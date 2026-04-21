@@ -88,19 +88,19 @@ void TestRemoteSnapshotItemHandler::testUpdateItem() {
         CPPUNIT_ASSERT_EQUAL(NodeType::Directory, item.type());
 
         CPPUNIT_ASSERT(handler.updateRemoteSnapshotItem("1000", RemoteSnapshotItemHandler::CsvIndexSize, item));
-        CPPUNIT_ASSERT_EQUAL(int64_t(1000), item.size());
+        CPPUNIT_ASSERT_EQUAL(int64_t{1000}, item.size());
 
         CPPUNIT_ASSERT(handler.updateRemoteSnapshotItem("123", RemoteSnapshotItemHandler::CsvIndexCreatedAt, item));
-        CPPUNIT_ASSERT_EQUAL(SyncTime(123), item.createdAt());
+        CPPUNIT_ASSERT_EQUAL(SyncTime{123}, item.createdAt());
 
         CPPUNIT_ASSERT(handler.updateRemoteSnapshotItem("-2082841200", RemoteSnapshotItemHandler::CsvIndexCreatedAt, item));
-        CPPUNIT_ASSERT_EQUAL(SyncTime(-2082841200), item.createdAt());
+        CPPUNIT_ASSERT_EQUAL(SyncTime{-2082841200}, item.createdAt());
 
         CPPUNIT_ASSERT(handler.updateRemoteSnapshotItem("124", RemoteSnapshotItemHandler::CsvIndexModtime, item));
-        CPPUNIT_ASSERT_EQUAL(SyncTime(124), item.lastModified());
+        CPPUNIT_ASSERT_EQUAL(SyncTime{124}, item.lastModified());
         CPPUNIT_ASSERT(handler.updateRemoteSnapshotItem("-1", RemoteSnapshotItemHandler::CsvIndexModtime,
                                                         item)); // We can have negative values! (for dates before 1970)
-        CPPUNIT_ASSERT_EQUAL(int64_t(-1), item.lastModified());
+        CPPUNIT_ASSERT_EQUAL(int64_t{-1}, item.lastModified());
 
         CPPUNIT_ASSERT(handler.updateRemoteSnapshotItem("1", RemoteSnapshotItemHandler::CsvIndexCanWrite, item));
         CPPUNIT_ASSERT_EQUAL(true, item.canWrite());
@@ -120,17 +120,17 @@ void TestRemoteSnapshotItemHandler::testUpdateItem() {
         RemoteSnapshotItem item;
         CPPUNIT_ASSERT(!handler.updateRemoteSnapshotItem("Invalid Size! Integer representation expected",
                                                          RemoteSnapshotItemHandler::CsvIndexSize, item));
-        CPPUNIT_ASSERT_EQUAL(int64_t(0), item.size());
+        CPPUNIT_ASSERT_EQUAL(int64_t{0}, item.size());
     }
     {
         RemoteSnapshotItem item;
         CPPUNIT_ASSERT(!handler.updateRemoteSnapshotItem("-1", RemoteSnapshotItemHandler::CsvIndexSize, item));
-        CPPUNIT_ASSERT_EQUAL(int64_t(-1), item.size());
+        CPPUNIT_ASSERT_EQUAL(int64_t{-1}, item.size());
     }
     {
         RemoteSnapshotItem item;
         CPPUNIT_ASSERT(!handler.updateRemoteSnapshotItem(std::string(100, '9'), RemoteSnapshotItemHandler::CsvIndexSize, item));
-        CPPUNIT_ASSERT_EQUAL(int64_t(0), item.size());
+        CPPUNIT_ASSERT_EQUAL(int64_t{0}, item.size());
     }
 
     // Invalid dates.
@@ -138,25 +138,25 @@ void TestRemoteSnapshotItemHandler::testUpdateItem() {
         RemoteSnapshotItem item;
         CPPUNIT_ASSERT(!handler.updateRemoteSnapshotItem("Invalid date! Integer representation expected",
                                                          RemoteSnapshotItemHandler::CsvIndexCreatedAt, item));
-        CPPUNIT_ASSERT_EQUAL(int64_t(0), item.createdAt());
+        CPPUNIT_ASSERT_EQUAL(int64_t{0}, item.createdAt());
     }
     {
         RemoteSnapshotItem item;
         CPPUNIT_ASSERT(
                 !handler.updateRemoteSnapshotItem(std::string(100, '9'), RemoteSnapshotItemHandler::CsvIndexCreatedAt, item));
-        CPPUNIT_ASSERT_EQUAL(int64_t(0), item.createdAt());
+        CPPUNIT_ASSERT_EQUAL(int64_t{0}, item.createdAt());
     }
     {
         RemoteSnapshotItem item;
         CPPUNIT_ASSERT(!handler.updateRemoteSnapshotItem("Invalid date! Integer representation expected",
                                                          RemoteSnapshotItemHandler::CsvIndexModtime, item));
-        CPPUNIT_ASSERT_EQUAL(int64_t(0), item.lastModified());
+        CPPUNIT_ASSERT_EQUAL(int64_t{0}, item.lastModified());
     }
     {
         RemoteSnapshotItem item;
         CPPUNIT_ASSERT(
                 !handler.updateRemoteSnapshotItem(std::string(100, '9'), RemoteSnapshotItemHandler::CsvIndexModtime, item));
-        CPPUNIT_ASSERT_EQUAL(int64_t(0), item.lastModified());
+        CPPUNIT_ASSERT_EQUAL(int64_t{0}, item.lastModified());
     }
 }
 
@@ -167,12 +167,10 @@ std::string toCsvString(const std::string &name) {
     bool encloseInDoubleQuotes = false;
     bool prevCharBackslash = false;
 
-    for (char c: name) {
-        if (c == '"') {
-            if (!prevCharBackslash) { // If a double quote is preceded by a comma, do not insert a second double quote.
-                encloseInDoubleQuotes = true;
-                ss << '"'; // Insert 2 double quotes instead of one
-            }
+    for (const char c: name) {
+        if (c == '"' && !prevCharBackslash) { // If a double quote is preceded by a comma, do not insert a second double quote.
+            encloseInDoubleQuotes = true;
+            ss << '"'; // Insert 2 double quotes instead of one
         }
 
         if (c == ',' || c == '\n') {
@@ -251,8 +249,8 @@ void TestRemoteSnapshotItemHandler::testGetItem() {
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
 
-        const SnapshotItem expectedItem(NodeId("0"), NodeId("1"), Str2SyncName(std::string("kDrive2")), SyncTime(123),
-                                        SyncTime(124), NodeType::Directory, int64_t(1000), true, false, true);
+        const SnapshotItem expectedItem(NodeId("0"), NodeId("1"), Str2SyncName(std::string("kDrive2")), SyncTime{123},
+                                        SyncTime{124}, NodeType::Directory, int64_t{1000}, true, false, true);
 
         const auto result = snapshotitem_checker::compare(expectedItem, item);
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
@@ -272,8 +270,8 @@ void TestRemoteSnapshotItemHandler::testGetItem() {
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
 
-        const SnapshotItem expectedItem(NodeId("0"), NodeId("1"), Str2SyncName(std::string(R"("kDrive2")")), SyncTime(123),
-                                        SyncTime(124), NodeType::Directory, int64_t(1000), true, false, true);
+        const SnapshotItem expectedItem(NodeId("0"), NodeId("1"), Str2SyncName(std::string(R"("kDrive2")")), SyncTime{123},
+                                        SyncTime{124}, NodeType::Directory, int64_t{1000}, true, false, true);
 
         const auto result = snapshotitem_checker::compare(expectedItem, item);
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
@@ -309,8 +307,8 @@ void TestRemoteSnapshotItemHandler::testGetItem() {
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
 
-        const SnapshotItem expectedItem(NodeId("0"), NodeId("1"), Str2SyncName(std::string("kDrive\n2")), SyncTime(123),
-                                        SyncTime(124), NodeType::Directory, int64_t(1000), false, true, true);
+        const SnapshotItem expectedItem(NodeId("0"), NodeId("1"), Str2SyncName(std::string("kDrive\n2")), SyncTime{123},
+                                        SyncTime{124}, NodeType::Directory, int64_t{1000}, false, true, true);
 
         const auto result = snapshotitem_checker::compare(expectedItem, item);
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
