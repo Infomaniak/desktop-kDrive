@@ -423,20 +423,21 @@ void TestParmsDb::testUpdateExclusionTemplates() {
     CPPUNIT_ASSERT(dbDefaults == fileDefaults);
 }
 
-bool TestParmsDb::deleteColumn(std::string tableName, const std::string &columnName) {
-    int errId = -1;
-    std::string error;
-
+bool TestParmsDb::deleteColumn(const std::string &tableName, const std::string &columnName) {
     auto parmsDb = ParmsDb::instance();
 
     const auto deleteRequestName = std::string("delete_") + columnName + "_from_" + tableName;
     const auto sqlRequestBody = std::string("ALTER TABLE ") + tableName + " DROP " + columnName + ";";
     if (!parmsDb->createAndPrepareRequest(deleteRequestName.c_str(), sqlRequestBody.c_str())) return false;
 
+    int32_t errId = -1;
+    std::string error;
     if (!parmsDb->queryExec(deleteRequestName, errId, error)) {
         parmsDb->queryFree(deleteRequestName);
+
         return parmsDb->sqlFail(deleteRequestName, error);
     }
+
     parmsDb->queryFree(deleteRequestName);
 
     return true;
