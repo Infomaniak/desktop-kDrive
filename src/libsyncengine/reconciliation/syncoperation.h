@@ -171,7 +171,7 @@ class SyncOperationList : public SharedObject {
          * @brief Check if a local Edit operation is caused by the current sync.
          * @param nodeId The ID of the object.
          * @param rootPath The localPath of the sync.
-         * @param relativePath The absolutePath of the object.
+         * @param relativePath The relative path of the object.
          * @param lastModified The modified time of the object.
          * @param size The size of the object.
          * @return true is the Edit operation corresponds to a sync operation.

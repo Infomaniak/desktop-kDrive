@@ -105,26 +105,23 @@ void TestSyncOperation::testGetOpFromTargetNodeId() {
 }
 
 void TestSyncOperation::testIsLocalEditCausedBySync() {
-    auto res = _syncOperationList.isLocalEditCausedBySync(*_localNodeAAA->id(), SyncPath(Str("/Users/John/kDrive")),
-                                                          SyncPath(Str("a/aa/aaa")), 12345, 999);
+    const auto rootPath = SyncPath(Str("kDrive"));
+
+    auto res = _syncOperationList.isLocalEditCausedBySync(*_localNodeAAA->id(), rootPath, SyncPath(Str("a/aa/aaa")), 12345, 999);
     CPPUNIT_ASSERT(res == false);
 
     _op1->setPropagationStatus(SyncOperation::PropagationStatus::InProgress);
-    res = _syncOperationList.isLocalEditCausedBySync(*_localNodeAAA->id(), SyncPath(Str("/Users/John/kDrive")),
-                                                     SyncPath(Str("a/aa/aaa")), 12345, 999);
+    res = _syncOperationList.isLocalEditCausedBySync(*_localNodeAAA->id(), rootPath, SyncPath(Str("a/aa/aaa")), 12345, 999);
     CPPUNIT_ASSERT(res == true);
 
     _op1->setPropagationStatus(SyncOperation::PropagationStatus::Propagated);
-    res = _syncOperationList.isLocalEditCausedBySync(*_localNodeAAA->id(), SyncPath(Str("/Users/John/kDrive")),
-                                                     SyncPath(Str("a/aa/aaa")), 12345, 999);
+    res = _syncOperationList.isLocalEditCausedBySync(*_localNodeAAA->id(), rootPath, SyncPath(Str("a/aa/aaa")), 12345, 999);
     CPPUNIT_ASSERT(res == true);
 
-    res = _syncOperationList.isLocalEditCausedBySync(*_localNodeAAA->id(), SyncPath(Str("/Users/John/kDrive")),
-                                                     SyncPath(Str("a/aa/aaa")), 24680, 999);
+    res = _syncOperationList.isLocalEditCausedBySync(*_localNodeAAA->id(), rootPath, SyncPath(Str("a/aa/aaa")), 24680, 999);
     CPPUNIT_ASSERT(res == false);
 
-    res = _syncOperationList.isLocalEditCausedBySync(*_localNodeAAA->id(), SyncPath(Str("/Users/John/kDrive")),
-                                                     SyncPath(Str("a/aa/aaa")), 12345, 555);
+    res = _syncOperationList.isLocalEditCausedBySync(*_localNodeAAA->id(), rootPath, SyncPath(Str("a/aa/aaa")), 12345, 555);
     CPPUNIT_ASSERT(res == false);
 }
 

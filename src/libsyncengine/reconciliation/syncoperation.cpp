@@ -65,13 +65,16 @@ SyncOpPtr SyncOperationList::getOp(const UniqueId id) {
 }
 
 const std::list<UniqueId> &SyncOperationList::opSortedList() const {
-    const std::scoped_lock lock(_mutex);
     return _opSortedList;
 }
 
 const std::unordered_set<UniqueId> &SyncOperationList::opListIdByType(const OperationType type) {
-    const std::scoped_lock lock(_mutex);
-    return _opListByType[type];
+    const auto it = _opListByType.find(type);
+    if (it != _opListByType.end()) {
+        return it->second;
+    }
+    static std::unordered_set<UniqueId> emptySet;
+    return emptySet;
 }
 
 std::list<UniqueId> SyncOperationList::getOpIdsFromSourceNodeId(const NodeId &nodeId, const ReplicaSide side) {
@@ -80,9 +83,12 @@ std::list<UniqueId> SyncOperationList::getOpIdsFromSourceNodeId(const NodeId &no
     const auto it = _nodeIdSource2ops.find(nodeId);
     if (it != _nodeIdSource2ops.end()) {
         for (const auto opId: it->second) {
-            const auto opPtr = _allOps[opId];
-            // Keep the op only if its source side is the same as `side`.
-            if (opPtr && otherSide(opPtr->targetSide()) == side) opList.push_back(opId);
+            const auto it2 = _allOps.find(opId);
+            if (it2 != _allOps.end()) {
+                const auto opPtr = it2->second;
+                // Keep the op only if its source side is the same as `side`.
+                if (opPtr && otherSide(opPtr->targetSide()) == side) opList.push_back(opId);
+            }
         }
     }
 
@@ -95,18 +101,20 @@ SyncOpPtr SyncOperationList::getOpFromTargetNodeId(const NodeId &nodeId, Replica
     const auto it = _nodeIdTarget2ops.find(nodeId);
     if (it != _nodeIdTarget2ops.end()) {
         for (const auto opId: it->second) {
-            const auto opPtr = _allOps[opId];
-            // Filter by side, type and path
-            if (opPtr && opPtr->targetSide() == side && opPtr->type() == type && opPtr->correspondingNode() &&
-                opPtr->correspondingNode()->getPath() == relativePath)
-                return opPtr;
+            const auto it2 = _allOps.find(opId);
+            if (it2 != _allOps.end()) {
+                const auto opPtr = it2->second;
+                // Filter by side, type and path
+                if (opPtr && opPtr->targetSide() == side && opPtr->type() == type && opPtr->correspondingNode() &&
+                    opPtr->correspondingNode()->getPath() == relativePath)
+                    return opPtr;
+            }
         }
     }
     return nullptr;
 }
 
 const std::unordered_map<UniqueId, SyncOpPtr> &SyncOperationList::allOps() const {
-    const std::scoped_lock lock(_mutex);
     return _allOps;
 }
 
@@ -152,20 +160,40 @@ void SyncOperationList::deleteOp(const std::list<UniqueId>::const_iterator it) {
     const auto opId = *it;
     if (const auto syncOp = getOp(opId); syncOp) {
         const auto type = syncOp->type();
-        _opListByType[type].erase(opId);
+        const auto _opListByTypeIt = _opListByType.find(type);
+        if (_opListByTypeIt != _opListByType.end()) {
+            (void) _opListByTypeIt->second.erase(opId);
+        }
+
         if (syncOp->affectedNode()) {
             if (const auto nodeId = syncOp->affectedNode()->id(); nodeId.has_value()) {
-                (void) _nodeIdSource2ops.erase(*nodeId);
+                const auto nodeIdSource2opsIt = _nodeIdSource2ops.find(*nodeId);
+                if (nodeIdSource2opsIt != _nodeIdSource2ops.end()) {
+                    (void) std::remove_if(nodeIdSource2opsIt->second.begin(), nodeIdSource2opsIt->second.end(),
+                                          [opId](int value) { return value == opId; });
+                    if (nodeIdSource2opsIt->second.empty()) {
+                        (void) _nodeIdSource2ops.erase(nodeIdSource2opsIt);
+                    }
+                }
             }
         }
+
         if (syncOp->correspondingNode()) {
             if (const auto nodeId = syncOp->correspondingNode()->id(); nodeId.has_value()) {
-                (void) _nodeIdTarget2ops.erase(*nodeId);
+                const auto nodeIdTarget2opsIt = _nodeIdTarget2ops.find(*nodeId);
+                if (nodeIdTarget2opsIt != _nodeIdTarget2ops.end()) {
+                    (void) std::remove_if(nodeIdTarget2opsIt->second.begin(), nodeIdTarget2opsIt->second.end(),
+                                          [opId](int value) { return value == opId; });
+                    if (nodeIdTarget2opsIt->second.empty()) {
+                        (void) _nodeIdTarget2ops.erase(nodeIdTarget2opsIt);
+                    }
+                }
             }
         }
     }
-    _allOps.erase(opId);
-    _opSortedList.erase(it);
+
+    (void) _allOps.erase(opId);
+    (void) _opSortedList.erase(it);
 }
 
 size_t SyncOperationList::size() const {
@@ -193,7 +221,11 @@ void SyncOperationList::clear() {
 }
 
 SyncOperationList &SyncOperationList::operator=(const SyncOperationList &other) {
-    const std::scoped_lock lock(_mutex);
+    if (this == &other) {
+        return *this;
+    }
+
+    const std::scoped_lock lock(_mutex, other._mutex);
     this->_allOps = other._allOps;
     this->_opSortedList = other._opSortedList;
     this->_opListByType = other._opListByType;
