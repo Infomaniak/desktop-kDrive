@@ -281,8 +281,9 @@ ExitInfo RemoteFileSystemObserverWorker::updateV3MainFolderItem(const RemoteNode
 
     // As long as the local folder hierarchy reflects the v2 API,
     // we should not create a Private folder at the root of the local synchronization folder.
-    const auto &privateFolderName = ApiTranslator::v3SpecialFolderNames.at(SpecialFolder::Private);
-    if (folderName == privateFolderName) return ExitCode::Ok;
+    if (const auto &privateFolderName = ApiTranslator::v3SpecialFolderNames.at(SpecialFolder::Private);
+        folderName == privateFolderName)
+        return ExitCode::Ok;
 
     DbNode dbNode;
     bool found = false;
@@ -330,10 +331,10 @@ ExitInfo RemoteFileSystemObserverWorker::initWithCursor() {
     for (const auto &mainFolderRemoteId: mainDirectoriesRemoteIds) {
         if (_blackList.contains(mainFolderRemoteId)) continue;
 
-        updateV3MainFolderItem(mainFolderRemoteId);
+        exitInfo = updateV3MainFolderItem(mainFolderRemoteId);
+        if (!exitInfo) return exitInfo;
 
-        constexpr bool saveCursor = true;
-        exitInfo = getItemsInDir(mainFolderRemoteId, saveCursor);
+        exitInfo = getItemsInDir(mainFolderRemoteId, CursorPersistence::Save);
         if (!exitInfo) return exitInfo;
     }
 
@@ -345,9 +346,7 @@ ExitInfo RemoteFileSystemObserverWorker::initWithCursor() {
 ExitInfo RemoteFileSystemObserverWorker::exploreDirectory(const NodeId &nodeId) {
     if (stopAsked()) return ExitCode::Ok;
 
-    constexpr bool saveCursor = false;
-
-    return getItemsInDir(nodeId, saveCursor);
+    return getItemsInDir(nodeId, CursorPersistence::None);
 }
 
 ExitInfo RemoteFileSystemObserverWorker::handleSnapshotItem(
@@ -384,7 +383,7 @@ ExitInfo RemoteFileSystemObserverWorker::handleSnapshotItem(
                                                   << Utility::formatSyncName(_liveSnapshot.name(item.parentId())));
 
         SyncPath path;
-        _liveSnapshot.path(item.parentId(), path, iterationState.ignore);
+        (void) _liveSnapshot.path(item.parentId(), path, iterationState.ignore);
         path /= item.name();
 
         Error err(_syncPal->syncDbId(), "", item.id(), NodeType::Directory, path, ConflictType::None, InconsistencyType::None,
@@ -422,9 +421,9 @@ void RemoteFileSystemObserverWorker::deleteOrphans() {
     }
 }
 
-ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &remoteDirId, const bool saveCursor) {
+ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &remoteDirId, const CursorPersistence cursorPersistence) {
     // Send request
-    sentry::pTraces::scoped::RFSOBackRequest perfMonitorBackRequest(!saveCursor, syncDbId());
+    sentry::pTraces::scoped::RFSOBackRequest perfMonitorBackRequest(cursorPersistence == CursorPersistence::None, syncDbId());
     std::shared_ptr<CsvFullFileListWithCursorJob> job = nullptr;
     try {
         job = std::make_shared<CsvFullFileListWithCursorJob>(_driveDbId, remoteDirId, _blackList,
@@ -452,7 +451,7 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &remoteDirId
         return job->exitInfo();
     }
 
-    if (saveCursor) {
+    if (cursorPersistence == CursorPersistence::Save) {
         if (const auto &cursor = job->getCursor();
             !_listingCursorMap.contains(remoteDirId) || cursor != _listingCursorMap[remoteDirId]) {
             _listingCursorMap[remoteDirId] = cursor;
@@ -476,7 +475,7 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &remoteDirId
 
     perfMonitorBackRequest.stop();
 
-    sentry::pTraces::counterScoped::RFSOExploreItem itemHandlingMonitor(!saveCursor, syncDbId());
+    sentry::pTraces::counterScoped::RFSOExploreItem itemHandlingMonitor(cursorPersistence == CursorPersistence::None, syncDbId());
     while (job->getItem(item, iterationState.error, iterationState.ignore, iterationState.eof)) {
         if (const auto exitInfo = handleSnapshotItem(item, existingFiles, iterationState, itemHandlingMonitor); !exitInfo) {
             return exitInfo;
@@ -1058,7 +1057,7 @@ ExitInfo RemoteFileSystemObserverWorker::getMainDirectoriesRemoteIds(std::vector
         return exitInfo;
 
     mainDirectoriesRemoteIds = {userPrivateFolderRemoteId, commonDocumentsFolderRemoteId, sharedFolderRemoteId};
-    std::erase_if(mainDirectoriesRemoteIds, [](const std::string_view s) { return s.empty(); });
+    (void) std::erase_if(mainDirectoriesRemoteIds, [](const std::string_view s) { return s.empty(); });
 
     return ExitCode::Ok;
 }
