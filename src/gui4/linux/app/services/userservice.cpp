@@ -20,7 +20,6 @@
 #include "serviceutils.h"
 
 #include <QLoggingCategory>
-#include <QPointer>
 
 namespace KDC {
 
@@ -39,19 +38,14 @@ void UserService::loadUsers() {
     beginRequest();
     setLastError(QString());
 
-    const QPointer<UserService> self(this);
-    _commService.requestUserInfoList([self](const ExitInfo &exitInfo, const std::vector<UserInfo> &list) {
-        if (!self) {
-            return;
-        }
-
-        self->endRequest();
+    _commService.requestUserInfoList([this](const ExitInfo &exitInfo, const std::vector<UserInfo> &list) {
+        endRequest();
         if (exitInfo.code() != ExitCode::Ok) {
-            self->setLastError(ServiceUtils::formatExitInfo(exitInfo));
+            setLastError(ServiceUtils::formatExitInfo(exitInfo));
             return;
         }
 
-        self->_appCache.replaceUsers(list);
+        _appCache.replaceUsers(list);
     });
 }
 
@@ -59,25 +53,20 @@ void UserService::loadAvailableDrives(const qint64 userDbId) {
     beginRequest();
     setLastError(QString());
 
-    const QPointer<UserService> self(this);
     const auto requestedUserDbId = static_cast<UserDbId>(userDbId);
     _commService.requestUserAvailableDrives(
-            requestedUserDbId, [self, requestedUserDbId](const ExitInfo &exitInfo, const std::vector<DriveAvailableInfo> &list) {
-                if (!self) {
-                    return;
-                }
-
-                self->endRequest();
-                if (self->_appCache.selectedUserDbId() != static_cast<qint64>(requestedUserDbId)) {
+            requestedUserDbId, [this, requestedUserDbId](const ExitInfo &exitInfo, const std::vector<DriveAvailableInfo> &list) {
+                endRequest();
+                if (_appCache.selectedUserDbId() != static_cast<qint64>(requestedUserDbId)) {
                     return;
                 }
 
                 if (exitInfo.code() != ExitCode::Ok) {
-                    self->setLastError(ServiceUtils::formatExitInfo(exitInfo));
+                    setLastError(ServiceUtils::formatExitInfo(exitInfo));
                     return;
                 }
 
-                self->_appCache.replaceAvailableDrives(list);
+                _appCache.replaceAvailableDrives(list);
             });
 }
 
@@ -85,16 +74,11 @@ void UserService::deleteUser(const qint64 userDbId) {
     beginRequest();
     setLastError(QString());
 
-    const QPointer<UserService> self(this);
     // Cache consistency is signal-driven: we wait for userRemoved/userUpdated pushes.
-    _commService.requestDeleteUser(static_cast<UserDbId>(userDbId), [self](const ExitInfo &exitInfo) {
-        if (!self) {
-            return;
-        }
-
-        self->endRequest();
+    _commService.requestDeleteUser(static_cast<UserDbId>(userDbId), [this](const ExitInfo &exitInfo) {
+        endRequest();
         if (exitInfo.code() != ExitCode::Ok) {
-            self->setLastError(ServiceUtils::formatExitInfo(exitInfo));
+            setLastError(ServiceUtils::formatExitInfo(exitInfo));
         }
     });
 }
@@ -103,26 +87,21 @@ void UserService::requestLoginToken(const QString &code, const QString &codeVeri
     beginRequest();
     setLastError(QString());
 
-    const QPointer<UserService> self(this);
-    _commService.requestLoginToken(code, codeVerifier, [self](const ExitInfo &exitInfo, const LoginTokenResult &result) {
-        if (!self) {
-            return;
-        }
-
-        self->endRequest();
+    _commService.requestLoginToken(code, codeVerifier, [this](const ExitInfo &exitInfo, const LoginTokenResult &result) {
+        endRequest();
         if (!result.error.isEmpty() || !result.errorDescription.isEmpty()) {
-            emit self->loginTokenFailed(result.error, result.errorDescription);
+            emit loginTokenFailed(result.error, result.errorDescription);
             return;
         }
 
         if (exitInfo.code() != ExitCode::Ok) {
             const QString errorDescription = ServiceUtils::formatExitInfo(exitInfo);
-            self->setLastError(errorDescription);
-            emit self->loginTokenFailed(QString(), errorDescription);
+            setLastError(errorDescription);
+            emit loginTokenFailed(QString(), errorDescription);
             return;
         }
 
-        emit self->loginTokenSucceeded(static_cast<qint64>(result.userDbId));
+        emit loginTokenSucceeded(static_cast<qint64>(result.userDbId));
     });
 }
 
