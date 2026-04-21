@@ -182,6 +182,7 @@ void DebuggingDialog::initUI() {
     _extendedLogCheckBox->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
     _extendedLogCheckBox->setText(tr("Extended Full Log"));
     _extendedLogCheckBox->setToolTip(extendedLogCheckBoxToolTip);
+    updateExtendedLogCheckBoxState();
     debugLevelSelectionHBox->addWidget(_extendedLogCheckBox);
 
     // Debug info main box | Debug Level Main Box | Debug level select box | Helper
@@ -581,11 +582,21 @@ void DebuggingDialog::updateUI() {
         _extendedLogCheckBox->show();
         _extendedLogHelpButton->show();
     }
+    updateExtendedLogCheckBoxState();
 }
 
 void DebuggingDialog::setNeedToSave(bool value) {
     _needToSave = value;
     _saveButton->setEnabled(value);
+}
+
+void DebuggingDialog::updateExtendedLogCheckBoxState() {
+    if (CommonUtility::envVarValue("KDRIVE_FORCE_EXTENDED_LOG") == "1") {
+        _extendedLogCheckBox->setDisabled(true);
+        _extendedLogCheckBox->setToolTip(
+                tr("The extended full log is activated through the KDRIVE_FORCE_EXTENDED_LOG environment variable. Set it to "
+                   "0 to disable it."));
+    }
 }
 
 QString DebuggingDialog::convertAppStateTimeToLocalHumanReadable(const QString &time) const {

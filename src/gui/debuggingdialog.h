@@ -76,6 +76,8 @@ class DebuggingDialog : public CustomDialog {
         void updateUI();
         void setNeedToSave(bool value);
 
+        void updateExtendedLogCheckBoxState();
+
         // helpers
         QString convertAppStateTimeToLocalHumanReadable(const QString &time) const;
     private slots:

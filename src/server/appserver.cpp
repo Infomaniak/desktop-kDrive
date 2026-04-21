@@ -3420,7 +3420,12 @@ void AppServer::logUsefulInformation() {
 
     // Log level
     LOG_INFO(Log::instance()->getLogger(), "Log level: " << ParametersCache::instance()->parameters().logLevel());
-    LOG_INFO(Log::instance()->getLogger(), "Extended log activated: " << ParametersCache::instance()->parameters().extendedLog());
+    if (CommonUtility::envVarValue("KDRIVE_FORCE_EXTENDED_LOG") == "1") {
+        LOG_INFO(Log::instance()->getLogger(), "Extended log forced by environment variable KDRIVE_FORCE_EXTENDED_LOG");
+    } else {
+        LOG_INFO(Log::instance()->getLogger(),
+                 "Extended log activated: " << ParametersCache::instance()->parameters().extendedLog());
+    }
 
     LOG_INFO(_logger, "********************");
 }
