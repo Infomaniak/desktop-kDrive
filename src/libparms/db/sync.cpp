@@ -29,9 +29,9 @@ Sync::Sync() :
     _notificationsDisabled(false),
     _hasFullyCompleted(false) {}
 
-Sync::Sync(SyncDbId dbId, DriveDbId driveDbId, const std::filesystem::path &localPath, const NodeId &localNodeId,
-           const std::filesystem::path &targetPath, const NodeId &targetNodeId, bool paused, bool supportVfs,
-           VirtualFileMode virtualFileMode, bool notificationsDisabled, const std::filesystem::path &dbPath,
+Sync::Sync(const SyncDbId dbId, const DriveDbId driveDbId, const std::filesystem::path &localPath, const NodeId &localNodeId,
+           const std::filesystem::path &targetPath, const NodeId &targetNodeId, const bool paused, const bool supportVfs,
+           const VirtualFileMode virtualFileMode, const bool notificationsDisabled, const std::filesystem::path &dbPath,
            bool hasFullyCompleted, const std::string &navigationPaneClsid, CursorStore cursorStore) :
     _dbId(dbId),
     _driveDbId(driveDbId),
