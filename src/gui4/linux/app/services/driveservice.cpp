@@ -20,7 +20,6 @@
 #include "serviceutils.h"
 
 #include <QLoggingCategory>
-#include <QPointer>
 
 namespace KDC {
 
@@ -40,19 +39,14 @@ void DriveService::loadDrives() {
     beginRequest();
     setLastError({});
 
-    const QPointer<DriveService> self(this);
-    _commService.requestDriveInfoList([self](const ExitInfo &exitInfo, const std::vector<DriveInfo> &list) {
-        if (!self) {
-            return;
-        }
-
-        self->endRequest();
+    _commService.requestDriveInfoList([this](const ExitInfo &exitInfo, const std::vector<DriveInfo> &list) {
+        endRequest();
         if (!exitInfo) {
-            self->setLastError(ServiceUtils::formatExitInfo(exitInfo));
+            setLastError(ServiceUtils::formatExitInfo(exitInfo));
             return;
         }
 
-        self->_appCache.replaceDrives(list);
+        _appCache.replaceDrives(list);
     });
 }
 
@@ -60,16 +54,11 @@ void DriveService::deleteDrive(const qint64 driveDbId) {
     beginRequest();
     setLastError(QString());
 
-    const QPointer<DriveService> self(this);
     // Cache consistency is signal-driven: we wait for driveRemoved/driveUpdated pushes.
-    _commService.requestDriveDelete(static_cast<DriveDbId>(driveDbId), [self](const ExitInfo &exitInfo) {
-        if (!self) {
-            return;
-        }
-
-        self->endRequest();
+    _commService.requestDriveDelete(static_cast<DriveDbId>(driveDbId), [this](const ExitInfo &exitInfo) {
+        endRequest();
         if (!exitInfo) {
-            self->setLastError(ServiceUtils::formatExitInfo(exitInfo));
+            setLastError(ServiceUtils::formatExitInfo(exitInfo));
         }
     });
 }
@@ -82,15 +71,10 @@ void DriveService::updateDrive(const DriveInfo &driveInfo) {
     beginRequest();
     setLastError({});
 
-    const QPointer<DriveService> self(this);
-    _commService.requestDriveUpdate(driveInfo, [self](const ExitInfo &exitInfo) {
-        if (!self) {
-            return;
-        }
-
-        self->endRequest();
+    _commService.requestDriveUpdate(driveInfo, [this](const ExitInfo &exitInfo) {
+        endRequest();
         if (!exitInfo) {
-            self->setLastError(ServiceUtils::formatExitInfo(exitInfo));
+            setLastError(ServiceUtils::formatExitInfo(exitInfo));
         }
     });
 }
