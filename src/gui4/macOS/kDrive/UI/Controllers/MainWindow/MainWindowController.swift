@@ -48,6 +48,7 @@ final class MainWindowController: NSWindowController {
         window.center()
         window.setFrameAutosaveName(WindowConstants.frameName)
         window.minSize = NSSize(width: 800, height: 450)
+        window.collectionBehavior = [.managed, .moveToActiveSpace]
         window.delegate = self
 
         observeRouter()
