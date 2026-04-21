@@ -381,6 +381,14 @@ enum class TranslationMode {
     V3ToV2
 };
 
+enum class SpecialFolder {
+    CommonDocuments = 0,
+    Private = 1,
+    Shared = 2
+};
+
+using SpecialFolderNames = std::unordered_map<SpecialFolder, SyncName>;
+
 // Adding a new types here requires to add it in stringToAppStateValue and appStateValueToString in libcommon/utility/utility.cpp
 using AppStateValue = std::variant<std::string, int, int64_t, LogUploadState>;
 

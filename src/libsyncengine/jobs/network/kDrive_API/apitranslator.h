@@ -32,11 +32,6 @@ class ApiTranslator {
         static ExitInfo translateV3ToV2(UserDbId userDbId, DriveId driveId, NodeId &remoteNodeId);
         static ExitInfo translateV3ToV2(UserDbId userDbId, DriveId driveId, RemoteNodeInfoList &v3RemoteNodeInfoList);
 
-        enum class SpecialFolder {
-            CommonDocuments = 0,
-            Private = 1,
-            Shared = 2
-        };
         static ExitInfo getSpecialFolderRemoteId(UserDbId userDbId, DriveId driveId, SpecialFolder specialFolder,
                                                  RemoteNodeId &folderRemoteId);
 
@@ -44,7 +39,6 @@ class ApiTranslator {
 
         static RemoteNodeId v2RootFolderRemoteId();
 
-        using SpecialFolderNames = std::unordered_map<SpecialFolder, std::string>;
         static const SpecialFolderNames v3SpecialFolderNames;
 
     private:
