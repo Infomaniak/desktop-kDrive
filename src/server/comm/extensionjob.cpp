@@ -330,11 +330,13 @@ void ExtensionJob::commandMakeAvailableLocallyDirect(const CommString &argument,
             continue;
         }
 
-        // Set pin state
-        if (const auto exitInfo = setPinState(fileData, PinState::AlwaysLocal); !exitInfo) {
-            LOGW_INFO(Log::instance()->getLogger(),
-                      L"Error in ExtensionJob::setPinState - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
-            continue;
+        if (ps != PinState::AlwaysLocal) {
+            // Set pin state
+            if (const auto exitInfo = setPinState(fileData, PinState::AlwaysLocal); !exitInfo) {
+                LOGW_INFO(Log::instance()->getLogger(),
+                          L"Error in ExtensionJob::setPinState - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
+                continue;
+            }
         }
 #endif
 
@@ -649,11 +651,13 @@ void ExtensionJob::commandMakeOnlineOnlyDirect(const CommString &argument, std::
             continue;
         }
 
-        // Set pin state
-        if (const auto exitInfo = setPinState(fileData, PinState::OnlineOnly); !exitInfo) {
-            LOGW_INFO(Log::instance()->getLogger(),
-                      L"Error in ExtensionJob::setPinState - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
-            continue;
+        if (ps != PinState::OnlineOnly) {
+            // Set pin state
+            if (const auto exitInfo = setPinState(fileData, PinState::OnlineOnly); !exitInfo) {
+                LOGW_INFO(Log::instance()->getLogger(),
+                          L"Error in ExtensionJob::setPinState - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
+                continue;
+            }
         }
 
         // Dehydrate placeholder
@@ -662,9 +666,9 @@ void ExtensionJob::commandMakeOnlineOnlyDirect(const CommString &argument, std::
                                                             << Utility::formatSyncPath(filePath) << L": " << exitInfo);
 
             // Setting back the previous pin state
-            if (const auto exitInfo = cancelDehydrate(fileData, ps); !exitInfo) {
-                LOGW_INFO(Log::instance()->getLogger(),
-                          L"Error in ExtensionJob::cancelDehydrate - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
+            if (const auto exitInfo2 = cancelDehydrate(fileData, ps); !exitInfo2) {
+                LOGW_INFO(Log::instance()->getLogger(), L"Error in ExtensionJob::cancelDehydrate - "
+                                                                << Utility::formatSyncPath(filePath) << L": " << exitInfo2);
             }
 
             continue;
