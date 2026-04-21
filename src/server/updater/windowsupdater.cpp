@@ -229,28 +229,34 @@ std::string WindowsUpdater::computeFileChecksum(const SyncPath &filepath) {
         return "";
     }
 
-    SHA256_CTX sha256;  // Using SHA256 instead of the project-standard XXH3 for security.
-                        // XXH3 is a non-cryptographic hash; an attacker could craft a malicious
-                        // file with the same XXH3 hash (collision attack).
-    SHA256_Init(&sha256);
+    SHA256_CTX sha256{}; // Using SHA256 instead of the project-standard XXH3 for security.
+                         // XXH3 is a non-cryptographic hash; an attacker could craft a malicious
+                         // file with the same XXH3 hash (collision attack).
+    if (SHA256_Init(&sha256) != 1) { // Check return value
+        LOGW_WARN(Log::instance()->getLogger(), L"SHA256_Init failed");
+        return "";
+    }
 
-    char buffer[8192];
-    while (file.read(buffer, sizeof(buffer))) {
-        SHA256_Update(&sha256, buffer, file.gcount());
+    std::array<char, 8192> buffer{};
+    while (file.read(buffer.data(), buffer.size())) {
+        SHA256_Update(&sha256, buffer.data(), static_cast<std::size_t>(file.gcount()));
     }
     // Process remaining bytes
-    SHA256_Update(&sha256, buffer, file.gcount());
+    SHA256_Update(&sha256, buffer.data(), static_cast<std::size_t>(file.gcount()));
 
-    unsigned char hash[SHA256_DIGEST_LENGTH];
-    SHA256_Final(hash, &sha256);
-
-    // Convert to hex string
-    std::stringstream ss;
-    for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
-        ss << std::hex << std::setw(2) << std::setfill('0') << (int) hash[i];
+    std::array<std::uint8_t, SHA256_DIGEST_LENGTH> hash{};
+    if (SHA256_Final(hash.data(), &sha256) != 1) {
+        LOGW_WARN(Log::instance()->getLogger(), L"SHA256_Final failed");
+        return "";
     }
 
-    return ss.str();
+    std::string result;
+    result.reserve(SHA256_DIGEST_LENGTH * 2);
+    for (const auto &byte: hash) {
+        result += std::format("{:02x}", static_cast<int>(byte));
+    }
+
+    return result;
 }
 
 bool WindowsUpdater::verifyDigitalSignature(const SyncPath &filepath) {
