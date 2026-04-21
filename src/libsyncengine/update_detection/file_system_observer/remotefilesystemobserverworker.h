@@ -58,7 +58,11 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         [[nodiscard]] ExitInfo handleSnapshotItem(const SnapshotItem &item, SyncNameSet &existingFiles,
                                                   ParsingIterationState &iterationState,
                                                   sentry::pTraces::counterScoped::RFSOExploreItem &perfMonitor);
-        [[nodiscard]] ExitInfo getItemsInDir(const NodeId &dirId, bool saveCursor);
+        enum class CursorPersistence {
+            Save,
+            None
+        };
+        [[nodiscard]] ExitInfo getItemsInDir(const NodeId &dirId, CursorPersistence persistence = CursorPersistence::None);
 
         struct ActionInfo {
                 ActionCode actionCode{ActionCode::ActionCodeUnknown};

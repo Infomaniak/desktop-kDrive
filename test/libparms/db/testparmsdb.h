@@ -80,9 +80,8 @@ class TestParmsDb : public CppUnit::TestFixture, public TestBase {
     private:
         LocalTemporaryDirectory _parmsDbTemporarDirectory;
         bool deleteColumns();
+        bool deleteColumn(const std::string &tableName, const std::string &columnName);
         bool deleteAppState(AppStateKey key);
-        bool deleteColumn(std::string tableName, const std::string &columnName);
-
 };
 
 } // namespace KDC
