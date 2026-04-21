@@ -2667,7 +2667,7 @@ void AppServer::addCompletedItem(int syncDbId, const SyncFileItem &item, bool no
     ServerRequests::syncFileItemToSyncFileItemInfo(item, itemInfo);
     sendSyncCompletedItem(syncDbId, itemInfo);
 
-    if (notify) {
+    if (notify && item.status() == SyncFileStatus::Success) {
         // Store notification
         Notification notification;
         notification._syncDbId = syncDbId;
