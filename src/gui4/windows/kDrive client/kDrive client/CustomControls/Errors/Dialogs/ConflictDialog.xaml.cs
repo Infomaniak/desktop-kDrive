@@ -48,6 +48,7 @@ public partial class ConflictDialog : Page
         _dialog.IsPrimaryButtonEnabled = false;
         _dialog.PrimaryButtonClick += Dialog_PrimaryButtonClick;
         _dialog.CloseButtonClick += Dialog_CloseButtonClick;
+        _dialog.DefaultButton = ContentDialogButton.Primary;
         _dialog.Closed += Dialog_Closed;
 
         _dialog.CloseButtonText = kDrive.Localizer.Instance.GetString("buttonClose");
@@ -98,7 +99,7 @@ public partial class ConflictDialog : Page
     private async Task<bool> ApplyUserChoices()
     {
         _dialog.IsEnabled = false;
-        var result = !await ViewModel.ApplyUserChoices();
+        var result = await ViewModel.ApplyUserChoices();
         _dialog.IsEnabled = true;
         return result;
     }
