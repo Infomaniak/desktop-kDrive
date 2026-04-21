@@ -1925,10 +1925,7 @@ ExitInfo ServerRequests::loadDriveInfo(Drive &drive, const AccountId previousAcc
         quotaUpdated = true;
     }
 
-    drive.setPackInfo({.id = job->packInfo().id,
-                       .name = job->packInfo().name,
-                       .displayName = job->packInfo().displayName,
-                       .isFree = job->packInfo().isFree});
+    drive.setPackInfo(job->packInfo());
 
     return ExitCode::Ok;
 }
@@ -2238,6 +2235,7 @@ void ServerRequests::driveToDriveInfo(const Drive &drive, DriveInfo &driveInfo) 
     driveInfo.setLocked(drive.locked());
     driveInfo.setUsedSize(drive.usedSize());
     driveInfo.setAccessDenied(drive.accessDenied());
+    driveInfo.setPackInfo(drive.packInfo());
 }
 
 void ServerRequests::syncToSyncInfo(const Sync &sync, SyncInfo &syncInfo) {

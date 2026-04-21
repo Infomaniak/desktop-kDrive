@@ -58,8 +58,8 @@ class DriveInfo {
         bool accessDenied() const { return _accessDenied; }
         void setAccessDenied(const bool accessDenied) { _accessDenied = accessDenied; }
 
-        [[nodiscard]] bool packIsFree() const { return _packIsFree; }
-        void setPackIsFree(const bool pack_is_free) { _packIsFree = pack_is_free; }
+        [[nodiscard]] const PackInfo &packInfo() const { return _packInfo; }
+        void setPackInfo(const PackInfo &packInfo) { _packInfo = packInfo; }
 
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
         void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
@@ -69,7 +69,7 @@ class DriveInfo {
                    lhs.name() == rhs.name() && lhs.size() == rhs.size() && lhs.color() == rhs.color() &&
                    lhs.notifications() == rhs.notifications() && lhs.admin() == rhs.admin() &&
                    lhs.maintenance() == rhs.maintenance() && lhs.locked() == rhs.locked() && lhs.usedSize() == rhs.usedSize() &&
-                   lhs.accessDenied() == rhs.accessDenied();
+                   lhs.accessDenied() == rhs.accessDenied() && lhs.packInfo() == rhs.packInfo();
         }
 
     private:
@@ -88,7 +88,7 @@ class DriveInfo {
         int64_t _usedSize{0};
         bool _accessDenied{false};
 
-        bool _packIsFree{false};
+        PackInfo _packInfo;
 };
 
 void operator>>(QDataStream &in, DriveInfo &info);

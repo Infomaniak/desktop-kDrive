@@ -325,8 +325,8 @@ void TestGuiCommChannel::testUserInfoListJob() {
         QImage avatar;
         (void) avatar.loadFromData(avatarQBA);
 
-        const UserInfo ui1(1, 1001, "aaaaa","a1a1a1", "aaaaa@xxx.com", avatar, true);
-        const UserInfo ui2(2, 1002, "bbbbb","b1b1b1", "bbbbb@xxx.com", avatar, false);
+        const UserInfo ui1(1, 1001, "aaaaa", "a1a1a1", "aaaaa@xxx.com", avatar, true);
+        const UserInfo ui2(2, 1002, "bbbbb", "b1b1b1", "bbbbb@xxx.com", avatar, false);
 
         userInfoListJob->_userInfoList = {ui1, ui2};
     };
@@ -530,7 +530,7 @@ std::vector<DriveInfo> createDriveInfoList() {
     di1.setAccessDenied(false);
     di1.setSize(1000000000);
     di1.setUsedSize(50000000);
-    di1.setPackIsFree(true);
+    di1.setPackInfo(PackInfo(1, "pack_free", "PackFree", true));
 
     DriveInfo di2;
     di2.setDbId(2);
@@ -545,7 +545,7 @@ std::vector<DriveInfo> createDriveInfoList() {
     di2.setAccessDenied(true);
     di2.setSize(2000000000);
     di2.setUsedSize(60000000);
-    di2.setPackIsFree(false);
+    di2.setPackInfo(PackInfo(2, "pack_pro", "PackPro", false));
 
     return {di1, di2};
 }
@@ -564,7 +564,12 @@ Poco::JSON::Array createDriveInfoObjList() {
     (void) driveInfoObj1.set("notifications", true);
     (void) driveInfoObj1.set("size", 1000000000);
     (void) driveInfoObj1.set("usedSize", 50000000);
-    (void) driveInfoObj1.set("isFree", true);
+    Poco::JSON::Object packInfoObj1;
+    (void) packInfoObj1.set("id", 1);
+    (void) packInfoObj1.set("name", toBase64(Str("pack_free")));
+    (void) packInfoObj1.set("displayName", toBase64(Str("PackFree")));
+    (void) packInfoObj1.set("isFree", true);
+    (void) driveInfoObj1.set("packInfo", packInfoObj1);
 
     Poco::JSON::Object driveInfoObj2;
     (void) driveInfoObj2.set("accessDenied", true);
@@ -579,7 +584,12 @@ Poco::JSON::Array createDriveInfoObjList() {
     (void) driveInfoObj2.set("notifications", false);
     (void) driveInfoObj2.set("size", 2000000000);
     (void) driveInfoObj2.set("usedSize", 60000000);
-    (void) driveInfoObj2.set("isFree", false);
+    Poco::JSON::Object packInfoObj2;
+    (void) packInfoObj2.set("id", 2);
+    (void) packInfoObj2.set("name", toBase64(Str("pack_pro")));
+    (void) packInfoObj2.set("displayName", toBase64(Str("PackPro")));
+    (void) packInfoObj2.set("isFree", false);
+    (void) driveInfoObj2.set("packInfo", packInfoObj2);
 
     Poco::JSON::Array driveInfoObjList;
 

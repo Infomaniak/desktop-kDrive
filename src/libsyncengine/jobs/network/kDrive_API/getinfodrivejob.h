@@ -38,7 +38,7 @@ class GetInfoDriveJob : public AbstractTokenNetworkJob {
         [[nodiscard]] int64_t maintenanceFrom() const { return _maintenanceFrom; }
         [[nodiscard]] bool isLocked() const { return _isLocked; }
         [[nodiscard]] int64_t usedSize() const { return _usedSize; }
-        [[nodiscard]] const Drive::PackInfo &packInfo() const { return _packInfo; }
+        [[nodiscard]] const PackInfo &packInfo() const { return _packInfo; }
 
     protected:
         ExitInfo handleError(const std::string &replyBody, const Poco::URI &uri) override;
@@ -57,7 +57,7 @@ class GetInfoDriveJob : public AbstractTokenNetworkJob {
         int64_t _maintenanceFrom{0};
         bool _isLocked{false};
         int64_t _usedSize{0};
-        Drive::PackInfo _packInfo;
+        PackInfo _packInfo;
 };
 
 } // namespace KDC
