@@ -2655,8 +2655,12 @@ void AppServer::onMessageReceivedFromAnotherProcess(const QString &message, QObj
         showSettings();
     } else if (message == restartClientMsg) {
         _clientManuallyRestarted = true;
-        if (!startClient()) {
-            LOG_ERROR(_logger, "Failed to start the client");
+        if (!_clientProcess || _clientProcess->state() == QProcess::ProcessState::NotRunning) {
+            if (!startClient()) {
+                LOG_ERROR(_logger, "Failed to start the client");
+            }
+        } else if (_clientProcess->state() == QProcess::ProcessState::Running) {
+            showSynthesis();
         }
     } else {
         LOG_WARN(_logger, "Unknown message received from another kDrive process: '" << message.toStdString() << "'");
