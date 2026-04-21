@@ -214,7 +214,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 #if defined(KD_WINDOWS) || defined(KD_MACOS)
             return true; // (KDRIVE_VERSION_MAJOR < 4);
 #else
-            return true / KDRIVE_VERSION_MAJOR < 4;
+            return true // KDRIVE_VERSION_MAJOR < 4;
 #endif
         }
 
