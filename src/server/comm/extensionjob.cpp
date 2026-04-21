@@ -321,7 +321,7 @@ void ExtensionJob::commandMakeAvailableLocallyDirect(const CommString &argument,
         }
 
 #if defined(KD_MACOS)
-        // Not done in Windows case: triggers an hydration
+        // Not done in Windows case: triggers a hydration
         // Get pin state
         PinState ps{PinState::Unknown};
         if (const auto exitInfo = getPinState(fileData, ps); !exitInfo) {
@@ -953,11 +953,16 @@ ExitInfo ExtensionJob::cancelHydrate(const FileData &fileData, PinState pinState
     if (vfsMapIt == _commManager->appServer().vfsMap.cend() || !vfsMapIt->second) return {ExitCode::LogicError};
 
     vfsMapIt->second->cancelHydrate(fileData.localPath);
-    return vfsMapIt->second->setPinState(fileData.relativePath, pinState);
+
+    if (pinState != PinState::Unknown) return vfsMapIt->second->setPinState(fileData.relativePath, pinState);
+
+    return ExitCode::Ok;
 }
 
 ExitInfo ExtensionJob::cancelDehydrate(const FileData &fileData, PinState pinState) {
-    return setPinState(fileData, pinState);
+    if (pinState != PinState::Unknown) return setPinState(fileData, pinState);
+
+    return ExitCode::Ok;
 }
 
 ExitInfo ExtensionJob::dehydratePlaceholder(const FileData &fileData) {
