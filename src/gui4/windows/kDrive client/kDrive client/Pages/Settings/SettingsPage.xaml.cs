@@ -513,7 +513,8 @@ namespace Infomaniak.kDrive.Pages.Settings
             Control? control = sender as Control;
             if (control is not null)
                 control.IsEnabled = false;
-            if (!await kDrive.Localizer.Instance.TryLaunchUriAsync("helpURL"))
+
+            if (!await Windows.System.Launcher.LaunchUriAsync(App.Constants.kSuite.HelpUri))
             {
                 Logger.Log(Logger.Level.Error, "Failed to launch HelpDesk URI.");
                 Utility.ShowUnexpectedErrorTeachingTip();

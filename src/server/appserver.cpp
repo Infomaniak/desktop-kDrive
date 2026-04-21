@@ -2726,7 +2726,13 @@ void AppServer::addCompletedItem(const SyncDbId syncDbId, const SyncFileItem &it
     ServerRequests::syncFileItemToSyncFileItemInfo(item, itemInfo);
     sendSyncCompletedItem(syncDbId, itemInfo);
 
-    if (notify && item.status() == SyncFileStatus::Success) {
+    if (item.status() != SyncFileStatus::Success) {
+        return;
+    }
+  
+    resolveItemErrors(syncDbId, item);
+
+    if (notify) {
         // Store notification
         Notification notification;
         notification._syncDbId = syncDbId;
@@ -2736,6 +2742,7 @@ void AppServer::addCompletedItem(const SyncDbId syncDbId, const SyncFileItem &it
         _notifications.push_back(notification);
     }
 }
+
 
 void AppServer::sendGuiSignal(std::shared_ptr<AbstractGuiJob> signal) const {
     if (useCommManager()) {
@@ -4483,6 +4490,41 @@ void AppServer::addError(const Error &error) const {
         // Send error to sentry only for technical errors
         SentryUser sentryUser(user.email(), user.name(), std::to_string(user.userId()));
         sentry::Handler::captureMessage(sentry::Level::Warning, "AppServer::addError", error.errorString(), sentryUser);
+    }
+}
+
+void AppServer::resolveItemErrors(const SyncDbId syncDbId, const SyncFileItem &item) const {
+    std::vector<Error> errorList;
+
+    bool found = false;
+    if (!ParmsDb::instance()->selectErrorByNodeInfo(syncDbId, item.localNodeId(), item.remoteNodeId(), item.path(),
+                                                    item.newPath(), errorList, found)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectErrorByNodeInfo");
+        return;
+    }
+
+    if (!found) return;
+
+    for (const auto &error: errorList) {
+        bool keepError = false;
+
+        if (ExitInfo exitInfo = ServerRequests::keepError(error, keepError); !exitInfo) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ServerRequests::keepError: " << exitInfo);
+            continue;
+        }
+
+        if (keepError) continue;
+
+        bool found = false;
+        if (!ParmsDb::instance()->deleteError(error.dbId(), found)) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteError");
+            return;
+        }
+        if (!found) {
+            LOG_WARN(Log::instance()->getLogger(), "Error not found in Error table for dbId=" << error.dbId());
+            return;
+        }
+        sendErrorRemoved(error.dbId());
     }
 }
 

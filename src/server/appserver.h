@@ -147,6 +147,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void stopAllSyncsTask(const std::vector<SyncDbId> &syncDbIdList);
 
         void addError(const Error &error) const;
+        void resolveItemErrors(SyncDbId syncDbId, const SyncFileItem &item) const;
         void updateSentryUser();
         void deleteDrive(DriveDbId driveDbId);
         void deleteSync(SyncDbId syncDbId);
