@@ -38,7 +38,7 @@ DriveService::DriveService(CommService &commService, AppCache &appCache, QObject
 
 void DriveService::loadDrives() {
     beginRequest();
-    setLastError(QString());
+    setLastError({});
 
     const QPointer<DriveService> self(this);
     _commService.requestDriveInfoList([self](const ExitInfo &exitInfo, const std::vector<DriveInfo> &list) {
