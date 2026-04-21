@@ -21,6 +21,10 @@
 
 namespace KDC::ServiceUtils {
 
+/**
+ * Not final version
+ * TODO Subject to changements / will depends on the ui implemented
+ */
 QString formatExitInfo(const ExitInfo &exitInfo) {
     return QStringLiteral("IPC request failed (code=%1[%2], cause=%3[%4])")
             .arg(QString::fromStdString(toString(exitInfo.code())))
