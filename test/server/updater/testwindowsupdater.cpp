@@ -177,21 +177,20 @@ void TestWindowsUpdater::testIsChecksumValid() {
 
         // Only copy file if it's expected to exist
         if (testCase.fileName == "picture-1.jpg") {
-            IoHelper::copyFileOrDirectory(testhelpers::localTestDirPath() / "test_pictures/picture-1.jpg", tmpDir.path(),
-                                          ioError);
+            (void) IoHelper::copyFileOrDirectory(testhelpers::localTestDirPath() / "test_pictures/picture-1.jpg", tmpDir.path(),
+                                                 ioError);
         }
 
         WindowsUpdater updater;
-        AbstractUpdater &up = static_cast<AbstractUpdater &>(updater);
 
         AllVersionsInfo versionInfo;
         TestAbstractUpdater::generateValidAllVersionsInfo(versionInfo);
-        std::shared_ptr<MockUpdateChecker> testUpdateChecker = std::make_shared<MockUpdateChecker>();
+        auto testUpdateChecker = std::make_shared<MockUpdateChecker>();
 
         testUpdateChecker->setAllVersionInfo(versionInfo);
         testUpdateChecker->setVersionReceived(true);
         testUpdateChecker->setChecksumForAllChannels(testCase.checksumValue);
-        up._updateChecker = testUpdateChecker;
+        updater._updateChecker = testUpdateChecker;
 
         CPPUNIT_ASSERT_EQUAL(testCase.expectedValid, updater.verifyFileChecksum(tmpDir.path() / testCase.fileName));
     }

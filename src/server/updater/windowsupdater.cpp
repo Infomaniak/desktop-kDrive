@@ -191,8 +191,7 @@ bool WindowsUpdater::verifyFileChecksum(const SyncPath &filepath) {
         }
 
         // Send to Sentry
-        KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error,
-                                             "Updater::verifyChecksum::" + reason,
+        KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "Updater::verifyChecksum::" + reason,
                                              "Checksum verification failed: " + reason);
         return false;
     };
@@ -239,10 +238,10 @@ std::string WindowsUpdater::computeFileChecksum(const SyncPath &filepath) {
 
     std::array<char, 8192> buffer{};
     while (file.read(buffer.data(), buffer.size())) {
-        SHA256_Update(&sha256, buffer.data(), static_cast<std::size_t>(file.gcount()));
+        (void) SHA256_Update(&sha256, buffer.data(), static_cast<std::size_t>(file.gcount()));
     }
     // Process remaining bytes
-    SHA256_Update(&sha256, buffer.data(), static_cast<std::size_t>(file.gcount()));
+    (void) SHA256_Update(&sha256, buffer.data(), static_cast<std::size_t>(file.gcount()));
 
     std::array<std::uint8_t, SHA256_DIGEST_LENGTH> hash{};
     if (SHA256_Final(hash.data(), &sha256) != 1) {
