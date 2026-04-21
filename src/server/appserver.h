@@ -136,6 +136,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void sendShowSynthesisMsg();
         void sendRestartClientMsg();
         void sendAuthorizationCode();
+        void handleClientDisconnection() { OnClientDisconnectedReceived(); }
 
         void clearKeychainKeys();
 
@@ -386,7 +387,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void onUpdateStateChanged(UpdateState state);
         void onCleanup();
         void onRequestReceived(int id, RequestNum num, const QByteArray &params);
-        void onRestartClientReceived();
+        void OnClientDisconnectedReceived();
         void onMessageReceivedFromAnotherProcess(const QString &message, QObject *);
         void onSendNotifAsked(const QString &title, const QString &message);
         void onAuthorizationCodeReceived(const QString &code, const QString &state);

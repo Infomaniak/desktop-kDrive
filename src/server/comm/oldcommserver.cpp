@@ -218,7 +218,7 @@ void OldCommServer::onErrorOccurred(QAbstractSocket::SocketError socketError) {
         // Restart comm server
         start();
         // Restart client
-        emit restartClient();
+        emit clientDisconnected();
         return;
     }
 

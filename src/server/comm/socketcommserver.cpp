@@ -41,7 +41,11 @@ SocketCommChannel::~SocketCommChannel() {
     }
 
     if (_callbackThread && _callbackThread->joinable()) {
-        _callbackThread->join();
+        if (_callbackThread->get_id() == std::this_thread::get_id()) {
+            _callbackThread->detach();
+        } else {
+            _callbackThread->join();
+        }
     }
 }
 
@@ -281,8 +285,11 @@ void SocketCommServer::execute() {
         if (_stopAsked) break;
 
         auto channel = makeCommChannel(socket);
-        const std::scoped_lock lock(_channelsMutex);
-        channel->setLostConnectionCbk([this](std::shared_ptr<AbstractCommChannel> ch) { lostConnectionCbk(ch); });
+        channel->setLostConnectionCbk([this](std::shared_ptr<AbstractCommChannel> ch) {
+            const std::scoped_lock lock(_channelsMutex);
+            _channels.remove(ch);
+            lostConnectionCbk(ch);
+        });
         _channels.push_back(channel);
         newConnectionCbk();
     }

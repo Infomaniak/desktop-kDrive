@@ -57,7 +57,7 @@ class OldCommServer : public QObject {
 
     signals:
         void requestReceived(int id, RequestNum num, const QByteArray &params);
-        void restartClient();
+        void clientDisconnected();
 
     private:
         static std::shared_ptr<OldCommServer> _instance;
