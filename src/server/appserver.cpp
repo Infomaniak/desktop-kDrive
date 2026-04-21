@@ -389,7 +389,7 @@ void AppServer::init() {
         }
 
         connect(OldCommServer::instance().get(), &OldCommServer::requestReceived, this, &AppServer::onRequestReceived);
-        connect(OldCommServer::instance().get(), &OldCommServer::clientDisconnected, this, &AppServer::OnClientDisconnectedReceived);
+        connect(OldCommServer::instance().get(), &OldCommServer::clientDisconnected, this, &AppServer::onClientDisconnectedReceived);
     }
 
     // Update users/accounts/drives info
@@ -2606,7 +2606,7 @@ void AppServer::onCleanup() {
     cleanup();
 }
 
-void AppServer::OnClientDisconnectedReceived() {
+void AppServer::onClientDisconnectedReceived() {
     bool quit = false;
 #if NDEBUG
     if (clientHasCrashed()) {
