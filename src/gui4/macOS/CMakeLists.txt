@@ -28,9 +28,6 @@ add_custom_command(
     COMMAND sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
     COMMAND xcodebuild -project "${CLIENT_PROJECT}" -scheme "${CLIENT_SCHEME}" -configuration Release -arch x86_64 -arch arm64 ONLY_ACTIVE_ARCH=NO SYMROOT=${CLIENT_PATH}/build build
     COMMAND cp -RP "${CLIENT_PATH}/build/Release/kDrive.app" "${CLIENT_DEST}"
-    # COMMAND ${CMAKE_COMMAND} -E copy_directory "${CLIENT_PATH}/build/Release/kDrive.app" "${CLIENT_DEST}"
-    # SYMROOT=${CMAKE_INSTALL_PREFIX}/kDrive.app/Contents/MacOS build
-    # SYMROOT=${CLIENT_PATH}/build build
     COMMAND ${CMAKE_COMMAND} -E touch "${CLIENT_STAMP}"
     COMMAND xcodebuild -version
     COMMAND sudo xcode-select -s /Applications/Xcode_16.app/Contents/Developer
@@ -48,11 +45,6 @@ install(CODE "
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     )
 ")
-#install(DIRECTORY "${CLIENT_DEST}"
-#        DESTINATION "${CMAKE_INSTALL_PREFIX}/kDrive.app/Contents/MacOS"
-#        OPTIONAL
-#        PATTERN "*"
-#        PATTERN "*.framework" EXCLUDE)
 
 # Ensure all C++ libraries and executables are built first with Xcode 16
 # before switching to Xcode 26 for the Swift GUI build
