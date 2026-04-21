@@ -242,9 +242,11 @@ void saveCommPort(unsigned short port) {
 
 void SocketCommServer::execute() {
     int retries = 0;
+    bool bindSuccess = false;
     do {
         try {
             _serverSocket.bind(Poco::Net::SocketAddress(host, "0"), true, true);
+            bindSuccess = true;
         } catch (Poco::Exception &ex) {
             LOG_ERROR(Log::instance()->getLogger(), "Exception in ServerSocket::bind: " << ex.displayText());
             Utility::msleep(500);
@@ -255,7 +257,7 @@ void SocketCommServer::execute() {
                         "Failed to bind server socket after 10 retries: " + std::string(ex.displayText()));
             }
         }
-    } while (_serverSocket.address().port() == 0); // Loop until a port is successfully assigned
+    } while (!bindSuccess); // Loop until bind is successful
 
     LOG_DEBUG(Log::instance()->getLogger(), name() << " listening on port " << getPort());
     saveCommPort(getPort());
