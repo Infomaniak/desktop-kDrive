@@ -63,7 +63,7 @@ public partial class ConflictDialog : Page
 
     private async void Dialog_CloseButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
     {
-        if (ViewModel.CurrentErrorIndex != 0)
+        if (ViewModel.CurrentErrorIndex > 1)
         {
             // Save all the conflict resolutions choices the user made so far, even if they didn't click on the "Validate" button for the current conflict.
             if (!await ApplyUserChoices())
