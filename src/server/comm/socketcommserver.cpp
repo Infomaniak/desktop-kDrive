@@ -168,6 +168,10 @@ SocketCommServer::~SocketCommServer() {
     }
 }
 
+std::string SocketCommServer::getHost() {
+    return host;
+}
+
 void SocketCommServer::close() {
     if (_stopAsked) {
         LOG_DEBUG(Log::instance()->getLogger(), name() << " is already stoping");
