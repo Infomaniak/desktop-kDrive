@@ -2235,6 +2235,7 @@ void ServerRequests::driveToDriveInfo(const Drive &drive, DriveInfo &driveInfo) 
     driveInfo.setLocked(drive.locked());
     driveInfo.setUsedSize(drive.usedSize());
     driveInfo.setAccessDenied(drive.accessDenied());
+    driveInfo.setPackInfo(drive.packInfo());
 }
 
 void ServerRequests::syncToSyncInfo(const Sync &sync, SyncInfo &syncInfo) {
