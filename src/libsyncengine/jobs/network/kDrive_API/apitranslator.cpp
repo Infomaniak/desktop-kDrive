@@ -21,10 +21,9 @@
 #include "jobs/network/jobexceptions.h"
 
 namespace KDC {
-const ApiTranslator::SpecialFolderNames ApiTranslator::v3SpecialFolderNames = {
-        {ApiTranslator::SpecialFolder::CommonDocuments, "Common documents"},
-        {ApiTranslator::SpecialFolder::Private, "Private"},
-        {ApiTranslator::SpecialFolder::Shared, "Shared"}};
+const SpecialFolderNames ApiTranslator::v3SpecialFolderNames = {{SpecialFolder::CommonDocuments, Str("Common documents")},
+                                                                {SpecialFolder::Private, Str("Private")},
+                                                                {SpecialFolder::Shared, Str("Shared")}};
 
 std::mutex ApiTranslator::_mutex;
 
@@ -93,7 +92,7 @@ ExitInfo ApiTranslator::updateCache(const UserDbId userDbId, const DriveId drive
 
     for (const auto specialFolder: {SpecialFolder::CommonDocuments, SpecialFolder::Private, SpecialFolder::Shared}) {
         const auto it = std::find_if(nodeInfoList.cbegin(), nodeInfoList.cend(), [specialFolder](const NodeInfo &nodeInfo) {
-            return nodeInfo.name() == v3SpecialFolderNames.at(specialFolder).c_str();
+            return nodeInfo.name() == SyncName2QStr(v3SpecialFolderNames.at(specialFolder));
         });
         if (it != nodeInfoList.cend()) _specialFolderRemoteIdsCache[specialFolder][driveId] = it->nodeId().toStdString();
     }
