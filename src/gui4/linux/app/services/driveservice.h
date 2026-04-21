@@ -66,7 +66,7 @@ class DriveService : public QObject {
 
         CommService &_commService;
         AppCache &_appCache;
-        int32_t _pendingRequestCount{0};
+        Count _pendingRequestCount{0};
         bool _loading{false};
         QString _lastError;
 };
