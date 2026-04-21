@@ -8,6 +8,10 @@ macOS UI:
   - changed-files:
     - any-glob-to-any-file: 'src/gui4/macOS/**'
 
+Linux UI:
+  - changed-files:
+    - any-glob-to-any-file: 'src/gui4/linux/**'
+
 XPC:
   - changed-files:
     - any-glob-to-any-file: ['src/gui4/macOS/kDriveCore/ServerBridge/**', 'extensions/MacOSX/kDriveFinderSync/**', 'src/server/comm/**']
