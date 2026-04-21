@@ -102,7 +102,7 @@ void TmpBlacklistManager::clear() {
         NodeSet tmp;
         SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), blacklistType_, tmp);
         for (const auto &nodeId: tmp) {
-            _syncPal->forceUpdateLastChangeRevision(nodeId, side);
+            (void) _syncPal->forceUpdateLastChangeRevision(nodeId, side);
         }
 
         // Clear the blacklist in cache
@@ -203,7 +203,7 @@ void TmpBlacklistManager::eraseSingleItemFromBlacklist(const NodeId &nodeId, con
     auto &errors = side == ReplicaSide::Local ? _localErrors : _remoteErrors;
     errors.erase(nodeId);
 
-    _syncPal->forceUpdateLastChangeRevision(nodeId, side);
+    (void) _syncPal->forceUpdateLastChangeRevision(nodeId, side);
     logMessage(L"Item removed from tmp blacklist", nodeId, side);
 }
 
