@@ -326,7 +326,7 @@ void ExtensionJob::commandMakeAvailableLocallyDirect(const CommString &argument,
         PinState ps{PinState::Unknown};
         if (const auto exitInfo = getPinState(fileData, ps); !exitInfo) {
             LOGW_INFO(Log::instance()->getLogger(),
-                      L"Error in ExtensionJob::pinState - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
+                      L"Error in ExtensionJob::getPinState - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
             continue;
         }
 
@@ -647,7 +647,7 @@ void ExtensionJob::commandMakeOnlineOnlyDirect(const CommString &argument, std::
         PinState ps{PinState::Unknown};
         if (const auto exitInfo = getPinState(fileData, ps); !exitInfo) {
             LOGW_INFO(Log::instance()->getLogger(),
-                      L"Error in ExtensionJob::pinState - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
+                      L"Error in ExtensionJob::getPinState - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
             continue;
         }
 
