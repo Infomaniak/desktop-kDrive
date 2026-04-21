@@ -130,7 +130,7 @@ class SyncOperationList : public SharedObject {
 
         void setOpList(const std::list<SyncOpPtr> &opList);
 
-        SyncOpPtr getOp(UniqueId id);
+        SyncOpPtr getOp(UniqueId id) const;
         [[nodiscard]] const std::list<UniqueId> &opSortedList() const { return _opSortedList; }
         const std::unordered_set<UniqueId> &opListIdByType(const OperationType type) { return _opListByType[type]; }
         /**
@@ -154,7 +154,7 @@ class SyncOperationList : public SharedObject {
 
         void getOpIdToIndexMap(std::unordered_map<UniqueId, int> &map, OperationType typeFilter = OperationType::None);
 
-        int64_t countOps(ReplicaSide affectedSide, OperationType operationType);
+        uint64_t countOps(ReplicaSide affectedSide, OperationType operationType) const;
 
     private:
         std::unordered_map<UniqueId, SyncOpPtr> _allOps;

@@ -57,7 +57,7 @@ void SyncOperationList::setOpList(const std::list<SyncOpPtr> &opList) {
     }
 }
 
-SyncOpPtr SyncOperationList::getOp(const UniqueId id) {
+SyncOpPtr SyncOperationList::getOp(const UniqueId id) const {
     const auto opIt = _allOps.find(id);
     return opIt == _allOps.end() ? nullptr : opIt->second;
 }
@@ -132,8 +132,8 @@ SyncOperationList &SyncOperationList::operator=(const SyncOperationList &other) 
     return *this;
 }
 
-int64_t SyncOperationList::countOps(ReplicaSide affectedSide, OperationType operationType) {
-    int64_t count = 0;
+uint64_t SyncOperationList::countOps(ReplicaSide affectedSide, OperationType operationType) const {
+    uint64_t count = 0;
     for (const auto &opId: _opSortedList) {
         const auto syncOp = getOp(opId);
         if (syncOp && syncOp->affectedNode()->side() == affectedSide && syncOp->type() == operationType) count++;

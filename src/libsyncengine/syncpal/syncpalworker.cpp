@@ -105,23 +105,22 @@ bool SyncPalWorker::shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const 
 }
 
 void SyncPalWorker::checkForMassDestructions() const {
-    const uint64_t localSnapshotSize = _syncPal->snapshot(ReplicaSide::Local)->nbItems();
+    const auto snapshotItems = _syncPal->snapshot(ReplicaSide::Local)->nbItems();
+    const auto deleteOps = _syncPal->_syncOps->countOps(ReplicaSide::Local, OperationType::Delete);
 
-    // Set destruction threshold based on local snapshot size.
-    uint16_t destructionThreshold = 0;
-    if (localSnapshotSize >= 100 && localSnapshotSize < 20000) {
-        destructionThreshold = 1000;
-    } else if (localSnapshotSize >= 20000) {
-        destructionThreshold = 10000;
+    // Define alert threshold
+    uint16_t alertThreshold = 0;
+    const auto items = snapshotItems + deleteOps;
+    if (items >= 100 && items < 20000) {
+        alertThreshold = 1000;
+    } else if (items >= 20000) {
+        alertThreshold = 10000;
     }
 
-    if (destructionThreshold) {
-        const int64_t localDeleteCount = _syncPal->_syncOps->countOps(ReplicaSide::Local, OperationType::Delete);
-        if (localDeleteCount >= destructionThreshold) {
-            LOG_SYNCPAL_WARN(_logger, "Mass destruction detected: " << localDeleteCount);
-            sentry::Handler::captureMessage(sentry::Level::Warning, "SyncPalWorker::checkForMassDestructions",
-                                            "Mass destruction detected: " + std::to_string(localDeleteCount));
-        }
+    if (alertThreshold && deleteOps >= alertThreshold) {
+        LOG_SYNCPAL_WARN(_logger, "Mass destruction detected: " << deleteOps << "/" << items);
+        sentry::Handler::captureMessage(sentry::Level::Warning, "SyncPalWorker::checkForMassDestructions",
+                                        "Mass destruction detected: " + std::to_string(deleteOps) + "/" + std::to_string(items));
     }
 }
 
