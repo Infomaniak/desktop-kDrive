@@ -47,7 +47,7 @@ void DriveService::loadDrives() {
         }
 
         self->endRequest();
-        if (exitInfo.code() != ExitCode::Ok) {
+        if (!exitInfo) {
             self->setLastError(ServiceUtils::formatExitInfo(exitInfo));
             return;
         }
@@ -68,7 +68,7 @@ void DriveService::deleteDrive(const qint64 driveDbId) {
         }
 
         self->endRequest();
-        if (exitInfo.code() != ExitCode::Ok) {
+        if (!exitInfo) {
             self->setLastError(ServiceUtils::formatExitInfo(exitInfo));
         }
     });
@@ -89,7 +89,7 @@ void DriveService::updateDrive(const DriveInfo &driveInfo) {
         }
 
         self->endRequest();
-        if (exitInfo.code() != ExitCode::Ok) {
+        if (!exitInfo) {
             self->setLastError(ServiceUtils::formatExitInfo(exitInfo));
         }
     });
