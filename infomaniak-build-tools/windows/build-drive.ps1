@@ -109,10 +109,8 @@ function Set-Bullseye-Coverage {
         $cmd = Get-Command cov01.exe -ErrorAction Stop
         & $cmd $cov01Parameter
      } catch {
-         Write-Host "BullseyeCoverage cov01.exe command not found."
-         if ($enable) {
-            exit 1
-         }
+        Write-Host "BullseyeCoverage cov01.exe command not found."
+        exit 1
      }
      
      $outputString = "disabled"
@@ -770,7 +768,11 @@ Set-Bullseye-Coverage $coverage
 Write-Host
 
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "Failed to enable code coverage computation. Aborting." -f Red
+    $outputString = "disabled"
+     if ($enabled) {
+        $outputString = "enabled"
+    }
+    Write-Host "Failed to $str code coverage computation. Aborting." -f Red
     exit $LASTEXITCODE
 }
 
