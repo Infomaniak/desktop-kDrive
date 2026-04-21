@@ -48,6 +48,7 @@ class LiveSnapshot : public Snapshot, public SharedObject {
         bool setLastModified(const NodeId &itemId, SyncTime newTime);
         bool setContentChecksum(const NodeId &itemId, const std::string &newChecksum);
         bool clearContentChecksum(const NodeId &itemId);
+        bool forceUpdateLastChangeRevision(const NodeId &itemId);
 
         bool isValid() const;
         void setValid(bool newIsValid);

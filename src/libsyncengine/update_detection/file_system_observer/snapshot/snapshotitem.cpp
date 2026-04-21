@@ -124,6 +124,12 @@ void SnapshotItem::setLastChangedSnapshotVersion(SnapshotRevision snapshotVersio
     }
 }
 
+void SnapshotItem::forceUpdateLastChangeRevision() {
+    if (_snapshotRevisionHandler) {
+        _lastChangeRevision = _snapshotRevisionHandler->nextVersion();
+    }
+}
+
 SnapshotItem &SnapshotItem::operator=(const SnapshotItem &other) {
     copyExceptChildren(other);
     _children = other.children();

@@ -64,6 +64,11 @@ class SnapshotItem {
         void setLastChangedSnapshotVersion(SnapshotRevision snapshotVersion);
         SnapshotRevision lastChangeRevision() const { return _lastChangeRevision; }
 
+        // Force update the last change revision to the next snapshot revision. 
+        // This is useful when we want to mark an item as changed without actually changing its properties, for example when we
+        // remove an item from tmp blacklist and want to make sure it is properly re-synced.
+        void forceUpdateLastChangeRevision();
+
         void setSnapshotRevisionHandler(const std::shared_ptr<SnapshotRevisionHandler> snapshotRevisionHandler) {
             _snapshotRevisionHandler = snapshotRevisionHandler;
             _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
