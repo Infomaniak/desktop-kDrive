@@ -80,7 +80,7 @@ void DriveService::setActiveDrive(const qint64 driveDbId) {
 
 void DriveService::updateDrive(const DriveInfo &driveInfo) {
     beginRequest();
-    setLastError(QString());
+    setLastError({});
 
     const QPointer<DriveService> self(this);
     _commService.requestDriveUpdate(driveInfo, [self](const ExitInfo &exitInfo) {
