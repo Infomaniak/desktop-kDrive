@@ -22,7 +22,6 @@
 #include "libcommon/utility/types.h"
 
 #include <QLoggingCategory>
-#include <QPointer>
 
 namespace KDC {
 
@@ -43,19 +42,14 @@ void SyncService::loadSyncs() {
     beginRequest();
     setLastError(QString());
 
-    const QPointer<SyncService> self(this);
-    _commService.requestSyncInfoList([self](const ExitInfo &exitInfo, const std::vector<SyncInfo> &list) {
-        if (!self) {
-            return;
-        }
-
-        self->endRequest();
+    _commService.requestSyncInfoList([this](const ExitInfo &exitInfo, const std::vector<SyncInfo> &list) {
+        endRequest();
         if (exitInfo.code() != ExitCode::Ok) {
-            self->setLastError(ServiceUtils::formatExitInfo(exitInfo));
+            setLastError(ServiceUtils::formatExitInfo(exitInfo));
             return;
         }
 
-        self->_appCache.replaceSyncs(list);
+        _appCache.replaceSyncs(list);
     });
 }
 
@@ -73,19 +67,14 @@ void SyncService::addSync(const qint64 userDbId, const qint64 accountId, const q
     request.serverFolderNodeId = QStr2Str(serverFolderNodeId);
     request.liteSync = liteSync;
 
-    const QPointer<SyncService> self(this);
-    _commService.requestSyncAdd(request, [self](const ExitInfo &exitInfo, const SyncInfo &syncInfo) {
-        if (!self) {
-            return;
-        }
-
-        self->endRequest();
+    _commService.requestSyncAdd(request, [this](const ExitInfo &exitInfo, const SyncInfo &syncInfo) {
+        endRequest();
         if (exitInfo.code() != ExitCode::Ok) {
-            self->setLastError(ServiceUtils::formatExitInfo(exitInfo));
+            setLastError(ServiceUtils::formatExitInfo(exitInfo));
             return;
         }
 
-        emit self->syncAddCompleted(static_cast<qint64>(syncInfo.dbId()));
+        emit syncAddCompleted(static_cast<qint64>(syncInfo.dbId()));
     });
 }
 
@@ -93,15 +82,10 @@ void SyncService::startSync(const qint64 syncDbId) {
     beginRequest();
     setLastError(QString());
 
-    const QPointer<SyncService> self(this);
-    _commService.requestSyncStart(static_cast<SyncDbId>(syncDbId), [self](const ExitInfo &exitInfo) {
-        if (!self) {
-            return;
-        }
-
-        self->endRequest();
+    _commService.requestSyncStart(static_cast<SyncDbId>(syncDbId), [this](const ExitInfo &exitInfo) {
+        endRequest();
         if (exitInfo.code() != ExitCode::Ok) {
-            self->setLastError(ServiceUtils::formatExitInfo(exitInfo));
+            setLastError(ServiceUtils::formatExitInfo(exitInfo));
         }
     });
 }
@@ -110,15 +94,10 @@ void SyncService::stopSync(const qint64 syncDbId) {
     beginRequest();
     setLastError(QString());
 
-    const QPointer<SyncService> self(this);
-    _commService.requestSyncStop(static_cast<SyncDbId>(syncDbId), [self](const ExitInfo &exitInfo) {
-        if (!self) {
-            return;
-        }
-
-        self->endRequest();
+    _commService.requestSyncStop(static_cast<SyncDbId>(syncDbId), [this](const ExitInfo &exitInfo) {
+        endRequest();
         if (exitInfo.code() != ExitCode::Ok) {
-            self->setLastError(ServiceUtils::formatExitInfo(exitInfo));
+            setLastError(ServiceUtils::formatExitInfo(exitInfo));
         }
     });
 }
@@ -127,16 +106,11 @@ void SyncService::deleteSync(const qint64 syncDbId) {
     beginRequest();
     setLastError(QString());
 
-    const QPointer<SyncService> self(this);
     // Cache consistency is signal-driven: we wait for syncRemoved/syncUpdated pushes.
-    _commService.requestSyncDelete(static_cast<SyncDbId>(syncDbId), [self](const ExitInfo &exitInfo) {
-        if (!self) {
-            return;
-        }
-
-        self->endRequest();
+    _commService.requestSyncDelete(static_cast<SyncDbId>(syncDbId), [this](const ExitInfo &exitInfo) {
+        endRequest();
         if (exitInfo.code() != ExitCode::Ok) {
-            self->setLastError(ServiceUtils::formatExitInfo(exitInfo));
+            setLastError(ServiceUtils::formatExitInfo(exitInfo));
         }
     });
 }
@@ -145,20 +119,15 @@ void SyncService::querySyncStatus(const qint64 syncDbId) {
     beginRequest();
     setLastError(QString());
 
-    const QPointer<SyncService> self(this);
     _commService.requestSyncStatus(static_cast<SyncDbId>(syncDbId),
-                                   [self, syncDbId](const ExitInfo &exitInfo, const SyncStatus status) {
-                                       if (!self) {
-                                           return;
-                                       }
-
-                                       self->endRequest();
+                                   [this, syncDbId](const ExitInfo &exitInfo, const SyncStatus status) {
+                                       endRequest();
                                        if (exitInfo.code() != ExitCode::Ok) {
-                                           self->setLastError(ServiceUtils::formatExitInfo(exitInfo));
+                                           setLastError(ServiceUtils::formatExitInfo(exitInfo));
                                            return;
                                        }
 
-                                       emit self->syncStatusReceived(syncDbId, toInt(status));
+                                       emit syncStatusReceived(syncDbId, toInt(status));
                                    });
 }
 
@@ -166,20 +135,15 @@ void SyncService::findGoodPathForNewSync(const QString &basePath) {
     beginRequest();
     setLastError(QString());
 
-    const QPointer<SyncService> self(this);
     _commService.requestFindGoodPathForNewSync(
-            QStr2Path(basePath), [self](const ExitInfo &exitInfo, const GoodPathResult &result) {
-                if (!self) {
-                    return;
-                }
-
-                self->endRequest();
+            QStr2Path(basePath), [this](const ExitInfo &exitInfo, const GoodPathResult &result) {
+                endRequest();
                 if (exitInfo.code() != ExitCode::Ok) {
-                    self->setLastError(ServiceUtils::formatExitInfo(exitInfo));
+                    setLastError(ServiceUtils::formatExitInfo(exitInfo));
                     return;
                 }
 
-                emit self->suggestedPathReceived(Path2QStr(result.goodPath), result.errorMessage);
+                emit suggestedPathReceived(Path2QStr(result.goodPath), result.errorMessage);
             });
 }
 
@@ -193,21 +157,16 @@ void SyncService::isPathValidForNewSync(const QString &path, const int32_t syncC
 
     beginRequest();
 
-    const QPointer<SyncService> self(this);
     _commService.requestIsPathValidForNewSync(QStr2Path(path), static_cast<SyncConfiguration>(syncConfiguration),
-                                              [self](const ExitInfo &exitInfo, const bool isValid) {
-                                                  if (!self) {
-                                                      return;
-                                                  }
-
-                                                  self->endRequest();
+                                              [this](const ExitInfo &exitInfo, const bool isValid) {
+                                                  endRequest();
                                                   if (exitInfo.code() != ExitCode::Ok) {
-                                                      self->setLastError(ServiceUtils::formatExitInfo(exitInfo));
-                                                      emit self->pathValidationReceived(false);
+                                                      setLastError(ServiceUtils::formatExitInfo(exitInfo));
+                                                      emit pathValidationReceived(false);
                                                       return;
                                                   }
 
-                                                  emit self->pathValidationReceived(isValid);
+                                                  emit pathValidationReceived(isValid);
                                               });
 }
 
