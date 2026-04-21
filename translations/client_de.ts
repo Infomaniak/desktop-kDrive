@@ -305,12 +305,12 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
 <context>
     <name>KDC::AppServer</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="1653"/>
+        <location filename="../src/server/appserver.cpp" line="1679"/>
         <source>Share link copied to clipboard</source>
         <translation>Freigabelink in die Zwischenablage kopiert</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3723"/>
+        <location filename="../src/server/appserver.cpp" line="3759"/>
         <source>%1 and %n other file(s) have been removed.</source>
         <translation>
             <numerusform>%1 und %n andere Datei(en) wurde(n) gelöscht.</numerusform>
@@ -318,13 +318,13 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3725"/>
+        <location filename="../src/server/appserver.cpp" line="3761"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 wurde gelöscht.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3730"/>
+        <location filename="../src/server/appserver.cpp" line="3766"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
             <numerusform>%1 und %n andere Datei(en) wurde(n) hinzugefügt.</numerusform>
@@ -332,13 +332,13 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3732"/>
+        <location filename="../src/server/appserver.cpp" line="3768"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 wurde hinzugefügt.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3737"/>
+        <location filename="../src/server/appserver.cpp" line="3773"/>
         <source>%1 and %n other file(s) have been updated.</source>
         <translation>
             <numerusform>%1 und %n andere Datei(en) wurde(n) aktualisiert.</numerusform>
@@ -346,13 +346,13 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3739"/>
+        <location filename="../src/server/appserver.cpp" line="3775"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 wurde aktualisiert.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3744"/>
+        <location filename="../src/server/appserver.cpp" line="3780"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
         <translation>
             <numerusform>%1 wurde zu %2 verschoben und %n andere Datei(en) wurde(n) verschoben.</numerusform>
@@ -360,12 +360,12 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3747"/>
+        <location filename="../src/server/appserver.cpp" line="3783"/>
         <source>%1 has been moved to %2.</source>
         <translation>%1 wurde zu %2 verschoben.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3755"/>
+        <location filename="../src/server/appserver.cpp" line="3791"/>
         <source>Sync Activity</source>
         <translation>Synchronisierungsaktivität</translation>
     </message>
@@ -464,17 +464,17 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
         <translation>Es wurden keine Synchronisierungsordner konfiguriert.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1422"/>
+        <location filename="../src/gui/clientgui.cpp" line="1426"/>
         <source>Synthesis</source>
         <translation>Synthese</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1423"/>
+        <location filename="../src/gui/clientgui.cpp" line="1427"/>
         <source>Preferences</source>
         <translation>Einstellungen</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1424"/>
+        <location filename="../src/gui/clientgui.cpp" line="1428"/>
         <source>Quit</source>
         <translation>Beenden</translation>
     </message>
@@ -519,22 +519,22 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
         <translation>%1 (Synchronisierung wurde angehalten)</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1257"/>
+        <location filename="../src/gui/clientgui.cpp" line="1261"/>
         <source>Do you really want to remove the synchronizations of the account &lt;i&gt;%1&lt;/i&gt; ?&lt;br&gt;&lt;b&gt;Note:&lt;/b&gt; This will &lt;b&gt;not&lt;/b&gt; delete any files.</source>
         <translation>Möchten Sie die Synchronisierungen des Kontos &lt;i&gt;%1&lt;/i&gt; wirklich entfernen?&lt;br&gt;&lt;b&gt;Hinweis:&lt;/b&gt; Dadurch werden &lt;b&gt;keine&lt;/b&gt; Dateien gelöscht.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1261"/>
+        <location filename="../src/gui/clientgui.cpp" line="1265"/>
         <source>REMOVE ALL SYNCHRONIZATIONS</source>
         <translation>ALLE SYNC. ENTFERNEN</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1262"/>
+        <location filename="../src/gui/clientgui.cpp" line="1266"/>
         <source>CANCEL</source>
         <translation>ABBRECHEN</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1590"/>
+        <location filename="../src/gui/clientgui.cpp" line="1594"/>
         <source>Failed to start synchronizations!</source>
         <translation>Synchronisierungen konnten nicht gestartet werden!</translation>
     </message>
@@ -562,22 +562,22 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
 <context>
     <name>KDC::ConfirmSynchronizationDialog</name>
     <message>
-        <location filename="../src/gui/confirmsynchronizationdialog.cpp" line="85"/>
+        <location filename="../src/gui/confirmsynchronizationdialog.cpp" line="86"/>
         <source>Summary of your local folder synchronization</source>
         <translation>Zusammenfassung der Synchronisierung Ihrer lokalen Ordner</translation>
     </message>
     <message>
-        <location filename="../src/gui/confirmsynchronizationdialog.cpp" line="94"/>
+        <location filename="../src/gui/confirmsynchronizationdialog.cpp" line="95"/>
         <source>The contents of the folder on your computer will be synchronized to the folder of the selected kDrive and vice versa.</source>
         <translation>Die Inhalte des Ordners auf Ihrem Rechner werden mit dem Ordner des ausgewählten kDrive synchronisiert und umgekehrt.</translation>
     </message>
     <message>
-        <location filename="../src/gui/confirmsynchronizationdialog.cpp" line="183"/>
+        <location filename="../src/gui/confirmsynchronizationdialog.cpp" line="184"/>
         <source>CANCEL</source>
         <translation>ABBRECHEN</translation>
     </message>
     <message>
-        <location filename="../src/gui/confirmsynchronizationdialog.cpp" line="190"/>
+        <location filename="../src/gui/confirmsynchronizationdialog.cpp" line="191"/>
         <source>SYNCHRONIZE</source>
         <translation>SYNCHRONISIEREN</translation>
     </message>
@@ -1156,27 +1156,27 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
 <context>
     <name>KDC::ErrorsPopup</name>
     <message>
-        <location filename="../src/gui/errorspopup.cpp" line="75"/>
+        <location filename="../src/gui/errorspopup.cpp" line="73"/>
         <source>Some files couldn&apos;t be synchronized on the following kDrive(s) :</source>
         <translation>Einige Dateien auf dem / den folgenden kDrive(s) konnten nicht synchronisiert werden:</translation>
     </message>
     <message>
-        <location filename="../src/gui/errorspopup.cpp" line="97"/>
+        <location filename="../src/gui/errorspopup.cpp" line="95"/>
         <source> (%1 error(s))</source>
         <translation> (%1 Fehler)</translation>
     </message>
     <message>
-        <location filename="../src/gui/errorspopup.cpp" line="103"/>
+        <location filename="../src/gui/errorspopup.cpp" line="101"/>
         <source> (%1 information(s))</source>
         <translation> (%1 Informationen(n))</translation>
     </message>
     <message>
-        <location filename="../src/gui/errorspopup.cpp" line="109"/>
+        <location filename="../src/gui/errorspopup.cpp" line="107"/>
         <source> (%1 error(s) and %2 information(s))</source>
         <translation> (%1 Fehler und %2 Informationen)</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/gui/errorspopup.cpp" line="150"/>
+        <location filename="../src/gui/errorspopup.cpp" line="147"/>
         <source>Generic errors (%n warning(s) or error(s))</source>
         <comment>Number of warnings or errors</comment>
         <translation>
@@ -2454,47 +2454,47 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
 <context>
     <name>KDC::SynthesisPopover</name>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1170"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1181"/>
         <source>Update kDrive App</source>
         <translation>Aktualisieren Sie die kDrive-App</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1171"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1182"/>
         <source>This kDrive app version is not supported anymore. To access the latest features and enhancements, please update.</source>
         <translation>Diese kDrive-App-Version wird nicht mehr unterstützt. Um auf die neuesten Funktionen und Verbesserungen zuzugreifen, aktualisieren Sie bitte.</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="967"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="978"/>
         <source>Update</source>
         <translation>Aktualisieren</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1174"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1187"/>
         <source>Please download the latest version on the website.</source>
         <translation>Bitte laden Sie die neueste Version auf der Website herunter.</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="970"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="981"/>
         <source>Update download in progress</source>
         <translation>Update-Download läuft</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="973"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="984"/>
         <source>Looking for update...</source>
         <translation>Auf der Suche nach Updates...</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="976"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="987"/>
         <source>Manual update</source>
         <translation>Manuelles Update</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="979"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="990"/>
         <source>Unavailable</source>
         <translation>Nicht verfügbar</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1187"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1200"/>
         <source>You can synchronize files &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;from your computer&lt;/a&gt; or on &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;kdrive.infomaniak.com&lt;/a&gt;.</source>
         <translation>Sie können Dateien &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;von Ihrem Computer&lt;/a&gt; oder von &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;kdrive.infomaniak.com&lt;/a&gt; synchronisieren.</translation>
     </message>
@@ -2514,33 +2514,38 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         <translation>Aktivität</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1122"/>
-        <location filename="../src/gui/synthesispopover.cpp" line="1169"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1133"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1180"/>
         <source>Not implemented!</source>
         <translation>Nicht implementiert!</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1180"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1184"/>
+        <source>&lt;a style= text-decoration:none; href=&quot;https://www.infomaniak.com/en/apps/download-kdrive&quot;&gt;Click here to download manually&lt;/a&gt;</source>
+        <translation>&lt;a style= text-decoration:none; href=&quot;https://www.infomaniak.com/de/anwendungen/kdrive-herunterladen&quot;&gt;Klicken Sie hier, um manuell herunterzuladen&lt;/a&gt;</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/synthesispopover.cpp" line="1193"/>
         <source>No synchronized folder for this Drive!</source>
         <translation>Kein synchronisierter Ordner für diesen kDrive!</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1183"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1196"/>
         <source>No kDrive configured!</source>
         <translation>Kein kDrive eingerichtet!</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1150"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1161"/>
         <source>Unable to open link %1.</source>
         <translation>Link %1 kann nicht geöffnet werden.</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1162"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1173"/>
         <source>Invalid link %1.</source>
         <translation>Ungültiger Link %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="575"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="586"/>
         <source>Unable to open folder url %1.</source>
         <translation>Ordner-URL %1 kann nicht geöffnet werden.</translation>
     </message>
@@ -2695,47 +2700,47 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         <translation>Einstellungen können nicht gespeichert werden!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="460"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="461"/>
         <source>The parent folder is a sync folder or contained in one</source>
         <translation>Der übergeordnete Ordner ist ein Sync-Ordner oder befindet sich in einem / einer</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="494"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="495"/>
         <source>Can&apos;t find a valid path</source>
         <translation>Kann keinen gültigen Pfad finden</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2098"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2109"/>
         <source>No valid folder selected!</source>
         <translation>Kein gültiger Ordner ausgewählt!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2109"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2120"/>
         <source>The selected path does not exist!</source>
         <translation>Der ausgewählte Pfad existiert nicht!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2114"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2125"/>
         <source>The selected path is not a folder!</source>
         <translation>Der ausgewählte Pfad ist kein Ordner!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2119"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2130"/>
         <source>You have no permission to write to the selected folder!</source>
         <translation>Sie haben keine Schreibberechtigung für den ausgewählten Ordner!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2149"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2160"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
         <translation>Der lokale Ordner %1 enthält einen bereits synchronisierten Ordner. Bitte wählen Sie einen anderen!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2157"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2168"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
         <translation>Der lokale Ordner %1 befindet sich in einem bereits synchronisierten Ordner. Bitte wählen Sie einen anderen!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2165"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2176"/>
         <source>The local folder %1 is already synced. Please pick another one!</source>
         <translation>Der lokale Ordner %1 ist bereits synchronisiert. Bitte wählen Sie einen anderen!</translation>
     </message>
