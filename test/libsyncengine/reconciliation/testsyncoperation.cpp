@@ -72,14 +72,14 @@ void TestSyncOperation::testGetOpIdsFromSourceNodeId() {
     CPPUNIT_ASSERT(ops.front() == _op1->id());
 
     ops = _syncOperationList.getOpIdsFromSourceNodeId(*_localNodeAAA->id(), ReplicaSide::Local);
-    CPPUNIT_ASSERT(ops.size() == 0);
+    CPPUNIT_ASSERT(ops.empty());
 
     ops = _syncOperationList.getOpIdsFromSourceNodeId(*_localNodeAAB->id(), ReplicaSide::Local);
     CPPUNIT_ASSERT(ops.size() == 1);
     CPPUNIT_ASSERT(ops.front() == _op2->id());
 
     ops = _syncOperationList.getOpIdsFromSourceNodeId(*_remoteNodeAAB->id(), ReplicaSide::Remote);
-    CPPUNIT_ASSERT(ops.size() == 0);
+    CPPUNIT_ASSERT(ops.empty());
 }
 
 void TestSyncOperation::testGetOpFromTargetNodeId() {

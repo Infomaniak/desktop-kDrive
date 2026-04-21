@@ -1441,7 +1441,8 @@ bool CommonUtility::modificationTimesAreEqual(const SyncPath &path, SyncTime tim
     // https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-filetime
     const uint16_t timeDifferenceThresholdForEdit = CommonUtility::isFAT(path) ? 1 // +/- 1 sec
                                                                                : 0;
-    return abs(time1 - time2) <= timeDifferenceThresholdForEdit;
+    const auto diff = time1 > time2 ? time1 - time2 : time2 - time1;
+    return diff <= timeDifferenceThresholdForEdit;
 }
 
 void CommonUtility::convertFromBase64Str(const std::string &base64Str, std::string &value) {
