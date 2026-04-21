@@ -28,7 +28,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.System;
 
 namespace Infomaniak.kDrive.Pages.Settings
 {
@@ -515,7 +514,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             if (control is not null)
                 control.IsEnabled = false;
 
-            if (!await Launcher.LaunchUriAsync(App.Constants.kSuite.HelpUri))
+            if (!await Windows.System.Launcher.LaunchUriAsync(App.Constants.kSuite.HelpUri))
             {
                 Logger.Log(Logger.Level.Error, "Failed to launch HelpDesk URI.");
                 Utility.ShowUnexpectedErrorTeachingTip();
