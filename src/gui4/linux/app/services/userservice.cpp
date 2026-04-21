@@ -68,12 +68,12 @@ void UserService::loadAvailableDrives(const qint64 userDbId) {
                 }
 
                 self->endRequest();
-                if (exitInfo.code() != ExitCode::Ok) {
-                    self->setLastError(ServiceUtils::formatExitInfo(exitInfo));
+                if (self->_appCache.selectedUserDbId() != static_cast<qint64>(requestedUserDbId)) {
                     return;
                 }
 
-                if (self->_appCache.selectedUserDbId() != static_cast<qint64>(requestedUserDbId)) {
+                if (exitInfo.code() != ExitCode::Ok) {
+                    self->setLastError(ServiceUtils::formatExitInfo(exitInfo));
                     return;
                 }
 
