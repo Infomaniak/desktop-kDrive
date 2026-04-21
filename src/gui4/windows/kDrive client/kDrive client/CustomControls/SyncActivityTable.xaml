@@ -155,7 +155,7 @@
                                           x:DataType="types:SyncFileStatus">
                                 <controls:SvgIcon  Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
                                                    PointerPressed="ItemErrorIcon_PointerPressed"
-                                                   Foreground="{ThemeResource colors.status.medium.warning}"
+                                                   Foreground="{ThemeResource Infomaniak.DS.colors.status.medium.warning}"
                                                    UriString="{StaticResource Infomaniak.DS.Icons.Actions.triangle-alert-outline}">
                                     <ToolTipService.ToolTip>
                                         <ToolTip Content="{x:Bind kDrive:Localizer.Instance.GetString('syncErrorTooltip')}" />
@@ -165,7 +165,7 @@
                             <DataTemplate x:Key="SynchronizedTemplate"
                                           x:DataType="types:SyncFileStatus">
                                 <controls:SvgIcon  Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
-                                                   Foreground="{ThemeResource colors.status.medium.success}"
+                                                   Foreground="{ThemeResource Infomaniak.DS.colors.status.medium.success}"
                                                    UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-check-outline}">
                                     <ToolTipService.ToolTip>
                                         <ToolTip Content="{x:Bind kDrive:Localizer.Instance.GetString('syncSuccessTooltip')}" />

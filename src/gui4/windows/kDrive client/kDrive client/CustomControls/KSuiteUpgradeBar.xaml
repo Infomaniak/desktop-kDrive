@@ -15,15 +15,15 @@
         <Border.BorderBrush>
             <LinearGradientBrush StartPoint="0,0"
                                  EndPoint="1,0">
-                <GradientStop Color="{ThemeResource kSuite.Gradient.lightblue}"
+                <GradientStop Color="{ThemeResource Infomaniak.DS.kSuite.Gradient.lightblue}"
                               Offset="0.0" />
-                <GradientStop Color="{ThemeResource kSuite.Gradient.darkblue}"
+                <GradientStop Color="{ThemeResource Infomaniak.DS.kSuite.Gradient.darkblue}"
                               Offset="0.25" />
-                <GradientStop Color="{ThemeResource kSuite.Gradient.purple}"
+                <GradientStop Color="{ThemeResource Infomaniak.DS.kSuite.Gradient.purple}"
                               Offset="0.5" />
-                <GradientStop Color="{ThemeResource kSuite.Gradient.pink}"
+                <GradientStop Color="{ThemeResource Infomaniak.DS.kSuite.Gradient.pink}"
                               Offset="0.75" />
-                <GradientStop Color="{ThemeResource kSuite.Gradient.orange}"
+                <GradientStop Color="{ThemeResource Infomaniak.DS.kSuite.Gradient.orange}"
                               Offset="1.0" />
             </LinearGradientBrush>
         </Border.BorderBrush>

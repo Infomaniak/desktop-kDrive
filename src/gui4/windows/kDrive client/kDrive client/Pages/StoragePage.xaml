@@ -110,8 +110,8 @@
                 <controls:MultiValueProgressBar Value1="{x:Bind PageViewModel.HydratedFileSize, Mode=OneWay}"
                                                 Value2="{x:Bind PageViewModel.OtherFileSize, Mode=OneWay}"
                                                 Value3="{x:Bind PageViewModel.DiskFreeSize, Mode=OneWay}"
-                                                Color1="{ThemeResource AccentAAFillColorDefaultBrush }"
-                                                Color2="{ThemeResource SystemFillColorSuccessBackgroundBrush}"
+                                                Color1="{ThemeResource Infomaniak.DS.colors.accent.kdrive.defaultBrush}"
+                                                Color2="{ThemeResource Infomaniak.Custom.colors.storage.otherBrush}"
                                                 Color3="{ThemeResource AccentAAFillColorDisabledBrush}" />
                 <Grid>
 
@@ -136,7 +136,7 @@
                     <Ellipse Grid.Column="0"
                              Height="8"
                              Width="8"
-                             Fill="{ThemeResource AccentAAFillColorDefaultBrush}" />
+                             Fill="{ThemeResource Infomaniak.DS.colors.accent.kdrive.defaultBrush}" />
 
                     <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('storageComputerUsedByKDrive')}"
                                Grid.Column="1"
@@ -179,7 +179,7 @@
                     <Ellipse Grid.Column="0"
                              Height="8"
                              Width="8"
-                             Fill="{ThemeResource SystemFillColorSuccessBackgroundBrush}" />
+                             Fill="{ThemeResource Infomaniak.Custom.colors.storage.otherBrush}" />
 
                     <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('storageComputerUsedByOther')}"
                                Grid.Column="1"
