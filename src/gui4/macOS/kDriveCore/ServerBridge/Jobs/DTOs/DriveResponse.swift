@@ -32,7 +32,7 @@ struct DriveDeleteQuery: Codable, Sendable {
 }
 
 struct DriveSearchQuery: Codable, Sendable {
-    let driveDbId: Int32
+    let syncDbId: Int32
     let searchString: String
 }
 

@@ -27,4 +27,8 @@ public struct FileResponse: Codable, Sendable {
     @Base64CodedString var id: String
     @Base64CodedString var name: String
     let type: KDC.NodeType
+    @Base64CodedString var path: String
+    let modifiedTime: Int64
+    let size: Int64
+    let isAvailableLocally: Bool
 }
