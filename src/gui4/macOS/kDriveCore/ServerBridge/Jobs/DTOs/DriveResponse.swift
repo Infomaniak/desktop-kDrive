@@ -33,7 +33,7 @@ struct DriveDeleteQuery: Codable, Sendable {
 
 struct DriveSearchQuery: Codable, Sendable {
     let syncDbId: Int32
-    let searchString: String
+    @Base64CodedString var searchString: String
 }
 
 struct DriveInfoListResponse: Codable, Sendable {
