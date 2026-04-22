@@ -23,7 +23,7 @@
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/io/filestat.h"
-#include "libsyncengine/jobs/network/kDrive_API/getfileinfojobV3.h"
+#include "libsyncengine/jobs/network/kDrive_API/getfileinfojob.h"
 #include "libsyncengine/jobs/network/kDrive_API/getdriveuserinfojob.h"
 #include "libsyncengine/requests/driveuserinfocache.h"
 #include "libsyncengine/syncpal/syncpal.h"
@@ -69,16 +69,16 @@ ExitInfo NodeConflictInfoJob::serializeOutputParms() {
 }
 
 ExitInfo NodeConflictInfoJob::fetchRemoteInfo(const UserDbId userDbId, const DriveId driveId, const NodeId &nodeId) {
-    std::shared_ptr<GetFileInfoJobV3> networkJob;
+    std::shared_ptr<GetFileInfoJob> networkJob;
     try {
-        networkJob = std::make_shared<GetFileInfoJobV3>(userDbId, driveId, nodeId);
+        networkJob = std::make_shared<GetFileInfoJob>(userDbId, driveId, nodeId);
     } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Error creating GetFileInfoJobV3: error=" << e.what());
+        LOG_WARN(_logger, "Error creating GetFileInfoJob: error=" << e.what());
         return ExitCode::DataError;
     }
 
     if (const auto exitInfo = networkJob->runSynchronously(); !exitInfo) {
-        LOG_WARN(_logger, "Error in GetFileInfoJobV3::runSynchronously for nodeId=" << nodeId << " exitInfo=" << exitInfo);
+        LOG_WARN(_logger, "Error in GetFileInfoJob::runSynchronously for nodeId=" << nodeId << " exitInfo=" << exitInfo);
         return exitInfo;
     }
     _nodeConflictInfo.setFileSize(networkJob->size());
