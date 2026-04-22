@@ -22,19 +22,29 @@ import SwiftUI
 struct SearchSheetView: View {
     var onDismiss: () -> Void
 
-    var body: some View {
-        VStack(spacing: AppPadding.padding24) {
-            Text("Hello World")
-                .font(.title)
-                .foregroundStyle(ColorToken.Text.primary.asColor)
+    @State private var searchText = ""
 
-            Button("Close") {
-                onDismiss()
+    var body: some View {
+        VStack(spacing: 0) {
+            TextField("Search...", text: $searchText)
+                .textFieldStyle(.roundedBorder)
+                .padding(AppPadding.padding16)
+
+            List {
+                Text("Hello World")
+                    .foregroundStyle(ColorToken.Text.primary.asColor)
             }
-            .keyboardShortcut(.cancelAction)
-            .buttonStyle(.borderedProminent)
+
+            HStack {
+                Spacer()
+                Button("Close") {
+                    onDismiss()
+                }
+                .keyboardShortcut(.cancelAction)
+                .buttonStyle(.borderedProminent)
+            }
+            .padding(AppPadding.padding16)
         }
-        .padding(AppPadding.page)
         .frame(minWidth: 400, minHeight: 300)
     }
 }
