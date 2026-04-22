@@ -13,7 +13,7 @@
           Subtitle="Beta"
           HorizontalContentAlignment="Stretch"
           IsPaneToggleButtonVisible="False"
-          IsBackButtonVisible="True"
+          IsBackButtonVisible="{x:Bind Frame.CanGoBack, Mode=OneWay}"
           BackRequested="TitleBar_BackRequested">
 
     <TitleBar.Resources>

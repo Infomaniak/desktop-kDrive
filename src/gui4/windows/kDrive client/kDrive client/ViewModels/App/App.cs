@@ -279,20 +279,20 @@ namespace Infomaniak.kDrive.ViewModels
                         return false;
                     }
 
-                    if (!await serverCommService.RefreshUpdaterVersionInfo(null, cts.Token))
+                    Logger.Log(Logger.Level.Info, "All server data loaded successfully.");
+                    IsInitialized = true;
+
+                    _ = serverCommService.RefreshUpdaterVersionInfo(null, CancellationToken.None).ContinueWith(task =>
                     {
                         Logger.Log(Logger.Level.Error, "Failed to refresh updater version info during AppModel initialization.");
                         // This is not critical, we can continue without this info
-                    }
+                    });
 
-                    if (!await serverCommService.ActivateLoadInfo(CancellationToken.None))
+                    _ = serverCommService.ActivateLoadInfo(CancellationToken.None).ContinueWith(task =>
                     {
                         Logger.Log(Logger.Level.Error, "Failed to ActivateLoadInfo during AppModel initialization.");
                         // This is not critical, we can continue without this info
-                    }
-
-                    Logger.Log(Logger.Level.Info, "All server data loaded successfully.");
-                    IsInitialized = true;
+                    });
                     return true;
                 }
             }
