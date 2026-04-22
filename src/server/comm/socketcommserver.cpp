@@ -30,9 +30,9 @@ SocketCommChannel::SocketCommChannel(const Poco::Net::StreamSocket &socket) :
     _socket(socket) {}
 
 void SocketCommChannel::startCallbackThread() {
-    std::weak_ptr<AbstractCommChannel> weakChannel = weak_from_this();
+    std::weak_ptr<SocketCommChannel> weakChannel = std::static_pointer_cast<SocketCommChannel>(shared_from_this());
     auto callbackHandlerFunc = std::function<void()>([weakChannel]() {
-        const auto channel = std::dynamic_pointer_cast<SocketCommChannel>(weakChannel.lock());
+        const auto channel = weakChannel.lock();
         if (!channel) {
             return;
         }
@@ -155,7 +155,7 @@ void SocketCommChannel::callbackHandler() {
 
 uint64_t SocketCommChannel::bytesAvailable() const {
     try {
-        return static_cast<uint64_t>((std::max)(0, _socket.available()));
+        return static_cast<uint64_t>((std::max) (0, _socket.available()));
     } catch (Poco::Exception &ex) {
         LOG_ERROR(Log::instance()->getLogger(), "Exception in StreamSocket::available: " << ex.displayText());
         return static_cast<uint64_t>(0);
