@@ -252,7 +252,7 @@ std::string WindowsUpdater::computeFileChecksum(const SyncPath &filepath) {
     std::string result;
     result.reserve(SHA256_DIGEST_LENGTH * 2);
     for (const auto &byte: hash) {
-        result += std::format("{:02x}", static_cast<int>(byte));
+        result += std::format("{:02x}", static_cast<int32_t>(byte));
     }
 
     return result;
