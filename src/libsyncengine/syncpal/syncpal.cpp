@@ -1411,8 +1411,8 @@ bool SyncPal::isTmpBlacklisted(const SyncPath &relativePath, const ReplicaSide s
     return _tmpBlacklistManager->isTmpBlacklisted(relativePath, side);
 }
 
-void SyncPal::clearTmpBlacklist(bool& found) {
-    _tmpBlacklistManager->clear(found);
+void SyncPal::clearTmpBlacklist() {
+    _tmpBlacklistManager->clear();
 }
 
 void SyncPal::refreshTmpBlacklist() {
@@ -1425,6 +1425,24 @@ void SyncPal::removeItemFromTmpBlacklist(const NodeId &nodeId, const ReplicaSide
 
 void SyncPal::removeItemFromTmpBlacklist(const SyncPath &relativePath) {
     _tmpBlacklistManager->removeItemFromTmpBlacklist(relativePath);
+}
+
+bool SyncPal::forceUpdateLastChangeRevision(const NodeId &nodeId, ReplicaSide side) {
+    if (side == ReplicaSide::Unknown) {
+        LOG_ERROR(_logger, "Call to SyncPal::forceUpdateLastChangeRevision with 'ReplicaSide::Unknown').");
+        return false;
+    }
+
+    if (side == ReplicaSide::Local) {
+        LOG_IF_FAIL(_localFSObserverWorker)
+        if (!_localFSObserverWorker) return false;
+        return _localFSObserverWorker->forceUpdateLastChangeRevision(nodeId);
+    } else if (side == ReplicaSide::Remote) {
+        LOG_IF_FAIL(_remoteFSObserverWorker)
+        if (!_remoteFSObserverWorker) return false;
+        return _remoteFSObserverWorker->forceUpdateLastChangeRevision(nodeId);
+    }
+    return false;
 }
 
 ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool deleteNodeLater, ExitCause cause) {

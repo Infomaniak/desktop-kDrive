@@ -41,6 +41,7 @@ class FileSystemObserverWorker : public ISyncWorker {
         [[nodiscard]] bool initializing() const { return _initializing; }
 
         [[nodiscard]] const LiveSnapshot &liveSnapshot() const { return _liveSnapshot; }
+        bool forceUpdateLastChangeRevision(const NodeId &itemId) { return _liveSnapshot.forceUpdateLastChangeRevision(itemId); }
 
     protected:
         std::shared_ptr<SyncDb> _syncDb;
