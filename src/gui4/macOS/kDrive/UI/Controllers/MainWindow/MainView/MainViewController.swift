@@ -226,8 +226,8 @@ extension MainViewController {
         let searchButton = NSToolbarItem(itemIdentifier: .init("SearchButton"))
         searchButton.image = KDriveResources.magnifyingGlass.image
         searchButton.label = KDriveLocalizable.buttonSearch
-        searchButton.target = nil
-        searchButton.action = nil
+        searchButton.target = self
+        searchButton.action = #selector(showSearchSheet)
 
         let group = NSToolbarItemGroup(itemIdentifier: .searchGroup)
         group.subitems = [searchButton]
@@ -238,6 +238,12 @@ extension MainViewController {
 
     @objc private func openHelpURL() {
         NSWorkspace.shared.open(URLConstants.help)
+    }
+
+    @objc private func showSearchSheet() {
+        let searchSheetView = SearchSheetView()
+        let hostingController = NSHostingController(rootView: searchSheetView)
+        presentAsSheet(hostingController)
     }
 
     @objc private func togglePauseResume() {
