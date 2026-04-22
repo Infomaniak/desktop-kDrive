@@ -55,8 +55,8 @@ UploadJob::UploadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, 
 }
 
 UploadJob::UploadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, const SyncPath &absoluteFilePath,
-                     const NodeId &fileId, const SyncTime modificationTime) :
-    UploadJob(vfs, driveDbId, absoluteFilePath, SyncName(), "", 0, modificationTime) {
+                     const RemoteNodeId &fileId, const SyncTime modificationTime) :
+    UploadJob(vfs, driveDbId, absoluteFilePath, {}, RemoteNodeId{}, SyncTime{0}, modificationTime) {
     _fileId = fileId;
 
     // Retrieve creation date from the local file
