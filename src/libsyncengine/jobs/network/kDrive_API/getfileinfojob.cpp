@@ -19,6 +19,8 @@
 #include "getfileinfojob.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/utility/jsonparserutility.h"
+#include "libsyncengine/jobs/network/kDrive_API/apitranslator.h"
+#include "jobs/network/jobexceptions.h"
 
 #include <Poco/Net/HTTPRequest.h>
 
@@ -31,6 +33,11 @@ GetFileInfoJob::GetFileInfoJob(const UserDbId userDbId, const DriveId driveId, c
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _apiVersion = 3;
     _trials = 1;
+
+    if (const auto exitInfo = ApiTranslator::translateV2ToV3(userDbId, driveId, _nodeId); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ApiTranslator::translateV2ToV3: " << exitInfo);
+        throw JobException("Translation error in GetFileInfoJob::GetFileInfoJob.");
+    }
 }
 
 
@@ -40,6 +47,11 @@ GetFileInfoJob::GetFileInfoJob(const DriveDbId driveDbId, const RemoteNodeId &no
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _apiVersion = 3;
     _trials = 1;
+
+    if (const auto exitInfo = ApiTranslator::translateV2ToV3(userDbId(), driveId(), _nodeId); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ApiTranslator::translateV2ToV3: " << exitInfo);
+        throw JobException("Translation error in GetFileInfoJob::GetFileInfoJob.");
+    }
 }
 
 ExitInfo GetFileInfoJob::handleResponse(std::istream &is) {
@@ -50,26 +62,26 @@ ExitInfo GetFileInfoJob::handleResponse(std::istream &is) {
     const auto dataObj = jsonRes()->getObject(dataKey);
     if (!dataObj) return ExitCode::Ok;
 
-    if (!JsonParserUtility::extractValue(dataObj, parentIdKey, _parentNodeId)) {
-        return {};
-    }
-    if (!JsonParserUtility::extractValue(dataObj, createdAtKey, _creationTime)) {
-        return {};
-    }
-    if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modificationTime)) {
-        return {};
-    }
-    std::string tmp;
-    if (!JsonParserUtility::extractValue(dataObj, typeKey, tmp)) {
-        return {};
-    }
-    if (tmp != dirKey) {
-        if (!JsonParserUtility::extractValue(dataObj, sizeKey, _size)) {
-            return {};
-        }
-    }
+    if (!JsonParserUtility::extractValue(dataObj, parentIdKey, _parentNodeId))
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
 
-    if (std::string symbolicLink; JsonParserUtility::extractValue(dataObj, symbolicLinkKey, symbolicLink, false)) {
+    if (!JsonParserUtility::extractValue(dataObj, createdAtKey, _creationTime))
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+
+    if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modificationTime))
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+
+    std::string tmp;
+    if (!JsonParserUtility::extractValue(dataObj, typeKey, tmp)) return {ExitCode::BackError, ExitCause::MissingReplyData};
+
+    if (tmp != dirKey && !JsonParserUtility::extractValue(dataObj, sizeKey, _size))
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+
+    if (!JsonParserUtility::extractValue(dataObj, lastModifiedByKey, _lastModifiedByUserId))
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+
+    constexpr bool mandatory = false;
+    if (std::string symbolicLink; JsonParserUtility::extractValue(dataObj, symbolicLinkKey, symbolicLink, mandatory)) {
         _isLink = !symbolicLink.empty();
     }
 

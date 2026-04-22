@@ -24,18 +24,19 @@ namespace KDC {
 
 class GetFileInfoJob : public AbstractTokenNetworkJob {
     public:
-        GetFileInfoJob(UserDbId userDbId, DriveId driveId, const NodeId &nodeId);
+        GetFileInfoJob(UserDbId userDbId, DriveId driveId, const RemoteNodeId &nodeId);
         GetFileInfoJob(DriveDbId driveDbId, const NodeId &nodeId);
 
-        inline const NodeId &nodeId() const { return _nodeId; }
-        inline const NodeId &parentNodeId() const { return _parentNodeId; }
-        inline SyncTime creationTime() const { return _creationTime; }
-        inline SyncTime modificationTime() const { return _modificationTime; }
-        inline bool isLink() const { return _isLink; }
-        inline int64_t size() const { return _size; }
+        const RemoteNodeId &nodeId() const { return _nodeId; }
+        const RemoteNodeId &parentNodeId() const { return _parentNodeId; }
+        SyncTime creationTime() const { return _creationTime; }
+        SyncTime modificationTime() const { return _modificationTime; }
+        int32_t lastModifiedByUserId() const { return _lastModifiedByUserId; }
+        bool isLink() const { return _isLink; }
+        int64_t size() const { return _size; }
 
-        inline void setWithPath(const bool val) { _withPath = val; }
-        inline SyncPath path() const { return _path; }
+        void setWithPath(const bool val) { _withPath = val; }
+        SyncPath path() const { return _path; }
 
     protected:
         ExitInfo handleResponse(std::istream &is) override;
@@ -46,11 +47,12 @@ class GetFileInfoJob : public AbstractTokenNetworkJob {
         void setQueryParameters(Poco::URI &) override;
         inline ExitInfo setData() override { return ExitCode::Ok; }
 
-        NodeId _nodeId;
-        NodeId _parentNodeId;
+        RemoteNodeId _nodeId;
+        RemoteNodeId _parentNodeId;
         std::string _name;
         SyncTime _creationTime{0};
         SyncTime _modificationTime{0};
+        int32_t _lastModifiedByUserId{-1};
         bool _isLink{false};
         bool _withPath{false};
         int64_t _size{-1};
