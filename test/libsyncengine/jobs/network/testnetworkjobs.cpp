@@ -26,7 +26,6 @@
 #include "jobs/network/kDrive_API/getallfilesindirectoryjob.h"
 #include "jobs/network/kDrive_API/getdriveslistjob.h"
 #include "jobs/network/kDrive_API/getfileinfojob.h"
-#include "jobs/network/kDrive_API/getrootfilelistjob.h"
 #include "jobs/network/infomaniak_API/getinfouserjob.h"
 #include "jobs/network/kDrive_API/getinfodrivejob.h"
 #include "jobs/network/kDrive_API/getthumbnailjob.h"
