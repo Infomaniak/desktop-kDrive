@@ -44,7 +44,6 @@ set(syncengine_SRCS
     jobs/network/kDrive_API/apitranslator.h jobs/network/kDrive_API/apitranslator.cpp
     ### API v2 jobs
     jobs/network/kDrive_API/backerror.h jobs/network/kDrive_API/backerror.cpp
-    jobs/network/kDrive_API/getrootfilelistjob.h jobs/network/kDrive_API/getrootfilelistjob.cpp
     jobs/network/kDrive_API/listingconf.h
     jobs/network/kDrive_API/getfilesindirectoryjob.h jobs/network/kDrive_API/getfilesindirectoryjob.cpp
     jobs/network/kDrive_API/getfilesinrootdirjob.h jobs/network/kDrive_API/getfilesinrootdirjob.cpp
