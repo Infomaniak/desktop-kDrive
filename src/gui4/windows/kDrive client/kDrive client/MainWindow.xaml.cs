@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using H.NotifyIcon;
 using Infomaniak.kDrive.CustomControls;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -72,6 +73,13 @@ namespace Infomaniak.kDrive
 
         private void MainWindow_Closed(object sender, WindowEventArgs args)
         {
+            if ((App.Current as App)?.CurrentWindow == this)
+            {
+                args.Handled = true;
+                this.Hide();
+                return;
+            }
+
             ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
             Closed -= MainWindow_Closed;
             this.Content.PointerPressed -= OnPointerPressed;
