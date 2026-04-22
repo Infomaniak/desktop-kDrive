@@ -241,9 +241,16 @@ extension MainViewController {
     }
 
     @objc private func showSearchSheet() {
-        let searchSheetView = SearchSheetView()
+        let searchSheetView = SearchSheetView { [weak self] in
+            self?.dismissSearchSheet()
+        }
         let hostingController = NSHostingController(rootView: searchSheetView)
         presentAsSheet(hostingController)
+    }
+
+    private func dismissSearchSheet() {
+        guard let presentedViewController = presentedViewControllers?.first else { return }
+        dismiss(presentedViewController)
     }
 
     @objc private func togglePauseResume() {

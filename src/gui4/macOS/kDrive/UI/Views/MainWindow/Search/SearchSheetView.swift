@@ -20,7 +20,7 @@ import kDriveCoreUI
 import SwiftUI
 
 struct SearchSheetView: View {
-    @Environment(\.dismiss) private var dismiss
+    var onDismiss: () -> Void
 
     var body: some View {
         VStack(spacing: AppPadding.padding24) {
@@ -29,7 +29,7 @@ struct SearchSheetView: View {
                 .foregroundStyle(ColorToken.Text.primary.asColor)
 
             Button("Close") {
-                dismiss()
+                onDismiss()
             }
             .keyboardShortcut(.cancelAction)
             .buttonStyle(.borderedProminent)
@@ -40,5 +40,5 @@ struct SearchSheetView: View {
 }
 
 #Preview {
-    SearchSheetView()
+    SearchSheetView {}
 }
