@@ -135,6 +135,7 @@
 				Parsing/HexColorTests.swift,
 				Parsing/Jobs/AccountInfoListTest.swift,
 				Parsing/Jobs/BlacklistedNodeListTest.swift,
+				Parsing/Jobs/DriveSearchTest.swift,
 				Parsing/Jobs/JSON/ACCOUNT_INFOLIST.json,
 				Parsing/Jobs/JSON/BLACKLISTED_NODE_LIST.json,
 				Parsing/Jobs/JSON/DRIVE_SEARCH.json,
