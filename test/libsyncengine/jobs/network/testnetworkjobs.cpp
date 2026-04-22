@@ -22,10 +22,10 @@
 #include "jobs/network/kDrive_API/downloadjob.h"
 #include "jobs/network/kDrive_API/duplicatejob.h"
 #include "jobs/network/getavatarjob.h"
+#include "jobs/network/kDrive_API/getfilesindirectoryjob.h"
 #include "jobs/network/kDrive_API/getallfilesindirectoryjob.h"
 #include "jobs/network/kDrive_API/getdriveslistjob.h"
 #include "jobs/network/kDrive_API/getfileinfojob.h"
-#include "jobs/network/kDrive_API/getfilelistjob.h"
 #include "jobs/network/kDrive_API/getrootfilelistjob.h"
 #include "jobs/network/infomaniak_API/getinfouserjob.h"
 #include "jobs/network/kDrive_API/getinfodrivejob.h"
@@ -165,30 +165,27 @@ void TestNetworkJobs::tearDown() {
     TestBase::stop();
 }
 
+bool TestNetworkJobs::existsInRemoteDirectory(const SyncName &fileName, const RemoteNodeId &remoteDirId,
+                                              const NodeType nodeType) {
+    GetAllFilesInDirectoryJob job(_driveDbId, remoteDirId, TranslationMode::V2ToV3);
+    job.setListingConf({.dirOnly = (nodeType == NodeType::Directory)});
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.runSynchronously());
+    RemoteNodeInfoList remoteNodeInfoList;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.remoteNodeInfoList(remoteNodeInfoList));
+
+    const auto fileNameQString = SyncName2QStr(fileName);
+    const auto it = std::find_if(remoteNodeInfoList.begin(), remoteNodeInfoList.end(),
+                                 [&fileNameQString](const NodeInfo &info) { return info.name() == fileNameQString; });
+
+    return it != remoteNodeInfoList.end();
+}
+
 
 void TestNetworkJobs::testCreateDir() {
     const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testCreateDir");
 
-    GetFileListJob fileListJob(_driveDbId, _remoteDirId);
-    const ExitCode exitCode = fileListJob.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
-
-    Poco::JSON::Object::Ptr resObj = fileListJob.jsonRes();
-    CPPUNIT_ASSERT(resObj);
-
-    bool newDirFound = false;
-    for (const auto dataArray = resObj->getArray(dataKey); const auto &item: *dataArray) {
-        const auto &dirObj = item.extract<Poco::JSON::Object::Ptr>();
-
-        SyncName name;
-        CPPUNIT_ASSERT(JsonParserUtility::extractValue(dirObj, nameKey, name));
-
-        if (remoteTmpDir.name() == name) {
-            newDirFound = true;
-            break;
-        }
-    }
-    CPPUNIT_ASSERT(newDirFound);
+    const bool exists = existsInRemoteDirectory(remoteTmpDir.name(), _remoteDirId, NodeType::Directory);
+    CPPUNIT_ASSERT(exists);
 }
 
 void TestNetworkJobs::testCopyToDir() {
@@ -197,26 +194,11 @@ void TestNetworkJobs::testCopyToDir() {
 
     const SyncName filename = Str("testCopyToDir_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()) + Str(".txt");
     CopyToDirectoryJob job(_driveDbId, testFileRemoteId, remoteTmpDir.id(), filename);
-    ExitCode exitCode = job.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    const ExitInfo exitInfo = job.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
 
-    GetFileListJob fileListJob(_driveDbId, remoteTmpDir.id());
-    exitCode = fileListJob.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
-
-    Poco::JSON::Object::Ptr resObj = fileListJob.jsonRes();
-    CPPUNIT_ASSERT(resObj);
-
-    bool found = false;
-    Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
-    for (const auto &it: *dataArray) {
-        Poco::JSON::Object::Ptr dirObj = it.extract<Poco::JSON::Object::Ptr>();
-        if (filename == Str2SyncName(dirObj->get(nameKey))) {
-            found = true;
-            break;
-        }
-    }
-    CPPUNIT_ASSERT(found);
+    const bool exists = existsInRemoteDirectory(filename, remoteTmpDir.id(), NodeType::File);
+    CPPUNIT_ASSERT(exists);
 }
 
 void TestNetworkJobs::testDelete() {
@@ -237,22 +219,8 @@ void TestNetworkJobs::testDelete() {
     CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
 
     // Check that the file has been deleted
-    GetFileListJob fileListJob(_driveDbId, testDummyDirRemoteId);
-    exitCode = fileListJob.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
-
-    Poco::JSON::Object::Ptr resObj = fileListJob.jsonRes();
-    CPPUNIT_ASSERT(resObj);
-
-    bool newFileFound = false;
-    for (const auto dataArray = resObj->getArray(dataKey); const auto &item: *dataArray) {
-        const auto &dirObj = item.extract<Poco::JSON::Object::Ptr>();
-        if (_dummyFileName == dirObj->get(nameKey)) {
-            newFileFound = true;
-            break;
-        }
-    }
-    CPPUNIT_ASSERT(!newFileFound);
+    const bool fileExists = existsInRemoteDirectory(_dummyFileName, testDummyDirRemoteId, NodeType::File);
+    CPPUNIT_ASSERT(!fileExists);
 
     RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDelete");
     const LocalTemporaryDirectory localTmpDir("testDelete");
@@ -268,28 +236,13 @@ void TestNetworkJobs::testDelete() {
     // Delete directory - A local dir exists with the same path but not the same id => canRun == true
     DeleteJob jobLocalDirSynonymExists(_driveDbId, remoteTmpDir.id(), "1234", localTmpDir.path(), NodeType::Directory);
     CPPUNIT_ASSERT(jobLocalDirSynonymExists.canRun());
-    exitCode = jobLocalDirSynonymExists.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    ExitInfo exitInfo = jobLocalDirSynonymExists.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
 
     // Check that the dir has been deleted
-    GetFileListJob fileListJob2(_driveDbId, _remoteDirId);
-    exitCode = fileListJob2.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    const bool dirExists = existsInRemoteDirectory(_dummyFileName, testDummyDirRemoteId, NodeType::Directory);
+    CPPUNIT_ASSERT(!dirExists);
 
-    resObj = fileListJob2.jsonRes();
-    CPPUNIT_ASSERT(resObj);
-
-    bool newDirFound = false;
-    const auto dataArray = resObj->getArray(dataKey);
-    for (Poco::JSON::Array::ConstIterator it = dataArray->begin(); it != dataArray->end(); ++it) {
-        Poco::JSON::Object::Ptr dirObj = it->extract<Poco::JSON::Object::Ptr>();
-        SyncName currentName = dirObj->get(nameKey);
-        if (remoteTmpDir.name() == currentName) {
-            newDirFound = true;
-            break;
-        }
-    }
-    CPPUNIT_ASSERT(!newDirFound);
     remoteTmpDir.setDeleted();
 }
 
@@ -897,37 +850,37 @@ void TestNetworkJobs::testGetFileInfo() {
     }
 }
 
-void TestNetworkJobs::testGetFileList() {
+void TestNetworkJobs::testGetFilesInDirectory() {
     {
-        GetFileListJob job(_driveDbId, pictureDirRemoteId);
-        const ExitCode exitCode = job.runSynchronously();
-        CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+        GetFilesInDirectoryJob job(_driveDbId, pictureDirRemoteId, {}, TranslationMode::V2ToV3);
+        const ExitInfo exitInfo = job.runSynchronously();
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
 
-        int counter = 0;
-        Poco::JSON::Array::Ptr dataArray = job.jsonRes()->getArray(dataKey);
-        for (Poco::JSON::Array::ConstIterator it = dataArray->begin(); it != dataArray->end(); ++it) {
-            counter++;
-        }
-        CPPUNIT_ASSERT(counter == 5);
+        RemoteNodeInfoList nodeInfoList;
+        const ExitInfo nodeInfoExitInfo = job.nodeInfoList(nodeInfoList);
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), nodeInfoExitInfo);
+        CPPUNIT_ASSERT_EQUAL(size_t{5}, nodeInfoList.size());
     }
     {
         const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteDirId, "testGetFileList");
-        for (uint16_t i = 0; i < 11; i++) {
+        for (auto i = 0; i < 11; ++i) {
             CreateDirJob job(nullptr, _driveDbId, tmpRemoteDir.id(), Str2SyncName(std::to_string(i)));
             (void) job.runSynchronously();
         }
 
-        for (uint16_t page = 1; page <= 2; page++) {
-            GetFileListJob job(_driveDbId, tmpRemoteDir.id(), FileListJobConfig{page, true, 10});
+        Cursor cursor;
+        for (auto page = 1; page <= 2; ++page) {
+            GetFilesInDirectoryJob job(_driveDbId, tmpRemoteDir.id(), cursor, TranslationMode::V2ToV3);
+            job.setListingConf({.limit = 10});
             (void) job.runSynchronously();
-            Poco::JSON::Object::Ptr resObj = job.jsonRes();
-            CPPUNIT_ASSERT(resObj);
-            Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
-            CPPUNIT_ASSERT(dataArray);
+            cursor = job.cursor();
+            RemoteNodeInfoList nodeInfoList;
+            const ExitInfo nodeInfoExitInfo = job.nodeInfoList(nodeInfoList);
+            CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), nodeInfoExitInfo);
             if (page == 1) {
-                CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(10), dataArray->size());
+                CPPUNIT_ASSERT_EQUAL(size_t{10}, nodeInfoList.size());
             } else {
-                CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), dataArray->size());
+                CPPUNIT_ASSERT_EQUAL(size_t{1}, nodeInfoList.size());
             }
         }
     }
@@ -1116,9 +1069,8 @@ void TestNetworkJobs::testDuplicateRenameMove() {
     const ExitCode moveExitCode = moveJob.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, moveExitCode);
 
-    GetFileListJob fileListJob(_driveDbId, remoteTargetTmpDir.id());
-    const ExitCode getFileListExitCode = fileListJob.runSynchronously();
-    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, getFileListExitCode);
+    GetFilesInDirectoryJob fileListJob(_driveDbId, remoteTargetTmpDir.id(), {}, TranslationMode::V2ToV3);
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), fileListJob.runSynchronously());
 
     Poco::JSON::Object::Ptr resObj = fileListJob.jsonRes();
     CPPUNIT_ASSERT(resObj);
@@ -1398,9 +1350,8 @@ void TestNetworkJobs::testDefuncted() { // Create a file
     _nbParallelThreads = initialNbParallelThreads;
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
-    GetFileListJob fileListJob(_driveDbId, remoteTmpDir.id());
-    exitCode = fileListJob.runSynchronously();
-    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
+    GetFilesInDirectoryJob fileListJob(_driveDbId, remoteTmpDir.id(), {}, TranslationMode::V2ToV3);
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), fileListJob.runSynchronously());
 
     Poco::JSON::Object::Ptr resObj = fileListJob.jsonRes();
     CPPUNIT_ASSERT(resObj);
@@ -1434,10 +1385,10 @@ void TestNetworkJobs::testDriveUploadSessionSynchronousAborted() {
                                                  remoteTmpDir.id(), testhelpers::defaultTime, testhelpers::defaultTime, false, 1);
     SyncJobManagerSingleton::instance()->queueAsyncJob(DriveUploadSessionJob);
 
-    int counter = 0;
+    Count counter = 0;
     while (!DriveUploadSessionJob->isRunning()) {
         Utility::msleep(10);
-        CPPUNIT_ASSERT_LESS(500, ++counter); // Wait at most 5sec
+        CPPUNIT_ASSERT_LESS(Count{500}, ++counter); // Wait at most 5sec
     }
     DriveUploadSessionJob->abort();
 
@@ -1484,13 +1435,12 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronousAborted() {
     Utility::msleep(1000); // Wait 1sec
 
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionAsynchronousAborted - Check jobs");
-    GetFileListJob fileListJob(_driveDbId, remoteTmpDir.id());
-    ExitCode exitCode = fileListJob.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    GetFilesInDirectoryJob fileListJob(_driveDbId, remoteTmpDir.id(), {}, TranslationMode::V2ToV3);
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), fileListJob.runSynchronously());
 
-    Poco::JSON::Object::Ptr resObj = fileListJob.jsonRes();
+    const Poco::JSON::Object::Ptr resObj = fileListJob.jsonRes();
     CPPUNIT_ASSERT(resObj);
-    Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
+    const Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
     CPPUNIT_ASSERT(dataArray);
     CPPUNIT_ASSERT(dataArray->empty());
 

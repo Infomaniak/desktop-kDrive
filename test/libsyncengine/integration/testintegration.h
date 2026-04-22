@@ -27,6 +27,7 @@
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/remotetemporarydirectory.h"
 #include "utility/timerutility.h"
+#include "info/nodeinfo.h"
 
 using namespace CppUnit;
 
@@ -124,18 +125,9 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
                                  std::chrono::milliseconds minWaitTime = std::chrono::milliseconds(3000)) const;
         void logStep(const std::string &str);
 
-        struct RemoteFileInfo {
-                NodeId id;
-                NodeId parentId;
-                SyncTime modificationTime{0};
-                SyncTime creationTime{0};
-                int64_t size{0};
-                NodeType type = NodeType::Unknown;
-
-                bool isValid() const { return !id.empty(); }
-        };
-        RemoteFileInfo getRemoteFileInfoByName(int driveDbId, const NodeId &parentId, const SyncName &name) const;
-        int64_t countItemsInRemoteDir(int driveDbId, const NodeId &parentId) const;
+        [[nodiscard]] NodeInfo getRemoteFileInfoByName(DriveDbId driveDbId, const RemoteNodeId &parentId,
+                                                       const SyncName &name) const;
+        static Count countItemsInRemoteDir(DriveDbId driveDbId, const RemoteNodeId &parentId);
 
         log4cplus::Logger _logger;
         std::shared_ptr<SyncPal> _syncPal = nullptr;
