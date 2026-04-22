@@ -33,11 +33,11 @@ namespace KDC {
 class UploadJob : public AbstractTokenNetworkJob {
     public:
         // Using file name and parent ID, for file creation only.
-        UploadJob(DriveDbId driveDbId, const SyncPath &absoluteFilePath, const SyncName &filename,
-                  const NodeId &remoteParentDirId, SyncTime creationTime, SyncTime modificationTime);
+        UploadJob(const DriveDbId driveDbId, const SyncPath &absoluteFilePath, const SyncName &filename,
+                  const RemoteNodeId &remoteParentDirId, SyncTime creationTime, SyncTime modificationTime);
         // Using file ID, for file edition only.
-        UploadJob(DriveDbId driveDbId, const SyncPath &absoluteFilePath, const NodeId &fileId,
-                  SyncTime modificationTime, int64_t remoteSize = -1);
+        UploadJob(const DriveDbId driveDbId, const SyncPath &absoluteFilePath, const RemoteNodeId &fileId,
+                  SyncTime modificationTime, const int64_t remoteSize = -1);
 
         const NodeId &nodeId() const { return _nodeIdOut; }
         SyncTime creationTime() const { return _creationTimeOut; }

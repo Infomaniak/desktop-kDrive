@@ -59,8 +59,8 @@ UploadJob::UploadJob(const DriveDbId driveDbId, const SyncPath &absoluteFilePath
 }
 
 UploadJob::UploadJob(const DriveDbId driveDbId, const SyncPath &absoluteFilePath,
-                     const NodeId &fileId, const SyncTime modificationTime, const int64_t remoteSize) :
-    UploadJob(driveDbId, absoluteFilePath, SyncName(), "", 0, modificationTime) {
+                     const RemoteNodeId &fileId, const SyncTime modificationTime, const int64_t remoteSize) :
+    UploadJob(driveDbId, absoluteFilePath, SyncName{}, RemoteNodeId{}, SyncTime{0}, modificationTime) {
     _fileId = fileId;
     _remoteSize = remoteSize;
 
