@@ -15,9 +15,9 @@ namespace Infomaniak.kDrive.CustomControls
             InitializeComponent();
         }
 
-        private Visibility TitleBarContentVisibility(Sync? selectedSync, bool isUpdateRequired)
+        private Visibility TitleBarContentVisibility(bool isModelInitialized, Sync? selectedSync, bool isUpdateRequired)
         {
-            if (isUpdateRequired)
+            if (!isModelInitialized || isUpdateRequired)
                 return Visibility.Collapsed;
             if (selectedSync is null)
                 return Visibility.Collapsed;
