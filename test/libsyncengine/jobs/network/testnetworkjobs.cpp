@@ -1711,7 +1711,7 @@ void TestNetworkJobs::testGetAllFilesInDirectory() {
     CPPUNIT_ASSERT(nodeInfo3.path().endsWith(nodeInfo3.name()));
     CPPUNIT_ASSERT(!nodeInfo3.nodeId().isEmpty());
     CPPUNIT_ASSERT(nodeInfo3.parentNodeId() == parentNodeId);
-    CPPUNIT_ASSERT_EQUAL(qint64{-1}, nodeInfo3.size());
+    CPPUNIT_ASSERT_EQUAL(qint64{5}, nodeInfo3.size());
 
     // The backend issues an HTTP error 422 if `limit` is less than 5.
     listFilesInDirectoryJob.setListingConf({.withPath = true, .dirOnly = false, .limit = 1});
