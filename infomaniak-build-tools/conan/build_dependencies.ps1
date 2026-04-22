@@ -207,7 +207,6 @@ if (-not (Test-Path -Path "infomaniak-build-tools/conan" -PathType Container))
 
 $ConanRemoteBaseFolder = Join-Path $CurrentDir "infomaniak-build-tools/conan"
 $LocalRemoteName = "localrecipes"
-$RecipesFolder = Join-Path $ConanRemoteBaseFolder "recipes"
 
 Log "Current conan home configuration:"
 & $ConanExe config home
