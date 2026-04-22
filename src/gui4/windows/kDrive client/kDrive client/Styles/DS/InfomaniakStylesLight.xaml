@@ -32,7 +32,7 @@
     <Color x:Key="colors.status.medium.information">#1EC6FF</Color>
 
     <!-- Documents -->
-    <x:String x:Key="Infomaniak.DS.Icons.Documents.file3d">ms-appx:///Assets/DS/Icons/Documents/file3d.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Documents.file-3d">ms-appx:///Assets/DS/Icons/Documents/file-3d.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Documents.file-audio">ms-appx:///Assets/DS/Icons/Documents/file-audio.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Documents.file-chart">ms-appx:///Assets/DS/Icons/Documents/file-chart.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Documents.file-code">ms-appx:///Assets/DS/Icons/Documents/file-code.svg</x:String>

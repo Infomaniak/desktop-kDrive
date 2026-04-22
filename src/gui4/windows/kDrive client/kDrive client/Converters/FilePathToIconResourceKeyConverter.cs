@@ -28,7 +28,7 @@ namespace Infomaniak.kDrive.Converters
             {
                 // 3D files
                 ".stl" or ".obj" or ".fbx" or ".dae" or ".3ds" or ".blend" or ".glb" or ".gltf" or ".ply" or ".x3d"
-                    => "Infomaniak.DS.Icons.Documents.file3d",
+                    => "Infomaniak.DS.Icons.Documents.file-3d",
 
                 // Audio files
                 ".mp3" or ".wav" or ".flac" or ".aac" or ".ogg" or ".wma" or ".m4a" or ".aiff" or ".mid" or ".midi"
