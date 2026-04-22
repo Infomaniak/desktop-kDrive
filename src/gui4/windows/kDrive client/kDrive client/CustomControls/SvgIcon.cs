@@ -27,9 +27,6 @@ namespace Infomaniak.kDrive.CustomControls
             // Track Loaded state
             Loaded += OnLoaded;
             Unloaded += OnUnloaded;
-
-            // Subscribe to theme changes
-            ActualThemeChanged += OnThemeChanged;
         }
 
         public Uri? UriSource
@@ -102,6 +99,9 @@ namespace Infomaniak.kDrive.CustomControls
         {
             _isLoaded = true;
             ScheduleRefresh();
+
+            // Subscribe to theme changes
+            ActualThemeChanged += OnThemeChanged;
         }
 
         private void OnUnloaded(object sender, RoutedEventArgs e)
