@@ -31,6 +31,7 @@ final class MainWindowController: NSWindowController {
     @LazyInjectService private var router: MainWindowRouter
     @LazyInjectService private var xpcConnectionProvider: XPCConnectionProvider
     @LazyInjectService private var coherentCache: CoherentCache
+    @LazyInjectService private var cacheObservable: CoherentCacheObservable
 
     // periphery:ignore - We keep a strong reference on the viewController being presented
     private var viewController: NSViewController?
@@ -53,6 +54,7 @@ final class MainWindowController: NSWindowController {
 
         observeRouter()
         observeXPConnectionState()
+        observeUsersCache()
     }
 
     @available(*, unavailable)
@@ -71,6 +73,21 @@ final class MainWindowController: NSWindowController {
         xpcConnectionProvider.guiConnectionStatePublisher
             .receiveOnMain(store: &bindStore) { [weak self] state in
                 self?.navigateAfterPreloading(state: state)
+            }
+    }
+
+    private func observeUsersCache() {
+        cacheObservable.usersPublisher
+            .receiveOnMain(store: &bindStore) { [weak self] _ in
+                guard let self = self else { return }
+                guard case .mainWindow = router.currentRoute else {
+                    return
+                }
+
+                Task {
+                    let route = await self.guessBestRouteWhenXPCIsConnected()
+                    self.router.navigate(to: route)
+                }
             }
     }
 
