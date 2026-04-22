@@ -60,8 +60,8 @@ UploadJob::UploadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, 
 }
 
 UploadJob::UploadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, const SyncPath &absoluteFilePath,
-                     const NodeId &fileId, const SyncTime modificationTime, const int64_t remoteSize) :
-    UploadJob(vfs, driveDbId, absoluteFilePath, SyncName(), "", 0, modificationTime) {
+                     const RemoteNodeId &fileId, const SyncTime modificationTime, const int64_t remoteSize) :
+    UploadJob(vfs, driveDbId, absoluteFilePath, SyncName{}, RemoteNodeId{}, SyncTime{0}, modificationTime) {
     _fileId = fileId;
     _remoteSize = remoteSize;
 
