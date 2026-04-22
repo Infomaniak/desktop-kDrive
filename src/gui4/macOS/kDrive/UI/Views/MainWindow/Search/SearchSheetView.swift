@@ -31,6 +31,7 @@ struct SearchSheetView: View {
             Button("Close") {
                 dismiss()
             }
+            .keyboardShortcut(.cancelAction)
             .buttonStyle(.borderedProminent)
         }
         .padding(AppPadding.page)
