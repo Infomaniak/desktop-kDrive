@@ -939,7 +939,8 @@ void TestIntegration::waitForSyncToBeIdle(
     const auto timeOutDuration = minutes(2);
     const TimerUtility timeoutTimer;
 
-    // Wait for end of sync (A sync is considered ended when it stay in Idle for more than 3s)
+    // Wait for the completion of a sync.
+    // A sync is considered complete if it remains `Idle` for more than 3s.
     bool ended = false;
     while (!ended) {
         CPPUNIT_ASSERT_MESSAGE(srcLoc.toString(), timeoutTimer.elapsed<minutes>() < timeOutDuration);

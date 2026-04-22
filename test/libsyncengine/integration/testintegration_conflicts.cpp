@@ -122,18 +122,20 @@ void TestIntegration::testEditEditPseudoConflict() {
 void TestIntegration::testEditEditConflict() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
+    // Check that the creation of the remote file with ID `_testFileRemoteId` has been propagated on the local side.
+    SyncPath relativePath;
+    bool ignore = false;
+    (void) _syncPal->_remoteFSObserverWorker->liveSnapshot().path(_testFileRemoteId, relativePath, ignore);
+    const SyncPath absoluteLocalPath = _syncPal->localPath() / relativePath;
+    CPPUNIT_ASSERT(std::filesystem::exists(absoluteLocalPath));
+
     // Edit remote file.
     int64_t creationTime = 0;
     int64_t modificationTime = 0;
     testhelpers::editRemoteFile(_driveDbId, _testFileRemoteId, &creationTime, &modificationTime);
 
     // Edit local file.
-    SyncPath relativePath;
-    bool ignore = false;
-    (void) _syncPal->_remoteFSObserverWorker->liveSnapshot().path(_testFileRemoteId, relativePath, ignore);
-    const SyncPath absoluteLocalPath = _syncPal->localPath() / relativePath;
     testhelpers::generateOrEditTestFile(absoluteLocalPath);
-
     (void) IoHelper::setFileDates(absoluteLocalPath, creationTime, modificationTime, false);
 
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
