@@ -37,9 +37,10 @@ void GetFilesInDirectoryJob::translateRemoteDirIdFromV2ToV3(const TranslationMod
     }
 }
 
-GetFilesInDirectoryJob::GetFilesInDirectoryJob(const UserDbId userDbId, const DriveId driveId, RemoteNodeId remoteDirId,
-                                               std::string cursorInput,
-                                               const TranslationMode translationMode /* = TranslationMode::V2ToV3 */) :
+
+GetFilesInDirectoryJob::GetFilesInDirectoryJob(const UserDbId userDbId, const DriveId driveId, RemoteNodeId fileId,
+                                               Cursor cursorInput,
+                                               const TranslationMode translationMode /* = TranslationMode:None */) :
     AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, driveId),
     _remoteDirId(std::move(remoteDirId)),
     _cursorInput(std::move(cursorInput)) {
@@ -48,8 +49,9 @@ GetFilesInDirectoryJob::GetFilesInDirectoryJob(const UserDbId userDbId, const Dr
     translateRemoteDirIdFromV2ToV3(translationMode);
 }
 
-GetFilesInDirectoryJob::GetFilesInDirectoryJob(const DriveDbId driveDbId, RemoteNodeId remoteDirId, std::string cursorInput,
-                                               const TranslationMode translationMode /* = TranslationMode::V2ToV3 */) :
+
+GetFilesInDirectoryJob::GetFilesInDirectoryJob(const DriveDbId driveDbId, RemoteNodeId fileId, Cursor cursorInput,
+                                               const TranslationMode translationMode /* = TranslationMode::None */) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
     _remoteDirId(std::move(remoteDirId)),
     _cursorInput(std::move(cursorInput)) {
@@ -134,9 +136,19 @@ ExitInfo GetFilesInDirectoryJob::deserializeDataArray() {
         if (!JsonParserUtility::extractValue(obj, parentIdKey, parentId))
             return {ExitCode::BackError, ExitCause::MissingReplyData};
 
-        NodeInfo nodeInfo(QString::fromStdString(nodeId), SyncName2QStr(name),
-                          -1, // Size is not set as it can be long to calculate.
-                          parentId.c_str(), modifiedTime, SyncName2QStr(path));
+
+        std::string typeString;
+        if (!JsonParserUtility::extractValue(obj, typeKey, typeString)) {
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
+        }
+
+        qint64 fileSize = -1;
+        if (typeString != dirKey && !JsonParserUtility::extractValue(obj, sizeKey, fileSize, mandatory)) {
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
+        }
+
+        NodeInfo nodeInfo(QString::fromStdString(nodeId), SyncName2QStr(name), fileSize, parentId.c_str(), modifiedTime,
+                          SyncName2QStr(path));
         nodeInfo.setAccessDenied(accessDenied);
 
         (void) _remoteNodeInfoList.emplace_back(std::move(nodeInfo));
@@ -148,7 +160,7 @@ ExitInfo GetFilesInDirectoryJob::deserializeDataArray() {
 ExitInfo GetFilesInDirectoryJob::v2RemoteNodeInfoList(RemoteNodeInfoList &remoteNodeInfoList) const {
     // Data is already deserialized by handleResponse().
     remoteNodeInfoList = _remoteNodeInfoList;
-    return ApiTranslator::translateV3ToV2(userDbId(), driveDbId(), remoteNodeInfoList);
+    return ApiTranslator::translateV3ToV2(userDbId(), driveId(), remoteNodeInfoList);
 }
 
 
