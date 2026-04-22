@@ -45,8 +45,8 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBaseWithParmsDb 
         CPPUNIT_TEST(testGetAvatar);
         CPPUNIT_TEST(testGetDriveList);
         CPPUNIT_TEST(testGetFileInfo);
-        CPPUNIT_TEST(testGetFileList);
         CPPUNIT_TEST(testCheckHashMatch);
+        CPPUNIT_TEST(testGetFilesInDirectory);
         CPPUNIT_TEST(testGetFileListWithCursor);
         CPPUNIT_TEST(testFullFileListWithCursorCsv);
         CPPUNIT_TEST(testFullFileListWithCursorCsvZip);
@@ -92,8 +92,12 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBaseWithParmsDb 
         void testGetAvatar();
         void testGetDriveList();
         void testGetFileInfo();
+<<<<<<< HEAD
         void testGetFileList();
         void testCheckHashMatch();
+=======
+        void testGetFilesInDirectory();
+>>>>>>> 8656c9004 (refactor(get-file-list-job): Removes the version v2 of GetFileListJob instances from tests and CMakeLists.txt)
         void testGetFileListWithCursor();
         void testFullFileListWithCursorCsv();
         void testFullFileListWithCursorCsvZip();
@@ -127,6 +131,8 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBaseWithParmsDb 
 
     private:
         bool createTestFiles();
+        bool existsInRemoteDirectory(const SyncName &fileName, const RemoteNodeId &remoteDirId,
+                                     const NodeType nodeType = NodeType::File);
 
         void testUpload(SyncTime creationTimeIn, SyncTime modificationTimeIn, SyncTime &creationTimeOut,
                         SyncTime &modificationTimeOut);
