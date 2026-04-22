@@ -53,12 +53,12 @@ void TestIntegration::testLocalChanges() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     auto remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, _remoteSyncDir.id(), filePath.filename());
-    CPPUNIT_ASSERT(remoteTestFileInfo.isValid());
+    CPPUNIT_ASSERT(!remoteTestFileInfo.nodeId().isEmpty());
 
     const auto remoteTestDirInfo = getRemoteFileInfoByName(_driveDbId, _remoteSyncDir.id(), subDirPath.filename());
-    CPPUNIT_ASSERT(remoteTestDirInfo.isValid());
-    CPPUNIT_ASSERT_EQUAL(fileStat.size, remoteTestFileInfo.size);
-    CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, remoteTestFileInfo.modificationTime);
+    CPPUNIT_ASSERT(!remoteTestDirInfo.nodeId().isEmpty());
+    CPPUNIT_ASSERT_EQUAL(fileStat.size, remoteTestFileInfo.size());
+    CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, remoteTestFileInfo.modtime());
     logStep("test create local file");
 
     // Generate an edit operation.
@@ -68,10 +68,10 @@ void TestIntegration::testLocalChanges() {
 
     const auto prevRemoteTestFileInfo = remoteTestFileInfo;
     remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, _remoteSyncDir.id(), filePath.filename());
-    CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, remoteTestFileInfo.modificationTime);
-    CPPUNIT_ASSERT_LESS(remoteTestFileInfo.modificationTime, prevRemoteTestFileInfo.modificationTime);
-    CPPUNIT_ASSERT_EQUAL(fileStat.size, remoteTestFileInfo.size);
-    CPPUNIT_ASSERT_LESS(remoteTestFileInfo.size, prevRemoteTestFileInfo.size);
+    CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, remoteTestFileInfo.modtime());
+    CPPUNIT_ASSERT_LESS(remoteTestFileInfo.modtime(), prevRemoteTestFileInfo.modtime());
+    CPPUNIT_ASSERT_EQUAL(fileStat.size, remoteTestFileInfo.size());
+    CPPUNIT_ASSERT_LESS(remoteTestFileInfo.size(), prevRemoteTestFileInfo.size());
     logStep("test edit local file");
 
     // Generate a move operation.
@@ -83,9 +83,9 @@ void TestIntegration::testLocalChanges() {
     }
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
-    remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, remoteTestDirInfo.id, newName);
-    CPPUNIT_ASSERT(remoteTestFileInfo.isValid());
-    CPPUNIT_ASSERT_EQUAL(remoteTestDirInfo.id, remoteTestFileInfo.parentId);
+    remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, remoteTestDirInfo.nodeId().toStdString(), newName);
+    CPPUNIT_ASSERT(!remoteTestFileInfo.nodeId().isEmpty());
+    CPPUNIT_ASSERT_EQUAL(remoteTestDirInfo.nodeId().toStdString(), remoteTestFileInfo.parentNodeId().toStdString());
 
     filePath = destinationPath;
     logStep("test move local file");
@@ -97,8 +97,8 @@ void TestIntegration::testLocalChanges() {
     }
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
-    remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, remoteTestDirInfo.id, filePath.filename());
-    CPPUNIT_ASSERT(!remoteTestFileInfo.isValid());
+    remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, remoteTestDirInfo.nodeId().toStdString(), filePath.filename());
+    CPPUNIT_ASSERT(remoteTestFileInfo.nodeId().isEmpty());
 
 #if defined(KD_LINUX)
     CPPUNIT_ASSERT(!testhelpers::hasTrashInfo() || testhelpers::isInTrash(subDirPath));
@@ -207,7 +207,7 @@ void TestIntegration::testSimultaneousChanges() {
 
     CPPUNIT_ASSERT(std::filesystem::exists(remoteFilePath));
     const auto remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, _remoteSyncDir.id(), localFilePath.filename());
-    CPPUNIT_ASSERT(remoteTestFileInfo.isValid());
+    CPPUNIT_ASSERT(!remoteTestFileInfo.nodeId().isEmpty());
     logStep("testSimultaneousChanges");
 }
 
