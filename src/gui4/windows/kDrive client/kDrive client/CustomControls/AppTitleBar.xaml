@@ -12,7 +12,9 @@
           Title="kDrive"
           Subtitle="Beta"
           HorizontalContentAlignment="Stretch"
-          IsPaneToggleButtonVisible="False">
+          IsPaneToggleButtonVisible="False"
+          IsBackButtonVisible="True"
+          BackRequested="TitleBar_BackRequested">
 
     <TitleBar.Resources>
         <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />

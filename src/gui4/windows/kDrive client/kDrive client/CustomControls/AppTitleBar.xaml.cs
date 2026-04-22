@@ -10,6 +10,8 @@ namespace Infomaniak.kDrive.CustomControls
         public AppModel ViewModel { get; } =
            App.ServiceProvider.GetRequiredService<AppModel>();
 
+        private Frame? Frame => ((App.Current as App)?.CurrentWindow as MainWindow)?.AppNavView?.Frame ?? null;
+
         public AppTitleBar()
         {
             InitializeComponent();
@@ -23,6 +25,12 @@ namespace Infomaniak.kDrive.CustomControls
                 return Visibility.Collapsed;
 
             return Visibility.Visible;
+        }
+
+        private void TitleBar_BackRequested(TitleBar sender, object args)
+        {
+            if (Frame is not null && Frame.CanGoBack)
+                Frame?.GoBack();
         }
     }
 }
