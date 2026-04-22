@@ -6,7 +6,7 @@
   Locale: fr, French
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 16 Apr 2026 16:32:33 +0200 
+  Exported at: Wed, 22 Apr 2026 10:45:05 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -150,8 +150,8 @@ Vous pouvez accéder à vos synchronisations avancées à partir du sélecteur d
     <value>Disponibles hors ligne</value> 
   </data> 
   <data name="availableOfflineDescription" xml:space="preserve"> 
-    <value>Vos fichiers sont copiés sur votre ordinateur.
-Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value> 
+    <value>Vos fichiers locaux restent accessibles.
+La synchronisation reprendra automatiquement  dès que vous serez reconnecté.</value> 
   </data> 
   <data name="backErrorDriveAsleepDescription" xml:space="preserve"> 
     <value>Vous pouvez le réveiller à partir de l’interface web.</value> 
@@ -440,7 +440,6 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value>
   </data> 
   <data name="dataManagementDescription" xml:space="preserve"> 
     <value>Vous pouvez personnaliser les données d’utilisation et opérationnelles qui sont récupérées par Infomaniak pour corriger des bugs et faire évoluer l’application. Les deux outils utilisés sont hébergés et gérés exclusivement chez nous.
-
 
 Le code source de cette application peut être vérifié, les informations récoltées sont anonymes et vos informations personnelles restent strictement confidentielles et ne sont jamais partagées avec des tiers.</value> 
   </data> 
