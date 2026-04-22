@@ -35,7 +35,7 @@ class ApiTranslator {
                                                       RemoteNodeInfoList &v3RemoteNodeInfoList);
 
         [[nodiscard]] static ExitInfo getSpecialFolderRemoteId(UserDbId userDbId, DriveId driveId, SpecialFolder specialFolder,
-                                                 RemoteNodeId &folderRemoteId);
+                                                               RemoteNodeId &folderRemoteId);
         [[nodiscard]] static ExitInfo getDriveDbId(DriveId driveId, DriveDbId &driveDbId);
         [[nodiscard]] static RemoteNodeId v2RootFolderRemoteId();
 
@@ -44,7 +44,6 @@ class ApiTranslator {
     private:
         [[nodiscard]] static bool getDriveDbIds(DriveDbIdMap &driveIdMap);
         [[nodiscard]] static ExitInfo updateCache(UserDbId userDbId, DriveId driveId);
-
 
         using RemoteNodeIdCacheMap = std::unordered_map<DriveId, RemoteNodeId>;
         using RemoteSpecialFoldersCacheMap = std::unordered_map<SpecialFolder, RemoteNodeIdCacheMap>;
