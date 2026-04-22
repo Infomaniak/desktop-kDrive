@@ -43,6 +43,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         private int _inBufferJsonBalance = 0;
         private readonly ConcurrentDictionary<long, TaskCompletionSource<CommData>> _pendingRequests = [];
         private bool _stopRequested = false;
+        private const string _host = "127.0.0.1";
         private long NextId
         {
             get
@@ -92,10 +93,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     {
                         int port = int.Parse(File.ReadAllText(commPortFilePath).Trim());
 
-                        Logger.Log(Logger.Level.Info, $"Attempting to connect to localhost:{port}");
+                        Logger.Log(Logger.Level.Info, $"Attempting to connect to {_host}:{port}");
                         _client?.Dispose();
                         _client = new TcpClient();
-                        await _client.ConnectAsync("localhost", port).ConfigureAwait(false);
+                        await _client.ConnectAsync(_host, port).ConfigureAwait(false);
                         Logger.Log(Logger.Level.Info, "Connected to server.");
                     }
                     catch (SocketException ex)
