@@ -49,7 +49,7 @@
 
 param(
     [Parameter(Mandatory = $false, Position = 0, HelpMessage = "Debug, Release or RelWithDebInfo")]
-    [ValidateSet("Debug","Release", "RelWithDebInfo")]
+    [ValidateSet("Debug", "Release", "RelWithDebInfo")]
     [string]$BuildType = "Debug",
 
     [Parameter(Mandatory = $false, HelpMessage = "Show help message")]
@@ -74,49 +74,74 @@ param(
     [switch]$Update
 )
 
-function Show-Help { Write-Host "Usage: $($MyInvocation.MyCommand.Name) [-Help] [Debug|Release|RelWithDebInfo] [-CI] [-OutputDir <path>] [-MakeRelease] [-CleanCache] [-Update]" ; exit 0 }
-if ($Help) { Show-Help }
+function Show-Help
+{
+    Write-Host "Usage: $( $MyInvocation.MyCommand.Name ) [-Help] [Debug|Release|RelWithDebInfo] [-CI] [-OutputDir <path>] [-MakeRelease] [-CleanCache] [-Update]"; exit 0
+}
+if ($Help)
+{
+    Show-Help
+}
 
 $ErrorActionPreference = "Stop"
 
-function Log { Write-Host "[INFO] $($args -join ' ')" }
-function Err { Write-Error "[ERROR] $($args -join ' ')" ; exit 1 }
+function Log
+{
+    Write-Host "[INFO] $( $args -join ' ' )"
+}
+function Err
+{
+    Write-Error "[ERROR] $( $args -join ' ' )"; exit 1
+}
 
 # Determine repository root and default output directory
 $CurrentDir = (Get-Location).Path
 $DefaultOutputDir = Join-Path $CurrentDir "build-windows"
 
 # If a custom output directory is provided, use it
-if ($OutputDir) {
+if ($OutputDir)
+{
     Log "Using custom output directory: $OutputDir"
-} else {
+}
+else
+{
     $OutputDir = $DefaultOutputDir
     Log "No custom output directory provided. Using default: $OutputDir"
 }
 
 # Remove previous CMakeUserPresets.json if it exists
-if (Test-Path -Path ".\CMakeUserPresets.json") {
+if (Test-Path -Path ".\CMakeUserPresets.json")
+{
     Log "Removing previous CMakeUserPresets.json file."
     Remove-Item -Path ".\CMakeUserPresets.json" -Force
 }
 
 
 
-function Get-ConanExePath {
-    try {
+function Get-ConanExePath
+{
+    try
+    {
         $cmd = Get-Command conan.exe -ErrorAction Stop
-        Log "Conan executable found at: $($cmd.Path)"
+        Log "Conan executable found at: $( $cmd.Path )"
         return $cmd.Path
-    } catch { }
+    }
+    catch
+    {
+    }
 
-    try {
+    try
+    {
         $pythonCmd = Get-Command python -ErrorAction Stop
 
         $venvCheck = & $pythonCmd -c 'import sys; print(sys.prefix != sys.base_prefix)'
-        if($venvCheck.Trim().ToLower() -ne "true") {
+        if ($venvCheck.Trim().ToLower() -ne "true")
+        {
             Write-Warning "Python virtual environment not activated. It is recommended to install conan with a virtual env."
         }
-    } catch {
+    }
+    catch
+    {
         Err "Interpreter 'python' not found. Please install Python 3 and/or add it to the PATH."
         return $null
     }
@@ -133,9 +158,10 @@ exe = os.path.join(prefix, 'Scripts', 'conan.exe')
 print(exe)
 "@
 
-    $rawPath = & $pythonCmd.Path -c $pythonCode 2>$null
+    $rawPath = & $pythonCmd.Path -c $pythonCode 2> $null
     $exePath = $rawPath.Trim()
-    if ($LASTEXITCODE -ne 0 -or -not (Test-Path $exePath)) {
+    if ($LASTEXITCODE -ne 0 -or -not (Test-Path $exePath))
+    {
         Err "Unable to locate 'conan.exe' via Python."
         return $null
     }
@@ -145,7 +171,8 @@ print(exe)
 }
 
 # If we are running in CI mode, we activate the python virtual environment.
-if ($CI) {
+if ($CI)
+{
     # Activate the python virtual environment.
     & "C:\Program Files\Python313\.venv\Scripts\activate.ps1"
 
@@ -153,16 +180,18 @@ if ($CI) {
     & "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
     Log "CI mode enabled."
     $env:SSL_CERT_FILE = (& python -m certifi).Trim() # Because of the CI User on Windows, we need to set the SSL_CERT_FILE environment variable to the certifi bundle.
-    Log "SSL_CERT_FILE set to $($env:SSL_CERT_FILE)"
+    Log "SSL_CERT_FILE set to $( $env:SSL_CERT_FILE )"
 }
 
 # Locate Conan executable
 $ConanExe = Get-ConanExePath
-if (-not $ConanExe) {
+if (-not $ConanExe)
+{
     Err "Conan executable not found. Please ensure Conan is installed and accessible."
 }
 
-function Has-Profile {
+function Has-Profile
+{
     param(
         [string]$ProfileName
     )
@@ -171,31 +200,38 @@ function Has-Profile {
 }
 
 
-if (-not (Test-Path -Path "infomaniak-build-tools/conan" -PathType Container)) {
+if (-not (Test-Path -Path "infomaniak-build-tools/conan" -PathType Container))
+{
     Err "Please run this script from the repository root."
 }
 
 $ConanRemoteBaseFolder = Join-Path $CurrentDir "infomaniak-build-tools/conan"
-$LocalRemoteName       = "localrecipes"
-$RecipesFolder         = Join-Path $ConanRemoteBaseFolder "recipes"
+$LocalRemoteName = "localrecipes"
+$RecipesFolder = Join-Path $ConanRemoteBaseFolder "recipes"
 
 Log "Current conan home configuration:"
 & $ConanExe config home
 
-if ($MakeRelease) {
+if ($MakeRelease)
+{
     $ConanProfile = "infomaniak_release"
-    if (-not (Has-Profile -ProfileName $ConanProfile)) {
+    if (-not (Has-Profile -ProfileName $ConanProfile))
+    {
         Err "Profile '$ConanProfile' does not exist. Please create it."
     }
     $profilePath = & $ConanExe profile path $ConanProfile
-    if (-not (Get-Content $profilePath | Select-String -Pattern 'build_type=(Release|RelWithDebInfo)')) {
+    if (-not (Get-Content $profilePath | Select-String -Pattern 'build_type=(Release|RelWithDebInfo)'))
+    {
         Err "Profile '$ConanProfile' must set build_type to Release or RelWithDebInfo."
     }
-    if (Get-Content $profilePath | Select-String -Pattern 'tools.cmake.cmaketoolchain:user_toolchain') {
+    if (Get-Content $profilePath | Select-String -Pattern 'tools.cmake.cmaketoolchain:user_toolchain')
+    {
         Err "Profile '$ConanProfile' must not set tools.cmake.cmaketoolchain:user_toolchain."
     }
     Log "Using '$ConanProfile' profile for Conan."
-} else {
+}
+else
+{
     $ConanProfile = "default"
     Log "Using '$ConanProfile' profile for Conan."
 }
@@ -203,51 +239,65 @@ if ($MakeRelease) {
 # Define a Conan "Remote" pointing at the on-disk recipe folder.
 $NormalizeRemoteUrl = {
     param([string]$Url)
-    if ([string]::IsNullOrWhiteSpace($Url)) {
+    if ( [string]::IsNullOrWhiteSpace($Url))
+    {
         return ""
     }
     return ($Url -replace '\\', '/').TrimEnd('/')
 }
 
-$ExpectedRemoteUrl = try {
+$ExpectedRemoteUrl = try
+{
     (Resolve-Path -Path $ConanRemoteBaseFolder).Path
-} catch {
+}
+catch
+{
     $ConanRemoteBaseFolder
 }
 $ExpectedRemoteUrlNormalized = & $NormalizeRemoteUrl $ExpectedRemoteUrl
 
 $remotesJson = & $ConanExe remote list --format=json
-if ($LASTEXITCODE -ne 0) {
+if ($LASTEXITCODE -ne 0)
+{
     Err "Failed to list Conan remotes."
 }
 
-try {
+try
+{
     $remotes = $remotesJson | ConvertFrom-Json
-} catch {
+}
+catch
+{
     Err "Failed to parse Conan remotes JSON output."
 }
 
 $matchingRemote = $remotes | Where-Object {
     $_.name -eq $LocalRemoteName -and
-    $_.enabled -eq $true -and
-    (& $NormalizeRemoteUrl $_.url) -eq $ExpectedRemoteUrlNormalized
+            $_.enabled -eq $true -and
+            (& $NormalizeRemoteUrl $_.url) -eq $ExpectedRemoteUrlNormalized
 } | Select-Object -First 1
 
-if ($matchingRemote) {
+if ($matchingRemote)
+{
     Log "Conan remote '$LocalRemoteName' already exists, has the expected URL and is enabled."
-} else {
+}
+else
+{
     $remoteWithSameName = $remotes | Where-Object { $_.name -eq $LocalRemoteName } | Select-Object -First 1
-    if ($remoteWithSameName) {
+    if ($remoteWithSameName)
+    {
         Log "Removing Conan remote '$LocalRemoteName' because URL/enabled state does not match the expected configuration."
         & $ConanExe remote remove $LocalRemoteName
-        if ($LASTEXITCODE -ne 0) {
+        if ($LASTEXITCODE -ne 0)
+        {
             Err "Failed to remove existing Conan remote '$LocalRemoteName'."
         }
     }
 
     Log "Adding Conan remote '$LocalRemoteName' at '$ConanRemoteBaseFolder'."
     & $ConanExe remote add $LocalRemoteName $ConanRemoteBaseFolder
-    if ($LASTEXITCODE -ne 0) {
+    if ($LASTEXITCODE -ne 0)
+    {
         Err "Failed to add local Conan remote."
     }
 }
@@ -265,18 +315,20 @@ $conanInstallArgs = @(
     "-r", $LocalRemoteName,
     "-r", "conancenter",
     "-c", "tools.cmake.cmaketoolchain:generator=Ninja",
-    "-c", "tools.env.virtualenv:powershell=powershell",
-    "-o", "qt/*:qt_login_type=$qt_login_type"
+    "-c", "tools.env.virtualenv:powershell=powershell"
 )
-if ($CI) {
+if ($CI)
+{
     $conanInstallArgs += "-o"
     $conanInstallArgs += "qt/*:qt_login_type=envvars"
 }
-if ($Update) {
+if ($Update)
+{
     $conanInstallArgs += "--update"
 }
 & $ConanExe @conanInstallArgs
-if ($LASTEXITCODE -ne 0) {
+if ($LASTEXITCODE -ne 0)
+{
     Err "Failed to install Conan dependencies."
 }
 
@@ -289,20 +341,22 @@ $newUserPath = ($currentUserPath -split ';' | Where-Object { $_ -notlike "*\.con
 [System.Environment]::SetEnvironmentVariable("Path", $newUserPath, "User")
 Log "previous conan path entries removed."
 
-if ($CleanCache) {
+if ($CleanCache)
+{
     Log "Cleaning Conan cache to save disk space..."
     & $ConanExe cache clean --source --build --temp "*"
     Log "Conan cache cleaned."
 }
 
 # Update user environment variables if requested (programs will need to be restarted to see the changes)
-if ($UpdateEnvironment) {
+if ($UpdateEnvironment)
+{
     Log "Adding new conan path to user Path environment variable..."
     $currentUserPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
     $allowedNames = @("build", "bin")
 
     $conanRoot = Join-Path $env:USERPROFILE ".conan2\p"
-        $conanBinPaths = Get-ChildItem -Path $conanRoot -Recurse -Include *.exe, *.dll | ForEach-Object { $_.Directory.FullName } | Sort-Object -Unique
+    $conanBinPaths = Get-ChildItem -Path $conanRoot -Recurse -Include *.exe, *.dll | ForEach-Object { $_.Directory.FullName } | Sort-Object -Unique
 
     # Get matching directories
     $conanBinPaths = Get-ChildItem -Path $conanRoot -Recurse -Include *.exe, *.dll | Sort-Object -Unique | Where-Object {
@@ -310,22 +364,25 @@ if ($UpdateEnvironment) {
         $parent = $_.Directory.Parent.Name
         $grandparent = $_.Directory.Parent.Parent.Name
         $allowedNames -contains $current -or
-        $allowedNames -contains $parent -or
-        $allowedNames -contains $grandparent
+                $allowedNames -contains $parent -or
+                $allowedNames -contains $grandparent
     } | ForEach-Object { $_.Directory.FullName } | Sort-Object -Unique
 
-    foreach ($path in $conanBinPaths) {
-        if (-not ($newUserPath -split ';' | Where-Object { $_ -eq $path })) {
+    foreach ($path in $conanBinPaths)
+    {
+        if (-not ($newUserPath -split ';' | Where-Object { $_ -eq $path }))
+        {
             Log "Adding '$path' to user Path."
             $newUserPath += ";$path"
         }
     }
-   [System.Environment]::SetEnvironmentVariable("Path", $newUserPath, "User")
-   Log "New user Path set to: $newUserPath"
-   Log "User Path environment variable updated. Please restart your programs to apply the changes."
+    [System.Environment]::SetEnvironmentVariable("Path", $newUserPath, "User")
+    Log "New user Path set to: $newUserPath"
+    Log "User Path environment variable updated. Please restart your programs to apply the changes."
 }
 
-if ($CI)  {
+if ($CI)
+{
     # Exit the python virtual environment.
     deactivate
 }
