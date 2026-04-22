@@ -27,6 +27,7 @@
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/remotetemporarydirectory.h"
 #include "utility/timerutility.h"
+#include "info/nodeinfo.h"
 
 #include <source_location>
 
@@ -167,6 +168,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         RemoteFileInfo getRemoteFileInfoByPath(DriveDbId driveDbId, const NodeId &rootParentId,
                                                const SyncPath &relativePath) const;
         int64_t countItemsInRemoteDir(DriveDbId driveDbId, const NodeId &parentId) const;
+        static Count countItemsInRemoteDir(DriveDbId driveDbId, const RemoteNodeId &parentId);
 
         log4cplus::Logger _logger;
         std::shared_ptr<MockSyncPal> _syncPal = nullptr;
