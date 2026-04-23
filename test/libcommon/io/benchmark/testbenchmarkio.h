@@ -99,7 +99,7 @@ bool filesystem_exists(const std::string &path);
 bool win32_getfileattributes_a(const std::string &path);
 bool win32_getfileattributes_w(const std::string &path);
 bool crt_stat(const std::string &path);
-bool crt_access(const std::string &path);
+// bool crt_access(const std::string &path); // Removed: not a real existence check for drive client
 } // namespace ExistsTests
 
 // ============================================================================
@@ -112,28 +112,6 @@ bool fstat_full(const std::string &path);
 bool statx_full(const std::string &path);
 bool filesystem_full(const std::string &path);
 } // namespace MetadataTests
-
-// ============================================================================
-// TEST FUNCTIONS - CATEGORY 2: READ OPERATIONS (File handle opened)
-// ============================================================================
-namespace ReadTests {
-bool ifstream_binary(const std::string &path);
-bool ifstream_text(const std::string &path);
-bool fopen_binary(const std::string &path);
-bool fopen_text(const std::string &path);
-bool win32_createfile(const std::string &path);
-bool win32_createfile_w(const std::string &path);
-bool win32_findfirstfile(const std::string &path);
-} // namespace ReadTests
-
-// ============================================================================
-// TEST FUNCTIONS - CATEGORY 3: WRITE OPERATIONS
-// ============================================================================
-namespace WriteTests {
-bool filesystem_last_write_time(const std::string &path);
-bool win32_setfiletime(const std::string &path);
-bool ofstream_append(const std::string &path);
-} // namespace WriteTests
 
 // ============================================================================
 // TEST FUNCTIONS - CATEGORY 4: FILE SIZE
@@ -219,7 +197,7 @@ class BenchmarkIOHelper : public CppUnit::TestFixture, public TestBase {
         void runAllIOBenchmarks();
 
     private:
-        int32_t iterations_ = 10000;
+        int32_t iterations_ = 100000;
 };
 
 } // namespace KDC

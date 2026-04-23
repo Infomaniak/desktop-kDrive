@@ -122,9 +122,6 @@ bool crt_stat(const std::string &path) {
     return _stat(path.c_str(), &buffer) == 0;
 }
 
-bool crt_access(const std::string &path) {
-    return _access(path.c_str(), 0) == 0;
-}
 
 } // namespace ExistsTests
 
@@ -326,15 +323,6 @@ bool win32_createfile_w(const std::string &path) {
     return false;
 }
 
-bool win32_findfirstfile(const std::string &path) {
-    WIN32_FIND_DATAA findData;
-    HANDLE hFind = FindFirstFileA(path.c_str(), &findData);
-    if (hFind != INVALID_HANDLE_VALUE) {
-        FindClose(hFind);
-        return true;
-    }
-    return false;
-}
 
 } // namespace ReadTests
 
@@ -586,11 +574,12 @@ void RunAllBenchmarks(const std::string &testFilePath, int iterations) {
     std::cout << "\n[Running Exists Tests...]\n";
     benchmark.addResult("Exists", "std::filesystem::status", benchmark.measure(ExistsTests::filesystem_status, testFilePath));
     benchmark.addResult("Exists", "std::filesystem::exists", benchmark.measure(ExistsTests::filesystem_exists, testFilePath));
+#if defined(KD_WINDOWS)
     benchmark.addResult("Exists", "GetFileAttributesA", benchmark.measure(ExistsTests::win32_getfileattributes_a, testFilePath));
     benchmark.addResult("Exists", "GetFileAttributesW + s2ws",
                         benchmark.measure(ExistsTests::win32_getfileattributes_w, testFilePath));
+#endif
     benchmark.addResult("Exists", "_stat()", benchmark.measure(ExistsTests::crt_stat, testFilePath));
-    benchmark.addResult("Exists", "_access()", benchmark.measure(ExistsTests::crt_access, testFilePath));
     // --- METADATA ---
     std::cout << "[Running Metadata Tests...]\n";
     benchmark.addResult("Metadata", "stat_full", benchmark.measure(MetadataTests::stat_full, testFilePath));
@@ -608,15 +597,18 @@ void RunAllBenchmarks(const std::string &testFilePath, int iterations) {
     benchmark.addResult("Read", "ifstream (text)", benchmark.measure(ReadTests::ifstream_text, testFilePath));
     benchmark.addResult("Read", "fopen (rb)", benchmark.measure(ReadTests::fopen_binary, testFilePath));
     benchmark.addResult("Read", "fopen (r)", benchmark.measure(ReadTests::fopen_text, testFilePath));
+#if defined(KD_WINDOWS)
     benchmark.addResult("Read", "CreateFileA", benchmark.measure(ReadTests::win32_createfile, testFilePath));
     benchmark.addResult("Read", "CreateFileW + s2ws", benchmark.measure(ReadTests::win32_createfile_w, testFilePath));
-    benchmark.addResult("Read", "FindFirstFileA", benchmark.measure(ReadTests::win32_findfirstfile, testFilePath));
+#endif
 
     // --- WRITE ---
     std::cout << "[Running Write Tests...]\n";
     benchmark.addResult("Write", "filesystem::last_write_time",
                         benchmark.measure(WriteTests::filesystem_last_write_time, testFilePath));
+#if defined(KD_WINDOWS)
     benchmark.addResult("Write", "SetFileTime (Win32)", benchmark.measure(WriteTests::win32_setfiletime, testFilePath));
+#endif
     benchmark.addResult("Write", "ofstream (append)", benchmark.measure(WriteTests::ofstream_append, testFilePath));
 
     // --- CREATE ---
@@ -650,6 +642,7 @@ void RunAllBenchmarks(const std::string &testFilePath, int iterations) {
                                     return true;
                                 },
                                 testFilePath));
+#if defined(KD_WINDOWS)
     benchmark.addResult("Size", "GetFileSizeEx (Win32)",
                         benchmark.measure(
                                 [](const std::string &p) {
@@ -657,6 +650,7 @@ void RunAllBenchmarks(const std::string &testFilePath, int iterations) {
                                     return true;
                                 },
                                 testFilePath));
+#endif
     benchmark.addResult("Size", "_filelength (CRT)",
                         benchmark.measure(
                                 [](const std::string &p) {
