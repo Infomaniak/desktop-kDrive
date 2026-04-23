@@ -22,8 +22,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         communicationlayer/signaldispatcher.h
         app/services/commservice.cpp
         app/services/commservice.h
-        app/services/serviceutils.cpp
-        app/services/serviceutils.h
+        app/services/serviceeventbus.cpp
+        app/services/serviceeventbus.h
         app/services/userservice.cpp
         app/services/userservice.h
 )

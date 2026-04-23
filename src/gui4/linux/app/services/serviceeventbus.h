@@ -16,21 +16,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "serviceutils.h"
+#pragma once
+
+#include "libcommon/comm.h"
 #include "libcommon/utility/types.h"
 
-namespace KDC::ServiceUtils {
+#include <QObject>
+
+namespace KDC {
 
 /**
- * Not final version
- * TODO Subject to changements / will depends on the ui implemented
+ * Shared event bus for high-level app services.
+ *
+ * UI layers can subscribe once to this object for cross-service events
+ * such as generic request failures.
  */
-QString formatExitInfo(const ExitInfo &exitInfo) {
-    return QStringLiteral("IPC request failed (code=%1[%2], cause=%3[%4])")
-            .arg(QString::fromStdString(toString(exitInfo.code())))
-            .arg(toInt(exitInfo.code()))
-            .arg(QString::fromStdString(toString(exitInfo.cause())))
-            .arg(toInt(exitInfo.cause()));
-}
+class ServiceEventBus : public QObject {
+        Q_OBJECT
 
-} // namespace KDC::ServiceUtils
+    public:
+        explicit ServiceEventBus(QObject *parent = nullptr);
+
+        void notifyGenericError(const ExitInfo &exitInfo, RequestNum requestNum);
+
+    signals:
+        void genericErrorOccurred();
+};
+
+} // namespace KDC
