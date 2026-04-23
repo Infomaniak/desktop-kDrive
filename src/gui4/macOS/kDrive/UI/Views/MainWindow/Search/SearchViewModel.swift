@@ -16,7 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import AppKit
 import Combine
+import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 
@@ -27,11 +29,19 @@ final class SearchViewModel: ObservableObject {
     @Published private(set) var isSearching = false
 
     private let syncDbId: Int32
+    private let synchroLocalPath: URL
     private var bindStore = Set<AnyCancellable>()
 
-    init(syncDbId: Int32) {
+    init(syncDbId: Int32, synchroLocalPath: URL) {
         self.syncDbId = syncDbId
+        self.synchroLocalPath = synchroLocalPath
         setupSearchSubscription()
+    }
+
+    func openInFinder(file: UISearchResponse) {
+        @InjectService var nodeURLGenerator: NodeURLGenerator
+        let url = nodeURLGenerator.localURL(for: file.path, synchroPath: synchroLocalPath)
+        NSWorkspace.shared.open(url)
     }
 
     private func setupSearchSubscription() {

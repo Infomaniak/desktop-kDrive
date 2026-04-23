@@ -33,17 +33,24 @@ struct SearchSheetView: View {
                 .focused($isSearchFieldFocused)
 
             List(viewModel.searchResults) { file in
-                HStack {
-                    Image(systemName: file.type == .directory ? "folder.fill" : "doc.fill")
-                        .foregroundStyle(ColorToken.Text.secondary.asColor)
-                    VStack(alignment: .leading) {
-                        Text(file.name)
-                            .foregroundStyle(ColorToken.Text.primary.asColor)
-                        Text(file.path)
-                            .font(.caption)
+                Button {
+                    viewModel.openInFinder(file: file)
+                } label: {
+                    HStack {
+                        Image(systemName: file.type == .directory ? "folder.fill" : "doc.fill")
                             .foregroundStyle(ColorToken.Text.secondary.asColor)
+                        VStack(alignment: .leading) {
+                            Text(file.name)
+                                .foregroundStyle(ColorToken.Text.primary.asColor)
+                            Text(file.path)
+                                .font(.caption)
+                                .foregroundStyle(ColorToken.Text.secondary.asColor)
+                        }
+                        Spacer()
                     }
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
             }
             .overlay {
                 if viewModel.isSearching {
@@ -72,5 +79,5 @@ struct SearchSheetView: View {
 }
 
 #Preview {
-    SearchSheetView(viewModel: SearchViewModel(syncDbId: 0)) {}
+    SearchSheetView(viewModel: SearchViewModel(syncDbId: 0, synchroLocalPath: URL(fileURLWithPath: "/"))) {}
 }
