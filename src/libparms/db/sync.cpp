@@ -30,7 +30,7 @@ Sync::Sync() :
     _hasFullyCompleted(false) {}
 
 Sync::Sync(const SyncDbId dbId, const DriveDbId driveDbId, const std::filesystem::path &localPath, const NodeId &localNodeId,
-           const std::filesystem::path &targetPath, const NodeId &targetNodeId, const bool paused, const bool supportVfs,
+           const std::filesystem::path &targetPath, const RemoteNodeId &targetNodeId, const bool paused, const bool supportVfs,
            const VirtualFileMode virtualFileMode, const bool notificationsDisabled, const std::filesystem::path &dbPath,
            bool hasFullyCompleted, const std::string &navigationPaneClsid, CursorStore cursorStore) :
     _dbId(dbId),
@@ -47,24 +47,5 @@ Sync::Sync(const SyncDbId dbId, const DriveDbId driveDbId, const std::filesystem
     _hasFullyCompleted(hasFullyCompleted),
     _navigationPaneClsid(navigationPaneClsid),
     _cursorStore(std::move(cursorStore)) {}
-
-CursorStore Sync::getCursorStore() const {
-    CursorData userPrivateFolderCursorData;
-    userPrivateFolderCursor(userPrivateFolderCursorData.cursor, userPrivateFolderCursorData.timestamp);
-
-    CursorData commonDocumentsFolderCursorData;
-    commonDocumentsFolderCursor(commonDocumentsFolderCursorData.cursor, commonDocumentsFolderCursorData.timestamp);
-
-    CursorData sharedFolderCursorData;
-    sharedFolderCursor(sharedFolderCursorData.cursor, sharedFolderCursorData.timestamp);
-
-    return {userPrivateFolderCursorData, commonDocumentsFolderCursorData, sharedFolderCursorData};
-}
-
-void Sync::setCursorStore(const KDC::CursorStore &cursors) {
-    setUserPrivateFolderCursor(cursors.userPrivateFolderCursor.cursor, cursors.userPrivateFolderCursor.timestamp);
-    setCommonDocumentsFolderCursor(cursors.commonDocumentsFolderCursor.cursor, cursors.commonDocumentsFolderCursor.timestamp);
-    setSharedFolderCursor(cursors.sharedFolderCursor.cursor, cursors.sharedFolderCursor.timestamp);
-}
 
 } // namespace KDC

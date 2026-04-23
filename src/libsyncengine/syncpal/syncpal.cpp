@@ -921,56 +921,20 @@ ExitInfo SyncPal::updateSync(const Sync &sync) {
     return ExitCode::Ok;
 }
 
-ExitInfo SyncPal::setUserPrivateFolderCursor(const Cursor &listingCursor, const Timestamp timestamp) {
+ExitInfo SyncPal::setFolderCursor(const SpecialFolder specialFolder, const CursorData &cursorData) {
     Sync sync;
     if (const auto exitInfo = selectSync(sync); !exitInfo) return exitInfo;
 
-    sync.setUserPrivateFolderCursor(listingCursor, timestamp);
+    sync.setFolderCursor(specialFolder, cursorData);
 
     return updateSync(sync);
 }
 
-ExitInfo SyncPal::setCommonDocumentsFolderCursor(const Cursor &listingCursor, const Timestamp timestamp) {
+ExitInfo SyncPal::getFolderCursor(const SpecialFolder specialFolder, CursorData &cursorData) {
     Sync sync;
     if (const auto exitInfo = selectSync(sync); !exitInfo) return exitInfo;
 
-    sync.setCommonDocumentsFolderCursor(listingCursor, timestamp);
-
-    return updateSync(sync);
-}
-
-ExitInfo SyncPal::setSharedFolderCursor(const Cursor &listingCursor, const Timestamp timestamp) {
-    Sync sync;
-    if (const auto exitInfo = selectSync(sync); !exitInfo) return exitInfo;
-
-    sync.setSharedFolderCursor(listingCursor, timestamp);
-
-    return updateSync(sync);
-}
-
-ExitInfo SyncPal::userPrivateFolderCursor(Cursor &value, Timestamp &timestamp) {
-    Sync sync;
-    if (const auto exitInfo = selectSync(sync); !exitInfo) return exitInfo;
-
-    sync.userPrivateFolderCursor(value, timestamp);
-
-    return ExitCode::Ok;
-}
-
-ExitInfo SyncPal::commonDocumentsFolderCursor(Cursor &value, Timestamp &timestamp) {
-    Sync sync;
-    if (const auto exitInfo = selectSync(sync); !exitInfo) return exitInfo;
-
-    sync.commonDocumentsFolderCursor(value, timestamp);
-
-    return ExitCode::Ok;
-}
-
-ExitInfo SyncPal::sharedFolderCursor(Cursor &value, Timestamp &timestamp) {
-    Sync sync;
-    if (const auto exitInfo = selectSync(sync); !exitInfo) return exitInfo;
-
-    sync.sharedFolderCursor(value, timestamp);
+    sync.getFolderCursor(specialFolder, cursorData);
 
     return ExitCode::Ok;
 }
