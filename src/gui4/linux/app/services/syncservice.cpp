@@ -64,7 +64,7 @@ void SyncService::loadSyncs() {
 
     _commService.requestSyncInfoList([this](const ExitInfo &exitInfo, const std::vector<SyncInfo> &list) {
         endAction(actionLoadSyncs);
-        if (exitInfo.code() != ExitCode::Ok) {
+        if (!exitInfo) {
             notifyRequestFailure(exitInfo, RequestNum::SYNC_INFOLIST);
             return;
         }
@@ -88,7 +88,7 @@ void SyncService::addSync(const qint64 userDbId, const qint64 accountId, const q
 
     _commService.requestSyncAdd(request, [this](const ExitInfo &exitInfo, const SyncInfo &syncInfo) {
         endAction(actionAddSync);
-        if (exitInfo.code() != ExitCode::Ok) {
+        if (!exitInfo) {
             notifyRequestFailure(exitInfo, RequestNum::SYNC_ADD);
             return;
         }
@@ -102,7 +102,7 @@ void SyncService::startSync(const qint64 syncDbId) {
 
     _commService.requestSyncStart(static_cast<SyncDbId>(syncDbId), [this, syncDbId](const ExitInfo &exitInfo) {
         endAction(actionStartSync, syncDbId);
-        if (exitInfo.code() != ExitCode::Ok) {
+        if (!exitInfo) {
             notifyRequestFailure(exitInfo, RequestNum::SYNC_START);
         }
     });
@@ -113,7 +113,7 @@ void SyncService::stopSync(const qint64 syncDbId) {
 
     _commService.requestSyncStop(static_cast<SyncDbId>(syncDbId), [this, syncDbId](const ExitInfo &exitInfo) {
         endAction(actionStopSync, syncDbId);
-        if (exitInfo.code() != ExitCode::Ok) {
+        if (!exitInfo) {
             notifyRequestFailure(exitInfo, RequestNum::SYNC_STOP);
         }
     });
@@ -125,7 +125,7 @@ void SyncService::deleteSync(const qint64 syncDbId) {
     // Cache consistency is signal-driven: we wait for syncRemoved/syncUpdated pushes.
     _commService.requestSyncDelete(static_cast<SyncDbId>(syncDbId), [this, syncDbId](const ExitInfo &exitInfo) {
         endAction(actionDeleteSync, syncDbId);
-        if (exitInfo.code() != ExitCode::Ok) {
+        if (!exitInfo) {
             notifyRequestFailure(exitInfo, RequestNum::SYNC_DELETE);
         }
     });
@@ -137,7 +137,7 @@ void SyncService::querySyncStatus(const qint64 syncDbId) {
     _commService.requestSyncStatus(static_cast<SyncDbId>(syncDbId),
                                    [this, syncDbId](const ExitInfo &exitInfo, const SyncStatus status) {
                                        endAction(actionQuerySyncStatus, syncDbId);
-                                       if (exitInfo.code() != ExitCode::Ok) {
+                                       if (!exitInfo) {
                                            notifyRequestFailure(exitInfo, RequestNum::SYNC_STATUS);
                                            return;
                                        }
@@ -149,16 +149,16 @@ void SyncService::querySyncStatus(const qint64 syncDbId) {
 void SyncService::findGoodPathForNewSync(const QString &basePath) {
     beginAction(actionFindGoodPathForNewSync);
 
-    _commService.requestFindGoodPathForNewSync(
-            QStr2Path(basePath), [this](const ExitInfo &exitInfo, const GoodPathResult &result) {
-                endAction(actionFindGoodPathForNewSync);
-                if (exitInfo.code() != ExitCode::Ok) {
-                    notifyRequestFailure(exitInfo, RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC);
-                    return;
-                }
+    _commService.requestFindGoodPathForNewSync(QStr2Path(basePath),
+                                               [this](const ExitInfo &exitInfo, const GoodPathResult &result) {
+                                                   endAction(actionFindGoodPathForNewSync);
+                                                   if (!exitInfo) {
+                                                       notifyRequestFailure(exitInfo, RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC);
+                                                       return;
+                                                   }
 
-                emit suggestedPathReceived(Path2QStr(result.goodPath), result.errorMessage);
-            });
+                                                   emit suggestedPathReceived(Path2QStr(result.goodPath), result.errorMessage);
+                                               });
 }
 
 void SyncService::isPathValidForNewSync(const QString &path, const int32_t syncConfiguration) {
@@ -173,7 +173,7 @@ void SyncService::isPathValidForNewSync(const QString &path, const int32_t syncC
     _commService.requestIsPathValidForNewSync(QStr2Path(path), static_cast<SyncConfiguration>(syncConfiguration),
                                               [this](const ExitInfo &exitInfo, const bool isValid) {
                                                   endAction(actionIsPathValidForNewSync);
-                                                  if (exitInfo.code() != ExitCode::Ok) {
+                                                  if (!exitInfo) {
                                                       notifyRequestFailure(exitInfo, RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC);
                                                       emit pathValidationReceived(false);
                                                       return;
@@ -228,8 +228,7 @@ bool SyncService::isActionPending(const QString &actionKey, const qint64 scopeId
 }
 
 bool SyncService::isValidSyncConfigurationValue(const int32_t syncConfiguration) const {
-    return syncConfiguration >= toInt(SyncConfiguration::Classic) &&
-           syncConfiguration < toInt(SyncConfiguration::EnumEnd);
+    return syncConfiguration >= toInt(SyncConfiguration::Classic) && syncConfiguration < toInt(SyncConfiguration::EnumEnd);
 }
 
 void SyncService::setLoading(const bool loading) {
