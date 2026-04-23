@@ -282,16 +282,19 @@ namespace Infomaniak.kDrive.ViewModels
                     Logger.Log(Logger.Level.Info, "All server data loaded successfully.");
                     IsInitialized = true;
 
-                    _ = serverCommService.RefreshUpdaterVersionInfo(null, CancellationToken.None).ContinueWith(task =>
+
+                    // Refresh updater version info and load info in parallel, they are not critical for the app to function and can be slow to load
+                    _ = Task.Run(async () =>
                     {
-                        Logger.Log(Logger.Level.Error, "Failed to refresh updater version info during AppModel initialization.");
-                        // This is not critical, we can continue without this info
+                        if (!await serverCommService.RefreshUpdaterVersionInfo(null, cts.Token))
+                            Logger.Log(Logger.Level.Warning, "RefreshUpdaterVersionInfo returned false during AppModel initialization.");
+
                     });
 
-                    _ = serverCommService.ActivateLoadInfo(CancellationToken.None).ContinueWith(task =>
+                    _ = Task.Run(async () =>
                     {
-                        Logger.Log(Logger.Level.Error, "Failed to ActivateLoadInfo during AppModel initialization.");
-                        // This is not critical, we can continue without this info
+                        if (!await serverCommService.ActivateLoadInfo(cts.Token))
+                            Logger.Log(Logger.Level.Warning, "Failed to ActivateLoadInfo during AppModel initialization.");
                     });
                     return true;
                 }
