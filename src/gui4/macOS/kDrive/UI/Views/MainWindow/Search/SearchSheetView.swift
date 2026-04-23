@@ -87,6 +87,7 @@ struct SearchSheetView: View {
                     bottom: AppPadding.padding4,
                     trailing: AppPadding.padding16
                 ))
+                .hideRowSeparatorIfAvailable()
             }
             .listStyle(.plain)
             .redacted(reason: shouldRedact ? .placeholder : [])
@@ -118,6 +119,17 @@ struct SearchSheetView: View {
                 title: "Search your files",
                 subtitle: "Type to start searching"
             )
+        }
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func hideRowSeparatorIfAvailable() -> some View {
+        if #available(macOS 13.0, *) {
+            self.listRowSeparator(.hidden)
+        } else {
+            self
         }
     }
 }
