@@ -1704,7 +1704,7 @@ void TestNetworkJobs::testGetAllFilesInDirectory() {
     CPPUNIT_ASSERT(nodeInfo2.path().endsWith(nodeInfo2.name()));
     CPPUNIT_ASSERT(!nodeInfo2.nodeId().isEmpty());
     CPPUNIT_ASSERT(nodeInfo2.parentNodeId() == parentNodeId);
-    CPPUNIT_ASSERT_EQUAL(qint64{-1}, nodeInfo2.size()); // Not computed because it is expensive.
+    CPPUNIT_ASSERT_EQUAL(qint64{5}, nodeInfo2.size());
 
     const NodeInfo &nodeInfo3 = listFilesInDirectoryJob.v3RemoteNodeInfoList().at(2);
     CPPUNIT_ASSERT(nodeInfo3.path().endsWith(nodeInfo3.name()));
