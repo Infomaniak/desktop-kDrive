@@ -86,6 +86,8 @@ struct DriveSearchResult {
 // ---------------------------------------------------------------------------
 
 /**
+ * TODO asap: Refactor this class into multiple smaller classes.
+ *
  * Low-level backend-facing service.
  *
  * Responsibilities:
@@ -226,31 +228,36 @@ class CommService : public QObject {
         void requestQuit(const VoidCallback &callback) const;
 
     signals:
+        // Signal arguments passed as `const T &` must be fully namespace-qualified (e.g. KDC::UserInfo, not UserInfo).
+        // Qt's moc identifies types by string name for meta-type registration. This only matters for queued connections
+        // (cross-thread or explicit Qt::QueuedConnection), direct connections are unaffected, but Clazy enforces it  defensively
+        // in case connection types change. Thx Clazy :+1:
+
         // --- User ---
-        void userAdded(const UserInfo &info);
-        void userUpdated(const UserInfo &info);
+        void userAdded(const KDC::UserInfo &info);
+        void userUpdated(const KDC::UserInfo &info);
         void userRemoved(UserDbId userDbId);
 
         // --- Account ---
-        void accountAdded(const AccountInfo &info);
-        void accountUpdated(const AccountInfo &info);
+        void accountAdded(const KDC::AccountInfo &info);
+        void accountUpdated(const KDC::AccountInfo &info);
         void accountRemoved(AccountDbId accountDbId);
 
         // --- Drive ---
-        void driveAdded(const DriveInfo &info);
-        void driveUpdated(const DriveInfo &info);
+        void driveAdded(const KDC::DriveInfo &info);
+        void driveUpdated(const KDC::DriveInfo &info);
         void driveRemoved(DriveDbId driveDbId);
 
         // --- Sync ---
-        void syncAdded(const SyncInfo &info);
-        void syncUpdated(const SyncInfo &info);
+        void syncAdded(const KDC::SyncInfo &info);
+        void syncUpdated(const KDC::SyncInfo &info);
         void syncRemoved(SyncDbId syncDbId);
         void syncProgressInfo(SyncDbId syncDbId, SyncStatus status, SyncStep step, int64_t currentFile, int64_t totalFiles,
                               int64_t completedSize, int64_t totalSize, int64_t estimatedRemainingTime);
-        void itemCompleted(SyncDbId syncDbId, const SyncFileItemInfo &info);
+        void itemCompleted(SyncDbId syncDbId, const KDC::SyncFileItemInfo &info);
 
         // --- Error ---
-        void errorAdded(const ErrorInfo &info);
+        void errorAdded(const KDC::ErrorInfo &info);
         void errorRemoved(ErrorDbId errorDbId);
 
         // --- Updater ---
