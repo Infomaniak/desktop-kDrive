@@ -22,6 +22,10 @@ import SwiftUI
 struct SearchResultRowView: View {
     let file: UISearchResponse
 
+    private var openInBrowserTooltip: String {
+        "This file is not available locally and will be opened in your browser"
+    }
+
     var body: some View {
         HStack(alignment: .firstTextBaseline) {
             FileTypeView(fileTypeRepresentation: file.fileTypeRepresentation)
@@ -37,6 +41,11 @@ struct SearchResultRowView: View {
                     .foregroundStyle(ColorToken.Text.tertiary.asColor)
             }
             Spacer()
+            if !file.isAvailableLocally {
+                Image(systemName: "arrow.up.forward.square")
+                    .foregroundStyle(ColorToken.Text.secondary.asColor)
+                    .help(openInBrowserTooltip)
+            }
         }
         .contentShape(Rectangle())
     }
@@ -55,7 +64,7 @@ struct SearchResultRowView: View {
     }
 }
 
-#Preview {
+#Preview("Available locally") {
     SearchResultRowView(file: UISearchResponse(
         id: "1",
         name: "Example.pdf",
@@ -64,5 +73,17 @@ struct SearchResultRowView: View {
         modifiedDate: Date(),
         size: 1024,
         isAvailableLocally: true
+    ))
+}
+
+#Preview("Not available locally") {
+    SearchResultRowView(file: UISearchResponse(
+        id: "2",
+        name: "Remote file.docx",
+        type: .file,
+        path: "/Documents/Remote file.docx",
+        modifiedDate: Date(),
+        size: 2048,
+        isAvailableLocally: false
     ))
 }
