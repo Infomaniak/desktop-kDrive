@@ -28,6 +28,24 @@ public struct UISearchResponse: Sendable, Identifiable {
     public let size: Int64
     public let isAvailableLocally: Bool
 
+    public init(
+        id: String,
+        name: String,
+        type: UINodeType?,
+        path: String,
+        modifiedDate: Date,
+        size: Int64,
+        isAvailableLocally: Bool
+    ) {
+        self.id = id
+        self.name = name
+        self.type = type
+        self.path = path
+        self.modifiedDate = modifiedDate
+        self.size = size
+        self.isAvailableLocally = isAvailableLocally
+    }
+
     public var parentFolderName: String {
         let parentPath = (path as NSString).deletingLastPathComponent
         return (parentPath as NSString).lastPathComponent

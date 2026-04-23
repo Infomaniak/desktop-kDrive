@@ -43,24 +43,7 @@ struct SearchSheetView: View {
                 Button {
                     viewModel.openInFinder(file: file)
                 } label: {
-                    HStack(alignment: .firstTextBaseline) {
-                        FileTypeView(fileTypeRepresentation: file.fileTypeRepresentation)
-                            .frame(size: AppIconSize.iconSize12)
-                        VStack(alignment: .leading) {
-                            Text(file.name)
-                                .font(.Tokens.title3)
-                                .lineLimit(1)
-                                .foregroundStyle(ColorToken.Text.primary.asColor)
-                            Text(
-                                "\(file.parentFolderName) - \(file.modifiedDate, format: .dateTime) - \(file.size, format: .byteCount(style: .file))"
-                            )
-                            .font(.Tokens.subheadline)
-                            .lineLimit(1)
-                            .foregroundStyle(ColorToken.Text.tertiary.asColor)
-                        }
-                        Spacer()
-                    }
-                    .contentShape(Rectangle())
+                    SearchResultRowView(file: file)
                 }
                 .buttonStyle(.plain)
                 .listRowInsets(EdgeInsets(
