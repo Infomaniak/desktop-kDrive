@@ -394,9 +394,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::shared_ptr<OperationGeneratorWorker> _operationsGeneratorWorker{nullptr};
         std::shared_ptr<OperationSorterWorker> _operationsSorterWorker{nullptr};
         std::shared_ptr<ExecutorWorker> _executorWorker{nullptr};
-
         std::shared_ptr<TmpBlacklistManager> _tmpBlacklistManager{nullptr};
-
 
         void freeWorkers();
         ExitCode setSyncPaused(bool value);
@@ -404,19 +402,11 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
                             const std::string &targetNodeId = std::string());
         void setSyncHasFullyCompletedInParams(bool syncHasFullyCompleted);
 
-        ExitInfo listingCursor(std::string &value, int64_t &timestamp);
-
         ExitInfo selectSync(Sync &sync);
         ExitInfo updateSync(const Sync &sync);
 
-        ExitInfo setUserPrivateFolderCursor(const Cursor &listingCursor, Timestamp timestamp);
-        ExitInfo setCommonDocumentsFolderCursor(const Cursor &listingCursor, Timestamp timestamp);
-        ExitInfo setSharedFolderCursor(const Cursor &listingCursor, Timestamp timestamp);
-        ExitInfo setLongPollCursor(const Cursor &listingCursor, Timestamp timestamp);
-
-        ExitInfo userPrivateFolderCursor(Cursor &listingCursor, Timestamp &timestamp);
-        ExitInfo commonDocumentsFolderCursor(Cursor &listingCursor, Timestamp &timestamp);
-        ExitInfo sharedFolderCursor(Cursor &listingCursor, Timestamp &timestamp);
+        ExitInfo setFolderCursor(SpecialFolder specialFolder, const CursorData &cursorData);
+        ExitInfo getFolderCursor(SpecialFolder specialFolder, CursorData &cursorData);
 
         ExitCode updateSyncNode(SyncNodeType syncNodeType);
         ExitCode updateSyncNode();

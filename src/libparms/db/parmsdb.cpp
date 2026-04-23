@@ -2271,12 +2271,12 @@ bool ParmsDb::bindQueryToSyncValues(const Sync &sync, const char *requestId, con
 
     const auto &cursorStore = sync.getCursorStore();
 
-    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.userPrivateFolderCursor.cursor));
-    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.userPrivateFolderCursor.timestamp));
-    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.commonDocumentsFolderCursor.cursor));
-    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.commonDocumentsFolderCursor.timestamp));
-    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.sharedFolderCursor.cursor));
-    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.sharedFolderCursor.timestamp));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.at(SpecialFolder::Private).cursor));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.at(SpecialFolder::Private).timestamp));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.at(SpecialFolder::CommonDocuments).cursor));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.at(SpecialFolder::CommonDocuments).timestamp));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.at(SpecialFolder::Shared).cursor));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.at(SpecialFolder::Shared).timestamp));
 
     if (filter == FieldFilter::WhereSyncDbId) {
         LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, sync.dbId()));
@@ -2447,14 +2447,14 @@ void ParmsDb::fillSyncWithQueryResult(Sync &sync, const char *requestId, const s
 
     // Cursors
     CursorStore cursorStore;
-    LOG_IF_FAIL(queryStringValue(requestId, fieldIndex++, cursorStore.userPrivateFolderCursor.cursor));
-    LOG_IF_FAIL(queryInt64Value(requestId, fieldIndex++, cursorStore.userPrivateFolderCursor.timestamp));
+    LOG_IF_FAIL(queryStringValue(requestId, fieldIndex++, cursorStore[SpecialFolder::Private].cursor));
+    LOG_IF_FAIL(queryInt64Value(requestId, fieldIndex++, cursorStore[SpecialFolder::Private].timestamp));
 
-    LOG_IF_FAIL(queryStringValue(requestId, fieldIndex++, cursorStore.commonDocumentsFolderCursor.cursor));
-    LOG_IF_FAIL(queryInt64Value(requestId, fieldIndex++, cursorStore.commonDocumentsFolderCursor.timestamp));
+    LOG_IF_FAIL(queryStringValue(requestId, fieldIndex++, cursorStore[SpecialFolder::CommonDocuments].cursor));
+    LOG_IF_FAIL(queryInt64Value(requestId, fieldIndex++, cursorStore[SpecialFolder::CommonDocuments].timestamp));
 
-    LOG_IF_FAIL(queryStringValue(requestId, fieldIndex++, cursorStore.sharedFolderCursor.cursor));
-    LOG_IF_FAIL(queryInt64Value(requestId, fieldIndex++, cursorStore.sharedFolderCursor.timestamp));
+    LOG_IF_FAIL(queryStringValue(requestId, fieldIndex++, cursorStore[SpecialFolder::Shared].cursor));
+    LOG_IF_FAIL(queryInt64Value(requestId, fieldIndex++, cursorStore[SpecialFolder::Shared].timestamp));
 
     sync.setCursorStore(cursorStore);
 }
