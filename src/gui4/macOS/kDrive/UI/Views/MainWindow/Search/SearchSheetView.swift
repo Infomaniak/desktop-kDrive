@@ -36,9 +36,9 @@ struct SearchSheetView: View {
                 Button {
                     viewModel.openInFinder(file: file)
                 } label: {
-                    HStack {
-                        Image(systemName: file.type == .directory ? "folder.fill" : "doc.fill")
-                            .foregroundStyle(ColorToken.Text.secondary.asColor)
+                    HStack(alignment: .bottom) {
+                        FileTypeView(fileTypeRepresentation: file.fileTypeRepresentation)
+                            .frame(size: AppIconSize.iconSize16)
                         VStack(alignment: .leading) {
                             Text(file.name)
                                 .foregroundStyle(ColorToken.Text.primary.asColor)

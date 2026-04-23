@@ -17,6 +17,7 @@
  */
 
 import Foundation
+import UniformTypeIdentifiers
 
 public struct UISearchResponse: Sendable, Identifiable {
     public let id: String
@@ -26,4 +27,14 @@ public struct UISearchResponse: Sendable, Identifiable {
     public let modifiedTime: TimeInterval
     public let size: Int64
     public let isAvailableLocally: Bool
+
+    public var fileTypeRepresentation: FileTypeRepresentation {
+        if type == .directory {
+            return .folder
+        }
+        guard let fileType = UTType(filenameExtension: (path as NSString).pathExtension) else {
+            return .unknown
+        }
+        return FileTypeRepresentation(utType: fileType)
+    }
 }
