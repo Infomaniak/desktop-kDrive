@@ -161,14 +161,14 @@ void TestWindowsUpdater::testIsChecksumValid() {
     };
 
     static const std::string noChecksumValue("");
-    static const std::string fakeChecksumValue("083a301369cd711e9803f7d90d342a3778f9cb864ab22992b49fccddc3b9256c");
-    static const std::string trueChecksumValue("3d735840895bcb958f359009b06cbe9b840ae9e2df22651f431bfec4ac7b696f");
+    static const std::string invalidChecksumValue("083a301369cd711e9803f7d90d342a3778f9cb864ab22992b49fccddc3b9256c");
+    static const std::string validChecksumValue("3d735840895bcb958f359009b06cbe9b840ae9e2df22651f431bfec4ac7b696f");
 
     const std::vector<TestCase> testCases = {
             {noChecksumValue, "picture-1.jpg", true}, // kstore is missing checksum
-            {fakeChecksumValue, "picture-1111.jpg", false}, // can't calculate checksum (file doesn't exist)
-            {fakeChecksumValue, "picture-1.jpg", false}, // checksum is invalid
-            {trueChecksumValue, "picture-1.jpg", true}, // checksum is valid
+            {invalidChecksumValue, "picture-1111.jpg", false}, // can't calculate checksum (file doesn't exist)
+            {invalidChecksumValue, "picture-1.jpg", false}, // checksum is invalid
+            {validChecksumValue, "picture-1.jpg", true}, // checksum is valid
     };
 
     for (const auto &testCase: testCases) {
