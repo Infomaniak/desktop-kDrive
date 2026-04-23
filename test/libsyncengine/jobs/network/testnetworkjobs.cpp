@@ -137,7 +137,7 @@ void TestNetworkJobs::setUp() {
 
     initParmsDb();
 
-    _cacheDirectory = std::make_shared<CacheDirectory>(_localTempDir.path());
+    _cacheDirectory = std::make_shared<CacheDirectory>(_localParmsDbTempDir.path());
 
     const testhelpers::TestVariables testVariables;
     _remoteDirId = testVariables.remoteDirId;
