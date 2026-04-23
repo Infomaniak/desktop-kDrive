@@ -33,6 +33,32 @@ struct SearchSheetView: View {
         !viewModel.searchText.isEmpty
     }
 
+    private var displayedResults: [UISearchResponse] {
+        if hasResults {
+            return viewModel.searchResults
+        } else if viewModel.isSearching {
+            return Self.placeholderResults
+        } else {
+            return []
+        }
+    }
+
+    private var shouldRedact: Bool {
+        viewModel.isSearching
+    }
+
+    private static let placeholderResults: [UISearchResponse] = (0..<5).map { index in
+        UISearchResponse(
+            id: "placeholder-\(index)",
+            name: "Loading file name",
+            type: .file,
+            path: "/Placeholder/Path",
+            modifiedDate: Date(),
+            size: 1024,
+            isAvailableLocally: true
+        )
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: AppPadding.padding8) {
@@ -48,7 +74,7 @@ struct SearchSheetView: View {
             .clipShape(RoundedRectangle(cornerRadius: 18))
             .padding(AppPadding.padding16)
 
-            List(viewModel.searchResults) { file in
+            List(displayedResults) { file in
                 Button {
                     viewModel.openInFinder(file: file)
                 } label: {
@@ -63,11 +89,11 @@ struct SearchSheetView: View {
                 ))
             }
             .listStyle(.plain)
-            .opacity(hasResults ? 1 : 0)
+            .redacted(reason: shouldRedact ? .placeholder : [])
+            .disabled(shouldRedact)
+            .opacity(displayedResults.isEmpty ? 0 : 1)
             .overlay {
-                if viewModel.isSearching {
-                    ProgressView()
-                } else if !hasResults {
+                if displayedResults.isEmpty {
                     emptyStateView
                 }
             }
