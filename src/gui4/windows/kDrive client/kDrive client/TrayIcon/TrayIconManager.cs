@@ -97,12 +97,16 @@ namespace Infomaniak.kDrive.TrayIcon
                 .AutoRefresh(sync => sync.SyncStatus) // react when a sync's Status changes
                 .AutoRefreshOnObservable(sync => sync.SyncErrors.ToObservableChangeSet()) // react when any sync's errors change
                 .Subscribe(_ => UpdateTrayIcon()));
+
+            // Subscribe to changes in the available update
+            _subscriptions.Add(_appModel.Settings.UpdateManager.WhenPropertyChanged(updateManager => updateManager.AvailableUpdate)
+                .Subscribe(_ => UpdateTrayIcon()));
         }
 
         private void UpdateTrayIcon()
         {
 
-            if (_appModel.AllSyncs.Any(sync => sync.SyncStatus == SyncStatus.Running))
+            if (_appModel.AllSyncs.Any(sync => sync.SyncStatus == SyncStatus.Running || sync.SyncStatus == SyncStatus.Paused))
             {
                 SetIconSync();
                 return;
@@ -114,7 +118,12 @@ namespace Infomaniak.kDrive.TrayIcon
                 return;
             }
 
-            if (_appModel.AllSyncs.All(sync => sync.SyncStatus == SyncStatus.Paused || sync.SyncStatus == SyncStatus.Stopped || sync.SyncStatus == SyncStatus.Offline))
+            if (_appModel.Settings.UpdateManager.AvailableUpdate is not null)
+            {
+                SetIconNeutral();
+            }
+
+            if (_appModel.AllSyncs.All(sync => sync.SyncStatus == SyncStatus.Stopped || sync.SyncStatus == SyncStatus.Offline))
             {
                 SetIconPause();
                 return;
@@ -146,8 +155,13 @@ namespace Infomaniak.kDrive.TrayIcon
         }
         public void SetIconPause()
         {
-            Logger.Log(Logger.Level.Debug, "Setting tray icon to 'error' state.");
+            Logger.Log(Logger.Level.Debug, "Setting tray icon to 'pause' state.");
             SetIcon("taskbar-ico-pause");
+        }
+        public void SetIconNotification()
+        {
+            Logger.Log(Logger.Level.Debug, "Setting tray icon to 'notification' state.");
+            SetIcon("taskbar-ico-notification");
         }
         public void SetIconNeutral()
         {
