@@ -268,18 +268,18 @@ SyncSetupData createSyncs() {
     sync2.setDbPath("/Users/me/Library/Application Support/kDrive/.parms.db");
 
     CursorStore cursorStore1;
-    cursorStore1.userPrivateFolderCursor = CursorData{"xxx", 1};
-    cursorStore1.commonDocumentsFolderCursor = CursorData{"yyy", 2};
-    cursorStore1.sharedFolderCursor = CursorData{"zzz", 3};
+    cursorStore1[SpecialFolder::Private] = CursorData{"xxx", 1};
+    cursorStore1[SpecialFolder::CommonDocuments] = CursorData{"yyy", 2};
+    cursorStore1[SpecialFolder::Shared] = CursorData{"zzz", 3};
 
     sync1.setCursorStore(cursorStore1);
 
     CursorStore cursorStore2;
-    cursorStore1.userPrivateFolderCursor = CursorData{"aaa", 10};
-    cursorStore1.commonDocumentsFolderCursor = CursorData{"bbb", 20};
-    cursorStore1.sharedFolderCursor = CursorData{"ccc", 30};
+    cursorStore2[SpecialFolder::Private] = CursorData{"aaa", 10};
+    cursorStore2[SpecialFolder::CommonDocuments] = CursorData{"bbb", 20};
+    cursorStore2[SpecialFolder::Shared] = CursorData{"ccc", 30};
 
-    sync1.setCursorStore(cursorStore1);
+    sync2.setCursorStore(cursorStore2);
 
     SyncSetupData data;
     data.syncs = {sync1, sync2};
