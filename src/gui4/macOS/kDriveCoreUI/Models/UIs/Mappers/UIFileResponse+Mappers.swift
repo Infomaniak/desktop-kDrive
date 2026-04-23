@@ -27,7 +27,7 @@ public extension UISearchResponse {
             name: searchResponse.name,
             type: UINodeType(synchroNodeType: searchResponseType),
             path: searchResponse.path,
-            modifiedTime: searchResponse.modifiedTime,
+            modifiedTime: TimeInterval(searchResponse.modifiedTime),
             size: searchResponse.size,
             isAvailableLocally: searchResponse.isAvailableLocally
         )

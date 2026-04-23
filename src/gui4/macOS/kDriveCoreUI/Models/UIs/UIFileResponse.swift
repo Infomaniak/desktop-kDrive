@@ -23,7 +23,7 @@ public struct UISearchResponse: Sendable, Identifiable {
     public let name: String
     public let type: UINodeType?
     public let path: String
-    public let modifiedTime: Int64
+    public let modifiedTime: TimeInterval
     public let size: Int64
     public let isAvailableLocally: Bool
 }
