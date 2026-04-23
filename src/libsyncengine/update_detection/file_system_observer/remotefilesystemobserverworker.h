@@ -101,11 +101,11 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
 
         DriveDbId _driveDbId = -1;
 
-        using CursorMap = std::unordered_map<NodeId, Cursor, StringHashFunction, std::equal_to<>>;
+        using CursorMap = std::unordered_map<RemoteNodeId, CursorData, StringHashFunction, std::equal_to<>>;
         // Map tracking the cursors of the listing requests made for folders specified by their remote IDs.
         CursorMap _listingCursorMap;
-        ExitInfo listingCursor(const NodeId &remoteDirId, Cursor &cursor, Timestamp &timestamp);
-        ExitInfo saveListingCursor(const NodeId &remoteDirId, const Cursor &cursor, const Timestamp timeStamp);
+        ExitInfo getListingCursor(const RemoteNodeId &remoteDirId, CursorData &cursorData);
+        ExitInfo saveListingCursor(const RemoteNodeId &remoteDirId, const CursorData &cursorData);
 
         RemoteNodeIdSet _blackList; // A list of user-selected folders not to be synchronized.
         int _listingFullCounter = 0;

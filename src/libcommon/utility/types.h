@@ -85,13 +85,17 @@ struct CursorData {
         friend bool operator==(const CursorData &lhs, const CursorData &rhs) = default;
 };
 
-struct CursorStore {
-        CursorData userPrivateFolderCursor;
-        CursorData commonDocumentsFolderCursor;
-        CursorData sharedFolderCursor;
-
-        friend bool operator==(const CursorStore &lhs, const CursorStore &rhs) = default;
+enum class SpecialFolder {
+    CommonDocuments = 0,
+    Private = 1,
+    Shared = 2
 };
+
+using CursorStore = std::unordered_map<SpecialFolder, CursorData>;
+[[maybe_unused]] static const CursorStore defaultCursorStore =
+        CursorStore{{SpecialFolder::Private, {}}, {SpecialFolder::CommonDocuments, {}}, {SpecialFolder::Shared, {}}};
+
+using SpecialFolderNames = std::unordered_map<SpecialFolder, SyncName>;
 
 #if defined(KD_WINDOWS)
 using StringStream = std::wstringstream;
