@@ -24,7 +24,7 @@ namespace KDC {
 
 class ContinueFileListWithCursorJob final : public AbstractListingJob {
     public:
-        ContinueFileListWithCursorJob(int driveDbId, NodeId remoteDirId, std::string cursor,
+        ContinueFileListWithCursorJob(DriveDbId driveDbId, RemoteNodeId remoteDirId, Cursor cursor,
                                       const RemoteNodeIdSet &blacklist = {});
 
     private:
