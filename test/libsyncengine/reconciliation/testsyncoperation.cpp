@@ -125,6 +125,14 @@ void TestSyncOperation::testIsLocalEditCausedBySync() {
     CPPUNIT_ASSERT(res == false);
 }
 
+void TestSyncOperation::testCountOps() {
+    CPPUNIT_ASSERT(_syncOperationList.countOps(ReplicaSide::Local, OperationType::Delete) == 1);
+    CPPUNIT_ASSERT(_syncOperationList.countOps(ReplicaSide::Local, OperationType::Edit) == 0);
+    CPPUNIT_ASSERT(_syncOperationList.countOps(ReplicaSide::Local, OperationType::Create) == 0);
+    CPPUNIT_ASSERT(_syncOperationList.countOps(ReplicaSide::Remote, OperationType::Delete) == 0);
+    CPPUNIT_ASSERT(_syncOperationList.countOps(ReplicaSide::Remote, OperationType::Edit) == 1);
+}
+
 SyncOpPtr TestSyncOperation::generateSyncOperation(OperationType opType, const std::shared_ptr<Node> affectedNode,
                                                    const std::shared_ptr<Node> correspondingNode) {
     const auto op = std::make_shared<SyncOperation>();

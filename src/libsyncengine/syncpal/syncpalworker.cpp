@@ -110,16 +110,17 @@ bool SyncPalWorker::shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const 
 }
 
 void SyncPalWorker::checkForMassDeletions() const {
+    // Local deletions to propagate
     const auto nbOfLocalDeleteOps = _syncPal->_syncOps->countOps(ReplicaSide::Local, OperationType::Delete);
     if (!nbOfLocalDeleteOps) return;
 
-    uint64_t nbTotalOfLocalDeleteOps = 0;
-    nbTotalOfLocalDeleteOps = _syncPal->nbOfLocalDeleteOpsPropagated() + nbOfLocalDeleteOps;
+    // Cumulative local deletions propagated across successive synchronizations
+    const auto nbTotalOfLocalDeleteOps = _syncPal->nbOfLocalDeleteOpsPropagated() + nbOfLocalDeleteOps;
 
-    // Evaluation of the local snapshot size before destructions
+    // Approximation of the local snapshot size before deletions
     const auto nbTotalOfLocalSnapshotItems = _syncPal->snapshot(ReplicaSide::Local)->nbItems() + nbTotalOfLocalDeleteOps;
 
-    // Define alert threshold
+    // Determine alert threshold
     uint64_t alertThreshold = 0;
     for (size_t i = 0; i < massDeletionsThresholdArr.size(); i++) {
         if (nbTotalOfLocalSnapshotItems >= massDeletionsThresholdArr[i].first &&
@@ -129,10 +130,11 @@ void SyncPalWorker::checkForMassDeletions() const {
         }
     }
 
+    // Check for mass deletions
     if (alertThreshold && nbTotalOfLocalDeleteOps >= alertThreshold) {
-        LOG_SYNCPAL_WARN(_logger, "Mass destruction detected: " << nbTotalOfLocalDeleteOps << "/" << nbTotalOfLocalSnapshotItems);
-        sentry::Handler::captureMessage(sentry::Level::Warning, "SyncPalWorker::checkForMassDestructions",
-                                        "Mass destruction detected: " + std::to_string(nbTotalOfLocalDeleteOps) + "/" +
+        LOG_SYNCPAL_WARN(_logger, "Mass deletions detected: " << nbTotalOfLocalDeleteOps << "/" << nbTotalOfLocalSnapshotItems);
+        sentry::Handler::captureMessage(sentry::Level::Warning, "SyncPalWorker::checkForMassDeletions",
+                                        "Mass deletions detected: " + std::to_string(nbTotalOfLocalDeleteOps) + "/" +
                                                 std::to_string(nbTotalOfLocalSnapshotItems));
     }
 }
