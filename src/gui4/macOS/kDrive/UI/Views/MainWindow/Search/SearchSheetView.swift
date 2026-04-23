@@ -21,7 +21,6 @@ import SwiftUI
 
 struct SearchSheetView: View {
     @ObservedObject var viewModel: SearchViewModel
-    var onDismiss: () -> Void
 
     @FocusState private var isSearchFieldFocused: Bool
 
@@ -68,16 +67,6 @@ struct SearchSheetView: View {
                         .foregroundStyle(ColorToken.Text.secondary.asColor)
                 }
             }
-
-            HStack {
-                Spacer()
-                Button("Close") {
-                    onDismiss()
-                }
-                .keyboardShortcut(.cancelAction)
-                .buttonStyle(.borderedProminent)
-            }
-            .padding(AppPadding.padding16)
         }
         .frame(minWidth: 400, minHeight: 300)
         .onAppear {
@@ -87,5 +76,5 @@ struct SearchSheetView: View {
 }
 
 #Preview {
-    SearchSheetView(viewModel: SearchViewModel(syncDbId: 0, synchroLocalPath: URL(fileURLWithPath: "/"))) {}
+    SearchSheetView(viewModel: SearchViewModel(syncDbId: 0, synchroLocalPath: URL(fileURLWithPath: "/")))
 }

@@ -247,23 +247,26 @@ extension MainViewController {
         let syncDbId = Int32(synchro.dbId)
 
         let searchViewModel = SearchViewModel(syncDbId: syncDbId, synchroLocalPath: synchro.localPath)
-        let searchSheetView = SearchSheetView(viewModel: searchViewModel) { [weak self] in
-            self?.dismissSearchSheet()
-        }
+        let searchSheetView = SearchSheetView(viewModel: searchViewModel)
         let hostingController = NSHostingController(rootView: searchSheetView)
         presentAsSheet(hostingController)
 
-        sheetClickMonitor = NSEvent.addLocalMonitorForEvents(matching: .leftMouseDown) { [weak self] event in
+        sheetClickMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .keyDown]) { [weak self] event in
             guard let self,
-                  let sheetWindow = self.presentedViewControllers?.first?.view.window,
-                  let eventWindow = event.window else {
+                  let sheetWindow = self.presentedViewControllers?.first?.view.window else {
                 return event
             }
 
-            if eventWindow != sheetWindow {
+            if event.type == .keyDown && event.keyCode == 53 {
                 self.dismissSearchSheet()
                 return nil
             }
+
+            if event.type == .leftMouseDown, let eventWindow = event.window, eventWindow != sheetWindow {
+                self.dismissSearchSheet()
+                return nil
+            }
+
             return event
         }
     }
