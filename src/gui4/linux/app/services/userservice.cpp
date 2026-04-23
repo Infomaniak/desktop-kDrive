@@ -56,7 +56,7 @@ void UserService::loadUsers() {
 
     _commService.requestUserInfoList([this](const ExitInfo &exitInfo, const std::vector<UserInfo> &list) {
         endAction(actionLoadUsers);
-        if (exitInfo.code() != ExitCode::Ok) {
+        if (!exitInfo) {
             notifyRequestFailure(exitInfo, RequestNum::USER_INFOLIST);
             return;
         }
@@ -76,7 +76,7 @@ void UserService::loadAvailableDrives(const qint64 userDbId) {
                     return;
                 }
 
-                if (exitInfo.code() != ExitCode::Ok) {
+                if (!exitInfo) {
                     notifyRequestFailure(exitInfo, RequestNum::USER_AVAILABLEDRIVES);
                     return;
                 }
@@ -91,7 +91,7 @@ void UserService::deleteUser(const qint64 userDbId) {
     // Cache consistency is signal-driven: we wait for userRemoved/userUpdated pushes.
     _commService.requestDeleteUser(static_cast<UserDbId>(userDbId), [this, userDbId](const ExitInfo &exitInfo) {
         endAction(actionDeleteUser, userDbId);
-        if (exitInfo.code() != ExitCode::Ok) {
+        if (!exitInfo) {
             notifyRequestFailure(exitInfo, RequestNum::USER_DELETE);
         }
     });
@@ -108,7 +108,7 @@ void UserService::requestLoginToken(const QString &code, const QString &codeVeri
             return;
         }
 
-        if (exitInfo.code() != ExitCode::Ok) {
+        if (!exitInfo) {
             notifyRequestFailure(exitInfo, RequestNum::LOGIN_REQUESTTOKEN);
             emit loginTokenFailed(QString(), QString());
             return;
