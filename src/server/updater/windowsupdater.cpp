@@ -187,7 +187,9 @@ bool WindowsUpdater::verifyFileChecksum(const SyncPath &filepath) {
         if (ioError == IoError::Success) {
             LOGW_INFO(Log::instance()->getLogger(), L"corrupted file at " << Utility::formatSyncPath(filepath) << L" deleted");
         } else {
-            LOGW_WARN(Log::instance()->getLogger(), L"couldn't reach corrupted file at " << Utility::formatSyncPath(filepath));
+            LOGW_WARN(Log::instance()->getLogger(), L"couldn't reach corrupted file at " << Utility::formatSyncPath(filepath)
+                                                                                         << L" : IOError state "
+                                                                                         << static_cast<int>(ioError));
         }
 
         // Send to Sentry
