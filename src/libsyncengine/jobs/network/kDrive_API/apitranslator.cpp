@@ -68,6 +68,8 @@ ExitInfo ApiTranslator::getDriveDbId(const DriveId driveId, DriveDbId &driveDbId
 ExitInfo ApiTranslator::updateCache(const UserDbId userDbId, const DriveId driveId) {
     constexpr auto maxNumberOfItems = 1000;
 
+    // With the following untranslated remote ID value, the listing `GetAllFilesInDirectoryJob` (v3 API) will return the list of
+    // the drive's root folder children, which is the only way to get the remote IDs of the special folders.
     const RemoteNodeId remoteFolderId = v2RootFolderRemoteId();
     std::shared_ptr<GetAllFilesInDirectoryJob> fileListJob;
 
