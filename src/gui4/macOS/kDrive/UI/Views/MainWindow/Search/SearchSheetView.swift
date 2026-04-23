@@ -17,12 +17,21 @@
  */
 
 import kDriveCoreUI
+import kDriveResources
 import SwiftUI
 
 struct SearchSheetView: View {
     @ObservedObject var viewModel: SearchViewModel
 
     @FocusState private var isSearchFieldFocused: Bool
+
+    private var hasResults: Bool {
+        !viewModel.searchResults.isEmpty
+    }
+
+    private var hasSearchQuery: Bool {
+        !viewModel.searchText.isEmpty
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -54,18 +63,35 @@ struct SearchSheetView: View {
                 ))
             }
             .listStyle(.plain)
+            .opacity(hasResults ? 1 : 0)
             .overlay {
                 if viewModel.isSearching {
                     ProgressView()
-                } else if viewModel.searchResults.isEmpty && !viewModel.searchText.isEmpty {
-                    Text("No results")
-                        .foregroundStyle(ColorToken.Text.secondary.asColor)
+                } else if !hasResults {
+                    emptyStateView
                 }
             }
         }
         .frame(minWidth: 400, minHeight: 368)
         .onAppear {
             isSearchFieldFocused = true
+        }
+    }
+
+    @ViewBuilder
+    private var emptyStateView: some View {
+        if hasSearchQuery {
+            IKContentUnavailableView(
+                image: KDriveResources.mountainsTreesSun.swiftUIImage,
+                title: "No results",
+                subtitle: "Try a different search term"
+            )
+        } else {
+            IKContentUnavailableView(
+                image: KDriveResources.mountainsTreesSun.swiftUIImage,
+                title: "Search your files",
+                subtitle: "Type to start searching"
+            )
         }
     }
 }
