@@ -20,34 +20,41 @@
 
 #include "app/cache/appcache.h"
 #include "app/services/commservice.h"
+#include "app/services/serviceactiontracker.h"
 #include "app/services/serviceeventbus.h"
 
 #include <QObject>
 #include <QString>
-
-#include <cstdint>
 
 namespace KDC {
 
 /**
  * High-level user-oriented facade exposed to QML.
  *
- * This service orchestrates user requests over CommService and updates AppCache.
+ * Role:
+ * - orchestrates user requests through CommService;
+ * - updates AppCache snapshots and incremental entities;
+ * - reports transient cross-service failures through ServiceEventBus;
+ * - registers per-action pending state in ServiceActionTracker.
  */
 class UserService : public QObject {
         Q_OBJECT
         Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
 
     public:
-        explicit UserService(CommService &commService, AppCache &appCache, ServiceEventBus &serviceEventBus,
-                             QObject *parent = nullptr);
+        explicit UserService(CommService &commService, AppCache &appCache, ServiceActionTracker &serviceActionTracker,
+                             ServiceEventBus &serviceEventBus, QObject *parent = nullptr);
 
-        bool loading() const { return _loading; }
+        [[nodiscard]] bool loading() const { return _loading; }
 
         Q_INVOKABLE void loadUsers();
         Q_INVOKABLE void loadAvailableDrives(qint64 userDbId);
         Q_INVOKABLE void deleteUser(qint64 userDbId);
         Q_INVOKABLE void requestLoginToken(const QString &code, const QString &codeVerifier);
+        Q_INVOKABLE [[nodiscard]] bool isLoadUsersPending() const;
+        Q_INVOKABLE [[nodiscard]] bool isLoadAvailableDrivesPending(qint64 userDbId) const;
+        Q_INVOKABLE [[nodiscard]] bool isDeleteUserPending(qint64 userDbId) const;
+        Q_INVOKABLE [[nodiscard]] bool isLoginPending() const;
 
     signals:
         void loadingChanged();
@@ -55,15 +62,16 @@ class UserService : public QObject {
         void loginTokenFailed(const QString &error, const QString &errorDescription);
 
     private:
-        void beginRequest();
-        void endRequest();
+        void beginAction(const QString &actionKey, qint64 scopeId = 0);
+        void endAction(const QString &actionKey, qint64 scopeId = 0);
         void setLoading(bool loading);
+        [[nodiscard]] bool isActionPending(const QString &actionKey, qint64 scopeId = 0) const;
         void notifyRequestFailure(const ExitInfo &exitInfo, RequestNum requestNum);
 
         CommService &_commService;
         AppCache &_appCache;
+        ServiceActionTracker &_serviceActionTracker;
         ServiceEventBus &_serviceEventBus;
-        int32_t _pendingRequestCount{0};
         bool _loading{false};
 };
 
