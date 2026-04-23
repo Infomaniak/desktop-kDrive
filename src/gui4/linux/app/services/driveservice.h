@@ -43,9 +43,9 @@ class DriveService : public QObject {
     public:
         explicit DriveService(CommService &commService, AppCache &appCache, QObject *parent = nullptr);
 
-        bool loading() const { return _loading; }
-        const QString &lastError() const { return _lastError; }
-        qint64 activeDriveDbId() const { return _appCache.selectedDriveDbId(); }
+        [[nodiscard]] bool loading() const { return _loading; }
+        [[nodiscard]] const QString &lastError() const { return _lastError; }
+        [[nodiscard]] qint64 activeDriveDbId() const { return _appCache.selectedDriveDbId(); }
 
         Q_INVOKABLE void loadDrives();
         Q_INVOKABLE void deleteDrive(qint64 driveDbId);

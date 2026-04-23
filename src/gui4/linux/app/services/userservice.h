@@ -41,8 +41,8 @@ class UserService : public QObject {
     public:
         explicit UserService(CommService &commService, AppCache &appCache, QObject *parent = nullptr);
 
-        bool loading() const { return _loading; }
-        const QString &lastError() const { return _lastError; }
+        [[nodiscard]] bool loading() const { return _loading; }
+        [[nodiscard]] const QString &lastError() const { return _lastError; }
 
         Q_INVOKABLE void loadUsers();
         Q_INVOKABLE void loadAvailableDrives(qint64 userDbId);

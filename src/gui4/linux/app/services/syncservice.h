@@ -39,8 +39,8 @@ class SyncService : public QObject {
     public:
         explicit SyncService(CommService &commService, AppCache &appCache, QObject *parent = nullptr);
 
-        bool loading() const { return _loading; }
-        const QString &lastError() const { return _lastError; }
+        [[nodiscard]] bool loading() const { return _loading; }
+        [[nodiscard]] const QString &lastError() const { return _lastError; }
 
         Q_INVOKABLE void loadSyncs();
         Q_INVOKABLE void addSync(qint64 userDbId, qint64 accountId, qint64 driveId, const QString &localFolderPath,
@@ -66,7 +66,7 @@ class SyncService : public QObject {
         void endRequest();
         void setLoading(bool loading);
         void setLastError(const QString &error);
-        bool isValidSyncConfigurationValue(int32_t syncConfiguration) const;
+        [[nodiscard]] bool isValidSyncConfigurationValue(int32_t syncConfiguration) const;
 
         CommService &_commService;
         AppCache &_appCache;
