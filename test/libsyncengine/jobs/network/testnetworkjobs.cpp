@@ -140,11 +140,10 @@ void TestNetworkJobs::setUp() {
 
     initParmsDb();
 
-    _cacheDirectory = std::make_shared<CacheDirectory>(_localTempDir.path());
+    _cacheDirectory = std::make_shared<CacheDirectory>(_localParmsDbTempDir.path());
 
     const testhelpers::TestVariables testVariables;
     _remoteDirId = testVariables.remoteDirId;
-
 }
 
 void TestNetworkJobs::tearDown() {
@@ -1624,7 +1623,7 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
         public:
             explicit GetInfoUserJobMock(const UserDbId userDbId, const ApiToken &apiToken) :
                 GetInfoUserJob(userDbId),
-                _apiToken(apiToken) {};
+                _apiToken(apiToken){};
 
             [[nodiscard]] Poco::Net::HTTPResponse httpResponse() const override {
                 return Poco::Net::HTTPResponse(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
