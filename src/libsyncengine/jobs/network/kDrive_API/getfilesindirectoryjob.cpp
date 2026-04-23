@@ -38,7 +38,7 @@ void GetFilesInDirectoryJob::translateRemoteDirIdFromV2ToV3(const TranslationMod
 }
 
 
-GetFilesInDirectoryJob::GetFilesInDirectoryJob(const UserDbId userDbId, const DriveId driveId, RemoteNodeId fileId,
+GetFilesInDirectoryJob::GetFilesInDirectoryJob(const UserDbId userDbId, const DriveId driveId, RemoteNodeId remoteDirId,
                                                Cursor cursorInput,
                                                const TranslationMode translationMode /* = TranslationMode:None */) :
     AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, driveId),
@@ -50,7 +50,7 @@ GetFilesInDirectoryJob::GetFilesInDirectoryJob(const UserDbId userDbId, const Dr
 }
 
 
-GetFilesInDirectoryJob::GetFilesInDirectoryJob(const DriveDbId driveDbId, RemoteNodeId fileId, Cursor cursorInput,
+GetFilesInDirectoryJob::GetFilesInDirectoryJob(const DriveDbId driveDbId, RemoteNodeId remoteDirId, Cursor cursorInput,
                                                const TranslationMode translationMode /* = TranslationMode::None */) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
     _remoteDirId(std::move(remoteDirId)),
