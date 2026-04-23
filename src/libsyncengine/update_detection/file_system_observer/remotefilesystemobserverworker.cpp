@@ -352,8 +352,7 @@ ExitInfo RemoteFileSystemObserverWorker::exploreDirectory(const NodeId &nodeId) 
 ExitInfo RemoteFileSystemObserverWorker::handleSnapshotItem(
         const SnapshotItem &item, SyncNameSet &existingFiles, ParsingIterationState &iterationState,
         sentry::pTraces::counterScoped::RFSOExploreItem &itemHandlingMonitor) {
-    if (iterationState.ignore) return ExitCode::Ok; // continue
-    if (iterationState.eof) return ExitCode::Ok; // break
+    if (iterationState.ignore || iterationState.eof) return ExitCode::Ok;
 
     itemHandlingMonitor.start();
 
@@ -475,9 +474,8 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &remoteDirId
 
     sentry::pTraces::counterScoped::RFSOExploreItem itemHandlingMonitor(cursorPersistence == CursorPersistence::None, syncDbId());
     while (job->getItem(item, iterationState.error, iterationState.ignore, iterationState.eof)) {
-        if (const auto exitInfo = handleSnapshotItem(item, existingFiles, iterationState, itemHandlingMonitor); !exitInfo) {
+        if (const auto exitInfo = handleSnapshotItem(item, existingFiles, iterationState, itemHandlingMonitor); !exitInfo)
             return exitInfo;
-        }
 
         if (iterationState.eof) break;
         if (stopAsked()) return ExitCode::Ok;
