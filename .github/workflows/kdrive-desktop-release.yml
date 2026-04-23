@@ -28,6 +28,10 @@ on:
         type: boolean
         description: Upload builds to kDrive
         default: true
+      for_testing_only:
+        type: boolean
+        description: For testing only
+        default: false
 
 concurrency:
   group: kDrive-desktop-release-${{ github.head_ref }}
@@ -54,6 +58,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Check translations
+        if: ${{ !inputs.for_testing_only }}
         run: |
              cd translations\updateTool
              $result = .\Windows.ps1
@@ -79,6 +84,12 @@ jobs:
                  exit 0
              }
 
+      - name: Skip translations check in testing mode
+        if: ${{ inputs.for_testing_only }}
+        run: |
+             Write-Host "For testing only mode enabled: translations check skipped."
+             "<h1>:warning: For testing only mode: translations check skipped.</h1>" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+
 # Check Release Notes
   check-release-notes:
     runs-on: [ self-hosted, Linux, X64 ]
@@ -91,6 +102,7 @@ jobs:
         uses: ./.github/actions/get_version
 
       - name: Check release notes
+        if: ${{ !inputs.for_testing_only }}
         run: |
           VERSION_NUMBER="${{ steps.get-version.outputs.kDrive_version }}"  # Example: 3.9.20.23
           VERSION_NUMBER="${VERSION_NUMBER%.*}"  # Remove build number for release notes check
@@ -130,6 +142,13 @@ jobs:
             echo "</tr>"
             echo "</table>"
           } >> $GITHUB_STEP_SUMMARY
+        shell: bash
+
+      - name: Skip release notes check in testing mode
+        if: ${{ inputs.for_testing_only }}
+        run: |
+          echo "For testing only mode enabled: release notes check skipped."
+          echo "<h1>:warning: For testing only mode: release notes check skipped.</h1>" >> $GITHUB_STEP_SUMMARY
         shell: bash
 
 # Build apps
@@ -226,7 +245,7 @@ jobs:
           merge-multiple: true
 
       - name: Upload debug files and installers/appimage to kDrive
-        run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version }}" -os "win"
+        run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version }}" -os "win" -SkipReleaseNotesUpload:${{ inputs.for_testing_only }}
 
       - name: Download sentry-cli and login
         run: |
@@ -268,7 +287,7 @@ jobs:
           merge-multiple: true
 
       - name: Upload debug files and installers/appimage to kDrive
-        run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version }}" -os "linux-amd"
+        run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version }}" -os "linux-amd" -SkipReleaseNotesUpload:${{ inputs.for_testing_only }}
 
       - name: Download sentry-cli and login
         run: |
@@ -310,7 +329,7 @@ jobs:
           merge-multiple: true
 
       - name: Upload debug files and installers/appimage to kDrive
-        run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version }}" -os "linux-arm"
+        run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version }}" -os "linux-arm" -SkipReleaseNotesUpload:${{ inputs.for_testing_only }}
 
       - name: Download sentry-cli and login
         run: |
@@ -352,7 +371,7 @@ jobs:
           merge-multiple: true
 
       - name: Upload debug files and installers/appimage to kDrive
-        run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version }}" -os "macos"
+        run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version }}" -os "macos" -SkipReleaseNotesUpload:${{ inputs.for_testing_only }}
 
       - name: Download sentry-cli and login
         run: |
