@@ -47,6 +47,9 @@ class DriveListModel : public QAbstractListModel {
             MaintenanceRole,
             LockedRole,
             AccessDeniedRole,
+            PackIdRole,
+            PackNameRole,
+            PackDisplayNameRole,
             PackIsFreeRole,
             SelectedRole
         };

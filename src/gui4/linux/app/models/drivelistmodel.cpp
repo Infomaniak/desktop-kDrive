@@ -71,8 +71,14 @@ QVariant DriveListModel::data(const QModelIndex &index, const int role) const {
             return drive.locked();
         case AccessDeniedRole:
             return drive.accessDenied();
+        case PackIdRole:
+            return static_cast<qint64>(drive.packInfo().id());
+        case PackNameRole:
+            return QString::fromStdString(drive.packInfo().name());
+        case PackDisplayNameRole:
+            return QString::fromStdString(drive.packInfo().displayName());
         case PackIsFreeRole:
-            return drive.packIsFree();
+            return drive.packInfo().isFree();
         case SelectedRole:
             return static_cast<qint64>(drive.dbId()) == _appCache.selectedDriveDbId();
         default:
@@ -81,21 +87,23 @@ QVariant DriveListModel::data(const QModelIndex &index, const int role) const {
 }
 
 QHash<int, QByteArray> DriveListModel::roleNames() const {
-    static const QHash<int, QByteArray> roles{
-            {DbIdRole, "dbId"},
-            {IdRole, "id"},
-            {AccountDbIdRole, "accountDbId"},
-            {NameRole, "name"},
-            {SizeRole, "size"},
-            {UsedSizeRole, "usedSize"},
-            {ColorRole, "color"},
-            {NotificationsRole, "notifications"},
-            {AdminRole, "admin"},
-            {MaintenanceRole, "maintenance"},
-            {LockedRole, "locked"},
-            {AccessDeniedRole, "accessDenied"},
-            {PackIsFreeRole, "packIsFree"},
-            {SelectedRole, "selected"}};
+    static const QHash<int, QByteArray> roles{{DbIdRole, "dbId"},
+                                              {IdRole, "id"},
+                                              {AccountDbIdRole, "accountDbId"},
+                                              {NameRole, "name"},
+                                              {SizeRole, "size"},
+                                              {UsedSizeRole, "usedSize"},
+                                              {ColorRole, "color"},
+                                              {NotificationsRole, "notifications"},
+                                              {AdminRole, "admin"},
+                                              {MaintenanceRole, "maintenance"},
+                                              {LockedRole, "locked"},
+                                              {AccessDeniedRole, "accessDenied"},
+                                              {PackIdRole, "packId"},
+                                              {PackNameRole, "packName"},
+                                              {PackDisplayNameRole, "packDisplayName"},
+                                              {PackIsFreeRole, "packIsFree"},
+                                              {SelectedRole, "selected"}};
     return roles;
 }
 
