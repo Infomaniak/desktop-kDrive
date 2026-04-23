@@ -25,8 +25,9 @@ PermissionsGiver::PermissionsGiver(const SyncPath &path, const log4cplus::Logger
     _logger(logger) {
     if (const auto ioError = IoHelper::setFullAccess(_path); ioError != IoError::Success) {
         LOGW_ERROR(_logger, L"Failed to set full access rights - " << Utility::formatIoError(path, ioError));
+    } else {
+        LOGW_DEBUG(_logger, L"PermissionsGiver set full access rights: " << Utility::formatSyncPath(_path));
     }
-    LOGW_DEBUG(_logger, L"PermissionsGiver set full access rights: " << Utility::formatSyncPath(_path));
 }
 
 } // namespace KDC

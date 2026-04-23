@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1094,11 +1094,9 @@ IoError IoHelper::setFullAccess(const SyncPath &path) noexcept {
     // Retrieve `exec` rights. It is not modified by this method.
     bool dummyRead = false;
     bool dummyWrite = false;
-    bool exec = false;
-    if (const auto ioError = IoHelper::getRights(path, dummyRead, dummyWrite, exec); ioError != IoError::Success) {
-        LOGW_DEBUG(logger(), L"Failed to set rights for: " << Utility::formatSyncPath(path));
-        return IoError::Unknown;
-    }
+    bool exec = true;
+    (void) IoHelper::getRights(path, dummyRead, dummyWrite,
+                               exec); // This is the best effort to re-apply the existing exec rights.
 
     // The file must be unlocked before changing its access rights.
     if (const auto ioError = unlock(path); ioError != IoError::Success) {
