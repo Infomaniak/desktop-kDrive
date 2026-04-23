@@ -17,32 +17,47 @@
  */
 
 #include "driveservice.h"
-#include "serviceutils.h"
 
 #include <QLoggingCategory>
+
+namespace {
+constexpr char serviceKeyDrive[] = "drive";
+constexpr char actionLoadDrives[] = "loadDrives";
+constexpr char actionDeleteDrive[] = "deleteDrive";
+constexpr char actionUpdateDrive[] = "updateDrive";
+} // namespace
 
 namespace KDC {
 
 Q_LOGGING_CATEGORY(lcDriveService, "gui.v4.driveservice", QtInfoMsg)
 
-DriveService::DriveService(CommService &commService, AppCache &appCache, QObject *const parent) :
+DriveService::DriveService(CommService &commService, AppCache &appCache, ServiceActionTracker &serviceActionTracker,
+                           ServiceEventBus &serviceEventBus, QObject *const parent) :
     QObject(parent),
     _commService(commService),
-    _appCache(appCache) {
+    _appCache(appCache),
+    _serviceActionTracker(serviceActionTracker),
+    _serviceEventBus(serviceEventBus) {
     (void) connect(&_commService, &CommService::driveAdded, &_appCache, &AppCache::upsertDrive);
     (void) connect(&_commService, &CommService::driveUpdated, &_appCache, &AppCache::upsertDrive);
     (void) connect(&_commService, &CommService::driveRemoved, &_appCache, &AppCache::removeDrive);
     (void) connect(&_appCache, &AppCache::selectedDriveDbIdChanged, this, &DriveService::activeDriveDbIdChanged);
+    (void) connect(&_serviceActionTracker, &ServiceActionTracker::servicePendingChanged, this,
+                   [this](const QString &serviceKey, const bool pending) {
+                       if (serviceKey == serviceKeyDrive) {
+                           setLoading(pending);
+                       }
+                   });
+    setLoading(_serviceActionTracker.isServicePending(serviceKeyDrive));
 }
 
 void DriveService::loadDrives() {
-    beginRequest();
-    setLastError({});
+    beginAction(actionLoadDrives);
 
     _commService.requestDriveInfoList([this](const ExitInfo &exitInfo, const std::vector<DriveInfo> &list) {
-        endRequest();
-        if (!exitInfo) {
-            setLastError(ServiceUtils::formatExitInfo(exitInfo));
+        endAction(actionLoadDrives);
+        if (exitInfo.code() != ExitCode::Ok) {
+            notifyRequestFailure(exitInfo, RequestNum::DRIVE_INFOLIST);
             return;
         }
 
@@ -51,14 +66,13 @@ void DriveService::loadDrives() {
 }
 
 void DriveService::deleteDrive(const qint64 driveDbId) {
-    beginRequest();
-    setLastError(QString());
+    beginAction(actionDeleteDrive, driveDbId);
 
     // Cache consistency is signal-driven: we wait for driveRemoved/driveUpdated pushes.
-    _commService.requestDriveDelete(static_cast<DriveDbId>(driveDbId), [this](const ExitInfo &exitInfo) {
-        endRequest();
-        if (!exitInfo) {
-            setLastError(ServiceUtils::formatExitInfo(exitInfo));
+    _commService.requestDriveDelete(static_cast<DriveDbId>(driveDbId), [this, driveDbId](const ExitInfo &exitInfo) {
+        endAction(actionDeleteDrive, driveDbId);
+        if (exitInfo.code() != ExitCode::Ok) {
+            notifyRequestFailure(exitInfo, RequestNum::DRIVE_DELETE);
         }
     });
 }
@@ -68,34 +82,39 @@ void DriveService::setActiveDrive(const qint64 driveDbId) {
 }
 
 void DriveService::updateDrive(const DriveInfo &driveInfo) {
-    beginRequest();
-    setLastError({});
+    const qint64 driveDbId = static_cast<qint64>(driveInfo.dbId());
+    beginAction(actionUpdateDrive, driveDbId);
 
-    _commService.requestDriveUpdate(driveInfo, [this](const ExitInfo &exitInfo) {
-        endRequest();
-        if (!exitInfo) {
-            setLastError(ServiceUtils::formatExitInfo(exitInfo));
+    _commService.requestDriveUpdate(driveInfo, [this, driveDbId](const ExitInfo &exitInfo) {
+        endAction(actionUpdateDrive, driveDbId);
+        if (exitInfo.code() != ExitCode::Ok) {
+            notifyRequestFailure(exitInfo, RequestNum::DRIVE_UPDATE);
         }
     });
 }
 
-void DriveService::beginRequest() {
-    ++_pendingRequestCount;
-    setLoading(true);
+bool DriveService::isLoadDrivesPending() const {
+    return isActionPending(actionLoadDrives);
 }
 
-void DriveService::endRequest() {
-    if (_pendingRequestCount <= 0) {
-        qCWarning(lcDriveService) << "endRequest called with non-positive pending count:" << _pendingRequestCount;
-        _pendingRequestCount = 0;
-        setLoading(false);
-        return;
-    }
+bool DriveService::isDeleteDrivePending(const qint64 driveDbId) const {
+    return isActionPending(actionDeleteDrive, driveDbId);
+}
 
-    --_pendingRequestCount;
-    if (_pendingRequestCount == 0) {
-        setLoading(false);
-    }
+bool DriveService::isUpdateDrivePending(const qint64 driveDbId) const {
+    return isActionPending(actionUpdateDrive, driveDbId);
+}
+
+void DriveService::beginAction(const QString &actionKey, const qint64 scopeId) {
+    _serviceActionTracker.beginAction(serviceKeyDrive, actionKey, scopeId);
+}
+
+void DriveService::endAction(const QString &actionKey, const qint64 scopeId) {
+    _serviceActionTracker.endAction(serviceKeyDrive, actionKey, scopeId);
+}
+
+bool DriveService::isActionPending(const QString &actionKey, const qint64 scopeId) const {
+    return _serviceActionTracker.isActionPending(serviceKeyDrive, actionKey, scopeId);
 }
 
 void DriveService::setLoading(const bool loading) {
@@ -106,12 +125,9 @@ void DriveService::setLoading(const bool loading) {
     emit loadingChanged();
 }
 
-void DriveService::setLastError(const QString &error) {
-    if (_lastError == error) {
-        return;
-    }
-    _lastError = error;
-    emit lastErrorChanged();
+void DriveService::notifyRequestFailure(const ExitInfo &exitInfo, const RequestNum requestNum) {
+    qCWarning(lcDriveService) << "Drive service request failed | code:" << exitInfo.code() << "/ cause:" << exitInfo.cause();
+    _serviceEventBus.notifyGenericError(exitInfo, requestNum);
 }
 
 } // namespace KDC
