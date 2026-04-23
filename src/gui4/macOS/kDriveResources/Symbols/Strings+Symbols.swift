@@ -143,7 +143,7 @@ public enum KDriveLocalizable {
   /// loco:698b244d7e73966ce3096b02
   public static let copyingLink = KDriveLocalizable.tr("Localizable", "copyingLink", fallback: "Copying Link…")
   /// loco:698b169cf72c91b1760a7002
-  public static let dataManagementDescription = KDriveLocalizable.tr("Localizable", "dataManagementDescription", fallback: "You can customize the usage and operational data collected by Infomaniak to fix bugs and improve the application. Both tools used are hosted and managed exclusively by us.\n\n\nThe source code of this application can be verified, the information collected is anonymous and your personal information remains strictly confidential and is never shared with third parties.")
+  public static let dataManagementDescription = KDriveLocalizable.tr("Localizable", "dataManagementDescription", fallback: "You can customize the usage and operational data collected by Infomaniak to fix bugs and improve the application. Both tools used are hosted and managed exclusively by us.\n\nThe source code of this application can be verified, the information collected is anonymous and your personal information remains strictly confidential and is never shared with third parties.")
   /// loco:698b15ec9e0aad20280f8c02
   public static let dataManagementSettings = KDriveLocalizable.tr("Localizable", "dataManagementSettings", fallback: "Data management")
   /// loco:698b164a5f781b3d5203de12
@@ -302,6 +302,8 @@ public enum KDriveLocalizable {
   public static let needHelpSetting = KDriveLocalizable.tr("Localizable", "needHelpSetting", fallback: "Need help?")
   /// loco:69ce15f8ac7c0ee6d7099c02
   public static let networkSettings = KDriveLocalizable.tr("Localizable", "networkSettings", fallback: "Network")
+  /// loco:6992de465798e1839302bbc2
+  public static let noAccountConnected = KDriveLocalizable.tr("Localizable", "noAccountConnected", fallback: "Add an account to get started")
   /// loco:698b10ad0c20e31c9c00a5c2
   public static let notificationsDisabledAlways = KDriveLocalizable.tr("Localizable", "notificationsDisabledAlways", fallback: "Always")
   /// loco:698b1086dc2a328c000cfd92

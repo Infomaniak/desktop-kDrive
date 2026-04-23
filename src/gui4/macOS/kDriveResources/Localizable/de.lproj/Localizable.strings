@@ -4,7 +4,7 @@
  * Locale: de, German
  * Tagged: macOS
  * Exported by: Killian Mathias
- * Exported at: Tue, 14 Apr 2026 11:05:52 +0200
+ * Exported at: Thu, 23 Apr 2026 14:56:15 +0200
  */
 
 
@@ -435,6 +435,8 @@
 "needHelpSetting" = "Brauchen Sie Hilfe?";
 /* loco:69ce15f8ac7c0ee6d7099c02 */
 "networkSettings" = "Network";
+/* loco:6992de465798e1839302bbc2 */
+"noAccountConnected" = "Fügen Sie ein Konto hinzu, um zu beginnen";
 
 
 /* loco:698b0aaddee0bf9fb206a694 */
