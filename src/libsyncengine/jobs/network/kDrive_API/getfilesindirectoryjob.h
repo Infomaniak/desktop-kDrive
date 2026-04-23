@@ -28,15 +28,15 @@ namespace KDC {
 class GetFilesInDirectoryJob : public AbstractTokenNetworkJob {
     public:
         /// @throw JobException
-        GetFilesInDirectoryJob(UserDbId userDbId, DriveId driveId, NodeId fileId, std::string cursorInput = {},
+        GetFilesInDirectoryJob(UserDbId userDbId, DriveId driveId, RemoteNodeId remoteDirId, Cursor cursorInput = {},
                                TranslationMode translationMode = TranslationMode::None);
         /// @throw JobException
-        explicit GetFilesInDirectoryJob(DriveDbId driveDbId, NodeId fileId, std::string cursorInput = {},
+        explicit GetFilesInDirectoryJob(DriveDbId driveDbId, RemoteNodeId remoteDirId, Cursor cursorInput = {},
                                         TranslationMode translationMode = TranslationMode::None);
 
         void setListingConf(const ListingConf &listingConf) { _listingConf = listingConf; };
 
-        [[nodiscard]] const std::string &cursor() const { return _cursorOutput; }
+        [[nodiscard]] const Cursor &cursor() const { return _cursorOutput; }
         [[nodiscard]] bool hasMore() const { return _hasMore; }
 
         [[nodiscard]] ExitInfo nodeInfoList(RemoteNodeInfoList &nodeInfoList) const {
@@ -62,19 +62,19 @@ class GetFilesInDirectoryJob : public AbstractTokenNetworkJob {
         // of the JSON result's `data` field.
         ExitInfo deserializeDataArray();
         /// @throw JobException
-        void translateRemoteIdFromV2ToV3(const TranslationMode translationMode);
+        void translateRemoteDirIdFromV2ToV3(TranslationMode translationMode);
 
         // The remote identifier of the folder whose file list is queried.
-        RemoteNodeId _fileId;
+        RemoteNodeId _remoteDirId;
 
         // If `_hasMore` is `true` a subsequent request is required.
         bool _hasMore{false};
 
         // The starting point of the listing to be performed by the backend.
-        std::string _cursorInput;
+        Cursor _cursorInput;
 
         // Used for subsequent requests when `_hasMore` is `true`
-        std::string _cursorOutput;
+        Cursor _cursorOutput;
 
         // The deserialization of the request JSON result.
         RemoteNodeInfoList _remoteNodeInfoList;
