@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,6 +49,7 @@ namespace Infomaniak.kDrive.CustomControls
                 typeof(Pages.StoragePage)
             }}
         };
+        private const int _maxStackSize = 5;
 
         public AppNavigationView()
         {
@@ -90,8 +92,21 @@ namespace Infomaniak.kDrive.CustomControls
         private void Frame_Navigated(object sender, Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
         {
             UpdateSelectedItem();
+
+            var frame = (Microsoft.UI.Xaml.Controls.Frame)sender;
+
+            TrimStack(frame.BackStack, _maxStackSize);
+            TrimStack(frame.ForwardStack, _maxStackSize);
         }
 
+        private void TrimStack(IList<PageStackEntry> stack, int maxSize)
+        {
+            while (stack.Count > maxSize)
+            {
+                // Remove oldest entry (index 0 = bottom of stack)
+                stack.RemoveAt(0);
+            }
+        }
 
         private void OnItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
         {
@@ -149,7 +164,7 @@ namespace Infomaniak.kDrive.CustomControls
 
         private Visibility GetSyncSelectorVisibility(bool isPaneOpen, IList<Sync> syncs)
         {
-            if(isPaneOpen && syncs.Count > 0)
+            if (isPaneOpen && syncs.Count > 0)
                 return Visibility.Visible;
             else
                 return Visibility.Collapsed;

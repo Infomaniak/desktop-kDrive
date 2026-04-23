@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using Infomaniak.kDrive.Pages.Settings;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,6 +23,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace Infomaniak.kDrive.Pages
@@ -99,6 +99,45 @@ namespace Infomaniak.kDrive.Pages
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
             DetachHandlers();
+            CleanupLottiePlayers();
+        }
+
+        private void CleanupLottiePlayers()
+        {
+            try
+            {
+                // Find and cleanup all LottiePlayer controls in the visual tree
+                var lottiePlayers = FindVisualChildren<CustomControls.LottiePlayer>(this);
+                foreach (var player in lottiePlayers)
+                {
+                    player?.Cleanup();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(Logger.Level.Warning, $"Error cleaning up Lottie players: {ex.Message}");
+            }
+        }
+
+        private static IEnumerable<T> FindVisualChildren<T>(DependencyObject parent) where T : DependencyObject
+        {
+            if (parent == null)
+                yield break;
+
+            int childCount = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < childCount; i++)
+            {
+                var child = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(parent, i);
+                if (child is T typedChild)
+                {
+                    yield return typedChild;
+                }
+
+                foreach (var descendant in FindVisualChildren<T>(child))
+                {
+                    yield return descendant;
+                }
+            }
         }
 
         private void DetachHandlers()
