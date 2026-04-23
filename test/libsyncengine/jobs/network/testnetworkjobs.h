@@ -63,6 +63,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testDriveUploadSessionSynchronousAborted);
         CPPUNIT_TEST(testDriveUploadSessionAsynchronousAborted);
         CPPUNIT_TEST(testGetAppVersionInfo);
+        CPPUNIT_TEST(testGetAppVersionInfoParsingEdgeCases);
         CPPUNIT_TEST(testDirectDownload);
         CPPUNIT_TEST(testDownloadHasEnoughSpace);
         CPPUNIT_TEST(testSearch);
@@ -106,6 +107,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         void testDriveUploadSessionSynchronousAborted();
         void testDriveUploadSessionAsynchronousAborted();
         void testGetAppVersionInfo();
+        void testGetAppVersionInfoParsingEdgeCases();
         void testDirectDownload();
         void testDownloadHasEnoughSpace();
         void testSearch();
