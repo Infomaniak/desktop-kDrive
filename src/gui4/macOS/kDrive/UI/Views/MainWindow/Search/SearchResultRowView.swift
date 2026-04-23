@@ -44,10 +44,10 @@ struct SearchResultRowView: View {
             if !file.isAvailableLocally {
                 Image(systemName: "arrow.up.forward.square")
                     .foregroundStyle(ColorToken.Text.secondary.asColor)
-                    .help(openInBrowserTooltip)
             }
         }
         .contentShape(Rectangle())
+        .help(file.isAvailableLocally ? "" : openInBrowserTooltip)
     }
 
     private var formattedSubtitle: String {
