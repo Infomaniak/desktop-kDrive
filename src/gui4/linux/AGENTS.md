@@ -21,6 +21,8 @@
 - Do not run `clang-format` on `CMakeLists.txt` in this repository.
 - For any branch named `linux-v4/*`: create it from `linux-v4/main`, and compute diffs against `linux-v4/main` by
   default. `linux-v4/main` is the Linux v4 integration branch regularly rebased on `develop`.
+- For shared infrastructure classes, document the class role explicitly in the header comment (and non-role when
+  relevant).
 
 ## Scope
 
@@ -36,6 +38,8 @@
   logic.
 - `communicationlayer/signaldispatcher.*`: server-push signal fanout to registered handlers.
 - `app/services/commservice.*`: typed request/signal facade above `IpcClient`.
+- `app/services/serviceactiontracker.*`: shared persistent state for in-flight service actions
+  (`begin/end/isActionPending/isServicePending`).
 - `app/services/serviceeventbus.*`: shared high-level service event hub (single UI subscription point for generic
   cross-service failures). Owned once by `AppClientLinux` and injected by reference into app services.
 - `app/cache/appcache.*`: central observable cache (`AppCache` QObject) — typed snapshots and incremental
@@ -68,6 +72,8 @@ cmake --build build-linux/build/build/Debug --target kdrive_qml -- -j 12
 - When object lifetime is uncertain in async callbacks, guard with `QPointer<T>`.
 - For cross-service UI error notification, use a single shared `ServiceEventBus` instance and inject it by reference
   into each service (`UserService`, `DriveService`, `SyncService`, ...).
+- Keep responsibilities split:
+  `ServiceEventBus` for transient events, `ServiceActionTracker` for durable pending-action state.
 - Do not create per-service formatted error-string state for UI display; services emit generic bus signals and keep
   structured backend error information in request handlers/logs.
 
@@ -79,6 +85,8 @@ cmake --build build-linux/build/build/Debug --target kdrive_qml -- -j 12
 - Request methods should parse `Poco::DynamicStruct` into typed DTOs before exposing data upward.
 - Generic UI-facing request failures from high-level services should be emitted through `ServiceEventBus` so UI can
   subscribe once (`genericErrorOccurred()`).
+- Action-level and per-service loading state should come from `ServiceActionTracker`
+  (`isActionPending(...)`, `isServicePending(...)`).
 - Use shared `msgParam*` keys and enums from `libcommon`; avoid ad-hoc string keys.
 
 ## Coding Conventions (Linux v4)
