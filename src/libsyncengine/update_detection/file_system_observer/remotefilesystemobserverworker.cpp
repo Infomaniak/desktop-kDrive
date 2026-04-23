@@ -560,11 +560,11 @@ ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(const RemoteNodeId &remote
         LOG_SYNCPAL_DEBUG(_logger, "Notify changes request failed for drive: " << std::to_string(_driveDbId).c_str()
                                                                                << " and cursor: "
                                                                                << _listingCursorMap.at(remoteDirId).cursor);
-        return {ExitCode::BackError, ExitCause::ApiErr};
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
     if (!JsonParserUtility::extractValue(resObj, changesKey, changes)) {
-        return {ExitCode::BackError, ExitCause::ApiErr};
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
     return ExitCode::Ok;
@@ -704,31 +704,29 @@ ExitInfo RemoteFileSystemObserverWorker::processActions(const Poco::JSON::Array:
 
 ExitInfo RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Object::Ptr actionObj, ActionInfo &actionInfo) {
     std::string tmpStr;
-    if (!JsonParserUtility::extractValue(actionObj, actionKey, tmpStr)) {
-        return ExitCode::BackError;
-    }
+    if (!JsonParserUtility::extractValue(actionObj, actionKey, tmpStr)) return {ExitCode::BackError, ExitCause::MissingReplyData};
+
     actionInfo.actionCode = getActionCode(tmpStr);
 
     RemoteFileId tmpInt = 0;
-    if (!JsonParserUtility::extractValue(actionObj, fileIdKey, tmpInt)) {
-        return ExitCode::BackError;
-    }
+    if (!JsonParserUtility::extractValue(actionObj, fileIdKey, tmpInt)) return {ExitCode::BackError, ExitCause::MissingReplyData};
+
     if (const auto exitInfo = actionInfo.snapshotItem.setId(_syncPal->userDbId(), _syncPal->driveId(), std::to_string(tmpInt));
         !exitInfo)
         return exitInfo;
 
-    if (!JsonParserUtility::extractValue(actionObj, parentIdKey, tmpInt)) {
-        return ExitCode::BackError;
-    }
+    if (!JsonParserUtility::extractValue(actionObj, parentIdKey, tmpInt))
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+
     if (const auto exitInfo =
                 actionInfo.snapshotItem.setParentId(_syncPal->userDbId(), _syncPal->driveId(), std::to_string(tmpInt));
         !exitInfo)
         return exitInfo;
 
     SyncName tmpDestPathStr;
-    if (!JsonParserUtility::extractValue(actionObj, destinationKey, tmpDestPathStr, false)) {
-        return ExitCode::BackError;
-    }
+    if (!JsonParserUtility::extractValue(actionObj, destinationKey, tmpDestPathStr, false))
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+
     if (!tmpDestPathStr.empty()) {
         // This a move operation. Get the name from the `destination` field
         actionInfo.snapshotItem.setName(tmpDestPathStr.substr(tmpDestPathStr.find_last_of('/') + 1)); // +1 to ignore the last "/"
@@ -736,23 +734,22 @@ ExitInfo RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
     } else {
         // Otherwise, get the name from the `path` field
         SyncName actionPath;
-        if (!JsonParserUtility::extractValue(actionObj, pathKey, actionPath)) {
-            return ExitCode::BackError;
-        }
+        if (!JsonParserUtility::extractValue(actionObj, pathKey, actionPath))
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
+
         actionInfo.setPath(actionPath);
         actionInfo.snapshotItem.setName(
                 actionInfo.path().substr(actionInfo.path().find_last_of('/') + 1)); // +1 to ignore the last "/"
     }
 
     SyncTime tmpTime = 0;
-    if (!JsonParserUtility::extractValue(actionObj, createdAtKey, tmpTime, false)) {
-        return ExitCode::BackError;
-    }
+    if (!JsonParserUtility::extractValue(actionObj, createdAtKey, tmpTime, false))
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+
     actionInfo.snapshotItem.setCreatedAt(tmpTime);
 
-    if (!JsonParserUtility::extractValue(actionObj, lastModifiedAtKey, tmpTime, false)) {
-        return ExitCode::BackError;
-    }
+    if (!JsonParserUtility::extractValue(actionObj, lastModifiedAtKey, tmpTime, false))
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
     actionInfo.snapshotItem.setLastModified(tmpTime);
 
     return ExitCode::Ok;
@@ -761,27 +758,34 @@ ExitInfo RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
 ExitInfo RemoteFileSystemObserverWorker::extractActionFileInfo(const Poco::JSON::Object::Ptr actionFileObj,
                                                                ActionInfoList &actionInfoList) {
     RemoteFileId fileId = 0;
-    if (!JsonParserUtility::extractValue(actionFileObj, idKey, fileId)) return ExitCode::BackError;
+    if (!JsonParserUtility::extractValue(actionFileObj, idKey, fileId)) return {ExitCode::BackError, ExitCause::MissingReplyData};
+    ;
 
     std::string fileTypeString;
-    if (!JsonParserUtility::extractValue(actionFileObj, typeKey, fileTypeString)) return ExitCode::BackError;
+    if (!JsonParserUtility::extractValue(actionFileObj, typeKey, fileTypeString))
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+    ;
 
     uint64_t fileSize = 0;
     if (fileTypeString == fileKey && !JsonParserUtility::extractValue(actionFileObj, sizeKey, fileSize, false))
-        return ExitCode::BackError;
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
 
     SyncTime createdAtTime = 0;
-    if (!JsonParserUtility::extractValue(actionFileObj, createdAtKey, createdAtTime, false)) return ExitCode::BackError;
+    if (!JsonParserUtility::extractValue(actionFileObj, createdAtKey, createdAtTime, false))
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
 
     SyncTime lastModifiedAtTime = 0;
-    if (!JsonParserUtility::extractValue(actionFileObj, lastModifiedAtKey, lastModifiedAtTime, false)) return ExitCode::BackError;
+    if (!JsonParserUtility::extractValue(actionFileObj, lastModifiedAtKey, lastModifiedAtTime, false))
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
 
     std::string symbolicKeyString;
-    if (!JsonParserUtility::extractValue(actionFileObj, symbolicLinkKey, symbolicKeyString, false)) return ExitCode::BackError;
+    if (!JsonParserUtility::extractValue(actionFileObj, symbolicLinkKey, symbolicKeyString, false))
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
 
     bool canWrite = false;
     if (auto capabilitiesObj = actionFileObj->getObject(capabilitiesKey); capabilitiesObj) {
-        if (!JsonParserUtility::extractValue(capabilitiesObj, canWriteKey, canWrite)) return ExitCode::BackError;
+        if (!JsonParserUtility::extractValue(capabilitiesObj, canWriteKey, canWrite))
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
     for (auto &actionInfo: actionInfoList) {
