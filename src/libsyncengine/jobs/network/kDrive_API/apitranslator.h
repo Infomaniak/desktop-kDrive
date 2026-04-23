@@ -43,7 +43,7 @@ class ApiTranslator {
 
     private:
         static bool getDriveDbIds(DriveDbIdMap &driveIdMap);
-        static ExitInfo updateCache(UserDbId userDbId, DriveDbId driveDbId);
+        static ExitInfo updateCache(UserDbId userDbId, DriveId driveId);
 
         using RemoteNodeIdCacheMap = std::unordered_map<DriveDbId, RemoteNodeId>;
         using RemoteSpecialFoldersCacheMap = std::unordered_map<SpecialFolder, RemoteNodeIdCacheMap>;
