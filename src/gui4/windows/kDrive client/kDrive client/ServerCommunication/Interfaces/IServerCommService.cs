@@ -119,6 +119,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         // Error-related requests
         Task<bool> RefreshErrors(CancellationToken cancellationToken);
         Task<bool> DeleteError(DbId errorDbId, CancellationToken cancellationToken);
+        Task<bool> RefreshSyncErrors(DbId syncDbId, CancellationToken cancellationToken);
         Task<bool> ResolveConflicts(List<DbId> keepLocalErrorDbIds, List<DbId> keepRemoteErrorDbIds, CancellationToken cancellationToken);
         Task<bool> ResolveConflictsQuick(List<DbId> errorDbIds, ConflictResolutionStrategy strategy, CancellationToken cancellationToken);
 

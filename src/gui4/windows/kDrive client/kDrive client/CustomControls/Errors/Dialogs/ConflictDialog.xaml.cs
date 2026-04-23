@@ -3,6 +3,7 @@ using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace Infomaniak.kDrive.CustomControls.Errors;
@@ -46,15 +47,31 @@ public partial class ConflictDialog : Page
     {
         _dialog.IsPrimaryButtonEnabled = false;
         _dialog.PrimaryButtonClick += Dialog_PrimaryButtonClick;
+        _dialog.CloseButtonClick += Dialog_CloseButtonClick;
+        _dialog.DefaultButton = ContentDialogButton.Primary;
         _dialog.Closed += Dialog_Closed;
+
+        _dialog.CloseButtonText = kDrive.Localizer.Instance.GetString("buttonClose");
         RefreshPrimaryButtonText();
     }
 
     private void Dialog_Closed(ContentDialog sender, ContentDialogClosedEventArgs args)
     {
         _dialog.PrimaryButtonClick -= Dialog_PrimaryButtonClick;
+        _dialog.CloseButtonClick -= Dialog_CloseButtonClick;
         _dialog.Closed -= Dialog_Closed;
-        Bindings.StopTracking();
+    }
+
+    private async void Dialog_CloseButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+    {
+        if (ViewModel.CurrentErrorIndex > 1)
+        {
+            // Save all the conflict resolutions choices the user made so far, even if they didn't click on the "Validate" button for the current conflict.
+            if (!await ApplyUserChoices())
+            {
+                Utility.ShowUnexpectedErrorTeachingTip();
+            }
+        }
     }
 
     private async void Dialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
@@ -65,13 +82,11 @@ public partial class ConflictDialog : Page
         if (!ViewModel.HasMultipleConflicts || ViewModel.CurrentErrorIndex == _errors.Count)
         {
             // The user has validated the last conflict, we can now apply all their choices on the server
-            _dialog.IsEnabled = false;
-            if (!await ViewModel.ApplyUserChoices())
+            if (!await ApplyUserChoices())
             {
                 Utility.ShowUnexpectedErrorTeachingTip();
                 args.Cancel = true;
             }
-            _dialog.IsEnabled = true;
         }
         else
         {
@@ -79,6 +94,14 @@ public partial class ConflictDialog : Page
             RefreshPrimaryButtonText();
             args.Cancel = true;
         }
+    }
+
+    private async Task<bool> ApplyUserChoices()
+    {
+        _dialog.IsEnabled = false;
+        var result = await ViewModel.ApplyUserChoices();
+        _dialog.IsEnabled = true;
+        return result;
     }
 
     private void RefreshPrimaryButtonText()

@@ -41,7 +41,6 @@ namespace Infomaniak.kDrive.CustomControls
         {
             _activitySubscription?.Dispose();
             ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
-            Bindings.StopTracking();
         }
 
         private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)

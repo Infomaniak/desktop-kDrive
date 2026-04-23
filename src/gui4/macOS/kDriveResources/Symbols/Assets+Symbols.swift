@@ -77,6 +77,8 @@ public enum KDriveResources {
   public static let mountainsTreesSun = ImageAsset(name: "mountains-trees-sun")
   public static let volumeStrokeDots = ImageAsset(name: "volume-stroke-dots")
   public static let kdriveAppIcon = ImageAsset(name: "kdrive-app-icon")
+  public static let matomoLogo = ImageAsset(name: "matomo-logo")
+  public static let sentryLogo = ImageAsset(name: "sentry-logo")
   public static let kdriveCircleFilledArrowsClockwise = ImageAsset(name: "kdrive-circle-filled-arrows-clockwise")
   public static let kdriveCircleFilledExclamationMark = ImageAsset(name: "kdrive-circle-filled-exclamation-mark")
   public static let kdriveCircleFilledPause = ImageAsset(name: "kdrive-circle-filled-pause")

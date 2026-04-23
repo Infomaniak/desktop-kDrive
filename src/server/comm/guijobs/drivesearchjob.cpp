@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -85,6 +85,7 @@ ExitInfo DriveSearchJob::process() {
     // Send search request (synchronously for now)
     SearchJob searchJob(sync.driveDbId(), _syncDbId, CommonUtility::commString2Str(_searchString));
     (void) searchJob.runSynchronously();
+    _hasMore = searchJob.hasMore();
     for (const auto &searchInfo: searchJob.searchResults()) {
         _searchInfoList.push_back(searchInfo);
     }

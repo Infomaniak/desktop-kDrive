@@ -11,7 +11,6 @@
       xmlns:toolKit="using:CommunityToolkit.WinUI.Controls"
       xmlns:popupPages="using:Infomaniak.kDrive.Pages.Popup"
       xmlns:kDrive="using:Infomaniak.kDrive"
-      Unloaded="Page_Unloaded"
       mc:Ignorable="d">
 
     <Page.Resources>
@@ -163,6 +162,8 @@
                                                           Click="TemplateCheckBox_Click" />
 
                                                 <ToggleSwitch Grid.Column="2"
+                                                              OnContent="{x:Bind kDrive:Localizer.Instance.GetString('labelActivated')}"
+                                                              OffContent="{x:Bind kDrive:Localizer.Instance.GetString('labelDeactivated')}"
                                                               IsOn="{x:Bind Warning, Mode=OneWay}"
                                                               Toggled="WarningToggleSwitch_Toggled"
                                                               HorizontalAlignment="Right">

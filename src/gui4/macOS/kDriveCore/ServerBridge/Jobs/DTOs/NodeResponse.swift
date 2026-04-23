@@ -78,3 +78,19 @@ struct CreateMissingFoldersQuery: Codable, Sendable {
 struct CreateMissingFoldersResponse: Codable, Sendable {
     @Base64CodedString var nodeId: String
 }
+
+struct NodeConflictInfoQuery: Codable, Sendable {
+    let syncDbId: Int32
+    @Base64CodedString var relativePath: String
+    let replicaSide: KDC.ReplicaSide
+}
+
+struct NodeConflictInfoResponse: Codable, Sendable {
+    let nodeConflictInfo: NodeConflictInfoMetadata
+}
+
+struct NodeConflictInfoMetadata: Codable, Sendable {
+    @Base64CodedString var authorName: String
+    let fileSize: Int64
+    let lastModificationDate: Int64
+}

@@ -97,8 +97,9 @@ void OperationSorterWorker::sortOperations() {
         }
     }
 
-    if (const auto reshuffledOps = fixImpossibleFirstMoveOp(); reshuffledOps && !reshuffledOps->isEmpty()) {
-        *_syncPal->_syncOps = *reshuffledOps;
+    SyncOperationList reshuffledOps;
+    if (fixImpossibleFirstMoveOp(reshuffledOps) && !reshuffledOps.isEmpty()) {
+        *_syncPal->_syncOps = reshuffledOps;
         // If a cycle is discovered, the sync must be restarted after the execution of the operation in _syncOps
         _syncPal->setRestart(true);
     }
@@ -293,7 +294,7 @@ SyncOpPtr OperationSorterWorker::getAncestorOpWithHighestIndex(const std::unorde
     depth = ancestorNode ? 1 : 0;
 
     while (ancestorNode && ancestorNode != _syncPal->updateTree(node->side())->rootNode()) {
-        for (const auto parentOpIdList = _syncPal->_syncOps->getOpIdsFromNodeId(*ancestorNode->id(), node->side());
+        for (const auto parentOpIdList = _syncPal->_syncOps->getOpIdsFromSourceNodeId(*ancestorNode->id(), node->side());
              const auto &parentOpId: parentOpIdList) {
             const auto parentOp = _syncPal->_syncOps->getOp(parentOpId);
             if (parentOp->type() != OperationType::Create) {
@@ -349,9 +350,11 @@ void OperationSorterWorker::fixMoveBeforeMoveHierarchyFlip() {
     LOG_SYNCPAL_DEBUG(_logger, "End fixMoveBeforeMoveHierarchyFlip");
 }
 
-std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp() {
+bool OperationSorterWorker::fixImpossibleFirstMoveOp(SyncOperationList &syncOperationList) {
+    syncOperationList.clear();
+
     if (_syncPal->_syncOps->isEmpty()) {
-        return std::nullopt;
+        return false;
     }
 
     const auto firstOp = _syncPal->_syncOps->getOp(_syncPal->_syncOps->opSortedList().front());
@@ -360,7 +363,7 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
     LOG_IF_FAIL(node)
     // Check if firstOp is move-directory operation.
     if (firstOp->type() != OperationType::Move || node->type() != NodeType::Directory) {
-        return std::nullopt; // firstOp is possible
+        return false; // firstOp is possible
     }
 
     // firstOp is an impossible move if dest starts with source + "/".
@@ -372,7 +375,7 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
     }
 
     if (!CommonUtility::isDescendantOrEqual(normalizedPath, node->moveOriginInfos().normalizedPath())) {
-        return std::nullopt; // firstOp is possible
+        return false; // firstOp is possible
     }
 
     const auto correspondingDestinationParentNode = correspondingNodeInOtherTree(node->parentNode());
@@ -380,7 +383,7 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
     if (correspondingDestinationParentNode == nullptr || correspondingSourceNode == nullptr) {
         LOGW_SYNCPAL_ERROR(_logger, L"Missing corresponding nodes for node " << Utility::formatSyncName(node->name()) << L" ("
                                                                              << CommonUtility::s2ws(*node->id()) << L")");
-        return std::nullopt; // Should never happen
+        return false; // Should never happen
     }
 
     std::list<std::shared_ptr<Node>> moveDirectoryList;
@@ -402,7 +405,7 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
     int32_t lowestIndex = INT32_MAX;
     SyncOpPtr selectedOp = nullptr;
     for (const auto &n: moveDirectoryList) {
-        for (const auto opIds = _syncPal->_syncOps->getOpIdsFromNodeId(*n->id(), n->side()); const auto opId: opIds) {
+        for (const auto opIds = _syncPal->_syncOps->getOpIdsFromSourceNodeId(*n->id(), n->side()); const auto opId: opIds) {
             const auto op = _syncPal->_syncOps->getOp(opId);
             LOG_IF_FAIL(op)
             if (op->type() != OperationType::Move) {
@@ -418,22 +421,21 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
 
     // Make a list of all operations on target replica up to selectedOp
     const auto targetReplica = correspondingDestinationParentNode->side();
-    SyncOperationList reshuffledOps;
     for (const auto &opId: _syncPal->_syncOps->opSortedList()) {
         const auto op = _syncPal->_syncOps->getOp(opId);
         LOG_IF_FAIL(op)
         // Include selectedOp
         if (op == selectedOp) {
-            (void) reshuffledOps.pushOp(op);
+            (void) syncOperationList.pushOp(op);
             break;
         }
         // Operations that affect the targetReplica or both (omit flag)
         if (op->affectedNode()->side() == targetReplica || op->omit()) {
-            (void) reshuffledOps.pushOp(op);
+            (void) syncOperationList.pushOp(op);
         }
     }
 
-    return reshuffledOps;
+    return true;
 }
 
 bool OperationSorterWorker::breakCycle(SyncOperationList &cycle, const SyncOpPtr &renameResolutionOp) {

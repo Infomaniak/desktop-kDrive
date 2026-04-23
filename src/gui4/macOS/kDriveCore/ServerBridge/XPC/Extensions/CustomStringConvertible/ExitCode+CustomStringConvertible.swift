@@ -16,7 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Foundation
+import CppInterop
 
 extension KDC.ExitCode: CustomStringConvertible {
     public var description: String {

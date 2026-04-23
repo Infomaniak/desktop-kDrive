@@ -18,15 +18,20 @@
 
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <!--  kSuite gradient colors  -->
-    <Color x:Key="kSuite.Gradient.lightblue">#1DDDFD</Color>
-    <Color x:Key="kSuite.Gradient.darkblue">#337CFF</Color>
-    <Color x:Key="kSuite.Gradient.purple">#A055FC</Color>
-    <Color x:Key="kSuite.Gradient.pink">#F34BBB</Color>
-    <Color x:Key="kSuite.Gradient.orange">#FD8C3D</Color>
+    <Color x:Key="Infomaniak.DS.kSuite.Gradient.lightblue">#1DDDFD</Color>
+    <Color x:Key="Infomaniak.DS.kSuite.Gradient.darkblue">#337CFF</Color>
+    <Color x:Key="Infomaniak.DS.kSuite.Gradient.purple">#A055FC</Color>
+    <Color x:Key="Infomaniak.DS.kSuite.Gradient.pink">#F34BBB</Color>
+    <Color x:Key="Infomaniak.DS.kSuite.Gradient.orange">#FD8C3D</Color>
 
     <!--  status colors  -->
-    <Color x:Key="colors.status.medium.success">#5FC96B</Color>
-    <Color x:Key="colors.status.medium.warning">#FFB632</Color>
-    <Color x:Key="colors.status.medium.error">#FC776D</Color>
-    <Color x:Key="colors.status.medium.information">#48E0FF</Color>
+    <Color x:Key="Infomaniak.DS.colors.status.medium.success">#5FC96B</Color>
+    <Color x:Key="Infomaniak.DS.colors.status.medium.warning">#FFB632</Color>
+    <Color x:Key="Infomaniak.DS.colors.status.medium.error">#FC776D</Color>
+    <Color x:Key="Infomaniak.DS.colors.status.medium.information">#48E0FF</Color>
+
+    <!--  kdrive colors  -->
+    <Color x:Key="Infomaniak.DS.colors.accent.kdrive.default">#7A9FFF</Color>
+    <SolidColorBrush x:Key="Infomaniak.DS.colors.accent.kdrive.defaultBrush" Color="{StaticResource Infomaniak.DS.colors.accent.kdrive.default}" />
+
 </ResourceDictionary>

@@ -16,12 +16,19 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Combine
-import Foundation
+import Cocoa
+import InfomaniakDI
+import kDriveCoreUI
+import kDriveResources
+import SwiftUI
 
-public extension AnyPublisher where Output == KDC.UpdateState, Failure == Never {
-    func observableUpdaterPublisher() -> AnyPublisher<KDC.UpdateState, Never> {
-        removeDuplicates()
-            .eraseToAnyPublisher()
+final class DataManagementPreferencesViewController: TitledViewController<DataManagementPreferencesView> {
+    convenience init() {
+        @InjectService var router: PreferencesViewRouter
+        self.init(
+            toolbarTitle: KDriveLocalizable.dataManagementSettings,
+            navigableRouter: router,
+            contentView: DataManagementPreferencesView()
+        )
     }
 }

@@ -23,9 +23,5 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
             if (!await Error.OpenItemInWebViewAsync())
                 Utility.ShowUnexpectedErrorTeachingTip();
         }
-        private void UserControl_Unloaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-        {
-            Bindings.StopTracking();
-        }
     }
 }

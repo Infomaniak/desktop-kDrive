@@ -263,6 +263,18 @@ bool LiveSnapshot::clearContentChecksum(const NodeId &itemId) {
     return setContentChecksum(itemId, "");
 }
 
+bool LiveSnapshot::forceUpdateLastChangeRevision(const NodeId &itemId) {
+    const std::scoped_lock lock(_mutex);
+    if (const auto item = findItem(itemId); item) {
+        item->forceUpdateLastChangeRevision();
+        if (!isOrphan(itemId)) {
+            startUpdate();
+        }
+        return true;
+    }
+    return false;
+}
+
 
 bool LiveSnapshot::isValid() const {
     const std::scoped_lock lock(_mutex);

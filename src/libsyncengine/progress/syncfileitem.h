@@ -71,8 +71,6 @@ class SyncFileItem {
         inline void setCreationTime(SyncTime newCreationTime) { _creationTime = newCreationTime; }
         inline bool dehydrated() const { return _dehydrated; }
         inline void setDehydrated(bool newDehydrated) { _dehydrated = newDehydrated; }
-        inline bool confirmed() const { return _confirmed; }
-        inline void setConfirmed(bool newConfirmed) { _confirmed = newConfirmed; }
         inline SyncTime timestamp() const { return _timestamp; }
         inline void setTimestamp(SyncTime newTimestamp) { _timestamp = newTimestamp; }
 
@@ -86,8 +84,7 @@ class SyncFileItem {
                    _instruction == other._instruction && _status == other._status && _conflict == other._conflict &&
                    _inconsistency == other._inconsistency && _cancelType == other._cancelType && _error == other._error &&
                    _size == other._size && _progress == other._progress && _modTime == other._modTime &&
-                   _creationTime == other._creationTime && _dehydrated == other._dehydrated && _confirmed == other._confirmed &&
-                   _timestamp == other._timestamp;
+                   _creationTime == other._creationTime && _dehydrated == other._dehydrated && _timestamp == other._timestamp;
         }
 
     private:
@@ -109,7 +106,6 @@ class SyncFileItem {
         SyncTime _modTime{0};
         SyncTime _creationTime{0};
         bool _dehydrated{false};
-        bool _confirmed{false};
         SyncTime _timestamp{std::time(nullptr)};
 };
 

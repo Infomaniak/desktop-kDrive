@@ -5,6 +5,7 @@ using Infomaniak.kDrive.ServerCommunication.JsonConverters;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -1280,6 +1281,16 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return CheckJobResultAndLogIfError(data, parms);
         }
 
+        public async Task<bool> RefreshSyncErrors(DbId syncDbId, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.SyncDbId] = syncDbId
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.ERROR_SYNC_REFRESH, parms, cancellationToken).ConfigureAwait(false);
+            return CheckJobResultAndLogIfError(data, parms);
+        }
+
         public async Task<bool> ResolveConflicts(List<DbId> keepLocalErrorDbIds, List<DbId> keepRemoteErrorDbIds, CancellationToken cancellationToken)
         {
             var parms = new JsonObject
@@ -1355,6 +1366,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     break;
                 case SignalNum.UTILITY_SHOW_NOTIFICATION:
                     await HandleUtilityShowNotification(sender, args);
+                    break;
+                case SignalNum.UTILITY_SHOW_SYNTHESIS:
+                    await HandleUtilityShowSynthesis(sender, args);
+                    break;
+                case SignalNum.UTILITY_SHOW_SETTINGS:
+                    await HandleUtilityShowSettings(sender, args);
                     break;
                 default:
                     Logger.Log(Logger.Level.Warning, $"Unhandled signal received: {args.SignalNum}");
@@ -1852,6 +1869,31 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
 
             App.ServiceProvider.GetRequiredService<NotificationManager>().ShowNotification(title, message);
+        }
+
+        public async Task HandleUtilityShowSynthesis(object? sender, SignalEventArgs args)
+        {
+            Logger.Log(Logger.Level.Info, "Received UTILITY_SHOW_SYNTHESIS signal - bringing main window to foreground");
+            if (Application.Current is App app)
+                await Utility.RunOnUIThread(() => app.CreateWindow(App.CreateWindowOptions.Foreground));
+        }
+
+        public async Task HandleUtilityShowSettings(object? sender, SignalEventArgs args)
+        {
+            Logger.Log(Logger.Level.Info, "Received UTILITY_SHOW_SETTINGS signal - bringing main window to foreground and navigating to settings");
+            if (Application.Current is App app)
+            {
+                await Utility.RunOnUIThread(() =>
+                {
+                    app.CreateWindow(App.CreateWindowOptions.Foreground);
+
+                    // Navigate to settings page
+                    if (app.CurrentWindow is MainWindow mainWindow)
+                    {
+                        mainWindow.AppNavView?.Frame?.Navigate(typeof(Pages.Settings.SettingsPage));
+                    }
+                });
+            }
         }
 
         // Helpers

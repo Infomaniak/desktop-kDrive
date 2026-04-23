@@ -47,8 +47,8 @@ struct ParametersInfoTest {
         let response = try decoder.decode(CallbackMessage<ParametersInfoResponse>.self, from: callbackData)
 
         // THEN
-        #expect(response.code == .Ok)
-        #expect(response.cause == .Unknown)
+        #expect(response.code == KDC.ExitCode.Ok)
+        #expect(response.cause == KDC.ExitCause.Unknown)
         #expect(response.id == 9)
 
         let parametersInfo = response.body.parametersInfo

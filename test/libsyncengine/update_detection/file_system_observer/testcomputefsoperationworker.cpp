@@ -511,6 +511,44 @@ void TestComputeFSOperationWorker::testHasChangedSinceLastSeen() {
     _syncPal->copySnapshots();
 
     CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->hasChangedSinceLastSeen(nodeIds));
+
+    const SnapshotRevision localRevisionBeforeUnblacklist =
+            _syncPal->liveSnapshot(ReplicaSide::Local).lastChangeRevision(nodeIds.localNodeId);
+    const SnapshotRevision remoteRevisionBeforeUnblacklist =
+            _syncPal->liveSnapshot(ReplicaSide::Remote).lastChangeRevision(nodeIds.remoteNodeId);
+
+    _syncPal->blacklistTemporarily(nodeIds.localNodeId, "test.txt", ReplicaSide::Local);
+    _syncPal->blacklistTemporarily(nodeIds.remoteNodeId, "test.txt", ReplicaSide::Remote);
+    _syncPal->removeItemFromTmpBlacklist(nodeIds.localNodeId, ReplicaSide::Local);
+    _syncPal->copySnapshots();
+
+    CPPUNIT_ASSERT_GREATER(localRevisionBeforeUnblacklist,
+                           _syncPal->liveSnapshot(ReplicaSide::Local).lastChangeRevision(nodeIds.localNodeId));
+    CPPUNIT_ASSERT_GREATER(remoteRevisionBeforeUnblacklist,
+                           _syncPal->liveSnapshot(ReplicaSide::Remote).lastChangeRevision(nodeIds.remoteNodeId));
+    CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->hasChangedSinceLastSeen(nodeIds));
+
+    _syncPal->computeFSOperationsWorker()->_lastLocalSnapshotSyncedRevision =
+            _syncPal->liveSnapshot(ReplicaSide::Local).lastChangeRevision(nodeIds.localNodeId);
+    _syncPal->computeFSOperationsWorker()->_lastRemoteSnapshotSyncedRevision =
+            _syncPal->liveSnapshot(ReplicaSide::Remote).lastChangeRevision(nodeIds.remoteNodeId);
+    CPPUNIT_ASSERT(!_syncPal->computeFSOperationsWorker()->hasChangedSinceLastSeen(nodeIds));
+
+    const SnapshotRevision localRevisionBeforeClear =
+            _syncPal->liveSnapshot(ReplicaSide::Local).lastChangeRevision(nodeIds.localNodeId);
+    const SnapshotRevision remoteRevisionBeforeClear =
+            _syncPal->liveSnapshot(ReplicaSide::Remote).lastChangeRevision(nodeIds.remoteNodeId);
+
+    _syncPal->blacklistTemporarily(nodeIds.localNodeId, "test.txt", ReplicaSide::Local);
+    _syncPal->blacklistTemporarily(nodeIds.remoteNodeId, "test.txt", ReplicaSide::Remote);
+    _syncPal->clearTmpBlacklist();
+    _syncPal->copySnapshots();
+
+    CPPUNIT_ASSERT_GREATER(localRevisionBeforeClear,
+                           _syncPal->liveSnapshot(ReplicaSide::Local).lastChangeRevision(nodeIds.localNodeId));
+    CPPUNIT_ASSERT_GREATER(remoteRevisionBeforeClear,
+                           _syncPal->liveSnapshot(ReplicaSide::Remote).lastChangeRevision(nodeIds.remoteNodeId));
+    CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->hasChangedSinceLastSeen(nodeIds));
 }
 
 void TestComputeFSOperationWorker::testIsInUnsyncedList(const bool expectedResult, const NodeId &nodeId,

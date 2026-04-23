@@ -50,7 +50,7 @@ void TestSocketComm::testServerListen() {
 
     // Create a client socket and connect to the server
     Poco::Net::StreamSocket clientSocket;
-    clientSocket.connect(Poco::Net::SocketAddress("localhost", _socketCommServerTest->getPort()));
+    clientSocket.connect(Poco::Net::SocketAddress(SocketCommServer::getHost(), _socketCommServerTest->getPort()));
     auto clientSideChannel = std::make_shared<SocketCommChannelTest>(clientSocket);
 
     // Wait for the server to accept the connection
@@ -95,7 +95,7 @@ void TestSocketComm::testServerCallbacks() {
 
     // Create a client socket and connect to the server
     Poco::Net::StreamSocket clientSocket;
-    clientSocket.connect(Poco::Net::SocketAddress("localhost", _socketCommServerTest->getPort()));
+    clientSocket.connect(Poco::Net::SocketAddress(SocketCommServer::getHost(), _socketCommServerTest->getPort()));
     auto clientSideChannel = std::make_shared<SocketCommChannelTest>(clientSocket);
 
     // Wait for the server to accept the connection
@@ -130,7 +130,7 @@ void TestSocketComm::testChannelReadyReadCallback() {
 
     // Create a client socket and connect to the server
     Poco::Net::StreamSocket clientSocket;
-    clientSocket.connect(Poco::Net::SocketAddress("localhost", _socketCommServerTest->getPort()));
+    clientSocket.connect(Poco::Net::SocketAddress(SocketCommServer::getHost(), _socketCommServerTest->getPort()));
     auto clientSideChannel = std::make_shared<SocketCommChannelTest>(clientSocket);
 
     // Wait for the server to accept the connection
@@ -170,7 +170,7 @@ void TestSocketComm::testChannelReadAndWriteData() {
 
     // Create a client socket and connect to the server
     Poco::Net::StreamSocket clientSocket;
-    clientSocket.connect(Poco::Net::SocketAddress("localhost", _socketCommServerTest->getPort()));
+    clientSocket.connect(Poco::Net::SocketAddress(SocketCommServer::getHost(), _socketCommServerTest->getPort()));
     auto clientSideChannel = std::make_shared<SocketCommChannelTest>(clientSocket);
 
     // Wait for the server to accept the connection

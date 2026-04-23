@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Subjects;
+using System.Threading.Tasks;
 using static Infomaniak.kDrive.ViewModels.AppModel;
 
 namespace Infomaniak.kDrive.Pages.Errors
@@ -21,6 +22,7 @@ namespace Infomaniak.kDrive.Pages.Errors
         private const int _maxConflictsForIndividualDisplay = 5;
         private bool _hasManyConflicts;
         private bool _hasError;
+        private bool _refreshInProgress;
         private int _conflictsCount;
         private readonly List<IDisposable?> _errorsSubscription = new();
 
@@ -66,6 +68,12 @@ namespace Infomaniak.kDrive.Pages.Errors
         {
             get => _conflitFilterText;
             set => SetConflictFilterText(value);
+        }
+
+        public bool RefreshInProgress
+        {
+            get => _refreshInProgress;
+            set => SetPropertyInUIThread(ref _refreshInProgress, value);
         }
 
         public ErrorPageVM()
@@ -211,7 +219,7 @@ namespace Infomaniak.kDrive.Pages.Errors
             if (HasManyConflicts && error.IsConflictUserResolvable())
                 return false;
 
-            if(IsInStorageErrorList(error)) return false;
+            if (IsInStorageErrorList(error)) return false;
 
             return true;
         }
@@ -258,6 +266,18 @@ namespace Infomaniak.kDrive.Pages.Errors
         private bool IsInOtherErrorList(Error error)
         {
             return !IsInFileErrorsList(error) && !IsInSyncDirErrorList(error) && !error.IsConflictUserResolvable() && !IsInStorageErrorList(error);
+        }
+
+        public async Task<bool> RefreshErrors()
+        {
+            if (_sync is null)
+                return false;
+
+            RefreshInProgress = true;
+            var result = await _sync.RefreshErrors();
+            RefreshInProgress = false;
+
+            return result;
         }
 
         public void Dispose()

@@ -48,11 +48,6 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
             DetachEventHandlers();
         }
 
-        private void Page_Unloaded(object sender, RoutedEventArgs e)
-        {
-            Bindings.StopTracking();
-            DetachEventHandlers();
-        }
 
         private void DetachEventHandlers()
         {

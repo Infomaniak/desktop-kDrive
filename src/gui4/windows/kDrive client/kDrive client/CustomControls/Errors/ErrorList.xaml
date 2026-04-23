@@ -8,7 +8,6 @@
              xmlns:controls="using:Infomaniak.kDrive.CustomControls"
              xmlns:errors="using:Infomaniak.kDrive.CustomControls.Errors"
              xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
-             Unloaded="UserControl_Unloaded"
              mc:Ignorable="d">
 
     <Grid RowSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">

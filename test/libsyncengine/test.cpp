@@ -31,6 +31,7 @@
 #include "update_detection/update_detector/testupdatetree.h"
 #include "update_detection/update_detector/testnode.h"
 #include "update_detection/update_detector/testupdatetreeworker.h"
+#include "reconciliation/testsyncoperation.h"
 #include "reconciliation/platform_inconsistency_checker/testplatforminconsistencycheckerworker.h"
 #include "reconciliation/conflict_finder/testconflictfinderworker.h"
 #include "reconciliation/operation_generator/testoperationgeneratorworker.h"
@@ -43,6 +44,7 @@
 #include "jobs/network/kDrive_API/testloguploadjob.h"
 #include "jobs/network/testsnapshotitemhandler.h"
 #include "jobs/local/testlocaljobs.h"
+#include "jobs/testabstractjob.h"
 #include "jobs/testsyncjobmanagersingleton.h"
 #include "propagation/executor/testfilerescuer.h"
 #include "requests/testexclusiontemplatecache.h"
@@ -67,6 +69,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncDb);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncNodeCache);
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLocalJobs);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractJob);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncJobManagerSingleton);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSnapshot);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestFsOperation);
@@ -84,6 +87,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestNode);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateTree);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateTreeWorker);
 // CPPUNIT_TEST_SUITE_REGISTRATION(BenchUpdateTreeWorker);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncOperation);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestPlatformInconsistencyCheckerWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestConflictFinderWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestConflictResolverWorker);

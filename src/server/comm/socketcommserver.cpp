@@ -19,8 +19,11 @@
 #include "socketcommserver.h"
 
 #include "libcommon/utility/utility.h"
+#include "libcommonserver/utility/utility.h"
 
 namespace KDC {
+
+constexpr char host[] = "127.0.0.1";
 
 SocketCommChannel::SocketCommChannel(const Poco::Net::StreamSocket &socket) :
     AbstractCommChannel(),
@@ -139,7 +142,7 @@ void SocketCommChannel::callbackHandler() {
 
 uint64_t SocketCommChannel::bytesAvailable() const {
     try {
-        return static_cast<uint64_t>((std::max)(0, _socket.available()));
+        return static_cast<uint64_t>((std::max) (0, _socket.available()));
     } catch (Poco::Exception &ex) {
         LOG_ERROR(Log::instance()->getLogger(), "Exception in StreamSocket::available: " << ex.displayText());
         return static_cast<uint64_t>(0);
@@ -165,6 +168,10 @@ SocketCommServer::~SocketCommServer() {
     }
 }
 
+std::string SocketCommServer::getHost() {
+    return host;
+}
+
 void SocketCommServer::close() {
     if (_stopAsked) {
         LOG_DEBUG(Log::instance()->getLogger(), name() << " is already stoping");
@@ -175,7 +182,7 @@ void SocketCommServer::close() {
         if (!_serverSocket.isNull()) {
             Poco::Net::StreamSocket socket;
             try {
-                socket.connect(Poco::Net::SocketAddress("localhost", getPort())); // Connect to unblock accept
+                socket.connect(Poco::Net::SocketAddress(host, getPort())); // Connect to unblock accept
             } catch (Poco::Exception &ex) {
                 LOG_ERROR(Log::instance()->getLogger(), "Exception in StreamSocket::connect: " << ex.displayText());
             }
@@ -234,12 +241,23 @@ void saveCommPort(unsigned short port) {
 }
 
 void SocketCommServer::execute() {
-    try {
-        _serverSocket.bind(Poco::Net::SocketAddress("localhost", "0"), true, true);
-    } catch (Poco::Exception &ex) {
-        LOG_ERROR(Log::instance()->getLogger(), "Exception in ServerSocket::bind: " << ex.displayText());
-        return;
-    }
+    int retries = 0;
+    bool bindSuccess = false;
+    do {
+        try {
+            _serverSocket.bind(Poco::Net::SocketAddress(host, "0"), true, true);
+            bindSuccess = true;
+        } catch (Poco::Exception &ex) {
+            LOG_ERROR(Log::instance()->getLogger(), "Exception in ServerSocket::bind: " << ex.displayText());
+            Utility::msleep(500);
+            ++retries;
+            if (retries == 10) {
+                sentry::Handler::captureMessage(
+                        sentry::Level::Error, "SocketCommServer bind error",
+                        "Failed to bind server socket after 10 retries: " + std::string(ex.displayText()));
+            }
+        }
+    } while (!bindSuccess); // Loop until bind is successful
 
     LOG_DEBUG(Log::instance()->getLogger(), name() << " listening on port " << getPort());
     saveCommPort(getPort());

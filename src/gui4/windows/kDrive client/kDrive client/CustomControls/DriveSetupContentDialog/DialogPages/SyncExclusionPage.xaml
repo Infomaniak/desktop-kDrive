@@ -9,9 +9,7 @@
       xmlns:converters="using:Infomaniak.kDrive.Converters"
       xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
       xmlns:templateSelectors="using:Infomaniak.kDrive.TemplateSelectors"
-      xmlns:kDrive="using:Infomaniak.kDrive"
-      Unloaded="Page_Unloaded"
-      mc:Ignorable="d">
+      xmlns:kDrive="using:Infomaniak.kDrive" mc:Ignorable="d">
     <Page.Transitions>
         <TransitionCollection>
             <NavigationThemeTransition />

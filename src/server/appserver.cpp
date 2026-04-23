@@ -957,21 +957,24 @@ bool AppServer::areMacVfsAuthsOk() const {
 
 void AppServer::setDistributionChannel(const VersionChannel versionChannel) {
     if (_noUpdate) return;
-    assert(_updateManager && "The update manager is not set.");
+
+    if (!_updateManager) {
+        LOG_WARN(_logger, "The update manager is not set.");
+        return;
+    }
 
     _updateManager->setDistributionChannel(versionChannel);
 }
 
 VersionInfo AppServer::getVersionInfo(const VersionChannel versionChannel) const {
     if (_noUpdate) {
-        VersionInfo versionInfo;
-        versionInfo.tag = CommonUtility::versionTag();
-        versionInfo.buildVersion = CommonUtility::versionBuild();
-
-        return versionInfo;
+        return VersionInfo::current();
     }
 
-    assert(_updateManager && "The update manager is not set.");
+    if (!_updateManager) {
+        LOG_WARN(_logger, "The update manager is not set.");
+        return VersionInfo::current();
+    }
 
     return _updateManager->versionInfo(versionChannel);
 }
@@ -979,22 +982,29 @@ VersionInfo AppServer::getVersionInfo(const VersionChannel versionChannel) const
 UpdateState AppServer::getUpdateState() const {
     if (_noUpdate) return UpdateState::NoUpdate;
 
-    assert(_updateManager && "The update manager is not set.");
-
+    if (!_updateManager) {
+        LOG_WARN(_logger, "The update manager is not set.");
+        return UpdateState::Unknown;
+    }
     return _updateManager->state();
 }
 
 void AppServer::refreshUpdateState() {
     if (_noUpdate) return;
 
-    assert(_updateManager && "The update manager is not set.");
-
+    if (!_updateManager) {
+        LOG_WARN(_logger, "The update manager is not set.");
+        return;
+    }
     return _updateManager->forceRefresh();
 }
 
 void AppServer::startInstaller() {
-    LOG_IF_FAIL(_logger, _updateManager && "The update manager is not set.");
-    if (_updateManager) _updateManager->startInstaller();
+    if (!_updateManager) {
+        LOG_WARN(_logger, "The update manager is not set.");
+        return;
+    }
+    _updateManager->startInstaller();
 }
 
 void AppServer::crash() const {
@@ -2645,8 +2655,12 @@ void AppServer::onMessageReceivedFromAnotherProcess(const QString &message, QObj
         showSettings();
     } else if (message == restartClientMsg) {
         _clientManuallyRestarted = true;
-        if (!startClient()) {
-            LOG_ERROR(_logger, "Failed to start the client");
+        if (!_clientProcess || _clientProcess->state() == QProcess::ProcessState::NotRunning) {
+            if (!startClient()) {
+                LOG_ERROR(_logger, "Failed to start the client");
+            }
+        } else if (_clientProcess->state() == QProcess::ProcessState::Running) {
+            showSynthesis();
         }
     } else {
         LOG_WARN(_logger, "Unknown message received from another kDrive process: '" << message.toStdString() << "'");
@@ -2712,6 +2726,12 @@ void AppServer::addCompletedItem(const SyncDbId syncDbId, const SyncFileItem &it
     ServerRequests::syncFileItemToSyncFileItemInfo(item, itemInfo);
     sendSyncCompletedItem(syncDbId, itemInfo);
 
+    if (item.status() != SyncFileStatus::Success) {
+        return;
+    }
+  
+    resolveItemErrors(syncDbId, item);
+
     if (notify) {
         // Store notification
         Notification notification;
@@ -2722,6 +2742,7 @@ void AppServer::addCompletedItem(const SyncDbId syncDbId, const SyncFileItem &it
         _notifications.push_back(notification);
     }
 }
+
 
 void AppServer::sendGuiSignal(std::shared_ptr<AbstractGuiJob> signal) const {
     if (useCommManager()) {
@@ -3401,7 +3422,12 @@ void AppServer::logUsefulInformation() {
 
     // Log level
     LOG_INFO(Log::instance()->getLogger(), "Log level: " << ParametersCache::instance()->parameters().logLevel());
-    LOG_INFO(Log::instance()->getLogger(), "Extended log activated: " << ParametersCache::instance()->parameters().extendedLog());
+    if (CommonUtility::envVarValue("KDRIVE_FORCE_EXTENDED_LOG") == "1") {
+        LOG_INFO(Log::instance()->getLogger(), "Extended log forced by environment variable KDRIVE_FORCE_EXTENDED_LOG");
+    } else {
+        LOG_INFO(Log::instance()->getLogger(),
+                 "Extended log activated: " << ParametersCache::instance()->parameters().extendedLog());
+    }
 
     LOG_INFO(_logger, "********************");
 }
@@ -4469,6 +4495,41 @@ void AppServer::addError(const Error &error) const {
         // Send error to sentry only for technical errors
         SentryUser sentryUser(user.email(), user.name(), std::to_string(user.userId()));
         sentry::Handler::captureMessage(sentry::Level::Warning, "AppServer::addError", error.errorString(), sentryUser);
+    }
+}
+
+void AppServer::resolveItemErrors(const SyncDbId syncDbId, const SyncFileItem &item) const {
+    std::vector<Error> errorList;
+
+    bool found = false;
+    if (!ParmsDb::instance()->selectErrorByNodeInfo(syncDbId, item.localNodeId(), item.remoteNodeId(), item.path(),
+                                                    item.newPath(), errorList, found)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectErrorByNodeInfo");
+        return;
+    }
+
+    if (!found) return;
+
+    for (const auto &error: errorList) {
+        bool keepError = false;
+
+        if (ExitInfo exitInfo = ServerRequests::keepError(error, keepError); !exitInfo) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ServerRequests::keepError: " << exitInfo);
+            continue;
+        }
+
+        if (keepError) continue;
+
+        bool found = false;
+        if (!ParmsDb::instance()->deleteError(error.dbId(), found)) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteError");
+            return;
+        }
+        if (!found) {
+            LOG_WARN(Log::instance()->getLogger(), "Error not found in Error table for dbId=" << error.dbId());
+            return;
+        }
+        sendErrorRemoved(error.dbId());
     }
 }
 

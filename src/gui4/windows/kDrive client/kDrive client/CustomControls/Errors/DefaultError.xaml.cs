@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using Windows.System;
 
 namespace Infomaniak.kDrive.CustomControls.Errors
 {
@@ -28,10 +29,6 @@ namespace Infomaniak.kDrive.CustomControls.Errors
             Error = error;
             UpdateCard();
             Logger.Log(Logger.Level.Error, $"DefaultError displayed: {Error?.ToString() ?? "null"}");
-        }
-        private void UserControl_Unloaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-        {
-            Bindings.StopTracking();
         }
         private void UpdateCard()
         {
@@ -79,7 +76,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors
             Control? control = sender as Control;
             if (control is not null)
                 control.IsEnabled = false;
-            if (!await kDrive.Localizer.Instance.TryLaunchUriAsync("helpURL"))
+            if (!await Launcher.LaunchUriAsync(App.Constants.kSuite.HelpUri))
             {
                 Logger.Log(Logger.Level.Error, "Failed to launch HelpDesk URI.");
                 Utility.ShowUnexpectedErrorTeachingTip();

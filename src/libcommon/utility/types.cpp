@@ -938,6 +938,13 @@ const std::string VersionInfo::versionInfoBuildVersion = "buildVersion";
 const std::string VersionInfo::versionInfoBuildMinOsVersion = "buildMinOsVersion";
 const std::string VersionInfo::versionInfoDownloadUrl = "downloadUrl";
 
+VersionInfo VersionInfo::current() {
+    VersionInfo versionInfo;
+    versionInfo.tag = CommonUtility::versionTag();
+    versionInfo.buildVersion = CommonUtility::versionBuild();
+    return versionInfo;
+}
+
 void VersionInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, versionInfoChannel, channel);
     CommonUtility::writeValueToStruct(dstruct, versionInfoTag, tag);

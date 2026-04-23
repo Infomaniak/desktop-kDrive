@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import CppInterop
 import Foundation
 import InfomaniakConcurrency
 import InfomaniakDI
@@ -111,6 +112,6 @@ public struct NodeJobs: Sendable {
 
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<NodeConflictInfoResponse>.self)
 
-        return decodedMessage.body.nodeConflictInfo
+        return NodeConflictInfo(nodeConflictInfoMetadata: decodedMessage.body.nodeConflictInfo)
     }
 }

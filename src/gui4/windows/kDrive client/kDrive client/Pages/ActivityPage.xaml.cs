@@ -55,12 +55,6 @@ namespace Infomaniak.kDrive.Pages
         }
 
 
-        private void Page_Unloaded(object sender, RoutedEventArgs e)
-        {
-            Bindings.StopTracking();
-            DetachEventHandlers();
-        }
-
         private void DetachEventHandlers()
         {
             ViewModel.SelectedSyncChanged -= ViewModel_SelectedSyncChanged;

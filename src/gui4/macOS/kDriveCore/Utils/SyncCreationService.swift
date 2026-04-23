@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import CppInterop
 import Foundation
 
 public enum SyncOrigin: Sendable {
@@ -81,8 +82,7 @@ public final class SyncCreationService: SyncCreator {
 
         try createDestinationIfNecessary(at: localFolderURL)
 
-        let syncInfo = try await SyncJobs().addSync(identifier: identifier, metadata: metadata)
-        return syncInfo
+        return try await SyncJobs().addSync(identifier: identifier, metadata: metadata)
     }
 
     public func preferredLocalPath(for driveName: String) async throws -> URL {

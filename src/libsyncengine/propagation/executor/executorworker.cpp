@@ -107,6 +107,8 @@ void ExecutorWorker::execute() {
 
         changesCounter++;
 
+        syncOp->setPropagationStatus(SyncOperation::PropagationStatus::InProgress);
+
         std::shared_ptr<SyncJob> job = nullptr;
         bool ignored = false;
         bool bypassProgressComplete = false;
@@ -135,6 +137,8 @@ void ExecutorWorker::execute() {
                 executorExitInfo = ExitCode::DataError;
             }
         }
+
+        syncOp->setPropagationStatus(SyncOperation::PropagationStatus::Propagated);
 
         // If an operation fails but is correctly handled by handleExecutorError, execution can proceed.
         if (executorExitInfo.cause() == ExitCause::OperationCanceled) {
@@ -1307,6 +1311,7 @@ ExitInfo ExecutorWorker::waitForAllJobsToFinish() {
             cancelAllOngoingJobs();
             return exitInfo;
         }
+        Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
     return ExitCode::Ok;
 }

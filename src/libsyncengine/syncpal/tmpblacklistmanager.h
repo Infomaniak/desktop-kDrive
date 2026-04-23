@@ -40,6 +40,7 @@ class TmpBlacklistManager {
         void refreshBlacklist();
 
         // Remove the item from local and remote blacklist
+        void clear();
         void removeItemFromTmpBlacklist(const SyncPath &relativePath);
         void removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side);
         bool isTmpBlacklisted(const SyncPath &path, ReplicaSide side) const;

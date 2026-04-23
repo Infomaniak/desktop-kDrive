@@ -18,8 +18,12 @@
 
 import Sentry
 
-public struct SentryService {
-    public init() {}
+public final class SentryService {
+    private var isSentryAuthorized = true
+
+    public init() {
+        fetchAuthorization()
+    }
 
     public func initSentry() {
         SentrySDK.start { options in
@@ -32,17 +36,23 @@ public struct SentryService {
                 options.enableMetricKit = true
             }
 
-            options.beforeSend = { event in
-                // if the application is in debug mode discard the events
+            options.beforeSend = { [weak self] event in
+                guard let self else { return nil }
+                fetchAuthorization()
+
                 #if DEBUG || TEST
                 return nil
                 #else
-                if UserDefaults.shared.isSentryAuthorized {
-                    return event
-                } else {
-                    return nil
-                }
+                return isSentryAuthorized ? event : nil
                 #endif
+            }
+        }
+    }
+
+    private func fetchAuthorization() {
+        Task {
+            if let isEnabled = try? await ParametersJobs().parametersInfo().sentryEnabled {
+                isSentryAuthorized = isEnabled
             }
         }
     }

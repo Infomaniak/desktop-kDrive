@@ -1,6 +1,7 @@
 import glob
 import os
 import re
+import time
 from os.path import join as pjoin
 from html.parser import HTMLParser
 from urllib.parse import urljoin, urlparse
@@ -399,8 +400,11 @@ class QtConan(ConanFile):
         self.output.highlight(f"Login method: '{self.options.qt_login_type}'")
 
         self.run(f"{quoted_installer} {' '.join(args)}")
-
-        rmdir(self, cache_path)
+       
+        try:
+            rmdir(self, cache_path)
+        except Exception as e:
+            self.output.warning(f"Cleanup failed: {e}")
 
         find_wrap_open_gl = pjoin(self.build_folder, "install", self.version, self._subfolder_install(), "lib", "cmake", "Qt6", "FindWrapOpenGL.cmake")
         if os.path.exists(find_wrap_open_gl) and self.settings.os == "Macos":

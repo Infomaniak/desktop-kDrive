@@ -23,10 +23,6 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
             error.Path = Error.Sync?.LocalPath ?? string.Empty;
             error.NodeType = Types.NodeType.Directory;
         }
-        private void UserControl_Unloaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-        {
-            Bindings.StopTracking();
-        }
 
         private async void ErrorCard_ActionClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {

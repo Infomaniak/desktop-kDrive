@@ -530,6 +530,17 @@ void SynthesisPopover::initUI() {
     lockedAppVersionVBox->addWidget(_lockedAppUpdateManualLabel);
 #endif
 
+    lockedAppVersionVBox->addSpacing(defaultPageSpacing);
+
+    // HyperLink
+    _linkToStorePage = new QLabel(this);
+    _linkToStorePage->setObjectName("defaultTextLabel");
+    _linkToStorePage->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+    _linkToStorePage->setAlignment(Qt::AlignHCenter);
+    _linkToStorePage->setWordWrap(true);
+    _linkToStorePage->setOpenExternalLinks(true);
+    lockedAppVersionVBox->addWidget(_linkToStorePage);
+
     // Shadow
     auto *effect = new QGraphicsDropShadowEffect(this);
     effect->setBlurRadius(shadowBlurRadius);
@@ -1169,7 +1180,9 @@ void SynthesisPopover::retranslateUi() {
     _notImplementedLabel->setText(tr("Not implemented!"));
     _lockedAppupdateAppLabel->setText(tr("Update kDrive App"));
     _lockedAppLabel->setText(tr(
-            "This kDrive app version is not supported anymore. To access the latest features and enhancements, please update."));
+        "This kDrive app version is not supported anymore. To access the latest features and enhancements, please update."));
+    _linkToStorePage->setText(tr("<a style= text-decoration:none; "
+        "href=\"https://www.infomaniak.com/en/apps/download-kdrive\">Click here to download manually</a>"));
 #ifdef Q_OS_LINUX
     _lockedAppUpdateManualLabel->setText(tr("Please download the latest version on the website."));
 #endif // Q_OS_LINUX

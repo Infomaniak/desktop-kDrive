@@ -1,0 +1,6 @@
+module CppInterop {
+    header "interop/cstypes.h"
+    header "interop/comm.h"
+    requires cplusplus
+    export *
+}

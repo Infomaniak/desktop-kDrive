@@ -60,12 +60,6 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
             }
         }
 
-        private void Page_Unloaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-        {
-            DetachEventHandlers();
-            Bindings.StopTracking();
-        }
-
         // Public methods
         public async Task SaveChanges()
         {

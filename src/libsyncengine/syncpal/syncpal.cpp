@@ -1411,6 +1411,10 @@ bool SyncPal::isTmpBlacklisted(const SyncPath &relativePath, const ReplicaSide s
     return _tmpBlacklistManager->isTmpBlacklisted(relativePath, side);
 }
 
+void SyncPal::clearTmpBlacklist() {
+    _tmpBlacklistManager->clear();
+}
+
 void SyncPal::refreshTmpBlacklist() {
     _tmpBlacklistManager->refreshBlacklist();
 }
@@ -1421,6 +1425,24 @@ void SyncPal::removeItemFromTmpBlacklist(const NodeId &nodeId, const ReplicaSide
 
 void SyncPal::removeItemFromTmpBlacklist(const SyncPath &relativePath) {
     _tmpBlacklistManager->removeItemFromTmpBlacklist(relativePath);
+}
+
+bool SyncPal::forceUpdateLastChangeRevision(const NodeId &nodeId, ReplicaSide side) {
+    if (side == ReplicaSide::Unknown) {
+        LOG_ERROR(_logger, "Call to SyncPal::forceUpdateLastChangeRevision with 'ReplicaSide::Unknown').");
+        return false;
+    }
+
+    if (side == ReplicaSide::Local) {
+        LOG_IF_FAIL(_localFSObserverWorker)
+        if (!_localFSObserverWorker) return false;
+        return _localFSObserverWorker->forceUpdateLastChangeRevision(nodeId);
+    } else if (side == ReplicaSide::Remote) {
+        LOG_IF_FAIL(_remoteFSObserverWorker)
+        if (!_remoteFSObserverWorker) return false;
+        return _remoteFSObserverWorker->forceUpdateLastChangeRevision(nodeId);
+    }
+    return false;
 }
 
 ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool deleteNodeLater, ExitCause cause) {
@@ -1435,16 +1457,19 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool
         LOG_SYNCPAL_WARN(_logger, "Access error on root folder");
         return ExitInfo(ExitCode::SystemError, Utility::exitCauseFromInaccessibleSyncDirectory(localPath()));
     }
-    Error error(syncDbId(), "", "", relativeLocalPath.extension() == SyncPath() ? NodeType::Directory : NodeType::File,
-                relativeLocalPath, ConflictType::None, InconsistencyType::None, CancelType::None, "", ExitCode::SystemError,
-                cause);
-    addError(error);
 
     LOG_IF_FAIL(_localFSObserverWorker)
     LOG_IF_FAIL(_remoteFSObserverWorker)
     if (!_localFSObserverWorker || !_remoteFSObserverWorker) return ExitCode::LogicError;
 
     NodeId localNodeId = liveSnapshot(ReplicaSide::Local).itemId(relativeLocalPath);
+    NodeId remoteNodeId = liveSnapshot(ReplicaSide::Remote).itemId(relativeLocalPath);
+
+    // File type cannot be fetched for an access denied item, using File as default.
+    Error error(syncDbId(), localNodeId, remoteNodeId, NodeType::File, relativeLocalPath, ConflictType::None,
+                InconsistencyType::None, CancelType::None, "", ExitCode::SystemError, cause);
+    addError(error);
+
     if (localNodeId.empty()) {
         SyncPath absolutePath = localPath() / relativeLocalPath;
         if (!IoHelper::getNodeId(absolutePath, localNodeId)) {
@@ -1467,7 +1492,6 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool
                                          << CommonUtility::s2ws(localNodeId)
                                          << L" is blacklisted temporarily because of a denied access.");
 
-    NodeId remoteNodeId = liveSnapshot(ReplicaSide::Remote).itemId(relativeLocalPath);
     if (bool found; remoteNodeId.empty() && !localNodeId.empty() &&
                     !_syncDb->correspondingNodeId(ReplicaSide::Local, localNodeId, remoteNodeId, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::correspondingNodeId");

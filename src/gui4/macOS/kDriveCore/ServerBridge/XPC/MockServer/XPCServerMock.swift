@@ -17,6 +17,7 @@
  */
 
 import Combine
+import CppInterop
 import Foundation
 import InfomaniakDI
 import OrderedCollections

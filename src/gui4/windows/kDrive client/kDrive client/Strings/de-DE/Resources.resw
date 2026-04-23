@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 13 Apr 2026 15:02:06 +0200 
+  Exported at: Thu, 16 Apr 2026 16:32:33 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -920,6 +920,9 @@ Es wird in Ihrem Browser geöffnet.</value>
   <data name="labelAccessRightsModified" xml:space="preserve"> 
     <value>Zugriffsrechte geändert</value> 
   </data> 
+  <data name="labelActivated" xml:space="preserve"> 
+    <value>Aktiviert</value> 
+  </data> 
   <data name="labelAgo" xml:space="preserve"> 
     <value>Vor %@</value> 
     <comment>Suffix for relative timestamps in activity lists; %@ is the time period (e.g., 5 minutes).</comment> 
@@ -982,6 +985,9 @@ Nützlich, wenn Sie wissen, dass die wichtige Arbeit online auf kDrive ist.</val
   </data> 
   <data name="labelDate" xml:space="preserve"> 
     <value>Datum</value> 
+  </data> 
+  <data name="labelDeactivated" xml:space="preserve"> 
+    <value>Deaktiviert</value> 
   </data> 
   <data name="labelFAQ" xml:space="preserve"> 
     <value>FAQ</value> 

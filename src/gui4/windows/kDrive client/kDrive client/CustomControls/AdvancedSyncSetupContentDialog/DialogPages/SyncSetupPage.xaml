@@ -10,7 +10,6 @@
       xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
       xmlns:templateSelectors="using:Infomaniak.kDrive.TemplateSelectors"
       xmlns:kDrive="using:Infomaniak.kDrive"
-      Unloaded="Page_Unloaded"
       mc:Ignorable="d">
     <Page.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
@@ -247,6 +246,8 @@
                 </Grid>
 
                 <ToggleSwitch Grid.Row="1"
+                              OnContent="{x:Bind kDrive:Localizer.Instance.GetString('labelActivated')}"
+                              OffContent="{x:Bind kDrive:Localizer.Instance.GetString('labelDeactivated')}"
                               IsEnabled="{x:Bind AdvancedSyncSetupContentDialogVM.NewSync.SupportsLiteSync , Mode=OneWay}"
                               IsOn="{x:Bind AdvancedSyncSetupContentDialogVM.NewSync.SyncType, Converter={StaticResource SyncTypeToBoolConverter}, Mode=TwoWay}" />
 

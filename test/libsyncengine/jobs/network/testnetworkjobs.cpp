@@ -1046,8 +1046,8 @@ void TestNetworkJobs::testGetInfoDrive() {
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
     CPPUNIT_ASSERT_EQUAL(std::string("kDrive Desktop Team"), job.name());
-    CPPUNIT_ASSERT_EQUAL(std::string("pro"), job.packInfo().name);
-    CPPUNIT_ASSERT(!job.packInfo().isFree);
+    CPPUNIT_ASSERT_EQUAL(std::string("pro"), job.packInfo().name());
+    CPPUNIT_ASSERT(!job.packInfo().isFree());
 }
 
 void TestNetworkJobs::testThumbnail() {
@@ -1566,7 +1566,7 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
         public:
             explicit GetInfoUserJobMock(const UserDbId userDbId, const ApiToken &apiToken) :
                 GetInfoUserJob(userDbId),
-                _apiToken(apiToken){};
+                _apiToken(apiToken) {};
 
             [[nodiscard]] Poco::Net::HTTPResponse httpResponse() const override {
                 return Poco::Net::HTTPResponse(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
