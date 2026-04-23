@@ -242,7 +242,7 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
         }
 
         if (cursor != _listingCursorMap[remoteDirId].cursor) {
-            _listingCursorMap[remoteDirId] = CursorData{cursor, static_cast<Timestamp>(time(0))};
+            _listingCursorMap[remoteDirId] = CursorData{cursor, CommonUtility::now()};
             LOG_SYNCPAL_DEBUG(_logger, "Sync cursor for remoteDirId=" << remoteDirId
                                                                       << " updated: " << _listingCursorMap[remoteDirId].cursor);
             exitInfo = saveListingCursor(remoteDirId, _listingCursorMap.at(remoteDirId));
@@ -293,7 +293,7 @@ ExitInfo RemoteFileSystemObserverWorker::updateV3MainFolderItem(const RemoteNode
     }
 
     RemoteSnapshotItem remoteSnapshotItem(remoteNodeId);
-    const SyncTime now = std::chrono::steady_clock::now().time_since_epoch().count();
+    const SyncTime now = CommonUtility::now();
     remoteSnapshotItem.setType(NodeType::Directory);
     remoteSnapshotItem.setName(folderName);
     remoteSnapshotItem.setCreatedAt(now);
@@ -454,7 +454,7 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &remoteDirId
     if (cursorPersistence == CursorPersistence::Save) {
         if (const auto &cursor = job->getCursor();
             !_listingCursorMap.contains(remoteDirId) || cursor != _listingCursorMap[remoteDirId].cursor) {
-            _listingCursorMap[remoteDirId] = CursorData{cursor, static_cast<Timestamp>(time(0))};
+            _listingCursorMap[remoteDirId] = CursorData{cursor, CommonUtility::now()};
             LOG_SYNCPAL_DEBUG(_logger, "Cursor updated: " << _listingCursorMap[remoteDirId].cursor);
             if (const ExitInfo exitInfo = saveListingCursor(remoteDirId, _listingCursorMap.at(remoteDirId)); !exitInfo) {
                 LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::saveListingCursor");
