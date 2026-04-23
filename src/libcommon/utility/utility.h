@@ -371,6 +371,7 @@ struct COMMON_EXPORT CommonUtility {
         static QImage toQImage(const std::shared_ptr<CommBLOB> blob);
 
         static bool modificationTimesAreEqual(const SyncPath &path, SyncTime time1, SyncTime time2);
+        inline static SyncTime now() { return time(nullptr); };
 
         static SyncTime getCurrentSyncTime();
         static SyncTime getCurrentSyncTimeWithOffset(std::chrono::seconds offset);
