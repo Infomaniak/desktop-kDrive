@@ -54,7 +54,7 @@ The exact set of redistributed binaries can vary by platform:
 - **License:** LGPL-3.0 / GPL-2.0 / GPL-3.0 / Commercial
 - **Copyright:** Copyright (C) The Qt Company Ltd. and other contributors
 - **Repository:** https://www.qt.io/
-- **Note:** Declared in `conanfile.py`.This application is built against Qt 6.2.3. Qt is deployed with the application
+- **Note:** Declared in `conanfile.py`. This application is built against Qt 6.2.3. Qt is deployed with the application
   on supported platforms. Qt source packages are available from https://download.qt.io/
 
 ### Poco
@@ -63,7 +63,7 @@ The exact set of redistributed binaries can vary by platform:
 - **License:** BSL-1.0
 - **Copyright:** Copyright (c) 2006-2024, Applied Informatics Software Engineering GmbH and Contributors
 - **Repository:** https://github.com/pocoproject/poco
-- **Note:** Declared in `conanfile.py`.Required by multiple kDrive libraries and redistributed by platform packaging
+- **Note:** Declared in `conanfile.py`. Required by multiple kDrive libraries and redistributed by platform packaging
   scripts.
 
 ### Sentry Native
@@ -72,7 +72,7 @@ The exact set of redistributed binaries can vary by platform:
 - **License:** MIT
 - **Copyright:** Copyright (c) 2019 Sentry
 - **Repository:** https://github.com/getsentry/sentry-native
-- **Note:** Declared in `conanfile.py`.Installed outside Conan according to `infomaniak-build-tools/*/Readme.md` and
+- **Note:** Declared in `conanfile.py`. Installed outside Conan according to `infomaniak-build-tools/*/Readme.md` and
   redistributed with the application. The repository does not pin one single version across all platforms; the Linux
   setup documentation currently references `0.7.9`.
 
