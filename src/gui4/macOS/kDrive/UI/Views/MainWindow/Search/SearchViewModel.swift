@@ -26,11 +26,15 @@ import kDriveCoreUI
 final class SearchViewModel: ObservableObject {
     @Published var searchText = ""
     @Published private(set) var searchResults: [UISearchResponse] = []
-    @Published private(set) var isSearching = false
+
+    var isSearching: Bool {
+        currentSearchTask != nil
+    }
 
     private let syncDbId: Int32
     private let synchroLocalPath: URL
     private var bindStore = Set<AnyCancellable>()
+    @Published private var currentSearchTask: Task<Void, Never>?
 
     init(syncDbId: Int32, synchroLocalPath: URL) {
         self.syncDbId = syncDbId
@@ -54,24 +58,30 @@ final class SearchViewModel: ObservableObject {
     }
 
     private func performSearch(query: String) {
+        currentSearchTask?.cancel()
+        currentSearchTask = nil
+
         guard !query.isEmpty else {
             searchResults = []
-            isSearching = false
             return
         }
 
-        isSearching = true
-        Task {
+        currentSearchTask = Task {
             await fetchSearchResults(query: query)
+            currentSearchTask = nil
         }
     }
 
     private func fetchSearchResults(query: String) async {
-        defer { isSearching = false }
         do {
             let results = try await DriveJobs().driveSearch(syncDbId: syncDbId, searchString: query)
+
+            guard !Task.isCancelled else { return }
+
             searchResults = results.map { UISearchResponse(searchResponse: $0) }
         } catch {
+            guard !Task.isCancelled else { return }
+
             searchResults = []
         }
     }
