@@ -650,6 +650,8 @@ ExitInfo RemoteFileSystemObserverWorker::processActions(const Poco::JSON::Array:
                                                         const Poco::JSON::Array::Ptr actionsFilesArray) {
     if (!actionArray) return ExitCode::Ok;
 
+    // The information about backend actions is split into two arrays in the API reply: `actions` and `actions_files`. We need to
+    // combine the information from these two arrays to be able to process the actions.
     ActionInfoList actionInfoList;
     if (const auto exitInfo = createActionInfoList(actionArray, actionInfoList); !exitInfo) return exitInfo;
     if (const auto exitInfo = fillActionsFilesInfo(actionsFilesArray, actionInfoList); !exitInfo) return exitInfo;
