@@ -20,6 +20,7 @@
 
 #include "app/cache/appcache.h"
 #include "app/services/commservice.h"
+#include "app/services/serviceeventbus.h"
 
 #include <QObject>
 #include <QString>
@@ -36,13 +37,12 @@ namespace KDC {
 class UserService : public QObject {
         Q_OBJECT
         Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
-        Q_PROPERTY(QString lastError READ lastError NOTIFY lastErrorChanged)
 
     public:
-        explicit UserService(CommService &commService, AppCache &appCache, QObject *parent = nullptr);
+        explicit UserService(CommService &commService, AppCache &appCache, ServiceEventBus &serviceEventBus,
+                             QObject *parent = nullptr);
 
         bool loading() const { return _loading; }
-        const QString &lastError() const { return _lastError; }
 
         Q_INVOKABLE void loadUsers();
         Q_INVOKABLE void loadAvailableDrives(qint64 userDbId);
@@ -51,7 +51,6 @@ class UserService : public QObject {
 
     signals:
         void loadingChanged();
-        void lastErrorChanged();
         void loginTokenSucceeded(qint64 userDbId);
         void loginTokenFailed(const QString &error, const QString &errorDescription);
 
@@ -59,13 +58,13 @@ class UserService : public QObject {
         void beginRequest();
         void endRequest();
         void setLoading(bool loading);
-        void setLastError(const QString &error);
+        void notifyRequestFailure(const ExitInfo &exitInfo, RequestNum requestNum);
 
         CommService &_commService;
         AppCache &_appCache;
+        ServiceEventBus &_serviceEventBus;
         int32_t _pendingRequestCount{0};
         bool _loading{false};
-        QString _lastError;
 };
 
 } // namespace KDC
