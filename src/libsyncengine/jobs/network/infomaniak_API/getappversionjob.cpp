@@ -163,8 +163,10 @@ ExitInfo GetAppVersionJob::handleResponse(std::istream &is) {
         if (!_versionsInfo[channel].isValid()) {
             if (channel == VersionChannel::Prod) {
                 LOG_ERROR(_logger, "Missing mandatory value for production version");
+                _versionsInfo.clear();
                 return {ExitCode::BackError, ExitCause::MissingReplyData};
             } else {
+                (void) _versionsInfo.erase(channel);
                 LOG_WARN(_logger, "Missing mandatory value for channel: " << versionType);
                 continue;
             }
