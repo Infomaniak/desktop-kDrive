@@ -17,35 +17,55 @@
  */
 
 #include "syncservice.h"
-#include "serviceutils.h"
 
 #include "libcommon/utility/types.h"
 
 #include <QLoggingCategory>
 
+namespace {
+constexpr char serviceKeySync[] = "sync";
+constexpr char actionLoadSyncs[] = "loadSyncs";
+constexpr char actionAddSync[] = "addSync";
+constexpr char actionStartSync[] = "startSync";
+constexpr char actionStopSync[] = "stopSync";
+constexpr char actionDeleteSync[] = "deleteSync";
+constexpr char actionQuerySyncStatus[] = "querySyncStatus";
+constexpr char actionFindGoodPathForNewSync[] = "findGoodPathForNewSync";
+constexpr char actionIsPathValidForNewSync[] = "isPathValidForNewSync";
+} // namespace
+
 namespace KDC {
 
 Q_LOGGING_CATEGORY(lcSyncService, "gui.v4.syncservice", QtInfoMsg)
 
-SyncService::SyncService(CommService &commService, AppCache &appCache, QObject *const parent) :
+SyncService::SyncService(CommService &commService, AppCache &appCache, ServiceActionTracker &serviceActionTracker,
+                         ServiceEventBus &serviceEventBus, QObject *const parent) :
     QObject(parent),
     _commService(commService),
-    _appCache(appCache) {
+    _appCache(appCache),
+    _serviceActionTracker(serviceActionTracker),
+    _serviceEventBus(serviceEventBus) {
     (void) connect(&_commService, &CommService::syncAdded, &_appCache, &AppCache::upsertSync);
     (void) connect(&_commService, &CommService::syncUpdated, &_appCache, &AppCache::upsertSync);
     (void) connect(&_commService, &CommService::syncRemoved, &_appCache, &AppCache::removeSync);
     (void) connect(&_commService, &CommService::errorAdded, &_appCache, &AppCache::upsertError);
     (void) connect(&_commService, &CommService::errorRemoved, &_appCache, &AppCache::removeError);
+    (void) connect(&_serviceActionTracker, &ServiceActionTracker::servicePendingChanged, this,
+                   [this](const QString &serviceKey, const bool pending) {
+                       if (serviceKey == serviceKeySync) {
+                           setLoading(pending);
+                       }
+                   });
+    setLoading(_serviceActionTracker.isServicePending(serviceKeySync));
 }
 
 void SyncService::loadSyncs() {
-    beginRequest();
-    setLastError(QString());
+    beginAction(actionLoadSyncs);
 
     _commService.requestSyncInfoList([this](const ExitInfo &exitInfo, const std::vector<SyncInfo> &list) {
-        endRequest();
+        endAction(actionLoadSyncs);
         if (exitInfo.code() != ExitCode::Ok) {
-            setLastError(ServiceUtils::formatExitInfo(exitInfo));
+            notifyRequestFailure(exitInfo, RequestNum::SYNC_INFOLIST);
             return;
         }
 
@@ -55,8 +75,7 @@ void SyncService::loadSyncs() {
 
 void SyncService::addSync(const qint64 userDbId, const qint64 accountId, const qint64 driveId, const QString &localFolderPath,
                           const QString &serverFolderPath, const QString &serverFolderNodeId, const bool liteSync) {
-    beginRequest();
-    setLastError(QString());
+    beginAction(actionAddSync);
 
     SyncAddRequest request;
     request.userDbId = static_cast<UserDbId>(userDbId);
@@ -68,9 +87,9 @@ void SyncService::addSync(const qint64 userDbId, const qint64 accountId, const q
     request.liteSync = liteSync;
 
     _commService.requestSyncAdd(request, [this](const ExitInfo &exitInfo, const SyncInfo &syncInfo) {
-        endRequest();
+        endAction(actionAddSync);
         if (exitInfo.code() != ExitCode::Ok) {
-            setLastError(ServiceUtils::formatExitInfo(exitInfo));
+            notifyRequestFailure(exitInfo, RequestNum::SYNC_ADD);
             return;
         }
 
@@ -79,51 +98,47 @@ void SyncService::addSync(const qint64 userDbId, const qint64 accountId, const q
 }
 
 void SyncService::startSync(const qint64 syncDbId) {
-    beginRequest();
-    setLastError(QString());
+    beginAction(actionStartSync, syncDbId);
 
-    _commService.requestSyncStart(static_cast<SyncDbId>(syncDbId), [this](const ExitInfo &exitInfo) {
-        endRequest();
+    _commService.requestSyncStart(static_cast<SyncDbId>(syncDbId), [this, syncDbId](const ExitInfo &exitInfo) {
+        endAction(actionStartSync, syncDbId);
         if (exitInfo.code() != ExitCode::Ok) {
-            setLastError(ServiceUtils::formatExitInfo(exitInfo));
+            notifyRequestFailure(exitInfo, RequestNum::SYNC_START);
         }
     });
 }
 
 void SyncService::stopSync(const qint64 syncDbId) {
-    beginRequest();
-    setLastError(QString());
+    beginAction(actionStopSync, syncDbId);
 
-    _commService.requestSyncStop(static_cast<SyncDbId>(syncDbId), [this](const ExitInfo &exitInfo) {
-        endRequest();
+    _commService.requestSyncStop(static_cast<SyncDbId>(syncDbId), [this, syncDbId](const ExitInfo &exitInfo) {
+        endAction(actionStopSync, syncDbId);
         if (exitInfo.code() != ExitCode::Ok) {
-            setLastError(ServiceUtils::formatExitInfo(exitInfo));
+            notifyRequestFailure(exitInfo, RequestNum::SYNC_STOP);
         }
     });
 }
 
 void SyncService::deleteSync(const qint64 syncDbId) {
-    beginRequest();
-    setLastError(QString());
+    beginAction(actionDeleteSync, syncDbId);
 
     // Cache consistency is signal-driven: we wait for syncRemoved/syncUpdated pushes.
-    _commService.requestSyncDelete(static_cast<SyncDbId>(syncDbId), [this](const ExitInfo &exitInfo) {
-        endRequest();
+    _commService.requestSyncDelete(static_cast<SyncDbId>(syncDbId), [this, syncDbId](const ExitInfo &exitInfo) {
+        endAction(actionDeleteSync, syncDbId);
         if (exitInfo.code() != ExitCode::Ok) {
-            setLastError(ServiceUtils::formatExitInfo(exitInfo));
+            notifyRequestFailure(exitInfo, RequestNum::SYNC_DELETE);
         }
     });
 }
 
 void SyncService::querySyncStatus(const qint64 syncDbId) {
-    beginRequest();
-    setLastError(QString());
+    beginAction(actionQuerySyncStatus, syncDbId);
 
     _commService.requestSyncStatus(static_cast<SyncDbId>(syncDbId),
                                    [this, syncDbId](const ExitInfo &exitInfo, const SyncStatus status) {
-                                       endRequest();
+                                       endAction(actionQuerySyncStatus, syncDbId);
                                        if (exitInfo.code() != ExitCode::Ok) {
-                                           setLastError(ServiceUtils::formatExitInfo(exitInfo));
+                                           notifyRequestFailure(exitInfo, RequestNum::SYNC_STATUS);
                                            return;
                                        }
 
@@ -132,14 +147,13 @@ void SyncService::querySyncStatus(const qint64 syncDbId) {
 }
 
 void SyncService::findGoodPathForNewSync(const QString &basePath) {
-    beginRequest();
-    setLastError(QString());
+    beginAction(actionFindGoodPathForNewSync);
 
     _commService.requestFindGoodPathForNewSync(
             QStr2Path(basePath), [this](const ExitInfo &exitInfo, const GoodPathResult &result) {
-                endRequest();
+                endAction(actionFindGoodPathForNewSync);
                 if (exitInfo.code() != ExitCode::Ok) {
-                    setLastError(ServiceUtils::formatExitInfo(exitInfo));
+                    notifyRequestFailure(exitInfo, RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC);
                     return;
                 }
 
@@ -148,20 +162,19 @@ void SyncService::findGoodPathForNewSync(const QString &basePath) {
 }
 
 void SyncService::isPathValidForNewSync(const QString &path, const int32_t syncConfiguration) {
-    setLastError(QString());
     if (!isValidSyncConfigurationValue(syncConfiguration)) {
-        setLastError(QStringLiteral("Invalid sync configuration value: %1").arg(syncConfiguration));
+        qCWarning(lcSyncService) << "isPathValidForNewSync: invalid sync configuration value:" << syncConfiguration;
         emit pathValidationReceived(false);
         return;
     }
 
-    beginRequest();
+    beginAction(actionIsPathValidForNewSync);
 
     _commService.requestIsPathValidForNewSync(QStr2Path(path), static_cast<SyncConfiguration>(syncConfiguration),
                                               [this](const ExitInfo &exitInfo, const bool isValid) {
-                                                  endRequest();
+                                                  endAction(actionIsPathValidForNewSync);
                                                   if (exitInfo.code() != ExitCode::Ok) {
-                                                      setLastError(ServiceUtils::formatExitInfo(exitInfo));
+                                                      notifyRequestFailure(exitInfo, RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC);
                                                       emit pathValidationReceived(false);
                                                       return;
                                                   }
@@ -170,23 +183,48 @@ void SyncService::isPathValidForNewSync(const QString &path, const int32_t syncC
                                               });
 }
 
-void SyncService::beginRequest() {
-    ++_pendingRequestCount;
-    setLoading(true);
+bool SyncService::isLoadSyncsPending() const {
+    return isActionPending(actionLoadSyncs);
 }
 
-void SyncService::endRequest() {
-    if (_pendingRequestCount <= 0) {
-        qCWarning(lcSyncService) << "endRequest called with non-positive pending count:" << _pendingRequestCount;
-        _pendingRequestCount = 0;
-        setLoading(false);
-        return;
-    }
+bool SyncService::isAddSyncPending() const {
+    return isActionPending(actionAddSync);
+}
 
-    --_pendingRequestCount;
-    if (_pendingRequestCount == 0) {
-        setLoading(false);
-    }
+bool SyncService::isStartSyncPending(const qint64 syncDbId) const {
+    return isActionPending(actionStartSync, syncDbId);
+}
+
+bool SyncService::isStopSyncPending(const qint64 syncDbId) const {
+    return isActionPending(actionStopSync, syncDbId);
+}
+
+bool SyncService::isDeleteSyncPending(const qint64 syncDbId) const {
+    return isActionPending(actionDeleteSync, syncDbId);
+}
+
+bool SyncService::isQuerySyncStatusPending(const qint64 syncDbId) const {
+    return isActionPending(actionQuerySyncStatus, syncDbId);
+}
+
+bool SyncService::isFindGoodPathForNewSyncPending() const {
+    return isActionPending(actionFindGoodPathForNewSync);
+}
+
+bool SyncService::isPathValidForNewSyncPending() const {
+    return isActionPending(actionIsPathValidForNewSync);
+}
+
+void SyncService::beginAction(const QString &actionKey, const qint64 scopeId) {
+    _serviceActionTracker.beginAction(serviceKeySync, actionKey, scopeId);
+}
+
+void SyncService::endAction(const QString &actionKey, const qint64 scopeId) {
+    _serviceActionTracker.endAction(serviceKeySync, actionKey, scopeId);
+}
+
+bool SyncService::isActionPending(const QString &actionKey, const qint64 scopeId) const {
+    return _serviceActionTracker.isActionPending(serviceKeySync, actionKey, scopeId);
 }
 
 bool SyncService::isValidSyncConfigurationValue(const int32_t syncConfiguration) const {
@@ -202,12 +240,9 @@ void SyncService::setLoading(const bool loading) {
     emit loadingChanged();
 }
 
-void SyncService::setLastError(const QString &error) {
-    if (_lastError == error) {
-        return;
-    }
-    _lastError = error;
-    emit lastErrorChanged();
+void SyncService::notifyRequestFailure(const ExitInfo &exitInfo, const RequestNum requestNum) {
+    qCWarning(lcSyncService) << "Sync service request failed | code:" << exitInfo.code() << "/ cause:" << exitInfo.cause();
+    _serviceEventBus.notifyGenericError(exitInfo, requestNum);
 }
 
 } // namespace KDC

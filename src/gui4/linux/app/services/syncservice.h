@@ -20,6 +20,8 @@
 
 #include "app/cache/appcache.h"
 #include "app/services/commservice.h"
+#include "app/services/serviceactiontracker.h"
+#include "app/services/serviceeventbus.h"
 
 #include <QObject>
 #include <QString>
@@ -30,17 +32,22 @@ namespace KDC {
 
 /**
  * High-level sync-oriented facade exposed to QML.
+ *
+ * Role:
+ * - orchestrates sync requests through CommService;
+ * - updates AppCache snapshots and incremental entities;
+ * - reports transient cross-service failures through ServiceEventBus;
+ * - registers per-action pending state in ServiceActionTracker.
  */
 class SyncService : public QObject {
         Q_OBJECT
         Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
-        Q_PROPERTY(QString lastError READ lastError NOTIFY lastErrorChanged)
 
     public:
-        explicit SyncService(CommService &commService, AppCache &appCache, QObject *parent = nullptr);
+        explicit SyncService(CommService &commService, AppCache &appCache, ServiceActionTracker &serviceActionTracker,
+                             ServiceEventBus &serviceEventBus, QObject *parent = nullptr);
 
-        bool loading() const { return _loading; }
-        const QString &lastError() const { return _lastError; }
+        [[nodiscard]] bool loading() const { return _loading; }
 
         Q_INVOKABLE void loadSyncs();
         Q_INVOKABLE void addSync(qint64 userDbId, qint64 accountId, qint64 driveId, const QString &localFolderPath,
@@ -51,10 +58,17 @@ class SyncService : public QObject {
         Q_INVOKABLE void querySyncStatus(qint64 syncDbId);
         Q_INVOKABLE void findGoodPathForNewSync(const QString &basePath);
         Q_INVOKABLE void isPathValidForNewSync(const QString &path, int32_t syncConfiguration);
+        Q_INVOKABLE [[nodiscard]] bool isLoadSyncsPending() const;
+        Q_INVOKABLE [[nodiscard]] bool isAddSyncPending() const;
+        Q_INVOKABLE [[nodiscard]] bool isStartSyncPending(qint64 syncDbId) const;
+        Q_INVOKABLE [[nodiscard]] bool isStopSyncPending(qint64 syncDbId) const;
+        Q_INVOKABLE [[nodiscard]] bool isDeleteSyncPending(qint64 syncDbId) const;
+        Q_INVOKABLE [[nodiscard]] bool isQuerySyncStatusPending(qint64 syncDbId) const;
+        Q_INVOKABLE [[nodiscard]] bool isFindGoodPathForNewSyncPending() const;
+        Q_INVOKABLE [[nodiscard]] bool isPathValidForNewSyncPending() const;
 
     signals:
         void loadingChanged();
-        void lastErrorChanged();
         void syncStatusReceived(qint64 syncDbId, int32_t status);
         // The second argument can carry a non-blocking warning message from the backend.
         void suggestedPathReceived(const QString &goodPath, const QString &warningMessage);
@@ -62,17 +76,18 @@ class SyncService : public QObject {
         void syncAddCompleted(qint64 syncDbId);
 
     private:
-        void beginRequest();
-        void endRequest();
+        void beginAction(const QString &actionKey, qint64 scopeId = 0);
+        void endAction(const QString &actionKey, qint64 scopeId = 0);
         void setLoading(bool loading);
-        void setLastError(const QString &error);
-        bool isValidSyncConfigurationValue(int32_t syncConfiguration) const;
+        [[nodiscard]] bool isActionPending(const QString &actionKey, qint64 scopeId = 0) const;
+        void notifyRequestFailure(const ExitInfo &exitInfo, RequestNum requestNum);
+        [[nodiscard]] bool isValidSyncConfigurationValue(int32_t syncConfiguration) const;
 
         CommService &_commService;
         AppCache &_appCache;
-        int32_t _pendingRequestCount{0};
+        ServiceActionTracker &_serviceActionTracker;
+        ServiceEventBus &_serviceEventBus;
         bool _loading{false};
-        QString _lastError;
 };
 
 } // namespace KDC
