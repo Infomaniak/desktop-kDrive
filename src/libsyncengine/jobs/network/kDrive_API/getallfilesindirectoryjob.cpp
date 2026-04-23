@@ -23,13 +23,13 @@
 
 namespace KDC {
 
-GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob(const UserDbId userDbId, const DriveId driveId, RemoteNodeId fileId,
+GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob(const UserDbId userDbId, const DriveId driveId, RemoteNodeId remoteDirId,
                                                      const TranslationMode translationMode /* = TranslationMode::V2ToV3 */) :
-    FileListJob(userDbId, driveId, std::move(fileId), translationMode) {}
+    FileListJob(userDbId, driveId, std::move(remoteDirId), translationMode) {}
 
-GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob(const DriveDbId driveDbId, RemoteNodeId fileId,
+GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob(const DriveDbId driveDbId, RemoteNodeId remoteDirId,
                                                      const TranslationMode translationMode /* = TranslationMode::V2ToV3 */) :
-    FileListJob(driveDbId, std::move(fileId), translationMode) {}
+    FileListJob(driveDbId, std::move(remoteDirId), translationMode) {}
 
 
 void GetAllFilesInDirectoryJob::abort() {
@@ -51,9 +51,10 @@ ExitInfo GetAllFilesInDirectoryJob::runJob() {
         }
         std::shared_ptr<GetFilesInDirectoryJob> fileListJob = nullptr;
         try {
-            fileListJob =
-                    _driveDbId ? std::make_shared<GetFilesInDirectoryJob>(_driveDbId, _fileId, cursor, _translationMode)
-                               : std::make_shared<GetFilesInDirectoryJob>(_userDbId, _driveId, _fileId, cursor, _translationMode);
+            fileListJob = _driveDbId
+                                  ? std::make_shared<GetFilesInDirectoryJob>(_driveDbId, _remoteDirId, cursor, _translationMode)
+                                  : std::make_shared<GetFilesInDirectoryJob>(_userDbId, _driveId, _remoteDirId, cursor,
+                                                                             _translationMode);
         } catch (const std::bad_alloc &badAllocationException) {
             return exception2ExitCode(badAllocationException);
         } catch (const JobException &jobException) {
