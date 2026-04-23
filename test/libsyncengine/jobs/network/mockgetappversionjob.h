@@ -90,7 +90,8 @@ class MockGetAppVersionJob final : public GetAppVersionJob {
 
             Poco::JSON::Array publishedVersionsArray;
             for (const auto channel:
-                 {VersionChannel::Prod, VersionChannel::Next, VersionChannel::Beta, VersionChannel::Internal}) {
+                 {VersionChannel::Prod, VersionChannel::Next, VersionChannel::Beta, VersionChannel::Internal,
+                  VersionChannel::Test}) {
                 Poco::JSON::Object tmpObj;
                 (void) tmpObj.set("tag", tag);
                 (void) tmpObj.set("tag_updated_at", "2020-06-04 15:06:37");

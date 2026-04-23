@@ -75,6 +75,9 @@ struct DistributionChannelView: View {
             case .internal:
                 guard currentValue != .internal else { return }
                 newValue = .internal
+            case .test:
+                guard currentValue != .test else { return }
+                newValue = .test
             }
 
             try? await repository.update(\.distributionChannel, value: newValue)

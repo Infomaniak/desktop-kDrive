@@ -547,6 +547,7 @@
 
 /* loco:698af24c3d21055870072b12 */
 "releaseChannelInternal" = "Internal";
+"releaseChannelTest" = "Test";
 
 /* loco:698b2df25c57be025b0ecfd2 */
 "sentryDescription" = "Sentry is a tool hosted and managed exclusively by Infomaniak to monitor the stability of the application in real time and automatically report any technical errors to our developers.\n\nThis data allows our team to quickly fix and optimize the application, resulting in a better user experience for you.";

@@ -547,6 +547,7 @@
 
 /* loco:698af24c3d21055870072b12 */
 "releaseChannelInternal" = "Intern";
+"releaseChannelTest" = "Test";
 
 /* loco:698b2df25c57be025b0ecfd2 */
 "sentryDescription" = "Sentry ist ein Tool, das ausschliesslich von Infomaniak gehostet und verwaltet wird, um die Stabilität der Anwendung in Echtzeit zu überwachen und technische Fehler automatisch an unsere Entwickler zu melden.\n\nDiese Daten ermöglichen es unserem Team, die Anwendung schnell zu beheben und zu optimieren, was zu einer besseren Benutzererfahrung für Sie führt.";

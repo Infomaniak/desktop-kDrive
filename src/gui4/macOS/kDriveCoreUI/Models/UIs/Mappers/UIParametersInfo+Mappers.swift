@@ -151,6 +151,8 @@ public extension UIDistributionChannel {
             self = .beta
         case .Internal:
             self = .internal
+        case .Test:
+            self = .test
         case .Legacy:
             self = .legacy
         case .Unknown:
@@ -175,6 +177,8 @@ public extension UIDistributionChannel {
             return .Beta
         case .internal:
             return .Internal
+        case .test:
+            return .Test
         case .legacy:
             return .Legacy
         }

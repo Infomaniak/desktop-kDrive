@@ -104,6 +104,7 @@ public enum UIDistributionChannel: String, CaseIterable, Sendable, Equatable {
     case next
     case beta
     case `internal`
+    case test
     case legacy
 }
 

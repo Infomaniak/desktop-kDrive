@@ -29,6 +29,7 @@ enum BetaOption: String, Identifiable, CaseIterable, PreferenceOption {
     case doNotJoin
     case beta
     case `internal`
+    case test
 
     var description: String {
         switch self {
@@ -38,6 +39,8 @@ enum BetaOption: String, Identifiable, CaseIterable, PreferenceOption {
             KDriveLocalizable.releaseChannelBeta
         case .internal:
             KDriveLocalizable.releaseChannelInternal
+        case .test:
+            KDriveLocalizable.releaseChannelTest
         }
     }
 
@@ -49,6 +52,8 @@ enum BetaOption: String, Identifiable, CaseIterable, PreferenceOption {
             return KDriveLocalizable.releaseChannelBeta
         case .internal:
             return KDriveLocalizable.releaseChannelInternal
+        case .test:
+            return KDriveLocalizable.releaseChannelTest
         }
     }
 
@@ -62,6 +67,8 @@ enum BetaOption: String, Identifiable, CaseIterable, PreferenceOption {
             self = .beta
         case .internal:
             self = .internal
+        case .test:
+            self = .test
         case .legacy:
             self = .doNotJoin
         }
