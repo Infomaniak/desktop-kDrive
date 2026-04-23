@@ -19,11 +19,14 @@
 #pragma once
 
 #include "testincludes.h"
+
+#include "io/cachedirectory.h"
 #include "keychainmanager/apitoken.h"
 #include "test_utility/localtemporarydirectory.h"
 
 #include "utility/types.h"
 #include "libcommonserver/io/iohelper.h"
+
 using namespace CppUnit;
 
 namespace KDC {
@@ -128,6 +131,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
 
         static uint64_t _nbParallelThreads;
 
-        LocalTemporaryDirectory _localParmsDbTempDir{"testNetworkJobs"};
+        LocalTemporaryDirectory _localTempDir{"testNetworkJobs"};
+        std::shared_ptr<CacheDirectory> _cacheDirectory;
 };
 } // namespace KDC

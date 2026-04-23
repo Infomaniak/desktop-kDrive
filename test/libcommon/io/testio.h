@@ -37,7 +37,6 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testGetItemType);
         CPPUNIT_TEST(testGetFileSize);
         CPPUNIT_TEST(testTempDirectoryPath);
-        CPPUNIT_TEST(testCacheDirectoryPath);
         CPPUNIT_TEST(testLogDirectoryPath);
         CPPUNIT_TEST(testCheckIfPathExists);
         CPPUNIT_TEST(testCheckIfIsDirectory);
@@ -87,7 +86,6 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         void testGetItemType(void);
         void testGetFileSize(void);
         void testTempDirectoryPath(void);
-        void testCacheDirectoryPath(void);
         void testLogDirectoryPath(void);
         void testGetNodeId(void);
         void testCheckDirectoryIterator(void);

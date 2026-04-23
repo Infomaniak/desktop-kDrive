@@ -17,6 +17,8 @@
  */
 
 #include "testexclusiontemplatecache.h"
+
+#include "io/cachedirectory.h"
 #include "libparms/db/parmsdb.h"
 #include "requests/parameterscache.h"
 #include "mocks/libcommonserver/db/mockdb.h"
@@ -129,12 +131,14 @@ void TestExclusionTemplateCache::testIsExcluded() {
 #endif
 }
 void TestExclusionTemplateCache::testCacheFolderIsExcluded() {
-    SyncPath cachePath;
-    CPPUNIT_ASSERT(IoHelper::cacheDirectoryPath(cachePath));
-    CPPUNIT_ASSERT(!cachePath.empty());
+    const LocalTemporaryDirectory tmpLocalFolder("testCacheFolderIsExcluded");
+    CacheDirectory cacheDirectory(tmpLocalFolder.path());
+    SyncPath cacheDirectoryPath;
+    CPPUNIT_ASSERT(cacheDirectory.path(cacheDirectoryPath));
+    CPPUNIT_ASSERT(!cacheDirectoryPath.empty());
     bool isWarning = false;
-    CPPUNIT_ASSERT_MESSAGE(cachePath.filename().string() + " is not excluded",
-                           ExclusionTemplateCache::instance()->isExcluded(cachePath.filename(), isWarning));
+    CPPUNIT_ASSERT_MESSAGE(cacheDirectoryPath.filename().string() + " is not excluded",
+                           ExclusionTemplateCache::instance()->isExcluded(cacheDirectoryPath.filename(), isWarning));
     CPPUNIT_ASSERT(!isWarning);
 }
 

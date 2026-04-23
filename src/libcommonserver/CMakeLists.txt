@@ -43,6 +43,7 @@ set(libcommonserver_SRCS
     io/filestat.h
     io/iohelper.h io/iohelper.cpp
     io/permissionsholder.h io/permissionsholder.cpp
+    io/cachedirectory.h io/cachedirectory.cpp
     # Log
     log/log.h log/log.cpp
     log/customrollingfileappender.h log/customrollingfileappender.cpp

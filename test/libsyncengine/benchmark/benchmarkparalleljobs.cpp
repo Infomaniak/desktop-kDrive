@@ -120,7 +120,7 @@ void BenchmarkParallelJobs::benchmarkParallelJobs() {
             dataExtractor.addRow(std::to_string(nbThreads));
             for (uint16_t i = 0; i < nbRepetition; i++) {
                 runJobs(static_cast<uint16_t>(nbThreads), dataExtractor,
-                        generateDownloadJobs(remoteDirId, localTmpDir.path(), static_cast<uint64_t>(size * 1000 * 1000)));
+                        generateDownloadJobs(remoteDirId, localTmpDir.path(), static_cast<int64_t>(size * 1000 * 1000)));
             }
         }
         dataExtractor.print();
@@ -144,7 +144,7 @@ void BenchmarkParallelJobs::benchmarkParallelJobs() {
                 const LocalTemporaryDirectory localTmpDirDownload(filename);
                 const NodeId remoteDirId = size == 1 ? "3477086" : "3477931";
                 downloadJobs = generateDownloadJobs(remoteDirId, localTmpDirDownload.path(),
-                                                    static_cast<uint64_t>(size * 1000 * 1000), nbFiles / 2);
+                                                    static_cast<int64_t>(size * 1000 * 1000), nbFiles / 2);
                 // Mix jobs in list
                 std::list<std::shared_ptr<SyncJob>> jobs;
                 auto it1 = uploadJobs.begin();
@@ -222,7 +222,7 @@ std::list<std::shared_ptr<SyncJob>> BenchmarkParallelJobs::generateUploadSession
 
 std::list<std::shared_ptr<SyncJob>> BenchmarkParallelJobs::generateDownloadJobs(const NodeId &remoteDirId,
                                                                                 const SyncPath &localTestFolderPath,
-                                                                                const uint64_t expectedSize,
+                                                                                const int64_t expectedSize,
                                                                                 const uint16_t nbMaxJob /*= 0*/) const {
     std::list<NodeId> remoteFileIds;
     (void) retrieveRemoteFileIds(remoteDirId, remoteFileIds);
@@ -230,7 +230,8 @@ std::list<std::shared_ptr<SyncJob>> BenchmarkParallelJobs::generateDownloadJobs(
     uint64_t counter = 0;
     std::list<std::shared_ptr<SyncJob>> jobs;
     for (const auto &remoteFileId: remoteFileIds) {
-        const auto job = std::make_shared<DownloadJob>(nullptr, driveDbId, remoteFileId, localTestFolderPath, expectedSize);
+        const auto job = std::make_shared<DownloadJob>(
+                nullptr, nullptr, DownloadJob::FileDownloadInfo{driveDbId, remoteFileId, localTestFolderPath, expectedSize});
         (void) jobs.push_back(job);
         counter++;
         if (nbMaxJob && counter >= nbMaxJob) {
