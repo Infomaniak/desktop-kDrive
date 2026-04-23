@@ -141,6 +141,10 @@ VersionChannel AbstractUpdater::currentVersionChannel() const {
         return VersionChannel::Internal;
     }
 
+    if (allVersions.contains(VersionChannel::Test) && allVersions.at(VersionChannel::Test).fullVersion() == currentVersion) {
+        return VersionChannel::Test;
+    }
+
     if (allVersions.contains(VersionChannel::Prod) &&
         CommonUtility::isVersionLower(currentVersion, allVersions.at(VersionChannel::Prod).fullVersion())) {
         return VersionChannel::Legacy;

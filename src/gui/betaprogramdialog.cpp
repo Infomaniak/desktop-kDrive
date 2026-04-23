@@ -34,6 +34,7 @@ static constexpr auto iconColor = QColor(239, 139, 52);
 static constexpr int indexNo = 0;
 static constexpr int indexBeta = 1;
 static constexpr int indexInternal = 2;
+static constexpr int indexTest = 3;
 
 namespace KDC {
 
@@ -91,6 +92,7 @@ BetaProgramDialog::BetaProgramDialog(const bool isQuit, const bool isStaff, QWid
         _staffSelectionBox->insertItem(indexNo, tr("No"));
         _staffSelectionBox->insertItem(indexBeta, tr("Public beta version"));
         _staffSelectionBox->insertItem(indexInternal, tr("Internal beta version"));
+        _staffSelectionBox->insertItem(indexTest, tr("Test version"));
 
         switch (ParametersCache::instance()->parametersInfo().distributionChannel()) {
             case VersionChannel::Prod:
@@ -101,6 +103,9 @@ BetaProgramDialog::BetaProgramDialog(const bool isQuit, const bool isStaff, QWid
                 break;
             case VersionChannel::Internal:
                 _initialIndex = indexInternal;
+                break;
+            case VersionChannel::Test:
+                _initialIndex = indexTest;
                 break;
             default:
                 break;
@@ -188,6 +193,8 @@ VersionChannel toDistributionChannel(const int index) {
             return VersionChannel::Beta;
         case indexInternal:
             return VersionChannel::Internal;
+        case indexTest:
+            return VersionChannel::Test;
         default:
             break;
     }

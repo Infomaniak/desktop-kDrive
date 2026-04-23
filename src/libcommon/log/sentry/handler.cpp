@@ -519,6 +519,9 @@ void Handler::setDistributionChannel(const VersionChannel channel) {
         case VersionChannel::Internal:
             channelStr = "Internal";
             break;
+        case VersionChannel::Test:
+            channelStr = "Test";
+            break;
         case VersionChannel::Legacy:
             channelStr = "Legacy";
             break;

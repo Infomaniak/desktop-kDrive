@@ -38,6 +38,8 @@ namespace Infomaniak.kDrive.CustomControls
         {
             UpdateChannelComboBox_Internal.Visibility =
                 IsStaffUserConnected() ? Visibility.Visible : Visibility.Collapsed;
+            UpdateChannelComboBox_Test.Visibility =
+                IsStaffUserConnected() ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void RegisterPropertyChangedHandlers()

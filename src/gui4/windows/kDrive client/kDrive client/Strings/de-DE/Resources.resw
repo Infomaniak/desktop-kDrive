@@ -1425,6 +1425,9 @@ Bitte warten Sie einen Moment.</value>
   <data name="releaseChannelInternal" xml:space="preserve"> 
     <value>Intern</value> 
   </data> 
+  <data name="releaseChannelTest" xml:space="preserve"> 
+    <value>Test</value> 
+  </data> 
   <data name="remoteLocation" xml:space="preserve"> 
     <value>Speicherort auf kDrive</value> 
   </data> 

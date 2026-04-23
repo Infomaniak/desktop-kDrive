@@ -69,10 +69,13 @@ const VersionInfo &UpdateChecker::versionInfo(const VersionChannel chosenChannel
             _versionsInfo.contains(VersionChannel::Beta) ? _versionsInfo[VersionChannel::Beta] : _defaultVersionInfo;
     const VersionInfo &internalVersion =
             _versionsInfo.contains(VersionChannel::Internal) ? _versionsInfo[VersionChannel::Internal] : _defaultVersionInfo;
+    const VersionInfo &testVersion =
+            _versionsInfo.contains(VersionChannel::Test) ? _versionsInfo[VersionChannel::Test] : _defaultVersionInfo;
     std::set<std::reference_wrapper<const VersionInfo>, VersionInfoCmp> sortedVersionList;
     (void) sortedVersionList.insert(prodVersion);
     (void) sortedVersionList.insert(betaVersion);
     (void) sortedVersionList.insert(internalVersion);
+    (void) sortedVersionList.insert(testVersion);
     for (const auto &versionInfo: sortedVersionList) {
         if (versionInfo.get().channel <= chosenChannel) return versionInfo;
     }

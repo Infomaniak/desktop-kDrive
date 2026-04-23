@@ -785,6 +785,8 @@ std::string toString(const VersionChannel e) {
             return "Beta";
         case VersionChannel::Internal:
             return "Internal";
+        case VersionChannel::Test:
+            return "Test";
         case VersionChannel::Legacy:
             return "Legacy";
         case VersionChannel::Unknown:

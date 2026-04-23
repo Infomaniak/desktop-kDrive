@@ -44,7 +44,8 @@ class UpdateChecker {
          * @brief Return the version information. Implements some logic to always return the highest available versions according
          * to the selected distribution channel. That means if the `Beta` version is newer than the `Internal` version, the the
          * `Beta` version wins over the `Internal` one and must be proposed even if the user has selected the `Internal` channel.
-         * The rule is the `Production` version wins over all others, the `Beta` verison wins over the `Internal` version.
+         * The rule is the `Production` version wins over all others, the `Beta` version wins over the `Internal` and `Test`
+         * versions.
          * @param chosenChannel The selected distribution channel.
          * @return A reference to the found `VersionInfo` object. If not found, return a reference to default constructed, invalid
          * `VersionInfo`object.

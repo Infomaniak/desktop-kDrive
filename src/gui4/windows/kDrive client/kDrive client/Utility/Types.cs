@@ -86,6 +86,7 @@ namespace Infomaniak.kDrive.Types
         Next,
         Beta,
         Internal,
+        Test,
         Legacy,
         Unknown
     };

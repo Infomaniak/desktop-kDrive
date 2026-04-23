@@ -3837,8 +3837,9 @@ bool AppServer::startClient() {
         QString pathToExecutable;
 
 #if defined(KD_WINDOWS)
-        if (ParametersCache::instance()->parameters().distributionChannel() ==
-            VersionChannel::Internal) { // The WinUI3 GUI is currently only for internal builds
+        if (ParametersCache::instance()->parameters().distributionChannel() == VersionChannel::Internal ||
+            ParametersCache::instance()->parameters().distributionChannel() ==
+                    VersionChannel::Test) { // The WinUI3 GUI is currently only for internal/test builds
             pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENTV4_EXECUTABLE);
 
             IoError ioError = IoError::Success;

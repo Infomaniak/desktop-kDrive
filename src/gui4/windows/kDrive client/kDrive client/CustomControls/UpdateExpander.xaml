@@ -72,6 +72,11 @@
                               Content="{x:Bind kDrive:Localizer.Instance.GetString('releaseChannelInternal'), Mode=OneWay}"
                               Foreground="{ThemeResource SystemFillColorCriticalBrush}"
                               Visibility="Collapsed" />
+                <ComboBoxItem Tag="Test"
+                              x:Name="UpdateChannelComboBox_Test"
+                              Content="{x:Bind kDrive:Localizer.Instance.GetString('releaseChannelTest'), Mode=OneWay}"
+                              Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                              Visibility="Collapsed" />
             </ComboBox>
         </toolKit:SettingsCard>
     </toolKit:SettingsExpander.Items>

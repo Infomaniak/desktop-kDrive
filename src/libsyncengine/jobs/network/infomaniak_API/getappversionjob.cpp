@@ -31,6 +31,7 @@ static const std::string versionTypeProdKey = "production";
 static const std::string versionTypeNextKey = "production-next";
 static const std::string versionTypeBetaKey = "beta";
 static const std::string versionTypeInternalKey = "internal";
+static const std::string versionTypeTestKey = "test";
 static const std::string platformMacOsKey = "mac-os";
 static const std::string platformWindowsKey = "windows";
 static const std::string platformLinuxAmdKey = "linux-amd";
@@ -72,6 +73,7 @@ VersionChannel toDistributionChannel(const std::string &str) {
     if (str == versionTypeNextKey) return VersionChannel::Next;
     if (str == versionTypeBetaKey) return VersionChannel::Beta;
     if (str == versionTypeInternalKey) return VersionChannel::Internal;
+    if (str == versionTypeTestKey) return VersionChannel::Test;
     return VersionChannel::Unknown;
 }
 
@@ -85,6 +87,8 @@ std::string GetAppVersionJob::toStr(const VersionChannel channel) {
             return versionTypeBetaKey;
         case VersionChannel::Internal:
             return versionTypeInternalKey;
+        case VersionChannel::Test:
+            return versionTypeTestKey;
         default:
             return "unknown";
     }
@@ -112,6 +116,7 @@ VersionChannel GetAppVersionJob::toDistributionChannel(const std::string &val) c
     if (val == versionTypeNextKey) return VersionChannel::Next;
     if (val == versionTypeBetaKey) return VersionChannel::Beta;
     if (val == versionTypeInternalKey) return VersionChannel::Internal;
+    if (val == versionTypeTestKey) return VersionChannel::Test;
     return VersionChannel::Unknown;
 }
 

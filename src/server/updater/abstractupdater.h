@@ -70,7 +70,7 @@ class AbstractUpdater {
 
         /* Get the channel of the currently installed version.
          * If multiple channels refer to the current version, the closest to the production channel is returned.
-         * Production > Next > Beta > Internal
+         * Production > Next > Beta > Internal > Test
          */
         [[nodiscard]] VersionChannel currentVersionChannel() const;
 

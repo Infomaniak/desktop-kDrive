@@ -295,6 +295,7 @@ enum class VersionChannel {
     Next,
     Beta,
     Internal,
+    Test,
     Legacy,
     Unknown,
     EnumEnd
