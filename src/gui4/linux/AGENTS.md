@@ -36,6 +36,8 @@
   logic.
 - `communicationlayer/signaldispatcher.*`: server-push signal fanout to registered handlers.
 - `app/services/commservice.*`: typed request/signal facade above `IpcClient`.
+- `app/services/serviceeventbus.*`: shared high-level service event hub (single UI subscription point for generic
+  cross-service failures). Owned once by `AppClientLinux` and injected by reference into app services.
 - `app/cache/appcache.*`: central observable cache (`AppCache` QObject) — typed snapshots and incremental
   `upsert*`/`remove*` slots for users, accounts, drives, available drives, syncs, and errors; QML models and
   services read from it instead of parsing transport payloads directly.
@@ -64,6 +66,10 @@ cmake --build build-linux/build/build/Debug --target kdrive_qml -- -j 12
 - New backend calls must be added in `CommService`, not in UI files.
 - Server-push events must be registered in `CommService::register*Handlers` and re-emitted as typed Qt signals.
 - When object lifetime is uncertain in async callbacks, guard with `QPointer<T>`.
+- For cross-service UI error notification, use a single shared `ServiceEventBus` instance and inject it by reference
+  into each service (`UserService`, `DriveService`, `SyncService`, ...).
+- Do not create per-service formatted error-string state for UI display; services emit generic bus signals and keep
+  structured backend error information in request handlers/logs.
 
 ## IPC And Error Handling
 
@@ -71,6 +77,8 @@ cmake --build build-linux/build/build/Debug --target kdrive_qml -- -j 12
 - `IpcClient` treats post-connection socket failure as fatal (disconnect/error after first successful connection exits
   process).
 - Request methods should parse `Poco::DynamicStruct` into typed DTOs before exposing data upward.
+- Generic UI-facing request failures from high-level services should be emitted through `ServiceEventBus` so UI can
+  subscribe once (`genericErrorOccurred()`).
 - Use shared `msgParam*` keys and enums from `libcommon`; avoid ad-hoc string keys.
 
 ## Coding Conventions (Linux v4)
