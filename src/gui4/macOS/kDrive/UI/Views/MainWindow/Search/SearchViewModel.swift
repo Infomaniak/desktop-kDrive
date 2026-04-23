@@ -52,14 +52,17 @@ final class SearchViewModel: ObservableObject {
 
         isSearching = true
         Task {
-            do {
-                let results = try await DriveJobs().driveSearch(syncDbId: syncDbId, searchString: query)
-                searchResults = results.map { UIFileResponse(fileResponse: $0) }
-                isSearching = false
-            } catch {
-                searchResults = []
-                isSearching = false
-            }
+            await fetchSearchResults(query: query)
+        }
+    }
+
+    private func fetchSearchResults(query: String) async {
+        defer { isSearching = false }
+        do {
+            let results = try await DriveJobs().driveSearch(syncDbId: syncDbId, searchString: query)
+            searchResults = results.map { UIFileResponse(fileResponse: $0) }
+        } catch {
+            searchResults = []
         }
     }
 }
