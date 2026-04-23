@@ -26,14 +26,18 @@ struct SearchSheetView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            TextField("Search...", text: $viewModel.searchText)
-                .textFieldStyle(.plain)
-                .padding(.horizontal, AppPadding.padding12)
-                .frame(height: 36)
-                .background(ColorToken.Surface.secondary.asColor)
-                .clipShape(RoundedRectangle(cornerRadius: 18))
-                .padding(AppPadding.padding16)
-                .focused($isSearchFieldFocused)
+            HStack(spacing: AppPadding.padding8) {
+                Image(systemName: "magnifyingglass")
+                    .foregroundStyle(ColorToken.Text.secondary.asColor)
+                TextField("Search...", text: $viewModel.searchText)
+                    .textFieldStyle(.plain)
+                    .focused($isSearchFieldFocused)
+            }
+            .padding(.horizontal, AppPadding.padding12)
+            .frame(height: 36)
+            .background(ColorToken.Surface.secondary.asColor)
+            .clipShape(RoundedRectangle(cornerRadius: 18))
+            .padding(AppPadding.padding16)
 
             List(viewModel.searchResults) { file in
                 Button {
