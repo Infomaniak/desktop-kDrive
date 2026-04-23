@@ -16,33 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Combine
-import kDriveCore
 import kDriveCoreUI
 import SwiftUI
 
 struct SearchSheetView: View {
-    let syncDbId: Int32
+    @ObservedObject var viewModel: SearchViewModel
     var onDismiss: () -> Void
 
-    @State private var searchText = ""
-    @State private var searchResults: [UIFileResponse] = []
-    @State private var isSearching = false
-    @State private var searchSubject = PassthroughSubject<String, Never>()
-    @State private var cancellables = Set<AnyCancellable>()
     @FocusState private var isSearchFieldFocused: Bool
 
     var body: some View {
         VStack(spacing: 0) {
-            TextField("Search...", text: $searchText)
+            TextField("Search...", text: $viewModel.searchText)
                 .textFieldStyle(.roundedBorder)
                 .padding(AppPadding.padding16)
                 .focused($isSearchFieldFocused)
-                .onChange(of: searchText) { newValue in
-                    searchSubject.send(newValue)
-                }
 
-            List(searchResults) { file in
+            List(viewModel.searchResults) { file in
                 HStack {
                     Image(systemName: file.type == .directory ? "folder.fill" : "doc.fill")
                         .foregroundStyle(ColorToken.Text.secondary.asColor)
@@ -56,9 +46,9 @@ struct SearchSheetView: View {
                 }
             }
             .overlay {
-                if isSearching {
+                if viewModel.isSearching {
                     ProgressView()
-                } else if searchResults.isEmpty && !searchText.isEmpty {
+                } else if viewModel.searchResults.isEmpty && !viewModel.searchText.isEmpty {
                     Text("No results")
                         .foregroundStyle(ColorToken.Text.secondary.asColor)
                 }
@@ -77,40 +67,10 @@ struct SearchSheetView: View {
         .frame(minWidth: 400, minHeight: 300)
         .onAppear {
             isSearchFieldFocused = true
-            setupSearchSubscription()
-        }
-    }
-
-    private func setupSearchSubscription() {
-        searchSubject
-            .throttle(for: .milliseconds(250), scheduler: DispatchQueue.main, latest: true)
-            .sink { query in
-                performSearch(query: query)
-            }
-            .store(in: &cancellables)
-    }
-
-    private func performSearch(query: String) {
-        guard !query.isEmpty else {
-            searchResults = []
-            isSearching = false
-            return
-        }
-
-        isSearching = true
-        Task {
-            defer { isSearching = false }
-            do {
-                let results = try await DriveJobs().driveSearch(syncDbId: syncDbId, searchString: query)
-                let uiResults = results.map { UIFileResponse(fileResponse: $0) }
-                searchResults = uiResults
-            } catch {
-                searchResults = []
-            }
         }
     }
 }
 
 #Preview {
-    SearchSheetView(syncDbId: 0) {}
+    SearchSheetView(viewModel: SearchViewModel(syncDbId: 0)) {}
 }
