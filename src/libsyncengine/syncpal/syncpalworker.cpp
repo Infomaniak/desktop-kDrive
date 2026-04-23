@@ -35,7 +35,12 @@
 #include <log4cplus/loggingmacros.h>
 
 #define UPDATE_PROGRESS_DELAY 1
+
 namespace KDC {
+
+// Alert threshold definition for mass deletions
+static constexpr std::array<std::pair<uint64_t /* from size */, uint64_t /* alert threshold (0 means no alert) */>, 3>
+        massDeletionsThresholdArr{{{0, 0}, {100, 1000}, {20000, 10000}}};
 
 SyncPalWorker::SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
                              const std::chrono::seconds &startDelay) :
@@ -104,23 +109,31 @@ bool SyncPalWorker::shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const 
     return networkIssue || httpBlockingError || syncDirNotAccessible || invalidOperation;
 }
 
-void SyncPalWorker::checkForMassDestructions() const {
-    const auto snapshotItems = _syncPal->snapshot(ReplicaSide::Local)->nbItems();
-    const auto deleteOps = _syncPal->_syncOps->countOps(ReplicaSide::Local, OperationType::Delete);
+void SyncPalWorker::checkForMassDeletions() const {
+    const auto nbOfLocalDeleteOps = _syncPal->_syncOps->countOps(ReplicaSide::Local, OperationType::Delete);
+    if (!nbOfLocalDeleteOps) return;
+
+    uint64_t nbTotalOfLocalDeleteOps = 0;
+    nbTotalOfLocalDeleteOps = _syncPal->nbOfLocalDeleteOpsPropagated() + nbOfLocalDeleteOps;
+
+    // Evaluation of the local snapshot size before destructions
+    const auto nbTotalOfLocalSnapshotItems = _syncPal->snapshot(ReplicaSide::Local)->nbItems() + nbTotalOfLocalDeleteOps;
 
     // Define alert threshold
-    uint16_t alertThreshold = 0;
-    const auto items = snapshotItems + deleteOps;
-    if (items >= 100 && items < 20000) {
-        alertThreshold = 1000;
-    } else if (items >= 20000) {
-        alertThreshold = 10000;
+    uint64_t alertThreshold = 0;
+    for (size_t i = 0; i < massDeletionsThresholdArr.size(); i++) {
+        if (nbTotalOfLocalSnapshotItems >= massDeletionsThresholdArr[i].first &&
+            (i == massDeletionsThresholdArr.size() - 1 || nbTotalOfLocalSnapshotItems < massDeletionsThresholdArr[i + 1].first)) {
+            alertThreshold = massDeletionsThresholdArr[i].second;
+            break;
+        }
     }
 
-    if (alertThreshold && deleteOps >= alertThreshold) {
-        LOG_SYNCPAL_WARN(_logger, "Mass destruction detected: " << deleteOps << "/" << items);
+    if (alertThreshold && nbTotalOfLocalDeleteOps >= alertThreshold) {
+        LOG_SYNCPAL_WARN(_logger, "Mass destruction detected: " << nbTotalOfLocalDeleteOps << "/" << nbTotalOfLocalSnapshotItems);
         sentry::Handler::captureMessage(sentry::Level::Warning, "SyncPalWorker::checkForMassDestructions",
-                                        "Mass destruction detected: " + std::to_string(deleteOps) + "/" + std::to_string(items));
+                                        "Mass destruction detected: " + std::to_string(nbTotalOfLocalDeleteOps) + "/" +
+                                                std::to_string(nbTotalOfLocalSnapshotItems));
     }
 }
 
@@ -489,11 +502,13 @@ SyncStep SyncPalWorker::nextStep() const {
             const bool areLiveSnapshotsUpdated =
                     _syncPal->liveSnapshot(ReplicaSide::Local).updated() || _syncPal->liveSnapshot(ReplicaSide::Remote).updated();
 
-
-            return areLiveSnapshotsValid && areFSOWorkersRunning && !areFSOWorkersInitializing && !areFSOWorkersUpdating &&
-                                   (areLiveSnapshotsUpdated || _syncPal->restart())
-                           ? SyncStep::UpdateDetection1
-                           : SyncStep::Idle;
+            if (areLiveSnapshotsValid && areFSOWorkersRunning && !areFSOWorkersInitializing && !areFSOWorkersUpdating &&
+                (areLiveSnapshotsUpdated || _syncPal->restart()))
+                return SyncStep::UpdateDetection1;
+            else {
+                _syncPal->resetNbOfLocalDeleteOpsPropagated();
+                return SyncStep::Idle;
+            }
         }
         case SyncStep::UpdateDetection1: {
             auto logNbOps = [this](const ReplicaSide side) {
@@ -533,7 +548,7 @@ SyncStep SyncPalWorker::nextStep() const {
             return SyncStep::Propagation2; // Go directly to the Executor step
         case SyncStep::Reconciliation4:
             LOG_SYNCPAL_DEBUG(_logger, _syncPal->_syncOps->size() << " operations generated")
-            checkForMassDestructions();
+            checkForMassDeletions();
             return SyncStep::Propagation1;
         case SyncStep::Propagation1:
             return SyncStep::Propagation2;
