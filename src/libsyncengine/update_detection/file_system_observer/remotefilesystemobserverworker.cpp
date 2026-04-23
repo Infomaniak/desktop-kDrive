@@ -186,7 +186,8 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
 
         std::shared_ptr<ContinueFileListWithCursorJob> job = nullptr;
         if (_listingCursorMap.at(remoteDirId).cursor.empty()) {
-            LOG_SYNCPAL_WARN(_logger, "Cursor is empty for driveDbId=" << _driveDbId << ", invalidating remote snapshot.");
+            LOG_SYNCPAL_WARN(_logger, "Cursor is empty for driveDbId=" << _driveDbId << " and remoteDirId=" << remoteDirId
+                                                                       << ", invalidating remote snapshot.");
             tryToInvalidateSnapshot();
             exitInfo = ExitCode::DataError;
             break;
@@ -234,9 +235,9 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
         Poco::JSON::Object::Ptr dataObj = resObj->getObject(dataKey);
         if (!dataObj) continue;
 
-        std::string cursor;
+        Cursor cursor;
         if (!JsonParserUtility::extractValue(resObj, cursorKey, cursor)) {
-            exitInfo = ExitCode::BackError;
+            exitInfo = {ExitCode::BackError, ExitCause::MissingReplyData};
             break;
         }
 
