@@ -269,15 +269,15 @@ void AppServer::init() {
     }
 
     // Init KeyChainManager instance
-    if (!KeyChainManager::instance()) {
+    if (!KeyChainManagerSingleton::instance()) {
         LOG_WARN(_logger, "Error in KeyChainManager::instance");
         throw std::runtime_error("Unable to initialize key chain manager.");
     }
 
 #if defined(KD_LINUX)
     // For access to keyring in order to promt authentication popup
-    KeyChainManager::instance()->writeDummyTest();
-    KeyChainManager::instance()->clearDummyTest();
+    KeyChainManagerSingleton::instance()->writeDummyTest();
+    KeyChainManagerSingleton::instance()->clearDummyTest();
 #endif
 
     // Init ParametersCache instance
@@ -754,7 +754,7 @@ ExitInfo AppServer::updateParametersAndPropagateChanges(const ParametersInfo &ne
     if (oldParametersInfo.proxyConfig().needsAuth()) {
         // Read pwd from keystore
         bool found = false;
-        if (!KeyChainManager::instance()->readDataFromKeystore(oldParametersInfo.proxyConfig().token(), pwd, found)) {
+        if (!KeyChainManagerSingleton::instance()->readDataFromKeystore(oldParametersInfo.proxyConfig().token(), pwd, found)) {
             LOG_WARN(_logger, "Failed to read proxy pwd from keychain");
         }
         if (!found) {
@@ -2157,7 +2157,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             if (parameters.proxyConfig().needsAuth()) {
                 // Read pwd from keystore
                 bool found;
-                if (!KeyChainManager::instance()->readDataFromKeystore(parameters.proxyConfig().token(), pwd, found)) {
+                if (!KeyChainManagerSingleton::instance()->readDataFromKeystore(parameters.proxyConfig().token(), pwd, found)) {
                     LOG_WARN(_logger, "Failed to read proxy pwd from keychain");
                 }
                 if (!found) {
@@ -2852,11 +2852,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 
@@ -3746,7 +3746,7 @@ void AppServer::clearKeychainKeys() {
     }
 
     for (const auto &user: userList) {
-        KeyChainManager::instance()->deleteToken(user.keychainKey());
+        KeyChainManagerSingleton::instance()->deleteToken(user.keychainKey());
     }
 }
 

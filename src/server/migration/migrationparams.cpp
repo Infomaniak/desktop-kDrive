@@ -603,7 +603,7 @@ ExitCode MigrationParams::migrateProxySettings(ProxyConfig &proxyConfig) {
         proxyConfig.setUser(user.toStdString());
 
         std::string keychainKeyProxyPass(Utility::computeMd5Hash(std::to_string(std::time(nullptr))));
-        if (!KeyChainManager::instance()->writeToken(keychainKeyProxyPass, pwd)) {
+        if (!KeyChainManagerSingleton::instance()->writeToken(keychainKeyProxyPass, pwd)) {
             LOG_WARN(_logger, "Failed to write password token into keychain");
             return ExitCode::SystemError;
         }
@@ -771,7 +771,7 @@ ExitCode MigrationParams::setToken(User &user, const std::string &appPassword) {
     ExitCode tokenGetExitCode = getTokenFromAppPassword(user.email(), appPassword, apiToken);
     if (tokenGetExitCode == ExitCode::Ok) {
         std::string keychainKey(Utility::computeMd5Hash(std::to_string(std::time(nullptr))));
-        if (KeyChainManager::instance()->writeToken(keychainKey, apiToken.rawData())) {
+        if (KeyChainManagerSingleton::instance()->writeToken(keychainKey, apiToken.rawData())) {
             // Update userInfo
             user.setKeychainKey(keychainKey);
             found = false;

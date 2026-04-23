@@ -530,7 +530,7 @@ ExitInfo AbstractTokenNetworkJob::refreshToken() {
             return {ExitCode::DataError, ExitCause::DbEntryNotFound};
         }
 
-        (void) KeyChainManager::instance()->deleteToken(user.keychainKey());
+        (void) KeyChainManagerSingleton::instance()->deleteToken(user.keychainKey());
 
         user.setKeychainKey(""); // Clear the keychainKey
         (void) ParmsDb::instance()->updateUser(user, found);

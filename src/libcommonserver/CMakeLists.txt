@@ -49,6 +49,7 @@ set(libcommonserver_SRCS
     # Keychain manager
     keychainmanager/apitoken.h keychainmanager/apitoken.cpp
     keychainmanager/keychainmanager.h keychainmanager/keychainmanager.cpp
+    keychainmanager/ikeychainstore.h keychainmanager/keychainstore.cpp
 )
 
 if(APPLE)

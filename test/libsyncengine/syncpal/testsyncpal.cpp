@@ -21,11 +21,13 @@
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 
+
 #include "libcommonserver/keychainmanager/keychainmanager.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/network/proxy.h"
 
 #include "libsyncengine/jobs/network/kDrive_API/movejob.h"
+#include "mocks/libcommonserver/keychainmanager/mockkeychainstore.h"
 
 #include "test_utility/testhelpers.h"
 
@@ -44,8 +46,9 @@ void TestSyncPal::setUp() {
     apiToken.setAccessToken(testVariables.apiToken);
 
     std::string keychainKey("123");
-    (void) KeyChainManager::instance(true);
-    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    auto mockStore = std::make_unique<MockKeychainStore>();
+    KeyChainManagerSingleton::setStore(std::move(mockStore));
+    (void) KeyChainManagerSingleton::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
     (void) ParmsDb::instance(_localParmsDbTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);

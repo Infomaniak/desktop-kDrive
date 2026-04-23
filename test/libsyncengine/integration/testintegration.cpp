@@ -31,6 +31,7 @@
 #include "requests/exclusiontemplatecache.h"
 #include "requests/syncnodecache.h"
 #include "requests/exclusiontemplatecache.h"
+#include "mocks/libcommonserver/keychainmanager/mockkeychainstore.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "propagation/executor/filerescuer.h"
 #include "test_utility/testhelpers.h"
@@ -80,8 +81,9 @@ void TestIntegration::setUp() {
     apiToken.setAccessToken(testVariables.apiToken);
 
     const std::string keychainKey("123");
-    (void) KeyChainManager::instance(true);
-    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    auto mockStore = std::make_unique<MockKeychainStore>();
+    KeyChainManagerSingleton::setStore(std::move(mockStore));
+    (void) KeyChainManagerSingleton::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
     bool alreadyExists = false;

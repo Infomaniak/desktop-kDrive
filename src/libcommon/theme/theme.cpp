@@ -28,6 +28,8 @@
 
 namespace KDC {
 
+
+
 Theme *Theme::instance() {
     return &_instance;
 }
@@ -50,33 +52,34 @@ QIcon Theme::applicationIcon() const {
     return themeIcon(QStringLiteral(APPLICATION_ICON_NAME "-icon"));
 }
 
+QString Theme::getFlavor(const bool systray) const {
+    if (!systray || !_mono) return "colored";
+
+    if (QOperatingSystemVersion::currentType() == QOperatingSystemVersion::OSType::MacOS &&
+        QOperatingSystemVersion::current() > QOperatingSystemVersion::MacOSCatalina) {
+        return "black";
+    }
+
+    return CommonUtility::hasDarkSystray() ? "white" : "black";
+}
+
 QIcon Theme::themeIcon(const QString &name, bool sysTray, bool sysTrayMenuVisible) const {
     Q_UNUSED(sysTrayMenuVisible)
     QString osType;
-    QString flavor;
 
-    if (QOperatingSystemVersion::current().currentType() == QOperatingSystemVersion::OSType::MacOS) {
-        osType = "mac";
-    } else {
-        osType = "windows";
+    switch (QOperatingSystemVersion::currentType()) {
+        case QOperatingSystemVersion::OSType::MacOS:
+            osType = "mac";
+            break;
+        case QOperatingSystemVersion::OSType::Windows:
+            osType = "windows";
+            break;
+        default:
+            return QIcon{};
     }
 
-    if (sysTray) {
-        if (_mono) {
-            if (QOperatingSystemVersion::current().currentType() == QOperatingSystemVersion::OSType::MacOS &&
-                QOperatingSystemVersion::current() > QOperatingSystemVersion::MacOSCatalina) {
-                flavor = QString("black");
-            } else {
-                flavor = CommonUtility::hasDarkSystray() ? QString("white") : QString("black");
-            }
-        } else {
-            flavor = QString("colored");
-        }
-    } else {
-        flavor = QString("colored");
-    }
-
-    QString key = name + "," + flavor;
+    const QString flavor = getFlavor(sysTray);
+    const QString key = name + "," + flavor;
     QIcon &cached = _iconCache[key];
     if (cached.isNull()) {
         QString pixmapName = QString(":/client/resources/icons/theme/%1/%2/%3.svg").arg(osType, flavor, name);

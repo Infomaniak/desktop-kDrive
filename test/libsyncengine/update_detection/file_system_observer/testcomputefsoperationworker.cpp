@@ -22,11 +22,13 @@
 #include "requests/syncnodecache.h"
 #include "requests/parameterscache.h"
 
+#include "libcommon/utility/utility.h"
+
+#include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/keychainmanager/keychainmanager.h"
 #include "libcommonserver/io/iohelper.h"
 
-#include "libcommon/utility/utility.h"
-
+#include "mocks/libcommonserver/keychainmanager/mockkeychainstore.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 
@@ -57,8 +59,9 @@ void TestComputeFSOperationWorker::setUp() {
     apiToken.setAccessToken(testVariables.apiToken);
 
     std::string keychainKey("123");
-    (void) KeyChainManager::instance(true);
-    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    auto mockStore = std::make_unique<MockKeychainStore>();
+    KeyChainManagerSingleton::setStore(std::move(mockStore));
+    (void) KeyChainManagerSingleton::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     /// Create parmsDb
     ParmsDb::instance(_localParmsTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);

@@ -19,6 +19,8 @@ set(testcommonserver_SRCS
         utility/testutility.h utility/testutility.cpp
         # db
         db/testdb.h db/testdb.cpp
+        # keychainmanager
+        keychainmanager/testkeychainmanager.h keychainmanager/testkeychainmanager.cpp 
 )
 
 if(APPLE)

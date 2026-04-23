@@ -19,11 +19,14 @@
 #include "testincludes.h"
 
 #include "utility/testutility.h"
+
 #include "db/testdb.h"
+#include "keychainmanager/testkeychainmanager.h"
 
 namespace KDC {
 CPPUNIT_TEST_SUITE_REGISTRATION(TestUtility);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestDb);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestKeyChainManager);
 } // namespace KDC
 
 int main(int, char **) {
