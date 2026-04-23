@@ -18,7 +18,7 @@
 
 #include "localcopyjob.h"
 
-#include "libcommonserver/io/permissionsholder.h"
+#include "libcommonserver/io/permissionsgiver.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 
@@ -77,7 +77,7 @@ ExitInfo LocalCopyJob::runJob() {
     }
 
     // Make sure we are allowed to propagate the change
-    PermissionsHolder _(_dest.parent_path(), _logger);
+    PermissionsGiver _(_dest.parent_path(), _logger);
 
     ExitInfo exitInfo = ExitCode::Ok;
     try {

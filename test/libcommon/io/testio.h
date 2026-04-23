@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testCheckSetAndGetRights); // Keep this test before any tests that may use set/get right functions
         CPPUNIT_TEST(testLock);
         CPPUNIT_TEST(testReadOnly);
-        CPPUNIT_TEST(testPermissionsHolder);
+        CPPUNIT_TEST(testPermissionsGiver);
         CPPUNIT_TEST(testGetItemType);
         CPPUNIT_TEST(testGetFileSize);
         CPPUNIT_TEST(testTempDirectoryPath);
@@ -115,7 +115,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         void testCheckSetAndGetRights();
         void testLock();
         void testReadOnly();
-        void testPermissionsHolder();
+        void testPermissionsGiver();
 
     private:
         void testGetItemTypeSimpleCases();
