@@ -19,6 +19,7 @@
 using DynamicData;
 using DynamicData.Binding;
 using H.NotifyIcon;
+using Infomaniak.kDrive.CustomControls.Errors;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
@@ -112,7 +113,7 @@ namespace Infomaniak.kDrive.TrayIcon
                 return;
             }
 
-            if (_appModel.AllSyncs.Any(sync => sync.SyncErrors.Count != 0))
+            if (_appModel.AllSyncs.Any(sync => sync.SyncErrors.Any(err => ErrorFactory.GetErrorCardInfos(err)?.Meta.ShowInSystemTray == true)))
             {
                 SetIconError();
                 return;
@@ -120,7 +121,8 @@ namespace Infomaniak.kDrive.TrayIcon
 
             if (_appModel.Settings.UpdateManager.AvailableUpdate is not null)
             {
-                SetIconNeutral();
+                SetIconNotification();
+                return;
             }
 
             if (_appModel.AllSyncs.All(sync => sync.SyncStatus == SyncStatus.Stopped || sync.SyncStatus == SyncStatus.Offline))

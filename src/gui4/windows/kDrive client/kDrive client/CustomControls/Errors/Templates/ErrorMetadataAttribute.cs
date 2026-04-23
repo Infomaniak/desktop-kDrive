@@ -16,7 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 using Infomaniak.kDrive.Types;
+using Infomaniak.kDrive.ViewModels;
 using System;
+using System.Linq;
 
 namespace Infomaniak.kDrive.CustomControls.Errors.Templates
 {
@@ -33,5 +35,17 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates
         public ConflictType[] ConflictTypes { get; set; } = new[] { ConflictType.None };
         public ExitCode[] ExitCodes { get; set; } = new[] { ExitCode.Unknown };
         public ExitCause[] ExitCauses { get; set; } = new[] { ExitCause.Unknown };
+        public bool ShowInSystemTray { get; set; } = false;
+
+        public bool matches(Error error)
+        {
+            return Levels.Contains(error.ErrorLevel) &&
+                   NodeTypes.Contains(error.NodeType) &&
+                   CancelTypes.Contains(error.CancelType) &&
+                   InconsistencyTypes.Contains(error.InconsistencyType) &&
+                   ConflictTypes.Contains(error.ConflictType) &&
+                   ExitCodes.Contains(error.ExitCode) &&
+                   ExitCauses.Contains(error.ExitCause);
+        }
     }
 }
