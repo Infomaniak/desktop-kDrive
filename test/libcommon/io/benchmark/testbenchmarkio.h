@@ -39,6 +39,14 @@
 #include <iomanip>
 #include <cstdint>
 
+#include <fcntl.h>
+#if defined(KD_LINUX) || defined(KD_MACOS)
+#include <unistd.h>
+#include <linux/stat.h>
+#endif
+#define _GNU_SOURCE
+#include <system_error>
+
 // Windows API
 #include <windows.h>
 #include <io.h>
@@ -96,15 +104,13 @@ bool crt_access(const std::string &path);
 
 // ============================================================================
 // TEST FUNCTIONS - CATEGORY 2: METADATA (retrieve metadata: perms, times, size)
-// These tests read file metadata (permissions, mode bits, times, size) via
-// different APIs. They are not existence-only checks.
 // ============================================================================
 namespace MetadataTests {
-bool filesystem_permissions(const std::string &path);
-bool crt_stat_mode(const std::string &path);
-bool last_write_time(const std::string &path);
-bool file_size(const std::string &path);
-bool win32_getfileattributes_ex(const std::string &path);
+bool stat_full(const std::string &path);
+bool lstat_full(const std::string &path);
+bool fstat_full(const std::string &path);
+bool statx_full(const std::string &path);
+bool filesystem_full(const std::string &path);
 } // namespace MetadataTests
 
 // ============================================================================

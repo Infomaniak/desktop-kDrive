@@ -128,58 +128,154 @@ bool crt_access(const std::string &path) {
 
 } // namespace ExistsTests
 
-
 // ============================================================================
-// TEST FUNCTIONS - METADATA (detailed metadata retrieval)
+// TEST FUNCTIONS - METADATA
 // ============================================================================
 namespace MetadataTests {
 
-bool filesystem_permissions(const std::string &path) {
-    // Check that we can read permissions via status().permissions()
-    std::error_code ec;
-    auto st = std::filesystem::status(path, ec);
-    if (ec) return false;
-    auto perms = st.permissions();
-    // Ensure at least one permission flag is present
-    return perms != std::filesystem::perms::none;
-}
+bool stat_full(const std::string &path) {
+    struct stat st{};
+    if (::stat(path.c_str(), &st) != 0) return false;
 
-bool crt_stat_mode(const std::string &path) {
-    struct _stat buffer;
-    if (_stat(path.c_str(), &buffer) != 0) return false;
-    // Ensure mode bits are present (owner/group/other)
-#if defined(_WIN32)
-    // MSVC CRT exposes read/write flags via _S_IREAD/_S_IWRITE
-    return (buffer.st_mode & (_S_IREAD | _S_IWRITE)) != 0;
-#else
-    return (buffer.st_mode & (S_IRWXU | S_IRWXG | S_IRWXO)) != 0;
+    auto dev = st.st_dev;
+    auto inode = st.st_ino;
+    auto mode = st.st_mode;
+    auto nlink = st.st_nlink;
+    auto uid = st.st_uid;
+    auto gid = st.st_gid;
+    auto rdev = st.st_rdev;
+    auto size = st.st_size;
+#if defined(KD_LINUX) || defined(KD_MACOS)
+    auto blksize = st.st_blksize;
+    auto blocks = st.st_blocks;
+    (void) blksize;
+    (void) blocks;
 #endif
+
+    auto atime = st.st_atime;
+    auto mtime = st.st_mtime;
+    auto ctime = st.st_ctime;
+
+    (void) dev;
+    (void) inode;
+    (void) mode;
+    (void) nlink;
+    (void) uid;
+    (void) gid;
+    (void) rdev;
+    (void) size;
+    (void) atime;
+    (void) mtime;
+    (void) ctime;
+
+    return true;
 }
 
-bool last_write_time(const std::string &path) {
-    try {
-        auto t = std::filesystem::last_write_time(path);
-        (void) t;
-        return true;
-    } catch (...) {
-        return false;
-    }
-}
+bool lstat_full(const std::string &path) {
+#if defined(KD_LINUX) || defined(KD_MACOS)
+    struct stat st{};
+    if (::lstat(path.c_str(), &st) != 0) return false;
 
-bool file_size(const std::string &path) {
-    std::error_code ec;
-    auto sz = std::filesystem::file_size(path, ec);
-    return !ec;
-}
+    auto inode = st.st_ino;
+    auto mode = st.st_mode;
+    auto size = st.st_size;
 
-bool win32_getfileattributes_ex(const std::string &path) {
-#if defined(KD_WINDOWS)
-    WIN32_FILE_ATTRIBUTE_DATA data;
-    return GetFileAttributesExA(path.c_str(), GetFileExInfoStandard, &data) == TRUE;
-#else
-    (void)path;
+    (void) inode;
+    (void) mode;
+    (void) size;
+
+    return true;
+#endif
     return false;
+}
+
+bool fstat_full(const std::string &path) {
+    int fd = ::open(path.c_str(), O_RDONLY);
+    if (fd < 0) return false;
+
+    struct stat st{};
+    bool ok = (::fstat(fd, &st) == 0);
+
+    if (ok) {
+        auto inode = st.st_ino;
+        auto size = st.st_size;
+        auto uid = st.st_uid;
+        auto gid = st.st_gid;
+
+        (void) inode;
+        (void) size;
+        (void) uid;
+        (void) gid;
+    }
+
+    ::close(fd);
+    return ok;
+}
+
+bool statx_full(const std::string &path) {
+#if defined(KD_LINUX)
+    struct statx stx{};
+
+    int ret = ::statx(AT_FDCWD, path.c_str(), AT_STATX_SYNC_AS_STAT, STATX_BASIC_STATS | STATX_BTIME, &stx);
+
+    if (ret != 0) return false;
+
+    auto mask = stx.stx_mask;
+    auto size = stx.stx_size;
+    auto blocks = stx.stx_blocks;
+    auto uid = stx.stx_uid;
+    auto gid = stx.stx_gid;
+    auto mode = stx.stx_mode;
+
+    auto atime = stx.stx_atime;
+    auto mtime = stx.stx_mtime;
+    auto ctime = stx.stx_ctime;
+    auto btime = stx.stx_btime;
+
+    auto inode = stx.stx_ino;
+    auto dev_major = stx.stx_dev_major;
+    auto dev_minor = stx.stx_dev_minor;
+
+    (void) mask;
+    (void) size;
+    (void) blocks;
+    (void) uid;
+    (void) gid;
+    (void) mode;
+    (void) atime;
+    (void) mtime;
+    (void) ctime;
+    (void) btime;
+    (void) inode;
+    (void) dev_major;
+    (void) dev_minor;
+
+    return true;
 #endif
+    return false;
+}
+
+bool filesystem_full(const std::string &path) {
+    std::error_code ec;
+
+    auto status = std::filesystem::status(path, ec);
+    if (ec) return false;
+
+    auto size = std::filesystem::file_size(path, ec);
+    if (ec) return false;
+
+    auto last_write = std::filesystem::last_write_time(path, ec);
+    if (ec) return false;
+
+    auto perms = status.permissions();
+    auto type = status.type();
+
+    (void) size;
+    (void) last_write;
+    (void) perms;
+    (void) type;
+
+    return true;
 }
 
 } // namespace MetadataTests
@@ -359,7 +455,7 @@ bool create_CreateFileW(const std::string &dir) {
     return create_ofstream(dir);
 #endif
 }
-}
+} // namespace CreateTests
 
 // ----------------------------------------------------------------------------
 // DELETE FUNCTIONS
@@ -392,7 +488,7 @@ bool delete_crt_remove(const std::string &dir) {
     ::CreateTestFile(filename);
     return std::remove(filename.c_str()) == 0;
 }
-}
+} // namespace DeleteTests
 
 // ----------------------------------------------------------------------------
 // MOVE FUNCTIONS
@@ -435,15 +531,17 @@ bool move_MoveFileW(const std::string &dir) {
     const auto dst = KDC::CommonUtility::s2ws((std::filesystem::path(dir) / "bench_move_MoveFileW_dst.tmp").string());
     ::CreateTestFile(KDC::CommonUtility::ws2s(src));
     BOOL ok = MoveFileW(src.c_str(), dst.c_str());
-    if (ok) std::filesystem::remove(KDC::CommonUtility::ws2s(dst));
-    else std::filesystem::remove(KDC::CommonUtility::ws2s(src));
+    if (ok)
+        std::filesystem::remove(KDC::CommonUtility::ws2s(dst));
+    else
+        std::filesystem::remove(KDC::CommonUtility::ws2s(src));
     return ok == TRUE;
 #else
     return move_filesystem_rename(dir);
 #endif
 }
 
-} // namespace OpsTests
+} // namespace MoveTests
 
 
 // ============================================================================
@@ -488,19 +586,22 @@ void RunAllBenchmarks(const std::string &testFilePath, int iterations) {
     std::cout << "\n[Running Exists Tests...]\n";
     benchmark.addResult("Exists", "std::filesystem::status", benchmark.measure(ExistsTests::filesystem_status, testFilePath));
     benchmark.addResult("Exists", "std::filesystem::exists", benchmark.measure(ExistsTests::filesystem_exists, testFilePath));
-    benchmark.addResult("Exists", "GetFileAttributesA",
-                        benchmark.measure(ExistsTests::win32_getfileattributes_a, testFilePath));
+    benchmark.addResult("Exists", "GetFileAttributesA", benchmark.measure(ExistsTests::win32_getfileattributes_a, testFilePath));
     benchmark.addResult("Exists", "GetFileAttributesW + s2ws",
                         benchmark.measure(ExistsTests::win32_getfileattributes_w, testFilePath));
     benchmark.addResult("Exists", "_stat()", benchmark.measure(ExistsTests::crt_stat, testFilePath));
     benchmark.addResult("Exists", "_access()", benchmark.measure(ExistsTests::crt_access, testFilePath));
-    // New metadata benchmarks that actually read metadata fields
-    benchmark.addResult("Metadata", "std::filesystem::permissions", benchmark.measure(MetadataTests::filesystem_permissions, testFilePath));
-    benchmark.addResult("Metadata", "_stat() mode bits", benchmark.measure(MetadataTests::crt_stat_mode, testFilePath));
-    benchmark.addResult("Metadata", "std::filesystem::last_write_time", benchmark.measure(MetadataTests::last_write_time, testFilePath));
-    benchmark.addResult("Metadata", "std::filesystem::file_size", benchmark.measure(MetadataTests::file_size, testFilePath));
-    benchmark.addResult("Metadata", "GetFileAttributesEx (Win32)", benchmark.measure(MetadataTests::win32_getfileattributes_ex, testFilePath));
-
+    // --- METADATA ---
+    std::cout << "[Running Metadata Tests...]\n";
+    benchmark.addResult("Metadata", "stat_full", benchmark.measure(MetadataTests::stat_full, testFilePath));
+#if defined(KD_LINUX) || defined(KD_MACOS)
+    benchmark.addResult("Metadata", "lstat_full", benchmark.measure(MetadataTests::lstat_full, testFilePath));
+#endif
+    benchmark.addResult("Metadata", "fstat_full", benchmark.measure(MetadataTests::fstat_full, testFilePath));
+#if defined(KD_LINUX)
+    benchmark.addResult("Metadata", "statx_full", benchmark.measure(MetadataTests::statx_full, testFilePath));
+#endif
+    benchmark.addResult("Metadata", "filesystem_full", benchmark.measure(MetadataTests::filesystem_full, testFilePath));
     // --- READ ---
     std::cout << "[Running Read Tests...]\n";
     benchmark.addResult("Read", "ifstream (binary)", benchmark.measure(ReadTests::ifstream_binary, testFilePath));
@@ -513,7 +614,8 @@ void RunAllBenchmarks(const std::string &testFilePath, int iterations) {
 
     // --- WRITE ---
     std::cout << "[Running Write Tests...]\n";
-    benchmark.addResult("Write", "filesystem::last_write_time", benchmark.measure(WriteTests::filesystem_last_write_time, testFilePath));
+    benchmark.addResult("Write", "filesystem::last_write_time",
+                        benchmark.measure(WriteTests::filesystem_last_write_time, testFilePath));
     benchmark.addResult("Write", "SetFileTime (Win32)", benchmark.measure(WriteTests::win32_setfiletime, testFilePath));
     benchmark.addResult("Write", "ofstream (append)", benchmark.measure(WriteTests::ofstream_append, testFilePath));
 
@@ -526,22 +628,42 @@ void RunAllBenchmarks(const std::string &testFilePath, int iterations) {
 
     // --- DELETE ---
     std::cout << "[Running Delete Tests...]\n";
-    benchmark.addResult("Delete", "delete (filesystem::remove)", benchmark.measure(DeleteTests::delete_filesystem_remove, testFilePath));
+    benchmark.addResult("Delete", "delete (filesystem::remove)",
+                        benchmark.measure(DeleteTests::delete_filesystem_remove, testFilePath));
     benchmark.addResult("Delete", "delete (DeleteFileA)", benchmark.measure(DeleteTests::delete_DeleteFileA, testFilePath));
     benchmark.addResult("Delete", "delete (CRT remove)", benchmark.measure(DeleteTests::delete_crt_remove, testFilePath));
 
     // --- MOVE ---
     std::cout << "[Running Move Tests...]\n";
-    benchmark.addResult("Move", "move (std::filesystem::rename)", benchmark.measure(MoveTests::move_filesystem_rename, testFilePath));
+    benchmark.addResult("Move", "move (std::filesystem::rename)",
+                        benchmark.measure(MoveTests::move_filesystem_rename, testFilePath));
     benchmark.addResult("Move", "move (MoveFileA)", benchmark.measure(MoveTests::move_MoveFileA, testFilePath));
     benchmark.addResult("Move", "move (MoveFileW)", benchmark.measure(MoveTests::move_MoveFileW, testFilePath));
 
     // --- SIZE ---
     std::cout << "[Running Size Tests...]\n";
     // Size tests are not boolean-returning; measure by adapting wrapper to bool conversion for timing only.
-    benchmark.addResult("Size", "filesystem::file_size", benchmark.measure([](const std::string &p){ (void)SizeTests::filesystem_filesize(p); return true; }, testFilePath));
-    benchmark.addResult("Size", "GetFileSizeEx (Win32)", benchmark.measure([](const std::string &p){ (void)SizeTests::win32_getfilesize(p); return true; }, testFilePath));
-    benchmark.addResult("Size", "_filelength (CRT)", benchmark.measure([](const std::string &p){ (void)SizeTests::crt_filelength(p); return true; }, testFilePath));
+    benchmark.addResult("Size", "filesystem::file_size",
+                        benchmark.measure(
+                                [](const std::string &p) {
+                                    (void) SizeTests::filesystem_filesize(p);
+                                    return true;
+                                },
+                                testFilePath));
+    benchmark.addResult("Size", "GetFileSizeEx (Win32)",
+                        benchmark.measure(
+                                [](const std::string &p) {
+                                    (void) SizeTests::win32_getfilesize(p);
+                                    return true;
+                                },
+                                testFilePath));
+    benchmark.addResult("Size", "_filelength (CRT)",
+                        benchmark.measure(
+                                [](const std::string &p) {
+                                    (void) SizeTests::crt_filelength(p);
+                                    return true;
+                                },
+                                testFilePath));
 
     // Print results and cleanup
     benchmark.printResultsByCategory();
@@ -556,17 +678,22 @@ void RunAllBenchmarks(const std::string &testFilePath, int iterations) {
         if (r.category != "Ops") continue;
         std::string method = r.method;
         std::string type;
-        if (method.find("create") != std::string::npos) type = "Write";
-        else if (method.find("delete") != std::string::npos) type = "Delete";
-        else if (method.find("move") != std::string::npos) type = "Move";
-        else type = "Other";
+        if (method.find("create") != std::string::npos)
+            type = "Write";
+        else if (method.find("delete") != std::string::npos)
+            type = "Delete";
+        else if (method.find("move") != std::string::npos)
+            type = "Move";
+        else
+            type = "Other";
 
         opsByType[type].push_back(r);
 
         // Extract API name inside parentheses if present
         const auto p1 = method.find('(');
         const auto p2 = method.find(')');
-        std::string api = (p1 != std::string::npos && p2 != std::string::npos && p2 > p1) ? method.substr(p1+1, p2-p1-1) : method;
+        std::string api =
+                (p1 != std::string::npos && p2 != std::string::npos && p2 > p1) ? method.substr(p1 + 1, p2 - p1 - 1) : method;
         auto &agg = apiAggregates[api];
         agg.first += r.time_ms;
         agg.second += 1;
@@ -578,17 +705,21 @@ void RunAllBenchmarks(const std::string &testFilePath, int iterations) {
         auto it = opsByType.find(group);
         if (it == opsByType.end()) continue;
         auto vec = it->second;
-        std::sort(vec.begin(), vec.end(), [](const BenchmarkResult &a, const BenchmarkResult &b){ return a.time_ms < b.time_ms; });
+        std::sort(vec.begin(), vec.end(),
+                  [](const BenchmarkResult &a, const BenchmarkResult &b) { return a.time_ms < b.time_ms; });
 
         std::cout << "\n[" << group << "]\n";
         std::cout << "------------------------------------------------------------\n";
-        std::cout << std::left << std::setw(30) << "API" << std::right << std::setw(14) << "Time (ms)" << std::setw(12) << "OK" << "\n";
+        std::cout << std::left << std::setw(30) << "API" << std::right << std::setw(14) << "Time (ms)" << std::setw(12) << "OK"
+                  << "\n";
         std::cout << "------------------------------------------------------------\n";
         for (const auto &r: vec) {
             // extract api
             const auto p1 = r.method.find('(');
             const auto p2 = r.method.find(')');
-            std::string api = (p1 != std::string::npos && p2 != std::string::npos && p2 > p1) ? r.method.substr(p1+1, p2-p1-1) : r.method;
+            std::string api = (p1 != std::string::npos && p2 != std::string::npos && p2 > p1)
+                                      ? r.method.substr(p1 + 1, p2 - p1 - 1)
+                                      : r.method;
             std::cout << std::left << std::setw(30) << api << std::right << std::setw(14) << std::fixed << std::setprecision(2)
                       << r.time_ms << std::setw(12) << (r.success ? "✓" : "✗") << "\n";
         }
@@ -596,22 +727,28 @@ void RunAllBenchmarks(const std::string &testFilePath, int iterations) {
 
     // Compute overall per-API averages and rank
     if (!apiAggregates.empty()) {
-        struct ApiAvg { std::string api; double avg; int count; };
+        struct ApiAvg {
+                std::string api;
+                double avg;
+                int count;
+        };
         std::vector<ApiAvg> avgs;
         for (const auto &kv: apiAggregates) {
             avgs.push_back({kv.first, kv.second.first / kv.second.second, kv.second.second});
         }
-        std::sort(avgs.begin(), avgs.end(), [](const ApiAvg &a, const ApiAvg &b){ return a.avg < b.avg; });
+        std::sort(avgs.begin(), avgs.end(), [](const ApiAvg &a, const ApiAvg &b) { return a.avg < b.avg; });
 
         const double best = avgs.front().avg;
         std::cout << "\n[OVERALL API RANKING] (lower avg time across Ops is better)\n";
         std::cout << "------------------------------------------------------------\n";
-        std::cout << std::left << std::setw(30) << "API" << std::right << std::setw(12) << "Avg (ms)" << std::setw(12) << "Rel" << std::setw(8) << "Cnt" << "\n";
+        std::cout << std::left << std::setw(30) << "API" << std::right << std::setw(12) << "Avg (ms)" << std::setw(12) << "Rel"
+                  << std::setw(8) << "Cnt" << "\n";
         std::cout << "------------------------------------------------------------\n";
         for (const auto &a: avgs) {
             double rel = (a.avg - best) / best * 100.0;
             std::cout << std::left << std::setw(30) << a.api << std::right << std::setw(12) << std::fixed << std::setprecision(2)
-                      << a.avg << std::setw(11) << (rel <= 0.0 ? "best" : (std::to_string((int)rel) + "%")) << std::setw(8) << a.count << "\n";
+                      << a.avg << std::setw(11) << (rel <= 0.0 ? "best" : (std::to_string((int) rel) + "%")) << std::setw(8)
+                      << a.count << "\n";
         }
     }
 
