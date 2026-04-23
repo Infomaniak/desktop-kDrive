@@ -449,11 +449,11 @@ bool TestParmsDb::deleteColumns() {
     // Sync table
     if (!deleteColumn("sync", "localNodeId")) return false;
     if (!deleteColumn("sync", "userPrivateFolderCursor")) return false;
-    if (!deleteColumn("sync", "userPrivateFolderTimestamp")) return false;
+    if (!deleteColumn("sync", "userPrivateFolderCursorTimestamp")) return false;
     if (!deleteColumn("sync", "commonDocumentsFolderCursor")) return false;
-    if (!deleteColumn("sync", "commonDocumentsFolderTimestamp")) return false;
+    if (!deleteColumn("sync", "commonDocumentsFolderCursorTimestamp")) return false;
     if (!deleteColumn("sync", "sharedFolderCursor")) return false;
-    if (!deleteColumn("sync", "sharedFolderTimestamp")) return false;
+    if (!deleteColumn("sync", "sharedFolderCursorTimestamp")) return false;
 
     // Parameters table
     if (!deleteColumn("parameters", "maxAllowedCpu")) return false;
@@ -805,11 +805,11 @@ void TestParmsDb::testAddMissingColumnsDuringUpgrade() {
 
     CPPUNIT_ASSERT(parmsDb->columnExists("sync", "localNodeId", exists) && exists);
     CPPUNIT_ASSERT(parmsDb->columnExists("sync", "userPrivateFolderCursor", exists) && exists);
-    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "userPrivateFolderTimestamp", exists) && exists);
+    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "userPrivateFolderCursorTimestamp", exists) && exists);
     CPPUNIT_ASSERT(parmsDb->columnExists("sync", "commonDocumentsFolderCursor", exists) && exists);
-    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "commonDocumentsFolderTimestamp", exists) && exists);
+    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "commonDocumentsFolderCursorTimestamp", exists) && exists);
     CPPUNIT_ASSERT(parmsDb->columnExists("sync", "sharedFolderCursor", exists) && exists);
-    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "sharedFolderTimestamp", exists) && exists);
+    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "sharedFolderCursorTimestamp", exists) && exists);
 
     CPPUNIT_ASSERT(parmsDb->columnExists("account", "name", exists) && exists);
     CPPUNIT_ASSERT(parmsDb->columnExists("user", "firstName", exists) && exists);
