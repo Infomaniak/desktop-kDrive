@@ -19,6 +19,7 @@
 #pragma once
 
 #include "app/services/commservice.h"
+#include "app/services/serviceeventbus.h"
 #include "communicationlayer/ipcclient.h"
 #include "communicationlayer/signaldispatcher.h"
 
@@ -47,6 +48,7 @@ class AppClientLinux : public QApplication {
          */
         SignalDispatcher &signalDispatcher() { return _signalDispatcher; }
         CommService &serverCommService() { return _serverCommService; }
+        ServiceEventBus &serviceEventBus() { return _serviceEventBus; }
 
     signals:
         /** Emitted once the first IPC connection to the server has been successfully established. */
@@ -60,6 +62,7 @@ class AppClientLinux : public QApplication {
         IpcClient _ipcClient{this};
         SignalDispatcher _signalDispatcher{this};
         CommService _serverCommService{_ipcClient, _signalDispatcher, this};
+        ServiceEventBus _serviceEventBus{this};
 };
 
 } // namespace KDC

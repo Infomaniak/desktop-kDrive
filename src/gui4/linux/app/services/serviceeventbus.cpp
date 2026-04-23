@@ -16,14 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "serviceeventbus.h"
 
 #include "libcommon/utility/types.h"
 
-#include <QString>
+#include <QLoggingCategory>
 
-namespace KDC::ServiceUtils {
+namespace KDC {
 
-QString formatExitInfo(const ExitInfo &exitInfo);
+Q_LOGGING_CATEGORY(lcServiceEventBus, "gui.v4.serviceeventbus", QtInfoMsg)
 
-} // namespace KDC::ServiceUtils
+ServiceEventBus::ServiceEventBus(QObject *const parent) :
+    QObject(parent) {}
+
+void ServiceEventBus::notifyGenericError(const ExitInfo &exitInfo, const RequestNum requestNum) {
+    qCWarning(lcServiceEventBus) << "Generic service error | request:" << toInt(requestNum) << "/ code:" << exitInfo.code()
+                                 << "/ cause:" << exitInfo.cause();
+    // TODO(gui4/linux): capture this error in Sentry once Sentry is integrated in the Linux v4 app.
+    emit genericErrorOccurred();
+}
+
+} // namespace KDC
