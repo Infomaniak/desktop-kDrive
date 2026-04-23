@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2026 Infomaniak Network SA
+ Copyright (C) 2023-2025 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -16,18 +16,13 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import CppInterop
 import Foundation
 
-struct SearchInfoList: Codable, Sendable {
-    let searchInfoList: [FileResponse]
-}
-
-public struct FileResponse: Codable, Sendable {
-    @Base64CodedString public var id: String
-    @Base64CodedString public var name: String
-    public let type: KDC.NodeType
-    @Base64CodedString public var path: String
+public struct UIFileResponse: Sendable, Identifiable {
+    public let id: String
+    public let name: String
+    public let type: UINodeType?
+    public let path: String
     public let modifiedTime: Int64
     public let size: Int64
     public let isAvailableLocally: Bool
