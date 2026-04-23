@@ -27,39 +27,41 @@
 
 namespace KDC {
 
-void GetFilesInDirectoryJob::translateRemoteIdFromV2ToV3(const TranslationMode translationMode) {
+void GetFilesInDirectoryJob::translateRemoteDirIdFromV2ToV3(const TranslationMode translationMode) {
+    // The translation mode can be set to None in case the caller already has the v3 remote id
+    // and needs to avoid an infinite series of nested listing requests.
     if (translationMode != TranslationMode::V2ToV3) return;
-    if (const auto exitInfo = ApiTranslator::translateV2ToV3(userDbId(), driveId(), _fileId); !exitInfo) {
+    if (const auto exitInfo = ApiTranslator::translateV2ToV3(userDbId(), driveId(), _remoteDirId); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ApiTranslator::translateV2ToV3: " << exitInfo);
         throw JobException("Translation error in GetFilesInDirectoryJob::GetFilesInDirectoryJob.");
     }
 }
 
-GetFilesInDirectoryJob::GetFilesInDirectoryJob(const UserDbId userDbId, const DriveId driveId, RemoteNodeId fileId,
+GetFilesInDirectoryJob::GetFilesInDirectoryJob(const UserDbId userDbId, const DriveId driveId, RemoteNodeId remoteDirId,
                                                std::string cursorInput,
                                                const TranslationMode translationMode /* = TranslationMode::V2ToV3 */) :
     AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, driveId),
-    _fileId(std::move(fileId)),
+    _remoteDirId(std::move(remoteDirId)),
     _cursorInput(std::move(cursorInput)) {
     _apiVersion = 3;
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
-    translateRemoteIdFromV2ToV3(translationMode);
+    translateRemoteDirIdFromV2ToV3(translationMode);
 }
 
-GetFilesInDirectoryJob::GetFilesInDirectoryJob(const DriveDbId driveDbId, RemoteNodeId fileId, std::string cursorInput,
+GetFilesInDirectoryJob::GetFilesInDirectoryJob(const DriveDbId driveDbId, RemoteNodeId remoteDirId, std::string cursorInput,
                                                const TranslationMode translationMode /* = TranslationMode::V2ToV3 */) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
-    _fileId(std::move(fileId)),
+    _remoteDirId(std::move(remoteDirId)),
     _cursorInput(std::move(cursorInput)) {
     _apiVersion = 3;
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
-    translateRemoteIdFromV2ToV3(translationMode);
+    translateRemoteDirIdFromV2ToV3(translationMode);
 }
 
 std::string GetFilesInDirectoryJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
     str += "/files/";
-    str += _fileId;
+    str += _remoteDirId;
     str += "/files";
 
     return str;
