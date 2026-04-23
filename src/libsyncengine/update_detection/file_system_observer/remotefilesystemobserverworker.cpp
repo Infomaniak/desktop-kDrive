@@ -243,7 +243,8 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
 
         if (cursor != _listingCursorMap[remoteDirId].cursor) {
             _listingCursorMap[remoteDirId] = CursorData{cursor, static_cast<Timestamp>(time(0))};
-            LOG_SYNCPAL_DEBUG(_logger, "Sync cursor updated: " << _listingCursorMap[remoteDirId].cursor);
+            LOG_SYNCPAL_DEBUG(_logger, "Sync cursor for remoteDirId=" << remoteDirId
+                                                                      << " updated: " << _listingCursorMap[remoteDirId].cursor);
             exitInfo = saveListingCursor(remoteDirId, _listingCursorMap.at(remoteDirId));
             if (!exitInfo) {
                 LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::saveListingCursor: " << exitInfo);
