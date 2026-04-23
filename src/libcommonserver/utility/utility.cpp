@@ -622,6 +622,7 @@ ExitInfo Utility::tryCreateTmpDir(const std::shared_ptr<CacheDirectory> cacheDir
     return ExitCode::Ok;
 }
 
+namespace {
 ExitInfo checkTmpDirectoryRights(const SyncPath &path) {
     bool read = false;
     bool write = false;
@@ -634,6 +635,7 @@ ExitInfo checkTmpDirectoryRights(const SyncPath &path) {
     }
     return ExitCode::Ok;
 }
+} // namespace
 
 ExitInfo Utility::tryCreateTmpFile(const std::shared_ptr<CacheDirectory> cacheDirectory,
                                    const SyncName &name /*= Str("testFile")*/) {
@@ -679,7 +681,7 @@ ExitInfo Utility::tryCreateTmpFile(const std::shared_ptr<CacheDirectory> cacheDi
 
     auto ioError = IoError::Unknown;
     (void) IoHelper::deleteItem(tmpPath, ioError);
-    return ExitCode::Ok;
+    return ok ? ExitCode::Ok : ExitCode::SystemError;
 }
 
 void Utility::msleep(const int64_t msec) {
