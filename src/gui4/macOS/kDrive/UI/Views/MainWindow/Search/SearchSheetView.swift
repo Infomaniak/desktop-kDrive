@@ -16,23 +16,47 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import kDriveCore
 import kDriveCoreUI
 import SwiftUI
 
 struct SearchSheetView: View {
+    let syncDbId: Int32
     var onDismiss: () -> Void
 
     @State private var searchText = ""
+    @State private var searchResults: [UIFileResponse] = []
+    @State private var isSearching = false
 
     var body: some View {
         VStack(spacing: 0) {
             TextField("Search...", text: $searchText)
                 .textFieldStyle(.roundedBorder)
                 .padding(AppPadding.padding16)
+                .onSubmit {
+                    performSearch()
+                }
 
-            List {
-                Text("Hello World")
-                    .foregroundStyle(ColorToken.Text.primary.asColor)
+            List(searchResults) { file in
+                HStack {
+                    Image(systemName: file.type == .directory ? "folder.fill" : "doc.fill")
+                        .foregroundStyle(ColorToken.Text.secondary.asColor)
+                    VStack(alignment: .leading) {
+                        Text(file.name)
+                            .foregroundStyle(ColorToken.Text.primary.asColor)
+                        Text(file.path)
+                            .font(.caption)
+                            .foregroundStyle(ColorToken.Text.secondary.asColor)
+                    }
+                }
+            }
+            .overlay {
+                if isSearching {
+                    ProgressView()
+                } else if searchResults.isEmpty && !searchText.isEmpty {
+                    Text("No results")
+                        .foregroundStyle(ColorToken.Text.secondary.asColor)
+                }
             }
 
             HStack {
@@ -47,8 +71,32 @@ struct SearchSheetView: View {
         }
         .frame(minWidth: 400, minHeight: 300)
     }
+
+    private func performSearch() {
+        guard !searchText.isEmpty else {
+            searchResults = []
+            return
+        }
+
+        isSearching = true
+        Task {
+            do {
+                let results = try await DriveJobs().driveSearch(syncDbId: syncDbId, searchString: searchText)
+                let uiResults = results.map { UIFileResponse(fileResponse: $0) }
+                await MainActor.run {
+                    searchResults = uiResults
+                    isSearching = false
+                }
+            } catch {
+                await MainActor.run {
+                    searchResults = []
+                    isSearching = false
+                }
+            }
+        }
+    }
 }
 
 #Preview {
-    SearchSheetView {}
+    SearchSheetView(syncDbId: 0) {}
 }

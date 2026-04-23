@@ -241,7 +241,10 @@ extension MainViewController {
     }
 
     @objc private func showSearchSheet() {
-        let searchSheetView = SearchSheetView { [weak self] in
+        guard let synchro = viewModel.currentSynchro else { return }
+        let syncDbId = Int32(synchro.dbId)
+
+        let searchSheetView = SearchSheetView(syncDbId: syncDbId) { [weak self] in
             self?.dismissSearchSheet()
         }
         let hostingController = NSHostingController(rootView: searchSheetView)
