@@ -28,7 +28,11 @@ struct SearchSheetView: View {
     var body: some View {
         VStack(spacing: 0) {
             TextField("Search...", text: $viewModel.searchText)
-                .textFieldStyle(.roundedBorder)
+                .textFieldStyle(.plain)
+                .padding(.horizontal, AppPadding.padding12)
+                .frame(height: 36)
+                .background(ColorToken.Surface.secondary.asColor)
+                .clipShape(RoundedRectangle(cornerRadius: 18))
                 .padding(AppPadding.padding16)
                 .focused($isSearchFieldFocused)
 
