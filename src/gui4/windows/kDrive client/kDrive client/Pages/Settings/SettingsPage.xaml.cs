@@ -54,12 +54,9 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private async void AutoStartToggleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
-            if (!IsLoaded)
-                return;
-
             if (sender is ToggleSwitch toggleSwitch)
             {
-                if (!toggleSwitch.IsEnabled)
+                if (!toggleSwitch.IsEnabled || !toggleSwitch.IsLoaded)
                     return;
 
                 toggleSwitch.IsEnabled = false;
@@ -109,7 +106,7 @@ namespace Infomaniak.kDrive.Pages.Settings
         {
             if (sender is ToggleSwitch toggleSwitch)
             {
-                if (!toggleSwitch.IsEnabled)
+                if (!toggleSwitch.IsEnabled || !toggleSwitch.IsLoaded)
                     return;
 
                 toggleSwitch.IsEnabled = false;
@@ -367,7 +364,7 @@ namespace Infomaniak.kDrive.Pages.Settings
         {
             if (sender is ToggleSwitch toggleSwitch)
             {
-                if (!toggleSwitch.IsEnabled)
+                if (!toggleSwitch.IsEnabled || !toggleSwitch.IsLoaded)
                     return;
                 LogSettingsExpander.IsEnabled = false;
                 toggleSwitch.IsEnabled = false;
@@ -385,7 +382,7 @@ namespace Infomaniak.kDrive.Pages.Settings
         {
             if (sender is ToggleSwitch toggleSwitch)
             {
-                if (!toggleSwitch.IsEnabled)
+                if (!toggleSwitch.IsEnabled || !toggleSwitch.IsLoaded)
                     return;
                 LogSettingsExpander.IsEnabled = false;
                 toggleSwitch.IsEnabled = false;
@@ -403,7 +400,7 @@ namespace Infomaniak.kDrive.Pages.Settings
         {
             if (sender is ToggleSwitch toggleSwitch)
             {
-                if (!toggleSwitch.IsEnabled)
+                if (!toggleSwitch.IsEnabled || !toggleSwitch.IsLoaded)
                     return;
                 LogSettingsExpander.IsEnabled = false;
                 toggleSwitch.IsEnabled = false;
