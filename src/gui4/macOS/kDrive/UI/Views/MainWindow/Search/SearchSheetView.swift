@@ -47,16 +47,24 @@ struct SearchSheetView: View {
                                 .font(.Tokens.title3)
                                 .lineLimit(1)
                                 .foregroundStyle(ColorToken.Text.primary.asColor)
-                            Text("\(file.parentFolderName) - \(file.modifiedDate, format: .dateTime) - \(file.size, format: .byteCount(style: .file))")
-                                .font(.Tokens.subheadline)
-                                .lineLimit(1)
-                                .foregroundStyle(ColorToken.Text.tertiary.asColor)
+                            Text(
+                                "\(file.parentFolderName) - \(file.modifiedDate, format: .dateTime) - \(file.size, format: .byteCount(style: .file))"
+                            )
+                            .font(.Tokens.subheadline)
+                            .lineLimit(1)
+                            .foregroundStyle(ColorToken.Text.tertiary.asColor)
                         }
                         Spacer()
                     }
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .listRowInsets(EdgeInsets(
+                    top: AppPadding.padding4,
+                    leading: AppPadding.padding16,
+                    bottom: AppPadding.padding4,
+                    trailing: AppPadding.padding16
+                ))
             }
             .listStyle(.plain)
             .overlay {
