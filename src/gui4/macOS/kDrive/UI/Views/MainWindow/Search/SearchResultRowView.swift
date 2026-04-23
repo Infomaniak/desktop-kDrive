@@ -31,16 +31,27 @@ struct SearchResultRowView: View {
                     .font(.Tokens.title3)
                     .lineLimit(1)
                     .foregroundStyle(ColorToken.Text.primary.asColor)
-                Text(
-                    "\(file.parentFolderName) - \(file.modifiedDate, format: .dateTime) - \(file.size, format: .byteCount(style: .file))"
-                )
-                .font(.Tokens.subheadline)
-                .lineLimit(1)
-                .foregroundStyle(ColorToken.Text.tertiary.asColor)
+                Text(formattedSubtitle)
+                    .font(.Tokens.subheadline)
+                    .lineLimit(1)
+                    .foregroundStyle(ColorToken.Text.tertiary.asColor)
             }
             Spacer()
         }
         .contentShape(Rectangle())
+    }
+
+    private var formattedSubtitle: String {
+        var components: [String] = []
+
+        if !file.parentFolderName.isEmpty {
+            components.append(file.parentFolderName)
+        }
+
+        components.append(file.modifiedDate.formatted(.dateTime))
+        components.append(file.size.formatted(.byteCount(style: .file)))
+
+        return components.joined(separator: " - ")
     }
 }
 
