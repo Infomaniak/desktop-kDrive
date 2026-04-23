@@ -145,6 +145,10 @@ ExitInfo GetAppVersionJob::handleResponse(std::istream &is) {
             return {ExitCode::BackError, ExitCause::MissingReplyData};
 
         const VersionChannel channel = toDistributionChannel(versionType);
+        if (channel == VersionChannel::Unknown) {
+            LOG_INFO(_logger, "Skipping unknown version channel: " << versionType);
+            continue;
+        }
         _versionsInfo[channel].channel = channel;
 
         if (!JsonParserUtility::extractValue(obj, tagKey, _versionsInfo[channel].tag))
@@ -157,8 +161,13 @@ ExitInfo GetAppVersionJob::handleResponse(std::istream &is) {
             return {ExitCode::BackError, ExitCause::MissingReplyData};
 
         if (!_versionsInfo[channel].isValid()) {
-            LOG_WARN(_logger, "Missing mandatory value.");
-            return {ExitCode::BackError, ExitCause::MissingReplyData};
+            if (channel == VersionChannel::Prod) {
+                LOG_ERROR(_logger, "Missing mandatory value for production version");
+                return {ExitCode::BackError, ExitCause::MissingReplyData};
+            } else {
+                LOG_WARN(_logger, "Missing mandatory value for channel: " << versionType);
+                continue;
+            }
         }
     }
 
