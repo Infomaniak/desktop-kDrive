@@ -40,15 +40,18 @@ struct SearchSheetView: View {
                 Button {
                     viewModel.openInFinder(file: file)
                 } label: {
-                    HStack(alignment: .bottom) {
+                    HStack(alignment: .firstTextBaseline) {
                         FileTypeView(fileTypeRepresentation: file.fileTypeRepresentation)
-                            .frame(size: AppIconSize.iconSize16)
+                            .frame(size: AppIconSize.iconSize12)
                         VStack(alignment: .leading) {
                             Text(file.name)
+                                .font(.Tokens.title3)
+                                .lineLimit(1)
                                 .foregroundStyle(ColorToken.Text.primary.asColor)
                             Text(file.path)
-                                .font(.caption)
-                                .foregroundStyle(ColorToken.Text.secondary.asColor)
+                                .font(.Tokens.subheadline)
+                                .lineLimit(1)
+                                .foregroundStyle(ColorToken.Text.tertiary.asColor)
                         }
                         Spacer()
                     }
@@ -56,6 +59,7 @@ struct SearchSheetView: View {
                 }
                 .buttonStyle(.plain)
             }
+            .listStyle(.plain)
             .overlay {
                 if viewModel.isSearching {
                     ProgressView()
