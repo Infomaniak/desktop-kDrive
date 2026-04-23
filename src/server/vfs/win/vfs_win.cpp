@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -189,7 +189,7 @@ ExitInfo VfsWin::updateMetadata(const SyncPath &filePathStd, time_t creationTime
     }
 
     // Update placeholder
-    PermissionsGiver permsHolder(fullPath, logger());
+    PermissionsGiver permsGiver(fullPath, logger());
     WIN32_FIND_DATA findData;
     findData.nFileSizeHigh = (DWORD) (size >> 32);
     findData.nFileSizeLow = (DWORD) (size & 0xFFFFFFFF);
@@ -228,7 +228,7 @@ ExitInfo VfsWin::createPlaceholder(const SyncPath &relativeLocalPath, const Sync
     }
 
     // Create placeholder
-    PermissionsGiver permsHolder(fullPath, logger());
+    PermissionsGiver permsGiver(fullPath, logger());
     WIN32_FIND_DATA findData;
     findData.nFileSizeHigh = (DWORD) (item.size() >> 32);
     findData.nFileSizeLow = (DWORD) (item.size() & 0xFFFFFFFF);
@@ -270,7 +270,7 @@ ExitInfo VfsWin::dehydratePlaceholder(const SyncPath &path) {
     }
 
     LOGW_DEBUG(logger(), L"Dehydrate file: " << Utility::formatSyncPath(fullPath));
-    PermissionsGiver permsHolder(fullPath, logger());
+    PermissionsGiver permsGiver(fullPath, logger());
     auto dehydrateFct = [=]() { dehydrate(fullPath.lexically_normal().native()); };
     std::thread dehydrateTask(dehydrateFct);
     dehydrateTask.detach();
@@ -288,7 +288,7 @@ ExitInfo VfsWin::convertToPlaceholder(const SyncPath &pathStd, const SyncFileIte
     }
 
     SyncPath fullPath(QStr2Path(path));
-    PermissionsGiver permsHolder(fullPath, logger());
+    PermissionsGiver permsGiver(fullPath, logger());
     DWORD dwAttrs = GetFileAttributesW(fullPath.lexically_normal().native().c_str());
     if (dwAttrs == INVALID_FILE_ATTRIBUTES) {
         DWORD errorCode = GetLastError();
@@ -367,7 +367,7 @@ void VfsWin::convertDirContentToPlaceholder(const QString &filePath, bool isHydr
 
             // Convert to placeholder
             {
-                PermissionsGiver permsHolder(fullPath, logger());
+                PermissionsGiver permsGiver(fullPath, logger());
                 if (vfsConvertToPlaceHolder(std::to_wstring(fileStat.inode).c_str(),
                                             fullPath.lexically_normal().native().c_str()) != S_OK) {
                     LOGW_WARN(logger(), L"Error in vfsConvertToPlaceHolder: " << Utility::formatSyncPath(fullPath));
@@ -383,7 +383,7 @@ void VfsWin::convertDirContentToPlaceholder(const QString &filePath, bool isHydr
 }
 
 void VfsWin::clearFileAttributes(const SyncPath &fullPath) {
-    PermissionsGiver permsHolder(fullPath, logger());
+    PermissionsGiver permsGiver(fullPath, logger());
     if (vfsRevertPlaceHolder(fullPath.lexically_normal().native().c_str()) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsRevertPlaceHolder: " << Utility::formatSyncPath(fullPath));
     }
@@ -418,7 +418,7 @@ ExitInfo VfsWin::updateFetchStatus(const SyncPath &tmpPathStd, const SyncPath &p
         return handleVfsError(fullPath);
     }
 
-    PermissionsGiver permsHolder(fullPath, logger());
+    PermissionsGiver permsGiver(fullPath, logger());
     if (vfsUpdateFetchStatus(std::to_wstring(_vfsSetupParams.driveId).c_str(), std::to_wstring(_vfsSetupParams.syncDbId).c_str(),
                              fullPath.lexically_normal().native().c_str(), fullTmpPath.lexically_normal().native().c_str(),
                              received, &canceled, &finished) != S_OK) {
@@ -473,7 +473,7 @@ ExitInfo VfsWin::forceStatus(const SyncPath &absolutePathStd, const VfsStatus &v
         NodeId localNodeId = std::to_string(filestat.inode);
 
         // Convert to placeholder
-        PermissionsGiver permsHolder(absolutePathStd, logger());
+        PermissionsGiver permsGiver(absolutePathStd, logger());
         if (vfsConvertToPlaceHolder(CommonUtility::s2ws(localNodeId).c_str(), absolutePathStd.native().c_str()) != S_OK) {
             LOGW_WARN(logger(), L"Error in vfsConvertToPlaceHolder: " << Utility::formatSyncPath(absolutePathStd));
             return handleVfsError(absolutePathStd);
@@ -483,7 +483,7 @@ ExitInfo VfsWin::forceStatus(const SyncPath &absolutePathStd, const VfsStatus &v
     // Set status
     LOGW_DEBUG(logger(), L"Setting syncing status to: " << vfsStatus.isSyncing << L" for file: "
                                                         << Utility::formatSyncPath(absolutePathStd));
-    PermissionsGiver permsHolder(absolutePathStd, logger());
+    PermissionsGiver permsGiver(absolutePathStd, logger());
     if (ExitInfo exitInfo = setPlaceholderStatus(absolutePathStd.native(), vfsStatus.isSyncing); !exitInfo) {
         LOGW_WARN(logger(), L"Error in setPlaceholderStatus: " << Utility::formatSyncPath(absolutePathStd) << L" " << exitInfo);
         return exitInfo;
@@ -538,7 +538,7 @@ ExitInfo VfsWin::setPinState(const SyncPath &relativePathStd, PinState state) {
             break;
     }
 
-    const PermissionsGiver permsHolder(fullPath, logger());
+    const PermissionsGiver permsGiver(fullPath, logger());
     if (vfsSetPinState(fullPath.lexically_normal().native().c_str(), vfsState) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsSetPinState: " << Utility::formatSyncPath(fullPath));
         return handleVfsError(fullPath);

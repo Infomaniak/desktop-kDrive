@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -267,8 +267,8 @@ ExitInfo SyncLocalDeleteJob::runJob() {
     if (const auto exitInfo = canRun(); !exitInfo) return exitInfo;
 
     // Make sure we are allowed to propagate the change
-    PermissionsGiver permsHolder(absolutePath().parent_path(), _logger);
-    PermissionsGiver permsHolder2(absolutePath(), _logger);
+    PermissionsGiver permsGiver(absolutePath().parent_path(), _logger);
+    PermissionsGiver permsGiver2(absolutePath(), _logger);
 
     if (const bool tryMoveToTrash = ParametersCache::instance()->parameters().moveToTrash(); tryMoveToTrash || _forceToTrash) {
         return moveToTrash();
