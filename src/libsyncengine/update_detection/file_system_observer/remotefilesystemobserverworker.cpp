@@ -256,7 +256,7 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
         }
 
         if (!JsonParserUtility::extractValue(resObj, hasMoreKey, hasMore)) {
-            exitInfo = ExitCode::BackError;
+            exitInfo = {ExitCode::BackError, ExitCause::MissingReplyData};
             break;
         }
 
