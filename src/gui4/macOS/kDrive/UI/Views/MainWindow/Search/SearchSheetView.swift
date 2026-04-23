@@ -27,12 +27,14 @@ struct SearchSheetView: View {
     @State private var searchText = ""
     @State private var searchResults: [UIFileResponse] = []
     @State private var isSearching = false
+    @FocusState private var isSearchFieldFocused: Bool
 
     var body: some View {
         VStack(spacing: 0) {
             TextField("Search...", text: $searchText)
                 .textFieldStyle(.roundedBorder)
                 .padding(AppPadding.padding16)
+                .focused($isSearchFieldFocused)
                 .onSubmit {
                     performSearch()
                 }
@@ -70,6 +72,9 @@ struct SearchSheetView: View {
             .padding(AppPadding.padding16)
         }
         .frame(minWidth: 400, minHeight: 300)
+        .onAppear {
+            isSearchFieldFocused = true
+        }
     }
 
     private func performSearch() {
