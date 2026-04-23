@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Combine
 import kDriveCore
 import kDriveCoreUI
 import SwiftUI
@@ -27,6 +28,8 @@ struct SearchSheetView: View {
     @State private var searchText = ""
     @State private var searchResults: [UIFileResponse] = []
     @State private var isSearching = false
+    @State private var searchSubject = PassthroughSubject<String, Never>()
+    @State private var cancellables = Set<AnyCancellable>()
     @FocusState private var isSearchFieldFocused: Bool
 
     var body: some View {
@@ -35,8 +38,8 @@ struct SearchSheetView: View {
                 .textFieldStyle(.roundedBorder)
                 .padding(AppPadding.padding16)
                 .focused($isSearchFieldFocused)
-                .onSubmit {
-                    performSearch()
+                .onChange(of: searchText) { newValue in
+                    searchSubject.send(newValue)
                 }
 
             List(searchResults) { file in
@@ -74,29 +77,35 @@ struct SearchSheetView: View {
         .frame(minWidth: 400, minHeight: 300)
         .onAppear {
             isSearchFieldFocused = true
+            setupSearchSubscription()
         }
     }
 
-    private func performSearch() {
-        guard !searchText.isEmpty else {
+    private func setupSearchSubscription() {
+        searchSubject
+            .throttle(for: .milliseconds(250), scheduler: DispatchQueue.main, latest: true)
+            .sink { query in
+                performSearch(query: query)
+            }
+            .store(in: &cancellables)
+    }
+
+    private func performSearch(query: String) {
+        guard !query.isEmpty else {
             searchResults = []
+            isSearching = false
             return
         }
 
         isSearching = true
         Task {
+            defer { isSearching = false }
             do {
-                let results = try await DriveJobs().driveSearch(syncDbId: syncDbId, searchString: searchText)
+                let results = try await DriveJobs().driveSearch(syncDbId: syncDbId, searchString: query)
                 let uiResults = results.map { UIFileResponse(fileResponse: $0) }
-                await MainActor.run {
-                    searchResults = uiResults
-                    isSearching = false
-                }
+                searchResults = uiResults
             } catch {
-                await MainActor.run {
-                    searchResults = []
-                    isSearching = false
-                }
+                searchResults = []
             }
         }
     }
