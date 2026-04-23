@@ -242,16 +242,22 @@ namespace Infomaniak.kDrive
                 Logger.Log(Logger.Level.Warning, "Cannot bring window to front: Application?.Current?.CurrentWindow is null");
                 return;
             }
-            app.CurrentWindow.Show();
-            app.CurrentWindow.Activate();
-            var hWnd = WindowNative.GetWindowHandle(app.CurrentWindow);
-            if (hWnd == IntPtr.Zero)
-            {
-                Logger.Log(Logger.Level.Warning, "Cannot bring window to front: hWnd is zero");
-                return;
-            }
 
-            SetForegroundWindow(hWnd);
+            if (!app.CurrentWindow.Visible)
+            {
+                app.CurrentWindow.Activate();
+            }
+            else
+            {
+                var hWnd = WindowNative.GetWindowHandle(app.CurrentWindow);
+                if (hWnd == IntPtr.Zero)
+                {
+                    Logger.Log(Logger.Level.Warning, "Cannot bring window to front: hWnd is zero");
+                    return;
+                }
+
+                SetForegroundWindow(hWnd);
+            }
         }
         public static string ObfuscateEmail(string? email)
         {
