@@ -56,7 +56,7 @@ void DriveService::loadDrives() const {
 
     _commService.requestDriveInfoList([this](const ExitInfo &exitInfo, const std::vector<DriveInfo> &list) {
         endAction(actionLoadDrives);
-        if (exitInfo.code() != ExitCode::Ok) {
+        if (!exitInfo) {
             notifyRequestFailure(exitInfo, RequestNum::DRIVE_INFOLIST);
             return;
         }
@@ -71,7 +71,7 @@ void DriveService::deleteDrive(const qint64 driveDbId) const {
     // Cache consistency is signal-driven: we wait for driveRemoved/driveUpdated pushes.
     _commService.requestDriveDelete(static_cast<DriveDbId>(driveDbId), [this, driveDbId](const ExitInfo &exitInfo) {
         endAction(actionDeleteDrive, driveDbId);
-        if (exitInfo.code() != ExitCode::Ok) {
+        if (!exitInfo) {
             notifyRequestFailure(exitInfo, RequestNum::DRIVE_DELETE);
         }
     });
@@ -87,7 +87,7 @@ void DriveService::updateDrive(const DriveInfo &driveInfo) const {
 
     _commService.requestDriveUpdate(driveInfo, [this, driveDbId](const ExitInfo &exitInfo) {
         endAction(actionUpdateDrive, driveDbId);
-        if (exitInfo.code() != ExitCode::Ok) {
+        if (!exitInfo) {
             notifyRequestFailure(exitInfo, RequestNum::DRIVE_UPDATE);
         }
     });
