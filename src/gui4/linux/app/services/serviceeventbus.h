@@ -26,10 +26,14 @@
 namespace KDC {
 
 /**
- * Shared event bus for high-level app services.
+ * Cross-service event bus for transient UI events.
  *
- * UI layers can subscribe once to this object for cross-service events
- * such as generic request failures.
+ * Role:
+ * - Emits one-shot events that do not represent durable state.
+ * - Provides a single subscription point for UI notifications common to multiple services.
+ *
+ * Non-role:
+ * - Does not track pending/loading state. Durable action state is handled by ServiceActionTracker.
  */
 class ServiceEventBus : public QObject {
         Q_OBJECT
@@ -37,6 +41,11 @@ class ServiceEventBus : public QObject {
     public:
         explicit ServiceEventBus(QObject *parent = nullptr);
 
+        /**
+         * Emits a generic UI-facing error event and logs structured backend context.
+         *
+         * The payload remains internal to C++ logs/telemetry; UI receives only the generic event signal.
+         */
         void notifyGenericError(const ExitInfo &exitInfo, RequestNum requestNum);
 
     signals:
