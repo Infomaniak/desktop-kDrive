@@ -40,6 +40,8 @@ final class MainViewController: IKSplitViewController {
 
     private var bindStore = Set<AnyCancellable>()
 
+    private var sheetClickMonitor: Any?
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -250,9 +252,27 @@ extension MainViewController {
         }
         let hostingController = NSHostingController(rootView: searchSheetView)
         presentAsSheet(hostingController)
+
+        sheetClickMonitor = NSEvent.addLocalMonitorForEvents(matching: .leftMouseDown) { [weak self] event in
+            guard let self,
+                  let sheetWindow = self.presentedViewControllers?.first?.view.window,
+                  let eventWindow = event.window else {
+                return event
+            }
+
+            if eventWindow != sheetWindow {
+                self.dismissSearchSheet()
+                return nil
+            }
+            return event
+        }
     }
 
     private func dismissSearchSheet() {
+        if let monitor = sheetClickMonitor {
+            NSEvent.removeMonitor(monitor)
+            sheetClickMonitor = nil
+        }
         guard let presentedViewController = presentedViewControllers?.first else { return }
         dismiss(presentedViewController)
     }
