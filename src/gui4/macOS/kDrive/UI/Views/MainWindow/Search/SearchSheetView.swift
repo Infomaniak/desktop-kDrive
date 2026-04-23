@@ -68,7 +68,7 @@ struct SearchSheetView: View {
                 }
             }
         }
-        .frame(minWidth: 400, minHeight: 300)
+        .frame(minWidth: 400, minHeight: 368)
         .onAppear {
             isSearchFieldFocused = true
         }
