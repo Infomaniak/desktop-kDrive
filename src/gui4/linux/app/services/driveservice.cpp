@@ -51,7 +51,7 @@ DriveService::DriveService(CommService &commService, AppCache &appCache, Service
     setLoading(_serviceActionTracker.isServicePending(serviceKeyDrive));
 }
 
-void DriveService::loadDrives() {
+void DriveService::loadDrives() const {
     beginAction(actionLoadDrives);
 
     _commService.requestDriveInfoList([this](const ExitInfo &exitInfo, const std::vector<DriveInfo> &list) {
@@ -65,7 +65,7 @@ void DriveService::loadDrives() {
     });
 }
 
-void DriveService::deleteDrive(const qint64 driveDbId) {
+void DriveService::deleteDrive(const qint64 driveDbId) const {
     beginAction(actionDeleteDrive, driveDbId);
 
     // Cache consistency is signal-driven: we wait for driveRemoved/driveUpdated pushes.
@@ -77,12 +77,12 @@ void DriveService::deleteDrive(const qint64 driveDbId) {
     });
 }
 
-void DriveService::setActiveDrive(const qint64 driveDbId) {
+void DriveService::setActiveDrive(const qint64 driveDbId) const {
     _appCache.setSelectedDriveDbId(driveDbId);
 }
 
-void DriveService::updateDrive(const DriveInfo &driveInfo) {
-    const qint64 driveDbId = static_cast<qint64>(driveInfo.dbId());
+void DriveService::updateDrive(const DriveInfo &driveInfo) const {
+    const auto driveDbId = static_cast<qint64>(driveInfo.dbId());
     beginAction(actionUpdateDrive, driveDbId);
 
     _commService.requestDriveUpdate(driveInfo, [this, driveDbId](const ExitInfo &exitInfo) {
@@ -105,11 +105,11 @@ bool DriveService::isUpdateDrivePending(const qint64 driveDbId) const {
     return isActionPending(actionUpdateDrive, driveDbId);
 }
 
-void DriveService::beginAction(const QString &actionKey, const qint64 scopeId) {
+void DriveService::beginAction(const QString &actionKey, const qint64 scopeId) const {
     _serviceActionTracker.beginAction(serviceKeyDrive, actionKey, scopeId);
 }
 
-void DriveService::endAction(const QString &actionKey, const qint64 scopeId) {
+void DriveService::endAction(const QString &actionKey, const qint64 scopeId) const {
     _serviceActionTracker.endAction(serviceKeyDrive, actionKey, scopeId);
 }
 
@@ -125,7 +125,7 @@ void DriveService::setLoading(const bool loading) {
     emit loadingChanged();
 }
 
-void DriveService::notifyRequestFailure(const ExitInfo &exitInfo, const RequestNum requestNum) {
+void DriveService::notifyRequestFailure(const ExitInfo &exitInfo, const RequestNum requestNum) const {
     qCWarning(lcDriveService) << "Drive service request failed | code:" << exitInfo.code() << "/ cause:" << exitInfo.cause();
     _serviceEventBus.notifyGenericError(exitInfo, requestNum);
 }

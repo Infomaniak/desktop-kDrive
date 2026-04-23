@@ -52,25 +52,25 @@ class DriveService : public QObject {
         [[nodiscard]] bool loading() const { return _loading; }
         [[nodiscard]] qint64 activeDriveDbId() const { return _appCache.selectedDriveDbId(); }
 
-        Q_INVOKABLE void loadDrives();
-        Q_INVOKABLE void deleteDrive(qint64 driveDbId);
-        Q_INVOKABLE void setActiveDrive(qint64 driveDbId);
+        Q_INVOKABLE void loadDrives() const;
+        Q_INVOKABLE void deleteDrive(qint64 driveDbId) const;
+        Q_INVOKABLE void setActiveDrive(qint64 driveDbId) const;
         Q_INVOKABLE [[nodiscard]] bool isLoadDrivesPending() const;
         Q_INVOKABLE [[nodiscard]] bool isDeleteDrivePending(qint64 driveDbId) const;
         Q_INVOKABLE [[nodiscard]] bool isUpdateDrivePending(qint64 driveDbId) const;
 
-        void updateDrive(const DriveInfo &driveInfo);
+        void updateDrive(const DriveInfo &driveInfo) const;
 
     signals:
         void loadingChanged();
         void activeDriveDbIdChanged();
 
     private:
-        void beginAction(const QString &actionKey, qint64 scopeId = 0);
-        void endAction(const QString &actionKey, qint64 scopeId = 0);
+        void beginAction(const QString &actionKey, qint64 scopeId = 0) const;
+        void endAction(const QString &actionKey, qint64 scopeId = 0) const;
         void setLoading(bool loading);
         [[nodiscard]] bool isActionPending(const QString &actionKey, qint64 scopeId = 0) const;
-        void notifyRequestFailure(const ExitInfo &exitInfo, RequestNum requestNum);
+        void notifyRequestFailure(const ExitInfo &exitInfo, RequestNum requestNum) const;
 
         CommService &_commService;
         AppCache &_appCache;
