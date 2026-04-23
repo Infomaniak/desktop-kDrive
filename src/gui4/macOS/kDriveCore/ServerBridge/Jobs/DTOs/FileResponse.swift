@@ -20,10 +20,10 @@ import CppInterop
 import Foundation
 
 struct SearchInfoList: Codable, Sendable {
-    let searchInfoList: [FileResponse]
+    let searchInfoList: [SearchResponse]
 }
 
-public struct FileResponse: Codable, Sendable {
+public struct SearchResponse: Codable, Sendable {
     @Base64CodedString public var id: String
     @Base64CodedString public var name: String
     public let type: KDC.NodeType

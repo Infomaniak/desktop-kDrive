@@ -96,7 +96,7 @@ public struct DriveJobs: Sendable {
         // TODO: also implement signal
     }
 
-    public func driveSearch(syncDbId: Int32, searchString: String) async throws -> [FileResponse] {
+    public func driveSearch(syncDbId: Int32, searchString: String) async throws -> [SearchResponse] {
         IKLogger.data.log("Query for driveSearch")
         let query = DriveSearchQuery(syncDbId: syncDbId, searchString: searchString)
         let request = await RequestMessage<DriveSearchQuery>(num: RequestNum.DRIVE_SEARCH, body: query)

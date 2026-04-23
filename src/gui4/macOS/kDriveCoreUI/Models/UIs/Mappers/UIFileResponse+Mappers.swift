@@ -19,17 +19,17 @@
 import Foundation
 import kDriveCore
 
-public extension UIFileResponse {
-    init(fileResponse: FileResponse) {
-        let fileResponseType: KDC.NodeType = fileResponse.type
+public extension UISearchResponse {
+    init(searchResponse: SearchResponse) {
+        let searchResponseType: KDC.NodeType = searchResponse.type
         self.init(
-            id: fileResponse.id,
-            name: fileResponse.name,
-            type: UINodeType(synchroNodeType: fileResponseType),
-            path: fileResponse.path,
-            modifiedTime: fileResponse.modifiedTime,
-            size: fileResponse.size,
-            isAvailableLocally: fileResponse.isAvailableLocally
+            id: searchResponse.id,
+            name: searchResponse.name,
+            type: UINodeType(synchroNodeType: searchResponseType),
+            path: searchResponse.path,
+            modifiedTime: searchResponse.modifiedTime,
+            size: searchResponse.size,
+            isAvailableLocally: searchResponse.isAvailableLocally
         )
     }
 }

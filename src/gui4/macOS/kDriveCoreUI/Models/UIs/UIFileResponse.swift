@@ -18,7 +18,7 @@
 
 import Foundation
 
-public struct UIFileResponse: Sendable, Identifiable {
+public struct UISearchResponse: Sendable, Identifiable {
     public let id: String
     public let name: String
     public let type: UINodeType?

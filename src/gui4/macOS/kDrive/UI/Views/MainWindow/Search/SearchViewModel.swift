@@ -23,7 +23,7 @@ import kDriveCoreUI
 @MainActor
 final class SearchViewModel: ObservableObject {
     @Published var searchText = ""
-    @Published private(set) var searchResults: [UIFileResponse] = []
+    @Published private(set) var searchResults: [UISearchResponse] = []
     @Published private(set) var isSearching = false
 
     private let syncDbId: Int32
@@ -60,7 +60,7 @@ final class SearchViewModel: ObservableObject {
         defer { isSearching = false }
         do {
             let results = try await DriveJobs().driveSearch(syncDbId: syncDbId, searchString: query)
-            searchResults = results.map { UIFileResponse(fileResponse: $0) }
+            searchResults = results.map { UISearchResponse(searchResponse: $0) }
         } catch {
             searchResults = []
         }
