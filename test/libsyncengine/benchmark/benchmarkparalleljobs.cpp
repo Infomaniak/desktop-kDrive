@@ -220,14 +220,14 @@ std::list<std::shared_ptr<SyncJob>> BenchmarkParallelJobs::generateUploadSession
     return jobs;
 }
 
-std::list<std::shared_ptr<SyncJob>> BenchmarkParallelJobs::generateDownloadJobs(const NodeId &remoteDirId,
+std::list<std::shared_ptr<SyncJob>> BenchmarkParallelJobs::generateDownloadJobs(const RemoteNodeId &remoteDirId,
                                                                                 const SyncPath &localTestFolderPath,
                                                                                 const int64_t expectedSize,
                                                                                 const uint16_t nbMaxJob /*= 0*/) const {
     std::list<NodeId> remoteFileIds;
     (void) retrieveRemoteFileIds(remoteDirId, remoteFileIds);
 
-    uint64_t counter = 0;
+    Count counter = 0;
     std::list<std::shared_ptr<SyncJob>> jobs;
     for (const auto &remoteFileId: remoteFileIds) {
         const auto job = std::make_shared<DownloadJob>(
