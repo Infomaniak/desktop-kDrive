@@ -66,7 +66,7 @@ final class SearchViewModel: ObservableObject {
 
     private func setupSearchSubscription() {
         $searchText
-            .throttle(for: .milliseconds(250), scheduler: DispatchQueue.main, latest: true)
+            .throttle(for: 0.5, scheduler: DispatchQueue.main, latest: true)
             .sink { [weak self] query in
                 self?.performSearch(query: query)
             }
