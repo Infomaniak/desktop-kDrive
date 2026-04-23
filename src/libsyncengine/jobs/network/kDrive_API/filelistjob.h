@@ -59,7 +59,7 @@ class FileListJob : public SyncJob {
         DriveDbId _driveDbId{0};
 
         // The remote identifier of the folder whose file list is queried.
-        NodeId _fileId;
+        RemoteNodeId _remoteDirId;
 
         ListingConf _listingConf;
 
