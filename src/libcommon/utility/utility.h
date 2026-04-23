@@ -333,6 +333,7 @@ struct COMMON_EXPORT CommonUtility {
         static QImage toQImage(const std::shared_ptr<CommBLOB> blob);
 
         static bool modificationTimesAreEqual(const SyncPath &path, SyncTime time1, SyncTime time2);
+        inline static SyncTime now() { return time(nullptr); };
 
         class InvalidEnumerationValue : public std::runtime_error {
             public:
