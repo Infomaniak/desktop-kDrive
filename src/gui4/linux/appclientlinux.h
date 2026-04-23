@@ -19,6 +19,7 @@
 #pragma once
 
 #include "app/services/commservice.h"
+#include "app/services/serviceactiontracker.h"
 #include "app/services/serviceeventbus.h"
 #include "communicationlayer/ipcclient.h"
 #include "communicationlayer/signaldispatcher.h"
@@ -33,7 +34,13 @@ Q_DECLARE_LOGGING_CATEGORY(lcAppClientLinux)
 /**
  * Top-level application object for the Linux GUI client.
  *
- * Owns the IPC client and the signal dispatcher. On construction, sets up logging,
+ * Owns the IPC client and cross-service infrastructure objects:
+ * - SignalDispatcher: routes server push messages to typed handlers.
+ * - CommService: typed request/signal facade over IPC.
+ * - ServiceActionTracker: durable UI-facing pending-action state.
+ * - ServiceEventBus: transient cross-service events (errors, notifications, ...).
+ *
+ * On construction, sets up logging,
  * wires IPC signals to the dispatcher, and initiates the connection to the server.
  */
 class AppClientLinux : public QApplication {
@@ -48,6 +55,7 @@ class AppClientLinux : public QApplication {
          */
         SignalDispatcher &signalDispatcher() { return _signalDispatcher; }
         CommService &serverCommService() { return _serverCommService; }
+        ServiceActionTracker &serviceActionTracker() { return _serviceActionTracker; }
         ServiceEventBus &serviceEventBus() { return _serviceEventBus; }
 
     signals:
@@ -62,6 +70,7 @@ class AppClientLinux : public QApplication {
         IpcClient _ipcClient{this};
         SignalDispatcher _signalDispatcher{this};
         CommService _serverCommService{_ipcClient, _signalDispatcher, this};
+        ServiceActionTracker _serviceActionTracker{this};
         ServiceEventBus _serviceEventBus{this};
 };
 
