@@ -24,9 +24,14 @@ public struct UISearchResponse: Sendable, Identifiable {
     public let name: String
     public let type: UINodeType?
     public let path: String
-    public let modifiedTime: TimeInterval
+    public let modifiedDate: Date
     public let size: Int64
     public let isAvailableLocally: Bool
+
+    public var parentFolderName: String {
+        let parentPath = (path as NSString).deletingLastPathComponent
+        return (parentPath as NSString).lastPathComponent
+    }
 
     public var fileTypeRepresentation: FileTypeRepresentation {
         if type == .directory {

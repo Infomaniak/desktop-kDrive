@@ -48,7 +48,7 @@ struct SearchSheetView: View {
                                 .font(.Tokens.title3)
                                 .lineLimit(1)
                                 .foregroundStyle(ColorToken.Text.primary.asColor)
-                            Text(file.path)
+                            Text("\(file.parentFolderName) - \(file.modifiedDate, format: .dateTime) - \(file.size, format: .byteCount(style: .file))")
                                 .font(.Tokens.subheadline)
                                 .lineLimit(1)
                                 .foregroundStyle(ColorToken.Text.tertiary.asColor)
