@@ -320,11 +320,11 @@ KDC::Parameters::DialogGeometry blobToDialogGeometry(const std::shared_ptr<std::
     "hasFullyCompleted INTEGER,"                                                             \
     "navigationPaneClsid TEXT,"                                                              \
     "userPrivateFolderCursor TEXT,"                                                          \
-    "userPrivateFolderTimestamp INTEGER,"                                                    \
+    "userPrivateFolderCursorTimestamp INTEGER,"                                              \
     "commonDocumentsFolderCursor TEXT,"                                                      \
-    "commonDocumentsFolderTimestamp INTEGER,"                                                \
+    "commonDocumentsFolderCursorTimestamp INTEGER,"                                          \
     "sharedFolderCursor TEXT,"                                                               \
-    "sharedFolderTimestamp INTEGER,"                                                         \
+    "sharedFolderCursorTimestamp INTEGER,"                                                   \
     "toDelete INTEGER,"                                                                      \
     "vfsRegisteredAt INTEGER,"                                                               \
     "FOREIGN KEY (driveDbId) REFERENCES drive(dbId) ON DELETE CASCADE ON UPDATE NO ACTION) " \
@@ -335,19 +335,19 @@ KDC::Parameters::DialogGeometry blobToDialogGeometry(const std::shared_ptr<std::
     "INSERT INTO sync (dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, " \
     "virtualFileMode, "                                                                                                 \
     "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, "                                                   \
-    "userPrivateFolderCursor, userPrivateFolderTimestamp, "                                                             \
-    "commonDocumentsFolderCursor, commonDocumentsFolderTimestamp, "                                                     \
-    "sharedFolderCursor, sharedFolderTimestamp, toDelete, vfsRegisteredAt) "                                            \
-    "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?20);"
+    "userPrivateFolderCursor, userPrivateFolderCursorTimestamp, "                                                       \
+    "commonDocumentsFolderCursor, commonDocumentsFolderCursorTimestamp, "                                               \
+    "sharedFolderCursor, sharedFolderCursorTimestamp, toDelete, vfsRegisteredAt) "                                      \
+    "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21);"
 
 #define UPDATE_SYNC_REQUEST_ID "update_sync"
 #define UPDATE_SYNC_REQUEST                                                                                              \
     "UPDATE sync SET driveDbId=?1, localPath=?2, localNodeId=?3, targetPath=?4, targetNodeId=?5, dbPath=?6, paused=?7, " \
     "supportVfs=?8, "                                                                                                    \
     "virtualFileMode=?9, notificationsDisabled=?10, hasFullyCompleted=?11, navigationPaneClsid=?12, "                    \
-    "userPrivateFolderCursor=?13, userPrivateFolderTimestamp=?14, "                                                      \
-    "commonDocumentsFolderCursor=?15, commonDocumentsFolderTimestamp=?16, "                                              \
-    "sharedFolderCursor=?17, sharedFolderTimestamp=?18, toDelete=?19, vfsRegisteredAt=?20 "                              \
+    "userPrivateFolderCursor=?13, userPrivateFolderCursorTimestamp=?14, "                                                \
+    "commonDocumentsFolderCursor=?15, commonDocumentsFolderCursorTimestamp=?16, "                                        \
+    "sharedFolderCursor=?17, sharedFolderCursorTimestamp=?18, toDelete=?19, vfsRegisteredAt=?20 "                        \
     "WHERE dbId=?21;"
 
 #define UPDATE_SYNC_PAUSED_REQUEST_ID "update_sync_paused"
@@ -374,9 +374,9 @@ KDC::Parameters::DialogGeometry blobToDialogGeometry(const std::shared_ptr<std::
 #define SELECT_SYNC_REQUEST                                                                                                   \
     "SELECT dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, " \
     "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, "                                                         \
-    "userPrivateFolderCursor, userPrivateFolderTimestamp, "                                                                   \
-    "commonDocumentsFolderCursor, commonDocumentsFolderTimestamp, "                                                           \
-    "sharedFolderCursor, sharedFolderTimestamp, toDelete, vfsRegisteredAt "                                                   \
+    "userPrivateFolderCursor, userPrivateFolderCursorTimestamp, "                                                             \
+    "commonDocumentsFolderCursor, commonDocumentsFolderCursorTimestamp, "                                                     \
+    "sharedFolderCursor, sharedFolderCursorTimestamp, toDelete, vfsRegisteredAt "                                             \
     "FROM sync "                                                                                                              \
     "WHERE dbId=?1;"
 
@@ -384,20 +384,19 @@ KDC::Parameters::DialogGeometry blobToDialogGeometry(const std::shared_ptr<std::
 #define SELECT_SYNC_BY_PATH_REQUEST                                                                                           \
     "SELECT dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, " \
     "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, "                                                         \
-    "userPrivateFolderCursor, userPrivateFolderTimestamp, "                                                                   \
-    "commonDocumentsFolderCursor, commonDocumentsFolderTimestamp, "                                                           \
-    "sharedFolderCursor, sharedFolderTimestamp, toDelete, vfsRegisteredAt "                                                   \
+    "userPrivateFolderCursor, userPrivateFolderCursorTimestamp, "                                                             \
+    "commonDocumentsFolderCursor, commonDocumentsFolderCursorTimestamp, "                                                     \
+    "sharedFolderCursor, sharedFolderCursorTimestamp, toDelete, vfsRegisteredAt "                                             \
     "FROM sync "                                                                                                              \
     "WHERE dbPath=?1;"
-
 
 #define SELECT_ALL_SYNCS_REQUEST_ID "select_syncs"
 #define SELECT_ALL_SYNCS_REQUEST                                                                                              \
     "SELECT dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, " \
     "notificationsDisabled, hasFullyCompleted, navigationPaneClsid,  "                                                        \
-    "userPrivateFolderCursor, userPrivateFolderTimestamp, "                                                                   \
-    "commonDocumentsFolderCursor, commonDocumentsFolderTimestamp, "                                                           \
-    "sharedFolderCursor, sharedFolderTimestamp, toDelete, vfsRegisteredAt "                                                   \
+    "userPrivateFolderCursor, userPrivateFolderCursorTimestamp, "                                                             \
+    "commonDocumentsFolderCursor, commonDocumentsFolderCursorTimestamp, "                                                     \
+    "sharedFolderCursor, sharedFolderCursorTimestamp, toDelete, vfsRegisteredAt "                                             \
     "FROM sync "                                                                                                              \
     "ORDER BY dbId;"
 
@@ -406,9 +405,9 @@ KDC::Parameters::DialogGeometry blobToDialogGeometry(const std::shared_ptr<std::
     "SELECT dbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, " \
     "notificationsDisabled, "                                                                                      \
     "hasFullyCompleted, navigationPaneClsid, "                                                                     \
-    "userPrivateFolderCursor, userPrivateFolderTimestamp, "                                                        \
-    "commonDocumentsFolderCursor, commonDocumentsFolderTimestamp, "                                                \
-    "sharedFolderCursor, sharedFolderTimestamp, toDelete, vfsRegisteredAt "                                        \
+    "userPrivateFolderCursor, userPrivateFolderCursorTimestamp, "                                                  \
+    "commonDocumentsFolderCursor, commonDocumentsFolderCursorTimestamp, "                                          \
+    "sharedFolderCursor, sharedFolderCursorTimestamp, toDelete, vfsRegisteredAt "                                  \
     "FROM sync "                                                                                                   \
     "WHERE driveDbId=?1 "                                                                                          \
     "ORDER BY dbId;"
@@ -1444,11 +1443,11 @@ bool ParmsDb::upgradeTables() {
     }
 
     if (!addTextColumnIfMissing(tableName, "userPrivateFolderCursor")) return false;
-    if (!addIntegerColumnIfMissing(tableName, "userPrivateFolderTimestamp")) return false;
+    if (!addIntegerColumnIfMissing(tableName, "userPrivateFolderCursorTimestamp")) return false;
     if (!addTextColumnIfMissing(tableName, "commonDocumentsFolderCursor")) return false;
-    if (!addIntegerColumnIfMissing(tableName, "commonDocumentsFolderTimestamp")) return false;
+    if (!addIntegerColumnIfMissing(tableName, "commonDocumentsFolderCursorTimestamp")) return false;
     if (!addTextColumnIfMissing(tableName, "sharedFolderCursor")) return false;
-    if (!addIntegerColumnIfMissing(tableName, "sharedFolderTimestamp")) return false;
+    if (!addIntegerColumnIfMissing(tableName, "sharedFolderCursorTimestamp")) return false;
 
 
     // Account table
