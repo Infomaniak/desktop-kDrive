@@ -32,19 +32,35 @@ final class SearchViewModel: ObservableObject {
     }
 
     private let syncDbId: Int32
+    private let driveId: Int
     private let synchroLocalPath: URL
     private var bindStore = Set<AnyCancellable>()
     @Published private var currentSearchTask: Task<Void, Never>?
 
-    init(syncDbId: Int32, synchroLocalPath: URL) {
+    init(syncDbId: Int32, driveId: Int, synchroLocalPath: URL) {
         self.syncDbId = syncDbId
+        self.driveId = driveId
         self.synchroLocalPath = synchroLocalPath
         setupSearchSubscription()
     }
 
-    func openInFinder(file: UISearchResponse) {
+    func openFile(_ file: UISearchResponse) {
+        if file.isAvailableLocally {
+            openInFinder(file: file)
+        } else {
+            openInBrowser(file: file)
+        }
+    }
+
+    private func openInFinder(file: UISearchResponse) {
         @InjectService var nodeURLGenerator: NodeURLGenerator
         let url = nodeURLGenerator.localURL(for: file.path, synchroPath: synchroLocalPath)
+        NSWorkspace.shared.open(url)
+    }
+
+    private func openInBrowser(file: UISearchResponse) {
+        let urlString = "https://kdrive.infomaniak.com/app/drive/\(driveId)/redirect/\(file.id)"
+        guard let url = URL(string: urlString) else { return }
         NSWorkspace.shared.open(url)
     }
 

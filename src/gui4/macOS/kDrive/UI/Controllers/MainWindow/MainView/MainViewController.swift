@@ -243,10 +243,11 @@ extension MainViewController {
     }
 
     @objc private func showSearchSheet() {
-        guard let synchro = viewModel.currentSynchro else { return }
-        let syncDbId = Int32(synchro.dbId)
+        guard let synchroContext = viewModel.currentSynchroContext else { return }
+        let syncDbId = Int32(synchroContext.synchro.dbId)
+        let driveId = synchroContext.drive.driveId
 
-        let searchViewModel = SearchViewModel(syncDbId: syncDbId, synchroLocalPath: synchro.localPath)
+        let searchViewModel = SearchViewModel(syncDbId: syncDbId, driveId: driveId, synchroLocalPath: synchroContext.synchro.localPath)
         let searchSheetView = SearchSheetView(viewModel: searchViewModel)
         let hostingController = NSHostingController(rootView: searchSheetView)
         presentAsSheet(hostingController)

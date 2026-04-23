@@ -76,7 +76,7 @@ struct SearchSheetView: View {
 
             List(displayedResults) { file in
                 Button {
-                    viewModel.openInFinder(file: file)
+                    viewModel.openFile(file)
                 } label: {
                     SearchResultRowView(file: file)
                 }
@@ -123,5 +123,5 @@ struct SearchSheetView: View {
 }
 
 #Preview {
-    SearchSheetView(viewModel: SearchViewModel(syncDbId: 0, synchroLocalPath: URL(fileURLWithPath: "/")))
+    SearchSheetView(viewModel: SearchViewModel(syncDbId: 0, driveId: 0, synchroLocalPath: URL(fileURLWithPath: "/")))
 }
