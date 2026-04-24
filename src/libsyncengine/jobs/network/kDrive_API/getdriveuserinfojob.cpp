@@ -28,14 +28,12 @@ GetDriveUserInfoJob::GetDriveUserInfoJob(const UserDbId userDbId, const DriveId 
     AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, driveId),
     _targetUserId(userId) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
-    _apiVersion = 3;
 }
 
 GetDriveUserInfoJob::GetDriveUserInfoJob(const DriveDbId driveDbId, const UserId userId) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
     _targetUserId(userId) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
-    _apiVersion = 3;
 }
 
 ExitInfo GetDriveUserInfoJob::handleJsonResponse(const std::string &replyBody) {
