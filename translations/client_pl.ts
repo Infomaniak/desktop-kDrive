@@ -880,7 +880,7 @@ Wybierz inny folder. Jeśli kontynuujesz, funkcja Lite Sync zostanie wyłączona
         <message>
             <location filename="../src/gui/debuggingdialog.h" line="70" />
             <source>The entire folder is large (&gt; 100 MB) and may take some time to share. To reduce the sharing time, we recommend, that you share only the last kDrive session.</source>
-            <translation>Cały folder jest duży (&amp;gt; 100 MB) i udostępnienie go może zająć trochę czasu. Aby skrócić czas udostępniania, zalecamy udostępnienie tylko ostatniej sesji kDrive.</translation>
+            <translation>Cały folder jest duży (&gt; 100 MB) i udostępnienie go może zająć trochę czasu. Aby skrócić czas udostępniania, zalecamy udostępnienie tylko ostatniej sesji kDrive.</translation>
         </message>
         <message>
             <location filename="../src/gui/debuggingdialog.cpp" line="600" />
@@ -1644,7 +1644,7 @@ Proszę skorzystać z poniższego linku, aby przesłać logi do działu pomocy t
         <message>
             <location filename="../src/gui/parametersdialog.cpp" line="406" />
             <source>Unable to start synchronization (error %1).&lt;br&gt;You must allow:&lt;br&gt;- kDrive in System Settings &gt;&gt; General &gt;&gt; Login Items &amp; Extensions &gt;&gt; Endpoint Security Extensions&lt;br&gt;- kDrive LiteSync Extension in System Settings &gt;&gt; Privacy &amp; Security &gt;&gt; Full Disk Access.</source>
-            <translation>Nie można rozpocząć synchronizacji (błąd %1).&lt;br&gt;Należy zezwolić na&lt;br&gt;:- kDrive w Ustawieniach systemu &amp;gt;&amp;gt; Ogólne &amp;gt;&amp;gt; Elementy logowania i rozszerzenia &amp;gt;&amp;gt; Rozszerzenia zabezpieczeń punktów&lt;br&gt;końcowych - Rozszerzenie kDrive LiteSync w Ustawieniach systemu &amp;gt;&amp;gt; Prywatność i bezpieczeństwo &amp;gt;&amp;gt; Pełny dostęp do dysku.</translation>
+            <translation>Nie można rozpocząć synchronizacji (błąd %1).&lt;br&gt;Należy zezwolić na&lt;br&gt;:- kDrive w Ustawieniach systemu &gt;&gt; Ogólne &gt;&gt; Elementy logowania i rozszerzenia &gt;&gt; Rozszerzenia zabezpieczeń punktów&lt;br&gt;końcowych - Rozszerzenie kDrive LiteSync w Ustawieniach systemu &gt;&gt; Prywatność i bezpieczeństwo &gt;&gt; Pełny dostęp do dysku.</translation>
         </message>
         <message>
             <location filename="../src/gui/parametersdialog.cpp" line="419" />
@@ -3012,7 +3012,7 @@ Proszę skorzystać z poniższego linku, aby przesłać logi do działu pomocy t
         <message>
             <location filename="../src/gui/guiutility.cpp" line="336" />
             <source>Sync in progress (%1 of %2)</source>
-            <translation>Trwa synchronizacja (1% z 2%)</translation>
+            <translation>Trwa synchronizacja (%1 z %2)</translation>
         </message>
         <message>
             <location filename="../src/gui/guiutility.cpp" line="340" />

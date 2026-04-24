@@ -880,7 +880,7 @@ Selecione outra pasta. Se continuar, o Lite Sync será desativado.&lt;br&gt;
         <message>
             <location filename="../src/gui/debuggingdialog.h" line="70" />
             <source>The entire folder is large (&gt; 100 MB) and may take some time to share. To reduce the sharing time, we recommend, that you share only the last kDrive session.</source>
-            <translation>A pasta completa é grande (&amp;gt; 100 MB) e pode demorar algum tempo a partilhar. Para reduzir o tempo de partilha, recomendamos que partilhe apenas a última sessão do kDrive.</translation>
+            <translation>A pasta completa é grande (&gt; 100 MB) e pode demorar algum tempo a partilhar. Para reduzir o tempo de partilha, recomendamos que partilhe apenas a última sessão do kDrive.</translation>
         </message>
         <message>
             <location filename="../src/gui/debuggingdialog.cpp" line="600" />
@@ -1644,7 +1644,7 @@ Por favor, utilize o seguinte link para enviar os registos para o apoio técnico
         <message>
             <location filename="../src/gui/parametersdialog.cpp" line="406" />
             <source>Unable to start synchronization (error %1).&lt;br&gt;You must allow:&lt;br&gt;- kDrive in System Settings &gt;&gt; General &gt;&gt; Login Items &amp; Extensions &gt;&gt; Endpoint Security Extensions&lt;br&gt;- kDrive LiteSync Extension in System Settings &gt;&gt; Privacy &amp; Security &gt;&gt; Full Disk Access.</source>
-            <translation>Não foi possível iniciar a sincronização (erro %1).&lt;br&gt;Deve autorizar: - o kDrive em «Definições do sistema» &amp;gt;&amp;gt; «Geral» &amp;gt;&amp;gt; «Itens de&lt;br&gt;início de sessão e extensões» &amp;gt;&amp;gt; «Extensões de segurança de terminais»&lt;br&gt;; - a extensão kDrive LiteSync em «Definições do sistema» &amp;gt;&amp;gt; «Privacidade e segurança» &amp;gt;&amp;gt; «Acesso total ao disco».</translation>
+            <translation>Não foi possível iniciar a sincronização (erro %1).&lt;br&gt;Deve autorizar: - o kDrive em «Definições do sistema» &gt;&gt; «Geral» &gt;&gt; «Itens de&lt;br&gt;início de sessão e extensões» &gt;&gt; «Extensões de segurança de terminais»&lt;br&gt;; - a extensão kDrive LiteSync em «Definições do sistema» &gt;&gt; «Privacidade e segurança» &gt;&gt; «Acesso total ao disco».</translation>
         </message>
         <message>
             <location filename="../src/gui/parametersdialog.cpp" line="419" />
@@ -2282,7 +2282,7 @@ Por favor, utilize o seguinte link para enviar os registos para o apoio técnico
         <message>
             <location filename="../src/gui/statusbarwidget.cpp" line="178" />
             <source>Resume kDrive "%1" synchronization</source>
-            <translation>Retomar a sincronização do kDrive &amp;quot;%1&amp;quot;</translation>
+            <translation>Retomar a sincronização do kDrive &quot;%1&quot;</translation>
         </message>
         <message>
             <location filename="../src/gui/statusbarwidget.cpp" line="180" />
@@ -2292,7 +2292,7 @@ Por favor, utilize o seguinte link para enviar os registos para o apoio técnico
         <message>
             <location filename="../src/gui/statusbarwidget.cpp" line="183" />
             <source>Pause kDrive "%1" synchronization</source>
-            <translation>Suspender a sincronização do kDrive &amp;quot;%1&amp;quot;</translation>
+            <translation>Suspender a sincronização do kDrive &quot;%1&quot;</translation>
         </message>
         <message>
             <location filename="../src/gui/statusbarwidget.cpp" line="184" />
