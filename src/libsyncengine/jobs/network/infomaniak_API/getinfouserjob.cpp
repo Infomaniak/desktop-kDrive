@@ -27,6 +27,7 @@ namespace KDC {
 GetInfoUserJob::GetInfoUserJob(const UserDbId userDbId) :
     AbstractTokenNetworkJob(ApiType::Profile, userDbId, 0, 0) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
+    _apiVersion = 2;
 }
 
 ExitInfo GetInfoUserJob::handleJsonResponse(const std::string &replyBody) {
