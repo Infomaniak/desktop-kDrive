@@ -37,7 +37,7 @@ MoveJob::MoveJob(cconst DriveDbId driveDbId, SyncPath destFilepath, RemoteNodeId
     _destDirId(std::move(destDirId)),
     _name(std::move(name)) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
-    _apiVersion = 3;
+
     if (const auto exitInfo = ApiTranslator::translateV2ToV3(userDbId(), driveId(), _destDirId); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ApiTranslator::translateV2ToV3: " << exitInfo);
         throw JobException("Translation error in MoveJob::MoveJob.");
