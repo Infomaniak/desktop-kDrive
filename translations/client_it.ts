@@ -2026,6 +2026,11 @@ Accedi alla versione web per verificare lo stato del tuo kDrive oppure contatta 
         <translation>Portoghese</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="513"/>
+        <source>Polish</source>
+        <translation>Polacco</translation>
+    </message>
+    <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="466"/>
         <source>Unable to open folder %1.</source>
         <translation>Impossibile aprire la cartella %1.</translation>
