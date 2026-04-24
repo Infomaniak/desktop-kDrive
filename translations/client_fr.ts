@@ -2021,6 +2021,11 @@ Veuillez utiliser le lien suivant pour envoyer les logs au support: &lt;a style=
         <translation>Suédois</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="512"/>
+        <source>Portuguese</source>
+        <translation>Portugais</translation>
+    </message>
+    <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="466"/>
         <source>Unable to open folder %1.</source>
         <translation>Impossible d&apos;ouvrir le dossier %1.</translation>

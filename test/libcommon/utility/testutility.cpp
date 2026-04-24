@@ -486,6 +486,7 @@ void TestUtility::testLanguageCode() {
     CPPUNIT_ASSERT_EQUAL(std::string("es"), CommonUtility::languageCode(Language::Spanish).toStdString());
     CPPUNIT_ASSERT_EQUAL(std::string("it"), CommonUtility::languageCode(Language::Italian).toStdString());
     CPPUNIT_ASSERT_EQUAL(std::string("sv"), CommonUtility::languageCode(Language::Swedish).toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("pt"), CommonUtility::languageCode(Language::Portuguese).toStdString());
 
     const auto systemLanguage = QLocale::languageToCode(QLocale::system().language());
     CPPUNIT_ASSERT_EQUAL(systemLanguage.toStdString(), CommonUtility::languageCode(Language::Default).toStdString());
@@ -501,6 +502,7 @@ void TestUtility::testIsSupportedLanguage() {
     CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("es"));
     CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("it"));
     CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("sv"));
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("pt"));
     CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isSupportedLanguage("ita"));
     CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isSupportedLanguage("zc"));
     CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isSupportedLanguage(""));

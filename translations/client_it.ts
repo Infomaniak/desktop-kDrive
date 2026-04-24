@@ -2021,6 +2021,11 @@ Accedi alla versione web per verificare lo stato del tuo kDrive oppure contatta 
         <translation>Svedese</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="512"/>
+        <source>Portuguese</source>
+        <translation>Portoghese</translation>
+    </message>
+    <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="466"/>
         <source>Unable to open folder %1.</source>
         <translation>Impossibile aprire la cartella %1.</translation>
