@@ -50,7 +50,7 @@ struct SearchResultRowView: View {
         }
         .padding(.vertical, AppPadding.padding4)
         .padding(.horizontal, AppPadding.padding8)
-        .background(isHovered ? ColorToken.Status.Light.security.asColor : Color.clear)
+        .background(isHovered ? ColorToken.Surface.secondary.asColor : Color.clear)
         .clipShape(RoundedRectangle(cornerRadius: AppRadius.radius4))
         .contentShape(Rectangle())
         .onHover { hovering in
