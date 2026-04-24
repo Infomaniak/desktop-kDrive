@@ -286,14 +286,14 @@ namespace Infomaniak.kDrive.ViewModels
                     // Refresh updater version info and load info in parallel, they are not critical for the app to function and can be slow to load
                     _ = Task.Run(async () =>
                     {
-                        if (!await serverCommService.RefreshUpdaterVersionInfo(null, cts.Token))
+                        if (!await serverCommService.RefreshUpdaterVersionInfo(null, CancellationToken.None))
                             Logger.Log(Logger.Level.Warning, "RefreshUpdaterVersionInfo returned false during AppModel initialization.");
 
                     });
 
                     _ = Task.Run(async () =>
                     {
-                        if (!await serverCommService.ActivateLoadInfo(cts.Token))
+                        if (!await serverCommService.ActivateLoadInfo(CancellationToken.None))
                             Logger.Log(Logger.Level.Warning, "Failed to ActivateLoadInfo during AppModel initialization.");
                     });
                     return true;

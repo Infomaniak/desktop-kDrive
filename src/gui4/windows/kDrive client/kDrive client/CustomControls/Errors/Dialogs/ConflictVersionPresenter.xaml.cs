@@ -145,7 +145,7 @@ namespace Infomaniak.kDrive.CustomControls
                 {
                     if (await OpenInBrowserAsync())
                     {
-                        await Task.Delay(disableDurationMs); // Avoid multiple click by the time the fie open
+                        await Task.Delay(disableDurationMs); // Avoid multiple click by the time the file open
                         return;
                     }
 
@@ -161,7 +161,7 @@ namespace Infomaniak.kDrive.CustomControls
 
 
                 await Utility.OpenFileAsync(NodeAbsolutePath);
-                await Task.Delay(disableDurationMs); // Avoid multiple click by the time the fie open
+                await Task.Delay(disableDurationMs); // Avoid multiple click by the time the file open
                 if (control is not null)
                     control.IsEnabled = true;
             }
@@ -174,7 +174,7 @@ namespace Infomaniak.kDrive.CustomControls
 
         private async Task<bool> OpenInBrowserAsync()
         {
-            if (!IsRemote || Error is null || Error.Sync is null)
+            if (!IsRemote || Error is null)
             {
                 Logger.Log(Logger.Level.Warning, $"Attempted to open in browser but the version is not remote or error/sync info is missing: IsRemote={IsRemote}, Error is null={Error is null}, Sync is null={Error?.Sync is null}");
                 return false;
@@ -186,14 +186,7 @@ namespace Infomaniak.kDrive.CustomControls
                 return false;
             }
 
-            var url = App.Constants.Drive.itemUri(Error.Sync.Drive.DriveId, Error.RemoteNodeId);
-            if (!await Launcher.LaunchUriAsync(url))
-            {
-                Logger.Log(Logger.Level.Warning, $"Failed to launch URL: {url}");
-                return false;
-            }
-
-            return true;
+            return await Error.OpenItemInWebViewAsync();
         }
     }
 }
