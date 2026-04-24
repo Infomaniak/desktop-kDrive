@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 #include "jobs/network/kDrive_API/itemsexistjob.h"
 #include "requests/parameterscache.h"
 
-#include "libcommonserver/io/permissionsholder.h"
+#include "libcommonserver/io/permissionsgiver.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 
@@ -267,8 +267,8 @@ ExitInfo SyncLocalDeleteJob::runJob() {
     if (const auto exitInfo = canRun(); !exitInfo) return exitInfo;
 
     // Make sure we are allowed to propagate the change
-    PermissionsHolder permsHolder(absolutePath().parent_path(), _logger);
-    PermissionsHolder permsHolder2(absolutePath(), _logger);
+    PermissionsGiver permsGiver(absolutePath().parent_path(), _logger);
+    PermissionsGiver permsGiver2(absolutePath(), _logger);
 
     if (const bool tryMoveToTrash = ParametersCache::instance()->parameters().moveToTrash(); tryMoveToTrash || _forceToTrash) {
         return moveToTrash();

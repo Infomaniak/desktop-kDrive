@@ -1,6 +1,7 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,18 +22,13 @@
 #include "utility/types.h"
 
 /**
- * @brief Provide full access to a file or folder for the lifespan of the `PermissionsHolder` object. Access rights are reset to
- * their initial values upon destruction.
- * This class aims to simplify the management of items inside folders with restricted access (such as "Common documents" or
- * "Shared") or files with read-only rights that need to be updated. It should be used everywhere an item (or its children) with
- * limited access might be modified.
+ * @brief Provide full access to a file or folder.
  */
 namespace KDC {
 
-class PermissionsHolder {
+class PermissionsGiver {
     public:
-        explicit PermissionsHolder(const SyncPath &path, const log4cplus::Logger logger);
-        ~PermissionsHolder();
+        explicit PermissionsGiver(const SyncPath &path, const log4cplus::Logger logger);
 
     private:
         SyncPath _path;
