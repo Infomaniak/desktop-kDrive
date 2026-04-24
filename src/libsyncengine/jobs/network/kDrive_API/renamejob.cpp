@@ -23,13 +23,14 @@
 
 namespace KDC {
 
-RenameJob::RenameJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, const NodeId &remoteFileId,
-                     const SyncPath &absoluteFinalPath) :
+RenameJob::RenameJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, RemoteNodeId remoteFileId,
+                     SyncPath absoluteFinalPath) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
-    _remoteFileId(remoteFileId),
-    _absoluteFinalPath(absoluteFinalPath),
+    _remoteFileId(std::move(remoteFileId)),
+    _absoluteFinalPath(std::move(absoluteFinalPath)),
     _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
+    _apiVersion = 2;
 }
 
 RenameJob::~RenameJob() {
@@ -52,6 +53,7 @@ std::string RenameJob::getSpecificUrl() {
     str += "/files/";
     str += _remoteFileId;
     str += "/rename";
+
     return str;
 }
 
@@ -63,6 +65,7 @@ ExitInfo RenameJob::setData() {
     std::stringstream ss;
     json.stringify(ss);
     _data = ss.str();
+
     return ExitCode::Ok;
 }
 

@@ -27,12 +27,12 @@
 
 namespace KDC {
 
-CopyToDirectoryJob::CopyToDirectoryJob(const DriveDbId driveDbId, const NodeId &remoteFileId, const NodeId &remoteDestId,
-                                       const SyncName &newName) :
+CopyToDirectoryJob::CopyToDirectoryJob(const DriveDbId driveDbId, RemoteNodeId remoteFileId, RemoteNodeId remoteDestId,
+                                       SyncName newName) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
-    _remoteFileId(remoteFileId),
-    _remoteDestId(remoteDestId),
-    _newName(newName) {
+    _remoteFileId(std::move(remoteFileId)),
+    _remoteDestId(std::move(remoteDestId)),
+    _newName(std::move(newName)) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
     _apiVersion = 3;
     if (const auto exitInfo = ApiTranslator::translateV2ToV3(userDbId(), driveId(), _remoteDestId); !exitInfo) {
@@ -42,20 +42,17 @@ CopyToDirectoryJob::CopyToDirectoryJob(const DriveDbId driveDbId, const NodeId &
 }
 
 ExitInfo CopyToDirectoryJob::handleResponse(std::istream &is) {
-    if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) {
-        return exitInfo;
-    }
+    if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) return exitInfo;
 
-    NodeId res;
-    if (jsonRes()) {
-        Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
-        if (dataObj) {
-            if (!JsonParserUtility::extractValue(dataObj, idKey, _nodeId)) {
-                return {};
-            }
-            if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modtime)) {
-                return {};
-            }
+    if (!jsonRes()) return ExitCode::Ok;
+
+    if (Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey); dataObj) {
+        if (!JsonParserUtility::extractValue(dataObj, idKey, _nodeId)) {
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
+        }
+
+        if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modtime)) {
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
     }
 
@@ -68,6 +65,7 @@ std::string CopyToDirectoryJob::getSpecificUrl() {
     str += _remoteFileId;
     str += "/copy/";
     str += _remoteDestId;
+
     return str;
 }
 
@@ -78,6 +76,7 @@ ExitInfo CopyToDirectoryJob::setData() {
     std::stringstream ss;
     json.stringify(ss);
     _data = ss.str();
+
     return ExitCode::Ok;
 }
 

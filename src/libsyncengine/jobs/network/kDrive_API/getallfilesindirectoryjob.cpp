@@ -32,7 +32,6 @@ GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob(const DriveDbId driveDbId, 
     FileListJob(driveDbId, std::move(remoteDirId), translationMode) {}
 
 
-
 void GetAllFilesInDirectoryJob::abort() {
     LOG_DEBUG(_logger, "Aborting exhaustive file list request " << jobId());
     SyncJob::abort();
@@ -41,7 +40,7 @@ void GetAllFilesInDirectoryJob::abort() {
 ExitInfo GetAllFilesInDirectoryJob::runJob() {
     _remoteNodeInfoList.clear();
     bool hasMore = false;
-    std::string cursor;
+    Cursor cursor;
     constexpr Count maxListingPages = 100000; // To detect and avoid potential infinite loop.
     Count pageCount = 0;
     do {

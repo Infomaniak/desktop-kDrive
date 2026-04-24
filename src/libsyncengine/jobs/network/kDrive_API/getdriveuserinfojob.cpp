@@ -42,26 +42,18 @@ ExitInfo GetDriveUserInfoJob::handleJsonResponse(const std::string &replyBody) {
     if (const auto exitInfo = AbstractTokenNetworkJob::handleJsonResponse(replyBody); !exitInfo) return exitInfo;
 
     const auto dataArray = jsonRes()->getArray(dataKey);
-    if (!dataArray || dataArray->empty()) {
-        return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
+    if (!dataArray || dataArray->empty()) return {ExitCode::BackError, ExitCause::MissingReplyData};
 
     const auto dataObj = dataArray->getObject(0);
-    if (!dataObj) {
-        return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
+    if (!dataObj) return {ExitCode::BackError, ExitCause::MissingReplyData};
 
-    if (!JsonParserUtility::extractValue(dataObj, displayNameKey, _name)) {
+    if (!JsonParserUtility::extractValue(dataObj, displayNameKey, _name))
         return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
 
-    if (!JsonParserUtility::extractValue(dataObj, emailKey, _email)) {
-        return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
+    if (!JsonParserUtility::extractValue(dataObj, emailKey, _email)) return {ExitCode::BackError, ExitCause::MissingReplyData};
 
-    if (!JsonParserUtility::extractValue(dataObj, avatarKey, _avatarUrl)) {
+    if (!JsonParserUtility::extractValue(dataObj, avatarKey, _avatarUrl))
         return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
 
     return ExitCode::Ok;
 }
@@ -69,6 +61,7 @@ ExitInfo GetDriveUserInfoJob::handleJsonResponse(const std::string &replyBody) {
 std::string GetDriveUserInfoJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
     str += "/users";
+
     return str;
 }
 

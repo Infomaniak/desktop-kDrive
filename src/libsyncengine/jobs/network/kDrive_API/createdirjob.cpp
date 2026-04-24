@@ -28,36 +28,38 @@
 
 namespace KDC {
 
-CreateDirJob::CreateDirJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, const SyncPath &filepath,
-                           const NodeId &parentId, const SyncName &name, const std::string &color /*= ""*/) :
+CreateDirJob::CreateDirJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, SyncPath filepath, RemoteNodeId parentId,
+                           SyncName name, std::string color /*= ""*/) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
-    _filePath(filepath),
-    _parentDirId(parentId),
-    _name(name),
-    _color(color),
+    _filePath(std::move(filepath)),
+    _parentDirId(std::move(parentId)),
+    _name(std::move(name)),
+    _color(std::move(color)),
     _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
+    _apiVersion = 3;
     if (const auto exitInfo = ApiTranslator::translateV2ToV3(userDbId(), driveId(), _parentDirId); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ApiTranslator::translateV2ToV3: " << exitInfo);
         throw JobException("Translation error in CreateDirJob::CreateDirJob.");
     }
 }
 
-CreateDirJob::CreateDirJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, const NodeId &parentId,
-                           const SyncName &name) :
-    CreateDirJob(vfs, driveDbId, "", parentId, name) {}
+CreateDirJob::CreateDirJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, RemoteNodeId parentId, SyncName name) :
+    CreateDirJob(vfs, driveDbId, SyncPath{}, std::move(parentId), std::move(name)) {}
 
-CreateDirJob::CreateDirJob(const std::shared_ptr<Vfs> vfs, const UserDbId userDbId, const DriveId driveId, const NodeId &parentId,
-                           const SyncName &name) :
+CreateDirJob::CreateDirJob(const std::shared_ptr<Vfs> vfs, const UserDbId userDbId, const DriveId driveId, RemoteNodeId parentId,
+                           SyncName name) :
     AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, driveId),
-    _parentDirId(parentId),
-    _name(name),
+    _parentDirId(std::move(parentId)),
+    _name(std::move(name)),
     _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
+    _apiVersion = 3;
 }
 
 CreateDirJob::~CreateDirJob() {
     if (_filePath.empty() || !_vfs) return;
+
     if (const ExitInfo exitInfo = _vfs->setPinState(_filePath, PinState::AlwaysLocal); !exitInfo) {
         LOGW_WARN(_logger,
                   L"Error in CreateDirJob::vfsSetPinState for " << Utility::formatSyncPath(_filePath) << L" : " << exitInfo);
@@ -70,48 +72,45 @@ CreateDirJob::~CreateDirJob() {
                   L"Error in CreateDirJob::vfsForceStatus for " << Utility::formatSyncPath(_filePath) << L" : " << exitInfo);
     }
 }
+
 std::string CreateDirJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
     str += "/files/";
     str += _parentDirId;
     str += "/directory";
+
     return str;
 }
 
 ExitInfo CreateDirJob::setData() {
     Poco::JSON::Object json;
     json.set("name", _name);
-    if (!_color.empty()) {
-        json.set("color", _color);
-    }
+    if (!_color.empty()) json.set("color", _color);
 
     std::stringstream ss;
     json.stringify(ss);
     _data = ss.str();
+
     return ExitCode::Ok;
 }
 
 ExitInfo CreateDirJob::handleResponse(std::istream &is) {
-    if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) {
-        return exitInfo;
+    if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) return exitInfo;
+
+    if (!jsonRes()) return ExitCode::Ok;
+
+    if (const auto dataObj = jsonRes()->getObject(dataKey); dataObj) {
+        if (!JsonParserUtility::extractValue(dataObj, idKey, _nodeId)) return {ExitCode::BackError, ExitCause::MissingReplyData};
+
+        if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modtime))
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
-    if (jsonRes()) {
-        if (const auto dataObj = jsonRes()->getObject(dataKey); dataObj) {
-            if (!JsonParserUtility::extractValue(dataObj, idKey, _nodeId)) {
-                return {};
-            }
-            if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modtime)) {
-                return {};
-            }
-        }
-
-        if (!_filePath.empty() && _vfs) {
-            constexpr VfsStatus vfsStatus({.isHydrated = true, .isSyncing = false, .progress = 0});
-            if (const auto exitInfo = _vfs->forceStatus(_filePath, vfsStatus); !exitInfo) {
-                LOGW_WARN(_logger, L"Error in CreateDirJob::_vfsForceStatus for " << Utility::formatSyncPath(_filePath) << L" : "
-                                                                                  << exitInfo);
-            }
+    if (!_filePath.empty() && _vfs) {
+        constexpr VfsStatus vfsStatus({.isHydrated = true, .isSyncing = false, .progress = 0});
+        if (const auto exitInfo = _vfs->forceStatus(_filePath, vfsStatus); !exitInfo) {
+            LOGW_WARN(_logger,
+                      L"Error in CreateDirJob::_vfsForceStatus for " << Utility::formatSyncPath(_filePath) << L" : " << exitInfo);
         }
     }
 
