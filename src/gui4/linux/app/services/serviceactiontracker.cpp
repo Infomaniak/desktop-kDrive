@@ -100,16 +100,16 @@ void ServiceActionTracker::endAction(const ServiceKey &serviceKey, const ActionK
     _pendingCountByService[serviceKey] -= 1;
 
     if (scopeIt.value() == 0) {
-        actionState.pendingCountByScope.erase(scopeIt);
+        (void) actionState.pendingCountByScope.erase(scopeIt);
         emit actionPendingChanged(serviceKey, actionKey, scopeId, false);
     }
 
     if (actionState.totalPendingCount == 0) {
-        serviceActions.erase(actionIt);
+        (void) serviceActions.erase(actionIt);
     }
 
     if (serviceActions.isEmpty()) {
-        _pendingByServiceAndAction.erase(serviceIt);
+        (void) _pendingByServiceAndAction.erase(serviceIt);
     }
 
     if (_pendingCountByService.value(serviceKey, 0) == 0) {
