@@ -45,68 +45,61 @@ namespace KDC {
 #define READ_RETRIES 10
 #define READ_RETRIES_NETWORK_LOST 100
 
-DownloadJob::DownloadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, const NodeId &remoteFileId,
-                         const SyncPath &localpath, const int64_t expectedSize, const SyncTime creationTime,
-                         const SyncTime modificationTime, const bool isCreate) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false),
-    _remoteFileId(remoteFileId),
-    _localpath(localpath),
-    _expectedSize(expectedSize),
-    _creationTimeIn(creationTime),
-    _modificationTimeIn(modificationTime),
-    _isCreate(isCreate),
-    _vfs(vfs) {
+DownloadJob::DownloadJob(const std::shared_ptr<Vfs> vfs, std::shared_ptr<CacheDirectory> cacheDirectory,
+                         const FileDownloadInfo &fileDownloadInfo) :
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, fileDownloadInfo.driveDbId, 0, false),
+    _vfs(vfs),
+    _cacheDirectory(cacheDirectory),
+    _fileDownloadInfo(fileDownloadInfo) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _customTimeout = 60;
     _trials = TRIALS;
-}
 
-DownloadJob::DownloadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, const NodeId &remoteFileId,
-                         const SyncPath &localpath, int64_t expectedSize) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false),
-    _remoteFileId(remoteFileId),
-    _localpath(localpath),
-    _expectedSize(expectedSize),
-    _ignoreDateTime(true),
-    _vfs(vfs) {
-    _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
-    _customTimeout = 60;
-    _trials = TRIALS;
+    if (!_cacheDirectory) {
+        // If no cache directory have been provided, fallback to creating a temporary cache directory into parent folder.
+        _cacheDirectory = std::make_shared<CacheDirectory>(_fileDownloadInfo.localpath.parent_path());
+    }
 }
 
 DownloadJob::~DownloadJob() {
     // Remove tmp file
     // For a remote CREATE operation, the tmp file should no longer exist, but if an error occurred in handleResponse, it must
     // be deleted.
-    if (!removeTmpFile() && !_isCreate) {
+    if (!removeTmpFile() && !_fileDownloadInfo.isCreate) {
         LOGW_WARN(_logger, L"Failed to remove tmp file: " << Utility::formatSyncPath(_tmpPath));
     }
 
     if (!_vfs) return;
 
     // If the download job intent is to create a new local file, then there is no downloaded file after cancellation.
-    if (_responseHandlingCanceled && _isCreate) return;
+    if (_responseHandlingCanceled && _fileDownloadInfo.isCreate) return;
 
     if (_responseHandlingCanceled) {
-        if (const ExitInfo exitInfo = _vfs->setPinState(_localpath, PinState::OnlineOnly); !exitInfo) {
-            LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
+        if (const ExitInfo exitInfo = _vfs->setPinState(_fileDownloadInfo.localpath, PinState::OnlineOnly); !exitInfo) {
+            LOGW_WARN(_logger,
+                      L"Error in vfsSetPinState: " << Utility::formatSyncPath(_fileDownloadInfo.localpath) << L": " << exitInfo);
         }
 
-        if (const ExitInfo exitInfo = _vfs->forceStatus(_localpath, VfsStatus()); !exitInfo) {
-            LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
+        if (const ExitInfo exitInfo = _vfs->forceStatus(_fileDownloadInfo.localpath, VfsStatus()); !exitInfo) {
+            LOGW_WARN(_logger,
+                      L"Error in vfsForceStatus: " << Utility::formatSyncPath(_fileDownloadInfo.localpath) << L": " << exitInfo);
         }
 
-        _vfs->cancelHydrate(_localpath);
+        _vfs->cancelHydrate(_fileDownloadInfo.localpath);
     } else {
-        if (const ExitInfo res = _vfs->setPinState(
-                    _localpath, exitInfo().code() == ExitCode::Ok ? PinState::AlwaysLocal : PinState::OnlineOnly);
+        if (const ExitInfo res =
+                    _vfs->setPinState(_fileDownloadInfo.localpath,
+                                      exitInfo().code() == ExitCode::Ok ? PinState::AlwaysLocal : PinState::OnlineOnly);
             !res) {
-            LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(_localpath) << L": " << res);
+            LOGW_WARN(_logger,
+                      L"Error in vfsSetPinState: " << Utility::formatSyncPath(_fileDownloadInfo.localpath) << L": " << res);
         }
 
-        if (const ExitInfo res = _vfs->forceStatus(_localpath, VfsStatus({.isHydrated = exitInfo().code() == ExitCode::Ok}));
+        if (const ExitInfo res =
+                    _vfs->forceStatus(_fileDownloadInfo.localpath, VfsStatus({.isHydrated = exitInfo().code() == ExitCode::Ok}));
             !res) {
-            LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L": " << res);
+            LOGW_WARN(_logger,
+                      L"Error in vfsForceStatus: " << Utility::formatSyncPath(_fileDownloadInfo.localpath) << L": " << res);
         }
     }
 }
@@ -114,12 +107,17 @@ DownloadJob::~DownloadJob() {
 std::string DownloadJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
     str += "/files/";
-    str += _remoteFileId;
+    str += _fileDownloadInfo.remoteFileId;
     str += "/download";
     return str;
 }
 
 ExitInfo DownloadJob::canRun() {
+    if (_fileDownloadInfo.remoteFileId.empty() || _fileDownloadInfo.localpath.empty()) {
+        LOG_WARN(_logger, "Missing mandatory inputs! ");
+        return ExitCode::LogicError;
+    }
+
     if (bypassCheck()) {
         return ExitCode::Ok;
     }
@@ -127,13 +125,14 @@ ExitInfo DownloadJob::canRun() {
     // Check that we can create the item here
     bool exists = false;
     IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(_localpath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_localpath, ioError));
+    if (!IoHelper::checkIfPathExists(_fileDownloadInfo.localpath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
+        LOGW_WARN(_logger,
+                  L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_fileDownloadInfo.localpath, ioError));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
-    if (_isCreate && exists) {
-        LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(_localpath)
+    if (_fileDownloadInfo.isCreate && exists) {
+        LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(_fileDownloadInfo.localpath)
                                           << L" already exists. Aborting current sync and restarting.");
         return {ExitCode::DataError, ExitCause::FileExists};
     }
@@ -142,36 +141,40 @@ ExitInfo DownloadJob::canRun() {
 }
 
 ExitInfo DownloadJob::runJob() noexcept {
-    if (!_isCreate && _vfs) {
+    if (!_fileDownloadInfo.isCreate && _vfs) {
         // Get hydration status
         VfsStatus vfsStatus;
-        _vfs->status(_localpath, vfsStatus);
+        (void) _vfs->status(_fileDownloadInfo.localpath, vfsStatus);
         _isHydrated = vfsStatus.isHydrated;
 
         // Update size on file system
         FileStat filestat;
         IoError ioError = IoError::Success;
-        if (!IoHelper::getFileStat(_localpath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive)) {
-            LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_localpath, ioError));
+        if (!IoHelper::getFileStat(_fileDownloadInfo.localpath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive)) {
+            LOGW_WARN(_logger,
+                      L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_fileDownloadInfo.localpath, ioError));
             return ExitCode::SystemError;
         }
         if (ioError == IoError::NoSuchFileOrDirectory) {
-            LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_localpath));
+            LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
             return {ExitCode::SystemError, ExitCause::NotFound};
         } else if (ioError == IoError::AccessDenied) {
-            LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_localpath));
+            LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
 
-        if (const ExitInfo exitInfo = _vfs->updateMetadata(_localpath, filestat.creationTime, filestat.modificationTime,
-                                                           _expectedSize, std::to_string(filestat.inode));
+        if (const ExitInfo exitInfo =
+                    _vfs->updateMetadata(_fileDownloadInfo.localpath, filestat.creationTime, filestat.modificationTime,
+                                         _fileDownloadInfo.expectedSize, std::to_string(filestat.inode));
             !exitInfo) {
-            LOGW_WARN(_logger, L"Update metadata failed " << exitInfo << L" " << Utility::formatSyncPath(_localpath));
+            LOGW_WARN(_logger,
+                      L"Update metadata failed " << exitInfo << L" " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
             return exitInfo;
         }
 
-        if (const ExitInfo exitInfo = _vfs->forceStatus(_localpath, VfsStatus({.isSyncing = true})); !exitInfo) {
-            LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
+        if (const ExitInfo exitInfo = _vfs->forceStatus(_fileDownloadInfo.localpath, VfsStatus({.isSyncing = true})); !exitInfo) {
+            LOGW_WARN(_logger,
+                      L"Error in vfsForceStatus: " << Utility::formatSyncPath(_fileDownloadInfo.localpath) << L": " << exitInfo);
             return exitInfo;
         }
     }
@@ -224,16 +227,17 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
         if (!_responseHandlingCanceled) {
             if (_vfs && !_isHydrated && !fetchFinished) { // updateFetchStatus is used only for hydration.
                 // Update fetch status
-                if (ExitInfo exitInfo =
-                            _vfs->updateFetchStatus(_tmpPath, _localpath, getProgress(), fetchCanceled, fetchFinished);
+                if (ExitInfo exitInfo = _vfs->updateFetchStatus(_tmpPath, _fileDownloadInfo.localpath, getProgress(),
+                                                                fetchCanceled, fetchFinished);
                     !exitInfo) {
-                    LOGW_WARN(_logger,
-                              L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
+                    LOGW_WARN(_logger, L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(_fileDownloadInfo.localpath)
+                                                                          << L" : " << exitInfo);
                     fetchError = true;
                 } else if (fetchCanceled) {
-                    LOGW_WARN(_logger, L"Update fetch status canceled: " << Utility::formatSyncPath(_localpath));
+                    LOGW_WARN(_logger, L"Update fetch status canceled: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
                 } else if (!fetchFinished) {
-                    LOGW_WARN(_logger, L"Update fetch status not terminated: " << Utility::formatSyncPath(_localpath));
+                    LOGW_WARN(_logger,
+                              L"Update fetch status not terminated: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
                 }
 
                 _responseHandlingCanceled = fetchCanceled || fetchError || (!fetchFinished);
@@ -260,7 +264,7 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
                                httpResponse().getContentLength() == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH
                                        ? BUF_SIZE
                                        : (httpResponse().getContentLength() - getProgress());
-                       !hasEnoughPlace(_tmpPath, _localpath, neededPlace, _logger)) {
+                       !hasEnoughPlace(_tmpPath, _fileDownloadInfo.localpath, neededPlace, _logger)) {
                 return {ExitCode::SystemError, ExitCause::NotEnoughDiskSpace};
             } else {
                 return {ExitCode::SystemError, ExitCause::FileAccessError};
@@ -268,14 +272,15 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
         }
     }
     if (!_ignoreDateTime) {
-        if (const IoError ioError = IoHelper::setFileDates(_localpath, _creationTimeIn, _modificationTimeIn, isLink);
+        if (const IoError ioError = IoHelper::setFileDates(_fileDownloadInfo.localpath, _fileDownloadInfo.creationTime,
+                                                           _fileDownloadInfo.modificationTime, isLink);
             ioError == IoError::Unknown) {
-            LOGW_WARN(_logger, L"Error in IoHelper::setFileDates: " << Utility::formatSyncPath(_localpath));
+            LOGW_WARN(_logger, L"Error in IoHelper::setFileDates: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
             // Do nothing (remote file will be updated during the next sync)
             sentry::Handler::captureMessage(sentry::Level::Warning, "DownloadJob::handleResponse", "Unable to set file dates");
         } else if (ioError == IoError::NoSuchFileOrDirectory || ioError == IoError::AccessDenied) {
             LOGW_INFO(_logger, L"Item does not exist anymore or access is denied. Restarting sync: "
-                                       << Utility::formatSyncPath(_localpath));
+                                       << Utility::formatSyncPath(_fileDownloadInfo.localpath));
             return {ExitCode::DataError, ExitCause::InvalidSnapshot};
         }
     }
@@ -283,16 +288,16 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
     // Retrieve inode
     FileStat filestat;
     IoError ioError = IoError::Success;
-    if (!IoHelper::getFileStat(_localpath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_localpath, ioError));
+    if (!IoHelper::getFileStat(_fileDownloadInfo.localpath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive)) {
+        LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_fileDownloadInfo.localpath, ioError));
         return ExitCode::SystemError;
     }
 
     if (ioError == IoError::NoSuchFileOrDirectory) {
-        LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_localpath));
+        LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
         return {ExitCode::DataError, ExitCause::InvalidSnapshot};
     } else if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_localpath));
+        LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
@@ -301,21 +306,21 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
     _modificationTimeOut = filestat.modificationTime;
     _sizeOut = filestat.size;
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
-    if (_creationTimeIn != _creationTimeOut || _modificationTimeIn != _modificationTimeOut) {
+    if (_fileDownloadInfo.creationTime != _creationTimeOut || _fileDownloadInfo.modificationTime != _modificationTimeOut) {
         // In the following cases, it is not an issue:
         // - Windows: if creation/modification date = 0, it is set to current date
         // - macOS: if creation date > modification date, creation date is set to modification date
         LOGW_INFO(_logger, L"Impossible to set creation and/or modification time(s) on local file."
-                                   << L" Desired values: " << _creationTimeIn << L"/" << _modificationTimeIn << L" Set values: "
-                                   << _creationTimeOut << L"/" << _modificationTimeOut << L" for "
-                                   << Utility::formatSyncPath(_localpath));
+                                   << L" Desired values: " << _fileDownloadInfo.creationTime << L"/"
+                                   << _fileDownloadInfo.modificationTime << L" Set values: " << _creationTimeOut << L"/"
+                                   << _modificationTimeOut << L" for " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
     }
 #else
     // On Linux, the creation date cannot be set
-    if (_modificationTimeIn != _modificationTimeOut) {
+    if (_fileDownloadInfo.modificationTime != _modificationTimeOut) {
         LOGW_INFO(_logger, L"Impossible to set modification time on local file."
-                                   << L" Desired value: " << _modificationTimeIn << L" Set value: " << _modificationTimeOut
-                                   << L" for " << Utility::formatSyncPath(_localpath));
+                                   << L" Desired value: " << _fileDownloadInfo.modificationTime << L" Set value: "
+                                   << _modificationTimeOut << L" for " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
     }
 #endif
 
@@ -324,61 +329,61 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
 
 ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string &data) {
     // Delete in case it already exists (EDIT operation)
-    (void) IoHelper::deleteItem(_localpath);
+    (void) IoHelper::deleteItem(_fileDownloadInfo.localpath);
 
     if (mimeType == mimeTypeSymlink || mimeType == mimeTypeSymlinkFolder) {
         // Create symlink
         const auto targetPath = Str2Path(data);
-        if (targetPath == _localpath) {
-            LOGW_DEBUG(_logger, L"Cannot create symlink on itself: " << Utility::formatSyncPath(_localpath));
+        if (targetPath == _fileDownloadInfo.localpath) {
+            LOGW_DEBUG(_logger, L"Cannot create symlink on itself: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
             return {};
         }
 
         LOGW_DEBUG(_logger, L"Create symlink with target " << Utility::formatSyncPath(targetPath) << L", "
-                                                           << Utility::formatSyncPath(_localpath));
+                                                           << Utility::formatSyncPath(_fileDownloadInfo.localpath));
 
         bool isFolder = mimeType == mimeTypeSymlinkFolder;
         IoError ioError = IoError::Success;
-        if (!IoHelper::createSymlink(targetPath, _localpath, isFolder, ioError)) {
+        if (!IoHelper::createSymlink(targetPath, _fileDownloadInfo.localpath, isFolder, ioError)) {
             LOGW_WARN(_logger, L"Failed to create symlink: " << Utility::formatIoError(targetPath, ioError));
             return {};
         }
     } else if (mimeType == mimeTypeHardlink) {
         // Unreachable code
         const auto targetPath = Str2Path(data);
-        if (targetPath == _localpath) {
-            LOGW_DEBUG(_logger, L"Cannot create hardlink on itself: " << Utility::formatSyncPath(_localpath));
+        if (targetPath == _fileDownloadInfo.localpath) {
+            LOGW_DEBUG(_logger, L"Cannot create hardlink on itself: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
             return {};
         }
 
         LOGW_DEBUG(_logger, L"Create hardlink: target " << Utility::formatSyncPath(targetPath) << L", "
-                                                        << Utility::formatSyncPath(_localpath));
+                                                        << Utility::formatSyncPath(_fileDownloadInfo.localpath));
 
         std::error_code ec;
-        std::filesystem::create_hard_link(targetPath, _localpath, ec);
+        std::filesystem::create_hard_link(targetPath, _fileDownloadInfo.localpath, ec);
         if (ec) {
             LOGW_WARN(_logger, L"Failed to create hardlink: target " << Utility::formatSyncPath(targetPath) << L", "
-                                                                     << Utility::formatSyncPath(_localpath) << L", "
-                                                                     << Utility::formatStdError(ec));
+                                                                     << Utility::formatSyncPath(_fileDownloadInfo.localpath)
+                                                                     << L", " << Utility::formatStdError(ec));
             return {};
         }
     } else if (mimeType == mimeTypeJunction) {
 #if defined(KD_WINDOWS)
-        LOGW_DEBUG(_logger, L"Create junction: " << Utility::formatSyncPath(_localpath));
+        LOGW_DEBUG(_logger, L"Create junction: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
 
         IoError ioError = IoError::Success;
-        if (!IoHelper::createJunction(data, _localpath, ioError)) {
-            LOGW_WARN(_logger, L"Failed to create junction: " << Utility::formatIoError(_localpath, ioError));
+        if (!IoHelper::createJunction(data, _fileDownloadInfo.localpath, ioError)) {
+            LOGW_WARN(_logger, L"Failed to create junction: " << Utility::formatIoError(_fileDownloadInfo.localpath, ioError));
             return {};
         }
 #endif
     } else if (mimeType == mimeTypeFinderAlias) {
 #if defined(KD_MACOS)
-        LOGW_DEBUG(_logger, L"Create alias: " << Utility::formatSyncPath(_localpath));
+        LOGW_DEBUG(_logger, L"Create alias: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
 
         IoError ioError = IoError::Success;
-        if (!IoHelper::createAlias(data, _localpath, ioError)) {
-            LOGW_WARN(_logger, L"Failed to create alias: " << Utility::formatIoError(_localpath, ioError));
+        if (!IoHelper::createAlias(data, _fileDownloadInfo.localpath, ioError)) {
+            LOGW_WARN(_logger, L"Failed to create alias: " << Utility::formatIoError(_fileDownloadInfo.localpath, ioError));
 
             if (ioError == IoError::Unknown) {
                 // Could be an alias imported into the drive by drag&drop in the webapp
@@ -398,8 +403,9 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
                         return {};
                     }
 
-                    if (!IoHelper::createAlias(data2, _localpath, ioError)) {
-                        LOGW_WARN(_logger, L"Failed to create alias: " << Utility::formatIoError(_localpath, ioError));
+                    if (!IoHelper::createAlias(data2, _fileDownloadInfo.localpath, ioError)) {
+                        LOGW_WARN(_logger,
+                                  L"Failed to create alias: " << Utility::formatIoError(_fileDownloadInfo.localpath, ioError));
                         return {};
                     }
 
@@ -453,35 +459,35 @@ ExitInfo DownloadJob::moveTmpFile() {
         bool sharingViolationError = false;
 #endif
         static const bool forceCopy = CommonUtility::envVarValue("KDRIVE_PRESERVE_PERMISSIONS_ON_CREATE") == "1";
-        if (_isCreate && !forceCopy) {
+        if (_fileDownloadInfo.isCreate && !forceCopy) {
             // Make sure we are allowed to propagate the change
-            PermissionsHolder _(_localpath.parent_path(), _logger);
+            PermissionsHolder _(_fileDownloadInfo.localpath.parent_path(), _logger);
 
             // Move file
             IoError ioError = IoError::Success;
-            IoHelper::moveItem(_tmpPath, _localpath, ioError);
+            (void) IoHelper::moveItem(_tmpPath, _fileDownloadInfo.localpath, ioError);
             crossDeviceLinkError = ioError == IoError::CrossDeviceLink; // Unable to move between 2 distinct file systems
             if (ioError != IoError::Success && !crossDeviceLinkError) {
                 LOGW_WARN(_logger, L"Failed to move downloaded file " << Utility::formatSyncPath(_tmpPath) << L" to "
-                                                                      << Utility::formatSyncPath(_localpath) << L", err='"
-                                                                      << Utility::formatIoError(ioError) << L"'");
+                                                                      << Utility::formatSyncPath(_fileDownloadInfo.localpath)
+                                                                      << L", err='" << Utility::formatIoError(ioError) << L"'");
                 error = true;
                 accessDeniedError = ioError == IoError::AccessDenied;
                 // NB: On Windows, ec.value() == ERROR_SHARING_VIOLATION is translated as IoError::AccessDenied
             }
         }
 
-        if (!_isCreate || crossDeviceLinkError || forceCopy) {
+        if (!_fileDownloadInfo.isCreate || crossDeviceLinkError || forceCopy) {
             // Make sure we are allowed to propagate the change
-            PermissionsHolder _(_localpath.parent_path(), _logger);
+            PermissionsHolder _(_fileDownloadInfo.localpath.parent_path(), _logger);
 
             // Copy file content (i.e. when the target exists, do not change its node id).
             std::error_code ec;
-            std::filesystem::copy(_tmpPath, _localpath, std::filesystem::copy_options::overwrite_existing, ec);
+            std::filesystem::copy(_tmpPath, _fileDownloadInfo.localpath, std::filesystem::copy_options::overwrite_existing, ec);
             if (ec) {
                 LOGW_WARN(_logger, L"Failed to copy downloaded file " << Utility::formatSyncPath(_tmpPath) << L" to "
-                                                                      << Utility::formatSyncPath(_localpath) << L", err='"
-                                                                      << Utility::formatStdError(ec) << L"'");
+                                                                      << Utility::formatSyncPath(_fileDownloadInfo.localpath)
+                                                                      << L", err='" << Utility::formatStdError(ec) << L"'");
                 error = true;
                 accessDeniedError = IoHelper::stdError2ioError(ec.value()) == IoError::AccessDenied;
 #if defined(KD_WINDOWS)
@@ -497,7 +503,8 @@ ExitInfo DownloadJob::moveTmpFile() {
                     // Retry
                     retry = true;
                     Utility::msleep(10);
-                    LOGW_DEBUG(_logger, L"Retrying to copy downloaded file: " << Utility::formatSyncPath(_localpath));
+                    LOGW_DEBUG(_logger,
+                               L"Retrying to copy downloaded file: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
                     counter--;
                     continue;
                 } else {
@@ -511,19 +518,21 @@ ExitInfo DownloadJob::moveTmpFile() {
             } else {
                 bool exists = false;
                 IoError ioError = IoError::Success;
-                if (!IoHelper::checkIfPathExists(_localpath.parent_path(), exists, ioError,
+                if (!IoHelper::checkIfPathExists(_fileDownloadInfo.localpath.parent_path(), exists, ioError,
                                                  IoHelper::PathCheckOption::Insensitive)) {
                     LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
-                                               << Utility::formatIoError(_localpath.parent_path(), ioError));
+                                               << Utility::formatIoError(_fileDownloadInfo.localpath.parent_path(), ioError));
                     return ExitCode::SystemError;
                 }
                 if (ioError == IoError::AccessDenied) {
-                    LOGW_WARN(_logger, L"Access denied to item " << Utility::formatSyncPath(_localpath.parent_path()));
+                    LOGW_WARN(_logger,
+                              L"Access denied to item " << Utility::formatSyncPath(_fileDownloadInfo.localpath.parent_path()));
                     return {ExitCode::SystemError, ExitCause::FileAccessError};
                 }
 
                 if (!exists) {
-                    LOGW_INFO(_logger, L"Parent of item does not exist anymore " << Utility::formatSyncPath(_localpath));
+                    LOGW_INFO(_logger,
+                              L"Parent of item does not exist anymore " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
                     disableRetry();
                 }
 
@@ -570,14 +579,13 @@ ExitInfo DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::is
     fetchError = false;
 
     SyncPath cacheDirectoryPath;
-    if (!IoHelper::cacheDirectoryPath(cacheDirectoryPath)) {
-        LOGW_WARN(_logger, L"Failed to get cache directory");
-        return {ExitCode::SystemError, ExitCause::TmpDirAccessError};
+    if (const auto exitInfo = _cacheDirectory->path(cacheDirectoryPath); !exitInfo) {
+        return exitInfo;
     }
 
     std::ofstream output;
     do {
-        const std::string tmpFileName = "kdrive_" + CommonUtility::generateRandomStringAlphaNum();
+        const std::string tmpFileName = CacheDirectory::createTmpFileName();
         _tmpPath = cacheDirectoryPath / tmpFileName;
 
         output.open(_tmpPath.native().c_str(), std::ofstream::out | std::ofstream::binary);
@@ -599,7 +607,7 @@ ExitInfo DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::is
         setProgress(0);
 
         if (expectedSize != Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH) {
-            if (!hasEnoughPlace(_tmpPath, _localpath, expectedSize, _logger)) {
+            if (!hasEnoughPlace(_tmpPath, _fileDownloadInfo.localpath, expectedSize, _logger)) {
                 writeError = true;
             }
             if (expectedSize < 0) {
@@ -693,12 +701,15 @@ ExitInfo DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::is
                 if (_vfs && !_isHydrated) { // updateFetchStatus is used only for hydration.
                     if (timer.elapsed<std::chrono::milliseconds>().count() > NOTIFICATION_DELAY || done) {
                         // Update fetch status
-                        if (!_vfs->updateFetchStatus(_tmpPath, _localpath, getProgress(), fetchCanceled, fetchFinished)) {
-                            LOGW_WARN(_logger, L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(_localpath));
+                        if (!_vfs->updateFetchStatus(_tmpPath, _fileDownloadInfo.localpath, getProgress(), fetchCanceled,
+                                                     fetchFinished)) {
+                            LOGW_WARN(_logger,
+                                      L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
                             fetchError = true;
                             break;
                         } else if (fetchCanceled) {
-                            LOGW_WARN(_logger, L"Update fetch status canceled: " << Utility::formatSyncPath(_localpath));
+                            LOGW_WARN(_logger,
+                                      L"Update fetch status canceled: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
                             break;
                         }
                         timer.restart();

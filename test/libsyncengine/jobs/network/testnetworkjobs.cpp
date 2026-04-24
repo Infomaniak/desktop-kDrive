@@ -103,7 +103,7 @@ void TestNetworkJobs::setUp() {
     (void) KeyChainManager::instance(true);
     (void) KeyChainManager::instance()->writeToken(keychainKey, _apiToken.reconstructJsonString());
     // Create parmsDb
-    (void) ParmsDb::instance(_localParmsDbTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
+    (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
 
     // Insert user, account & drive
@@ -129,6 +129,9 @@ void TestNetworkJobs::setUp() {
     if (ParmsDb::instance()->selectParameters(parameters, found) && found) {
         Proxy::instance(parameters.proxyConfig());
     }
+
+    // Setup cache directory
+    _cacheDirectory = std::make_shared<CacheDirectory>(_localTempDir.path());
 }
 
 void TestNetworkJobs::tearDown() {
@@ -290,8 +293,9 @@ void TestNetworkJobs::testDownload() {
         int64_t sizeOut = 0;
         // Download (CREATE propagation)
         {
-            DownloadJob job(nullptr, _driveDbId, testFileRemoteId, localDestFilePath, 0, creationTimeIn.count(),
-                            modificationTimeIn.count(), false);
+            DownloadJob job(nullptr, _cacheDirectory,
+                            DownloadJob::FileDownloadInfo{_driveDbId, testFileRemoteId, localDestFilePath, 0,
+                                                          creationTimeIn.count(), modificationTimeIn.count(), false});
             const ExitCode exitCode = job.runSynchronously();
             sizeOut = job.size();
             CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
@@ -330,8 +334,9 @@ void TestNetworkJobs::testDownload() {
         // Download again (EDIT propagation)
         {
             modificationTimeIn += std::chrono::minutes(1);
-            DownloadJob job(nullptr, _driveDbId, testFileRemoteId, localDestFilePath, 0, creationTimeIn.count(),
-                            modificationTimeIn.count(), false);
+            DownloadJob job(nullptr, _cacheDirectory,
+                            DownloadJob::FileDownloadInfo{_driveDbId, testFileRemoteId, localDestFilePath, 0,
+                                                          creationTimeIn.count(), modificationTimeIn.count(), false});
             const ExitCode exitCode = job.runSynchronously();
             sizeOut = job.size();
             CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
@@ -378,8 +383,9 @@ void TestNetworkJobs::testDownload() {
             vfs->setMockForceStatus([]([[maybe_unused]] const SyncPath & /*path*/,
                                        [[maybe_unused]] const VfsStatus & /*vfsStatus*/) -> ExitInfo { return ExitCode::Ok; });
 
-            DownloadJob job(vfs, _driveDbId, testFileRemoteId, localDestFilePath, 0, creationTimeIn.count(),
-                            modificationTimeIn.count(), false);
+            DownloadJob job(vfs, _cacheDirectory,
+                            DownloadJob::FileDownloadInfo{_driveDbId, testFileRemoteId, localDestFilePath, 0,
+                                                          creationTimeIn.count(), modificationTimeIn.count(), false});
             const ExitCode exitCode = job.runSynchronously();
             CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
             CPPUNIT_ASSERT_EQUAL(true, job._isHydrated);
@@ -420,6 +426,19 @@ void TestNetworkJobs::testDownload() {
             CPPUNIT_ASSERT(value == litesync_attrs::statusOffline);
         }
 #endif
+
+        // Download again (EDIT propagation) but cache directory has been deleted
+        {
+            SyncPath cacheDirectoryPath;
+            CPPUNIT_ASSERT(_cacheDirectory->path(cacheDirectoryPath));
+            (void) IoHelper::deleteItem(cacheDirectoryPath);
+
+            modificationTimeIn += std::chrono::minutes(1);
+            DownloadJob job(nullptr, _cacheDirectory,
+                            DownloadJob::FileDownloadInfo{_driveDbId, testFileRemoteId, localDestFilePath, 0,
+                                                          creationTimeIn.count(), modificationTimeIn.count(), false});
+            CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.runSynchronously().code());
+        }
     }
 
     // Cross Device Link
@@ -444,7 +463,8 @@ void TestNetworkJobs::testDownload() {
         IoHelperTestUtilities::setTempDirectoryPathFunction(MockTempDirectoryPath);
         // CREATE
         {
-            DownloadJob job(nullptr, _driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, true);
+            DownloadJob job(nullptr, _cacheDirectory,
+                            DownloadJob::FileDownloadInfo{_driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, true});
             const ExitCode exitCode = job.runSynchronously();
             CPPUNIT_ASSERT_GREATER(int64_t{-1}, job.size());
             CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
@@ -465,7 +485,8 @@ void TestNetworkJobs::testDownload() {
 
         // EDIT
         {
-            DownloadJob job(nullptr, _driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, false);
+            DownloadJob job(nullptr, _cacheDirectory,
+                            DownloadJob::FileDownloadInfo{_driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, false});
             const ExitCode exitCode = job.runSynchronously();
             CPPUNIT_ASSERT_GREATER(int64_t{-1}, job.size());
             CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
@@ -511,31 +532,18 @@ void TestNetworkJobs::testDownload() {
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT_MESSAGE("Small partition not found", exist);
 
-        // Not Enough disk space (tmp dir)
-        {
-            // Trying to download a file with size 9Mo in a 8Mo disk should fail with SystemError,
-            // NotEnoughDiskSpace.
-            const SyncPath localDestFilePath = temporaryDirectory.path() / "9Mo.txt";
-            DownloadJob downloadJob(nullptr, _driveDbId, remoteTmpDir.id(), localDestFilePath, 0, 0, 0, false);
-
-            IoHelperTestUtilities::setCacheDirectoryPath(smallPartitionPath);
-
-            downloadJob.runSynchronously();
-            CPPUNIT_ASSERT_EQUAL(int64_t{-1}, downloadJob.size());
-            IoHelperTestUtilities::resetFunctions();
-            CPPUNIT_ASSERT_EQUAL_MESSAGE(std::string("Space available at " + smallPartitionPath.string() + " -> " +
-                                                     std::to_string(Utility::getFreeDiskSpace(smallPartitionPath))),
-                                         ExitInfo(ExitCode::SystemError, ExitCause::NotEnoughDiskSpace), downloadJob.exitInfo());
-        }
+        const auto cacheDirectory = std::make_shared<CacheDirectory>(smallPartitionPath);
 
         // Not Enough disk space (destination dir)
         {
             // Trying to download a file with size 9Mo in a 8Mo disk should fail with SystemError,
             // NotEnoughDiskSpace.
             const SyncPath localDestFilePath = smallPartitionPath / "9Mo.txt";
-            DownloadJob downloadJob(nullptr, _driveDbId, remoteTmpDir.id(), localDestFilePath, 0, 0, 0, false);
+            DownloadJob downloadJob(
+                    nullptr, cacheDirectory,
+                    DownloadJob::FileDownloadInfo{_driveDbId, remoteTmpDir.id(), localDestFilePath, 0, 0, 0, false});
 
-            downloadJob.runSynchronously();
+            (void) downloadJob.runSynchronously();
             CPPUNIT_ASSERT_EQUAL(int64_t{-1}, downloadJob.size());
             CPPUNIT_ASSERT_EQUAL_MESSAGE(std::string("Space available at " + smallPartitionPath.string() + " -> " +
                                                      std::to_string(Utility::getFreeDiskSpace(smallPartitionPath))),
@@ -559,7 +567,8 @@ void TestNetworkJobs::testDownload() {
         const SyncPath localDestFilePath = temporaryDirectorySync.path() / "empty_file.txt";
         // Download an empty file
         {
-            DownloadJob job(nullptr, _driveDbId, remote0bytesFileId, localDestFilePath, 0, 0, 0, false);
+            DownloadJob job(nullptr, _cacheDirectory,
+                            DownloadJob::FileDownloadInfo{_driveDbId, remote0bytesFileId, localDestFilePath, 0, 0, 0, false});
             (void) job.runSynchronously();
             CPPUNIT_ASSERT_EQUAL(int64_t{0}, job.size());
             CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.exitInfo().code());
@@ -580,8 +589,9 @@ void TestNetworkJobs::testDownload() {
 
         // Download a file symlink
         {
-            DownloadJob job(nullptr, _driveDbId, testFileSymlinkRemoteId, localDestFilePath, 0, creationTimeIn.count(),
-                            modificationTimeIn.count(), false);
+            DownloadJob job(nullptr, _cacheDirectory,
+                            DownloadJob::FileDownloadInfo{_driveDbId, testFileSymlinkRemoteId, localDestFilePath, 0,
+                                                          creationTimeIn.count(), modificationTimeIn.count(), false});
             const ExitCode exitCode = job.runSynchronously();
             CPPUNIT_ASSERT_GREATER(int64_t{-1}, job.size());
             CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
@@ -621,8 +631,9 @@ void TestNetworkJobs::testDownload() {
 
         // Download a folder symlink
         {
-            DownloadJob job(nullptr, _driveDbId, testFolderSymlinkRemoteId, localDestFilePath, 0, creationTimeIn.count(),
-                            modificationTimeIn.count(), false);
+            DownloadJob job(nullptr, _cacheDirectory,
+                            DownloadJob::FileDownloadInfo{_driveDbId, testFolderSymlinkRemoteId, localDestFilePath, 0,
+                                                          creationTimeIn.count(), modificationTimeIn.count(), false});
             const ExitCode exitCode = job.runSynchronously();
             CPPUNIT_ASSERT_GREATER(int64_t{-1}, job.size());
             CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
@@ -662,8 +673,9 @@ void TestNetworkJobs::testDownload() {
 
         // Download a valid alias
         {
-            DownloadJob job(nullptr, _driveDbId, testAliasGoodRemoteId, localDestFilePath, 0, creationTimeIn.count(),
-                            modificationTimeIn.count(), false);
+            DownloadJob job(nullptr, _cacheDirectory,
+                            DownloadJob::FileDownloadInfo{_driveDbId, testAliasGoodRemoteId, localDestFilePath, 0,
+                                                          creationTimeIn.count(), modificationTimeIn.count(), false});
             const ExitCode exitCode = job.runSynchronously();
             CPPUNIT_ASSERT_GREATER(int64_t{-1}, job.size());
             CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
@@ -693,7 +705,8 @@ void TestNetworkJobs::testDownload() {
 
         // Download an invalid alias (not imported by the desktop app)
         {
-            DownloadJob job(nullptr, _driveDbId, testAliasDnDRemoteId, localDestFilePath, 0, 0, 0, false);
+            DownloadJob job(nullptr, _cacheDirectory,
+                            DownloadJob::FileDownloadInfo{_driveDbId, testAliasDnDRemoteId, localDestFilePath, 0, 0, 0, false});
             const ExitCode exitCode = job.runSynchronously();
             CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
         }
@@ -712,7 +725,9 @@ void TestNetworkJobs::testDownload() {
 
         // Download an invalid alias (corrupted)
         {
-            DownloadJob job(nullptr, _driveDbId, testAliasCorruptedRemoteId, localDestFilePath, 0, 0, 0, false);
+            DownloadJob job(
+                    nullptr, _cacheDirectory,
+                    DownloadJob::FileDownloadInfo{_driveDbId, testAliasCorruptedRemoteId, localDestFilePath, 0, 0, 0, false});
             const ExitCode exitCode = job.runSynchronously();
             CPPUNIT_ASSERT(exitCode == ExitCode::SystemError);
         }
@@ -771,8 +786,9 @@ void TestNetworkJobs::testDownloadAborted() {
                 return ExitCode::Ok;
             });
 
-    std::shared_ptr<DownloadJob> job =
-            std::make_shared<DownloadJob>(vfs, _driveDbId, testBigFileRemoteId, localDestFilePath, 0, 0, 0, false);
+    std::shared_ptr<DownloadJob> job = std::make_shared<DownloadJob>(
+            vfs, _cacheDirectory,
+            DownloadJob::FileDownloadInfo{_driveDbId, testBigFileRemoteId, localDestFilePath, 0, 0, 0, false});
     SyncJobManagerSingleton::instance()->queueAsyncJob(job);
 
     int counter = 0;

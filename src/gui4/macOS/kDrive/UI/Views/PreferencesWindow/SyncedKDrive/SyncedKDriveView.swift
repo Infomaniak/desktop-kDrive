@@ -30,7 +30,7 @@ struct SyncedKDriveView: View {
     @State private var mainSynchroMode = UISynchroMode.storeOnline
     @State private var advancedSynchros = [UISynchro]()
 
-    @State private var isShowingRemoveSynchroConfirmation = false
+    @State private var synchroToDelete: UISynchro?
     @State private var isShowingGenericError = false
 
     var body: some View {
@@ -92,7 +92,7 @@ struct SyncedKDriveView: View {
 
                 Section {
                     Button(role: .destructive) {
-                        isShowingRemoveSynchroConfirmation = true
+                        synchroToDelete = mainSynchro
                     } label: {
                         Text(KDriveLocalizable.buttonRemoveSync)
                             .foregroundStyle(.red)
@@ -124,8 +124,8 @@ struct SyncedKDriveView: View {
         .task {
             await fetchSynchros()
         }
-        .sheet(isPresented: $isShowingRemoveSynchroConfirmation) {
-            RemoveSynchroConfirmationView(synchroDbId: mainSynchro?.dbId ?? 0, completion: handleSynchroIsDeleted)
+        .sheet(item: $synchroToDelete) { synchro in
+            RemoveSynchroConfirmationView(synchroDbId: synchro.dbId, completion: handleSynchroIsDeleted)
         }
         .genericErrorAlert(isPresented: $isShowingGenericError)
     }

@@ -20,6 +20,7 @@
 
 #include "syncenginelib.h"
 #include "db/syncdb.h"
+#include "io/cachedirectory.h"
 #include "progress/progressinfo.h"
 #include "syncpal/conflictingfilescorrector.h"
 #include "update_detection/file_system_observer/snapshot/livesnapshot.h"
@@ -339,10 +340,14 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
             (void) _localOperationSet->removeOp(localNodeId, operationType);
         }
 
+<<<<<<< feat/Sentry-message-for-mass-destructions
         // Local delete operations monitoring
         uint64_t nbOfLocalDeleteOpsPropagated() const { return _nbOfLocalDeleteOpsPropagated; }
         void incrementNbOfLocalDeleteOpsPropagated() { _nbOfLocalDeleteOpsPropagated++; }
         void resetNbOfLocalDeleteOpsPropagated() { _nbOfLocalDeleteOpsPropagated = 0; }
+=======
+        [[nodiscard]] std::shared_ptr<CacheDirectory> cacheDirectory() const { return _cacheDirectory; }
+>>>>>>> develop
 
     protected:
         virtual void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
@@ -432,6 +437,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void setUpConflictingFilesCorrector(const std::vector<Error> &keepLocalErrorList,
                                             const std::vector<Error> &keepRemoteErrorList);
         log4cplus::Logger _logger;
+
+        std::shared_ptr<CacheDirectory> _cacheDirectory;
 
         // TODO : Refactor to not use friend classes (should be reserved for test purpose).
         friend class SyncPalWorker;

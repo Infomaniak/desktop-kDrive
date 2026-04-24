@@ -173,7 +173,6 @@ namespace Infomaniak.kDrive
                 if (options.HasFlag(CreateWindowOptions.CancelOnboarding) || !StartOnboardingIfNeeded())
                 {
                     CurrentWindow = new MainWindow();
-                    CurrentWindow.Closed += CurrentWindow_Closed;
                 }
                 else
                 {
@@ -183,15 +182,6 @@ namespace Infomaniak.kDrive
 
             if (options.HasFlag(CreateWindowOptions.Foreground))
                 Utility.BringCurrentWindowToFront();
-        }
-
-        private void CurrentWindow_Closed(object sender, WindowEventArgs e)
-        {
-            if (sender is Window window && window == CurrentWindow)
-            {
-                e.Handled = true;
-                window.Hide();
-            }
         }
 
         async void OnProcessExit(object? sender, EventArgs e)
@@ -229,8 +219,10 @@ namespace Infomaniak.kDrive
                     Logger.Log(Logger.Level.Info, "OnBoardingWindow is already open, skipping StartOnboarding call.");
                     return;
                 }
-                CurrentWindow?.Close();
+
+                var previousWindow = CurrentWindow;
                 CurrentWindow = new OnBoarding.OnBoardingWindow();
+                previousWindow?.Close();
 
                 ((OnBoarding.OnBoardingWindow)CurrentWindow).Closed += OnOnboardingClosed;
                 Utility.BringCurrentWindowToFront();
@@ -263,7 +255,6 @@ namespace Infomaniak.kDrive
         public static void ExitApplication()
         {
             Logger.Log(Logger.Level.Info, "Exiting application.");
-            (Current as App)!.CurrentWindow?.Close();
             Environment.Exit(0);
         }
 

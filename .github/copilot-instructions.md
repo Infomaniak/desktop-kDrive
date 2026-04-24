@@ -20,3 +20,14 @@ Before proposing code or review comments:
 - Do not introduce new frameworks/patterns without clear repo precedent.
 - For non-trivial logic changes, suggest or add corresponding tests in `test/`.
 - Do not invent secrets, tokens, URLs, or environment values.
+
+## Pull Request & Commit Rules (MANDATORY)
+When the user asks to create a PR or prepare PR content:
+1. Use English only for PR title and PR description.
+2. Create the PR as Draft by default.
+3. Use `develop` as the default target branch unless the user explicitly asks for a different base branch.
+
+When proposing commit messages:
+1. Use English only.
+2. Use Conventional Commits format: `<type>(<scope>): <subject>`.
+3. Allowed types: `feat`, `fix`, `refactor`, `perf`, `test`, `docs`, `chore`, `ci`.

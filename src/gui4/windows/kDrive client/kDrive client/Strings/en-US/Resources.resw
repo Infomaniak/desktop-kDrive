@@ -6,7 +6,7 @@
   Locale: en, English
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 16 Apr 2026 16:32:33 +0200 
+  Exported at: Wed, 22 Apr 2026 11:14:52 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -150,8 +150,8 @@ You can access your advanced syncs from the drive picker on the home page.</valu
     <value>Available offline</value> 
   </data> 
   <data name="availableOfflineDescription" xml:space="preserve"> 
-    <value>Your files are copied to your computer.
-You can open them at any time, even without an internet connection.</value> 
+    <value>Your local files remain accessible.
+Synchronization will automatically resume as soon as you are reconnected.</value> 
   </data> 
   <data name="backErrorDriveAsleepDescription" xml:space="preserve"> 
     <value>You can wake it up from the web interface.</value> 
@@ -440,7 +440,6 @@ You can open them at any time, even without an internet connection.</value>
   </data> 
   <data name="dataManagementDescription" xml:space="preserve"> 
     <value>You can customize the usage and operational data collected by Infomaniak to fix bugs and improve the application. Both tools used are hosted and managed exclusively by us.
-
 
 The source code of this application can be verified, the information collected is anonymous and your personal information remains strictly confidential and is never shared with third parties.</value> 
   </data> 
