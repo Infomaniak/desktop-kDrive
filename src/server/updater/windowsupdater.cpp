@@ -17,6 +17,16 @@
  */
 
 #include <QProcess>
+
+#include <algorithm>
+#include <array>
+#include <cstddef>
+#include <cstdint>
+#include <format>
+#include <fstream>
+
+#include <openssl/sha.h>
+
 #include "windowsupdater.h"
 #include "log/log.h"
 #include "jobs/network/directdownloadjob.h"
@@ -173,7 +183,7 @@ std::streamsize WindowsUpdater::getExpectedInstallerSize(const std::string &down
 }
 
 bool WindowsUpdater::verifyFileChecksum(const SyncPath &filepath) {
-    const std::string &expectedChecksum = versionInfo(_currentChannel).checksum;
+    const std::string &expectedChecksum = CommonUtility::toLower(versionInfo(_currentChannel).checksum);
 
     auto cleanupAndFail = [&](const std::string &reason) {
         auto ioError = IoError::Success;
@@ -199,13 +209,13 @@ bool WindowsUpdater::verifyFileChecksum(const SyncPath &filepath) {
     }
 
     // Compute actual checksum
-    std::string actualChecksum = computeFileChecksum(filepath);
+    const std::string actualChecksum = CommonUtility::toLower(computeFileChecksum(filepath));
     if (actualChecksum.empty()) {
         LOGW_ERROR(Log::instance()->getLogger(), L"Failed to compute file checksum.");
         return cleanupAndFail("computeFailed");
     }
 
-    // Verify match
+    // verify checksum
     if (actualChecksum != expectedChecksum) {
         LOGW_ERROR(Log::instance()->getLogger(), L"Checksum mismatch! Expected: " << CommonUtility::s2ws(expectedChecksum)
                                                                                   << L", Got: "
