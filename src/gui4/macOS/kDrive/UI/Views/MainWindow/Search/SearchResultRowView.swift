@@ -17,6 +17,7 @@
  */
 
 import kDriveCoreUI
+import kDriveResources
 import SwiftUI
 
 struct SearchResultRowView: View {
@@ -25,7 +26,7 @@ struct SearchResultRowView: View {
     @State private var isHovered = false
 
     private var openInBrowserTooltip: String {
-        "This file is not available locally and will be opened in your browser"
+        KDriveLocalizable.searchResultOpenInBrowserTooltip
     }
 
     var body: some View {
