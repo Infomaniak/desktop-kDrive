@@ -593,6 +593,7 @@ void DebuggingDialog::setNeedToSave(bool value) {
 void DebuggingDialog::updateExtendedLogCheckBoxState() {
     if (CommonUtility::envVarValue("KDRIVE_FORCE_EXTENDED_LOG") == "1") {
         _extendedLogCheckBox->setDisabled(true);
+        _extendedLogCheckBox->setChecked(true);
         _extendedLogCheckBox->setToolTip(
                 tr("The extended full log is activated through the KDRIVE_FORCE_EXTENDED_LOG environment variable. Set it to "
                    "0 to disable it."));
