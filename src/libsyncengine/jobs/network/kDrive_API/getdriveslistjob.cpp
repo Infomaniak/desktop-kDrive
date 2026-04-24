@@ -29,6 +29,7 @@ const std::string driveKey = "drive";
 GetDrivesListJob::GetDrivesListJob(const UserDbId userDbId) :
     AbstractTokenNetworkJob(ApiType::DriveByUser, userDbId, 0, 0) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
+    _apiVersion = 2;
 }
 
 void GetDrivesListJob::setQueryParameters(Poco::URI &uri) {
@@ -40,6 +41,7 @@ void GetDrivesListJob::setQueryParameters(Poco::URI &uri) {
 std::string GetDrivesListJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
     str += "/users/current/drives";
+
     return str;
 }
 

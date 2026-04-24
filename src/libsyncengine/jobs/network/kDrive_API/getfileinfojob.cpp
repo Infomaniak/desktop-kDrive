@@ -26,10 +26,10 @@
 
 namespace KDC {
 
-GetFileInfoJob::GetFileInfoJob(const UserDbId userDbId, const DriveId driveId, const RemoteNodeId &nodeId) :
+GetFileInfoJob::GetFileInfoJob(const UserDbId userDbId, const DriveId driveId, RemoteNodeId nodeId) :
     AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, driveId),
 
-    _nodeId(nodeId) {
+    _nodeId(std::move(nodeId)) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _apiVersion = 3;
     _trials = 1;
@@ -41,9 +41,9 @@ GetFileInfoJob::GetFileInfoJob(const UserDbId userDbId, const DriveId driveId, c
 }
 
 
-GetFileInfoJob::GetFileInfoJob(const DriveDbId driveDbId, const RemoteNodeId &nodeId) :
+GetFileInfoJob::GetFileInfoJob(const DriveDbId driveDbId, RemoteNodeId nodeId) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
-    _nodeId(nodeId) {
+    _nodeId(std::move(nodeId)) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _apiVersion = 3;
     _trials = 1;
@@ -114,6 +114,7 @@ std::string GetFileInfoJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
     str += "/files/";
     str += _nodeId;
+
     return str;
 }
 

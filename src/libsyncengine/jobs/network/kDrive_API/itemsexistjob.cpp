@@ -27,21 +27,25 @@ namespace KDC {
 ItemsExistJob::ItemsExistJob(const DriveDbId driveDbId, const NodeSet &ids) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
+    _apiVersion = 2;
     for (const auto &id: ids) {
         (void) _nodeExistenceMap.try_emplace(id, false);
     }
 }
 
-bool ItemsExistJob::exists(const NodeId &id, IoError &ioError) {
+bool ItemsExistJob::exists(const RemoteNodeId &id, IoError &ioError) {
     if (!_nodeExistenceMap.contains(id)) {
         ioError = IoError::InvalidArgument;
         return false;
     }
+
     if (_nodeExistenceMap[id]) {
         ioError = IoError::Success;
         return true;
     }
+
     ioError = IoError::NoSuchFileOrDirectory;
+
     return false;
 }
 
@@ -71,6 +75,7 @@ std::string ItemsExistJob::getSpecificUrl() {
 
 ExitInfo ItemsExistJob::handleResponse(std::istream &is) {
     if (const auto exitCode = AbstractTokenNetworkJob::handleResponse(is); !exitCode) return exitCode;
+
     if (!jsonRes()) {
         LOG_ERROR(_logger, "No valid JSON object.");
         return {ExitCode::BackError, ExitCause::MissingReplyData};
@@ -81,6 +86,7 @@ ExitInfo ItemsExistJob::handleResponse(std::istream &is) {
         LOG_ERROR(_logger, "Missing data array, key:" << dataKey);
         return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
+
     for (auto it = dataArray->begin(); it != dataArray->end(); ++it) {
         const auto obj = it->extract<Poco::JSON::Object::Ptr>();
         NodeId nodeId;
@@ -100,6 +106,7 @@ ExitInfo ItemsExistJob::handleResponse(std::istream &is) {
 
         _nodeExistenceMap[nodeId] = exists;
     }
+
     return ExitCode::Ok;
 }
 

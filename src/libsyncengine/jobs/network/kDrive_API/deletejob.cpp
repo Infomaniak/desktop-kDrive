@@ -28,23 +28,22 @@
 
 namespace KDC {
 
-DeleteJob::DeleteJob(const DriveDbId driveDbId, const NodeId &remoteItemId, const NodeId &localItemId,
-                     const SyncPath &absoluteLocalFilepath, const NodeType nodeType) :
+DeleteJob::DeleteJob(const DriveDbId driveDbId, RemoteNodeId remoteItemId, RemoteNodeId localItemId,
+                     SyncPath absoluteLocalFilepath, const NodeType nodeType) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
-    _remoteItemId(remoteItemId),
-    _localItemId(localItemId),
-    _absoluteLocalFilepath(absoluteLocalFilepath),
+    _remoteItemId(std::move(remoteItemId)),
+    _localItemId(std::move(localItemId)),
+    _absoluteLocalFilepath(std::move(absoluteLocalFilepath)),
     _nodeType(nodeType) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_DELETE;
+    _apiVersion = 2;
 }
 
-DeleteJob::DeleteJob(const DriveDbId driveDbId, const NodeId &remoteItemId) :
-    DeleteJob(driveDbId, remoteItemId, {}, {}, NodeType::Unknown) {}
+DeleteJob::DeleteJob(const DriveDbId driveDbId, RemoteNodeId remoteItemId) :
+    DeleteJob(driveDbId, std::move(remoteItemId), RemoteNodeId{}, SyncPath{}, NodeType::Unknown) {}
 
 ExitInfo DeleteJob::canRun() {
-    if (bypassCheck()) {
-        return ExitCode::Ok;
-    }
+    if (bypassCheck()) return ExitCode::Ok;
 
     if (_remoteItemId.empty() || _localItemId.empty() || _absoluteLocalFilepath.empty()) {
         LOGW_WARN(_logger, L"Error in DeleteJob::canRun: missing required input, remote ID:"
@@ -53,7 +52,7 @@ ExitInfo DeleteJob::canRun() {
         return ExitCode::DataError;
     }
 
-    // The item must be absent on local replica for the job to run
+    // The item must be absent on local replica for the job to run.
     bool existsWithSameId = false;
     NodeId otherNodeId;
     IoError ioError = IoError::Success;
@@ -62,9 +61,8 @@ ExitInfo DeleteJob::canRun() {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_absoluteLocalFilepath, ioError));
         return ExitCode::SystemError;
     }
-    if (ioError == IoError::AccessDenied) {
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
-    }
+
+    if (ioError == IoError::AccessDenied) return {ExitCode::SystemError, ExitCause::FileAccessError};
 
     if (existsWithSameId) {
         FileStat filestat;
@@ -76,9 +74,13 @@ ExitInfo DeleteJob::canRun() {
 
         if (ioError == IoError::NoSuchFileOrDirectory) {
             LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_absoluteLocalFilepath));
+
             return {ExitCode::DataError, ExitCause::InvalidSnapshot};
-        } else if (ioError == IoError::AccessDenied) {
+        }
+
+        if (ioError == IoError::AccessDenied) {
             LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_absoluteLocalFilepath));
+
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
 
@@ -86,12 +88,16 @@ ExitInfo DeleteJob::canRun() {
             // The nodeId has been reused by a new item.
             LOGW_DEBUG(_logger,
                        L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath) << L" has been reused by a new item.");
+
             return ExitCode::Ok;
         }
 
         LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath) << L" still exists on local replica.");
+
         return {ExitCode::DataError, ExitCause::FileExists};
-    } else if (!otherNodeId.empty() && _localItemId != otherNodeId) {
+    }
+
+    if (!otherNodeId.empty() && _localItemId != otherNodeId) {
         LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath)
                                       << L" exists on local replica with another ID (" << CommonUtility::s2ws(_localItemId)
                                       << L"/" << CommonUtility::s2ws(otherNodeId) << L")");
@@ -108,6 +114,7 @@ std::string DeleteJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
     str += "/files/";
     str += _remoteItemId;
+
     return str;
 }
 
