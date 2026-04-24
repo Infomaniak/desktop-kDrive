@@ -67,6 +67,15 @@ struct SearchSheetView: View {
                 TextField("Search...", text: $viewModel.searchText)
                     .textFieldStyle(.plain)
                     .focused($isSearchFieldFocused)
+                if hasSearchQuery {
+                    Button {
+                        viewModel.searchText = ""
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(ColorToken.Text.tertiary.asColor)
+                    }
+                    .buttonStyle(.plain)
+                }
             }
             .padding(.horizontal, AppPadding.padding12)
             .frame(height: 36)
