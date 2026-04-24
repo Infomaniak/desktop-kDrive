@@ -33,7 +33,7 @@
             <location filename="../src/gui/aboutdialog.cpp" line="162" />
             <location filename="../src/gui/aboutdialog.cpp" line="171" />
             <source>Unable to open folder %1.</source>
-            <translation>Nao foi possivel abrir a pasta %1.</translation>
+            <translation>Não foi possível abrir a pasta %1.</translation>
         </message>
         <message>
             <location filename="../src/gui/aboutdialog.cpp" line="132" />
@@ -46,7 +46,7 @@
         <message>
             <location filename="../src/gui/abstractfileitemwidget.cpp" line="177" />
             <source>Unable to open folder path %1.</source>
-            <translation>Nao foi possivel abrir o caminho da pasta %1.</translation>
+            <translation>Não foi possível abrir o caminho da pasta %1.</translation>
         </message>
     </context>
     <context>
@@ -69,7 +69,7 @@
         <message>
             <location filename="../src/gui/adddriveconfirmationwidget.cpp" line="130" />
             <source>PARAMETERS</source>
-            <translation>PARAMETROS</translation>
+            <translation>PARÂMETROS</translation>
         </message>
         <message>
             <location filename="../src/gui/adddriveconfirmationwidget.cpp" line="138" />
@@ -140,7 +140,7 @@
         <message>
             <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="207" />
             <source>Unable to open link %1.</source>
-            <translation>Nao foi possivel abrir a ligacao %1.</translation>
+            <translation>Não foi possível abrir a ligação %1.</translation>
         </message>
         <message>
             <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="112" />
@@ -197,7 +197,7 @@ Selecione outra pasta. Se continuar, o Lite Sync será desativado.&lt;br&gt;
         <message>
             <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="377" />
             <source>Unable to open link %1.</source>
-            <translation>Nao foi possivel abrir a ligacao %1.</translation>
+            <translation>Não foi possível abrir a ligação %1.</translation>
         </message>
         <message>
             <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="246" />
@@ -477,7 +477,7 @@ Selecione outra pasta. Se continuar, o Lite Sync será desativado.&lt;br&gt;
             <location filename="../src/gui/clientgui.cpp" line="1427" />
             <source>Preferences</source>
             <translatorcomment>Préférences</translatorcomment>
-            <translation>Preferencias</translation>
+            <translation>Preferências</translation>
         </message>
         <message>
             <location filename="../src/gui/clientgui.cpp" line="1428" />
@@ -547,7 +547,7 @@ Selecione outra pasta. Se continuar, o Lite Sync será desativado.&lt;br&gt;
         <message>
             <location filename="../src/gui/clientgui.cpp" line="849" />
             <source>Unable to open folder path %1.</source>
-            <translation>Nao foi possivel abrir o caminho da pasta %1.</translation>
+            <translation>Não foi possível abrir o caminho da pasta %1.</translation>
         </message>
         <message>
             <location filename="../src/gui/clientgui.cpp" line="116" />
@@ -897,7 +897,7 @@ Selecione outra pasta. Se continuar, o Lite Sync será desativado.&lt;br&gt;
             <location filename="../src/gui/debuggingdialog.cpp" line="698" />
             <location filename="../src/gui/debuggingdialog.cpp" line="704" />
             <source>Unable to open folder %1.</source>
-            <translation>Nao foi possivel abrir a pasta %1.</translation>
+            <translation>Não foi possível abrir a pasta %1.</translation>
         </message>
         <message>
             <location filename="../src/gui/debuggingdialog.cpp" line="711" />
@@ -1261,7 +1261,7 @@ Selecione outra pasta. Se continuar, o Lite Sync será desativado.&lt;br&gt;
             <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="67" />
             <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="73" />
             <source>Unable to open link %1.</source>
-            <translation>Nao foi possivel abrir a ligacao %1.</translation>
+            <translation>Não foi possível abrir a ligação %1.</translation>
         </message>
         <message>
             <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="122" />
@@ -1398,7 +1398,7 @@ Selecione outra pasta. Se continuar, o Lite Sync será desativado.&lt;br&gt;
         <message>
             <location filename="../src/gui/genericerroritemwidget.cpp" line="85" />
             <source>Unable to open folder path %1.</source>
-            <translation>Nao foi possivel abrir o caminho da pasta %1.</translation>
+            <translation>Não foi possível abrir o caminho da pasta %1.</translation>
         </message>
     </context>
     <context>
@@ -1522,7 +1522,7 @@ Selecione outra pasta. Se continuar, o Lite Sync será desativado.&lt;br&gt;
         <message>
             <location filename="../src/gui/localfolderdialog.cpp" line="292" />
             <source>Unable to open link %1.</source>
-            <translation>Nao foi possivel abrir a ligacao %1.</translation>
+            <translation>Não foi possível abrir a ligação %1.</translation>
         </message>
     </context>
     <context>
@@ -1543,7 +1543,7 @@ Selecione outra pasta. Se continuar, o Lite Sync será desativado.&lt;br&gt;
         <message>
             <location filename="../src/gui/mainmenubarwidget.cpp" line="115" />
             <source>Preferences</source>
-            <translation>Preferencias</translation>
+            <translation>Preferências</translation>
         </message>
         <message>
             <location filename="../src/gui/mainmenubarwidget.cpp" line="116" />
@@ -1556,7 +1556,7 @@ Selecione outra pasta. Se continuar, o Lite Sync será desativado.&lt;br&gt;
         <message>
             <location filename="../src/gui/parametersdialog.cpp" line="1082" />
             <source>Unable to open folder path %1.</source>
-            <translation>Nao foi possivel abrir o caminho da pasta %1.</translation>
+            <translation>Não foi possível abrir o caminho da pasta %1.</translation>
         </message>
         <message>
             <location filename="../src/gui/parametersdialog.cpp" line="1096" />
@@ -1961,7 +1961,7 @@ Por favor, utilize o seguinte link para enviar os registos para o apoio técnico
         <message>
             <location filename="../src/gui/preferencesmenubarwidget.cpp" line="64" />
             <source>Preferences</source>
-            <translation>Preferencias</translation>
+            <translation>Preferências</translation>
         </message>
     </context>
     <context>
@@ -2024,12 +2024,12 @@ Por favor, utilize o seguinte link para enviar os registos para o apoio técnico
         <message>
             <location filename="../src/gui/preferenceswidget.cpp" line="466" />
             <source>Unable to open folder %1.</source>
-            <translation>Nao foi possivel abrir a pasta %1.</translation>
+            <translation>Não foi possível abrir a pasta %1.</translation>
         </message>
         <message>
             <location filename="../src/gui/preferenceswidget.cpp" line="478" />
             <source>Unable to open link %1.</source>
-            <translation>Nao foi possivel abrir a ligacao %1.</translation>
+            <translation>Não foi possível abrir a ligação %1.</translation>
         </message>
         <message>
             <location filename="../src/gui/preferenceswidget.cpp" line="483" />
@@ -2547,7 +2547,7 @@ Por favor, utilize o seguinte link para enviar os registos para o apoio técnico
         <message>
             <location filename="../src/gui/synthesispopover.cpp" line="1161" />
             <source>Unable to open link %1.</source>
-            <translation>Nao foi possivel abrir a ligacao %1.</translation>
+            <translation>Não foi possível abrir a ligação %1.</translation>
         </message>
         <message>
             <location filename="../src/gui/synthesispopover.cpp" line="1173" />
@@ -3007,7 +3007,7 @@ Por favor, utilize o seguinte link para enviar os registos para o apoio técnico
         <message>
             <location filename="../src/gui/guiutility.cpp" line="336" />
             <source>Sync in progress (%1 of %2)</source>
-            <translation>Sincronização em curso (1% de 2%)</translation>
+            <translation>Sincronização em curso (%1 de %2)</translation>
         </message>
         <message>
             <location filename="../src/gui/guiutility.cpp" line="340" />
