@@ -19,7 +19,7 @@
 import Foundation
 import OrderedCollections
 
-public struct UISynchro: Sendable, Equatable, Hashable {
+public struct UISynchro: Sendable, Equatable, Hashable, Identifiable {
     public typealias ID = Int
 
     public var id: ID {
