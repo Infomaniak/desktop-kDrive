@@ -23,16 +23,15 @@
 
 namespace KDC {
 
-GetSizeJob::GetSizeJob(const UserDbId userDbId, const DriveId driveId, const NodeId &nodeId) :
+GetSizeJob::GetSizeJob(const UserDbId userDbId, const DriveId driveId, RemoteNodeId nodeId) :
     AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, driveId),
-    _nodeId(nodeId),
-    _size(0) {
+    _nodeId(std::move(nodeId)) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
-GetSizeJob::GetSizeJob(const DriveDbId driveDbId, const NodeId &nodeId) :
+GetSizeJob::GetSizeJob(const DriveDbId driveDbId, RemoteNodeId nodeId) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
-    _nodeId(nodeId) {
+    _nodeId(std::move(nodeId)) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
@@ -58,6 +57,7 @@ ExitInfo GetSizeJob::handleError(const std::string &replyBody, const Poco::URI &
         // Access to the directory is forbidden
         return ExitCode::Ok;
     }
+
     return AbstractTokenNetworkJob::handleError(replyBody, uri);
 }
 
@@ -66,6 +66,7 @@ std::string GetSizeJob::getSpecificUrl() {
     str += "/files/";
     str += _nodeId;
     str += "/sizes";
+
     return str;
 }
 

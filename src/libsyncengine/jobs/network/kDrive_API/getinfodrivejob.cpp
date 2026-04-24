@@ -33,11 +33,13 @@ static const std::string packIsFreeKey = "is_free";
 GetInfoDriveJob::GetInfoDriveJob(const UserDbId userDbId, const DriveId driveId) :
     AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, driveId) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
+    _apiVersion = 2;
 }
 
 GetInfoDriveJob::GetInfoDriveJob(const DriveDbId driveDbId) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
+    _apiVersion = 2;
 }
 
 ExitInfo GetInfoDriveJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
@@ -58,42 +60,31 @@ ExitInfo GetInfoDriveJob::handleJsonResponse(const std::string &replyBody) {
         return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
-    if (!JsonParserUtility::extractValue(dataObj, nameKey, _name)) {
-        return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
+    if (!JsonParserUtility::extractValue(dataObj, nameKey, _name)) return {ExitCode::BackError, ExitCause::MissingReplyData};
 
-    if (!JsonParserUtility::extractValue(dataObj, sizeKey, _size)) {
-        return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
+    if (!JsonParserUtility::extractValue(dataObj, sizeKey, _size)) return {ExitCode::BackError, ExitCause::MissingReplyData};
 
-    if (!JsonParserUtility::extractValue(dataObj, accountAdminKey, _isAdmin)) {
+    if (!JsonParserUtility::extractValue(dataObj, accountAdminKey, _isAdmin))
         return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
 
-    if (Poco::JSON::Object::Ptr prefObj = dataObj->getObject(preferencesKey)) { // Not mandatory
+    if (Poco::JSON::Object::Ptr prefObj = dataObj->getObject(preferencesKey)) // Not mandatory
         (void) JsonParserUtility::extractValue(prefObj, colorKey, _colorHex, false);
-    }
 
-    if (!JsonParserUtility::extractValue(dataObj, accountIdKey, _accountId)) {
+    if (!JsonParserUtility::extractValue(dataObj, accountIdKey, _accountId))
         return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
 
     // Non DB attributes
-    if (!JsonParserUtility::extractValue(dataObj, inMaintenanceKey, _isInMaintenance)) {
+    if (!JsonParserUtility::extractValue(dataObj, inMaintenanceKey, _isInMaintenance))
         return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
 
-    if (_isInMaintenance) { // Not mandatory
+    if (_isInMaintenance) // Not mandatory
         (void) JsonParserUtility::extractValue(dataObj, maintenanceAtKey, _maintenanceFrom, false);
-    }
 
-    if (!JsonParserUtility::extractValue(dataObj, isLockedKey, _isLocked)) {
+    if (!JsonParserUtility::extractValue(dataObj, isLockedKey, _isLocked))
         return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
 
-    if (!JsonParserUtility::extractValue(dataObj, usedSizeKey, _usedSize)) {
+    if (!JsonParserUtility::extractValue(dataObj, usedSizeKey, _usedSize))
         return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
 
     if (Poco::JSON::Object::Ptr packObj = dataObj->getObject(packKey); packObj) { // Not mandatory
         uint64_t packId = 0;
