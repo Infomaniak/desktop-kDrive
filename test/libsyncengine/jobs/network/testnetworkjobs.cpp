@@ -782,6 +782,7 @@ void TestNetworkJobs::testDownloadAborted() {
 
     Utility::msleep(1000); // Wait 1sec
     job.reset();
+
     CPPUNIT_ASSERT(!std::filesystem::exists(localDestFilePath));
 }
 
@@ -1153,8 +1154,8 @@ void TestNetworkJobs::testDuplicateRenameMove() {
 void TestNetworkJobs::testRename() {
     // Rename
     const SyncName filename = Str("test_rename_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()) + Str(".txt");
-    RenameJob renamejob(_driveDbId, testFileRemoteRenameId, filename);
-    renamejob.runSynchronously();
+    RenameJob reNameJob(_driveDbId, testFileRemoteRenameId, filename);
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), reNameJob.runSynchronously());
 
     // Check the name has changed
     GetFileInfoJob fileInfoJob(_driveDbId, testFileRemoteRenameId);
