@@ -44,26 +44,30 @@ class ServiceActionTracker : public QObject {
         Q_OBJECT
 
     public:
+        using ServiceKey = QString;
+        using ActionKey = QString;
+        using ScopeId = qint64;
+
         explicit ServiceActionTracker(QObject *parent = nullptr);
 
-        Q_INVOKABLE [[nodiscard]] bool isActionPending(const QString &serviceKey, const QString &actionKey,
-                                                       qint64 scopeId = 0) const;
-        Q_INVOKABLE [[nodiscard]] bool isServicePending(const QString &serviceKey) const;
-        void beginAction(const QString &serviceKey, const QString &actionKey, qint64 scopeId = 0);
-        void endAction(const QString &serviceKey, const QString &actionKey, qint64 scopeId = 0);
+        Q_INVOKABLE [[nodiscard]] bool isActionPending(const ServiceKey &serviceKey, const ActionKey &actionKey,
+                                                       ScopeId scopeId = 0) const;
+        Q_INVOKABLE [[nodiscard]] bool isServicePending(const ServiceKey &serviceKey) const;
+        void beginAction(const ServiceKey &serviceKey, const ActionKey &actionKey, ScopeId scopeId = 0);
+        void endAction(const ServiceKey &serviceKey, const ActionKey &actionKey, ScopeId scopeId = 0);
 
     signals:
-        void servicePendingChanged(const QString &serviceKey, bool pending);
-        void actionPendingChanged(const QString &serviceKey, const QString &actionKey, qint64 scopeId, bool pending);
+        void servicePendingChanged(const ServiceKey &serviceKey, bool pending);
+        void actionPendingChanged(const ServiceKey &serviceKey, const ActionKey &actionKey, ScopeId scopeId, bool pending);
 
     private:
         struct ActionPendingState {
-                QHash<qint64, int32_t> pendingCountByScope;
+                QHash<ScopeId, int32_t> pendingCountByScope;
                 int32_t totalPendingCount{0};
         };
 
-        QHash<QString, QHash<QString, ActionPendingState>> _pendingByServiceAndAction;
-        QHash<QString, int32_t> _pendingCountByService;
+        QHash<ServiceKey, QHash<ActionKey, ActionPendingState>> _pendingByServiceAndAction;
+        QHash<ServiceKey, int32_t> _pendingCountByService;
 };
 
 } // namespace KDC
