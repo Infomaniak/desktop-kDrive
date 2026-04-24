@@ -224,7 +224,7 @@ Veuillez sélectionner un autre dossier. Si vous continuez, Lite Sync sera désa
     </message>
     <message>
         <location filename="../src/gui/adddriveloginwidget.cpp" line="119"/>
-        <source>An error occurred during authentication. Please, close the login window and try again.&lt;br&gt;If the error persists, contact our support team.</source>
+        <source>An error occurred during authentication. Please close the login window and try again.&lt;br&gt;If the error persists, contact our support team.</source>
         <translation>Une erreur est survenue pendant l&apos;authentification. Veuillez fermer la fenêtre de connexion et réessayer.&lt;br&gt;Si l&apos;erreur persiste, contactez notre équipe de support.</translation>
     </message>
     <message>
