@@ -55,7 +55,7 @@ GetFileInfoJob::GetFileInfoJob(const DriveDbId driveDbId, RemoteNodeId nodeId) :
 }
 
 ExitInfo GetFileInfoJob::handleResponse(std::istream &is) {
-    if (const auto exitCode = AbstractTokenNetworkJob::handleResponse(is); !exitCode) return exitCode;
+    if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) return exitInfo;
 
     if (!jsonRes()) return ExitCode::Ok;
 
