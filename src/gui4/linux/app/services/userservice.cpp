@@ -66,12 +66,10 @@ void UserService::loadUsers() {
 }
 
 void UserService::loadAvailableDrives(const qint64 userDbId) {
-    const auto requestedUserDbId = static_cast<UserDbId>(userDbId);
     beginAction(actionLoadAvailableDrives, userDbId);
 
     _commService.requestUserAvailableDrives(
-            requestedUserDbId,
-            [this, userDbId, requestedUserDbId](const ExitInfo &exitInfo, const std::vector<DriveAvailableInfo> &list) {
+            userDbId, [this, userDbId](const ExitInfo &exitInfo, const std::vector<DriveAvailableInfo> &list) {
                 endAction(actionLoadAvailableDrives, userDbId);
                 if (_appCache.selectedUserDbId() != userDbId) {
                     return;
@@ -90,7 +88,7 @@ void UserService::deleteUser(const qint64 userDbId) {
     beginAction(actionDeleteUser, userDbId);
 
     // Cache consistency is signal-driven: we wait for userRemoved/userUpdated pushes.
-    _commService.requestDeleteUser(static_cast<UserDbId>(userDbId), [this, userDbId](const ExitInfo &exitInfo) {
+    _commService.requestDeleteUser(userDbId, [this, userDbId](const ExitInfo &exitInfo) {
         endAction(actionDeleteUser, userDbId);
         if (!exitInfo) {
             notifyRequestFailure(exitInfo, RequestNum::USER_DELETE);
@@ -115,7 +113,7 @@ void UserService::requestLoginToken(const QString &code, const QString &codeVeri
             return;
         }
 
-        emit loginTokenSucceeded(static_cast<qint64>(result.userDbId));
+        emit loginTokenSucceeded(result.userDbId);
     });
 }
 
