@@ -119,7 +119,7 @@ struct SearchSheetView: View {
         if hasSearchQuery {
             IKContentUnavailableView(
                 image: KDriveResources.mountainsTreesSun.swiftUIImage,
-                title: "No results",
+                title: KDriveLocalizable.noResults,
                 subtitle: "Try a different search term"
             )
         } else {
