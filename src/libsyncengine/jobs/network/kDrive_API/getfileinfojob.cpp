@@ -31,7 +31,7 @@ GetFileInfoJob::GetFileInfoJob(const UserDbId userDbId, const DriveId driveId, R
 
     _nodeId(std::move(nodeId)) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
-    _apiVersion = 3;
+
     _trials = 1;
 
     if (const auto exitInfo = ApiTranslator::translateV2ToV3(userDbId, driveId, _nodeId); !exitInfo) {
@@ -45,7 +45,7 @@ GetFileInfoJob::GetFileInfoJob(const DriveDbId driveDbId, RemoteNodeId nodeId) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
     _nodeId(std::move(nodeId)) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
-    _apiVersion = 3;
+
     _trials = 1;
 
     if (const auto exitInfo = ApiTranslator::translateV2ToV3(userDbId(), driveId(), _nodeId); !exitInfo) {
