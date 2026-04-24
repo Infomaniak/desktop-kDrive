@@ -81,7 +81,7 @@ def fill_missing_translations(git_dir_path, language):
     
     
 
-languages = ["de", "es", "fr", "it", "sv", "pt"]
+languages = ["de", "es", "fr", "it", "sv", "pt", "pl"]
 
 for language in languages:
     fill_missing_translations(args.git_dir_path, language)

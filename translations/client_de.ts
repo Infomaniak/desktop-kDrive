@@ -2022,6 +2022,11 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         <translation>Portugiesisch</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="513"/>
+        <source>Polish</source>
+        <translation>Polnisch</translation>
+    </message>
+    <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="466"/>
         <source>Unable to open folder %1.</source>
         <translation>Ordner %1 kann nicht geöffnet werden.</translation>

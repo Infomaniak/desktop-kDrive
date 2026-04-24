@@ -111,6 +111,8 @@ Language MigrationParams::strToLanguage(QString lang) {
         return Language::Swedish;
     } else if (lang == "pt") {
         return Language::Portuguese;
+    } else if (lang == "pl") {
+        return Language::Polish;
     } else {
         return Language::Default;
     }

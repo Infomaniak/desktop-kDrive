@@ -2022,6 +2022,11 @@ Por favor, utilize o seguinte link para enviar os registos para o apoio técnico
             <translation>Português</translation>
         </message>
         <message>
+            <location filename="../src/gui/preferenceswidget.cpp" line="513" />
+            <source>Polish</source>
+            <translation>Polaco</translation>
+        </message>
+        <message>
             <location filename="../src/gui/preferenceswidget.cpp" line="466" />
             <source>Unable to open folder %1.</source>
             <translation>Não foi possível abrir a pasta %1.</translation>
