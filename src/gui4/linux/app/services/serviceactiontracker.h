@@ -62,12 +62,12 @@ class ServiceActionTracker : public QObject {
 
     private:
         struct ActionPendingState {
-                QHash<ScopeId, int32_t> pendingCountByScope;
-                int32_t totalPendingCount{0};
+                QHash<ScopeId, uint32_t> pendingCountByScope;
+                uint32_t totalPendingCount{0};
         };
 
         QHash<ServiceKey, QHash<ActionKey, ActionPendingState>> _pendingByServiceAndAction;
-        QHash<ServiceKey, int32_t> _pendingCountByService;
+        QHash<ServiceKey, uint32_t> _pendingCountByService;
 };
 
 } // namespace KDC
