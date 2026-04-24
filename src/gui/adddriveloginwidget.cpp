@@ -116,7 +116,9 @@ void AddDriveLoginWidget::onAuthorizationCodeReceived(const QString &code, const
     if (exitCode != ExitCode::Ok) {
         qCWarning(lcAddDriveLoginWidget()) << "Error in Requests::requestToken: code=" << exitCode;
 
-        CustomMessageBox msgBox(QMessageBox::Warning, tr("Token request failed: %1 - %2").arg(error, errorDescr),
+        CustomMessageBox msgBox(QMessageBox::Warning,
+                                tr("An error occurred during authentication. Please, close the login window and try again.<br>"
+                                   "If the error persists, contact our support team."),
                                 QMessageBox::Ok);
         (void) msgBox.exec();
 
