@@ -96,6 +96,7 @@ const QString CommonUtility::frenchCode = "fr";
 const QString CommonUtility::germanCode = "de";
 const QString CommonUtility::spanishCode = "es";
 const QString CommonUtility::italianCode = "it";
+const QString CommonUtility::swedishCode = "sv";
 
 static std::random_device rd;
 static std::default_random_engine gen(rd());
@@ -804,7 +805,8 @@ bool CommonUtility::languageCodeIsEnglish(const QString &languageCode) {
 }
 
 bool CommonUtility::isSupportedLanguage(const QString &languageCode) {
-    static const std::unordered_set<QString> supportedLanguages = {englishCode, frenchCode, germanCode, italianCode, spanishCode};
+    static const std::unordered_set<QString> supportedLanguages = {englishCode, frenchCode,  germanCode,
+                                                                   italianCode, spanishCode, swedishCode};
     return supportedLanguages.contains(languageCode);
 }
 
@@ -824,6 +826,8 @@ QString CommonUtility::languageCode(const Language language) {
             return italianCode;
         case Language::Spanish:
             return spanishCode;
+        case Language::Swedish:
+            return swedishCode;
         case Language::English:
             break;
         case Language::EnumEnd:
