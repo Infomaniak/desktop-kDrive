@@ -31,6 +31,9 @@
 
 #ifdef Q_OS_WIN
 #include <io.h> // for stdout
+#ifndef NDEBUG
+#include <windows.h>
+#endif
 #endif
 
 static const int logSizeWatcherTimeout = 60000;
@@ -85,6 +88,15 @@ Logger::Logger(QObject *parent) :
     _doFileFlush(false),
     _logExpire(0),
     _logDebug(false) {
+#if defined(Q_OS_WIN) && !defined(NDEBUG)
+    if (AllocConsole()) {
+        FILE *fp = nullptr;
+        freopen_s(&fp, "CONOUT$", "w", stdout);
+        freopen_s(&fp, "CONOUT$", "w", stderr);
+        std::cout.clear();
+        std::cerr.clear();
+    }
+#endif
     qSetMessagePattern(
             "%{time yyyy-MM-dd hh:mm:ss:zzz} "
             "[%{if-debug}D%{endif}%{if-info}I%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] "
@@ -154,6 +166,9 @@ void Logger::doLog(const QString &msg) {
             if (_doFileFlush) _logstream->flush();
         }
     }
+#ifndef NDEBUG
+    std::cout << qPrintable(msg) << '\n';
+#endif
     emit logWindowLog(msg);
 }
 

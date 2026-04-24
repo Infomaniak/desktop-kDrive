@@ -61,6 +61,9 @@
 #ifdef LOG4CPLUS_HAVE_ERRNO_H
 #include <errno.h>
 #endif
+#ifndef NDEBUG
+#include <iostream>
+#endif
 
 namespace log4cplus {
 
@@ -189,6 +192,11 @@ void CustomRollingFileAppender::append(const log4cplus::spi::InternalLoggingEven
 
     try {
         RollingFileAppender::append(event);
+#ifndef NDEBUG
+        log4cplus::tostringstream oss;
+        layout->formatAndAppend(oss, event);
+        std::cout << LOG4CPLUS_TSTRING_TO_STRING(oss.str());
+#endif
     } catch (...) {
         // Bug in gcc => std::filesystem::path wstring is crashing with non ASCII characters
         // Fixed in next gcc-12 version

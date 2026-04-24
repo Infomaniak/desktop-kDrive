@@ -41,6 +41,15 @@ Log::~Log() {
 }
 
 std::shared_ptr<Log> Log::instance(const log4cplus::tstring &filePath) {
+#if defined(KD_WINDOWS) && !defined(NDEBUG)
+    if (AllocConsole()) {
+        FILE *fp = nullptr;
+        freopen_s(&fp, "CONOUT$", "w", stdout);
+        freopen_s(&fp, "CONOUT$", "w", stderr);
+        std::cout.clear();
+        std::cerr.clear();
+    }
+#endif
     if (_instance == nullptr) {
         if (filePath.empty()) {
             return nullptr;
