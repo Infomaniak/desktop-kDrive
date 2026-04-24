@@ -2015,6 +2015,11 @@ Por favor, utilice el siguiente enlace para enviar los registros al soporte: &lt
         <translation>Sueco</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="512"/>
+        <source>Portuguese</source>
+        <translation>Portugués</translation>
+    </message>
+    <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="466"/>
         <source>Unable to open folder %1.</source>
         <translation>No se puede abrir la carpeta %1.</translation>
