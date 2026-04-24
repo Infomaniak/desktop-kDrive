@@ -242,7 +242,7 @@ extension MainViewController {
         NSWorkspace.shared.open(URLConstants.help)
     }
 
-    @objc private func showSearchSheet() {
+    @objc func showSearchSheet() {
         guard let synchroContext = viewModel.currentSynchroContext else { return }
         let syncDbId = Int32(synchroContext.synchro.dbId)
         let driveId = synchroContext.drive.driveId

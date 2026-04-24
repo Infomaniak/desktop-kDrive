@@ -133,6 +133,10 @@ final class MainMenu: NSMenu {
 
         menu.addItem(withTitle: "Select All", action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
 
+        menu.addItem(NSMenuItem.separator())
+
+        menu.addItem(withTitle: "Find...", action: #selector(MainWindowController.showSearchSheet), keyEquivalent: "f")
+
         return menu
     }
 

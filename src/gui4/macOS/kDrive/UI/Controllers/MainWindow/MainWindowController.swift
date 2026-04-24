@@ -20,6 +20,8 @@ import Cocoa
 import Combine
 import InfomaniakDI
 import kDriveCore
+import kDriveCoreUI
+import SwiftUI
 import OrderedCollections
 
 final class MainWindowController: NSWindowController {
@@ -37,6 +39,7 @@ final class MainWindowController: NSWindowController {
     // periphery:ignore - We keep a strong reference on the viewController being presented
     private var viewController: NSViewController?
     private var bindStore = Set<AnyCancellable>()
+    private var sheetClickMonitor: Any?
 
     init() {
         let window = NSWindow(
@@ -167,6 +170,13 @@ final class MainWindowController: NSWindowController {
 
         return true
         #endif
+    }
+
+    // MARK: - Search
+
+    @objc func showSearchSheet() {
+        guard let mainViewController = viewController as? MainViewController else { return }
+        mainViewController.showSearchSheet()
     }
 }
 
