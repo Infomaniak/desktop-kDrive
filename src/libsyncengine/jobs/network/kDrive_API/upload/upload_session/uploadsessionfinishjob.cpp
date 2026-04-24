@@ -37,7 +37,6 @@ UploadSessionFinishJob::UploadSessionFinishJob(const UploadSessionType uploadTyp
     _creationTimeIn(creationTime),
     _modificationTimeIn(modificationTime) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
-    _apiVersion = 3;
 }
 
 UploadSessionFinishJob::UploadSessionFinishJob(const UploadSessionType uploadType, const SyncPath &absoluteFilePath,

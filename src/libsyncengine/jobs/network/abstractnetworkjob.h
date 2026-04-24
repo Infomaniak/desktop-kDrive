@@ -80,7 +80,7 @@ class AbstractNetworkJob : public SyncJob {
         void getStringFromStream(std::istream &inputStream, std::string &res);
 
         std::string _httpMethod;
-        uint8_t _apiVersion{2};
+        uint8_t _apiVersion{3};
         std::string _data;
         int _customTimeout = 0;
         static const int32_t _defaultTrials = 2;
