@@ -27,7 +27,8 @@ Q_LOGGING_CATEGORY(lcServiceActionTracker, "gui.v4.serviceactiontracker", QtInfo
 ServiceActionTracker::ServiceActionTracker(QObject *const parent) :
     QObject(parent) {}
 
-bool ServiceActionTracker::isActionPending(const QString &serviceKey, const QString &actionKey, const qint64 scopeId) const {
+bool ServiceActionTracker::isActionPending(const ServiceKey &serviceKey, const ActionKey &actionKey,
+                                           const ScopeId scopeId) const {
     const auto serviceIt = _pendingByServiceAndAction.constFind(serviceKey);
     if (serviceIt == _pendingByServiceAndAction.constEnd()) {
         return false;
@@ -47,11 +48,11 @@ bool ServiceActionTracker::isActionPending(const QString &serviceKey, const QStr
     return *scopeIt > 0;
 }
 
-bool ServiceActionTracker::isServicePending(const QString &serviceKey) const {
+bool ServiceActionTracker::isServicePending(const ServiceKey &serviceKey) const {
     return _pendingCountByService.value(serviceKey, 0) > 0;
 }
 
-void ServiceActionTracker::beginAction(const QString &serviceKey, const QString &actionKey, const qint64 scopeId) {
+void ServiceActionTracker::beginAction(const ServiceKey &serviceKey, const ActionKey &actionKey, const ScopeId scopeId) {
     auto &serviceActions = _pendingByServiceAndAction[serviceKey];
     auto &actionState = serviceActions[actionKey];
     const int32_t previousScopeCount = actionState.pendingCountByScope.value(scopeId, 0);
@@ -70,7 +71,7 @@ void ServiceActionTracker::beginAction(const QString &serviceKey, const QString 
     }
 }
 
-void ServiceActionTracker::endAction(const QString &serviceKey, const QString &actionKey, const qint64 scopeId) {
+void ServiceActionTracker::endAction(const ServiceKey &serviceKey, const ActionKey &actionKey, const ScopeId scopeId) {
     auto serviceIt = _pendingByServiceAndAction.find(serviceKey);
     if (serviceIt == _pendingByServiceAndAction.end()) {
         qCWarning(lcServiceActionTracker) << "endAction called for unknown serviceKey:" << serviceKey
