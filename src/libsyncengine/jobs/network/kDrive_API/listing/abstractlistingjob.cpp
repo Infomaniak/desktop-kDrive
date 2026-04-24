@@ -24,14 +24,11 @@ namespace KDC {
 
 
 AbstractListingJob::AbstractListingJob(const DriveDbId driveDbId, RemoteNodeIdSet blacklist /*= {}*/) :
-    AbstractListingJob(ApiType::Drive, driveDbId, std::move(blacklist)) {
-    _apiVersion = 3;
-}
+    AbstractListingJob(ApiType::Drive, driveDbId, std::move(blacklist)) {}
 
 AbstractListingJob::AbstractListingJob(const ApiType apiType, const DriveDbId driveDbId, RemoteNodeIdSet blacklist /*= {}*/) :
     AbstractTokenNetworkJob(apiType, 0, driveDbId, 0),
     _blacklist(std::move(blacklist)) {
-    _apiVersion = 3;
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 
