@@ -24,10 +24,10 @@ namespace KDC {
 
 class CopyToDirectoryJob : public AbstractTokenNetworkJob {
     public:
-        CopyToDirectoryJob(DriveDbId driveDbId, const NodeId &remoteFileId, const NodeId &remoteDestId, const SyncName &newName);
+        CopyToDirectoryJob(DriveDbId driveDbId, RemoteNodeId remoteFileId, RemoteNodeId remoteDestId, SyncName newName);
 
-        inline const NodeId &nodeId() const { return _nodeId; }
-        inline SyncTime modtime() const { return _modtime; }
+        [[nodiscard]] const RemoteNodeId &nodeId() const { return _nodeId; }
+        [[nodiscard]] SyncTime modtime() const { return _modtime; }
 
     protected:
         ExitInfo handleResponse(std::istream &is) override;
@@ -36,11 +36,11 @@ class CopyToDirectoryJob : public AbstractTokenNetworkJob {
         std::string getSpecificUrl() override;
         ExitInfo setData() override;
 
-        NodeId _remoteFileId;
-        NodeId _remoteDestId;
+        RemoteNodeId _remoteFileId;
+        RemoteNodeId _remoteDestId;
         SyncName _newName;
 
-        NodeId _nodeId;
+        RemoteNodeId _nodeId;
         SyncTime _modtime = 0;
 };
 

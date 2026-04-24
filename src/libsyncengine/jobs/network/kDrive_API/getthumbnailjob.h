@@ -24,14 +24,14 @@ namespace KDC {
 
 class GetThumbnailJob : public AbstractTokenNetworkJob {
     public:
-        GetThumbnailJob(DriveDbId driveDbId, NodeId nodeId, unsigned width);
+        GetThumbnailJob(DriveDbId driveDbId, RemoteNodeId nodeId, unsigned width);
 
     private:
         virtual std::string getSpecificUrl() override;
         virtual void setQueryParameters(Poco::URI &uri) override;
         inline virtual ExitInfo setData() override { return ExitCode::Ok; }
 
-        NodeId _nodeId;
+        RemoteNodeId _nodeId;
         unsigned _width;
 };
 

@@ -30,7 +30,7 @@ class DownloadJob : public AbstractTokenNetworkJob {
         struct FileDownloadInfo {
                 const DriveDbId driveDbId = 0;
                 const NodeId remoteFileId;
-                const SyncPath localpath;
+                const SyncPath localPath;
                 const int64_t expectedSize = Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH;
                 const SyncTime creationTime = 0;
                 SyncTime modificationTime = 0;
@@ -45,12 +45,12 @@ class DownloadJob : public AbstractTokenNetworkJob {
                     const FileDownloadInfo &fileDownloadInfo, DateTimePolicy dateTimePolicy);
         ~DownloadJob() override;
 
-        inline const NodeId &remoteNodeId() const { return _fileDownloadInfo.remoteFileId; }
-        inline const SyncPath &localPath() const { return _fileDownloadInfo.localpath; }
+        const RemoteNodeId &remoteNodeId() const { return _fileDownloadInfo.remoteFileId; }
+        const SyncPath &localPath() const { return _fileDownloadInfo.localPath; }
 
-        inline const NodeId &localNodeId() const { return _localNodeId; }
-        inline SyncTime creationTime() const { return _creationTimeOut; }
-        inline SyncTime modificationTime() const { return _modificationTimeOut; }
+        const RemoteNodeId &localNodeId() const { return _localNodeId; }
+        SyncTime creationTime() const { return _creationTimeOut; }
+        SyncTime modificationTime() const { return _modificationTimeOut; }
         [[nodiscard]] inline int64_t size() const { return _sizeOut; }
 
         [[nodiscard]] int64_t expectedSize() const { return _fileDownloadInfo.expectedSize; }
