@@ -1219,8 +1219,8 @@ void ParametersDialog::refreshErrorList(const DriveDbId driveDbId) {
     }
 
     // Display new errors
-    int autoresolvedErrorCount = 0;
-    int unresolvedErrorCount = 0;
+    Count autoresolvedErrorCount = 0;
+    Count unresolvedErrorCount = 0;
     autoresolvedErrorsListWidget->clear();
     unresolvedErrorsListWidget->clear();
     errorTabWidget->showResolveConflicts(false);

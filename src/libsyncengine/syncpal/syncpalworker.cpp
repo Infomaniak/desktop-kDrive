@@ -35,7 +35,7 @@
 
 #include <log4cplus/loggingmacros.h>
 
-#include <math.h>
+#include <cmath>
 
 #define UPDATE_PROGRESS_DELAY 1
 
@@ -111,29 +111,30 @@ bool SyncPalWorker::shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const 
 }
 
 void SyncPalWorker::checkForMassDeletions() const {
-    // Local deletions to propagate
-    const auto nbOfLocalDeleteOps = _syncPal->_syncOps->countOps(ReplicaSide::Local, OperationType::Delete);
-    if (!nbOfLocalDeleteOps) return;
+    const auto nbOfLocalDeleteOpsToPropagate = _syncPal->_syncOps->countOps(ReplicaSide::Local, OperationType::Delete);
+    if (!nbOfLocalDeleteOpsToPropagate) return;
 
-    // Cumulative local deletions propagated across successive synchronizations
-    const auto nbTotalOfLocalDeleteOps = _syncPal->nbOfLocalDeleteOpsPropagated() + nbOfLocalDeleteOps;
+    // Cumulative count of local deletions that were propagated across successive synchronizations, no of which reached the idle
+    // state.
+    const auto totalCountOfLocalDeleteOps = _syncPal->nbOfLocalDeleteOpsPropagated() + nbOfLocalDeleteOpsToPropagate;
 
     // Approximation of the local snapshot size before deletions
-    const auto nbTotalOfLocalSnapshotItems = _syncPal->snapshot(ReplicaSide::Local)->nbItems() + nbTotalOfLocalDeleteOps;
+    const auto totalCountOfLocalSnapshotItems = _syncPal->snapshot(ReplicaSide::Local)->nbItems() + totalCountOfLocalDeleteOps;
 
     // Calculate alert threshold = size / ln(size)
-    uint64_t alertThreshold = 0;
-    if (nbTotalOfLocalSnapshotItems > snapshotMinSizeForDeleteAlert) {
+    Count alertThreshold = 0;
+    if (totalCountOfLocalSnapshotItems > snapshotMinSizeForDeleteAlert) {
         static_assert(snapshotMinSizeForDeleteAlert > 1);
-        alertThreshold = static_cast<uint64_t>(nbTotalOfLocalSnapshotItems / log(nbTotalOfLocalSnapshotItems));
+        alertThreshold = static_cast<Count>(totalCountOfLocalSnapshotItems / log(totalCountOfLocalSnapshotItems));
     }
 
     // Check for mass deletions
-    if (alertThreshold && nbTotalOfLocalDeleteOps >= alertThreshold) {
-        LOG_SYNCPAL_WARN(_logger, "Mass deletions detected: " << nbTotalOfLocalDeleteOps << "/" << nbTotalOfLocalSnapshotItems);
+    if (alertThreshold && totalCountOfLocalDeleteOps >= alertThreshold) {
+        LOG_SYNCPAL_WARN(_logger,
+                         "Mass deletions detected: " << totalCountOfLocalDeleteOps << "/" << totalCountOfLocalSnapshotItems);
         sentry::Handler::captureMessage(sentry::Level::Warning, "SyncPalWorker::checkForMassDeletions",
-                                        "Mass deletions detected: " + std::to_string(nbTotalOfLocalDeleteOps) + "/" +
-                                                std::to_string(nbTotalOfLocalSnapshotItems));
+                                        "Mass deletions detected: " + std::to_string(totalCountOfLocalDeleteOps) + "/" +
+                                                std::to_string(totalCountOfLocalSnapshotItems));
     }
 }
 

@@ -950,7 +950,7 @@ void ClientGui::onRefreshErrorList() {
             return;
         }
 
-        _generalErrorsCounter = (int) _errorInfoMap[0].count();
+        _generalErrorsCounter = static_cast<Count>(_errorInfoMap[0].count());
         emit errorAdded(0);
         for (const auto &errorInfo: _errorInfoMap[0]) {
             versionLocked = versionLocked || errorInfo.exitCode() == ExitCode::UpdateRequired;

@@ -58,7 +58,7 @@ using UserId = int64_t;
 using UserDbId = int64_t;
 using GenericId = int64_t;
 
-using Count = int64_t;
+using Count = uint64_t;
 using SyncTime = int64_t;
 
 using SyncDbRevision = uint64_t;

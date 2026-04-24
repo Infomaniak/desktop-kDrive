@@ -226,14 +226,19 @@ SyncOperationList &SyncOperationList::operator=(const SyncOperationList &other) 
     return *this;
 }
 
-uint64_t SyncOperationList::countOps(ReplicaSide affectedSide, OperationType operationType) const {
+Count SyncOperationList::countOps(ReplicaSide affectedSide, OperationType operationType) const {
     const std::scoped_lock lock(_mutex);
-    uint64_t count = 0;
-    for (const auto &opId: _opSortedList) {
-        const auto syncOp = getOp(opId);
-        if (syncOp && syncOp->affectedNode()->side() == affectedSide && syncOp->type() == operationType) count++;
-    }
-    return count;
+    const auto count =
+            std::count_if(_opSortedList.begin(), _opSortedList.end(), [this, affectedSide, operationType](UniqueId opId) {
+                const auto it = _allOps.find(opId);
+                if (it == _allOps.end() || !it->second) {
+                    assert(false);
+                    return false;
+                }
+                const auto &syncOp = it->second;
+                return (syncOp->affectedNode()->side() == affectedSide && syncOp->type() == operationType);
+            });
+    return static_cast<Count>(count);
 }
 
 bool SyncOperationList::isLocalEditCausedBySync(const NodeId &nodeId, const SyncPath &rootPath, const SyncPath &relativePath,

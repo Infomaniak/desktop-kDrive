@@ -341,7 +341,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         }
 
         // Local delete operations monitoring
-        uint64_t nbOfLocalDeleteOpsPropagated() const { return _nbOfLocalDeleteOpsPropagated; }
+        Count nbOfLocalDeleteOpsPropagated() const { return _nbOfLocalDeleteOpsPropagated; }
         void incrementNbOfLocalDeleteOpsPropagated() { _nbOfLocalDeleteOpsPropagated++; }
         void resetNbOfLocalDeleteOpsPropagated() { _nbOfLocalDeleteOpsPropagated = 0; }
 
@@ -363,9 +363,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::unordered_map<SyncPath, UniqueId, PathHashFunction> _syncPathToDownloadJobMap;
         std::mutex _directDownloadJobsMapMutex;
 
-        // Cumulative local deletion operations propagated across successive synchronizations.
-        // This counter is reset when synchronization stays idle.
-        uint64_t _nbOfLocalDeleteOpsPropagated{0};
+        // Cumulative count of local delete operations that were propagated across successive synchronization cycles since the
+        // last time the synchronization was in the idle state.
+        Count _nbOfLocalDeleteOpsPropagated{0};
 
         // Callbacks
         std::function<void(const Error &error)> _addError;

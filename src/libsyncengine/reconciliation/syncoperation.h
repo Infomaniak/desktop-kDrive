@@ -168,8 +168,8 @@ class SyncOperationList : public SharedObject {
 
         void getOpIdToIndexMap(std::unordered_map<UniqueId, int> &map, OperationType typeFilter = OperationType::None);
 
-        uint64_t countOps(ReplicaSide affectedSide, OperationType operationType) const;
-  
+        Count countOps(ReplicaSide affectedSide, OperationType operationType) const;
+
         /**
          * @brief Check if a local Edit operation is caused by the current sync.
          * @param nodeId The ID of the object.
