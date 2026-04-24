@@ -24,8 +24,8 @@ namespace KDC {
 
 class AbstractListingJob : public AbstractTokenNetworkJob {
     public:
-        explicit AbstractListingJob(DriveDbId driveDbId, const NodeSet &blacklist = {});
-        explicit AbstractListingJob(ApiType apiType, DriveDbId driveDbId, const NodeSet &blacklist = {});
+        explicit AbstractListingJob(DriveDbId driveDbId, RemoteNodeIdSet blacklist = {});
+        explicit AbstractListingJob(ApiType apiType, DriveDbId driveDbId, RemoteNodeIdSet blacklist = {});
 
         ExitInfo setData() override;
         ExitInfo handleError(const std::string &replyBody, const Poco::URI &uri) override;
