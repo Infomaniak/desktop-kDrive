@@ -48,7 +48,7 @@ struct SearchResultRowView: View {
                     .foregroundStyle(ColorToken.Text.secondary.asColor)
             }
         }
-        .padding(.vertical, AppPadding.padding4)
+        .padding(.vertical, AppPadding.padding8)
         .padding(.horizontal, AppPadding.padding8)
         .background(isHovered ? ColorToken.Surface.secondary.asColor : Color.clear)
         .clipShape(RoundedRectangle(cornerRadius: AppRadius.radius4))

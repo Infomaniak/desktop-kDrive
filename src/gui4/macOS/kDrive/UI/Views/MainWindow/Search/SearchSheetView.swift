@@ -91,9 +91,9 @@ struct SearchSheetView: View {
                 }
                 .buttonStyle(.plain)
                 .listRowInsets(EdgeInsets(
-                    top: AppPadding.padding4,
+                    top: 0,
                     leading: AppPadding.padding16,
-                    bottom: AppPadding.padding4,
+                    bottom: 0,
                     trailing: AppPadding.padding16
                 ))
                 .hideRowSeparatorIfAvailable()
