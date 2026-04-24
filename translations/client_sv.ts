@@ -263,7 +263,7 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
         <message>
             <location filename="../src/gui/adddriveserverfolderswidget.cpp" line="210" />
             <source>Impossible to load the list of subfolders. Your kDrive might be in maintenance.&lt;br&gt;Please, login to the &lt;a style="%1" href="%2"&gt;web version&lt;/a&gt; to check your kDrive's status, or contact your administrator.</source>
-            <translation>Det går inte att ladda listan över undermappar&lt;br&gt;. Din kDrive kan vara under underhåll. Logga in på &lt;a style="%1" href="%2"&gt;web&lt;/a&gt;bversionen för att kontrollera statusen för din kDrive, eller kontakta din administratör.</translation>
+            <translation>Det går inte att ladda listan över undermappar&lt;br&gt;. Din kDrive kan vara under underhåll. Logga in på &lt;a style="%1" href="%2"&gt;webbversionen&lt;/a&gt; för att kontrollera statusen för din kDrive, eller kontakta din administratör.</translation>
         </message>
     </context>
     <context>
@@ -865,7 +865,7 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
         <message>
             <location filename="../src/gui/debuggingdialog.cpp" line="497" />
             <source> 3. Share the link with &lt;a style="%1" href="%2"&gt; support@infomaniak.com &lt;/a&gt;&lt;br&gt;</source>
-            <translation> 3. Dela länken med&lt;a style="%1" href="%2"&gt;support@infomaniak.com &lt;/a&gt;&lt;br&gt;</translation>
+            <translation> 3. Dela länken med &lt;a style="%1" href="%2"&gt;support@infomaniak.com &lt;/a&gt;&lt;br&gt;</translation>
         </message>
         <message>
             <location filename="../src/gui/debuggingdialog.cpp" line="527" />
@@ -880,7 +880,7 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
         <message>
             <location filename="../src/gui/debuggingdialog.h" line="70" />
             <source>The entire folder is large (&gt; 100 MB) and may take some time to share. To reduce the sharing time, we recommend, that you share only the last kDrive session.</source>
-            <translation>Hela mappen är stor (&amp;gt; 100 MB) och det kan ta en stund att dela den. För att minska delningstiden rekommenderar vi att du endast delar den senaste kDrive-sessionen.</translation>
+            <translation>Hela mappen är stor (&gt; 100 MB) och det kan ta en stund att dela den. För att minska delningstiden rekommenderar vi att du endast delar den senaste kDrive-sessionen.</translation>
         </message>
         <message>
             <location filename="../src/gui/debuggingdialog.cpp" line="600" />
@@ -1644,7 +1644,7 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
         <message>
             <location filename="../src/gui/parametersdialog.cpp" line="406" />
             <source>Unable to start synchronization (error %1).&lt;br&gt;You must allow:&lt;br&gt;- kDrive in System Settings &gt;&gt; General &gt;&gt; Login Items &amp; Extensions &gt;&gt; Endpoint Security Extensions&lt;br&gt;- kDrive LiteSync Extension in System Settings &gt;&gt; Privacy &amp; Security &gt;&gt; Full Disk Access.</source>
-            <translation>Det går inte att starta synkroniseringen (fel %1).&lt;br&gt;Du måste ge behörighet till:&lt;br&gt;– kDrive i Systeminställningar &amp;gt;&amp;gt; Allmänt &amp;gt;&amp;gt; Inloggningsobjekt och tillägg &amp;gt;&amp;gt; Tillägg för&lt;br&gt;Endpoint Security– kDrive LiteSync-tillägget i Systeminställningar &amp;gt;&amp;gt; Sekretess och säkerhet &amp;gt;&amp;gt; Fullständig disktillgång.</translation>
+            <translation>Det går inte att starta synkroniseringen (fel %1).&lt;br&gt;Du måste ge behörighet till:&lt;br&gt;– kDrive i Systeminställningar &gt;&gt; Allmänt &gt;&gt; Inloggningsobjekt och tillägg &gt;&gt; Tillägg för&lt;br&gt;Endpoint Security– kDrive LiteSync-tillägget i Systeminställningar &gt;&gt; Sekretess och säkerhet &gt;&gt; Fullständig disktillgång.</translation>
         </message>
         <message>
             <location filename="../src/gui/parametersdialog.cpp" line="419" />
@@ -1689,7 +1689,7 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
         <message>
             <location filename="../src/gui/parametersdialog.cpp" line="475" />
             <source>The kDrive is asleep.&lt;br&gt;Please, login to the &lt;a style="%1" href="%2"&gt;web version&lt;/a&gt; to check your kDrive's status, or contact your administrator.</source>
-            <translation>kDrive är inaktivt.&lt;br&gt;Logga in på &lt;a style="%1" href="%2"&gt;web&lt;/a&gt;bversionen för att kontrollera statusen för ditt kDrive, eller kontakta din administratör.</translation>
+            <translation>kDrive är inaktivt.&lt;br&gt;Logga in på &lt;a style="%1" href="%2"&gt;web&lt;/a&gt;versionen för att kontrollera statusen för ditt kDrive, eller kontakta din administratör.</translation>
         </message>
         <message>
             <location filename="../src/gui/parametersdialog.cpp" line="479" />
@@ -2987,7 +2987,7 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
         <message>
             <location filename="../src/gui/guiutility.cpp" line="650" />
             <source>You cannot exclude more than %1 folders. Please uncheck higher-level folders.</source>
-            <translation>Du kan inte utesluta fler än 1 % av mapparna. Avmarkera mapparna på högre nivå.</translation>
+            <translation>Du kan inte utesluta fler än %1 mappar. Avmarkera mapparna på högre nivå.</translation>
         </message>
         <message>
             <location filename="../src/gui/guiutility.cpp" line="351" />
@@ -3002,7 +3002,7 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
         <message>
             <location filename="../src/gui/guiutility.cpp" line="336" />
             <source>Sync in progress (%1 of %2)</source>
-            <translation>Synkronisering pågår (1 % av 2 %)</translation>
+            <translation>Synkronisering pågår (%1 av %2)</translation>
         </message>
         <message>
             <location filename="../src/gui/guiutility.cpp" line="340" />
