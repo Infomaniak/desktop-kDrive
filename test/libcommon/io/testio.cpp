@@ -62,10 +62,6 @@ void TestIo::testTempDirectoryPath() {
         CPPUNIT_ASSERT(IoHelper::deviceTempDirectoryPath(tmpPath, ioError));
         CPPUNIT_ASSERT(!tmpPath.empty());
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
-
-        CPPUNIT_ASSERT(IoHelper::appTempDirectoryPath(tmpPath, ioError));
-        CPPUNIT_ASSERT(!tmpPath.empty());
-        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
     {
@@ -102,12 +98,6 @@ void TestIo::testTempDirectoryPath() {
         // Restores previous value.
         (void) CommonUtility::setenv("KDRIVE_TMP_PATH", previousPathString.c_str(), 1);
     }
-}
-
-void TestIo::testCacheDirectoryPath() {
-    SyncPath cachePath;
-    CPPUNIT_ASSERT(_testObj->cacheDirectoryPath(cachePath));
-    CPPUNIT_ASSERT(!cachePath.empty());
 }
 
 void TestIo::testLogDirectoryPath() {

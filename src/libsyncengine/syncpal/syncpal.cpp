@@ -108,6 +108,8 @@ SyncPal::SyncPal(std::shared_ptr<Vfs> vfs, const int syncDbId_, const std::strin
     _syncInfo.targetPath = sync.targetPath();
     _syncInfo.targetPath.make_preferred();
 
+    _cacheDirectory = std::make_shared<CacheDirectory>(_syncInfo.localPath);
+
     // Get drive
     Drive drive;
     if (!ParmsDb::instance()->selectDrive(driveDbId(), drive, found)) {
@@ -720,7 +722,9 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
     // Hydration job
     std::shared_ptr<DownloadJob> job = nullptr;
     try {
-        job = std::make_shared<DownloadJob>(vfs(), driveDbId(), remoteNodeId, absoluteLocalPath, expectedSize);
+        job = std::make_shared<DownloadJob>(
+                vfs(), _cacheDirectory,
+                DownloadJob::FileDownloadInfo{driveDbId(), remoteNodeId, absoluteLocalPath, expectedSize});
         if (!job) {
             LOG_SYNCPAL_WARN(_logger, "Memory allocation error");
             return ExitCode::SystemError;

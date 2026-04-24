@@ -12,7 +12,9 @@
           Title="kDrive"
           Subtitle="Beta"
           HorizontalContentAlignment="Stretch"
-          IsPaneToggleButtonVisible="False">
+          IsPaneToggleButtonVisible="False"
+          IsBackButtonVisible="{x:Bind Frame.CanGoBack, Mode=OneWay}"
+          BackRequested="TitleBar_BackRequested">
 
     <TitleBar.Resources>
         <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
@@ -33,7 +35,7 @@
               HorizontalAlignment="Center"
               VerticalAlignment="Center"
               ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.S}"
-              Visibility="{x:Bind TitleBarContentVisibility(ViewModel.SelectedSync, ViewModel.UpdateRequired), Mode=OneWay}">
+              Visibility="{x:Bind TitleBarContentVisibility(ViewModel.IsInitialized , ViewModel.SelectedSync, ViewModel.UpdateRequired), Mode=OneWay}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="auto" />
 

@@ -10,19 +10,27 @@ namespace Infomaniak.kDrive.CustomControls
         public AppModel ViewModel { get; } =
            App.ServiceProvider.GetRequiredService<AppModel>();
 
+        private Frame? Frame => ((App.Current as App)?.CurrentWindow as MainWindow)?.AppNavView?.Frame ?? null;
+
         public AppTitleBar()
         {
             InitializeComponent();
         }
 
-        private Visibility TitleBarContentVisibility(Sync? selectedSync, bool isUpdateRequired)
+        private Visibility TitleBarContentVisibility(bool isModelInitialized, Sync? selectedSync, bool isUpdateRequired)
         {
-            if (isUpdateRequired)
+            if (!isModelInitialized || isUpdateRequired)
                 return Visibility.Collapsed;
             if (selectedSync is null)
                 return Visibility.Collapsed;
 
             return Visibility.Visible;
+        }
+
+        private void TitleBar_BackRequested(TitleBar sender, object args)
+        {
+            if (Frame is not null && Frame.CanGoBack)
+                Frame?.GoBack();
         }
     }
 }

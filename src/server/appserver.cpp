@@ -476,14 +476,9 @@ void AppServer::init() {
     if (ParmsDb::instance()->versionUpdated()) Utility::restartLoginItemAgent();
 #endif
 
-    // Check if temp directory is accessible.
-    if (Utility::tryCreateTmpFile() == IoError::Success) {
-        // Start syncs
-        LOG_DEBUG(_logger, "Start syncs");
-        QTimer::singleShot(0, [=, this]() { startSyncsAndRetryOnError(); });
-    } else {
-        addError(Error(ERR_ID, ExitCode::SystemError, ExitCause::TmpDirAccessError));
-    }
+    // Start syncs
+    LOG_DEBUG(_logger, "Start syncs");
+    QTimer::singleShot(0, [=, this]() { startSyncsAndRetryOnError(); });
 
     // Init JobManager(s)
     if (!GuiJobManagerSingleton::instance()) {
@@ -583,13 +578,6 @@ void AppServer::cleanup() {
     // Close ParmsDb
     ParmsDb::instance()->close();
     LOG_DEBUG(_logger, "ParmsDb closed");
-
-    // Clean up tmp directory
-    SyncPath tmpDirPath;
-    auto dummyIoError = IoError::Unknown;
-    if (IoHelper::appTempDirectoryPath(tmpDirPath, dummyIoError)) {
-        (void) IoHelper::deleteItem(tmpDirPath, dummyIoError);
-    }
 }
 
 void AppServer::reset() {
@@ -3381,14 +3369,6 @@ void AppServer::logUsefulInformation() {
     LOG_INFO(_logger, "kernel type : " << QSysInfo::kernelType().toStdString());
     LOG_INFO(_logger, "locale: " << QLocale::system().name().toStdString());
     LOG_INFO(_logger, "# of logical CPU core: " << std::thread::hardware_concurrency());
-
-    // Log cache path
-    SyncPath cachePath;
-    if (!IoHelper::cacheDirectoryPath(cachePath)) {
-        LOGW_WARN(_logger, L"Error getting cache directory");
-    }
-    LOGW_INFO(_logger, L"cache " << Utility::formatSyncPath(cachePath));
-    LOGW_INFO(_logger, L"free space for cache: " << Utility::getFreeDiskSpace(cachePath) << L" bytes");
 
     // Log app ID
     LOG_INFO(Log::instance()->getLogger(), "App ID: " << appUID());

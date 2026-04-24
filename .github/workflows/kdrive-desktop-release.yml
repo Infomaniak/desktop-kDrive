@@ -24,9 +24,9 @@ on:
           - arm64
           - none
         default: all
-      upload_to_kdrive:
+      enable_safety_checks_and_upload_builds_to_kdrive:
         type: boolean
-        description: Upload builds to kDrive
+        description: Enable safety checks and upload builds to kDrive
         default: true
 
 concurrency:
@@ -54,6 +54,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Check translations
+        if: ${{ inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
         run: |
              cd translations\updateTool
              $result = .\Windows.ps1
@@ -79,6 +80,12 @@ jobs:
                  exit 0
              }
 
+      - name: Skip translations check
+        if: ${{ !inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
+        run: |
+             Write-Host "Safety checks and uploads are disabled: translations check skipped."
+             "<h1>:warning: Safety checks disabled: translations check skipped.</h1>" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+
 # Check Release Notes
   check-release-notes:
     runs-on: [ self-hosted, Linux, X64 ]
@@ -91,6 +98,7 @@ jobs:
         uses: ./.github/actions/get_version
 
       - name: Check release notes
+        if: ${{ inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
         run: |
           VERSION_NUMBER="${{ steps.get-version.outputs.kDrive_version }}"  # Example: 3.9.20.23
           VERSION_NUMBER="${VERSION_NUMBER%.*}"  # Remove build number for release notes check
@@ -130,6 +138,13 @@ jobs:
             echo "</tr>"
             echo "</table>"
           } >> $GITHUB_STEP_SUMMARY
+        shell: bash
+
+      - name: Skip release notes check
+        if: ${{ !inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
+        run: |
+          echo "Safety checks and uploads are disabled: release notes check skipped."
+          echo "<h1>:warning: Safety checks disabled: release notes check skipped.</h1>" >> $GITHUB_STEP_SUMMARY
         shell: bash
 
 # Build apps
@@ -201,7 +216,7 @@ jobs:
 
 # Upload the installer and sentry artifacts
   upload-to-kDrive-and-sentry-Windows:
-    if: ${{ inputs.build_windows && inputs.upload_to_kdrive }}
+    if: ${{ inputs.build_windows && inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
     needs: [build-Windows]
     runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be runing on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
     env:
@@ -243,7 +258,7 @@ jobs:
         shell: powershell
 
   upload-to-kDrive-and-sentry-Linux-amd:
-    if: ${{ (inputs.build_linux == 'all' || inputs.build_linux == 'amd64') && inputs.upload_to_kdrive }}
+    if: ${{ (inputs.build_linux == 'all' || inputs.build_linux == 'amd64') && inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
     needs: [build-Linux-amd]
     runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be running on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
     env:
@@ -285,7 +300,7 @@ jobs:
         shell: powershell
 
   upload-to-kDrive-and-sentry-Linux-arm:
-    if: ${{ (inputs.build_linux == 'all' || inputs.build_linux == 'arm64') && inputs.upload_to_kdrive }}
+    if: ${{ (inputs.build_linux == 'all' || inputs.build_linux == 'arm64') && inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
     needs: [build-Linux-arm]
     runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be running on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
     env:
@@ -327,7 +342,7 @@ jobs:
         shell: powershell
 
   upload-to-kDrive-and-sentry-macOS:
-    if: ${{ inputs.build_macos && inputs.upload_to_kdrive }}
+    if: ${{ inputs.build_macos && inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
     needs: [build-MacOS]
     runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be running on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
     env:

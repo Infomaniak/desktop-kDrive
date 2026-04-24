@@ -67,6 +67,7 @@ namespace Infomaniak.kDrive.OnBoarding
         private async void OnBoardingWindow_Closed(object sender, WindowEventArgs args)
         {
             LottiePlayer.ActualThemeChanged -= LottiePlayer_ActualThemeChanged;
+            LottiePlayer?.Cleanup();
             await _onBoardingViewModel.DisposeAsync();
         }
 

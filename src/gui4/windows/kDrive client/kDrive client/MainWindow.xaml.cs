@@ -16,11 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using H.NotifyIcon;
 using Infomaniak.kDrive.CustomControls;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using System;
 using System.ComponentModel;
 
@@ -42,13 +44,45 @@ namespace Infomaniak.kDrive
             AppWindow.TitleBar.PreferredTheme = Microsoft.UI.Windowing.TitleBarTheme.UseDefaultAppMode;
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
             Closed += MainWindow_Closed;
+            this.Content.PointerPressed += OnPointerPressed;
+
             UpdateControlsVisibility();
+        }
+
+        private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            var props = e.GetCurrentPoint(null).Properties;
+
+            if (props.IsXButton1Pressed) // Mouse Back button
+            {
+                if (AppNavView?.Frame?.CanGoBack == true)
+                {
+                    AppNavView?.Frame?.GoBack();
+                    e.Handled = true;
+                }
+            }
+            else if (props.IsXButton2Pressed) // Mouse Forward button
+            {
+                if (AppNavView?.Frame?.CanGoForward == true)
+                {
+                    AppNavView?.Frame?.GoForward();
+                    e.Handled = true;
+                }
+            }
         }
 
         private void MainWindow_Closed(object sender, WindowEventArgs args)
         {
+            if ((App.Current as App)?.CurrentWindow == this)
+            {
+                args.Handled = true;
+                this.Hide();
+                return;
+            }
+
             ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
             Closed -= MainWindow_Closed;
+            this.Content.PointerPressed -= OnPointerPressed;
         }
 
         private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)

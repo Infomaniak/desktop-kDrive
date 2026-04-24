@@ -117,23 +117,6 @@ struct IoHelper {
          */
         static bool deviceTempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept;
 
-        //! Returns the location of the kDrive temporary subdirectory.
-        /*!
-         \param directoryPath is the path to the kDrive temporary directory. Empty if there is an error.
-         \param ioError holds the error returned when an underlying OS API call fails.
-         \return true if no unexpected error occurred, false otherwise.
-         */
-        static bool appTempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept;
-
-
-        //! Returns the directory location suitable for temporary files.
-        /*! This directory is deleted at the end of the application run.
-          ! The location of this folder can be enforced with the env variable: KDRIVE_CACHE_PATH
-         \param directoryPath is a path to a directory suitable for temporary files. Empty if there is an error.
-         \return true if no unexpected error occurred, false otherwise.
-         */
-        static bool cacheDirectoryPath(SyncPath &directoryPath) noexcept;
-
         //! Returns the log directory path of the application.
         /*!
          \param directoryPath is set with the path of to the log directory of the application. Empty if there is an error.
@@ -202,7 +185,6 @@ struct IoHelper {
 
         static bool isPathOnMountedDisk(const SyncPath &path, bool &isMounted, IoError &ioError) noexcept;
 
-#if defined(KD_MACOS) || defined(KD_WINDOWS)
         //! Hides or reveals the item indicated by path.
         /*!
          \param path is a file system path to a directory entry (we also call it an item).
@@ -210,7 +192,6 @@ struct IoHelper {
          terminal when using a sheer `ls` command).
          */
         static void setFileHidden(const SyncPath &path, bool hidden) noexcept;
-#endif
 
         //! Checks if the item indicated by the specified path exists.
         /*!
@@ -597,7 +578,6 @@ struct IoHelper {
                                                   IoError &ioError) noexcept;
         static bool _getFileStatFn(const SyncPath &path, FileStat *filestat, IoError &ioError) noexcept;
         static bool _unsuportedFSLogged;
-        static void setCacheDirectoryPath(const SyncPath &newPath);
 
     private:
         static log4cplus::Logger _logger;

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -379,14 +379,16 @@ void TestSyncJobManagerSingleton::testCanRunjob() {
         const RemoteTemporaryDirectory remoteTmpDir(driveDbId, _testVariables.remoteDirId, "testCanRunjob");
 
         const LocalTemporaryDirectory localTmpDir("testCanRunjob");
+        const auto cacheDirectory = std::make_shared<CacheDirectory>(localTmpDir.path());
 
         bool noMoreRun = false;
         uint64_t counter = 0;
         const NodeId testBigFileRemoteId = "97601"; // test_ci/big_file_dir/big_text_file.txt
         for (auto i = 0; i < 20; i++) {
-            const auto job =
-                    std::make_shared<DownloadJob>(nullptr, driveDbId, testBigFileRemoteId, localTmpDir.path(), 110 * 1024 * 1024,
-                                                  testhelpers::defaultFileSize, testhelpers::defaultFileSize, false);
+            const auto job = std::make_shared<DownloadJob>(
+                    nullptr, cacheDirectory,
+                    DownloadJob::FileDownloadInfo{driveDbId, testBigFileRemoteId, localTmpDir.path(), 110 * 1024 * 1024,
+                                                  testhelpers::defaultFileSize, testhelpers::defaultFileSize, false});
             if (!SyncJobManagerSingleton::instance()->canRunJob(job)) {
                 noMoreRun = true;
                 break;
@@ -403,45 +405,6 @@ void TestSyncJobManagerSingleton::testCanRunjob() {
         }
     }
 }
-
-static const Poco::URI testUri("https://api.kdrive.infomaniak.com/2/drive/102489/files/56850/directory");
-void sendTestRequest(Poco::Net::HTTPSClientSession &session, const bool resetSession) {
-    Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, testUri.toString(), Poco::Net::HTTPMessage::HTTP_1_1);
-    request.setContentLength(0);
-    (void) session.sendRequest(request);
-
-    Poco::Net::HTTPResponse response;
-    (void) session.receiveResponse(response);
-    if (resetSession) {
-        session.reset();
-    }
-}
-
-void TestSyncJobManagerSingleton::testReuseSocket() {
-    Poco::Net::Context::Ptr context =
-            new Poco::Net::Context(Poco::Net::Context::TLS_CLIENT_USE, "", "", "", Poco::Net::Context::VERIFY_NONE);
-    context->requireMinimumProtocol(Poco::Net::Context::PROTO_TLSV1_2);
-    context->enableSessionCache(true);
-
-    // Session
-    Poco::Net::HTTPSClientSession session(testUri.getHost(), testUri.getPort(), context);
-    session.setKeepAlive(true);
-
-    sendTestRequest(session, false);
-    CPPUNIT_ASSERT(session.socket().impl()->initialized());
-    sendTestRequest(session, false); // Doing twice, so we can see in console that the socket is still connected
-    CPPUNIT_ASSERT(session.socket().impl()->initialized());
-
-    Poco::Net::HTTPSClientSession session1(testUri.getHost(), testUri.getPort(), context);
-    sendTestRequest(session1, false);
-    CPPUNIT_ASSERT(session1.socket().impl() != session.socket().impl());
-
-    sendTestRequest(session, true);
-    CPPUNIT_ASSERT(!session.socket().impl()->initialized());
-    sendTestRequest(session, true); // Doing twice, so we can see in console that the socket is not connected anymore
-    CPPUNIT_ASSERT(!session.socket().impl()->initialized());
-}
-
 void TestSyncJobManagerSingleton::callback(const UniqueId jobId) {
     const std::scoped_lock lock(_mutex);
 
