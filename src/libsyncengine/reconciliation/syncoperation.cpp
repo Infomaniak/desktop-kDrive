@@ -228,16 +228,15 @@ SyncOperationList &SyncOperationList::operator=(const SyncOperationList &other) 
 
 Count SyncOperationList::countOps(ReplicaSide affectedSide, OperationType operationType) const {
     const std::scoped_lock lock(_mutex);
-    const auto count =
-            std::count_if(_opSortedList.begin(), _opSortedList.end(), [this, affectedSide, operationType](UniqueId opId) {
-                const auto it = _allOps.find(opId);
-                if (it == _allOps.end() || !it->second) {
-                    assert(false);
-                    return false;
-                }
-                const auto &syncOp = it->second;
-                return (syncOp->affectedNode()->side() == affectedSide && syncOp->type() == operationType);
-            });
+    const auto count = std::ranges::count_if(_opSortedList, [this, affectedSide, operationType](UniqueId opId) {
+        const auto it = _allOps.find(opId);
+        if (it == _allOps.end() || !it->second) {
+            assert(false);
+            return false;
+        }
+        const auto &syncOp = it->second;
+        return syncOp->affectedNode()->side() == affectedSide && syncOp->type() == operationType;
+    });
     return static_cast<Count>(count);
 }
 
