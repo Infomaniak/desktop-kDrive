@@ -64,7 +64,7 @@ struct SearchSheetView: View {
             HStack(spacing: AppPadding.padding8) {
                 Image(systemName: "magnifyingglass")
                     .foregroundStyle(ColorToken.Text.secondary.asColor)
-                TextField("Search...", text: $viewModel.searchText)
+                TextField(KDriveLocalizable.searchPlaceholder, text: $viewModel.searchText)
                     .textFieldStyle(.plain)
                     .focused($isSearchFieldFocused)
                 if hasSearchQuery {
@@ -120,13 +120,13 @@ struct SearchSheetView: View {
             IKContentUnavailableView(
                 image: KDriveResources.mountainsTreesSun.swiftUIImage,
                 title: KDriveLocalizable.noResults,
-                subtitle: "Try a different search term"
+                subtitle: KDriveLocalizable.tryDifferentSearchTerm
             )
         } else {
             IKContentUnavailableView(
                 image: KDriveResources.mountainsTreesSun.swiftUIImage,
-                title: "Search your files",
-                subtitle: "Type to start searching"
+                title: KDriveLocalizable.searchYourFiles,
+                subtitle: KDriveLocalizable.typeToStartSearching
             )
         }
     }

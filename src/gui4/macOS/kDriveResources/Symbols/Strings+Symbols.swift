@@ -359,6 +359,7 @@ public enum KDriveLocalizable {
   public static let notificationsDisabledNever = KDriveLocalizable.tr("Localizable", "notificationsDisabledNever", fallback: "Never")
   /// loco:698b0aaddee0bf9fb206a694
   public static let notSyncedDrive = KDriveLocalizable.tr("Localizable", "notSyncedDrive", fallback: "Not synchronized")
+  public static let noResults = KDriveLocalizable.tr("Localizable", "noResults", fallback: "No results")
   /// loco:698c5b3fa3cb0fe14205ddb5
   public static let onboardingAdvancedSettingsDriveCustomizeLocation = KDriveLocalizable.tr("Localizable", "onboardingAdvancedSettingsDriveCustomizeLocation", fallback: "Customize the location of your kDrive folder on your computer:")
   /// loco:698c5bda2351f47094030442
@@ -534,6 +535,9 @@ public enum KDriveLocalizable {
   public static let syncInProgressTooltip = KDriveLocalizable.tr("Localizable", "syncInProgressTooltip", fallback: "Syncing")
   /// loco:698b1593acd7caac53091c62
   public static let syncRules = KDriveLocalizable.tr("Localizable", "syncRules", fallback: "Sync rules")
+  public static let searchPlaceholder = KDriveLocalizable.tr("Localizable", "searchPlaceholder", fallback: "Search...")
+  public static let searchYourFiles = KDriveLocalizable.tr("Localizable", "searchYourFiles", fallback: "Search your files")
+  public static let typeToStartSearching = KDriveLocalizable.tr("Localizable", "typeToStartSearching", fallback: "Type to start searching")
   /// loco:69cb7b4436165087ff055e92
   public static let syncShortStatusError = KDriveLocalizable.tr("Localizable", "syncShortStatusError", fallback: "An error occurred")
   /// loco:69ca840f10c2c8213703f4f2
@@ -550,6 +554,7 @@ public enum KDriveLocalizable {
   public static let tabTitleHome = KDriveLocalizable.tr("Localizable", "tabTitleHome", fallback: "Home")
   /// loco:68a70c659c53feed83039c42
   public static let tabTitleStorage = KDriveLocalizable.tr("Localizable", "tabTitleStorage", fallback: "Storage")
+  public static let tryDifferentSearchTerm = KDriveLocalizable.tr("Localizable", "tryDifferentSearchTerm", fallback: "Try a different search term")
   /// loco:6981e8f0b024a7b4e00f7262
   public static let unavailableContentNoActivityDescription = KDriveLocalizable.tr("Localizable", "unavailableContentNoActivityDescription", fallback: "Your files are accessible and synchronized.")
   /// loco:6981e8f0f994e5f7bc040692
