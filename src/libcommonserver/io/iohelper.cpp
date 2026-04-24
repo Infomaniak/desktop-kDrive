@@ -1095,8 +1095,10 @@ IoError IoHelper::setFullAccess(const SyncPath &path) noexcept {
     bool dummyRead = false;
     bool dummyWrite = false;
     bool exec = true;
-    (void) IoHelper::getRights(path, dummyRead, dummyWrite,
-                               exec); // This is the best effort to re-apply the existing exec rights.
+    if (const auto ioError = IoHelper::getRights(path, dummyRead, dummyWrite, exec); ioError != IoError::Success) {
+        LOGW_DEBUG(logger(), L"Failed to set rights for: " << Utility::formatSyncPath(path));
+        // This is the best effort to re-apply the existing exec rights, therefor we do not return in case of error.
+    }
 
     // The file must be unlocked before changing its access rights.
     if (const auto ioError = unlock(path); ioError != IoError::Success) {
