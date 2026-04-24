@@ -531,7 +531,7 @@ ExitInfo DownloadJob::moveTmpFile() {
         static const bool forceCopy = CommonUtility::envVarValue("KDRIVE_PRESERVE_PERMISSIONS_ON_CREATE") == "1";
         if (_fileDownloadInfo.isCreate && !forceCopy) {
             // Make sure we are allowed to propagate the change
-            PermissionsGiver _(_fileDownloadInfo.localpath.parent_path(), _logger);
+            PermissionsGiver _(_fileDownloadInfo.localPath.parent_path(), _logger);
 
 
             // Move file
@@ -550,7 +550,7 @@ ExitInfo DownloadJob::moveTmpFile() {
 
         if (!_fileDownloadInfo.isCreate || crossDeviceLinkError || forceCopy) {
             // Make sure we are allowed to propagate the change
-            PermissionsGiver _(_fileDownloadInfo.localpath.parent_path(), _logger);
+            PermissionsGiver _(_fileDownloadInfo.localPath.parent_path(), _logger);
 
             // Copy file content (i.e. when the target exists, do not change its node id).
             std::error_code ec;
