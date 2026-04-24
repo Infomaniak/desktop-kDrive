@@ -43,7 +43,7 @@ UserService::UserService(CommService &commService, AppCache &appCache, ServiceAc
     (void) connect(&_commService, &CommService::userUpdated, &_appCache, &AppCache::upsertUser);
     (void) connect(&_commService, &CommService::userRemoved, &_appCache, &AppCache::removeUser);
     (void) connect(&_serviceActionTracker, &ServiceActionTracker::servicePendingChanged, this,
-                   [this](const QString &serviceKey, const bool pending) {
+                   [this](const ServiceActionTracker::ServiceKey &serviceKey, const bool pending) {
                        if (serviceKey == serviceKeyUser) {
                            setLoading(pending);
                        }
@@ -67,12 +67,13 @@ void UserService::loadUsers() {
 
 void UserService::loadAvailableDrives(const qint64 userDbId) {
     const auto requestedUserDbId = static_cast<UserDbId>(userDbId);
-    beginAction(actionLoadAvailableDrives, static_cast<qint64>(requestedUserDbId));
+    beginAction(actionLoadAvailableDrives, userDbId);
 
     _commService.requestUserAvailableDrives(
-            requestedUserDbId, [this, requestedUserDbId](const ExitInfo &exitInfo, const std::vector<DriveAvailableInfo> &list) {
-                endAction(actionLoadAvailableDrives, static_cast<qint64>(requestedUserDbId));
-                if (_appCache.selectedUserDbId() != static_cast<qint64>(requestedUserDbId)) {
+            requestedUserDbId,
+            [this, userDbId, requestedUserDbId](const ExitInfo &exitInfo, const std::vector<DriveAvailableInfo> &list) {
+                endAction(actionLoadAvailableDrives, userDbId);
+                if (_appCache.selectedUserDbId() != userDbId) {
                     return;
                 }
 
@@ -134,15 +135,16 @@ bool UserService::isLoginPending() const {
     return isActionPending(actionRequestLoginToken);
 }
 
-void UserService::beginAction(const QString &actionKey, const qint64 scopeId) {
+void UserService::beginAction(const ServiceActionTracker::ActionKey &actionKey, const ServiceActionTracker::ScopeId scopeId) {
     _serviceActionTracker.beginAction(serviceKeyUser, actionKey, scopeId);
 }
 
-void UserService::endAction(const QString &actionKey, const qint64 scopeId) {
+void UserService::endAction(const ServiceActionTracker::ActionKey &actionKey, const ServiceActionTracker::ScopeId scopeId) {
     _serviceActionTracker.endAction(serviceKeyUser, actionKey, scopeId);
 }
 
-bool UserService::isActionPending(const QString &actionKey, const qint64 scopeId) const {
+bool UserService::isActionPending(const ServiceActionTracker::ActionKey &actionKey,
+                                  const ServiceActionTracker::ScopeId scopeId) const {
     return _serviceActionTracker.isActionPending(serviceKeyUser, actionKey, scopeId);
 }
 
