@@ -35,7 +35,7 @@ SearchJob::SearchJob(const DriveDbId driveDbId, const SyncDbId syncDbId, std::st
     _searchString(std::move(searchString)),
     _cursorInput(std::move(cursorInput)) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
-    _apiVersion = 3;
+
 
     if (!ParmsDb::instance()) {
         assert(false);
@@ -63,7 +63,6 @@ SearchJob::SearchJob(const DriveDbId driveDbId, std::string searchString, Cursor
     _searchString(std::move(searchString)),
     _cursorInput(std::move(cursorInput)) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
-    _apiVersion = 3;
 }
 
 

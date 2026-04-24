@@ -40,9 +40,9 @@ set(syncengine_SRCS
     jobs/network/directdownloadjob.h jobs/network/directdownloadjob.cpp
     jobs/network/infomaniak_API/getaccountinfojob.h jobs/network/infomaniak_API/getaccountinfojob.cpp
     jobs/network/infomaniak_API/getinfouserjob.h jobs/network/infomaniak_API/getinfouserjob.cpp
-    ### API translator
+    ### API translator v2 <-> v3
     jobs/network/kDrive_API/apitranslator.h jobs/network/kDrive_API/apitranslator.cpp
-    ### API v2 jobs
+    ### API v2 or v3 jobs
     jobs/network/kDrive_API/backerror.h jobs/network/kDrive_API/backerror.cpp
     jobs/network/kDrive_API/listingconf.h
     jobs/network/kDrive_API/getfilesindirectoryjob.h jobs/network/kDrive_API/getfilesindirectoryjob.cpp
