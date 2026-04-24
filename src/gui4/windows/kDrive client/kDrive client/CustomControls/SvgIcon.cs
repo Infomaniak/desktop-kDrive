@@ -53,7 +53,17 @@ namespace Infomaniak.kDrive.CustomControls
                 typeof(SvgIcon),
                 new PropertyMetadata(null, OnUriChanged));
 
-
+        public string? ResourceKey
+        {
+            get => (string?)GetValue(ResourceKeyProperty);
+            set => SetValue(ResourceKeyProperty, value);
+        }
+        public static readonly DependencyProperty ResourceKeyProperty =
+            DependencyProperty.Register(
+                nameof(ResourceKey),
+                typeof(string),
+                typeof(SvgIcon),
+                new PropertyMetadata(null, OnResourceNameChanged));
 
         public bool IsIconEnabled
         {
@@ -72,6 +82,13 @@ namespace Infomaniak.kDrive.CustomControls
             if (d is SvgIcon icon && icon._isLoaded)
                 icon.ScheduleRefresh();
         }
+
+        private static void OnResourceNameChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is SvgIcon icon && icon._isLoaded)
+                icon.ScheduleRefresh();
+        }
+
         private static void OnIconIsEnabledChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is SvgIcon icon && icon._isLoaded)
@@ -82,11 +99,21 @@ namespace Infomaniak.kDrive.CustomControls
         {
             _isLoaded = true;
             ScheduleRefresh();
+
+            // Subscribe to theme changes
+            ActualThemeChanged += OnThemeChanged;
         }
 
         private void OnUnloaded(object sender, RoutedEventArgs e)
         {
             _isLoaded = false;
+            ActualThemeChanged -= OnThemeChanged;
+        }
+
+        private void OnThemeChanged(FrameworkElement sender, object args)
+        {
+            if (_isLoaded)
+                ScheduleRefresh();
         }
 
         private void OnDependencyPropertyChanged(DependencyObject sender, DependencyProperty dp)
@@ -97,7 +124,54 @@ namespace Infomaniak.kDrive.CustomControls
 
         private void ScheduleRefresh()
         {
-            if (UriString != UriSource?.ToString())
+            // If ResourceKey is set, resolve it from application resources
+            if (!string.IsNullOrWhiteSpace(ResourceKey))
+            {
+                if (!Application.Current.Resources.TryGetValue(ResourceKey, out var resource))
+                {
+                    Logger.Log(Logger.Level.Warning, $"Resource not found: {ResourceKey}");
+                    if (UriSource is not null)
+                    {
+                        UriSource = null;
+                        return; // UriSource changed will trigger Refresh
+                    }
+                }
+
+
+                string? resourcePath = resource?.ToString();
+                if (!string.IsNullOrWhiteSpace(resourcePath))
+                {
+                    try
+                    {
+                        var newUri = new Uri(resourcePath);
+                        // Only update if the URI actually changed to prevent recursion
+                        if (UriSource?.ToString() != newUri.ToString())
+                        {
+                            UriSource = newUri;
+                            return; // UriSource changed will trigger Refresh
+                        }
+                    }
+                    catch
+                    {
+                        Logger.Log(Logger.Level.Error, $"Failed to create URI from resource: {ResourceKey} -> {resourcePath}");
+                        if (UriSource is not null)
+                        {
+                            UriSource = null;
+                            return; // UriSource changed will trigger Refresh
+                        }
+                    }
+                }
+                else
+                {
+                    if (UriSource is not null)
+                    {
+                        UriSource = null;
+                        return; // UriSource changed will trigger Refresh
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(UriString) && UriString != UriSource?.ToString())
             {
                 try
                 {

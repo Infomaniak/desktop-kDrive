@@ -9,9 +9,6 @@
              xmlns:controls="using:Infomaniak.kDrive.CustomControls"
              xmlns:kDrive="using:Infomaniak.kDrive"
              mc:Ignorable="d">
-    <UserControl.Resources>
-        <converters:FilePathToIconConverter x:Key="FilePathToIconConverter" />
-    </UserControl.Resources>
     <local:ErrorCard x:Name="ErrorCard"
                      Title="{x:Bind kDrive:Localizer.Instance.GetString('errForbiddenActionTitle')}"
                      Description="{x:Bind kDrive:Localizer.Instance.GetStringCombine1s('errMoveCancelDescription', Error.NodeTypeTranslationKey)}"

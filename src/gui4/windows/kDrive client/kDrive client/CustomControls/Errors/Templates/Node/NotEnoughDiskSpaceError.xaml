@@ -8,9 +8,6 @@
              xmlns:converters="using:Infomaniak.kDrive.Converters"
              xmlns:kDrive="using:Infomaniak.kDrive"
              mc:Ignorable="d">
-    <UserControl.Resources>
-        <converters:FilePathToIconConverter x:Key="FilePathToIconConverter" />
-    </UserControl.Resources>
     <local:ErrorCard x:Name="ErrorCard"
                      Title="{x:Bind kDrive:Localizer.Instance.GetString('errNotEnoughDiskSpaceTitle')}"
                      Description="{x:Bind kDrive:Localizer.Instance.GetString('errNotEnoughDiskSpaceDescription')}"

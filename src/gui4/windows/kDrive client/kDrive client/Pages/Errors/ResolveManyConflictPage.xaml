@@ -14,7 +14,7 @@
       mc:Ignorable="d">
     <Page.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        <converters:FilePathToIconConverter x:Key="FilePathToIconConverter" />
+        <converters:FilePathToIconResourceKeyConverter x:Key="FilePathToIconResourceKeyConverter" />
     </Page.Resources>
     <Grid Margin="{StaticResource Infomaniak.Style.Thickness.Uniform.L}"
           RowSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
@@ -117,7 +117,7 @@
                                     <ColumnDefinition Width="auto" />
                                 </Grid.ColumnDefinitions>
                                 <controls:SvgIcon Grid.Column="0"
-                                                  UriString="{x:Bind Path, Converter={StaticResource FilePathToIconConverter}}"
+                                                  ResourceKey="{x:Bind Path, Converter={StaticResource FilePathToIconResourceKeyConverter}}"
                                                   VerticalAlignment="Center"
                                                   Style="{StaticResource Infomaniak.Style.Icon.Size.XS}" />
 

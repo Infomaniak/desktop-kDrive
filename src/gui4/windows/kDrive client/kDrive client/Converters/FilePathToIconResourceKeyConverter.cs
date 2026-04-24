@@ -3,7 +3,7 @@ using System;
 
 namespace Infomaniak.kDrive.Converters
 {
-    public class FilePathToIconConverter : IValueConverter
+    public class FilePathToIconResourceKeyConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
@@ -18,7 +18,7 @@ namespace Infomaniak.kDrive.Converters
             }
             else
             {
-                Logger.Log(Logger.Level.Error, "FilePathToIconConverter: value is not a string or Uri.");
+                Logger.Log(Logger.Level.Error, "FilePathToIconResourceKeyConverter: value is not a string or Uri.");
                 path = "";
             }
 
@@ -28,7 +28,7 @@ namespace Infomaniak.kDrive.Converters
             {
                 // 3D files
                 ".stl" or ".obj" or ".fbx" or ".dae" or ".3ds" or ".blend" or ".glb" or ".gltf" or ".ply" or ".x3d"
-                    => "Infomaniak.DS.Icons.Documents.file3d",
+                    => "Infomaniak.DS.Icons.Documents.file-3d",
 
                 // Audio files
                 ".mp3" or ".wav" or ".flac" or ".aac" or ".ogg" or ".wma" or ".m4a" or ".aiff" or ".mid" or ".midi"
@@ -91,25 +91,13 @@ namespace Infomaniak.kDrive.Converters
             };
             if (iconResourceKey == "")
             {
-                Logger.Log(Logger.Level.Warning, $"FilePathToIconConverter: Using default icon for unknown extension '{extension}' in path '{path}'.");
+                Logger.Log(Logger.Level.Warning, $"FilePathToIconResourceKeyConverter: Using default icon for unknown extension '{extension}' in path '{path}'.");
                 iconResourceKey = "Infomaniak.DS.Icons.Documents.file";
                 // This is not an error, just a warning for tracking purposes.
                 // The above warning will lead to a Sentry allowing us to add more extensions in the future.
             }
 
-            if (Microsoft.UI.Xaml.Application.Current.Resources[iconResourceKey] is string iconUriStr)
-            {
-                if (targetType == typeof(string))
-                    return iconUriStr;
-                else
-                    return new Uri(iconUriStr);
-            }
-            else
-            {
-                Logger.Log(Logger.Level.Error, $"Resource for file extension {extension} should be {iconResourceKey} but was not found or is not a string.");
-                throw new ArgumentException("Icon resource not found", nameof(value));
-            }
-
+            return iconResourceKey;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

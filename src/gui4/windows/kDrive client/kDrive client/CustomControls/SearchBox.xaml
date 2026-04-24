@@ -9,7 +9,7 @@
              xmlns:kDrive="using:Infomaniak.kDrive"
              mc:Ignorable="d">
     <UserControl.Resources>
-        <converters:FilePathToIconConverter x:Key="FilePathToIconConverter" />
+        <converters:FilePathToIconResourceKeyConverter x:Key="FilePathToIconResourceKeyConverter" />
         <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
         <converters:BytesToHumanReadableStringConverter x:Key="BytesToHumanReadableStringConverter" />
         <converters:DateTimeToTimeAgoConverter x:Key="DateTimeToTimeAgoConverter" />
@@ -63,7 +63,7 @@
                 <local:SvgIcon Grid.Column="0"
                                Grid.Row="0"
                                Style="{StaticResource Infomaniak.Style.Icon.Size.S}"
-                               UriString="{x:Bind SearchItem.Name, Converter={StaticResource FilePathToIconConverter}}" />
+                               ResourceKey="{x:Bind SearchItem.Name, Converter={StaticResource FilePathToIconResourceKeyConverter}}" />
 
                 <TextBlock Grid.Column="1"
                            Grid.Row="0"
