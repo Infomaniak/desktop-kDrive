@@ -24,11 +24,11 @@ namespace KDC {
 
 class GetFileLinkJob : public AbstractTokenNetworkJob {
     public:
-        GetFileLinkJob(DriveDbId driveDbId, const NodeId &nodeId);
+        GetFileLinkJob(DriveDbId driveDbId, RemoteNodeId nodeId);
 
     private:
         virtual std::string getSpecificUrl() override;
-        inline virtual ExitInfo setData() override { return ExitCode::Ok; }
+        virtual ExitInfo setData() override { return ExitCode::Ok; }
 
         NodeId _nodeId;
 };

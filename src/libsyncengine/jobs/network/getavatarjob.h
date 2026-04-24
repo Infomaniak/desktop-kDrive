@@ -36,6 +36,6 @@ class GetAvatarJob : public AbstractNetworkJob {
         ExitInfo handleResponse(std::istream &is) override;
 
         std::string _avatarUrl;
-        std::shared_ptr<std::vector<char>> _avatar;
+        std::shared_ptr<std::vector<char>> _avatar{nullptr};
 };
 } // namespace KDC

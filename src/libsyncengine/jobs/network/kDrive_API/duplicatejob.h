@@ -25,8 +25,7 @@ namespace KDC {
 
 class DuplicateJob : public AbstractTokenNetworkJob {
     public:
-        DuplicateJob(const std::shared_ptr<Vfs> vfs, DriveDbId driveDbId, const NodeId &remoteFileId,
-                     const SyncPath &absoluteFinalPath);
+        DuplicateJob(const std::shared_ptr<Vfs> vfs, DriveDbId driveDbId, RemoteNodeId remoteFileId, SyncPath absoluteFinalPath);
         ~DuplicateJob() override;
 
         inline const NodeId &nodeId() const { return _nodeId; }
@@ -39,10 +38,10 @@ class DuplicateJob : public AbstractTokenNetworkJob {
         std::string getSpecificUrl() override;
         ExitInfo setData() override;
 
-        NodeId _remoteFileId;
+        RemoteNodeId _remoteFileId;
         SyncPath _absoluteFinalPath;
 
-        NodeId _nodeId;
+        RemoteNodeId _nodeId;
         SyncTime _modtime = 0;
         const std::shared_ptr<Vfs> _vfs;
 };

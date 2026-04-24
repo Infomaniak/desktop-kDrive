@@ -91,6 +91,8 @@ enum class SpecialFolder {
     Shared = 2
 };
 
+using SpecialFolderNames = std::unordered_map<SpecialFolder, SyncName>;
+
 using CursorStore = std::unordered_map<SpecialFolder, CursorData>;
 [[maybe_unused]] static const CursorStore defaultCursorStore =
         CursorStore{{SpecialFolder::Private, {}}, {SpecialFolder::CommonDocuments, {}}, {SpecialFolder::Shared, {}}};
@@ -384,14 +386,6 @@ enum class TranslationMode {
     V2ToV3,
     V3ToV2
 };
-
-enum class SpecialFolder {
-    CommonDocuments = 0,
-    Private = 1,
-    Shared = 2
-};
-
-using SpecialFolderNames = std::unordered_map<SpecialFolder, SyncName>;
 
 enum class Scope {
     None = 0,

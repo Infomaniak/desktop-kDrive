@@ -22,11 +22,12 @@
 
 namespace KDC {
 
-GetThumbnailJob::GetThumbnailJob(DriveDbId driveDbId, NodeId nodeId, unsigned width) :
+GetThumbnailJob::GetThumbnailJob(const DriveDbId driveDbId, RemoteNodeId nodeId, const unsigned width) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0, false),
-    _nodeId(nodeId),
+    _nodeId(std::move(nodeId)),
     _width(width) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
+    _apiVersion = 2;
 }
 
 std::string GetThumbnailJob::getSpecificUrl() {
@@ -34,6 +35,7 @@ std::string GetThumbnailJob::getSpecificUrl() {
     str += "/files/";
     str += _nodeId;
     str += "/thumbnail";
+
     return str;
 }
 
