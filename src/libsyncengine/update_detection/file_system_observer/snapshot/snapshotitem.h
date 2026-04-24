@@ -62,7 +62,7 @@ class SnapshotItem {
         void setLastChangedSnapshotVersion(SnapshotRevision snapshotVersion);
         SnapshotRevision lastChangeRevision() const { return _lastChangeRevision; }
 
-        // Force update the last change revision to the next snapshot revision. 
+        // Force update the last change revision to the next snapshot revision.
         // This is useful when we want to mark an item as changed without actually changing its properties, for example when we
         // remove an item from tmp blacklist and want to make sure it is properly re-synced.
         void forceUpdateLastChangeRevision();
@@ -111,8 +111,8 @@ class RemoteSnapshotItem : public SnapshotItem {
         RemoteSnapshotItem(const RemoteNodeId &id, const RemoteNodeId &parentId, const SyncName &name, SyncTime createdAt,
                            SyncTime lastModified, NodeType type, int64_t size, bool isLink, bool canWrite, bool canShare);
         RemoteSnapshotItem(const RemoteSnapshotItem &other) = default;
-        [[nodiscard]] ExitInfo setId(UserDbId userDbId, DriveId driveId, const NodeId &id);
-        [[nodiscard]] ExitInfo setParentId(UserDbId userDbId, DriveId driveId, const NodeId &newParentId);
+        [[nodiscard]] ExitInfo setId(UserDbId userDbId, DriveId driveId, const RemoteNodeId &id);
+        [[nodiscard]] ExitInfo setParentId(UserDbId userDbId, DriveId driveId, const RemoteNodeId &newParentId);
 };
 
 } // namespace KDC
