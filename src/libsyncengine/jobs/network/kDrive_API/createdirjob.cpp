@@ -37,7 +37,7 @@ CreateDirJob::CreateDirJob(const std::shared_ptr<Vfs> vfs, const DriveDbId drive
     _color(std::move(color)),
     _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
-    _apiVersion = 3;
+
     if (const auto exitInfo = ApiTranslator::translateV2ToV3(userDbId(), driveId(), _parentDirId); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ApiTranslator::translateV2ToV3: " << exitInfo);
         throw JobException("Translation error in CreateDirJob::CreateDirJob.");
@@ -54,7 +54,6 @@ CreateDirJob::CreateDirJob(const std::shared_ptr<Vfs> vfs, const UserDbId userDb
     _name(std::move(name)),
     _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
-    _apiVersion = 3;
 }
 
 CreateDirJob::~CreateDirJob() {
