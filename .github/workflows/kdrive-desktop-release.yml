@@ -4,26 +4,29 @@ on:
   workflow_dispatch:  
     inputs:
       build_windows:
-        type: boolean
+        type: choice
         description: Build Windows executables
-        default: true
-      build_windows_new_client:
-        type: boolean
-        description: Build Windows with new client (has no effect on macOS and Linux)
-        default: false
+        options:
+          - Do not build
+          - Legacy client
+          - New client
+        default: Legacy client
       build_macos:
-        type: boolean
+        type: choice
         description: Build macOS executables
-        default: true
+        options:
+          - Do not build
+          - Legacy client
+        default: Legacy client
       build_linux:
         type: choice
         description: Build Linux executables
         options:
-          - all
-          - amd64
-          - arm64
-          - none
-        default: all
+          - Do not build
+          - Legacy client (all)
+          - Legacy client (amd64)
+          - Legacy client (arm64)
+        default: Legacy client (all)
       enable_safety_checks_and_upload_builds_to_kdrive:
         type: boolean
         description: Enable safety checks and upload builds to kDrive
@@ -152,7 +155,7 @@ jobs:
 
 # Build apps
   build-Windows:
-    if: ${{ inputs.build_windows }}
+    if: ${{ inputs.build_windows != 'Do not build' }}
     needs: [ check-release-notes, check-translations ]
     runs-on: [ self-hosted, Windows, desktop-kdrive-with-gui ] #with-gui is required for the build_windows action to unlock the release signing certificate
     outputs:
@@ -171,10 +174,10 @@ jobs:
           physical_cert: ${{ secrets.WINDOWS_PHYSICAL_CERT }}
           physical_cert_pass: ${{ secrets.WINDOWS_PHYSICAL_CERT_PASSWORD }}
           release_build: true
-          build_new_client: ${{ inputs.build_windows_new_client }}
+          build_new_client: ${{ inputs.build_windows == 'New client' }}
 
   build-Linux-amd:
-    if: ${{ inputs.build_linux == 'all' || inputs.build_linux == 'amd64' }}
+    if: ${{ inputs.build_linux == 'Legacy client (all)' || inputs.build_linux == 'Legacy client (amd64)' }}
     needs: [ check-release-notes, check-translations ]
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
     steps:
@@ -188,7 +191,7 @@ jobs:
           release_build: true
 
   build-Linux-arm:
-    if: ${{ inputs.build_linux == 'all' || inputs.build_linux == 'arm64' }}
+    if: ${{ inputs.build_linux == 'Legacy client (all)' || inputs.build_linux == 'Legacy client (arm64)' }}
     needs: [ check-release-notes, check-translations ]
     runs-on: [ self-hosted, macOS, ARM64, desktop-kdrive ]
     steps:
@@ -202,7 +205,7 @@ jobs:
           release_build: true
 
   build-MacOS:
-    if: ${{ inputs.build_macos }}
+    if: ${{ inputs.build_macos != 'Do not build' }}
     needs: [ check-release-notes, check-translations ]
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
     steps:
@@ -219,7 +222,7 @@ jobs:
 
 # Upload the installer and sentry artifacts
   upload-to-kDrive-and-sentry-Windows:
-    if: ${{ inputs.build_windows && inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
+    if: ${{ inputs.build_windows != 'Do not build' && inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
     needs: [build-Windows]
     runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be runing on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
     env:
@@ -261,7 +264,7 @@ jobs:
         shell: powershell
 
   upload-to-kDrive-and-sentry-Linux-amd:
-    if: ${{ (inputs.build_linux == 'all' || inputs.build_linux == 'amd64') && inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
+    if: ${{ (inputs.build_linux == 'Legacy client (all)' || inputs.build_linux == 'Legacy client (amd64)') && inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
     needs: [build-Linux-amd]
     runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be running on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
     env:
@@ -303,7 +306,7 @@ jobs:
         shell: powershell
 
   upload-to-kDrive-and-sentry-Linux-arm:
-    if: ${{ (inputs.build_linux == 'all' || inputs.build_linux == 'arm64') && inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
+    if: ${{ (inputs.build_linux == 'Legacy client (all)' || inputs.build_linux == 'Legacy client (arm64)') && inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
     needs: [build-Linux-arm]
     runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be running on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
     env:
@@ -345,7 +348,7 @@ jobs:
         shell: powershell
 
   upload-to-kDrive-and-sentry-macOS:
-    if: ${{ inputs.build_macos && inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
+    if: ${{ inputs.build_macos != 'Do not build' && inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
     needs: [build-MacOS]
     runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be running on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
     env:
