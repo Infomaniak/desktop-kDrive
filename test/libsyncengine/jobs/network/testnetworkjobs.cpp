@@ -792,7 +792,7 @@ void TestNetworkJobs::testDownloadAborted() {
 
     CPPUNIT_ASSERT(forceStatusCalled);
     CPPUNIT_ASSERT(!vfsStatusRes.isSyncing);
-    CPPUNIT_ASSERT_EQUAL(static_cast<int16_t>(0), vfsStatusRes.progress);
+    CPPUNIT_ASSERT_EQUAL(int16_t{0}, vfsStatusRes.progress);
     CPPUNIT_ASSERT(!vfsStatusRes.isHydrated);
     CPPUNIT_ASSERT(!std::filesystem::exists(localDestFilePath));
 }
@@ -1166,8 +1166,8 @@ void TestNetworkJobs::testDuplicateRenameMove() {
 void TestNetworkJobs::testRename() {
     // Rename
     const SyncName filename = Str("test_rename_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()) + Str(".txt");
-    RenameJob renamejob(nullptr, _driveDbId, testFileRemoteRenameId, filename);
-    renamejob.runSynchronously();
+    RenameJob reNameJob(nullptr, _driveDbId, testFileRemoteRenameId, filename);
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), reNameJob.runSynchronously());
 
     // Check the name has changed
     GetFileInfoJob fileInfoJob(_driveDbId, testFileRemoteRenameId);
