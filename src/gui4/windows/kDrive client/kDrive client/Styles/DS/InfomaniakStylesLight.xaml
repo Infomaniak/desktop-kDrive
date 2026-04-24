@@ -26,10 +26,14 @@
     <Color x:Key="Infomaniak.DS.kSuite.Gradient.orange">#FD8C3D</Color>
 
     <!--  status colors  -->
-    <Color x:Key="colors.status.medium.success">#3EBF4D</Color>
-    <Color x:Key="colors.status.medium.warning">#FF9D0A</Color>
-    <Color x:Key="colors.status.medium.error">#F44336</Color>
-    <Color x:Key="colors.status.medium.information">#1EC6FF</Color>
+    <Color x:Key="Infomaniak.DS.colors.status.medium.success">#3EBF4D</Color>
+    <Color x:Key="Infomaniak.DS.colors.status.medium.warning">#FF9D0A</Color>
+    <Color x:Key="Infomaniak.DS.colors.status.medium.error">#F44336</Color>
+    <Color x:Key="Infomaniak.DS.colors.status.medium.information">#1EC6FF</Color>
+
+    <!--  kdrive colors  -->
+    <Color x:Key="Infomaniak.DS.colors.accent.kdrive.default">#446FDD</Color>
+    <SolidColorBrush x:Key="Infomaniak.DS.colors.accent.kdrive.defaultBrush" Color="{StaticResource Infomaniak.DS.colors.accent.kdrive.default}" />
 
     <!-- Documents -->
     <x:String x:Key="Infomaniak.DS.Icons.Documents.file-3d">ms-appx:///Assets/DS/Icons/Documents/file-3d.svg</x:String>

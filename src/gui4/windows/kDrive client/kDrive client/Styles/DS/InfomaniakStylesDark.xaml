@@ -30,6 +30,10 @@
     <Color x:Key="Infomaniak.DS.colors.status.medium.error">#FC776D</Color>
     <Color x:Key="Infomaniak.DS.colors.status.medium.information">#48E0FF</Color>
     
+    <!--  kdrive colors  -->
+    <Color x:Key="Infomaniak.DS.colors.accent.kdrive.default">#7A9FFF</Color>
+    <SolidColorBrush x:Key="Infomaniak.DS.colors.accent.kdrive.defaultBrush" Color="{StaticResource Infomaniak.DS.colors.accent.kdrive.default}" />
+    
     <!-- Documents -->
     <x:String x:Key="Infomaniak.DS.Icons.Documents.file-3d">ms-appx:///Assets/DS/Icons/Documents/file-3d-dark.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Documents.file-audio">ms-appx:///Assets/DS/Icons/Documents/file-audio-dark.svg</x:String>
