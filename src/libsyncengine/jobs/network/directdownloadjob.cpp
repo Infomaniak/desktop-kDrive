@@ -29,15 +29,15 @@ namespace KDC {
 
 constexpr uint64_t bufferSize = 4096 * 1000; // 4MB     // TODO : this should be defined in a common parent class
 
-DirectDownloadJob::DirectDownloadJob(const std::string &url) :
-    _url(url) {
+DirectDownloadJob::DirectDownloadJob(std::string url) :
+    _url(std::move(url)) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_HEAD;
     _apiVersion = 2;
 }
 
-DirectDownloadJob::DirectDownloadJob(const SyncPath &destinationFile, const std::string &url) :
-    _destinationFile(destinationFile),
-    _url(url) {
+DirectDownloadJob::DirectDownloadJob(SyncPath destinationFilePath, std::string url) :
+    _destinationFilePath(std::move(destinationFilePath)),
+    _url(std::move(url)) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _apiVersion = 2;
 }
@@ -46,11 +46,11 @@ DirectDownloadJob::DirectDownloadJob(const SyncPath &destinationFile, const std:
 ExitInfo DirectDownloadJob::handleResponse(std::istream &is) {
     if (_httpMethod == Poco::Net::HTTPRequest::HTTP_HEAD) return ExitCode::Ok;
 
-    std::ofstream output(_destinationFile.native().c_str(), std::ios::binary);
+    std::ofstream output(_destinationFilePath.native().c_str(), std::ios::binary);
     if (!output) {
-        LOGW_WARN(_logger, L"Failed to create file: " << Utility::formatSyncPath(_destinationFile));
+        LOGW_WARN(_logger, L"Failed to create file: " << Utility::formatSyncPath(_destinationFilePath));
         return {ExitCode::SystemError,
-                Utility::enoughSpace(_destinationFile) ? ExitCause::FileAccessError : ExitCause::NotEnoughDiskSpace};
+                Utility::enoughSpace(_destinationFilePath) ? ExitCause::FileAccessError : ExitCause::NotEnoughDiskSpace};
     }
 
     const ExitInfo exitInfo = readFromStream(is, output);
