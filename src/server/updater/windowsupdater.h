@@ -72,6 +72,12 @@ class WindowsUpdater : public AbstractUpdater {
          */
         virtual bool verifyDigitalSignature(const SyncPath &filepath);
 
+        /**
+         * @brief Attempt to re-download the installer. Fails if already attempted.
+         * @param filepath Path to the installer file.
+         */
+        void retryDownload(const SyncPath &filepath);
+
         bool _autoUpdate{false};
 
         friend class TestWindowsUpdater;

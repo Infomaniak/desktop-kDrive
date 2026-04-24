@@ -67,17 +67,11 @@ void WindowsUpdater::startInstaller() {
     }
     if (std::error_code ec; !std::filesystem::exists(filepath, ec)) {
         LOGW_WARN(Log::instance()->getLogger(), L"Installer file not found. " << Utility::formatStdError(filepath, ec));
-        if (_autoUpdate) {
-            LOG_ERROR(Log::instance()->getLogger(), "Already tried to re-download the installer before.");
-            setState(UpdateState::UpdateError);
-            return;
-        }
-        _autoUpdate = true;
-        downloadUpdate();
+        retryDownload(filepath);
         return;
     }
     if (!verifyFileChecksum(filepath)) {
-        setState(UpdateState::UpdateError); // Or create UpdateState::ChecksumError
+        retryDownload(filepath);
         return;
     }
 
@@ -271,6 +265,16 @@ bool WindowsUpdater::verifyDigitalSignature(const SyncPath &filepath) {
         return false;
     }
     return true;
+}
+
+void WindowsUpdater::retryDownload(const SyncPath &filepath) {
+    if (_autoUpdate) {
+        LOG_ERROR(Log::instance()->getLogger(), "Already tried to re-download the installer before.");
+        setState(UpdateState::UpdateError);
+        return;
+    }
+    _autoUpdate = true;
+    downloadUpdate();
 }
 
 } // namespace KDC
