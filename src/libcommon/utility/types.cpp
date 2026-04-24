@@ -543,6 +543,8 @@ std::string toString(const Language e) {
             return "Portuguese";
         case Language::Polish:
             return "Polish";
+        case Language::Norwegian:
+            return "Norwegian";
         default:
             return noConversionStr;
     }

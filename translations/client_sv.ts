@@ -2027,6 +2027,11 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
             <translation>Polska</translation>
         </message>
         <message>
+            <location filename="../src/gui/preferenceswidget.cpp" line="514" />
+            <source>Norwegian</source>
+            <translation>Norska</translation>
+        </message>
+        <message>
             <location filename="../src/gui/preferenceswidget.cpp" line="466" />
             <source>Unable to open folder %1.</source>
             <translation>Det går inte att öppna mappen %1.</translation>

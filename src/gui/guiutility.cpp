@@ -630,6 +630,8 @@ QLocale GuiUtility::languageToQLocale(Language language) {
             return QLocale::Portuguese;
         case Language::Polish:
             return QLocale::Polish;
+        case Language::Norwegian:
+            return QLocale::NorwegianBokmal;
         default:
             return QLocale();
     }

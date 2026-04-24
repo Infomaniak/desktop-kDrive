@@ -114,6 +114,7 @@ struct COMMON_EXPORT CommonUtility {
         static const QString swedishCode;
         static const QString portugueseCode;
         static const QString polishCode;
+        static const QString norwegianCode;
         static QString languageCode(Language language);
         static QStringList languageCodeList(Language enforcedLocale);
         static void setupTranslations(QCoreApplication *app, Language enforcedLocale);
