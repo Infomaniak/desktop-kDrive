@@ -101,7 +101,7 @@ class GetAppVersionJobForTests final : public GetAppVersionJob {
         }
 };
 
-static Poco::JSON::Object buildPublishedVersion(const std::string &channel, const bool includeTag = true) {
+Poco::JSON::Object buildPublishedVersion(const std::string &channel, const bool includeTag = true) {
     Poco::JSON::Object versionObj;
     if (includeTag) {
         (void) versionObj.set("tag", "3.6.4");
@@ -113,7 +113,7 @@ static Poco::JSON::Object buildPublishedVersion(const std::string &channel, cons
     return versionObj;
 }
 
-static std::string buildAppVersionReply(const Poco::JSON::Array &publishedVersions) {
+std::string buildAppVersionReply(const Poco::JSON::Array &publishedVersions) {
     Poco::JSON::Object applicationObj;
     (void) applicationObj.set("min_version", "3.6.0.0");
     (void) applicationObj.set("published_versions", publishedVersions);
