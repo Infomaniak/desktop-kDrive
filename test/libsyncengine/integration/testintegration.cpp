@@ -153,8 +153,8 @@ void TestIntegration::tearDown() {
 void TestIntegration::testAll() {
     if (!testhelpers::isExtendedTest()) return;
 
-    // Start sync
     _syncPal->start();
+
     // Wait for the end of 1st sync
     waitForSyncToBeIdle(std::source_location::current());
     logStep("initialization");
@@ -530,8 +530,7 @@ void TestIntegration::testEncoding() {
     waitForSyncToBeIdle(std::source_location::current());
 
     const auto remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), nfcPath.filename().native());
-    CPPUNIT_ASSERT(!remoteTestFileInfo.nodeId().isEmpty()); // The NFC file is not synchronized because the NFD file with the same
-                                                            // name already exists on remote replica.
+    CPPUNIT_ASSERT(!remoteTestFileInfo.nodeId().isEmpty());
     CPPUNIT_ASSERT_EQUAL(int64_t{1}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
     logStep("testEncoding");
 }
