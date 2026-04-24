@@ -68,10 +68,10 @@ def fill_missing_translations(git_dir_path, language):
         messages = context.find_all("message")
         for message in messages:
             if not message.translation.text:
-                    source_text = message.source.get_text()
-                    message.translation.string = html.unescape(translator.translate_text(source_text, target_lang=deepl_target).text)
-                    del message.translation["type"] # Mark translation as finished
-                    changes[(message.location.get("filename"), message.location.get("line"))] = message.translation
+                source_text = message.source.get_text()
+                message.translation.string = html.unescape(translator.translate_text(source_text, target_lang=deepl_target).text)
+                del message.translation["type"] # Mark translation as finished
+                changes[(message.location.get("filename"), message.location.get("line"))] = message.translation
 
     
     if changes:

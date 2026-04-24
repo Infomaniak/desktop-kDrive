@@ -2029,7 +2029,7 @@ Por favor, utilize o seguinte link para enviar os registos para o apoio técnico
         <message>
             <location filename="../src/gui/preferenceswidget.cpp" line="514" />
             <source>Norwegian</source>
-            <translation>Noruegues</translation>
+            <translation>Norueguês</translation>
         </message>
         <message>
             <location filename="../src/gui/preferenceswidget.cpp" line="466" />
