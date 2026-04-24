@@ -124,7 +124,7 @@ void SyncPalWorker::checkForMassDeletions() const {
     // Calculate alert threshold = size / ln(size)
     uint64_t alertThreshold = 0;
     if (nbTotalOfLocalSnapshotItems > snapshotMinSizeForDeleteAlert) {
-        assert(snapshotMinSizeForDeleteAlert > 1);
+        static_assert(snapshotMinSizeForDeleteAlert > 1);
         alertThreshold = static_cast<uint64_t>(nbTotalOfLocalSnapshotItems / log(nbTotalOfLocalSnapshotItems));
     }
 
