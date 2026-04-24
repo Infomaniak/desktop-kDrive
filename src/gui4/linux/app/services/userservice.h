@@ -62,10 +62,11 @@ class UserService : public QObject {
         void loginTokenFailed(const QString &error, const QString &errorDescription);
 
     private:
-        void beginAction(const QString &actionKey, qint64 scopeId = 0);
-        void endAction(const QString &actionKey, qint64 scopeId = 0);
+        void beginAction(const ServiceActionTracker::ActionKey &actionKey, ServiceActionTracker::ScopeId scopeId = 0);
+        void endAction(const ServiceActionTracker::ActionKey &actionKey, ServiceActionTracker::ScopeId scopeId = 0);
         void setLoading(bool loading);
-        [[nodiscard]] bool isActionPending(const QString &actionKey, qint64 scopeId = 0) const;
+        [[nodiscard]] bool isActionPending(const ServiceActionTracker::ActionKey &actionKey,
+                                           ServiceActionTracker::ScopeId scopeId = 0) const;
         void notifyRequestFailure(const ExitInfo &exitInfo, RequestNum requestNum);
 
         CommService &_commService;
