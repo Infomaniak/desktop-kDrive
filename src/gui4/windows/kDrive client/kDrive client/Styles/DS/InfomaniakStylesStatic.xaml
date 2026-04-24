@@ -86,7 +86,6 @@
     <x:String x:Key="Infomaniak.DS.Icons.Users.users-circle-question-mark">ms-appx:///Assets/DS/Icons/Users/users-circle-question-mark.svg</x:String>
 
     <!-- Documents -->
-    <x:String x:Key="Infomaniak.DS.Icons.Documents.file">ms-appx:///Assets/DS/Icons/Documents/file.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-outline">ms-appx:///Assets/DS/Icons/Documents/folder-outline.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-open">ms-appx:///Assets/DS/Icons/Documents/folder-open.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-connect">ms-appx:///Assets/DS/Icons/Documents/folder-connect.svg</x:String>
