@@ -22,6 +22,8 @@ import SwiftUI
 struct SearchResultRowView: View {
     let file: UISearchResponse
 
+    @State private var isHovered = false
+
     private var openInBrowserTooltip: String {
         "This file is not available locally and will be opened in your browser"
     }
@@ -46,7 +48,14 @@ struct SearchResultRowView: View {
                     .foregroundStyle(ColorToken.Text.secondary.asColor)
             }
         }
+        .padding(.vertical, AppPadding.padding4)
+        .padding(.horizontal, AppPadding.padding8)
+        .background(isHovered ? ColorToken.Status.Light.security.asColor : Color.clear)
+        .clipShape(RoundedRectangle(cornerRadius: AppRadius.radius4))
         .contentShape(Rectangle())
+        .onHover { hovering in
+            isHovered = hovering
+        }
         .help(file.isAvailableLocally ? "" : openInBrowserTooltip)
     }
 
