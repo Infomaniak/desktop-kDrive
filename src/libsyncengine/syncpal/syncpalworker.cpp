@@ -114,9 +114,9 @@ void SyncPalWorker::checkForMassDeletions() const {
     const auto nbOfLocalDeleteOpsToPropagate = _syncPal->_syncOps->countOps(ReplicaSide::Local, OperationType::Delete);
     if (!nbOfLocalDeleteOpsToPropagate) return;
 
-    // Cumulative count of local deletions that were propagated across successive synchronizations, no of which reached the idle
+    // Cumulative count of local deletions that were propagated across successive synchronizations, none of which reached the idle
     // state.
-    const auto totalCountOfLocalDeleteOps = _syncPal->nbOfLocalDeleteOpsPropagated() + nbOfLocalDeleteOpsToPropagate;
+    const auto totalCountOfLocalDeleteOps = _syncPal->nbOfPropagatedLocalDeleteOps() + nbOfLocalDeleteOpsToPropagate;
 
     // Approximation of the local snapshot size before deletions
     const auto totalCountOfLocalSnapshotItems = _syncPal->snapshot(ReplicaSide::Local)->nbItems() + totalCountOfLocalDeleteOps;
@@ -507,7 +507,7 @@ SyncStep SyncPalWorker::nextStep() const {
                 (areLiveSnapshotsUpdated || _syncPal->restart()))
                 return SyncStep::UpdateDetection1;
             else {
-                _syncPal->resetNbOfLocalDeleteOpsPropagated();
+                _syncPal->resetNbOfPropagatedLocalDeleteOps();
                 return SyncStep::Idle;
             }
         }

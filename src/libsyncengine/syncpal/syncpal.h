@@ -341,9 +341,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         }
 
         // Local delete operations monitoring
-        Count nbOfLocalDeleteOpsPropagated() const { return _nbOfLocalDeleteOpsPropagated; }
-        void incrementNbOfLocalDeleteOpsPropagated() { _nbOfLocalDeleteOpsPropagated++; }
-        void resetNbOfLocalDeleteOpsPropagated() { _nbOfLocalDeleteOpsPropagated = 0; }
+        Count nbOfPropagatedLocalDeleteOps() const { return _nbOfPropagatedLocalDeleteOps; }
+        void incrementNbOfPropagatedLocalDeleteOps() { _nbOfPropagatedLocalDeleteOps++; }
+        void resetNbOfPropagatedLocalDeleteOps() { _nbOfPropagatedLocalDeleteOps = 0; }
 
         [[nodiscard]] std::shared_ptr<CacheDirectory> cacheDirectory() const { return _cacheDirectory; }
 
@@ -365,7 +365,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         // Cumulative count of local delete operations that were propagated across successive synchronization cycles since the
         // last time the synchronization was in the idle state.
-        Count _nbOfLocalDeleteOpsPropagated{0};
+        Count _nbOfPropagatedLocalDeleteOps{0};
 
         // Callbacks
         std::function<void(const Error &error)> _addError;

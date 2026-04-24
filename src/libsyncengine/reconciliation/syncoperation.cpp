@@ -228,7 +228,7 @@ SyncOperationList &SyncOperationList::operator=(const SyncOperationList &other) 
 
 Count SyncOperationList::countOps(ReplicaSide affectedSide, OperationType operationType) const {
     const std::scoped_lock lock(_mutex);
-    const auto count = std::ranges::count_if(_opSortedList, [this, affectedSide, operationType](UniqueId opId) {
+    const auto count = std::ranges::count_if(_opSortedList, [this, affectedSide, operationType](const UniqueId opId) {
         const auto it = _allOps.find(opId);
         if (it == _allOps.end() || !it->second) {
             assert(false);

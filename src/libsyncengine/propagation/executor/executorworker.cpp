@@ -2018,7 +2018,7 @@ ExitInfo ExecutorWorker::propagateDeleteToDbAndTree(SyncOpPtr syncOp) {
     }
 
     if (syncOp->affectedNode()->side() == ReplicaSide::Local && !syncOp->omit())
-        _syncPal->incrementNbOfLocalDeleteOpsPropagated();
+        _syncPal->incrementNbOfPropagatedLocalDeleteOps();
 
     return ExitCode::Ok;
 }
