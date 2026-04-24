@@ -181,7 +181,7 @@ ExitInfo RemoteSnapshotItem::setId(const UserDbId userDbId, const DriveId driveI
     return ExitCode::Ok;
 }
 
-ExitInfo RemoteSnapshotItem::setParentId(const UserDbId userDbId, const DriveDbId driveId, const NodeId &newParentId) {
+ExitInfo RemoteSnapshotItem::setParentId(const UserDbId userDbId, const DriveId driveId, const RemoteNodeId &newParentId) {
     _parentId = newParentId;
     if (const auto exitInfo = ApiTranslator::translateV3ToV2(userDbId, driveId, _parentId); !exitInfo) return exitInfo;
     _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
