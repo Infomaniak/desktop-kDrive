@@ -1,5 +1,5 @@
 # Default path to lupdate.exe
-$lupdatePath = "C:\Qt\Tools\QtDesignStudio\qt6_design_studio_reduced_version\bin\lupdate.exe"
+$lupdatePath = ".\linguist\lupdate.exe"
 
 # Verify again the path provided by the user
 while (-Not (Test-Path $lupdatePath)) {
@@ -20,7 +20,7 @@ $updatedCount = 0
 foreach ($file in $tsFiles) {
     & $lupdatePath $srcPath -ts $file.FullName -noobsolete
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "Error while running lupdate.exe for $($file.FullName)"
+        Write-Host "Error while running lupdate.exe for $($file.FullName) $($LASTEXITCODE)"
     } else {
         Write-Host "Update successful for $($file.FullName)"
         $updatedCount++
