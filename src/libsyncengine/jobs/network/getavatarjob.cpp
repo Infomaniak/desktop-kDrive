@@ -41,8 +41,8 @@ std::string GetAvatarJob::getUrl() {
 ExitInfo GetAvatarJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
     Poco::XML::DOMParser parser;
     Poco::AutoPtr<Poco::XML::Document> pDoc = parser.parseString(replyBody);
-    Poco::XML::Node *pNode = pDoc->getNodeByPath(errorCodePathKey);
-    if (pNode != nullptr) {
+
+    if (Poco::XML::Node *pNode = pDoc->getNodeByPath(errorCodePathKey); pNode) {
         _backError = BackError(pNode->innerText(), {});
         LOG_WARN(_logger, "Error in request: " << uri.toString() << ". Error code: " << _backError.code());
     } else {
@@ -54,6 +54,7 @@ ExitInfo GetAvatarJob::handleError(const std::string &replyBody, const Poco::URI
 
 ExitInfo GetAvatarJob::handleResponse(std::istream &is) {
     _avatar = std::make_shared<std::vector<char>>(std::istreambuf_iterator(is), (std::istreambuf_iterator<char>()));
+
     return ExitCode::Ok;
 }
 
