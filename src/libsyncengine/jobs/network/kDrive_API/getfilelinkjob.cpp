@@ -22,9 +22,9 @@
 
 namespace KDC {
 
-GetFileLinkJob::GetFileLinkJob(DriveDbId driveDbId, const NodeId &nodeId) :
+GetFileLinkJob::GetFileLinkJob(const DriveDbId driveDbId, RemoteNodeId nodeId) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
-    _nodeId(nodeId) {
+    _nodeId(std::move(nodeId)) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
@@ -33,6 +33,7 @@ std::string GetFileLinkJob::getSpecificUrl() {
     str += "/files/";
     str += _nodeId;
     str += "/link";
+
     return str;
 }
 
