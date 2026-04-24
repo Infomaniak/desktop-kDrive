@@ -2010,6 +2010,11 @@ Por favor, utilice el siguiente enlace para enviar los registros al soporte: &lt
         <translation>Servidor proxy</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="511"/>
+        <source>Swedish</source>
+        <translation>Sueco</translation>
+    </message>
+    <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="466"/>
         <source>Unable to open folder %1.</source>
         <translation>No se puede abrir la carpeta %1.</translation>
