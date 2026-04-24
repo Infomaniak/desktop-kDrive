@@ -26,7 +26,7 @@ class ItemsExistJob : public AbstractTokenNetworkJob {
     public:
         explicit ItemsExistJob(DriveDbId driveDbId, const NodeSet &ids = {});
 
-        bool exists(const NodeId &id, IoError &ioError);
+        bool exists(const RemoteNodeId &id, IoError &ioError);
 
     private:
         ExitInfo setData() override;
@@ -34,7 +34,7 @@ class ItemsExistJob : public AbstractTokenNetworkJob {
 
         ExitInfo handleResponse(std::istream &is) override;
 
-        std::unordered_map<NodeId, bool, StringHashFunction, std::equal_to<>> _nodeExistenceMap;
+        std::unordered_map<RemoteNodeId, bool, StringHashFunction, std::equal_to<>> _nodeExistenceMap;
 };
 
 } // namespace KDC

@@ -30,11 +30,10 @@ namespace KDC {
 static constexpr auto privateFolder = Str("/Private/");
 static constexpr auto sharedFolder = Str("/Shared/");
 
-SearchJob::SearchJob(const DriveDbId driveDbId, const SyncDbId syncDbId, const std::string &searchString,
-                     const std::string &cursorInput /*= {}*/) :
+SearchJob::SearchJob(const DriveDbId driveDbId, const SyncDbId syncDbId, std::string searchString, Cursor cursorInput /*= {}*/) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
-    _searchString(searchString),
-    _cursorInput(cursorInput) {
+    _searchString(std::move(searchString)),
+    _cursorInput(std::move(cursorInput)) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _apiVersion = 3;
 
@@ -59,10 +58,10 @@ SearchJob::SearchJob(const DriveDbId driveDbId, const SyncDbId syncDbId, const s
     _syncRootPath = sync.localPath();
 }
 
-SearchJob::SearchJob(const DriveDbId driveDbId, const std::string &searchString, const std::string &cursorInput /*= {}*/) :
+SearchJob::SearchJob(const DriveDbId driveDbId, std::string searchString, Cursor cursorInput /*= {}*/) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
-    _searchString(searchString),
-    _cursorInput(cursorInput) {
+    _searchString(std::move(searchString)),
+    _cursorInput(std::move(cursorInput)) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _apiVersion = 3;
 }
@@ -71,6 +70,7 @@ SearchJob::SearchJob(const DriveDbId driveDbId, const std::string &searchString,
 std::string SearchJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
     str += "/files/search/default";
+
     return str;
 }
 
@@ -169,6 +169,7 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
         (void) _searchResults.emplace_back(nodeId, name, type == "dir" ? NodeType::Directory : NodeType::File, path, modifiedTime,
                                            size, isAvailableLocally);
     }
+
     return ExitCode::Ok;
 }
 } // namespace KDC
