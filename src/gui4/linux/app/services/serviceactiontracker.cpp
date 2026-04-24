@@ -55,7 +55,7 @@ bool ServiceActionTracker::isServicePending(const ServiceKey &serviceKey) const 
 void ServiceActionTracker::beginAction(const ServiceKey &serviceKey, const ActionKey &actionKey, const ScopeId scopeId) {
     auto &serviceActions = _pendingByServiceAndAction[serviceKey];
     auto &actionState = serviceActions[actionKey];
-    const int32_t previousScopeCount = actionState.pendingCountByScope.value(scopeId, 0);
+    const uint32_t previousScopeCount = actionState.pendingCountByScope.value(scopeId, 0);
     const bool wasServicePending = isServicePending(serviceKey);
 
     actionState.pendingCountByScope[scopeId] = previousScopeCount + 1;
@@ -72,7 +72,7 @@ void ServiceActionTracker::beginAction(const ServiceKey &serviceKey, const Actio
 }
 
 void ServiceActionTracker::endAction(const ServiceKey &serviceKey, const ActionKey &actionKey, const ScopeId scopeId) {
-    auto serviceIt = _pendingByServiceAndAction.find(serviceKey);
+    const auto serviceIt = _pendingByServiceAndAction.find(serviceKey);
     if (serviceIt == _pendingByServiceAndAction.end()) {
         qCWarning(lcServiceActionTracker) << "endAction called for unknown serviceKey:" << serviceKey
                                           << "| actionKey:" << actionKey << "| scopeId:" << scopeId;
@@ -88,8 +88,8 @@ void ServiceActionTracker::endAction(const ServiceKey &serviceKey, const ActionK
     }
 
     auto &actionState = actionIt.value();
-    auto scopeIt = actionState.pendingCountByScope.find(scopeId);
-    if (scopeIt == actionState.pendingCountByScope.end() || scopeIt.value() <= 0) {
+    const auto scopeIt = actionState.pendingCountByScope.find(scopeId);
+    if (scopeIt == actionState.pendingCountByScope.end() || scopeIt.value() == 0) {
         qCWarning(lcServiceActionTracker) << "endAction called for non-pending scope | serviceKey:" << serviceKey
                                           << "| actionKey:" << actionKey << "| scopeId:" << scopeId;
         return;
@@ -112,7 +112,7 @@ void ServiceActionTracker::endAction(const ServiceKey &serviceKey, const ActionK
         _pendingByServiceAndAction.erase(serviceIt);
     }
 
-    if (_pendingCountByService.value(serviceKey, 0) <= 0) {
+    if (_pendingCountByService.value(serviceKey, 0) == 0) {
         _pendingCountByService.remove(serviceKey);
         emit servicePendingChanged(serviceKey, false);
     }
