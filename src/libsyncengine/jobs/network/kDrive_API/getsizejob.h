@@ -24,11 +24,11 @@ namespace KDC {
 
 class GetSizeJob : public AbstractTokenNetworkJob {
     public:
-        GetSizeJob(UserDbId userDbId, DriveId driveId, const NodeId &nodeId);
-        GetSizeJob(DriveDbId driveDbId, const NodeId &nodeId);
+        GetSizeJob(UserDbId userDbId, DriveId driveId, RemoteNodeId nodeId);
+        GetSizeJob(DriveDbId driveDbId, RemoteNodeId nodeId);
 
-        inline const NodeId &nodeId() const { return _nodeId; }
-        inline int64_t size() const { return _size; }
+        const RemoteNodeId &nodeId() const { return _nodeId; }
+        int64_t size() const { return _size; }
 
     protected:
         ExitInfo handleResponse(std::istream &is) override;
@@ -38,7 +38,7 @@ class GetSizeJob : public AbstractTokenNetworkJob {
         std::string getSpecificUrl() override;
         ExitInfo setData() override { return ExitCode::Ok; }
 
-        NodeId _nodeId;
+        RemoteNodeId _nodeId;
         int64_t _size{0};
 };
 } // namespace KDC
