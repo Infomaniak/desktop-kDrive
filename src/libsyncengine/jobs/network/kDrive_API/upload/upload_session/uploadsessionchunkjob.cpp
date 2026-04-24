@@ -39,7 +39,6 @@ UploadSessionChunkJob::UploadSessionChunkJob(UploadSessionType uploadType, Drive
 
     _data = chunkContent;
     _chunkHash = Utility::computeXxHash(_data);
-    _apiVersion = 3;
 }
 
 UploadSessionChunkJob::UploadSessionChunkJob(UploadSessionType uploadType, const SyncPath &filepath,

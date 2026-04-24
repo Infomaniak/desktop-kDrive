@@ -44,7 +44,6 @@ GetFilesInDirectoryJob::GetFilesInDirectoryJob(const UserDbId userDbId, const Dr
     AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, driveId),
     _remoteDirId(std::move(remoteDirId)),
     _cursorInput(std::move(cursorInput)) {
-    _apiVersion = 3;
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     translateRemoteDirIdFromV2ToV3(translationMode);
 }
@@ -55,7 +54,6 @@ GetFilesInDirectoryJob::GetFilesInDirectoryJob(const DriveDbId driveDbId, Remote
     AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
     _remoteDirId(std::move(remoteDirId)),
     _cursorInput(std::move(cursorInput)) {
-    _apiVersion = 3;
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     translateRemoteDirIdFromV2ToV3(translationMode);
 }
