@@ -496,24 +496,23 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &remoteDirId
 }
 
 ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(const RemoteNodeId &remoteDirId, bool &changes) {
-    // Temporary mocks the long poll request as `listing/longpoll` does not exist in the API v3 yet.
-    changes = true;
-
-    return ExitCode::Ok;
-
-    // Actual implementation
     changes = false;
     if (!_liveSnapshot.isValid()) return ExitCode::Ok;
 
     std::shared_ptr<LongPollJob> notifyJob = nullptr;
     if (const auto exitInfo = getListingCursor(remoteDirId, _listingCursorMap[remoteDirId]); !exitInfo) {
-        LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::listingCursor: " << exitInfo);
+        LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::getListingCursor: remoteDirId="
+                                          << remoteDirId << ", exitInfo=" << exitInfo);
         return exitInfo;
     }
+
+    const std::string dataMessage = "for driveDbId=" + std::to_string(_driveDbId) + ", remoteDirId=" + remoteDirId +
+                                    " and cursor=" + _listingCursorMap.at(remoteDirId).cursor;
+
     try {
         notifyJob = std::make_shared<LongPollJob>(_driveDbId, _listingCursorMap.at(remoteDirId).cursor);
     } catch (const JobException &e) {
-        LOG_SYNCPAL_WARN(_logger, "Error in LongPollJob::LongPollJob for driveDbId=" << _driveDbId << " error=" << e.what());
+        LOG_SYNCPAL_WARN(_logger, "Exception thrown in LongPollJob::LongPollJob" << dataMessage << ", error=" << e.what());
         return exception2ExitCode(e);
     }
 
@@ -528,7 +527,7 @@ ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(const RemoteNodeId &remote
 
         {
             const std::scoped_lock lock(_mutex);
-            if (_updating) { // We want to update snapshot immediately, cancel LongPoll job and send a listing/continue
+            if (_updating) { // We want to update the remote snapshot immediately, cancel LongPoll job and send a listing/continue
                              // request
                 notifyJob->abort();
                 changes = true;
@@ -537,14 +536,12 @@ ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(const RemoteNodeId &remote
             }
         }
 
-        // Wait until job finished
+        // Wait until the long poll job is finished.
         Utility::msleep(100);
     }
 
     if (!notifyJob->exitInfo()) {
-        LOG_SYNCPAL_WARN(_logger, "Error in LongPollJob: " << notifyJob->exitInfo()
-                                                           << " for drive: " << std::to_string(_driveDbId)
-                                                           << " and cursor: " << _listingCursorMap.at(remoteDirId).cursor);
+        LOG_SYNCPAL_WARN(_logger, "Error in LongPollJob: " << notifyJob->exitInfo() << dataMessage);
 
         if (notifyJob->exitInfo() == ExitInfo(ExitCode::NetworkError, ExitCause::NetworkTimeout)) {
             _syncPal->addError(Error(_syncPal->syncDbId(), ERR_ID, notifyJob->exitInfo()));
@@ -555,14 +552,13 @@ ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(const RemoteNodeId &remote
 
     Poco::JSON::Object::Ptr resObj = notifyJob->jsonRes();
     if (!resObj) {
-        // If error, fall
-        LOG_SYNCPAL_DEBUG(_logger, "Notify changes request failed for drive: " << std::to_string(_driveDbId).c_str()
-                                                                               << " and cursor: "
-                                                                               << _listingCursorMap.at(remoteDirId).cursor);
+        LOG_SYNCPAL_DEBUG(_logger, "(Long poll) No JSON response. Notify changes request failed " << dataMessage);
         return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
     if (!JsonParserUtility::extractValue(resObj, changesKey, changes)) {
+        LOG_SYNCPAL_DEBUG(_logger, "(Long poll) The key for changes is missing in JSON response. Notify changes request failed "
+                                           << dataMessage);
         return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
