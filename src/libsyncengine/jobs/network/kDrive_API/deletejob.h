@@ -25,17 +25,17 @@ namespace KDC {
 
 class DeleteJob : public AbstractTokenNetworkJob {
     public:
-        DeleteJob(DriveDbId driveDbId, const NodeId &remoteItemId, const NodeId &localItemId,
-                  const SyncPath &absoluteLocalFilepath, NodeType nodeType);
-        DeleteJob(DriveDbId driveDbId, const NodeId &remoteItemId); // To be used in tests only.
+        DeleteJob(DriveDbId driveDbId, RemoteNodeId remoteItemId, RemoteNodeId localItemId, SyncPath absoluteLocalFilepath,
+                  NodeType nodeType);
+        DeleteJob(DriveDbId driveDbId, RemoteNodeId remoteItemId); // To be used in tests only.
         ExitInfo canRun() override;
 
     private:
         std::string getSpecificUrl() override;
         inline ExitInfo setData() override { return ExitCode::Ok; }
 
-        const NodeId _remoteItemId;
-        const NodeId _localItemId;
+        const RemoteNodeId _remoteItemId;
+        const RemoteNodeId _localItemId;
         SyncPath _absoluteLocalFilepath;
         NodeType _nodeType;
 };

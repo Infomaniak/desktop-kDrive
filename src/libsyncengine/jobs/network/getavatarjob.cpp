@@ -29,9 +29,9 @@
 namespace KDC {
 
 GetAvatarJob::GetAvatarJob(std::string url) :
-    _avatarUrl(url),
-    _avatar(nullptr) {
+    _avatarUrl(std::move(url)) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
+    _apiVersion = 2;
 }
 
 std::string GetAvatarJob::getUrl() {
