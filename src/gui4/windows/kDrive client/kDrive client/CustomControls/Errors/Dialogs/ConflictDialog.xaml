@@ -59,6 +59,7 @@
                                                Unselected="RemoteVersionPresenter_Unselected"
                                                NodeInfo="{x:Bind ViewModel.RemoteVersionInfo, Mode=OneWay}"
                                                NodeAbsolutePath="{x:Bind ViewModel.RemoteVersionAbsolutePath, Mode=OneWay}"
+                                               Error="{x:Bind ViewModel.CurrentError, Mode=OneWay}"
                                                ShowMostRecentBadge="{x:Bind ViewModel.RemoteIsMostRecent, Mode=OneWay}" />
 
             <controls:ConflictVersionPresenter x:Name="LocalVersionPresenter"
@@ -68,6 +69,7 @@
                                                Unselected="LocalVersionPresenter_Unselected"
                                                NodeInfo="{x:Bind ViewModel.LocalVersionInfo, Mode=OneWay}"
                                                NodeAbsolutePath="{x:Bind ViewModel.LocalVersionAbsolutePath, Mode=OneWay}"
+                                               Error="{x:Bind ViewModel.CurrentError, Mode=OneWay}"
                                                ShowMostRecentBadge="{x:Bind ViewModel.LocalIsMostRecent, Mode=OneWay}" />
         </Grid>
     </StackPanel>
