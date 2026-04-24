@@ -36,7 +36,7 @@ CreateDirJob::CreateDirJob(const DriveDbId driveDbId, SyncPath filepath, RemoteN
     _name(std::move(name)),
     _color(std::move(color)) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
-    _apiVersion = 3;
+
     if (const auto exitInfo = ApiTranslator::translateV2ToV3(userDbId(), driveId(), _parentDirId); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ApiTranslator::translateV2ToV3: " << exitInfo);
         throw JobException("Translation error in CreateDirJob::CreateDirJob.");
@@ -52,7 +52,6 @@ CreateDirJob::CreateDirJob(const UserDbId userDbId, const DriveId driveId, Remot
     _parentDirId(std::move(parentId)),
     _name(std::move(name)) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
-    _apiVersion = 3;
 }
 
 std::string CreateDirJob::getSpecificUrl() {
