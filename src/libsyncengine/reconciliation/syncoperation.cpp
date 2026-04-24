@@ -227,6 +227,7 @@ SyncOperationList &SyncOperationList::operator=(const SyncOperationList &other) 
 }
 
 uint64_t SyncOperationList::countOps(ReplicaSide affectedSide, OperationType operationType) const {
+    const std::scoped_lock lock(_mutex);
     uint64_t count = 0;
     for (const auto &opId: _opSortedList) {
         const auto syncOp = getOp(opId);

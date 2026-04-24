@@ -32,15 +32,16 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/log/sentry/ptraces.h"
 #include "libcommon/log/sentry/utility.h"
+
 #include <log4cplus/loggingmacros.h>
+
+#include <math.h>
 
 #define UPDATE_PROGRESS_DELAY 1
 
 namespace KDC {
 
-// Alert threshold definition for mass deletions
-static constexpr std::array<std::pair<uint64_t /* from size */, uint64_t /* alert threshold (0 means no alert) */>, 3>
-        massDeletionsThresholdArr{{{0, 0}, {100, 1000}, {20000, 10000}}};
+static constexpr auto snapshotMinSizeForDeleteAlert = 100; // 100 items
 
 SyncPalWorker::SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
                              const std::chrono::seconds &startDelay) :
@@ -120,14 +121,11 @@ void SyncPalWorker::checkForMassDeletions() const {
     // Approximation of the local snapshot size before deletions
     const auto nbTotalOfLocalSnapshotItems = _syncPal->snapshot(ReplicaSide::Local)->nbItems() + nbTotalOfLocalDeleteOps;
 
-    // Determine alert threshold
+    // Calculate alert threshold = size / ln(size)
     uint64_t alertThreshold = 0;
-    for (size_t i = 0; i < massDeletionsThresholdArr.size(); i++) {
-        if (nbTotalOfLocalSnapshotItems >= massDeletionsThresholdArr[i].first &&
-            (i == massDeletionsThresholdArr.size() - 1 || nbTotalOfLocalSnapshotItems < massDeletionsThresholdArr[i + 1].first)) {
-            alertThreshold = massDeletionsThresholdArr[i].second;
-            break;
-        }
+    if (nbTotalOfLocalSnapshotItems > snapshotMinSizeForDeleteAlert) {
+        assert(snapshotMinSizeForDeleteAlert > 1);
+        alertThreshold = static_cast<uint64_t>(nbTotalOfLocalSnapshotItems / log(nbTotalOfLocalSnapshotItems));
     }
 
     // Check for mass deletions
