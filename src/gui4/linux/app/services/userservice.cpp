@@ -39,9 +39,6 @@ UserService::UserService(CommService &commService, AppCache &appCache, ServiceAc
     _appCache(appCache),
     _serviceActionTracker(serviceActionTracker),
     _serviceEventBus(serviceEventBus) {
-    (void) connect(&_commService, &CommService::userAdded, &_appCache, &AppCache::upsertUser);
-    (void) connect(&_commService, &CommService::userUpdated, &_appCache, &AppCache::upsertUser);
-    (void) connect(&_commService, &CommService::userRemoved, &_appCache, &AppCache::removeUser);
     (void) connect(&_serviceActionTracker, &ServiceActionTracker::servicePendingChanged, this,
                    [this](const ServiceActionTracker::ServiceKey &serviceKey, const bool pending) {
                        if (serviceKey == serviceKeyUser) {
