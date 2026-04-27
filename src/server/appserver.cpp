@@ -3841,7 +3841,7 @@ bool AppServer::startClient() {
 
         IoError ioError = IoError::Success;
         bool exists = false;
-        if (!IoHelper::checkIfPathExists(pathToExecutable.toStdString(), exists, ioError,
+        if (!IoHelper::checkIfPathExists(QStr2Path(pathToExecutable), exists, ioError,
                                          IoHelper::PathCheckOption::Insensitive) ||
             !exists || ioError != IoError::Success) {
             pathToExecutable.clear();
