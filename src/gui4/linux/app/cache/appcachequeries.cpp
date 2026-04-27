@@ -25,7 +25,7 @@
 namespace {
 template<typename T, typename Getter>
 void appendSortedById(std::vector<T> &values, Getter getter) {
-    std::ranges::sort(values, [getter](const T &lhs, const T &rhs) { return getter(lhs) < getter(rhs); });
+    (void) std::ranges::sort(values, [getter](const T &lhs, const T &rhs) { return getter(lhs) < getter(rhs); });
 }
 } // namespace
 
@@ -97,7 +97,7 @@ std::vector<DriveAvailableInfo> AppCache::availableDrives(const UserDbId userDbI
         return {};
     }
     auto values = it->second;
-    std::ranges::sort(values, [](const DriveAvailableInfo &lhs, const DriveAvailableInfo &rhs) {
+    (void) std::ranges::sort(values, [](const DriveAvailableInfo &lhs, const DriveAvailableInfo &rhs) {
         if (lhs.accountId() != rhs.accountId()) {
             return lhs.accountId() < rhs.accountId();
         }
@@ -141,6 +141,9 @@ std::optional<SyncInfo> AppCache::sync(const SyncDbId syncDbId) const {
 std::optional<ErrorInfo> AppCache::syncError(const ErrorDbId errorDbId) const {
     const auto it = _syncErrorsByDbId.find(errorDbId);
     if (it == _syncErrorsByDbId.end()) {
+        return std::nullopt;
+    }
+    if (!_syncsByDbId.contains(it->second.syncDbId())) {
         return std::nullopt;
     }
     return it->second;
@@ -233,7 +236,7 @@ std::vector<ErrorInfo> AppCache::errorsForSync(const SyncDbId syncDbId) const {
             values.push_back(*errorInfo);
         }
     }
-    std::ranges::sort(values, [](const ErrorInfo &lhs, const ErrorInfo &rhs) { return lhs.getTime() < rhs.getTime(); });
+    (void) std::ranges::sort(values, [](const ErrorInfo &lhs, const ErrorInfo &rhs) { return lhs.getTime() < rhs.getTime(); });
     return values;
 }
 
@@ -282,7 +285,7 @@ std::vector<SyncContext> AppCache::syncContexts() const {
             contexts.push_back(*context);
         }
     }
-    std::ranges::sort(contexts, [](const SyncContext &lhs, const SyncContext &rhs) {
+    (void) std::ranges::sort(contexts, [](const SyncContext &lhs, const SyncContext &rhs) {
         if (lhs.user.dbId() != rhs.user.dbId()) return lhs.user.dbId() < rhs.user.dbId();
         if (lhs.account.dbId() != rhs.account.dbId()) return lhs.account.dbId() < rhs.account.dbId();
         if (lhs.drive.dbId() != rhs.drive.dbId()) return lhs.drive.dbId() < rhs.drive.dbId();
@@ -323,7 +326,7 @@ std::vector<DriveContext> AppCache::driveContexts() const {
             contexts.push_back(*context);
         }
     }
-    std::ranges::sort(contexts, [](const DriveContext &lhs, const DriveContext &rhs) {
+    (void) std::ranges::sort(contexts, [](const DriveContext &lhs, const DriveContext &rhs) {
         if (lhs.user.dbId() != rhs.user.dbId()) return lhs.user.dbId() < rhs.user.dbId();
         if (lhs.account.dbId() != rhs.account.dbId()) return lhs.account.dbId() < rhs.account.dbId();
         return lhs.drive.dbId() < rhs.drive.dbId();
@@ -356,9 +359,9 @@ std::vector<AvailableDriveContext> AppCache::availableDriveContexts() const {
     std::vector<AvailableDriveContext> contexts;
     for (const auto userDbId: _availableDrivesByUserDbId | std::views::keys) {
         auto userContexts = availableDriveContexts(userDbId);
-        contexts.insert(contexts.end(), userContexts.begin(), userContexts.end());
+        (void) contexts.insert(contexts.end(), userContexts.begin(), userContexts.end());
     }
-    std::ranges::sort(contexts, [](const AvailableDriveContext &lhs, const AvailableDriveContext &rhs) {
+    (void) std::ranges::sort(contexts, [](const AvailableDriveContext &lhs, const AvailableDriveContext &rhs) {
         if (lhs.user.dbId() != rhs.user.dbId()) return lhs.user.dbId() < rhs.user.dbId();
         if (lhs.availableDrive.accountId() != rhs.availableDrive.accountId()) {
             return lhs.availableDrive.accountId() < rhs.availableDrive.accountId();

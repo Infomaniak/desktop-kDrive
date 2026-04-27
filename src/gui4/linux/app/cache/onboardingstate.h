@@ -21,7 +21,10 @@
 #include "app/cache/appcache.h"
 #include "app/cache/cachetypes.h"
 
+#include <QLoggingCategory>
 #include <QObject>
+
+Q_DECLARE_LOGGING_CATEGORY(lcOnboardingState)
 
 #include <optional>
 #include <unordered_map>

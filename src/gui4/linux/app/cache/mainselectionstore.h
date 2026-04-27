@@ -21,7 +21,10 @@
 #include "app/cache/appcache.h"
 #include "app/cache/cachetypes.h"
 
+#include <QLoggingCategory>
 #include <QObject>
+
+Q_DECLARE_LOGGING_CATEGORY(lcMainSelectionStore)
 
 #include <optional>
 #include <vector>
@@ -55,7 +58,8 @@ class MainSelectionStore : public QObject {
         void currentSyncContextChanged();
 
     private:
-        void handleCacheChanged();
+        void handleSyncsChanged();
+        void handleContextDataChanged();
         void setCurrentSyncDbId(SyncDbId syncDbId);
         [[nodiscard]] SyncDbId firstAvailableSyncDbId() const;
 
