@@ -20,6 +20,7 @@ import Cocoa
 import Combine
 import InfomaniakDI
 import kDriveCore
+import OrderedCollections
 
 final class MainWindowController: NSWindowController {
     enum WindowConstants {
@@ -77,17 +78,14 @@ final class MainWindowController: NSWindowController {
     }
 
     private func observeUsersCache() {
-        cacheObservable.usersPublisher
+        cacheObservable.usersPublisher.map { $0.isEmpty }.removeDuplicates()
             .receiveOnMain(store: &bindStore) { [weak self] _ in
                 guard let self = self else { return }
                 guard case .mainWindow = router.currentRoute else {
                     return
                 }
 
-                Task {
-                    let route = await self.guessBestRouteWhenXPCIsConnected()
-                    self.router.navigate(to: route)
-                }
+                self.router.navigate(to: .onboarding())
             }
     }
 
