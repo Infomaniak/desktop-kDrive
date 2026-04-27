@@ -23,10 +23,10 @@ namespace KDC {
 MainSelectionStore::MainSelectionStore(AppCache &cache, QObject *const parent) :
     QObject(parent),
     _cache(cache) {
-    (void) connect(&_cache, &AppCache::usersChanged, this, &MainSelectionStore::ensureValidSelection);
-    (void) connect(&_cache, &AppCache::accountsChanged, this, &MainSelectionStore::ensureValidSelection);
-    (void) connect(&_cache, &AppCache::drivesChanged, this, &MainSelectionStore::ensureValidSelection);
-    (void) connect(&_cache, &AppCache::syncsChanged, this, &MainSelectionStore::ensureValidSelection);
+    (void) connect(&_cache, &AppCache::usersChanged, this, &MainSelectionStore::handleCacheChanged);
+    (void) connect(&_cache, &AppCache::accountsChanged, this, &MainSelectionStore::handleCacheChanged);
+    (void) connect(&_cache, &AppCache::drivesChanged, this, &MainSelectionStore::handleCacheChanged);
+    (void) connect(&_cache, &AppCache::syncsChanged, this, &MainSelectionStore::handleCacheChanged);
 }
 
 qint64 MainSelectionStore::currentSyncDbId() const {
@@ -70,6 +70,14 @@ void MainSelectionStore::ensureValidSelection() {
     }
 
     setCurrentSyncDbId(firstAvailableSyncDbId());
+}
+
+void MainSelectionStore::handleCacheChanged() {
+    const auto previousCurrentSyncDbId = _currentSyncDbId;
+    ensureValidSelection();
+    if (_currentSyncDbId != 0 && _currentSyncDbId == previousCurrentSyncDbId) {
+        emit currentSyncContextChanged();
+    }
 }
 
 void MainSelectionStore::setCurrentSyncDbId(const SyncDbId syncDbId) {
