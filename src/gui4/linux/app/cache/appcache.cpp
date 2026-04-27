@@ -28,6 +28,7 @@ AppCache::AppCache(QObject *const parent) :
     QObject(parent) {}
 
 void AppCache::clearAll() {
+    qCInfo(lcAppCache) << "Cache cleared";
     const bool hadUsers = !_usersByDbId.empty();
     const bool hadAccounts = !_accountsByDbId.empty();
     const bool hadDrives = !_drivesByDbId.empty();
@@ -74,6 +75,7 @@ void AppCache::replaceAccounts(const std::vector<AccountInfo> &accounts) {
     _accountsByDbId.clear();
     for (const auto &info: accounts) {
         if (!_usersByDbId.contains(info.userDbId())) {
+            qCWarning(lcAppCache) << "Account dropped during replace | accountDbId:" << info.dbId() << "/ unknown userDbId:" << info.userDbId();
             continue;
         }
         _accountsByDbId[info.dbId()] = AccountNode{info, info.userDbId(), {}};
@@ -92,6 +94,7 @@ void AppCache::replaceDrives(const std::vector<DriveInfo> &drives) {
     _drivesByDbId.clear();
     for (const auto &info: drives) {
         if (!_accountsByDbId.contains(info.accountDbId())) {
+            qCWarning(lcAppCache) << "Drive dropped during replace | driveDbId:" << info.dbId() << "/ unknown accountDbId:" << info.accountDbId();
             continue;
         }
         _drivesByDbId[info.dbId()] = DriveNode{info, info.accountDbId(), {}};
@@ -109,6 +112,7 @@ void AppCache::replaceSyncs(const std::vector<SyncInfo> &syncs) {
     _syncsByDbId.clear();
     for (const auto &info: syncs) {
         if (!_drivesByDbId.contains(info.driveDbId())) {
+            qCWarning(lcAppCache) << "Sync dropped during replace | syncDbId:" << info.dbId() << "/ unknown driveDbId:" << info.driveDbId();
             continue;
         }
         _syncsByDbId[info.dbId()] = SyncNode{info, info.driveDbId(), {}};
@@ -125,6 +129,7 @@ void AppCache::replaceSyncErrors(const std::vector<ErrorInfo> &errors) {
     _syncErrorsByDbId.clear();
     for (const auto &info: errors) {
         if (!_syncsByDbId.contains(info.syncDbId())) {
+            qCWarning(lcAppCache) << "Sync error dropped during replace | errorDbId:" << info.dbId() << "/ unknown syncDbId:" << info.syncDbId();
             continue;
         }
         _syncErrorsByDbId[info.dbId()] = info;
@@ -170,6 +175,7 @@ void AppCache::clearAllAvailableDrives() {
 void AppCache::upsertUser(const UserInfo &info) {
     auto &node = _usersByDbId[info.dbId()];
     node.info = info;
+    qCDebug(lcAppCache) << "User upserted | dbId:" << info.dbId();
     emit usersChanged();
 }
 
@@ -178,6 +184,7 @@ void AppCache::removeUser(const UserDbId userDbId) {
     if (userIt == _usersByDbId.end()) {
         return;
     }
+    qCDebug(lcAppCache) << "User removed | dbId:" << userDbId;
 
     for (const auto accountDbIds = userIt->second.accountDbIds; const auto accountDbId: accountDbIds) {
         removeAccountCascade(accountDbId);
@@ -195,6 +202,7 @@ void AppCache::removeUser(const UserDbId userDbId) {
 
 void AppCache::upsertAccount(const AccountInfo &info) {
     if (!_usersByDbId.contains(info.userDbId())) {
+        qCWarning(lcAppCache) << "Account upsert dropped | accountDbId:" << info.dbId() << "/ unknown userDbId:" << info.userDbId();
         return;
     }
 
@@ -207,6 +215,7 @@ void AppCache::upsertAccount(const AccountInfo &info) {
     node.info = info;
     node.parentUserDbId = info.userDbId();
     linkAccountToUser(info.dbId(), info.userDbId());
+    qCDebug(lcAppCache) << "Account upserted | dbId:" << info.dbId() << "/ userDbId:" << info.userDbId();
     emit accountsChanged();
 }
 
@@ -214,6 +223,7 @@ void AppCache::removeAccount(const AccountDbId accountDbId) {
     if (!_accountsByDbId.contains(accountDbId)) {
         return;
     }
+    qCDebug(lcAppCache) << "Account removed | dbId:" << accountDbId;
     removeAccountCascade(accountDbId);
     emit accountsChanged();
     emit drivesChanged();
@@ -223,6 +233,7 @@ void AppCache::removeAccount(const AccountDbId accountDbId) {
 
 void AppCache::upsertDrive(const DriveInfo &info) {
     if (!_accountsByDbId.contains(info.accountDbId())) {
+        qCWarning(lcAppCache) << "Drive upsert dropped | driveDbId:" << info.dbId() << "/ unknown accountDbId:" << info.accountDbId();
         return;
     }
 
@@ -235,6 +246,7 @@ void AppCache::upsertDrive(const DriveInfo &info) {
     node.info = info;
     node.parentAccountDbId = info.accountDbId();
     linkDriveToAccount(info.dbId(), info.accountDbId());
+    qCDebug(lcAppCache) << "Drive upserted | dbId:" << info.dbId() << "/ accountDbId:" << info.accountDbId();
     emit drivesChanged();
 }
 
@@ -242,6 +254,7 @@ void AppCache::removeDrive(const DriveDbId driveDbId) {
     if (!_drivesByDbId.contains(driveDbId)) {
         return;
     }
+    qCDebug(lcAppCache) << "Drive removed | dbId:" << driveDbId;
     removeDriveCascade(driveDbId);
     emit drivesChanged();
     emit syncsChanged();
@@ -250,6 +263,7 @@ void AppCache::removeDrive(const DriveDbId driveDbId) {
 
 void AppCache::upsertSync(const SyncInfo &info) {
     if (!_drivesByDbId.contains(info.driveDbId())) {
+        qCWarning(lcAppCache) << "Sync upsert dropped | syncDbId:" << info.dbId() << "/ unknown driveDbId:" << info.driveDbId();
         return;
     }
 
@@ -262,6 +276,7 @@ void AppCache::upsertSync(const SyncInfo &info) {
     node.info = info;
     node.parentDriveDbId = info.driveDbId();
     linkSyncToDrive(info.dbId(), info.driveDbId());
+    qCDebug(lcAppCache) << "Sync upserted | dbId:" << info.dbId() << "/ driveDbId:" << info.driveDbId();
     emit syncsChanged();
 }
 
@@ -269,6 +284,7 @@ void AppCache::removeSync(const SyncDbId syncDbId) {
     if (!_syncsByDbId.contains(syncDbId)) {
         return;
     }
+    qCDebug(lcAppCache) << "Sync removed | dbId:" << syncDbId;
     removeSyncCascade(syncDbId);
     emit syncsChanged();
     emit syncErrorsChanged();
@@ -276,6 +292,7 @@ void AppCache::removeSync(const SyncDbId syncDbId) {
 
 void AppCache::upsertSyncError(const ErrorInfo &info) {
     if (!_syncsByDbId.contains(info.syncDbId())) {
+        qCWarning(lcAppCache) << "Sync error upsert dropped | errorDbId:" << info.dbId() << "/ unknown syncDbId:" << info.syncDbId();
         return;
     }
 
@@ -286,6 +303,7 @@ void AppCache::upsertSyncError(const ErrorInfo &info) {
 
     _syncErrorsByDbId[info.dbId()] = info;
     linkErrorToSync(info.dbId(), info.syncDbId());
+    qCDebug(lcAppCache) << "Sync error upserted | dbId:" << info.dbId() << "/ syncDbId:" << info.syncDbId();
     emit syncErrorsChanged();
 }
 
@@ -294,6 +312,7 @@ void AppCache::removeSyncError(const ErrorDbId errorDbId) {
     if (errorIt == _syncErrorsByDbId.end()) {
         return;
     }
+    qCDebug(lcAppCache) << "Sync error removed | dbId:" << errorDbId;
     unlinkErrorFromSync(errorDbId, errorIt->second.syncDbId());
     _syncErrorsByDbId.erase(errorIt);
     emit syncErrorsChanged();
