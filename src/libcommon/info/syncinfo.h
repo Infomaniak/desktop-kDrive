@@ -59,6 +59,8 @@ class SyncInfo {
         friend QDataStream &operator>>(QDataStream &in, SyncInfo &info);
         friend QDataStream &operator<<(QDataStream &out, const SyncInfo &info);
 
+        friend bool operator==(const SyncInfo &lhs, const SyncInfo &rhs) = default;
+
         friend QDataStream &operator>>(QDataStream &in, QList<SyncInfo> &list);
         friend QDataStream &operator<<(QDataStream &out, const QList<SyncInfo> &list);
 
