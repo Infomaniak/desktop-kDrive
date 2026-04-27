@@ -305,12 +305,12 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
 <context>
     <name>KDC::AppServer</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="1685"/>
+        <location filename="../src/server/appserver.cpp" line="1679"/>
         <source>Share link copied to clipboard</source>
         <translation>Freigabelink in die Zwischenablage kopiert</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3773"/>
+        <location filename="../src/server/appserver.cpp" line="3759"/>
         <source>%1 and %n other file(s) have been removed.</source>
         <translation>
             <numerusform>%1 und %n andere Datei(en) wurde(n) gelöscht.</numerusform>
@@ -318,13 +318,13 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3775"/>
+        <location filename="../src/server/appserver.cpp" line="3761"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 wurde gelöscht.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3780"/>
+        <location filename="../src/server/appserver.cpp" line="3766"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
             <numerusform>%1 und %n andere Datei(en) wurde(n) hinzugefügt.</numerusform>
@@ -332,13 +332,13 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3782"/>
+        <location filename="../src/server/appserver.cpp" line="3768"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 wurde hinzugefügt.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3787"/>
+        <location filename="../src/server/appserver.cpp" line="3773"/>
         <source>%1 and %n other file(s) have been updated.</source>
         <translation>
             <numerusform>%1 und %n andere Datei(en) wurde(n) aktualisiert.</numerusform>
@@ -346,13 +346,13 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3789"/>
+        <location filename="../src/server/appserver.cpp" line="3775"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 wurde aktualisiert.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3794"/>
+        <location filename="../src/server/appserver.cpp" line="3780"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
         <translation>
             <numerusform>%1 wurde zu %2 verschoben und %n andere Datei(en) wurde(n) verschoben.</numerusform>
@@ -360,12 +360,12 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3797"/>
+        <location filename="../src/server/appserver.cpp" line="3783"/>
         <source>%1 has been moved to %2.</source>
         <translation>%1 wurde zu %2 verschoben.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3805"/>
+        <location filename="../src/server/appserver.cpp" line="3791"/>
         <source>Sync Activity</source>
         <translation>Synchronisierungsaktivität</translation>
     </message>
@@ -464,17 +464,17 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
         <translation>Es wurden keine Synchronisierungsordner konfiguriert.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1422"/>
+        <location filename="../src/gui/clientgui.cpp" line="1426"/>
         <source>Synthesis</source>
         <translation>Synthese</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1423"/>
+        <location filename="../src/gui/clientgui.cpp" line="1427"/>
         <source>Preferences</source>
         <translation>Einstellungen</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1424"/>
+        <location filename="../src/gui/clientgui.cpp" line="1428"/>
         <source>Quit</source>
         <translation>Beenden</translation>
     </message>
@@ -519,22 +519,22 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
         <translation>%1 (Synchronisierung wurde angehalten)</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1257"/>
+        <location filename="../src/gui/clientgui.cpp" line="1261"/>
         <source>Do you really want to remove the synchronizations of the account &lt;i&gt;%1&lt;/i&gt; ?&lt;br&gt;&lt;b&gt;Note:&lt;/b&gt; This will &lt;b&gt;not&lt;/b&gt; delete any files.</source>
         <translation>Möchten Sie die Synchronisierungen des Kontos &lt;i&gt;%1&lt;/i&gt; wirklich entfernen?&lt;br&gt;&lt;b&gt;Hinweis:&lt;/b&gt; Dadurch werden &lt;b&gt;keine&lt;/b&gt; Dateien gelöscht.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1261"/>
+        <location filename="../src/gui/clientgui.cpp" line="1265"/>
         <source>REMOVE ALL SYNCHRONIZATIONS</source>
         <translation>ALLE SYNC. ENTFERNEN</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1262"/>
+        <location filename="../src/gui/clientgui.cpp" line="1266"/>
         <source>CANCEL</source>
         <translation>ABBRECHEN</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1590"/>
+        <location filename="../src/gui/clientgui.cpp" line="1594"/>
         <source>Failed to start synchronizations!</source>
         <translation>Synchronisierungen konnten nicht gestartet werden!</translation>
     </message>
@@ -792,95 +792,90 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
         <translation>Erweitertes vollständiges Protokoll</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="207"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="206"/>
         <source>Delete logs older than %1 days</source>
         <translation>Protokolle löschen, die älter als %1 Tage sind</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="226"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="225"/>
         <source>Share the debug folder with Infomaniak support.</source>
         <translation>Geben Sie den Debug-Ordner für den Infomaniak-Support frei.</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="250"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="249"/>
         <source>The last session is the periode since the last kDrive start.</source>
         <translation>Die letzte Sitzung ist der Zeitraum seit dem letzten kDrive-Start.</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="254"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="253"/>
         <source>Share only the last kDrive session</source>
         <translation>Teilen Sie nur die letzte kDrive-Sitzung</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="285"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="284"/>
         <source>  Loading</source>
         <translation>  Wird geladen</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="294"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="293"/>
         <source>Cancel</source>
         <translation>Abbrechen</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="320"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="319"/>
         <source>SAVE</source>
         <translation>SPEICHERN</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="327"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="326"/>
         <source>CANCEL</source>
         <translation>ABBRECHEN</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="471"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="470"/>
         <source>Failed to share</source>
         <translation>Teilen fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="481"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="480"/>
         <source>1. Check that you are logged in &lt;br&gt;2. Check that you have configured at least one kDrive</source>
         <translation>1. Überprüfen Sie, ob Sie angemeldet sind &lt;br&gt;2. Überprüfen Sie, ob Sie mindestens ein kDrive konfiguriert haben</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="486"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="485"/>
         <source> (Connexion interrupted)</source>
         <translation> (Verbindung unterbrochen)</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="493"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="492"/>
         <source>Share the folder with SwissTransfer &lt;br&gt;</source>
         <translation>Teilen Sie den Ordner mit SwissTransfer &lt;br&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="494"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="493"/>
         <source> 1. We automatically compressed your log &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;here&lt;/a&gt;.&lt;br&gt;</source>
         <translation> 1. Wir haben Ihr Protokoll &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;hier&lt;/a&gt; automatisch komprimiert.&lt;br&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="496"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="495"/>
         <source> 2. Transfer the archive with &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;swisstransfer.com&lt;/a&gt;&lt;br&gt;</source>
         <translation> 2. Übertragen Sie das Archiv mit &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;swisstransfer.com&lt;/a&gt;&lt;br&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="498"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="497"/>
         <source> 3. Share the link with &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt; support@infomaniak.com &lt;/a&gt;&lt;br&gt;</source>
         <translation> 3. Teilen Sie den Link mit &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt; support@infomaniak.com &lt;/a&gt;&lt;br&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="528"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="527"/>
         <source>Last upload the %1</source>
         <translatorcomment>Letzte Hochladung am %1</translatorcomment>
         <translation>Letztes Hochladen von %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="556"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="555"/>
         <source>Sharing has been cancelled</source>
         <translation>Die Freigabe wurde abgebrochen</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="597"/>
-        <source>The extended full log is activated through the KDRIVE_FORCE_EXTENDED_LOG environment variable. Set it to 0 to disable it.</source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/gui/debuggingdialog.h" line="70"/>
@@ -888,40 +883,40 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
         <translation>Der gesamte Ordner ist groß (&gt; 100 MB) und kann einige Zeit für die Freigabe benötigen. Um die Freigabezeit zu reduzieren, empfehlen wir, nur die letzte kDrive-Sitzung freizugeben.</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="611"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="600"/>
         <source>%1/%2/%3 at %4h%5m and %6s</source>
         <extracomment>Date format for the last successful log upload. %1: month, %2: day, %3: year, %4: hour, %5: minute, %6: second</extracomment>
         <translatorcomment>ie: Letzte Hochladung am 29.01.24 um 13:04:06 Uhr</translatorcomment>
         <translation>%2.%1.%3 um %4:%5:%6 Uhr</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="654"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="643"/>
         <source>Do you want to save your modifications?</source>
         <translation>Wollen Sie Ihre Änderungen speichern?</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="709"/>
-        <location filename="../src/gui/debuggingdialog.cpp" line="715"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="698"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="704"/>
         <source>Unable to open folder %1.</source>
         <translation>Ordner %1 kann nicht geöffnet werden.</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="722"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="711"/>
         <source>  Share</source>
         <translation>  Teilen</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="732"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="721"/>
         <source>  Sharing | step 1/2 %1%</source>
         <translation>  Teilen | Schritt 1/2 %1%</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="741"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="730"/>
         <source>  Sharing | step 2/2 %1%</source>
         <translation>  Teilen | Schritt 2/2 %1%</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="751"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="740"/>
         <source>  Canceling...</source>
         <translation>  Stornieren...</translation>
     </message>
@@ -1992,32 +1987,27 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         <translation>kDrive beim Start öffnen</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="515"/>
-        <source>Finnish</source>
-        <translation>Finnisch</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="521"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="516"/>
         <source>Advanced</source>
         <translation>Erweitert</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="522"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="517"/>
         <source>Debugging information</source>
         <translation>Debugging-Informationen</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="524"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="519"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Open debugging folder&lt;/a&gt;</source>
         <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Debugging-Ordner öffnen&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="525"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="520"/>
         <source>Files to exclude</source>
         <translation>Auszuschliessende Dateien</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="526"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="521"/>
         <source>Proxy server</source>
         <translation>Proxy-Server</translation>
     </message>
@@ -2057,7 +2047,7 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         <translation>Ungültiger Link %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="528"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="523"/>
         <source>Lite Sync</source>
         <translation>Lite Sync</translation>
     </message>
@@ -2740,37 +2730,37 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         <translation>Kann keinen gültigen Pfad finden</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2108"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2109"/>
         <source>No valid folder selected!</source>
         <translation>Kein gültiger Ordner ausgewählt!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2119"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2120"/>
         <source>The selected path does not exist!</source>
         <translation>Der ausgewählte Pfad existiert nicht!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2124"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2125"/>
         <source>The selected path is not a folder!</source>
         <translation>Der ausgewählte Pfad ist kein Ordner!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2129"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2130"/>
         <source>You have no permission to write to the selected folder!</source>
         <translation>Sie haben keine Schreibberechtigung für den ausgewählten Ordner!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2159"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2160"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
         <translation>Der lokale Ordner %1 enthält einen bereits synchronisierten Ordner. Bitte wählen Sie einen anderen!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2167"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2168"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
         <translation>Der lokale Ordner %1 befindet sich in einem bereits synchronisierten Ordner. Bitte wählen Sie einen anderen!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2175"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2176"/>
         <source>The local folder %1 is already synced. Please pick another one!</source>
         <translation>Der lokale Ordner %1 ist bereits synchronisiert. Bitte wählen Sie einen anderen!</translation>
     </message>
@@ -2920,6 +2910,19 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
     </message>
 </context>
 <context>
+    <name>main.cpp</name>
+    <message>
+        <location filename="../src/gui/mainclient.cpp" line="49"/>
+        <source>System Tray not available</source>
+        <translation>Systemleiste nicht verfügbar</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/mainclient.cpp" line="48"/>
+        <source>%1 requires a working system tray. If you are running XFCE, please follow &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;these instructions&lt;/a&gt;. Otherwise, please install a system tray application such as &apos;trayer&apos; and try again.</source>
+        <translation>%1 benötigt eine funktionierende Systemablage (System Tray). Wenn Sie XFCE verwenden, folgen Sie bitte &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;diesen Anweisungen&lt;/a&gt;. Andernfalls installieren Sie bitte eine System-Tray-Anwendung wie „trayer“ und versuchen Sie es erneut.</translation>
+    </message>
+</context>
+<context>
     <name>utility</name>
     <message>
         <location filename="../src/gui/guiutility.cpp" line="84"/>
@@ -3006,12 +3009,12 @@ Sie können eines über die kDrive-Einstellungen hinzufügen.</translation>
         <translation>Der Ordner &lt;b&gt;%1&lt;/b&gt; kann nicht als Synchronisationsordner ausgewählt werden. Bitte wählen Sie einen anderen Ordner. Vorgeschlagener Ordner: &lt;b&gt;%2&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="651"/>
+        <location filename="../src/gui/guiutility.cpp" line="641"/>
         <source>You have excluded more than %1 folders, please note that this will affect synchronization performance.</source>
         <translation>Sie haben mehr als %1 Ordner ausgeschlossen. Bitte beachten Sie, dass dies die Synchronisierungsleistung beeinträchtigt.</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="660"/>
+        <location filename="../src/gui/guiutility.cpp" line="650"/>
         <source>You cannot exclude more than %1 folders. Please uncheck higher-level folders.</source>
         <translation>Sie können maximal %1 Ordner ausschließen. Bitte deaktivieren Sie die übergeordneten Ordner.</translation>
     </message>
