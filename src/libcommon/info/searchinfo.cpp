@@ -43,7 +43,7 @@ void SearchInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, searchInfoId, _id);
     CommonUtility::writeValueToStruct(dstruct, searchInfoName, _name);
     CommonUtility::writeValueToStruct(dstruct, searchInfoType, _type);
-    CommonUtility::writeValueToStruct(dstruct, searchInfoPath, Path2Str(_path));
+    CommonUtility::writeValueToStruct(dstruct, searchInfoPath, CommonUtility::syncPath2CommString(_path));
     CommonUtility::writeValueToStruct(dstruct, searchInfoModifiedTime, _modifiedTime);
     CommonUtility::writeValueToStruct(dstruct, searchInfoSize, _size);
     CommonUtility::writeValueToStruct(dstruct, searchInfoIsAvailableLocally, _isAvailableLocally);
@@ -53,9 +53,9 @@ void SearchInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, searchInfoId, _id);
     CommonUtility::readValueFromStruct(dstruct, searchInfoName, _name);
     CommonUtility::readValueFromStruct(dstruct, searchInfoType, _type);
-    std::string pathStr;
+    CommString pathStr;
     CommonUtility::readValueFromStruct(dstruct, searchInfoPath, pathStr);
-    _path = Str2Path(pathStr);
+    _path = CommonUtility::commString2SyncPath(pathStr);
     CommonUtility::readValueFromStruct(dstruct, searchInfoModifiedTime, _modifiedTime);
     CommonUtility::readValueFromStruct(dstruct, searchInfoSize, _size);
     CommonUtility::readValueFromStruct(dstruct, searchInfoIsAvailableLocally, _isAvailableLocally);
