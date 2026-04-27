@@ -39,6 +39,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/services/serviceactiontracker.h
         app/services/serviceeventbus.cpp
         app/services/serviceeventbus.h
+        app/services/syncservice.cpp
+        app/services/syncservice.h
         app/services/userservice.cpp
         app/services/userservice.h
 )
