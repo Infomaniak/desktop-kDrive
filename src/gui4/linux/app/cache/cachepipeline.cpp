@@ -18,6 +18,8 @@
 
 #include "cachepipeline.h"
 
+#include "libcommon/utility/cstypes.h"
+
 namespace KDC {
 
 CachePipeline::CachePipeline(CommService &commService, AppCache &appCache, QObject *const parent) :
@@ -40,8 +42,28 @@ CachePipeline::CachePipeline(CommService &commService, AppCache &appCache, QObje
     (void) connect(&_commService, &CommService::syncUpdated, &_appCache, &AppCache::upsertSync, Qt::UniqueConnection);
     (void) connect(&_commService, &CommService::syncRemoved, &_appCache, &AppCache::removeSync, Qt::UniqueConnection);
 
-    (void) connect(&_commService, &CommService::errorAdded, &_appCache, &AppCache::upsertSyncError, Qt::UniqueConnection);
-    (void) connect(&_commService, &CommService::errorRemoved, &_appCache, &AppCache::removeSyncError, Qt::UniqueConnection);
+    (void) connect(&_commService, &CommService::errorAdded, &_appCache,
+                   [this](const ErrorInfo &info) {
+                       if (info.level() == ErrorLevel::Server) {
+                           _appCache.upsertServerError(info);
+                           return;
+                       }
+
+                       _appCache.upsertSyncError(info);
+                   },
+                   Qt::UniqueConnection);
+    (void) connect(&_commService, &CommService::errorRemoved, &_appCache,
+                   [this](const ErrorDbId errorDbId) {
+                       if (_appCache.syncError(errorDbId).has_value()) {
+                           _appCache.removeSyncError(errorDbId);
+                           return;
+                       }
+
+                       if (_appCache.serverError(errorDbId).has_value()) {
+                           _appCache.removeServerError(errorDbId);
+                       }
+                   },
+                   Qt::UniqueConnection);
 }
 
 } // namespace KDC
