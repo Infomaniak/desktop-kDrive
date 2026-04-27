@@ -148,9 +148,29 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 
             Logger.Log(Logger.Level.Info, "Folder picked: " + folder.Path);
 
-            if (DriveSetupContentDialogVM.NewSyncs.Any(s => s.LocalPath.Equals(folder.Path, StringComparison.OrdinalIgnoreCase)))
+            if (DriveSetupContentDialogVM.NewSyncs.Any(s => s != newSync && s.LocalPath.Equals(folder.Path, StringComparison.OrdinalIgnoreCase)))
             {
-                Logger.Log(Logger.Level.Warning, $"Selected folder path '{folder.Path}' is already used by another sync.");
+                Logger.Log(Logger.Level.Info, $"Selected folder path '{folder.Path}' is already used by another sync.");
+                Utility.ShowTeachingTip(Localizer.Instance.GetString("teachingTipInvalidFolderTitle"), Localizer.Instance.GetString("teachingTipInvalidFolderContent"), TimeSpan.FromSeconds(20));
+
+                control.IsEnabled = true;
+                return;
+            }
+
+            if (DriveSetupContentDialogVM.NewSyncs.Any(s => s != newSync && s.LocalPath.StartsWith(folder.Path, StringComparison.OrdinalIgnoreCase)))
+            {
+                Logger.Log(Logger.Level.Info, $"Selected folder path '{folder.Path}' is already parent of an another sync.");
+                Utility.ShowTeachingTip(Localizer.Instance.GetString("teachingTipInvalidFolderTitle"), Localizer.Instance.GetString("teachingTipInvalidFolderContent"), TimeSpan.FromSeconds(20));
+
+                control.IsEnabled = true;
+                return;
+            }
+
+            if (DriveSetupContentDialogVM.NewSyncs.Any(s => s != newSync && s.LocalPath.StartsWith(folder.Path, StringComparison.OrdinalIgnoreCase)))
+            {
+                Logger.Log(Logger.Level.Info, $"Selected folder path '{folder.Path}' is include an another sync.");
+                Utility.ShowTeachingTip(Localizer.Instance.GetString("teachingTipInvalidFolderTitle"), Localizer.Instance.GetString("teachingTipInvalidFolderContent"), TimeSpan.FromSeconds(20));
+
                 control.IsEnabled = true;
                 return;
             }
