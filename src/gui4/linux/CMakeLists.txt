@@ -33,6 +33,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/services/commservice.h
         app/services/cachebootstrapper.cpp
         app/services/cachebootstrapper.h
+        app/services/driveservice.cpp
+        app/services/driveservice.h
         app/services/serviceactiontracker.cpp
         app/services/serviceactiontracker.h
         app/services/serviceeventbus.cpp
