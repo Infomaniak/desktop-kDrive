@@ -52,6 +52,8 @@ struct SyncContext {
         SyncInfo sync;
         std::vector<ErrorInfo> errors;
         std::optional<ErrorInfo> latestError;
+
+        friend bool operator==(const SyncContext &lhs, const SyncContext &rhs) = default;
 };
 
 struct DriveContext {
@@ -59,6 +61,8 @@ struct DriveContext {
         AccountInfo account;
         DriveInfo drive;
         std::vector<SyncInfo> syncs;
+
+        friend bool operator==(const DriveContext &lhs, const DriveContext &rhs) = default;
 };
 
 struct AvailableDriveContext {
@@ -67,6 +71,8 @@ struct AvailableDriveContext {
         DriveAvailableInfo availableDrive;
         bool alreadyConfigured{false};
         std::optional<DriveInfo> configuredDrive;
+
+        friend bool operator==(const AvailableDriveContext &lhs, const AvailableDriveContext &rhs) = default;
 };
 
 struct PendingSyncConfig {
