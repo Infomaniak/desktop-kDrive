@@ -166,7 +166,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
                 return;
             }
 
-            if (DriveSetupContentDialogVM.NewSyncs.Any(s => s != newSync && s.LocalPath.StartsWith(folder.Path, StringComparison.OrdinalIgnoreCase)))
+            if (DriveSetupContentDialogVM.NewSyncs.Any(s => s != newSync && folder.Path.StartsWith(s.LocalPath, StringComparison.OrdinalIgnoreCase)))
             {
                 Logger.Log(Logger.Level.Info, $"Selected folder path '{folder.Path}' is include an another sync.");
                 Utility.ShowTeachingTip(Localizer.Instance.GetString("teachingTipInvalidFolderTitle"), Localizer.Instance.GetString("teachingTipInvalidFolderContent"), TimeSpan.FromSeconds(20));
