@@ -46,11 +46,15 @@
   cross-service failures). Owned once by `AppClientLinux` and injected by reference into app services.
 - `app/cache/appcache.*`: durable graph-backed cache (`AppCache` QObject) — owns configured users/accounts/drives/syncs,
   split sync/server errors, per-user available drives, cascade removals, and derived read models.
+- `app/cache/cachepipeline.*`: unique bridge for `CommService -> AppCache` push signals.
 - `app/cache/cachetypes.h`: cache read models and onboarding keys (`SyncContext`, `DriveContext`,
   `AvailableDriveContext`, `AvailableDriveKey`, `PendingSyncConfig`).
 - `app/cache/mainselectionstore.*`: sync-first main-shell selection owner (`currentSyncDbId`) and selection healing.
   - emits `currentSyncContextChanged()` as a coarse invalidation signal when the current sync context stays selected but the underlying cache graph changes.
 - `app/cache/onboardingstate.*`: onboarding-only selected user, selected available-drive keys, and pending sync configs.
+- `app/services/cachebootstrapper.*`: sequential initial snapshot loader for users, accounts, drives, syncs, and sync errors.
+- `app/services/driveservice.*`: drive use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`.
+- `app/services/syncservice.*`: sync use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`.
 - `ui/`: QML shell and design tokens.
 
 ## Build And Validation
@@ -82,10 +86,13 @@ cmake --build build-linux/build/build/Debug --target kdrive_qml -- -j 12
   `ServiceEventBus` for transient events, `ServiceActionTracker` for durable pending-action state.
 - Do not create per-service formatted error-string state for UI display; services emit generic bus signals and keep
   structured backend error information in request handlers/logs.
+- `DriveService` and `SyncService` use `ServiceActionTracker` for loading/pending state and `ServiceEventBus` for
+  transient failure notification; avoid reintroducing local `lastError` / ad hoc pending counters there.
 - `AppCache`, `MainSelectionStore`, and `OnboardingState` mutations must run on the Qt main thread.
 - `AppCache` must not own mutable main selection; derive main context through `MainSelectionStore.currentSyncDbId`.
 - Store available drives per user via `AppCache::replaceAvailableDrivesForUser(...)`; do not reintroduce a global
   available-drives snapshot.
+- `CachePipeline` owns the direct push-signal bridge from `CommService` to `AppCache`; service classes should not wire those pushes themselves.
 
 ## IPC And Error Handling
 
