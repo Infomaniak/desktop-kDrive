@@ -3,16 +3,20 @@
 This file lists the main third-party components used and/or redistributed by kDrive Desktop.
 
 The exact set of redistributed binaries can vary by platform:
+
 - Conan-managed dependencies are declared in `conanfile.py`.
-- Additional packaged dependencies are documented in `infomaniak-build-tools/{linux,macos,windows}/Readme.md` and packaging scripts.
+- Additional packaged dependencies are documented in `infomaniak-build-tools/{linux,macos,windows}/Readme.md` and
+  packaging scripts.
 - Vendored sources are stored in `src/3rdparty/`.
-- Build-only tools and local developer prerequisites are intentionally excluded when they are not redistributed with release artifacts.
+- Build-only tools and local developer prerequisites are intentionally excluded when they are not redistributed with
+  release artifacts.
 
 ---
 
 ## Conan-Managed Dependencies
 
 ### xxHash
+
 - **Version:** 0.8.2
 - **License:** BSD-2-Clause
 - **Copyright:** Copyright (c) 2012-2021 Yann Collet
@@ -20,6 +24,7 @@ The exact set of redistributed binaries can vary by platform:
 - **Note:** Declared in `conanfile.py`.
 
 ### log4cplus
+
 - **Version:** 2.1.2
 - **License:** Apache-2.0 OR BSD-2-Clause
 - **Copyright:** Copyright (c) 1999-2021 log4cplus project contributors
@@ -27,6 +32,7 @@ The exact set of redistributed binaries can vary by platform:
 - **Note:** Declared in `conanfile.py`.
 
 ### zlib
+
 - **Version:** [>=1.2.11 <2]
 - **License:** Zlib
 - **Copyright:** Copyright (C) 1995-2024 Jean-loup Gailly and Mark Adler
@@ -34,52 +40,64 @@ The exact set of redistributed binaries can vary by platform:
 - **Note:** Declared in `conanfile.py`; also required by OpenSSL and some platform libzip builds.
 
 ### OpenSSL
+
 - **Version:** 3.2.4
 - **License:** Apache-2.0
 - **Copyright:** Copyright (c) 1998-2024 The OpenSSL Project Authors
 - **Repository:** https://www.openssl.org/
-- **Note:** Declared in `conanfile.py`. macOS uses the local `openssl-universal/3.2.4` recipe, other platforms use `openssl/3.2.4`.
+- **Note:** Declared in `conanfile.py`. macOS uses the local `openssl-macos/3.2.4` recipe, other platforms use
+  `openssl/3.2.4`.
+
+### Qt 6
+
+- **Version:** 6.2.3 / 6.8.3
+- **License:** LGPL-3.0 / GPL-2.0 / GPL-3.0 / Commercial
+- **Copyright:** Copyright (C) The Qt Company Ltd. and other contributors
+- **Repository:** https://www.qt.io/
+- **Note:** Declared in `conanfile.py`. This application is built against Qt 6.2.3. Qt is deployed with the application
+  on supported platforms. Qt source packages are available from https://download.qt.io/
+
+### Poco
+
+- **Version:** 1.13.3
+- **License:** BSL-1.0
+- **Copyright:** Copyright (c) 2006-2024, Applied Informatics Software Engineering GmbH and Contributors
+- **Repository:** https://github.com/pocoproject/poco
+- **Note:** Declared in `conanfile.py`. Required by multiple kDrive libraries and redistributed by platform packaging
+  scripts.
+
+### Sentry Native
+
+- **Version:** Build-environment dependent
+- **License:** MIT
+- **Copyright:** Copyright (c) 2019 Sentry
+- **Repository:** https://github.com/getsentry/sentry-native
+- **Note:** Declared in `conanfile.py`. Installed outside Conan according to `infomaniak-build-tools/*/Readme.md` and
+  redistributed with the application. The repository does not pin one single version across all platforms; the Linux
+  setup documentation currently references `0.7.9`.
+
+### Crashpad
+
+- **Version:** Bundled through the Sentry Native crashpad backend
+- **License:** BSD-3-Clause
+- **Copyright:** Copyright 2014 The Crashpad Authors
+- **Repository:** https://chromium.googlesource.com/crashpad/crashpad/
+- **Note:** Declared in `conanfile.py`. The `crashpad_handler` executable is redistributed with the application.
 
 ---
 
 ## Packaged Dependencies Installed Outside Conan
 
-### Qt 6
-- **Version:** 6.2.3
-- **License:** LGPL-3.0 / GPL-2.0 / GPL-3.0 / Commercial
-- **Copyright:** Copyright (C) The Qt Company Ltd. and other contributors
-- **Repository:** https://www.qt.io/
-- **Note:** This application is built against Qt 6.2.3. Qt is deployed with the application on supported platforms. Qt source packages are available from https://download.qt.io/
-
-### Poco
-- **Version:** 1.13.3
-- **License:** BSL-1.0
-- **Copyright:** Copyright (c) 2006-2024, Applied Informatics Software Engineering GmbH and Contributors
-- **Repository:** https://github.com/pocoproject/poco
-- **Note:** Required by multiple kDrive libraries and redistributed by platform packaging scripts.
-
 ### libzip
+
 - **Version:** 1.10.1
 - **License:** BSD-3-Clause
 - **Copyright:** Copyright (C) 1999-2024 Dieter Baron and Thomas Klausner
 - **Repository:** https://libzip.org/
 - **Note:** Used by `libcommon` and `libcommonserver`; redistributed by platform packaging scripts.
 
-### Sentry Native
-- **Version:** Build-environment dependent
-- **License:** MIT
-- **Copyright:** Copyright (c) 2019 Sentry
-- **Repository:** https://github.com/getsentry/sentry-native
-- **Note:** Installed outside Conan according to `infomaniak-build-tools/*/Readme.md` and redistributed with the application. The repository does not pin one single version across all platforms; the Linux setup documentation currently references `0.7.9`.
-
-### Crashpad
-- **Version:** Bundled through the Sentry Native crashpad backend
-- **License:** BSD-3-Clause
-- **Copyright:** Copyright 2014 The Crashpad Authors
-- **Repository:** https://chromium.googlesource.com/crashpad/crashpad/
-- **Note:** The `crashpad_handler` executable is redistributed with the application.
-
 ### Sparkle
+
 - **Version:** 2.6.4
 - **License:** MIT
 - **Copyright:** Copyright (c) Sparkle Project
@@ -91,43 +109,53 @@ The exact set of redistributed binaries can vary by platform:
 ## Vendored Source Dependencies (`src/3rdparty/`)
 
 ### utf8proc
+
 - **License:** MIT
 - **Additional Notice:** Unicode data license applies to `utf8proc_data.c`
-- **Copyright:** Copyright (c) 2014-2021 Steven G. Johnson, Jiahao Chen, Tony Kelman, Jonas Fonseca, and other contributors
+- **Copyright:** Copyright (c) 2014-2021 Steven G. Johnson, Jiahao Chen, Tony Kelman, Jonas Fonseca, and other
+  contributors
 - **Original Copyright:** Copyright (c) 2009, 2013 Public Software Group e. V., Berlin, Germany
 - **Repository:** https://github.com/JuliaStrings/utf8proc
 - **Note:** Built from vendored source on Unix platforms.
 
 ### keychain
+
 - **License:** MIT
 - **Copyright:** Copyright (c) 2019 Hannes Rantzsch, Rene Meusel
 - **Repository:** https://github.com/hrantzsch/keychain
 - **Note:** Built from vendored source.
 
 ### qt-piwik-tracker
+
 - **License:** MIT
 - **Copyright:** Copyright (c) 2014-2025 Patrizio Bekerle
 - **Repository:** https://github.com/pbek/qt-piwik-tracker
 - **Note:** Vendored in `src/3rdparty/` and built as part of `libcommongui`.
 
 ### QProgressIndicator
+
 - **License:** MIT
 - **Copyright:** Copyright (c) 2011 Morgan Leborgne
-- **Note:** Vendored in `src/3rdparty/`. No public upstream repository URL is referenced here because the previously used GitHub link is no longer available.
+- **Note:** Vendored in `src/3rdparty/`. No public upstream repository URL is referenced here because the previously
+  used GitHub link is no longer available.
 
 ### SQLite
+
 - **License:** Public Domain
 - **Copyright:** The author disclaims copyright to the SQLite amalgamation
 - **Repository:** https://www.sqlite.org/
-- **Note:** The vendored SQLite amalgamation in `src/3rdparty/sqlite3/` is used on macOS and Windows. Linux prefers the system SQLite when available.
+- **Note:** The vendored SQLite amalgamation in `src/3rdparty/sqlite3/` is used on macOS and Windows. Linux prefers the
+  system SQLite when available.
 
 ### QtSingleApplication
+
 - **License:** LGPL-2.1 with Digia Qt LGPL Exception 1.1
 - **Copyright:** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies)
 - **Repository:** https://github.com/qt-creator/qt-creator
 - **Note:** Vendored from Qt Creator sources.
 
 ### QtLockedFile
+
 - **License:** LGPL-2.1 with Digia Qt LGPL Exception 1.1
 - **Copyright:** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies)
 - **Repository:** https://github.com/qt-creator/qt-creator
@@ -138,6 +166,7 @@ The exact set of redistributed binaries can vary by platform:
 ## License Texts
 
 ### MIT License
+
 ```
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -159,6 +188,7 @@ SOFTWARE.
 ```
 
 ### BSD 2-Clause License
+
 ```
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -183,6 +213,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
 ### BSD 3-Clause License
+
 ```
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -211,6 +242,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
 ### Apache License 2.0
+
 ```
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -226,6 +258,7 @@ limitations under the License.
 ```
 
 ### Zlib License
+
 ```
 This software is provided 'as-is', without any express or implied warranty.
 In no event will the authors be held liable for any damages arising from the
@@ -247,6 +280,7 @@ subject to the following restrictions:
 ```
 
 ### Boost Software License 1.0
+
 ```
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -274,6 +308,7 @@ DEALINGS IN THE SOFTWARE.
 ```
 
 ### Unicode Data License
+
 ```
 COPYRIGHT AND PERMISSION NOTICE
 
@@ -311,6 +346,7 @@ authorization of the copyright holder.
 ```
 
 ### Digia Qt LGPL Exception 1.1
+
 ```
 As an additional permission to the GNU Lesser General Public License version
 2.1, the object code form of a "work that uses the Library" may incorporate
@@ -335,6 +371,7 @@ modified version of the Library.
 ```
 
 ### SQLite Public Domain Notice
+
 ```
 The author disclaims copyright to this source code. In place of a legal
 notice, here is a blessing:
@@ -345,17 +382,22 @@ notice, here is a blessing:
 ```
 
 ### GNU Lesser General Public License v2.1
-The full text of the LGPL v2.1 is available in [`src/3rdparty/LICENSE.LGPL`](src/3rdparty/LICENSE.LGPL) and at: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
+
+The full text of the LGPL v2.1 is available in [`src/3rdparty/LICENSE.LGPL`](src/3rdparty/LICENSE.LGPL) and
+at: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
 
 ### GNU Lesser General Public License v3.0
+
 The full text of the LGPL v3.0 is available at:
 https://www.gnu.org/licenses/lgpl-3.0.html
 
 ### GNU General Public License v2.0
+
 The full text of the GPL v2.0 is available at:
 https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 
 ### GNU General Public License v3.0
+
 The full text of the GPL v3.0 is available at:
 https://www.gnu.org/licenses/gpl-3.0.html
 
