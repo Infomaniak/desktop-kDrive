@@ -31,8 +31,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         communicationlayer/signaldispatcher.h
         app/services/commservice.cpp
         app/services/commservice.h
-        app/services/cachebootstrapper.cpp
-        app/services/cachebootstrapper.h
+        app/services/cachehydrator.cpp
+        app/services/cachehydrator.h
         app/services/driveservice.cpp
         app/services/driveservice.h
         app/services/serviceactiontracker.cpp
