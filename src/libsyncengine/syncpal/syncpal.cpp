@@ -580,7 +580,7 @@ bool SyncPal::initProgress(const SyncFileItem &item) {
 }
 
 bool SyncPal::setProgress(const SyncPath &relativePath, int progress) {
-    if (!_progressInfo->setProgress(relativePath, progress)) {
+    if (_progressInfo && !_progressInfo->setProgress(relativePath, progress)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ProgressInfo::setProgress");
         return false;
     }
