@@ -77,7 +77,6 @@ void AppCache::replaceAccounts(const std::vector<AccountInfo> &accounts) {
             continue;
         }
         _accountsByDbId[info.dbId()] = AccountNode{info, info.userDbId(), {}};
-        linkAccountToUser(info.dbId(), info.userDbId());
     }
     pruneConfiguredGraph();
     emit accountsChanged();
@@ -96,7 +95,6 @@ void AppCache::replaceDrives(const std::vector<DriveInfo> &drives) {
             continue;
         }
         _drivesByDbId[info.dbId()] = DriveNode{info, info.accountDbId(), {}};
-        linkDriveToAccount(info.dbId(), info.accountDbId());
     }
     pruneConfiguredGraph();
     emit drivesChanged();
@@ -114,7 +112,6 @@ void AppCache::replaceSyncs(const std::vector<SyncInfo> &syncs) {
             continue;
         }
         _syncsByDbId[info.dbId()] = SyncNode{info, info.driveDbId(), {}};
-        linkSyncToDrive(info.dbId(), info.driveDbId());
     }
     pruneConfiguredGraph();
     emit syncsChanged();
@@ -171,8 +168,8 @@ void AppCache::clearAllAvailableDrives() {
 }
 
 void AppCache::upsertUser(const UserInfo &info) {
-    auto &[userInfo, _] = _usersByDbId[info.dbId()];
-    userInfo = info;
+    auto &node = _usersByDbId[info.dbId()];
+    node.info = info;
     emit usersChanged();
 }
 
