@@ -231,7 +231,8 @@ std::list<std::shared_ptr<SyncJob>> BenchmarkParallelJobs::generateDownloadJobs(
     std::list<std::shared_ptr<SyncJob>> jobs;
     for (const auto &remoteFileId: remoteFileIds) {
         const auto job = std::make_shared<DownloadJob>(
-                nullptr, nullptr, DownloadJob::FileDownloadInfo{driveDbId, remoteFileId, localTestFolderPath, expectedSize});
+                nullptr, nullptr, DownloadJob::FileDownloadInfo{driveDbId, remoteFileId, localTestFolderPath, expectedSize},
+                DownloadJob::DateTimePolicy::IgnoreDateTime);
         (void) jobs.push_back(job);
         counter++;
         if (nbMaxJob && counter >= nbMaxJob) {

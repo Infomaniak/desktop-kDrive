@@ -141,7 +141,8 @@ void TestWindowsUpdater::testIsSignatureValid() {
         const testhelpers::TestVariables testVariables;
         static const NodeId signedFileId = "5304421";
         const auto signedFilePath = tmpDir.path() / "testfile.exe";
-        DownloadJob job(nullptr, cacheDirectory, DownloadJob::FileDownloadInfo{_driveDbId, signedFileId, signedFilePath, 0});
+        DownloadJob job(nullptr, cacheDirectory, DownloadJob::FileDownloadInfo{_driveDbId, signedFileId, signedFilePath, 0},
+                        DownloadJob::DateTimePolicy::UseDateTime);
         (void) job.runSynchronously();
         CPPUNIT_ASSERT(DigitalSignatureChecker_win(SyncPath(signedFilePath)).isSignatureValid());
     }

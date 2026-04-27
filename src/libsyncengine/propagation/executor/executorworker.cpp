@@ -584,7 +584,8 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
                                 DownloadJob::FileDownloadInfo{_syncPal->driveDbId(), syncOp->affectedNode()->id().value_or(""),
                                                               absoluteLocalFilePath, syncOp->affectedNode()->size(),
                                                               syncOp->affectedNode()->createdAt().value_or(0),
-                                                              syncOp->affectedNode()->modificationTime().value_or(0), true});
+                                                              syncOp->affectedNode()->modificationTime().value_or(0), true},
+                                DownloadJob::DateTimePolicy::UseDateTime);
                     } catch (std::exception const &e) {
                         LOGW_SYNCPAL_WARN(_logger, L"Error in DownloadJob::DownloadJob for driveDbId="
                                                            << _syncPal->driveDbId() << L" : " << CommonUtility::s2ws(e.what()));
@@ -831,7 +832,8 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<SyncJ
                     DownloadJob::FileDownloadInfo{_syncPal->driveDbId(), syncOp->affectedNode()->id().value_or(""),
                                                   absoluteLocalFilePath, syncOp->affectedNode()->size(),
                                                   syncOp->affectedNode()->createdAt().value_or(0),
-                                                  syncOp->affectedNode()->modificationTime().value_or(0), false});
+                                                  syncOp->affectedNode()->modificationTime().value_or(0), false},
+                    DownloadJob::DateTimePolicy::UseDateTime);
         } catch (std::exception const &e) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in DownloadJob::DownloadJob for driveDbId=" << _syncPal->driveDbId() << L" : "
                                                                                            << CommonUtility::s2ws(e.what()));

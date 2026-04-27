@@ -723,8 +723,8 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
     std::shared_ptr<DownloadJob> job = nullptr;
     try {
         job = std::make_shared<DownloadJob>(
-                vfs(), _cacheDirectory,
-                DownloadJob::FileDownloadInfo{driveDbId(), remoteNodeId, absoluteLocalPath, expectedSize});
+                vfs(), _cacheDirectory, DownloadJob::FileDownloadInfo{driveDbId(), remoteNodeId, absoluteLocalPath, expectedSize},
+                DownloadJob::DateTimePolicy::IgnoreDateTime);
         if (!job) {
             LOG_SYNCPAL_WARN(_logger, "Memory allocation error");
             return ExitCode::SystemError;
