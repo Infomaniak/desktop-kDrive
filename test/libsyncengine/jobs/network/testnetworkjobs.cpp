@@ -1600,7 +1600,7 @@ void TestNetworkJobs::testGetAppVersionInfoParsingEdgeCases() {
         const ExitInfo exitInfo = job.parseResponse(buildAppVersionReply(publishedVersions));
 
         CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitInfo.code());
-        CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), job.versionsInfo().size());
+        CPPUNIT_ASSERT_EQUAL(size_t{1}, job.versionsInfo().size());
         CPPUNIT_ASSERT(job.versionsInfo().contains(VersionChannel::Prod));
         CPPUNIT_ASSERT(!job.versionsInfo().contains(VersionChannel::Beta));
     }
