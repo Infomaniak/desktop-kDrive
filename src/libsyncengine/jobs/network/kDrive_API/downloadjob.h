@@ -38,7 +38,7 @@ class DownloadJob : public AbstractTokenNetworkJob {
         };
         enum class DateTimePolicy {
             IgnoreDateTime,
-            UseDateTime
+            ApplyDateTime
         };
 
         DownloadJob(const std::shared_ptr<Vfs> vfs, std::shared_ptr<CacheDirectory> cacheDirectory,
@@ -92,7 +92,7 @@ class DownloadJob : public AbstractTokenNetworkJob {
         FileDownloadInfo _fileDownloadInfo;
 
         SyncPath _tmpPath;
-        DateTimePolicy _dateTimePolicy = DateTimePolicy::UseDateTime;
+        DateTimePolicy _dateTimePolicy = DateTimePolicy::ApplyDateTime;
         bool _responseHandlingCanceled = false;
 
         NodeId _localNodeId;

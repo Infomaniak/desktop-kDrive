@@ -272,7 +272,7 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
             }
         }
     }
-    if (_dateTimePolicy == DateTimePolicy::UseDateTime) {
+    if (_dateTimePolicy == DateTimePolicy::ApplyDateTime) {
         if (const IoError ioError = IoHelper::setFileDates(_fileDownloadInfo.localpath, _fileDownloadInfo.creationTime,
                                                            _fileDownloadInfo.modificationTime, isLink);
             ioError == IoError::Unknown) {

@@ -296,7 +296,7 @@ void TestNetworkJobs::testDownload() {
             DownloadJob job(nullptr, _cacheDirectory,
                             DownloadJob::FileDownloadInfo{_driveDbId, testFileRemoteId, localDestFilePath, 0,
                                                           creationTimeIn.count(), modificationTimeIn.count(), false},
-                            DownloadJob::DateTimePolicy::UseDateTime);
+                            DownloadJob::DateTimePolicy::ApplyDateTime);
             const ExitCode exitCode = job.runSynchronously();
             sizeOut = job.size();
             CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
@@ -338,7 +338,7 @@ void TestNetworkJobs::testDownload() {
             DownloadJob job(nullptr, _cacheDirectory,
                             DownloadJob::FileDownloadInfo{_driveDbId, testFileRemoteId, localDestFilePath, 0,
                                                           creationTimeIn.count(), modificationTimeIn.count(), false},
-                            DownloadJob::DateTimePolicy::UseDateTime);
+                            DownloadJob::DateTimePolicy::ApplyDateTime);
             const ExitCode exitCode = job.runSynchronously();
             sizeOut = job.size();
             CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
@@ -388,7 +388,7 @@ void TestNetworkJobs::testDownload() {
             DownloadJob job(vfs, _cacheDirectory,
                             DownloadJob::FileDownloadInfo{_driveDbId, testFileRemoteId, localDestFilePath, 0,
                                                           creationTimeIn.count(), modificationTimeIn.count(), false},
-                            DownloadJob::DateTimePolicy::UseDateTime);
+                            DownloadJob::DateTimePolicy::ApplyDateTime);
             const ExitCode exitCode = job.runSynchronously();
             CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
             CPPUNIT_ASSERT_EQUAL(true, job._isHydrated);
@@ -440,7 +440,7 @@ void TestNetworkJobs::testDownload() {
             DownloadJob job(nullptr, _cacheDirectory,
                             DownloadJob::FileDownloadInfo{_driveDbId, testFileRemoteId, localDestFilePath, 0,
                                                           creationTimeIn.count(), modificationTimeIn.count(), false},
-                            DownloadJob::DateTimePolicy::UseDateTime);
+                            DownloadJob::DateTimePolicy::ApplyDateTime);
             CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.runSynchronously().code());
         }
     }
@@ -469,7 +469,7 @@ void TestNetworkJobs::testDownload() {
         {
             DownloadJob job(nullptr, _cacheDirectory,
                             DownloadJob::FileDownloadInfo{_driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, true},
-                            DownloadJob::DateTimePolicy::UseDateTime);
+                            DownloadJob::DateTimePolicy::ApplyDateTime);
             const ExitCode exitCode = job.runSynchronously();
             CPPUNIT_ASSERT_GREATER(int64_t{-1}, job.size());
             CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
@@ -492,7 +492,7 @@ void TestNetworkJobs::testDownload() {
         {
             DownloadJob job(nullptr, _cacheDirectory,
                             DownloadJob::FileDownloadInfo{_driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, false},
-                            DownloadJob::DateTimePolicy::UseDateTime);
+                            DownloadJob::DateTimePolicy::ApplyDateTime);
             const ExitCode exitCode = job.runSynchronously();
             CPPUNIT_ASSERT_GREATER(int64_t{-1}, job.size());
             CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
@@ -548,7 +548,7 @@ void TestNetworkJobs::testDownload() {
             DownloadJob downloadJob(
                     nullptr, cacheDirectory,
                     DownloadJob::FileDownloadInfo{_driveDbId, remoteTmpDir.id(), localDestFilePath, 0, 0, 0, false},
-                    DownloadJob::DateTimePolicy::UseDateTime);
+                    DownloadJob::DateTimePolicy::ApplyDateTime);
 
             (void) downloadJob.runSynchronously();
             CPPUNIT_ASSERT_EQUAL(int64_t{-1}, downloadJob.size());
@@ -576,7 +576,7 @@ void TestNetworkJobs::testDownload() {
         {
             DownloadJob job(nullptr, _cacheDirectory,
                             DownloadJob::FileDownloadInfo{_driveDbId, remote0bytesFileId, localDestFilePath, 0, 0, 0, false},
-                            DownloadJob::DateTimePolicy::UseDateTime);
+                            DownloadJob::DateTimePolicy::ApplyDateTime);
             (void) job.runSynchronously();
             CPPUNIT_ASSERT_EQUAL(int64_t{0}, job.size());
             CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.exitInfo().code());
@@ -600,7 +600,7 @@ void TestNetworkJobs::testDownload() {
             DownloadJob job(nullptr, _cacheDirectory,
                             DownloadJob::FileDownloadInfo{_driveDbId, testFileSymlinkRemoteId, localDestFilePath, 0,
                                                           creationTimeIn.count(), modificationTimeIn.count(), false},
-                            DownloadJob::DateTimePolicy::UseDateTime);
+                            DownloadJob::DateTimePolicy::ApplyDateTime);
             const ExitCode exitCode = job.runSynchronously();
             CPPUNIT_ASSERT_GREATER(int64_t{-1}, job.size());
             CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
@@ -643,7 +643,7 @@ void TestNetworkJobs::testDownload() {
             DownloadJob job(nullptr, _cacheDirectory,
                             DownloadJob::FileDownloadInfo{_driveDbId, testFolderSymlinkRemoteId, localDestFilePath, 0,
                                                           creationTimeIn.count(), modificationTimeIn.count(), false},
-                            DownloadJob::DateTimePolicy::UseDateTime);
+                            DownloadJob::DateTimePolicy::ApplyDateTime);
             const ExitCode exitCode = job.runSynchronously();
             CPPUNIT_ASSERT_GREATER(int64_t{-1}, job.size());
             CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
@@ -802,7 +802,7 @@ void TestNetworkJobs::testDownloadAborted() {
     std::shared_ptr<DownloadJob> job = std::make_shared<DownloadJob>(
             vfs, _cacheDirectory,
             DownloadJob::FileDownloadInfo{_driveDbId, testBigFileRemoteId, localDestFilePath, 0, 0, 0, false},
-            DownloadJob::DateTimePolicy::UseDateTime);
+            DownloadJob::DateTimePolicy::ApplyDateTime);
     SyncJobManagerSingleton::instance()->queueAsyncJob(job);
 
     int counter = 0;

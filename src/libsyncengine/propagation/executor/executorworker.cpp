@@ -585,7 +585,7 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
                                                               absoluteLocalFilePath, syncOp->affectedNode()->size(),
                                                               syncOp->affectedNode()->createdAt().value_or(0),
                                                               syncOp->affectedNode()->modificationTime().value_or(0), true},
-                                DownloadJob::DateTimePolicy::UseDateTime);
+                                DownloadJob::DateTimePolicy::ApplyDateTime);
                     } catch (std::exception const &e) {
                         LOGW_SYNCPAL_WARN(_logger, L"Error in DownloadJob::DownloadJob for driveDbId="
                                                            << _syncPal->driveDbId() << L" : " << CommonUtility::s2ws(e.what()));
@@ -833,7 +833,7 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<SyncJ
                                                   absoluteLocalFilePath, syncOp->affectedNode()->size(),
                                                   syncOp->affectedNode()->createdAt().value_or(0),
                                                   syncOp->affectedNode()->modificationTime().value_or(0), false},
-                    DownloadJob::DateTimePolicy::UseDateTime);
+                    DownloadJob::DateTimePolicy::ApplyDateTime);
         } catch (std::exception const &e) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in DownloadJob::DownloadJob for driveDbId=" << _syncPal->driveDbId() << L" : "
                                                                                            << CommonUtility::s2ws(e.what()));

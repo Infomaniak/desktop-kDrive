@@ -389,7 +389,7 @@ void TestSyncJobManagerSingleton::testCanRunjob() {
                     nullptr, cacheDirectory,
                     DownloadJob::FileDownloadInfo{driveDbId, testBigFileRemoteId, localTmpDir.path(), 110 * 1024 * 1024,
                                                   testhelpers::defaultFileSize, testhelpers::defaultFileSize, false},
-                    DownloadJob::DateTimePolicy::UseDateTime);
+                    DownloadJob::DateTimePolicy::ApplyDateTime);
             if (!SyncJobManagerSingleton::instance()->canRunJob(job)) {
                 noMoreRun = true;
                 break;
