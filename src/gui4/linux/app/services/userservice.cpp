@@ -72,7 +72,8 @@ void UserService::loadAvailableDrives(const qint64 userDbId) {
             scopedUserDbId,
             [this, scopedUserDbId, generation](const ExitInfo &exitInfo, const std::vector<DriveAvailableInfo> &list) {
                 endAction(actionLoadAvailableDrives, scopedUserDbId);
-                if (_availableDriveLoadGenerations[scopedUserDbId] != generation) {
+                const auto generationIt = _availableDriveLoadGenerations.find(scopedUserDbId);
+                if (generationIt == _availableDriveLoadGenerations.end() || generationIt->second != generation) {
                     return;
                 }
 
