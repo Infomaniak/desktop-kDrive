@@ -113,7 +113,11 @@ void AddDriveWizard::startNextStep(bool backward) {
 
     _currentStep = (Step) (_currentStep + (backward ? -1 : 1));
 
-    if (_currentStep == Login && backward) {
+    if (_currentStep == None) {
+        // We close the wizard on login error.
+        exit();
+        return;
+    } else if (_currentStep == Login && backward) {
         if (!_addDriveListWidget->isAddUserClicked()) {
             exit();
             return;

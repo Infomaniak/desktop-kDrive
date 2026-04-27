@@ -114,16 +114,20 @@ void AddDriveLoginWidget::onAuthorizationCodeReceived(const QString &code, const
     QString errorDescr;
     const auto exitCode = GuiRequests::requestToken(code, _codeVerifier, _userDbId, error, errorDescr);
     if (exitCode != ExitCode::Ok) {
-        qCWarning(lcAddDriveLoginWidget()) << "Error in Requests::requestToken: code=" << exitCode;
+        qCWarning(lcAddDriveLoginWidget()) << "Error in Requests::requestToken: code=" << exitCode << "error=" << error
+                                           << "errorDescr=" << errorDescr;
 
-        CustomMessageBox msgBox(QMessageBox::Warning, tr("Token request failed: %1 - %2").arg(error, errorDescr),
+        CustomMessageBox msgBox(QMessageBox::Warning,
+                                tr("An error occurred during authentication. Please close the login window and try again.<br>"
+                                   "If the error persists, contact our support team."),
                                 QMessageBox::Ok);
         (void) msgBox.exec();
 
         emit terminated(false);
-    } else {
-        emit terminated();
+        return;
     }
+
+    emit terminated();
 }
 
 void AddDriveLoginWidget::onErrorReceived(const QString error, const QString errorDescr) {
