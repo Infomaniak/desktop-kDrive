@@ -44,8 +44,6 @@
 #include <security.h>
 #include <winioctl.h>
 #include <winsock2.h>
-#define _WIN32_WINNT 0x0602 // Windows 8 / Server 2012
-#include <Windows.h>
 
 constexpr int MAX_GET_RIGHTS_DURATION_MS = 200;
 namespace KDC {
