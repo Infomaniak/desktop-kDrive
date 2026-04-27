@@ -19,8 +19,9 @@
 - Prefer documenting private implementation helpers in `.cpp` rather than headers.
 - Do not introduce raw `int` in new code when a fixed-width type fits (`uint8_t`, `int32_t`, ...).
 - Do not run `clang-format` on `CMakeLists.txt` in this repository.
-- For any branch named `linux-v4/*`: create it from `linux-v4/main`, and compute diffs against `linux-v4/main` by
-  default. `linux-v4/main` is the Linux v4 integration branch regularly rebased on `develop`.
+- For the Linux v4 cache refactor stack, use the branch plan from `/home/rgld/Projects/01 - Linux V4/Cache`:
+  `linux-v4/cache/foundation` -> `linux-v4/cache/services` -> `linux-v4/cache/models`.
+  Compute diffs against the actual stack base for the branch you are working on.
 - For shared infrastructure classes, document the class role explicitly in the header comment (and non-role when
   relevant).
 - In range-for loops over associative containers, prefer `std::views::keys` / `std::views::values` over structured
@@ -52,7 +53,7 @@
 - `app/cache/mainselectionstore.*`: sync-first main-shell selection owner (`currentSyncDbId`) and selection healing.
   - emits `currentSyncContextChanged()` as a coarse invalidation signal when the current sync context stays selected but the underlying cache graph changes.
 - `app/cache/onboardingstate.*`: onboarding-only selected user, selected available-drive keys, and pending sync configs.
-- `app/services/cachebootstrapper.*`: sequential initial snapshot loader for users, accounts, drives, syncs, and sync errors.
+- `app/services/cachehydrator.*`: sequential initial snapshot loader for users, accounts, drives, syncs, and sync errors.
 - `app/services/driveservice.*`: drive use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`.
 - `app/services/syncservice.*`: sync use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`.
 - `ui/`: QML shell and design tokens.
