@@ -44,6 +44,8 @@
 #include <security.h>
 #include <winioctl.h>
 #include <winsock2.h>
+#define _WIN32_WINNT 0x0602 // Windows 8 / Server 2012
+#include <Windows.h>
 
 constexpr int MAX_GET_RIGHTS_DURATION_MS = 200;
 namespace KDC {
@@ -132,6 +134,13 @@ uint64_t computeNodeId(const _FILE_ID_FULL_DIR_INFORMATION *pFileInfo) {
     return static_cast<uint64_t>(longLongId);
 }
 
+uint64_t computeNodeId(const BY_HANDLE_FILE_INFORMATION &pFileInfo) {
+    // We keep `long long` type cast for legacy reason.
+    auto longLongId = (static_cast<long long>(pFileInfo.nFileIndexHigh) << 32) + static_cast<long long>(pFileInfo.nFileIndexLow);
+
+    return static_cast<uint64_t>(longLongId);
+}
+
 } // namespace
 
 int IoHelper::_getAndSetRightsMethod = -1; // -1: not initialized, 0: Windows API, 1: std::filesystem
@@ -144,7 +153,29 @@ IoError IoHelper::stdError2ioError(int error) noexcept {
     return dWordError2ioError(static_cast<DWORD>(error), logger());
 }
 
+bool GetRootNodeId(const SyncPath &rootPath, NodeId &nodeId) noexcept {
+    HANDLE hRoot = CreateFileW(rootPath.wstring().c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
+                               OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+
+    if (hRoot == INVALID_HANDLE_VALUE) {
+        return false;
+    }
+    BY_HANDLE_FILE_INFORMATION info{};
+    if (!GetFileInformationByHandle(hRoot, &info)) {
+        CloseHandle(hRoot);
+        return false;
+    }
+
+    nodeId = std::to_string(computeNodeId(info));
+    CloseHandle(hRoot);
+    return true;
+}
+
 bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
+    if (path == path.root_path()) {
+        return GetRootNodeId(path, nodeId);
+    }
+
     // Get parent folder handle
     HANDLE hParent = CreateFileW(path.parent_path().wstring().c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_READ, nullptr,
                                  OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
