@@ -18,6 +18,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/cache/appcache.h
         app/cache/mainselectionstore.cpp
         app/cache/mainselectionstore.h
+        app/cache/onboardingstate.cpp
+        app/cache/onboardingstate.h
         communicationlayer/ipcclient.cpp
         communicationlayer/ipcclient.h
         communicationlayer/signaldispatcher.cpp
