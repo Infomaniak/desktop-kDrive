@@ -22,12 +22,14 @@
 #include <algorithm>
 #include <ranges>
 
+Q_LOGGING_CATEGORY(lcAppCache, "gui.v4.appcache", QtInfoMsg)
+
 namespace {
 template<typename IdType>
 void appendUnique(std::vector<IdType> &values, const IdType id) {
     const auto insertIt = std::ranges::lower_bound(values, id);
     if (insertIt == values.end() || *insertIt != id) {
-        values.insert(insertIt, id);
+        (void) values.insert(insertIt, id);
     }
 }
 
@@ -97,7 +99,7 @@ void AppCache::removeAccountCascade(const AccountDbId accountDbId) {
         removeDriveCascade(driveDbId);
     }
     unlinkAccountFromUser(accountDbId, accountIt->second.parentUserDbId);
-    _accountsByDbId.erase(accountIt);
+    (void) _accountsByDbId.erase(accountIt);
 }
 
 void AppCache::removeDriveCascade(const DriveDbId driveDbId) {
@@ -110,7 +112,7 @@ void AppCache::removeDriveCascade(const DriveDbId driveDbId) {
         removeSyncCascade(syncDbId);
     }
     unlinkDriveFromAccount(driveDbId, driveIt->second.parentAccountDbId);
-    _drivesByDbId.erase(driveIt);
+    (void) _drivesByDbId.erase(driveIt);
 }
 
 void AppCache::removeSyncCascade(const SyncDbId syncDbId) {
@@ -120,10 +122,12 @@ void AppCache::removeSyncCascade(const SyncDbId syncDbId) {
     }
 
     for (const auto errorDbId: syncIt->second.errorDbIds) {
-        _syncErrorsByDbId.erase(errorDbId);
+        if (_syncErrorsByDbId.erase(errorDbId) == 0) {
+            qCWarning(lcAppCache) << "Sync error absent during cascade removal | errorDbId:" << errorDbId << "/ syncDbId:" << syncDbId;
+        }
     }
     unlinkSyncFromDrive(syncDbId, syncIt->second.parentDriveDbId);
-    _syncsByDbId.erase(syncIt);
+    (void) _syncsByDbId.erase(syncIt);
 }
 
 void AppCache::pruneConfiguredGraph() {
@@ -157,7 +161,9 @@ void AppCache::pruneConfiguredGraph() {
         removeSyncCascade(syncDbId);
     }
 
-    std::erase_if(_availableDrivesByUserDbId, [this](const auto &entry) { return !_usersByDbId.contains(entry.first); });
+    (void) std::erase_if(_syncErrorsByDbId,
+                         [this](const auto &entry) { return !_syncsByDbId.contains(entry.second.syncDbId()); });
+    (void) std::erase_if(_availableDrivesByUserDbId, [this](const auto &entry) { return !_usersByDbId.contains(entry.first); });
     rebuildGraphRelations();
 }
 
