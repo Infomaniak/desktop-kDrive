@@ -23,6 +23,8 @@
   default. `linux-v4/main` is the Linux v4 integration branch regularly rebased on `develop`.
 - For shared infrastructure classes, document the class role explicitly in the header comment (and non-role when
   relevant).
+- In range-for loops over associative containers, prefer `std::views::keys` / `std::views::values` over structured
+  bindings with an unused `_` element when only keys or only values are needed.
 
 ## Scope
 
@@ -42,9 +44,12 @@
   (`begin/end/isActionPending/isServicePending`).
 - `app/services/serviceeventbus.*`: shared high-level service event hub (single UI subscription point for generic
   cross-service failures). Owned once by `AppClientLinux` and injected by reference into app services.
-- `app/cache/appcache.*`: central observable cache (`AppCache` QObject) — typed snapshots and incremental
-  `upsert*`/`remove*` slots for users, accounts, drives, available drives, syncs, and errors; QML models and
-  services read from it instead of parsing transport payloads directly.
+- `app/cache/appcache.*`: durable graph-backed cache (`AppCache` QObject) — owns configured users/accounts/drives/syncs,
+  split sync/server errors, per-user available drives, cascade removals, and derived read models.
+- `app/cache/cachetypes.h`: cache read models and onboarding keys (`SyncContext`, `DriveContext`,
+  `AvailableDriveContext`, `AvailableDriveKey`, `PendingSyncConfig`).
+- `app/cache/mainselectionstore.*`: sync-first main-shell selection owner (`currentSyncDbId`) and selection healing.
+- `app/cache/onboardingstate.*`: onboarding-only selected user, selected available-drive keys, and pending sync configs.
 - `ui/`: QML shell and design tokens.
 
 ## Build And Validation
@@ -76,6 +81,10 @@ cmake --build build-linux/build/build/Debug --target kdrive_qml -- -j 12
   `ServiceEventBus` for transient events, `ServiceActionTracker` for durable pending-action state.
 - Do not create per-service formatted error-string state for UI display; services emit generic bus signals and keep
   structured backend error information in request handlers/logs.
+- `AppCache`, `MainSelectionStore`, and `OnboardingState` mutations must run on the Qt main thread.
+- `AppCache` must not own mutable main selection; derive main context through `MainSelectionStore.currentSyncDbId`.
+- Store available drives per user via `AppCache::replaceAvailableDrivesForUser(...)`; do not reintroduce a global
+  available-drives snapshot.
 
 ## IPC And Error Handling
 
