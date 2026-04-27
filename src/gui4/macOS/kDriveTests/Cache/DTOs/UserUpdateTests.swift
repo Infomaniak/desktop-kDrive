@@ -25,6 +25,7 @@ struct UserUpdateTests {
     private static let dbId: Int32 = 1
     private static let userId: Int32 = 100
     private static let name = "Test User"
+    private static let firstName = "Test"
     private static let email = "test@example.com"
     private static let avatar = Data([0x01, 0x02, 0x03])
     private static let isConnected = true
@@ -34,6 +35,7 @@ struct UserUpdateTests {
         dbId: Int32 = dbId,
         userId: Int32 = userId,
         name: String = name,
+        firstName: String = firstName,
         email: String = email,
         accounts: IndexedAccounts = [:],
         availableDrives: IndexedAvailableDrives = [:],
@@ -45,6 +47,7 @@ struct UserUpdateTests {
             dbId: dbId,
             userId: userId,
             name: name,
+            firstName: firstName,
             email: email,
             accounts: accounts,
             availableDrives: availableDrives,

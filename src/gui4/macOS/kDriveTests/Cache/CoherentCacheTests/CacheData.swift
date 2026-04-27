@@ -28,6 +28,7 @@ enum CacheData {
         dbId: expectedUserDbId,
         userId: expectedUserAPIId,
         name: "appleseed",
+        firstName: "Jonh",
         email: "ja@apple.com",
         accounts: [:],
         availableDrives: [:],
@@ -38,10 +39,12 @@ enum CacheData {
 
     static let updatedUserAPIId = Int32.random(in: 0 ... 10000)
     static let updatedUserName = "appleseed2"
+    static let updatedUserFirstName = "Jonh2"
     static var updatedUser = User(
         dbId: expectedUserDbId,
         userId: updatedUserAPIId,
         name: updatedUserName,
+        firstName: updatedUserFirstName,
         email: "ja@apple.com",
         accounts: [:],
         availableDrives: [:],
@@ -253,6 +256,7 @@ enum CacheData {
         dbId: secondUserDbId,
         userId: secondUserAPIId,
         name: "seconduser",
+        firstName: "secondFirstName",
         email: "second@example.com",
         accounts: [:],
         availableDrives: [:],
