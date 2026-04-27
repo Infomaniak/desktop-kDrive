@@ -26,6 +26,9 @@
 #include <QObject>
 #include <QString>
 
+#include <cstdint>
+#include <unordered_map>
+
 namespace KDC {
 
 /**
@@ -73,6 +76,7 @@ class UserService : public QObject {
         AppCache &_appCache;
         ServiceActionTracker &_serviceActionTracker;
         ServiceEventBus &_serviceEventBus;
+        std::unordered_map<UserDbId, uint64_t> _availableDriveLoadGenerations;
         bool _loading{false};
 };
 
