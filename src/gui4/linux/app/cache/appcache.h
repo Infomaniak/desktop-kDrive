@@ -20,7 +20,10 @@
 
 #include "app/cache/cachetypes.h"
 
+#include <QLoggingCategory>
 #include <QObject>
+
+Q_DECLARE_LOGGING_CATEGORY(lcAppCache)
 
 #include <optional>
 #include <unordered_map>
