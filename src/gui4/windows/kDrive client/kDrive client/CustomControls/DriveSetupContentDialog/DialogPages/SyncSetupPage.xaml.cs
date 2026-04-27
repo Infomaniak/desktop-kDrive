@@ -160,7 +160,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 
             if (DriveSetupContentDialogVM.NewSyncs.Any(s => s != newSync && IsSubPathOf(s.LocalPath, folder.Path)))
             {
-                Logger.Log(Logger.Level.Info, $"Selected folder path '{folder.Path}' is already parent of an another sync.");
+                Logger.Log(Logger.Level.Info, $"Selected folder path '{folder.Path}' is already the parent of another sync.");
                 Utility.ShowTeachingTip(Localizer.Instance.GetString("teachingTipInvalidFolderTitle"), Localizer.Instance.GetString("teachingTipInvalidFolderContent"), TimeSpan.FromSeconds(20));
 
                 control.IsEnabled = true;
@@ -169,7 +169,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 
             if (DriveSetupContentDialogVM.NewSyncs.Any(s => s != newSync && IsSubPathOf(folder.Path, s.LocalPath)))
             {
-                Logger.Log(Logger.Level.Info, $"Selected folder path '{folder.Path}' is include an another sync.");
+                Logger.Log(Logger.Level.Info, $"Selected folder path '{folder.Path}' is inside another sync.");
                 Utility.ShowTeachingTip(Localizer.Instance.GetString("teachingTipInvalidFolderTitle"), Localizer.Instance.GetString("teachingTipInvalidFolderContent"), TimeSpan.FromSeconds(20));
 
                 control.IsEnabled = true;
