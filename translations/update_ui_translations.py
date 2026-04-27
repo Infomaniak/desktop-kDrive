@@ -48,6 +48,7 @@ DEEPL_LANGUAGE_CODES = {
     "fr": "FR",
     "it": "IT",
     "nb": "NB",
+    "fi": "FI",
     "pl": "PL",
     "sv": "SV",
     "pt": "PT-PT",
@@ -83,7 +84,7 @@ def fill_missing_translations(git_dir_path, language):
     
     
 
-languages = ["de", "es", "fr", "it", "sv", "pt", "pl", "nb"]
+languages = ["de", "es", "fr", "it", "sv", "pt", "pl", "nb", "fi"]
 
 for language in languages:
     fill_missing_translations(args.git_dir_path, language)
