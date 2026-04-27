@@ -23,6 +23,12 @@
 
 #include <QLoggingCategory>
 
+#include <cstdint>
+
+namespace {
+constexpr int32_t maxErrorsToLoad = 1000;
+} // namespace
+
 namespace KDC {
 
 Q_LOGGING_CATEGORY(lcCommService, "gui.v4.commservice", QtInfoMsg)
@@ -496,8 +502,11 @@ void CommService::requestSyncGetPublicLinkUrl(const DriveDbId driveDbId, const N
 // -- Error ---------------------------------------------------------------
 
 void CommService::requestErrorInfoList(const ErrorInfoListCallback &callback) const {
+    Poco::DynamicStruct params;
+    params[msgParamLimit] = maxErrorsToLoad;
+
     _ipcClient.sendRequest(
-            RequestNum::ERROR_INFOLIST, {}, [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
+            RequestNum::ERROR_INFOLIST, params, [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                 std::vector<ErrorInfo> list;
                 if (exitInfo.code() == ExitCode::Ok) {
                     CommonUtility::readValuesFromStruct(result, msgParamErrorInfoList, list, dynamicVar2Struct<ErrorInfo>);
