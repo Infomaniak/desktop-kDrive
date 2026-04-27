@@ -432,6 +432,20 @@ static void normalizeSyncName(sqlite3_context *context, int argc, sqlite3_value 
 }
 } // namespace details
 
+bool SqliteDb::walCheckpointTruncate() {
+    if (!isOpened()) {
+        return false;
+    }
+    int nLog = 0, nCkpt = 0;
+    _errId = sqlite3_wal_checkpoint_v2(_sqlite3Db.get(), nullptr, SQLITE_CHECKPOINT_TRUNCATE, &nLog, &nCkpt);
+    if (_errId != SQLITE_OK && _errId != SQLITE_BUSY) {
+        LOG_WARN(_logger, "WAL checkpoint (TRUNCATE) failed: " << _errId << " - " << sqlite3_errmsg(_sqlite3Db.get()));
+        return false;
+    }
+    LOG_DEBUG(_logger, "WAL checkpoint (TRUNCATE): log=" << nLog << " checkpointed=" << nCkpt);
+    return true;
+}
+
 int SqliteDb::createNormalizeSyncNameFunc() {
     return sqlite3_create_function(_sqlite3Db.get(), "normalizeSyncName", 1, SQLITE_UTF8, nullptr, &details::normalizeSyncName,
                                    nullptr, nullptr);

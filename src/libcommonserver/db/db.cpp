@@ -51,6 +51,14 @@
 #define PRAGMA_FOREIGN_KEYS_ID "db6"
 #define PRAGMA_FOREIGN_KEYS "PRAGMA foreign_keys=ON;"
 
+// WAL tuning: checkpoint every 100 pages instead of the SQLite default (1000)
+#define PRAGMA_WAL_AUTOCHECKPOINT_ID "db7"
+#define PRAGMA_WAL_AUTOCHECKPOINT "PRAGMA wal_autocheckpoint=100;"
+
+// WAL tuning: truncate WAL to at most 64 MB after each successful checkpoint
+#define PRAGMA_JOURNAL_SIZE_LIMIT_ID "db8"
+#define PRAGMA_JOURNAL_SIZE_LIMIT "PRAGMA journal_size_limit=67108864;"
+
 //
 // version
 //
@@ -227,6 +235,14 @@ void Db::close() {
     LOGW_DEBUG(_logger, L"Closing DB " << Path2WStr(_dbPath));
 
     commitTransaction();
+
+    if (_journalMode == "WAL") {
+        // Force a TRUNCATE checkpoint before closing to prevent the WAL from persisting
+        // at a large size across restarts (especially on Windows where PASSIVE checkpoints
+        // are often blocked by file locking and cannot truncate the WAL).
+        _sqliteDb->walCheckpointTruncate();
+    }
+
     _sqliteDb->close();
 }
 
@@ -563,6 +579,28 @@ bool Db::checkConnect(const std::string &version) {
     }
     queryFree(PRAGMA_FOREIGN_KEYS_ID);
     LOG_DEBUG(_logger, "sqlite3 foreign_keys=ON");
+
+    if (_journalMode == "WAL") {
+        // PRAGMA_WAL_AUTOCHECKPOINT: lower threshold to prevent unbounded WAL growth
+        if (!createAndPrepareRequest(PRAGMA_WAL_AUTOCHECKPOINT_ID, PRAGMA_WAL_AUTOCHECKPOINT)) return false;
+        if (!queryNext(PRAGMA_WAL_AUTOCHECKPOINT_ID, hasData)) {
+            LOG_WARN(_logger, "Error getting query result: " << PRAGMA_WAL_AUTOCHECKPOINT_ID);
+            queryFree(PRAGMA_WAL_AUTOCHECKPOINT_ID);
+            return false;
+        }
+        queryFree(PRAGMA_WAL_AUTOCHECKPOINT_ID);
+        LOG_DEBUG(_logger, "sqlite3 wal_autocheckpoint=100");
+
+        // PRAGMA_JOURNAL_SIZE_LIMIT: cap WAL file size after each successful checkpoint
+        if (!createAndPrepareRequest(PRAGMA_JOURNAL_SIZE_LIMIT_ID, PRAGMA_JOURNAL_SIZE_LIMIT)) return false;
+        if (!queryNext(PRAGMA_JOURNAL_SIZE_LIMIT_ID, hasData)) {
+            LOG_WARN(_logger, "Error getting query result: " << PRAGMA_JOURNAL_SIZE_LIMIT_ID);
+            queryFree(PRAGMA_JOURNAL_SIZE_LIMIT_ID);
+            return false;
+        }
+        queryFree(PRAGMA_JOURNAL_SIZE_LIMIT_ID);
+        LOG_DEBUG(_logger, "sqlite3 journal_size_limit=67108864");
+    }
 
     return true;
 }
