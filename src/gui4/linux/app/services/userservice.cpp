@@ -45,6 +45,7 @@ UserService::UserService(CommService &commService, AppCache &appCache, ServiceAc
                            setLoading(pending);
                        }
                    });
+    (void) connect(&_appCache, &AppCache::usersChanged, this, [this] { pruneStaleAvailableDriveGenerations(); });
     setLoading(_serviceActionTracker.isServicePending(serviceKeyUser));
 }
 
@@ -75,6 +76,11 @@ void UserService::loadAvailableDrives(const qint64 userDbId) {
                     return;
                 }
 
+                if (!_appCache.user(scopedUserDbId).has_value()) {
+                    _availableDriveLoadGenerations.erase(scopedUserDbId);
+                    return;
+                }
+
                 if (!exitInfo) {
                     notifyRequestFailure(exitInfo, RequestNum::USER_AVAILABLEDRIVES);
                     return;
@@ -86,6 +92,7 @@ void UserService::loadAvailableDrives(const qint64 userDbId) {
 
 void UserService::deleteUser(const qint64 userDbId) {
     beginAction(actionDeleteUser, userDbId);
+    ++_availableDriveLoadGenerations[static_cast<UserDbId>(userDbId)];
 
     // Cache consistency is signal-driven: we wait for userRemoved/userUpdated pushes.
     _commService.requestDeleteUser(userDbId, [this, userDbId](const ExitInfo &exitInfo) {
@@ -131,6 +138,17 @@ bool UserService::isDeleteUserPending(const qint64 userDbId) const {
 
 bool UserService::isLoginPending() const {
     return isActionPending(actionRequestLoginToken);
+}
+
+void UserService::pruneStaleAvailableDriveGenerations() {
+    for (auto it = _availableDriveLoadGenerations.begin(); it != _availableDriveLoadGenerations.end();) {
+        if (_appCache.user(it->first).has_value()) {
+            ++it;
+            continue;
+        }
+
+        it = _availableDriveLoadGenerations.erase(it);
+    }
 }
 
 void UserService::beginAction(const ServiceActionTracker::ActionKey &actionKey, const ServiceActionTracker::ScopeId scopeId) {
