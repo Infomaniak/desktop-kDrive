@@ -20,9 +20,19 @@
 
 #include <QLoggingCategory>
 
+#include <cstdlib>
+
 namespace KDC {
 
+namespace {
 Q_LOGGING_CATEGORY(lcCacheHydrator, "gui.v4.cachehydrator", QtInfoMsg)
+
+[[noreturn]] void exitOnHydrationFailure(const char *const stage, const ExitInfo &exitInfo) {
+    qCCritical(lcCacheHydrator) << "Cache hydration failed at" << stage << "| code:" << exitInfo.code()
+                                << "/ cause:" << exitInfo.cause();
+    std::exit(EXIT_FAILURE);
+}
+} // namespace
 
 CacheHydrator::CacheHydrator(CommService &commService, AppCache &appCache, QObject *const parent) :
     QObject(parent),
@@ -36,9 +46,7 @@ void CacheHydrator::bootstrap() const {
 void CacheHydrator::loadUsers() const {
     _commService.requestUserInfoList([this](const ExitInfo &exitInfo, const std::vector<UserInfo> &list) {
         if (!exitInfo) {
-            qCWarning(lcCacheHydrator) << "User bootstrap failed | code:" << exitInfo.code() << "/ cause:" << exitInfo.cause();
-            loadAccounts();
-            return;
+            exitOnHydrationFailure("users", exitInfo);
         }
 
         _appCache.replaceUsers(list);
@@ -49,10 +57,7 @@ void CacheHydrator::loadUsers() const {
 void CacheHydrator::loadAccounts() const {
     _commService.requestAccountInfoList([this](const ExitInfo &exitInfo, const std::vector<AccountInfo> &list) {
         if (!exitInfo) {
-            qCWarning(lcCacheHydrator) << "Account bootstrap failed | code:" << exitInfo.code()
-                                       << "/ cause:" << exitInfo.cause();
-            loadDrives();
-            return;
+            exitOnHydrationFailure("accounts", exitInfo);
         }
 
         _appCache.replaceAccounts(list);
@@ -63,9 +68,7 @@ void CacheHydrator::loadAccounts() const {
 void CacheHydrator::loadDrives() const {
     _commService.requestDriveInfoList([this](const ExitInfo &exitInfo, const std::vector<DriveInfo> &list) {
         if (!exitInfo) {
-            qCWarning(lcCacheHydrator) << "Drive bootstrap failed | code:" << exitInfo.code() << "/ cause:" << exitInfo.cause();
-            loadSyncs();
-            return;
+            exitOnHydrationFailure("drives", exitInfo);
         }
 
         _appCache.replaceDrives(list);
@@ -76,9 +79,7 @@ void CacheHydrator::loadDrives() const {
 void CacheHydrator::loadSyncs() const {
     _commService.requestSyncInfoList([this](const ExitInfo &exitInfo, const std::vector<SyncInfo> &list) {
         if (!exitInfo) {
-            qCWarning(lcCacheHydrator) << "Sync bootstrap failed | code:" << exitInfo.code() << "/ cause:" << exitInfo.cause();
-            loadSyncErrors();
-            return;
+            exitOnHydrationFailure("syncs", exitInfo);
         }
 
         _appCache.replaceSyncs(list);
@@ -89,8 +90,7 @@ void CacheHydrator::loadSyncs() const {
 void CacheHydrator::loadSyncErrors() const {
     _commService.requestErrorInfoList([this](const ExitInfo &exitInfo, const std::vector<ErrorInfo> &list) {
         if (!exitInfo) {
-            qCWarning(lcCacheHydrator) << "Error bootstrap failed | code:" << exitInfo.code() << "/ cause:" << exitInfo.cause();
-            return;
+            exitOnHydrationFailure("errors", exitInfo);
         }
 
         std::vector<ErrorInfo> syncErrors;
