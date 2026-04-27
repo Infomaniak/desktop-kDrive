@@ -119,6 +119,8 @@ Language MigrationParams::strToLanguage(QString lang) {
         return Language::Finnish;
     } else if (lang == "da") {
         return Language::Danish;
+    } else if (lang == "el") {
+        return Language::Greek;
     } else {
         return Language::Default;
     }

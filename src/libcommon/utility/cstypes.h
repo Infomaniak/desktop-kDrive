@@ -192,6 +192,7 @@ enum class Language {
     Norwegian,
     Finnish,
     Danish,
+    Greek,
     EnumEnd
 };
 

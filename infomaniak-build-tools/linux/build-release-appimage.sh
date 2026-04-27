@@ -265,7 +265,7 @@ function clean_app_directory() {
   for prefix in qt qtbase qtconnectivity qtdeclarative qtlocation qtmultimedia qtserialport qtwebsockets; do
     # Remove all except de, es, fr, it, sv, pt, pl, nb, fi, da, en
     find . -mindepth 1 -maxdepth 1 \( -type f -o -type l \) -name "${prefix}_*.qm" \
-      ! -name "*_de.qm" ! -name "*_es.qm" ! -name "*_fr.qm" ! -name "*_it.qm" ! -name "*_sv.qm" ! -name "*_pt.qm" ! -name "*_pl.qm" ! -name "*_nb.qm" ! -name "*_fi.qm" ! -name "*_da.qm" ! -name "*_en.qm" -delete
+      ! -name "*_de.qm" ! -name "*_es.qm" ! -name "*_fr.qm" ! -name "*_it.qm" ! -name "*_sv.qm" ! -name "*_pt.qm" ! -name "*_pl.qm" ! -name "*_nb.qm" ! -name "*_fi.qm" ! -name "*_da.qm" ! -name "*_el.qm" ! -name "*_en.qm" -delete
   done
 
   cd /app
