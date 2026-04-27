@@ -36,14 +36,14 @@ class CacheHydrator : public QObject {
 
     public:
         explicit CacheHydrator(CommService &commService, AppCache &appCache, QObject *parent = nullptr);
-        void bootstrap();
+        void bootstrap() const;
 
     private:
-        void loadUsers();
-        void loadAccounts();
-        void loadDrives();
-        void loadSyncs();
-        void loadSyncErrors();
+        void loadUsers() const;
+        void loadAccounts() const;
+        void loadDrives() const;
+        void loadSyncs() const;
+        void loadSyncErrors() const;
 
         CommService &_commService;
         AppCache &_appCache;
