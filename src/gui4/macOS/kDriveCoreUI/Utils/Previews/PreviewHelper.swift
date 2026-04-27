@@ -49,6 +49,7 @@ public enum PreviewHelper {
         dbId: 95014,
         userId: 95014,
         name: "Tim Cook",
+        firstName: "Tim",
         email: "tim@apple.com",
         avatar: nil
     )

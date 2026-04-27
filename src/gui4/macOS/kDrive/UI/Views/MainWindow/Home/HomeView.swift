@@ -31,11 +31,7 @@ struct HomeView: View {
     @ObservedUISynchroState private var synchroState: UISynchroState
 
     private var userName: String {
-        guard let currentUser = mainViewModel.currentUser,
-              let givenName = try? PersonNameComponents.FormatStyle().parseStrategy.parse(currentUser.name).givenName
-        else { return "" }
-
-        return givenName
+        return mainViewModel.currentUser?.firstName ?? ""
     }
 
     private var state: HomeState {

@@ -31,6 +31,7 @@ struct UserInfoMetadata: Codable, Sendable {
     let dbId: Int32
     let userId: Int32
     @Base64CodedString var name: String
+    @Base64CodedString var firstName: String
     @Base64CodedString var email: String
     @Base64CodedData var avatar: Data
     let isConnected: Bool

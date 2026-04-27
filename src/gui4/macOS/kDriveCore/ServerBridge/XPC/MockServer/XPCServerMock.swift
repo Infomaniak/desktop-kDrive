@@ -91,6 +91,7 @@ public actor XPCServerMock: XPCGuiProtocol, @preconcurrency XPCConnectionProvide
         let newUser = User(dbId: userDbId,
                            userId: Int32.random(in: 0 ... 1000),
                            name: "Jonh Appleseed",
+                           firstName: "Jonh",
                            email: "jonh.appleseed@apple.com",
                            accounts: [:],
                            availableDrives: [:],
