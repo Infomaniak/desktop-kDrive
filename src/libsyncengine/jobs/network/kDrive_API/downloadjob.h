@@ -92,7 +92,7 @@ class DownloadJob : public AbstractTokenNetworkJob {
         FileDownloadInfo _fileDownloadInfo;
 
         SyncPath _tmpPath;
-        DateTimePolicy _dateTimePolicy = DateTimePolicy::ApplyDateTime;
+        DateTimePolicy _dateTimePolicy;
         bool _responseHandlingCanceled = false;
 
         NodeId _localNodeId;

@@ -686,7 +686,7 @@ void TestNetworkJobs::testDownload() {
             DownloadJob job(nullptr, _cacheDirectory,
                             DownloadJob::FileDownloadInfo{_driveDbId, testAliasGoodRemoteId, localDestFilePath, 0,
                                                           creationTimeIn.count(), modificationTimeIn.count(), false},
-                            DownloadJob::DateTimePolicy::UseDateTime);
+                            DownloadJob::DateTimePolicy::ApplyDateTime);
             const ExitCode exitCode = job.runSynchronously();
             CPPUNIT_ASSERT_GREATER(int64_t{-1}, job.size());
             CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
@@ -718,7 +718,7 @@ void TestNetworkJobs::testDownload() {
         {
             DownloadJob job(nullptr, _cacheDirectory,
                             DownloadJob::FileDownloadInfo{_driveDbId, testAliasDnDRemoteId, localDestFilePath, 0, 0, 0, false},
-                            DownloadJob::DateTimePolicy::UseDateTime);
+                            DownloadJob::DateTimePolicy::ApplyDateTime);
             const ExitCode exitCode = job.runSynchronously();
             CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
         }
@@ -740,7 +740,7 @@ void TestNetworkJobs::testDownload() {
             DownloadJob job(
                     nullptr, _cacheDirectory,
                     DownloadJob::FileDownloadInfo{_driveDbId, testAliasCorruptedRemoteId, localDestFilePath, 0, 0, 0, false},
-                    DownloadJob::DateTimePolicy::UseDateTime);
+                    DownloadJob::DateTimePolicy::ApplyDateTime);
             const ExitCode exitCode = job.runSynchronously();
             CPPUNIT_ASSERT(exitCode == ExitCode::SystemError);
         }
