@@ -23,9 +23,6 @@
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
 
-// Output parameters keys
-static const auto outParamsErrorInfo = "errorInfoList";
-
 namespace KDC {
 
 ErrorInfolistJob::ErrorInfolistJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
@@ -45,7 +42,7 @@ ExitInfo ErrorInfolistJob::deserializeInputParms() {
 }
 
 ExitInfo ErrorInfolistJob::serializeOutputParms() {
-    writeParamValues(outParamsErrorInfo, _errorInfoList, info2DynamicVar<ErrorInfo>);
+    writeParamValues(msgParamErrorInfoList, _errorInfoList, info2DynamicVar<ErrorInfo>);
     return ExitCode::Ok;
 }
 
