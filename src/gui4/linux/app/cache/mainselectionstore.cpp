@@ -18,15 +18,17 @@
 
 #include "mainselectionstore.h"
 
+Q_LOGGING_CATEGORY(lcMainSelectionStore, "gui.v4.mainselectionstore", QtInfoMsg)
+
 namespace KDC {
 
 MainSelectionStore::MainSelectionStore(AppCache &cache, QObject *const parent) :
     QObject(parent),
     _cache(cache) {
-    (void) connect(&_cache, &AppCache::usersChanged, this, &MainSelectionStore::handleCacheChanged);
-    (void) connect(&_cache, &AppCache::accountsChanged, this, &MainSelectionStore::handleCacheChanged);
-    (void) connect(&_cache, &AppCache::drivesChanged, this, &MainSelectionStore::handleCacheChanged);
-    (void) connect(&_cache, &AppCache::syncsChanged, this, &MainSelectionStore::handleCacheChanged);
+    (void) connect(&_cache, &AppCache::syncsChanged,    this, &MainSelectionStore::handleSyncsChanged);
+    (void) connect(&_cache, &AppCache::usersChanged,    this, &MainSelectionStore::handleContextDataChanged);
+    (void) connect(&_cache, &AppCache::accountsChanged, this, &MainSelectionStore::handleContextDataChanged);
+    (void) connect(&_cache, &AppCache::drivesChanged,   this, &MainSelectionStore::handleContextDataChanged);
 }
 
 qint64 MainSelectionStore::currentSyncDbId() const {
@@ -48,6 +50,7 @@ void MainSelectionStore::selectSync(const qint64 syncDbId) {
     const auto typedSyncDbId = static_cast<SyncDbId>(syncDbId);
     _lastRequestedSyncDbId = typedSyncDbId;
     if (typedSyncDbId != 0 && !_cache.syncContext(typedSyncDbId)) {
+        qCWarning(lcMainSelectionStore) << "Requested sync not in context, falling back | syncDbId:" << typedSyncDbId;
         ensureValidSelection();
         return;
     }
@@ -72,10 +75,16 @@ void MainSelectionStore::ensureValidSelection() {
     setCurrentSyncDbId(firstAvailableSyncDbId());
 }
 
-void MainSelectionStore::handleCacheChanged() {
+void MainSelectionStore::handleSyncsChanged() {
     const auto previousCurrentSyncDbId = _currentSyncDbId;
     ensureValidSelection();
     if (_currentSyncDbId != 0 && _currentSyncDbId == previousCurrentSyncDbId) {
+        emit currentSyncContextChanged();
+    }
+}
+
+void MainSelectionStore::handleContextDataChanged() {
+    if (_currentSyncDbId != 0) {
         emit currentSyncContextChanged();
     }
 }
@@ -84,6 +93,7 @@ void MainSelectionStore::setCurrentSyncDbId(const SyncDbId syncDbId) {
     if (_currentSyncDbId == syncDbId) {
         return;
     }
+    qCDebug(lcMainSelectionStore) << "Current sync changed | from:" << _currentSyncDbId << "/ to:" << syncDbId;
     _currentSyncDbId = syncDbId;
     emit currentSyncDbIdChanged();
     emit currentSyncContextChanged();
