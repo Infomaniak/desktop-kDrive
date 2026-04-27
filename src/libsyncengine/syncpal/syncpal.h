@@ -148,6 +148,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         virtual ~SyncPal();
 
         inline void setAddErrorCallback(const std::function<void(const Error &)> &addError) { _addError = addError; }
+        inline void setResolveSyncErrorsByExitCauseCallback(const std::function<void(SyncDbId syncDbId, ExitCause cause)> &resolveSyncErrors) {
+            _resolveSyncErrors = resolveSyncErrors;
+        }
 
         inline void setAddCompletedItemCallback(const std::function<void(int, const SyncFileItem &, bool)> &addCompletedItem) {
             _addCompletedItem = addCompletedItem;
@@ -247,6 +250,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void addError(const Error &error);
         void addCompletedItem(SyncDbId syncDbId, const SyncFileItem &item);
         void fixConflictedFilesCompleted(SyncDbId syncDbId, uint64_t nbErrors);
+        void resolveSyncErrorsByExitCause(ExitCause cause);
 
         bool wipeVirtualFiles();
         bool wipeOldPlaceholders();
@@ -361,6 +365,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         // Callbacks
         std::function<void(const Error &error)> _addError;
+        std::function<void(SyncDbId syncDbId, ExitCause cause)> _resolveSyncErrors;
         std::function<void(SyncDbId syncDbId, const SyncFileItem &item, bool notify)> _addCompletedItem;
         std::function<void(SyncDbId syncDbId, uint64_t nbErrors)> _fixConflictedFilesCompleted;
         std::shared_ptr<Vfs> _vfs;

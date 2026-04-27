@@ -468,6 +468,15 @@
     "DELETE FROM error "             \
     "WHERE dbId=?1;"
 
+#define SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID "select_syncerror_by_exitcause"
+#define SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST                                                                                  \
+    "SELECT dbId, time, "                                                                                                      \
+    "functionName, workerName, exitCode, exitCause, "                                                                          \
+    "localNodeId, remoteNodeId, nodeType, path, status, conflictType, inconsistencyType, cancelType, destinationPath, level, " \
+    "syncDbId FROM "                                                                                                           \
+    "error "                                                                                                                   \
+    "WHERE syncDbId=?1 AND exitCause=?2;"
+
 #define SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID "select_error_by_level_and_syncdbid"
 #define SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST                                                                      \
     "SELECT dbId, time, "                                                                                                   \
@@ -1069,6 +1078,7 @@ bool ParmsDb::prepare() {
     if (!createAndPrepareRequest(UPDATE_ERROR_REQUEST_ID, UPDATE_ERROR_REQUEST)) return false;
     if (!createAndPrepareRequest(DELETE_ALL_ERROR_BY_EXITCODE_REQUEST_ID, DELETE_ALL_ERROR_BY_EXITCODE_REQUEST)) return false;
     if (!createAndPrepareRequest(DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST_ID, DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST)) return false;
+    if (!createAndPrepareRequest(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST)) return false;
     if (!createAndPrepareRequest(DELETE_ALL_ERROR_BY_LEVEL_REQUEST_ID, DELETE_ALL_ERROR_BY_LEVEL_REQUEST)) return false;
     if (!createAndPrepareRequest(DELETE_ERROR_BY_DBID_REQUEST_ID, DELETE_ERROR_BY_DBID_REQUEST)) return false;
     if (!createAndPrepareRequest(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID,
@@ -2998,6 +3008,73 @@ bool ParmsDb::deleteAllErrorsByExitCause(const ExitCause exitCause) {
         LOG_WARN(_logger, "Error running query: " << DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST_ID);
         return false;
     }
+
+    return true;
+}
+
+bool ParmsDb::selectSyncErrorsByExitCause(SyncDbId syncDbId, ExitCause exitCause, std::vector<Error> &errs) {
+    const std::scoped_lock lock(_mutex);
+
+    int errId = -1;
+
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 1, syncDbId));
+    LOG_IF_FAIL(queryBindValue(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 2, static_cast<int>(exitCause)));
+    bool found = false;
+    for (;;) {
+        if (!queryNext(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, found)) {
+            LOG_WARN(_logger, "Error getting query result: " << SELECT_ALL_ERROR_ID);
+            return false;
+        }
+        if (!found) {
+            break;
+        }
+
+        int64_t dbId = 0;
+        LOG_IF_FAIL(queryInt64Value(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 0, dbId));
+        int64_t time = 0;
+        LOG_IF_FAIL(queryInt64Value(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 1, time));
+        std::string functionName;
+        LOG_IF_FAIL(queryStringValue(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 2, functionName));
+        std::string workerName;
+        LOG_IF_FAIL(queryStringValue(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 3, workerName));
+        int exitCode = 0;
+        LOG_IF_FAIL(queryIntValue(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 4, exitCode));
+        int exitCause = 0;
+        LOG_IF_FAIL(queryIntValue(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 5, exitCause));
+        std::string localNodeId;
+        LOG_IF_FAIL(queryStringValue(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 6, localNodeId));
+        std::string remoteNodeId;
+        LOG_IF_FAIL(queryStringValue(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 7, remoteNodeId));
+        int nodeType;
+        LOG_IF_FAIL(queryIntValue(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 8, nodeType));
+        SyncName path;
+        LOG_IF_FAIL(querySyncNameValue(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 9, path));
+        int status;
+        LOG_IF_FAIL(queryIntValue(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 10, status));
+        int conflictType;
+        LOG_IF_FAIL(queryIntValue(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 11, conflictType));
+        int inconsistencyType;
+        LOG_IF_FAIL(queryIntValue(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 12, inconsistencyType));
+        int cancelType;
+        LOG_IF_FAIL(queryIntValue(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 13, cancelType));
+        SyncName destinationPath;
+        LOG_IF_FAIL(querySyncNameValue(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 14, destinationPath));
+        int intLevel = 0;
+        LOG_IF_FAIL(queryIntValue(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 15, intLevel));
+        ErrorLevel level = fromInt<ErrorLevel>(intLevel);
+
+        SyncDbId syncDbId = 0;
+        LOG_IF_FAIL(queryInt64Value(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 16, syncDbId));
+
+
+        errs.push_back(Error(dbId, time, level, functionName, syncDbId, workerName, static_cast<ExitCode>(exitCode),
+                             static_cast<ExitCause>(exitCause), static_cast<NodeId>(localNodeId),
+                             static_cast<NodeId>(remoteNodeId), static_cast<NodeType>(nodeType), static_cast<SyncPath>(path),
+                             static_cast<ConflictType>(conflictType), static_cast<InconsistencyType>(inconsistencyType),
+                             static_cast<CancelType>(cancelType), static_cast<SyncPath>(destinationPath)));
+    }
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID));
 
     return true;
 }

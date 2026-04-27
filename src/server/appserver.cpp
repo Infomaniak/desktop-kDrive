@@ -4520,13 +4520,10 @@ void AppServer::resolveItemErrors(const SyncDbId syncDbId, const SyncFileItem &i
 void AppServer::resolveSyncErrorsByExitCause(SyncDbId syncDbId, ExitCause cause) const {
     std::vector<Error> errorList;
 
-    bool found = false;
     if (!ParmsDb::instance()->selectSyncErrorsByExitCause(syncDbId, cause, errorList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectSyncErrorsByExitCause");
         return;
     }
-
-    if (!found) return;
 
     resolveErrors(errorList);
 }
