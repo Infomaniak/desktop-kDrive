@@ -28,14 +28,14 @@ namespace KDC {
 /**
  * Sequential initial snapshot loader for Linux v4 cache hydration.
  *
- * Loads users, then accounts, then drives, then syncs, then sync errors so the
+ * Loads users, then accounts, then drives, then syncs, then errors so the
  * graph-backed AppCache is populated in parent-first order.
  */
-class CacheBootstrapper : public QObject {
+class CacheHydrator : public QObject {
         Q_OBJECT
 
     public:
-        explicit CacheBootstrapper(CommService &commService, AppCache &appCache, QObject *parent = nullptr);
+        explicit CacheHydrator(CommService &commService, AppCache &appCache, QObject *parent = nullptr);
         void bootstrap();
 
     private:
