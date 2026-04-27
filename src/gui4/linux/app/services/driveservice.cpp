@@ -19,7 +19,6 @@
 #include "driveservice.h"
 
 #include <QLoggingCategory>
-#include <QPointer>
 
 namespace {
 constexpr char serviceKeyDrive[] = "drive";
@@ -54,35 +53,25 @@ bool DriveService::loading() const {
 void DriveService::loadDrives() {
     beginAction(actionLoadDrives);
 
-    const QPointer<DriveService> self(this);
-    _commService.requestDriveInfoList([self](const ExitInfo &exitInfo, const std::vector<DriveInfo> &list) {
-        if (!self) {
-            return;
-        }
-
-        self->endAction(actionLoadDrives);
+    _commService.requestDriveInfoList([this](const ExitInfo &exitInfo, const std::vector<DriveInfo> &list) {
+        endAction(actionLoadDrives);
         if (!exitInfo) {
-            self->notifyRequestFailure(exitInfo, RequestNum::DRIVE_INFOLIST);
+            notifyRequestFailure(exitInfo, RequestNum::DRIVE_INFOLIST);
             return;
         }
 
-        self->_appCache.replaceDrives(list);
+        _appCache.replaceDrives(list);
     });
 }
 
 void DriveService::deleteDrive(const qint64 driveDbId) {
     beginAction(actionDeleteDrive, driveDbId);
 
-    const QPointer<DriveService> self(this);
     // Cache consistency is signal-driven: we wait for driveRemoved/driveUpdated pushes.
-    _commService.requestDriveDelete(static_cast<DriveDbId>(driveDbId), [self, driveDbId](const ExitInfo &exitInfo) {
-        if (!self) {
-            return;
-        }
-
-        self->endAction(actionDeleteDrive, driveDbId);
+    _commService.requestDriveDelete(static_cast<DriveDbId>(driveDbId), [this, driveDbId](const ExitInfo &exitInfo) {
+        endAction(actionDeleteDrive, driveDbId);
         if (!exitInfo) {
-            self->notifyRequestFailure(exitInfo, RequestNum::DRIVE_DELETE);
+            notifyRequestFailure(exitInfo, RequestNum::DRIVE_DELETE);
         }
     });
 }
@@ -90,15 +79,10 @@ void DriveService::deleteDrive(const qint64 driveDbId) {
 void DriveService::updateDrive(const DriveInfo &driveInfo) {
     beginAction(actionUpdateDrive, static_cast<qint64>(driveInfo.dbId()));
 
-    const QPointer<DriveService> self(this);
-    _commService.requestDriveUpdate(driveInfo, [self, driveDbId = static_cast<qint64>(driveInfo.dbId())](const ExitInfo &exitInfo) {
-        if (!self) {
-            return;
-        }
-
-        self->endAction(actionUpdateDrive, driveDbId);
+    _commService.requestDriveUpdate(driveInfo, [this, driveDbId = static_cast<qint64>(driveInfo.dbId())](const ExitInfo &exitInfo) {
+        endAction(actionUpdateDrive, driveDbId);
         if (!exitInfo) {
-            self->notifyRequestFailure(exitInfo, RequestNum::DRIVE_UPDATE);
+            notifyRequestFailure(exitInfo, RequestNum::DRIVE_UPDATE);
         }
     });
 }
