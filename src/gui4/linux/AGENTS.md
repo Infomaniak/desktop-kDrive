@@ -49,6 +49,7 @@
 - `app/cache/cachetypes.h`: cache read models and onboarding keys (`SyncContext`, `DriveContext`,
   `AvailableDriveContext`, `AvailableDriveKey`, `PendingSyncConfig`).
 - `app/cache/mainselectionstore.*`: sync-first main-shell selection owner (`currentSyncDbId`) and selection healing.
+  - emits `currentSyncContextChanged()` as a coarse invalidation signal when the current sync context stays selected but the underlying cache graph changes.
 - `app/cache/onboardingstate.*`: onboarding-only selected user, selected available-drive keys, and pending sync configs.
 - `ui/`: QML shell and design tokens.
 
