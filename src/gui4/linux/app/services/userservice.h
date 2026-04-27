@@ -68,6 +68,7 @@ class UserService : public QObject {
         void beginAction(const ServiceActionTracker::ActionKey &actionKey, ServiceActionTracker::ScopeId scopeId = 0);
         void endAction(const ServiceActionTracker::ActionKey &actionKey, ServiceActionTracker::ScopeId scopeId = 0);
         void setLoading(bool loading);
+        void pruneStaleAvailableDriveGenerations();
         [[nodiscard]] bool isActionPending(const ServiceActionTracker::ActionKey &actionKey,
                                            ServiceActionTracker::ScopeId scopeId = 0) const;
         void notifyRequestFailure(const ExitInfo &exitInfo, RequestNum requestNum);
