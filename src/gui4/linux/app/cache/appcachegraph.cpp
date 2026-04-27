@@ -25,9 +25,9 @@
 namespace {
 template<typename IdType>
 void appendUnique(std::vector<IdType> &values, const IdType id) {
-    if (std::ranges::find(values, id) == values.end()) {
-        values.push_back(id);
-        std::ranges::sort(values);
+    const auto insertIt = std::ranges::lower_bound(values, id);
+    if (insertIt == values.end() || *insertIt != id) {
+        values.insert(insertIt, id);
     }
 }
 
@@ -162,8 +162,8 @@ void AppCache::pruneConfiguredGraph() {
 }
 
 void AppCache::rebuildGraphRelations() {
-    for (auto &[_, accountDbIds]: _usersByDbId | std::views::values) {
-        accountDbIds.clear();
+    for (auto &userNode: _usersByDbId | std::views::values) {
+        userNode.accountDbIds.clear();
     }
     for (auto &accountNode: _accountsByDbId | std::views::values) {
         accountNode.driveDbIds.clear();
