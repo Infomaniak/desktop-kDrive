@@ -29,11 +29,11 @@ CacheHydrator::CacheHydrator(CommService &commService, AppCache &appCache, QObje
     _commService(commService),
     _appCache(appCache) {}
 
-void CacheHydrator::bootstrap() {
+void CacheHydrator::bootstrap() const {
     loadUsers();
 }
 
-void CacheHydrator::loadUsers() {
+void CacheHydrator::loadUsers() const {
     _commService.requestUserInfoList([this](const ExitInfo &exitInfo, const std::vector<UserInfo> &list) {
         if (!exitInfo) {
             qCWarning(lcCacheHydrator) << "User bootstrap failed | code:" << exitInfo.code() << "/ cause:" << exitInfo.cause();
@@ -46,7 +46,7 @@ void CacheHydrator::loadUsers() {
     });
 }
 
-void CacheHydrator::loadAccounts() {
+void CacheHydrator::loadAccounts() const {
     _commService.requestAccountInfoList([this](const ExitInfo &exitInfo, const std::vector<AccountInfo> &list) {
         if (!exitInfo) {
             qCWarning(lcCacheHydrator) << "Account bootstrap failed | code:" << exitInfo.code()
@@ -60,7 +60,7 @@ void CacheHydrator::loadAccounts() {
     });
 }
 
-void CacheHydrator::loadDrives() {
+void CacheHydrator::loadDrives() const {
     _commService.requestDriveInfoList([this](const ExitInfo &exitInfo, const std::vector<DriveInfo> &list) {
         if (!exitInfo) {
             qCWarning(lcCacheHydrator) << "Drive bootstrap failed | code:" << exitInfo.code() << "/ cause:" << exitInfo.cause();
@@ -73,7 +73,7 @@ void CacheHydrator::loadDrives() {
     });
 }
 
-void CacheHydrator::loadSyncs() {
+void CacheHydrator::loadSyncs() const {
     _commService.requestSyncInfoList([this](const ExitInfo &exitInfo, const std::vector<SyncInfo> &list) {
         if (!exitInfo) {
             qCWarning(lcCacheHydrator) << "Sync bootstrap failed | code:" << exitInfo.code() << "/ cause:" << exitInfo.cause();
@@ -86,7 +86,7 @@ void CacheHydrator::loadSyncs() {
     });
 }
 
-void CacheHydrator::loadSyncErrors() {
+void CacheHydrator::loadSyncErrors() const {
     _commService.requestErrorInfoList([this](const ExitInfo &exitInfo, const std::vector<ErrorInfo> &list) {
         if (!exitInfo) {
             qCWarning(lcCacheHydrator) << "Error bootstrap failed | code:" << exitInfo.code() << "/ cause:" << exitInfo.cause();
