@@ -139,18 +139,6 @@ uint64_t computeNodeId(const BY_HANDLE_FILE_INFORMATION &pFileInfo) {
     return static_cast<uint64_t>(longLongId);
 }
 
-} // namespace
-
-int IoHelper::_getAndSetRightsMethod = -1; // -1: not initialized, 0: Windows API, 1: std::filesystem
-bool IoHelper::_setRightsWindowsApiInheritance = false;
-std::unique_ptr<BYTE[]> IoHelper::_psid = nullptr;
-TRUSTEE IoHelper::_trustee = {nullptr};
-std::mutex IoHelper::_initRightsWindowsApiMutex;
-
-IoError IoHelper::stdError2ioError(int error) noexcept {
-    return dWordError2ioError(static_cast<DWORD>(error), logger());
-}
-
 bool GetRootNodeId(const SyncPath &rootPath, NodeId &nodeId) noexcept {
     HANDLE hRoot = CreateFileW(rootPath.wstring().c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
                                OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
@@ -167,6 +155,18 @@ bool GetRootNodeId(const SyncPath &rootPath, NodeId &nodeId) noexcept {
     nodeId = std::to_string(computeNodeId(info));
     CloseHandle(hRoot);
     return true;
+}
+
+} // namespace
+
+int IoHelper::_getAndSetRightsMethod = -1; // -1: not initialized, 0: Windows API, 1: std::filesystem
+bool IoHelper::_setRightsWindowsApiInheritance = false;
+std::unique_ptr<BYTE[]> IoHelper::_psid = nullptr;
+TRUSTEE IoHelper::_trustee = {nullptr};
+std::mutex IoHelper::_initRightsWindowsApiMutex;
+
+IoError IoHelper::stdError2ioError(int error) noexcept {
+    return dWordError2ioError(static_cast<DWORD>(error), logger());
 }
 
 bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
