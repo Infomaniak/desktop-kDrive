@@ -879,7 +879,7 @@ Seleziona un&apos;altra cartella. Se continui, Lite Sync verrà disabilitato.&lt
     <message>
         <location filename="../src/gui/debuggingdialog.cpp" line="597"/>
         <source>The extended full log is activated through the KDRIVE_FORCE_EXTENDED_LOG environment variable. Set it to 0 to disable it.</source>
-        <translation type="unfinished"></translation>
+        <translation>Il log completo esteso è attivato tramite la variabile d&apos;ambiente KDRIVE_FORCE_EXTENDED_LOG. Impostala a 0 per disattivarlo.</translation>
     </message>
     <message>
         <location filename="../src/gui/debuggingdialog.h" line="70"/>
@@ -2917,6 +2917,19 @@ Accedi alla versione web per verificare lo stato del tuo kDrive oppure contatta 
             <numerusform>%n secondo/i</numerusform>
             <numerusform>%n secondo/i</numerusform>
         </translation>
+    </message>
+</context>
+<context>
+    <name>main.cpp</name>
+    <message>
+        <location filename="../src/gui/mainclient.cpp" line="49"/>
+        <source>System Tray not available</source>
+        <translation>Area di notifica non disponibile</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/mainclient.cpp" line="48"/>
+        <source>%1 requires a working system tray. If you are running XFCE, please follow &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;these instructions&lt;/a&gt;. Otherwise, please install a system tray application such as &apos;trayer&apos; and try again.</source>
+        <translation>%1 richiede un&apos;area di notifica (system tray) funzionante. Se utilizzi XFCE, segui &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;queste istruzioni&lt;/a&gt;. In caso contrario, installa un&apos;applicazione per l&apos;area di notifica come &quot;trayer&quot; e riprova.</translation>
     </message>
 </context>
 <context>

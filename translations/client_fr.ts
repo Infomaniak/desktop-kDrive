@@ -880,7 +880,7 @@ Veuillez sélectionner un autre dossier. Si vous continuez, Lite Sync sera désa
     <message>
         <location filename="../src/gui/debuggingdialog.cpp" line="597"/>
         <source>The extended full log is activated through the KDRIVE_FORCE_EXTENDED_LOG environment variable. Set it to 0 to disable it.</source>
-        <translation type="unfinished"></translation>
+        <translation>Le journal complet étendu est activé via la variable d&apos;environnement KDRIVE_FORCE_EXTENDED_LOG. Définissez-la à 0 pour la désactiver.</translation>
     </message>
     <message>
         <location filename="../src/gui/debuggingdialog.h" line="70"/>
@@ -2916,6 +2916,19 @@ Veuillez utiliser le lien suivant pour envoyer les logs au support: &lt;a style=
             <numerusform>%n seconde</numerusform>
             <numerusform>%n secondes</numerusform>
         </translation>
+    </message>
+</context>
+<context>
+    <name>main.cpp</name>
+    <message>
+        <location filename="../src/gui/mainclient.cpp" line="49"/>
+        <source>System Tray not available</source>
+        <translation>Zone de notification indisponible</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/mainclient.cpp" line="48"/>
+        <source>%1 requires a working system tray. If you are running XFCE, please follow &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;these instructions&lt;/a&gt;. Otherwise, please install a system tray application such as &apos;trayer&apos; and try again.</source>
+        <translation>%1 nécessite une zone de notification (system tray) fonctionnelle. Si vous utilisez XFCE, veuillez suivre &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;ces instructions&lt;/a&gt;. Sinon, veuillez installer une application de zone de notification telle que « trayer » et réessayer.</translation>
     </message>
 </context>
 <context>
