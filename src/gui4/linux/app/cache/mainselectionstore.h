@@ -55,6 +55,7 @@ class MainSelectionStore : public QObject {
         void currentSyncContextChanged();
 
     private:
+        void handleCacheChanged();
         void setCurrentSyncDbId(SyncDbId syncDbId);
         [[nodiscard]] SyncDbId firstAvailableSyncDbId() const;
 
