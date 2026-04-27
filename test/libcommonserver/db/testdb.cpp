@@ -364,40 +364,40 @@ void TestDb::testWalTruncateOnClose() {
 }
 
 bool TestDb::MyTestDb::walAutocheckpointPragma(int &value) {
-    constexpr auto id = "wal_autocheckpoint_query";
-    LOG_IF_FAIL(queryCreate(id));
+    constexpr auto queryId = "wal_autocheckpoint_query";
+    LOG_IF_FAIL(queryCreate(queryId));
     int errId = -1;
     std::string error;
-    if (!queryPrepare(id, "PRAGMA wal_autocheckpoint;", false, errId, error)) {
-        queryFree(id);
+    if (!queryPrepare(queryId, "PRAGMA wal_autocheckpoint;", false, errId, error)) {
+        queryFree(queryId);
         return false;
     }
     bool hasData = false;
-    if (!queryNext(id, hasData) || !hasData) {
-        queryFree(id);
+    if (!queryNext(queryId, hasData) || !hasData) {
+        queryFree(queryId);
         return false;
     }
-    LOG_IF_FAIL(queryIntValue(id, 0, value));
-    queryFree(id);
+    LOG_IF_FAIL(queryIntValue(queryId, 0, value));
+    queryFree(queryId);
     return true;
 }
 
 bool TestDb::MyTestDb::journalSizeLimitPragma(int64_t &value) {
-    constexpr auto id = "journal_size_limit_query";
-    LOG_IF_FAIL(queryCreate(id));
+    constexpr auto queryId = "journal_size_limit_query";
+    LOG_IF_FAIL(queryCreate(queryId));
     int errId = -1;
     std::string error;
-    if (!queryPrepare(id, "PRAGMA journal_size_limit;", false, errId, error)) {
-        queryFree(id);
+    if (!queryPrepare(queryId, "PRAGMA journal_size_limit;", false, errId, error)) {
+        queryFree(queryId);
         return false;
     }
     bool hasData = false;
-    if (!queryNext(id, hasData) || !hasData) {
-        queryFree(id);
+    if (!queryNext(queryId, hasData) || !hasData) {
+        queryFree(queryId);
         return false;
     }
-    LOG_IF_FAIL(queryInt64Value(id, 0, value));
-    queryFree(id);
+    LOG_IF_FAIL(queryInt64Value(queryId, 0, value));
+    queryFree(queryId);
     return true;
 }
 
