@@ -115,8 +115,6 @@ Language MigrationParams::strToLanguage(QString lang) {
         return Language::Polish;
     } else if (lang == "nb" || lang == "no") {
         return Language::Norwegian;
-    } else if (lang == "fi") {
-        return Language::Finnish;
     } else {
         return Language::Default;
     }

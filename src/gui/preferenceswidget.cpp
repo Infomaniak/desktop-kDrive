@@ -512,7 +512,6 @@ void PreferencesWidget::retranslateUi() const {
     _languageSelectorComboBox->addItem(tr("Portuguese"), toInt(Language::Portuguese));
     _languageSelectorComboBox->addItem(tr("Polish"), toInt(Language::Polish));
     _languageSelectorComboBox->addItem(tr("Norwegian"), toInt(Language::Norwegian));
-    _languageSelectorComboBox->addItem(tr("Finnish"), toInt(Language::Finnish));
     const int languageIndex =
             _languageSelectorComboBox->findData(toInt(ParametersCache::instance()->parametersInfo().language()));
     _languageSelectorComboBox->setCurrentIndex(languageIndex);
