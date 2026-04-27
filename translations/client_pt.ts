@@ -1997,27 +1997,32 @@ Por favor, utilize o seguinte link para enviar os registos para o apoio técnico
         <translation>Finlandês</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="521"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="516"/>
+        <source>Danish</source>
+        <translation>Dinamarquês</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="522"/>
         <source>Advanced</source>
         <translation>Avancado</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="522"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="523"/>
         <source>Debugging information</source>
         <translation>Informacoes de depuracao</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="524"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="525"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Open debugging folder&lt;/a&gt;</source>
         <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Abrir a pasta de depuração&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="525"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="526"/>
         <source>Files to exclude</source>
         <translation>Ficheiros a excluir</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="526"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="527"/>
         <source>Proxy server</source>
         <translation>Servidor proxy</translation>
     </message>
@@ -2057,7 +2062,7 @@ Por favor, utilize o seguinte link para enviar os registos para o apoio técnico
         <translation>Ligacao invalida %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="528"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="529"/>
         <source>Lite Sync</source>
         <translation>Lite Sync</translation>
     </message>
@@ -2992,12 +2997,12 @@ Por favor, utilize o seguinte link para enviar os registos para o apoio técnico
         <translation>A pasta &lt;b&gt;%1&lt;/b&gt; não pode ser selecionada como pasta de sincronização. Por favor, selecione outra pasta. Pasta sugerida: &lt;b&gt;%2&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="651"/>
+        <location filename="../src/gui/guiutility.cpp" line="653"/>
         <source>You have excluded more than %1 folders, please note that this will affect synchronization performance.</source>
         <translation>Excluiu mais de %1 pastas; tenha em atenção que isto irá afetar o desempenho da sincronização.</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="660"/>
+        <location filename="../src/gui/guiutility.cpp" line="662"/>
         <source>You cannot exclude more than %1 folders. Please uncheck higher-level folders.</source>
         <translation>Não é possível excluir mais do que %1 pastas. Desmarque as pastas de nível superior.</translation>
     </message>

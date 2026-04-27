@@ -1996,27 +1996,32 @@ Accedi alla versione web per verificare lo stato del tuo kDrive oppure contatta 
         <translation>Finlandese</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="521"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="516"/>
+        <source>Danish</source>
+        <translation>Danese</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="522"/>
         <source>Advanced</source>
         <translation>Avanzate</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="522"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="523"/>
         <source>Debugging information</source>
         <translation>Informazioni di debug</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="524"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="525"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Open debugging folder&lt;/a&gt;</source>
         <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Apri cartella di debug&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="525"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="526"/>
         <source>Files to exclude</source>
         <translation>File da escludere</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="526"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="527"/>
         <source>Proxy server</source>
         <translation>Server proxy</translation>
     </message>
@@ -2056,7 +2061,7 @@ Accedi alla versione web per verificare lo stato del tuo kDrive oppure contatta 
         <translation>Link %1 non valido.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="528"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="529"/>
         <source>Lite Sync</source>
         <translation>Lite Sync</translation>
     </message>
@@ -2920,19 +2925,6 @@ Accedi alla versione web per verificare lo stato del tuo kDrive oppure contatta 
     </message>
 </context>
 <context>
-    <name>main.cpp</name>
-    <message>
-        <location filename="../src/gui/mainclient.cpp" line="49"/>
-        <source>System Tray not available</source>
-        <translation>Area di notifica non disponibile</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/mainclient.cpp" line="48"/>
-        <source>%1 requires a working system tray. If you are running XFCE, please follow &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;these instructions&lt;/a&gt;. Otherwise, please install a system tray application such as &apos;trayer&apos; and try again.</source>
-        <translation>%1 richiede un&apos;area di notifica (system tray) funzionante. Se utilizzi XFCE, segui &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;queste istruzioni&lt;/a&gt;. In caso contrario, installa un&apos;applicazione per l&apos;area di notifica come &quot;trayer&quot; e riprova.</translation>
-    </message>
-</context>
-<context>
     <name>utility</name>
     <message>
         <location filename="../src/gui/guiutility.cpp" line="84"/>
@@ -3019,12 +3011,12 @@ Puoi aggiungerne uno dalle impostazioni di kDrive.</translation>
         <translation>La cartella &lt;b&gt;%1&lt;/b&gt; non può essere selezionata come cartella di sincronizzazione. Selezionare un&apos;altra cartella. Cartella suggerita: &lt;b&gt;%2&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="651"/>
+        <location filename="../src/gui/guiutility.cpp" line="653"/>
         <source>You have excluded more than %1 folders, please note that this will affect synchronization performance.</source>
         <translation>Hai escluso più di %1 cartelle. Tieni presente che ciò influirà sulle prestazioni di sincronizzazione.</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="660"/>
+        <location filename="../src/gui/guiutility.cpp" line="662"/>
         <source>You cannot exclude more than %1 folders. Please uncheck higher-level folders.</source>
         <translation>Non puoi escludere più di %1 cartelle. Deseleziona le cartelle di livello superiore.</translation>
     </message>

@@ -1997,27 +1997,32 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         <translation>Finnisch</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="521"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="516"/>
+        <source>Danish</source>
+        <translation>Dänisch</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="522"/>
         <source>Advanced</source>
         <translation>Erweitert</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="522"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="523"/>
         <source>Debugging information</source>
         <translation>Debugging-Informationen</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="524"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="525"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Open debugging folder&lt;/a&gt;</source>
         <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Debugging-Ordner öffnen&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="525"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="526"/>
         <source>Files to exclude</source>
         <translation>Auszuschliessende Dateien</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="526"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="527"/>
         <source>Proxy server</source>
         <translation>Proxy-Server</translation>
     </message>
@@ -2057,7 +2062,7 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         <translation>Ungültiger Link %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="528"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="529"/>
         <source>Lite Sync</source>
         <translation>Lite Sync</translation>
     </message>
@@ -2920,19 +2925,6 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
     </message>
 </context>
 <context>
-    <name>main.cpp</name>
-    <message>
-        <location filename="../src/gui/mainclient.cpp" line="49"/>
-        <source>System Tray not available</source>
-        <translation>Systemleiste nicht verfügbar</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/mainclient.cpp" line="48"/>
-        <source>%1 requires a working system tray. If you are running XFCE, please follow &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;these instructions&lt;/a&gt;. Otherwise, please install a system tray application such as &apos;trayer&apos; and try again.</source>
-        <translation>%1 benötigt eine funktionierende Systemablage (System Tray). Wenn Sie XFCE verwenden, folgen Sie bitte &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;diesen Anweisungen&lt;/a&gt;. Andernfalls installieren Sie bitte eine System-Tray-Anwendung wie „trayer" und versuchen Sie es erneut.</translation>
-    </message>
-</context>
-<context>
     <name>utility</name>
     <message>
         <location filename="../src/gui/guiutility.cpp" line="84"/>
@@ -3019,12 +3011,12 @@ Sie können eines über die kDrive-Einstellungen hinzufügen.</translation>
         <translation>Der Ordner &lt;b&gt;%1&lt;/b&gt; kann nicht als Synchronisationsordner ausgewählt werden. Bitte wählen Sie einen anderen Ordner. Vorgeschlagener Ordner: &lt;b&gt;%2&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="651"/>
+        <location filename="../src/gui/guiutility.cpp" line="653"/>
         <source>You have excluded more than %1 folders, please note that this will affect synchronization performance.</source>
         <translation>Sie haben mehr als %1 Ordner ausgeschlossen. Bitte beachten Sie, dass dies die Synchronisierungsleistung beeinträchtigt.</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="660"/>
+        <location filename="../src/gui/guiutility.cpp" line="662"/>
         <source>You cannot exclude more than %1 folders. Please uncheck higher-level folders.</source>
         <translation>Sie können maximal %1 Ordner ausschließen. Bitte deaktivieren Sie die übergeordneten Ordner.</translation>
     </message>

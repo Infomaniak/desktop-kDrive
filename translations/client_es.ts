@@ -1995,27 +1995,32 @@ Por favor, utilice el siguiente enlace para enviar los registros al soporte: &lt
         <translation>Finlandés</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="521"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="516"/>
+        <source>Danish</source>
+        <translation>Danés</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="522"/>
         <source>Advanced</source>
         <translation>Avanzado</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="522"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="523"/>
         <source>Debugging information</source>
         <translation>Información de depuración</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="524"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="525"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Open debugging folder&lt;/a&gt;</source>
         <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Abrir carpeta de depuración&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="525"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="526"/>
         <source>Files to exclude</source>
         <translation>Archivos a excluir</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="526"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="527"/>
         <source>Proxy server</source>
         <translation>Servidor proxy</translation>
     </message>
@@ -2055,7 +2060,7 @@ Por favor, utilice el siguiente enlace para enviar los registros al soporte: &lt
         <translation>Enlace %1 no válido.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="528"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="529"/>
         <source>Lite Sync</source>
         <translation>Lite Sync</translation>
     </message>
@@ -2918,19 +2923,6 @@ Por favor, utilice el siguiente enlace para enviar los registros al soporte: &lt
     </message>
 </context>
 <context>
-    <name>main.cpp</name>
-    <message>
-        <location filename="../src/gui/mainclient.cpp" line="49"/>
-        <source>System Tray not available</source>
-        <translation>Bandeja del sistema no disponible</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/mainclient.cpp" line="48"/>
-        <source>%1 requires a working system tray. If you are running XFCE, please follow &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;these instructions&lt;/a&gt;. Otherwise, please install a system tray application such as &apos;trayer&apos; and try again.</source>
-        <translation>%1 requiere una bandeja del sistema funcional. Si está utilizando XFCE, siga &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;estas instrucciones&lt;/a&gt;. De lo contrario, instale una aplicación de bandeja del sistema como «trayer» e inténtelo de nuevo.</translation>
-    </message>
-</context>
-<context>
     <name>utility</name>
     <message>
         <location filename="../src/gui/guiutility.cpp" line="84"/>
@@ -3017,12 +3009,12 @@ quedan %3...</translation>
         <translation>La carpeta &lt;b&gt;%1&lt;/b&gt; no puede seleccionarse como carpeta de sincronización. Por favor, seleccione otra carpeta. Carpeta sugerida: &lt;b&gt;%2&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="651"/>
+        <location filename="../src/gui/guiutility.cpp" line="653"/>
         <source>You have excluded more than %1 folders, please note that this will affect synchronization performance.</source>
         <translation>Ha excluido más de %1 carpetas, tenga en cuenta que esto afectará el rendimiento de la sincronización.</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="660"/>
+        <location filename="../src/gui/guiutility.cpp" line="662"/>
         <source>You cannot exclude more than %1 folders. Please uncheck higher-level folders.</source>
         <translation>No se pueden excluir más de %1 carpetas. Desmarque las carpetas de nivel superior.</translation>
     </message>

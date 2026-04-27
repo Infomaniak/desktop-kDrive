@@ -2002,27 +2002,32 @@ Proszę skorzystać z poniższego linku, aby przesłać logi do działu pomocy t
         <translation>Fiński</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="521"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="516"/>
+        <source>Danish</source>
+        <translation>Duński</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="522"/>
         <source>Advanced</source>
         <translation>Zaawansowane</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="522"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="523"/>
         <source>Debugging information</source>
         <translation>Informacje debugowania</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="524"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="525"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Open debugging folder&lt;/a&gt;</source>
         <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Otwórz folder debugowania&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="525"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="526"/>
         <source>Files to exclude</source>
         <translation>Pliki do wykluczenia</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="526"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="527"/>
         <source>Proxy server</source>
         <translation>Serwer proxy</translation>
     </message>
@@ -2062,7 +2067,7 @@ Proszę skorzystać z poniższego linku, aby przesłać logi do działu pomocy t
         <translation>Nieprawidłowy link %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="528"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="529"/>
         <source>Lite Sync</source>
         <translation>Lite Sync</translation>
     </message>
@@ -3003,12 +3008,12 @@ Proszę skorzystać z poniższego linku, aby przesłać logi do działu pomocy t
         <translation>Folder &lt;b&gt;%1&lt;/b&gt; nie może zostać wybrany jako folder synchronizacji. Wybierz inny folder. Sugerowany folder: &lt;b&gt;%2&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="651"/>
+        <location filename="../src/gui/guiutility.cpp" line="653"/>
         <source>You have excluded more than %1 folders, please note that this will affect synchronization performance.</source>
         <translation>Wykluczyłeś ponad %1 folderów. Pamiętaj, że wpłynie to na wydajność synchronizacji.</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="660"/>
+        <location filename="../src/gui/guiutility.cpp" line="662"/>
         <source>You cannot exclude more than %1 folders. Please uncheck higher-level folders.</source>
         <translation>Nie można wykluczyć więcej niż %1 folderów. Proszę odznaczyć foldery wyższego poziomu.</translation>
     </message>
