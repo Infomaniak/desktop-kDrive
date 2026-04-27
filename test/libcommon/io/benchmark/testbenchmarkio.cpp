@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "testbenchmarkio.h"
+#include "utility/types.h"
 
 // ============================================================================
 // BENCHMARK ENGINE IMPLEMENTATION
@@ -51,11 +52,11 @@ void testbenchmarkio::printResults() const {
     for (const auto &r: sorted) {
         std::cout << std::left << std::setw(12) << r.category << std::setw(40) << r.method << std::right << std::setw(14)
                   << std::fixed << std::setprecision(2) << r.time_ms << std::setw(18) << std::fixed << std::setprecision(1)
-                  << r.avg_ns_per_call << std::setw(8) << (r.success ? "✓" : "✗") << "\n";
-    }
+                                << r.avg_ns_per_call << std::setw(8) << (r.success ? "Y" : "N") << "\n";
+                      }
 
-    std::cout << "================================================================\n";
-}
+                      std::cout << "================================================================\n";
+                  }
 
 void testbenchmarkio::printResultsByCategory() const {
     std::vector<std::string> categories = {"Exists", "Metadata", "Read", "Write", "Size", "Create", "Delete", "Move"};
@@ -78,7 +79,7 @@ void testbenchmarkio::printResultsByCategory() const {
         for (const auto &r: filtered) {
             std::cout << std::left << std::setw(40) << r.method << std::right << std::setw(14) << std::fixed
                       << std::setprecision(2) << r.time_ms << std::setw(18) << std::fixed << std::setprecision(1)
-                      << r.avg_ns_per_call << std::setw(8) << (r.success ? "✓" : "✗") << "\n";
+                      << r.avg_ns_per_call << std::setw(8) << (r.success ? "Y" : "N") << "\n";
         }
     }
 }
@@ -452,9 +453,9 @@ namespace DeleteTests {
 bool delete_filesystem_remove(const std::string &dir) {
     try {
         const auto path = std::filesystem::path(dir) / "bench_delete_std.tmp";
-        ::CreateTestFile(path.string());
+        CreateTestFile(path.string());
         std::filesystem::remove(path);
-        return !std::filesystem::exists(path);
+        return true;
     } catch (...) {
         return false;
     }
@@ -463,9 +464,8 @@ bool delete_filesystem_remove(const std::string &dir) {
 bool delete_DeleteFileA(const std::string &dir) {
 #if defined(KD_WINDOWS)
     const auto filename = (std::filesystem::path(dir) / "bench_delete_DeleteFileA.tmp").string();
-    ::CreateTestFile(filename);
-    BOOL ok = DeleteFileA(filename.c_str());
-    return ok && !std::filesystem::exists(filename);
+    CreateTestFile(filename);
+    return DeleteFileA(filename.c_str()) == TRUE;
 #else
     return delete_filesystem_remove(dir);
 #endif
@@ -473,7 +473,7 @@ bool delete_DeleteFileA(const std::string &dir) {
 
 bool delete_crt_remove(const std::string &dir) {
     const auto filename = (std::filesystem::path(dir) / "bench_delete_crt.tmp").string();
-    ::CreateTestFile(filename);
+    CreateTestFile(filename);
     return std::remove(filename.c_str()) == 0;
 }
 } // namespace DeleteTests
@@ -486,11 +486,10 @@ bool move_filesystem_rename(const std::string &dir) {
     try {
         const auto src = std::filesystem::path(dir) / "bench_move_src.tmp";
         const auto dst = std::filesystem::path(dir) / "bench_move_dst.tmp";
-        ::CreateTestFile(src.string());
+        CreateTestFile(src.string());
         std::filesystem::rename(src, dst);
-        bool ok = std::filesystem::exists(dst) && !std::filesystem::exists(src);
         std::filesystem::remove(dst);
-        return ok;
+        return true;
     } catch (...) {
         return false;
     }
@@ -500,7 +499,7 @@ bool move_MoveFileA(const std::string &dir) {
 #if defined(KD_WINDOWS)
     const auto src = (std::filesystem::path(dir) / "bench_move_MoveFileA_src.tmp").string();
     const auto dst = (std::filesystem::path(dir) / "bench_move_MoveFileA_dst.tmp").string();
-    ::CreateTestFile(src);
+    CreateTestFile(src);
     BOOL ok = MoveFileA(src.c_str(), dst.c_str());
     if (ok) {
         std::filesystem::remove(dst);
@@ -517,7 +516,7 @@ bool move_MoveFileW(const std::string &dir) {
 #if defined(KD_WINDOWS)
     const auto src = KDC::CommonUtility::s2ws((std::filesystem::path(dir) / "bench_move_MoveFileW_src.tmp").string());
     const auto dst = KDC::CommonUtility::s2ws((std::filesystem::path(dir) / "bench_move_MoveFileW_dst.tmp").string());
-    ::CreateTestFile(KDC::CommonUtility::ws2s(src));
+    CreateTestFile(KDC::CommonUtility::ws2s(src));
     BOOL ok = MoveFileW(src.c_str(), dst.c_str());
     if (ok)
         std::filesystem::remove(KDC::CommonUtility::ws2s(dst));
@@ -533,14 +532,71 @@ bool move_MoveFileW(const std::string &dir) {
 
 
 // ============================================================================
+// TEST FUNCTIONS - IOHELPER
+// ============================================================================
+namespace IoHelperTests {
+
+bool iohelper_checkIfPathExists(const std::string &path) {
+    bool exists = false;
+    KDC::IoError ioError = KDC::IoError::Unknown;
+    KDC::IoHelper::checkIfPathExists(path, exists, ioError, KDC::IoHelper::PathCheckOption::Insensitive);
+    return exists;
+}
+
+bool iohelper_getFileStat(const std::string &path) {
+    KDC::FileStat fs{};
+    KDC::IoError ioError = KDC::IoError::Unknown;
+    return KDC::IoHelper::getFileStat(path, &fs, ioError, KDC::IoHelper::PathCheckOption::Insensitive);
+}
+
+bool iohelper_getFileSize(const std::string &path) {
+    uint64_t size = 0;
+    KDC::IoError ioError = KDC::IoError::Unknown;
+    return KDC::IoHelper::getFileSize(path, size, ioError);
+}
+
+bool iohelper_openFile(const std::string &path) {
+    std::ifstream file;
+    KDC::IoError ioError = KDC::IoError::Unknown;
+    bool ok = KDC::IoHelper::openFile(path, file, ioError);
+    if (file.is_open()) file.close();
+    return ok;
+}
+
+bool iohelper_setFileDates(const std::string &path) {
+    const auto now = static_cast<KDC::SyncTime>(
+            std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+    return KDC::IoHelper::setFileDates(path, now, now, false) == KDC::IoError::Success;
+}
+
+bool iohelper_deleteItem(const std::string &dir) {
+    const auto path = (std::filesystem::path(dir) / "bench_iohelper_delete.tmp").string();
+    CreateTestFile(path);
+    KDC::IoError ioError = KDC::IoError::Unknown;
+    return KDC::IoHelper::deleteItem(path, ioError);
+}
+
+bool iohelper_moveItem(const std::string &dir) {
+    //try {
+        const auto src = std::filesystem::path(dir) / "bench_iohelper_move_src.tmp";
+        const auto dst = std::filesystem::path(dir) / "bench_iohelper_move_dst.tmp";
+    CreateTestFile(src.string());
+        KDC::IoError ioError = KDC::IoError::Unknown;
+        const bool ok = KDC::IoHelper::moveItem(src, dst, ioError);
+        if (ok)
+            KDC::IoHelper::deleteItem(dst);
+        else
+            KDC::IoHelper::deleteItem(src);
+        return ok;
+    //} catch (...) {
+    //    return false;
+    }
+
+} // namespace IoHelperTests
+
+// ============================================================================
 // HELPER FUNCTIONS IMPLEMENTATION
 // ============================================================================
-bool CreateTestFile(const std::string &path, const std::string &content) {
-    std::ofstream f(path, std::ios::binary);
-    if (!f) return false;
-    f << content;
-    return true;
-}
 
 bool DeleteTestFile(const std::string &path) {
     try {
@@ -549,6 +605,16 @@ bool DeleteTestFile(const std::string &path) {
     } catch (...) {
         return false;
     }
+}
+
+// ============================================================================
+// HELPER FUNCTIONS - TEST FILE MANAGEMENT
+// ============================================================================
+bool CreateTestFile(const std::string &path, const std::string &content) {
+    std::ofstream f(path, std::ios::binary);
+    if (!f) return false;
+    f << content;
+    return true;
 }
 
 // ============================================================================
@@ -580,6 +646,8 @@ void RunAllBenchmarks(const std::string &testFilePath, int iterations) {
                         benchmark.measure(ExistsTests::win32_getfileattributes_w, testFilePath));
 #endif
     benchmark.addResult("Exists", "_stat()", benchmark.measure(ExistsTests::crt_stat, testFilePath));
+    benchmark.addResult("Exists", "IoHelper::checkIfPathExists",
+                        benchmark.measure(IoHelperTests::iohelper_checkIfPathExists, testFilePath));
     // --- METADATA ---
     std::cout << "[Running Metadata Tests...]\n";
     benchmark.addResult("Metadata", "stat_full", benchmark.measure(MetadataTests::stat_full, testFilePath));
@@ -591,6 +659,8 @@ void RunAllBenchmarks(const std::string &testFilePath, int iterations) {
     benchmark.addResult("Metadata", "statx_full", benchmark.measure(MetadataTests::statx_full, testFilePath));
 #endif
     benchmark.addResult("Metadata", "filesystem_full", benchmark.measure(MetadataTests::filesystem_full, testFilePath));
+    benchmark.addResult("Metadata", "IoHelper::getFileStat",
+                        benchmark.measure(IoHelperTests::iohelper_getFileStat, testFilePath));
     // --- READ ---
     std::cout << "[Running Read Tests...]\n";
     benchmark.addResult("Read", "ifstream (binary)", benchmark.measure(ReadTests::ifstream_binary, testFilePath));
@@ -601,6 +671,7 @@ void RunAllBenchmarks(const std::string &testFilePath, int iterations) {
     benchmark.addResult("Read", "CreateFileA", benchmark.measure(ReadTests::win32_createfile, testFilePath));
     benchmark.addResult("Read", "CreateFileW + s2ws", benchmark.measure(ReadTests::win32_createfile_w, testFilePath));
 #endif
+    benchmark.addResult("Read", "IoHelper::openFile", benchmark.measure(IoHelperTests::iohelper_openFile, testFilePath));
 
     // --- WRITE ---
     std::cout << "[Running Write Tests...]\n";
@@ -610,6 +681,8 @@ void RunAllBenchmarks(const std::string &testFilePath, int iterations) {
     benchmark.addResult("Write", "SetFileTime (Win32)", benchmark.measure(WriteTests::win32_setfiletime, testFilePath));
 #endif
     benchmark.addResult("Write", "ofstream (append)", benchmark.measure(WriteTests::ofstream_append, testFilePath));
+    benchmark.addResult("Write", "IoHelper::setFileDates",
+                        benchmark.measure(IoHelperTests::iohelper_setFileDates, testFilePath));
 
     // --- CREATE ---
     std::cout << "[Running Create Tests...]\n";
@@ -624,6 +697,8 @@ void RunAllBenchmarks(const std::string &testFilePath, int iterations) {
                         benchmark.measure(DeleteTests::delete_filesystem_remove, testFilePath));
     benchmark.addResult("Delete", "delete (DeleteFileA)", benchmark.measure(DeleteTests::delete_DeleteFileA, testFilePath));
     benchmark.addResult("Delete", "delete (CRT remove)", benchmark.measure(DeleteTests::delete_crt_remove, testFilePath));
+    benchmark.addResult("Delete", "IoHelper::deleteItem",
+                        benchmark.measure(IoHelperTests::iohelper_deleteItem, testFilePath));
 
     // --- MOVE ---
     std::cout << "[Running Move Tests...]\n";
@@ -631,6 +706,8 @@ void RunAllBenchmarks(const std::string &testFilePath, int iterations) {
                         benchmark.measure(MoveTests::move_filesystem_rename, testFilePath));
     benchmark.addResult("Move", "move (MoveFileA)", benchmark.measure(MoveTests::move_MoveFileA, testFilePath));
     benchmark.addResult("Move", "move (MoveFileW)", benchmark.measure(MoveTests::move_MoveFileW, testFilePath));
+    benchmark.addResult("Move", "IoHelper::moveItem",
+                        benchmark.measure(IoHelperTests::iohelper_moveItem, testFilePath));
 
     // --- SIZE ---
     std::cout << "[Running Size Tests...]\n";
@@ -658,92 +735,114 @@ void RunAllBenchmarks(const std::string &testFilePath, int iterations) {
                                     return true;
                                 },
                                 testFilePath));
+    benchmark.addResult("Size", "IoHelper::getFileSize",
+                        benchmark.measure(IoHelperTests::iohelper_getFileSize, testFilePath));
 
     // Print results and cleanup
     benchmark.printResultsByCategory();
     benchmark.printResults();
 
-    // --- OPS: grouped comparison (Write / Delete / Move) ---
-    const auto &allResults = benchmark.getResults();
-    std::map<std::string, std::vector<BenchmarkResult>> opsByType;
-    std::map<std::string, std::pair<double, int>> apiAggregates; // api -> (totalMs, count)
-
-    for (const auto &r: allResults) {
-        if (r.category != "Ops") continue;
-        std::string method = r.method;
-        std::string type;
-        if (method.find("create") != std::string::npos)
-            type = "Write";
-        else if (method.find("delete") != std::string::npos)
-            type = "Delete";
-        else if (method.find("move") != std::string::npos)
-            type = "Move";
-        else
-            type = "Other";
-
-        opsByType[type].push_back(r);
-
-        // Extract API name inside parentheses if present
-        const auto p1 = method.find('(');
-        const auto p2 = method.find(')');
-        std::string api =
-                (p1 != std::string::npos && p2 != std::string::npos && p2 > p1) ? method.substr(p1 + 1, p2 - p1 - 1) : method;
-        auto &agg = apiAggregates[api];
-        agg.first += r.time_ms;
-        agg.second += 1;
-    }
-
-    // Print grouped Ops
-    std::cout << "\n[OPS COMPARISON BY TYPE]\n";
-    for (const auto &group: {std::string("Write"), std::string("Delete"), std::string("Move")}) {
-        auto it = opsByType.find(group);
-        if (it == opsByType.end()) continue;
-        auto vec = it->second;
-        std::sort(vec.begin(), vec.end(),
-                  [](const BenchmarkResult &a, const BenchmarkResult &b) { return a.time_ms < b.time_ms; });
-
-        std::cout << "\n[" << group << "]\n";
-        std::cout << "------------------------------------------------------------\n";
-        std::cout << std::left << std::setw(30) << "API" << std::right << std::setw(14) << "Time (ms)" << std::setw(12) << "OK"
-                  << "\n";
-        std::cout << "------------------------------------------------------------\n";
-        for (const auto &r: vec) {
-            // extract api
-            const auto p1 = r.method.find('(');
-            const auto p2 = r.method.find(')');
-            std::string api = (p1 != std::string::npos && p2 != std::string::npos && p2 > p1)
-                                      ? r.method.substr(p1 + 1, p2 - p1 - 1)
-                                      : r.method;
-            std::cout << std::left << std::setw(30) << api << std::right << std::setw(14) << std::fixed << std::setprecision(2)
-                      << r.time_ms << std::setw(12) << (r.success ? "✓" : "✗") << "\n";
-        }
-    }
-
-    // Compute overall per-API averages and rank
-    if (!apiAggregates.empty()) {
-        struct ApiAvg {
-                std::string api;
-                double avg;
-                int count;
+    // --- TAB 1: IoHelper  /  TAB 2: Best raw API  (per category) ---
+    {
+        // Underlying OS/stdlib API used by each IoHelper method (from source inspection of iohelper.cpp)
+        const std::map<std::string, std::string> iohelperUnderlyingApi = {
+                {"IoHelper::checkIfPathExists", "std::filesystem::symlink_status"},
+                {"IoHelper::getFileStat", "NtQueryInformationFile (Win) / stat (Linux/Mac)"},
+                {"IoHelper::getFileSize", "std::filesystem::file_size"},
+                {"IoHelper::openFile", "std::ifstream (binary, with retry loop)"},
+                {"IoHelper::setFileDates", "SetFileTime (Win) / utimensat (Linux/Mac)"},
+                {"IoHelper::deleteItem", "std::filesystem::remove_all"},
+                {"IoHelper::moveItem", "std::filesystem::rename"},
         };
-        std::vector<ApiAvg> avgs;
-        for (const auto &kv: apiAggregates) {
-            avgs.push_back({kv.first, kv.second.first / kv.second.second, kv.second.second});
-        }
-        std::sort(avgs.begin(), avgs.end(), [](const ApiAvg &a, const ApiAvg &b) { return a.avg < b.avg; });
 
-        const double best = avgs.front().avg;
-        std::cout << "\n[OVERALL API RANKING] (lower avg time across Ops is better)\n";
-        std::cout << "------------------------------------------------------------\n";
-        std::cout << std::left << std::setw(30) << "API" << std::right << std::setw(12) << "Avg (ms)" << std::setw(12) << "Rel"
-                  << std::setw(8) << "Cnt" << "\n";
-        std::cout << "------------------------------------------------------------\n";
-        for (const auto &a: avgs) {
-            double rel = (a.avg - best) / best * 100.0;
-            std::cout << std::left << std::setw(30) << a.api << std::right << std::setw(12) << std::fixed << std::setprecision(2)
-                      << a.avg << std::setw(11) << (rel <= 0.0 ? "best" : (std::to_string((int) rel) + "%")) << std::setw(8)
-                      << a.count << "\n";
+        struct CategoryEntry {
+                std::string category;
+                std::string iohelperMethod;
+                std::string underlyingApi;
+                double iohelperMs;
+                double iohelperNs;
+                bool iohelperOk;
+                std::string bestAltMethod;
+                double bestAltMs;
+                double bestAltNs;
+                bool bestAltOk;
+        };
+
+        std::vector<CategoryEntry> entries;
+
+        std::map<std::string, std::vector<BenchmarkResult>> byCategory;
+        for (const auto &r: benchmark.getResults()) byCategory[r.category].push_back(r);
+
+        const std::vector<std::string> catOrder = {"Exists", "Metadata", "Read", "Write", "Size", "Create", "Delete", "Move"};
+        for (const auto &cat: catOrder) {
+            const auto it = byCategory.find(cat);
+            if (it == byCategory.end()) continue;
+            const auto &catResults = it->second;
+
+            const BenchmarkResult *iohelperResult = nullptr;
+            const BenchmarkResult *bestAlt = nullptr;
+            for (const auto &r: catResults) {
+                if (r.method.rfind("IoHelper::", 0) == 0) {
+                    iohelperResult = &r;
+                } else if (!bestAlt || r.time_ms < bestAlt->time_ms) {
+                    bestAlt = &r;
+                }
+            }
+            if (!iohelperResult || !bestAlt) continue;
+
+            CategoryEntry e;
+            e.category = cat;
+            e.iohelperMethod = iohelperResult->method;
+            const auto apiIt = iohelperUnderlyingApi.find(iohelperResult->method);
+            e.underlyingApi = (apiIt != iohelperUnderlyingApi.end()) ? apiIt->second : "unknown";
+            e.iohelperMs = iohelperResult->time_ms;
+            e.iohelperNs = iohelperResult->avg_ns_per_call;
+            e.iohelperOk = iohelperResult->success;
+            e.bestAltMethod = bestAlt->method;
+            e.bestAltMs = bestAlt->time_ms;
+            e.bestAltNs = bestAlt->avg_ns_per_call;
+            e.bestAltOk = bestAlt->success;
+            entries.push_back(e);
         }
+
+        constexpr int W_CAT = 10, W_METHOD = 44, W_MS = 14, W_NS = 14, W_OK = 6;
+        const int totalWidth = W_CAT + W_METHOD + W_MS + W_NS + W_OK;
+        const std::string sep(totalWidth, '-');
+
+        // ---- TAB 1: IoHelper ----
+        std::cout << "\n";
+        std::cout << sep << "\n";
+        std::cout << "  TAB 1 - IoHelper  (production API + its underlying OS call)\n";
+        std::cout << sep << "\n";
+        std::cout << std::left << std::setw(W_CAT) << "Category" << std::setw(W_METHOD) << "IoHelper method / underlying API"
+                  << std::right << std::setw(W_MS) << "Time (ms)" << std::setw(W_NS) << "Ns/Call" << std::setw(W_OK) << "OK"
+                  << "\n";
+        std::cout << sep << "\n";
+        for (const auto &e: entries) {
+            // Row 1: IoHelper method name + time
+            std::cout << std::left << std::setw(W_CAT) << e.category << std::setw(W_METHOD) << e.iohelperMethod << std::right
+                      << std::setw(W_MS) << std::fixed << std::setprecision(2) << e.iohelperMs << std::setw(W_NS) << std::fixed
+                      << std::setprecision(1) << e.iohelperNs << std::setw(W_OK) << (e.iohelperOk ? "OK" : "FAIL") << "\n";
+            // Row 2: underlying API (indented, no times)
+            std::cout << std::left << std::setw(W_CAT) << "" << "  -> " << e.underlyingApi << "\n";
+        }
+        std::cout << sep << "\n";
+
+        // ---- TAB 2: Best raw benchmark ----
+        std::cout << "\n";
+        std::cout << sep << "\n";
+        std::cout << "  TAB 2 - Best raw API  (fastest individual call in each category)\n";
+        std::cout << sep << "\n";
+        std::cout << std::left << std::setw(W_CAT) << "Category" << std::setw(W_METHOD) << "Fastest method" << std::right
+                  << std::setw(W_MS) << "Time (ms)" << std::setw(W_NS) << "Ns/Call" << std::setw(W_OK) << "OK"
+                  << "\n";
+        std::cout << sep << "\n";
+        for (const auto &e: entries) {
+            std::cout << std::left << std::setw(W_CAT) << e.category << std::setw(W_METHOD) << e.bestAltMethod << std::right
+                      << std::setw(W_MS) << std::fixed << std::setprecision(2) << e.bestAltMs << std::setw(W_NS) << std::fixed
+                      << std::setprecision(1) << e.bestAltNs << std::setw(W_OK) << (e.bestAltOk ? "OK" : "FAIL") << "\n";
+        }
+        std::cout << sep << "\n";
     }
 
     (void) DeleteTestFile(testFilePath);

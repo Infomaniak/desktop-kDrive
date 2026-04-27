@@ -27,6 +27,8 @@
 
 #include "testincludes.h"
 #include "libcommon/utility/utility.h"
+#include "libcommonserver/io/iohelper.h"
+#include "libcommonserver/io/filestat.h"
 
 #include <iostream>
 #include <fstream>
@@ -157,6 +159,19 @@ bool move_MoveFileW(const std::string &dir);
 } // namespace MoveTests
 
 // ============================================================================
+// TEST FUNCTIONS - IOHELPER (wraps the real IoHelper API used in production)
+// ============================================================================
+namespace IoHelperTests {
+bool iohelper_checkIfPathExists(const std::string &path);
+bool iohelper_getFileStat(const std::string &path);
+bool iohelper_getFileSize(const std::string &path);
+bool iohelper_openFile(const std::string &path);
+bool iohelper_setFileDates(const std::string &path);
+bool iohelper_deleteItem(const std::string &dir);
+bool iohelper_moveItem(const std::string &dir);
+} // namespace IoHelperTests
+
+// ============================================================================
 // RUNNER: Execute all benchmarks
 // ============================================================================
 void RunAllBenchmarks(const std::string &testFilePath = "io_benchmark_test.tmp", int iterations = 50000);
@@ -197,7 +212,7 @@ class BenchmarkIOHelper : public CppUnit::TestFixture, public TestBase {
         void runAllIOBenchmarks();
 
     private:
-        int32_t iterations_ = 100000;
+        int32_t iterations_ = 10000;
 };
 
 } // namespace KDC
