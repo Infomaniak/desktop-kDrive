@@ -24,6 +24,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using Windows.Storage.Pickers;
@@ -157,7 +158,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
                 return;
             }
 
-            if (DriveSetupContentDialogVM.NewSyncs.Any(s => s != newSync && s.LocalPath.StartsWith(folder.Path, StringComparison.OrdinalIgnoreCase)))
+            if (DriveSetupContentDialogVM.NewSyncs.Any(s => s != newSync && IsSubPathOf(s.LocalPath, folder.Path)))
             {
                 Logger.Log(Logger.Level.Info, $"Selected folder path '{folder.Path}' is already parent of an another sync.");
                 Utility.ShowTeachingTip(Localizer.Instance.GetString("teachingTipInvalidFolderTitle"), Localizer.Instance.GetString("teachingTipInvalidFolderContent"), TimeSpan.FromSeconds(20));
@@ -166,7 +167,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
                 return;
             }
 
-            if (DriveSetupContentDialogVM.NewSyncs.Any(s => s != newSync && folder.Path.StartsWith(s.LocalPath, StringComparison.OrdinalIgnoreCase)))
+            if (DriveSetupContentDialogVM.NewSyncs.Any(s => s != newSync && IsSubPathOf(folder.Path, s.LocalPath)))
             {
                 Logger.Log(Logger.Level.Info, $"Selected folder path '{folder.Path}' is include an another sync.");
                 Utility.ShowTeachingTip(Localizer.Instance.GetString("teachingTipInvalidFolderTitle"), Localizer.Instance.GetString("teachingTipInvalidFolderContent"), TimeSpan.FromSeconds(20));
@@ -196,6 +197,23 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
             await newSync.SelectBestVfsMode();
             Logger.Log(Logger.Level.Info, $"Sync path for drive '{newSync.Drive?.Name ?? "unknown"}' updated to '{newSync.LocalPath}' with sync type '{newSync.SyncType}'");
             control.IsEnabled = true;
+        }
+
+        private static bool IsSubPathOf(string candidatePath, string parentPath)
+        {
+            string normalizedCandidate = Path.GetFullPath(candidatePath)
+                .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+            string normalizedParent = Path.GetFullPath(parentPath)
+                .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+            return normalizedCandidate.StartsWith(
+                       normalizedParent + Path.DirectorySeparatorChar,
+                       StringComparison.OrdinalIgnoreCase)
+                   || string.Equals(
+                       normalizedCandidate,
+                       normalizedParent,
+                       StringComparison.OrdinalIgnoreCase);
         }
 
         private void Exclusionbutton_click(object sender, RoutedEventArgs e)
