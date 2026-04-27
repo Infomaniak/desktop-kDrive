@@ -20,6 +20,8 @@
 
 #include <algorithm>
 
+Q_LOGGING_CATEGORY(lcOnboardingState, "gui.v4.onboardingstate", QtInfoMsg)
+
 namespace KDC {
 
 OnboardingState::OnboardingState(AppCache &cache, QObject *const parent) :
@@ -40,7 +42,7 @@ qint64 OnboardingState::selectedUserDbId() const {
 
 std::vector<AvailableDriveKey> OnboardingState::selectedAvailableDriveKeys() const {
     std::vector<AvailableDriveKey> keys(_selectedAvailableDriveKeys.begin(), _selectedAvailableDriveKeys.end());
-    std::ranges::sort(keys, [](const AvailableDriveKey &lhs, const AvailableDriveKey &rhs) {
+    (void) std::ranges::sort(keys, [](const AvailableDriveKey &lhs, const AvailableDriveKey &rhs) {
         if (lhs.userDbId != rhs.userDbId) return lhs.userDbId < rhs.userDbId;
         if (lhs.accountId != rhs.accountId) return lhs.accountId < rhs.accountId;
         return lhs.driveId < rhs.driveId;
@@ -83,11 +85,13 @@ void OnboardingState::clearSelectedUser() {
 
 void OnboardingState::selectAvailableDrive(const AvailableDriveKey &key) {
     if (!belongsToSelectedUser(key)) {
+        qCWarning(lcOnboardingState) << "Drive select ignored: key does not belong to selected user | userDbId:" << key.userDbId << "/ selectedUserDbId:" << _selectedUserDbId;
         return;
     }
     if (!_selectedAvailableDriveKeys.insert(key).second) {
         return;
     }
+    qCDebug(lcOnboardingState) << "Available drive selected | userDbId:" << key.userDbId << "/ driveId:" << key.driveId;
     emit selectedAvailableDrivesChanged();
 }
 
@@ -95,6 +99,7 @@ void OnboardingState::unselectAvailableDrive(const AvailableDriveKey &key) {
     if (_selectedAvailableDriveKeys.erase(key) == 0) {
         return;
     }
+    qCDebug(lcOnboardingState) << "Available drive unselected | userDbId:" << key.userDbId << "/ driveId:" << key.driveId;
     const bool removedConfig = _pendingSyncConfigs.erase(key) > 0;
     emit selectedAvailableDrivesChanged();
     if (removedConfig) emit pendingSyncConfigsChanged();
@@ -119,6 +124,7 @@ void OnboardingState::clearSelectedAvailableDrives() {
 
 void OnboardingState::setPendingSyncConfig(const AvailableDriveKey &key, const PendingSyncConfig &config) {
     if (!belongsToSelectedUser(key) || !isAvailableDriveSelected(key)) {
+        qCWarning(lcOnboardingState) << "Pending sync config ignored: drive not selected or wrong user | userDbId:" << key.userDbId << "/ driveId:" << key.driveId;
         return;
     }
     _pendingSyncConfigs[key] = config;
@@ -133,6 +139,7 @@ void OnboardingState::clearPendingSyncConfig(const AvailableDriveKey &key) {
 }
 
 void OnboardingState::reset() {
+    qCInfo(lcOnboardingState) << "Onboarding state reset";
     const bool userChanged = _selectedUserDbId != 0;
     const bool hadSelectedDrives = !_selectedAvailableDriveKeys.empty();
     const bool hadPendingConfigs = !_pendingSyncConfigs.empty();
@@ -153,6 +160,7 @@ void OnboardingState::ensureValidState() {
         pruneSelectedAvailableDrives();
         return;
     }
+    qCWarning(lcOnboardingState) << "Selected user removed from cache, resetting | userDbId:" << _selectedUserDbId;
     reset();
 }
 
@@ -168,6 +176,7 @@ void OnboardingState::pruneSelectedAvailableDrives() {
             ++it;
             continue;
         }
+        qCDebug(lcOnboardingState) << "Selected drive pruned (no longer available) | userDbId:" << it->userDbId << "/ driveId:" << it->driveId;
         pendingConfigsChanged = _pendingSyncConfigs.erase(*it) > 0 || pendingConfigsChanged;
         it = _selectedAvailableDriveKeys.erase(it);
         selectionChanged = true;
