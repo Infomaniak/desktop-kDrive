@@ -144,6 +144,7 @@ struct COMMON_EXPORT CommonUtility {
          * disk root.
          * @return True if the given path is a disk root folder; otherwise, false.
          */
+        static bool isDiskRootFolder(const SyncPath &absolutePath);
         static bool isDiskRootFolder(const SyncPath &absolutePath, SyncPath &suggestedPath);
         static const std::string dbVersionNumber(const std::string &dbVersion);
         /**
