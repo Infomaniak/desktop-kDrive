@@ -34,8 +34,8 @@ namespace KDC {
 std::vector<UserInfo> AppCache::users() const {
     std::vector<UserInfo> values;
     values.reserve(_usersByDbId.size());
-    for (const auto &[info, _]: _usersByDbId | std::views::values) {
-        values.push_back(info);
+    for (const auto &node: _usersByDbId | std::views::values) {
+        values.push_back(node.info);
     }
     appendSortedById(values, [](const UserInfo &info) { return info.dbId(); });
     return values;
