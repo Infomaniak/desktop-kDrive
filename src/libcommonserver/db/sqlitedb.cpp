@@ -438,7 +438,12 @@ bool SqliteDb::walCheckpointTruncate() {
     }
     int nLog = 0, nCkpt = 0;
     _errId = sqlite3_wal_checkpoint_v2(_sqlite3Db.get(), nullptr, SQLITE_CHECKPOINT_TRUNCATE, &nLog, &nCkpt);
-    if (_errId != SQLITE_OK && _errId != SQLITE_BUSY) {
+    if (_errId == SQLITE_BUSY) {
+        LOG_WARN(_logger, "WAL checkpoint (TRUNCATE) blocked by active readers (SQLITE_BUSY): log=" << nLog
+                                                                                                    << " checkpointed=" << nCkpt);
+        return false;
+    }
+    if (_errId != SQLITE_OK) {
         LOG_WARN(_logger, "WAL checkpoint (TRUNCATE) failed: " << _errId << " - " << sqlite3_errmsg(_sqlite3Db.get()));
         return false;
     }

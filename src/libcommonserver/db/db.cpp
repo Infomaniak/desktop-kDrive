@@ -240,7 +240,9 @@ void Db::close() {
         // Force a TRUNCATE checkpoint before closing to prevent the WAL from persisting
         // at a large size across restarts (especially on Windows where PASSIVE checkpoints
         // are often blocked by file locking and cannot truncate the WAL).
-        _sqliteDb->walCheckpointTruncate();
+        if (!_sqliteDb->walCheckpointTruncate()) {
+            LOGW_WARN(_logger, L"Failed to truncate WAL during DB close for " << Path2WStr(_dbPath));
+        }
     }
 
     _sqliteDb->close();

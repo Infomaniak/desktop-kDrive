@@ -23,6 +23,8 @@
 
 #include "libcommon/utility/logiffail.h"
 
+#include "../test_utility/localtemporarydirectory.h"
+
 #define CREATE_TEST_TABLE_ID "testdb1"
 #define CREATE_TEST_TABLE              \
     "CREATE TABLE IF NOT EXISTS test(" \
@@ -319,6 +321,84 @@ std::vector<TestDb::Test> TestDb::MyTestDb::selectTest() {
     }
 
     return tests;
+}
+
+void TestDb::testWalSettings() {
+    if (!_testObj->isWalMode()) {
+        return; // skip on non-WAL file systems (e.g. FAT32, some macOS volumes)
+    }
+
+    int autocheckpoint = -1;
+    CPPUNIT_ASSERT(_testObj->walAutocheckpointPragma(autocheckpoint));
+    CPPUNIT_ASSERT_EQUAL(100, autocheckpoint);
+
+    int64_t sizeLimit = -1;
+    CPPUNIT_ASSERT(_testObj->journalSizeLimitPragma(sizeLimit));
+    CPPUNIT_ASSERT_EQUAL(int64_t(67108864), sizeLimit);
+}
+
+void TestDb::testWalTruncateOnClose() {
+    LocalTemporaryDirectory tmpDir("testWalTruncate");
+    const auto dbPath = tmpDir.path() / "test_wal_truncate.db";
+
+    {
+        MyTestDb db(dbPath);
+        if (!db.isWalMode()) {
+            return; // skip on non-WAL file systems (e.g. FAT32, some macOS volumes)
+        }
+
+        // Insert rows to ensure WAL frames are written
+        const Test t0(0, 1, 2, 3.0, "a");
+        const Test t1(1, 4, 5, 6.0, "b");
+        CPPUNIT_ASSERT(db.insertTest(t0));
+        CPPUNIT_ASSERT(db.insertTest(t1));
+
+        // db goes out of scope here → ~MyTestDb() → ~Db() → Db::close() → walCheckpointTruncate()
+    }
+
+    // After a clean close with TRUNCATE checkpoint, the WAL file must be absent or zero-length
+    const auto walPath = std::filesystem::path(dbPath.string() + "-wal");
+    if (std::filesystem::exists(walPath)) {
+        CPPUNIT_ASSERT_EQUAL(static_cast<std::uintmax_t>(0), std::filesystem::file_size(walPath));
+    }
+}
+
+bool TestDb::MyTestDb::walAutocheckpointPragma(int &value) {
+    constexpr auto id = "wal_autocheckpoint_query";
+    LOG_IF_FAIL(queryCreate(id));
+    int errId = -1;
+    std::string error;
+    if (!queryPrepare(id, "PRAGMA wal_autocheckpoint;", false, errId, error)) {
+        queryFree(id);
+        return false;
+    }
+    bool hasData = false;
+    if (!queryNext(id, hasData) || !hasData) {
+        queryFree(id);
+        return false;
+    }
+    LOG_IF_FAIL(queryIntValue(id, 0, value));
+    queryFree(id);
+    return true;
+}
+
+bool TestDb::MyTestDb::journalSizeLimitPragma(int64_t &value) {
+    constexpr auto id = "journal_size_limit_query";
+    LOG_IF_FAIL(queryCreate(id));
+    int errId = -1;
+    std::string error;
+    if (!queryPrepare(id, "PRAGMA journal_size_limit;", false, errId, error)) {
+        queryFree(id);
+        return false;
+    }
+    bool hasData = false;
+    if (!queryNext(id, hasData) || !hasData) {
+        queryFree(id);
+        return false;
+    }
+    LOG_IF_FAIL(queryInt64Value(id, 0, value));
+    queryFree(id);
+    return true;
 }
 
 TestDb::Test::Test(int64_t id, int intValue, int64_t int64Value, double doubleValue, const std::string &textValue) :
