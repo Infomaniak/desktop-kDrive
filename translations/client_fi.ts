@@ -263,7 +263,7 @@ Valitse toinen kansio. Jos jatkat, Lite Sync poistetaan käytöstä.&lt;br&gt;
         <message>
             <location filename="../src/gui/adddriveserverfolderswidget.cpp" line="210" />
             <source>Impossible to load the list of subfolders. Your kDrive might be in maintenance.&lt;br&gt;Please, login to the &lt;a style="%1" href="%2"&gt;web version&lt;/a&gt; to check your kDrive's status, or contact your administrator.</source>
-            <translation>Alikansioiden listaa ei voi ladata. kDrive saattaa olla huoltotilassa.&lt;br&gt;Kirjaudu &lt;a style="%1" href="%2"&gt;verkkoversiooon&lt;/a&gt; tarkistaaksesi kDriven tilan tai ota yhteyttä järjestelmänvalvojaasi.</translation>
+            <translation>Alikansioiden listaa ei voi ladata. kDrive saattaa olla huoltotilassa.&lt;br&gt;Kirjaudu &lt;a style="%1" href="%2"&gt;verkkoversioon&lt;/a&gt; tarkistaaksesi kDriven tilan tai ota yhteyttä järjestelmänvalvojaasi.</translation>
         </message>
     </context>
     <context>
@@ -1680,12 +1680,12 @@ Valitse toinen kansio. Jos jatkat, Lite Sync poistetaan käytöstä.&lt;br&gt;
         <message>
             <location filename="../src/gui/parametersdialog.cpp" line="475" />
             <source>The kDrive is asleep.&lt;br&gt;Please, login to the &lt;a style="%1" href="%2"&gt;web version&lt;/a&gt; to check your kDrive's status, or contact your administrator.</source>
-            <translation>kDrive on lepotilassa.&lt;br&gt;Kirjaudu &lt;a style="%1" href="%2"&gt;verkkoversiooon&lt;/a&gt; tarkistaaksesi kDriven tilan tai ota yhteyttä järjestelmänvalvojaasi.</translation>
+            <translation>kDrive on lepotilassa.&lt;br&gt;Kirjaudu &lt;a style="%1" href="%2"&gt;verkkoversioon&lt;/a&gt; tarkistaaksesi kDriven tilan tai ota yhteyttä järjestelmänvalvojaasi.</translation>
         </message>
         <message>
             <location filename="../src/gui/parametersdialog.cpp" line="479" />
             <source>The kDrive is asleep.&lt;br&gt;Please, login to the web version to check your kDrive's status, or contact your administrator.</source>
-            <translation>kDrive on lepotilassa.&lt;br&gt;Kirjaudu verkkoversiooon tarkistaaksesi kDriven tilan tai ota yhteyttä järjestelmänvalvojaasi.</translation>
+            <translation>kDrive on lepotilassa.&lt;br&gt;Kirjaudu verkkoversioon tarkistaaksesi kDriven tilan tai ota yhteyttä järjestelmänvalvojaasi.</translation>
         </message>
         <message>
             <location filename="../src/gui/parametersdialog.cpp" line="483" />
