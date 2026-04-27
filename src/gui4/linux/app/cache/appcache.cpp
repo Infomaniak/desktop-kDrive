@@ -16,251 +16,302 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 #include "appcache.h"
 
-#include <algorithm>
-
-namespace {
-/**
- * Inserts @p value into @p list if no element matches @p id, or replaces the matching element.
- * @tparam T       Element type stored in the list.
- * @tparam IdType  Type of the identifier used for lookup.
- * @tparam Getter  Callable of signature `IdType(const T &)` that extracts the id from an element.
- * @param list     The vector to update.
- * @param value    The new element to insert or use as replacement.
- * @param id       The identifier to look up.
- * @param getter   Callable that returns the id of a given element.
- */
-template<typename T, typename IdType, typename Getter>
-void upsertById(std::vector<T> &list, const T &value, IdType id, Getter getter) {
-    const auto it = std::ranges::find_if(list, [id, getter](const T &existing) { return getter(existing) == id; });
-    if (it == list.end()) {
-        list.push_back(value);
-        return;
-    }
-    *it = value;
-}
-
-/**
- * Removes from @p list all elements whose id matches @p id.
- * @tparam T       Element type stored in the list.
- * @tparam IdType  Type of the identifier used for lookup.
- * @tparam Getter  Callable of signature `IdType(const T &)` that extracts the id from an element.
- * @param list     The vector to update.
- * @param id       The identifier of the element to remove.
- * @param getter   Callable that returns the id of a given element.
- * @return         `true` if at least one element was removed, `false` otherwise.
- */
-template<typename T, typename IdType, typename Getter>
-bool removeById(std::vector<T> &list, IdType id, Getter getter) {
-    const auto erasedCount = std::erase_if(list, [id, getter](const T &value) { return getter(value) == id; });
-    return erasedCount > 0;
-}
-} // namespace
+#include <ranges>
+#include <utility>
 
 namespace KDC {
 
 AppCache::AppCache(QObject *const parent) :
     QObject(parent) {}
 
-qint64 AppCache::selectedUserDbId() const {
-    return static_cast<qint64>(_selectedUserDbId);
-}
-
-qint64 AppCache::selectedDriveDbId() const {
-    return static_cast<qint64>(_selectedDriveDbId);
-}
-
-qint64 AppCache::selectedSyncDbId() const {
-    return static_cast<qint64>(_selectedSyncDbId);
-}
-
-void AppCache::setConnected(const bool connected) {
-    if (_connected == connected) {
-        return;
-    }
-    _connected = connected;
-    emit connectedChanged();
-}
-
-void AppCache::setSelectedUserDbId(const qint64 userDbId) {
-    const auto typedUserDbId = static_cast<UserDbId>(userDbId);
-    if (_selectedUserDbId == typedUserDbId) {
-        return;
-    }
-    _selectedUserDbId = typedUserDbId;
-
-    const bool hadAvailableDrives = !_availableDrives.empty();
-    _availableDrives.clear();
-
-    emit selectedUserDbIdChanged();
-    if (hadAvailableDrives) {
-        emit availableDrivesChanged();
-    }
-}
-
-void AppCache::setSelectedDriveDbId(const qint64 driveDbId) {
-    const auto typedDriveDbId = static_cast<DriveDbId>(driveDbId);
-    if (_selectedDriveDbId == typedDriveDbId) {
-        return;
-    }
-    _selectedDriveDbId = typedDriveDbId;
-    emit selectedDriveDbIdChanged();
-}
-
-void AppCache::setSelectedSyncDbId(const qint64 syncDbId) {
-    const auto typedSyncDbId = static_cast<SyncDbId>(syncDbId);
-    if (_selectedSyncDbId == typedSyncDbId) {
-        return;
-    }
-    _selectedSyncDbId = typedSyncDbId;
-    emit selectedSyncDbIdChanged();
-}
-
 void AppCache::clearAll() {
-    // Connection state is intentionally preserved: cache content and transport connectivity are orthogonal.
-    const bool usersListChanged = !_users.empty();
-    const bool accountsListChanged = !_accounts.empty();
-    const bool drivesListChanged = !_drives.empty();
-    const bool availableDrivesListChanged = !_availableDrives.empty();
-    const bool syncsListChanged = !_syncs.empty();
-    const bool errorsListChanged = !_errors.empty();
-    const bool userSelectionChanged = _selectedUserDbId != 0;
-    const bool driveSelectionChanged = _selectedDriveDbId != 0;
-    const bool syncSelectionChanged = _selectedSyncDbId != 0;
+    const bool hadUsers = !_usersByDbId.empty();
+    const bool hadAccounts = !_accountsByDbId.empty();
+    const bool hadDrives = !_drivesByDbId.empty();
+    const bool hadSyncs = !_syncsByDbId.empty();
+    const bool hadSyncErrors = !_syncErrorsByDbId.empty();
+    const bool hadServerErrors = !_serverErrorsByDbId.empty();
+    const bool hadAvailableDrives = !_availableDrivesByUserDbId.empty();
 
-    _users.clear();
-    _accounts.clear();
-    _drives.clear();
-    _availableDrives.clear();
-    _syncs.clear();
-    _errors.clear();
-    _selectedUserDbId = 0;
-    _selectedDriveDbId = 0;
-    _selectedSyncDbId = 0;
+    _usersByDbId.clear();
+    _accountsByDbId.clear();
+    _drivesByDbId.clear();
+    _syncsByDbId.clear();
+    _syncErrorsByDbId.clear();
+    _serverErrorsByDbId.clear();
+    _availableDrivesByUserDbId.clear();
 
-    if (usersListChanged) emit usersChanged();
-    if (accountsListChanged) emit accountsChanged();
-    if (drivesListChanged) emit drivesChanged();
-    if (availableDrivesListChanged) emit availableDrivesChanged();
-    if (syncsListChanged) emit syncsChanged();
-    if (errorsListChanged) emit errorsChanged();
-    if (userSelectionChanged) emit selectedUserDbIdChanged();
-    if (driveSelectionChanged) emit selectedDriveDbIdChanged();
-    if (syncSelectionChanged) emit selectedSyncDbIdChanged();
+    if (hadUsers) emit usersChanged();
+    if (hadAccounts) emit accountsChanged();
+    if (hadDrives) emit drivesChanged();
+    if (hadSyncs) emit syncsChanged();
+    if (hadSyncErrors) emit syncErrorsChanged();
+    if (hadServerErrors) emit serverErrorsChanged();
+    if (hadAvailableDrives) emit allAvailableDrivesChanged();
 }
 
 void AppCache::replaceUsers(const std::vector<UserInfo> &users) {
-    _users = users;
+    _usersByDbId.clear();
+    for (const auto &info: users) {
+        _usersByDbId[info.dbId()].info = info;
+    }
+    pruneConfiguredGraph();
     emit usersChanged();
+    emit accountsChanged();
+    emit drivesChanged();
+    emit syncsChanged();
+    emit syncErrorsChanged();
+    emit allAvailableDrivesChanged();
 }
 
 void AppCache::replaceAccounts(const std::vector<AccountInfo> &accounts) {
-    _accounts = accounts;
+    for (auto &userNode: _usersByDbId | std::views::values) {
+        userNode.accountDbIds.clear();
+    }
+    _accountsByDbId.clear();
+    for (const auto &info: accounts) {
+        if (!_usersByDbId.contains(info.userDbId())) {
+            continue;
+        }
+        _accountsByDbId[info.dbId()] = AccountNode{info, info.userDbId(), {}};
+        linkAccountToUser(info.dbId(), info.userDbId());
+    }
+    pruneConfiguredGraph();
     emit accountsChanged();
+    emit drivesChanged();
+    emit syncsChanged();
+    emit syncErrorsChanged();
 }
 
 void AppCache::replaceDrives(const std::vector<DriveInfo> &drives) {
-    _drives = drives;
+    for (auto &accountNode: _accountsByDbId | std::views::values) {
+        accountNode.driveDbIds.clear();
+    }
+    _drivesByDbId.clear();
+    for (const auto &info: drives) {
+        if (!_accountsByDbId.contains(info.accountDbId())) {
+            continue;
+        }
+        _drivesByDbId[info.dbId()] = DriveNode{info, info.accountDbId(), {}};
+        linkDriveToAccount(info.dbId(), info.accountDbId());
+    }
+    pruneConfiguredGraph();
     emit drivesChanged();
-}
-
-void AppCache::replaceAvailableDrives(const std::vector<DriveAvailableInfo> &availableDrives) {
-    _availableDrives = availableDrives;
-    emit availableDrivesChanged();
+    emit syncsChanged();
+    emit syncErrorsChanged();
 }
 
 void AppCache::replaceSyncs(const std::vector<SyncInfo> &syncs) {
-    _syncs = syncs;
+    for (auto &driveNode: _drivesByDbId | std::views::values) {
+        driveNode.syncDbIds.clear();
+    }
+    _syncsByDbId.clear();
+    for (const auto &info: syncs) {
+        if (!_drivesByDbId.contains(info.driveDbId())) {
+            continue;
+        }
+        _syncsByDbId[info.dbId()] = SyncNode{info, info.driveDbId(), {}};
+        linkSyncToDrive(info.dbId(), info.driveDbId());
+    }
+    pruneConfiguredGraph();
     emit syncsChanged();
+    emit syncErrorsChanged();
 }
 
-void AppCache::replaceErrors(const std::vector<ErrorInfo> &errors) {
-    _errors = errors;
-    emit errorsChanged();
+void AppCache::replaceSyncErrors(const std::vector<ErrorInfo> &errors) {
+    for (auto &syncNode: _syncsByDbId | std::views::values) {
+        syncNode.errorDbIds.clear();
+    }
+    _syncErrorsByDbId.clear();
+    for (const auto &info: errors) {
+        if (!_syncsByDbId.contains(info.syncDbId())) {
+            continue;
+        }
+        _syncErrorsByDbId[info.dbId()] = info;
+        linkErrorToSync(info.dbId(), info.syncDbId());
+    }
+    emit syncErrorsChanged();
+}
+
+void AppCache::replaceServerErrors(const std::vector<ErrorInfo> &errors) {
+    _serverErrorsByDbId.clear();
+    for (const auto &info: errors) {
+        _serverErrorsByDbId[info.dbId()] = info;
+    }
+    emit serverErrorsChanged();
+}
+
+void AppCache::replaceAvailableDrivesForUser(const UserDbId userDbId, const std::vector<DriveAvailableInfo> &availableDrives) {
+    std::vector<DriveAvailableInfo> scopedAvailableDrives;
+    scopedAvailableDrives.reserve(availableDrives.size());
+    for (auto info: availableDrives) {
+        info.setUserDbId(userDbId);
+        scopedAvailableDrives.push_back(info);
+    }
+    _availableDrivesByUserDbId[userDbId] = std::move(scopedAvailableDrives);
+    emit availableDrivesChanged(userDbId);
+}
+
+void AppCache::clearAvailableDrivesForUser(const UserDbId userDbId) {
+    if (_availableDrivesByUserDbId.erase(userDbId) == 0) {
+        return;
+    }
+    emit availableDrivesChanged(userDbId);
+}
+
+void AppCache::clearAllAvailableDrives() {
+    if (_availableDrivesByUserDbId.empty()) {
+        return;
+    }
+    _availableDrivesByUserDbId.clear();
+    emit allAvailableDrivesChanged();
 }
 
 void AppCache::upsertUser(const UserInfo &info) {
-    upsertById(_users, info, info.dbId(), [](const UserInfo &user) { return user.dbId(); });
+    auto &[userInfo, _] = _usersByDbId[info.dbId()];
+    userInfo = info;
     emit usersChanged();
 }
 
 void AppCache::removeUser(const UserDbId userDbId) {
-    if (!removeById(_users, userDbId, [](const UserInfo &user) { return user.dbId(); })) {
+    const auto userIt = _usersByDbId.find(userDbId);
+    if (userIt == _usersByDbId.end()) {
         return;
     }
-    const bool selectionChanged = _selectedUserDbId == userDbId;
-    if (selectionChanged) {
-        _selectedUserDbId = 0;
+
+    for (const auto accountDbIds = userIt->second.accountDbIds; const auto accountDbId: accountDbIds) {
+        removeAccountCascade(accountDbId);
     }
+    _usersByDbId.erase(userIt);
+    const bool hadAvailableDrives = _availableDrivesByUserDbId.erase(userDbId) > 0;
+
     emit usersChanged();
-    if (selectionChanged) {
-        emit selectedUserDbIdChanged();
-    }
+    emit accountsChanged();
+    emit drivesChanged();
+    emit syncsChanged();
+    emit syncErrorsChanged();
+    if (hadAvailableDrives) emit availableDrivesChanged(userDbId);
 }
 
 void AppCache::upsertAccount(const AccountInfo &info) {
-    upsertById(_accounts, info, info.dbId(), [](const AccountInfo &account) { return account.dbId(); });
+    if (!_usersByDbId.contains(info.userDbId())) {
+        return;
+    }
+
+    if (const auto existingIt = _accountsByDbId.find(info.dbId());
+        existingIt != _accountsByDbId.end() && existingIt->second.parentUserDbId != info.userDbId()) {
+        unlinkAccountFromUser(info.dbId(), existingIt->second.parentUserDbId);
+    }
+
+    auto &node = _accountsByDbId[info.dbId()];
+    node.info = info;
+    node.parentUserDbId = info.userDbId();
+    linkAccountToUser(info.dbId(), info.userDbId());
     emit accountsChanged();
 }
 
 void AppCache::removeAccount(const AccountDbId accountDbId) {
-    if (!removeById(_accounts, accountDbId, [](const AccountInfo &account) { return account.dbId(); })) {
+    if (!_accountsByDbId.contains(accountDbId)) {
         return;
     }
+    removeAccountCascade(accountDbId);
     emit accountsChanged();
+    emit drivesChanged();
+    emit syncsChanged();
+    emit syncErrorsChanged();
 }
 
 void AppCache::upsertDrive(const DriveInfo &info) {
-    upsertById(_drives, info, info.dbId(), [](const DriveInfo &drive) { return drive.dbId(); });
+    if (!_accountsByDbId.contains(info.accountDbId())) {
+        return;
+    }
+
+    if (const auto existingIt = _drivesByDbId.find(info.dbId());
+        existingIt != _drivesByDbId.end() && existingIt->second.parentAccountDbId != info.accountDbId()) {
+        unlinkDriveFromAccount(info.dbId(), existingIt->second.parentAccountDbId);
+    }
+
+    auto &node = _drivesByDbId[info.dbId()];
+    node.info = info;
+    node.parentAccountDbId = info.accountDbId();
+    linkDriveToAccount(info.dbId(), info.accountDbId());
     emit drivesChanged();
 }
 
 void AppCache::removeDrive(const DriveDbId driveDbId) {
-    if (!removeById(_drives, driveDbId, [](const DriveInfo &drive) { return drive.dbId(); })) {
+    if (!_drivesByDbId.contains(driveDbId)) {
         return;
     }
-    const bool selectionChanged = _selectedDriveDbId == driveDbId;
-    if (selectionChanged) {
-        _selectedDriveDbId = 0;
-        _selectedSyncDbId = 0;
-    }
+    removeDriveCascade(driveDbId);
     emit drivesChanged();
-    if (selectionChanged) {
-        emit selectedDriveDbIdChanged();
-        emit selectedSyncDbIdChanged();
-    }
+    emit syncsChanged();
+    emit syncErrorsChanged();
 }
 
 void AppCache::upsertSync(const SyncInfo &info) {
-    upsertById(_syncs, info, info.dbId(), [](const SyncInfo &sync) { return sync.dbId(); });
+    if (!_drivesByDbId.contains(info.driveDbId())) {
+        return;
+    }
+
+    if (const auto existingIt = _syncsByDbId.find(info.dbId());
+        existingIt != _syncsByDbId.end() && existingIt->second.parentDriveDbId != info.driveDbId()) {
+        unlinkSyncFromDrive(info.dbId(), existingIt->second.parentDriveDbId);
+    }
+
+    auto &node = _syncsByDbId[info.dbId()];
+    node.info = info;
+    node.parentDriveDbId = info.driveDbId();
+    linkSyncToDrive(info.dbId(), info.driveDbId());
     emit syncsChanged();
 }
 
 void AppCache::removeSync(const SyncDbId syncDbId) {
-    if (!removeById(_syncs, syncDbId, [](const SyncInfo &sync) { return sync.dbId(); })) {
+    if (!_syncsByDbId.contains(syncDbId)) {
         return;
     }
-    const bool selectionChanged = _selectedSyncDbId == syncDbId;
-    if (selectionChanged) {
-        _selectedSyncDbId = 0;
-    }
+    removeSyncCascade(syncDbId);
     emit syncsChanged();
-    if (selectionChanged) {
-        emit selectedSyncDbIdChanged();
-    }
+    emit syncErrorsChanged();
 }
 
-void AppCache::upsertError(const ErrorInfo &info) {
-    upsertById(_errors, info, info.dbId(), [](const ErrorInfo &error) { return error.dbId(); });
-    emit errorsChanged();
-}
-
-void AppCache::removeError(const ErrorDbId errorDbId) {
-    if (!removeById(_errors, errorDbId, [](const ErrorInfo &error) { return error.dbId(); })) {
+void AppCache::upsertSyncError(const ErrorInfo &info) {
+    if (!_syncsByDbId.contains(info.syncDbId())) {
         return;
     }
-    emit errorsChanged();
+
+    if (const auto existingIt = _syncErrorsByDbId.find(info.dbId());
+        existingIt != _syncErrorsByDbId.end() && existingIt->second.syncDbId() != info.syncDbId()) {
+        unlinkErrorFromSync(info.dbId(), existingIt->second.syncDbId());
+    }
+
+    _syncErrorsByDbId[info.dbId()] = info;
+    linkErrorToSync(info.dbId(), info.syncDbId());
+    emit syncErrorsChanged();
+}
+
+void AppCache::removeSyncError(const ErrorDbId errorDbId) {
+    const auto errorIt = _syncErrorsByDbId.find(errorDbId);
+    if (errorIt == _syncErrorsByDbId.end()) {
+        return;
+    }
+    unlinkErrorFromSync(errorDbId, errorIt->second.syncDbId());
+    _syncErrorsByDbId.erase(errorIt);
+    emit syncErrorsChanged();
+}
+
+void AppCache::upsertServerError(const ErrorInfo &info) {
+    _serverErrorsByDbId[info.dbId()] = info;
+    emit serverErrorsChanged();
+}
+
+void AppCache::removeServerError(const ErrorDbId errorDbId) {
+    if (_serverErrorsByDbId.erase(errorDbId) == 0) {
+        return;
+    }
+    emit serverErrorsChanged();
 }
 
 } // namespace KDC
