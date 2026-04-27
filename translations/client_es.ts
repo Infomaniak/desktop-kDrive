@@ -877,7 +877,7 @@ Seleccione otra carpeta. Si continúa, Lite Sync se deshabilitará.&lt;br&gt;
         <translation>Compartir ha sido cancelado</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="597"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="598"/>
         <source>The extended full log is activated through the KDRIVE_FORCE_EXTENDED_LOG environment variable. Set it to 0 to disable it.</source>
         <translation>El registro completo extendido se activa mediante la variable de entorno KDRIVE_FORCE_EXTENDED_LOG. Configúrelo en 0 para deshabilitarlo.</translation>
     </message>
@@ -887,39 +887,39 @@ Seleccione otra carpeta. Si continúa, Lite Sync se deshabilitará.&lt;br&gt;
         <translation>La carpeta completa es grande (&gt; 100 MB) y puede tardar algún tiempo en compartirse. Para reducir el tiempo de compartición, le recomendamos que comparta sólo la última sesión de kDrive.</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="611"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="612"/>
         <source>%1/%2/%3 at %4h%5m and %6s</source>
         <extracomment>Date format for the last successful log upload. %1: month, %2: day, %3: year, %4: hour, %5: minute, %6: second</extracomment>
         <translation>%2/%1/%3 a las %4:%5 y %6s</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="654"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="655"/>
         <source>Do you want to save your modifications?</source>
         <translation>¿Deseas guardar tus cambios?</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="709"/>
-        <location filename="../src/gui/debuggingdialog.cpp" line="715"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="710"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="716"/>
         <source>Unable to open folder %1.</source>
         <translation>No se puede abrir la carpeta %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="722"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="723"/>
         <source>  Share</source>
         <translation>  Compartir</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="732"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="733"/>
         <source>  Sharing | step 1/2 %1%</source>
         <translation>  Compartir | paso 1/2 %1%</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="741"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="742"/>
         <source>  Sharing | step 2/2 %1%</source>
         <translation>  Compartir | paso 2/2 %1%</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="751"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="752"/>
         <source>  Canceling...</source>
         <translation>  Cancelado...</translation>
     </message>
