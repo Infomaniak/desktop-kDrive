@@ -2717,7 +2717,7 @@ void AppServer::addCompletedItem(const SyncDbId syncDbId, const SyncFileItem &it
     if (item.status() != SyncFileStatus::Success) {
         return;
     }
-  
+
     resolveItemErrors(syncDbId, item);
 
     if (notify) {
@@ -3837,17 +3837,14 @@ bool AppServer::startClient() {
         QString pathToExecutable;
 
 #if defined(KD_WINDOWS)
-        if (ParametersCache::instance()->parameters().distributionChannel() ==
-            VersionChannel::Internal) { // The WinUI3 GUI is currently only for internal builds
-            pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENTV4_EXECUTABLE);
+        pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENTV4_EXECUTABLE);
 
-            IoError ioError = IoError::Success;
-            bool exists = false;
-            if (!IoHelper::checkIfPathExists(pathToExecutable.toStdString(), exists, ioError,
-                                             IoHelper::PathCheckOption::Insensitive) ||
-                !exists || ioError != IoError::Success) {
-                pathToExecutable.clear();
-            }
+        IoError ioError = IoError::Success;
+        bool exists = false;
+        if (!IoHelper::checkIfPathExists(QStr2Path(pathToExecutable), exists, ioError,
+                                         IoHelper::PathCheckOption::Insensitive) ||
+            !exists || ioError != IoError::Success) {
+            pathToExecutable.clear();
         }
         if (pathToExecutable.isEmpty()) {
             pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENT_EXECUTABLE);
