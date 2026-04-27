@@ -76,15 +76,21 @@ void MainSelectionStore::ensureValidSelection() {
 }
 
 void MainSelectionStore::handleSyncsChanged() {
+    const auto previousContext = currentSyncContext();
     const auto previousCurrentSyncDbId = _currentSyncDbId;
     ensureValidSelection();
-    if (_currentSyncDbId != 0 && _currentSyncDbId == previousCurrentSyncDbId) {
+    if (_currentSyncDbId != 0 && _currentSyncDbId == previousCurrentSyncDbId && previousContext != currentSyncContext()) {
         emit currentSyncContextChanged();
     }
 }
 
 void MainSelectionStore::handleContextDataChanged() {
+    const auto previousContext = currentSyncContext();
+    const auto previousCurrentSyncDbId = _currentSyncDbId;
     if (_currentSyncDbId != 0) {
+        ensureValidSelection();
+    }
+    if (_currentSyncDbId == previousCurrentSyncDbId && previousContext != currentSyncContext()) {
         emit currentSyncContextChanged();
     }
 }
