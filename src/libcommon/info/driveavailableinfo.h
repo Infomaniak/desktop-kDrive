@@ -54,6 +54,8 @@ class DriveAvailableInfo {
         friend QDataStream &operator>>(QDataStream &in, DriveAvailableInfo &info);
         friend QDataStream &operator<<(QDataStream &out, const DriveAvailableInfo &info);
 
+        friend bool operator==(const DriveAvailableInfo &lhs, const DriveAvailableInfo &rhs) = default;
+
         friend QDataStream &operator>>(QDataStream &in, QList<DriveAvailableInfo> &list);
         friend QDataStream &operator<<(QDataStream &out, const QList<DriveAvailableInfo> &list);
 
