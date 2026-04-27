@@ -66,12 +66,15 @@ void UserService::loadUsers() {
 }
 
 void UserService::loadAvailableDrives(const qint64 userDbId) {
-    beginAction(actionLoadAvailableDrives, userDbId);
+    const auto scopedUserDbId = static_cast<UserDbId>(userDbId);
+    beginAction(actionLoadAvailableDrives, scopedUserDbId);
+    const auto generation = ++_availableDriveLoadGenerations[scopedUserDbId];
 
     _commService.requestUserAvailableDrives(
-            userDbId, [this, userDbId](const ExitInfo &exitInfo, const std::vector<DriveAvailableInfo> &list) {
-                endAction(actionLoadAvailableDrives, userDbId);
-                if (_appCache.selectedUserDbId() != userDbId) {
+            scopedUserDbId,
+            [this, scopedUserDbId, generation](const ExitInfo &exitInfo, const std::vector<DriveAvailableInfo> &list) {
+                endAction(actionLoadAvailableDrives, scopedUserDbId);
+                if (_availableDriveLoadGenerations[scopedUserDbId] != generation) {
                     return;
                 }
 
@@ -80,7 +83,7 @@ void UserService::loadAvailableDrives(const qint64 userDbId) {
                     return;
                 }
 
-                _appCache.replaceAvailableDrives(list);
+                _appCache.replaceAvailableDrivesForUser(scopedUserDbId, list);
             });
 }
 
