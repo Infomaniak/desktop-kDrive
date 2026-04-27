@@ -126,7 +126,7 @@ time_t FileTimeToUnixTime(LARGE_INTEGER filetime, DWORD *remainder) {
 
 uint64_t computeNodeId(const _FILE_ID_FULL_DIR_INFORMATION *pFileInfo) {
     // We keep `long long` type cast for legacy reason.
-    auto longLongId =
+    const auto longLongId =
             (static_cast<long long>(pFileInfo->FileId.HighPart) << 32) + static_cast<long long>(pFileInfo->FileId.LowPart);
 
     return static_cast<uint64_t>(longLongId);
@@ -134,13 +134,13 @@ uint64_t computeNodeId(const _FILE_ID_FULL_DIR_INFORMATION *pFileInfo) {
 
 uint64_t computeNodeId(const BY_HANDLE_FILE_INFORMATION &pFileInfo) {
     // We keep `long long` type cast for legacy reason.
-    auto longLongId = (static_cast<long long>(pFileInfo.nFileIndexHigh) << 32) + static_cast<long long>(pFileInfo.nFileIndexLow);
+    const auto longLongId = (static_cast<long long>(pFileInfo.nFileIndexHigh) << 32) + static_cast<long long>(pFileInfo.nFileIndexLow);
 
     return static_cast<uint64_t>(longLongId);
 }
 
 bool GetRootNodeId(const SyncPath &rootPath, NodeId &nodeId) noexcept {
-    HANDLE hRoot = CreateFileW(rootPath.wstring().c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
+    const HANDLE hRoot = CreateFileW(rootPath.wstring().c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
                                OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
 
     if (hRoot == INVALID_HANDLE_VALUE) {
@@ -148,12 +148,12 @@ bool GetRootNodeId(const SyncPath &rootPath, NodeId &nodeId) noexcept {
     }
     BY_HANDLE_FILE_INFORMATION info{};
     if (!GetFileInformationByHandle(hRoot, &info)) {
-        CloseHandle(hRoot);
+        (void)  CloseHandle(hRoot);
         return false;
     }
 
     nodeId = std::to_string(computeNodeId(info));
-    CloseHandle(hRoot);
+    (void) CloseHandle(hRoot);
     return true;
 }
 

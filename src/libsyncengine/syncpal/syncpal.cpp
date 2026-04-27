@@ -377,7 +377,7 @@ void SyncPal::fixConflictedFilesCompleted(const SyncDbId syncDbId, uint64_t nbEr
     }
 }
 
-void SyncPal::resolveSyncErrorsByExitCause(ExitCause cause) {
+void SyncPal::resolveSyncErrorsByExitCause(const ExitCause cause) {
     if (_resolveSyncErrors) {
         _resolveSyncErrors(syncDbId(), cause);
     }

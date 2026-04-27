@@ -3038,41 +3038,41 @@ bool ParmsDb::selectSyncErrorsByExitCause(SyncDbId syncDbId, ExitCause exitCause
         LOG_IF_FAIL(queryStringValue(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 2, functionName));
         std::string workerName;
         LOG_IF_FAIL(queryStringValue(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 3, workerName));
-        int exitCode = 0;
+        int32_t exitCode = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 4, exitCode));
-        int exitCause = 0;
-        LOG_IF_FAIL(queryIntValue(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 5, exitCause));
+        int32_t exitCauseRes = 0;
+        LOG_IF_FAIL(queryIntValue(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 5, exitCauseRes));
         std::string localNodeId;
         LOG_IF_FAIL(queryStringValue(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 6, localNodeId));
         std::string remoteNodeId;
         LOG_IF_FAIL(queryStringValue(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 7, remoteNodeId));
-        int nodeType;
+        int32_t nodeType = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 8, nodeType));
         SyncName path;
         LOG_IF_FAIL(querySyncNameValue(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 9, path));
-        int status;
+        int32_t status = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 10, status));
-        int conflictType;
+        int32_t conflictType = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 11, conflictType));
-        int inconsistencyType;
+        int32_t inconsistencyType = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 12, inconsistencyType));
-        int cancelType;
+        int32_t cancelType = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 13, cancelType));
         SyncName destinationPath;
         LOG_IF_FAIL(querySyncNameValue(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 14, destinationPath));
-        int intLevel = 0;
+        int32_t intLevel = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 15, intLevel));
         ErrorLevel level = fromInt<ErrorLevel>(intLevel);
 
-        SyncDbId syncDbId = 0;
-        LOG_IF_FAIL(queryInt64Value(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 16, syncDbId));
+        SyncDbId syncDbIdRes = 0;
+        LOG_IF_FAIL(queryInt64Value(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 16, syncDbIdRes));
 
 
-        errs.push_back(Error(dbId, time, level, functionName, syncDbId, workerName, static_cast<ExitCode>(exitCode),
-                             static_cast<ExitCause>(exitCause), static_cast<NodeId>(localNodeId),
+        errs.emplace_back(dbId, time, level, functionName, syncDbIdRes, workerName, static_cast<ExitCode>(exitCode),
+                             static_cast<ExitCause>(exitCauseRes), static_cast<NodeId>(localNodeId),
                              static_cast<NodeId>(remoteNodeId), static_cast<NodeType>(nodeType), static_cast<SyncPath>(path),
                              static_cast<ConflictType>(conflictType), static_cast<InconsistencyType>(inconsistencyType),
-                             static_cast<CancelType>(cancelType), static_cast<SyncPath>(destinationPath)));
+                             static_cast<CancelType>(cancelType), static_cast<SyncPath>(destinationPath));
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID));
 
