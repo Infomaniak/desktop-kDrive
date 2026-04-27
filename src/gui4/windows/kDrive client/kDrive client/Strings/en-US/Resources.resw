@@ -6,7 +6,7 @@
   Locale: en, English
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Wed, 22 Apr 2026 11:14:52 +0200 
+  Exported at: Mon, 27 Apr 2026 16:45:25 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -150,8 +150,8 @@ You can access your advanced syncs from the drive picker on the home page.</valu
     <value>Available offline</value> 
   </data> 
   <data name="availableOfflineDescription" xml:space="preserve"> 
-    <value>Your local files remain accessible.
-Synchronization will automatically resume as soon as you are reconnected.</value> 
+    <value>Your files are copied to your computer.
+You can open them at any time, even without an internet connection.</value> 
   </data> 
   <data name="backErrorDriveAsleepDescription" xml:space="preserve"> 
     <value>You can wake it up from the web interface.</value> 
@@ -1426,6 +1426,9 @@ Please wait a few moments.</value>
   <data name="releaseChannelInternal" xml:space="preserve"> 
     <value>Internal</value> 
   </data> 
+  <data name="releaseChannelTest" xml:space="preserve"> 
+    <value>Test</value> 
+  </data> 
   <data name="remoteLocation" xml:space="preserve"> 
     <value>Location on kDrive</value> 
   </data> 
@@ -1548,8 +1551,8 @@ An internet connection is required to access them.</value>
     <value>Sync in progress</value> 
   </data> 
   <data name="synchroStatusOfflineDescription" xml:space="preserve"> 
-    <value>Your files are copied to your computer.
-You can open them at any time, even without internet.</value> 
+    <value>Your local files remain accessible.
+Synchronization will automatically resume once you are reconnected.</value> 
   </data> 
   <data name="synchroStatusOfflineTitle" xml:space="preserve"> 
     <value>Offline</value> 
