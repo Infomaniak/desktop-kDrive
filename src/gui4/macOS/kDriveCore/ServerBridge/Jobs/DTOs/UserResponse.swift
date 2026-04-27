@@ -32,6 +32,7 @@ public struct UserInfoResponse: Codable, Sendable {
     public let userId: Int32
     @Base64CodedString public var email: String
     @Base64CodedString public var name: String
+    @Base64CodedString public var firstName: String
     @Base64CodedData public var avatar: Data
     public let isConnected: Bool
     public let isStaff: Bool
@@ -43,6 +44,7 @@ extension UserInfoResponse {
             dbId: dbId,
             userId: userId,
             name: name,
+            firstName: firstName,
             email: email,
             accounts: [:],
             availableDrives: [:],

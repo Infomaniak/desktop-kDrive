@@ -48,7 +48,8 @@ public enum PreviewHelper {
     public static let user = UIUser(
         dbId: 95014,
         userId: 95014,
-        name: "Tim Cook",
+        name: "Cook",
+        firstName: "Tim",
         email: "tim@apple.com",
         avatar: nil
     )

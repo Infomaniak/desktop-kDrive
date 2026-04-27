@@ -29,6 +29,7 @@ public struct User: Identifiable, Hashable, Sendable {
     public let dbId: Int32
     public let userId: Int32
     public var name: String
+    public var firstName: String
     public var email: String
     public var accounts: IndexedAccounts
     public var availableDrives: IndexedAvailableDrives
@@ -40,6 +41,7 @@ public struct User: Identifiable, Hashable, Sendable {
         dbId: Int32,
         userId: Int32,
         name: String,
+        firstName: String,
         email: String,
         accounts: IndexedAccounts,
         availableDrives: IndexedAvailableDrives,
@@ -50,6 +52,7 @@ public struct User: Identifiable, Hashable, Sendable {
         self.dbId = dbId
         self.userId = userId
         self.name = name
+        self.firstName = firstName
         self.email = email
         self.accounts = accounts
         self.availableDrives = availableDrives
@@ -62,6 +65,7 @@ public struct User: Identifiable, Hashable, Sendable {
         dbId = userInfoMetadata.dbId
         userId = userInfoMetadata.userId
         name = userInfoMetadata.name
+        firstName = userInfoMetadata.firstName
         email = userInfoMetadata.email
         accounts = [:]
         availableDrives = [:]
@@ -76,6 +80,7 @@ extension User {
         UserInfoMetadata(dbId: dbId,
                          userId: userId,
                          name: name,
+                         firstName: firstName,
                          email: email,
                          avatar: avatar ?? Data(),
                          isConnected: isConnected,
@@ -92,18 +97,29 @@ public extension User {
 
         @usableFromInline static let userId = UpdateOptions(rawValue: 1 << 0)
         @usableFromInline static let name = UpdateOptions(rawValue: 1 << 1)
-        @usableFromInline static let email = UpdateOptions(rawValue: 1 << 2)
-        @usableFromInline static let avatar = UpdateOptions(rawValue: 1 << 3)
-        @usableFromInline static let isConnected = UpdateOptions(rawValue: 1 << 4)
-        @usableFromInline static let isStaff = UpdateOptions(rawValue: 1 << 5)
-        @usableFromInline static let accounts = UpdateOptions(rawValue: 1 << 6)
-        @usableFromInline static let availableDrives = UpdateOptions(rawValue: 1 << 7)
+        @usableFromInline static let firstName = UpdateOptions(rawValue: 1 << 2)
+        @usableFromInline static let email = UpdateOptions(rawValue: 1 << 3)
+        @usableFromInline static let avatar = UpdateOptions(rawValue: 1 << 4)
+        @usableFromInline static let isConnected = UpdateOptions(rawValue: 1 << 5)
+        @usableFromInline static let isStaff = UpdateOptions(rawValue: 1 << 6)
+        @usableFromInline static let accounts = UpdateOptions(rawValue: 1 << 7)
+        @usableFromInline static let availableDrives = UpdateOptions(rawValue: 1 << 8)
 
         @usableFromInline
-        static let updateSignal: UpdateOptions = [.userId, .name, .email, .avatar, .isConnected, .isStaff]
+        static let updateSignal: UpdateOptions = [.userId, .name, .firstName, .email, .avatar, .isConnected, .isStaff]
 
         @usableFromInline
-        static let all: UpdateOptions = [.userId, .name, .email, .avatar, .isConnected, .isStaff, .accounts, .availableDrives]
+        static let all: UpdateOptions = [
+            .userId,
+            .name,
+            .firstName,
+            .email,
+            .avatar,
+            .isConnected,
+            .isStaff,
+            .accounts,
+            .availableDrives
+        ]
     }
 
     func updated(with other: User, updateOptions: UpdateOptions) -> User? {
@@ -115,6 +131,7 @@ public extension User {
             dbId: dbId,
             userId: updateOptions.contains(.userId) ? other.userId : userId,
             name: updateOptions.contains(.name) ? other.name : name,
+            firstName: updateOptions.contains(.firstName) ? other.firstName : firstName,
             email: updateOptions.contains(.email) ? other.email : email,
             accounts: updateOptions.contains(.accounts) ? other.accounts : accounts,
             availableDrives: updateOptions.contains(.availableDrives) ? other.availableDrives : availableDrives,

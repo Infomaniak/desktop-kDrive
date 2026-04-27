@@ -90,7 +90,8 @@ public actor XPCServerMock: XPCGuiProtocol, @preconcurrency XPCConnectionProvide
         try await Task.sleep(nanoseconds: 1_000_000_000)
         let newUser = User(dbId: userDbId,
                            userId: Int32.random(in: 0 ... 1000),
-                           name: "Jonh Appleseed",
+                           name: "Appleseed",
+                           firstName: "John",
                            email: "jonh.appleseed@apple.com",
                            accounts: [:],
                            availableDrives: [:],
