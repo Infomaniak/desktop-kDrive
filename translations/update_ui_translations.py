@@ -47,6 +47,8 @@ DEEPL_LANGUAGE_CODES = {
     "es": "ES",
     "fr": "FR",
     "it": "IT",
+    "nb": "NB",
+    "pl": "PL",
     "sv": "SV",
     "pt": "PT-PT",
 }
