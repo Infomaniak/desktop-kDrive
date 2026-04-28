@@ -36,8 +36,13 @@ class DownloadJob : public AbstractTokenNetworkJob {
                 SyncTime modificationTime = 0;
                 bool isCreate = false;
         };
+        enum class DateTimePolicy {
+            IgnoreDateTime,
+            ApplyDateTime
+        };
+
         DownloadJob(const std::shared_ptr<Vfs> vfs, std::shared_ptr<CacheDirectory> cacheDirectory,
-                    const FileDownloadInfo &fileDownloadInfo);
+                    const FileDownloadInfo &fileDownloadInfo, DateTimePolicy dateTimePolicy);
         ~DownloadJob() override;
 
         inline const NodeId &remoteNodeId() const { return _fileDownloadInfo.remoteFileId; }
@@ -87,7 +92,7 @@ class DownloadJob : public AbstractTokenNetworkJob {
         FileDownloadInfo _fileDownloadInfo;
 
         SyncPath _tmpPath;
-        bool _ignoreDateTime = false;
+        DateTimePolicy _dateTimePolicy;
         bool _responseHandlingCanceled = false;
 
         NodeId _localNodeId;

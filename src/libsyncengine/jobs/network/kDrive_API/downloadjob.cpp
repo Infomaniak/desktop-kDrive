@@ -46,11 +46,12 @@ namespace KDC {
 #define READ_RETRIES_NETWORK_LOST 100
 
 DownloadJob::DownloadJob(const std::shared_ptr<Vfs> vfs, std::shared_ptr<CacheDirectory> cacheDirectory,
-                         const FileDownloadInfo &fileDownloadInfo) :
+                         const FileDownloadInfo &fileDownloadInfo, DateTimePolicy dateTimePolicy) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, fileDownloadInfo.driveDbId, 0, false),
     _vfs(vfs),
     _cacheDirectory(cacheDirectory),
-    _fileDownloadInfo(fileDownloadInfo) {
+    _fileDownloadInfo(fileDownloadInfo),
+    _dateTimePolicy(dateTimePolicy) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _customTimeout = 60;
     _trials = TRIALS;
@@ -271,7 +272,7 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
             }
         }
     }
-    if (!_ignoreDateTime) {
+    if (_dateTimePolicy == DateTimePolicy::ApplyDateTime) {
         if (const IoError ioError = IoHelper::setFileDates(_fileDownloadInfo.localpath, _fileDownloadInfo.creationTime,
                                                            _fileDownloadInfo.modificationTime, isLink);
             ioError == IoError::Unknown) {
