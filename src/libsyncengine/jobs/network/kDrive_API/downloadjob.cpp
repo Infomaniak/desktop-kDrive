@@ -279,8 +279,13 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
     }
 
     if (_dateTimePolicy == DateTimePolicy::ApplyDateTime) {
+<<<<<<< HEAD
         if (const IoError ioError = IoHelper::setFileDates(_fileDownloadInfo.localpath, _fileDownloadInfo.creationTime,
 
+=======
+        if (const IoError ioError = IoHelper::setFileDates(_fileDownloadInfo.localPath, _fileDownloadInfo.creationTime,
+                                                           _fileDownloadInfo.modificationTime, isLink);
+>>>>>>> fec603d2c (fix(merge-conflicts): Fixes issues introduced while merging)
             ioError == IoError::Unknown) {
             LOGW_WARN(_logger, L"Error in IoHelper::setFileDates: " << Utility::formatSyncPath(_fileDownloadInfo.localPath));
             // Do nothing (remote file will be updated during the next sync)
@@ -345,15 +350,10 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
     if (mimeType == mimeTypeSymlink || mimeType == mimeTypeSymlinkFolder) {
         // Create symlink
         const auto targetPath = Str2Path(data);
-<<<<<<< HEAD
+
         if (targetPath == _fileDownloadInfo.localpath) {
             LOGW_DEBUG(_logger, L"Cannot create symlink on itself: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
             return {ExitCode::SystemError, ExitCause::FileAccessError};
-=======
-        if (targetPath == _fileDownloadInfo.localPath) {
-            LOGW_DEBUG(_logger, L"Cannot create symlink on itself: " << Utility::formatSyncPath(_fileDownloadInfo.localPath));
-            return {};
->>>>>>> 0e4fcc35d (refactor(network-jobs): Specify the API version of every network request and makes consistent use of the RemoteNodeId type)
         }
 
         LOGW_DEBUG(_logger, L"Create symlink with target " << Utility::formatSyncPath(targetPath) << L", "
@@ -397,7 +397,7 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
         LOGW_DEBUG(_logger, L"Create junction: " << Utility::formatSyncPath(_fileDownloadInfo.localPath));
 
         IoError ioError = IoError::Success;
-<<<<<<< HEAD
+
         if (!IoHelper::createJunction(data, _fileDownloadInfo.localpath, ioError)) {
             LOGW_WARN(_logger, L"Failed to create junction: " << Utility::formatIoError(_fileDownloadInfo.localpath, ioError));
             if (ioError == IoError::NoSuchFileOrDirectory) {
@@ -409,11 +409,7 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
             } else {
                 return ExitCode::SystemError;
             }
-=======
-        if (!IoHelper::createJunction(data, _fileDownloadInfo.localPath, ioError)) {
-            LOGW_WARN(_logger, L"Failed to create junction: " << Utility::formatIoError(_fileDownloadInfo.localPath, ioError));
-            return {};
->>>>>>> 0e4fcc35d (refactor(network-jobs): Specify the API version of every network request and makes consistent use of the RemoteNodeId type)
+
         }
 #endif
     } else if (mimeType == mimeTypeFinderAlias) {
@@ -454,7 +450,6 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
 
                     if (!IoHelper::createAlias(data2, _fileDownloadInfo.localPath, ioError)) {
                         LOGW_WARN(_logger,
-<<<<<<< HEAD
                                   L"Failed to create alias: " << Utility::formatIoError(_fileDownloadInfo.localpath, ioError));
                         if (ioError == IoError::NoSuchFileOrDirectory) {
                             LOGW_WARN(_logger,
@@ -467,10 +462,7 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
                         } else {
                             return ExitCode::SystemError;
                         }
-=======
-                                  L"Failed to create alias: " << Utility::formatIoError(_fileDownloadInfo.localPath, ioError));
-                        return {};
->>>>>>> 0e4fcc35d (refactor(network-jobs): Specify the API version of every network request and makes consistent use of the RemoteNodeId type)
+
                     }
 
                     return ExitCode::Ok;
