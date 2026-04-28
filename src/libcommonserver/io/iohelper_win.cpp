@@ -142,7 +142,7 @@ uint64_t computeNodeId(const BY_HANDLE_FILE_INFORMATION &pFileInfo) {
 
 // Get the node id of a root path. This is necessary because pzwQueryDirectoryFile requires a parent handle, which is not
 // available for root paths.
-bool GetRootNodeId(const SyncPath &rootPath, NodeId &nodeId) noexcept {
+bool getRootNodeId(const SyncPath &rootPath, NodeId &nodeId) noexcept {
     const HANDLE hRoot = CreateFileW(rootPath.wstring().c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
                                      nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
 
@@ -174,7 +174,7 @@ IoError IoHelper::stdError2ioError(int error) noexcept {
 
 bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
     if (path == path.root_path()) {
-        return GetRootNodeId(path, nodeId);
+        return getRootNodeId(path, nodeId);
     }
 
     // Get parent folder handle
