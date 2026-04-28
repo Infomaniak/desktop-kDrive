@@ -921,7 +921,7 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         <message>
             <location filename="../src/gui/debuggingdialog.h" line="70" />
             <source>The entire folder is large (&gt; 100 MB) and may take some time to share. To reduce the sharing time, we recommend, that you share only the last kDrive session.</source>
-            <translation>Ο φάκελος είναι μεγάλος (&amp;gt; 100 MB) και η κοινοποίησή του ενδέχεται να διαρκέσει. Για μικρότερο χρόνο, συνιστάται η κοινοποίηση μόνο της τελευταίας συνεδρίας kDrive.</translation>
+            <translation>Ο φάκελος είναι μεγάλος (&gt; 100 MB) και η κοινοποίησή του ενδέχεται να διαρκέσει. Για μικρότερο χρόνο, συνιστάται η κοινοποίηση μόνο της τελευταίας συνεδρίας kDrive.</translation>
         </message>
     </context>
     <context>
