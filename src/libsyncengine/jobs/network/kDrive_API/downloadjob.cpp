@@ -317,7 +317,8 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
         }
     }
 
-    if (const ExitInfo exitInfo = applyFileDatesIfRequired(fileType); !exitInfo) return exitInfo;
+    if (const auto exitInfo = applyFileDatesIfRequired(fileType); !exitInfo) return exitInfo;
+
     return setOutputParameters();
 }
 
