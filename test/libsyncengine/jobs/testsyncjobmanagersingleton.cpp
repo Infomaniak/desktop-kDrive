@@ -352,7 +352,7 @@ void TestSyncJobManagerSingleton::testCanRunjob() {
         for (auto i = 0; i < 20; i++) {
             const auto job = std::make_shared<DownloadJob>(
                     nullptr, cacheDirectory,
-                    DownloadJob::FileDownloadInfo{driveDbId, testBigFileRemoteId, localTmpDir.path(), 110 * 1024 * 1024,
+                    DownloadJob::FileDownloadInfo{_driveDbId, testBigFileRemoteId, localTmpDir.path(), 110 * 1024 * 1024,
                                                   testhelpers::defaultFileSize, testhelpers::defaultFileSize, false},
                     DownloadJob::DateTimePolicy::ApplyDateTime);
             if (!SyncJobManagerSingleton::instance()->canRunJob(job)) {
