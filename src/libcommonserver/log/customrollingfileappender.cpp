@@ -21,7 +21,6 @@
 #include "utility/utility.h"
 #include "io/iohelper.h"
 #include "io/filestat.h"
-#include "utility/utility.h"
 
 /*****************************************/
 /********** namespace log4cplus **********/
@@ -194,7 +193,13 @@ void CustomRollingFileAppender::append(const log4cplus::spi::InternalLoggingEven
         RollingFileAppender::append(event);
 #ifndef NDEBUG
         log4cplus::tostringstream oss;
-        layout->formatAndAppend(oss, event);
+
+        // layout is optional in log4cplus, fall back to raw message if not set
+        if (layout)
+            layout->formatAndAppend(oss, event);
+        else
+            oss << event.getMessage();
+
         std::cout << LOG4CPLUS_TSTRING_TO_STRING(oss.str());
 #endif
     } catch (...) {
