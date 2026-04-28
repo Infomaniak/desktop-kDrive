@@ -1551,8 +1551,8 @@ Se requiere conexión a Internet para acceder a ellos.</value>
     <value>Sincronización en curso</value> 
   </data> 
   <data name="synchroStatusOfflineDescription" xml:space="preserve"> 
-    <value>Tus archivos locales siguen siendo accesibles.
-La sincronización se reanudará automáticamente en cuanto vuelvas a estar conectado.</value> 
+    <value>Sus archivos locales siguen siendo accesibles.
+La sincronización se reanudará automáticamente en cuanto vuelva a estar conectado.</value> 
   </data> 
   <data name="synchroStatusOfflineTitle" xml:space="preserve"> 
     <value>Sin conexión</value> 
