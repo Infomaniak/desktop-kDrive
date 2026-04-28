@@ -131,7 +131,7 @@ namespace Infomaniak.kDrive.TrayIcon
                 return;
             }
 
-            SetIconOk();
+            SetIconNeutral();
         }
 
         private async void UISettings_ColorValuesChanged(UISettings sender, object args)
@@ -140,35 +140,30 @@ namespace Infomaniak.kDrive.TrayIcon
             await Utility.RunOnUIThread(() => RefreshTheme());
         }
 
-        public void SetIconOk()
-        {
-            Logger.Log(Logger.Level.Debug, "Setting tray icon to 'ok' state.");
-            SetIcon("taskbar-ico");
-        }
         public void SetIconSync()
         {
             Logger.Log(Logger.Level.Debug, "Setting tray icon to 'sync' state.");
-            SetIcon("taskbar-ico-sync");
+            SetIcon("sync");
         }
         public void SetIconError()
         {
             Logger.Log(Logger.Level.Debug, "Setting tray icon to 'error' state.");
-            SetIcon("taskbar-ico-error");
+            SetIcon("error");
         }
         public void SetIconPause()
         {
             Logger.Log(Logger.Level.Debug, "Setting tray icon to 'pause' state.");
-            SetIcon("taskbar-ico-pause");
+            SetIcon("pause");
         }
         public void SetIconNotification()
         {
             Logger.Log(Logger.Level.Debug, "Setting tray icon to 'notification' state.");
-            SetIcon("taskbar-ico-notification");
+            SetIcon("notif");
         }
         public void SetIconNeutral()
         {
             Logger.Log(Logger.Level.Debug, "Setting tray icon to 'neutral' state.");
-            SetIcon("taskbar-ico");
+            SetIcon("neutral");
         }
 
         private async void ShowWindowCommand_ExecuteRequested(object? sender, ExecuteRequestedEventArgs args)
@@ -196,7 +191,7 @@ namespace Infomaniak.kDrive.TrayIcon
             try
             {
                 _currentIcon = fileName;
-                var imagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "logo", $"{_currentIcon}{GetThemeSuffix()}.ico");
+                var imagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "Custom", "Icons", "TrayIcons", $"{_currentIcon}{GetThemeSuffix()}.ico");
                 using var bitmap = new Bitmap(imagePath);
                 var iconHandle = bitmap.GetHicon();
                 var icon = Icon.FromHandle(iconHandle);
