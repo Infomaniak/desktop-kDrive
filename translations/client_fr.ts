@@ -2036,6 +2036,21 @@ Veuillez utiliser le lien suivant pour envoyer les logs au support: &lt;a style=
         <translation>Norvégien</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="515"/>
+        <source>Finnish</source>
+        <translation>Finnois</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="516"/>
+        <source>Danish</source>
+        <translation>Danois</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="517"/>
+        <source>Greek</source>
+        <translation>Grec</translation>
+    </message>
+    <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="466"/>
         <source>Unable to open folder %1.</source>
         <translation>Impossible d&apos;ouvrir le dossier %1.</translation>

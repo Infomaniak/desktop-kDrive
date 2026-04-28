@@ -254,7 +254,7 @@ function clean_app_directory() {
   find . -mindepth 1 -maxdepth 1 \( -type f -o -type l \) ! -name "libqsqlite.so" -delete
   cd /app
 
-  # Clean translations - keep only de, es, fr, it, sv, pt, pl, nb, fi, da, en
+  # Clean translations - keep only de, es, fr, it, sv, pt, pl, nb, fi, da, el, en
   echo "  Cleaning translations..."
   cd ./usr/translations
 

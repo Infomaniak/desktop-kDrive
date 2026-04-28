@@ -2035,6 +2035,21 @@ Por favor, utilice el siguiente enlace para enviar los registros al soporte: &lt
         <translation>Noruego</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="515"/>
+        <source>Finnish</source>
+        <translation>Finlandés</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="516"/>
+        <source>Danish</source>
+        <translation>Danés</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="517"/>
+        <source>Greek</source>
+        <translation>Griego</translation>
+    </message>
+    <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="466"/>
         <source>Unable to open folder %1.</source>
         <translation>No se puede abrir la carpeta %1.</translation>
