@@ -606,7 +606,6 @@ struct VersionInfo {
         uint64_t buildVersion{0}; // Example: 20240816
         std::string buildMinOsVersion; // Optional. Minimum supported version of the OS. Examples: 10.15, 11, server 2005, ...
         std::string downloadUrl; // URL to download the version
-        std::string checksum; // Verify if the downloaded file is correct, and not corrupted. Uses a SHA-256
 
         bool operator==(const VersionInfo &other) const {
             return channel == other.channel && tag == other.tag && buildVersion == other.buildVersion &&
