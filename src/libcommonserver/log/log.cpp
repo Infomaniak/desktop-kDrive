@@ -46,6 +46,7 @@ Log::~Log() {
 }
 
 std::shared_ptr<Log> Log::instance(const log4cplus::tstring &filePath) {
+    if (_instance == nullptr) {
 #if defined(KD_WINDOWS) && !defined(NDEBUG)
     if (AllocConsole()) {
         FILE *fp = nullptr;
@@ -58,7 +59,6 @@ std::shared_ptr<Log> Log::instance(const log4cplus::tstring &filePath) {
         std::cerr.clear();
     }
 #endif
-    if (_instance == nullptr) {
         if (filePath.empty()) {
             return nullptr;
         }
