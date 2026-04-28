@@ -634,7 +634,6 @@ struct VersionInfo {
             buildVersion = 0;
             buildMinOsVersion.clear();
             downloadUrl.clear();
-            checksum.clear();
         }
 
         static const std::string versionInfoChannel;
