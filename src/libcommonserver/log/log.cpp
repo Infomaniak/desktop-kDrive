@@ -26,6 +26,11 @@
 
 #include <codecvt>
 
+#if defined(KD_WINDOWS) && !defined(NDEBUG)
+#include <windows.h>
+#include <iostream>
+#endif
+
 namespace KDC {
 
 const std::wstring Log::instanceName = L"Main";
@@ -42,6 +47,18 @@ Log::~Log() {
 
 std::shared_ptr<Log> Log::instance(const log4cplus::tstring &filePath) {
     if (_instance == nullptr) {
+#if defined(KD_WINDOWS) && !defined(NDEBUG)
+        if (AllocConsole()) {
+            FILE *fp = nullptr;
+            (void) freopen_s(&fp, "CONOUT$", "w", stdout);
+            (void) freopen_s(&fp, "CONOUT$", "w", stderr);
+
+            // freopen_s may leave the stream in an error state on failure.
+            // Clear C++ stream flags to ensure std::cout/std::cerr remain usable.
+            std::cout.clear();
+            std::cerr.clear();
+        }
+#endif
         if (filePath.empty()) {
             return nullptr;
         }

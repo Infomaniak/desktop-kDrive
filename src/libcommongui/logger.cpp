@@ -29,8 +29,13 @@
 
 #include <iostream>
 
-#ifdef Q_OS_WIN
-#include <io.h> // for stdout
+#if defined(KD_WINDOWS)
+#include <io.h>
+#if !defined(NDEBUG)
+#include <windows.h>
+#endif
+#else
+#include <unistd.h>
 #endif
 
 static const int logSizeWatcherTimeout = 60000;
@@ -85,6 +90,18 @@ Logger::Logger(QObject *parent) :
     _doFileFlush(false),
     _logExpire(0),
     _logDebug(false) {
+#if defined(Q_OS_WIN) && !defined(NDEBUG)
+    if (AllocConsole()) {
+        FILE *fp = nullptr;
+        (void) freopen_s(&fp, "CONOUT$", "w", stdout);
+        (void) freopen_s(&fp, "CONOUT$", "w", stderr);
+
+        // freopen_s may leave the stream in an error state on failure.
+        // Clear C++ stream flags to ensure std::cout/std::cerr remain usable.
+        std::cout.clear();
+        std::cerr.clear();
+    }
+#endif
     qSetMessagePattern(
             "%{time yyyy-MM-dd hh:mm:ss:zzz} "
             "[%{if-debug}D%{endif}%{if-info}I%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] "
@@ -154,6 +171,9 @@ void Logger::doLog(const QString &msg) {
             if (_doFileFlush) _logstream->flush();
         }
     }
+#ifndef NDEBUG
+    std::cout << qPrintable(msg) << std::endl;
+#endif
     emit logWindowLog(msg);
 }
 
