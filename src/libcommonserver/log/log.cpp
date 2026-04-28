@@ -26,6 +26,11 @@
 
 #include <codecvt>
 
+#if defined(KD_WINDOWS) && !defined(NDEBUG)
+#include <windows.h>
+#include <iostream>
+#endif
+
 namespace KDC {
 
 const std::wstring Log::instanceName = L"Main";
