@@ -277,13 +277,9 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
             }
         }
     }
-<<<<<<< HEAD
+
     if (_dateTimePolicy == DateTimePolicy::ApplyDateTime) {
-        if (const IoError ioError = IoHelper::setFileDates(_fileDownloadInfo.localpath, _fileDownloadInfo.creationTime,
-=======
-    if (!_ignoreDateTime) {
         if (const IoError ioError = IoHelper::setFileDates(_fileDownloadInfo.localPath, _fileDownloadInfo.creationTime,
->>>>>>> 7c794d54b (refactor(network-jobs): Specify the API version of every network request and makes consistent use of the RemoteNodeId type)
                                                            _fileDownloadInfo.modificationTime, isLink);
             ioError == IoError::Unknown) {
             LOGW_WARN(_logger, L"Error in IoHelper::setFileDates: " << Utility::formatSyncPath(_fileDownloadInfo.localPath));
