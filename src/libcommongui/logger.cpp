@@ -95,6 +95,9 @@ Logger::Logger(QObject *parent) :
         FILE *fp = nullptr;
         (void) freopen_s(&fp, "CONOUT$", "w", stdout);
         (void) freopen_s(&fp, "CONOUT$", "w", stderr);
+
+        // freopen_s may leave the stream in an error state on failure.
+        // Clear C++ stream flags to ensure std::cout/std::cerr remain usable.
         std::cout.clear();
         std::cerr.clear();
     }
