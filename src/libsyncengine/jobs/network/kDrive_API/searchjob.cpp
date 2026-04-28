@@ -126,11 +126,11 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
             return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
 
-        SyncName path_;
-        if (!JsonParserUtility::extractValue(obj, pathKey, path_)) {
+        SyncName pathStr;
+        if (!JsonParserUtility::extractValue(obj, pathKey, pathStr)) {
             return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
-        SyncPath path(path_);
+        SyncPath path(pathStr);
 
         SyncTime modifiedTime = 0;
         if (!JsonParserUtility::extractValue(obj, lastModifiedAtKey, modifiedTime, false)) {
@@ -149,6 +149,10 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
                 path = path.string().substr(std::char_traits<char>::length(privateFolder));
             } else if (path.string().starts_with(sharedFolder)) {
                 path = path.string().substr(std::char_traits<char>::length(sharedFolder));
+            }
+
+            if (path.string().starts_with("/") || path.string().starts_with("\\")) {
+                path = path.relative_path();
             }
 
             SyncPath absolutePath = _syncRootPath / path;
