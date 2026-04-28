@@ -275,6 +275,7 @@ namespace Infomaniak.kDrive
 
                 SetForegroundWindow(hWnd);
             }
+            app.CurrentWindow.Show();
         }
         public static string ObfuscateEmail(string? email)
         {
