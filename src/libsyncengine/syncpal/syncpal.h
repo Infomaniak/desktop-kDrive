@@ -128,7 +128,6 @@ struct SyncProgress {
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
 };
 
-
 class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
     public:
         enum class PauseCaller {
@@ -345,6 +344,11 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
             (void) _localOperationSet->removeOp(localNodeId, operationType);
         }
 
+        // Local delete operations monitoring
+        Count nbOfPropagatedLocalDeleteOps() const { return _nbOfPropagatedLocalDeleteOps; }
+        void incrementNbOfPropagatedLocalDeleteOps() { _nbOfPropagatedLocalDeleteOps++; }
+        void resetNbOfPropagatedLocalDeleteOps() { _nbOfPropagatedLocalDeleteOps = 0; }
+
         [[nodiscard]] std::shared_ptr<CacheDirectory> cacheDirectory() const { return _cacheDirectory; }
 
     protected:
@@ -362,6 +366,10 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
                 _folderHydrationInProgress; // key: bundle path, value: bundle children paths
         std::unordered_map<SyncPath, UniqueId, PathHashFunction> _syncPathToDownloadJobMap;
         std::mutex _directDownloadJobsMapMutex;
+
+        // Cumulative count of local delete operations that were propagated across successive synchronization cycles since the
+        // last time the synchronization was in the idle state.
+        Count _nbOfPropagatedLocalDeleteOps{0};
 
         // Callbacks
         std::function<void(const Error &error)> _addError;

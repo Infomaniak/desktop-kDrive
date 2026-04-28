@@ -58,7 +58,7 @@ void SyncOperationList::setOpList(const std::list<SyncOpPtr> &opList) {
     }
 }
 
-SyncOpPtr SyncOperationList::getOp(const UniqueId id) {
+SyncOpPtr SyncOperationList::getOp(const UniqueId id) const {
     const std::scoped_lock lock(_mutex);
     const auto opIt = _allOps.find(id);
     return opIt == _allOps.end() ? nullptr : opIt->second;
@@ -224,6 +224,20 @@ SyncOperationList &SyncOperationList::operator=(const SyncOperationList &other) 
     this->_nodeIdSource2ops = other._nodeIdSource2ops;
     this->_nodeIdTarget2ops = other._nodeIdTarget2ops;
     return *this;
+}
+
+Count SyncOperationList::countOps(ReplicaSide affectedSide, OperationType operationType) const {
+    const std::scoped_lock lock(_mutex);
+    const auto count = std::ranges::count_if(_opSortedList, [this, affectedSide, operationType](const UniqueId opId) {
+        const auto it = _allOps.find(opId);
+        if (it == _allOps.end() || !it->second) {
+            assert(false);
+            return false;
+        }
+        const auto &syncOp = it->second;
+        return syncOp->affectedNode()->side() == affectedSide && syncOp->type() == operationType;
+    });
+    return static_cast<Count>(count);
 }
 
 bool SyncOperationList::isLocalEditCausedBySync(const NodeId &nodeId, const SyncPath &rootPath, const SyncPath &relativePath,

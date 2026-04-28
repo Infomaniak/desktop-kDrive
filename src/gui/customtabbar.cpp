@@ -34,7 +34,7 @@ static int textLineHeightOffset = 15;
 static int notifBoxXMargin = 10;
 static int notifBoxHeight = 20;
 static float notifBoxRadius = 9.5;
-static int maxNbNotif = 99;
+static uint16_t maxNbNotif = 99;
 static int notifTextPadding = 15;
 
 CustomTabBar::CustomTabBar(QWidget *parent) :

@@ -2019,6 +2019,9 @@ ExitInfo ExecutorWorker::propagateDeleteToDbAndTree(SyncOpPtr syncOp) {
         return ExitCode::DataError;
     }
 
+    if (syncOp->affectedNode()->side() == ReplicaSide::Local && !syncOp->omit())
+        _syncPal->incrementNbOfPropagatedLocalDeleteOps();
+
     return ExitCode::Ok;
 }
 

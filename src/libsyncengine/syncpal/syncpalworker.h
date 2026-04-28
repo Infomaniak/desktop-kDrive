@@ -50,6 +50,7 @@ class SyncPalWorker : public ISyncWorker {
 #if defined(KD_WINDOWS)
         std::unique_ptr<StdLoggingThread> _resetVfsFilesStatusThread{nullptr};
 #endif
+
         void initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&workers)[2],
                       std::shared_ptr<SharedObject> (&inputSharedObject)[2]);
         void initStepFirst(std::shared_ptr<ISyncWorker> (&workers)[2], std::shared_ptr<SharedObject> (&inputSharedObject)[2],
@@ -90,6 +91,8 @@ class SyncPalWorker : public ISyncWorker {
         void removeSyncDirChangedErrorIfAny();
 
         bool shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr);
+
+        void checkForMassDeletions() const;
 
         friend class TestSyncPalWorker;
 };

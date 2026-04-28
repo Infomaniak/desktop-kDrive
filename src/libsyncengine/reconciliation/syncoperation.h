@@ -142,9 +142,10 @@ class SyncOperationList : public SharedObject {
 
         void setOpList(const std::list<SyncOpPtr> &opList);
 
-        SyncOpPtr getOp(UniqueId id);
+        SyncOpPtr getOp(UniqueId id) const;
         [[nodiscard]] const std::list<UniqueId> &opSortedList() const;
         const std::unordered_set<UniqueId> &opListIdByType(const OperationType type);
+
         /**
          * @brief Get the list of operation IDs related to the given source node. The side must also be provided to handle cases
          * where the same ID exists on both the local and remote replicas.
@@ -166,6 +167,8 @@ class SyncOperationList : public SharedObject {
         SyncOperationList &operator=(SyncOperationList const &other);
 
         void getOpIdToIndexMap(std::unordered_map<UniqueId, int> &map, OperationType typeFilter = OperationType::None);
+
+        Count countOps(const ReplicaSide affectedSide, const OperationType operationType) const;
 
         /**
          * @brief Check if a local Edit operation is caused by the current sync.
