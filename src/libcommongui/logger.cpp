@@ -29,11 +29,13 @@
 
 #include <iostream>
 
-#ifdef Q_OS_WIN
-#include <io.h> // for stdout
-#ifndef NDEBUG
+#if defined(KD_WINDOWS)
+#include <io.h>
+#if !defined(NDEBUG)
 #include <windows.h>
 #endif
+#else
+#include <unistd.h>
 #endif
 
 static const int logSizeWatcherTimeout = 60000;
@@ -91,8 +93,8 @@ Logger::Logger(QObject *parent) :
 #if defined(Q_OS_WIN) && !defined(NDEBUG)
     if (AllocConsole()) {
         FILE *fp = nullptr;
-        freopen_s(&fp, "CONOUT$", "w", stdout);
-        freopen_s(&fp, "CONOUT$", "w", stderr);
+        (void) freopen_s(&fp, "CONOUT$", "w", stdout);
+        (void) freopen_s(&fp, "CONOUT$", "w", stderr);
         std::cout.clear();
         std::cerr.clear();
     }
