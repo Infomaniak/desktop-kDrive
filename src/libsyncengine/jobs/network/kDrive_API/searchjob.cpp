@@ -146,10 +146,9 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
 
         if (!_syncRootPath.empty()) {
             if (path.native().starts_with(privateFolder)) {
-                path = path.native().substr(
-                        std::char_traits<std::remove_cvref_t<decltype(*privateFolder)>>::length(privateFolder));
+                path = path.native().substr(std::size(privateFolder) - 1);
             } else if (path.native().starts_with(sharedFolder)) {
-                path = path.native().substr(std::char_traits<std::remove_cvref_t<decltype(*sharedFolder)>>::length(sharedFolder));
+                path = path.native().substr(std::size(sharedFolder) - 1);
             }
 
             if (path.native().starts_with(Str("/")) || path.native().starts_with(Str("\\"))) {
