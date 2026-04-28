@@ -953,6 +953,11 @@ bool CommonUtility::isSubDir(const SyncPath &path1, const SyncPath &path2) {
     return (it1 == it1End);
 }
 
+bool CommonUtility::isDiskRootFolder(const SyncPath &absolutePath) {
+    SyncPath dummyPath;
+    return isDiskRootFolder(absolutePath, dummyPath);
+}
+
 bool CommonUtility::isDiskRootFolder(const SyncPath &absolutePath, SyncPath &suggestedPath) {
     suggestedPath = SyncPath();
     if (absolutePath == absolutePath.root_path()) {
@@ -1134,7 +1139,7 @@ void CommonUtility::initAppImageEnvironment() {
             if (setenv("GIO_MODULE_DIR", gioModuleDir.c_str(), 1) == -1) {
                 const int err = errno;
                 qWarning() << "Failed to set GIO_MODULE_DIR to " << gioModuleDir.c_str() << " (errno " << err << ": "
-                          << strerror(err) << ")";
+                           << strerror(err) << ")";
             }
         } else {
             qWarning() << "APPDIR environment variable is not set, AppImage environment may be incomplete";

@@ -3096,6 +3096,30 @@ ExitInfo AppServer::manageDriveMovedToAnotherAccount(const User &user, const Acc
     return ExitCode::Ok;
 }
 
+void AppServer::resolveErrors(std::vector<Error> errorList) const {
+    for (const auto &error: errorList) {
+        bool keepError = false;
+
+        if (ExitInfo exitInfo = ServerRequests::keepError(error, keepError); !exitInfo) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ServerRequests::keepError: " << exitInfo);
+            continue;
+        }
+
+        if (keepError) continue;
+
+        bool found = false;
+        if (!ParmsDb::instance()->deleteError(error.dbId(), found)) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteError");
+            return;
+        }
+        if (!found) {
+            LOG_WARN(Log::instance()->getLogger(), "Error not found in Error table for dbId=" << error.dbId());
+            return;
+        }
+        sendErrorRemoved(error.dbId());
+    }
+}
+
 ExitInfo AppServer::startSyncs() {
     // Load user list
     std::vector<User> userList;
@@ -3932,6 +3956,7 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, bool
         // Set callbacks
         syncPalMapIt = syncPalMap.find(sync.dbId());
         syncPalMapIt->second->setAddErrorCallback(std::bind_front(&AppServer::addError, this));
+        syncPalMapIt->second->setResolveSyncErrorsByExitCauseCallback(std::bind_front(&AppServer::resolveSyncErrorsByExitCause, this));
         syncPalMapIt->second->setAddCompletedItemCallback(std::bind_front(&AppServer::addCompletedItem, this));
         syncPalMapIt->second->setFixConflictedFilesCompletedCallback(
                 std::bind_front(&AppServer::sendNodeFixConflictedFilesCompleted, this));
@@ -4486,28 +4511,18 @@ void AppServer::resolveItemErrors(const SyncDbId syncDbId, const SyncFileItem &i
     }
 
     if (!found) return;
+    resolveErrors(errorList);
+}
 
-    for (const auto &error: errorList) {
-        bool keepError = false;
+void AppServer::resolveSyncErrorsByExitCause(SyncDbId syncDbId, ExitCause cause) const {
+    std::vector<Error> errorList;
 
-        if (ExitInfo exitInfo = ServerRequests::keepError(error, keepError); !exitInfo) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in ServerRequests::keepError: " << exitInfo);
-            continue;
-        }
-
-        if (keepError) continue;
-
-        bool found = false;
-        if (!ParmsDb::instance()->deleteError(error.dbId(), found)) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteError");
-            return;
-        }
-        if (!found) {
-            LOG_WARN(Log::instance()->getLogger(), "Error not found in Error table for dbId=" << error.dbId());
-            return;
-        }
-        sendErrorRemoved(error.dbId());
+    if (!ParmsDb::instance()->selectSyncErrorsByExitCause(syncDbId, cause, errorList)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectSyncErrorsByExitCause");
+        return;
     }
+
+    resolveErrors(errorList);
 }
 
 void AppServer::sendUserAdded(const UserInfo &userInfo) const {

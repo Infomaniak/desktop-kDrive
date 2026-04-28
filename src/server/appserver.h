@@ -148,6 +148,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         void addError(const Error &error) const;
         void resolveItemErrors(SyncDbId syncDbId, const SyncFileItem &item) const;
+        void resolveSyncErrorsByExitCause(SyncDbId syncDbId, ExitCause cause) const;
         void updateSentryUser();
         void deleteDrive(DriveDbId driveDbId);
         void deleteSync(SyncDbId syncDbId);
@@ -298,6 +299,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         ExitInfo handleDriveAccessDenied(const Drive &drive);
         ExitInfo manageDriveMovedToAnotherAccount(const User &user, const Account &oldAccount, const AccountId newAccountId,
                                                   Drive &drive, bool &driveUpdated);
+        void resolveErrors(std::vector<Error> errorList) const;
+
 
         [[nodiscard]] ExitInfo initSyncPal(const Sync &sync, const QSet<QString> &blackList, bool start = true,
                                            const std::chrono::seconds &startDelay = std::chrono::seconds(0),

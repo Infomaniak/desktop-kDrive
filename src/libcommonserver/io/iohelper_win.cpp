@@ -126,10 +126,38 @@ time_t FileTimeToUnixTime(LARGE_INTEGER filetime, DWORD *remainder) {
 
 uint64_t computeNodeId(const _FILE_ID_FULL_DIR_INFORMATION *pFileInfo) {
     // We keep `long long` type cast for legacy reason.
-    auto longLongId =
+    const auto longLongId =
             (static_cast<long long>(pFileInfo->FileId.HighPart) << 32) + static_cast<long long>(pFileInfo->FileId.LowPart);
 
     return static_cast<uint64_t>(longLongId);
+}
+
+uint64_t computeNodeId(const BY_HANDLE_FILE_INFORMATION &pFileInfo) {
+    // We keep `long long` type cast for legacy reason.
+    const auto longLongId =
+            (static_cast<long long>(pFileInfo.nFileIndexHigh) << 32) + static_cast<long long>(pFileInfo.nFileIndexLow);
+
+    return static_cast<uint64_t>(longLongId);
+}
+
+// Get the node id of a root path. This is necessary because pzwQueryDirectoryFile requires a parent handle, which is not
+// available for root paths.
+bool getRootNodeId(const SyncPath &rootPath, NodeId &nodeId) noexcept {
+    const HANDLE hRoot = CreateFileW(rootPath.wstring().c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                                     nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+
+    if (hRoot == INVALID_HANDLE_VALUE) {
+        return false;
+    }
+    BY_HANDLE_FILE_INFORMATION info{};
+    if (!GetFileInformationByHandle(hRoot, &info)) {
+        (void) CloseHandle(hRoot);
+        return false;
+    }
+
+    nodeId = std::to_string(computeNodeId(info));
+    (void) CloseHandle(hRoot);
+    return true;
 }
 
 } // namespace
@@ -145,6 +173,10 @@ IoError IoHelper::stdError2ioError(int error) noexcept {
 }
 
 bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
+    if (path == path.root_path()) {
+        return getRootNodeId(path, nodeId);
+    }
+
     // Get parent folder handle
     HANDLE hParent = CreateFileW(path.parent_path().wstring().c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_READ, nullptr,
                                  OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);

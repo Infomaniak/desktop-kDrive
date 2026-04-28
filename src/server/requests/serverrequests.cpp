@@ -322,6 +322,12 @@ ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, SyncConfigu
         return ExitCode::Ok;
     }
 
+    // Check if the path is the root of a drive, which is not allowed for sync*
+    if (CommonUtility::isDiskRootFolder(path)) {
+        LOGW_INFO(Log::instance()->getLogger(), L"Path is the root of a drive, which is not allowed for sync: " << Utility::formatSyncPath(path));
+        return ExitCode::Ok;
+    }
+
     // Check for nested syncs
     std::vector<Sync> syncList;
     if (!ParmsDb::instance()->selectAllSyncs(syncList)) {

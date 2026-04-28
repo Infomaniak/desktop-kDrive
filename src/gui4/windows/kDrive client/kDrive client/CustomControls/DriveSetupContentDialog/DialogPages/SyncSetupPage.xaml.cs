@@ -24,6 +24,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using Windows.Storage.Pickers;
@@ -148,9 +149,29 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 
             Logger.Log(Logger.Level.Info, "Folder picked: " + folder.Path);
 
-            if (DriveSetupContentDialogVM.NewSyncs.Any(s => s.LocalPath.Equals(folder.Path, StringComparison.OrdinalIgnoreCase)))
+            if (DriveSetupContentDialogVM.NewSyncs.Any(s => s != newSync && s.LocalPath.Equals(folder.Path, StringComparison.OrdinalIgnoreCase)))
             {
-                Logger.Log(Logger.Level.Warning, $"Selected folder path '{folder.Path}' is already used by another sync.");
+                Logger.Log(Logger.Level.Info, $"Selected folder path '{folder.Path}' is already used by another sync.");
+                Utility.ShowTeachingTip(Localizer.Instance.GetString("teachingTipInvalidFolderTitle"), Localizer.Instance.GetString("teachingTipInvalidFolderContent"), TimeSpan.FromSeconds(20));
+
+                control.IsEnabled = true;
+                return;
+            }
+
+            if (DriveSetupContentDialogVM.NewSyncs.Any(s => s != newSync && IsSubPathOf(s.LocalPath, folder.Path)))
+            {
+                Logger.Log(Logger.Level.Info, $"Selected folder path '{folder.Path}' is already the parent of another sync.");
+                Utility.ShowTeachingTip(Localizer.Instance.GetString("teachingTipInvalidFolderTitle"), Localizer.Instance.GetString("teachingTipInvalidFolderContent"), TimeSpan.FromSeconds(20));
+
+                control.IsEnabled = true;
+                return;
+            }
+
+            if (DriveSetupContentDialogVM.NewSyncs.Any(s => s != newSync && IsSubPathOf(folder.Path, s.LocalPath)))
+            {
+                Logger.Log(Logger.Level.Info, $"Selected folder path '{folder.Path}' is inside another sync.");
+                Utility.ShowTeachingTip(Localizer.Instance.GetString("teachingTipInvalidFolderTitle"), Localizer.Instance.GetString("teachingTipInvalidFolderContent"), TimeSpan.FromSeconds(20));
+
                 control.IsEnabled = true;
                 return;
             }
@@ -176,6 +197,23 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
             await newSync.SelectBestVfsMode();
             Logger.Log(Logger.Level.Info, $"Sync path for drive '{newSync.Drive?.Name ?? "unknown"}' updated to '{newSync.LocalPath}' with sync type '{newSync.SyncType}'");
             control.IsEnabled = true;
+        }
+
+        private static bool IsSubPathOf(string candidatePath, string parentPath)
+        {
+            string normalizedCandidate = Path.GetFullPath(candidatePath)
+                .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+            string normalizedParent = Path.GetFullPath(parentPath)
+                .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+            return normalizedCandidate.StartsWith(
+                       normalizedParent + Path.DirectorySeparatorChar,
+                       StringComparison.OrdinalIgnoreCase)
+                   || string.Equals(
+                       normalizedCandidate,
+                       normalizedParent,
+                       StringComparison.OrdinalIgnoreCase);
         }
 
         private void Exclusionbutton_click(object sender, RoutedEventArgs e)

@@ -49,6 +49,8 @@
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
+#include "libparms/db/parmsdb.h"
+
 #include "tmpblacklistmanager.h"
 #include "jobs/network/kDrive_API/upload/upload_session/uploadsessioncanceljob.h"
 
@@ -372,6 +374,12 @@ void SyncPal::addCompletedItem(const SyncDbId syncDbId, const SyncFileItem &item
 void SyncPal::fixConflictedFilesCompleted(const SyncDbId syncDbId, uint64_t nbErrors) {
     if (_fixConflictedFilesCompleted) {
         _fixConflictedFilesCompleted(syncDbId, nbErrors);
+    }
+}
+
+void SyncPal::resolveSyncErrorsByExitCause(const ExitCause cause) {
+    if (_resolveSyncErrors) {
+        _resolveSyncErrors(syncDbId(), cause);
     }
 }
 

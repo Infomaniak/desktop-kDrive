@@ -592,6 +592,9 @@ bool SyncPalWorker::tryToFixDbNodeIdsAfterSyncDirChange() {
                                                     "Sync Dir migration failure");
         return false;
     }
+ 
+    _syncPal->resolveSyncErrorsByExitCause(ExitCause::SyncDirChanged);
+
     LOG_SYNCPAL_INFO(_logger, "SyncDb successfully fixed after sync dir change, new local node ID is " << newLocalRootNodeId);
     sentry::Handler::instance()->captureMessage(KDC::sentry::Level::Info, "SyncDb successfully fixed after sync dir change",
                                                 "Sync Dir migration success");

@@ -87,6 +87,7 @@ class SyncPalWorker : public ISyncWorker {
          *         false otherwise.
          */
         bool tryToFixDbNodeIdsAfterSyncDirChange();
+        void removeSyncDirChangedErrorIfAny();
 
         bool shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr);
 
