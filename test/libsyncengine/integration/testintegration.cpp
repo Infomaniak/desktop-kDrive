@@ -534,7 +534,7 @@ void TestIntegration::testEncoding() {
 
     const auto remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), nfcPath.filename().native());
     CPPUNIT_ASSERT(!remoteTestFileInfo.nodeId().isEmpty());
-    CPPUNIT_ASSERT_EQUAL(int64_t{1}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
+    CPPUNIT_ASSERT_EQUAL(Count{1}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
     logStep("testEncoding");
 }
 
@@ -1050,7 +1050,7 @@ void TestIntegration::testSynchronizationOfSymLinks() {
     CPPUNIT_ASSERT(!remoteTestFileInfo3.nodeId().isEmpty());
     CPPUNIT_ASSERT(!remoteTestFileInfo4.nodeId().isEmpty());
 
-    CPPUNIT_ASSERT_EQUAL(int64_t{6}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
+    CPPUNIT_ASSERT_EQUAL(Count{6}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
 
     waitForSyncToBeIdle(std::source_location::current());
 
@@ -1100,7 +1100,7 @@ void TestIntegration::testSymLinkWithTooManySymbolicLevels() {
 
     CPPUNIT_ASSERT(!remoteTestFileInfo1.nodeId().isEmpty());
     CPPUNIT_ASSERT(!remoteTestFileInfo2.nodeId().isEmpty());
-    CPPUNIT_ASSERT_EQUAL(int64_t{2}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
+    CPPUNIT_ASSERT_EQUAL(Count{2}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
 
     logStep("testSymLinkWithTooManySymbolicLevels");
 }
@@ -1121,7 +1121,7 @@ void TestIntegration::testDirSymLinkWithTooManySymbolicLevels() {
 
     CPPUNIT_ASSERT(!remoteTestFileInfo1.nodeId().isEmpty());
     CPPUNIT_ASSERT(!remoteTestFileInfo2.nodeId().isEmpty());
-    CPPUNIT_ASSERT_EQUAL(int64_t{2}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
+    CPPUNIT_ASSERT_EQUAL(Count{2}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
 
     logStep("testDirSymLinkWithTooManySymbolicLevels");
 }
