@@ -169,7 +169,7 @@ void Logger::doLog(const QString &msg) {
         }
     }
 #ifndef NDEBUG
-    std::cout << qPrintable(msg) << '\n';
+    std::cout << qPrintable(msg) << std::endl;
 #endif
     emit logWindowLog(msg);
 }
