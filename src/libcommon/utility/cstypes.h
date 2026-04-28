@@ -186,6 +186,13 @@ enum class Language {
     German,
     Spanish,
     Italian,
+    Swedish,
+    Portuguese,
+    Polish,
+    Norwegian,
+    Finnish,
+    Danish,
+    Greek,
     EnumEnd
 };
 

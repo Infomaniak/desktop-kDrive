@@ -107,6 +107,20 @@ Language MigrationParams::strToLanguage(QString lang) {
         return Language::Spanish;
     } else if (lang == "it") {
         return Language::Italian;
+    } else if (lang == "sv") {
+        return Language::Swedish;
+    } else if (lang == "pt") {
+        return Language::Portuguese;
+    } else if (lang == "pl") {
+        return Language::Polish;
+    } else if (lang == "nb" || lang == "no") {
+        return Language::Norwegian;
+    } else if (lang == "fi") {
+        return Language::Finnish;
+    } else if (lang == "da") {
+        return Language::Danish;
+    } else if (lang == "el") {
+        return Language::Greek;
     } else {
         return Language::Default;
     }

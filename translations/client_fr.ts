@@ -2016,6 +2016,41 @@ Veuillez utiliser le lien suivant pour envoyer les logs au support: &lt;a style=
         <translation>Serveur proxy</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="511"/>
+        <source>Swedish</source>
+        <translation>Suédois</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="512"/>
+        <source>Portuguese</source>
+        <translation>Portugais</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="513"/>
+        <source>Polish</source>
+        <translation>Polonais</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="514"/>
+        <source>Norwegian</source>
+        <translation>Norvégien</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="515"/>
+        <source>Finnish</source>
+        <translation>Finnois</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="516"/>
+        <source>Danish</source>
+        <translation>Danois</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="517"/>
+        <source>Greek</source>
+        <translation>Grec</translation>
+    </message>
+    <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="466"/>
         <source>Unable to open folder %1.</source>
         <translation>Impossible d&apos;ouvrir le dossier %1.</translation>

@@ -2016,6 +2016,41 @@ Accedi alla versione web per verificare lo stato del tuo kDrive oppure contatta 
         <translation>Server proxy</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="511"/>
+        <source>Swedish</source>
+        <translation>Svedese</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="512"/>
+        <source>Portuguese</source>
+        <translation>Portoghese</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="513"/>
+        <source>Polish</source>
+        <translation>Polacco</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="514"/>
+        <source>Norwegian</source>
+        <translation>Norvegese</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="515"/>
+        <source>Finnish</source>
+        <translation>Finlandese</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="516"/>
+        <source>Danish</source>
+        <translation>Danese</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="517"/>
+        <source>Greek</source>
+        <translation>Greco</translation>
+    </message>
+    <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="466"/>
         <source>Unable to open folder %1.</source>
         <translation>Impossibile aprire la cartella %1.</translation>

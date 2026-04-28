@@ -624,6 +624,20 @@ QLocale GuiUtility::languageToQLocale(Language language) {
             return QLocale::German;
         case Language::Italian:
             return QLocale::Italian;
+        case Language::Swedish:
+            return QLocale::Swedish;
+        case Language::Portuguese:
+            return QLocale::Portuguese;
+        case Language::Polish:
+            return QLocale::Polish;
+        case Language::Norwegian:
+            return QLocale::NorwegianBokmal;
+        case Language::Finnish:
+            return QLocale::Finnish;
+        case Language::Danish:
+            return QLocale::Danish;
+        case Language::Greek:
+            return QLocale::Greek;
         default:
             return QLocale();
     }

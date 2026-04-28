@@ -2015,6 +2015,41 @@ Por favor, utilice el siguiente enlace para enviar los registros al soporte: &lt
         <translation>Servidor proxy</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="511"/>
+        <source>Swedish</source>
+        <translation>Sueco</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="512"/>
+        <source>Portuguese</source>
+        <translation>Portugués</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="513"/>
+        <source>Polish</source>
+        <translation>Polaco</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="514"/>
+        <source>Norwegian</source>
+        <translation>Noruego</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="515"/>
+        <source>Finnish</source>
+        <translation>Finlandés</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="516"/>
+        <source>Danish</source>
+        <translation>Danés</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="517"/>
+        <source>Greek</source>
+        <translation>Griego</translation>
+    </message>
+    <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="466"/>
         <source>Unable to open folder %1.</source>
         <translation>No se puede abrir la carpeta %1.</translation>

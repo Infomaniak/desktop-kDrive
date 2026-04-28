@@ -111,6 +111,13 @@ struct COMMON_EXPORT CommonUtility {
         static const QString germanCode;
         static const QString spanishCode;
         static const QString italianCode;
+        static const QString swedishCode;
+        static const QString portugueseCode;
+        static const QString polishCode;
+        static const QString norwegianCode;
+        static const QString finnishCode;
+        static const QString danishCode;
+        static const QString greekCode;
         static QString languageCode(Language language);
         static QStringList languageCodeList(Language enforcedLocale);
         static void setupTranslations(QCoreApplication *app, Language enforcedLocale);
@@ -166,7 +173,7 @@ struct COMMON_EXPORT CommonUtility {
         static int setenv(const char *const name, const char *const value, const int overwrite);
 
 #if defined(KD_LINUX)
-         // Sets the working directory path and configures GIO_MODULE_DIR to prevent loading incompatible system GIO modules.
+        // Sets the working directory path and configures GIO_MODULE_DIR to prevent loading incompatible system GIO modules.
         static void initAppImageEnvironment();
 #endif
 
