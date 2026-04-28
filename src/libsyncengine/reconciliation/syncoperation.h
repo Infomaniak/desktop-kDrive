@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -142,9 +142,10 @@ class SyncOperationList : public SharedObject {
 
         void setOpList(const std::list<SyncOpPtr> &opList);
 
-        SyncOpPtr getOp(UniqueId id);
+        SyncOpPtr getOp(UniqueId id) const;
         [[nodiscard]] const std::list<UniqueId> &opSortedList() const;
         const std::unordered_set<UniqueId> &opListIdByType(const OperationType type);
+
         /**
          * @brief Get the list of operation IDs related to the given source node. The side must also be provided to handle cases
          * where the same ID exists on both the local and remote replicas.
@@ -167,6 +168,8 @@ class SyncOperationList : public SharedObject {
 
         void getOpIdToIndexMap(std::unordered_map<UniqueId, int> &map, OperationType typeFilter = OperationType::None);
 
+        Count countOps(const ReplicaSide affectedSide, const OperationType operationType) const;
+
         /**
          * @brief Check if a local Edit operation is caused by the current sync.
          * @param nodeId The ID of the object.
@@ -177,7 +180,7 @@ class SyncOperationList : public SharedObject {
          * @return true is the Edit operation corresponds to a sync operation.
          */
         bool isLocalEditCausedBySync(const NodeId &nodeId, const SyncPath &rootPath, const SyncPath &relativePath,
-                                       SyncTime lastModified, int64_t size);
+                                     SyncTime lastModified, int64_t size);
 
     private:
         std::unordered_map<UniqueId, SyncOpPtr> _allOps;

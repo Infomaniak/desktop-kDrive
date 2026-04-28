@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -584,7 +584,8 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
                                 DownloadJob::FileDownloadInfo{_syncPal->driveDbId(), syncOp->affectedNode()->id().value_or(""),
                                                               absoluteLocalFilePath, syncOp->affectedNode()->size(),
                                                               syncOp->affectedNode()->createdAt().value_or(0),
-                                                              syncOp->affectedNode()->modificationTime().value_or(0), true});
+                                                              syncOp->affectedNode()->modificationTime().value_or(0), true},
+                                DownloadJob::DateTimePolicy::ApplyDateTime);
                     } catch (std::exception const &e) {
                         LOGW_SYNCPAL_WARN(_logger, L"Error in DownloadJob::DownloadJob for driveDbId="
                                                            << _syncPal->driveDbId() << L" : " << CommonUtility::s2ws(e.what()));
@@ -831,7 +832,8 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<SyncJ
                     DownloadJob::FileDownloadInfo{_syncPal->driveDbId(), syncOp->affectedNode()->id().value_or(""),
                                                   absoluteLocalFilePath, syncOp->affectedNode()->size(),
                                                   syncOp->affectedNode()->createdAt().value_or(0),
-                                                  syncOp->affectedNode()->modificationTime().value_or(0), false});
+                                                  syncOp->affectedNode()->modificationTime().value_or(0), false},
+                    DownloadJob::DateTimePolicy::ApplyDateTime);
         } catch (std::exception const &e) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in DownloadJob::DownloadJob for driveDbId=" << _syncPal->driveDbId() << L" : "
                                                                                            << CommonUtility::s2ws(e.what()));
@@ -2016,6 +2018,9 @@ ExitInfo ExecutorWorker::propagateDeleteToDbAndTree(SyncOpPtr syncOp) {
         LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::deleteOpNodes");
         return ExitCode::DataError;
     }
+
+    if (syncOp->affectedNode()->side() == ReplicaSide::Local && !syncOp->omit())
+        _syncPal->incrementNbOfPropagatedLocalDeleteOps();
 
     return ExitCode::Ok;
 }

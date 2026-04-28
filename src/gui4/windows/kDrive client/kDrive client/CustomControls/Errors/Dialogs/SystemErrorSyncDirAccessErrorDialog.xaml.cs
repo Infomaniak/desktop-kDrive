@@ -1,3 +1,20 @@
+﻿/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 using CommunityToolkit.WinUI;
 using DynamicData;
 using Infomaniak.kDrive.ViewModels;
@@ -26,7 +43,7 @@ public partial class SystemErrorSyncDirAccessErrorDialog : Page
         string faqText = Localizer.Instance.GetString("labelFAQ");
 
         // Split the sentence around the placeholder
-        var parts = sentence.Split(new[] { "%@" }, StringSplitOptions.None);
+        var parts = sentence.Split(new[] { "{0}" }, StringSplitOptions.None);
 
         // Add first part
         AccessRightsModifiedTextBlock.Inlines.Add(new Run { Text = parts[0] });
@@ -49,7 +66,7 @@ public partial class SystemErrorSyncDirAccessErrorDialog : Page
         string newSyncText = Localizer.Instance.GetString("labelNewSync");
 
         // Split the sentence around the placeholder
-        parts = sentence.Split(new[] { "%@" }, StringSplitOptions.None);
+        parts = sentence.Split(new[] { "{0}" }, StringSplitOptions.None);
 
         // Add first part
         FolderDeletedTextBlock.Inlines.Add(new Run { Text = parts[0] });

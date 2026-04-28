@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ namespace KDC {
 class LocalDeleteJobMockingTrash : public SyncLocalDeleteJob {
     public:
         explicit LocalDeleteJobMockingTrash(const std::shared_ptr<SyncPal> syncPal, const SyncPath &absolutePath) :
-            SyncLocalDeleteJob(syncPal, absolutePath){};
+            SyncLocalDeleteJob(syncPal, absolutePath) {};
         void setMoveToTrashFailed(const bool failed) { _moveToTrashFailed = failed; };
         void setLiteSyncEnabled(const bool enabled) { _liteSyncIsEnabled = enabled; };
         void setMockMoveToTrash(const bool mocked) { _moveToTrashIsMocked = mocked; }
@@ -269,7 +269,7 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
         public:
             LocalDeleteJobMock(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath, bool isDehydratedPlaceholder,
                                NodeId remoteId, bool forceToTrash = false) :
-                SyncLocalDeleteJob(syncPal, relativePath, isDehydratedPlaceholder, remoteId, forceToTrash){
+                SyncLocalDeleteJob(syncPal, relativePath, isDehydratedPlaceholder, remoteId, forceToTrash) {
 
                 };
             void setRemoteItemPath(const SyncPath &remoteItemPath) { _remoteItemPath = remoteItemPath; }

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,7 +64,7 @@ class SnapshotItem {
         void setLastChangedSnapshotVersion(SnapshotRevision snapshotVersion);
         SnapshotRevision lastChangeRevision() const { return _lastChangeRevision; }
 
-        // Force update the last change revision to the next snapshot revision. 
+        // Force update the last change revision to the next snapshot revision.
         // This is useful when we want to mark an item as changed without actually changing its properties, for example when we
         // remove an item from tmp blacklist and want to make sure it is properly re-synced.
         void forceUpdateLastChangeRevision();

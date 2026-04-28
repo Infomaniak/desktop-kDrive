@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 #include "localcreatedirjob.h"
 
-#include "libcommonserver/io/permissionsholder.h"
+#include "libcommonserver/io/permissionsgiver.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
@@ -62,7 +62,7 @@ ExitInfo LocalCreateDirJob::runJob() {
     }
 
     // Make sure we are allowed to propagate the change
-    PermissionsHolder _(_destFilePath.parent_path(), _logger);
+    PermissionsGiver _(_destFilePath.parent_path(), _logger);
 
     IoError ioError = IoError::Success;
     if (IoHelper::createDirectory(_destFilePath, false, ioError) && ioError == IoError::Success) {

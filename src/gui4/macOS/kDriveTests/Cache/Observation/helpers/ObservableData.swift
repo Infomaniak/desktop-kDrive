@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -117,6 +117,7 @@ public enum ObservableData {
         dbId: expectedUserDbId,
         userId: expectedUserId,
         name: "appleseed",
+        firstName: "Jonh",
         email: "ja@apple.com",
         accounts: [:],
         availableDrives: [:],
@@ -129,6 +130,7 @@ public enum ObservableData {
         dbId: expectedUserDbId,
         userId: expectedUserId,
         name: "appleseed",
+        firstName: "Jonh",
         email: "ja@apple.com",
         accounts: indexedAccounts,
         availableDrives: [:],
@@ -141,6 +143,7 @@ public enum ObservableData {
         dbId: expectedUserDbId,
         userId: expectedUserId,
         name: "appleseed  UPDATE",
+        firstName: "Jonh  UPDATE",
         email: "ja@apple.com",
         accounts: indexedAccounts,
         availableDrives: [:],

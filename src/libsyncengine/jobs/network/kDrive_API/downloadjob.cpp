@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
-#include "libcommonserver/io/permissionsholder.h"
+#include "libcommonserver/io/permissionsgiver.h"
 
 #include "libcommon/utility/utility.h"
 
@@ -46,11 +46,12 @@ namespace KDC {
 #define READ_RETRIES_NETWORK_LOST 100
 
 DownloadJob::DownloadJob(const std::shared_ptr<Vfs> vfs, std::shared_ptr<CacheDirectory> cacheDirectory,
-                         const FileDownloadInfo &fileDownloadInfo) :
+                         const FileDownloadInfo &fileDownloadInfo, DateTimePolicy dateTimePolicy) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, fileDownloadInfo.driveDbId, 0, false),
     _vfs(vfs),
     _cacheDirectory(cacheDirectory),
-    _fileDownloadInfo(fileDownloadInfo) {
+    _fileDownloadInfo(fileDownloadInfo),
+    _dateTimePolicy(dateTimePolicy) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _customTimeout = 60;
     _trials = TRIALS;
@@ -271,7 +272,7 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
             }
         }
     }
-    if (!_ignoreDateTime) {
+    if (_dateTimePolicy == DateTimePolicy::ApplyDateTime) {
         if (const IoError ioError = IoHelper::setFileDates(_fileDownloadInfo.localpath, _fileDownloadInfo.creationTime,
                                                            _fileDownloadInfo.modificationTime, isLink);
             ioError == IoError::Unknown) {
@@ -461,7 +462,7 @@ ExitInfo DownloadJob::moveTmpFile() {
         static const bool forceCopy = CommonUtility::envVarValue("KDRIVE_PRESERVE_PERMISSIONS_ON_CREATE") == "1";
         if (_fileDownloadInfo.isCreate && !forceCopy) {
             // Make sure we are allowed to propagate the change
-            PermissionsHolder _(_fileDownloadInfo.localpath.parent_path(), _logger);
+            PermissionsGiver _(_fileDownloadInfo.localpath.parent_path(), _logger);
 
             // Move file
             IoError ioError = IoError::Success;
@@ -479,7 +480,7 @@ ExitInfo DownloadJob::moveTmpFile() {
 
         if (!_fileDownloadInfo.isCreate || crossDeviceLinkError || forceCopy) {
             // Make sure we are allowed to propagate the change
-            PermissionsHolder _(_fileDownloadInfo.localpath.parent_path(), _logger);
+            PermissionsGiver _(_fileDownloadInfo.localpath.parent_path(), _logger);
 
             // Copy file content (i.e. when the target exists, do not change its node id).
             std::error_code ec;

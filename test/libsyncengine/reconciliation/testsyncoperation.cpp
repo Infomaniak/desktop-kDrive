@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -123,6 +123,14 @@ void TestSyncOperation::testIsLocalEditCausedBySync() {
 
     res = _syncOperationList.isLocalEditCausedBySync(*_localNodeAAA->id(), rootPath, SyncPath(Str("a/aa/aaa")), 12345, 555);
     CPPUNIT_ASSERT(res == false);
+}
+
+void TestSyncOperation::testCountOps() {
+    CPPUNIT_ASSERT(_syncOperationList.countOps(ReplicaSide::Local, OperationType::Delete) == 1);
+    CPPUNIT_ASSERT(_syncOperationList.countOps(ReplicaSide::Local, OperationType::Edit) == 0);
+    CPPUNIT_ASSERT(_syncOperationList.countOps(ReplicaSide::Local, OperationType::Create) == 0);
+    CPPUNIT_ASSERT(_syncOperationList.countOps(ReplicaSide::Remote, OperationType::Delete) == 0);
+    CPPUNIT_ASSERT(_syncOperationList.countOps(ReplicaSide::Remote, OperationType::Edit) == 1);
 }
 
 SyncOpPtr TestSyncOperation::generateSyncOperation(OperationType opType, const std::shared_ptr<Node> affectedNode,

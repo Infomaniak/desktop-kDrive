@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -58,7 +58,7 @@ void SyncOperationList::setOpList(const std::list<SyncOpPtr> &opList) {
     }
 }
 
-SyncOpPtr SyncOperationList::getOp(const UniqueId id) {
+SyncOpPtr SyncOperationList::getOp(const UniqueId id) const {
     const std::scoped_lock lock(_mutex);
     const auto opIt = _allOps.find(id);
     return opIt == _allOps.end() ? nullptr : opIt->second;
@@ -226,8 +226,22 @@ SyncOperationList &SyncOperationList::operator=(const SyncOperationList &other) 
     return *this;
 }
 
+Count SyncOperationList::countOps(ReplicaSide affectedSide, OperationType operationType) const {
+    const std::scoped_lock lock(_mutex);
+    const auto count = std::ranges::count_if(_opSortedList, [this, affectedSide, operationType](const UniqueId opId) {
+        const auto it = _allOps.find(opId);
+        if (it == _allOps.end() || !it->second) {
+            assert(false);
+            return false;
+        }
+        const auto &syncOp = it->second;
+        return syncOp->affectedNode()->side() == affectedSide && syncOp->type() == operationType;
+    });
+    return static_cast<Count>(count);
+}
+
 bool SyncOperationList::isLocalEditCausedBySync(const NodeId &nodeId, const SyncPath &rootPath, const SyncPath &relativePath,
-                                                  SyncTime lastModified, int64_t size) {
+                                                SyncTime lastModified, int64_t size) {
     const std::scoped_lock lock(_mutex);
     const auto opPtr = getOpFromTargetNodeId(nodeId, ReplicaSide::Local, OperationType::Edit, relativePath);
     if (opPtr && opPtr->affectedNode()) {

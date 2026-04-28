@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -160,8 +160,7 @@ std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::
                                                     std::shared_ptr<AbstractCommChannel> channel) {
     if (const auto makeElt = _makeMap.find(requestNum); makeElt != _makeMap.end())
         return makeElt->second(commManager, requestId, inParams, channel);
-    else 
-    {
+    else {
         LOG_WARN(Log::instance()->getLogger(), "Received unknown request " << requestNum << " with id " << requestId);
         return std::make_shared<UnknownRequestJob>(commManager, requestId, inParams, channel);
     }

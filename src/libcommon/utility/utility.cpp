@@ -976,6 +976,11 @@ bool CommonUtility::isSubDir(const SyncPath &path1, const SyncPath &path2) {
     return (it1 == it1End);
 }
 
+bool CommonUtility::isDiskRootFolder(const SyncPath &absolutePath) {
+    SyncPath dummyPath;
+    return isDiskRootFolder(absolutePath, dummyPath);
+}
+
 bool CommonUtility::isDiskRootFolder(const SyncPath &absolutePath, SyncPath &suggestedPath) {
     suggestedPath = SyncPath();
     if (absolutePath == absolutePath.root_path()) {

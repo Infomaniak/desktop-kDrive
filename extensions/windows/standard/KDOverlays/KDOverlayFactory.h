@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,13 @@
 
 #pragma once
 
-enum State { State_Error = 0, State_OK, State_OKShared, State_Sync, State_Warning };
+enum State {
+    State_Error = 0,
+    State_OK,
+    State_OKShared,
+    State_Sync,
+    State_Warning
+};
 
 class KDOverlayFactory : public IClassFactory {
     public:

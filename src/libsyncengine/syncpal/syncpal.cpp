@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,6 +49,8 @@
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
+#include "libparms/db/parmsdb.h"
+
 #include "tmpblacklistmanager.h"
 #include "jobs/network/kDrive_API/upload/upload_session/uploadsessioncanceljob.h"
 
@@ -375,6 +377,12 @@ void SyncPal::fixConflictedFilesCompleted(const SyncDbId syncDbId, uint64_t nbEr
     }
 }
 
+void SyncPal::resolveSyncErrorsByExitCause(const ExitCause cause) {
+    if (_resolveSyncErrors) {
+        _resolveSyncErrors(syncDbId(), cause);
+    }
+}
+
 bool SyncPal::wipeVirtualFiles() {
     LOG_SYNCPAL_INFO(_logger, "Wiping virtual files");
     if (!vfs()) {
@@ -580,7 +588,7 @@ bool SyncPal::initProgress(const SyncFileItem &item) {
 }
 
 bool SyncPal::setProgress(const SyncPath &relativePath, int progress) {
-    if (!_progressInfo->setProgress(relativePath, progress)) {
+    if (_progressInfo && !_progressInfo->setProgress(relativePath, progress)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ProgressInfo::setProgress");
         return false;
     }
@@ -723,8 +731,8 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
     std::shared_ptr<DownloadJob> job = nullptr;
     try {
         job = std::make_shared<DownloadJob>(
-                vfs(), _cacheDirectory,
-                DownloadJob::FileDownloadInfo{driveDbId(), remoteNodeId, absoluteLocalPath, expectedSize});
+                vfs(), _cacheDirectory, DownloadJob::FileDownloadInfo{driveDbId(), remoteNodeId, absoluteLocalPath, expectedSize},
+                DownloadJob::DateTimePolicy::IgnoreDateTime);
         if (!job) {
             LOG_SYNCPAL_WARN(_logger, "Memory allocation error");
             return ExitCode::SystemError;

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -142,7 +142,7 @@ void SocketCommChannel::callbackHandler() {
 
 uint64_t SocketCommChannel::bytesAvailable() const {
     try {
-        return static_cast<uint64_t>((std::max) (0, _socket.available()));
+        return static_cast<uint64_t>((std::max)(0, _socket.available()));
     } catch (Poco::Exception &ex) {
         LOG_ERROR(Log::instance()->getLogger(), "Exception in StreamSocket::available: " << ex.displayText());
         return static_cast<uint64_t>(0);

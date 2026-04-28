@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -687,8 +687,7 @@ void TestParmsDb::testError() {
         std::vector<Error> selectedErrors;
         bool found = false;
         CPPUNIT_ASSERT(ParmsDb::instance()->selectErrorByNodeInfo(sync1.dbId(), std::nullopt, std::nullopt,
-                                                                  SyncPath("/dir1/file3"), std::nullopt,
-                                                                  selectedErrors, found));
+                                                                  SyncPath("/dir1/file3"), std::nullopt, selectedErrors, found));
         CPPUNIT_ASSERT(found);
         CPPUNIT_ASSERT_EQUAL(size_t(2), selectedErrors.size());
         CPPUNIT_ASSERT_EQUAL(SyncPath("/dir1/file3"), selectedErrors.at(0).path());
@@ -701,8 +700,7 @@ void TestParmsDb::testError() {
         std::vector<Error> selectedErrors;
         bool found = false;
         CPPUNIT_ASSERT(ParmsDb::instance()->selectErrorByNodeInfo(sync1.dbId(), std::nullopt, std::nullopt, std::nullopt,
-                                                                  SyncPath("/dir1/file3_dest"),
-                                                                  selectedErrors, found));
+                                                                  SyncPath("/dir1/file3_dest"), selectedErrors, found));
         CPPUNIT_ASSERT(found);
         CPPUNIT_ASSERT_EQUAL(size_t(1), selectedErrors.size());
         CPPUNIT_ASSERT_EQUAL(SyncPath("/dir1/file3"), selectedErrors.at(0).path());

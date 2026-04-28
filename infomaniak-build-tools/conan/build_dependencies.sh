@@ -1,7 +1,7 @@
 #! /usr/bin/env bash
 #
 # Infomaniak kDrive - Desktop
-# Copyright (C) 2023-2025 Infomaniak Network SA
+# Copyright (C) 2023-2026 Infomaniak Network SA
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ build_type="Debug"
 output_dir=""
 clean_conan_cache=false
 use_release_profile=false
+enable_update=false
 # Preserve original arguments for output_dir resolution
 all_args=("$@")
 
@@ -46,13 +47,20 @@ while [[ $# -gt 0 ]]; do
       clean_conan_cache=true
       shift
       ;;
+    --update)
+      enable_update=true
+      shift
+      ;;
     -h|--help)
       cat << EOF >&2
-Usage: $0 [Debug|RelWithDebInfo|Release] [--output-dir=<output_dir>] [--make-release] [--clean-cache] [--help]
+Usage: $0 [Debug|RelWithDebInfo|Release] [--output-dir=<output_dir>] [--make-release] [--clean-cache] [--update] [--help]
   --help               Display this help message.
   --output-dir=<dir>   Set the output directory for the Conan packages.
   --make-release       Use the 'infomaniak_release' Conan profile.
   --clean-cache        Clean the Conan cache (packages sources, build folders, ...) after installation to save disk space.
+  --update             Ask Conan to check remotes for newer versions/revisions.
+                       Disabled by default to keep CI deterministic and avoid
+                       local-recipes revision/timestamp conflicts.
 
 There are three ways to set the output directory (in descending order of priority):
     1. By passing the --output-dir=<dir> parameter.
@@ -255,10 +263,28 @@ log "- Platform: '$platform'"
 log "- Architecture option: '$architecture'"
 log "- Build type: '$build_type'"
 log "- Output directory: '$output_dir'"
+log "- Conan update enabled: '$enable_update'"
 echo
 
 log "Installing dependencies..."
-conan install . --update --output-folder="$output_dir" --build=missing $architecture -s:a=build_type="$build_type" --profile:all="$conan_profile" -r=$local_recipe_remote_name -r=conancenter -vv
+
+conan_install_cmd=(
+  conan install .
+  --output-folder="$output_dir"
+  --build=missing
+  $architecture
+  -s:a=build_type="$build_type"
+  --profile:all="$conan_profile"
+  -r="$local_recipe_remote_name"
+  -r=conancenter
+  -vv
+)
+
+if [[ "$enable_update" == true ]]; then
+  conan_install_cmd+=(--update)
+fi
+
+"${conan_install_cmd[@]}"
 
 
 if [ $? -ne 0 ]; then

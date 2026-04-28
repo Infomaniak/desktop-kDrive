@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,19 +23,19 @@
 
 class __declspec(dllexport) StringUtil {
     public:
-        static std::string toUtf8(const wchar_t* utf16, int len = -1);
-        static std::wstring toUtf16(const char* utf8, int len = -1);
+        static std::string toUtf8(const wchar_t *utf16, int len = -1);
+        static std::wstring toUtf16(const char *utf8, int len = -1);
 
         template<class T>
-        static bool begins_with(const T& input, const T& match) {
+        static bool begins_with(const T &input, const T &match) {
             return input.size() >= match.size() && std::equal(match.begin(), match.end(), input.begin());
         }
 
-        static bool isDescendantOf(const std::wstring& child, const std::wstring& parent) {
+        static bool isDescendantOf(const std::wstring &child, const std::wstring &parent) {
             return isDescendantOf(child.c_str(), child.size(), parent.c_str(), parent.size());
         }
 
-        static bool isDescendantOf(PCWSTR child, size_t childLength, const std::wstring& parent) {
+        static bool isDescendantOf(PCWSTR child, size_t childLength, const std::wstring &parent) {
             return isDescendantOf(child, childLength, parent.c_str(), parent.size());
         }
 
@@ -46,7 +46,7 @@ class __declspec(dllexport) StringUtil {
                    wcsncmp(child, parent, parentLength) == 0;
         }
 
-        static bool extractChunks(const std::wstring& source, std::wstring& secondChunk, std::wstring& thirdChunk) {
+        static bool extractChunks(const std::wstring &source, std::wstring &secondChunk, std::wstring &thirdChunk) {
             auto statusBegin = source.find(L':', 0);
             assert(statusBegin != std::wstring::npos);
 
@@ -62,8 +62,8 @@ class __declspec(dllexport) StringUtil {
             return true;
         }
 
-        static bool extractChunks(const std::wstring& source, std::wstring& secondChunk, std::wstring& thirdChunk,
-                                  std::wstring& forthChunk) {
+        static bool extractChunks(const std::wstring &source, std::wstring &secondChunk, std::wstring &thirdChunk,
+                                  std::wstring &forthChunk) {
             auto statusBegin = source.find(L':', 0);
             assert(statusBegin != std::wstring::npos);
 

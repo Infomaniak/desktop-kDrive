@@ -1,4 +1,21 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ -->
 <Page x:Class="Infomaniak.kDrive.Pages.Errors.ResolveManyConflictPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -14,7 +31,7 @@
       mc:Ignorable="d">
     <Page.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        <converters:FilePathToIconConverter x:Key="FilePathToIconConverter" />
+        <converters:FilePathToIconResourceKeyConverter x:Key="FilePathToIconResourceKeyConverter" />
     </Page.Resources>
     <Grid Margin="{StaticResource Infomaniak.Style.Thickness.Uniform.L}"
           RowSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
@@ -117,7 +134,7 @@
                                     <ColumnDefinition Width="auto" />
                                 </Grid.ColumnDefinitions>
                                 <controls:SvgIcon Grid.Column="0"
-                                                  UriString="{x:Bind Path, Converter={StaticResource FilePathToIconConverter}}"
+                                                  ResourceKey="{x:Bind Path, Converter={StaticResource FilePathToIconResourceKeyConverter}}"
                                                   VerticalAlignment="Center"
                                                   Style="{StaticResource Infomaniak.Style.Icon.Size.XS}" />
 

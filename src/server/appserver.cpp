@@ -2717,7 +2717,7 @@ void AppServer::addCompletedItem(const SyncDbId syncDbId, const SyncFileItem &it
     if (item.status() != SyncFileStatus::Success) {
         return;
     }
-  
+
     resolveItemErrors(syncDbId, item);
 
     if (notify) {
@@ -3094,6 +3094,30 @@ ExitInfo AppServer::manageDriveMovedToAnotherAccount(const User &user, const Acc
         sendAccountRemoved(oldAccount.dbId());
     }
     return ExitCode::Ok;
+}
+
+void AppServer::resolveErrors(std::vector<Error> errorList) const {
+    for (const auto &error: errorList) {
+        bool keepError = false;
+
+        if (ExitInfo exitInfo = ServerRequests::keepError(error, keepError); !exitInfo) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ServerRequests::keepError: " << exitInfo);
+            continue;
+        }
+
+        if (keepError) continue;
+
+        bool found = false;
+        if (!ParmsDb::instance()->deleteError(error.dbId(), found)) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteError");
+            return;
+        }
+        if (!found) {
+            LOG_WARN(Log::instance()->getLogger(), "Error not found in Error table for dbId=" << error.dbId());
+            return;
+        }
+        sendErrorRemoved(error.dbId());
+    }
 }
 
 ExitInfo AppServer::startSyncs() {
@@ -3837,17 +3861,13 @@ bool AppServer::startClient() {
         QString pathToExecutable;
 
 #if defined(KD_WINDOWS)
-        if (ParametersCache::instance()->parameters().distributionChannel() ==
-            VersionChannel::Internal) { // The WinUI3 GUI is currently only for internal builds
-            pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENTV4_EXECUTABLE);
+        pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENTV4_EXECUTABLE);
 
-            IoError ioError = IoError::Success;
-            bool exists = false;
-            if (!IoHelper::checkIfPathExists(pathToExecutable.toStdString(), exists, ioError,
-                                             IoHelper::PathCheckOption::Insensitive) ||
-                !exists || ioError != IoError::Success) {
-                pathToExecutable.clear();
-            }
+        IoError ioError = IoError::Success;
+        bool exists = false;
+        if (!IoHelper::checkIfPathExists(QStr2Path(pathToExecutable), exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
+            !exists || ioError != IoError::Success) {
+            pathToExecutable.clear();
         }
         if (pathToExecutable.isEmpty()) {
             pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENT_EXECUTABLE);
@@ -3935,6 +3955,8 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, bool
         // Set callbacks
         syncPalMapIt = syncPalMap.find(sync.dbId());
         syncPalMapIt->second->setAddErrorCallback(std::bind_front(&AppServer::addError, this));
+        syncPalMapIt->second->setResolveSyncErrorsByExitCauseCallback(
+                std::bind_front(&AppServer::resolveSyncErrorsByExitCause, this));
         syncPalMapIt->second->setAddCompletedItemCallback(std::bind_front(&AppServer::addCompletedItem, this));
         syncPalMapIt->second->setFixConflictedFilesCompletedCallback(
                 std::bind_front(&AppServer::sendNodeFixConflictedFilesCompleted, this));
@@ -4489,28 +4511,18 @@ void AppServer::resolveItemErrors(const SyncDbId syncDbId, const SyncFileItem &i
     }
 
     if (!found) return;
+    resolveErrors(errorList);
+}
 
-    for (const auto &error: errorList) {
-        bool keepError = false;
+void AppServer::resolveSyncErrorsByExitCause(SyncDbId syncDbId, ExitCause cause) const {
+    std::vector<Error> errorList;
 
-        if (ExitInfo exitInfo = ServerRequests::keepError(error, keepError); !exitInfo) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in ServerRequests::keepError: " << exitInfo);
-            continue;
-        }
-
-        if (keepError) continue;
-
-        bool found = false;
-        if (!ParmsDb::instance()->deleteError(error.dbId(), found)) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteError");
-            return;
-        }
-        if (!found) {
-            LOG_WARN(Log::instance()->getLogger(), "Error not found in Error table for dbId=" << error.dbId());
-            return;
-        }
-        sendErrorRemoved(error.dbId());
+    if (!ParmsDb::instance()->selectSyncErrorsByExitCause(syncDbId, cause, errorList)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectSyncErrorsByExitCause");
+        return;
     }
+
+    resolveErrors(errorList);
 }
 
 void AppServer::sendUserAdded(const UserInfo &userInfo) const {

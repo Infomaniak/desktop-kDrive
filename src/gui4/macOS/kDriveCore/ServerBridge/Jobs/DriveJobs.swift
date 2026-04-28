@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -96,9 +96,9 @@ public struct DriveJobs: Sendable {
         // TODO: also implement signal
     }
 
-    public func driveSearch(driveDbId: Int32, searchString: String) async throws -> [FileResponse] {
+    public func driveSearch(syncDbId: Int32, searchString: String) async throws -> [FileResponse] {
         IKLogger.data.log("Query for driveSearch")
-        let query = DriveSearchQuery(driveDbId: driveDbId, searchString: searchString)
+        let query = DriveSearchQuery(syncDbId: syncDbId, searchString: searchString)
         let request = await RequestMessage<DriveSearchQuery>(num: RequestNum.DRIVE_SEARCH, body: query)
 
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<SearchInfoList>.self)

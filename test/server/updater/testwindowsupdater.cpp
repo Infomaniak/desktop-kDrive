@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -141,7 +141,8 @@ void TestWindowsUpdater::testIsSignatureValid() {
         const testhelpers::TestVariables testVariables;
         static const NodeId signedFileId = "5304421";
         const auto signedFilePath = tmpDir.path() / "testfile.exe";
-        DownloadJob job(nullptr, cacheDirectory, DownloadJob::FileDownloadInfo{_driveDbId, signedFileId, signedFilePath, 0});
+        DownloadJob job(nullptr, cacheDirectory, DownloadJob::FileDownloadInfo{_driveDbId, signedFileId, signedFilePath, 0},
+                        DownloadJob::DateTimePolicy::ApplyDateTime);
         (void) job.runSynchronously();
         CPPUNIT_ASSERT(DigitalSignatureChecker_win(SyncPath(signedFilePath)).isSignatureValid());
     }

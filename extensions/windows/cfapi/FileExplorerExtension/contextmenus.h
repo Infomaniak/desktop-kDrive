@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -97,7 +97,9 @@ class ExplorerCommandHandlerEnumerator : public IEnumExplorerCommand {
         }
 
         ExplorerCommandHandlerEnumerator(const ContextMenuInfo &contextMenuInfo) :
-            _cRef(1), _ullCurrent(0), _contextMenuInfo(contextMenuInfo) {}
+            _cRef(1),
+            _ullCurrent(0),
+            _contextMenuInfo(contextMenuInfo) {}
 
     private:
         ~ExplorerCommandHandlerEnumerator() {}

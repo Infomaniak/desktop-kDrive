@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -319,6 +319,13 @@ ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, SyncConfigu
     // Check the FS
     if (!CommonUtility::isSyncCompatible(path)) {
         LOGW_INFO(Log::instance()->getLogger(), L"Unsupported File System: " << Utility::formatSyncPath(path));
+        return ExitCode::Ok;
+    }
+
+    // Check if the path is the root of a drive, which is not allowed for sync*
+    if (CommonUtility::isDiskRootFolder(path)) {
+        LOGW_INFO(Log::instance()->getLogger(),
+                  L"Path is the root of a drive, which is not allowed for sync: " << Utility::formatSyncPath(path));
         return ExitCode::Ok;
     }
 

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1219,8 +1219,8 @@ void ParametersDialog::refreshErrorList(const DriveDbId driveDbId) {
     }
 
     // Display new errors
-    int autoresolvedErrorCount = 0;
-    int unresolvedErrorCount = 0;
+    Count autoresolvedErrorCount = 0;
+    Count unresolvedErrorCount = 0;
     autoresolvedErrorsListWidget->clear();
     unresolvedErrorsListWidget->clear();
     errorTabWidget->showResolveConflicts(false);

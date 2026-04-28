@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -231,7 +231,8 @@ std::list<std::shared_ptr<SyncJob>> BenchmarkParallelJobs::generateDownloadJobs(
     std::list<std::shared_ptr<SyncJob>> jobs;
     for (const auto &remoteFileId: remoteFileIds) {
         const auto job = std::make_shared<DownloadJob>(
-                nullptr, nullptr, DownloadJob::FileDownloadInfo{driveDbId, remoteFileId, localTestFolderPath, expectedSize});
+                nullptr, nullptr, DownloadJob::FileDownloadInfo{driveDbId, remoteFileId, localTestFolderPath, expectedSize},
+                DownloadJob::DateTimePolicy::IgnoreDateTime);
         (void) jobs.push_back(job);
         counter++;
         if (nbMaxJob && counter >= nbMaxJob) {

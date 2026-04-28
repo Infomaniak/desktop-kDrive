@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,8 +29,7 @@
 #include <minwindef.h>
 #include <urlmon.h>
 
-#define THUMBNAIL_MIME_TYPE_LIST \
-    { L"image", L"video" }
+#define THUMBNAIL_MIME_TYPE_LIST {L"image", L"video"}
 
 // IInitializeWithItem
 IFACEMETHODIMP ThumbnailProvider::Initialize(_In_ IShellItem *item, _In_ DWORD mode) {

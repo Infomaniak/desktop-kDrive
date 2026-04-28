@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -31,11 +31,7 @@ struct HomeView: View {
     @ObservedUISynchroState private var synchroState: UISynchroState
 
     private var userName: String {
-        guard let currentUser = mainViewModel.currentUser,
-              let givenName = try? PersonNameComponents.FormatStyle().parseStrategy.parse(currentUser.name).givenName
-        else { return "" }
-
-        return givenName
+        return mainViewModel.currentUser?.firstName ?? ""
     }
 
     private var state: HomeState {

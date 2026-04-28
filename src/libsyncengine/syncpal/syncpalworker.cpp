@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,10 +32,16 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/log/sentry/ptraces.h"
 #include "libcommon/log/sentry/utility.h"
+
 #include <log4cplus/loggingmacros.h>
 
+#include <cmath>
+
 #define UPDATE_PROGRESS_DELAY 1
+
 namespace KDC {
+
+static constexpr auto snapshotMinSizeForDeleteAlert = 100; // 100 items
 
 SyncPalWorker::SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
                              const std::chrono::seconds &startDelay) :
@@ -102,6 +108,34 @@ bool SyncPalWorker::shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const 
     }
 
     return networkIssue || httpBlockingError || syncDirNotAccessible || invalidOperation;
+}
+
+void SyncPalWorker::checkForMassDeletions() const {
+    const auto nbOfLocalDeleteOpsToPropagate = _syncPal->_syncOps->countOps(ReplicaSide::Local, OperationType::Delete);
+    if (!nbOfLocalDeleteOpsToPropagate) return;
+
+    // Cumulative count of local deletions that were propagated across successive synchronizations, none of which reached the idle
+    // state.
+    const auto totalCountOfLocalDeleteOps = _syncPal->nbOfPropagatedLocalDeleteOps() + nbOfLocalDeleteOpsToPropagate;
+
+    // Approximation of the local snapshot size before deletions
+    const auto totalCountOfLocalSnapshotItems = _syncPal->snapshot(ReplicaSide::Local)->nbItems() + totalCountOfLocalDeleteOps;
+
+    // Calculate alert threshold = size / ln(size)
+    Count alertThreshold = 0;
+    if (totalCountOfLocalSnapshotItems > snapshotMinSizeForDeleteAlert) {
+        static_assert(snapshotMinSizeForDeleteAlert > 1);
+        alertThreshold = static_cast<Count>(totalCountOfLocalSnapshotItems / log(totalCountOfLocalSnapshotItems));
+    }
+
+    // Check for mass deletions
+    if (alertThreshold && totalCountOfLocalDeleteOps >= alertThreshold) {
+        LOG_SYNCPAL_WARN(_logger,
+                         "Mass deletions detected: " << totalCountOfLocalDeleteOps << "/" << totalCountOfLocalSnapshotItems);
+        sentry::Handler::captureMessage(sentry::Level::Warning, "SyncPalWorker::checkForMassDeletions",
+                                        "Mass deletions detected: " + std::to_string(totalCountOfLocalDeleteOps) + "/" +
+                                                std::to_string(totalCountOfLocalSnapshotItems));
+    }
 }
 
 void SyncPalWorker::execute() {
@@ -469,11 +503,13 @@ SyncStep SyncPalWorker::nextStep() const {
             const bool areLiveSnapshotsUpdated =
                     _syncPal->liveSnapshot(ReplicaSide::Local).updated() || _syncPal->liveSnapshot(ReplicaSide::Remote).updated();
 
-
-            return areLiveSnapshotsValid && areFSOWorkersRunning && !areFSOWorkersInitializing && !areFSOWorkersUpdating &&
-                                   (areLiveSnapshotsUpdated || _syncPal->restart())
-                           ? SyncStep::UpdateDetection1
-                           : SyncStep::Idle;
+            if (areLiveSnapshotsValid && areFSOWorkersRunning && !areFSOWorkersInitializing && !areFSOWorkersUpdating &&
+                (areLiveSnapshotsUpdated || _syncPal->restart()))
+                return SyncStep::UpdateDetection1;
+            else {
+                _syncPal->resetNbOfPropagatedLocalDeleteOps();
+                return SyncStep::Idle;
+            }
         }
         case SyncStep::UpdateDetection1: {
             auto logNbOps = [this](const ReplicaSide side) {
@@ -513,6 +549,7 @@ SyncStep SyncPalWorker::nextStep() const {
             return SyncStep::Propagation2; // Go directly to the Executor step
         case SyncStep::Reconciliation4:
             LOG_SYNCPAL_DEBUG(_logger, _syncPal->_syncOps->size() << " operations generated")
+            checkForMassDeletions();
             return SyncStep::Propagation1;
         case SyncStep::Propagation1:
             return SyncStep::Propagation2;
@@ -592,6 +629,9 @@ bool SyncPalWorker::tryToFixDbNodeIdsAfterSyncDirChange() {
                                                     "Sync Dir migration failure");
         return false;
     }
+
+    _syncPal->resolveSyncErrorsByExitCause(ExitCause::SyncDirChanged);
+
     LOG_SYNCPAL_INFO(_logger, "SyncDb successfully fixed after sync dir change, new local node ID is " << newLocalRootNodeId);
     sentry::Handler::instance()->captureMessage(KDC::sentry::Level::Info, "SyncDb successfully fixed after sync dir change",
                                                 "Sync Dir migration success");

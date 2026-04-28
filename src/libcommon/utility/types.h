@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -58,7 +58,7 @@ using UserId = int64_t;
 using UserDbId = int64_t;
 using GenericId = int64_t;
 
-using Count = int64_t;
+using Count = uint64_t;
 using SyncTime = int64_t;
 
 using SyncDbRevision = uint64_t;
