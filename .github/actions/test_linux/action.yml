@@ -61,7 +61,7 @@ runs:
         shell: bash
 
       - name: Upload tests logs artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: linux-logs-${{ inputs.test_name }}
           path: /tmp/kDrive-logdir/*

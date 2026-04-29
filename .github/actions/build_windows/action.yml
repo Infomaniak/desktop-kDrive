@@ -170,7 +170,7 @@ runs:
         if: steps.build.outcome == 'success'
 
       - name: Upload build common files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: windows-build-common-files
           path: |
@@ -180,7 +180,7 @@ runs:
         if: steps.build.outcome == 'success'
 
       - name: Upload uncached build common files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: windows-build-common-files-uncached
           path: |
@@ -190,7 +190,7 @@ runs:
         if: steps.build.outcome == 'success'
 
       - name: Upload build test common executable
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: win-kDrive_test_common
           path: ${{ github.workspace }}/build-windows/build/bin/kDrive_test_common.exe
@@ -199,7 +199,7 @@ runs:
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'false' }}
 
       - name: Upload build test common server executable
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: win-kDrive_test_common_server
           path: ${{ github.workspace }}/build-windows/build/bin/kDrive_test_common_server.exe
@@ -208,7 +208,7 @@ runs:
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'false' }}
 
       - name: Upload build test server executable
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: win-kDrive_test_server
           path: ${{ github.workspace }}/build-windows/build/bin/kDrive_test_server.exe
@@ -217,7 +217,7 @@ runs:
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'false' }}
 
       - name: Upload build test syncengine executable
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: win-kDrive_test_syncengine
           path: ${{ github.workspace }}/build-windows/build/bin/kDrive_test_syncengine.exe
@@ -226,7 +226,7 @@ runs:
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'false' }}
 
       - name: Upload build test parms executable
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: win-kDrive_test_parms
           path: ${{ github.workspace }}/build-windows/build/bin/kDrive_test_parms.exe
@@ -259,7 +259,7 @@ runs:
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 
       - name: Upload sentry server artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: win-release-artifacts-server-debug
           path: ${{ github.workspace }}/build-windows/sentry-server-artifacts
@@ -268,7 +268,7 @@ runs:
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 
       - name: Upload sentry client artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: win-release-artifacts-client-debug
           path: ${{ github.workspace }}/build-windows/sentry-client-artifacts
@@ -277,7 +277,7 @@ runs:
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 
       - name: Upload app installer
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: win-release-artifacts-installer
           path: ${{ github.workspace }}\build-windows\kDrive-* # kDrive-x.x.x.yyyymmdd.exe

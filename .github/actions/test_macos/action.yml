@@ -70,7 +70,7 @@ runs:
         shell: bash
 
       - name: Upload tests logs artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: macos-logs-${{ inputs.test_name }}
           path: ${{ env.logdir_path }}/*

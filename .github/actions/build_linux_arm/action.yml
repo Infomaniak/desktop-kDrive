@@ -21,7 +21,7 @@ runs:
         shell: bash
 
       - name: Upload app AppImage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: linux-release-artifacts-appimage-arm64
           path: ${{ github.workspace }}/build-linux-arm64/install/kDrive-*-arm64.AppImage # kDrive-<full_version>-arm64.AppImage
@@ -48,7 +48,7 @@ runs:
 
       - name: Upload sentry server artifacts
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: linux-release-artifacts-server-debug-arm64
           path: ${{ github.workspace }}/build-linux-arm64/sentry-server-artifacts
@@ -57,7 +57,7 @@ runs:
 
       - name: Upload sentry client artifacts
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: linux-release-artifacts-client-debug-arm64
           path: ${{ github.workspace }}/build-linux-arm64/sentry-client-artifacts
