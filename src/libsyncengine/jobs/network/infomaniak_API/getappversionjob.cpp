@@ -145,20 +145,27 @@ ExitInfo GetAppVersionJob::handleResponse(std::istream &is) {
             return {ExitCode::BackError, ExitCause::MissingReplyData};
 
         const VersionChannel channel = toDistributionChannel(versionType);
+        if (channel == VersionChannel::Unknown) {
+            LOG_INFO(_logger, "Skipping unknown version channel: " << versionType);
+            continue;
+        }
         _versionsInfo[channel].channel = channel;
 
-        if (!JsonParserUtility::extractValue(obj, tagKey, _versionsInfo[channel].tag))
-            return {ExitCode::BackError, ExitCause::MissingReplyData};
-        if (!JsonParserUtility::extractValue(obj, buildVersionKey, _versionsInfo[channel].buildVersion))
-            return {ExitCode::BackError, ExitCause::MissingReplyData};
-        if (!JsonParserUtility::extractValue(obj, buildMinOsVersionKey, _versionsInfo[channel].buildMinOsVersion))
-            return {ExitCode::BackError, ExitCause::MissingReplyData};
-        if (!JsonParserUtility::extractValue(obj, downloadUrlKey, _versionsInfo[channel].downloadUrl))
-            return {ExitCode::BackError, ExitCause::MissingReplyData};
+        (void) JsonParserUtility::extractValue(obj, tagKey, _versionsInfo[channel].tag);
+        (void) JsonParserUtility::extractValue(obj, buildVersionKey, _versionsInfo[channel].buildVersion);
+        (void) JsonParserUtility::extractValue(obj, buildMinOsVersionKey, _versionsInfo[channel].buildMinOsVersion);
+        (void) JsonParserUtility::extractValue(obj, downloadUrlKey, _versionsInfo[channel].downloadUrl);
 
         if (!_versionsInfo[channel].isValid()) {
-            LOG_WARN(_logger, "Missing mandatory value.");
-            return {ExitCode::BackError, ExitCause::MissingReplyData};
+            if (channel == VersionChannel::Prod) {
+                LOG_ERROR(_logger, "Missing mandatory value for production version");
+                _versionsInfo.clear();
+                return {ExitCode::BackError, ExitCause::MissingReplyData};
+            }
+
+            (void) _versionsInfo.erase(channel);
+            LOG_WARN(_logger, "Missing mandatory value for channel: " << versionType);
+            continue;
         }
     }
 
