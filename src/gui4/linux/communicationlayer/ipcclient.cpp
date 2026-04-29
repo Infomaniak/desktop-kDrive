@@ -321,7 +321,7 @@ void IpcClient::handleServerSignal(const Poco::DynamicStruct &ipcMessage, const 
     }
     const Poco::DynamicStruct params = ipcMessage[msgRequestParams].extract<Poco::DynamicStruct>();
 
-    qCDebug(lcIpcClient) << "Signal emitted | SignalNum:" << num << "/ id:" << id;
+    qCDebug(lcIpcClient) << "Signal received | SignalNum:" << num << "/ id:" << id;
     emit serverSignalReceived(num, params);
 }
 /**
