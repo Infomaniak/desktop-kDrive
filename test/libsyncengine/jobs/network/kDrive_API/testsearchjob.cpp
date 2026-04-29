@@ -18,6 +18,7 @@
 
 #include "testsearchjob.h"
 
+#include "config.h"
 #include "jobs/network/kDrive_API/searchjob.h"
 #include "jobs/network/abstracttokennetworkjob.h"
 #include "requests/parameterscache.h"
