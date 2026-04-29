@@ -4,7 +4,6 @@ else()
     project(testsyncengine LANGUAGES C CXX)
 endif()
 
-find_package(SQLite3 3.53.0 REQUIRED)
 find_package(Poco 1.13.3 REQUIRED Foundation)
 find_package(log4cplus 2.1.2 REQUIRED)
 
@@ -109,7 +108,6 @@ set_target_properties(${testsyncengine_NAME} PROPERTIES
 
 target_link_libraries(${testsyncengine_NAME}
         ${libsyncengine_NAME}
-        SQLite::SQLite3
 )
 
 if(WIN32)
