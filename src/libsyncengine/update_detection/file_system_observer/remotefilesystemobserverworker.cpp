@@ -350,7 +350,7 @@ ExitInfo RemoteFileSystemObserverWorker::exploreDirectory(const NodeId &nodeId) 
 }
 
 ExitInfo RemoteFileSystemObserverWorker::handleSnapshotItem(
-        const SnapshotItem &item, SyncNameSet &existingFiles, ParsingIterationState &iterationState,
+        const RemoteSnapshotItem &item, SyncNameSet &existingFiles, ParsingIterationState &iterationState,
         sentry::pTraces::counterScoped::RFSOExploreItem &itemHandlingMonitor) {
     if (iterationState.ignore || iterationState.eof) return ExitCode::Ok;
 
