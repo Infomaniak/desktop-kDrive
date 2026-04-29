@@ -68,7 +68,6 @@ class AppCache : public QObject {
         [[nodiscard]] std::vector<SyncInfo> syncsForDrive(DriveDbId driveDbId) const;
         // Sync-scoped errors sorted by error time, oldest first.
         [[nodiscard]] std::vector<ErrorInfo> errorsForSync(SyncDbId syncDbId) const;
-        [[nodiscard]] std::vector<ErrorInfo> syncErrors(SyncDbId syncDbId) const;
 
         // Derived read models used by sidebar, settings, and onboarding adapters.
         // A context is omitted when its full parent chain cannot be resolved.
