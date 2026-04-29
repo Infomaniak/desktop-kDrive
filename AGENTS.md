@@ -54,6 +54,7 @@ clang-format -i <file>
 ### Local Norms
 - In versioned documentation such as `AGENTS.md`, use repo-relative paths, not hardcoded absolute filesystem paths.
 - For Linux builds/validation, use `infomaniak-build-tools/linux/build-release-via-podman.sh` rather than direct `cmake --build`.
+- For dependency builds, use `infomaniak-build-tools/conan/build_dependencies.sh Debug` rather than direct `conan install` so the project-specific environment is set correctly.
 <!-- Add project-specific user corrections here -->
 
 ## JIT Index
