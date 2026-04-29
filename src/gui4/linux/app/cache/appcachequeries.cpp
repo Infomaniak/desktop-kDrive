@@ -240,10 +240,6 @@ std::vector<ErrorInfo> AppCache::errorsForSync(const SyncDbId syncDbId) const {
     return values;
 }
 
-std::vector<ErrorInfo> AppCache::syncErrors(const SyncDbId syncDbId) const {
-    return errorsForSync(syncDbId);
-}
-
 std::optional<SyncContext> AppCache::syncContext(const SyncDbId syncDbId) const {
     const auto syncIt = _syncsByDbId.find(syncDbId);
     if (syncIt == _syncsByDbId.end()) {
