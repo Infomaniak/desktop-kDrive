@@ -35,7 +35,7 @@ void appendUnique(std::vector<IdType> &values, const IdType id) {
 
 template<typename IdType>
 void removeValue(std::vector<IdType> &values, const IdType id) {
-    std::erase(values, id);
+    (void) std::erase(values, id);
 }
 } // namespace
 
