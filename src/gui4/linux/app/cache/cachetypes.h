@@ -40,9 +40,7 @@ struct AvailableDriveKey {
         AccountId accountId{0};
         DriveId driveId{0};
 
-        friend bool operator==(const AvailableDriveKey &lhs, const AvailableDriveKey &rhs) {
-            return lhs.userDbId == rhs.userDbId && lhs.accountId == rhs.accountId && lhs.driveId == rhs.driveId;
-        }
+        friend bool operator==(const AvailableDriveKey &lhs, const AvailableDriveKey &rhs) = default;
 };
 
 struct SyncContext {
