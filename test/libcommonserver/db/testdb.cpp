@@ -328,13 +328,13 @@ void TestDb::testWalSettings() {
         return; // skip on non-WAL file systems (e.g. FAT32, some macOS volumes)
     }
 
-    int autocheckpoint = -1;
+    auto autocheckpoint = -1;
     CPPUNIT_ASSERT(_testObj->walAutocheckpointPragma(autocheckpoint));
     CPPUNIT_ASSERT_EQUAL(100, autocheckpoint);
 
     int64_t sizeLimit = -1;
     CPPUNIT_ASSERT(_testObj->journalSizeLimitPragma(sizeLimit));
-    CPPUNIT_ASSERT_EQUAL(int64_t(67108864), sizeLimit);
+    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(67108864), sizeLimit);
 }
 
 void TestDb::testWalTruncateOnClose() {
@@ -366,14 +366,12 @@ void TestDb::testWalTruncateOnClose() {
 bool TestDb::MyTestDb::walAutocheckpointPragma(int &value) {
     constexpr auto queryId = "wal_autocheckpoint_query";
     LOG_IF_FAIL(queryCreate(queryId));
-    int errId = -1;
-    std::string error;
-    if (!queryPrepare(queryId, "PRAGMA wal_autocheckpoint;", false, errId, error)) {
+    auto errId = -1;
+    if (std::string error; !queryPrepare(queryId, "PRAGMA wal_autocheckpoint;", false, errId, error)) {
         queryFree(queryId);
         return false;
     }
-    bool hasData = false;
-    if (!queryNext(queryId, hasData) || !hasData) {
+    if (bool hasData = false; !queryNext(queryId, hasData) || !hasData) {
         queryFree(queryId);
         return false;
     }
@@ -385,14 +383,12 @@ bool TestDb::MyTestDb::walAutocheckpointPragma(int &value) {
 bool TestDb::MyTestDb::journalSizeLimitPragma(int64_t &value) {
     constexpr auto queryId = "journal_size_limit_query";
     LOG_IF_FAIL(queryCreate(queryId));
-    int errId = -1;
-    std::string error;
-    if (!queryPrepare(queryId, "PRAGMA journal_size_limit;", false, errId, error)) {
+    auto errId = -1;
+    if (std::string error; !queryPrepare(queryId, "PRAGMA journal_size_limit;", false, errId, error)) {
         queryFree(queryId);
         return false;
     }
-    bool hasData = false;
-    if (!queryNext(queryId, hasData) || !hasData) {
+    if (bool hasData = false; !queryNext(queryId, hasData) || !hasData) {
         queryFree(queryId);
         return false;
     }
