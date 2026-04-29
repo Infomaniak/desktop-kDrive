@@ -12,6 +12,8 @@ concurrency:
   group: remove-xxhash-global
   cancel-in-progress: false
 
+permissions: {}
+
 jobs:
   remove_xxhash:
     name: Remove xxhash on self-hosted desktop-kdrive macOS runners
@@ -60,6 +62,3 @@ jobs:
         shell: bash
         run: |
           echo "Workflow completed. Check the logs above for details."
-
-
-
