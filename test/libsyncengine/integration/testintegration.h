@@ -133,11 +133,11 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         std::shared_ptr<SyncPal> _syncPal = nullptr;
         std::shared_ptr<ParmsDb> _parmsDb = nullptr;
 
-        int _driveDbId = 0;
+        DriveDbId _driveDbId = 0;
         LocalTemporaryDirectory _localSyncDir;
         RemoteTemporaryDirectory _remoteSyncDir{"testIntegration"};
         LocalTemporaryDirectory _localTempDir{"testIntegration"};
-        NodeId _testFileRemoteId;
+        RemoteNodeId _testFileRemoteId;
         TimerUtility _timer;
 };
 
