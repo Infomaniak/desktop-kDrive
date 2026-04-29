@@ -27,7 +27,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
         Levels = new[] { ErrorLevel.Node },
         NodeTypes = new[] { NodeType.File, NodeType.Directory },
         ExitCodes = new[] { ExitCode.SystemError },
-        ExitCauses = new[] { ExitCause.NotEnoughDiskSpace }
+        ExitCauses = new[] { ExitCause.NotEnoughDiskSpace },
+        ShowInSystemTray = true
     )]
     public sealed partial class NotEnoughDiskSpaceError : UserControl
     {

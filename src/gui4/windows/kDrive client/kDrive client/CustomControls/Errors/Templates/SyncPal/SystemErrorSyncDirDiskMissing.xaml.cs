@@ -27,7 +27,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
         Levels = new[] { ErrorLevel.SyncPal },
         ExitCodes = new[] { ExitCode.SystemError },
         ExitCauses = new[] { ExitCause.SyncDirDiskMissing },
-        NodeTypes = new[] { NodeType.File, NodeType.Directory, NodeType.Unknown }
+        NodeTypes = new[] { NodeType.File, NodeType.Directory, NodeType.Unknown },
+        ShowInSystemTray = true
     )]
     public sealed partial class SystemErrorSyncDirDiskMissing : UserControl
     {

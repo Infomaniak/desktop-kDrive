@@ -25,7 +25,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
         Levels = new[] { ErrorLevel.Node },
         NodeTypes = new[] { NodeType.File, NodeType.Directory },
         ExitCodes = new[] { ExitCode.BackError },
-        ExitCauses = new[] { ExitCause.HttpErrForbidden }
+        ExitCauses = new[] { ExitCause.HttpErrForbidden },
+        ShowInSystemTray = true
     )]
     public sealed partial class GenericErrForbiddenError : UserControl
     {
