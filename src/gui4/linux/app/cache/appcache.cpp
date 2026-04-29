@@ -75,7 +75,8 @@ void AppCache::replaceAccounts(const std::vector<AccountInfo> &accounts) {
     _accountsByDbId.clear();
     for (const auto &info: accounts) {
         if (!_usersByDbId.contains(info.userDbId())) {
-            qCWarning(lcAppCache) << "Account dropped during replace | accountDbId:" << info.dbId() << "/ unknown userDbId:" << info.userDbId();
+            qCWarning(lcAppCache) << "Account dropped during replace | accountDbId:" << info.dbId()
+                                  << "/ unknown userDbId:" << info.userDbId();
             continue;
         }
         _accountsByDbId[info.dbId()] = AccountNode{info, info.userDbId(), {}};
@@ -94,7 +95,8 @@ void AppCache::replaceDrives(const std::vector<DriveInfo> &drives) {
     _drivesByDbId.clear();
     for (const auto &info: drives) {
         if (!_accountsByDbId.contains(info.accountDbId())) {
-            qCWarning(lcAppCache) << "Drive dropped during replace | driveDbId:" << info.dbId() << "/ unknown accountDbId:" << info.accountDbId();
+            qCWarning(lcAppCache) << "Drive dropped during replace | driveDbId:" << info.dbId()
+                                  << "/ unknown accountDbId:" << info.accountDbId();
             continue;
         }
         _drivesByDbId[info.dbId()] = DriveNode{info, info.accountDbId(), {}};
@@ -112,7 +114,8 @@ void AppCache::replaceSyncs(const std::vector<SyncInfo> &syncs) {
     _syncsByDbId.clear();
     for (const auto &info: syncs) {
         if (!_drivesByDbId.contains(info.driveDbId())) {
-            qCWarning(lcAppCache) << "Sync dropped during replace | syncDbId:" << info.dbId() << "/ unknown driveDbId:" << info.driveDbId();
+            qCWarning(lcAppCache) << "Sync dropped during replace | syncDbId:" << info.dbId()
+                                  << "/ unknown driveDbId:" << info.driveDbId();
             continue;
         }
         _syncsByDbId[info.dbId()] = SyncNode{info, info.driveDbId(), {}};
@@ -129,7 +132,8 @@ void AppCache::replaceSyncErrors(const std::vector<ErrorInfo> &errors) {
     _syncErrorsByDbId.clear();
     for (const auto &info: errors) {
         if (!_syncsByDbId.contains(info.syncDbId())) {
-            qCWarning(lcAppCache) << "Sync error dropped during replace | errorDbId:" << info.dbId() << "/ unknown syncDbId:" << info.syncDbId();
+            qCWarning(lcAppCache) << "Sync error dropped during replace | errorDbId:" << info.dbId()
+                                  << "/ unknown syncDbId:" << info.syncDbId();
             continue;
         }
         _syncErrorsByDbId[info.dbId()] = info;
@@ -202,7 +206,8 @@ void AppCache::removeUser(const UserDbId userDbId) {
 
 void AppCache::upsertAccount(const AccountInfo &info) {
     if (!_usersByDbId.contains(info.userDbId())) {
-        qCWarning(lcAppCache) << "Account upsert dropped | accountDbId:" << info.dbId() << "/ unknown userDbId:" << info.userDbId();
+        qCWarning(lcAppCache) << "Account upsert dropped | accountDbId:" << info.dbId()
+                              << "/ unknown userDbId:" << info.userDbId();
         return;
     }
 
@@ -233,7 +238,8 @@ void AppCache::removeAccount(const AccountDbId accountDbId) {
 
 void AppCache::upsertDrive(const DriveInfo &info) {
     if (!_accountsByDbId.contains(info.accountDbId())) {
-        qCWarning(lcAppCache) << "Drive upsert dropped | driveDbId:" << info.dbId() << "/ unknown accountDbId:" << info.accountDbId();
+        qCWarning(lcAppCache) << "Drive upsert dropped | driveDbId:" << info.dbId()
+                              << "/ unknown accountDbId:" << info.accountDbId();
         return;
     }
 
@@ -292,7 +298,8 @@ void AppCache::removeSync(const SyncDbId syncDbId) {
 
 void AppCache::upsertSyncError(const ErrorInfo &info) {
     if (!_syncsByDbId.contains(info.syncDbId())) {
-        qCWarning(lcAppCache) << "Sync error upsert dropped | errorDbId:" << info.dbId() << "/ unknown syncDbId:" << info.syncDbId();
+        qCWarning(lcAppCache) << "Sync error upsert dropped | errorDbId:" << info.dbId()
+                              << "/ unknown syncDbId:" << info.syncDbId();
         return;
     }
 
