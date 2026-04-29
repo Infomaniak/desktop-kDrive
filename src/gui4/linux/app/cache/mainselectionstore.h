@@ -24,10 +24,10 @@
 #include <QLoggingCategory>
 #include <QObject>
 
-Q_DECLARE_LOGGING_CATEGORY(lcMainSelectionStore)
-
 #include <optional>
 #include <vector>
+
+Q_DECLARE_LOGGING_CATEGORY(lcMainSelectionStore)
 
 namespace KDC {
 
