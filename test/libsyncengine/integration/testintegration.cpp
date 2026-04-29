@@ -1028,7 +1028,7 @@ void TestIntegration::testSynchronizationOfSymLinks() {
 }
 
 void TestIntegration::testSymLinkWithTooManySymbolicLevels() {
-    RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
+    RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id(), "test_sym_link_loop_sync");
 
     waitForSyncToBeIdle(std::source_location::current());
 
@@ -1048,7 +1048,7 @@ void TestIntegration::testSymLinkWithTooManySymbolicLevels() {
 }
 
 void TestIntegration::testDirSymLinkWithTooManySymbolicLevels() {
-    RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
+    RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id(), "test_dir_sym_link_loop_sync");
 
     waitForSyncToBeIdle(std::source_location::current());
 
