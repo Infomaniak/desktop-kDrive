@@ -23,7 +23,7 @@
 
 #include "libcommon/utility/logiffail.h"
 
-#include "../test_utility/localtemporarydirectory.h"
+#include "test_utility/localtemporarydirectory.h"
 
 #define CREATE_TEST_TABLE_ID "testdb1"
 #define CREATE_TEST_TABLE              \
