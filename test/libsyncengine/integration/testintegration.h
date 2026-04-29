@@ -178,7 +178,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         LocalTemporaryDirectory _localSyncDir;
         RemoteTemporaryDirectory _remoteSyncDir{"testIntegration"};
         LocalTemporaryDirectory _localTempDir{"testIntegration"};
-        NodeId _testFileRemoteId;
+        RemoteNodeId _testFileRemoteId;
         TimerUtility _timer;
 };
 
