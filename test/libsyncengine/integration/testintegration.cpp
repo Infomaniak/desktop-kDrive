@@ -1086,7 +1086,6 @@ void TestIntegration::testSynchronizationOfSymLinks() {
 
 void TestIntegration::testSymLinkWithTooManySymbolicLevels() {
     const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
-
     waitForSyncToBeIdle(std::source_location::current());
 
     testhelpers::createSymLinkLoop(_syncPal->localPath() / tmpRemoteDir.name() / "file_symlink_1.txt",
@@ -1106,7 +1105,6 @@ void TestIntegration::testSymLinkWithTooManySymbolicLevels() {
 
 void TestIntegration::testDirSymLinkWithTooManySymbolicLevels() {
     const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
-
     waitForSyncToBeIdle(std::source_location::current());
 
     testhelpers::createSymLinkLoop(_syncPal->localPath() / tmpRemoteDir.name() / "folder_symlink_1",
