@@ -27,26 +27,24 @@ GetSizeJob::GetSizeJob(const UserDbId userDbId, const DriveId driveId, RemoteNod
     AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, driveId),
     _nodeId(std::move(nodeId)) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
+    _apiVersion = 2;
 }
 
 GetSizeJob::GetSizeJob(const DriveDbId driveDbId, RemoteNodeId nodeId) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
     _nodeId(std::move(nodeId)) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
+    _apiVersion = 2;
 }
 
 ExitInfo GetSizeJob::handleResponse(std::istream &is) {
-    if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) {
-        return exitInfo;
-    }
+    if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) return exitInfo;
 
-    if (jsonRes()) {
-        Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
-        if (dataObj) {
-            if (!JsonParserUtility::extractValue(dataObj, sizeKey, _size)) {
-                return {};
-            }
-        }
+    if (!jsonRes()) return ExitCode::Ok;
+
+    if (Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
+        dataObj && !JsonParserUtility::extractValue(dataObj, sizeKey, _size)) {
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
     return ExitCode::Ok;
