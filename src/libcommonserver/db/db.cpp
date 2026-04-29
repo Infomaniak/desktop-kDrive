@@ -37,8 +37,7 @@ constexpr const char *selectSqliteVersionId = "db1";
 constexpr const char *selectSqliteVersion = "SELECT sqlite_version();";
 
 constexpr const char *pragmaLockingModeId = "db2";
-// constexpr const char* pragmaLockingMode = "PRAGMA locking_mode=EXCLUSIVE;";
-constexpr const char *pragmaLockingMode = "PRAGMA locking_mode=NORMAL;"; // For debugging
+constexpr const char *pragmaLockingMode = "PRAGMA locking_mode=";
 
 constexpr const char *pragmaJournalModeId = "db3";
 constexpr const char *pragmaJournalMode = "PRAGMA journal_mode=";
@@ -528,7 +527,15 @@ bool Db::checkConnect(const std::string &version) {
     LOG_DEBUG(_logger, "sqlite3 version=" << result);
 
     // PRAGMA_LOCKING_MODE
-    if (!createAndPrepareRequest(pragmaLockingModeId, pragmaLockingMode)) return false;
+    std::string lockingMode = "EXCLUSIVE";
+    if (CommonUtility::envVarValue("KDRIVE_NORMAL_LOCKING_MODE") == "1") {
+        lockingMode = "NORMAL";
+    }
+#if !defined(NDEBUG)
+    lockingMode = "NORMAL";
+#endif
+    std::string sqlStr(pragmaLockingMode + lockingMode + ";");
+    if (!createAndPrepareRequest(pragmaLockingModeId, sqlStr.c_str())) return false;
     if (!queryNext(pragmaLockingModeId, hasData) || !hasData) {
         LOG_WARN(_logger, "Error getting query result: " << pragmaLockingModeId);
         queryFree(pragmaLockingModeId);
@@ -539,8 +546,8 @@ bool Db::checkConnect(const std::string &version) {
     LOG_DEBUG(_logger, "sqlite3 locking_mode=" << result);
 
     // PRAGMA_JOURNAL_MODE
-    std::string sql(pragmaJournalMode + _journalMode + ";");
-    if (!createAndPrepareRequest(pragmaJournalModeId, sql.c_str())) return false;
+    sqlStr = pragmaJournalMode + _journalMode + ";";
+    if (!createAndPrepareRequest(pragmaJournalModeId, sqlStr.c_str())) return false;
     if (!queryNext(pragmaJournalModeId, hasData) || !hasData) {
         LOG_WARN(_logger, "Error getting query result: " << pragmaJournalModeId);
         queryFree(pragmaJournalModeId);
@@ -554,8 +561,8 @@ bool Db::checkConnect(const std::string &version) {
     // With WAL journal the NORMAL sync mode is safe from corruption, otherwise use the standard FULL mode.
     std::string synchronousMode = "FULL";
     if (_journalMode.compare("WAL") == 0) synchronousMode = "NORMAL";
-    sql = pragmaSynchronous + synchronousMode + ";";
-    if (!createAndPrepareRequest(pragmaSynchronousId, sql.c_str())) return false;
+    sqlStr = pragmaSynchronous + synchronousMode + ";";
+    if (!createAndPrepareRequest(pragmaSynchronousId, sqlStr.c_str())) return false;
     if (!queryNext(pragmaSynchronousId, hasData)) {
         LOG_WARN(_logger, "Error getting query result: " << pragmaSynchronousId);
         queryFree(pragmaSynchronousId);
