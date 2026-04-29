@@ -123,7 +123,8 @@ void AppCache::removeSyncCascade(const SyncDbId syncDbId) {
 
     for (const auto errorDbId: syncIt->second.errorDbIds) {
         if (_syncErrorsByDbId.erase(errorDbId) == 0) {
-            qCWarning(lcAppCache) << "Sync error absent during cascade removal | errorDbId:" << errorDbId << "/ syncDbId:" << syncDbId;
+            qCWarning(lcAppCache) << "Sync error absent during cascade removal | errorDbId:" << errorDbId
+                                  << "/ syncDbId:" << syncDbId;
         }
     }
     unlinkSyncFromDrive(syncDbId, syncIt->second.parentDriveDbId);
