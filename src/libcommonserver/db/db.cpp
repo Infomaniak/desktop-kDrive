@@ -32,32 +32,34 @@
 
 #include <Poco/MD5Engine.h>
 
-#define SELECT_SQLITE_VERSION_ID "db1"
-#define SELECT_SQLITE_VERSION "SELECT sqlite_version();"
+namespace {
+constexpr const char *selectSqliteVersionId = "db1";
+constexpr const char *selectSqliteVersion = "SELECT sqlite_version();";
 
-#define PRAGMA_LOCKING_MODE_ID "db2"
-// #define PRAGMA_LOCKING_MODE             "PRAGMA locking_mode=EXCLUSIVE;"
-#define PRAGMA_LOCKING_MODE "PRAGMA locking_mode=NORMAL;" // For debugging
+constexpr const char *pragmaLockingModeId = "db2";
+// constexpr const char* pragmaLockingMode = "PRAGMA locking_mode=EXCLUSIVE;";
+constexpr const char *pragmaLockingMode = "PRAGMA locking_mode=NORMAL;"; // For debugging
 
-#define PRAGMA_JOURNAL_MODE_ID "db3"
-#define PRAGMA_JOURNAL_MODE "PRAGMA journal_mode="
+constexpr const char *pragmaJournalModeId = "db3";
+constexpr const char *pragmaJournalMode = "PRAGMA journal_mode=";
 
-#define PRAGMA_SYNCHRONOUS_ID "db4"
-#define PRAGMA_SYNCHRONOUS "PRAGMA synchronous="
+constexpr const char *pragmaSynchronousId = "db4";
+constexpr const char *pragmaSynchronous = "PRAGMA synchronous=";
 
-#define PRAGMA_CASE_SENSITIVE_LIKE_ID "db5"
-#define PRAGMA_CASE_SENSITIVE_LIKE "PRAGMA case_sensitive_like=ON;"
+constexpr const char *pragmaCaseSensitiveLikeId = "db5";
+constexpr const char *pragmaCaseSensitiveLike = "PRAGMA case_sensitive_like=ON;";
 
-#define PRAGMA_FOREIGN_KEYS_ID "db6"
-#define PRAGMA_FOREIGN_KEYS "PRAGMA foreign_keys=ON;"
+constexpr const char *pragmaForeignKeysId = "db6";
+constexpr const char *pragmaForeignKeys = "PRAGMA foreign_keys=ON;";
 
 // WAL tuning: checkpoint every 100 pages instead of the SQLite default (1000)
-#define PRAGMA_WAL_AUTOCHECKPOINT_ID "db7"
-#define PRAGMA_WAL_AUTOCHECKPOINT "PRAGMA wal_autocheckpoint=100;"
+constexpr const char *pragmaWalAutocheckpointId = "db7";
+constexpr const char *pragmaWalAutocheckpoint = "PRAGMA wal_autocheckpoint=100;";
 
 // WAL tuning: truncate WAL to at most 64 MB after each successful checkpoint
-#define PRAGMA_JOURNAL_SIZE_LIMIT_ID "db8"
-#define PRAGMA_JOURNAL_SIZE_LIMIT "PRAGMA journal_size_limit=67108864;"
+constexpr const char *pragmaJournalSizeLimitId = "db8";
+constexpr const char *pragmaJournalSizeLimit = "PRAGMA journal_size_limit=67108864;";
+} // namespace
 
 //
 // version
@@ -513,94 +515,94 @@ bool Db::checkConnect(const std::string &version) {
     }
 
     // SELECT_SQLITE_VERSION
-    if (!createAndPrepareRequest(SELECT_SQLITE_VERSION_ID, SELECT_SQLITE_VERSION)) return false;
+    if (!createAndPrepareRequest(selectSqliteVersionId, selectSqliteVersion)) return false;
     bool hasData;
-    if (!queryNext(SELECT_SQLITE_VERSION_ID, hasData) || !hasData) {
-        LOG_WARN(_logger, "Error getting query result: " << SELECT_SQLITE_VERSION_ID);
-        queryFree(SELECT_SQLITE_VERSION_ID);
+    if (!queryNext(selectSqliteVersionId, hasData) || !hasData) {
+        LOG_WARN(_logger, "Error getting query result: " << selectSqliteVersionId);
+        queryFree(selectSqliteVersionId);
         return false;
     }
     std::string result;
-    LOG_IF_FAIL(queryStringValue(SELECT_SQLITE_VERSION_ID, 0, result));
-    queryFree(SELECT_SQLITE_VERSION_ID);
+    LOG_IF_FAIL(queryStringValue(selectSqliteVersionId, 0, result));
+    queryFree(selectSqliteVersionId);
     LOG_DEBUG(_logger, "sqlite3 version=" << result);
 
     // PRAGMA_LOCKING_MODE
-    if (!createAndPrepareRequest(PRAGMA_LOCKING_MODE_ID, PRAGMA_LOCKING_MODE)) return false;
-    if (!queryNext(PRAGMA_LOCKING_MODE_ID, hasData) || !hasData) {
-        LOG_WARN(_logger, "Error getting query result: " << PRAGMA_LOCKING_MODE_ID);
-        queryFree(PRAGMA_LOCKING_MODE_ID);
+    if (!createAndPrepareRequest(pragmaLockingModeId, pragmaLockingMode)) return false;
+    if (!queryNext(pragmaLockingModeId, hasData) || !hasData) {
+        LOG_WARN(_logger, "Error getting query result: " << pragmaLockingModeId);
+        queryFree(pragmaLockingModeId);
         return false;
     }
-    LOG_IF_FAIL(queryStringValue(PRAGMA_LOCKING_MODE_ID, 0, result));
-    queryFree(PRAGMA_LOCKING_MODE_ID);
+    LOG_IF_FAIL(queryStringValue(pragmaLockingModeId, 0, result));
+    queryFree(pragmaLockingModeId);
     LOG_DEBUG(_logger, "sqlite3 locking_mode=" << result);
 
     // PRAGMA_JOURNAL_MODE
-    std::string sql(PRAGMA_JOURNAL_MODE + _journalMode + ";");
-    if (!createAndPrepareRequest(PRAGMA_JOURNAL_MODE_ID, sql.c_str())) return false;
-    if (!queryNext(PRAGMA_JOURNAL_MODE_ID, hasData) || !hasData) {
-        LOG_WARN(_logger, "Error getting query result: " << PRAGMA_JOURNAL_MODE_ID);
-        queryFree(PRAGMA_JOURNAL_MODE_ID);
+    std::string sql(pragmaJournalMode + _journalMode + ";");
+    if (!createAndPrepareRequest(pragmaJournalModeId, sql.c_str())) return false;
+    if (!queryNext(pragmaJournalModeId, hasData) || !hasData) {
+        LOG_WARN(_logger, "Error getting query result: " << pragmaJournalModeId);
+        queryFree(pragmaJournalModeId);
         return false;
     }
-    LOG_IF_FAIL(queryStringValue(PRAGMA_JOURNAL_MODE_ID, 0, result));
-    queryFree(PRAGMA_JOURNAL_MODE_ID);
+    LOG_IF_FAIL(queryStringValue(pragmaJournalModeId, 0, result));
+    queryFree(pragmaJournalModeId);
     LOG_DEBUG(_logger, "sqlite3 journal_mode=" << result);
 
     // PRAGMA_SYNCHRONOUS
     // With WAL journal the NORMAL sync mode is safe from corruption, otherwise use the standard FULL mode.
     std::string synchronousMode = "FULL";
     if (_journalMode.compare("WAL") == 0) synchronousMode = "NORMAL";
-    sql = PRAGMA_SYNCHRONOUS + synchronousMode + ";";
-    if (!createAndPrepareRequest(PRAGMA_SYNCHRONOUS_ID, sql.c_str())) return false;
-    if (!queryNext(PRAGMA_SYNCHRONOUS_ID, hasData)) {
-        LOG_WARN(_logger, "Error getting query result: " << PRAGMA_SYNCHRONOUS_ID);
-        queryFree(PRAGMA_SYNCHRONOUS_ID);
+    sql = pragmaSynchronous + synchronousMode + ";";
+    if (!createAndPrepareRequest(pragmaSynchronousId, sql.c_str())) return false;
+    if (!queryNext(pragmaSynchronousId, hasData)) {
+        LOG_WARN(_logger, "Error getting query result: " << pragmaSynchronousId);
+        queryFree(pragmaSynchronousId);
         return false;
     }
-    queryFree(PRAGMA_SYNCHRONOUS_ID);
+    queryFree(pragmaSynchronousId);
     LOG_DEBUG(_logger, "sqlite3 synchronous=" << synchronousMode);
 
     // PRAGMA_CASE_SENSITIVE_LIKE
-    if (!createAndPrepareRequest(PRAGMA_CASE_SENSITIVE_LIKE_ID, PRAGMA_CASE_SENSITIVE_LIKE)) return false;
-    if (!queryNext(PRAGMA_CASE_SENSITIVE_LIKE_ID, hasData)) {
-        LOG_WARN(_logger, "Error getting query result: " << PRAGMA_CASE_SENSITIVE_LIKE_ID);
-        queryFree(PRAGMA_CASE_SENSITIVE_LIKE_ID);
+    if (!createAndPrepareRequest(pragmaCaseSensitiveLikeId, pragmaCaseSensitiveLike)) return false;
+    if (!queryNext(pragmaCaseSensitiveLikeId, hasData)) {
+        LOG_WARN(_logger, "Error getting query result: " << pragmaCaseSensitiveLikeId);
+        queryFree(pragmaCaseSensitiveLikeId);
         return false;
     }
-    queryFree(PRAGMA_CASE_SENSITIVE_LIKE_ID);
+    queryFree(pragmaCaseSensitiveLikeId);
     LOG_DEBUG(_logger, "sqlite3 case_sensitivity=ON");
 
     // PRAGMA_FOREIGN_KEYS
-    if (!createAndPrepareRequest(PRAGMA_FOREIGN_KEYS_ID, PRAGMA_FOREIGN_KEYS)) return false;
-    if (!queryNext(PRAGMA_FOREIGN_KEYS_ID, hasData)) {
-        LOG_WARN(_logger, "Error getting query result: " << PRAGMA_FOREIGN_KEYS_ID);
-        queryFree(PRAGMA_FOREIGN_KEYS_ID);
+    if (!createAndPrepareRequest(pragmaForeignKeysId, pragmaForeignKeys)) return false;
+    if (!queryNext(pragmaForeignKeysId, hasData)) {
+        LOG_WARN(_logger, "Error getting query result: " << pragmaForeignKeysId);
+        queryFree(pragmaForeignKeysId);
         return false;
     }
-    queryFree(PRAGMA_FOREIGN_KEYS_ID);
+    queryFree(pragmaForeignKeysId);
     LOG_DEBUG(_logger, "sqlite3 foreign_keys=ON");
 
     if (_journalMode == "WAL") {
         // PRAGMA_WAL_AUTOCHECKPOINT: lower threshold to prevent unbounded WAL growth
-        if (!createAndPrepareRequest(PRAGMA_WAL_AUTOCHECKPOINT_ID, PRAGMA_WAL_AUTOCHECKPOINT)) return false;
-        if (!queryNext(PRAGMA_WAL_AUTOCHECKPOINT_ID, hasData)) {
-            LOG_WARN(_logger, "Error getting query result: " << PRAGMA_WAL_AUTOCHECKPOINT_ID);
-            queryFree(PRAGMA_WAL_AUTOCHECKPOINT_ID);
+        if (!createAndPrepareRequest(pragmaWalAutocheckpointId, pragmaWalAutocheckpoint)) return false;
+        if (!queryNext(pragmaWalAutocheckpointId, hasData)) {
+            LOG_WARN(_logger, "Error getting query result: " << pragmaWalAutocheckpointId);
+            queryFree(pragmaWalAutocheckpointId);
             return false;
         }
-        queryFree(PRAGMA_WAL_AUTOCHECKPOINT_ID);
+        queryFree(pragmaWalAutocheckpointId);
         LOG_DEBUG(_logger, "sqlite3 wal_autocheckpoint=100");
 
         // PRAGMA_JOURNAL_SIZE_LIMIT: cap WAL file size after each successful checkpoint
-        if (!createAndPrepareRequest(PRAGMA_JOURNAL_SIZE_LIMIT_ID, PRAGMA_JOURNAL_SIZE_LIMIT)) return false;
-        if (!queryNext(PRAGMA_JOURNAL_SIZE_LIMIT_ID, hasData)) {
-            LOG_WARN(_logger, "Error getting query result: " << PRAGMA_JOURNAL_SIZE_LIMIT_ID);
-            queryFree(PRAGMA_JOURNAL_SIZE_LIMIT_ID);
+        if (!createAndPrepareRequest(pragmaJournalSizeLimitId, pragmaJournalSizeLimit)) return false;
+        if (!queryNext(pragmaJournalSizeLimitId, hasData)) {
+            LOG_WARN(_logger, "Error getting query result: " << pragmaJournalSizeLimitId);
+            queryFree(pragmaJournalSizeLimitId);
             return false;
         }
-        queryFree(PRAGMA_JOURNAL_SIZE_LIMIT_ID);
+        queryFree(pragmaJournalSizeLimitId);
         LOG_DEBUG(_logger, "sqlite3 journal_size_limit=67108864");
     }
 
