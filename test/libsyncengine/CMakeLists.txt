@@ -113,7 +113,7 @@ set_target_properties(${testsyncengine_NAME} PROPERTIES
 
 target_link_libraries(${testsyncengine_NAME}
         ${libsyncengine_NAME}
-        ${SQLITE3_LIBRARIES}
+        SQLite::SQLite3
 )
 
 if(WIN32)
