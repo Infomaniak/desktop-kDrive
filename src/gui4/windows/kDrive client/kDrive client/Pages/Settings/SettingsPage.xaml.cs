@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using CommunityToolkit.WinUI.Controls;
 using Infomaniak.kDrive.CustomControls;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
@@ -34,6 +35,7 @@ namespace Infomaniak.kDrive.Pages.Settings
     public sealed partial class SettingsPage : Page
     {
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
+        private const string _skipNextRefreshKey = "skipNextRefresh";
         public AppModel ViewModel => _viewModel;
 
         public SettingsPage()
@@ -41,10 +43,6 @@ namespace Infomaniak.kDrive.Pages.Settings
             Logger.Log(Logger.Level.Info, "Navigated to SettingsPage - Initializing SettingsPage components");
             InitializeComponent();
             Logger.Log(Logger.Level.Debug, "SettingsPage components initialized");
-        }
-        protected override async void OnNavigatedTo(NavigationEventArgs e)
-        {
-            await RefreshAvailableDrivesForAllUsers();
         }
 
         private void CreateAccountButton_Click(object sender, RoutedEventArgs e)
@@ -119,8 +117,42 @@ namespace Infomaniak.kDrive.Pages.Settings
             }
         }
 
+        private async void UserSettingsExpander_Loaded(object sender, RoutedEventArgs e)
+        {
+            User? user = (sender as FrameworkElement)?.DataContext as User;
+            if (user is null)
+            {
+                Logger.Log(Logger.Level.Error, "Unable to find the user from DataContext.");
+                return;
+            }
+
+            if (await user.RefreshAvailableDrives(CancellationToken.None))
+            {
+                var senderExpander = sender as SettingsExpander;
+                if (senderExpander is null)
+                {
+                    Logger.Log(Logger.Level.Error, "Unable to find the SettingsExpander from sender.");
+                    return;
+                }
+                senderExpander.Tag = _skipNextRefreshKey;
+                senderExpander.IsExpanded = true;
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Warning, "Error while refreshing available drives for user.");
+            }
+        }
+
         private async void UserSettingsExpander_Expanded(object sender, EventArgs e)
         {
+            var control = sender as Control;
+            if (control?.Tag?.ToString() == _skipNextRefreshKey)
+            {
+                control.Tag = "";
+                return;
+
+            }
+
             User? user = (sender as FrameworkElement)?.DataContext as User;
             if (user is null)
             {
@@ -133,17 +165,6 @@ namespace Infomaniak.kDrive.Pages.Settings
                 Logger.Log(Logger.Level.Warning, "Error while refreshing available drives for user.");
                 Utility.ShowUnexpectedErrorTeachingTip(); // Show a generic error message for now, discussion is in progress with UX team to improve this.
             }
-        }
-
-        private async Task RefreshAvailableDrivesForAllUsers()
-        {
-            List<Task<bool>> loadAvailableDrivesTasks = [];
-            foreach (var user in ViewModel.Users)
-            {
-                loadAvailableDrivesTasks.Add(user.RefreshAvailableDrives(CancellationToken.None));
-            }
-            await Task.WhenAll(loadAvailableDrivesTasks);
-            // Results are ignored for now; errors are displayed only if the user explicitly expands the user settings.
         }
 
         private void FixForegroundOnPointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)

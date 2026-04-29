@@ -276,7 +276,8 @@
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="viewmodel:User">
                                 <toolKit:SettingsExpander ItemsSource="{x:Bind AllDrives, Mode=OneWay}"
-                                                          Expanded="UserSettingsExpander_Expanded">
+                                                          Expanded="UserSettingsExpander_Expanded"
+                                                          Loaded="UserSettingsExpander_Loaded">
                                     <ProgressRing Height="6"
                                                   Width="Auto"
                                                   Visibility="{x:Bind DriveRefreshInProgress, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
