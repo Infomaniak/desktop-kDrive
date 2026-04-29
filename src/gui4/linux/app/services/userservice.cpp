@@ -78,7 +78,7 @@ void UserService::loadAvailableDrives(const qint64 userDbId) {
                 }
 
                 if (!_appCache.user(scopedUserDbId).has_value()) {
-                    _availableDriveLoadGenerations.erase(scopedUserDbId);
+                    (void) _availableDriveLoadGenerations.erase(scopedUserDbId);
                     return;
                 }
 
