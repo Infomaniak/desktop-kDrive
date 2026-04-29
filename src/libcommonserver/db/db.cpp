@@ -555,7 +555,14 @@ bool Db::checkConnect(const std::string &version) {
     }
     LOG_IF_FAIL(queryStringValue(pragmaJournalModeId, 0, result));
     queryFree(pragmaJournalModeId);
-    LOG_DEBUG(_logger, "sqlite3 journal_mode=" << result);
+    // Normalize to uppercase to match the internal convention ("WAL", "DELETE", …).
+    const std::string effectiveJournalMode = CommonUtility::toUpper(result);
+    if (effectiveJournalMode != _journalMode) {
+        LOG_WARN(_logger, "Requested journal mode '" << _journalMode << "' but SQLite applied '" << effectiveJournalMode
+                                                     << "'; using effective mode");
+        _journalMode = effectiveJournalMode;
+    }
+    LOG_DEBUG(_logger, "sqlite3 journal_mode=" << _journalMode);
 
     // PRAGMA_SYNCHRONOUS
     // With WAL journal the NORMAL sync mode is safe from corruption, otherwise use the standard FULL mode.
