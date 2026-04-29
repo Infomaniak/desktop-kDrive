@@ -55,7 +55,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
                 bool eof{false};
                 uint64_t itemCount{0};
         };
-        [[nodiscard]] ExitInfo handleSnapshotItem(const SnapshotItem &item, SyncNameSet &existingFiles,
+        [[nodiscard]] ExitInfo handleSnapshotItem(const RemoteSnapshotItem &item, SyncNameSet &existingFiles,
                                                   ParsingIterationState &iterationState,
                                                   sentry::pTraces::counterScoped::RFSOExploreItem &perfMonitor);
         enum class CursorPersistence {
