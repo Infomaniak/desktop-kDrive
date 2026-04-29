@@ -38,7 +38,7 @@
                  IsClosable="True"
                  Closed="kDriveFullInfoBar_Closed">
             <InfoBar.IconSource>
-                <controls:SvgIconSource UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive-outline}"
+                <controls:SvgIconSource UriSource="{StaticResource Infomaniak.DS.Icons.Products.kDrive-outline}"
                                         Foreground="{ThemeResource SystemAccentColor}" />
             </InfoBar.IconSource>
             <InfoBar.ActionButton>
@@ -56,7 +56,7 @@
                  IsClosable="True"
                  Closed="TmpDirAccessError_Closed">
             <InfoBar.IconSource>
-                <controls:SvgIconSource UriString="{StaticResource Infomaniak.DS.Icons.Network.cloud-offline}"
+                <controls:SvgIconSource UriSource="{StaticResource Infomaniak.DS.Icons.Network.cloud-offline}"
                                         Foreground="{ThemeResource SystemAccentColor}" />
             </InfoBar.IconSource>
             <InfoBar.ActionButton>
