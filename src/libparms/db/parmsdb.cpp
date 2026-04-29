@@ -25,7 +25,7 @@
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 
-#include <3rdparty/sqlite3/sqlite3.h>
+#include <sqlite3.h>
 
 #include <fstream>
 #include <string>
@@ -3069,10 +3069,10 @@ bool ParmsDb::selectSyncErrorsByExitCause(SyncDbId syncDbId, ExitCause exitCause
 
 
         errs.emplace_back(dbId, time, level, functionName, syncDbIdRes, workerName, static_cast<ExitCode>(exitCode),
-                             static_cast<ExitCause>(exitCauseRes), static_cast<NodeId>(localNodeId),
-                             static_cast<NodeId>(remoteNodeId), static_cast<NodeType>(nodeType), static_cast<SyncPath>(path),
-                             static_cast<ConflictType>(conflictType), static_cast<InconsistencyType>(inconsistencyType),
-                             static_cast<CancelType>(cancelType), static_cast<SyncPath>(destinationPath));
+                          static_cast<ExitCause>(exitCauseRes), static_cast<NodeId>(localNodeId),
+                          static_cast<NodeId>(remoteNodeId), static_cast<NodeType>(nodeType), static_cast<SyncPath>(path),
+                          static_cast<ConflictType>(conflictType), static_cast<InconsistencyType>(inconsistencyType),
+                          static_cast<CancelType>(cancelType), static_cast<SyncPath>(destinationPath));
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID));
 
