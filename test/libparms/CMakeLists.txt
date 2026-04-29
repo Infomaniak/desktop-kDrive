@@ -28,10 +28,6 @@ elseif(WIN32)
 endif()
 
 
-if(USE_OUR_OWN_SQLITE3)
-    list(APPEND testparms_SRCS ${SQLITE3_SOURCE})
-endif()
-
 if(WIN32)
     include_directories("C:/Program Files (x86)/cppunit/include")
 else()
@@ -69,4 +65,3 @@ if(APPLE)
     # Default Lite Sync app exclude list
     install(FILES ${CMAKE_SOURCE_DIR}/litesync-exclude.lst DESTINATION ${BIN_OUTPUT_DIRECTORY})
 endif()
-

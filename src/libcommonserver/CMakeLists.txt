@@ -65,10 +65,6 @@ else()
     list(APPEND libcommonserver_SRCS io/iohelper_linux.cpp utility/utility_linux.cpp)
 endif()
 
-if(USE_OUR_OWN_SQLITE3)
-    list(APPEND libcommonserver_SRCS ${SQLITE3_SOURCE})
-endif()
-
 # Target
 add_library(${libcommonserver_NAME} STATIC ${libcommonserver_SRCS})
 
@@ -133,13 +129,6 @@ else()
         ${CMAKE_CURRENT_BINARY_DIR}
         "/usr/local/include"
         ${CMAKE_SOURCE_DIR}/src/3rdparty/utf8proc)
-endif()
-
-if(USE_OUR_OWN_SQLITE3)
-    # make sure that the path for the local sqlite3 is before the system one
-    target_include_directories("${libcommonserver_NAME}" BEFORE PRIVATE ${SQLITE3_INCLUDE_DIR})
-else()
-    target_include_directories("${libcommonserver_NAME}" PRIVATE ${SQLITE3_INCLUDE_DIR})
 endif()
 
 # Link
