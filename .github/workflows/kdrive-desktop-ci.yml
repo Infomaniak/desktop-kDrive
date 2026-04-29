@@ -10,6 +10,9 @@ concurrency:
   group: kDrive-desktop-ci-${{ github.head_ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 env:
   KDRIVE_TEST_CI_API_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
   KDRIVE_TEST_CI_ACCOUNT_ID: ${{ vars.KDRIVE_TEST_CI_ACCOUNT_ID }}
