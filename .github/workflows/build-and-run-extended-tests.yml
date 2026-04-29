@@ -40,7 +40,7 @@ jobs:
         shell: cmd
 
       - name: Checkout the code
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v6.0.2
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || (github.event_name == 'workflow_dispatch' && github.ref_name || 'develop') }}
           submodules: recursive
@@ -118,7 +118,7 @@ jobs:
         run : rm -rf /Users/runner/Library/Developer/Xcode/DerivedData
         
       - name: Checkout the code
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v6.0.2
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || (github.event_name == 'workflow_dispatch' && github.ref_name || 'develop') }}
           submodules: recursive
@@ -169,7 +169,7 @@ jobs:
       QT_QPA_PLATFORM: "offscreen"
     steps:
       - name: Checkout the code
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v6.0.2
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || (github.event_name == 'workflow_dispatch' && github.ref_name || 'develop') }}
           submodules: recursive
@@ -208,7 +208,7 @@ jobs:
       KCHAT_WEBHOOK_URL: ${{ secrets.KCHAT_WEBHOOK_URL }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v6.0.2
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || 'develop' }}
 

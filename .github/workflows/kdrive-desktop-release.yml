@@ -51,7 +51,7 @@ jobs:
     runs-on: [self-hosted, Windows, desktop-kdrive-with-gui ]
     steps:
       - name: Checkout the PR
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
 
       - name: Check translations
         if: ${{ inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
@@ -91,7 +91,7 @@ jobs:
     runs-on: [ self-hosted, Linux, X64 ]
     steps:
       - name: Checkout the PR
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
 
       - name: Get kDrive version
         id: get-version
@@ -158,7 +158,7 @@ jobs:
       KDC_PHYSICAL_AUMID: ${{ secrets.KDC_PHYSICAL_AUMID }}
     steps:
       - name: Checkout the PR
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
         with:
           submodules: recursive
       - name: Build Windows
@@ -176,7 +176,7 @@ jobs:
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
     steps:
       - name: Checkout the PR
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
         with:
           submodules: recursive
       - name: Build Linux
@@ -190,7 +190,7 @@ jobs:
     runs-on: [ self-hosted, macOS, ARM64, desktop-kdrive ]
     steps:
       - name: Checkout the PR
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
         with:
           submodules: recursive
       - name: Build Linux
@@ -204,7 +204,7 @@ jobs:
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
     steps:
       - name: Checkout the PR
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
         with:
           submodules: recursive
       - name: Build macOS
@@ -225,7 +225,7 @@ jobs:
         KDRIVE_DIR_ID: ${{ secrets.KDRIVE_DIR_ID }}
     steps:
       - name: Checkout the PR
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v6.0.2
         with:
           ref: ${{ github.head_ref }}
 
@@ -267,7 +267,7 @@ jobs:
         KDRIVE_DIR_ID: ${{ secrets.KDRIVE_DIR_ID }}
     steps:
       - name: Checkout the PR
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v6.0.2
         with:
           ref: ${{ github.head_ref }}
 
@@ -309,7 +309,7 @@ jobs:
         KDRIVE_DIR_ID: ${{ secrets.KDRIVE_DIR_ID }}
     steps:
       - name: Checkout the PR
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v6.0.2
         with:
           ref: ${{ github.head_ref }}
 
@@ -351,7 +351,7 @@ jobs:
         KDRIVE_DIR_ID: ${{ secrets.KDRIVE_DIR_ID }}
     steps:
       - name: Checkout the PR
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v6.0.2
         with:
           ref: ${{ github.head_ref }}
 
@@ -390,7 +390,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout the PR
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
 
       - name: Get kDrive version
         id: get-version

@@ -29,7 +29,7 @@ jobs:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
     steps:
       - name: Checkout the PR
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
         with:
           submodules: recursive
       - name: Build Windows
@@ -42,7 +42,7 @@ jobs:
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
     steps:
       - name: Checkout the PR
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
         with:
           submodules: recursive
       - name: Build Linux
@@ -52,7 +52,7 @@ jobs:
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
     steps:
       - name: Checkout the PR
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
         with:
           submodules: recursive
       - name: Build macOS
@@ -74,7 +74,7 @@ jobs:
       KDRIVE_SENTRY_ENVIRONMENT: "windows_ci_runner"
     steps:
        - name: Checkout the PR
-         uses: actions/checkout@v4.1.1
+         uses: actions/checkout@v6.0.2
          with:
           ref: ${{ github.head_ref }}
 
@@ -97,7 +97,7 @@ jobs:
       KDRIVE_SENTRY_ENVIRONMENT: "linux_ci_runner"
     steps:
        - name: Checkout the PR
-         uses: actions/checkout@v4.1.1
+         uses: actions/checkout@v6.0.2
          with:
           ref: ${{ github.head_ref }}
 
@@ -120,7 +120,7 @@ jobs:
       KDRIVE_SENTRY_ENVIRONMENT: "macos_ci_runner"
     steps:
        - name: Checkout the PR
-         uses: actions/checkout@v4.1.1
+         uses: actions/checkout@v6.0.2
          with:
           ref: ${{ github.head_ref }}
 
