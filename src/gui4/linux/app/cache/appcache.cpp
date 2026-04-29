@@ -189,7 +189,7 @@ void AppCache::removeUser(const UserDbId userDbId) {
     for (const auto accountDbIds = userIt->second.accountDbIds; const auto accountDbId: accountDbIds) {
         removeAccountCascade(accountDbId);
     }
-    _usersByDbId.erase(userIt);
+    (void) _usersByDbId.erase(userIt);
     const bool hadAvailableDrives = _availableDrivesByUserDbId.erase(userDbId) > 0;
 
     emit usersChanged();
@@ -314,7 +314,7 @@ void AppCache::removeSyncError(const ErrorDbId errorDbId) {
     }
     qCDebug(lcAppCache) << "Sync error removed | dbId:" << errorDbId;
     unlinkErrorFromSync(errorDbId, errorIt->second.syncDbId());
-    _syncErrorsByDbId.erase(errorIt);
+    (void) _syncErrorsByDbId.erase(errorIt);
     emit syncErrorsChanged();
 }
 
