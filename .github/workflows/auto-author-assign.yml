@@ -4,9 +4,6 @@ on:
   pull_request_target:
     types: [ opened, reopened ]
 
-permissions:
-  pull-requests: write
-
 jobs:
   assign-author:
     uses: Infomaniak/.github/.github/workflows/auto_author_assign.yml@v2.3.2
