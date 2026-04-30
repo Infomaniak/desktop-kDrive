@@ -90,7 +90,6 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBaseWithParmsDb 
         void testGetDriveList();
         void testGetFileInfo();
         void testGetFilesInDirectory();
-        void testGetFileListWithCursor();
         void testFullFileListWithCursorCsv();
         void testFullFileListWithCursorCsvZip();
         void testFullFileListWithCursorCsvBlacklist();
