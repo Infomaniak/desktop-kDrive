@@ -75,6 +75,7 @@ ExitInfo Snapshot::getItemId(const SyncPath &path, NodeId &id) const {
         sentry::Handler::captureMessage(sentry::Level::Error, "Root folder id not found in snapshot",
                                         "Snapshot::getItemId failed because the root node ID was not found in snapshot.");
         return {ExitCode::DataError, ExitCause::InvalidSnapshot};
+
     }
 
     auto item = rootItemIt->second;
