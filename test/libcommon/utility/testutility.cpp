@@ -476,7 +476,7 @@ void TestUtility::testGenerateRandomNumber() {
     bool allValuesAreTheSame = true;
     for (auto i = 0; i < 100; i++) {
         const auto val = CommonUtility::generateRandomNumber(1, 100);
-        if (val != sequence[i]) {
+        if (val != static_cast<int64_t>(sequence[i])) {
             allValuesAreTheSame = false;
             break;
         }
