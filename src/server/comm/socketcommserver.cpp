@@ -308,8 +308,8 @@ void SocketCommServer::execute() {
             const std::scoped_lock lock(_channelsMutex);
             _channels.push_back(channel);
         }
-        channel->startCallbackThread();
         newConnectionCbk();
+        channel->startCallbackThread();
     }
     _isListening = false;
 }
