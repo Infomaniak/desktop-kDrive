@@ -18,12 +18,17 @@
 #include "testbenchmarkio.h"
 #include "utility/types.h"
 
+namespace KDC {
+
+static int32_t iterations_ = 10000;
+
 // ============================================================================
 // BENCHMARK ENGINE IMPLEMENTATION
 // ============================================================================
 testbenchmarkio::testbenchmarkio(int iterations, bool warmup) :
-    iterations_(iterations),
-    warmup_(warmup) {}
+    warmup_(warmup) {
+    iterations_ = iterations;
+}
 
 void testbenchmarkio::addResult(const std::string &category, const std::string &method, double time_ms, bool success) {
     BenchmarkResult r;
@@ -52,14 +57,14 @@ void testbenchmarkio::printResults() const {
     for (const auto &r: sorted) {
         std::cout << std::left << std::setw(12) << r.category << std::setw(40) << r.method << std::right << std::setw(14)
                   << std::fixed << std::setprecision(2) << r.time_ms << std::setw(18) << std::fixed << std::setprecision(1)
-                                << r.avg_ns_per_call << std::setw(8) << (r.success ? "Y" : "N") << "\n";
-                      }
+                  << r.avg_ns_per_call << std::setw(8) << (r.success ? "Y" : "N") << "\n";
+    }
 
-                      std::cout << "================================================================\n";
-                  }
+    std::cout << "================================================================\n";
+}
 
 void testbenchmarkio::printResultsByCategory() const {
-    std::vector<std::string> categories = {"Exists", "Metadata", "Read", "Write", "Size", "Create", "Delete", "Move"};
+    std::vector<std::string> categories = {"Exists", "Metadata", "Read", "Size", "Create", "Delete", "Move"};
 
     for (const auto &cat: categories) {
         std::vector<BenchmarkResult> filtered;
@@ -97,6 +102,18 @@ void testbenchmarkio::reset() {
 // ============================================================================
 namespace ExistsTests {
 
+void testinit(const std::string &path) {
+    std::ofstream f(path, std::ios::binary);
+    if (f) {
+        f << "data";
+    }
+}
+
+void teardown(const std::string &path) {
+    std::error_code ec;
+    std::filesystem::remove(path, ec);
+}
+
 bool filesystem_status(const std::string &path) {
     std::error_code ec;
     auto status = std::filesystem::status(path, ec);
@@ -113,7 +130,7 @@ bool win32_getfileattributes_a(const std::string &path) {
 }
 
 bool win32_getfileattributes_w(const std::string &path) {
-    std::wstring wpath = KDC::CommonUtility::s2ws(path);
+    std::wstring wpath = CommonUtility::s2ws(path);
     DWORD attrs = GetFileAttributesW(wpath.c_str());
     return attrs != INVALID_FILE_ATTRIBUTES;
 }
@@ -131,28 +148,42 @@ bool crt_stat(const std::string &path) {
 // ============================================================================
 namespace MetadataTests {
 
+void testinit(const std::string &path) {
+    std::ofstream f(path, std::ios::binary);
+    if (!f) return;
+
+    // Write a bit of data to ensure metadata is meaningful
+    f << "benchmark_metadata_test_content";
+}
+
+void teardown(const std::string &path) {
+    std::error_code ec;
+    std::filesystem::remove(path, ec);
+}
+
 bool stat_full(const std::string &path) {
     struct stat st{};
     if (::stat(path.c_str(), &st) != 0) return false;
 
-    auto dev = st.st_dev;
-    auto inode = st.st_ino;
-    auto mode = st.st_mode;
-    auto nlink = st.st_nlink;
-    auto uid = st.st_uid;
-    auto gid = st.st_gid;
-    auto rdev = st.st_rdev;
-    auto size = st.st_size;
-#if defined(KD_LINUX) || defined(KD_MACOS)
-    auto blksize = st.st_blksize;
-    auto blocks = st.st_blocks;
+    volatile auto dev = st.st_dev;
+    volatile auto inode = st.st_ino;
+    volatile auto mode = st.st_mode;
+    volatile auto nlink = st.st_nlink;
+    volatile auto uid = st.st_uid;
+    volatile auto gid = st.st_gid;
+    volatile auto rdev = st.st_rdev;
+    volatile auto size = st.st_size;
+
+#if defined(__linux__) || defined(__APPLE__)
+    volatile auto blksize = st.st_blksize;
+    volatile auto blocks = st.st_blocks;
     (void) blksize;
     (void) blocks;
 #endif
 
-    auto atime = st.st_atime;
-    auto mtime = st.st_mtime;
-    auto ctime = st.st_ctime;
+    volatile auto atime = st.st_atime;
+    volatile auto mtime = st.st_mtime;
+    volatile auto ctime = st.st_ctime;
 
     (void) dev;
     (void) inode;
@@ -169,70 +200,29 @@ bool stat_full(const std::string &path) {
     return true;
 }
 
-bool lstat_full(const std::string &path) {
-#if defined(KD_LINUX) || defined(KD_MACOS)
-    struct stat st{};
-    if (::lstat(path.c_str(), &st) != 0) return false;
-
-    auto inode = st.st_ino;
-    auto mode = st.st_mode;
-    auto size = st.st_size;
-
-    (void) inode;
-    (void) mode;
-    (void) size;
-
-    return true;
-#endif
-    return false;
-}
-
-bool fstat_full(const std::string &path) {
-    int fd = ::open(path.c_str(), O_RDONLY);
-    if (fd < 0) return false;
-
-    struct stat st{};
-    bool ok = (::fstat(fd, &st) == 0);
-
-    if (ok) {
-        auto inode = st.st_ino;
-        auto size = st.st_size;
-        auto uid = st.st_uid;
-        auto gid = st.st_gid;
-
-        (void) inode;
-        (void) size;
-        (void) uid;
-        (void) gid;
-    }
-
-    ::close(fd);
-    return ok;
-}
-
 bool statx_full(const std::string &path) {
-#if defined(KD_LINUX)
+#if defined(KD_LINUX) or defined(KD_MACOS)
     struct statx stx{};
 
-    int ret = ::statx(AT_FDCWD, path.c_str(), AT_STATX_SYNC_AS_STAT, STATX_BASIC_STATS | STATX_BTIME, &stx);
+    int ret = ::statx(AT_FDCWD, path.c_str(), AT_STATX_SYNC_AS_STAT, STATX_ALL, &stx);
 
     if (ret != 0) return false;
 
-    auto mask = stx.stx_mask;
-    auto size = stx.stx_size;
-    auto blocks = stx.stx_blocks;
-    auto uid = stx.stx_uid;
-    auto gid = stx.stx_gid;
-    auto mode = stx.stx_mode;
+    volatile auto mask = stx.stx_mask;
+    volatile auto size = stx.stx_size;
+    volatile auto blocks = stx.stx_blocks;
+    volatile auto uid = stx.stx_uid;
+    volatile auto gid = stx.stx_gid;
+    volatile auto mode = stx.stx_mode;
 
-    auto atime = stx.stx_atime;
-    auto mtime = stx.stx_mtime;
-    auto ctime = stx.stx_ctime;
-    auto btime = stx.stx_btime;
+    volatile auto atime = stx.stx_atime;
+    volatile auto mtime = stx.stx_mtime;
+    volatile auto ctime = stx.stx_ctime;
+    volatile auto btime = stx.stx_btime;
 
-    auto inode = stx.stx_ino;
-    auto dev_major = stx.stx_dev_major;
-    auto dev_minor = stx.stx_dev_minor;
+    volatile auto inode = stx.stx_ino;
+    volatile auto dev_major = stx.stx_dev_major;
+    volatile auto dev_minor = stx.stx_dev_minor;
 
     (void) mask;
     (void) size;
@@ -249,8 +239,55 @@ bool statx_full(const std::string &path) {
     (void) dev_minor;
 
     return true;
-#endif
+#else
+    (void) path;
     return false;
+#endif
+}
+
+bool fstat_full(const std::string &path) {
+    int fd = ::open(path.c_str(), O_RDONLY);
+    if (fd < 0) return false;
+
+    struct stat st{};
+    bool ok = (::fstat(fd, &st) == 0);
+
+    if (ok) {
+        volatile auto dev = st.st_dev;
+        volatile auto inode = st.st_ino;
+        volatile auto mode = st.st_mode;
+        volatile auto nlink = st.st_nlink;
+        volatile auto uid = st.st_uid;
+        volatile auto gid = st.st_gid;
+        volatile auto rdev = st.st_rdev;
+        volatile auto size = st.st_size;
+
+#if defined(__linux__) || defined(__APPLE__)
+        volatile auto blksize = st.st_blksize;
+        volatile auto blocks = st.st_blocks;
+        (void) blksize;
+        (void) blocks;
+#endif
+
+        volatile auto atime = st.st_atime;
+        volatile auto mtime = st.st_mtime;
+        volatile auto ctime = st.st_ctime;
+
+        (void) dev;
+        (void) inode;
+        (void) mode;
+        (void) nlink;
+        (void) uid;
+        (void) gid;
+        (void) rdev;
+        (void) size;
+        (void) atime;
+        (void) mtime;
+        (void) ctime;
+    }
+
+    ::close(fd);
+    return ok;
 }
 
 bool filesystem_full(const std::string &path) {
@@ -265,13 +302,15 @@ bool filesystem_full(const std::string &path) {
     auto last_write = std::filesystem::last_write_time(path, ec);
     if (ec) return false;
 
-    auto perms = status.permissions();
-    auto type = status.type();
+    volatile auto perms = status.permissions();
+    volatile auto type = status.type();
+    volatile auto sz = size;
+    volatile auto lw = last_write.time_since_epoch().count();
 
-    (void) size;
-    (void) last_write;
     (void) perms;
     (void) type;
+    (void) sz;
+    (void) lw;
 
     return true;
 }
@@ -283,149 +322,213 @@ bool filesystem_full(const std::string &path) {
 // ============================================================================
 namespace ReadTests {
 
+constexpr size_t BUFFER_SIZE = 4096;
+
+void testinit(const std::string &path) {
+    std::ofstream f(path, std::ios::binary);
+    if (!f) return;
+
+    std::string content(BUFFER_SIZE, 'x');
+    f.write(content.data(), content.size());
+}
+
+void teardown(const std::string &path) {
+    std::filesystem::remove(path);
+}
+
 bool ifstream_binary(const std::string &path) {
     std::ifstream f(path, std::ios::binary);
-    return f.good();
+    if (!f) return false;
+
+    static thread_local std::vector<char> buffer(BUFFER_SIZE);
+    f.read(buffer.data(), buffer.size());
+
+    return f.good() || f.gcount() > 0;
 }
 
 bool ifstream_text(const std::string &path) {
     std::ifstream f(path);
-    return f.good();
+    if (!f) return false;
+
+    static thread_local std::string buffer(BUFFER_SIZE, '\0');
+    f.read(buffer.data(), buffer.size());
+
+    return f.good() || f.gcount() > 0;
 }
 
-bool fopen_binary(const std::string &path) {
+bool fread_binary(const std::string &path) {
     FILE *f = fopen(path.c_str(), "rb");
-    if (f) fclose(f);
-    return f != nullptr;
+    if (!f) return false;
+
+    static thread_local std::vector<char> buffer(BUFFER_SIZE);
+    size_t read = fread(buffer.data(), 1, buffer.size(), f);
+
+    fclose(f);
+    return read > 0;
 }
 
-bool fopen_text(const std::string &path) {
+bool fread_text(const std::string &path) {
     FILE *f = fopen(path.c_str(), "r");
-    if (f) fclose(f);
-    return f != nullptr;
+    if (!f) return false;
+
+    static thread_local std::string buffer(BUFFER_SIZE, '\0');
+    size_t read = fread(buffer.data(), 1, buffer.size(), f);
+
+    fclose(f);
+    return read > 0;
 }
 
-bool win32_createfile(const std::string &path) {
+bool win32_readfile(const std::string &path) {
+#if defined(KD_WINDOWS)
     HANDLE h = CreateFileA(path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-    if (h != INVALID_HANDLE_VALUE) {
-        CloseHandle(h);
-        return true;
-    }
-    return false;
-}
-
-bool win32_createfile_w(const std::string &path) {
-    std::wstring wpath = KDC::CommonUtility::s2ws(path);
-    HANDLE h = CreateFileW(wpath.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-    if (h != INVALID_HANDLE_VALUE) {
-        CloseHandle(h);
-        return true;
-    }
-    return false;
-}
-
-
-} // namespace ReadTests
-
-// ============================================================================
-// TEST FUNCTIONS - WRITE
-// ============================================================================
-namespace WriteTests {
-
-bool filesystem_last_write_time(const std::string &path) {
-    try {
-        auto now = std::filesystem::file_time_type::clock::now();
-        std::filesystem::last_write_time(path, now);
-        return true;
-    } catch (...) {
-        return false;
-    }
-}
-
-bool win32_setfiletime(const std::string &path) {
-    HANDLE h = CreateFileA(path.c_str(), FILE_WRITE_ATTRIBUTES, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING,
-                           FILE_ATTRIBUTE_NORMAL, nullptr);
     if (h == INVALID_HANDLE_VALUE) return false;
 
-    FILETIME ft;
-    GetSystemTimeAsFileTime(&ft);
-    SetFileTime(h, nullptr, nullptr, &ft);
+    static thread_local std::vector<char> buffer(BUFFER_SIZE);
+
+    DWORD read = 0;
+    BOOL ok = ReadFile(h, buffer.data(), (DWORD) buffer.size(), &read, nullptr);
+
     CloseHandle(h);
-    return true;
+    return ok && read > 0;
+#else
+    return ifstream_binary(path);
+#endif
 }
 
-bool ofstream_append(const std::string &path) {
-    std::ofstream f(path, std::ios::app);
-    return f.good();
+bool win32_readfile_w(const std::string &path) {
+#if defined(KD_WINDOWS)
+    std::wstring wpath(path.begin(), path.end());
+
+    HANDLE h = CreateFileW(wpath.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+    if (h == INVALID_HANDLE_VALUE) return false;
+
+    static thread_local std::vector<char> buffer(BUFFER_SIZE);
+
+    DWORD read = 0;
+    BOOL ok = ReadFile(h, buffer.data(), (DWORD) buffer.size(), &read, nullptr);
+
+    CloseHandle(h);
+    return ok && read > 0;
+#else
+    return ifstream_binary(path);
+#endif
 }
 
-} // namespace WriteTests
+} // namespace ReadTests
 
 // ============================================================================
 // TEST FUNCTIONS - SIZE
 // ============================================================================
 namespace SizeTests {
 
-uint64_t filesystem_filesize(const std::string &path) {
-    std::error_code ec;
-    return static_cast<uint64_t>(std::filesystem::file_size(path, ec));
+void testinit(const std::string &path) {
+    constexpr std::size_t size = 1024 * 1024; // 1 MB
+
+    std::ofstream f(path, std::ios::binary | std::ios::trunc);
+    if (!f) return;
+
+    std::string buffer(4096, 'A'); // 4 KB chunk
+
+    std::size_t written = 0;
+    while (written < size) {
+        std::size_t to_write = std::min(buffer.size(), size - written);
+        f.write(buffer.data(), to_write);
+        written += to_write;
+    }
 }
 
-uint64_t win32_getfilesize(const std::string &path) {
+void teardown(const std::string &path) {
+    std::error_code ec;
+    std::filesystem::remove(path, ec);
+}
+
+bool filesystem_filesize(const std::string &path) {
+    std::error_code ec;
+    return std::filesystem::file_size(path, ec) != static_cast<uint64_t>(-1);
+}
+
+bool win32_getfilesize(const std::string &path) {
     HANDLE h = CreateFileA(path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-    if (h == INVALID_HANDLE_VALUE) return 0;
+    if (h == INVALID_HANDLE_VALUE) return false;
 
     LARGE_INTEGER size;
-    GetFileSizeEx(h, &size);
+    if (!GetFileSizeEx(h, &size)) {
+        CloseHandle(h);
+        return false;
+    }
     CloseHandle(h);
-    return static_cast<uint64_t>(size.QuadPart);
+    return static_cast<uint64_t>(size.QuadPart) != static_cast<uint64_t>(-1);
 }
 
-uint64_t crt_filelength(const std::string &path) {
+bool crt_filelength(const std::string &path) {
     struct _stat buffer;
-    if (_stat(path.c_str(), &buffer) != 0) return 0;
-    return static_cast<uint64_t>(buffer.st_size);
+    if (_stat(path.c_str(), &buffer) != 0) return false;
+    return static_cast<uint64_t>(buffer.st_size) != static_cast<uint64_t>(-1);
 }
 
 } // namespace SizeTests
 
 // ============================================================================
-// CREATE FUNCTIONS
+// CREATE FUNCTIONS (Benchmark-ready)
 // ============================================================================
 namespace CreateTests {
 
+void testinit(const std::string &path) {
+    std::error_code ec;
+    std::filesystem::create_directories(path, ec);
+}
+
+void teardown(const std::string &path) {
+    std::error_code ec;
+    std::filesystem::remove_all(path, ec);
+}
+
+// Helper to generate unique filenames per iteration
+inline std::filesystem::path make_path(const std::string &dir, const std::string &prefix) {
+    static std::atomic<uint64_t> counter{0};
+    return std::filesystem::path(dir) / (prefix + "_" + std::to_string(counter++) + ".tmp");
+}
+
 bool create_ofstream(const std::string &dir) {
-    try {
-        const auto path = std::filesystem::path(dir) / "bench_create_ofstream.tmp";
-        std::ofstream f(path, std::ios::binary);
-        if (!f) return false;
-        f << "x";
-        f.close();
-        std::filesystem::remove(path);
-        return true;
-    } catch (...) {
-        return false;
-    }
+    const auto path = make_path(dir, "bench_create_ofstream");
+
+    std::ofstream f(path, std::ios::binary);
+    if (!f) return false;
+
+    f.write("x", 1);
+    f.close();
+
+    std::filesystem::remove(path);
+    return true;
 }
 
 bool create_fopen(const std::string &dir) {
-    const auto path = (std::filesystem::path(dir) / "bench_create_fopen.tmp").string();
+    const auto path = make_path(dir, "bench_create_fopen").string();
+
     FILE *f = fopen(path.c_str(), "wb");
     if (!f) return false;
-    fputs("x", f);
+
+    fwrite("x", 1, 1, f);
     fclose(f);
+
     std::filesystem::remove(path);
     return true;
 }
 
 bool create_CreateFileA(const std::string &dir) {
 #if defined(KD_WINDOWS)
-    const std::string filename = (std::filesystem::path(dir) / "bench_create_CreateFileA.tmp").string();
-    HANDLE h = CreateFileA(filename.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+    const auto path = make_path(dir, "bench_create_CreateFileA").string();
+
+    HANDLE h = CreateFileA(path.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+
     if (h == INVALID_HANDLE_VALUE) return false;
+
+    DWORD written = 0;
+    WriteFile(h, "x", 1, &written, nullptr);
+
     CloseHandle(h);
-    std::filesystem::remove(filename);
-    return true;
+    std::filesystem::remove(path);
+    return written == 1;
 #else
     return create_ofstream(dir);
 #endif
@@ -433,38 +536,57 @@ bool create_CreateFileA(const std::string &dir) {
 
 bool create_CreateFileW(const std::string &dir) {
 #if defined(KD_WINDOWS)
-    const std::wstring filename =
-            KDC::CommonUtility::s2ws((std::filesystem::path(dir) / "bench_create_CreateFileW.tmp").string());
-    HANDLE h = CreateFileW(filename.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+    const auto path = make_path(dir, "bench_create_CreateFileW");
+    const std::wstring wpath = CommonUtility::s2ws(path.string());
+
+    HANDLE h = CreateFileW(wpath.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+
     if (h == INVALID_HANDLE_VALUE) return false;
+
+    DWORD written = 0;
+    WriteFile(h, "x", 1, &written, nullptr);
+
     CloseHandle(h);
-    std::filesystem::remove(KDC::CommonUtility::ws2s(filename));
-    return true;
+    std::filesystem::remove(path);
+    return written == 1;
 #else
     return create_ofstream(dir);
 #endif
 }
+
 } // namespace CreateTests
 
 // ----------------------------------------------------------------------------
 // DELETE FUNCTIONS
 // ----------------------------------------------------------------------------
 namespace DeleteTests {
-bool delete_filesystem_remove(const std::string &dir) {
-    try {
-        const auto path = std::filesystem::path(dir) / "bench_delete_std.tmp";
+
+static std::atomic<uint64_t> counter{0};
+
+void testinit(const std::string &dir) {
+    for (counter = 0; counter < iterations_; counter++) {
+        auto path = std::filesystem::path(dir) / ("bench_delete_" + std::to_string(counter) + ".tmp");
         CreateTestFile(path.string());
-        std::filesystem::remove(path);
-        return true;
-    } catch (...) {
-        return false;
     }
+    counter = 0;
+}
+
+void teardown(const std::string &dir) {}
+
+bool delete_filesystem_remove(const std::string &dir) {
+    uint64_t id = counter++;
+
+    auto path = std::filesystem::path(dir) / ("bench_delete_" + std::to_string(id) + ".tmp");
+
+    return std::filesystem::remove(path);
 }
 
 bool delete_DeleteFileA(const std::string &dir) {
 #if defined(KD_WINDOWS)
-    const auto filename = (std::filesystem::path(dir) / "bench_delete_DeleteFileA.tmp").string();
-    CreateTestFile(filename);
+    uint64_t id = counter++;
+
+    auto filename = (std::filesystem::path(dir) / ("bench_delete_" + std::to_string(id) + ".tmp")).string();
+
     return DeleteFileA(filename.c_str()) == TRUE;
 #else
     return delete_filesystem_remove(dir);
@@ -472,8 +594,10 @@ bool delete_DeleteFileA(const std::string &dir) {
 }
 
 bool delete_crt_remove(const std::string &dir) {
-    const auto filename = (std::filesystem::path(dir) / "bench_delete_crt.tmp").string();
-    CreateTestFile(filename);
+    uint64_t id = counter++;
+
+    auto filename = (std::filesystem::path(dir) / ("bench_delete_" + std::to_string(id) + ".tmp")).string();
+
     return std::remove(filename.c_str()) == 0;
 }
 } // namespace DeleteTests
@@ -482,31 +606,42 @@ bool delete_crt_remove(const std::string &dir) {
 // MOVE FUNCTIONS
 // ----------------------------------------------------------------------------
 namespace MoveTests {
-bool move_filesystem_rename(const std::string &dir) {
-    try {
-        const auto src = std::filesystem::path(dir) / "bench_move_src.tmp";
-        const auto dst = std::filesystem::path(dir) / "bench_move_dst.tmp";
-        CreateTestFile(src.string());
-        std::filesystem::rename(src, dst);
-        std::filesystem::remove(dst);
-        return true;
-    } catch (...) {
-        return false;
+
+static std::atomic<uint64_t> counter{0};
+
+void testinit(const std::string &dir) {
+    for (counter = 0; counter < iterations_; counter++) {
+        auto path = std::filesystem::path(dir) / ("bench_move_" + std::to_string(counter) + "_src.tmp");
+        CreateTestFile(path.string());
     }
+    counter = 0;
+}
+
+void teardown(const std::string &dir) {
+    std::error_code ec;
+    std::filesystem::remove_all(dir, ec);
+}
+
+bool move_filesystem_rename(const std::string &dir) {
+    uint64_t id = counter++;
+
+    auto src = std::filesystem::path(dir) / ("bench_move_" + std::to_string(id) + "_src.tmp");
+    auto dst = std::filesystem::path(dir) / ("bench_move_" + std::to_string(id) + "_dst.tmp");
+
+    std::error_code ec;
+    std::filesystem::rename(src, dst, ec);
+
+    return !ec;
 }
 
 bool move_MoveFileA(const std::string &dir) {
 #if defined(KD_WINDOWS)
-    const auto src = (std::filesystem::path(dir) / "bench_move_MoveFileA_src.tmp").string();
-    const auto dst = (std::filesystem::path(dir) / "bench_move_MoveFileA_dst.tmp").string();
-    CreateTestFile(src);
-    BOOL ok = MoveFileA(src.c_str(), dst.c_str());
-    if (ok) {
-        std::filesystem::remove(dst);
-    } else {
-        if (std::filesystem::exists(src)) std::filesystem::remove(src);
-    }
-    return ok == TRUE;
+    uint64_t id = counter++;
+
+    auto src = (std::filesystem::path(dir) / ("bench_move_" + std::to_string(id) + "_src.tmp")).string();
+    auto dst = (std::filesystem::path(dir) / ("bench_move_" + std::to_string(id) + "_dst.tmp")).string();
+
+    return MoveFileA(src.c_str(), dst.c_str()) == TRUE;
 #else
     return move_filesystem_rename(dir);
 #endif
@@ -514,15 +649,12 @@ bool move_MoveFileA(const std::string &dir) {
 
 bool move_MoveFileW(const std::string &dir) {
 #if defined(KD_WINDOWS)
-    const auto src = KDC::CommonUtility::s2ws((std::filesystem::path(dir) / "bench_move_MoveFileW_src.tmp").string());
-    const auto dst = KDC::CommonUtility::s2ws((std::filesystem::path(dir) / "bench_move_MoveFileW_dst.tmp").string());
-    CreateTestFile(KDC::CommonUtility::ws2s(src));
-    BOOL ok = MoveFileW(src.c_str(), dst.c_str());
-    if (ok)
-        std::filesystem::remove(KDC::CommonUtility::ws2s(dst));
-    else
-        std::filesystem::remove(KDC::CommonUtility::ws2s(src));
-    return ok == TRUE;
+    uint64_t id = counter++;
+
+    auto src = CommonUtility::s2ws((std::filesystem::path(dir) / ("bench_move_" + std::to_string(id) + "_src.tmp")).string());
+    auto dst = CommonUtility::s2ws((std::filesystem::path(dir) / ("bench_move_" + std::to_string(id) + "_dst.tmp")).string());
+
+    return MoveFileW(src.c_str(), dst.c_str()) == TRUE;
 #else
     return move_filesystem_rename(dir);
 #endif
@@ -538,59 +670,59 @@ namespace IoHelperTests {
 
 bool iohelper_checkIfPathExists(const std::string &path) {
     bool exists = false;
-    KDC::IoError ioError = KDC::IoError::Unknown;
-    KDC::IoHelper::checkIfPathExists(path, exists, ioError, KDC::IoHelper::PathCheckOption::Insensitive);
+    IoError ioError = IoError::Unknown;
+    IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive);
     return exists;
 }
 
 bool iohelper_getFileStat(const std::string &path) {
-    KDC::FileStat fs{};
-    KDC::IoError ioError = KDC::IoError::Unknown;
-    return KDC::IoHelper::getFileStat(path, &fs, ioError, KDC::IoHelper::PathCheckOption::Insensitive);
+    FileStat fs{};
+    IoError ioError = IoError::Unknown;
+    return IoHelper::getFileStat(path, &fs, ioError, IoHelper::PathCheckOption::Insensitive);
 }
 
 bool iohelper_getFileSize(const std::string &path) {
     uint64_t size = 0;
-    KDC::IoError ioError = KDC::IoError::Unknown;
-    return KDC::IoHelper::getFileSize(path, size, ioError);
+    IoError ioError = IoError::Unknown;
+    return IoHelper::getFileSize(path, size, ioError);
 }
 
 bool iohelper_openFile(const std::string &path) {
     std::ifstream file;
-    KDC::IoError ioError = KDC::IoError::Unknown;
-    bool ok = KDC::IoHelper::openFile(path, file, ioError);
+    IoError ioError = IoError::Unknown;
+    bool ok = IoHelper::openFile(path, file, ioError);
     if (file.is_open()) file.close();
     return ok;
 }
 
 bool iohelper_setFileDates(const std::string &path) {
-    const auto now = static_cast<KDC::SyncTime>(
+    const auto now = static_cast<SyncTime>(
             std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count());
-    return KDC::IoHelper::setFileDates(path, now, now, false) == KDC::IoError::Success;
+    return IoHelper::setFileDates(path, now, now, false) == IoError::Success;
 }
 
 bool iohelper_deleteItem(const std::string &dir) {
     const auto path = (std::filesystem::path(dir) / "bench_iohelper_delete.tmp").string();
     CreateTestFile(path);
-    KDC::IoError ioError = KDC::IoError::Unknown;
-    return KDC::IoHelper::deleteItem(path, ioError);
+    IoError ioError = IoError::Unknown;
+    return IoHelper::deleteItem(path, ioError);
 }
 
 bool iohelper_moveItem(const std::string &dir) {
-    //try {
-        const auto src = std::filesystem::path(dir) / "bench_iohelper_move_src.tmp";
-        const auto dst = std::filesystem::path(dir) / "bench_iohelper_move_dst.tmp";
+    // try {
+    const auto src = std::filesystem::path(dir) / "bench_iohelper_move_src.tmp";
+    const auto dst = std::filesystem::path(dir) / "bench_iohelper_move_dst.tmp";
     CreateTestFile(src.string());
-        KDC::IoError ioError = KDC::IoError::Unknown;
-        const bool ok = KDC::IoHelper::moveItem(src, dst, ioError);
-        if (ok)
-            KDC::IoHelper::deleteItem(dst);
-        else
-            KDC::IoHelper::deleteItem(src);
-        return ok;
+    IoError ioError = IoError::Unknown;
+    const bool ok = IoHelper::moveItem(src, dst, ioError);
+    if (ok)
+        IoHelper::deleteItem(dst);
+    else
+        IoHelper::deleteItem(src);
+    return ok;
     //} catch (...) {
     //    return false;
-    }
+}
 
 } // namespace IoHelperTests
 
@@ -607,14 +739,15 @@ bool DeleteTestFile(const std::string &path) {
     }
 }
 
-// ============================================================================
-// HELPER FUNCTIONS - TEST FILE MANAGEMENT
-// ============================================================================
 bool CreateTestFile(const std::string &path, const std::string &content) {
     std::ofstream f(path, std::ios::binary);
     if (!f) return false;
     f << content;
     return true;
+}
+
+int getiterations(void) {
+    return iterations_;
 }
 
 // ============================================================================
@@ -638,105 +771,136 @@ void RunAllBenchmarks(const std::string &testFilePath, int iterations) {
 
     // --- EXISTS ---
     std::cout << "\n[Running Exists Tests...]\n";
-    benchmark.addResult("Exists", "std::filesystem::status", benchmark.measure(ExistsTests::filesystem_status, testFilePath));
-    benchmark.addResult("Exists", "std::filesystem::exists", benchmark.measure(ExistsTests::filesystem_exists, testFilePath));
+    benchmark.addResult(
+            "Exists", "std::filesystem::status",
+            benchmark.measure(ExistsTests::filesystem_status, testFilePath, ExistsTests::testinit, ExistsTests::teardown, false));
+    benchmark.addResult(
+            "Exists", "std::filesystem::exists",
+            benchmark.measure(ExistsTests::filesystem_exists, testFilePath, ExistsTests::testinit, ExistsTests::teardown, false));
 #if defined(KD_WINDOWS)
-    benchmark.addResult("Exists", "GetFileAttributesA", benchmark.measure(ExistsTests::win32_getfileattributes_a, testFilePath));
+    benchmark.addResult("Exists", "GetFileAttributesA",
+                        benchmark.measure(ExistsTests::win32_getfileattributes_a, testFilePath, ExistsTests::testinit,
+                                          ExistsTests::teardown, false));
     benchmark.addResult("Exists", "GetFileAttributesW + s2ws",
-                        benchmark.measure(ExistsTests::win32_getfileattributes_w, testFilePath));
+                        benchmark.measure(ExistsTests::win32_getfileattributes_w, testFilePath, ExistsTests::testinit,
+                                          ExistsTests::teardown, false));
 #endif
-    benchmark.addResult("Exists", "_stat()", benchmark.measure(ExistsTests::crt_stat, testFilePath));
+    benchmark.addResult(
+            "Exists", "_stat()",
+            benchmark.measure(ExistsTests::crt_stat, testFilePath, ExistsTests::testinit, ExistsTests::teardown, false));
     benchmark.addResult("Exists", "IoHelper::checkIfPathExists",
-                        benchmark.measure(IoHelperTests::iohelper_checkIfPathExists, testFilePath));
+                        benchmark.measure(IoHelperTests::iohelper_checkIfPathExists, testFilePath, ExistsTests::testinit,
+                                          ExistsTests::teardown, false));
     // --- METADATA ---
     std::cout << "[Running Metadata Tests...]\n";
-    benchmark.addResult("Metadata", "stat_full", benchmark.measure(MetadataTests::stat_full, testFilePath));
+    benchmark.addResult(
+            "Metadata", "stat_full",
+            benchmark.measure(MetadataTests::stat_full, testFilePath, MetadataTests::testinit, MetadataTests::teardown, false));
 #if defined(KD_LINUX) || defined(KD_MACOS)
-    benchmark.addResult("Metadata", "lstat_full", benchmark.measure(MetadataTests::lstat_full, testFilePath));
+    benchmark.addResult(
+            "Metadata", "lstat_full",
+            benchmark.measure(MetadataTests::lstat_full, testFilePath, MetadataTests::testinit, MetadataTests::teardown, false));
 #endif
-    benchmark.addResult("Metadata", "fstat_full", benchmark.measure(MetadataTests::fstat_full, testFilePath));
+    benchmark.addResult(
+            "Metadata", "fstat_full",
+            benchmark.measure(MetadataTests::fstat_full, testFilePath, MetadataTests::testinit, MetadataTests::teardown, false));
 #if defined(KD_LINUX)
-    benchmark.addResult("Metadata", "statx_full", benchmark.measure(MetadataTests::statx_full, testFilePath));
+    benchmark.addResult(
+            "Metadata", "statx_full",
+            benchmark.measure(MetadataTests::statx_full, testFilePath, MetadataTests::testinit, MetadataTests::teardown, false));
 #endif
-    benchmark.addResult("Metadata", "filesystem_full", benchmark.measure(MetadataTests::filesystem_full, testFilePath));
+    benchmark.addResult("Metadata", "filesystem_full",
+                        benchmark.measure(MetadataTests::filesystem_full, testFilePath, MetadataTests::testinit,
+                                          MetadataTests::teardown, false));
     benchmark.addResult("Metadata", "IoHelper::getFileStat",
-                        benchmark.measure(IoHelperTests::iohelper_getFileStat, testFilePath));
+                        benchmark.measure(IoHelperTests::iohelper_getFileStat, testFilePath, MetadataTests::testinit,
+                                          MetadataTests::teardown, false));
     // --- READ ---
     std::cout << "[Running Read Tests...]\n";
-    benchmark.addResult("Read", "ifstream (binary)", benchmark.measure(ReadTests::ifstream_binary, testFilePath));
-    benchmark.addResult("Read", "ifstream (text)", benchmark.measure(ReadTests::ifstream_text, testFilePath));
-    benchmark.addResult("Read", "fopen (rb)", benchmark.measure(ReadTests::fopen_binary, testFilePath));
-    benchmark.addResult("Read", "fopen (r)", benchmark.measure(ReadTests::fopen_text, testFilePath));
+    benchmark.addResult(
+            "Read", "ifstream (binary)",
+            benchmark.measure(ReadTests::ifstream_binary, testFilePath, ReadTests::testinit, ReadTests::teardown, false));
+    benchmark.addResult(
+            "Read", "ifstream (text)",
+            benchmark.measure(ReadTests::ifstream_text, testFilePath, ReadTests::testinit, ReadTests::teardown, false));
+    benchmark.addResult(
+            "Read", "fopen (rb)",
+            benchmark.measure(ReadTests::fread_binary, testFilePath, ReadTests::testinit, ReadTests::teardown, false));
+    benchmark.addResult("Read", "fopen (r)",
+                        benchmark.measure(ReadTests::fread_text, testFilePath, ReadTests::testinit, ReadTests::teardown, false));
 #if defined(KD_WINDOWS)
-    benchmark.addResult("Read", "CreateFileA", benchmark.measure(ReadTests::win32_createfile, testFilePath));
-    benchmark.addResult("Read", "CreateFileW + s2ws", benchmark.measure(ReadTests::win32_createfile_w, testFilePath));
+    benchmark.addResult(
+            "Read", "CreateFileA",
+            benchmark.measure(ReadTests::win32_readfile, testFilePath, ReadTests::testinit, ReadTests::teardown, false));
+    benchmark.addResult(
+            "Read", "CreateFileW + s2ws",
+            benchmark.measure(ReadTests::win32_readfile_w, testFilePath, ReadTests::testinit, ReadTests::teardown, false));
 #endif
-    benchmark.addResult("Read", "IoHelper::openFile", benchmark.measure(IoHelperTests::iohelper_openFile, testFilePath));
-
-    // --- WRITE ---
-    std::cout << "[Running Write Tests...]\n";
-    benchmark.addResult("Write", "filesystem::last_write_time",
-                        benchmark.measure(WriteTests::filesystem_last_write_time, testFilePath));
-#if defined(KD_WINDOWS)
-    benchmark.addResult("Write", "SetFileTime (Win32)", benchmark.measure(WriteTests::win32_setfiletime, testFilePath));
-#endif
-    benchmark.addResult("Write", "ofstream (append)", benchmark.measure(WriteTests::ofstream_append, testFilePath));
-    benchmark.addResult("Write", "IoHelper::setFileDates",
-                        benchmark.measure(IoHelperTests::iohelper_setFileDates, testFilePath));
+    benchmark.addResult(
+            "Read", "IoHelper::openFile",
+            benchmark.measure(IoHelperTests::iohelper_openFile, testFilePath, ReadTests::testinit, ReadTests::teardown, false));
 
     // --- CREATE ---
     std::cout << "[Running Create Tests...]\n";
-    benchmark.addResult("Create", "create (ofstream)", benchmark.measure(CreateTests::create_ofstream, testFilePath));
-    benchmark.addResult("Create", "create (fopen)", benchmark.measure(CreateTests::create_fopen, testFilePath));
-    benchmark.addResult("Create", "create (CreateFileA)", benchmark.measure(CreateTests::create_CreateFileA, testFilePath));
-    benchmark.addResult("Create", "create (CreateFileW)", benchmark.measure(CreateTests::create_CreateFileW, testFilePath));
+    benchmark.addResult(
+            "Create", "create (ofstream)",
+            benchmark.measure(CreateTests::create_ofstream, testFilePath, CreateTests::testinit, CreateTests::teardown, false));
+    benchmark.addResult(
+            "Create", "create (fopen)",
+            benchmark.measure(CreateTests::create_fopen, testFilePath, CreateTests::testinit, CreateTests::teardown, false));
+    benchmark.addResult("Create", "create (CreateFileA)",
+                        benchmark.measure(CreateTests::create_CreateFileA, testFilePath, CreateTests::testinit,
+                                          CreateTests::teardown, false));
+    benchmark.addResult("Create", "create (CreateFileW)",
+                        benchmark.measure(CreateTests::create_CreateFileW, testFilePath, CreateTests::testinit,
+                                          CreateTests::teardown, false));
 
     // --- DELETE ---
     std::cout << "[Running Delete Tests...]\n";
     benchmark.addResult("Delete", "delete (filesystem::remove)",
-                        benchmark.measure(DeleteTests::delete_filesystem_remove, testFilePath));
-    benchmark.addResult("Delete", "delete (DeleteFileA)", benchmark.measure(DeleteTests::delete_DeleteFileA, testFilePath));
-    benchmark.addResult("Delete", "delete (CRT remove)", benchmark.measure(DeleteTests::delete_crt_remove, testFilePath));
+                        benchmark.measure(DeleteTests::delete_filesystem_remove, testFilePath, DeleteTests::testinit,
+                                          DeleteTests::teardown, true));
+    benchmark.addResult(
+            "Delete", "delete (DeleteFileA)",
+            benchmark.measure(DeleteTests::delete_DeleteFileA, testFilePath, DeleteTests::testinit, DeleteTests::teardown, true));
+    benchmark.addResult(
+            "Delete", "delete (CRT remove)",
+            benchmark.measure(DeleteTests::delete_crt_remove, testFilePath, DeleteTests::testinit, DeleteTests::teardown, true));
     benchmark.addResult("Delete", "IoHelper::deleteItem",
-                        benchmark.measure(IoHelperTests::iohelper_deleteItem, testFilePath));
+                        benchmark.measure(IoHelperTests::iohelper_deleteItem, testFilePath, DeleteTests::testinit,
+                                          DeleteTests::teardown, true));
 
     // --- MOVE ---
     std::cout << "[Running Move Tests...]\n";
-    benchmark.addResult("Move", "move (std::filesystem::rename)",
-                        benchmark.measure(MoveTests::move_filesystem_rename, testFilePath));
-    benchmark.addResult("Move", "move (MoveFileA)", benchmark.measure(MoveTests::move_MoveFileA, testFilePath));
-    benchmark.addResult("Move", "move (MoveFileW)", benchmark.measure(MoveTests::move_MoveFileW, testFilePath));
-    benchmark.addResult("Move", "IoHelper::moveItem",
-                        benchmark.measure(IoHelperTests::iohelper_moveItem, testFilePath));
+    benchmark.addResult(
+            "Move", "move (std::filesystem::rename)",
+            benchmark.measure(MoveTests::move_filesystem_rename, testFilePath, MoveTests::testinit, MoveTests::teardown, true));
+    benchmark.addResult(
+            "Move", "move (MoveFileA)",
+            benchmark.measure(MoveTests::move_MoveFileA, testFilePath, MoveTests::testinit, MoveTests::teardown, true));
+    benchmark.addResult(
+            "Move", "move (MoveFileW)",
+            benchmark.measure(MoveTests::move_MoveFileW, testFilePath, MoveTests::testinit, MoveTests::teardown, true));
+    benchmark.addResult(
+            "Move", "IoHelper::moveItem",
+            benchmark.measure(IoHelperTests::iohelper_moveItem, testFilePath, MoveTests::testinit, MoveTests::teardown, true));
 
     // --- SIZE ---
     std::cout << "[Running Size Tests...]\n";
-    // Size tests are not boolean-returning; measure by adapting wrapper to bool conversion for timing only.
-    benchmark.addResult("Size", "filesystem::file_size",
-                        benchmark.measure(
-                                [](const std::string &p) {
-                                    (void) SizeTests::filesystem_filesize(p);
-                                    return true;
-                                },
-                                testFilePath));
+    benchmark.addResult(
+            "Size", "filesystem::file_size",
+            benchmark.measure(SizeTests::filesystem_filesize, testFilePath, SizeTests::testinit, SizeTests::teardown, true));
 #if defined(KD_WINDOWS)
-    benchmark.addResult("Size", "GetFileSizeEx (Win32)",
-                        benchmark.measure(
-                                [](const std::string &p) {
-                                    (void) SizeTests::win32_getfilesize(p);
-                                    return true;
-                                },
-                                testFilePath));
+    benchmark.addResult(
+            "Size", "GetFileSizeEx (Win32)",
+            benchmark.measure(SizeTests::win32_getfilesize, testFilePath, SizeTests::testinit, SizeTests::teardown, true));
 #endif
-    benchmark.addResult("Size", "_filelength (CRT)",
-                        benchmark.measure(
-                                [](const std::string &p) {
-                                    (void) SizeTests::crt_filelength(p);
-                                    return true;
-                                },
-                                testFilePath));
-    benchmark.addResult("Size", "IoHelper::getFileSize",
-                        benchmark.measure(IoHelperTests::iohelper_getFileSize, testFilePath));
+    benchmark.addResult(
+            "Size", "_filelength (CRT)",
+            benchmark.measure(SizeTests::crt_filelength, testFilePath, SizeTests::testinit, SizeTests::teardown, true));
+    benchmark.addResult(
+            "Size", "IoHelper::getFileSize",
+            benchmark.measure(IoHelperTests::iohelper_getFileSize, testFilePath, SizeTests::testinit, SizeTests::teardown, true));
 
     // Print results and cleanup
     benchmark.printResultsByCategory();
@@ -851,7 +1015,6 @@ void RunAllBenchmarks(const std::string &testFilePath, int iterations) {
 // ============================================================================
 // CppUnit wrapper to run all IO tests from a single test
 // ============================================================================
-namespace KDC {
 
 void BenchmarkIOHelper::setUp() {
     TestBase::start();
@@ -863,7 +1026,7 @@ void BenchmarkIOHelper::tearDown() {
 
 void BenchmarkIOHelper::runAllIOBenchmarks() {
     // Name and iterations can be adjusted or parameterized if needed
-    ::RunAllBenchmarks("io_benchmark_test.tmp", iterations_);
+    RunAllBenchmarks("io_benchmark_test.tmp", iterations_);
 }
 
 } // namespace KDC

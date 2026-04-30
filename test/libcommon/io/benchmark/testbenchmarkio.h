@@ -54,6 +54,7 @@
 #include <io.h>
 #include <sys/stat.h>
 
+namespace KDC {
 // ============================================================================
 // BENCHMARK RESULTS STRUCT
 // ============================================================================
@@ -72,9 +73,8 @@ class testbenchmarkio {
     public:
         testbenchmarkio(int iterations = 50000, bool warmup = true);
 
-        template<typename Func>
-        double measure(Func func, const std::string &path);
-
+        template<typename Func, typename Init, typename Teardown>
+        double measure(Func func, const std::string &path, Init init, Teardown teardown, bool per_iteration = false);
         void addResult(const std::string &category, const std::string &method, double time_ms, bool success = true);
 
         void printResults() const;
@@ -83,45 +83,63 @@ class testbenchmarkio {
         const std::vector<BenchmarkResult> &getResults() const;
         void reset();
 
-        int getIterations() const { return iterations_; }
-
     private:
-        int iterations_;
         bool warmup_;
         std::vector<BenchmarkResult> results_;
 };
 
 // ============================================================================
-// TEST FUNCTIONS - CATEGORY 1: EXISTS (No file handle opened)
-// These are quick checks to determine if the file exists using different APIs
+// TEST FUNCTIONS - CATEGORY 1: EXISTS
 // ============================================================================
 namespace ExistsTests {
+void testinit(const std::string &path);
+void teardown(const std::string &path);
+
 bool filesystem_status(const std::string &path);
 bool filesystem_exists(const std::string &path);
 bool win32_getfileattributes_a(const std::string &path);
 bool win32_getfileattributes_w(const std::string &path);
 bool crt_stat(const std::string &path);
-// bool crt_access(const std::string &path); // Removed: not a real existence check for drive client
 } // namespace ExistsTests
 
 // ============================================================================
 // TEST FUNCTIONS - CATEGORY 2: METADATA (retrieve metadata: perms, times, size)
 // ============================================================================
 namespace MetadataTests {
+void testinit(const std::string &path);
+void teardown(const std::string &path);
+
 bool stat_full(const std::string &path);
-bool lstat_full(const std::string &path);
-bool fstat_full(const std::string &path);
 bool statx_full(const std::string &path);
+bool fstat_full(const std::string &path);
 bool filesystem_full(const std::string &path);
 } // namespace MetadataTests
+
+// ============================================================================
+// TEST FUNCTIONS - CATEGORY 3: READ
+// ============================================================================
+namespace ReadTests {
+void testinit(const std::string &path);
+void teardown(const std::string &path);
+
+bool ifstream_binary(const std::string &path);
+bool ifstream_text(const std::string &path);
+bool fread_binary(const std::string &path);
+bool fread_text(const std::string &path);
+bool win32_readfile(const std::string &path);
+bool win32_readfile_w(const std::string &path);
+} // namespace ReadTests
 
 // ============================================================================
 // TEST FUNCTIONS - CATEGORY 4: FILE SIZE
 // ============================================================================
 namespace SizeTests {
-uint64_t filesystem_filesize(const std::string &path);
-uint64_t win32_getfilesize(const std::string &path);
-uint64_t crt_filelength(const std::string &path);
+void testinit(const std::string &path);
+void teardown(const std::string &path);
+
+bool filesystem_filesize(const std::string &path);
+bool win32_getfilesize(const std::string &path);
+bool crt_filelength(const std::string &path);
 } // namespace SizeTests
 
 // ============================================================================
@@ -129,11 +147,18 @@ uint64_t crt_filelength(const std::string &path);
 // ============================================================================
 bool CreateTestFile(const std::string &path, const std::string &content = "Benchmark test data");
 bool DeleteTestFile(const std::string &path);
+int getiterations(void);
 
 // ============================================================================
 // CREATE FUNCTIONS
 // ============================================================================
 namespace CreateTests {
+void testinit(const std::string &path);
+void teardown(const std::string &path);
+
+void testinit(const std::string &path);
+void teardown(const std::string &path);
+
 bool create_ofstream(const std::string &dir);
 bool create_fopen(const std::string &dir);
 bool create_CreateFileA(const std::string &dir);
@@ -144,6 +169,9 @@ bool create_CreateFileW(const std::string &dir);
 // DELETE FUNCTIONS
 // ----------------------------------------------------------------------------
 namespace DeleteTests {
+void testinit(const std::string &path);
+void teardown(const std::string &path);
+
 bool delete_filesystem_remove(const std::string &dir);
 bool delete_DeleteFileA(const std::string &dir);
 bool delete_crt_remove(const std::string &dir);
@@ -153,6 +181,9 @@ bool delete_crt_remove(const std::string &dir);
 // MOVE FUNCTIONS
 // ----------------------------------------------------------------------------
 namespace MoveTests {
+void testinit(const std::string &path);
+void teardown(const std::string &path);
+
 bool move_filesystem_rename(const std::string &dir);
 bool move_MoveFileA(const std::string &dir);
 bool move_MoveFileW(const std::string &dir);
@@ -177,28 +208,43 @@ bool iohelper_moveItem(const std::string &dir);
 void RunAllBenchmarks(const std::string &testFilePath = "io_benchmark_test.tmp", int iterations = 50000);
 
 // ============================================================================
-// TEMPLATE IMPLEMENTATION (Must be in header)
+// TEMPLATE IMPLEMENTATION
 // ============================================================================
-template<typename Func>
-inline double testbenchmarkio::measure(Func func, const std::string &path) {
-    // Warmup phase
-    if (warmup_) {
-        for (int32_t i = 0; i < 10; ++i) func(path);
+template<typename Func, typename Init, typename Teardown>
+double testbenchmarkio::measure(Func func, const std::string &path, Init init, Teardown teardown, bool per_iteration) {
+    volatile bool result = false;
+
+    // Warmup
+    if (!per_iteration) init(path);
+    for (int32_t i = 0; i < 10; ++i) {
+        if (per_iteration) init(path);
+        result ^= func(path);
+        if (per_iteration) teardown(path);
+    }
+    if (!per_iteration) teardown(path);
+
+
+    // Init once if not per-iteration
+    if (!per_iteration) init(path);
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    for (int32_t i = 0; i < getiterations(); ++i) {
+        if (per_iteration) init(path);
+
+        result ^= func(path);
+
+        if (per_iteration) teardown(path);
     }
 
-    // Timed phase
-    auto start = std::chrono::high_resolution_clock::now();
-    volatile bool result = false;
-    for (int32_t i = 0; i < iterations_; ++i) {
-        result = func(path);
-    }
     auto end = std::chrono::high_resolution_clock::now();
+
+    // Teardown once if not per-iteration
+    if (!per_iteration) teardown(path);
 
     std::chrono::duration<double, std::milli> elapsed = end - start;
     return elapsed.count();
 }
-
-namespace KDC {
 
 class BenchmarkIOHelper : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(BenchmarkIOHelper);
@@ -210,9 +256,6 @@ class BenchmarkIOHelper : public CppUnit::TestFixture, public TestBase {
         virtual void tearDown() override;
 
         void runAllIOBenchmarks();
-
-    private:
-        int32_t iterations_ = 10000;
 };
 
 } // namespace KDC
