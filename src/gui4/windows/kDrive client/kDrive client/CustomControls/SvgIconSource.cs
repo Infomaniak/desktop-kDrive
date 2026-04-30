@@ -23,7 +23,6 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Media.Media3D;
 
 namespace Infomaniak.kDrive.CustomControls
 {
@@ -107,17 +106,17 @@ namespace Infomaniak.kDrive.CustomControls
 
         private (double Width, double Height) ComputeRasterSize(SvgDocument svgDoc)
         {
-            var scale = Utility.DpiHelper.GetScaleForWindow(
-                WinRT.Interop.WindowNative.GetWindowHandle((Application.Current as App)?.CurrentWindow));
+            Window? window = (Application.Current as App)?.CurrentWindow;
 
-            var ratio = svgDoc.Height.Value / svgDoc.Width.Value;
-            if (double.IsNaN(ratio) || double.IsInfinity(ratio))
-                ratio = 1.0F;
+            if (window is null)
+            {
+                Logger.Log(Logger.Level.Warning, "Unable to get current window for DPI scaling, defaulting to 1.0");
+                return (svgDoc.Width.Value, svgDoc.Height.Value);
+            }
 
-            double targetHeight = svgDoc.Height.Value;
-            double targetWidth = targetHeight / ratio;
-
-            return (targetWidth * scale, targetHeight * scale);
+            var scale = Utility.DpiHelper.GetScaleForWindow(WinRT.Interop.WindowNative.GetWindowHandle(window));
+            scale = scale == 0 ? 1.0 : scale; // Fallback to 1.0 if DPI scaling is unavailable
+            return (svgDoc.Height.Value * scale, svgDoc.Width.Value * scale);
         }
 
         private void TryFallback()

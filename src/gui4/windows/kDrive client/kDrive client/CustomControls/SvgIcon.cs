@@ -32,16 +32,13 @@ namespace Infomaniak.kDrive.CustomControls
     {
         private bool _isLoaded;
         private CancellationTokenSource? _refreshCts;
-        private List<KeyValuePair<DependencyProperty, long>> subscribptionTokens = new List<KeyValuePair<DependencyProperty, long>>();
+        private List<KeyValuePair<DependencyProperty, long>> _subscriptionTokens = new List<KeyValuePair<DependencyProperty, long>>();
 
         public SvgIcon()
         {
             // Register property change callbacks
             Foreground = null;
-            subscribptionTokens.Add(new KeyValuePair<DependencyProperty, long>(ForegroundProperty, RegisterPropertyChangedCallback(ForegroundProperty, OnDependencyPropertyChanged)));
-            subscribptionTokens.Add(new KeyValuePair<DependencyProperty, long>(WidthProperty, RegisterPropertyChangedCallback(WidthProperty, OnDependencyPropertyChanged)));
-            subscribptionTokens.Add(new KeyValuePair<DependencyProperty, long>(HeightProperty, RegisterPropertyChangedCallback(HeightProperty, OnDependencyPropertyChanged)));
-
+           
             // Track Loaded state
             Loaded += OnLoaded;
             Unloaded += OnUnloaded;
@@ -115,6 +112,11 @@ namespace Infomaniak.kDrive.CustomControls
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
+            _subscriptionTokens.Add(new KeyValuePair<DependencyProperty, long>(ForegroundProperty, RegisterPropertyChangedCallback(ForegroundProperty, OnDependencyPropertyChanged)));
+            _subscriptionTokens.Add(new KeyValuePair<DependencyProperty, long>(WidthProperty, RegisterPropertyChangedCallback(WidthProperty, OnDependencyPropertyChanged)));
+            _subscriptionTokens.Add(new KeyValuePair<DependencyProperty, long>(HeightProperty, RegisterPropertyChangedCallback(HeightProperty, OnDependencyPropertyChanged)));
+
+
             _isLoaded = true;
             ScheduleRefresh();
 
@@ -128,11 +130,11 @@ namespace Infomaniak.kDrive.CustomControls
             ActualThemeChanged -= OnThemeChanged;
 
             // Unregister property change callbacks
-            foreach (var token in subscribptionTokens)
+            foreach (var token in _subscriptionTokens)
             {
                 UnregisterPropertyChangedCallback(token.Key, token.Value);
             }
-            subscribptionTokens.Clear();
+            _subscriptionTokens.Clear();
         }
 
         private void OnThemeChanged(FrameworkElement sender, object args)

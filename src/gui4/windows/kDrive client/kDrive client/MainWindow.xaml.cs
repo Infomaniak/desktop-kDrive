@@ -44,13 +44,8 @@ namespace Infomaniak.kDrive
             AppWindow.TitleBar.PreferredTheme = Microsoft.UI.Windowing.TitleBarTheme.UseDefaultAppMode;
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
             Closed += MainWindow_Closed;
+            Activated += MainWindow_Activated;
             this.Content.PointerPressed += OnPointerPressed;
-            Activated += OnActivated;
-        }
-
-        private void OnActivated(object sender, WindowActivatedEventArgs args)
-        {
-            UpdateControlsVisibility();
         }
 
         private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -75,6 +70,11 @@ namespace Infomaniak.kDrive
             }
         }
 
+        private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
+        {
+            UpdateControlsVisibility();
+        }
+
         private void MainWindow_Closed(object sender, WindowEventArgs args)
         {
             if ((App.Current as App)?.CurrentWindow == this)
@@ -86,6 +86,7 @@ namespace Infomaniak.kDrive
 
             ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
             Closed -= MainWindow_Closed;
+            Activated -= MainWindow_Activated;
             this.Content.PointerPressed -= OnPointerPressed;
         }
 
