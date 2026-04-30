@@ -474,7 +474,7 @@ void TestUtility::testGenerateRandomNumber() {
 
     // Check that a second draw does not produce the same sequence
     bool allValuesAreTheSame = true;
-    for (auto i = 0; i < 100; i++) {
+    for (size_t i = 0; i < 100; i++) {
         const auto val = CommonUtility::generateRandomNumber(1, 100);
         if (val != sequence[static_cast<size_t>(i)]) {
             allValuesAreTheSame = false;

@@ -274,7 +274,7 @@ void TestIntegration::testEditDeleteConflict() {
 }
 
 namespace {
-NodeId createRemoteFile(const int driveDbId, const SyncName &name, const NodeId &remoteParentFileId,
+NodeId createRemoteFile(const DriveDbId driveDbId, const SyncName &name, const RemoteNodeId &remoteParentFileId,
                         SyncTime *creationTime = nullptr, SyncTime *modificationTime = nullptr, int64_t *size = nullptr) {
     const LocalTemporaryDirectory temporaryDir;
     const auto tmpFilePath = temporaryDir.path() / ("tmpFile_" + CommonUtility::generateRandomStringAlphaNum(10));
@@ -302,7 +302,7 @@ struct RemoteNodeInfo {
         NodeId remoteNodeIdAB;
 };
 
-void generateInitialTestSituation(const int driveDbId, const NodeId &parentId, RemoteNodeInfo &info) {
+void generateInitialTestSituation(const DriveDbId driveDbId, const RemoteNodeId &parentId, RemoteNodeInfo &info) {
     // .
     // `-- A
     //     |-- AA

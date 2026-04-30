@@ -24,13 +24,13 @@ namespace KDC {
 
 class LongPollJob final : public AbstractListingJob {
     public:
-        LongPollJob(int driveDbId, const std::string &cursor, const NodeSet &blacklist = {});
+        LongPollJob(DriveDbId driveDbId, Cursor cursor, const NodeSet &blacklist = {});
 
     private:
         std::string getSpecificUrl() override;
         void setQueryParameters(Poco::URI &uri) override;
 
-        std::string _cursor;
+        Cursor _cursor;
 };
 
 } // namespace KDC
