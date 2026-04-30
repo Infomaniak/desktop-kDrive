@@ -17,8 +17,8 @@
  */
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Svg;
 using System;
 using System.IO;
 using System.Threading;
@@ -33,7 +33,6 @@ namespace Infomaniak.kDrive.CustomControls
         public SvgIconSource()
         {
             RegisterPropertyChangedCallback(ForegroundProperty, OnDependencyPropertyChanged);
-            ImageSource = new SvgImageSource();
         }
 
         public Uri? UriSource
@@ -48,17 +47,6 @@ namespace Infomaniak.kDrive.CustomControls
                 typeof(SvgIconSource),
                 new PropertyMetadata(null, OnDependencyPropertyChanged));
 
-        public string UriString
-        {
-            get => (string)GetValue(UriSourceStringProperty);
-            set => SetValue(UriSourceStringProperty, value);
-        }
-        public static readonly DependencyProperty UriSourceStringProperty =
-            DependencyProperty.Register(
-                nameof(UriString),
-                typeof(string),
-                typeof(SvgIconSource),
-                new PropertyMetadata(string.Empty, OnDependencyPropertyChanged));
 
         private static void OnDependencyPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -75,19 +63,6 @@ namespace Infomaniak.kDrive.CustomControls
 
         private void ScheduleRefresh()
         {
-            if (UriString != UriSource?.ToString())
-            {
-                try
-                {
-                    UriSource = new Uri(UriString);
-                }
-                catch
-                {
-                    UriSource = null;
-                }
-                return; // UriSource changed will trigger Refresh
-            }
-
             _refreshCts = SvgHelper.ScheduleOnDispatcher(_refreshCts, DispatcherQueue, RefreshSource, "SvgIconSource");
         }
 
@@ -99,20 +74,20 @@ namespace Infomaniak.kDrive.CustomControls
                 if (UriSource is null)
                     return;
 
-                var svgImageSource = ImageSource as SvgImageSource;
-                if (svgImageSource is null)
-                {
-                    Logger.Log(Logger.Level.Error, $"ImageSource is not SvgImageSource");
-                    TryFallback();
-                    return;
-                }
-
                 var result = SvgHelper.TryLoad(UriSource, Foreground, token);
                 if (result is null)
                 {
                     TryFallback();
                     return;
                 }
+                var (pixelWidth, pixelHeight) = ComputeRasterSize(result.Value.Doc);
+
+                ImageSource = new SvgImageSource
+                {
+                    RasterizePixelWidth = pixelWidth,
+                    RasterizePixelHeight = pixelHeight
+                };
+                var svgImageSource = (SvgImageSource)ImageSource;
 
                 using var memoryStream = result.Value.Stream;
                 await svgImageSource.SetSourceAsync(memoryStream.AsRandomAccessStream()).AsTask(token);
@@ -127,7 +102,23 @@ namespace Infomaniak.kDrive.CustomControls
                 TryFallback();
             }
         }
-     
+
+
+        private (double Width, double Height) ComputeRasterSize(SvgDocument svgDoc)
+        {
+            Window? window = (Application.Current as App)?.CurrentWindow;
+
+            if (window is null)
+            {
+                Logger.Log(Logger.Level.Warning, "Unable to get current window for DPI scaling, defaulting to 1.0");
+                return (svgDoc.Width.Value, svgDoc.Height.Value);
+            }
+
+            var scale = Utility.DpiHelper.GetScaleForWindow(WinRT.Interop.WindowNative.GetWindowHandle(window));
+            scale = scale == 0 ? 1.0 : scale; // Fallback to 1.0 if DPI scaling is unavailable
+            return (svgDoc.Height.Value * scale, svgDoc.Width.Value * scale);
+        }
+
         private void TryFallback()
         {
             try
