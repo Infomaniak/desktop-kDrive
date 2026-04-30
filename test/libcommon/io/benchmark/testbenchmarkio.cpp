@@ -38,6 +38,7 @@ void testbenchmarkio::addResult(const std::string &category, const std::string &
     r.avg_ns_per_call = (time_ms * 1'000'000.0) / iterations_;
     r.success = success;
     results_.push_back(r);
+    printProgress();
 }
 
 void testbenchmarkio::printResults() const {
@@ -95,6 +96,29 @@ const std::vector<BenchmarkResult> &testbenchmarkio::getResults() const {
 
 void testbenchmarkio::reset() {
     results_.clear();
+}
+
+void testbenchmarkio::printProgress() const {
+    const int current = static_cast<int>(results_.size());
+    const int total = (total_ > 0) ? total_ : current;
+    constexpr int barWidth = 40;
+
+    const float ratio = (total > 0) ? static_cast<float>(current) / static_cast<float>(total) : 1.0f;
+    const int filled = static_cast<int>(ratio * barWidth);
+
+    const std::string &lastMethod = results_.back().method;
+    const std::string &lastCategory = results_.back().category;
+
+    std::cout << "\r  [";
+    for (int i = 0; i < barWidth; ++i)
+        std::cout << (i < filled ? '#' : '-');
+    std::cout << "] " << std::setw(2) << current << "/" << total
+              << " (" << std::fixed << std::setprecision(0) << std::setw(3) << (ratio * 100.0f) << "%)  "
+              << std::left << std::setw(10) << lastCategory << "  " << lastMethod
+              << std::flush;
+
+    if (current >= total)
+        std::cout << "\n";
 }
 
 // ============================================================================
@@ -762,12 +786,39 @@ void RunAllBenchmarks(const std::string &testFilePath, int iterations) {
 
     testbenchmarkio benchmark(iterations);
 
+    // Compute the total number of addResult calls (platform-dependent)
+    int expectedCount = 0;
+    expectedCount += 4; // Exists: filesystem_status, filesystem_exists, _stat, IoHelper
+#if defined(KD_WINDOWS)
+    expectedCount += 2; // Exists: GetFileAttributesA, GetFileAttributesW
+#endif
+    expectedCount += 4; // Metadata: stat, fstat, filesystem_full, IoHelper
+#if defined(KD_LINUX) || defined(KD_MACOS)
+    expectedCount += 1; // Metadata: lstat
+#endif
+#if defined(KD_LINUX)
+    expectedCount += 1; // Metadata: statx
+#endif
+    expectedCount += 5; // Read: ifstream x2, fread x2, IoHelper
+#if defined(KD_WINDOWS)
+    expectedCount += 2; // Read: CreateFileA, CreateFileW
+#endif
+    expectedCount += 4; // Create
+    expectedCount += 4; // Delete
+    expectedCount += 4; // Move
+    expectedCount += 3; // Size: filesystem, crt, IoHelper
+#if defined(KD_WINDOWS)
+    expectedCount += 1; // Size: GetFileSizeEx
+#endif
+    benchmark.setExpectedCount(expectedCount);
+
     std::cout << "\n";
     std::cout << "================================================================\n";
     std::cout << "              IOHELPER BENCHMARK SUITE                          \n";
     std::cout << "================================================================\n";
     std::cout << "Test file: " << testFilePath << "\n";
     std::cout << "Iterations: " << iterations << "\n";
+    std::cout << "\n";
 
     // --- EXISTS ---
     std::cout << "\n[Running Exists Tests...]\n";
@@ -792,7 +843,7 @@ void RunAllBenchmarks(const std::string &testFilePath, int iterations) {
                         benchmark.measure(IoHelperTests::iohelper_checkIfPathExists, testFilePath, ExistsTests::testinit,
                                           ExistsTests::teardown, false));
     // --- METADATA ---
-    std::cout << "[Running Metadata Tests...]\n";
+    // std::cout << "[Running Metadata Tests...]\n";
     benchmark.addResult(
             "Metadata", "stat_full",
             benchmark.measure(MetadataTests::stat_full, testFilePath, MetadataTests::testinit, MetadataTests::teardown, false));
@@ -816,7 +867,7 @@ void RunAllBenchmarks(const std::string &testFilePath, int iterations) {
                         benchmark.measure(IoHelperTests::iohelper_getFileStat, testFilePath, MetadataTests::testinit,
                                           MetadataTests::teardown, false));
     // --- READ ---
-    std::cout << "[Running Read Tests...]\n";
+    // std::cout << "[Running Read Tests...]\n";
     benchmark.addResult(
             "Read", "ifstream (binary)",
             benchmark.measure(ReadTests::ifstream_binary, testFilePath, ReadTests::testinit, ReadTests::teardown, false));
@@ -841,7 +892,7 @@ void RunAllBenchmarks(const std::string &testFilePath, int iterations) {
             benchmark.measure(IoHelperTests::iohelper_openFile, testFilePath, ReadTests::testinit, ReadTests::teardown, false));
 
     // --- CREATE ---
-    std::cout << "[Running Create Tests...]\n";
+    //std::cout << "[Running Create Tests...]\n";
     benchmark.addResult(
             "Create", "create (ofstream)",
             benchmark.measure(CreateTests::create_ofstream, testFilePath, CreateTests::testinit, CreateTests::teardown, false));
@@ -856,7 +907,7 @@ void RunAllBenchmarks(const std::string &testFilePath, int iterations) {
                                           CreateTests::teardown, false));
 
     // --- DELETE ---
-    std::cout << "[Running Delete Tests...]\n";
+    //std::cout << "[Running Delete Tests...]\n";
     benchmark.addResult("Delete", "delete (filesystem::remove)",
                         benchmark.measure(DeleteTests::delete_filesystem_remove, testFilePath, DeleteTests::testinit,
                                           DeleteTests::teardown, true));
@@ -871,7 +922,7 @@ void RunAllBenchmarks(const std::string &testFilePath, int iterations) {
                                           DeleteTests::teardown, true));
 
     // --- MOVE ---
-    std::cout << "[Running Move Tests...]\n";
+    // std::cout << "[Running Move Tests...]\n";
     benchmark.addResult(
             "Move", "move (std::filesystem::rename)",
             benchmark.measure(MoveTests::move_filesystem_rename, testFilePath, MoveTests::testinit, MoveTests::teardown, true));
@@ -886,7 +937,7 @@ void RunAllBenchmarks(const std::string &testFilePath, int iterations) {
             benchmark.measure(IoHelperTests::iohelper_moveItem, testFilePath, MoveTests::testinit, MoveTests::teardown, true));
 
     // --- SIZE ---
-    std::cout << "[Running Size Tests...]\n";
+    // std::cout << "[Running Size Tests...]\n";
     benchmark.addResult(
             "Size", "filesystem::file_size",
             benchmark.measure(SizeTests::filesystem_filesize, testFilePath, SizeTests::testinit, SizeTests::teardown, true));

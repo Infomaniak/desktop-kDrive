@@ -77,6 +77,8 @@ class testbenchmarkio {
         double measure(Func func, const std::string &path, Init init, Teardown teardown, bool per_iteration = false);
         void addResult(const std::string &category, const std::string &method, double time_ms, bool success = true);
 
+        void setExpectedCount(int total) { total_ = total; }
+
         void printResults() const;
         void printResultsByCategory() const;
 
@@ -85,7 +87,10 @@ class testbenchmarkio {
 
     private:
         bool warmup_;
+        int total_{0};
         std::vector<BenchmarkResult> results_;
+
+        void printProgress() const;
 };
 
 // ============================================================================
