@@ -311,6 +311,7 @@ ExitInfo LocalFileSystemObserverWorker::processDetectedChanges(const std::list<s
                 if (!_liveSnapshot.removeItem(itemId)) {
                     LOGW_SYNCPAL_WARN(_logger, L"Failed to remove item: " << Utility::formatSyncPath(absolutePath) << L" ("
                                                                           << CommonUtility::s2ws(itemId) << L")");
+
                     return ExitCode::DataError;
                 }
 
