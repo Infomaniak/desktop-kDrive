@@ -30,7 +30,7 @@
 
 #include <queue>
 
-#include <3rdparty/sqlite3/sqlite3.h>
+#include <sqlite3.h>
 
 #define PRAGMA_WRITABLE_SCHEMA_ID "db1"
 #define PRAGMA_WRITABLE_SCHEMA "PRAGMA writable_schema=ON;"
