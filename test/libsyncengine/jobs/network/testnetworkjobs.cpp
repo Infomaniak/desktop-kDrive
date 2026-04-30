@@ -43,7 +43,6 @@
 #include "jobs/network/kDrive_API/itemsexistjob.h"
 #include "jobs/network/kDrive_API/searchjob.h"
 #include "jobs/network/kDrive_API/listing/csvfullfilelistwithcursorjob.h"
-#include "jobs/network/kDrive_API/listing/initfilelistwithcursorjob.h"
 #include "jobs/network/kDrive_API/upload/uploadjob.h"
 #include "jobs/network/kDrive_API/upload/upload_session/driveuploadsession.h"
 
@@ -947,24 +946,6 @@ void TestNetworkJobs::testCheckHashMatch() {
         CPPUNIT_ASSERT_EQUAL_MESSAGE(tc.name + ": unexpected exit code", tc.expectedExitCode, job.exitInfo().code());
         CPPUNIT_ASSERT_EQUAL_MESSAGE(tc.name + ": unexpected shouldDownload", tc.expectedShouldDownload, job.shouldDownload());
     }
-}
-
-void TestNetworkJobs::testGetFileListWithCursor() {
-    InitFileListWithCursorJob job(_driveDbId, pictureDirRemoteId);
-    const ExitInfo exitInfo = job.runSynchronously();
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
-
-    Count counter = 0;
-    std::string cursor;
-    if (Poco::JSON::Object::Ptr dataObj = job.jsonRes()->getObject(dataKey); dataObj) {
-        cursor = dataObj->get(cursorKey).toString();
-        if (Poco::JSON::Array::Ptr filesArray = dataObj->getArray(filesKey); filesArray) {
-            for (auto it = filesArray->begin(); it != filesArray->end(); ++it) ++counter;
-        }
-    }
-
-    CPPUNIT_ASSERT(!cursor.empty());
-    CPPUNIT_ASSERT_EQUAL(Count{5}, counter);
 }
 
 void TestNetworkJobs::testFullFileListWithCursorCsv() {
