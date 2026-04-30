@@ -696,34 +696,32 @@ void SyncPal::resetSnapshotInvalidationCounters() {
 
 ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &absoluteLocalPath,
                                  const SyncPath &parentFolderPath) {
-    std::optional<NodeId> localNodeId = std::nullopt;
-    bool found = false;
-    if (!_syncDb->id(ReplicaSide::Local, relativePath, localNodeId, found)) {
-        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id");
-        return ExitCode::DbError;
-    }
-    if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table: " << Utility::formatSyncPath(relativePath));
+    // Get the nodeId from the File System (not from the DB).
+    // It is possible that an element of the path has been renamed and that the change has not yet been synchronized.
+    NodeId localNodeId;
+    if (!IoHelper::getNodeId(absoluteLocalPath, localNodeId)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getNodeId for " << Utility::formatSyncPath(absoluteLocalPath));
         return ExitCode::DataError;
     }
 
     NodeId remoteNodeId;
-    if (!_syncDb->correspondingNodeId(ReplicaSide::Local, *localNodeId, remoteNodeId, found)) {
+    bool found = false;
+    if (!_syncDb->correspondingNodeId(ReplicaSide::Local, localNodeId, remoteNodeId, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::correspondingNodeId");
         return ExitCode::DbError;
     }
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table for localNodeId=" << CommonUtility::s2ws(*localNodeId));
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table for localNodeId=" << CommonUtility::s2ws(localNodeId));
         return ExitCode::DataError;
     }
 
     int64_t expectedSize = -1;
-    if (!_syncDb->size(ReplicaSide::Local, *localNodeId, expectedSize, found)) {
+    if (!_syncDb->size(ReplicaSide::Local, localNodeId, expectedSize, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::size");
         return ExitCode::DbError;
     }
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table for localNodeId=" << CommonUtility::s2ws(*localNodeId));
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table for localNodeId=" << CommonUtility::s2ws(localNodeId));
         return ExitCode::DataError;
     }
 

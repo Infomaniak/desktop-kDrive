@@ -322,17 +322,36 @@ void ExtensionJob::commandMakeAvailableLocallyDirect(const CommString &argument,
 
 #if defined(KD_MACOS)
         // Not done in Windows case: triggers a hydration
-        // Set pin state
-        if (!setPinState(fileData, PinState::AlwaysLocal)) {
+        // Get pin state
+        PinState ps{PinState::Unknown};
+        if (const auto exitInfo = getPinState(fileData, ps); !exitInfo) {
             LOGW_INFO(Log::instance()->getLogger(),
-                      L"Error in ExtensionJob::setPinState - " << Utility::formatSyncPath(filePath));
+                      L"Error in ExtensionJob::getPinState - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
             continue;
+        }
+
+        if (ps != PinState::AlwaysLocal) {
+            // Set pin state
+            if (const auto exitInfo = setPinState(fileData, PinState::AlwaysLocal); !exitInfo) {
+                LOGW_INFO(Log::instance()->getLogger(),
+                          L"Error in ExtensionJob::setPinState - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
+                continue;
+            }
         }
 #endif
 
         if (!addDownloadJob(fileData, parentFolder)) {
             LOGW_INFO(Log::instance()->getLogger(),
                       L"Error in ExtensionJob::addDownloadJob - " << Utility::formatSyncPath(filePath));
+
+#if defined(KD_MACOS)
+            // Cancel hydration and reset pin state to initial value
+            if (const auto exitInfo = cancelHydrate(fileData, ps); !exitInfo) {
+                LOGW_INFO(Log::instance()->getLogger(),
+                          L"Error in ExtensionJob::cancelHydrate - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
+            }
+#endif
+
             continue;
         }
     }
@@ -624,17 +643,34 @@ void ExtensionJob::commandMakeOnlineOnlyDirect(const CommString &argument, std::
             continue;
         }
 
-        // Set pin state
-        if (ExitInfo exitInfo = setPinState(fileData, PinState::OnlineOnly); !exitInfo) {
+        // Get pin state
+        PinState ps{PinState::Unknown};
+        if (const auto exitInfo = getPinState(fileData, ps); !exitInfo) {
             LOGW_INFO(Log::instance()->getLogger(),
-                      L"Error in ExtensionJob::setPinState - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
+                      L"Error in ExtensionJob::getPinState - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
             continue;
         }
 
+        if (ps != PinState::OnlineOnly) {
+            // Set pin state
+            if (const auto exitInfo = setPinState(fileData, PinState::OnlineOnly); !exitInfo) {
+                LOGW_INFO(Log::instance()->getLogger(),
+                          L"Error in ExtensionJob::setPinState - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
+                continue;
+            }
+        }
+
         // Dehydrate placeholder
-        if (ExitInfo exitInfo = dehydratePlaceholder(fileData); !exitInfo) {
-            LOGW_INFO(Log::instance()->getLogger(),
-                      L"Error in ExtensionJob::dehydratePlaceholder - " << Utility::formatSyncPath(filePath) << exitInfo);
+        if (const auto exitInfo = dehydratePlaceholder(fileData); !exitInfo) {
+            LOGW_INFO(Log::instance()->getLogger(), L"Error in ExtensionJob::dehydratePlaceholder - "
+                                                            << Utility::formatSyncPath(filePath) << L": " << exitInfo);
+
+            // Setting back the previous pin state
+            if (const auto exitInfo2 = cancelDehydrate(fileData, ps); !exitInfo2) {
+                LOGW_INFO(Log::instance()->getLogger(), L"Error in ExtensionJob::cancelDehydrate - "
+                                                                << Utility::formatSyncPath(filePath) << L": " << exitInfo2);
+            }
+
             continue;
         }
     }
@@ -888,6 +924,17 @@ VfsMap::const_iterator ExtensionJob::retrieveVfsMapIt(const SyncDbId syncDbId) c
     return result;
 }
 
+ExitInfo ExtensionJob::getPinState(const FileData &fileData, PinState &pinState) {
+    if (!fileData.syncDbId) return {ExitCode::LogicError, ExitCause::InvalidArgument};
+
+    const std::scoped_lock lock(_commManager->appServer().vfsMapMutex);
+    const auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
+    if (vfsMapIt == _commManager->appServer().vfsMap.cend() || !vfsMapIt->second) return {ExitCode::LogicError};
+
+    pinState = vfsMapIt->second->pinState(fileData.relativePath);
+    return ExitCode::Ok;
+}
+
 ExitInfo ExtensionJob::setPinState(const FileData &fileData, PinState pinState) {
     if (!fileData.syncDbId) return {ExitCode::LogicError, ExitCause::InvalidArgument};
 
@@ -896,6 +943,26 @@ ExitInfo ExtensionJob::setPinState(const FileData &fileData, PinState pinState) 
     if (vfsMapIt == _commManager->appServer().vfsMap.cend() || !vfsMapIt->second) return {ExitCode::LogicError};
 
     return vfsMapIt->second->setPinState(fileData.relativePath, pinState);
+}
+
+ExitInfo ExtensionJob::cancelHydrate(const FileData &fileData, PinState pinState) {
+    if (!fileData.syncDbId) return {ExitCode::LogicError, ExitCause::InvalidArgument};
+
+    const std::scoped_lock lock(_commManager->appServer().vfsMapMutex);
+    const auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
+    if (vfsMapIt == _commManager->appServer().vfsMap.cend() || !vfsMapIt->second) return {ExitCode::LogicError};
+
+    vfsMapIt->second->cancelHydrate(fileData.localPath);
+
+    if (pinState != PinState::Unknown) return vfsMapIt->second->setPinState(fileData.relativePath, pinState);
+
+    return ExitCode::Ok;
+}
+
+ExitInfo ExtensionJob::cancelDehydrate(const FileData &fileData, PinState pinState) {
+    if (pinState != PinState::Unknown) return setPinState(fileData, pinState);
+
+    return ExitCode::Ok;
 }
 
 ExitInfo ExtensionJob::dehydratePlaceholder(const FileData &fileData) {
