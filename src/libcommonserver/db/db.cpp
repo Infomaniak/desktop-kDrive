@@ -527,8 +527,7 @@ bool Db::checkConnect(const std::string &version) {
     LOG_DEBUG(_logger, "sqlite3 version=" << result);
 
     // PRAGMA_LOCKING_MODE
-    // std::string lockingMode = "EXCLUSIVE";
-    std::string lockingMode = "NORMAL";
+    std::string lockingMode = "EXCLUSIVE";
     if (CommonUtility::envVarValue("KDRIVE_NORMAL_LOCKING_MODE") == "1") {
         lockingMode = "NORMAL";
     }

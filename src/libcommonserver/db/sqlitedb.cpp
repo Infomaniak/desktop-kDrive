@@ -23,6 +23,8 @@
 #include "utility/logiffail.h"
 #include "log/log.h"
 
+#include "libcommon/utility/utility.h"
+
 #include <log4cplus/loggingmacros.h>
 
 #include <sqlite3.h>
@@ -144,8 +146,11 @@ void SqliteDb::close() {
 
     if (_autoDelete) {
         // Delete DB
-        if (auto ioError = IoError::Unknown; !IoHelper::deleteItem(_dbPath, ioError)) {
-            LOGW_WARN(_logger, L"Failed to remove db file " << Utility::formatIoError(_dbPath, ioError));
+        for (auto retries = 0; retries < 10; retries++) {
+            if (auto ioError = IoError::Unknown; !IoHelper::deleteItem(_dbPath, ioError)) {
+                LOGW_WARN(_logger, L"Failed to remove db file " << Utility::formatIoError(_dbPath, ioError));
+            }
+            Utility::msleep(1000);
         }
     }
 }
