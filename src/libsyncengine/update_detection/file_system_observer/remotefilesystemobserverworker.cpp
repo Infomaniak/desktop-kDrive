@@ -420,7 +420,8 @@ void RemoteFileSystemObserverWorker::deleteOrphans() {
     }
 }
 
-ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &remoteDirId, const CursorPersistence cursorPersistence) {
+ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const RemoteNodeId &remoteDirId,
+                                                       const CursorPersistence cursorPersistence) {
     // Send request
     sentry::pTraces::scoped::RFSOBackRequest perfMonitorBackRequest(cursorPersistence == CursorPersistence::None, syncDbId());
     std::shared_ptr<CsvFullFileListWithCursorJob> job = nullptr;
