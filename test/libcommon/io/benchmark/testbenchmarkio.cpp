@@ -17,6 +17,7 @@
  */
 #include "testbenchmarkio.h"
 #include "utility/types.h"
+#include "test_utility/localtemporarydirectory.h"
 
 namespace KDC {
 
@@ -126,42 +127,36 @@ void testbenchmarkio::printProgress() const {
 // ============================================================================
 namespace ExistsTests {
 
-void testinit(const std::string &path) {
+void testinit(const SyncPath &path) {
     std::ofstream f(path, std::ios::binary);
     if (f) {
         f << "data";
     }
 }
 
-void teardown(const std::string &path) {
+void teardown(const SyncPath &path) {
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }
 
-bool filesystem_status(const std::string &path) {
+bool filesystem_status(const SyncPath &path) {
     std::error_code ec;
     auto status = std::filesystem::status(path, ec);
     return status.type() != std::filesystem::file_type::none;
 }
 
-bool filesystem_exists(const std::string &path) {
+bool filesystem_exists(const SyncPath &path) {
     return std::filesystem::exists(path);
 }
 
-bool win32_getfileattributes_a(const std::string &path) {
-    DWORD attrs = GetFileAttributesA(path.c_str());
+bool win32_getfileattributes_w(const SyncPath &path) {
+    DWORD attrs = GetFileAttributesW(path.native().c_str());
     return attrs != INVALID_FILE_ATTRIBUTES;
 }
 
-bool win32_getfileattributes_w(const std::string &path) {
-    std::wstring wpath = CommonUtility::s2ws(path);
-    DWORD attrs = GetFileAttributesW(wpath.c_str());
-    return attrs != INVALID_FILE_ATTRIBUTES;
-}
-
-bool crt_stat(const std::string &path) {
+bool crt_stat(const SyncPath &path) {
     struct _stat buffer;
-    return _stat(path.c_str(), &buffer) == 0;
+    return _stat(path.string().c_str(), &buffer) == 0;
 }
 
 
@@ -172,7 +167,7 @@ bool crt_stat(const std::string &path) {
 // ============================================================================
 namespace MetadataTests {
 
-void testinit(const std::string &path) {
+void testinit(const SyncPath &path) {
     std::ofstream f(path, std::ios::binary);
     if (!f) return;
 
@@ -180,14 +175,14 @@ void testinit(const std::string &path) {
     f << "benchmark_metadata_test_content";
 }
 
-void teardown(const std::string &path) {
+void teardown(const SyncPath &path) {
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }
 
-bool stat_full(const std::string &path) {
+bool stat_full(const SyncPath &path) {
     struct stat st{};
-    if (::stat(path.c_str(), &st) != 0) return false;
+    if (::stat(path.string().c_str(), &st) != 0) return false;
 
     volatile auto dev = st.st_dev;
     volatile auto inode = st.st_ino;
@@ -224,11 +219,50 @@ bool stat_full(const std::string &path) {
     return true;
 }
 
-bool statx_full(const std::string &path) {
+bool wstat_full(const SyncPath &path) {
+    struct _stat64i32 st{};
+    if (::_wstat(path.native().c_str(), &st) != 0) return false;
+
+    volatile auto dev = st.st_dev;
+    volatile auto inode = st.st_ino;
+    volatile auto mode = st.st_mode;
+    volatile auto nlink = st.st_nlink;
+    volatile auto uid = st.st_uid;
+    volatile auto gid = st.st_gid;
+    volatile auto rdev = st.st_rdev;
+    volatile auto size = st.st_size;
+
+#if defined(__linux__) || defined(__APPLE__)
+    volatile auto blksize = st.st_blksize;
+    volatile auto blocks = st.st_blocks;
+    (void) blksize;
+    (void) blocks;
+#endif
+
+    volatile auto atime = st.st_atime;
+    volatile auto mtime = st.st_mtime;
+    volatile auto ctime = st.st_ctime;
+
+    (void) dev;
+    (void) inode;
+    (void) mode;
+    (void) nlink;
+    (void) uid;
+    (void) gid;
+    (void) rdev;
+    (void) size;
+    (void) atime;
+    (void) mtime;
+    (void) ctime;
+
+    return true;
+}
+
+bool statx_full(const SyncPath &path) {
 #if defined(KD_LINUX) or defined(KD_MACOS)
     struct statx stx{};
 
-    int ret = ::statx(AT_FDCWD, path.c_str(), AT_STATX_SYNC_AS_STAT, STATX_ALL, &stx);
+    int ret = ::statx(AT_FDCWD, path.string().c_str(), AT_STATX_SYNC_AS_STAT, STATX_ALL, &stx);
 
     if (ret != 0) return false;
 
@@ -269,8 +303,8 @@ bool statx_full(const std::string &path) {
 #endif
 }
 
-bool fstat_full(const std::string &path) {
-    int fd = ::open(path.c_str(), O_RDONLY);
+bool fstat_full(const SyncPath &path) {
+    int fd = ::open(path.string().c_str(), O_RDONLY);
     if (fd < 0) return false;
 
     struct stat st{};
@@ -314,7 +348,7 @@ bool fstat_full(const std::string &path) {
     return ok;
 }
 
-bool filesystem_full(const std::string &path) {
+bool filesystem_full(const SyncPath &path) {
     std::error_code ec;
 
     auto status = std::filesystem::status(path, ec);
@@ -348,7 +382,7 @@ namespace ReadTests {
 
 constexpr size_t BUFFER_SIZE = 4096;
 
-void testinit(const std::string &path) {
+void testinit(const SyncPath &path) {
     std::ofstream f(path, std::ios::binary);
     if (!f) return;
 
@@ -356,11 +390,11 @@ void testinit(const std::string &path) {
     f.write(content.data(), content.size());
 }
 
-void teardown(const std::string &path) {
+void teardown(const SyncPath &path) {
     std::filesystem::remove(path);
 }
 
-bool ifstream_binary(const std::string &path) {
+bool ifstream_binary(const SyncPath &path) {
     std::ifstream f(path, std::ios::binary);
     if (!f) return false;
 
@@ -370,7 +404,7 @@ bool ifstream_binary(const std::string &path) {
     return f.good() || f.gcount() > 0;
 }
 
-bool ifstream_text(const std::string &path) {
+bool ifstream_text(const SyncPath &path) {
     std::ifstream f(path);
     if (!f) return false;
 
@@ -380,8 +414,8 @@ bool ifstream_text(const std::string &path) {
     return f.good() || f.gcount() > 0;
 }
 
-bool fread_binary(const std::string &path) {
-    FILE *f = fopen(path.c_str(), "rb");
+bool fread_binary(const SyncPath &path) {
+    FILE *f = fopen(path.string().c_str(), "rb");
     if (!f) return false;
 
     static thread_local std::vector<char> buffer(BUFFER_SIZE);
@@ -391,8 +425,8 @@ bool fread_binary(const std::string &path) {
     return read > 0;
 }
 
-bool fread_text(const std::string &path) {
-    FILE *f = fopen(path.c_str(), "r");
+bool fread_text(const SyncPath &path) {
+    FILE *f = fopen(path.string().c_str(), "r");
     if (!f) return false;
 
     static thread_local std::string buffer(BUFFER_SIZE, '\0');
@@ -402,9 +436,9 @@ bool fread_text(const std::string &path) {
     return read > 0;
 }
 
-bool win32_readfile(const std::string &path) {
+bool win32_readfile(const SyncPath &path) {
 #if defined(KD_WINDOWS)
-    HANDLE h = CreateFileA(path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+    HANDLE h = CreateFileA(path.string().c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
     if (h == INVALID_HANDLE_VALUE) return false;
 
     static thread_local std::vector<char> buffer(BUFFER_SIZE);
@@ -419,11 +453,10 @@ bool win32_readfile(const std::string &path) {
 #endif
 }
 
-bool win32_readfile_w(const std::string &path) {
+bool win32_readfile_w(const SyncPath &path) {
 #if defined(KD_WINDOWS)
-    std::wstring wpath(path.begin(), path.end());
 
-    HANDLE h = CreateFileW(wpath.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+    HANDLE h = CreateFileW(path.native().c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
     if (h == INVALID_HANDLE_VALUE) return false;
 
     static thread_local std::vector<char> buffer(BUFFER_SIZE);
@@ -445,7 +478,7 @@ bool win32_readfile_w(const std::string &path) {
 // ============================================================================
 namespace SizeTests {
 
-void testinit(const std::string &path) {
+void testinit(const SyncPath &path) {
     constexpr std::size_t size = 1024 * 1024; // 1 MB
 
     std::ofstream f(path, std::ios::binary | std::ios::trunc);
@@ -461,18 +494,18 @@ void testinit(const std::string &path) {
     }
 }
 
-void teardown(const std::string &path) {
+void teardown(const SyncPath &path) {
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }
 
-bool filesystem_filesize(const std::string &path) {
+bool filesystem_filesize(const SyncPath &path) {
     std::error_code ec;
     return std::filesystem::file_size(path, ec) != static_cast<uint64_t>(-1);
 }
 
-bool win32_getfilesize(const std::string &path) {
-    HANDLE h = CreateFileA(path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+bool win32_getfilesize(const SyncPath &path) {
+    HANDLE h = CreateFileA(path.string().c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
     if (h == INVALID_HANDLE_VALUE) return false;
 
     LARGE_INTEGER size;
@@ -484,9 +517,9 @@ bool win32_getfilesize(const std::string &path) {
     return static_cast<uint64_t>(size.QuadPart) != static_cast<uint64_t>(-1);
 }
 
-bool crt_filelength(const std::string &path) {
+bool crt_filelength(const SyncPath &path) {
     struct _stat buffer;
-    if (_stat(path.c_str(), &buffer) != 0) return false;
+    if (_stat(path.string().c_str(), &buffer) != 0) return false;
     return static_cast<uint64_t>(buffer.st_size) != static_cast<uint64_t>(-1);
 }
 
@@ -497,23 +530,23 @@ bool crt_filelength(const std::string &path) {
 // ============================================================================
 namespace CreateTests {
 
-void testinit(const std::string &path) {
+void testinit(const SyncPath &path) {
     std::error_code ec;
     std::filesystem::create_directories(path, ec);
 }
 
-void teardown(const std::string &path) {
+void teardown(const SyncPath &path) {
     std::error_code ec;
     std::filesystem::remove_all(path, ec);
 }
 
 // Helper to generate unique filenames per iteration
-inline std::filesystem::path make_path(const std::string &dir, const std::string &prefix) {
+inline std::filesystem::path make_path(const SyncPath &dir, const std::string &prefix) {
     static std::atomic<uint64_t> counter{0};
     return std::filesystem::path(dir) / (prefix + "_" + std::to_string(counter++) + ".tmp");
 }
 
-bool create_ofstream(const std::string &dir) {
+bool create_ofstream(const SyncPath &dir) {
     const auto path = make_path(dir, "bench_create_ofstream");
 
     std::ofstream f(path, std::ios::binary);
@@ -526,7 +559,7 @@ bool create_ofstream(const std::string &dir) {
     return true;
 }
 
-bool create_fopen(const std::string &dir) {
+bool create_fopen(const SyncPath &dir) {
     const auto path = make_path(dir, "bench_create_fopen").string();
 
     FILE *f = fopen(path.c_str(), "wb");
@@ -539,7 +572,7 @@ bool create_fopen(const std::string &dir) {
     return true;
 }
 
-bool create_CreateFileA(const std::string &dir) {
+bool create_CreateFileA(const SyncPath &dir) {
 #if defined(KD_WINDOWS)
     const auto path = make_path(dir, "bench_create_CreateFileA").string();
 
@@ -558,7 +591,7 @@ bool create_CreateFileA(const std::string &dir) {
 #endif
 }
 
-bool create_CreateFileW(const std::string &dir) {
+bool create_CreateFileW(const SyncPath &dir) {
 #if defined(KD_WINDOWS)
     const auto path = make_path(dir, "bench_create_CreateFileW");
     const std::wstring wpath = CommonUtility::s2ws(path.string());
@@ -587,7 +620,7 @@ namespace DeleteTests {
 
 static std::atomic<uint64_t> counter{0};
 
-void testinit(const std::string &dir) {
+void testinit(const SyncPath &dir) {
     for (counter = 0; counter < iterations_; counter++) {
         auto path = std::filesystem::path(dir) / ("bench_delete_" + std::to_string(counter) + ".tmp");
         CreateTestFile(path.string());
@@ -595,9 +628,9 @@ void testinit(const std::string &dir) {
     counter = 0;
 }
 
-void teardown(const std::string &dir) {}
+void teardown(const SyncPath &dir) {}
 
-bool delete_filesystem_remove(const std::string &dir) {
+bool delete_filesystem_remove(const SyncPath &dir) {
     uint64_t id = counter++;
 
     auto path = std::filesystem::path(dir) / ("bench_delete_" + std::to_string(id) + ".tmp");
@@ -605,7 +638,7 @@ bool delete_filesystem_remove(const std::string &dir) {
     return std::filesystem::remove(path);
 }
 
-bool delete_DeleteFileA(const std::string &dir) {
+bool delete_DeleteFileA(const SyncPath &dir) {
 #if defined(KD_WINDOWS)
     uint64_t id = counter++;
 
@@ -617,7 +650,7 @@ bool delete_DeleteFileA(const std::string &dir) {
 #endif
 }
 
-bool delete_crt_remove(const std::string &dir) {
+bool delete_crt_remove(const SyncPath &dir) {
     uint64_t id = counter++;
 
     auto filename = (std::filesystem::path(dir) / ("bench_delete_" + std::to_string(id) + ".tmp")).string();
@@ -633,7 +666,7 @@ namespace MoveTests {
 
 static std::atomic<uint64_t> counter{0};
 
-void testinit(const std::string &dir) {
+void testinit(const SyncPath &dir) {
     for (counter = 0; counter < iterations_; counter++) {
         auto path = std::filesystem::path(dir) / ("bench_move_" + std::to_string(counter) + "_src.tmp");
         CreateTestFile(path.string());
@@ -641,12 +674,12 @@ void testinit(const std::string &dir) {
     counter = 0;
 }
 
-void teardown(const std::string &dir) {
+void teardown(const SyncPath &dir) {
     std::error_code ec;
     std::filesystem::remove_all(dir, ec);
 }
 
-bool move_filesystem_rename(const std::string &dir) {
+bool move_filesystem_rename(const SyncPath &dir) {
     uint64_t id = counter++;
 
     auto src = std::filesystem::path(dir) / ("bench_move_" + std::to_string(id) + "_src.tmp");
@@ -658,7 +691,7 @@ bool move_filesystem_rename(const std::string &dir) {
     return !ec;
 }
 
-bool move_MoveFileA(const std::string &dir) {
+bool move_MoveFileA(const SyncPath &dir) {
 #if defined(KD_WINDOWS)
     uint64_t id = counter++;
 
@@ -671,7 +704,7 @@ bool move_MoveFileA(const std::string &dir) {
 #endif
 }
 
-bool move_MoveFileW(const std::string &dir) {
+bool move_MoveFileW(const SyncPath &dir) {
 #if defined(KD_WINDOWS)
     uint64_t id = counter++;
 
@@ -692,26 +725,26 @@ bool move_MoveFileW(const std::string &dir) {
 // ============================================================================
 namespace IoHelperTests {
 
-bool iohelper_checkIfPathExists(const std::string &path) {
+bool iohelper_checkIfPathExists(const SyncPath &path) {
     bool exists = false;
     IoError ioError = IoError::Unknown;
     IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive);
     return exists;
 }
 
-bool iohelper_getFileStat(const std::string &path) {
+bool iohelper_getFileStat(const SyncPath &path) {
     FileStat fs{};
     IoError ioError = IoError::Unknown;
     return IoHelper::getFileStat(path, &fs, ioError, IoHelper::PathCheckOption::Insensitive);
 }
 
-bool iohelper_getFileSize(const std::string &path) {
+bool iohelper_getFileSize(const SyncPath &path) {
     uint64_t size = 0;
     IoError ioError = IoError::Unknown;
     return IoHelper::getFileSize(path, size, ioError);
 }
 
-bool iohelper_openFile(const std::string &path) {
+bool iohelper_openFile(const SyncPath &path) {
     std::ifstream file;
     IoError ioError = IoError::Unknown;
     bool ok = IoHelper::openFile(path, file, ioError);
@@ -719,20 +752,20 @@ bool iohelper_openFile(const std::string &path) {
     return ok;
 }
 
-bool iohelper_setFileDates(const std::string &path) {
+bool iohelper_setFileDates(const SyncPath &path) {
     const auto now = static_cast<SyncTime>(
             std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count());
     return IoHelper::setFileDates(path, now, now, false) == IoError::Success;
 }
 
-bool iohelper_deleteItem(const std::string &dir) {
+bool iohelper_deleteItem(const SyncPath &dir) {
     const auto path = (std::filesystem::path(dir) / "bench_iohelper_delete.tmp").string();
     CreateTestFile(path);
     IoError ioError = IoError::Unknown;
     return IoHelper::deleteItem(path, ioError);
 }
 
-bool iohelper_moveItem(const std::string &dir) {
+bool iohelper_moveItem(const SyncPath &dir) {
     // try {
     const auto src = std::filesystem::path(dir) / "bench_iohelper_move_src.tmp";
     const auto dst = std::filesystem::path(dir) / "bench_iohelper_move_dst.tmp";
@@ -754,7 +787,7 @@ bool iohelper_moveItem(const std::string &dir) {
 // HELPER FUNCTIONS IMPLEMENTATION
 // ============================================================================
 
-bool DeleteTestFile(const std::string &path) {
+bool DeleteTestFile(const SyncPath &path) {
     try {
         std::filesystem::remove(path);
         return true;
@@ -763,7 +796,7 @@ bool DeleteTestFile(const std::string &path) {
     }
 }
 
-bool CreateTestFile(const std::string &path, const std::string &content) {
+bool CreateTestFile(const SyncPath &path, const std::string &content) {
     std::ofstream f(path, std::ios::binary);
     if (!f) return false;
     f << content;
@@ -777,10 +810,12 @@ int getiterations(void) {
 // ============================================================================
 // RUNNER IMPLEMENTATION
 // ============================================================================
-void RunAllBenchmarks(const std::string &testFilePath, int iterations) {
+void RunAllBenchmarks(const SyncPath &testFilePath, int iterations) {
+    LocalTemporaryDirectory tmpDir;
     // Setup
-    if (!CreateTestFile(testFilePath)) {
-        std::cerr << "Failed to create test file: " << testFilePath << "\n";
+    const auto testFilePathFull = tmpDir.path() / testFilePath;
+    if (!CreateTestFile(testFilePathFull)) {
+        std::cerr << "Failed to create test file: " << testFilePathFull << "\n";
         return;
     }
 
@@ -829,10 +864,7 @@ void RunAllBenchmarks(const std::string &testFilePath, int iterations) {
             "Exists", "std::filesystem::exists",
             benchmark.measure(ExistsTests::filesystem_exists, testFilePath, ExistsTests::testinit, ExistsTests::teardown, false));
 #if defined(KD_WINDOWS)
-    benchmark.addResult("Exists", "GetFileAttributesA",
-                        benchmark.measure(ExistsTests::win32_getfileattributes_a, testFilePath, ExistsTests::testinit,
-                                          ExistsTests::teardown, false));
-    benchmark.addResult("Exists", "GetFileAttributesW + s2ws",
+    benchmark.addResult("Exists", "GetFileAttributesW",
                         benchmark.measure(ExistsTests::win32_getfileattributes_w, testFilePath, ExistsTests::testinit,
                                           ExistsTests::teardown, false));
 #endif
@@ -1060,7 +1092,7 @@ void RunAllBenchmarks(const std::string &testFilePath, int iterations) {
         std::cout << sep << "\n";
     }
 
-    (void) DeleteTestFile(testFilePath);
+    (void) DeleteTestFile(testFilePathFull);
 }
 
 // ============================================================================
@@ -1077,7 +1109,7 @@ void BenchmarkIOHelper::tearDown() {
 
 void BenchmarkIOHelper::runAllIOBenchmarks() {
     // Name and iterations can be adjusted or parameterized if needed
-    RunAllBenchmarks("io_benchmark_test.tmp", iterations_);
+    RunAllBenchmarks(SyncPath("io_benchmark_test.tmp"), iterations_);
 }
 
 } // namespace KDC

@@ -74,7 +74,7 @@ class testbenchmarkio {
         testbenchmarkio(int iterations = 50000, bool warmup = true);
 
         template<typename Func, typename Init, typename Teardown>
-        double measure(Func func, const std::string &path, Init init, Teardown teardown, bool per_iteration = false);
+        double measure(Func func, const SyncPath &path, Init init, Teardown teardown, bool per_iteration = false);
         void addResult(const std::string &category, const std::string &method, double time_ms, bool success = true);
 
         void setExpectedCount(int total) { total_ = total; }
@@ -97,126 +97,125 @@ class testbenchmarkio {
 // TEST FUNCTIONS - CATEGORY 1: EXISTS
 // ============================================================================
 namespace ExistsTests {
-void testinit(const std::string &path);
-void teardown(const std::string &path);
+void testinit(const SyncPath &path);
+void teardown(const SyncPath &path);
 
-bool filesystem_status(const std::string &path);
-bool filesystem_exists(const std::string &path);
-bool win32_getfileattributes_a(const std::string &path);
-bool win32_getfileattributes_w(const std::string &path);
-bool crt_stat(const std::string &path);
+bool filesystem_status(const SyncPath &path);
+bool filesystem_exists(const SyncPath &path);
+bool win32_getfileattributes_w(const SyncPath &path);
+bool crt_stat(const SyncPath &path);
 } // namespace ExistsTests
 
 // ============================================================================
 // TEST FUNCTIONS - CATEGORY 2: METADATA (retrieve metadata: perms, times, size)
 // ============================================================================
 namespace MetadataTests {
-void testinit(const std::string &path);
-void teardown(const std::string &path);
+void testinit(const SyncPath &path);
+void teardown(const SyncPath &path);
 
-bool stat_full(const std::string &path);
-bool statx_full(const std::string &path);
-bool fstat_full(const std::string &path);
-bool filesystem_full(const std::string &path);
+bool stat_full(const SyncPath &path);
+bool statx_full(const SyncPath &path);
+bool fstat_full(const SyncPath &path);
+bool filesystem_full(const SyncPath &path);
 } // namespace MetadataTests
 
 // ============================================================================
 // TEST FUNCTIONS - CATEGORY 3: READ
 // ============================================================================
 namespace ReadTests {
-void testinit(const std::string &path);
-void teardown(const std::string &path);
+void testinit(const SyncPath &path);
+void teardown(const SyncPath &path);
 
-bool ifstream_binary(const std::string &path);
-bool ifstream_text(const std::string &path);
-bool fread_binary(const std::string &path);
-bool fread_text(const std::string &path);
-bool win32_readfile(const std::string &path);
-bool win32_readfile_w(const std::string &path);
+bool ifstream_binary(const SyncPath &path);
+bool ifstream_text(const SyncPath &path);
+bool fread_binary(const SyncPath &path);
+bool fread_text(const SyncPath &path);
+bool win32_readfile(const SyncPath &path);
+bool win32_readfile_w(const SyncPath &path);
 } // namespace ReadTests
 
 // ============================================================================
 // TEST FUNCTIONS - CATEGORY 4: FILE SIZE
 // ============================================================================
 namespace SizeTests {
-void testinit(const std::string &path);
-void teardown(const std::string &path);
+void testinit(const SyncPath &path);
+void teardown(const SyncPath &path);
 
-bool filesystem_filesize(const std::string &path);
-bool win32_getfilesize(const std::string &path);
-bool crt_filelength(const std::string &path);
+bool filesystem_filesize(const SyncPath &path);
+bool win32_getfilesize(const SyncPath &path);
+bool crt_filelength(const SyncPath &path);
 } // namespace SizeTests
 
 // ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
-bool CreateTestFile(const std::string &path, const std::string &content = "Benchmark test data");
-bool DeleteTestFile(const std::string &path);
+bool CreateTestFile(const SyncPath &path, const std::string &content = "Benchmark test data");
+bool DeleteTestFile(const SyncPath &path);
 int getiterations(void);
 
 // ============================================================================
 // CREATE FUNCTIONS
 // ============================================================================
 namespace CreateTests {
-void testinit(const std::string &path);
-void teardown(const std::string &path);
+void testinit(const SyncPath &path);
+void teardown(const SyncPath &path);
 
-void testinit(const std::string &path);
-void teardown(const std::string &path);
+void testinit(const SyncPath &path);
+void teardown(const SyncPath &path);
 
-bool create_ofstream(const std::string &dir);
-bool create_fopen(const std::string &dir);
-bool create_CreateFileA(const std::string &dir);
-bool create_CreateFileW(const std::string &dir);
+bool create_ofstream(const SyncPath &dir);
+bool create_fopen(const SyncPath &dir);
+bool create_CreateFileA(const SyncPath &dir);
+bool create_CreateFileW(const SyncPath &dir);
 } // namespace CreateTests
 
 // ----------------------------------------------------------------------------
 // DELETE FUNCTIONS
 // ----------------------------------------------------------------------------
 namespace DeleteTests {
-void testinit(const std::string &path);
-void teardown(const std::string &path);
+void testinit(const SyncPath &path);
+void teardown(const SyncPath &path);
 
-bool delete_filesystem_remove(const std::string &dir);
-bool delete_DeleteFileA(const std::string &dir);
-bool delete_crt_remove(const std::string &dir);
+bool delete_filesystem_remove(const SyncPath &dir);
+bool delete_DeleteFileA(const SyncPath &dir);
+bool delete_crt_remove(const SyncPath &dir);
 } // namespace DeleteTests
 
 // ----------------------------------------------------------------------------
 // MOVE FUNCTIONS
 // ----------------------------------------------------------------------------
 namespace MoveTests {
-void testinit(const std::string &path);
-void teardown(const std::string &path);
+void testinit(const SyncPath &path);
+void teardown(const SyncPath &path);
 
-bool move_filesystem_rename(const std::string &dir);
-bool move_MoveFileA(const std::string &dir);
-bool move_MoveFileW(const std::string &dir);
+bool move_filesystem_rename(const SyncPath &dir);
+bool move_MoveFileA(const SyncPath &dir);
+bool move_MoveFileW(const SyncPath &dir);
 } // namespace MoveTests
 
 // ============================================================================
 // TEST FUNCTIONS - IOHELPER (wraps the real IoHelper API used in production)
 // ============================================================================
 namespace IoHelperTests {
-bool iohelper_checkIfPathExists(const std::string &path);
-bool iohelper_getFileStat(const std::string &path);
-bool iohelper_getFileSize(const std::string &path);
-bool iohelper_openFile(const std::string &path);
-bool iohelper_setFileDates(const std::string &path);
-bool iohelper_deleteItem(const std::string &dir);
-bool iohelper_moveItem(const std::string &dir);
+bool iohelper_checkIfPathExists(const SyncPath &path);
+bool iohelper_getFileStat(const SyncPath &path);
+bool iohelper_getFileSize(const SyncPath &path);
+bool iohelper_openFile(const SyncPath &path);
+bool iohelper_setFileDates(const SyncPath &path);
+bool iohelper_deleteItem(const SyncPath &dir);
+bool iohelper_moveItem(const SyncPath &dir);
 } // namespace IoHelperTests
 
 // ============================================================================
 // RUNNER: Execute all benchmarks
 // ============================================================================
-void RunAllBenchmarks(const std::string &testFilePath = "io_benchmark_test.tmp", int iterations = 50000);
+void RunAllBenchmarks(const SyncPath &testFilePath = "io_benchmark_test.tmp", int iterations = 50000);
 
 // ============================================================================
 // TEMPLATE IMPLEMENTATION
 // ============================================================================
 template<typename Func, typename Init, typename Teardown>
-double testbenchmarkio::measure(Func func, const std::string &path, Init init, Teardown teardown, bool per_iteration) {
+double testbenchmarkio::measure(Func func, const SyncPath &path, Init init, Teardown teardown, bool per_iteration) {
     volatile bool result = false;
 
     // Warmup
