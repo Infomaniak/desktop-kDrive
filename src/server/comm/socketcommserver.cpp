@@ -30,10 +30,12 @@ SocketCommChannel::SocketCommChannel(const Poco::Net::StreamSocket &socket) :
     _socket(socket) {}
 
 void SocketCommChannel::startCallbackThread() {
-    std::weak_ptr<SocketCommChannel> weakChannel = std::static_pointer_cast<SocketCommChannel>(shared_from_this());
+    const std::weak_ptr<SocketCommChannel> weakChannel = std::static_pointer_cast<SocketCommChannel>(shared_from_this());
     auto callbackHandlerFunc = std::function<void()>([weakChannel]() {
         const auto channel = weakChannel.lock();
         if (!channel) {
+            LOG_WARN(Log::instance()->getLogger(),
+                     "Unable to lock SocketCommChannel in callbackHandlerFunc, channel might have been destroyed");
             return;
         }
         channel->callbackHandler();
@@ -295,11 +297,17 @@ void SocketCommServer::execute() {
 
         auto channel = makeCommChannel(socket);
         channel->setLostConnectionCbk([this](std::shared_ptr<AbstractCommChannel> ch) {
-            const std::scoped_lock lock(_channelsMutex);
-            _channels.remove(ch);
+            {
+                const std::scoped_lock lock(_channelsMutex);
+                _channels.remove(ch);
+            }
             lostConnectionCbk(ch);
         });
-        _channels.push_back(channel);
+
+        {
+            const std::scoped_lock lock(_channelsMutex);
+            _channels.push_back(channel);
+        }
         channel->startCallbackThread();
         newConnectionCbk();
     }
