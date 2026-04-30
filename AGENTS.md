@@ -17,8 +17,9 @@ Nearest file wins: the sub-AGENTS.md closest to the file you're editing takes pr
 # Initialize submodules used by the build
 git submodule update --init --recursive
 
-# Install Conan 2 dependencies (run from repo root)
-conan install . --build=missing -s build_type=Debug
+# Install Conan 2 dependencies using the project wrapper script (run from repo root)
+# Accepted build types: Debug | Release | RelWithDebInfo
+infomaniak-build-tools/conan/build_dependencies.sh Debug
 
 # Configure + build (example: macOS)
 cmake -B build-macos -DCMAKE_BUILD_TYPE=Debug -DBUILD_UNIT_TESTS=ON
