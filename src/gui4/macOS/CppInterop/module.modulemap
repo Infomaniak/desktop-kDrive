@@ -1,4 +1,5 @@
 module CppInterop {
+    header "interop/kd_macos_defines.h"
     header "interop/cstypes.h"
     header "interop/comm.h"
     requires cplusplus
