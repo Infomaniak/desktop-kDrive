@@ -45,7 +45,11 @@ namespace Infomaniak.kDrive
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
             Closed += MainWindow_Closed;
             this.Content.PointerPressed += OnPointerPressed;
+            Activated += OnActivated;
+        }
 
+        private void OnActivated(object sender, WindowActivatedEventArgs args)
+        {
             UpdateControlsVisibility();
         }
 

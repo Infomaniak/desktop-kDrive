@@ -46,7 +46,7 @@ namespace Infomaniak.kDrive.CustomControls
         {
             InitializeComponent();
 
-            ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+            ViewModel.SelectedSyncChanged += ViewModel_SelectedSyncChanged;
 
             if (ViewModel.SelectedSync != null)
             {
@@ -54,18 +54,17 @@ namespace Infomaniak.kDrive.CustomControls
             }
             RefreshFilteredActivities();
         }
+
         private void UserControl_Unloaded(object sender, RoutedEventArgs e)
         {
             _activitySubscription?.Dispose();
-            ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+            _outGoingActivities.Clear();
+            ViewModel.SelectedSyncChanged -= ViewModel_SelectedSyncChanged;
         }
 
-        private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        private void ViewModel_SelectedSyncChanged(object? sender, AppModel.SelectedSyncChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(ViewModel.SelectedSync) && ViewModel.SelectedSync is not null)
-            {
-                RefreshFilteredActivities();
-            }
+            RefreshFilteredActivities();
         }
 
         private void SubscribeToActivities(Sync sync)
@@ -76,7 +75,14 @@ namespace Infomaniak.kDrive.CustomControls
                 .ToObservableChangeSet()
                 .Filter(a => a.Direction == SyncDirection.Up)
                 .Sort(SortExpressionComparer<SyncFileItem>.Ascending(a => a.Timestamp))
-                .OnItemAdded(a => _outGoingActivities.Insert(0, a))
+                .OnItemAdded(a =>
+                {
+                    _outGoingActivities.Insert(0, a);
+                    const int MaxActivities = 200;
+                    while (_outGoingActivities.Count > MaxActivities)
+                        _outGoingActivities.RemoveAt(_outGoingActivities.Count - 1);
+                })
+                .OnItemRemoved(a => _outGoingActivities.Remove(a))
                 .Subscribe();
         }
 
@@ -109,8 +115,11 @@ namespace Infomaniak.kDrive.CustomControls
         {
             if (ActivityList == null)
                 return;
+
             if (ShowIncomingActivity == null || ShowIncomingActivity == true)
             {
+                _activitySubscription?.Dispose();
+                _outGoingActivities.Clear();
                 ActivityList.ItemsSource = ViewModel.SelectedSync?.SyncActivities;
             }
             else if (ViewModel.SelectedSync is not null)
