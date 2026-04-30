@@ -13,8 +13,11 @@ on:
         - 'main'
  
 concurrency:
-  group: nighlty-${{ github.head_ref }}
+  group: extended-tests-${{ github.event.pull_request.number || github.ref_name || github.run_id }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
 
 env:
   KDRIVE_TEST_CI_API_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
@@ -26,7 +29,8 @@ env:
   KDRIVE_TEST_CI_REMOTE_PATH: ${{ vars.KDRIVE_TEST_CI_REMOTE_PATH }}
   KDRIVE_TEST_CI_RUNNING_ON_CI: true
   KDRIVE_TEST_CI_EXTENDED_TEST : true
-  KDRIVE_SENTRY_ENVIRONMENT: "windows_ci_runner"
+  KDRIVE_SENTRY_ENVIRONMENT: "ci_tests"
+  QT_INSTALLER_JWT_TOKEN: ${{ secrets.QT_INSTALLER_JWT_TOKEN }}
 
 jobs:
   Windows-extended-tests:
@@ -40,7 +44,7 @@ jobs:
         shell: cmd
 
       - name: Checkout the code
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v6.0.2
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || (github.event_name == 'workflow_dispatch' && github.ref_name || 'develop') }}
           submodules: recursive
@@ -90,7 +94,7 @@ jobs:
         if: always()
 
       - name: Upload tests logs artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: windows-tests-logs
           path: C:/Windows/Temp/kDrive-logdir/*
@@ -99,7 +103,7 @@ jobs:
         if: always()
 
       - name: Upload coverage report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: windows-coverage-report
           path: coverage_html/*
@@ -118,7 +122,7 @@ jobs:
         run : rm -rf /Users/runner/Library/Developer/Xcode/DerivedData
         
       - name: Checkout the code
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v6.0.2
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || (github.event_name == 'workflow_dispatch' && github.ref_name || 'develop') }}
           submodules: recursive
@@ -146,7 +150,7 @@ jobs:
         if  : success() || failure()
 
       - name: Upload tests logs artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: macos-tests-logs
           path: ${{ env.logdir_path }}/*
@@ -169,7 +173,7 @@ jobs:
       QT_QPA_PLATFORM: "offscreen"
     steps:
       - name: Checkout the code
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v6.0.2
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || (github.event_name == 'workflow_dispatch' && github.ref_name || 'develop') }}
           submodules: recursive
@@ -188,7 +192,7 @@ jobs:
         run : ./infomaniak-build-tools/run-tests.sh
 
       - name: Upload tests logs artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: linux-tests-logs
           path: /tmp/kDrive-logdir/*
@@ -208,7 +212,7 @@ jobs:
       KCHAT_WEBHOOK_URL: ${{ secrets.KCHAT_WEBHOOK_URL }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v6.0.2
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || 'develop' }}
 

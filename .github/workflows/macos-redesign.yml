@@ -21,7 +21,7 @@ jobs:
     # More info here: https://github.com/orgs/community/discussions/175498
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
       - name: Build
         run: |
           xcodebuild \
@@ -47,8 +47,9 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
       - name: Setup Mise
+        # jdx/mise-action@v3.6.1
         uses: jdx/mise-action@6d1e696aa24c1aa1bcc1adea0212707c71ab78a8
         with:
           working_directory: src/gui4/macOS
@@ -61,8 +62,9 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
       - name: Setup Mise
+        # jdx/mise-action@v3.6.1
         uses: jdx/mise-action@6d1e696aa24c1aa1bcc1adea0212707c71ab78a8
         with:
           working_directory: src/gui4/macOS
@@ -75,8 +77,9 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
       - name: Setup Mise
+        # jdx/mise-action@v3.6.1
         uses: jdx/mise-action@6d1e696aa24c1aa1bcc1adea0212707c71ab78a8
         with:
           working_directory: src/gui4/macOS      
