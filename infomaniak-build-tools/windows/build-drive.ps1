@@ -767,7 +767,7 @@ if ($upload) {
 
 $res = Set-Bullseye-Coverage $coverage
 if ($res -ne 0) {
-    if ($ci) {
+    if ($ci && $buildType -eq "Release") {
         $outputString = "disable"
         if ($coverage) {
             $outputString = "enable"
