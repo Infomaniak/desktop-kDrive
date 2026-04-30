@@ -768,11 +768,11 @@ Set-Bullseye-Coverage $coverage
 Write-Host
 
 if ($LASTEXITCODE -ne 0) {
-    $outputString = "disabled"
-     if ($enabled) {
-        $outputString = "enabled"
+    $outputString = "disable"
+    if ($coverage) {
+        $outputString = "enable"
     }
-    Write-Host "Failed to $str code coverage computation. Aborting." -f Red
+    Write-Host "Failed to $outputString code coverage computation. Aborting." -f Red
     exit $LASTEXITCODE
 }
 
