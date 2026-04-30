@@ -16,6 +16,13 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         appclientlinux.h
         app/cache/appcache.cpp
         app/cache/appcache.h
+        app/cache/appcachegraph.cpp
+        app/cache/appcachequeries.cpp
+        app/cache/cachetypes.h
+        app/cache/mainselectionstore.cpp
+        app/cache/mainselectionstore.h
+        app/cache/onboardingstate.cpp
+        app/cache/onboardingstate.h
         communicationlayer/ipcclient.cpp
         communicationlayer/ipcclient.h
         communicationlayer/signaldispatcher.cpp
