@@ -26,15 +26,15 @@ OperationSorterFilter::OperationSorterFilter(const std::unordered_map<UniqueId, 
 void OperationSorterFilter::filterOperations() {
     clear();
 
-    NameToOpMap deleteBeforeMoveCandidates;
-    NameToOpMap moveBeforeCreateCandidates;
+    OpLocationToOpMap deleteBeforeMoveCandidates;
+    OpLocationToOpMap moveBeforeCreateCandidates;
     SyncPathToSyncOpMap deletedDirectoryPaths;
     SyncPathToSyncOpMap moveOriginPaths;
     SyncPathToSyncOpMap createdDirectoryPaths;
     SyncPathToSyncOpMap moveDestinationPaths;
-    NameToOpMap deleteBeforeCreateCandidates;
-    NameToOpMap moveOriginNames;
-    NameToOpMap moveDestinationNames;
+    OpLocationToOpMap deleteBeforeCreateCandidates;
+    OpLocationToOpMap moveOriginCandidates;
+    OpLocationToOpMap moveDestinationCandidates;
     std::list<std::pair<SyncOpPtr, SyncPath>> moveBeforeMoveHierarchyFlipCandidates;
 
     for (const auto &[_, op]: _ops) {
@@ -43,7 +43,7 @@ void OperationSorterFilter::filterOperations() {
         filterMoveBeforeDeleteCandidates(op, deletedDirectoryPaths, moveOriginPaths);
         filterCreateBeforeMoveCandidates(op, createdDirectoryPaths, moveDestinationPaths);
         filterDeleteBeforeCreateCandidates(op, deleteBeforeCreateCandidates);
-        filterMoveBeforeMoveOccupiedCandidates(op, moveOriginNames, moveDestinationNames);
+        filterMoveBeforeMoveOccupiedCandidates(op, moveOriginCandidates, moveDestinationCandidates);
         filterEditBeforeMoveCandidates(op);
         filterMoveBeforeMoveHierarchyFlipCandidates(op, moveBeforeMoveHierarchyFlipCandidates);
     }
@@ -61,10 +61,15 @@ void OperationSorterFilter::clear() {
 }
 
 // delete before move, e.g. user deletes an object at path "x" and moves another object "a" to "x".
-void OperationSorterFilter::filterDeleteBeforeMoveCandidates(const SyncOpPtr &op, NameToOpMap &deleteBeforeMoveCandidates) {
+void OperationSorterFilter::filterDeleteBeforeMoveCandidates(const SyncOpPtr &op, OpLocationToOpMap &deleteBeforeMoveCandidates) {
     if (op->type() == OperationType::Delete || op->type() == OperationType::Move) {
-        if (const auto [_, ok] = deleteBeforeMoveCandidates.try_emplace(op->affectedNode()->normalizedName(), op); !ok) {
-            const auto &otherOp = deleteBeforeMoveCandidates.at(op->affectedNode()->normalizedName());
+        assert(op->affectedNode()->parentNode());
+        assert(op->affectedNode()->parentNode()->id().has_value());
+
+        const SyncName name = op->affectedNode()->normalizedName();
+        const OpLocation opLocation{*op->affectedNode()->parentNode()->id(), name};
+        if (const auto [_, ok] = deleteBeforeMoveCandidates.try_emplace(opLocation, op); !ok) {
+            const auto &otherOp = deleteBeforeMoveCandidates.at(opLocation);
             if (op->targetSide() != otherOp->targetSide() || op->type() == otherOp->type()) {
                 return;
             }
@@ -73,22 +78,28 @@ void OperationSorterFilter::filterDeleteBeforeMoveCandidates(const SyncOpPtr &op
     }
 }
 
-void OperationSorterFilter::filterMoveBeforeCreateCandidates(const SyncOpPtr &op, NameToOpMap &moveBeforeCreateCandidates) {
+void OperationSorterFilter::filterMoveBeforeCreateCandidates(const SyncOpPtr &op, OpLocationToOpMap &moveBeforeCreateCandidates) {
     if (op->type() == OperationType::Create) {
+        assert(op->affectedNode()->parentNode());
+        assert(op->affectedNode()->parentNode()->id().has_value());
+
         const SyncName name = op->affectedNode()->normalizedName();
-        if (const auto &[_, ok] = moveBeforeCreateCandidates.try_emplace(name, op); !ok) {
-            const auto &otherOp = moveBeforeCreateCandidates.at(name);
+        const OpLocation opLocation{*op->affectedNode()->parentNode()->id(), name};
+        if (const auto &[_, ok] = moveBeforeCreateCandidates.try_emplace(opLocation, op); !ok) {
+            const auto &otherOp = moveBeforeCreateCandidates.at(opLocation);
             if (op->targetSide() != otherOp->targetSide() || otherOp->type() != OperationType::Move) {
                 return;
             }
             (void) _fixMoveBeforeCreateCandidates.emplace_back(op, otherOp);
         }
     }
+
     if (op->type() == OperationType::Move) {
         const SyncName name = op->affectedNode()->moveOriginInfos().normalizedPath().filename().native();
-        if (const auto &[_, ok] = moveBeforeCreateCandidates.try_emplace(name, op); !ok) {
+        const OpLocation opLocation{op->affectedNode()->moveOriginInfos().parentNodeId(), name};
+        if (const auto &[_, ok] = moveBeforeCreateCandidates.try_emplace(opLocation, op); !ok) {
             // move before create, e.g. user moves an object "a" to "b" and creates another object at "a".
-            const auto &otherOp = moveBeforeCreateCandidates.at(name);
+            const auto &otherOp = moveBeforeCreateCandidates.at(opLocation);
             if (op->targetSide() != otherOp->targetSide() || otherOp->type() != OperationType::Create) {
                 return;
             }
@@ -187,20 +198,18 @@ void OperationSorterFilter::filterCreateBeforeMoveCandidates(const SyncOpPtr &op
         }
     }
 }
-void OperationSorterFilter::filterDeleteBeforeCreateCandidates(const SyncOpPtr &op, NameToOpMap &deleteBeforeCreateCandidates) {
-    if (op->type() == OperationType::Delete) {
-        if (const auto [_, ok] = deleteBeforeCreateCandidates.try_emplace(op->affectedNode()->normalizedName(), op); !ok) {
-            const auto &otherOp = deleteBeforeCreateCandidates.at(op->affectedNode()->normalizedName());
-            if (op->targetSide() != otherOp->targetSide() || otherOp->type() != OperationType::Create) {
-                return;
-            }
-            (void) _fixDeleteBeforeCreateCandidates.emplace_back(op, otherOp);
-        }
-    }
-    if (op->type() == OperationType::Create) {
-        if (const auto [_, ok] = deleteBeforeCreateCandidates.try_emplace(op->affectedNode()->normalizedName(), op); !ok) {
-            const auto &otherOp = deleteBeforeCreateCandidates.at(op->affectedNode()->normalizedName());
-            if (op->targetSide() != otherOp->targetSide() || otherOp->type() != OperationType::Delete) {
+void OperationSorterFilter::filterDeleteBeforeCreateCandidates(const SyncOpPtr &op,
+                                                               OpLocationToOpMap &deleteBeforeCreateCandidates) {
+    if (op->type() == OperationType::Delete || op->type() == OperationType::Create) {
+        assert(op->affectedNode()->parentNode());
+        assert(op->affectedNode()->parentNode()->id().has_value());
+
+        const SyncName name = op->affectedNode()->normalizedName();
+        const OpLocation opLocation{*op->affectedNode()->parentNode()->id(), name};
+        if (const auto [_, ok] = deleteBeforeCreateCandidates.try_emplace(opLocation, op); !ok) {
+            const auto &otherOp = deleteBeforeCreateCandidates.at(opLocation);
+            if (op->targetSide() != otherOp->targetSide() ||
+                otherOp->type() != (op->type() == OperationType::Delete ? OperationType::Create : OperationType::Delete)) {
                 return;
             }
             (void) _fixDeleteBeforeCreateCandidates.emplace_back(op, otherOp);
@@ -208,23 +217,30 @@ void OperationSorterFilter::filterDeleteBeforeCreateCandidates(const SyncOpPtr &
     }
 }
 
-void OperationSorterFilter::filterMoveBeforeMoveOccupiedCandidates(const SyncOpPtr &op, NameToOpMap &moveOriginNames,
-                                                                   NameToOpMap &moveDestinationNames) {
+void OperationSorterFilter::filterMoveBeforeMoveOccupiedCandidates(const SyncOpPtr &op, OpLocationToOpMap &moveOriginCandidates,
+                                                                   OpLocationToOpMap &moveDestinationCandidates) {
     if (op->type() != OperationType::Move) return;
 
-    const SyncName originName = op->affectedNode()->moveOriginInfos().normalizedPath().filename().native();
-    const SyncName destinationName = op->affectedNode()->normalizedName();
+    assert(op->affectedNode()->parentNode());
+    assert(op->affectedNode()->parentNode()->id().has_value());
 
-    if (moveOriginNames.contains(destinationName)) {
-        const auto &otherOp = moveOriginNames.at(destinationName);
+    const SyncName destinationName = op->affectedNode()->normalizedName();
+    const OpLocation destinationOpLocation{*op->affectedNode()->parentNode()->id(), destinationName};
+
+    if (moveOriginCandidates.contains(destinationOpLocation)) {
+        const auto &otherOp = moveOriginCandidates.at(destinationOpLocation);
         if (op == otherOp || op->targetSide() != otherOp->targetSide()) {
             return;
         }
         // op must be executed after otherOp
         (void) _fixMoveBeforeMoveOccupiedCandidates.emplace_back(op, otherOp);
     }
-    if (moveDestinationNames.contains(originName)) {
-        const auto &otherOp = moveDestinationNames.at(originName);
+
+    const SyncName originName = op->affectedNode()->moveOriginInfos().normalizedPath().filename().native();
+    const OpLocation originOpLocation{op->affectedNode()->moveOriginInfos().parentNodeId(), originName};
+
+    if (moveDestinationCandidates.contains(originOpLocation)) {
+        const auto &otherOp = moveDestinationCandidates.at(originOpLocation);
         if (op == otherOp || op->targetSide() != otherOp->targetSide()) {
             return;
         }
@@ -232,8 +248,8 @@ void OperationSorterFilter::filterMoveBeforeMoveOccupiedCandidates(const SyncOpP
         (void) _fixMoveBeforeMoveOccupiedCandidates.emplace_back(otherOp, op);
     }
 
-    (void) moveOriginNames.try_emplace(originName, op);
-    (void) moveDestinationNames.try_emplace(destinationName, op);
+    (void) moveOriginCandidates.try_emplace(originOpLocation, op);
+    (void) moveDestinationCandidates.try_emplace(destinationOpLocation, op);
 }
 
 void OperationSorterFilter::filterEditBeforeMoveCandidates(const SyncOpPtr &op) {

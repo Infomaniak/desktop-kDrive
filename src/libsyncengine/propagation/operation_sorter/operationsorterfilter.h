@@ -18,8 +18,27 @@
 
 #include "libsyncengine/reconciliation/syncoperation.h"
 
+#include <Poco/Hash.h>
+
 namespace KDC {
-using NameToOpMap = std::unordered_map<SyncName, SyncOpPtr, SyncNameHashFunction, std::equal_to<>>;
+
+struct OpLocation {
+        NodeId parentNodeId;
+        SyncName name;
+
+        bool operator==(const OpLocation &other) const { return parentNodeId == other.parentNodeId && name == other.name; }
+};
+
+struct OpLocationHashFunction {
+        auto operator()(const OpLocation &opLocation) const {
+            std::size_t seed = 0;
+            Poco::hashCombine(seed, opLocation.parentNodeId);
+            Poco::hashCombine(seed, opLocation.name);
+            return seed;
+        }
+};
+
+using OpLocationToOpMap = std::unordered_map<OpLocation, SyncOpPtr, OpLocationHashFunction, std::equal_to<>>;
 using NodeIdToOpListMap = std::unordered_map<DbNodeId, std::list<SyncOpPtr>>;
 using SyncPathToSyncOpMap = std::unordered_map<SyncPath, SyncOpPtr, PathHashFunction>;
 
@@ -62,14 +81,14 @@ class OperationSorterFilter {
          * @param op The SyncOperation to be checked.
          * @param deleteBeforeMoveCandidates The map storing the names of affected items.
          */
-        void filterDeleteBeforeMoveCandidates(const SyncOpPtr &op, NameToOpMap &deleteBeforeMoveCandidates);
+        void filterDeleteBeforeMoveCandidates(const SyncOpPtr &op, OpLocationToOpMap &deleteBeforeMoveCandidates);
         /**
          * @brief Insert in a set the names of the created items and the origin names of the moved items. If the same name is
          * inserted twice, fixMoveBeforeCreate will be checked for the corresponding operations.
          * @param op The SyncOperation to be checked.
          * @param moveBeforeCreateCandidates The map storing the names of affected items.
          */
-        void filterMoveBeforeCreateCandidates(const SyncOpPtr &op, NameToOpMap &moveBeforeCreateCandidates);
+        void filterMoveBeforeCreateCandidates(const SyncOpPtr &op, OpLocationToOpMap &moveBeforeCreateCandidates);
         /**
          * @brief For each move operation, check if the origin path is inside a deleted path.
          * @param op The SyncOperation to be checked.
@@ -92,15 +111,15 @@ class OperationSorterFilter {
          * @param op The SyncOperation to be checked.
          * @param deleteBeforeCreateCandidates The map storing the names of affected items.
          */
-        void filterDeleteBeforeCreateCandidates(const SyncOpPtr &op, NameToOpMap &deleteBeforeCreateCandidates);
+        void filterDeleteBeforeCreateCandidates(const SyncOpPtr &op, OpLocationToOpMap &deleteBeforeCreateCandidates);
         /**
          * @brief Insert in a set the origin and destination names of the moved items. If the same name is inserted twice,
          * fixMoveBeforeMoveOccupied will be checked for the corresponding operations.
          * @param op The SyncOperation to be checked.
          * @param moveBeforeMoveOccupiedCandidates The map storing the names of affected items.
          */
-        void filterMoveBeforeMoveOccupiedCandidates(const SyncOpPtr &op, NameToOpMap &moveOriginNames,
-                                                    NameToOpMap &moveDestinationNames);
+        void filterMoveBeforeMoveOccupiedCandidates(const SyncOpPtr &op, OpLocationToOpMap &moveOriginCandidates,
+                                                    OpLocationToOpMap &moveDestinationCandidates);
         /**
          * @brief Select only the operations that have both an EDIT and a MOVE operation.
          * @param op The SyncOperation to be checked.
