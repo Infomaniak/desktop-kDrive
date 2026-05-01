@@ -26,6 +26,7 @@ GetFileLinkJob::GetFileLinkJob(const DriveDbId driveDbId, RemoteNodeId nodeId) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
     _nodeId(std::move(nodeId)) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
+    _apiVersion = 2;
 }
 
 std::string GetFileLinkJob::getSpecificUrl() {
