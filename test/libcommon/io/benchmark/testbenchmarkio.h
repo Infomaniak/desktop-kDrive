@@ -41,6 +41,7 @@
 #include <algorithm>
 #include <iomanip>
 #include <cstdint>
+#include <limits>
 
 #include <fcntl.h>
 #if defined(KD_LINUX) || defined(KD_MACOS)
@@ -80,7 +81,6 @@ class testbenchmarkio {
 
         void setCategoryExpectedCounts(const std::map<std::string, int> &counts) { categoryTotals_ = counts; }
 
-        void printResults() const;
         void printResultsByCategory() const;
 
         const std::vector<BenchmarkResult> &getResults() const;
@@ -106,6 +106,7 @@ bool filesystem_exists(const SyncPath &path);
 bool win32_getfileattributes_w(const SyncPath &path);
 bool crt_stat(const SyncPath &path);
 bool iohelper_checkIfPathExists(const SyncPath &path);
+bool stripped_iohelper_checkIfPathExists(const SyncPath &path);
 } // namespace ExistsTests
 
 // ============================================================================
@@ -120,7 +121,7 @@ bool statx_full(const SyncPath &path);
 bool fstat_full(const SyncPath &path);
 bool filesystem_full(const SyncPath &path);
 bool iohelper_getFileStat(const SyncPath &path);
-bool iohelper_setFileDates(const SyncPath &path);
+bool stripped_iohelper_getFileStat(const SyncPath &path);
 } // namespace MetadataTests
 
 // ============================================================================
@@ -137,6 +138,7 @@ bool fread_text(const SyncPath &path);
 bool win32_readfile(const SyncPath &path);
 bool win32_readfile_w(const SyncPath &path);
 bool iohelper_openFile(const SyncPath &path);
+bool stripped_iohelper_openFile(const SyncPath &path);
 } // namespace ReadTests
 
 // ============================================================================
@@ -150,6 +152,7 @@ bool filesystem_filesize(const SyncPath &path);
 bool win32_getfilesize(const SyncPath &path);
 bool crt_filelength(const SyncPath &path);
 bool iohelper_getFileSize(const SyncPath &path);
+bool stripped_iohelper_getFileSize(const SyncPath &path);
 } // namespace SizeTests
 
 // ============================================================================
@@ -158,6 +161,7 @@ bool iohelper_getFileSize(const SyncPath &path);
 bool CreateTestFile(const SyncPath &path, const std::string &content = "Benchmark test data");
 bool DeleteTestFile(const SyncPath &path);
 int getiterations(void);
+void setiterations(int n);
 
 // ============================================================================
 // CREATE FUNCTIONS
@@ -185,7 +189,9 @@ void teardown(const SyncPath &path);
 bool delete_filesystem_remove(const SyncPath &dir);
 bool delete_DeleteFileA(const SyncPath &dir);
 bool delete_crt_remove(const SyncPath &dir);
+bool delete_remove_all(const SyncPath &dir);
 bool iohelper_deleteItem(const SyncPath &dir);
+bool stripped_iohelper_deleteItem(const SyncPath &dir);
 } // namespace DeleteTests
 
 // ----------------------------------------------------------------------------
@@ -199,6 +205,7 @@ bool move_filesystem_rename(const SyncPath &dir);
 bool move_MoveFileA(const SyncPath &dir);
 bool move_MoveFileW(const SyncPath &dir);
 bool iohelper_moveItem(const SyncPath &dir);
+bool stripped_iohelper_moveItem(const SyncPath &dir);
 } // namespace MoveTests
 
 // ============================================================================

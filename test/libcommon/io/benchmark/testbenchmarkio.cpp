@@ -21,7 +21,7 @@
 
 namespace KDC {
 
-static int32_t iterations_ = 10000;
+static int32_t iterations_ = 1000;
 
 // ============================================================================
 // BENCHMARK ENGINE IMPLEMENTATION
@@ -40,29 +40,6 @@ void testbenchmarkio::addResult(const std::string &category, const std::string &
     r.success = success;
     results_.push_back(r);
     printProgress();
-}
-
-void testbenchmarkio::printResults() const {
-    std::vector<BenchmarkResult> sorted = results_;
-    std::sort(sorted.begin(), sorted.end(), [](const auto &a, const auto &b) { return a.time_ms < b.time_ms; });
-
-    std::cout << "\n";
-    std::cout << "================================================================\n";
-    std::cout << "                    BENCHMARK RESULTS                           \n";
-    std::cout << "================================================================\n";
-    std::cout << "Iterations: " << iterations_ << "\n";
-    std::cout << "----------------------------------------------------------------\n";
-    std::cout << std::left << std::setw(12) << "Category" << std::setw(40) << "Method" << std::right << std::setw(14)
-              << "Time (ms)" << std::setw(18) << "Ns/Call" << std::setw(8) << "OK" << "\n";
-    std::cout << "----------------------------------------------------------------\n";
-
-    for (const auto &r: sorted) {
-        std::cout << std::left << std::setw(12) << r.category << std::setw(40) << r.method << std::right << std::setw(14)
-                  << std::fixed << std::setprecision(2) << r.time_ms << std::setw(18) << std::fixed << std::setprecision(1)
-                  << r.avg_ns_per_call << std::setw(8) << (r.success ? "Y" : "N") << "\n";
-    }
-
-    std::cout << "================================================================\n";
 }
 
 void testbenchmarkio::printResultsByCategory() const {
@@ -175,6 +152,12 @@ bool iohelper_checkIfPathExists(const SyncPath &path) {
     IoError ioError = IoError::Unknown;
     IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive);
     return exists;
+}
+
+bool stripped_iohelper_checkIfPathExists(const SyncPath &path) {
+    std::error_code ec;
+    const auto s = std::filesystem::symlink_status(path, ec);
+    return !ec && s.type() != std::filesystem::file_type::not_found;
 }
 
 } // namespace ExistsTests
@@ -396,10 +379,14 @@ bool iohelper_getFileStat(const SyncPath &path) {
     return IoHelper::getFileStat(path, &fs, ioError, IoHelper::PathCheckOption::Insensitive);
 }
 
-bool iohelper_setFileDates(const SyncPath &path) {
-    const auto now = static_cast<SyncTime>(
-            std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count());
-    return IoHelper::setFileDates(path, now, now, false) == IoError::Success;
+bool stripped_iohelper_getFileStat(const SyncPath &path) {
+#if defined(KD_WINDOWS)
+    struct _stat64i32 st{};
+    return ::_wstat(path.native().c_str(), &st) == 0;
+#else
+    struct stat st{};
+    return ::stat(path.string().c_str(), &st) == 0;
+#endif
 }
 
 } // namespace MetadataTests
@@ -508,6 +495,13 @@ bool iohelper_openFile(const SyncPath &path) {
     return ok;
 }
 
+bool stripped_iohelper_openFile(const SyncPath &path) {
+    std::ifstream f(path.native(), std::ifstream::binary);
+    const bool ok = f.is_open();
+    if (ok) f.close();
+    return ok;
+}
+
 } // namespace ReadTests
 
 // ============================================================================
@@ -564,6 +558,12 @@ bool iohelper_getFileSize(const SyncPath &path) {
     uint64_t size = 0;
     IoError ioError = IoError::Unknown;
     return IoHelper::getFileSize(path, size, ioError);
+}
+
+bool stripped_iohelper_getFileSize(const SyncPath &path) {
+    std::error_code ec;
+    const auto size = std::filesystem::file_size(path, ec);
+    return !ec && size != static_cast<std::uintmax_t>(-1);
 }
 
 } // namespace SizeTests
@@ -703,11 +703,29 @@ bool delete_crt_remove(const SyncPath &dir) {
     return std::remove(filename.c_str()) == 0;
 }
 
+bool delete_remove_all(const SyncPath &dir) {
+    uint64_t id = counter++;
+    std::error_code ec;
+
+    auto filename = (std::filesystem::path(dir) / ("bench_delete_" + std::to_string(id) + ".tmp")).string();
+    std::filesystem::remove_all(filename, ec);
+
+    return ec == std::error_code();
+}
+
 bool iohelper_deleteItem(const SyncPath &dir) {
     const auto path = (std::filesystem::path(dir) / "bench_iohelper_delete.tmp").string();
     CreateTestFile(path);
     IoError ioError = IoError::Unknown;
     return IoHelper::deleteItem(path, ioError);
+}
+
+bool stripped_iohelper_deleteItem(const SyncPath &dir) {
+    uint64_t id = counter++;
+    std::error_code ec;
+    const auto path = std::filesystem::path(dir) / ("bench_delete_" + std::to_string(id) + ".tmp");
+    std::filesystem::remove_all(path, ec);
+    return !ec;
 }
 } // namespace DeleteTests
 
@@ -784,6 +802,16 @@ bool iohelper_moveItem(const SyncPath &dir) {
     return ok;
 }
 
+bool stripped_iohelper_moveItem(const SyncPath &dir) {
+    const auto src = std::filesystem::path(dir) / "bench_stripped_move_src.tmp";
+    const auto dst = std::filesystem::path(dir) / "bench_stripped_move_dst.tmp";
+    CreateTestFile(src.string());
+    std::error_code ec;
+    std::filesystem::rename(src, dst, ec);
+    if (!ec) std::filesystem::remove(dst, ec);
+    return !ec;
+}
+
 } // namespace MoveTests
 
 
@@ -811,6 +839,10 @@ int getiterations(void) {
     return iterations_;
 }
 
+void setiterations(int n) {
+    iterations_ = n;
+}
+
 // ============================================================================
 // RUNNER IMPLEMENTATION
 // ============================================================================
@@ -819,25 +851,25 @@ void RunAllBenchmarks(const SyncPath &testFilePath, int iterations) {
 
     // Expected benchmark count per category (must match addResult calls below)
     std::map<std::string, int> catCounts;
-    catCounts["Exists"] = 4; // filesystem_status, filesystem_exists, _stat, IoHelper
+    catCounts["Exists"] = 5; // filesystem_status, filesystem_exists, _stat, IoHelper, stripped IoHelper
 #if defined(KD_WINDOWS)
     catCounts["Exists"] += 1; // GetFileAttributesW
 #endif
-    catCounts["Metadata"] = 4; // stat, fstat, filesystem_full, IoHelper
+    catCounts["Metadata"] = 5; // stat, fstat, filesystem_full, IoHelper, stripped IoHelper
 #if defined(KD_LINUX) || defined(KD_MACOS)
     catCounts["Metadata"] += 1; // lstat
 #endif
 #if defined(KD_LINUX)
     catCounts["Metadata"] += 1; // statx
 #endif
-    catCounts["Read"] = 5; // ifstream x2, fread x2, IoHelper
+    catCounts["Read"] = 6; // ifstream x2, fread x2, IoHelper, stripped IoHelper
 #if defined(KD_WINDOWS)
     catCounts["Read"] += 2; // CreateFileA, CreateFileW
 #endif
     catCounts["Create"] = 4;
-    catCounts["Delete"] = 4;
-    catCounts["Move"] = 4;
-    catCounts["Size"] = 3; // filesystem, crt, IoHelper
+    catCounts["Delete"] = 6; // filesystem_remove, DeleteFileA, crt_remove, remove_all, IoHelper, stripped IoHelper
+    catCounts["Move"] = 5; // rename, MoveFileA, MoveFileW, IoHelper, stripped IoHelper
+    catCounts["Size"] = 4; // filesystem, crt, IoHelper, stripped IoHelper
 #if defined(KD_WINDOWS)
     catCounts["Size"] += 1; // GetFileSizeEx
 #endif
@@ -867,6 +899,8 @@ void RunAllBenchmarks(const SyncPath &testFilePath, int iterations) {
                 benchmark.measure(ExistsTests::crt_stat, filePath, ExistsTests::testinit, ExistsTests::teardown, false));
         benchmark.addResult("Exists", "IoHelper::checkIfPathExists",
                 benchmark.measure(ExistsTests::iohelper_checkIfPathExists, filePath, ExistsTests::testinit, ExistsTests::teardown, false));
+        benchmark.addResult("Exists", "stripped IoHelper-checkIfPathExists",
+                benchmark.measure(ExistsTests::stripped_iohelper_checkIfPathExists, filePath, ExistsTests::testinit, ExistsTests::teardown, false));
     }
 
     // --- METADATA ---
@@ -889,6 +923,8 @@ void RunAllBenchmarks(const SyncPath &testFilePath, int iterations) {
                 benchmark.measure(MetadataTests::filesystem_full, filePath, MetadataTests::testinit, MetadataTests::teardown, false));
         benchmark.addResult("Metadata", "IoHelper::getFileStat",
                 benchmark.measure(MetadataTests::iohelper_getFileStat, filePath, MetadataTests::testinit, MetadataTests::teardown, false));
+        benchmark.addResult("Metadata", "stripped IoHelper-getFileStat",
+                benchmark.measure(MetadataTests::stripped_iohelper_getFileStat, filePath, MetadataTests::testinit, MetadataTests::teardown, false));
     }
 
     // --- READ ---
@@ -911,10 +947,13 @@ void RunAllBenchmarks(const SyncPath &testFilePath, int iterations) {
 #endif
         benchmark.addResult("Read", "IoHelper::openFile",
                 benchmark.measure(ReadTests::iohelper_openFile, filePath, ReadTests::testinit, ReadTests::teardown, false));
+        benchmark.addResult("Read", "stripped IoHelper-openFile",
+                benchmark.measure(ReadTests::stripped_iohelper_openFile, filePath, ReadTests::testinit, ReadTests::teardown, false));
     }
 
     // --- CREATE ---
     {
+        setiterations(iterations / 10);
         LocalTemporaryDirectory tmpDir("bench_create");
         const SyncPath dirPath = tmpDir.path() / "workdir";
         benchmark.addResult("Create", "create (ofstream)",
@@ -925,10 +964,12 @@ void RunAllBenchmarks(const SyncPath &testFilePath, int iterations) {
                 benchmark.measure(CreateTests::create_CreateFileA, dirPath, CreateTests::testinit, CreateTests::teardown, false));
         benchmark.addResult("Create", "create (CreateFileW)",
                 benchmark.measure(CreateTests::create_CreateFileW, dirPath, CreateTests::testinit, CreateTests::teardown, false));
+        setiterations(iterations);
     }
 
     // --- DELETE ---
     {
+        setiterations(iterations / 10);
         LocalTemporaryDirectory tmpDir("bench_delete");
         const SyncPath dirPath = tmpDir.path();
         benchmark.addResult("Delete", "delete (filesystem::remove)",
@@ -937,12 +978,18 @@ void RunAllBenchmarks(const SyncPath &testFilePath, int iterations) {
                 benchmark.measure(DeleteTests::delete_DeleteFileA, dirPath, DeleteTests::testinit, DeleteTests::teardown, false));
         benchmark.addResult("Delete", "delete (CRT remove)",
                 benchmark.measure(DeleteTests::delete_crt_remove, dirPath, DeleteTests::testinit, DeleteTests::teardown, false));
+        benchmark.addResult("Delete", "delete (filesystem::remove_all)",
+                benchmark.measure(DeleteTests::delete_remove_all, dirPath, DeleteTests::testinit, DeleteTests::teardown, false));
         benchmark.addResult("Delete", "IoHelper::deleteItem",
                 benchmark.measure(DeleteTests::iohelper_deleteItem, dirPath, DeleteTests::testinit, DeleteTests::teardown, false));
+        benchmark.addResult("Delete", "stripped IoHelper-deleteItem",
+                benchmark.measure(DeleteTests::stripped_iohelper_deleteItem, dirPath, DeleteTests::testinit, DeleteTests::teardown, false));
+        setiterations(iterations);
     }
 
     // --- MOVE ---
     {
+        setiterations(iterations / 10);
         LocalTemporaryDirectory tmpDir("bench_move");
         const SyncPath dirPath = tmpDir.path();
         benchmark.addResult("Move", "move (std::filesystem::rename)",
@@ -953,6 +1000,9 @@ void RunAllBenchmarks(const SyncPath &testFilePath, int iterations) {
                 benchmark.measure(MoveTests::move_MoveFileW, dirPath, MoveTests::testinit, MoveTests::teardown, false));
         benchmark.addResult("Move", "IoHelper::moveItem",
                 benchmark.measure(MoveTests::iohelper_moveItem, dirPath, MoveTests::testinit, MoveTests::teardown, false));
+        benchmark.addResult("Move", "stripped IoHelper-moveItem",
+                benchmark.measure(MoveTests::stripped_iohelper_moveItem, dirPath, MoveTests::testinit, MoveTests::teardown, false));
+        setiterations(iterations);
     }
 
     // --- SIZE ---
@@ -969,36 +1019,49 @@ void RunAllBenchmarks(const SyncPath &testFilePath, int iterations) {
                 benchmark.measure(SizeTests::crt_filelength, filePath, SizeTests::testinit, SizeTests::teardown, false));
         benchmark.addResult("Size", "IoHelper::getFileSize",
                 benchmark.measure(SizeTests::iohelper_getFileSize, filePath, SizeTests::testinit, SizeTests::teardown, false));
+        benchmark.addResult("Size", "stripped IoHelper-getFileSize",
+                benchmark.measure(SizeTests::stripped_iohelper_getFileSize, filePath, SizeTests::testinit, SizeTests::teardown, false));
     }
 
     // Print results and cleanup
     benchmark.printResultsByCategory();
-    benchmark.printResults();
 
-    // --- TAB 1: IoHelper  /  TAB 2: Best raw API  (per category) ---
+    std::cout << "\n================================================================\n";
+    std::cout << "                    BENCHMARK RESULTS\n";
+    std::cout << "================================================================\n";
+
+    // --- TAB 1: IoHelper  /  TAB 2: Best raw API  /  TAB 3: Stripped IoHelper ---
     {
-        // Underlying OS/stdlib API used by each IoHelper method (from source inspection of iohelper.cpp)
         const std::map<std::string, std::string> iohelperUnderlyingApi = {
                 {"IoHelper::checkIfPathExists", "std::filesystem::symlink_status"},
                 {"IoHelper::getFileStat", "NtQueryInformationFile (Win) / stat (Linux/Mac)"},
                 {"IoHelper::getFileSize", "std::filesystem::file_size"},
                 {"IoHelper::openFile", "std::ifstream (binary, with retry loop)"},
-                {"IoHelper::setFileDates", "SetFileTime (Win) / utimensat (Linux/Mac)"},
                 {"IoHelper::deleteItem", "std::filesystem::remove_all"},
                 {"IoHelper::moveItem", "std::filesystem::rename"},
         };
 
         struct CategoryEntry {
                 std::string category;
+                // TAB 1 - IoHelper
                 std::string iohelperMethod;
                 std::string underlyingApi;
                 double iohelperMs;
                 double iohelperNs;
                 bool iohelperOk;
+                bool iohelperIsFastest;
+                // TAB 2 - Best raw (excludes IoHelper:: and stripped IoHelper-)
                 std::string bestAltMethod;
                 double bestAltMs;
                 double bestAltNs;
                 bool bestAltOk;
+                bool bestAltIsFastest;
+                // TAB 3 - Stripped IoHelper
+                std::string strippedMethod;
+                double strippedMs;
+                double strippedNs;
+                bool strippedOk;
+                bool strippedIsFastest;
         };
 
         std::vector<CategoryEntry> entries;
@@ -1006,40 +1069,57 @@ void RunAllBenchmarks(const SyncPath &testFilePath, int iterations) {
         std::map<std::string, std::vector<BenchmarkResult>> byCategory;
         for (const auto &r: benchmark.getResults()) byCategory[r.category].push_back(r);
 
-        const std::vector<std::string> catOrder = {"Exists", "Metadata", "Read", "Write", "Size", "Create", "Delete", "Move"};
+        const std::vector<std::string> catOrder = {"Exists", "Metadata", "Read", "Size", "Create", "Delete", "Move"};
         for (const auto &cat: catOrder) {
             const auto it = byCategory.find(cat);
             if (it == byCategory.end()) continue;
             const auto &catResults = it->second;
 
             const BenchmarkResult *iohelperResult = nullptr;
+            const BenchmarkResult *strippedResult = nullptr;
             const BenchmarkResult *bestAlt = nullptr;
+            double fastestMs = std::numeric_limits<double>::max();
+
             for (const auto &r: catResults) {
+                if (r.time_ms < fastestMs) fastestMs = r.time_ms;
                 if (r.method.rfind("IoHelper::", 0) == 0) {
                     iohelperResult = &r;
+                } else if (r.method.rfind("stripped IoHelper-", 0) == 0) {
+                    strippedResult = &r;
                 } else if (!bestAlt || r.time_ms < bestAlt->time_ms) {
                     bestAlt = &r;
                 }
             }
-            if (!iohelperResult || !bestAlt) continue;
+            if (!iohelperResult || !bestAlt || !strippedResult) continue;
 
             CategoryEntry e;
             e.category = cat;
+
             e.iohelperMethod = iohelperResult->method;
             const auto apiIt = iohelperUnderlyingApi.find(iohelperResult->method);
             e.underlyingApi = (apiIt != iohelperUnderlyingApi.end()) ? apiIt->second : "unknown";
             e.iohelperMs = iohelperResult->time_ms;
             e.iohelperNs = iohelperResult->avg_ns_per_call;
             e.iohelperOk = iohelperResult->success;
+            e.iohelperIsFastest = (iohelperResult->time_ms <= fastestMs);
+
             e.bestAltMethod = bestAlt->method;
             e.bestAltMs = bestAlt->time_ms;
             e.bestAltNs = bestAlt->avg_ns_per_call;
             e.bestAltOk = bestAlt->success;
+            e.bestAltIsFastest = (bestAlt->time_ms <= fastestMs);
+
+            e.strippedMethod = strippedResult->method;
+            e.strippedMs = strippedResult->time_ms;
+            e.strippedNs = strippedResult->avg_ns_per_call;
+            e.strippedOk = strippedResult->success;
+            e.strippedIsFastest = (strippedResult->time_ms <= fastestMs);
+
             entries.push_back(e);
         }
 
-        constexpr int W_CAT = 10, W_METHOD = 44, W_MS = 14, W_NS = 14, W_OK = 6;
-        const int totalWidth = W_CAT + W_METHOD + W_MS + W_NS + W_OK;
+        constexpr int W_CAT = 10, W_METHOD = 44, W_MS = 14, W_NS = 14, W_OK = 6, W_FAST = 12;
+        const int totalWidth = W_CAT + W_METHOD + W_MS + W_NS + W_OK + W_FAST;
         const std::string sep(totalWidth, '-');
 
         // ---- TAB 1: IoHelper ----
@@ -1047,33 +1127,53 @@ void RunAllBenchmarks(const SyncPath &testFilePath, int iterations) {
         std::cout << sep << "\n";
         std::cout << "  TAB 1 - IoHelper  (production API + its underlying OS call)\n";
         std::cout << sep << "\n";
-        std::cout << std::left << std::setw(W_CAT) << "Category" << std::setw(W_METHOD) << "IoHelper method / underlying API"
-                  << std::right << std::setw(W_MS) << "Time (ms)" << std::setw(W_NS) << "Ns/Call" << std::setw(W_OK) << "OK"
-                  << "\n";
+        std::cout << std::left << std::setw(W_CAT) << "Category" << std::setw(W_METHOD) << "IoHelper method"
+                  << std::right << std::setw(W_MS) << "Time (ms)" << std::setw(W_NS) << "Ns/Call"
+                  << std::setw(W_OK) << "OK" << std::setw(W_FAST) << "Is fastest" << "\n";
         std::cout << sep << "\n";
         for (const auto &e: entries) {
-            // Row 1: IoHelper method name + time
-            std::cout << std::left << std::setw(W_CAT) << e.category << std::setw(W_METHOD) << e.iohelperMethod << std::right
-                      << std::setw(W_MS) << std::fixed << std::setprecision(2) << e.iohelperMs << std::setw(W_NS) << std::fixed
-                      << std::setprecision(1) << e.iohelperNs << std::setw(W_OK) << (e.iohelperOk ? "OK" : "FAIL") << "\n";
-            // Row 2: underlying API (indented, no times)
+            std::cout << std::left << std::setw(W_CAT) << e.category << std::setw(W_METHOD) << e.iohelperMethod
+                      << std::right << std::setw(W_MS) << std::fixed << std::setprecision(2) << e.iohelperMs
+                      << std::setw(W_NS) << std::fixed << std::setprecision(1) << e.iohelperNs
+                      << std::setw(W_OK) << (e.iohelperOk ? "OK" : "FAIL")
+                      << std::setw(W_FAST) << (e.iohelperIsFastest ? "Y" : "N") << "\n";
             std::cout << std::left << std::setw(W_CAT) << "" << "  -> " << e.underlyingApi << "\n";
         }
         std::cout << sep << "\n";
 
-        // ---- TAB 2: Best raw benchmark ----
+        // ---- TAB 2: Best raw benchmark (excludes IoHelper:: and stripped IoHelper-) ----
         std::cout << "\n";
         std::cout << sep << "\n";
-        std::cout << "  TAB 2 - Best raw API  (fastest individual call in each category)\n";
+        std::cout << "  TAB 2 - Best raw API  (fastest, excluding IoHelper and stripped variants)\n";
         std::cout << sep << "\n";
-        std::cout << std::left << std::setw(W_CAT) << "Category" << std::setw(W_METHOD) << "Fastest method" << std::right
-                  << std::setw(W_MS) << "Time (ms)" << std::setw(W_NS) << "Ns/Call" << std::setw(W_OK) << "OK"
-                  << "\n";
+        std::cout << std::left << std::setw(W_CAT) << "Category" << std::setw(W_METHOD) << "Fastest method"
+                  << std::right << std::setw(W_MS) << "Time (ms)" << std::setw(W_NS) << "Ns/Call"
+                  << std::setw(W_OK) << "OK" << std::setw(W_FAST) << "Is fastest" << "\n";
         std::cout << sep << "\n";
         for (const auto &e: entries) {
-            std::cout << std::left << std::setw(W_CAT) << e.category << std::setw(W_METHOD) << e.bestAltMethod << std::right
-                      << std::setw(W_MS) << std::fixed << std::setprecision(2) << e.bestAltMs << std::setw(W_NS) << std::fixed
-                      << std::setprecision(1) << e.bestAltNs << std::setw(W_OK) << (e.bestAltOk ? "OK" : "FAIL") << "\n";
+            std::cout << std::left << std::setw(W_CAT) << e.category << std::setw(W_METHOD) << e.bestAltMethod
+                      << std::right << std::setw(W_MS) << std::fixed << std::setprecision(2) << e.bestAltMs
+                      << std::setw(W_NS) << std::fixed << std::setprecision(1) << e.bestAltNs
+                      << std::setw(W_OK) << (e.bestAltOk ? "OK" : "FAIL")
+                      << std::setw(W_FAST) << (e.bestAltIsFastest ? "Y" : "N") << "\n";
+        }
+        std::cout << sep << "\n";
+
+        // ---- TAB 3: Stripped IoHelper ----
+        std::cout << "\n";
+        std::cout << sep << "\n";
+        std::cout << "  TAB 3 - Stripped IoHelper  (raw underlying API only, no IoHelper overhead)\n";
+        std::cout << sep << "\n";
+        std::cout << std::left << std::setw(W_CAT) << "Category" << std::setw(W_METHOD) << "Stripped method"
+                  << std::right << std::setw(W_MS) << "Time (ms)" << std::setw(W_NS) << "Ns/Call"
+                  << std::setw(W_OK) << "OK" << std::setw(W_FAST) << "Is fastest" << "\n";
+        std::cout << sep << "\n";
+        for (const auto &e: entries) {
+            std::cout << std::left << std::setw(W_CAT) << e.category << std::setw(W_METHOD) << e.strippedMethod
+                      << std::right << std::setw(W_MS) << std::fixed << std::setprecision(2) << e.strippedMs
+                      << std::setw(W_NS) << std::fixed << std::setprecision(1) << e.strippedNs
+                      << std::setw(W_OK) << (e.strippedOk ? "OK" : "FAIL")
+                      << std::setw(W_FAST) << (e.strippedIsFastest ? "Y" : "N") << "\n";
         }
         std::cout << sep << "\n";
     }
