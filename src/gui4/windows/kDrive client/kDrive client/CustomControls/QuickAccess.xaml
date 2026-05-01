@@ -168,8 +168,13 @@
                     HorizontalContentAlignment="Stretch"
                     VerticalAlignment="Bottom"
                     Click="TrashButton_Click">
-                <Grid>
-                    <StackPanel Orientation="Horizontal"
+                <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0"
+                                Orientation="Horizontal"
                                 Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                         <controls:SvgIcon Height="13"
                                           Width="13"
@@ -179,7 +184,8 @@
                         <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('folderTrash')}"
                                    Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                     </StackPanel>
-                    <controls:SvgIcon Height="10"
+                    <controls:SvgIcon Grid.Column="1"
+                                      Height="10"
                                       Width="10"
                                       VerticalAlignment="Center"
                                       HorizontalAlignment="Right"
