@@ -100,23 +100,34 @@ void testbenchmarkio::reset() {
 }
 
 void testbenchmarkio::printProgress() const {
-    const int current = static_cast<int>(results_.size());
-    const int total = (total_ > 0) ? total_ : current;
-    constexpr int barWidth = 40;
+    const std::string &cat = results_.back().category;
+    const std::string &method = results_.back().method;
 
+    // Count completed results in the current category
+    int current = 0;
+    for (const auto &r: results_)
+        if (r.category == cat) current++;
+
+    int total = current;
+    const auto it = categoryTotals_.find(cat);
+    if (it != categoryTotals_.end()) total = it->second;
+
+    // Print category header when this is the first result of a new category
+    const bool newCategory = (results_.size() == 1) ||
+                             (results_[results_.size() - 2].category != cat);
+    if (newCategory)
+        std::cout << "\n  [" << cat << "]\n";
+
+    constexpr int barWidth = 40;
     const float ratio = (total > 0) ? static_cast<float>(current) / static_cast<float>(total) : 1.0f;
     const int filled = static_cast<int>(ratio * barWidth);
 
-    const std::string &lastMethod = results_.back().method;
-    const std::string &lastCategory = results_.back().category;
-
-    std::cout << "\r  [";
+    std::cout << "\r    [";
     for (int i = 0; i < barWidth; ++i)
         std::cout << (i < filled ? '#' : '-');
     std::cout << "] " << std::setw(2) << current << "/" << total
               << " (" << std::fixed << std::setprecision(0) << std::setw(3) << (ratio * 100.0f) << "%)  "
-              << std::left << std::setw(10) << lastCategory << "  " << lastMethod
-              << std::flush;
+              << method << std::flush;
 
     if (current >= total)
         std::cout << "\n";
@@ -621,6 +632,8 @@ namespace DeleteTests {
 static std::atomic<uint64_t> counter{0};
 
 void testinit(const SyncPath &dir) {
+    std::error_code ec;
+    std::filesystem::create_directories(dir, ec);
     for (counter = 0; counter < iterations_; counter++) {
         auto path = std::filesystem::path(dir) / ("bench_delete_" + std::to_string(counter) + ".tmp");
         CreateTestFile(path.string());
@@ -667,6 +680,8 @@ namespace MoveTests {
 static std::atomic<uint64_t> counter{0};
 
 void testinit(const SyncPath &dir) {
+    std::error_code ec;
+    std::filesystem::create_directories(dir, ec);
     for (counter = 0; counter < iterations_; counter++) {
         auto path = std::filesystem::path(dir) / ("bench_move_" + std::to_string(counter) + "_src.tmp");
         CreateTestFile(path.string());
@@ -811,41 +826,33 @@ int getiterations(void) {
 // RUNNER IMPLEMENTATION
 // ============================================================================
 void RunAllBenchmarks(const SyncPath &testFilePath, int iterations) {
-    LocalTemporaryDirectory tmpDir;
-    // Setup
-    const auto testFilePathFull = tmpDir.path() / testFilePath;
-    if (!CreateTestFile(testFilePathFull)) {
-        std::cerr << "Failed to create test file: " << testFilePathFull << "\n";
-        return;
-    }
-
     testbenchmarkio benchmark(iterations);
 
-    // Compute the total number of addResult calls (platform-dependent)
-    int expectedCount = 0;
-    expectedCount += 4; // Exists: filesystem_status, filesystem_exists, _stat, IoHelper
+    // Expected benchmark count per category (must match addResult calls below)
+    std::map<std::string, int> catCounts;
+    catCounts["Exists"] = 4; // filesystem_status, filesystem_exists, _stat, IoHelper
 #if defined(KD_WINDOWS)
-    expectedCount += 2; // Exists: GetFileAttributesA, GetFileAttributesW
+    catCounts["Exists"] += 1; // GetFileAttributesW
 #endif
-    expectedCount += 4; // Metadata: stat, fstat, filesystem_full, IoHelper
+    catCounts["Metadata"] = 4; // stat, fstat, filesystem_full, IoHelper
 #if defined(KD_LINUX) || defined(KD_MACOS)
-    expectedCount += 1; // Metadata: lstat
+    catCounts["Metadata"] += 1; // lstat
 #endif
 #if defined(KD_LINUX)
-    expectedCount += 1; // Metadata: statx
+    catCounts["Metadata"] += 1; // statx
 #endif
-    expectedCount += 5; // Read: ifstream x2, fread x2, IoHelper
+    catCounts["Read"] = 5; // ifstream x2, fread x2, IoHelper
 #if defined(KD_WINDOWS)
-    expectedCount += 2; // Read: CreateFileA, CreateFileW
+    catCounts["Read"] += 2; // CreateFileA, CreateFileW
 #endif
-    expectedCount += 4; // Create
-    expectedCount += 4; // Delete
-    expectedCount += 4; // Move
-    expectedCount += 3; // Size: filesystem, crt, IoHelper
+    catCounts["Create"] = 4;
+    catCounts["Delete"] = 4;
+    catCounts["Move"] = 4;
+    catCounts["Size"] = 3; // filesystem, crt, IoHelper
 #if defined(KD_WINDOWS)
-    expectedCount += 1; // Size: GetFileSizeEx
+    catCounts["Size"] += 1; // GetFileSizeEx
 #endif
-    benchmark.setExpectedCount(expectedCount);
+    benchmark.setCategoryExpectedCounts(catCounts);
 
     std::cout << "\n";
     std::cout << "================================================================\n";
@@ -856,134 +863,124 @@ void RunAllBenchmarks(const SyncPath &testFilePath, int iterations) {
     std::cout << "\n";
 
     // --- EXISTS ---
-    std::cout << "\n[Running Exists Tests...]\n";
-    benchmark.addResult(
-            "Exists", "std::filesystem::status",
-            benchmark.measure(ExistsTests::filesystem_status, testFilePath, ExistsTests::testinit, ExistsTests::teardown, false));
-    benchmark.addResult(
-            "Exists", "std::filesystem::exists",
-            benchmark.measure(ExistsTests::filesystem_exists, testFilePath, ExistsTests::testinit, ExistsTests::teardown, false));
+    {
+        LocalTemporaryDirectory tmpDir("bench_exists");
+        const SyncPath filePath = tmpDir.path() / "bench_file.tmp";
+        benchmark.addResult("Exists", "std::filesystem::status",
+                benchmark.measure(ExistsTests::filesystem_status, filePath, ExistsTests::testinit, ExistsTests::teardown, false));
+        benchmark.addResult("Exists", "std::filesystem::exists",
+                benchmark.measure(ExistsTests::filesystem_exists, filePath, ExistsTests::testinit, ExistsTests::teardown, false));
 #if defined(KD_WINDOWS)
-    benchmark.addResult("Exists", "GetFileAttributesW",
-                        benchmark.measure(ExistsTests::win32_getfileattributes_w, testFilePath, ExistsTests::testinit,
-                                          ExistsTests::teardown, false));
+        benchmark.addResult("Exists", "GetFileAttributesW",
+                benchmark.measure(ExistsTests::win32_getfileattributes_w, filePath, ExistsTests::testinit, ExistsTests::teardown, false));
 #endif
-    benchmark.addResult(
-            "Exists", "_stat()",
-            benchmark.measure(ExistsTests::crt_stat, testFilePath, ExistsTests::testinit, ExistsTests::teardown, false));
-    benchmark.addResult("Exists", "IoHelper::checkIfPathExists",
-                        benchmark.measure(IoHelperTests::iohelper_checkIfPathExists, testFilePath, ExistsTests::testinit,
-                                          ExistsTests::teardown, false));
+        benchmark.addResult("Exists", "_stat()",
+                benchmark.measure(ExistsTests::crt_stat, filePath, ExistsTests::testinit, ExistsTests::teardown, false));
+        benchmark.addResult("Exists", "IoHelper::checkIfPathExists",
+                benchmark.measure(IoHelperTests::iohelper_checkIfPathExists, filePath, ExistsTests::testinit, ExistsTests::teardown, false));
+    }
+
     // --- METADATA ---
-    // std::cout << "[Running Metadata Tests...]\n";
-    benchmark.addResult(
-            "Metadata", "stat_full",
-            benchmark.measure(MetadataTests::stat_full, testFilePath, MetadataTests::testinit, MetadataTests::teardown, false));
+    {
+        LocalTemporaryDirectory tmpDir("bench_metadata");
+        const SyncPath filePath = tmpDir.path() / "bench_file.tmp";
+        benchmark.addResult("Metadata", "stat_full",
+                benchmark.measure(MetadataTests::stat_full, filePath, MetadataTests::testinit, MetadataTests::teardown, false));
 #if defined(KD_LINUX) || defined(KD_MACOS)
-    benchmark.addResult(
-            "Metadata", "lstat_full",
-            benchmark.measure(MetadataTests::lstat_full, testFilePath, MetadataTests::testinit, MetadataTests::teardown, false));
+        benchmark.addResult("Metadata", "lstat_full",
+                benchmark.measure(MetadataTests::lstat_full, filePath, MetadataTests::testinit, MetadataTests::teardown, false));
 #endif
-    benchmark.addResult(
-            "Metadata", "fstat_full",
-            benchmark.measure(MetadataTests::fstat_full, testFilePath, MetadataTests::testinit, MetadataTests::teardown, false));
+        benchmark.addResult("Metadata", "fstat_full",
+                benchmark.measure(MetadataTests::fstat_full, filePath, MetadataTests::testinit, MetadataTests::teardown, false));
 #if defined(KD_LINUX)
-    benchmark.addResult(
-            "Metadata", "statx_full",
-            benchmark.measure(MetadataTests::statx_full, testFilePath, MetadataTests::testinit, MetadataTests::teardown, false));
+        benchmark.addResult("Metadata", "statx_full",
+                benchmark.measure(MetadataTests::statx_full, filePath, MetadataTests::testinit, MetadataTests::teardown, false));
 #endif
-    benchmark.addResult("Metadata", "filesystem_full",
-                        benchmark.measure(MetadataTests::filesystem_full, testFilePath, MetadataTests::testinit,
-                                          MetadataTests::teardown, false));
-    benchmark.addResult("Metadata", "IoHelper::getFileStat",
-                        benchmark.measure(IoHelperTests::iohelper_getFileStat, testFilePath, MetadataTests::testinit,
-                                          MetadataTests::teardown, false));
+        benchmark.addResult("Metadata", "filesystem_full",
+                benchmark.measure(MetadataTests::filesystem_full, filePath, MetadataTests::testinit, MetadataTests::teardown, false));
+        benchmark.addResult("Metadata", "IoHelper::getFileStat",
+                benchmark.measure(IoHelperTests::iohelper_getFileStat, filePath, MetadataTests::testinit, MetadataTests::teardown, false));
+    }
+
     // --- READ ---
-    // std::cout << "[Running Read Tests...]\n";
-    benchmark.addResult(
-            "Read", "ifstream (binary)",
-            benchmark.measure(ReadTests::ifstream_binary, testFilePath, ReadTests::testinit, ReadTests::teardown, false));
-    benchmark.addResult(
-            "Read", "ifstream (text)",
-            benchmark.measure(ReadTests::ifstream_text, testFilePath, ReadTests::testinit, ReadTests::teardown, false));
-    benchmark.addResult(
-            "Read", "fopen (rb)",
-            benchmark.measure(ReadTests::fread_binary, testFilePath, ReadTests::testinit, ReadTests::teardown, false));
-    benchmark.addResult("Read", "fopen (r)",
-                        benchmark.measure(ReadTests::fread_text, testFilePath, ReadTests::testinit, ReadTests::teardown, false));
+    {
+        LocalTemporaryDirectory tmpDir("bench_read");
+        const SyncPath filePath = tmpDir.path() / "bench_file.tmp";
+        benchmark.addResult("Read", "ifstream (binary)",
+                benchmark.measure(ReadTests::ifstream_binary, filePath, ReadTests::testinit, ReadTests::teardown, false));
+        benchmark.addResult("Read", "ifstream (text)",
+                benchmark.measure(ReadTests::ifstream_text, filePath, ReadTests::testinit, ReadTests::teardown, false));
+        benchmark.addResult("Read", "fopen (rb)",
+                benchmark.measure(ReadTests::fread_binary, filePath, ReadTests::testinit, ReadTests::teardown, false));
+        benchmark.addResult("Read", "fopen (r)",
+                benchmark.measure(ReadTests::fread_text, filePath, ReadTests::testinit, ReadTests::teardown, false));
 #if defined(KD_WINDOWS)
-    benchmark.addResult(
-            "Read", "CreateFileA",
-            benchmark.measure(ReadTests::win32_readfile, testFilePath, ReadTests::testinit, ReadTests::teardown, false));
-    benchmark.addResult(
-            "Read", "CreateFileW + s2ws",
-            benchmark.measure(ReadTests::win32_readfile_w, testFilePath, ReadTests::testinit, ReadTests::teardown, false));
+        benchmark.addResult("Read", "CreateFileA",
+                benchmark.measure(ReadTests::win32_readfile, filePath, ReadTests::testinit, ReadTests::teardown, false));
+        benchmark.addResult("Read", "CreateFileW + s2ws",
+                benchmark.measure(ReadTests::win32_readfile_w, filePath, ReadTests::testinit, ReadTests::teardown, false));
 #endif
-    benchmark.addResult(
-            "Read", "IoHelper::openFile",
-            benchmark.measure(IoHelperTests::iohelper_openFile, testFilePath, ReadTests::testinit, ReadTests::teardown, false));
+        benchmark.addResult("Read", "IoHelper::openFile",
+                benchmark.measure(IoHelperTests::iohelper_openFile, filePath, ReadTests::testinit, ReadTests::teardown, false));
+    }
 
     // --- CREATE ---
-    //std::cout << "[Running Create Tests...]\n";
-    benchmark.addResult(
-            "Create", "create (ofstream)",
-            benchmark.measure(CreateTests::create_ofstream, testFilePath, CreateTests::testinit, CreateTests::teardown, false));
-    benchmark.addResult(
-            "Create", "create (fopen)",
-            benchmark.measure(CreateTests::create_fopen, testFilePath, CreateTests::testinit, CreateTests::teardown, false));
-    benchmark.addResult("Create", "create (CreateFileA)",
-                        benchmark.measure(CreateTests::create_CreateFileA, testFilePath, CreateTests::testinit,
-                                          CreateTests::teardown, false));
-    benchmark.addResult("Create", "create (CreateFileW)",
-                        benchmark.measure(CreateTests::create_CreateFileW, testFilePath, CreateTests::testinit,
-                                          CreateTests::teardown, false));
+    {
+        LocalTemporaryDirectory tmpDir("bench_create");
+        const SyncPath dirPath = tmpDir.path() / "workdir";
+        benchmark.addResult("Create", "create (ofstream)",
+                benchmark.measure(CreateTests::create_ofstream, dirPath, CreateTests::testinit, CreateTests::teardown, false));
+        benchmark.addResult("Create", "create (fopen)",
+                benchmark.measure(CreateTests::create_fopen, dirPath, CreateTests::testinit, CreateTests::teardown, false));
+        benchmark.addResult("Create", "create (CreateFileA)",
+                benchmark.measure(CreateTests::create_CreateFileA, dirPath, CreateTests::testinit, CreateTests::teardown, false));
+        benchmark.addResult("Create", "create (CreateFileW)",
+                benchmark.measure(CreateTests::create_CreateFileW, dirPath, CreateTests::testinit, CreateTests::teardown, false));
+    }
 
     // --- DELETE ---
-    //std::cout << "[Running Delete Tests...]\n";
-    benchmark.addResult("Delete", "delete (filesystem::remove)",
-                        benchmark.measure(DeleteTests::delete_filesystem_remove, testFilePath, DeleteTests::testinit,
-                                          DeleteTests::teardown, true));
-    benchmark.addResult(
-            "Delete", "delete (DeleteFileA)",
-            benchmark.measure(DeleteTests::delete_DeleteFileA, testFilePath, DeleteTests::testinit, DeleteTests::teardown, true));
-    benchmark.addResult(
-            "Delete", "delete (CRT remove)",
-            benchmark.measure(DeleteTests::delete_crt_remove, testFilePath, DeleteTests::testinit, DeleteTests::teardown, true));
-    benchmark.addResult("Delete", "IoHelper::deleteItem",
-                        benchmark.measure(IoHelperTests::iohelper_deleteItem, testFilePath, DeleteTests::testinit,
-                                          DeleteTests::teardown, true));
+    {
+        LocalTemporaryDirectory tmpDir("bench_delete");
+        const SyncPath dirPath = tmpDir.path();
+        benchmark.addResult("Delete", "delete (filesystem::remove)",
+                benchmark.measure(DeleteTests::delete_filesystem_remove, dirPath, DeleteTests::testinit, DeleteTests::teardown, false));
+        benchmark.addResult("Delete", "delete (DeleteFileA)",
+                benchmark.measure(DeleteTests::delete_DeleteFileA, dirPath, DeleteTests::testinit, DeleteTests::teardown, false));
+        benchmark.addResult("Delete", "delete (CRT remove)",
+                benchmark.measure(DeleteTests::delete_crt_remove, dirPath, DeleteTests::testinit, DeleteTests::teardown, false));
+        benchmark.addResult("Delete", "IoHelper::deleteItem",
+                benchmark.measure(IoHelperTests::iohelper_deleteItem, dirPath, DeleteTests::testinit, DeleteTests::teardown, false));
+    }
 
     // --- MOVE ---
-    // std::cout << "[Running Move Tests...]\n";
-    benchmark.addResult(
-            "Move", "move (std::filesystem::rename)",
-            benchmark.measure(MoveTests::move_filesystem_rename, testFilePath, MoveTests::testinit, MoveTests::teardown, true));
-    benchmark.addResult(
-            "Move", "move (MoveFileA)",
-            benchmark.measure(MoveTests::move_MoveFileA, testFilePath, MoveTests::testinit, MoveTests::teardown, true));
-    benchmark.addResult(
-            "Move", "move (MoveFileW)",
-            benchmark.measure(MoveTests::move_MoveFileW, testFilePath, MoveTests::testinit, MoveTests::teardown, true));
-    benchmark.addResult(
-            "Move", "IoHelper::moveItem",
-            benchmark.measure(IoHelperTests::iohelper_moveItem, testFilePath, MoveTests::testinit, MoveTests::teardown, true));
+    {
+        LocalTemporaryDirectory tmpDir("bench_move");
+        const SyncPath dirPath = tmpDir.path();
+        benchmark.addResult("Move", "move (std::filesystem::rename)",
+                benchmark.measure(MoveTests::move_filesystem_rename, dirPath, MoveTests::testinit, MoveTests::teardown, false));
+        benchmark.addResult("Move", "move (MoveFileA)",
+                benchmark.measure(MoveTests::move_MoveFileA, dirPath, MoveTests::testinit, MoveTests::teardown, false));
+        benchmark.addResult("Move", "move (MoveFileW)",
+                benchmark.measure(MoveTests::move_MoveFileW, dirPath, MoveTests::testinit, MoveTests::teardown, false));
+        benchmark.addResult("Move", "IoHelper::moveItem",
+                benchmark.measure(IoHelperTests::iohelper_moveItem, dirPath, MoveTests::testinit, MoveTests::teardown, false));
+    }
 
     // --- SIZE ---
-    // std::cout << "[Running Size Tests...]\n";
-    benchmark.addResult(
-            "Size", "filesystem::file_size",
-            benchmark.measure(SizeTests::filesystem_filesize, testFilePath, SizeTests::testinit, SizeTests::teardown, true));
+    {
+        LocalTemporaryDirectory tmpDir("bench_size");
+        const SyncPath filePath = tmpDir.path() / "bench_file.tmp";
+        benchmark.addResult("Size", "filesystem::file_size",
+                benchmark.measure(SizeTests::filesystem_filesize, filePath, SizeTests::testinit, SizeTests::teardown, false));
 #if defined(KD_WINDOWS)
-    benchmark.addResult(
-            "Size", "GetFileSizeEx (Win32)",
-            benchmark.measure(SizeTests::win32_getfilesize, testFilePath, SizeTests::testinit, SizeTests::teardown, true));
+        benchmark.addResult("Size", "GetFileSizeEx (Win32)",
+                benchmark.measure(SizeTests::win32_getfilesize, filePath, SizeTests::testinit, SizeTests::teardown, false));
 #endif
-    benchmark.addResult(
-            "Size", "_filelength (CRT)",
-            benchmark.measure(SizeTests::crt_filelength, testFilePath, SizeTests::testinit, SizeTests::teardown, true));
-    benchmark.addResult(
-            "Size", "IoHelper::getFileSize",
-            benchmark.measure(IoHelperTests::iohelper_getFileSize, testFilePath, SizeTests::testinit, SizeTests::teardown, true));
+        benchmark.addResult("Size", "_filelength (CRT)",
+                benchmark.measure(SizeTests::crt_filelength, filePath, SizeTests::testinit, SizeTests::teardown, false));
+        benchmark.addResult("Size", "IoHelper::getFileSize",
+                benchmark.measure(IoHelperTests::iohelper_getFileSize, filePath, SizeTests::testinit, SizeTests::teardown, false));
+    }
 
     // Print results and cleanup
     benchmark.printResultsByCategory();
@@ -1091,8 +1088,6 @@ void RunAllBenchmarks(const SyncPath &testFilePath, int iterations) {
         }
         std::cout << sep << "\n";
     }
-
-    (void) DeleteTestFile(testFilePathFull);
 }
 
 // ============================================================================

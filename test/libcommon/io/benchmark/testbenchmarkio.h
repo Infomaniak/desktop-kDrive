@@ -34,6 +34,7 @@
 #include <fstream>
 #include <filesystem>
 #include <chrono>
+#include <map>
 #include <string>
 #include <vector>
 #include <functional>
@@ -77,7 +78,7 @@ class testbenchmarkio {
         double measure(Func func, const SyncPath &path, Init init, Teardown teardown, bool per_iteration = false);
         void addResult(const std::string &category, const std::string &method, double time_ms, bool success = true);
 
-        void setExpectedCount(int total) { total_ = total; }
+        void setCategoryExpectedCounts(const std::map<std::string, int> &counts) { categoryTotals_ = counts; }
 
         void printResults() const;
         void printResultsByCategory() const;
@@ -87,7 +88,7 @@ class testbenchmarkio {
 
     private:
         bool warmup_;
-        int total_{0};
+        std::map<std::string, int> categoryTotals_;
         std::vector<BenchmarkResult> results_;
 
         void printProgress() const;
