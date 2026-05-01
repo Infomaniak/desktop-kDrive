@@ -21,7 +21,7 @@
 
 namespace KDC {
 
-static int32_t iterations_ = 1000;
+static int32_t iterations_ = 100000;
 
 // ============================================================================
 // BENCHMARK ENGINE IMPLEMENTATION
@@ -56,14 +56,19 @@ void testbenchmarkio::printResultsByCategory() const {
         std::sort(filtered.begin(), filtered.end(), [](const auto &a, const auto &b) { return a.time_ms < b.time_ms; });
 
         std::cout << "\n[" << cat << "]\n";
-        std::cout << "----------------------------------------------------------------\n";
+        std::cout << "--------------------------------------------------------------------------------\n";
         std::cout << std::left << std::setw(40) << "Method" << std::right << std::setw(14) << "Time (ms)" << std::setw(18)
                   << "Ns/Call" << std::setw(8) << "OK" << "\n";
 
         for (const auto &r: filtered) {
-            std::cout << std::left << std::setw(40) << r.method << std::right << std::setw(14) << std::fixed
-                      << std::setprecision(2) << r.time_ms << std::setw(18) << std::fixed << std::setprecision(1)
-                      << r.avg_ns_per_call << std::setw(8) << (r.success ? "Y" : "N") << "\n";
+            const bool isIoHelper = r.method.rfind("IoHelper::", 0) == 0;
+            const bool isStripped = r.method.rfind("stripped IoHelper-", 0) == 0;
+            const char fill = isIoHelper ? '=' : (isStripped ? '-' : ' ');
+
+            std::cout << std::left << std::setfill(fill) << std::setw(40) << r.method + " " << std::right << std::setw(14)
+                      << std::fixed << std::setprecision(2) << " " + std::to_string(std::llround(r.time_ms)) + " "
+                      << std::setw(18) << std::fixed << std::setprecision(1) << " " + std::to_string(std::llround(r.avg_ns_per_call)) + " " << std::setw(8)
+                      << " " + std::string(r.success ? "Y" : "N") << std::setfill(' ') << std::endl;
         }
     }
 }
@@ -90,24 +95,19 @@ void testbenchmarkio::printProgress() const {
     if (it != categoryTotals_.end()) total = it->second;
 
     // Print category header when this is the first result of a new category
-    const bool newCategory = (results_.size() == 1) ||
-                             (results_[results_.size() - 2].category != cat);
-    if (newCategory)
-        std::cout << "\n  [" << cat << "]\n";
+    const bool newCategory = (results_.size() == 1) || (results_[results_.size() - 2].category != cat);
+    if (newCategory) std::cout << "\n  [" << cat << "]\n";
 
     constexpr int barWidth = 40;
     const float ratio = (total > 0) ? static_cast<float>(current) / static_cast<float>(total) : 1.0f;
     const int filled = static_cast<int>(ratio * barWidth);
 
     std::cout << "\r    [";
-    for (int i = 0; i < barWidth; ++i)
-        std::cout << (i < filled ? '#' : '-');
-    std::cout << "] " << std::setw(2) << current << "/" << total
-              << " (" << std::fixed << std::setprecision(0) << std::setw(3) << (ratio * 100.0f) << "%)  "
-              << method << std::flush;
+    for (int i = 0; i < barWidth; ++i) std::cout << (i < filled ? '#' : '-');
+    std::cout << "] " << std::setw(2) << current << "/" << total << " (" << std::fixed << std::setprecision(0) << std::setw(3)
+              << (ratio * 100.0f) << "%)  " << method << std::flush;
 
-    if (current >= total)
-        std::cout << "\n";
+    if (current >= total) std::cout << "\n";
 }
 
 // ============================================================================
@@ -454,7 +454,8 @@ bool fread_text(const SyncPath &path) {
 
 bool win32_readfile(const SyncPath &path) {
 #if defined(KD_WINDOWS)
-    HANDLE h = CreateFileA(path.string().c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+    HANDLE h = CreateFileA(path.string().c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL,
+                           nullptr);
     if (h == INVALID_HANDLE_VALUE) return false;
 
     static thread_local std::vector<char> buffer(BUFFER_SIZE);
@@ -472,7 +473,8 @@ bool win32_readfile(const SyncPath &path) {
 bool win32_readfile_w(const SyncPath &path) {
 #if defined(KD_WINDOWS)
 
-    HANDLE h = CreateFileW(path.native().c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+    HANDLE h = CreateFileW(path.native().c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL,
+                           nullptr);
     if (h == INVALID_HANDLE_VALUE) return false;
 
     static thread_local std::vector<char> buffer(BUFFER_SIZE);
@@ -536,7 +538,8 @@ bool filesystem_filesize(const SyncPath &path) {
 }
 
 bool win32_getfilesize(const SyncPath &path) {
-    HANDLE h = CreateFileA(path.string().c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+    HANDLE h = CreateFileA(path.string().c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL,
+                           nullptr);
     if (h == INVALID_HANDLE_VALUE) return false;
 
     LARGE_INTEGER size;
@@ -887,68 +890,88 @@ void RunAllBenchmarks(const SyncPath &testFilePath, int iterations) {
     {
         LocalTemporaryDirectory tmpDir("bench_exists");
         const SyncPath filePath = tmpDir.path() / "bench_file.tmp";
-        benchmark.addResult("Exists", "std::filesystem::status",
+        benchmark.addResult(
+                "Exists", "std::filesystem::status",
                 benchmark.measure(ExistsTests::filesystem_status, filePath, ExistsTests::testinit, ExistsTests::teardown, false));
-        benchmark.addResult("Exists", "std::filesystem::exists",
+        benchmark.addResult(
+                "Exists", "std::filesystem::exists",
                 benchmark.measure(ExistsTests::filesystem_exists, filePath, ExistsTests::testinit, ExistsTests::teardown, false));
 #if defined(KD_WINDOWS)
         benchmark.addResult("Exists", "GetFileAttributesW",
-                benchmark.measure(ExistsTests::win32_getfileattributes_w, filePath, ExistsTests::testinit, ExistsTests::teardown, false));
+                            benchmark.measure(ExistsTests::win32_getfileattributes_w, filePath, ExistsTests::testinit,
+                                              ExistsTests::teardown, false));
 #endif
-        benchmark.addResult("Exists", "_stat()",
+        benchmark.addResult(
+                "Exists", "_stat()",
                 benchmark.measure(ExistsTests::crt_stat, filePath, ExistsTests::testinit, ExistsTests::teardown, false));
         benchmark.addResult("Exists", "IoHelper::checkIfPathExists",
-                benchmark.measure(ExistsTests::iohelper_checkIfPathExists, filePath, ExistsTests::testinit, ExistsTests::teardown, false));
+                            benchmark.measure(ExistsTests::iohelper_checkIfPathExists, filePath, ExistsTests::testinit,
+                                              ExistsTests::teardown, false));
         benchmark.addResult("Exists", "stripped IoHelper-checkIfPathExists",
-                benchmark.measure(ExistsTests::stripped_iohelper_checkIfPathExists, filePath, ExistsTests::testinit, ExistsTests::teardown, false));
+                            benchmark.measure(ExistsTests::stripped_iohelper_checkIfPathExists, filePath, ExistsTests::testinit,
+                                              ExistsTests::teardown, false));
     }
 
     // --- METADATA ---
     {
         LocalTemporaryDirectory tmpDir("bench_metadata");
         const SyncPath filePath = tmpDir.path() / "bench_file.tmp";
-        benchmark.addResult("Metadata", "stat_full",
+        benchmark.addResult(
+                "Metadata", "stat_full",
                 benchmark.measure(MetadataTests::stat_full, filePath, MetadataTests::testinit, MetadataTests::teardown, false));
 #if defined(KD_LINUX) || defined(KD_MACOS)
-        benchmark.addResult("Metadata", "lstat_full",
+        benchmark.addResult(
+                "Metadata", "lstat_full",
                 benchmark.measure(MetadataTests::lstat_full, filePath, MetadataTests::testinit, MetadataTests::teardown, false));
 #endif
-        benchmark.addResult("Metadata", "fstat_full",
+        benchmark.addResult(
+                "Metadata", "fstat_full",
                 benchmark.measure(MetadataTests::fstat_full, filePath, MetadataTests::testinit, MetadataTests::teardown, false));
 #if defined(KD_LINUX)
-        benchmark.addResult("Metadata", "statx_full",
+        benchmark.addResult(
+                "Metadata", "statx_full",
                 benchmark.measure(MetadataTests::statx_full, filePath, MetadataTests::testinit, MetadataTests::teardown, false));
 #endif
         benchmark.addResult("Metadata", "filesystem_full",
-                benchmark.measure(MetadataTests::filesystem_full, filePath, MetadataTests::testinit, MetadataTests::teardown, false));
+                            benchmark.measure(MetadataTests::filesystem_full, filePath, MetadataTests::testinit,
+                                              MetadataTests::teardown, false));
         benchmark.addResult("Metadata", "IoHelper::getFileStat",
-                benchmark.measure(MetadataTests::iohelper_getFileStat, filePath, MetadataTests::testinit, MetadataTests::teardown, false));
+                            benchmark.measure(MetadataTests::iohelper_getFileStat, filePath, MetadataTests::testinit,
+                                              MetadataTests::teardown, false));
         benchmark.addResult("Metadata", "stripped IoHelper-getFileStat",
-                benchmark.measure(MetadataTests::stripped_iohelper_getFileStat, filePath, MetadataTests::testinit, MetadataTests::teardown, false));
+                            benchmark.measure(MetadataTests::stripped_iohelper_getFileStat, filePath, MetadataTests::testinit,
+                                              MetadataTests::teardown, false));
     }
 
     // --- READ ---
     {
         LocalTemporaryDirectory tmpDir("bench_read");
         const SyncPath filePath = tmpDir.path() / "bench_file.tmp";
-        benchmark.addResult("Read", "ifstream (binary)",
+        benchmark.addResult(
+                "Read", "ifstream (binary)",
                 benchmark.measure(ReadTests::ifstream_binary, filePath, ReadTests::testinit, ReadTests::teardown, false));
-        benchmark.addResult("Read", "ifstream (text)",
+        benchmark.addResult(
+                "Read", "ifstream (text)",
                 benchmark.measure(ReadTests::ifstream_text, filePath, ReadTests::testinit, ReadTests::teardown, false));
-        benchmark.addResult("Read", "fopen (rb)",
+        benchmark.addResult(
+                "Read", "fopen (rb)",
                 benchmark.measure(ReadTests::fread_binary, filePath, ReadTests::testinit, ReadTests::teardown, false));
         benchmark.addResult("Read", "fopen (r)",
-                benchmark.measure(ReadTests::fread_text, filePath, ReadTests::testinit, ReadTests::teardown, false));
+                            benchmark.measure(ReadTests::fread_text, filePath, ReadTests::testinit, ReadTests::teardown, false));
 #if defined(KD_WINDOWS)
-        benchmark.addResult("Read", "CreateFileA",
+        benchmark.addResult(
+                "Read", "CreateFileA",
                 benchmark.measure(ReadTests::win32_readfile, filePath, ReadTests::testinit, ReadTests::teardown, false));
-        benchmark.addResult("Read", "CreateFileW + s2ws",
+        benchmark.addResult(
+                "Read", "CreateFileW + s2ws",
                 benchmark.measure(ReadTests::win32_readfile_w, filePath, ReadTests::testinit, ReadTests::teardown, false));
 #endif
-        benchmark.addResult("Read", "IoHelper::openFile",
+        benchmark.addResult(
+                "Read", "IoHelper::openFile",
                 benchmark.measure(ReadTests::iohelper_openFile, filePath, ReadTests::testinit, ReadTests::teardown, false));
         benchmark.addResult("Read", "stripped IoHelper-openFile",
-                benchmark.measure(ReadTests::stripped_iohelper_openFile, filePath, ReadTests::testinit, ReadTests::teardown, false));
+                            benchmark.measure(ReadTests::stripped_iohelper_openFile, filePath, ReadTests::testinit,
+                                              ReadTests::teardown, false));
     }
 
     // --- CREATE ---
@@ -956,13 +979,17 @@ void RunAllBenchmarks(const SyncPath &testFilePath, int iterations) {
         setiterations(iterations / 10);
         LocalTemporaryDirectory tmpDir("bench_create");
         const SyncPath dirPath = tmpDir.path() / "workdir";
-        benchmark.addResult("Create", "create (ofstream)",
+        benchmark.addResult(
+                "Create", "create (ofstream)",
                 benchmark.measure(CreateTests::create_ofstream, dirPath, CreateTests::testinit, CreateTests::teardown, false));
-        benchmark.addResult("Create", "create (fopen)",
+        benchmark.addResult(
+                "Create", "create (fopen)",
                 benchmark.measure(CreateTests::create_fopen, dirPath, CreateTests::testinit, CreateTests::teardown, false));
-        benchmark.addResult("Create", "create (CreateFileA)",
+        benchmark.addResult(
+                "Create", "create (CreateFileA)",
                 benchmark.measure(CreateTests::create_CreateFileA, dirPath, CreateTests::testinit, CreateTests::teardown, false));
-        benchmark.addResult("Create", "create (CreateFileW)",
+        benchmark.addResult(
+                "Create", "create (CreateFileW)",
                 benchmark.measure(CreateTests::create_CreateFileW, dirPath, CreateTests::testinit, CreateTests::teardown, false));
         setiterations(iterations);
     }
@@ -973,17 +1000,23 @@ void RunAllBenchmarks(const SyncPath &testFilePath, int iterations) {
         LocalTemporaryDirectory tmpDir("bench_delete");
         const SyncPath dirPath = tmpDir.path();
         benchmark.addResult("Delete", "delete (filesystem::remove)",
-                benchmark.measure(DeleteTests::delete_filesystem_remove, dirPath, DeleteTests::testinit, DeleteTests::teardown, false));
-        benchmark.addResult("Delete", "delete (DeleteFileA)",
+                            benchmark.measure(DeleteTests::delete_filesystem_remove, dirPath, DeleteTests::testinit,
+                                              DeleteTests::teardown, false));
+        benchmark.addResult(
+                "Delete", "delete (DeleteFileA)",
                 benchmark.measure(DeleteTests::delete_DeleteFileA, dirPath, DeleteTests::testinit, DeleteTests::teardown, false));
-        benchmark.addResult("Delete", "delete (CRT remove)",
+        benchmark.addResult(
+                "Delete", "delete (CRT remove)",
                 benchmark.measure(DeleteTests::delete_crt_remove, dirPath, DeleteTests::testinit, DeleteTests::teardown, false));
-        benchmark.addResult("Delete", "delete (filesystem::remove_all)",
+        benchmark.addResult(
+                "Delete", "delete (filesystem::remove_all)",
                 benchmark.measure(DeleteTests::delete_remove_all, dirPath, DeleteTests::testinit, DeleteTests::teardown, false));
         benchmark.addResult("Delete", "IoHelper::deleteItem",
-                benchmark.measure(DeleteTests::iohelper_deleteItem, dirPath, DeleteTests::testinit, DeleteTests::teardown, false));
+                            benchmark.measure(DeleteTests::iohelper_deleteItem, dirPath, DeleteTests::testinit,
+                                              DeleteTests::teardown, false));
         benchmark.addResult("Delete", "stripped IoHelper-deleteItem",
-                benchmark.measure(DeleteTests::stripped_iohelper_deleteItem, dirPath, DeleteTests::testinit, DeleteTests::teardown, false));
+                            benchmark.measure(DeleteTests::stripped_iohelper_deleteItem, dirPath, DeleteTests::testinit,
+                                              DeleteTests::teardown, false));
         setiterations(iterations);
     }
 
@@ -992,16 +1025,21 @@ void RunAllBenchmarks(const SyncPath &testFilePath, int iterations) {
         setiterations(iterations / 10);
         LocalTemporaryDirectory tmpDir("bench_move");
         const SyncPath dirPath = tmpDir.path();
-        benchmark.addResult("Move", "move (std::filesystem::rename)",
+        benchmark.addResult(
+                "Move", "move (std::filesystem::rename)",
                 benchmark.measure(MoveTests::move_filesystem_rename, dirPath, MoveTests::testinit, MoveTests::teardown, false));
-        benchmark.addResult("Move", "move (MoveFileA)",
+        benchmark.addResult(
+                "Move", "move (MoveFileA)",
                 benchmark.measure(MoveTests::move_MoveFileA, dirPath, MoveTests::testinit, MoveTests::teardown, false));
-        benchmark.addResult("Move", "move (MoveFileW)",
+        benchmark.addResult(
+                "Move", "move (MoveFileW)",
                 benchmark.measure(MoveTests::move_MoveFileW, dirPath, MoveTests::testinit, MoveTests::teardown, false));
-        benchmark.addResult("Move", "IoHelper::moveItem",
+        benchmark.addResult(
+                "Move", "IoHelper::moveItem",
                 benchmark.measure(MoveTests::iohelper_moveItem, dirPath, MoveTests::testinit, MoveTests::teardown, false));
         benchmark.addResult("Move", "stripped IoHelper-moveItem",
-                benchmark.measure(MoveTests::stripped_iohelper_moveItem, dirPath, MoveTests::testinit, MoveTests::teardown, false));
+                            benchmark.measure(MoveTests::stripped_iohelper_moveItem, dirPath, MoveTests::testinit,
+                                              MoveTests::teardown, false));
         setiterations(iterations);
     }
 
@@ -1009,18 +1047,23 @@ void RunAllBenchmarks(const SyncPath &testFilePath, int iterations) {
     {
         LocalTemporaryDirectory tmpDir("bench_size");
         const SyncPath filePath = tmpDir.path() / "bench_file.tmp";
-        benchmark.addResult("Size", "filesystem::file_size",
+        benchmark.addResult(
+                "Size", "filesystem::file_size",
                 benchmark.measure(SizeTests::filesystem_filesize, filePath, SizeTests::testinit, SizeTests::teardown, false));
 #if defined(KD_WINDOWS)
-        benchmark.addResult("Size", "GetFileSizeEx (Win32)",
+        benchmark.addResult(
+                "Size", "GetFileSizeEx (Win32)",
                 benchmark.measure(SizeTests::win32_getfilesize, filePath, SizeTests::testinit, SizeTests::teardown, false));
 #endif
-        benchmark.addResult("Size", "_filelength (CRT)",
+        benchmark.addResult(
+                "Size", "_filelength (CRT)",
                 benchmark.measure(SizeTests::crt_filelength, filePath, SizeTests::testinit, SizeTests::teardown, false));
-        benchmark.addResult("Size", "IoHelper::getFileSize",
+        benchmark.addResult(
+                "Size", "IoHelper::getFileSize",
                 benchmark.measure(SizeTests::iohelper_getFileSize, filePath, SizeTests::testinit, SizeTests::teardown, false));
         benchmark.addResult("Size", "stripped IoHelper-getFileSize",
-                benchmark.measure(SizeTests::stripped_iohelper_getFileSize, filePath, SizeTests::testinit, SizeTests::teardown, false));
+                            benchmark.measure(SizeTests::stripped_iohelper_getFileSize, filePath, SizeTests::testinit,
+                                              SizeTests::teardown, false));
     }
 
     // Print results and cleanup
@@ -1127,15 +1170,14 @@ void RunAllBenchmarks(const SyncPath &testFilePath, int iterations) {
         std::cout << sep << "\n";
         std::cout << "  TAB 1 - IoHelper  (production API + its underlying OS call)\n";
         std::cout << sep << "\n";
-        std::cout << std::left << std::setw(W_CAT) << "Category" << std::setw(W_METHOD) << "IoHelper method"
-                  << std::right << std::setw(W_MS) << "Time (ms)" << std::setw(W_NS) << "Ns/Call"
-                  << std::setw(W_OK) << "OK" << std::setw(W_FAST) << "Is fastest" << "\n";
+        std::cout << std::left << std::setw(W_CAT) << "Category" << std::setw(W_METHOD) << "IoHelper method" << std::right
+                  << std::setw(W_MS) << "Time (ms)" << std::setw(W_NS) << "Ns/Call" << std::setw(W_OK) << "OK"
+                  << std::setw(W_FAST) << "Is fastest" << "\n";
         std::cout << sep << "\n";
         for (const auto &e: entries) {
-            std::cout << std::left << std::setw(W_CAT) << e.category << std::setw(W_METHOD) << e.iohelperMethod
-                      << std::right << std::setw(W_MS) << std::fixed << std::setprecision(2) << e.iohelperMs
-                      << std::setw(W_NS) << std::fixed << std::setprecision(1) << e.iohelperNs
-                      << std::setw(W_OK) << (e.iohelperOk ? "OK" : "FAIL")
+            std::cout << std::left << std::setw(W_CAT) << e.category << std::setw(W_METHOD) << e.iohelperMethod << std::right
+                      << std::setw(W_MS) << std::fixed << std::setprecision(2) << e.iohelperMs << std::setw(W_NS) << std::fixed
+                      << std::setprecision(1) << e.iohelperNs << std::setw(W_OK) << (e.iohelperOk ? "OK" : "FAIL")
                       << std::setw(W_FAST) << (e.iohelperIsFastest ? "Y" : "N") << "\n";
             std::cout << std::left << std::setw(W_CAT) << "" << "  -> " << e.underlyingApi << "\n";
         }
@@ -1146,15 +1188,14 @@ void RunAllBenchmarks(const SyncPath &testFilePath, int iterations) {
         std::cout << sep << "\n";
         std::cout << "  TAB 2 - Best raw API  (fastest, excluding IoHelper and stripped variants)\n";
         std::cout << sep << "\n";
-        std::cout << std::left << std::setw(W_CAT) << "Category" << std::setw(W_METHOD) << "Fastest method"
-                  << std::right << std::setw(W_MS) << "Time (ms)" << std::setw(W_NS) << "Ns/Call"
-                  << std::setw(W_OK) << "OK" << std::setw(W_FAST) << "Is fastest" << "\n";
+        std::cout << std::left << std::setw(W_CAT) << "Category" << std::setw(W_METHOD) << "Fastest method" << std::right
+                  << std::setw(W_MS) << "Time (ms)" << std::setw(W_NS) << "Ns/Call" << std::setw(W_OK) << "OK"
+                  << std::setw(W_FAST) << "Is fastest" << "\n";
         std::cout << sep << "\n";
         for (const auto &e: entries) {
-            std::cout << std::left << std::setw(W_CAT) << e.category << std::setw(W_METHOD) << e.bestAltMethod
-                      << std::right << std::setw(W_MS) << std::fixed << std::setprecision(2) << e.bestAltMs
-                      << std::setw(W_NS) << std::fixed << std::setprecision(1) << e.bestAltNs
-                      << std::setw(W_OK) << (e.bestAltOk ? "OK" : "FAIL")
+            std::cout << std::left << std::setw(W_CAT) << e.category << std::setw(W_METHOD) << e.bestAltMethod << std::right
+                      << std::setw(W_MS) << std::fixed << std::setprecision(2) << e.bestAltMs << std::setw(W_NS) << std::fixed
+                      << std::setprecision(1) << e.bestAltNs << std::setw(W_OK) << (e.bestAltOk ? "OK" : "FAIL")
                       << std::setw(W_FAST) << (e.bestAltIsFastest ? "Y" : "N") << "\n";
         }
         std::cout << sep << "\n";
@@ -1164,15 +1205,14 @@ void RunAllBenchmarks(const SyncPath &testFilePath, int iterations) {
         std::cout << sep << "\n";
         std::cout << "  TAB 3 - Stripped IoHelper  (raw underlying API only, no IoHelper overhead)\n";
         std::cout << sep << "\n";
-        std::cout << std::left << std::setw(W_CAT) << "Category" << std::setw(W_METHOD) << "Stripped method"
-                  << std::right << std::setw(W_MS) << "Time (ms)" << std::setw(W_NS) << "Ns/Call"
-                  << std::setw(W_OK) << "OK" << std::setw(W_FAST) << "Is fastest" << "\n";
+        std::cout << std::left << std::setw(W_CAT) << "Category" << std::setw(W_METHOD) << "Stripped method" << std::right
+                  << std::setw(W_MS) << "Time (ms)" << std::setw(W_NS) << "Ns/Call" << std::setw(W_OK) << "OK"
+                  << std::setw(W_FAST) << "Is fastest" << "\n";
         std::cout << sep << "\n";
         for (const auto &e: entries) {
-            std::cout << std::left << std::setw(W_CAT) << e.category << std::setw(W_METHOD) << e.strippedMethod
-                      << std::right << std::setw(W_MS) << std::fixed << std::setprecision(2) << e.strippedMs
-                      << std::setw(W_NS) << std::fixed << std::setprecision(1) << e.strippedNs
-                      << std::setw(W_OK) << (e.strippedOk ? "OK" : "FAIL")
+            std::cout << std::left << std::setw(W_CAT) << e.category << std::setw(W_METHOD) << e.strippedMethod << std::right
+                      << std::setw(W_MS) << std::fixed << std::setprecision(2) << e.strippedMs << std::setw(W_NS) << std::fixed
+                      << std::setprecision(1) << e.strippedNs << std::setw(W_OK) << (e.strippedOk ? "OK" : "FAIL")
                       << std::setw(W_FAST) << (e.strippedIsFastest ? "Y" : "N") << "\n";
         }
         std::cout << sep << "\n";
