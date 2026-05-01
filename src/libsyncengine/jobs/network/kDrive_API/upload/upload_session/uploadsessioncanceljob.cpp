@@ -24,19 +24,19 @@ namespace KDC {
 
 UploadSessionCancelJob::UploadSessionCancelJob(const UploadSessionType uploadType, const DriveDbId driveDbId,
                                                const SyncPath &filepath, const std::string &sessionToken) :
-    AbstractUploadSessionJob(uploadType, driveDbId, filepath, sessionToken) {
+    AbstractUploadSessionJob(uploadType, driveDbId, filepath, SessionInfo{.url = "", .token = sessionToken}) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_DELETE;
 }
 
 UploadSessionCancelJob::UploadSessionCancelJob(const UploadSessionType uploadType, const std::string &sessionToken) :
-    AbstractUploadSessionJob(uploadType, 0, "", sessionToken) {
+    AbstractUploadSessionJob(uploadType, 0, "", SessionInfo{.url = "", .token = sessionToken}) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_DELETE;
 }
 
 std::string UploadSessionCancelJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
     str += "/upload/session/";
-    str += _sessionToken;
+    str += _sessionInfo.token;
     return str;
 }
 

@@ -135,7 +135,8 @@ void AbstractUploadSession::uploadChunkCallback(const UniqueId jobId) {
 
         _threadCounter--;
         addProgress(static_cast<int64_t>(jobInfo.mapped()->chunkSize()));
-        LOG_INFO(_logger, "Session " << _sessionToken << ", thread " << jobId << " finished. " << _threadCounter << " running");
+        LOG_INFO(_logger,
+                 "Session " << _sessionInfo.token << ", thread " << jobId << " finished. " << _threadCounter << " running");
     }
 }
 
@@ -225,24 +226,24 @@ ExitInfo AbstractUploadSession::startSession() {
     }
 
     const auto dataObj = startJob->jsonRes()->getObject(dataKey);
-    if (!dataObj || !JsonParserUtility::extractValue(dataObj, tokenKey, _sessionToken)) {
+    if (!dataObj || !JsonParserUtility::extractValue(dataObj, tokenKey, _sessionInfo.token)) {
         LOG_WARN(_logger, "Failed to extract upload session token");
         return ExitCode::DataError;
     }
 
-    if (!dataObj || !JsonParserUtility::extractValue(dataObj, uploadUrlKey, _sessionUrl)) {
+    if (!dataObj || !JsonParserUtility::extractValue(dataObj, uploadUrlKey, _sessionInfo.url)) {
         LOG_WARN(_logger, "Failed to extract upload session url");
         return ExitCode::DataError;
     }
 
-    if (const auto exitInfo = handleStartJobResult(startJob, _sessionToken); !exitInfo) {
+    if (const auto exitInfo = handleStartJobResult(startJob, _sessionInfo.token); !exitInfo) {
         LOG_WARN(_logger, "Error in handleStartJobResult");
         return exitInfo;
     }
 
     _sessionStarted = true;
 
-    if (_sessionToken.empty()) {
+    if (_sessionInfo.token.empty()) {
         LOG_WARN(_logger, "Invalid upload session token!");
         return ExitCode::DataError;
     }
@@ -250,7 +251,7 @@ ExitInfo AbstractUploadSession::startSession() {
 }
 
 ExitInfo AbstractUploadSession::sendChunks() {
-    if (_sessionToken.empty()) {
+    if (_sessionInfo.token.empty()) {
         LOG_WARN(_logger, "Impossible to upload chunks without a valid session token");
         return ExitCode::DataError;
     }
@@ -340,19 +341,19 @@ ExitInfo AbstractUploadSession::sendChunks() {
                 SyncJobManagerSingleton::instance()->queueAsyncJob(chunkJob, Poco::Thread::PRIO_NORMAL);
                 const auto &[_, inserted] = _ongoingChunkJobs.try_emplace(chunkJob->jobId(), chunkJob);
                 if (!inserted) {
-                    LOG_ERROR(_logger, "Session " << _sessionToken << ", job " << chunkJob->jobId()
+                    LOG_ERROR(_logger, "Session " << _sessionInfo.token << ", job " << chunkJob->jobId()
                                                   << " not inserted in ongoing job list because its ID already exists.");
                     sentry::Handler::captureMessage(sentry::Level::Warning, "Upload chunk error", "Job ID already exists");
                     jobCreationError = true;
                     break;
                 }
-                LOG_INFO(_logger, "Session " << _sessionToken << ", job " << chunkJob->jobId() << " queued, " << _threadCounter
-                                             << " jobs in queue");
+                LOG_INFO(_logger, "Session " << _sessionInfo.token << ", job " << chunkJob->jobId() << " queued, "
+                                             << _threadCounter << " jobs in queue");
             }
 
             waitForJobsToComplete(false);
         } else {
-            LOG_INFO(_logger, "Session " << _sessionToken << ", thread " << chunkJob->jobId() << " start.");
+            LOG_INFO(_logger, "Session " << _sessionInfo.token << ", thread " << chunkJob->jobId() << " start.");
 
             _chunkJobExitInfo = chunkJob->runSynchronously();
             if (!_chunkJobExitInfo || chunkJob->hasHttpError()) {
@@ -411,7 +412,7 @@ ExitInfo AbstractUploadSession::sendChunks() {
 }
 
 ExitInfo AbstractUploadSession::closeSession() {
-    if (_sessionToken.empty()) {
+    if (_sessionInfo.token.empty()) {
         LOG_WARN(_logger, "Impossible to close upload session without a valid session token");
         return ExitCode::DataError;
     }
@@ -448,7 +449,7 @@ ExitInfo AbstractUploadSession::cancelSession() {
     LOG_DEBUG(_logger, "Cancelling upload session job " << jobId());
     _sessionCancelled = true;
 
-    if (_sessionToken.empty()) {
+    if (_sessionInfo.token.empty()) {
         LOG_WARN(_logger, "Impossible to cancel upload session without a valid session token");
         return ExitCode::DataError;
     }
@@ -457,14 +458,14 @@ ExitInfo AbstractUploadSession::cancelSession() {
     {
         const std::scoped_lock lock(_mutex);
         for (const auto &[jobId, job]: _ongoingChunkJobs) {
-            if (job.get() && job->sessionToken() == _sessionToken) {
+            if (job.get() && job->sessionToken() == _sessionInfo.token) {
                 LOG_INFO(_logger, "Aborting chunk job " << jobId);
                 job->abort();
             }
         }
     }
 
-    LOG_INFO(_logger, "Aborting upload session: " << _sessionToken);
+    LOG_INFO(_logger, "Aborting upload session: " << _sessionInfo.token);
     std::shared_ptr<UploadSessionCancelJob> cancelJob = nullptr;
     try {
         cancelJob = createCancelJob();
