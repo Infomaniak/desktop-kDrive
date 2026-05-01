@@ -26,7 +26,7 @@
 
 #include <codecvt>
 
-#if defined(KD_WINDOWS) && !defined(NDEBUG)
+#if defined(KD_WINDOWS) && !defined(NDEBUG) && defined(ENABLE_LOG_TO_CONSOLE)
 #include <windows.h>
 #include <iostream>
 #endif
@@ -47,7 +47,8 @@ Log::~Log() {
 
 std::shared_ptr<Log> Log::instance(const log4cplus::tstring &filePath) {
     if (_instance == nullptr) {
-#if defined(KD_WINDOWS) && !defined(NDEBUG)
+        //add there a environement variable, which, if defined, print logs)
+#if defined(KD_WINDOWS) && !defined(NDEBUG) && defined(ENABLE_LOG_TO_CONSOLE)
         if (AllocConsole()) {
             FILE *fp = nullptr;
             (void) freopen_s(&fp, "CONOUT$", "w", stdout);
