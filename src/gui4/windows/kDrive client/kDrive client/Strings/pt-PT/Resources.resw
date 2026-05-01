@@ -6,7 +6,7 @@
   Locale: pt, Portuguese
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 01 May 2026 10:17:16 +0200 
+  Exported at: Fri, 01 May 2026 14:26:22 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -73,8 +73,8 @@
     <value>Portuguese</value>
   </metadata> 
   <data name="aboutAppVersionCopyright" xml:space="preserve"> 
-    <value>Versão %1$s.%2$s
-© 2019-%3$s Infomaniak Network SA -</value> 
+    <value>Versão %@.%@
+© 2019-%@ Infomaniak Network SA -</value> 
   </data> 
   <data name="aboutKDrive" xml:space="preserve"> 
     <value>Acerca do kDrive</value> 
@@ -182,7 +182,7 @@ Pode abri-los em qualquer momento, mesmo sem ligação à Internet.</value>
     <value>Definições avançadas</value> 
   </data> 
   <data name="buttonApplyToXFiles" xml:space="preserve"> 
-    <value>Aplicar a %s ficheiros</value> 
+    <value>Aplicar a %@ ficheiros</value> 
   </data> 
   <data name="buttonAskForAccess" xml:space="preserve"> 
     <value>Pedir acesso</value> 
@@ -331,7 +331,7 @@ Pode abri-los em qualquer momento, mesmo sem ligação à Internet.</value>
     <value>Remover sincronização</value> 
   </data> 
   <data name="buttonRenameItem" xml:space="preserve"> 
-    <value>Renomear %s</value> 
+    <value>Renomear %@</value> 
   </data> 
   <data name="buttonRestartSignIn" xml:space="preserve"> 
     <value>Reiniciar o início de sessão</value> 
@@ -498,7 +498,7 @@ Esta pasta não deve estar incluída noutra pasta de sincronização nem conter 
     <value>Adicionar uma regra de exclusão</value> 
   </data> 
   <data name="dialogRemoveAccountContent" xml:space="preserve"> 
-    <value>Está prestes a desligar %s da aplicação.
+    <value>Está prestes a desligar %@ da aplicação.
 A pasta de sincronização permanecerá no seu computador, mas deixará de ser sincronizada com o kDrive.
 
 Todos os seus dados permanecerão acessíveis online no kDrive.</value> 
@@ -605,11 +605,11 @@ Inicie sessão novamente com o endereço de e-mail correto %@</value>
     <value>Introduza a sua palavra-passe</value> 
   </data> 
   <data name="errCreateCancelDescription" xml:space="preserve"> 
-    <value>Não tem as permissões necessárias para adicionar um %s a esta localização.
+    <value>Não tem as permissões necessárias para adicionar um %@ a esta localização.
 Peça acesso ao proprietário ou administrador.</value> 
   </data> 
   <data name="errDeleteCancelDescription" xml:space="preserve"> 
-    <value>Não tem permissão para eliminar este %s. Foi restaurado para a sua localização original. Peça acesso ao proprietário ou administrador.</value> 
+    <value>Não tem permissão para eliminar este %@. Foi restaurado para a sua localização original. Peça acesso ao proprietário ou administrador.</value> 
   </data> 
   <data name="errDialogConfigChangedTitle" xml:space="preserve"> 
     <value>Foi detetada uma alteração na sua configuração</value> 
@@ -618,13 +618,13 @@ Peça acesso ao proprietário ou administrador.</value>
     <value>Nestas situações, uma nova sincronização pode ser necessária para continuar a utilizar o kDrive corretamente.</value> 
   </data> 
   <data name="errDialogLocalFileAccessDescription" xml:space="preserve"> 
-    <value>As permissões de acesso ao %s foram alteradas, impedindo a sua sincronização.</value> 
+    <value>As permissões de acesso ao %@ foram alteradas, impedindo a sua sincronização.</value> 
   </data> 
   <data name="errDialogLocalFileAccessFaqLink" xml:space="preserve"> 
-    <value>Consulte o %s para restaurar o acesso</value> 
+    <value>Consulte o %@ para restaurar o acesso</value> 
   </data> 
   <data name="errDialogLocalFileAccessLocationLabel" xml:space="preserve"> 
-    <value>Última localização de %s:</value> 
+    <value>Última localização de %@:</value> 
   </data> 
   <data name="errDialogSystemSyncDirDiskMissingTitle" xml:space="preserve"> 
     <value>Disco externo desligado</value> 
@@ -654,13 +654,13 @@ Tente novamente dentro de alguns minutos.</value>
 A versão original foi mantida e a sua edição foi guardada num ficheiro separado com "conflito" no nome. Peça acesso ao proprietário ou administrador.</value> 
   </data> 
   <data name="errEndWithSpaceDescription" xml:space="preserve"> 
-    <value>O nome deste %1$s termina com um espaço, impedindo a sua sincronização. Renomeie o %2$s a partir do kDrive online.</value> 
+    <value>O nome deste %@ termina com um espaço, impedindo a sua sincronização. Renomeie o %@ a partir do kDrive online.</value> 
   </data> 
   <data name="errEndWithSpaceTitle" xml:space="preserve"> 
-    <value>Espaço no final do nome do %s</value> 
+    <value>Espaço no final do nome do %@</value> 
   </data> 
   <data name="errExcludedByTemplateDescription" xml:space="preserve"> 
-    <value>Uma regra de exclusão está a impedir a sincronização deste %s.</value> 
+    <value>Uma regra de exclusão está a impedir a sincronização deste %@.</value> 
   </data> 
   <data name="errExcludedByTemplateTitle" xml:space="preserve"> 
     <value>Excluído da sincronização</value> 
@@ -697,10 +697,10 @@ Contacte o seu administrador para aumentar o limite de tamanho dos ficheiros.</v
     <comment>Title shown when a forbidden or unauthorized action is attempted.</comment> 
   </data> 
   <data name="errForbiddenCharDescription_win" xml:space="preserve"> 
-    <value>O nome deste %1$s contém um ou mais caracteres não suportados pela aplicação kDrive do Windows. Renomeie o %2$s a partir do kDrive online.</value> 
+    <value>O nome deste %@ contém um ou mais caracteres não suportados pela aplicação kDrive do Windows. Renomeie o %@ a partir do kDrive online.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
-    <value>Este nome contém apenas espaços e não pode ser utilizado. Renomeie o %s a partir do kDrive online.</value> 
+    <value>Este nome contém apenas espaços e não pode ser utilizado. Renomeie o %@ a partir do kDrive online.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesTitle" xml:space="preserve"> 
     <value>Nome inválido</value> 
@@ -735,19 +735,19 @@ Mova uma das pastas para que não fiquem encadeadas, ou elimine a sua sincroniza
     <value>kDrives encadeados</value> 
   </data> 
   <data name="errLocalFileAccessDescription" xml:space="preserve"> 
-    <value>Não é possível aceder a este %s no seu computador. Verifique se ainda existe e se tem direitos para aceder ao mesmo.</value> 
+    <value>Não é possível aceder a este %@ no seu computador. Verifique se ainda existe e se tem direitos para aceder ao mesmo.</value> 
   </data> 
   <data name="errLocalFileAccessTitle" xml:space="preserve"> 
-    <value>%s inacessível</value> 
+    <value>%@ inacessível</value> 
   </data> 
   <data name="errMoveCancelDescription" xml:space="preserve"> 
-    <value>Não tem os direitos para mover este %s para aqui; será restaurado para a sua localização original. Peça acesso ao proprietário ou administrador.</value> 
+    <value>Não tem os direitos para mover este %@ para aqui; será restaurado para a sua localização original. Peça acesso ao proprietário ou administrador.</value> 
   </data> 
   <data name="errNameLengthDescription" xml:space="preserve"> 
-    <value>Este nome excede o comprimento permitido (250 caracteres). Renomeie o %s.</value> 
+    <value>Este nome excede o comprimento permitido (250 caracteres). Renomeie o %@.</value> 
   </data> 
   <data name="errNameLengthTitle" xml:space="preserve"> 
-    <value>Nome do %s demasiado longo</value> 
+    <value>Nome do %@ demasiado longo</value> 
   </data> 
   <data name="errNetworkErrorOtherDescription" xml:space="preserve"> 
     <value>Não é possível ligar ao kDrive.
@@ -769,22 +769,22 @@ A sincronização será retomada automaticamente quando a ligação for restabel
     <value>Carácter não suportado</value> 
   </data> 
   <data name="errPathLengthDescription" xml:space="preserve"> 
-    <value>O caminho para este %s é demasiado longo para ser sincronizado. Renomeie uma ou mais pastas nas quais se encontra para encurtar o caminho.</value> 
+    <value>O caminho para este %@ é demasiado longo para ser sincronizado. Renomeie uma ou mais pastas nas quais se encontra para encurtar o caminho.</value> 
   </data> 
   <data name="errPathLengthTitle" xml:space="preserve"> 
-    <value>Caminho para %s demasiado longo</value> 
+    <value>Caminho para %@ demasiado longo</value> 
   </data> 
   <data name="errQuotaExceededDescription" xml:space="preserve"> 
-    <value>O seu kDrive está cheio. Liberte espaço ou atualize a sua subscrição para sincronizar este %s.</value> 
+    <value>O seu kDrive está cheio. Liberte espaço ou atualize a sua subscrição para sincronizar este %@.</value> 
   </data> 
   <data name="errQuotaExceededTitle" xml:space="preserve"> 
     <value>Limite de armazenamento atingido</value> 
   </data> 
   <data name="errReservedNameDescription" xml:space="preserve"> 
-    <value>Este nome está reservado pelo sistema do seu computador. Renomeie o %s a partir do kDrive online.</value> 
+    <value>Este nome está reservado pelo sistema do seu computador. Renomeie o %@ a partir do kDrive online.</value> 
   </data> 
   <data name="errReservedNameTitle" xml:space="preserve"> 
-    <value>Nome de %s reservado</value> 
+    <value>Nome de %@ reservado</value> 
   </data> 
   <data name="errSystemErrorSyncDirAccessErrorDescription" xml:space="preserve"> 
     <value>Verifique a localização ou os direitos de acesso à pasta.</value> 
@@ -886,10 +886,10 @@ A sincronização será retomada automaticamente quando a ligação for restabel
     <value>Durante três dias</value> 
   </data> 
   <data name="greetingLabel" xml:space="preserve"> 
-    <value>Olá %1$s, %2$s</value> 
+    <value>Olá %@, %@</value> 
   </data> 
   <data name="helpKDriveName" xml:space="preserve"> 
-    <value>kDrive %s</value> 
+    <value>kDrive %@</value> 
   </data> 
   <data name="helpUrl" xml:space="preserve"> 
     <value>https://www.infomaniak.com/en/support</value> 
@@ -923,7 +923,7 @@ Será aberto no seu navegador.</value>
     <value>Ativado</value> 
   </data> 
   <data name="labelAgo" xml:space="preserve"> 
-    <value>há %s</value> 
+    <value>há %@</value> 
     <comment>Suffix for relative timestamps in activity lists; %@ is the time period (e.g., 5 minutes).</comment> 
   </data> 
   <data name="labelAllFolders" xml:space="preserve"> 
@@ -957,7 +957,7 @@ Será aberto no seu navegador.</value>
     <value>Escolher a versão a manter</value> 
   </data> 
   <data name="labelConflictStrategyKeepLocalDescription" xml:space="preserve"> 
-    <value>As versões online destes %s ficheiros serão substituídas pelas suas versões locais.
+    <value>As versões online destes %@ ficheiros serão substituídas pelas suas versões locais.
 Atenção, isto pode substituir o trabalho dos seus colaboradores.</value> 
   </data> 
   <data name="labelConflictStrategyKeepLocalTitle" xml:space="preserve"> 
@@ -970,7 +970,7 @@ Atenção, isto pode substituir o trabalho dos seus colaboradores.</value>
     <value>Manter as versões mais recentes</value> 
   </data> 
   <data name="labelConflictStrategyKeepRemoteDescription" xml:space="preserve"> 
-    <value>Todas as alterações locais destes %s ficheiros serão descartadas.
+    <value>Todas as alterações locais destes %@ ficheiros serão descartadas.
 Útil se souber que o trabalho importante está online no kDrive.</value> 
   </data> 
   <data name="labelConflictStrategyKeepRemoteTitle" xml:space="preserve"> 
@@ -980,7 +980,7 @@ Atenção, isto pode substituir o trabalho dos seus colaboradores.</value>
     <value>Inicie sessão para começar.</value> 
   </data> 
   <data name="labelCreateNewSync" xml:space="preserve"> 
-    <value>Crie uma %s.</value> 
+    <value>Crie uma %@.</value> 
   </data> 
   <data name="labelDate" xml:space="preserve"> 
     <value>Data</value> 
@@ -1026,7 +1026,7 @@ Atenção, isto pode substituir o trabalho dos seus colaboradores.</value>
     <value>Agora mesmo</value> 
   </data> 
   <data name="labelKDriveVersion" xml:space="preserve"> 
-    <value>kDrive %s</value> 
+    <value>kDrive %@</value> 
   </data> 
   <data name="labelKiloBytes" xml:space="preserve"> 
     <value>KB</value> 
@@ -1036,7 +1036,7 @@ Atenção, isto pode substituir o trabalho dos seus colaboradores.</value>
     <value>Local</value> 
   </data> 
   <data name="labelManyConflictTitle" xml:space="preserve"> 
-    <value>%s ficheiros foram modificados tanto no seu computador como no kDrive.</value> 
+    <value>%@ ficheiros foram modificados tanto no seu computador como no kDrive.</value> 
   </data> 
   <data name="labelMegaBytes" xml:space="preserve"> 
     <value>MB</value> 
@@ -1113,7 +1113,7 @@ Atenção, isto pode substituir o trabalho dos seus colaboradores.</value>
     <comment>Abbreviated unit for second used in relative timestamps.</comment> 
   </data> 
   <data name="labelSince" xml:space="preserve"> 
-    <value>Desde: %s</value> 
+    <value>Desde: %@</value> 
     <comment>Label showing the start time of a synchronization pause or event; %@ is the formatted date/time.</comment> 
   </data> 
   <data name="labelSize" xml:space="preserve"> 
@@ -1123,22 +1123,22 @@ Atenção, isto pode substituir o trabalho dos seus colaboradores.</value>
     <value>Estado</value> 
   </data> 
   <data name="labelStorageFree" xml:space="preserve"> 
-    <value>%s livre</value> 
+    <value>%@ livre</value> 
     <comment>Label showing available free storage space; %@ is the formatted size (singular form).</comment> 
   </data> 
   <data name="labelStorageFree-plural" xml:space="preserve"> 
-    <value>%s livres</value> 
+    <value>%@ livres</value> 
   </data> 
   <data name="labelStorageLoading" xml:space="preserve"> 
     <value>A calcular…</value> 
     <comment>Loading indicator text shown while storage usage is being calculated.</comment> 
   </data> 
   <data name="labelStorageUsed" xml:space="preserve"> 
-    <value>%s utilizado</value> 
+    <value>%@ utilizado</value> 
     <comment>Label showing used storage space; %@ is the formatted size (singular form).</comment> 
   </data> 
   <data name="labelStorageUsed-plural" xml:space="preserve"> 
-    <value>%s utilizados</value> 
+    <value>%@ utilizados</value> 
   </data> 
   <data name="labelSyncExclusionEmptyDescription" xml:space="preserve"> 
     <value>Este kDrive contém apenas ficheiros. Todos os ficheiros serão sincronizados neste dispositivo.</value> 
@@ -1169,7 +1169,7 @@ Atenção, isto pode substituir o trabalho dos seus colaboradores.</value>
     <value>Bem-vindo ao kDrive</value> 
   </data> 
   <data name="labelXoverY" xml:space="preserve"> 
-    <value>%1$s de %2$s</value> 
+    <value>%@ de %@</value> 
   </data> 
   <data name="labelkDriveManagement" xml:space="preserve"> 
     <value>Gestão do kDrive</value> 
@@ -1243,7 +1243,7 @@ Verifique e renomeie os ficheiros que contenham caracteres incomuns e tente nova
     <value>Foram detetadas versões diferentes destes ficheiros.</value> 
   </data> 
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
-    <value>%s conflitos de versões detetados</value> 
+    <value>%@ conflitos de versões detetados</value> 
   </data> 
   <data name="matomoDescription" xml:space="preserve"> 
     <value>O Matomo é uma ferramenta de análise alojada e gerida exclusivamente pela Infomaniak para perceber como a aplicação é utilizada.
@@ -1433,7 +1433,7 @@ Aguarde alguns instantes.</value>
     <value>Localização no kDrive</value> 
   </data> 
   <data name="searchBoxPlaceholder" xml:space="preserve"> 
-    <value>Pesquisar em %s</value> 
+    <value>Pesquisar em %@</value> 
   </data> 
   <data name="selectFoldersToSync" xml:space="preserve"> 
     <value>Selecione as pastas a sincronizar neste computador.</value> 
@@ -1486,7 +1486,7 @@ Estes dados permitem à nossa equipa corrigir e otimizar rapidamente a aplicaç�
     <value>Sincronização</value> 
   </data> 
   <data name="storageThisComputerTitle" xml:space="preserve"> 
-    <value>Este PC - %1$s - %2$s</value> 
+    <value>Este PC - %@ - %@</value> 
     <comment>Label for the local computer entry in the storage view; first %@ is computer name, second %@ is disk identifier.</comment> 
   </data> 
   <data name="storedOnline" xml:space="preserve"> 
@@ -1673,13 +1673,13 @@ Atualize a aplicação para aceder aos seus ficheiros e retomar a sincronizaçã
     <comment>Title in the Windows information banner when there are multiple sync errors; {0} is the error count.</comment> 
   </data> 
   <data name="winStorageMissingDiskDescription" xml:space="preserve"> 
-    <value>O kDrive não consegue aceder ao disco %s
+    <value>O kDrive não consegue aceder ao disco %@
 Certifique-se de que está ligado,
 desbloqueado e acessível no seu computador.</value> 
     <comment>Description shown when a storage disk is missing or inaccessible; %@ is the disk name or drive letter.</comment> 
   </data> 
   <data name="winStorageMissingDiskTitle" xml:space="preserve"> 
-    <value>O disco de armazenamento %s não está acessível</value> 
+    <value>O disco de armazenamento %@ não está acessível</value> 
     <comment>Title shown when a storage disk is not accessible; %@ is the disk name or drive letter.</comment> 
   </data> 
   <data name="winbuttonRemoveFileExclusionRule" xml:space="preserve"> 
@@ -1687,13 +1687,7 @@ desbloqueado e acessível no seu computador.</value>
     <comment>Button to remove a single selected file exclusion rule from the exclusion list.</comment> 
   </data> 
   <data name="winbuttonRemoveFileExclusionRule-plural" xml:space="preserve"> 
-    <value>Remover (%s regras)</value> 
+    <value>Remover (%@ regras)</value> 
     <comment>Button to remove multiple selected file exclusion rules; %@ is the number of rules to be removed.</comment> 
-  </data> 
-  <data name="winbuttonRemoveFileExclusionRule-plural-2" xml:space="preserve"> 
-    <value /> 
-  </data> 
-  <data name="winbuttonRemoveFileExclusionRule-plural-3" xml:space="preserve"> 
-    <value /> 
   </data> 
 </root>

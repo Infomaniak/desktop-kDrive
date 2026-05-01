@@ -6,7 +6,7 @@
   Locale: nb, Norwegian Bokmål
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 01 May 2026 10:17:16 +0200 
+  Exported at: Fri, 01 May 2026 14:26:22 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -73,8 +73,8 @@
     <value>Norwegian Bokmål</value>
   </metadata> 
   <data name="aboutAppVersionCopyright" xml:space="preserve"> 
-    <value>Versjon %1$s.%2$s
-© 2019-%3$s Infomaniak Network SA -</value> 
+    <value>Versjon %@.%@
+© 2019-%@ Infomaniak Network SA -</value> 
   </data> 
   <data name="aboutKDrive" xml:space="preserve"> 
     <value>Om kDrive</value> 
@@ -182,7 +182,7 @@ Du kan åpne dem når som helst, selv uten internettforbindelse.</value>
     <value>Avanserte innstillinger</value> 
   </data> 
   <data name="buttonApplyToXFiles" xml:space="preserve"> 
-    <value>Bruk på %s filer</value> 
+    <value>Bruk på %@ filer</value> 
   </data> 
   <data name="buttonAskForAccess" xml:space="preserve"> 
     <value>Be om tilgang</value> 
@@ -331,7 +331,7 @@ Du kan åpne dem når som helst, selv uten internettforbindelse.</value>
     <value>Fjern synkronisering</value> 
   </data> 
   <data name="buttonRenameItem" xml:space="preserve"> 
-    <value>Gi nytt navn til %s</value> 
+    <value>Gi nytt navn til %@</value> 
   </data> 
   <data name="buttonRestartSignIn" xml:space="preserve"> 
     <value>Start innlogging på nytt</value> 
@@ -498,7 +498,7 @@ Denne mappen må ikke være inkludert i en annen synkroniseringsmappe og må ikk
     <value>Legg til en ekskluderingsregel</value> 
   </data> 
   <data name="dialogRemoveAccountContent" xml:space="preserve"> 
-    <value>Du er i ferd med å koble fra %s fra programmet.
+    <value>Du er i ferd med å koble fra %@ fra programmet.
 Synkroniseringsmappen forblir på datamaskinen, men vil ikke lenger synkroniseres med kDrive.
 
 Alle dine data forblir tilgjengelige på nett på kDrive.</value> 
@@ -605,11 +605,11 @@ Logg inn igjen med riktig e-postadresse %@</value>
     <value>Skriv inn passordet ditt</value> 
   </data> 
   <data name="errCreateCancelDescription" xml:space="preserve"> 
-    <value>Du har ikke de nødvendige tillatelsene til å legge til en %s på dette stedet.
+    <value>Du har ikke de nødvendige tillatelsene til å legge til en %@ på dette stedet.
 Be om tilgang fra eieren eller administratoren.</value> 
   </data> 
   <data name="errDeleteCancelDescription" xml:space="preserve"> 
-    <value>Du har ikke tillatelse til å slette dette %s. Det er blitt gjenopprettet til sin opprinnelige plassering. Be om tilgang fra eieren eller administratoren.</value> 
+    <value>Du har ikke tillatelse til å slette dette %@. Det er blitt gjenopprettet til sin opprinnelige plassering. Be om tilgang fra eieren eller administratoren.</value> 
   </data> 
   <data name="errDialogConfigChangedTitle" xml:space="preserve"> 
     <value>En endring ble oppdaget i konfigurasjonen din</value> 
@@ -618,13 +618,13 @@ Be om tilgang fra eieren eller administratoren.</value>
     <value>I disse situasjonene kan en ny synkronisering være nødvendig for å fortsette å bruke kDrive korrekt.</value> 
   </data> 
   <data name="errDialogLocalFileAccessDescription" xml:space="preserve"> 
-    <value>Tilgangsrettighetene for %s ble endret, noe som hindrer synkronisering.</value> 
+    <value>Tilgangsrettighetene for %@ ble endret, noe som hindrer synkronisering.</value> 
   </data> 
   <data name="errDialogLocalFileAccessFaqLink" xml:space="preserve"> 
-    <value>Sjekk %s for å gjenopprette tilgang</value> 
+    <value>Sjekk %@ for å gjenopprette tilgang</value> 
   </data> 
   <data name="errDialogLocalFileAccessLocationLabel" xml:space="preserve"> 
-    <value>Siste plassering av %s:</value> 
+    <value>Siste plassering av %@:</value> 
   </data> 
   <data name="errDialogSystemSyncDirDiskMissingTitle" xml:space="preserve"> 
     <value>Ekstern disk frakoblet</value> 
@@ -654,13 +654,13 @@ Prøv igjen om noen minutter.</value>
 Originalversjonen er beholdt og endringen din er lagret i en separat fil med "konflikt" i navnet. Be om tilgang fra eieren eller administratoren.</value> 
   </data> 
   <data name="errEndWithSpaceDescription" xml:space="preserve"> 
-    <value>Navnet på dette %1$s avsluttes med et mellomrom, noe som hindrer synkronisering. Gi nytt navn til %2$s fra kDrive på nett.</value> 
+    <value>Navnet på dette %@ avsluttes med et mellomrom, noe som hindrer synkronisering. Gi nytt navn til %@ fra kDrive på nett.</value> 
   </data> 
   <data name="errEndWithSpaceTitle" xml:space="preserve"> 
-    <value>Mellomrom på slutten av %s-navn</value> 
+    <value>Mellomrom på slutten av %@-navn</value> 
   </data> 
   <data name="errExcludedByTemplateDescription" xml:space="preserve"> 
-    <value>En ekskluderingsregel forhindrer synkronisering av dette %s.</value> 
+    <value>En ekskluderingsregel forhindrer synkronisering av dette %@.</value> 
   </data> 
   <data name="errExcludedByTemplateTitle" xml:space="preserve"> 
     <value>Ekskludert fra synkronisering</value> 
@@ -697,10 +697,10 @@ Kontakt administratoren din for å øke filstørrelsesgrensen.</value>
     <comment>Title shown when a forbidden or unauthorized action is attempted.</comment> 
   </data> 
   <data name="errForbiddenCharDescription_win" xml:space="preserve"> 
-    <value>Navnet på dette %1$s inneholder ett eller flere tegn som ikke støttes av kDrive Windows-programmet. Gi nytt navn til %2$s fra kDrive på nett.</value> 
+    <value>Navnet på dette %@ inneholder ett eller flere tegn som ikke støttes av kDrive Windows-programmet. Gi nytt navn til %@ fra kDrive på nett.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
-    <value>Dette navnet inneholder bare mellomrom og kan ikke brukes. Gi nytt navn til %s fra kDrive på nett.</value> 
+    <value>Dette navnet inneholder bare mellomrom og kan ikke brukes. Gi nytt navn til %@ fra kDrive på nett.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesTitle" xml:space="preserve"> 
     <value>Ugyldig navn</value> 
@@ -735,19 +735,19 @@ Flytt en av mappene slik at de ikke lenger er nøstet, eller slett synkroniserin
     <value>Nestede kDrives</value> 
   </data> 
   <data name="errLocalFileAccessDescription" xml:space="preserve"> 
-    <value>Kan ikke få tilgang til dette %s på datamaskinen din. Sjekk at det fortsatt finnes og at du har rettigheter til å åpne det.</value> 
+    <value>Kan ikke få tilgang til dette %@ på datamaskinen din. Sjekk at det fortsatt finnes og at du har rettigheter til å åpne det.</value> 
   </data> 
   <data name="errLocalFileAccessTitle" xml:space="preserve"> 
-    <value>%s utilgjengelig</value> 
+    <value>%@ utilgjengelig</value> 
   </data> 
   <data name="errMoveCancelDescription" xml:space="preserve"> 
-    <value>Du har ikke rettighetene til å flytte dette %s hit; det vil bli gjenopprettet til sin opprinnelige plassering. Be om tilgang fra eieren eller administratoren.</value> 
+    <value>Du har ikke rettighetene til å flytte dette %@ hit; det vil bli gjenopprettet til sin opprinnelige plassering. Be om tilgang fra eieren eller administratoren.</value> 
   </data> 
   <data name="errNameLengthDescription" xml:space="preserve"> 
-    <value>Dette navnet overskrider tillatt lengde (250 tegn). Gi nytt navn til %s.</value> 
+    <value>Dette navnet overskrider tillatt lengde (250 tegn). Gi nytt navn til %@.</value> 
   </data> 
   <data name="errNameLengthTitle" xml:space="preserve"> 
-    <value>%s-navn for langt</value> 
+    <value>%@-navn for langt</value> 
   </data> 
   <data name="errNetworkErrorOtherDescription" xml:space="preserve"> 
     <value>Kan ikke koble til kDrive.
@@ -769,22 +769,22 @@ Synkroniseringen gjenopptas automatisk når tilkoblingen er gjenopprettet.</valu
     <value>Tegn som ikke støttes</value> 
   </data> 
   <data name="errPathLengthDescription" xml:space="preserve"> 
-    <value>Banen til dette %s er for lang til å synkroniseres. Gi nytt navn til én eller flere mapper den er i for å forkorte banen.</value> 
+    <value>Banen til dette %@ er for lang til å synkroniseres. Gi nytt navn til én eller flere mapper den er i for å forkorte banen.</value> 
   </data> 
   <data name="errPathLengthTitle" xml:space="preserve"> 
-    <value>Bane til %s for lang</value> 
+    <value>Bane til %@ for lang</value> 
   </data> 
   <data name="errQuotaExceededDescription" xml:space="preserve"> 
-    <value>kDrive-en din er full. Frigjør plass eller oppgrader abonnementet ditt for å synkronisere dette %s.</value> 
+    <value>kDrive-en din er full. Frigjør plass eller oppgrader abonnementet ditt for å synkronisere dette %@.</value> 
   </data> 
   <data name="errQuotaExceededTitle" xml:space="preserve"> 
     <value>Lagringsgrense nådd</value> 
   </data> 
   <data name="errReservedNameDescription" xml:space="preserve"> 
-    <value>Dette navnet er reservert av datamaskinsystemet ditt. Gi nytt navn til %s fra kDrive på nett.</value> 
+    <value>Dette navnet er reservert av datamaskinsystemet ditt. Gi nytt navn til %@ fra kDrive på nett.</value> 
   </data> 
   <data name="errReservedNameTitle" xml:space="preserve"> 
-    <value>%s-navn reservert</value> 
+    <value>%@-navn reservert</value> 
   </data> 
   <data name="errSystemErrorSyncDirAccessErrorDescription" xml:space="preserve"> 
     <value>Sjekk plasseringen eller tilgangsrettighetene for mappen.</value> 
@@ -886,10 +886,10 @@ Synkroniseringen gjenopptas automatisk når tilkoblingen er gjenopprettet.</valu
     <value>I tre dager</value> 
   </data> 
   <data name="greetingLabel" xml:space="preserve"> 
-    <value>Hei %1$s, %2$s</value> 
+    <value>Hei %@, %@</value> 
   </data> 
   <data name="helpKDriveName" xml:space="preserve"> 
-    <value>kDrive %s</value> 
+    <value>kDrive %@</value> 
   </data> 
   <data name="helpUrl" xml:space="preserve"> 
     <value>https://www.infomaniak.com/en/support</value> 
@@ -923,7 +923,7 @@ Det vil åpnes i nettleseren din.</value>
     <value>Aktivert</value> 
   </data> 
   <data name="labelAgo" xml:space="preserve"> 
-    <value>for %s siden</value> 
+    <value>for %@ siden</value> 
     <comment>Suffix for relative timestamps in activity lists; %@ is the time period (e.g., 5 minutes).</comment> 
   </data> 
   <data name="labelAllFolders" xml:space="preserve"> 
@@ -957,7 +957,7 @@ Det vil åpnes i nettleseren din.</value>
     <value>Velg versjonen som skal beholdes</value> 
   </data> 
   <data name="labelConflictStrategyKeepLocalDescription" xml:space="preserve"> 
-    <value>Nettversjonene av disse %s filene vil bli erstattet av dine lokale versjoner.
+    <value>Nettversjonene av disse %@ filene vil bli erstattet av dine lokale versjoner.
 Vær oppmerksom på at dette kan overskrive samarbeidspartnernes arbeid.</value> 
   </data> 
   <data name="labelConflictStrategyKeepLocalTitle" xml:space="preserve"> 
@@ -970,7 +970,7 @@ Vær oppmerksom på at dette kan overskrive samarbeidspartnernes arbeid.</value>
     <value>Behold de nyeste versjonene</value> 
   </data> 
   <data name="labelConflictStrategyKeepRemoteDescription" xml:space="preserve"> 
-    <value>Alle lokale endringer for disse %s filene vil bli forkastet.
+    <value>Alle lokale endringer for disse %@ filene vil bli forkastet.
 Nyttig hvis du vet at det viktige arbeidet er på nett på kDrive.</value> 
   </data> 
   <data name="labelConflictStrategyKeepRemoteTitle" xml:space="preserve"> 
@@ -980,7 +980,7 @@ Nyttig hvis du vet at det viktige arbeidet er på nett på kDrive.</value>
     <value>Logg inn for å komme i gang.</value> 
   </data> 
   <data name="labelCreateNewSync" xml:space="preserve"> 
-    <value>Opprett en %s.</value> 
+    <value>Opprett en %@.</value> 
   </data> 
   <data name="labelDate" xml:space="preserve"> 
     <value>Dato</value> 
@@ -1026,7 +1026,7 @@ Nyttig hvis du vet at det viktige arbeidet er på nett på kDrive.</value>
     <value>Akkurat nå</value> 
   </data> 
   <data name="labelKDriveVersion" xml:space="preserve"> 
-    <value>kDrive %s</value> 
+    <value>kDrive %@</value> 
   </data> 
   <data name="labelKiloBytes" xml:space="preserve"> 
     <value>kB</value> 
@@ -1036,7 +1036,7 @@ Nyttig hvis du vet at det viktige arbeidet er på nett på kDrive.</value>
     <value>Lokal</value> 
   </data> 
   <data name="labelManyConflictTitle" xml:space="preserve"> 
-    <value>%s filer har blitt endret både på datamaskinen din og på kDrive.</value> 
+    <value>%@ filer har blitt endret både på datamaskinen din og på kDrive.</value> 
   </data> 
   <data name="labelMegaBytes" xml:space="preserve"> 
     <value>MB</value> 
@@ -1113,7 +1113,7 @@ Nyttig hvis du vet at det viktige arbeidet er på nett på kDrive.</value>
     <comment>Abbreviated unit for second used in relative timestamps.</comment> 
   </data> 
   <data name="labelSince" xml:space="preserve"> 
-    <value>Siden: %s</value> 
+    <value>Siden: %@</value> 
     <comment>Label showing the start time of a synchronization pause or event; %@ is the formatted date/time.</comment> 
   </data> 
   <data name="labelSize" xml:space="preserve"> 
@@ -1123,22 +1123,22 @@ Nyttig hvis du vet at det viktige arbeidet er på nett på kDrive.</value>
     <value>Status</value> 
   </data> 
   <data name="labelStorageFree" xml:space="preserve"> 
-    <value>%s ledig</value> 
+    <value>%@ ledig</value> 
     <comment>Label showing available free storage space; %@ is the formatted size (singular form).</comment> 
   </data> 
   <data name="labelStorageFree-plural" xml:space="preserve"> 
-    <value>%s ledig</value> 
+    <value>%@ ledig</value> 
   </data> 
   <data name="labelStorageLoading" xml:space="preserve"> 
     <value>Beregner…</value> 
     <comment>Loading indicator text shown while storage usage is being calculated.</comment> 
   </data> 
   <data name="labelStorageUsed" xml:space="preserve"> 
-    <value>%s brukt</value> 
+    <value>%@ brukt</value> 
     <comment>Label showing used storage space; %@ is the formatted size (singular form).</comment> 
   </data> 
   <data name="labelStorageUsed-plural" xml:space="preserve"> 
-    <value>%s brukt</value> 
+    <value>%@ brukt</value> 
   </data> 
   <data name="labelSyncExclusionEmptyDescription" xml:space="preserve"> 
     <value>Denne kDrive inneholder bare filer. Alle filer vil bli synkronisert på denne enheten.</value> 
@@ -1169,7 +1169,7 @@ Nyttig hvis du vet at det viktige arbeidet er på nett på kDrive.</value>
     <value>Velkommen til kDrive</value> 
   </data> 
   <data name="labelXoverY" xml:space="preserve"> 
-    <value>%1$s av %2$s</value> 
+    <value>%@ av %@</value> 
   </data> 
   <data name="labelkDriveManagement" xml:space="preserve"> 
     <value>kDrive-administrasjon</value> 
@@ -1243,7 +1243,7 @@ Kontroller og gi nytt navn til filer som inneholder uvanlige tegn, og prøv dere
     <value>Forskjellige versjoner av disse filene ble oppdaget.</value> 
   </data> 
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
-    <value>%s versjonskonflikt(er) oppdaget</value> 
+    <value>%@ versjonskonflikt(er) oppdaget</value> 
   </data> 
   <data name="matomoDescription" xml:space="preserve"> 
     <value>Matomo er et analyseverktøy som er driftet og administrert utelukkende av Infomaniak for å forstå hvordan programmet brukes.
@@ -1433,7 +1433,7 @@ Vennligst vent noen øyeblikk.</value>
     <value>Plassering på kDrive</value> 
   </data> 
   <data name="searchBoxPlaceholder" xml:space="preserve"> 
-    <value>Søk i %s</value> 
+    <value>Søk i %@</value> 
   </data> 
   <data name="selectFoldersToSync" xml:space="preserve"> 
     <value>Velg mappene som skal synkroniseres på denne datamaskinen.</value> 
@@ -1486,7 +1486,7 @@ Disse dataene lar teamet vårt raskt rette og optimalisere programmet, noe som g
     <value>Synkronisering</value> 
   </data> 
   <data name="storageThisComputerTitle" xml:space="preserve"> 
-    <value>Denne PC-en – %1$s – %2$s</value> 
+    <value>Denne PC-en – %@ – %@</value> 
     <comment>Label for the local computer entry in the storage view; first %@ is computer name, second %@ is disk identifier.</comment> 
   </data> 
   <data name="storedOnline" xml:space="preserve"> 
@@ -1673,13 +1673,13 @@ Oppdater programmet for å få tilgang til filene dine og gjenoppta synkroniseri
     <comment>Title in the Windows information banner when there are multiple sync errors; {0} is the error count.</comment> 
   </data> 
   <data name="winStorageMissingDiskDescription" xml:space="preserve"> 
-    <value>kDrive kan ikke få tilgang til disk %s
+    <value>kDrive kan ikke få tilgang til disk %@
 Sørg for at den er tilkoblet,
 låst opp og tilgjengelig fra datamaskinen din.</value> 
     <comment>Description shown when a storage disk is missing or inaccessible; %@ is the disk name or drive letter.</comment> 
   </data> 
   <data name="winStorageMissingDiskTitle" xml:space="preserve"> 
-    <value>Lagringsdisk %s er ikke tilgjengelig</value> 
+    <value>Lagringsdisk %@ er ikke tilgjengelig</value> 
     <comment>Title shown when a storage disk is not accessible; %@ is the disk name or drive letter.</comment> 
   </data> 
   <data name="winbuttonRemoveFileExclusionRule" xml:space="preserve"> 
@@ -1687,13 +1687,7 @@ låst opp og tilgjengelig fra datamaskinen din.</value>
     <comment>Button to remove a single selected file exclusion rule from the exclusion list.</comment> 
   </data> 
   <data name="winbuttonRemoveFileExclusionRule-plural" xml:space="preserve"> 
-    <value>Fjern (%s regler)</value> 
+    <value>Fjern (%@ regler)</value> 
     <comment>Button to remove multiple selected file exclusion rules; %@ is the number of rules to be removed.</comment> 
-  </data> 
-  <data name="winbuttonRemoveFileExclusionRule-plural-2" xml:space="preserve"> 
-    <value /> 
-  </data> 
-  <data name="winbuttonRemoveFileExclusionRule-plural-3" xml:space="preserve"> 
-    <value /> 
   </data> 
 </root>

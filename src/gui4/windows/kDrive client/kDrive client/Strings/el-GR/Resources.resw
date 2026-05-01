@@ -6,7 +6,7 @@
   Locale: el, Greek
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 01 May 2026 10:17:16 +0200 
+  Exported at: Fri, 01 May 2026 14:26:22 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -73,8 +73,8 @@
     <value>Greek</value>
   </metadata> 
   <data name="aboutAppVersionCopyright" xml:space="preserve"> 
-    <value>Version %1$s.%2$s
-© 2019-%3$s Infomaniak Network SA -</value> 
+    <value>Version %@.%@
+© 2019-%@ Infomaniak Network SA -</value> 
   </data> 
   <data name="aboutKDrive" xml:space="preserve"> 
     <value>Σχετικά με το kDrive</value> 
@@ -182,7 +182,7 @@
     <value>Προηγμένες ρυθμίσεις</value> 
   </data> 
   <data name="buttonApplyToXFiles" xml:space="preserve"> 
-    <value>Εφαρμογή σε %s αρχεία</value> 
+    <value>Εφαρμογή σε %@ αρχεία</value> 
   </data> 
   <data name="buttonAskForAccess" xml:space="preserve"> 
     <value>Αίτηση πρόσβασης</value> 
@@ -331,7 +331,7 @@
     <value>Κατάργηση συγχρονισμού</value> 
   </data> 
   <data name="buttonRenameItem" xml:space="preserve"> 
-    <value>Μετονομασία %s</value> 
+    <value>Μετονομασία %@</value> 
   </data> 
   <data name="buttonRestartSignIn" xml:space="preserve"> 
     <value>Επανεκκίνηση σύνδεσης</value> 
@@ -498,7 +498,7 @@
     <value>Προσθήκη κανόνα εξαίρεσης</value> 
   </data> 
   <data name="dialogRemoveAccountContent" xml:space="preserve"> 
-    <value>Πρόκειται να αποσυνδέσετε τον λογαριασμό %s από την εφαρμογή.
+    <value>Πρόκειται να αποσυνδέσετε τον λογαριασμό %@ από την εφαρμογή.
 Ο φάκελος συγχρονισμού θα παραμείνει στον υπολογιστή σας, αλλά δεν θα συγχρονίζεται πλέον με το kDrive.
 
 Όλα τα δεδομένα σας θα παραμένουν προσβάσιμα διαδικτυακά στο kDrive.</value> 
@@ -605,11 +605,11 @@
     <value>Εισαγάγετε τον κωδικό πρόσβασής σας</value> 
   </data> 
   <data name="errCreateCancelDescription" xml:space="preserve"> 
-    <value>Δεν έχετε τα απαραίτητα δικαιώματα για να προσθέσετε ένα %s σε αυτή την τοποθεσία.
+    <value>Δεν έχετε τα απαραίτητα δικαιώματα για να προσθέσετε ένα %@ σε αυτή την τοποθεσία.
 Ζητήστε πρόσβαση από τον κάτοχο ή τον διαχειριστή.</value> 
   </data> 
   <data name="errDeleteCancelDescription" xml:space="preserve"> 
-    <value>Δεν έχετε άδεια να διαγράψετε αυτό το %s. Έχει αποκατασταθεί στην αρχική του τοποθεσία. Ζητήστε πρόσβαση από τον κάτοχο ή τον διαχειριστή.</value> 
+    <value>Δεν έχετε άδεια να διαγράψετε αυτό το %@. Έχει αποκατασταθεί στην αρχική του τοποθεσία. Ζητήστε πρόσβαση από τον κάτοχο ή τον διαχειριστή.</value> 
   </data> 
   <data name="errDialogConfigChangedTitle" xml:space="preserve"> 
     <value>Εντοπίστηκε αλλαγή στη διαμόρφωσή σας</value> 
@@ -618,13 +618,13 @@
     <value>Σε αυτές τις περιπτώσεις, ενδέχεται να απαιτείται νέος συγχρονισμός για να συνεχίσετε να χρησιμοποιείτε σωστά το kDrive.</value> 
   </data> 
   <data name="errDialogLocalFileAccessDescription" xml:space="preserve"> 
-    <value>Τα δικαιώματα πρόσβασης για το %s άλλαξαν, εμποδίζοντας τον συγχρονισμό του.</value> 
+    <value>Τα δικαιώματα πρόσβασης για το %@ άλλαξαν, εμποδίζοντας τον συγχρονισμό του.</value> 
   </data> 
   <data name="errDialogLocalFileAccessFaqLink" xml:space="preserve"> 
-    <value>Ελέγξτε το %s για να αποκαταστήσετε την πρόσβαση</value> 
+    <value>Ελέγξτε το %@ για να αποκαταστήσετε την πρόσβαση</value> 
   </data> 
   <data name="errDialogLocalFileAccessLocationLabel" xml:space="preserve"> 
-    <value>Τελευταία τοποθεσία του %s:</value> 
+    <value>Τελευταία τοποθεσία του %@:</value> 
   </data> 
   <data name="errDialogSystemSyncDirDiskMissingTitle" xml:space="preserve"> 
     <value>Εξωτερικός δίσκος αποσυνδέθηκε</value> 
@@ -654,13 +654,13 @@
 Διατηρήθηκε η αρχική έκδοση και η επεξεργασία σας αποθηκεύτηκε σε ξεχωριστό αρχείο με "conflict" στο όνομά του. Ζητήστε πρόσβαση από τον κάτοχο ή τον διαχειριστή.</value> 
   </data> 
   <data name="errEndWithSpaceDescription" xml:space="preserve"> 
-    <value>Το όνομα αυτού του %1$s τελειώνει με κενό, εμποδίζοντας τον συγχρονισμό του. Μετονομάστε το %2$s από το kDrive online.</value> 
+    <value>Το όνομα αυτού του %@ τελειώνει με κενό, εμποδίζοντας τον συγχρονισμό του. Μετονομάστε το %@ από το kDrive online.</value> 
   </data> 
   <data name="errEndWithSpaceTitle" xml:space="preserve"> 
-    <value>Κενό στο τέλος του ονόματος %s</value> 
+    <value>Κενό στο τέλος του ονόματος %@</value> 
   </data> 
   <data name="errExcludedByTemplateDescription" xml:space="preserve"> 
-    <value>Ένας κανόνας εξαίρεσης εμποδίζει τον συγχρονισμό αυτού του %s.</value> 
+    <value>Ένας κανόνας εξαίρεσης εμποδίζει τον συγχρονισμό αυτού του %@.</value> 
   </data> 
   <data name="errExcludedByTemplateTitle" xml:space="preserve"> 
     <value>Εξαιρείται από τον συγχρονισμό</value> 
@@ -697,10 +697,10 @@
     <comment>Title shown when a forbidden or unauthorized action is attempted.</comment> 
   </data> 
   <data name="errForbiddenCharDescription_win" xml:space="preserve"> 
-    <value>Το όνομα αυτού του %1$s περιέχει έναν ή περισσότερους χαρακτήρες που δεν υποστηρίζονται από την εφαρμογή kDrive Windows. Μετονομάστε το %2$s από το kDrive online.</value> 
+    <value>Το όνομα αυτού του %@ περιέχει έναν ή περισσότερους χαρακτήρες που δεν υποστηρίζονται από την εφαρμογή kDrive Windows. Μετονομάστε το %@ από το kDrive online.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
-    <value>Αυτό το όνομα περιέχει μόνο κενά και δεν μπορεί να χρησιμοποιηθεί. Μετονομάστε το %s από το kDrive online.</value> 
+    <value>Αυτό το όνομα περιέχει μόνο κενά και δεν μπορεί να χρησιμοποιηθεί. Μετονομάστε το %@ από το kDrive online.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesTitle" xml:space="preserve"> 
     <value>Μη έγκυρο όνομα</value> 
@@ -735,19 +735,19 @@
     <value>Ένθετα kDrive</value> 
   </data> 
   <data name="errLocalFileAccessDescription" xml:space="preserve"> 
-    <value>Δεν είναι δυνατή η πρόσβαση σε αυτό το %s στον υπολογιστή σας. Ελέγξτε ότι υπάρχει ακόμα και ότι έχετε δικαιώματα πρόσβασης σε αυτό.</value> 
+    <value>Δεν είναι δυνατή η πρόσβαση σε αυτό το %@ στον υπολογιστή σας. Ελέγξτε ότι υπάρχει ακόμα και ότι έχετε δικαιώματα πρόσβασης σε αυτό.</value> 
   </data> 
   <data name="errLocalFileAccessTitle" xml:space="preserve"> 
-    <value>%s μη προσβάσιμο</value> 
+    <value>%@ μη προσβάσιμο</value> 
   </data> 
   <data name="errMoveCancelDescription" xml:space="preserve"> 
-    <value>Δεν έχετε δικαιώματα για να μεταφέρετε αυτό το %s εδώ· θα αποκατασταθεί στην αρχική του τοποθεσία. Ζητήστε πρόσβαση από τον κάτοχο ή τον διαχειριστή.</value> 
+    <value>Δεν έχετε δικαιώματα για να μεταφέρετε αυτό το %@ εδώ· θα αποκατασταθεί στην αρχική του τοποθεσία. Ζητήστε πρόσβαση από τον κάτοχο ή τον διαχειριστή.</value> 
   </data> 
   <data name="errNameLengthDescription" xml:space="preserve"> 
-    <value>Αυτό το όνομα υπερβαίνει το επιτρεπτό μήκος (250 χαρακτήρες). Μετονομάστε το %s.</value> 
+    <value>Αυτό το όνομα υπερβαίνει το επιτρεπτό μήκος (250 χαρακτήρες). Μετονομάστε το %@.</value> 
   </data> 
   <data name="errNameLengthTitle" xml:space="preserve"> 
-    <value>Το όνομα %s είναι πολύ μακρύ</value> 
+    <value>Το όνομα %@ είναι πολύ μακρύ</value> 
   </data> 
   <data name="errNetworkErrorOtherDescription" xml:space="preserve"> 
     <value>Δεν είναι δυνατή η σύνδεση στο kDrive.
@@ -769,22 +769,22 @@
     <value>Μη υποστηριζόμενος χαρακτήρας</value> 
   </data> 
   <data name="errPathLengthDescription" xml:space="preserve"> 
-    <value>Η διαδρομή προς αυτό το %s είναι πολύ μακριά για συγχρονισμό. Μετονομάστε έναν ή περισσότερους φακέλους στους οποίους βρίσκεται για να μικρύνετε τη διαδρομή.</value> 
+    <value>Η διαδρομή προς αυτό το %@ είναι πολύ μακριά για συγχρονισμό. Μετονομάστε έναν ή περισσότερους φακέλους στους οποίους βρίσκεται για να μικρύνετε τη διαδρομή.</value> 
   </data> 
   <data name="errPathLengthTitle" xml:space="preserve"> 
-    <value>Η διαδρομή προς %s είναι πολύ μακριά</value> 
+    <value>Η διαδρομή προς %@ είναι πολύ μακριά</value> 
   </data> 
   <data name="errQuotaExceededDescription" xml:space="preserve"> 
-    <value>Το kDrive σας είναι γεμάτο. Ελευθερώστε χώρο ή αναβαθμίστε τη συνδρομή σας για να συγχρονίσετε αυτό το %s.</value> 
+    <value>Το kDrive σας είναι γεμάτο. Ελευθερώστε χώρο ή αναβαθμίστε τη συνδρομή σας για να συγχρονίσετε αυτό το %@.</value> 
   </data> 
   <data name="errQuotaExceededTitle" xml:space="preserve"> 
     <value>Το όριο αποθηκευτικού χώρου συμπληρώθηκε</value> 
   </data> 
   <data name="errReservedNameDescription" xml:space="preserve"> 
-    <value>Αυτό το όνομα είναι δεσμευμένο από το σύστημα του υπολογιστή σας. Μετονομάστε το %s από το kDrive online.</value> 
+    <value>Αυτό το όνομα είναι δεσμευμένο από το σύστημα του υπολογιστή σας. Μετονομάστε το %@ από το kDrive online.</value> 
   </data> 
   <data name="errReservedNameTitle" xml:space="preserve"> 
-    <value>Το όνομα %s είναι δεσμευμένο</value> 
+    <value>Το όνομα %@ είναι δεσμευμένο</value> 
   </data> 
   <data name="errSystemErrorSyncDirAccessErrorDescription" xml:space="preserve"> 
     <value>Ελέγξτε την τοποθεσία ή τα δικαιώματα πρόσβασης του φακέλου.</value> 
@@ -886,10 +886,10 @@
     <value>Για τρεις ημέρες</value> 
   </data> 
   <data name="greetingLabel" xml:space="preserve"> 
-    <value>Γεια σας %1$s, %2$s</value> 
+    <value>Γεια σας %@, %@</value> 
   </data> 
   <data name="helpKDriveName" xml:space="preserve"> 
-    <value>kDrive %s</value> 
+    <value>kDrive %@</value> 
   </data> 
   <data name="helpUrl" xml:space="preserve"> 
     <value>https://www.infomaniak.com/en/support</value> 
@@ -923,7 +923,7 @@
     <value>Ενεργοποιημένο</value> 
   </data> 
   <data name="labelAgo" xml:space="preserve"> 
-    <value>πριν από %s</value> 
+    <value>πριν από %@</value> 
     <comment>Suffix for relative timestamps in activity lists; %@ is the time period (e.g., 5 minutes).</comment> 
   </data> 
   <data name="labelAllFolders" xml:space="preserve"> 
@@ -957,7 +957,7 @@
     <value>Επιλογή έκδοσης για διατήρηση</value> 
   </data> 
   <data name="labelConflictStrategyKeepLocalDescription" xml:space="preserve"> 
-    <value>Οι διαδικτυακές εκδόσεις αυτών των %s αρχείων θα αντικατασταθούν από τις τοπικές σας εκδόσεις.
+    <value>Οι διαδικτυακές εκδόσεις αυτών των %@ αρχείων θα αντικατασταθούν από τις τοπικές σας εκδόσεις.
 Προσοχή, αυτό μπορεί να αντικαταστήσει τη δουλειά των συνεργατών σας.</value> 
   </data> 
   <data name="labelConflictStrategyKeepLocalTitle" xml:space="preserve"> 
@@ -970,7 +970,7 @@
     <value>Διατήρηση των πιο πρόσφατων εκδόσεων</value> 
   </data> 
   <data name="labelConflictStrategyKeepRemoteDescription" xml:space="preserve"> 
-    <value>Όλες οι τοπικές αλλαγές για αυτά τα %s αρχεία θα απορριφθούν.
+    <value>Όλες οι τοπικές αλλαγές για αυτά τα %@ αρχεία θα απορριφθούν.
 Χρήσιμο εάν γνωρίζετε ότι η σημαντική εργασία βρίσκεται διαδικτυακά στο kDrive.</value> 
   </data> 
   <data name="labelConflictStrategyKeepRemoteTitle" xml:space="preserve"> 
@@ -980,7 +980,7 @@
     <value>Συνδεθείτε για να ξεκινήσετε.</value> 
   </data> 
   <data name="labelCreateNewSync" xml:space="preserve"> 
-    <value>Δημιουργήστε έναν %s.</value> 
+    <value>Δημιουργήστε έναν %@.</value> 
   </data> 
   <data name="labelDate" xml:space="preserve"> 
     <value>Ημερομηνία</value> 
@@ -1026,7 +1026,7 @@
     <value>Μόλις τώρα</value> 
   </data> 
   <data name="labelKDriveVersion" xml:space="preserve"> 
-    <value>kDrive %s</value> 
+    <value>kDrive %@</value> 
   </data> 
   <data name="labelKiloBytes" xml:space="preserve"> 
     <value>KB</value> 
@@ -1036,7 +1036,7 @@
     <value>Τοπικό</value> 
   </data> 
   <data name="labelManyConflictTitle" xml:space="preserve"> 
-    <value>%s αρχεία τροποποιήθηκαν τόσο στον υπολογιστή σας όσο και στο kDrive.</value> 
+    <value>%@ αρχεία τροποποιήθηκαν τόσο στον υπολογιστή σας όσο και στο kDrive.</value> 
   </data> 
   <data name="labelMegaBytes" xml:space="preserve"> 
     <value>MB</value> 
@@ -1113,7 +1113,7 @@
     <comment>Abbreviated unit for second used in relative timestamps.</comment> 
   </data> 
   <data name="labelSince" xml:space="preserve"> 
-    <value>Από: %s</value> 
+    <value>Από: %@</value> 
     <comment>Label showing the start time of a synchronization pause or event; %@ is the formatted date/time.</comment> 
   </data> 
   <data name="labelSize" xml:space="preserve"> 
@@ -1123,22 +1123,22 @@
     <value>Κατάσταση</value> 
   </data> 
   <data name="labelStorageFree" xml:space="preserve"> 
-    <value>%s ελεύθερο</value> 
+    <value>%@ ελεύθερο</value> 
     <comment>Label showing available free storage space; %@ is the formatted size (singular form).</comment> 
   </data> 
   <data name="labelStorageFree-plural" xml:space="preserve"> 
-    <value>%s ελεύθερα</value> 
+    <value>%@ ελεύθερα</value> 
   </data> 
   <data name="labelStorageLoading" xml:space="preserve"> 
     <value>Υπολογισμός…</value> 
     <comment>Loading indicator text shown while storage usage is being calculated.</comment> 
   </data> 
   <data name="labelStorageUsed" xml:space="preserve"> 
-    <value>%s χρησιμοποιημένο</value> 
+    <value>%@ χρησιμοποιημένο</value> 
     <comment>Label showing used storage space; %@ is the formatted size (singular form).</comment> 
   </data> 
   <data name="labelStorageUsed-plural" xml:space="preserve"> 
-    <value>%s χρησιμοποιημένα</value> 
+    <value>%@ χρησιμοποιημένα</value> 
   </data> 
   <data name="labelSyncExclusionEmptyDescription" xml:space="preserve"> 
     <value>Αυτό το kDrive περιέχει μόνο αρχεία. Όλα τα αρχεία θα συγχρονιστούν σε αυτή τη συσκευή.</value> 
@@ -1169,7 +1169,7 @@
     <value>Καλωσορίσατε στο kDrive</value> 
   </data> 
   <data name="labelXoverY" xml:space="preserve"> 
-    <value>%1$s από %2$s</value> 
+    <value>%@ από %@</value> 
   </data> 
   <data name="labelkDriveManagement" xml:space="preserve"> 
     <value>Διαχείριση kDrive</value> 
@@ -1243,7 +1243,7 @@
     <value>Εντοπίστηκαν διαφορετικές εκδόσεις αυτών των αρχείων.</value> 
   </data> 
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
-    <value>%s συγκρούσεις εκδόσεων εντοπίστηκαν</value> 
+    <value>%@ συγκρούσεις εκδόσεων εντοπίστηκαν</value> 
   </data> 
   <data name="matomoDescription" xml:space="preserve"> 
     <value>Το Matomo είναι ένα εργαλείο ανάλυσης που φιλοξενείται και διαχειρίζεται αποκλειστικά από την Infomaniak για να κατανοεί πώς χρησιμοποιείται η εφαρμογή.
@@ -1433,7 +1433,7 @@
     <value>Τοποθεσία στο kDrive</value> 
   </data> 
   <data name="searchBoxPlaceholder" xml:space="preserve"> 
-    <value>Αναζήτηση στο %s</value> 
+    <value>Αναζήτηση στο %@</value> 
   </data> 
   <data name="selectFoldersToSync" xml:space="preserve"> 
     <value>Επιλέξτε τους φακέλους για συγχρονισμό σε αυτόν τον υπολογιστή.</value> 
@@ -1486,7 +1486,7 @@
     <value>Συγχρονισμός</value> 
   </data> 
   <data name="storageThisComputerTitle" xml:space="preserve"> 
-    <value>Αυτός ο υπολογιστής - %1$s - %2$s</value> 
+    <value>Αυτός ο υπολογιστής - %@ - %@</value> 
     <comment>Label for the local computer entry in the storage view; first %@ is computer name, second %@ is disk identifier.</comment> 
   </data> 
   <data name="storedOnline" xml:space="preserve"> 
@@ -1673,13 +1673,13 @@
     <comment>Title in the Windows information banner when there are multiple sync errors; {0} is the error count.</comment> 
   </data> 
   <data name="winStorageMissingDiskDescription" xml:space="preserve"> 
-    <value>Το kDrive δεν μπορεί να αποκτήσει πρόσβαση στη μονάδα %s
+    <value>Το kDrive δεν μπορεί να αποκτήσει πρόσβαση στη μονάδα %@
 Βεβαιωθείτε ότι είναι συνδεδεμένη,
 ξεκλειδωμένη και προσβάσιμη από τον υπολογιστή σας.</value> 
     <comment>Description shown when a storage disk is missing or inaccessible; %@ is the disk name or drive letter.</comment> 
   </data> 
   <data name="winStorageMissingDiskTitle" xml:space="preserve"> 
-    <value>Η μονάδα αποθήκευσης %s δεν είναι προσβάσιμη</value> 
+    <value>Η μονάδα αποθήκευσης %@ δεν είναι προσβάσιμη</value> 
     <comment>Title shown when a storage disk is not accessible; %@ is the disk name or drive letter.</comment> 
   </data> 
   <data name="winbuttonRemoveFileExclusionRule" xml:space="preserve"> 
@@ -1687,13 +1687,7 @@
     <comment>Button to remove a single selected file exclusion rule from the exclusion list.</comment> 
   </data> 
   <data name="winbuttonRemoveFileExclusionRule-plural" xml:space="preserve"> 
-    <value>Κατάργηση (%s κανόνων)</value> 
+    <value>Κατάργηση (%@ κανόνων)</value> 
     <comment>Button to remove multiple selected file exclusion rules; %@ is the number of rules to be removed.</comment> 
-  </data> 
-  <data name="winbuttonRemoveFileExclusionRule-plural-2" xml:space="preserve"> 
-    <value /> 
-  </data> 
-  <data name="winbuttonRemoveFileExclusionRule-plural-3" xml:space="preserve"> 
-    <value /> 
   </data> 
 </root>
