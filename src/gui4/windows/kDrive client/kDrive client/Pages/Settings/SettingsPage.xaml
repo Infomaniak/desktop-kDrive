@@ -99,8 +99,7 @@
                             <ComboBoxItem Content="Dansk"
                                           Tag="Danish" />
                             <ComboBoxItem Content="Nederlands"
-                                          Tag="Dutch" 
-                                          IsEnabled="False"/>
+                                          Tag="Dutch" />
                             <ComboBoxItem Content="Suomi"
                                           Tag="Finnish" />
                             <ComboBoxItem Content="Ελληνικά"

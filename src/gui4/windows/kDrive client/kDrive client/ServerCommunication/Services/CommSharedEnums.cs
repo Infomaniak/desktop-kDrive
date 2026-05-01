@@ -207,6 +207,7 @@ namespace Infomaniak.kDrive.Types
         German,
         Spanish,
         Italian,
+        Dutch,
         Swedish,
         Portuguese,
         Polish,

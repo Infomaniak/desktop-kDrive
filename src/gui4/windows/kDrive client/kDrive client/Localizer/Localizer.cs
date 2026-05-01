@@ -38,7 +38,7 @@ namespace Infomaniak.kDrive
                 { Language.German, "de" },
                 { Language.Spanish, "es" },
                 { Language.Danish, "da" },
-                //{ Language.Dutch, "nl" },
+                { Language.Dutch, "nl" },
                 { Language.Finnish, "fi" },
                 { Language.Greek, "el" },
                 { Language.Norwegian, "nb" },
