@@ -25,7 +25,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,13 +35,61 @@ namespace Infomaniak.kDrive.Pages.Settings
     {
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         private const string _skipNextRefreshKey = "skipNextRefresh";
+        private NavigationParameter? _navigationParameter;
+
+
         public AppModel ViewModel => _viewModel;
+
+        public struct NavigationParameter
+        {
+            public enum SettingsTab
+            {
+                Default,
+                Users
+            }
+
+            public SettingsTab Tab { get; set; }
+            public User? UserToShow { get; set; }
+        }
 
         public SettingsPage()
         {
             Logger.Log(Logger.Level.Info, "Navigated to SettingsPage - Initializing SettingsPage components");
             InitializeComponent();
             Logger.Log(Logger.Level.Debug, "SettingsPage components initialized");
+            Loaded += SettingsPage_Loaded;
+        }
+
+        private void SettingsPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (_navigationParameter is null)
+                return;
+
+            switch (_navigationParameter.Value.Tab)
+            {
+                case NavigationParameter.SettingsTab.Users:
+                    BringUserIntoView(_navigationParameter.Value.UserToShow);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        {
+            _navigationParameter = e.Parameter as NavigationParameter?;
+        }
+
+        private void BringUserIntoView(User? user)
+        {
+            if (user is not null && UsersListView.ContainerFromItem(user) is UIElement container)
+            {
+                container.StartBringIntoView(new BringIntoViewOptions { VerticalAlignmentRatio = 0.1f });
+                return;
+            }
+
+            // If the container is null, just scroll to the Accounts section
+            AccountsStackPanel.StartBringIntoView(new BringIntoViewOptions { VerticalAlignmentRatio = 0.1f });
         }
 
         private void CreateAccountButton_Click(object sender, RoutedEventArgs e)
@@ -592,7 +639,6 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private void RestartAppHyperlinkButton_Click(object sender, RoutedEventArgs e) => App.RestartApplication();
     }
-
     // templateSelector for the drives listview
     public partial class DriveDataTemplateSelector : DataTemplateSelector
     {

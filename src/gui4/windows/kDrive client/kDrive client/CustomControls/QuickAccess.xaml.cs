@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.Pages.Settings;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -88,6 +89,22 @@ namespace Infomaniak.kDrive.CustomControls
             {
                 Logger.Log(Logger.Level.Error, "No sync selected or unable to get URL.");
             }
+        }
+
+        private void ProfilePictureBorder_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            ((App.Current as App)?.CurrentWindow as MainWindow)?.AppNavView?.Frame?.Navigate(typeof(SettingsPage), new SettingsPage.NavigationParameter { Tab = SettingsPage.NavigationParameter.SettingsTab.Users, UserToShow = ViewModel.SelectedSync?.Drive.Account.User });
+        }
+
+        private void SyncBorder_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            if (ViewModel.SelectedSync is null)
+                return;
+
+            if (ViewModel.SelectedSync.IsAdvanced)
+                ((App.Current as App)?.CurrentWindow as MainWindow)?.AppNavView?.Frame?.Navigate(typeof(DriveAdvancedSyncsPage), ViewModel.SelectedSync.Drive);
+            else
+                ((App.Current as App)?.CurrentWindow as MainWindow)?.AppNavView?.Frame?.Navigate(typeof(DriveManagementPage), ViewModel.SelectedSync.Drive);
         }
     }
 }

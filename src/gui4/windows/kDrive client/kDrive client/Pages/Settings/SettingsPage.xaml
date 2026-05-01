@@ -60,7 +60,8 @@
         <TextBlock Grid.Row="0"
                    Text="{x:Bind kDrive:Localizer.Instance.GetString('settingsTitle'), Mode=OneWay}"
                    Style="{StaticResource Infomaniak.Style.TextBlock.Title}" />
-        <ScrollView Grid.Row="1">
+        <ScrollView x:Name="SettingsScrollView"
+                    Grid.Row="1">
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.L}">
                 <!-- General -->
                 <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
@@ -217,7 +218,8 @@
                     </toolKit:SettingsCard>
                 </StackPanel>
                 <!-- Account -->
-                <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                <StackPanel x:Name="AccountsStackPanel"
+                            Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                     <Grid>
                         <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('sidebarItemAccounts'), Mode=OneWay}"
                                    HorizontalAlignment="Left"
@@ -260,7 +262,8 @@
                     </toolKit:SettingsCard>
 
                     <!-- Account - List -->
-                    <ListView ItemsSource="{x:Bind ViewModel.Users}"
+                    <ListView x:Name="UsersListView"
+                              ItemsSource="{x:Bind ViewModel.Users, Mode=OneWay}"
                               SelectionMode="None"
                               Visibility="{x:Bind ViewModel.Users.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
                         <ListView.ItemContainerStyle>

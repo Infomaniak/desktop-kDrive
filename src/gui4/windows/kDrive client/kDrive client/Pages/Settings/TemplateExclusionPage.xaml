@@ -117,6 +117,7 @@
                 <!-- User Exclusion - At least one template-->
                 <toolKit:SettingsExpander Header="{x:Bind kDrive:Localizer.Instance.GetString('userExclusionFileListHeader')}"
                                           Description="{x:Bind kDrive:Localizer.Instance.GetString('userExclusionFileListDescription')}"
+                                          IsExpanded="True"
                                           Visibility="{x:Bind _templateListModel.UserDefinedTemplates.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
 
                     <toolKit:SettingsExpander.HeaderIcon>
