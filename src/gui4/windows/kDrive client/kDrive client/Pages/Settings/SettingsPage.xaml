@@ -77,7 +77,6 @@
                         </toolKit:SettingsCard.HeaderIcon>
                         <toolKit:SettingsCard.Description>
                             <HyperlinkButton Content="{x:Bind kDrive:Localizer.Instance.GetString('languageSettingWarning'), Mode=OneWay}"
-                                             Style="{StaticResource CaptionTextBlockStyle}"
                                              Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                                              Visibility="{x:Bind ViewModel.Settings.RestartRequiredForLanguageChange, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
                                              Click="RestartAppHyperlinkButton_Click"/>
