@@ -105,6 +105,7 @@ bool filesystem_status(const SyncPath &path);
 bool filesystem_exists(const SyncPath &path);
 bool win32_getfileattributes_w(const SyncPath &path);
 bool crt_stat(const SyncPath &path);
+bool iohelper_checkIfPathExists(const SyncPath &path);
 } // namespace ExistsTests
 
 // ============================================================================
@@ -118,6 +119,8 @@ bool stat_full(const SyncPath &path);
 bool statx_full(const SyncPath &path);
 bool fstat_full(const SyncPath &path);
 bool filesystem_full(const SyncPath &path);
+bool iohelper_getFileStat(const SyncPath &path);
+bool iohelper_setFileDates(const SyncPath &path);
 } // namespace MetadataTests
 
 // ============================================================================
@@ -133,6 +136,7 @@ bool fread_binary(const SyncPath &path);
 bool fread_text(const SyncPath &path);
 bool win32_readfile(const SyncPath &path);
 bool win32_readfile_w(const SyncPath &path);
+bool iohelper_openFile(const SyncPath &path);
 } // namespace ReadTests
 
 // ============================================================================
@@ -145,6 +149,7 @@ void teardown(const SyncPath &path);
 bool filesystem_filesize(const SyncPath &path);
 bool win32_getfilesize(const SyncPath &path);
 bool crt_filelength(const SyncPath &path);
+bool iohelper_getFileSize(const SyncPath &path);
 } // namespace SizeTests
 
 // ============================================================================
@@ -180,6 +185,7 @@ void teardown(const SyncPath &path);
 bool delete_filesystem_remove(const SyncPath &dir);
 bool delete_DeleteFileA(const SyncPath &dir);
 bool delete_crt_remove(const SyncPath &dir);
+bool iohelper_deleteItem(const SyncPath &dir);
 } // namespace DeleteTests
 
 // ----------------------------------------------------------------------------
@@ -192,20 +198,8 @@ void teardown(const SyncPath &path);
 bool move_filesystem_rename(const SyncPath &dir);
 bool move_MoveFileA(const SyncPath &dir);
 bool move_MoveFileW(const SyncPath &dir);
-} // namespace MoveTests
-
-// ============================================================================
-// TEST FUNCTIONS - IOHELPER (wraps the real IoHelper API used in production)
-// ============================================================================
-namespace IoHelperTests {
-bool iohelper_checkIfPathExists(const SyncPath &path);
-bool iohelper_getFileStat(const SyncPath &path);
-bool iohelper_getFileSize(const SyncPath &path);
-bool iohelper_openFile(const SyncPath &path);
-bool iohelper_setFileDates(const SyncPath &path);
-bool iohelper_deleteItem(const SyncPath &dir);
 bool iohelper_moveItem(const SyncPath &dir);
-} // namespace IoHelperTests
+} // namespace MoveTests
 
 // ============================================================================
 // RUNNER: Execute all benchmarks

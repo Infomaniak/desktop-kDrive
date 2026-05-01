@@ -170,6 +170,12 @@ bool crt_stat(const SyncPath &path) {
     return _stat(path.string().c_str(), &buffer) == 0;
 }
 
+bool iohelper_checkIfPathExists(const SyncPath &path) {
+    bool exists = false;
+    IoError ioError = IoError::Unknown;
+    IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive);
+    return exists;
+}
 
 } // namespace ExistsTests
 
@@ -384,6 +390,18 @@ bool filesystem_full(const SyncPath &path) {
     return true;
 }
 
+bool iohelper_getFileStat(const SyncPath &path) {
+    FileStat fs{};
+    IoError ioError = IoError::Unknown;
+    return IoHelper::getFileStat(path, &fs, ioError, IoHelper::PathCheckOption::Insensitive);
+}
+
+bool iohelper_setFileDates(const SyncPath &path) {
+    const auto now = static_cast<SyncTime>(
+            std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+    return IoHelper::setFileDates(path, now, now, false) == IoError::Success;
+}
+
 } // namespace MetadataTests
 
 // ============================================================================
@@ -482,6 +500,14 @@ bool win32_readfile_w(const SyncPath &path) {
 #endif
 }
 
+bool iohelper_openFile(const SyncPath &path) {
+    std::ifstream file;
+    IoError ioError = IoError::Unknown;
+    bool ok = IoHelper::openFile(path, file, ioError);
+    if (file.is_open()) file.close();
+    return ok;
+}
+
 } // namespace ReadTests
 
 // ============================================================================
@@ -532,6 +558,12 @@ bool crt_filelength(const SyncPath &path) {
     struct _stat buffer;
     if (_stat(path.string().c_str(), &buffer) != 0) return false;
     return static_cast<uint64_t>(buffer.st_size) != static_cast<uint64_t>(-1);
+}
+
+bool iohelper_getFileSize(const SyncPath &path) {
+    uint64_t size = 0;
+    IoError ioError = IoError::Unknown;
+    return IoHelper::getFileSize(path, size, ioError);
 }
 
 } // namespace SizeTests
@@ -670,6 +702,13 @@ bool delete_crt_remove(const SyncPath &dir) {
 
     return std::remove(filename.c_str()) == 0;
 }
+
+bool iohelper_deleteItem(const SyncPath &dir) {
+    const auto path = (std::filesystem::path(dir) / "bench_iohelper_delete.tmp").string();
+    CreateTestFile(path);
+    IoError ioError = IoError::Unknown;
+    return IoHelper::deleteItem(path, ioError);
+}
 } // namespace DeleteTests
 
 // ----------------------------------------------------------------------------
@@ -732,56 +771,7 @@ bool move_MoveFileW(const SyncPath &dir) {
 #endif
 }
 
-} // namespace MoveTests
-
-
-// ============================================================================
-// TEST FUNCTIONS - IOHELPER
-// ============================================================================
-namespace IoHelperTests {
-
-bool iohelper_checkIfPathExists(const SyncPath &path) {
-    bool exists = false;
-    IoError ioError = IoError::Unknown;
-    IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive);
-    return exists;
-}
-
-bool iohelper_getFileStat(const SyncPath &path) {
-    FileStat fs{};
-    IoError ioError = IoError::Unknown;
-    return IoHelper::getFileStat(path, &fs, ioError, IoHelper::PathCheckOption::Insensitive);
-}
-
-bool iohelper_getFileSize(const SyncPath &path) {
-    uint64_t size = 0;
-    IoError ioError = IoError::Unknown;
-    return IoHelper::getFileSize(path, size, ioError);
-}
-
-bool iohelper_openFile(const SyncPath &path) {
-    std::ifstream file;
-    IoError ioError = IoError::Unknown;
-    bool ok = IoHelper::openFile(path, file, ioError);
-    if (file.is_open()) file.close();
-    return ok;
-}
-
-bool iohelper_setFileDates(const SyncPath &path) {
-    const auto now = static_cast<SyncTime>(
-            std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count());
-    return IoHelper::setFileDates(path, now, now, false) == IoError::Success;
-}
-
-bool iohelper_deleteItem(const SyncPath &dir) {
-    const auto path = (std::filesystem::path(dir) / "bench_iohelper_delete.tmp").string();
-    CreateTestFile(path);
-    IoError ioError = IoError::Unknown;
-    return IoHelper::deleteItem(path, ioError);
-}
-
 bool iohelper_moveItem(const SyncPath &dir) {
-    // try {
     const auto src = std::filesystem::path(dir) / "bench_iohelper_move_src.tmp";
     const auto dst = std::filesystem::path(dir) / "bench_iohelper_move_dst.tmp";
     CreateTestFile(src.string());
@@ -792,11 +782,10 @@ bool iohelper_moveItem(const SyncPath &dir) {
     else
         IoHelper::deleteItem(src);
     return ok;
-    //} catch (...) {
-    //    return false;
 }
 
-} // namespace IoHelperTests
+} // namespace MoveTests
+
 
 // ============================================================================
 // HELPER FUNCTIONS IMPLEMENTATION
@@ -877,7 +866,7 @@ void RunAllBenchmarks(const SyncPath &testFilePath, int iterations) {
         benchmark.addResult("Exists", "_stat()",
                 benchmark.measure(ExistsTests::crt_stat, filePath, ExistsTests::testinit, ExistsTests::teardown, false));
         benchmark.addResult("Exists", "IoHelper::checkIfPathExists",
-                benchmark.measure(IoHelperTests::iohelper_checkIfPathExists, filePath, ExistsTests::testinit, ExistsTests::teardown, false));
+                benchmark.measure(ExistsTests::iohelper_checkIfPathExists, filePath, ExistsTests::testinit, ExistsTests::teardown, false));
     }
 
     // --- METADATA ---
@@ -899,7 +888,7 @@ void RunAllBenchmarks(const SyncPath &testFilePath, int iterations) {
         benchmark.addResult("Metadata", "filesystem_full",
                 benchmark.measure(MetadataTests::filesystem_full, filePath, MetadataTests::testinit, MetadataTests::teardown, false));
         benchmark.addResult("Metadata", "IoHelper::getFileStat",
-                benchmark.measure(IoHelperTests::iohelper_getFileStat, filePath, MetadataTests::testinit, MetadataTests::teardown, false));
+                benchmark.measure(MetadataTests::iohelper_getFileStat, filePath, MetadataTests::testinit, MetadataTests::teardown, false));
     }
 
     // --- READ ---
@@ -921,7 +910,7 @@ void RunAllBenchmarks(const SyncPath &testFilePath, int iterations) {
                 benchmark.measure(ReadTests::win32_readfile_w, filePath, ReadTests::testinit, ReadTests::teardown, false));
 #endif
         benchmark.addResult("Read", "IoHelper::openFile",
-                benchmark.measure(IoHelperTests::iohelper_openFile, filePath, ReadTests::testinit, ReadTests::teardown, false));
+                benchmark.measure(ReadTests::iohelper_openFile, filePath, ReadTests::testinit, ReadTests::teardown, false));
     }
 
     // --- CREATE ---
@@ -949,7 +938,7 @@ void RunAllBenchmarks(const SyncPath &testFilePath, int iterations) {
         benchmark.addResult("Delete", "delete (CRT remove)",
                 benchmark.measure(DeleteTests::delete_crt_remove, dirPath, DeleteTests::testinit, DeleteTests::teardown, false));
         benchmark.addResult("Delete", "IoHelper::deleteItem",
-                benchmark.measure(IoHelperTests::iohelper_deleteItem, dirPath, DeleteTests::testinit, DeleteTests::teardown, false));
+                benchmark.measure(DeleteTests::iohelper_deleteItem, dirPath, DeleteTests::testinit, DeleteTests::teardown, false));
     }
 
     // --- MOVE ---
@@ -963,7 +952,7 @@ void RunAllBenchmarks(const SyncPath &testFilePath, int iterations) {
         benchmark.addResult("Move", "move (MoveFileW)",
                 benchmark.measure(MoveTests::move_MoveFileW, dirPath, MoveTests::testinit, MoveTests::teardown, false));
         benchmark.addResult("Move", "IoHelper::moveItem",
-                benchmark.measure(IoHelperTests::iohelper_moveItem, dirPath, MoveTests::testinit, MoveTests::teardown, false));
+                benchmark.measure(MoveTests::iohelper_moveItem, dirPath, MoveTests::testinit, MoveTests::teardown, false));
     }
 
     // --- SIZE ---
@@ -979,7 +968,7 @@ void RunAllBenchmarks(const SyncPath &testFilePath, int iterations) {
         benchmark.addResult("Size", "_filelength (CRT)",
                 benchmark.measure(SizeTests::crt_filelength, filePath, SizeTests::testinit, SizeTests::teardown, false));
         benchmark.addResult("Size", "IoHelper::getFileSize",
-                benchmark.measure(IoHelperTests::iohelper_getFileSize, filePath, SizeTests::testinit, SizeTests::teardown, false));
+                benchmark.measure(SizeTests::iohelper_getFileSize, filePath, SizeTests::testinit, SizeTests::teardown, false));
     }
 
     // Print results and cleanup
