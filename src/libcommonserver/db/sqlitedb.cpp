@@ -146,13 +146,8 @@ void SqliteDb::close() {
 
     if (_autoDelete) {
         // Delete DB
-        for (auto retries = 0; retries < 10; retries++) {
-            if (auto ioError = IoError::Unknown; !IoHelper::deleteItem(_dbPath, ioError)) {
-                LOGW_WARN(_logger, L"Failed to remove db file " << Utility::formatIoError(_dbPath, ioError));
-                Utility::msleep(100);
-                continue;
-            }
-            break;
+        if (auto ioError = IoError::Unknown; !IoHelper::deleteItem(_dbPath, ioError)) {
+            LOGW_WARN(_logger, L"Failed to remove db file " << Utility::formatIoError(_dbPath, ioError));
         }
     }
 }

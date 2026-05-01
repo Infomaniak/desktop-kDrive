@@ -83,11 +83,6 @@ class DbNodeTest : public DbNode {
 
 void TestSyncDb::setUp() {
     TestBase::start();
-    // bool alreadyExists = false;
-    // const std::filesystem::path syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
-    //
-    // // Delete previous DB
-    // (void) IoHelper::deleteItem(syncDbPath);
 
     // Create DB
     const auto syncDbPath = MockDb::makeDbName(1, 1, 1, 1);
@@ -298,7 +293,8 @@ void TestSyncDb::testUpgradeTo3_6_7() {
 }
 
 void TestSyncDb::testInit3_6_4() {
-    SyncDbMock testDb(_testObj->dbPath().string(), "3.6.4");
+    const auto syncDbPath = MockDb::makeDbName(1, 1, 1, 1);
+    SyncDbMock testDb(syncDbPath.string(), "3.6.4");
     const LocalTemporaryDirectory localTmpDir("testUpgradeTo3_6_5");
     createParmsDb(testDb.dbPath(), localTmpDir.path());
     const auto syncFilesInfo = createSyncFiles(localTmpDir.path());
