@@ -1304,8 +1304,8 @@ ExitCode ServerRequests::createDir(const DriveDbId driveDbId, const QString &par
     return exitCode;
 }
 
-ExitCode ServerRequests::getPublicLinkUrl(const DriveDbId driveDbId, const NodeId &nodeId, std::string &linkUrl) {
-    auto logWarning = [&](const std::string &context_, const DriveDbId driveDbId_, const std::string &nodeId_,
+ExitInfo ServerRequests::getPublicLinkUrl(const DriveDbId driveDbId, const RemoteNodeId &nodeId, std::string &linkUrl) {
+    auto logWarning = [&](const std::string &context_, const DriveDbId driveDbId_, const RemoteNodeId &nodeId_,
                           const std::string &error_) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in " << context_ << " for driveDbId=" << driveDbId_ << " nodeId=" << nodeId_ << " error=" << error_);
@@ -1315,28 +1315,28 @@ ExitCode ServerRequests::getPublicLinkUrl(const DriveDbId driveDbId, const NodeI
     std::shared_ptr<AbstractTokenNetworkJob> job;
     try {
         job = std::make_shared<PostFileLinkJob>(driveDbId, nodeId);
-    } catch (const std::exception &e) {
-        logWarning("PostFileLinkJob", driveDbId, nodeId, e.what());
+    } catch (const JobException &e) {
+        logWarning("Exception thrown by PostFileLinkJob", driveDbId, nodeId, e.what());
         return exception2ExitCode(e);
     }
 
     if (!job->runSynchronously()) {
-        if (job->exitInfo().code() == ExitCode::BackError && job->exitInfo().cause() == ExitCause::ShareLinkAlreadyExists) {
+        if (job->exitInfo() == ExitInfo{ExitCode::BackError, ExitCause::ShareLinkAlreadyExists}) {
             // The link already exists, get it
             job.reset();
             try {
                 job = std::make_shared<GetFileLinkJob>(driveDbId, nodeId);
-            } catch (const std::exception &e) {
-                logWarning("GetFileLinkJob", driveDbId, nodeId, e.what());
+            } catch (const JobException &e) {
+                logWarning("Exception thrown by GetFileLinkJob", driveDbId, nodeId, e.what());
                 return exception2ExitCode(e);
             }
 
             if (!job->runSynchronously()) {
-                logWarning("GetFileLinkJob", driveDbId, nodeId, toString(job->exitInfo().code()));
+                logWarning("Error in GetFileLinkJob::GetFileLinkJob", driveDbId, nodeId, toString(job->exitInfo().code()));
                 return job->exitInfo();
             }
         } else {
-            logWarning("PostFileLinkJob", driveDbId, nodeId, toString(job->exitInfo().code()));
+            logWarning("Error in PostFileLinkJob::runSynchronously", driveDbId, nodeId, toString(job->exitInfo().code()));
             return job->exitInfo();
         }
     }
@@ -1344,18 +1344,18 @@ ExitCode ServerRequests::getPublicLinkUrl(const DriveDbId driveDbId, const NodeI
     const Poco::JSON::Object::Ptr resObj = job->jsonRes();
     if (!resObj) {
         logWarning("ServerRequests::getPublicLinkUrl", driveDbId, nodeId, "Fail to parse JSON object");
-        return ExitCode::BackError;
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
     const Poco::JSON::Object::Ptr dataObj = resObj->getObject(dataKey);
     if (!dataObj) {
         logWarning("ServerRequests::getPublicLinkUrl", driveDbId, nodeId, "Fail to extract data object");
-        return ExitCode::BackError;
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
     if (!JsonParserUtility::extractValue(dataObj, urlKey, linkUrl)) {
         logWarning("ServerRequests::getPublicLinkUrl", driveDbId, nodeId, "Fail to extract URL");
-        return ExitCode::BackError;
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
     return ExitCode::Ok;
