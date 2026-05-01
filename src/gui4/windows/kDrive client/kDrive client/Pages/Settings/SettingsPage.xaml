@@ -183,14 +183,11 @@
                             <StackPanel Orientation="Horizontal"
                                         Visibility="{Binding IsOn, ElementName=MoveToTrashToggleSwitch, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <TextBlock TextWrapping="WrapWholeWords">
-                                    <TextBlock.Inlines>
-
-                                        <Run Text="{x:Bind kDrive:Localizer.Instance.GetString('moveDeletedFilesToRecycleBinWarning'), Mode=OneWay}" />
-                                        <Hyperlink NavigateUri="https://faq.infomaniak.com/2383#desktop"
-                                                   UnderlineStyle="None">
-                                            <Run Text="{x:Bind kDrive:Localizer.Instance.GetString('learnMore'), Mode=OneWay}" />
-                                        </Hyperlink>
-                                    </TextBlock.Inlines>
+                                    <Run Text="{x:Bind kDrive:Localizer.Instance.GetString('moveDeletedFilesToRecycleBinWarning'), Mode=OneWay}" />
+                                    <Hyperlink NavigateUri="https://faq.infomaniak.com/2383#desktop"
+                                               UnderlineStyle="None">
+                                        <Run Text="{x:Bind kDrive:Localizer.Instance.GetString('learnMore'), Mode=OneWay}" />
+                                    </Hyperlink>
                                 </TextBlock>
                             </StackPanel>
                         </toolKit:SettingsCard.Description>

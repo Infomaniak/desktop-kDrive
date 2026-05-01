@@ -49,7 +49,7 @@ namespace Infomaniak.kDrive
 
         private string GetBestAvailableCultureName(Language language)
         {
-            if(languageToCultureMap.Count != Language.GetValues(typeof(Language)).Length - 1) // -1 because of Language.Default
+            if (languageToCultureMap.Count != Language.GetValues(typeof(Language)).Length - 1) // -1 because of Language.Default
                 Logger.Log(Logger.Level.Warning, "The language to culture map does not contain all languages defined in the Language enum. This may cause issues with localization.");
 
             if (language == Language.Default)
@@ -57,7 +57,7 @@ namespace Infomaniak.kDrive
             else if (!languageToCultureMap.ContainsKey(language))
             {
                 Logger.Log(Logger.Level.Error, $"Unsupported Language {language}, falling back to english.");
-                return "en";
+                return languageToCultureMap.GetValueOrDefault(Language.English, "en");
             }
             else
                 return languageToCultureMap[language];
