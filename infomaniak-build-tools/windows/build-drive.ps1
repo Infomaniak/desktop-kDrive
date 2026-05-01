@@ -109,10 +109,8 @@ function Set-Bullseye-Coverage {
         $cmd = Get-Command cov01.exe -ErrorAction Stop
         & $cmd $cov01Parameter
      } catch {
-         Write-Host "BullseyeCoverage cov01.exe command not found."
-         if ($enable) {
-            exit 1
-         }
+        Write-Host "BullseyeCoverage cov01.exe command not found."
+        return 1
      }
      
      $outputString = "disabled"
@@ -121,6 +119,7 @@ function Set-Bullseye-Coverage {
     }
 
      Write-Host "BullseyeCoverage is $outputString."
+     return 0
 } 
 function Clean {
     param (
@@ -766,12 +765,19 @@ if ($upload) {
 #                                                                                               #
 #################################################################################################
 
-Set-Bullseye-Coverage $coverage
-Write-Host
-
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "Failed to enable code coverage computation. Aborting." -f Red
-    exit $LASTEXITCODE
+$res = Set-Bullseye-Coverage $coverage
+if ($res -ne 0) {
+    if (($ci -and $buildType -eq "Release") -or $coverage) {
+        $outputString = "disable"
+        if ($coverage) {
+            $outputString = "enable"
+        }
+        Write-Host "Failed to $outputString code coverage computation. Aborting." -f Red
+        exit $res
+    }
+    else {
+        Write-Host "Ignoring error returned by Set-Bullseye-Coverage because this is not a CI build." -f Yellow
+    }
 }
 
 #################################################################################################
