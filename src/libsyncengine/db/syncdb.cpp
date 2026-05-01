@@ -302,14 +302,14 @@ namespace KDC {
 DbNode SyncDb::_driveRootNode(0, std::nullopt, SyncName(), SyncName(), "1", "1", std::nullopt, std::nullopt, std::nullopt,
                               NodeType::Directory, 0, std::nullopt);
 
-SyncDb::SyncDb(const std::string &dbPath, const std::string &version, const std::string &targetNodeId) :
+SyncDb::SyncDb(const std::string &dbPath, const std::string &targetNodeId) :
     Db(dbPath),
     _cache(*this) {
     if (!targetNodeId.empty()) {
         _rootNode.setNodeIdRemote(targetNodeId);
     }
 
-    if (!checkConnect(version)) {
+    if (!checkConnect()) {
         throw std::runtime_error("Cannot open DB!");
     }
 

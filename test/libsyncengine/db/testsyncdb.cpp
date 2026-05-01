@@ -31,8 +31,8 @@ using namespace CppUnit;
 
 namespace KDC {
 
-SyncDbMock::SyncDbMock(const std::string &dbPath, const std::string &version, const std::string &targetNodeId) :
-    SyncDb(dbPath, version, targetNodeId) {}
+SyncDbMock::SyncDbMock(const std::string &dbPath, const std::string &targetNodeId) :
+    SyncDb(dbPath, targetNodeId) {}
 
 
 void SyncDbMock::freeRequest(const char *requestId) {

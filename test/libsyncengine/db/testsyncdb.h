@@ -25,7 +25,7 @@ namespace KDC {
 
 class SyncDbMock : public SyncDb {
     public:
-        SyncDbMock(const std::string &dbPath, const std::string &version, const std::string &targetNodeId = std::string());
+        SyncDbMock(const std::string &dbPath, const std::string &targetNodeId = std::string());
         bool prepare() override;
         void freeRequest(const char *requestId);
         void enablePrepare(bool enabled);

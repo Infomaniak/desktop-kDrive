@@ -158,7 +158,7 @@ void TestDb::testAddIntegerColumnIfMissing() {
 
 TestDb::MyTestDb::MyTestDb(const std::filesystem::path &dbPath) :
     Db(dbPath) {
-    if (!checkConnect("3.3.4")) {
+    if (!checkConnect()) {
         throw std::runtime_error("Cannot open DB!");
     }
     init("3.3.4");

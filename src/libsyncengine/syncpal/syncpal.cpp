@@ -547,7 +547,7 @@ ExitCode SyncPal::setSyncPaused(bool value) {
 bool SyncPal::createOrOpenDb(const SyncPath &syncDbPath, const std::string &version, const std::string &targetNodeId) {
     // Create/open sync DB
     try {
-        _syncDb = std::shared_ptr<SyncDb>(new SyncDb(syncDbPath.string(), version, targetNodeId));
+        _syncDb = std::shared_ptr<SyncDb>(new SyncDb(syncDbPath.string(), targetNodeId));
     } catch (std::exception const &e) {
         const auto exceptionMsg = CommonUtility::s2ws(std::string(e.what()));
         LOGW_SYNCPAL_WARN(

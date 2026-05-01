@@ -32,7 +32,7 @@ namespace KDC {
 
 class SyncDb : public Db {
     public:
-        SyncDb(const std::string &dbPath, const std::string &version, const std::string &targetNodeId = std::string());
+        SyncDb(const std::string &dbPath, const std::string &targetNodeId = std::string());
 
         std::string dbType() const override { return "Sync"; }
 
