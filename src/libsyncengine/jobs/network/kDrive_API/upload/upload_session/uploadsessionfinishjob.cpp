@@ -31,7 +31,7 @@ UploadSessionFinishJob::UploadSessionFinishJob(const std::shared_ptr<Vfs> vfs, c
                                                const std::string &sessionToken, const std::string &totalChunkHash,
                                                const uint64_t totalChunks, const SyncTime creationTime,
                                                SyncTime modificationTime) :
-    AbstractUploadSessionJob(uploadType, driveDbId, absoluteFilePath, sessionToken),
+    AbstractUploadSessionJob(uploadType, driveDbId, absoluteFilePath, SessionInfo{.url = "", .token = sessionToken}),
     _totalChunkHash(totalChunkHash),
     _totalChunks(totalChunks),
     _creationTimeIn(creationTime),
@@ -75,7 +75,7 @@ ExitInfo UploadSessionFinishJob::handleResponse(std::istream &is) {
 std::string UploadSessionFinishJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
     str += "/upload/session/";
-    str += _sessionToken;
+    str += _sessionInfo.token;
     str += "/finish";
     return str;
 }

@@ -69,8 +69,8 @@ class AbstractUploadSession : public SyncJob {
         [[nodiscard]] std::string getTotalChunkHash() const { return _totalChunkHash; }
         [[nodiscard]] uint64_t getFileSize() const { return _filesize; }
         [[nodiscard]] SyncName getFileName() const { return _filename; }
-        [[nodiscard]] std::string getSessionToken() const { return _sessionToken; }
-        [[nodiscard]] std::string getSessionUrl() const { return _sessionUrl; }
+        [[nodiscard]] SessionInfo getSessionInfo() const { return _sessionInfo; }
+        [[nodiscard]] std::string getSessionToken() const { return _sessionInfo.token; }
         [[nodiscard]] bool isCancelled() const noexcept { return _sessionCancelled; }
 
     private:
@@ -97,9 +97,7 @@ class AbstractUploadSession : public SyncJob {
         bool _jobExecutionError = false;
         ExitInfo _chunkJobExitInfo;
 
-        std::string _sessionToken;
-        std::string _sessionUrl;
-
+        SessionInfo _sessionInfo;
         uint64_t _chunkSize = 0;
         uint64_t _totalChunks = 0;
         std::string _totalChunkHash; // This is not a content checksum. It is the hash of all the chunk hash concatenated

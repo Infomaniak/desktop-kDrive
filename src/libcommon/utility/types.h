@@ -97,6 +97,12 @@ using CursorStore = std::unordered_map<SpecialFolder, CursorData>;
 
 using SpecialFolderNames = std::unordered_map<SpecialFolder, SyncName>;
 
+using Url = std::string;
+struct SessionInfo {
+        Url url;
+        std::string token;
+};
+
 #if defined(KD_WINDOWS)
 using StringStream = std::wstringstream;
 using OStringStream = std::wostringstream;
