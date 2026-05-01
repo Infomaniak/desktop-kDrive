@@ -6,7 +6,7 @@
   Locale: es, Spanish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 27 Apr 2026 16:45:25 +0200 
+  Exported at: Fri, 01 May 2026 10:17:16 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -1689,5 +1689,11 @@ desbloqueado y accesible desde su ordenador.</value>
   <data name="winbuttonRemoveFileExclusionRule-plural" xml:space="preserve"> 
     <value>Eliminar (%@ reglas)</value> 
     <comment>Button to remove multiple selected file exclusion rules; %@ is the number of rules to be removed.</comment> 
+  </data> 
+  <data name="winbuttonRemoveFileExclusionRule-plural-2" xml:space="preserve"> 
+    <value /> 
+  </data> 
+  <data name="winbuttonRemoveFileExclusionRule-plural-3" xml:space="preserve"> 
+    <value /> 
   </data> 
 </root>

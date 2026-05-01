@@ -3,7 +3,7 @@
   <!--
   Loco xml export: ResX - .NET resources
   Project: kDrive Desktop
-  Locale: fr, French
+  Locale: sv, Swedish
   Tagged: windows
   Exported by: Herve Eruam
   Exported at: Fri, 01 May 2026 10:17:16 +0200 
@@ -67,1041 +67,1041 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <metadata name="locoLocaleCode">
-    <value>fr</value>
+    <value>sv</value>
   </metadata>
   <metadata name="locoLocaleName" xml:space="preserve">
-    <value>French</value>
+    <value>Swedish</value>
   </metadata> 
   <data name="aboutAppVersionCopyright" xml:space="preserve"> 
-    <value>Version %@.%@
-© 2019-%@ Infomaniak Network SA -</value> 
+    <value>Version %1$s.%2$s
+© 2019-%3$s Infomaniak Network SA -</value> 
   </data> 
   <data name="aboutKDrive" xml:space="preserve"> 
-    <value>À propos de kDrive</value> 
+    <value>Om kDrive</value> 
   </data> 
   <data name="aboutKDriveDescription" xml:space="preserve"> 
-    <value>Développé et hébergé exclusivement en Suisse, kDrive assure une protection totale de vos données, sans revente ni espionnage, dans des centres certifiés ISO, avec chiffrement et sauvegarde sur plusieurs supports.</value> 
+    <value>Utvecklad och uteslutande driftad i Schweiz säkerställer kDrive ett fullständigt skydd av dina data, utan vidaresäljning eller spionage, i ISO-certifierade datacenter, med kryptering och säkerhetskopiera på flera media.</value> 
   </data> 
   <data name="activitiesTitleIdle" xml:space="preserve"> 
-    <value>Synchronisation terminée</value> 
+    <value>Synkronisering slutförd</value> 
   </data> 
   <data name="activitiesTitleInProgress" xml:space="preserve"> 
-    <value>Synchronisation en cours</value> 
+    <value>Synkronisering pågår</value> 
   </data> 
   <data name="activitiesTitleNoActivity" xml:space="preserve"> 
-    <value>Aucune activité récente</value> 
+    <value>Ingen ny aktivitet</value> 
   </data> 
   <data name="activitiesTitleOffline" xml:space="preserve"> 
-    <value>Vous êtes hors ligne</value> 
+    <value>Du är offline</value> 
   </data> 
   <data name="activitiesTitlePause" xml:space="preserve"> 
-    <value>Synchronisation interrompue</value> 
+    <value>Synkronisering pausad</value> 
   </data> 
   <data name="activitiesTypeAllActivities" xml:space="preserve"> 
-    <value>Toutes les activités</value> 
+    <value>Alla aktiviteter</value> 
   </data> 
   <data name="activitiesTypeMyActivity" xml:space="preserve"> 
-    <value>Mon activité uniquement</value> 
+    <value>Endast min aktivitet</value> 
   </data> 
   <data name="addAdvancedSyncDialogTitle" xml:space="preserve"> 
-    <value>Synchroniser un dossier avec kDrive</value> 
+    <value>Synkronisera en mapp med kDrive</value> 
   </data> 
   <data name="addAdvancedSyncLocalFolderDescription" xml:space="preserve"> 
-    <value>Choisissez le dossier de votre ordinateur à synchroniser sur kDrive :</value> 
+    <value>Välj mappen på din dator som ska synkroniseras med kDrive:</value> 
   </data> 
   <data name="addAdvancedSyncLocalFolderTitle" xml:space="preserve"> 
-    <value>Dossier synchronisé</value> 
+    <value>Synkroniserad mapp</value> 
   </data> 
   <data name="addAdvancedSyncRemoteFolderDescription" xml:space="preserve"> 
-    <value>Personnalisez l’emplacement du dossier de votre ordinateur sur kDrive :</value> 
+    <value>Anpassa platsen för din datormapp på kDrive:</value> 
   </data> 
   <data name="addAdvancedSyncRemoteFolderPageTitle" xml:space="preserve"> 
-    <value>Choisissez l’emplacement du dossier sur kDrive</value> 
+    <value>Välj mappens plats på kDrive</value> 
   </data> 
   <data name="addAdvancedSyncRemoteFolderTitle" xml:space="preserve"> 
-    <value>Emplacement kDrive</value> 
+    <value>kDrive-plats</value> 
   </data> 
   <data name="advancedSyncDescription" xml:space="preserve"> 
-    <value>Sélectionnez un dossier sur votre ordinateur à synchroniser avec kDrive.
-Vous pouvez accéder à vos synchronisations avancées à partir du sélecteur de lecteur de la page d’accueil.</value> 
+    <value>Välj en mapp på din dator att synkronisera med kDrive.
+Du kan komma åt dina avancerade synkroniseringar från enhetsväljaren på startsidan.</value> 
   </data> 
   <data name="advancedSyncSubtitle" xml:space="preserve"> 
-    <value>Synchroniser un dossier avec kDrive</value> 
+    <value>Synkronisera en mapp med kDrive</value> 
   </data> 
   <data name="advancedSyncTitle" xml:space="preserve"> 
-    <value>Synchronisation avancée</value> 
+    <value>Avancerad synkronisering</value> 
   </data> 
   <data name="appUpToDate" xml:space="preserve"> 
-    <value>L’application est à jour</value> 
+    <value>Programmet är uppdaterat</value> 
   </data> 
   <data name="applyingChange" xml:space="preserve"> 
-    <value>Appliquer le changement…</value> 
+    <value>Tillämpar ändring…</value> 
   </data> 
   <data name="autoCleanupLogsDescription" xml:space="preserve"> 
-    <value>Supprime les journaux datant de plus de 7 jours pour économiser de l’espace.</value> 
+    <value>Tar bort loggar äldre än 7 dagar för att spara diskutrymme.</value> 
   </data> 
   <data name="autoCleanupLogsSetting" xml:space="preserve"> 
-    <value>Nettoyage automatique</value> 
+    <value>Automatisk rensning</value> 
   </data> 
   <data name="automaticUpdatesSetting" xml:space="preserve"> 
-    <value>Mises à jour automatiques</value> 
+    <value>Automatiska uppdateringar</value> 
   </data> 
   <data name="availableOffline" xml:space="preserve"> 
-    <value>Disponibles hors ligne</value> 
+    <value>Tillgänglig offline</value> 
   </data> 
   <data name="availableOfflineDescription" xml:space="preserve"> 
-    <value>Vos fichiers sont copiés sur votre ordinateur.
-Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value> 
+    <value>Dina filer kopieras till din dator.
+Du kan öppna dem när som helst, även utan internetanslutning.</value> 
   </data> 
   <data name="backErrorDriveAsleepDescription" xml:space="preserve"> 
-    <value>Vous pouvez le réveiller à partir de l’interface web.</value> 
+    <value>Du kan väcka den från webbgränssnittet.</value> 
   </data> 
   <data name="betaProgramDescription" xml:space="preserve"> 
-    <value>Bénéficiez d’un accès anticipé aux nouvelles versions de l’application avant qu’elles ne soient diffusées au grand public et participez à l’amélioration de l’application en nous partageant vos idées d’améliorations.</value> 
+    <value>Få tidig åtkomst till nya versioner av programmet innan de släpps till allmänheten och hjälp till att förbättra appen genom att dela dina förbättringsidéer med oss.</value> 
   </data> 
   <data name="betaProgramTitle" xml:space="preserve"> 
-    <value>Rejoindre le programme bêta</value> 
+    <value>Gå med i betaprogrammet</value> 
   </data> 
   <data name="browserSignInInstruction" xml:space="preserve"> 
-    <value>Votre navigateur devrait s’ouvrir automatiquement pour finaliser la connexion. Une fois connecté, vous reviendrez automatiquement dans kDrive.</value> 
+    <value>Din webbläsare bör öppnas automatiskt för att slutföra inloggningen. När du är inloggad återgår du automatiskt till kDrive.</value> 
     <comment>Instruction shown during sign-in when waiting for browser-based authentication to complete.</comment> 
   </data> 
   <data name="buttonActivateOfflineSync" xml:space="preserve"> 
-    <value>Activer la synchronisation hors ligne</value> 
+    <value>Aktivera offlinesynkronisering</value> 
   </data> 
   <data name="buttonAddAdvancedSync" xml:space="preserve"> 
-    <value>Synchroniser un dossier</value> 
+    <value>Synkronisera en mapp</value> 
   </data> 
   <data name="buttonAddFileExclusionRule" xml:space="preserve"> 
-    <value>Ajouter une règle</value> 
+    <value>Lägg till en regel</value> 
   </data> 
   <data name="buttonAddStorage" xml:space="preserve"> 
-    <value>Ajouter du stockage</value> 
+    <value>Lägg till lagringsutrymme</value> 
   </data> 
   <data name="buttonAdvancedParameters" xml:space="preserve"> 
-    <value>Paramètres avancés</value> 
+    <value>Avancerade inställningar</value> 
   </data> 
   <data name="buttonApplyToXFiles" xml:space="preserve"> 
-    <value>Appliquer aux %@ fichiers</value> 
+    <value>Tillämpa på %s filer</value> 
   </data> 
   <data name="buttonAskForAccess" xml:space="preserve"> 
-    <value>Demander l’accès</value> 
+    <value>Begär åtkomst</value> 
   </data> 
   <data name="buttonCancel" xml:space="preserve"> 
-    <value>Annuler</value> 
+    <value>Avbryt</value> 
   </data> 
   <data name="buttonChangeFolder" xml:space="preserve"> 
-    <value>Modifier le dossier</value> 
+    <value>Ändra mapp</value> 
   </data> 
   <data name="buttonChangeToOffline" xml:space="preserve"> 
-    <value>Stocker hors ligne</value> 
+    <value>Lagra offline</value> 
   </data> 
   <data name="buttonChangeToOnline" xml:space="preserve"> 
-    <value>Stocker en ligne</value> 
+    <value>Lagra online</value> 
   </data> 
   <data name="buttonChangeUser" xml:space="preserve"> 
-    <value>Changer d’utilisateur</value> 
+    <value>Byt användare</value> 
   </data> 
   <data name="buttonClose" xml:space="preserve"> 
-    <value>Fermer</value> 
+    <value>Stäng</value> 
   </data> 
   <data name="buttonCloseKDrive" xml:space="preserve"> 
-    <value>Fermer kDrive</value> 
+    <value>Stäng kDrive</value> 
     <comment>Button to quit the kDrive application entirely.</comment> 
   </data> 
   <data name="buttonConfigure" xml:space="preserve"> 
-    <value>Configurer</value> 
+    <value>Konfigurera</value> 
   </data> 
   <data name="buttonConfirm" xml:space="preserve"> 
-    <value>Confirmer</value> 
+    <value>Bekräfta</value> 
   </data> 
   <data name="buttonConnect" xml:space="preserve"> 
-    <value>Se connecter</value> 
+    <value>Logga in</value> 
   </data> 
   <data name="buttonConnectAccount" xml:space="preserve"> 
-    <value>Connecter un compte</value> 
+    <value>Anslut ett konto</value> 
   </data> 
   <data name="buttonCopyShareLink" xml:space="preserve"> 
-    <value>Copier le lien de partage</value> 
+    <value>Kopiera delningslänk</value> 
   </data> 
   <data name="buttonCreateAccount" xml:space="preserve"> 
-    <value>Créer un compte</value> 
+    <value>Skapa ett konto</value> 
   </data> 
   <data name="buttonCreateNewSync" xml:space="preserve"> 
-    <value>Créer une nouvelle synchronisation</value> 
+    <value>Skapa en ny synkronisering</value> 
   </data> 
   <data name="buttonCustomLocation" xml:space="preserve"> 
-    <value>Emplacement personnalisé</value> 
+    <value>Anpassad plats</value> 
   </data> 
   <data name="buttonDisconnectAccount" xml:space="preserve"> 
-    <value>Déconnecter ce compte</value> 
+    <value>Koppla från det här kontot</value> 
   </data> 
   <data name="buttonDownloadInProgress" xml:space="preserve"> 
-    <value>Téléchargement en cours…</value> 
+    <value>Laddar ned…</value> 
   </data> 
   <data name="buttonDownloadManually" xml:space="preserve"> 
-    <value>Télécharger manuellement</value> 
+    <value>Ladda ned manuellt</value> 
   </data> 
   <data name="buttonEnable" xml:space="preserve"> 
-    <value>Activer</value> 
+    <value>Aktivera</value> 
   </data> 
   <data name="buttonEnableInSettings" xml:space="preserve"> 
-    <value>Activer dans les paramètres Windows</value> 
+    <value>Aktivera i Windows-inställningar</value> 
   </data> 
   <data name="buttonErrorResolutionTip" xml:space="preserve"> 
-    <value>Comprendre le problème</value> 
+    <value>Förstå problemet</value> 
   </data> 
   <data name="buttonFeedback" xml:space="preserve"> 
-    <value>Partager une idée</value> 
+    <value>Dela en idé</value> 
   </data> 
   <data name="buttonFixErrors" xml:space="preserve"> 
-    <value>Corriger les erreurs</value> 
+    <value>Åtgärda fel</value> 
   </data> 
   <data name="buttonHelpdesk" xml:space="preserve"> 
     <value>Support</value> 
   </data> 
   <data name="buttonKDriveOnline" xml:space="preserve"> 
-    <value>kDrive en ligne</value> 
+    <value>kDrive online</value> 
   </data> 
   <data name="buttonKeepAccount" xml:space="preserve"> 
-    <value>Garder le compte</value> 
+    <value>Behåll konto</value> 
   </data> 
   <data name="buttonLogOut" xml:space="preserve"> 
-    <value>Déconnecter</value> 
+    <value>Logga ut</value> 
   </data> 
   <data name="buttonLogin" xml:space="preserve"> 
-    <value>Se connecter</value> 
+    <value>Logga in</value> 
   </data> 
   <data name="buttonManage" xml:space="preserve"> 
-    <value>Gérer</value> 
+    <value>Hantera</value> 
   </data> 
   <data name="buttonManageDiskSpace" xml:space="preserve"> 
-    <value>Gérer l’espace disque</value> 
+    <value>Hantera diskutrymme</value> 
   </data> 
   <data name="buttonManageIndividually" xml:space="preserve"> 
-    <value>Traiter les fichiers individuellement</value> 
+    <value>Hantera filer individuellt</value> 
   </data> 
   <data name="buttonManageStorage" xml:space="preserve"> 
-    <value>Gérer le stockage</value> 
+    <value>Hantera lagring</value> 
   </data> 
   <data name="buttonOpenDebugFolder" xml:space="preserve"> 
-    <value>Ouvrir le dossier de débogage</value> 
+    <value>Öppna felsökningsmapp</value> 
   </data> 
   <data name="buttonOpenExplorer" xml:space="preserve"> 
-    <value>Ouvrir l’explorateur</value> 
+    <value>Öppna Utforskaren</value> 
   </data> 
   <data name="buttonOpenFolder" xml:space="preserve"> 
-    <value>Ouvrir le dossier</value> 
+    <value>Öppna mapp</value> 
   </data> 
   <data name="buttonOpenInBrowser" xml:space="preserve"> 
-    <value>Ouvrir dans le navigateur</value> 
+    <value>Öppna i webbläsare</value> 
   </data> 
   <data name="buttonOpenInExplorer" xml:space="preserve"> 
-    <value>Ouvrir dans l’explorateur</value> 
+    <value>Öppna i Utforskaren</value> 
     <comment>Button to reveal the selected item in Windows Explorer.</comment> 
   </data> 
   <data name="buttonOpenInKDrive" xml:space="preserve"> 
-    <value>Ouvrir dans kDrive Web</value> 
+    <value>Öppna i kDrive Web</value> 
   </data> 
   <data name="buttonOpenKDrive" xml:space="preserve"> 
-    <value>Ouvrir kDrive</value> 
+    <value>Öppna kDrive</value> 
   </data> 
   <data name="buttonOpenParentFolder" xml:space="preserve"> 
-    <value>Ouvrir le dossier parent</value> 
+    <value>Öppna överordnad mapp</value> 
   </data> 
   <data name="buttonOpenSyncExclusionRules" xml:space="preserve"> 
-    <value>Gérer les exclusions</value> 
+    <value>Hantera undantag</value> 
   </data> 
   <data name="buttonOpenSyncSettings" xml:space="preserve"> 
-    <value>Ouvrir les paramètres de synchronisation</value> 
+    <value>Öppna synkroniseringsinstillningar</value> 
   </data> 
   <data name="buttonPause" xml:space="preserve"> 
-    <value>Pause</value> 
+    <value>Paus</value> 
   </data> 
   <data name="buttonRefresh" xml:space="preserve"> 
-    <value>Rafraîchir</value> 
+    <value>Uppdatera</value> 
   </data> 
   <data name="buttonReleaseNotes" xml:space="preserve"> 
-    <value>Notes de mise à jour</value> 
+    <value>Versionsnoteringar</value> 
   </data> 
   <data name="buttonRemove" xml:space="preserve"> 
-    <value>Supprimer</value> 
+    <value>Ta bort</value> 
   </data> 
   <data name="buttonRemoveSync" xml:space="preserve"> 
-    <value>Supprimer la synchronisation</value> 
+    <value>Ta bort synkronisering</value> 
   </data> 
   <data name="buttonRenameItem" xml:space="preserve"> 
-    <value>Renommer le %@</value> 
+    <value>Byt namn på %s</value> 
   </data> 
   <data name="buttonRestartSignIn" xml:space="preserve"> 
-    <value>Relancer la connexion</value> 
+    <value>Starta om inloggning</value> 
   </data> 
   <data name="buttonRestartSync" xml:space="preserve"> 
-    <value>Reprendre la synchronisation</value> 
+    <value>Återuppta synkronisering</value> 
   </data> 
   <data name="buttonRestartSynchro" xml:space="preserve"> 
-    <value>Redémarrer la synchronisation</value> 
+    <value>Starta om synkronisering</value> 
   </data> 
   <data name="buttonRetry" xml:space="preserve"> 
-    <value>Réessayer</value> 
+    <value>Försök igen</value> 
   </data> 
   <data name="buttonReturnToDefaultFolder" xml:space="preserve"> 
-    <value>Revenir au dossier par défaut</value> 
+    <value>Återgå till standardmapp</value> 
   </data> 
   <data name="buttonSave" xml:space="preserve"> 
-    <value>Enregistrer</value> 
+    <value>Spara</value> 
   </data> 
   <data name="buttonSaveMyChoices" xml:space="preserve"> 
-    <value>Sauvegarder mes choix</value> 
+    <value>Spara mina val</value> 
   </data> 
   <data name="buttonSearch" xml:space="preserve"> 
-    <value>Recherche</value> 
+    <value>Sök</value> 
   </data> 
   <data name="buttonSeeActivities" xml:space="preserve"> 
-    <value>Voir les activités</value> 
+    <value>Visa aktiviteter</value> 
   </data> 
   <data name="buttonSelect" xml:space="preserve"> 
-    <value>Sélectionner</value> 
+    <value>Välj</value> 
   </data> 
   <data name="buttonSelectFolder" xml:space="preserve"> 
-    <value>Sélectionner un dossier</value> 
+    <value>Välj en mapp</value> 
   </data> 
   <data name="buttonSelectFolders" xml:space="preserve"> 
-    <value>Sélectionner les dossiers</value> 
+    <value>Välj mappar</value> 
   </data> 
   <data name="buttonSelectLocation" xml:space="preserve"> 
-    <value>Sélectionner un emplacement</value> 
+    <value>Välj en plats</value> 
   </data> 
   <data name="buttonSelected" xml:space="preserve"> 
-    <value>Sélectionné</value> 
+    <value>Vald</value> 
   </data> 
   <data name="buttonSend" xml:space="preserve"> 
-    <value>Envoyer</value> 
+    <value>Skicka</value> 
   </data> 
   <data name="buttonSendLog" xml:space="preserve"> 
-    <value>Envoyer le dossier de débogage</value> 
+    <value>Skicka felsökningsmapp</value> 
   </data> 
   <data name="buttonSettings" xml:space="preserve"> 
-    <value>Ouvrir les paramètres</value> 
+    <value>Öppna inställningar</value> 
   </data> 
   <data name="buttonShowOffers" xml:space="preserve"> 
-    <value>Voir les offres</value> 
+    <value>Visa erbjudanden</value> 
   </data> 
   <data name="buttonSignOut" xml:space="preserve"> 
-    <value>Se déconnecter</value> 
+    <value>Logga ut</value> 
   </data> 
   <data name="buttonStart" xml:space="preserve"> 
-    <value>Démarrage</value> 
+    <value>Start</value> 
   </data> 
   <data name="buttonStartConflictsResolution" xml:space="preserve"> 
-    <value>Commencer le choix des versions</value> 
+    <value>Starta versionsval</value> 
   </data> 
   <data name="buttonStartForFree" xml:space="preserve"> 
-    <value>Commencer gratuitement</value> 
+    <value>Kom igång gratis</value> 
   </data> 
   <data name="buttonSynchronizeOffline" xml:space="preserve"> 
-    <value>Synchroniser hors ligne</value> 
+    <value>Synkronisera offline</value> 
   </data> 
   <data name="buttonUpdate" xml:space="preserve"> 
-    <value>Mettre à jour</value> 
+    <value>Uppdatera</value> 
   </data> 
   <data name="buttonUpdateNow" xml:space="preserve"> 
-    <value>Mettre à jour maintenant</value> 
+    <value>Uppdatera nu</value> 
   </data> 
   <data name="buttonUpdateSubscription" xml:space="preserve"> 
-    <value>Mettre à jour l’abonnement</value> 
+    <value>Uppdatera prenumeration</value> 
   </data> 
   <data name="buttonUpgradeOffer" xml:space="preserve"> 
-    <value>Mise à niveau</value> 
+    <value>Uppgradera</value> 
   </data> 
   <data name="buttonValidate" xml:space="preserve"> 
-    <value>Valider</value> 
+    <value>Bekräfta</value> 
   </data> 
   <data name="buttonValidateAndGoNext" xml:space="preserve"> 
-    <value>Valider et passer au suivant</value> 
+    <value>Bekräfta och gå till nästa</value> 
   </data> 
   <data name="buttonWakeUp" xml:space="preserve"> 
-    <value>Réveil</value> 
+    <value>Väck</value> 
   </data> 
   <data name="conflictErrorAction" xml:space="preserve"> 
-    <value>Choisir une version</value> 
+    <value>Välj en version</value> 
   </data> 
   <data name="conflictErrorDescription" xml:space="preserve"> 
-    <value>Deux versions différentes de ces fichiers ont été détectées.</value> 
+    <value>Två olika versioner av dessa filer hittades.</value> 
   </data> 
   <data name="conflictErrorTitle" xml:space="preserve"> 
-    <value>Conflits de versions</value> 
+    <value>Versionskonflikt</value> 
   </data> 
   <data name="conflictsSearchBoxPlaceholder" xml:space="preserve"> 
-    <value>Rechercher un fichier</value> 
+    <value>Sök efter en fil</value> 
   </data> 
   <data name="creatingShareLink" xml:space="preserve"> 
-    <value>Création du lien de partage…</value> 
+    <value>Skapar delningslänk…</value> 
   </data> 
   <data name="dataManagementDescription" xml:space="preserve"> 
-    <value>Vous pouvez personnaliser les données d’utilisation et opérationnelles qui sont récupérées par Infomaniak pour corriger des bugs et faire évoluer l’application. Les deux outils utilisés sont hébergés et gérés exclusivement chez nous.
+    <value>Du kan anpassa vilka användnings- och driftsdata som samlas in av Infomaniak för att åtgärda buggar och förbättra programmet. Båda verktygen som används driftas och hanteras exklusivt av oss.
 
-Le code source de cette application peut être vérifié, les informations récoltées sont anonymes et vos informations personnelles restent strictement confidentielles et ne sont jamais partagées avec des tiers.</value> 
+Källkoden för det här programmet kan verifieras, den insamlade informationen är anonym och din personliga information förblir strikt konfidentiell och delas aldrig med tredje part.</value> 
   </data> 
   <data name="dataManagementSettings" xml:space="preserve"> 
-    <value>Gestion des données</value> 
+    <value>Datahantering</value> 
   </data> 
   <data name="dataManagementSubtitle" xml:space="preserve"> 
-    <value>Infomaniak respecte votre vie privée</value> 
+    <value>Infomaniak respekterar din integritet</value> 
   </data> 
   <data name="debugLevelDescription" xml:space="preserve"> 
-    <value>Sélectionner la quantité d’informations enregistrées.</value> 
+    <value>Välj mängden information som ska loggas.</value> 
   </data> 
   <data name="debugLevelSetting" xml:space="preserve"> 
-    <value>Niveau de débogage</value> 
+    <value>Felsökningsnivå</value> 
   </data> 
   <data name="debugLogsDescription" xml:space="preserve"> 
-    <value>Permettent au support Infomaniak d’identifier l’origine d’un incident.</value> 
+    <value>Gör det möjligt för Infomaniaks support att identifiera orsaken till en incident.</value> 
   </data> 
   <data name="debugLogsSettings" xml:space="preserve"> 
-    <value>Journaux de débogage</value> 
+    <value>Felsökningsloggar</value> 
   </data> 
   <data name="defaultErrorDescription" xml:space="preserve"> 
-    <value>La synchronisation va redémarrer automatiquement.
-Si le problème persiste, contactez notre support en joignant les détails techniques ci-dessous.</value> 
+    <value>Synkronisering startas om automatiskt.
+Om problemet kvarstår, kontakta vår support och bifoga de tekniska detaljerna nedan.</value> 
   </data> 
   <data name="defaultErrorDetailsLabel" xml:space="preserve"> 
-    <value>Détails techniques</value> 
+    <value>Tekniska detaljer</value> 
   </data> 
   <data name="defaultErrorTitle" xml:space="preserve"> 
-    <value>Une erreur inattendue s’est produite</value> 
+    <value>Ett oväntat fel inträffade</value> 
   </data> 
   <data name="defaultExclusionFileListDescription" xml:space="preserve"> 
-    <value>Ces fichiers sont ignorés par défaut et ne peuvent pas être modifiés.</value> 
+    <value>Dessa filer är undantagna som standard och kan inte ändras.</value> 
   </data> 
   <data name="defaultExclusionFileListHeader" xml:space="preserve"> 
-    <value>Exclusion automatique</value> 
+    <value>Automatiskt undantag</value> 
   </data> 
   <data name="deleteCancelErrorTitle" xml:space="preserve"> 
-    <value>Suppression annulée</value> 
+    <value>Radering avbruten</value> 
   </data> 
   <data name="dialogDataErrorSyncDirChangeDescription" xml:space="preserve"> 
-    <value>Dans ces situations, une nouvelle synchronisation est nécessaire pour continuer à utiliser kDrive correctement.</value> 
+    <value>I dessa situationer krävs en ny synkronisering för att fortsätta använda kDrive korrekt.</value> 
   </data> 
   <data name="dialogDriveSetupInvalidFolderDescription" xml:space="preserve"> 
-    <value>Veuillez sélectionner un dossier vide qui ne se trouve pas à la racine d’un lecteur.
+    <value>Välj en tom mapp som inte är roten av en enhet.
 
-Ce dossier ne doit pas être inclus dans un autre dossier de synchronisation et ne doit pas contenir de sous-dossier de synchronisation.</value> 
+Den här mappen får inte ingå i en annan synkroniseringsmapp och får inte innehålla en synkroniserad undermapp.</value> 
   </data> 
   <data name="dialogDriveSetupInvalidFolderTitle" xml:space="preserve"> 
-    <value>Ce dossier ne peut pas être sélectionné</value> 
+    <value>Den här mappen kan inte väljas</value> 
   </data> 
   <data name="dialogNewExclusionRulePrimaryButton" xml:space="preserve"> 
-    <value>Ajouter une règle</value> 
+    <value>Lägg till en regel</value> 
   </data> 
   <data name="dialogNewExclusionRuleTitle" xml:space="preserve"> 
-    <value>Ajouter une règle d’exclusion</value> 
+    <value>Lägg till en undantagsregel</value> 
   </data> 
   <data name="dialogRemoveAccountContent" xml:space="preserve"> 
-    <value>Vous allez déconnecter %@ de l’application.
-Le dossier de synchronisation restera sur votre ordinateur, mais ne sera plus synchronisé avec kDrive.
+    <value>Du håller på att koppla från %s från programmet.
+Synkroniseringsmappen finns kvar på din dator men synkroniseras inte längre med kDrive.
 
-Toutes vos données resteront accessibles en ligne sur kDrive.</value> 
+All din data förblir tillgänglig online på kDrive.</value> 
   </data> 
   <data name="dialogRemoveAccountTitle" xml:space="preserve"> 
-    <value>Se déconnecter de ce compte ?</value> 
+    <value>Logga ut från det här kontot?</value> 
   </data> 
   <data name="dialogSyncDeletionWarningContent" xml:space="preserve"> 
-    <value>Le dossier local restera sur votre ordinateur, mais il ne sera plus synchronisé avec kDrive.
-Cette action est permanente.
-Pour synchroniser à nouveau votre lecteur, vous devrez le reconnecter plus tard.
+    <value>Den lokala mappen finns kvar på din dator, men den synkroniseras inte längre med kDrive.
+Den här åtgärden är permanent.
+För att synkronisera enheten igen måste du ansluta den på nytt senare.
 
-Avant de continuer, assurez-vous que tous vos fichiers sont à jour et entièrement synchronisés.</value> 
+Se till att alla dina filer är uppdaterade och helt synkroniserade innan du fortsätter.</value> 
   </data> 
   <data name="dialogSyncDeletionWarningTitle" xml:space="preserve"> 
-    <value>Supprimer la synchronisation ?</value> 
+    <value>Ta bort synkronisering?</value> 
   </data> 
   <data name="dialogSyncModeChangeErrorContent" xml:space="preserve"> 
-    <value>Le changement de mode de synchronisation a été annulé.
+    <value>Ändringen av synkroniseringsläget avbröts.
 
-La synchronisation actuelle reste inchangée. Toutefois, si un comportement anormal se produit, vous devrez peut-être supprimer et recréer la synchronisation pour rétablir le bon fonctionnement.</value> 
+Den aktuella synkroniseringen är oförändrad. Om ett onormalt beteende uppstår kan du dock behöva ta bort och återskapa synkroniseringen för att återställa korrekt funktion.</value> 
   </data> 
   <data name="dialogSyncModeChangeErrorTitle" xml:space="preserve"> 
-    <value>Une erreur s’est produite</value> 
+    <value>Ett fel inträffade</value> 
   </data> 
   <data name="dialogSyncModeChangeWarningContent" xml:space="preserve"> 
-    <value>Cette opération peut prendre un certain temps, selon la taille de vos données. En cas d’échec, une nouvelle synchronisation complète du drive pourra être nécessaire.
+    <value>Den här åtgärden kan ta en stund beroende på storleken på dina data. Om det misslyckas kan en fullständig omsynkronisering av enheten krävas.
 
-Avant de continuer, assurez-vous que tous vos fichiers sont bien à jour et synchronisés.
+Se till att alla dina filer är uppdaterade och synkroniserade innan du fortsätter.
 
-Ne fermez pas l’application pendant le processus.</value> 
+Stäng inte programmet under processen.</value> 
   </data> 
   <data name="dialogSyncModeChangeWarningTitle" xml:space="preserve"> 
-    <value>Changer le mode de synchronisation ?</value> 
+    <value>Ändra synkroniseringsläge?</value> 
   </data> 
   <data name="dialogSystemErrorSyncDirAccessErrorDescription" xml:space="preserve"> 
-    <value>Voici comment rétablir la synchronisation :</value> 
+    <value>Så här återställer du synkroniseringen:</value> 
   </data> 
   <data name="dialogSystemErrorSyncDirDiskMissingErrorDescription" xml:space="preserve"> 
-    <value>Le disque contenant votre dossier de synchronisation n’est plus connecté</value> 
+    <value>Disken som innehåller din synkroniseringsmapp är inte längre ansluten</value> 
   </data> 
   <data name="dialogSystemErrorSyncDirDiskMissingErrorTip" xml:space="preserve"> 
-    <value>Reconnectez-le pour reprendre la synchronisation.</value> 
+    <value>Anslut den igen för att återuppta synkroniseringen.</value> 
   </data> 
   <data name="disableNotificationsSetting" xml:space="preserve"> 
-    <value>Désactiver les notifications</value> 
+    <value>Inaktivera aviseringar</value> 
   </data> 
   <data name="doNotJoin" xml:space="preserve"> 
-    <value>Ne pas rejoindre</value> 
+    <value>Gå inte med</value> 
   </data> 
   <data name="downloadAppUrl" xml:space="preserve"> 
-    <value>https://www.infomaniak.com/fr/applications/telecharger-kdrive</value> 
+    <value>https://www.infomaniak.com/en/apps/download-kdrive</value> 
   </data> 
   <data name="driveAccessDeniedErrorDescription" xml:space="preserve"> 
-    <value>Vous n’avez pas la permission d’accéder à ce kDrive.
-Veuillez vérifier vos autorisations ou contacter votre administrateur.</value> 
+    <value>Du har inte behörighet att komma åt den här kDrive.
+Kontrollera dina behörigheter eller kontakta din administratör.</value> 
   </data> 
   <data name="driveAccessDeniedErrorTitle" xml:space="preserve"> 
-    <value>Accès refusé au kDrive</value> 
+    <value>Åtkomst nekad till kDrive</value> 
   </data> 
   <data name="driveAsleepErrorTitle" xml:space="preserve"> 
-    <value>Votre kDrive est en veille</value> 
+    <value>Din kDrive är i vilöläge</value> 
   </data> 
   <data name="driveLockedAdminErrorDescription" xml:space="preserve"> 
-    <value>Ce kDrive n’a pas été renouvelé. Vous ne pouvez plus y accéder.
-Renouvelez votre abonnement pour réactiver le service.</value> 
+    <value>Den här kDrive har inte förnyats. Du kan inte längre komma åt den.
+Förnya din prenumeration för att återaktivera tjänsten.</value> 
   </data> 
   <data name="driveLockedErrorDescription" xml:space="preserve"> 
-    <value>Ce kDrive n’a pas été renouvelé. Vous ne pouvez plus y accéder.
-Contactez votre administrateur pour réactiver le service.</value> 
+    <value>Den här kDrive har inte förnyats. Du kan inte längre komma åt den.
+Kontakta din administratör för att återaktivera tjänsten.</value> 
   </data> 
   <data name="driveLockedErrorTitle" xml:space="preserve"> 
-    <value>Votre kDrive a expiré</value> 
+    <value>Din kDrive har upphört att gälla</value> 
   </data> 
   <data name="driveLoggingErrorDescription" xml:space="preserve"> 
-    <value>Reconnectez-vous pour continuer à utiliser kDrive.</value> 
+    <value>Logga in igen för att fortsätta använda kDrive.</value> 
   </data> 
   <data name="driveLoggingErrorTitle" xml:space="preserve"> 
-    <value>Vous avez été déconnecté</value> 
+    <value>Du har loggats ut</value> 
   </data> 
   <data name="driveLoggingErrorUserMismatchDescription" xml:space="preserve"> 
-    <value>Le compte utilisé pour cette connexion ne correspond pas à celui de ce kDrive.
-Veuillez vous connecter à nouveau avec l’adresse électronique correcte %@</value> 
+    <value>Kontot som används för den här anslutningen matchar inte det för den här kDrive.
+Logga in igen med rätt e-postadress %@</value> 
   </data> 
   <data name="driveLoggingErrorUserMismatchTitle" xml:space="preserve"> 
-    <value>Ce compte ne correspond pas</value> 
+    <value>Det här kontot matchar inte</value> 
   </data> 
   <data name="driveWakingUpErrorDescription" xml:space="preserve"> 
-    <value>Le kDrive est en cours de réveil… cela peut prendre quelques instants.</value> 
+    <value>kDrive vaknar… det kan ta några ögonblick.</value> 
   </data> 
   <data name="driveWakingUpErrorTitle" xml:space="preserve"> 
-    <value>Réveil du kDrive en cours</value> 
+    <value>kDrive vaknar</value> 
   </data> 
   <data name="duplicateNamesErrorTitle" xml:space="preserve"> 
-    <value>Dédoublement de noms</value> 
+    <value>Duplicerade namn</value> 
   </data> 
   <data name="enableDebugLogDescription" xml:space="preserve"> 
-    <value>Enregistrer les informations de diagnostic sur mon ordinateur.</value> 
+    <value>Spela in diagnostisk information på min dator.</value> 
   </data> 
   <data name="enableDebugLogsSetting" xml:space="preserve"> 
-    <value>Activer l’enregistrement des informations de débogage</value> 
+    <value>Aktivera felsökningsloggning</value> 
   </data> 
   <data name="enterPasswordPlaceholder" xml:space="preserve"> 
-    <value>Entrez votre mot de passe</value> 
+    <value>Ange ditt lösenord</value> 
   </data> 
   <data name="errCreateCancelDescription" xml:space="preserve"> 
-    <value>Vous n’avez pas les droits nécessaires pour ajouter un %@ à cet emplacement.
-Demandez l’accès au propriétaire ou à l’administrateur.</value> 
+    <value>Du har inte nödvändiga behörigheter för att lägga till en %s på den här platsen.
+Begär åtkomst från ägaren eller administratören.</value> 
   </data> 
   <data name="errDeleteCancelDescription" xml:space="preserve"> 
-    <value>Vous n’avez pas l’autorisation de supprimer ce %@. Il a été restauré à son emplacement d’origine. Demandez l’accès au propriétaire ou à l’administrateur.</value> 
+    <value>Du har inte behörighet att ta bort denna %s. Den har återställts till sin ursprungliga plats. Begär åtkomst från ägaren eller administratören.</value> 
   </data> 
   <data name="errDialogConfigChangedTitle" xml:space="preserve"> 
-    <value>Un changement a été détecté dans votre configuration</value> 
+    <value>En ändring hittades i din konfiguration</value> 
   </data> 
   <data name="errDialogInvalidSyncSyncDirAccessDescription" xml:space="preserve"> 
-    <value>Dans ces situations, une nouvelle synchronisation peut être nécessaire pour continuer à utiliser kDrive correctement.</value> 
+    <value>I dessa situationer kan en ny synkronisering krävas för att fortsätta använda kDrive korrekt.</value> 
   </data> 
   <data name="errDialogLocalFileAccessDescription" xml:space="preserve"> 
-    <value>Les droits d’accès du %@ ont été modifiés, ce qui empêche sa synchronisation.</value> 
+    <value>Åtkomstbehörigheterna för %s har ändrats, vilket förhindrar att den synkroniseras.</value> 
   </data> 
   <data name="errDialogLocalFileAccessFaqLink" xml:space="preserve"> 
-    <value>Consultez la %@ pour rétablir l’accès</value> 
+    <value>Se %s för att återställa åtkomst</value> 
   </data> 
   <data name="errDialogLocalFileAccessLocationLabel" xml:space="preserve"> 
-    <value>Dernier emplacement du %@ :</value> 
+    <value>Senaste plats för %s:</value> 
   </data> 
   <data name="errDialogSystemSyncDirDiskMissingTitle" xml:space="preserve"> 
-    <value>Disque externe déconnecté</value> 
+    <value>Extern disk frånkopplad</value> 
   </data> 
   <data name="errDialogSystemUnableToStartVfsDescription" xml:space="preserve"> 
-    <value>Cette opération peut prendre un certain temps, selon la quantité de données à traiter.
+    <value>Den här åtgärden kan ta en stund beroende på mängden data som ska behandlas.
 
-Ne fermez pas l’application pendant le processus.
+Stäng inte programmet under processen.
 
-En cas d’échec, vous pourrez lancer facilement une nouvelle synchronisation complète du drive ou contacter notre support.</value> 
+Om det misslyckas kan du enkelt starta en fullständig omsynkronisering av enheten eller kontakta vår support.</value> 
   </data> 
   <data name="errDialogSystemUnableToStartVfsTitle" xml:space="preserve"> 
-    <value>Activer la synchronisation hors ligne</value> 
+    <value>Aktivera offlinesynkronisering</value> 
   </data> 
   <data name="errDriveMaintenanceDescription" xml:space="preserve"> 
-    <value>Ce kDrive est temporairement indisponible pour cause de maintenance.
-Veuillez réessayer dans quelques minutes.</value> 
+    <value>Den här kDrive är tillfälligt otillgänglig på grund av underhåll.
+Försök igen om några minuter.</value> 
   </data> 
   <data name="errDriveMaintenanceTitle" xml:space="preserve"> 
-    <value>Maintenance en cours</value> 
+    <value>Underhåll pågår</value> 
   </data> 
   <data name="errDuplicateNamesDescription" xml:space="preserve"> 
-    <value>Un fichier ou un dossier portant ce nom existe déjà.</value> 
+    <value>En fil eller mapp med det här namnet finns redan.</value> 
   </data> 
   <data name="errEditCancelDescription" xml:space="preserve"> 
-    <value>Vous n’avez pas les droits pour modifier ce fichier.
-La version originale a été conservée et votre modification a été enregistrée dans un fichier séparé avec “conflit” dans son nom. Demandez l’accès au propriétaire ou à l’administrateur.</value> 
+    <value>Du har inte rätt att redigera den här filen.
+Originalversionen har behållits och din redigering har sparats i en separat fil med “konflikts” i namnet. Begär åtkomst från ägaren eller administratören.</value> 
   </data> 
   <data name="errEndWithSpaceDescription" xml:space="preserve"> 
-    <value>Le nom de ce %@ se termine par un espace, ce qui empêche sa synchronisation. Renommez le %@ depuis kDrive en ligne.</value> 
+    <value>Namnet på denna %1$s slutar med ett mellanslag, vilket förhindrar att den synkroniseras. Byt namn på %2$s från kDrive online.</value> 
   </data> 
   <data name="errEndWithSpaceTitle" xml:space="preserve"> 
-    <value>Espace à la fin du nom du %@</value> 
+    <value>Avslutande mellanslag i %s-namn</value> 
   </data> 
   <data name="errExcludedByTemplateDescription" xml:space="preserve"> 
-    <value>Une règle d’exclusion empêche la synchronisation de ce %@.</value> 
+    <value>En undantagsregel förhindrar att den här %s synkroniseras.</value> 
   </data> 
   <data name="errExcludedByTemplateTitle" xml:space="preserve"> 
-    <value>Exclu de la synchronisation</value> 
+    <value>Undantagen från synkronisering</value> 
   </data> 
   <data name="errFileExistsDescription" xml:space="preserve"> 
-    <value>Un fichier portant ce nom existe déjà.</value> 
+    <value>En fil med det här namnet finns redan.</value> 
   </data> 
   <data name="errFileLockedDescription" xml:space="preserve"> 
-    <value>Ce fichier est actuellement utilisé par un autre utilisateur.
-Vos modifications seront synchronisées ultérieurement.</value> 
+    <value>Den här filen används för tillfället av en annan användare.
+Dina ändringar synkroniseras senare.</value> 
   </data> 
   <data name="errFileLockedTitle" xml:space="preserve"> 
-    <value>Fichier verrouillé</value> 
+    <value>Fil låst</value> 
   </data> 
   <data name="errFileRescuedDescription" xml:space="preserve"> 
-    <value>Ce fichier a été supprimé sur kDrive en ligne pendant que vous le modifiiez. Une copie a été conservée sur votre ordinateur dans le dossier de récupération.</value> 
+    <value>Den här filen raderades på kDrive online medan du redigerade den. En kopia har sparats på din dator i återställningsmappen.</value> 
   </data> 
   <data name="errFileRescuedTitle" xml:space="preserve"> 
-    <value>Fichier récupéré</value> 
+    <value>Fil räddad</value> 
   </data> 
   <data name="errFileTooBigAdminDescription" xml:space="preserve"> 
-    <value>Ce fichier dépasse la taille maximale autorisée (50 Go).
-Contactez le support pour débloquer la limite.</value> 
+    <value>Den här filen överskrider den maximalt tillåtna storleken (50 GB).
+Kontakta support för att låsa upp gränsen.</value> 
   </data> 
   <data name="errFileTooBigDescription" xml:space="preserve"> 
-    <value>Ce fichier dépasse la taille maximale autorisée (50 Go).
-Contactez votre administrateur pour augmenter la limite de taille des fichiers.</value> 
+    <value>Den här filen överskrider den maximalt tillåtna storleken (50 GB).
+Kontakta din administratör för att öka filstorleksgränsen.</value> 
   </data> 
   <data name="errFileTooBigTitle" xml:space="preserve"> 
-    <value>Fichier trop volumineux</value> 
+    <value>Filen är för stor</value> 
   </data> 
   <data name="errForbiddenActionTitle" xml:space="preserve"> 
-    <value>Accès interdit</value> 
+    <value>Åtkomst förbjuden</value> 
     <comment>Title shown when a forbidden or unauthorized action is attempted.</comment> 
   </data> 
   <data name="errForbiddenCharDescription_win" xml:space="preserve"> 
-    <value>Le nom de ce %@ contient un ou plusieurs caractères non pris en charge par l’application kDrive Windows. Renommez le %@ depuis kDrive en ligne.</value> 
+    <value>Namnet på denna %1$s innehåller ett eller flera tecken som inte stöds av kDrive Windows-programmet. Byt namn på %2$s från kDrive online.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
-    <value>Ce nom contient uniquement des espaces et ne peut pas être utilisé. Renommez le %@ depuis kDrive en ligne.</value> 
+    <value>Det här namnet innehåller bara mellanslag och kan inte användas. Byt namn på %s från kDrive online.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesTitle" xml:space="preserve"> 
-    <value>Nom invalide</value> 
+    <value>Ogiltigt namn</value> 
   </data> 
   <data name="errForbiddenCharTitle" xml:space="preserve"> 
-    <value>Caractère non pris en charge</value> 
+    <value>Tecknet stöds inte</value> 
   </data> 
   <data name="errGenericForbiddenDescription" xml:space="preserve"> 
-    <value>Vous n’avez pas les droits nécessaires pour effectuer cette action.
-Demandez l’accès au propriétaire ou à l’administrateur.</value> 
+    <value>Du har inte nödvändiga behörigheter för att utföra den här åtgärden.
+Begär åtkomst från ägaren eller administratören.</value> 
   </data> 
   <data name="errGenericForbiddenTitle" xml:space="preserve"> 
-    <value>Accès interdit</value> 
+    <value>Åtkomst förbjuden</value> 
   </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
-    <value>Ce fichier est un lien système (hard link) qui ne peut pas être synchronisé.</value> 
+    <value>Den här filen är en hård länk som inte kan synkroniseras.</value> 
   </data> 
   <data name="errHardlinkTitle" xml:space="preserve"> 
-    <value>Type de fichier non pris en charge</value> 
+    <value>Filtypen stöds inte</value> 
   </data> 
   <data name="errInvalidSyncSyncDirAccessDescription" xml:space="preserve"> 
-    <value>Ce dossier n’est plus accessible à son emplacement d’origine.</value> 
+    <value>Den här mappen är inte längre tillgänglig på sin ursprungliga plats.</value> 
   </data> 
   <data name="errInvalidSyncSyncDirAccessTitle" xml:space="preserve"> 
-    <value>Dossier de synchronisation introuvable</value> 
+    <value>Synkroniseringsmapp hittades inte</value> 
   </data> 
   <data name="errInvalidSyncSyncDirNestingDescription" xml:space="preserve"> 
-    <value>Un de vos kDrive est synchronisé à l’intérieur du dossier de synchronisation d’un autre kDrive.
-Déplacez l’un des dossiers pour qu’ils ne soient plus imbriqués ou supprimez votre synchronisation pour la recréer.</value> 
+    <value>En av dina kDrives synkroniseras inuti synkroniseringsmappen för en annan kDrive.
+Flytta en av mapparna så att de inte längre är kapslade, eller ta bort din synkronisering för att återskapa den.</value> 
   </data> 
   <data name="errInvalidSyncSyncDirNestingTitle" xml:space="preserve"> 
-    <value>kDrive imbriqués</value> 
+    <value>Kapslade kDrives</value> 
   </data> 
   <data name="errLocalFileAccessDescription" xml:space="preserve"> 
-    <value>Impossible d’accéder à ce %@ sur votre ordinateur. Vérifiez qu’il existe toujours et que vous disposez des droits pour y accéder.</value> 
+    <value>Det går inte att komma åt den här %s på din dator. Kontrollera att den fortfarande finns och att du har behörighet att komma åt den.</value> 
   </data> 
   <data name="errLocalFileAccessTitle" xml:space="preserve"> 
-    <value>%@ inaccessible</value> 
+    <value>%s otillgänglig</value> 
   </data> 
   <data name="errMoveCancelDescription" xml:space="preserve"> 
-    <value>Vous ne disposez pas des droits pour déplacer ce %@ ici, il sera restauré à son emplacement d’origine. Demandez l’accès au propriétaire ou à l’administrateur.</value> 
+    <value>Du har inte rätt att flytta den här %s hit; den återställs till sin ursprungliga plats. Begär åtkomst från ägaren eller administratören.</value> 
   </data> 
   <data name="errNameLengthDescription" xml:space="preserve"> 
-    <value>Ce nom dépasse la longueur autorisée (250 caractères). Renommez le %@.</value> 
+    <value>Det här namnet överskrider den tillåtna längden (250 tecken). Byt namn på %s.</value> 
   </data> 
   <data name="errNameLengthTitle" xml:space="preserve"> 
-    <value>Nom de %@ trop long</value> 
+    <value>%s-namn för långt</value> 
   </data> 
   <data name="errNetworkErrorOtherDescription" xml:space="preserve"> 
-    <value>Impossible de se connecter à kDrive.
-La synchronisation reprendra automatiquement dès que la connexion sera rétablie.</value> 
+    <value>Det går inte att ansluta till kDrive.
+Synkroniseringen återuptas automatiskt när anslutningen har återställts.</value> 
   </data> 
   <data name="errNetworkErrorOtherTitle" xml:space="preserve"> 
-    <value>Connexion temporairement indisponible</value> 
+    <value>Anslutning tillfälligt otillgänglig</value> 
   </data> 
   <data name="errNotEnoughDiskSpaceDescription" xml:space="preserve"> 
-    <value>Il n’y a plus assez d’espace sur votre ordinateur pour synchroniser ce fichier.</value> 
+    <value>Det finns inte tillräckligt med utrymme på din dator för att synkronisera den här filen.</value> 
   </data> 
   <data name="errNotEnoughDiskSpaceTitle" xml:space="preserve"> 
-    <value>Espace disque insuffisant</value> 
+    <value>Otillräckligt diskutrymme</value> 
   </data> 
   <data name="errNotYetSupportedCharDescription" xml:space="preserve"> 
-    <value>Le nom de ce fichier contient un ou plusieurs caractères non pris en charge par l’application kDrive. Renommez le fichier depuis kDrive en ligne.</value> 
+    <value>Namnet på den här filen innehåller ett eller flera tecken som ännu inte stöds av kDrive-programmet. Byt namn på filen från kDrive online.</value> 
   </data> 
   <data name="errNotYetSupportedCharTitle" xml:space="preserve"> 
-    <value>Caractère non pris en charge</value> 
+    <value>Tecknet stöds inte</value> 
   </data> 
   <data name="errPathLengthDescription" xml:space="preserve"> 
-    <value>Le chemin d’accès à ce %@ est trop long pour être synchronisé. Renommez un ou plusieurs dossiers dans lesquels il se trouve pour raccourcir le chemin.</value> 
+    <value>Sökvägen till denna %s är för lång för att synkroniseras. Byt namn på en eller flera mappar den befinner sig i för att korta ned sökvägen.</value> 
   </data> 
   <data name="errPathLengthTitle" xml:space="preserve"> 
-    <value>Chemin d’accès au %@ trop long</value> 
+    <value>Sökväg till %s för lång</value> 
   </data> 
   <data name="errQuotaExceededDescription" xml:space="preserve"> 
-    <value>Votre kDrive est plein. Libérez de l’espace ou mettez à niveau votre abonnement pour synchroniser ce %@.</value> 
+    <value>Din kDrive är full. Frgör utrymme eller uppgradera din prenumeration för att synkronisera den här %s.</value> 
   </data> 
   <data name="errQuotaExceededTitle" xml:space="preserve"> 
-    <value>Limite de stockage atteinte</value> 
+    <value>Lagringsgräns nådd</value> 
   </data> 
   <data name="errReservedNameDescription" xml:space="preserve"> 
-    <value>Ce nom est réservé par le système de votre ordinateur. Renommez le %@ depuis kDrive en ligne.</value> 
+    <value>Det här namnet är reserverat av datorns system. Byt namn på %s från kDrive online.</value> 
   </data> 
   <data name="errReservedNameTitle" xml:space="preserve"> 
-    <value>Nom de %@ réservé</value> 
+    <value>%s-namn reserverat</value> 
   </data> 
   <data name="errSystemErrorSyncDirAccessErrorDescription" xml:space="preserve"> 
-    <value>Vérifiez l’emplacement ou les droits d’accès du dossier.</value> 
+    <value>Kontrollera mappens plats eller åtkomsträttigheter.</value> 
   </data> 
   <data name="errSystemErrorSyncDirAccessTitle" xml:space="preserve"> 
-    <value>Dossier de synchronisation inaccessible</value> 
+    <value>Synkroniseringsmappen är otillgänglig</value> 
   </data> 
   <data name="errSystemNotEnoughDiskSpaceDescription" xml:space="preserve"> 
-    <value>L’espace disque de votre appareil est plein. La synchronisation est interrompue. Libérez de l’espace pour reprendre la synchronisation.</value> 
+    <value>Enhetens diskutrymme är fullt. Synkroniseringen har pausats. Frgör utrymme för att återuppta synkroniseringen.</value> 
   </data> 
   <data name="errSystemNotEnoughDiskSpaceTitle" xml:space="preserve"> 
-    <value>Espace disque insuffisant</value> 
+    <value>Otillräckligt diskutrymme</value> 
   </data> 
   <data name="errSystemSyncDirChanged" xml:space="preserve"> 
-    <value>Ce dossier n’est plus accessible à son emplacement d’origine.</value> 
+    <value>Den här mappen är inte längre tillgänglig på sin ursprungliga plats.</value> 
   </data> 
   <data name="errSystemSyncDirDiskMissingDescription" xml:space="preserve"> 
-    <value>Ce dossier n’est plus accessible. Une action est nécessaire pour reprendre la synchronisation.</value> 
+    <value>Den här mappen är inte längre tillgänglig. En åtgärd krävs för att återuppta synkroniseringen.</value> 
   </data> 
   <data name="errSystemSyncDirMissingTitle" xml:space="preserve"> 
-    <value>Dossier de synchronisation introuvable</value> 
+    <value>Synkroniseringsmapp hittades inte</value> 
   </data> 
   <data name="errSystemUnableToStartVfsDescription" xml:space="preserve"> 
-    <value>Lite Sync n’arrive pas à démarrer. Vous pouvez continuer à synchroniser vos fichiers en activant la synchronisation hors-ligne dans les paramètres. Contactez le support si le problème persiste.</value> 
+    <value>Lite Sync kan inte starta. Du kan fortsätta synkronisera dina filer genom att aktivera offlinesynkronisering i inställningarna. Kontakta support om problemet kvarstår.</value> 
   </data> 
   <data name="errSystemUnableToStartVfsTitle" xml:space="preserve"> 
-    <value>Impossible de démarrer Lite Sync</value> 
+    <value>Det går inte att starta Lite Sync</value> 
   </data> 
   <data name="errTmpBlacklistedDescription" xml:space="preserve"> 
-    <value>La synchronisation de cet élément n’a pas réussi. Elle sera relancée automatiquement plus tard.</value> 
+    <value>Synkronisering av det här objektet misslyckades. Det försöks automatiskt igen senare.</value> 
   </data> 
   <data name="errTmpBlacklistedTitle" xml:space="preserve"> 
-    <value>Synchronisation temporairement échouée</value> 
+    <value>Synkronisering tillfälligt misslyckad</value> 
   </data> 
   <data name="errUploadNotTerminatedDescription" xml:space="preserve"> 
-    <value>Le téléversement n’a pas pu être terminé. Veuillez réessayer plus tard.</value> 
+    <value>Uppladdningen kunde inte slutföras. Försök igen senare.</value> 
   </data> 
   <data name="errorListFilesToVerifyHeader" xml:space="preserve"> 
-    <value>Fichiers à vérifier</value> 
+    <value>Filer att kontrollera</value> 
   </data> 
   <data name="errorListOthersHeader" xml:space="preserve"> 
-    <value>Autres</value> 
+    <value>Övrigt</value> 
   </data> 
   <data name="errorPageTitle" xml:space="preserve"> 
-    <value>Erreurs à corriger</value> 
+    <value>Fel att åtgärda</value> 
   </data> 
   <data name="excludeRuleDescription" xml:space="preserve"> 
-    <value>Les fichiers correspondant à cette règle ne seront pas synchronisés.</value> 
+    <value>Filer som matchar den här regeln synkroniseras inte.</value> 
   </data> 
   <data name="extendedLogDescription" xml:space="preserve"> 
-    <value>Active la collecte d’informations supplémentaires utiles au support.</value> 
+    <value>Aktiverar insamling av ytterligare information som är användbar för support.</value> 
   </data> 
   <data name="extendedLogSetting" xml:space="preserve"> 
-    <value>Journal détaillé étendu</value> 
+    <value>Utökad detaljerad logg</value> 
   </data> 
   <data name="extendedLogWarning" xml:space="preserve"> 
-    <value>Lorsque cette option est activée, kDrive fonctionne plus lentement.</value> 
+    <value>När det här alternativet är aktiverat körs kDrive långsammare.</value> 
   </data> 
   <data name="failedToCreateShareLinkError" xml:space="preserve"> 
-    <value>Échec de la création d’un lien de partage</value> 
+    <value>Det gick inte att skapa en delningslänk</value> 
   </data> 
   <data name="faqUrl" xml:space="preserve"> 
-    <value>https://www.infomaniak.com/fr/support/faq/admin2/kdrive</value> 
+    <value>https://www.infomaniak.com/en/support/faq/admin2/kdrive</value> 
   </data> 
   <data name="feedbackSetting" xml:space="preserve"> 
-    <value>Aidez-nous à améliorer kDrive</value> 
+    <value>Hjälp oss förbättra kDrive</value> 
   </data> 
   <data name="feedbackURL" xml:space="preserve"> 
-    <value>https://feedback.userreport.com/fe6ca4b6-5812-4f39-8ca6-5f2300aecda6</value> 
+    <value>https://feedback.userreport.com/652ad8f0-84c8-4a21-9e31-7a8bd7134f46</value> 
   </data> 
   <data name="fileExistsErrorTitle" xml:space="preserve"> 
-    <value>Le fichier existe déjà</value> 
+    <value>Filen finns redan</value> 
   </data> 
   <data name="fileSyncMode" xml:space="preserve"> 
-    <value>Mode de synchronisation des fichiers</value> 
+    <value>Filsynkroniseringsläge</value> 
   </data> 
   <data name="fileSyncModeDescription" xml:space="preserve"> 
-    <value>Définissez comment vos fichiers sont stockés et accessibles.</value> 
+    <value>Definiera hur dina filer lagras och används.</value> 
   </data> 
   <data name="filesToExclude" xml:space="preserve"> 
-    <value>Fichiers à exclure</value> 
+    <value>Filer att exkludera</value> 
   </data> 
   <data name="folderFavorites" xml:space="preserve"> 
-    <value>Favoris</value> 
+    <value>Favoriter</value> 
   </data> 
   <data name="folderShares" xml:space="preserve"> 
-    <value>Partages</value> 
+    <value>Delningar</value> 
   </data> 
   <data name="folderTrash" xml:space="preserve"> 
-    <value>Corbeille</value> 
+    <value>Papperskorg</value> 
   </data> 
   <data name="forOneHour" xml:space="preserve"> 
-    <value>Pendant 1 heure</value> 
+    <value>I 1 timme</value> 
   </data> 
   <data name="forOneWeek" xml:space="preserve"> 
-    <value>Pendant une semaine</value> 
+    <value>I en vecka</value> 
   </data> 
   <data name="forThreeDays" xml:space="preserve"> 
-    <value>Pendant trois jours</value> 
+    <value>I tre dagar</value> 
   </data> 
   <data name="greetingLabel" xml:space="preserve"> 
-    <value>Bonjour %@, %@</value> 
+    <value>Hej %1$s, %2$s</value> 
   </data> 
   <data name="helpKDriveName" xml:space="preserve"> 
-    <value>kDrive %@</value> 
+    <value>kDrive %s</value> 
   </data> 
   <data name="helpUrl" xml:space="preserve"> 
-    <value>https://www.infomaniak.com/fr/aide</value> 
+    <value>https://www.infomaniak.com/en/support</value> 
   </data> 
   <data name="infomaniakSupport" xml:space="preserve"> 
-    <value>Support Infomaniak</value> 
+    <value>Infomaniak Support</value> 
   </data> 
   <data name="informationBlockKDriveFullSubtitle" xml:space="preserve"> 
-    <value>Libérez de l’espace ou mettez votre forfait à niveau pour continuer à synchroniser vos fichiers.</value> 
+    <value>Frgör utrymme eller uppgradera ditt abonnemang för att fortsätta synkronisera dina filer.</value> 
   </data> 
   <data name="informationBlockKDriveFullTitle" xml:space="preserve"> 
-    <value>Votre kDrive est plein</value> 
+    <value>Din kDrive är full</value> 
   </data> 
   <data name="informationBlockSynchroErrorSubtitle" xml:space="preserve"> 
-    <value>Certains fichiers n’ont pas pu être synchronisés.</value> 
+    <value>Vissa filer kunde inte synkroniseras.</value> 
   </data> 
   <data name="informationBlockTmpDirAccessErrorSubtitle" xml:space="preserve"> 
-    <value>Nous n’arrivons pas à accéder à vos fichiers. Redémarrez l’application pour relancer la synchronisation. Si le problème continue, contactez le support.</value> 
+    <value>Vi kan inte komma åt dina filer. Starta om programmet för att återuppta synkroniseringen. Om problemet fortsätter, kontakta support.</value> 
   </data> 
   <data name="informationBlockTmpDirAccessErrorTitle" xml:space="preserve"> 
-    <value>Connexion à kDrive interrompue</value> 
+    <value>Anslutning till kDrive avbruten</value> 
   </data> 
   <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
-    <value>Cet élément n’est pas disponible sur cet appareil.
-Il s’ouvrira dans votre navigateur.</value> 
+    <value>Det här objektet är inte tillgängligt på den här enheten.
+Det öppnas i din webbläsare.</value> 
   </data> 
   <data name="labelAccessRightsModified" xml:space="preserve"> 
-    <value>Droits d’accès modifiés</value> 
+    <value>Åtkomsträttigheter ändrade</value> 
   </data> 
   <data name="labelActivated" xml:space="preserve"> 
-    <value>Activé</value> 
+    <value>Aktiverad</value> 
   </data> 
   <data name="labelAgo" xml:space="preserve"> 
-    <value>il y a %@</value> 
+    <value>för %s sedan</value> 
     <comment>Suffix for relative timestamps in activity lists; %@ is the time period (e.g., 5 minutes).</comment> 
   </data> 
   <data name="labelAllFolders" xml:space="preserve"> 
-    <value>Tous les dossiers</value> 
+    <value>Alla mappar</value> 
   </data> 
   <data name="labelAllkDrive" xml:space="preserve"> 
-    <value>Tout le kDrive</value> 
+    <value>Hela kDrive</value> 
   </data> 
   <data name="labelAllowTracking" xml:space="preserve"> 
-    <value>Autoriser le suivi</value> 
+    <value>Tillåt spårning</value> 
   </data> 
   <data name="labelAuthor" xml:space="preserve"> 
-    <value>Auteur</value> 
+    <value>Författare</value> 
   </data> 
   <data name="labelByDefault" xml:space="preserve"> 
-    <value>Par défaut</value> 
+    <value>Som standard</value> 
   </data> 
   <data name="labelBytes" xml:space="preserve"> 
-    <value>o</value> 
+    <value>B</value> 
   </data> 
   <data name="labelChooseConflictVersion" xml:space="preserve"> 
-    <value>Choisissez la version de vos fichiers que vous souhaitez conserver.</value> 
+    <value>Välj vilken version av dina filer du vill behålla.</value> 
   </data> 
   <data name="labelChooseConflictVersionIndividual" xml:space="preserve"> 
-    <value>Pour chaque fichier, sélectionnez la version à conserver.</value> 
+    <value>Välj för varje fil vilken version som ska behållas.</value> 
   </data> 
   <data name="labelConflictDialogQuestion" xml:space="preserve"> 
-    <value>Quelle version souhaitez-vous garder ?</value> 
+    <value>Vilken version vill du behålla?</value> 
   </data> 
   <data name="labelConflictDialogTitle" xml:space="preserve"> 
-    <value>Choisir la version à conserver</value> 
+    <value>Välj vilken version som ska behållas</value> 
   </data> 
   <data name="labelConflictStrategyKeepLocalDescription" xml:space="preserve"> 
-    <value>Les versions en ligne de ces %@ fichiers seront remplacées par vos versions locales.
-Attention, cela peut écraser le travail de vos collaborateurs.</value> 
+    <value>Onlineversionerna av dessa %s filer ersätts av dina lokala versioner.
+Var uppmärksam, detta kan skriva över dina kollegors arbete.</value> 
   </data> 
   <data name="labelConflictStrategyKeepLocalTitle" xml:space="preserve"> 
-    <value>Conserver uniquement les versions locales</value> 
+    <value>Behåll bara lokala versioner</value> 
   </data> 
   <data name="labelConflictStrategyKeepMostRecentDescription" xml:space="preserve"> 
-    <value>Pour chaque conflit, nous conserverons automatiquement la version (locale ou en ligne) modifiée le plus récemment. C’est le choix le plus sûr dans la plupart des cas.</value> 
+    <value>För varje konflikt behåller vi automatiskt den version (lokal eller online) som senast ändrades. Det är det säkraste valet i de flesta fall.</value> 
   </data> 
   <data name="labelConflictStrategyKeepMostRecentTitle" xml:space="preserve"> 
-    <value>Conserver les versions les plus récentes</value> 
+    <value>Behåll de senaste versionerna</value> 
   </data> 
   <data name="labelConflictStrategyKeepRemoteDescription" xml:space="preserve"> 
-    <value>Toutes les modifications locales pour ces %@ fichiers seront annulées.
-Utile si vous savez que le travail important est en ligne sur kDrive.</value> 
+    <value>Alla lokala ändringar för dessa %s filer tas bort.
+Användbart om du vet att det viktiga arbetet finns online på kDrive.</value> 
   </data> 
   <data name="labelConflictStrategyKeepRemoteTitle" xml:space="preserve"> 
-    <value>Conserver uniquement les versions en ligne</value> 
+    <value>Behåll bara onlineversionerna</value> 
   </data> 
   <data name="labelConnectToStart" xml:space="preserve"> 
-    <value>Connectez-vous pour commencer.</value> 
+    <value>Logga in för att komma igång.</value> 
   </data> 
   <data name="labelCreateNewSync" xml:space="preserve"> 
-    <value>Créez une %@.</value> 
+    <value>Skapa en %s.</value> 
   </data> 
   <data name="labelDate" xml:space="preserve"> 
-    <value>Date</value> 
+    <value>Datum</value> 
   </data> 
   <data name="labelDeactivated" xml:space="preserve"> 
-    <value>Desactivé</value> 
+    <value>Inaktiverad</value> 
   </data> 
   <data name="labelFAQ" xml:space="preserve"> 
     <value>FAQ</value> 
   </data> 
   <data name="labelFileLowerCase" xml:space="preserve"> 
-    <value>fichier</value> 
+    <value>fil</value> 
   </data> 
   <data name="labelFolder" xml:space="preserve"> 
-    <value>Dossier</value> 
+    <value>Mapp</value> 
   </data> 
   <data name="labelFolderDeleted" xml:space="preserve"> 
-    <value>Dossier supprimé</value> 
+    <value>Mapp raderad</value> 
   </data> 
   <data name="labelFolderDisplacedOrModified" xml:space="preserve"> 
-    <value>Dossier déplacé ou modifié</value> 
+    <value>Mapp flyttad eller ändrad</value> 
   </data> 
   <data name="labelFolderDisplacedOrModifiedTip" xml:space="preserve"> 
-    <value>Le dossier a peut-être été déplacé vers un autre disque puis remis à son emplacement initial.</value> 
+    <value>Mappen kanske har flyttats till en annan disk och sedan återställts till sin ursprungliga plats.</value> 
   </data> 
   <data name="labelFolderLowerCase" xml:space="preserve"> 
-    <value>dossier</value> 
+    <value>mapp</value> 
   </data> 
   <data name="labelFolderMovedOrRenamed" xml:space="preserve"> 
-    <value>Dossier déplacé ou renommé</value> 
+    <value>Mapp flyttad eller omdöpt</value> 
   </data> 
   <data name="labelFolderRecreatedOrReplaced" xml:space="preserve"> 
-    <value>Dossier recréé ou remplacé</value> 
+    <value>Mapp återskapad eller ersätt</value> 
   </data> 
   <data name="labelFolderRecreatedOrReplacedTip" xml:space="preserve"> 
-    <value>Le dossier a été supprimé puis recréé, ou remplacé par un autre dossier portant le même nom.</value> 
+    <value>Mappen raderades och återskapades, eller ersättes av en annan mapp med samma namn.</value> 
   </data> 
   <data name="labelGigaBytes" xml:space="preserve"> 
-    <value>Go</value> 
+    <value>GB</value> 
     <comment>Unit abbreviation for gigabytes, used in file size and storage displays.</comment> 
   </data> 
   <data name="labelJustNow" xml:space="preserve"> 
-    <value>À l’instant</value> 
+    <value>Just nu</value> 
   </data> 
   <data name="labelKDriveVersion" xml:space="preserve"> 
-    <value>kDrive %@</value> 
+    <value>kDrive %s</value> 
   </data> 
   <data name="labelKiloBytes" xml:space="preserve"> 
-    <value>Ko</value> 
+    <value>KB</value> 
     <comment>Unit abbreviation for kilobytes, used in file size displays.</comment> 
   </data> 
   <data name="labelLocal" xml:space="preserve"> 
-    <value>Locale</value> 
+    <value>Lokal</value> 
   </data> 
   <data name="labelManyConflictTitle" xml:space="preserve"> 
-    <value>%@ fichiers ont été modifiés à la fois sur votre ordinateur et sur kDrive.</value> 
+    <value>%s filer har ändrats både på din dator och på kDrive.</value> 
   </data> 
   <data name="labelMegaBytes" xml:space="preserve"> 
-    <value>Mo</value> 
+    <value>MB</value> 
     <comment>Unit abbreviation for megabytes, used in file size displays.</comment> 
   </data> 
   <data name="labelMostRecent" xml:space="preserve"> 
-    <value>Plus récente</value> 
+    <value>Senaste</value> 
   </data> 
   <data name="labelName" xml:space="preserve"> 
-    <value>Nom</value> 
+    <value>Namn</value> 
   </data> 
   <data name="labelNewDeviceDetected" xml:space="preserve"> 
-    <value>Nouvel appareil détecté</value> 
+    <value>Ny enhet hittades</value> 
   </data> 
   <data name="labelNewDeviceDetectedTip" xml:space="preserve"> 
-    <value>Vous utilisez kDrive sur un nouvel ordinateur, après une restauration depuis une sauvegarde.</value> 
+    <value>Du använder kDrive på en ny dator, efter en återställning från en säkerhetskopia.</value> 
   </data> 
   <data name="labelNewFolder" xml:space="preserve"> 
-    <value>Nouveau dossier</value> 
+    <value>Ny mapp</value> 
   </data> 
   <data name="labelNewSync" xml:space="preserve"> 
-    <value>nouvelle synchronisation</value> 
+    <value>ny synkronisering</value> 
   </data> 
   <data name="labelNoConflictsFound" xml:space="preserve"> 
-    <value>Aucun conflit ne correspond à votre recherche</value> 
+    <value>Inga konflikter matchar din sökning</value> 
   </data> 
   <data name="labelNoErrorsToFix" xml:space="preserve"> 
-    <value>Aucune erreur à corriger.</value> 
+    <value>Inga fel att åtgärda.</value> 
   </data> 
   <data name="labelNotifications" xml:space="preserve"> 
-    <value>Notification</value> 
+    <value>Avisering</value> 
   </data> 
   <data name="labelOnline" xml:space="preserve"> 
-    <value>En ligne</value> 
+    <value>Online</value> 
   </data> 
   <data name="labelOnlineFolderDeletedOrRenamed" xml:space="preserve"> 
-    <value>Dossier supprimé en ligne</value> 
+    <value>Onlinemapp raderad</value> 
   </data> 
   <data name="labelOnlineFolderDeletedOrRenamedTip" xml:space="preserve"> 
-    <value>Le dossier synchronisé a été supprimé sur kDrive en ligne ou n’est plus accessible.</value> 
+    <value>Den synkroniserade mappen raderades på kDrive online eller är inte längre tillgänglig.</value> 
   </data> 
   <data name="labelOriginalLocation" xml:space="preserve"> 
-    <value>Emplacement d’origine :</value> 
+    <value>Ursprunglig plats:</value> 
   </data> 
   <data name="labelRecommended" xml:space="preserve"> 
-    <value>Recommandé</value> 
+    <value>Rekommenderas</value> 
   </data> 
   <data name="labelRemoteAccessRightsModifiedTip" xml:space="preserve"> 
-    <value>Le dossier a peut-être été déplacé vers un autre disque puis remis à son emplacement initial.</value> 
+    <value>Mappen kanske har flyttats till en annan disk och sedan återställts till sin ursprungliga plats.</value> 
   </data> 
   <data name="labelRestoreToOriginalLocation" xml:space="preserve"> 
-    <value>Remettez-le à son emplacement d’origine.</value> 
+    <value>Återställ den till sin ursprungliga plats.</value> 
   </data> 
   <data name="labelRules" xml:space="preserve"> 
-    <value>Règles</value> 
+    <value>Regler</value> 
   </data> 
   <data name="labelSameAsSystem" xml:space="preserve"> 
-    <value>Identique au système</value> 
+    <value>Samma som systemet</value> 
   </data> 
   <data name="labelShortDay" xml:space="preserve"> 
     <value>d</value> 
     <comment>Abbreviated unit for day used in relative timestamps (e.g., 3d ago).</comment> 
   </data> 
   <data name="labelShortHour" xml:space="preserve"> 
-    <value>h</value> 
+    <value>t</value> 
     <comment>Abbreviated unit for hour used in relative timestamps.</comment> 
   </data> 
   <data name="labelShortMinute" xml:space="preserve"> 
@@ -1109,585 +1109,585 @@ Utile si vous savez que le travail important est en ligne sur kDrive.</value>
     <comment>Abbreviated unit for minute used in relative timestamps.</comment> 
   </data> 
   <data name="labelShortSecond" xml:space="preserve"> 
-    <value>sec</value> 
+    <value>sek</value> 
     <comment>Abbreviated unit for second used in relative timestamps.</comment> 
   </data> 
   <data name="labelSince" xml:space="preserve"> 
-    <value>Depuis : %@</value> 
+    <value>Sedan: %s</value> 
     <comment>Label showing the start time of a synchronization pause or event; %@ is the formatted date/time.</comment> 
   </data> 
   <data name="labelSize" xml:space="preserve"> 
-    <value>Taille</value> 
+    <value>Storlek</value> 
   </data> 
   <data name="labelStatus" xml:space="preserve"> 
-    <value>Statut</value> 
+    <value>Status</value> 
   </data> 
   <data name="labelStorageFree" xml:space="preserve"> 
-    <value>%@ libre</value> 
+    <value>%s ledigt</value> 
     <comment>Label showing available free storage space; %@ is the formatted size (singular form).</comment> 
   </data> 
   <data name="labelStorageFree-plural" xml:space="preserve"> 
-    <value>%@ libres</value> 
+    <value>%s lediga</value> 
   </data> 
   <data name="labelStorageLoading" xml:space="preserve"> 
-    <value>Calcul…</value> 
+    <value>Beräknar…</value> 
     <comment>Loading indicator text shown while storage usage is being calculated.</comment> 
   </data> 
   <data name="labelStorageUsed" xml:space="preserve"> 
-    <value>%@ utilisé</value> 
+    <value>%s använt</value> 
     <comment>Label showing used storage space; %@ is the formatted size (singular form).</comment> 
   </data> 
   <data name="labelStorageUsed-plural" xml:space="preserve"> 
-    <value>%@ utilisés</value> 
+    <value>%s använda</value> 
   </data> 
   <data name="labelSyncExclusionEmptyDescription" xml:space="preserve"> 
-    <value>Ce kDrive contient uniquement des fichiers. Tous les fichiers seront synchronisés sur cet appareil.</value> 
+    <value>Den här kDrive innehåller bara filer. Alla filer synkroniseras på den här enheten.</value> 
   </data> 
   <data name="labelSyncExclusionEmptyTitle" xml:space="preserve"> 
-    <value>Aucun dossier à sélectionner</value> 
+    <value>Ingen mapp att välja</value> 
   </data> 
   <data name="labelSyncFolder" xml:space="preserve"> 
-    <value>Dossiers de synchronisation</value> 
+    <value>Synkroniseringsmappar</value> 
   </data> 
   <data name="labelSyncLocation" xml:space="preserve"> 
-    <value>Emplacement</value> 
+    <value>Plats</value> 
   </data> 
   <data name="labelSyncYourKDrive" xml:space="preserve"> 
-    <value>Synchronisez vos kDrive sur cet appareil</value> 
+    <value>Synkronisera dina kDrives på den här enheten</value> 
   </data> 
   <data name="labelSyncedFolders" xml:space="preserve"> 
-    <value>Dossiers synchronisés</value> 
+    <value>Synkroniserade mappar</value> 
   </data> 
   <data name="labelSynchronisation" xml:space="preserve"> 
-    <value>Synchronisation</value> 
+    <value>Synkronisering</value> 
   </data> 
   <data name="labelTeraBytes" xml:space="preserve"> 
-    <value>To</value> 
+    <value>TB</value> 
     <comment>Unit abbreviation for terabytes, used in storage displays.</comment> 
   </data> 
   <data name="labelWelcomeToKDrive" xml:space="preserve"> 
-    <value>Bienvenue sur kDrive</value> 
+    <value>Välkommen till kDrive</value> 
   </data> 
   <data name="labelXoverY" xml:space="preserve"> 
-    <value>%@ sur %@</value> 
+    <value>%1$s av %2$s</value> 
   </data> 
   <data name="labelkDriveManagement" xml:space="preserve"> 
-    <value>Gestion de kDrive</value> 
+    <value>kDrive-hantering</value> 
   </data> 
   <data name="languageSetting" xml:space="preserve"> 
-    <value>Langue</value> 
+    <value>Språk</value> 
   </data> 
   <data name="languageSettingWarning" xml:space="preserve"> 
-    <value>Redémarrez l’application pour finir d’appliquer la nouvelle langue.</value> 
+    <value>Starta om programmet för att slutföra tillämpningen av det nya språket.</value> 
   </data> 
   <data name="largeFolderRecommendation" xml:space="preserve"> 
-    <value>Le dossier complet est volumineux.
-Pour accélérer l’envoi, nous vous recommandons de n’envoyer que la dernière session kDrive.</value> 
+    <value>Den fullständiga mappen är stor.
+För att påskynda uppladdningen rekommenderar vi att du bara skickar den senaste kDrive-sessionen.</value> 
   </data> 
   <data name="learnMore" xml:space="preserve"> 
-    <value>En savoir plus</value> 
+    <value>Läs mer</value> 
   </data> 
   <data name="licensesHyperLink" xml:space="preserve"> 
-    <value>Licence LGPL v3 - Sources Git</value> 
+    <value>LGPL v3-licens - Git-källor</value> 
   </data> 
   <data name="linkCopiedToClipboardTitle" xml:space="preserve"> 
-    <value>Lien copié dans le presse-papiers</value> 
+    <value>Länk kopierad till urklipp</value> 
   </data> 
   <data name="liteSyncUnavailableDescription" xml:space="preserve"> 
-    <value>Disque incompatible ou dossier directement à la racine du disque (ex : choisissez un dossier comme D:/Mon drive au lieu de D:/)</value> 
+    <value>Inkompatibel enhet eller mapp direkt i roten av enheten (t.ex. välj en mapp som D:/Min enhet istället för D:/)</value> 
   </data> 
   <data name="localLocation" xml:space="preserve"> 
-    <value>Emplacement sur l’ordinateur</value> 
+    <value>Plats på dator</value> 
     <comment>Label for the local PC folder location field in sync settings.</comment> 
   </data> 
   <data name="logLevelDebug" xml:space="preserve"> 
-    <value>Débogage</value> 
+    <value>Felsök</value> 
   </data> 
   <data name="logLevelError" xml:space="preserve"> 
-    <value>Erreur</value> 
+    <value>Fel</value> 
   </data> 
   <data name="logLevelExtended" xml:space="preserve"> 
-    <value>Étendu</value> 
+    <value>Utökad</value> 
     <comment>Extended log level option in the debug level dropdown in advanced settings.</comment> 
   </data> 
   <data name="logLevelFatal" xml:space="preserve"> 
-    <value>Critique</value> 
+    <value>Kritisk</value> 
   </data> 
   <data name="logLevelInfo" xml:space="preserve"> 
     <value>Info</value> 
   </data> 
   <data name="logLevelWarning" xml:space="preserve"> 
-    <value>Avertissement</value> 
+    <value>Varning</value> 
   </data> 
   <data name="logUploadPopupTitle" xml:space="preserve"> 
-    <value>Envoyer le dossier de débogage au support Infomaniak</value> 
+    <value>Skicka felsökningsmapp till Infomaniaks support</value> 
   </data> 
   <data name="logicErrorFullListParsingErrorDescription" xml:space="preserve"> 
-    <value>Certains noms de fichiers peuvent contenir des caractères spéciaux non pris en charge (tels que des guillemets doubles, des barres obliques inversées ou des sauts de ligne).
+    <value>Vissa filnamn kan innehålla specialtecken som inte stöds (t.ex. dubbla citattecken, omvända snedstreck eller radbrytningar).
 
-Veuillez vérifier et renommer les fichiers contenant des caractères inhabituels, puis réessayez.</value> 
+Kontrollera och byt namn på filer som innehåller ovanliga tecken och försök sedan igen.</value> 
   </data> 
   <data name="logicErrorFullListParsingErrorTitle" xml:space="preserve"> 
-    <value>Nom de fichier invalide</value> 
+    <value>Ogiltigt filnamn</value> 
   </data> 
   <data name="logsStatusCompression" xml:space="preserve"> 
-    <value>Compression des journaux…</value> 
+    <value>Komprimerar loggar…</value> 
   </data> 
   <data name="logsStatusUpload" xml:space="preserve"> 
-    <value>Transfert des journaux vers le support…</value> 
+    <value>Laddar upp loggar till support…</value> 
   </data> 
   <data name="logsUploadErrorTooltip" xml:space="preserve"> 
-    <value>Le dernier transfert a échoué. Veuillez vérifier votre connexion Internet et vous assurer qu’au moins un utilisateur de kDrive est connecté. Les transferts sont limités à 10 par jour.</value> 
+    <value>Den senaste uppladdningen misslyckades. Kontrollera din internetanslutning och se till att minst en kDrive-användare är inloggad. Uppladdningar är begränsade till 10 per dag.</value> 
   </data> 
   <data name="manyConflictErrorDescription" xml:space="preserve"> 
-    <value>Des versions différentes de ces fichiers ont été détectées.</value> 
+    <value>Olika versioner av dessa filer hittades.</value> 
   </data> 
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
-    <value>%@ conflits de versions détectés</value> 
+    <value>%s versionskonflikt(er) hittades</value> 
   </data> 
   <data name="matomoDescription" xml:space="preserve"> 
-    <value>Matomo est un outil d’analyse hébergé et géré exclusivement par Infomaniak pour comprendre comment l’application est utilisée.
+    <value>Matomo är ett analysverktyg som driftas och hanteras exklusivt av Infomaniak för att förstå hur programmet används.
 
-L’étude de ces données permet à notre équipe d’améliorer en continu l’interface de l’application.</value> 
+Analys av dessa data gör det möjligt för vårt team att kontinuerligt förbättra programmets gränssnitt.</value> 
   </data> 
   <data name="moveCancelErrorTitle" xml:space="preserve"> 
-    <value>Déplacement annulé</value> 
+    <value>Flytt avbruten</value> 
   </data> 
   <data name="moveDeletedFilesToRecycleBinSetting" xml:space="preserve"> 
-    <value>Déplacer les fichiers supprimés dans la corbeille de l’ordinateur</value> 
+    <value>Flytta raderade filer till datorns papperskorg</value> 
   </data> 
   <data name="moveDeletedFilesToRecycleBinWarning" xml:space="preserve"> 
-    <value>Certains éléments ne pourront pas être déplacés.</value> 
+    <value>Vissa objekt kanske inte kan flyttas.</value> 
   </data> 
   <data name="myksuitePlusBannerDescription" xml:space="preserve"> 
-    <value>Plus d’espace de stockage, plus de fonctionnalités avec ma kSuite+</value> 
+    <value>Mer lagringsutrymme, fler funktioner med my kSuite+</value> 
   </data> 
   <data name="needHelpSetting" xml:space="preserve"> 
-    <value>Besoin d’aide ?</value> 
+    <value>Behöver du hjälp?</value> 
   </data> 
   <data name="noAccountConnected" xml:space="preserve"> 
-    <value>Ajoutez un compte pour commencer</value> 
+    <value>Lägg till ett konto för att komma igång</value> 
   </data> 
   <data name="noResultsFound" xml:space="preserve"> 
-    <value>Aucun résultat trouvé</value> 
+    <value>Inga resultat hittades</value> 
   </data> 
   <data name="notSyncedDrive" xml:space="preserve"> 
-    <value>Non synchronisé</value> 
+    <value>Inte synkroniserad</value> 
   </data> 
   <data name="notificationsDisabledAlways" xml:space="preserve"> 
-    <value>Toujours</value> 
+    <value>Alltid</value> 
   </data> 
   <data name="notificationsDisabledNever" xml:space="preserve"> 
-    <value>Jamais</value> 
+    <value>Aldrig</value> 
   </data> 
   <data name="notifyOnFileExcluded" xml:space="preserve"> 
-    <value>Recevoir une notification lorsqu’un fichier est exclu</value> 
+    <value>Ta emot ett meddelande när en fil exkluderas</value> 
   </data> 
   <data name="onBoardingAdvancedSettingsDriveTitle" xml:space="preserve"> 
-    <value>Configurer la synchronisation pour ce kDrive</value> 
+    <value>Konfigurera synkronisering för den här kDrive</value> 
   </data> 
   <data name="onboardingAdvancedSettingsDriveCustomizeLocation" xml:space="preserve"> 
-    <value>Personnalisez l’emplacement de votre dossier kDrive sur votre ordinateur :</value> 
+    <value>Anpassa platsen för din kDrive-mapp på din dator:</value> 
   </data> 
   <data name="onboardingAdvancedSettingsDriveCustomizeLocationTip" xml:space="preserve"> 
-    <value>Le dossier choisi doit être vide pour que la synchronisation fonctionne correctement.</value> 
+    <value>Den valda mappen måste vara tom för att synkroniseringen ska fungera korrekt.</value> 
   </data> 
   <data name="onboardingAdvancedSettingsDriveExclusionDescription" xml:space="preserve"> 
-    <value>Choisissez les dossiers à synchroniser sur cet ordinateur :</value> 
+    <value>Välj mapparna att synkronisera på den här datorn:</value> 
   </data> 
   <data name="onboardingAdvancedSettingsDriveExclusionTitle" xml:space="preserve"> 
-    <value>Dossiers synchronisés</value> 
+    <value>Synkroniserade mappar</value> 
   </data> 
   <data name="onboardingAdvancedSettingsDriveSelectionDescription" xml:space="preserve"> 
-    <value>Pour chaque kDrive, vous pourrez choisir où il est synchronisé sur votre ordinateur et quels dossiers synchroniser.</value> 
+    <value>För varje kDrive kan du välja var den synkroniseras på din dator och vilka mappar som ska synkroniseras.</value> 
   </data> 
   <data name="onboardingAdvancedSettingsDriveSelectionExclusion" xml:space="preserve"> 
-    <value>Contenu synchronisé :</value> 
+    <value>Synkroniserat innehåll:</value> 
   </data> 
   <data name="onboardingAdvancedSettingsDriveSelectionLocation" xml:space="preserve"> 
-    <value>Emplacement :</value> 
+    <value>Plats:</value> 
   </data> 
   <data name="onboardingAdvancedSettingsDriveSelectionTitle" xml:space="preserve"> 
-    <value>Configurer vos kDrive</value> 
+    <value>Konfigurera dina kDrives</value> 
   </data> 
   <data name="onboardingAdvancedSettingsExclusionTitle" xml:space="preserve"> 
-    <value>Choisissez les dossiers à synchroniser sur cet ordinateur</value> 
+    <value>Välj mapparna att synkronisera på den här datorn</value> 
   </data> 
   <data name="onboardingAdvancedSettingsLiteSyncDescription" xml:space="preserve"> 
-    <value>Les fichiers sont téléchargés uniquement à l’ouverture, pour économiser de l’espace disque.</value> 
+    <value>Filer laddas ned enbart när de öppnas, för att spara diskutrymme.</value> 
   </data> 
   <data name="onboardingAdvancedSettingsLiteSyncTitle" xml:space="preserve"> 
-    <value>Activer la Lite Sync</value> 
+    <value>Aktivera Lite Sync</value> 
   </data> 
   <data name="onboardingAlreadySyncedDriveTooltip" xml:space="preserve"> 
-    <value>Ce kDrive est déjà configuré.
-Allez dans vos paramètres pour le modifier.</value> 
+    <value>Den här kDrive är redan konfigurerad.
+Gå till dina inställningar för att ändra den.</value> 
   </data> 
   <data name="onboardingDriveSelectionNoDriveDescription" xml:space="preserve"> 
-    <value>Commencez gratuitement avec my kSuite,
-ou choisissez une offre adaptée à vos besoins.</value> 
+    <value>Kom igång gratis med my kSuite,
+eller välj ett abonnemang som passar dina behov.</value> 
   </data> 
   <data name="onboardingDriveSelectionNoDriveTitle" xml:space="preserve"> 
-    <value>Vous n’avez pas encore de kDrive.</value> 
+    <value>Du har inte en kDrive ännu.</value> 
   </data> 
   <data name="onboardingDriveSelectionSelectTitle" xml:space="preserve"> 
-    <value>Choisissez les kDrive à synchroniser sur cet ordinateur :</value> 
+    <value>Välj kDrives att synkronisera på den här datorn:</value> 
   </data> 
   <data name="onboardingDriveSelectionSyncInProgress" xml:space="preserve"> 
-    <value>Synchronisation en cours</value> 
+    <value>Synkronisering pågår</value> 
   </data> 
   <data name="onboardingDriveSelectionTitle" xml:space="preserve"> 
-    <value>Content de vous retrouver !</value> 
+    <value>Kul att se dig!</value> 
   </data> 
   <data name="onboardingExclusionSummaryNone" xml:space="preserve"> 
-    <value>Tous les dossiers kDrive</value> 
+    <value>Alla kDrive-mappar</value> 
   </data> 
   <data name="onboardingExclusionSummarySome" xml:space="preserve"> 
-    <value>Sélection personnalisée</value> 
+    <value>Anpassat urval</value> 
   </data> 
   <data name="onboardingLoginDescription" xml:space="preserve"> 
-    <value>Le cloud privé, rapide et sécurisé, hébergé en Suisse.
+    <value>Det privata, snabba och säkra molnet, drftat i Schweiz.
 
-Connectez-vous et gardez vos documents synchronisés sur tous vos appareils.</value> 
+Logga in och håll dina dokument synkroniserade på alla dina enheter.</value> 
   </data> 
   <data name="onboardingLoginErrorDescription" xml:space="preserve"> 
-    <value>Une erreur est survenue, veuillez réessayer.</value> 
+    <value>Ett fel uppstod, försök igen.</value> 
   </data> 
   <data name="onboardingLoginErrorTitle" xml:space="preserve"> 
-    <value>Erreur de connexion</value> 
+    <value>Inloggningsfel</value> 
   </data> 
   <data name="onboardingLoginProcessingDescription" xml:space="preserve"> 
-    <value>Récupération de vos informations…</value> 
+    <value>Hämtar din information…</value> 
   </data> 
   <data name="onboardingLoginProcessingTitle" xml:space="preserve"> 
-    <value>Un instant…</value> 
+    <value>Ett ögonblick…</value> 
   </data> 
   <data name="onboardingLoginTitle" xml:space="preserve"> 
-    <value>Bienvenue dans kDrive</value> 
+    <value>Välkommen till kDrive</value> 
   </data> 
   <data name="onboardingSynchronizationAppReadyDescription" xml:space="preserve"> 
-    <value>Vos fichiers sont prêts à être synchronisés
-en toute sécurité sur votre ordinateur.</value> 
+    <value>Dina filer är redo att synkroniseras
+säkert på din dator.</value> 
   </data> 
   <data name="onboardingSynchronizationAppReadyTitle" xml:space="preserve"> 
-    <value>Tout est prêt !</value> 
+    <value>Allt är klart!</value> 
   </data> 
   <data name="onboardingSynchronizationInProgressDescription" xml:space="preserve"> 
-    <value>Nous finalisons la configuration de vos kDrive.
+    <value>Vi slutför konfigurationen av dina kDrives.
 
-Nous vous invitons à patienter quelques instants.</value> 
+Vänta ett ögonblick.</value> 
   </data> 
   <data name="onboardingSynchronizationInProgressTitle" xml:space="preserve"> 
-    <value>Synchronisation en cours…</value> 
+    <value>Synkronisering pågår…</value> 
   </data> 
   <data name="openKDriveAtStartupSetting" xml:space="preserve"> 
-    <value>Ouvrir kDrive au démarrage de l’ordinateur</value> 
+    <value>Öppna kDrive när datorn startar</value> 
   </data> 
   <data name="openLoginPage" xml:space="preserve"> 
-    <value>Ouvrir la page de connexion</value> 
+    <value>Öppna inloggningssidan</value> 
   </data> 
   <data name="pathCopiedToClipboard" xml:space="preserve"> 
-    <value>Chemin copié dans le presse-papiers</value> 
+    <value>Sökväg kopierad till urklipp</value> 
   </data> 
   <data name="proxyConnectionDescription" xml:space="preserve"> 
-    <value>Définissez comment kDrive se connecte à Internet.</value> 
+    <value>Definiera hur kDrive ansluter till internet.</value> 
   </data> 
   <data name="proxyHost" xml:space="preserve"> 
-    <value>Serveur</value> 
+    <value>Server</value> 
   </data> 
   <data name="proxyNeedAuth" xml:space="preserve"> 
-    <value>Authentification requise</value> 
+    <value>Autentisering krävs</value> 
   </data> 
   <data name="proxyPassword" xml:space="preserve"> 
-    <value>Mot de passe</value> 
+    <value>Lösenord</value> 
   </data> 
   <data name="proxyPort" xml:space="preserve"> 
     <value>Port</value> 
   </data> 
   <data name="proxySettings" xml:space="preserve"> 
-    <value>Paramètres Proxy</value> 
+    <value>Proxyinällningar</value> 
     <comment>Title of the proxy settings section in advanced settings.</comment> 
   </data> 
   <data name="proxyType" xml:space="preserve"> 
-    <value>Type de proxy</value> 
+    <value>Proxytyp</value> 
   </data> 
   <data name="proxyTypeHTTP" xml:space="preserve"> 
-    <value>Configuration manuelle</value> 
+    <value>Manuell konfiguration</value> 
   </data> 
   <data name="proxyTypeNone" xml:space="preserve"> 
-    <value>Aucun</value> 
+    <value>Ingen</value> 
   </data> 
   <data name="proxyUser" xml:space="preserve"> 
-    <value>Nom d’utilisateur</value> 
+    <value>Användarnamn</value> 
   </data> 
   <data name="releaseChannelBeta" xml:space="preserve"> 
-    <value>Bêta</value> 
+    <value>Beta</value> 
   </data> 
   <data name="releaseChannelInternal" xml:space="preserve"> 
-    <value>Interne</value> 
+    <value>Intern</value> 
   </data> 
   <data name="releaseChannelTest" xml:space="preserve"> 
     <value>Test</value> 
   </data> 
   <data name="remoteLocation" xml:space="preserve"> 
-    <value>Emplacement sur kDrive</value> 
+    <value>Plats på kDrive</value> 
   </data> 
   <data name="searchBoxPlaceholder" xml:space="preserve"> 
-    <value>Recherche dans %@</value> 
+    <value>Sök i %s</value> 
   </data> 
   <data name="selectFoldersToSync" xml:space="preserve"> 
-    <value>Sélectionnez les dossiers à synchroniser sur cet ordinateur.</value> 
+    <value>Välj mapparna att synkronisera på den här datorn.</value> 
   </data> 
   <data name="selectFoldersToSyncDescription" xml:space="preserve"> 
-    <value>Les dossiers non sélectionnés ne seront pas téléchargés sur votre appareil. Ils resteront disponibles en ligne et ne seront pas supprimés.</value> 
+    <value>Icke valda mappar laddas inte ned till din enhet. De förblir tillgängliga online och tas inte bort.</value> 
   </data> 
   <data name="selectFoldersToSyncDescriptionShort" xml:space="preserve"> 
-    <value>Les dossiers non sélectionnés ne seront pas téléchargés sur votre appareil. Ils resteront disponibles en ligne.</value> 
+    <value>Icke valda mappar laddas inte ned till din enhet. De förblir tillgängliga online.</value> 
   </data> 
   <data name="sendLastSessionOnly" xml:space="preserve"> 
-    <value>Envoyer uniquement la dernière session</value> 
+    <value>Skicka bara senaste sessionen</value> 
   </data> 
   <data name="sentryDescription" xml:space="preserve"> 
-    <value>Sentry est un outil hébergé et géré exclusivement par Infomaniak pour surveiller en temps réel la stabilité de l’application et signaler automatiquement d’éventuelles erreurs techniques à nos développeurs.
+    <value>Sentry är ett verktyg som driftas och hanteras exklusivt av Infomaniak för att övervaka programmets stabilitet i realtid och automatiskt rapportera eventuella tekniska fel till våra utvecklare.
 
-Ces données permettent à notre équipe de rapidement corriger et optimiser l’application, ce qui se traduit par une meilleure expérience d’utilisation pour vous.</value> 
+Dessa data gör det möjligt för vårt team att snabbt åtgärda och optimera programmet, vilket ger en bättre användarupplevelse för dig.</value> 
   </data> 
   <data name="settingsTitle" xml:space="preserve"> 
-    <value>Paramètres</value> 
+    <value>Inställningar</value> 
   </data> 
   <data name="sidebarItemAccounts" xml:space="preserve"> 
-    <value>Comptes</value> 
+    <value>Konton</value> 
   </data> 
   <data name="sidebarItemAdvanced" xml:space="preserve"> 
-    <value>Avancés</value> 
+    <value>Avancerat</value> 
   </data> 
   <data name="sidebarItemGeneral" xml:space="preserve"> 
-    <value>Général</value> 
+    <value>Allmänt</value> 
   </data> 
   <data name="sidebarItemKDriveTitle" xml:space="preserve"> 
-    <value>Dossier kDrive</value> 
+    <value>kDrive-mapp</value> 
   </data> 
   <data name="signInBrowser" xml:space="preserve"> 
-    <value>Connectez-vous dans votre navigateur</value> 
+    <value>Logga in med din webbläsare</value> 
   </data> 
   <data name="storageComputerFreeSpace" xml:space="preserve"> 
-    <value>Espace libre de l’ordinateur</value> 
+    <value>Ledigt utrymme på datorn</value> 
     <comment>Label for the free disk space segment in the local storage usage chart.</comment> 
   </data> 
   <data name="storageComputerUsedByKDrive" xml:space="preserve"> 
-    <value>Fichiers kDrive stockés sur l’ordinateur</value> 
+    <value>kDrive-filer lagrade på datorn</value> 
     <comment>Label for the kDrive files segment in the local storage usage chart.</comment> 
   </data> 
   <data name="storageComputerUsedByOther" xml:space="preserve"> 
-    <value>Autres fichiers de l’ordinateur</value> 
+    <value>Övriga filer på datorn</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
   <data name="storageSyncBlockTitle" xml:space="preserve"> 
-    <value>Synchronisation</value> 
+    <value>Synkronisering</value> 
   </data> 
   <data name="storageThisComputerTitle" xml:space="preserve"> 
-    <value>Ce PC - %@ - %@</value> 
+    <value>Den här datorn - %1$s - %2$s</value> 
     <comment>Label for the local computer entry in the storage view; first %@ is computer name, second %@ is disk identifier.</comment> 
   </data> 
   <data name="storedOnline" xml:space="preserve"> 
-    <value>Stockés en ligne</value> 
+    <value>Lagrade online</value> 
   </data> 
   <data name="storedOnlineDescription" xml:space="preserve"> 
-    <value>Vos fichiers restent dans le cloud et n’utilisent pas de place sur votre ordinateur.
-Connexion internet requise pour y accéder.</value> 
+    <value>Dina filer finns kvar i molnet och tar inte upp utrymme på din dator.
+Internetanslutning krävs för att komma åt dem.</value> 
   </data> 
   <data name="syncErrorTooltip" xml:space="preserve"> 
-    <value>Erreur de synchronisation</value> 
+    <value>Synkroniseringsfel</value> 
   </data> 
   <data name="syncFolderCustomLocation" xml:space="preserve"> 
-    <value>Dossier personnalisé</value> 
+    <value>Anpassad mapp</value> 
   </data> 
   <data name="syncFolderDefaultLocation" xml:space="preserve"> 
-    <value>Dossier par défaut</value> 
+    <value>Standardmapp</value> 
   </data> 
   <data name="syncInProgressTooltip" xml:space="preserve"> 
-    <value>Synchronisation</value> 
+    <value>Synkronisering</value> 
   </data> 
   <data name="syncModeApplying" xml:space="preserve"> 
-    <value>Votre nouveau mode de synchronisation est en cours d’application…</value> 
+    <value>Ditt nya synkroniseringsläge tillämpas…</value> 
   </data> 
   <data name="syncRules" xml:space="preserve"> 
-    <value>Règles de synchronisation</value> 
+    <value>Synkroniseringsregler</value> 
   </data> 
   <data name="syncShortStatusError" xml:space="preserve"> 
-    <value>Une erreur s’est produite</value> 
+    <value>Ett fel inträffade</value> 
   </data> 
   <data name="syncShortStatusIdle" xml:space="preserve"> 
-    <value>La dernière synchronisation a réussi</value> 
+    <value>Senaste synkronisering lyckades</value> 
   </data> 
   <data name="syncShortStatusPaused" xml:space="preserve"> 
-    <value>La synchronisation est en pause</value> 
+    <value>Synkronisering är pausad</value> 
   </data> 
   <data name="syncShortStatusRunning" xml:space="preserve"> 
-    <value>La synchronisation est en cours</value> 
+    <value>Synkronisering pågår</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
-    <value>Synchronisé</value> 
+    <value>Synkroniserad</value> 
   </data> 
   <data name="syncedDrive" xml:space="preserve"> 
-    <value>Synchronisé</value> 
+    <value>Synkroniserad</value> 
   </data> 
   <data name="syncedFromComputer" xml:space="preserve"> 
-    <value>Synchronisé à partir de votre ordinateur</value> 
+    <value>Synkroniserat från din dator</value> 
   </data> 
   <data name="syncedFromKDriveWeb" xml:space="preserve"> 
-    <value>Synchronisé depuis kDrive web</value> 
+    <value>Synkroniserat från kDrive web</value> 
   </data> 
   <data name="synchroInProgress" xml:space="preserve"> 
-    <value>vos fichiers se synchronisent</value> 
+    <value>dina filer synkroniseras</value> 
   </data> 
   <data name="synchroPaused" xml:space="preserve"> 
-    <value>la synchronisation est en pause</value> 
+    <value>synkroniseringen är pausad</value> 
   </data> 
   <data name="synchroStatusInProgressDescription" xml:space="preserve"> 
-    <value>Vos fichiers récents sont en train d’être mis à jour.</value> 
+    <value>Dina senaste filer uppdateras.</value> 
   </data> 
   <data name="synchroStatusInProgressTitle" xml:space="preserve"> 
-    <value>Synchronisation en cours</value> 
+    <value>Synkronisering pågår</value> 
   </data> 
   <data name="synchroStatusOfflineDescription" xml:space="preserve"> 
-    <value>Vos fichiers locaux restent accessibles.
-La synchronisation reprendra automatiquement dès que vous serez reconnecté.</value> 
+    <value>Dina lokala filer är fortfarande tillgängliga.
+Synkroniseringen återuptas automatiskt när du ansluts igen.</value> 
   </data> 
   <data name="synchroStatusOfflineTitle" xml:space="preserve"> 
-    <value>Hors ligne</value> 
+    <value>Offline</value> 
   </data> 
   <data name="synchroStatusPausedDescription" xml:space="preserve"> 
-    <value>La synchronisation est temporairement arrêtée.</value> 
+    <value>Synkroniseringen har tillfälligt stoppats.</value> 
   </data> 
   <data name="synchroStatusPausedTitle" xml:space="preserve"> 
-    <value>Pause activée</value> 
+    <value>Pausad</value> 
   </data> 
   <data name="synchroStatusUpToDateDescription" xml:space="preserve"> 
-    <value>Vos fichiers sont accessibles et synchronisés.</value> 
+    <value>Dina filer är tillgängliga och synkroniserade.</value> 
   </data> 
   <data name="synchroStatusUpToDateTitle" xml:space="preserve"> 
-    <value>Aucune activité en cours</value> 
+    <value>Ingen pågående aktivitet</value> 
   </data> 
   <data name="synchroUpToDate" xml:space="preserve"> 
-    <value>vos fichiers sont à jour</value> 
+    <value>dina filer är uppdaterade</value> 
   </data> 
   <data name="synchronizationSettings" xml:space="preserve"> 
-    <value>Synchronisation</value> 
+    <value>Synkronisering</value> 
   </data> 
   <data name="systemErrorFileOrDirectoryCorruptedDescription" xml:space="preserve"> 
-    <value>Un fichier ou un dossier dans votre dossier de synchronisation semble être corrompu.
-La synchronisation a été interrompue. Veuillez vérifier vos fichiers et réessayer.</value> 
+    <value>En fil eller mapp i din synkroniseringsmapp verkar vara skadad.
+Synkroniseringen har pausats. Kontrollera dina filer och försök igen.</value> 
   </data> 
   <data name="systemErrorFileOrDirectoryCorruptedTitle" xml:space="preserve"> 
-    <value>Fichier corrompu détecté</value> 
+    <value>Skadad fil hittades</value> 
   </data> 
   <data name="tabTitleActivities" xml:space="preserve"> 
-    <value>Activité</value> 
+    <value>Aktivitet</value> 
   </data> 
   <data name="tabTitleHome" xml:space="preserve"> 
-    <value>Accueil</value> 
+    <value>Hem</value> 
   </data> 
   <data name="tabTitleStorage" xml:space="preserve"> 
-    <value>Stockage</value> 
+    <value>Lagring</value> 
   </data> 
   <data name="teachingTipInvalidFolderAdvancedContent" xml:space="preserve"> 
-    <value>Le dossier ne pas doit pas être la racine d’un lecteur et ne pas contenir ni être dans un dossier déjà synchronisé.</value> 
+    <value>Mappen får inte vara roten till en enhet och får inte innehålla eller befinna sig i en redan synkroniserad mapp.</value> 
   </data> 
   <data name="teachingTipInvalidFolderContent" xml:space="preserve"> 
-    <value>Le dossier doit être vide, ne pas être la racine d’un lecteur et ne pas contenir ni être dans un dossier déjà synchronisé.</value> 
+    <value>Mappen måste vara tom, får inte vara roten till en enhet och får inte innehålla eller befinna sig i en redan synkroniserad mapp.</value> 
   </data> 
   <data name="teachingTipInvalidFolderTitle" xml:space="preserve"> 
-    <value>Ce dossier ne peut pas être utilisé</value> 
+    <value>Den här mappen kan inte användas</value> 
   </data> 
   <data name="titleConflictIndividualResolution" xml:space="preserve"> 
-    <value>Traitement individuel</value> 
+    <value>Individuell hantering</value> 
   </data> 
   <data name="tooltipExclusionRuleNotifications" xml:space="preserve"> 
-    <value>Une notification vous informe lorsqu’un fichier est exclu par cette règle</value> 
+    <value>Ett meddelande informerar dig när en fil exkluderas av den här regeln</value> 
   </data> 
   <data name="trayIconButtonCloseKDrive.Label" xml:space="preserve"> 
-    <value>Fermer kDrive</value> 
+    <value>Stäng kDrive</value> 
     <comment>This translation is used for the taskbar icon menu, which requires the x:Uid format (i.e., suffixed with .Label).</comment> 
   </data> 
   <data name="trayIconButtonOpenKDrive.Label" xml:space="preserve"> 
-    <value>Ouvrir kDrive</value> 
+    <value>Öppna kDrive</value> 
     <comment>This translation is used for the taskbar icon menu, which requires the x:Uid format (i.e., suffixed with .Label).</comment> 
   </data> 
   <data name="unableToCreateRemoteFolderTeachingTipContent" xml:space="preserve"> 
-    <value>Vérifiez que votre connexion internet est active, que ce nom n’est pas déjà utilisé et qu’il ne contient pas de caractères invalides.</value> 
+    <value>Kontrollera att din internetanslutning är aktiv, att det här namnet inte redan används och att det inte innehåller ogiltiga tecken.</value> 
   </data> 
   <data name="unableToCreateRemoteFolderTeachingTipTitle" xml:space="preserve"> 
-    <value>Impossible de créer ce dossier</value> 
+    <value>Det går inte att skapa den här mappen</value> 
   </data> 
   <data name="unauthorizedAccess" xml:space="preserve"> 
-    <value>Accès non autorisé</value> 
+    <value>Obehörig åtkomst</value> 
   </data> 
   <data name="unavailableContentNoActivityDescription" xml:space="preserve"> 
-    <value>Vos fichiers sont accessibles et synchronisés.</value> 
+    <value>Dina filer är tillgängliga och synkroniserade.</value> 
   </data> 
   <data name="unavailableContentNoActivityTitle" xml:space="preserve"> 
-    <value>Aucune activité récente</value> 
+    <value>Ingen ny aktivitet</value> 
   </data> 
   <data name="unexpectedErrorTeachingTipContent" xml:space="preserve"> 
-    <value>Veuillez réessayer dans quelques instants.
-Si le problème persiste, veuillez contacter le service d’assistance.</value> 
+    <value>Försök igen om några ögonblick.
+Om problemet kvarstår, kontakta support.</value> 
   </data> 
   <data name="unexpectedErrorTeachingTipTitle" xml:space="preserve"> 
-    <value>Une erreur inattendue s’est produite</value> 
+    <value>Ett oväntat fel inträffade</value> 
   </data> 
   <data name="untilTomorrow" xml:space="preserve"> 
-    <value>Jusqu’à demain</value> 
+    <value>Till imorgon</value> 
   </data> 
   <data name="updateAvailable" xml:space="preserve"> 
-    <value>kDrive %@ disponible</value> 
+    <value>kDrive %@ tillgänglig</value> 
   </data> 
   <data name="updateRequiredDescription" xml:space="preserve"> 
-    <value>Une nouvelle version de kDrive est nécessaire pour continuer.
-Mettez à jour l’application pour accéder à vos fichiers et relancer la synchronisation.</value> 
+    <value>En ny version av kDrive krävs för att fortsätta.
+Uppdatera programmet för att komma åt dina filer och återuppta synkroniseringen.</value> 
   </data> 
   <data name="updateRequiredTitle" xml:space="preserve"> 
-    <value>Mise à jour requise</value> 
+    <value>Uppdatering krävs</value> 
   </data> 
   <data name="updateSettings" xml:space="preserve"> 
-    <value>Mise à jour</value> 
+    <value>Uppdatera</value> 
   </data> 
   <data name="uploadNotTerminatedErrorTitle" xml:space="preserve"> 
-    <value>Téléversement incomplet</value> 
+    <value>Ofullständig uppladdning</value> 
   </data> 
   <data name="userExclusionFileListDescription" xml:space="preserve"> 
-    <value>Ajouter des fichiers à exclure de la synchronisation.</value> 
+    <value>Lägg till filer att exkludera från synkronisering.</value> 
   </data> 
   <data name="userExclusionFileListHeader" xml:space="preserve"> 
-    <value>Règles d’exclusion personnalisées</value> 
+    <value>Anpassade undantagsregler</value> 
   </data> 
   <data name="viewSourceCode" xml:space="preserve"> 
-    <value>Voir le code source</value> 
+    <value>Visa källkod</value> 
   </data> 
   <data name="winInformationBlockSynchroErrorTitle" xml:space="preserve"> 
-    <value>Vous avez une erreur de synchronisation</value> 
+    <value>Du har ett synkroniseringsfel</value> 
     <comment>Title in the Windows information banner when there is exactly one synchronization error.</comment> 
   </data> 
   <data name="winInformationBlockSynchroErrorTitle-plural" xml:space="preserve"> 
-    <value>Vous avez {0} erreurs de synchronisation</value> 
+    <value>Du har {0} synkroniseringsfel</value> 
     <comment>Title in the Windows information banner when there are multiple sync errors; {0} is the error count.</comment> 
   </data> 
   <data name="winStorageMissingDiskDescription" xml:space="preserve"> 
-    <value>kDrive ne peut pas accéder au disque %@
-Assurez-vous qu’il est bien connecté,
-déverrouillé et accessible depuis votre ordinateur.</value> 
+    <value>kDrive kan inte komma åt disk %s
+Se till att den är ansluten,
+olåst och tillgänglig från din dator.</value> 
     <comment>Description shown when a storage disk is missing or inaccessible; %@ is the disk name or drive letter.</comment> 
   </data> 
   <data name="winStorageMissingDiskTitle" xml:space="preserve"> 
-    <value>Le disque de stockage %@ n’est pas accessible</value> 
+    <value>Lagringsdisk %s är inte tillgänglig</value> 
     <comment>Title shown when a storage disk is not accessible; %@ is the disk name or drive letter.</comment> 
   </data> 
   <data name="winbuttonRemoveFileExclusionRule" xml:space="preserve"> 
-    <value>Retirer</value> 
+    <value>Ta bort</value> 
     <comment>Button to remove a single selected file exclusion rule from the exclusion list.</comment> 
   </data> 
   <data name="winbuttonRemoveFileExclusionRule-plural" xml:space="preserve"> 
-    <value>Supprimer (%@ règles)</value> 
+    <value>Ta bort (%s regler)</value> 
     <comment>Button to remove multiple selected file exclusion rules; %@ is the number of rules to be removed.</comment> 
   </data> 
   <data name="winbuttonRemoveFileExclusionRule-plural-2" xml:space="preserve"> 

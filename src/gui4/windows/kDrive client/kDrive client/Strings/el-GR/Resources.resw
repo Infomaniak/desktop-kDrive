@@ -1,0 +1,1699 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<root> 
+  <!--
+  Loco xml export: ResX - .NET resources
+  Project: kDrive Desktop
+  Locale: el, Greek
+  Tagged: windows
+  Exported by: Herve Eruam
+  Exported at: Fri, 01 May 2026 10:17:16 +0200 
+  --> 
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <metadata name="locoLocaleCode">
+    <value>el</value>
+  </metadata>
+  <metadata name="locoLocaleName" xml:space="preserve">
+    <value>Greek</value>
+  </metadata> 
+  <data name="aboutAppVersionCopyright" xml:space="preserve"> 
+    <value>Version %1$s.%2$s
+© 2019-%3$s Infomaniak Network SA -</value> 
+  </data> 
+  <data name="aboutKDrive" xml:space="preserve"> 
+    <value>Σχετικά με το kDrive</value> 
+  </data> 
+  <data name="aboutKDriveDescription" xml:space="preserve"> 
+    <value>Αναπτύχθηκε και φιλοξενείται αποκλειστικά στην Ελβετία, το kDrive διασφαλίζει την πλήρη προστασία των δεδομένων σας, χωρίς μεταπώληση ή παρακολούθηση, σε κέντρα δεδομένων πιστοποιημένα ISO, με κρυπτογράφηση και δημιουργία αντιγράφων ασφαλείας σε πολλαπλά μέσα.</value> 
+  </data> 
+  <data name="activitiesTitleIdle" xml:space="preserve"> 
+    <value>Ο συγχρονισμός ολοκληρώθηκε</value> 
+  </data> 
+  <data name="activitiesTitleInProgress" xml:space="preserve"> 
+    <value>Ο συγχρονισμός βρίσκεται σε εξέλιξη</value> 
+  </data> 
+  <data name="activitiesTitleNoActivity" xml:space="preserve"> 
+    <value>Καμία πρόσφατη δραστηριότητα</value> 
+  </data> 
+  <data name="activitiesTitleOffline" xml:space="preserve"> 
+    <value>Είστε εκτός σύνδεσης</value> 
+  </data> 
+  <data name="activitiesTitlePause" xml:space="preserve"> 
+    <value>Ο συγχρονισμός διακόπηκε</value> 
+  </data> 
+  <data name="activitiesTypeAllActivities" xml:space="preserve"> 
+    <value>Όλες οι δραστηριότητες</value> 
+  </data> 
+  <data name="activitiesTypeMyActivity" xml:space="preserve"> 
+    <value>Μόνο η δική μου δραστηριότητα</value> 
+  </data> 
+  <data name="addAdvancedSyncDialogTitle" xml:space="preserve"> 
+    <value>Συγχρονισμός φακέλου με το kDrive</value> 
+  </data> 
+  <data name="addAdvancedSyncLocalFolderDescription" xml:space="preserve"> 
+    <value>Επιλέξτε τον φάκελο του υπολογιστή σας για συγχρονισμό με το kDrive:</value> 
+  </data> 
+  <data name="addAdvancedSyncLocalFolderTitle" xml:space="preserve"> 
+    <value>Συγχρονισμένος φάκελος</value> 
+  </data> 
+  <data name="addAdvancedSyncRemoteFolderDescription" xml:space="preserve"> 
+    <value>Προσαρμόστε τη θέση του φακέλου του υπολογιστή σας στο kDrive:</value> 
+  </data> 
+  <data name="addAdvancedSyncRemoteFolderPageTitle" xml:space="preserve"> 
+    <value>Επιλέξτε τη θέση του φακέλου στο kDrive</value> 
+  </data> 
+  <data name="addAdvancedSyncRemoteFolderTitle" xml:space="preserve"> 
+    <value>Τοποθεσία kDrive</value> 
+  </data> 
+  <data name="advancedSyncDescription" xml:space="preserve"> 
+    <value>Επιλέξτε έναν φάκελο στον υπολογιστή σας για συγχρονισμό με το kDrive.
+Μπορείτε να αποκτήσετε πρόσβαση στους προηγμένους συγχρονισμούς σας από τον επιλογέα μονάδας στην αρχική σελίδα.</value> 
+  </data> 
+  <data name="advancedSyncSubtitle" xml:space="preserve"> 
+    <value>Συγχρονισμός φακέλου με το kDrive</value> 
+  </data> 
+  <data name="advancedSyncTitle" xml:space="preserve"> 
+    <value>Προηγμένος συγχρονισμός</value> 
+  </data> 
+  <data name="appUpToDate" xml:space="preserve"> 
+    <value>Η εφαρμογή είναι ενημερωμένη</value> 
+  </data> 
+  <data name="applyingChange" xml:space="preserve"> 
+    <value>Εφαρμογή αλλαγής…</value> 
+  </data> 
+  <data name="autoCleanupLogsDescription" xml:space="preserve"> 
+    <value>Διαγράφει αρχεία καταγραφής παλαιότερα από 7 ημέρες για εξοικονόμηση χώρου στο δίσκο.</value> 
+  </data> 
+  <data name="autoCleanupLogsSetting" xml:space="preserve"> 
+    <value>Αυτόματη εκκαθάριση</value> 
+  </data> 
+  <data name="automaticUpdatesSetting" xml:space="preserve"> 
+    <value>Αυτόματες ενημερώσεις</value> 
+  </data> 
+  <data name="availableOffline" xml:space="preserve"> 
+    <value>Διαθέσιμο εκτός σύνδεσης</value> 
+  </data> 
+  <data name="availableOfflineDescription" xml:space="preserve"> 
+    <value>Τα αρχεία σας αντιγράφονται στον υπολογιστή σας.
+Μπορείτε να τα ανοίξετε ανά πάσα στιγμή, ακόμα και χωρίς σύνδεση στο διαδίκτυο.</value> 
+  </data> 
+  <data name="backErrorDriveAsleepDescription" xml:space="preserve"> 
+    <value>Μπορείτε να το αφυπνίσετε από τη διαδικτυακή διεπαφή.</value> 
+  </data> 
+  <data name="betaProgramDescription" xml:space="preserve"> 
+    <value>Αποκτήστε πρόσβαση στις νέες εκδόσεις της εφαρμογής πριν κυκλοφορήσουν στο ευρύ κοινό και βοηθήστε στη βελτίωση της εφαρμογής μοιράζοντάς μας τις ιδέες σας.</value> 
+  </data> 
+  <data name="betaProgramTitle" xml:space="preserve"> 
+    <value>Εγγραφή στο πρόγραμμα beta</value> 
+  </data> 
+  <data name="browserSignInInstruction" xml:space="preserve"> 
+    <value>Το πρόγραμμα περιήγησής σας θα ανοίξει αυτόματα για να ολοκληρώσετε τη σύνδεση. Μόλις συνδεθείτε, θα επιστρέψετε αυτόματα στο kDrive.</value> 
+    <comment>Instruction shown during sign-in when waiting for browser-based authentication to complete.</comment> 
+  </data> 
+  <data name="buttonActivateOfflineSync" xml:space="preserve"> 
+    <value>Ενεργοποίηση συγχρονισμού εκτός σύνδεσης</value> 
+  </data> 
+  <data name="buttonAddAdvancedSync" xml:space="preserve"> 
+    <value>Συγχρονισμός φακέλου</value> 
+  </data> 
+  <data name="buttonAddFileExclusionRule" xml:space="preserve"> 
+    <value>Προσθήκη κανόνα</value> 
+  </data> 
+  <data name="buttonAddStorage" xml:space="preserve"> 
+    <value>Προσθήκη αποθηκευτικού χώρου</value> 
+  </data> 
+  <data name="buttonAdvancedParameters" xml:space="preserve"> 
+    <value>Προηγμένες ρυθμίσεις</value> 
+  </data> 
+  <data name="buttonApplyToXFiles" xml:space="preserve"> 
+    <value>Εφαρμογή σε %s αρχεία</value> 
+  </data> 
+  <data name="buttonAskForAccess" xml:space="preserve"> 
+    <value>Αίτηση πρόσβασης</value> 
+  </data> 
+  <data name="buttonCancel" xml:space="preserve"> 
+    <value>Άκυρο</value> 
+  </data> 
+  <data name="buttonChangeFolder" xml:space="preserve"> 
+    <value>Αλλαγή φακέλου</value> 
+  </data> 
+  <data name="buttonChangeToOffline" xml:space="preserve"> 
+    <value>Αποθήκευση εκτός σύνδεσης</value> 
+  </data> 
+  <data name="buttonChangeToOnline" xml:space="preserve"> 
+    <value>Αποθήκευση online</value> 
+  </data> 
+  <data name="buttonChangeUser" xml:space="preserve"> 
+    <value>Εναλλαγή χρήστη</value> 
+  </data> 
+  <data name="buttonClose" xml:space="preserve"> 
+    <value>Κλείσιμο</value> 
+  </data> 
+  <data name="buttonCloseKDrive" xml:space="preserve"> 
+    <value>Κλείσιμο kDrive</value> 
+    <comment>Button to quit the kDrive application entirely.</comment> 
+  </data> 
+  <data name="buttonConfigure" xml:space="preserve"> 
+    <value>Διαμόρφωση</value> 
+  </data> 
+  <data name="buttonConfirm" xml:space="preserve"> 
+    <value>Επιβεβαίωση</value> 
+  </data> 
+  <data name="buttonConnect" xml:space="preserve"> 
+    <value>Σύνδεση</value> 
+  </data> 
+  <data name="buttonConnectAccount" xml:space="preserve"> 
+    <value>Σύνδεση λογαριασμού</value> 
+  </data> 
+  <data name="buttonCopyShareLink" xml:space="preserve"> 
+    <value>Αντιγραφή συνδέσμου κοινής χρήσης</value> 
+  </data> 
+  <data name="buttonCreateAccount" xml:space="preserve"> 
+    <value>Δημιουργία λογαριασμού</value> 
+  </data> 
+  <data name="buttonCreateNewSync" xml:space="preserve"> 
+    <value>Δημιουργία νέου συγχρονισμού</value> 
+  </data> 
+  <data name="buttonCustomLocation" xml:space="preserve"> 
+    <value>Προσαρμοσμένη τοποθεσία</value> 
+  </data> 
+  <data name="buttonDisconnectAccount" xml:space="preserve"> 
+    <value>Αποσύνδεση αυτού του λογαριασμού</value> 
+  </data> 
+  <data name="buttonDownloadInProgress" xml:space="preserve"> 
+    <value>Λήψη σε εξέλιξη…</value> 
+  </data> 
+  <data name="buttonDownloadManually" xml:space="preserve"> 
+    <value>Μη αυτόματη λήψη</value> 
+  </data> 
+  <data name="buttonEnable" xml:space="preserve"> 
+    <value>Ενεργοποίηση</value> 
+  </data> 
+  <data name="buttonEnableInSettings" xml:space="preserve"> 
+    <value>Ενεργοποίηση στις ρυθμίσεις των Windows</value> 
+  </data> 
+  <data name="buttonErrorResolutionTip" xml:space="preserve"> 
+    <value>Κατανόηση του ζητήματος</value> 
+  </data> 
+  <data name="buttonFeedback" xml:space="preserve"> 
+    <value>Κοινοποίηση ιδέας</value> 
+  </data> 
+  <data name="buttonFixErrors" xml:space="preserve"> 
+    <value>Διόρθωση σφαλμάτων</value> 
+  </data> 
+  <data name="buttonHelpdesk" xml:space="preserve"> 
+    <value>Υποστήριξη</value> 
+  </data> 
+  <data name="buttonKDriveOnline" xml:space="preserve"> 
+    <value>kDrive online</value> 
+  </data> 
+  <data name="buttonKeepAccount" xml:space="preserve"> 
+    <value>Διατήρηση λογαριασμού</value> 
+  </data> 
+  <data name="buttonLogOut" xml:space="preserve"> 
+    <value>Αποσύνδεση</value> 
+  </data> 
+  <data name="buttonLogin" xml:space="preserve"> 
+    <value>Σύνδεση</value> 
+  </data> 
+  <data name="buttonManage" xml:space="preserve"> 
+    <value>Διαχείριση</value> 
+  </data> 
+  <data name="buttonManageDiskSpace" xml:space="preserve"> 
+    <value>Διαχείριση χώρου δίσκου</value> 
+  </data> 
+  <data name="buttonManageIndividually" xml:space="preserve"> 
+    <value>Χειρισμός αρχείων μεμονωμένα</value> 
+  </data> 
+  <data name="buttonManageStorage" xml:space="preserve"> 
+    <value>Διαχείριση αποθηκευτικού χώρου</value> 
+  </data> 
+  <data name="buttonOpenDebugFolder" xml:space="preserve"> 
+    <value>Άνοιγμα φακέλου εντοπισμού σφαλμάτων</value> 
+  </data> 
+  <data name="buttonOpenExplorer" xml:space="preserve"> 
+    <value>Άνοιγμα Εξερευνητή</value> 
+  </data> 
+  <data name="buttonOpenFolder" xml:space="preserve"> 
+    <value>Άνοιγμα φακέλου</value> 
+  </data> 
+  <data name="buttonOpenInBrowser" xml:space="preserve"> 
+    <value>Άνοιγμα στο πρόγραμμα περιήγησης</value> 
+  </data> 
+  <data name="buttonOpenInExplorer" xml:space="preserve"> 
+    <value>Άνοιγμα στον Εξερευνητή</value> 
+    <comment>Button to reveal the selected item in Windows Explorer.</comment> 
+  </data> 
+  <data name="buttonOpenInKDrive" xml:space="preserve"> 
+    <value>Άνοιγμα στο kDrive Web</value> 
+  </data> 
+  <data name="buttonOpenKDrive" xml:space="preserve"> 
+    <value>Άνοιγμα kDrive</value> 
+  </data> 
+  <data name="buttonOpenParentFolder" xml:space="preserve"> 
+    <value>Άνοιγμα γονικού φακέλου</value> 
+  </data> 
+  <data name="buttonOpenSyncExclusionRules" xml:space="preserve"> 
+    <value>Διαχείριση εξαιρέσεων</value> 
+  </data> 
+  <data name="buttonOpenSyncSettings" xml:space="preserve"> 
+    <value>Άνοιγμα ρυθμίσεων συγχρονισμού</value> 
+  </data> 
+  <data name="buttonPause" xml:space="preserve"> 
+    <value>Παύση</value> 
+  </data> 
+  <data name="buttonRefresh" xml:space="preserve"> 
+    <value>Ανανέωση</value> 
+  </data> 
+  <data name="buttonReleaseNotes" xml:space="preserve"> 
+    <value>Σημειώσεις έκδοσης</value> 
+  </data> 
+  <data name="buttonRemove" xml:space="preserve"> 
+    <value>Κατάργηση</value> 
+  </data> 
+  <data name="buttonRemoveSync" xml:space="preserve"> 
+    <value>Κατάργηση συγχρονισμού</value> 
+  </data> 
+  <data name="buttonRenameItem" xml:space="preserve"> 
+    <value>Μετονομασία %s</value> 
+  </data> 
+  <data name="buttonRestartSignIn" xml:space="preserve"> 
+    <value>Επανεκκίνηση σύνδεσης</value> 
+  </data> 
+  <data name="buttonRestartSync" xml:space="preserve"> 
+    <value>Συνέχιση συγχρονισμού</value> 
+  </data> 
+  <data name="buttonRestartSynchro" xml:space="preserve"> 
+    <value>Επανεκκίνηση συγχρονισμού</value> 
+  </data> 
+  <data name="buttonRetry" xml:space="preserve"> 
+    <value>Επανάληψη</value> 
+  </data> 
+  <data name="buttonReturnToDefaultFolder" xml:space="preserve"> 
+    <value>Επιστροφή στον προεπιλεγμένο φάκελο</value> 
+  </data> 
+  <data name="buttonSave" xml:space="preserve"> 
+    <value>Αποθήκευση</value> 
+  </data> 
+  <data name="buttonSaveMyChoices" xml:space="preserve"> 
+    <value>Αποθήκευση των επιλογών μου</value> 
+  </data> 
+  <data name="buttonSearch" xml:space="preserve"> 
+    <value>Αναζήτηση</value> 
+  </data> 
+  <data name="buttonSeeActivities" xml:space="preserve"> 
+    <value>Προβολή δραστηριοτήτων</value> 
+  </data> 
+  <data name="buttonSelect" xml:space="preserve"> 
+    <value>Επιλογή</value> 
+  </data> 
+  <data name="buttonSelectFolder" xml:space="preserve"> 
+    <value>Επιλογή φακέλου</value> 
+  </data> 
+  <data name="buttonSelectFolders" xml:space="preserve"> 
+    <value>Επιλογή φακέλων</value> 
+  </data> 
+  <data name="buttonSelectLocation" xml:space="preserve"> 
+    <value>Επιλογή τοποθεσίας</value> 
+  </data> 
+  <data name="buttonSelected" xml:space="preserve"> 
+    <value>Επιλεγμένο</value> 
+  </data> 
+  <data name="buttonSend" xml:space="preserve"> 
+    <value>Αποστολή</value> 
+  </data> 
+  <data name="buttonSendLog" xml:space="preserve"> 
+    <value>Αποστολή φακέλου εντοπισμού σφαλμάτων</value> 
+  </data> 
+  <data name="buttonSettings" xml:space="preserve"> 
+    <value>Άνοιγμα ρυθμίσεων</value> 
+  </data> 
+  <data name="buttonShowOffers" xml:space="preserve"> 
+    <value>Προβολή προσφορών</value> 
+  </data> 
+  <data name="buttonSignOut" xml:space="preserve"> 
+    <value>Αποσύνδεση</value> 
+  </data> 
+  <data name="buttonStart" xml:space="preserve"> 
+    <value>Έναρξη</value> 
+  </data> 
+  <data name="buttonStartConflictsResolution" xml:space="preserve"> 
+    <value>Έναρξη επιλογής εκδόσεων</value> 
+  </data> 
+  <data name="buttonStartForFree" xml:space="preserve"> 
+    <value>Ξεκινήστε δωρεάν</value> 
+  </data> 
+  <data name="buttonSynchronizeOffline" xml:space="preserve"> 
+    <value>Συγχρονισμός εκτός σύνδεσης</value> 
+  </data> 
+  <data name="buttonUpdate" xml:space="preserve"> 
+    <value>Ενημέρωση</value> 
+  </data> 
+  <data name="buttonUpdateNow" xml:space="preserve"> 
+    <value>Ενημέρωση τώρα</value> 
+  </data> 
+  <data name="buttonUpdateSubscription" xml:space="preserve"> 
+    <value>Ενημέρωση συνδρομής</value> 
+  </data> 
+  <data name="buttonUpgradeOffer" xml:space="preserve"> 
+    <value>Αναβάθμιση</value> 
+  </data> 
+  <data name="buttonValidate" xml:space="preserve"> 
+    <value>Επιβεβαίωση</value> 
+  </data> 
+  <data name="buttonValidateAndGoNext" xml:space="preserve"> 
+    <value>Επιβεβαίωση και μετάβαση στο επόμενο</value> 
+  </data> 
+  <data name="buttonWakeUp" xml:space="preserve"> 
+    <value>Αφύπνιση</value> 
+  </data> 
+  <data name="conflictErrorAction" xml:space="preserve"> 
+    <value>Επιλογή έκδοσης</value> 
+  </data> 
+  <data name="conflictErrorDescription" xml:space="preserve"> 
+    <value>Εντοπίστηκαν δύο διαφορετικές εκδόσεις αυτών των αρχείων.</value> 
+  </data> 
+  <data name="conflictErrorTitle" xml:space="preserve"> 
+    <value>Συγκρούσεις εκδόσεων</value> 
+  </data> 
+  <data name="conflictsSearchBoxPlaceholder" xml:space="preserve"> 
+    <value>Αναζήτηση αρχείου</value> 
+  </data> 
+  <data name="creatingShareLink" xml:space="preserve"> 
+    <value>Δημιουργία συνδέσμου κοινής χρήσης…</value> 
+  </data> 
+  <data name="dataManagementDescription" xml:space="preserve"> 
+    <value>Μπορείτε να προσαρμόσετε τα δεδομένα χρήσης και λειτουργίας που συλλέγει η Infomaniak για τη διόρθωση σφαλμάτων και τη βελτίωση της εφαρμογής. Και τα δύο εργαλεία που χρησιμοποιούνται φιλοξενούνται και διαχειρίζονται αποκλειστικά από εμάς.
+
+Ο πηγαίος κώδικας αυτής της εφαρμογής μπορεί να επαληθευτεί, οι πληροφορίες που συλλέγονται είναι ανώνυμες και τα προσωπικά σας στοιχεία παραμένουν αυστηρά εμπιστευτικά και δεν μοιράζονται ποτέ με τρίτους.</value> 
+  </data> 
+  <data name="dataManagementSettings" xml:space="preserve"> 
+    <value>Διαχείριση δεδομένων</value> 
+  </data> 
+  <data name="dataManagementSubtitle" xml:space="preserve"> 
+    <value>Η Infomaniak σέβεται την ιδιωτικότητά σας</value> 
+  </data> 
+  <data name="debugLevelDescription" xml:space="preserve"> 
+    <value>Επιλέξτε την ποσότητα πληροφοριών που θα καταγράφονται.</value> 
+  </data> 
+  <data name="debugLevelSetting" xml:space="preserve"> 
+    <value>Επίπεδο εντοπισμού σφαλμάτων</value> 
+  </data> 
+  <data name="debugLogsDescription" xml:space="preserve"> 
+    <value>Επιτρέπουν στην υποστήριξη της Infomaniak να εντοπίσει την αιτία ενός συμβάντος.</value> 
+  </data> 
+  <data name="debugLogsSettings" xml:space="preserve"> 
+    <value>Αρχεία καταγραφής εντοπισμού σφαλμάτων</value> 
+  </data> 
+  <data name="defaultErrorDescription" xml:space="preserve"> 
+    <value>Ο συγχρονισμός θα επανεκκινήσει αυτόματα.
+Εάν το πρόβλημα παραμένει, επικοινωνήστε με την υποστήριξή μας επισυνάπτοντας τις τεχνικές λεπτομέρειες παρακάτω.</value> 
+  </data> 
+  <data name="defaultErrorDetailsLabel" xml:space="preserve"> 
+    <value>Τεχνικές λεπτομέρειες</value> 
+  </data> 
+  <data name="defaultErrorTitle" xml:space="preserve"> 
+    <value>Παρουσιάστηκε μη αναμενόμενο σφάλμα</value> 
+  </data> 
+  <data name="defaultExclusionFileListDescription" xml:space="preserve"> 
+    <value>Αυτά τα αρχεία εξαιρούνται από προεπιλογή και δεν μπορούν να τροποποιηθούν.</value> 
+  </data> 
+  <data name="defaultExclusionFileListHeader" xml:space="preserve"> 
+    <value>Αυτόματη εξαίρεση</value> 
+  </data> 
+  <data name="deleteCancelErrorTitle" xml:space="preserve"> 
+    <value>Η διαγραφή ακυρώθηκε</value> 
+  </data> 
+  <data name="dialogDataErrorSyncDirChangeDescription" xml:space="preserve"> 
+    <value>Σε αυτές τις περιπτώσεις, απαιτείται νέος συγχρονισμός για να συνεχίσετε να χρησιμοποιείτε σωστά το kDrive.</value> 
+  </data> 
+  <data name="dialogDriveSetupInvalidFolderDescription" xml:space="preserve"> 
+    <value>Επιλέξτε έναν κενό φάκελο που δεν βρίσκεται στη ρίζα μιας μονάδας δίσκου.
+
+Αυτός ο φάκελος δεν πρέπει να περιλαμβάνεται σε άλλον φάκελο συγχρονισμού και δεν πρέπει να περιέχει υποφάκελο συγχρονισμού.</value> 
+  </data> 
+  <data name="dialogDriveSetupInvalidFolderTitle" xml:space="preserve"> 
+    <value>Αυτός ο φάκελος δεν μπορεί να επιλεγεί</value> 
+  </data> 
+  <data name="dialogNewExclusionRulePrimaryButton" xml:space="preserve"> 
+    <value>Προσθήκη κανόνα</value> 
+  </data> 
+  <data name="dialogNewExclusionRuleTitle" xml:space="preserve"> 
+    <value>Προσθήκη κανόνα εξαίρεσης</value> 
+  </data> 
+  <data name="dialogRemoveAccountContent" xml:space="preserve"> 
+    <value>Πρόκειται να αποσυνδέσετε τον λογαριασμό %s από την εφαρμογή.
+Ο φάκελος συγχρονισμού θα παραμείνει στον υπολογιστή σας, αλλά δεν θα συγχρονίζεται πλέον με το kDrive.
+
+Όλα τα δεδομένα σας θα παραμένουν προσβάσιμα διαδικτυακά στο kDrive.</value> 
+  </data> 
+  <data name="dialogRemoveAccountTitle" xml:space="preserve"> 
+    <value>Αποσύνδεση από αυτόν τον λογαριασμό;</value> 
+  </data> 
+  <data name="dialogSyncDeletionWarningContent" xml:space="preserve"> 
+    <value>Ο τοπικός φάκελος θα παραμείνει στον υπολογιστή σας, αλλά δεν θα συγχρονίζεται πλέον με το kDrive.
+Αυτή η ενέργεια είναι μόνιμη.
+Για να συγχρονίσετε ξανά τη μονάδα σας, θα χρειαστεί να τη συνδέσετε ξανά αργότερα.
+
+Πριν συνεχίσετε, βεβαιωθείτε ότι όλα τα αρχεία σας είναι ενημερωμένα και πλήρως συγχρονισμένα.</value> 
+  </data> 
+  <data name="dialogSyncDeletionWarningTitle" xml:space="preserve"> 
+    <value>Κατάργηση συγχρονισμού;</value> 
+  </data> 
+  <data name="dialogSyncModeChangeErrorContent" xml:space="preserve"> 
+    <value>Η αλλαγή λειτουργίας συγχρονισμού ακυρώθηκε.
+
+Ο τρέχων συγχρονισμός παραμένει αμετάβλητος. Ωστόσο, εάν παρουσιαστεί ανώμαλη συμπεριφορά, ίσως χρειαστεί να διαγράψετε και να δημιουργήσετε ξανά τον συγχρονισμό για να αποκαταστήσετε τη σωστή λειτουργία.</value> 
+  </data> 
+  <data name="dialogSyncModeChangeErrorTitle" xml:space="preserve"> 
+    <value>Παρουσιάστηκε σφάλμα</value> 
+  </data> 
+  <data name="dialogSyncModeChangeWarningContent" xml:space="preserve"> 
+    <value>Αυτή η λειτουργία ενδέχεται να χρειαστεί κάποιο χρόνο ανάλογα με το μέγεθος των δεδομένων σας. Εάν αποτύχει, ίσως απαιτηθεί πλήρης επανασυγχρονισμός της μονάδας.
+
+Πριν συνεχίσετε, βεβαιωθείτε ότι όλα τα αρχεία σας είναι ενημερωμένα και συγχρονισμένα.
+
+Μην κλείσετε την εφαρμογή κατά τη διάρκεια της διαδικασίας.</value> 
+  </data> 
+  <data name="dialogSyncModeChangeWarningTitle" xml:space="preserve"> 
+    <value>Αλλαγή λειτουργίας συγχρονισμού;</value> 
+  </data> 
+  <data name="dialogSystemErrorSyncDirAccessErrorDescription" xml:space="preserve"> 
+    <value>Δείτε πώς να αποκαταστήσετε τον συγχρονισμό:</value> 
+  </data> 
+  <data name="dialogSystemErrorSyncDirDiskMissingErrorDescription" xml:space="preserve"> 
+    <value>Ο δίσκος που περιέχει τον φάκελο συγχρονισμού σας δεν είναι πλέον συνδεδεμένος</value> 
+  </data> 
+  <data name="dialogSystemErrorSyncDirDiskMissingErrorTip" xml:space="preserve"> 
+    <value>Συνδέστε τον ξανά για να συνεχίσετε τον συγχρονισμό.</value> 
+  </data> 
+  <data name="disableNotificationsSetting" xml:space="preserve"> 
+    <value>Απενεργοποίηση ειδοποιήσεων</value> 
+  </data> 
+  <data name="doNotJoin" xml:space="preserve"> 
+    <value>Χωρίς εγγραφή</value> 
+  </data> 
+  <data name="downloadAppUrl" xml:space="preserve"> 
+    <value>https://www.infomaniak.com/en/apps/download-kdrive</value> 
+  </data> 
+  <data name="driveAccessDeniedErrorDescription" xml:space="preserve"> 
+    <value>Δεν έχετε άδεια πρόσβασης σε αυτό το kDrive.
+Ελέγξτε τα δικαιώματά σας ή επικοινωνήστε με τον διαχειριστή σας.</value> 
+  </data> 
+  <data name="driveAccessDeniedErrorTitle" xml:space="preserve"> 
+    <value>Η πρόσβαση στο kDrive απορρίφθηκε</value> 
+  </data> 
+  <data name="driveAsleepErrorTitle" xml:space="preserve"> 
+    <value>Το kDrive σας βρίσκεται σε κατάσταση αδρανείας</value> 
+  </data> 
+  <data name="driveLockedAdminErrorDescription" xml:space="preserve"> 
+    <value>Αυτό το kDrive δεν ανανεώθηκε. Δεν μπορείτε πλέον να έχετε πρόσβαση σε αυτό.
+Ανανεώστε τη συνδρομή σας για να επανενεργοποιήσετε την υπηρεσία.</value> 
+  </data> 
+  <data name="driveLockedErrorDescription" xml:space="preserve"> 
+    <value>Αυτό το kDrive δεν ανανεώθηκε. Δεν μπορείτε πλέον να έχετε πρόσβαση σε αυτό.
+Επικοινωνήστε με τον διαχειριστή σας για να επανενεργοποιήσετε την υπηρεσία.</value> 
+  </data> 
+  <data name="driveLockedErrorTitle" xml:space="preserve"> 
+    <value>Το kDrive σας έχει λήξει</value> 
+  </data> 
+  <data name="driveLoggingErrorDescription" xml:space="preserve"> 
+    <value>Συνδεθείτε ξανά για να συνεχίσετε να χρησιμοποιείτε το kDrive.</value> 
+  </data> 
+  <data name="driveLoggingErrorTitle" xml:space="preserve"> 
+    <value>Αποσυνδεθήκατε</value> 
+  </data> 
+  <data name="driveLoggingErrorUserMismatchDescription" xml:space="preserve"> 
+    <value>Ο λογαριασμός που χρησιμοποιήθηκε για αυτή τη σύνδεση δεν αντιστοιχεί στον λογαριασμό αυτού του kDrive.
+Συνδεθείτε ξανά με τη σωστή διεύθυνση email %@</value> 
+  </data> 
+  <data name="driveLoggingErrorUserMismatchTitle" xml:space="preserve"> 
+    <value>Αυτός ο λογαριασμός δεν αντιστοιχεί</value> 
+  </data> 
+  <data name="driveWakingUpErrorDescription" xml:space="preserve"> 
+    <value>Το kDrive αφυπνίζεται… αυτό μπορεί να χρειαστεί μερικές στιγμές.</value> 
+  </data> 
+  <data name="driveWakingUpErrorTitle" xml:space="preserve"> 
+    <value>Το kDrive αφυπνίζεται</value> 
+  </data> 
+  <data name="duplicateNamesErrorTitle" xml:space="preserve"> 
+    <value>Διπλά ονόματα</value> 
+  </data> 
+  <data name="enableDebugLogDescription" xml:space="preserve"> 
+    <value>Καταγραφή διαγνωστικών πληροφοριών στον υπολογιστή μου.</value> 
+  </data> 
+  <data name="enableDebugLogsSetting" xml:space="preserve"> 
+    <value>Ενεργοποίηση καταγραφής εντοπισμού σφαλμάτων</value> 
+  </data> 
+  <data name="enterPasswordPlaceholder" xml:space="preserve"> 
+    <value>Εισαγάγετε τον κωδικό πρόσβασής σας</value> 
+  </data> 
+  <data name="errCreateCancelDescription" xml:space="preserve"> 
+    <value>Δεν έχετε τα απαραίτητα δικαιώματα για να προσθέσετε ένα %s σε αυτή την τοποθεσία.
+Ζητήστε πρόσβαση από τον κάτοχο ή τον διαχειριστή.</value> 
+  </data> 
+  <data name="errDeleteCancelDescription" xml:space="preserve"> 
+    <value>Δεν έχετε άδεια να διαγράψετε αυτό το %s. Έχει αποκατασταθεί στην αρχική του τοποθεσία. Ζητήστε πρόσβαση από τον κάτοχο ή τον διαχειριστή.</value> 
+  </data> 
+  <data name="errDialogConfigChangedTitle" xml:space="preserve"> 
+    <value>Εντοπίστηκε αλλαγή στη διαμόρφωσή σας</value> 
+  </data> 
+  <data name="errDialogInvalidSyncSyncDirAccessDescription" xml:space="preserve"> 
+    <value>Σε αυτές τις περιπτώσεις, ενδέχεται να απαιτείται νέος συγχρονισμός για να συνεχίσετε να χρησιμοποιείτε σωστά το kDrive.</value> 
+  </data> 
+  <data name="errDialogLocalFileAccessDescription" xml:space="preserve"> 
+    <value>Τα δικαιώματα πρόσβασης για το %s άλλαξαν, εμποδίζοντας τον συγχρονισμό του.</value> 
+  </data> 
+  <data name="errDialogLocalFileAccessFaqLink" xml:space="preserve"> 
+    <value>Ελέγξτε το %s για να αποκαταστήσετε την πρόσβαση</value> 
+  </data> 
+  <data name="errDialogLocalFileAccessLocationLabel" xml:space="preserve"> 
+    <value>Τελευταία τοποθεσία του %s:</value> 
+  </data> 
+  <data name="errDialogSystemSyncDirDiskMissingTitle" xml:space="preserve"> 
+    <value>Εξωτερικός δίσκος αποσυνδέθηκε</value> 
+  </data> 
+  <data name="errDialogSystemUnableToStartVfsDescription" xml:space="preserve"> 
+    <value>Αυτή η λειτουργία μπορεί να χρειαστεί κάποιο χρόνο ανάλογα με την ποσότητα των δεδομένων που πρέπει να επεξεργαστούν.
+
+Μην κλείσετε την εφαρμογή κατά τη διάρκεια της διαδικασίας.
+
+Εάν αποτύχει, μπορείτε εύκολα να ξεκινήσετε έναν πλήρη επανασυγχρονισμό της μονάδας ή να επικοινωνήσετε με την υποστήριξή μας.</value> 
+  </data> 
+  <data name="errDialogSystemUnableToStartVfsTitle" xml:space="preserve"> 
+    <value>Ενεργοποίηση συγχρονισμού εκτός σύνδεσης</value> 
+  </data> 
+  <data name="errDriveMaintenanceDescription" xml:space="preserve"> 
+    <value>Αυτό το kDrive δεν είναι προσωρινά διαθέσιμο λόγω συντήρησης.
+Δοκιμάστε ξανά σε λίγα λεπτά.</value> 
+  </data> 
+  <data name="errDriveMaintenanceTitle" xml:space="preserve"> 
+    <value>Συντήρηση σε εξέλιξη</value> 
+  </data> 
+  <data name="errDuplicateNamesDescription" xml:space="preserve"> 
+    <value>Υπάρχει ήδη ένα αρχείο ή φάκελος με αυτό το όνομα.</value> 
+  </data> 
+  <data name="errEditCancelDescription" xml:space="preserve"> 
+    <value>Δεν έχετε δικαιώματα για να επεξεργαστείτε αυτό το αρχείο.
+Διατηρήθηκε η αρχική έκδοση και η επεξεργασία σας αποθηκεύτηκε σε ξεχωριστό αρχείο με "conflict" στο όνομά του. Ζητήστε πρόσβαση από τον κάτοχο ή τον διαχειριστή.</value> 
+  </data> 
+  <data name="errEndWithSpaceDescription" xml:space="preserve"> 
+    <value>Το όνομα αυτού του %1$s τελειώνει με κενό, εμποδίζοντας τον συγχρονισμό του. Μετονομάστε το %2$s από το kDrive online.</value> 
+  </data> 
+  <data name="errEndWithSpaceTitle" xml:space="preserve"> 
+    <value>Κενό στο τέλος του ονόματος %s</value> 
+  </data> 
+  <data name="errExcludedByTemplateDescription" xml:space="preserve"> 
+    <value>Ένας κανόνας εξαίρεσης εμποδίζει τον συγχρονισμό αυτού του %s.</value> 
+  </data> 
+  <data name="errExcludedByTemplateTitle" xml:space="preserve"> 
+    <value>Εξαιρείται από τον συγχρονισμό</value> 
+  </data> 
+  <data name="errFileExistsDescription" xml:space="preserve"> 
+    <value>Υπάρχει ήδη ένα αρχείο με αυτό το όνομα.</value> 
+  </data> 
+  <data name="errFileLockedDescription" xml:space="preserve"> 
+    <value>Αυτό το αρχείο χρησιμοποιείται αυτή τη στιγμή από άλλον χρήστη.
+Οι αλλαγές σας θα συγχρονιστούν αργότερα.</value> 
+  </data> 
+  <data name="errFileLockedTitle" xml:space="preserve"> 
+    <value>Αρχείο κλειδωμένο</value> 
+  </data> 
+  <data name="errFileRescuedDescription" xml:space="preserve"> 
+    <value>Αυτό το αρχείο διαγράφηκε στο kDrive online ενώ το επεξεργαζόσασταν. Ένα αντίγραφο αποθηκεύτηκε στον υπολογιστή σας στον φάκελο ανάκτησης.</value> 
+  </data> 
+  <data name="errFileRescuedTitle" xml:space="preserve"> 
+    <value>Αρχείο ανακτήθηκε</value> 
+  </data> 
+  <data name="errFileTooBigAdminDescription" xml:space="preserve"> 
+    <value>Αυτό το αρχείο υπερβαίνει το μέγιστο επιτρεπτό μέγεθος (50 GB).
+Επικοινωνήστε με την υποστήριξη για να αρθεί το όριο.</value> 
+  </data> 
+  <data name="errFileTooBigDescription" xml:space="preserve"> 
+    <value>Αυτό το αρχείο υπερβαίνει το μέγιστο επιτρεπτό μέγεθος (50 GB).
+Επικοινωνήστε με τον διαχειριστή σας για να αυξήσετε το όριο μεγέθους αρχείου.</value> 
+  </data> 
+  <data name="errFileTooBigTitle" xml:space="preserve"> 
+    <value>Το αρχείο είναι πολύ μεγάλο</value> 
+  </data> 
+  <data name="errForbiddenActionTitle" xml:space="preserve"> 
+    <value>Απαγορευμένη πρόσβαση</value> 
+    <comment>Title shown when a forbidden or unauthorized action is attempted.</comment> 
+  </data> 
+  <data name="errForbiddenCharDescription_win" xml:space="preserve"> 
+    <value>Το όνομα αυτού του %1$s περιέχει έναν ή περισσότερους χαρακτήρες που δεν υποστηρίζονται από την εφαρμογή kDrive Windows. Μετονομάστε το %2$s από το kDrive online.</value> 
+  </data> 
+  <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
+    <value>Αυτό το όνομα περιέχει μόνο κενά και δεν μπορεί να χρησιμοποιηθεί. Μετονομάστε το %s από το kDrive online.</value> 
+  </data> 
+  <data name="errForbiddenCharOnlySpacesTitle" xml:space="preserve"> 
+    <value>Μη έγκυρο όνομα</value> 
+  </data> 
+  <data name="errForbiddenCharTitle" xml:space="preserve"> 
+    <value>Μη υποστηριζόμενος χαρακτήρας</value> 
+  </data> 
+  <data name="errGenericForbiddenDescription" xml:space="preserve"> 
+    <value>Δεν έχετε τα απαραίτητα δικαιώματα για να εκτελέσετε αυτή την ενέργεια.
+Ζητήστε πρόσβαση από τον κάτοχο ή τον διαχειριστή.</value> 
+  </data> 
+  <data name="errGenericForbiddenTitle" xml:space="preserve"> 
+    <value>Απαγορευμένη πρόσβαση</value> 
+  </data> 
+  <data name="errHardlinkDescription" xml:space="preserve"> 
+    <value>Αυτό το αρχείο είναι σκληρός σύνδεσμος (hard link) που δεν μπορεί να συγχρονιστεί.</value> 
+  </data> 
+  <data name="errHardlinkTitle" xml:space="preserve"> 
+    <value>Μη υποστηριζόμενος τύπος αρχείου</value> 
+  </data> 
+  <data name="errInvalidSyncSyncDirAccessDescription" xml:space="preserve"> 
+    <value>Αυτός ο φάκελος δεν είναι πλέον προσβάσιμος στην αρχική του τοποθεσία.</value> 
+  </data> 
+  <data name="errInvalidSyncSyncDirAccessTitle" xml:space="preserve"> 
+    <value>Ο φάκελος συγχρονισμού δεν βρέθηκε</value> 
+  </data> 
+  <data name="errInvalidSyncSyncDirNestingDescription" xml:space="preserve"> 
+    <value>Ένα από τα kDrive σας συγχρονίζεται μέσα στον φάκελο συγχρονισμού ενός άλλου kDrive.
+Μεταφέρετε έναν από τους φακέλους ώστε να μην είναι πλέον ένθετοι, ή διαγράψτε τον συγχρονισμό σας για να τον δημιουργήσετε ξανά.</value> 
+  </data> 
+  <data name="errInvalidSyncSyncDirNestingTitle" xml:space="preserve"> 
+    <value>Ένθετα kDrive</value> 
+  </data> 
+  <data name="errLocalFileAccessDescription" xml:space="preserve"> 
+    <value>Δεν είναι δυνατή η πρόσβαση σε αυτό το %s στον υπολογιστή σας. Ελέγξτε ότι υπάρχει ακόμα και ότι έχετε δικαιώματα πρόσβασης σε αυτό.</value> 
+  </data> 
+  <data name="errLocalFileAccessTitle" xml:space="preserve"> 
+    <value>%s μη προσβάσιμο</value> 
+  </data> 
+  <data name="errMoveCancelDescription" xml:space="preserve"> 
+    <value>Δεν έχετε δικαιώματα για να μεταφέρετε αυτό το %s εδώ· θα αποκατασταθεί στην αρχική του τοποθεσία. Ζητήστε πρόσβαση από τον κάτοχο ή τον διαχειριστή.</value> 
+  </data> 
+  <data name="errNameLengthDescription" xml:space="preserve"> 
+    <value>Αυτό το όνομα υπερβαίνει το επιτρεπτό μήκος (250 χαρακτήρες). Μετονομάστε το %s.</value> 
+  </data> 
+  <data name="errNameLengthTitle" xml:space="preserve"> 
+    <value>Το όνομα %s είναι πολύ μακρύ</value> 
+  </data> 
+  <data name="errNetworkErrorOtherDescription" xml:space="preserve"> 
+    <value>Δεν είναι δυνατή η σύνδεση στο kDrive.
+Ο συγχρονισμός θα συνεχιστεί αυτόματα μόλις αποκατασταθεί η σύνδεση.</value> 
+  </data> 
+  <data name="errNetworkErrorOtherTitle" xml:space="preserve"> 
+    <value>Η σύνδεση δεν είναι προσωρινά διαθέσιμη</value> 
+  </data> 
+  <data name="errNotEnoughDiskSpaceDescription" xml:space="preserve"> 
+    <value>Δεν υπάρχει αρκετός χώρος στον υπολογιστή σας για τον συγχρονισμό αυτού του αρχείου.</value> 
+  </data> 
+  <data name="errNotEnoughDiskSpaceTitle" xml:space="preserve"> 
+    <value>Ανεπαρκής χώρος δίσκου</value> 
+  </data> 
+  <data name="errNotYetSupportedCharDescription" xml:space="preserve"> 
+    <value>Το όνομα αυτού του αρχείου περιέχει έναν ή περισσότερους χαρακτήρες που δεν υποστηρίζονται ακόμα από την εφαρμογή kDrive. Μετονομάστε το αρχείο από το kDrive online.</value> 
+  </data> 
+  <data name="errNotYetSupportedCharTitle" xml:space="preserve"> 
+    <value>Μη υποστηριζόμενος χαρακτήρας</value> 
+  </data> 
+  <data name="errPathLengthDescription" xml:space="preserve"> 
+    <value>Η διαδρομή προς αυτό το %s είναι πολύ μακριά για συγχρονισμό. Μετονομάστε έναν ή περισσότερους φακέλους στους οποίους βρίσκεται για να μικρύνετε τη διαδρομή.</value> 
+  </data> 
+  <data name="errPathLengthTitle" xml:space="preserve"> 
+    <value>Η διαδρομή προς %s είναι πολύ μακριά</value> 
+  </data> 
+  <data name="errQuotaExceededDescription" xml:space="preserve"> 
+    <value>Το kDrive σας είναι γεμάτο. Ελευθερώστε χώρο ή αναβαθμίστε τη συνδρομή σας για να συγχρονίσετε αυτό το %s.</value> 
+  </data> 
+  <data name="errQuotaExceededTitle" xml:space="preserve"> 
+    <value>Το όριο αποθηκευτικού χώρου συμπληρώθηκε</value> 
+  </data> 
+  <data name="errReservedNameDescription" xml:space="preserve"> 
+    <value>Αυτό το όνομα είναι δεσμευμένο από το σύστημα του υπολογιστή σας. Μετονομάστε το %s από το kDrive online.</value> 
+  </data> 
+  <data name="errReservedNameTitle" xml:space="preserve"> 
+    <value>Το όνομα %s είναι δεσμευμένο</value> 
+  </data> 
+  <data name="errSystemErrorSyncDirAccessErrorDescription" xml:space="preserve"> 
+    <value>Ελέγξτε την τοποθεσία ή τα δικαιώματα πρόσβασης του φακέλου.</value> 
+  </data> 
+  <data name="errSystemErrorSyncDirAccessTitle" xml:space="preserve"> 
+    <value>Ο φάκελος συγχρονισμού δεν είναι προσβάσιμος</value> 
+  </data> 
+  <data name="errSystemNotEnoughDiskSpaceDescription" xml:space="preserve"> 
+    <value>Ο χώρος δίσκου της συσκευής σας είναι γεμάτος. Ο συγχρονισμός διακόπηκε. Ελευθερώστε χώρο για να συνεχίσετε τον συγχρονισμό.</value> 
+  </data> 
+  <data name="errSystemNotEnoughDiskSpaceTitle" xml:space="preserve"> 
+    <value>Ανεπαρκής χώρος δίσκου</value> 
+  </data> 
+  <data name="errSystemSyncDirChanged" xml:space="preserve"> 
+    <value>Αυτός ο φάκελος δεν είναι πλέον προσβάσιμος στην αρχική του τοποθεσία.</value> 
+  </data> 
+  <data name="errSystemSyncDirDiskMissingDescription" xml:space="preserve"> 
+    <value>Αυτός ο φάκελος δεν είναι πλέον προσβάσιμος. Απαιτείται ενέργεια για να συνεχιστεί ο συγχρονισμός.</value> 
+  </data> 
+  <data name="errSystemSyncDirMissingTitle" xml:space="preserve"> 
+    <value>Ο φάκελος συγχρονισμού δεν βρέθηκε</value> 
+  </data> 
+  <data name="errSystemUnableToStartVfsDescription" xml:space="preserve"> 
+    <value>Το Lite Sync δεν μπορεί να εκκινήσει. Μπορείτε να συνεχίσετε να συγχρονίζετε τα αρχεία σας ενεργοποιώντας τον συγχρονισμό εκτός σύνδεσης στις ρυθμίσεις. Επικοινωνήστε με την υποστήριξη εάν το πρόβλημα παραμένει.</value> 
+  </data> 
+  <data name="errSystemUnableToStartVfsTitle" xml:space="preserve"> 
+    <value>Αδύνατη εκκίνηση του Lite Sync</value> 
+  </data> 
+  <data name="errTmpBlacklistedDescription" xml:space="preserve"> 
+    <value>Ο συγχρονισμός αυτού του στοιχείου απέτυχε. Θα επαναληφθεί αυτόματα αργότερα.</value> 
+  </data> 
+  <data name="errTmpBlacklistedTitle" xml:space="preserve"> 
+    <value>Ο συγχρονισμός απέτυχε προσωρινά</value> 
+  </data> 
+  <data name="errUploadNotTerminatedDescription" xml:space="preserve"> 
+    <value>Η μεταφόρτωση δεν μπόρεσε να ολοκληρωθεί. Δοκιμάστε ξανά αργότερα.</value> 
+  </data> 
+  <data name="errorListFilesToVerifyHeader" xml:space="preserve"> 
+    <value>Αρχεία για έλεγχο</value> 
+  </data> 
+  <data name="errorListOthersHeader" xml:space="preserve"> 
+    <value>Άλλα</value> 
+  </data> 
+  <data name="errorPageTitle" xml:space="preserve"> 
+    <value>Σφάλματα για διόρθωση</value> 
+  </data> 
+  <data name="excludeRuleDescription" xml:space="preserve"> 
+    <value>Τα αρχεία που ταιριάζουν με αυτόν τον κανόνα δεν θα συγχρονίζονται.</value> 
+  </data> 
+  <data name="extendedLogDescription" xml:space="preserve"> 
+    <value>Ενεργοποιεί τη συλλογή πρόσθετων πληροφοριών χρήσιμων για την υποστήριξη.</value> 
+  </data> 
+  <data name="extendedLogSetting" xml:space="preserve"> 
+    <value>Εκτεταμένο λεπτομερές αρχείο καταγραφής</value> 
+  </data> 
+  <data name="extendedLogWarning" xml:space="preserve"> 
+    <value>Όταν αυτή η επιλογή είναι ενεργή, το kDrive λειτουργεί πιο αργά.</value> 
+  </data> 
+  <data name="failedToCreateShareLinkError" xml:space="preserve"> 
+    <value>Αποτυχία δημιουργίας συνδέσμου κοινής χρήσης</value> 
+  </data> 
+  <data name="faqUrl" xml:space="preserve"> 
+    <value>https://www.infomaniak.com/en/support/faq/admin2/kdrive</value> 
+  </data> 
+  <data name="feedbackSetting" xml:space="preserve"> 
+    <value>Βοηθήστε μας να βελτιώσουμε το kDrive</value> 
+  </data> 
+  <data name="feedbackURL" xml:space="preserve"> 
+    <value>https://feedback.userreport.com/652ad8f0-84c8-4a21-9e31-7a8bd7134f46</value> 
+  </data> 
+  <data name="fileExistsErrorTitle" xml:space="preserve"> 
+    <value>Το αρχείο υπάρχει ήδη</value> 
+  </data> 
+  <data name="fileSyncMode" xml:space="preserve"> 
+    <value>Λειτουργία συγχρονισμού αρχείων</value> 
+  </data> 
+  <data name="fileSyncModeDescription" xml:space="preserve"> 
+    <value>Καθορίστε τον τρόπο αποθήκευσης και πρόσβασης στα αρχεία σας.</value> 
+  </data> 
+  <data name="filesToExclude" xml:space="preserve"> 
+    <value>Αρχεία για εξαίρεση</value> 
+  </data> 
+  <data name="folderFavorites" xml:space="preserve"> 
+    <value>Αγαπημένα</value> 
+  </data> 
+  <data name="folderShares" xml:space="preserve"> 
+    <value>Κοινοποιήσεις</value> 
+  </data> 
+  <data name="folderTrash" xml:space="preserve"> 
+    <value>Κάδος απορριμμάτων</value> 
+  </data> 
+  <data name="forOneHour" xml:space="preserve"> 
+    <value>Για 1 ώρα</value> 
+  </data> 
+  <data name="forOneWeek" xml:space="preserve"> 
+    <value>Για μία εβδομάδα</value> 
+  </data> 
+  <data name="forThreeDays" xml:space="preserve"> 
+    <value>Για τρεις ημέρες</value> 
+  </data> 
+  <data name="greetingLabel" xml:space="preserve"> 
+    <value>Γεια σας %1$s, %2$s</value> 
+  </data> 
+  <data name="helpKDriveName" xml:space="preserve"> 
+    <value>kDrive %s</value> 
+  </data> 
+  <data name="helpUrl" xml:space="preserve"> 
+    <value>https://www.infomaniak.com/en/support</value> 
+  </data> 
+  <data name="infomaniakSupport" xml:space="preserve"> 
+    <value>Υποστήριξη Infomaniak</value> 
+  </data> 
+  <data name="informationBlockKDriveFullSubtitle" xml:space="preserve"> 
+    <value>Ελευθερώστε χώρο ή αναβαθμίστε το πλάνο σας για να συνεχίσετε να συγχρονίζετε τα αρχεία σας.</value> 
+  </data> 
+  <data name="informationBlockKDriveFullTitle" xml:space="preserve"> 
+    <value>Το kDrive σας είναι γεμάτο</value> 
+  </data> 
+  <data name="informationBlockSynchroErrorSubtitle" xml:space="preserve"> 
+    <value>Ορισμένα αρχεία δεν μπόρεσαν να συγχρονιστούν.</value> 
+  </data> 
+  <data name="informationBlockTmpDirAccessErrorSubtitle" xml:space="preserve"> 
+    <value>Δεν μπορούμε να αποκτήσουμε πρόσβαση στα αρχεία σας. Επανεκκινήστε την εφαρμογή για να συνεχίσετε τον συγχρονισμό. Εάν το πρόβλημα συνεχίζεται, επικοινωνήστε με την υποστήριξη.</value> 
+  </data> 
+  <data name="informationBlockTmpDirAccessErrorTitle" xml:space="preserve"> 
+    <value>Διακόπηκε η σύνδεση με το kDrive</value> 
+  </data> 
+  <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
+    <value>Αυτό το στοιχείο δεν είναι διαθέσιμο σε αυτή τη συσκευή.
+Θα ανοίξει στο πρόγραμμα περιήγησής σας.</value> 
+  </data> 
+  <data name="labelAccessRightsModified" xml:space="preserve"> 
+    <value>Τα δικαιώματα πρόσβασης τροποποιήθηκαν</value> 
+  </data> 
+  <data name="labelActivated" xml:space="preserve"> 
+    <value>Ενεργοποιημένο</value> 
+  </data> 
+  <data name="labelAgo" xml:space="preserve"> 
+    <value>πριν από %s</value> 
+    <comment>Suffix for relative timestamps in activity lists; %@ is the time period (e.g., 5 minutes).</comment> 
+  </data> 
+  <data name="labelAllFolders" xml:space="preserve"> 
+    <value>Όλοι οι φάκελοι</value> 
+  </data> 
+  <data name="labelAllkDrive" xml:space="preserve"> 
+    <value>Όλο το kDrive</value> 
+  </data> 
+  <data name="labelAllowTracking" xml:space="preserve"> 
+    <value>Να επιτρέπεται η παρακολούθηση</value> 
+  </data> 
+  <data name="labelAuthor" xml:space="preserve"> 
+    <value>Συντάκτης</value> 
+  </data> 
+  <data name="labelByDefault" xml:space="preserve"> 
+    <value>Από προεπιλογή</value> 
+  </data> 
+  <data name="labelBytes" xml:space="preserve"> 
+    <value>B</value> 
+  </data> 
+  <data name="labelChooseConflictVersion" xml:space="preserve"> 
+    <value>Επιλέξτε ποια έκδοση των αρχείων σας θέλετε να διατηρήσετε.</value> 
+  </data> 
+  <data name="labelChooseConflictVersionIndividual" xml:space="preserve"> 
+    <value>Για κάθε αρχείο, επιλέξτε την έκδοση που θέλετε να διατηρήσετε.</value> 
+  </data> 
+  <data name="labelConflictDialogQuestion" xml:space="preserve"> 
+    <value>Ποια έκδοση θέλετε να διατηρήσετε;</value> 
+  </data> 
+  <data name="labelConflictDialogTitle" xml:space="preserve"> 
+    <value>Επιλογή έκδοσης για διατήρηση</value> 
+  </data> 
+  <data name="labelConflictStrategyKeepLocalDescription" xml:space="preserve"> 
+    <value>Οι διαδικτυακές εκδόσεις αυτών των %s αρχείων θα αντικατασταθούν από τις τοπικές σας εκδόσεις.
+Προσοχή, αυτό μπορεί να αντικαταστήσει τη δουλειά των συνεργατών σας.</value> 
+  </data> 
+  <data name="labelConflictStrategyKeepLocalTitle" xml:space="preserve"> 
+    <value>Διατήρηση μόνο των τοπικών εκδόσεων</value> 
+  </data> 
+  <data name="labelConflictStrategyKeepMostRecentDescription" xml:space="preserve"> 
+    <value>Για κάθε σύγκρουση, θα διατηρούμε αυτόματα την έκδοση (τοπική ή διαδικτυακή) που τροποποιήθηκε πιο πρόσφατα. Αυτή είναι η πιο ασφαλής επιλογή στις περισσότερες περιπτώσεις.</value> 
+  </data> 
+  <data name="labelConflictStrategyKeepMostRecentTitle" xml:space="preserve"> 
+    <value>Διατήρηση των πιο πρόσφατων εκδόσεων</value> 
+  </data> 
+  <data name="labelConflictStrategyKeepRemoteDescription" xml:space="preserve"> 
+    <value>Όλες οι τοπικές αλλαγές για αυτά τα %s αρχεία θα απορριφθούν.
+Χρήσιμο εάν γνωρίζετε ότι η σημαντική εργασία βρίσκεται διαδικτυακά στο kDrive.</value> 
+  </data> 
+  <data name="labelConflictStrategyKeepRemoteTitle" xml:space="preserve"> 
+    <value>Διατήρηση μόνο των διαδικτυακών εκδόσεων</value> 
+  </data> 
+  <data name="labelConnectToStart" xml:space="preserve"> 
+    <value>Συνδεθείτε για να ξεκινήσετε.</value> 
+  </data> 
+  <data name="labelCreateNewSync" xml:space="preserve"> 
+    <value>Δημιουργήστε έναν %s.</value> 
+  </data> 
+  <data name="labelDate" xml:space="preserve"> 
+    <value>Ημερομηνία</value> 
+  </data> 
+  <data name="labelDeactivated" xml:space="preserve"> 
+    <value>Απενεργοποιημένο</value> 
+  </data> 
+  <data name="labelFAQ" xml:space="preserve"> 
+    <value>FAQ</value> 
+  </data> 
+  <data name="labelFileLowerCase" xml:space="preserve"> 
+    <value>αρχείο</value> 
+  </data> 
+  <data name="labelFolder" xml:space="preserve"> 
+    <value>Φάκελος</value> 
+  </data> 
+  <data name="labelFolderDeleted" xml:space="preserve"> 
+    <value>Ο φάκελος διαγράφηκε</value> 
+  </data> 
+  <data name="labelFolderDisplacedOrModified" xml:space="preserve"> 
+    <value>Ο φάκελος μεταφέρθηκε ή τροποποιήθηκε</value> 
+  </data> 
+  <data name="labelFolderDisplacedOrModifiedTip" xml:space="preserve"> 
+    <value>Ο φάκελος μπορεί να έχει μεταφερθεί σε άλλον δίσκο και στη συνέχεια να επιστράφηκε στην αρχική του τοποθεσία.</value> 
+  </data> 
+  <data name="labelFolderLowerCase" xml:space="preserve"> 
+    <value>φάκελος</value> 
+  </data> 
+  <data name="labelFolderMovedOrRenamed" xml:space="preserve"> 
+    <value>Ο φάκελος μεταφέρθηκε ή μετονομάστηκε</value> 
+  </data> 
+  <data name="labelFolderRecreatedOrReplaced" xml:space="preserve"> 
+    <value>Ο φάκελος δημιουργήθηκε εκ νέου ή αντικαταστάθηκε</value> 
+  </data> 
+  <data name="labelFolderRecreatedOrReplacedTip" xml:space="preserve"> 
+    <value>Ο φάκελος διαγράφηκε και δημιουργήθηκε εκ νέου ή αντικαταστάθηκε από άλλον φάκελο με το ίδιο όνομα.</value> 
+  </data> 
+  <data name="labelGigaBytes" xml:space="preserve"> 
+    <value>GB</value> 
+    <comment>Unit abbreviation for gigabytes, used in file size and storage displays.</comment> 
+  </data> 
+  <data name="labelJustNow" xml:space="preserve"> 
+    <value>Μόλις τώρα</value> 
+  </data> 
+  <data name="labelKDriveVersion" xml:space="preserve"> 
+    <value>kDrive %s</value> 
+  </data> 
+  <data name="labelKiloBytes" xml:space="preserve"> 
+    <value>KB</value> 
+    <comment>Unit abbreviation for kilobytes, used in file size displays.</comment> 
+  </data> 
+  <data name="labelLocal" xml:space="preserve"> 
+    <value>Τοπικό</value> 
+  </data> 
+  <data name="labelManyConflictTitle" xml:space="preserve"> 
+    <value>%s αρχεία τροποποιήθηκαν τόσο στον υπολογιστή σας όσο και στο kDrive.</value> 
+  </data> 
+  <data name="labelMegaBytes" xml:space="preserve"> 
+    <value>MB</value> 
+    <comment>Unit abbreviation for megabytes, used in file size displays.</comment> 
+  </data> 
+  <data name="labelMostRecent" xml:space="preserve"> 
+    <value>Πιο πρόσφατο</value> 
+  </data> 
+  <data name="labelName" xml:space="preserve"> 
+    <value>Όνομα</value> 
+  </data> 
+  <data name="labelNewDeviceDetected" xml:space="preserve"> 
+    <value>Εντοπίστηκε νέα συσκευή</value> 
+  </data> 
+  <data name="labelNewDeviceDetectedTip" xml:space="preserve"> 
+    <value>Χρησιμοποιείτε το kDrive σε νέο υπολογιστή, μετά από επαναφορά από αντίγραφο ασφαλείας.</value> 
+  </data> 
+  <data name="labelNewFolder" xml:space="preserve"> 
+    <value>Νέος φάκελος</value> 
+  </data> 
+  <data name="labelNewSync" xml:space="preserve"> 
+    <value>νέος συγχρονισμός</value> 
+  </data> 
+  <data name="labelNoConflictsFound" xml:space="preserve"> 
+    <value>Καμία σύγκρουση δεν αντιστοιχεί στην αναζήτησή σας</value> 
+  </data> 
+  <data name="labelNoErrorsToFix" xml:space="preserve"> 
+    <value>Δεν υπάρχουν σφάλματα για διόρθωση.</value> 
+  </data> 
+  <data name="labelNotifications" xml:space="preserve"> 
+    <value>Ειδοποίηση</value> 
+  </data> 
+  <data name="labelOnline" xml:space="preserve"> 
+    <value>Online</value> 
+  </data> 
+  <data name="labelOnlineFolderDeletedOrRenamed" xml:space="preserve"> 
+    <value>Ο φάκελος διαγράφηκε στο διαδίκτυο</value> 
+  </data> 
+  <data name="labelOnlineFolderDeletedOrRenamedTip" xml:space="preserve"> 
+    <value>Ο συγχρονισμένος φάκελος διαγράφηκε στο kDrive online ή δεν είναι πλέον προσβάσιμος.</value> 
+  </data> 
+  <data name="labelOriginalLocation" xml:space="preserve"> 
+    <value>Αρχική τοποθεσία:</value> 
+  </data> 
+  <data name="labelRecommended" xml:space="preserve"> 
+    <value>Συνιστάται</value> 
+  </data> 
+  <data name="labelRemoteAccessRightsModifiedTip" xml:space="preserve"> 
+    <value>Ο φάκελος μπορεί να έχει μεταφερθεί σε άλλον δίσκο και στη συνέχεια να επιστράφηκε στην αρχική του τοποθεσία.</value> 
+  </data> 
+  <data name="labelRestoreToOriginalLocation" xml:space="preserve"> 
+    <value>Επαναφέρετε το στην αρχική του τοποθεσία.</value> 
+  </data> 
+  <data name="labelRules" xml:space="preserve"> 
+    <value>Κανόνες</value> 
+  </data> 
+  <data name="labelSameAsSystem" xml:space="preserve"> 
+    <value>Ίδιο με το σύστημα</value> 
+  </data> 
+  <data name="labelShortDay" xml:space="preserve"> 
+    <value>μ</value> 
+    <comment>Abbreviated unit for day used in relative timestamps (e.g., 3d ago).</comment> 
+  </data> 
+  <data name="labelShortHour" xml:space="preserve"> 
+    <value>ω</value> 
+    <comment>Abbreviated unit for hour used in relative timestamps.</comment> 
+  </data> 
+  <data name="labelShortMinute" xml:space="preserve"> 
+    <value>λεπτ</value> 
+    <comment>Abbreviated unit for minute used in relative timestamps.</comment> 
+  </data> 
+  <data name="labelShortSecond" xml:space="preserve"> 
+    <value>δευτ</value> 
+    <comment>Abbreviated unit for second used in relative timestamps.</comment> 
+  </data> 
+  <data name="labelSince" xml:space="preserve"> 
+    <value>Από: %s</value> 
+    <comment>Label showing the start time of a synchronization pause or event; %@ is the formatted date/time.</comment> 
+  </data> 
+  <data name="labelSize" xml:space="preserve"> 
+    <value>Μέγεθος</value> 
+  </data> 
+  <data name="labelStatus" xml:space="preserve"> 
+    <value>Κατάσταση</value> 
+  </data> 
+  <data name="labelStorageFree" xml:space="preserve"> 
+    <value>%s ελεύθερο</value> 
+    <comment>Label showing available free storage space; %@ is the formatted size (singular form).</comment> 
+  </data> 
+  <data name="labelStorageFree-plural" xml:space="preserve"> 
+    <value>%s ελεύθερα</value> 
+  </data> 
+  <data name="labelStorageLoading" xml:space="preserve"> 
+    <value>Υπολογισμός…</value> 
+    <comment>Loading indicator text shown while storage usage is being calculated.</comment> 
+  </data> 
+  <data name="labelStorageUsed" xml:space="preserve"> 
+    <value>%s χρησιμοποιημένο</value> 
+    <comment>Label showing used storage space; %@ is the formatted size (singular form).</comment> 
+  </data> 
+  <data name="labelStorageUsed-plural" xml:space="preserve"> 
+    <value>%s χρησιμοποιημένα</value> 
+  </data> 
+  <data name="labelSyncExclusionEmptyDescription" xml:space="preserve"> 
+    <value>Αυτό το kDrive περιέχει μόνο αρχεία. Όλα τα αρχεία θα συγχρονιστούν σε αυτή τη συσκευή.</value> 
+  </data> 
+  <data name="labelSyncExclusionEmptyTitle" xml:space="preserve"> 
+    <value>Δεν υπάρχουν φάκελοι για επιλογή</value> 
+  </data> 
+  <data name="labelSyncFolder" xml:space="preserve"> 
+    <value>Φάκελοι συγχρονισμού</value> 
+  </data> 
+  <data name="labelSyncLocation" xml:space="preserve"> 
+    <value>Τοποθεσία</value> 
+  </data> 
+  <data name="labelSyncYourKDrive" xml:space="preserve"> 
+    <value>Συγχρονίστε τα kDrive σας σε αυτή τη συσκευή</value> 
+  </data> 
+  <data name="labelSyncedFolders" xml:space="preserve"> 
+    <value>Συγχρονισμένοι φάκελοι</value> 
+  </data> 
+  <data name="labelSynchronisation" xml:space="preserve"> 
+    <value>Συγχρονισμός</value> 
+  </data> 
+  <data name="labelTeraBytes" xml:space="preserve"> 
+    <value>TB</value> 
+    <comment>Unit abbreviation for terabytes, used in storage displays.</comment> 
+  </data> 
+  <data name="labelWelcomeToKDrive" xml:space="preserve"> 
+    <value>Καλωσορίσατε στο kDrive</value> 
+  </data> 
+  <data name="labelXoverY" xml:space="preserve"> 
+    <value>%1$s από %2$s</value> 
+  </data> 
+  <data name="labelkDriveManagement" xml:space="preserve"> 
+    <value>Διαχείριση kDrive</value> 
+  </data> 
+  <data name="languageSetting" xml:space="preserve"> 
+    <value>Γλώσσα</value> 
+  </data> 
+  <data name="languageSettingWarning" xml:space="preserve"> 
+    <value>Επανεκκινήστε την εφαρμογή για να ολοκληρωθεί η εφαρμογή της νέας γλώσσας.</value> 
+  </data> 
+  <data name="largeFolderRecommendation" xml:space="preserve"> 
+    <value>Ο πλήρης φάκελος είναι μεγάλος.
+Για να επιταχύνετε την αποστολή, σας συνιστούμε να στείλετε μόνο την τελευταία περίοδο σύνδεσης kDrive.</value> 
+  </data> 
+  <data name="learnMore" xml:space="preserve"> 
+    <value>Μάθετε περισσότερα</value> 
+  </data> 
+  <data name="licensesHyperLink" xml:space="preserve"> 
+    <value>Άδεια LGPL v3 - Πηγές Git</value> 
+  </data> 
+  <data name="linkCopiedToClipboardTitle" xml:space="preserve"> 
+    <value>Ο σύνδεσμος αντιγράφηκε στο πρόχειρο</value> 
+  </data> 
+  <data name="liteSyncUnavailableDescription" xml:space="preserve"> 
+    <value>Μη συμβατή μονάδα δίσκου ή φάκελος απευθείας στη ρίζα της μονάδας (π.χ. επιλέξτε έναν φάκελο όπως D:/Η μονάδα μου αντί για D:/)</value> 
+  </data> 
+  <data name="localLocation" xml:space="preserve"> 
+    <value>Τοποθεσία στον υπολογιστή</value> 
+    <comment>Label for the local PC folder location field in sync settings.</comment> 
+  </data> 
+  <data name="logLevelDebug" xml:space="preserve"> 
+    <value>Εντοπισμός σφαλμάτων</value> 
+  </data> 
+  <data name="logLevelError" xml:space="preserve"> 
+    <value>Σφάλμα</value> 
+  </data> 
+  <data name="logLevelExtended" xml:space="preserve"> 
+    <value>Εκτεταμένο</value> 
+    <comment>Extended log level option in the debug level dropdown in advanced settings.</comment> 
+  </data> 
+  <data name="logLevelFatal" xml:space="preserve"> 
+    <value>Κρίσιμο</value> 
+  </data> 
+  <data name="logLevelInfo" xml:space="preserve"> 
+    <value>Πληροφορίες</value> 
+  </data> 
+  <data name="logLevelWarning" xml:space="preserve"> 
+    <value>Προειδοποίηση</value> 
+  </data> 
+  <data name="logUploadPopupTitle" xml:space="preserve"> 
+    <value>Αποστολή φακέλου εντοπισμού σφαλμάτων στην υποστήριξη Infomaniak</value> 
+  </data> 
+  <data name="logicErrorFullListParsingErrorDescription" xml:space="preserve"> 
+    <value>Ορισμένα ονόματα αρχείων ενδέχεται να περιέχουν μη υποστηριζόμενους ειδικούς χαρακτήρες (όπως διπλά εισαγωγικά, ανάστροφες κάθετες ή αλλαγές γραμμής).
+
+Ελέγξτε και μετονομάστε τα αρχεία που περιέχουν ασυνήθιστους χαρακτήρες και δοκιμάστε ξανά.</value> 
+  </data> 
+  <data name="logicErrorFullListParsingErrorTitle" xml:space="preserve"> 
+    <value>Μη έγκυρο όνομα αρχείου</value> 
+  </data> 
+  <data name="logsStatusCompression" xml:space="preserve"> 
+    <value>Συμπίεση αρχείων καταγραφής…</value> 
+  </data> 
+  <data name="logsStatusUpload" xml:space="preserve"> 
+    <value>Μεταφόρτωση αρχείων καταγραφής στην υποστήριξη…</value> 
+  </data> 
+  <data name="logsUploadErrorTooltip" xml:space="preserve"> 
+    <value>Η τελευταία μεταφόρτωση απέτυχε. Ελέγξτε τη σύνδεσή σας στο διαδίκτυο και βεβαιωθείτε ότι τουλάχιστον ένας χρήστης kDrive είναι συνδεδεμένος. Οι μεταφορτώσεις περιορίζονται σε 10 ανά ημέρα.</value> 
+  </data> 
+  <data name="manyConflictErrorDescription" xml:space="preserve"> 
+    <value>Εντοπίστηκαν διαφορετικές εκδόσεις αυτών των αρχείων.</value> 
+  </data> 
+  <data name="manyConflictErrorTitle" xml:space="preserve"> 
+    <value>%s συγκρούσεις εκδόσεων εντοπίστηκαν</value> 
+  </data> 
+  <data name="matomoDescription" xml:space="preserve"> 
+    <value>Το Matomo είναι ένα εργαλείο ανάλυσης που φιλοξενείται και διαχειρίζεται αποκλειστικά από την Infomaniak για να κατανοεί πώς χρησιμοποιείται η εφαρμογή.
+
+Η ανάλυση αυτών των δεδομένων επιτρέπει στην ομάδα μας να βελτιώνει συνεχώς τη διεπαφή της εφαρμογής.</value> 
+  </data> 
+  <data name="moveCancelErrorTitle" xml:space="preserve"> 
+    <value>Η μεταφορά ακυρώθηκε</value> 
+  </data> 
+  <data name="moveDeletedFilesToRecycleBinSetting" xml:space="preserve"> 
+    <value>Μεταφορά διαγραμμένων αρχείων στον κάδο ανακύκλωσης του υπολογιστή</value> 
+  </data> 
+  <data name="moveDeletedFilesToRecycleBinWarning" xml:space="preserve"> 
+    <value>Ορισμένα στοιχεία μπορεί να μην είναι δυνατό να μεταφερθούν.</value> 
+  </data> 
+  <data name="myksuitePlusBannerDescription" xml:space="preserve"> 
+    <value>Περισσότερος αποθηκευτικός χώρος, περισσότερες λειτουργίες με τη my kSuite+</value> 
+  </data> 
+  <data name="needHelpSetting" xml:space="preserve"> 
+    <value>Χρειάζεστε βοήθεια;</value> 
+  </data> 
+  <data name="noAccountConnected" xml:space="preserve"> 
+    <value>Προσθέστε έναν λογαριασμό για να ξεκινήσετε</value> 
+  </data> 
+  <data name="noResultsFound" xml:space="preserve"> 
+    <value>Δεν βρέθηκαν αποτελέσματα</value> 
+  </data> 
+  <data name="notSyncedDrive" xml:space="preserve"> 
+    <value>Μη συγχρονισμένο</value> 
+  </data> 
+  <data name="notificationsDisabledAlways" xml:space="preserve"> 
+    <value>Πάντα</value> 
+  </data> 
+  <data name="notificationsDisabledNever" xml:space="preserve"> 
+    <value>Ποτέ</value> 
+  </data> 
+  <data name="notifyOnFileExcluded" xml:space="preserve"> 
+    <value>Λήψη ειδοποίησης όταν ένα αρχείο εξαιρείται</value> 
+  </data> 
+  <data name="onBoardingAdvancedSettingsDriveTitle" xml:space="preserve"> 
+    <value>Ρύθμιση παραμέτρων συγχρονισμού για αυτό το kDrive</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsDriveCustomizeLocation" xml:space="preserve"> 
+    <value>Προσαρμόστε τη θέση του φακέλου kDrive στον υπολογιστή σας:</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsDriveCustomizeLocationTip" xml:space="preserve"> 
+    <value>Ο επιλεγμένος φάκελος πρέπει να είναι κενός για να λειτουργεί σωστά ο συγχρονισμός.</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsDriveExclusionDescription" xml:space="preserve"> 
+    <value>Επιλέξτε τους φακέλους για συγχρονισμό σε αυτόν τον υπολογιστή:</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsDriveExclusionTitle" xml:space="preserve"> 
+    <value>Συγχρονισμένοι φάκελοι</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsDriveSelectionDescription" xml:space="preserve"> 
+    <value>Για κάθε kDrive, μπορείτε να επιλέξετε πού συγχρονίζεται στον υπολογιστή σας και ποιους φακέλους να συγχρονίσετε.</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsDriveSelectionExclusion" xml:space="preserve"> 
+    <value>Συγχρονισμένο περιεχόμενο:</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsDriveSelectionLocation" xml:space="preserve"> 
+    <value>Τοποθεσία:</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsDriveSelectionTitle" xml:space="preserve"> 
+    <value>Ρύθμιση παραμέτρων των kDrive σας</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsExclusionTitle" xml:space="preserve"> 
+    <value>Επιλέξτε τους φακέλους για συγχρονισμό σε αυτόν τον υπολογιστή</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsLiteSyncDescription" xml:space="preserve"> 
+    <value>Τα αρχεία λαμβάνονται μόνο κατά το άνοιγμά τους, για εξοικονόμηση χώρου δίσκου.</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsLiteSyncTitle" xml:space="preserve"> 
+    <value>Ενεργοποίηση Lite Sync</value> 
+  </data> 
+  <data name="onboardingAlreadySyncedDriveTooltip" xml:space="preserve"> 
+    <value>Αυτό το kDrive είναι ήδη διαμορφωμένο.
+Μεταβείτε στις ρυθμίσεις σας για να το τροποποιήσετε.</value> 
+  </data> 
+  <data name="onboardingDriveSelectionNoDriveDescription" xml:space="preserve"> 
+    <value>Ξεκινήστε δωρεάν με τη my kSuite,
+ή επιλέξτε ένα πλάνο που ταιριάζει στις ανάγκες σας.</value> 
+  </data> 
+  <data name="onboardingDriveSelectionNoDriveTitle" xml:space="preserve"> 
+    <value>Δεν έχετε ακόμα kDrive.</value> 
+  </data> 
+  <data name="onboardingDriveSelectionSelectTitle" xml:space="preserve"> 
+    <value>Επιλέξτε τα kDrive για συγχρονισμό σε αυτόν τον υπολογιστή:</value> 
+  </data> 
+  <data name="onboardingDriveSelectionSyncInProgress" xml:space="preserve"> 
+    <value>Συγχρονισμός σε εξέλιξη</value> 
+  </data> 
+  <data name="onboardingDriveSelectionTitle" xml:space="preserve"> 
+    <value>Χαιρόμαστε που σας βλέπουμε!</value> 
+  </data> 
+  <data name="onboardingExclusionSummaryNone" xml:space="preserve"> 
+    <value>Όλοι οι φάκελοι kDrive</value> 
+  </data> 
+  <data name="onboardingExclusionSummarySome" xml:space="preserve"> 
+    <value>Προσαρμοσμένη επιλογή</value> 
+  </data> 
+  <data name="onboardingLoginDescription" xml:space="preserve"> 
+    <value>Το ιδιωτικό, γρήγορο και ασφαλές cloud, φιλοξενούμενο στην Ελβετία.
+
+Συνδεθείτε και διατηρήστε τα έγγραφά σας συγχρονισμένα σε όλες τις συσκευές σας.</value> 
+  </data> 
+  <data name="onboardingLoginErrorDescription" xml:space="preserve"> 
+    <value>Παρουσιάστηκε σφάλμα, παρακαλούμε δοκιμάστε ξανά.</value> 
+  </data> 
+  <data name="onboardingLoginErrorTitle" xml:space="preserve"> 
+    <value>Σφάλμα σύνδεσης</value> 
+  </data> 
+  <data name="onboardingLoginProcessingDescription" xml:space="preserve"> 
+    <value>Ανάκτηση πληροφοριών σας…</value> 
+  </data> 
+  <data name="onboardingLoginProcessingTitle" xml:space="preserve"> 
+    <value>Ένα λεπτό…</value> 
+  </data> 
+  <data name="onboardingLoginTitle" xml:space="preserve"> 
+    <value>Καλωσορίσατε στο kDrive</value> 
+  </data> 
+  <data name="onboardingSynchronizationAppReadyDescription" xml:space="preserve"> 
+    <value>Τα αρχεία σας είναι έτοιμα να συγχρονιστούν
+με ασφάλεια στον υπολογιστή σας.</value> 
+  </data> 
+  <data name="onboardingSynchronizationAppReadyTitle" xml:space="preserve"> 
+    <value>Όλα έτοιμα!</value> 
+  </data> 
+  <data name="onboardingSynchronizationInProgressDescription" xml:space="preserve"> 
+    <value>Οριστικοποιούμε τη διαμόρφωση των kDrive σας.
+
+Παρακαλούμε περιμένετε μερικές στιγμές.</value> 
+  </data> 
+  <data name="onboardingSynchronizationInProgressTitle" xml:space="preserve"> 
+    <value>Συγχρονισμός σε εξέλιξη…</value> 
+  </data> 
+  <data name="openKDriveAtStartupSetting" xml:space="preserve"> 
+    <value>Άνοιγμα kDrive κατά την εκκίνηση του υπολογιστή</value> 
+  </data> 
+  <data name="openLoginPage" xml:space="preserve"> 
+    <value>Άνοιγμα σελίδας σύνδεσης</value> 
+  </data> 
+  <data name="pathCopiedToClipboard" xml:space="preserve"> 
+    <value>Η διαδρομή αντιγράφηκε στο πρόχειρο</value> 
+  </data> 
+  <data name="proxyConnectionDescription" xml:space="preserve"> 
+    <value>Καθορίστε τον τρόπο σύνδεσης του kDrive στο διαδίκτυο.</value> 
+  </data> 
+  <data name="proxyHost" xml:space="preserve"> 
+    <value>Διακομιστής</value> 
+  </data> 
+  <data name="proxyNeedAuth" xml:space="preserve"> 
+    <value>Απαιτείται έλεγχος ταυτότητας</value> 
+  </data> 
+  <data name="proxyPassword" xml:space="preserve"> 
+    <value>Κωδικός πρόσβασης</value> 
+  </data> 
+  <data name="proxyPort" xml:space="preserve"> 
+    <value>Θύρα</value> 
+  </data> 
+  <data name="proxySettings" xml:space="preserve"> 
+    <value>Ρυθμίσεις διακομιστή μεσολάβησης</value> 
+    <comment>Title of the proxy settings section in advanced settings.</comment> 
+  </data> 
+  <data name="proxyType" xml:space="preserve"> 
+    <value>Τύπος διακομιστή μεσολάβησης</value> 
+  </data> 
+  <data name="proxyTypeHTTP" xml:space="preserve"> 
+    <value>Μη αυτόματη διαμόρφωση</value> 
+  </data> 
+  <data name="proxyTypeNone" xml:space="preserve"> 
+    <value>Κανένας</value> 
+  </data> 
+  <data name="proxyUser" xml:space="preserve"> 
+    <value>Όνομα χρήστη</value> 
+  </data> 
+  <data name="releaseChannelBeta" xml:space="preserve"> 
+    <value>Beta</value> 
+  </data> 
+  <data name="releaseChannelInternal" xml:space="preserve"> 
+    <value>Εσωτερικό</value> 
+  </data> 
+  <data name="releaseChannelTest" xml:space="preserve"> 
+    <value>Δοκιμή</value> 
+  </data> 
+  <data name="remoteLocation" xml:space="preserve"> 
+    <value>Τοποθεσία στο kDrive</value> 
+  </data> 
+  <data name="searchBoxPlaceholder" xml:space="preserve"> 
+    <value>Αναζήτηση στο %s</value> 
+  </data> 
+  <data name="selectFoldersToSync" xml:space="preserve"> 
+    <value>Επιλέξτε τους φακέλους για συγχρονισμό σε αυτόν τον υπολογιστή.</value> 
+  </data> 
+  <data name="selectFoldersToSyncDescription" xml:space="preserve"> 
+    <value>Οι μη επιλεγμένοι φάκελοι δεν θα ληφθούν στη συσκευή σας. Θα παραμείνουν διαθέσιμοι online και δεν θα διαγραφούν.</value> 
+  </data> 
+  <data name="selectFoldersToSyncDescriptionShort" xml:space="preserve"> 
+    <value>Οι μη επιλεγμένοι φάκελοι δεν θα ληφθούν στη συσκευή σας. Θα παραμείνουν διαθέσιμοι online.</value> 
+  </data> 
+  <data name="sendLastSessionOnly" xml:space="preserve"> 
+    <value>Αποστολή μόνο της τελευταίας περιόδου σύνδεσης</value> 
+  </data> 
+  <data name="sentryDescription" xml:space="preserve"> 
+    <value>Το Sentry είναι ένα εργαλείο που φιλοξενείται και διαχειρίζεται αποκλειστικά από την Infomaniak για την παρακολούθηση σε πραγματικό χρόνο της σταθερότητας της εφαρμογής και την αυτόματη αναφορά τυχόν τεχνικών σφαλμάτων στους προγραμματιστές μας.
+
+Αυτά τα δεδομένα επιτρέπουν στην ομάδα μας να διορθώνει και να βελτιστοποιεί γρήγορα την εφαρμογή, με αποτέλεσμα καλύτερη εμπειρία χρήστη για εσάς.</value> 
+  </data> 
+  <data name="settingsTitle" xml:space="preserve"> 
+    <value>Ρυθμίσεις</value> 
+  </data> 
+  <data name="sidebarItemAccounts" xml:space="preserve"> 
+    <value>Λογαριασμοί</value> 
+  </data> 
+  <data name="sidebarItemAdvanced" xml:space="preserve"> 
+    <value>Προηγμένα</value> 
+  </data> 
+  <data name="sidebarItemGeneral" xml:space="preserve"> 
+    <value>Γενικά</value> 
+  </data> 
+  <data name="sidebarItemKDriveTitle" xml:space="preserve"> 
+    <value>Φάκελος kDrive</value> 
+  </data> 
+  <data name="signInBrowser" xml:space="preserve"> 
+    <value>Συνδεθείτε από το πρόγραμμα περιήγησής σας</value> 
+  </data> 
+  <data name="storageComputerFreeSpace" xml:space="preserve"> 
+    <value>Ελεύθερος χώρος στον υπολογιστή</value> 
+    <comment>Label for the free disk space segment in the local storage usage chart.</comment> 
+  </data> 
+  <data name="storageComputerUsedByKDrive" xml:space="preserve"> 
+    <value>Αρχεία kDrive αποθηκευμένα στον υπολογιστή</value> 
+    <comment>Label for the kDrive files segment in the local storage usage chart.</comment> 
+  </data> 
+  <data name="storageComputerUsedByOther" xml:space="preserve"> 
+    <value>Άλλα αρχεία στον υπολογιστή</value> 
+    <comment>Label for the other files segment in the local storage usage chart.</comment> 
+  </data> 
+  <data name="storageSyncBlockTitle" xml:space="preserve"> 
+    <value>Συγχρονισμός</value> 
+  </data> 
+  <data name="storageThisComputerTitle" xml:space="preserve"> 
+    <value>Αυτός ο υπολογιστής - %1$s - %2$s</value> 
+    <comment>Label for the local computer entry in the storage view; first %@ is computer name, second %@ is disk identifier.</comment> 
+  </data> 
+  <data name="storedOnline" xml:space="preserve"> 
+    <value>Αποθηκευμένο online</value> 
+  </data> 
+  <data name="storedOnlineDescription" xml:space="preserve"> 
+    <value>Τα αρχεία σας παραμένουν στο cloud και δεν χρησιμοποιούν χώρο στον υπολογιστή σας.
+Απαιτείται σύνδεση στο διαδίκτυο για πρόσβαση σε αυτά.</value> 
+  </data> 
+  <data name="syncErrorTooltip" xml:space="preserve"> 
+    <value>Σφάλμα συγχρονισμού</value> 
+  </data> 
+  <data name="syncFolderCustomLocation" xml:space="preserve"> 
+    <value>Προσαρμοσμένος φάκελος</value> 
+  </data> 
+  <data name="syncFolderDefaultLocation" xml:space="preserve"> 
+    <value>Προεπιλεγμένος φάκελος</value> 
+  </data> 
+  <data name="syncInProgressTooltip" xml:space="preserve"> 
+    <value>Συγχρονισμός</value> 
+  </data> 
+  <data name="syncModeApplying" xml:space="preserve"> 
+    <value>Η νέα λειτουργία συγχρονισμού σας εφαρμόζεται…</value> 
+  </data> 
+  <data name="syncRules" xml:space="preserve"> 
+    <value>Κανόνες συγχρονισμού</value> 
+  </data> 
+  <data name="syncShortStatusError" xml:space="preserve"> 
+    <value>Παρουσιάστηκε σφάλμα</value> 
+  </data> 
+  <data name="syncShortStatusIdle" xml:space="preserve"> 
+    <value>Ο τελευταίος συγχρονισμός ήταν επιτυχής</value> 
+  </data> 
+  <data name="syncShortStatusPaused" xml:space="preserve"> 
+    <value>Ο συγχρονισμός είναι σε παύση</value> 
+  </data> 
+  <data name="syncShortStatusRunning" xml:space="preserve"> 
+    <value>Ο συγχρονισμός βρίσκεται σε εξέλιξη</value> 
+  </data> 
+  <data name="syncSuccessTooltip" xml:space="preserve"> 
+    <value>Συγχρονίστηκε</value> 
+  </data> 
+  <data name="syncedDrive" xml:space="preserve"> 
+    <value>Συγχρονισμένο</value> 
+  </data> 
+  <data name="syncedFromComputer" xml:space="preserve"> 
+    <value>Συγχρονισμένο από τον υπολογιστή σας</value> 
+  </data> 
+  <data name="syncedFromKDriveWeb" xml:space="preserve"> 
+    <value>Συγχρονισμένο από το kDrive web</value> 
+  </data> 
+  <data name="synchroInProgress" xml:space="preserve"> 
+    <value>τα αρχεία σας συγχρονίζονται</value> 
+  </data> 
+  <data name="synchroPaused" xml:space="preserve"> 
+    <value>ο συγχρονισμός είναι σε παύση</value> 
+  </data> 
+  <data name="synchroStatusInProgressDescription" xml:space="preserve"> 
+    <value>Τα πρόσφατα αρχεία σας ενημερώνονται.</value> 
+  </data> 
+  <data name="synchroStatusInProgressTitle" xml:space="preserve"> 
+    <value>Συγχρονισμός σε εξέλιξη</value> 
+  </data> 
+  <data name="synchroStatusOfflineDescription" xml:space="preserve"> 
+    <value>Τα τοπικά αρχεία σας παραμένουν προσβάσιμα.
+Ο συγχρονισμός θα συνεχιστεί αυτόματα μόλις συνδεθείτε ξανά.</value> 
+  </data> 
+  <data name="synchroStatusOfflineTitle" xml:space="preserve"> 
+    <value>Εκτός σύνδεσης</value> 
+  </data> 
+  <data name="synchroStatusPausedDescription" xml:space="preserve"> 
+    <value>Ο συγχρονισμός έχει σταματήσει προσωρινά.</value> 
+  </data> 
+  <data name="synchroStatusPausedTitle" xml:space="preserve"> 
+    <value>Παύση ενεργοποιημένη</value> 
+  </data> 
+  <data name="synchroStatusUpToDateDescription" xml:space="preserve"> 
+    <value>Τα αρχεία σας είναι προσβάσιμα και συγχρονισμένα.</value> 
+  </data> 
+  <data name="synchroStatusUpToDateTitle" xml:space="preserve"> 
+    <value>Καμία ενεργή δραστηριότητα</value> 
+  </data> 
+  <data name="synchroUpToDate" xml:space="preserve"> 
+    <value>τα αρχεία σας είναι ενημερωμένα</value> 
+  </data> 
+  <data name="synchronizationSettings" xml:space="preserve"> 
+    <value>Συγχρονισμός</value> 
+  </data> 
+  <data name="systemErrorFileOrDirectoryCorruptedDescription" xml:space="preserve"> 
+    <value>Ένα αρχείο ή φάκελος στον φάκελο συγχρονισμού σας φαίνεται να έχει καταστραφεί.
+Ο συγχρονισμός διακόπηκε. Ελέγξτε τα αρχεία σας και δοκιμάστε ξανά.</value> 
+  </data> 
+  <data name="systemErrorFileOrDirectoryCorruptedTitle" xml:space="preserve"> 
+    <value>Εντοπίστηκε κατεστραμμένο αρχείο</value> 
+  </data> 
+  <data name="tabTitleActivities" xml:space="preserve"> 
+    <value>Δραστηριότητα</value> 
+  </data> 
+  <data name="tabTitleHome" xml:space="preserve"> 
+    <value>Αρχική</value> 
+  </data> 
+  <data name="tabTitleStorage" xml:space="preserve"> 
+    <value>Αποθηκευτικός χώρος</value> 
+  </data> 
+  <data name="teachingTipInvalidFolderAdvancedContent" xml:space="preserve"> 
+    <value>Ο φάκελος δεν πρέπει να είναι η ρίζα μιας μονάδας δίσκου και δεν πρέπει να περιέχει ή να βρίσκεται μέσα σε φάκελο που συγχρονίζεται ήδη.</value> 
+  </data> 
+  <data name="teachingTipInvalidFolderContent" xml:space="preserve"> 
+    <value>Ο φάκελος πρέπει να είναι κενός, δεν πρέπει να είναι η ρίζα μιας μονάδας δίσκου και δεν πρέπει να περιέχει ή να βρίσκεται μέσα σε φάκελο που συγχρονίζεται ήδη.</value> 
+  </data> 
+  <data name="teachingTipInvalidFolderTitle" xml:space="preserve"> 
+    <value>Αυτός ο φάκελος δεν μπορεί να χρησιμοποιηθεί</value> 
+  </data> 
+  <data name="titleConflictIndividualResolution" xml:space="preserve"> 
+    <value>Μεμονωμένος χειρισμός</value> 
+  </data> 
+  <data name="tooltipExclusionRuleNotifications" xml:space="preserve"> 
+    <value>Μια ειδοποίηση σας ενημερώνει όταν ένα αρχείο εξαιρείται από αυτόν τον κανόνα</value> 
+  </data> 
+  <data name="trayIconButtonCloseKDrive.Label" xml:space="preserve"> 
+    <value>Κλείσιμο kDrive</value> 
+    <comment>This translation is used for the taskbar icon menu, which requires the x:Uid format (i.e., suffixed with .Label).</comment> 
+  </data> 
+  <data name="trayIconButtonOpenKDrive.Label" xml:space="preserve"> 
+    <value>Άνοιγμα kDrive</value> 
+    <comment>This translation is used for the taskbar icon menu, which requires the x:Uid format (i.e., suffixed with .Label).</comment> 
+  </data> 
+  <data name="unableToCreateRemoteFolderTeachingTipContent" xml:space="preserve"> 
+    <value>Ελέγξτε ότι η σύνδεσή σας στο διαδίκτυο είναι ενεργή, ότι αυτό το όνομα δεν χρησιμοποιείται ήδη και ότι δεν περιέχει μη έγκυρους χαρακτήρες.</value> 
+  </data> 
+  <data name="unableToCreateRemoteFolderTeachingTipTitle" xml:space="preserve"> 
+    <value>Αδύνατη δημιουργία αυτού του φακέλου</value> 
+  </data> 
+  <data name="unauthorizedAccess" xml:space="preserve"> 
+    <value>Μη εξουσιοδοτημένη πρόσβαση</value> 
+  </data> 
+  <data name="unavailableContentNoActivityDescription" xml:space="preserve"> 
+    <value>Τα αρχεία σας είναι προσβάσιμα και συγχρονισμένα.</value> 
+  </data> 
+  <data name="unavailableContentNoActivityTitle" xml:space="preserve"> 
+    <value>Καμία πρόσφατη δραστηριότητα</value> 
+  </data> 
+  <data name="unexpectedErrorTeachingTipContent" xml:space="preserve"> 
+    <value>Παρακαλούμε δοκιμάστε ξανά σε λίγες στιγμές.
+Εάν το πρόβλημα παραμένει, παρακαλούμε επικοινωνήστε με την υποστήριξη.</value> 
+  </data> 
+  <data name="unexpectedErrorTeachingTipTitle" xml:space="preserve"> 
+    <value>Παρουσιάστηκε μη αναμενόμενο σφάλμα</value> 
+  </data> 
+  <data name="untilTomorrow" xml:space="preserve"> 
+    <value>Μέχρι αύριο</value> 
+  </data> 
+  <data name="updateAvailable" xml:space="preserve"> 
+    <value>kDrive %@ διαθέσιμο</value> 
+  </data> 
+  <data name="updateRequiredDescription" xml:space="preserve"> 
+    <value>Απαιτείται νέα έκδοση του kDrive για να συνεχίσετε.
+Ενημερώστε την εφαρμογή για να αποκτήσετε πρόσβαση στα αρχεία σας και να συνεχίσετε τον συγχρονισμό.</value> 
+  </data> 
+  <data name="updateRequiredTitle" xml:space="preserve"> 
+    <value>Απαιτείται ενημέρωση</value> 
+  </data> 
+  <data name="updateSettings" xml:space="preserve"> 
+    <value>Ενημέρωση</value> 
+  </data> 
+  <data name="uploadNotTerminatedErrorTitle" xml:space="preserve"> 
+    <value>Ημιτελής μεταφόρτωση</value> 
+  </data> 
+  <data name="userExclusionFileListDescription" xml:space="preserve"> 
+    <value>Προσθήκη αρχείων για εξαίρεση από τον συγχρονισμό.</value> 
+  </data> 
+  <data name="userExclusionFileListHeader" xml:space="preserve"> 
+    <value>Προσαρμοσμένοι κανόνες εξαίρεσης</value> 
+  </data> 
+  <data name="viewSourceCode" xml:space="preserve"> 
+    <value>Προβολή πηγαίου κώδικα</value> 
+  </data> 
+  <data name="winInformationBlockSynchroErrorTitle" xml:space="preserve"> 
+    <value>Έχετε ένα σφάλμα συγχρονισμού</value> 
+    <comment>Title in the Windows information banner when there is exactly one synchronization error.</comment> 
+  </data> 
+  <data name="winInformationBlockSynchroErrorTitle-plural" xml:space="preserve"> 
+    <value>Έχετε {0} σφάλματα συγχρονισμού</value> 
+    <comment>Title in the Windows information banner when there are multiple sync errors; {0} is the error count.</comment> 
+  </data> 
+  <data name="winStorageMissingDiskDescription" xml:space="preserve"> 
+    <value>Το kDrive δεν μπορεί να αποκτήσει πρόσβαση στη μονάδα %s
+Βεβαιωθείτε ότι είναι συνδεδεμένη,
+ξεκλειδωμένη και προσβάσιμη από τον υπολογιστή σας.</value> 
+    <comment>Description shown when a storage disk is missing or inaccessible; %@ is the disk name or drive letter.</comment> 
+  </data> 
+  <data name="winStorageMissingDiskTitle" xml:space="preserve"> 
+    <value>Η μονάδα αποθήκευσης %s δεν είναι προσβάσιμη</value> 
+    <comment>Title shown when a storage disk is not accessible; %@ is the disk name or drive letter.</comment> 
+  </data> 
+  <data name="winbuttonRemoveFileExclusionRule" xml:space="preserve"> 
+    <value>Κατάργηση</value> 
+    <comment>Button to remove a single selected file exclusion rule from the exclusion list.</comment> 
+  </data> 
+  <data name="winbuttonRemoveFileExclusionRule-plural" xml:space="preserve"> 
+    <value>Κατάργηση (%s κανόνων)</value> 
+    <comment>Button to remove multiple selected file exclusion rules; %@ is the number of rules to be removed.</comment> 
+  </data> 
+  <data name="winbuttonRemoveFileExclusionRule-plural-2" xml:space="preserve"> 
+    <value /> 
+  </data> 
+  <data name="winbuttonRemoveFileExclusionRule-plural-3" xml:space="preserve"> 
+    <value /> 
+  </data> 
+</root>
