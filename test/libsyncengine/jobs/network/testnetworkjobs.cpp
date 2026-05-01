@@ -1553,7 +1553,7 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
         public:
             explicit GetInfoUserJobMock(const UserDbId userDbId, const ApiToken &apiToken) :
                 GetInfoUserJob(userDbId),
-                _apiToken(apiToken){};
+                _apiToken(apiToken) {};
 
             [[nodiscard]] Poco::Net::HTTPResponse httpResponse() const override {
                 return Poco::Net::HTTPResponse(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
@@ -1624,6 +1624,7 @@ void TestNetworkJobs::testGetAllFilesInDirectory() {
     const LocalTemporaryDirectory temporaryDirectory("testGetAllFilesInDirectory");
     const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testGetAllFilesInDirectory");
 
+    std::vector<int64_t> testFileSizes;
     for (const auto &fileName: {Str("test_file_A.txt"), Str("test_file_B.txt")}) {
         const SyncPath localFilePath = temporaryDirectory.path() / fileName;
         testhelpers::generateOrEditTestFile(localFilePath);
@@ -1637,6 +1638,7 @@ void TestNetworkJobs::testGetAllFilesInDirectory() {
         FileStat fileStat;
         IoHelper::getFileStat(localFilePath, &fileStat, exists, IoHelper::PathCheckOption::Insensitive);
 
+        testFileSizes.push_back(fileStat.size);
         UploadJob job(nullptr, _driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
                       creationTimeIn.count(), modificationTimeIn.count());
         const ExitInfo exitInfo = job.runSynchronously();
@@ -1685,13 +1687,13 @@ void TestNetworkJobs::testGetAllFilesInDirectory() {
     CPPUNIT_ASSERT(nodeInfo2.path().endsWith(nodeInfo2.name()));
     CPPUNIT_ASSERT(!nodeInfo2.nodeId().isEmpty());
     CPPUNIT_ASSERT(nodeInfo2.parentNodeId() == parentNodeId);
-    CPPUNIT_ASSERT_EQUAL(qint64{5}, nodeInfo2.size());
+    CPPUNIT_ASSERT_EQUAL(qint64{testFileSizes.at(0)}, nodeInfo2.size());
 
     const NodeInfo &nodeInfo3 = listFilesInDirectoryJob.v3RemoteNodeInfoList().at(2);
     CPPUNIT_ASSERT(nodeInfo3.path().endsWith(nodeInfo3.name()));
     CPPUNIT_ASSERT(!nodeInfo3.nodeId().isEmpty());
     CPPUNIT_ASSERT(nodeInfo3.parentNodeId() == parentNodeId);
-    CPPUNIT_ASSERT_EQUAL(qint64{5}, nodeInfo3.size());
+    CPPUNIT_ASSERT_EQUAL(qint64{testFileSizes.at(1)}, nodeInfo3.size());
 
     // The backend issues an HTTP error 422 if `limit` is less than 5.
     listFilesInDirectoryJob.setListingConf({.withPath = true, .dirOnly = false, .limit = 1});
