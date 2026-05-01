@@ -120,8 +120,10 @@ void TestIntegration::setUp() {
     (void) IoHelper::getFileStat(_localSyncDir.path(), &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
 
     // This is an advanced sync. Define remote target path and remote target node ID.
-    const Sync sync(1, drive.dbId(), _localSyncDir.path(), std::to_string(fileStat.inode),
-                    remoteTestCiDirPath / _remoteSyncDir.name(), _remoteSyncDir.id());
+    Sync sync(1, drive.dbId(), _localSyncDir.path(), std::to_string(fileStat.inode), remoteTestCiDirPath / _remoteSyncDir.name(),
+              _remoteSyncDir.id());
+    const auto syncDbPath = MockDb::makeDbName(user.userId(), account.accountId(), drive.driveId(), sync.dbId());
+    sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(sync);
 
     // Setup proxy

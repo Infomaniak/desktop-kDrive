@@ -58,7 +58,9 @@ void TestPlatformInconsistencyCheckerWorker::setUp() {
     const Drive drive(1, 1, account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
 
-    const Sync sync(1, drive.dbId(), _tempDir.path(), "", "", "");
+    Sync sync(1, drive.dbId(), _tempDir.path(), "", "", "");
+    const auto syncDbPath = MockDb::makeDbName(user.userId(), account.accountId(), drive.driveId(), sync.dbId());
+    sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(sync);
 
     // Create SyncPal
