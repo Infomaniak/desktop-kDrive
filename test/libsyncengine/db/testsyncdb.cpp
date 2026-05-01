@@ -396,7 +396,7 @@ void TestSyncDb::testCorrespondingNodeIdWithCache() {
     testCorrespondingNodeIdTemplate<SyncDbReadOnlyCache>(*_testObj, _testObj->cache());
 }
 
-void TestSyncDb::testCorrespondingNodeIdWithCacheFaillure() {
+void TestSyncDb::testCorrespondingNodeIdWithCacheFailure() {
     _testObj->enablePrepare(true);
     // This cache will not be reloaded, so it will remain empty. All methods in SyncDbReadOnlyCache should
     // therefore use their fallback and query the database directly.
@@ -555,7 +555,7 @@ void TestSyncDb::testNodesWithCache() {
     CPPUNIT_ASSERT(_testObj->clearNodes());
     testNodesTemplate<SyncDbReadOnlyCache>(*_testObj, _testObj->cache());
 }
-void TestSyncDb::testNodeWithCacheFaillure() {
+void TestSyncDb::testNodeWithCacheFailure() {
     _testObj->enablePrepare(true);
     _testObj->prepare();
     CPPUNIT_ASSERT(_testObj->exists());
