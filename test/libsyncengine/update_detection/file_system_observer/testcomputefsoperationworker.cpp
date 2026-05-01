@@ -78,6 +78,8 @@ void TestComputeFSOperationWorker::setUp() {
     (void) ParmsDb::instance()->insertDrive(drive);
 
     Sync sync(1, drive.dbId(), localPathStr, "", testVariables.remotePath);
+    const auto syncDbPath = MockDb::makeDbName(user.userId(), account.accountId(), drive.driveId(), sync.dbId());
+    sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(sync);
 
     _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), sync.dbId(),

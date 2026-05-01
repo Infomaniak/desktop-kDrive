@@ -210,7 +210,7 @@ This profile must not contain a `tools.cmake.cmaketoolchain:user_toolchain` entr
 ./infomaniak-build-tools/conan/build_dependencies.sh [Debug|Release] [--output-dir=<output_dir>]
 ```
 
-> **Note:** Currently only **xxHash**, **log4cplus**, **Qt**, **OpenSSL**, **zlib**, **Sentry** and **Poco** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
+> **Note:** Currently only **xxHash**, **log4cplus**, **Qt**, **OpenSSL**, **zlib**, **SQLite**, **Sentry** and **Poco** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
 
 ---
 # Build in Debug
@@ -219,7 +219,6 @@ This profile must not contain a `tools.cmake.cmaketoolchain:user_toolchain` entr
 
 ```bash
 sudo apt-get install -y libgl1-mesa-dev \
-   sqlite3 libsqlite3-dev \
    libsecret-1-dev
 ```
 In order for CMake to be able to find all dependencies, you might need to define `LD_LIBRARY_PATH=/usr/local/lib` in your environment variables.
@@ -232,7 +231,7 @@ Install the following libraries:
 
 ```bash
 sudo apt update && sudo apt install -y mesa-utils freeglut3-dev \
-                    libsqlite3-dev pkg-config \
+                    pkg-config \
                     libglib2.0-dev libsecret-1-0 \
                     libsecret-1-dev libglib2.0-dev
 ```

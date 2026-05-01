@@ -4,7 +4,6 @@ else()
     project(testsyncengine LANGUAGES C CXX)
 endif()
 
-find_package(SQLite3 3.8.0 REQUIRED)
 find_package(Poco 1.13.3 REQUIRED Foundation)
 find_package(log4cplus 2.1.2 REQUIRED)
 
@@ -88,10 +87,6 @@ elseif (WIN32)
     list(APPEND testsyncengine_SRCS ../test_utility/testhelpers_win.cpp)
 endif()
 
-if(USE_OUR_OWN_SQLITE3)
-    list(APPEND testsyncengine_SRCS ${SQLITE3_SOURCE})
-endif()
-
 if(WIN32)
     include_directories("C:/Program Files (x86)/cppunit/include")
 else()
@@ -113,7 +108,6 @@ set_target_properties(${testsyncengine_NAME} PROPERTIES
 
 target_link_libraries(${testsyncengine_NAME}
         ${libsyncengine_NAME}
-        ${SQLITE3_LIBRARIES}
 )
 
 if(WIN32)

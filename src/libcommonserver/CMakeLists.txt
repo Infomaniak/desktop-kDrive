@@ -5,7 +5,7 @@ else()
 endif()
 
 find_package(Qt6 REQUIRED Core)
-find_package(SQLite3 3.8.0 REQUIRED)
+find_package(SQLite3 3.53.0 REQUIRED)
 find_package(Poco 1.13.3 REQUIRED Foundation Net JSON Util)
 find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
 find_package(xxHash 0.8.2 REQUIRED)
@@ -63,10 +63,6 @@ elseif(WIN32)
     list(APPEND libcommonserver_SRCS utility/digitalsignaturechecker_win.h utility/digitalsignaturechecker_win.cpp)
 else()
     list(APPEND libcommonserver_SRCS io/iohelper_linux.cpp utility/utility_linux.cpp)
-endif()
-
-if(USE_OUR_OWN_SQLITE3)
-    list(APPEND libcommonserver_SRCS ${SQLITE3_SOURCE})
 endif()
 
 # Target
@@ -135,17 +131,10 @@ else()
         ${CMAKE_SOURCE_DIR}/src/3rdparty/utf8proc)
 endif()
 
-if(USE_OUR_OWN_SQLITE3)
-    # make sure that the path for the local sqlite3 is before the system one
-    target_include_directories("${libcommonserver_NAME}" BEFORE PRIVATE ${SQLITE3_INCLUDE_DIR})
-else()
-    target_include_directories("${libcommonserver_NAME}" PRIVATE ${SQLITE3_INCLUDE_DIR})
-endif()
-
 # Link
 target_link_libraries(${libcommonserver_NAME}
     ${libcommon_NAME}
-    ${SQLITE3_LIBRARIES}
+    SQLite::SQLite3
     Poco::Foundation Poco::Net Poco::JSON Poco::Util
     OpenSSL::SSL OpenSSL::Crypto
     xxHash::xxhash

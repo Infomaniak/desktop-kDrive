@@ -144,8 +144,7 @@ The exact set of redistributed binaries can vary by platform:
 - **License:** Public Domain
 - **Copyright:** The author disclaims copyright to the SQLite amalgamation
 - **Repository:** https://www.sqlite.org/
-- **Note:** The vendored SQLite amalgamation in `src/3rdparty/sqlite3/` is used on macOS and Windows. Linux prefers the
-  system SQLite when available.
+- **Note:** Provided by Conan package `sqlite3/3.53.0`.
 
 ### QtSingleApplication
 

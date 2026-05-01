@@ -17,8 +17,9 @@ Nearest file wins: the sub-AGENTS.md closest to the file you're editing takes pr
 # Initialize submodules used by the build
 git submodule update --init --recursive
 
-# Install Conan 2 dependencies (run from repo root)
-conan install . --build=missing -s build_type=Debug
+# Install Conan 2 dependencies using the project wrapper script (run from repo root)
+# Accepted build types: Debug | Release | RelWithDebInfo
+infomaniak-build-tools/conan/build_dependencies.sh Debug
 
 # Configure + build (example: macOS)
 cmake -B build-macos -DCMAKE_BUILD_TYPE=Debug -DBUILD_UNIT_TESTS=ON
@@ -54,6 +55,7 @@ clang-format -i <file>
 ### Local Norms
 - In versioned documentation such as `AGENTS.md`, use repo-relative paths, not hardcoded absolute filesystem paths.
 - For Linux builds/validation, use `infomaniak-build-tools/linux/build-release-via-podman.sh` rather than direct `cmake --build`.
+- For dependency builds, use `infomaniak-build-tools/conan/build_dependencies.sh <Debug|Release|RelWithDebInfo>` rather than direct `conan install` so the project-specific environment is set correctly.
 <!-- Add project-specific user corrections here -->
 
 ## JIT Index

@@ -69,6 +69,8 @@ void TestExecutorWorker::setUp() {
     (void) ParmsDb::instance()->insertDrive(drive);
 
     _sync = Sync(1, drive.dbId(), localPathStr, "", testVariables.remotePath);
+    const auto syncDbPath = MockDb::makeDbName(userId, accountId, driveId, _sync.dbId());
+    _sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(_sync);
 
     // Setup proxy

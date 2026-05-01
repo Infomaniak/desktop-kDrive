@@ -92,7 +92,8 @@ void TestWorkers::setUp() {
 #else
     _sync.setVirtualFileMode(VirtualFileMode::Off);
 #endif
-
+    const auto syncDbPath = MockDb::makeDbName(userId, accountId, driveId, _sync.dbId());
+    _sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(_sync);
 
     // Setup proxy

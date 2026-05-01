@@ -89,6 +89,8 @@ void TestRemoteFileSystemObserverWorker::setUp() {
     (void) ParmsDb::instance()->insertDrive(drive);
 
     Sync sync(1, drive.dbId(), testhelpers::localTestDirPath(), "", "/");
+    const auto syncDbPath = MockDb::makeDbName(userId, accountId, driveId, 1);
+    sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(sync);
 
     _syncPal = std::make_shared<SyncPalTest>(sync.dbId(), KDRIVE_VERSION_STRING);

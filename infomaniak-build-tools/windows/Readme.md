@@ -262,7 +262,7 @@ powershell ./infomaniak-build-tools/conan/build_dependencies.ps1 [Debug|Release]
 
 > **:warning: Do NOT run this script from an environment where `vcvars` (e.g. `vcvarsall.bat` or `vcvars64.bat`) has already been activated when Conan needs to build dependencies into its cache. Some dependencies will fail to build if the MSVC environment variables are already set. This restriction only applies when packages are being compiled; subsequent runs against an already-populated cache are unaffected.**
 
-> **Note:** Currently only **xxHash**, **log4cplus**, **Qt**, **OpenSSL**, **zlib**, **Sentry** and **Poco** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
+> **Note:** Currently only **xxHash**, **log4cplus**, **Qt**, **OpenSSL**, **zlib**, **SQLite**, **Sentry** and **Poco** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
 
 ---
 # Build in Debug
