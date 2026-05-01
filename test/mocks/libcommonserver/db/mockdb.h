@@ -44,6 +44,11 @@ class MockDb : public Db {
             return Db::makeDbName(userId, accountId, driveId, syncDbId, alreadyExist, makeDbFileName);
         }
 
+        static std::filesystem::path makeDbName(int userId, int accountId, int driveId, int syncDbId) {
+            bool dummy = false;
+            return Db::makeDbName(userId, accountId, driveId, syncDbId, dummy, makeDbFileName);
+        }
+
         static std::filesystem::path makeDbName(bool &alreadyExist) { return makeDbName(0, 0, 0, 0, alreadyExist); }
 };
 

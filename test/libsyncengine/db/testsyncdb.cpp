@@ -83,13 +83,14 @@ class DbNodeTest : public DbNode {
 
 void TestSyncDb::setUp() {
     TestBase::start();
-    bool alreadyExists = false;
-    const std::filesystem::path syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
-
-    // Delete previous DB
-    (void) IoHelper::deleteItem(syncDbPath);
+    // bool alreadyExists = false;
+    // const std::filesystem::path syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
+    //
+    // // Delete previous DB
+    // (void) IoHelper::deleteItem(syncDbPath);
 
     // Create DB
+    const auto syncDbPath = MockDb::makeDbName(1, 1, 1, 1);
     _testObj = new SyncDbMock(syncDbPath.string(), KDRIVE_VERSION_STRING);
     _testObj->init(KDRIVE_VERSION_STRING);
     _testObj->setAutoDelete(true);

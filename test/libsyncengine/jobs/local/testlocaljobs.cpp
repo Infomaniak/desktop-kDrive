@@ -88,9 +88,8 @@ void KDC::TestLocalJobs::setUp() {
     (void) ParmsDb::instance()->insertDrive(drive);
 
     // Use a unique SyncDb path to avoid cross-test collisions on Windows when SQLite runs in EXCLUSIVE mode.
-    bool alreadyExists = false;
     auto sync = Sync(1, drive.dbId(), _localTempDir.path(), "", testVariables.remotePath);
-    const auto syncDbPath = MockDb::makeDbName(userId, accountId, driveId, 1, alreadyExists);
+    const auto syncDbPath = MockDb::makeDbName(userId, accountId, driveId, 1);
     sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(sync);
 
