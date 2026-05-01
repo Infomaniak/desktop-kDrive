@@ -39,7 +39,7 @@ namespace KDC {
 class LocalDeleteJobMockingTrash : public SyncLocalDeleteJob {
     public:
         explicit LocalDeleteJobMockingTrash(const std::shared_ptr<SyncPal> syncPal, const SyncPath &absolutePath) :
-            SyncLocalDeleteJob(syncPal, absolutePath){};
+            SyncLocalDeleteJob(syncPal, absolutePath) {};
         void setMoveToTrashFailed(const bool failed) { _moveToTrashFailed = failed; };
         void setLiteSyncEnabled(const bool enabled) { _liteSyncIsEnabled = enabled; };
         void setMockMoveToTrash(const bool mocked) { _moveToTrashIsMocked = mocked; }
@@ -87,7 +87,11 @@ void KDC::TestLocalJobs::setUp() {
     Drive drive(1, driveId, account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
 
-    const auto sync = Sync(1, drive.dbId(), _localTempDir.path(), "", testVariables.remotePath);
+    // Use a unique SyncDb path to avoid cross-test collisions on Windows when SQLite runs in EXCLUSIVE mode.
+    bool alreadyExists = false;
+    auto sync = Sync(1, drive.dbId(), _localTempDir.path(), "", testVariables.remotePath);
+    const auto syncDbPath = MockDb::makeDbName(userId, accountId, driveId, 1, alreadyExists);
+    sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(sync);
 
     // Setup proxy
@@ -105,11 +109,13 @@ void KDC::TestLocalJobs::setUp() {
 void TestLocalJobs::tearDown() {
     ParametersCache::reset();
 
-    ParmsDb::instance()->close();
-    ParmsDb::reset();
     if (_syncPal && _syncPal->syncDb()) {
         _syncPal->syncDb()->close();
     }
+    _syncPal.reset();
+
+    ParmsDb::instance()->close();
+    ParmsDb::reset();
 
     TestBase::stop();
 }
@@ -269,7 +275,7 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
         public:
             LocalDeleteJobMock(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath, bool isDehydratedPlaceholder,
                                NodeId remoteId, bool forceToTrash = false) :
-                SyncLocalDeleteJob(syncPal, relativePath, isDehydratedPlaceholder, remoteId, forceToTrash){
+                SyncLocalDeleteJob(syncPal, relativePath, isDehydratedPlaceholder, remoteId, forceToTrash) {
 
                 };
             void setRemoteItemPath(const SyncPath &remoteItemPath) { _remoteItemPath = remoteItemPath; }
