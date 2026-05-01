@@ -85,17 +85,34 @@
                                   SelectedValue="{x:Bind ViewModel.Settings.Language, Converter={StaticResource ToStringConverter}, Mode=OneWay}"
                                   SelectionChanged="LanguageComboBox_Changed">
                             <ComboBoxItem Content="{x:Bind kDrive:Localizer.Instance.GetString('labelSameAsSystem'), Mode=OneWay}"
-                                          Tag="SystemDefault" />
+                                          Tag="Default" />
                             <ComboBoxItem Content="Français"
-                                          Tag="FR" />
+                                          Tag="French" />
                             <ComboBoxItem Content="English"
-                                          Tag="EN" />
+                                          Tag="English" />
                             <ComboBoxItem Content="Deutsch"
-                                          Tag="DE" />
+                                          Tag="German" />
                             <ComboBoxItem Content="Español"
-                                          Tag="ES" />
+                                          Tag="Spanish" />
                             <ComboBoxItem Content="Italiano"
-                                          Tag="IT" />
+                                          Tag="Italian" />
+                            <ComboBoxItem Content="Dansk"
+                                          Tag="Danish" />
+                            <ComboBoxItem Content="Nederlands"
+                                          Tag="Dutch" 
+                                          IsEnabled="False"/>
+                            <ComboBoxItem Content="Suomi"
+                                          Tag="Finnish" />
+                            <ComboBoxItem Content="Ελληνικά"
+                                          Tag="Greek" />
+                            <ComboBoxItem Content="Norsk (Bokmål)"
+                                          Tag="Norwegian" />
+                            <ComboBoxItem Content="Polski"
+                                          Tag="Polish" />
+                            <ComboBoxItem Content="Português"
+                                          Tag="Portuguese" />
+                            <ComboBoxItem Content="Svenska"
+                                          Tag="Swedish" />
                         </ComboBox>
                     </toolKit:SettingsCard>
                     <!-- General - Auto start -->
@@ -167,11 +184,14 @@
                             <StackPanel Orientation="Horizontal"
                                         Visibility="{Binding IsOn, ElementName=MoveToTrashToggleSwitch, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <TextBlock TextWrapping="WrapWholeWords">
-                                    <Run Text="{x:Bind kDrive:Localizer.Instance.GetString('moveDeletedFilesToRecycleBinWarning'), Mode=OneWay}" />
-                                    <Hyperlink NavigateUri="https://faq.infomaniak.com/2383#desktop"
-                                               UnderlineStyle="None">
-                                        <Run Text="{x:Bind kDrive:Localizer.Instance.GetString('learnMore'), Mode=OneWay}" />
-                                    </Hyperlink>
+                                    <TextBlock.Inlines>
+
+                                        <Run Text="{x:Bind kDrive:Localizer.Instance.GetString('moveDeletedFilesToRecycleBinWarning'), Mode=OneWay}" />
+                                        <Hyperlink NavigateUri="https://faq.infomaniak.com/2383#desktop"
+                                                   UnderlineStyle="None">
+                                            <Run Text="{x:Bind kDrive:Localizer.Instance.GetString('learnMore'), Mode=OneWay}" />
+                                        </Hyperlink>
+                                    </TextBlock.Inlines>
                                 </TextBlock>
                             </StackPanel>
                         </toolKit:SettingsCard.Description>

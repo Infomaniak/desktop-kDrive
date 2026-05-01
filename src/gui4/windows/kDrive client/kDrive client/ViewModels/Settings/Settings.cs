@@ -25,7 +25,7 @@ namespace Infomaniak.kDrive.ViewModels
 {
     public class Settings : UISafeObservableObject
     {
-        private Language _language = Language.SystemDefault;
+        private Language _language = Language.Default;
         private bool _restartRequiredForLanguageChange = false;
         private bool _autoStart = false;
         private bool _moveToTrash = false;
