@@ -17,7 +17,6 @@
  */
 
 using DynamicData;
-using H.NotifyIcon;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ServerCommunication.Services;
 using Infomaniak.kDrive.TrayIcon;
@@ -26,16 +25,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Security.Authentication.OAuth;
 using Microsoft.UI.Xaml;
 using Microsoft.Win32;
-using Microsoft.Windows.AppLifecycle;
 using Sentry;
 using System;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
-using Windows.ApplicationModel.Core;
-using Windows.ApplicationModel.VoiceCommands;
-using Windows.Foundation;
 
 namespace Infomaniak.kDrive
 {
@@ -252,6 +245,12 @@ namespace Infomaniak.kDrive
             return false;
         }
 
+        public static void RestartApplication()
+        {
+            Logger.Log(Logger.Level.Info, $"Restarting client app");
+            Windows.ApplicationModel.Core.AppRestartFailureReason failureReason = Microsoft.Windows.AppLifecycle.AppInstance.Restart(string.Join(" ", Environment.GetCommandLineArgs()));
+            Logger.Log(Logger.Level.Warning, $"Restarting application fail with reason: {failureReason}");
+        }
         public static void ExitApplication()
         {
             Logger.Log(Logger.Level.Info, "Exiting application.");

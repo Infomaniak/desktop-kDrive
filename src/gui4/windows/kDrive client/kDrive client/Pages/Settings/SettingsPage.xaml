@@ -76,10 +76,11 @@
                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                         </toolKit:SettingsCard.HeaderIcon>
                         <toolKit:SettingsCard.Description>
-                            <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('languageSettingWarning'), Mode=OneWay}"
-                                       Style="{StaticResource CaptionTextBlockStyle}"
-                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                       Visibility="{x:Bind ViewModel.Settings.RestartRequiredForLanguageChange, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+                            <HyperlinkButton Content="{x:Bind kDrive:Localizer.Instance.GetString('languageSettingWarning'), Mode=OneWay}"
+                                             Style="{StaticResource CaptionTextBlockStyle}"
+                                             Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                             Visibility="{x:Bind ViewModel.Settings.RestartRequiredForLanguageChange, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
+                                             Click="RestartAppHyperlinkButton_Click"/>
                         </toolKit:SettingsCard.Description>
                         <ComboBox SelectedValuePath="Tag"
                                   SelectedValue="{x:Bind ViewModel.Settings.Language, Converter={StaticResource ToStringConverter}, Mode=OneWay}"
