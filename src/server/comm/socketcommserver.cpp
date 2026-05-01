@@ -295,11 +295,11 @@ void SocketCommServer::execute() {
 
         if (_stopAsked) break;
 
-        auto channel = makeCommChannel(socket);
+        const auto channel = makeCommChannel(socket);
         channel->setLostConnectionCbk([this](std::shared_ptr<AbstractCommChannel> ch) {
             {
                 const std::scoped_lock lock(_channelsMutex);
-                _channels.remove(ch);
+                (void) _channels.remove(ch);
             }
             lostConnectionCbk(ch);
         });
