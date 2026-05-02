@@ -92,8 +92,6 @@ namespace Infomaniak.kDrive.ViewModels
             });
 
             SyncActivities.CollectionChanged += SyncActivities_CollectionChanged;
-
-            RefreshHasExcludedFolder();
         }
 
         private void SyncActivities_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -211,7 +209,12 @@ namespace Infomaniak.kDrive.ViewModels
 
         public bool? HasExcludedFolder
         {
-            get => _hasExcludedFolder;
+            get
+            {
+                if (_hasExcludedFolder is null)
+                    RefreshHasExcludedFolder();
+                return _hasExcludedFolder;
+            }
             set => SetPropertyInUIThread(ref _hasExcludedFolder, value);
         }
 
