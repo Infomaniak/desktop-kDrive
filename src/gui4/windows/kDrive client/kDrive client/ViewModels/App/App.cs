@@ -75,11 +75,10 @@ namespace Infomaniak.kDrive.ViewModels
         public Settings Settings { get; } = new Settings();
 
         // Helpers
-        private readonly Network _network = new();
         private readonly Task? _networkWatcher;
         private readonly CancellationTokenSource _networkWatcherCancellationSource = new();
         private bool _networkAvailable;
-        private bool _updateRequired = false;
+        private bool _updateRequired;
 
         public class SelectedSyncChangedEventArgs : EventArgs
         {
@@ -135,8 +134,7 @@ namespace Infomaniak.kDrive.ViewModels
             AllSyncs.ToObservableChangeSet()
                                        .Subscribe(_ => UIThreadDispatcher.TryEnqueue(EnsureValidSelectedSync));
 
-            _networkAvailable = _network.IsAvailable;
-            _networkWatcher = WatchNetworkAsync(_networkWatcherCancellationSource.Token);
+            _ = Task.Run(() => WatchNetworkAsync(_networkWatcherCancellationSource.Token));
         }
 
         ~AppModel()
@@ -155,6 +153,7 @@ namespace Infomaniak.kDrive.ViewModels
 
                 try
                 {
+                    
                     var profile = NetworkInformation.GetInternetConnectionProfile();
 
                     if (profile != null)
@@ -172,7 +171,7 @@ namespace Infomaniak.kDrive.ViewModels
                 if (previousStatus != isAvailable)
                 {
                     previousStatus = isAvailable;
-                    UIThreadDispatcher.TryEnqueue(() => NetworkAvailable = isAvailable);
+                    NetworkAvailable = isAvailable;
                 }
 
                 try
