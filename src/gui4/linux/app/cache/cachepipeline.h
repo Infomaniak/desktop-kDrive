@@ -36,9 +36,15 @@ class CachePipeline : public QObject {
     public:
         explicit CachePipeline(CommService &commService, AppCache &appCache, QObject *parent = nullptr);
 
+    public slots:
+        void markHydrated();
+
     private:
+        bool acceptPush(const char *signalName) const;
+
         CommService &_commService;
         AppCache &_appCache;
+        bool _hydrated{false};
 };
 
 } // namespace KDC
