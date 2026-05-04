@@ -53,7 +53,7 @@ class ISyncWorker {
 
         [[nodiscard]] const int64_t &pauseDuration() const { return _pauseDuration; }
         void setPauseDuration(const int64_t &pauseDuration) {
-            _pauseDuration = std::max(pauseDuration, defaultPauseDuration);
+            _pauseDuration = std::max(pauseDuration, (int64_t)0);
         } // Minimum pause duration is 1 min
         void resetPauseDuration() { _pauseDuration = defaultPauseDuration; }
 

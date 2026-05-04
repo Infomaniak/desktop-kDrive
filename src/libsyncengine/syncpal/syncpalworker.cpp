@@ -107,6 +107,19 @@ bool SyncPalWorker::shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const 
         return true;
     }
 
+    if ((w1 && w1->exitCode() == ExitCode::BackError) || (w2 && w2->exitCode() == ExitCode::BackError)) {
+        double multiplicativeFactor = 2; // binary exponential backoff
+        int64_t baseDelay(60000); // 1 min
+        int64_t maxDelay(3600000); // 1 hour
+        int64_t computedDelay = baseDelay * (std::pow(multiplicativeFactor, _syncPal->_consecutiveFailures++));
+
+        double jitter = (float) (rand()) / (float) (RAND_MAX) * 0.2 + 1;
+        const auto newPauseDuration = static_cast<int64_t>(std::min(computedDelay, maxDelay) * jitter);
+        LOG_SYNCPAL_INFO(_logger, "Changing pause duration to " << newPauseDuration << " ms");
+        setPauseDuration(newPauseDuration);
+        return true;
+    }
+
     return networkIssue || httpBlockingError || syncDirNotAccessible || invalidOperation;
 }
 
