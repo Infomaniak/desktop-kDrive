@@ -20,7 +20,13 @@
 
 #include "libcommon/utility/cstypes.h"
 
+#include <QLoggingCategory>
+
 namespace KDC {
+
+namespace {
+Q_LOGGING_CATEGORY(lcCachePipeline, "gui.v4.cachepipeline", QtInfoMsg)
+} // namespace
 
 CachePipeline::CachePipeline(CommService &commService, AppCache &appCache, QObject *const parent) :
     QObject(parent),
@@ -60,6 +66,20 @@ CachePipeline::CachePipeline(CommService &commService, AppCache &appCache, QObje
             _appCache.removeServerError(errorDbId);
         }
     });
+}
+
+void CachePipeline::markHydrated() {
+    _hydrated = true;
+    qCInfo(lcCachePipeline) << "Cache hydration completed; live cache push mutations enabled";
+}
+
+bool CachePipeline::acceptPush(const char *const signalName) const {
+    if (_hydrated) {
+        return true;
+    }
+
+    qCWarning(lcCachePipeline) << "Cache push dropped before hydration completed | signal:" << signalName;
+    return false;
 }
 
 } // namespace KDC
