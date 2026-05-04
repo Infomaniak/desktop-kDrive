@@ -79,12 +79,13 @@ void DriveService::deleteDrive(const qint64 driveDbId) {
 void DriveService::updateDrive(const DriveInfo &driveInfo) {
     beginAction(actionUpdateDrive, static_cast<qint64>(driveInfo.dbId()));
 
-    _commService.requestDriveUpdate(driveInfo, [this, driveDbId = static_cast<qint64>(driveInfo.dbId())](const ExitInfo &exitInfo) {
-        endAction(actionUpdateDrive, driveDbId);
-        if (!exitInfo) {
-            notifyRequestFailure(exitInfo, RequestNum::DRIVE_UPDATE);
-        }
-    });
+    _commService.requestDriveUpdate(driveInfo,
+                                    [this, driveDbId = static_cast<qint64>(driveInfo.dbId())](const ExitInfo &exitInfo) {
+                                        endAction(actionUpdateDrive, driveDbId);
+                                        if (!exitInfo) {
+                                            notifyRequestFailure(exitInfo, RequestNum::DRIVE_UPDATE);
+                                        }
+                                    });
 }
 
 bool DriveService::isLoadDrivesPending() const {
