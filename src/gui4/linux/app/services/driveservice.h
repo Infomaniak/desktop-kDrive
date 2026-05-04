@@ -49,6 +49,9 @@ class DriveService : public QObject {
 
         Q_INVOKABLE void loadDrives();
         Q_INVOKABLE void deleteDrive(qint64 driveDbId);
+        Q_INVOKABLE [[nodiscard]] bool isLoadDrivesPending() const;
+        Q_INVOKABLE [[nodiscard]] bool isDeleteDrivePending(qint64 driveDbId) const;
+        Q_INVOKABLE [[nodiscard]] bool isUpdateDrivePending(qint64 driveDbId) const;
 
         void updateDrive(const DriveInfo &driveInfo);
 
