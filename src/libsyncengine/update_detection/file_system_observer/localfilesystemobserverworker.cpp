@@ -94,30 +94,33 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
         if (opTypeFromOS == OperationType::Delete) {
             // Check if exists with same nodeId
             NodeId prevNodeId;
-            if (const auto exitInfo = _liveSnapshot.getItemId(relativePath, prevNodeId); !exitInfo) {
-                if (exitInfo.cause() == ExitCause::NotFound) {
-                    bool existsWithSameId = false;
-                    NodeId otherNodeId;
-                    if (auto checkError = IoError::Success;
-                        IoHelper::checkIfPathExistsWithSameNodeId(absolutePath, prevNodeId, existsWithSameId, otherNodeId,
-                                                                  checkError, IoHelper::PathCheckOption::Insensitive) &&
-                        !existsWithSameId) {
-                        if (_liveSnapshot.removeItem(prevNodeId)) {
-                            LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: "
-                                                                << Utility::formatSyncPath(absolutePath) << L" ("
-                                                                << CommonUtility::s2ws(prevNodeId) << L")");
-                        } else {
-                            LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: " << Utility::formatSyncPath(absolutePath) << L" ("
-                                                                                << CommonUtility::s2ws(prevNodeId) << L")");
-                            invalidateSnapshot();
-                            return ExitCode::DataError;
-                        }
-                        continue;
+            if (const auto exitInfo = _liveSnapshot.getItemId(relativePath, prevNodeId); exitInfo) {
+                // An item has been found with the same path
+                bool existsWithSameId = false;
+                NodeId otherNodeId;
+                if (auto checkError = IoError::Success;
+                    IoHelper::checkIfPathExistsWithSameNodeId(absolutePath, prevNodeId, existsWithSameId, otherNodeId, checkError,
+                                                              IoHelper::PathCheckOption::Insensitive) &&
+                    !existsWithSameId) {
+                    if (_liveSnapshot.removeItem(prevNodeId)) {
+                        LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: "
+                                                            << Utility::formatSyncPath(absolutePath) << L" ("
+                                                            << CommonUtility::s2ws(prevNodeId) << L")");
+                    } else {
+                        LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: " << Utility::formatSyncPath(absolutePath) << L" ("
+                                                                            << CommonUtility::s2ws(prevNodeId) << L")");
+                        invalidateSnapshot();
+                        return ExitCode::DataError;
                     }
+                    continue;
                 }
-
-                tryToInvalidateSnapshot();
-                return exitInfo;
+            } else {
+                if (exitInfo.cause() == ExitCause::NotFound) {
+                    // OK, just continue
+                } else {
+                    invalidateSnapshot();
+                    return exitInfo;
+                }
             }
         }
 
