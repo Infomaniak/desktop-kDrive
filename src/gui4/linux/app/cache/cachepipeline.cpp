@@ -22,60 +22,71 @@
 
 #include <QLoggingCategory>
 
+#include <tuple>
+
 namespace KDC {
 
 namespace {
 Q_LOGGING_CATEGORY(lcCachePipeline, "gui.v4.cachepipeline", QtInfoMsg)
+
+template<typename Signal, typename Slot>
+struct CacheConnection {
+        const char *signalName;
+        Signal signal;
+        Slot slot;
+};
+
+template<typename Signal, typename Slot>
+constexpr auto makeCacheConnection(const char *const signalName, Signal signal, Slot slot) {
+    return CacheConnection<Signal, Slot>{signalName, signal, slot};
+}
+
+constexpr auto directCacheConnections =
+        std::make_tuple(makeCacheConnection("userAdded", &CommService::userAdded, &AppCache::upsertUser),
+                        makeCacheConnection("userUpdated", &CommService::userUpdated, &AppCache::upsertUser),
+                        makeCacheConnection("userRemoved", &CommService::userRemoved, &AppCache::removeUser),
+                        makeCacheConnection("accountAdded", &CommService::accountAdded, &AppCache::upsertAccount),
+                        makeCacheConnection("accountUpdated", &CommService::accountUpdated, &AppCache::upsertAccount),
+                        makeCacheConnection("accountRemoved", &CommService::accountRemoved, &AppCache::removeAccount),
+                        makeCacheConnection("driveAdded", &CommService::driveAdded, &AppCache::upsertDrive),
+                        makeCacheConnection("driveUpdated", &CommService::driveUpdated, &AppCache::upsertDrive),
+                        makeCacheConnection("driveRemoved", &CommService::driveRemoved, &AppCache::removeDrive),
+                        makeCacheConnection("syncAdded", &CommService::syncAdded, &AppCache::upsertSync),
+                        makeCacheConnection("syncUpdated", &CommService::syncUpdated, &AppCache::upsertSync),
+                        makeCacheConnection("syncRemoved", &CommService::syncRemoved, &AppCache::removeSync));
 } // namespace
 
 CachePipeline::CachePipeline(CommService &commService, AppCache &appCache, QObject *const parent) :
     QObject(parent),
     _commService(commService),
     _appCache(appCache) {
-    (void) connect(&_commService, &CommService::userAdded, this, [this](const UserInfo &info) {
-        if (acceptPush("userAdded")) _appCache.upsertUser(info);
-    });
-    (void) connect(&_commService, &CommService::userUpdated, this, [this](const UserInfo &info) {
-        if (acceptPush("userUpdated")) _appCache.upsertUser(info);
-    });
-    (void) connect(&_commService, &CommService::userRemoved, this, [this](const UserDbId userDbId) {
-        if (acceptPush("userRemoved")) _appCache.removeUser(userDbId);
-    });
+    connectDropPipeline();
+}
 
-    (void) connect(&_commService, &CommService::accountAdded, this, [this](const AccountInfo &info) {
-        if (acceptPush("accountAdded")) _appCache.upsertAccount(info);
-    });
-    (void) connect(&_commService, &CommService::accountUpdated, this, [this](const AccountInfo &info) {
-        if (acceptPush("accountUpdated")) _appCache.upsertAccount(info);
-    });
-    (void) connect(&_commService, &CommService::accountRemoved, this, [this](const AccountDbId accountDbId) {
-        if (acceptPush("accountRemoved")) _appCache.removeAccount(accountDbId);
-    });
+void CachePipeline::connectDropPipeline() {
+    std::apply(
+            [this](const auto &...connection) {
+                (_preHydrationConnections.push_back(
+                         connect(&_commService, connection.signal, this,
+                                 [signalName = connection.signalName](const auto &...) { logDroppedPush(signalName); })),
+                 ...);
+            },
+            directCacheConnections);
 
-    (void) connect(&_commService, &CommService::driveAdded, this, [this](const DriveInfo &info) {
-        if (acceptPush("driveAdded")) _appCache.upsertDrive(info);
-    });
-    (void) connect(&_commService, &CommService::driveUpdated, this, [this](const DriveInfo &info) {
-        if (acceptPush("driveUpdated")) _appCache.upsertDrive(info);
-    });
-    (void) connect(&_commService, &CommService::driveRemoved, this, [this](const DriveDbId driveDbId) {
-        if (acceptPush("driveRemoved")) _appCache.removeDrive(driveDbId);
-    });
+    _preHydrationConnections.push_back(
+            connect(&_commService, &CommService::errorAdded, this, [](const ErrorInfo &) { logDroppedPush("errorAdded"); }));
+    _preHydrationConnections.push_back(
+            connect(&_commService, &CommService::errorRemoved, this, [](const ErrorDbId) { logDroppedPush("errorRemoved"); }));
+}
 
-    (void) connect(&_commService, &CommService::syncAdded, this, [this](const SyncInfo &info) {
-        if (acceptPush("syncAdded")) _appCache.upsertSync(info);
-    });
-    (void) connect(&_commService, &CommService::syncUpdated, this, [this](const SyncInfo &info) {
-        if (acceptPush("syncUpdated")) _appCache.upsertSync(info);
-    });
-    (void) connect(&_commService, &CommService::syncRemoved, this, [this](const SyncDbId syncDbId) {
-        if (acceptPush("syncRemoved")) _appCache.removeSync(syncDbId);
-    });
+void CachePipeline::connectLivePipeline() {
+    std::apply(
+            [this](const auto &...connection) {
+                ((void) connect(&_commService, connection.signal, &_appCache, connection.slot, Qt::UniqueConnection), ...);
+            },
+            directCacheConnections);
 
     (void) connect(&_commService, &CommService::errorAdded, this, [this](const ErrorInfo &info) {
-        if (!acceptPush("errorAdded")) {
-            return;
-        }
         if (info.level() == ErrorLevel::Server) {
             _appCache.upsertServerError(info);
             return;
@@ -83,9 +94,6 @@ CachePipeline::CachePipeline(CommService &commService, AppCache &appCache, QObje
         _appCache.upsertSyncError(info);
     });
     (void) connect(&_commService, &CommService::errorRemoved, this, [this](const ErrorDbId errorDbId) {
-        if (!acceptPush("errorRemoved")) {
-            return;
-        }
         if (_appCache.syncError(errorDbId).has_value()) {
             _appCache.removeSyncError(errorDbId);
             return;
@@ -97,17 +105,21 @@ CachePipeline::CachePipeline(CommService &commService, AppCache &appCache, QObje
 }
 
 void CachePipeline::markHydrated() {
+    if (_hydrated) {
+        return;
+    }
+
     _hydrated = true;
+    for (const auto &connection: _preHydrationConnections) {
+        (void) QObject::disconnect(connection);
+    }
+    _preHydrationConnections.clear();
+    connectLivePipeline();
     qCInfo(lcCachePipeline) << "Cache hydration completed; live cache push mutations enabled";
 }
 
-bool CachePipeline::acceptPush(const char *const signalName) const {
-    if (_hydrated) {
-        return true;
-    }
-
+void CachePipeline::logDroppedPush(const char *const signalName) {
     qCWarning(lcCachePipeline) << "Cache push dropped before hydration completed | signal:" << signalName;
-    return false;
 }
 
 } // namespace KDC
