@@ -96,7 +96,19 @@ SyncPath getTrashSubDir(const TrashSubDirectory trashSubDir) {
 
 bool hasTrashInfo() {
     std::error_code ec;
-    return std::filesystem::exists(getTrashSubDir(TrashSubDirectory::Info), ec);
+    const auto trashInfoPath = getTrashSubDir(TrashSubDirectory::Info);
+    if (!std::filesystem::exists(trashInfoPath, ec) || ec) return false;
+
+    const auto trashPath = Utility::getTrashPath();
+    const auto tempPath = std::filesystem::temp_directory_path(ec);
+    if (ec) return false;
+
+    struct stat trashStat {};
+    struct stat tempStat {};
+    if (::stat(trashPath.c_str(), &trashStat) != 0) return false;
+    if (::stat(tempPath.c_str(), &tempStat) != 0) return false;
+
+    return trashStat.st_dev == tempStat.st_dev;
 }
 
 void eraseFromTrash(const KDC::SyncPath &relativePath) {
