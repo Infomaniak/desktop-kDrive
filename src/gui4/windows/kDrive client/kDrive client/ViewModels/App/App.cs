@@ -23,7 +23,6 @@ using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
-using Microsoft.VisualBasic.Devices;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -134,7 +133,7 @@ namespace Infomaniak.kDrive.ViewModels
             AllSyncs.ToObservableChangeSet()
                                        .Subscribe(_ => UIThreadDispatcher.TryEnqueue(EnsureValidSelectedSync));
 
-            _ = Task.Run(() => WatchNetworkAsync(_networkWatcherCancellationSource.Token));
+            _networkWatcher = Task.Run(() => WatchNetworkAsync(_networkWatcherCancellationSource.Token));
         }
 
         ~AppModel()
