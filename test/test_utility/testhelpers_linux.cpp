@@ -178,7 +178,7 @@ void showTrashInfo() {
             std::cout << "OriginalPath: " << originalPathStr << std::endl;
         }
     } catch (const std::filesystem::filesystem_error &e) {
-        std::cerr << "File system exception caught in `isInTrash`: " << e.what() << std::endl;
+        std::cerr << "File system exception caught in `showTrashInfo`: " << e.what() << std::endl;
     }
 }
 
