@@ -180,10 +180,8 @@ void teardown(const SyncPath &path) {
     std::filesystem::remove(path, ec);
 }
 
-bool stat_full(const SyncPath &path) {
-    struct stat st{};
-    if (::stat(path.string().c_str(), &st) != 0) return false;
-
+template<typename StatT>
+inline void consumeStatFields(const StatT &st) noexcept {
     volatile auto dev = st.st_dev;
     volatile auto inode = st.st_ino;
     volatile auto mode = st.st_mode;
@@ -192,69 +190,31 @@ bool stat_full(const SyncPath &path) {
     volatile auto gid = st.st_gid;
     volatile auto rdev = st.st_rdev;
     volatile auto size = st.st_size;
-
 #if defined(__linux__) || defined(__APPLE__)
     volatile auto blksize = st.st_blksize;
     volatile auto blocks = st.st_blocks;
     (void) blksize;
     (void) blocks;
 #endif
-
     volatile auto atime = st.st_atime;
     volatile auto mtime = st.st_mtime;
     volatile auto ctime = st.st_ctime;
+    (void) dev; (void) inode; (void) mode; (void) nlink;
+    (void) uid; (void) gid;  (void) rdev;  (void) size;
+    (void) atime; (void) mtime; (void) ctime;
+}
 
-    (void) dev;
-    (void) inode;
-    (void) mode;
-    (void) nlink;
-    (void) uid;
-    (void) gid;
-    (void) rdev;
-    (void) size;
-    (void) atime;
-    (void) mtime;
-    (void) ctime;
-
+bool stat_full(const SyncPath &path) {
+    struct stat st{};
+    if (::stat(path.string().c_str(), &st) != 0) return false;
+    consumeStatFields(st);
     return true;
 }
 
 bool wstat_full(const SyncPath &path) {
     struct _stat64i32 st{};
     if (::_wstat(path.native().c_str(), &st) != 0) return false;
-
-    volatile auto dev = st.st_dev;
-    volatile auto inode = st.st_ino;
-    volatile auto mode = st.st_mode;
-    volatile auto nlink = st.st_nlink;
-    volatile auto uid = st.st_uid;
-    volatile auto gid = st.st_gid;
-    volatile auto rdev = st.st_rdev;
-    volatile auto size = st.st_size;
-
-#if defined(__linux__) || defined(__APPLE__)
-    volatile auto blksize = st.st_blksize;
-    volatile auto blocks = st.st_blocks;
-    (void) blksize;
-    (void) blocks;
-#endif
-
-    volatile auto atime = st.st_atime;
-    volatile auto mtime = st.st_mtime;
-    volatile auto ctime = st.st_ctime;
-
-    (void) dev;
-    (void) inode;
-    (void) mode;
-    (void) nlink;
-    (void) uid;
-    (void) gid;
-    (void) rdev;
-    (void) size;
-    (void) atime;
-    (void) mtime;
-    (void) ctime;
-
+    consumeStatFields(st);
     return true;
 }
 
@@ -306,44 +266,9 @@ bool statx_full(const SyncPath &path) {
 bool fstat_full(const SyncPath &path) {
     int fd = ::open(path.string().c_str(), O_RDONLY);
     if (fd < 0) return false;
-
     struct stat st{};
-    bool ok = (::fstat(fd, &st) == 0);
-
-    if (ok) {
-        volatile auto dev = st.st_dev;
-        volatile auto inode = st.st_ino;
-        volatile auto mode = st.st_mode;
-        volatile auto nlink = st.st_nlink;
-        volatile auto uid = st.st_uid;
-        volatile auto gid = st.st_gid;
-        volatile auto rdev = st.st_rdev;
-        volatile auto size = st.st_size;
-
-#if defined(__linux__) || defined(__APPLE__)
-        volatile auto blksize = st.st_blksize;
-        volatile auto blocks = st.st_blocks;
-        (void) blksize;
-        (void) blocks;
-#endif
-
-        volatile auto atime = st.st_atime;
-        volatile auto mtime = st.st_mtime;
-        volatile auto ctime = st.st_ctime;
-
-        (void) dev;
-        (void) inode;
-        (void) mode;
-        (void) nlink;
-        (void) uid;
-        (void) gid;
-        (void) rdev;
-        (void) size;
-        (void) atime;
-        (void) mtime;
-        (void) ctime;
-    }
-
+    const bool ok = (::fstat(fd, &st) == 0);
+    if (ok) consumeStatFields(st);
     ::close(fd);
     return ok;
 }
