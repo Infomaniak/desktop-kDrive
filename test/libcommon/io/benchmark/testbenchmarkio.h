@@ -86,6 +86,8 @@ class testbenchmarkio {
         const std::vector<BenchmarkResult> &getResults() const;
         void reset();
 
+        static int32_t iterations_;
+
     private:
         bool warmup_;
         std::map<std::string, int> categoryTotals_;

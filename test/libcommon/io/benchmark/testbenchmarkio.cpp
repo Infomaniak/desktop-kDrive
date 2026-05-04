@@ -21,7 +21,7 @@
 
 namespace KDC {
 
-static int32_t iterations_ = 100000;
+int32_t testbenchmarkio::iterations_ = 100000;
 
 // ============================================================================
 // BENCHMARK ENGINE IMPLEMENTATION
@@ -594,7 +594,7 @@ static std::atomic<uint64_t> counter{0};
 void testinit(const SyncPath &dir) {
     std::error_code ec;
     std::filesystem::create_directories(dir, ec);
-    for (counter = 0; counter < iterations_; counter++) {
+    for (counter = 0; counter < static_cast<uint64_t>(getiterations()); counter++) {
         auto path = std::filesystem::path(dir) / ("bench_delete_" + std::to_string(counter) + ".tmp");
         CreateTestFile(path.string());
     }
@@ -667,7 +667,7 @@ static std::atomic<uint64_t> counter{0};
 void testinit(const SyncPath &dir) {
     std::error_code ec;
     std::filesystem::create_directories(dir, ec);
-    for (counter = 0; counter < iterations_; counter++) {
+    for (counter = 0; counter < static_cast<uint64_t>(getiterations()); counter++) {
         auto path = std::filesystem::path(dir) / ("bench_move_" + std::to_string(counter) + "_src.tmp");
         CreateTestFile(path.string());
     }
@@ -764,11 +764,11 @@ bool CreateTestFile(const SyncPath &path, const std::string &content) {
 }
 
 int getiterations(void) {
-    return iterations_;
+    return testbenchmarkio::iterations_;
 }
 
 void setiterations(int n) {
-    iterations_ = n;
+    testbenchmarkio::iterations_ = n;
 }
 
 // ============================================================================
@@ -1158,7 +1158,7 @@ void BenchmarkIOHelper::tearDown() {
 
 void BenchmarkIOHelper::runAllIOBenchmarks() {
     // Name and iterations can be adjusted or parameterized if needed
-    RunAllBenchmarks(SyncPath("io_benchmark_test.tmp"), iterations_);
+    RunAllBenchmarks(SyncPath("io_benchmark_test.tmp"), testbenchmarkio::iterations_);
 }
 
 } // namespace KDC
