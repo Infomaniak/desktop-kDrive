@@ -108,6 +108,7 @@ void CacheHydrator::loadSyncErrors() const {
 
         _appCache.replaceSyncErrors(syncErrors);
         _appCache.replaceServerErrors(serverErrors);
+        emit bootstrapCompleted();
     });
 }
 
