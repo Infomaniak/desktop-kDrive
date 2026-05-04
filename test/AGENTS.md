@@ -301,26 +301,26 @@ Do not modify these files. Tests that need mutable data must copy fixtures into 
 
 ```bash
 # Find all test suite class declarations across test/
-rg -rn "class Test[A-Z]" /home/rgld/Projects/desktop-kDrive/test/ -g "*.h"
+rg -rn "class Test[A-Z]" ./test/ -g "*.h"
 
 # Find which binary a test suite belongs to (check test.cpp registrations)
-rg -rn "CPPUNIT_TEST_SUITE_REGISTRATION" /home/rgld/Projects/desktop-kDrive/test/ -g "test.cpp"
+rg -rn "CPPUNIT_TEST_SUITE_REGISTRATION" ./test/ -g "test.cpp"
 
 # Find an existing test to copy as a model (e.g. for a utility class)
-rg -rn "class Test.*Utility" /home/rgld/Projects/desktop-kDrive/test/ -g "*.h"
+rg -rn "class Test.*Utility" ./test/ -g "*.h"
 
 # Find all integration test guards
-rg -rn "isRunningOnCI|KDRIVE_TEST_CI_RUNNING_ON_CI|CPPUNIT_SKIP" /home/rgld/Projects/desktop-kDrive/test/ -g "*.cpp"
+rg -rn "isRunningOnCI|KDRIVE_TEST_CI_RUNNING_ON_CI|CPPUNIT_SKIP" ./test/ -g "*.cpp"
 
 # Find all mock usages
-rg -rn "#include.*mock" /home/rgld/Projects/desktop-kDrive/test/ -g "*.h" -i
+rg -rn "#include.*mock" ./test/ -g "*.h" -i
 
 # Find tests that use LocalTemporaryDirectory (good models for file-system tests)
-rg -rn "LocalTemporaryDirectory" /home/rgld/Projects/desktop-kDrive/test/ -g "*.h" -l
+rg -rn "LocalTemporaryDirectory" ./test/ -g "*.h" -l
 
 # Find tests for a specific class name
-rg -rn "class TestSyncPal" /home/rgld/Projects/desktop-kDrive/test/ -g "*.h"
+rg -rn "class TestSyncPal" ./test/ -g "*.h"
 
 # Find all CPPUNIT_TEST macros in a suite to understand test coverage
-rg -n "CPPUNIT_TEST(" /home/rgld/Projects/desktop-kDrive/test/libsyncengine/reconciliation/ -g "*.h"
+rg -n "CPPUNIT_TEST(" ./test/libsyncengine/reconciliation/ -g "*.h"
 ```
