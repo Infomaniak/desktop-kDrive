@@ -47,6 +47,7 @@
 - `app/cache/appcache.*`: durable graph-backed cache (`AppCache` QObject) — owns configured users/accounts/drives/syncs,
   split sync/server errors, per-user available drives, cascade removals, and derived read models.
 - `app/cache/cachepipeline.*`: unique bridge for `CommService -> AppCache` push signals.
+    - Drops push mutations before `CacheHydrator::bootstrapCompleted()` and logs the invariant violation.
 - `app/cache/cachetypes.h`: cache read models and onboarding keys (`SyncContext`, `DriveContext`,
   `AvailableDriveContext`, `AvailableDriveKey`, `PendingSyncConfig`).
 - `app/cache/mainselectionstore.*`: sync-first main-shell selection owner (`currentSyncDbId`) and selection healing.
@@ -94,6 +95,7 @@ cmake --build build-linux/build/build/Debug --target kDrive kdrive_qml -- -j 8
   available-drives snapshot.
 - `CachePipeline` owns the direct push-signal bridge from `CommService` to `AppCache`; service classes should not wire
   those pushes themselves.
+- `CachePipeline` must not let server pushes mutate `AppCache` before the initial `CacheHydrator` snapshot has completed.
 
 ## IPC And Error Handling
 
