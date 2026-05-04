@@ -149,6 +149,8 @@ void TestAppServer::testStartAndStopSync() {
     CPPUNIT_ASSERT(_appPtr->syncPalMap[syncDbId]->isRunning());
     CPPUNIT_ASSERT(syncIsActive(syncDbId));
 
+    const auto syncDbPath = _appPtr->syncPalMap[syncDbId]->syncDb()->dbPath();
+
     // Stop sync & clear maps
     _appPtr->stopSyncTask(syncDbId);
     CPPUNIT_ASSERT(_appPtr->syncPalMap.empty());
@@ -164,6 +166,10 @@ void TestAppServer::testStartAndStopSync() {
     _appPtr->stopAllSyncsTask({syncDbId});
     CPPUNIT_ASSERT(_appPtr->syncPalMap.empty());
     CPPUNIT_ASSERT(_appPtr->vfsMap.empty());
+    auto exists = false;
+    auto ioError = IoError::Unknown;
+    CPPUNIT_ASSERT(IoHelper::checkIfPathExists(syncDbPath, exists, ioError, IoHelper::PathCheckOption::Insensitive));
+    CPPUNIT_ASSERT(exists);
 
     // Update sync local folder with a dummy value
     Sync sync;
@@ -188,6 +194,13 @@ void TestAppServer::testStartAndStopSync() {
     // Update sync local folder with the good value
     CPPUNIT_ASSERT(ParmsDb::instance()->updateSync(sync, found) && found);
     sync.setLocalPath(_localPath);
+
+    // Stop syncs & clear maps for all users
+    _appPtr->stopAllSyncsTask({syncDbId}, SyncPal::DbBehaviorAfterStop::Remove);
+    CPPUNIT_ASSERT(_appPtr->syncPalMap.empty());
+    CPPUNIT_ASSERT(_appPtr->vfsMap.empty());
+    CPPUNIT_ASSERT(IoHelper::checkIfPathExists(syncDbPath, exists, ioError, IoHelper::PathCheckOption::Insensitive));
+    CPPUNIT_ASSERT(exists);
 }
 
 void TestAppServer::testCleanup() {
