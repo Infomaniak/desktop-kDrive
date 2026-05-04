@@ -21,9 +21,6 @@
 - Prefer documenting private implementation helpers in `.cpp` rather than headers.
 - Do not introduce raw `int` in new code when a fixed-width type fits (`uint8_t`, `int32_t`, ...).
 - Do not run `clang-format` on `CMakeLists.txt` in this repository.
-- For the Linux v4 cache refactor stack, use the branch plan from `/home/rgld/Projects/01 - Linux V4/Cache`:
-  `linux-v4/cache/foundation` -> `linux-v4/cache/services` -> `linux-v4/cache/models`.
-  Compute diffs against the actual stack base for the branch you are working on.
 - For shared infrastructure classes, document the class role explicitly in the header comment (and non-role when
   relevant).
 - In range-for loops over associative containers, prefer `std::views::keys` / `std::views::values` over structured
