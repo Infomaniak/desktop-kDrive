@@ -70,7 +70,7 @@ std::string getOriginalPath(const SyncPath &infoFile) {
     static const std::string pathKey = "Path=";
     while (std::getline(file, line)) {
         if (line.rfind(pathKey, 0) != 0) continue;
-        return line.substr(pathKey.size());
+        return Poco::URI::decode(line.substr(pathKey.size()));
     }
 
     return "";
