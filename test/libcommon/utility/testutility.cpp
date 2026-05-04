@@ -520,6 +520,25 @@ void TestUtility::testIsSupportedLanguage() {
     CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isSupportedLanguage(""));
 }
 
+void TestUtility::testStrToLanguage() {
+    CPPUNIT_ASSERT_EQUAL(Language::English, CommonUtility::strToLanguage("en"));
+    CPPUNIT_ASSERT_EQUAL(Language::French, CommonUtility::strToLanguage("fr"));
+    CPPUNIT_ASSERT_EQUAL(Language::German, CommonUtility::strToLanguage("de"));
+    CPPUNIT_ASSERT_EQUAL(Language::Spanish, CommonUtility::strToLanguage("es"));
+    CPPUNIT_ASSERT_EQUAL(Language::Italian, CommonUtility::strToLanguage("it"));
+    CPPUNIT_ASSERT_EQUAL(Language::Dutch, CommonUtility::strToLanguage("nl"));
+    CPPUNIT_ASSERT_EQUAL(Language::Swedish, CommonUtility::strToLanguage("sv"));
+    CPPUNIT_ASSERT_EQUAL(Language::Portuguese, CommonUtility::strToLanguage("pt"));
+    CPPUNIT_ASSERT_EQUAL(Language::Polish, CommonUtility::strToLanguage("pl"));
+    CPPUNIT_ASSERT_EQUAL(Language::Norwegian, CommonUtility::strToLanguage("nb"));
+    CPPUNIT_ASSERT_EQUAL(Language::Norwegian, CommonUtility::strToLanguage("no"));
+    CPPUNIT_ASSERT_EQUAL(Language::Finnish, CommonUtility::strToLanguage("fi"));
+    CPPUNIT_ASSERT_EQUAL(Language::Danish, CommonUtility::strToLanguage("da"));
+    CPPUNIT_ASSERT_EQUAL(Language::Greek, CommonUtility::strToLanguage("el"));
+    CPPUNIT_ASSERT_EQUAL(Language::Default, CommonUtility::strToLanguage("xx"));
+    CPPUNIT_ASSERT_EQUAL(Language::Default, CommonUtility::strToLanguage(""));
+}
+
 #if defined(KD_WINDOWS)
 void TestUtility::testGetLastErrorMessage() {
     // Ensure that the error message is reset.
