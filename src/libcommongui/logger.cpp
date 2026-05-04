@@ -172,7 +172,7 @@ void Logger::doLog(const QString &msg) {
         }
     }
 #ifndef NDEBUG
-    if (CommonUtility::envVarValue("ENABLE_LOG_TO_CONSOLE") != "0") {
+    if (CommonUtility::envVarValue("ENABLE_LOG_TO_CONSOLE") == "1") {
         std::cout << qPrintable(msg) << std::endl;
     }
 #endif
