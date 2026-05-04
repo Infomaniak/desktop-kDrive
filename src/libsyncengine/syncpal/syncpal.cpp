@@ -1022,7 +1022,7 @@ ExitInfo SyncPal::checkIfExistsOnServer(const SyncPath &path, bool &exists) cons
 ExitInfo SyncPal::checkIfCanShareItem(const SyncPath &path, bool &canShare) const {
     canShare = false;
 
-    if (!_remoteFSObserverWorker) ExitCode::LogicError;
+    if (!_remoteFSObserverWorker) return ExitCode::LogicError;
 
     // Path is normalized on server side
     SyncPath normalizedPath;
