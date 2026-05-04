@@ -21,7 +21,10 @@
 #include "app/cache/appcache.h"
 #include "app/services/commservice.h"
 
+#include <QMetaObject>
 #include <QObject>
+
+#include <vector>
 
 namespace KDC {
 
@@ -29,6 +32,14 @@ namespace KDC {
  * Owns all server-push signal connections from CommService to AppCache.
  *
  * This is the single bridge for push-driven cache mutation in the Linux v4 services layer.
+ *
+ * It starts in pre-hydration mode: supported CommService push signals are connected to a drop logger only, so live server
+ * mutations cannot race with CacheHydrator's initial full-snapshot replacements. Once markHydrated() is called after
+ * CacheHydrator::bootstrapCompleted(), those temporary drop connections are removed and the live pipeline is installed.
+ *
+ * User/account/drive/sync signals are connected directly to the matching AppCache mutation slots in live mode. Error signals
+ * keep custom routing because server errors and sync errors are stored separately in AppCache. The class owns only the signal
+ * wiring; AppCache remains the cache authority, and CacheHydrator remains responsible for initial snapshot loading.
  */
 class CachePipeline : public QObject {
         Q_OBJECT
@@ -40,10 +51,13 @@ class CachePipeline : public QObject {
         void markHydrated();
 
     private:
-        bool acceptPush(const char *signalName) const;
+        void connectDropPipeline();
+        void connectLivePipeline();
+        static void logDroppedPush(const char *signalName);
 
         CommService &_commService;
         AppCache &_appCache;
+        std::vector<QMetaObject::Connection> _preHydrationConnections;
         bool _hydrated{false};
 };
 
