@@ -336,6 +336,13 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
                     invalidateSnapshot();
                     return ExitCode::DataError;
                 }
+            } else {
+                if (exitInfo.cause() == ExitCause::NotFound) {
+                    // OK, just continue
+                } else {
+                    invalidateSnapshot();
+                    return exitInfo;
+                }
             }
 
             // This can be either Create, Move or Edit operation
@@ -773,6 +780,8 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                             continue;
                         }
                         parentNodeId = std::to_string(parentFileStat.inode);
+                    } else {
+                        return exitInfo;
                     }
                 }
             }
