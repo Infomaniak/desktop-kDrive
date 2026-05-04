@@ -35,6 +35,7 @@ set(testsyncengine_SRCS
         jobs/network/testnetworkjobs.h jobs/network/testnetworkjobs.cpp
         jobs/network/kDrive_API/testapitranslator.h jobs/network/kDrive_API/testapitranslator.cpp
         jobs/network/kDrive_API/testloguploadjob.h jobs/network/kDrive_API/testloguploadjob.cpp
+        jobs/network/kDrive_API/testsearchjob.h jobs/network/kDrive_API/testsearchjob.cpp
         ## Local jobs
         jobs/local/testlocaljobs.h jobs/local/testlocaljobs.cpp
         # Update Detection
