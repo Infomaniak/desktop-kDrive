@@ -42,7 +42,7 @@ CachePipeline::CachePipeline(CommService &commService, AppCache &appCache, QObje
     (void) connect(&_commService, &CommService::syncUpdated, &_appCache, &AppCache::upsertSync, Qt::UniqueConnection);
     (void) connect(&_commService, &CommService::syncRemoved, &_appCache, &AppCache::removeSync, Qt::UniqueConnection);
 
-    (void) connect(&_commService, &CommService::errorAdded, &_appCache, [this](const ErrorInfo &info) {
+    (void) connect(&_commService, &CommService::errorAdded, this, [this](const ErrorInfo &info) {
         if (info.level() == ErrorLevel::Server) {
             _appCache.upsertServerError(info);
             return;
@@ -50,7 +50,7 @@ CachePipeline::CachePipeline(CommService &commService, AppCache &appCache, QObje
 
         _appCache.upsertSyncError(info);
     });
-    (void) connect(&_commService, &CommService::errorRemoved, &_appCache, [this](const ErrorDbId errorDbId) {
+    (void) connect(&_commService, &CommService::errorRemoved, this, [this](const ErrorDbId errorDbId) {
         if (_appCache.syncError(errorDbId).has_value()) {
             _appCache.removeSyncError(errorDbId);
             return;
