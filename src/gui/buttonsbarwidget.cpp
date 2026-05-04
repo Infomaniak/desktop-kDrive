@@ -37,7 +37,7 @@ ButtonsBarWidget::ButtonsBarWidget(QWidget *parent) :
     setLayout(_hboxLayout);
 }
 
-void ButtonsBarWidget::insertButton(const int position, CustomTogglePushButton *button) {
+void ButtonsBarWidget::insertButton(const int position, CustomTogglePushButton *const button) {
     if (button) {
         _hboxLayout->insertWidget(position, button);
         connect(button, &CustomTogglePushButton::toggled, this, &ButtonsBarWidget::onToggle);

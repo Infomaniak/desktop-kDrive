@@ -36,7 +36,7 @@ class ButtonsBarWidget : public QWidget {
     public:
         explicit ButtonsBarWidget(QWidget *parent = nullptr);
 
-        void insertButton(int position, CustomTogglePushButton *button);
+        void insertButton(int position, CustomTogglePushButton *const button);
         void selectButton(int position);
         int position() const { return _position; }
 
