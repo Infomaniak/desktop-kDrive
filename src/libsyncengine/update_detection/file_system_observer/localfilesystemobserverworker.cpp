@@ -209,6 +209,9 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
                     // The file does not exist anymore, ignore it
                     continue;
                 }
+                LOGW_SYNCPAL_WARN(_logger, L"Error in Snapshot::getItemId: " << Utility::formatSyncPath(absolutePath) << L" ("
+                                                                             << CommonUtility::s2ws(itemId) << L")");
+                invalidateSnapshot();
                 return exitInfo;
             }
 
