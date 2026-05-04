@@ -192,7 +192,7 @@ void CustomRollingFileAppender::append(const log4cplus::spi::InternalLoggingEven
     try {
         RollingFileAppender::append(event);
 #ifndef NDEBUG
-        if (CommonUtility::envVarValue("ENABLE_LOG_TO_CONSOLE") == "1") {
+        if (CommonUtility::logToConsole) {
             log4cplus::tostringstream oss;
 
             // layout is optional in log4cplus, fall back to raw message if not set

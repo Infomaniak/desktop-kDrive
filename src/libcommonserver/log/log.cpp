@@ -47,9 +47,8 @@ Log::~Log() {
 
 std::shared_ptr<Log> Log::instance(const log4cplus::tstring &filePath) {
     if (_instance == nullptr) {
-        // add there a environement variable, which, if defined, print logs)
 #if defined(KD_WINDOWS) && !defined(NDEBUG)
-        if (CommonUtility::envVarValue("ENABLE_LOG_TO_CONSOLE") == "1") {
+        if (CommonUtility::logToConsole) {
             if (AllocConsole()) {
                 FILE *fp = nullptr;
                 (void) freopen_s(&fp, "CONOUT$", "w", stdout);
