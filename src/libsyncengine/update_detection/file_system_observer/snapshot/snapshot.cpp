@@ -236,8 +236,16 @@ bool Snapshot::exists(const NodeId &itemId) const {
 
 ExitInfo Snapshot::checkIfPathExists(const SyncPath &path, bool &exists) const {
     const std::scoped_lock lock(_mutex);
+    exists = false;
+
     NodeId id;
-    if (const auto exitInfo = getItemId(path, id); !exitInfo) return exitInfo;
+    if (const auto exitInfo = getItemId(path, id); !exitInfo) {
+        if (exitInfo.exitCause() == ExitCause::NotFound) {
+            return ExitCode::Ok;
+        }
+        return exitInfo;
+    }
+
     exists = !id.empty();
     return ExitCode::Ok;
 }
