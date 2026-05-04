@@ -86,7 +86,7 @@ void TestSyncDb::setUp() {
 
     // Create DB
     const auto syncDbPath = MockDb::makeDbName(1, 1, 1, 1);
-    _testObj = new SyncDbMock(syncDbPath.string(), KDRIVE_VERSION_STRING);
+    _testObj = new SyncDbMock(syncDbPath.string());
     _testObj->init(KDRIVE_VERSION_STRING);
     _testObj->setAutoDelete(true);
 }
@@ -294,7 +294,7 @@ void TestSyncDb::testUpgradeTo3_6_7() {
 
 void TestSyncDb::testInit3_6_4() {
     const auto syncDbPath = MockDb::makeDbName(1, 1, 1, 1);
-    SyncDbMock testDb(syncDbPath.string(), "3.6.4");
+    SyncDbMock testDb(syncDbPath.string());
     const LocalTemporaryDirectory localTmpDir("testUpgradeTo3_6_5");
     createParmsDb(testDb.dbPath(), localTmpDir.path());
     const auto syncFilesInfo = createSyncFiles(localTmpDir.path());

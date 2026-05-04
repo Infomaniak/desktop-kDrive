@@ -3688,7 +3688,7 @@ void AppServer::clearSyncNodes() {
     // Clear node tables
     for (const auto &sync: syncList) {
         SyncPath dbPath = sync.dbPath();
-        auto syncDbPtr = std::make_shared<SyncDb>(dbPath.string(), _theme->version());
+        auto syncDbPtr = std::make_shared<SyncDb>(dbPath.string());
         syncDbPtr->clearNodes();
     }
 }
@@ -3865,8 +3865,7 @@ bool AppServer::startClient() {
 
         IoError ioError = IoError::Success;
         bool exists = false;
-        if (!IoHelper::checkIfPathExists(QStr2Path(pathToExecutable), exists, ioError,
-                                         IoHelper::PathCheckOption::Insensitive) ||
+        if (!IoHelper::checkIfPathExists(QStr2Path(pathToExecutable), exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
             !exists || ioError != IoError::Success) {
             pathToExecutable.clear();
         }
@@ -3956,7 +3955,8 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, bool
         // Set callbacks
         syncPalMapIt = syncPalMap.find(sync.dbId());
         syncPalMapIt->second->setAddErrorCallback(std::bind_front(&AppServer::addError, this));
-        syncPalMapIt->second->setResolveSyncErrorsByExitCauseCallback(std::bind_front(&AppServer::resolveSyncErrorsByExitCause, this));
+        syncPalMapIt->second->setResolveSyncErrorsByExitCauseCallback(
+                std::bind_front(&AppServer::resolveSyncErrorsByExitCause, this));
         syncPalMapIt->second->setAddCompletedItemCallback(std::bind_front(&AppServer::addCompletedItem, this));
         syncPalMapIt->second->setFixConflictedFilesCompletedCallback(
                 std::bind_front(&AppServer::sendNodeFixConflictedFilesCompleted, this));

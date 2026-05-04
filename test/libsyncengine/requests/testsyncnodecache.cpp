@@ -42,7 +42,7 @@ void TestSyncNodeCache::setUp() {
     (void) IoHelper::deleteItem(syncDbPath);
 
     // Create DB
-    _testObj = std::make_shared<SyncDb>(syncDbPath.string(), KDRIVE_VERSION_STRING);
+    _testObj = std::make_shared<SyncDb>(syncDbPath.string());
     _testObj->init(KDRIVE_VERSION_STRING);
     _testObj->setAutoDelete(true);
 
