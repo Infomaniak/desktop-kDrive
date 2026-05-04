@@ -39,11 +39,11 @@ CacheHydrator::CacheHydrator(CommService &commService, AppCache &appCache, QObje
     _commService(commService),
     _appCache(appCache) {}
 
-void CacheHydrator::bootstrap() const {
+void CacheHydrator::bootstrap() {
     loadUsers();
 }
 
-void CacheHydrator::loadUsers() const {
+void CacheHydrator::loadUsers() {
     _commService.requestUserInfoList([this](const ExitInfo &exitInfo, const std::vector<UserInfo> &list) {
         if (!exitInfo) {
             exitOnHydrationFailure("users", exitInfo);
@@ -54,7 +54,7 @@ void CacheHydrator::loadUsers() const {
     });
 }
 
-void CacheHydrator::loadAccounts() const {
+void CacheHydrator::loadAccounts() {
     _commService.requestAccountInfoList([this](const ExitInfo &exitInfo, const std::vector<AccountInfo> &list) {
         if (!exitInfo) {
             exitOnHydrationFailure("accounts", exitInfo);
@@ -65,7 +65,7 @@ void CacheHydrator::loadAccounts() const {
     });
 }
 
-void CacheHydrator::loadDrives() const {
+void CacheHydrator::loadDrives() {
     _commService.requestDriveInfoList([this](const ExitInfo &exitInfo, const std::vector<DriveInfo> &list) {
         if (!exitInfo) {
             exitOnHydrationFailure("drives", exitInfo);
@@ -76,7 +76,7 @@ void CacheHydrator::loadDrives() const {
     });
 }
 
-void CacheHydrator::loadSyncs() const {
+void CacheHydrator::loadSyncs() {
     _commService.requestSyncInfoList([this](const ExitInfo &exitInfo, const std::vector<SyncInfo> &list) {
         if (!exitInfo) {
             exitOnHydrationFailure("syncs", exitInfo);
@@ -87,7 +87,7 @@ void CacheHydrator::loadSyncs() const {
     });
 }
 
-void CacheHydrator::loadSyncErrors() const {
+void CacheHydrator::loadSyncErrors() {
     _commService.requestErrorInfoList([this](const ExitInfo &exitInfo, const std::vector<ErrorInfo> &list) {
         if (!exitInfo) {
             exitOnHydrationFailure("errors", exitInfo);
