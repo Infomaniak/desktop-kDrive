@@ -50,7 +50,7 @@ ExitInfo SyncDeleteJob::serializeOutputParms() {
 }
 
 ExitInfo SyncDeleteJob::process() {
-    _commManager->appServer().stopSyncTask(_syncDbId);
+    _commManager->appServer().stopSyncTask(_syncDbId, SyncPal::DbBehaviorAfterStop::Remove);
 
     // Delete sync from DB
     _commManager->appServer().deleteSync(_syncDbId);

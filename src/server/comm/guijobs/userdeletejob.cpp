@@ -63,7 +63,7 @@ ExitInfo UserDeleteJob::process() {
     }
 
     // Stop syncs for this user and remove them from syncPalMap.
-    _commManager->appServer().stopAllSyncsTask(syncDbIdList);
+    _commManager->appServer().stopAllSyncsTask(syncDbIdList, SyncPal::DbBehaviorAfterStop::Remove);
 
     // Delete user from DB
     const ExitInfo exitInfo = ServerRequests::deleteUser(_userDbId);
