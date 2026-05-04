@@ -176,17 +176,19 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
 
                 // Check if item still exist in liveSnapshot
                 NodeId itemId;
-                if (const auto exitInfo = _liveSnapshot.getItemId(relativePath, itemId); !exitInfo) {
+                if (const auto exitInfo = _liveSnapshot.getItemId(relativePath, itemId); exitInfo) {
+                    // Remove it from liveSnapshot
+                    if (!_liveSnapshot.removeItem(itemId)) {
+                        LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: " << Utility::formatSyncPath(absolutePath) << L" ("
+                                                                            << CommonUtility::s2ws(itemId) << L")");
+                        invalidateSnapshot();
+                        return ExitCode::DataError;
+                    }
+                } else {
                     if (exitInfo.cause() == ExitCause::NotFound) {
-                        // Remove it from liveSnapshot
-                        if (!_liveSnapshot.removeItem(itemId)) {
-                            LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: " << Utility::formatSyncPath(absolutePath) << L" ("
-                                                                                << CommonUtility::s2ws(itemId) << L")");
-                            invalidateSnapshot();
-                            return ExitCode::DataError;
-                        }
+                        // OK, just continue
                     } else {
-                        tryToInvalidateSnapshot();
+                        invalidateSnapshot();
                         return exitInfo;
                     }
                 }
