@@ -40,6 +40,12 @@ void TestAppServer::setUp() {
 
     if (QCoreApplication::instance()) {
         _appPtr = dynamic_cast<MockAppServer *>(QCoreApplication::instance());
+
+        Sync sync;
+        bool found = false;
+        if (ParmsDb::instance()->selectSync(1, sync, found) && found) {
+            _localPath = sync.localPath();
+        }
         return;
     }
 
@@ -175,6 +181,8 @@ void TestAppServer::testStartAndStopSync() {
     Sync sync;
     found = false;
     CPPUNIT_ASSERT(ParmsDb::instance()->selectSync(syncDbId, sync, found) && found);
+    const auto originalLocalPath = sync.localPath();
+    CPPUNIT_ASSERT(!originalLocalPath.empty());
 
 #ifdef KD_WINDOWS
     sync.setLocalPath("Y:\\dummy");
@@ -192,15 +200,16 @@ void TestAppServer::testStartAndStopSync() {
     CPPUNIT_ASSERT(exitInfo.cause() == ExitCause::SyncDirDiskMissing);
 
     // Update sync local folder with the good value
+    sync.setLocalPath(originalLocalPath);
     CPPUNIT_ASSERT(ParmsDb::instance()->updateSync(sync, found) && found);
-    sync.setLocalPath(_localPath);
 
-    // Stop syncs & clear maps for all users
+    // Check that DB file is removed when sync is deleted
+    CPPUNIT_ASSERT(_appPtr->startSyncs());
     _appPtr->stopAllSyncsTask({syncDbId}, SyncPal::DbBehaviorAfterStop::Remove);
     CPPUNIT_ASSERT(_appPtr->syncPalMap.empty());
     CPPUNIT_ASSERT(_appPtr->vfsMap.empty());
     CPPUNIT_ASSERT(IoHelper::checkIfPathExists(syncDbPath, exists, ioError, IoHelper::PathCheckOption::Insensitive));
-    CPPUNIT_ASSERT(exists);
+    CPPUNIT_ASSERT(!exists);
 }
 
 void TestAppServer::testCleanup() {
