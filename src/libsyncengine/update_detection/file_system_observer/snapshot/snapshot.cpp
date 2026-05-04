@@ -240,7 +240,7 @@ ExitInfo Snapshot::checkIfPathExists(const SyncPath &path, bool &exists) const {
 
     NodeId id;
     if (const auto exitInfo = getItemId(path, id); !exitInfo) {
-        if (exitInfo.exitCause() == ExitCause::NotFound) {
+        if (exitInfo.cause() == ExitCause::NotFound) {
             return ExitCode::Ok;
         }
         return exitInfo;
