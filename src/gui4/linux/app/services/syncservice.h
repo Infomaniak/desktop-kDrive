@@ -26,6 +26,8 @@
 #include <QObject>
 #include <QString>
 
+#include <cstdint>
+
 namespace KDC {
 
 /**
@@ -57,6 +59,15 @@ class SyncService : public QObject {
         Q_INVOKABLE void findGoodPathForNewSync(const QString &basePath);
         Q_INVOKABLE void isPathValidForNewSync(const QString &path, int32_t syncConfiguration);
 
+        Q_INVOKABLE [[nodiscard]] bool isLoadSyncsPending() const;
+        Q_INVOKABLE [[nodiscard]] bool isAddSyncPending() const;
+        Q_INVOKABLE [[nodiscard]] bool isStartSyncPending(qint64 syncDbId) const;
+        Q_INVOKABLE [[nodiscard]] bool isStopSyncPending(qint64 syncDbId) const;
+        Q_INVOKABLE [[nodiscard]] bool isDeleteSyncPending(qint64 syncDbId) const;
+        Q_INVOKABLE [[nodiscard]] bool isQuerySyncStatusPending(qint64 syncDbId) const;
+        Q_INVOKABLE [[nodiscard]] bool isFindGoodPathForNewSyncPending() const;
+        Q_INVOKABLE [[nodiscard]] bool isPathValidForNewSyncPending() const;
+
     signals:
         void loadingChanged();
         void syncStatusReceived(qint64 syncDbId, int32_t status);
@@ -76,6 +87,8 @@ class SyncService : public QObject {
         AppCache &_appCache;
         ServiceActionTracker &_serviceActionTracker;
         ServiceEventBus &_serviceEventBus;
+        uint64_t _findGoodPathGeneration{0};
+        uint64_t _pathValidationGeneration{0};
 };
 
 } // namespace KDC
