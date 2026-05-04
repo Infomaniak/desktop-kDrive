@@ -15,7 +15,9 @@
 
 - In versioned documentation, use repo-relative paths (no hardcoded absolute paths).
 - Do not add links to `.md` files that are not versioned in git.
-- For Linux validation, prefer `infomaniak-build-tools/linux/build-release-via-podman.sh`.
+- On a Linux host, validate natively: run `./infomaniak-build-tools/conan/build_dependencies.sh Debug`, configure with
+  the generated Conan/CMake Debug preset, then build `kDrive`,
+  `kDrive_client`, and `kdrive_qml`. Do not use the Podman release script for this local Linux validation path.
 - Prefer documenting private implementation helpers in `.cpp` rather than headers.
 - Do not introduce raw `int` in new code when a fixed-width type fits (`uint8_t`, `int32_t`, ...).
 - Do not run `clang-format` on `CMakeLists.txt` in this repository.
@@ -51,9 +53,11 @@
 - `app/cache/cachetypes.h`: cache read models and onboarding keys (`SyncContext`, `DriveContext`,
   `AvailableDriveContext`, `AvailableDriveKey`, `PendingSyncConfig`).
 - `app/cache/mainselectionstore.*`: sync-first main-shell selection owner (`currentSyncDbId`) and selection healing.
-  - emits `currentSyncContextChanged()` as a coarse invalidation signal when the current sync context stays selected but the underlying cache graph changes.
+    - emits `currentSyncContextChanged()` as a coarse invalidation signal when the current sync context stays selected
+      but the underlying cache graph changes.
 - `app/cache/onboardingstate.*`: onboarding-only selected user, selected available-drive keys, and pending sync configs.
-- `app/services/cachehydrator.*`: sequential initial snapshot loader for users, accounts, drives, syncs, and sync errors.
+- `app/services/cachehydrator.*`: sequential initial snapshot loader for users, accounts, drives, syncs, and sync
+  errors.
 - `app/services/driveservice.*`: drive use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`.
 - `app/services/syncservice.*`: sync use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`.
 - `ui/`: QML shell and design tokens.
@@ -61,14 +65,12 @@
 ## Build And Validation
 
 ```bash
-# From repo root: configure a Linux debug tree (example used in CLion workflow)
+# From repo root: install Debug dependencies and generate Conan/CMake presets
+./infomaniak-build-tools/conan/build_dependencies.sh Debug
+
+# Configure the generated Debug preset, then build the relevant Linux targets
 cmake --preset conan-debug -S . -B build-linux/build/build/Debug
-
-# Preferred Linux validation build
-infomaniak-build-tools/linux/build-release-via-podman.sh
-
-# Optional fast local iteration build (not the canonical validation path)
-cmake --build build-linux/build/build/Debug --target kdrive_qml -- -j 12
+cmake --build build-linux/build/build/Debug --target kDrive kdrive_qml -- -j 8
 ```
 
 ## Architecture Rules
@@ -93,7 +95,8 @@ cmake --build build-linux/build/build/Debug --target kdrive_qml -- -j 12
 - `AppCache` must not own mutable main selection; derive main context through `MainSelectionStore.currentSyncDbId`.
 - Store available drives per user via `AppCache::replaceAvailableDrivesForUser(...)`; do not reintroduce a global
   available-drives snapshot.
-- `CachePipeline` owns the direct push-signal bridge from `CommService` to `AppCache`; service classes should not wire those pushes themselves.
+- `CachePipeline` owns the direct push-signal bridge from `CommService` to `AppCache`; service classes should not wire
+  those pushes themselves.
 
 ## IPC And Error Handling
 
@@ -153,9 +156,8 @@ rg -n "Q_LOGGING_CATEGORY|qC(Debug|Info|Warning|Critical)" src/gui4/linux -g "*.
 ## Pre-PR Checks
 
 ```bash
-# Build the Linux v4 frontend target locally
-cmake --build build-linux/build/build/Debug --target kdrive_qml -- -j 12
-
-# Run the canonical Linux validation build
-infomaniak-build-tools/linux/build-release-via-podman.sh
+# Native Linux validation from repo root
+./infomaniak-build-tools/conan/build_dependencies.sh Debug
+cmake --preset conan-debug -S . -B build-linux/build/build/Debug
+cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive_qml -- -j 8
 ```
