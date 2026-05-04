@@ -87,6 +87,18 @@ void DriveService::updateDrive(const DriveInfo &driveInfo) {
     });
 }
 
+bool DriveService::isLoadDrivesPending() const {
+    return isActionPending(actionLoadDrives);
+}
+
+bool DriveService::isDeleteDrivePending(const qint64 driveDbId) const {
+    return isActionPending(actionDeleteDrive, driveDbId);
+}
+
+bool DriveService::isUpdateDrivePending(const qint64 driveDbId) const {
+    return isActionPending(actionUpdateDrive, driveDbId);
+}
+
 void DriveService::beginAction(const ServiceActionTracker::ActionKey &actionKey, const ServiceActionTracker::ScopeId scopeId) {
     _serviceActionTracker.beginAction(serviceKeyDrive, actionKey, scopeId);
 }
