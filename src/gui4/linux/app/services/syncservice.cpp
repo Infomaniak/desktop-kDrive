@@ -146,20 +146,27 @@ void SyncService::querySyncStatus(const qint64 syncDbId) {
 
 void SyncService::findGoodPathForNewSync(const QString &basePath) {
     beginAction(actionFindGoodPathForNewSync);
+    const auto generation = ++_findGoodPathGeneration;
 
-    _commService.requestFindGoodPathForNewSync(
-            QStr2Path(basePath), [this](const ExitInfo &exitInfo, const GoodPathResult &result) {
-                endAction(actionFindGoodPathForNewSync);
-                if (!exitInfo) {
-                    notifyRequestFailure(exitInfo, RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC);
-                    return;
-                }
+    _commService.requestFindGoodPathForNewSync(QStr2Path(basePath),
+                                               [this, generation](const ExitInfo &exitInfo, const GoodPathResult &result) {
+                                                   endAction(actionFindGoodPathForNewSync);
+                                                   if (generation != _findGoodPathGeneration) {
+                                                       return;
+                                                   }
 
-                emit suggestedPathReceived(Path2QStr(result.goodPath), result.errorMessage);
-            });
+                                                   if (!exitInfo) {
+                                                       notifyRequestFailure(exitInfo, RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC);
+                                                       return;
+                                                   }
+
+                                                   emit suggestedPathReceived(Path2QStr(result.goodPath), result.errorMessage);
+                                               });
 }
 
 void SyncService::isPathValidForNewSync(const QString &path, const int32_t syncConfiguration) {
+    const auto generation = ++_pathValidationGeneration;
+
     if (!isValidSyncConfigurationValue(syncConfiguration)) {
         emit pathValidationReceived(false);
         return;
@@ -168,8 +175,12 @@ void SyncService::isPathValidForNewSync(const QString &path, const int32_t syncC
     beginAction(actionIsPathValidForNewSync);
 
     _commService.requestIsPathValidForNewSync(QStr2Path(path), static_cast<SyncConfiguration>(syncConfiguration),
-                                              [this](const ExitInfo &exitInfo, const bool isValid) {
+                                              [this, generation](const ExitInfo &exitInfo, const bool isValid) {
                                                   endAction(actionIsPathValidForNewSync);
+                                                  if (generation != _pathValidationGeneration) {
+                                                      return;
+                                                  }
+
                                                   if (!exitInfo) {
                                                       notifyRequestFailure(exitInfo, RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC);
                                                       emit pathValidationReceived(false);
@@ -178,6 +189,38 @@ void SyncService::isPathValidForNewSync(const QString &path, const int32_t syncC
 
                                                   emit pathValidationReceived(isValid);
                                               });
+}
+
+bool SyncService::isLoadSyncsPending() const {
+    return isActionPending(actionLoadSyncs);
+}
+
+bool SyncService::isAddSyncPending() const {
+    return isActionPending(actionAddSync);
+}
+
+bool SyncService::isStartSyncPending(const qint64 syncDbId) const {
+    return isActionPending(actionStartSync, syncDbId);
+}
+
+bool SyncService::isStopSyncPending(const qint64 syncDbId) const {
+    return isActionPending(actionStopSync, syncDbId);
+}
+
+bool SyncService::isDeleteSyncPending(const qint64 syncDbId) const {
+    return isActionPending(actionDeleteSync, syncDbId);
+}
+
+bool SyncService::isQuerySyncStatusPending(const qint64 syncDbId) const {
+    return isActionPending(actionQuerySyncStatus, syncDbId);
+}
+
+bool SyncService::isFindGoodPathForNewSyncPending() const {
+    return isActionPending(actionFindGoodPathForNewSync);
+}
+
+bool SyncService::isPathValidForNewSyncPending() const {
+    return isActionPending(actionIsPathValidForNewSync);
 }
 
 void SyncService::beginAction(const ServiceActionTracker::ActionKey &actionKey, const ServiceActionTracker::ScopeId scopeId) {
