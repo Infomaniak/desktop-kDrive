@@ -159,12 +159,15 @@ void TestSnapshot::testSnapshot() {
     CPPUNIT_ASSERT(childrenIds.empty());
 
     // Remove node B
-    _liveSnapshot->removeItem("b");
+    CPPUNIT_ASSERT(_liveSnapshot->removeItem("b"));
     _liveSnapshot->getChildrenIds(_rootNodeId, childrenIds);
     CPPUNIT_ASSERT(!_liveSnapshot->exists("aaa"));
     CPPUNIT_ASSERT(!_liveSnapshot->exists("aa"));
     CPPUNIT_ASSERT(!_liveSnapshot->exists("b"));
     CPPUNIT_ASSERT(!childrenIds.contains("b"));
+
+    CPPUNIT_ASSERT(!_liveSnapshot->removeItem(""));
+    CPPUNIT_ASSERT(!_liveSnapshot->removeItem(_liveSnapshot->rootFolderId()));
 
     // Reset liveSnapshot
     _liveSnapshot->init();

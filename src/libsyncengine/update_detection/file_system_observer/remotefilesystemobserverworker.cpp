@@ -394,10 +394,15 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     auto nodeIdIt = nodeIds.begin();
     while (nodeIdIt != nodeIds.end()) {
         if (_liveSnapshot.isOrphan(*nodeIdIt)) {
-            LOGW_SYNCPAL_DEBUG(_logger, L"Node '" << SyncName2WStr(_liveSnapshot.name(*nodeIdIt)) << L"' ("
-                                                  << CommonUtility::s2ws(*nodeIdIt) << L") is orphan. Removing it from "
-                                                  << _liveSnapshot.side() << L" snapshot.");
-            _liveSnapshot.removeItem(*nodeIdIt);
+            const auto itemName = _liveSnapshot.name(*nodeIdIt);
+            LOGW_SYNCPAL_DEBUG(_logger, L"Node '" << SyncName2WStr(itemName) << L"' (" << CommonUtility::s2ws(*nodeIdIt)
+                                                  << L") is orphan. Removing it from " << _liveSnapshot.side() << L" snapshot.");
+            if (!_liveSnapshot.removeItem(*nodeIdIt)) {
+                LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: " << SyncName2WStr(itemName) << L" ("
+                                                                    << CommonUtility::s2ws(*nodeIdIt) << L")");
+                invalidateSnapshot();
+                return ExitCode::DataError;
+            }
         }
         nodeIdIt++;
     }
@@ -505,7 +510,12 @@ ExitInfo RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
                 _syncPal->addError(error);
             }
             // Remove it from liveSnapshot
-            _liveSnapshot.removeItem(actionInfo.snapshotItem.id());
+            if (!_liveSnapshot.removeItem(actionInfo.snapshotItem.id())) {
+                LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: " << SyncName2WStr(actionInfo.snapshotItem.name()) << L" ("
+                                                                    << CommonUtility::s2ws(actionInfo.snapshotItem.id()) << L")");
+                invalidateSnapshot();
+                return ExitCode::DataError;
+            }
             continue;
         }
 
@@ -754,7 +764,7 @@ ExitInfo RemoteFileSystemObserverWorker::removeItemFromSnapshot(const NodeId &id
     if (_liveSnapshot.removeItem(id)) return ExitCode::Ok;
 
     LOG_SYNCPAL_WARN(_logger, "Fail to remove item for ID: " << id);
-    tryToInvalidateSnapshot();
+    invalidateSnapshot();
     return ExitCode::BackError;
 }
 
