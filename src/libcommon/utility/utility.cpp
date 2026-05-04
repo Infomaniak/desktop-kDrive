@@ -1169,7 +1169,10 @@ std::string CommonUtility::envVarValue(const std::string &name, bool &isSet) {
 }
 
 #ifndef NDEBUG
-const bool CommonUtility::logToConsole = CommonUtility::envVarValue("KDRIVE_ENABLE_LOG_TO_CONSOLE") == "1";
+bool CommonUtility::logToConsoleEnabled() {
+    static const bool value = CommonUtility::envVarValue("KDRIVE_ENABLE_LOG_TO_CONSOLE") == "1";
+    return value;
+}
 #endif
 
 int CommonUtility::setenv(const char *const name, const char *const value, const int overwrite) {

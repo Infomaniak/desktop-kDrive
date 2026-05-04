@@ -175,7 +175,7 @@ struct COMMON_EXPORT CommonUtility {
         static int setenv(const char *const name, const char *const value, const int overwrite);
 
 #ifndef NDEBUG
-        static const bool logToConsole;
+        static bool logToConsoleEnabled();
 #endif
 
 #if defined(KD_LINUX)

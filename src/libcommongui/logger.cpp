@@ -172,7 +172,7 @@ void Logger::doLog(const QString &msg) {
         }
     }
 #ifndef NDEBUG
-    if (CommonUtility::logToConsole) {
+    if (CommonUtility::logToConsoleEnabled()) {
         std::cout << qPrintable(msg) << std::endl;
     }
 #endif
