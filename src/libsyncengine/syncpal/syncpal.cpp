@@ -1487,7 +1487,7 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool
         return exitInfo;
     }
     NodeId remoteNodeId;
-    if (const auto exitInfo = liveSnapshot(ReplicaSide::Remote).getItemId(relativeLocalPath, localNodeId);
+    if (const auto exitInfo = liveSnapshot(ReplicaSide::Remote).getItemId(relativeLocalPath, remoteNodeId);
         !exitInfo && exitInfo.cause() != ExitCause::NotFound) {
         return exitInfo;
     }
