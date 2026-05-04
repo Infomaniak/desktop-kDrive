@@ -57,6 +57,7 @@ jobs:
     runs-on: [self-hosted, Windows ]
     steps:
       - name: Checkout the PR
+        if: ${{ inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
         uses: actions/checkout@v6.0.2
 
       - name: Check translations
@@ -97,9 +98,11 @@ jobs:
     runs-on: [ self-hosted, Linux, X64 ]
     steps:
       - name: Checkout the PR
+        if: ${{ inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
         uses: actions/checkout@v6.0.2
 
       - name: Get kDrive version
+        if: ${{ inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
         id: get-version
         uses: ./.github/actions/get_version
 
