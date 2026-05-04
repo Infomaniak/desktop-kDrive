@@ -1009,6 +1009,7 @@ ExitInfo SyncPal::checkIfExistsOnServer(const SyncPath &path, bool &exists) cons
     if (const auto exitInfo = liveSnapshot(ReplicaSide::Remote).getItemId(normalizedPath, nodeId); !exitInfo) {
         if (exitInfo.cause() == ExitCause::NotFound) {
             exists = false;
+            return ExitCode::Ok;
         } else {
             return exitInfo;
         }
