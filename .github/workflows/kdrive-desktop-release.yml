@@ -54,7 +54,7 @@ env:
 jobs:
 # Check translation files
   check-translations:
-    runs-on: [self-hosted, Windows, desktop-kdrive-with-gui ]
+    runs-on: [self-hosted, Windows ]
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v6.0.2
