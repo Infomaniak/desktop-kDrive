@@ -38,7 +38,7 @@ struct CacheConnection {
 
 template<typename Signal, typename Slot>
 constexpr auto makeCacheConnection(const char *const signalName, Signal signal, Slot slot) {
-    return CacheConnection<Signal, Slot>{signalName, signal, slot};
+    return CacheConnection{signalName, signal, slot};
 }
 
 constexpr auto directCacheConnections =
