@@ -364,8 +364,6 @@ public enum KDriveLocalizable {
   public static let onboardingAdvancedSettingsDriveCustomizeLocationTip = KDriveLocalizable.tr("Localizable", "onboardingAdvancedSettingsDriveCustomizeLocationTip", fallback: "The selected folder must be empty for synchronization to work correctly.")
   /// loco:698c5c378bdea123d60afff7
   public static let onboardingAdvancedSettingsDriveExclusionDescription = KDriveLocalizable.tr("Localizable", "onboardingAdvancedSettingsDriveExclusionDescription", fallback: "Choose the folders to synchronize on this computer:")
-  /// loco:698c5d476258b6cb2e047e2a
-  public static let onboardingAdvancedSettingsDriveExclusionTip = KDriveLocalizable.tr("Localizable", "onboardingAdvancedSettingsDriveExclusionTip", fallback: "Unselected folders will remain accessible online.")
   /// loco:698c62f8bde3b880ce05ea53
   public static let onboardingAdvancedSettingsDriveSelectionDescription = KDriveLocalizable.tr("Localizable", "onboardingAdvancedSettingsDriveSelectionDescription", fallback: "For each kDrive, you can choose where it is synced on your computer and which folders to synchronize.")
   /// loco:698c5f7af0e0abf8b4088952

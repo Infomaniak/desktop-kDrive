@@ -534,8 +534,6 @@
 /* loco:698c5c378bdea123d60afff7 */
 "onboardingAdvancedSettingsDriveExclusionDescription" = "Wählen Sie die zu synchronisierenden Ordner auf diesem Computer aus:";
 
-/* loco:698c5d476258b6cb2e047e2a */
-"onboardingAdvancedSettingsDriveExclusionTip" = "Nicht ausgewählte Ordner bleiben online zugänglich.";
 
 /* loco:698c62f8bde3b880ce05ea53 */
 "onboardingAdvancedSettingsDriveSelectionDescription" = "Für jedes kDrive können Sie wählen, wo es auf Ihrem Computer synchronisiert wird und welche Ordner synchronisiert werden sollen.";
@@ -657,6 +655,10 @@
 
 /* loco:698b02a302385f4ff103bd62 */
 "sendLastSessionOnly" = "Nur letzte Sitzung senden";
+
+
+/* loco:698b07172a4fff6e66027c94 */
+"selectFoldersToSyncDescription" = "Nicht ausgewählte Ordner werden nicht auf Ihr Gerät heruntergeladen. Sie bleiben online verfügbar und werden nicht gelöscht.";
 
 /* loco:698b2df25c57be025b0ecfd2 */
 "sentryDescription" = "Sentry ist ein Tool, das ausschliesslich von Infomaniak gehostet und verwaltet wird, um die Stabilität der Anwendung in Echtzeit zu überwachen und technische Fehler automatisch an unsere Entwickler zu melden.\n\nDiese Daten ermöglichen es unserem Team, die Anwendung schnell zu beheben und zu optimieren, was zu einer besseren Benutzererfahrung für Sie führt.";
