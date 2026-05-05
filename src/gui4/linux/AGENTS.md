@@ -25,6 +25,8 @@
   relevant).
 - In range-for loops over associative containers, prefer `std::views::keys` / `std::views::values` over structured
   bindings with an unused `_` element when only keys or only values are needed.
+- For Linux v4 model/UI checks, build only the `kdrive_qml` target unless a broader backend/server validation is
+  explicitly needed.
 
 ## Scope
 
