@@ -36,6 +36,8 @@ class SocketCommChannel : public AbstractCommChannel {
         uint64_t bytesAvailable() const override;
         void close() override;
 
+        bool joinCallbackThread();
+
     protected:
         // Return number of CommChar (/!\ not always equal the number of bytes) read or 0 on error or closed connection
         uint64_t readData(CommChar *data, uint64_t maxlen) override;

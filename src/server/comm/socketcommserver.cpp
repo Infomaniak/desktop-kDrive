@@ -30,17 +30,8 @@ SocketCommChannel::SocketCommChannel(const Poco::Net::StreamSocket &socket) :
     _socket(socket) {}
 
 void SocketCommChannel::startCallbackThread() {
-    const std::weak_ptr<SocketCommChannel> weakChannel = std::static_pointer_cast<SocketCommChannel>(shared_from_this());
-    auto callbackHandlerFunc = std::function<void()>([weakChannel]() {
-        const auto channel = weakChannel.lock();
-        if (!channel) {
-            LOG_WARN(Log::instance()->getLogger(),
-                     "Unable to lock SocketCommChannel in callbackHandlerFunc, channel might have been destroyed");
-            return;
-        }
-        channel->callbackHandler();
-    });
-    _callbackThread = std::make_unique<StdLoggingThread>(callbackHandlerFunc);
+    auto callbackHandlerFct = std::function<void()>([this]() { callbackHandler(); });
+    _callbackThread = std::make_unique<StdLoggingThread>(callbackHandlerFct);
 }
 
 SocketCommChannel::~SocketCommChannel() {
@@ -52,11 +43,7 @@ SocketCommChannel::~SocketCommChannel() {
     }
 
     if (_callbackThread && _callbackThread->joinable()) {
-        if (_callbackThread->get_id() == std::this_thread::get_id()) {
-            _callbackThread->detach();
-        } else {
-            _callbackThread->join();
-        }
+        _callbackThread->join();
     }
 }
 
@@ -170,6 +157,14 @@ void SocketCommChannel::close() {
     } catch (Poco::Exception &ex) {
         LOG_ERROR(Log::instance()->getLogger(), "Exception in StreamSocket::shutdown: " << ex.displayText());
     }
+}
+
+bool SocketCommChannel::joinCallbackThread() {
+    if (_callbackThread && _callbackThread->joinable()) {
+        _callbackThread->join();
+        return true;
+    }
+    return false;
 }
 
 SocketCommServer::SocketCommServer(const std::string &name) :
@@ -297,11 +292,21 @@ void SocketCommServer::execute() {
 
         const auto channel = makeCommChannel(socket);
         channel->setLostConnectionCbk([this](std::shared_ptr<AbstractCommChannel> ch) {
-            {
-                const std::scoped_lock lock(_channelsMutex);
-                (void) _channels.remove(ch);
-            }
-            lostConnectionCbk(ch);
+            std::function<void()> postPonnedLostConnectionCbk = [this, ch]() {
+                auto channelPtr = std::dynamic_pointer_cast<SocketCommChannel>(ch);
+                if (channelPtr->joinCallbackThread()) {
+                    const std::scoped_lock lock(_channelsMutex);
+                    (void) _channels.remove(ch);
+                    lostConnectionCbk(ch);
+                } else {
+                    LOG_WARN(Log::instance()->getLogger(),
+                             "Failed to join callback thread for channel " << ch->id() << " on lost connection");
+                }
+            };
+
+            // Postpone the lost connection callback to avoid potential deadlocks if the callback is called from the callback
+            // thread itself
+            StdLoggingThread(postPonnedLostConnectionCbk).detach();
         });
 
         {
