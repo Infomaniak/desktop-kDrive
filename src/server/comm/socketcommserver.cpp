@@ -180,6 +180,8 @@ SocketCommServer::~SocketCommServer() {
     } catch (std::exception &ex) {
         LOG_ERROR(Log::instance()->getLogger(), "Exception in SocketCommChannel::close: " << ex.what());
     }
+
+    joinAndClearPostponedLostConnectionCbks();
 }
 
 std::string SocketCommServer::getHost() {
@@ -311,7 +313,7 @@ void SocketCommServer::execute() {
             // Postpone _channels.remove(ch), as it may destroy the channel and its
             // SocketCommChannel::callbackHandler thread while the current code
             // (SocketCommChannel::lostConnectionCbk) is executing from this same callbackHandler thread.
-            StdLoggingThread(postponedLostConnectionCbk).detach();
+            _postponedLostConnectionCbks.emplace_back(std::make_shared<StdLoggingThread>(postponedLostConnectionCbk));
         });
 
         {
@@ -320,7 +322,21 @@ void SocketCommServer::execute() {
         }
         newConnectionCbk();
         channel->startCallbackThread();
+
+        // Clear terminated postponed lost-connection callback threads to avoid accumulating too many threads in case of many
+        // connections/disconnections (edge case as the application is not expected to handle more than one connection at a time,
+        // but better be safe)
+        joinAndClearPostponedLostConnectionCbks();
     }
     _isListening = false;
 }
+void SocketCommServer::joinAndClearPostponedLostConnectionCbks() {
+    // Join and remove all postponed lost-connection callback threads
+    for (auto &thread: _postponedLostConnectionCbks) {
+        if (thread->joinable()) {
+            thread->join();
+        }
+    }
+
+    _postponedLostConnectionCbks.clear();
 } // namespace KDC
