@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyVersion>3.8.4.1</AssemblyVersion>
     <OutputType>WinExe</OutputType>
@@ -363,6 +363,7 @@
   </Target>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <!-- Rename the generated .pri file to Resources.pri | This is a bug in the generations of unpackaged winui apps -->
+	<Exec Command="powershell -ExecutionPolicy Bypass -NoProfile -Command &quot;$src = '$(OutDir)$(AssemblyName).pri'; $dst = '$(OutDir)Resources.pri'; if (Test-Path $dst) { Remove-Item $dst -Force }; Rename-Item -Path $src -NewName 'Resources.pri';&quot;" />
     <ItemGroup>
       <!-- Keep only fr-FR, en-US, es-ES, it-IT, de-DE -->
       <RemovingFiles Include="$(OutDir)*\*.mui" Exclude="&#xD;&#xA;            $(OutDir)fr-FR\*.mui;&#xD;&#xA;            $(OutDir)en-US\*.mui;&#xD;&#xA;            $(OutDir)es-ES\*.mui;&#xD;&#xA;            $(OutDir)it-IT\*.mui;&#xD;&#xA;            $(OutDir)de-DE\*.mui" />
