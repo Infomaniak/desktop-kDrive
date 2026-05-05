@@ -24,6 +24,7 @@
 #include "app/cache/onboardingstate.h"
 #include "app/models/availabledrivelistmodel.h"
 #include "app/models/currentsyncmodel.h"
+#include "app/models/drivelistmodel.h"
 #include "app/models/synclistmodel.h"
 #include "app/services/cachepopulator.h"
 #include "app/services/commservice.h"

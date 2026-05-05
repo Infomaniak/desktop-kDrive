@@ -29,6 +29,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/models/availabledrivelistmodel.h
         app/models/currentsyncmodel.cpp
         app/models/currentsyncmodel.h
+        app/models/drivelistmodel.cpp
+        app/models/drivelistmodel.h
         app/models/synclistmodel.cpp
         app/models/synclistmodel.h
         communicationlayer/ipcclient.cpp
