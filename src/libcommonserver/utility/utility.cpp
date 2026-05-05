@@ -684,6 +684,75 @@ ExitInfo Utility::tryCreateTmpFile(const std::shared_ptr<CacheDirectory> cacheDi
     return ok ? ExitCode::Ok : ExitCode::SystemError;
 }
 
+#if defined(KD_LINUX)
+ExitInfo Utility::getFileSystemName(const std::shared_ptr<CacheDirectory> cacheDirectory, std::string &fileSystemName) {
+    if (!cacheDirectory) {
+        LOG_WARN(logger(), "Cache directory not provided!");
+        return {ExitCode::SystemError, ExitCause::InvalidArgument};
+    }
+
+
+    SyncPath localSyncPath;
+    if (const auto exitInfo = cacheDirectory->path(localSyncPath); !exitInfo) return exitInfo;
+
+    fileSystemName = CommonUtility::fileSystemName(localSyncPath);
+
+    if (CommonUtility::isEXT234(localSyncPath)) {
+        // `statfs` can confuse more restrictive systems with `EXT2/3/4 when a USB stick is used.
+        constexpr auto invalidExFatFileName = "a:b";
+
+        const auto exitInfo = tryCreateTmpFile(cacheDirectory, invalidExFatFileName);
+        if (exitInfo.cause() == ExitCause::TmpDirAccessError) {
+            LOG_WARN(logger(), "Cannot access tmp directory.");
+
+            return exitInfo;
+        }
+
+        if (!exitInfo) {
+            LOG_DEBUG(logger(),
+                      "File names containing a colon character are not valid for the filesystem in use. We shall assume that "
+                      "this file system is exFAT.");
+            fileSystemName = CommonUtility::exFAT();
+        }
+    }
+#endif
+
+    return ExitCode::Ok;
+}
+
+ExitInfo Utility::checkIfFileNamesCanEndWithSpace([[maybe_unused]] const std::shared_ptr<CacheDirectory> cacheDirectory,
+                                                  bool &canEndWithSpace) {
+    canEndWithSpace = true;
+
+#if defined(KD_LINUX)
+    SyncPath localSyncPath;
+    if (const auto exitInfo = cacheDirectory->path(localSyncPath); !exitInfo) {
+        if (exitInfo.cause() == ExitCause::TmpDirAccessError) {
+            LOG_WARN(logger(), "Cannot access tmp directory.");
+
+            return exitInfo;
+        }
+    }
+    if (CommonUtility::isEXT234(localSyncPath)) {
+        constexpr auto fileNameWithEndingSpace = "a ";
+
+        const auto exitInfo = tryCreateTmpFile(cacheDirectory, fileNameWithEndingSpace);
+        if (exitInfo.cause() == ExitCause::TmpDirAccessError) {
+            LOG_WARN(logger(), "Cannot access tmp directory.");
+
+            return exitInfo;
+        }
+
+        if (!exitInfo) {
+            LOG_DEBUG(logger(), "The file system in use does not support file names with an ending space.");
+            canEndWithSpace = false;
+        }
+    }
+#endif
+
+    return ExitCode::Ok;
+}
+
 void Utility::msleep(const int64_t msec) {
     const std::chrono::milliseconds dura(msec);
     std::this_thread::sleep_for(dura);

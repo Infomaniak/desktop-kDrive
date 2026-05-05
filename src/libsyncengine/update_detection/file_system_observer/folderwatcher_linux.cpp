@@ -44,7 +44,15 @@ SyncPath FolderWatcher_linux::makeSyncPath(const SyncPath &watchedFolderPath, co
 
 void FolderWatcher_linux::startWatching() {
     LOGW_DEBUG(_logger, L"Start watching folder " << Utility::formatSyncPath(_folder));
-    LOG_DEBUG(_logger, "File system format: " << CommonUtility::fileSystemName(_folder));
+
+    std::string fileSystemName;
+    if (const auto exitInfo = Utility::getFileSystemName(_parent->cacheDirectory(), fileSystemName); !exitInfo) {
+        LOGW_WARN(_logger, L"Error in Utility::getFileSystemName: exitInfo=" << exitInfo);
+        setExitInfo(exitInfo);
+        return;
+    }
+
+    LOG_DEBUG(_logger, "File system format: " << fileSystemName);
     LOG_DEBUG(_logger, "Free space on disk: " << Utility::getFreeDiskSpace(_folder) << " bytes.");
 
     _fileDescriptor = inotify_init();
@@ -53,8 +61,8 @@ void FolderWatcher_linux::startWatching() {
         return;
     }
 
-    if (const auto &exitInfo = addFolderRecursive(_folder); !exitInfo) {
-        setExitInfo(exitInfo);
+    if (const auto &addFolderRecursiveExitInfo = addFolderRecursive(_folder); !addFolderRecursiveExitInfo) {
+        setExitInfo(addFolderRecursiveExitInfo);
         return;
     }
 

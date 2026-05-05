@@ -199,6 +199,12 @@ struct COMMONSERVER_EXPORT Utility {
          */
         static ExitInfo tryCreateTmpFile(std::shared_ptr<CacheDirectory> cacheDirectory, const SyncName &name = Str("testFile"));
 
+#if defined(KD_LINUX)
+        static ExitInfo getFileSystemName(std::shared_ptr<CacheDirectory> cacheDirectory, std::string &fileSystemName);
+#endif
+        static ExitInfo checkIfFileNamesCanEndWithSpace([[maybe_unused]] std::shared_ptr<CacheDirectory> cacheDirectory,
+                                                        bool &canEndWithSpace);
+
         static void msleep(int64_t msec);
 
         static bool getLinuxDesktopType(std::string &currentDesktop);

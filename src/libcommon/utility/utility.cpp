@@ -220,20 +220,21 @@ const std::string &CommonUtility::versionTag() {
 uint64_t CommonUtility::versionBuild() {
     return KDRIVE_VERSION_BUILD;
 }
-
-static std::unordered_map<std::string, std::string> rootFsTypeMap;
+namespace {
 std::string getRootFsType(const SyncPath &targetPath) {
+    static std::unordered_map<std::string, std::string> rootFsTypeMap;
+
     auto it = rootFsTypeMap.find(targetPath.root_name().string());
     if (it == rootFsTypeMap.end()) {
         const std::string fsType = CommonUtility::fileSystemName(targetPath);
         const auto [it2, inserted] = rootFsTypeMap.try_emplace(targetPath.root_name().string(), CommonUtility::toUpper(fsType));
-        if (!inserted) {
-            return {};
-        }
+        if (!inserted) return {};
+
         it = it2;
     }
     return it->second;
 }
+} // namespace
 
 bool CommonUtility::isNTFS(const SyncPath &targetPath) {
     static const std::string ntfs("NTFS");
@@ -275,6 +276,32 @@ bool CommonUtility::isLiteSyncCompatible([[maybe_unused]] const SyncPath &target
 #endif
 }
 
+#if defined(KD_LINUX)
+namespace {
+#ifndef EXFAT_SUPER_MAGIC
+#define EXFAT_SUPER_MAGIC 0x2011BAB0
+#endif
+
+constexpr auto exFat = "exFAT";
+constexpr auto ext234 = "EXT2/3/4";
+
+std::string formatFsName(const std::string &prettyName, const long fType) {
+    std::stringstream stream;
+    stream << std::hex << fType;
+    return prettyName + " | 0x" + stream.str();
+}
+} // namespace
+
+bool CommonUtility::isEXT234(const SyncPath &targetPath) {
+    return contains(getRootFsType(targetPath), ext234);
+}
+
+std::string CommonUtility::exFAT() {
+    return formatFsName(exFat, EXFAT_SUPER_MAGIC);
+}
+
+#endif
+
 std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {
 #if defined(KD_MACOS)
     struct statfs stat;
@@ -287,7 +314,7 @@ std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {
     DWORD dwFileSystemFlags = 0;
 
     if (GetVolumeInformation(targetPath.root_path().c_str(), NULL, 0, NULL, &dwMaxFileNameLength, &dwFileSystemFlags,
-                             szFileSystemName, sizeof(szFileSystemName)) == TRUE) {
+                             szFileSystemName, sizeof(szf)) == TRUE) {
         return ws2s(szFileSystemName);
     } else {
         // Not all the requested information is retrieved
@@ -303,18 +330,16 @@ std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {
 #elif defined(KD_LINUX)
     struct statfs stat;
     if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
-        const auto formatFsName = [](const std::string &prettyName, long fsCode) {
-            std::stringstream stream;
-            stream << std::hex << fsCode;
-            return prettyName + " | 0x" + stream.str();
-        };
         switch (stat.f_type) {
+            case EXFAT_SUPER_MAGIC:
+                return exFAT();
             case 0x137d:
                 return formatFsName("EXT(1)", stat.f_type);
             case 0xef51:
                 return formatFsName("EXT2", stat.f_type);
-            case 0xef53:
-                return formatFsName("EXT2/3/4", stat.f_type);
+            case 0xef53: // EXT_SUPER_MAGIC
+                return formatFsName(ext234, stat.f_type);
+                ;
             case 0xbad1dea:
             case 0xa501fcf5:
             case 0x58465342:

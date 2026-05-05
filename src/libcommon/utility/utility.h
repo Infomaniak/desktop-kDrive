@@ -82,6 +82,8 @@ struct COMMON_EXPORT CommonUtility {
         static std::string osVersion();
 #ifdef KD_LINUX
         static std::string distributionName();
+        static bool isEXT234(const SyncPath &targetPath);
+        static std::string exFAT();
 #endif
         static Platform platform();
         static QString platformArch();
