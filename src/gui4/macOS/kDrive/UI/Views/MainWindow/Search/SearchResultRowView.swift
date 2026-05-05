@@ -33,6 +33,7 @@ struct SearchResultRowView: View {
         HStack(alignment: .firstTextBaseline) {
             FileTypeView(fileTypeRepresentation: file.fileTypeRepresentation)
                 .frame(size: AppIconSize.iconSize12)
+                .accessibilityHidden(true)
             VStack(alignment: .leading) {
                 Text(file.name)
                     .font(.Tokens.title3)
@@ -47,6 +48,7 @@ struct SearchResultRowView: View {
             if !file.isAvailableLocally {
                 Image(systemName: "arrow.up.forward.square")
                     .foregroundStyle(ColorToken.Text.secondary.asColor)
+                    .accessibilityHidden(true)
             }
         }
         .padding(.vertical, AppPadding.padding8)
@@ -54,6 +56,9 @@ struct SearchResultRowView: View {
         .background(isHovered ? ColorToken.Surface.secondary.asColor : Color.clear)
         .clipShape(RoundedRectangle(cornerRadius: AppRadius.radius4))
         .contentShape(Rectangle())
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(file.name), \(formattedSubtitle)")
+        .accessibilityHint(file.isAvailableLocally ? KDriveLocalizable.buttonOpenInFinder : KDriveLocalizable.buttonOpenInBrowser)
         .onHover { hovering in
             isHovered = hovering
         }
