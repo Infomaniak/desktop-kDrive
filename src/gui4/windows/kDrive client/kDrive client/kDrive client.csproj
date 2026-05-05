@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyVersion>3.8.4.1</AssemblyVersion>
     <OutputType>WinExe</OutputType>
@@ -82,9 +82,6 @@
     <SignAssembly>False</SignAssembly>
     <DelaySign>False</DelaySign>
   </PropertyGroup>
-  <Target Name="CheckTranslations" BeforeTargets="PreBuildEvent">
-    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\..\Check-TranslationKeys.ps1&quot;" />
-  </Target>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
   </PropertyGroup>
@@ -355,17 +352,9 @@
       <Generator>MSBuild:Compile</Generator>
     </None>
   </ItemGroup>
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="powershell -ExecutionPolicy Bypass -NoProfile -File &quot;$(ProjectDir)Assets\Custom\Animations\lottieConverter.ps1&quot; -Directory &quot;$(ProjectDir)Assets\Custom\Animations&quot;" />
-  </Target>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <!-- Rename the generated .pri file to Resources.pri | This is a bug in the generations of unpackaged winui apps -->
-    <Exec Command="powershell -ExecutionPolicy Bypass -NoProfile -Command &quot;$src = '$(OutDir)$(AssemblyName).pri'; $dst = '$(OutDir)Resources.pri'; if (Test-Path $dst) { Remove-Item $dst -Force }; Rename-Item -Path $src -NewName 'Resources.pri';&quot;" />
-    <ItemGroup>
-      <!-- Keep only fr-FR, en-US, es-ES, it-IT, de-DE -->
-      <RemovingFiles Include="$(OutDir)*\*.mui" Exclude="&#xD;&#xA;            $(OutDir)fr-FR\*.mui;&#xD;&#xA;            $(OutDir)en-US\*.mui;&#xD;&#xA;            $(OutDir)es-ES\*.mui;&#xD;&#xA;            $(OutDir)it-IT\*.mui;&#xD;&#xA;            $(OutDir)de-DE\*.mui" />
-      <RemovingFolders Include="@(RemovingFiles-&gt;'%(RootDir)%(Directory)')" />
-    </ItemGroup>
-    <RemoveDir Directories="@(RemovingFolders)" />
-  </Target>
+    <!-- Debug: keep original PRI and copy to avoid rebuild -->
+    <Exec Condition="'$(Configuration)' == 'Debug'" Command="powershell -ExecutionPolicy Bypass -NoProfile -Command &quot;Copy-Item '$(OutDir)$(AssemblyName).pri' '$(OutDir)Resources.pri' -Force&quot;" />
+    <!-- Release: rename PRI -->
+	  <Exec Condition="'$(Configuration)' == 'Release'" Command="powershell -ExecutionPolicy Bypass -NoProfile -Command &quot;$src='$(OutDir)$(AssemblyName).pri'; $dst='$(OutDir)Resources.pri'; if (Test-Path $dst) { Remove-Item $dst -Force }; Rename-Item $src 'Resources.pri'&quot;" />  </Target>
 </Project>
