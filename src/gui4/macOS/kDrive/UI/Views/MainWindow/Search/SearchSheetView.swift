@@ -64,6 +64,7 @@ struct SearchSheetView: View {
             HStack(spacing: AppPadding.padding8) {
                 Image(systemName: "magnifyingglass")
                     .foregroundStyle(ColorToken.Text.secondary.asColor)
+                    .accessibilityHidden(true)
                 TextField(KDriveLocalizable.searchPlaceholder, text: $viewModel.searchText)
                     .textFieldStyle(.plain)
                     .focused($isSearchFieldFocused)
@@ -75,6 +76,7 @@ struct SearchSheetView: View {
                             .foregroundStyle(ColorToken.Text.tertiary.asColor)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel(KDriveLocalizable.accessibilitySearchClear)
                 }
             }
             .padding(.horizontal, AppPadding.padding12)
@@ -102,6 +104,8 @@ struct SearchSheetView: View {
             .redacted(reason: shouldRedact ? .placeholder : [])
             .disabled(shouldRedact)
             .opacity(displayedResults.isEmpty ? 0 : 1)
+            .accessibilityElement(children: shouldRedact ? .ignore : .contain)
+            .accessibilityLabel(shouldRedact ? KDriveLocalizable.accessibilitySearching : "")
             .overlay {
                 if displayedResults.isEmpty {
                     emptyStateView
@@ -109,6 +113,7 @@ struct SearchSheetView: View {
             }
         }
         .frame(minWidth: 600, minHeight: 368)
+        .accessibilityLabel(KDriveLocalizable.accessibilitySearchSheetLabel)
         .onAppear {
             isSearchFieldFocused = true
         }
