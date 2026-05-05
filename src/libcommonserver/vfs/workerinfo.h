@@ -20,15 +20,18 @@
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
 
-#include <deque>
+#include <log4cplus/logger.h>
+#include <log4cplus/loggingmacros.h>
+
 #include <QObject>
 #include <QList>
 #include <QMutex>
 #include <QThread>
 #include <QWaitCondition>
 
-#include <log4cplus/logger.h>
-#include <log4cplus/loggingmacros.h>
+#include <deque>
+#include <utility>
+
 
 namespace KDC {
 struct WorkerInfo {

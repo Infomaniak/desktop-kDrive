@@ -672,7 +672,7 @@ bool IoHelper::logArchiverDirectoryPath(SyncPath &directoryPath, IoError &ioErro
 
 
 bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &ioError,
-                                 [[maybe_unused]] PathCheckOption option) noexcept {
+                                 [[maybe_unused]] const PathCheckOption option) noexcept {
     exists = false;
     ioError = IoError::Success;
     std::error_code ec;

@@ -23,6 +23,8 @@
 #include <QPainter>
 #include <QRect>
 
+#include <utility>
+
 namespace KDC {
 
 static const int hMargin = 30;
@@ -50,7 +52,7 @@ void ButtonsBarWidget::insertButton(const int position, CustomTogglePushButton *
 
 void ButtonsBarWidget::selectButton(const int position) {
     int i = 0;
-    for (auto btn: std::as_const(buttonsList)) {
+    for (const auto btn: std::as_const(buttonsList)) {
         if (i == position) {
             btn->setChecked(true);
             emit buttonToggled(position);
@@ -72,7 +74,7 @@ void ButtonsBarWidget::paintEvent(QPaintEvent *event) {
 void ButtonsBarWidget::onToggle(const bool checked) {
     if (checked) {
         int position = 0;
-        for (auto btn: std::as_const(buttonsList)) {
+        for (const auto btn: std::as_const(buttonsList)) {
             if (btn == sender()) {
                 _position = position;
                 emit buttonToggled(position);

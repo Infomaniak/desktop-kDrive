@@ -49,6 +49,8 @@
 #include <QScrollBar>
 #include <QPushButton>
 
+#include <utility>
+
 #define UPDATE_PROGRESS_DELAY 500
 
 namespace KDC {
