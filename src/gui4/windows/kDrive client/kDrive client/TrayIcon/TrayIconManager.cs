@@ -31,6 +31,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using Windows.UI.ViewManagement;
 using static Infomaniak.kDrive.App;
@@ -107,7 +108,7 @@ namespace Infomaniak.kDrive.TrayIcon
         private void UpdateTrayIcon()
         {
 
-            if (_appModel.AllSyncs.Any(sync => sync.SyncStatus == SyncStatus.Running || sync.SyncStatus == SyncStatus.Paused))
+            if (_appModel.AllSyncs.Any(sync => sync.SyncStatus == SyncStatus.Running))
             {
                 SetIconSync();
                 return;
@@ -125,7 +126,7 @@ namespace Infomaniak.kDrive.TrayIcon
                 return;
             }
 
-            if (_appModel.AllSyncs.All(sync => sync.SyncStatus == SyncStatus.Stopped || sync.SyncStatus == SyncStatus.Offline))
+            if (_appModel.AllSyncs.All(sync => sync.SyncStatus == SyncStatus.Paused || sync.SyncStatus == SyncStatus.Stopped || sync.SyncStatus == SyncStatus.Offline))
             {
                 SetIconPause();
                 return;
@@ -183,6 +184,9 @@ namespace Infomaniak.kDrive.TrayIcon
             App.ExitApplicationAndShutdownServer();
         }
 
+        [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = CharSet.Auto)]
+        extern static bool DestroyIcon(IntPtr handle);
+
         private void SetIcon(string fileName)
         {
             if (_trayIcon is null)
@@ -196,10 +200,11 @@ namespace Infomaniak.kDrive.TrayIcon
                 var iconHandle = bitmap.GetHicon();
                 var icon = Icon.FromHandle(iconHandle);
                 _trayIcon.UpdateIcon(icon);
+                DestroyIcon(iconHandle);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to set tray icon: {ex.Message}");
+                Logger.Log(Logger.Level.Warning, $"Failed to set tray icon: {ex.Message}");
             }
         }
 

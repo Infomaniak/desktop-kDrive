@@ -37,7 +37,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates
         public ExitCause[] ExitCauses { get; set; } = new[] { ExitCause.Unknown };
         public bool ShowInSystemTray { get; set; } = false;
 
-        public bool matches(Error error)
+        public bool Matches(Error error)
         {
             return Levels.Contains(error.ErrorLevel) &&
                    NodeTypes.Contains(error.NodeType) &&

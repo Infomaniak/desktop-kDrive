@@ -15,7 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-﻿using DynamicData;
 using Infomaniak.kDrive.CustomControls.Errors.Templates;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Xaml.Controls;
@@ -50,7 +49,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors
             if (_cacheByDbId.TryGetValue(error.DbId, out var entry))
             {
                 // Verify that the cached entry still matches the error properties
-                if (entry.Meta.matches(error))
+                if (entry.Meta.Matches(error))
                 {
                     Logger.Log(Logger.Level.Extended, $"Cache hit for error DbId {error.DbId}. Returning cached entry: {entry}");
                     return entry;
@@ -81,7 +80,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors
             }
 
             // Try to find a perfect match
-            var perfectMatch = candidates.Select(c => (c.type, c.meta)).Where(c => c.meta.matches(error));
+            var perfectMatch = candidates.Select(c => (c.type, c.meta)).Where(c => c.meta.Matches(error));
 
             if (!perfectMatch.Any())
             {
@@ -90,11 +89,11 @@ namespace Infomaniak.kDrive.CustomControls.Errors
             }
             else if (perfectMatch.Count() > 1)
             {
-                Logger.Log(Logger.Level.Error, $"Multiple perfect matches found for best control type retrieval (error: {error}). Returning the first match ${perfectMatch.First().type.FullName}.");
+                Logger.Log(Logger.Level.Error, $"Multiple perfect matches found for best control type retrieval (error: {error}). Returning the first match {perfectMatch.First().type.FullName}.");
             }
             
             result = new ErrorCardInfos(perfectMatch.First().type, perfectMatch.First().meta);
-            _cacheByDbId.Add(error.DbId, result);
+            _cacheByDbId.TryAdd(error.DbId, result);
             return result;
         }
 
