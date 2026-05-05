@@ -609,7 +609,7 @@ void SynthesisPopover::getFirstSyncByPriority(const DriveDbId driveDbId, SyncDbI
                                   << SyncStatus::StopAsked << SyncStatus::Stopped << SyncStatus::Error << SyncStatus::Idle;
 
     found = false;
-    for (SyncStatus status: std::as_const(statusPriority)) {
+    for (const SyncStatus status: std::as_const(statusPriority)) {
         getFirstSyncWithStatus(status, driveDbId, syncDbId, found);
         if (found) {
             break;

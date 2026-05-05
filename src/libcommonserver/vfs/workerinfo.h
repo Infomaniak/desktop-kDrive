@@ -37,7 +37,7 @@ namespace KDC {
 struct WorkerInfo {
         ~WorkerInfo() {
             // Force threads to stop if needed
-            for (QThread *thread: std::as_const(_threadList)) {
+            for (QThread *const thread: std::as_const(_threadList)) {
                 if (thread) {
                     thread->quit();
                     if (!thread->wait(1000)) {
