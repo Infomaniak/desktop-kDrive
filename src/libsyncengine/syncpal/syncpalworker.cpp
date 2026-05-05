@@ -76,13 +76,6 @@ bool shouldBeStopped(const std::shared_ptr<ISyncWorker> w1, const std::shared_pt
     return dbError || systemError || updateRequired || invalidSyncError || invalidToken || driveNotFound;
 }
 
-double generateRandomNumber(const double left, const double right) {
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
-    std::uniform_real_distribution<double> dist(left, right);
-    return dist(gen);
-}
-
 } // namespace
 
 bool SyncPalWorker::shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 /*= nullptr*/) {
@@ -131,6 +124,10 @@ bool SyncPalWorker::handleBackError(const std::shared_ptr<ISyncWorker> w1, const
         int64_t maxDelay(3600000); // 1 hour
         int64_t computedDelay = baseDelay * (std::pow(multiplicativeFactor, _syncPal->_consecutiveFailures));
         _syncPal->_consecutiveFailures++;
+
+        auto generateRandomNumber = [](const double left, const double right) -> auto {
+            return left + static_cast<double>(rand()) / (static_cast<double>(RAND_MAX / (right - left)));
+        };
 
         double jitter = generateRandomNumber(0.8, 1.2); // 20% of the computed delay
         const auto newPauseDuration = static_cast<int64_t>(std::min(static_cast<int64_t>(computedDelay * jitter), maxDelay));
