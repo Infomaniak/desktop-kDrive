@@ -85,7 +85,7 @@ struct GeneralPreferencesVersionSection: View {
             // TODO: Automatic update is not available yet
             Toggle(KDriveLocalizable.automaticUpdatesSetting, isOn: .constant(false))
 
-            IKLabeledContent(KDriveLocalizable.betaSettings) {
+            IKLabeledContent(KDriveLocalizable.releaseChannelBeta) {
                 HStack {
                     Text(betaOption.description)
                         .foregroundStyle(.secondary)
