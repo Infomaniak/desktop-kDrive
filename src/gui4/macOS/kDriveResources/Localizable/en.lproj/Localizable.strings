@@ -797,6 +797,10 @@
 /* loco:68a70c659c53feed83039c42 */
 "tabTitleStorage" = "Storage";
 
+/* loco:69eb7b41376492d2de0d0242
+ * Empty search state subtitle when no result matches the user query in SearchSheetView. */
+"tryDifferentSearchTerm" = "Try a different search term";
+
 /* loco:6981e8f0b024a7b4e00f7262 */
 "unavailableContentNoActivityDescription" = "Your files are accessible and synchronized.";
 
