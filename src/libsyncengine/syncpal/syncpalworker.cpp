@@ -76,6 +76,13 @@ bool shouldBeStopped(const std::shared_ptr<ISyncWorker> w1, const std::shared_pt
     return dbError || systemError || updateRequired || invalidSyncError || invalidToken || driveNotFound;
 }
 
+double generateRandomNumber(const double left, const double right) {
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::uniform_real_distribution<double> dist(left, right);
+    return dist(gen);
+}
+
 } // namespace
 
 bool SyncPalWorker::shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 /*= nullptr*/) {
@@ -98,6 +105,13 @@ bool SyncPalWorker::shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const 
     const auto invalidOperation =
             (w1 && w1->exitCode() == ExitCode::InvalidOperation) || (w2 && w2->exitCode() == ExitCode::InvalidOperation);
 
+    if (handleRateLimited(w1, w2)) return true;
+    if (handleBackError(w1, w2)) return true;
+
+    return networkIssue || httpBlockingError || syncDirNotAccessible || invalidOperation;
+}
+
+bool SyncPalWorker::handleRateLimited(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2) {
     if ((w1 && w1->exitCode() == ExitCode::RateLimited) || (w2 && w2->exitCode() == ExitCode::RateLimited)) {
         const auto newPauseDuration =
                 std::max(w1 ? w1->pauseDuration() : defaultPauseDuration, w2 ? w2->pauseDuration() : defaultPauseDuration);
@@ -107,19 +121,16 @@ bool SyncPalWorker::shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const 
         }
         return true;
     }
+    return false;
+}
 
+bool SyncPalWorker::handleBackError(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2) {
     if ((w1 && w1->exitCode() == ExitCode::BackError) || (w2 && w2->exitCode() == ExitCode::BackError)) {
         double multiplicativeFactor = 2; // binary exponential backoff
         int64_t baseDelay(60000); // 1 min
         int64_t maxDelay(3600000); // 1 hour
-        int64_t computedDelay = baseDelay * (std::pow(multiplicativeFactor, _syncPal->_consecutiveFailures++));
-
-        auto generateRandomNumber = [](double left, double right) -> double {
-            static std::random_device rd;
-            static std::mt19937 gen(rd());
-            std::uniform_real_distribution<double> dist(left, right);
-            return dist(gen);
-        };
+        int64_t computedDelay = baseDelay * (std::pow(multiplicativeFactor, _syncPal->_consecutiveFailures));
+        _syncPal->_consecutiveFailures++;
 
         double jitter = generateRandomNumber(0.8, 1.2); // 20% of the computed delay
         const auto newPauseDuration = static_cast<int64_t>(std::min(static_cast<int64_t>(computedDelay * jitter), maxDelay));
@@ -127,8 +138,7 @@ bool SyncPalWorker::shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const 
         setPauseDuration(newPauseDuration);
         return true;
     }
-
-    return networkIssue || httpBlockingError || syncDirNotAccessible || invalidOperation;
+    return false;
 }
 
 void SyncPalWorker::checkForMassDeletions() const {

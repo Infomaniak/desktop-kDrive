@@ -372,7 +372,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         // last time the synchronization was in the idle state.
         Count _nbOfPropagatedLocalDeleteOps{0};
 
-        int _consecutiveFailures{0};
+        int64_t _consecutiveFailures{0};
 
         // Callbacks
         std::function<void(const Error &error)> _addError;
