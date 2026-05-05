@@ -165,13 +165,14 @@ void SyncService::findGoodPathForNewSync(const QString &basePath) {
 }
 
 void SyncService::isPathValidForNewSync(const QString &path, const int32_t syncConfiguration) {
+    const auto generation = ++_pathValidationGeneration;
+
     if (!isValidSyncConfigurationValue(syncConfiguration)) {
         emit pathValidationReceived(false);
         return;
     }
 
     beginAction(actionIsPathValidForNewSync);
-    const auto generation = ++_pathValidationGeneration;
 
     _commService.requestIsPathValidForNewSync(QStr2Path(path), static_cast<SyncConfiguration>(syncConfiguration),
                                               [this, generation](const ExitInfo &exitInfo, const bool isValid) {
