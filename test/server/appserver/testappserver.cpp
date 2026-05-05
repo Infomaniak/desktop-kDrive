@@ -40,12 +40,6 @@ void TestAppServer::setUp() {
 
     if (QCoreApplication::instance()) {
         _appPtr = dynamic_cast<MockAppServer *>(QCoreApplication::instance());
-
-        Sync sync;
-        bool found = false;
-        if (ParmsDb::instance()->selectSync(1, sync, found) && found) {
-            _localPath = sync.localPath();
-        }
         return;
     }
 
@@ -72,11 +66,11 @@ void TestAppServer::setUp() {
     const Drive drive(1, driveId, account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
 
-    _localPath = _localTempDir.path().string() + "/local_sync_directory";
-    std::filesystem::create_directories(_localPath);
+    const auto localPath = _localTempDir.path().string() + "/local_sync_directory";
+    std::filesystem::create_directories(localPath);
 
-    _remotePath = testVariables.remotePath;
-    Sync sync(1, drive.dbId(), _localPath, "", _remotePath);
+    const auto remotePath = testVariables.remotePath;
+    Sync sync(1, drive.dbId(), localPath, "", remotePath);
     (void) ParmsDb::instance()->insertSync(sync);
 
     // Create AppServer
