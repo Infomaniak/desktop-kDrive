@@ -82,7 +82,7 @@ final class SearchViewModel: ObservableObject {
             return
         }
 
-        currentSearchTask = Task {
+        currentSearchTask = Task { @MainActor in
             await fetchSearchResults(query: query)
             currentSearchTask = nil
         }
