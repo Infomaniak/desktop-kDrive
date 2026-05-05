@@ -152,7 +152,6 @@ namespace Infomaniak.kDrive.ViewModels
 
                 try
                 {
-                    
                     var profile = NetworkInformation.GetInternetConnectionProfile();
 
                     if (profile != null)
