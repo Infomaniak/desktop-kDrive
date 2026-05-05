@@ -93,7 +93,13 @@ namespace Infomaniak.kDrive.CustomControls
 
         private void ProfilePictureBorder_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
-            ((App.Current as App)?.CurrentWindow as MainWindow)?.AppNavView?.Frame?.Navigate(typeof(SettingsPage), new SettingsPage.NavigationParameter { Tab = SettingsPage.NavigationParameter.SettingsTab.Users, UserToShow = ViewModel.SelectedSync?.Drive.Account.User });
+            var frame = Utility.GetFrame(this);
+            if(frame is null)
+            {
+                Logger.Log(Logger.Level.Warning, "ProfilePictureBorder_PointerPressed: Unable to find Frame for navigation.");
+                return;
+            }
+            frame.Navigate(typeof(SettingsPage), new SettingsPage.NavigationParameter { Tab = SettingsPage.NavigationParameter.SettingsTab.Users, UserToShow = ViewModel.SelectedSync?.Drive.Account.User });
         }
 
         private void SyncBorder_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
@@ -101,10 +107,17 @@ namespace Infomaniak.kDrive.CustomControls
             if (ViewModel.SelectedSync is null)
                 return;
 
+            var frame = Utility.GetFrame(this);
+            if (frame is null)
+            {
+                Logger.Log(Logger.Level.Warning, "SyncBorder_PointerPressed: Unable to find Frame for navigation.");
+                return;
+            }
+
             if (ViewModel.SelectedSync.IsAdvanced)
-                ((App.Current as App)?.CurrentWindow as MainWindow)?.AppNavView?.Frame?.Navigate(typeof(DriveAdvancedSyncsPage), ViewModel.SelectedSync.Drive);
+                frame.Navigate(typeof(DriveAdvancedSyncsPage), ViewModel.SelectedSync.Drive);
             else
-                ((App.Current as App)?.CurrentWindow as MainWindow)?.AppNavView?.Frame?.Navigate(typeof(DriveManagementPage), ViewModel.SelectedSync.Drive);
+                frame.Navigate(typeof(DriveManagementPage), ViewModel.SelectedSync.Drive);
         }
     }
 }
