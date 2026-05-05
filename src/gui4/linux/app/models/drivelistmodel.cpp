@@ -33,14 +33,14 @@ DriveListModel::DriveListModel(AppCache &appCache, MainSelectionStore &mainSelec
                    &DriveListModel::emitCurrentRoleChanged);
 }
 
-int DriveListModel::rowCount(const QModelIndex &parent) const {
+qint32 DriveListModel::rowCount(const QModelIndex &parent) const {
     if (parent.isValid()) {
         return 0;
     }
-    return static_cast<int>(_contexts.size());
+    return static_cast<qint32>(_contexts.size());
 }
 
-QVariant DriveListModel::data(const QModelIndex &index, const int role) const {
+QVariant DriveListModel::data(const QModelIndex &index, const qint32 role) const {
     const auto *const context = contextForIndex(index);
     if (context == nullptr) {
         return {};
@@ -100,31 +100,31 @@ QVariant DriveListModel::data(const QModelIndex &index, const int role) const {
     }
 }
 
-QHash<int, QByteArray> DriveListModel::roleNames() const {
-    static const QHash<int, QByteArray> roles{{DbIdRole, "dbId"},
-                                              {IdRole, "id"},
-                                              {AccountDbIdRole, "accountDbId"},
-                                              {AccountIdRole, "accountId"},
-                                              {AccountNameRole, "accountName"},
-                                              {UserDbIdRole, "userDbId"},
-                                              {UserIdRole, "userId"},
-                                              {UserNameRole, "userName"},
-                                              {UserEmailRole, "userEmail"},
-                                              {NameRole, "name"},
-                                              {SizeRole, "size"},
-                                              {UsedSizeRole, "usedSize"},
-                                              {ColorRole, "color"},
-                                              {NotificationsRole, "notifications"},
-                                              {AdminRole, "admin"},
-                                              {MaintenanceRole, "maintenance"},
-                                              {LockedRole, "locked"},
-                                              {AccessDeniedRole, "accessDenied"},
-                                              {PackIdRole, "packId"},
-                                              {PackNameRole, "packName"},
-                                              {PackDisplayNameRole, "packDisplayName"},
-                                              {PackIsFreeRole, "packIsFree"},
-                                              {SyncCountRole, "syncCount"},
-                                              {CurrentRole, "current"}};
+QHash<qint32, QByteArray> DriveListModel::roleNames() const {
+    static const QHash<qint32, QByteArray> roles{{DbIdRole, "dbId"},
+                                                 {IdRole, "id"},
+                                                 {AccountDbIdRole, "accountDbId"},
+                                                 {AccountIdRole, "accountId"},
+                                                 {AccountNameRole, "accountName"},
+                                                 {UserDbIdRole, "userDbId"},
+                                                 {UserIdRole, "userId"},
+                                                 {UserNameRole, "userName"},
+                                                 {UserEmailRole, "userEmail"},
+                                                 {NameRole, "name"},
+                                                 {SizeRole, "size"},
+                                                 {UsedSizeRole, "usedSize"},
+                                                 {ColorRole, "color"},
+                                                 {NotificationsRole, "notifications"},
+                                                 {AdminRole, "admin"},
+                                                 {MaintenanceRole, "maintenance"},
+                                                 {LockedRole, "locked"},
+                                                 {AccessDeniedRole, "accessDenied"},
+                                                 {PackIdRole, "packId"},
+                                                 {PackNameRole, "packName"},
+                                                 {PackDisplayNameRole, "packDisplayName"},
+                                                 {PackIsFreeRole, "packIsFree"},
+                                                 {SyncCountRole, "syncCount"},
+                                                 {CurrentRole, "current"}};
     return roles;
 }
 
@@ -150,11 +150,11 @@ void DriveListModel::emitCurrentRoleChanged() {
         return;
     }
 
-    emit dataChanged(index(0, 0), index(static_cast<int>(_contexts.size()) - 1, 0), {CurrentRole});
+    emit dataChanged(index(0, 0), index(static_cast<qint32>(_contexts.size()) - 1, 0), {CurrentRole});
 }
 
 const DriveContext *DriveListModel::contextForIndex(const QModelIndex &index) const {
-    if (!index.isValid() || index.row() < 0 || index.row() >= static_cast<int>(_contexts.size())) {
+    if (!index.isValid() || index.row() < 0 || index.row() >= static_cast<qint32>(_contexts.size())) {
         return nullptr;
     }
 
