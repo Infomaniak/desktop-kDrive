@@ -512,6 +512,8 @@
 /* loco:6992de465798e1839302bbc2 */
 "noAccountConnected" = "Fügen Sie ein Konto hinzu, um zu beginnen";
 
+/* loco:6989f957dd64bb04d70f39a2 */
+"noResultsFound" = "Keine Ergebnisse gefunden";
 
 /* loco:698b0aaddee0bf9fb206a694 */
 "notSyncedDrive" = "Nicht synchronisiert";
