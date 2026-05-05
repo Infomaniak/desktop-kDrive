@@ -536,7 +536,6 @@ public enum KDriveLocalizable {
   /// loco:698b1593acd7caac53091c62
   public static let syncRules = KDriveLocalizable.tr("Localizable", "syncRules", fallback: "Sync rules")
   public static let searchPlaceholder = KDriveLocalizable.tr("Localizable", "searchPlaceholder", fallback: "Search...")
-  public static let searchResultOpenInBrowserTooltip = KDriveLocalizable.tr("Localizable", "searchResultOpenInBrowserTooltip", fallback: "This file is not available locally and will be opened in your browser")
   public static let searchYourFiles = KDriveLocalizable.tr("Localizable", "searchYourFiles", fallback: "Search your files")
   public static let typeToStartSearching = KDriveLocalizable.tr("Localizable", "typeToStartSearching", fallback: "Type to start searching")
   /// loco:69cb7b4436165087ff055e92
