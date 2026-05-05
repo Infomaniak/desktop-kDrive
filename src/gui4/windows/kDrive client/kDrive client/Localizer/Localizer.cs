@@ -15,8 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.Types;
 using Microsoft.Windows.Globalization;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -27,26 +29,33 @@ namespace Infomaniak.kDrive
     internal class Localizer : UISafeObservableObject
     {
         public static Localizer Instance { get; } = new Localizer();
+
         private static readonly ResourceContext context = ResourceContext.GetForViewIndependentUse();
+        private static Dictionary<Language, string> languageToCultureMap = new Dictionary<Language, string>
+            {
+                { Language.English, "en" },
+                { Language.French, "fr" },
+                { Language.Italian, "it" },
+                { Language.German, "de" },
+                { Language.Spanish, "es" },
+                { Language.Danish, "da" },
+                { Language.Dutch, "nl" },
+                { Language.Finnish, "fi" },
+                { Language.Greek, "el" },
+                { Language.Norwegian, "nb" },
+                { Language.Polish, "pl" },
+                { Language.Portuguese, "pt" },
+                { Language.Swedish, "sv" }
+            };
+
 
         public void SetLanguage(Types.Language language)
         {
-            CultureInfo.CurrentCulture.ClearCachedData();
-            string cultureName = language switch
-            {
-                Types.Language.SystemDefault => CultureInfo.CurrentCulture.TwoLetterISOLanguageName,
-                _ => language.ToString().ToLower()
-            };
-
-            var supportedLanguages = new[] { "fr", "it", "de", "es", "en" };
-            if (!supportedLanguages.Contains(cultureName))
-            {
-                Logger.Log(Logger.Level.Warning, $"Unsupported language {cultureName}, falling back to english.");
-                cultureName = "en";
-            }
+            string cultureName = GetBestAvailableCultureName(language);
 
             try
             {
+                CultureInfo.CurrentCulture.ClearCachedData();
                 ApplicationLanguages.PrimaryLanguageOverride = cultureName;
                 context.QualifierValues["language"] = cultureName;
                 Logger.Log(Logger.Level.Info, $"Culture set to {cultureName}");
@@ -199,6 +208,34 @@ namespace Infomaniak.kDrive
                 return false;
             string localizedString = GetString(key);
             return !localizedString.StartsWith("!") && !localizedString.EndsWith("!");
+        }
+
+        private string GetBestAvailableCultureName(Language language)
+        {
+            if (languageToCultureMap.Count != Language.GetValues(typeof(Language)).Length - 1) // -1 because of Language.Default
+                Logger.Log(Logger.Level.Warning, "The language to culture map does not contain all languages defined in the Language enum. This may cause issues with localization.");
+
+            if (language == Language.Default)
+                return GetBestAvailableSystemDefaultCultureName();
+            else if (!languageToCultureMap.ContainsKey(language))
+            {
+                Logger.Log(Logger.Level.Error, $"Unsupported Language {language}, falling back to english.");
+                return languageToCultureMap.GetValueOrDefault(Language.English, "en");
+            }
+            else
+                return languageToCultureMap[language];
+        }
+
+        private string GetBestAvailableSystemDefaultCultureName()
+        {
+            string systemCultureName = CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
+            if (languageToCultureMap.Values.ToArray().Contains(systemCultureName))
+                return systemCultureName;
+            else
+            {
+                Logger.Log(Logger.Level.Warning, $"System language {systemCultureName} is not supported, falling back to english.");
+                return "en"; // Fallback to english if system language is not supported
+            }
         }
     }
 }

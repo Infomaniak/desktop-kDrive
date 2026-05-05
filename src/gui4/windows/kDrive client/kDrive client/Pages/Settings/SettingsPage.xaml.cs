@@ -568,6 +568,8 @@ namespace Infomaniak.kDrive.Pages.Settings
                 control.IsEnabled = true;
             }
         }
+
+        private void RestartAppHyperlinkButton_Click(object sender, RoutedEventArgs e) => App.RestartApplication();
     }
 
     // templateSelector for the drives listview
@@ -589,5 +591,4 @@ namespace Infomaniak.kDrive.Pages.Settings
             return base.SelectTemplateCore(item);
         }
     }
-
 }

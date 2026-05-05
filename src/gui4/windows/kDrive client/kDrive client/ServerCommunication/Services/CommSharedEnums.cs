@@ -73,7 +73,7 @@ namespace Infomaniak.kDrive.Types
         ERROR_GET_CONFLICTS_LEGACY,
         ERROR_DELETE_SERVER,
         ERROR_DELETE_SYNC,
-        ERROR_DELETE_INVALIDTOKEN, 
+        ERROR_DELETE_INVALIDTOKEN,
         ERROR_DELETE,
         ERROR_SYNC_REFRESH,
         ERROR_RESOLVE_CONFLICTS_LEGACY,
@@ -197,6 +197,24 @@ namespace Infomaniak.kDrive.Types
         Server,
         SyncPal,
         Node
+    };
+
+    public enum Language
+    {
+        Default,
+        English,
+        French,
+        German,
+        Spanish,
+        Italian,
+        Dutch,
+        Swedish,
+        Portuguese,
+        Polish,
+        Norwegian,
+        Finnish,
+        Danish,
+        Greek
     };
 
 

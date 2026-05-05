@@ -6,7 +6,7 @@
   Locale: en, English
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 27 Apr 2026 16:45:25 +0200 
+  Exported at: Mon, 04 May 2026 07:48:35 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -1644,7 +1644,7 @@ If the problem persists, please contact support.</value>
   </data> 
   <data name="updateRequiredDescription" xml:space="preserve"> 
     <value>A new version of kDrive is required to continue.
-Please update the application to access your files and resume synchronization</value> 
+Please update the application to access your files and resume synchronization.</value> 
   </data> 
   <data name="updateRequiredTitle" xml:space="preserve"> 
     <value>Update required</value> 

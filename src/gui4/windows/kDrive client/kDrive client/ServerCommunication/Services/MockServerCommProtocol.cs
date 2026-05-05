@@ -540,7 +540,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             // Create mock ParmsInfo
             ParmsInfo parmsInfo = new()
             {
-                Language = Language.SystemDefault,
+                Language = Language.Default,
                 AutoStart = true,
                 MoveToTrash = true,
                 NotificationsDisabled = NotificationsDisabled.Always,
