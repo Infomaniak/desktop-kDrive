@@ -76,7 +76,7 @@ namespace Infomaniak.kDrive.ViewModels
         // Helpers
         private readonly Task? _networkWatcher;
         private readonly CancellationTokenSource _networkWatcherCancellationSource = new();
-        private bool _networkAvailable;
+        private bool _networkAvailable = true;
         private bool _updateRequired;
 
         public class SelectedSyncChangedEventArgs : EventArgs
