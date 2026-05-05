@@ -304,8 +304,9 @@ void SocketCommServer::execute() {
                 }
             };
 
-            // Postpone the lost connection callback to avoid potential deadlocks if the callback is called from the callback
-            // thread itself
+            // Postpone _channels.remove(ch), as it may destroy the channel and its
+            // SocketCommChannel::callbackHandler thread while the current code
+            // (SocketCommChannel::lostConnectionCbk) is executing from this same callbackHandler thread.
             StdLoggingThread(postPonnedLostConnectionCbk).detach();
         });
 
