@@ -173,9 +173,11 @@ jobs:
       - name: Build Windows
         id: build-windows-step
         uses: ./.github/actions/build_windows
-        with:  
-          physical_cert: ${{ secrets.WINDOWS_PHYSICAL_CERT }}
-          physical_cert_pass: ${{ secrets.WINDOWS_PHYSICAL_CERT_PASSWORD }}
+        with:
+          ev_host: ${{ secrets.WINDOWS_DIGICERT_HOST }}
+          ev_api_key: ${{ secrets.WINDOWS_DIGICERT_API_KEY }}
+          ev_cert: ${{ secrets.WINDOWS_DIGICERT_CLIENT_CERT_FILE_B64 }}
+          ev_cert_pass: ${{ secrets.WINDOWS_DIGICERT_CLIENT_CERT_PASSWORD }}
           release_build: true
           build_new_client: ${{ inputs.build_windows == 'New client' }}
 

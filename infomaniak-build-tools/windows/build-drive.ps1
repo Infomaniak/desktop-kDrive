@@ -1,4 +1,4 @@
-﻿<#
+<#
  Infomaniak kDrive - Desktop App
  Copyright (C) 2023-2026 Infomaniak Network SA
 
@@ -40,7 +40,7 @@ Param(
     # tokenPass: The password to use for unlocking the USB-key signing certificate (only used if upload is set)
     [String] $tokenPass,
 	
-	# Msi: Build MSI installer
+    # Msi: Build MSI installer
     [switch] $msi,
 
     # Coverage: Flag to enable or disable the code coverage computation
@@ -167,7 +167,7 @@ function Get-Aumid {
     param (
         [bool] $upload
     )
-   $aumid = if ($upload) { $env:KDC_PHYSICAL_AUMID } else { $env:KDC_VIRTUAL_AUMID }
+    $aumid = if ($upload) { $env:KDC_PHYSICAL_AUMID } else { $env:KDC_VIRTUAL_AUMID }
 
     if (!$aumid) {
         Write-Host "The AUMID value could not be read from env.
@@ -434,10 +434,15 @@ function Sign-File {
         [bool] $upload = $false,
         [string] $thumbprint,
         [string] $tokenPass = "",
-		[string] $description = ""
+        [string] $description = ""
     )
     Write-Host "Signing the file $filePath with thumbprint $thumbprint" -f Yellow
-    & "$path\infomaniak-build-tools\windows\ksigntool.exe" sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256 /fd sha256 /td sha256 /v /debug /sm /d $description $filePath /password:$tokenPass
+    if ($tokenPass) {
+      & "C:\Program Files (x86)\Microsoft SDKs\ClickOnce\SignTool\signtool.exe" sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256 /fd sha256 /td sha256 /v /debug /sm /d $description $filePath /password:$tokenPass
+    }
+    else {
+      & "C:\Program Files (x86)\Microsoft SDKs\ClickOnce\SignTool\signtool.exe" sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256 /fd sha256 /td sha256 /v /debug /sm /d $description $filePath
+    }
     $res = $LASTEXITCODE
     Write-Host "Signing exit code: $res" -ForegroundColor Yellow
     if ($res -ne 0) {
