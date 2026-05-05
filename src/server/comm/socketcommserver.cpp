@@ -160,9 +160,13 @@ void SocketCommChannel::close() {
 }
 
 bool SocketCommChannel::joinCallbackThread() {
-    if (_callbackThread && _callbackThread->joinable()) {
-        _callbackThread->join();
-        return true;
+    try {
+        if (_callbackThread && _callbackThread->joinable()) {
+            _callbackThread->join();
+            return true;
+        }
+    } catch (std::exception &ex) {
+        LOG_ERROR(Log::instance()->getLogger(), "Exception in StdLoggingThread::join: " << ex.what());
     }
     return false;
 }
@@ -292,9 +296,9 @@ void SocketCommServer::execute() {
 
         const auto channel = makeCommChannel(socket);
         channel->setLostConnectionCbk([this](std::shared_ptr<AbstractCommChannel> ch) {
-            std::function<void()> postPonnedLostConnectionCbk = [this, ch]() {
+            std::function<void()> postponedLostConnectionCbk = [this, ch]() {
                 auto channelPtr = std::dynamic_pointer_cast<SocketCommChannel>(ch);
-                if (channelPtr->joinCallbackThread()) {
+                if (channelPtr && channelPtr->joinCallbackThread()) {
                     const std::scoped_lock lock(_channelsMutex);
                     (void) _channels.remove(ch);
                     lostConnectionCbk(ch);
@@ -307,7 +311,7 @@ void SocketCommServer::execute() {
             // Postpone _channels.remove(ch), as it may destroy the channel and its
             // SocketCommChannel::callbackHandler thread while the current code
             // (SocketCommChannel::lostConnectionCbk) is executing from this same callbackHandler thread.
-            StdLoggingThread(postPonnedLostConnectionCbk).detach();
+            StdLoggingThread(postponedLostConnectionCbk).detach();
         });
 
         {
