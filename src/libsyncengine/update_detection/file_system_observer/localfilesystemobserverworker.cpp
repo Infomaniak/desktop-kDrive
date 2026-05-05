@@ -82,6 +82,12 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
             _pendingFileEvents.clear();
             break;
         }
+
+        if (path == _syncPal->localPath()) {
+            // Ignore events on the sync folder
+            continue;
+        }
+
         sentry::pTraces::scoped::LFSOChangeDetected perfMonitor(syncDbId());
         // Raise flag _updating in order to wait 1sec without local changes before starting the sync
         _updating = true;
