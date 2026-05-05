@@ -139,10 +139,18 @@ std::string AbstractTokenNetworkJob::getSpecificUrl() {
 }
 
 ExitInfo AbstractTokenNetworkJob::handleUnauthorizedResponse() {
-    if (_apiType == ApiType::Profile || _apiType == ApiType::DriveByUser) {
-        return handleUserUnauthorizedResponse();
-    } else {
-        return handleDriveUnauthorizedResponse();
+    switch (_apiType) {
+        case ApiType::Drive:
+        case ApiType::NotifyDrive:
+            return {ExitCode::BackError, ExitCause::DriveAccessError};
+        case ApiType::DriveByUser:
+        case ApiType::Desktop:
+        case ApiType::Profile:
+            return handleUserUnauthorizedResponse();
+        default: {
+            LOG_WARN(_logger, "Unauthorized response received for unknown API type");
+            return ExitInfo{ExitCode::BackError, ExitCause::Unknown};
+        }
     }
 }
 
@@ -172,10 +180,6 @@ ExitInfo AbstractTokenNetworkJob::handleUserUnauthorizedResponse() {
     if (_trials > 2) disableRetry();
 
     return ExitCode::InvalidToken;
-}
-
-ExitInfo AbstractTokenNetworkJob::handleDriveUnauthorizedResponse() {
-    return {ExitCode::BackError, ExitCause::DriveAccessError};
 }
 
 void AbstractTokenNetworkJob::defaultBackErrorHandling(const NetworkErrorCode errorCode, const Poco::URI &uri,
