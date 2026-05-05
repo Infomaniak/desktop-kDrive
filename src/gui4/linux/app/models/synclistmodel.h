@@ -73,6 +73,8 @@ class SyncListModel : public QAbstractListModel {
         [[nodiscard]] QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
         [[nodiscard]] QHash<int, QByteArray> roleNames() const override;
 
+        Q_INVOKABLE void selectSync(qint64 syncDbId);
+
     private:
         void resetModel();
         void emitSelectionRoleChanged();
