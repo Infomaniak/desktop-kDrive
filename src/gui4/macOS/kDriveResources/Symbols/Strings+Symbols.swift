@@ -536,7 +536,6 @@ public enum KDriveLocalizable {
   /// loco:698b1593acd7caac53091c62
   public static let syncRules = KDriveLocalizable.tr("Localizable", "syncRules", fallback: "Sync rules")
   public static let searchYourFiles = KDriveLocalizable.tr("Localizable", "searchYourFiles", fallback: "Search your files")
-  public static let typeToStartSearching = KDriveLocalizable.tr("Localizable", "typeToStartSearching", fallback: "Type to start searching")
   /// loco:69cb7b4436165087ff055e92
   public static let syncShortStatusError = KDriveLocalizable.tr("Localizable", "syncShortStatusError", fallback: "An error occurred")
   /// loco:69ca840f10c2c8213703f4f2
@@ -554,6 +553,9 @@ public enum KDriveLocalizable {
   /// loco:68a70c659c53feed83039c42
   public static let tabTitleStorage = KDriveLocalizable.tr("Localizable", "tabTitleStorage", fallback: "Storage")
   public static let tryDifferentSearchTerm = KDriveLocalizable.tr("Localizable", "tryDifferentSearchTerm", fallback: "Try a different search term")
+  /// loco:69eb809ce1364c763a050862
+  ///  * Empty search state subtitle in SearchSheetView before the user enters a query.
+  public static let typeToStartSearching = KDriveLocalizable.tr("Localizable", "typeToStartSearching", fallback: "Type to start searching")
   /// loco:6981e8f0b024a7b4e00f7262
   public static let unavailableContentNoActivityDescription = KDriveLocalizable.tr("Localizable", "unavailableContentNoActivityDescription", fallback: "Your files are accessible and synchronized.")
   /// loco:6981e8f0f994e5f7bc040692
