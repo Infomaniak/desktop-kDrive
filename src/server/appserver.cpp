@@ -4418,14 +4418,8 @@ void AppServer::addError(const Error &error) const {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::insertError");
         return;
     }
-    if (!errorAlreadyExists) errorList.push_back(errorCopy);
 
-
-    User user;
-    if (errorCopy.syncDbId() && ServerRequests::getUserFromSyncDbId(errorCopy.syncDbId(), user) != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ServerRequests::getUserFromSyncDbId");
-        return;
-    }
+    manageError(errorCopy, errorList, errorAlreadyExists);
 
     if (ServerRequests::isDisplayableError(errorCopy)) {
         // Notify the client
@@ -4438,75 +4432,132 @@ void AppServer::addError(const Error &error) const {
         ServerRequests::errorToErrorInfo(errorCopy, errorInfo);
         sendErrorAdded(errorInfo);
     }
+}
 
-    if (errorCopy.exitCode() == ExitCode::InvalidToken) {
-        // Manage invalid token error
-        LOG_DEBUG(Log::instance()->getLogger(), "Manage invalid token error");
-
-        if (!user.dbId()) {
-            LOG_WARN(Log::instance()->getLogger(), "Invalid error");
-            return;
-        }
-
-        // Update user
-        user.setKeychainKey(std::string());
-        bool found = false;
-        if (!ParmsDb::instance()->updateUser(user, found)) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateUser");
-            return;
-        }
-        if (!found) {
-            LOG_WARN(Log::instance()->getLogger(), "User not found with dbId=" << user.dbId());
-            return;
-        }
-
-        UserInfo userInfo;
-        ServerRequests::userToUserInfo(user, userInfo);
-        sendUserUpdated(userInfo);
-    } else if (errorCopy.exitCode() == ExitCode::NetworkError && errorCopy.exitCause() == ExitCause::SocketsDefuncted) {
-        // Manage sockets defuncted error
-        LOG_WARN(Log::instance()->getLogger(), "Manage sockets defuncted error");
-
-        sentry::Handler::captureMessage(sentry::Level::Warning, "AppServer::addError", "Sockets defuncted error");
-
-        // Decrease upload session max parallel jobs
-        ParametersCache::instance()->decreaseUploadSessionParallelThreads();
-
-        // Decrease JobManager pool capacity
-        SyncJobManagerSingleton::instance()->decreasePoolCapacity();
-    } else if (errorCopy.exitCode() == ExitCode::SystemError && errorCopy.exitCause() == ExitCause::FileAccessError) {
-        // Remove child errors
-        std::unordered_set<int64_t> toBeRemovedErrorIds;
-        for (const Error &parentError: errorList) {
-            for (const Error &childError: errorList) {
-                if (CommonUtility::isDescendantOrEqual(childError.path(), parentError.path()) &&
-                    childError.dbId() != parentError.dbId()) {
-                    toBeRemovedErrorIds.insert(childError.dbId());
-                }
-            }
-        }
-        for (auto errorId: toBeRemovedErrorIds) {
-            bool found = false;
-            if (!ParmsDb::instance()->deleteError(errorId, found)) {
-                LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteError");
-                return;
-            }
-            if (!found) {
-                LOG_WARN(Log::instance()->getLogger(), "Error not found in Error table for dbId=" << errorId);
-                return;
-            }
-            sendErrorRemoved(errorId);
-        }
-        if (!toBeRemovedErrorIds.empty()) sendErrorsCleared(errorCopy.syncDbId());
-    } else if (_updateManager && errorCopy.exitCode() == ExitCode::UpdateRequired) {
-        _updateManager->updater()->unskipVersion();
+void AppServer::manageError(const Error &error, std::vector<Error> &errorList, bool errorAlreadyExists) const {
+    User user;
+    Account account;
+    Drive drive;
+    Sync sync;
+    if (error.syncDbId() &&
+        ServerRequests::getDbStructsFromSyncDbId(error.syncDbId(), user, account, drive, sync) != ExitCode::Ok) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ServerRequests::getDbStructsFromSyncDbId");
+        return;
     }
 
-    if (!ServerRequests::isAutoResolvedError(errorCopy) && !errorAlreadyExists) {
+    if (error.exitCode() == ExitCode::InvalidToken) {
+        manageInvalidTokenError(user);
+    } else if (error.exitCode() == ExitCode::BackError && error.exitCause() == ExitCause::DriveAccessError) {
+        manageDriveAccessError(drive);
+    } else if (error.exitCode() == ExitCode::NetworkError && error.exitCause() == ExitCause::SocketsDefuncted) {
+        manageSocketsDefunctedError();
+    } else if (error.exitCode() == ExitCode::SystemError && error.exitCause() == ExitCause::FileAccessError) {
+        manageFileAccessErrorError(errorList);
+    } else if (_updateManager && error.exitCode() == ExitCode::UpdateRequired) {
+        manageUpdateRequiredErrorError();
+    }
+
+    if (!ServerRequests::isAutoResolvedError(error) && !errorAlreadyExists) {
         // Send error to sentry only for technical errors
         SentryUser sentryUser(user.email(), user.name(), std::to_string(user.userId()));
         sentry::Handler::captureMessage(sentry::Level::Warning, "AppServer::addError", error.errorString(), sentryUser);
     }
+}
+
+void AppServer::manageDriveAccessError(Drive &drive) const {
+    // Manage drive access error
+    LOG_DEBUG(Log::instance()->getLogger(), "Manage drive access error");
+
+    if (!drive.dbId()) {
+        LOG_WARN(Log::instance()->getLogger(), "Invalid error");
+        return;
+    }
+
+    // Update drive
+    drive.setAccessDenied(true);
+    bool found = false;
+    if (!ParmsDb::instance()->updateDrive(drive, found)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateDrive");
+        return;
+    }
+    if (!found) {
+        LOG_WARN(Log::instance()->getLogger(), "Drive not found with dbId=" << drive.dbId());
+        return;
+    }
+
+    DriveInfo driveInfo;
+    ServerRequests::driveToDriveInfo(drive, driveInfo);
+    sendDriveUpdated(driveInfo);
+}
+
+void AppServer::manageInvalidTokenError(User &user) const {
+    // Manage invalid token error
+    LOG_DEBUG(Log::instance()->getLogger(), "Manage invalid token error");
+
+    if (!user.dbId()) {
+        LOG_WARN(Log::instance()->getLogger(), "Invalid error");
+        return;
+    }
+
+    // Update user
+    user.setKeychainKey(std::string());
+    bool found = false;
+    if (!ParmsDb::instance()->updateUser(user, found)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateUser");
+        return;
+    }
+    if (!found) {
+        LOG_WARN(Log::instance()->getLogger(), "User not found with dbId=" << user.dbId());
+        return;
+    }
+
+    UserInfo userInfo;
+    ServerRequests::userToUserInfo(user, userInfo);
+    sendUserUpdated(userInfo);
+}
+
+void AppServer::manageSocketsDefunctedError() const {
+    // Manage sockets defuncted error
+    LOG_WARN(Log::instance()->getLogger(), "Manage sockets defuncted error");
+
+    sentry::Handler::captureMessage(sentry::Level::Warning, "AppServer::addError", "Sockets defuncted error");
+
+    // Decrease upload session max parallel jobs
+    ParametersCache::instance()->decreaseUploadSessionParallelThreads();
+
+    // Decrease JobManager pool capacity
+    SyncJobManagerSingleton::instance()->decreasePoolCapacity();
+}
+
+void AppServer::manageFileAccessErrorError(const std::vector<Error> &errorList) const {
+    // Remove child errors
+    std::unordered_set<int64_t> toBeRemovedErrorIds;
+    for (const Error &parentError: errorList) {
+        for (const Error &childError: errorList) {
+            if (CommonUtility::isDescendantOrEqual(childError.path(), parentError.path()) &&
+                childError.dbId() != parentError.dbId()) {
+                toBeRemovedErrorIds.insert(childError.dbId());
+            }
+        }
+    }
+    for (auto errorId: toBeRemovedErrorIds) {
+        bool found = false;
+        if (!ParmsDb::instance()->deleteError(errorId, found)) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteError");
+            return;
+        }
+        if (!found) {
+            LOG_WARN(Log::instance()->getLogger(), "Error not found in Error table for dbId=" << errorId);
+            return;
+        }
+        sendErrorRemoved(errorId);
+    }
+
+    if (!toBeRemovedErrorIds.empty()) sendErrorsCleared(errorList[0].syncDbId());
+}
+
+void AppServer::manageUpdateRequiredErrorError() const {
+    _updateManager->updater()->unskipVersion();
 }
 
 void AppServer::resolveItemErrors(const SyncDbId syncDbId, const SyncFileItem &item) const {
