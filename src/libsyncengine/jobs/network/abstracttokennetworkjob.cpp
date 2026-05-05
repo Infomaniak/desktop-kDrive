@@ -139,6 +139,14 @@ std::string AbstractTokenNetworkJob::getSpecificUrl() {
 }
 
 ExitInfo AbstractTokenNetworkJob::handleUnauthorizedResponse() {
+    if (_apiType == ApiType::Profile || _apiType == ApiType::DriveByUser) {
+        return handleUserUnauthorizedResponse();
+    } else {
+        return handleDriveUnauthorizedResponse();
+    }
+}
+
+ExitInfo AbstractTokenNetworkJob::handleUserUnauthorizedResponse() {
     // There is no longer any refresh of the token since v3.5.6
     // This code is only used when updating from a version < v3.5.6
     if (const auto apiToken = loadApiToken(); apiToken != _apiToken) {
@@ -164,6 +172,10 @@ ExitInfo AbstractTokenNetworkJob::handleUnauthorizedResponse() {
     if (_trials > 2) disableRetry();
 
     return ExitCode::InvalidToken;
+}
+
+ExitInfo AbstractTokenNetworkJob::handleDriveUnauthorizedResponse() {
+    return {ExitCode::BackError, ExitCause::DriveAccessError};
 }
 
 void AbstractTokenNetworkJob::defaultBackErrorHandling(const NetworkErrorCode errorCode, const Poco::URI &uri,
