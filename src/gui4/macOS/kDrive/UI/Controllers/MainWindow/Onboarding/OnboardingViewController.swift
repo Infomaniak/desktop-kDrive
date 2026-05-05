@@ -72,7 +72,7 @@ final class OnboardingViewController: NSViewController {
     private func setupWindowAppearance() {
         guard let window = view.window else { return }
 
-        window.title = KDriveLocalizable.onboardingWindowTitle
+        window.title = KDriveLocalizable.onboardingLoginTitle
         window.titlebarAppearsTransparent = true
         window.isMovableByWindowBackground = false
 

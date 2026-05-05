@@ -414,8 +414,8 @@ public enum KDriveLocalizable {
   public static let onboardingLoginHintLoading = KDriveLocalizable.tr("Localizable", "onboardingLoginHintLoading", fallback: "Just a few more moments, and we’ll load your account…")
   /// loco:691deb477145f10ab4052cd4
   public static let onboardingLoginHintWebAuth = KDriveLocalizable.tr("Localizable", "onboardingLoginHintWebAuth", fallback: "Login from your browser…")
-  /// loco:68e673754d80559c460bdf02
-  public static let onboardingLoginTitle = KDriveLocalizable.tr("Localizable", "onboardingLoginTitle", fallback: "Welcome to kDrive!")
+  /// loco:68e8fa27d09187683c0679b2
+  public static let onboardingLoginTitle = KDriveLocalizable.tr("Localizable", "onboardingLoginTitle", fallback: "Welcome to kDrive")
   /// loco:6931a1769dc60cb1820f5fe3
   public static let onboardingSynchronizationAppReadyDescription = KDriveLocalizable.tr("Localizable", "onboardingSynchronizationAppReadyDescription", fallback: "Your files are ready to be securely synchronized on your computer.")
   /// loco:6931a16c3498d5205b0380d3

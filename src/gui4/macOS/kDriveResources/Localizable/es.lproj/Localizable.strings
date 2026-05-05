@@ -592,8 +592,8 @@
 /* loco:698c68dd53b356ce140d32a2 */
 "onboardingLoginProcessingTitle" = "Un momento…";
 
-/* loco:68e673754d80559c460bdf02 */
-"onboardingLoginTitle" = "¡Bienvenido a kDrive!";
+/* loco:68e8fa27d09187683c0679b2 */
+"onboardingLoginTitle" = "Bienvenido a kDrive";
 
 /* loco:6931a1769dc60cb1820f5fe3 */
 "onboardingSynchronizationAppReadyDescription" = "Tus archivos están listos para sincronizarse de forma segura en tu ordenador.";
