@@ -87,17 +87,17 @@ runs:
 
       - name: Digicert - Setup SSM KSP on Windows latest
         run: |
-          if("${{ inputs.release_build }}" -eq "true") {
+          IF "${{ inputs.release_build }}"=="true" (
             curl -X GET  https://one.digicert.com/signingmanager/api-ui/v1/releases/Keylockertools-windows-x64.msi/download -H "x-api-key:%SM_API_KEY%" -o Keylockertools-windows-x64.msi
             msiexec /i Keylockertools-windows-x64.msi /quiet /qn
-          }
+          )
         shell: cmd
 
       - name: Digicert - Register KSP
         run: |
-          if("${{ inputs.release_build }}" -eq "true") {
+          IF "${{ inputs.release_build }}"=="true" (
             smctl windows ksp list
-          }
+          )
         shell: cmd
 
       - name: Build kDrive desktop
