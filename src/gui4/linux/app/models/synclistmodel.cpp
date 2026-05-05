@@ -34,14 +34,14 @@ SyncListModel::SyncListModel(AppCache &appCache, MainSelectionStore &mainSelecti
                    &SyncListModel::emitSelectionRoleChanged);
 }
 
-int SyncListModel::rowCount(const QModelIndex &parent) const {
+qint32 SyncListModel::rowCount(const QModelIndex &parent) const {
     if (parent.isValid()) {
         return 0;
     }
-    return static_cast<int>(_contexts.size());
+    return static_cast<qint32>(_contexts.size());
 }
 
-QVariant SyncListModel::data(const QModelIndex &index, const int role) const {
+QVariant SyncListModel::data(const QModelIndex &index, const qint32 role) const {
     const auto *const context = contextForIndex(index);
     if (context == nullptr) {
         return {};
@@ -103,32 +103,32 @@ QVariant SyncListModel::data(const QModelIndex &index, const int role) const {
     }
 }
 
-QHash<int, QByteArray> SyncListModel::roleNames() const {
-    static const QHash<int, QByteArray> roles{{DbIdRole, "dbId"},
-                                              {DriveDbIdRole, "driveDbId"},
-                                              {DriveIdRole, "driveId"},
-                                              {DriveNameRole, "driveName"},
-                                              {AccountDbIdRole, "accountDbId"},
-                                              {AccountIdRole, "accountId"},
-                                              {AccountNameRole, "accountName"},
-                                              {UserDbIdRole, "userDbId"},
-                                              {UserIdRole, "userId"},
-                                              {UserNameRole, "userName"},
-                                              {UserEmailRole, "userEmail"},
-                                              {LocalPathRole, "localPath"},
-                                              {TargetPathRole, "targetPath"},
-                                              {TargetNodeIdRole, "targetNodeId"},
-                                              {SupportVfsRole, "supportVfs"},
-                                              {VirtualFileModeRole, "virtualFileMode"},
-                                              {NavigationPaneClsidRole, "navigationPaneClsid"},
-                                              {ErrorCountRole, "errorCount"},
-                                              {HasErrorRole, "hasError"},
-                                              {LatestErrorDbIdRole, "latestErrorDbId"},
-                                              {LatestErrorTimeRole, "latestErrorTime"},
-                                              {LatestErrorLevelRole, "latestErrorLevel"},
-                                              {LatestErrorExitCodeRole, "latestErrorExitCode"},
-                                              {LatestErrorPathRole, "latestErrorPath"},
-                                              {SelectedRole, "selected"}};
+QHash<qint32, QByteArray> SyncListModel::roleNames() const {
+    static const QHash<qint32, QByteArray> roles{{DbIdRole, "dbId"},
+                                                 {DriveDbIdRole, "driveDbId"},
+                                                 {DriveIdRole, "driveId"},
+                                                 {DriveNameRole, "driveName"},
+                                                 {AccountDbIdRole, "accountDbId"},
+                                                 {AccountIdRole, "accountId"},
+                                                 {AccountNameRole, "accountName"},
+                                                 {UserDbIdRole, "userDbId"},
+                                                 {UserIdRole, "userId"},
+                                                 {UserNameRole, "userName"},
+                                                 {UserEmailRole, "userEmail"},
+                                                 {LocalPathRole, "localPath"},
+                                                 {TargetPathRole, "targetPath"},
+                                                 {TargetNodeIdRole, "targetNodeId"},
+                                                 {SupportVfsRole, "supportVfs"},
+                                                 {VirtualFileModeRole, "virtualFileMode"},
+                                                 {NavigationPaneClsidRole, "navigationPaneClsid"},
+                                                 {ErrorCountRole, "errorCount"},
+                                                 {HasErrorRole, "hasError"},
+                                                 {LatestErrorDbIdRole, "latestErrorDbId"},
+                                                 {LatestErrorTimeRole, "latestErrorTime"},
+                                                 {LatestErrorLevelRole, "latestErrorLevel"},
+                                                 {LatestErrorExitCodeRole, "latestErrorExitCode"},
+                                                 {LatestErrorPathRole, "latestErrorPath"},
+                                                 {SelectedRole, "selected"}};
     return roles;
 }
 
@@ -147,11 +147,11 @@ void SyncListModel::emitSelectionRoleChanged() {
         return;
     }
 
-    emit dataChanged(index(0, 0), index(static_cast<int>(_contexts.size()) - 1, 0), {SelectedRole});
+    emit dataChanged(index(0, 0), index(static_cast<qint32>(_contexts.size()) - 1, 0), {SelectedRole});
 }
 
 const SyncContext *SyncListModel::contextForIndex(const QModelIndex &index) const {
-    if (!index.isValid() || index.row() < 0 || index.row() >= static_cast<int>(_contexts.size())) {
+    if (!index.isValid() || index.row() < 0 || index.row() >= static_cast<qint32>(_contexts.size())) {
         return nullptr;
     }
 
