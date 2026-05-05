@@ -71,7 +71,7 @@ runs:
       - name: Digicert - Set variables
         id: variables
         run: |
-          if("${{ inputs.release_build }}" -eq "true") {
+          if [ "${{ inputs.release_build }}" = "true" ] then
             echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
             echo "KEYPAIR_NAME=gt-standard-keypair" >> $GITHUB_OUTPUT
             echo "CERTIFICATE_NAME=gt-certificate" >> $GITHUB_OUTPUT
