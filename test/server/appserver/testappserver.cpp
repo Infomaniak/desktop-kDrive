@@ -66,11 +66,10 @@ void TestAppServer::setUp() {
     const Drive drive(1, driveId, account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
 
-    const auto localPath = _localTempDir.path().string() + "/local_sync_directory";
+    const auto localPath = _localTempDir.path() / "local_sync_directory";
     std::filesystem::create_directories(localPath);
 
-    const auto remotePath = testVariables.remotePath;
-    Sync sync(1, drive.dbId(), localPath, "", remotePath);
+    Sync sync(1, drive.dbId(), localPath, "", testVariables.remotePath);
     (void) ParmsDb::instance()->insertSync(sync);
 
     // Create AppServer
