@@ -107,6 +107,11 @@ namespace Infomaniak.kDrive.TrayIcon
 
         private void UpdateTrayIcon()
         {
+            if (!_appModel.IsInitialized)
+            {
+                SetIconNeutral();
+                return;
+            }
 
             if (_appModel.AllSyncs.Any(sync => sync.SyncStatus == SyncStatus.Running))
             {
