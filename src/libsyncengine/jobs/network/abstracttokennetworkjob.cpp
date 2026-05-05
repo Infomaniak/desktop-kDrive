@@ -142,6 +142,7 @@ ExitInfo AbstractTokenNetworkJob::handleUnauthorizedResponse() {
     switch (_apiType) {
         case ApiType::Drive:
         case ApiType::NotifyDrive:
+            disableRetry();
             return {ExitCode::BackError, ExitCause::DriveAccessError};
         case ApiType::DriveByUser:
         case ApiType::Desktop:
