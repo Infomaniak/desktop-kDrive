@@ -339,4 +339,5 @@ void SocketCommServer::joinAndClearPostponedLostConnectionCbks() {
     }
 
     _postponedLostConnectionCbks.clear();
+}
 } // namespace KDC
