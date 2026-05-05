@@ -36,6 +36,7 @@
 #include <log4cplus/loggingmacros.h>
 
 #include <cmath>
+#include <random>
 
 #define UPDATE_PROGRESS_DELAY 1
 
@@ -113,8 +114,15 @@ bool SyncPalWorker::shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const 
         int64_t maxDelay(3600000); // 1 hour
         int64_t computedDelay = baseDelay * (std::pow(multiplicativeFactor, _syncPal->_consecutiveFailures++));
 
-        double jitter = (float) (rand()) / (float) (RAND_MAX) * 0.2 + 1;
-        const auto newPauseDuration = static_cast<int64_t>(std::min(computedDelay, maxDelay) * jitter);
+        auto generateRandomNumber = [](double left, double right) -> double {
+            static std::random_device rd;
+            static std::mt19937 gen(rd());
+            std::uniform_real_distribution<double> dist(left, right);
+            return dist(gen);
+        };
+
+        double jitter = generateRandomNumber(0.8, 1.2); // 20% of the computed delay
+        const auto newPauseDuration = static_cast<int64_t>(std::min(static_cast<int64_t>(computedDelay * jitter), maxDelay));
         LOG_SYNCPAL_INFO(_logger, "Changing pause duration to " << newPauseDuration << " ms");
         setPauseDuration(newPauseDuration);
         return true;
