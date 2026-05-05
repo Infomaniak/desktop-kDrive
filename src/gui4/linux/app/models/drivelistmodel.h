@@ -38,7 +38,7 @@ class DriveListModel : public QAbstractListModel {
         Q_OBJECT
 
     public:
-        enum Roles : int {
+        enum Roles : qint32 {
             DbIdRole = Qt::UserRole + 1,
             IdRole,
             AccountDbIdRole,
@@ -68,9 +68,9 @@ class DriveListModel : public QAbstractListModel {
 
         explicit DriveListModel(AppCache &appCache, MainSelectionStore &mainSelectionStore, QObject *parent = nullptr);
 
-        [[nodiscard]] int rowCount(const QModelIndex &parent = QModelIndex()) const override;
-        [[nodiscard]] QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
-        [[nodiscard]] QHash<int, QByteArray> roleNames() const override;
+        [[nodiscard]] qint32 rowCount(const QModelIndex &parent = QModelIndex()) const override;
+        [[nodiscard]] QVariant data(const QModelIndex &index, qint32 role = Qt::DisplayRole) const override;
+        [[nodiscard]] QHash<qint32, QByteArray> roleNames() const override;
 
         Q_INVOKABLE void selectFirstSyncForDrive(qint64 driveDbId);
 

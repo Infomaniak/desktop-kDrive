@@ -43,14 +43,14 @@ AvailableDriveListModel::AvailableDriveListModel(AppCache &appCache, OnboardingS
                    &AvailableDriveListModel::emitPendingConfigRolesChanged);
 }
 
-int AvailableDriveListModel::rowCount(const QModelIndex &parent) const {
+qint32 AvailableDriveListModel::rowCount(const QModelIndex &parent) const {
     if (parent.isValid()) {
         return 0;
     }
-    return static_cast<int>(_contexts.size());
+    return static_cast<qint32>(_contexts.size());
 }
 
-QVariant AvailableDriveListModel::data(const QModelIndex &index, const int role) const {
+QVariant AvailableDriveListModel::data(const QModelIndex &index, const qint32 role) const {
     const auto *const context = contextForIndex(index);
     if (context == nullptr) {
         return {};
@@ -107,28 +107,28 @@ QVariant AvailableDriveListModel::data(const QModelIndex &index, const int role)
     }
 }
 
-QHash<int, QByteArray> AvailableDriveListModel::roleNames() const {
-    static const QHash<int, QByteArray> roles{{UserDbIdRole, "userDbId"},
-                                              {UserIdRole, "userId"},
-                                              {UserNameRole, "userName"},
-                                              {UserEmailRole, "userEmail"},
-                                              {AccountIdRole, "accountId"},
-                                              {AccountNameRole, "accountName"},
-                                              {AccountDbIdRole, "accountDbId"},
-                                              {HasConfiguredAccountRole, "hasConfiguredAccount"},
-                                              {DriveIdRole, "driveId"},
-                                              {NameRole, "name"},
-                                              {ColorRole, "color"},
-                                              {AlreadyConfiguredRole, "alreadyConfigured"},
-                                              {ConfiguredDriveDbIdRole, "configuredDriveDbId"},
-                                              {ConfiguredDriveNameRole, "configuredDriveName"},
-                                              {SelectedRole, "selected"},
-                                              {HasPendingConfigRole, "hasPendingConfig"},
-                                              {PendingLocalPathRole, "pendingLocalPath"},
-                                              {PendingTargetPathRole, "pendingTargetPath"},
-                                              {PendingTargetNodeIdRole, "pendingTargetNodeId"},
-                                              {PendingSupportVfsRole, "pendingSupportVfs"},
-                                              {PendingVirtualFileModeRole, "pendingVirtualFileMode"}};
+QHash<qint32, QByteArray> AvailableDriveListModel::roleNames() const {
+    static const QHash<qint32, QByteArray> roles{{UserDbIdRole, "userDbId"},
+                                                 {UserIdRole, "userId"},
+                                                 {UserNameRole, "userName"},
+                                                 {UserEmailRole, "userEmail"},
+                                                 {AccountIdRole, "accountId"},
+                                                 {AccountNameRole, "accountName"},
+                                                 {AccountDbIdRole, "accountDbId"},
+                                                 {HasConfiguredAccountRole, "hasConfiguredAccount"},
+                                                 {DriveIdRole, "driveId"},
+                                                 {NameRole, "name"},
+                                                 {ColorRole, "color"},
+                                                 {AlreadyConfiguredRole, "alreadyConfigured"},
+                                                 {ConfiguredDriveDbIdRole, "configuredDriveDbId"},
+                                                 {ConfiguredDriveNameRole, "configuredDriveName"},
+                                                 {SelectedRole, "selected"},
+                                                 {HasPendingConfigRole, "hasPendingConfig"},
+                                                 {PendingLocalPathRole, "pendingLocalPath"},
+                                                 {PendingTargetPathRole, "pendingTargetPath"},
+                                                 {PendingTargetNodeIdRole, "pendingTargetNodeId"},
+                                                 {PendingSupportVfsRole, "pendingSupportVfs"},
+                                                 {PendingVirtualFileModeRole, "pendingVirtualFileMode"}};
     return roles;
 }
 
@@ -180,7 +180,7 @@ void AvailableDriveListModel::emitSelectionRolesChanged() {
         return;
     }
 
-    emit dataChanged(index(0, 0), index(static_cast<int>(_contexts.size()) - 1, 0), {SelectedRole});
+    emit dataChanged(index(0, 0), index(static_cast<qint32>(_contexts.size()) - 1, 0), {SelectedRole});
 }
 
 void AvailableDriveListModel::emitPendingConfigRolesChanged() {
@@ -188,7 +188,7 @@ void AvailableDriveListModel::emitPendingConfigRolesChanged() {
         return;
     }
 
-    emit dataChanged(index(0, 0), index(static_cast<int>(_contexts.size()) - 1, 0),
+    emit dataChanged(index(0, 0), index(static_cast<qint32>(_contexts.size()) - 1, 0),
                      {HasPendingConfigRole, PendingLocalPathRole, PendingTargetPathRole, PendingTargetNodeIdRole,
                       PendingSupportVfsRole, PendingVirtualFileModeRole});
 }
@@ -200,7 +200,7 @@ void AvailableDriveListModel::handleAvailableDrivesChanged(const UserDbId userDb
 }
 
 const AvailableDriveContext *AvailableDriveListModel::contextForIndex(const QModelIndex &index) const {
-    if (!index.isValid() || index.row() < 0 || index.row() >= static_cast<int>(_contexts.size())) {
+    if (!index.isValid() || index.row() < 0 || index.row() >= static_cast<qint32>(_contexts.size())) {
         return nullptr;
     }
 
