@@ -170,7 +170,7 @@ namespace Infomaniak.kDrive.Pages
                 return Localizer.Instance.GetString("labelWelcomeToKDrive");
 
 
-            const string transitionStr = "...";
+            const string transitionStr = "…";
             string syncStateStr = status switch
             {
                 SyncStatus.Undefined => transitionStr,
