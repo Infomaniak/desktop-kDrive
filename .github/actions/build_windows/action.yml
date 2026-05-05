@@ -56,7 +56,7 @@ runs:
             Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_EV_CERT
             certutil -decode certificate/tempCert.txt certificate/ev_certificate.p12
             Remove-Item -path certificate -include tempCert.txt
-            Import-Certificate -Filepath certificate/ev_certificate.p12 -CertStoreLocation Cert:\LocalMachine\My
+            Import-PfxCertificate -Filepath certificate/ev_certificate.p12 -CertStoreLocation Cert:\LocalMachine\My
             Write-Host "Digicert certificate imported successfully."
             } else {
             New-Item -ItemType directory -Path certificate
