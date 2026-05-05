@@ -91,7 +91,7 @@ namespace Infomaniak.kDrive.CustomControls
             }
         }
 
-        private void ProfilePictureBorder_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        private void ProfilePictureBorder_Click(object sender, RoutedEventArgs e)
         {
             var frame = Utility.GetFrame(this);
             if(frame is null)
@@ -102,7 +102,7 @@ namespace Infomaniak.kDrive.CustomControls
             frame.Navigate(typeof(SettingsPage), new SettingsPage.NavigationParameter { Tab = SettingsPage.NavigationParameter.SettingsTab.Users, UserToShow = ViewModel.SelectedSync?.Drive.Account.User });
         }
 
-        private void SyncBorder_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        private void SyncBorder_Click(object sender, RoutedEventArgs e)
         {
             if (ViewModel.SelectedSync is null)
                 return;
@@ -110,7 +110,7 @@ namespace Infomaniak.kDrive.CustomControls
             var frame = Utility.GetFrame(this);
             if (frame is null)
             {
-                Logger.Log(Logger.Level.Warning, "SyncBorder_PointerPressed: Unable to find Frame for navigation.");
+                Logger.Log(Logger.Level.Warning, "SyncBorder_Click: Unable to find Frame for navigation.");
                 return;
             }
 
