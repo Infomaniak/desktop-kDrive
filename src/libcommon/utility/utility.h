@@ -174,9 +174,7 @@ struct COMMON_EXPORT CommonUtility {
         static std::string envVarValue(const std::string &name, bool &isSet);
         static int setenv(const char *const name, const char *const value, const int overwrite);
 
-#ifndef NDEBUG
         static bool logToConsoleEnabled();
-#endif
 
 #if defined(KD_LINUX)
         // Sets the working directory path and configures GIO_MODULE_DIR to prevent loading incompatible system GIO modules.

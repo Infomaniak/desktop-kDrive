@@ -191,7 +191,6 @@ void CustomRollingFileAppender::append(const log4cplus::spi::InternalLoggingEven
 
     try {
         RollingFileAppender::append(event);
-#ifndef NDEBUG
         if (CommonUtility::logToConsoleEnabled()) {
             log4cplus::tostringstream oss;
 
@@ -203,7 +202,6 @@ void CustomRollingFileAppender::append(const log4cplus::spi::InternalLoggingEven
 
             std::cout << LOG4CPLUS_TSTRING_TO_STRING(oss.str()) << std::flush;
         }
-#endif
     } catch (...) {
         // Bug in gcc => std::filesystem::path wstring is crashing with non ASCII characters
         // Fixed in next gcc-12 version
