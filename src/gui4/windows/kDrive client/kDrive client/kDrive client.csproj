@@ -206,6 +206,9 @@
     <Page Update="CustomControls\Errors\Templates\Node\NotEnoughDiskSpaceError.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="CustomControls\Errors\Templates\SyncPal\InvalidTokenError.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="CustomControls\Errors\Templates\SyncPal\DataErrorSyncDirChanged.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -360,7 +363,6 @@
   </Target>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <!-- Rename the generated .pri file to Resources.pri | This is a bug in the generations of unpackaged winui apps -->
-    <Exec Command="powershell -ExecutionPolicy Bypass -NoProfile -Command &quot;$src = '$(OutDir)$(AssemblyName).pri'; $dst = '$(OutDir)Resources.pri'; if (Test-Path $dst) { Remove-Item $dst -Force }; Rename-Item -Path $src -NewName 'Resources.pri';&quot;" />
     <ItemGroup>
       <!-- Keep only fr-FR, en-US, es-ES, it-IT, de-DE -->
       <RemovingFiles Include="$(OutDir)*\*.mui" Exclude="&#xD;&#xA;            $(OutDir)fr-FR\*.mui;&#xD;&#xA;            $(OutDir)en-US\*.mui;&#xD;&#xA;            $(OutDir)es-ES\*.mui;&#xD;&#xA;            $(OutDir)it-IT\*.mui;&#xD;&#xA;            $(OutDir)de-DE\*.mui" />

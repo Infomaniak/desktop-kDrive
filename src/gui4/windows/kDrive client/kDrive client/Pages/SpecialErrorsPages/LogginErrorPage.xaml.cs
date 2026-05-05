@@ -21,20 +21,46 @@ using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.Pages
 {
     public sealed partial class LogginErrorPage : SpecialErroBasePage
     {
+        public struct NavigationParams
+        {
+            public bool TryReconnectOnLoad { get; set; }
+        }
+        private NavigationParams? _navigationParams;
         public LogginErrorPage() : base([SyncErrorStates.LoggingError])
         {
             Logger.Log(Logger.Level.Info, "Navigated to LogginErrorPage - Initializing LogginErrorPage components");
             InitializeComponent();
             Logger.Log(Logger.Level.Debug, "LogginErrorPage components initialized");
+            Loaded += OnLoaded;
+        }
+
+        private async void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            if(_navigationParams?.TryReconnectOnLoad == true)
+            {
+                DispatcherQueue.TryEnqueue(async () => await StartConnection());
+            }
+        }
+
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        {
+            _navigationParams = e.Parameter as NavigationParams?;
         }
         private async void ConnectionButton_Click(object sender, RoutedEventArgs e)
+        {
+            await StartConnection();
+        }
+
+        private async Task StartConnection()
         {
             try
             {
