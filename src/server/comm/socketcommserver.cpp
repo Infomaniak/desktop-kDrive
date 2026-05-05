@@ -27,8 +27,19 @@ constexpr char host[] = "127.0.0.1";
 
 SocketCommChannel::SocketCommChannel(const Poco::Net::StreamSocket &socket) :
     AbstractCommChannel(),
-    _socket(socket) {
-    auto callbackHandlerFunc = std::function<void()>([this]() { callbackHandler(); });
+    _socket(socket) {}
+
+void SocketCommChannel::startCallbackThread() {
+    const std::weak_ptr<SocketCommChannel> weakChannel = std::static_pointer_cast<SocketCommChannel>(shared_from_this());
+    auto callbackHandlerFunc = std::function<void()>([weakChannel]() {
+        const auto channel = weakChannel.lock();
+        if (!channel) {
+            LOG_WARN(Log::instance()->getLogger(),
+                     "Unable to lock SocketCommChannel in callbackHandlerFunc, channel might have been destroyed");
+            return;
+        }
+        channel->callbackHandler();
+    });
     _callbackThread = std::make_unique<StdLoggingThread>(callbackHandlerFunc);
 }
 
@@ -41,7 +52,11 @@ SocketCommChannel::~SocketCommChannel() {
     }
 
     if (_callbackThread && _callbackThread->joinable()) {
-        _callbackThread->join();
+        if (_callbackThread->get_id() == std::this_thread::get_id()) {
+            _callbackThread->detach();
+        } else {
+            _callbackThread->join();
+        }
     }
 }
 
@@ -280,11 +295,21 @@ void SocketCommServer::execute() {
 
         if (_stopAsked) break;
 
-        auto channel = makeCommChannel(socket);
-        const std::scoped_lock lock(_channelsMutex);
-        channel->setLostConnectionCbk([this](std::shared_ptr<AbstractCommChannel> ch) { lostConnectionCbk(ch); });
-        _channels.push_back(channel);
+        const auto channel = makeCommChannel(socket);
+        channel->setLostConnectionCbk([this](std::shared_ptr<AbstractCommChannel> ch) {
+            {
+                const std::scoped_lock lock(_channelsMutex);
+                (void) _channels.remove(ch);
+            }
+            lostConnectionCbk(ch);
+        });
+
+        {
+            const std::scoped_lock lock(_channelsMutex);
+            _channels.push_back(channel);
+        }
         newConnectionCbk();
+        channel->startCallbackThread();
     }
     _isListening = false;
 }

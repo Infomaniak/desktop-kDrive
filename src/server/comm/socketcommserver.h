@@ -31,6 +31,7 @@ class SocketCommChannel : public AbstractCommChannel {
     public:
         explicit SocketCommChannel(const Poco::Net::StreamSocket &socket);
         ~SocketCommChannel();
+        void startCallbackThread();
 
         uint64_t bytesAvailable() const override;
         void close() override;

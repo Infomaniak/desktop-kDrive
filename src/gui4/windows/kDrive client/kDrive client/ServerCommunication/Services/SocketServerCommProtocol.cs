@@ -194,6 +194,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
             catch (Exception ex)
             {
+                ConnectionLost?.Invoke(this, EventArgs.Empty);
                 Logger.Log(Logger.Level.Error, $"Socket write error: {ex.Message}");
                 return new CommData();
             }
