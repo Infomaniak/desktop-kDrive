@@ -132,6 +132,10 @@ QHash<int, QByteArray> SyncListModel::roleNames() const {
     return roles;
 }
 
+void SyncListModel::selectSync(const qint64 syncDbId) {
+    _mainSelectionStore.selectSync(syncDbId);
+}
+
 void SyncListModel::resetModel() {
     beginResetModel();
     _contexts = _mainSelectionStore.syncContexts();
