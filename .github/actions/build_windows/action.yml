@@ -50,14 +50,13 @@ runs:
         env:
           WINDOWS_VIRTUAL_CERT:  ${{ inputs.virtual_cert }}
           WINDOWS_EV_CERT: ${{ inputs.ev_cert }}
-          WINDOWS_EV_CERT_PASS: ${{ inputs.ev_cert_pass }}
         run: |
           if("${{ inputs.release_build }}" -eq "true") {
             New-Item -ItemType directory -Path certificate
             Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_EV_CERT
-            certutil -decode certificate/tempCert.txt certificate/ev_certificate.p12
+            certutil -decode certificate/tempCert.txt certificate/ev_certificate.pfx
             Remove-Item -path certificate -include tempCert.txt
-            Import-PfxCertificate -Filepath certificate/ev_certificate.p12 -CertStoreLocation Cert:\LocalMachine\My -Password  $env:WINDOWS_EV_CERT_PASS
+            Import-PfxCertificate -FilePath certificate/ev_certificate.pfx -CertStoreLocation Cert:\LocalMachine\My -Password (ConvertTo-SecureString -String "${{ inputs.ev_cert_pass }}" -Force -AsPlainText)
             Write-Host "Digicert certificate imported successfully."
             } else {
             New-Item -ItemType directory -Path certificate
