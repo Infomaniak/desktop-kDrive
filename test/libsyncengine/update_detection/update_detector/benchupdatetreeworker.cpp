@@ -37,7 +37,7 @@ void BenchUpdateTreeWorker::setUp() {
     (void) ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     const std::filesystem::path syncDbPath = MockDb::makeDbName(alreadyExists);
-    _syncDb = std::make_shared<SyncDb>(syncDbPath.string(), KDRIVE_VERSION_STRING);
+    _syncDb = std::make_shared<SyncDb>(syncDbPath.string());
     (void) _syncDb->init(KDRIVE_VERSION_STRING);
     _syncDb->setAutoDelete(true);
 

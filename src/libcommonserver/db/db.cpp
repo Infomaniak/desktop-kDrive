@@ -403,7 +403,7 @@ bool Db::init(const std::string &version) {
                 if (retry) {
                     LOG_WARN(_logger, "Error in Db::create - Retry");
                     _sqliteDb->close();
-                    return checkConnect(version);
+                    return checkConnect();
                 } else {
                     LOG_WARN(_logger, "Error in Db::create");
                     return false;
@@ -466,9 +466,7 @@ bool Db::sqlFail(const std::string &log, const std::string &error) {
     return false;
 }
 
-bool Db::checkConnect(const std::string &version) {
-    (void) version;
-
+bool Db::checkConnect() {
     if (_sqliteDb && _sqliteDb->isOpened()) {
         // Unfortunately the sqlite isOpen check can return true even when the underlying storage
         // has become unavailable - and then some operations may cause crashes.

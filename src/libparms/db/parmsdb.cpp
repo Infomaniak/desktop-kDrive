@@ -571,7 +571,7 @@ std::shared_ptr<ParmsDb> ParmsDb::instance(const std::filesystem::path &dbPath, 
         }
 
         try {
-            _instance = std::shared_ptr<ParmsDb>(new ParmsDb(dbPath, version, autoDelete, test));
+            _instance = std::shared_ptr<ParmsDb>(new ParmsDb(dbPath, autoDelete, test));
         } catch (...) {
             return nullptr;
         }
@@ -591,12 +591,12 @@ void ParmsDb::reset() {
     }
 }
 
-ParmsDb::ParmsDb(const std::filesystem::path &dbPath, const std::string &version, bool autoDelete, bool test) :
+ParmsDb::ParmsDb(const std::filesystem::path &dbPath, bool autoDelete, bool test) :
     Db(dbPath),
     _test(test) {
     setAutoDelete(autoDelete);
 
-    if (!checkConnect(version)) {
+    if (!checkConnect()) {
         throw std::runtime_error("Cannot open DB!");
     }
 
@@ -3014,8 +3014,6 @@ bool ParmsDb::deleteAllErrorsByExitCause(const ExitCause exitCause) {
 
 bool ParmsDb::selectSyncErrorsByExitCause(SyncDbId syncDbId, ExitCause exitCause, std::vector<Error> &errs) {
     const std::scoped_lock lock(_mutex);
-
-    int errId = -1;
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID));
     LOG_IF_FAIL(queryBindValue(SELECT_SYNC_ERROR_BY_EXITCAUSEREQUEST_ID, 1, syncDbId));

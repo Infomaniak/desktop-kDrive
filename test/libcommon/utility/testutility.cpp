@@ -77,6 +77,14 @@ void TestUtility::extractIntFromStrVersion() {
         CPPUNIT_ASSERT((std::vector<uint32_t>{155, 75, 0, 20250221} == versionNumberComponents));
     }
 
+    {
+        const std::string versionString = "155.75.0 (build 1)";
+        std::vector<uint32_t> versionNumberComponents;
+
+        CommonUtility::extractIntFromStrVersion(versionString, versionNumberComponents);
+        CPPUNIT_ASSERT((std::vector<uint32_t>{155, 75, 0, 1} == versionNumberComponents));
+    }
+
     // Invalid version string
     {
         const std::string versionString = ".0";
@@ -121,6 +129,8 @@ void TestUtility::testIsVersionLower() {
     CPPUNIT_ASSERT(!CommonUtility::isVersionLower("3.5.8", "2.6.7"));
     CPPUNIT_ASSERT(!CommonUtility::isVersionLower("3.5.8", "2.6.9"));
 
+    CPPUNIT_ASSERT(CommonUtility::isVersionLower("1.2.3.4", "1.2.3.5"));
+    CPPUNIT_ASSERT(!CommonUtility::isVersionLower("1.2.3.5", "1.2.3.4"));
 
     // Double digit major, minor or patch versions
     CPPUNIT_ASSERT(CommonUtility::isVersionLower("1.0.0", "55.0.0"));
@@ -142,6 +152,10 @@ void TestUtility::testIsVersionLower() {
     CPPUNIT_ASSERT(CommonUtility::isVersionLower("255.85.0 (build 1)", "255.85.0 (build 20250222)"));
     CPPUNIT_ASSERT(CommonUtility::isVersionLower("255.85.0 (build 1)", "255.85.0 (build 2)"));
     CPPUNIT_ASSERT(!CommonUtility::isVersionLower("255.85.0 (build 2)", "255.85.0 (build 1)"));
+    CPPUNIT_ASSERT(CommonUtility::isVersionLower("1.2.3 (build 4)", "1.2.3.5"));
+    CPPUNIT_ASSERT(!CommonUtility::isVersionLower("1.2.3.5", "1.2.3 (build 4)"));
+    CPPUNIT_ASSERT(!CommonUtility::isVersionLower("1.2.3.4", "1.2.3 (build 4)"));
+    CPPUNIT_ASSERT(!CommonUtility::isVersionLower("1.2.3 (build 4)", "1.2.3.4"));
 
     // With an invalid version
     CPPUNIT_ASSERT(CommonUtility::isVersionLower(".155.75.0", "156.75.0"));

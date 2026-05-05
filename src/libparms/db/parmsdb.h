@@ -149,7 +149,7 @@ class PARMS_EXPORT ParmsDb : public Db {
 
         static std::shared_ptr<ParmsDb> _instance;
 
-        ParmsDb(const std::filesystem::path &dbPath, const std::string &version, bool autoDelete, bool test);
+        ParmsDb(const std::filesystem::path &dbPath, bool autoDelete, bool test);
 
         bool upgradeTables();
         bool insertDefaultParameters();

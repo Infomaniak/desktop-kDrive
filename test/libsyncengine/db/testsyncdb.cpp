@@ -31,8 +31,8 @@ using namespace CppUnit;
 
 namespace KDC {
 
-SyncDbMock::SyncDbMock(const std::string &dbPath, const std::string &version, const std::string &targetNodeId) :
-    SyncDb(dbPath, version, targetNodeId) {}
+SyncDbMock::SyncDbMock(const std::string &dbPath, const std::string &targetNodeId) :
+    SyncDb(dbPath, targetNodeId) {}
 
 
 void SyncDbMock::freeRequest(const char *requestId) {
@@ -86,7 +86,7 @@ void TestSyncDb::setUp() {
 
     // Create DB
     const auto syncDbPath = MockDb::makeDbName(1, 1, 1, 1);
-    _testObj = new SyncDbMock(syncDbPath.string(), KDRIVE_VERSION_STRING);
+    _testObj = new SyncDbMock(syncDbPath.string());
     _testObj->init(KDRIVE_VERSION_STRING);
     _testObj->setAutoDelete(true);
 }
@@ -294,7 +294,7 @@ void TestSyncDb::testUpgradeTo3_6_7() {
 
 void TestSyncDb::testInit3_6_4() {
     const auto syncDbPath = MockDb::makeDbName(1, 1, 1, 1);
-    SyncDbMock testDb(syncDbPath.string(), "3.6.4");
+    SyncDbMock testDb(syncDbPath.string());
     const LocalTemporaryDirectory localTmpDir("testUpgradeTo3_6_5");
     createParmsDb(testDb.dbPath(), localTmpDir.path());
     const auto syncFilesInfo = createSyncFiles(localTmpDir.path());
@@ -396,7 +396,7 @@ void TestSyncDb::testCorrespondingNodeIdWithCache() {
     testCorrespondingNodeIdTemplate<SyncDbReadOnlyCache>(*_testObj, _testObj->cache());
 }
 
-void TestSyncDb::testCorrespondingNodeIdWithCacheFaillure() {
+void TestSyncDb::testCorrespondingNodeIdWithCacheFailure() {
     _testObj->enablePrepare(true);
     // This cache will not be reloaded, so it will remain empty. All methods in SyncDbReadOnlyCache should
     // therefore use their fallback and query the database directly.
@@ -555,7 +555,7 @@ void TestSyncDb::testNodesWithCache() {
     CPPUNIT_ASSERT(_testObj->clearNodes());
     testNodesTemplate<SyncDbReadOnlyCache>(*_testObj, _testObj->cache());
 }
-void TestSyncDb::testNodeWithCacheFaillure() {
+void TestSyncDb::testNodeWithCacheFailure() {
     _testObj->enablePrepare(true);
     _testObj->prepare();
     CPPUNIT_ASSERT(_testObj->exists());
