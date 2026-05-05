@@ -72,8 +72,6 @@ class TestAppServer : public CppUnit::TestFixture, public TestBase {
     private:
         MockAppServer *_appPtr;
         LocalTemporaryDirectory _localTempDir = LocalTemporaryDirectory("TestAppServer");
-        SyncPath _localPath;
-        SyncPath _remotePath;
 
         bool waitForSyncStatus(int syncDbId, SyncStatus targetStatus) const;
         bool syncIsActive(int syncDbId) const;

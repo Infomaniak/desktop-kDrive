@@ -585,9 +585,10 @@ void AppServer::reset() {
 }
 
 // This task can be long and block the GUI
-void AppServer::stopSyncTask(const SyncDbId syncDbId) {
+void AppServer::stopSyncTask(const SyncDbId syncDbId,
+                             const SyncPal::DbBehaviorAfterStop behavior /*= SyncPal::DbBehaviorAfterStop::Keep*/) {
     // Stop sync and remove it from syncPalMap
-    if (const auto exitInfo = stopSyncPal(syncDbId, SyncPal::PauseCaller::Sync, SyncPal::DbBehaviorAfterStop::Keep); !exitInfo) {
+    if (const auto exitInfo = stopSyncPal(syncDbId, SyncPal::PauseCaller::Sync, behavior); !exitInfo) {
         LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncDbId << " : " << exitInfo);
     }
 
@@ -639,9 +640,10 @@ void AppServer::stopAllVfs() {
     LOG_DEBUG(_logger, "Vfs(s) stopped");
 }
 
-void AppServer::stopAllSyncsTask(const std::vector<SyncDbId> &syncDbIdList) {
+void AppServer::stopAllSyncsTask(const std::vector<SyncDbId> &syncDbIdList,
+                                 const SyncPal::DbBehaviorAfterStop behavior /*= SyncPal::DbBehaviorAfterStop::Keep*/) {
     for (const auto syncDbId: syncDbIdList) {
-        stopSyncTask(syncDbId);
+        stopSyncTask(syncDbId, behavior);
     }
 }
 
@@ -1095,7 +1097,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             // Stop syncs for this user and remove them from syncPalMap.
             QTimer::singleShot(100, [this, userDbId, syncDbIdList]() {
-                AppServer::stopAllSyncsTask(syncDbIdList);
+                AppServer::stopAllSyncsTask(syncDbIdList, SyncPal::DbBehaviorAfterStop::Remove);
 
                 // Delete user from DB
                 const ExitCode exitCode = ServerRequests::deleteUser(userDbId);
@@ -1348,7 +1350,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             // Stop syncs for this drive and remove them from syncPalMap
             QTimer::singleShot(100, [this, driveDbId, syncDbIdList]() {
-                AppServer::stopAllSyncsTask(syncDbIdList);
+                AppServer::stopAllSyncsTask(syncDbIdList, SyncPal::DbBehaviorAfterStop::Remove);
                 AppServer::deleteDrive(driveDbId);
             });
 #if defined(KD_MACOS)
@@ -1598,7 +1600,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 // Create and start SyncPal
                 if (const auto exitInfo = initSyncPal(sync, blackList, !startPostponed, std::chrono::seconds(0), false, true);
                     !exitInfo) {
-                    stopSyncTask(syncInfo.dbId());
+                    stopSyncTask(syncInfo.dbId(), SyncPal::DbBehaviorAfterStop::Remove);
 
                     // Delete sync from DB
                     if (const ExitInfo exitInfo2 = ServerRequests::deleteSync(syncInfo.dbId()); !exitInfo2) {
@@ -1653,7 +1655,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             const auto syncDbId = static_cast<SyncDbId>(tmpSyncDbId);
             QTimer::singleShot(100, [this, syncDbId]() {
-                AppServer::stopSyncTask(syncDbId); // This task can be long, hence blocking, on Windows.
+                AppServer::stopSyncTask(
+                        syncDbId, SyncPal::DbBehaviorAfterStop::Remove); // This task can be long, hence blocking, on Windows.
 
                 // Delete sync from DB
                 deleteSync(syncDbId);

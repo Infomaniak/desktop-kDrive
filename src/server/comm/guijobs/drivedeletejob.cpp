@@ -61,7 +61,7 @@ ExitInfo DriveDeleteJob::process() {
     }
 
     // Stop syncs for this user and remove them from syncPalMap.
-    _commManager->appServer().stopAllSyncsTask(syncDbIdList);
+    _commManager->appServer().stopAllSyncsTask(syncDbIdList, SyncPal::DbBehaviorAfterStop::Remove);
     _commManager->appServer().deleteDrive(_driveDbId);
 #if defined(KD_MACOS)
     Utility::restartFinderExtension();

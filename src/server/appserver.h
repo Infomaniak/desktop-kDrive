@@ -145,7 +145,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         void stopAllSyncPals();
         void stopAllVfs();
 
-        void stopAllSyncsTask(const std::vector<SyncDbId> &syncDbIdList);
+        void stopAllSyncsTask(const std::vector<SyncDbId> &syncDbIdList,
+                              const SyncPal::DbBehaviorAfterStop behavior = SyncPal::DbBehaviorAfterStop::Keep);
 
         void addError(const Error &error) const;
         void resolveItemErrors(SyncDbId syncDbId, const SyncFileItem &item) const;
@@ -177,7 +178,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         [[nodiscard]] ExitInfo stopVfs(SyncDbId syncDbId, bool unregister);
         [[nodiscard]] ExitInfo startSyncs(User &user);
-        void stopSyncTask(SyncDbId syncDbId);
+        void stopSyncTask(SyncDbId syncDbId, const SyncPal::DbBehaviorAfterStop behavior = SyncPal::DbBehaviorAfterStop::Keep);
         [[nodiscard]] ExitInfo setSupportsVirtualFilesAsync(SyncDbId syncDbId, bool value);
         [[nodiscard]] ExitInfo setSupportsVirtualFiles(SyncDbId syncDbId, bool value);
         void setDistributionChannel(VersionChannel versionChannel);
