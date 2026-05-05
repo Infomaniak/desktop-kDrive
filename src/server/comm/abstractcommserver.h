@@ -41,6 +41,7 @@ class AbstractCommServer {
         virtual bool listen() = 0;
         virtual std::shared_ptr<AbstractCommChannel> nextPendingConnection() = 0;
         virtual std::list<std::shared_ptr<AbstractCommChannel>> connections() = 0;
+        bool hasActiveConnexion() { return !connections().empty(); }
 
         void setNewConnectionCbk(const std::function<void()> &cbk) { _onNewConnectionCbk = cbk; }
         void newConnectionCbk() {

@@ -389,7 +389,8 @@ void AppServer::init() {
         }
 
         connect(OldCommServer::instance().get(), &OldCommServer::requestReceived, this, &AppServer::onRequestReceived);
-        connect(OldCommServer::instance().get(), &OldCommServer::clientDisconnected, this, &AppServer::onClientDisconnectedReceived);
+        connect(OldCommServer::instance().get(), &OldCommServer::clientDisconnected, this,
+                &AppServer::onClientDisconnectedReceived);
     }
 
     // Update users/accounts/drives info
@@ -2645,13 +2646,18 @@ void AppServer::onMessageReceivedFromAnotherProcess(const QString &message, QObj
     } else if (message == showSettingsMsg) {
         showSettings();
     } else if (message == restartClientMsg) {
+        const auto oldCommServerHasActiveConnection = useOldCommServer() && OldCommServer::instance()->hasActiveConnexion();
+        const auto newCommServerHasActiveConnection = useCommManager() && _commManager->hasActiveClientConnexion();
+        if (oldCommServerHasActiveConnection || newCommServerHasActiveConnection) {
+            LOG_INFO(_logger, "An active connexion with a client already exist, showing synthesis!");
+            showSynthesis();
+            return;
+        }
         _clientManuallyRestarted = true;
         if (!_clientProcess || _clientProcess->state() == QProcess::ProcessState::NotRunning) {
             if (!startClient()) {
                 LOG_ERROR(_logger, "Failed to start the client");
             }
-        } else if (_clientProcess->state() == QProcess::ProcessState::Running) {
-            showSynthesis();
         }
     } else {
         LOG_WARN(_logger, "Unknown message received from another kDrive process: '" << message.toStdString() << "'");
