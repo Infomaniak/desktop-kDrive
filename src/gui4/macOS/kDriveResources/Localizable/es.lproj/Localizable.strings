@@ -557,7 +557,7 @@
 
 /* loco:69eb8290d3fa21c4fb096d82
  * Tooltip shown on search results when file is not available locally and will open in browser. */
-"searchResultOpenInBrowserTooltip" = "This file is not available locally and will be opened in your browser";
+"searchResultOpenInBrowserTooltip" = "Este archivo no está disponible localmente y se abrirá en tu navegador";
 
 /* loco:69eb8061e9130678990a5972
  * Empty search state title in SearchSheetView before any query is entered. */
