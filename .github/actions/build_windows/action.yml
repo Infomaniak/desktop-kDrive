@@ -97,11 +97,11 @@ runs:
       - name: Digicert - Synchronize signature certificate
         run: |
           IF "${{ inputs.release_build }}"=="true" (
-            # List KSPs
+            REM List KSPs
             smctl windows ksp list
-            # Verify the KSP
+            REM Verify the KSP
             certutil.exe -csp "DigiCert Software Trust Manager KSP" -key -user
-            # Synchronize certificate
+            REM Synchronize certificate
             smctl windows certsync
           )
         shell: cmd
