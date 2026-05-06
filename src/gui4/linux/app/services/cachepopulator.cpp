@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "cachehydrator.h"
+#include "cachepopulator.h"
 
 #include <QLoggingCategory>
 
@@ -34,16 +34,16 @@ Q_LOGGING_CATEGORY(lcCacheHydrator, "gui.v4.cachehydrator", QtInfoMsg)
 }
 } // namespace
 
-CacheHydrator::CacheHydrator(CommService &commService, AppCache &appCache, QObject *const parent) :
+CachePopulator::CachePopulator(CommService &commService, AppCache &appCache, QObject *const parent) :
     QObject(parent),
     _commService(commService),
     _appCache(appCache) {}
 
-void CacheHydrator::bootstrap() {
+void CachePopulator::bootstrap() {
     loadUsers();
 }
 
-void CacheHydrator::loadUsers() {
+void CachePopulator::loadUsers() {
     _commService.requestUserInfoList([this](const ExitInfo &exitInfo, const std::vector<UserInfo> &list) {
         if (!exitInfo) {
             exitOnHydrationFailure("users", exitInfo);
@@ -54,7 +54,7 @@ void CacheHydrator::loadUsers() {
     });
 }
 
-void CacheHydrator::loadAccounts() {
+void CachePopulator::loadAccounts() {
     _commService.requestAccountInfoList([this](const ExitInfo &exitInfo, const std::vector<AccountInfo> &list) {
         if (!exitInfo) {
             exitOnHydrationFailure("accounts", exitInfo);
@@ -65,7 +65,7 @@ void CacheHydrator::loadAccounts() {
     });
 }
 
-void CacheHydrator::loadDrives() {
+void CachePopulator::loadDrives() {
     _commService.requestDriveInfoList([this](const ExitInfo &exitInfo, const std::vector<DriveInfo> &list) {
         if (!exitInfo) {
             exitOnHydrationFailure("drives", exitInfo);
@@ -76,7 +76,7 @@ void CacheHydrator::loadDrives() {
     });
 }
 
-void CacheHydrator::loadSyncs() {
+void CachePopulator::loadSyncs() {
     _commService.requestSyncInfoList([this](const ExitInfo &exitInfo, const std::vector<SyncInfo> &list) {
         if (!exitInfo) {
             exitOnHydrationFailure("syncs", exitInfo);
@@ -87,7 +87,7 @@ void CacheHydrator::loadSyncs() {
     });
 }
 
-void CacheHydrator::loadSyncErrors() {
+void CachePopulator::loadSyncErrors() {
     _commService.requestErrorInfoList([this](const ExitInfo &exitInfo, const std::vector<ErrorInfo> &list) {
         if (!exitInfo) {
             exitOnHydrationFailure("errors", exitInfo);
