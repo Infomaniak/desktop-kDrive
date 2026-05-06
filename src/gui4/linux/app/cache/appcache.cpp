@@ -337,4 +337,29 @@ void AppCache::removeServerError(const ErrorDbId errorDbId) {
     emit serverErrorsChanged();
 }
 
+void AppCache::upsertError(const ErrorInfo &info) {
+    switch (info.level()) {
+        case ErrorLevel::Node:
+        case ErrorLevel::SyncPal:
+            upsertSyncError(info);
+            break;
+        case ErrorLevel::Server:
+            upsertServerError(info);
+            break;
+        default:
+            qCWarning(lcAppCache) << "Received error with unknown level:" << static_cast<int>(info.level())
+                                  << "and dbId:" << info.dbId();
+    }
+}
+
+void AppCache::removeError(const ErrorDbId errorDbId) {
+    if (syncError(errorDbId).has_value()) {
+        removeSyncError(errorDbId);
+        return;
+    }
+    if (serverError(errorDbId).has_value()) {
+        removeServerError(errorDbId);
+    }
+}
+
 } // namespace KDC
