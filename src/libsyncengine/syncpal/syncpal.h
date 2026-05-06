@@ -352,6 +352,10 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         [[nodiscard]] std::shared_ptr<CacheDirectory> cacheDirectory() const { return _cacheDirectory; }
 
+        int64_t consecutiveBackErrors() const { return _consecutiveBackErrors; }
+        void incrementConsecutiveBackErrors() { _consecutiveBackErrors++; }
+        void resetConsecutiveBackErrors() { _consecutiveBackErrors = 0; }
+
     protected:
         virtual void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
 
@@ -371,8 +375,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         // Cumulative count of local delete operations that were propagated across successive synchronization cycles since the
         // last time the synchronization was in the idle state.
         Count _nbOfPropagatedLocalDeleteOps{0};
-
-        int64_t _consecutiveFailures{0};
 
         // Callbacks
         std::function<void(const Error &error)> _addError;
@@ -443,6 +445,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void setUpConflictingFilesCorrector(const std::vector<Error> &keepLocalErrorList,
                                             const std::vector<Error> &keepRemoteErrorList);
         log4cplus::Logger _logger;
+
+        int64_t _consecutiveBackErrors{0};
 
         std::shared_ptr<CacheDirectory> _cacheDirectory;
 
