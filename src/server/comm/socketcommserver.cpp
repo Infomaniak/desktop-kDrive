@@ -169,6 +169,8 @@ bool SocketCommChannel::joinCallbackThread() {
         }
     } catch (std::exception &ex) {
         LOG_ERROR(Log::instance()->getLogger(), "Exception in StdLoggingThread::join: " << ex.what());
+    } catch (...) {
+        LOG_ERROR(Log::instance()->getLogger(), "Unknown exception in StdLoggingThread::join");
     }
     return false;
 }
@@ -334,7 +336,7 @@ void SocketCommServer::execute() {
 }
 void SocketCommServer::joinAndClearPostponedLostConnectionCbks() {
     // Join and remove all postponed lost-connection callback threads
-    for (auto thread: _postponedLostConnectionCbks) {
+    for (const auto thread: _postponedLostConnectionCbks) {
         if (thread->joinable()) {
             thread->join();
         }
