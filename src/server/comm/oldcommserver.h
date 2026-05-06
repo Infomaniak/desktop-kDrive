@@ -54,6 +54,9 @@ class OldCommServer : public QObject {
 
         void start();
         inline bool isListening() { return _tcpServer.isListening(); }
+        bool hasActiveConnexion() const {
+            return _tcpSocket != nullptr && _tcpSocket->state() == QAbstractSocket::ConnectedState && _tcpSocket->isValid();
+        }
 
     signals:
         void requestReceived(int id, RequestNum num, const QByteArray &params);
