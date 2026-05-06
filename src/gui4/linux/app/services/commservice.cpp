@@ -19,6 +19,7 @@
 #include "commservice.h"
 
 #include "libcommon/comm.h"
+#include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
 
 #include <QLoggingCategory>
@@ -26,7 +27,7 @@
 #include <cstdint>
 
 namespace {
-constexpr Count maxErrorsToLoad = 1000;
+constexpr KDC::Count maxErrorsToLoad = 1000;
 } // namespace
 
 namespace KDC {
