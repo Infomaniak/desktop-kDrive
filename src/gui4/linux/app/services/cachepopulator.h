@@ -31,11 +31,11 @@ namespace KDC {
  * Loads users, then accounts, then drives, then syncs, then errors so the
  * graph-backed AppCache is populated in parent-first order.
  */
-class CacheHydrator : public QObject {
+class CachePopulator : public QObject {
         Q_OBJECT
 
     public:
-        explicit CacheHydrator(CommService &commService, AppCache &appCache, QObject *parent = nullptr);
+        explicit CachePopulator(CommService &commService, AppCache &appCache, QObject *parent = nullptr);
         void bootstrap();
 
     signals:
