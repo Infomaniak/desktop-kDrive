@@ -121,7 +121,7 @@ bool SyncPalWorker::handleBackError(const std::shared_ptr<ISyncWorker> w1, const
     if ((w1 && w1->exitCode() == ExitCode::BackError) || (w2 && w2->exitCode() == ExitCode::BackError)) {
         constexpr double multiplicativeFactor = 2; // binary exponential backoff
         constexpr int64_t baseDelay(60000); // 1 min
-        constexpr int64_t maxDelay(3600000); // 1 hour
+        constexpr int64_t maxDelay(14400000); // 1 hour
         int64_t computedDelay = baseDelay * std::pow(multiplicativeFactor, std::min(_syncPal->consecutiveBackErrors(), (int64_t)12));
         _syncPal->incrementConsecutiveBackErrors();
 
