@@ -228,7 +228,7 @@ function Build-Extension {
     $configuration = $buildType
     if ($buildType -eq "RelWithDebInfo") { $configuration = "Release" }
     if($upload) {
-        $publisher = "CN=DigiCert Trusted G4 Code Signing Europe RSA4096 SHA384 2023 CA1, O = DigiCert, Inc., C = US"
+        $publisher = "CN=DigiCert Trusted Root G4, OU=www.digicert.com, O=DigiCert Inc, C=US"
     }else{
         $publisher = "CN=Windows11CI-1"
     }
