@@ -19,11 +19,11 @@
 import Cocoa
 import Combine
 import InfomaniakDI
-import SwiftUI
-import UserNotifications
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
+import SwiftUI
+import UserNotifications
 
 extension NSToolbarItem.Identifier {
     static let supportGroup = NSToolbarItem.Identifier("SupportGroup")
@@ -132,9 +132,9 @@ final class MainViewController: IKSplitViewController {
                 contentViewController = BlockingErrorViewController(blockingError: blockingError)
             } else {
                 #if DEBUG
-                    fatalError("Attempting to navigate to blocking error view without an error")
+                fatalError("Attempting to navigate to blocking error view without an error")
                 #else
-                    contentViewController = HomeViewController(mainViewModel: viewModel)
+                contentViewController = HomeViewController(mainViewModel: viewModel)
                 #endif
             }
         case .activityError:
@@ -263,7 +263,7 @@ extension MainViewController {
         unregisterSheetClickMonitor()
         sheetClickMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .keyDown]) { [weak self] event in
             guard let self,
-                let sheetWindow = self.presentedViewControllers?.first?.view.window
+                  let sheetWindow = self.presentedViewControllers?.first?.view.window
             else {
                 return event
             }
