@@ -2647,7 +2647,7 @@ void AppServer::onMessageReceivedFromAnotherProcess(const QString &message, QObj
         showSettings();
     } else if (message == restartClientMsg) {
         const auto oldCommServerHasActiveConnection = useOldCommServer() && OldCommServer::instance()->hasActiveConnexion();
-        const auto newCommServerHasActiveConnection = useCommManager() && _commManager->hasActiveClientConnexion();
+        const auto newCommServerHasActiveConnection = useCommManager() && _commManager->hasActiveGuiConnection();
         if (oldCommServerHasActiveConnection || newCommServerHasActiveConnection) {
             LOG_INFO(_logger, "An active connexion with a client already exists, showing synthesis!");
             showSynthesis();

@@ -298,7 +298,7 @@ void CommManager::sendGuiSignal(const std::shared_ptr<AbstractGuiJob> signal) {
     GuiJobManagerSingleton::instance()->queueAsyncJob(signal);
 }
 
-bool CommManager::hasActiveClientConnexion() {
+bool CommManager::hasActiveGuiConnection() {
     const std::scoped_lock lock(_mutex);
     return _guiCommServer && _guiCommServer->hasActiveConnexion();
 }
