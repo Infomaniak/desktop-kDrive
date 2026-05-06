@@ -85,7 +85,7 @@ jobs:
         uses: ./.github/actions/test_windows
         with:
           test_name: ${{ matrix.test_name }}
-          test_dependencies_version: linux_v4.2 # ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+          test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
   # Tests Linux
   Test-Linux:
@@ -131,7 +131,7 @@ jobs:
         uses: ./.github/actions/test_macos
         with:
           test_name: ${{ matrix.test_name }}
-          test_dependencies_version: linux_v4.2 # ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+          test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
   Unit-Tests:
     runs-on: [ self-hosted, Windows ]
