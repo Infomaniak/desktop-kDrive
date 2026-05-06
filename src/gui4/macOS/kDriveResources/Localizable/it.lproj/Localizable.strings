@@ -566,7 +566,7 @@
 
 /* loco:69eb8061e9130678990a5972
  * Empty search state title in SearchSheetView before any query is entered. */
-"searchYourFiles" = "Search your files";
+"searchYourFiles" = "Cerca i tuoi file";
 
 
 /* loco:698b07172a4fff6e66027c94 */
