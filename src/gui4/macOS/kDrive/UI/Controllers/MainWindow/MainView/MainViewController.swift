@@ -170,7 +170,7 @@ extension MainViewController {
             .space,
             .syncControlsGroup,
             .space,
-            .searchGroup,
+            .searchGroup
         ])
 
         return initialItems
