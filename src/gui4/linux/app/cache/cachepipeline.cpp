@@ -18,8 +18,6 @@
 
 #include "cachepipeline.h"
 
-#include "libcommon/utility/cstypes.h"
-
 #include <QLoggingCategory>
 
 #include <tuple>
@@ -53,7 +51,9 @@ constexpr auto directCacheConnections =
                         makeCacheConnection("driveRemoved", &CommService::driveRemoved, &AppCache::removeDrive),
                         makeCacheConnection("syncAdded", &CommService::syncAdded, &AppCache::upsertSync),
                         makeCacheConnection("syncUpdated", &CommService::syncUpdated, &AppCache::upsertSync),
-                        makeCacheConnection("syncRemoved", &CommService::syncRemoved, &AppCache::removeSync));
+                        makeCacheConnection("syncRemoved", &CommService::syncRemoved, &AppCache::removeSync),
+                        makeCacheConnection("errorAdded", &CommService::errorAdded, &AppCache::upsertError),
+                        makeCacheConnection("errorRemoved", &CommService::errorRemoved, &AppCache::removeError));
 } // namespace
 
 CachePipeline::CachePipeline(CommService &commService, AppCache &appCache, QObject *const parent) :
@@ -72,11 +72,6 @@ void CachePipeline::connectDropPipeline() {
                  ...);
             },
             directCacheConnections);
-
-    _preHydrationConnections.push_back(
-            connect(&_commService, &CommService::errorAdded, this, [](const ErrorInfo &) { logDroppedPush("errorAdded"); }));
-    _preHydrationConnections.push_back(
-            connect(&_commService, &CommService::errorRemoved, this, [](const ErrorDbId) { logDroppedPush("errorRemoved"); }));
 }
 
 void CachePipeline::connectLivePipeline() {
@@ -85,23 +80,6 @@ void CachePipeline::connectLivePipeline() {
                 ((void) connect(&_commService, connection.signal, &_appCache, connection.slot, Qt::UniqueConnection), ...);
             },
             directCacheConnections);
-
-    (void) connect(&_commService, &CommService::errorAdded, this, [this](const ErrorInfo &info) {
-        if (info.level() == ErrorLevel::Server) {
-            _appCache.upsertServerError(info);
-            return;
-        }
-        _appCache.upsertSyncError(info);
-    });
-    (void) connect(&_commService, &CommService::errorRemoved, this, [this](const ErrorDbId errorDbId) {
-        if (_appCache.syncError(errorDbId).has_value()) {
-            _appCache.removeSyncError(errorDbId);
-            return;
-        }
-        if (_appCache.serverError(errorDbId).has_value()) {
-            _appCache.removeServerError(errorDbId);
-        }
-    });
 }
 
 void CachePipeline::markHydrated() {
