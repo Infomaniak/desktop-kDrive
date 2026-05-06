@@ -161,7 +161,7 @@ void SocketCommChannel::close() {
     }
 }
 
-bool SocketCommChannel::joinCallbackThread() {
+bool SocketCommChannel::joinCallbackThread() noexcept {
     try {
         if (_callbackThread && _callbackThread->joinable()) {
             _callbackThread->join();
@@ -334,7 +334,7 @@ void SocketCommServer::execute() {
     }
     _isListening = false;
 }
-void SocketCommServer::joinAndClearPostponedLostConnectionCbks() noexcept {
+void SocketCommServer::joinAndClearPostponedLostConnectionCbks() {
     // Join and remove all postponed lost-connection callback threads
     for (const auto& thread: _postponedLostConnectionCbks) {
         if (thread->joinable()) {
