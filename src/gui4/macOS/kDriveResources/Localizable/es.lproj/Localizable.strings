@@ -713,7 +713,8 @@
 
 /* loco:69eb809ce1364c763a050862
  * Empty search state subtitle in SearchSheetView before the user enters a query. */
-"typeToStartSearching" = "Type to start searching";
+"typeToStartSearching" = "Escribe para empezar a buscar";
+
 
 /* loco:6981e8f0b024a7b4e00f7262 */
 "unavailableContentNoActivityDescription" = "Tus archivos están accesibles y sincronizados.";
