@@ -492,6 +492,8 @@ public enum KDriveLocalizable {
   public static let tabTitleHome = KDriveLocalizable.tr("Localizable", "tabTitleHome", fallback: "Home")
   /// loco:68a70c659c53feed83039c42
   public static let tabTitleStorage = KDriveLocalizable.tr("Localizable", "tabTitleStorage", fallback: "Storage")
+  /// loco:69eb7b41376492d2de0d0242
+  ///  * Empty search state subtitle when no result matches the user query in SearchSheetView.
   public static let tryDifferentSearchTerm = KDriveLocalizable.tr("Localizable", "tryDifferentSearchTerm", fallback: "Try a different search term")
   /// loco:69eb809ce1364c763a050862
   ///  * Empty search state subtitle in SearchSheetView before the user enters a query.

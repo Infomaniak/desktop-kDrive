@@ -717,7 +717,7 @@
 
 /* loco:69eb7b41376492d2de0d0242
  * Empty search state subtitle when no result matches the user query in SearchSheetView. */
-"tryDifferentSearchTerm" = "Try a different search term";
+"tryDifferentSearchTerm" = "Prova un termine di ricerca diverso";
 
 /* loco:69eb809ce1364c763a050862
  * Empty search state subtitle in SearchSheetView before the user enters a query. */
