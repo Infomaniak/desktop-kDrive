@@ -26,7 +26,7 @@
 #include <cstdint>
 
 namespace {
-constexpr int32_t maxErrorsToLoad = 1000;
+constexpr Count maxErrorsToLoad = 1000;
 } // namespace
 
 namespace KDC {
