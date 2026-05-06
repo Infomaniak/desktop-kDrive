@@ -153,7 +153,7 @@ function Get-Thumbprint {
     
     $thumbprint = 
     If ($upload) {
-        Get-ChildItem $certStore | Where-Object { $_.Subject -match "INFOMANIAK" -and $_.Issuer -match "DigiCert Trusted G4 Code Signing Europe RSA4096 SHA384 2023 CA1" } | Select -ExpandProperty Thumbprint
+        Get-ChildItem $certStore | Where-Object { $_.Subject -match "INFOMANIAK" -and $_.Issuer -match "DigiCert" } | Select -ExpandProperty Thumbprint
     } 
     Else {
         Get-ChildItem $certStore | Where-Object { $_.Subject -match "Windows11CI-1" -and $_.Issuer -match "Windows11CI-1" } | Select -ExpandProperty Thumbprint
@@ -228,7 +228,7 @@ function Build-Extension {
     $configuration = $buildType
     if ($buildType -eq "RelWithDebInfo") { $configuration = "Release" }
     if($upload) {
-        $publisher = "CN=DigiCert Trusted G4 Code Signing Europe RSA4096 SHA384 2023 CA1"
+        $publisher = "CN=INFOMANIAK NETWORK SA, O=INFOMANIAK NETWORK SA, L=Les Acacias, S=Genève, C=CH, SERIALNUMBER=CHE-103.167.648, OID.2.5.4.15=Private Organization, OID.1.3.6.1.4.1.311.60.2.1.2=Genève, OID.1.3.6.1.4.1.311.60.2.1.3=CH"
 
     }else{
         $publisher = "CN=Windows11CI-1"
