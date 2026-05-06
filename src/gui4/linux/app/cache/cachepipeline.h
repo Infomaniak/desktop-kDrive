@@ -37,8 +37,7 @@ namespace KDC {
  * mutations cannot race with CachePopulator's initial full-snapshot replacements. Once markHydrated() is called after
  * CachePopulator::bootstrapCompleted(), those temporary drop connections are removed and the live pipeline is installed.
  *
- * User/account/drive/sync signals are connected directly to the matching AppCache mutation slots in live mode. Error signals
- * keep custom routing because server errors and sync errors are stored separately in AppCache. The class owns only the signal
+ * Push signals are connected directly to matching AppCache mutation slots in live mode. The class owns only the signal
  * wiring; AppCache remains the cache authority, and CachePopulator remains responsible for initial snapshot loading.
  */
 class CachePipeline : public QObject {
