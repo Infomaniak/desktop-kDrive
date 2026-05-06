@@ -92,6 +92,7 @@ runs:
             msiexec /i Keylockertools-windows-x64.msi /quiet /qn
           )
         shell: cmd
+        continue-on-error: true
 
       - name: Digicert - Register KSP
         run: |
