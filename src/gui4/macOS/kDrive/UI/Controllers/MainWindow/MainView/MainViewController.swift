@@ -263,18 +263,18 @@ extension MainViewController {
         unregisterSheetClickMonitor()
         sheetClickMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .keyDown]) { [weak self] event in
             guard let self,
-                  let sheetWindow = self.presentedViewControllers?.first?.view.window
+                  let sheetWindow = presentedViewControllers?.first?.view.window
             else {
                 return event
             }
 
             if event.type == .keyDown && event.keyCode == 53 {
-                self.dismissSearchSheet()
+                dismissSearchSheet()
                 return nil
             }
 
             if event.type == .leftMouseDown, let eventWindow = event.window, eventWindow != sheetWindow {
-                self.dismissSearchSheet()
+                dismissSearchSheet()
                 return nil
             }
 
