@@ -247,7 +247,7 @@ void CommService::requestLoginToken(const QString &code, const QString &codeVeri
     _ipcClient.sendRequest(RequestNum::LOGIN_REQUESTTOKEN, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                LoginTokenResult loginResult;
-                               if (exitInfo.code() == ExitCode::Ok) {
+                               if (exitInfo) {
                                    CommonUtility::readValueFromStruct(result, msgParamUserDbId, loginResult.userDbId);
                                } else {
                                    CommString error;
@@ -267,7 +267,7 @@ void CommService::requestUserDbIdList(const UserDbIdListCallback &callback) cons
     _ipcClient.sendRequest(RequestNum::USER_DBIDLIST, {},
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                std::vector<UserDbId> list;
-                               if (exitInfo.code() == ExitCode::Ok) {
+                               if (exitInfo) {
                                    CommonUtility::readValuesFromStruct(result, msgParamUserDbIdList, list);
                                }
                                callback(exitInfo, list);
@@ -278,7 +278,7 @@ void CommService::requestUserInfoList(const UserInfoListCallback &callback) cons
     _ipcClient.sendRequest(
             RequestNum::USER_INFOLIST, {}, [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                 std::vector<UserInfo> list;
-                if (exitInfo.code() == ExitCode::Ok) {
+                if (exitInfo) {
                     CommonUtility::readValuesFromStruct(result, msgParamUserInfoList, list, dynamicVar2Struct<UserInfo>);
                 }
                 callback(exitInfo, list);
@@ -291,7 +291,7 @@ void CommService::requestUserAvailableDrives(const UserDbId userDbId, const Driv
     _ipcClient.sendRequest(RequestNum::USER_AVAILABLEDRIVES, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                std::vector<DriveAvailableInfo> list;
-                               if (exitInfo.code() == ExitCode::Ok) {
+                               if (exitInfo) {
                                    CommonUtility::readValuesFromStruct(result, msgParamDriveAvailableInfoList, list,
                                                                        dynamicVar2Struct<DriveAvailableInfo>);
                                }
@@ -312,7 +312,7 @@ void CommService::requestAccountInfoList(const AccountInfoListCallback &callback
     _ipcClient.sendRequest(
             RequestNum::ACCOUNT_INFOLIST, {}, [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                 std::vector<AccountInfo> list;
-                if (exitInfo.code() == ExitCode::Ok) {
+                if (exitInfo) {
                     CommonUtility::readValuesFromStruct(result, msgParamAccountInfoList, list, dynamicVar2Struct<AccountInfo>);
                 }
                 callback(exitInfo, list);
@@ -325,7 +325,7 @@ void CommService::requestDriveInfoList(const DriveInfoListCallback &callback) co
     _ipcClient.sendRequest(
             RequestNum::DRIVE_INFOLIST, {}, [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                 std::vector<DriveInfo> list;
-                if (exitInfo.code() == ExitCode::Ok) {
+                if (exitInfo) {
                     CommonUtility::readValuesFromStruct(result, msgParamDriveInfoList, list, dynamicVar2Struct<DriveInfo>);
                 }
                 callback(exitInfo, list);
@@ -356,7 +356,7 @@ void CommService::requestDriveSearch(const SyncDbId syncDbId, const QString &sea
     _ipcClient.sendRequest(
             RequestNum::DRIVE_SEARCH, params, [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                 DriveSearchResult searchResult;
-                if (exitInfo.code() == ExitCode::Ok) {
+                if (exitInfo) {
                     CommonUtility::readValuesFromStruct(result, msgParamSearchInfoList, searchResult.searchInfoList,
                                                         dynamicVar2Struct<SearchInfo>);
                     CommonUtility::readValueFromStruct(result, msgParamHasMore, searchResult.hasMore);
@@ -371,7 +371,7 @@ void CommService::requestSyncInfoList(const SyncInfoListCallback &callback) cons
     _ipcClient.sendRequest(
             RequestNum::SYNC_INFOLIST, {}, [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                 std::vector<SyncInfo> list;
-                if (exitInfo.code() == ExitCode::Ok) {
+                if (exitInfo) {
                     CommonUtility::readValuesFromStruct(result, msgParamSyncInfoList, list, dynamicVar2Struct<SyncInfo>);
                 }
                 callback(exitInfo, list);
@@ -390,7 +390,7 @@ void CommService::requestSyncAdd(const SyncAddRequest &request, const SyncInfoCa
     params[msgParamBlackList] = request.blackList;
     _ipcClient.sendRequest(RequestNum::SYNC_ADD, params, [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
         SyncInfo info;
-        if (exitInfo.code() == ExitCode::Ok) {
+        if (exitInfo) {
             info.fromDynamicStruct(result[msgParamSyncInfo].extract<Poco::DynamicStruct>());
         }
         callback(exitInfo, info);
@@ -408,7 +408,7 @@ void CommService::requestSyncAdd2(const SyncAdd2Request &request, const SyncInfo
     _ipcClient.sendRequest(RequestNum::SYNC_ADD2, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                SyncInfo info;
-                               if (exitInfo.code() == ExitCode::Ok) {
+                               if (exitInfo) {
                                    info.fromDynamicStruct(result[msgParamSyncInfo].extract<Poco::DynamicStruct>());
                                }
                                callback(exitInfo, info);
@@ -435,7 +435,7 @@ void CommService::requestSyncStatus(const SyncDbId syncDbId, const SyncStatusCal
     _ipcClient.sendRequest(RequestNum::SYNC_STATUS, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                auto status = SyncStatus::Undefined;
-                               if (exitInfo.code() == ExitCode::Ok) {
+                               if (exitInfo) {
                                    CommonUtility::readValueFromStruct(result, msgParamSyncStatus, status);
                                }
                                callback(exitInfo, status);
@@ -473,7 +473,7 @@ void CommService::requestSyncGetPrivateLinkUrl(const DriveDbId driveDbId, const 
     _ipcClient.sendRequest(RequestNum::SYNC_GETPRIVATELINKURL, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                QString url;
-                               if (exitInfo.code() == ExitCode::Ok) {
+                               if (exitInfo) {
                                    CommString linkUrl;
                                    CommonUtility::readValueFromStruct(result, msgParamLinkUrl, linkUrl);
                                    url = CommonUtility::commString2QStr(linkUrl);
@@ -490,7 +490,7 @@ void CommService::requestSyncGetPublicLinkUrl(const DriveDbId driveDbId, const N
     _ipcClient.sendRequest(RequestNum::SYNC_GETPUBLICLINKURL, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                QString url;
-                               if (exitInfo.code() == ExitCode::Ok) {
+                               if (exitInfo) {
                                    CommString linkUrl;
                                    CommonUtility::readValueFromStruct(result, msgParamLinkUrl, linkUrl);
                                    url = CommonUtility::commString2QStr(linkUrl);
@@ -508,7 +508,7 @@ void CommService::requestErrorInfoList(const ErrorInfoListCallback &callback) co
     _ipcClient.sendRequest(
             RequestNum::ERROR_INFOLIST, params, [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                 std::vector<ErrorInfo> list;
-                if (exitInfo.code() == ExitCode::Ok) {
+                if (exitInfo) {
                     CommonUtility::readValuesFromStruct(result, msgParamErrorInfoList, list, dynamicVar2Struct<ErrorInfo>);
                 }
                 callback(exitInfo, list);
@@ -553,7 +553,7 @@ void CommService::requestNodeInfo(const UserDbId userDbId, const DriveId driveId
     _ipcClient.sendRequest(RequestNum::NODE_INFO, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                NodeInfo info;
-                               if (exitInfo.code() == ExitCode::Ok) {
+                               if (exitInfo) {
                                    info.fromDynamicStruct(result[msgParamNodeInfo].extract<Poco::DynamicStruct>());
                                }
                                callback(exitInfo, info);
@@ -569,7 +569,7 @@ void CommService::requestNodeConflictInfo(const SyncDbId syncDbId, const SyncPat
     _ipcClient.sendRequest(RequestNum::NODE_CONFLICT_INFO, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                NodeConflictInfo info;
-                               if (exitInfo.code() == ExitCode::Ok) {
+                               if (exitInfo) {
                                    info.fromDynamicStruct(result[msgParamNodeConflictInfo].extract<Poco::DynamicStruct>());
                                }
                                callback(exitInfo, info);
@@ -583,7 +583,7 @@ void CommService::requestNodePath(const SyncDbId syncDbId, const NodeId &nodeId,
     _ipcClient.sendRequest(RequestNum::NODE_PATH, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                QString path;
-                               if (exitInfo.code() == ExitCode::Ok) {
+                               if (exitInfo) {
                                    CommString pathStr;
                                    CommonUtility::readValueFromStruct(result, msgParamPath, pathStr);
                                    path = CommonUtility::commString2QStr(pathStr);
@@ -601,7 +601,7 @@ void CommService::requestNodeSubfolders(const DriveDbId driveDbId, const NodeId 
     _ipcClient.sendRequest(
             RequestNum::NODE_SUBFOLDERS, params, [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                 std::vector<NodeInfo> list;
-                if (exitInfo.code() == ExitCode::Ok) {
+                if (exitInfo) {
                     CommonUtility::readValuesFromStruct(result, msgParamNodeSubFolderInfoList, list, dynamicVar2Struct<NodeInfo>);
                 }
                 callback(exitInfo, list);
@@ -617,7 +617,7 @@ void CommService::requestNodeSubfolders2(const DriveDbId driveDbId, const NodeId
     _ipcClient.sendRequest(
             RequestNum::NODE_SUBFOLDERS2, params, [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                 std::vector<NodeInfo> list;
-                if (exitInfo.code() == ExitCode::Ok) {
+                if (exitInfo) {
                     CommonUtility::readValuesFromStruct(result, msgParamNodeSubFolderInfoList, list, dynamicVar2Struct<NodeInfo>);
                 }
                 callback(exitInfo, list);
@@ -633,7 +633,7 @@ void CommService::requestNodeFolderSize(const UserDbId userDbId, const DriveId d
     _ipcClient.sendRequest(RequestNum::NODE_FOLDER_SIZE, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                int64_t folderSize = 0;
-                               if (exitInfo.code() == ExitCode::Ok) {
+                               if (exitInfo) {
                                    CommonUtility::readValueFromStruct(result, msgParamFolderSize, folderSize);
                                }
                                callback(exitInfo, folderSize);
@@ -649,7 +649,7 @@ void CommService::requestNodeCreateMissingFolders(const DriveDbId driveDbId, con
     _ipcClient.sendRequest(RequestNum::NODE_CREATEMISSINGFOLDERS, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                NodeId nodeId;
-                               if (exitInfo.code() == ExitCode::Ok) {
+                               if (exitInfo) {
                                    CommonUtility::readValueFromStruct(result, msgParamNodeId, nodeId);
                                }
                                callback(exitInfo, nodeId);
@@ -662,7 +662,7 @@ void CommService::requestParametersInfo(const ParametersInfoCallback &callback) 
     _ipcClient.sendRequest(RequestNum::PARAMETERS_INFO, {},
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                ParametersInfo info;
-                               if (exitInfo.code() == ExitCode::Ok) {
+                               if (exitInfo) {
                                    info.fromDynamicStruct(result[msgParamParametersInfo].extract<Poco::DynamicStruct>());
                                }
                                callback(exitInfo, info);
@@ -686,7 +686,7 @@ void CommService::requestBlacklistedNodeList(const SyncDbId syncDbId, const Node
     _ipcClient.sendRequest(RequestNum::BLACKLISTED_NODE_LIST, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                std::vector<NodeId> list;
-                               if (exitInfo.code() == ExitCode::Ok) {
+                               if (exitInfo) {
                                    CommonUtility::readValuesFromStruct(result, msgParamNodeIdList, list);
                                }
                                callback(exitInfo, list);
@@ -708,7 +708,7 @@ void CommService::requestExclTemplGetList(const bool defaultTemplates, const Exc
     _ipcClient.sendRequest(RequestNum::EXCLTEMPL_GETLIST, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                std::vector<ExclusionTemplateInfo> list;
-                               if (exitInfo.code() == ExitCode::Ok) {
+                               if (exitInfo) {
                                    CommonUtility::readValuesFromStruct(result, msgParamExclusionTemplateList, list,
                                                                        dynamicVar2Struct<ExclusionTemplateInfo>);
                                }
@@ -736,7 +736,7 @@ void CommService::requestExclTemplGetExcluded(const QString &name, const BoolCal
     _ipcClient.sendRequest(RequestNum::EXCLTEMPL_GETEXCLUDED, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                bool isExcluded = false;
-                               if (exitInfo.code() == ExitCode::Ok) {
+                               if (exitInfo) {
                                    CommonUtility::readValueFromStruct(result, msgParamIsExcluded, isExcluded);
                                }
                                callback(exitInfo, isExcluded);
@@ -749,7 +749,7 @@ void CommService::requestUpdaterState(const UpdateStateCallback &callback) const
     _ipcClient.sendRequest(RequestNum::UPDATER_STATE, {},
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                auto state = UpdateState::Unknown;
-                               if (exitInfo.code() == ExitCode::Ok) {
+                               if (exitInfo) {
                                    CommonUtility::readValueFromStruct(result, msgParamUpdateState, state);
                                }
                                callback(exitInfo, state);
@@ -762,7 +762,7 @@ void CommService::requestUpdaterVersionInfo(const VersionChannel channel, const 
     _ipcClient.sendRequest(RequestNum::UPDATER_VERSION_INFO, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                VersionInfo info;
-                               if (exitInfo.code() == ExitCode::Ok) {
+                               if (exitInfo) {
                                    info.fromDynamicStruct(result[msgParamVersionInfo].extract<Poco::DynamicStruct>());
                                }
                                callback(exitInfo, info);
@@ -782,7 +782,7 @@ void CommService::requestFindGoodPathForNewSync(const SyncPath &basePath, const 
     _ipcClient.sendRequest(RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                GoodPathResult pathResult;
-                               if (exitInfo.code() == ExitCode::Ok) {
+                               if (exitInfo) {
                                    CommString goodPath;
                                    CommString errorMessage;
                                    CommonUtility::readValueFromStruct(result, msgParamGoodPath, goodPath);
@@ -804,7 +804,7 @@ void CommService::requestIsPathValidForNewSync(const SyncPath &path, const SyncC
     _ipcClient.sendRequest(RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                bool isValid = false;
-                               if (exitInfo.code() == ExitCode::Ok) {
+                               if (exitInfo) {
                                    CommonUtility::readValueFromStruct(result, msgParamIsValid, isValid);
                                }
                                callback(exitInfo, isValid);
@@ -817,7 +817,7 @@ void CommService::requestGetAppState(const AppStateKey key, const AppStateCallba
     _ipcClient.sendRequest(RequestNum::UTILITY_GET_APPSTATE, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                QString value;
-                               if (exitInfo.code() == ExitCode::Ok) {
+                               if (exitInfo) {
                                    // AppState values are stored as a std::variant on the server side, so the wire
                                    // type may not be a plain string. Use Poco's type-coercing convert<> instead
                                    // of readValueFromStruct (which uses strict extraction) to handle all variants.
@@ -839,7 +839,7 @@ void CommService::requestHasSystemLaunchOnStartup(const BoolCallback &callback) 
     _ipcClient.sendRequest(RequestNum::UTILITY_HASSYSTEMLAUNCHONSTARTUP, {},
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                bool enabled = false;
-                               if (exitInfo.code() == ExitCode::Ok) {
+                               if (exitInfo) {
                                    CommonUtility::readValueFromStruct(result, msgParamEnabled, enabled);
                                }
                                callback(exitInfo, enabled);
@@ -867,7 +867,7 @@ void CommService::requestGetLogEstimatedSize(const LogSizeCallback &callback) co
     _ipcClient.sendRequest(RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY, {},
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                uint64_t logSize = 0;
-                               if (exitInfo.code() == ExitCode::Ok) {
+                               if (exitInfo) {
                                    CommonUtility::readValueFromStruct(result, msgParamLogSize, logSize);
                                }
                                callback(exitInfo, logSize);
