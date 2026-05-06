@@ -60,6 +60,10 @@ final class MainViewController: IKSplitViewController {
         }
     }
 
+    deinit {
+        unregisterSheetClickMonitor()
+    }
+
     private func bindViewModel() {
         router.$currentPath
             .receiveOnMain(store: &bindStore) { [weak self] newPath in
@@ -252,6 +256,7 @@ extension MainViewController {
         let hostingController = NSHostingController(rootView: searchSheetView)
         presentAsSheet(hostingController)
 
+        unregisterSheetClickMonitor()
         sheetClickMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .keyDown]) { [weak self] event in
             guard let self,
                   let sheetWindow = self.presentedViewControllers?.first?.view.window else {
@@ -272,11 +277,15 @@ extension MainViewController {
         }
     }
 
-    private func dismissSearchSheet() {
-        if let monitor = sheetClickMonitor {
-            NSEvent.removeMonitor(monitor)
-            sheetClickMonitor = nil
+    private func unregisterSheetClickMonitor() {
+        if let sheetClickMonitor {
+            NSEvent.removeMonitor(sheetClickMonitor)
         }
+        sheetClickMonitor = nil
+    }
+
+    private func dismissSearchSheet() {
+        unregisterSheetClickMonitor()
         guard let presentedViewController = presentedViewControllers?.first else { return }
         dismiss(presentedViewController)
     }
