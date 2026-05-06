@@ -42,8 +42,10 @@ SocketCommChannel::~SocketCommChannel() {
         LOG_ERROR(Log::instance()->getLogger(), "Exception in SocketCommChannel::close: " << ex.what());
     }
 
-    if (_callbackThread && _callbackThread->joinable()) {
-        _callbackThread->join();
+    if (joinCallbackThread()) {
+        LOG_DEBUG(Log::instance()->getLogger(), "Callback thread joined successfully");
+    } else {
+        LOG_ERROR(Log::instance()->getLogger(), "Failed to join callback thread");
     }
 }
 
@@ -313,7 +315,7 @@ void SocketCommServer::execute() {
             // Postpone _channels.remove(ch), as it may destroy the channel and its
             // SocketCommChannel::callbackHandler thread while the current code
             // (SocketCommChannel::lostConnectionCbk) is executing from this same callbackHandler thread.
-            _postponedLostConnectionCbks.emplace_back(std::make_shared<StdLoggingThread>(postponedLostConnectionCbk));
+            (void) _postponedLostConnectionCbks.emplace_back(std::make_shared<StdLoggingThread>(postponedLostConnectionCbk));
         });
 
         {
@@ -332,7 +334,7 @@ void SocketCommServer::execute() {
 }
 void SocketCommServer::joinAndClearPostponedLostConnectionCbks() {
     // Join and remove all postponed lost-connection callback threads
-    for (auto &thread: _postponedLostConnectionCbks) {
+    for (auto thread: _postponedLostConnectionCbks) {
         if (thread->joinable()) {
             thread->join();
         }
