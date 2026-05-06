@@ -20,7 +20,6 @@
 /* loco:69a6d9dd08a75d40410b53f6 */
 "accessibilityBetaProgramPicker" = "Elegir el canal de distribución";
 
-
 /* loco:69fa0b22dbdab357240dcb12
  * VoiceOver reads this when the user focuses the X button that clears the search field */
 "accessibilitySearchClear" = "Borrar búsqueda";
@@ -93,7 +92,6 @@
 /* loco:698c5e4ec95ac47af70ec115 */
 "buttonConfigure" = "Configurar";
 
-
 /* loco:698b1376f55227e2c30a2fe4 */
 "buttonConnectAccount" = "Conectar una cuenta";
 
@@ -105,7 +103,6 @@
 
 /* loco:68e673c48af12c42e80027c8 */
 "buttonCreateAccount" = "Crear una cuenta";
-
 
 /* loco:698b14e52445668d9d0495a2 */
 "buttonDisconnectAccount" = "Desconectar esta cuenta";
@@ -177,7 +174,6 @@
 /* loco:6964e1dfed4b6acb0107409a */
 "buttonSeeActivities" = "Ver actividades";
 
-
 /* loco:698c5cb5f86b52c6fc001fc4 */
 "buttonSelectFolders" = "Seleccionar carpetas";
 
@@ -222,7 +218,6 @@
 "dataManagementSubtitle" = "Infomaniak respeta su privacidad";
 /* loco:698b35a408fd1ee25f08ab35 */
 "debugLogsSettings" = "Registros de depuración";
-
 
 /* loco:698c6bbd94b70c0d3d09cde4 */
 "dialogRemoveAccountContent" = "Desconectarás %@ de la aplicación.\n\nLa carpeta de sincronización permanecerá en su ordenador, pero ya no se sincronizará con kDrive.\n\nTodos sus datos seguirán siendo accesibles en línea en kDrive.";
@@ -382,16 +377,11 @@
 /* loco:6989fec57ca0d7305008b1e2 */
 "labelName" = "Nombre";
 
-
-
-
 /* loco:698b5869ab41083f11042b52 */
 "labelNotifications" = "Notificación";
 
 /* loco:69a6e4aceff2d992ad059324 */
 "labelOff" = "Desactivado";
-
-
 
 /* loco:698b2f6aae1ca9d0290ad174 */
 "labelSameAsSystem" = "Igual que el sistema";
@@ -554,7 +544,6 @@
 /* loco:698af24c3d21055870072b12 */
 "releaseChannelInternal" = "Interno";
 
-
 /* loco:69eb8137c1ea8e116a0ba282
  * Search field placeholder in SearchSheetView. */
 "searchPlaceholder" = "Buscar…";
@@ -566,7 +555,6 @@
 /* loco:69eb8061e9130678990a5972
  * Empty search state title in SearchSheetView before any query is entered. */
 "searchYourFiles" = "Buscar tus archivos";
-
 
 /* loco:698b07172a4fff6e66027c94 */
 "selectFoldersToSyncDescription" = "Las carpetas no seleccionadas no se descargarán en su dispositivo. Seguirán disponibles en línea y no se eliminarán.";
@@ -718,7 +706,6 @@
 /* loco:69eb809ce1364c763a050862
  * Empty search state subtitle in SearchSheetView before the user enters a query. */
 "typeToStartSearching" = "Escribe para empezar a buscar";
-
 
 /* loco:6981e8f0b024a7b4e00f7262 */
 "unavailableContentNoActivityDescription" = "Tus archivos están accesibles y sincronizados.";
