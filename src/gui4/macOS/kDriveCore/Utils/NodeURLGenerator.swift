@@ -37,7 +37,7 @@ public struct DriveNodeURLGenerator: NodeURLGenerator {
     public func shareURL(for nodeId: String, driveDbId: Int) async throws -> URL {
         return try await SyncJobs().getPublicLinkUrl(driveDbId: Int32(driveDbId), nodeId: nodeId)
     }
-    
+
     public func redirectURL(forDriveId driveId: Int, fileId: String) -> URL? {
         let urlString = "https://kdrive.infomaniak.com/app/drive/\(driveId)/redirect/\(fileId)"
         return URL(string: urlString)

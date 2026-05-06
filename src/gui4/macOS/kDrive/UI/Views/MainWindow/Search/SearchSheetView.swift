@@ -16,9 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import SwiftUI
 import kDriveCoreUI
 import kDriveResources
-import SwiftUI
 
 struct SearchSheetView: View {
     @ObservedObject var viewModel: SearchViewModel
@@ -92,12 +92,14 @@ struct SearchSheetView: View {
                     SearchResultRowView(file: file)
                 }
                 .buttonStyle(.plain)
-                .listRowInsets(EdgeInsets(
-                    top: 0,
-                    leading: AppPadding.padding16,
-                    bottom: 0,
-                    trailing: AppPadding.padding16
-                ))
+                .listRowInsets(
+                    EdgeInsets(
+                        top: 0,
+                        leading: AppPadding.padding16,
+                        bottom: 0,
+                        trailing: AppPadding.padding16
+                    )
+                )
                 .hideRowSeparatorIfAvailable()
             }
             .listStyle(.plain)
@@ -137,9 +139,9 @@ struct SearchSheetView: View {
     }
 }
 
-private extension View {
+extension View {
     @ViewBuilder
-    func hideRowSeparatorIfAvailable() -> some View {
+    fileprivate func hideRowSeparatorIfAvailable() -> some View {
         if #available(macOS 13.0, *) {
             self.listRowSeparator(.hidden)
         } else {
