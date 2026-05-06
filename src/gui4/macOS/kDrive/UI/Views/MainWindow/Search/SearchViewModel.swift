@@ -59,8 +59,8 @@ final class SearchViewModel: ObservableObject {
     }
 
     private func openInBrowser(file: UISearchResponse) {
-        let urlString = "https://kdrive.infomaniak.com/app/drive/\(driveId)/redirect/\(file.id)"
-        guard let url = URL(string: urlString) else { return }
+        @InjectService var nodeURLGenerator: NodeURLGenerator
+        guard let url = nodeURLGenerator.redirectURL(forDriveId: driveId, fileId: file.id) else { return }
         NSWorkspace.shared.open(url)
     }
 
