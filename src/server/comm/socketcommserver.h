@@ -36,6 +36,8 @@ class SocketCommChannel : public AbstractCommChannel {
         uint64_t bytesAvailable() const override;
         void close() override;
 
+        bool joinCallbackThread() noexcept;
+
     protected:
         // Return number of CommChar (/!\ not always equal the number of bytes) read or 0 on error or closed connection
         uint64_t readData(CommChar *data, uint64_t maxlen) override;
@@ -74,6 +76,8 @@ class SocketCommServer : public AbstractCommServer {
         bool _stopAsked = false;
         std::unique_ptr<StdLoggingThread> _serverSocketThread{nullptr};
         void execute();
+        void joinAndClearPostponedLostConnectionCbks();
+        std::vector<std::shared_ptr<StdLoggingThread>> _postponedLostConnectionCbks;
 };
 
 } // namespace KDC
