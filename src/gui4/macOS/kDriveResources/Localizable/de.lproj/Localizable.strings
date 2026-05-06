@@ -4,7 +4,7 @@
  * Locale: de, German
  * Tagged: macOS
  * Exported by: Killian Mathias
- * Exported at: Thu, 23 Apr 2026 14:56:15 +0200
+ * Exported at: Tue, 14 Apr 2026 11:05:52 +0200
  */
 
 
@@ -20,8 +20,14 @@
 /* loco:69a6d9dd08a75d40410b53f6 */
 "accessibilityBetaProgramPicker" = "Wählen Sie den Vertriebskanal";
 
-/* loco:69e1dcc78d162264ae0f2f52 */
-"accessibilityMoreInformation" = "Weitere Informationen anzeigen";
+
+/* loco:69fa0b22dbdab357240dcb12
+ * VoiceOver reads this when the user focuses the X button that clears the search field */
+"accessibilitySearchClear" = "Suche löschen";
+
+/* loco:69fa0b2668d2d58f030a2422
+ * VoiceOver reads this when the search sheet opens so the user knows what modal they entered */
+"accessibilitySearchSheetLabel" = "Dateien durchsuchen";
 
 /* loco:69b275fb3440db13f0011c03 */
 "accessibilitySelectSynchroMode" = "Wählen Sie einen Synchronisationsmodus";
@@ -52,12 +58,6 @@
 
 /* loco:698af4376b386d18b9037522 */
 "appUpToDate" = "Die Anwendung ist auf dem neuesten Stand";
-
-/* loco:698b36f2eb276c03d00e7c07 */
-"autoCleanupLogsDescription" = "Löscht Protokolle, die älter als 7 Tage sind, um Speicherplatz zu sparen.";
-
-/* loco:698b36d9eb276c03d00e7c03 */
-"autoCleanupLogsSetting" = "Automatische Bereinigung";
 
 /* loco:698af0b429d5e005bc08dfb2 */
 "automaticUpdatesSetting" = "Automatische Aktualisierungen";
@@ -142,9 +142,6 @@
 /* loco:697a2658a44fbad34f011962 */
 "buttonManage" = "Verwalten";
 
-/* loco:698b3ab789def0ffdd073952 */
-"buttonOpenDebugFolder" = "Debug-Ordner öffnen";
-
 /* loco:68b04d823f2b735c170caea2 */
 "buttonOpenInBrowser" = "Im Browser öffnen";
 
@@ -174,9 +171,6 @@
 
 /* loco:69c106a55fd64fd95c00ef42 */
 "buttonReturnToDefaultFolder" = "Zurück zum Standardordner";
-/* loco:6989c90fad75adcb2e05c302 */
-"buttonSave" = "Speichern";
-
 
 /* loco:69a7f03b5fa9c90f560c1192 */
 "buttonSearch" = "Suche";
@@ -187,12 +181,6 @@
 
 /* loco:698c5cb5f86b52c6fc001fc4 */
 "buttonSelectFolders" = "Ordner auswählen";
-
-/* loco:6989f2b84f80e68db204aa55 */
-"buttonSend" = "Senden";
-
-/* loco:6989e1e13690f28b9e0c8b92 */
-"buttonSendLog" = "Debug-Ordner senden";
 
 /* loco:69a7ed31e3754291a4029e52 */
 "buttonSettings" = "Einstellungen öffnen";
@@ -232,15 +220,6 @@
 
 /* loco:698b15ec9e0aad20280f8c02 */
 "dataManagementSettings" = "Datenverwaltung";
-
-/* loco:698b3a87553e334c1009a7e4 */
-"debugLevelDescription" = "Wählen Sie die Menge der zu protokollierenden Informationen aus.";
-
-/* loco:698b3a4d553e334c1009a7e2 */
-"debugLevelSetting" = "Debug-Stufe";
-
-/* loco:698b35cccaddc9598c08a6c2 */
-"debugLogsDescription" = "Ermöglicht dem Infomaniak-Support, die Ursache eines Vorfalls zu identifizieren.";
 
 /* loco:698b164a5f781b3d5203de12 */
 "dataManagementSubtitle" = "Infomaniak respektiert Ihre Privatsphäre";
@@ -298,12 +277,6 @@
 
 /* loco:6979e389195e90fdc909d252 */
 "driveWakingUpErrorTitle" = "Aufwecken des kDrive läuft";
-/* loco:698b3654af04fbae590cbf82 */
-"enableDebugLogDescription" = "Diagnoseinformationen auf meinem Computer aufzeichnen.";
-
-/* loco:698b361c54ac23ef050755a2 */
-"enableDebugLogsSetting" = "Debug-Protokollierung aktivieren";
-
 
 /* loco:6998110a3f9ff4c3230a4eb2 */
 "errorConnectingToXPCServer" = "Es scheint, dass wir die App nicht laden können…";
@@ -316,15 +289,6 @@
 
 /* loco:69b3e9128555b02b5001ee42 */
 "errorWhileChangingSynchroMode" = "Fehler beim Ändern des Synchronisationsmodus";
-
-/* loco:698b37a3ff1c8782250e1a74 */
-"extendedLogDescription" = "Aktiviert die Erfassung zusätzlicher Informationen, die für den Support nützlich sind.";
-
-/* loco:698b3778571c7248480ed4c2 */
-"extendedLogSetting" = "Erweitertes detailliertes Protokoll";
-
-/* loco:698b37efff1c8782250e1a76 */
-"extendedLogWarning" = "Wenn diese Option aktiviert ist, läuft kDrive langsamer.";
 
 /* loco:6992ec7abaf88a24990d3e13 */
 "feedbackSetting" = "Helfen Sie uns, kDrive zu verbessern";
@@ -361,9 +325,6 @@
 
 /* loco:6964f0b575a31a8d9601a6d7 */
 "helpKDriveName" = "kDrive %@";
-
-/* loco:6989e175cdee4aba850e89b2 */
-"infomaniakSupport" = "Infomaniak Support";
 
 /* loco:696a481cf54b5acbc60209c2 */
 "informationBlockKDriveFullSubtitle" = "Geben Sie Speicherplatz frei oder aktualisieren Sie Ihren Tarif, um Ihre Dateien weiterhin zu synchronisieren.";
@@ -440,7 +401,7 @@
 
 
 /* loco:698b2f6aae1ca9d0290ad174 */
-"labelSameAsSystem" = "Wie das System";
+"labelSameAsSystem" = "Gleiches wie System";
 
 /* loco:6989ff974ef31503cb002e23 */
 "labelSize" = "Grösse";
@@ -466,36 +427,11 @@
 /* loco:698b0dd551a7a263e6030a72 */
 "languageSetting" = "Sprache";
 
-/* loco:698b02fbc4b83479960bbf92 */
-"largeFolderRecommendation" = "Der gesamte Ordner ist gross.\nUm den Upload zu beschleunigen, empfehlen wir, nur die letzte kDrive-Sitzung zu senden.";
-
 /* loco:698a1276e1c66ed33b03bf32 */
 "linkCopiedToClipboardTitle" = "Link in die Zwischenablage kopiert";
 
 /* loco:698b2e50ea6bcf51bf026fc2 */
 "matomoDescription" = "Matomo ist ein Analysetool, das ausschliesslich von Infomaniak gehostet und verwaltet wird, um zu verstehen, wie die Anwendung verwendet wird.\n\nDie Analyse dieser Daten ermöglicht es unserem Team, die Benutzeroberfläche der Anwendung kontinuierlich zu verbessern.";
-/* loco:698b392cacfe189ede0cf082 */
-"logLevelDebug" = "Debug";
-
-/* loco:698b3972f0be39d922008ec3 */
-"logLevelError" = "Fehler";
-
-/* loco:698b391e693b9b942d0006a2
- * Extended log level option in the debug level dropdown in advanced settings. */
-"logLevelExtended" = "Erweitert";
-
-/* loco:698b3982f6e48fd003019f52 */
-"logLevelFatal" = "Fatal";
-
-/* loco:698b393d2a881def5c0fe142 */
-"logLevelInfo" = "Info";
-
-/* loco:698b394a2a881def5c0fe144 */
-"logLevelWarning" = "Warnung";
-
-/* loco:6989f263fe556601b70fe7a2 */
-"logUploadPopupTitle" = "Debug-Ordner an Infomaniak Support senden";
-
 /* loco:698b11f969e305d1ce01e062 */
 "moveDeletedFilesToRecycleBinSetting" = "Gelöschte Dateien in den Papierkorb des Computers verschieben";
 
@@ -505,10 +441,7 @@
 /* loco:6992e9f20953b626df05ffc2 */
 "needHelpSetting" = "Brauchen Sie Hilfe?";
 /* loco:69ce15f8ac7c0ee6d7099c02 */
-"networkSettings" = "Netzwerk";
-
-/* loco:6992de465798e1839302bbc2 */
-"noAccountConnected" = "Fügen Sie ein Konto hinzu, um zu beginnen";
+"networkSettings" = "Network";
 
 /* loco:6989f957dd64bb04d70f39a2 */
 "noResultsFound" = "Keine Ergebnisse gefunden";
@@ -616,36 +549,6 @@
 
 /* loco:698b0ee1587496f4f5035cd2 */
 "openKDriveAtStartupSetting" = "KDrive beim Start des Computers öffnen";
-/* loco:698b2ef3d4aa9d35260e3484 */
-"proxyConnectionDescription" = "Legen Sie fest, wie kDrive eine Verbindung zum Internet herstellt.";
-
-/* loco:698b3452210436b0e501a3a2 */
-"proxyHost" = "Server";
-
-/* loco:698b347b1d024ca9f20d69a2 */
-"proxyNeedAuth" = "Authentifizierung erforderlich";
-
-/* loco:698b349f7ad01ee67e0d5f92 */
-"proxyPassword" = "Passwort";
-
-/* loco:698b345c116156e70a073a42 */
-"proxyPort" = "Port";
-
-/* loco:698b2e7edcb5f5b87b0d29e2
- * Title of the proxy settings section in advanced settings. */
-"proxySettings" = "Proxy-Einstellungen";
-
-/* loco:698b2ff2aa06201dc403c422 */
-"proxyType" = "Proxy-Typ";
-
-/* loco:698b2f2e89df53c9e4039b02 */
-"proxyTypeHTTP" = "Manuelle Konfiguration";
-
-/* loco:698b2f80dac62f80330a2412 */
-"proxyTypeNone" = "Keiner";
-
-/* loco:698b34ab7ad01ee67e0d5f94 */
-"proxyUser" = "Benutzername";
 
 /* loco:698af22fb4f7b3f2640d1493 */
 "releaseChannelBeta" = "Beta";
@@ -653,8 +556,18 @@
 /* loco:698af24c3d21055870072b12 */
 "releaseChannelInternal" = "Intern";
 
-/* loco:698b02a302385f4ff103bd62 */
-"sendLastSessionOnly" = "Nur letzte Sitzung senden";
+
+/* loco:69eb8137c1ea8e116a0ba282
+ * Search field placeholder in SearchSheetView. */
+"searchPlaceholder" = "Search...";
+
+/* loco:69eb8290d3fa21c4fb096d82
+ * Tooltip shown on search results when file is not available locally and will open in browser. */
+"searchResultOpenInBrowserTooltip" = "This file is not available locally and will be opened in your browser";
+
+/* loco:69eb8061e9130678990a5972
+ * Empty search state title in SearchSheetView before any query is entered. */
+"searchYourFiles" = "Search your files";
 
 
 /* loco:698b07172a4fff6e66027c94 */
