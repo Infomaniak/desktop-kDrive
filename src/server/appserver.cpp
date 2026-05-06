@@ -4418,6 +4418,7 @@ void AppServer::addError(const Error &error) const {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::insertError");
         return;
     }
+    if (!errorAlreadyExists) errorList.push_back(errorCopy);
 
     manageError(errorCopy, errorList, errorAlreadyExists);
 
