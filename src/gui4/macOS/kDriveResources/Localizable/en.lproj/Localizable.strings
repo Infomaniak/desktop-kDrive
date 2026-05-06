@@ -20,7 +20,6 @@
 /* loco:69a6d9dd08a75d40410b53f6 */
 "accessibilityBetaProgramPicker" = "Choosing a distribution channel";
 
-
 /* loco:69fa0b22dbdab357240dcb12
  * VoiceOver reads this when the user focuses the X button that clears the search field */
 "accessibilitySearchClear" = "Clear search";
@@ -77,7 +76,6 @@
 
 /* loco:69a6d9b44d26dc09aa0d0643 */
 "betaProgramTitle" = "Join the beta program";
-
 
 /* loco:696a483470f3b70399021c12 */
 "buttonAddStorage" = "Add Storage";
@@ -182,7 +180,6 @@
 /* loco:6964e1dfed4b6acb0107409a */
 "buttonSeeActivities" = "See activities";
 
-
 /* loco:698c5cb5f86b52c6fc001fc4 */
 "buttonSelectFolders" = "Select folders";
 
@@ -229,7 +226,6 @@
 "dataManagementSubtitle" = "Infomaniak respects your privacy";
 /* loco:698b35a408fd1ee25f08ab35 */
 "debugLogsSettings" = "Debug logs";
-
 
 /* loco:698c6bbd94b70c0d3d09cde4 */
 "dialogRemoveAccountContent" = "You will disconnect %@ from the application.\n\nThe synchronization folder will remain on your computer, but will no longer be synchronized with kDrive.\n\nAll your data will remain accessible online on kDrive.";
@@ -393,16 +389,11 @@
 /* loco:6989fec57ca0d7305008b1e2 */
 "labelName" = "Name";
 
-
-
-
 /* loco:698b5869ab41083f11042b52 */
 "labelNotifications" = "Notification";
 
 /* loco:69a6e4aceff2d992ad059324 */
 "labelOff" = "Off";
-
-
 
 /* loco:698b2f6aae1ca9d0290ad174 */
 "labelSameAsSystem" = "Same as system";
@@ -472,7 +463,6 @@
 /* loco:698c5c378bdea123d60afff7 */
 "onboardingAdvancedSettingsDriveExclusionDescription" = "Choose the folders to synchronize on this computer:";
 
-
 /* loco:698c62f8bde3b880ce05ea53 */
 "onboardingAdvancedSettingsDriveSelectionDescription" = "For each kDrive, you can choose where it is synced on your computer and which folders to synchronize.";
 
@@ -533,7 +523,6 @@
 /* loco:691deb477145f10ab4052cd4 */
 "onboardingLoginHintWebAuth" = "Login from your browser…";
 
-
 /* loco:68e8fa27d09187683c0679b2 */
 "onboardingLoginTitle" = "Welcome to kDrive";
 
@@ -561,7 +550,6 @@
 /* loco:698af24c3d21055870072b12 */
 "releaseChannelInternal" = "Internal";
 
-
 /* loco:69eb8137c1ea8e116a0ba282
  * Search field placeholder in SearchSheetView. */
 "searchPlaceholder" = "Search...";
@@ -573,7 +561,6 @@
 /* loco:69eb8061e9130678990a5972
  * Empty search state title in SearchSheetView before any query is entered. */
 "searchYourFiles" = "Search your files";
-
 
 /* loco:698b07172a4fff6e66027c94 */
 "selectFoldersToSyncDescription" = "Unselected folders will not be downloaded to your device. They will remain available online and will not be deleted.";
