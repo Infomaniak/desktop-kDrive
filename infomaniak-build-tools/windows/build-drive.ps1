@@ -153,7 +153,7 @@ function Get-Thumbprint {
     
     $thumbprint = 
     If ($upload) {
-        Get-ChildItem $certStore | Where-Object { $_.Subject -match "342efe9f-c725-49fb-9a8c-b2ce8e2fd1c2" -and $_.Issuer -match "adf1d8dc-3c04-4e80-bf61-6129d552fc01" } | Select -ExpandProperty Thumbprint
+        Get-ChildItem $certStore | Where-Object { $_.Subject -match "INFOMANIAK" -and $_.Issuer -match "Digicert Trusted G4 Code Signing Europe" } | Select -ExpandProperty Thumbprint
     } 
     Else {
         Get-ChildItem $certStore | Where-Object { $_.Subject -match "Windows11CI-1" -and $_.Issuer -match "Windows11CI-1" } | Select -ExpandProperty Thumbprint
