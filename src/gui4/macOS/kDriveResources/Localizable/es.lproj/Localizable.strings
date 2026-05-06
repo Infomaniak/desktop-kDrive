@@ -29,6 +29,10 @@
  * VoiceOver reads this when the search sheet opens so the user knows what modal they entered */
 "accessibilitySearchSheetLabel" = "Buscar tus archivos";
 
+/* loco:69fa0b2455ed5e00570ecf12
+ * VoiceOver reads this when placeholder skeleton rows are shown during search */
+"accessibilitySearching" = "Buscando…";
+
 /* loco:69b275fb3440db13f0011c03 */
 "accessibilitySelectSynchroMode" = "Seleccionar un modo de sincronización";
 

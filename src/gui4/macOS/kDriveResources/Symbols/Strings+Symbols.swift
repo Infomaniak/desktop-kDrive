@@ -21,6 +21,9 @@ public enum KDriveLocalizable {
   /// loco:69fa0b22dbdab357240dcb12
   ///  * VoiceOver reads this when the user focuses the X button that clears the search field
   public static let accessibilitySearchClear = KDriveLocalizable.tr("Localizable", "accessibilitySearchClear", fallback: "Clear search")
+  /// loco:69fa0b2455ed5e00570ecf12
+  ///  * VoiceOver reads this when placeholder skeleton rows are shown during search
+  public static let accessibilitySearching = KDriveLocalizable.tr("Localizable", "accessibilitySearching", fallback: "Searching…")
   /// loco:69fa0b2668d2d58f030a2422
   ///  * VoiceOver reads this when the search sheet opens so the user knows what modal they entered
   public static let accessibilitySearchSheetLabel = KDriveLocalizable.tr("Localizable", "accessibilitySearchSheetLabel", fallback: "Search your files")
