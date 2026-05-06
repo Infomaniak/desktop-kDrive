@@ -98,12 +98,19 @@ void CacheHydrator::loadSyncErrors() {
         syncErrors.reserve(list.size());
         serverErrors.reserve(list.size());
         for (const auto &info: list) {
-            if (info.level() == ErrorLevel::Server) {
-                serverErrors.push_back(info);
-                continue;
+            switch (info.level()) {
+                case ErrorLevel::Node:
+                case ErrorLevel::SyncPal:
+                    syncErrors.push_back(info);
+                    break;
+                case ErrorLevel::Server:
+                    serverErrors.push_back(info);
+                    break;
+                default:
+                    qCWarning(lcCacheHydrator) << "Received error with unknown level:" << static_cast<int>(info.level())
+                                               << "and dbId:" << info.dbId();
+                    continue; // Skip unknown error levels
             }
-
-            syncErrors.push_back(info);
         }
 
         _appCache.replaceSyncErrors(syncErrors);
