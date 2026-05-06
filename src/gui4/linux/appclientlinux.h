@@ -22,7 +22,7 @@
 #include "app/cache/cachepipeline.h"
 #include "app/cache/mainselectionstore.h"
 #include "app/cache/onboardingstate.h"
-#include "app/services/cachehydrator.h"
+#include "app/services/cachepopulator.h"
 #include "app/services/commservice.h"
 #include "app/services/driveservice.h"
 #include "app/services/serviceactiontracker.h"
@@ -90,7 +90,7 @@ class AppClientLinux : public QApplication {
         OnboardingState _onboardingState{_appCache, this};
         ServiceActionTracker _serviceActionTracker{this};
         ServiceEventBus _serviceEventBus{this};
-        CacheHydrator _cacheHydrator{_serverCommService, _appCache, this};
+        CachePopulator _cacheHydrator{_serverCommService, _appCache, this};
         UserService _userService{_serverCommService, _appCache, _serviceActionTracker, _serviceEventBus, this};
         DriveService _driveService{_serverCommService, _appCache, _serviceActionTracker, _serviceEventBus, this};
         SyncService _syncService{_serverCommService, _appCache, _serviceActionTracker, _serviceEventBus, this};
