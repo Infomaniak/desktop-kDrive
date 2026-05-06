@@ -334,9 +334,9 @@ void SocketCommServer::execute() {
     }
     _isListening = false;
 }
-void SocketCommServer::joinAndClearPostponedLostConnectionCbks() {
+void SocketCommServer::joinAndClearPostponedLostConnectionCbks() noexcept {
     // Join and remove all postponed lost-connection callback threads
-    for (const auto thread: _postponedLostConnectionCbks) {
+    for (const auto& thread: _postponedLostConnectionCbks) {
         if (thread->joinable()) {
             thread->join();
         }
