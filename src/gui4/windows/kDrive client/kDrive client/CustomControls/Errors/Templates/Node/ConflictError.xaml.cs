@@ -20,16 +20,14 @@ using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
 namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
 {
     [ErrorMetadata(
         Levels = new[] { ErrorLevel.Node },
         NodeTypes = new[] { NodeType.File, NodeType.Directory },
-        ConflictTypes = new[] { ConflictType.CreateCreate, ConflictType.EditEdit }
+        ConflictTypes = new[] { ConflictType.CreateCreate, ConflictType.EditEdit },
+        ShowInSystemTray = true
     )]
     public sealed partial class ConflictError : UserControl
     {

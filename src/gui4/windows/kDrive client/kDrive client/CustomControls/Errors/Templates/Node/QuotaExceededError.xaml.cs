@@ -28,7 +28,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
         Levels = new[] { ErrorLevel.Node },
         NodeTypes = new[] { NodeType.File, NodeType.Directory },
         ExitCodes = new[] { ExitCode.BackError },
-        ExitCauses = new[] { ExitCause.QuotaExceeded }
+        ExitCauses = new[] { ExitCause.QuotaExceeded },
+        ShowInSystemTray = true
     )]
     public sealed partial class QuotaExceededError : UserControl
     {

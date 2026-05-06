@@ -17,6 +17,7 @@
  */
 
 using DynamicData;
+using H.NotifyIcon;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ServerCommunication.Services;
 using Infomaniak.kDrive.TrayIcon;

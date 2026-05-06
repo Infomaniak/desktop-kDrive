@@ -74,7 +74,7 @@
                                   Foreground="{ThemeResource TextFillColorPrimary}" />
             </NavigationViewItem.Icon>
             <NavigationViewItem.InfoBadge>
-                <InfoBadge Style="{StaticResource AttentionDotInfoBadgeStyle}"
+                <InfoBadge Style="{StaticResource CriticalDotInfoBadgeStyle}"
                            VerticalAlignment="Center"
                            Visibility="{x:Bind ViewModel.SelectedSync.SyncErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay, FallbackValue=Collapsed}" />
             </NavigationViewItem.InfoBadge>

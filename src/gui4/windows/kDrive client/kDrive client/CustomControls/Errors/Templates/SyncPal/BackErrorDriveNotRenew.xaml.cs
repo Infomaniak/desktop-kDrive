@@ -25,7 +25,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
     [ErrorMetadata(
         Levels = new[] { ErrorLevel.SyncPal },
         ExitCodes = new[] { ExitCode.BackError },
-        ExitCauses = new[] { ExitCause.DriveNotRenew }
+        ExitCauses = new[] { ExitCause.DriveNotRenew },
+        ShowInSystemTray = true
     )]
     public sealed partial class BackErrorDriveNotRenew : UserControl
     {

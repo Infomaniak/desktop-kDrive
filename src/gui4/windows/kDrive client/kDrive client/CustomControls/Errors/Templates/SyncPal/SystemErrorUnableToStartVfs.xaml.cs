@@ -25,7 +25,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
     [ErrorMetadata(
         Levels = new[] { ErrorLevel.SyncPal },
         ExitCodes = new[] { ExitCode.SystemError },
-        ExitCauses = new[] { ExitCause.UnableToStartVfs }
+        ExitCauses = new[] { ExitCause.UnableToStartVfs },
+        ShowInSystemTray = true
     )]
     public sealed partial class SystemErrorUnableToStartVfs : UserControl
     {

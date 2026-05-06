@@ -203,6 +203,9 @@
     <Page Update="CustomControls\Errors\Templates\Node\NotEnoughDiskSpaceError.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="CustomControls\Errors\Templates\SyncPal\InvalidTokenError.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="CustomControls\Errors\Templates\SyncPal\DataErrorSyncDirChanged.xaml">
       <SubType>Designer</SubType>
     </Page>

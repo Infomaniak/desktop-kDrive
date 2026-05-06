@@ -23,17 +23,28 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
 {
     [ErrorMetadata(
         Levels = new[] { ErrorLevel.SyncPal },
-        ExitCodes = new[] { ExitCode.InvalidSync },
-        ExitCauses = new[] { ExitCause.SyncDirNestingError },
+        ExitCodes = new[] { ExitCode.InvalidToken },
         ShowInSystemTray = true
     )]
-    public sealed partial class InvalidSyncSyncDirNestingError : UserControl
+    public sealed partial class InvalidTokenError : UserControl
     {
         private Error Error { get; init; }
-        public InvalidSyncSyncDirNestingError(Error error)
+        public InvalidTokenError(Error error)
         {
             this.InitializeComponent();
             Error = error;
+        }
+
+        private async void ErrorCard_ActionClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            var frame = Utility.GetFrame(this);
+            if (frame is null)
+            {
+                Logger.Log(Logger.Level.Warning, "Unable to get the current frame");
+                return;
+            }
+
+            frame.Navigate(typeof(Pages.LogginErrorPage), new Pages.LogginErrorPage.NavigationParams { TryReconnectOnLoad = true });
         }
     }
 }

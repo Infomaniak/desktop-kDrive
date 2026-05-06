@@ -98,6 +98,7 @@ namespace Infomaniak.kDrive
 
         private void UpdateControlsVisibility()
         {
+            if (NavView is null || SplashScreen is null) return;
             if (!ViewModel.IsInitialized)
             {
                 SplashScreen.Visibility = Visibility.Visible;

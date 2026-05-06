@@ -24,7 +24,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
     [ErrorMetadata(
         Levels = new[] { ErrorLevel.Node },
         NodeTypes = new[] { NodeType.File, NodeType.Directory },
-        CancelTypes = new[] { CancelType.FileRescued }
+        CancelTypes = new[] { CancelType.FileRescued },
+        ShowInSystemTray = true
     )]
     public sealed partial class FileRescuedError : UserControl
     {

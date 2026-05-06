@@ -25,7 +25,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
     [ErrorMetadata(
         Levels = new[] { ErrorLevel.SyncPal },
         ExitCodes = new[] { ExitCode.BackError },
-        ExitCauses = new[] { ExitCause.DriveAsleep, ExitCause.DriveWakingUp }
+        ExitCauses = new[] { ExitCause.DriveAsleep, ExitCause.DriveWakingUp },
+        ShowInSystemTray = true
     )]
     public sealed partial class BackErrorDriveAsleep : UserControl
     {

@@ -25,7 +25,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
     [ErrorMetadata(
         Levels = new[] { ErrorLevel.SyncPal },
         ExitCodes = new[] { ExitCode.InvalidSync },
-        ExitCauses = new[] { ExitCause.SyncDirAccessError }
+        ExitCauses = new[] { ExitCause.SyncDirAccessError },
+        ShowInSystemTray = true
     )]
     public sealed partial class InvalidSyncSyncDirAccessError : UserControl
     {

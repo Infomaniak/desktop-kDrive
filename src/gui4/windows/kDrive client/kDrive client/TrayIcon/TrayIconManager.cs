@@ -19,6 +19,7 @@
 using DynamicData;
 using DynamicData.Binding;
 using H.NotifyIcon;
+using Infomaniak.kDrive.CustomControls.Errors;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
@@ -30,6 +31,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using Windows.UI.ViewManagement;
 using static Infomaniak.kDrive.App;
@@ -97,10 +99,19 @@ namespace Infomaniak.kDrive.TrayIcon
                 .AutoRefresh(sync => sync.SyncStatus) // react when a sync's Status changes
                 .AutoRefreshOnObservable(sync => sync.SyncErrors.ToObservableChangeSet()) // react when any sync's errors change
                 .Subscribe(_ => UpdateTrayIcon()));
+
+            // Subscribe to changes in the available update
+            _subscriptions.Add(_appModel.Settings.UpdateManager.WhenPropertyChanged(updateManager => updateManager.AvailableUpdate)
+                .Subscribe(_ => UpdateTrayIcon()));
         }
 
         private void UpdateTrayIcon()
         {
+            if (!_appModel.IsInitialized)
+            {
+                SetIconNeutral();
+                return;
+            }
 
             if (_appModel.AllSyncs.Any(sync => sync.SyncStatus == SyncStatus.Running))
             {
@@ -108,9 +119,15 @@ namespace Infomaniak.kDrive.TrayIcon
                 return;
             }
 
-            if (_appModel.AllSyncs.Any(sync => sync.SyncErrors.Count != 0))
+            if (_appModel.AllSyncs.Any(sync => sync.SyncErrors.Any(err => ErrorFactory.GetErrorCardInfos(err)?.Meta.ShowInSystemTray == true)))
             {
                 SetIconError();
+                return;
+            }
+
+            if (_appModel.Settings.UpdateManager.AvailableUpdate is not null)
+            {
+                SetIconNotification();
                 return;
             }
 
@@ -120,7 +137,7 @@ namespace Infomaniak.kDrive.TrayIcon
                 return;
             }
 
-            SetIconOk();
+            SetIconNeutral();
         }
 
         private async void UISettings_ColorValuesChanged(UISettings sender, object args)
@@ -129,30 +146,30 @@ namespace Infomaniak.kDrive.TrayIcon
             await Utility.RunOnUIThread(() => RefreshTheme());
         }
 
-        public void SetIconOk()
-        {
-            Logger.Log(Logger.Level.Debug, "Setting tray icon to 'ok' state.");
-            SetIcon("taskbar-ico");
-        }
         public void SetIconSync()
         {
             Logger.Log(Logger.Level.Debug, "Setting tray icon to 'sync' state.");
-            SetIcon("taskbar-ico-sync");
+            SetIcon("sync");
         }
         public void SetIconError()
         {
             Logger.Log(Logger.Level.Debug, "Setting tray icon to 'error' state.");
-            SetIcon("taskbar-ico-error");
+            SetIcon("error");
         }
         public void SetIconPause()
         {
-            Logger.Log(Logger.Level.Debug, "Setting tray icon to 'error' state.");
-            SetIcon("taskbar-ico-pause");
+            Logger.Log(Logger.Level.Debug, "Setting tray icon to 'pause' state.");
+            SetIcon("pause");
+        }
+        public void SetIconNotification()
+        {
+            Logger.Log(Logger.Level.Debug, "Setting tray icon to 'notification' state.");
+            SetIcon("notif");
         }
         public void SetIconNeutral()
         {
             Logger.Log(Logger.Level.Debug, "Setting tray icon to 'neutral' state.");
-            SetIcon("taskbar-ico");
+            SetIcon("neutral");
         }
 
         private async void ShowWindowCommand_ExecuteRequested(object? sender, ExecuteRequestedEventArgs args)
@@ -172,6 +189,9 @@ namespace Infomaniak.kDrive.TrayIcon
             App.ExitApplicationAndShutdownServer();
         }
 
+        [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = CharSet.Auto)]
+        extern static bool DestroyIcon(IntPtr handle);
+
         private void SetIcon(string fileName)
         {
             if (_trayIcon is null)
@@ -180,15 +200,16 @@ namespace Infomaniak.kDrive.TrayIcon
             try
             {
                 _currentIcon = fileName;
-                var imagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "logo", $"{_currentIcon}{GetThemeSuffix()}.ico");
+                var imagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "Custom", "Icons", "TrayIcons", $"{_currentIcon}{GetThemeSuffix()}.ico");
                 using var bitmap = new Bitmap(imagePath);
                 var iconHandle = bitmap.GetHicon();
                 var icon = Icon.FromHandle(iconHandle);
                 _trayIcon.UpdateIcon(icon);
+                DestroyIcon(iconHandle);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to set tray icon: {ex.Message}");
+                Logger.Log(Logger.Level.Warning, $"Failed to set tray icon: {ex.Message}");
             }
         }
 
