@@ -34,12 +34,12 @@ namespace KDC {
  * This is the single bridge for push-driven cache mutation in the Linux v4 services layer.
  *
  * It starts in pre-hydration mode: supported CommService push signals are connected to a drop logger only, so live server
- * mutations cannot race with CacheHydrator's initial full-snapshot replacements. Once markHydrated() is called after
- * CacheHydrator::bootstrapCompleted(), those temporary drop connections are removed and the live pipeline is installed.
+ * mutations cannot race with CachePopulator's initial full-snapshot replacements. Once markHydrated() is called after
+ * CachePopulator::bootstrapCompleted(), those temporary drop connections are removed and the live pipeline is installed.
  *
  * User/account/drive/sync signals are connected directly to the matching AppCache mutation slots in live mode. Error signals
  * keep custom routing because server errors and sync errors are stored separately in AppCache. The class owns only the signal
- * wiring; AppCache remains the cache authority, and CacheHydrator remains responsible for initial snapshot loading.
+ * wiring; AppCache remains the cache authority, and CachePopulator remains responsible for initial snapshot loading.
  */
 class CachePipeline : public QObject {
         Q_OBJECT
