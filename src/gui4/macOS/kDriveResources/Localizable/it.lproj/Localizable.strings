@@ -20,7 +20,6 @@
 /* loco:69a6d9dd08a75d40410b53f6 */
 "accessibilityBetaProgramPicker" = "Scelta del canale di distribuzione";
 
-
 /* loco:69fa0b22dbdab357240dcb12
  * VoiceOver reads this when the user focuses the X button that clears the search field */
 "accessibilitySearchClear" = "Cancella ricerca";
@@ -78,7 +77,6 @@
 /* loco:69a6d9b44d26dc09aa0d0643 */
 "betaProgramTitle" = "Partecipare al programma beta";
 
-
 /* loco:696a483470f3b70399021c12 */
 "buttonAddStorage" = "Aggiungere l’archiviazione";
 
@@ -108,7 +106,6 @@
 
 /* loco:68e673c48af12c42e80027c8 */
 "buttonCreateAccount" = "Creare un account";
-
 
 /* loco:698b14e52445668d9d0495a2 */
 "buttonDisconnectAccount" = "Disconnettere questo account";
@@ -181,7 +178,6 @@
 
 /* loco:6964e1dfed4b6acb0107409a */
 "buttonSeeActivities" = "Vedere le attività";
-
 
 /* loco:698c5cb5f86b52c6fc001fc4 */
 "buttonSelectFolders" = "Selezionare le cartelle";
@@ -392,16 +388,11 @@
 /* loco:6989fec57ca0d7305008b1e2 */
 "labelName" = "Nome";
 
-
-
-
 /* loco:698b5869ab41083f11042b52 */
 "labelNotifications" = "Notifica";
 
 /* loco:69a6e4aceff2d992ad059324 */
 "labelOff" = "Spento";
-
-
 
 /* loco:698b2f6aae1ca9d0290ad174 */
 "labelSameAsSystem" = "Come il sistema";
@@ -470,7 +461,6 @@
 /* loco:698c5c378bdea123d60afff7 */
 "onboardingAdvancedSettingsDriveExclusionDescription" = "Scegliere le cartelle da sincronizzare su questo computer:";
 
-
 /* loco:698c62f8bde3b880ce05ea53 */
 "onboardingAdvancedSettingsDriveSelectionDescription" = "Per ogni kDrive è possibile scegliere la posizione di sincronizzazione sul computer e le cartelle da sincronizzare.";
 
@@ -531,7 +521,6 @@
 /* loco:691deb477145f10ab4052cd4 */
 "onboardingLoginHintWebAuth" = "Connessione dal browser…";
 
-
 /* loco:68e8fa27d09187683c0679b2 */
 "onboardingLoginTitle" = "Benvenuto su kDrive";
 
@@ -559,7 +548,6 @@
 /* loco:698af24c3d21055870072b12 */
 "releaseChannelInternal" = "Interno";
 
-
 /* loco:69eb8137c1ea8e116a0ba282
  * Search field placeholder in SearchSheetView. */
 "searchPlaceholder" = "Cerca…";
@@ -571,7 +559,6 @@
 /* loco:69eb8061e9130678990a5972
  * Empty search state title in SearchSheetView before any query is entered. */
 "searchYourFiles" = "Cerca i tuoi file";
-
 
 /* loco:698b07172a4fff6e66027c94 */
 "selectFoldersToSyncDescription" = "Le cartelle non selezionate non verranno scaricate sul tuo dispositivo. Resteranno disponibili online e non verranno eliminate.";
@@ -726,7 +713,6 @@
 /* loco:69eb809ce1364c763a050862
  * Empty search state subtitle in SearchSheetView before the user enters a query. */
 "typeToStartSearching" = "Digita per iniziare la ricerca";
-
 
 /* loco:6981e8f0b024a7b4e00f7262 */
 "unavailableContentNoActivityDescription" = "I tuoi file sono accessibili e sincronizzati.";
