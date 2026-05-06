@@ -112,6 +112,8 @@ class AppCache : public QObject {
         void removeSyncError(ErrorDbId errorDbId);
         void upsertServerError(const ErrorInfo &info);
         void removeServerError(ErrorDbId errorDbId);
+        void upsertError(const ErrorInfo &info);
+        void removeError(ErrorDbId errorDbId);
 
     signals:
         // Coarse invalidation signals. Current QML-facing adapters should rebuild their read models from queries.
