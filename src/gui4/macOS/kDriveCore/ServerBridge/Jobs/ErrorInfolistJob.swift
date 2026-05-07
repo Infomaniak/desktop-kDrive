@@ -27,10 +27,13 @@ public struct ErrorInfoListJob: Sendable {
 
     public init() {}
 
+    /// The maximum limit matched what is done on windows
+    static let maxErrorInfoListLimit: Int32 = 1000
+
     @discardableResult
-    public func errorInfoList(limit: Int32) async throws -> [ErrorInfo] {
+    public func errorInfoList() async throws -> [ErrorInfo] {
         IKLogger.data.log("Query for errorInfo list")
-        let query = ErrorInfoListQuery(limit: limit)
+        let query = ErrorInfoListQuery(limit: Self.maxErrorInfoListLimit)
         let request = await RequestMessage<ErrorInfoListQuery>(num: RequestNum.ERROR_INFOLIST, body: query)
 
         let decodedMessage = try await queryFetcher.query(
