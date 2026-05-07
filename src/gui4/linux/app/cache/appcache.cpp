@@ -347,8 +347,7 @@ void AppCache::upsertError(const ErrorInfo &info) {
             upsertServerError(info);
             break;
         default:
-            qCWarning(lcAppCache) << "Received error with unknown level:" << static_cast<int>(info.level())
-                                  << "and dbId:" << info.dbId();
+            qCWarning(lcAppCache) << "Received error with unknown level:" << toInt(info.level()) << "and dbId:" << info.dbId();
     }
 }
 
