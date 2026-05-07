@@ -339,11 +339,13 @@ void AppCache::removeServerError(const ErrorDbId errorDbId) {
 
 void AppCache::upsertError(const ErrorInfo &info) {
     switch (info.level()) {
-        case ErrorLevel::Node:
-        case ErrorLevel::SyncPal:
+        using enum KDC::ErrorLevel;
+
+        case Node:
+        case SyncPal:
             upsertSyncError(info);
             break;
-        case ErrorLevel::Server:
+        case Server:
             upsertServerError(info);
             break;
         default:
