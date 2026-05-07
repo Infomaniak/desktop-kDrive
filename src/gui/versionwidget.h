@@ -65,7 +65,7 @@ class VersionWidget final : public QWidget {
         void refresh(UpdateState state = UpdateState::Unknown) const;
         void initVersionInfoBloc(PreferencesBlocWidget *prefBloc);
         void initBetaBloc(PreferencesBlocWidget *prefBloc);
-        void saveDistributionChannel(VersionChannel channel) const;
+        void saveDistributionChannel(DistributionChannel channel) const;
 
         bool _isStaff{false};
         bool _updatesAreEnabled{true};

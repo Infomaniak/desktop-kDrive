@@ -506,7 +506,7 @@ std::string toString(SyncStatus e);
 std::string toString(SyncStep e);
 std::string toString(UploadSessionType e);
 std::string toString(UpdateState e);
-std::string toString(VersionChannel e);
+std::string toString(DistributionChannel e);
 std::string toString(VirtualFileMode e);
 std::string toString(SyncConfiguration e);
 
@@ -600,7 +600,7 @@ struct ItemType {
 };
 
 struct VersionInfo {
-        VersionChannel channel = VersionChannel::Unknown;
+        DistributionChannel channel = DistributionChannel::Unknown;
         std::string tag; // Version number. Example: 3.6.4
         // std::string changeLog; // List of changes in this version, not used for now.
         uint64_t buildVersion{0}; // Example: 20240816
@@ -613,7 +613,7 @@ struct VersionInfo {
         }
 
         [[nodiscard]] bool isValid() const {
-            return channel != VersionChannel::Unknown && !tag.empty() && buildVersion != 0 && !downloadUrl.empty();
+            return channel != DistributionChannel::Unknown && !tag.empty() && buildVersion != 0 && !downloadUrl.empty();
         }
 
         [[nodiscard]] std::string fullVersion() const {
@@ -622,14 +622,8 @@ struct VersionInfo {
             return ss.str();
         }
 
-        [[nodiscard]] std::string beautifulVersion() const {
-            std::stringstream ss;
-            ss << tag << " (" << buildVersion << ")";
-            return ss.str();
-        }
-
         void clear() {
-            channel = VersionChannel::Unknown;
+            channel = DistributionChannel::Unknown;
             tag.clear();
             buildVersion = 0;
             buildMinOsVersion.clear();
@@ -666,8 +660,6 @@ struct VersionInfo {
             return out;
         }
 };
-
-using AllVersionsInfo = std::unordered_map<VersionChannel, VersionInfo>;
 
 struct NodeIds {
         DbNodeId dbNodeId;

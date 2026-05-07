@@ -791,19 +791,21 @@ std::string toString(const UpdateState e) {
     }
 }
 
-std::string toString(const VersionChannel e) {
+std::string toString(const DistributionChannel e) {
     switch (e) {
-        case VersionChannel::Prod:
+        case DistributionChannel::Prod:
             return "Prod";
-        case VersionChannel::Next:
+        case DistributionChannel::Next:
             return "Next";
-        case VersionChannel::Beta:
+        case DistributionChannel::Beta:
             return "Beta";
-        case VersionChannel::Internal:
+        case DistributionChannel::Internal:
             return "Internal";
-        case VersionChannel::Legacy:
+        case DistributionChannel::Legacy:
             return "Legacy";
-        case VersionChannel::Unknown:
+        case DistributionChannel::Test:
+            return "Test";
+        case DistributionChannel::Unknown:
             return "Unknown";
         default:
             return noConversionStr;
