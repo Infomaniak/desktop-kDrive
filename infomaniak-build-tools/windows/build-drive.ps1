@@ -463,10 +463,10 @@ function Sign-File {
     )
     Write-Host "Signing the file $filePath with thumbprint $thumbprint" -f Yellow
     if ($tokenPass) {
-      & "C:\Program Files (x86)\Microsoft SDKs\ClickOnce\SignTool\signtool.exe" sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256 /fd sha256 /td sha256 /v /debug /sm /d $description $filePath /password:$tokenPass
+      & "C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64\signtool.exe" sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256 /fd sha256 /td sha256 /v /debug /sm /d $description $filePath /password:$tokenPass
     }
     else {
-      & "C:\Program Files (x86)\Microsoft SDKs\ClickOnce\SignTool\signtool.exe" sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256 /fd sha256 /td sha256 /v /debug /sm /d $description $filePath
+      & "C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64\signtool.exe" sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256 /fd sha256 /td sha256 /v /debug /sm /d $description $filePath
     }
     $res = $LASTEXITCODE
     Write-Host "Signing exit code: $res" -ForegroundColor Yellow
