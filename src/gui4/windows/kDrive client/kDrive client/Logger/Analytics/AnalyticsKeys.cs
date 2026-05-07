@@ -11,7 +11,8 @@
         OnboardingSyncConfigurationPage,
         OnboardingFinalPage,
         DriveSetupDialog,
-        StartPauseButton
+        StartPauseButton,
+        SyncSelector
     }
 
     public enum EventName
@@ -50,6 +51,7 @@
         OpenKDriveWeb,
         OpenTrashWeb,
         OpenStorage,
-        RestartApp
+        RestartApp,
+        SyncSelected
     }
 }
