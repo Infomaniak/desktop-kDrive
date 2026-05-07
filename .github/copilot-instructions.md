@@ -25,7 +25,7 @@ Before proposing code or review comments:
 - When reviewing a PR, inspect SonarCloud findings for the PR if a SonarCloud MCP/tool is available.
 - Treat new SonarCloud issues as review-relevant context, especially correctness, reliability, security, and maintainability issues.
 - Never guess, infer, fabricate, or reconstruct SonarCloud findings from code alone. Only mention a SonarCloud issue when it was read from SonarCloud/tool output.
-- If SonarCloud MCP/tool access is unavailable or returns no data during review, say exactly that and continue with normal code review.
+- If SonarCloud MCP/tool access is unavailable or returns no data during review, include the note: "SonarCloud findings were unavailable during this review." Then continue with normal code review.
 - SonarCloud findings can be stale during a PR review. Use them as hints only, verify against the current diff, and be cautious about their freshness.
 - Do not duplicate SonarCloud findings verbatim unless they identify a concrete actionable problem in the changed code.
 
