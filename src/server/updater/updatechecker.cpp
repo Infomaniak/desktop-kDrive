@@ -28,9 +28,9 @@
 
 namespace KDC {
 
-ExitCode UpdateChecker::checkUpdateAvailability(UniqueId *id /*= nullptr*/) {
+ExitCode UpdateChecker::checkUpdateAvailability(const DistributionChannel channel, UniqueId *id /*= nullptr*/) {
     std::shared_ptr<AbstractNetworkJob> job;
-    if (const auto exitCode = generateGetAppVersionJob(job); exitCode != ExitCode::Ok) return exitCode;
+    if (const auto exitCode = generateGetAppVersionJob(channel, job); exitCode != ExitCode::Ok) return exitCode;
     if (id) *id = job->jobId();
 
     LOG_INFO(Log::instance()->getLogger(), "Looking for new app version...");
@@ -57,29 +57,6 @@ class VersionInfoCmp {
         }
 };
 
-const VersionInfo &UpdateChecker::versionInfo(const VersionChannel chosenChannel) {
-    if (!_isVersionReceived) return _defaultVersionInfo;
-    const VersionInfo &prodVersion = prodVersionInfo();
-
-    // If the user wants only `Production` versions, just return the current `Production` version.
-    if (chosenChannel == VersionChannel::Prod) return prodVersion;
-
-    // Otherwise, we need to check if there is not a newer version in other channels.
-    const VersionInfo &betaVersion =
-            _versionsInfo.contains(VersionChannel::Beta) ? _versionsInfo[VersionChannel::Beta] : _defaultVersionInfo;
-    const VersionInfo &internalVersion =
-            _versionsInfo.contains(VersionChannel::Internal) ? _versionsInfo[VersionChannel::Internal] : _defaultVersionInfo;
-    std::set<std::reference_wrapper<const VersionInfo>, VersionInfoCmp> sortedVersionList;
-    (void) sortedVersionList.insert(prodVersion);
-    (void) sortedVersionList.insert(betaVersion);
-    (void) sortedVersionList.insert(internalVersion);
-    for (const auto &versionInfo: sortedVersionList) {
-        if (versionInfo.get().channel <= chosenChannel) return versionInfo;
-    }
-
-    return _defaultVersionInfo;
-}
-
 void UpdateChecker::versionInfoReceived(const UniqueId jobId) {
     // A mutex is needed because this function can be run multiple times simultaneously when the computer wakes from sleep.
     const std::scoped_lock<std::mutex> lock(_mutex);
@@ -104,8 +81,7 @@ void UpdateChecker::versionInfoReceived(const UniqueId jobId) {
         LOG_ERROR(Log::instance()->getLogger(),
                   "Error in UpdateChecker::versionInfoReceived : " << getAppVersionJobPtr->exitInfo());
     } else {
-        _versionsInfo = getAppVersionJobPtr->versionsInfo();
-        _prodVersionChannel = getAppVersionJobPtr->prodVersionChannel();
+        _versionsInfo = getAppVersionJobPtr->versionInfo();
         _isVersionReceived = true;
     }
 
@@ -122,7 +98,7 @@ void UpdateChecker::versionInfoReceived(const UniqueId jobId) {
     _callback();
 }
 
-ExitCode UpdateChecker::generateGetAppVersionJob(std::shared_ptr<AbstractNetworkJob> &job) {
+ExitCode UpdateChecker::generateGetAppVersionJob(const DistributionChannel channel, std::shared_ptr<AbstractNetworkJob> &job) {
     AppStateValue appStateValue = "";
     if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::AppUid, appStateValue, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAppState");
@@ -143,7 +119,7 @@ ExitCode UpdateChecker::generateGetAppVersionJob(std::shared_ptr<AbstractNetwork
     }
 
     const auto &appUid = std::get<std::string>(appStateValue);
-    job = std::make_shared<GetAppVersionJob>(CommonUtility::platform(), appUid, userIdList);
+    job = std::make_shared<GetAppVersionJob>(channel, appUid, userIdList);
     return ExitCode::Ok;
 }
 

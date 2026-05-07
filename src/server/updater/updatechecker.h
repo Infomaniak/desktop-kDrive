@@ -33,25 +33,16 @@ class UpdateChecker {
 
         /**
          * @brief Asynchronously check for new version information.
+         * @param channel The distribution channel currently selected.
          * @param id Optional. ID of the created asynchronous job. Useful in tests.
          * @return ExitCode::Ok if the job has been successfully created.
          */
-        ExitCode checkUpdateAvailability(UniqueId *id = nullptr);
+        ExitCode checkUpdateAvailability(const DistributionChannel channel, UniqueId *id = nullptr);
 
         void setCallback(const std::function<void()> &callback);
 
-        /**
-         * @brief Return the version information. Implements some logic to always return the highest available versions according
-         * to the selected distribution channel. That means if the `Beta` version is newer than the `Internal` version, the the
-         * `Beta` version wins over the `Internal` one and must be proposed even if the user has selected the `Internal` channel.
-         * The rule is the `Production` version wins over all others, the `Beta` verison wins over the `Internal` version.
-         * @param chosenChannel The selected distribution channel.
-         * @return A reference to the found `VersionInfo` object. If not found, return a reference to default constructed, invalid
-         * `VersionInfo`object.
-         */
-        const VersionInfo &versionInfo(VersionChannel chosenChannel);
+        const VersionInfo &versionInfo() { return _versionsInfo; };
 
-        [[nodiscard]] const std::unordered_map<VersionChannel, VersionInfo> &versionsInfo() const { return _versionsInfo; }
         [[nodiscard]] bool isVersionReceived() const { return _isVersionReceived; }
         [[nodiscard]] bool appShouldBeBlocked() const { return _appShouldBeBlocked; }
 
@@ -65,28 +56,14 @@ class UpdateChecker {
         /**
          * @brief Create a shared pointer to the `GetAppVersionJob`. Override this method in test class to test different
          * scenarios.
+         * @param channel The distribution channel currently selected.
          * @param job The `GetAppVersionJob` we want to use in `checkUpdateAvailable()`.
          * @return ExitCode::Ok if the job has been successfully created.
          */
-        virtual ExitCode generateGetAppVersionJob(std::shared_ptr<AbstractNetworkJob> &job);
-
-        /**
-         * @brief Return the adequate version info, according to whether the current app has been selected in the progressive
-         * update distribution process.
-         * @return const reference on a VersionInfo
-         */
-        const VersionInfo &prodVersionInfo() {
-#if defined(KD_MACOS) || defined(KD_WINDOWS)
-            return _versionsInfo.contains(_prodVersionChannel) ? _versionsInfo[_prodVersionChannel] : _defaultVersionInfo;
-#else
-            return _versionsInfo.contains(VersionChannel::Prod) ? _versionsInfo[VersionChannel::Prod] : _defaultVersionInfo;
-#endif
-        }
+        virtual ExitCode generateGetAppVersionJob(const DistributionChannel channel, std::shared_ptr<AbstractNetworkJob> &job);
 
         std::function<void()> _callback = nullptr;
-        VersionChannel _prodVersionChannel{VersionChannel::Unknown};
-        const VersionInfo _defaultVersionInfo;
-        AllVersionsInfo _versionsInfo;
+        VersionInfo _versionsInfo;
         bool _isVersionReceived{false};
         bool _appShouldBeBlocked{false};
         std::mutex _mutex;

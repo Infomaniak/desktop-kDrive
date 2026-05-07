@@ -31,9 +31,7 @@ class AbstractUpdater {
         AbstractUpdater();
         virtual ~AbstractUpdater() = default;
 
-        [[nodiscard]] virtual const VersionInfo &versionInfo(const VersionChannel channel) const {
-            return _updateChecker->versionInfo(channel);
-        }
+        [[nodiscard]] virtual const VersionInfo &versionInfo() const { return _updateChecker->versionInfo(); }
         [[nodiscard]] const UpdateState &state() const { return _state; }
 
         /**
@@ -42,7 +40,7 @@ class AbstractUpdater {
          * @param id Optional. ID of the created asynchronous job. Useful in tests.
          * @return ExitCode::Ok if no errors.
          */
-        ExitCode checkUpdateAvailable(VersionChannel currentChannel, UniqueId *id = nullptr);
+        ExitCode checkUpdateAvailable(DistributionChannel currentChannel, UniqueId *id = nullptr);
 
         /**
          * @brief Start the installation.
@@ -66,13 +64,7 @@ class AbstractUpdater {
         virtual void unskipVersion();
         [[nodiscard]] static bool isVersionSkipped(const std::string &version);
 
-        void setCurrentChannel(const VersionChannel currentChannel) { _currentChannel = currentChannel; }
-
-        /* Get the channel of the currently installed version.
-         * If multiple channels refer to the current version, the closest to the production channel is returned.
-         * Production > Next > Beta > Internal
-         */
-        [[nodiscard]] VersionChannel currentVersionChannel() const;
+        void setCurrentChannel(const DistributionChannel currentChannel) { _currentChannel = currentChannel; }
 
         [[nodiscard]] bool appShouldBeBlocked() const { return _appShouldBeBlocked; }
 
@@ -82,17 +74,18 @@ class AbstractUpdater {
         inline virtual std::string getCurrentVersion() const { return CommonUtility::currentVersion(); }
         virtual bool checkMinOsVersion(const std::string &minOsVersion) const;
 
-        VersionChannel _currentChannel{VersionChannel::Unknown};
 
     private:
         void onAppVersionReceived();
 
+        DistributionChannel _currentChannel{DistributionChannel::Unknown};
         std::shared_ptr<UpdateChecker> _updateChecker;
         UpdateState _state{UpdateState::UpToDate}; // Current state of the update process.
         std::function<void(UpdateState)> _stateChangeCallback = nullptr;
         bool _appShouldBeBlocked{false};
 
         friend class TestAbstractUpdater;
+        friend class MockUpdater;
 };
 
 std::unique_ptr<AbstractUpdater> createUpdater();

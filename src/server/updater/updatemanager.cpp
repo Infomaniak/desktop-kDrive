@@ -52,14 +52,12 @@ UpdateManager::UpdateManager(QObject *parent) :
                        [this]() { setDistributionChannel(ParametersCache::instance()->parameters().distributionChannel()); });
 }
 
-void UpdateManager::setDistributionChannel(const VersionChannel channel) {
-    if (_currentChannel == channel) {
-        return;
-    }
+void UpdateManager::setDistributionChannel(const DistributionChannel channel) {
     _currentChannel = channel;
-    (void) _updater->checkUpdateAvailable(channel);
-    ParametersCache::instance()->parameters().setDistributionChannel(channel);
+    (void) _updater->checkUpdateAvailable(_currentChannel);
+    ParametersCache::instance()->parameters().setDistributionChannel(_currentChannel);
     ParametersCache::instance()->save();
+    sentry::Handler::instance()->setDistributionChannel(_currentChannel);
 }
 
 void UpdateManager::startInstaller() const {
@@ -85,9 +83,8 @@ void UpdateManager::slotUpdateStateChanged(const UpdateState newState) {
             break;
         }
         case UpdateState::ManualUpdateAvailable: {
-            emit updateAnnouncement(
-                    tr("New update available."),
-                    tr("Version %1 is available for download.").arg(_updater->versionInfo(_currentChannel).tag.c_str()));
+            emit updateAnnouncement(tr("New update available."),
+                                    tr("Version %1 is available for download.").arg(_updater->versionInfo().tag.c_str()));
             break;
         }
         case UpdateState::Available: {
@@ -96,7 +93,7 @@ void UpdateManager::slotUpdateStateChanged(const UpdateState newState) {
             break;
         }
         case UpdateState::Ready: {
-            if (AbstractUpdater::isVersionSkipped(_updater->versionInfo(_currentChannel).fullVersion())) break;
+            if (AbstractUpdater::isVersionSkipped(_updater->versionInfo().fullVersion())) break;
                 // The new version is ready to be installed
 #if defined(KD_WINDOWS)
             emit showUpdateDialog();
