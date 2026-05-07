@@ -99,11 +99,13 @@ void CachePopulator::loadSyncErrors() {
         serverErrors.reserve(list.size());
         for (const auto &info: list) {
             switch (info.level()) {
-                case ErrorLevel::Node:
-                case ErrorLevel::SyncPal:
+                using enum KDC::ErrorLevel;
+
+                case Node:
+                case SyncPal:
                     syncErrors.push_back(info);
                     break;
-                case ErrorLevel::Server:
+                case Server:
                     serverErrors.push_back(info);
                     break;
                 default:
