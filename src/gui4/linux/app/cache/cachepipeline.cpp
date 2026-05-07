@@ -66,7 +66,7 @@ CachePipeline::CachePipeline(CommService &commService, AppCache &appCache, QObje
 void CachePipeline::connectDropPipeline() {
     std::apply(
             [this](const auto &...connection) {
-                (_preHydrationConnections.push_back(
+                (_prePopulationConnections.push_back(
                          connect(&_commService, connection.signal, this,
                                  [signalName = connection.signalName](const auto &...) { logDroppedPush(signalName); })),
                  ...);
@@ -82,22 +82,22 @@ void CachePipeline::connectLivePipeline() {
             directCacheConnections);
 }
 
-void CachePipeline::markHydrated() {
-    if (_hydrated) {
+void CachePipeline::markPopulated() {
+    if (_populated) {
         return;
     }
 
-    _hydrated = true;
-    for (const auto &connection: _preHydrationConnections) {
+    _populated = true;
+    for (const auto &connection: _prePopulationConnections) {
         (void) QObject::disconnect(connection);
     }
-    _preHydrationConnections.clear();
+    _prePopulationConnections.clear();
     connectLivePipeline();
-    qCInfo(lcCachePipeline) << "Cache hydration completed; live cache push mutations enabled";
+    qCInfo(lcCachePipeline) << "Cache population completed; live cache push mutations enabled";
 }
 
 void CachePipeline::logDroppedPush(const char *const signalName) {
-    qCWarning(lcCachePipeline) << "Cache push dropped before hydration completed | signal:" << signalName;
+    qCWarning(lcCachePipeline) << "Cache push dropped before population completed | signal:" << signalName;
 }
 
 } // namespace KDC
