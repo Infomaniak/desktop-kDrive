@@ -10,12 +10,14 @@
         OnboardingConnectionFailedPage,
         OnboardingSyncConfigurationPage,
         OnboardingFinalPage,
-        DriveSetupDialog
+        DriveSetupDialog,
+        StartPauseButton
     }
 
     public enum EventName
     {
         StartSync,
+        PauseSync,
         OpenActivity,
         OpenSignInWeb,
         ShowAllActivities,
