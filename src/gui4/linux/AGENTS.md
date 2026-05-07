@@ -47,14 +47,14 @@
 - `app/cache/appcache.*`: durable graph-backed cache (`AppCache` QObject) — owns configured users/accounts/drives/syncs,
   split sync/server errors, per-user available drives, cascade removals, and derived read models.
 - `app/cache/cachepipeline.*`: unique bridge for `CommService -> AppCache` push signals.
-    - Drops push mutations before `CacheHydrator::bootstrapCompleted()` and logs the invariant violation.
+    - Drops push mutations before `CachePopulator::bootstrapCompleted()` and logs the invariant violation.
 - `app/cache/cachetypes.h`: cache read models and onboarding keys (`SyncContext`, `DriveContext`,
   `AvailableDriveContext`, `AvailableDriveKey`, `PendingSyncConfig`).
 - `app/cache/mainselectionstore.*`: sync-first main-shell selection owner (`currentSyncDbId`) and selection healing.
     - emits `currentSyncContextChanged()` as a coarse invalidation signal when the current sync context stays selected
       but the underlying cache graph changes.
 - `app/cache/onboardingstate.*`: onboarding-only selected user, selected available-drive keys, and pending sync configs.
-- `app/services/cachehydrator.*`: sequential initial snapshot loader for users, accounts, drives, syncs, and sync
+- `app/services/cachepopulator.*`: sequential initial snapshot loader for users, accounts, drives, syncs, and sync
   errors.
 - `app/services/driveservice.*`: targeted drive use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`;
   durable cache mutations stay signal-driven through `CachePipeline`.
@@ -97,7 +97,7 @@ cmake --build build-linux/build/build/Debug --target kDrive kdrive_qml -- -j 8
   available-drives snapshot.
 - `CachePipeline` owns the direct push-signal bridge from `CommService` to `AppCache`; service classes should not wire
   those pushes themselves.
-- `CachePipeline` must not let server pushes mutate `AppCache` before the initial `CacheHydrator` snapshot has completed.
+- `CachePipeline` must not let server pushes mutate `AppCache` before the initial `CachePopulator` snapshot has completed.
 - Full graph snapshots (`USER_INFOLIST`, `ACCOUNT_INFOLIST`, `DRIVE_INFOLIST`, `SYNC_INFOLIST`, initial error list) belong
   to `CachePopulator` bootstrap/reconnect only. Do not expose user/drive/sync full-refresh methods to QML services.
 - QML-facing services should provide targeted actions only; user/account/drive/sync cache consistency is push-signal-driven.
