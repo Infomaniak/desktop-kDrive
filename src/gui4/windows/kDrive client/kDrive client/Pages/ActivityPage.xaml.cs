@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-using Infomaniak.kDrive.CustomControls;
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.Pages.Settings;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
@@ -30,6 +30,7 @@ namespace Infomaniak.kDrive.Pages
 {
     public sealed partial class ActivityPage : Page
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel { get { return _viewModel; } }
         public ActivityPage()
@@ -39,7 +40,7 @@ namespace Infomaniak.kDrive.Pages
             Logger.Log(Logger.Level.Debug, "ActivityPage components initialized");
             UpdateTitleTemplate();
         }
- 
+
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             if (ViewModel.SelectedSync is null)
@@ -50,6 +51,7 @@ namespace Infomaniak.kDrive.Pages
             {
                 ViewModel.SelectedSyncChanged += ViewModel_SelectedSyncChanged;
                 ViewModel.SelectedSync.PropertyChanged += ViewModel_SelectedSync_PropertyChanged;
+                _analyticsService.TrackPageView(Analytics.Keys.Category.ActivityPage);
             }
         }
 
@@ -111,6 +113,19 @@ namespace Infomaniak.kDrive.Pages
                     TitleContentControl.ContentTemplate = (DataTemplate)this.Resources["LoadingTitleTemplate"];
                     break;
             }
+        }
+        private void ShowIncomingActivityComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (IsLoaded) return;
+            ComboBox? comboBox = sender as ComboBox;
+            if (comboBox is null) return;
+
+            if (comboBox.SelectedIndex == 0)
+                _analyticsService.TrackClick(Analytics.Keys.Category.ActivityPage, Analytics.Keys.EventName.ShowMyActivities);
+            else 
+                _analyticsService.TrackClick(Analytics.Keys.Category.ActivityPage, Analytics.Keys.EventName.ShowAllActivities);
+
+
         }
     }
 }

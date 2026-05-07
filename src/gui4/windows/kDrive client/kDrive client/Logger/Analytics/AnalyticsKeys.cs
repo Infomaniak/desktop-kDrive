@@ -3,11 +3,7 @@
     public enum Category
     {
         HomePage,
-        SettingsPage,
-        SyncErrorPage,
-        SyncItem,
-        SyncAction,
-        Other
+        ActivityPage
     }
 
     public enum EventName
@@ -15,5 +11,14 @@
         StartSync,
         OpenActivity,
         OpenLoginWeb,
+        ShowAllActivities,
+        ShowMyActivities,
+        OpenErrors,
+        OpenItemFolder,
+        OpenItemErrorFromIcon,
+        OpenItem,
+        OpenItemWeb,
+        CopyItemWebLink,
+        OpenItemError,
     }
 }

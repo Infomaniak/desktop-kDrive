@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -25,6 +26,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors
 {
     public partial class ErrorBar : UserControl
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private AppModel ViewModel { get; } = App.ServiceProvider.GetRequiredService<AppModel>();
 
         public ErrorBar()
@@ -41,6 +43,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors
             if (frame is not null)
             {
                 Logger.Log(Logger.Level.Info, "Navigating to ErrorPage.");
+                _analyticsService.TrackClick(Analytics.Keys.Category.ActivityPage, Analytics.Keys.EventName.OpenErrors);
                 frame.Navigate(typeof(Pages.Errors.ErrorPage));
             }
             else
