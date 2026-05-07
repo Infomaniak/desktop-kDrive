@@ -207,7 +207,7 @@ endif(WIN32)
 
 if(UNIX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wconversion -Wsign-conversion -Wimplicit-fallthrough -Wformat=2")
-    if(CMAKE_BUILD_TYPE MATCHES "Debug|RelWithDebInfo")
+    if(APPLE OR CMAKE_BUILD_TYPE MATCHES "Debug|RelWithDebInfo")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
     endif()
     if(APPLE)
