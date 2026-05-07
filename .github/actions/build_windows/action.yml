@@ -102,7 +102,7 @@ runs:
             REM Verify the KSP
             certutil.exe -csp "DigiCert Software Trust Manager KSP" -key -user
             REM Synchronize certificate
-            smctl windows certsync
+            smctl windows certsync --store="system"
           )
         shell: cmd
 
