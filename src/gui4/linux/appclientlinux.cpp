@@ -49,8 +49,8 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     (void) connect(&_ipcClient, &IpcClient::disconnected, this, &AppClientLinux::ipcDisconnected);
     (void) connect(&_ipcClient, &IpcClient::serverSignalReceived, &_signalDispatcher, &SignalDispatcher::dispatch);
     (void) connect(this, &AppClientLinux::ipcDisconnected, &_appCache, [this] { _appCache.clearAll(); });
-    (void) connect(&_cacheHydrator, &CachePopulator::bootstrapCompleted, &_cachePipeline, &CachePipeline::markHydrated);
-    (void) connect(this, &AppClientLinux::ipcConnected, this, [this] { _cacheHydrator.bootstrap(); });
+    (void) connect(&_cachePopulator, &CachePopulator::bootstrapCompleted, &_cachePipeline, &CachePipeline::markPopulated);
+    (void) connect(this, &AppClientLinux::ipcConnected, this, [this] { _cachePopulator.bootstrap(); });
     (void) connect(this, &QCoreApplication::aboutToQuit, this, [] { qCInfo(lcAppClientLinux) << "Qt aboutToQuit emitted"; });
 
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("appCache"), &_appCache);
