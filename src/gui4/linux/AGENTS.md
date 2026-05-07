@@ -56,8 +56,10 @@
 - `app/cache/onboardingstate.*`: onboarding-only selected user, selected available-drive keys, and pending sync configs.
 - `app/services/cachehydrator.*`: sequential initial snapshot loader for users, accounts, drives, syncs, and sync
   errors.
-- `app/services/driveservice.*`: drive use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`.
-- `app/services/syncservice.*`: sync use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`.
+- `app/services/driveservice.*`: targeted drive use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`;
+  durable cache mutations stay signal-driven through `CachePipeline`.
+- `app/services/syncservice.*`: targeted sync use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`;
+  durable cache mutations stay signal-driven through `CachePipeline`.
 - `ui/`: QML shell and design tokens.
 
 ## Build And Validation
@@ -96,6 +98,9 @@ cmake --build build-linux/build/build/Debug --target kDrive kdrive_qml -- -j 8
 - `CachePipeline` owns the direct push-signal bridge from `CommService` to `AppCache`; service classes should not wire
   those pushes themselves.
 - `CachePipeline` must not let server pushes mutate `AppCache` before the initial `CacheHydrator` snapshot has completed.
+- Full graph snapshots (`USER_INFOLIST`, `ACCOUNT_INFOLIST`, `DRIVE_INFOLIST`, `SYNC_INFOLIST`, initial error list) belong
+  to `CachePopulator` bootstrap/reconnect only. Do not expose user/drive/sync full-refresh methods to QML services.
+- QML-facing services should provide targeted actions only; user/account/drive/sync cache consistency is push-signal-driven.
 
 ## IPC And Error Handling
 
