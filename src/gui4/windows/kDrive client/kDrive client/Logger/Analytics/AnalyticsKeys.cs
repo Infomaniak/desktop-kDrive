@@ -13,8 +13,10 @@
         OnboardingFinalPage,
         DriveSetupDialog,
         StartPauseButton,
-        SyncSelector, 
+        SyncSelector,
         NavBar,
+        BatchConflictResolutionPage,
+        IndividualConflictResolutionPage
     }
 
     public enum EventName
@@ -54,12 +56,21 @@
         OpenTrashWeb,
         OpenStorage,
         RestartApp,
-        SyncSelected, 
+        SyncSelected,
         OpenHome,
         OpenSyncDir,
         OpenSettings,
         Expanded,
         ActivityBreadcrumb,
-        RefreshErrors
+        RefreshErrors,
+        ErrorBreadcrumb,
+        Apply,
+        OpenIndividualResolution,
+        KeepMostRecent,
+        KeepOnline,
+        KeepRemote,
+        BatchConflictResolutionBreadcrumb,
+        StartChoices,
+        ManageSingleConflict
     }
 }
