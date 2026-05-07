@@ -386,6 +386,25 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         notifyServerErrorsUpdate()
     }
 
+    public func updateErrors(_ errors: [ErrorInfo]) async throws {
+        serverErrors.removeAll()
+
+        for error in errors {
+            if error.level == .Server {
+                try await addOrUpdateServerError(error)
+            } else {
+                guard var synchro = getSynchro(synchroDbId: error.synchroDbId) else {
+                    continue
+                }
+                synchro.errors[error.dbId] = error
+                if synchro.latestError == nil {
+                    synchro.latestError = SynchroError(errorInfo: error)
+                }
+                try? updateSynchro(synchro)
+            }
+        }
+    }
+
     public func removeError(_ errorDbId: Int32) async throws {
         guard try await removeServerError(errorDbId) == nil else {
             return

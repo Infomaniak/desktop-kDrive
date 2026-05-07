@@ -39,6 +39,8 @@ public struct ErrorInfoListJob: Sendable {
         )
 
         let errorList = decodedMessage.body.errorInfoList.map { ErrorInfo(errorInfoMetadata: $0) }
+        try? await coherentCache.updateErrors(errorList)
+
         return errorList
     }
 }
