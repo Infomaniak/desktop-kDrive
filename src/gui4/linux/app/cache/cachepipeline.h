@@ -33,8 +33,8 @@ namespace KDC {
  *
  * This is the single bridge for push-driven cache mutation in the Linux v4 services layer.
  *
- * It starts in pre-hydration mode: supported CommService push signals are connected to a drop logger only, so live server
- * mutations cannot race with CachePopulator's initial full-snapshot replacements. Once markHydrated() is called after
+ * It starts in pre-population mode: supported CommService push signals are connected to a drop logger only, so live server
+ * mutations cannot race with CachePopulator's initial full-snapshot replacements. Once markPopulated() is called after
  * CachePopulator::bootstrapCompleted(), those temporary drop connections are removed and the live pipeline is installed.
  *
  * Push signals are connected directly to matching AppCache mutation slots in live mode. The class owns only the signal
@@ -47,7 +47,7 @@ class CachePipeline : public QObject {
         explicit CachePipeline(CommService &commService, AppCache &appCache, QObject *parent = nullptr);
 
     public slots:
-        void markHydrated();
+        void markPopulated();
 
     private:
         void connectDropPipeline();
@@ -56,8 +56,8 @@ class CachePipeline : public QObject {
 
         CommService &_commService;
         AppCache &_appCache;
-        std::vector<QMetaObject::Connection> _preHydrationConnections;
-        bool _hydrated{false};
+        std::vector<QMetaObject::Connection> _prePopulationConnections;
+        bool _populated{false};
 };
 
 } // namespace KDC

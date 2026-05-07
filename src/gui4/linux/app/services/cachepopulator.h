@@ -26,7 +26,7 @@
 namespace KDC {
 
 /**
- * Sequential initial snapshot loader for Linux v4 cache hydration.
+ * Sequential initial snapshot loader for Linux v4 cache population.
  *
  * Loads users, then accounts, then drives, then syncs, then errors so the
  * graph-backed AppCache is populated in parent-first order.
