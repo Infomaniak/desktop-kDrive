@@ -149,7 +149,7 @@ function Get-Version {
 function Get-Cert-Property {
     param (
         [bool] $upload,
-        [bool] $ci # On CI build machines, the certificate are located in local computer store
+        [bool] $ci, # On CI build machines, the certificate are located in local computer store
         [string] $property
     )
     if ($ci) {
