@@ -50,11 +50,9 @@ class UserService : public QObject {
 
         [[nodiscard]] bool loading() const { return _loading; }
 
-        Q_INVOKABLE void loadUsers();
         Q_INVOKABLE void loadAvailableDrives(qint64 userDbId);
         Q_INVOKABLE void deleteUser(qint64 userDbId);
         Q_INVOKABLE void requestLoginToken(const QString &code, const QString &codeVerifier);
-        Q_INVOKABLE [[nodiscard]] bool isLoadUsersPending() const;
         Q_INVOKABLE [[nodiscard]] bool isLoadAvailableDrivesPending(qint64 userDbId) const;
         Q_INVOKABLE [[nodiscard]] bool isDeleteUserPending(qint64 userDbId) const;
         Q_INVOKABLE [[nodiscard]] bool isLoginPending() const;
