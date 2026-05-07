@@ -180,14 +180,14 @@ function Get-Thumbprint {
     return $thumbprint
 }
 
-function Get-Issuer {
+function Get-Publisher {
     param (
         [bool] $upload,
         [bool] $ci # On CI build machines, the certificate are located in local computer store
     )
 
-    $thumbprint = Get-Cert-Property $upload $ci "Issuer"
-    return $thumbprint
+    $publisher = Get-Cert-Property $upload $ci "Subject"
+    return $publisher
 }
 
 function Get-Aumid {
@@ -255,7 +255,7 @@ function Build-Extension {
     $configuration = $buildType
     if ($buildType -eq "RelWithDebInfo") { $configuration = "Release" }
 
-    $publisher = Get-Issuer -Upload $upload -Ci $ci
+    $publisher = Get-Publisher -Upload $upload -Ci $ci
     Write-Host "Publisher: $publisher"
 
     $appxManifestPath = "$extPath\FileExplorerExtensionPackage\Package.appxmanifest"
