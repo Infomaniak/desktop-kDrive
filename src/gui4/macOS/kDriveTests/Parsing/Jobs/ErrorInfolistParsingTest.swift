@@ -52,10 +52,10 @@ struct ErrorInfoListParsingTest {
         #expect(response.id == 130)
         #expect(response.body.errorInfoList.count == 2)
 
-        let firstError = response.body.errorInfoList.first!
+        let firstError = try #require(response.body.errorInfoList.first)
         #expect(firstError.dbId == 1)
         #expect(firstError.syncDbId == 42)
-        #expect(firstError.time == 1717689600.0)
+        #expect(firstError.time == 1_717_689_600.0)
         #expect(firstError.level == KDC.ErrorLevel.Node)
         #expect(firstError.functionName == "testFunction")
         #expect(firstError.workerName == "testWorker")
