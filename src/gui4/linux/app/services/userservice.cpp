@@ -22,7 +22,6 @@
 
 namespace {
 constexpr char serviceKeyUser[] = "user";
-constexpr char actionLoadUsers[] = "loadUsers";
 constexpr char actionLoadAvailableDrives[] = "loadAvailableDrives";
 constexpr char actionDeleteUser[] = "deleteUser";
 constexpr char actionRequestLoginToken[] = "requestLoginToken";
@@ -47,20 +46,6 @@ UserService::UserService(CommService &commService, AppCache &appCache, ServiceAc
                    });
     (void) connect(&_appCache, &AppCache::usersChanged, this, [this] { pruneStaleAvailableDriveGenerations(); });
     setLoading(_serviceActionTracker.isServicePending(serviceKeyUser));
-}
-
-void UserService::loadUsers() {
-    beginAction(actionLoadUsers);
-
-    _commService.requestUserInfoList([this](const ExitInfo &exitInfo, const std::vector<UserInfo> &list) {
-        endAction(actionLoadUsers);
-        if (!exitInfo) {
-            notifyRequestFailure(exitInfo, RequestNum::USER_INFOLIST);
-            return;
-        }
-
-        _appCache.replaceUsers(list);
-    });
 }
 
 void UserService::loadAvailableDrives(const qint64 userDbId) {
@@ -123,10 +108,6 @@ void UserService::requestLoginToken(const QString &code, const QString &codeVeri
 
         emit loginTokenSucceeded(result.userDbId);
     });
-}
-
-bool UserService::isLoadUsersPending() const {
-    return isActionPending(actionLoadUsers);
 }
 
 bool UserService::isLoadAvailableDrivesPending(const qint64 userDbId) const {
