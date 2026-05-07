@@ -22,7 +22,6 @@
 
 namespace {
 constexpr char serviceKeyDrive[] = "drive";
-constexpr char actionLoadDrives[] = "loadDrives";
 constexpr char actionDeleteDrive[] = "deleteDrive";
 constexpr char actionUpdateDrive[] = "updateDrive";
 } // namespace
@@ -31,11 +30,10 @@ namespace KDC {
 
 Q_LOGGING_CATEGORY(lcDriveService, "gui.v4.driveservice", QtInfoMsg)
 
-DriveService::DriveService(CommService &commService, AppCache &appCache, ServiceActionTracker &serviceActionTracker,
-                           ServiceEventBus &serviceEventBus, QObject *const parent) :
+DriveService::DriveService(CommService &commService, ServiceActionTracker &serviceActionTracker, ServiceEventBus &serviceEventBus,
+                           QObject *const parent) :
     QObject(parent),
     _commService(commService),
-    _appCache(appCache),
     _serviceActionTracker(serviceActionTracker),
     _serviceEventBus(serviceEventBus) {
     (void) connect(&_serviceActionTracker, &ServiceActionTracker::servicePendingChanged, this,
@@ -48,20 +46,6 @@ DriveService::DriveService(CommService &commService, AppCache &appCache, Service
 
 bool DriveService::loading() const {
     return _serviceActionTracker.isServicePending(serviceKeyDrive);
-}
-
-void DriveService::loadDrives() {
-    beginAction(actionLoadDrives);
-
-    _commService.requestDriveInfoList([this](const ExitInfo &exitInfo, const std::vector<DriveInfo> &list) {
-        endAction(actionLoadDrives);
-        if (!exitInfo) {
-            notifyRequestFailure(exitInfo, RequestNum::DRIVE_INFOLIST);
-            return;
-        }
-
-        _appCache.replaceDrives(list);
-    });
 }
 
 void DriveService::deleteDrive(const qint64 driveDbId) {
@@ -86,10 +70,6 @@ void DriveService::updateDrive(const DriveInfo &driveInfo) {
                                             notifyRequestFailure(exitInfo, RequestNum::DRIVE_UPDATE);
                                         }
                                     });
-}
-
-bool DriveService::isLoadDrivesPending() const {
-    return isActionPending(actionLoadDrives);
 }
 
 bool DriveService::isDeleteDrivePending(const qint64 driveDbId) const {
