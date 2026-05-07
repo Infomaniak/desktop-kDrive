@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include "app/cache/appcache.h"
 #include "app/services/commservice.h"
 #include "app/services/serviceactiontracker.h"
 #include "app/services/serviceeventbus.h"
@@ -35,7 +34,7 @@ namespace KDC {
  *
  * Role:
  * - orchestrates sync lifecycle requests through CommService;
- * - refreshes AppCache snapshots on successful loads;
+ * - keeps durable cache mutations signal-driven through CachePipeline;
  * - reports transient failures through ServiceEventBus;
  * - registers durable pending state in ServiceActionTracker.
  */
@@ -44,12 +43,11 @@ class SyncService : public QObject {
         Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
 
     public:
-        explicit SyncService(CommService &commService, AppCache &appCache, ServiceActionTracker &serviceActionTracker,
+        explicit SyncService(CommService &commService, ServiceActionTracker &serviceActionTracker,
                              ServiceEventBus &serviceEventBus, QObject *parent = nullptr);
 
         [[nodiscard]] bool loading() const;
 
-        Q_INVOKABLE void loadSyncs();
         Q_INVOKABLE void addSync(qint64 userDbId, qint64 accountId, qint64 driveId, const QString &localFolderPath,
                                  const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync);
         Q_INVOKABLE void startSync(qint64 syncDbId);
@@ -59,7 +57,6 @@ class SyncService : public QObject {
         Q_INVOKABLE void findGoodPathForNewSync(const QString &basePath);
         Q_INVOKABLE void isPathValidForNewSync(const QString &path, int32_t syncConfiguration);
 
-        Q_INVOKABLE [[nodiscard]] bool isLoadSyncsPending() const;
         Q_INVOKABLE [[nodiscard]] bool isAddSyncPending() const;
         Q_INVOKABLE [[nodiscard]] bool isStartSyncPending(qint64 syncDbId) const;
         Q_INVOKABLE [[nodiscard]] bool isStopSyncPending(qint64 syncDbId) const;
@@ -84,7 +81,6 @@ class SyncService : public QObject {
         [[nodiscard]] bool isValidSyncConfigurationValue(int32_t syncConfiguration) const;
 
         CommService &_commService;
-        AppCache &_appCache;
         ServiceActionTracker &_serviceActionTracker;
         ServiceEventBus &_serviceEventBus;
         uint64_t _findGoodPathGeneration{0};
