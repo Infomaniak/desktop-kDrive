@@ -61,7 +61,7 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     _qmlEngine.loadFromModule(QStringLiteral("kDrive.UI"), QStringLiteral("Main"));
     if (_qmlEngine.rootObjects().isEmpty()) {
         qCCritical(lcAppClientLinux) << "QML root object creation failed";
-        std::exit(EXIT_FAILURE);
+        std::exit(EXIT_FAILURE); // TODO add a sentry message here.
     }
 
     qCDebug(lcAppClientLinux) << "IPC/cache/QML wiring initialized";
