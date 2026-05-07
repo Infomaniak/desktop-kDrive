@@ -24,80 +24,38 @@
 
 namespace KDC {
 
-static const std::string prodVersionKey = "prod_version";
-static const std::string applicationKey = "application";
-static const std::string publishedVersionsKey = "published_versions";
-static const std::string versionTypeProdKey = "production";
-static const std::string versionTypeNextKey = "production-next";
-static const std::string versionTypeBetaKey = "beta";
-static const std::string versionTypeInternalKey = "internal";
-static const std::string platformMacOsKey = "mac-os";
-static const std::string platformWindowsKey = "windows";
-static const std::string platformLinuxAmdKey = "linux-amd";
-static const std::string platformLinuxArmKey = "linux-arm";
 static const std::string tagKey = "tag";
 static const std::string buildVersionKey = "build_version";
-static const std::string buildMinOsVersionKey = "build_min_os_version";
 static const std::string downloadUrlKey = "download_link";
-static const std::string minVersionKey = "min_version";
+static const std::string buildMinOsVersionKey = "build_min_os_version";
+static const std::string applicationMinVersionKey = "application_min_version";
 
-GetAppVersionJob::GetAppVersionJob(const Platform platform, const std::string &appID) :
-    GetAppVersionJob(platform, appID, {}) {}
+GetAppVersionJob::GetAppVersionJob(const DistributionChannel currentChannel, const std::string &appID) :
+    GetAppVersionJob(currentChannel, appID, {}) {}
 
-GetAppVersionJob::GetAppVersionJob(const Platform platform, const std::string &appID, const std::vector<UserId> &userIdList) :
-    _platform(platform),
+GetAppVersionJob::GetAppVersionJob(const DistributionChannel currentChannel, const std::string &appID,
+                                   const std::vector<UserId> &userIdList) :
+    AbstractTokenNetworkJob(AbstractTokenNetworkJob::ApiType::Internal),
+    _currentChannel(currentChannel),
     _appId(appID),
     _userIdList(userIdList) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
-}
-
-std::string GetAppVersionJob::toStr(const Platform platform) {
-    switch (platform) {
-        case Platform::MacOS:
-            return platformMacOsKey;
-        case Platform::Windows:
-        case Platform::WindowsServer:
-            return platformWindowsKey;
-        case Platform::LinuxAMD:
-            return platformLinuxAmdKey;
-        case Platform::LinuxARM:
-            return platformLinuxArmKey;
-        default:
-            return "unknown";
-    }
-}
-
-VersionChannel toDistributionChannel(const std::string &str) {
-    if (str == versionTypeProdKey) return VersionChannel::Prod;
-    if (str == versionTypeNextKey) return VersionChannel::Next;
-    if (str == versionTypeBetaKey) return VersionChannel::Beta;
-    if (str == versionTypeInternalKey) return VersionChannel::Internal;
-    return VersionChannel::Unknown;
-}
-
-std::string GetAppVersionJob::toStr(const VersionChannel channel) {
-    switch (channel) {
-        case VersionChannel::Prod:
-            return versionTypeProdKey;
-        case VersionChannel::Next:
-            return versionTypeNextKey;
-        case VersionChannel::Beta:
-            return versionTypeBetaKey;
-        case VersionChannel::Internal:
-            return versionTypeInternalKey;
-        default:
-            return "unknown";
-    }
+    _apiVersion = 1;
 }
 
 std::string GetAppVersionJob::getSpecificUrl() {
-    std::stringstream ss;
-    ss << "/app-information/kstore-update/" << toStr(_platform) << "/com.infomaniak.drive/" << _appId;
-    return ss.str();
+    constexpr auto kStoreEndpoint = "app-information/applications/version";
+    return kStoreEndpoint;
 }
 
 void GetAppVersionJob::setQueryParameters(Poco::URI &uri) {
     for (const auto &id: _userIdList) {
+        uri.addQueryParameter("appId", _appId);
+        uri.addQueryParameter("channel", toString(_currentChannel));
+        uri.addQueryParameter("platform", toString(CommonUtility::platform()));
+        uri.addQueryParameter("os_version", CommonUtility::osVersion());
+        uri.addQueryParameter("store", "kStore");
+        uri.addQueryParameter("name", "com.infomaniak.drive");
         uri.addQueryParameter("user_ids[]", std::to_string(id));
     }
 }
@@ -105,14 +63,6 @@ void GetAppVersionJob::setQueryParameters(Poco::URI &uri) {
 ExitInfo GetAppVersionJob::handleError(const std::string &, const Poco::URI &uri) {
     LOG_DEBUG(_logger, "Request failed: " << Utility::formatRequest(uri, _backError.code(), _backError.description()));
     return {};
-}
-
-VersionChannel GetAppVersionJob::toDistributionChannel(const std::string &val) const {
-    if (val == versionTypeProdKey) return VersionChannel::Prod;
-    if (val == versionTypeNextKey) return VersionChannel::Next;
-    if (val == versionTypeBetaKey) return VersionChannel::Beta;
-    if (val == versionTypeInternalKey) return VersionChannel::Internal;
-    return VersionChannel::Unknown;
 }
 
 ExitInfo GetAppVersionJob::handleResponse(std::istream &is) {
@@ -123,51 +73,17 @@ ExitInfo GetAppVersionJob::handleResponse(std::istream &is) {
     const Poco::JSON::Object::Ptr dataObj = JsonParserUtility::extractJsonObject(jsonRes(), dataKey);
     if (!dataObj) return {ExitCode::BackError, ExitCause::MissingReplyData};
 
-    std::string tmpStr;
-    if (!JsonParserUtility::extractValue(dataObj, prodVersionKey, tmpStr))
+    _versionsInfo.channel = _currentChannel;
+    if (!JsonParserUtility::extractValue(dataObj, tagKey, _versionsInfo.tag))
         return {ExitCode::BackError, ExitCause::MissingReplyData};
-    _prodVersionChannel = toDistributionChannel(tmpStr);
-
-    const Poco::JSON::Object::Ptr applicationObj = JsonParserUtility::extractJsonObject(dataObj, applicationKey);
-    if (!applicationObj) return {ExitCode::BackError, ExitCause::MissingReplyData};
-
-    if (!JsonParserUtility::extractValue(applicationObj, minVersionKey, _minAppVersion))
+    if (!JsonParserUtility::extractValue(dataObj, buildVersionKey, _versionsInfo.buildVersion))
         return {ExitCode::BackError, ExitCause::MissingReplyData};
-
-
-    const Poco::JSON::Array::Ptr publishedVersions = JsonParserUtility::extractArrayObject(applicationObj, publishedVersionsKey);
-    if (!publishedVersions) return {ExitCode::BackError, ExitCause::MissingReplyData};
-
-    for (const auto &versionInfo: *publishedVersions) {
-        const auto &obj = versionInfo.extract<Poco::JSON::Object::Ptr>();
-        std::string versionType;
-        if (!JsonParserUtility::extractValue(obj, typeKey, versionType))
-            return {ExitCode::BackError, ExitCause::MissingReplyData};
-
-        const VersionChannel channel = toDistributionChannel(versionType);
-        if (channel == VersionChannel::Unknown) {
-            LOG_INFO(_logger, "Skipping unknown version channel: " << versionType);
-            continue;
-        }
-        _versionsInfo[channel].channel = channel;
-
-        (void) JsonParserUtility::extractValue(obj, tagKey, _versionsInfo[channel].tag);
-        (void) JsonParserUtility::extractValue(obj, buildVersionKey, _versionsInfo[channel].buildVersion);
-        (void) JsonParserUtility::extractValue(obj, buildMinOsVersionKey, _versionsInfo[channel].buildMinOsVersion);
-        (void) JsonParserUtility::extractValue(obj, downloadUrlKey, _versionsInfo[channel].downloadUrl);
-
-        if (!_versionsInfo[channel].isValid()) {
-            if (channel == VersionChannel::Prod) {
-                LOG_ERROR(_logger, "Missing mandatory value for production version");
-                _versionsInfo.clear();
-                return {ExitCode::BackError, ExitCause::MissingReplyData};
-            }
-
-            (void) _versionsInfo.erase(channel);
-            LOG_WARN(_logger, "Missing mandatory value for channel: " << versionType);
-            continue;
-        }
-    }
+    if (!JsonParserUtility::extractValue(dataObj, buildMinOsVersionKey, _versionsInfo.buildMinOsVersion))
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+    if (!JsonParserUtility::extractValue(dataObj, downloadUrlKey, _versionsInfo.downloadUrl))
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+    if (!JsonParserUtility::extractValue(dataObj, applicationMinVersionKey, _minAppVersion))
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
 
     return ExitCode::Ok;
 }

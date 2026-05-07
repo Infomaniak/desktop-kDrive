@@ -41,7 +41,9 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
             DriveByUser,
             Profile,
             NotifyDrive,
-            Desktop
+            Desktop,
+            Internal,
+            InternalUnauthenticated
         };
 
         /// @throw std::runtime_error
@@ -102,6 +104,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
 
         bool _accessTokenAlreadyRefreshed{false};
 
+        void fetchDriveDbIdFromSync();
         virtual ApiToken loadApiToken();
 
         std::string getUrl() override;

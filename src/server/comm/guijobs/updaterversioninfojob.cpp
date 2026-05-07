@@ -36,31 +36,16 @@ UpdaterVersionInfoJob::UpdaterVersionInfoJob(std::shared_ptr<CommManager> commMa
 }
 
 ExitInfo UpdaterVersionInfoJob::deserializeInputParms() {
-    constexpr auto logMessage = "Exception in UpdaterVersionInfoJob::readParamValue: error=";
-    try {
-        readParamValue(inParamsChannel, _channel);
-    } catch (const Poco::Exception &pocoException) {
-        LOG_WARN(_logger, logMessage << pocoException.message());
-
-        return ExitCode::LogicError;
-    } catch (const CommonUtility::InvalidEnumerationValue &cuException) {
-        LOG_WARN(_logger, logMessage << cuException.what());
-
-        return ExitCode::LogicError;
-    }
-
     return ExitCode::Ok;
 }
 
 ExitInfo UpdaterVersionInfoJob::serializeOutputParms() {
     writeParamValue(outParamsVersionInfo, _versionInfo, info2DynamicVar<VersionInfo>);
-
     return ExitCode::Ok;
 }
 
 ExitInfo UpdaterVersionInfoJob::process() {
-    _versionInfo = _commManager->appServer().getVersionInfo(_channel);
-
+    _versionInfo = _commManager->appServer().getVersionInfo();
     return ExitCode::Ok;
 }
 

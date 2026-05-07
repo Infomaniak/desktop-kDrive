@@ -76,7 +76,9 @@ AbstractTokenNetworkJob::AbstractTokenNetworkJob(const ApiType apiType, const Us
     checkParametersValidity();
     _apiToken = loadApiToken();
 
-    addRawHeader("Authorization", "Bearer " + _apiToken.accessToken());
+    if (!_apiToken.accessToken().empty()) {
+        addRawHeader("Authorization", "Bearer " + _apiToken.accessToken());
+    }
 }
 
 AbstractTokenNetworkJob::AbstractTokenNetworkJob(const ApiType apiType, const bool returnJson /*= true*/) :
@@ -502,32 +504,41 @@ ApiToken AbstractTokenNetworkJob::retrieveApiTokenFromUserCache() {
     }
 }
 
+void AbstractTokenNetworkJob::fetchDriveDbIdFromSync() {
+    // Fetch the drive identifier of the first available sync.
+    std::vector<Sync> syncList;
+    if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
+        assert(false);
+        const std::string err{"Error in ParmsDb::selectAllSyncs"};
+        LOG_WARN(_logger, err);
+        throw DbError(err);
+    }
+
+    if (syncList.empty()) {
+        if (_apiType == ApiType::Internal) {
+            // OK, some internal API might be called authenticated or unauthenticated
+            return;
+        }
+        assert(false);
+        const std::string err{"No sync found"};
+        LOG_WARN(_logger, err);
+        throw DataError(err);
+    }
+
+    _driveDbId = syncList[0].driveDbId();
+}
+
 ApiToken AbstractTokenNetworkJob::loadApiToken() {
     ApiToken apiToken;
-    if (_apiType == ApiType::Desktop) {
-        // Fetch the drive identifier of the first available sync.
-        std::vector<Sync> syncList;
-        if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
-            assert(false);
-            const std::string err{"Error in ParmsDb::selectAllSyncs"};
-            LOG_WARN(_logger, err);
-            throw DbError(err);
-        }
-
-        if (syncList.empty()) {
-            assert(false);
-            const std::string err{"No sync found"};
-            LOG_WARN(_logger, err);
-            throw DataError(err);
-        }
-
-        _driveDbId = syncList[0].driveDbId();
+    if (_apiType == ApiType::Desktop || _apiType == ApiType::Internal) {
+        fetchDriveDbIdFromSync();
     }
 
     switch (_apiType) {
         case ApiType::Drive:
         case ApiType::Desktop:
-        case ApiType::NotifyDrive: {
+        case ApiType::NotifyDrive:
+        case ApiType::Internal: {
             if (_driveDbId) loadUserInfoFromDriveDbId();
             apiToken = retrieveApiTokenFromUserCache();
             break;
@@ -538,6 +549,7 @@ ApiToken AbstractTokenNetworkJob::loadApiToken() {
             apiToken = retrieveApiTokenFromUserCache();
             break;
         }
+        case ApiType::InternalUnauthenticated:
         default:
             // No token required
             break;

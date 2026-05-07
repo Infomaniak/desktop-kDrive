@@ -118,7 +118,10 @@ void AbstractNetworkJob::logRequestInfo() {
     LOG_DEBUG(_logger, "Accept: " << acceptHeader());
     LOG_DEBUG(_logger, "X-Request-ID: " << _requestUuid);
     for (const auto &[headerKey, headerValue]: _rawHeaders) {
-        if (headerKey == "Authorization") continue;
+        if (headerKey == "Authorization") {
+            LOG_DEBUG(_logger, "Authorization: Bearer *****");
+            continue;
+        }
         LOG_DEBUG(_logger, headerKey << ": " << headerValue);
     }
     if (!_data.empty()) {

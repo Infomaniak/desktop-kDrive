@@ -28,8 +28,6 @@ class UpdaterVersionInfoJob : public AbstractGuiJob {
                               std::shared_ptr<AbstractCommChannel> channel);
 
     private:
-        // Input parameter
-        VersionChannel _channel{VersionChannel::Unknown};
         // Output parameters
         VersionInfo _versionInfo;
 
