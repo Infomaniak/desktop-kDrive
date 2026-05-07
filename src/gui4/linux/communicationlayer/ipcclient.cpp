@@ -144,8 +144,7 @@ void IpcClient::sendRequest(const RequestNum num, const Poco::DynamicStruct &par
                                 << ")"; // See qabstractsocket.h#SocketState
         exit(EXIT_FAILURE);
     }
-    const int32_t id = _nextId;
-    ++_nextId;
+    const int32_t id = _nextId++;
 
     Poco::DynamicStruct ipcMessage;
     ipcMessage[msgType] = toInt(GuiJobType::Query);
