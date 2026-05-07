@@ -24,7 +24,6 @@
 
 namespace {
 constexpr char serviceKeySync[] = "sync";
-constexpr char actionLoadSyncs[] = "loadSyncs";
 constexpr char actionAddSync[] = "addSync";
 constexpr char actionStartSync[] = "startSync";
 constexpr char actionStopSync[] = "stopSync";
@@ -38,11 +37,10 @@ namespace KDC {
 
 Q_LOGGING_CATEGORY(lcSyncService, "gui.v4.syncservice", QtInfoMsg)
 
-SyncService::SyncService(CommService &commService, AppCache &appCache, ServiceActionTracker &serviceActionTracker,
-                         ServiceEventBus &serviceEventBus, QObject *const parent) :
+SyncService::SyncService(CommService &commService, ServiceActionTracker &serviceActionTracker, ServiceEventBus &serviceEventBus,
+                         QObject *const parent) :
     QObject(parent),
     _commService(commService),
-    _appCache(appCache),
     _serviceActionTracker(serviceActionTracker),
     _serviceEventBus(serviceEventBus) {
     (void) connect(&_serviceActionTracker, &ServiceActionTracker::servicePendingChanged, this,
@@ -55,20 +53,6 @@ SyncService::SyncService(CommService &commService, AppCache &appCache, ServiceAc
 
 bool SyncService::loading() const {
     return _serviceActionTracker.isServicePending(serviceKeySync);
-}
-
-void SyncService::loadSyncs() {
-    beginAction(actionLoadSyncs);
-
-    _commService.requestSyncInfoList([this](const ExitInfo &exitInfo, const std::vector<SyncInfo> &list) {
-        endAction(actionLoadSyncs);
-        if (!exitInfo) {
-            notifyRequestFailure(exitInfo, RequestNum::SYNC_INFOLIST);
-            return;
-        }
-
-        _appCache.replaceSyncs(list);
-    });
 }
 
 void SyncService::addSync(const qint64 userDbId, const qint64 accountId, const qint64 driveId, const QString &localFolderPath,
@@ -189,10 +173,6 @@ void SyncService::isPathValidForNewSync(const QString &path, const int32_t syncC
 
                                                   emit pathValidationReceived(isValid);
                                               });
-}
-
-bool SyncService::isLoadSyncsPending() const {
-    return isActionPending(actionLoadSyncs);
 }
 
 bool SyncService::isAddSyncPending() const {

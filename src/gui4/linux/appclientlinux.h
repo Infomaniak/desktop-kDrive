@@ -92,8 +92,8 @@ class AppClientLinux : public QApplication {
         ServiceEventBus _serviceEventBus{this};
         CachePopulator _cachePopulator{_serverCommService, _appCache, this};
         UserService _userService{_serverCommService, _appCache, _serviceActionTracker, _serviceEventBus, this};
-        DriveService _driveService{_serverCommService, _appCache, _serviceActionTracker, _serviceEventBus, this};
-        SyncService _syncService{_serverCommService, _appCache, _serviceActionTracker, _serviceEventBus, this};
+        DriveService _driveService{_serverCommService, _serviceActionTracker, _serviceEventBus, this};
+        SyncService _syncService{_serverCommService, _serviceActionTracker, _serviceEventBus, this};
         QQmlApplicationEngine _qmlEngine;
 };
 
