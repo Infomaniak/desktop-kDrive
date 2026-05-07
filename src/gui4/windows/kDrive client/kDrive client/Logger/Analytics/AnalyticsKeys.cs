@@ -48,6 +48,8 @@
         OpenFavoritesWeb,
         OpenSharedWeb,
         OpenKDriveWeb,
-        OpenTrashWeb
+        OpenTrashWeb,
+        OpenStorage,
+        RestartApp
     }
 }
