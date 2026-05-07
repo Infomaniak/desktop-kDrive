@@ -993,39 +993,48 @@ ExitCode SyncPal::fileRemoteIdFromLocalPath(const SyncPath &path, NodeId &nodeId
     return ExitCode::Ok;
 }
 
-bool SyncPal::checkIfExistsOnServer(const SyncPath &path, bool &exists) const {
+ExitInfo SyncPal::checkIfExistsOnServer(const SyncPath &path, bool &exists) const {
     exists = false;
 
-    if (!_remoteFSObserverWorker) return false;
+    if (!_remoteFSObserverWorker) return {ExitCode::LogicError};
 
     // Path is normalized on server side
     SyncPath normalizedPath;
     if (!Utility::normalizedSyncPath(path, normalizedPath)) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(path));
-        return false;
+        return ExitCode::SystemError;
     }
-    const NodeId nodeId = liveSnapshot(ReplicaSide::Remote).itemId(normalizedPath);
-    exists = !nodeId.empty();
-    return true;
+
+    NodeId nodeId;
+    if (const auto exitInfo = liveSnapshot(ReplicaSide::Remote).getItemId(normalizedPath, nodeId); !exitInfo) {
+        if (exitInfo.cause() == ExitCause::NotFound) {
+            exists = false;
+            return ExitCode::Ok;
+        } else {
+            return exitInfo;
+        }
+    }
+
+    exists = true;
+    return ExitCode::Ok;
 }
 
-bool SyncPal::checkIfCanShareItem(const SyncPath &path, bool &canShare) const {
+ExitInfo SyncPal::checkIfCanShareItem(const SyncPath &path, bool &canShare) const {
     canShare = false;
 
-    if (!_remoteFSObserverWorker) return false;
+    if (!_remoteFSObserverWorker) return ExitCode::LogicError;
 
     // Path is normalized on server side
     SyncPath normalizedPath;
     if (!Utility::normalizedSyncPath(path, normalizedPath)) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(path));
-        return false;
+        return ExitCode::SystemError;
     }
 
-    if (const NodeId nodeId = liveSnapshot(ReplicaSide::Remote).itemId(normalizedPath); !nodeId.empty()) {
-        canShare = liveSnapshot(ReplicaSide::Remote).canShare(nodeId);
-    }
-
-    return true;
+    NodeId nodeId;
+    if (const auto exitInfo = liveSnapshot(ReplicaSide::Remote).getItemId(normalizedPath, nodeId); !exitInfo) return exitInfo;
+    canShare = liveSnapshot(ReplicaSide::Remote).canShare(nodeId);
+    return ExitCode::Ok;
 }
 
 ExitCode SyncPal::syncIdSet(SyncNodeType type, NodeSet &nodeIdSet) {
@@ -1472,8 +1481,16 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool
     LOG_IF_FAIL(_remoteFSObserverWorker)
     if (!_localFSObserverWorker || !_remoteFSObserverWorker) return ExitCode::LogicError;
 
-    NodeId localNodeId = liveSnapshot(ReplicaSide::Local).itemId(relativeLocalPath);
-    NodeId remoteNodeId = liveSnapshot(ReplicaSide::Remote).itemId(relativeLocalPath);
+    NodeId localNodeId;
+    if (const auto exitInfo = liveSnapshot(ReplicaSide::Local).getItemId(relativeLocalPath, localNodeId);
+        !exitInfo && exitInfo.cause() != ExitCause::NotFound) {
+        return exitInfo;
+    }
+    NodeId remoteNodeId;
+    if (const auto exitInfo = liveSnapshot(ReplicaSide::Remote).getItemId(relativeLocalPath, remoteNodeId);
+        !exitInfo && exitInfo.cause() != ExitCause::NotFound) {
+        return exitInfo;
+    }
 
     // File type cannot be fetched for an access denied item, using File as default.
     Error error(syncDbId(), localNodeId, remoteNodeId, NodeType::File, relativeLocalPath, ConflictType::None,

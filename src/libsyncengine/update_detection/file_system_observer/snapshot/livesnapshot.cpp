@@ -129,6 +129,15 @@ bool LiveSnapshot::updateItem(const SnapshotItem &newItem) {
 }
 
 bool LiveSnapshot::removeItem(const NodeId itemId) {
+    if (itemId.empty()) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in LiveSnapshot::removeItem: empty item ID argument.");
+        return false;
+    }
+    if (itemId == rootFolderId()) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in LiveSnapshot::removeItem: cannot remove root folder.");
+        return false;
+    }
+
     if (auto item = findItem(itemId); item) {
         return removeItem(item);
     }
