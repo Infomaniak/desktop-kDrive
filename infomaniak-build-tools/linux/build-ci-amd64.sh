@@ -128,7 +128,7 @@ export QTDIR
 extract_debug () {
     objcopy --only-keep-debug "$1/$2" "$CONTENTDIR/$2-amd64.dbg"
     objcopy --strip-debug "$1/$2"
-    objcopy "--add-gnu-debuglink=$CONTENTDIR/kDrive-amd64.dbg" "$1/$2"
+    objcopy "--add-gnu-debuglink=$CONTENTDIR/$2-amd64.dbg" "$1/$2"
 }
 
 mkdir -p "$APPDIR"
