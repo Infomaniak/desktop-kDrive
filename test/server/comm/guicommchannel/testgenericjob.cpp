@@ -25,9 +25,9 @@ namespace KDC {
 void TestGuiCommChannel::testGenericJob(const CommString &query, const CommString &answer, const CommString &cbkAnswer,
                                         const std::function<void(std::shared_ptr<AbstractGuiJob>)> &processFct) {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    assert(cbkAnswer.empty());
+    CPPUNIT_ASSERT(cbkAnswer.empty());
 #else
-    assert(!cbkAnswer.empty());
+    CPPUNIT_ASSERT(!cbkAnswer.empty());
 #endif
 
     auto test = [&](const CommString &testQuery, std::shared_ptr<AbstractCommChannel> testChannel) {
