@@ -173,8 +173,6 @@ namespace Infomaniak.kDrive.CustomControls
 
         private async void TitleBarSearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
-            _analyticsService.TrackClick(Analytics.Keys.Category.Search, Analytics.Keys.EventName.ValidateSearch);
-
             ISearchBoxResultItem? resultItem = args.ChosenSuggestion as ISearchBoxResultItem;
 
             // If the user has not selected a suggestion, attempt to find an exact match in the suggestion list.
