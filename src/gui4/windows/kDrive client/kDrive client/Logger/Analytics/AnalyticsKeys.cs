@@ -12,7 +12,8 @@
         OnboardingFinalPage,
         DriveSetupDialog,
         StartPauseButton,
-        SyncSelector
+        SyncSelector, 
+        NavBar,
     }
 
     public enum EventName
@@ -52,6 +53,10 @@
         OpenTrashWeb,
         OpenStorage,
         RestartApp,
-        SyncSelected
+        SyncSelected, 
+        OpenHome,
+        OpenSyncDir,
+        OpenSettings,
+        Expanded
     }
 }

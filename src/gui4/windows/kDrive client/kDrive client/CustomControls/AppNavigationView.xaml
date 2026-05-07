@@ -32,7 +32,9 @@
                 IsBackButtonVisible="Collapsed"
                 OpenPaneLength="280"
                 CompactPaneLength="52"
-                Loaded="AppNavigationView_Loaded">
+                Loaded="AppNavigationView_Loaded"
+                Expanding="NavigationView_Expanding"
+                >
     <!--
     CompactPaneLength must be overridden (default is 48px) due to the following issue:
     https://github.com/microsoft/microsoft-ui-xaml/issues/10415
