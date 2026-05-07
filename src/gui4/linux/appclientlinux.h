@@ -47,7 +47,7 @@ Q_DECLARE_LOGGING_CATEGORY(lcAppClientLinux)
  * - SignalDispatcher: routes server push messages to typed handlers.
  * - CommService: typed request/signal facade over IPC.
  * - CachePipeline: unique bridge from CommService push signals to AppCache.
- * - CacheHydrator: sequential initial snapshot loader for the graph-backed cache.
+ * - CachePopulator: sequential initial snapshot loader for the graph-backed cache.
  * - ServiceActionTracker: durable UI-facing pending-action state.
  * - ServiceEventBus: transient cross-service events (errors, notifications, ...).
  *
@@ -90,7 +90,7 @@ class AppClientLinux : public QApplication {
         OnboardingState _onboardingState{_appCache, this};
         ServiceActionTracker _serviceActionTracker{this};
         ServiceEventBus _serviceEventBus{this};
-        CachePopulator _cacheHydrator{_serverCommService, _appCache, this};
+        CachePopulator _cachePopulator{_serverCommService, _appCache, this};
         UserService _userService{_serverCommService, _appCache, _serviceActionTracker, _serviceEventBus, this};
         DriveService _driveService{_serverCommService, _appCache, _serviceActionTracker, _serviceEventBus, this};
         SyncService _syncService{_serverCommService, _appCache, _serviceActionTracker, _serviceEventBus, this};
