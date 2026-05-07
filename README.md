@@ -2,7 +2,7 @@
 
 [![Extended tests - All OS](https://github.com/Infomaniak/desktop-kDrive/actions/workflows/build-and-run-extended-tests.yml/badge.svg)](https://github.com/Infomaniak/desktop-kDrive/actions/workflows/build-and-run-extended-tests.yml)
 
-## The Desktop application for [kDrive by Infomaniak](https://www.infomaniak.com/kdrive).
+## The Desktop application for [kDrive by Infomaniak](https://www.infomaniak.com/kdrive)
 
 ### Synchronise, share, collaborate. The Swiss cloud that’s 100% secure.
 
@@ -21,13 +21,13 @@ resell your data.
 
 ### [Download the kDrive app here](https://www.infomaniak.com/en/apps/download-kdrive)
 
-Alternatively, you can retrieve the latest platform-specific direct download URLs
-here: https://www.infomaniak.com/drive/latest.
+Alternatively, retrieve the latest
+platform-specific [direct download URLs](https://www.infomaniak.com/drive/latest).
 
 ## License & Contributions
 
 This project is under GPLv3 license.  
-If you see a bug or an enhanceable point, feel free to create an issue so we can discuss it. Once approved, we or you (
+If you see a bug or an enhanceable point, feel free to create an issue, so we can discuss it. Once approved, we or you (
 depending on the criticality of the bug or improvement) can take care of it and open a pull request.
 Please do not open a pull request before creating an issue.
 
@@ -40,10 +40,10 @@ device.
 
 The **kDrive Desktop** application follows the [Syncpal Algorithm by Marius Shekow](https://hal.science/hal-02319573/).
 
-### Language
+### Languages
 
 The project is developed in **C++** using **Qt**.  
-The macOS extension is made in **Objective-C/C++**
+The **macOS** extension is made in **Objective-C/C++**.
 
 ### Minimum Requirements
 
@@ -55,7 +55,7 @@ The macOS extension is made in **Objective-C/C++**
 
 ### Libraries
 
-The kDrive Desktop Application is using the following libraries:
+The **kDrive Desktop** application is using the following libraries:
 
 - The user interface and application framework are built with [Qt](https://www.qt.io/)
 - The network communications are made using [Poco](https://pocoproject.org/) libraries.
@@ -71,8 +71,11 @@ The kDrive Desktop Application is using the following libraries:
 
 ## Development
 
-The build and the release setup are documented per platform in `infomaniak-build-tools`.
+The project uses **Conan 2.x** to manage its C++ dependencies. [Key libraries](#libraries)
+are installed via custom [Conan](https://conan.io/) recipes located
+in [`infomaniak-build-tools/conan/recipes`](./infomaniak-build-tools/conan/recipes).
 
+The build and the release setup are documented per platform in `infomaniak-build-tools`.
 Start with the guide that matches your development environment:
 
 | [Linux](./infomaniak-build-tools/linux/Readme.md) | [macOS](./infomaniak-build-tools/macos/Readme.md) | [Windows](./infomaniak-build-tools/windows/Readme.md) |
