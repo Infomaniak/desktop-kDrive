@@ -4,6 +4,7 @@
     {
         HomePage,
         ActivityPage,
+        ErrorPage,
         StoragePage,
         Search,
         OnboardingWelcomePage,
@@ -57,6 +58,8 @@
         OpenHome,
         OpenSyncDir,
         OpenSettings,
-        Expanded
+        Expanded,
+        ActivityBreadcrumb,
+        RefreshErrors
     }
 }
