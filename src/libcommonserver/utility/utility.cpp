@@ -681,6 +681,7 @@ ExitInfo Utility::tryCreateTmpFile(const std::shared_ptr<CacheDirectory> cacheDi
 
     auto ioError = IoError::Unknown;
     (void) IoHelper::deleteItem(tmpPath, ioError);
+
     return ok ? ExitCode::Ok : ExitCode::SystemError;
 }
 
@@ -715,10 +716,9 @@ ExitInfo Utility::getFileSystemName(const std::shared_ptr<CacheDirectory> cacheD
             fileSystemName = CommonUtility::exFAT();
         }
     }
+}
 #endif
 
-    return ExitCode::Ok;
-}
 
 ExitInfo Utility::checkIfFileNamesCanEndWithSpace([[maybe_unused]] const std::shared_ptr<CacheDirectory> cacheDirectory,
                                                   bool &canEndWithSpace) {
