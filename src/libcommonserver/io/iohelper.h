@@ -158,6 +158,14 @@ struct IoHelper {
         // file status. This is a convenience function to be used in tests only.
         static void getFileStat(const SyncPath &path, FileStat *filestat, bool &exists, PathCheckOption option);
 
+        //! Get the checksum of the file indicated by `path`.
+        /*!
+         \param path is a file system path to a directory entry (we also call it an item).
+         \param ioError holds the error returned when an underlying OS API call fails.
+         \return the checksum of the file indicated by `path`.
+         */
+        static std::string getFileChecksum(const SyncPath &path, std::ifstream &ifs, IoError &ioError) noexcept;
+
         //! Check if the item indicated by path has a size or a modification date different from the specified ones.
         /*!
          \param path is a file system path to a directory entry (we also call it an item).

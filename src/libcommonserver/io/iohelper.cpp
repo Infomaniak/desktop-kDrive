@@ -762,6 +762,35 @@ void IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, Pa
     }
 }
 
+std::string IoHelper::getFileChecksum(const SyncPath &path, std::ifstream &ifs, IoError &ioError) {
+    ioError = IoError::Success;
+
+    IoHelper::openFile(path, ifs, ioError);
+
+    if (!ifs) {
+        ioError = IoError::NoSuchFileOrDirectory;
+        return "";
+    }
+
+    constexpr size_t CHUNK_SIZE = 8 * 1024 * 1024; // 8 MB
+    std::vector<char> buffer(CHUNK_SIZE);
+
+    XXH3_state_t *state = XXH3_createState();
+    XXH3_64bits_reset(state);
+
+    size_t readBytes;
+    while ((readBytes = fread(buffer.data(), 1, buffer.size(), f)) > 0) {
+        XXH3_64bits_update(state, buffer.data(), readBytes);
+    }
+
+    fclose(f);
+
+    XXH64_hash_t hash = XXH3_64bits_digest(state);
+    XXH3_freeState(state);
+
+    return Utility::xxHashToStr(hash);
+}
+
 bool IoHelper::checkIfFileChanged(const SyncPath &path, int64_t previousSize, SyncTime previousMtime,
                                   SyncTime previousCreationTime, bool &changed, IoError &ioError) noexcept {
     changed = false;
