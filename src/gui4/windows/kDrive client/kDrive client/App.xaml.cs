@@ -48,8 +48,6 @@ namespace Infomaniak.kDrive
         }
 
         private static IServiceProvider? _serviceProvider = null;
-        private IConfiguration configuration;
-
         internal static IServiceProvider ServiceProvider => _serviceProvider ?? throw new InvalidOperationException("Service provider is not initialized.");
 
         /* 
