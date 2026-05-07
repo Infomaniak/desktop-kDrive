@@ -31,15 +31,15 @@
 #endif
 
 namespace forbidden_filename_characters {
-static const char fat32[] = {'\\', '/', ':', '*', '?', '"', '<', '>', '|', '\n', '\r', '\t', '\0'};
+static const std::vector<char> fat32 = {'\\', '/', ':', '*', '?', '"', '<', '>', '|', '\n', '\r', '\t', '\0'};
 
 #if defined(KD_WINDOWS)
-static const chars[] = {'\\', '/', ':', '*', '?', '"', '<', '>', '|', '\n'};
+static const std::vector<char> chars = {'\\', '/', ':', '*', '?', '"', '<', '>', '|', '\n'};
 #else
 #if defined(KD_MACOS)
-static const char chars[] = {'/'};
+static const std::vector<char> chars = {'/'};
 #else
-static const char chars[] = {'/', '\0'};
+static const std::vector<char> chars = {'/', '\0'};
 #endif
 #endif
 } // namespace forbidden_filename_characters
@@ -99,12 +99,12 @@ ExitInfo PlatformInconsistencyCheckerUtility::renameLocalFile(const SyncPath &ab
     return moveJob.exitInfo();
 }
 
-ExitInfo PlatformInconsistencyCheckerUtility::nameHasForbiddenChars(
+ExitInfo PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
         const SyncName &name, [[maybe_unused]] std::shared_ptr<CacheDirectory> cacheDirectory, bool &hasForbiddenChars) {
     hasForbiddenChars = false;
-    std::string forbiddenChars;
+    std::vector<char> forbiddenChars;
 
-    const auto exitInfo = forbiddenFilenameChars(cacheDirectory, forbiddenChars);
+    const auto exitInfo = getForbiddenFilenameChars(cacheDirectory, forbiddenChars);
     if (!exitInfo) return exitInfo;
 
     for (auto c: forbiddenChars) {
@@ -124,6 +124,7 @@ ExitInfo PlatformInconsistencyCheckerUtility::nameHasForbiddenChars(
             LOGW_INFO(Log::instance()->getLogger(),
                       L"Name '" << SyncName2WStr(name) << L"' contains forbidden character: '" << std::wstring(1, c) << L"'");
             forbiddenChars = true;
+            return ExitCode::Ok;
         }
     }
 #endif
@@ -135,7 +136,7 @@ bool PlatformInconsistencyCheckerUtility::isNameOnlySpaces(const SyncName &name)
     return CommonUtility::ltrim(name).empty();
 }
 
-ExitInfo PlatformInconsistencyCheckerUtility::checkIfNameEndWithForbiddenSpace(
+ExitInfo PlatformInconsistencyCheckerUtility::checkIfNameEndsWithForbiddenSpace(
         [[maybe_unused]] const SyncName &name, [[maybe_unused]] const std::shared_ptr<CacheDirectory> cacheDirectory,
         bool &endsWithForbiddenSpace) {
     endsWithForbiddenSpace = false;
@@ -155,9 +156,10 @@ ExitInfo PlatformInconsistencyCheckerUtility::checkIfNameEndWithForbiddenSpace(
     if (const auto exitInfo = Utility::checkIfFileNamesCanEndWithSpace(cacheDirectory, fileNamesCanEndWithSpace); !exitInfo)
         return exitInfo;
 
-    endsWithForbiddenSpace = name.back() == ' ';
+    endsWithForbiddenSpace = !fileNamesCanEndWithSpace && name.back() == ' ';
 #endif
-    return ExitCode::Ok; // Name ending with a space is only forbidden on Windows.
+    return ExitCode::Ok; // Name ending with a space is only forbidden on Windows or on a Linux when a USB stick with exFAT is
+                         // used.
 }
 
 #if defined(KD_WINDOWS)
@@ -258,8 +260,8 @@ SyncName PlatformInconsistencyCheckerUtility::generateSuffix(SuffixType suffixTy
     return suffix + ss.str() + Str("_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10));
 }
 
-ExitInfo PlatformInconsistencyCheckerUtility::forbiddenFilenameChars(
-        [[maybe_unused]] const std::shared_ptr<CacheDirectory> cacheDirectory, std::string &forbiddenChars) {
+ExitInfo PlatformInconsistencyCheckerUtility::getForbiddenFilenameChars(
+        [[maybe_unused]] const std::shared_ptr<CacheDirectory> cacheDirectory, std::vector<char> &forbiddenChars) {
     forbiddenChars = forbidden_filename_characters::chars;
 #if defined(KD_LINUX)
     std::string fileSystemName;

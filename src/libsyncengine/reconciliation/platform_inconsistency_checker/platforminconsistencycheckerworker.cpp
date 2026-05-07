@@ -174,10 +174,11 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(std::shared_ptr<Node> nod
 bool PlatformInconsistencyCheckerWorker::checkPathAndName(std::shared_ptr<Node> remoteNode) {
     const SyncPath relativePath = remoteNode->getPath();
     bool hasForbiddenCharacters = false;
-    if (const auto exitInfo = PlatformInconsistencyCheckerUtility::nameHasForbiddenChars(
+    if (const auto exitInfo = PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
                 remoteNode->name(), _syncPal->cacheDirectory(), hasForbiddenCharacters);
         !exitInfo) {
-        LOGW_SYNCPAL_INFO(_logger, L"Error in PlatformInconsistencyCheckerUtility::nameHasForbiddenChars: exitInfo=" << exitInfo);
+        LOGW_SYNCPAL_INFO(_logger,
+                          L"Error in PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars: exitInfo=" << exitInfo);
         _syncPal->addError(Error(ERR_ID, exitInfo));
     }
 
@@ -187,7 +188,7 @@ bool PlatformInconsistencyCheckerWorker::checkPathAndName(std::shared_ptr<Node> 
     }
 
     bool endsWithForbiddenSpace = false;
-    if (const auto exitInfo = PlatformInconsistencyCheckerUtility::checkIfNameEndWithForbiddenSpace(
+    if (const auto exitInfo = PlatformInconsistencyCheckerUtility::checkIfNameEndsWithForbiddenSpace(
                 remoteNode->name(), _syncPal->cacheDirectory(), endsWithForbiddenSpace);
         !exitInfo) {
         blacklistNode(remoteNode, InconsistencyType::ForbiddenCharEndWithSpace);
