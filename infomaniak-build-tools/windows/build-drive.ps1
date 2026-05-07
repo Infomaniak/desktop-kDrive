@@ -165,7 +165,7 @@ function Get-Cert-Property {
     Else {
         Get-ChildItem $certStore | Where-Object { $_.Subject -match $debugCertSubjectRegEx -and $_.Issuer -match $debugCertIssuerRegEx } | Select -ExpandProperty $property
     }
-    Write-Host "Using $property: $value"
+    Write-Host "Using ${property}: ${value}"
 
     return $value
 }
