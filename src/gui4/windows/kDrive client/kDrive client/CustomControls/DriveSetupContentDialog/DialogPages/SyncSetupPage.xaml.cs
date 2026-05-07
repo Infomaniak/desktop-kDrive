@@ -115,7 +115,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 
         private async void ChangeFolder_Click(object sender, RoutedEventArgs e)
         {
-            _analyticsService.TrackClick(Analytics.Keys.Category.Onboarding, Analytics.Keys.EventName.ChangeSyncLocalLocation);
+            _analyticsService.TrackClick(Analytics.Keys.Category.DriveSetupDialog, Analytics.Keys.EventName.ChangeSyncLocalLocation);
             Logger.Log(Logger.Level.Info, "Change sync path button clicked, opening folder picker");
 
             if (DriveSetupContentDialogVM?.CurrentSync is null)
