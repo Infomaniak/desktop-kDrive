@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyVersion>3.8.4.1</AssemblyVersion>
     <OutputType>WinExe</OutputType>
@@ -46,7 +46,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.5" />
     <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.4.0" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.1721" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.0.1" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260317003" />
     <PackageReference Include="Sentry" Version="6.3.1" />
     <PackageReference Include="Sentry.Profiling" Version="6.3.1" />
     <PackageReference Include="Serilog" Version="4.3.1" />
@@ -360,5 +360,6 @@
     <!-- Debug: keep original PRI and copy to avoid rebuild -->
     <Exec Condition="'$(Configuration)' == 'Debug'" Command="powershell -ExecutionPolicy Bypass -NoProfile -Command &quot;Copy-Item '$(OutDir)$(AssemblyName).pri' '$(OutDir)Resources.pri' -Force&quot;" />
     <!-- Release: rename PRI -->
-	  <Exec Condition="'$(Configuration)' == 'Release'" Command="powershell -ExecutionPolicy Bypass -NoProfile -Command &quot;$src='$(OutDir)$(AssemblyName).pri'; $dst='$(OutDir)Resources.pri'; if (Test-Path $dst) { Remove-Item $dst -Force }; Rename-Item $src 'Resources.pri'&quot;" />  </Target>
+    <Exec Condition="'$(Configuration)' == 'Release'" Command="powershell -ExecutionPolicy Bypass -NoProfile -Command &quot;$src='$(OutDir)$(AssemblyName).pri'; $dst='$(OutDir)Resources.pri'; if (Test-Path $dst) { Remove-Item $dst -Force }; Rename-Item $src 'Resources.pri'&quot;" />
+  </Target>
 </Project>

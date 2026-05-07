@@ -23,12 +23,14 @@ using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ServerCommunication.Services;
 using Infomaniak.kDrive.TrayIcon;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Security.Authentication.OAuth;
 using Microsoft.UI.Xaml;
 using Microsoft.Win32;
 using Sentry;
 using System;
+using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
 
@@ -46,6 +48,8 @@ namespace Infomaniak.kDrive
         }
 
         private static IServiceProvider? _serviceProvider = null;
+        private IConfiguration configuration;
+
         internal static IServiceProvider ServiceProvider => _serviceProvider ?? throw new InvalidOperationException("Service provider is not initialized.");
 
         /* 
@@ -75,6 +79,8 @@ namespace Infomaniak.kDrive
             services.AddSingleton<UserDefaults>();
             services.AddSingleton<TrayIconManager>();
             services.AddSingleton<NotificationManager>();
+            var configuration = new ConfigurationBuilder().Build();
+            services.AddSingleton<IConfiguration>(configuration);
             services.AddMatomoTracking(options =>
             {
                 options.MatomoHostname = "https://analytics.infomaniak.com/";

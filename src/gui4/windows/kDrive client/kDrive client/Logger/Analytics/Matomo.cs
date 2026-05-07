@@ -21,10 +21,12 @@ namespace Infomaniak.kDrive.Analytics
 
             _tracker.Track(new EventTrackingItem()
             {
-                Url = category.ToCamelCase(),
-                EventCategory = _clickEventCategory,
+                Url = $"kdrive://{category.ToCamelCase()}",
+                EventCategory = category.ToCamelCase(),
+                EventAction = _clickEventCategory,
                 EventName = eventName.ToCamelCase(),
-                EventValue = value
+                EventValue = value,
+                NewVisit = false
             });
         }
 
@@ -35,7 +37,7 @@ namespace Infomaniak.kDrive.Analytics
 
             _tracker.Track(new PageViewTrackingItem()
             {
-                Url = category.ToCamelCase(),
+                Url = $"kdrive://{category.ToCamelCase()}",
                 ActionName = category.ToCamelCase(),
             });
         }
