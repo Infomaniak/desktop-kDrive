@@ -59,8 +59,8 @@ void PlatformInconsistencyCheckerWorker::execute() {
 ExitCode PlatformInconsistencyCheckerWorker::checkTree(ReplicaSide side) {
     std::shared_ptr<Node> node = _syncPal->updateTree(side)->rootNode();
     const SyncPath &parentPath = node->name();
-    assert(side == ReplicaSide::Remote ||
-           side == ReplicaSide::Local && "Invalid side in PlatformInconsistencyCheckerWorker::checkTree");
+    assert((side == ReplicaSide::Remote || side == ReplicaSide::Local) &&
+           "Invalid side in PlatformInconsistencyCheckerWorker::checkTree");
 
     ExitCode exitCode = ExitCode::Unknown;
     sentry::PTraceUPtr perfmonitor;
