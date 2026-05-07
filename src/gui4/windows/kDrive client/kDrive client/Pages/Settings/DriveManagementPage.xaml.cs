@@ -108,7 +108,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             var radioButton = sender as RadioButton;
             if (radioButton is null)
             {
-                Logger.Log(Logger.Level.Error, "Online sync mode radio button is null when clicking on online sync mode radio button");
+                Logger.Log(Logger.Level.Error, "Sender of SyncTypeRadioButton_Click is not a RadioButton");
                 return;
             }
 
@@ -118,7 +118,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             Sync? sync = ManagedDrive?.MainSync;
             if (sync is null)
             {
-                Logger.Log(Logger.Level.Error, "Could not get sync from ManagedDrive?.MainSync when clicking on online sync mode radio button");
+                Logger.Log(Logger.Level.Error, "Could not get sync from ManagedDrive?.MainSync when clicking on sync mode radio button");
                 return;
             }
 
@@ -128,6 +128,18 @@ namespace Infomaniak.kDrive.Pages.Settings
             if (!targetOffline && !targetOnline)
             {
                 Logger.Log(Logger.Level.Error, "Unknown radio button name for sync mode change");
+                return;
+            }
+
+            if(targetOffline && sync.SyncType == Types.SyncType.Offline)
+            {
+                Logger.Log(Logger.Level.Info, "User clicked on Offline sync mode radio button while already in Offline mode");
+                return;
+            }
+
+            if(targetOnline && sync.SyncType == Types.SyncType.Online)
+            {
+                Logger.Log(Logger.Level.Info, "User clicked on Online sync mode radio button while already in Online mode");
                 return;
             }
 
