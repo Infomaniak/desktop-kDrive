@@ -171,6 +171,11 @@ QString CommonUtility::platformName() {
 }
 
 Platform CommonUtility::platform() {
+    static Platform platform = Platform::Unknown;
+    if (platform != Platform::Unknown) {
+        return platform;
+    }
+
     const QString name = platformName();
     if (name.contains("macos", Qt::CaseInsensitive)) return Platform::MacOS;
     if (name.contains("windows", Qt::CaseInsensitive)) {
@@ -198,13 +203,7 @@ const std::string &CommonUtility::userAgentString() {
 }
 
 const std::string &CommonUtility::currentVersion() {
-    static std::string str;
-    if (str.empty()) {
-        std::stringstream ss;
-        ss << KDRIVE_VERSION_MAJOR << "." << KDRIVE_VERSION_MINOR << "." << KDRIVE_VERSION_PATCH << "." << KDRIVE_VERSION_BUILD;
-        str = ss.str();
-    }
-    return str;
+    return KDRIVE_VERSION_STRING;
 }
 
 const std::string &CommonUtility::versionTag() {

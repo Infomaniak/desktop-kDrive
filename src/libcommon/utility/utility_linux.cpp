@@ -102,11 +102,15 @@ std::string extractOSInfo(const std::string &key) {
 }
 
 std::string CommonUtility::osVersion() {
-    return extractOSInfo("VERSION_ID");
+    static std::string osVersion;
+    if (osVersion.empty()) osVersion = extractOSInfo("VERSION");
+    return osVersion;
 }
 
 std::string CommonUtility::distributionName() {
-    return extractOSInfo("NAME");
+    static std::string distributionName;
+    if (distributionName.empty()) distributionName = extractOSInfo("NAME");
+    return distributionName;
 }
 
 
