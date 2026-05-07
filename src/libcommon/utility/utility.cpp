@@ -1168,6 +1168,15 @@ std::string CommonUtility::envVarValue(const std::string &name, bool &isSet) {
     return std::string();
 }
 
+bool CommonUtility::logToConsoleEnabled() {
+#ifndef NDEBUG
+    static const bool value = CommonUtility::envVarValue("KDRIVE_ENABLE_LOG_TO_CONSOLE") == "1";
+    return value;
+#else
+    return false;
+#endif
+}
+
 int CommonUtility::setenv(const char *const name, const char *const value, const int overwrite) {
 #if defined(KD_WINDOWS)
     // https://stackoverflow.com/a/23616164/4675396
