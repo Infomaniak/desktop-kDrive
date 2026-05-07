@@ -404,7 +404,7 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
                 return ExitCode::DataError;
             }
         }
-        nodeIdIt++;
+        ++nodeIdIt;
     }
 
     LOG_SYNCPAL_DEBUG(_logger,

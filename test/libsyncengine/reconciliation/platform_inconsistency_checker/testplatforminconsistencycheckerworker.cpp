@@ -97,12 +97,12 @@ void TestPlatformInconsistencyCheckerWorker::testIsNameTooLong() {
 void TestPlatformInconsistencyCheckerWorker::testCheckNameForbiddenChars() {
     SyncName allowedName = Str("test-test");
     bool hasForbiddenChars = false;
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::instance()->checkIfNameHasForbiddenChars(
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
                                                          allowedName, _syncPal->cacheDirectory(), hasForbiddenChars));
     CPPUNIT_ASSERT(!hasForbiddenChars);
 
     SyncName forbiddenName = Str("test/test");
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::instance()->checkIfNameHasForbiddenChars(
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
                                                          forbiddenName, _syncPal->cacheDirectory(), hasForbiddenChars));
     CPPUNIT_ASSERT(hasForbiddenChars);
 
@@ -110,53 +110,53 @@ void TestPlatformInconsistencyCheckerWorker::testCheckNameForbiddenChars() {
 
 #if defined(KD_WINDOWS)
     forbiddenName = Str("test\\test");
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::instance()->checkIfNameHasForbiddenChars(
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
                                                          forbiddenName, _syncPal->cacheDirectory(), hasForbiddenChars));
     CPPUNIT_ASSERT(hasForbiddenChars);
 
     forbiddenName = Str("test:test");
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::instance()->checkIfNameHasForbiddenChars(
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
                                                          forbiddenName, _syncPal->cacheDirectory(), hasForbiddenChars));
     CPPUNIT_ASSERT(hasForbiddenChars);
 
     forbiddenName = Str("test*test");
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::instance()->checkIfNameHasForbiddenChars(
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
                                                          forbiddenName, _syncPal->cacheDirectory(), hasForbiddenChars));
     CPPUNIT_ASSERT(hasForbiddenChars);
 
     forbiddenName = Str("test?test");
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::instance()->checkIfNameHasForbiddenChars(
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
                                                          forbiddenName, _syncPal->cacheDirectory(), hasForbiddenChars));
     CPPUNIT_ASSERT(hasForbiddenChars);
 
     forbiddenName = Str("test\"test");
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::instance()->checkIfNameHasForbiddenChars(
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
                                                          forbiddenName, _syncPal->cacheDirectory(), hasForbiddenChars));
     CPPUNIT_ASSERT(hasForbiddenChars);
 
     forbiddenName = Str("test<test");
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::instance()->checkIfNameHasForbiddenChars(
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
                                                          forbiddenName, _syncPal->cacheDirectory(), hasForbiddenChars));
     CPPUNIT_ASSERT(hasForbiddenChars);
 
     forbiddenName = Str("test>test");
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::instance()->checkIfNameHasForbiddenChars(
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
                                                          forbiddenName, _syncPal->cacheDirectory(), hasForbiddenChars));
     CPPUNIT_ASSERT(hasForbiddenChars);
 
     forbiddenName = Str("test|test");
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::instance()->checkIfNameHasForbiddenChars(
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
                                                          forbiddenName, _syncPal->cacheDirectory(), hasForbiddenChars));
     CPPUNIT_ASSERT(hasForbiddenChars);
 
     forbiddenName = Str("test\ntest");
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::instance()->checkIfNameHasForbiddenChars(
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
                                                          forbiddenName, _syncPal->cacheDirectory(), hasForbiddenChars));
     CPPUNIT_ASSERT(hasForbiddenChars);
 
     forbiddenName = Str("test ");
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
-                         PlatformInconsistencyCheckerUtility::instance()->checkIfNameHasForbiddenChars(forbiddenName));
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
+                                                         forbiddenName, _syncPal->cacheDirectory(), endsWithForbiddenSpace));
     CPPUNIT_ASSERT(!hasForbiddenChars);
 
     bool endsWithForbiddenSpace = false;
@@ -167,7 +167,7 @@ void TestPlatformInconsistencyCheckerWorker::testCheckNameForbiddenChars() {
     forbiddenName = std::string("test");
     forbiddenName.append(1, '\0');
     hasForbiddenChars = false;
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::instance()->checkIfNameHasForbiddenChars(
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
                                                          forbiddenName, _syncPal->cacheDirectory(), hasForbiddenChars));
     CPPUNIT_ASSERT(hasForbiddenChars);
 

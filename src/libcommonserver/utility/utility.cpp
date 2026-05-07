@@ -717,6 +717,8 @@ ExitInfo Utility::getFileSystemName(const std::shared_ptr<CacheDirectory> cacheD
             fileSystemName = CommonUtility::exFAT();
         }
     }
+
+    return ExitCode::Ok;
 }
 #endif
 

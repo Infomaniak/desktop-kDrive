@@ -285,7 +285,7 @@ namespace {
 constexpr auto exFat = "exFAT";
 constexpr auto ext234 = "EXT2/3/4";
 
-std::string formatFsName(const std::string &prettyName, const long fType) {
+std::string formatFsName(const std::string &prettyName, const int64_t fType) {
     std::stringstream stream;
     stream << std::hex << fType;
     return prettyName + " | 0x" + stream.str();
