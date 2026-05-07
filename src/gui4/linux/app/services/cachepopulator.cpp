@@ -25,11 +25,11 @@
 namespace KDC {
 
 namespace {
-Q_LOGGING_CATEGORY(lcCacheHydrator, "gui.v4.cachehydrator", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcCachePopulator, "gui.v4.cachepopulator", QtInfoMsg)
 
-[[noreturn]] void exitOnHydrationFailure(const char *const stage, const ExitInfo &exitInfo) {
-    qCCritical(lcCacheHydrator) << "Cache hydration failed at" << stage << "| code:" << exitInfo.code()
-                                << "/ cause:" << exitInfo.cause();
+[[noreturn]] void exitOnPopulationFailure(const char *const stage, const ExitInfo &exitInfo) {
+    qCCritical(lcCachePopulator) << "Cache population failed at" << stage << "| code:" << exitInfo.code()
+                                 << "/ cause:" << exitInfo.cause();
     std::exit(EXIT_FAILURE); // TODO send a sentry message
 }
 } // namespace
@@ -46,7 +46,7 @@ void CachePopulator::bootstrap() {
 void CachePopulator::loadUsers() {
     _commService.requestUserInfoList([this](const ExitInfo &exitInfo, const std::vector<UserInfo> &list) {
         if (!exitInfo) {
-            exitOnHydrationFailure("users", exitInfo);
+            exitOnPopulationFailure("users", exitInfo);
         }
 
         _appCache.replaceUsers(list);
@@ -57,7 +57,7 @@ void CachePopulator::loadUsers() {
 void CachePopulator::loadAccounts() {
     _commService.requestAccountInfoList([this](const ExitInfo &exitInfo, const std::vector<AccountInfo> &list) {
         if (!exitInfo) {
-            exitOnHydrationFailure("accounts", exitInfo);
+            exitOnPopulationFailure("accounts", exitInfo);
         }
 
         _appCache.replaceAccounts(list);
@@ -68,7 +68,7 @@ void CachePopulator::loadAccounts() {
 void CachePopulator::loadDrives() {
     _commService.requestDriveInfoList([this](const ExitInfo &exitInfo, const std::vector<DriveInfo> &list) {
         if (!exitInfo) {
-            exitOnHydrationFailure("drives", exitInfo);
+            exitOnPopulationFailure("drives", exitInfo);
         }
 
         _appCache.replaceDrives(list);
@@ -79,7 +79,7 @@ void CachePopulator::loadDrives() {
 void CachePopulator::loadSyncs() {
     _commService.requestSyncInfoList([this](const ExitInfo &exitInfo, const std::vector<SyncInfo> &list) {
         if (!exitInfo) {
-            exitOnHydrationFailure("syncs", exitInfo);
+            exitOnPopulationFailure("syncs", exitInfo);
         }
 
         _appCache.replaceSyncs(list);
@@ -90,7 +90,7 @@ void CachePopulator::loadSyncs() {
 void CachePopulator::loadSyncErrors() {
     _commService.requestErrorInfoList([this](const ExitInfo &exitInfo, const std::vector<ErrorInfo> &list) {
         if (!exitInfo) {
-            exitOnHydrationFailure("errors", exitInfo);
+            exitOnPopulationFailure("errors", exitInfo);
         }
 
         std::vector<ErrorInfo> syncErrors;
@@ -107,9 +107,9 @@ void CachePopulator::loadSyncErrors() {
                     serverErrors.push_back(info);
                     break;
                 default:
-                    qCWarning(lcCacheHydrator) << "Received error with unknown level:" << static_cast<int>(info.level())
-                                               << "and dbId:" << info.dbId();
                     continue; // Skip unknown error levels
+                    qCWarning(lcCachePopulator) << "Received error with unknown level:" << static_cast<int>(info.level())
+                                                << "and dbId:" << info.dbId();
             }
         }
 
