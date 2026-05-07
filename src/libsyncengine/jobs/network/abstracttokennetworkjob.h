@@ -106,6 +106,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
 
         std::string getUrl() override;
         ExitInfo handleUnauthorizedResponse();
+        ExitInfo handleUserUnauthorizedResponse();
         void defaultBackErrorHandling(NetworkErrorCode errorCode, const Poco::URI &uri, ExitCause &exitCause);
 
         // Load user information, including the API token, based on the record associated `_driveDbId`, provided it does exist.

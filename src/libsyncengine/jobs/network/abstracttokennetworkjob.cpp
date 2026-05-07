@@ -139,6 +139,23 @@ std::string AbstractTokenNetworkJob::getSpecificUrl() {
 }
 
 ExitInfo AbstractTokenNetworkJob::handleUnauthorizedResponse() {
+    switch (_apiType) {
+        case ApiType::Drive:
+        case ApiType::NotifyDrive:
+            disableRetry();
+            return {ExitCode::BackError, ExitCause::DriveAccessError};
+        case ApiType::DriveByUser:
+        case ApiType::Desktop:
+        case ApiType::Profile:
+            return handleUserUnauthorizedResponse();
+        default: {
+            LOG_WARN(_logger, "Unauthorized response received for unknown API type");
+            return ExitInfo{ExitCode::BackError, ExitCause::Unknown};
+        }
+    }
+}
+
+ExitInfo AbstractTokenNetworkJob::handleUserUnauthorizedResponse() {
     // There is no longer any refresh of the token since v3.5.6
     // This code is only used when updating from a version < v3.5.6
     if (const auto apiToken = loadApiToken(); apiToken != _apiToken) {

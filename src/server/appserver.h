@@ -149,8 +149,16 @@ class AppServer : public SharedTools::QtSingleApplication {
                               const SyncPal::DbBehaviorAfterStop behavior = SyncPal::DbBehaviorAfterStop::Keep);
 
         void addError(const Error &error) const;
+        void manageError(const Error &error, std::vector<Error> &errorList, bool errorAlreadyExists) const;
+        void manageDriveAccessError(Drive &drive) const;
+        void manageInvalidTokenError(User& user) const;
+        void manageSocketsDefunctedError() const;
+        void manageFileAccessErrorError(const std::vector<Error> &errorList) const;
+        void manageUpdateRequiredErrorError() const;
+
         void resolveItemErrors(SyncDbId syncDbId, const SyncFileItem &item) const;
         void resolveSyncErrorsByExitCause(SyncDbId syncDbId, ExitCause cause) const;
+
         void updateSentryUser();
         void deleteDrive(DriveDbId driveDbId);
         void deleteSync(SyncDbId syncDbId);
