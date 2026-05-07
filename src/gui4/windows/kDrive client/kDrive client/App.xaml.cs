@@ -77,8 +77,8 @@ namespace Infomaniak.kDrive
             services.AddSingleton<NotificationManager>();
             services.AddMatomoTracking(options =>
             {
-                options.MatomoHostname = "https://[My matomo hostname]/";
-                options.SiteId = "[My site id]";
+                options.MatomoHostname = "https://analytics.infomaniak.com/";
+                options.SiteId = "41";
             });
             services.AddSingleton<IAnalyticsService, MatomoService>();
             _serviceProvider = services.BuildServiceProvider();

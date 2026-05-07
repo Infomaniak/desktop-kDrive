@@ -14,29 +14,29 @@ namespace Infomaniak.kDrive.Analytics
             _userDefaults = userDefaults;
         }
 
-        public void TrackClick(string category, string name, int? value = null)
+        public void TrackClick(Keys.Category category, Keys.EventName eventName, int? value = null)
         {
             if (!IsMatomoEnabled())
                 return;
 
             _tracker.Track(new EventTrackingItem()
             {
-                Url = category,
+                Url = category.ToCamelCase(),
                 EventCategory = _clickEventCategory,
-                EventName = name,
+                EventName = eventName.ToCamelCase(),
                 EventValue = value
             });
         }
 
-        public void TrackPageView(string category)
+        public void TrackPageView(Keys.Category category)
         {
             if (!IsMatomoEnabled())
                 return;
 
             _tracker.Track(new PageViewTrackingItem()
             {
-                Url = category,
-                ActionName = category
+                Url = category.ToCamelCase(),
+                ActionName = category.ToCamelCase(),
             });
         }
 

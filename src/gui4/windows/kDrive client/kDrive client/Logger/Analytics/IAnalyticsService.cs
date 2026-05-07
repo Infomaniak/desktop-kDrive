@@ -2,9 +2,9 @@
 {
     internal interface IAnalyticsService
     {
-        void TrackClick(string category, string name, int? value = null);
+        void TrackClick(Keys.Category category, Keys.EventName eventName, int? value = null);
 
-        void TrackPageView(string category);
+        void TrackPageView(Keys.Category category);
 
     }
 }

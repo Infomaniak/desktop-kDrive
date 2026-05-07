@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,6 +31,7 @@ namespace Infomaniak.kDrive.Pages
 {
     public sealed partial class HomePage : Page
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel => _viewModel;
         public HomePage()
@@ -58,16 +60,16 @@ namespace Infomaniak.kDrive.Pages
             }
         }
 
-        private void RedirectToErrorPageIfNeeded()
+        private bool RedirectToErrorPageIfNeeded()
         {
             if (ViewModel.SelectedSync is null)
-                return;
+                return false;
 
             switch (ViewModel.SelectedSync.SyncErrorState)
             {
                 case SyncErrorStates.Undefined:
                     // No error, stay on the HomePage
-                    break;
+                    return false;
                 case SyncErrorStates.AccessDenied:
                     AppModel.UIThreadDispatcher.TryEnqueue(() => Frame?.Navigate(typeof(DriveAccessDeniedPage)));
                     break;
@@ -85,15 +87,17 @@ namespace Infomaniak.kDrive.Pages
                     break;
                 default:
                     Logger.Log(Logger.Level.Warning, $"Unexpected SyncErrorState: {ViewModel.SelectedSync?.SyncErrorState}. Staying on HomePage.");
-                    break;
+                    return false;
             }
+            return true;
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             ViewModel.SelectedSyncChanged += OnSelectedSyncChanged;
             OnSelectedSyncChanged(null, new(null, ViewModel.SelectedSync));
-            RedirectToErrorPageIfNeeded();
+            if (!RedirectToErrorPageIfNeeded())
+                _analyticsService.TrackPageView(Analytics.Keys.Category.HomePage);
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
@@ -150,6 +154,7 @@ namespace Infomaniak.kDrive.Pages
 
         private void SyncInProgressHyperlinkButton_Click(object sender, RoutedEventArgs e)
         {
+            _analyticsService.TrackClick(Analytics.Keys.Category.HomePage, Analytics.Keys.EventName.OpenActivity);
             DetachHandlers();
             Frame.Navigate(typeof(ActivityPage));
         }
@@ -161,12 +166,13 @@ namespace Infomaniak.kDrive.Pages
                 Logger.Log(Logger.Level.Warning, "No sync is selected, cannot resume sync.");
                 return;
             }
+            _analyticsService.TrackClick(Analytics.Keys.Category.HomePage, Analytics.Keys.EventName.StartSync);
             await ViewModel.SelectedSync.Start();
         }
 
         public string GetGreetingLabel(string? userName, SyncStatus? status)
         {
-            if(userName is null || status is null)
+            if (userName is null || status is null)
                 return Localizer.Instance.GetString("labelWelcomeToKDrive");
 
 
@@ -191,6 +197,7 @@ namespace Infomaniak.kDrive.Pages
 
         private void StartOnboardingButton_Click(object sender, RoutedEventArgs e)
         {
+            _analyticsService.TrackClick(Analytics.Keys.Category.HomePage, Analytics.Keys.EventName.OpenLoginWeb);
             (App.Current as App)?.StartOnboarding();
         }
     }

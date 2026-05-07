@@ -383,6 +383,19 @@ namespace Infomaniak.kDrive
             }
         }
     }
+
+    public static class EnumExtensions
+    {
+        public static string ToCamelCase(this Enum value)
+        {
+            string name = value.ToString();
+
+            if (string.IsNullOrEmpty(name))
+                return name;
+
+            return char.ToLowerInvariant(name[0]) + name[1..];
+        }
+    }
 }
 
 
