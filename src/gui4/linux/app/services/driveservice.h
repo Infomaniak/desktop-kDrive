@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include "app/cache/appcache.h"
 #include "app/services/commservice.h"
 #include "app/services/serviceactiontracker.h"
 #include "app/services/serviceeventbus.h"
@@ -33,7 +32,7 @@ namespace KDC {
  *
  * Role:
  * - orchestrates drive requests through CommService;
- * - refreshes AppCache snapshots on successful loads;
+ * - keeps durable cache mutations signal-driven through CachePipeline;
  * - reports transient failures through ServiceEventBus;
  * - registers durable pending state in ServiceActionTracker.
  */
@@ -42,14 +41,12 @@ class DriveService : public QObject {
         Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
 
     public:
-        explicit DriveService(CommService &commService, AppCache &appCache, ServiceActionTracker &serviceActionTracker,
+        explicit DriveService(CommService &commService, ServiceActionTracker &serviceActionTracker,
                               ServiceEventBus &serviceEventBus, QObject *parent = nullptr);
 
         [[nodiscard]] bool loading() const;
 
-        Q_INVOKABLE void loadDrives();
         Q_INVOKABLE void deleteDrive(qint64 driveDbId);
-        Q_INVOKABLE [[nodiscard]] bool isLoadDrivesPending() const;
         Q_INVOKABLE [[nodiscard]] bool isDeleteDrivePending(qint64 driveDbId) const;
         Q_INVOKABLE [[nodiscard]] bool isUpdateDrivePending(qint64 driveDbId) const;
 
@@ -66,7 +63,6 @@ class DriveService : public QObject {
         void notifyRequestFailure(const ExitInfo &exitInfo, RequestNum requestNum);
 
         CommService &_commService;
-        AppCache &_appCache;
         ServiceActionTracker &_serviceActionTracker;
         ServiceEventBus &_serviceEventBus;
 };
