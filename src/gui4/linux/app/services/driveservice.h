@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include "app/cache/appcache.h"
 #include "app/services/commservice.h"
 #include "app/services/serviceactiontracker.h"
 #include "app/services/serviceeventbus.h"
@@ -26,57 +25,46 @@
 #include <QObject>
 #include <QString>
 
-#include <cstdint>
-#include <unordered_map>
-
 namespace KDC {
 
 /**
- * High-level user-oriented facade exposed to QML.
+ * High-level drive-oriented facade.
  *
  * Role:
- * - orchestrates user requests through CommService;
- * - updates AppCache snapshots and incremental entities;
- * - reports transient cross-service failures through ServiceEventBus;
- * - registers per-action pending state in ServiceActionTracker.
+ * - orchestrates drive requests through CommService;
+ * - keeps durable cache mutations signal-driven through CachePipeline;
+ * - reports transient failures through ServiceEventBus;
+ * - registers durable pending state in ServiceActionTracker.
  */
-class UserService : public QObject {
+class DriveService : public QObject {
         Q_OBJECT
         Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
 
     public:
-        explicit UserService(CommService &commService, AppCache &appCache, ServiceActionTracker &serviceActionTracker,
-                             ServiceEventBus &serviceEventBus, QObject *parent = nullptr);
+        explicit DriveService(CommService &commService, ServiceActionTracker &serviceActionTracker,
+                              ServiceEventBus &serviceEventBus, QObject *parent = nullptr);
 
-        [[nodiscard]] bool loading() const { return _loading; }
+        [[nodiscard]] bool loading() const;
 
-        Q_INVOKABLE void loadAvailableDrives(qint64 userDbId);
-        Q_INVOKABLE void deleteUser(qint64 userDbId);
-        Q_INVOKABLE void requestLoginToken(const QString &code, const QString &codeVerifier);
-        Q_INVOKABLE [[nodiscard]] bool isLoadAvailableDrivesPending(qint64 userDbId) const;
-        Q_INVOKABLE [[nodiscard]] bool isDeleteUserPending(qint64 userDbId) const;
-        Q_INVOKABLE [[nodiscard]] bool isLoginPending() const;
+        Q_INVOKABLE void deleteDrive(qint64 driveDbId);
+        Q_INVOKABLE [[nodiscard]] bool isDeleteDrivePending(qint64 driveDbId) const;
+        Q_INVOKABLE [[nodiscard]] bool isUpdateDrivePending(qint64 driveDbId) const;
+
+        void updateDrive(const DriveInfo &driveInfo);
 
     signals:
         void loadingChanged();
-        void loginTokenSucceeded(qint64 userDbId);
-        void loginTokenFailed(const QString &error, const QString &errorDescription);
 
     private:
         void beginAction(const ServiceActionTracker::ActionKey &actionKey, ServiceActionTracker::ScopeId scopeId = 0);
         void endAction(const ServiceActionTracker::ActionKey &actionKey, ServiceActionTracker::ScopeId scopeId = 0);
-        void setLoading(bool loading);
-        void pruneStaleAvailableDriveGenerations();
         [[nodiscard]] bool isActionPending(const ServiceActionTracker::ActionKey &actionKey,
                                            ServiceActionTracker::ScopeId scopeId = 0) const;
         void notifyRequestFailure(const ExitInfo &exitInfo, RequestNum requestNum);
 
         CommService &_commService;
-        AppCache &_appCache;
         ServiceActionTracker &_serviceActionTracker;
         ServiceEventBus &_serviceEventBus;
-        std::unordered_map<UserDbId, uint64_t> _availableDriveLoadGenerations;
-        bool _loading{false};
 };
 
 } // namespace KDC

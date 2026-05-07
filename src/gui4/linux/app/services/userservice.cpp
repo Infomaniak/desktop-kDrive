@@ -22,7 +22,6 @@
 
 namespace {
 constexpr char serviceKeyUser[] = "user";
-constexpr char actionLoadUsers[] = "loadUsers";
 constexpr char actionLoadAvailableDrives[] = "loadAvailableDrives";
 constexpr char actionDeleteUser[] = "deleteUser";
 constexpr char actionRequestLoginToken[] = "requestLoginToken";
@@ -39,30 +38,14 @@ UserService::UserService(CommService &commService, AppCache &appCache, ServiceAc
     _appCache(appCache),
     _serviceActionTracker(serviceActionTracker),
     _serviceEventBus(serviceEventBus) {
-    (void) connect(&_commService, &CommService::userAdded, &_appCache, &AppCache::upsertUser);
-    (void) connect(&_commService, &CommService::userUpdated, &_appCache, &AppCache::upsertUser);
-    (void) connect(&_commService, &CommService::userRemoved, &_appCache, &AppCache::removeUser);
     (void) connect(&_serviceActionTracker, &ServiceActionTracker::servicePendingChanged, this,
                    [this](const ServiceActionTracker::ServiceKey &serviceKey, const bool pending) {
                        if (serviceKey == serviceKeyUser) {
                            setLoading(pending);
                        }
                    });
+    (void) connect(&_appCache, &AppCache::usersChanged, this, [this] { pruneStaleAvailableDriveGenerations(); });
     setLoading(_serviceActionTracker.isServicePending(serviceKeyUser));
-}
-
-void UserService::loadUsers() {
-    beginAction(actionLoadUsers);
-
-    _commService.requestUserInfoList([this](const ExitInfo &exitInfo, const std::vector<UserInfo> &list) {
-        endAction(actionLoadUsers);
-        if (!exitInfo) {
-            notifyRequestFailure(exitInfo, RequestNum::USER_INFOLIST);
-            return;
-        }
-
-        _appCache.replaceUsers(list);
-    });
 }
 
 void UserService::loadAvailableDrives(const qint64 userDbId) {
@@ -74,7 +57,13 @@ void UserService::loadAvailableDrives(const qint64 userDbId) {
             scopedUserDbId,
             [this, scopedUserDbId, generation](const ExitInfo &exitInfo, const std::vector<DriveAvailableInfo> &list) {
                 endAction(actionLoadAvailableDrives, scopedUserDbId);
-                if (_availableDriveLoadGenerations[scopedUserDbId] != generation) {
+                if (const auto generationIt = _availableDriveLoadGenerations.find(scopedUserDbId);
+                    generationIt == _availableDriveLoadGenerations.end() || generationIt->second != generation) {
+                    return;
+                }
+
+                if (!_appCache.user(scopedUserDbId).has_value()) {
+                    (void) _availableDriveLoadGenerations.erase(scopedUserDbId);
                     return;
                 }
 
@@ -89,6 +78,7 @@ void UserService::loadAvailableDrives(const qint64 userDbId) {
 
 void UserService::deleteUser(const qint64 userDbId) {
     beginAction(actionDeleteUser, userDbId);
+    ++_availableDriveLoadGenerations[static_cast<UserDbId>(userDbId)];
 
     // Cache consistency is signal-driven: we wait for userRemoved/userUpdated pushes.
     _commService.requestDeleteUser(userDbId, [this, userDbId](const ExitInfo &exitInfo) {
@@ -120,10 +110,6 @@ void UserService::requestLoginToken(const QString &code, const QString &codeVeri
     });
 }
 
-bool UserService::isLoadUsersPending() const {
-    return isActionPending(actionLoadUsers);
-}
-
 bool UserService::isLoadAvailableDrivesPending(const qint64 userDbId) const {
     return isActionPending(actionLoadAvailableDrives, userDbId);
 }
@@ -134,6 +120,17 @@ bool UserService::isDeleteUserPending(const qint64 userDbId) const {
 
 bool UserService::isLoginPending() const {
     return isActionPending(actionRequestLoginToken);
+}
+
+void UserService::pruneStaleAvailableDriveGenerations() {
+    for (auto it = _availableDriveLoadGenerations.begin(); it != _availableDriveLoadGenerations.end();) {
+        if (_appCache.user(it->first).has_value()) {
+            ++it;
+            continue;
+        }
+
+        it = _availableDriveLoadGenerations.erase(it);
+    }
 }
 
 void UserService::beginAction(const ServiceActionTracker::ActionKey &actionKey, const ServiceActionTracker::ScopeId scopeId) {

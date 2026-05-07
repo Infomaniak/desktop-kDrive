@@ -18,6 +18,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/cache/appcache.h
         app/cache/appcachegraph.cpp
         app/cache/appcachequeries.cpp
+        app/cache/cachepipeline.cpp
+        app/cache/cachepipeline.h
         app/cache/cachetypes.h
         app/cache/mainselectionstore.cpp
         app/cache/mainselectionstore.h
@@ -29,10 +31,16 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         communicationlayer/signaldispatcher.h
         app/services/commservice.cpp
         app/services/commservice.h
+        app/services/cachepopulator.cpp
+        app/services/cachepopulator.h
+        app/services/driveservice.cpp
+        app/services/driveservice.h
         app/services/serviceactiontracker.cpp
         app/services/serviceactiontracker.h
         app/services/serviceeventbus.cpp
         app/services/serviceeventbus.h
+        app/services/syncservice.cpp
+        app/services/syncservice.h
         app/services/userservice.cpp
         app/services/userservice.h
 )

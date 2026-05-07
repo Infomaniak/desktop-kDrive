@@ -72,6 +72,7 @@ inline constexpr char msgParamTitle[] = "title";
 inline constexpr char msgParamMessage[] = "message";
 inline constexpr char msgParamLogUploadState[] = "state";
 inline constexpr char msgParamPercentage[] = "percentage";
+inline constexpr char msgParamLimit[] = "limit";
 
 // Request parameter keys
 inline constexpr char msgParamAuthCode[] = "code";

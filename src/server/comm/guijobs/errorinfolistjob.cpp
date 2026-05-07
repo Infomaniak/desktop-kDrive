@@ -23,9 +23,6 @@
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
 
-// Input parameters keys
-static const auto inParmsLimit = "limit";
-
 // Output parameters keys
 static const auto outParamsErrorInfo = "errorInfoList";
 
@@ -39,7 +36,7 @@ ErrorInfolistJob::ErrorInfolistJob(std::shared_ptr<CommManager> commManager, int
 
 ExitInfo ErrorInfolistJob::deserializeInputParms() {
     try {
-        readParamValue(inParmsLimit, _limit);
+        readParamValue(msgParamLimit, _limit);
     } catch (const std::exception &e) {
         LOG_WARN(_logger, "Exception in ErrorInfolistJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
