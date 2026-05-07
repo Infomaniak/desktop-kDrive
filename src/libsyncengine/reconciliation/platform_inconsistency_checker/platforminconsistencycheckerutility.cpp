@@ -112,6 +112,7 @@ ExitInfo PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
             LOGW_INFO(Log::instance()->getLogger(),
                       L"Name '" << SyncName2WStr(name) << L"' contains forbidden character: '" << std::wstring(1, c) << L"'");
             hasForbiddenChars = true;
+
             return ExitCode::Ok;
         }
     }
@@ -122,8 +123,9 @@ ExitInfo PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
         const int64_t asciiCode(c);
         if (asciiCode <= 31) {
             LOGW_INFO(Log::instance()->getLogger(),
-                      L"Name '" << SyncName2WStr(name) << L"' contains forbidden character: '" << std::wstring(1, c) << L"'");
-            forbiddenChars = true;
+                      L"Name '" << SyncName2WStr(name) << L"' contains a forbidden character: '" << std::wstring(1, c) << L"'");
+            hasForbiddenChars = true;
+
             return ExitCode::Ok;
         }
     }
