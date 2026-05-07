@@ -80,6 +80,12 @@ $archiveName = "kDrive.7z"
 # NSIS needs the path to use backslash
 $archiveDataPath = ('{0}\build-windows\{1}' -f $path.Replace('/', '\'), $archiveName)
 
+# Certificates
+$debugCertSubjectRegEx = "Windows11CI-1"
+$debugCertIssuerRegEx = "Windows11CI-1"
+$releaseCertSubjectRegEx = "INFOMANIAK"
+$releaseCertIssuerRegEx = "Digicert"
+
 #################################################################################################
 #                                                                                               #
 #										  	 IMPORT                                             #
@@ -140,10 +146,11 @@ function Get-Version {
     
 }
 
-function Get-Thumbprint {
+function Get-Cert-Property {
     param (
         [bool] $upload,
         [bool] $ci # On CI build machines, the certificate are located in local computer store
+        [string] $property
     )
     if ($ci) {
         $certStore = "Cert:\LocalMachine\My"
@@ -151,15 +158,35 @@ function Get-Thumbprint {
         $certStore = "Cert:\CurrentUser\My"
     }
     
-    $thumbprint = 
+    $value = 
     If ($upload) {
-        Get-ChildItem $certStore | Where-Object { $_.Subject -match "INFOMANIAK" -and $_.Issuer -match "DigiCert" } | Select -ExpandProperty Thumbprint
+        Get-ChildItem $certStore | Where-Object { $_.Subject -match $releaseCertSubjectRegEx -and $_.Issuer -match $releaseCertIssuerRegEx } | Select -ExpandProperty $property
     } 
     Else {
-        Get-ChildItem $certStore | Where-Object { $_.Subject -match "Windows11CI-1" -and $_.Issuer -match "Windows11CI-1" } | Select -ExpandProperty Thumbprint
+        Get-ChildItem $certStore | Where-Object { $_.Subject -match $debugCertSubjectRegEx -and $_.Issuer -match $debugCertIssuerRegEx } | Select -ExpandProperty $property
     }
-    Write-Host "Using thumbprint: $thumbprint"
+    Write-Host "Using $property: $value"
 
+    return $value
+}
+
+function Get-Thumbprint {
+    param (
+        [bool] $upload,
+        [bool] $ci # On CI build machines, the certificate are located in local computer store
+    )
+
+    $thumbprint = Get-Cert-Property $upload $ci "Thumbprint"
+    return $thumbprint
+}
+
+function Get-Issuer {
+    param (
+        [bool] $upload,
+        [bool] $ci # On CI build machines, the certificate are located in local computer store
+    )
+
+    $thumbprint = Get-Cert-Property $upload $ci "Issuer"
     return $thumbprint
 }
 
@@ -227,12 +254,9 @@ function Build-Extension {
 
     $configuration = $buildType
     if ($buildType -eq "RelWithDebInfo") { $configuration = "Release" }
-    if($upload) {
-        $publisher = "CN=INFOMANIAK NETWORK SA, O=INFOMANIAK NETWORK SA, L=Les Acacias, S=Genève, C=CH, SERIALNUMBER=CHE-103.167.648, OID.2.5.4.15=Private Organization, OID.1.3.6.1.4.1.311.60.2.1.2=Genève, OID.1.3.6.1.4.1.311.60.2.1.3=CH"
 
-    }else{
-        $publisher = "CN=Windows11CI-1"
-    }
+    $publisher = Get-Issuer -Upload $upload -Ci $ci
+    Write-Host "Publisher: $publisher"
 
     $appxManifestPath = "$extPath\FileExplorerExtensionPackage\Package.appxmanifest"
     if (Test-Path $appxManifestPath) {
@@ -247,8 +271,8 @@ function Build-Extension {
     $version = Get-version -IncludeBuildVersion $true
     Write-Host "Extension version: $version"
 	
-	$aumid = Get-Aumid $upload
-	Write-Host "Building extension with AUMID: $aumid"
+    $aumid = Get-Aumid $upload
+    Write-Host "Building extension with AUMID: $aumid"
 	
     msbuild "$extPath\kDriveExt.sln" /p:Configuration=$configuration /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true /p:PackageCertificateThumbprint="$thumbprint" /p:KDC_AUMID="$aumid"
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
