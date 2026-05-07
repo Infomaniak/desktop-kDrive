@@ -107,7 +107,6 @@ void CachePopulator::loadSyncErrors() {
                     serverErrors.push_back(info);
                     break;
                 default:
-                    continue; // Skip unknown error levels
                     qCWarning(lcCachePopulator) << "Received error with unknown level:" << static_cast<int>(info.level())
                                                 << "and dbId:" << info.dbId();
             }
