@@ -687,11 +687,12 @@ ExitInfo Utility::tryCreateTmpFile(const std::shared_ptr<CacheDirectory> cacheDi
 
 #if defined(KD_LINUX)
 ExitInfo Utility::getFileSystemName(const std::shared_ptr<CacheDirectory> cacheDirectory, std::string &fileSystemName) {
+    fileSystemName = {};
+
     if (!cacheDirectory) {
         LOG_WARN(logger(), "Cache directory not provided!");
         return {ExitCode::SystemError, ExitCause::InvalidArgument};
     }
-
 
     SyncPath localSyncPath;
     if (const auto exitInfo = cacheDirectory->path(localSyncPath); !exitInfo) return exitInfo;

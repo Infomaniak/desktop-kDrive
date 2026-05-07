@@ -314,7 +314,7 @@ std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {
     DWORD dwFileSystemFlags = 0;
 
     if (GetVolumeInformation(targetPath.root_path().c_str(), NULL, 0, NULL, &dwMaxFileNameLength, &dwFileSystemFlags,
-                             szFileSystemName, sizeof(szf)) == TRUE) {
+                             szFileSystemName, sizeof(szFileSystemName)) == TRUE) {
         return ws2s(szFileSystemName);
     } else {
         // Not all the requested information is retrieved
@@ -339,7 +339,6 @@ std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {
                 return formatFsName("EXT2", stat.f_type);
             case 0xef53: // EXT_SUPER_MAGIC
                 return formatFsName(ext234, stat.f_type);
-                ;
             case 0xbad1dea:
             case 0xa501fcf5:
             case 0x58465342:
@@ -739,7 +738,7 @@ bool CommonUtility::compressFile(const QString &originalName, const QString &tar
 #endif
 }
 
-Language CommonUtility::strToLanguage(const QString& lang) {
+Language CommonUtility::strToLanguage(const QString &lang) {
     if (lang == "en") {
         return Language::English;
     } else if (lang == "fr") {
@@ -869,9 +868,9 @@ bool CommonUtility::languageCodeIsEnglish(const QString &languageCode) {
 }
 
 bool CommonUtility::isSupportedLanguage(const QString &languageCode) {
-    static const std::unordered_set<QString> supportedLanguages = {englishCode,   frenchCode,  germanCode,     italianCode,
-                                                                   spanishCode,   dutchCode,   swedishCode,    portugueseCode, 
-                                                                   polishCode,    norwegianCode, finnishCode, danishCode,     greekCode};
+    static const std::unordered_set<QString> supportedLanguages = {
+            englishCode,    frenchCode, germanCode,    italianCode, spanishCode, dutchCode, swedishCode,
+            portugueseCode, polishCode, norwegianCode, finnishCode, danishCode,  greekCode};
     return supportedLanguages.contains(languageCode);
 }
 
