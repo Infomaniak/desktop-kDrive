@@ -28,7 +28,7 @@ class MockUpdater : public AbstractUpdater {
     public:
         explicit MockUpdater(const std::shared_ptr<UpdateChecker> &customUpdateChecker = std::make_shared<UpdateChecker>()) :
             AbstractUpdater(customUpdateChecker) {
-            _currentChannel = VersionChannel::Beta;
+            _currentChannel = DistributionChannel::Beta;
         }
 
         void startInstaller() override {

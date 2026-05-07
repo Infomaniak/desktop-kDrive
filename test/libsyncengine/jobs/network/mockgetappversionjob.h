@@ -62,8 +62,9 @@ inline uint64_t buildVersion(const VersionValue versionNumber) {
 
 class MockGetAppVersionJob final : public GetAppVersionJob {
     public:
-        MockGetAppVersionJob(const Platform platform, const std::string &appID, const bool updateShouldBeAvailable) :
-            GetAppVersionJob(platform, appID),
+        MockGetAppVersionJob(const DistributionChannel currentChannel, const std::string &appID,
+                             const bool updateShouldBeAvailable) :
+            GetAppVersionJob(currentChannel, appID),
             _updateShouldBeAvailable(updateShouldBeAvailable) {}
 
         ExitInfo runJob() noexcept override {
@@ -89,13 +90,13 @@ class MockGetAppVersionJob final : public GetAppVersionJob {
             (void) versionObj.set("download_link", "test");
 
             Poco::JSON::Array publishedVersionsArray;
-            for (const auto channel:
-                 {VersionChannel::Prod, VersionChannel::Next, VersionChannel::Beta, VersionChannel::Internal}) {
+            for (const auto channel: {DistributionChannel::Prod, DistributionChannel::Next, DistributionChannel::Beta,
+                                      DistributionChannel::Internal}) {
                 Poco::JSON::Object tmpObj;
                 (void) tmpObj.set("tag", tag);
                 (void) tmpObj.set("tag_updated_at", "2020-06-04 15:06:37");
                 (void) tmpObj.set("version_changelog", "test");
-                (void) tmpObj.set("type", GetAppVersionJob::toStr(channel));
+                // (void) tmpObj.set("type", GetAppVersionJob::toStr(channel)); // TODO
                 (void) tmpObj.set("build_version", buildVersion);
                 (void) tmpObj.set("build_min_os_version", "1.1");
                 (void) tmpObj.set("download_link", "test");

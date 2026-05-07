@@ -67,7 +67,7 @@ void TestGuiCommChannel::testSignalDriveUpdatedJob() {
 
 void TestGuiCommChannel::testSignalUpdaterShowDialogJob() {
     VersionInfo versionInfo;
-    versionInfo.channel = VersionChannel::Beta;
+    versionInfo.channel = DistributionChannel::Beta;
     versionInfo.tag = "4.0.0";
     versionInfo.buildVersion = 1;
     versionInfo.buildMinOsVersion = "15.1";
