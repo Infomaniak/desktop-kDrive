@@ -3,7 +3,9 @@
     public enum Category
     {
         HomePage,
-        ActivityPage
+        ActivityPage,
+        StoragePage,
+        Search
     }
 
     public enum EventName
@@ -20,5 +22,6 @@
         OpenItemWeb,
         CopyItemWebLink,
         OpenItemError,
+        ValidateSearch,
     }
 }

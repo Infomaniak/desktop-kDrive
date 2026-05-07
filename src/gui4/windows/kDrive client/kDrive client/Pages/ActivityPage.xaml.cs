@@ -116,7 +116,7 @@ namespace Infomaniak.kDrive.Pages
         }
         private void ShowIncomingActivityComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (IsLoaded) return;
+            if (!IsLoaded) return;
             ComboBox? comboBox = sender as ComboBox;
             if (comboBox is null) return;
 
@@ -124,7 +124,6 @@ namespace Infomaniak.kDrive.Pages
                 _analyticsService.TrackClick(Analytics.Keys.Category.ActivityPage, Analytics.Keys.EventName.ShowMyActivities);
             else 
                 _analyticsService.TrackClick(Analytics.Keys.Category.ActivityPage, Analytics.Keys.EventName.ShowAllActivities);
-
 
         }
     }

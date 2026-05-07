@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2026 Infomaniak Network SA
  *
@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 using CommunityToolkit.WinUI;
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
@@ -72,6 +73,7 @@ namespace Infomaniak.kDrive.CustomControls
 
     public sealed partial class SearchBox : UserControl
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private CancellationTokenSource? _searchCts;
         private AppModel ViewModel => App.ServiceProvider.GetRequiredService<AppModel>();
         private const string _privateFolderName = "Private/";
@@ -171,6 +173,7 @@ namespace Infomaniak.kDrive.CustomControls
 
         private async void TitleBarSearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
+            _analyticsService.TrackClick(Analytics.Keys.Category.Search, Analytics.Keys.EventName.ValidateSearch);
 
             ISearchBoxResultItem? resultItem = args.ChosenSuggestion as ISearchBoxResultItem;
 
@@ -202,6 +205,7 @@ namespace Infomaniak.kDrive.CustomControls
                 // Item is not available locally, open in web browser
                 var url = App.Constants.Drive.itemUri(ViewModel.SelectedSync.Drive.DriveId, resultItem.SearchItem.NodeId);
                 await Launcher.LaunchUriAsync(url);
+                _analyticsService.TrackClick(Analytics.Keys.Category.Search, Analytics.Keys.EventName.OpenItemWeb);
                 sender.IsSuggestionListOpen = false;
                 return;
             }
@@ -227,10 +231,12 @@ namespace Infomaniak.kDrive.CustomControls
                 if (!Directory.Exists(path))
                 {
                     await Utility.OpenFileAsync(path);
+                    _analyticsService.TrackClick(Analytics.Keys.Category.Search, Analytics.Keys.EventName.OpenItem);
                     sender.IsSuggestionListOpen = false;
                     return;
                 }
                 await Utility.OpenFolderSecurely(path);
+                _analyticsService.TrackClick(Analytics.Keys.Category.Search, Analytics.Keys.EventName.OpenItem);
                 sender.IsSuggestionListOpen = false;
             }
         }
@@ -277,6 +283,7 @@ namespace Infomaniak.kDrive.CustomControls
                 // Item is not available locally, open in web browser
                 var url = App.Constants.Drive.itemUri(ViewModel.SelectedSync.Drive.DriveId, resultItem.SearchItem.NodeId);
                 await Launcher.LaunchUriAsync(url);
+                _analyticsService.TrackClick(Analytics.Keys.Category.Search, Analytics.Keys.EventName.OpenItemWeb);
                 return;
             }
 
@@ -297,6 +304,7 @@ namespace Infomaniak.kDrive.CustomControls
 
                 string path = System.IO.Path.Combine(ViewModel.SelectedSync.LocalPath, itemRelativePath);
                 await Utility.OpenFolderSecurely(path);
+                _analyticsService.TrackClick(Analytics.Keys.Category.Search, Analytics.Keys.EventName.OpenItem);
             }
         }
 
