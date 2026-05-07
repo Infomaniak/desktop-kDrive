@@ -44,6 +44,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testCreateSymlink);
         CPPUNIT_TEST(testGetNodeId);
         CPPUNIT_TEST(testGetFileStat);
+        CPPUNIT_TEST(testGetFileChecksum);
         CPPUNIT_TEST(testGetRights);
         // CPPUNIT_TEST(testIsFileAccessible); // Temporary disabled: Infinite loop on Linux CI
         CPPUNIT_TEST(testFileChanged);
@@ -94,6 +95,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         void testCreateDirectory(void);
         void testCreateSymlink(void);
         void testGetFileStat(void);
+        void testGetFileChecksum(void);
         void testGetRights(void);
         void testIsFileAccessible(void);
         void testFileChanged(void);
