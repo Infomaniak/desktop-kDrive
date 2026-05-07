@@ -16,7 +16,11 @@
         SyncSelector,
         NavBar,
         BatchConflictResolutionPage,
-        IndividualConflictResolutionPage
+        IndividualConflictResolutionPage,
+        SettingsPage,
+        GeneralSettingsPage,
+        AccountsSettingsPage,
+        AdvancedSettingsPage
     }
 
     public enum EventName
@@ -71,6 +75,31 @@
         KeepRemote,
         BatchConflictResolutionBreadcrumb,
         StartChoices,
-        ManageSingleConflict
+        ManageSingleConflict,
+        StartUpdate,
+        ChangeReleaseChannel,
+        ChangeLanguage,
+        ChangeAutoStart,
+        ChangeNotifications,
+        ChangeMoveToTrash,
+        OpenSupportWeb,
+        OpenFeedbackWeb,
+        OpenOnboarding,
+        Disconnect,
+        CancelDisconnect,
+        ConfirmDisconnect,
+        OpenDriveSettings,
+        OpenExclusionRules,
+        ChangeMatomoSettings,
+        ChangeSentrySettings,
+        OpenSourceCodeWeb,
+        ChangeProxyMode,
+        ChangeProxySettings,
+        ChangeLogIsOn,
+        ChangeLogPurge,
+        ChangeLogVerbosity,
+        OpenLogFolder,
+        SendLogToSupport,
+        CancelLogToSupport,
     }
 }

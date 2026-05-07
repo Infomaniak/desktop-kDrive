@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.CustomControls;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
@@ -33,6 +34,7 @@ namespace Infomaniak.kDrive.Pages.Settings
 {
     public sealed partial class SettingsPage : Page
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel => _viewModel;
 
@@ -44,11 +46,13 @@ namespace Infomaniak.kDrive.Pages.Settings
         }
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
+            _analyticsService.TrackPageView(Analytics.Keys.Category.SettingsPage);
             await RefreshAvailableDrivesForAllUsers();
         }
 
         private void CreateAccountButton_Click(object sender, RoutedEventArgs e)
         {
+            _analyticsService.TrackClick(Analytics.Keys.Category.AccountsSettingsPage, Analytics.Keys.EventName.OpenOnboarding);
             (App.Current as App)?.StartOnboarding();
         }
 
@@ -60,6 +64,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                     return;
 
                 toggleSwitch.IsEnabled = false;
+                _analyticsService.TrackClick(Analytics.Keys.Category.GeneralSettingsPage, Analytics.Keys.EventName.ChangeAutoStart, toggleSwitch.IsOn ? 1 : 0);
                 if (!await ViewModel.Settings.ChangeAutoStart(toggleSwitch.IsOn))
                 {
                     Logger.Log(Logger.Level.Error, "Failed to change AutoStart setting");
@@ -80,6 +85,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                     return;
 
                 comboBox.IsEnabled = false;
+                _analyticsService.TrackClick(Analytics.Keys.Category.GeneralSettingsPage, Analytics.Keys.EventName.ChangeNotifications);
 
                 string? selection = selectedItem.Tag as string;
                 if (!Enum.TryParse<NotificationsDisabled>(selection, out NotificationsDisabled selectedNotificationsDisabled))
@@ -108,6 +114,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             {
                 if (!toggleSwitch.IsEnabled || !toggleSwitch.IsLoaded)
                     return;
+                _analyticsService.TrackClick(Analytics.Keys.Category.GeneralSettingsPage, Analytics.Keys.EventName.ChangeMoveToTrash);
 
                 toggleSwitch.IsEnabled = false;
                 if (!await ViewModel.Settings.ChangeMoveToTrash(toggleSwitch.IsOn))
@@ -167,6 +174,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             var control = sender as Control;
             if (control is not null)
                 control.IsEnabled = false;
+            _analyticsService.TrackClick(Analytics.Keys.Category.AccountsSettingsPage, Analytics.Keys.EventName.Disconnect);
 
             ContentDialog dialog = new ContentDialog
             {
@@ -181,6 +189,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             var result = await dialog.ShowAsync();
             if (result == ContentDialogResult.Secondary)
             {
+                _analyticsService.TrackClick(Analytics.Keys.Category.AccountsSettingsPage, Analytics.Keys.EventName.ConfirmDisconnect);
                 if (!await _viewModel.DisconnectUserAsync(user.DbId))
                 {
                     Logger.Log(Logger.Level.Error, "Failed to disconnect user");
@@ -192,6 +201,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             }
             else
             {
+                _analyticsService.TrackClick(Analytics.Keys.Category.AccountsSettingsPage, Analytics.Keys.EventName.CancelDisconnect);
                 Logger.Log(Logger.Level.Info, "User disconnection cancelled by user");
             }
             if (control is not null)
@@ -204,6 +214,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             if (drive is not null)
             {
                 Logger.Log(Logger.Level.Info, $"ManageDriveButton clicked for configured drive {drive.Name}, going to manage page");
+                _analyticsService.TrackClick(Analytics.Keys.Category.AccountsSettingsPage, Analytics.Keys.EventName.OpenDriveSettings);
                 Frame.Navigate(typeof(DriveManagementPage), drive);
             }
             else
@@ -215,6 +226,7 @@ namespace Infomaniak.kDrive.Pages.Settings
         private void SyncRulesCard_Clicked(object sender, RoutedEventArgs e)
         {
             Logger.Log(Logger.Level.Info, "Navigating to Sync Rules Page from Settings Page");
+            _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.OpenExclusionRules);
             Frame.Navigate(typeof(TemplateExclusionPage));
         }
 
@@ -223,6 +235,10 @@ namespace Infomaniak.kDrive.Pages.Settings
             ConsentResult result = await MatomoContentDialog.ShowAsync(this.XamlRoot);
             if (result == ConsentResult.Cancelled)
                 return;
+            if ((result == ConsentResult.Allowed) == ViewModel.Settings.MatomoEnabled)
+                return;
+
+            _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.ChangeMatomoSettings, (result == ConsentResult.Allowed) ? 1 : 0);
             if (!await ViewModel.Settings.ChangeMatomoEnabled(result == ConsentResult.Allowed))
             {
                 Logger.Log(Logger.Level.Error, "Failed to change Matomo enabled setting");
@@ -236,6 +252,10 @@ namespace Infomaniak.kDrive.Pages.Settings
             if (result == ConsentResult.Cancelled)
                 return;
 
+            if ((result == ConsentResult.Allowed) == ViewModel.Settings.SentryEnabled)
+                return;
+
+            _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.ChangeSentrySettings, (result == ConsentResult.Allowed) ? 1 : 0);
             if (!await ViewModel.Settings.ChangeSentryEnabled(result == ConsentResult.Allowed))
             {
                 Logger.Log(Logger.Level.Error, "Failed to change Sentry enabled setting");
@@ -248,6 +268,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             var control = sender as Control;
             if (control is not null)
                 control.IsEnabled = false;
+            _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.OpenSourceCodeWeb);
 
             await Windows.System.Launcher.LaunchUriAsync(App.Constants.GitHub.RepoUrl);
 
@@ -284,6 +305,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                 control.IsEnabled = true;
                 Logger.Log(Logger.Level.Error, "selected item is null or invalid");
             }
+            _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.ChangeProxyMode);
 
             if (selectedProxyType == ProxyType.HTTP && ViewModel.Settings.ProxyConfig.Type != ProxyType.HTTP)
                 ProxySettingsExpander.IsExpanded = true;
@@ -325,6 +347,7 @@ namespace Infomaniak.kDrive.Pages.Settings
 
             ProxySaveProgressRing.Visibility = Visibility.Visible;
             ProxySettingsExpander.IsEnabled = false;
+            _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.ChangeProxySettings);
 
             if (!await ViewModel.Settings.ChangeProxyConfiguration(ProxyHostTextBox.Text, int.Parse(ProxyPortTextBox.Text), ProxyNeedsAuthToggleSwitch.IsOn, ProxyUserTextBox.Text, ProxyPwdPasswordBox.Password))
             {
@@ -350,6 +373,7 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private async void OpenDebugFolderButton_Click(object sender, RoutedEventArgs e)
         {
+            _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.OpenLogFolder);
             try
             {
                 await Utility.OpenFolderSecurely(Logger.LogFolder);
@@ -368,6 +392,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                     return;
                 LogSettingsExpander.IsEnabled = false;
                 toggleSwitch.IsEnabled = false;
+                _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.ChangeLogIsOn, toggleSwitch.IsOn ? 1 : 0);
                 if (!await ViewModel.Settings.ChangeLogLevel(toggleSwitch.IsOn ? Logger.Level.Debug : Logger.Level.None))
                 {
                     Logger.Log(Logger.Level.Error, "Failed to change log level");
@@ -386,6 +411,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                     return;
                 LogSettingsExpander.IsEnabled = false;
                 toggleSwitch.IsEnabled = false;
+                _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.ChangeLogPurge, toggleSwitch.IsOn ? 1 : 0);
                 if (!await ViewModel.Settings.ChangePurgeOldLog(toggleSwitch.IsOn))
                 {
                     Logger.Log(Logger.Level.Error, "Failed to change purge old logs setting");
@@ -411,7 +437,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                     LogSettingsExpander.IsEnabled = true;
                     return; // No change needed
                 }
-
+                _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.ChangeLogVerbosity);
                 if (!await ViewModel.Settings.ChangeLogLevel(toggleSwitch.IsOn ? Logger.Level.Extended : Logger.Level.Debug))
                 {
                     Logger.Log(Logger.Level.Error, "Failed to change log level");
@@ -455,6 +481,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                 control.IsEnabled = true;
                 return;
             }
+            _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.ChangeLogVerbosity);
 
             if (!await ViewModel.Settings.ChangeLogLevel(selectedLevel))
             {
@@ -481,6 +508,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                 Logger.Log(Logger.Level.Error, "control is disabled");
                 return;
             }
+            _analyticsService.TrackClick(Analytics.Keys.Category.GeneralSettingsPage, Analytics.Keys.EventName.ChangeLanguage);
 
             control.IsEnabled = false;
 
@@ -510,6 +538,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             Control? control = sender as Control;
             if (control is not null)
                 control.IsEnabled = false;
+            _analyticsService.TrackClick(Analytics.Keys.Category.GeneralSettingsPage, Analytics.Keys.EventName.OpenSupportWeb);
 
             if (!await Windows.System.Launcher.LaunchUriAsync(App.Constants.kSuite.HelpUri))
             {
@@ -527,6 +556,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             Control? control = sender as Control;
             if (control is not null)
                 control.IsEnabled = false;
+            _analyticsService.TrackClick(Analytics.Keys.Category.GeneralSettingsPage, Analytics.Keys.EventName.OpenFeedbackWeb);
             if (!await kDrive.Localizer.Instance.TryLaunchUriAsync("feedbackURL"))
             {
                 Logger.Log(Logger.Level.Error, "Failed to launch Feedback URI.");
