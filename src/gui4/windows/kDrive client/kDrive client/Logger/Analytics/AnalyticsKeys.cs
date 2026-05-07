@@ -43,5 +43,11 @@
         ChangeSyncLocalLocation,
         ChangeSyncExclusions,
         ChangeSyncMode,
+        OpenSyncSettings,
+        OpenUserSettings,
+        OpenFavoritesWeb,
+        OpenSharedWeb,
+        OpenKDriveWeb,
+        OpenTrashWeb
     }
 }
