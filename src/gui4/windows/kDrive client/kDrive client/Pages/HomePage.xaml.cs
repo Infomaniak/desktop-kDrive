@@ -197,7 +197,7 @@ namespace Infomaniak.kDrive.Pages
 
         private void StartOnboardingButton_Click(object sender, RoutedEventArgs e)
         {
-            _analyticsService.TrackClick(Analytics.Keys.Category.HomePage, Analytics.Keys.EventName.OpenLoginWeb);
+            _analyticsService.TrackClick(Analytics.Keys.Category.HomePage, Analytics.Keys.EventName.OpenSignInWeb);
             (App.Current as App)?.StartOnboarding();
         }
     }

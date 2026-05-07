@@ -5,14 +5,19 @@
         HomePage,
         ActivityPage,
         StoragePage,
-        Search
+        Search,
+        OnboardingWelcomePage,
+        OnboardingConnectionFailedPage,
+        OnboardingSyncConfigurationPage,
+        OnboardingFinalPage,
+        DriveSetupDialog
     }
 
     public enum EventName
     {
         StartSync,
         OpenActivity,
-        OpenLoginWeb,
+        OpenSignInWeb,
         ShowAllActivities,
         ShowMyActivities,
         OpenErrors,
@@ -23,5 +28,18 @@
         CopyItemWebLink,
         OpenItemError,
         ValidateSearch,
+        OpenSignUpWeb,
+        ReOpenLoginWeb,
+        SelectDrive,
+        UnselectDrive,
+        OpenAdvancedSettings,
+        Confirm,
+        Cancel,
+        OpenOffersWeb,
+        OpenStartFreeWeb,
+        ConfigureSync,
+        ChangeSyncLocalLocation,
+        ChangeSyncExclusions,
+        ChangeSyncMode,
     }
 }

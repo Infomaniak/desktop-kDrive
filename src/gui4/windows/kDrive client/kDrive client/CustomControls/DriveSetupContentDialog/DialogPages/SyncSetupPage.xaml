@@ -321,7 +321,8 @@
                                   OnContent="{x:Bind kDrive:Localizer.Instance.GetString('labelActivated')}"
                                   OffContent="{x:Bind kDrive:Localizer.Instance.GetString('labelDeactivated')}"
                                   IsEnabled="{x:Bind DriveSetupContentDialogVM.CurrentSync.SupportsLiteSync , Mode=OneWay}"
-                                  IsOn="{x:Bind DriveSetupContentDialogVM.CurrentSync.SyncType, Converter={StaticResource SyncTypeToBoolConverter}, Mode=TwoWay}" />
+                                  IsOn="{x:Bind DriveSetupContentDialogVM.CurrentSync.SyncType, Converter={StaticResource SyncTypeToBoolConverter}, Mode=TwoWay}"
+                                  Toggled="LiteSyncToggle_Toggled" />
 
                     <TextBlock Grid.ColumnSpan="2"
                                Grid.Row="2"

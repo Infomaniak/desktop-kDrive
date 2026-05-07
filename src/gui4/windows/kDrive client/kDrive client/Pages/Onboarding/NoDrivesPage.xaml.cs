@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.OnBoarding;
 using Infomaniak.kDrive.Pages.Errors;
 using Infomaniak.kDrive.ViewModels;
@@ -30,6 +31,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 {
     public sealed partial class NoDrivesPage : Page
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private readonly AppModel _appModel = App.ServiceProvider.GetRequiredService<AppModel>();
         private ViewModels.Onboarding? _onboardingViewModel;
 
@@ -60,6 +62,11 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             }
         }
 
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            DetachEventHandlers();
+        }
+
         private void DetachEventHandlers()
         {
             if (_onboardingViewModel is not null)
@@ -83,11 +90,13 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 
         private async void OnStartFreeButtonClick(object sender, RoutedEventArgs e)
         {
+            _analyticsService.TrackClick(Analytics.Keys.Category.OnboardingSyncConfigurationPage, Analytics.Keys.EventName.OpenStartFreeWeb);
             await Windows.System.Launcher.LaunchUriAsync(App.Constants.Drive.StartFreeUri);
         }
 
         private async void OnOffersButtonClick(object sender, RoutedEventArgs e)
         {
+            _analyticsService.TrackClick(Analytics.Keys.Category.OnboardingSyncConfigurationPage, Analytics.Keys.EventName.OpenOffersWeb);
             await Windows.System.Launcher.LaunchUriAsync(App.Constants.kSuite.TarrifsUri);
         }
 

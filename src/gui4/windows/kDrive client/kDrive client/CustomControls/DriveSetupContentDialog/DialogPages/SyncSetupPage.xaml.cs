@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.CustomControls;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
@@ -33,6 +34,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 {
     public sealed partial class SyncSetupPage : Page
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel { get { return _viewModel; } }
 
@@ -113,6 +115,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 
         private async void ChangeFolder_Click(object sender, RoutedEventArgs e)
         {
+            _analyticsService.TrackClick(Analytics.Keys.Category.Onboarding, Analytics.Keys.EventName.ChangeSyncLocalLocation);
             Logger.Log(Logger.Level.Info, "Change sync path button clicked, opening folder picker");
 
             if (DriveSetupContentDialogVM?.CurrentSync is null)
@@ -218,6 +221,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 
         private void Exclusionbutton_click(object sender, RoutedEventArgs e)
         {
+            _analyticsService.TrackClick(Analytics.Keys.Category.DriveSetupDialog, Analytics.Keys.EventName.ChangeSyncExclusions);
             Frame.Navigate(typeof(SyncExclusionPage), DriveSetupContentDialogVM);
         }
 
@@ -233,6 +237,12 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 
             newSync.LocalPath = newSync.DefaultPath;
             await newSync.SelectBestVfsMode();
+        }
+
+        private void LiteSyncToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (IsLoaded && sender is ToggleSwitch toggle)
+                _analyticsService.TrackClick(Analytics.Keys.Category.DriveSetupDialog, Analytics.Keys.EventName.ChangeSyncMode, toggle.IsOn ? 1 : 0);
         }
     }
 }
