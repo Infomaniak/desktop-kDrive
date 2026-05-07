@@ -30,7 +30,7 @@ Q_LOGGING_CATEGORY(lcCacheHydrator, "gui.v4.cachehydrator", QtInfoMsg)
 [[noreturn]] void exitOnHydrationFailure(const char *const stage, const ExitInfo &exitInfo) {
     qCCritical(lcCacheHydrator) << "Cache hydration failed at" << stage << "| code:" << exitInfo.code()
                                 << "/ cause:" << exitInfo.cause();
-    std::exit(EXIT_FAILURE);
+    std::exit(EXIT_FAILURE); // TODO send a sentry message
 }
 } // namespace
 
