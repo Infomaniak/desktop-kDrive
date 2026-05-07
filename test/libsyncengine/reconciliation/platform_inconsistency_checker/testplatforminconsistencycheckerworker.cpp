@@ -156,7 +156,7 @@ void TestPlatformInconsistencyCheckerWorker::testCheckNameForbiddenChars() {
 
     forbiddenName = Str("test ");
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
-                                                         forbiddenName, _syncPal->cacheDirectory(), endsWithForbiddenSpace));
+                                                         forbiddenName, _syncPal->cacheDirectory(), hasForbiddenChars));
     CPPUNIT_ASSERT(!hasForbiddenChars);
 
     bool endsWithForbiddenSpace = false;
