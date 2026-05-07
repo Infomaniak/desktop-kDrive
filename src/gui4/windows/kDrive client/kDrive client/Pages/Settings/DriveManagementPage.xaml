@@ -83,7 +83,8 @@
                     </toolKit:SettingsCard>
 
                     <!-- Folder Selection -->
-                    <toolKit:SettingsExpander Header="{x:Bind kDrive:Localizer.Instance.GetString('labelSynchronisation')}">
+                    <toolKit:SettingsExpander Header="{x:Bind kDrive:Localizer.Instance.GetString('labelSynchronisation')}"
+                                              Expanded="ExclusionsSettingsExpander_Expanded">
                         <toolKit:SettingsExpander.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Arrows.arrow-loop}"
                                               Height="32"

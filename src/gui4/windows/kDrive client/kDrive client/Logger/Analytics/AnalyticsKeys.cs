@@ -20,7 +20,9 @@
         SettingsPage,
         GeneralSettingsPage,
         AccountsSettingsPage,
-        AdvancedSettingsPage
+        AdvancedSettingsPage,
+        DriveManagementPage,
+        DriveAdvancedSyncsPage
     }
 
     public enum EventName
@@ -63,6 +65,7 @@
         SyncSelected,
         OpenHome,
         OpenSyncDir,
+        OpenRemoteSyncDir,
         OpenSettings,
         Expanded,
         ActivityBreadcrumb,
@@ -101,5 +104,14 @@
         OpenLogFolder,
         SendLogToSupport,
         CancelLogToSupport,
+        SettingsBreadcrumbs,
+        ManageAdvancedSync,
+        ShowItemExclusion,
+        CancelSyncModeSwitch,
+        ConfirmSyncModeSwitch,
+        Delete,
+        Create,
+        DriveBreadcrumbs,
+        DriveManagementBreadcrumbs
     }
 }
