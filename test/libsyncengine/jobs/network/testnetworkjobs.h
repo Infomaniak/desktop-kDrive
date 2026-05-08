@@ -122,7 +122,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBaseWithParmsDb 
     private:
         bool createTestFiles();
         bool existsInRemoteDirectory(const SyncName &fileName, const RemoteNodeId &remoteDirId,
-                                     const NodeType nodeType = NodeType::File);
+                                     NodeType nodeType = NodeType::File);
 
         void testUpload(SyncTime creationTimeIn, SyncTime modificationTimeIn, SyncTime &creationTimeOut,
                         SyncTime &modificationTimeOut);
