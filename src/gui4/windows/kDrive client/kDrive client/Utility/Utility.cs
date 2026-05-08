@@ -304,7 +304,7 @@ namespace Infomaniak.kDrive
         public static void ShowUnexpectedErrorTeachingTip()
         {
             Logger.Log(Logger.Level.Error, "Showing unexpected error TeachingTip");
-            App.ServiceProvider.GetRequiredService<IAnalyticsService>().TrackOther(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.UnexpectedErrorTeachingTipShown);
+            App.ServiceProvider.GetRequiredService<IAnalyticsService>().TrackOther(Analytics.Keys.Category.UnexpectedErrorTeachingTip, Analytics.Keys.EventName.Displayed);
             ShowTeachingTip(Localizer.Instance.GetString("unexpectedErrorTeachingTipTitle"), Localizer.Instance.GetString("unexpectedErrorTeachingTipContent"));
         }
 

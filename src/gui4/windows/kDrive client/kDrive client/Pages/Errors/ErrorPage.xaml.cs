@@ -70,7 +70,7 @@ namespace Infomaniak.kDrive.Pages.Errors
 
         private void ManyConflicts_ActionClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            _analyticsService.TrackOther(Analytics.Keys.Category.UnexpectedErrorTeachingTip, Analytics.Keys.EventName.Displayed);
+            _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageMultipleConflicts);
             Frame.Navigate(typeof(ConflictQuickResolvePage));
         }
 
