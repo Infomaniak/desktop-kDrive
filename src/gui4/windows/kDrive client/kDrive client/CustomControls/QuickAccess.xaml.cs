@@ -102,7 +102,7 @@ namespace Infomaniak.kDrive.CustomControls
             frame.Navigate(typeof(SettingsPage), new SettingsPage.NavigationParameter { Tab = SettingsPage.NavigationParameter.SettingsTab.Users, UserToShow = ViewModel.SelectedSync?.Drive.Account.User });
         }
 
-        private void SyncBorder_Click(object sender, RoutedEventArgs e)
+        private void SyncIconButton_Click(object sender, RoutedEventArgs e)
         {
             if (ViewModel.SelectedSync is null)
                 return;
@@ -118,6 +118,27 @@ namespace Infomaniak.kDrive.CustomControls
                 frame.Navigate(typeof(DriveAdvancedSyncsPage), ViewModel.SelectedSync.Drive);
             else
                 frame.Navigate(typeof(DriveManagementPage), ViewModel.SelectedSync.Drive);
+        }
+
+        private void PersonPictureButton_PointerEntered(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            PersonPictureButtonOverlay.Opacity = 0.8;
+            PersonPictureButtonOverlayIcon.Opacity = 1.0;
+        }
+        private void PersonPictureButton_PointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            PersonPictureButtonOverlay.Opacity = 0;
+            PersonPictureButtonOverlayIcon.Opacity = 0;
+        }
+        private void SyncIconButton_PointerEntered(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            SyncIconButtonOverlay.Opacity = 0.8;
+            SyncIconButtonOverlayIcon.Opacity = 1.0;
+        }
+        private void SyncIconButton_PointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            SyncIconButtonOverlay.Opacity = 0;
+            SyncIconButtonOverlayIcon.Opacity = 0;
         }
     }
 }
