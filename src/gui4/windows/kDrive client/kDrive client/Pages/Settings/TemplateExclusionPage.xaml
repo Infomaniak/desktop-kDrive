@@ -33,7 +33,7 @@
     <Page.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </Page.Resources>
-    <Grid Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.L}"
+    <Grid Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.L}"
           RowSpacing="{StaticResource Infomaniak.Style.Spacing.L}">
         <Grid.RowDefinitions>
             <!-- Title & BreadCrumb bar -->
@@ -45,7 +45,8 @@
         <!-- Title & BreadCrumb bar -->
         <StackPanel Grid.Row="0"
                     Orientation="Vertical"
-                    Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                    Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+                    Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.L}">
             <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('settingsTitle')}"
                        Style="{StaticResource TitleLargeTextBlockStyle}" />
 
@@ -55,7 +56,8 @@
 
         <!-- Template exclusion management -->
         <ScrollView Grid.Row="1">
-            <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+            <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+                        Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.L}">
                 <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('filesToExclude')}"
                            Style="{StaticResource TitleTextBlockStyle}" />
 
@@ -117,6 +119,7 @@
                 <!-- User Exclusion - At least one template-->
                 <toolKit:SettingsExpander Header="{x:Bind kDrive:Localizer.Instance.GetString('userExclusionFileListHeader')}"
                                           Description="{x:Bind kDrive:Localizer.Instance.GetString('userExclusionFileListDescription')}"
+                                          IsExpanded="True"
                                           Visibility="{x:Bind _templateListModel.UserDefinedTemplates.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
 
                     <toolKit:SettingsExpander.HeaderIcon>

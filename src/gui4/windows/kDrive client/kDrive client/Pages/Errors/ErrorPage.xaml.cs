@@ -71,7 +71,7 @@ namespace Infomaniak.kDrive.Pages.Errors
 
         private void NoErrorHyperlinkButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var frame = ((App.Current as App)?.CurrentWindow as MainWindow)?.AppNavView.Frame;
+            var frame = Utility.GetFrame(this);
             if (frame is null)
             {
                 Logger.Log(Logger.Level.Warning, "Failed to fetch current frame.");
