@@ -97,7 +97,7 @@ ExitInfo getAccount(const Drive &drive, Account &account) {
         assert(false);
         const std::string err{"Error in ParmsDb::selectAccount"};
         LOG_WARN(Log::instance()->getLogger(), err);
-        return {ExitCode::DataError, ExitCause::DbAccessError};
+        return {ExitCode::DbError, ExitCause::DbAccessError};
     }
 
     if (!found) {
