@@ -18,6 +18,8 @@
 
 #include "currentsyncmodel.h"
 
+#include "utility/types.h"
+
 namespace KDC {
 
 CurrentSyncModel::CurrentSyncModel(MainSelectionStore &mainSelectionStore, QObject *const parent) :
@@ -92,7 +94,7 @@ bool CurrentSyncModel::supportVfs() const {
 }
 
 qint32 CurrentSyncModel::virtualFileMode() const {
-    return _context ? static_cast<qint32>(_context->sync.virtualFileMode()) : 0;
+    return _context ? toInt(_context->sync.virtualFileMode()) : 0;
 }
 
 QString CurrentSyncModel::navigationPaneClsid() const {
@@ -108,7 +110,7 @@ bool CurrentSyncModel::hasError() const {
 }
 
 qint64 CurrentSyncModel::latestErrorDbId() const {
-    return hasError() ? static_cast<qint64>(_context->latestError->dbId()) : 0;
+    return hasError() ? toInt(_context->latestError->dbId()) : 0;
 }
 
 qint64 CurrentSyncModel::latestErrorTime() const {
@@ -116,11 +118,11 @@ qint64 CurrentSyncModel::latestErrorTime() const {
 }
 
 qint32 CurrentSyncModel::latestErrorLevel() const {
-    return hasError() ? static_cast<qint32>(_context->latestError->level()) : 0;
+    return hasError() ? toInt(_context->latestError->level()) : 0;
 }
 
 qint32 CurrentSyncModel::latestErrorExitCode() const {
-    return hasError() ? static_cast<qint32>(_context->latestError->exitCode()) : 0;
+    return hasError() ? toInt(_context->latestError->exitCode()) : 0;
 }
 
 QString CurrentSyncModel::latestErrorPath() const {
