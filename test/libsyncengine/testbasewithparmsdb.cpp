@@ -50,10 +50,10 @@ void TestBaseWithParmsDb::initParmsDb() {
     (void) ParmsDb::instance()->insertUser(user);
 
     const AccountId accountId(atoi(testVariables.accountId.c_str()));
-    Account account(AccountDbId{1}, accountId, user.dbId(), "account1");
+    Account account(AccountDbId{2}, accountId, user.dbId(), "account1");
     (void) ParmsDb::instance()->insertAccount(account);
 
-    _driveDbId = 1;
+    _driveDbId = 3;
     _driveId = atoi(testVariables.driveId.c_str());
     Drive drive(_driveDbId, _driveId, account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
