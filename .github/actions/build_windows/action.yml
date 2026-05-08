@@ -77,7 +77,7 @@ runs:
             echo "CERTIFICATE_NAME=gt-certificate" >> $GITHUB_OUTPUT
             echo "SM_HOST=${{ inputs.ksp_host }}" >> "$GITHUB_ENV"
             echo "SM_API_KEY=${{ inputs.ksp_api_key }}" >> "$GITHUB_ENV"
-            echo "SM_CLIENT_CERT_FILE=C:\\release-runner\\_work\\desktop-kDrive\\desktop-kDrive\\certificate\\ksp_client_certificate.pfx" >> "$GITHUB_ENV"
+            echo "SM_CLIENT_CERT_FILE=${{ github.workspace }}/certificate/ksp_client_certificate.pfx" >> "$GITHUB_ENV"
             echo "SM_CLIENT_CERT_PASSWORD=${{ inputs.ksp_client_cert_pass }}" >> "$GITHUB_ENV"
             echo "C:\Program Files (x86)\Windows Kits\10\App Certification Kit" >> $GITHUB_PATH
             echo "C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.8 Tools" >> $GITHUB_PATH
