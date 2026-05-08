@@ -24,7 +24,12 @@
         DriveManagementPage,
         DriveAdvancedSyncsPage,
         ExclusionSelector,
-        Errors
+        Errors,
+        AsleepErrorPage,
+        DriveAccessDeniedPage,
+        LogginErrorPage,
+        MaintenanceErrorPage,
+        NotRenewErrorPage
     }
 
     public enum EventName
@@ -149,6 +154,7 @@
         ManageDriveAccessDenied,
         ManageSpaceOnly,
         ManageInvalidToken,
-        ManageTmpDirError
+        ManageTmpDirError,
+        OpenRenewWeb
     }
 }
