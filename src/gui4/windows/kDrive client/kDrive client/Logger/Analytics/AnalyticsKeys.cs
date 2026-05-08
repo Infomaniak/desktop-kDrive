@@ -23,7 +23,8 @@
         AdvancedSettingsPage,
         DriveManagementPage,
         DriveAdvancedSyncsPage,
-        ExclusionSelector
+        ExclusionSelector,
+        Errors
     }
 
     public enum EventName
@@ -80,10 +81,12 @@
         BatchConflictResolutionBreadcrumb,
         StartChoices,
         ManageSingleConflict,
+        ManageMultipleConflicts,
         StartUpdate,
         ChangeReleaseChannel,
         ChangeLanguage,
         ChangeAutoStart,
+        ChangeAutoUpdate,
         ChangeNotifications,
         ChangeMoveToTrash,
         OpenSupportWeb,
@@ -115,6 +118,37 @@
         DriveBreadcrumbs,
         DriveManagementBreadcrumbs,
         SelectDir,
-        UnselectDir
+        UnselectDir,
+        ShowConflictVersion,
+        ValidateConflictResolution,
+        ManageFileAccessError,
+        FileAccessErrorOpenFolder,
+        ManageNotEnoughDiskSpace,
+        ManageUnsupportedChar,
+        ManageEndsWithSpace,
+        ManageFileNameReserved,
+        ManageFileNameTooLong,
+        ManagePathTooLong,
+        ManageInvalidName,
+        ManageExcludedFile,
+        ManageRescuedFile,
+        ManageInvalidRemoteSyncDir,
+        ManageSyncDirAccessError,
+        SyncDirAccessErrorOpenFolder,
+        ManageSyncDirDiskMissing,
+        SyncDirDiskMissingRestartSync,
+        ManageSyncDirChanged,
+        SyncDirChangedRecreate,
+        ManageLiteSyncError,
+        LiteSyncErrorSwitchMode,
+        ManageQuotaExceeded,
+        ManageUnexpectedError,
+        ManageDriveInMaintenance,
+        ManageDriveAsleep,
+        ManageDriveNotRenew,
+        ManageDriveAccessDenied,
+        ManageSpaceOnly,
+        ManageInvalidToken,
+        ManageTmpDirError
     }
 }

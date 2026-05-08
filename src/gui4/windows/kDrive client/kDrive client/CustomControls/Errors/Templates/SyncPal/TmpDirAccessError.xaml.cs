@@ -15,8 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
@@ -29,6 +31,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
     )]
     public sealed partial class TmpDirAccessError : UserControl
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private Error Error { get; init; }
         public TmpDirAccessError(Error error)
         {
@@ -37,6 +40,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
         }
         private async void ErrorCard_ActionClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
+            _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageTmpDirError);
             App.ExitApplicationAndShutdownServer();
         }
     }

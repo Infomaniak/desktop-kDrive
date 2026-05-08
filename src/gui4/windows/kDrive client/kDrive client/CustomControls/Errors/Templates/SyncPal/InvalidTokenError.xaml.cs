@@ -15,8 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
@@ -28,6 +30,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
     )]
     public sealed partial class InvalidTokenError : UserControl
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private Error Error { get; init; }
         public InvalidTokenError(Error error)
         {
@@ -43,6 +46,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
                 Logger.Log(Logger.Level.Warning, "Unable to get the current frame");
                 return;
             }
+            _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageInvalidToken);
 
             frame.Navigate(typeof(Pages.LogginErrorPage), new Pages.LogginErrorPage.NavigationParams { TryReconnectOnLoad = true });
         }

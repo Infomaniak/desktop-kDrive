@@ -300,7 +300,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
         }
 
         Logger.Log(Logger.Level.Info, "User confirmed new advanced sync creation in content dialog, creating sync");
-        _analyticsService.TrackClick(Analytics.Keys.Category.DriveAdvancedSyncsPage, Analytics.Keys.EventName.AddAdvancedSync);
+        _analyticsService.TrackClick(Analytics.Keys.Category.DriveAdvancedSyncsPage, Analytics.Keys.EventName.Create);
 
         var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
         Logger.Log(Logger.Level.Debug, $"Setting up new sync: LocalPath={newSync.LocalPath}, RemotePath={newSync.RemotePath}, Drive={newSync.Drive.Name}");
@@ -349,13 +349,11 @@ public sealed partial class DriveAdvancedSyncsPage : Page
         var result = await dialog.ShowAsync();
         if (result == ContentDialogResult.Primary)
         {
-            _analyticsService.TrackClick(Analytics.Keys.Category.DriveAdvancedSyncsPage, Analytics.Keys.EventName.SaveItemExclusion);
             Logger.Log(Logger.Level.Info, "User confirmed sync exclusion changes");
             await exclusionPage.SaveChanges();
         }
         else
         {
-            _analyticsService.TrackClick(Analytics.Keys.Category.DriveAdvancedSyncsPage, Analytics.Keys.EventName.CancelItemExclusion);
             Logger.Log(Logger.Level.Info, "User canceled sync exclusion changes");
         }
 
