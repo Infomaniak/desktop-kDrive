@@ -148,7 +148,7 @@ Add the path to the `Icoutils` folder to your `PATH` environment variable, e.g. 
 # Certificate Configuration
 
 To be able to sign executables, you need to have one of two the Infomaniak certificates installed.
-We use the virtual certificate for `DEBUG` builds and the physical certificate (USB key) for release builds.
+We use the debug certificate for Debug builds and the KSP client certificate for Release builds.
 
 Once the certificates are installed on your machine, open `F:\Projects\desktop-kDrive\extensions\windows\cfapi\kDriveExt.sln` and follow the next steps
 to create an environment variable for each certificate:

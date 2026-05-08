@@ -37,9 +37,6 @@ Param(
     # Upload: Flag to trigger the use of the KSP client certificate
     [switch] $upload,
 
-    # tokenPass: The password to use for unlocking the KSP client certificate (only used if upload is set)
-    [String] $tokenPass,
-	
     # Msi: Build MSI installer
     [switch] $msi,
 
@@ -160,10 +157,10 @@ function Get-Cert-Property {
     
     $value = 
     If ($upload) {
-        Get-ChildItem $certStore | Where-Object { $_.Subject -match $kspClientCertSubjectRegEx -and $_.Issuer -match $kspClientCertIssuerRegEx } | Select -ExpandProperty $property
+        Get-ChildItem $certStore | Where-Object { $_.Subject -match $kspClientCertSubjectRegEx -and $_.Issuer -match $kspClientCertIssuerRegEx } | Select -first 1 -ExpandProperty $property
     } 
     Else {
-        Get-ChildItem $certStore | Where-Object { $_.Subject -match $debugCertSubjectRegEx -and $_.Issuer -match $debugCertIssuerRegEx } | Select -ExpandProperty $property
+        Get-ChildItem $certStore | Where-Object { $_.Subject -match $debugCertSubjectRegEx -and $_.Issuer -match $debugCertIssuerRegEx } | Select -first 1 -ExpandProperty $property
     }
     Write-Host "Using ${property}: ${value}"
 
@@ -278,7 +275,7 @@ function Build-Extension {
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     $bundlePath = "$extPath/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_${version}_Test/FileExplorerExtensionPackage_${version}_x64_arm64.msixbundle"
-    Sign-File -FilePath $bundlePath -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass -Description "FileExplorerExtensionPackage"
+    Sign-File -FilePath $bundlePath -Upload $upload -Thumbprint $thumbprint -Description "FileExplorerExtensionPackage"
 
     $srcVfsPath = "$path/src/libcommonserver/vfs/win/."
     Copy-Item -Path "$extPath/Vfs/../Common/debug.h" -Destination $srcVfsPath
@@ -458,16 +455,10 @@ function Sign-File {
         [string] $filePath,
         [bool] $upload = $false,
         [string] $thumbprint,
-        [string] $tokenPass = "",
         [string] $description = ""
     )
     Write-Host "Signing the file $filePath with thumbprint $thumbprint" -f Yellow
-    if ($tokenPass) {
-      & "C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64\signtool.exe" sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256 /fd sha256 /td sha256 /v /debug /sm /d $description $filePath /password:$tokenPass
-    }
-    else {
-      & "C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64\signtool.exe" sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256 /fd sha256 /td sha256 /v /debug /sm /d $description $filePath
-    }
+    & "C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64\signtool.exe" sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256 /fd sha256 /td sha256 /v /debug /sm /d $description $filePath
     $res = $LASTEXITCODE
     Write-Host "Signing exit code: $res" -ForegroundColor Yellow
     if ($res -ne 0) {
@@ -559,7 +550,7 @@ function Prepare-Archive {
         $filename = Split-Path -Leaf $file
 
         $thumbprint = Get-Thumbprint -Upload $upload -Ci $ci
-        Sign-File -FilePath $archivePath/$filename -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass -Description $filename
+        Sign-File -FilePath $archivePath/$filename -Upload $upload -Thumbprint $thumbprint -Description $filename
 
     }
 
@@ -577,7 +568,7 @@ function Prepare-Archive {
             $signature.Status -eq 'NotSigned'
         }
         foreach ($file in $filesToSign) {
-            Sign-File -FilePath $file.FullName -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass -Description $file.Name
+            Sign-File -FilePath $file.FullName -Upload $upload -Thumbprint $thumbprint -Description $file.Name
             Write-Host "Signed file: $($file.FullName)"
         }
     }
@@ -621,7 +612,7 @@ function Create-Archive {
     $installerPath = Get-Installer-Path -ContentPath $contentPath
 
     if (Test-Path -Path $installerPath) {
-        Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass -Description $appName
+        Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -Description $appName
         Write-Host ("$installerPath signed successfully.") -f Green
     }
     else {
@@ -659,7 +650,7 @@ function Create-MSI-Package {
 	$installerPath = Get-Installer-Path -ContentPath $contentPath -msi
 
 	if (Test-Path -Path $installerPath) {
-		Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass -Description $appName
+		Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -Description $appName
 		Write-Host ("$installerPath signed successfully.") -f Green
 	}
 	else {

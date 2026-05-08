@@ -38,7 +38,7 @@ jobs:
       - name: Build Windows
         uses: ./.github/actions/build_windows
         with:  
-          debug_cert: ${{ secrets.WINDOWS_DEBUG_CERT_B64 }}
+          debug_cert: ${{ secrets.WINDOWS_DEBUG_CERT_FILE_B64 }}
           debug_cert_pass: ${{ secrets.WINDOWS_DEBUG_CERT_PASSWORD }}
     
   build-Linux:
