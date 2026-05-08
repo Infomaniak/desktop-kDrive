@@ -549,8 +549,8 @@ ExitInfo DownloadJob::moveTmpFile() {
 
 bool DownloadJob::hasEnoughPlace(const SyncPath &tmpDirPath, const SyncPath &destDirPath, int64_t neededPlace,
                                  log4cplus::Logger logger) {
-    auto tmpDirSize = Utility::Utility::getFreeDiskSpace(tmpDirPath);
-    auto destDirSize = Utility::Utility::getFreeDiskSpace(destDirPath);
+    auto tmpDirSize = Utility::getFreeDiskSpace(tmpDirPath);
+    auto destDirSize = Utility::getFreeDiskSpace(destDirPath);
 
     if (const auto &freeBytes = std::min(tmpDirSize, destDirSize); freeBytes >= 0) {
         const auto totalNeededSpace = neededPlace + Utility::freeDiskSpaceLimit();

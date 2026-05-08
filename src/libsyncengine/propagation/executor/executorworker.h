@@ -92,6 +92,7 @@ class ExecutorWorker : public OperationProcessor {
         ExitInfo handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);
         ExitInfo generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);
         ExitInfo getPathFromDb(const std::shared_ptr<Node> node, SyncPath &dbPath);
+        ExitInfo getPathFromDb(DbNodeId dbNodeId, ReplicaSide side, SyncPath &dbPath);
 
         ExitInfo handleDeleteOp(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);
         ExitInfo generateDeleteJob(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);

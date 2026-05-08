@@ -82,6 +82,12 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
             _pendingFileEvents.clear();
             break;
         }
+
+        // Ignore events on the sync folder
+        if (path == _syncPal->localPath()) {
+            continue;
+        }
+
         sentry::pTraces::scoped::LFSOChangeDetected perfMonitor(syncDbId());
         // Raise flag _updating in order to wait 1sec without local changes before starting the sync
         _updating = true;
@@ -118,7 +124,7 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
                     absolutePath, &fileStat, ioError,
                     IoHelper::PathCheckOption::Sensitive)) { // Sensitive existence check is needed for MOVE operation
             LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absolutePath, ioError));
-            tryToInvalidateSnapshot();
+            invalidateSnapshot();
             return ExitCode::SystemError;
         }
 
@@ -140,7 +146,7 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
             if (!IoHelper::getItemType(absolutePath, itemType)) {
                 LOGW_SYNCPAL_WARN(_logger,
                                   L"Error in IoHelper::getItemType: " << Utility::formatIoError(absolutePath, itemType.ioError));
-                tryToInvalidateSnapshot();
+                invalidateSnapshot();
                 return ExitCode::SystemError;
             }
             if (itemType.ioError == IoError::AccessDenied) {
@@ -194,7 +200,7 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
             } else {
                 LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: " << Utility::formatSyncPath(absolutePath) << L" ("
                                                                     << CommonUtility::s2ws(itemId) << L")");
-                tryToInvalidateSnapshot();
+                invalidateSnapshot();
                 return ExitCode::DataError;
             }
 
@@ -235,7 +241,7 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
                 if (ExitInfo exitInfo = _syncPal->vfs()->status(absolutePath, vfsStatus); !exitInfo) {
                     LOGW_SYNCPAL_WARN(_logger,
                                       L"Error in vfsStatus: " << Utility::formatSyncPath(absolutePath) << L": " << exitInfo);
-                    tryToInvalidateSnapshot();
+                    invalidateSnapshot();
                     return ExitCode::DataError;
                 }
 
@@ -248,7 +254,7 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
                         if (!_syncPal->vfs()->fileStatusChanged(absolutePath, SyncFileStatus::Syncing)) {
                             LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::vfsFileStatusChanged: "
                                                                << Utility::formatSyncPath(absolutePath));
-                            tryToInvalidateSnapshot();
+                            invalidateSnapshot();
                             return ExitCode::DataError;
                         }
                     }
@@ -282,7 +288,7 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
                 } else {
                     LOGW_SYNCPAL_WARN(_logger, L"Failed to remove item: " << Utility::formatSyncPath(absolutePath) << L" ("
                                                                           << CommonUtility::s2ws(itemId) << L")");
-                    tryToInvalidateSnapshot();
+                    invalidateSnapshot();
                     return ExitCode::DataError;
                 }
                 continue;
@@ -300,7 +306,7 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
                 } else {
                     LOGW_SYNCPAL_WARN(_logger, L"Failed to delete item: " << Utility::formatSyncPath(absolutePath) << L" ("
                                                                           << CommonUtility::s2ws(previousItemId) << L")");
-                    tryToInvalidateSnapshot();
+                    invalidateSnapshot();
                     return ExitCode::DataError;
                 }
             }
@@ -312,7 +318,7 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
             if (!_liveSnapshot.updateItem(item)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Failed to insert item: " << Utility::formatSyncPath(absolutePath) << L" ("
                                                                       << CommonUtility::s2ws(nodeId) << L")");
-                tryToInvalidateSnapshot();
+                invalidateSnapshot();
                 return ExitCode::DataError;
             }
 
@@ -329,8 +335,9 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
                 //                }
             }
 
-            // Manage directories moved from outside the synchronized directory
             if (nodeType == NodeType::Directory) {
+                // A new directory must be explored
+                // NB: When a directory is moved inside the sync directory, it is deleted & added to the snapshot
                 if (absolutePath.native().length() > CommonUtility::maxPathLength()) {
                     LOGW_SYNCPAL_WARN(_logger, L"Ignore item: " << Utility::formatSyncPath(absolutePath) << L" because size > "
                                                                 << CommonUtility::maxPathLength());
@@ -341,7 +348,7 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
                     // Error while exploring directory, we need to invalidate the liveSnapshot
                     LOGW_SYNCPAL_WARN(_logger, L"Error in LocalFileSystemObserverWorker::exploreDir for "
                                                        << Utility::formatSyncPath(absolutePath) << L" " << exitInfo);
-                    tryToInvalidateSnapshot();
+                    invalidateSnapshot();
                     return exitInfo;
                 }
             }
@@ -358,7 +365,7 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
                 if (const auto exitCode = isEditValid(nodeId, absolutePath, fileStat.modificationTime, fileStat.size, valid);
                     exitCode != ExitCode::Ok) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in LocalFileSystemObserverWorker::isEditValid code=" << exitCode);
-                    tryToInvalidateSnapshot();
+                    invalidateSnapshot();
                     return exitCode;
                 }
 
@@ -387,7 +394,7 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
         } else {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to update item: " << Utility::formatSyncPath(absolutePath) << L" ("
                                                                   << CommonUtility::s2ws(nodeId) << L")");
-            tryToInvalidateSnapshot();
+            invalidateSnapshot();
             return ExitCode::DataError;
         }
     }
@@ -408,7 +415,7 @@ void LocalFileSystemObserverWorker::execute() {
     for (;;) {
         if (stopAsked()) {
             exitInfo = ExitCode::Ok;
-            tryToInvalidateSnapshot();
+            invalidateSnapshot();
             break;
         }
 
@@ -422,7 +429,7 @@ void LocalFileSystemObserverWorker::execute() {
         exitInfo = _folderWatcher->exitInfo();
         if (!exitInfo) {
             LOG_SYNCPAL_WARN(_logger, "Error in FolderWatcher: " << _folderWatcher->exitInfo());
-            tryToInvalidateSnapshot();
+            invalidateSnapshot();
             break;
         }
         // We never pause this thread

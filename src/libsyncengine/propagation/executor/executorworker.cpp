@@ -287,10 +287,16 @@ void ExecutorWorker::initSyncFileItem(SyncOpPtr syncOp, SyncFileItem &syncItem) 
 }
 
 void ExecutorWorker::setProgressComplete(const SyncOpPtr syncOp, SyncFileStatus status, const NodeId &newRemoteNodeId) {
+    assert(syncOp->affectedNode());
     SyncPath relativeLocalFilePath;
-    if (syncOp->type() == OperationType::Create || syncOp->type() == OperationType::Edit) {
-        relativeLocalFilePath = syncOp->nodePath(ReplicaSide::Local);
+    if (const auto idb = syncOp->affectedNode()->idb(); idb.has_value()) {
+        auto side = otherSide(syncOp->affectedNode()->side());
+        if (const auto exitInfo = getPathFromDb(*idb, side, relativeLocalFilePath); !exitInfo) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in ExecutorWorker::getPathFromDb: dbId=" << *idb << L" : " << exitInfo);
+            return;
+        }
     } else {
+        // Case of a propagation error
         relativeLocalFilePath = syncOp->affectedNode()->getPath();
     }
 
@@ -971,7 +977,7 @@ ExitInfo ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &byp
 ExitInfo ExecutorWorker::getPathFromDb(const std::shared_ptr<Node> node, SyncPath &path) {
     bool found = false;
     if (!_syncPal->syncDb()->path(node->side(), node->id().value(), path, found)) {
-        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb:: path");
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path");
         return ExitCode::DbError;
     }
     if (!found) {
@@ -979,6 +985,24 @@ ExitInfo ExecutorWorker::getPathFromDb(const std::shared_ptr<Node> node, SyncPat
                                                                   << node->side());
         return {ExitCode::DataError, ExitCause::NotFound};
     }
+    return ExitCode::Ok;
+}
+
+ExitInfo ExecutorWorker::getPathFromDb(DbNodeId dbNodeId, ReplicaSide side, SyncPath &dbPath) {
+    SyncPath localPath;
+    SyncPath remotePath;
+    bool found = false;
+    if (!_syncPal->syncDb()->path(dbNodeId, localPath, remotePath, found)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path");
+        return ExitCode::DbError;
+    }
+    if (!found) {
+        LOGW_SYNCPAL_WARN(_logger, L"Path not in DB for item DB ID " << dbNodeId << L" on side " << side);
+        return {ExitCode::DataError, ExitCause::NotFound};
+    }
+
+    dbPath = side == ReplicaSide::Local ? localPath : remotePath;
+
     return ExitCode::Ok;
 }
 
@@ -1160,7 +1184,7 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
         return ExitCode::Ok;
     }
 
-    return handleFinishedJob(job, syncOp, syncOp->affectedNode()->getPath(), ignored, bypassProgressComplete);
+    return handleFinishedJob(job, syncOp, relativeDestLocalFilePath, ignored, bypassProgressComplete);
 }
 
 ExitInfo ExecutorWorker::handleDeleteOp(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete) {
@@ -1461,7 +1485,7 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<SyncJob> job, SyncOpP
         } else { // The error is managed and the execution can continue.
             LOGW_DEBUG(_logger, L"Error successfully managed: " << job->exitInfo() << L" on " << syncOp->type()
                                                                 << L" operation for "
-                                                                << Utility::formatSyncPath(syncOp->affectedNode()->getPath()));
+                                                                << Utility::formatSyncPath(relativeLocalPath));
             bypassProgressComplete = true;
             return {ExitCode::Ok, ExitCause::OperationCanceled};
         }
@@ -1995,10 +2019,10 @@ ExitInfo ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
 
         correspondingNode->setName(syncOp->newName());
 
-        if (!correspondingNode->parentNode()->insertChildren(correspondingNode)) {
+        if (!parentNode->insertChildren(correspondingNode)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node "
                                                << Utility::formatSyncName(correspondingNode->name()) << L" parent node "
-                                               << Utility::formatSyncName(correspondingNode->parentNode()->name()));
+                                               << Utility::formatSyncName(parentNode->name()));
             return ExitCode::DataError;
         }
     }

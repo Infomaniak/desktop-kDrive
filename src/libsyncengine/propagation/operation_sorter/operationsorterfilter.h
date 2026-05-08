@@ -26,15 +26,15 @@ struct OpLocation {
         NodeId parentNodeId;
         SyncName name;
 
-        bool operator==(const OpLocation &other) const { return parentNodeId == other.parentNodeId && name == other.name; }
+        bool operator==(const OpLocation &) const = default;
 };
 
 struct OpLocationHashFunction {
         auto operator()(const OpLocation &opLocation) const {
-            std::size_t seed = 0;
-            Poco::hashCombine(seed, opLocation.parentNodeId);
-            Poco::hashCombine(seed, opLocation.name);
-            return seed;
+            std::size_t h = 0;
+            Poco::hashCombine(h, opLocation.parentNodeId);
+            Poco::hashCombine(h, SyncName2Str(opLocation.name));
+            return h;
         }
 };
 

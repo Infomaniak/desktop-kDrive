@@ -174,7 +174,7 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
                                                   << SyncName2WStr(currentNodeIt->second->name()).c_str() << L"' (node ID: '"
                                                   << CommonUtility::s2ws(currentNodeIt->second->id().value_or(""))
                                                   << L"', DB ID: '" << currentNodeIt->second->idb().value_or(-1)
-                                                  << L"') updated. Operation DELETE inserted in change events.");
+                                                  << L"') updated. Operation Delete inserted in change events.");
             }
         } else {
             std::shared_ptr<Node> parentNode;
@@ -235,7 +235,7 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
                     LOGW_SYNCPAL_DEBUG(_logger, _side << L" update tree: Node '" << SyncName2WStr(existingNode->name()).c_str()
                                                       << L"' (node ID: '" << CommonUtility::s2ws(existingNode->id().value_or(""))
                                                       << L"', DB ID: '" << existingNode->idb().value_or(-1)
-                                                      << L"') updated. Operation DELETE inserted in change events.");
+                                                      << L"') updated. Operation Delete inserted in change events.");
                 }
             } else {
                 // create node
@@ -264,7 +264,7 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
                                   << L"', DB ID: '" << (existingNode->idb().has_value() ? *existingNode->idb() : -1)
                                   << L"', parent ID: '"
                                   << CommonUtility::s2ws(parentNode->id().has_value() ? *parentNode->id() : NodeId()).c_str()
-                                  << L"') inserted. Operation DELETE inserted in change events.");
+                                  << L"') inserted. Operation Delete inserted in change events.");
                 }
             }
         }
