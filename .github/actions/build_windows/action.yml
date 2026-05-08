@@ -48,19 +48,19 @@ runs:
 
       - name: Import Windows certificate
         env:
-          WINDOWS_DEBUG_CERT:  ${{ inputs.debug_cert }}
           WINDOWS_KSP_CLIENT_CERT: ${{ inputs.ksp_client_cert }}
+          WINDOWS_DEBUG_CERT: ${{ inputs.debug_cert }}
         run: |
           if("${{ inputs.release_build }}" -eq "true") {
             New-Item -ItemType directory -Path certificate
-            Set-Content -Path certificate/tempCert.txt -Value $env: WINDOWS_KSP_CLIENT_CERT
+            Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_KSP_CLIENT_CERT
             certutil -decode certificate/tempCert.txt certificate/ksp_client_certificate.pfx
             Remove-Item -path certificate -include tempCert.txt
             Import-PfxCertificate -FilePath certificate/ksp_client_certificate.pfx -CertStoreLocation Cert:\LocalMachine\My -Password (ConvertTo-SecureString -String "${{ inputs.ksp_client_cert_pass }}" -Force -AsPlainText)
             Write-Host "KSP client certificate imported successfully."
             } else {
             New-Item -ItemType directory -Path certificate
-            Set-Content -Path certificate/tempCert.txt -Value $env: WINDOWS_DEBUG_CERT
+            Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_DEBUG_CERT
             certutil -decode certificate/tempCert.txt certificate/debug_certificate.pfx
             Remove-Item -path certificate -include tempCert.txt
             Import-PfxCertificate -FilePath certificate/debug_certificate.pfx -CertStoreLocation Cert:\LocalMachine\My -Password (ConvertTo-SecureString -String "${{ inputs.debug_cert_pass }}" -Force -AsPlainText)
