@@ -57,7 +57,7 @@ The **macOS** extension is made in **Objective-C/C++**.
 
 The **kDrive Desktop** application is using the following libraries:
 
-- The user interface and application framework are built with [Qt](https://www.qt.io/)
+- The user interface and application framework are built with [Qt](https://www.qt.io/).
 - The network communications are made using [Poco](https://pocoproject.org/) libraries.
 - [OpenSSL](https://openssl-library.org/) is used for cryptographic and TLS features.
 - [zlib](https://zlib.net/) is used for compression support.
