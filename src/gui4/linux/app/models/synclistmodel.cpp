@@ -18,6 +18,8 @@
 
 #include "synclistmodel.h"
 
+#include "utility/types.h"
+
 namespace KDC {
 
 SyncListModel::SyncListModel(AppCache &appCache, MainSelectionStore &mainSelectionStore, QObject *const parent) :
@@ -79,7 +81,7 @@ QVariant SyncListModel::data(const QModelIndex &index, const qint32 role) const 
         case SupportVfsRole:
             return context->sync.supportVfs();
         case VirtualFileModeRole:
-            return static_cast<qint32>(context->sync.virtualFileMode());
+            return toInt(context->sync.virtualFileMode());
         case NavigationPaneClsidRole:
             return context->sync.navigationPaneClsid();
         case ErrorCountRole:
@@ -91,9 +93,9 @@ QVariant SyncListModel::data(const QModelIndex &index, const qint32 role) const 
         case LatestErrorTimeRole:
             return context->latestError ? QVariant::fromValue(context->latestError->getTime()) : QVariant{};
         case LatestErrorLevelRole:
-            return context->latestError ? QVariant::fromValue(static_cast<qint32>(context->latestError->level())) : QVariant{};
+            return context->latestError ? QVariant::fromValue(toInt(context->latestError->level())) : QVariant{};
         case LatestErrorExitCodeRole:
-            return context->latestError ? QVariant::fromValue(static_cast<qint32>(context->latestError->exitCode())) : QVariant{};
+            return context->latestError ? QVariant::fromValue(toInt(context->latestError->exitCode())) : QVariant{};
         case LatestErrorPathRole:
             return context->latestError ? context->latestError->path() : QVariant{};
         case SelectedRole:
