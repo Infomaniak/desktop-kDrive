@@ -89,13 +89,13 @@ void TestIntegration::setUp() {
     (void) ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     // Insert user, account, drive & sync
-    const User user(1, 12321, keychainKey);
+    const User user(UserDbId{1}, UserId{12321}, keychainKey);
     (void) ParmsDb::instance()->insertUser(user);
 
-    const Account account(1, atoi(testVariables.accountId.c_str()), user.dbId(), "account1");
+    const Account account(AccountDbId{1}, atoi(testVariables.accountId.c_str()), user.dbId(), "account1");
     (void) ParmsDb::instance()->insertAccount(account);
 
-    _driveDbId = 1;
+    _driveDbId = 2;
     const Drive drive(_driveDbId, atoi(testVariables.driveId.c_str()), account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
 
