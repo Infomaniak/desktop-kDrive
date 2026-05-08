@@ -34,10 +34,10 @@ Param(
     # Ci: Build configured for CI
     [switch] $ci,
 
-    # Upload: Flag to trigger the use of the USB-key signing certificate
+    # Upload: Flag to trigger the use of the KSP client certificate
     [switch] $upload,
 
-    # tokenPass: The password to use for unlocking the USB-key signing certificate (only used if upload is set)
+    # tokenPass: The password to use for unlocking the KSP client certificate (only used if upload is set)
     [String] $tokenPass,
 	
     # Msi: Build MSI installer
@@ -83,8 +83,8 @@ $archiveDataPath = ('{0}\build-windows\{1}' -f $path.Replace('/', '\'), $archive
 # Certificates
 $debugCertSubjectRegEx = "Windows11CI-1"
 $debugCertIssuerRegEx = "Windows11CI-1"
-$releaseCertSubjectRegEx = "INFOMANIAK"
-$releaseCertIssuerRegEx = "Digicert"
+$kspClientCertSubjectRegEx = "INFOMANIAK"
+$kspClientCertIssuerRegEx = "Digicert"
 
 #################################################################################################
 #                                                                                               #
@@ -160,7 +160,7 @@ function Get-Cert-Property {
     
     $value = 
     If ($upload) {
-        Get-ChildItem $certStore | Where-Object { $_.Subject -match $releaseCertSubjectRegEx -and $_.Issuer -match $releaseCertIssuerRegEx } | Select -ExpandProperty $property
+        Get-ChildItem $certStore | Where-Object { $_.Subject -match $kspClientCertSubjectRegEx -and $_.Issuer -match $kspClientCertIssuerRegEx } | Select -ExpandProperty $property
     } 
     Else {
         Get-ChildItem $certStore | Where-Object { $_.Subject -match $debugCertSubjectRegEx -and $_.Issuer -match $debugCertIssuerRegEx } | Select -ExpandProperty $property
@@ -180,21 +180,21 @@ function Get-Thumbprint {
     return $thumbprint
 }
 
-function Get-Publisher {
+function Get-Subject {
     param (
         [bool] $upload,
         [bool] $ci # On CI build machines, the certificate are located in local computer store
     )
 
-    $publisher = Get-Cert-Property $upload $ci "Subject"
-    return $publisher
+    $subject = Get-Cert-Property $upload $ci "Subject"
+    return $subject
 }
 
 function Get-Aumid {
     param (
         [bool] $upload
     )
-    $aumid = if ($upload) { $env:KDC_PHYSICAL_AUMID } else { $env:KDC_VIRTUAL_AUMID }
+    $aumid = if ($upload) { $env:KDC_RELEASE_AUMID } else { $env:KDC_DEBUG_AUMID }
 
     if (!$aumid) {
         Write-Host "The AUMID value could not be read from env.
@@ -255,12 +255,12 @@ function Build-Extension {
     $configuration = $buildType
     if ($buildType -eq "RelWithDebInfo") { $configuration = "Release" }
 
-    $publisher = Get-Publisher -Upload $upload -Ci $ci
-    Write-Host "Publisher: $publisher"
+    $subject = Get-Subject -Upload $upload -Ci $ci
+    Write-Host "Subject: $subject"
 
     $appxManifestPath = "$extPath\FileExplorerExtensionPackage\Package.appxmanifest"
     if (Test-Path $appxManifestPath) {
-        (Get-Content $appxManifestPath -Raw) -replace 'Publisher="[^"]*"', "Publisher=`"$publisher`"" |
+        (Get-Content $appxManifestPath -Raw) -replace 'Publisher="[^"]*"', "Publisher=`"$subject`"" |
         Set-Content -Encoding UTF8 -Force $appxManifestPath
     } else {
         Write-Host "Package.appxmanifest not found at $appxManifestPath" -ForegroundColor Red
@@ -723,7 +723,7 @@ Parameters :
     `t`tremake`t`t: Remove all the files, then rebuild the project
     `t-ext`t`t`t: Rebuild and redeploy the windows extension
     `t-ci`t`t`t: Use the CI build configuration
-    `t-upload`t`t: Upload flag to switch between the virtual and physical certificates. Also rebuilds the project
+    `t-upload`t`t: Upload flag to switch between the debug and release certificates. Also rebuilds the project
     `t-coverage`t`t: Enable coverage computation
     `t-unitTests`t`t: Enable unit tests build
     ") -f Cyan

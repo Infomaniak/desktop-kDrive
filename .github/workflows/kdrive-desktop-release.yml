@@ -163,8 +163,6 @@ jobs:
     runs-on: [ self-hosted, Windows, desktop-kdrive-with-gui ] #with-gui is required for the build_windows action to unlock the release signing certificate
     outputs:
       kDrive_version: ${{ steps.build-windows-step.outputs.kDrive_version }}
-    env:
-      KDC_PHYSICAL_AUMID: ${{ secrets.KDC_PHYSICAL_AUMID }}
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v6.0.2
@@ -174,10 +172,10 @@ jobs:
         id: build-windows-step
         uses: ./.github/actions/build_windows
         with:
-          ev_host: ${{ secrets.WINDOWS_DIGICERT_HOST }}
-          ev_api_key: ${{ secrets.WINDOWS_DIGICERT_API_KEY }}
-          ev_cert: ${{ secrets.WINDOWS_DIGICERT_CLIENT_CERT_FILE_B64 }}
-          ev_cert_pass: ${{ secrets.WINDOWS_DIGICERT_CLIENT_CERT_PASSWORD }}
+          ksp_host: ${{ secrets.WINDOWS_KSP_HOST }}
+          ksp_api_key: ${{ secrets.WINDOWS_KSP_API_KEY }}
+          ksp_client_cert: ${{ secrets.WINDOWS_KSP_CLIENT_CERT_FILE_B64 }}
+          ksp_client_cert_pass: ${{ secrets.WINDOWS_KSP_CLIENT_CERT_PASSWORD }}
           release_build: true
           build_new_client: ${{ inputs.build_windows == 'New client' }}
 

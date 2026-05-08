@@ -2,23 +2,23 @@ name: Build Windows
 description: 'Build windows app'
 
 inputs:
-  virtual_cert:
-    description: 'The virtual certificate, mandatory for non-release builds'
+  debug_cert:
+    description: 'The debug certificate, mandatory for non-release builds'
     required: false
-  virtual_cert_pass:
-    description: 'Password of the virtual certificate, mandatory for non-release builds'
+  debug_cert_pass:
+    description: 'Password of the debug certificate, mandatory for non-release builds'
     required: false
-  ev_host:
-    description: 'The EV host, mandatory for release builds'
+  ksp_host:
+    description: 'The KSP host, mandatory for release builds'
     required: false
-  ev_api_key:
-    description: 'The EV API key, mandatory for release builds'
+  ksp_api_key:
+    description: 'The KSP API key, mandatory for release builds'
     required: false
-  ev_cert:
-    description: 'The EV certificate, mandatory for release builds'
+  ksp_client_cert:
+    description: 'The KSP certificate, mandatory for release builds'
     required: false
-  ev_cert_pass:
-    description: 'Password of the EV certificate, mandatory for release builds'
+  ksp_client_cert_pass:
+    description: 'Password of the KSP certificate, mandatory for release builds'
     required: false
   release_build:
     description: 'If true, run the release build script'
@@ -48,44 +48,44 @@ runs:
 
       - name: Import Windows certificate
         env:
-          WINDOWS_VIRTUAL_CERT:  ${{ inputs.virtual_cert }}
-          WINDOWS_EV_CERT: ${{ inputs.ev_cert }}
+          WINDOWS_DEBUG_CERT:  ${{ inputs.debug_cert }}
+          WINDOWS_KSP_CLIENT_CERT: ${{ inputs.ksp_client_cert }}
         run: |
           if("${{ inputs.release_build }}" -eq "true") {
             New-Item -ItemType directory -Path certificate
-            Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_EV_CERT
-            certutil -decode certificate/tempCert.txt certificate/ev_certificate.pfx
+            Set-Content -Path certificate/tempCert.txt -Value $env: WINDOWS_KSP_CLIENT_CERT
+            certutil -decode certificate/tempCert.txt certificate/ksp_client_certificate.pfx
             Remove-Item -path certificate -include tempCert.txt
-            Import-PfxCertificate -FilePath certificate/ev_certificate.pfx -CertStoreLocation Cert:\LocalMachine\My -Password (ConvertTo-SecureString -String "${{ inputs.ev_cert_pass }}" -Force -AsPlainText)
-            Write-Host "Digicert certificate imported successfully."
+            Import-PfxCertificate -FilePath certificate/ksp_client_certificate.pfx -CertStoreLocation Cert:\LocalMachine\My -Password (ConvertTo-SecureString -String "${{ inputs.ksp_client_cert_pass }}" -Force -AsPlainText)
+            Write-Host "KSP client certificate imported successfully."
             } else {
             New-Item -ItemType directory -Path certificate
-            Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_VIRTUAL_CERT
-            certutil -decode certificate/tempCert.txt certificate/certificate.pfx
+            Set-Content -Path certificate/tempCert.txt -Value $env: WINDOWS_DEBUG_CERT
+            certutil -decode certificate/tempCert.txt certificate/debug_certificate.pfx
             Remove-Item -path certificate -include tempCert.txt
-            Import-PfxCertificate -FilePath certificate/certificate.pfx -CertStoreLocation Cert:\LocalMachine\My -Password (ConvertTo-SecureString -String "${{ inputs.virtual_cert_pass }}" -Force -AsPlainText)
-            Write-Host "Virtual certificate imported successfully."
+            Import-PfxCertificate -FilePath certificate/debug_certificate.pfx -CertStoreLocation Cert:\LocalMachine\My -Password (ConvertTo-SecureString -String "${{ inputs.debug_cert_pass }}" -Force -AsPlainText)
+            Write-Host "Debug certificate imported successfully."
             }
         shell: powershell
 
-      - name: Digicert - Set variables
+      - name: Digicert KSP - Set variables
         id: variables
         run: |
           if [ "${{ inputs.release_build }}" = "true" ]; then
             echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
             echo "KEYPAIR_NAME=gt-standard-keypair" >> $GITHUB_OUTPUT
             echo "CERTIFICATE_NAME=gt-certificate" >> $GITHUB_OUTPUT
-            echo "SM_HOST=${{ inputs.ev_host }}" >> "$GITHUB_ENV"
-            echo "SM_API_KEY=${{ inputs.ev_api_key }}" >> "$GITHUB_ENV"
-            echo "SM_CLIENT_CERT_FILE=C:\\release-runner\\_work\\desktop-kDrive\\desktop-kDrive\\certificate\\ev_certificate.pfx" >> "$GITHUB_ENV"
-            echo "SM_CLIENT_CERT_PASSWORD=${{ inputs.ev_cert_pass }}" >> "$GITHUB_ENV"
+            echo "SM_HOST=${{ inputs.ksp_host }}" >> "$GITHUB_ENV"
+            echo "SM_API_KEY=${{ inputs.ksp_api_key }}" >> "$GITHUB_ENV"
+            echo "SM_CLIENT_CERT_FILE=C:\\release-runner\\_work\\desktop-kDrive\\desktop-kDrive\\certificate\\ksp_client_certificate.pfx" >> "$GITHUB_ENV"
+            echo "SM_CLIENT_CERT_PASSWORD=${{ inputs.ksp_client_cert_pass }}" >> "$GITHUB_ENV"
             echo "C:\Program Files (x86)\Windows Kits\10\App Certification Kit" >> $GITHUB_PATH
             echo "C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.8 Tools" >> $GITHUB_PATH
             echo "C:\Program Files\DigiCert\DigiCert Keylocker Tools" >> $GITHUB_PATH
           fi
         shell: bash
 
-      - name: Digicert - Setup SSM KSP on Windows latest
+      - name: Digicert KSP - Setup SSM KSP on Windows latest
         run: |
           IF "${{ inputs.release_build }}"=="true" (
             curl -X GET  https://one.digicert.com/signingmanager/api-ui/v1/releases/Keylockertools-windows-x64.msi/download -H "x-api-key:%SM_API_KEY%" -o Keylockertools-windows-x64.msi
@@ -94,11 +94,9 @@ runs:
         shell: cmd
         continue-on-error: true
 
-      - name: Digicert - Synchronize signature certificate
+      - name: Digicert KSP - Synchronize signature certificate
         run: |
           IF "${{ inputs.release_build }}"=="true" (
-            REM List KSPs
-            smctl windows ksp list
             REM Verify the KSP
             certutil.exe -csp "DigiCert Software Trust Manager KSP" -key -user
             REM Synchronize certificate
