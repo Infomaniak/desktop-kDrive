@@ -46,6 +46,8 @@ else()
     include_directories("/usr/local/include")
 endif()
 
+add_executable(${testcommon_NAME} ${testcommon_SRCS})
+
 # Precompiled headers
 set(PC_HEADER_FILES
     # std c++
