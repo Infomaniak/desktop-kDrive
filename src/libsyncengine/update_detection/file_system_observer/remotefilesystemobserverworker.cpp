@@ -108,8 +108,6 @@ void RemoteFileSystemObserverWorker::execute() {
 }
 
 ExitInfo RemoteFileSystemObserverWorker::generateInitialSnapshot() {
-    ExitInfo exitInfo = ExitCode::Ok;
-
     LOG_SYNCPAL_INFO(_logger, "Starting remote snapshot generation");
     const auto start = std::chrono::steady_clock::now();
     sentry::pTraces::scoped::RFSOGenerateInitialSnapshot perfMonitor(syncDbId());
@@ -123,7 +121,8 @@ ExitInfo RemoteFileSystemObserverWorker::generateInitialSnapshot() {
 
     const auto end = std::chrono::steady_clock::now();
     const std::chrono::duration<double> elapsedSeconds = end - start;
-    exitInfo = initWithCursor();
+
+    ExitInfo exitInfo = initWithCursor();
     if (exitInfo && !stopAsked()) {
         _liveSnapshot.setValid(true);
         LOG_SYNCPAL_INFO(_logger, "Remote snapshot generated in: " << elapsedSeconds.count() << "s for "
@@ -497,6 +496,9 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const RemoteNodeId &remot
 }
 
 ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(const RemoteNodeId &remoteDirId, bool &changes) {
+    LOG_MSG_IF_FAIL(!updating(), "Long poll request should not be sent while an update is in progress.")
+    if (updating()) return ExitCode::LogicError;
+
     changes = false;
     if (!_liveSnapshot.isValid()) return ExitCode::Ok;
 
@@ -524,17 +526,6 @@ ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(const RemoteNodeId &remote
             notifyJob->abort();
 
             return ExitCode::Ok;
-        }
-
-        {
-            const std::scoped_lock lock(_mutex);
-            if (_updating) { // We want to update the remote snapshot immediately, cancel LongPoll job and send a listing/continue
-                             // request
-                notifyJob->abort();
-                changes = true;
-
-                return ExitCode::Ok;
-            }
         }
 
         // Wait until the long poll job is finished.
