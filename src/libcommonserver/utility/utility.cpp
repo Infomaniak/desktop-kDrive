@@ -645,24 +645,26 @@ ExitInfo Utility::tryCreateTmpFile(const std::shared_ptr<CacheDirectory> cacheDi
     }
 
     SyncPath cacheDirectoryPath;
-    if (const auto exitInfo = cacheDirectory->path(cacheDirectoryPath); !exitInfo) {
-        return exitInfo;
-    }
+    if (const auto exitInfo = cacheDirectory->path(cacheDirectoryPath); !exitInfo) return exitInfo;
+
     SyncPath tmpPath = cacheDirectoryPath / name;
-    uint64_t retries = 0;
-    bool ok = false;
+    Count retries = 0;
+    bool exists = false;
+
+    const auto createPathInCacheWithRandomSuffix = [&]() {
+        return cacheDirectoryPath / (name + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()));
+    };
+
     do {
-        bool exists = false;
-        auto output = std::ofstream(tmpPath.native().c_str(), std::ios::binary);
-        if (!output) {
+        if (auto output = std::ofstream(tmpPath.native().c_str(), std::ios::binary); !output) {
             if (const auto exitInfo = checkTmpDirectoryRights(cacheDirectoryPath); !exitInfo) return exitInfo;
 
-            retries++;
-            // Retry with a random suffix added to item name
-            tmpPath = cacheDirectoryPath / (name + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()));
+            ++retries;
+            tmpPath = createPathInCacheWithRandomSuffix();
+
             continue;
-        }
-        output.close();
+        } else
+            output.close();
 
         // Check if item already exist (it should exist at this point)
         if (auto ioError = IoError::Unknown;
@@ -670,24 +672,31 @@ ExitInfo Utility::tryCreateTmpFile(const std::shared_ptr<CacheDirectory> cacheDi
             LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(tmpPath, ioError));
             return {ExitCode::SystemError, ioError == IoError::AccessDenied ? ExitCause::TmpDirAccessError : ExitCause::Unknown};
         }
+
         if (!exists) {
-            retries++;
-            // Retry with a random suffix added to item name
-            tmpPath = cacheDirectoryPath / (name + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()));
-            continue;
+            ++retries;
+            tmpPath = createPathInCacheWithRandomSuffix();
         }
-        ok = true;
-    } while (!ok && retries < maxNbCreationTmpFolderRetries);
+    } while (!exists && retries < maxNbCreationTmpFolderRetries);
 
-    auto ioError = IoError::Unknown;
-    (void) IoHelper::deleteItem(tmpPath, ioError);
+    if (!exists) return {ExitCode::SystemError, ExitCause::InvalidName};
 
-    return ok ? ExitCode::Ok : ExitCode::SystemError;
+    (void) IoHelper::deleteItem(tmpPath);
+
+    return ExitCode::Ok;
 }
 
 #if defined(KD_LINUX)
 ExitInfo Utility::getFileSystemName(const std::shared_ptr<CacheDirectory> cacheDirectory, std::string &fileSystemName) {
     fileSystemName = {};
+
+    static std::unordered_map<SyncPath, std::string> cacheDirectoryToFileSystemName;
+
+    const auto it = cacheDirectoryToFileSystemName.find(cacheDirectory->path());
+    if (it != cacheDirectoryToFileSystemName.end()) {
+        fileSystemName = it->second;
+        return ExitCode::Ok;
+    }
 
     if (!cacheDirectory) {
         LOG_WARN(logger(), "Cache directory not provided!");
@@ -698,27 +707,31 @@ ExitInfo Utility::getFileSystemName(const std::shared_ptr<CacheDirectory> cacheD
     if (const auto exitInfo = cacheDirectory->path(localSyncPath); !exitInfo) return exitInfo;
 
     fileSystemName = CommonUtility::fileSystemName(localSyncPath);
+    cacheDirectoryToFileSystemName[cacheDirectory->path()] = fileSystemName;
 
-    if (CommonUtility::isEXT234(localSyncPath)) {
-        // `statfs` can confuse more restrictive systems with `EXT2/3/4 when a USB stick is used.
-        constexpr auto invalidExFatFileName = "a:b";
+    if (!CommonUtility::isEXT234(localSyncPath)) return ExitCode::Ok;
 
-        const auto exitInfo = tryCreateTmpFile(cacheDirectory, invalidExFatFileName);
-        if (exitInfo.cause() == ExitCause::TmpDirAccessError) {
-            LOG_WARN(logger(), "Cannot access tmp directory.");
+    // `statfs` can confuse more restrictive systems with `EXT2/3/4 when a USB stick is used.
+    constexpr auto invalidExFatFileName = "a:b";
 
-            return exitInfo;
-        }
+    const auto exitInfo = tryCreateTmpFile(cacheDirectory, invalidExFatFileName);
+    if (exitInfo.cause() == ExitCause::TmpDirAccessError) {
+        LOG_WARN(logger(), "Cannot access tmp directory.");
 
-        if (!exitInfo) {
-            LOG_DEBUG(logger(),
-                      "File names containing a colon character are not valid for the filesystem in use. We shall assume that "
-                      "this file system is exFAT.");
-            fileSystemName = CommonUtility::exFAT();
-        }
+        return exitInfo;
     }
 
-    return ExitCode::Ok;
+    if (exitInfo.cause() == ExitCause::InvalidName) {
+        LOG_DEBUG(logger(),
+                  "File names containing a colon character are not valid for the filesystem in use. We shall assume that "
+                  "this file system is exFAT.");
+        fileSystemName = CommonUtility::exFAT();
+        cacheDirectoryToFileSystemName[cacheDirectory->path()] = fileSystemName;
+
+        return ExitCode::Ok;
+    }
+
+    return exitInfo;
 }
 #endif
 
@@ -732,9 +745,9 @@ ExitInfo Utility::checkIfFileNamesCanEndWithSpace([[maybe_unused]] const std::sh
     if (const auto exitInfo = cacheDirectory->path(localSyncPath); !exitInfo) {
         if (exitInfo.cause() == ExitCause::TmpDirAccessError) {
             LOG_WARN(logger(), "Cannot access tmp directory.");
-
-            return exitInfo;
         }
+
+        return exitInfo;
     }
     if (CommonUtility::isEXT234(localSyncPath)) {
         constexpr auto fileNameWithEndingSpace = "a ";
