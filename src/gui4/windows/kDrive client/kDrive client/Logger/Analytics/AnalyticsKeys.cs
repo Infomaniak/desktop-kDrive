@@ -22,7 +22,8 @@
         AccountsSettingsPage,
         AdvancedSettingsPage,
         DriveManagementPage,
-        DriveAdvancedSyncsPage
+        DriveAdvancedSyncsPage,
+        ExclusionSelector
     }
 
     public enum EventName
@@ -112,6 +113,8 @@
         Delete,
         Create,
         DriveBreadcrumbs,
-        DriveManagementBreadcrumbs
+        DriveManagementBreadcrumbs,
+        SelectDir,
+        UnselectDir
     }
 }
