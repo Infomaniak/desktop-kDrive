@@ -156,8 +156,8 @@ to create an environment variable for each certificate:
 - Go to the `Packaging` tab.
 - Click on `Choose Certificate...` then `Select from store`.
 - Copy the `AUMID` (located at the end of the `Family Name` field, after the underscore).
-- Create an environment variable named `KDC_VIRTUAL_AUMID` with the copied `AUMID` as value.
-- Repeat the same steps using the USB key certificate, in an environment variable named `KDC_PHYSICAL_AUMID`.
+- Create an environment variable named `KDC_DEBUG_AUMID` with the copied `AUMID` as value.
+- Repeat the same steps using the KSP certificate, in an environment variable named `KDC_RELEASE_AUMID`.
 ---
 
 ## Conan
