@@ -47,11 +47,11 @@ The **macOS** extension is made in **Objective-C/C++**.
 
 ### Minimum Requirements
 
-| System  | With LiteSync    | Without LiteSync                            | ARM                
+| System  | With LiteSync    | Without LiteSync                            | ARM
 |---------|------------------|---------------------------------------------|--------------------|
-| Linux   | :x:              | Ubuntu 22.04 (amd64) / Ubuntu 24.04 (arm64) | :heavy_check_mark: 
-| macOS   | macOS 10.15      | macOS 10.15                                 | :heavy_check_mark: 
-| Windows | Windows 10 1709	 | Windows 10                                  | :x:                
+| Linux   | :x:              | Ubuntu 22.04 (amd64) / Ubuntu 24.04 (arm64) | :heavy_check_mark: |
+| macOS   | macOS 10.15      | macOS 10.15                                 | :heavy_check_mark: |
+| Windows | Windows 10 1709  | Windows 10                                  | :x:                |
 
 ### Libraries
 
