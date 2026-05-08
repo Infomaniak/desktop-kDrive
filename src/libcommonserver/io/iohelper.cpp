@@ -762,8 +762,30 @@ void IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, Pa
     }
 }
 
-std::string IoHelper::getFileChecksum(const SyncPath &path, std::ifstream &ifs, IoError &ioError) {
+std::string IoHelper::getFileChecksum(const SyncPath &path, std::ifstream &ifs, IoError &ioError) noexcept {
     ioError = IoError::Success;
+
+    std::error_code ec;
+    auto status = std::filesystem::symlink_status(path, ec);
+    ioError = stdError2ioError(ec);
+
+    if (ioError != IoError::Success) return "";
+
+    if (std::filesystem::is_symlink(status)) {
+        ioError = IoError::InvalidArgument;
+        return "";
+    }
+
+#if defined(KD_MACOS)
+    bool isAlias = false;
+    if (!IoHelper::checkIfIsAlias(path, isAlias, ioError)) {
+        return "";
+    }
+    if (isAlias) {
+        ioError = IoError::InvalidArgument;
+        return "";
+    }
+#endif
 
     IoHelper::openFile(path, ifs, ioError);
 
@@ -779,12 +801,11 @@ std::string IoHelper::getFileChecksum(const SyncPath &path, std::ifstream &ifs, 
     XXH3_64bits_reset(state);
 
     size_t readBytes;
-    while ((readBytes = fread(buffer.data(), 1, buffer.size(), f)) > 0) {
+    while ((readBytes = ifs.read(buffer.data(), buffer.size()).gcount()) > 0) {
         XXH3_64bits_update(state, buffer.data(), readBytes);
     }
 
-    fclose(f);
-
+    ifs.close();
     XXH64_hash_t hash = XXH3_64bits_digest(state);
     XXH3_freeState(state);
 
