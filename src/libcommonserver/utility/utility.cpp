@@ -726,7 +726,7 @@ ExitInfo Utility::getFileSystemName(const std::shared_ptr<CacheDirectory> cacheD
                   "File names containing a colon character are not valid for the filesystem in use. We shall assume that "
                   "this file system is exFAT.");
         fileSystemName = CommonUtility::exFAT();
-        cacheDirectoryToFileSystemName[cacheDirectory->path()] = fileSystemName;
+        cacheDirectoryToFileSystemName[localSyncPath] = fileSystemName;
 
         return ExitCode::Ok;
     }
