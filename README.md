@@ -27,8 +27,8 @@ platform-specific [direct download URLs](https://www.infomaniak.com/drive/latest
 ## License & Contributions
 
 This project is under GPLv3 license.  
-If you see a bug or an enhanceable point, feel free to create an issue, so we can discuss it. Once approved, we or you (
-depending on the criticality of the bug or improvement) can take care of it and open a pull request.
+If you see a bug or an enhanceable point, feel free to create an issue, so we can discuss it. Once approved, we or you
+(depending on the criticality of the bug or improvement) can take care of it and open a pull request.
 Please do not open a pull request before creating an issue.
 
 ## Tech things
