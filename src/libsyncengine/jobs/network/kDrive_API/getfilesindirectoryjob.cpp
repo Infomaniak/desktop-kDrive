@@ -78,6 +78,42 @@ void GetFilesInDirectoryJob::setQueryParameters(Poco::URI &uri) {
     uri.addQueryParameter("limit", std::to_string(_listingConf.limit));
 }
 
+ExitInfo GetFilesInDirectoryJob::extractName(const Poco::JSON::Object::Ptr &obj, SyncName &name) {
+    SyncName rawName;
+    if (!JsonParserUtility::extractValue(obj, nameKey, rawName)) return {ExitCode::BackError, ExitCause::MissingReplyData};
+
+    if (!Utility::normalizedSyncName(rawName, name)) {
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(rawName));
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitInfo GetFilesInDirectoryJob::extractPath(const Poco::JSON::Object::Ptr &obj, SyncName &path) const {
+    if (!_listingConf.withPath) return ExitCode::Ok;
+
+    SyncName rawPath;
+    if (!JsonParserUtility::extractValue(obj, pathKey, rawPath)) return {ExitCode::BackError, ExitCause::MissingReplyData};
+
+    if (!Utility::normalizedSyncName(rawPath, path)) {
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(rawPath));
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitInfo GetFilesInDirectoryJob::extractAccessDenied(const Poco::JSON::Object::Ptr &obj, bool &accessDenied) {
+    if (auto capabilitiesObj = obj->getObject(capabilitiesKey); capabilitiesObj) {
+        bool canShow = true;
+        if (!JsonParserUtility::extractValue(capabilitiesObj, canShowKey, canShow))
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
+
+        accessDenied = !canShow;
+    }
+
+    return ExitCode::Ok;
+}
+
 ExitInfo GetFilesInDirectoryJob::deserializeDataArray() {
     const auto dataArray = jsonRes()->getArray(dataKey);
     if (!dataArray) {
@@ -91,30 +127,13 @@ ExitInfo GetFilesInDirectoryJob::deserializeDataArray() {
         RemoteNodeId nodeId;
         if (!JsonParserUtility::extractValue(obj, idKey, nodeId)) return {ExitCode::BackError, ExitCause::MissingReplyData};
 
-        SyncName rawName;
-        if (!JsonParserUtility::extractValue(obj, nameKey, rawName)) return {ExitCode::BackError, ExitCause::MissingReplyData};
-
         SyncName name;
-        if (!Utility::normalizedSyncName(rawName, name)) {
-            LOGW_DEBUG(Log::instance()->getLogger(),
-                       L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(rawName));
-            // Ignore the item
-            continue;
-        }
+        if (const auto exitInfo = extractName(obj, name); !exitInfo) return exitInfo;
+        if (name.empty()) continue;
 
         SyncName path;
-        if (_listingConf.withPath) {
-            SyncName rawPath;
-            if (!JsonParserUtility::extractValue(obj, pathKey, rawPath))
-                return {ExitCode::BackError, ExitCause::MissingReplyData};
-
-            if (!Utility::normalizedSyncName(rawPath, path)) {
-                LOGW_DEBUG(Log::instance()->getLogger(),
-                           L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(rawPath));
-                // Ignore the item
-                continue;
-            }
-        }
+        if (const auto exitInfo = extractPath(obj, path); !exitInfo) return exitInfo;
+        if (_listingConf.withPath && path.empty()) continue;
 
         SyncTime modifiedTime = 0;
         const bool mandatory = false;
@@ -122,18 +141,11 @@ ExitInfo GetFilesInDirectoryJob::deserializeDataArray() {
             return {ExitCode::BackError, ExitCause::MissingReplyData};
 
         bool accessDenied = false;
-        if (auto capabilitiesObj = obj->getObject(capabilitiesKey); capabilitiesObj) {
-            bool canShow = true;
-            if (!JsonParserUtility::extractValue(capabilitiesObj, canShowKey, canShow))
-                return {ExitCode::BackError, ExitCause::MissingReplyData};
-
-            accessDenied = !canShow;
-        }
+        if (const auto exitInfo = extractAccessDenied(obj, accessDenied); !exitInfo) return exitInfo;
 
         RemoteNodeId parentId;
         if (!JsonParserUtility::extractValue(obj, parentIdKey, parentId))
             return {ExitCode::BackError, ExitCause::MissingReplyData};
-
 
         std::string typeString;
         if (!JsonParserUtility::extractValue(obj, typeKey, typeString)) {
