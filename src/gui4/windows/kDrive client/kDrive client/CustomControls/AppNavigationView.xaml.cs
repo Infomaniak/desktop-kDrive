@@ -145,8 +145,8 @@ namespace Infomaniak.kDrive.CustomControls
                 // Navigate to the selected page
                 if (_navigationItemToPage.TryGetValue(item?.Tag?.ToString() ?? "", out var pageTypes))
                 {
-                    ContentFrame.Navigate(pageTypes.Item1.FirstOrDefault());
                     _analyticsService.TrackClick(Analytics.Keys.Category.NavBar, pageTypes.Item2);
+                    ContentFrame.Navigate(pageTypes.Item1.FirstOrDefault());
                 }
                 else
                 {
