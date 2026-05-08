@@ -191,9 +191,16 @@ bool PlatformInconsistencyCheckerWorker::checkPathAndName(std::shared_ptr<Node> 
     if (const auto exitInfo = PlatformInconsistencyCheckerUtility::checkIfNameEndsWithForbiddenSpace(
                 remoteNode->name(), _syncPal->cacheDirectory(), endsWithForbiddenSpace);
         !exitInfo) {
+        LOGW_SYNCPAL_INFO(_logger, L"Error in PlatformInconsistencyCheckerUtility::checkIfNameEndsWithForbiddenSpace: exitInfo="
+                                           << exitInfo);
+        _syncPal->addError(Error(ERR_ID, exitInfo));
+        return false;
+    }
+    if (endsWithForbiddenSpace) {
         blacklistNode(remoteNode, InconsistencyType::ForbiddenCharEndWithSpace);
         return false;
     }
+
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(remoteNode->name())) {
         blacklistNode(remoteNode, InconsistencyType::ReservedName);
         return false;

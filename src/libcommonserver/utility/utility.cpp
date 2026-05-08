@@ -690,14 +690,6 @@ ExitInfo Utility::tryCreateTmpFile(const std::shared_ptr<CacheDirectory> cacheDi
 ExitInfo Utility::getFileSystemName(const std::shared_ptr<CacheDirectory> cacheDirectory, std::string &fileSystemName) {
     fileSystemName = {};
 
-    static std::unordered_map<SyncPath, std::string> cacheDirectoryToFileSystemName;
-
-    const auto it = cacheDirectoryToFileSystemName.find(cacheDirectory->path());
-    if (it != cacheDirectoryToFileSystemName.end()) {
-        fileSystemName = it->second;
-        return ExitCode::Ok;
-    }
-
     if (!cacheDirectory) {
         LOG_WARN(logger(), "Cache directory not provided!");
         return {ExitCode::SystemError, ExitCause::InvalidArgument};
@@ -706,8 +698,16 @@ ExitInfo Utility::getFileSystemName(const std::shared_ptr<CacheDirectory> cacheD
     SyncPath localSyncPath;
     if (const auto exitInfo = cacheDirectory->path(localSyncPath); !exitInfo) return exitInfo;
 
+    static std::unordered_map<SyncPath, std::string> cacheDirectoryToFileSystemName;
+
+    const auto it = cacheDirectoryToFileSystemName.find(localSyncPath);
+    if (it != cacheDirectoryToFileSystemName.end()) {
+        fileSystemName = it->second;
+        return ExitCode::Ok;
+    }
+
     fileSystemName = CommonUtility::fileSystemName(localSyncPath);
-    cacheDirectoryToFileSystemName[cacheDirectory->path()] = fileSystemName;
+    cacheDirectoryToFileSystemName[localSyncPath] = fileSystemName;
 
     if (!CommonUtility::isEXT234(localSyncPath)) return ExitCode::Ok;
 

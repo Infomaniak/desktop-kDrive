@@ -810,8 +810,9 @@ ExitInfo RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &
 ExitInfo RemoteFileSystemObserverWorker::checkForUnsupportedCharacters([[maybe_unused]] const SyncName &name,
                                                                        [[maybe_unused]] const NodeId &nodeId,
                                                                        [[maybe_unused]] const NodeType type) {
-#if defined(KD_MACOS)
     ExitInfo exitInfo = ExitCode::Ok;
+
+#if defined(KD_MACOS)
     // Check that the name doesn't contain a character not yet supported by the filesystem (ex: U+1FA77 on pre macOS 13.4)
     if (type == NodeType::File) {
         exitInfo = Utility::tryCreateTmpFile(_syncPal->cacheDirectory(), name);
@@ -831,7 +832,7 @@ ExitInfo RemoteFileSystemObserverWorker::checkForUnsupportedCharacters([[maybe_u
     }
 #endif
 
-    return ExitCode::Ok;
+    return exitInfo;
 }
 
 void RemoteFileSystemObserverWorker::countListingRequests() {
