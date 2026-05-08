@@ -101,7 +101,7 @@ QVariant AvailableDriveListModel::data(const QModelIndex &index, const qint32 ro
         case PendingSupportVfsRole:
             return pendingConfig ? pendingConfig->supportVfs : QVariant{};
         case PendingVirtualFileModeRole:
-            return pendingConfig ? static_cast<qint32>(pendingConfig->virtualFileMode) : noVirtualFileMode;
+            return pendingConfig ? toInt(pendingConfig->virtualFileMode) : noVirtualFileMode;
         default:
             return {};
     }
