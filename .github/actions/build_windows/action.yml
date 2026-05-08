@@ -8,6 +8,9 @@ inputs:
   debug_cert_pass:
     description: 'Password of the debug certificate, mandatory for non-release builds'
     required: false
+  debug_cert_thumbprint:
+    description: 'Thumbprint of the debug certificate, mandatory for non-release builds'
+    required: false
   ksp_host:
     description: 'The KSP host, mandatory for release builds'
     required: false
@@ -19,6 +22,9 @@ inputs:
     required: false
   ksp_client_cert_pass:
     description: 'Password of the KSP certificate, mandatory for release builds'
+    required: false
+  ksp_client_cert_thumbprint:
+    description: 'Thumbprint of the KSP certificate, mandatory for release builds'
     required: false
   release_build:
     description: 'If true, run the release build script'
@@ -112,15 +118,26 @@ runs:
             powershell "certutil -scinfo -Silent"
 
             IF "${{ inputs.build_new_client }}"=="true" (
-              powershell "./infomaniak-build-tools/windows/build-drive.ps1" -ci -ext -msi -clean remake -upload -newGui $true
+              powershell "./infomaniak-build-tools/windows/build-drive.ps1" -thumbprint "${{ inputs.ksp_client_cert_thumbprint }}" -ci -ext -msi -clean remake -upload -newGui $true
             ) ELSE (
-              powershell "./infomaniak-build-tools/windows/build-drive.ps1" -ci -ext -msi -clean remake -upload
+              powershell "./infomaniak-build-tools/windows/build-drive.ps1" -thumbprint "${{ inputs.ksp_client_cert_thumbprint }}" -ci -ext -msi -clean remake -upload
             )
 
           ) ELSE (
-            powershell -File "./infomaniak-build-tools/windows/build-drive.ps1" -ci -unitTests
+            powershell -File "./infomaniak-build-tools/windows/build-drive.ps1" -thumbprint "${{ inputs.debug_cert_thumbprint }}" -ci -unitTests
           )
         shell: cmd
+
+      - name: Remove Windows certificate
+        run: |
+          if("${{ inputs.release_build }}" -eq "true") {
+            Get-ChildItem "Cert:\LocalMachine\My\${{ inputs.ksp_client_cert_thumbprint }}" | Remove-Item
+            Write-Host "KSP client certificate removed successfully."
+            } else {
+            Get-ChildItem "Cert:\LocalMachine\My\${{ inputs.debug_cert_thumbprint }}" | Remove-Item
+            Write-Host "Debug certificate imported successfully."
+            }
+        shell: powershell
 
       - name: Fetch dependencies
         run: |

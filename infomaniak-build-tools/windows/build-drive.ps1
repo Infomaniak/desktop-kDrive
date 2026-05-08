@@ -22,6 +22,9 @@ Param(
     [ValidateSet('Release', 'RelWithDebInfo', 'Debug')]
     [string] $buildType = "RelWithDebInfo",
 
+    # Thumbprint: The thumbprint of the debug or KSP certificate
+    [string] $thumbprint,
+
     # Path: The path to the root CMakeLists.txt
     [string] $path = $PWD.Path,
 
@@ -145,7 +148,7 @@ function Get-Version {
 
 function Get-Cert-Property {
     param (
-        [bool] $upload,
+        [string] $thumbprint,
         [bool] $ci, # On CI build machines, the certificate are located in local computer store
         [string] $property
     )
@@ -155,35 +158,19 @@ function Get-Cert-Property {
         $certStore = "Cert:\CurrentUser\My"
     }
     
-    $value = 
-    If ($upload) {
-        Get-ChildItem $certStore | Where-Object { $_.Subject -match $kspClientCertSubjectRegEx -and $_.Issuer -match $kspClientCertIssuerRegEx } | Select -first 1 -ExpandProperty $property
-    } 
-    Else {
-        Get-ChildItem $certStore | Where-Object { $_.Subject -match $debugCertSubjectRegEx -and $_.Issuer -match $debugCertIssuerRegEx } | Select -first 1 -ExpandProperty $property
-    }
+    $value = Get-ChildItem $certStore/$thumbprint | Select -ExpandProperty $property
     Write-Host "Using ${property}: ${value}"
 
     return $value
 }
 
-function Get-Thumbprint {
-    param (
-        [bool] $upload,
-        [bool] $ci # On CI build machines, the certificate are located in local computer store
-    )
-
-    $thumbprint = Get-Cert-Property $upload $ci "Thumbprint"
-    return $thumbprint
-}
-
 function Get-Subject {
     param (
-        [bool] $upload,
+        [string] $thumbprint,
         [bool] $ci # On CI build machines, the certificate are located in local computer store
     )
 
-    $subject = Get-Cert-Property $upload $ci "Subject"
+    $subject = Get-Cert-Property $thumbprint $ci "Subject"
     return $subject
 }
 
@@ -458,7 +445,7 @@ function Sign-File {
         [string] $description = ""
     )
     Write-Host "Signing the file $filePath with thumbprint $thumbprint" -f Yellow
-    & "C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64\signtool.exe" sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256 /fd sha256 /td sha256 /v /debug /sm /d $description $filePath
+    & signtool.exe sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256 /fd sha256 /td sha256 /v /debug /sm /d $description $filePath
     $res = $LASTEXITCODE
     Write-Host "Signing exit code: $res" -ForegroundColor Yellow
     if ($res -ne 0) {
@@ -479,7 +466,8 @@ function Prepare-Archive {
         [string] $newGuiDir,
         [string] $archivePath,
         [bool] $upload,
-        [bool] $ci
+        [bool] $ci,
+        [string] $thumbprint
     )
 
     Write-Host "Preparing the archive ..."
@@ -549,7 +537,6 @@ function Prepare-Archive {
 
         $filename = Split-Path -Leaf $file
 
-        $thumbprint = Get-Thumbprint -Upload $upload -Ci $ci
         Sign-File -FilePath $archivePath/$filename -Upload $upload -Thumbprint $thumbprint -Description $filename
 
     }
@@ -585,7 +572,8 @@ function Create-Archive {
         [string] $archiveName,
         [string] $archivePath,
         [bool] $upload,
-        [bool] $ci
+        [bool] $ci,
+        [string] $thumbprint
     )
 
     Write-Host "Creating the archive ..."
@@ -608,7 +596,6 @@ function Create-Archive {
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     # Sign final installer
-    $thumbprint = Get-Thumbprint -Upload $upload -Ci $ci
     $installerPath = Get-Installer-Path -ContentPath $contentPath
 
     if (Test-Path -Path $installerPath) {
@@ -627,7 +614,8 @@ function Create-MSI-Package {
     param (
         [string] $path,
         [string] $buildPath,
-        [string] $contentPath
+        [string] $contentPath,
+        [string] $thumbprint
     )
 
     Write-Host "Creating MSI package ..."
@@ -643,10 +631,6 @@ function Create-MSI-Package {
 	if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 	# Sign final installer
-	if (!$thumbprint) {
-		$thumbprint = Get-Thumbprint $upload
-	}
-
 	$installerPath = Get-Installer-Path -ContentPath $contentPath -msi
 
 	if (Test-Path -Path $installerPath) {
@@ -808,7 +792,6 @@ if ($res -ne 0) {
 #################################################################################################
 
 if (!(Test-Path "$vfsDir\vfs.dll") -or $ext) {
-    $thumbprint = Get-Thumbprint -Upload $upload -Ci $ci
     Build-Extension -Path $path -ContentPath $contentPath -ExtPath $extPath -BuildType $buildType -Thumbprint $thumbprint
 
     if ($LASTEXITCODE -ne 0) {
@@ -849,7 +832,7 @@ if ($LASTEXITCODE -ne 0) {
 #                                                                                               #
 #################################################################################################
 
-Prepare-Archive -BuildType $buildType -BuildPath $buildPath -VfsDir $vfsDir -ArchivePath $archivePath -Upload $upload -Ci $ci -NewGuiDir "$buildPath/bin/client" -NewGui $newGui
+Prepare-Archive -BuildType $buildType -BuildPath $buildPath -VfsDir $vfsDir -ArchivePath $archivePath -Upload $upload -Ci $ci -NewGuiDir "$buildPath/bin/client" -NewGui $newGui -Thumbprint $thumbprint
 if ($LASTEXITCODE -ne 0)
 {
     Write-Host "Archive preparation failed. Aborting." -f Red
@@ -862,7 +845,7 @@ if ($LASTEXITCODE -ne 0)
 #                                                                                               #
 #################################################################################################
 
-Create-Archive -Path $path -BuildPath $buildPath -ContentPath $contentPath -InstallPath $installPath -Archivename $archiveName -ArchivePath $archivePath -Upload $upload -Ci $ci
+Create-Archive -Path $path -BuildPath $buildPath -ContentPath $contentPath -InstallPath $installPath -Archivename $archiveName -ArchivePath $archivePath -Upload $upload -Ci $ci -Thumbprint $thumbprint
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Archive creation failed ($LASTEXITCODE) . Aborting." -f Red
     exit $LASTEXITCODE
@@ -876,7 +859,7 @@ if ($LASTEXITCODE -ne 0) {
 #################################################################################################
 
 if ($msi) {
-    Create-MSI-Package -Path $path -buildPath $buildPath -ContentPath $contentPath
+    Create-MSI-Package -Path $path -buildPath $buildPath -ContentPath $contentPath -Thumbprint $thumbprint
     if ($LASTEXITCODE -ne 0) {
         Write-Host "MSI package creation failed ($LASTEXITCODE) . Aborting." -f Red
         exit $LASTEXITCODE
