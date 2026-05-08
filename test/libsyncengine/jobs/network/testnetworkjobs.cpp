@@ -238,7 +238,7 @@ void TestNetworkJobs::testDelete() {
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
 
     // Check that the dir has been deleted
-    const bool dirExists = existsInRemoteDirectory(_dummyFileName, testDummyDirRemoteId, NodeType::Directory);
+    const bool dirExists = existsInRemoteDirectory(remoteTmpDir.name(), _remoteDirId, NodeType::Directory);
     CPPUNIT_ASSERT(!dirExists);
 
     remoteTmpDir.setDeleted();
@@ -1553,7 +1553,7 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
         public:
             explicit GetInfoUserJobMock(const UserDbId userDbId, const ApiToken &apiToken) :
                 GetInfoUserJob(userDbId),
-                _apiToken(apiToken) {};
+                _apiToken(apiToken){};
 
             [[nodiscard]] Poco::Net::HTTPResponse httpResponse() const override {
                 return Poco::Net::HTTPResponse(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
