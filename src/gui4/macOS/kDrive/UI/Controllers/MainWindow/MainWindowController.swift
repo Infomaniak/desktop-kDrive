@@ -79,8 +79,11 @@ final class MainWindowController: NSWindowController {
 
     private func observeUsersCache() {
         cacheObservable.usersPublisher.map { $0.isEmpty }.removeDuplicates()
-            .receiveOnMain(store: &bindStore) { [weak self] _ in
+            .receiveOnMain(store: &bindStore) { [weak self] noAccount in
                 guard let self = self else { return }
+                
+                guard noAccount else { return }
+                
                 guard case .mainWindow = router.currentRoute else {
                     return
                 }
