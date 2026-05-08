@@ -49,7 +49,7 @@
                                          ConfiguredTemplate="{StaticResource ConfiguredDriveTemplate}"
                                          UnconfiguredTemplate="{StaticResource UnconfiguredDriveTemplate}" />
     </Page.Resources>
-    <Grid Margin="{StaticResource Infomaniak.Style.Thickness.Uniform.L}"
+    <Grid Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.L}"
           RowSpacing="{StaticResource Infomaniak.Style.Spacing.L}">
         <Grid.RowDefinitions>
             <!-- Title -->
@@ -58,11 +58,13 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <TextBlock Grid.Row="0"
+                   Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.L}"
                    Text="{x:Bind kDrive:Localizer.Instance.GetString('settingsTitle'), Mode=OneWay}"
                    Style="{StaticResource Infomaniak.Style.TextBlock.Title}" />
         <ScrollView x:Name="SettingsScrollView"
                     Grid.Row="1">
-            <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.L}">
+            <StackPanel Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.L}"
+                        Spacing="{StaticResource Infomaniak.Style.Spacing.L}">
                 <!-- General -->
                 <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                     <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('sidebarItemGeneral'), Mode=OneWay}"
