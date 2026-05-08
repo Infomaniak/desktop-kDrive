@@ -651,7 +651,7 @@ ExitInfo Utility::tryCreateTmpFile(const std::shared_ptr<CacheDirectory> cacheDi
     Count retries = 0;
     bool exists = false;
 
-    const auto createPathInCacheWithRandomSuffix = [&]() {
+    const auto createPathInCacheWithRandomSuffix = [&cacheDirectoryPath, &name]() {
         return cacheDirectoryPath / (name + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()));
     };
 
