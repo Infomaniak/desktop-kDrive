@@ -17,7 +17,9 @@
  */
 using CommunityToolkit.WinUI;
 using H.NotifyIcon;
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -302,6 +304,7 @@ namespace Infomaniak.kDrive
         public static void ShowUnexpectedErrorTeachingTip()
         {
             Logger.Log(Logger.Level.Error, "Showing unexpected error TeachingTip");
+            App.ServiceProvider.GetRequiredService<IAnalyticsService>().TrackOther(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.UnexpectedErrorTeachingTipShown);
             ShowTeachingTip(Localizer.Instance.GetString("unexpectedErrorTeachingTipTitle"), Localizer.Instance.GetString("unexpectedErrorTeachingTipContent"));
         }
 

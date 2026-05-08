@@ -9,6 +9,7 @@ namespace Infomaniak.kDrive.Analytics
     internal class MatomoService : IAnalyticsService
     {
         private const string _clickEventCategory = "click";
+        private const string _otherEventCategory = "other";
         private const int MaxConcurrentRequests = 4;
         private readonly SemaphoreSlim _throttle = new(MaxConcurrentRequests, MaxConcurrentRequests);
         private readonly IMatomoTracker _tracker;
@@ -23,12 +24,27 @@ namespace Infomaniak.kDrive.Analytics
         {
             if (!IsMatomoEnabled())
                 return;
+            TrackEvent(category, eventName, _clickEventCategory, value);
+
+        }
+
+        public void TrackOther(Keys.Category category, Keys.EventName eventName, int? value = null)
+        {
+            if (!IsMatomoEnabled())
+                return;
+            TrackEvent(category, eventName, _otherEventCategory, value);
+        }
+
+        private void TrackEvent(Keys.Category category, Keys.EventName eventName, string eventAction, int? value = null)
+        {
+            if (!IsMatomoEnabled())
+                return;
 
             _ = TrackInBackgroundAsync(() => _tracker.Track(new EventTrackingItem()
             {
                 Url = $"kdrive://{category.ToCamelCase()}",
                 EventCategory = category.ToCamelCase(),
-                EventAction = _clickEventCategory,
+                EventAction = eventAction,
                 EventName = eventName.ToCamelCase(),
                 EventValue = value,
                 NewVisit = false

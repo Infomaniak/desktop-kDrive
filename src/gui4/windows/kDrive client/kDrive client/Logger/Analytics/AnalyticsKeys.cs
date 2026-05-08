@@ -25,6 +25,7 @@
         DriveAdvancedSyncsPage,
         ExclusionSelector,
         Errors,
+        UnexpectedErrorTeachingTip,
         AsleepErrorPage,
         DriveAccessDeniedPage,
         LogginErrorPage,
@@ -155,6 +156,7 @@
         ManageSpaceOnly,
         ManageInvalidToken,
         ManageTmpDirError,
-        OpenRenewWeb
+        OpenRenewWeb,
+        Displayed
     }
 }
