@@ -340,15 +340,14 @@ namespace Infomaniak.kDrive.ViewModels
             await error.Sync.AddErrorAsync(error);
         }
 
-        public async Task RemoveErrorByDbIdAsync(DbId errorDbId, bool refreshErrorState = true)
+        public async Task RemoveErrorByDbIdAsync(DbId errorDbId)
         {
             Logger.Log(Logger.Level.Info, $"AppModel: Removing error - {errorDbId}");
             var appError = AppErrors.FirstOrDefault(e => e.DbId == errorDbId);
             if (appError is not null)
             {
                 await Utility.RunOnUIThread(() => AppErrors.Remove(appError));
-                if (refreshErrorState)
-                    await RefreshErrorState();
+                await RefreshErrorState();
                 return;
             }
 

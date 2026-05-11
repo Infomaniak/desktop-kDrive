@@ -45,7 +45,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         private const int _maxErrorLimit = 1000;
         private object _errorLock = new object();
         private Int64 _errorCount = 0;
-        private volatile bool _hasMoreError;
+        private bool _hasMoreError;
 
         public ServerCommService(IServerCommProtocol commClient, AppModel viewModel)
         {
