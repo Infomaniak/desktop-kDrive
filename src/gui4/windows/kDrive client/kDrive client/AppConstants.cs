@@ -184,6 +184,7 @@ namespace Infomaniak.kDrive
     internal sealed class ProductionAppConstants : IAppConstants
     {
         public ISentryConstants Sentry { get; } = new ProductionSentry();
+        public IMatomoConstants Matomo { get; } = new ProductionMatomo();
         public IGitHubConstants GitHub { get; } = new ProductionGitHub();
         public ISyncConstants Sync { get; } = new ProductionSync();
         public IDriveConstants Drive { get; } = new ProductionDrive();
@@ -205,6 +206,7 @@ namespace Infomaniak.kDrive
     internal sealed class PreProdAppConstants : IAppConstants
     {
         public ISentryConstants Sentry { get; } = new ProductionSentry();
+        public IMatomoConstants Matomo { get; } = new ProductionMatomo();
         public IGitHubConstants GitHub { get; } = new ProductionGitHub();
         public ISyncConstants Sync { get; } = new ProductionSync();
 
