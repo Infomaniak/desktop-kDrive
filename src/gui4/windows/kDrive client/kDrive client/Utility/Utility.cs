@@ -166,7 +166,7 @@ namespace Infomaniak.kDrive
             private static extern IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex);
 
             private delegate IntPtr WndProcDelegate(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
-            private sealed record class DpiSubclassData(IntPtr OriginalWndProc, WndProcDelegate WndProcDelegate, GCHandle WndProcHandle);
+            private sealed record class DpiSubclassData(IntPtr OriginalWndProc, WndProcDelegate WndProc, GCHandle WndProcHandle);
             private static readonly Dictionary<IntPtr, DpiSubclassData> _dpiSubclassDataByHwnd = [];
             private static readonly object _dpiSubclassLock = new();
 
@@ -184,56 +184,55 @@ namespace Infomaniak.kDrive
             /// <summary>
             /// Subclasses the window to listen for WM_DPICHANGED and automatically re-scale on DPI changes.
             /// </summary>
-            public static void RegisterDpiChangeHandler(IntPtr hWnd, AppWindow appWindow, int baseWidth, int baseHeight)
+            public static bool RegisterDpiChangeHandler(IntPtr hWnd, AppWindow appWindow, int baseWidth, int baseHeight)
             {
                 lock (_dpiSubclassLock)
                 {
                     if (_dpiSubclassDataByHwnd.ContainsKey(hWnd))
                     {
-                        return;
+                        return false;
                     }
-                }
 
-                IntPtr originalWndProc = GetWindowLongPtr(hWnd, GWLP_WNDPROC);
+                    IntPtr originalWndProc = GetWindowLongPtr(hWnd, GWLP_WNDPROC);
 
-                // Must be stored in a field to prevent garbage collection of the delegate.
-                WndProcDelegate newWndProc = (hwnd, msg, wParam, lParam) =>
-                {
-                    if (msg == WM_DPICHANGED)
+                    // Must be stored in a field to prevent garbage collection of the delegate.
+                    WndProcDelegate newWndProc = (hwnd, msg, wParam, lParam) =>
                     {
-                        double newScale = (wParam.ToInt32() & 0xFFFF) / 96.0;
-                        int scaledWidth = (int)(baseWidth * newScale);
-                        int scaledHeight = (int)(baseHeight * newScale);
-
-                        if (appWindow.Presenter is OverlappedPresenter p)
+                        if (msg == WM_DPICHANGED)
                         {
-                            p.PreferredMinimumWidth = scaledWidth;
-                            p.PreferredMinimumHeight = scaledHeight;
+                            double newScale = (wParam.ToInt32() & 0xFFFF) / 96.0;
+                            int scaledWidth = (int)(baseWidth * newScale);
+                            int scaledHeight = (int)(baseHeight * newScale);
+
+                            if (appWindow.Presenter is OverlappedPresenter p)
+                            {
+                                p.PreferredMinimumWidth = scaledWidth;
+                                p.PreferredMinimumHeight = scaledHeight;
+                            }
+
+                            // The lParam contains a pointer to a RECT with the suggested new window position/size.
+                            var suggestedRect = Marshal.PtrToStructure<RECT>(lParam);
+                            appWindow.MoveAndResize(new RectInt32(
+                                suggestedRect.Left,
+                                suggestedRect.Top,
+                                suggestedRect.Right - suggestedRect.Left,
+                                suggestedRect.Bottom - suggestedRect.Top));
+
+                            DpiChanged?.Invoke(null, newScale);
+
+                            return IntPtr.Zero;
                         }
 
-                        // The lParam contains a pointer to a RECT with the suggested new window position/size.
-                        var suggestedRect = Marshal.PtrToStructure<RECT>(lParam);
-                        appWindow.MoveAndResize(new RectInt32(
-                            suggestedRect.Left,
-                            suggestedRect.Top,
-                            suggestedRect.Right - suggestedRect.Left,
-                            suggestedRect.Bottom - suggestedRect.Top));
+                        return CallWindowProc(originalWndProc, hwnd, msg, wParam, lParam);
+                    };
 
-                        DpiChanged?.Invoke(null, newScale);
-
-                        return IntPtr.Zero;
-                    }
-
-                    return CallWindowProc(originalWndProc, hwnd, msg, wParam, lParam);
-                };
-
-                // Pin the delegate to prevent GC collection
-                GCHandle wndProcHandle = GCHandle.Alloc(newWndProc);
-                lock (_dpiSubclassLock)
-                {
+                    // Pin the delegate to prevent GC collection
+                    GCHandle wndProcHandle = GCHandle.Alloc(newWndProc);
                     _dpiSubclassDataByHwnd[hWnd] = new DpiSubclassData(originalWndProc, newWndProc, wndProcHandle);
+                    SetWindowLongPtr(hWnd, GWLP_WNDPROC, Marshal.GetFunctionPointerForDelegate(newWndProc));
                 }
-                SetWindowLongPtr(hWnd, GWLP_WNDPROC, Marshal.GetFunctionPointerForDelegate(newWndProc));
+
+                return true;
             }
 
             public static void UnregisterDpiChangeHandler(IntPtr hWnd)
@@ -289,8 +288,16 @@ namespace Infomaniak.kDrive
                 appWindow.SetIcon("Assets\\kDrive.ico");
 
                 // Subclass the window to automatically handle DPI changes
-                DpiHelper.RegisterDpiChangeHandler(hWnd, appWindow, width, height);
-                window.Closed += (_, _) => DpiHelper.UnregisterDpiChangeHandler(hWnd);
+                if (DpiHelper.RegisterDpiChangeHandler(hWnd, appWindow, width, height))
+                {
+                    WindowEventHandler? closeHandler = null;
+                    closeHandler = (_, _) =>
+                    {
+                        window.Closed -= closeHandler;
+                        DpiHelper.UnregisterDpiChangeHandler(hWnd);
+                    };
+                    window.Closed += closeHandler;
+                }
             }
         }
 
@@ -534,7 +541,6 @@ namespace Infomaniak.kDrive
         }
     }
 }
-
 
 
 
