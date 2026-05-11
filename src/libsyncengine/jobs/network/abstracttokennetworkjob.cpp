@@ -134,6 +134,9 @@ std::string AbstractTokenNetworkJob::getSpecificUrl() {
             str += API_PREFIX_DESKTOP;
             break;
         case ApiType::Profile:
+        case ApiType::Internal:
+        case ApiType::InternalUnauthenticated:
+        default:
             break;
     }
 
@@ -144,6 +147,8 @@ ExitInfo AbstractTokenNetworkJob::handleUnauthorizedResponse() {
     switch (_apiType) {
         case ApiType::Drive:
         case ApiType::NotifyDrive:
+        case ApiType::Internal:
+        case ApiType::InternalUnauthenticated:
             disableRetry();
             return {ExitCode::BackError, ExitCause::DriveAccessError};
         case ApiType::DriveByUser:
@@ -286,6 +291,8 @@ std::string AbstractTokenNetworkJob::getUrl() {
             apiUrl = UrlHelper::notifyApiUrl(_apiVersion);
             break;
         case ApiType::Profile:
+        case ApiType::Internal:
+        case ApiType::InternalUnauthenticated:
             apiUrl = UrlHelper::infomaniakApiUrl(_apiVersion);
             break;
     }
@@ -515,10 +522,6 @@ void AbstractTokenNetworkJob::fetchDriveDbIdFromSync() {
     }
 
     if (syncList.empty()) {
-        if (_apiType == ApiType::Internal) {
-            // OK, some internal API might be called authenticated or unauthenticated
-            return;
-        }
         assert(false);
         const std::string err{"No sync found"};
         LOG_WARN(_logger, err);
@@ -528,10 +531,32 @@ void AbstractTokenNetworkJob::fetchDriveDbIdFromSync() {
     _driveDbId = syncList[0].driveDbId();
 }
 
+void AbstractTokenNetworkJob::fetchFirstUserDbId() {
+    // Fetch the first user ID from DB.
+    std::vector<User> userList;
+    if (!ParmsDb::instance()->selectAllUsers(userList)) {
+        assert(false);
+        const std::string err{"Error in ParmsDb::selectAllUsers"};
+        LOG_WARN(_logger, err);
+        throw DbError(err);
+    }
+
+    if (userList.empty()) {
+        assert(false);
+        const std::string err{"No user found"};
+        LOG_WARN(_logger, err);
+        throw DataError(err);
+    }
+
+    _userDbId = userList[0].dbId();
+}
+
 ApiToken AbstractTokenNetworkJob::loadApiToken() {
     ApiToken apiToken;
     if (_apiType == ApiType::Desktop || _apiType == ApiType::Internal) {
         fetchDriveDbIdFromSync();
+    } else if (_apiType == ApiType::Internal) {
+        fetchFirstUserDbId();
     }
 
     switch (_apiType) {

@@ -40,6 +40,9 @@ class GetAppVersionJob : public AbstractTokenNetworkJob {
         ExitInfo handleResponse(std::istream &is) override;
 
     private:
+        GetAppVersionJob(const DistributionChannel currentChannel, const std::string &appID,
+                         const std::vector<UserId> &userIdList, const ApiType apiType);
+
         std::string getUrl() override { return UrlHelper::infomaniakApiUrl(_apiVersion, true) + getSpecificUrl(); }
         std::string getSpecificUrl() override;
 

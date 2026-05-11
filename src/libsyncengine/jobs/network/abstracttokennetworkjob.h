@@ -105,6 +105,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         bool _accessTokenAlreadyRefreshed{false};
 
         void fetchDriveDbIdFromSync();
+        void fetchFirstUserDbId();
         virtual ApiToken loadApiToken();
 
         std::string getUrl() override;

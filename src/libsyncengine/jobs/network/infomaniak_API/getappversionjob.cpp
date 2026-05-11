@@ -35,27 +35,23 @@ GetAppVersionJob::GetAppVersionJob(const DistributionChannel currentChannel, con
 
 GetAppVersionJob::GetAppVersionJob(const DistributionChannel currentChannel, const std::string &appID,
                                    const std::vector<UserId> &userIdList) :
-    AbstractTokenNetworkJob(AbstractTokenNetworkJob::ApiType::Internal),
-    _currentChannel(currentChannel),
-    _appId(appID),
-    _userIdList(userIdList) {
-    _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
-    _apiVersion = 1;
-}
+    GetAppVersionJob(currentChannel, appID, userIdList,
+                     userIdList.empty() ? ApiType::InternalUnauthenticated : ApiType::Internal) {}
 
 std::string GetAppVersionJob::getSpecificUrl() {
-    constexpr auto kStoreEndpoint = "app-information/applications/version";
-    return kStoreEndpoint;
+    constexpr auto kStoreAuthenticatedEndpoint = "/app-information/applications/version";
+    constexpr auto kStoreUnauthenticatedEndpoint = "/app-information/applications/version/no-auth";
+    return getApiType() == ApiType::Internal ? kStoreAuthenticatedEndpoint : kStoreUnauthenticatedEndpoint;
 }
 
 void GetAppVersionJob::setQueryParameters(Poco::URI &uri) {
+    uri.addQueryParameter("appId", _appId);
+    uri.addQueryParameter("channel", toString(_currentChannel));
+    uri.addQueryParameter("platform", toString(CommonUtility::platform()));
+    uri.addQueryParameter("os_version", CommonUtility::osVersion());
+    uri.addQueryParameter("store", "kStore");
+    uri.addQueryParameter("name", "com.infomaniak.drive");
     for (const auto &id: _userIdList) {
-        uri.addQueryParameter("appId", _appId);
-        uri.addQueryParameter("channel", toString(_currentChannel));
-        uri.addQueryParameter("platform", toString(CommonUtility::platform()));
-        uri.addQueryParameter("os_version", CommonUtility::osVersion());
-        uri.addQueryParameter("store", "kStore");
-        uri.addQueryParameter("name", "com.infomaniak.drive");
         uri.addQueryParameter("user_ids[]", std::to_string(id));
     }
 }
@@ -86,6 +82,16 @@ ExitInfo GetAppVersionJob::handleResponse(std::istream &is) {
         return {ExitCode::BackError, ExitCause::MissingReplyData};
 
     return ExitCode::Ok;
+}
+
+GetAppVersionJob::GetAppVersionJob(const DistributionChannel currentChannel, const std::string &appID,
+                                   const std::vector<UserId> &userIdList, const ApiType apiType) :
+    AbstractTokenNetworkJob(apiType),
+    _currentChannel(currentChannel),
+    _appId(appID),
+    _userIdList(userIdList) {
+    _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
+    _apiVersion = 1;
 }
 
 } // namespace KDC
