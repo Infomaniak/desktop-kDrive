@@ -26,6 +26,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -165,6 +166,9 @@ namespace Infomaniak.kDrive
             private static extern IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex);
 
             private delegate IntPtr WndProcDelegate(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+            private sealed record class DpiSubclassData(IntPtr OriginalWndProc, WndProcDelegate WndProcDelegate, GCHandle WndProcHandle);
+            private static readonly Dictionary<IntPtr, DpiSubclassData> _dpiSubclassDataByHwnd = [];
+            private static readonly object _dpiSubclassLock = new();
 
             /// <summary>
             /// Raised when a WM_DPICHANGED message is received, after the window has been resized.
@@ -182,7 +186,15 @@ namespace Infomaniak.kDrive
             /// </summary>
             public static void RegisterDpiChangeHandler(IntPtr hWnd, AppWindow appWindow, int baseWidth, int baseHeight)
             {
-                var originalWndProc = GetWindowLongPtr(hWnd, GWLP_WNDPROC);
+                lock (_dpiSubclassLock)
+                {
+                    if (_dpiSubclassDataByHwnd.ContainsKey(hWnd))
+                    {
+                        return;
+                    }
+                }
+
+                IntPtr originalWndProc = GetWindowLongPtr(hWnd, GWLP_WNDPROC);
 
                 // Must be stored in a field to prevent garbage collection of the delegate.
                 WndProcDelegate newWndProc = (hwnd, msg, wParam, lParam) =>
@@ -216,8 +228,30 @@ namespace Infomaniak.kDrive
                 };
 
                 // Pin the delegate to prevent GC collection
-                GCHandle.Alloc(newWndProc);
+                GCHandle wndProcHandle = GCHandle.Alloc(newWndProc);
+                lock (_dpiSubclassLock)
+                {
+                    _dpiSubclassDataByHwnd[hWnd] = new DpiSubclassData(originalWndProc, newWndProc, wndProcHandle);
+                }
                 SetWindowLongPtr(hWnd, GWLP_WNDPROC, Marshal.GetFunctionPointerForDelegate(newWndProc));
+            }
+
+            public static void UnregisterDpiChangeHandler(IntPtr hWnd)
+            {
+                DpiSubclassData? dpiSubclassData;
+                lock (_dpiSubclassLock)
+                {
+                    if (!_dpiSubclassDataByHwnd.Remove(hWnd, out dpiSubclassData))
+                    {
+                        return;
+                    }
+                }
+
+                SetWindowLongPtr(hWnd, GWLP_WNDPROC, dpiSubclassData.OriginalWndProc);
+                if (dpiSubclassData.WndProcHandle.IsAllocated)
+                {
+                    dpiSubclassData.WndProcHandle.Free();
+                }
             }
 
             [StructLayout(LayoutKind.Sequential)]
@@ -256,6 +290,7 @@ namespace Infomaniak.kDrive
 
                 // Subclass the window to automatically handle DPI changes
                 DpiHelper.RegisterDpiChangeHandler(hWnd, appWindow, width, height);
+                window.Closed += (_, _) => DpiHelper.UnregisterDpiChangeHandler(hWnd);
             }
         }
 
@@ -499,7 +534,6 @@ namespace Infomaniak.kDrive
         }
     }
 }
-
 
 
 
