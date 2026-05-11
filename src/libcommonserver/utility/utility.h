@@ -122,7 +122,7 @@ struct COMMONSERVER_EXPORT Utility {
         static std::string xxHashToStr(XXH64_hash_t hash);
 
         static void unzipStream(std::istream &inputStream, std::stringstream &ss,
-                                Poco::InflatingStreamBuf::StreamType type = Poco::InflatingStreamBuf::STREAM_GZIP);
+                                const Poco::InflatingStreamBuf::StreamType type = Poco::InflatingStreamBuf::STREAM_GZIP);
 
 #if defined(KD_MACOS)
         static SyncPath getExcludedAppFilePath(bool test = false);

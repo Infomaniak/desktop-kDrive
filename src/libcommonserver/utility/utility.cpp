@@ -342,10 +342,10 @@ std::string Utility::xxHashToStr(XXH64_hash_t hash) {
 }
 
 void Utility::unzipStream(std::istream &inputStream, std::stringstream &ss,
-                          Poco::InflatingStreamBuf::StreamType type /*= Poco::InflatingStreamBuf::STREAM_GZIP*/) {
+                          const Poco::InflatingStreamBuf::StreamType type /*= Poco::InflatingStreamBuf::STREAM_GZIP*/) {
     Poco::InflatingInputStream inflater(inputStream, type);
     while (inputStream) {
-        Poco::StreamCopier::copyStream(inflater, ss);
+        (void) Poco::StreamCopier::copyStream(inflater, ss);
     }
 }
 
