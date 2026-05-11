@@ -368,11 +368,8 @@ namespace Infomaniak.kDrive.ViewModels
         public async Task ClearAllErrorsAsync()
         {
             Logger.Log(Logger.Level.Info, "AppModel: Clearing all errors.");
-            foreach (var appError in AppErrors.ToList())
-            {
-                await RemoveErrorByDbIdAsync(appError.DbId, false);
-            }
-
+            
+            await Utility.RunOnUIThread(() => AppErrors.Clear());
             await RefreshErrorState();
             foreach (var sync in AllSyncs)
             {

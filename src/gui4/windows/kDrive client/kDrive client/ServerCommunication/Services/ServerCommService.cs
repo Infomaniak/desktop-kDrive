@@ -1772,8 +1772,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 // Create new item
                 var newItem = new SyncFileItem(sync, fileItemInfo);
 
-                const int MinFileSizeForTopSticking = 1024; // Don't stick items smaller than 1KB to the top as they are likely to complete very fast, otherwise we might end up with flickering in the UI with items jumping from the top to the middle of the list when they are completed.
-                if (newItem.Status != SyncFileStatus.Syncing || newItem.Size < MinFileSizeForTopSticking)
+                const int minFileSizeForTopSticking = 1024; // Don't stick items smaller than 1KB to the top as they are likely to complete very fast, otherwise we might end up with flickering in the UI with items jumping from the top to the middle of the list when they are completed.
+                if (newItem.Status != SyncFileStatus.Syncing || newItem.Size < minFileSizeForTopSticking)
                 {
                     // Insert item after all syncing items
                     activities.Insert(Math.Clamp(destIndex, 0, activities.Count), newItem);
