@@ -115,7 +115,7 @@ runs:
         run: |
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
           IF "${{ inputs.release_build }}"=="true" (
-            $thumbprint = '${{ inputs.ksp_client_cert_thumbprint }}'
+            $thumbprint = "${{ inputs.ksp_client_cert_thumbprint }}"
             powershell "certutil -scinfo -Silent"
 
             IF "${{ inputs.build_new_client }}"=="true" (
@@ -125,7 +125,8 @@ runs:
             )
 
           ) ELSE (
-            $thumbprint = '${{ inputs.debug_cert_thumbprint }}'
+            $thumbprint = "${{ inputs.debug_cert_thumbprint }}"
+            Write-Host "action thumbprint = $($thumbprint)"
             powershell -File "./infomaniak-build-tools/windows/build-drive.ps1" -thumbprint $thumbprint -ci -unitTests
           )
         shell: cmd
