@@ -425,17 +425,15 @@ void TestSyncPalWorker::testHandleBackError() {
     constexpr double factor = 2.0;
 
     // Build a minimal mock worker that exits with BackError.
-    auto makeBackErrorWorker = [&]() -> std::shared_ptr<ISyncWorker> {
-        auto w = std::make_shared<MockPlatformInconsistencyCheckerWorker>(
-                _syncPal, "Mock PIC BackError", "M_PICB");
+    auto makeBackErrorWorker = [&syncPal = _syncPal]() -> std::shared_ptr<ISyncWorker> {
+        auto w = std::make_shared<MockPlatformInconsistencyCheckerWorker>(syncPal, "Mock PIC BackError", "M_PICB");
         w->setMockExecuteCallback([]() { return ExitInfo{ExitCode::BackError, ExitCause::Unknown}; });
         return w;
     };
 
     // Simulate several consecutive BackError exits and verify exponential growth.
-    for (int i = 0; i < 10; ++i) {
-        const int64_t expected =
-                std::min(static_cast<int64_t>(baseDelay * std::pow(factor, i)), maxDelay);
+    for (int64_t i = 0; i < 10; ++i) {
+        const int64_t expected = std::min(static_cast<int64_t>(baseDelay * std::pow(factor, i)), maxDelay);
 
         auto w = makeBackErrorWorker();
         w->start();
@@ -463,7 +461,7 @@ void TestSyncPalWorker::testHandleBackError() {
     w->start();
     w->waitForExit();
 
-    worker->handleBackError(w, nullptr);
+    (void) worker->handleBackError(w, nullptr);
     CPPUNIT_ASSERT_EQUAL(baseDelay, worker->pauseDuration());
 }
 
