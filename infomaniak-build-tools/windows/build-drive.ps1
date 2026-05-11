@@ -234,7 +234,7 @@ function Build-Extension {
     $configuration = $buildType
     if ($buildType -eq "RelWithDebInfo") { $configuration = "Release" }
 
-    $subject = Get-Subject -Upload $upload -Ci $ci
+    $subject = Get-Subject -Thumbprint $thumbprint -Ci $ci
     Write-Host "Subject: $subject"
 
     $appxManifestPath = "$extPath\FileExplorerExtensionPackage\Package.appxmanifest"
