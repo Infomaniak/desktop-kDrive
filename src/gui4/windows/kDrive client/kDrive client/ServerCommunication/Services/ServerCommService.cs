@@ -42,6 +42,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
     {
         private readonly IServerCommProtocol _commClient;
         private readonly AppModel _viewModel;
+        private const int _maxErrorLimit = 10;
+        private Int64 _errorCount = 0;
+        private bool _hasMoreError;
 
         public ServerCommService(IServerCommProtocol commClient, AppModel viewModel)
         {
@@ -1261,7 +1264,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         {
             JsonObject parms = new()
             {
-                [JsonKeys.Limit] = 1000
+                [JsonKeys.Limit] = _maxErrorLimit
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.ERROR_INFOLIST, parms, cancellationToken).ConfigureAwait(false);
             if (!CheckJobResultAndLogIfError(data, parms))
@@ -1283,6 +1286,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return false;
             }
 
+            _hasMoreError = errorInfos.Count == _maxErrorLimit;
+            _errorCount = errorInfos.Count;
             await _viewModel.ClearAllErrorsAsync().ConfigureAwait(false);
             foreach (var errorInfo in errorInfos)
             {
@@ -1855,10 +1860,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
 
             var sync = App.ServiceProvider.GetRequiredService<AppModel>().AllSyncs.FirstOrDefault(s => s.DbId == errorInfo.SyncDbId);
-
             if (sync is not null)
             {
                 Error error = new(sync, errorInfo);
+                ++_errorCount;
                 await _viewModel.AddErrorAsync(error).ConfigureAwait(false);
             }
             else
@@ -1868,6 +1873,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         }
         public async Task HandleErrorRemovedAsync(object? sender, SignalEventArgs args)
         {
+            if (_hasMoreError && _errorCount < _maxErrorLimit / 2)
+            {
+                if (!await RefreshErrors(CancellationToken.None).ConfigureAwait(false))
+                    Logger.Log(Logger.Level.Warning, "Failled to refresh errors"); // If the refresh fail, we must continue to at least remove the error in respons to the signal
+                else
+                    return;
+            }
+
             var signalData = args.SignalData;
             if (signalData == null || !signalData.ContainsKey(JsonKeys.ErrorDbId))
             {
@@ -1881,6 +1894,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Logger.Log(Logger.Level.Error, "errorDbId is null.");
                 return;
             }
+            --_errorCount;
             await _viewModel.RemoveErrorByDbIdAsync(errorDbId.Value);
         }
 
