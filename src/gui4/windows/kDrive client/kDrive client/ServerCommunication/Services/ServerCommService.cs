@@ -43,8 +43,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         private readonly IServerCommProtocol _commClient;
         private readonly AppModel _viewModel;
         private const int _maxErrorLimit = 1000;
+        private object _errorLock = new object();
         private Int64 _errorCount = 0;
-        private bool _hasMoreError;
+        private volatile bool _hasMoreError;
 
         public ServerCommService(IServerCommProtocol commClient, AppModel viewModel)
         {
@@ -1285,9 +1286,11 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Logger.Log(Logger.Level.Error, $"Failed to deserialize errorInfoList from ${data.Params[JsonKeys.ErrorInfoList]}.");
                 return false;
             }
-
-            _hasMoreError = errorInfos.Count == _maxErrorLimit;
-            _errorCount = errorInfos.Count;
+            lock (_errorLock)
+            {
+                _hasMoreError = errorInfos.Count == _maxErrorLimit;
+                _errorCount = errorInfos.Count;
+            }
             await _viewModel.ClearAllErrorsAsync().ConfigureAwait(false);
             foreach (var errorInfo in errorInfos)
             {
@@ -1863,7 +1866,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             if (sync is not null)
             {
                 Error error = new(sync, errorInfo);
-                ++_errorCount;
+                lock (_errorLock)
+                {
+                    ++_errorCount;
+                }
                 await _viewModel.AddErrorAsync(error).ConfigureAwait(false);
             }
             else
@@ -1900,7 +1906,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return;
             }
             await _viewModel.RemoveErrorByDbIdAsync(errorDbId.Value);
-            _errorCount = Math.Max(0, _errorCount - 1);
+            lock (_errorLock)
+            {
+                _errorCount = Math.Max(0, _errorCount - 1);
+            }
         }
 
         public async Task HandleUtilityShowNotification(object? sender, SignalEventArgs args)
