@@ -38,7 +38,7 @@ namespace Infomaniak.kDrive
             InitializeComponent();
             this.ExtendsContentIntoTitleBar = true;  // enable custom titlebar
             this.SetTitleBar(AppTitleBar);
-            Utility.SetWindowProperties(this, 900, 600, true);
+            Utility.SetWindowProperties(this, 900, 600, true, true);
             Utility.SetWindowCurrentSize(this, 1025, 683); // Set to the minimum size keeping the nav bar panel open by default
             AppModel.UIThreadDispatcher = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread(); // Save the UI thread dispatcher for later use in view models
             AppWindow.TitleBar.PreferredTheme = Microsoft.UI.Windowing.TitleBarTheme.UseDefaultAppMode;

@@ -6,7 +6,7 @@
   Locale: it, Italian
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 05 May 2026 18:05:59 +0200 
+  Exported at: Mon, 11 May 2026 12:40:23 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -1641,6 +1641,28 @@ Se il problema persiste, contatta il supporto.</value>
   </data> 
   <data name="updateAvailable" xml:space="preserve"> 
     <value>kDrive %@ disponibile</value> 
+  </data> 
+  <data name="updateDialogDescription" xml:space="preserve"> 
+    <value>L’installazione richiede meno di un minuto.
+La sincronizzazione riprenderà automaticamente al termine.</value> 
+  </data> 
+  <data name="updateDialogIgnoreVersion" xml:space="preserve"> 
+    <value>Ignora questa versione</value> 
+  </data> 
+  <data name="updateDialogInstallNow" xml:space="preserve"> 
+    <value>Installa ora</value> 
+  </data> 
+  <data name="updateDialogRemindLater" xml:space="preserve"> 
+    <value>Ricordamelo più tardi</value> 
+  </data> 
+  <data name="updateDialogSeeWhatsNew" xml:space="preserve"> 
+    <value>Scopri le novità</value> 
+  </data> 
+  <data name="updateDialogSubtitle" xml:space="preserve"> 
+    <value>Versione %@ · Stai usando la %@</value> 
+  </data> 
+  <data name="updateDialogTitle" xml:space="preserve"> 
+    <value>Aggiornamento disponibile</value> 
   </data> 
   <data name="updateRequiredDescription" xml:space="preserve"> 
     <value>È necessaria una nuova versione di kDrive per continuare.

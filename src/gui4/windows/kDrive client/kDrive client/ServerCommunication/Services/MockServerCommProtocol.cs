@@ -67,6 +67,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 RequestNum.DRIVE_INFOLIST => await DriveInfoListRequest(parameters),
                 RequestNum.SYNC_INFOLIST => await SyncInfoListRequest(parameters),
                 RequestNum.UPDATER_START_INSTALLER => await UpdateStartInstaller(parameters),
+                RequestNum.UPDATER_SKIP_VERSION => await UpdaterSkipVersion(parameters),
                 RequestNum.UPDATER_VERSION_INFO => await UpdaterVersionInfo(parameters),
                 RequestNum.UPDATER_CHANGE_CHANNEL => await UpdaterChangeChannel(parameters),
                 RequestNum.PARAMETERS_INFO => await ParametersInfo(parameters),
@@ -266,6 +267,19 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Type = CommMessageType.Request,
                 Id = (int)NextId,
                 RequestNum = RequestNum.UPDATER_START_INSTALLER,
+                Params = new JsonObject()
+            };
+        }
+
+        private async Task<CommData> UpdaterSkipVersion(JsonObject parameters)
+        {
+            Logger.Log(Logger.Level.Debug, "Received UpdaterSkipVersion request.");
+            await Task.CompletedTask;
+            return new CommData
+            {
+                Type = CommMessageType.Request,
+                Id = (int)NextId,
+                RequestNum = RequestNum.UPDATER_SKIP_VERSION,
                 Params = new JsonObject()
             };
         }

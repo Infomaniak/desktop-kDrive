@@ -149,24 +149,99 @@ namespace Infomaniak.kDrive
 
         public static class DpiHelper
         {
+            private const int WM_DPICHANGED = 0x02E0;
+            private const int GWLP_WNDPROC = -4;
+
             [DllImport("User32.dll")]
             private static extern uint GetDpiForWindow(IntPtr hWnd);
+
+            [DllImport("User32.dll")]
+            private static extern IntPtr CallWindowProc(IntPtr lpPrevWndFunc, IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+
+            [DllImport("User32.dll", EntryPoint = "SetWindowLongPtrW")]
+            private static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
+
+            [DllImport("User32.dll", EntryPoint = "GetWindowLongPtrW")]
+            private static extern IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex);
+
+            private delegate IntPtr WndProcDelegate(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+
+            /// <summary>
+            /// Raised when a WM_DPICHANGED message is received, after the window has been resized.
+            /// </summary>
+            public static event EventHandler<double>? DpiChanged;
 
             public static double GetScaleForWindow(IntPtr hWnd)
             {
                 uint dpi = GetDpiForWindow(hWnd);
                 return dpi / 96.0; // 96 DPI = 100%
             }
+
+            /// <summary>
+            /// Subclasses the window to listen for WM_DPICHANGED and automatically re-scale on DPI changes.
+            /// </summary>
+            public static void RegisterDpiChangeHandler(IntPtr hWnd, AppWindow appWindow, int baseWidth, int baseHeight)
+            {
+                var originalWndProc = GetWindowLongPtr(hWnd, GWLP_WNDPROC);
+
+                // Must be stored in a field to prevent garbage collection of the delegate.
+                WndProcDelegate newWndProc = (hwnd, msg, wParam, lParam) =>
+                {
+                    if (msg == WM_DPICHANGED)
+                    {
+                        double newScale = (wParam.ToInt32() & 0xFFFF) / 96.0;
+                        int scaledWidth = (int)(baseWidth * newScale);
+                        int scaledHeight = (int)(baseHeight * newScale);
+
+                        if (appWindow.Presenter is OverlappedPresenter p)
+                        {
+                            p.PreferredMinimumWidth = scaledWidth;
+                            p.PreferredMinimumHeight = scaledHeight;
+                        }
+
+                        // The lParam contains a pointer to a RECT with the suggested new window position/size.
+                        var suggestedRect = Marshal.PtrToStructure<RECT>(lParam);
+                        appWindow.MoveAndResize(new RectInt32(
+                            suggestedRect.Left,
+                            suggestedRect.Top,
+                            suggestedRect.Right - suggestedRect.Left,
+                            suggestedRect.Bottom - suggestedRect.Top));
+
+                        DpiChanged?.Invoke(null, newScale);
+
+                        return IntPtr.Zero;
+                    }
+
+                    return CallWindowProc(originalWndProc, hwnd, msg, wParam, lParam);
+                };
+
+                // Pin the delegate to prevent GC collection
+                GCHandle.Alloc(newWndProc);
+                SetWindowLongPtr(hWnd, GWLP_WNDPROC, Marshal.GetFunctionPointerForDelegate(newWndProc));
+            }
+
+            [StructLayout(LayoutKind.Sequential)]
+            private struct RECT
+            {
+                public int Left;
+                public int Top;
+                public int Right;
+                public int Bottom;
+            }
         }
-        public static void SetWindowProperties(Window window, int width, int height, bool resizable)
+
+        /// <summary>
+        /// Configures window presenter properties and registers a WM_DPICHANGED listener for automatic DPI scaling.
+        /// </summary>
+        public static void SetWindowProperties(Window window, int width, int height, bool resizable, bool mimimizable)
         {
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
             var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
             var appWindow = AppWindow.GetFromWindowId(windowId);
             if (appWindow != null && appWindow.Presenter is OverlappedPresenter presenter)
             {
-                presenter.IsMaximizable = true;
-                presenter.IsMinimizable = true;
+                presenter.IsMaximizable = resizable;
+                presenter.IsMinimizable = mimimizable;
                 presenter.IsResizable = resizable;
 
                 // Use the RasterizationScale to scale the desired size
@@ -178,6 +253,24 @@ namespace Infomaniak.kDrive
                 presenter.PreferredMinimumHeight = scaledHeight;
                 appWindow.Resize(new SizeInt32(scaledWidth, scaledHeight));
                 appWindow.SetIcon("Assets\\kDrive.ico");
+
+                // Subclass the window to automatically handle DPI changes
+                DpiHelper.RegisterDpiChangeHandler(hWnd, appWindow, width, height);
+            }
+        }
+
+        public static void CenterWindow(Window window)
+        {
+            IntPtr hWnd = WindowNative.GetWindowHandle(window);
+            WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+
+            if (AppWindow.GetFromWindowId(windowId) is AppWindow appWindow &&
+                DisplayArea.GetFromWindowId(windowId, DisplayAreaFallback.Nearest) is DisplayArea displayArea)
+            {
+                PointInt32 CenteredPosition = appWindow.Position;
+                CenteredPosition.X = (displayArea.WorkArea.Width - appWindow.Size.Width) / 2;
+                CenteredPosition.Y = (displayArea.WorkArea.Height - appWindow.Size.Height) / 2;
+                appWindow.Move(CenteredPosition);
             }
         }
 
@@ -261,14 +354,20 @@ namespace Infomaniak.kDrive
                 Logger.Log(Logger.Level.Warning, "Cannot bring window to front: Application?.Current?.CurrentWindow is null");
                 return;
             }
+            BringWindowToFront(app.CurrentWindow);
+        }
 
-            if (!app.CurrentWindow.Visible)
+        public static void BringWindowToFront(Window window)
+        {
+            Logger.Log(Logger.Level.Info, "Bringing current window to front");
+
+            if (!window.Visible)
             {
-                app.CurrentWindow.Activate();
+                window.Activate();
             }
             else
             {
-                var hWnd = WindowNative.GetWindowHandle(app.CurrentWindow);
+                var hWnd = WindowNative.GetWindowHandle(window);
                 if (hWnd == IntPtr.Zero)
                 {
                     Logger.Log(Logger.Level.Warning, "Cannot bring window to front: hWnd is zero");
@@ -277,7 +376,7 @@ namespace Infomaniak.kDrive
 
                 SetForegroundWindow(hWnd);
             }
-            app.CurrentWindow.Show();
+            window.Show();
         }
         public static string ObfuscateEmail(string? email)
         {

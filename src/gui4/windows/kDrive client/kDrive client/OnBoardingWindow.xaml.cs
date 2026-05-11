@@ -47,7 +47,7 @@ namespace Infomaniak.kDrive.OnBoarding
             this.ExtendsContentIntoTitleBar = true;  // enable custom titlebar
             
             this.SetTitleBar(AppTitleBar);
-            Utility.SetWindowProperties(this, 900, 600, false);
+            Utility.SetWindowProperties(this, 900, 600, false, true);
             LottiePlayer.ActualThemeChanged += LottiePlayer_ActualThemeChanged;
             UpdateLottieSource(_lottieRessourceKey, 130, 1);
             Closed += OnBoardingWindow_Closed;

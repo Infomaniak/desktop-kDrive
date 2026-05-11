@@ -89,9 +89,8 @@ namespace Infomaniak.kDrive.CustomControls
             infoBadge.SetBinding(InfoBadge.VisibilityProperty, new Binding()
             {
                 Source = ViewModel.Settings.UpdateManager,
-                Path = new PropertyPath(nameof(ViewModel.Settings.UpdateManager.AvailableUpdate)),
-                Converter = new Converters.IsNullToBoolOrVisibilityConverter(),
-                ConverterParameter = "Inverted=True",
+                Path = new PropertyPath(nameof(ViewModel.Settings.UpdateManager.ShowNotification)),
+                Converter = new Converters.BooleanToVisibilityConverter(),
                 Mode = BindingMode.OneWay
             });
 

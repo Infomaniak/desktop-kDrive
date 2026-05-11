@@ -120,14 +120,16 @@ namespace Infomaniak.kDrive.CustomControls
             _isLoaded = true;
             ScheduleRefresh();
 
-            // Subscribe to theme changes
+            // Subscribe to theme and DPI changes
             ActualThemeChanged += OnThemeChanged;
+            Utility.DpiHelper.DpiChanged += OnDpiChanged;
         }
 
         private void OnUnloaded(object sender, RoutedEventArgs e)
         {
             _isLoaded = false;
             ActualThemeChanged -= OnThemeChanged;
+            Utility.DpiHelper.DpiChanged -= OnDpiChanged;
 
             // Unregister property change callbacks
             foreach (var token in _subscriptionTokens)
@@ -141,6 +143,12 @@ namespace Infomaniak.kDrive.CustomControls
         {
             if (_isLoaded)
                 ScheduleRefresh();
+        }
+
+        private void OnDpiChanged(object? sender, double newScale)
+        {
+            if (_isLoaded)
+                DispatcherQueue?.TryEnqueue(() => ScheduleRefresh());
         }
 
         private void OnDependencyPropertyChanged(DependencyObject sender, DependencyProperty dp)
@@ -266,8 +274,7 @@ namespace Infomaniak.kDrive.CustomControls
 
         private (double Width, double Height) ComputeRasterSize(SvgDocument svgDoc)
         {
-            var scale = Utility.DpiHelper.GetScaleForWindow(
-                WinRT.Interop.WindowNative.GetWindowHandle((Application.Current as App)?.CurrentWindow));
+            var scale = this.XamlRoot.RasterizationScale;
 
             var ratio = svgDoc.Height.Value / svgDoc.Width.Value;
             if (double.IsNaN(ratio) || double.IsInfinity(ratio))
