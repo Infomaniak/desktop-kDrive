@@ -79,8 +79,8 @@ namespace Infomaniak.kDrive.CustomControls
                 .OnItemAdded(a =>
                 {
                     _outGoingActivities.Insert(0, a);
-                    const int MaxActivities = 200;
-                    while (_outGoingActivities.Count > MaxActivities)
+                    const int maxActivities = 200;
+                    while (_outGoingActivities.Count > maxActivities)
                         _outGoingActivities.RemoveAt(_outGoingActivities.Count - 1);
                 })
                 .OnItemRemoved(a => _outGoingActivities.Remove(a))

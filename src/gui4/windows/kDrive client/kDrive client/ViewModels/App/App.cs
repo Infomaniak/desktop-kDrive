@@ -342,35 +342,33 @@ namespace Infomaniak.kDrive.ViewModels
 
         public async Task RemoveErrorByDbIdAsync(DbId errorDbId, bool refreshErrorState = true)
         {
+            Logger.Log(Logger.Level.Info, $"AppModel: Removing error - {errorDbId}");
+            var appError = AppErrors.FirstOrDefault(e => e.DbId == errorDbId);
+            if (appError is not null)
             {
-                Logger.Log(Logger.Level.Info, $"AppModel: Removing error - {errorDbId}");
-                var appError = AppErrors.FirstOrDefault(e => e.DbId == errorDbId);
-                if (appError is not null)
+                await Utility.RunOnUIThread(() => AppErrors.Remove(appError));
+                if (refreshErrorState)
+                    await RefreshErrorState();
+                return;
+            }
+
+            foreach (var sync in AllSyncs)
+            {
+                var syncError = sync.SyncErrors.FirstOrDefault(e => e.DbId == errorDbId);
+                if (syncError != null)
                 {
-                    await Utility.RunOnUIThread(() => AppErrors.Remove(appError));
-                    if (refreshErrorState)
-                        await RefreshErrorState();
+                    await sync.RemoveErrorAsync(syncError);
                     return;
                 }
-
-                foreach (var sync in AllSyncs)
-                {
-                    var syncError = sync.SyncErrors.FirstOrDefault(e => e.DbId == errorDbId);
-                    if (syncError != null)
-                    {
-                        await sync.RemoveErrorAsync(syncError);
-                        return;
-                    }
-                }
-
-                Logger.Log(Logger.Level.Warning, $"AppModel: Could not find error with DbId {errorDbId} to remove.");
             }
+
+            Logger.Log(Logger.Level.Warning, $"AppModel: Could not find error with DbId {errorDbId} to remove.");
         }
 
         public async Task ClearAllErrorsAsync()
         {
             Logger.Log(Logger.Level.Info, "AppModel: Clearing all errors.");
-            foreach (var appError in AppErrors)
+            foreach (var appError in AppErrors.ToList())
             {
                 await RemoveErrorByDbIdAsync(appError.DbId, false);
             }

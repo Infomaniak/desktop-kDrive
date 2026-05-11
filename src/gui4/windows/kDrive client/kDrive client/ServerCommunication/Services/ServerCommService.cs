@@ -1877,7 +1877,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 if (!await RefreshErrors(CancellationToken.None).ConfigureAwait(false))
                 {
-                    Logger.Log(Logger.Level.Warning, "Failled to refresh errors"); // If the refresh fail, we must continue to at least remove the error in respons to the signal
+                    Logger.Log(Logger.Level.Warning, "Failed to refresh errors"); // If the refresh fails, we must continue to at least remove the error in response to the signal
                 }
                 else
                 {
@@ -1899,8 +1899,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Logger.Log(Logger.Level.Error, "errorDbId is null.");
                 return;
             }
-            --_errorCount;
             await _viewModel.RemoveErrorByDbIdAsync(errorDbId.Value);
+            _errorCount = Math.Max(0, _errorCount - 1);
         }
 
         public async Task HandleUtilityShowNotification(object? sender, SignalEventArgs args)
