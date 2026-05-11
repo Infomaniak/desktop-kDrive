@@ -42,7 +42,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
     {
         private readonly IServerCommProtocol _commClient;
         private readonly AppModel _viewModel;
-        private const int _maxErrorLimit = 10;
+        private const int _maxErrorLimit = 1000;
         private Int64 _errorCount = 0;
         private bool _hasMoreError;
 
