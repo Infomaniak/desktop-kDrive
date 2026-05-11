@@ -104,6 +104,22 @@ The exact set of redistributed binaries can vary by platform:
 - **Repository:** https://github.com/sparkle-project/Sparkle
 - **Note:** macOS only. `Sparkle.framework` is bundled into the application when available.
 
+### CodeArt.MatomoTracking
+
+- **Version:** 1.0.5
+- **License:** MIT
+- **Copyright:** Copyright (c) CodeArt, Allan Thraen
+- **Repository:** https://github.com/CodeArtDK/CodeArt.MatomoTracking
+- **Note:** Windows WinUI3 only. Declared as a NuGet dependency in `src/gui4/windows/kDrive client/kDrive client/kDrive client.csproj`.
+
+### H.NotifyIcon.WinUI
+
+- **Version:** 2.3.1
+- **License:** MIT
+- **Copyright:** Copyright (c) havendv
+- **Repository:** https://github.com/HavenDV/H.NotifyIcon
+- **Note:** Windows WinUI3 only. Declared as a NuGet dependency in `src/gui4/windows/kDrive client/kDrive client/kDrive client.csproj`.
+
 ---
 
 ## Vendored Source Dependencies (`src/3rdparty/`)
