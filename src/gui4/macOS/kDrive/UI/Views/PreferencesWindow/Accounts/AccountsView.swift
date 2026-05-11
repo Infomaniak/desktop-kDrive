@@ -28,7 +28,7 @@ struct AccountsView: View {
         Form {
             if viewModel.users.isEmpty {
                 AccountsPreferencesAddAccountView()
-            }else {
+            } else {
                 ForEach(viewModel.users) { user in
                     UserSection(
                         user: user,
@@ -36,8 +36,7 @@ struct AccountsView: View {
                         availableDrives: viewModel.availableDrive[user.id, default: []]
                     )
                 }
-                
-                
+
                 Section {
                     Button(KDriveLocalizable.buttonConnectAccount) {
                         // TODO: Add new user
