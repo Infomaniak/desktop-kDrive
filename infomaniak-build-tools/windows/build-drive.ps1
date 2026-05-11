@@ -153,7 +153,6 @@ function Get-Cert-Property {
     }
     
     $value = Get-ChildItem $certStore/$thumbprint | Select -ExpandProperty $property
-    Write-Host "${property} = ${value}"
 
     return $value
 }
@@ -786,9 +785,6 @@ if ($res -ne 0) {
 #################################################################################################
 
 if (!(Test-Path "$vfsDir\vfs.dll") -or $ext) {
-    Write-Host "xxxx"
-    Write-Host $thumbprint
-    Write-Host "xxxx"
     Build-Extension -Path $path -ContentPath $contentPath -ExtPath $extPath -BuildType $buildType -Thumbprint $thumbprint
 
     if ($LASTEXITCODE -ne 0) {

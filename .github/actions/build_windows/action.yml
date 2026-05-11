@@ -115,13 +115,12 @@ runs:
         run: |
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
           IF "${{ inputs.release_build }}"=="true" (
-            $thumbprint = "${{ inputs.ksp_client_cert_thumbprint }}"
             powershell "certutil -scinfo -Silent"
 
             IF "${{ inputs.build_new_client }}"=="true" (
-              powershell "./infomaniak-build-tools/windows/build-drive.ps1" -thumbprint $thumbprint -ci -ext -msi -clean remake -upload -newGui $true
+              powershell "./infomaniak-build-tools/windows/build-drive.ps1" -thumbprint ${{ inputs.ksp_client_cert_thumbprint }} -ci -ext -msi -clean remake -upload -newGui $true
             ) ELSE (
-              powershell "./infomaniak-build-tools/windows/build-drive.ps1" -thumbprint $thumbprint -ci -ext -msi -clean remake -upload
+              powershell "./infomaniak-build-tools/windows/build-drive.ps1" -thumbprint ${{ inputs.ksp_client_cert_thumbprint }} -ci -ext -msi -clean remake -upload
             )
 
           ) ELSE (
