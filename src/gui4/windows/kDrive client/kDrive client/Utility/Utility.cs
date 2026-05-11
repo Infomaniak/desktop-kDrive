@@ -310,8 +310,8 @@ namespace Infomaniak.kDrive
                 DisplayArea.GetFromWindowId(windowId, DisplayAreaFallback.Nearest) is DisplayArea displayArea)
             {
                 PointInt32 CenteredPosition = appWindow.Position;
-                CenteredPosition.X = (displayArea.WorkArea.Width - appWindow.Size.Width) / 2;
-                CenteredPosition.Y = (displayArea.WorkArea.Height - appWindow.Size.Height) / 2;
+                CenteredPosition.X = displayArea.WorkArea.X + (displayArea.WorkArea.Width - appWindow.Size.Width) / 2;
+                CenteredPosition.Y = displayArea.WorkArea.Y + (displayArea.WorkArea.Height - appWindow.Size.Height) / 2;
                 appWindow.Move(CenteredPosition);
             }
         }
@@ -541,6 +541,5 @@ namespace Infomaniak.kDrive
         }
     }
 }
-
 
 
