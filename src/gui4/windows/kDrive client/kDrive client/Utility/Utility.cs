@@ -290,15 +290,20 @@ namespace Infomaniak.kDrive
                 // Subclass the window to automatically handle DPI changes
                 if (DpiHelper.RegisterDpiChangeHandler(hWnd, appWindow, width, height))
                 {
-                    WindowEventHandler? closeHandler = null;
-                    closeHandler = (_, _) =>
-                    {
-                        window.Closed -= closeHandler;
-                        DpiHelper.UnregisterDpiChangeHandler(hWnd);
-                    };
-                    window.Closed += closeHandler;
+                    window.Closed += OnWindowClosed;
                 }
             }
+        }
+
+        private static void OnWindowClosed(object sender, WindowEventArgs args)
+        {
+            var window = sender as Window;
+            if (window is null)
+                return;
+            window.Closed -= OnWindowClosed;
+            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
+            var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+            DpiHelper.UnregisterDpiChangeHandler(hWnd);
         }
 
         public static void CenterWindow(Window window)
