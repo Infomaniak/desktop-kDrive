@@ -31,7 +31,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Threading; 
+using System.Threading;
 using System.Threading.Tasks;
 using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommProtocol;
 using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommService;
@@ -48,6 +48,18 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             _commClient = commClient;
             _viewModel = viewModel;
             _commClient.SignalReceived += OnSignalReceived;
+            _commClient.ConnectionLost += OnConnectionLost;
+        }
+
+        private void OnConnectionLost(object? sender, EventArgs e)
+        {
+            Logger.Log(Logger.Level.Fatal, "Connection to server lost, this application will close.");
+            App.ExitApplication();
+        }
+
+        public async Task<bool> Init(CancellationToken cancellationToken)
+        {
+            return await _commClient.InitConnection(cancellationToken).ConfigureAwait(false);
         }
 
         // Utility methods

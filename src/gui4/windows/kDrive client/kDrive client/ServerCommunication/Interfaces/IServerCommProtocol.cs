@@ -25,8 +25,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
 {
     public interface IServerCommProtocol
     {
-        Task Initialize();
-
         public class CommData
         {
             // Type can be Request or Signal
@@ -54,6 +52,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
             // Parameters for requests or data for signals
             public JsonObject Params { get; set; } = [];
         }
+        public Task<bool> InitConnection(CancellationToken cancellationToken);
 
         public Task<CommData> SendRequestAsync(RequestNum requestNum, JsonObject parameters, CancellationToken cancellationToken = default);
 

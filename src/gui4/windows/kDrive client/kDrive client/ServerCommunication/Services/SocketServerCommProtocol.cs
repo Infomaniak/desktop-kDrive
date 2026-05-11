@@ -22,27 +22,33 @@ using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.Storage.Streams;
 using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommProtocol;
 
 
 namespace Infomaniak.kDrive.ServerCommunication.Services
 {
-    // For the moment, non implemented methods will fallback to the MockServerCommProtocol implementation
     public class SocketServerCommProtocol : Interfaces.IServerCommProtocol
     {
-        private TcpClient? _client;
+        private Socket? _socket;
         private long _requestIdCounter = 0;
-        private string _inBuffer = "";
+        private readonly byte[] _receiveBuffer = new byte[65536]; // 64 Ko
+        private readonly StringBuilder _inBuffer = new();
         private int _inBufferJsonBalance = 0;
+        private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            Converters = { new Base64StringJsonConverter() }
+        };
         private readonly ConcurrentDictionary<long, TaskCompletionSource<CommData>> _pendingRequests = [];
         private bool _stopRequested = false;
+        private Task? _pollingTask;
         private const string _host = "127.0.0.1";
         private long NextId
         {
@@ -56,86 +62,130 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return ++_requestIdCounter;
             }
         }
-
-        public event EventHandler<SignalEventArgs>? SignalReceived;
-        public event EventHandler? ConnectionLost;
-
-        public SocketServerCommProtocol()
-        {
-            Initialize();
-        }
-
-        public Task Initialize()
-        {
-            Task.Run(ReconnectLoop);
-            return Task.CompletedTask;
-        }
-
-        ~SocketServerCommProtocol()
-        {
-            _client?.Dispose();
-            _stopRequested = true;
-        }
-
-        private async Task ReconnectLoop()
-        {
-            string commPortFilePath = Path.Combine(
+        private string _commPortFilePath = Path.Combine(
                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                "kDrive",
                ".comm"
            );
 
-            while (!_stopRequested)
-            {
-                if (_client == null || !_client.Connected)
-                {
-                    try
-                    {
-                        int port = int.Parse(File.ReadAllText(commPortFilePath).Trim());
+        private static readonly JsonSerializerOptions JsonOptions = new()
+        {
+            PropertyNameCaseInsensitive = true,
+            Converters = { new Base64StringJsonConverter() }
+        };
 
-                        Logger.Log(Logger.Level.Info, $"Attempting to connect to {_host}:{port}");
-                        _client?.Dispose();
-                        _client = new TcpClient();
-                        await _client.ConnectAsync(_host, port).ConfigureAwait(false);
-                        Logger.Log(Logger.Level.Info, "Connected to server.");
-                    }
-                    catch (SocketException ex)
+        public event EventHandler<SignalEventArgs>? SignalReceived;
+        public event EventHandler? ConnectionLost;
+
+        ~SocketServerCommProtocol()
+        {
+            _socket?.Dispose();
+            _stopRequested = true;
+        }
+
+        private int? GetServerPort()
+        {
+            try
+            {
+                int port = int.Parse(File.ReadAllText(_commPortFilePath).Trim());
+                return port;
+            }
+            catch (FileNotFoundException)
+            {
+                Logger.Log(Logger.Level.Info, $".comm file not found at {_commPortFilePath}.");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to read server port from .comm file: {ex.Message}");
+                return null;
+            }
+        }
+        public async Task<bool> InitConnection(CancellationToken cancellationToken)
+        {
+            if (_pollingTask is not null)
+            {
+                Logger.Log(Logger.Level.Error, "Connection initialization attempted while polling task is already running.");
+                return false;
+            }
+
+            while (!_stopRequested && !cancellationToken.IsCancellationRequested)
+            {
+                if (_socket is not null && _socket.Connected)
+                    return true;
+
+                int? port = GetServerPort();
+                try
+                {
+                    if (port is null)
                     {
-                        Logger.Log(Logger.Level.Warning, $"Connection failed: {ex.Message}. Retrying in 2 seconds...");
-                        _client = null;
-                        await Task.Delay(2000).ConfigureAwait(false);
+                        await Task.Delay(500, cancellationToken).ConfigureAwait(false);
                         continue;
                     }
-                    catch (FileNotFoundException)
-                    {
-                        Logger.Log(Logger.Level.Error, $".comm file not found at {commPortFilePath}. Retrying in 2 seconds...");
-                        await Task.Delay(2000).ConfigureAwait(false);
+
+                    Logger.Log(Logger.Level.Info, $"Attempting to connect to {_host}:{port}");
+                    _socket?.Dispose();
+                    _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                    await _socket.ConnectAsync(_host, port.Value).ConfigureAwait(false);
+                    Logger.Log(Logger.Level.Info, "Connected to server.");
+                    _pollingTask = Task.Run(PollingLoop);
+                    return true;
+                }
+                catch (OperationCanceledException)
+                {
+                    Logger.Log(Logger.Level.Info, "Connection initialization was canceled.");
+                    return false;
+                }
+                catch (SocketException ex)
+                {
+                    Logger.Log(Logger.Level.Warning, $"Connection failed: {ex.Message}. Retrying in 0.5 seconds...");
+                    _socket?.Dispose();
+                    _socket = null;
+                    await Task.Delay(500, cancellationToken).ConfigureAwait(false);
+                    continue;
+                }
+            }
+            return false;
+        }
+        private async Task PollingLoop()
+        {
+            if (_socket is null)
+                return;
+
+            while (_socket?.Connected == true)
+            {
+                try
+                {
+                    if (!_socket.Poll(TimeSpan.FromSeconds(5), SelectMode.SelectRead))
                         continue;
-                    }
+                }
+                catch (SocketException ex)
+                {
+                    Logger.Log(Logger.Level.Error, $"Socket poll error: {ex.Message}");
+                    _socket?.Dispose();
+                    _socket = null;
+                    ConnectionLost?.Invoke(this, EventArgs.Empty);
+                    return;
+                }
+
+                if (_socket.Available == 0)
+                {
+                    Logger.Log(Logger.Level.Warning, "Server has closed the connection.");
+                    _socket?.Dispose();
+                    _socket = null;
+                    ConnectionLost?.Invoke(this, EventArgs.Empty);
+                    return;
                 }
 
                 try
                 {
-                    while (_client.Connected)
-                    {
-                        while (_client.GetStream().DataAvailable || _inBuffer.Any())
-                        {
-                            await OnReadyReadAsync().ConfigureAwait(false);
-                        }
-                        await Task.Delay(100).ConfigureAwait(false); // Polling interval
-                    }
+                    await OnReadyReadAsync().ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(Logger.Level.Error, $"Error in read loop: {ex.Message}");
-                    _client?.Dispose();
-                    _client = null;
+                    Logger.Log(Logger.Level.Error, $"Error processing incoming message: {ex.Message}");
+                    // Continue the loop to keep the connection alive, unless it's a critical error
                 }
-
-                Logger.Log(Logger.Level.Warning, "Disconnected from server, attempting to reconnect...");
-                ConnectionLost?.Invoke(this, EventArgs.Empty);
-                // Small delay before attempting reconnect
-                await Task.Delay(2000).ConfigureAwait(false);
             }
         }
 
@@ -146,7 +196,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 // Wait asynchronously until the client is connected
                 const int softWaitTimeMs = 30000; // Log every 30s
                 var lastLogTime = Stopwatch.StartNew();
-                while (_client == null || !_client.Connected)
+                while (_socket == null || !_socket.Connected)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
@@ -176,8 +226,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 string jsonString = JsonSerializer.Serialize(requestObj);
                 byte[] jsonBytes = Encoding.Unicode.GetBytes(jsonString);
 
-                NetworkStream stream = _client.GetStream();
-                await stream.WriteAsync(jsonBytes, 0, jsonBytes.Length, cancellationToken).ConfigureAwait(false);
+                await _socket.SendAsync(jsonBytes).ConfigureAwait(false);
                 Logger.Log(Logger.Level.Info, $"Sent request: {jsonString}");
                 cancellationToken.ThrowIfCancellationRequested();
                 CommData reply = await WaitForReplyAsync(requestId, cancellationToken).ConfigureAwait(false);
@@ -224,90 +273,83 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         private async Task OnReadyReadAsync()
         {
-            if (_client == null || !_client.Connected)
+            do
             {
-                Logger.Log(Logger.Level.Warning, "Unable to read: client is not connected.");
-                return;
-            }
-            NetworkStream stream = _client.GetStream();
-            Logger.Log(Logger.Level.Debug, "Data is ready to be read from the server.");
-
-            // Read the JSON message
-            int jsonEndIndex = -1;
-
-            if (_client.GetStream().DataAvailable)
-            {
-                byte[] jsonBytes = new byte[1024 * 4];
-                int bytesRead = await stream.ReadAsync(jsonBytes, 0, 1024 * 4).ConfigureAwait(false);
-
-                string str = Encoding.Unicode.GetString(jsonBytes, 0, bytesRead);
-                _inBuffer += str;
-                if (_inBufferJsonBalance != 0)
+                if (_socket == null || !_socket.Connected)
                 {
-                    int endIndex = -1;
-                    UpdateJsonBalance(str, ref _inBufferJsonBalance, ref endIndex);
-                    if (endIndex != -1)
-                        jsonEndIndex = _inBuffer.Length - str.Length + endIndex;
+                    Logger.Log(Logger.Level.Warning, "Unable to read: socket is not connected.");
+                    return;
+                }
+
+                // Read the JSON message
+                int jsonEndIndex = -1;
+
+                if (_socket.Available > 0)
+                {
+                    int bytesRead = await _socket.ReceiveAsync(_receiveBuffer).ConfigureAwait(false);
+                    string str = Encoding.Unicode.GetString(_receiveBuffer, 0, bytesRead);
+                    _inBuffer.Append(str);
+                    if (_inBufferJsonBalance != 0)
+                    {
+                        int endIndex = -1;
+                        UpdateJsonBalance(_inBuffer, _inBuffer.Length - str.Length, ref _inBufferJsonBalance, ref endIndex);
+                        if (endIndex != -1)
+                            jsonEndIndex = _inBuffer.Length - str.Length + endIndex;
+                        else
+                            jsonEndIndex = -1;
+                    }
                     else
-                        jsonEndIndex = -1;
+                    {
+                        UpdateJsonBalance(_inBuffer, 0, ref _inBufferJsonBalance, ref jsonEndIndex);
+                    }
                 }
                 else
                 {
-                    UpdateJsonBalance(_inBuffer, ref _inBufferJsonBalance, ref jsonEndIndex);
+                    _inBufferJsonBalance = 0;
+                    UpdateJsonBalance(_inBuffer, 0, ref _inBufferJsonBalance, ref jsonEndIndex);
                 }
-            }
-            else
-            {
-                _inBufferJsonBalance = 0;
-                UpdateJsonBalance(_inBuffer, ref _inBufferJsonBalance, ref jsonEndIndex);
-            }
 
-            // Consistency check
-            if (_inBuffer.Any() && _inBuffer.First() != '{')
-            {
-                Logger.Log(Logger.Level.Warning, "Invalid message format: does not start with '{'.");
-                _inBuffer = ""; // Discard the buffer to resync
-                _inBufferJsonBalance = 0;
-                return;
-            }
-            if (jsonEndIndex == -1)
-            {
-                Logger.Log(Logger.Level.Debug, "Incomplete JSON message, waiting for more data.");
-                return; // Wait for more data
-            }
+                // Consistency check
+                if (_inBuffer.Length > 0 && _inBuffer[0] != '{')
+                {
+                    Logger.Log(Logger.Level.Warning, "Invalid message format: does not start with '{'.");
+                    _inBuffer.Clear(); // Discard the buffer to resync
+                    _inBufferJsonBalance = 0;
+                    return;
+                }
+                if (jsonEndIndex == -1)
+                {
+                    Logger.Log(Logger.Level.Debug, "Incomplete JSON message, waiting for more data.");
+                    return; // Wait for more data
+                }
 
-            string jsonString = _inBuffer.Substring(0, jsonEndIndex + 1);
-            if (!jsonString.EndsWith("}"))
-            {
-                Logger.Log(Logger.Level.Error, "unexpected end character");
-            }
-            _inBuffer = _inBuffer.Substring(jsonEndIndex + 1);
+                ReadOnlySpan<char> jsonSpan = _inBuffer.ToString(0, jsonEndIndex + 1);
+                if (!jsonSpan.EndsWith("}"))
+                {
+                    Logger.Log(Logger.Level.Error, "unexpected end character");
+                }
+                _inBuffer.Remove(0, jsonEndIndex + 1);
 
-            // Parse JSON
-            var options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            };
-            options.Converters.Add(new Base64StringJsonConverter());
-            Logger.Log(Logger.Level.Debug, $"Deserializing: {jsonString}");
-            var messageObj = JsonSerializer.Deserialize<CommData>(jsonString, options);
-            if (messageObj is null)
-            {
-                Logger.Log(Logger.Level.Warning, "Invalid message format.");
-                return;
-            }
-            HandleServerMessageAsync(messageObj);
+                // Parse JSON
+                Logger.Log(Logger.Level.Debug, $"Deserializing: {jsonSpan}");
+                var messageObj = JsonSerializer.Deserialize<CommData>(jsonSpan, _jsonOptions);
+                if (messageObj is null)
+                {
+                    Logger.Log(Logger.Level.Warning, "Invalid message format.");
+                    return;
+                }
+
+                HandleServerMessageAsync(messageObj);
+            } while (_socket.Available > 0 || _inBuffer.Length > 0);
         }
-
-        private static void UpdateJsonBalance(string str, ref int balance, ref int endIndex)
+        private static void UpdateJsonBalance(StringBuilder sb, int startIndex, ref int balance, ref int endIndex)
         {
             endIndex = -1;
-            for (int i = 0; i < str.Length; i++)
+            for (int i = startIndex; i < sb.Length; i++)
             {
-                if (str[i] == '{')
-                    balance++;
-                else if (str[i] == '}')
-                    balance--;
+                char c = sb[i];
+                if (c == '{') balance++;
+                else if (c == '}') balance--;
                 if (balance == 0)
                 {
                     endIndex = i;

@@ -32,6 +32,7 @@ using Sentry;
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 
 namespace Infomaniak.kDrive
 {
@@ -131,12 +132,11 @@ namespace Infomaniak.kDrive
 
             ServiceProvider.GetRequiredService<TrayIconManager>().Initialize();
 
-            ServiceProvider.GetRequiredService<IServerCommProtocol>().ConnectionLost += (s, e) =>
+            var serverCommService = ServiceProvider.GetRequiredService<IServerCommService>();
+            using (var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5)))
             {
-                Logger.Log(Logger.Level.Fatal, "Connection to server lost, this application will close.");
-                SentrySdk.Flush(new TimeSpan(0, 0, 5));
-                ExitApplication();
-            };
+                await serverCommService.Init(cts.Token);
+            }
 
             AppModel appModel = ServiceProvider.GetRequiredService<AppModel>();
             if (!await appModel.InitializeAsync())
@@ -254,6 +254,7 @@ namespace Infomaniak.kDrive
         }
         public static void ExitApplication()
         {
+            SentrySdk.Flush(new TimeSpan(0, 0, 5));
             Logger.Log(Logger.Level.Info, "Exiting application.");
             Environment.Exit(0);
         }
