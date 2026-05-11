@@ -126,8 +126,7 @@ runs:
 
           ) ELSE (
             $thumbprint = "${{ inputs.debug_cert_thumbprint }}"
-            Write-Host "action thumbprint = $($thumbprint)"
-            powershell -File "./infomaniak-build-tools/windows/build-drive.ps1" -thumbprint $thumbprint -ci -unitTests
+            powershell -File "./infomaniak-build-tools/windows/build-drive.ps1" -thumbprint ${{ inputs.debug_cert_thumbprint }} -ci -unitTests
           )
         shell: cmd
 

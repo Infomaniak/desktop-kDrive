@@ -153,7 +153,6 @@ function Get-Cert-Property {
     }
     
     $value = Get-ChildItem $certStore/$thumbprint | Select -ExpandProperty $property
-    Write-Host "Using thumbprint0: ${thumbprint}"
     Write-Host "${property} = ${value}"
 
     return $value
@@ -165,7 +164,6 @@ function Get-Subject {
         [bool] $ci # On CI build machines, the certificate are located in local computer store
     )
 
-    Write-Host "Using thumbprint1: ${thumbprint}"
     $subject = Get-Cert-Property $thumbprint $ci "Subject"
     return $subject
 }
@@ -235,7 +233,6 @@ function Build-Extension {
     $configuration = $buildType
     if ($buildType -eq "RelWithDebInfo") { $configuration = "Release" }
 
-    Write-Host "Using thumbprint2: ${thumbprint}"
     $subject = Get-Subject -Thumbprint $thumbprint -Ci $ci
     Write-Host "Subject: $subject"
 
@@ -789,7 +786,9 @@ if ($res -ne 0) {
 #################################################################################################
 
 if (!(Test-Path "$vfsDir\vfs.dll") -or $ext) {
-    Write-Host "Using thumbprint3: ${thumbprint}"
+    Write-Host "xxxx"
+    Write-Host $thumbprint
+    Write-Host "xxxx"
     Build-Extension -Path $path -ContentPath $contentPath -ExtPath $extPath -BuildType $buildType -Thumbprint $thumbprint
 
     if ($LASTEXITCODE -ne 0) {
