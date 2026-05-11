@@ -36,7 +36,6 @@
 #include <log4cplus/loggingmacros.h>
 
 #include <cmath>
-#include <random>
 
 #define UPDATE_PROGRESS_DELAY 1
 
