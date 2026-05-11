@@ -340,28 +340,31 @@ namespace Infomaniak.kDrive.ViewModels
             await error.Sync.AddErrorAsync(error);
         }
 
-        public async Task RemoveErrorByDbIdAsync(DbId errorDbId)
+        public async Task RemoveErrorByDbIdAsync(DbId errorDbId, bool refreshErrorState = true)
         {
-            Logger.Log(Logger.Level.Info, $"AppModel: Removing error - {errorDbId}");
-            var appError = AppErrors.FirstOrDefault(e => e.DbId == errorDbId);
-            if (appError is not null)
             {
-                await Utility.RunOnUIThread(() => AppErrors.Remove(appError));
-                await RefreshErrorState();
-                return;
-            }
-
-            foreach (var sync in AllSyncs)
-            {
-                var syncError = sync.SyncErrors.FirstOrDefault(e => e.DbId == errorDbId);
-                if (syncError != null)
+                Logger.Log(Logger.Level.Info, $"AppModel: Removing error - {errorDbId}");
+                var appError = AppErrors.FirstOrDefault(e => e.DbId == errorDbId);
+                if (appError is not null)
                 {
-                    await sync.RemoveErrorAsync(syncError);
+                    await Utility.RunOnUIThread(() => AppErrors.Remove(appError));
+                    if (refreshErrorState)
+                        await RefreshErrorState();
                     return;
                 }
-            }
 
-            Logger.Log(Logger.Level.Warning, $"AppModel: Could not find error with DbId {errorDbId} to remove.");
+                foreach (var sync in AllSyncs)
+                {
+                    var syncError = sync.SyncErrors.FirstOrDefault(e => e.DbId == errorDbId);
+                    if (syncError != null)
+                    {
+                        await sync.RemoveErrorAsync(syncError);
+                        return;
+                    }
+                }
+
+                Logger.Log(Logger.Level.Warning, $"AppModel: Could not find error with DbId {errorDbId} to remove.");
+            }
         }
 
         public async Task ClearAllErrorsAsync()
@@ -369,9 +372,10 @@ namespace Infomaniak.kDrive.ViewModels
             Logger.Log(Logger.Level.Info, "AppModel: Clearing all errors.");
             foreach (var appError in AppErrors)
             {
-                await RemoveErrorByDbIdAsync(appError.DbId);
+                await RemoveErrorByDbIdAsync(appError.DbId, false);
             }
 
+            await RefreshErrorState();
             foreach (var sync in AllSyncs)
             {
                 await sync.ClearAllErrorsAsync();
