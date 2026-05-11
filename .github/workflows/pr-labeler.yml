@@ -18,6 +18,31 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           configuration-path: .github/labeler.yml
 
+  draft-ci-free-label:
+    runs-on: self-hosted
+    if: ${{ github.event.pull_request.draft }}
+    steps:
+      - name: Add CI Free label on draft PR
+        uses: actions/github-script@v9.0.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const prNumber = context.payload.pull_request.number;
+
+            try {
+              await github.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number: prNumber,
+                labels: ["CI Free ⛓️‍💥"],
+              });
+              core.info('Added "CI Free ⛓️‍💥" label to draft PR.');
+            } catch (e) {
+              core.warning(`Failed to add label: ${e.message}`);
+            }
+
   quick-fix-label:
     runs-on: self-hosted
     steps:
