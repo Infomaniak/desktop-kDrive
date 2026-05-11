@@ -94,6 +94,8 @@ class SyncPalWorker : public ISyncWorker {
         bool handleRateLimited(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr);
         bool handleBackError(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr);
 
+        virtual double jitter() const;
+
         void checkForMassDeletions() const;
 
         friend class TestSyncPalWorker;

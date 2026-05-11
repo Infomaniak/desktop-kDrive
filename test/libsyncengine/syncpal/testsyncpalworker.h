@@ -81,6 +81,11 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
          */
         void testInternalPause3();
 
+        /* This test verifies that consecutive BackError exits produce an exponentially increasing pause duration (capped at
+         * maxDelay), and that the counter resets when the sync reaches the Idle step.
+         */
+        void testHandleBackError();
+
         void testStopDuringInternalPause();
         void testDestroyDuringInternalPause();
 
@@ -201,6 +206,14 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
                     setExitCause(exitInfo.cause());
                     setDone(exitInfo.code());
                 }
+        };
+
+        class MockSyncPalWorker : public SyncPalWorker {
+            public:
+                using SyncPalWorker::SyncPalWorker;
+
+            private:
+                double jitter() const override { return 1.0; }
         };
 
         class MockSyncPal : public SyncPal {

@@ -377,7 +377,7 @@ void TestSyncPalWorker::MockSyncPal::createWorkers(const std::chrono::seconds &s
             std::make_shared<MockOperationGeneratorWorker>(shared_from_this(), "Mock Operation Generator", "M_OPGE");
     _operationsSorterWorker = std::make_shared<MockOperationSorterWorker>(shared_from_this(), "Mock Operation Sorter", "M_OPSO");
     _executorWorker = std::make_shared<MockExecutorWorker>(shared_from_this(), "Mock Executor", "M_EXEC");
-    _syncPalWorker = std::make_shared<SyncPalWorker>(shared_from_this(), "Mock Main", "M_MAIN", startDelay);
+    _syncPalWorker = std::make_shared<MockSyncPalWorker>(shared_from_this(), "Mock Main", "M_MAIN", startDelay);
 
     _tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(shared_from_this());
 }
@@ -409,4 +409,62 @@ ExitInfo TestSyncPalWorker::MockRemoteFileSystemObserverWorker::generateInitialS
         return ExitCode::NetworkError;
     }
 }
+
+void TestSyncPalWorker::testHandleBackError() {
+    _syncPal = std::make_shared<MockSyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), _sync.dbId(),
+                                             KDRIVE_VERSION_STRING);
+    _syncPal->start(std::chrono::seconds(0));
+
+    const auto mockSyncPal = std::dynamic_pointer_cast<MockSyncPal>(_syncPal);
+    CPPUNIT_ASSERT(mockSyncPal);
+
+    auto *worker = mockSyncPal->getSyncPalWorker().get();
+
+    constexpr int64_t baseDelay = 600;
+    constexpr int64_t maxDelay = 3600;
+    constexpr double factor = 2.0;
+
+    // Build a minimal mock worker that exits with BackError.
+    auto makeBackErrorWorker = [&]() -> std::shared_ptr<ISyncWorker> {
+        auto w = std::make_shared<MockPlatformInconsistencyCheckerWorker>(
+                _syncPal, "Mock PIC BackError", "M_PICB");
+        w->setMockExecuteCallback([]() { return ExitInfo{ExitCode::BackError, ExitCause::Unknown}; });
+        return w;
+    };
+
+    // Simulate several consecutive BackError exits and verify exponential growth.
+    for (int i = 0; i < 5; ++i) {
+        const int64_t expected =
+                std::min(static_cast<int64_t>(baseDelay * std::pow(factor, i)), maxDelay);
+
+        auto w = makeBackErrorWorker();
+        w->start();
+        w->waitForExit();
+
+        const bool paused = worker->handleBackError(w, nullptr);
+        CPPUNIT_ASSERT(paused);
+        CPPUNIT_ASSERT_EQUAL(expected, worker->pauseDuration());
+    }
+
+    // Verify the counter resets when the Idle step is initialised (via initStep → resetConsecutiveBackErrors).
+    std::shared_ptr<ISyncWorker> stepWorkers[2] = {nullptr, nullptr};
+    std::shared_ptr<SharedObject> inputSharedObject[2] = {nullptr, nullptr};
+
+    // copySnapshots() must be called before entering Idle, mirroring the real sync loop
+    // (UpdateDetection1 always precedes Idle in production).
+    _syncPal->copySnapshots();
+
+    worker->initStep(SyncStep::Idle, stepWorkers, inputSharedObject);
+
+    CPPUNIT_ASSERT_EQUAL(int64_t{0}, _syncPal->consecutiveBackErrors());
+
+    // After reset, the first BackError should produce the base delay again.
+    auto w = makeBackErrorWorker();
+    w->start();
+    w->waitForExit();
+
+    worker->handleBackError(w, nullptr);
+    CPPUNIT_ASSERT_EQUAL(baseDelay, worker->pauseDuration());
+}
+
 } // namespace KDC

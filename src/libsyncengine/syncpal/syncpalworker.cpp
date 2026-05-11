@@ -121,17 +121,21 @@ bool SyncPalWorker::handleBackError(const std::shared_ptr<ISyncWorker> w1, const
     if ((w1 && w1->exitCode() == ExitCode::BackError) || (w2 && w2->exitCode() == ExitCode::BackError)) {
         constexpr double multiplicativeFactor = 2; // binary exponential backoff
         constexpr int64_t baseDelay(60000); // 1 min
-        constexpr int64_t maxDelay(14400000); // 1 hour
+        constexpr int64_t maxDelay(14400000); // 4 hour
         int64_t computedDelay = baseDelay * std::pow(multiplicativeFactor, std::min(_syncPal->consecutiveBackErrors(), (int64_t)12));
         _syncPal->incrementConsecutiveBackErrors();
 
-        double jitter = CommonUtility::generateRandomNumber(1000, 1400) / 1000.0; // 40% of the computed delay
-        const auto newPauseDuration = static_cast<int64_t>(std::min(static_cast<int64_t>(computedDelay * jitter), maxDelay));
+        const double jitterFactor = jitter(); // 40% of the computed delay
+        const auto newPauseDuration = static_cast<int64_t>(std::min(static_cast<int64_t>(computedDelay * jitterFactor), maxDelay));
         LOG_SYNCPAL_INFO(_logger, "Changing pause duration to " << newPauseDuration << " ms");
         setPauseDuration(newPauseDuration);
         return true;
-    }
+    } 
     return false;
+}
+
+double SyncPalWorker::jitter() const {
+    return CommonUtility::generateRandomNumber(1000, 1400) / 1000.0;
 }
 
 void SyncPalWorker::checkForMassDeletions() const {
