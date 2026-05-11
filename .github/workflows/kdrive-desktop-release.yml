@@ -176,7 +176,7 @@ jobs:
           ksp_api_key: ${{ secrets.WINDOWS_KSP_API_KEY }}
           ksp_client_cert: ${{ secrets.WINDOWS_KSP_CLIENT_CERT_FILE_B64 }}
           ksp_client_cert_pass: ${{ secrets.WINDOWS_KSP_CLIENT_CERT_PASSWORD }}
-          ksp_client_cert_thumbprint: ${{ secrets.WINDOWS_KSP_CLIENT_CERT_THUMPRINT }}
+          ksp_client_cert_thumbprint: ${{ secrets.WINDOWS_KSP_CLIENT_CERT_THUMBPRINT }}
           release_build: true
           build_new_client: ${{ inputs.build_windows == 'New client' }}
 
