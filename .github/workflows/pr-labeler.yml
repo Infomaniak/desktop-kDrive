@@ -2,7 +2,7 @@ name: PR Auto Labeler
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, ready_for_review]
 
 permissions:
   contents: read
@@ -20,7 +20,7 @@ jobs:
 
   draft-ci-free-label:
     runs-on: self-hosted
-    if: ${{ github.event.pull_request.draft }}
+    if: ${{ github.event.action == 'opened' && github.event.pull_request.draft }}
     steps:
       - name: Add CI Free label on draft PR
         uses: actions/github-script@v9.0.0
@@ -41,6 +41,43 @@ jobs:
               core.info('Added "CI Free ⛓️‍💥" label to draft PR.');
             } catch (e) {
               core.warning(`Failed to add label: ${e.message}`);
+            }
+
+  remove-ci-free-labels:
+    runs-on: self-hosted
+    if: ${{ github.event.action == 'ready_for_review' }}
+    steps:
+      - name: Remove all CI Free labels when PR is marked ready
+        uses: actions/github-script@v9.0.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const prNumber = context.payload.pull_request.number;
+
+            const ciFreeLabelPrefix = "CI Free";
+
+            const { data: labels } = await github.rest.issues.listLabelsOnIssue({
+              owner,
+              repo,
+              issue_number: prNumber,
+            });
+
+            for (const label of labels) {
+              if (label.name.startsWith(ciFreeLabelPrefix)) {
+                try {
+                  await github.rest.issues.removeLabel({
+                    owner,
+                    repo,
+                    issue_number: prNumber,
+                    name: label.name,
+                  });
+                  core.info(`Removed label "${label.name}".`);
+                } catch (e) {
+                  core.warning(`Failed to remove label "${label.name}": ${e.message}`);
+                }
+              }
             }
 
   quick-fix-label:
