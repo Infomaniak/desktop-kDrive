@@ -29,7 +29,7 @@ struct AdvancedPreferencesNetworkDetailView: View {
     @Binding var password: String
     @Binding var authRequired: Bool
 
-    let repository: PreferencesRepository
+    let numberFormatter = NumberFormatter()
 
     var body: some View {
         Picker(KDriveLocalizable.proxyType, selection: $proxyType) {
@@ -40,7 +40,7 @@ struct AdvancedPreferencesNetworkDetailView: View {
         TextField(KDriveLocalizable.proxyHost, text: $hostName)
             .textFieldStyle(.roundedBorder)
 
-        TextField(KDriveLocalizable.proxyPort, value: $port, formatter: NumberFormatter())
+        TextField(KDriveLocalizable.proxyPort, value: $port, formatter: numberFormatter)
             .textFieldStyle(.roundedBorder)
 
         Toggle(KDriveLocalizable.proxyNeedAuth, isOn: $authRequired)
@@ -50,8 +50,9 @@ struct AdvancedPreferencesNetworkDetailView: View {
                 .textFieldStyle(.roundedBorder)
                 .frame(alignment: .leading)
 
-            TextField(KDriveLocalizable.proxyPassword, text: $password)
+            SecureField(KDriveLocalizable.proxyPassword, text: $password)
                 .textFieldStyle(.roundedBorder)
+                .autocorrectionDisabled(true)
                 .onAppear(perform: getAuthRequired)
         }
     }
@@ -76,6 +77,5 @@ struct AdvancedPreferencesNetworkDetailView: View {
         username: .constant(""),
         password: .constant(""),
         authRequired: .constant(false),
-        repository: PreferencesRepository()
     )
 }

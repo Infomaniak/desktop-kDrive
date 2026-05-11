@@ -74,6 +74,17 @@ struct AdvancedPreferencesNetworkView: View {
         hostName = proxyConfiguration.hostName
         port = proxyConfiguration.port
         authType = proxyConfiguration.authType
+
+        switch proxyConfiguration.authType {
+        case .needsAuth(let user, let password):
+            authRequired = true
+            username = user
+            self.password = password
+        case .noAuth:
+            authRequired = false
+            username = ""
+            password = ""
+        }
     }
 
     func updateProxyType(newValue: UIProxyType?) {
@@ -95,6 +106,7 @@ struct AdvancedPreferencesNetworkView: View {
         let authType: UIProxyAuthType = authRequired ? .needsAuth(user: username, password: password) : .noAuth
         proxyConfiguration = UIProxyConfiguration(type: proxyType, hostName: hostName, port: port, authType: authType)
         updateValue(\.$proxyConfiguration, \.proxyConfiguration, newValue: proxyConfiguration)
+        isLoading = false
     }
 
     private func updateValue<T: Equatable>(
