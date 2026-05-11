@@ -73,7 +73,7 @@
     <value>Polish</value>
   </metadata> 
   <data name="aboutAppVersionCopyright" xml:space="preserve"> 
-    <value>Version %@.%@
+    <value>Wersja %@.%@
 © 2019-%@ Infomaniak Network SA -</value> 
   </data> 
   <data name="aboutKDrive" xml:space="preserve"> 
