@@ -289,19 +289,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     int bytesRead = await _socket.ReceiveAsync(_receiveBuffer).ConfigureAwait(false);
                     string str = Encoding.Unicode.GetString(_receiveBuffer, 0, bytesRead);
                     _inBuffer.Append(str);
-                    if (_inBufferJsonBalance != 0)
-                    {
-                        int endIndex = -1;
-                        UpdateJsonBalance(_inBuffer, _inBuffer.Length - str.Length, ref _inBufferJsonBalance, ref endIndex);
-                        if (endIndex != -1)
-                            jsonEndIndex = _inBuffer.Length - str.Length + endIndex;
-                        else
-                            jsonEndIndex = -1;
-                    }
-                    else
-                    {
-                        UpdateJsonBalance(_inBuffer, 0, ref _inBufferJsonBalance, ref jsonEndIndex);
-                    }
+                    UpdateJsonBalance(_inBuffer, _inBuffer.Length - str.Length, ref _inBufferJsonBalance, ref jsonEndIndex);
                 }
                 else
                 {
