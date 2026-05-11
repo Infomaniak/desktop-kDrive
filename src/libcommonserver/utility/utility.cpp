@@ -478,7 +478,7 @@ bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isM
     return true;
 }
 
-bool Utility::isLiteSyncExtError(const ExitInfo &exitInfo) {
+bool Utility::isLiteSyncExtError([[maybe_unused]] const ExitInfo &exitInfo) {
 #if defined(KD_MACOS)
     return (exitInfo.code() == ExitCode::SystemError &&
             (exitInfo.cause() == ExitCause::LiteSyncNotAllowed || exitInfo.cause() == ExitCause::LiteSyncExtNotRunning));
@@ -580,7 +580,7 @@ bool Utility::isError500(const Poco::Net::HTTPResponse::HTTPStatus httpErrorCode
 }
 
 static constexpr uint64_t maxNbCreationTmpFolderRetries = 3;
-ExitInfo Utility::tryCreateTmpDir(const std::shared_ptr<CacheDirectory> cacheDirectory,
+ExitInfo Utility::tryCreateTmpDir([[maybe_unused]] const std::shared_ptr<CacheDirectory> cacheDirectory,
                                   const SyncName &name /*= Str("testDir")*/) {
 #if defined(KD_MACOS)
     if (!cacheDirectory) {

@@ -238,6 +238,37 @@ add_executable(${testserver_NAME}
     ${3rdparty_SRC}
     ${testserver_SRCS})
 
+# Precompiled headers
+set(PC_HEADER_FILES)
+if(UNIX AND NOT APPLE)
+    set(PC_HEADER_FILES
+        "$<$<COMPILE_LANGUAGE:CXX>:<gio/gio.h$<ANGLE-R>>"
+    )
+endif()
+
+list(APPEND PC_HEADER_FILES
+    # std c++
+    "$<$<COMPILE_LANGUAGE:CXX>:<fstream$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<memory$<ANGLE-R>>"
+    # Qt
+    "$<$<COMPILE_LANGUAGE:CXX>:<qdir.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qfileinfo.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qstandardpaths.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qtimer.h$<ANGLE-R>>"
+    # CppUnit
+    "$<$<COMPILE_LANGUAGE:CXX>:<cppunit/TestFixture.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<cppunit/extensions/HelperMacros.h$<ANGLE-R>>"
+    # log4cplus
+    "$<$<COMPILE_LANGUAGE:CXX>:<log4cplus/loggingmacros.h$<ANGLE-R>>"
+    # kDrive
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommon/utility/types.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommon/utility/utility.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommonserver/log/log.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommonserver/utility/utility.h>"
+)
+
+target_precompile_headers(${testserver_NAME} PRIVATE ${PC_HEADER_FILES})
+
 set_target_properties(${testserver_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY})
 

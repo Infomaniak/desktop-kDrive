@@ -187,7 +187,7 @@ void TestComputeFSOperationWorker::testAccessDenied() {
         // AA (child of A) is deleted and recreated with the same node ID after the snapshots are copied
         // A access is denied
         // Causes an Access Denied in checkIfOkToDelete
-        _syncPal->_localFSObserverWorker->_liveSnapshot.removeItem("l_aa");
+        (void) _syncPal->_localFSObserverWorker->_liveSnapshot.removeItem("l_aa");
 
         SyncPath aNodePath = "A";
         std::error_code ec;

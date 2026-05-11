@@ -33,7 +33,7 @@ class Snapshot {
     public:
         Snapshot(const Snapshot &);
         virtual ~Snapshot() = default;
-        NodeId itemId(const SyncPath &path) const;
+
         NodeId parentId(const NodeId &itemId) const;
         virtual bool path(const NodeId &itemId, SyncPath &path, bool &ignore) const noexcept;
         SyncName name(const NodeId &itemId) const;
@@ -45,11 +45,13 @@ class Snapshot {
         bool canWrite(const NodeId &itemId) const;
         bool canShare(const NodeId &itemId) const;
         bool exists(const NodeId &itemId) const;
-        bool pathExists(const SyncPath &path) const;
         bool isLink(const NodeId &itemId) const;
         SnapshotRevision lastChangeRevision(const NodeId &itemId) const;
         bool getChildrenIds(const NodeId &itemId, NodeSet &childrenIds) const;
         NodeSet getDescendantIds(const NodeId &itemId) const;
+
+        ExitInfo getItemId(const SyncPath &path, NodeId &id) const;
+        ExitInfo checkIfPathExists(const SyncPath &path, bool &exists) const;
 
         void ids(NodeSet &ids) const;
         /** Checks if ancestorItem is an ancestor of item.

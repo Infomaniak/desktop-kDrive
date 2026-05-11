@@ -17,6 +17,7 @@
  */
 
 using Infomaniak.kDrive.Analytics;
+using CommunityToolkit.WinUI.Controls;
 using Infomaniak.kDrive.CustomControls;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
@@ -25,7 +26,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,18 +36,63 @@ namespace Infomaniak.kDrive.Pages.Settings
     {
         private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
+        private const string _skipNextRefreshKey = "skipNextRefresh";
+        private NavigationParameter? _navigationParameter;
+
+
         public AppModel ViewModel => _viewModel;
+
+        public struct NavigationParameter
+        {
+            public enum SettingsTab
+            {
+                Default,
+                Users
+            }
+
+            public SettingsTab Tab { get; set; }
+            public User? UserToShow { get; set; }
+        }
 
         public SettingsPage()
         {
             Logger.Log(Logger.Level.Info, "Navigated to SettingsPage - Initializing SettingsPage components");
             InitializeComponent();
             Logger.Log(Logger.Level.Debug, "SettingsPage components initialized");
+            Loaded += SettingsPage_Loaded;
         }
-        protected override async void OnNavigatedTo(NavigationEventArgs e)
+
+        private void SettingsPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (_navigationParameter is null)
+                return;
+
+            switch (_navigationParameter.Value.Tab)
+            {
+                case NavigationParameter.SettingsTab.Users:
+                    BringUserIntoView(_navigationParameter.Value.UserToShow);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             _analyticsService.TrackPageView(Analytics.Keys.Category.SettingsPage);
-            await RefreshAvailableDrivesForAllUsers();
+            _navigationParameter = e.Parameter as NavigationParameter?;
+        }
+
+        private void BringUserIntoView(User? user)
+        {
+            if (user is not null && UsersListView.ContainerFromItem(user) is UIElement container)
+            {
+                container.StartBringIntoView(new BringIntoViewOptions { VerticalAlignmentRatio = 0.1f });
+                return;
+            }
+
+            // If the container is null, just scroll to the Accounts section
+            AccountsStackPanel.StartBringIntoView(new BringIntoViewOptions { VerticalAlignmentRatio = 0.1f });
         }
 
         private void CreateAccountButton_Click(object sender, RoutedEventArgs e)
@@ -126,8 +171,42 @@ namespace Infomaniak.kDrive.Pages.Settings
             }
         }
 
+        private async void UserSettingsExpander_Loaded(object sender, RoutedEventArgs e)
+        {
+            User? user = (sender as FrameworkElement)?.DataContext as User;
+            if (user is null)
+            {
+                Logger.Log(Logger.Level.Error, "Unable to find the user from DataContext.");
+                return;
+            }
+
+            if (await user.RefreshAvailableDrives(CancellationToken.None))
+            {
+                var senderExpander = sender as SettingsExpander;
+                if (senderExpander is null)
+                {
+                    Logger.Log(Logger.Level.Error, "Unable to find the SettingsExpander from sender.");
+                    return;
+                }
+                senderExpander.Tag = _skipNextRefreshKey;
+                senderExpander.IsExpanded = true;
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Warning, "Error while refreshing available drives for user.");
+            }
+        }
+
         private async void UserSettingsExpander_Expanded(object sender, EventArgs e)
         {
+            var control = sender as Control;
+            if (control?.Tag?.ToString() == _skipNextRefreshKey)
+            {
+                control.Tag = "";
+                return;
+
+            }
+
             User? user = (sender as FrameworkElement)?.DataContext as User;
             if (user is null)
             {
@@ -140,17 +219,6 @@ namespace Infomaniak.kDrive.Pages.Settings
                 Logger.Log(Logger.Level.Warning, "Error while refreshing available drives for user.");
                 Utility.ShowUnexpectedErrorTeachingTip(); // Show a generic error message for now, discussion is in progress with UX team to improve this.
             }
-        }
-
-        private async Task RefreshAvailableDrivesForAllUsers()
-        {
-            List<Task<bool>> loadAvailableDrivesTasks = [];
-            foreach (var user in ViewModel.Users)
-            {
-                loadAvailableDrivesTasks.Add(user.RefreshAvailableDrives(CancellationToken.None));
-            }
-            await Task.WhenAll(loadAvailableDrivesTasks);
-            // Results are ignored for now; errors are displayed only if the user explicitly expands the user settings.
         }
 
         private void FixForegroundOnPointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
@@ -601,7 +669,6 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private void RestartAppHyperlinkButton_Click(object sender, RoutedEventArgs e) => App.RestartApplication();
     }
-
     // templateSelector for the drives listview
     public partial class DriveDataTemplateSelector : DataTemplateSelector
     {

@@ -35,7 +35,7 @@
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
     </Page.Resources>
-    <Grid Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.L}"
+    <Grid Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.L}"
           RowSpacing="{StaticResource Infomaniak.Style.Spacing.L}">
         <Grid.RowDefinitions>
             <!-- Title & BreadCrumb bar -->
@@ -47,7 +47,8 @@
         <!-- Title & BreadCrumb bar -->
         <StackPanel Grid.Row="0"
                     Orientation="Vertical"
-                    Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                    Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.L}"
+                    Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"                    >
             <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('settingsTitle')}"
                        Style="{StaticResource Infomaniak.Style.TextBlock.Title}" />
 
@@ -57,7 +58,8 @@
 
         <!-- Drive management -->
         <ScrollView Grid.Row="1">
-            <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+            <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+                        Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.L}">
                 <StackPanel Orientation="Horizontal"
                             Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                     <controls:SvgIcon Height="20"
@@ -104,7 +106,7 @@
                                     <TextBlock Grid.Row="0"
                                                Text="{x:Bind kDrive:Localizer.Instance.GetString('selectFoldersToSync')}"
                                                TextWrapping="Wrap" />
-                                    
+
                                     <controls:SyncExclusionSelector Grid.Row="1"
                                                                     Sync="{x:Bind ManagedDrive.MainSync, Mode=OneWay}"
                                                                     CanShowSaveMenu="True"

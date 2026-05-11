@@ -39,6 +39,7 @@
 #include "test_utility/testhelpers_requests.h"
 #include "test_utility/testhelpers.h"
 
+#include <fstream>
 #include <memory>
 
 using namespace CppUnit;
@@ -143,8 +144,11 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
     const LocalTemporaryDirectory temporaryDirectory("testRFSO");
     const SyncName testFileName = Str("test_file_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()) + Str(".txt");
     SyncPath testFilePath = temporaryDirectory.path() / testFileName;
-    std::string testCallStr = R"(echo "File creation" > )" + testFilePath.make_preferred().string();
-    std::system(testCallStr.c_str());
+    {
+        std::ofstream testFile(testFilePath);
+        testFile << "File creation\n";
+        CPPUNIT_ASSERT(testFile.good());
+    }
     RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _testFolderId, "test_remote_FSO");
     const NodeId nestedRemoteTmpDirId =
             testhelpers::createRemoteDir(_driveDbId, remoteTmpDir.id(), Str("test_remote_FSO_nested"));
@@ -193,8 +197,11 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
     {
         LOG_DEBUG(_logger, "***** test edit file *****");
 
-        testCallStr = R"(echo "This is an edit test" >> )" + testFilePath.make_preferred().string();
-        std::system(testCallStr.c_str());
+        {
+            std::ofstream testFile(testFilePath, std::ios::app);
+            testFile << "This is an edit test\n";
+            CPPUNIT_ASSERT(testFile.good());
+        }
 
         SyncTime prevCreationTime = _syncPal->liveSnapshot(ReplicaSide::Remote).createdAt(_testFileId);
         SyncTime prevModificationTime = _syncPal->liveSnapshot(ReplicaSide::Remote).lastModified(_testFileId);

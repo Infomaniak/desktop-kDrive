@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 using Infomaniak.kDrive.Analytics;
+using Infomaniak.kDrive.Pages.Settings;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -94,6 +95,56 @@ namespace Infomaniak.kDrive.CustomControls
             {
                 Logger.Log(Logger.Level.Error, "No sync selected or unable to get URL.");
             }
+        }
+
+        private void ProfilePictureBorder_Click(object sender, RoutedEventArgs e)
+        {
+            var frame = Utility.GetFrame(this);
+            if(frame is null)
+            {
+                Logger.Log(Logger.Level.Warning, "ProfilePictureBorder_PointerPressed: Unable to find Frame for navigation.");
+                return;
+            }
+            frame.Navigate(typeof(SettingsPage), new SettingsPage.NavigationParameter { Tab = SettingsPage.NavigationParameter.SettingsTab.Users, UserToShow = ViewModel.SelectedSync?.Drive.Account.User });
+        }
+
+        private void SyncIconButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (ViewModel.SelectedSync is null)
+                return;
+
+            var frame = Utility.GetFrame(this);
+            if (frame is null)
+            {
+                Logger.Log(Logger.Level.Warning, "SyncBorder_Click: Unable to find Frame for navigation.");
+                return;
+            }
+
+            if (ViewModel.SelectedSync.IsAdvanced)
+                frame.Navigate(typeof(DriveAdvancedSyncsPage), ViewModel.SelectedSync.Drive);
+            else
+                frame.Navigate(typeof(DriveManagementPage), ViewModel.SelectedSync.Drive);
+        }
+
+        private void PersonPictureButton_PointerEntered(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            PersonPictureButtonOverlay.Opacity = 0.8;
+            PersonPictureButtonOverlayIcon.Opacity = 1.0;
+        }
+        private void PersonPictureButton_PointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            PersonPictureButtonOverlay.Opacity = 0;
+            PersonPictureButtonOverlayIcon.Opacity = 0;
+        }
+        private void SyncIconButton_PointerEntered(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            SyncIconButtonOverlay.Opacity = 0.8;
+            SyncIconButtonOverlayIcon.Opacity = 1.0;
+        }
+        private void SyncIconButton_PointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            SyncIconButtonOverlay.Opacity = 0;
+            SyncIconButtonOverlayIcon.Opacity = 0;
         }
     }
 }

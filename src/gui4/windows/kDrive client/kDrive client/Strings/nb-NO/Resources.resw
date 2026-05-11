@@ -6,7 +6,7 @@
   Locale: nb, Norwegian Bokmål
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 04 May 2026 07:48:35 +0200 
+  Exported at: Tue, 05 May 2026 18:05:59 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -1456,7 +1456,7 @@ Disse dataene lar teamet vårt raskt rette og optimalisere programmet, noe som g
     <value>Innstillinger</value> 
   </data> 
   <data name="sidebarItemAccounts" xml:space="preserve"> 
-    <value>Kontoer</value> 
+    <value>Kontoer og synkroniseringer</value> 
   </data> 
   <data name="sidebarItemAdvanced" xml:space="preserve"> 
     <value>Avansert</value> 

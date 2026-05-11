@@ -66,13 +66,15 @@ Snapshot::Snapshot(Snapshot const &other) {
     }
 }
 
-NodeId Snapshot::itemId(const SyncPath &path) const {
+ExitInfo Snapshot::getItemId(const SyncPath &path, NodeId &id) const {
     const std::scoped_lock lock(_mutex);
-
+    id = {};
     const auto rootItemIt = _items.find(rootFolderId());
     if (rootItemIt == _items.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Root folder id not found in snapshot");
-        return "";
+        sentry::Handler::captureMessage(sentry::Level::Error, "Root folder id not found in snapshot",
+                                        "Snapshot::getItemId failed because the root node ID was not found in snapshot.");
+        return {ExitCode::DataError, ExitCause::InvalidSnapshot};
     }
 
     auto item = rootItemIt->second;
@@ -93,11 +95,12 @@ NodeId Snapshot::itemId(const SyncPath &path) const {
         }
 
         if (!idFound) {
-            return "";
+            return {ExitCode::DataError, ExitCause::NotFound};
         }
     }
 
-    return item->id();
+    id = item->id();
+    return ExitCode::Ok;
 }
 
 NodeId Snapshot::parentId(const NodeId &itemId) const {
@@ -231,9 +234,20 @@ bool Snapshot::exists(const NodeId &itemId) const {
     return findItem(itemId) && !isOrphan(itemId);
 }
 
-bool Snapshot::pathExists(const SyncPath &path) const {
+ExitInfo Snapshot::checkIfPathExists(const SyncPath &path, bool &exists) const {
     const std::scoped_lock lock(_mutex);
-    return !itemId(path).empty();
+    exists = false;
+
+    NodeId id;
+    if (const auto exitInfo = getItemId(path, id); !exitInfo) {
+        if (exitInfo.cause() == ExitCause::NotFound) {
+            return ExitCode::Ok;
+        }
+        return exitInfo;
+    }
+
+    exists = !id.empty();
+    return ExitCode::Ok;
 }
 
 bool Snapshot::isLink(const NodeId &itemId) const {
