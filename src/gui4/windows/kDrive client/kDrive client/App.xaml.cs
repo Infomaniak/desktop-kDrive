@@ -279,8 +279,8 @@ namespace Infomaniak.kDrive
                 while (ServiceProvider.GetRequiredService<AppModel>().Settings.UpdateManager.AvailableUpdate is null &&
                            retryCount < maxRetries)
                 {
-                    Logger.Log(Logger.Level.Warning,
-                                   $"ShowUpdateWindow called but no available update found, retrying in 10 seconds ({retryCount + 1}/{maxRetries}).");
+                    Logger.Log(Logger.Level.Info,
+                                   $"ShowUpdateWindow called but no available update found, retrying in 1 seconds ({retryCount + 1}/{maxRetries}).");
 
                     retryCount++;
                     await Task.Delay(TimeSpan.FromSeconds(1));

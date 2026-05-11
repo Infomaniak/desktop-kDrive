@@ -22,6 +22,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -89,7 +90,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                 // Strip any remaining HTML tags and trim whitespace
                 var text = Regex.Replace(match.Groups[1].Value, @"<[^>]+>", string.Empty).Trim();
                 if (!string.IsNullOrEmpty(text))
-                    results.Add(text);
+                    results.Add(WebUtility.HtmlDecode(text));
             }
             return results;
         }
