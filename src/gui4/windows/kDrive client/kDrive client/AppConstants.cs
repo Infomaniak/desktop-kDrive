@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 using System;
+using System.Windows.Forms;
 
 namespace Infomaniak.kDrive
 {
@@ -25,6 +26,7 @@ namespace Infomaniak.kDrive
     internal interface IAppConstants
     {
         ISentryConstants Sentry { get; }
+        IMatomoConstants Matomo { get; }
         IGitHubConstants GitHub { get; }
         ISyncConstants Sync { get; }
         IDriveConstants Drive { get; }
@@ -37,6 +39,12 @@ namespace Infomaniak.kDrive
     {
         string Dsn { get; }
         string Environment { get; }
+    }
+
+    internal interface IMatomoConstants
+    {
+        string Host { get; }
+        string SiteId { get; }
     }
 
     internal interface IGitHubConstants
@@ -85,6 +93,7 @@ namespace Infomaniak.kDrive
     internal sealed class CustomAppConstants : IAppConstants
     {
         public ISentryConstants Sentry { init; get; }
+        public IMatomoConstants Matomo { init; get; }
         public IGitHubConstants GitHub { init; get; }
         public IDriveConstants Drive { init; get; }
         public IStorageConstants Storage { init; get; }
@@ -92,9 +101,10 @@ namespace Infomaniak.kDrive
         public ILoginConstants Login { init; get; }
         public IkSuiteConstants kSuite { init; get; }
 
-        public CustomAppConstants(ISentryConstants sentry, IGitHubConstants gitHub, ISyncConstants sync, IDriveConstants drive, IStorageConstants storage, ILoginConstants oAuth, IkSuiteConstants kSuite)
+        public CustomAppConstants(ISentryConstants sentry, IMatomoConstants matomo, IGitHubConstants gitHub, ISyncConstants sync, IDriveConstants drive, IStorageConstants storage, ILoginConstants oAuth, IkSuiteConstants kSuite)
         {
             Sentry = sentry;
+            Matomo = matomo;
             GitHub = gitHub;
             Sync = sync;
             Drive = drive;
@@ -112,6 +122,11 @@ namespace Infomaniak.kDrive
             "https://c6ee7ba768d4f7fcd3a6f787f8cc569e@sentry-desktop.infomaniak.com/5";
 
         public string Environment { get; } = "production";
+    }
+    internal sealed class ProductionMatomo : IMatomoConstants
+    {
+        public string Host { get; } = "https://analytics.infomaniak.com/";
+        public string SiteId { get; } = "41";
     }
 
     internal sealed class ProductionGitHub : IGitHubConstants

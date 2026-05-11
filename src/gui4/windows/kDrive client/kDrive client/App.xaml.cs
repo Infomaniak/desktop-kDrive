@@ -30,7 +30,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.Win32;
 using Sentry;
 using System;
-using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
 
@@ -81,8 +80,8 @@ namespace Infomaniak.kDrive
             services.AddSingleton<IConfiguration>(configuration);
             services.AddMatomoTracking(options =>
             {
-                options.MatomoHostname = "https://analytics.infomaniak.com/";
-                options.SiteId = "41";
+                options.MatomoHostname = Constants.Matomo.Host;
+                options.SiteId = Constants.Matomo.SiteId;
             });
             services.AddSingleton<IAnalyticsService, MatomoService>();
             _serviceProvider = services.BuildServiceProvider();

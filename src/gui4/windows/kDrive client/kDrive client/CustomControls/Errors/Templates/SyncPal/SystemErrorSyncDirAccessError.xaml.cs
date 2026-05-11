@@ -79,7 +79,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
                 }
                 else
                 {
-                    _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageSyncDirAccessError);
+                    _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.SyncDirAccessErrorOpenFolder);
                     await Utility.OpenFolderSecurely(absolutPath);
                 }
             }

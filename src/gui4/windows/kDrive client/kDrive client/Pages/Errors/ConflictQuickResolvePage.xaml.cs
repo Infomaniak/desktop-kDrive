@@ -167,14 +167,14 @@ namespace Infomaniak.kDrive.Pages.Errors
         {
             if (!IsLoaded)
                 return;
-            _analyticsService.TrackClick(Analytics.Keys.Category.BatchConflictResolutionPage, Analytics.Keys.EventName.KeepOnline);
+            _analyticsService.TrackClick(Analytics.Keys.Category.BatchConflictResolutionPage, Analytics.Keys.EventName.KeepRemote);
         }
 
         private void KeepLocalRadioButton_Checked(object sender, RoutedEventArgs e)
         {
             if (!IsLoaded)
                 return;
-            _analyticsService.TrackClick(Analytics.Keys.Category.BatchConflictResolutionPage, Analytics.Keys.EventName.KeepRemote);
+            _analyticsService.TrackClick(Analytics.Keys.Category.BatchConflictResolutionPage, Analytics.Keys.EventName.KeepLocal);
         }
     }
 }

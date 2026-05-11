@@ -21,7 +21,6 @@ using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
 using System;
-using System.IO;
 
 namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
 {
@@ -64,13 +63,6 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
             _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageSyncDirDiskMissing);
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
-                if (Error.Sync is null)
-                {
-                    Logger.Log(Logger.Level.Error, "Error.Sync is null");
-                    Utility.ShowUnexpectedErrorTeachingTip();
-                    return;
-                }
-
                 if (Error.Sync is null)
                 {
                     Logger.Log(Logger.Level.Error, "Error.Sync is null in SystemErrorSyncDirDiskMissing. Cannot proceed with action click.");
