@@ -80,15 +80,9 @@ $archiveName = "kDrive.7z"
 # NSIS needs the path to use backslash
 $archiveDataPath = ('{0}\build-windows\{1}' -f $path.Replace('/', '\'), $archiveName)
 
-# Certificates
-$debugCertSubjectRegEx = "Windows11CI-1"
-$debugCertIssuerRegEx = "Windows11CI-1"
-$kspClientCertSubjectRegEx = "INFOMANIAK"
-$kspClientCertIssuerRegEx = "Digicert"
-
 #################################################################################################
 #                                                                                               #
-#										  	 IMPORT                                             #
+#                                            IMPORT                                             #
 #                                                                                               #
 #################################################################################################
 . "$path\infomaniak-build-tools\version-helpers.ps1"
@@ -159,7 +153,8 @@ function Get-Cert-Property {
     }
     
     $value = Get-ChildItem $certStore/$thumbprint | Select -ExpandProperty $property
-    Write-Host "Using ${property}: ${value}"
+    Write-Host "Using thumbprint: ${thumbprint}"
+    Write-Host "${property} = ${value}"
 
     return $value
 }
