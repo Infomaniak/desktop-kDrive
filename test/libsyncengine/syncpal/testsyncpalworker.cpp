@@ -420,8 +420,8 @@ void TestSyncPalWorker::testHandleBackError() {
 
     auto *worker = mockSyncPal->getSyncPalWorker().get();
 
-    constexpr int64_t baseDelay = 600;
-    constexpr int64_t maxDelay = 3600;
+    constexpr int64_t baseDelay = 60000;
+    constexpr int64_t maxDelay = 14400000;
     constexpr double factor = 2.0;
 
     // Build a minimal mock worker that exits with BackError.
@@ -433,7 +433,7 @@ void TestSyncPalWorker::testHandleBackError() {
     };
 
     // Simulate several consecutive BackError exits and verify exponential growth.
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < 10; ++i) {
         const int64_t expected =
                 std::min(static_cast<int64_t>(baseDelay * std::pow(factor, i)), maxDelay);
 

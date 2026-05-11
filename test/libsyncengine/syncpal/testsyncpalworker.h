@@ -48,6 +48,7 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST(testInternalPause1);
         CPPUNIT_TEST(testInternalPause2);
         CPPUNIT_TEST(testInternalPause3);
+        CPPUNIT_TEST(testHandleBackError);
         CPPUNIT_TEST_SUITE_END();
 
     public:
