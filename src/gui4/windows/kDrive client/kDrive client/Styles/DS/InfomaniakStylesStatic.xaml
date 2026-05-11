@@ -33,6 +33,7 @@
     <x:String x:Key="Infomaniak.DS.Icons.Actions.circle-block">ms-appx:///Assets/DS/Icons/Actions/circle-block.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Actions.circle-maybe-check">ms-appx:///Assets/DS/Icons/Actions/circle-maybe-check.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Actions.circle-question">ms-appx:///Assets/DS/Icons/Actions/circle-question.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Actions.circle-information">ms-appx:///Assets/DS/Icons/Actions/circle-information.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Actions.copy-paste">ms-appx:///Assets/DS/Icons/Actions/copy-paste.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Actions.eye">ms-appx:///Assets/DS/Icons/Actions/eye.svg</x:String>
 

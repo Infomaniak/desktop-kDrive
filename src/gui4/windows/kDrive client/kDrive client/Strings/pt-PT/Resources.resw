@@ -6,7 +6,7 @@
   Locale: pt, Portuguese
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 11 May 2026 12:40:23 +0200 
+  Exported at: Mon, 11 May 2026 09:31:50 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -1456,7 +1456,7 @@ Estes dados permitem à nossa equipa corrigir e otimizar rapidamente a aplicaç�
     <value>Definições</value> 
   </data> 
   <data name="sidebarItemAccounts" xml:space="preserve"> 
-    <value>Contas e sincronizações</value> 
+    <value>Contas</value> 
   </data> 
   <data name="sidebarItemAdvanced" xml:space="preserve"> 
     <value>Avançadas</value> 

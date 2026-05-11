@@ -231,7 +231,6 @@ namespace Infomaniak.kDrive
             return !localizedString.StartsWith("!") && !localizedString.EndsWith("!");
         }
 
-
         private string GetBestAvailableCultureName(Language language)
         {
             if (languageToCultureMap.Count != Language.GetValues(typeof(Language)).Length - 1) // -1 because of Language.Default

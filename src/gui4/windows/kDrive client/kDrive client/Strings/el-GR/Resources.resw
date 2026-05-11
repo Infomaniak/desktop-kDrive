@@ -6,7 +6,7 @@
   Locale: el, Greek
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 11 May 2026 12:40:23 +0200 
+  Exported at: Mon, 11 May 2026 09:31:50 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -1456,7 +1456,7 @@
     <value>Ρυθμίσεις</value> 
   </data> 
   <data name="sidebarItemAccounts" xml:space="preserve"> 
-    <value>Λογαριασμοί &amp; Συγχρονισμοί</value> 
+    <value>Λογαριασμοί</value> 
   </data> 
   <data name="sidebarItemAdvanced" xml:space="preserve"> 
     <value>Προηγμένα</value> 

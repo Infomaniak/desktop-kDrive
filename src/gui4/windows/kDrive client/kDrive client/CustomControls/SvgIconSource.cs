@@ -33,12 +33,6 @@ namespace Infomaniak.kDrive.CustomControls
         public SvgIconSource()
         {
             RegisterPropertyChangedCallback(ForegroundProperty, OnDependencyPropertyChanged);
-            Utility.DpiHelper.DpiChanged += OnDpiChanged;
-        }
-
-        private void OnDpiChanged(object? sender, double newScale)
-        {
-            DispatcherQueue?.TryEnqueue(() => ScheduleRefresh());
         }
 
         public Uri? UriSource
