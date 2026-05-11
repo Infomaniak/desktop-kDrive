@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.Pages.Settings;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,6 +27,7 @@ namespace Infomaniak.kDrive.CustomControls
 {
     public sealed partial class QuickAccess : UserControl
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel => _viewModel;
 
@@ -40,6 +42,7 @@ namespace Infomaniak.kDrive.CustomControls
             if (trashUrl != null)
             {
                 Logger.Log(Logger.Level.Debug, $"TrashButton_Click: Launching trash URL: {trashUrl}");
+                _analyticsService.TrackClick(Analytics.Keys.Category.HomePage, Analytics.Keys.EventName.OpenTrashWeb);
                 await Windows.System.Launcher.LaunchUriAsync(trashUrl);
             }
             else
@@ -53,7 +56,8 @@ namespace Infomaniak.kDrive.CustomControls
             Uri? favoritesUrl = ViewModel.SelectedSync?.Drive.GetWebFavoritesUri();
             if (favoritesUrl != null)
             {
-                Logger.Log(Logger.Level.Debug, $"Launching favorites URL: {favoritesUrl}");
+                Logger.Log(Logger.Level.Debug, $"Launching favorites URL: {favoritesUrl}"); 
+                _analyticsService.TrackClick(Analytics.Keys.Category.HomePage, Analytics.Keys.EventName.OpenFavoritesWeb);
                 await Windows.System.Launcher.LaunchUriAsync(favoritesUrl);
             }
             else
@@ -69,6 +73,7 @@ namespace Infomaniak.kDrive.CustomControls
             if (sharedUrl != null)
             {
                 Logger.Log(Logger.Level.Debug, $"Launching shared URL: {sharedUrl}");
+                _analyticsService.TrackClick(Analytics.Keys.Category.HomePage, Analytics.Keys.EventName.OpenSharedWeb);
                 await Windows.System.Launcher.LaunchUriAsync(sharedUrl);
             }
             else
@@ -83,6 +88,7 @@ namespace Infomaniak.kDrive.CustomControls
             if (onlineDriveUrl != null)
             {
                 Logger.Log(Logger.Level.Debug, $"Launching URL: {onlineDriveUrl}");
+                _analyticsService.TrackClick(Analytics.Keys.Category.HomePage, Analytics.Keys.EventName.OpenKDriveWeb);
                 await Windows.System.Launcher.LaunchUriAsync(onlineDriveUrl);
             }
             else

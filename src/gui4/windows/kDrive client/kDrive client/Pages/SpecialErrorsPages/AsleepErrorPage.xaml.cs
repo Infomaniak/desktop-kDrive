@@ -16,7 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.Types;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using System;
 
@@ -24,6 +26,7 @@ namespace Infomaniak.kDrive.Pages
 {
     public sealed partial class AsleepErrorPage : SpecialErroBasePage
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         public AsleepErrorPage() : base([SyncErrorStates.Asleep])
         {
             Logger.Log(Logger.Level.Info, "Navigated to AsleepErrorPage - Initializing AsleepErrorPage components");

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyVersion>3.8.4.1</AssemblyVersion>
     <OutputType>WinExe</OutputType>
@@ -36,6 +36,7 @@
     <ProjectCapability Include="Msix" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="CodeArt.MatomoTracking" Version="1.0.5" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.2.251219" />
     <PackageReference Include="CommunityToolkit.WinUI.Lottie" Version="8.2.250604" />
@@ -359,5 +360,6 @@
     <!-- Debug: keep original PRI and copy to avoid rebuild -->
     <Exec Condition="'$(Configuration)' == 'Debug'" Command="powershell -ExecutionPolicy Bypass -NoProfile -Command &quot;Copy-Item '$(OutDir)$(AssemblyName).pri' '$(OutDir)Resources.pri' -Force&quot;" />
     <!-- Release: rename PRI -->
-	  <Exec Condition="'$(Configuration)' == 'Release'" Command="powershell -ExecutionPolicy Bypass -NoProfile -Command &quot;$src='$(OutDir)$(AssemblyName).pri'; $dst='$(OutDir)Resources.pri'; if (Test-Path $dst) { Remove-Item $dst -Force }; Rename-Item $src 'Resources.pri'&quot;" />  </Target>
+    <Exec Condition="'$(Configuration)' == 'Release'" Command="powershell -ExecutionPolicy Bypass -NoProfile -Command &quot;$src='$(OutDir)$(AssemblyName).pri'; $dst='$(OutDir)Resources.pri'; if (Test-Path $dst) { Remove-Item $dst -Force }; Rename-Item $src 'Resources.pri'&quot;" />
+  </Target>
 </Project>

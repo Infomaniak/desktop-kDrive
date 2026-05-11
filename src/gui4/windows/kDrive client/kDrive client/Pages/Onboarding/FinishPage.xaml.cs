@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.OnBoarding;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,6 +28,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 {
     public sealed partial class FinishPage : Page
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel { get { return _viewModel; } }
         public FinishPage()
@@ -37,6 +39,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
         }
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
+            _analyticsService.TrackPageView(Analytics.Keys.Category.OnboardingFinalPage);
             if ((App.Current as App)?.CurrentWindow is OnBoardingWindow onBoardingWindow)
                 onBoardingWindow.UpdateLottieSource("Infomaniak.Custom.Animations.loader-stroke", 130, 1);
         }

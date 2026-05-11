@@ -15,8 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
 using System;
 
@@ -30,6 +32,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
     )]
     public sealed partial class BackErrorDriveNotRenew : UserControl
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
+
         private Error Error { get; init; }
         private string DescriptionLabel => (Error.Sync?.Drive.IsAdmin ?? false) ? Localizer.Instance.GetString("driveLockedAdminErrorDescription") : Localizer.Instance.GetString("driveLockedErrorDescription");
         private string ActionTextLabel => (Error.Sync?.Drive.IsAdmin ?? false) ? Localizer.Instance.GetString("buttonUpdateSubscription") : Localizer.Instance.GetString("buttonRefresh");
@@ -47,6 +51,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
                 Utility.ShowUnexpectedErrorTeachingTip();
                 return;
             }
+            _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageDriveNotRenew);
 
             Control? control = sender as Control;
             if (control is not null)

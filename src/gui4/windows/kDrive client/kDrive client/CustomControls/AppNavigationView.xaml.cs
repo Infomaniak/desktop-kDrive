@@ -15,8 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-using Infomaniak.kDrive.Pages.Settings;
-using Infomaniak.kDrive.Types;
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -32,39 +31,40 @@ namespace Infomaniak.kDrive.CustomControls
 {
     public sealed partial class AppNavigationView : NavigationView
     {
+        private static readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         public AppModel ViewModel { get; } =
            App.ServiceProvider.GetRequiredService<AppModel>();
 
         public Frame Frame { get { return ContentFrame; } }
-        private readonly Dictionary<string, List<Type>> _navigationItemToPage = new Dictionary<string, List<Type>>()
+        private readonly Dictionary<string, Tuple<List<Type>, Analytics.Keys.EventName>> _navigationItemToPage = new Dictionary<string, Tuple<List<Type>, Analytics.Keys.EventName>>()
         {
             {
-                "HomePage", new List<Type>() {
+                "HomePage", new Tuple<List<Type>, Analytics.Keys.EventName>(new List<Type>() {
                 typeof(Pages.HomePage),
                 typeof(Pages.DriveAccessDeniedPage),
                 typeof(Pages.LogginErrorPage),
                 typeof(Pages.NotRenewErrorPage),
                 typeof(Pages.MaintenanceErrorPage),
                 typeof(Pages.AsleepErrorPage)
-            }},
+            }, Analytics.Keys.EventName.OpenHome)},
             {
-                "ActivityPage", new List<Type>() {
+                "ActivityPage", new Tuple<List<Type>, Analytics.Keys.EventName>(new List<Type>() {
                 typeof(Pages.ActivityPage),
                 typeof(Pages.Errors.ErrorPage),
                 typeof(Pages.Errors.ConflictQuickResolvePage),
                 typeof(Pages.Errors.ResolveManyConflictPage)
-            }},
+            }, Analytics.Keys.EventName.OpenActivity)},
             {
-                "SettingsPage", new List<Type>() {
+                "SettingsPage", new Tuple<List<Type>, Analytics.Keys.EventName>(new List<Type>() {
                 typeof(Pages.Settings.SettingsPage),
                 typeof(Pages.Settings.DriveManagementPage),
                 typeof(Pages.Settings.DriveAdvancedSyncsPage),
                 typeof(Pages.Settings.TemplateExclusionPage)
-            }},
+            }, Analytics.Keys.EventName.OpenSettings)},
             {
-                "StoragePage", new List<Type>() {
+                "StoragePage", new Tuple<List<Type>, Analytics.Keys.EventName>(new List<Type>() {
                 typeof(Pages.StoragePage)
-            }}
+            }, Analytics.Keys.EventName.OpenStorage)}
         };
         private const int _maxStackSize = 5;
 
@@ -143,10 +143,16 @@ namespace Infomaniak.kDrive.CustomControls
                     return;
 
                 // Navigate to the selected page
-                if (_navigationItemToPage.TryGetValue(item?.Tag?.ToString() ?? "", out List<Type>? pageTypes))
-                    ContentFrame.Navigate(pageTypes.FirstOrDefault());
+                if (_navigationItemToPage.TryGetValue(item?.Tag?.ToString() ?? "", out var pageTypes))
+                {
+                    _analyticsService.TrackClick(Analytics.Keys.Category.NavBar, pageTypes.Item2);
+                    ContentFrame.Navigate(pageTypes.Item1.FirstOrDefault());
+                }
                 else
-                    ContentFrame.Navigate(typeof(SettingsPage));
+                {
+                    _analyticsService.TrackClick(Analytics.Keys.Category.NavBar, Analytics.Keys.EventName.OpenSettings);
+                    ContentFrame.Navigate(typeof(Pages.Settings.SettingsPage));
+                }
             }
         }
 
@@ -158,7 +164,7 @@ namespace Infomaniak.kDrive.CustomControls
             if (currentContent is null)
                 return false;
 
-            if (_navigationItemToPage.TryGetValue("SettingsPage", out var settingsPages) && settingsPages.Contains(currentContent.GetType()))
+            if (_navigationItemToPage.TryGetValue("SettingsPage", out var settingsPages) && settingsPages.Item1.Contains(currentContent.GetType()))
                 return false;
 
             return true;
@@ -167,8 +173,8 @@ namespace Infomaniak.kDrive.CustomControls
         private void UpdateSelectedItem()
         {
             var newSelectedItem = MenuItems.OfType<NavigationViewItem>().FirstOrDefault(item =>
-                _navigationItemToPage.TryGetValue(item.Tag.ToString() ?? "", out List<Type>? pageTypes) &&
-                pageTypes.Contains(ContentFrame.Content.GetType()));
+                _navigationItemToPage.TryGetValue(item.Tag.ToString() ?? "", out var pageTypes) &&
+                pageTypes.Item1.Contains(ContentFrame.Content.GetType()));
             if (newSelectedItem is null)
                 newSelectedItem = SettingsItem as NavigationViewItem;
             SelectedItem = newSelectedItem;
@@ -185,6 +191,14 @@ namespace Infomaniak.kDrive.CustomControls
                 return Visibility.Visible;
             else
                 return Visibility.Collapsed;
+        }
+
+        private void NavigationView_Expanding(NavigationView sender, NavigationViewItemExpandingEventArgs args)
+        {
+            if (!IsLoaded)
+                return;
+
+            _analyticsService.TrackClick(Analytics.Keys.Category.NavBar, Analytics.Keys.EventName.Expanded);
         }
     }
 }

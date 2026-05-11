@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
@@ -30,6 +31,7 @@ namespace Infomaniak.kDrive.Pages
 {
     public sealed partial class LogginErrorPage : SpecialErroBasePage
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         public struct NavigationParams
         {
             public bool TryReconnectOnLoad { get; set; }
@@ -53,10 +55,14 @@ namespace Infomaniak.kDrive.Pages
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
+            base.OnNavigatedTo(e);
             _navigationParams = e.Parameter as NavigationParams?;
+            _analyticsService.TrackPageView(Analytics.Keys.Category.LogginErrorPage);
         }
+
         private async void ConnectionButton_Click(object sender, RoutedEventArgs e)
         {
+            _analyticsService.TrackClick(Analytics.Keys.Category.LogginErrorPage, Analytics.Keys.EventName.OpenSignInWeb);
             await StartConnection();
         }
 

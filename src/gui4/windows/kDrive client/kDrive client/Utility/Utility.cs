@@ -17,7 +17,9 @@
  */
 using CommunityToolkit.WinUI;
 using H.NotifyIcon;
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -302,6 +304,7 @@ namespace Infomaniak.kDrive
         public static void ShowUnexpectedErrorTeachingTip()
         {
             Logger.Log(Logger.Level.Error, "Showing unexpected error TeachingTip");
+            App.ServiceProvider.GetRequiredService<IAnalyticsService>().TrackOther(Analytics.Keys.Category.UnexpectedErrorTeachingTip, Analytics.Keys.EventName.Displayed);
             ShowTeachingTip(Localizer.Instance.GetString("unexpectedErrorTeachingTipTitle"), Localizer.Instance.GetString("unexpectedErrorTeachingTipContent"));
         }
 
@@ -381,6 +384,19 @@ namespace Infomaniak.kDrive
             {
                 _currentTeachingTip = null;
             }
+        }
+    }
+
+    public static class EnumExtensions
+    {
+        public static string ToCamelCase(this Enum value)
+        {
+            string name = value.ToString();
+
+            if (string.IsNullOrEmpty(name))
+                return name;
+
+            return char.ToLowerInvariant(name[0]) + name[1..];
         }
     }
 }

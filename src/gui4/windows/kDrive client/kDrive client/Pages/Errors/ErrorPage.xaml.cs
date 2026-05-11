@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
@@ -26,6 +27,7 @@ namespace Infomaniak.kDrive.Pages.Errors
 {
     public sealed partial class ErrorPage : Page
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel { get { return _viewModel; } }
         private ErrorPageVM? _errorPageVM;
@@ -39,6 +41,7 @@ namespace Infomaniak.kDrive.Pages.Errors
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             _errorPageVM = new ErrorPageVM();
+            _analyticsService.TrackPageView(Analytics.Keys.Category.ErrorPage);
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
@@ -51,6 +54,7 @@ namespace Infomaniak.kDrive.Pages.Errors
         {
             Logger.Log(Logger.Level.Debug, "Navigating to ActivityPage");
             Frame.Navigate(typeof(ActivityPage));
+            _analyticsService.TrackClick(Analytics.Keys.Category.ErrorPage, Analytics.Keys.EventName.ActivityBreadcrumb);
         }
 
         private void OnSelectedSyncChanged(object sender, SelectedSyncChangedEventArgs e)
@@ -66,6 +70,7 @@ namespace Infomaniak.kDrive.Pages.Errors
 
         private void ManyConflicts_ActionClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
+            _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageMultipleConflicts);
             Frame.Navigate(typeof(ConflictQuickResolvePage));
         }
 
@@ -79,6 +84,7 @@ namespace Infomaniak.kDrive.Pages.Errors
             }
 
             frame.Navigate(typeof(Pages.ActivityPage));
+            _analyticsService.TrackClick(Analytics.Keys.Category.ErrorPage, Analytics.Keys.EventName.OpenActivity);
         }
 
         private async void RefreshButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -88,7 +94,7 @@ namespace Infomaniak.kDrive.Pages.Errors
                 Control? control = sender as Control;
                 if (control is not null)
                     control.IsEnabled = false;
-
+                _analyticsService.TrackClick(Analytics.Keys.Category.ErrorPage, Analytics.Keys.EventName.RefreshErrors);
                 await _errorPageVM.RefreshErrors();
 
                 if (control is not null)

@@ -16,12 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using CodeArt.MatomoTracking;
 using DynamicData;
-using H.NotifyIcon;
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ServerCommunication.Services;
 using Infomaniak.kDrive.TrayIcon;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Security.Authentication.OAuth;
 using Microsoft.UI.Xaml;
@@ -44,7 +46,6 @@ namespace Infomaniak.kDrive
             private set => _currentWindow = value;
         }
 
-        private readonly IServiceCollection _services = new ServiceCollection();
         private static IServiceProvider? _serviceProvider = null;
         internal static IServiceProvider ServiceProvider => _serviceProvider ?? throw new InvalidOperationException("Service provider is not initialized.");
 
@@ -66,16 +67,24 @@ namespace Infomaniak.kDrive
 
         internal static IAppConstants Constants => new ProductionAppConstants();
 
-
         internal App()
         {
-            _services.AddSingleton<AppModel>();
-            _services.AddSingleton<IServerCommProtocol, SocketServerCommProtocol>();
-            _services.AddSingleton<IServerCommService, ServerCommService>();
-            _services.AddSingleton<UserDefaults>();
-            _services.AddSingleton<TrayIconManager>();
-            _services.AddSingleton<NotificationManager>();
-            _serviceProvider = _services.BuildServiceProvider();
+            var services = new ServiceCollection();
+            services.AddSingleton<AppModel>();
+            services.AddSingleton<IServerCommProtocol, SocketServerCommProtocol>();
+            services.AddSingleton<IServerCommService, ServerCommService>();
+            services.AddSingleton<UserDefaults>();
+            services.AddSingleton<TrayIconManager>();
+            services.AddSingleton<NotificationManager>();
+            var configuration = new ConfigurationBuilder().Build();
+            services.AddSingleton<IConfiguration>(configuration);
+            services.AddMatomoTracking(options =>
+            {
+                options.MatomoHostname = Constants.Matomo.Host;
+                options.SiteId = Constants.Matomo.SiteId;
+            });
+            services.AddSingleton<IAnalyticsService, MatomoService>();
+            _serviceProvider = services.BuildServiceProvider();
             AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
 
             Logger.StartSentry();
@@ -122,16 +131,6 @@ namespace Infomaniak.kDrive
 
             ServiceProvider.GetRequiredService<TrayIconManager>().Initialize();
 
-            AppModel appModel = ServiceProvider.GetRequiredService<AppModel>();
-
-
-            // Start all singleton services
-            foreach (var serviceDescriptor in _services.Where(sd => sd.Lifetime == ServiceLifetime.Singleton))
-            {
-                // Force the initialization of singleton services
-                ServiceProvider.GetRequiredService(serviceDescriptor.ServiceType);
-            }
-
             ServiceProvider.GetRequiredService<IServerCommProtocol>().ConnectionLost += (s, e) =>
             {
                 Logger.Log(Logger.Level.Fatal, "Connection to server lost, this application will close.");
@@ -139,6 +138,7 @@ namespace Infomaniak.kDrive
                 ExitApplication();
             };
 
+            AppModel appModel = ServiceProvider.GetRequiredService<AppModel>();
             if (!await appModel.InitializeAsync())
             {
                 Logger.Log(Logger.Level.Fatal, "Application failed to initialize, exiting.");

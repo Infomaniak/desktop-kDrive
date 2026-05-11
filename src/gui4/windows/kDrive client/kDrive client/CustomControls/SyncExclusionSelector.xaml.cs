@@ -17,6 +17,7 @@
  */
 using DynamicData;
 using DynamicData.Binding;
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
@@ -67,6 +68,7 @@ namespace Infomaniak.kDrive.CustomControls
     public sealed partial class SyncExclusionSelector : UserControl
     {
         #region Private fields
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
 
         // Node IDs currently excluded on the server for this sync
         private List<NodeId> _excludedNodeIds = [];
@@ -213,7 +215,7 @@ namespace Infomaniak.kDrive.CustomControls
                 Logger.Log(Logger.Level.Error, "Cannot save sync exclusion changes: Sync is null.");
                 return;
             }
-
+            _analyticsService.TrackClick(Analytics.Keys.Category.ExclusionSelector, Analytics.Keys.EventName.Confirm);
             if (Sync is ViewModels.Sync dbSync)
             {
                 IsLoading = true;
@@ -240,6 +242,7 @@ namespace Infomaniak.kDrive.CustomControls
         public async Task CancelChanges()
         {
             HasPendingChanges = false;
+            _analyticsService.TrackClick(Analytics.Keys.Category.ExclusionSelector, Analytics.Keys.EventName.Cancel);
             await ReloadAsync();
         }
 
@@ -449,14 +452,17 @@ namespace Infomaniak.kDrive.CustomControls
                 if (checkBox.IsChecked == true)
                 {
                     CheckBox_Checked(sender);
+                    _analyticsService.TrackClick(Analytics.Keys.Category.ExclusionSelector, Analytics.Keys.EventName.SelectDir);
                 }
                 else if (checkBox.IsChecked == false)
                 {
                     CheckBox_Unchecked(sender);
+                    _analyticsService.TrackClick(Analytics.Keys.Category.ExclusionSelector, Analytics.Keys.EventName.UnselectDir);
                 }
                 else
                 {
                     CheckBox_Indeterminate(sender);
+                    _analyticsService.TrackClick(Analytics.Keys.Category.ExclusionSelector, Analytics.Keys.EventName.UnselectDir);
                 }
             }
         }
