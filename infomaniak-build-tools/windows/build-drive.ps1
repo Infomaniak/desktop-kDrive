@@ -1,4 +1,4 @@
-﻿<#
+<#
  Infomaniak kDrive - Desktop App
  Copyright (C) 2023-2025 Infomaniak Network SA
 
@@ -157,7 +157,7 @@ function Get-Thumbprint {
          Get-ChildItem $certStore | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -match "EV" } | Select -ExpandProperty Thumbprint
     } 
     Else {
-        Get-ChildItem $certStore | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -notmatch "EV" } | Select -ExpandProperty Thumbprint
+        Get-ChildItem $certStore | Where-Object { $_.Subject -match "Windows11CI-1" -and $_.Issuer -match "Windows11CI-1" } | Select -ExpandProperty Thumbprint
     }
     Write-Host "Using thumbprint: $thumbprint"
 
