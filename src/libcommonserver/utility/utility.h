@@ -33,6 +33,7 @@
 #include <filesystem>
 #include <unordered_set>
 #include <list>
+#include <Poco/InflatingStream.h>
 
 #include <Poco/DOM/Document.h>
 #include <Poco/Net/HTTPResponse.h>
@@ -119,6 +120,9 @@ struct COMMONSERVER_EXPORT Utility {
         static std::string computeXxHash(const std::string &in);
         static std::string computeXxHash(const char *in, std::size_t length);
         static std::string xxHashToStr(XXH64_hash_t hash);
+
+        static void unzipStream(std::istream &inputStream, std::stringstream &ss,
+                                Poco::InflatingStreamBuf::StreamType type = Poco::InflatingStreamBuf::STREAM_GZIP);
 
 #if defined(KD_MACOS)
         static SyncPath getExcludedAppFilePath(bool test = false);

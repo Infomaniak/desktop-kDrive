@@ -25,6 +25,8 @@
 
 #include "libcommon/utility/utility.h"
 
+#include <Poco/StreamCopier.h>
+
 #if defined(KD_MACOS)
 #include <sys/statvfs.h>
 #include <sys/mount.h>
@@ -337,6 +339,14 @@ std::string Utility::xxHashToStr(XXH64_hash_t hash) {
         output.append(buf);
     }
     return output;
+}
+
+void Utility::unzipStream(std::istream &inputStream, std::stringstream &ss,
+                          Poco::InflatingStreamBuf::StreamType type /*= Poco::InflatingStreamBuf::STREAM_GZIP*/) {
+    Poco::InflatingInputStream inflater(inputStream, type);
+    while (inputStream) {
+        Poco::StreamCopier::copyStream(inflater, ss);
+    }
 }
 
 #if defined(KD_MACOS)

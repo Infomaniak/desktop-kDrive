@@ -324,13 +324,6 @@ void AbstractNetworkJob::abort() {
     abortSession();
 }
 
-void AbstractNetworkJob::unzip(std::istream &is, std::stringstream &ss) {
-    Poco::InflatingInputStream inflater(is, Poco::InflatingStreamBuf::STREAM_GZIP);
-    while (is) {
-        Poco::StreamCopier::copyStream(inflater, ss);
-    }
-}
-
 void AbstractNetworkJob::createSession(const Poco::URI &uri) {
     const std::scoped_lock lock(_mutexSession);
 
@@ -580,11 +573,7 @@ void readStream(std::istream &inputStream, const Poco::Net::HTTPResponse &httpRe
     try {
         if (const std::string encoding = httpResponse.get("content-encoding", ""); encoding == "gzip") {
             std::stringstream ss;
-            // unzip(inputStream, ss);
-            Poco::InflatingInputStream inflater(inputStream, Poco::InflatingStreamBuf::STREAM_GZIP);
-            while (inputStream) {
-                Poco::StreamCopier::copyStream(inflater, ss);
-            }
+            Utility::unzipStream(inputStream, ss);
             res = ss.str();
         } else {
             std::string tmp(std::istreambuf_iterator<char>(inputStream), (std::istreambuf_iterator<char>()));
@@ -605,7 +594,7 @@ void AbstractNetworkJob::getStringFromStream(std::istream &inputStream, std::str
 
     // Wait
     TimerUtility timer;
-    while (timer.elapsed<std::chrono::seconds>() < std::chrono::seconds(sleepDurationThreshold) && !finished.load()) {
+    while (timer.elapsed<std::chrono::milliseconds>() < std::chrono::milliseconds(sleepDurationThreshold) && !finished.load()) {
         Utility::msleep(100);
     }
 
