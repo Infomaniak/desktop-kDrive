@@ -1876,9 +1876,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             if (_hasMoreError && _errorCount < _maxErrorLimit / 2)
             {
                 if (!await RefreshErrors(CancellationToken.None).ConfigureAwait(false))
+                {
                     Logger.Log(Logger.Level.Warning, "Failled to refresh errors"); // If the refresh fail, we must continue to at least remove the error in respons to the signal
+                }
                 else
+                {
+                    Logger.Log(Logger.Level.Info, "Errors refreshed successfully in response to error removed signal.");
                     return;
+                }
             }
 
             var signalData = args.SignalData;
