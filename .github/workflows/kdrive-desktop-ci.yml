@@ -4,7 +4,7 @@ on:
   pull_request:
     branches-ignore:
         - 'release/**'
-    types: [synchronize, opened, unlabeled]
+    types: [synchronize, opened, labeled, unlabeled]
 
 concurrency:
   group: kDrive-desktop-ci-${{ github.head_ref }}
