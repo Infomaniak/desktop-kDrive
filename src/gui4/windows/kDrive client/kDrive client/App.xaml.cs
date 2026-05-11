@@ -303,9 +303,8 @@ namespace Infomaniak.kDrive
                 {
                     Logger.Log(Logger.Level.Info,
                                    "Update window is already open, bringing existing window to front.");
-
-                    Utility.BringWindowToFront(_updateWindow);
                 }
+                Utility.BringWindowToFront(_updateWindow);
             });
 
         }

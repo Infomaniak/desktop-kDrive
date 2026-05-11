@@ -47,10 +47,17 @@
     <StackPanel Orientation="Horizontal"
                 Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}"
                 Visibility="{x:Bind ViewModel.Settings.UpdateManager.AvailableUpdate, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
+        <Button Style="{ThemeResource TextBlockButtonStyle}"
+                Background="Transparent"
+                Click="KnowMoreButton_Click">
+            <ToolTipService.ToolTip>
+                <ToolTip Content="{x:Bind kDrive:Localizer.Instance.GetString('learnMore'), Mode=OneWay}" />
+            </ToolTipService.ToolTip>
+            <local:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-information-outline}"
+                           Height="12"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+        </Button>
 
-        <local:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-information}"
-                       Height="16"
-                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
 
         <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonUpdate'), Mode=OneWay}"
                 Style="{ThemeResource AccentButtonStyle}"
