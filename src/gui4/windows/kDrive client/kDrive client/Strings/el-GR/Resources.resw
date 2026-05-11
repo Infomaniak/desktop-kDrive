@@ -73,7 +73,7 @@
     <value>Greek</value>
   </metadata> 
   <data name="aboutAppVersionCopyright" xml:space="preserve"> 
-    <value>Version %@.%@
+    <value>Έκδοση %@.%@
 © 2019-%@ Infomaniak Network SA -</value> 
   </data> 
   <data name="aboutKDrive" xml:space="preserve"> 
