@@ -16,23 +16,16 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import InfomaniakDI
-import kDriveCoreUI
 import SwiftUI
 
-struct DataManagementPreferencesButtonsView: View {
+struct SynchroRulesPreferencesDetailView: View {
+    let item: SynchroRulesItem
+
     var body: some View {
-        Section {
-            ForEach(DataManagementItem.allCases) { item in
-                FormNavigationCell(title: item.label) {
-                    @InjectService var router: PreferencesViewRouter
-                    router.append(item.preferencesViewDetail)
-                }
-            }
-        }
+        Text(item.rawValue)
     }
 }
 
 #Preview {
-    DataManagementPreferencesButtonsView()
+    SynchroRulesPreferencesDetailView(item: .apps)
 }

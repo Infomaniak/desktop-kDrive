@@ -45,6 +45,8 @@ public enum KDriveLocalizable {
   public static let activitiesTypeMyActivity = KDriveLocalizable.tr("Localizable", "activitiesTypeMyActivity", fallback: "My activity only")
   /// loco:698b07cec1d08f40b50bc702
   public static let advancedSyncTitle = KDriveLocalizable.tr("Localizable", "advancedSyncTitle", fallback: "Advanced synchronizations")
+  /// loco:6a01c8e3ba328c320801c492
+  public static let appsToExclude = KDriveLocalizable.tr("Localizable", "appsToExclude", fallback: "Apps to exclude")
   /// loco:698af4376b386d18b9037522
   public static let appUpToDate = KDriveLocalizable.tr("Localizable", "appUpToDate", fallback: "The application is up to date")
   /// loco:698b36f2eb276c03d00e7c07
@@ -229,10 +231,22 @@ public enum KDriveLocalizable {
   public static let errorStartingInstaller = KDriveLocalizable.tr("Localizable", "errorStartingInstaller", fallback: "Error while trying to start the installer")
   /// loco:69b3e9128555b02b5001ee42
   public static let errorWhileChangingSynchroMode = KDriveLocalizable.tr("Localizable", "errorWhileChangingSynchroMode", fallback: "Error while changing the mode of synchronization")
+  /// loco:6a01cb10947c595e7c030a83
+  public static let excludeRuleAppDescription = KDriveLocalizable.tr("Localizable", "excludeRuleAppDescription", fallback: "Block apps that might download or modify your files.")
+  /// loco:6a01ca75fd0cd802c903fca3
+  public static let excludeRuleFileDescription = KDriveLocalizable.tr("Localizable", "excludeRuleFileDescription", fallback: "Prevent certain temporary or system files from being copied to kDrive.")
+  /// loco:698b37a3ff1c8782250e1a74
+  public static let extendedLogDescription = KDriveLocalizable.tr("Localizable", "extendedLogDescription", fallback: "Enables collection of additional information useful for support.")
+  /// loco:698b3778571c7248480ed4c2
+  public static let extendedLogSetting = KDriveLocalizable.tr("Localizable", "extendedLogSetting", fallback: "Extended detailed log")
+  /// loco:698b37efff1c8782250e1a76
+  public static let extendedLogWarning = KDriveLocalizable.tr("Localizable", "extendedLogWarning", fallback: "When this option is enabled, kDrive runs more slowly.")
   /// loco:6992ec7abaf88a24990d3e13
   public static let feedbackSetting = KDriveLocalizable.tr("Localizable", "feedbackSetting", fallback: "Help us improve kDrive")
   /// loco:69a560c0ef88a6b6b00e49a4
   public static let feedbackURL = KDriveLocalizable.tr("Localizable", "feedbackURL", fallback: "https://feedback.userreport.com/652ad8f0-84c8-4a21-9e31-7a8bd7134f46")
+  /// loco:698b00c7f04008f614070e52
+  public static let filesToExclude = KDriveLocalizable.tr("Localizable", "filesToExclude", fallback: "Files to exclude")
   /// loco:698b05aa9eefd9ba070ce4a2
   public static let fileSyncMode = KDriveLocalizable.tr("Localizable", "fileSyncMode", fallback: "File synchronization mode")
   /// loco:698b05ecfd0cddb0b90c8b72

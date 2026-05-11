@@ -19,19 +19,35 @@
 import SwiftUI
 
 public struct FormNavigationCell: View {
-    let label: String
+    let title: String
+    let description: String?
     let navigate: () -> Void
 
-    public init(label: String, navigate: @escaping () -> Void) {
-        self.label = label
+    public init(title: String, description: String, navigate: @escaping () -> Void) {
+        self.title = title
+        self.description = description
+        self.navigate = navigate
+    }
+
+    public init(title: String, navigate: @escaping () -> Void) {
+        self.title = title
+        description = nil
         self.navigate = navigate
     }
 
     public var body: some View {
         Button(action: navigate) {
             HStack {
-                Text(label)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                VStack(alignment: .leading) {
+                    Text(title)
+
+                    if let description = description {
+                        Text(description)
+                            .font(.Tokens.callout)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
 
                 Image(systemName: "chevron.forward")
                     .foregroundStyle(.secondary)
@@ -43,5 +59,9 @@ public struct FormNavigationCell: View {
 }
 
 #Preview {
-    FormNavigationCell(label: "Hello, World!") {}
+    FormNavigationCell(title: "Hello, World!") {}
+}
+
+#Preview {
+    FormNavigationCell(title: "Hello", description: "World!") {}
 }

@@ -323,6 +323,14 @@
 /* loco:69b3e9128555b02b5001ee42 */
 "errorWhileChangingSynchroMode" = "Error al cambiar el modo de sincronización";
 
+/* loco:6a01cb10947c595e7c030a83 */
+"excludeRuleAppDescription" = "Bloquee las aplicaciones que puedan descargar o modificar sus archivos.";
+
+/* loco:698b0107941b49c4f500aa12 */
+"excludeRuleDescription" = "Los archivos que coincidan con esta regla no se sincronizarán.";
+
+/* loco:6a01ca75fd0cd802c903fca3 */
+"excludeRuleFileDescription" = "Evite que ciertos archivos temporales o del sistema se copien en kDrive.";
 /* loco:698b37a3ff1c8782250e1a74 */
 "extendedLogDescription" = "Activa la recopilación de información adicional útil para el soporte.";
 

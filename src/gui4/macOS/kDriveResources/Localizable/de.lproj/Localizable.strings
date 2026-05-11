@@ -62,6 +62,8 @@
 /* loco:698af4376b386d18b9037522 */
 "appUpToDate" = "Die Anwendung ist auf dem neuesten Stand";
 
+/* loco:6a01c8e3ba328c320801c492 */
+"appsToExclude" = "Auszuschliessende Apps";
 /* loco:698b36f2eb276c03d00e7c07 */
 "autoCleanupLogsDescription" = "Löscht Protokolle, die älter als 7 Tage sind, um Speicherplatz zu sparen.";
 
@@ -324,6 +326,14 @@
 /* loco:69b3e9128555b02b5001ee42 */
 "errorWhileChangingSynchroMode" = "Fehler beim Ändern des Synchronisationsmodus";
 
+/* loco:6a01cb10947c595e7c030a83 */
+"excludeRuleAppDescription" = "Blockieren Sie Apps, die Ihre Dateien herunterladen oder ändern könnten.";
+
+/* loco:698b0107941b49c4f500aa12 */
+"excludeRuleDescription" = "Dateien, die dieser Regel entsprechen, werden nicht synchronisiert.";
+
+/* loco:6a01ca75fd0cd802c903fca3 */
+"excludeRuleFileDescription" = "Vermeiden Sie, dass bestimmte temporäre oder Systemdateien in kDrive kopiert werden.";
 /* loco:698b37a3ff1c8782250e1a74 */
 "extendedLogDescription" = "Aktiviert die Erfassung zusätzlicher Informationen, die für den Support nützlich sind.";
 
