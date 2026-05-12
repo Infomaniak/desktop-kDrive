@@ -20,46 +20,7 @@
 
 #include "utility/types.h"
 
-#include <optional>
-
 namespace KDC {
-
-namespace {
-
-bool sameLatestError(const std::optional<ErrorInfo> &lhs, const std::optional<ErrorInfo> &rhs) {
-    if (lhs.has_value() != rhs.has_value()) {
-        return false;
-    }
-    if (!lhs) {
-        return true;
-    }
-
-    return lhs->dbId() == rhs->dbId() && lhs->getTime() == rhs->getTime() && lhs->level() == rhs->level() &&
-           lhs->exitCode() == rhs->exitCode() && lhs->path() == rhs->path();
-}
-
-bool sameExposedContext(const std::optional<SyncContext> &lhs, const std::optional<SyncContext> &rhs) {
-    if (lhs.has_value() != rhs.has_value()) {
-        return false;
-    }
-    if (!lhs) {
-        return true;
-    }
-
-    return lhs->sync.dbId() == rhs->sync.dbId() && lhs->drive.dbId() == rhs->drive.dbId() && lhs->drive.id() == rhs->drive.id() &&
-           lhs->drive.name() == rhs->drive.name() && lhs->account.dbId() == rhs->account.dbId() &&
-           lhs->account.id() == rhs->account.id() && lhs->account.name() == rhs->account.name() &&
-           lhs->user.dbId() == rhs->user.dbId() && lhs->user.userId() == rhs->user.userId() &&
-           lhs->user.name() == rhs->user.name() && lhs->user.email() == rhs->user.email() &&
-           lhs->userAvatarSource == rhs->userAvatarSource && lhs->user.avatarUrl() == rhs->user.avatarUrl() &&
-           lhs->sync.localPath() == rhs->sync.localPath() && lhs->sync.targetPath() == rhs->sync.targetPath() &&
-           lhs->sync.targetNodeId() == rhs->sync.targetNodeId() && lhs->sync.supportVfs() == rhs->sync.supportVfs() &&
-           lhs->sync.virtualFileMode() == rhs->sync.virtualFileMode() &&
-           lhs->sync.navigationPaneClsid() == rhs->sync.navigationPaneClsid() && lhs->errors.size() == rhs->errors.size() &&
-           sameLatestError(lhs->latestError, rhs->latestError);
-}
-
-} // namespace
 
 CurrentSyncModel::CurrentSyncModel(MainSelectionStore &mainSelectionStore, QObject *const parent) :
     QObject(parent),
@@ -121,7 +82,7 @@ QString CurrentSyncModel::userAvatarSource() const {
         return {};
     }
 
-    return !_context->userAvatarSource.isEmpty() ? _context->userAvatarSource : _context->user.avatarUrl();
+    return !_context->user.avatarSource().isEmpty() ? _context->user.avatarSource() : _context->user.avatarUrl();
 }
 
 QString CurrentSyncModel::localPath() const {
@@ -178,7 +139,7 @@ QString CurrentSyncModel::latestErrorPath() const {
 
 void CurrentSyncModel::refreshContext() {
     auto nextContext = _mainSelectionStore.currentSyncContext();
-    if (sameExposedContext(_context, nextContext)) {
+    if (_context == nextContext) {
         return;
     }
 
