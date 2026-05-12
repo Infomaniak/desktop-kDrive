@@ -200,6 +200,10 @@ struct COMMONSERVER_EXPORT Utility {
         static ExitInfo tryCreateTmpFile(std::shared_ptr<CacheDirectory> cacheDirectory, const SyncName &name = Str("testFile"));
 
 #if defined(KD_LINUX)
+        // This method makes a more accurate detection of the file system type on Linux, correcting the possibly wrong guess
+        // of `Utility::fileSystemName` when it returns "EXT2/3/4". In this case, it tries to create a file in the cache
+        // directory. This method circumvents the fact that `statfs` can mistake "exFAT" with the more permissive "EXT2/3/4" when
+        // a USB stick is used.
         static ExitInfo getFileSystemName(std::shared_ptr<CacheDirectory> cacheDirectory, std::string &fileSystemName);
 #endif
         static ExitInfo checkIfFileNamesCanEndWithSpace([[maybe_unused]] std::shared_ptr<CacheDirectory> cacheDirectory,
