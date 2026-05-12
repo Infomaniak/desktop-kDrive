@@ -253,11 +253,15 @@ namespace Infomaniak.kDrive
             return false;
         }
 
-        public static void RestartApplication()
+        public static void RestartApplicationWindows()
         {
-            Logger.Log(Logger.Level.Info, $"Restarting client app");
-            Windows.ApplicationModel.Core.AppRestartFailureReason failureReason = Microsoft.Windows.AppLifecycle.AppInstance.Restart(string.Join(" ", Environment.GetCommandLineArgs()));
-            Logger.Log(Logger.Level.Warning, $"Restarting application fail with reason: {failureReason}");
+            Logger.Log(Logger.Level.Info, $"Restarting all application windows.");
+            App app = (App)Current;
+            app.CloseUpdateWindow();
+            var previousWindow = app.CurrentWindow;
+            app.CurrentWindow = new OnBoarding.OnBoardingWindow();
+            previousWindow?.Close();
+            app.CreateWindow(CreateWindowOptions.Foreground);
         }
         public static void ExitApplication()
         {
