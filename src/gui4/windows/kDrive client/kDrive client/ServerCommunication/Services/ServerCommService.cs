@@ -2097,8 +2097,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 if (attempt < maxRetries)
                 {
                     await Task.Delay(delayMilliseconds);
+                    Logger.Log(Logger.Level.Info, $"AutoRetry: Attempt {attempt} failed for action in {callerName}, retrying after {delayMilliseconds}ms...");
                 }
-                Logger.Log(Logger.Level.Info, $"AutoRetry: Attempt {attempt} failed for action in {callerName}, retrying after {delayMilliseconds}ms...");
             }
             Logger.Log(Logger.Level.Error, $"AutoRetry: Failed to complete action in {callerName} after {maxRetries} attempts separated by {delayMilliseconds}ms.");
         }

@@ -36,6 +36,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
     public class SocketServerCommProtocol : Interfaces.IServerCommProtocol
     {
         private Socket? _socket;
+        private readonly SemaphoreSlim _sendLock = new(1, 1);
         private int _requestIdCounter = 0;
         private readonly byte[] _receiveBuffer = new byte[65536]; // 64 Ko
         private readonly StringBuilder _inBuffer = new();
@@ -58,19 +59,21 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 if (_requestIdCounter >= int.MaxValue - 1)
                 {
                     Logger.Log(Logger.Level.Info, "Request ID counter overflow, resetting to 0.");
-                    _requestIdCounter = 0;
+                    Interlocked.Exchange(ref _requestIdCounter, 0);
                 }
-                return ++_requestIdCounter;
+                Interlocked.Increment(ref _requestIdCounter);
+                return _requestIdCounter;
             }
         }
+
         private string _commPortFilePath = Path.Combine(
                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                "kDrive",
                ".comm"
            );
 
-        public event EventHandler<SignalEventArgs>? SignalReceived;
-        public event EventHandler? ConnectionLost;
+        public event EventHandler<SignalEventArgs> SignalReceived = delegate { };
+        public event EventHandler ConnectionLost = delegate { };
 
         ~SocketServerCommProtocol()
         {
@@ -185,6 +188,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task<CommData> SendRequestAsync(RequestNum requestNum, JsonObject parameters, CancellationToken cancellationToken = default)
         {
+            long requestId = NextId;
             try
             {
                 // Wait asynchronously until the client is connected
@@ -202,8 +206,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     await Task.Delay(100, cancellationToken).ConfigureAwait(false);
                 }
 
-
-                long requestId = NextId;
                 _pendingRequests[requestId] = new TaskCompletionSource<CommData>(
                     TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -219,8 +221,15 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 // Convert to JSON
                 string jsonString = JsonSerializer.Serialize(requestObj);
                 byte[] jsonBytes = Encoding.Unicode.GetBytes(jsonString);
-
-                await _socket.SendAsync(jsonBytes).ConfigureAwait(false);
+                await _sendLock.WaitAsync();
+                try
+                {
+                    await _socket.SendAsync(jsonBytes, SocketFlags.None);
+                }
+                finally
+                {
+                    _sendLock.Release();
+                }
                 Logger.Log(Logger.Level.Info, $"Sent request: {jsonString}");
                 cancellationToken.ThrowIfCancellationRequested();
                 CommData reply = await WaitForReplyAsync(requestId, cancellationToken).ConfigureAwait(false);
@@ -233,10 +242,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             catch (OperationCanceledException)
             {
                 Logger.Log(Logger.Level.Info, "Request operation was canceled.");
+                if (_pendingRequests.TryRemove(requestId, out var tcs))
+                    tcs.SetResult(new CommData());
                 return new CommData();
             }
             catch (Exception ex)
             {
+                if (_pendingRequests.TryRemove(requestId, out var tcs))
+                    tcs.SetResult(new CommData());
                 ConnectionLost?.Invoke(this, EventArgs.Empty);
                 Logger.Log(Logger.Level.Error, $"Socket write error: {ex.Message}");
                 return new CommData();
