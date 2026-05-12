@@ -54,10 +54,10 @@ void AppCache::clearAll() {
     if (hadAvailableDrives) emit allAvailableDrivesChanged();
 }
 
-void AppCache::replaceUsers(const std::vector<UserInfo> &users) {
+void AppCache::replaceUsers(const std::vector<UserSnapshot> &users) {
     _usersByDbId.clear();
-    for (const auto &info: users) {
-        _usersByDbId[info.dbId()].info = info;
+    for (const auto &snapshot: users) {
+        _usersByDbId[snapshot.info.dbId()] = UserNode{snapshot.info, snapshot.avatarSource, {}};
     }
     pruneConfiguredGraph();
     emit usersChanged();
@@ -176,10 +176,11 @@ void AppCache::clearAllAvailableDrives() {
     emit allAvailableDrivesChanged();
 }
 
-void AppCache::upsertUser(const UserInfo &info) {
-    auto &node = _usersByDbId[info.dbId()];
-    node.info = info;
-    qCDebug(lcAppCache) << "User upserted | dbId:" << info.dbId();
+void AppCache::upsertUser(const UserSnapshot &snapshot) {
+    auto &node = _usersByDbId[snapshot.info.dbId()];
+    node.info = snapshot.info;
+    node.avatarSource = snapshot.avatarSource;
+    qCDebug(lcAppCache) << "User upserted | dbId:" << snapshot.info.dbId();
     emit usersChanged();
 }
 
