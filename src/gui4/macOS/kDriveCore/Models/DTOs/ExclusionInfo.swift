@@ -36,7 +36,7 @@ extension ExclusionAppInfo {
     }
 }
 
-extension Array where Element == ExclusionAppInfo {
+extension [ExclusionAppInfo] {
     init(responses: [ExclusionAppInfoExchange]) {
         self = responses.map { ExclusionAppInfo(response: $0) }
     }
