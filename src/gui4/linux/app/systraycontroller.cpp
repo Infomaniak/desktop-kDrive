@@ -367,7 +367,7 @@ void SystemTrayController::onSyncProgressInfo(const SyncDbId syncDbId, const Syn
     refreshIconState();
 }
 
-void SystemTrayController::onTrayActivated(QSystemTrayIcon::ActivationReason reason) {
+void SystemTrayController::onTrayActivated(const QSystemTrayIcon::ActivationReason reason) const {
     qCInfo(lcSystemTrayController) << "System tray activated | reason:" << reason;
 
     if (!_isTrayModeActive) {
