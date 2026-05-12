@@ -30,6 +30,7 @@
 #include <QQmlContext>
 #include <QScreen>
 #include <QSysInfo>
+#include <QWindow>
 
 #include <cstdlib>
 #include <thread>
@@ -42,16 +43,38 @@ Q_LOGGING_CATEGORY(lcAppClientLinux, "gui.v4.app", QtInfoMsg)
 AppClientLinux::AppClientLinux(int &argc, char **argv) :
     QApplication(argc, argv) {
     setupLogging();
+    setQuitOnLastWindowClosed(false);
 
     qCInfo(lcAppClientLinux) << "Linux v4 GUI bootstrap started";
+    _systemTrayController.initialize();
+    _systemTrayController.observe(_appCache, _serverCommService);
 
     (void) connect(&_ipcClient, &IpcClient::connected, this, &AppClientLinux::ipcConnected);
     (void) connect(&_ipcClient, &IpcClient::disconnected, this, &AppClientLinux::ipcDisconnected);
     (void) connect(&_ipcClient, &IpcClient::serverSignalReceived, &_signalDispatcher, &SignalDispatcher::dispatch);
-    (void) connect(this, &AppClientLinux::ipcDisconnected, &_appCache, [this] { _appCache.clearAll(); });
+    (void) connect(this, &AppClientLinux::ipcDisconnected, &_appCache, [this] {
+        _systemTrayController.setProductStateInitialized(false);
+        _appCache.clearAll();
+    });
     (void) connect(&_cachePopulator, &CachePopulator::bootstrapCompleted, &_cachePipeline, &CachePipeline::markPopulated);
+    (void) connect(&_cachePopulator, &CachePopulator::bootstrapCompleted, &_systemTrayController,
+                   [this] { _systemTrayController.setProductStateInitialized(true); });
     (void) connect(this, &AppClientLinux::ipcConnected, this, [this] { _cachePopulator.bootstrap(); });
     (void) connect(this, &QCoreApplication::aboutToQuit, this, [] { qCInfo(lcAppClientLinux) << "Qt aboutToQuit emitted"; });
+    (void) connect(&_serverCommService, &CommService::showSettings, &_systemTrayController,
+                   &SystemTrayController::showMainWindow);
+    (void) connect(&_serverCommService, &CommService::showSynthesis, &_systemTrayController,
+                   &SystemTrayController::showMainWindow);
+    (void) connect(&_serverCommService, &CommService::quit, this, [] { QCoreApplication::quit(); });
+    (void) connect(&_systemTrayController, &SystemTrayController::quitRequested, this, [this] {
+        qCInfo(lcAppClientLinux) << "Quit requested from system tray";
+        _serverCommService.requestQuit([](const auto &exitInfo) {
+            if (!exitInfo) {
+                qCWarning(lcAppClientLinux) << "Server quit request failed";
+            }
+            QCoreApplication::quit();
+        });
+    });
 
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("appCache"), &_appCache);
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("userService"), &_userService);
@@ -59,11 +82,18 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("syncService"), &_syncService);
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("serviceEventBus"), &_serviceEventBus);
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("onboardingState"), &_onboardingState);
+    _qmlEngine.rootContext()->setContextProperty(QStringLiteral("systemTrayController"), &_systemTrayController);
     _qmlEngine.loadFromModule(QStringLiteral("kDrive.UI"), QStringLiteral("Main"));
     if (_qmlEngine.rootObjects().isEmpty()) {
         qCCritical(lcAppClientLinux) << "QML root object creation failed";
         std::exit(EXIT_FAILURE); // TODO add a sentry message here.
     }
+    auto *const mainWindow = qobject_cast<QWindow *>(_qmlEngine.rootObjects().constFirst());
+    if (!mainWindow) {
+        qCCritical(lcAppClientLinux) << "QML root object is not a window";
+        std::exit(EXIT_FAILURE); // TODO add a sentry message here.
+    }
+    _systemTrayController.setMainWindow(mainWindow);
 
     qCDebug(lcAppClientLinux) << "IPC/cache/QML wiring initialized";
 
