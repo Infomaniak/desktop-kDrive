@@ -550,7 +550,7 @@ namespace Infomaniak.kDrive.CustomControls
         private async void SizeContentLoader_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             if ((sender as Control)?.DataContext is TreeItem treeItem && treeItem.Node.Size == -1)
-                await treeItem.Node.LoadSize();
+                await treeItem.Node.LoadSize().ConfigureAwait(false);
         }
 
         // Recompute HasPendingChanges by comparing current excluded ids with original server exclusion set

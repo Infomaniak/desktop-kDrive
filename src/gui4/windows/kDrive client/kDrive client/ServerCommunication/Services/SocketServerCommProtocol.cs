@@ -41,6 +41,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         private readonly byte[] _receiveBuffer = new byte[65536]; // 64 Ko
         private readonly StringBuilder _inBuffer = new();
         private int _inBufferJsonBalance = 0;
+        private int _inBufferJsonBalanceSeen = 0;
         private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true,
@@ -289,13 +290,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     int bytesRead = await _socket.ReceiveAsync(_receiveBuffer).ConfigureAwait(false);
                     string str = Encoding.Unicode.GetString(_receiveBuffer, 0, bytesRead);
                     _inBuffer.Append(str);
-                    UpdateJsonBalance(_inBuffer, _inBuffer.Length - str.Length, ref _inBufferJsonBalance, ref jsonEndIndex);
                 }
-                else
-                {
-                    _inBufferJsonBalance = 0;
-                    UpdateJsonBalance(_inBuffer, 0, ref _inBufferJsonBalance, ref jsonEndIndex);
-                }
+
+                UpdateJsonBalance(_inBuffer, ref _inBufferJsonBalanceSeen, ref _inBufferJsonBalance, ref jsonEndIndex); 
 
                 // Consistency check
                 if (_inBuffer.Length > 0 && _inBuffer[0] != '{')
@@ -307,7 +304,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 }
                 if (jsonEndIndex == -1)
                 {
-                    Logger.Log(Logger.Level.Debug, "Incomplete JSON message, waiting for more data.");
+                    Logger.Log(Logger.Level.Extended, "Incomplete JSON message, waiting for more data.");
                     return; // Wait for more data
                 }
 
@@ -317,9 +314,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     Logger.Log(Logger.Level.Error, "unexpected end character");
                 }
                 _inBuffer.Remove(0, jsonEndIndex + 1);
-
+                _inBufferJsonBalanceSeen = 0;
                 // Parse JSON
-                Logger.Log(Logger.Level.Debug, $"Deserializing: {jsonSpan}");
+                Logger.Log(Logger.Level.Extended, $"Deserializing: {jsonSpan}");
                 var messageObj = JsonSerializer.Deserialize<CommData>(jsonSpan, _jsonOptions);
                 if (messageObj is null)
                 {
@@ -330,20 +327,22 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 HandleServerMessageAsync(messageObj);
             } while (_socket.Available > 0 || _inBuffer.Length > 0);
         }
-        private static void UpdateJsonBalance(StringBuilder sb, int startIndex, ref int balance, ref int endIndex)
+        private static void UpdateJsonBalance(StringBuilder sb, ref int seenIndex, ref int balance, ref int jsonEndIndex)
         {
-            endIndex = -1;
-            for (int i = startIndex; i < sb.Length; i++)
+            jsonEndIndex = -1;
+            for (int i = seenIndex; i < sb.Length; i++)
             {
                 char c = sb[i];
                 if (c == '{') balance++;
                 else if (c == '}') balance--;
                 if (balance == 0)
                 {
-                    endIndex = i;
+                    jsonEndIndex = i;
+                    seenIndex = i;
                     break;
                 }
             }
+            seenIndex = sb.Length;
         }
 
         private void HandleServerMessageAsync(CommData data)
