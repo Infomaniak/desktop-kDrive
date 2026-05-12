@@ -28,6 +28,29 @@
 
 namespace {
 constexpr KDC::Count maxErrorsToLoad = 1000;
+constexpr char userInfoAvatar[] = "avatar";
+
+QString avatarSourceFromUserStruct(const Poco::DynamicStruct &userStruct) {
+    if (!userStruct.contains(userInfoAvatar)) {
+        return {};
+    }
+
+    const auto base64Avatar = userStruct[userInfoAvatar].convert<std::string>();
+    if (base64Avatar.empty()) {
+        return {};
+    }
+
+    // UserInfo serializes the avatar field as PNG bytes before the IPC layer base64-encodes the BLOB.
+    return QStringLiteral("data:image/png;base64,%1")
+            .arg(QString::fromLatin1(base64Avatar.data(), static_cast<qsizetype>(base64Avatar.size())));
+}
+
+KDC::UserSnapshot userSnapshotFromDynamicStruct(const Poco::DynamicStruct &userStruct) {
+    KDC::UserSnapshot snapshot;
+    snapshot.info.fromDynamicStruct(userStruct);
+    snapshot.avatarSource = avatarSourceFromUserStruct(userStruct);
+    return snapshot;
+}
 } // namespace
 
 namespace KDC {
@@ -50,15 +73,11 @@ CommService::CommService(IpcClient &client, SignalDispatcher &dispatcher, QObjec
 
 void CommService::registerUserHandlers(SignalDispatcher &dispatcher) {
     dispatcher.registerHandler(SignalNum::USER_ADDED, [this](const Poco::DynamicStruct &params) {
-        UserInfo info;
-        info.fromDynamicStruct(params[msgParamUserInfo].extract<Poco::DynamicStruct>());
-        emit userAdded(info);
+        emit userAdded(userSnapshotFromDynamicStruct(params[msgParamUserInfo].extract<Poco::DynamicStruct>()));
     });
 
     dispatcher.registerHandler(SignalNum::USER_UPDATED, [this](const Poco::DynamicStruct &params) {
-        UserInfo info;
-        info.fromDynamicStruct(params[msgParamUserInfo].extract<Poco::DynamicStruct>());
-        emit userUpdated(info);
+        emit userUpdated(userSnapshotFromDynamicStruct(params[msgParamUserInfo].extract<Poco::DynamicStruct>()));
     });
 
     dispatcher.registerHandler(SignalNum::USER_REMOVED, [this](const Poco::DynamicStruct &params) {
@@ -278,9 +297,13 @@ void CommService::requestUserDbIdList(const UserDbIdListCallback &callback) cons
 void CommService::requestUserInfoList(const UserInfoListCallback &callback) const {
     _ipcClient.sendRequest(
             RequestNum::USER_INFOLIST, {}, [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
-                std::vector<UserInfo> list;
+                std::vector<UserSnapshot> list;
                 if (exitInfo) {
-                    CommonUtility::readValuesFromStruct(result, msgParamUserInfoList, list, dynamicVar2Struct<UserInfo>);
+                    CommonUtility::readValuesFromStruct(
+                            result, msgParamUserInfoList, list,
+                            std::function{[](const Poco::Dynamic::Var &value) {
+                                return userSnapshotFromDynamicStruct(value.extract<Poco::DynamicStruct>());
+                            }});
                 }
                 callback(exitInfo, list);
             });
