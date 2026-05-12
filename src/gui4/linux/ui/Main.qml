@@ -56,6 +56,10 @@ Window {
         const address = String(email || "").trim();
         return address.length > 0 ? address.charAt(0).toUpperCase() : "?";
     }
+    function requestAvailableDrives(userDbId) {
+        availableDriveListModel.selectUser(userDbId);
+        userService.loadAvailableDrives(userDbId);
+    }
 
     color: IKColors.surfacePrimary
     height: 760
@@ -170,7 +174,7 @@ Window {
                             width: syncList.width
 
                             onSelectRequested: syncListModel.selectSync(dbId)
-                            onUserRequested: availableDriveListModel.selectUser(userDbId)
+                            onUserRequested: mainWindow.requestAvailableDrives(userDbId)
                         }
                     }
                 }
@@ -193,7 +197,7 @@ Window {
                             width: driveList.width
 
                             onSelectRequested: driveListModel.selectFirstSyncForDrive(dbId)
-                            onUserRequested: availableDriveListModel.selectUser(userDbId)
+                            onUserRequested: mainWindow.requestAvailableDrives(userDbId)
                         }
                     }
                 }
