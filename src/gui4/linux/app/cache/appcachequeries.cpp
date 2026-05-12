@@ -263,6 +263,7 @@ std::optional<SyncContext> AppCache::syncContext(const SyncDbId syncDbId) const 
 
     SyncContext context;
     context.user = userIt->second.info;
+    context.userAvatarSource = userIt->second.avatarSource;
     context.account = accountIt->second.info;
     context.drive = driveIt->second.info;
     context.sync = syncIt->second.info;
@@ -308,6 +309,7 @@ std::optional<DriveContext> AppCache::driveContext(const DriveDbId driveDbId) co
 
     DriveContext context;
     context.user = userIt->second.info;
+    context.userAvatarSource = userIt->second.avatarSource;
     context.account = accountIt->second.info;
     context.drive = driveIt->second.info;
     context.syncs = syncsForDrive(driveDbId);
@@ -340,6 +342,9 @@ std::vector<AvailableDriveContext> AppCache::availableDriveContexts(const UserDb
     for (const auto &availableDrive: availableDrives(userDbId)) {
         AvailableDriveContext context;
         context.user = *userInfo;
+        if (const auto userIt = _usersByDbId.find(userDbId); userIt != _usersByDbId.end()) {
+            context.userAvatarSource = userIt->second.avatarSource;
+        }
         context.availableDrive = availableDrive;
         context.account = accountForAvailableDrive(userDbId, availableDrive.accountId());
         if (context.account) {
