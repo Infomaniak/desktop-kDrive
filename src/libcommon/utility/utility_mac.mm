@@ -98,4 +98,14 @@ std::string CommonUtility::osVersion() {
            [@(osVersion.patchVersion) stringValue].UTF8String;
 }
 
+std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {
+    struct statfs stat;
+
+    if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
+        return stat.f_fstypename;
+    }
+
+    return "UNIDENTIFIED";
+}
+
 } // namespace KDC

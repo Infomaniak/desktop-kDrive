@@ -157,4 +157,28 @@ std::string CommonUtility::osVersion() {
     return std::string(versionStr);
 }
 
+std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {
+    TCHAR szFileSystemName[MAX_PATH + 1];
+    DWORD dwMaxFileNameLength = 0;
+    DWORD dwFileSystemFlags = 0;
+
+    if (GetVolumeInformation(targetPath.root_path().c_str(), NULL, 0, NULL, &dwMaxFileNameLength, &dwFileSystemFlags,
+                             szFileSystemName, sizeof(szFileSystemName)) == TRUE) {
+        return ws2s(szFileSystemName);
+    } else {
+        // Not all the requested information is retrieved
+        DWORD dwError = GetLastError();
+        std::wstringstream message;
+        message << L"Error in GetVolumeInformation for " << Path2WStr(targetPath.root_name()) << L" ("
+                << utility_base::getErrorMessage(dwError) << L")";
+        sentry::Handler::captureMessage(sentry::Level::Warning, "CommonUtility::fileSystemName", ws2s(message.str()));
+
+        // !!! File system name can be OK or not !!!
+        return ws2s(szFileSystemName);
+    }
+
+
+    return "UNIDENTIFIED";
+}
+
 } // namespace KDC

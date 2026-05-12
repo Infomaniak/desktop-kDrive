@@ -61,7 +61,7 @@ void FolderWatcher_linux::startWatching() {
         return;
     }
 
-    if (const auto &addFolderRecursiveExitInfo = addFolderRecursive(_folder); !addFolderRecursiveExitInfo) {
+    if (const auto addFolderRecursiveExitInfo = addFolderRecursive(_folder); !addFolderRecursiveExitInfo) {
         setExitInfo(addFolderRecursiveExitInfo);
         return;
     }

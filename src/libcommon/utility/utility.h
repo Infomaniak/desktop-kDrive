@@ -533,6 +533,7 @@ struct COMMON_EXPORT CommonUtility {
 
         static SyncPath getGenericAppSupportDir();
 
+        static std::string getRootFsType(const SyncPath &targetPath);
 
         friend class TestUtility;
 };

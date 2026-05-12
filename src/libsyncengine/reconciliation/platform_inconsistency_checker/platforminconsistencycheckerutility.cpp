@@ -30,8 +30,8 @@
 #include <Poco/Util/WinRegistryKey.h>
 #endif
 
-namespace forbidden_filename_characters {
-static const std::vector<char> fat32 = {'\\', '/', ':', '*', '?', '"', '<', '>', '|', '\n', '\r', '\t', '\0'};
+namespace ForbiddenFilenameCharacters {
+static const std::vector<char> fat32Chars = {'\\', '/', ':', '*', '?', '"', '<', '>', '|', '\n', '\r', '\t', '\0'};
 
 #if defined(KD_WINDOWS)
 static const std::vector<char> chars = {'\\', '/', ':', '*', '?', '"', '<', '>', '|', '\n'};
@@ -42,7 +42,7 @@ static const std::vector<char> chars = {'/'};
 static const std::vector<char> chars = {'/', '\0'};
 #endif
 #endif
-} // namespace forbidden_filename_characters
+} // namespace ForbiddenFilenameCharacters
 
 static const int maxNameLengh = 255; // Max filename length is uniformized to 255 characters for all platforms and backends
 
@@ -264,12 +264,12 @@ SyncName PlatformInconsistencyCheckerUtility::generateSuffix(SuffixType suffixTy
 
 ExitInfo PlatformInconsistencyCheckerUtility::getForbiddenFilenameChars(
         [[maybe_unused]] const std::shared_ptr<CacheDirectory> cacheDirectory, std::vector<char> &forbiddenChars) {
-    forbiddenChars = forbidden_filename_characters::chars;
+    forbiddenChars = ForbiddenFilenameCharacters::chars;
 #if defined(KD_LINUX)
     std::string fileSystemName;
     const auto exitInfo = Utility::getFileSystemName(cacheDirectory, fileSystemName);
     if (!exitInfo) return exitInfo;
-    if (fileSystemName == CommonUtility::exFAT()) forbiddenChars = forbidden_filename_characters::fat32;
+    if (fileSystemName == CommonUtility::exFAT()) forbiddenChars = ForbiddenFilenameCharacters::fat32Chars;
 #endif
     return ExitCode::Ok;
 }
