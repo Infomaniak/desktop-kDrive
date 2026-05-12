@@ -29,6 +29,7 @@
 #include "app/services/serviceeventbus.h"
 #include "app/services/syncservice.h"
 #include "app/services/userservice.h"
+#include "app/systraycontroller.h"
 #include "communicationlayer/ipcclient.h"
 #include "communicationlayer/signaldispatcher.h"
 
@@ -52,7 +53,7 @@ Q_DECLARE_LOGGING_CATEGORY(lcAppClientLinux)
  * - ServiceEventBus: transient cross-service events (errors, notifications, ...).
  *
  * On construction, sets up logging,
- * wires IPC signals to the dispatcher, and initiates the connection to the server.
+ * wires IPC signals to the dispatcher, initializes the system tray, and initiates the connection to the server.
  */
 class AppClientLinux : public QApplication {
         Q_OBJECT
@@ -94,6 +95,7 @@ class AppClientLinux : public QApplication {
         UserService _userService{_serverCommService, _appCache, _serviceActionTracker, _serviceEventBus, this};
         DriveService _driveService{_serverCommService, _serviceActionTracker, _serviceEventBus, this};
         SyncService _syncService{_serverCommService, _serviceActionTracker, _serviceEventBus, this};
+        SystemTrayController _systemTrayController{this};
         QQmlApplicationEngine _qmlEngine;
 };
 
