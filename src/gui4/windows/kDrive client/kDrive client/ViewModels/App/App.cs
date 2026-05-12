@@ -121,12 +121,14 @@ namespace Infomaniak.kDrive.ViewModels
             AllSyncs = allSyncs;
 
             // Create a read-only observable collection of all drives across all users
-            AllSyncs.ToObservableChangeSet()
-                .AutoRefresh(s => s.Drive) // Refresh when the Drive property changes
-                .Transform(s => s.Drive) // Transform Sync to Drive
-                .DistinctValues(d => d)
-                .Bind(out var allDrives) // Bind to a read-only observable collection
-                .Subscribe();
+            _users.ToObservableChangeSet()
+               .AutoRefresh(u => u.Accounts.Count)
+               .TransformMany(a => a.Accounts)
+               .AutoRefresh(a => a.Drives.Count)
+               .TransformMany(a => a.Drives)
+               .Sort(SortExpressionComparer<Drive>.Ascending(d => d.DbId))
+               .Bind(out var allDrives)
+               .Subscribe();
             AllDrives = allDrives;
 
             // Observe changes to ActiveDrives list and ensure SelectedSync is valid

@@ -38,33 +38,31 @@ namespace Infomaniak.kDrive
 {
     public static class Utility
     {
-        public static async Task RunOnUIThread(Func<Task> action)
+        public static async Task<T> RunOnUIThread<T>(Func<Task<T>> action)
         {
             var dispatcher = AppModel.UIThreadDispatcher;
 
             if (dispatcher.HasThreadAccess)
             {
-                await action();
+                return await action().ConfigureAwait(false);
             }
-            else
+
+            TaskCompletionSource<T> tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            await dispatcher.EnqueueAsync(async () =>
             {
-                TaskCompletionSource tcs = new();
-
-                await dispatcher.EnqueueAsync(async () =>
+                try
                 {
-                    try
-                    {
-                        await action();
-                        tcs.SetResult();
-                    }
-                    catch (Exception ex)
-                    {
-                        tcs.SetException(ex);
-                    }
-                });
+                    T result = await action().ConfigureAwait(false);
+                    tcs.SetResult(result);
+                }
+                catch (Exception ex)
+                {
+                    tcs.SetException(ex);
+                }
+            }).ConfigureAwait(false);
 
-                await tcs.Task;
-            }
+            return await tcs.Task.ConfigureAwait(false);
         }
 
         public static async Task RunOnUIThread(Action action)
