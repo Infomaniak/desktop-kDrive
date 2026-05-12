@@ -225,7 +225,7 @@ Vælg venligst en anden mappe. Hvis du fortsætter, deaktiveres Lite Sync.&lt;br
     <message>
         <location filename="../src/gui/adddriveloginwidget.cpp" line="121"/>
         <source>An error occurred during authentication. Please close the login window and try again.&lt;br&gt;If the error persists, contact our support team.</source>
-        <translation type="unfinished"></translation>
+        <translation>Der opstod en fejl under godkendelsen. Luk venligst loginvinduet og pr�v igen.&lt;br&gt;Hvis fejlen forts�tter, kontakt vores supportteam.</translation>
     </message>
     <message>
         <location filename="../src/gui/adddriveloginwidget.cpp" line="137"/>
@@ -2102,7 +2102,7 @@ Brug venligst følgende link til at sende loggene til support: &lt;a style=&quot
     <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="512"/>
         <source>Dutch</source>
-        <translation type="unfinished"></translation>
+        <translation>Hollandsk</translation>
     </message>
     <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="518"/>
@@ -2937,12 +2937,12 @@ Brug venligst følgende link til at sende loggene til support: &lt;a style=&quot
     <message>
         <location filename="../src/gui/mainclient.cpp" line="49"/>
         <source>System Tray not available</source>
-        <translation type="unfinished"></translation>
+        <translation>Systembakke ikke tilg�ngelig</translation>
     </message>
     <message>
         <location filename="../src/gui/mainclient.cpp" line="50"/>
         <source>%1 requires a working system tray. If you are running XFCE, please follow &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;these instructions&lt;/a&gt;. Otherwise, please install a system tray application such as &apos;trayer&apos; and try again.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 kræver en fungerende systembakke. Hvis du k�rer XFCE, skal du f�lge &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;disse instruktioner&lt;/a&gt;. Ellers skal du installere en systembakkeapplikation som &apos;trayer&apos; og pr�ve igen.</translation>
     </message>
 </context>
 <context>

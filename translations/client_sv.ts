@@ -11,34 +11,34 @@
     <message>
         <location filename="../src/gui/aboutdialog.cpp" line="112"/>
         <source>CLOSE</source>
-        <translation>STÄNG</translation>
+        <translation>STÃ„NG</translation>
     </message>
     <message>
         <location filename="../src/gui/aboutdialog.cpp" line="123"/>
         <source>Version %1. For more information visit &lt;a style=&quot;%2&quot; href=&quot;%3&quot;&gt;%4&lt;/a&gt;&lt;br&gt;&lt;br&gt;</source>
-        <translation>Version %1. För mer information, besök &lt;a style=&quot;%2&quot; href=&quot;%3&quot;&gt;%4&lt;/a&gt;&lt;br&gt;&lt;br&gt;</translation>
+        <translation>Version %1. FÃ¶r mer information, besÃ¶k &lt;a style=&quot;%2&quot; href=&quot;%3&quot;&gt;%4&lt;/a&gt;&lt;br&gt;&lt;br&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/aboutdialog.cpp" line="126"/>
         <source>Copyright 2019-%1 Infomaniak Network SA&lt;br&gt;&lt;br&gt;</source>
-        <translation>Copyright 2019–%1 Infomaniak Network SA&lt;br&gt;&lt;br&gt;</translation>
+        <translation>Copyright 2019â€“%1 Infomaniak Network SA&lt;br&gt;&lt;br&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/aboutdialog.cpp" line="127"/>
         <source>Distributed by %1 and licensed under the &lt;a style=&quot;%3&quot; href=&quot;%4&quot;&gt;%5&lt;/a&gt;.&lt;br&gt;&lt;br&gt;%2 and the %2 logo are registered trademarks of %1.&lt;br&gt;&lt;br&gt;</source>
-        <translation>Distribueras av %1 och licensieras enligt &lt;a style=&quot;%3&quot; href=&quot;%4&quot;&gt;%5&lt;/a&gt;.&lt;br&gt;&lt;br&gt;%2 och %2-logotypen är registrerade varumärken som tillhör %1.&lt;br&gt;&lt;br&gt;</translation>
+        <translation>Distribueras av %1 och licensieras enligt &lt;a style=&quot;%3&quot; href=&quot;%4&quot;&gt;%5&lt;/a&gt;.&lt;br&gt;&lt;br&gt;%2 och %2-logotypen Ã¤r registrerade varumÃ¤rken som tillhÃ¶r %1.&lt;br&gt;&lt;br&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/aboutdialog.cpp" line="151"/>
         <location filename="../src/gui/aboutdialog.cpp" line="162"/>
         <location filename="../src/gui/aboutdialog.cpp" line="171"/>
         <source>Unable to open folder %1.</source>
-        <translation>Det går inte att öppna mappen %1.</translation>
+        <translation>Det gÃ¥r inte att Ã¶ppna mappen %1.</translation>
     </message>
     <message>
         <location filename="../src/gui/aboutdialog.cpp" line="132"/>
         <source>&lt;p&gt;&lt;small&gt;Built from &lt;a style=&quot;color: #489EF3&quot; href=&quot;%1&quot;&gt;Git sources&lt;/a&gt; on %2, %3 using Qt %4, %5&lt;/small&gt;&lt;/p&gt;</source>
-        <translation>&lt;p&gt;&lt;small&gt;Kompilerad från &lt;a style=&quot;color: #489EF3&quot; href=&quot;%1&quot;&gt;Git-källkod&lt;/a&gt; den %2, %3 med Qt %4, %5&lt;/small&gt;&lt;/p&gt;</translation>
+        <translation>&lt;p&gt;&lt;small&gt;Kompilerad frÃ¥n &lt;a style=&quot;color: #489EF3&quot; href=&quot;%1&quot;&gt;Git-kÃ¤llkod&lt;/a&gt; den %2, %3 med Qt %4, %5&lt;/small&gt;&lt;/p&gt;</translation>
     </message>
 </context>
 <context>
@@ -46,7 +46,7 @@
     <message>
         <location filename="../src/gui/abstractfileitemwidget.cpp" line="177"/>
         <source>Unable to open folder path %1.</source>
-        <translation>Det går inte att öppna mappsökvägen %1.</translation>
+        <translation>Det gÃ¥r inte att Ã¶ppna mappsÃ¶kvÃ¤gen %1.</translation>
     </message>
 </context>
 <context>
@@ -54,22 +54,22 @@
     <message>
         <location filename="../src/gui/adddriveconfirmationwidget.cpp" line="55"/>
         <source>Synchronization will start and you will be able to add files to your %1 folder.</source>
-        <translation>Synkroniseringen startar och du kan lägga till filer i mappen %1.</translation>
+        <translation>Synkroniseringen startar och du kan lÃ¤gga till filer i mappen %1.</translation>
     </message>
     <message>
         <location filename="../src/gui/adddriveconfirmationwidget.cpp" line="99"/>
         <source>Your kDrive is ready!</source>
-        <translation>Din kDrive är klar!</translation>
+        <translation>Din kDrive Ã¤r klar!</translation>
     </message>
     <message>
         <location filename="../src/gui/adddriveconfirmationwidget.cpp" line="123"/>
         <source>OPEN FOLDER</source>
-        <translation>ÖPPNA MAPP</translation>
+        <translation>Ã–PPNA MAPP</translation>
     </message>
     <message>
         <location filename="../src/gui/adddriveconfirmationwidget.cpp" line="130"/>
         <source>PARAMETERS</source>
-        <translation>INSTÄLLNINGAR</translation>
+        <translation>INSTÃ„LLNINGAR</translation>
     </message>
     <message>
         <location filename="../src/gui/adddriveconfirmationwidget.cpp" line="138"/>
@@ -87,12 +87,12 @@
     <message>
         <location filename="../src/gui/adddrivelistwidget.cpp" line="177"/>
         <source>NEXT</source>
-        <translation>NÄSTA</translation>
+        <translation>NÃ„STA</translation>
     </message>
     <message>
         <location filename="../src/gui/adddrivelistwidget.cpp" line="196"/>
         <source>Select the kDrive you want to synchronize</source>
-        <translation>Välj den kDrive du vill synkronisera</translation>
+        <translation>VÃ¤lj den kDrive du vill synkronisera</translation>
     </message>
     <message>
         <location filename="../src/gui/adddrivelistwidget.cpp" line="234"/>
@@ -102,7 +102,7 @@
     <message>
         <location filename="../src/gui/adddrivelistwidget.cpp" line="244"/>
         <source>Store your pictures, documents and e-mails in Switzerland from an independent company that respects privacy. Learn more</source>
-        <translation>Spara dina bilder, dokument och e-postmeddelanden i Schweiz hos ett oberoende företag som respekterar din integritet. Läs mer</translation>
+        <translation>Spara dina bilder, dokument och e-postmeddelanden i Schweiz hos ett oberoende fÃ¶retag som respekterar din integritet. LÃ¤s mer</translation>
     </message>
     <message>
         <location filename="../src/gui/adddrivelistwidget.cpp" line="263"/>
@@ -115,12 +115,12 @@
     <message>
         <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="147"/>
         <source>Conserve your computer space</source>
-        <translation>Spara utrymme på datorn</translation>
+        <translation>Spara utrymme pÃ¥ datorn</translation>
     </message>
     <message>
         <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="167"/>
         <source>Decide which files should be available online or locally</source>
-        <translation>Bestäm vilka filer som ska vara tillgängliga online eller lokalt</translation>
+        <translation>BestÃ¤m vilka filer som ska vara tillgÃ¤ngliga online eller lokalt</translation>
     </message>
     <message>
         <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="187"/>
@@ -135,12 +135,12 @@
     <message>
         <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="125"/>
         <source>Lite Sync syncs all your files without using your computer space. You can browse the files in your kDrive and download them locally whenever you want. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
-        <translation>Lite Sync synkroniserar alla dina filer utan att ta upp utrymme på din dator. Du kan bläddra bland filerna i ditt kDrive och ladda ner dem lokalt när du vill. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Läs mer&lt;/a&gt;</translation>
+        <translation>Lite Sync synkroniserar alla dina filer utan att ta upp utrymme pÃ¥ din dator. Du kan blÃ¤ddra bland filerna i ditt kDrive och ladda ner dem lokalt nÃ¤r du vill. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;LÃ¤s mer&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="207"/>
         <source>Unable to open link %1.</source>
-        <translation>Det går inte att öppna länken %1.</translation>
+        <translation>Det gÃ¥r inte att Ã¶ppna lÃ¤nken %1.</translation>
     </message>
     <message>
         <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="112"/>
@@ -158,51 +158,51 @@
     <message>
         <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="65"/>
         <source>Location of your %1 kDrive</source>
-        <translation>Plats för din %1 kDrive</translation>
+        <translation>Plats fÃ¶r din %1 kDrive</translation>
     </message>
     <message>
         <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="155"/>
         <source>Edit folder</source>
-        <translation>Ändra mapp</translation>
+        <translation>Ã„ndra mapp</translation>
     </message>
     <message>
         <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="246"/>
         <source>END</source>
-        <translation>SLUTFÖR</translation>
+        <translation>SLUTFÃ–R</translation>
     </message>
     <message>
         <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="297"/>
         <source>Select folder</source>
-        <translation>Välj mapp</translation>
+        <translation>VÃ¤lj mapp</translation>
     </message>
     <message>
         <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="264"/>
         <source>The contents of the &lt;b&gt;%1&lt;/b&gt; folder will be synchronized in your kDrive</source>
-        <translation>Innehållet i mappen &lt;b&gt;%1&lt;/b&gt; kommer att synkroniseras i din kDrive</translation>
+        <translation>InnehÃ¥llet i mappen &lt;b&gt;%1&lt;/b&gt; kommer att synkroniseras i din kDrive</translation>
     </message>
     <message>
         <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="212"/>
         <source>You will find all your files in this folder when the configuration is complete. You can drop new files there to sync them to your kDrive.</source>
-        <translation>När konfigurationen är klar hittar du alla dina filer i den här mappen. Du kan lägga in nya filer där för att synkronisera dem till din kDrive.</translation>
+        <translation>NÃ¤r konfigurationen Ã¤r klar hittar du alla dina filer i den hÃ¤r mappen. Du kan lÃ¤gga in nya filer dÃ¤r fÃ¶r att synkronisera dem till din kDrive.</translation>
     </message>
     <message>
         <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="284"/>
         <source>This folder is not compatible with Lite Sync.&lt;br&gt; 
 Please select another folder. If you continue Lite Sync will be disabled.&lt;br&gt; 
 &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
-        <translation>Den här mappen är inte kompatibel med Lite Sync.&lt;br&gt; 
-Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&gt; 
-&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Läs mer&lt;/a&gt;</translation>
+        <translation>Den hÃ¤r mappen Ã¤r inte kompatibel med Lite Sync.&lt;br&gt; 
+VÃ¤lj en annan mapp. Om du fortsÃ¤tter kommer Lite Sync att inaktiveras.&lt;br&gt; 
+&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;LÃ¤s mer&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="377"/>
         <source>Unable to open link %1.</source>
-        <translation>Det går inte att öppna länken %1.</translation>
+        <translation>Det gÃ¥r inte att Ã¶ppna lÃ¤nken %1.</translation>
     </message>
     <message>
         <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="246"/>
         <source>CONTINUE</source>
-        <translation>FORTSÄTT</translation>
+        <translation>FORTSÃ„TT</translation>
     </message>
 </context>
 <context>
@@ -210,22 +210,22 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/adddriveloginwidget.cpp" line="69"/>
         <source>Log in from your browser</source>
-        <translation>Logga in från din webbläsare</translation>
+        <translation>Logga in frÃ¥n din webblÃ¤sare</translation>
     </message>
     <message>
         <location filename="../src/gui/adddriveloginwidget.cpp" line="75"/>
         <source>Your browser should open automatically to complete the connection. Once connected, you will automatically return to kDrive.</source>
-        <translation>Din webbläsare bör öppnas automatiskt för att slutföra anslutningen. När anslutningen är upprättad återgår du automatiskt till kDrive.</translation>
+        <translation>Din webblÃ¤sare bÃ¶r Ã¶ppnas automatiskt fÃ¶r att slutfÃ¶ra anslutningen. NÃ¤r anslutningen Ã¤r upprÃ¤ttad Ã¥tergÃ¥r du automatiskt till kDrive.</translation>
     </message>
     <message>
         <location filename="../src/gui/adddriveloginwidget.cpp" line="85"/>
         <source>Open the login page</source>
-        <translation>Öppna inloggningssidan</translation>
+        <translation>Ã–ppna inloggningssidan</translation>
     </message>
     <message>
         <location filename="../src/gui/adddriveloginwidget.cpp" line="121"/>
         <source>An error occurred during authentication. Please close the login window and try again.&lt;br&gt;If the error persists, contact our support team.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ett fel uppstod vid autentisering. Stäng inloggningsfönstret och försök igen.&lt;br&gt;Om felet kvarstår, kontakta vårt supportteam.</translation>
     </message>
     <message>
         <location filename="../src/gui/adddriveloginwidget.cpp" line="137"/>
@@ -235,7 +235,7 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/adddriveloginwidget.cpp" line="145"/>
         <source>Failed to open the login page in your web browser</source>
-        <translation>Det gick inte att öppna inloggningssidan i din webbläsare</translation>
+        <translation>Det gick inte att Ã¶ppna inloggningssidan i din webblÃ¤sare</translation>
     </message>
 </context>
 <context>
@@ -243,27 +243,27 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/adddriveserverfolderswidget.cpp" line="129"/>
         <source>Select kDrive folders to synchronize on your desktop</source>
-        <translation>Välj vilka kDrive-mappar som ska synkroniseras på din dator</translation>
+        <translation>VÃ¤lj vilka kDrive-mappar som ska synkroniseras pÃ¥ din dator</translation>
     </message>
     <message>
         <location filename="../src/gui/adddriveserverfolderswidget.cpp" line="174"/>
         <source>CONTINUE</source>
-        <translation>FORTSÄTT</translation>
+        <translation>FORTSÃ„TT</translation>
     </message>
     <message>
         <location filename="../src/gui/adddriveserverfolderswidget.cpp" line="187"/>
         <source>Space available on your computer : %1</source>
-        <translation>Ledigt utrymme på din dator: %1</translation>
+        <translation>Ledigt utrymme pÃ¥ din dator: %1</translation>
     </message>
     <message>
         <location filename="../src/gui/adddriveserverfolderswidget.cpp" line="206"/>
         <source>An error occurred while loading the list of subfolders.</source>
-        <translation>Ett fel uppstod vid inläsningen av listan över undermappar.</translation>
+        <translation>Ett fel uppstod vid inlÃ¤sningen av listan Ã¶ver undermappar.</translation>
     </message>
     <message>
         <location filename="../src/gui/adddriveserverfolderswidget.cpp" line="210"/>
         <source>Impossible to load the list of subfolders. Your kDrive might be in maintenance.&lt;br&gt;Please, login to the &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;web version&lt;/a&gt; to check your kDrive&apos;s status, or contact your administrator.</source>
-        <translation>Det går inte att ladda listan över undermappar&lt;br&gt;. Din kDrive kan vara under underhåll. Logga in på &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;webbversionen&lt;/a&gt; för att kontrollera statusen för din kDrive, eller kontakta din administratör.</translation>
+        <translation>Det gÃ¥r inte att ladda listan Ã¶ver undermappar&lt;br&gt;. Din kDrive kan vara under underhÃ¥ll. Logga in pÃ¥ &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;webbversionen&lt;/a&gt; fÃ¶r att kontrollera statusen fÃ¶r din kDrive, eller kontakta din administratÃ¶r.</translation>
     </message>
 </context>
 <context>
@@ -281,7 +281,7 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/adddrivewizard.cpp" line="270"/>
         <source>The kDrive %1 is already synchronized on this computer. Continue anyway?</source>
-        <translation>kDrive %1 är redan synkroniserat på den här datorn. Vill du fortsätta ändå?</translation>
+        <translation>kDrive %1 Ã¤r redan synkroniserat pÃ¥ den hÃ¤r datorn. Vill du fortsÃ¤tta Ã¤ndÃ¥?</translation>
     </message>
 </context>
 <context>
@@ -289,17 +289,17 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/appclient.cpp" line="100"/>
         <source>kDrive client is run with bad parameters!</source>
-        <translation>kDrive-klienten körs med felaktiga parametrar!</translation>
+        <translation>kDrive-klienten kÃ¶rs med felaktiga parametrar!</translation>
     </message>
     <message>
         <location filename="../src/gui/appclient.cpp" line="109"/>
         <source>kDrive client is already running!</source>
-        <translation>kDrive-klienten är redan igång!</translation>
+        <translation>kDrive-klienten Ã¤r redan igÃ¥ng!</translation>
     </message>
     <message>
         <location filename="../src/gui/appclient.cpp" line="719"/>
         <source>The user %1 is not connected. Please log in again.</source>
-        <translation>Användaren %1 är inte inloggad. Logga in igen.</translation>
+        <translation>AnvÃ¤ndaren %1 Ã¤r inte inloggad. Logga in igen.</translation>
     </message>
 </context>
 <context>
@@ -307,7 +307,7 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/server/appserver.cpp" line="1689"/>
         <source>Share link copied to clipboard</source>
-        <translation>Delningslänken har kopierats till urklipp</translation>
+        <translation>DelningslÃ¤nken har kopierats till urklipp</translation>
     </message>
     <message numerus="yes">
         <location filename="../src/server/appserver.cpp" line="3806"/>
@@ -375,7 +375,7 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/basefoldertreeitemwidget.cpp" line="102"/>
         <source>No subfolders currently on the server.</source>
-        <translation>Det finns för närvarande inga undermappar på servern.</translation>
+        <translation>Det finns fÃ¶r nÃ¤rvarande inga undermappar pÃ¥ servern.</translation>
     </message>
 </context>
 <context>
@@ -388,12 +388,12 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/betaprogramdialog.cpp" line="69"/>
         <source>Join the beta program</source>
-        <translation>Anmäl dig till betaprogrammet</translation>
+        <translation>AnmÃ¤l dig till betaprogrammet</translation>
     </message>
     <message>
         <location filename="../src/gui/betaprogramdialog.cpp" line="77"/>
         <source>Get early access to new versions of the application before they are released to the general public, and take part in improving the application by sending us your comments.</source>
-        <translation>Få tillgång till nya versioner av applikationen innan de släpps till allmänheten och bidra till att förbättra applikationen genom att skicka oss dina synpunkter.</translation>
+        <translation>FÃ¥ tillgÃ¥ng till nya versioner av applikationen innan de slÃ¤pps till allmÃ¤nheten och bidra till att fÃ¶rbÃ¤ttra applikationen genom att skicka oss dina synpunkter.</translation>
     </message>
     <message>
         <location filename="../src/gui/betaprogramdialog.cpp" line="87"/>
@@ -418,12 +418,12 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/betaprogramdialog.cpp" line="141"/>
         <source>I understand</source>
-        <translation>Jag förstår</translation>
+        <translation>Jag fÃ¶rstÃ¥r</translation>
     </message>
     <message>
         <location filename="../src/gui/betaprogramdialog.cpp" line="147"/>
         <source>Are you sure you want to leave the beta program?</source>
-        <translation>Är du säker på att du vill lämna betaprogrammet?</translation>
+        <translation>Ã„r du sÃ¤ker pÃ¥ att du vill lÃ¤mna betaprogrammet?</translation>
     </message>
     <message>
         <location filename="../src/gui/betaprogramdialog.cpp" line="161"/>
@@ -438,12 +438,12 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/betaprogramdialog.cpp" line="228"/>
         <source>Your current version of the application may be too recent, your choice will be effective when the next update is available.</source>
-        <translation>Din nuvarande version av appen kan vara för ny; ditt val träder i kraft när nästa uppdatering blir tillgänglig.</translation>
+        <translation>Din nuvarande version av appen kan vara fÃ¶r ny; ditt val trÃ¤der i kraft nÃ¤r nÃ¤sta uppdatering blir tillgÃ¤nglig.</translation>
     </message>
     <message>
         <location filename="../src/gui/betaprogramdialog.cpp" line="233"/>
         <source>Beta versions may leave unexpectedly or cause instabilities.</source>
-        <translation>Betaversioner kan stängas ner utan förvarning eller orsaka instabilitet.</translation>
+        <translation>Betaversioner kan stÃ¤ngas ner utan fÃ¶rvarning eller orsaka instabilitet.</translation>
     </message>
 </context>
 <context>
@@ -451,7 +451,7 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/clientgui.cpp" line="189"/>
         <source>Failed to fix conflict(s) on %1 item(s) in sync folder: %2</source>
-        <translation>Det gick inte att lösa konflikterna för %1 objekt i synkroniseringsmappen: %2</translation>
+        <translation>Det gick inte att lÃ¶sa konflikterna fÃ¶r %1 objekt i synkroniseringsmappen: %2</translation>
     </message>
     <message>
         <location filename="../src/gui/clientgui.cpp" line="242"/>
@@ -476,8 +476,8 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/clientgui.cpp" line="1423"/>
         <source>Preferences</source>
-        <translatorcomment>Préférences</translatorcomment>
-        <translation>Inställningar</translation>
+        <translatorcomment>PrÃ©fÃ©rences</translatorcomment>
+        <translation>InstÃ¤llningar</translation>
     </message>
     <message>
         <location filename="../src/gui/clientgui.cpp" line="1424"/>
@@ -487,47 +487,47 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/clientgui.cpp" line="673"/>
         <source>Undefined State.</source>
-        <translation>Odefinierat tillstånd.</translation>
+        <translation>Odefinierat tillstÃ¥nd.</translation>
     </message>
     <message>
         <location filename="../src/gui/clientgui.cpp" line="676"/>
         <source>Waiting to start syncing.</source>
-        <translation>Väntar på att synkroniseringen ska starta.</translation>
+        <translation>VÃ¤ntar pÃ¥ att synkroniseringen ska starta.</translation>
     </message>
     <message>
         <location filename="../src/gui/clientgui.cpp" line="679"/>
         <source>Sync is running.</source>
-        <translation>Synkroniseringen pågår.</translation>
+        <translation>Synkroniseringen pÃ¥gÃ¥r.</translation>
     </message>
     <message>
         <location filename="../src/gui/clientgui.cpp" line="683"/>
         <source>Sync was successful, unresolved conflicts.</source>
-        <translation>Synkroniseringen lyckades, men det finns olösta konflikter.</translation>
+        <translation>Synkroniseringen lyckades, men det finns olÃ¶sta konflikter.</translation>
     </message>
     <message>
         <location filename="../src/gui/clientgui.cpp" line="685"/>
         <source>Last Sync was successful.</source>
-        <translation>Den senaste synkroniseringen genomfördes utan problem.</translation>
+        <translation>Den senaste synkroniseringen genomfÃ¶rdes utan problem.</translation>
     </message>
     <message>
         <location filename="../src/gui/clientgui.cpp" line="692"/>
         <source>User Abort.</source>
-        <translation>Användaren avbryter.</translation>
+        <translation>AnvÃ¤ndaren avbryter.</translation>
     </message>
     <message>
         <location filename="../src/gui/clientgui.cpp" line="696"/>
         <source>Sync is paused.</source>
-        <translation>Synkroniseringen är pausad.</translation>
+        <translation>Synkroniseringen Ã¤r pausad.</translation>
     </message>
     <message>
         <location filename="../src/gui/clientgui.cpp" line="705"/>
         <source>%1 (Sync is paused)</source>
-        <translation>%1 (Synkroniseringen är pausad)</translation>
+        <translation>%1 (Synkroniseringen Ã¤r pausad)</translation>
     </message>
     <message>
         <location filename="../src/gui/clientgui.cpp" line="1257"/>
         <source>Do you really want to remove the synchronizations of the account &lt;i&gt;%1&lt;/i&gt; ?&lt;br&gt;&lt;b&gt;Note:&lt;/b&gt; This will &lt;b&gt;not&lt;/b&gt; delete any files.</source>
-        <translation>Vill du verkligen ta bort synkroniseringarna för kontot &lt;i&gt;%1&lt;/i&gt;?&lt;br&gt;&lt;b&gt;Obs!&lt;/b&gt; Detta raderar inga filer.</translation>
+        <translation>Vill du verkligen ta bort synkroniseringarna fÃ¶r kontot &lt;i&gt;%1&lt;/i&gt;?&lt;br&gt;&lt;b&gt;Obs!&lt;/b&gt; Detta raderar inga filer.</translation>
     </message>
     <message>
         <location filename="../src/gui/clientgui.cpp" line="1261"/>
@@ -547,17 +547,17 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/clientgui.cpp" line="849"/>
         <source>Unable to open folder path %1.</source>
-        <translation>Det går inte att öppna mappsökvägen %1.</translation>
+        <translation>Det gÃ¥r inte att Ã¶ppna mappsÃ¶kvÃ¤gen %1.</translation>
     </message>
     <message>
         <location filename="../src/gui/clientgui.cpp" line="116"/>
         <source>Unable to initialize kDrive client</source>
-        <translation>Det går inte att starta kDrive-klienten</translation>
+        <translation>Det gÃ¥r inte att starta kDrive-klienten</translation>
     </message>
     <message>
         <location filename="../src/gui/clientgui.cpp" line="255"/>
         <source>Synchronization is paused</source>
-        <translation>Synkroniseringen är pausad</translation>
+        <translation>Synkroniseringen Ã¤r pausad</translation>
     </message>
 </context>
 <context>
@@ -570,7 +570,7 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/confirmsynchronizationdialog.cpp" line="95"/>
         <source>The contents of the folder on your computer will be synchronized to the folder of the selected kDrive and vice versa.</source>
-        <translation>Innehållet i mappen på din dator kommer att synkroniseras med mappen på den valda kDrive-enheten och vice versa.</translation>
+        <translation>InnehÃ¥llet i mappen pÃ¥ din dator kommer att synkroniseras med mappen pÃ¥ den valda kDrive-enheten och vice versa.</translation>
     </message>
     <message>
         <location filename="../src/gui/confirmsynchronizationdialog.cpp" line="184"/>
@@ -595,72 +595,72 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
         <location filename="../src/gui/customextensionsetupwidget.cpp" line="107"/>
         <location filename="../src/gui/customextensionsetupwidget.cpp" line="131"/>
         <source>Perform the following steps to ensure that Lite Sync works correctly on your computer and to complete the configuration of the kDrive.</source>
-        <translation>Följ dessa steg för att säkerställa att Lite Sync fungerar korrekt på din dator och för att slutföra konfigurationen av kDrive.</translation>
+        <translation>FÃ¶lj dessa steg fÃ¶r att sÃ¤kerstÃ¤lla att Lite Sync fungerar korrekt pÃ¥ din dator och fÃ¶r att slutfÃ¶ra konfigurationen av kDrive.</translation>
     </message>
     <message>
         <location filename="../src/gui/customextensionsetupwidget.cpp" line="208"/>
         <source>Open your Mac&apos;s &lt;b&gt;General settings&lt;/b&gt; or  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
-        <translation>Öppna &lt;b&gt;inställningarna under ”Allmänt”&lt;/b&gt; på din Mac eller  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;klicka här&lt;/a&gt;</translation>
+        <translation>Ã–ppna &lt;b&gt;instÃ¤llningarna under â€AllmÃ¤ntâ€&lt;/b&gt; pÃ¥ din Mac eller  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;klicka hÃ¤r&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/customextensionsetupwidget.cpp" line="212"/>
         <source>Open your Mac&apos;s &lt;b&gt;Privacy &amp; Security settings&lt;/b&gt; or  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
-        <translation>Öppna &lt;b&gt;inställningarna för sekretess och säkerhet&lt;/b&gt; på din Mac eller  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;klicka här&lt;/a&gt;</translation>
+        <translation>Ã–ppna &lt;b&gt;instÃ¤llningarna fÃ¶r sekretess och sÃ¤kerhet&lt;/b&gt; pÃ¥ din Mac eller  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;klicka hÃ¤r&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/customextensionsetupwidget.cpp" line="216"/>
         <source>Open your Mac&apos;s &lt;b&gt;Security &amp; Privacy settings&lt;/b&gt; or  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
-        <translation>Öppna &lt;b&gt;inställningarna&lt;/b&gt; för &lt;b&gt;Säkerhet och integritet&lt;/b&gt; på din Mac eller  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;klicka här&lt;/a&gt;</translation>
+        <translation>Ã–ppna &lt;b&gt;instÃ¤llningarna&lt;/b&gt; fÃ¶r &lt;b&gt;SÃ¤kerhet och integritet&lt;/b&gt; pÃ¥ din Mac eller  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;klicka hÃ¤r&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/customextensionsetupwidget.cpp" line="246"/>
         <source>Go to &lt;b&gt;&quot;Login Items &amp; Extensions&quot;&lt;/b&gt; section and then to &lt;b&gt;&quot;Endpoint Security Extensions&quot;&lt;/b&gt;</source>
-        <translation>Gå till avsnittet &lt;b&gt;”Inloggningsobjekt och tillägg”&lt;/b&gt; och sedan till &lt;b&gt;”Endpoint Security-tillägg”&lt;/b&gt;</translation>
+        <translation>GÃ¥ till avsnittet &lt;b&gt;â€Inloggningsobjekt och tillÃ¤ggâ€&lt;/b&gt; och sedan till &lt;b&gt;â€Endpoint Security-tillÃ¤ggâ€&lt;/b&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/customextensionsetupwidget.cpp" line="263"/>
         <source>Authorize the kDrive application</source>
-        <translation>Godkänn appen kDrive</translation>
+        <translation>GodkÃ¤nn appen kDrive</translation>
     </message>
     <message>
         <location filename="../src/gui/customextensionsetupwidget.cpp" line="272"/>
         <source>Go to &lt;b&gt;&quot;Security&quot;&lt;/b&gt; section</source>
-        <translation>Gå till avsnittet &lt;b&gt;”Säkerhet”&lt;/b&gt;</translation>
+        <translation>GÃ¥ till avsnittet &lt;b&gt;â€SÃ¤kerhetâ€&lt;/b&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/customextensionsetupwidget.cpp" line="289"/>
         <source>Authorize the kDrive application in the box indicating that kDrive has been blocked</source>
-        <translation>Godkänn kDrive-appen i rutan där det står att kDrive har blockerats</translation>
+        <translation>GodkÃ¤nn kDrive-appen i rutan dÃ¤r det stÃ¥r att kDrive har blockerats</translation>
     </message>
     <message>
         <location filename="../src/gui/customextensionsetupwidget.cpp" line="299"/>
         <source>Unlock the padlock &lt;img src=&quot;:/client/resources/icons/actions/lock.png&quot;&gt; and authorize the kDrive application</source>
-        <translation>Lås upp hänglåset &lt;img src=&quot;:/client/resources/icons/actions/lock.png&quot;&gt; och godkänn kDrive-appen</translation>
+        <translation>LÃ¥s upp hÃ¤nglÃ¥set &lt;img src=&quot;:/client/resources/icons/actions/lock.png&quot;&gt; och godkÃ¤nn kDrive-appen</translation>
     </message>
     <message>
         <location filename="../src/gui/customextensionsetupwidget.cpp" line="344"/>
         <source>Go to &lt;b&gt;&quot;Privacy &amp; Security&quot;&lt;/b&gt; section and click on &lt;b&gt;&quot;Full Disk Access&quot;&lt;/b&gt; or &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
-        <translation>Gå till avsnittet &lt;b&gt;”Sekretess och säkerhet”&lt;/b&gt; och klicka på &lt;b&gt;”Fullständig disktillgång”&lt;/b&gt; eller &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;klicka här&lt;/a&gt;</translation>
+        <translation>GÃ¥ till avsnittet &lt;b&gt;â€Sekretess och sÃ¤kerhetâ€&lt;/b&gt; och klicka pÃ¥ &lt;b&gt;â€FullstÃ¤ndig disktillgÃ¥ngâ€&lt;/b&gt; eller &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;klicka hÃ¤r&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/customextensionsetupwidget.cpp" line="348"/>
         <source>Still in the Security &amp; Privacy settings, open the &lt;b&gt;&quot;Privacy&quot;&lt;/b&gt; tab or &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
-        <translation>Öppna fliken &lt;b&gt;”Sekretess”&lt;/b&gt; i inställningarna för säkerhet och sekretess, eller &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;klicka här&lt;/a&gt;</translation>
+        <translation>Ã–ppna fliken &lt;b&gt;â€Sekretessâ€&lt;/b&gt; i instÃ¤llningarna fÃ¶r sÃ¤kerhet och sekretess, eller &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;klicka hÃ¤r&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/customextensionsetupwidget.cpp" line="376"/>
         <source>Check the &quot;kDrive LiteSync Extension&quot; box then the &quot;kDrive.app&quot; box (if not already checked)</source>
-        <translation>Markera rutan ”kDrive LiteSync Extension” och sedan rutan ”kDrive.app” (om den inte redan är markerad)</translation>
+        <translation>Markera rutan â€kDrive LiteSync Extensionâ€ och sedan rutan â€kDrive.appâ€ (om den inte redan Ã¤r markerad)</translation>
     </message>
     <message>
         <location filename="../src/gui/customextensionsetupwidget.cpp" line="393"/>
         <source>A restart of the app might be proposed, in this case accept it</source>
-        <translation>Det kan hända att appen föreslår en omstart; i så fall godkänner du den</translation>
+        <translation>Det kan hÃ¤nda att appen fÃ¶reslÃ¥r en omstart; i sÃ¥ fall godkÃ¤nner du den</translation>
     </message>
     <message>
         <location filename="../src/gui/customextensionsetupwidget.cpp" line="399"/>
         <source>Check the &quot;kDrive LiteSync Extension&quot; box (and &quot;kDrive.app&quot; if it exists) in &lt;b&gt;&quot;Full Disk Access&quot;&lt;/b&gt;</source>
-        <translation>Markera rutan ”kDrive LiteSync Extension” (och ”kDrive.app” om den finns) under &lt;b&gt;”Fullständig diskåtkomst”&lt;/b&gt;</translation>
+        <translation>Markera rutan â€kDrive LiteSync Extensionâ€ (och â€kDrive.appâ€ om den finns) under &lt;b&gt;â€FullstÃ¤ndig diskÃ¥tkomstâ€&lt;/b&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/customextensionsetupwidget.cpp" line="495"/>
@@ -681,12 +681,12 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/customextensionsetupwidget.cpp" line="499"/>
         <source>STEPS PERFORMED</source>
-        <translation>UTFÖRDA STEG</translation>
+        <translation>UTFÃ–RDA STEG</translation>
     </message>
     <message>
         <location filename="../src/gui/customextensionsetupwidget.cpp" line="501"/>
         <source>END</source>
-        <translation>SLUTFÖR</translation>
+        <translation>SLUTFÃ–R</translation>
     </message>
 </context>
 <context>
@@ -717,7 +717,7 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/debugreporter.cpp" line="37"/>
         <source>Sending of debugging information</source>
-        <translation>Översändning av felsökningsinformation</translation>
+        <translation>Ã–versÃ¤ndning av felsÃ¶kningsinformation</translation>
     </message>
     <message>
         <location filename="../src/gui/debugreporter.cpp" line="37"/>
@@ -735,7 +735,7 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/debuggingdialog.cpp" line="45"/>
         <source>Debug</source>
-        <translation>Felsökning</translation>
+        <translation>FelsÃ¶kning</translation>
     </message>
     <message>
         <location filename="../src/gui/debuggingdialog.cpp" line="47"/>
@@ -750,52 +750,52 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/debuggingdialog.cpp" line="49"/>
         <source>Fatal</source>
-        <translation>Dödlig</translation>
+        <translation>DÃ¶dlig</translation>
     </message>
     <message>
         <location filename="../src/gui/debuggingdialog.cpp" line="74"/>
         <source>Debugging settings</source>
-        <translation>Felsökningsinställningar</translation>
+        <translation>FelsÃ¶kningsinstÃ¤llningar</translation>
     </message>
     <message>
         <location filename="../src/gui/debuggingdialog.cpp" line="90"/>
         <source>Save debugging information in a folder on my computer (Recommended)</source>
-        <translation>Spara felsökningsinformation i en mapp på min dator (rekommenderas)</translation>
+        <translation>Spara felsÃ¶kningsinformation i en mapp pÃ¥ min dator (rekommenderas)</translation>
     </message>
     <message>
         <location filename="../src/gui/debuggingdialog.cpp" line="104"/>
         <source>This information enables IT support to determine the origin of an incident.</source>
-        <translation>Med hjälp av denna information kan IT-supporten fastställa var ett fel har sitt ursprung.</translation>
+        <translation>Med hjÃ¤lp av denna information kan IT-supporten faststÃ¤lla var ett fel har sitt ursprung.</translation>
     </message>
     <message>
         <location filename="../src/gui/debuggingdialog.cpp" line="114"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Open debugging folder&lt;/a&gt;</source>
-        <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Öppna felsökningsmappen&lt;/a&gt;</translation>
+        <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Ã–ppna felsÃ¶kningsmappen&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/debuggingdialog.cpp" line="143"/>
         <source>Debug level</source>
-        <translation>Felsökningsnivå</translation>
+        <translation>FelsÃ¶kningsnivÃ¥</translation>
     </message>
     <message>
         <location filename="../src/gui/debuggingdialog.cpp" line="152"/>
         <source>The trace level lets you choose the extent of the debugging information recorded</source>
-        <translation>Med spårningsnivån kan du välja hur mycket felsökningsinformation som ska registreras</translation>
+        <translation>Med spÃ¥rningsnivÃ¥n kan du vÃ¤lja hur mycket felsÃ¶kningsinformation som ska registreras</translation>
     </message>
     <message>
         <location filename="../src/gui/debuggingdialog.cpp" line="179"/>
         <source>The extended full log collects a detailed history that can be used for debugging. Enabling it can slow down the kDrive application.</source>
-        <translation>Den utökade fullständiga loggen samlar in en detaljerad historik som kan användas för felsökning. Om du aktiverar den kan det göra att kDrive-programmet går långsammare.</translation>
+        <translation>Den utÃ¶kade fullstÃ¤ndiga loggen samlar in en detaljerad historik som kan anvÃ¤ndas fÃ¶r felsÃ¶kning. Om du aktiverar den kan det gÃ¶ra att kDrive-programmet gÃ¥r lÃ¥ngsammare.</translation>
     </message>
     <message>
         <location filename="../src/gui/debuggingdialog.cpp" line="183"/>
         <source>Extended Full Log</source>
-        <translation>Utökad fullständig logg</translation>
+        <translation>UtÃ¶kad fullstÃ¤ndig logg</translation>
     </message>
     <message>
         <location filename="../src/gui/debuggingdialog.cpp" line="207"/>
         <source>Delete logs older than %1 days</source>
-        <translation>Ta bort loggar som är äldre än %1 dagar</translation>
+        <translation>Ta bort loggar som Ã¤r Ã¤ldre Ã¤n %1 dagar</translation>
     </message>
     <message>
         <location filename="../src/gui/debuggingdialog.cpp" line="226"/>
@@ -805,7 +805,7 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/debuggingdialog.cpp" line="250"/>
         <source>The last session is the periode since the last kDrive start.</source>
-        <translation>Den sista sessionen är tidsperioden sedan kDrive senast startades.</translation>
+        <translation>Den sista sessionen Ã¤r tidsperioden sedan kDrive senast startades.</translation>
     </message>
     <message>
         <location filename="../src/gui/debuggingdialog.cpp" line="254"/>
@@ -840,12 +840,12 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/debuggingdialog.cpp" line="481"/>
         <source>1. Check that you are logged in &lt;br&gt;2. Check that you have configured at least one kDrive</source>
-        <translation>1. Kontrollera att du är inloggad &lt;br&gt;2. Kontrollera att du har konfigurerat minst en kDrive</translation>
+        <translation>1. Kontrollera att du Ã¤r inloggad &lt;br&gt;2. Kontrollera att du har konfigurerat minst en kDrive</translation>
     </message>
     <message>
         <location filename="../src/gui/debuggingdialog.cpp" line="486"/>
         <source> (Connexion interrupted)</source>
-        <translation> (Anslutningen avbröts)</translation>
+        <translation> (Anslutningen avbrÃ¶ts)</translation>
     </message>
     <message>
         <location filename="../src/gui/debuggingdialog.cpp" line="493"/>
@@ -855,7 +855,7 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/debuggingdialog.cpp" line="494"/>
         <source> 1. We automatically compressed your log &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;here&lt;/a&gt;.&lt;br&gt;</source>
-        <translation> 1. Vi har automatiskt komprimerat din logg &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;här&lt;/a&gt;.&lt;br&gt;</translation>
+        <translation> 1. Vi har automatiskt komprimerat din logg &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;hÃ¤r&lt;/a&gt;.&lt;br&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/debuggingdialog.cpp" line="496"/>
@@ -865,7 +865,7 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/debuggingdialog.cpp" line="498"/>
         <source> 3. Share the link with &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt; support@infomaniak.com &lt;/a&gt;&lt;br&gt;</source>
-        <translation> 3. Dela länken med &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;support@infomaniak.com &lt;/a&gt;&lt;br&gt;</translation>
+        <translation> 3. Dela lÃ¤nken med &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;support@infomaniak.com &lt;/a&gt;&lt;br&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/debuggingdialog.cpp" line="528"/>
@@ -880,12 +880,12 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/debuggingdialog.cpp" line="598"/>
         <source>The extended full log is activated through the KDRIVE_FORCE_EXTENDED_LOG environment variable. Set it to 0 to disable it.</source>
-        <translation>Den utökade fullständiga loggen aktiveras via miljövariabeln KDRIVE_FORCE_EXTENDED_LOG. Sätt den till 0 för att inaktivera den.</translation>
+        <translation>Den utÃ¶kade fullstÃ¤ndiga loggen aktiveras via miljÃ¶variabeln KDRIVE_FORCE_EXTENDED_LOG. SÃ¤tt den till 0 fÃ¶r att inaktivera den.</translation>
     </message>
     <message>
         <location filename="../src/gui/debuggingdialog.h" line="70"/>
         <source>The entire folder is large (&gt; 100 MB) and may take some time to share. To reduce the sharing time, we recommend, that you share only the last kDrive session.</source>
-        <translation>Hela mappen är stor (&gt; 100 MB) och det kan ta en stund att dela den. För att minska delningstiden rekommenderar vi att du endast delar den senaste kDrive-sessionen.</translation>
+        <translation>Hela mappen Ã¤r stor (&gt; 100 MB) och det kan ta en stund att dela den. FÃ¶r att minska delningstiden rekommenderar vi att du endast delar den senaste kDrive-sessionen.</translation>
     </message>
     <message>
         <location filename="../src/gui/debuggingdialog.cpp" line="612"/>
@@ -896,13 +896,13 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/debuggingdialog.cpp" line="655"/>
         <source>Do you want to save your modifications?</source>
-        <translation>Vill du spara dina ändringar?</translation>
+        <translation>Vill du spara dina Ã¤ndringar?</translation>
     </message>
     <message>
         <location filename="../src/gui/debuggingdialog.cpp" line="710"/>
         <location filename="../src/gui/debuggingdialog.cpp" line="716"/>
         <source>Unable to open folder %1.</source>
-        <translation>Det går inte att öppna mappen %1.</translation>
+        <translation>Det gÃ¥r inte att Ã¶ppna mappen %1.</translation>
     </message>
     <message>
         <location filename="../src/gui/debuggingdialog.cpp" line="723"/>
@@ -940,7 +940,7 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="1123"/>
         <source>A notification will be displayed as soon as a new folder has been synchronized or modified</source>
-        <translation>Ett meddelande visas så snart en ny mapp har synkroniserats eller ändrats</translation>
+        <translation>Ett meddelande visas sÃ¥ snart en ny mapp har synkroniserats eller Ã¤ndrats</translation>
     </message>
     <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="1124"/>
@@ -950,12 +950,12 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="981"/>
         <source>Do you really want to stop syncing the folder &lt;i&gt;%1&lt;/i&gt; ?&lt;br&gt;&lt;b&gt;Note:&lt;/b&gt; This will &lt;b&gt;not&lt;/b&gt; delete any files.</source>
-        <translation>Vill du verkligen sluta synkronisera mappen &lt;i&gt;%1&lt;/i&gt;?&lt;br&gt;&lt;b&gt;Obs!&lt;/b&gt; Detta kommer &lt;b&gt;inte&lt;/b&gt; att radera några filer.</translation>
+        <translation>Vill du verkligen sluta synkronisera mappen &lt;i&gt;%1&lt;/i&gt;?&lt;br&gt;&lt;b&gt;Obs!&lt;/b&gt; Detta kommer &lt;b&gt;inte&lt;/b&gt; att radera nÃ¥gra filer.</translation>
     </message>
     <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="356"/>
         <source>This operation may take from a few seconds to a few minutes depending on the size of the folder.</source>
-        <translation>Denna åtgärd kan ta allt från några sekunder till några minuter, beroende på mappens storlek.</translation>
+        <translation>Denna Ã¥tgÃ¤rd kan ta allt frÃ¥n nÃ¥gra sekunder till nÃ¥gra minuter, beroende pÃ¥ mappens storlek.</translation>
     </message>
     <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="360"/>
@@ -982,23 +982,23 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="985"/>
         <source>REMOVE FOLDER SYNC CONNECTION</source>
-        <translation>TA BORT SYNKRONISERINGSFÖRBINDELSEN FÖR MAPPEN</translation>
+        <translation>TA BORT SYNKRONISERINGSFÃ–RBINDELSEN FÃ–R MAPPEN</translation>
     </message>
     <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="1048"/>
         <source>An error occurred while loading the list of subfolders.</source>
-        <translation>Ett fel uppstod vid inläsningen av listan över undermappar.</translation>
+        <translation>Ett fel uppstod vid inlÃ¤sningen av listan Ã¶ver undermappar.</translation>
     </message>
     <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="1121"/>
         <source>Enable the notifications for this kDrive</source>
-        <translation>Aktivera aviseringar för denna kDrive</translation>
+        <translation>Aktivera aviseringar fÃ¶r denna kDrive</translation>
     </message>
     <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="359"/>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="390"/>
         <source>CONFIRM</source>
-        <translation>BEKRÄFTA</translation>
+        <translation>BEKRÃ„FTA</translation>
     </message>
     <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="120"/>
@@ -1020,17 +1020,17 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="382"/>
         <source>Do you really want to turn off Lite Sync?</source>
-        <translation>Vill du verkligen stänga av Lite Sync?</translation>
+        <translation>Vill du verkligen stÃ¤nga av Lite Sync?</translation>
     </message>
     <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="384"/>
         <source>You don&apos;t have enough space to sync all the files on your kDrive (%1 missing). If you turn off Lite Sync, you need to select which folders to sync on your computer. In the meantime, the synchronization of your kDrive will be paused.</source>
-        <translation>Du har inte tillräckligt med utrymme för att synkronisera alla filer på din kDrive (%1 saknas). Om du inaktiverar Lite Sync måste du välja vilka mappar som ska synkroniseras på din dator. Under tiden kommer synkroniseringen av din kDrive att pausas.</translation>
+        <translation>Du har inte tillrÃ¤ckligt med utrymme fÃ¶r att synkronisera alla filer pÃ¥ din kDrive (%1 saknas). Om du inaktiverar Lite Sync mÃ¥ste du vÃ¤lja vilka mappar som ska synkroniseras pÃ¥ din dator. Under tiden kommer synkroniseringen av din kDrive att pausas.</translation>
     </message>
     <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="388"/>
         <source>If you turn off Lite Sync, all files will be downloaded to your computer.</source>
-        <translation>Om du stänger av Lite Sync kommer alla filer att laddas ner till din dator.</translation>
+        <translation>Om du stÃ¤nger av Lite Sync kommer alla filer att laddas ner till din dator.</translation>
     </message>
     <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="627"/>
@@ -1040,22 +1040,22 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="819"/>
         <source>Lite Sync activated.</source>
-        <translation>Lite Sync är aktiverat.</translation>
+        <translation>Lite Sync Ã¤r aktiverat.</translation>
     </message>
     <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="837"/>
         <source>Lite Sync deactivated.</source>
-        <translation>Lite Sync är inaktiverat.</translation>
+        <translation>Lite Sync Ã¤r inaktiverat.</translation>
     </message>
     <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="899"/>
         <source>This drive is being deleted.</source>
-        <translation>Den här enheten raderas.</translation>
+        <translation>Den hÃ¤r enheten raderas.</translation>
     </message>
     <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="962"/>
         <source>Impossible to open item %1</source>
-        <translation>Det går inte att öppna objekt %1</translation>
+        <translation>Det gÃ¥r inte att Ã¶ppna objekt %1</translation>
     </message>
     <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="1007"/>
@@ -1070,12 +1070,12 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="1126"/>
         <source>Search in your kDrive</source>
-        <translation>Sök i din kDrive</translation>
+        <translation>SÃ¶k i din kDrive</translation>
     </message>
     <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="1127"/>
         <source>Search</source>
-        <translation>Sök</translation>
+        <translation>SÃ¶k</translation>
     </message>
 </context>
 <context>
@@ -1088,7 +1088,7 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/driveselectionwidget.cpp" line="150"/>
         <source>Add a kDrive</source>
-        <translation>Lägg till en kDrive</translation>
+        <translation>LÃ¤gg till en kDrive</translation>
     </message>
 </context>
 <context>
@@ -1096,7 +1096,7 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/errortabwidget.cpp" line="179"/>
         <source>Resolve</source>
-        <translation>Lösa</translation>
+        <translation>LÃ¶sa</translation>
     </message>
     <message>
         <location filename="../src/gui/errortabwidget.cpp" line="180"/>
@@ -1106,7 +1106,7 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/errortabwidget.cpp" line="181"/>
         <source>Item(s) with unsupported characters</source>
-        <translation>Objekt med tecken som inte stöds</translation>
+        <translation>Objekt med tecken som inte stÃ¶ds</translation>
     </message>
     <message>
         <location filename="../src/gui/errortabwidget.cpp" line="92"/>
@@ -1119,22 +1119,22 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/errortabwidget.cpp" line="176"/>
         <source>To Resolve</source>
-        <translation>Att lösa</translation>
+        <translation>Att lÃ¶sa</translation>
     </message>
     <message>
         <location filename="../src/gui/errortabwidget.cpp" line="184"/>
         <source>Automatically resolved</source>
-        <translation>Löst automatiskt</translation>
+        <translation>LÃ¶st automatiskt</translation>
     </message>
     <message>
         <location filename="../src/gui/errortabwidget.cpp" line="185"/>
         <source>problem(s) solved</source>
-        <translation>problem löst</translation>
+        <translation>problem lÃ¶st</translation>
     </message>
     <message>
         <location filename="../src/gui/errortabwidget.cpp" line="177"/>
         <source>problem(s) detected</source>
-        <translation>problem har upptäckts</translation>
+        <translation>problem har upptÃ¤ckts</translation>
     </message>
 </context>
 <context>
@@ -1154,7 +1154,7 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/errorsmenubarwidget.cpp" line="101"/>
         <source>Back to preferences</source>
-        <translation>Tillbaka till inställningar</translation>
+        <translation>Tillbaka till instÃ¤llningar</translation>
     </message>
 </context>
 <context>
@@ -1162,7 +1162,7 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/errorspopup.cpp" line="73"/>
         <source>Some files couldn&apos;t be synchronized on the following kDrive(s) :</source>
-        <translation>Vissa filer kunde inte synkroniseras på följande kDrive-enheter:</translation>
+        <translation>Vissa filer kunde inte synkroniseras pÃ¥ fÃ¶ljande kDrive-enheter:</translation>
     </message>
     <message>
         <location filename="../src/gui/errorspopup.cpp" line="95"/>
@@ -1184,8 +1184,8 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
         <source>Generic errors (%n warning(s) or error(s))</source>
         <comment>Number of warnings or errors</comment>
         <translation>
-            <numerusform>Allmänna fel (%n varning eller fel)</numerusform>
-            <numerusform>Allmänna fel (%n varningar eller fel)</numerusform>
+            <numerusform>AllmÃ¤nna fel (%n varning eller fel)</numerusform>
+            <numerusform>AllmÃ¤nna fel (%n varningar eller fel)</numerusform>
         </translation>
     </message>
 </context>
@@ -1199,12 +1199,12 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/fileexclusiondialog.cpp" line="86"/>
         <source>Add files or folders that will not be synchronized on your computer.</source>
-        <translation>Lägg till filer eller mappar som inte ska synkroniseras på din dator.</translation>
+        <translation>LÃ¤gg till filer eller mappar som inte ska synkroniseras pÃ¥ din dator.</translation>
     </message>
     <message>
         <location filename="../src/gui/fileexclusiondialog.cpp" line="97"/>
         <source>Add</source>
-        <translation>Lägg till</translation>
+        <translation>LÃ¤gg till</translation>
     </message>
     <message>
         <location filename="../src/gui/fileexclusiondialog.cpp" line="109"/>
@@ -1229,12 +1229,12 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/fileexclusiondialog.cpp" line="304"/>
         <source>Do you want to save your modifications?</source>
-        <translation>Vill du spara dina ändringar?</translation>
+        <translation>Vill du spara dina Ã¤ndringar?</translation>
     </message>
     <message>
         <location filename="../src/gui/fileexclusiondialog.cpp" line="353"/>
         <source>Exclusion template already exists!</source>
-        <translation>Mallen för uteslutning finns redan!</translation>
+        <translation>Mallen fÃ¶r uteslutning finns redan!</translation>
     </message>
     <message>
         <location filename="../src/gui/fileexclusiondialog.cpp" line="374"/>
@@ -1244,7 +1244,7 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/fileexclusiondialog.cpp" line="434"/>
         <source>Cannot save changes!</source>
-        <translation>Det går inte att spara ändringarna!</translation>
+        <translation>Det gÃ¥r inte att spara Ã¤ndringarna!</translation>
     </message>
 </context>
 <context>
@@ -1252,7 +1252,7 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/fileexclusionnamedialog.cpp" line="58"/>
         <source>VALIDATE</source>
-        <translation>BEKRÄFTA</translation>
+        <translation>BEKRÃ„FTA</translation>
     </message>
     <message>
         <location filename="../src/gui/fileexclusionnamedialog.cpp" line="65"/>
@@ -1266,42 +1266,42 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
         <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="67"/>
         <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="73"/>
         <source>Unable to open link %1.</source>
-        <translation>Det går inte att öppna länken %1.</translation>
+        <translation>Det gÃ¥r inte att Ã¶ppna lÃ¤nken %1.</translation>
     </message>
     <message>
         <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="122"/>
         <source>Solve conflict(s)</source>
-        <translation>Lösa konflikter</translation>
+        <translation>LÃ¶sa konflikter</translation>
     </message>
     <message>
         <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="140"/>
         <source>&lt;b&gt;What do you want to do with the %1 conflicted item(s)?&lt;/b&gt;</source>
-        <translation>&lt;b&gt;Vad vill du göra med den/de %1 objektet/objekten som är i konflikt?&lt;/b&gt;</translation>
+        <translation>&lt;b&gt;Vad vill du gÃ¶ra med den/de %1 objektet/objekten som Ã¤r i konflikt?&lt;/b&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="143"/>
         <source>Save my changes and replace other users&apos; versions.</source>
-        <translation>Spara mina ändringar och ersätt andra användares versioner.</translation>
+        <translation>Spara mina Ã¤ndringar och ersÃ¤tt andra anvÃ¤ndares versioner.</translation>
     </message>
     <message>
         <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="147"/>
         <source>Undo my changes and keep other users&apos; versions.</source>
-        <translation>Ångra mina ändringar och behåll andra användares versioner.</translation>
+        <translation>Ã…ngra mina Ã¤ndringar och behÃ¥ll andra anvÃ¤ndares versioner.</translation>
     </message>
     <message>
         <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="169"/>
         <source>Your changes may be permanently deleted. They cannot be restored from the kDrive web application.</source>
-        <translation>Dina ändringar kan raderas permanent. De går inte att återställa via kDrive-webbappen.</translation>
+        <translation>Dina Ã¤ndringar kan raderas permanent. De gÃ¥r inte att Ã¥terstÃ¤lla via kDrive-webbappen.</translation>
     </message>
     <message>
         <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="171"/>
         <source>&lt;a style=%1 href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
-        <translation>&lt;a style=%1 href=&quot;%2&quot;&gt;Läs mer&lt;/a&gt;</translation>
+        <translation>&lt;a style=%1 href=&quot;%2&quot;&gt;LÃ¤s mer&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="175"/>
         <source>Your changes will be permanently deleted. They cannot be restored from the kDrive web application.</source>
-        <translation>Dina ändringar kommer att raderas permanent. De kan inte återställas via kDrive-webbappen.</translation>
+        <translation>Dina Ã¤ndringar kommer att raderas permanent. De kan inte Ã¥terstÃ¤llas via kDrive-webbappen.</translation>
     </message>
     <message>
         <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="191"/>
@@ -1311,7 +1311,7 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="228"/>
         <source>VALIDATE</source>
-        <translation>BEKRÄFTA</translation>
+        <translation>BEKRÃ„FTA</translation>
     </message>
     <message>
         <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="234"/>
@@ -1321,12 +1321,12 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="251"/>
         <source>Modifications have been made to these files by several users in several places (online on kDrive, a computer or a mobile). Folders containing these files may also have been deleted.&lt;br&gt;</source>
-        <translation>Flera användare har gjort ändringar i dessa filer på olika ställen (online på kDrive, på en dator eller i en mobil). Mappar som innehåller dessa filer kan också ha raderats.&lt;br&gt;</translation>
+        <translation>Flera anvÃ¤ndare har gjort Ã¤ndringar i dessa filer pÃ¥ olika stÃ¤llen (online pÃ¥ kDrive, pÃ¥ en dator eller i en mobil). Mappar som innehÃ¥ller dessa filer kan ocksÃ¥ ha raderats.&lt;br&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="253"/>
         <source>The local version of your item &lt;b&gt;is not synced&lt;/b&gt; with kDrive. &lt;a style=&quot;color: #489EF3&quot; href=&quot;%1&quot;&gt;Learn more&lt;/a&gt;</source>
-        <translation>Den lokala versionen av din artikel &lt;b&gt;är inte synkroniserad&lt;/b&gt; med kDrive. &lt;a style=&quot;color: #489EF3&quot; href=&quot;%1&quot;&gt;Läs mer&lt;/a&gt;</translation>
+        <translation>Den lokala versionen av din artikel &lt;b&gt;Ã¤r inte synkroniserad&lt;/b&gt; med kDrive. &lt;a style=&quot;color: #489EF3&quot; href=&quot;%1&quot;&gt;LÃ¤s mer&lt;/a&gt;</translation>
     </message>
 </context>
 <context>
@@ -1334,7 +1334,7 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/folderitemwidget.cpp" line="458"/>
         <source>More actions</source>
-        <translation>Fler åtgärder</translation>
+        <translation>Fler Ã¥tgÃ¤rder</translation>
     </message>
     <message>
         <location filename="../src/gui/folderitemwidget.cpp" line="188"/>
@@ -1355,17 +1355,17 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/folderitemwidget.cpp" line="481"/>
         <source>Unselected folders will be moved to trash provided they contain offline items. Folders synced to kDrive will remain available online.</source>
-        <translation>Mappar som inte är markerade flyttas till papperskorgen om de innehåller objekt som är offline. Mappar som synkroniserats till kDrive förblir tillgängliga online.</translation>
+        <translation>Mappar som inte Ã¤r markerade flyttas till papperskorgen om de innehÃ¥ller objekt som Ã¤r offline. Mappar som synkroniserats till kDrive fÃ¶rblir tillgÃ¤ngliga online.</translation>
     </message>
     <message>
         <location filename="../src/gui/folderitemwidget.cpp" line="485"/>
         <source>Unselected folders will be moved to trash. Folders synced to kDrive will remain available online.</source>
-        <translation>Mappar som inte är markerade kommer att flyttas till papperskorgen. Mappar som synkroniserats till kDrive kommer att förbli tillgängliga online.</translation>
+        <translation>Mappar som inte Ã¤r markerade kommer att flyttas till papperskorgen. Mappar som synkroniserats till kDrive kommer att fÃ¶rbli tillgÃ¤ngliga online.</translation>
     </message>
     <message>
         <location filename="../src/gui/folderitemwidget.cpp" line="488"/>
         <source>Unselected folders will be &lt;b&gt;permanently&lt;/b&gt; deleted from the computer. Folders synced to kDrive will remain available online.</source>
-        <translation>Mappar som inte är markerade kommer att raderas &lt;b&gt;permanent&lt;/b&gt; från datorn. Mappar som synkroniserats till kDrive kommer att finnas kvar online.</translation>
+        <translation>Mappar som inte Ã¤r markerade kommer att raderas &lt;b&gt;permanent&lt;/b&gt; frÃ¥n datorn. Mappar som synkroniserats till kDrive kommer att finnas kvar online.</translation>
     </message>
     <message>
         <location filename="../src/gui/folderitemwidget.cpp" line="493"/>
@@ -1375,7 +1375,7 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/folderitemwidget.cpp" line="494"/>
         <source>VALIDATE</source>
-        <translation>BEKRÄFTA</translation>
+        <translation>BEKRÃ„FTA</translation>
     </message>
     <message>
         <location filename="../src/gui/folderitemwidget.cpp" line="365"/>
@@ -1390,7 +1390,7 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/folderitemwidget.cpp" line="375"/>
         <source>Resume synchronization</source>
-        <translation>Fortsätt synkroniseringen</translation>
+        <translation>FortsÃ¤tt synkroniseringen</translation>
     </message>
     <message>
         <location filename="../src/gui/folderitemwidget.cpp" line="386"/>
@@ -1403,7 +1403,7 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/genericerroritemwidget.cpp" line="85"/>
         <source>Unable to open folder path %1.</source>
-        <translation>Det går inte att öppna mappsökvägen %1.</translation>
+        <translation>Det gÃ¥r inte att Ã¶ppna mappsÃ¶kvÃ¤gen %1.</translation>
     </message>
 </context>
 <context>
@@ -1421,7 +1421,7 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/litesyncappdialog.cpp" line="121"/>
         <source>VALIDATE</source>
-        <translation>BEKRÄFTA</translation>
+        <translation>BEKRÃ„FTA</translation>
     </message>
     <message>
         <location filename="../src/gui/litesyncappdialog.cpp" line="128"/>
@@ -1434,12 +1434,12 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/litesyncdialog.cpp" line="91"/>
         <source>Some apps (backup, anti-virus...) access your files, which leads to their download when they are &quot;online&quot;. Add them in the list below to avoid this behaviour.</source>
-        <translation>Vissa appar (säkerhetskopieringsappar, antivirusprogram...) får åtkomst till dina filer, vilket gör att de laddas ner när de är ”uppkopplade”. Lägg till dem i listan nedan för att undvika detta.</translation>
+        <translation>Vissa appar (sÃ¤kerhetskopieringsappar, antivirusprogram...) fÃ¥r Ã¥tkomst till dina filer, vilket gÃ¶r att de laddas ner nÃ¤r de Ã¤r â€uppkoppladeâ€. LÃ¤gg till dem i listan nedan fÃ¶r att undvika detta.</translation>
     </message>
     <message>
         <location filename="../src/gui/litesyncdialog.cpp" line="103"/>
         <source>Add</source>
-        <translation>Lägg till</translation>
+        <translation>LÃ¤gg till</translation>
     </message>
     <message>
         <location filename="../src/gui/litesyncdialog.cpp" line="115"/>
@@ -1464,7 +1464,7 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/litesyncdialog.cpp" line="295"/>
         <source>Do you want to save your modifications?</source>
-        <translation>Vill du spara dina ändringar?</translation>
+        <translation>Vill du spara dina Ã¤ndringar?</translation>
     </message>
     <message>
         <location filename="../src/gui/litesyncdialog.cpp" line="337"/>
@@ -1474,7 +1474,7 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/litesyncdialog.cpp" line="374"/>
         <source>Cannot save changes!</source>
-        <translation>Det går inte att spara ändringarna!</translation>
+        <translation>Det gÃ¥r inte att spara Ã¤ndringarna!</translation>
     </message>
 </context>
 <context>
@@ -1482,22 +1482,22 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/localfolderdialog.cpp" line="63"/>
         <source>Which folder on your computer would you like to&lt;br&gt;synchronize ?</source>
-        <translation>Vilken mapp på din dator vill du&lt;br&gt;synkronisera?</translation>
+        <translation>Vilken mapp pÃ¥ din dator vill du&lt;br&gt;synkronisera?</translation>
     </message>
     <message>
         <location filename="../src/gui/localfolderdialog.cpp" line="72"/>
         <source>The content of this folder will be synchronized on the kDrive</source>
-        <translation>Innehållet i den här mappen kommer att synkroniseras på kDrive</translation>
+        <translation>InnehÃ¥llet i den hÃ¤r mappen kommer att synkroniseras pÃ¥ kDrive</translation>
     </message>
     <message>
         <location filename="../src/gui/localfolderdialog.cpp" line="91"/>
         <source>Select a folder</source>
-        <translation>Välj en mapp</translation>
+        <translation>VÃ¤lj en mapp</translation>
     </message>
     <message>
         <location filename="../src/gui/localfolderdialog.cpp" line="131"/>
         <source>Edit folder</source>
-        <translation>Ändra mapp</translation>
+        <translation>Ã„ndra mapp</translation>
     </message>
     <message>
         <location filename="../src/gui/localfolderdialog.cpp" line="166"/>
@@ -1507,27 +1507,27 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/localfolderdialog.cpp" line="173"/>
         <source>CONTINUE</source>
-        <translation>FORTSÄTT</translation>
+        <translation>FORTSÃ„TT</translation>
     </message>
     <message>
         <location filename="../src/gui/localfolderdialog.cpp" line="210"/>
         <source>This folder is not compatible with Lite Sync.&lt;br&gt;
 Please select another folder. If you continue Lite Sync will be disabled.&lt;br&gt;
 &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
-        <translation>Den här mappen är inte kompatibel med Lite Sync.&lt;br&gt;
-Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&gt;
+        <translation>Den hÃ¤r mappen Ã¤r inte kompatibel med Lite Sync.&lt;br&gt;
+VÃ¤lj en annan mapp. Om du fortsÃ¤tter kommer Lite Sync att inaktiveras.&lt;br&gt;
 
-&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Läs mer&lt;/a&gt;</translation>
+&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;LÃ¤s mer&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/localfolderdialog.cpp" line="233"/>
         <source>Select folder</source>
-        <translation>Välj mapp</translation>
+        <translation>VÃ¤lj mapp</translation>
     </message>
     <message>
         <location filename="../src/gui/localfolderdialog.cpp" line="292"/>
         <source>Unable to open link %1.</source>
-        <translation>Det går inte att öppna länken %1.</translation>
+        <translation>Det gÃ¥r inte att Ã¶ppna lÃ¤nken %1.</translation>
     </message>
 </context>
 <context>
@@ -1540,7 +1540,7 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/libcommongui/logger.cpp" line="211"/>
         <source>&lt;nobr&gt;File &apos;%1&apos;&lt;br/&gt;cannot be opened for writing.&lt;br/&gt;&lt;br/&gt;The log output can &lt;b&gt;not&lt;/b&gt; be saved!&lt;/nobr&gt;</source>
-        <translation>&lt;nobr&gt;Filen &amp;#x27;%1&amp;#x27;&lt;br/&gt;kan inte öppnas för skrivning.&lt;br/&gt;&lt;br/&gt;Logginformationen kan &lt;b&gt;inte&lt;/b&gt; sparas!&lt;/nobr&gt;</translation>
+        <translation>&lt;nobr&gt;Filen &amp;#x27;%1&amp;#x27;&lt;br/&gt;kan inte Ã¶ppnas fÃ¶r skrivning.&lt;br/&gt;&lt;br/&gt;Logginformationen kan &lt;b&gt;inte&lt;/b&gt; sparas!&lt;/nobr&gt;</translation>
     </message>
 </context>
 <context>
@@ -1548,12 +1548,12 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/mainmenubarwidget.cpp" line="115"/>
         <source>Preferences</source>
-        <translation>Inställningar</translation>
+        <translation>InstÃ¤llningar</translation>
     </message>
     <message>
         <location filename="../src/gui/mainmenubarwidget.cpp" line="116"/>
         <source>Help</source>
-        <translation>Hjälp</translation>
+        <translation>HjÃ¤lp</translation>
     </message>
 </context>
 <context>
@@ -1561,24 +1561,24 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="1082"/>
         <source>Unable to open folder path %1.</source>
-        <translation>Det går inte att öppna mappsökvägen %1.</translation>
+        <translation>Det gÃ¥r inte att Ã¶ppna mappsÃ¶kvÃ¤gen %1.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="1096"/>
         <source>Transmission done!&lt;br&gt;Please refer to identifier &lt;b&gt;%1&lt;/b&gt; in bug reports.</source>
-        <translation>Överföringen är klar!&lt;br&gt;Ange referensnummer &lt;b&gt;%1&lt;/b&gt; i felrapporter.</translation>
+        <translation>Ã–verfÃ¶ringen Ã¤r klar!&lt;br&gt;Ange referensnummer &lt;b&gt;%1&lt;/b&gt; i felrapporter.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="1118"/>
         <source>No kDrive configured!</source>
-        <translation>kDrive är inte konfigurerat!</translation>
+        <translation>kDrive Ã¤r inte konfigurerat!</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="1097"/>
         <source>Transmission failed!
 Please, use the following link to send the logs to the support: &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%2&lt;/a&gt;</source>
-        <translation>Överföringen misslyckades!
-Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%2&lt;/a&gt;</translation>
+        <translation>Ã–verfÃ¶ringen misslyckades!
+AnvÃ¤nd fÃ¶ljande lÃ¤nk fÃ¶r att skicka loggfilerna till supporten: &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%2&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="337"/>
@@ -1587,84 +1587,84 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
         <location filename="../src/gui/parametersdialog.cpp" line="546"/>
         <location filename="../src/gui/parametersdialog.cpp" line="560"/>
         <source>A technical error has occurred (error %1).&lt;br&gt;Please empty the history and if the error persists, contact our support team.</source>
-        <translation>Ett tekniskt fel har uppstått (fel %1).&lt;br&gt;Rensa historiken och kontakta vår support om felet kvarstår.</translation>
+        <translation>Ett tekniskt fel har uppstÃ¥tt (fel %1).&lt;br&gt;Rensa historiken och kontakta vÃ¥r support om felet kvarstÃ¥r.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="342"/>
         <source>It seems that your network connection is configured with too low a timeout for the application to work correctly (error %1).&lt;br&gt;Please check your network configuration.</source>
-        <translation>Det verkar som om tidsgränsen för din nätverksanslutning är inställd på ett för lågt värde för att programmet ska fungera korrekt (fel %1).&lt;br&gt;Kontrollera din nätverkskonfiguration.</translation>
+        <translation>Det verkar som om tidsgrÃ¤nsen fÃ¶r din nÃ¤tverksanslutning Ã¤r instÃ¤lld pÃ¥ ett fÃ¶r lÃ¥gt vÃ¤rde fÃ¶r att programmet ska fungera korrekt (fel %1).&lt;br&gt;Kontrollera din nÃ¤tverkskonfiguration.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="347"/>
         <location filename="../src/gui/parametersdialog.cpp" line="516"/>
         <source>Cannot connect to kDrive server (error %1).&lt;br&gt;Attempting reconnection. Please check your Internet connection and your firewall.</source>
-        <translation>Det går inte att ansluta till kDrive-servern (fel %1).&lt;br&gt;Försöker ansluta igen. Kontrollera din internetanslutning och din brandvägg.</translation>
+        <translation>Det gÃ¥r inte att ansluta till kDrive-servern (fel %1).&lt;br&gt;FÃ¶rsÃ¶ker ansluta igen. Kontrollera din internetanslutning och din brandvÃ¤gg.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="352"/>
         <source>A login problem has occurred (error %1).&lt;br&gt;Please log in again and if the error persists, contact our support team.</source>
-        <translation>Ett inloggningsproblem har uppstått (fel %1).&lt;br&gt;Logga in igen. Om felet kvarstår, kontakta vår support.</translation>
+        <translation>Ett inloggningsproblem har uppstÃ¥tt (fel %1).&lt;br&gt;Logga in igen. Om felet kvarstÃ¥r, kontakta vÃ¥r support.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="356"/>
         <source>A new version of the application is available.&lt;br&gt;Please update the application to continue using it.</source>
-        <translation>En ny version av appen finns tillgänglig. Uppdatera&lt;br&gt;appen för att kunna fortsätta använda den.</translation>
+        <translation>En ny version av appen finns tillgÃ¤nglig. Uppdatera&lt;br&gt;appen fÃ¶r att kunna fortsÃ¤tta anvÃ¤nda den.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="360"/>
         <source>The log upload failed (error %1).&lt;br&gt;Please try again later.</source>
-        <translation>Uppladdningen av loggen misslyckades (fel %1).&lt;br&gt;Försök igen senare.</translation>
+        <translation>Uppladdningen av loggen misslyckades (fel %1).&lt;br&gt;FÃ¶rsÃ¶k igen senare.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="385"/>
         <source>The synchronization folder is no longer accessible (error %1).&lt;br&gt;Synchronization will resume as soon as the folder is accessible.</source>
-        <translation>Synkroniseringsmappen är inte längre tillgänglig (fel %1).&lt;br&gt;Synkroniseringen återupptas så snart mappen blir tillgänglig.</translation>
+        <translation>Synkroniseringsmappen Ã¤r inte lÃ¤ngre tillgÃ¤nglig (fel %1).&lt;br&gt;Synkroniseringen Ã¥terupptas sÃ¥ snart mappen blir tillgÃ¤nglig.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="532"/>
         <source>The synchronization folder has been replaced or moved in a way that prevents syncing (error %1).&lt;br&gt;This can happen after copying, moving, or restoring the folder.&lt;br&gt;To fix this, please create a new synchronization with a new folder.&lt;br&gt;Note: if you have unsynced changes in the old folder, you will need to copy them manually into the new one.</source>
-        <translation>Synkroniseringsmappen har ersatts eller flyttats på ett sätt som förhindrar synkronisering (fel %1).&lt;br&gt;Detta kan inträffa efter att mappen har kopierats, flyttats eller återställts.&lt;br&gt;För att åtgärda detta, skapa en ny synkronisering med en ny mapp.&lt;br&gt;Obs! Om det finns osynkroniserade ändringar i den gamla mappen måste du kopiera dem manuellt till den nya.</translation>
+        <translation>Synkroniseringsmappen har ersatts eller flyttats pÃ¥ ett sÃ¤tt som fÃ¶rhindrar synkronisering (fel %1).&lt;br&gt;Detta kan intrÃ¤ffa efter att mappen har kopierats, flyttats eller Ã¥terstÃ¤llts.&lt;br&gt;FÃ¶r att Ã¥tgÃ¤rda detta, skapa en ny synkronisering med en ny mapp.&lt;br&gt;Obs! Om det finns osynkroniserade Ã¤ndringar i den gamla mappen mÃ¥ste du kopiera dem manuellt till den nya.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="397"/>
         <source>There is not enough memory left on your machine.&lt;br&gt;The synchronization has been stopped.</source>
-        <translation>Det finns inte tillräckligt med minne kvar på din dator.&lt;br&gt;Synkroniseringen har avbrutits.</translation>
+        <translation>Det finns inte tillrÃ¤ckligt med minne kvar pÃ¥ din dator.&lt;br&gt;Synkroniseringen har avbrutits.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="320"/>
         <source>kDrive needs to have write access to your computer&apos;s temporary directory.&lt;br&gt;Please restart the kDrive app to resolve this issue.</source>
-        <translation>kDrive måste ha skrivbehörighet till datorns temporära katalog.&lt;br&gt;Starta om kDrive-appen för att lösa problemet.</translation>
+        <translation>kDrive mÃ¥ste ha skrivbehÃ¶righet till datorns temporÃ¤ra katalog.&lt;br&gt;Starta om kDrive-appen fÃ¶r att lÃ¶sa problemet.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="330"/>
         <location filename="../src/gui/parametersdialog.cpp" line="487"/>
         <source>A technical error has occurred.&lt;br&gt;Synchronization will resume as soon as possible. Please contact our support team if the error persists.</source>
-        <translation>Ett tekniskt fel har uppstått.&lt;br&gt;Synkroniseringen återupptas så snart som möjligt. Kontakta vår support om felet kvarstår.</translation>
+        <translation>Ett tekniskt fel har uppstÃ¥tt.&lt;br&gt;Synkroniseringen Ã¥terupptas sÃ¥ snart som mÃ¶jligt. Kontakta vÃ¥r support om felet kvarstÃ¥r.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="401"/>
         <source>The number of inotify watches is insufficient (error %1).&lt;br&gt;You can raise this number by editing &apos;/etc/sysctl.conf&apos;.</source>
-        <translation>Antalet inotify-övervakningar är otillräckligt (fel %1).&lt;br&gt;Du kan öka detta antal genom att redigera filen &amp;#x27;/etc/sysctl.conf&amp;#x27;.</translation>
+        <translation>Antalet inotify-Ã¶vervakningar Ã¤r otillrÃ¤ckligt (fel %1).&lt;br&gt;Du kan Ã¶ka detta antal genom att redigera filen &amp;#x27;/etc/sysctl.conf&amp;#x27;.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="406"/>
         <source>Unable to start synchronization (error %1).&lt;br&gt;You must allow:&lt;br&gt;- kDrive in System Settings &gt;&gt; General &gt;&gt; Login Items &amp; Extensions &gt;&gt; Endpoint Security Extensions&lt;br&gt;- kDrive LiteSync Extension in System Settings &gt;&gt; Privacy &amp; Security &gt;&gt; Full Disk Access.</source>
-        <translation>Det går inte att starta synkroniseringen (fel %1).&lt;br&gt;Du måste ge behörighet till:&lt;br&gt;– kDrive i Systeminställningar &gt;&gt; Allmänt &gt;&gt; Inloggningsobjekt och tillägg &gt;&gt; Tillägg för&lt;br&gt;Endpoint Security– kDrive LiteSync-tillägget i Systeminställningar &gt;&gt; Sekretess och säkerhet &gt;&gt; Fullständig disktillgång.</translation>
+        <translation>Det gÃ¥r inte att starta synkroniseringen (fel %1).&lt;br&gt;Du mÃ¥ste ge behÃ¶righet till:&lt;br&gt;â€“ kDrive i SysteminstÃ¤llningar &gt;&gt; AllmÃ¤nt &gt;&gt; Inloggningsobjekt och tillÃ¤gg &gt;&gt; TillÃ¤gg fÃ¶r&lt;br&gt;Endpoint Securityâ€“ kDrive LiteSync-tillÃ¤gget i SysteminstÃ¤llningar &gt;&gt; Sekretess och sÃ¤kerhet &gt;&gt; FullstÃ¤ndig disktillgÃ¥ng.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="419"/>
         <source>Unable to start Lite Sync plugin (error %1).&lt;br&gt;Check that the Lite Sync extension is installed and Windows Search service is enabled.&lt;br&gt;Please empty the history, restart and if the error persists, contact our support team.</source>
-        <translation>Det går inte att starta tillägget Lite Sync (fel %1).&lt;br&gt;Kontrollera att tillägget Lite Sync är installerat och att tjänsten Windows Search är aktiverad.&lt;br&gt;Rensa historiken, starta om datorn och kontakta vår support om felet kvarstår.</translation>
+        <translation>Det gÃ¥r inte att starta tillÃ¤gget Lite Sync (fel %1).&lt;br&gt;Kontrollera att tillÃ¤gget Lite Sync Ã¤r installerat och att tjÃ¤nsten Windows Search Ã¤r aktiverad.&lt;br&gt;Rensa historiken, starta om datorn och kontakta vÃ¥r support om felet kvarstÃ¥r.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="424"/>
         <source>Unable to start Lite Sync plugin (error %1).&lt;br&gt;Check that the Lite Sync extension has the correct permissions and is running.&lt;br&gt;Please empty the history, restart and if the error persists, contact our support team.</source>
-        <translation>Det går inte att starta tillägget Lite Sync (fel %1).&lt;br&gt;Kontrollera att tillägget Lite Sync har rätt behörigheter och är igång.&lt;br&gt;Rensa historiken, starta om och kontakta vår support om felet kvarstår.</translation>
+        <translation>Det gÃ¥r inte att starta tillÃ¤gget Lite Sync (fel %1).&lt;br&gt;Kontrollera att tillÃ¤gget Lite Sync har rÃ¤tt behÃ¶righeter och Ã¤r igÃ¥ng.&lt;br&gt;Rensa historiken, starta om och kontakta vÃ¥r support om felet kvarstÃ¥r.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="429"/>
         <source>Unable to start Lite Sync plugin (error %1).&lt;br&gt;Please empty the history, restart and if the error persists, contact our support team.</source>
-        <translation>Det går inte att starta Lite Sync-tillägget (fel %1).&lt;br&gt;Rensa historiken, starta om och kontakta vår support om felet kvarstår.</translation>
+        <translation>Det gÃ¥r inte att starta Lite Sync-tillÃ¤gget (fel %1).&lt;br&gt;Rensa historiken, starta om och kontakta vÃ¥r support om felet kvarstÃ¥r.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="435"/>
@@ -1674,82 +1674,82 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="449"/>
         <source>The kDrive is in maintenance mode.&lt;br&gt;Synchronization will begin again as soon as possible. Please contact our support team if the error persists.</source>
-        <translation>kDrive är i underhållsläge.&lt;br&gt;Synkroniseringen kommer att återupptas så snart som möjligt. Kontakta vår support om felet kvarstår.</translation>
+        <translation>kDrive Ã¤r i underhÃ¥llslÃ¤ge.&lt;br&gt;Synkroniseringen kommer att Ã¥terupptas sÃ¥ snart som mÃ¶jligt. Kontakta vÃ¥r support om felet kvarstÃ¥r.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="455"/>
         <source>The kDrive is blocked.&lt;br&gt;Please renew kDrive. If no action is taken, the data will be permanently deleted and it will be impossible to recover them.</source>
-        <translation>kDrive är blockerat.&lt;br&gt;Förnya kDrive. Om inga åtgärder vidtas kommer uppgifterna att raderas permanent och det går inte att återställa dem.</translation>
+        <translation>kDrive Ã¤r blockerat.&lt;br&gt;FÃ¶rnya kDrive. Om inga Ã¥tgÃ¤rder vidtas kommer uppgifterna att raderas permanent och det gÃ¥r inte att Ã¥terstÃ¤lla dem.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="460"/>
         <source>The kDrive is blocked.&lt;br&gt;Please contact an administrator to renew the kDrive. If no action is taken, the data will be permanently deleted and it will be impossible to recover them.</source>
-        <translation>kDrive är spärrat.&lt;br&gt;Kontakta en administratör för att återställa kDrive. Om inga åtgärder vidtas kommer uppgifterna att raderas permanent och det går inte att återställa dem.</translation>
+        <translation>kDrive Ã¤r spÃ¤rrat.&lt;br&gt;Kontakta en administratÃ¶r fÃ¶r att Ã¥terstÃ¤lla kDrive. Om inga Ã¥tgÃ¤rder vidtas kommer uppgifterna att raderas permanent och det gÃ¥r inte att Ã¥terstÃ¤lla dem.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="466"/>
         <source>The kDrive is waking up.&lt;br&gt;Synchronization will begin again as soon as possible. Please contact our support team if the error persists.</source>
-        <translation>kDrive startar upp.&lt;br&gt;Synkroniseringen kommer att återupptas så snart som möjligt. Kontakta vår support om felet kvarstår.</translation>
+        <translation>kDrive startar upp.&lt;br&gt;Synkroniseringen kommer att Ã¥terupptas sÃ¥ snart som mÃ¶jligt. Kontakta vÃ¥r support om felet kvarstÃ¥r.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="475"/>
         <source>The kDrive is asleep.&lt;br&gt;Please, login to the &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;web version&lt;/a&gt; to check your kDrive&apos;s status, or contact your administrator.</source>
-        <translation>kDrive är inaktivt.&lt;br&gt;Logga in på &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;web&lt;/a&gt;versionen för att kontrollera statusen för ditt kDrive, eller kontakta din administratör.</translation>
+        <translation>kDrive Ã¤r inaktivt.&lt;br&gt;Logga in pÃ¥ &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;web&lt;/a&gt;versionen fÃ¶r att kontrollera statusen fÃ¶r ditt kDrive, eller kontakta din administratÃ¶r.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="479"/>
         <source>The kDrive is asleep.&lt;br&gt;Please, login to the web version to check your kDrive&apos;s status, or contact your administrator.</source>
-        <translation>kDrive är inaktivt.&lt;br&gt;Logga in på webbversionen för att kontrollera statusen för ditt kDrive, eller kontakta din administratör.</translation>
+        <translation>kDrive Ã¤r inaktivt.&lt;br&gt;Logga in pÃ¥ webbversionen fÃ¶r att kontrollera statusen fÃ¶r ditt kDrive, eller kontakta din administratÃ¶r.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="483"/>
         <source>You are not authorised to access this kDrive.&lt;br&gt;Synchronization has been paused. Please contact an administrator.</source>
-        <translation>Du har inte behörighet att komma åt denna kDrive.&lt;br&gt;Synkroniseringen har pausats. Kontakta en administratör.</translation>
+        <translation>Du har inte behÃ¶righet att komma Ã¥t denna kDrive.&lt;br&gt;Synkroniseringen har pausats. Kontakta en administratÃ¶r.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="493"/>
         <source>A technical error has occurred (error %1).&lt;br&gt;Synchronization will resume as soon as possible. Please contact our support team if the error persists.</source>
-        <translation>Ett tekniskt fel har uppstått (fel %1).&lt;br&gt;Synkroniseringen återupptas så snart som möjligt. Kontakta vår support om felet kvarstår.</translation>
+        <translation>Ett tekniskt fel har uppstÃ¥tt (fel %1).&lt;br&gt;Synkroniseringen Ã¥terupptas sÃ¥ snart som mÃ¶jligt. Kontakta vÃ¥r support om felet kvarstÃ¥r.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="512"/>
         <source>The network connections have been dropped by the kernel (error %1).&lt;br&gt;Please empty the history and if the error persists, contact our support team.</source>
-        <translation>Nätverksanslutningarna har avbrutits av kärnan (fel %1).&lt;br&gt;Rensa historiken och kontakta vår support om felet kvarstår.</translation>
+        <translation>NÃ¤tverksanslutningarna har avbrutits av kÃ¤rnan (fel %1).&lt;br&gt;Rensa historiken och kontakta vÃ¥r support om felet kvarstÃ¥r.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="522"/>
         <source>Unfortunately your old configuration could not be migrated.&lt;br&gt;The application will use a blank configuration.</source>
-        <translation>Tyvärr gick det inte att överföra din gamla konfiguration.&lt;br&gt;Programmet kommer att använda en tom konfiguration.</translation>
+        <translation>TyvÃ¤rr gick det inte att Ã¶verfÃ¶ra din gamla konfiguration.&lt;br&gt;Programmet kommer att anvÃ¤nda en tom konfiguration.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="526"/>
         <source>Unfortunately your old proxy configuration could not be migrated, SOCKS5 proxies are not supported at this time.&lt;br&gt;The application will use system proxy settings instead.</source>
-        <translation>Tyvärr gick det inte att överföra din gamla proxykonfiguration, eftersom SOCKS5-proxyservrar inte stöds för närvarande.&lt;br&gt;Programmet kommer istället att använda systemets proxyinställningar.</translation>
+        <translation>TyvÃ¤rr gick det inte att Ã¶verfÃ¶ra din gamla proxykonfiguration, eftersom SOCKS5-proxyservrar inte stÃ¶ds fÃ¶r nÃ¤rvarande.&lt;br&gt;Programmet kommer istÃ¤llet att anvÃ¤nda systemets proxyinstÃ¤llningar.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="539"/>
         <source>A technical error has occurred (error %1).&lt;br&gt;Synchronization has been restarted. Please empty the history and if the error persists, please contact our support team.</source>
-        <translation>Ett tekniskt fel har uppstått (fel %1).&lt;br&gt;Synkroniseringen har startats om. Rensa historiken och kontakta vår support om felet kvarstår.</translation>
+        <translation>Ett tekniskt fel har uppstÃ¥tt (fel %1).&lt;br&gt;Synkroniseringen har startats om. Rensa historiken och kontakta vÃ¥r support om felet kvarstÃ¥r.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="550"/>
         <source>An error accessing the synchronization database has happened (error %1).&lt;br&gt;Synchronization has been stopped.</source>
-        <translation>Ett fel har uppstått vid åtkomst till synkroniseringsdatabasen (fel %1).&lt;br&gt;Synkroniseringen har avbrutits.</translation>
+        <translation>Ett fel har uppstÃ¥tt vid Ã¥tkomst till synkroniseringsdatabasen (fel %1).&lt;br&gt;Synkroniseringen har avbrutits.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="564"/>
         <source>A login problem has occurred (error %1).&lt;br&gt;Token invalid or revoked.</source>
-        <translation>Ett inloggningsproblem har uppstått (fel %1).&lt;br&gt;Tokenet är ogiltigt eller har återkallats.</translation>
+        <translation>Ett inloggningsproblem har uppstÃ¥tt (fel %1).&lt;br&gt;Tokenet Ã¤r ogiltigt eller har Ã¥terkallats.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="569"/>
         <source>Nested synchronizations are prohibited (error %1).&lt;br&gt;You should only keep synchronizations whose folders are not nested.</source>
-        <translation>Nästlade synkroniseringar är inte tillåtna (fel %1).&lt;br&gt;Du bör endast behålla synkroniseringar där mapparna inte är nästlade.</translation>
+        <translation>NÃ¤stlade synkroniseringar Ã¤r inte tillÃ¥tna (fel %1).&lt;br&gt;Du bÃ¶r endast behÃ¥lla synkroniseringar dÃ¤r mapparna inte Ã¤r nÃ¤stlade.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="573"/>
         <source>The sync folder on the remote kDrive no longer exists or is no longer accessible (error %1).&lt;br&gt;You need to restore it or give it back access rights or delete/recreate the synchronization.</source>
-        <translation>Synkroniseringsmappen på den fjärranslutna kDrive-enheten finns inte längre eller är inte längre tillgänglig (fel %1).&lt;br&gt;Du måste återställa den, återställa åtkomsträttigheterna eller ta bort och skapa synkroniseringen på nytt.</translation>
+        <translation>Synkroniseringsmappen pÃ¥ den fjÃ¤rranslutna kDrive-enheten finns inte lÃ¤ngre eller Ã¤r inte lÃ¤ngre tillgÃ¤nglig (fel %1).&lt;br&gt;Du mÃ¥ste Ã¥terstÃ¤lla den, Ã¥terstÃ¤lla Ã¥tkomstrÃ¤ttigheterna eller ta bort och skapa synkroniseringen pÃ¥ nytt.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="580"/>
@@ -1759,67 +1759,67 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="722"/>
         <source>You are not allowed to move item to &quot;%1&quot;.&lt;br&gt;It will be restored into its original parent folder.</source>
-        <translation>Du får inte flytta objektet till &amp;quot;%1&amp;quot;.&lt;br&gt;Det kommer att återställas till sin ursprungliga överordnade mapp.</translation>
+        <translation>Du fÃ¥r inte flytta objektet till &amp;quot;%1&amp;quot;.&lt;br&gt;Det kommer att Ã¥terstÃ¤llas till sin ursprungliga Ã¶verordnade mapp.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="814"/>
         <source>There is not enough space left on your computer.&lt;br&gt;The download has been canceled.</source>
-        <translation>Det finns inte tillräckligt med utrymme kvar på din dator.&lt;br&gt;Nedladdningen har avbrutits.</translation>
+        <translation>Det finns inte tillrÃ¤ckligt med utrymme kvar pÃ¥ din dator.&lt;br&gt;Nedladdningen har avbrutits.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="609"/>
         <source>This element has been moved somewhere else.&lt;br&gt;The local operation has been canceled.</source>
-        <translation>Denna komponent har flyttats till en annan plats.&lt;br&gt;Den lokala åtgärden har avbrutits.</translation>
+        <translation>Denna komponent har flyttats till en annan plats.&lt;br&gt;Den lokala Ã¥tgÃ¤rden har avbrutits.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="618"/>
         <source>An element with the same name already exists in this location.&lt;br&gt;The local element has been renamed.</source>
-        <translation>Det finns redan ett element med samma namn på den här platsen.&lt;br&gt;Det lokala elementet har bytt namn.</translation>
+        <translation>Det finns redan ett element med samma namn pÃ¥ den hÃ¤r platsen.&lt;br&gt;Det lokala elementet har bytt namn.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="614"/>
         <source>An element with the same name already exists in this location.&lt;br&gt;The local operation has been canceled.</source>
-        <translation>Det finns redan ett element med samma namn på den här platsen.&lt;br&gt;Den lokala åtgärden har avbrutits.</translation>
+        <translation>Det finns redan ett element med samma namn pÃ¥ den hÃ¤r platsen.&lt;br&gt;Den lokala Ã¥tgÃ¤rden har avbrutits.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="393"/>
         <source>There is not enough space left on your computer.&lt;br&gt;The synchronization has been stopped.</source>
-        <translation>Det finns inte tillräckligt med utrymme kvar på din dator.&lt;br&gt;Synkroniseringen har avbrutits.</translation>
+        <translation>Det finns inte tillrÃ¤ckligt med utrymme kvar pÃ¥ din dator.&lt;br&gt;Synkroniseringen har avbrutits.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="622"/>
         <source>The file was modified at the same time by another user.&lt;br&gt;Your modifications have been saved in a copy.</source>
-        <translation>Filen redigerades samtidigt av en annan användare.&lt;br&gt;Dina ändringar har sparats i en kopia.</translation>
+        <translation>Filen redigerades samtidigt av en annan anvÃ¤ndare.&lt;br&gt;Dina Ã¤ndringar har sparats i en kopia.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="626"/>
         <source>Another user has moved a parent folder of the destination.&lt;br&gt;The local operation has been canceled.</source>
-        <translation>En annan användare har flyttat en överordnad mapp till målplatsen.&lt;br&gt;Den lokala åtgärden har avbrutits.</translation>
+        <translation>En annan anvÃ¤ndare har flyttat en Ã¶verordnad mapp till mÃ¥lplatsen.&lt;br&gt;Den lokala Ã¥tgÃ¤rden har avbrutits.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="692"/>
         <source>The item name contains only spaces.&lt;br&gt;It has been temporarily blacklisted.</source>
-        <translation>Artikelnamnet innehåller endast mellanslag.&lt;br&gt;Det har tillfälligt lagts till på svartlistan.</translation>
+        <translation>Artikelnamnet innehÃ¥ller endast mellanslag.&lt;br&gt;Det har tillfÃ¤lligt lagts till pÃ¥ svartlistan.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="703"/>
         <source>Either you are not allowed to create an item, or another item already exists with the same name.&lt;br&gt;The item has been excluded from synchronization.</source>
-        <translation>Antingen har du inte behörighet att skapa ett objekt, eller så finns det redan ett objekt med samma namn.&lt;br&gt;Objektet har undantagits från synkroniseringen.</translation>
+        <translation>Antingen har du inte behÃ¶righet att skapa ett objekt, eller sÃ¥ finns det redan ett objekt med samma namn.&lt;br&gt;Objektet har undantagits frÃ¥n synkroniseringen.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="708"/>
         <source>You are not allowed to edit item.&lt;br&gt;The file containing your modifications has been renamed and excluded from synchronization.</source>
-        <translation>Du har inte behörighet att redigera objektet.&lt;br&gt;Filen med dina ändringar har bytt namn och har undantagits från synkroniseringen.</translation>
+        <translation>Du har inte behÃ¶righet att redigera objektet.&lt;br&gt;Filen med dina Ã¤ndringar har bytt namn och har undantagits frÃ¥n synkroniseringen.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="716"/>
         <source>You are not allowed to rename item.&lt;br&gt;It will be restored with its original name.</source>
-        <translation>Du får inte byta namn på objektet.&lt;br&gt;Det återställs till sitt ursprungliga namn.</translation>
+        <translation>Du fÃ¥r inte byta namn pÃ¥ objektet.&lt;br&gt;Det Ã¥terstÃ¤lls till sitt ursprungliga namn.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="727"/>
         <source>You are not allowed to delete item.&lt;br&gt;It will be restored to its original location.</source>
-        <translation>Du får inte ta bort objektet.&lt;br&gt;Det återställs till sin ursprungliga plats.</translation>
+        <translation>Du fÃ¥r inte ta bort objektet.&lt;br&gt;Det Ã¥terstÃ¤lls till sin ursprungliga plats.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="732"/>
@@ -1829,97 +1829,97 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="748"/>
         <source>The file has been modified locally while it has been deleted on the remote kDrive.&lt;br&gt;Local copy has been saved in the rescue folder.</source>
-        <translation>Filen har ändrats lokalt samtidigt som den har raderats på den fjärranslutna kDrive-enheten. En&lt;br&gt;lokal kopia har sparats i räddningsmappen.</translation>
+        <translation>Filen har Ã¤ndrats lokalt samtidigt som den har raderats pÃ¥ den fjÃ¤rranslutna kDrive-enheten. En&lt;br&gt;lokal kopia har sparats i rÃ¤ddningsmappen.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="765"/>
         <source>The operation performed on item is forbidden.&lt;br&gt;The item has been temporarily blacklisted.</source>
-        <translation>Den åtgärd som utförts på objektet är inte tillåten.&lt;br&gt;Objektet har tillfälligt lagts till i svartlistan.</translation>
+        <translation>Den Ã¥tgÃ¤rd som utfÃ¶rts pÃ¥ objektet Ã¤r inte tillÃ¥ten.&lt;br&gt;Objektet har tillfÃ¤lligt lagts till i svartlistan.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="771"/>
         <source>The operation performed on this item failed.&lt;br&gt;The item has been temporarily blacklisted.</source>
-        <translation>Åtgärden som utfördes på detta objekt misslyckades.&lt;br&gt;Objektet har tillfälligt lagts till i svartlistan.</translation>
+        <translation>Ã…tgÃ¤rden som utfÃ¶rdes pÃ¥ detta objekt misslyckades.&lt;br&gt;Objektet har tillfÃ¤lligt lagts till i svartlistan.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="776"/>
         <source>The file is too large to be uploaded. It has been temporarily blacklisted.</source>
-        <translation>Filen är för stor för att laddas upp. Den har tillfälligt blockerats.</translation>
+        <translation>Filen Ã¤r fÃ¶r stor fÃ¶r att laddas upp. Den har tillfÃ¤lligt blockerats.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="782"/>
         <source>Impossible to download the file.</source>
-        <translation>Det går inte att ladda ner filen.</translation>
+        <translation>Det gÃ¥r inte att ladda ner filen.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="779"/>
         <source>You have exceeded your quota. Increase your space quota to re-enable file upload.</source>
-        <translation>Du har överskridit din kvot. Öka din lagringskvot för att återaktivera filuppladdning.</translation>
+        <translation>Du har Ã¶verskridit din kvot. Ã–ka din lagringskvot fÃ¶r att Ã¥teraktivera filuppladdning.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="389"/>
         <source>The drive containing your synchronization folder is no longer connected (error %1).&lt;br&gt;Please reconnect it to resume synchronization.</source>
-        <translation>Enheten som innehåller din synkroniseringsmapp är inte längre ansluten (fel %1).&lt;br&gt;Anslut den igen för att återuppta synkroniseringen.</translation>
+        <translation>Enheten som innehÃ¥ller din synkroniseringsmapp Ã¤r inte lÃ¤ngre ansluten (fel %1).&lt;br&gt;Anslut den igen fÃ¶r att Ã¥teruppta synkroniseringen.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="413"/>
         <source>Unable to start synchronization (error %1).&lt;br&gt;The LiteSyncExt process is not currently running. Synchronization will resume as soon as it is started.</source>
-        <translation>Det går inte att starta synkroniseringen (fel %1).&lt;br&gt;Processen LiteSyncExt körs inte just nu. Synkroniseringen återupptas så snart processen har startats.</translation>
+        <translation>Det gÃ¥r inte att starta synkroniseringen (fel %1).&lt;br&gt;Processen LiteSyncExt kÃ¶rs inte just nu. Synkroniseringen Ã¥terupptas sÃ¥ snart processen har startats.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="649"/>
         <source>An existing item has an identical name with the same case options (same upper and lower case letters).&lt;br&gt;It has been temporarily blacklisted.</source>
-        <translation>Ett befintligt objekt har ett identiskt namn med samma versaler och gemener.&lt;br&gt;Det har tillfälligt blockerats.</translation>
+        <translation>Ett befintligt objekt har ett identiskt namn med samma versaler och gemener.&lt;br&gt;Det har tillfÃ¤lligt blockerats.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="656"/>
         <source>The item name contains an unsupported character.&lt;br&gt;It has been temporarily blacklisted.</source>
-        <translation>Produktnamnet innehåller ett tecken som inte stöds.&lt;br&gt;Det har tillfälligt blockerats.</translation>
+        <translation>Produktnamnet innehÃ¥ller ett tecken som inte stÃ¶ds.&lt;br&gt;Det har tillfÃ¤lligt blockerats.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="662"/>
         <source>The item name ends with a space, which is forbidden on your operating system.&lt;br&gt;It has been temporarily blacklisted.</source>
-        <translation>Objektnamnet slutar med ett mellanslag, vilket inte är tillåtet i ditt operativsystem.&lt;br&gt;Det har tillfälligt lagts till i svartlistan.</translation>
+        <translation>Objektnamnet slutar med ett mellanslag, vilket inte Ã¤r tillÃ¥tet i ditt operativsystem.&lt;br&gt;Det har tillfÃ¤lligt lagts till i svartlistan.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="668"/>
         <source>This item name is reserved by your operating system.&lt;br&gt;It has been temporarily blacklisted.</source>
-        <translation>Det här objektnamnet är reserverat av ditt operativsystem.&lt;br&gt;Det har tillfälligt lagts till i svartlistan.</translation>
+        <translation>Det hÃ¤r objektnamnet Ã¤r reserverat av ditt operativsystem.&lt;br&gt;Det har tillfÃ¤lligt lagts till i svartlistan.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="674"/>
         <source>The item name is too long.&lt;br&gt;It has been temporarily blacklisted.</source>
-        <translation>Artikelnamnet är för långt.&lt;br&gt;Det har tillfälligt blockerats.</translation>
+        <translation>Artikelnamnet Ã¤r fÃ¶r lÃ¥ngt.&lt;br&gt;Det har tillfÃ¤lligt blockerats.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="680"/>
         <source>The item path is too long.&lt;br&gt;It has been ignored.</source>
-        <translation>Sökvägen är för lång.&lt;br&gt;Den har ignorerats.</translation>
+        <translation>SÃ¶kvÃ¤gen Ã¤r fÃ¶r lÃ¥ng.&lt;br&gt;Den har ignorerats.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="686"/>
         <source>The item name contains a recent UNICODE character not yet supported by your filesystem.&lt;br&gt;It has been excluded from synchronization.</source>
-        <translation>Objektnamnet innehåller ett nytt Unicode-tecken som ännu inte stöds av ditt filsystem.&lt;br&gt;Det har uteslutits från synkroniseringen.</translation>
+        <translation>Objektnamnet innehÃ¥ller ett nytt Unicode-tecken som Ã¤nnu inte stÃ¶ds av ditt filsystem.&lt;br&gt;Det har uteslutits frÃ¥n synkroniseringen.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="735"/>
         <source>Failed to synchronize this item. It has been temporarily blacklisted.&lt;br&gt;Another attempt to sync it will be done in one hour or on next application startup.</source>
-        <translation>Det gick inte att synkronisera det här objektet. Det har tillfälligt lagts till i svartlistan.&lt;br&gt;Ett nytt försök att synkronisera det kommer att göras om en timme eller nästa gång programmet startas.</translation>
+        <translation>Det gick inte att synkronisera det hÃ¤r objektet. Det har tillfÃ¤lligt lagts till i svartlistan.&lt;br&gt;Ett nytt fÃ¶rsÃ¶k att synkronisera det kommer att gÃ¶ras om en timme eller nÃ¤sta gÃ¥ng programmet startas.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="740"/>
         <source>This item has been excluded from sync by a custom template.&lt;br&gt;You can disable this type of notification from the Preferences</source>
-        <translation>Denna post har undantagits från synkroniseringen genom en anpassad mall.&lt;br&gt;Du kan inaktivera denna typ av avisering under Inställningar</translation>
+        <translation>Denna post har undantagits frÃ¥n synkroniseringen genom en anpassad mall.&lt;br&gt;Du kan inaktivera denna typ av avisering under InstÃ¤llningar</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="745"/>
         <source>This item has been excluded from sync because it is a hard link.</source>
-        <translation>Den här posten har uteslutits från synkroniseringen eftersom det är en hård länk.</translation>
+        <translation>Den hÃ¤r posten har uteslutits frÃ¥n synkroniseringen eftersom det Ã¤r en hÃ¥rd lÃ¤nk.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="785"/>
         <source>This item is currently locked by another user online.&lt;br&gt;We will retry uploading your changes later.</source>
-        <translation>Den här artikeln är för närvarande upptagen av en annan användare som är inloggad.&lt;br&gt;Vi försöker ladda upp dina ändringar igen senare.</translation>
+        <translation>Den hÃ¤r artikeln Ã¤r fÃ¶r nÃ¤rvarande upptagen av en annan anvÃ¤ndare som Ã¤r inloggad.&lt;br&gt;Vi fÃ¶rsÃ¶ker ladda upp dina Ã¤ndringar igen senare.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="790"/>
@@ -1930,7 +1930,7 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="810"/>
         <source>Can&apos;t access item.&lt;br&gt;Please fix the read and write permissions.</source>
-        <translation>Det går inte att komma åt objektet.&lt;br&gt;Kontrollera läs- och skrivbehörigheterna.</translation>
+        <translation>Det gÃ¥r inte att komma Ã¥t objektet.&lt;br&gt;Kontrollera lÃ¤s- och skrivbehÃ¶righeterna.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="818"/>
@@ -1940,12 +1940,12 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="825"/>
         <source>Item already exists on other side.&lt;br&gt;It has been temporarily blacklisted.</source>
-        <translation>Objektet finns redan på den andra sidan.&lt;br&gt;Det har tillfälligt blockerats.</translation>
+        <translation>Objektet finns redan pÃ¥ den andra sidan.&lt;br&gt;Det har tillfÃ¤lligt blockerats.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="840"/>
         <source>A technical error has occurred.&lt;br&gt;Please empty the history and if the error persists, contact our support team.</source>
-        <translation>Ett tekniskt fel har uppstått.&lt;br&gt;Rensa historiken och kontakta vår support om felet kvarstår.</translation>
+        <translation>Ett tekniskt fel har uppstÃ¥tt.&lt;br&gt;Rensa historiken och kontakta vÃ¥r support om felet kvarstÃ¥r.</translation>
     </message>
 </context>
 <context>
@@ -1961,12 +1961,12 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/preferencesmenubarwidget.cpp" line="63"/>
         <source>Back to drive list</source>
-        <translation>Tillbaka till listan över körningar</translation>
+        <translation>Tillbaka till listan Ã¶ver kÃ¶rningar</translation>
     </message>
     <message>
         <location filename="../src/gui/preferencesmenubarwidget.cpp" line="64"/>
         <source>Preferences</source>
-        <translation>Inställningar</translation>
+        <translation>InstÃ¤llningar</translation>
     </message>
 </context>
 <context>
@@ -1974,12 +1974,12 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="485"/>
         <source>General</source>
-        <translation>Allmänt</translation>
+        <translation>AllmÃ¤nt</translation>
     </message>
     <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="487"/>
         <source>Activate dark theme</source>
-        <translation>Aktivera mörkt tema</translation>
+        <translation>Aktivera mÃ¶rkt tema</translation>
     </message>
     <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="489"/>
@@ -2009,7 +2009,7 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="512"/>
         <source>Dutch</source>
-        <translation type="unfinished"></translation>
+        <translation>Nederländska</translation>
     </message>
     <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="518"/>
@@ -2019,12 +2019,12 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="519"/>
         <source>Debugging information</source>
-        <translation>Felsökningsinformation</translation>
+        <translation>FelsÃ¶kningsinformation</translation>
     </message>
     <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="521"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Open debugging folder&lt;/a&gt;</source>
-        <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Öppna felsökningsmappen&lt;/a&gt;</translation>
+        <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Ã–ppna felsÃ¶kningsmappen&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="522"/>
@@ -2059,17 +2059,17 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="460"/>
         <source>Unable to open folder %1.</source>
-        <translation>Det går inte att öppna mappen %1.</translation>
+        <translation>Det gÃ¥r inte att Ã¶ppna mappen %1.</translation>
     </message>
     <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="472"/>
         <source>Unable to open link %1.</source>
-        <translation>Det går inte att öppna länken %1.</translation>
+        <translation>Det gÃ¥r inte att Ã¶ppna lÃ¤nken %1.</translation>
     </message>
     <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="477"/>
         <source>Invalid link %1.</source>
-        <translation>Ogiltig länk %1.</translation>
+        <translation>Ogiltig lÃ¤nk %1.</translation>
     </message>
     <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="525"/>
@@ -2079,12 +2079,12 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="491"/>
         <source>Language</source>
-        <translation>Språk</translation>
+        <translation>SprÃ¥k</translation>
     </message>
     <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="484"/>
         <source>Some process failed to run.</source>
-        <translation>Någon process kunde inte köras.</translation>
+        <translation>NÃ¥gon process kunde inte kÃ¶ras.</translation>
     </message>
     <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="492"/>
@@ -2099,12 +2099,12 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="494"/>
         <source>You can always retrieve already synced files from the kDrive web application trash.</source>
-        <translation>Du kan alltid återställa redan synkroniserade filer från papperskorgen i kDrives webbapp.</translation>
+        <translation>Du kan alltid Ã¥terstÃ¤lla redan synkroniserade filer frÃ¥n papperskorgen i kDrives webbapp.</translation>
     </message>
     <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="496"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
-        <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Läs mer&lt;/a&gt;</translation>
+        <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;LÃ¤s mer&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="500"/>
@@ -2142,7 +2142,7 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/progressbarwidget.cpp" line="70"/>
         <source>%1 in use</source>
-        <translation>%1 används</translation>
+        <translation>%1 anvÃ¤nds</translation>
     </message>
 </context>
 <context>
@@ -2165,7 +2165,7 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/proxyserverdialog.cpp" line="90"/>
         <source>Use system parameters</source>
-        <translation>Använd systemparametrar</translation>
+        <translation>AnvÃ¤nd systemparametrar</translation>
     </message>
     <message>
         <location filename="../src/gui/proxyserverdialog.cpp" line="95"/>
@@ -2185,17 +2185,17 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/proxyserverdialog.cpp" line="150"/>
         <source>Authentication needed</source>
-        <translation>Inloggning krävs</translation>
+        <translation>Inloggning krÃ¤vs</translation>
     </message>
     <message>
         <location filename="../src/gui/proxyserverdialog.cpp" line="165"/>
         <source>User</source>
-        <translation>Användare</translation>
+        <translation>AnvÃ¤ndare</translation>
     </message>
     <message>
         <location filename="../src/gui/proxyserverdialog.cpp" line="171"/>
         <source>Password</source>
-        <translation>Lösenord</translation>
+        <translation>LÃ¶senord</translation>
     </message>
     <message>
         <location filename="../src/gui/proxyserverdialog.cpp" line="185"/>
@@ -2210,17 +2210,17 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/proxyserverdialog.cpp" line="286"/>
         <source>Do you want to save your modifications?</source>
-        <translation>Vill du spara dina ändringar?</translation>
+        <translation>Vill du spara dina Ã¤ndringar?</translation>
     </message>
     <message>
         <location filename="../src/gui/proxyserverdialog.cpp" line="295"/>
         <source>Unable to save, all mandatory fields are not completed!</source>
-        <translation>Det går inte att spara, eftersom alla obligatoriska fält inte är ifyllda!</translation>
+        <translation>Det gÃ¥r inte att spara, eftersom alla obligatoriska fÃ¤lt inte Ã¤r ifyllda!</translation>
     </message>
     <message>
         <location filename="../src/gui/proxyserverdialog.cpp" line="316"/>
         <source>Proxy not found, save anyway?</source>
-        <translation>Proxy hittades inte, vill du spara ändå?</translation>
+        <translation>Proxy hittades inte, vill du spara Ã¤ndÃ¥?</translation>
     </message>
 </context>
 <context>
@@ -2233,7 +2233,7 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/resourcesmanagerdialog.cpp" line="65"/>
         <source>Maximum CPU usage allowed</source>
-        <translation>Högsta tillåtna CPU-användning</translation>
+        <translation>HÃ¶gsta tillÃ¥tna CPU-anvÃ¤ndning</translation>
     </message>
     <message>
         <location filename="../src/gui/resourcesmanagerdialog.cpp" line="96"/>
@@ -2248,7 +2248,7 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/resourcesmanagerdialog.cpp" line="122"/>
         <source>Do you want to save your modifications?</source>
-        <translation>Vill du spara dina ändringar?</translation>
+        <translation>Vill du spara dina Ã¤ndringar?</translation>
     </message>
 </context>
 <context>
@@ -2256,32 +2256,32 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/serverbasefolderdialog.cpp" line="81"/>
         <source>Select a folder on your kDrive</source>
-        <translation>Välj en mapp på din kDrive</translation>
+        <translation>VÃ¤lj en mapp pÃ¥ din kDrive</translation>
     </message>
     <message>
         <location filename="../src/gui/serverbasefolderdialog.cpp" line="90"/>
         <source>The content of the selected folder will be synchronized into the &lt;b&gt;%1&lt;/b&gt; folder.</source>
-        <translation>Innehållet i den valda mappen kommer att synkroniseras till mappen &lt;b&gt;%1&lt;/b&gt;.</translation>
+        <translation>InnehÃ¥llet i den valda mappen kommer att synkroniseras till mappen &lt;b&gt;%1&lt;/b&gt;.</translation>
     </message>
     <message>
         <location filename="../src/gui/serverbasefolderdialog.cpp" line="134"/>
         <source>CONTINUE</source>
-        <translation>FORTSÄTT</translation>
+        <translation>FORTSÃ„TT</translation>
     </message>
     <message>
         <location filename="../src/gui/serverbasefolderdialog.cpp" line="150"/>
         <source>Space available on your computer for the current folder : %1</source>
-        <translation>Ledig utrymme på din dator för den aktuella mappen: %1</translation>
+        <translation>Ledig utrymme pÃ¥ din dator fÃ¶r den aktuella mappen: %1</translation>
     </message>
     <message>
         <location filename="../src/gui/serverbasefolderdialog.cpp" line="190"/>
         <source>This folder is already being synced.</source>
-        <translation>Den här mappen synkroniseras redan.</translation>
+        <translation>Den hÃ¤r mappen synkroniseras redan.</translation>
     </message>
     <message>
         <location filename="../src/gui/serverbasefolderdialog.cpp" line="204"/>
         <source>CONFIRM</source>
-        <translation>BEKRÄFTA</translation>
+        <translation>BEKRÃ„FTA</translation>
     </message>
     <message>
         <location filename="../src/gui/serverbasefolderdialog.cpp" line="205"/>
@@ -2294,17 +2294,17 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/serverfoldersdialog.cpp" line="80"/>
         <source>The &lt;b&gt;%1&lt;/b&gt; folder contains subfolders,&lt;br&gt; select the ones you want to synchronize</source>
-        <translation>Mappen &lt;b&gt;%1&lt;/b&gt; innehåller undermappar.&lt;br&gt; Välj de som du vill synkronisera</translation>
+        <translation>Mappen &lt;b&gt;%1&lt;/b&gt; innehÃ¥ller undermappar.&lt;br&gt; VÃ¤lj de som du vill synkronisera</translation>
     </message>
     <message>
         <location filename="../src/gui/serverfoldersdialog.cpp" line="110"/>
         <source>CONTINUE</source>
-        <translation>FORTSÄTT</translation>
+        <translation>FORTSÃ„TT</translation>
     </message>
     <message>
         <location filename="../src/gui/serverfoldersdialog.cpp" line="146"/>
         <source>No subfolders currently on the server.</source>
-        <translation>Det finns för närvarande inga undermappar på servern.</translation>
+        <translation>Det finns fÃ¶r nÃ¤rvarande inga undermappar pÃ¥ servern.</translation>
     </message>
 </context>
 <context>
@@ -2312,12 +2312,12 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/statusbarwidget.cpp" line="178"/>
         <source>Resume kDrive &quot;%1&quot; synchronization</source>
-        <translation>Återuppta synkroniseringen av kDrive &amp;quot;%1&amp;quot;</translation>
+        <translation>Ã…teruppta synkroniseringen av kDrive &amp;quot;%1&amp;quot;</translation>
     </message>
     <message>
         <location filename="../src/gui/statusbarwidget.cpp" line="180"/>
         <source>Resume all kDrives synchronization</source>
-        <translation>Återuppta all synkronisering av kDrives</translation>
+        <translation>Ã…teruppta all synkronisering av kDrives</translation>
     </message>
     <message>
         <location filename="../src/gui/statusbarwidget.cpp" line="183"/>
@@ -2339,7 +2339,7 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
         <location filename="../src/gui/statusbarwidget.cpp" line="179"/>
         <location filename="../src/gui/statusbarwidget.cpp" line="322"/>
         <source>Resume synchronization</source>
-        <translation>Fortsätt synkroniseringen</translation>
+        <translation>FortsÃ¤tt synkroniseringen</translation>
     </message>
 </context>
 <context>
@@ -2347,12 +2347,12 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/synchronizeditemwidget.cpp" line="333"/>
         <source>Copy share link</source>
-        <translation>Kopiera delningslänken</translation>
+        <translation>Kopiera delningslÃ¤nken</translation>
     </message>
     <message>
         <location filename="../src/gui/synchronizeditemwidget.cpp" line="342"/>
         <source>Display on kdrive.infomaniak.com</source>
-        <translation>Visas på kdrive.infomaniak.com</translation>
+        <translation>Visas pÃ¥ kdrive.infomaniak.com</translation>
     </message>
     <message>
         <location filename="../src/gui/synchronizeditemwidget.cpp" line="387"/>
@@ -2362,17 +2362,17 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/synchronizeditemwidget.cpp" line="388"/>
         <source>More actions</source>
-        <translation>Fler åtgärder</translation>
+        <translation>Fler Ã¥tgÃ¤rder</translation>
     </message>
     <message>
         <location filename="../src/gui/synchronizeditemwidget.cpp" line="317"/>
         <source>Open</source>
-        <translation>Öppna</translation>
+        <translation>Ã–ppna</translation>
     </message>
     <message>
         <location filename="../src/gui/synchronizeditemwidget.cpp" line="325"/>
         <source>Add to favorites</source>
-        <translation>Lägg till i favoriter</translation>
+        <translation>LÃ¤gg till i favoriter</translation>
     </message>
 </context>
 <context>
@@ -2428,17 +2428,17 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/synthesisbar.cpp" line="149"/>
         <source>Unable to open folder url %1.</source>
-        <translation>Det går inte att öppna mappen med adressen %1.</translation>
+        <translation>Det gÃ¥r inte att Ã¶ppna mappen med adressen %1.</translation>
     </message>
     <message>
         <location filename="../src/gui/synthesisbar.cpp" line="219"/>
         <source>Open in folder</source>
-        <translation>Öppna i mappen</translation>
+        <translation>Ã–ppna i mappen</translation>
     </message>
     <message>
         <location filename="../src/gui/synthesisbar.cpp" line="257"/>
         <source>Open %1 web version</source>
-        <translation>Öppna webbversionen av %1</translation>
+        <translation>Ã–ppna webbversionen av %1</translation>
     </message>
     <message>
         <location filename="../src/gui/synthesisbar.cpp" line="267"/>
@@ -2448,7 +2448,7 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/synthesisbar.cpp" line="280"/>
         <source>Notifications disabled until %1</source>
-        <translation>Meddelanden är inaktiverade fram till %1</translation>
+        <translation>Meddelanden Ã¤r inaktiverade fram till %1</translation>
     </message>
     <message>
         <location filename="../src/gui/synthesisbar.cpp" line="281"/>
@@ -2458,12 +2458,12 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/synthesisbar.cpp" line="314"/>
         <source>Application preferences</source>
-        <translation>Inställningar för applikationen</translation>
+        <translation>InstÃ¤llningar fÃ¶r applikationen</translation>
     </message>
     <message>
         <location filename="../src/gui/synthesisbar.cpp" line="322"/>
         <source>Need help</source>
-        <translation>Behöver du hjälp?</translation>
+        <translation>BehÃ¶ver du hjÃ¤lp?</translation>
     </message>
     <message>
         <location filename="../src/gui/synthesisbar.cpp" line="330"/>
@@ -2478,7 +2478,7 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/synthesisbar.cpp" line="401"/>
         <source>Unable to access web site %1.</source>
-        <translation>Det går inte att komma åt webbplatsen %1.</translation>
+        <translation>Det gÃ¥r inte att komma Ã¥t webbplatsen %1.</translation>
     </message>
     <message>
         <location filename="../src/gui/synthesisbar.cpp" line="492"/>
@@ -2493,7 +2493,7 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/synthesisbar.cpp" line="494"/>
         <source>More actions</source>
-        <translation>Fler åtgärder</translation>
+        <translation>Fler Ã¥tgÃ¤rder</translation>
     </message>
 </context>
 <context>
@@ -2506,7 +2506,7 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/synthesispopover.cpp" line="1184"/>
         <source>This kDrive app version is not supported anymore. To access the latest features and enhancements, please update.</source>
-        <translation>Denna version av kDrive-appen stöds inte längre. Uppdatera appen för att få tillgång till de senaste funktionerna och förbättringarna.</translation>
+        <translation>Denna version av kDrive-appen stÃ¶ds inte lÃ¤ngre. Uppdatera appen fÃ¶r att fÃ¥ tillgÃ¥ng till de senaste funktionerna och fÃ¶rbÃ¤ttringarna.</translation>
     </message>
     <message>
         <location filename="../src/gui/synthesispopover.cpp" line="980"/>
@@ -2516,17 +2516,17 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/synthesispopover.cpp" line="1190"/>
         <source>Please download the latest version on the website.</source>
-        <translation>Ladda gärna ner den senaste versionen från webbplatsen.</translation>
+        <translation>Ladda gÃ¤rna ner den senaste versionen frÃ¥n webbplatsen.</translation>
     </message>
     <message>
         <location filename="../src/gui/synthesispopover.cpp" line="983"/>
         <source>Update download in progress</source>
-        <translation>Uppdateringen hämtas just nu</translation>
+        <translation>Uppdateringen hÃ¤mtas just nu</translation>
     </message>
     <message>
         <location filename="../src/gui/synthesispopover.cpp" line="986"/>
         <source>Looking for update...</source>
-        <translation>Väntar på uppdatering...</translation>
+        <translation>VÃ¤ntar pÃ¥ uppdatering...</translation>
     </message>
     <message>
         <location filename="../src/gui/synthesispopover.cpp" line="989"/>
@@ -2536,12 +2536,12 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/synthesispopover.cpp" line="992"/>
         <source>Unavailable</source>
-        <translation>Ej tillgängligt</translation>
+        <translation>Ej tillgÃ¤ngligt</translation>
     </message>
     <message>
         <location filename="../src/gui/synthesispopover.cpp" line="1203"/>
         <source>You can synchronize files &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;from your computer&lt;/a&gt; or on &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;kdrive.infomaniak.com&lt;/a&gt;.</source>
-        <translation>Du kan synkronisera filer &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;från din dator&lt;/a&gt; eller från &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;kdrive.infomaniak.com&lt;/a&gt;.</translation>
+        <translation>Du kan synkronisera filer &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;frÃ¥n din dator&lt;/a&gt; eller frÃ¥n &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;kdrive.infomaniak.com&lt;/a&gt;.</translation>
     </message>
     <message>
         <location filename="../src/gui/synthesispopover.cpp" line="448"/>
@@ -2567,32 +2567,32 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/synthesispopover.cpp" line="1187"/>
         <source>&lt;a style= text-decoration:none; href=&quot;https://www.infomaniak.com/en/apps/download-kdrive&quot;&gt;Click here to download manually&lt;/a&gt;</source>
-        <translation>&lt;a style= text-decoration:none; href=&quot;https://www.infomaniak.com/en/apps/download-kdrive&quot;&gt;Klicka här för att ladda ner manuellt&lt;/a&gt;</translation>
+        <translation>&lt;a style= text-decoration:none; href=&quot;https://www.infomaniak.com/en/apps/download-kdrive&quot;&gt;Klicka hÃ¤r fÃ¶r att ladda ner manuellt&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/synthesispopover.cpp" line="1196"/>
         <source>No synchronized folder for this Drive!</source>
-        <translation>Det finns ingen synkroniserad mapp för den här Drive-kontot!</translation>
+        <translation>Det finns ingen synkroniserad mapp fÃ¶r den hÃ¤r Drive-kontot!</translation>
     </message>
     <message>
         <location filename="../src/gui/synthesispopover.cpp" line="1199"/>
         <source>No kDrive configured!</source>
-        <translation>kDrive är inte konfigurerat!</translation>
+        <translation>kDrive Ã¤r inte konfigurerat!</translation>
     </message>
     <message>
         <location filename="../src/gui/synthesispopover.cpp" line="1163"/>
         <source>Unable to open link %1.</source>
-        <translation>Det går inte att öppna länken %1.</translation>
+        <translation>Det gÃ¥r inte att Ã¶ppna lÃ¤nken %1.</translation>
     </message>
     <message>
         <location filename="../src/gui/synthesispopover.cpp" line="1175"/>
         <source>Invalid link %1.</source>
-        <translation>Ogiltig länk %1.</translation>
+        <translation>Ogiltig lÃ¤nk %1.</translation>
     </message>
     <message>
         <location filename="../src/gui/synthesispopover.cpp" line="588"/>
         <source>Unable to open folder url %1.</source>
-        <translation>Det går inte att öppna mappen med adressen %1.</translation>
+        <translation>Det gÃ¥r inte att Ã¶ppna mappen med adressen %1.</translation>
     </message>
 </context>
 <context>
@@ -2600,17 +2600,17 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/updater/updatedialog.cpp" line="61"/>
         <source>&lt;p&gt;The new version &lt;b&gt;%1&lt;/b&gt; of the %2 Client is available and has been downloaded.&lt;/p&gt;&lt;p&gt;The installed version is %3.&lt;/p&gt;</source>
-        <translation>&lt;p&gt;Den nya versionen &lt;b&gt;%1&lt;/b&gt; av %2-klienten är tillgänglig och har hämtats.&lt;/p&gt;&lt;p&gt;Den installerade versionen är %3.&lt;/p&gt;</translation>
+        <translation>&lt;p&gt;Den nya versionen &lt;b&gt;%1&lt;/b&gt; av %2-klienten Ã¤r tillgÃ¤nglig och har hÃ¤mtats.&lt;/p&gt;&lt;p&gt;Den installerade versionen Ã¤r %3.&lt;/p&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/updater/updatedialog.cpp" line="95"/>
         <source>Skip this version</source>
-        <translation>Hoppa över den här versionen</translation>
+        <translation>Hoppa Ã¶ver den hÃ¤r versionen</translation>
     </message>
     <message>
         <location filename="../src/gui/updater/updatedialog.cpp" line="103"/>
         <source>Remind me later</source>
-        <translation>Påminn mig senare</translation>
+        <translation>PÃ¥minn mig senare</translation>
     </message>
     <message>
         <location filename="../src/gui/updater/updatedialog.cpp" line="109"/>
@@ -2623,12 +2623,12 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/server/updater/updatemanager.cpp" line="89"/>
         <source>New update available.</source>
-        <translation>En ny uppdatering finns tillgänglig.</translation>
+        <translation>En ny uppdatering finns tillgÃ¤nglig.</translation>
     </message>
     <message>
         <location filename="../src/server/updater/updatemanager.cpp" line="90"/>
         <source>Version %1 is available for download.</source>
-        <translation>Version %1 finns tillgänglig för nedladdning.</translation>
+        <translation>Version %1 finns tillgÃ¤nglig fÃ¶r nedladdning.</translation>
     </message>
 </context>
 <context>
@@ -2636,7 +2636,7 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/userselectionwidget.cpp" line="131"/>
         <source>Add an account</source>
-        <translation>Lägg till ett konto</translation>
+        <translation>LÃ¤gg till ett konto</translation>
     </message>
 </context>
 <context>
@@ -2664,32 +2664,32 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/versionwidget.cpp" line="197"/>
         <source>%1 is up to date!</source>
-        <translation>%1 är uppdaterad!</translation>
+        <translation>%1 Ã¤r uppdaterad!</translation>
     </message>
     <message>
         <location filename="../src/gui/versionwidget.cpp" line="201"/>
         <source>Checking update on server...</source>
-        <translation>Kontrollerar uppdateringar på servern...</translation>
+        <translation>Kontrollerar uppdateringar pÃ¥ servern...</translation>
     </message>
     <message>
         <location filename="../src/gui/versionwidget.cpp" line="205"/>
         <source>An update is available: %1.&lt;br&gt;Please download it from &lt;a style=&quot;%2&quot; href=&quot;%3&quot;&gt;here&lt;/a&gt;.</source>
-        <translation>En uppdatering finns tillgänglig: %1.&lt;br&gt;Ladda ner den &lt;a style=&quot;%2&quot; href=&quot;%3&quot;&gt;här&lt;/a&gt;.</translation>
+        <translation>En uppdatering finns tillgÃ¤nglig: %1.&lt;br&gt;Ladda ner den &lt;a style=&quot;%2&quot; href=&quot;%3&quot;&gt;hÃ¤r&lt;/a&gt;.</translation>
     </message>
     <message>
         <location filename="../src/gui/versionwidget.cpp" line="212"/>
         <source>An update is available: %1</source>
-        <translation>En uppdatering finns tillgänglig: %1</translation>
+        <translation>En uppdatering finns tillgÃ¤nglig: %1</translation>
     </message>
     <message>
         <location filename="../src/gui/versionwidget.cpp" line="218"/>
         <source>Downloading %1. Please wait...</source>
-        <translation>Hämtar %1. Vänta...</translation>
+        <translation>HÃ¤mtar %1. VÃ¤nta...</translation>
     </message>
     <message>
         <location filename="../src/gui/versionwidget.cpp" line="223"/>
         <source>Could not check for new updates.</source>
-        <translation>Det gick inte att söka efter nya uppdateringar.</translation>
+        <translation>Det gick inte att sÃ¶ka efter nya uppdateringar.</translation>
     </message>
     <message>
         <location filename="../src/gui/versionwidget.cpp" line="227"/>
@@ -2704,7 +2704,7 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/versionwidget.cpp" line="235"/>
         <source>Update disabled.</source>
-        <translation>Uppdateringen är inaktiverad.</translation>
+        <translation>Uppdateringen Ã¤r inaktiverad.</translation>
     </message>
     <message>
         <location filename="../src/gui/versionwidget.cpp" line="251"/>
@@ -2714,17 +2714,17 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/versionwidget.cpp" line="252"/>
         <source>Get early access to new versions of the application</source>
-        <translation>Få tidig tillgång till nya versioner av applikationen</translation>
+        <translation>FÃ¥ tidig tillgÃ¥ng till nya versioner av applikationen</translation>
     </message>
     <message>
         <location filename="../src/gui/versionwidget.cpp" line="256"/>
         <source>Join</source>
-        <translation>Gå med</translation>
+        <translation>GÃ¥ med</translation>
     </message>
     <message>
         <location filename="../src/gui/versionwidget.cpp" line="259"/>
         <source>Modify</source>
-        <translation>Ändra</translation>
+        <translation>Ã„ndra</translation>
     </message>
     <message>
         <location filename="../src/gui/versionwidget.cpp" line="259"/>
@@ -2737,22 +2737,22 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/parameterscache.cpp" line="59"/>
         <source>Unable to save parameters, please retry later.</source>
-        <translation>Det gick inte att spara parametrarna. Försök igen senare.</translation>
+        <translation>Det gick inte att spara parametrarna. FÃ¶rsÃ¶k igen senare.</translation>
     </message>
     <message>
         <location filename="../src/gui/parameterscache.cpp" line="60"/>
         <source>Unable to save parameters!</source>
-        <translation>Det går inte att spara parametrarna!</translation>
+        <translation>Det gÃ¥r inte att spara parametrarna!</translation>
     </message>
     <message>
         <location filename="../src/server/requests/serverrequests.cpp" line="467"/>
         <source>The parent folder is a sync folder or contained in one</source>
-        <translation>Överordnad mapp är en synkroniseringsmapp eller ingår i en sådan</translation>
+        <translation>Ã–verordnad mapp Ã¤r en synkroniseringsmapp eller ingÃ¥r i en sÃ¥dan</translation>
     </message>
     <message>
         <location filename="../src/server/requests/serverrequests.cpp" line="501"/>
         <source>Can&apos;t find a valid path</source>
-        <translation>Det går inte att hitta en giltig sökväg</translation>
+        <translation>Det gÃ¥r inte att hitta en giltig sÃ¶kvÃ¤g</translation>
     </message>
     <message>
         <location filename="../src/server/requests/serverrequests.cpp" line="2112"/>
@@ -2762,97 +2762,97 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/server/requests/serverrequests.cpp" line="2123"/>
         <source>The selected path does not exist!</source>
-        <translation>Den valda sökvägen finns inte!</translation>
+        <translation>Den valda sÃ¶kvÃ¤gen finns inte!</translation>
     </message>
     <message>
         <location filename="../src/server/requests/serverrequests.cpp" line="2128"/>
         <source>The selected path is not a folder!</source>
-        <translation>Den valda sökvägen är ingen mapp!</translation>
+        <translation>Den valda sÃ¶kvÃ¤gen Ã¤r ingen mapp!</translation>
     </message>
     <message>
         <location filename="../src/server/requests/serverrequests.cpp" line="2133"/>
         <source>You have no permission to write to the selected folder!</source>
-        <translation>Du har inte behörighet att skriva till den valda mappen!</translation>
+        <translation>Du har inte behÃ¶righet att skriva till den valda mappen!</translation>
     </message>
     <message>
         <location filename="../src/server/requests/serverrequests.cpp" line="2163"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
-        <translation>Den lokala mappen %1 innehåller en mapp som redan är synkroniserad. Välj en annan!</translation>
+        <translation>Den lokala mappen %1 innehÃ¥ller en mapp som redan Ã¤r synkroniserad. VÃ¤lj en annan!</translation>
     </message>
     <message>
         <location filename="../src/server/requests/serverrequests.cpp" line="2171"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
-        <translation>Den lokala mappen %1 finns i en mapp som redan är synkroniserad. Välj en annan mapp!</translation>
+        <translation>Den lokala mappen %1 finns i en mapp som redan Ã¤r synkroniserad. VÃ¤lj en annan mapp!</translation>
     </message>
     <message>
         <location filename="../src/server/requests/serverrequests.cpp" line="2179"/>
         <source>The local folder %1 is already synced. Please pick another one!</source>
-        <translation>Den lokala mappen %1 är redan synkroniserad. Välj en annan!</translation>
+        <translation>Den lokala mappen %1 Ã¤r redan synkroniserad. VÃ¤lj en annan!</translation>
     </message>
     <message>
         <location filename="../src/gui/folderitemwidget.cpp" line="42"/>
         <source>Lite sync (Beta) is enabled. Files from kDrive remain in the Cloud and do not use your computer&apos;s storage space.</source>
-        <translation>Lite sync (Beta) är aktiverat. Filerna från kDrive sparas i molnet och tar inte upp lagringsutrymme på din dator.</translation>
+        <translation>Lite sync (Beta) Ã¤r aktiverat. Filerna frÃ¥n kDrive sparas i molnet och tar inte upp lagringsutrymme pÃ¥ din dator.</translation>
     </message>
     <message>
         <location filename="../src/gui/folderitemwidget.cpp" line="45"/>
         <source>Lite sync (Beta) is disabled. The kDrive files use the storage space of your computer.</source>
-        <translation>Lite sync (Beta) är inaktiverat. kDrive-filerna använder lagringsutrymmet på din dator.</translation>
+        <translation>Lite sync (Beta) Ã¤r inaktiverat. kDrive-filerna anvÃ¤nder lagringsutrymmet pÃ¥ din dator.</translation>
     </message>
     <message>
         <location filename="../src/gui/folderitemwidget.cpp" line="48"/>
         <source>Lite sync is enabled. Files from kDrive remain in the Cloud and do not use your computer&apos;s storage space.</source>
-        <translation>Lite-synkronisering är aktiverad. Filerna från kDrive sparas i molnet och tar inte upp lagringsutrymme på din dator.</translation>
+        <translation>Lite-synkronisering Ã¤r aktiverad. Filerna frÃ¥n kDrive sparas i molnet och tar inte upp lagringsutrymme pÃ¥ din dator.</translation>
     </message>
     <message>
         <location filename="../src/gui/folderitemwidget.cpp" line="50"/>
         <source>Lite sync is disabled. The kDrive files use the storage space of your computer.</source>
-        <translation>Lite sync är inaktiverat. kDrive-filerna använder lagringsutrymmet på din dator.</translation>
+        <translation>Lite sync Ã¤r inaktiverat. kDrive-filerna anvÃ¤nder lagringsutrymmet pÃ¥ din dator.</translation>
     </message>
     <message>
         <location filename="../src/server/comm/extensionjob.cpp" line="1242"/>
         <source>Make available locally</source>
-        <translation>Gör tillgängligt lokalt</translation>
+        <translation>GÃ¶r tillgÃ¤ngligt lokalt</translation>
     </message>
     <message>
         <location filename="../src/server/comm/extensionjob.cpp" line="1246"/>
         <source>Free up local space</source>
-        <translation>Frigör lokalt lagringsutrymme</translation>
+        <translation>FrigÃ¶r lokalt lagringsutrymme</translation>
     </message>
     <message>
         <location filename="../src/server/comm/extensionjob.cpp" line="1250"/>
         <source>Cancel free up local space</source>
-        <translation>Avbryt för att frigöra lokalt utrymme</translation>
+        <translation>Avbryt fÃ¶r att frigÃ¶ra lokalt utrymme</translation>
     </message>
     <message>
         <location filename="../src/server/comm/extensionjob.cpp" line="1254"/>
         <source>Cancel make available locally</source>
-        <translation>Avbryt lokal tillgängliggöring</translation>
+        <translation>Avbryt lokal tillgÃ¤ngliggÃ¶ring</translation>
     </message>
     <message>
         <location filename="../src/server/comm/extensionjob.cpp" line="1258"/>
         <source>Resharing this file is not allowed</source>
-        <translation>Det är inte tillåtet att vidarebefordra den här filen</translation>
+        <translation>Det Ã¤r inte tillÃ¥tet att vidarebefordra den hÃ¤r filen</translation>
     </message>
     <message>
         <location filename="../src/server/comm/extensionjob.cpp" line="1259"/>
         <source>Resharing this folder is not allowed</source>
-        <translation>Det är inte tillåtet att dela den här mappen vidare</translation>
+        <translation>Det Ã¤r inte tillÃ¥tet att dela den hÃ¤r mappen vidare</translation>
     </message>
     <message>
         <location filename="../src/server/comm/extensionjob.cpp" line="1263"/>
         <source>Copy public share link</source>
-        <translation>Kopiera länken till den offentliga delningen</translation>
+        <translation>Kopiera lÃ¤nken till den offentliga delningen</translation>
     </message>
     <message>
         <location filename="../src/server/comm/extensionjob.cpp" line="1267"/>
         <source>Copy private share link</source>
-        <translation>Kopiera länken till den privata delningen</translation>
+        <translation>Kopiera lÃ¤nken till den privata delningen</translation>
     </message>
     <message>
         <location filename="../src/server/comm/extensionjob.cpp" line="1271"/>
         <source>Open in browser</source>
-        <translation>Öppna i webbläsaren</translation>
+        <translation>Ã–ppna i webblÃ¤saren</translation>
     </message>
 </context>
 <context>
@@ -2860,7 +2860,7 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/server/appserver.cpp" line="133"/>
         <source>kDrive application will close due to a fatal error.</source>
-        <translation>kDrive-programmet kommer att stängas på grund av ett allvarligt fel.</translation>
+        <translation>kDrive-programmet kommer att stÃ¤ngas pÃ¥ grund av ett allvarligt fel.</translation>
     </message>
 </context>
 <context>
@@ -2889,16 +2889,16 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
         <location filename="../src/libcommongui/utility/utility.cpp" line="41"/>
         <source>%n year(s)</source>
         <translation>
-            <numerusform>%n år</numerusform>
-            <numerusform>%n år</numerusform>
+            <numerusform>%n Ã¥r</numerusform>
+            <numerusform>%n Ã¥r</numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <location filename="../src/libcommongui/utility/utility.cpp" line="42"/>
         <source>%n month(s)</source>
         <translation>
-            <numerusform>%n månad</numerusform>
-            <numerusform>%n månader</numerusform>
+            <numerusform>%n mÃ¥nad</numerusform>
+            <numerusform>%n mÃ¥nader</numerusform>
         </translation>
     </message>
     <message numerus="yes">
@@ -2939,12 +2939,12 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/mainclient.cpp" line="49"/>
         <source>System Tray not available</source>
-        <translation type="unfinished"></translation>
+        <translation>Systemfältet är inte tillgängligt</translation>
     </message>
     <message>
         <location filename="../src/gui/mainclient.cpp" line="50"/>
         <source>%1 requires a working system tray. If you are running XFCE, please follow &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;these instructions&lt;/a&gt;. Otherwise, please install a system tray application such as &apos;trayer&apos; and try again.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 kräver ett fungerande systemfält. Om du kör XFCE, följ &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;dessa instruktioner&lt;/a&gt;. Annars, installera en systemfältsapplikation som &apos;trayer&apos; och försök igen.</translation>
     </message>
 </context>
 <context>
@@ -2952,42 +2952,42 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/guiutility.cpp" line="84"/>
         <source>Could not open browser</source>
-        <translation>Det gick inte att öppna webbläsaren</translation>
+        <translation>Det gick inte att Ã¶ppna webblÃ¤saren</translation>
     </message>
     <message>
         <location filename="../src/gui/guiutility.cpp" line="85"/>
         <source>There was an error when launching the browser to go to URL %1. Maybe no default browser is configured?</source>
-        <translation>Det uppstod ett fel när webbläsaren startades för att öppna webbadressen %1. Kanske har ingen standardwebbläsare angetts?</translation>
+        <translation>Det uppstod ett fel nÃ¤r webblÃ¤saren startades fÃ¶r att Ã¶ppna webbadressen %1. Kanske har ingen standardwebblÃ¤sare angetts?</translation>
     </message>
     <message>
         <location filename="../src/gui/guiutility.cpp" line="104"/>
         <source>Could not open email client</source>
-        <translation>Det gick inte att öppna e-postprogrammet</translation>
+        <translation>Det gick inte att Ã¶ppna e-postprogrammet</translation>
     </message>
     <message>
         <location filename="../src/gui/guiutility.cpp" line="105"/>
         <source>There was an error when launching the email client to create a new message. Maybe no default email client is configured?</source>
-        <translation>Det uppstod ett fel när e-postprogrammet startades för att skapa ett nytt meddelande. Kanske har inget standardprogram för e-post konfigurerats?</translation>
+        <translation>Det uppstod ett fel nÃ¤r e-postprogrammet startades fÃ¶r att skapa ett nytt meddelande. Kanske har inget standardprogram fÃ¶r e-post konfigurerats?</translation>
     </message>
     <message>
         <location filename="../src/gui/guiutility.cpp" line="324"/>
         <source>You are not connected anymore. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Log in&lt;/a&gt;</source>
-        <translation>Du är inte inloggad längre. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Logga in&lt;/a&gt;</translation>
+        <translation>Du Ã¤r inte inloggad lÃ¤ngre. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Logga in&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/guiutility.cpp" line="347"/>
         <source>Sync in progress (Step %1/%2).</source>
-        <translation>Synkronisering pågår (Steg %1/%2).</translation>
+        <translation>Synkronisering pÃ¥gÃ¥r (Steg %1/%2).</translation>
     </message>
     <message>
         <location filename="../src/gui/guiutility.cpp" line="353"/>
         <source>Sync in progress.</source>
-        <translation>Synkronisering pågår.</translation>
+        <translation>Synkronisering pÃ¥gÃ¥r.</translation>
     </message>
     <message>
         <location filename="../src/gui/guiutility.cpp" line="364"/>
         <source>Some files couldn&apos;t be synchronized. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
-        <translation>Vissa filer kunde inte synkroniseras. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Läs mer&lt;/a&gt;</translation>
+        <translation>Vissa filer kunde inte synkroniseras. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;LÃ¤s mer&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/guiutility.cpp" line="370"/>
@@ -2997,42 +2997,42 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/guiutility.cpp" line="570"/>
         <source>Folder &lt;b&gt;%1&lt;/b&gt; cannot be selected because another sync is using the same folder.</source>
-        <translation>Mappen &lt;b&gt;%1&lt;/b&gt; kan inte väljas eftersom en annan synkronisering använder samma mapp.</translation>
+        <translation>Mappen &lt;b&gt;%1&lt;/b&gt; kan inte vÃ¤ljas eftersom en annan synkronisering anvÃ¤nder samma mapp.</translation>
     </message>
     <message>
         <location filename="../src/gui/guiutility.cpp" line="576"/>
         <source>Folder &lt;b&gt;%1&lt;/b&gt; cannot be selected because it contains the synchronized folder &lt;b&gt;%2&lt;/b&gt;.</source>
-        <translation>Mappen &lt;b&gt;%1&lt;/b&gt; kan inte väljas eftersom den innehåller den synkroniserade mappen &lt;b&gt;%2&lt;/b&gt;.</translation>
+        <translation>Mappen &lt;b&gt;%1&lt;/b&gt; kan inte vÃ¤ljas eftersom den innehÃ¥ller den synkroniserade mappen &lt;b&gt;%2&lt;/b&gt;.</translation>
     </message>
     <message>
         <location filename="../src/gui/guiutility.cpp" line="584"/>
         <source>Folder &lt;b&gt;%1&lt;/b&gt; cannot be selected because it is contained in the synchronized folder &lt;b&gt;%2&lt;/b&gt;.</source>
-        <translation>Mappen &lt;b&gt;%1&lt;/b&gt; kan inte väljas eftersom den ingår i den synkroniserade mappen &lt;b&gt;%2&lt;/b&gt;.</translation>
+        <translation>Mappen &lt;b&gt;%1&lt;/b&gt; kan inte vÃ¤ljas eftersom den ingÃ¥r i den synkroniserade mappen &lt;b&gt;%2&lt;/b&gt;.</translation>
     </message>
     <message>
         <location filename="../src/gui/guiutility.cpp" line="595"/>
         <source>Folder &lt;b&gt;%1&lt;/b&gt; cannot be selected as sync folder. Please, select another folder.</source>
-        <translation>Mappen &lt;b&gt;%1&lt;/b&gt; kan inte väljas som synkroniseringsmapp. Välj en annan mapp.</translation>
+        <translation>Mappen &lt;b&gt;%1&lt;/b&gt; kan inte vÃ¤ljas som synkroniseringsmapp. VÃ¤lj en annan mapp.</translation>
     </message>
     <message>
         <location filename="../src/gui/guiutility.cpp" line="599"/>
         <source>Folder &lt;b&gt;%1&lt;/b&gt; cannot be selected as sync folder. Please, select another folder. Suggested folder: &lt;b&gt;%2&lt;/b&gt;</source>
-        <translation>Mappen &lt;b&gt;%1&lt;/b&gt; kan inte väljas som synkroniseringsmapp. Välj en annan mapp. Föreslagen mapp: &lt;b&gt;%2&lt;/b&gt;</translation>
+        <translation>Mappen &lt;b&gt;%1&lt;/b&gt; kan inte vÃ¤ljas som synkroniseringsmapp. VÃ¤lj en annan mapp. FÃ¶reslagen mapp: &lt;b&gt;%2&lt;/b&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/guiutility.cpp" line="657"/>
         <source>You have excluded more than %1 folders, please note that this will affect synchronization performance.</source>
-        <translation>Du har uteslutit mer än %1 mappar. Observera att detta kommer att påverka synkroniseringsprestandan.</translation>
+        <translation>Du har uteslutit mer Ã¤n %1 mappar. Observera att detta kommer att pÃ¥verka synkroniseringsprestandan.</translation>
     </message>
     <message>
         <location filename="../src/gui/guiutility.cpp" line="666"/>
         <source>You cannot exclude more than %1 folders. Please uncheck higher-level folders.</source>
-        <translation>Du kan inte utesluta fler än %1 mappar. Avmarkera mapparna på högre nivå.</translation>
+        <translation>Du kan inte utesluta fler Ã¤n %1 mappar. Avmarkera mapparna pÃ¥ hÃ¶gre nivÃ¥.</translation>
     </message>
     <message>
         <location filename="../src/gui/guiutility.cpp" line="351"/>
         <source>Synchronization starting</source>
-        <translation>Synkroniseringen påbörjas</translation>
+        <translation>Synkroniseringen pÃ¥bÃ¶rjas</translation>
     </message>
     <message>
         <location filename="../src/gui/guiutility.cpp" line="374"/>
@@ -3042,31 +3042,31 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     <message>
         <location filename="../src/gui/guiutility.cpp" line="336"/>
         <source>Sync in progress (%1 of %2)</source>
-        <translation>Synkronisering pågår (%1 av %2)</translation>
+        <translation>Synkronisering pÃ¥gÃ¥r (%1 av %2)</translation>
     </message>
     <message>
         <location filename="../src/gui/guiutility.cpp" line="340"/>
         <source>Sync in progress (%1 of %2)
 %3 left...</source>
-        <translation>Synkronisering pågår (%1 av %2)
+        <translation>Synkronisering pÃ¥gÃ¥r (%1 av %2)
 %3 kvar...</translation>
     </message>
     <message>
         <location filename="../src/gui/guiutility.cpp" line="358"/>
         <source>You are up to date, unresolved conflicts.</source>
-        <translation>Du har aktuella, olösta konflikter.</translation>
+        <translation>Du har aktuella, olÃ¶sta konflikter.</translation>
     </message>
     <message>
         <location filename="../src/gui/guiutility.cpp" line="360"/>
         <source>You are up to date!</source>
-        <translation>Nu är du uppdaterad!</translation>
+        <translation>Nu Ã¤r du uppdaterad!</translation>
     </message>
     <message>
         <location filename="../src/gui/guiutility.cpp" line="329"/>
         <source>No folder to synchronize
 You can add one from the kDrive settings.</source>
         <translation>Ingen mapp att synkronisera
-Du kan lägga till en i kDrive-inställningarna.</translation>
+Du kan lÃ¤gga till en i kDrive-instÃ¤llningarna.</translation>
     </message>
 </context>
 </TS>

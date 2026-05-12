@@ -175,7 +175,7 @@
         <source>This folder is not compatible with Lite Sync.&lt;br&gt; 
 Please select another folder. If you continue Lite Sync will be disabled.&lt;br&gt; 
 &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Deze map is niet compatibel met Lite Sync.&lt;br&gt; Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&gt; &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Meer informatie&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="297"/>
@@ -223,7 +223,7 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
     <message>
         <location filename="../src/gui/adddriveloginwidget.cpp" line="121"/>
         <source>An error occurred during authentication. Please close the login window and try again.&lt;br&gt;If the error persists, contact our support team.</source>
-        <translation type="unfinished"></translation>
+        <translation>Er is een fout opgetreden tijdens de authenticatie. Sluit het inlogvenster en probeer het opnieuw.&lt;br&gt;Als de fout aanhoudt, neem contact op met ons supportteam.</translation>
     </message>
     <message>
         <location filename="../src/gui/adddriveloginwidget.cpp" line="137"/>
@@ -878,7 +878,7 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
     <message>
         <location filename="../src/gui/debuggingdialog.cpp" line="598"/>
         <source>The extended full log is activated through the KDRIVE_FORCE_EXTENDED_LOG environment variable. Set it to 0 to disable it.</source>
-        <translation type="unfinished"></translation>
+        <translation>Het uitgebreide volledige logboek wordt geactiveerd via de omgevingsvariabele KDRIVE_FORCE_EXTENDED_LOG. Stel deze in op 0 om het uit te schakelen.</translation>
     </message>
     <message>
         <location filename="../src/gui/debuggingdialog.h" line="70"/>
@@ -1991,42 +1991,42 @@ Gebruik de volgende link om de logs naar de ondersteuning te sturen: &lt;a style
     <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="505"/>
         <source>Swedish</source>
-        <translation type="unfinished"></translation>
+        <translation>Zweeds</translation>
     </message>
     <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="506"/>
         <source>Portuguese</source>
-        <translation type="unfinished"></translation>
+        <translation>Portugees</translation>
     </message>
     <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="507"/>
         <source>Polish</source>
-        <translation type="unfinished"></translation>
+        <translation>Pools</translation>
     </message>
     <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="508"/>
         <source>Norwegian</source>
-        <translation type="unfinished"></translation>
+        <translation>Noors</translation>
     </message>
     <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="509"/>
         <source>Finnish</source>
-        <translation type="unfinished"></translation>
+        <translation>Fins</translation>
     </message>
     <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="510"/>
         <source>Danish</source>
-        <translation type="unfinished"></translation>
+        <translation>Deens</translation>
     </message>
     <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="511"/>
         <source>Greek</source>
-        <translation type="unfinished"></translation>
+        <translation>Grieks</translation>
     </message>
     <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="512"/>
         <source>Dutch</source>
-        <translation type="unfinished"></translation>
+        <translation>Nederlands</translation>
     </message>
     <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="518"/>
@@ -2564,7 +2564,7 @@ Gebruik de volgende link om de logs naar de ondersteuning te sturen: &lt;a style
     <message>
         <location filename="../src/gui/synthesispopover.cpp" line="1187"/>
         <source>&lt;a style= text-decoration:none; href=&quot;https://www.infomaniak.com/en/apps/download-kdrive&quot;&gt;Click here to download manually&lt;/a&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;a style= text-decoration:none; href=&quot;https://www.infomaniak.com/en/apps/download-kdrive&quot;&gt;Klik hier om handmatig te downloaden&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/synthesispopover.cpp" line="1196"/>

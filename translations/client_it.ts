@@ -1993,7 +1993,7 @@ Accedi alla versione web per verificare lo stato del tuo kDrive oppure contatta 
     <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="512"/>
         <source>Dutch</source>
-        <translation type="unfinished"></translation>
+        <translation>Olandese</translation>
     </message>
     <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="518"/>
