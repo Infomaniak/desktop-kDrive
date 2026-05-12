@@ -66,33 +66,29 @@ namespace Infomaniak.kDrive
             return await tcs.Task.ConfigureAwait(false);
         }
 
-        public static async Task RunOnUIThread(Action action)
+        public static async Task RunOnUIThread(Func<Task> action)
         {
             var dispatcher = AppModel.UIThreadDispatcher;
 
             if (dispatcher.HasThreadAccess)
             {
-                action();
+                await action();
+                return;
             }
-            else
+
+            await dispatcher.EnqueueAsync(async () =>
             {
-                TaskCompletionSource tcs = new();
+                await action();
+            });
+        }
 
-                await dispatcher.EnqueueAsync(() =>
-                {
-                    try
-                    {
-                        action();
-                        tcs.SetResult();
-                    }
-                    catch (Exception ex)
-                    {
-                        tcs.SetException(ex);
-                    }
-                });
-
-                await tcs.Task;
-            }
+        public static Task RunOnUIThread(Action action)
+        {
+            return RunOnUIThread(() =>
+            {
+                action();
+                return Task.CompletedTask;
+            });
         }
 
         public static async Task OpenFileAsync(string filePath)
