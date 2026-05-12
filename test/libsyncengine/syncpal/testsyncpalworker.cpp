@@ -439,8 +439,7 @@ void TestSyncPalWorker::testHandleBackError() {
         w->start();
         w->waitForExit();
 
-        const bool paused = worker->handleBackError(w, nullptr);
-        CPPUNIT_ASSERT(paused);
+        worker->handleBackError();
         CPPUNIT_ASSERT_EQUAL(expected, worker->pauseDuration());
     }
 
@@ -461,7 +460,7 @@ void TestSyncPalWorker::testHandleBackError() {
     w->start();
     w->waitForExit();
 
-    (void) worker->handleBackError(w, nullptr);
+    worker->handleBackError();
     CPPUNIT_ASSERT_EQUAL(baseDelay, worker->pauseDuration());
 }
 

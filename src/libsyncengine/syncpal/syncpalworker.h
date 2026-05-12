@@ -92,7 +92,7 @@ class SyncPalWorker : public ISyncWorker {
 
         bool shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr);
         bool handleRateLimited(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr);
-        bool handleBackError(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr);
+        void handleBackError();
 
         virtual double jitter() const;
 

@@ -98,7 +98,10 @@ bool SyncPalWorker::shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const 
             (w1 && w1->exitCode() == ExitCode::InvalidOperation) || (w2 && w2->exitCode() == ExitCode::InvalidOperation);
 
     if (handleRateLimited(w1, w2)) return true;
-    if (handleBackError(w1, w2)) return true;
+    if (httpBlockingError) {
+        handleBackError();
+        return true;
+    }
 
     return networkIssue || httpBlockingError || syncDirNotAccessible || invalidOperation;
 }
@@ -116,28 +119,17 @@ bool SyncPalWorker::handleRateLimited(const std::shared_ptr<ISyncWorker> w1, con
     return false;
 }
 
-bool SyncPalWorker::handleBackError(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2) {
-    bool anyBackError = (w1 && w1->exitCode() == ExitCode::BackError) || (w2 && w2->exitCode() == ExitCode::BackError);
+void SyncPalWorker::handleBackError(void) {
+    constexpr double multiplicativeFactor = 2; // binary exponential backoff
+    constexpr int64_t baseDelay(60000); // 1 min
+    constexpr int64_t maxDelay(14400000); // 4 hour
+    int64_t computedDelay = baseDelay * std::pow(multiplicativeFactor, std::min(_syncPal->consecutiveBackErrors(), (int64_t) 10));
+    _syncPal->incrementConsecutiveBackErrors();
 
-    bool anyDriveAccessError =
-            (w1 && w1->exitCause() == ExitCause::DriveAccessError) || (w2 && w2->exitCause() == ExitCause::DriveAccessError);
-
-    if (anyBackError && !anyDriveAccessError) {
-        constexpr double multiplicativeFactor = 2; // binary exponential backoff
-        constexpr int64_t baseDelay(60000); // 1 min
-        constexpr int64_t maxDelay(14400000); // 4 hour
-        int64_t computedDelay =
-                baseDelay * std::pow(multiplicativeFactor, std::min(_syncPal->consecutiveBackErrors(), (int64_t) 10));
-        _syncPal->incrementConsecutiveBackErrors();
-
-        const double jitterFactor = jitter(); // 40% of the computed delay
-        const auto newPauseDuration =
-                static_cast<int64_t>(std::min(static_cast<int64_t>(computedDelay * jitterFactor), maxDelay));
-        LOG_SYNCPAL_INFO(_logger, "Changing pause duration to " << newPauseDuration << " ms");
-        setPauseDuration(newPauseDuration);
-        return true;
-    }
-    return false;
+    const double jitterFactor = jitter(); // 40% of the computed delay
+    const auto newPauseDuration = static_cast<int64_t>(std::min(static_cast<int64_t>(computedDelay * jitterFactor), maxDelay));
+    LOG_SYNCPAL_INFO(_logger, "Changing pause duration to " << newPauseDuration << " ms");
+    setPauseDuration(newPauseDuration);
 }
 
 double SyncPalWorker::jitter() const {
