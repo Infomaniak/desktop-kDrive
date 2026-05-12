@@ -43,6 +43,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/services/syncservice.h
         app/services/userservice.cpp
         app/services/userservice.h
+        app/systraycontroller.cpp
+        app/systraycontroller.h
 )
 
 set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
@@ -66,7 +68,11 @@ set(GUI_QML_RESOURCE_FILES # Resources for the QML files (e.g. qmldir, js files,
 )
 
 set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
-        # TODO assets/...
+        ui/assets/tray/error.svg
+        ui/assets/tray/neutral.svg
+        ui/assets/tray/notif.svg
+        ui/assets/tray/pause.svg
+        ui/assets/tray/sync.svg
 )
 
 
@@ -81,6 +87,15 @@ qt_add_qml_module(${APPLICATION_CLIENTV4_EXECUTABLE}
         ${GUI_QML_FILES}
         RESOURCES
         ${GUI_QML_RESOURCE_FILES}
+)
+
+qt_add_resources(${APPLICATION_CLIENTV4_EXECUTABLE} "linux_gui_assets"
+        PREFIX
+        "/assets"
+        BASE
+        "ui/assets"
+        FILES
+        ${GUI_ASSETS}
 )
 
 target_link_libraries(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
