@@ -43,16 +43,24 @@ struct AvailableDriveKey {
         friend bool operator==(const AvailableDriveKey &lhs, const AvailableDriveKey &rhs) = default;
 };
 
-struct UserSnapshot {
-        UserInfo info;
-        QString avatarSource;
+class UserDisplayInfo : public UserInfo {
+    public:
+        using UserInfo::UserInfo;
 
-        friend bool operator==(const UserSnapshot &lhs, const UserSnapshot &rhs) = default;
+        [[nodiscard]] const QString &avatarSource() const { return _avatarSource; }
+        void setAvatarSource(const QString &avatarSource) { _avatarSource = avatarSource; }
+
+        friend bool operator==(const UserDisplayInfo &lhs, const UserDisplayInfo &rhs) {
+            return static_cast<const UserInfo &>(lhs) == static_cast<const UserInfo &>(rhs) &&
+                   lhs.avatarSource() == rhs.avatarSource();
+        }
+
+    private:
+        QString _avatarSource;
 };
 
 struct SyncContext {
-        UserInfo user;
-        QString userAvatarSource;
+        UserDisplayInfo user;
         AccountInfo account;
         DriveInfo drive;
         SyncInfo sync;
@@ -72,8 +80,7 @@ struct DriveContext {
 };
 
 struct AvailableDriveContext {
-        UserInfo user;
-        QString userAvatarSource;
+        UserDisplayInfo user;
         std::optional<AccountInfo> account;
         DriveAvailableInfo availableDrive;
         bool alreadyConfigured{false};
