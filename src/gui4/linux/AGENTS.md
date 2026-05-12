@@ -65,7 +65,7 @@
 - `app/models/synclistmodel.*`: QML-facing sync context list model built from `MainSelectionStore::syncContexts()` and
   `MainSelectionStore::currentSyncDbId`.
 - `app/services/cachepopulator.*`: sequential initial snapshot loader for users, accounts, drives, syncs, and sync
-  errors.
+  errors; after bootstrap, activates the server live-info refresh so quota-only drive updates reach `CachePipeline`.
 - `app/services/driveservice.*`: targeted drive use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`;
   durable cache mutations stay signal-driven through `CachePipeline`.
 - `app/services/syncservice.*`: targeted sync use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`;
