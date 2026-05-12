@@ -44,7 +44,7 @@ void CachePopulator::bootstrap() {
 }
 
 void CachePopulator::loadUsers() {
-    _commService.requestUserSnapshotList([this](const ExitInfo &exitInfo, const std::vector<UserSnapshot> &list) {
+    _commService.requestUserDisplayInfoList([this](const ExitInfo &exitInfo, const std::vector<UserDisplayInfo> &list) {
         if (!exitInfo) {
             exitOnPopulationFailure("users", exitInfo);
         }
