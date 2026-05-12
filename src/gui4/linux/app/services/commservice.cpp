@@ -45,11 +45,11 @@ QString avatarSourceFromUserStruct(const Poco::DynamicStruct &userStruct) {
             .arg(QString::fromLatin1(base64Avatar.data(), static_cast<qsizetype>(base64Avatar.size())));
 }
 
-KDC::UserSnapshot userSnapshotFromDynamicStruct(const Poco::DynamicStruct &userStruct) {
-    KDC::UserSnapshot snapshot;
-    snapshot.info.fromDynamicStruct(userStruct);
-    snapshot.avatarSource = avatarSourceFromUserStruct(userStruct);
-    return snapshot;
+KDC::UserDisplayInfo userDisplayInfoFromDynamicStruct(const Poco::DynamicStruct &userStruct) {
+    KDC::UserDisplayInfo info;
+    info.fromDynamicStruct(userStruct);
+    info.setAvatarSource(avatarSourceFromUserStruct(userStruct));
+    return info;
 }
 } // namespace
 
@@ -73,11 +73,11 @@ CommService::CommService(IpcClient &client, SignalDispatcher &dispatcher, QObjec
 
 void CommService::registerUserHandlers(SignalDispatcher &dispatcher) {
     dispatcher.registerHandler(SignalNum::USER_ADDED, [this](const Poco::DynamicStruct &params) {
-        emit userAdded(userSnapshotFromDynamicStruct(params[msgParamUserInfo].extract<Poco::DynamicStruct>()));
+        emit userAdded(userDisplayInfoFromDynamicStruct(params[msgParamUserInfo].extract<Poco::DynamicStruct>()));
     });
 
     dispatcher.registerHandler(SignalNum::USER_UPDATED, [this](const Poco::DynamicStruct &params) {
-        emit userUpdated(userSnapshotFromDynamicStruct(params[msgParamUserInfo].extract<Poco::DynamicStruct>()));
+        emit userUpdated(userDisplayInfoFromDynamicStruct(params[msgParamUserInfo].extract<Poco::DynamicStruct>()));
     });
 
     dispatcher.registerHandler(SignalNum::USER_REMOVED, [this](const Poco::DynamicStruct &params) {
@@ -294,14 +294,14 @@ void CommService::requestUserDbIdList(const UserDbIdListCallback &callback) cons
                            });
 }
 
-void CommService::requestUserSnapshotList(const UserSnapshotListCallback &callback) const {
+void CommService::requestUserDisplayInfoList(const UserDisplayInfoListCallback &callback) const {
     _ipcClient.sendRequest(RequestNum::USER_INFOLIST, {},
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
-                               std::vector<UserSnapshot> list;
+                               std::vector<UserDisplayInfo> list;
                                if (exitInfo) {
                                    CommonUtility::readValuesFromStruct(
                                            result, msgParamUserInfoList, list, std::function{[](const Poco::Dynamic::Var &value) {
-                                               return userSnapshotFromDynamicStruct(value.extract<Poco::DynamicStruct>());
+                                               return userDisplayInfoFromDynamicStruct(value.extract<Poco::DynamicStruct>());
                                            }});
                                }
                                callback(exitInfo, list);
