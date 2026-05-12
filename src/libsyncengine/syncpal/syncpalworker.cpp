@@ -123,7 +123,7 @@ void SyncPalWorker::handleBackError(void) {
     constexpr double multiplicativeFactor = 2; // binary exponential backoff
     constexpr int64_t baseDelay(60000); // 1 min
     constexpr int64_t maxDelay(14400000); // 4 hour
-    int64_t computedDelay = static_cast<int64_t>(
+    auto computedDelay = static_cast<int64_t>(
             baseDelay * std::pow(multiplicativeFactor, std::min(_syncPal->consecutiveBackErrors(), (int64_t)10)));
     _syncPal->incrementConsecutiveBackErrors();
 
