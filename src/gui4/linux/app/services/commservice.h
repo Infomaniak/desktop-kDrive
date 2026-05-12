@@ -105,7 +105,7 @@ class CommService : public QObject {
         using BoolCallback = std::function<void(const ExitInfo &, bool)>;
         using LoginTokenCallback = std::function<void(const ExitInfo &, const LoginTokenResult &)>;
         using UserDbIdListCallback = std::function<void(const ExitInfo &, const std::vector<UserDbId> &)>;
-        using UserInfoListCallback = std::function<void(const ExitInfo &, const std::vector<UserSnapshot> &)>;
+        using UserSnapshotListCallback = std::function<void(const ExitInfo &, const std::vector<UserSnapshot> &)>;
         using DriveAvailableInfoListCallback = std::function<void(const ExitInfo &, const std::vector<DriveAvailableInfo> &)>;
         using AccountInfoListCallback = std::function<void(const ExitInfo &, const std::vector<AccountInfo> &)>;
         using DriveInfoListCallback = std::function<void(const ExitInfo &, const std::vector<DriveInfo> &)>;
@@ -144,7 +144,7 @@ class CommService : public QObject {
 
         // --- User ---
         void requestUserDbIdList(const UserDbIdListCallback &callback) const;
-        void requestUserInfoList(const UserInfoListCallback &callback) const;
+        void requestUserSnapshotList(const UserSnapshotListCallback &callback) const;
         void requestUserAvailableDrives(UserDbId userDbId, const DriveAvailableInfoListCallback &callback) const;
         void requestDeleteUser(UserDbId userDbId, const VoidCallback &callback) const;
 
