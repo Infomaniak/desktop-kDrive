@@ -136,7 +136,7 @@ runs:
             Write-Host "KSP client certificate removed successfully."
             } else {
             Get-ChildItem "Cert:\LocalMachine\My\${{ inputs.debug_cert_thumbprint }}" | Remove-Item
-            Write-Host "Debug certificate imported successfully."
+            Write-Host "Debug certificate removed successfully."
             }
         shell: powershell
 
