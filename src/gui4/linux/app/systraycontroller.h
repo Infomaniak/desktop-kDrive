@@ -24,6 +24,7 @@
 #include <QObject>
 #include <QPointer>
 #include <QSystemTrayIcon>
+#include <QTimer>
 
 #include <unordered_map>
 
@@ -51,6 +52,7 @@ enum class TrayIconState {
  */
 class SystemTrayController final : public QObject {
         Q_OBJECT
+        Q_PROPERTY(bool trayModeActive READ trayModeActive NOTIFY trayModeActiveChanged)
 
     public:
         explicit SystemTrayController(QObject *parent = nullptr);
@@ -61,14 +63,20 @@ class SystemTrayController final : public QObject {
         void setProductStateInitialized(bool initialized);
         void setNotificationActive(bool active);
         void setIconState(TrayIconState state);
+        [[nodiscard]] bool trayModeActive() const { return _isTrayModeActive; }
 
         Q_INVOKABLE void showMainWindow() const;
         Q_INVOKABLE void hideMainWindow() const;
 
     signals:
         void quitRequested();
+        void trayModeActiveChanged(bool active);
 
     private:
+        void startTrayAvailabilityRetry();
+        void stopTrayAvailabilityRetry();
+        void attemptTrayActivation();
+        void activateTrayMode();
         void refreshIconState();
         void reconcileKnownSyncStatuses();
         void onSyncProgressInfo(SyncDbId syncDbId, SyncStatus status);
@@ -82,9 +90,12 @@ class SystemTrayController final : public QObject {
         QAction *_quitAction = nullptr;
         std::unordered_map<SyncDbId, SyncStatus> _syncStatuses;
         TrayIconState _iconState = TrayIconState::Neutral;
+        QTimer _trayAvailabilityRetryTimer;
+        uint8_t _trayAvailabilityRetryCount = 0;
         bool _isProductStateInitialized = false;
         bool _isNotificationActive = false;
         bool _isTrayAvailable = false;
+        bool _isTrayModeActive = false;
         bool _isInitialized = false;
 };
 
