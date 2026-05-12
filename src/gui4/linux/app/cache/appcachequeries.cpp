@@ -309,7 +309,6 @@ std::optional<DriveContext> AppCache::driveContext(const DriveDbId driveDbId) co
 
     DriveContext context;
     context.user = userIt->second.info;
-    context.userAvatarSource = userIt->second.avatarSource;
     context.account = accountIt->second.info;
     context.drive = driveIt->second.info;
     context.syncs = syncsForDrive(driveDbId);
