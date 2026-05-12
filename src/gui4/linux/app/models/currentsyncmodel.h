@@ -47,6 +47,7 @@ class CurrentSyncModel : public QObject {
         Q_PROPERTY(qint64 userId READ userId NOTIFY contextChanged)
         Q_PROPERTY(QString userName READ userName NOTIFY contextChanged)
         Q_PROPERTY(QString userEmail READ userEmail NOTIFY contextChanged)
+        Q_PROPERTY(QString userAvatarSource READ userAvatarSource NOTIFY contextChanged)
         Q_PROPERTY(QString localPath READ localPath NOTIFY contextChanged)
         Q_PROPERTY(QString targetPath READ targetPath NOTIFY contextChanged)
         Q_PROPERTY(QString targetNodeId READ targetNodeId NOTIFY contextChanged)
@@ -76,6 +77,7 @@ class CurrentSyncModel : public QObject {
         [[nodiscard]] qint64 userId() const;
         [[nodiscard]] QString userName() const;
         [[nodiscard]] QString userEmail() const;
+        [[nodiscard]] QString userAvatarSource() const;
         [[nodiscard]] QString localPath() const;
         [[nodiscard]] QString targetPath() const;
         [[nodiscard]] QString targetNodeId() const;
