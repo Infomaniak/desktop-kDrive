@@ -66,10 +66,12 @@
                    TextWrapping="Wrap" />
 
         <!-- What's new expander -->
-        <ScrollView Grid.Row="4"
+        <ScrollView x:Name="ReleaseNotesScrollView"
+                    Grid.Row="4"
                     ContentOrientation="Vertical"
                     VerticalAlignment="Top"
-                    Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.L}">
+                    Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.L}"
+                    Visibility="Collapsed">
             <Expander HorizontalAlignment="Stretch"
                       HorizontalContentAlignment="Stretch"
                       Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.L}">
@@ -78,28 +80,23 @@
                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                 </Expander.Header>
                 <Expander.Content>
-                    <controls:ContentLoader x:Name="ReleaseNotesLoader"
-                        IsLoading="True">
-                        <controls:ContentLoader.LoaderContent>
-                            <ItemsControl x:Name="ReleaseNotesItemsControl">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate x:DataType="x:String">
-                                        <StackPanel Orientation="Horizontal"
+                    <ItemsControl x:Name="ReleaseNotesItemsControl">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <StackPanel Orientation="Horizontal"
                                                     Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
                                                     Padding="0,2">
-                                            <TextBlock Text="•"
+                                    <TextBlock Text="•"
                                                        Style="{ThemeResource CaptionTextBlockStyle}"
                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                            <TextBlock Text="{x:Bind}"
+                                    <TextBlock Text="{x:Bind}"
                                                        TextWrapping="Wrap"
                                                        Style="{ThemeResource CaptionTextBlockStyle}"
                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </controls:ContentLoader.LoaderContent>
-                    </controls:ContentLoader>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </Expander.Content>
             </Expander>
         </ScrollView>

@@ -49,12 +49,11 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private async Task LoadReleaseNotesAsync()
         {
+            ReleaseNotesScrollView.Visibility = Visibility.Collapsed;
+
             var availableUpdate = ViewModel.Settings?.UpdateManager?.AvailableUpdate;
             if (availableUpdate is null)
-            {
-                ReleaseNotesLoader.IsLoading = false;
                 return;
-            }
 
             using var httpClient = new HttpClient();
             string? releaseNotes = null;
@@ -72,14 +71,13 @@ namespace Infomaniak.kDrive.Pages.Settings
                 catch (Exception innerEx)
                 {
                     Logger.Log(Logger.Level.Warning, $"Failed to load release notes from default language URL: {innerEx.Message}");
-                    ReleaseNotesLoader.IsLoading = false;
                     return;
                 }
             }
 
             var items = ParseListItems(releaseNotes);
             ReleaseNotesItemsControl.ItemsSource = items;
-            ReleaseNotesLoader.IsLoading = false;
+            ReleaseNotesScrollView.Visibility = Visibility.Visible;
         }
 
         private static List<string> ParseListItems(string html)
