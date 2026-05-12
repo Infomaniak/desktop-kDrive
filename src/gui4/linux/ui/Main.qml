@@ -22,8 +22,13 @@ import kDrive.UI
 
 Window {
     id: mainWindow
-    visible: true
+    visible: false
     title: "kDrive"
+
+    onClosing: (close) => {
+        close.accepted = false;
+        systemTrayController.hideMainWindow();
+    }
 
     // This rectangle is only there to test the dark mode management
     // and will be removed once the gui implem will start.
