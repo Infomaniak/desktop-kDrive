@@ -418,7 +418,7 @@ void TestSyncPalWorker::testHandleBackError() {
     const auto mockSyncPal = std::dynamic_pointer_cast<MockSyncPal>(_syncPal);
     CPPUNIT_ASSERT(mockSyncPal);
 
-    auto *worker = mockSyncPal->getSyncPalWorker().get();
+    auto *syncPalWorker = mockSyncPal->getSyncPalWorker().get();
 
     constexpr int64_t baseDelay = 60000;
     constexpr int64_t maxDelay = 14400000;
@@ -439,8 +439,8 @@ void TestSyncPalWorker::testHandleBackError() {
         w->start();
         w->waitForExit();
 
-        worker->handleBackError();
-        CPPUNIT_ASSERT_EQUAL(expected, worker->pauseDuration());
+        syncPalWorker->handleBackError();
+        CPPUNIT_ASSERT_EQUAL(expected, syncPalWorker->pauseDuration());
     }
 
     // Verify the counter resets when the Idle step is initialised (via initStep → resetConsecutiveBackErrors).
@@ -451,7 +451,7 @@ void TestSyncPalWorker::testHandleBackError() {
     // (UpdateDetection1 always precedes Idle in production).
     _syncPal->copySnapshots();
 
-    worker->initStep(SyncStep::Idle, stepWorkers, inputSharedObject);
+    syncPalWorker->initStep(SyncStep::Idle, stepWorkers, inputSharedObject);
 
     CPPUNIT_ASSERT_EQUAL(int64_t{0}, _syncPal->consecutiveBackErrors());
 
@@ -460,8 +460,8 @@ void TestSyncPalWorker::testHandleBackError() {
     w->start();
     w->waitForExit();
 
-    worker->handleBackError();
-    CPPUNIT_ASSERT_EQUAL(baseDelay, worker->pauseDuration());
+    syncPalWorker->handleBackError();
+    CPPUNIT_ASSERT_EQUAL(baseDelay, syncPalWorker->pauseDuration());
 }
 
 } // namespace KDC
