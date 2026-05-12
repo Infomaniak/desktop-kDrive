@@ -528,10 +528,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             }
 
             if (!control.IsEnabled)
-            {
-                Logger.Log(Logger.Level.Error, "control is disabled");
                 return;
-            }
 
             control.IsEnabled = false;
 
@@ -572,10 +569,8 @@ namespace Infomaniak.kDrive.Pages.Settings
             }
 
             if (!control.IsEnabled)
-            {
-                Logger.Log(Logger.Level.Error, "control is disabled");
                 return;
-            }
+
             _analyticsService.TrackClick(Analytics.Keys.Category.GeneralSettingsPage, Analytics.Keys.EventName.ChangeLanguage);
 
             control.IsEnabled = false;
