@@ -47,8 +47,8 @@ struct UpdaterVersionInfoTest {
         let response = try decoder.decode(CallbackMessage<UpdaterVersionInfoResponse>.self, from: callbackData)
 
         // THEN
-        #expect(response.code == .Ok)
-        #expect(response.cause == .Unknown)
+        #expect(response.code == KDC.ExitCode.Ok)
+        #expect(response.cause == KDC.ExitCause.Unknown)
         #expect(response.id == 18)
 
         // VersionInfo assertions
