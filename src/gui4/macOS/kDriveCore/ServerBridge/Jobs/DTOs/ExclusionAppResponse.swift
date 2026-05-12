@@ -18,27 +18,27 @@
 
 import Foundation
 
-struct ExclusionAppInfoExchange: Codable {
+struct ExclusionAppInfoExchange: Codable, Sendable {
     @Base64CodedString var appId: String
     @Base64CodedString var description: String
     let def: Bool
 }
 
-struct ExclusionAppGetListQuery: Codable {
+struct ExclusionAppGetListQuery: Codable, Sendable {
     let `default`: Bool
 }
 
-struct ExclusionAppGetListResponse: Codable {
+struct ExclusionAppGetListResponse: Codable, Sendable {
     let applicationList: [ExclusionAppInfoExchange]
 }
 
-struct ExclusionAppSetListQuery: Codable {
+struct ExclusionAppSetListQuery: Codable, Sendable {
     let `default`: Bool
     let applicationList: [ExclusionAppInfoExchange]
 }
 
-struct ExclusionAppSetListResponse: Codable {}
+struct ExclusionAppSetListResponse: Codable, Sendable {}
 
-struct ExclusionAppGetFetchingAppListResponse: Codable {
+struct ExclusionAppGetFetchingAppListResponse: Codable, Sendable {
     @Base64CodedStringDictionary var applicationTable: [String: String]
 }
