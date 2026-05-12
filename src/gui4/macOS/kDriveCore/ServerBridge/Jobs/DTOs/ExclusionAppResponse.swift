@@ -18,7 +18,7 @@
 
 import Foundation
 
-struct ExclusionAppInfoResponse: Codable {
+struct ExclusionAppInfoExchange: Codable {
     @Base64CodedString var appId: String
     @Base64CodedString var description: String
     let def: Bool
@@ -29,5 +29,12 @@ struct ExclusionAppGetListQuery: Codable {
 }
 
 struct ExclusionAppGetListResponse: Codable {
-    let applicationList: [ExclusionAppInfoResponse]
+    let applicationList: [ExclusionAppInfoExchange]
 }
+
+struct ExclusionAppSetListQuery: Codable {
+    let `default`: Bool
+    let applicationList: [ExclusionAppInfoExchange]
+}
+
+struct ExclusionAppSetListResponse: Codable {}

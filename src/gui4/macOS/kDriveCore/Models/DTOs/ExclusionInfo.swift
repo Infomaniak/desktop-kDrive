@@ -31,13 +31,13 @@ public struct ExclusionAppInfo: Sendable {
 }
 
 extension ExclusionAppInfo {
-    init(response: ExclusionAppInfoResponse) {
+    init(response: ExclusionAppInfoExchange) {
         self.init(appId: response.appId, description: response.description, def: response.def)
     }
 }
 
 extension Array where Element == ExclusionAppInfo {
-    init(responses: [ExclusionAppInfoResponse]) {
+    init(responses: [ExclusionAppInfoExchange]) {
         self = responses.map { ExclusionAppInfo(response: $0) }
     }
 }

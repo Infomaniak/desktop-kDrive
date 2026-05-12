@@ -40,4 +40,20 @@ public struct ExclusionAppJobs: Sendable {
 
         return [ExclusionAppInfo](responses: decodedMessage.body.applicationList)
     }
+
+    public func setExclusionAppList(default: Bool, applicationList: [ExclusionAppInfo]) async throws {
+        IKLogger.data.log("Set exclusionAppList")
+        let responses = applicationList
+            .map { ExclusionAppInfoExchange(appId: $0.appId, description: $0.description, def: $0.def) }
+        let query = ExclusionAppSetListQuery(default: `default`, applicationList: responses)
+        let request = await RequestMessage<ExclusionAppSetListQuery>(
+            num: RequestNum.EXCLAPP_SETLIST,
+            body: query
+        )
+
+        _ = try await queryFetcher.query(
+            request,
+            responseType: CallbackMessage<ExclusionAppSetListResponse>.self
+        )
+    }
 }
