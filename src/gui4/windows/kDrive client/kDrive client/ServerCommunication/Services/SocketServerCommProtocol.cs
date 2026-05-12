@@ -39,6 +39,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         private int _requestIdCounter = 0;
         private readonly byte[] _receiveBuffer = new byte[65536]; // 64 Ko
         private readonly StringBuilder _inBuffer = new();
+        private readonly Decoder _decoder = Encoding.Unicode.GetDecoder();
         private int _inBufferJsonBalance = 0;
         private int _inBufferJsonBalanceSeen = 0;
         private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
@@ -291,8 +292,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 if (_socket.Available > 0)
                 {
                     int bytesRead = await _socket.ReceiveAsync(_receiveBuffer).ConfigureAwait(false);
-                    string str = Encoding.Unicode.GetString(_receiveBuffer, 0, bytesRead);
-                    _inBuffer.Append(str);
+                    int charCount = _decoder.GetCharCount(_receiveBuffer, 0, bytesRead, flush: false);
+                    char[] chars = new char[charCount];
+                    _decoder.GetChars(_receiveBuffer, 0, bytesRead, chars, 0, flush: false);
+                    _inBuffer.Append(chars, 0, charCount);
                 }
 
                 if (!CheckBufferConsistency())
