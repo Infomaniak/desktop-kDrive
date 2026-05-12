@@ -26,8 +26,13 @@ Window {
     title: "kDrive"
 
     onClosing: (close) => {
-        close.accepted = false;
-        systemTrayController.hideMainWindow();
+        if (systemTrayController.trayModeActive) {
+            close.accepted = false;
+            systemTrayController.hideMainWindow();
+        } else {
+            close.accepted = true;
+            Qt.quit();
+        }
     }
 
     // This rectangle is only there to test the dark mode management

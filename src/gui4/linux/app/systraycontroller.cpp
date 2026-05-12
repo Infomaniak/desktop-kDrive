@@ -23,9 +23,11 @@
 
 #include <QAction>
 #include <QApplication>
+#include <QCoreApplication>
 #include <QIcon>
 #include <QLoggingCategory>
 #include <QWindow>
+#include <QTimer>
 
 #include <algorithm>
 
@@ -34,6 +36,18 @@ namespace KDC {
 Q_LOGGING_CATEGORY(lcSystemTrayController, "gui.v4.systray", QtInfoMsg)
 
 namespace {
+constexpr uint8_t trayAvailabilityRetryLimit = 60;
+constexpr int32_t trayAvailabilityRetryIntervalMs = 1000;
+
+#ifdef QT_DEBUG
+bool forceNoTrayRequested() {
+    return qEnvironmentVariableIsSet("KDRIVE_FORCE_NO_TRAY");
+}
+#else
+bool forceNoTrayRequested() {
+    return false;
+}
+#endif
 
 QString syncStatusLogName(const SyncStatus status) {
     return QString::fromStdString(toString(status));
@@ -84,7 +98,12 @@ bool isSyncStatus(const SyncStatus status) {
 } // namespace
 
 SystemTrayController::SystemTrayController(QObject *parent) :
-    QObject(parent) {}
+    QObject(parent) {
+    _trayAvailabilityRetryTimer.setParent(this);
+    _trayAvailabilityRetryTimer.setSingleShot(true);
+    _trayAvailabilityRetryTimer.setInterval(trayAvailabilityRetryIntervalMs);
+    (void) connect(&_trayAvailabilityRetryTimer, &QTimer::timeout, this, &SystemTrayController::attemptTrayActivation);
+}
 
 void SystemTrayController::initialize() {
     if (_isInitialized) {
@@ -92,7 +111,16 @@ void SystemTrayController::initialize() {
         return;
     }
 
+#ifdef QT_DEBUG
+    if (forceNoTrayRequested()) {
+        qCWarning(lcSystemTrayController) << "Debug override active: forcing system tray to be unavailable";
+        _isTrayAvailable = false;
+    } else {
+        _isTrayAvailable = QSystemTrayIcon::isSystemTrayAvailable();
+    }
+#else
     _isTrayAvailable = QSystemTrayIcon::isSystemTrayAvailable();
+#endif
     qCInfo(lcSystemTrayController) << "Initializing system tray | available:" << _isTrayAvailable
                                    << "| state:" << trayIconStateLogName(_iconState) << "| icon:" << trayIconPath(_iconState);
 
@@ -108,13 +136,14 @@ void SystemTrayController::initialize() {
     (void) connect(_quitAction, &QAction::triggered, this, &SystemTrayController::quitRequested);
     (void) connect(&_trayIcon, &QSystemTrayIcon::activated, this, &SystemTrayController::onTrayActivated);
 
-    if (!_isTrayAvailable) {
-        qCWarning(lcSystemTrayController) << "System tray is not available";
+    if (_isTrayAvailable) {
+        activateTrayMode();
+    } else {
+        qCWarning(lcSystemTrayController) << "System tray is not available at startup, using fallback window mode";
+        startTrayAvailabilityRetry();
     }
 
-    _trayIcon.show();
     _isInitialized = true;
-    qCInfo(lcSystemTrayController) << "System tray icon shown | visible:" << _trayIcon.isVisible();
 }
 
 void SystemTrayController::observe(AppCache &appCache, CommService &commService) {
@@ -142,8 +171,8 @@ void SystemTrayController::setMainWindow(QWindow *window) {
     qCInfo(lcSystemTrayController) << "Main window registered | valid:" << !_mainWindow.isNull()
                                    << "| visible:" << (_mainWindow ? _mainWindow->isVisible() : false);
 
-    if (!_isTrayAvailable && _mainWindow) {
-        qCWarning(lcSystemTrayController) << "Showing main window because the system tray is unavailable";
+    if (!_isTrayModeActive && _mainWindow) {
+        qCWarning(lcSystemTrayController) << "Showing main window because tray mode is not active";
         showMainWindow();
     }
 }
@@ -202,8 +231,81 @@ void SystemTrayController::hideMainWindow() const {
         return;
     }
 
+    if (!_isTrayModeActive) {
+        qCWarning(lcSystemTrayController) << "Cannot hide main window in fallback mode, quitting application instead";
+        QCoreApplication::quit();
+        return;
+    }
+
     qCInfo(lcSystemTrayController) << "Hiding main window instead of quitting";
     _mainWindow->hide();
+}
+
+void SystemTrayController::startTrayAvailabilityRetry() {
+    if (_trayAvailabilityRetryTimer.isActive()) {
+        return;
+    }
+
+#ifdef QT_DEBUG
+    if (forceNoTrayRequested()) {
+        qCInfo(lcSystemTrayController) << "Debug override keeps system tray unavailable";
+    }
+#endif
+    _trayAvailabilityRetryCount = 0;
+    qCInfo(lcSystemTrayController) << "Starting system tray availability retry loop | intervalMs:"
+                                   << trayAvailabilityRetryIntervalMs << "| limit:" << trayAvailabilityRetryLimit;
+    _trayAvailabilityRetryTimer.start();
+}
+
+void SystemTrayController::stopTrayAvailabilityRetry() {
+    if (_trayAvailabilityRetryTimer.isActive()) {
+        qCInfo(lcSystemTrayController) << "Stopping system tray availability retry loop";
+        _trayAvailabilityRetryTimer.stop();
+    }
+    _trayAvailabilityRetryCount = 0;
+}
+
+void SystemTrayController::attemptTrayActivation() {
+    if (_isTrayModeActive) {
+        stopTrayAvailabilityRetry();
+        return;
+    }
+
+#ifdef QT_DEBUG
+    _isTrayAvailable = !forceNoTrayRequested() && QSystemTrayIcon::isSystemTrayAvailable();
+#else
+    _isTrayAvailable = QSystemTrayIcon::isSystemTrayAvailable();
+#endif
+    if (_isTrayAvailable) {
+        qCInfo(lcSystemTrayController) << "System tray became available, activating tray mode";
+        activateTrayMode();
+        return;
+    }
+
+    ++_trayAvailabilityRetryCount;
+    qCInfo(lcSystemTrayController) << "System tray still unavailable | retry:" << _trayAvailabilityRetryCount << "/"
+                                   << trayAvailabilityRetryLimit;
+
+    if (_trayAvailabilityRetryCount >= trayAvailabilityRetryLimit) {
+        qCWarning(lcSystemTrayController) << "System tray unavailable after retry limit, staying in fallback window mode";
+        stopTrayAvailabilityRetry();
+        return;
+    }
+
+    _trayAvailabilityRetryTimer.start();
+}
+
+void SystemTrayController::activateTrayMode() {
+    if (_isTrayModeActive) {
+        return;
+    }
+
+    _isTrayAvailable = true;
+    _isTrayModeActive = true;
+    stopTrayAvailabilityRetry();
+    _trayIcon.show();
+    qCInfo(lcSystemTrayController) << "System tray mode activated | visible:" << _trayIcon.isVisible();
+    emit trayModeActiveChanged(true);
 }
 
 void SystemTrayController::refreshIconState() {
@@ -267,6 +369,11 @@ void SystemTrayController::onSyncProgressInfo(const SyncDbId syncDbId, const Syn
 
 void SystemTrayController::onTrayActivated(QSystemTrayIcon::ActivationReason reason) {
     qCInfo(lcSystemTrayController) << "System tray activated | reason:" << reason;
+
+    if (!_isTrayModeActive) {
+        qCWarning(lcSystemTrayController) << "Tray activation ignored because tray mode is not active";
+        return;
+    }
 
     if (reason == QSystemTrayIcon::Trigger || reason == QSystemTrayIcon::DoubleClick || reason == QSystemTrayIcon::MiddleClick) {
         showMainWindow();
