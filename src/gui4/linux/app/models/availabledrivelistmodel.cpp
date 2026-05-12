@@ -23,8 +23,15 @@
 namespace KDC {
 
 namespace {
-constexpr qint32 noVirtualFileMode = 0;
+constexpr qint32 noVirtualFileMode = static_cast<qint32>(VirtualFileMode::Off);
+
+VirtualFileMode virtualFileModeFromQmlValue(const qint32 value) {
+    if (value >= noVirtualFileMode && value < static_cast<qint32>(VirtualFileMode::EnumEnd)) {
+        return static_cast<VirtualFileMode>(value);
+    }
+    return VirtualFileMode::Off;
 }
+} // namespace
 
 AvailableDriveListModel::AvailableDriveListModel(AppCache &appCache, OnboardingState &onboardingState, QObject *const parent) :
     QAbstractListModel(parent),
@@ -159,7 +166,7 @@ void AvailableDriveListModel::setPendingSyncConfig(const qint64 accountId, const
     config.targetPath = targetPath;
     config.targetNodeId = targetNodeId;
     config.supportVfs = supportVfs;
-    config.virtualFileMode = static_cast<VirtualFileMode>(virtualFileMode);
+    config.virtualFileMode = virtualFileModeFromQmlValue(virtualFileMode);
     _onboardingState.setPendingSyncConfig(*key, config);
 }
 
