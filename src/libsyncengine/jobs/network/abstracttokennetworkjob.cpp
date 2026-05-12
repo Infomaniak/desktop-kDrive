@@ -345,16 +345,16 @@ ExitInfo AbstractTokenNetworkJob::handleJsonResponse(const std::string &replyBod
 
 #ifndef NDEBUG
 namespace {
-std::string hasDebugApiToken(const UserId &userId) {
+std::string getAccessTokenFromEnv(const UserId &userId) {
     std::string str = CommonUtility::envVarValue("KDRIVE_DEBUG_API_TOKEN");
     if (str.empty()) return {};
 
     const auto strList = Utility::splitStr(str, ';');
     if (strList.size() != 2) return {};
 
-    const auto debugUserDbId = strList[0];
+    const auto debugUserId = strList[0];
     const auto debugAccessToken = strList[1];
-    if (debugUserDbId != std::to_string(userId)) return {};
+    if (debugUserId != std::to_string(userId)) return {};
 
     return debugAccessToken;
 }
@@ -386,7 +386,7 @@ void AbstractTokenNetworkJob::loadUserInfoFromUserDbId() {
 
 
 #ifndef NDEBUG
-    const auto debugAccessToken = hasDebugApiToken(user.userId());
+    const auto debugAccessToken = getAccessTokenFromEnv(user.userId());
     if (debugAccessToken.empty()) {
 #endif
         if (user.keychainKey().empty()) {
