@@ -307,7 +307,7 @@ void TestIo::testGetFileChecksum() {
     {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath subdir = temporaryDirectory.path() / "permission_less_subdirectory";
-        std::filesystem::create_directory(subdir);
+        CPPUNIT_ASSERT(std::filesystem::create_directory(subdir));
         const SyncPath path = subdir / "file.txt";
         {
             std::ofstream ofs(path);
