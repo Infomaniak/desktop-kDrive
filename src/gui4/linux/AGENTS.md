@@ -56,14 +56,6 @@
     - emits `currentSyncContextChanged()` as a coarse invalidation signal when the current sync context stays selected
       but the underlying cache graph changes.
 - `app/cache/onboardingstate.*`: onboarding-only selected user, selected available-drive keys, and pending sync configs.
-- `app/models/availabledrivelistmodel.*`: QML-facing onboarding model built from
-  `AppCache::availableDriveContexts(OnboardingState::selectedUserDbId)` and onboarding selection state.
-- `app/models/currentsyncmodel.*`: QML-facing scalar-property adapter for
-  `MainSelectionStore::currentSyncContext()`.
-- `app/models/drivelistmodel.*`: QML-facing drive context list model built from `AppCache::driveContexts()` with
-  current-drive state derived from `MainSelectionStore`.
-- `app/models/synclistmodel.*`: QML-facing sync context list model built from `MainSelectionStore::syncContexts()` and
-  `MainSelectionStore::currentSyncDbId`.
 - `app/services/cachepopulator.*`: sequential initial snapshot loader for users, accounts, drives, syncs, and sync
   errors; after bootstrap, activates the server live-info refresh so quota-only drive updates reach `CachePipeline`.
 - `app/services/driveservice.*`: targeted drive use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`;
