@@ -17,6 +17,7 @@
  */
 
 #include "utility.h"
+#include "utility_base.h"
 #include "log/sentry/handler.h"
 
 #include <shlobj.h>
