@@ -188,6 +188,34 @@ ExitInfo DownloadJob::runJob() noexcept {
     return AbstractTokenNetworkJob::runJob();
 }
 
+
+void DownloadJob::handleCreation(bool &fetchFinished, bool &fetchCanceled, bool &fetchError, bool &writeError) {
+    if (_vfs && !_isHydrated && !fetchFinished) { // updateFetchStatus is used only for hydration.
+        // Update fetch status
+        if (ExitInfo exitInfo =
+                    _vfs->updateFetchStatus(_tmpPath, _fileDownloadInfo.localPath, getProgress(), fetchCanceled, fetchFinished);
+            !exitInfo) {
+            LOGW_WARN(_logger, L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(_fileDownloadInfo.localPath)
+                                                                  << L" : " << exitInfo);
+            fetchError = true;
+        } else if (fetchCanceled) {
+            LOGW_WARN(_logger, L"Update fetch status canceled: " << Utility::formatSyncPath(_fileDownloadInfo.localPath));
+        } else if (!fetchFinished) {
+            LOGW_WARN(_logger, L"Update fetch status not terminated: " << Utility::formatSyncPath(_fileDownloadInfo.localPath));
+        }
+
+        _responseHandlingCanceled = fetchCanceled || fetchError || (!fetchFinished);
+    } else if (_isHydrated) {
+        // Replace file by tmp one
+        if (!moveTmpFile()) {
+            LOGW_WARN(_logger, L"Failed to replace file by tmp one: " << Utility::formatSyncPath(_tmpPath));
+            writeError = true;
+        }
+
+        _responseHandlingCanceled = writeError;
+    }
+}
+
 ExitInfo DownloadJob::createFile(std::istream &is, bool &fetchCanceled) {
     bool readError = false;
     bool writeError = false;
@@ -202,51 +230,29 @@ ExitInfo DownloadJob::createFile(std::istream &is, bool &fetchCanceled) {
 
     _responseHandlingCanceled = isAborted() || readError || writeError || fetchCanceled || fetchError;
 
-    if (!_responseHandlingCanceled) {
-        if (_vfs && !_isHydrated && !fetchFinished) { // updateFetchStatus is used only for hydration.
-            // Update fetch status
-            if (ExitInfo exitInfo = _vfs->updateFetchStatus(_tmpPath, _fileDownloadInfo.localPath, getProgress(), fetchCanceled,
-                                                            fetchFinished);
-                !exitInfo) {
-                LOGW_WARN(_logger, L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(_fileDownloadInfo.localPath)
-                                                                      << L" : " << exitInfo);
-                fetchError = true;
-            } else if (fetchCanceled) {
-                LOGW_WARN(_logger, L"Update fetch status canceled: " << Utility::formatSyncPath(_fileDownloadInfo.localPath));
-            } else if (!fetchFinished) {
-                LOGW_WARN(_logger,
-                          L"Update fetch status not terminated: " << Utility::formatSyncPath(_fileDownloadInfo.localPath));
-            }
-
-            _responseHandlingCanceled = fetchCanceled || fetchError || (!fetchFinished);
-        } else if (_isHydrated) {
-            // Replace file by tmp one
-            if (!moveTmpFile()) {
-                LOGW_WARN(_logger, L"Failed to replace file by tmp one: " << Utility::formatSyncPath(_tmpPath));
-                writeError = true;
-            }
-
-            _responseHandlingCanceled = writeError;
-        }
-    }
+    if (!_responseHandlingCanceled) handleCreation(fetchFinished, fetchCanceled, fetchError, writeError);
 
     if (_responseHandlingCanceled) {
         // NB: VFS reset is done in the destructor
         if (isAborted() || fetchCanceled) {
             // Download aborted or canceled by the user
             return ExitCode::Ok;
-        } else if (readError) {
+        }
+
+        if (readError) {
             // Download issue
             return {ExitCode::BackError, ExitCause::InvalidSize};
-        } else if (const std::streamsize neededPlace =
-                           httpResponse().getContentLength() == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH
-                                   ? BUF_SIZE
-                                   : (httpResponse().getContentLength() - getProgress());
-                   !hasEnoughPlace(_tmpPath, _fileDownloadInfo.localPath, neededPlace, _logger)) {
-            return {ExitCode::SystemError, ExitCause::NotEnoughDiskSpace};
-        } else {
-            return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
+
+        if (const std::streamsize neededPlace =
+                    httpResponse().getContentLength() == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH
+                            ? BUF_SIZE
+                            : (httpResponse().getContentLength() - getProgress());
+            !hasEnoughPlace(_tmpPath, _fileDownloadInfo.localPath, neededPlace, _logger)) {
+            return {ExitCode::SystemError, ExitCause::NotEnoughDiskSpace};
+        }
+
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     return ExitCode::Ok;
