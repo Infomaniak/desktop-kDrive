@@ -42,6 +42,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             get => ++_requestIdCounter;
         }
 
+        public Task<bool> InitConnection(CancellationToken cancellationToken) { return Task.FromResult(true); }
         public event EventHandler<SignalEventArgs>? SignalReceived;
 
 #pragma warning disable CS0067 // ConnectionLost is not used in the mock implementation, but we need to declare it to satisfy the IServerCommProtocol interface. We can safely ignore the fact that it's never raised.
@@ -72,7 +73,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 RequestNum.UPDATER_CHANGE_CHANNEL => await UpdaterChangeChannel(parameters),
                 RequestNum.PARAMETERS_INFO => await ParametersInfo(parameters),
                 RequestNum.PARAMETERS_UPDATE => await ParametersUpdate(parameters),
-                RequestNum.ERROR_DELETE =>await ErrorDelete(parameters),
+                RequestNum.ERROR_DELETE => await ErrorDelete(parameters),
                 _ => throw new NotImplementedException($"RequestNum {requestNum} not implemented in MockServerCommProtocol.")
             };
         }

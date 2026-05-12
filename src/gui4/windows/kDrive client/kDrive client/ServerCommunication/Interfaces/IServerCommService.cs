@@ -28,6 +28,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
 {
     public interface IServerCommService
     {
+        Task<bool> Init(CancellationToken cancellationToken);
 
         // User-related requests
 
