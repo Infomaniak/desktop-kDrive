@@ -266,16 +266,22 @@ namespace Infomaniak.kDrive
         /// <summary>
         /// Configures window presenter properties and registers a WM_DPICHANGED listener for automatic DPI scaling.
         /// </summary>
-        public static void SetWindowProperties(Window window, int width, int height, bool resizable, bool minimizable)
+        public enum WindowResizeOptions
+        {
+            None,
+            AllowResize = 1,
+            AllowMinimize = 2,
+        }
+        public static void SetWindowProperties(Window window, int width, int height, WindowResizeOptions resizeOptions)
         {
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
             var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
             var appWindow = AppWindow.GetFromWindowId(windowId);
             if (appWindow != null && appWindow.Presenter is OverlappedPresenter presenter)
             {
-                presenter.IsMaximizable = resizable;
-                presenter.IsMinimizable = minimizable;
-                presenter.IsResizable = resizable;
+                presenter.IsMaximizable = resizeOptions.HasFlag(WindowResizeOptions.AllowResize);
+                presenter.IsMinimizable = resizeOptions.HasFlag(WindowResizeOptions.AllowMinimize);
+                presenter.IsResizable = resizeOptions.HasFlag(WindowResizeOptions.AllowResize);
 
                 // Use the RasterizationScale to scale the desired size
                 double scale = DpiHelper.GetScaleForWindow(hWnd);

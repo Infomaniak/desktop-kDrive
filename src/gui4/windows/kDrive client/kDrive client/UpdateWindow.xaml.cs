@@ -25,6 +25,8 @@ namespace Infomaniak.kDrive
 {
     public sealed partial class UpdateWindow : Window
     {
+        private const int _minimumWidth = 540;
+        private const int _minimumHeight = 467;
         public AppModel ViewModel { get; } = App.ServiceProvider.GetRequiredService<AppModel>();
 
         public UpdateWindow()
@@ -32,7 +34,7 @@ namespace Infomaniak.kDrive
             InitializeComponent();
             this.ExtendsContentIntoTitleBar = true;  // enable custom titlebar
                                                      // this.SetTitleBar(AppTitleBar);
-            Utility.SetWindowProperties(this, 540, 467, false, false);
+            Utility.SetWindowProperties(this, _minimumWidth, _minimumHeight, Utility.WindowResizeOptions.None); // Set initial size and prevent resizing
             AppWindow.TitleBar.PreferredTheme = Microsoft.UI.Windowing.TitleBarTheme.UseDefaultAppMode;
             Activated += UpdateWindow_Activated;
         }
