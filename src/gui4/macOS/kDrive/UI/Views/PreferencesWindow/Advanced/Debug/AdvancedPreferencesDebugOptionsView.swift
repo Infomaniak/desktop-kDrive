@@ -21,13 +21,15 @@ import kDriveResources
 import SwiftUI
 
 struct LabelContainerView: View {
-    let labelTitle: String
-    let labelDescription: String
+    let title: String
+    let description: String
+
     var body: some View {
         VStack(alignment: .leading) {
-            Text(labelTitle)
+            Text(title)
+                .font(.Tokens.body)
 
-            Text(labelDescription)
+            Text(description)
                 .font(.Tokens.subheadline)
                 .foregroundStyle(.secondary)
         }
@@ -36,25 +38,26 @@ struct LabelContainerView: View {
 }
 
 struct ToggleView: View {
-    let labelTitle: String
-    let labelDescription: String
+    let title: String
+    let description: String
     let helperText: String?
+
+    @State private var isShowingAlert = false
 
     @Binding var isOn: Bool
 
     var body: some View {
-        HStack(alignment: .center) {
-            LabelContainerView(labelTitle: labelTitle, labelDescription: labelDescription)
-            Toggle(labelTitle, isOn: $isOn)
+        HStack(alignment: .center, spacing: AppPadding.padding8) {
+            LabelContainerView(title: title, description: description)
+
+            Toggle(title, isOn: $isOn)
                 .labelsHidden()
-                .padding(.trailing, AppPadding.padding8)
+
             if let helperText {
-                Image(systemName: "info.circle")
-                    .resizable()
-                    .frame(width: 16, height: 16)
-                    .foregroundStyle(.secondary)
-                    .help(helperText)
-                    .accessibilityLabel(KDriveLocalizable.accessibilityMoreInformation)
+                InformationButton {
+                    isShowingAlert = true
+                }
+                .alert(helperText, isPresented: $isShowingAlert) {}
             }
         }
     }
@@ -63,29 +66,32 @@ struct ToggleView: View {
 struct AdvancedPreferencesDebugOptionsView: View {
     @State private var automaticCleaning = false
     @State private var extendedLog = false
-    @State private var debugLevel: UILogLevel = .debug
+    @State private var debugLevel = UILogLevel.debug
 
     let repository: PreferencesRepository
 
     var body: some View {
         Section {
             ToggleView(
-                labelTitle: KDriveLocalizable.autoCleanupLogsSetting,
-                labelDescription: KDriveLocalizable.autoCleanupLogsDescription,
+                title: KDriveLocalizable.autoCleanupLogsSetting,
+                description: KDriveLocalizable.autoCleanupLogsDescription,
                 helperText: nil,
                 isOn: $automaticCleaning
             )
+
             ToggleView(
-                labelTitle: KDriveLocalizable.extendedLogSetting,
-                labelDescription: KDriveLocalizable.extendedLogDescription,
+                title: KDriveLocalizable.extendedLogSetting,
+                description: KDriveLocalizable.extendedLogDescription,
                 helperText: KDriveLocalizable.extendedLogWarning,
                 isOn: $extendedLog
             )
+
             HStack {
                 LabelContainerView(
-                    labelTitle: KDriveLocalizable.debugLevelSetting,
-                    labelDescription: KDriveLocalizable.debugLevelDescription
+                    title: KDriveLocalizable.debugLevelSetting,
+                    description: KDriveLocalizable.debugLevelDescription
                 )
+
                 Picker(KDriveLocalizable.debugLevelSetting, selection: $debugLevel) {
                     ForEach(UILogLevel.allCases, id: \.id) { level in
                         Text(level.label).tag(level)
@@ -96,7 +102,7 @@ struct AdvancedPreferencesDebugOptionsView: View {
                 .pickerStyle(.menu)
             }
         }
-        .onAppear(perform: getAllValues)
+        .onAppear(perform: getInitialValues)
         .onChange(of: automaticCleaning) { newValue in
             updateRepositoryValue(\.$automaticCleaning, \.shouldPurgeOldLogs, newValue: newValue, repository: repository)
         }
@@ -108,7 +114,7 @@ struct AdvancedPreferencesDebugOptionsView: View {
         }
     }
 
-    func getAllValues() {
+    func getInitialValues() {
         automaticCleaning = repository.parametersInfo.shouldPurgeOldLogs
         extendedLog = repository.parametersInfo.isExtendedLogEnabled
         debugLevel = repository.parametersInfo.logLevel
