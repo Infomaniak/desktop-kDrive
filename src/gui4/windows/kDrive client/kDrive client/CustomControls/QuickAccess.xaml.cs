@@ -105,6 +105,7 @@ namespace Infomaniak.kDrive.CustomControls
                 Logger.Log(Logger.Level.Warning, "ProfilePictureBorder_PointerPressed: Unable to find Frame for navigation.");
                 return;
             }
+            _analyticsService.TrackClick(Analytics.Keys.Category.HomePage, Analytics.Keys.EventName.OpenUserSettings);
             frame.Navigate(typeof(SettingsPage), new SettingsPage.NavigationParameter { Tab = SettingsPage.NavigationParameter.SettingsTab.Users, UserToShow = ViewModel.SelectedSync?.Drive.Account.User });
         }
 
@@ -119,7 +120,7 @@ namespace Infomaniak.kDrive.CustomControls
                 Logger.Log(Logger.Level.Warning, "SyncBorder_Click: Unable to find Frame for navigation.");
                 return;
             }
-
+            _analyticsService.TrackClick(Analytics.Keys.Category.HomePage, Analytics.Keys.EventName.OpenSyncSettings);
             if (ViewModel.SelectedSync.IsAdvanced)
                 frame.Navigate(typeof(DriveAdvancedSyncsPage), ViewModel.SelectedSync.Drive);
             else

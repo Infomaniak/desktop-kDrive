@@ -16,10 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Infomaniak.kDrive.Analytics;
+using Infomaniak.kDrive.Pages.Errors;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -31,6 +34,7 @@ namespace Infomaniak.kDrive.Pages.Settings
 {
     public sealed partial class UpdateDialogPage : Page
     {
+        private static readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel => _viewModel;
 
@@ -45,6 +49,11 @@ namespace Infomaniak.kDrive.Pages.Settings
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
             await LoadReleaseNotesAsync();
+        }
+
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        {
+            _analyticsService.TrackPageView(Analytics.Keys.Category.BatchConflictResolutionPage);
         }
 
         private async Task LoadReleaseNotesAsync()
@@ -97,6 +106,7 @@ namespace Infomaniak.kDrive.Pages.Settings
         {
             Logger.Log(Logger.Level.Info, "User clicked 'Remind me later' on UpdateDialogPage.");
             (App.Current as App)?.CloseUpdateWindow();
+            _analyticsService.TrackClick(Analytics.Keys.Category.UpdateDialog, Analytics.Keys.EventName.Cancel);
         }
 
         private async void InstallNowButton_Click(object sender, RoutedEventArgs e)
@@ -111,6 +121,8 @@ namespace Infomaniak.kDrive.Pages.Settings
                 Logger.Log(Logger.Level.Error, "Update process failed to start.");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
+
+            _analyticsService.TrackClick(Analytics.Keys.Category.UpdateDialog, Analytics.Keys.EventName.Confirm);
 
             await Task.Delay(5000);
 
@@ -130,6 +142,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             }
 
             (App.Current as App)?.CloseUpdateWindow();
+            _analyticsService.TrackClick(Analytics.Keys.Category.UpdateDialog, Analytics.Keys.EventName.Ignore);
         }
     }
 }
