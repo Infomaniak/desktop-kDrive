@@ -662,7 +662,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             }
         }
 
-        private void RestartAppHyperlinkButton_Click(object sender, RoutedEventArgs e) => App.RestartApplication();
+        private void RestartAppHyperlinkButton_Click(object sender, RoutedEventArgs e) => App.RestartApplicationWindows();
     }
     // templateSelector for the drives listview
     public partial class DriveDataTemplateSelector : DataTemplateSelector
