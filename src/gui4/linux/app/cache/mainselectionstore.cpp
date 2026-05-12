@@ -25,10 +25,11 @@ namespace KDC {
 MainSelectionStore::MainSelectionStore(AppCache &cache, QObject *const parent) :
     QObject(parent),
     _cache(cache) {
-    (void) connect(&_cache, &AppCache::syncsChanged,    this, &MainSelectionStore::handleSyncsChanged);
-    (void) connect(&_cache, &AppCache::usersChanged,    this, &MainSelectionStore::handleContextDataChanged);
+    (void) connect(&_cache, &AppCache::syncsChanged, this, &MainSelectionStore::handleSyncsChanged);
+    (void) connect(&_cache, &AppCache::usersChanged, this, &MainSelectionStore::handleContextDataChanged);
     (void) connect(&_cache, &AppCache::accountsChanged, this, &MainSelectionStore::handleContextDataChanged);
-    (void) connect(&_cache, &AppCache::drivesChanged,   this, &MainSelectionStore::handleContextDataChanged);
+    (void) connect(&_cache, &AppCache::drivesChanged, this, &MainSelectionStore::handleContextDataChanged);
+    (void) connect(&_cache, &AppCache::syncErrorsChanged, this, &MainSelectionStore::handleContextDataChanged);
 }
 
 qint64 MainSelectionStore::currentSyncDbId() const {
