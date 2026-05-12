@@ -199,25 +199,27 @@ void TestIo::testGetFileChecksum() {
 #if defined(KD_MACOS)
     // A macOS Finder alias on a regular file: not computed, returns empty checksum.
     {
+        using enum IoError;
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
         const SyncPath path = temporaryDirectory.path() / "regular_file_alias";
 
-        IoError aliasError = IoError::Unknown;
+        IoError aliasError = Unknown;
         CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
-        CPPUNIT_ASSERT_EQUAL(IoError::Success, aliasError);
+        CPPUNIT_ASSERT_EQUAL(Success, aliasError);
 
-        IoError ioError = IoError::Unknown;
+        IoError ioError = Unknown;
         std::ifstream ifs;
 
         auto checksum = IoHelper::getFileChecksum(path, ifs, ioError);
-        CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, ioError);
+        CPPUNIT_ASSERT_EQUAL(InvalidArgument, ioError);
         CPPUNIT_ASSERT(checksum.empty());
         CPPUNIT_ASSERT_EQUAL(std::string(""), checksum);
     }
 
     // A dangling macOS Finder alias (target deleted): not computed, returns empty checksum.
     {
+        using enum IoError;
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = temporaryDirectory.path() / "file_to_be_deleted.png"; // This file will be deleted.
         const SyncPath path = temporaryDirectory.path() / "dangling_file_alias";
@@ -226,19 +228,19 @@ void TestIo::testGetFileChecksum() {
             ofs << "Some content.\n";
         }
 
-        IoError aliasError = IoError::Unknown;
+        IoError aliasError = Unknown;
         CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
-        CPPUNIT_ASSERT_EQUAL(IoError::Success, aliasError);
+        CPPUNIT_ASSERT_EQUAL(Success, aliasError);
 
-        auto ioErr = IoError::Unknown;
+        auto ioErr = Unknown;
         CPPUNIT_ASSERT(IoHelper::deleteItem(targetPath, ioErr));
-        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioErr);
+        CPPUNIT_ASSERT_EQUAL(Success, ioErr);
 
-        IoError ioError = IoError::Unknown;
+        IoError ioError = Unknown;
         std::ifstream ifs;
 
         auto checksum = IoHelper::getFileChecksum(path, ifs, ioError);
-        CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, ioError);
+        CPPUNIT_ASSERT_EQUAL(InvalidArgument, ioError);
         CPPUNIT_ASSERT(checksum.empty());
     }
 #endif
@@ -274,7 +276,7 @@ void TestIo::testGetFileChecksum() {
     {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath subdir = temporaryDirectory.path() / "permission_less_subdirectory";
-        std::filesystem::create_directory(subdir);
+        CPPUNIT_ASSERT(std::filesystem::create_directory(subdir));
         const SyncPath path = subdir / "file.txt";
         {
             std::ofstream ofs(path);
@@ -298,10 +300,9 @@ void TestIo::testGetFileChecksum() {
         CPPUNIT_ASSERT(!checksum.empty());
         CPPUNIT_ASSERT_EQUAL(std::string("3d48b0e057db6f01"), checksum);
     }
-    /*
 
     // A regular file within a subdirectory that misses owner search/exec permission:
-    // - access denied expected on MacOSX
+    // - access denied expected on macOS/Linux
     // - no error expected on Windows
     {
         const LocalTemporaryDirectory temporaryDirectory;
@@ -314,28 +315,23 @@ void TestIo::testGetFileChecksum() {
         }
         std::filesystem::permissions(subdir, std::filesystem::perms::owner_exec, std::filesystem::perm_options::remove);
 
-        FileStat fileStat;
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive));
+        std::ifstream ifs;
+
+        auto checksum = IoHelper::getFileChecksum(path, ifs, ioError);
 
         // Restore permission to allow subdir removal
         std::filesystem::permissions(subdir, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
 
-        CPPUNIT_ASSERT(!fileStat.isHidden);
 #if defined(KD_WINDOWS)
-        CPPUNIT_ASSERT_GREATER(int64_t{0}, fileStat.size);
-        CPPUNIT_ASSERT_GREATER(SyncTime{0}, fileStat.modificationTime);
-        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modificationTime);
-        CPPUNIT_ASSERT_EQUAL(NodeType::File, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+        CPPUNIT_ASSERT(!checksum.empty());
+        CPPUNIT_ASSERT_EQUAL(std::string("3d48b0e057db6f01"), checksum);
 #else
-        CPPUNIT_ASSERT_EQUAL(int64_t{0}, fileStat.size);
-        CPPUNIT_ASSERT_EQUAL(SyncTime{0}, fileStat.modificationTime);
-        CPPUNIT_ASSERT_EQUAL(SyncTime{0}, fileStat.creationTime);
-        CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoError::AccessDenied, ioError);
+        CPPUNIT_ASSERT(checksum.empty());
+#endif
     }
-#endif*/
 }
 
 } // namespace KDC

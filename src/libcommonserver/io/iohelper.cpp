@@ -787,7 +787,7 @@ std::string IoHelper::getFileChecksum(const SyncPath &path, std::ifstream &ifs, 
     }
 #endif
 
-    IoHelper::openFile(path, ifs, ioError);
+    (void) IoHelper::openFile(path, ifs, ioError);
 
     if (!ifs) {
         ioError = IoError::NoSuchFileOrDirectory;
@@ -800,7 +800,7 @@ std::string IoHelper::getFileChecksum(const SyncPath &path, std::ifstream &ifs, 
     XXH3_state_t *state = XXH3_createState();
     XXH3_64bits_reset(state);
 
-    size_t readBytes;
+    size_t readBytes(0);
     while ((readBytes = ifs.read(buffer.data(), buffer.size()).gcount()) > 0) {
         XXH3_64bits_update(state, buffer.data(), readBytes);
     }
