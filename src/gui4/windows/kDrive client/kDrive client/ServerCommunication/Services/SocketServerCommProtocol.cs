@@ -69,12 +69,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                ".comm"
            );
 
-        private static readonly JsonSerializerOptions JsonOptions = new()
-        {
-            PropertyNameCaseInsensitive = true,
-            Converters = { new Base64StringJsonConverter() }
-        };
-
         public event EventHandler<SignalEventArgs>? SignalReceived;
         public event EventHandler? ConnectionLost;
 
@@ -271,6 +265,17 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return tcs.Task;
         }
 
+        private bool CheckBufferConsistency()
+        {
+            if (_inBuffer.Length == 0)
+                return true;
+            if (_inBuffer[0] != '{')
+            {
+                Logger.Log(Logger.Level.Error, "Invalid message format: does not start with '{'.");
+                return false;
+            }
+            return true;
+        }
 
         private async Task OnReadyReadAsync()
         {
@@ -292,41 +297,44 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     _inBuffer.Append(str);
                 }
 
-                UpdateJsonBalance(_inBuffer, ref _inBufferJsonBalanceSeen, ref _inBufferJsonBalance, ref jsonEndIndex); 
-
-                // Consistency check
-                if (_inBuffer.Length > 0 && _inBuffer[0] != '{')
+                if (!CheckBufferConsistency())
                 {
-                    Logger.Log(Logger.Level.Warning, "Invalid message format: does not start with '{'.");
-                    _inBuffer.Clear(); // Discard the buffer to resync
-                    _inBufferJsonBalance = 0;
+                    ConnectionLost?.Invoke(this, EventArgs.Empty);
                     return;
                 }
+
+                UpdateJsonBalance(_inBuffer, ref _inBufferJsonBalanceSeen, ref _inBufferJsonBalance, ref jsonEndIndex);
+               
                 if (jsonEndIndex == -1)
                 {
                     Logger.Log(Logger.Level.Extended, "Incomplete JSON message, waiting for more data.");
-                    return; // Wait for more data
+                    return;
                 }
 
                 ReadOnlySpan<char> jsonSpan = _inBuffer.ToString(0, jsonEndIndex + 1);
                 if (!jsonSpan.EndsWith("}"))
                 {
-                    Logger.Log(Logger.Level.Error, "unexpected end character");
+                    Logger.Log(Logger.Level.Error, "Unexpected end character");
+                    ConnectionLost?.Invoke(this, EventArgs.Empty);
+                    return;
                 }
+
                 _inBuffer.Remove(0, jsonEndIndex + 1);
                 _inBufferJsonBalanceSeen = 0;
+
                 // Parse JSON
-                Logger.Log(Logger.Level.Extended, $"Deserializing: {jsonSpan}");
                 var messageObj = JsonSerializer.Deserialize<CommData>(jsonSpan, _jsonOptions);
                 if (messageObj is null)
                 {
-                    Logger.Log(Logger.Level.Warning, "Invalid message format.");
+                    Logger.Log(Logger.Level.Error, "Invalid message format.");
+                    ConnectionLost?.Invoke(this, EventArgs.Empty);
                     return;
                 }
 
                 HandleServerMessageAsync(messageObj);
             } while (_socket.Available > 0 || _inBuffer.Length > 0);
         }
+
         private static void UpdateJsonBalance(StringBuilder sb, ref int seenIndex, ref int balance, ref int jsonEndIndex)
         {
             jsonEndIndex = -1;
@@ -334,12 +342,15 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 char c = sb[i];
                 if (c == '{') balance++;
-                else if (c == '}') balance--;
-                if (balance == 0)
+                else if (c == '}')
                 {
-                    jsonEndIndex = i;
-                    seenIndex = i;
-                    break;
+                    balance--;
+                    if (balance == 0)
+                    {
+                        jsonEndIndex = i;
+                        seenIndex = i;
+                        break;
+                    }
                 }
             }
             seenIndex = sb.Length;
