@@ -38,6 +38,8 @@
 
 - `main.cpp`: process entry point + single-instance lock file.
 - `appclientlinux.*`: top-level app wiring (logging, IPC lifecycle, dispatcher/service ownership).
+- `app/systraycontroller.*`: Linux system tray ownership, 5-state tray icon selection, GNOME-compatible tray menu actions,
+  and main QML window show/hide behavior.
 - `communicationlayer/ipcclient.*`: raw TCP JSON transport, request/reply correlation, reconnect-before-first-connect
   logic.
 - `communicationlayer/signaldispatcher.*`: server-push signal fanout to registered handlers.
