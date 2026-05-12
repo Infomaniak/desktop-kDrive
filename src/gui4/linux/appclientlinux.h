@@ -22,10 +22,6 @@
 #include "app/cache/cachepipeline.h"
 #include "app/cache/mainselectionstore.h"
 #include "app/cache/onboardingstate.h"
-#include "app/models/availabledrivelistmodel.h"
-#include "app/models/currentsyncmodel.h"
-#include "app/models/drivelistmodel.h"
-#include "app/models/synclistmodel.h"
 #include "app/services/cachepopulator.h"
 #include "app/services/commservice.h"
 #include "app/services/driveservice.h"
@@ -92,10 +88,6 @@ class AppClientLinux : public QApplication {
         CachePipeline _cachePipeline{_serverCommService, _appCache, this};
         MainSelectionStore _mainSelectionStore{_appCache, this};
         OnboardingState _onboardingState{_appCache, this};
-        AvailableDriveListModel _availableDriveListModel{_appCache, _onboardingState, this};
-        CurrentSyncModel _currentSyncModel{_mainSelectionStore, this};
-        DriveListModel _driveListModel{_appCache, _mainSelectionStore, this};
-        SyncListModel _syncListModel{_appCache, _mainSelectionStore, this};
         ServiceActionTracker _serviceActionTracker{this};
         ServiceEventBus _serviceEventBus{this};
         CachePopulator _cachePopulator{_serverCommService, _appCache, this};
