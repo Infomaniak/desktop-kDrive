@@ -86,9 +86,10 @@ struct PendingSyncConfig {
 template<>
 struct std::hash<KDC::AvailableDriveKey> {
         std::size_t operator()(const KDC::AvailableDriveKey &key) const noexcept {
-            const auto hashUser = std::hash<KDC::UserDbId>{}(key.userDbId);
-            const auto hashAccount = std::hash<KDC::AccountId>{}(key.accountId);
-            const auto hashDrive = std::hash<KDC::DriveId>{}(key.driveId);
-            return hashUser ^ (hashAccount << 1U) ^ (hashDrive << 2U);
+            constexpr auto hashConstant = static_cast<std::size_t>(0x9e3779b97f4a7c15ULL);
+            std::size_t seed = std::hash<KDC::UserDbId>{}(key.userDbId);
+            seed ^= std::hash<KDC::AccountId>{}(key.accountId) + hashConstant + (seed << 6U) + (seed >> 2U);
+            seed ^= std::hash<KDC::DriveId>{}(key.driveId) + hashConstant + (seed << 6U) + (seed >> 2U);
+            return seed;
         }
 };
