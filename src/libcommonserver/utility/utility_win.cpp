@@ -19,6 +19,8 @@
 #include "utility.h"
 
 #include "libcommon/utility/utility.h"
+#include "libcommon/utility/utility_base.h"
+
 #include "log/log.h"
 
 #include <filesystem>
