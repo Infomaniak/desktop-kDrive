@@ -30,8 +30,8 @@ struct AdvancedPreferencesDebugEnableView: View {
     var body: some View {
         Section {
             ToggleView(
-                labelTitle: KDriveLocalizable.enableDebugLogsSetting,
-                labelDescription: KDriveLocalizable.enableDebugLogDescription,
+                title: KDriveLocalizable.enableDebugLogsSetting,
+                description: KDriveLocalizable.enableDebugLogDescription,
                 helperText: nil,
                 isOn: $enableDebugLogs
             )

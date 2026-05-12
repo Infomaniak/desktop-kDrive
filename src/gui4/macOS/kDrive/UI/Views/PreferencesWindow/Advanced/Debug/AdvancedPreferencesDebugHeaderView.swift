@@ -22,9 +22,8 @@ import SwiftUI
 
 struct AdvancedPreferencesDebugHeaderView: View {
     var body: some View {
-        VStack(alignment: .leading) {
+        VStack(alignment: .leading, spacing: AppPadding.padding4) {
             Text(KDriveLocalizable.debugLogsSettings)
-                .padding(.vertical, AppPadding.padding8)
 
             Text(KDriveLocalizable.debugLogsDescription)
                 .font(.Tokens.callout)

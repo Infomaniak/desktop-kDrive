@@ -22,7 +22,7 @@ import SwiftUI
 
 struct AdvancedPreferencesDebugView: View {
     let repository: PreferencesRepository
-    
+
     var body: some View {
         VStack(alignment: .leading) {
             Form {
