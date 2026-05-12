@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyVersion>3.8.4.1</AssemblyVersion>
     <OutputType>WinExe</OutputType>
@@ -361,6 +361,6 @@
     <!-- Debug: keep original PRI and copy to avoid rebuild -->
     <Exec Condition="'$(Configuration)' == 'Debug'" Command="powershell -ExecutionPolicy Bypass -NoProfile -Command &quot;Copy-Item '$(OutDir)$(AssemblyName).pri' '$(OutDir)Resources.pri' -Force&quot;" />
     <!-- Release: rename PRI -->
-    <Exec Condition="'$(Configuration)' == 'Release'" Command="powershell -ExecutionPolicy Bypass -NoProfile -Command &quot;$src='$(OutDir)$(AssemblyName).pri'; $dst='$(OutDir)Resources.pri'; if (Test-Path $dst) { Remove-Item $dst -Force }; Rename-Item $src 'Resources.pri'&quot;" />
+    <Exec Condition="'$(Configuration)' != 'Debug'" Command="powershell -ExecutionPolicy Bypass -NoProfile -Command &quot;$src='$(OutDir)$(AssemblyName).pri'; $dst='$(OutDir)Resources.pri'; if (Test-Path $dst) { Remove-Item $dst -Force }; Rename-Item $src 'Resources.pri'&quot;" />
   </Target>
 </Project>
