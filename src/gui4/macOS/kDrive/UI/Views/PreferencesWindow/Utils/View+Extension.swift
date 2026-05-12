@@ -1,4 +1,3 @@
-//
 /*
  Infomaniak kDrive - Desktop
  Copyright (C) 2023-2025 Infomaniak Network SA
@@ -30,7 +29,7 @@ extension View {
     ) {
         Task {
             guard newValue != repository.parametersInfo[keyPath: repositoryKeyPath] else { return }
-            
+
             do {
                 try await repository.update(repositoryKeyPath, value: newValue)
             } catch {

@@ -20,49 +20,6 @@ import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
-struct LabelContainerView: View {
-    let title: String
-    let description: String
-
-    var body: some View {
-        VStack(alignment: .leading) {
-            Text(title)
-                .font(.Tokens.body)
-
-            Text(description)
-                .font(.Tokens.subheadline)
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-}
-
-struct ToggleView: View {
-    let title: String
-    let description: String
-    let helperText: String?
-
-    @State private var isShowingAlert = false
-
-    @Binding var isOn: Bool
-
-    var body: some View {
-        HStack(alignment: .center, spacing: AppPadding.padding8) {
-            LabelContainerView(title: title, description: description)
-
-            Toggle(title, isOn: $isOn)
-                .labelsHidden()
-
-            if let helperText {
-                InformationButton {
-                    isShowingAlert = true
-                }
-                .alert(helperText, isPresented: $isShowingAlert) {}
-            }
-        }
-    }
-}
-
 struct AdvancedPreferencesDebugOptionsView: View {
     @State private var automaticCleaning = false
     @State private var extendedLog = false

@@ -24,10 +24,10 @@ import SwiftUI
 struct SendDebugFolderView: View {
     @Environment(\.dismiss) private var dismiss
 
-    @Binding var errorPresented: Bool
+    @Binding var isShowingError: Bool
 
-    @State private var sendOnlyLastSession = false
-    @State private var isSending = false
+    @State private var shouldOnlySendLastSession = false
+    @State private var isSendingDebugFolder = false
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -40,13 +40,13 @@ struct SendDebugFolderView: View {
                 .font(.Tokens.body)
                 .foregroundStyle(ColorToken.Text.tertiary.asColor)
 
-            Toggle(KDriveLocalizable.sendLastSessionOnly, isOn: $sendOnlyLastSession)
+            Toggle(KDriveLocalizable.sendLastSessionOnly, isOn: $shouldOnlySendLastSession)
                 .toggleStyle(.checkbox)
         }
         .padding()
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                LoadingButton(isLoading: $isSending) {
+                LoadingButton(isLoading: $isSendingDebugFolder) {
                     await sendFolder()
                     dismiss()
                 } label: {
@@ -65,27 +65,25 @@ struct SendDebugFolderView: View {
     func sendFolder() async {
         let utilityJobs = UtilityJobs()
         do {
-            try await utilityJobs.sendLogToSupport(includeArchivedLogs: !sendOnlyLastSession)
+            try await utilityJobs.sendLogToSupport(includeArchivedLogs: !shouldOnlySendLastSession)
         } catch {
-            errorPresented = true
+            isShowingError = true
         }
     }
 }
 
 struct AdvancedPreferencesDebugSendView: View {
-    @Environment(\.dismiss) private var dismiss
-
     @State private var isShowingSheet = false
-    @State private var errorPresented = false
+    @State private var isShowingError = false
 
     var body: some View {
         Section {
-            HStack {
-                HStack {
-                    BadgeView(image: KDriveResources.headphones.swiftUIImage, color: ColorToken.Accent.primary.asColor)
-                    Text(KDriveLocalizable.infomaniakSupport)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
+            HStack(spacing: AppPadding.padding8) {
+                BadgeView(image: KDriveResources.headphones.swiftUIImage, color: ColorToken.Accent.primary.asColor)
+
+                Text(KDriveLocalizable.infomaniakSupport)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
                 Button(KDriveLocalizable.buttonSendLog) {
                     isShowingSheet = true
                 }
@@ -94,9 +92,9 @@ struct AdvancedPreferencesDebugSendView: View {
             }
         }
         .sheet(isPresented: $isShowingSheet) {
-            SendDebugFolderView(errorPresented: $errorPresented)
+            SendDebugFolderView(isShowingError: $isShowingError)
         }
-        .genericErrorAlert(isPresented: $errorPresented)
+        .genericErrorAlert(isPresented: $isShowingError)
     }
 }
 

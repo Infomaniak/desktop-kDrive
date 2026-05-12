@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -16,24 +16,30 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import kDriveCoreUI
 import SwiftUI
 
-struct AdvancedPreferencesDebugView: View {
-    let repository: PreferencesRepository
+public struct LabelContainerView: View {
+    let title: String
+    let description: String
 
-    var body: some View {
+    public init(title: String, description: String) {
+        self.title = title
+        self.description = description
+    }
+
+    public var body: some View {
         VStack(alignment: .leading) {
-            Form {
-                AdvancedPreferencesDebugEnableView(repository: repository)
-                AdvancedPreferencesDebugOptionsView(repository: repository)
-                AdvancedPreferencesDebugSendView()
-            }
-            .groupedFormatStyle()
+            Text(title)
+                .font(.Tokens.body)
+
+            Text(description)
+                .font(.Tokens.subheadline)
+                .foregroundStyle(.secondary)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
 #Preview {
-    AdvancedPreferencesDebugView(repository: PreferencesRepository())
+    LabelContainerView(title: "My Title", description: "My Description")
 }
