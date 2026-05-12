@@ -86,12 +86,11 @@ void MainSelectionStore::handleSyncsChanged() {
 }
 
 void MainSelectionStore::handleContextDataChanged() {
-    const auto previousContext = currentSyncContext();
     const auto previousCurrentSyncDbId = _currentSyncDbId;
     if (_currentSyncDbId != 0) {
         ensureValidSelection();
     }
-    if (_currentSyncDbId == previousCurrentSyncDbId && previousContext != currentSyncContext()) {
+    if (_currentSyncDbId != 0 && _currentSyncDbId == previousCurrentSyncDbId) {
         emit currentSyncContextChanged();
     }
 }
