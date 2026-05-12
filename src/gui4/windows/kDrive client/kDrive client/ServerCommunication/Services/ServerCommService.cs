@@ -1879,7 +1879,13 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         }
         public async Task HandleErrorRemovedAsync(object? sender, SignalEventArgs args)
         {
-            if (_hasMoreError && _errorCount < _maxErrorLimit / 2)
+            bool refreshNeeded = false;
+            lock (_errorLock)
+            {
+                refreshNeeded = _hasMoreError && _errorCount < _maxErrorLimit / 2;
+            }
+
+            if (refreshNeeded)
             {
                 if (!await RefreshErrors(CancellationToken.None).ConfigureAwait(false))
                 {
@@ -1891,6 +1897,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     return;
                 }
             }
+
 
             var signalData = args.SignalData;
             if (signalData == null || !signalData.ContainsKey(JsonKeys.ErrorDbId))

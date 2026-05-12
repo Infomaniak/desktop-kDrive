@@ -281,7 +281,7 @@ namespace Infomaniak.kDrive.ViewModels
 
         public async Task ClearAllErrorsAsync()
         {
-            await Utility.RunOnUIThread(async () => SyncErrors.Clear());
+            await Utility.RunOnUIThread(() => SyncErrors.Clear());
             await RefreshErrorState();
         }
 
