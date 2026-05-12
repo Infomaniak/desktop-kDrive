@@ -18,9 +18,9 @@
 
 #include "utility.h"
 
-#include "types.h"
-
-#include <QString>
+#include <system_error>
+#include <fstream>
+#include <sys/mount.h>
 
 #import <AppKit/NSApplication.h>
 #import <AppKit/NSImage.h>
