@@ -1,0 +1,19 @@
+{
+  "cause": 0,
+  "code": 0,
+  "id": 125,
+  "params": {
+    "applicationList": [
+      {
+        "appId": "YXBwSWQx",
+        "def": false,
+        "description": "ZGVzY3JpcHRpb24x"
+      },
+      {
+        "appId": "YXBwSWQy",
+        "def": false,
+        "description": "ZGVzY3JpcHRpb24y"
+      }
+    ]
+  }
+}
