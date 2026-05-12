@@ -223,17 +223,17 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         <translation>Άνοιγμα σελίδας σύνδεσης</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="119"/>
-        <source>Token request failed: %1 - %2</source>
-        <translation>Αποτυχία αίτησης διακριτικού: %1 - %2</translation>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="121"/>
+        <source>An error occurred during authentication. Please close the login window and try again.&lt;br&gt;If the error persists, contact our support team.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="133"/>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="137"/>
         <source>Login failed: %1 - %2</source>
         <translation>Αποτυχία σύνδεσης: %1 - %2</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="141"/>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="145"/>
         <source>Failed to open the login page in your web browser</source>
         <translation>Αποτυχία ανοίγματος σελίδας σύνδεσης στον περιηγητή</translation>
     </message>
@@ -269,17 +269,17 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
 <context>
     <name>KDC::AddDriveWizard</name>
     <message>
-        <location filename="../src/gui/adddrivewizard.cpp" line="222"/>
+        <location filename="../src/gui/adddrivewizard.cpp" line="226"/>
         <source>Failed to create local folder %1</source>
         <translation>Αποτυχία δημιουργίας τοπικού φακέλου %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivewizard.cpp" line="233"/>
+        <location filename="../src/gui/adddrivewizard.cpp" line="237"/>
         <source>Failed to create new synchronization</source>
         <translation>Αποτυχία δημιουργίας νέου συγχρονισμού</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivewizard.cpp" line="266"/>
+        <location filename="../src/gui/adddrivewizard.cpp" line="270"/>
         <source>The kDrive %1 is already synchronized on this computer. Continue anyway?</source>
         <translation>Το kDrive %1 είναι ήδη συγχρονισμένο σε αυτόν τον υπολογιστή. Θέλετε να συνεχίσετε;</translation>
     </message>
@@ -305,12 +305,12 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
 <context>
     <name>KDC::AppServer</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="1685"/>
+        <location filename="../src/server/appserver.cpp" line="1689"/>
         <source>Share link copied to clipboard</source>
         <translation>Ο σύνδεσμος κοινοποίησης αντιγράφηκε στο πρόχειρο</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3773"/>
+        <location filename="../src/server/appserver.cpp" line="3806"/>
         <source>%1 and %n other file(s) have been removed.</source>
         <translation>
             <numerusform>%1 και %n άλλο αρχείο αφαιρέθηκαν.</numerusform>
@@ -318,13 +318,13 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3775"/>
+        <location filename="../src/server/appserver.cpp" line="3808"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
         <translation>Το %1 αφαιρέθηκε.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3780"/>
+        <location filename="../src/server/appserver.cpp" line="3813"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
             <numerusform>%1 και %n άλλο αρχείο προστέθηκαν.</numerusform>
@@ -332,13 +332,13 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3782"/>
+        <location filename="../src/server/appserver.cpp" line="3815"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
         <translation>Το %1 προστέθηκε.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3787"/>
+        <location filename="../src/server/appserver.cpp" line="3820"/>
         <source>%1 and %n other file(s) have been updated.</source>
         <translation>
             <numerusform>%1 και %n άλλο αρχείο ενημερώθηκαν.</numerusform>
@@ -346,13 +346,13 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3789"/>
+        <location filename="../src/server/appserver.cpp" line="3822"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
         <translation>Το %1 ενημερώθηκε.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3794"/>
+        <location filename="../src/server/appserver.cpp" line="3827"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
         <translation>
             <numerusform>Το %1 μετακινήθηκε στο %2 και %n άλλο αρχείο μετακινήθηκε.</numerusform>
@@ -360,12 +360,12 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3797"/>
+        <location filename="../src/server/appserver.cpp" line="3830"/>
         <source>%1 has been moved to %2.</source>
         <translation>Το %1 μετακινήθηκε στο %2.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3805"/>
+        <location filename="../src/server/appserver.cpp" line="3838"/>
         <source>Sync Activity</source>
         <translation>Δραστηριότητα συγχρονισμού</translation>
     </message>
@@ -691,22 +691,22 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
 <context>
     <name>KDC::CustomMessageBox</name>
     <message>
-        <location filename="../src/gui/custommessagebox.cpp" line="101"/>
+        <location filename="../src/gui/custommessagebox.cpp" line="100"/>
         <source>OK</source>
         <translation>ΟΚ</translation>
     </message>
     <message>
-        <location filename="../src/gui/custommessagebox.cpp" line="111"/>
+        <location filename="../src/gui/custommessagebox.cpp" line="110"/>
         <source>CANCEL</source>
         <translation>ΑΚΥΡΩΣΗ</translation>
     </message>
     <message>
-        <location filename="../src/gui/custommessagebox.cpp" line="121"/>
+        <location filename="../src/gui/custommessagebox.cpp" line="120"/>
         <source>YES</source>
         <translation>ΝΑΙ</translation>
     </message>
     <message>
-        <location filename="../src/gui/custommessagebox.cpp" line="131"/>
+        <location filename="../src/gui/custommessagebox.cpp" line="130"/>
         <source>NO</source>
         <translation>ΟΧΙ</translation>
     </message>
@@ -877,44 +877,44 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         <translation>Η κοινοποίηση ακυρώθηκε</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="597"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="598"/>
         <source>The extended full log is activated through the KDRIVE_FORCE_EXTENDED_LOG environment variable. Set it to 0 to disable it.</source>
         <translation>Το εκτεταμένο πλήρες αρχείο ενεργοποιείται μέσω της μεταβλητής περιβάλλοντος KDRIVE_FORCE_EXTENDED_LOG. Ορίστε το σε 0 για απενεργοποίηση.</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="611"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="612"/>
         <source>%1/%2/%3 at %4h%5m and %6s</source>
         <extracomment>Date format for the last successful log upload. %1: month, %2: day, %3: year, %4: hour, %5: minute, %6: second</extracomment>
         <translation>%1/%2/%3 στις %4:%5 και %6 δευτερόλεπτα</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="654"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="655"/>
         <source>Do you want to save your modifications?</source>
         <translation>Θέλετε να αποθηκεύσετε τις αλλαγές;</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="709"/>
-        <location filename="../src/gui/debuggingdialog.cpp" line="715"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="710"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="716"/>
         <source>Unable to open folder %1.</source>
         <translation>Δεν είναι δυνατό το άνοιγμα του φακέλου %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="722"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="723"/>
         <source>  Share</source>
         <translation>  Κοινοποίηση</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="732"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="733"/>
         <source>  Sharing | step 1/2 %1%</source>
         <translation>  Κοινοποίηση | βήμα 1/2 %1%</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="741"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="742"/>
         <source>  Sharing | step 2/2 %1%</source>
         <translation>  Κοινοποίηση | βήμα 2/2 %1%</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="751"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="752"/>
         <source>  Canceling...</source>
         <translation>  Ακύρωση...</translation>
     </message>
@@ -1531,12 +1531,12 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
 <context>
     <name>KDC::Logger</name>
     <message>
-        <location filename="../src/libcommongui/logger.cpp" line="189"/>
+        <location filename="../src/libcommongui/logger.cpp" line="211"/>
         <source>Error</source>
         <translation>Σφάλμα</translation>
     </message>
     <message>
-        <location filename="../src/libcommongui/logger.cpp" line="189"/>
+        <location filename="../src/libcommongui/logger.cpp" line="211"/>
         <source>&lt;nobr&gt;File &apos;%1&apos;&lt;br/&gt;cannot be opened for writing.&lt;br/&gt;&lt;br/&gt;The log output can &lt;b&gt;not&lt;/b&gt; be saved!&lt;/nobr&gt;</source>
         <translation>&lt;nobr&gt;Το αρχείο &apos;%1&apos;&lt;br/&gt;δεν μπορεί να ανοίξει για εγγραφή.&lt;br/&gt;&lt;br/&gt;Η καταγραφή &lt;b&gt;δεν&lt;/b&gt; μπορεί να αποθηκευτεί!&lt;/nobr&gt;</translation>
     </message>
@@ -1970,162 +1970,167 @@ Please, use the following link to send the logs to the support: &lt;a style=&quo
 <context>
     <name>KDC::PreferencesWidget</name>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="466"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="460"/>
         <source>Unable to open folder %1.</source>
         <translation>Δεν είναι δυνατό το άνοιγμα του φακέλου %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="478"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="472"/>
         <source>Unable to open link %1.</source>
         <translation>Δεν είναι δυνατό το άνοιγμα του συνδέσμου %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="483"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="477"/>
         <source>Invalid link %1.</source>
         <translation>Μη έγκυρος σύνδεσμος %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="490"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="484"/>
         <source>Some process failed to run.</source>
         <translation>Κάποια διεργασία απέτυχε να εκτελεστεί.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="491"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="485"/>
         <source>General</source>
         <translation>Γενικά</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="493"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="487"/>
         <source>Activate dark theme</source>
         <translation>Ενεργοποίηση σκούρου θέματος</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="495"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="489"/>
         <source>Activate monochrome icons</source>
         <translation>Ενεργοποίηση μονόχρωμων εικονιδίων</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="496"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="490"/>
         <source>Launch kDrive at startup</source>
         <translation>Εκκίνηση kDrive κατά την έναρξη</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="497"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="491"/>
         <source>Language</source>
         <translation>Γλώσσα</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="498"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="492"/>
         <source>Move deleted files to my computer&apos;s trash</source>
         <translation>Μεταφορά διαγραμμένων αρχείων στον κάδο</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="499"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="493"/>
         <source>Some files or folders may not be moved to the computer&apos;s trash.</source>
         <translation>Ορισμένα αρχεία ή φάκελοι ενδέχεται να μην μεταφερθούν στον κάδο.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="500"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="494"/>
         <source>You can always retrieve already synced files from the kDrive web application trash.</source>
         <translation>Μπορείτε πάντα να ανακτήσετε συγχρονισμένα αρχεία από τον κάδο της εφαρμογής ιστού kDrive.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="502"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="496"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
         <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Μάθετε περισσότερα&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="505"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="499"/>
         <source>Default</source>
         <translation>Προεπιλογή</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="506"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="500"/>
         <source>English</source>
         <translation>Αγγλικά</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="507"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="501"/>
         <source>French</source>
         <translation>Γαλλικά</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="508"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="502"/>
         <source>German</source>
         <translation>Γερμανικά</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="509"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="503"/>
         <source>Spanish</source>
         <translation>Ισπανικά</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="510"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="504"/>
         <source>Italian</source>
         <translation>Ιταλικά</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="511"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="505"/>
         <source>Swedish</source>
         <translation>Σουηδικά</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="512"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="506"/>
         <source>Portuguese</source>
         <translation>Πορτογαλικά</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="513"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="507"/>
         <source>Polish</source>
         <translation>Πολωνικά</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="514"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="508"/>
         <source>Norwegian</source>
         <translation>Νορβηγικά</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="515"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="509"/>
         <source>Finnish</source>
         <translation>Φινλανδικά</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="516"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="510"/>
         <source>Danish</source>
         <translation>Δανικά</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="517"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="511"/>
         <source>Greek</source>
         <translation>Ελληνικά</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="523"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="512"/>
+        <source>Dutch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="518"/>
         <source>Advanced</source>
         <translation>Σύνθετα</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="524"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="519"/>
         <source>Debugging information</source>
         <translation>Πληροφορίες εντοπισμού</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="526"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="521"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Open debugging folder&lt;/a&gt;</source>
         <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Άνοιγμα φακέλου εντοπισμού&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="527"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="522"/>
         <source>Files to exclude</source>
         <translation>Αρχεία προς εξαίρεση</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="528"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="523"/>
         <source>Proxy server</source>
         <translation>Διακομιστής μεσολάβησης</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="530"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="525"/>
         <source>Lite Sync</source>
         <translation>Lite Sync</translation>
     </message>
@@ -2492,98 +2497,98 @@ Please, use the following link to send the logs to the support: &lt;a style=&quo
 <context>
     <name>KDC::SynthesisPopover</name>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="446"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="448"/>
         <source>Synchronized</source>
         <translation>Συγχρονισμένα</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="450"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="452"/>
         <source>Favorites</source>
         <translation>Αγαπημένα</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="454"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="456"/>
         <source>Activity</source>
         <translation>Δραστηριότητα</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="586"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="588"/>
         <source>Unable to open folder url %1.</source>
         <translation>Δεν είναι δυνατό το άνοιγμα του URL φακέλου %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="978"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="980"/>
         <source>Update</source>
         <translation>Ενημέρωση</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="981"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="983"/>
         <source>Update download in progress</source>
         <translation>Λήψη ενημέρωσης σε εξέλιξη</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="984"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="986"/>
         <source>Looking for update...</source>
         <translation>Αναζήτηση ενημέρωσης...</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="987"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="989"/>
         <source>Manual update</source>
         <translation>Χειροκίνητη ενημέρωση</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="990"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="992"/>
         <source>Unavailable</source>
         <translation>Μη διαθέσιμο</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1133"/>
-        <location filename="../src/gui/synthesispopover.cpp" line="1180"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1135"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1182"/>
         <source>Not implemented!</source>
         <translation>Δεν έχει υλοποιηθεί!</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1161"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1163"/>
         <source>Unable to open link %1.</source>
         <translation>Δεν είναι δυνατό το άνοιγμα του συνδέσμου %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1173"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1175"/>
         <source>Invalid link %1.</source>
         <translation>Μη έγκυρος σύνδεσμος %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1181"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1183"/>
         <source>Update kDrive App</source>
         <translation>Ενημέρωση εφαρμογής kDrive</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1182"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1184"/>
         <source>This kDrive app version is not supported anymore. To access the latest features and enhancements, please update.</source>
         <translation>Αυτή η έκδοση της εφαρμογής kDrive δεν υποστηρίζεται πλέον. Ενημερώστε για πρόσβαση στις τελευταίες λειτουργίες.</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1184"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1187"/>
         <source>&lt;a style= text-decoration:none; href=&quot;https://www.infomaniak.com/en/apps/download-kdrive&quot;&gt;Click here to download manually&lt;/a&gt;</source>
         <translation>&lt;a style= text-decoration:none; href=&quot;https://www.infomaniak.com/en/apps/download-kdrive&quot;&gt;Κάντε κλικ εδώ για χειροκίνητη λήψη&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1187"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1190"/>
         <source>Please download the latest version on the website.</source>
         <translation>Κατεβάστε την τελευταία έκδοση από τον ιστότοπο.</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1193"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1196"/>
         <source>No synchronized folder for this Drive!</source>
         <translation>Δεν υπάρχει συγχρονισμένος φάκελος για αυτή τη μονάδα!</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1196"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1199"/>
         <source>No kDrive configured!</source>
         <translation>Δεν έχει διαμορφωθεί kDrive!</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1200"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1203"/>
         <source>You can synchronize files &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;from your computer&lt;/a&gt; or on &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;kdrive.infomaniak.com&lt;/a&gt;.</source>
         <translation>Μπορείτε να συγχρονίσετε αρχεία &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;από τον υπολογιστή σας&lt;/a&gt; ή στο &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;kdrive.infomaniak.com&lt;/a&gt;.</translation>
     </message>
@@ -2614,12 +2619,12 @@ Please, use the following link to send the logs to the support: &lt;a style=&quo
 <context>
     <name>KDC::UpdateManager</name>
     <message>
-        <location filename="../src/server/updater/updatemanager.cpp" line="86"/>
+        <location filename="../src/server/updater/updatemanager.cpp" line="89"/>
         <source>New update available.</source>
         <translation>Νέα ενημέρωση διαθέσιμη.</translation>
     </message>
     <message>
-        <location filename="../src/server/updater/updatemanager.cpp" line="87"/>
+        <location filename="../src/server/updater/updatemanager.cpp" line="90"/>
         <source>Version %1 is available for download.</source>
         <translation>Η έκδοση %1 είναι διαθέσιμη για λήψη.</translation>
     </message>
@@ -2758,92 +2763,92 @@ Please, use the following link to send the logs to the support: &lt;a style=&quo
         <translation>Αδύνατη η αποθήκευση παραμέτρων!</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1175"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1242"/>
         <source>Make available locally</source>
         <translation>Διαθεσιμότητα τοπικά</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1179"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1246"/>
         <source>Free up local space</source>
         <translation>Ελευθέρωση τοπικού χώρου</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1183"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1250"/>
         <source>Cancel free up local space</source>
         <translation>Ακύρωση ελευθέρωσης τοπικού χώρου</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1187"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1254"/>
         <source>Cancel make available locally</source>
         <translation>Ακύρωση τοπικής διαθεσιμότητας</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1191"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1258"/>
         <source>Resharing this file is not allowed</source>
         <translation>Η κοινοποίηση αυτού του αρχείου δεν επιτρέπεται</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1192"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1259"/>
         <source>Resharing this folder is not allowed</source>
         <translation>Η κοινοποίηση αυτού του φακέλου δεν επιτρέπεται</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1196"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1263"/>
         <source>Copy public share link</source>
         <translation>Αντιγραφή δημόσιου συνδέσμου κοινοποίησης</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1200"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1267"/>
         <source>Copy private share link</source>
         <translation>Αντιγραφή ιδιωτικού συνδέσμου κοινοποίησης</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1204"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1271"/>
         <source>Open in browser</source>
         <translation>Άνοιγμα στον περιηγητή</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="461"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="467"/>
         <source>The parent folder is a sync folder or contained in one</source>
         <translation>Ο γονικός φάκελος είναι φάκελος συγχρονισμού ή περιέχεται σε έναν</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="495"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="501"/>
         <source>Can&apos;t find a valid path</source>
         <translation>Δεν βρέθηκε έγκυρη διαδρομή</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2108"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2112"/>
         <source>No valid folder selected!</source>
         <translation>Δεν επιλέχθηκε έγκυρος φάκελος!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2119"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2123"/>
         <source>The selected path does not exist!</source>
         <translation>Η επιλεγμένη διαδρομή δεν υπάρχει!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2124"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2128"/>
         <source>The selected path is not a folder!</source>
         <translation>Η επιλεγμένη διαδρομή δεν είναι φάκελος!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2129"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2133"/>
         <source>You have no permission to write to the selected folder!</source>
         <translation>Δεν έχετε δικαίωμα εγγραφής στον επιλεγμένο φάκελο!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2159"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2163"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
         <translation>Ο τοπικός φάκελος %1 περιέχει φάκελο που συγχρονίζεται ήδη. Επιλέξτε άλλον!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2167"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2171"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
         <translation>Ο τοπικός φάκελος %1 περιέχεται σε φάκελο που συγχρονίζεται ήδη. Επιλέξτε άλλον!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2175"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2179"/>
         <source>The local folder %1 is already synced. Please pick another one!</source>
         <translation>Ο τοπικός φάκελος %1 συγχρονίζεται ήδη. Επιλέξτε άλλον!</translation>
     </message>
@@ -2925,6 +2930,19 @@ Please, use the following link to send the logs to the support: &lt;a style=&quo
         <location filename="../src/libcommongui/utility/utility.cpp" line="108"/>
         <source>%L1 B</source>
         <translation>%L1 B</translation>
+    </message>
+</context>
+<context>
+    <name>main.cpp</name>
+    <message>
+        <location filename="../src/gui/mainclient.cpp" line="49"/>
+        <source>System Tray not available</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/gui/mainclient.cpp" line="50"/>
+        <source>%1 requires a working system tray. If you are running XFCE, please follow &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;these instructions&lt;/a&gt;. Otherwise, please install a system tray application such as &apos;trayer&apos; and try again.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -3039,12 +3057,12 @@ You can add one from the kDrive settings.</source>
         <translation>Ο φάκελος &lt;b&gt;%1&lt;/b&gt; δεν μπορεί να επιλεγεί ως φάκελος συγχρονισμού. Επιλέξτε άλλον. Προτεινόμενος: &lt;b&gt;%2&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="655"/>
+        <location filename="../src/gui/guiutility.cpp" line="657"/>
         <source>You have excluded more than %1 folders, please note that this will affect synchronization performance.</source>
         <translation>Έχετε εξαιρέσει περισσότερους από %1 φακέλους. Αυτό θα επηρεάσει τις επιδόσεις συγχρονισμού.</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="664"/>
+        <location filename="../src/gui/guiutility.cpp" line="666"/>
         <source>You cannot exclude more than %1 folders. Please uncheck higher-level folders.</source>
         <translation>Δεν μπορείτε να εξαιρέσετε περισσότερους από %1 φακέλους. Αποεπιλέξτε φακέλους υψηλότερου επιπέδου.</translation>
     </message>
