@@ -343,6 +343,24 @@ ExitInfo AbstractTokenNetworkJob::handleJsonResponse(const std::string &replyBod
     return ExitCode::Ok;
 }
 
+#ifndef NDEBUG
+namespace {
+std::string getAccessTokenFromEnv(const UserId &userId) {
+    std::string str = CommonUtility::envVarValue("KDRIVE_DEBUG_API_TOKEN");
+    if (str.empty()) return {};
+
+    const auto strList = Utility::splitStr(str, ';');
+    if (strList.size() != 2) return {};
+
+    const auto debugUserId = strList[0];
+    const auto debugAccessToken = strList[1];
+    if (debugUserId != std::to_string(userId)) return {};
+
+    return debugAccessToken;
+}
+} // namespace
+#endif
+
 void AbstractTokenNetworkJob::loadUserInfoFromUserDbId() {
     assert(_userDbId && "Invalid user DB ID.");
 
@@ -366,21 +384,35 @@ void AbstractTokenNetworkJob::loadUserInfoFromUserDbId() {
         throw DataError(err);
     }
 
-    if (user.keychainKey().empty()) {
-        const std::string err{"Access token is empty"};
-        LOG_DEBUG(_logger, err);
-        throw TokenError(err);
-    }
 
-    // Read token form keystore
-    auto login = std::make_shared<Login>(user.keychainKey());
-    if (!login->hasToken()) {
-        const std::string err{"Failed to retrieve access token"};
-        LOG_WARN(_logger, err);
-        throw TokenError(err);
-    }
+#ifndef NDEBUG
+    const auto debugAccessToken = getAccessTokenFromEnv(user.userId());
+    if (debugAccessToken.empty()) {
+#endif
+        if (user.keychainKey().empty()) {
+            const std::string err{"Access token is empty"};
+            LOG_DEBUG(_logger, err);
+            throw TokenError(err);
+        }
 
-    _userToApiKeyMap[_userDbId] = {login, user.userId()};
+        // Read token from keystore
+        auto login = std::make_shared<Login>(user.keychainKey());
+        if (!login->hasToken()) {
+            const std::string err{"Failed to retrieve access token"};
+            LOG_WARN(_logger, err);
+            throw TokenError(err);
+        }
+        _userToApiKeyMap[_userDbId] = {login, user.userId()};
+#ifndef NDEBUG
+    } else {
+        ApiToken apiToken;
+        apiToken.setAccessToken(debugAccessToken);
+        auto login = std::make_shared<Login>();
+        login->setApiToken(apiToken);
+        LOG_INFO(_logger, "Using API token from environment variable KDRIVE_DEBUG_API_TOKEN for userDbId=" << _userDbId);
+        _userToApiKeyMap[_userDbId] = {login, user.userId()};
+    }
+#endif
 }
 
 Drive AbstractTokenNetworkJob::getDrive(const DriveDbId driveDbId) const {
