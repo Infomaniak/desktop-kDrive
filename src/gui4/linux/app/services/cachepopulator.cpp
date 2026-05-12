@@ -117,6 +117,16 @@ void CachePopulator::loadSyncErrors() {
         _appCache.replaceSyncErrors(syncErrors);
         _appCache.replaceServerErrors(serverErrors);
         emit bootstrapCompleted();
+        activateLiveInfoRefresh();
+    });
+}
+
+void CachePopulator::activateLiveInfoRefresh() const {
+    _commService.requestActivateLoadInfo([](const ExitInfo &exitInfo) {
+        if (!exitInfo) {
+            qCWarning(lcCachePopulator) << "Live info refresh activation failed | code:" << exitInfo.code()
+                                        << "/ cause:" << exitInfo.cause();
+        }
     });
 }
 
