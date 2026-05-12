@@ -571,6 +571,7 @@ ExitInfo AbstractNetworkJob::handleError(std::istream &inputStream, const Poco::
 
 void readStream(std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse, std::string &res,
                 std::atomic_bool &finished, std::exception_ptr &threadException) {
+    res = {};
     try {
         if (const std::string encoding = httpResponse.get("content-encoding", ""); encoding == "gzip") {
             std::stringstream ss;
@@ -614,7 +615,7 @@ void AbstractNetworkJob::getStringFromStream(std::istream &inputStream, std::str
         } catch (const std::exception &e) {
             LOG_WARN(_logger, "Failed to read response stream for job " << jobId() << ": " << e.what());
         } catch (...) {
-            LOG_WARN(_logger, "Failed to read response stream for job " << jobId() << ": unknown error");
+            LOG_WARN(_logger, "Failed to read response stream for job " << jobId() << ": unknown exception.");
         }
     }
 }
