@@ -120,15 +120,12 @@ bool SyncPalWorker::handleRateLimited(const std::shared_ptr<ISyncWorker> w1, con
 }
 
 void SyncPalWorker::handleBackError(void) {
-    constexpr double multiplicativeFactor = 2; // binary exponential backoff
-    constexpr int64_t baseDelay(60000); // 1 min
-    constexpr int64_t maxDelay(14400000); // 4 hour
     auto computedDelay = static_cast<int64_t>(
-            baseDelay * std::pow(multiplicativeFactor, std::min(_syncPal->consecutiveBackErrors(), (int64_t)10)));
+            backoffvarible::baseDelay * std::pow(backoffvarible::multiplicativeFactor, std::min(_syncPal->consecutiveBackErrors(), (int64_t)10)));
     _syncPal->incrementConsecutiveBackErrors();
 
     const double jitterFactor = jitter(); // 40% of the computed delay
-    const auto newPauseDuration = static_cast<int64_t>(std::min(static_cast<int64_t>(computedDelay * jitterFactor), maxDelay));
+    const auto newPauseDuration = static_cast<int64_t>(std::min(static_cast<int64_t>(computedDelay * jitterFactor), backoffvarible::maxDelay));
     LOG_SYNCPAL_INFO(_logger, "Changing pause duration to " << newPauseDuration << " ms");
     setPauseDuration(newPauseDuration);
 }

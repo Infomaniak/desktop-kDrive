@@ -23,6 +23,12 @@
 
 #include <ctime>
 
+namespace backoffvarible {
+constexpr double multiplicativeFactor = 2; // binary exponential backoff
+constexpr int64_t baseDelay(60000); // 1 min
+constexpr int64_t maxDelay(14400000); // 4 hour
+} // namespace backoffvarible
+
 namespace KDC {
 
 class SyncPalWorker : public ISyncWorker {
