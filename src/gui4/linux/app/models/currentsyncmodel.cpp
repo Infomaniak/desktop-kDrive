@@ -51,6 +51,7 @@ bool sameExposedContext(const std::optional<SyncContext> &lhs, const std::option
            lhs->account.id() == rhs->account.id() && lhs->account.name() == rhs->account.name() &&
            lhs->user.dbId() == rhs->user.dbId() && lhs->user.userId() == rhs->user.userId() &&
            lhs->user.name() == rhs->user.name() && lhs->user.email() == rhs->user.email() &&
+           lhs->userAvatarSource == rhs->userAvatarSource && lhs->user.avatarUrl() == rhs->user.avatarUrl() &&
            lhs->sync.localPath() == rhs->sync.localPath() && lhs->sync.targetPath() == rhs->sync.targetPath() &&
            lhs->sync.targetNodeId() == rhs->sync.targetNodeId() && lhs->sync.supportVfs() == rhs->sync.supportVfs() &&
            lhs->sync.virtualFileMode() == rhs->sync.virtualFileMode() &&
@@ -113,6 +114,14 @@ QString CurrentSyncModel::userName() const {
 
 QString CurrentSyncModel::userEmail() const {
     return _context ? _context->user.email() : QString{};
+}
+
+QString CurrentSyncModel::userAvatarSource() const {
+    if (!_context) {
+        return {};
+    }
+
+    return !_context->userAvatarSource.isEmpty() ? _context->userAvatarSource : _context->user.avatarUrl();
 }
 
 QString CurrentSyncModel::localPath() const {
