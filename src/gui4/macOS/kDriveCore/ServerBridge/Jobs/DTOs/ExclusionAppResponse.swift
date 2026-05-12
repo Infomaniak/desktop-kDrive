@@ -38,3 +38,7 @@ struct ExclusionAppSetListQuery: Codable {
 }
 
 struct ExclusionAppSetListResponse: Codable {}
+
+struct ExclusionAppGetFetchingAppListResponse: Codable {
+    @Base64CodedStringDictionary var applicationTable: [String: String]
+}

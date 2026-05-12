@@ -41,6 +41,21 @@ public struct ExclusionAppJobs: Sendable {
         return [ExclusionAppInfo](responses: decodedMessage.body.applicationList)
     }
 
+    public func getFetchingAppList() async throws -> [String: String] {
+        IKLogger.data.log("Query for fetchingAppList")
+        let request = await RequestMessage<EmptyQuery>(
+            num: RequestNum.EXCLAPP_GET_FETCHING_APP_LIST,
+            body: EmptyQuery()
+        )
+
+        let decodedMessage = try await queryFetcher.query(
+            request,
+            responseType: CallbackMessage<ExclusionAppGetFetchingAppListResponse>.self
+        )
+
+        return decodedMessage.body.applicationTable
+    }
+
     public func setExclusionAppList(default: Bool, applicationList: [ExclusionAppInfo]) async throws {
         IKLogger.data.log("Set exclusionAppList")
         let responses = applicationList
