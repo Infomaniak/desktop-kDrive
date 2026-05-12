@@ -122,6 +122,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
 
         // Update-related requests
         Task<bool> StartUpdate(CancellationToken cancellationToken);
+        Task<bool> SkipVersion(CancellationToken cancellationToken);
         Task<bool> RefreshUpdaterVersionInfo(UpdateState? updateState, CancellationToken cancellationToken);
 
         // Log-related requests

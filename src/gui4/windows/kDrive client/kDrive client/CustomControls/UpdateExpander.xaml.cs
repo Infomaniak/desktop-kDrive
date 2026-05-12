@@ -194,5 +194,10 @@ namespace Infomaniak.kDrive.CustomControls
                 toggleSwitch.IsEnabled = true;
             }
         }
+
+        private void KnowMoreButton_Click(object sender, RoutedEventArgs e)
+        {
+            (App.Current as App)?.ShowUpdateWindow();
+        }
     }
 }

@@ -6,7 +6,7 @@
   Locale: pl, Polish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 05 May 2026 18:05:59 +0200 
+  Exported at: Mon, 11 May 2026 09:31:50 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -1456,7 +1456,7 @@ Dane te pozwalają naszemu zespołowi na szybkie naprawianie i optymalizację ap
     <value>Ustawienia</value> 
   </data> 
   <data name="sidebarItemAccounts" xml:space="preserve"> 
-    <value>Konta i synchronizacje</value> 
+    <value>Konta</value> 
   </data> 
   <data name="sidebarItemAdvanced" xml:space="preserve"> 
     <value>Zaawansowane</value> 
@@ -1641,6 +1641,28 @@ Jeśli problem będzie się powtarzać, skontaktuj się ze wsparciem.</value>
   </data> 
   <data name="updateAvailable" xml:space="preserve"> 
     <value>kDrive %@ dostępny</value> 
+  </data> 
+  <data name="updateDialogDescription" xml:space="preserve"> 
+    <value>Instalacja trwa mniej niż minutę.
+Synchronizacja zostanie automatycznie wznowiona po zakończeniu.</value> 
+  </data> 
+  <data name="updateDialogIgnoreVersion" xml:space="preserve"> 
+    <value>Ignoruj tę wersję</value> 
+  </data> 
+  <data name="updateDialogInstallNow" xml:space="preserve"> 
+    <value>Zainstaluj teraz</value> 
+  </data> 
+  <data name="updateDialogRemindLater" xml:space="preserve"> 
+    <value>Przypomnij później</value> 
+  </data> 
+  <data name="updateDialogSeeWhatsNew" xml:space="preserve"> 
+    <value>Zobacz co nowego</value> 
+  </data> 
+  <data name="updateDialogSubtitle" xml:space="preserve"> 
+    <value>Wersja %@ · Używasz %@</value> 
+  </data> 
+  <data name="updateDialogTitle" xml:space="preserve"> 
+    <value>Dostępna aktualizacja</value> 
   </data> 
   <data name="updateRequiredDescription" xml:space="preserve"> 
     <value>Aby kontynuować, wymagana jest nowa wersja kDrive.

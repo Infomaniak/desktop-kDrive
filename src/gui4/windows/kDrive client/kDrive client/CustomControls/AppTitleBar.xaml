@@ -27,7 +27,6 @@
           xmlns:kDrive="using:Infomaniak.kDrive"
           mc:Ignorable="d"
           Title="kDrive"
-          Subtitle="Beta"
           HorizontalContentAlignment="Stretch"
           IsPaneToggleButtonVisible="False"
           IsBackButtonVisible="{x:Bind Frame.CanGoBack, Mode=OneWay}"

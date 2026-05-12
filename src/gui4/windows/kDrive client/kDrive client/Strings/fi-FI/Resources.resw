@@ -6,7 +6,7 @@
   Locale: fi, Finnish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 05 May 2026 18:05:59 +0200 
+  Exported at: Mon, 11 May 2026 09:31:50 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -1456,7 +1456,7 @@ Näiden tietojen avulla tiimimme voi nopeasti korjata ja optimoida sovellusta, m
     <value>Asetukset</value> 
   </data> 
   <data name="sidebarItemAccounts" xml:space="preserve"> 
-    <value>Tilit ja synkronoinnit</value> 
+    <value>Tilit</value> 
   </data> 
   <data name="sidebarItemAdvanced" xml:space="preserve"> 
     <value>Lisäasetukset</value> 
@@ -1641,6 +1641,28 @@ Jos ongelma jatkuu, ota yhteyttä tukeen.</value>
   </data> 
   <data name="updateAvailable" xml:space="preserve"> 
     <value>kDrive %@ saatavilla</value> 
+  </data> 
+  <data name="updateDialogDescription" xml:space="preserve"> 
+    <value>Asennus kestää alle minuutin.
+Synkronointi jatkuu automaattisesti lopuksi.</value> 
+  </data> 
+  <data name="updateDialogIgnoreVersion" xml:space="preserve"> 
+    <value>Ohita tämä versio</value> 
+  </data> 
+  <data name="updateDialogInstallNow" xml:space="preserve"> 
+    <value>Asenna nyt</value> 
+  </data> 
+  <data name="updateDialogRemindLater" xml:space="preserve"> 
+    <value>Muistuta myöhemmin</value> 
+  </data> 
+  <data name="updateDialogSeeWhatsNew" xml:space="preserve"> 
+    <value>Katso uutuudet</value> 
+  </data> 
+  <data name="updateDialogSubtitle" xml:space="preserve"> 
+    <value>Versio %@ · Käytät versiota %@</value> 
+  </data> 
+  <data name="updateDialogTitle" xml:space="preserve"> 
+    <value>Päivitys saatavilla</value> 
   </data> 
   <data name="updateRequiredDescription" xml:space="preserve"> 
     <value>Uusi kDrive-versio on tarpeen jatkamiseksi.

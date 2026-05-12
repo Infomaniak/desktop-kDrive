@@ -32,12 +32,15 @@ using Sentry;
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive
 {
     public partial class App : Application
     {
         private Window? _currentWindow;
+        private UpdateWindow? _updateWindow;
 
         public int LegacyCommPort { get; private set; } = -1;
         public Window? CurrentWindow
@@ -263,6 +266,59 @@ namespace Infomaniak.kDrive
             Logger.Log(Logger.Level.Info, "Sending exit command to server.");
             App.ServiceProvider.GetRequiredService<IServerCommService>().Exit();
             ExitApplication();
+        }
+
+        public void ShowUpdateWindow()
+        {
+
+            AppModel.UIThreadDispatcher.TryEnqueue(async () =>
+            {
+                const int maxRetries = 10;
+                int retryCount = 0;
+
+                while (ServiceProvider.GetRequiredService<AppModel>().Settings.UpdateManager.AvailableUpdate is null &&
+                           retryCount < maxRetries)
+                {
+                    Logger.Log(Logger.Level.Info,
+                                   $"ShowUpdateWindow called but no available update found, retrying in 1 seconds ({retryCount + 1}/{maxRetries}).");
+
+                    retryCount++;
+                    await Task.Delay(TimeSpan.FromSeconds(1));
+                }
+
+                if (ServiceProvider.GetRequiredService<AppModel>().Settings.UpdateManager.AvailableUpdate is null)
+                {
+                    Logger.Log(Logger.Level.Warning,
+                                   "ShowUpdateWindow aborted after retries because no available update was found.");
+                    return;
+                }
+
+                if (_updateWindow is null)
+                {
+                    _updateWindow = new UpdateWindow();
+                    _updateWindow.Closed += (s, e) => _updateWindow = null;
+                    _updateWindow.Activate();
+                }
+                else
+                {
+                    Logger.Log(Logger.Level.Info,
+                                   "Update window is already open, bringing existing window to front.");
+                }
+                Utility.BringWindowToFront(_updateWindow);
+            });
+
+        }
+
+        public void CloseUpdateWindow()
+        {
+            AppModel.UIThreadDispatcher.TryEnqueue(() =>
+            {
+                if (_updateWindow is not null)
+                {
+                    _updateWindow.Close();
+                    _updateWindow = null;
+                }
+            });
         }
     }
 }

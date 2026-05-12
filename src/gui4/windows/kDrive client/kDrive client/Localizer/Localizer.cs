@@ -68,11 +68,27 @@ namespace Infomaniak.kDrive
             }
         }
 
+        public string CurrentLanguage
+        {
+            get
+            {
+                string currentCultureName = ApplicationLanguages.PrimaryLanguageOverride;
+                if (string.IsNullOrEmpty(currentCultureName))
+                    return CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+                else
+                    return currentCultureName;
+            }
+        }
+
 
         public void TriggerRefresh()
         {
             OnPropertyChanged(nameof(GetString));
             OnPropertyChanged(nameof(GetString1s));
+            OnPropertyChanged(nameof(GetString1s2s));
+            OnPropertyChanged(nameof(GetString1i));
+            OnPropertyChanged(nameof(GetString1i2i));
+            OnPropertyChanged(nameof(GetStringCombine1s));
             OnPropertyChanged(nameof(GetStringWithPlural1i));
             OnPropertyChanged(nameof(GetStringWithPlural));
             OnPropertyChanged(nameof(IsValidKey));
@@ -84,6 +100,11 @@ namespace Infomaniak.kDrive
         public string GetString1s(string key, string arg1)
         {
             return GetString(key, new object?[] { arg1 });
+        }
+
+        public string GetString1s2s(string key, string arg1, string arg2)
+        {
+            return GetString(key, new object?[] { arg1, arg2 });
         }
 
         // This method is similar to GetString1s but the argument is expected to be a key for another localized string, so it calls GetString on the argument before passing it to GetString.
