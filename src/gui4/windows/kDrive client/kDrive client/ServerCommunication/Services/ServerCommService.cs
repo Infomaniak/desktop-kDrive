@@ -42,6 +42,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
     {
         private readonly IServerCommProtocol _commClient;
         private readonly AppModel _viewModel;
+        private const int _maxErrorLimit = 1000;
+        private object _errorLock = new object();
+        private Int64 _errorCount = 0;
+        private bool _hasMoreError;
 
         public ServerCommService(IServerCommProtocol commClient, AppModel viewModel)
         {
@@ -1261,7 +1265,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         {
             JsonObject parms = new()
             {
-                [JsonKeys.Limit] = 1000
+                [JsonKeys.Limit] = _maxErrorLimit
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.ERROR_INFOLIST, parms, cancellationToken).ConfigureAwait(false);
             if (!CheckJobResultAndLogIfError(data, parms))
@@ -1282,7 +1286,11 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Logger.Log(Logger.Level.Error, $"Failed to deserialize errorInfoList from ${data.Params[JsonKeys.ErrorInfoList]}.");
                 return false;
             }
-
+            lock (_errorLock)
+            {
+                _hasMoreError = errorInfos.Count == _maxErrorLimit;
+                _errorCount = errorInfos.Count;
+            }
             await _viewModel.ClearAllErrorsAsync().ConfigureAwait(false);
             foreach (var errorInfo in errorInfos)
             {
@@ -1764,8 +1772,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 // Create new item
                 var newItem = new SyncFileItem(sync, fileItemInfo);
 
-                const int MinFileSizeForTopSticking = 1024; // Don't stick items smaller than 1KB to the top as they are likely to complete very fast, otherwise we might end up with flickering in the UI with items jumping from the top to the middle of the list when they are completed.
-                if (newItem.Status != SyncFileStatus.Syncing || newItem.Size < MinFileSizeForTopSticking)
+                const int minFileSizeForTopSticking = 1024; // Don't stick items smaller than 1KB to the top as they are likely to complete very fast, otherwise we might end up with flickering in the UI with items jumping from the top to the middle of the list when they are completed.
+                if (newItem.Status != SyncFileStatus.Syncing || newItem.Size < minFileSizeForTopSticking)
                 {
                     // Insert item after all syncing items
                     activities.Insert(Math.Clamp(destIndex, 0, activities.Count), newItem);
@@ -1855,10 +1863,13 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
 
             var sync = App.ServiceProvider.GetRequiredService<AppModel>().AllSyncs.FirstOrDefault(s => s.DbId == errorInfo.SyncDbId);
-
             if (sync is not null)
             {
                 Error error = new(sync, errorInfo);
+                lock (_errorLock)
+                {
+                    ++_errorCount;
+                }
                 await _viewModel.AddErrorAsync(error).ConfigureAwait(false);
             }
             else
@@ -1868,6 +1879,26 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         }
         public async Task HandleErrorRemovedAsync(object? sender, SignalEventArgs args)
         {
+            bool refreshNeeded = false;
+            lock (_errorLock)
+            {
+                refreshNeeded = _hasMoreError && _errorCount < _maxErrorLimit / 2;
+            }
+
+            if (refreshNeeded)
+            {
+                if (!await RefreshErrors(CancellationToken.None).ConfigureAwait(false))
+                {
+                    Logger.Log(Logger.Level.Warning, "Failed to refresh errors"); // If the refresh fails, we must continue to at least remove the error in response to the signal
+                }
+                else
+                {
+                    Logger.Log(Logger.Level.Info, "Errors refreshed successfully in response to error removed signal.");
+                    return;
+                }
+            }
+
+
             var signalData = args.SignalData;
             if (signalData == null || !signalData.ContainsKey(JsonKeys.ErrorDbId))
             {
@@ -1882,6 +1913,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return;
             }
             await _viewModel.RemoveErrorByDbIdAsync(errorDbId.Value);
+            lock (_errorLock)
+            {
+                _errorCount = Math.Max(0, _errorCount - 1);
+            }
         }
 
         public async Task HandleUtilityShowNotification(object? sender, SignalEventArgs args)

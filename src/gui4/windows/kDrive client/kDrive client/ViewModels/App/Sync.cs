@@ -281,16 +281,7 @@ namespace Infomaniak.kDrive.ViewModels
 
         public async Task ClearAllErrorsAsync()
         {
-            await Utility.RunOnUIThread(async () =>
-            {
-                // Call RemoveError for each error to ensure proper handling (RemoveError is responsible for some viewmodel updates)
-                while (SyncErrors.Any())
-                {
-                    var error = SyncErrors[0];
-                    Logger.Log(Logger.Level.Info, $"Sync {DbId}: Clearing error {error.ExitCode} - {error.Path}");
-                    await RemoveErrorAsync(error, false);
-                }
-            });
+            await Utility.RunOnUIThread(() => SyncErrors.Clear());
             await RefreshErrorState();
         }
 
