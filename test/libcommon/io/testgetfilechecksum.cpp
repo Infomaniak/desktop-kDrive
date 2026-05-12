@@ -47,11 +47,12 @@ void TestIo::testGetFileChecksum() {
         auto checksum = IoHelper::getFileChecksum(path, ifs, ioError);
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-#else
-        CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
-#endif
         CPPUNIT_ASSERT(!checksum.empty());
         CPPUNIT_ASSERT_EQUAL(std::string("5dcc477e35136516"), checksum);
+#else
+        CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
+        CPPUNIT_ASSERT(checksum.empty());
+#endif
     }
 
     // A regular symbolic link on a file
