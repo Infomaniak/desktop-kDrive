@@ -35,6 +35,10 @@ struct TestDataCoding: Codable {
     @Base64CodedData var data: Data
 }
 
+struct TestStringDictionaryCoding: Codable {
+    @Base64CodedStringDictionary var table: [String: String]
+}
+
 struct TestColorCoding: Codable {
     @Base64CodedColor var color: HexColor
 
@@ -192,5 +196,33 @@ struct Base64CodedColorPropertyWrapperTests {
 
         // THEN
         #expect(jsonString == #"{"color":"\#(base64Expected)"}"#)
+    }
+}
+
+struct Base64CodedStringDictionaryPropertyWrapperTests {
+    static let sourceJson = #"{"table":{"appId1":"YXBwbGljYXRpb25OYW1lMQ==","appId2":"YXBwbGljYXRpb25OYW1lMg=="}}"#
+    static let sourceDict = ["appId1": "applicationName1", "appId2": "applicationName2"]
+
+    @Test func decodingStringDictionaryWithBase64Coding() async throws {
+        // GIVEN
+        let data = Data(Self.sourceJson.utf8)
+
+        // WHEN
+        let parsed = try JSONDecoder().decode(TestStringDictionaryCoding.self, from: data)
+
+        // THEN
+        #expect(parsed.table == Self.sourceDict)
+    }
+
+    @Test func encodingStringDictionaryWithBase64Coding() async throws {
+        // GIVEN
+        let testCoding = TestStringDictionaryCoding(table: Self.sourceDict)
+
+        // WHEN
+        let data = try JSONEncoder().encode(testCoding)
+        let jsonString = String(data: data, encoding: .utf8)
+
+        // THEN
+        #expect(jsonString == Self.sourceJson)
     }
 }
