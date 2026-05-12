@@ -395,7 +395,7 @@ void AbstractTokenNetworkJob::loadUserInfoFromUserDbId() {
             throw TokenError(err);
         }
 
-        // Read token form keystore
+        // Read token from keystore
         auto login = std::make_shared<Login>(user.keychainKey());
         if (!login->hasToken()) {
             const std::string err{"Failed to retrieve access token"};
