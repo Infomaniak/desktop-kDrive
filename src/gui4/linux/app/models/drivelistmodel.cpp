@@ -18,6 +18,8 @@
 
 #include "drivelistmodel.h"
 
+#include <algorithm>
+
 namespace KDC {
 
 DriveListModel::DriveListModel(AppCache &appCache, MainSelectionStore &mainSelectionStore, QObject *const parent) :
