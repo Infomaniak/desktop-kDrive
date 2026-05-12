@@ -413,7 +413,7 @@ ExitInfo TestSyncPalWorker::MockRemoteFileSystemObserverWorker::generateInitialS
 void TestSyncPalWorker::testHandleBackError() {
     _syncPal = std::make_shared<MockSyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), _sync.dbId(),
                                              KDRIVE_VERSION_STRING);
-    _syncPal->start(std::chrono::seconds(0));
+    _syncPal->start();
 
     const auto mockSyncPal = std::dynamic_pointer_cast<MockSyncPal>(_syncPal);
     CPPUNIT_ASSERT(mockSyncPal);
