@@ -294,19 +294,18 @@ void CommService::requestUserDbIdList(const UserDbIdListCallback &callback) cons
                            });
 }
 
-void CommService::requestUserInfoList(const UserInfoListCallback &callback) const {
-    _ipcClient.sendRequest(
-            RequestNum::USER_INFOLIST, {}, [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
-                std::vector<UserSnapshot> list;
-                if (exitInfo) {
-                    CommonUtility::readValuesFromStruct(
-                            result, msgParamUserInfoList, list,
-                            std::function{[](const Poco::Dynamic::Var &value) {
-                                return userSnapshotFromDynamicStruct(value.extract<Poco::DynamicStruct>());
-                            }});
-                }
-                callback(exitInfo, list);
-            });
+void CommService::requestUserSnapshotList(const UserSnapshotListCallback &callback) const {
+    _ipcClient.sendRequest(RequestNum::USER_INFOLIST, {},
+                           [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
+                               std::vector<UserSnapshot> list;
+                               if (exitInfo) {
+                                   CommonUtility::readValuesFromStruct(
+                                           result, msgParamUserInfoList, list, std::function{[](const Poco::Dynamic::Var &value) {
+                                               return userSnapshotFromDynamicStruct(value.extract<Poco::DynamicStruct>());
+                                           }});
+                               }
+                               callback(exitInfo, list);
+                           });
 }
 
 void CommService::requestUserAvailableDrives(const UserDbId userDbId, const DriveAvailableInfoListCallback &callback) const {
