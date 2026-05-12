@@ -64,7 +64,6 @@ struct SyncContext {
 
 struct DriveContext {
         UserInfo user;
-        QString userAvatarSource;
         AccountInfo account;
         DriveInfo drive;
         std::vector<SyncInfo> syncs;
