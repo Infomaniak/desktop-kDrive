@@ -24,7 +24,7 @@
 
 namespace {
 template<typename T, typename Getter>
-void appendSortedById(std::vector<T> &values, Getter getter) {
+void sortById(std::vector<T> &values, Getter getter) {
     (void) std::ranges::sort(values, [getter](const T &lhs, const T &rhs) { return getter(lhs) < getter(rhs); });
 }
 } // namespace
@@ -37,7 +37,7 @@ std::vector<UserInfo> AppCache::users() const {
     for (const auto &node: _usersByDbId | std::views::values) {
         values.push_back(node.info);
     }
-    appendSortedById(values, [](const UserInfo &info) { return info.dbId(); });
+    sortById(values, [](const UserInfo &info) { return info.dbId(); });
     return values;
 }
 
@@ -47,7 +47,7 @@ std::vector<AccountInfo> AppCache::accounts() const {
     for (const auto &node: _accountsByDbId | std::views::values) {
         values.push_back(node.info);
     }
-    appendSortedById(values, [](const AccountInfo &info) { return info.dbId(); });
+    sortById(values, [](const AccountInfo &info) { return info.dbId(); });
     return values;
 }
 
@@ -57,7 +57,7 @@ std::vector<DriveInfo> AppCache::drives() const {
     for (const auto &node: _drivesByDbId | std::views::values) {
         values.push_back(node.info);
     }
-    appendSortedById(values, [](const DriveInfo &info) { return info.dbId(); });
+    sortById(values, [](const DriveInfo &info) { return info.dbId(); });
     return values;
 }
 
@@ -67,7 +67,7 @@ std::vector<SyncInfo> AppCache::syncs() const {
     for (const auto &node: _syncsByDbId | std::views::values) {
         values.push_back(node.info);
     }
-    appendSortedById(values, [](const SyncInfo &info) { return info.dbId(); });
+    sortById(values, [](const SyncInfo &info) { return info.dbId(); });
     return values;
 }
 
@@ -77,7 +77,7 @@ std::vector<ErrorInfo> AppCache::syncErrors() const {
     for (const auto &info: _syncErrorsByDbId | std::views::values) {
         values.push_back(info);
     }
-    appendSortedById(values, [](const ErrorInfo &info) { return info.dbId(); });
+    sortById(values, [](const ErrorInfo &info) { return info.dbId(); });
     return values;
 }
 
@@ -87,7 +87,7 @@ std::vector<ErrorInfo> AppCache::serverErrors() const {
     for (const auto &info: _serverErrorsByDbId | std::views::values) {
         values.push_back(info);
     }
-    appendSortedById(values, [](const ErrorInfo &info) { return info.dbId(); });
+    sortById(values, [](const ErrorInfo &info) { return info.dbId(); });
     return values;
 }
 
@@ -185,7 +185,7 @@ std::vector<AccountInfo> AppCache::accountsForUser(const UserDbId userDbId) cons
             values.push_back(*accountInfo);
         }
     }
-    appendSortedById(values, [](const AccountInfo &info) { return info.dbId(); });
+    sortById(values, [](const AccountInfo &info) { return info.dbId(); });
     return values;
 }
 
@@ -202,7 +202,7 @@ std::vector<DriveInfo> AppCache::drivesForAccount(const AccountDbId accountDbId)
             values.push_back(*driveInfo);
         }
     }
-    appendSortedById(values, [](const DriveInfo &info) { return info.dbId(); });
+    sortById(values, [](const DriveInfo &info) { return info.dbId(); });
     return values;
 }
 
@@ -219,7 +219,7 @@ std::vector<SyncInfo> AppCache::syncsForDrive(const DriveDbId driveDbId) const {
             values.push_back(*syncInfo);
         }
     }
-    appendSortedById(values, [](const SyncInfo &info) { return info.dbId(); });
+    sortById(values, [](const SyncInfo &info) { return info.dbId(); });
     return values;
 }
 
