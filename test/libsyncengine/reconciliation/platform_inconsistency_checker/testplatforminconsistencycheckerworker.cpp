@@ -163,7 +163,7 @@ void TestPlatformInconsistencyCheckerWorker::testCheckNameForbiddenChars() {
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::checkIfNameEndsWithForbiddenSpace(
                                                          forbiddenName, _syncPal->cacheDirectory(), endsWithForbiddenSpace));
     CPPUNIT_ASSERT(endsWithForbiddenSpace);
-#elif defined(KD_LINUX) && !defined(KD_MACOS)
+#elif defined(KD_LINUX)
     forbiddenName = std::string("test");
     forbiddenName.append(1, '\0');
     hasForbiddenChars = false;
