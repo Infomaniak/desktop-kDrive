@@ -27,12 +27,24 @@ namespace Infomaniak.kDrive.ViewModels
         public VersionChannel Channel { get; set; } = VersionChannel.Prod;
         public string Tag { get; set; } = string.Empty; // e.g., "1.2.3"
         public int BuildVersion { get; set; } = 0;
-        public Uri ChangeLogUrl
+
+        public string FullVersion
+        {
+            get => $"{Tag}.{BuildVersion}";
+        }
+
+        public Uri ChangeLogUrlLocalized
         {
             get
             {
-                string languageCode = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
-                return App.Constants.Storage.ReleaseNoteUrl(Tag, languageCode);
+                return App.Constants.Storage.ReleaseNoteUrl(Tag, Localizer.Instance.CurrentLanguage);
+            }
+        }
+        public Uri ChangeLogUrlDefaultLanguage
+        {
+            get
+            {
+                return App.Constants.Storage.ReleaseNoteUrl(Tag, "en");
             }
         }
 

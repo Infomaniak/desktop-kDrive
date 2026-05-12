@@ -30,7 +30,8 @@
         DriveAccessDeniedPage,
         LogginErrorPage,
         MaintenanceErrorPage,
-        NotRenewErrorPage
+        NotRenewErrorPage,
+        UpdateDialog
     }
 
     public enum EventName
@@ -157,6 +158,7 @@
         ManageInvalidToken,
         ManageTmpDirError,
         OpenRenewWeb,
-        Displayed
+        Displayed,
+        Ignore
     }
 }

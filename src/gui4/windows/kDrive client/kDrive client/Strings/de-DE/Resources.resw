@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 05 May 2026 18:05:59 +0200 
+  Exported at: Mon, 11 May 2026 09:31:50 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -1455,7 +1455,7 @@ Diese Daten ermöglichen es unserem Team, die Anwendung schnell zu beheben und z
     <value>Einstellungen</value> 
   </data> 
   <data name="sidebarItemAccounts" xml:space="preserve"> 
-    <value>Konten &amp; Synchronisierungen</value> 
+    <value>Konten</value> 
   </data> 
   <data name="sidebarItemAdvanced" xml:space="preserve"> 
     <value>Erweitert</value> 
@@ -1640,6 +1640,28 @@ Wenn das Problem weiterhin besteht, wenden Sie sich bitte an den Support.</value
   </data> 
   <data name="updateAvailable" xml:space="preserve"> 
     <value>kDrive %@ verfügbar</value> 
+  </data> 
+  <data name="updateDialogDescription" xml:space="preserve"> 
+    <value>Die Installation dauert weniger als eine Minute.
+Ihre Synchronisierung wird am Ende automatisch fortgesetzt.</value> 
+  </data> 
+  <data name="updateDialogIgnoreVersion" xml:space="preserve"> 
+    <value>Diese Version ignorieren</value> 
+  </data> 
+  <data name="updateDialogInstallNow" xml:space="preserve"> 
+    <value>Jetzt installieren</value> 
+  </data> 
+  <data name="updateDialogRemindLater" xml:space="preserve"> 
+    <value>Später erinnern</value> 
+  </data> 
+  <data name="updateDialogSeeWhatsNew" xml:space="preserve"> 
+    <value>Neuigkeiten anzeigen</value> 
+  </data> 
+  <data name="updateDialogSubtitle" xml:space="preserve"> 
+    <value>Version %@ · Sie verwenden %@</value> 
+  </data> 
+  <data name="updateDialogTitle" xml:space="preserve"> 
+    <value>Update verfügbar</value> 
   </data> 
   <data name="updateRequiredDescription" xml:space="preserve"> 
     <value>Eine neue Version von kDrive ist erforderlich, um fortzufahren.

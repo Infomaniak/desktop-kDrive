@@ -1419,31 +1419,32 @@ void SyncPal::fixNodeTableDeleteItemsWithNullParentNodeId() {
 
 void SyncPal::increaseErrorCount(const NodeId &nodeId, const NodeType type, const SyncPath &relativePath, const ReplicaSide side,
                                  const ExitInfo exitInfo /*= ExitInfo()*/) {
-    _tmpBlacklistManager->increaseErrorCount(nodeId, type, relativePath, side, exitInfo);
+    if (_tmpBlacklistManager) _tmpBlacklistManager->increaseErrorCount(nodeId, type, relativePath, side, exitInfo);
 }
 
 void SyncPal::blacklistTemporarily(const NodeId &nodeId, const SyncPath &relativePath, const ReplicaSide side) {
-    _tmpBlacklistManager->blacklistItem(nodeId, relativePath, side);
+    if (_tmpBlacklistManager) _tmpBlacklistManager->blacklistItem(nodeId, relativePath, side);
 }
 
 bool SyncPal::isTmpBlacklisted(const SyncPath &relativePath, const ReplicaSide side) const {
-    return _tmpBlacklistManager->isTmpBlacklisted(relativePath, side);
+    if (_tmpBlacklistManager) return _tmpBlacklistManager->isTmpBlacklisted(relativePath, side);
+    return false;
 }
 
 void SyncPal::clearTmpBlacklist() {
-    _tmpBlacklistManager->clear();
+    if (_tmpBlacklistManager) _tmpBlacklistManager->clear();
 }
 
 void SyncPal::refreshTmpBlacklist() {
-    _tmpBlacklistManager->refreshBlacklist();
+    if (_tmpBlacklistManager) _tmpBlacklistManager->refreshBlacklist();
 }
 
 void SyncPal::removeItemFromTmpBlacklist(const NodeId &nodeId, const ReplicaSide side) {
-    _tmpBlacklistManager->removeItemFromTmpBlacklist(nodeId, side);
+    if (_tmpBlacklistManager) _tmpBlacklistManager->removeItemFromTmpBlacklist(nodeId, side);
 }
 
 void SyncPal::removeItemFromTmpBlacklist(const SyncPath &relativePath) {
-    _tmpBlacklistManager->removeItemFromTmpBlacklist(relativePath);
+    if (_tmpBlacklistManager) _tmpBlacklistManager->removeItemFromTmpBlacklist(relativePath);
 }
 
 bool SyncPal::forceUpdateLastChangeRevision(const NodeId &nodeId, ReplicaSide side) {

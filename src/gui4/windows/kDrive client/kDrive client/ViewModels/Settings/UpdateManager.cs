@@ -30,6 +30,7 @@ namespace Infomaniak.kDrive.ViewModels
         private VersionChannel _currentChannel = VersionChannel.Beta;
         private AppVersion? _availableUpdate;
         private bool _fetchingUpdate = false;
+        private bool _showNotification = false;
 
         public bool UpdateEnabled
         {
@@ -51,7 +52,10 @@ namespace Infomaniak.kDrive.ViewModels
         public AppVersion? AvailableUpdate
         {
             get => _availableUpdate;
-            set => SetPropertyInUIThread(ref _availableUpdate, value);
+            set
+            {
+                SetPropertyInUIThread(ref _availableUpdate, value);
+            }
         }
 
         public bool FetchingUpdate
@@ -60,22 +64,37 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _fetchingUpdate, value);
         }
 
+        public bool ShowNotification
+        {
+            get => _showNotification;
+            set => SetPropertyInUIThread(ref _showNotification, value);
+        }
+
         public static async Task<bool> StartUpdate()
         {
             return await App.ServiceProvider.GetRequiredService<IServerCommService>().StartUpdate(CancellationToken.None);
+        }
+
+        public async Task<bool> SkipVersion()
+        {
+            bool res = await App.ServiceProvider.GetRequiredService<IServerCommService>().SkipVersion(CancellationToken.None);
+            if (res)
+                ShowNotification = false;
+            return res;
         }
 
         public async Task<bool> ChangeChannel(VersionChannel newChannel)
         {
             var previousChannel = CurrentChannel;
             CurrentChannel = newChannel;
-            AvailableUpdate = null;
+
             if (!await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None))
             {
                 CurrentChannel = previousChannel;
                 return false;
             }
-
+            AvailableUpdate = null;
+            ShowNotification = false;
             return true;
         }
 

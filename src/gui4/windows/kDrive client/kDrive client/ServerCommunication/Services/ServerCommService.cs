@@ -1021,6 +1021,24 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return CheckJobResultAndLogIfError(data);
         }
 
+        public async Task<bool> SkipVersion(CancellationToken cancellationToken)
+        {
+            var availableUpdate = _viewModel.Settings?.UpdateManager?.AvailableUpdate;
+            if (availableUpdate is null)
+            {
+                Logger.Log(Logger.Level.Warning, "SkipVersion called but no available update.");
+                return false;
+            }
+
+            JsonObject parms = new()
+            {
+                [JsonKeys.SkippedVersion] = Utility.ToBase64String($"{availableUpdate.Tag}.{availableUpdate.BuildVersion}")
+            };
+
+            CommData data = await _commClient.SendRequestAsync(RequestNum.UPDATER_SKIP_VERSION, parms, cancellationToken).ConfigureAwait(false);
+            return CheckJobResultAndLogIfError(data);
+        }
+
         public async Task<bool> RefreshUpdaterVersionInfo(UpdateState? updateState, CancellationToken cancellationToken)
         {
             // First check the update state
@@ -1374,6 +1392,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     break;
                 case SignalNum.SYNC_REMOVED:
                     await HandleSyncRemovedAsync(sender, args);
+                    break;
+                case SignalNum.UPDATER_SHOW_DIALOG:
+                    await HandleUpdaterShowDialog(sender, args);
                     break;
                 case SignalNum.UPDATER_STATE_CHANGED:
                     await HandleUpdaterStateChangedAsync(sender, args);
@@ -1898,6 +1919,15 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
 
             App.ServiceProvider.GetRequiredService<NotificationManager>().ShowNotification(title, message);
+        }
+
+        public async Task HandleUpdaterShowDialog(object? sender, SignalEventArgs args)
+        {
+            Logger.Log(Logger.Level.Info, "Received UPDATER_SHOW_DIALOG signal - showing update window");
+            if (Application.Current is App app)
+                await Utility.RunOnUIThread(() => app.ShowUpdateWindow());
+
+            _viewModel.Settings.UpdateManager.ShowNotification = true;
         }
 
         public async Task HandleUtilityShowSynthesis(object? sender, SignalEventArgs args)

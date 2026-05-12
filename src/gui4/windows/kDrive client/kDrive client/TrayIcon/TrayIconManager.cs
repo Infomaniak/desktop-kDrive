@@ -101,7 +101,7 @@ namespace Infomaniak.kDrive.TrayIcon
                 .Subscribe(_ => UpdateTrayIcon()));
 
             // Subscribe to changes in the available update
-            _subscriptions.Add(_appModel.Settings.UpdateManager.WhenPropertyChanged(updateManager => updateManager.AvailableUpdate)
+            _subscriptions.Add(_appModel.Settings.UpdateManager.WhenPropertyChanged(updateManager => updateManager.ShowNotification)
                 .Subscribe(_ => UpdateTrayIcon()));
         }
 
@@ -125,7 +125,7 @@ namespace Infomaniak.kDrive.TrayIcon
                 return;
             }
 
-            if (_appModel.Settings.UpdateManager.AvailableUpdate is not null)
+            if (_appModel.Settings.UpdateManager.ShowNotification)
             {
                 SetIconNotification();
                 return;

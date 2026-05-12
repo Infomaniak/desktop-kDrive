@@ -23,6 +23,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Remove="Assets\Custom\Animations\Readme.md" />
+    <Content Remove="Assets\DS\Icons\Actions\circle-information.svg" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="$(ApplicationManifest)" />
