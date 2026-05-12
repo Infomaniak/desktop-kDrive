@@ -43,8 +43,16 @@ struct AvailableDriveKey {
         friend bool operator==(const AvailableDriveKey &lhs, const AvailableDriveKey &rhs) = default;
 };
 
+struct UserSnapshot {
+        UserInfo info;
+        QString avatarSource;
+
+        friend bool operator==(const UserSnapshot &lhs, const UserSnapshot &rhs) = default;
+};
+
 struct SyncContext {
         UserInfo user;
+        QString userAvatarSource;
         AccountInfo account;
         DriveInfo drive;
         SyncInfo sync;
@@ -56,6 +64,7 @@ struct SyncContext {
 
 struct DriveContext {
         UserInfo user;
+        QString userAvatarSource;
         AccountInfo account;
         DriveInfo drive;
         std::vector<SyncInfo> syncs;
@@ -65,6 +74,7 @@ struct DriveContext {
 
 struct AvailableDriveContext {
         UserInfo user;
+        QString userAvatarSource;
         std::optional<AccountInfo> account;
         DriveAvailableInfo availableDrive;
         bool alreadyConfigured{false};
