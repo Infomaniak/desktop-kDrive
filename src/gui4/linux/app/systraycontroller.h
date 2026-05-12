@@ -80,7 +80,7 @@ class SystemTrayController final : public QObject {
         void refreshIconState();
         void reconcileKnownSyncStatuses();
         void onSyncProgressInfo(SyncDbId syncDbId, SyncStatus status);
-        void onTrayActivated(QSystemTrayIcon::ActivationReason reason);
+        void onTrayActivated(QSystemTrayIcon::ActivationReason reason) const;
 
         AppCache *_appCache = nullptr;
         QPointer<QWindow> _mainWindow;
