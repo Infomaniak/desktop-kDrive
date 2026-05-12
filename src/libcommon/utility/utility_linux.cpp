@@ -118,7 +118,7 @@ namespace {
 constexpr auto exFat = "exFAT";
 constexpr auto ext234 = "EXT2/3/4";
 
-std::string formatFsName(const std::string &prettyName, const int64_t fType) {
+std::string formatFsName(const std::string &prettyName, const uint64_t fType) {
     std::stringstream stream;
     stream << std::hex << fType;
     return prettyName + " | 0x" + stream.str();
@@ -140,26 +140,26 @@ std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {
         switch (stat.f_type) {
             case EXFAT_SUPER_MAGIC:
                 return exFAT();
-            case 0x137d:
+            case 0x137du:
                 return formatFsName("EXT(1)", stat.f_type);
-            case 0xef51:
+            case 0xef51u:
                 return formatFsName("EXT2", stat.f_type);
-            case 0xef53: // EXT_SUPER_MAGIC
+            case 0xef53u: // EXT_SUPER_MAGIC
                 return formatFsName(ext234, stat.f_type);
-            case 0xbad1dea:
-            case 0xa501fcf5:
-            case 0x58465342:
+            case 0xbad1deau:
+            case 0xa501fcf5u:
+            case 0x58465342u:
                 return formatFsName("XFS", stat.f_type);
-            case 0x9123683e:
-            case 0x73727279:
+            case 0x9123683eu:
+            case 0x73727279u:
                 return formatFsName("BTRFS", stat.f_type);
-            case 0xf15f:
+            case 0xf15fu:
                 return formatFsName("ECRYPTFS", stat.f_type);
-            case 0x4244:
+            case 0x4244u:
                 return formatFsName("HFS", stat.f_type);
-            case 0x5346544e:
+            case 0x5346544eu:
                 return formatFsName("NTFS", stat.f_type);
-            case 0x858458f6:
+            case 0x858458f6u:
                 return formatFsName("RAMFS", stat.f_type);
             default:
                 return formatFsName("Unknown-see corresponding entry at https://man7.org/linux/man-pages/man2/statfs.2.html",
