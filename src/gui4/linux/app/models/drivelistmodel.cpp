@@ -31,7 +31,7 @@ DriveListModel::DriveListModel(AppCache &appCache, MainSelectionStore &mainSelec
     (void) connect(&_appCache, &AppCache::accountsChanged, this, &DriveListModel::resetModel);
     (void) connect(&_appCache, &AppCache::drivesChanged, this, &DriveListModel::resetModel);
     (void) connect(&_appCache, &AppCache::syncsChanged, this, &DriveListModel::resetModel);
-    (void) connect(&_mainSelectionStore, &MainSelectionStore::currentSyncContextChanged, this,
+    (void) connect(&_mainSelectionStore, &MainSelectionStore::currentSyncDbIdChanged, this,
                    &DriveListModel::emitCurrentRoleChanged);
 }
 
