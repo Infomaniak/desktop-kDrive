@@ -28,7 +28,6 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.Storage.Streams;
 using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommProtocol;
 
 
@@ -37,7 +36,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
     public class SocketServerCommProtocol : Interfaces.IServerCommProtocol
     {
         private Socket? _socket;
-        private long _requestIdCounter = 0;
+        private int _requestIdCounter = 0;
         private readonly byte[] _receiveBuffer = new byte[65536]; // 64 Ko
         private readonly StringBuilder _inBuffer = new();
         private int _inBufferJsonBalance = 0;
@@ -51,11 +50,11 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         private bool _stopRequested = false;
         private Task? _pollingTask;
         private const string _host = "127.0.0.1";
-        private long NextId
+        private int NextId
         {
             get
             {
-                if (_requestIdCounter >= long.MaxValue - 1)
+                if (_requestIdCounter >= int.MaxValue - 1)
                 {
                     Logger.Log(Logger.Level.Info, "Request ID counter overflow, resetting to 0.");
                     _requestIdCounter = 0;
@@ -87,7 +86,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
             catch (FileNotFoundException)
             {
-                Logger.Log(Logger.Level.Info, $".comm file not found at {_commPortFilePath}.");
                 return null;
             }
             catch (Exception ex)
@@ -121,7 +119,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     Logger.Log(Logger.Level.Info, $"Attempting to connect to {_host}:{port}");
                     _socket?.Dispose();
                     _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                    await _socket.ConnectAsync(_host, port.Value).ConfigureAwait(false);
+                    await _socket.ConnectAsync(_host, port.Value, cancellationToken).ConfigureAwait(false);
                     Logger.Log(Logger.Level.Info, "Connected to server.");
                     _pollingTask = Task.Run(PollingLoop);
                     return true;
@@ -147,7 +145,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             if (_socket is null)
                 return;
 
-            while (_socket?.Connected == true)
+            while (!_stopRequested && _socket?.Connected == true)
             {
                 try
                 {

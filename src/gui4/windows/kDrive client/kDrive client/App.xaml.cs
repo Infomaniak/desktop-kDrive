@@ -135,7 +135,12 @@ namespace Infomaniak.kDrive
             var serverCommService = ServiceProvider.GetRequiredService<IServerCommService>();
             using (var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5)))
             {
-                await serverCommService.Init(cts.Token);
+                if (!await serverCommService.Init(cts.Token))
+                {
+                    Logger.Log(Logger.Level.Fatal, "Failed to initialize server communication service, exiting application.");
+                    ExitApplication();
+                    return;
+                }
             }
 
             AppModel appModel = ServiceProvider.GetRequiredService<AppModel>();
