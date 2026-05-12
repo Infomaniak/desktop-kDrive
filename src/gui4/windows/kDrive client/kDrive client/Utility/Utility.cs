@@ -407,7 +407,6 @@ namespace Infomaniak.kDrive
         public static void BringWindowToFront(Window window)
         {
             Logger.Log(Logger.Level.Info, "Bringing current window to front");
-
             if (!window.Visible)
             {
                 window.Activate();

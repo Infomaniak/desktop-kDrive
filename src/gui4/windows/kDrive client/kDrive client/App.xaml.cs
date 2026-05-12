@@ -259,7 +259,7 @@ namespace Infomaniak.kDrive
             App app = (App)Current;
             app.CloseUpdateWindow();
             var previousWindow = app.CurrentWindow;
-            app.CurrentWindow = new OnBoarding.OnBoardingWindow();
+            app.CurrentWindow = null;
             previousWindow?.Close();
             app.CreateWindow(CreateWindowOptions.Foreground);
         }
