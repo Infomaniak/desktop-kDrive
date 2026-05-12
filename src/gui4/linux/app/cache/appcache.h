@@ -83,7 +83,7 @@ class AppCache : public QObject {
         void clearAll();
 
         // Atomic family snapshot replacements. Orphans are pruned so the graph remains coherent.
-        void replaceUsers(const std::vector<UserSnapshot> &users);
+        void replaceUsers(const std::vector<UserDisplayInfo> &users);
         void replaceAccounts(const std::vector<AccountInfo> &accounts);
         void replaceDrives(const std::vector<DriveInfo> &drives);
         void replaceSyncs(const std::vector<SyncInfo> &syncs);
@@ -96,7 +96,7 @@ class AppCache : public QObject {
 
     public slots:
         // Incremental entity mutations used by push-signal wiring. Remove methods own descendant cascade cleanup.
-        void upsertUser(const UserSnapshot &snapshot);
+        void upsertUser(const UserDisplayInfo &info);
         void removeUser(UserDbId userDbId);
 
         void upsertAccount(const AccountInfo &info);
@@ -128,8 +128,7 @@ class AppCache : public QObject {
 
     private:
         struct UserNode {
-                UserInfo info;
-                QString avatarSource;
+                UserDisplayInfo info;
                 std::vector<AccountDbId> accountDbIds;
         };
 
