@@ -110,7 +110,7 @@ bool CurrentSyncModel::hasError() const {
 }
 
 qint64 CurrentSyncModel::latestErrorDbId() const {
-    return hasError() ? toInt(_context->latestError->dbId()) : 0;
+    return hasError() ? static_cast<qint64>(_context->latestError->dbId()) : 0;
 }
 
 qint64 CurrentSyncModel::latestErrorTime() const {
