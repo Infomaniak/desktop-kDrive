@@ -203,7 +203,11 @@ const std::string &CommonUtility::userAgentString() {
 }
 
 const std::string &CommonUtility::currentVersion() {
-    return KDRIVE_VERSION_STRING;
+    static std::string str;
+    if (str.empty()) {
+        str = KDRIVE_VERSION_STRING;
+    }
+    return str;
 }
 
 const std::string &CommonUtility::versionTag() {
