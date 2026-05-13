@@ -97,13 +97,15 @@ ExitInfo getAccount(const Drive &drive, Account &account) {
         assert(false);
         const std::string err{"Error in ParmsDb::selectAccount"};
         LOG_WARN(Log::instance()->getLogger(), err);
-        return {ExitCode::DataError, ExitCause::DbAccessError};
+
+        return {ExitCode::DbError, ExitCause::DbAccessError};
     }
 
     if (!found) {
         assert(false);
         const std::string err{"Account not found for accountDbId=" + std::to_string(drive.accountDbId())};
         LOG_WARN(Log::instance()->getLogger(), err);
+
         return {ExitCode::DbError, ExitCause::DbEntryNotFound};
     }
 
