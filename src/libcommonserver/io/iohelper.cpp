@@ -801,11 +801,27 @@ std::string IoHelper::getFileChecksum(const SyncPath &path, std::ifstream &ifs, 
         std::vector<char> buffer(CHUNK_SIZE);
 
         XXH3_state_t *state = XXH3_createState();
-        XXH3_64bits_reset(state);
+
+        if (state == nullptr) {
+            ifs.close();
+            ioError = IoError::Unknown;
+            return "";
+        }
+        if (XXH3_64bits_reset(state) == XXH_ERROR) {
+            ifs.close();
+            XXH3_freeState(state);
+            ioError = IoError::Unknown;
+            return "";
+        }
 
         std::streamsize readBytes(0);
         while ((readBytes = ifs.read(buffer.data(), buffer.size()).gcount()) > 0) {
-            XXH3_64bits_update(state, buffer.data(), readBytes);
+            if (XXH3_64bits_update(state, buffer.data(), readBytes) == XXH_ERROR) {
+                ifs.close();
+                XXH3_freeState(state);
+                ioError = IoError::Unknown;
+                return "";
+            }
         }
 
         ifs.close();
