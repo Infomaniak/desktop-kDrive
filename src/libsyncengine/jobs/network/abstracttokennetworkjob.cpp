@@ -419,6 +419,7 @@ void AbstractTokenNetworkJob::loadUserInfoFromUserDbId() {
         return;
     }
 
+    _userId = user.userId();
 
 #ifndef NDEBUG
     const auto debugAccessToken = getAccessTokenFromEnv(user.userId());
@@ -439,19 +440,18 @@ void AbstractTokenNetworkJob::loadUserInfoFromUserDbId() {
         // Read token from keystore
         _userToApiKeyMap[_userDbId] = {login, user.userId()};
 
+        _userToApiKeyMap[_userDbId] = {login, _userId};
+
 #ifndef NDEBUG
     } else {
         ApiToken apiToken;
         apiToken.setAccessToken(debugAccessToken);
         auto login = std::make_shared<Login>();
         login->setApiToken(apiToken);
+        _userToApiKeyMap[_userDbId] = {login, _userId};
         LOG_INFO(_logger, "Using API token from environment variable KDRIVE_DEBUG_API_TOKEN for userDbId=" << _userDbId);
-
     }
 #endif
-
-    _userId = user.userId();
-    _userToApiKeyMap[_userDbId] = {login, _userId};
 }
 
 Drive AbstractTokenNetworkJob::getDrive(const DriveDbId driveDbId) const {
