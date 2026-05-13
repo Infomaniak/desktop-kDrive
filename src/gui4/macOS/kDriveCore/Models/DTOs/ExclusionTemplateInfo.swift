@@ -22,6 +22,12 @@ public struct ExclusionTemplateInfo: Codable, Sendable {
     public let template: String
     public let warning: Bool
     public let `default`: Bool
+    
+    public init(template: String, warning: Bool, default: Bool) {
+        self.template = template
+        self.warning = warning
+        self.default = `default`
+    }
 }
 
 extension ExclusionTemplateInfo {

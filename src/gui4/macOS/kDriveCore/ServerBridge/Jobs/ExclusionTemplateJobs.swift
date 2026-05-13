@@ -56,4 +56,21 @@ public struct ExclusionTemplateJobs: Sendable {
 
         return [ExclusionTemplateInfo](responses: decodedMessage.body.exclusionTemplateList)
     }
+
+    public func setUserExclusionTemplateList(_ exclusionTemplateList: [ExclusionTemplateInfo]) async throws {
+        IKLogger.data.log("Set user exclusionTemplateList")
+        let exchangeList = exclusionTemplateList.map {
+            ExclusionTemplateInfoExchange(template: $0.template, warning: $0.warning, default: $0.default)
+        }
+        let query = ExclusionTemplateSetUserListQuery(exclusionTemplateList: exchangeList)
+        let request = await RequestMessage<ExclusionTemplateSetUserListQuery>(
+            num: RequestNum.EXCLTEMPL_SETUSERLIST,
+            body: query
+        )
+
+        _ = try await queryFetcher.query(
+            request,
+            responseType: CallbackMessage<ExclusionTemplateSetUserListResponse>.self
+        )
+    }
 }

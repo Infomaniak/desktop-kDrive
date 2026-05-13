@@ -34,6 +34,18 @@ struct ExclusionTemplateGetListResponse: Codable, Sendable {
     let exclusionTemplateList: [ExclusionTemplateInfoResponse]
 }
 
+struct ExclusionTemplateSetUserListQuery: Codable, Sendable {
+    let exclusionTemplateList: [ExclusionTemplateInfoExchange]
+}
+
+struct ExclusionTemplateSetUserListResponse: Codable, Sendable {}
+
+struct ExclusionTemplateInfoExchange: Codable, Sendable {
+    @Base64CodedString var template: String
+    let warning: Bool
+    let `default`: Bool
+}
+
 struct ExclusionTemplateInfoResponse: Codable, Sendable {
     @Base64CodedString public var template: String
     let warning: Bool
