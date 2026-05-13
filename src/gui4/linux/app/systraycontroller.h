@@ -66,6 +66,7 @@ class SystemTrayController final : public QObject {
         [[nodiscard]] bool trayModeActive() const { return _isTrayModeActive; }
 
         Q_INVOKABLE void showMainWindow() const;
+        Q_INVOKABLE static void showSettingsWindow();
         Q_INVOKABLE void hideMainWindow() const;
 
     signals:
@@ -87,6 +88,7 @@ class SystemTrayController final : public QObject {
         QSystemTrayIcon _trayIcon;
         QMenu _trayMenu;
         QAction *_openAction = nullptr;
+        QAction *_settingsAction = nullptr;
         QAction *_quitAction = nullptr;
         std::unordered_map<SyncDbId, SyncStatus> _syncStatuses;
         TrayIconState _iconState = TrayIconState::Neutral;
