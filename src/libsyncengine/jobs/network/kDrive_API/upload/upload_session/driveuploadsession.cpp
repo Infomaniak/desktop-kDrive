@@ -89,13 +89,14 @@ std::shared_ptr<UploadSessionStartJob> DriveUploadSession::createStartJob() {
 
 std::shared_ptr<UploadSessionChunkJob> DriveUploadSession::createChunkJob(const std::string &chunkContent, uint64_t chunkNb,
                                                                           std::streamsize actualChunkSize) {
-    return std::make_shared<UploadSessionChunkJob>(UploadSessionType::Drive, _driveDbId, getFilePath(), getSessionToken(),
-                                                   getSessionUrl(), chunkContent, chunkNb, actualChunkSize, jobId());
+    return std::make_shared<UploadSessionChunkJob>(UploadSessionType::Drive, _driveDbId, getFilePath(), getSessionInfo(),
+                                                   chunkContent, chunkNb, actualChunkSize, jobId());
 }
 
 std::shared_ptr<UploadSessionFinishJob> DriveUploadSession::createFinishJob() {
-    return std::make_shared<UploadSessionFinishJob>(_vfs, UploadSessionType::Drive, _driveDbId, getFilePath(), getSessionToken(),
-                                                    getTotalChunkHash(), getTotalChunks(), _creationTimeIn, _modificationTimeIn);
+    return std::make_shared<UploadSessionFinishJob>(_vfs, UploadSessionType::Drive, _driveDbId, getFilePath(),
+                                                    getSessionInfo().token, getTotalChunkHash(), getTotalChunks(),
+                                                    _creationTimeIn, _modificationTimeIn);
 }
 
 std::shared_ptr<UploadSessionCancelJob> DriveUploadSession::createCancelJob() {
