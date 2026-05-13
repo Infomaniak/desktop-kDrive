@@ -234,7 +234,7 @@ void TestNetworkJobs::testDelete() {
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
 
     // Check that the dir has been deleted
-    const bool dirExists = existsInRemoteDirectory(_dummyFileName, testDummyDirRemoteId, NodeType::Directory);
+    const bool dirExists = existsInRemoteDirectory(remoteTmpDir.name(), _remoteDirId, NodeType::Directory);
     CPPUNIT_ASSERT(!dirExists);
 
     remoteTmpDir.setDeleted();
