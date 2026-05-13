@@ -83,8 +83,10 @@ std::string CreateDirJob::getSpecificUrl() {
 
 ExitInfo CreateDirJob::setData() {
     Poco::JSON::Object json;
-    json.set("name", _name);
-    if (!_color.empty()) json.set("color", _color);
+    (void) json.set("name", _name);
+    if (!_color.empty()) {
+        (void) json.set("color", _color);
+    }
 
     std::stringstream ss;
     json.stringify(ss);
