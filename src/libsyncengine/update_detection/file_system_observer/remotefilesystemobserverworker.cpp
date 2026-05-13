@@ -83,13 +83,12 @@ void RemoteFileSystemObserverWorker::execute() {
             }
         }
 
-        std::vector<std::string> mainDirectoriesRemoteIds;
-        if (const auto mainDirectoriesExitInfo = getMainDirectoriesRemoteIds(mainDirectoriesRemoteIds);
-            !mainDirectoriesExitInfo) {
-            LOG_SYNCPAL_DEBUG(_logger, "Error in getMainDirectoriesRemoteIds: " << mainDirectoriesExitInfo);
+        std::vector<std::string> specialFoldersRemoteIds;
+        if (const auto mainDirectoriesExitInfo = getSpeciaFoldersRemoteIds(specialFoldersRemoteIds); !mainDirectoriesExitInfo) {
+            LOG_SYNCPAL_DEBUG(_logger, "Error in getSpeciaFoldersRemoteIds: " << mainDirectoriesExitInfo);
             break;
         }
-        for (const auto &remoteDirId: mainDirectoriesRemoteIds) {
+        for (const auto &remoteDirId: specialFoldersRemoteIds) {
             exitInfo = processEvents(remoteDirId);
             if (!exitInfo) {
                 LOG_SYNCPAL_DEBUG(_logger, "Error in processEvents: remoteDirId=" << remoteDirId << ", ExitInfo: " << exitInfo);
@@ -99,12 +98,17 @@ void RemoteFileSystemObserverWorker::execute() {
 
         if (!exitInfo) break;
 
-        _initializing = false;
+        setInitFlagValue(false);
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
     setExitCause(exitInfo.cause());
     setDone(exitInfo.code());
+}
+
+bool RemoteFileSystemObserverWorker::updating() const {
+    return _updating || std::any_of(_specialFolderUpdateFlags.cbegin(), _specialFolderUpdateFlags.cend(),
+                                    [](const auto &pair) { return pair.second; });
 }
 
 ExitInfo RemoteFileSystemObserverWorker::generateInitialSnapshot() {
@@ -116,7 +120,9 @@ ExitInfo RemoteFileSystemObserverWorker::generateInitialSnapshot() {
     (void) SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, _blackList);
 
     _liveSnapshot.init();
-    _updating = true;
+
+    setUpdateFlagValue(true);
+
     countListingRequests();
 
     exitInfo = initWithCursor();
@@ -145,7 +151,8 @@ ExitInfo RemoteFileSystemObserverWorker::generateInitialSnapshot() {
                 break;
         }
     }
-    _updating = false;
+
+    setUpdateFlagValue(false);
 
     return exitInfo;
 }
@@ -161,7 +168,7 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
         return exitInfo;
     }
 
-    if (!_updating && !_initializing) {
+    if (!initializing()) {
         // Send long poll request
         bool changes = false;
         if (const auto exitInfo = sendLongPoll(remoteDirId, changes); !exitInfo) {
@@ -173,7 +180,8 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
     }
 
     // Retrieve changes
-    _updating = true;
+    setUpdateFlagValue(remoteDirId, true);
+
     ExitInfo exitInfo = ExitCode::Ok;
     bool hasMore = true;
     while (hasMore) {
@@ -266,16 +274,15 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
             break;
         }
     }
-
-    _updating = false;
+    setUpdateFlagValue(remoteDirId, false);
 
     return exitInfo;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::updateV3MainFolderItem(const RemoteNodeId &remoteNodeId) {
+ExitInfo RemoteFileSystemObserverWorker::updateV3SpecialFolderItem(const RemoteNodeId &remoteNodeId) {
     SyncName folderName;
-    if (const auto exitInfo = getV3RemoteFolderName(remoteNodeId, folderName); !exitInfo) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in RemoteFileSystemObserverWorker::getV3RemoteFolderName: remoteNodeId="
+    if (const auto exitInfo = getV3SpecialRemoteFolderName(remoteNodeId, folderName); !exitInfo) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in RemoteFileSystemObserverWorker::getV3SpecialRemoteFolderName: remoteNodeId="
                                            << CommonUtility::s2ws(remoteNodeId) << L", exitInfo=" << exitInfo);
         return exitInfo;
     }
@@ -322,20 +329,20 @@ ExitInfo RemoteFileSystemObserverWorker::updateV3MainFolderItem(const RemoteNode
 ExitInfo RemoteFileSystemObserverWorker::initWithCursor() {
     if (stopAsked()) return ExitCode::Ok;
 
-    std::vector<std::string> mainDirectoriesRemoteIds;
-    if (const auto mainDirectoriesExitInfo = getMainDirectoriesRemoteIds(mainDirectoriesRemoteIds); !mainDirectoriesExitInfo) {
-        LOG_SYNCPAL_DEBUG(_logger, "Error in getMainDirectoriesRemoteIds: " << mainDirectoriesExitInfo);
+    std::vector<std::string> specialFoldersRemoteIds;
+    if (const auto mainDirectoriesExitInfo = getSpeciaFoldersRemoteIds(specialFoldersRemoteIds); !mainDirectoriesExitInfo) {
+        LOG_SYNCPAL_DEBUG(_logger, "Error in getSpecialFoldersRemoteIds: " << mainDirectoriesExitInfo);
         return mainDirectoriesExitInfo;
     }
 
     ExitInfo exitInfo;
-    for (const auto &mainFolderRemoteId: mainDirectoriesRemoteIds) {
-        if (_blackList.contains(mainFolderRemoteId)) continue;
+    for (const auto &specialFoldersRemoteId: specialFoldersRemoteIds) {
+        if (_blackList.contains(specialFoldersRemoteId)) continue;
 
-        exitInfo = updateV3MainFolderItem(mainFolderRemoteId);
+        exitInfo = updateV3SpecialFolderItem(specialFoldersRemoteId);
         if (!exitInfo) return exitInfo;
 
-        exitInfo = getItemsInDir(mainFolderRemoteId, CursorPersistence::Save);
+        exitInfo = getItemsInDir(specialFoldersRemoteId, CursorPersistence::Save);
         if (!exitInfo) return exitInfo;
     }
 
@@ -344,7 +351,7 @@ ExitInfo RemoteFileSystemObserverWorker::initWithCursor() {
     return ExitCode::Ok;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::exploreDirectory(const NodeId &nodeId) {
+ExitInfo RemoteFileSystemObserverWorker::exploreDirectory(const RemoteNodeId &nodeId) {
     if (stopAsked()) return ExitCode::Ok;
 
     return getItemsInDir(nodeId, CursorPersistence::None);
@@ -1009,7 +1016,7 @@ void RemoteFileSystemObserverWorker::countListingRequests() {
     bool resetTimer = elapsedTime.count() > 3600; // 1h
     if (_listingFullCounter > 60) {
         // If there is more then 1 listing/full request per minute for an hour -> send a sentry
-        sentry::Handler::captureMessage(sentry::Level::Warning, "RemoteFileSystemObserverWorker::generateInitialSnapshot",
+        sentry::Handler::captureMessage(sentry::Level::Warning, "RemoteFileSystemObserverWorker::countListingRequests",
                                         "Too many listing/full requests, sync is looping");
         resetTimer = true;
     }
@@ -1028,8 +1035,8 @@ void RemoteFileSystemObserverWorker::ActionInfo::setPath(const KDC::SyncName &re
     _path = remotePath_.native();
 }
 
-ExitInfo RemoteFileSystemObserverWorker::getMainDirectoriesRemoteIds(std::vector<RemoteNodeId> &mainDirectoriesRemoteIds) const {
-    mainDirectoriesRemoteIds.clear();
+ExitInfo RemoteFileSystemObserverWorker::getSpeciaFoldersRemoteIds(std::vector<RemoteNodeId> &specialFoldersRemoteIds) const {
+    specialFoldersRemoteIds.clear();
 
     RemoteNodeId userPrivateFolderRemoteId;
     if (const auto exitInfo = ApiTranslator::getSpecialFolderRemoteId(_syncPal->userDbId(), _syncPal->driveId(),
@@ -1049,8 +1056,8 @@ ExitInfo RemoteFileSystemObserverWorker::getMainDirectoriesRemoteIds(std::vector
         !exitInfo)
         return exitInfo;
 
-    mainDirectoriesRemoteIds = {userPrivateFolderRemoteId, commonDocumentsFolderRemoteId, sharedFolderRemoteId};
-    (void) std::erase_if(mainDirectoriesRemoteIds, [](const std::string_view s) { return s.empty(); });
+    specialFoldersRemoteIds = {userPrivateFolderRemoteId, commonDocumentsFolderRemoteId, sharedFolderRemoteId};
+    (void) std::erase_if(specialFoldersRemoteIds, [](const std::string_view s) { return s.empty(); });
 
     return ExitCode::Ok;
 }
@@ -1087,7 +1094,7 @@ ExitInfo RemoteFileSystemObserverWorker::saveListingCursor(const RemoteNodeId &r
     return {ExitCode::LogicError, ExitCause::InvalidArgument};
 }
 
-ExitInfo RemoteFileSystemObserverWorker::getV3RemoteFolderName(const RemoteNodeId &remoteDirId, SyncName &folderName) {
+ExitInfo RemoteFileSystemObserverWorker::getV3SpecialRemoteFolderName(const RemoteNodeId &remoteDirId, SyncName &folderName) {
     folderName = SyncName{};
 
     RemoteNodeId userPrivateFolderRemoteId;
