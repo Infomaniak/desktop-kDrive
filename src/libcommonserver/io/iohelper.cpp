@@ -790,10 +790,9 @@ std::string IoHelper::getFileChecksum(const SyncPath &path, std::ifstream &ifs, 
     }
 #endif
 
-    (void) IoHelper::openFile(path, ifs, ioError);
+    const bool isOpen = IoHelper::openFile(path, ifs, ioError);
 
-    if (!ifs) {
-        ioError = IoError::NoSuchFileOrDirectory;
+    if (!isOpen || !ifs) {
         return "";
     }
 
