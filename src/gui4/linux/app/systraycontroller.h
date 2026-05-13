@@ -58,7 +58,7 @@ class SystemTrayController final : public QObject {
         explicit SystemTrayController(QObject *parent = nullptr);
 
         void initialize();
-        void observe(AppCache &appCache, CommService &commService);
+        void observe(AppCache &appCache, const CommService &commService);
         void setMainWindow(QWindow *window);
         void setProductStateInitialized(bool initialized);
         void setNotificationActive(bool active);
