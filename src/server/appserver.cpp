@@ -2786,11 +2786,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 
@@ -2823,7 +2823,9 @@ ExitInfo AppServer::updateUserInfo(User &user) {
     }
 
     for (auto &account: accounts) {
-        if (const auto exitInfo = updateAccount(account); !exitInfo) return exitInfo;
+        if (const auto exitInfo = updateAccount(account); !exitInfo) {
+            LOG_WARN(_logger, "Error in updateAccount for accountDbId=" << account.dbId() << ": " << exitInfo);
+        }
 
         std::vector<Drive> drives;
         if (!ParmsDb::instance()->selectAllDrives(account.dbId(), drives)) {
