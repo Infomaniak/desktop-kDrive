@@ -55,7 +55,7 @@ class DownloadJob : public AbstractTokenNetworkJob {
         const RemoteNodeId &remoteNodeId() const { return _fileDownloadInfo.remoteFileId; }
         const SyncPath &localPath() const { return _fileDownloadInfo.localPath; }
 
-        const RemoteNodeId &localNodeId() const { return _localNodeId; }
+        const NodeId &localNodeId() const { return _localNodeId; }
         SyncTime creationTime() const { return _creationTimeOut; }
         SyncTime modificationTime() const { return _modificationTimeOut; }
         [[nodiscard]] int64_t size() const { return _sizeOut; }
