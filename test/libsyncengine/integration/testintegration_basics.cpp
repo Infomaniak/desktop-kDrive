@@ -57,8 +57,8 @@ void TestIntegration::testLocalChanges() {
 
     const auto remoteTestDirInfo = getRemoteFileInfoByName(_driveDbId, _remoteSyncDir.id(), subDirPath.filename());
     CPPUNIT_ASSERT(!remoteTestDirInfo.nodeId().isEmpty());
-    CPPUNIT_ASSERT_EQUAL(fileStat.size, remoteTestFileInfo.size());
-    CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, remoteTestFileInfo.modtime());
+    CPPUNIT_ASSERT_EQUAL(qint64{fileStat.size}, remoteTestFileInfo.size());
+    CPPUNIT_ASSERT_EQUAL(qint64{fileStat.modificationTime}, remoteTestFileInfo.modtime());
     logStep("test create local file");
 
     // Generate an edit operation.
@@ -68,9 +68,9 @@ void TestIntegration::testLocalChanges() {
 
     const auto prevRemoteTestFileInfo = remoteTestFileInfo;
     remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, _remoteSyncDir.id(), filePath.filename());
-    CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, remoteTestFileInfo.modtime());
+    CPPUNIT_ASSERT_EQUAL(qint64{fileStat.modificationTime}, remoteTestFileInfo.modtime());
     CPPUNIT_ASSERT_LESS(remoteTestFileInfo.modtime(), prevRemoteTestFileInfo.modtime());
-    CPPUNIT_ASSERT_EQUAL(fileStat.size, remoteTestFileInfo.size());
+    CPPUNIT_ASSERT_EQUAL(qint64{fileStat.size}, remoteTestFileInfo.size());
     CPPUNIT_ASSERT_LESS(remoteTestFileInfo.size(), prevRemoteTestFileInfo.size());
     logStep("test edit local file");
 
