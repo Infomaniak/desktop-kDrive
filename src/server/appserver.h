@@ -136,6 +136,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void sendShowSynthesisMsg();
         void sendRestartClientMsg();
         void sendAuthorizationCode();
+        void handleClientDisconnection() { onClientDisconnectedReceived(); }
 
         void clearKeychainKeys();
 
@@ -144,11 +145,20 @@ class AppServer : public SharedTools::QtSingleApplication {
         void stopAllSyncPals();
         void stopAllVfs();
 
-        void stopAllSyncsTask(const std::vector<SyncDbId> &syncDbIdList);
+        void stopAllSyncsTask(const std::vector<SyncDbId> &syncDbIdList,
+                              const SyncPal::DbBehaviorAfterStop behavior = SyncPal::DbBehaviorAfterStop::Keep);
 
         void addError(const Error &error) const;
+        void manageError(const Error &error, std::vector<Error> &errorList, bool errorAlreadyExists) const;
+        void manageDriveAccessError(Drive &drive) const;
+        void manageInvalidTokenError(User& user) const;
+        void manageSocketsDefunctedError() const;
+        void manageFileAccessErrorError(const std::vector<Error> &errorList) const;
+        void manageUpdateRequiredErrorError() const;
+
         void resolveItemErrors(SyncDbId syncDbId, const SyncFileItem &item) const;
         void resolveSyncErrorsByExitCause(SyncDbId syncDbId, ExitCause cause) const;
+
         void updateSentryUser();
         void deleteDrive(DriveDbId driveDbId);
         void deleteSync(SyncDbId syncDbId);
@@ -176,7 +186,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         [[nodiscard]] ExitInfo stopVfs(SyncDbId syncDbId, bool unregister);
         [[nodiscard]] ExitInfo startSyncs(User &user);
-        void stopSyncTask(SyncDbId syncDbId);
+        void stopSyncTask(SyncDbId syncDbId, const SyncPal::DbBehaviorAfterStop behavior = SyncPal::DbBehaviorAfterStop::Keep);
         [[nodiscard]] ExitInfo setSupportsVirtualFilesAsync(SyncDbId syncDbId, bool value);
         [[nodiscard]] ExitInfo setSupportsVirtualFiles(SyncDbId syncDbId, bool value);
         void setDistributionChannel(VersionChannel versionChannel);
@@ -219,7 +229,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 #endif
         }
 
-        static bool useCommManager(bool checkIfInitialized = true) {
+        static bool useCommManager([[maybe_unused]] bool checkIfInitialized = true) {
 #if defined(KD_WINDOWS) || defined(KD_MACOS)
             if (checkIfInitialized)
                 return _commManager != nullptr;
@@ -386,7 +396,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void onUpdateStateChanged(UpdateState state);
         void onCleanup();
         void onRequestReceived(int id, RequestNum num, const QByteArray &params);
-        void onRestartClientReceived();
+        void onClientDisconnectedReceived();
         void onMessageReceivedFromAnotherProcess(const QString &message, QObject *);
         void onSendNotifAsked(const QString &title, const QString &message);
         void onAuthorizationCodeReceived(const QString &code, const QString &state);

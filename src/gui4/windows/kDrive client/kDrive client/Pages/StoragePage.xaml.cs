@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.Converters;
 using Infomaniak.kDrive.Pages.Settings;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
@@ -35,6 +36,7 @@ namespace Infomaniak.kDrive.Pages
 {
     public sealed partial class StoragePage : Page
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private readonly StoragePageViewModel _pageViewModel = new StoragePageViewModel();
         public StoragePageViewModel PageViewModel => _pageViewModel;
         public StoragePage()
@@ -46,7 +48,11 @@ namespace Infomaniak.kDrive.Pages
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             if (App.ServiceProvider.GetRequiredService<AppModel>().SelectedSync is null)
+            {
                 AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(SettingsPage)));
+                return;
+            }
+
             try
             {
                 await PageViewModel.UpdateDiskSizeAsync().ConfigureAwait(false);
@@ -55,6 +61,8 @@ namespace Infomaniak.kDrive.Pages
             {
                 Logger.Log(Logger.Level.Info, "Disk size update was canceled.");
             }
+
+            _analyticsService.TrackPageView(Analytics.Keys.Category.StoragePage);
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)

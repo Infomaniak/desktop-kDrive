@@ -42,6 +42,7 @@
 #include "jobs/network/testnetworkjobs.h"
 #include "jobs/network/kDrive_API/testapitranslator.h"
 #include "jobs/network/kDrive_API/testloguploadjob.h"
+#include "jobs/network/kDrive_API/testsearchjob.h"
 #include "jobs/network/testsnapshotitemhandler.h"
 #include "jobs/local/testlocaljobs.h"
 #include "jobs/testabstractjob.h"
@@ -64,6 +65,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestExclusionTemplateCache);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestNetworkJobs);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestApiTranslator);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLogUploadJob);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestSearchJob);
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncDb);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncNodeCache);

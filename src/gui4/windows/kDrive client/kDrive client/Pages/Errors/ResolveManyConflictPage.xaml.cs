@@ -15,14 +15,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-using Infomaniak.kDrive.CustomControls;
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.CustomControls.Errors;
-using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.ComponentModel;
@@ -33,6 +31,7 @@ namespace Infomaniak.kDrive.Pages.Errors
 {
     public sealed partial class ResolveManyConflictPage : Page
     {
+        private static readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel { get { return _viewModel; } }
         private ErrorPageVM? _errorPageVM;
@@ -47,6 +46,7 @@ namespace Infomaniak.kDrive.Pages.Errors
         {
             _errorPageVM = new ErrorPageVM();
             _errorPageVM.PropertyChanged += OnErrorPageVMPropertyChanged;
+            _analyticsService.TrackPageView(Analytics.Keys.Category.IndividualConflictResolutionPage);
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
@@ -75,6 +75,7 @@ namespace Infomaniak.kDrive.Pages.Errors
         {
             Logger.Log(Logger.Level.Debug, "Navigating to Conflict quick");
             Frame.Navigate(typeof(ConflictQuickResolvePage));
+            _analyticsService.TrackClick(Analytics.Keys.Category.IndividualConflictResolutionPage, Analytics.Keys.EventName.BatchConflictResolutionBreadcrumb);
         }
 
         private void OnSelectedSyncChanged(object sender, SelectedSyncChangedEventArgs e)
@@ -120,6 +121,7 @@ namespace Infomaniak.kDrive.Pages.Errors
             dialog.Resources["ContentDialogMaxWidth"] = Application.Current.Resources["Infomaniak.Style.ContentDialog.MaxWidth"];
             dialog.Resources["ContentDialogMaxHeight"] = Application.Current.Resources["Infomaniak.Style.ContentDialog.MaxHeight"];
 
+            _analyticsService.TrackClick(Analytics.Keys.Category.IndividualConflictResolutionPage, Analytics.Keys.EventName.StartChoices);
             _ = await dialog.ShowAsync();
         }
 
@@ -159,8 +161,13 @@ namespace Infomaniak.kDrive.Pages.Errors
             // Apply the style to allow wider content
             dialog.Resources["ContentDialogMaxWidth"] = Application.Current.Resources["Infomaniak.Style.ContentDialog.MaxWidth"];
             dialog.Resources["ContentDialogMaxHeight"] = Application.Current.Resources["Infomaniak.Style.ContentDialog.MaxHeight"];
-
+            _analyticsService.TrackClick(Analytics.Keys.Category.IndividualConflictResolutionPage, Analytics.Keys.EventName.ManageSingleConflict);
             _ = await dialog.ShowAsync();
+        }
+
+        private void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            _analyticsService.TrackClick(Analytics.Keys.Category.IndividualConflictResolutionPage, Analytics.Keys.EventName.ValidateSearch);
         }
     }
 }

@@ -86,7 +86,7 @@ class COMMONSERVER_EXPORT Db {
         void commitTransaction();
         void rollbackTransaction();
         bool sqlFail(const std::string &log, const std::string &error);
-        bool checkConnect(const std::string &version);
+        bool checkConnect();
 
         bool addIntegerColumnIfMissing(const std::string &tableName, const std::string &columnName, bool *columnAdded = nullptr);
         bool addTextColumnIfMissing(const std::string &tableName, const std::string &columnName, bool *columnAdded = nullptr);

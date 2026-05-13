@@ -148,7 +148,7 @@ Add the path to the `Icoutils` folder to your `PATH` environment variable, e.g. 
 # Certificate Configuration
 
 To be able to sign executables, you need to have one of two the Infomaniak certificates installed.
-We use the virtual certificate for `DEBUG` builds and the physical certificate (USB key) for release builds.
+We use the debug certificate for Debug builds and the KSP client certificate for Release builds.
 
 Once the certificates are installed on your machine, open `F:\Projects\desktop-kDrive\extensions\windows\cfapi\kDriveExt.sln` and follow the next steps
 to create an environment variable for each certificate:
@@ -156,8 +156,8 @@ to create an environment variable for each certificate:
 - Go to the `Packaging` tab.
 - Click on `Choose Certificate...` then `Select from store`.
 - Copy the `AUMID` (located at the end of the `Family Name` field, after the underscore).
-- Create an environment variable named `KDC_VIRTUAL_AUMID` with the copied `AUMID` as value.
-- Repeat the same steps using the USB key certificate, in an environment variable named `KDC_PHYSICAL_AUMID`.
+- Create an environment variable named `KDC_DEBUG_AUMID` with the copied `AUMID` as value.
+- Repeat the same steps using the KSP certificate, in an environment variable named `KDC_RELEASE_AUMID`.
 ---
 
 ## Conan
@@ -262,7 +262,7 @@ powershell ./infomaniak-build-tools/conan/build_dependencies.ps1 [Debug|Release]
 
 > **:warning: Do NOT run this script from an environment where `vcvars` (e.g. `vcvarsall.bat` or `vcvars64.bat`) has already been activated when Conan needs to build dependencies into its cache. Some dependencies will fail to build if the MSVC environment variables are already set. This restriction only applies when packages are being compiled; subsequent runs against an already-populated cache are unaffected.**
 
-> **Note:** Currently only **xxHash**, **log4cplus**, **Qt**, **OpenSSL**, **zlib**, **Sentry** and **Poco** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
+> **Note:** Currently only **xxHash**, **log4cplus**, **Qt**, **OpenSSL**, **zlib**, **SQLite**, **Sentry** and **Poco** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
 
 ---
 # Build in Debug

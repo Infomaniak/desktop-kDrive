@@ -49,6 +49,8 @@
 #include <QScrollBar>
 #include <QPushButton>
 
+#include <utility>
+
 #define UPDATE_PROGRESS_DELAY 500
 
 namespace KDC {
@@ -607,7 +609,7 @@ void SynthesisPopover::getFirstSyncByPriority(const DriveDbId driveDbId, SyncDbI
                                   << SyncStatus::StopAsked << SyncStatus::Stopped << SyncStatus::Error << SyncStatus::Idle;
 
     found = false;
-    for (SyncStatus status: qAsConst(statusPriority)) {
+    for (const SyncStatus status: std::as_const(statusPriority)) {
         getFirstSyncWithStatus(status, driveDbId, syncDbId, found);
         if (found) {
             break;
@@ -1180,9 +1182,10 @@ void SynthesisPopover::retranslateUi() {
     _notImplementedLabel->setText(tr("Not implemented!"));
     _lockedAppupdateAppLabel->setText(tr("Update kDrive App"));
     _lockedAppLabel->setText(tr(
-        "This kDrive app version is not supported anymore. To access the latest features and enhancements, please update."));
-    _linkToStorePage->setText(tr("<a style= text-decoration:none; "
-        "href=\"https://www.infomaniak.com/en/apps/download-kdrive\">Click here to download manually</a>"));
+            "This kDrive app version is not supported anymore. To access the latest features and enhancements, please update."));
+    _linkToStorePage->setText(
+            tr("<a style= text-decoration:none; "
+               "href=\"https://www.infomaniak.com/en/apps/download-kdrive\">Click here to download manually</a>"));
 #ifdef Q_OS_LINUX
     _lockedAppUpdateManualLabel->setText(tr("Please download the latest version on the website."));
 #endif // Q_OS_LINUX

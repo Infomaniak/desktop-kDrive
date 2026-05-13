@@ -389,7 +389,8 @@ void AppServer::init() {
         }
 
         connect(OldCommServer::instance().get(), &OldCommServer::requestReceived, this, &AppServer::onRequestReceived);
-        connect(OldCommServer::instance().get(), &OldCommServer::restartClient, this, &AppServer::onRestartClientReceived);
+        connect(OldCommServer::instance().get(), &OldCommServer::clientDisconnected, this,
+                &AppServer::onClientDisconnectedReceived);
     }
 
     // Update users/accounts/drives info
@@ -585,9 +586,10 @@ void AppServer::reset() {
 }
 
 // This task can be long and block the GUI
-void AppServer::stopSyncTask(const SyncDbId syncDbId) {
+void AppServer::stopSyncTask(const SyncDbId syncDbId,
+                             const SyncPal::DbBehaviorAfterStop behavior /*= SyncPal::DbBehaviorAfterStop::Keep*/) {
     // Stop sync and remove it from syncPalMap
-    if (const auto exitInfo = stopSyncPal(syncDbId, SyncPal::PauseCaller::Sync, SyncPal::DbBehaviorAfterStop::Keep); !exitInfo) {
+    if (const auto exitInfo = stopSyncPal(syncDbId, SyncPal::PauseCaller::Sync, behavior); !exitInfo) {
         LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncDbId << " : " << exitInfo);
     }
 
@@ -639,9 +641,10 @@ void AppServer::stopAllVfs() {
     LOG_DEBUG(_logger, "Vfs(s) stopped");
 }
 
-void AppServer::stopAllSyncsTask(const std::vector<SyncDbId> &syncDbIdList) {
+void AppServer::stopAllSyncsTask(const std::vector<SyncDbId> &syncDbIdList,
+                                 const SyncPal::DbBehaviorAfterStop behavior /*= SyncPal::DbBehaviorAfterStop::Keep*/) {
     for (const auto syncDbId: syncDbIdList) {
-        stopSyncTask(syncDbId);
+        stopSyncTask(syncDbId, behavior);
     }
 }
 
@@ -1095,7 +1098,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             // Stop syncs for this user and remove them from syncPalMap.
             QTimer::singleShot(100, [this, userDbId, syncDbIdList]() {
-                AppServer::stopAllSyncsTask(syncDbIdList);
+                AppServer::stopAllSyncsTask(syncDbIdList, SyncPal::DbBehaviorAfterStop::Remove);
 
                 // Delete user from DB
                 const ExitCode exitCode = ServerRequests::deleteUser(userDbId);
@@ -1348,7 +1351,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             // Stop syncs for this drive and remove them from syncPalMap
             QTimer::singleShot(100, [this, driveDbId, syncDbIdList]() {
-                AppServer::stopAllSyncsTask(syncDbIdList);
+                AppServer::stopAllSyncsTask(syncDbIdList, SyncPal::DbBehaviorAfterStop::Remove);
                 AppServer::deleteDrive(driveDbId);
             });
 #if defined(KD_MACOS)
@@ -1598,7 +1601,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 // Create and start SyncPal
                 if (const auto exitInfo = initSyncPal(sync, blackList, !startPostponed, std::chrono::seconds(0), false, true);
                     !exitInfo) {
-                    stopSyncTask(syncInfo.dbId());
+                    stopSyncTask(syncInfo.dbId(), SyncPal::DbBehaviorAfterStop::Remove);
 
                     // Delete sync from DB
                     if (const ExitInfo exitInfo2 = ServerRequests::deleteSync(syncInfo.dbId()); !exitInfo2) {
@@ -1653,7 +1656,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             const auto syncDbId = static_cast<SyncDbId>(tmpSyncDbId);
             QTimer::singleShot(100, [this, syncDbId]() {
-                AppServer::stopSyncTask(syncDbId); // This task can be long, hence blocking, on Windows.
+                AppServer::stopSyncTask(
+                        syncDbId, SyncPal::DbBehaviorAfterStop::Remove); // This task can be long, hence blocking, on Windows.
 
                 // Delete sync from DB
                 deleteSync(syncDbId);
@@ -2606,7 +2610,7 @@ void AppServer::onCleanup() {
     cleanup();
 }
 
-void AppServer::onRestartClientReceived() {
+void AppServer::onClientDisconnectedReceived() {
     bool quit = false;
 #if NDEBUG
     if (clientHasCrashed()) {
@@ -2642,13 +2646,18 @@ void AppServer::onMessageReceivedFromAnotherProcess(const QString &message, QObj
     } else if (message == showSettingsMsg) {
         showSettings();
     } else if (message == restartClientMsg) {
+        const auto oldCommServerHasActiveConnection = useOldCommServer() && OldCommServer::instance()->hasActiveConnexion();
+        const auto newCommServerHasActiveConnection = useCommManager() && _commManager->hasActiveGuiConnection();
+        if (oldCommServerHasActiveConnection || newCommServerHasActiveConnection) {
+            LOG_INFO(_logger, "An active connexion with a client already exists, showing synthesis!");
+            showSynthesis();
+            return;
+        }
         _clientManuallyRestarted = true;
         if (!_clientProcess || _clientProcess->state() == QProcess::ProcessState::NotRunning) {
             if (!startClient()) {
                 LOG_ERROR(_logger, "Failed to start the client");
             }
-        } else if (_clientProcess->state() == QProcess::ProcessState::Running) {
-            showSynthesis();
         }
     } else {
         LOG_WARN(_logger, "Unknown message received from another kDrive process: '" << message.toStdString() << "'");
@@ -3688,7 +3697,7 @@ void AppServer::clearSyncNodes() {
     // Clear node tables
     for (const auto &sync: syncList) {
         SyncPath dbPath = sync.dbPath();
-        auto syncDbPtr = std::make_shared<SyncDb>(dbPath.string(), _theme->version());
+        auto syncDbPtr = std::make_shared<SyncDb>(dbPath.string());
         syncDbPtr->clearNodes();
     }
 }
@@ -3865,8 +3874,7 @@ bool AppServer::startClient() {
 
         IoError ioError = IoError::Success;
         bool exists = false;
-        if (!IoHelper::checkIfPathExists(QStr2Path(pathToExecutable), exists, ioError,
-                                         IoHelper::PathCheckOption::Insensitive) ||
+        if (!IoHelper::checkIfPathExists(QStr2Path(pathToExecutable), exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
             !exists || ioError != IoError::Success) {
             pathToExecutable.clear();
         }
@@ -3956,7 +3964,8 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, bool
         // Set callbacks
         syncPalMapIt = syncPalMap.find(sync.dbId());
         syncPalMapIt->second->setAddErrorCallback(std::bind_front(&AppServer::addError, this));
-        syncPalMapIt->second->setResolveSyncErrorsByExitCauseCallback(std::bind_front(&AppServer::resolveSyncErrorsByExitCause, this));
+        syncPalMapIt->second->setResolveSyncErrorsByExitCauseCallback(
+                std::bind_front(&AppServer::resolveSyncErrorsByExitCause, this));
         syncPalMapIt->second->setAddCompletedItemCallback(std::bind_front(&AppServer::addCompletedItem, this));
         syncPalMapIt->second->setFixConflictedFilesCompletedCallback(
                 std::bind_front(&AppServer::sendNodeFixConflictedFilesCompleted, this));
@@ -4411,12 +4420,7 @@ void AppServer::addError(const Error &error) const {
     }
     if (!errorAlreadyExists) errorList.push_back(errorCopy);
 
-
-    User user;
-    if (errorCopy.syncDbId() && ServerRequests::getUserFromSyncDbId(errorCopy.syncDbId(), user) != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ServerRequests::getUserFromSyncDbId");
-        return;
-    }
+    manageError(errorCopy, errorList, errorAlreadyExists);
 
     if (ServerRequests::isDisplayableError(errorCopy)) {
         // Notify the client
@@ -4429,75 +4433,132 @@ void AppServer::addError(const Error &error) const {
         ServerRequests::errorToErrorInfo(errorCopy, errorInfo);
         sendErrorAdded(errorInfo);
     }
+}
 
-    if (errorCopy.exitCode() == ExitCode::InvalidToken) {
-        // Manage invalid token error
-        LOG_DEBUG(Log::instance()->getLogger(), "Manage invalid token error");
-
-        if (!user.dbId()) {
-            LOG_WARN(Log::instance()->getLogger(), "Invalid error");
-            return;
-        }
-
-        // Update user
-        user.setKeychainKey(std::string());
-        bool found = false;
-        if (!ParmsDb::instance()->updateUser(user, found)) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateUser");
-            return;
-        }
-        if (!found) {
-            LOG_WARN(Log::instance()->getLogger(), "User not found with dbId=" << user.dbId());
-            return;
-        }
-
-        UserInfo userInfo;
-        ServerRequests::userToUserInfo(user, userInfo);
-        sendUserUpdated(userInfo);
-    } else if (errorCopy.exitCode() == ExitCode::NetworkError && errorCopy.exitCause() == ExitCause::SocketsDefuncted) {
-        // Manage sockets defuncted error
-        LOG_WARN(Log::instance()->getLogger(), "Manage sockets defuncted error");
-
-        sentry::Handler::captureMessage(sentry::Level::Warning, "AppServer::addError", "Sockets defuncted error");
-
-        // Decrease upload session max parallel jobs
-        ParametersCache::instance()->decreaseUploadSessionParallelThreads();
-
-        // Decrease JobManager pool capacity
-        SyncJobManagerSingleton::instance()->decreasePoolCapacity();
-    } else if (errorCopy.exitCode() == ExitCode::SystemError && errorCopy.exitCause() == ExitCause::FileAccessError) {
-        // Remove child errors
-        std::unordered_set<int64_t> toBeRemovedErrorIds;
-        for (const Error &parentError: errorList) {
-            for (const Error &childError: errorList) {
-                if (CommonUtility::isDescendantOrEqual(childError.path(), parentError.path()) &&
-                    childError.dbId() != parentError.dbId()) {
-                    toBeRemovedErrorIds.insert(childError.dbId());
-                }
-            }
-        }
-        for (auto errorId: toBeRemovedErrorIds) {
-            bool found = false;
-            if (!ParmsDb::instance()->deleteError(errorId, found)) {
-                LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteError");
-                return;
-            }
-            if (!found) {
-                LOG_WARN(Log::instance()->getLogger(), "Error not found in Error table for dbId=" << errorId);
-                return;
-            }
-            sendErrorRemoved(errorId);
-        }
-        if (!toBeRemovedErrorIds.empty()) sendErrorsCleared(errorCopy.syncDbId());
-    } else if (_updateManager && errorCopy.exitCode() == ExitCode::UpdateRequired) {
-        _updateManager->updater()->unskipVersion();
+void AppServer::manageError(const Error &error, std::vector<Error> &errorList, bool errorAlreadyExists) const {
+    User user;
+    Account account;
+    Drive drive;
+    Sync sync;
+    if (error.syncDbId() &&
+        ServerRequests::getDbStructsFromSyncDbId(error.syncDbId(), user, account, drive, sync) != ExitCode::Ok) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ServerRequests::getDbStructsFromSyncDbId");
+        return;
     }
 
-    if (!ServerRequests::isAutoResolvedError(errorCopy) && !errorAlreadyExists) {
+    if (error.exitCode() == ExitCode::InvalidToken) {
+        manageInvalidTokenError(user);
+    } else if (error.exitCode() == ExitCode::BackError && error.exitCause() == ExitCause::DriveAccessError) {
+        manageDriveAccessError(drive);
+    } else if (error.exitCode() == ExitCode::NetworkError && error.exitCause() == ExitCause::SocketsDefuncted) {
+        manageSocketsDefunctedError();
+    } else if (error.exitCode() == ExitCode::SystemError && error.exitCause() == ExitCause::FileAccessError) {
+        manageFileAccessErrorError(errorList);
+    } else if (_updateManager && error.exitCode() == ExitCode::UpdateRequired) {
+        manageUpdateRequiredErrorError();
+    }
+
+    if (!ServerRequests::isAutoResolvedError(error) && !errorAlreadyExists) {
         // Send error to sentry only for technical errors
         SentryUser sentryUser(user.email(), user.name(), std::to_string(user.userId()));
         sentry::Handler::captureMessage(sentry::Level::Warning, "AppServer::addError", error.errorString(), sentryUser);
     }
+}
+
+void AppServer::manageDriveAccessError(Drive &drive) const {
+    // Manage drive access error
+    LOG_DEBUG(Log::instance()->getLogger(), "Manage drive access error");
+
+    if (!drive.dbId()) {
+        LOG_WARN(Log::instance()->getLogger(), "Invalid error");
+        return;
+    }
+
+    // Update drive
+    drive.setAccessDenied(true);
+    bool found = false;
+    if (!ParmsDb::instance()->updateDrive(drive, found)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateDrive");
+        return;
+    }
+    if (!found) {
+        LOG_WARN(Log::instance()->getLogger(), "Drive not found with dbId=" << drive.dbId());
+        return;
+    }
+
+    DriveInfo driveInfo;
+    ServerRequests::driveToDriveInfo(drive, driveInfo);
+    sendDriveUpdated(driveInfo);
+}
+
+void AppServer::manageInvalidTokenError(User &user) const {
+    // Manage invalid token error
+    LOG_DEBUG(Log::instance()->getLogger(), "Manage invalid token error");
+
+    if (!user.dbId()) {
+        LOG_WARN(Log::instance()->getLogger(), "Invalid error");
+        return;
+    }
+
+    // Update user
+    user.setKeychainKey(std::string());
+    bool found = false;
+    if (!ParmsDb::instance()->updateUser(user, found)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateUser");
+        return;
+    }
+    if (!found) {
+        LOG_WARN(Log::instance()->getLogger(), "User not found with dbId=" << user.dbId());
+        return;
+    }
+
+    UserInfo userInfo;
+    ServerRequests::userToUserInfo(user, userInfo);
+    sendUserUpdated(userInfo);
+}
+
+void AppServer::manageSocketsDefunctedError() const {
+    // Manage sockets defuncted error
+    LOG_WARN(Log::instance()->getLogger(), "Manage sockets defuncted error");
+
+    sentry::Handler::captureMessage(sentry::Level::Warning, "AppServer::addError", "Sockets defuncted error");
+
+    // Decrease upload session max parallel jobs
+    ParametersCache::instance()->decreaseUploadSessionParallelThreads();
+
+    // Decrease JobManager pool capacity
+    SyncJobManagerSingleton::instance()->decreasePoolCapacity();
+}
+
+void AppServer::manageFileAccessErrorError(const std::vector<Error> &errorList) const {
+    // Remove child errors
+    std::unordered_set<int64_t> toBeRemovedErrorIds;
+    for (const Error &parentError: errorList) {
+        for (const Error &childError: errorList) {
+            if (CommonUtility::isDescendantOrEqual(childError.path(), parentError.path()) &&
+                childError.dbId() != parentError.dbId()) {
+                toBeRemovedErrorIds.insert(childError.dbId());
+            }
+        }
+    }
+    for (auto errorId: toBeRemovedErrorIds) {
+        bool found = false;
+        if (!ParmsDb::instance()->deleteError(errorId, found)) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteError");
+            return;
+        }
+        if (!found) {
+            LOG_WARN(Log::instance()->getLogger(), "Error not found in Error table for dbId=" << errorId);
+            return;
+        }
+        sendErrorRemoved(errorId);
+    }
+
+    if (!toBeRemovedErrorIds.empty()) sendErrorsCleared(errorList[0].syncDbId());
+}
+
+void AppServer::manageUpdateRequiredErrorError() const {
+    _updateManager->updater()->unskipVersion();
 }
 
 void AppServer::resolveItemErrors(const SyncDbId syncDbId, const SyncFileItem &item) const {

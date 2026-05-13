@@ -1698,6 +1698,29 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
     }
 }
 
+void TestNetworkJobs::testGetInfoDriveOn401Error() {
+    class GetInfoDriveJobMock final : public GetInfoDriveJob {
+        public:
+            explicit GetInfoDriveJobMock(const DriveDbId driveDbId, const ApiToken &apiToken) :
+                GetInfoDriveJob(driveDbId),
+                _apiToken(apiToken) {}
+
+            [[nodiscard]] Poco::Net::HTTPResponse httpResponse() const override {
+                return Poco::Net::HTTPResponse(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
+            }
+            ApiToken loadApiToken() override { return _apiToken; }
+
+        private:
+            ApiToken _apiToken;
+    };
+
+    GetInfoDriveJobMock job(_driveDbId, _apiToken);
+    const auto exitInfo = job.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::BackError, exitInfo.code());
+    CPPUNIT_ASSERT_EQUAL(ExitCause::DriveAccessError, exitInfo.cause());
+    CPPUNIT_ASSERT_EQUAL(0, job.trials());
+}
+
 void TestNetworkJobs::testExists() {
     const NodeId dummyId("1234567890");
     const auto ids = {pictureDirRemoteId, picture1RemoteId, dummyId};

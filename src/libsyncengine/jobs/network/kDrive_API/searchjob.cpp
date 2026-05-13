@@ -27,8 +27,8 @@
 
 namespace KDC {
 
-static constexpr auto privateFolder = "Private/";
-static constexpr auto sharedFolder = "Shared/";
+static constexpr auto privateFolder = Str("/Private/");
+static constexpr auto sharedFolder = Str("/Shared/");
 
 SearchJob::SearchJob(const DriveDbId driveDbId, const SyncDbId syncDbId, const std::string &searchString,
                      const std::string &cursorInput /*= {}*/) :
@@ -126,10 +126,11 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
             return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
 
-        std::string path;
-        if (!JsonParserUtility::extractValue(obj, pathKey, path)) {
+        SyncName pathStr;
+        if (!JsonParserUtility::extractValue(obj, pathKey, pathStr)) {
             return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
+        SyncPath path(pathStr);
 
         SyncTime modifiedTime = 0;
         if (!JsonParserUtility::extractValue(obj, lastModifiedAtKey, modifiedTime, false)) {
@@ -144,14 +145,15 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
         bool isAvailableLocally = false;
 
         if (!_syncRootPath.empty()) {
-            if (path.starts_with('/') || path.starts_with('\\')) {
-                path.erase(0, 1);
+            if (path.native().starts_with(privateFolder)) {
+                path = path.native().substr(
+                        std::char_traits<std::remove_cvref_t<decltype(*privateFolder)>>::length(privateFolder));
+            } else if (path.native().starts_with(sharedFolder)) {
+                path = path.native().substr(std::char_traits<std::remove_cvref_t<decltype(*sharedFolder)>>::length(sharedFolder));
             }
 
-            if (path.starts_with(privateFolder)) {
-                path.erase(0, std::char_traits<char>::length(privateFolder));
-            } else if (path.starts_with(sharedFolder)) {
-                path.erase(0, std::char_traits<char>::length(sharedFolder));
+            if (path.native().starts_with(Str("/")) || path.native().starts_with(Str("\\"))) {
+                path = path.relative_path();
             }
 
             SyncPath absolutePath = _syncRootPath / path;

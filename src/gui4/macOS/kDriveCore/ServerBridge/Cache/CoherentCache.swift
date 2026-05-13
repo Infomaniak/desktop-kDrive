@@ -74,6 +74,7 @@ public protocol CoherentCache: Sendable {
     // MARK: - Errors
 
     func addOrUpdateError(_ error: ErrorInfo) async throws
+    func updateErrors(_ errors: [ErrorInfo]) async throws
     func removeError(_ errorDbId: Int32) async throws
     func clearErrors() async
 

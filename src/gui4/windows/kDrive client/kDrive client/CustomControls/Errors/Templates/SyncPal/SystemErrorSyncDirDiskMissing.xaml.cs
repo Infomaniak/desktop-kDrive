@@ -15,11 +15,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
 using System;
-using System.IO;
 
 namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
 {
@@ -27,10 +28,12 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
         Levels = new[] { ErrorLevel.SyncPal },
         ExitCodes = new[] { ExitCode.SystemError },
         ExitCauses = new[] { ExitCause.SyncDirDiskMissing },
-        NodeTypes = new[] { NodeType.File, NodeType.Directory, NodeType.Unknown }
+        NodeTypes = new[] { NodeType.File, NodeType.Directory, NodeType.Unknown },
+        ShowInSystemTray = true
     )]
     public sealed partial class SystemErrorSyncDirDiskMissing : UserControl
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private Error Error { get; init; }
         public SystemErrorSyncDirDiskMissing(Error error)
         {
@@ -57,35 +60,20 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
                 PrimaryButtonText = Localizer.Instance.GetString("buttonRestartSync"),
                 Content = new SystemErrorSyncDirDiskMissingErrorDialog(Error) { XamlRoot = xamlRoot }
             };
-
+            _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageSyncDirDiskMissing);
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
                 if (Error.Sync is null)
                 {
-                    Logger.Log(Logger.Level.Error, "Error.Sync is null");
+                    Logger.Log(Logger.Level.Error, "Error.Sync is null in SystemErrorSyncDirDiskMissing. Cannot proceed with action click.");
                     Utility.ShowUnexpectedErrorTeachingTip();
                     return;
                 }
-
-                string? absolutPath = Path.GetDirectoryName(Error.Sync.LocalPath) ?? Error.Sync.LocalPath;
-                if (string.IsNullOrEmpty(absolutPath))
+                _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.SyncDirDiskMissingRestartSync);
+                if (!await Error.Sync.Start())
                 {
-                    Utility.ShowUnexpectedErrorTeachingTip();
-                }
-                else
-                {
-                    if (Error.Sync is null)
-                    {
-                        Logger.Log(Logger.Level.Error, "Error.Sync is null in SystemErrorSyncDirDiskMissing. Cannot proceed with action click.");
-                        Utility.ShowUnexpectedErrorTeachingTip();
-                        return;
-                    }
-
-                    if (!await Error.Sync.Start())
-                    {
-                        Logger.Log(Logger.Level.Error, "Failed to restart sync in SystemErrorSyncDirDiskMissing.");
-                        Utility.ShowTeachingTip(Localizer.Instance.GetString("errDialogSystemSyncDirDiskMissingTitle"));
-                    }
+                    Logger.Log(Logger.Level.Error, "Failed to restart sync in SystemErrorSyncDirDiskMissing.");
+                    Utility.ShowTeachingTip(Localizer.Instance.GetString("errDialogSystemSyncDirDiskMissingTitle"));
                 }
             }
         }

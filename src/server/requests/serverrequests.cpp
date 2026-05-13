@@ -1275,10 +1275,10 @@ bool ServerRequests::isAutoResolvedError(const Error &error) {
     return autoResolved;
 }
 
-ExitCode ServerRequests::getUserFromSyncDbId(const SyncDbId syncDbId, User &user) {
+ExitCode ServerRequests::getDbStructsFromSyncDbId(SyncDbId syncDbId, User &user, Account &account, Drive &drive, Sync &sync) {
     // Get User
     bool found = false;
-    Sync sync;
+
     if (!ParmsDb::instance()->selectSync(syncDbId, sync, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectSync");
         return ExitCode::DbError;
@@ -1288,7 +1288,6 @@ ExitCode ServerRequests::getUserFromSyncDbId(const SyncDbId syncDbId, User &user
         return ExitCode::DataError;
     }
 
-    Drive drive;
     if (!ParmsDb::instance()->selectDrive(sync.driveDbId(), drive, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectDrive");
         return ExitCode::DbError;
@@ -1298,8 +1297,7 @@ ExitCode ServerRequests::getUserFromSyncDbId(const SyncDbId syncDbId, User &user
         return ExitCode::DataError;
     }
 
-    Account acc;
-    if (!ParmsDb::instance()->selectAccount(drive.accountDbId(), acc, found)) {
+    if (!ParmsDb::instance()->selectAccount(drive.accountDbId(), account, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAccount");
         return ExitCode::DbError;
     }
@@ -1308,12 +1306,12 @@ ExitCode ServerRequests::getUserFromSyncDbId(const SyncDbId syncDbId, User &user
         return ExitCode::DataError;
     }
 
-    if (!ParmsDb::instance()->selectUser(acc.userDbId(), user, found)) {
+    if (!ParmsDb::instance()->selectUser(account.userDbId(), user, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectUser");
         return ExitCode::DbError;
     }
     if (!found) {
-        LOG_WARN(Log::instance()->getLogger(), "User not found with dbId=" << acc.userDbId());
+        LOG_WARN(Log::instance()->getLogger(), "User not found with dbId=" << account.userDbId());
         return ExitCode::DataError;
     }
 

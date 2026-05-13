@@ -77,6 +77,14 @@ void TestUtility::extractIntFromStrVersion() {
         CPPUNIT_ASSERT((std::vector<uint32_t>{155, 75, 0, 20250221} == versionNumberComponents));
     }
 
+    {
+        const std::string versionString = "155.75.0 (build 1)";
+        std::vector<uint32_t> versionNumberComponents;
+
+        CommonUtility::extractIntFromStrVersion(versionString, versionNumberComponents);
+        CPPUNIT_ASSERT((std::vector<uint32_t>{155, 75, 0, 1} == versionNumberComponents));
+    }
+
     // Invalid version string
     {
         const std::string versionString = ".0";
@@ -121,6 +129,8 @@ void TestUtility::testIsVersionLower() {
     CPPUNIT_ASSERT(!CommonUtility::isVersionLower("3.5.8", "2.6.7"));
     CPPUNIT_ASSERT(!CommonUtility::isVersionLower("3.5.8", "2.6.9"));
 
+    CPPUNIT_ASSERT(CommonUtility::isVersionLower("1.2.3.4", "1.2.3.5"));
+    CPPUNIT_ASSERT(!CommonUtility::isVersionLower("1.2.3.5", "1.2.3.4"));
 
     // Double digit major, minor or patch versions
     CPPUNIT_ASSERT(CommonUtility::isVersionLower("1.0.0", "55.0.0"));
@@ -142,6 +152,10 @@ void TestUtility::testIsVersionLower() {
     CPPUNIT_ASSERT(CommonUtility::isVersionLower("255.85.0 (build 1)", "255.85.0 (build 20250222)"));
     CPPUNIT_ASSERT(CommonUtility::isVersionLower("255.85.0 (build 1)", "255.85.0 (build 2)"));
     CPPUNIT_ASSERT(!CommonUtility::isVersionLower("255.85.0 (build 2)", "255.85.0 (build 1)"));
+    CPPUNIT_ASSERT(CommonUtility::isVersionLower("1.2.3 (build 4)", "1.2.3.5"));
+    CPPUNIT_ASSERT(!CommonUtility::isVersionLower("1.2.3.5", "1.2.3 (build 4)"));
+    CPPUNIT_ASSERT(!CommonUtility::isVersionLower("1.2.3.4", "1.2.3 (build 4)"));
+    CPPUNIT_ASSERT(!CommonUtility::isVersionLower("1.2.3 (build 4)", "1.2.3.4"));
 
     // With an invalid version
     CPPUNIT_ASSERT(CommonUtility::isVersionLower(".155.75.0", "156.75.0"));
@@ -462,7 +476,7 @@ void TestUtility::testGenerateRandomNumber() {
     bool allValuesAreTheSame = true;
     for (auto i = 0; i < 100; i++) {
         const auto val = CommonUtility::generateRandomNumber(1, 100);
-        if (val != sequence[i]) {
+        if (val != sequence[static_cast<size_t>(i)]) {
             allValuesAreTheSame = false;
             break;
         }
@@ -485,6 +499,7 @@ void TestUtility::testLanguageCode() {
     CPPUNIT_ASSERT_EQUAL(std::string("de"), CommonUtility::languageCode(Language::German).toStdString());
     CPPUNIT_ASSERT_EQUAL(std::string("es"), CommonUtility::languageCode(Language::Spanish).toStdString());
     CPPUNIT_ASSERT_EQUAL(std::string("it"), CommonUtility::languageCode(Language::Italian).toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("nl"), CommonUtility::languageCode(Language::Dutch).toStdString());
     CPPUNIT_ASSERT_EQUAL(std::string("sv"), CommonUtility::languageCode(Language::Swedish).toStdString());
     CPPUNIT_ASSERT_EQUAL(std::string("pt"), CommonUtility::languageCode(Language::Portuguese).toStdString());
     CPPUNIT_ASSERT_EQUAL(std::string("pl"), CommonUtility::languageCode(Language::Polish).toStdString());
@@ -506,6 +521,7 @@ void TestUtility::testIsSupportedLanguage() {
     CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("de"));
     CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("es"));
     CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("it"));
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("nl"));
     CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("sv"));
     CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("pt"));
     CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("pl"));
@@ -516,6 +532,25 @@ void TestUtility::testIsSupportedLanguage() {
     CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isSupportedLanguage("ita"));
     CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isSupportedLanguage("zc"));
     CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isSupportedLanguage(""));
+}
+
+void TestUtility::testStrToLanguage() {
+    CPPUNIT_ASSERT_EQUAL(Language::English, CommonUtility::strToLanguage("en"));
+    CPPUNIT_ASSERT_EQUAL(Language::French, CommonUtility::strToLanguage("fr"));
+    CPPUNIT_ASSERT_EQUAL(Language::German, CommonUtility::strToLanguage("de"));
+    CPPUNIT_ASSERT_EQUAL(Language::Spanish, CommonUtility::strToLanguage("es"));
+    CPPUNIT_ASSERT_EQUAL(Language::Italian, CommonUtility::strToLanguage("it"));
+    CPPUNIT_ASSERT_EQUAL(Language::Dutch, CommonUtility::strToLanguage("nl"));
+    CPPUNIT_ASSERT_EQUAL(Language::Swedish, CommonUtility::strToLanguage("sv"));
+    CPPUNIT_ASSERT_EQUAL(Language::Portuguese, CommonUtility::strToLanguage("pt"));
+    CPPUNIT_ASSERT_EQUAL(Language::Polish, CommonUtility::strToLanguage("pl"));
+    CPPUNIT_ASSERT_EQUAL(Language::Norwegian, CommonUtility::strToLanguage("nb"));
+    CPPUNIT_ASSERT_EQUAL(Language::Norwegian, CommonUtility::strToLanguage("no"));
+    CPPUNIT_ASSERT_EQUAL(Language::Finnish, CommonUtility::strToLanguage("fi"));
+    CPPUNIT_ASSERT_EQUAL(Language::Danish, CommonUtility::strToLanguage("da"));
+    CPPUNIT_ASSERT_EQUAL(Language::Greek, CommonUtility::strToLanguage("el"));
+    CPPUNIT_ASSERT_EQUAL(Language::Default, CommonUtility::strToLanguage("xx"));
+    CPPUNIT_ASSERT_EQUAL(Language::Default, CommonUtility::strToLanguage(""));
 }
 
 #if defined(KD_WINDOWS)

@@ -16,22 +16,34 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.Types;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Navigation;
 
 namespace Infomaniak.kDrive.Pages
 {
     public sealed partial class DriveAccessDeniedPage : SpecialErroBasePage
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         public DriveAccessDeniedPage() : base([SyncErrorStates.AccessDenied])
         {
             Logger.Log(Logger.Level.Info, "Navigated to DriveAccessDeniedPage - Initializing DriveAccessDeniedPage components");
             InitializeComponent();
             Logger.Log(Logger.Level.Debug, "DriveAccessDeniedPage components initialized");
         }
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+            _analyticsService.TrackPageView(Analytics.Keys.Category.DriveAccessDeniedPage);
+        }
+
         private async void RetryButton_Click(object sender, RoutedEventArgs e)
         {
             Logger.Log(Logger.Level.Info, "Retry button clicked - Restarting sync");
+            _analyticsService.TrackClick(Analytics.Keys.Category.DriveAccessDeniedPage, Analytics.Keys.EventName.StartSync);
             await RestartSync();
         }
     }

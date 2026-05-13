@@ -107,15 +107,6 @@ namespace Infomaniak.kDrive.Types
         Unknown
     };
 
-    public enum Language
-    {
-        SystemDefault = 0,
-        FR,
-        IT,
-        DE,
-        ES,
-        EN
-    };
     public enum OAuth2State
     {
         None,

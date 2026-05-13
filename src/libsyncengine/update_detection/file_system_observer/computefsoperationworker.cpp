@@ -31,8 +31,7 @@ namespace KDC {
 ComputeFSOperationWorker::ComputeFSOperationWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                    const std::string &shortName) :
     ISyncWorker(syncPal, name, shortName),
-    _syncDbReadOnlyCache(syncPal->syncDb()->cache()) {
-}
+    _syncDbReadOnlyCache(syncPal->syncDb()->cache()) {}
 
 ComputeFSOperationWorker::ComputeFSOperationWorker(SyncDbReadOnlyCache &testSyncDbReadOnlyCache, const std::string &name,
                                                    const std::string &shortName) :
@@ -801,7 +800,7 @@ ExitInfo ComputeFSOperationWorker::checkIfOkToDelete(const ReplicaSide side, con
                                                      bool &isExcluded) {
     if (side != ReplicaSide::Local) return ExitCode::Ok;
 
-    if (!_syncPal->snapshot(ReplicaSide::Local)->itemId(relativePath).empty()) {
+    if (NodeId existingId; _syncPal->snapshot(ReplicaSide::Local)->getItemId(relativePath, existingId) && !existingId.empty()) {
         // Item with the same path but different ID exist
         // This is an Edit operation (Delete-Create)
         return ExitCode::Ok;

@@ -25,6 +25,8 @@ namespace Infomaniak.kDrive.OnBoarding
 {
     public sealed partial class OnBoardingWindow : Window
     {
+        private const int _minimumWidth = 900;
+        private const int _minimumHeight = 600;
         private bool _isInitialized = false;
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         private readonly ViewModels.Onboarding _onBoardingViewModel = new(App.ServiceProvider.GetRequiredService<ServerCommunication.Interfaces.IServerCommService>());
@@ -45,9 +47,9 @@ namespace Infomaniak.kDrive.OnBoarding
         {
             InitializeComponent();
             this.ExtendsContentIntoTitleBar = true;  // enable custom titlebar
-            
+
             this.SetTitleBar(AppTitleBar);
-            Utility.SetWindowProperties(this, 900, 600, false);
+            Utility.SetWindowProperties(this, _minimumWidth, _minimumHeight, Utility.WindowResizeOptions.AllowMinimize | Utility.WindowResizeOptions.AllowResize); // Set initial size and allow resizing
             LottiePlayer.ActualThemeChanged += LottiePlayer_ActualThemeChanged;
             UpdateLottieSource(_lottieRessourceKey, 130, 1);
             Closed += OnBoardingWindow_Closed;

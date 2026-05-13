@@ -67,11 +67,13 @@ void TestSyncPal::setUp() {
     _localPath = _localTempDir.path().string();
     _remotePath = testVariables.remotePath;
     Sync sync(1, drive.dbId(), _localPath, "", _remotePath);
+    const auto syncDbPath = MockDb::makeDbName(userId, accountId, driveId, sync.dbId());
+    sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(sync);
 
     // Setup proxy
     Parameters parameters;
-    bool found;
+    bool found = false;
     if (ParmsDb::instance()->selectParameters(parameters, found) && found) {
         Proxy::instance(parameters.proxyConfig());
     }

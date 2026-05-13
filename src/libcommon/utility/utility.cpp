@@ -96,6 +96,7 @@ const QString CommonUtility::frenchCode = "fr";
 const QString CommonUtility::germanCode = "de";
 const QString CommonUtility::spanishCode = "es";
 const QString CommonUtility::italianCode = "it";
+const QString CommonUtility::dutchCode = "nl";
 const QString CommonUtility::swedishCode = "sv";
 const QString CommonUtility::portugueseCode = "pt";
 const QString CommonUtility::polishCode = "pl";
@@ -220,19 +221,20 @@ uint64_t CommonUtility::versionBuild() {
     return KDRIVE_VERSION_BUILD;
 }
 
-static std::unordered_map<std::string, std::string> rootFsTypeMap;
-std::string getRootFsType(const SyncPath &targetPath) {
+std::string CommonUtility::getRootFsType(const SyncPath &targetPath) {
+    static std::unordered_map<std::string, std::string> rootFsTypeMap;
+
     auto it = rootFsTypeMap.find(targetPath.root_name().string());
     if (it == rootFsTypeMap.end()) {
         const std::string fsType = CommonUtility::fileSystemName(targetPath);
         const auto [it2, inserted] = rootFsTypeMap.try_emplace(targetPath.root_name().string(), CommonUtility::toUpper(fsType));
-        if (!inserted) {
-            return {};
-        }
+        if (!inserted) return {};
+
         it = it2;
     }
     return it->second;
 }
+
 
 bool CommonUtility::isNTFS(const SyncPath &targetPath) {
     static const std::string ntfs("NTFS");
@@ -249,7 +251,7 @@ bool CommonUtility::isFAT(const SyncPath &targetPath) {
     return contains(getRootFsType(targetPath), fat);
 }
 
-bool CommonUtility::isSyncCompatible(const SyncPath &targetPath) {
+bool CommonUtility::isSyncCompatible([[maybe_unused]] const SyncPath &targetPath) {
 #if defined(KD_MACOS)
     // Tested OK: APFS, HFS+, exFAT
     // Tested KO: FAT32
@@ -263,7 +265,7 @@ bool CommonUtility::isSyncCompatible(const SyncPath &targetPath) {
 #endif
 }
 
-bool CommonUtility::isLiteSyncCompatible(const SyncPath &targetPath) {
+bool CommonUtility::isLiteSyncCompatible([[maybe_unused]] const SyncPath &targetPath) {
     // Only File Systems supporting sparse files are compatible
 #if defined(KD_MACOS)
     return CommonUtility::isAPFS(targetPath);
@@ -272,71 +274,6 @@ bool CommonUtility::isLiteSyncCompatible(const SyncPath &targetPath) {
 #else
     return false;
 #endif
-}
-
-std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {
-#if defined(KD_MACOS)
-    struct statfs stat;
-    if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
-        return stat.f_fstypename;
-    }
-#elif defined(KD_WINDOWS)
-    TCHAR szFileSystemName[MAX_PATH + 1];
-    DWORD dwMaxFileNameLength = 0;
-    DWORD dwFileSystemFlags = 0;
-
-    if (GetVolumeInformation(targetPath.root_path().c_str(), NULL, 0, NULL, &dwMaxFileNameLength, &dwFileSystemFlags,
-                             szFileSystemName, sizeof(szFileSystemName)) == TRUE) {
-        return ws2s(szFileSystemName);
-    } else {
-        // Not all the requested information is retrieved
-        DWORD dwError = GetLastError();
-        std::wstringstream message;
-        message << L"Error in GetVolumeInformation for " << Path2WStr(targetPath.root_name()) << L" ("
-                << utility_base::getErrorMessage(dwError) << L")";
-        sentry::Handler::captureMessage(sentry::Level::Warning, "CommonUtility::fileSystemName", ws2s(message.str()));
-
-        // !!! File system name can be OK or not !!!
-        return ws2s(szFileSystemName);
-    }
-#elif defined(KD_LINUX)
-    struct statfs stat;
-    if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
-        const auto formatFsName = [](const std::string &prettyName, long fsCode) {
-            std::stringstream stream;
-            stream << std::hex << fsCode;
-            return prettyName + " | 0x" + stream.str();
-        };
-        switch (stat.f_type) {
-            case 0x137d:
-                return formatFsName("EXT(1)", stat.f_type);
-            case 0xef51:
-                return formatFsName("EXT2", stat.f_type);
-            case 0xef53:
-                return formatFsName("EXT2/3/4", stat.f_type);
-            case 0xbad1dea:
-            case 0xa501fcf5:
-            case 0x58465342:
-                return formatFsName("XFS", stat.f_type);
-            case 0x9123683e:
-            case 0x73727279:
-                return formatFsName("BTRFS", stat.f_type);
-            case 0xf15f:
-                return formatFsName("ECRYPTFS", stat.f_type);
-            case 0x4244:
-                return formatFsName("HFS", stat.f_type);
-            case 0x5346544e:
-                return formatFsName("NTFS", stat.f_type);
-            case 0x858458f6:
-                return formatFsName("RAMFS", stat.f_type);
-            default:
-                return formatFsName("Unknown-see corresponding entry at https://man7.org/linux/man-pages/man2/statfs.2.html",
-                                    stat.f_type);
-        }
-    }
-#endif
-
-    return "UNIDENTIFIED";
 }
 
 void CommonUtility::resetTranslations() {
@@ -713,6 +650,38 @@ bool CommonUtility::compressFile(const QString &originalName, const QString &tar
 #endif
 }
 
+Language CommonUtility::strToLanguage(const QString &lang) {
+    if (lang == "en") {
+        return Language::English;
+    } else if (lang == "fr") {
+        return Language::French;
+    } else if (lang == "de") {
+        return Language::German;
+    } else if (lang == "es") {
+        return Language::Spanish;
+    } else if (lang == "it") {
+        return Language::Italian;
+    } else if (lang == "sv") {
+        return Language::Swedish;
+    } else if (lang == "nl") {
+        return Language::Dutch;
+    } else if (lang == "pt") {
+        return Language::Portuguese;
+    } else if (lang == "pl") {
+        return Language::Polish;
+    } else if (lang == "nb" || lang == "no") {
+        return Language::Norwegian;
+    } else if (lang == "fi") {
+        return Language::Finnish;
+    } else if (lang == "da") {
+        return Language::Danish;
+    } else if (lang == "el") {
+        return Language::Greek;
+    } else {
+        return Language::Default;
+    }
+}
+
 QString applicationTrPath() {
 #if defined(KD_MACOS)
     QString devTrPath = QCoreApplication::applicationDirPath() + QString::fromLatin1("/../../../../src/gui/");
@@ -811,9 +780,9 @@ bool CommonUtility::languageCodeIsEnglish(const QString &languageCode) {
 }
 
 bool CommonUtility::isSupportedLanguage(const QString &languageCode) {
-    static const std::unordered_set<QString> supportedLanguages = {englishCode,   frenchCode,  germanCode,     italianCode,
-                                                                   spanishCode,   swedishCode, portugueseCode, polishCode,
-                                                                   norwegianCode, finnishCode, danishCode,     greekCode};
+    static const std::unordered_set<QString> supportedLanguages = {
+            englishCode,    frenchCode, germanCode,    italianCode, spanishCode, dutchCode, swedishCode,
+            portugueseCode, polishCode, norwegianCode, finnishCode, danishCode,  greekCode};
     return supportedLanguages.contains(languageCode);
 }
 
@@ -833,6 +802,8 @@ QString CommonUtility::languageCode(const Language language) {
             return italianCode;
         case Language::Spanish:
             return spanishCode;
+        case Language::Dutch:
+            return dutchCode;
         case Language::Swedish:
             return swedishCode;
         case Language::Portuguese:
@@ -1131,6 +1102,15 @@ std::string CommonUtility::envVarValue(const std::string &name, bool &isSet) {
 #endif
 
     return std::string();
+}
+
+bool CommonUtility::logToConsoleEnabled() {
+#ifndef NDEBUG
+    static const bool value = CommonUtility::envVarValue("KDRIVE_ENABLE_LOG_TO_CONSOLE") == "1";
+    return value;
+#else
+    return false;
+#endif
 }
 
 int CommonUtility::setenv(const char *const name, const char *const value, const int overwrite) {

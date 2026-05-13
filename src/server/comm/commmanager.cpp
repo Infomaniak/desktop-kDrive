@@ -298,6 +298,11 @@ void CommManager::sendGuiSignal(const std::shared_ptr<AbstractGuiJob> signal) {
     GuiJobManagerSingleton::instance()->queueAsyncJob(signal);
 }
 
+bool CommManager::hasActiveGuiConnection() {
+    const std::scoped_lock lock(_mutex);
+    return _guiCommServer && _guiCommServer->hasActiveConnexion();
+}
+
 void CommManager::onNewGuiConnection() {
     const std::scoped_lock lock(_mutex);
     if (!_guiCommServer) return;
@@ -328,5 +333,9 @@ void CommManager::onGuiQueryReceived(std::shared_ptr<AbstractCommChannel> channe
 
 void CommManager::onLostGuiConnection(std::shared_ptr<AbstractCommChannel> channel) {
     LOG_INFO(Log::instance()->getLogger(), "Lost gui connection: sender=" << channel->id());
+    if (_guiCommServer->connections().empty()) {
+        LOG_INFO(Log::instance()->getLogger(), "No more GUI connections");
+        _appServer.handleClientDisconnection();
+    }
 }
 } // namespace KDC

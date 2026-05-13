@@ -327,4 +327,52 @@ bool Utility::registerLoginRedirection() {
     return res;
 }
 
+ExitInfo Utility::getFileSystemName(const std::shared_ptr<CacheDirectory> cacheDirectory, std::string &fileSystemName) {
+    fileSystemName = {};
+
+    if (!cacheDirectory) {
+        LOG_WARN(logger(), "Cache directory not provided!");
+        return {ExitCode::SystemError, ExitCause::InvalidArgument};
+    }
+
+    SyncPath localSyncPath;
+    if (const auto exitInfo = cacheDirectory->path(localSyncPath); !exitInfo) return exitInfo;
+
+    static std::unordered_map<SyncPath, std::string> cacheDirectoryToFileSystemName;
+
+    const auto it = cacheDirectoryToFileSystemName.find(localSyncPath);
+    if (it != cacheDirectoryToFileSystemName.end()) {
+        fileSystemName = it->second;
+        return ExitCode::Ok;
+    }
+
+    fileSystemName = CommonUtility::fileSystemName(localSyncPath);
+    cacheDirectoryToFileSystemName[localSyncPath] = fileSystemName;
+
+    if (!CommonUtility::isEXT234(localSyncPath)) return ExitCode::Ok;
+
+    // `statfs` can confuse more restrictive systems with `EXT2/3/4 when a USB stick is used.
+    constexpr auto invalidExFatFileName = "a:b";
+
+    const auto exitInfo = tryCreateTmpFile(cacheDirectory, invalidExFatFileName);
+    if (exitInfo.cause() == ExitCause::TmpDirAccessError) {
+        LOG_WARN(logger(), "Cannot access tmp directory.");
+
+        return exitInfo;
+    }
+
+    if (exitInfo.cause() == ExitCause::InvalidName) {
+        LOG_DEBUG(logger(),
+                  "File names containing a colon character are not valid for the filesystem in use. We shall assume that "
+                  "this file system is exFAT.");
+        fileSystemName = CommonUtility::exFAT();
+        cacheDirectoryToFileSystemName[localSyncPath] = fileSystemName;
+
+        return ExitCode::Ok;
+    }
+
+    return exitInfo;
+}
+
+
 } // namespace KDC

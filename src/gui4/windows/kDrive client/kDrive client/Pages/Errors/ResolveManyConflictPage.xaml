@@ -101,7 +101,9 @@
                             QueryIcon="Find"
                             IsSuggestionListOpen="False"
                             HorizontalAlignment="Left"
-                            MinWidth="180" />
+                            MinWidth="180" 
+                            TextChanged="AutoSuggestBox_TextChanged"
+                            />
 
             <Button Grid.Row="0"
                     Grid.Column="1"

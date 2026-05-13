@@ -15,8 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using Windows.System;
@@ -28,10 +30,12 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
         Levels = new[] { ErrorLevel.Node },
         NodeTypes = new[] { NodeType.File, NodeType.Directory },
         ExitCodes = new[] { ExitCode.BackError },
-        ExitCauses = new[] { ExitCause.QuotaExceeded }
+        ExitCauses = new[] { ExitCause.QuotaExceeded },
+        ShowInSystemTray = true
     )]
     public sealed partial class QuotaExceededError : UserControl
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private Error Error { get; init; }
         public QuotaExceededError(Error error)
         {
@@ -46,6 +50,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
                 Logger.Log(Logger.Level.Error, "Sync is null on a node level error");
                 return;
             }
+            _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageQuotaExceeded);
+
             Uri changeOfferUri = App.Constants.Drive.ChangeOfferUri(Error.Sync.Drive.DriveId);
             await Launcher.LaunchUriAsync(changeOfferUri);
         }

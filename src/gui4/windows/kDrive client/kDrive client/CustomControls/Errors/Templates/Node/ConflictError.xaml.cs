@@ -15,24 +15,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
 namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
 {
     [ErrorMetadata(
         Levels = new[] { ErrorLevel.Node },
         NodeTypes = new[] { NodeType.File, NodeType.Directory },
-        ConflictTypes = new[] { ConflictType.CreateCreate, ConflictType.EditEdit }
+        ConflictTypes = new[] { ConflictType.CreateCreate, ConflictType.EditEdit },
+        ShowInSystemTray = true
     )]
     public sealed partial class ConflictError : UserControl
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
+
         private Error Error { get; init; }
         public ConflictError(Error error)
         {
@@ -59,7 +61,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
             // Apply the style to allow wider content
             dialog.Resources["ContentDialogMaxWidth"] = Application.Current.Resources["Infomaniak.Style.ContentDialog.MaxWidth"];
             dialog.Resources["ContentDialogMaxHeight"] = Application.Current.Resources["Infomaniak.Style.ContentDialog.MaxHeight"];
-
+            _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageSingleConflict);
             _ = await dialog.ShowAsync();
         }
     }

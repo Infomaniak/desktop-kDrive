@@ -125,7 +125,8 @@ void SyncPalWorker::checkForMassDeletions() const {
     Count alertThreshold = 0;
     if (totalCountOfLocalSnapshotItems > snapshotMinSizeForDeleteAlert) {
         static_assert(snapshotMinSizeForDeleteAlert > 1);
-        alertThreshold = static_cast<Count>(totalCountOfLocalSnapshotItems / log(totalCountOfLocalSnapshotItems));
+        alertThreshold = static_cast<Count>(static_cast<double>(totalCountOfLocalSnapshotItems) /
+                                            log(static_cast<double>(totalCountOfLocalSnapshotItems)));
     }
 
     // Check for mass deletions
@@ -629,7 +630,7 @@ bool SyncPalWorker::tryToFixDbNodeIdsAfterSyncDirChange() {
                                                     "Sync Dir migration failure");
         return false;
     }
- 
+
     _syncPal->resolveSyncErrorsByExitCause(ExitCause::SyncDirChanged);
 
     LOG_SYNCPAL_INFO(_logger, "SyncDb successfully fixed after sync dir change, new local node ID is " << newLocalRootNodeId);

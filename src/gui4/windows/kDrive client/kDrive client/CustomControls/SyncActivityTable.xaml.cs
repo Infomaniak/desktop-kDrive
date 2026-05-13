@@ -17,6 +17,7 @@
  */
 using DynamicData;
 using DynamicData.Binding;
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
@@ -25,7 +26,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.IO;
 using System.Reactive.Linq;
 using System.Threading;
@@ -36,6 +36,7 @@ namespace Infomaniak.kDrive.CustomControls
 {
     public sealed partial class SyncActivityTable : UserControl
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel => _viewModel;
 
@@ -78,8 +79,8 @@ namespace Infomaniak.kDrive.CustomControls
                 .OnItemAdded(a =>
                 {
                     _outGoingActivities.Insert(0, a);
-                    const int MaxActivities = 200;
-                    while (_outGoingActivities.Count > MaxActivities)
+                    const int maxActivities = 200;
+                    while (_outGoingActivities.Count > maxActivities)
                         _outGoingActivities.RemoveAt(_outGoingActivities.Count - 1);
                 })
                 .OnItemRemoved(a => _outGoingActivities.Remove(a))
@@ -141,6 +142,7 @@ namespace Infomaniak.kDrive.CustomControls
                 {
                     btn.IsEnabled = false;
                     await Utility.OpenFolderSecurely(activity.ParentFolderPath);
+                    _analyticsService.TrackClick(Analytics.Keys.Category.ActivityPage, Analytics.Keys.EventName.OpenItemFolder);
                     await Task.Delay(5000); // As the explorer might take some time to open avoid multiple clicks
                     btn.IsEnabled = true;
                 }
@@ -161,6 +163,7 @@ namespace Infomaniak.kDrive.CustomControls
             if (frame is not null)
             {
                 Logger.Log(Logger.Level.Info, "Navigating to ErrorPage.");
+                _analyticsService.TrackClick(Analytics.Keys.Category.ActivityPage, Analytics.Keys.EventName.OpenItemErrorFromIcon);
                 frame.Navigate(typeof(Pages.Errors.ErrorPage));
             }
             else
@@ -186,8 +189,8 @@ namespace Infomaniak.kDrive.CustomControls
                 Logger.Log(Logger.Level.Error, "DataContext is not a SyncFileItem");
                 return;
             }
-
             await Utility.OpenFolderSecurely(activity.LocalPath);
+            _analyticsService.TrackClick(Analytics.Keys.Category.ActivityPage, Analytics.Keys.EventName.OpenItem);
         }
 
         private async void OpenOnline_Click(object sender, RoutedEventArgs e)
@@ -209,6 +212,7 @@ namespace Infomaniak.kDrive.CustomControls
 
             Uri uri = App.Constants.Drive.itemUri(activity.Sync.Drive.DriveId, activity.RemoteNodeId);
             await Windows.System.Launcher.LaunchUriAsync(uri);
+            _analyticsService.TrackClick(Analytics.Keys.Category.ActivityPage, Analytics.Keys.EventName.OpenItemWeb);
         }
 
         private async void CopyPublicLink_Click(object sender, RoutedEventArgs e)
@@ -221,7 +225,6 @@ namespace Infomaniak.kDrive.CustomControls
                 return;
             }
 
-            // Find parrent button to anchor teaching tip
             DisplayTeachingTip(Localizer.Instance.GetString("creatingShareLink"), true);
 
             FrameworkElement? parentElement = element.DataContext as FrameworkElement;
@@ -251,6 +254,7 @@ namespace Infomaniak.kDrive.CustomControls
                 Logger.Log(Logger.Level.Error, "Could not retrieve public link");
                 DisplayTeachingTip(Localizer.Instance.GetString("failedToCreateShareLinkError"), false);
             }
+            _analyticsService.TrackClick(Analytics.Keys.Category.ActivityPage, Analytics.Keys.EventName.CopyItemWebLink);
         }
 
         private void NavigateToErrorPageButton_Click(object sender, RoutedEventArgs e)
@@ -259,6 +263,7 @@ namespace Infomaniak.kDrive.CustomControls
             if (frame is not null)
             {
                 Logger.Log(Logger.Level.Info, "Navigating to ErrorPage.");
+                _analyticsService.TrackClick(Analytics.Keys.Category.ActivityPage, Analytics.Keys.EventName.OpenItemError);
                 frame.Navigate(typeof(Pages.Errors.ErrorPage));
             }
             else

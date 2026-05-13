@@ -15,8 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -29,6 +31,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
     )]
     public sealed partial class ExcludedByTemplateError : UserControl
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private Error Error { get; init; }
         public ExcludedByTemplateError(Error error)
         {
@@ -38,6 +41,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
 
         private void ErrorCard_ActionClick(object sender, RoutedEventArgs e)
         {
+            _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageExcludedFile);
+
             var frame = ((Application.Current as App)?.CurrentWindow as MainWindow)?.AppNavView.Frame;
             if (frame is null)
             {

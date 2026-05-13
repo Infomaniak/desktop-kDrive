@@ -68,6 +68,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testDownloadHasEnoughSpace);
         CPPUNIT_TEST(testSearch);
         CPPUNIT_TEST(testGetInfoUserTrialsOn401Error);
+        CPPUNIT_TEST(testGetInfoDriveOn401Error);
         CPPUNIT_TEST(testExists);
         CPPUNIT_TEST(testGetAllFilesInDirectory);
         CPPUNIT_TEST_SUITE_END();
@@ -112,6 +113,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         void testDownloadHasEnoughSpace();
         void testSearch();
         void testGetInfoUserTrialsOn401Error();
+        void testGetInfoDriveOn401Error();
         void testExists();
         void testGetAllFilesInDirectory();
 

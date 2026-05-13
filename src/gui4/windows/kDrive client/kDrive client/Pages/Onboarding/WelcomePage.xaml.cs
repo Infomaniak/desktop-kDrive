@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.OnBoarding;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,6 +29,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 {
     public sealed partial class WelcomePage : Page
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         private ViewModels.Onboarding? _onBoardingViewModel;
         public AppModel ViewModel { get { return _viewModel; } }
@@ -39,6 +41,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
         }
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
+            _analyticsService.TrackPageView(Analytics.Keys.Category.OnboardingWelcomePage);
             if (e.Parameter is ViewModels.Onboarding obvm)
             {
                 _onBoardingViewModel = obvm;
@@ -50,6 +53,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
         private async void SignupButton_Click(object sender, RoutedEventArgs e)
         {
             Logger.Log(Logger.Level.Info, "Create account button clicked, opening sign up URL");
+            _analyticsService.TrackClick(Analytics.Keys.Category.OnboardingWelcomePage, Analytics.Keys.EventName.OpenSignUpWeb);
             if (sender is Button btn)
             {
                 btn.IsEnabled = false;
@@ -64,6 +68,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
         private void SigninButton_Click(object sender, RoutedEventArgs e)
         {
             Logger.Log(Logger.Level.Info, "Sign in button clicked, starting authentication process");
+            _analyticsService.TrackClick(Analytics.Keys.Category.OnboardingWelcomePage, Analytics.Keys.EventName.OpenSignInWeb);
             if (sender is Button btn)
             {
                 btn.IsEnabled = false;

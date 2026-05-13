@@ -36,23 +36,23 @@ class ButtonsBarWidget : public QWidget {
     public:
         explicit ButtonsBarWidget(QWidget *parent = nullptr);
 
-        void insertButton(int position, CustomTogglePushButton *button);
+        void insertButton(int position, CustomTogglePushButton *const button);
         void selectButton(int position);
-        inline int position() const { return _position; }
+        int position() const { return _position; }
 
     signals:
         void buttonToggled(int position);
 
     private:
-        int _position;
+        int _position{0};
         QColor _backgroundColor;
-        QHBoxLayout *_hboxLayout;
+        QHBoxLayout *_hboxLayout{nullptr};
         QList<CustomTogglePushButton *> buttonsList;
 
         void paintEvent(QPaintEvent *event) override;
 
-        inline QColor backgroundColor() const { return _backgroundColor; }
-        inline void setBackgroundColor(const QColor &value) { _backgroundColor = value; }
+        QColor backgroundColor() const { return _backgroundColor; }
+        void setBackgroundColor(const QColor &value) { _backgroundColor = value; }
 
     private slots:
         void onToggle(bool checked);

@@ -34,7 +34,6 @@ namespace KDC {
 
 UpdateManager::UpdateManager(QObject *parent) :
     QObject(parent) {
-    _currentChannel = ParametersCache::instance()->parameters().distributionChannel();
 
     initUpdater();
 
@@ -49,10 +48,14 @@ UpdateManager::UpdateManager(QObject *parent) :
     (void) connect(this, &UpdateManager::updateStateChanged, this, &UpdateManager::slotUpdateStateChanged, Qt::QueuedConnection);
 
     // At startup, do a check in any case and setup distribution channel.
-    QTimer::singleShot(3000, this, [this]() { setDistributionChannel(_currentChannel); });
+    QTimer::singleShot(3000, this,
+                       [this]() { setDistributionChannel(ParametersCache::instance()->parameters().distributionChannel()); });
 }
 
 void UpdateManager::setDistributionChannel(const VersionChannel channel) {
+    if (_currentChannel == channel) {
+        return;
+    }
     _currentChannel = channel;
     (void) _updater->checkUpdateAvailable(channel);
     ParametersCache::instance()->parameters().setDistributionChannel(channel);

@@ -32,7 +32,8 @@ class MockDb : public Db {
         explicit MockDb(const std::filesystem::path &dbPath) :
             Db(dbPath) {}
 
-        static std::string makeDbFileName(int userId, int accountId, int driveId, int syncDbId) {
+        static std::string makeDbFileName(const UserId userId, const AccountId accountId, const DriveId driveId,
+                                          const SyncDbId syncDbId) {
             std::string fileName = Db::makeDbFileName(userId, accountId, driveId, syncDbId);
             (void) fileName.append(CommonUtility::generateRandomStringAlphaNum());
             return fileName;
@@ -40,8 +41,15 @@ class MockDb : public Db {
 
         static std::string makeDbMockFileName() { return makeDbFileName(0, 0, 0, 0); }
 
-        static std::filesystem::path makeDbName(int userId, int accountId, int driveId, int syncDbId, bool &alreadyExist) {
+        static std::filesystem::path makeDbName(const UserId userId, const AccountId accountId, const DriveId driveId,
+                                                const SyncDbId syncDbId, bool &alreadyExist) {
             return Db::makeDbName(userId, accountId, driveId, syncDbId, alreadyExist, makeDbFileName);
+        }
+
+        static std::filesystem::path makeDbName(const UserId userId, const AccountId accountId, const DriveId driveId,
+                                                const SyncDbId syncDbId) {
+            bool dummy = false;
+            return Db::makeDbName(userId, accountId, driveId, syncDbId, dummy, makeDbFileName);
         }
 
         static std::filesystem::path makeDbName(bool &alreadyExist) { return makeDbName(0, 0, 0, 0, alreadyExist); }

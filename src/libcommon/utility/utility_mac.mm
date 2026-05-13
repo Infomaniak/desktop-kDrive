@@ -18,9 +18,9 @@
 
 #include "utility.h"
 
-#include "types.h"
-
-#include <QString>
+#include <system_error>
+#include <fstream>
+#include <sys/mount.h>
 
 #import <AppKit/NSApplication.h>
 #import <AppKit/NSImage.h>
@@ -96,6 +96,16 @@ std::string CommonUtility::osVersion() {
     return [@(osVersion.majorVersion) stringValue].UTF8String + std::string(".") +
            [@(osVersion.minorVersion) stringValue].UTF8String + std::string(".") +
            [@(osVersion.patchVersion) stringValue].UTF8String;
+}
+
+std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {
+    struct statfs stat;
+
+    if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
+        return stat.f_fstypename;
+    }
+
+    return "UNIDENTIFIED";
 }
 
 } // namespace KDC

@@ -16,9 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 using DynamicData.Binding;
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
@@ -31,6 +31,7 @@ namespace Infomaniak.kDrive.CustomControls
 {
     public sealed partial class HomeErrorInfoBar : UserControl
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         public HomeErrorInfoBarViewModel ControlViewModel { get; } = new HomeErrorInfoBarViewModel();
         private AppModel AppViewModel { get; } = App.ServiceProvider.GetRequiredService<AppModel>();
 
@@ -63,12 +64,14 @@ namespace Infomaniak.kDrive.CustomControls
             {
                 return;
             }
+            _analyticsService.TrackClick(Analytics.Keys.Category.HomePage, Analytics.Keys.EventName.OpenStorage);
             Uri changeOfferUri = App.Constants.Drive.ChangeOfferUri(AppViewModel.SelectedSync.Drive.DriveId);
             await Launcher.LaunchUriAsync(changeOfferUri);
         }
 
         private void TmpDirAccessError_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
+            _analyticsService.TrackClick(Analytics.Keys.Category.HomePage, Analytics.Keys.EventName.RestartApp);
             App.ExitApplicationAndShutdownServer();
         }
     }

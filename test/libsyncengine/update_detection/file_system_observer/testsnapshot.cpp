@@ -73,7 +73,7 @@ void TestSnapshot::tearDown() {
     TestBase::stop();
 }
 
-void TestSnapshot::testItemId() {
+void TestSnapshot::testGetItemId() {
     const NodeId rootNodeId = SyncDb::driveRootNode().nodeIdLocal().value();
 
     const DbNode dummyRootNode(0, std::nullopt, SyncName(), SyncName(), "1", "1", std::nullopt, std::nullopt, std::nullopt,
@@ -88,7 +88,9 @@ void TestSnapshot::testItemId() {
     liveSnapshot.updateItem(
             SnapshotItem("6", "4", Str("aba"), 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
     liveSnapshot.updateItem(SnapshotItem("7", "6", Str("abaa"), 1640995202, 1640995202, NodeType::File, 10, false, true, true));
-    CPPUNIT_ASSERT_EQUAL(NodeId("7"), liveSnapshot.itemId(SyncPath("a/ab/aba/abaa")));
+    NodeId nodeId;
+    CPPUNIT_ASSERT(liveSnapshot.getItemId(SyncPath("a/ab/aba/abaa"), nodeId));
+    CPPUNIT_ASSERT_EQUAL(NodeId("7"), nodeId);
 
     SyncName nfcNormalized;
     Utility::normalizedSyncName(Str("abà"), nfcNormalized);
@@ -98,13 +100,17 @@ void TestSnapshot::testItemId() {
 
     liveSnapshot.updateItem(
             SnapshotItem("6", "4", nfcNormalized, 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
-    CPPUNIT_ASSERT_EQUAL(NodeId("7"), liveSnapshot.itemId(SyncPath("a/ab") / nfcNormalized / Str("abaa")));
-    CPPUNIT_ASSERT_EQUAL(NodeId(""), liveSnapshot.itemId(SyncPath("a/ab") / nfdNormalized / Str("abaa")));
+    CPPUNIT_ASSERT(liveSnapshot.getItemId(SyncPath("a/ab") / nfcNormalized / Str("abaa"), nodeId));
+    CPPUNIT_ASSERT_EQUAL(NodeId("7"), nodeId);
+    CPPUNIT_ASSERT(!liveSnapshot.getItemId(SyncPath("a/ab") / nfdNormalized / Str("abaa"), nodeId));
+    CPPUNIT_ASSERT_EQUAL(NodeId(""), nodeId);
 
     liveSnapshot.updateItem(
             SnapshotItem("6", "4", nfdNormalized, 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
-    CPPUNIT_ASSERT_EQUAL(NodeId("7"), liveSnapshot.itemId(SyncPath("a/ab") / nfdNormalized / Str("abaa")));
-    CPPUNIT_ASSERT_EQUAL(NodeId(""), liveSnapshot.itemId(SyncPath("a/ab") / nfcNormalized / Str("abaa")));
+    CPPUNIT_ASSERT(liveSnapshot.getItemId(SyncPath("a/ab") / nfdNormalized / Str("abaa"), nodeId));
+    CPPUNIT_ASSERT_EQUAL(NodeId("7"), nodeId);
+    CPPUNIT_ASSERT(!liveSnapshot.getItemId(SyncPath("a/ab") / nfcNormalized / Str("abaa"), nodeId));
+    CPPUNIT_ASSERT_EQUAL(NodeId(""), nodeId);
 }
 
 void TestSnapshot::testSnapshot() {
@@ -139,7 +145,9 @@ void TestSnapshot::testSnapshot() {
     CPPUNIT_ASSERT_EQUAL(static_cast<SyncTime>(testhelpers::defaultTime), _liveSnapshot->lastModified("aaa"));
     CPPUNIT_ASSERT_EQUAL(NodeType::File, _liveSnapshot->type("aaa"));
     CPPUNIT_ASSERT(_liveSnapshot->contentChecksum("aaa").empty()); // Checksum never computed for now
-    CPPUNIT_ASSERT_EQUAL(NodeId("aaa"), _liveSnapshot->itemId(std::filesystem::path("A*/AA/AAA")));
+    NodeId nodeId;
+    CPPUNIT_ASSERT(_liveSnapshot->getItemId(SyncPath("A*/AA/AAA"), nodeId));
+    CPPUNIT_ASSERT_EQUAL(NodeId("aaa"), nodeId);
 
     // Move node AA under B
     _liveSnapshot->updateItem(SnapshotItem("aa", "b", Str("AA"), testhelpers::defaultTime, testhelpers::defaultTime,
@@ -151,12 +159,15 @@ void TestSnapshot::testSnapshot() {
     CPPUNIT_ASSERT(childrenIds.empty());
 
     // Remove node B
-    _liveSnapshot->removeItem("b");
+    CPPUNIT_ASSERT(_liveSnapshot->removeItem("b"));
     _liveSnapshot->getChildrenIds(_rootNodeId, childrenIds);
     CPPUNIT_ASSERT(!_liveSnapshot->exists("aaa"));
     CPPUNIT_ASSERT(!_liveSnapshot->exists("aa"));
     CPPUNIT_ASSERT(!_liveSnapshot->exists("b"));
     CPPUNIT_ASSERT(!childrenIds.contains("b"));
+
+    CPPUNIT_ASSERT(!_liveSnapshot->removeItem(""));
+    CPPUNIT_ASSERT(!_liveSnapshot->removeItem(_liveSnapshot->rootFolderId()));
 
     // Reset liveSnapshot
     _liveSnapshot->init();

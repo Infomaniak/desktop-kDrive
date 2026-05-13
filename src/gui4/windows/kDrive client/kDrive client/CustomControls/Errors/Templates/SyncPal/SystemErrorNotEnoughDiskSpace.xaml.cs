@@ -15,8 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
@@ -26,10 +28,13 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
     [ErrorMetadata(
         Levels = new[] { ErrorLevel.SyncPal },
         ExitCodes = new[] { ExitCode.SystemError },
-        ExitCauses = new[] { ExitCause.NotEnoughDiskSpace }
+        ExitCauses = new[] { ExitCause.NotEnoughDiskSpace },
+        ShowInSystemTray = true
     )]
     public sealed partial class SystemErrorNotEnoughDiskSpace : UserControl
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
+
         private Error Error { get; init; }
         public SystemErrorNotEnoughDiskSpace(Error error)
         {
@@ -39,6 +44,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
 
         private async void ErrorCard_ActionClick(object sender, RoutedEventArgs e)
         {
+            _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageNotEnoughDiskSpace);
+
             bool result = await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-settings:storagesense"));
             if (!result)
             {

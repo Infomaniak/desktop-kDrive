@@ -42,6 +42,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             get => ++_requestIdCounter;
         }
 
+        public Task<bool> InitConnection(CancellationToken cancellationToken) { return Task.FromResult(true); }
         public event EventHandler<SignalEventArgs>? SignalReceived;
 
 #pragma warning disable CS0067 // ConnectionLost is not used in the mock implementation, but we need to declare it to satisfy the IServerCommProtocol interface. We can safely ignore the fact that it's never raised.
@@ -67,11 +68,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 RequestNum.DRIVE_INFOLIST => await DriveInfoListRequest(parameters),
                 RequestNum.SYNC_INFOLIST => await SyncInfoListRequest(parameters),
                 RequestNum.UPDATER_START_INSTALLER => await UpdateStartInstaller(parameters),
+                RequestNum.UPDATER_SKIP_VERSION => await UpdaterSkipVersion(parameters),
                 RequestNum.UPDATER_VERSION_INFO => await UpdaterVersionInfo(parameters),
                 RequestNum.UPDATER_CHANGE_CHANNEL => await UpdaterChangeChannel(parameters),
                 RequestNum.PARAMETERS_INFO => await ParametersInfo(parameters),
                 RequestNum.PARAMETERS_UPDATE => await ParametersUpdate(parameters),
-                RequestNum.ERROR_DELETE =>await ErrorDelete(parameters),
+                RequestNum.ERROR_DELETE => await ErrorDelete(parameters),
                 _ => throw new NotImplementedException($"RequestNum {requestNum} not implemented in MockServerCommProtocol.")
             };
         }
@@ -266,6 +268,19 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Type = CommMessageType.Request,
                 Id = (int)NextId,
                 RequestNum = RequestNum.UPDATER_START_INSTALLER,
+                Params = new JsonObject()
+            };
+        }
+
+        private async Task<CommData> UpdaterSkipVersion(JsonObject parameters)
+        {
+            Logger.Log(Logger.Level.Debug, "Received UpdaterSkipVersion request.");
+            await Task.CompletedTask;
+            return new CommData
+            {
+                Type = CommMessageType.Request,
+                Id = (int)NextId,
+                RequestNum = RequestNum.UPDATER_SKIP_VERSION,
                 Params = new JsonObject()
             };
         }
@@ -540,7 +555,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             // Create mock ParmsInfo
             ParmsInfo parmsInfo = new()
             {
-                Language = Language.SystemDefault,
+                Language = Language.Default,
                 AutoStart = true,
                 MoveToTrash = true,
                 NotificationsDisabled = NotificationsDisabled.Always,

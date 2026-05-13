@@ -90,8 +90,8 @@ Logger::Logger(QObject *parent) :
     _doFileFlush(false),
     _logExpire(0),
     _logDebug(false) {
-#if defined(Q_OS_WIN) && !defined(NDEBUG)
-    if (AllocConsole()) {
+#if defined(Q_OS_WIN)
+    if (CommonUtility::logToConsoleEnabled() && AllocConsole()) {
         FILE *fp = nullptr;
         (void) freopen_s(&fp, "CONOUT$", "w", stdout);
         (void) freopen_s(&fp, "CONOUT$", "w", stderr);
@@ -172,7 +172,9 @@ void Logger::doLog(const QString &msg) {
         }
     }
 #ifndef NDEBUG
-    std::cout << qPrintable(msg) << std::endl;
+    if (CommonUtility::logToConsoleEnabled()) {
+        std::cout << qPrintable(msg) << std::endl;
+    }
 #endif
     emit logWindowLog(msg);
 }

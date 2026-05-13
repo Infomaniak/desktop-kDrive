@@ -114,7 +114,8 @@
         <ComboBox  Grid.Row="0"
                    Grid.Column="1"
                    MinWidth="200"
-                   SelectedIndex="{x:Bind ViewModel.SelectedSync.ShowIncomingActivity, Converter={StaticResource BooleanToIntegerConverter}, Mode=TwoWay}">
+                   SelectedIndex="{x:Bind ViewModel.SelectedSync.ShowIncomingActivity, Converter={StaticResource BooleanToIntegerConverter}, Mode=TwoWay}"
+                   SelectionChanged="ShowIncomingActivityComboBox_SelectionChanged">
             <ComboBox.Items>
                 <ComboBoxItem>
                     <StackPanel Orientation="Horizontal"

@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
@@ -34,6 +35,7 @@ namespace Infomaniak.kDrive.Pages.Settings
 
     public sealed partial class DriveManagementPage : Page
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel { get { return _viewModel; } }
         public Drive? ManagedDrive { get; set; }
@@ -76,6 +78,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                 AppModel.UIThreadDispatcher.TryEnqueue(() => { Frame.GoBack(); }); // Frame.GoBack() must be called outside of OnNavigatedTo
                 return;
             }
+            _analyticsService.TrackPageView(Analytics.Keys.Category.DriveManagementPage);
         }
 
         private void SetupNavBar(string driveName)
@@ -87,6 +90,7 @@ namespace Infomaniak.kDrive.Pages.Settings
         {
             if (args.Index == 0)
             {
+                _analyticsService.TrackClick(Analytics.Keys.Category.DriveManagementPage, Analytics.Keys.EventName.SettingsBreadcrumbs);
                 Logger.Log(Logger.Level.Debug, "Navigating to SettingsPage");
                 Frame.Navigate(typeof(SettingsPage));
             }
@@ -100,6 +104,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                 Logger.Log(Logger.Level.Error, "Cannot open local folder: MainSync or LocalPath is null");
                 return;
             }
+            _analyticsService.TrackClick(Analytics.Keys.Category.DriveManagementPage, Analytics.Keys.EventName.OpenSyncDir);
             await Utility.OpenFolderSecurely(path);
         }
 
@@ -108,7 +113,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             var radioButton = sender as RadioButton;
             if (radioButton is null)
             {
-                Logger.Log(Logger.Level.Error, "Online sync mode radio button is null when clicking on online sync mode radio button");
+                Logger.Log(Logger.Level.Error, "Sender of SyncTypeRadioButton_Click is not a RadioButton");
                 return;
             }
 
@@ -118,7 +123,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             Sync? sync = ManagedDrive?.MainSync;
             if (sync is null)
             {
-                Logger.Log(Logger.Level.Error, "Could not get sync from ManagedDrive?.MainSync when clicking on online sync mode radio button");
+                Logger.Log(Logger.Level.Error, "Could not get sync from ManagedDrive?.MainSync when clicking on sync mode radio button");
                 return;
             }
 
@@ -128,6 +133,18 @@ namespace Infomaniak.kDrive.Pages.Settings
             if (!targetOffline && !targetOnline)
             {
                 Logger.Log(Logger.Level.Error, "Unknown radio button name for sync mode change");
+                return;
+            }
+
+            if(targetOffline && sync.SyncType == Types.SyncType.Offline)
+            {
+                Logger.Log(Logger.Level.Info, "User clicked on Offline sync mode radio button while already in Offline mode");
+                return;
+            }
+
+            if(targetOnline && sync.SyncType == Types.SyncType.Online)
+            {
+                Logger.Log(Logger.Level.Info, "User clicked on Online sync mode radio button while already in Online mode");
                 return;
             }
 
@@ -144,6 +161,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             bool canceledByUser = await dialog.ShowAsync() != ContentDialogResult.Primary;
             if (canceledByUser)
             {
+                _analyticsService.TrackClick(Analytics.Keys.Category.DriveManagementPage, Analytics.Keys.EventName.CancelSyncModeSwitch);
                 // This is needed to revert the radio button state back to offline, as changing the sync type to online can fail and we want to reflect that in the UI.
                 if (targetOnline)
                 {
@@ -160,6 +178,8 @@ namespace Infomaniak.kDrive.Pages.Settings
                 return;
             }
 
+
+            _analyticsService.TrackClick(Analytics.Keys.Category.DriveManagementPage, Analytics.Keys.EventName.ConfirmSyncModeSwitch, targetOnline ? 1 : 0);
 
             bool success = false;
             if (targetOnline)
@@ -227,6 +247,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             }
 
             Logger.Log(Logger.Level.Info, "User confirmed sync removal");
+            _analyticsService.TrackClick(Analytics.Keys.Category.DriveManagementPage, Analytics.Keys.EventName.Delete);
             if (!await ManagedDrive.RemoveSync(ManagedDrive.MainSync, CancellationToken.None))
             {
                 Logger.Log(Logger.Level.Error, "Failed to remove sync");
@@ -286,6 +307,7 @@ namespace Infomaniak.kDrive.Pages.Settings
 
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
 
+            _analyticsService.TrackClick(Analytics.Keys.Category.DriveManagementPage, Analytics.Keys.EventName.Create);
             Logger.Log(Logger.Level.Debug, $"Setting up new sync: LocalPath={newSync.LocalPath}, RemotePath={newSync.RemotePath}, Drive={newSync.Drive.Name}");
             if (!await commService.AddSync(newSync, CancellationToken.None))
             {
@@ -326,7 +348,13 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private void AdvancedSyncsSettingsCard_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
+            _analyticsService.TrackClick(Analytics.Keys.Category.DriveManagementPage, Analytics.Keys.EventName.ManageAdvancedSync);
             Frame.Navigate(typeof(DriveAdvancedSyncsPage), BaseDrive);
+        }
+
+        private void ExclusionsSettingsExpander_Expanded(object sender, EventArgs e)
+        {
+            _analyticsService.TrackClick(Analytics.Keys.Category.DriveManagementPage, Analytics.Keys.EventName.ShowItemExclusion);
         }
     }
 }

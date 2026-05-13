@@ -152,6 +152,10 @@ class KDriveDesktop(ConanFile):
         qt_version = "6.8.3" if self.settings.os == "Linux" and str(self.settings.arch).startswith("arm") else "6.2.3"
         self.requires(f"qt/{qt_version}")
         self.requires("xxhash/0.8.2") # From local recipe
+        self.requires("sqlite3/3.53.0", options={
+            "shared": False,
+            "build_executable": False
+        })
         # log4cplus
         self.requires("log4cplus/2.1.2", options={
             "shared": True,

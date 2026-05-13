@@ -15,8 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.Pages.DriveSetupContentDialog;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System.Collections.Generic;
@@ -25,6 +27,7 @@ namespace Infomaniak.kDrive.CustomControls
 {
     public partial class DriveSetupContentDialog : ContentDialog
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         public enum DriveSetupResult
         {
             Confirmed,
@@ -48,6 +51,7 @@ namespace Infomaniak.kDrive.CustomControls
             base.PrimaryButtonClick += DriveSetupContentDialog_PrimaryButtonClick;
             base.CloseButtonClick += DriveSetupContentDialog_CloseButtonClick;
             _driveSetupContentDialogVM.SetupFinished += DriveSetupContentDialogVM_SetupFinished;
+            _analyticsService.TrackPageView(Analytics.Keys.Category.DriveSetupDialog);
         }
 
         private void DriveSetupContentDialogVM_SetupFinished(object? sender, DriveSetupResult e)
@@ -60,12 +64,14 @@ namespace Infomaniak.kDrive.CustomControls
         // Intercept button clicks to manage steps
         private void DriveSetupContentDialog_CloseButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
+            _analyticsService.TrackClick(Analytics.Keys.Category.DriveSetupDialog, Analytics.Keys.EventName.Cancel);
             _driveSetupContentDialogVM.CancelCurrentStep();
             args.Cancel = true;
         }
 
         private void DriveSetupContentDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
+            _analyticsService.TrackClick(Analytics.Keys.Category.DriveSetupDialog, Analytics.Keys.EventName.Confirm);
             _driveSetupContentDialogVM.ConfirmCurrentStep();
             args.Cancel = true;
         }

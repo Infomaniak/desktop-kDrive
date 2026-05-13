@@ -16,32 +16,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using CodeArt.MatomoTracking;
 using DynamicData;
-using H.NotifyIcon;
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ServerCommunication.Services;
 using Infomaniak.kDrive.TrayIcon;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Security.Authentication.OAuth;
 using Microsoft.UI.Xaml;
 using Microsoft.Win32;
-using Microsoft.Windows.AppLifecycle;
 using Sentry;
 using System;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using Windows.ApplicationModel.Core;
-using Windows.ApplicationModel.VoiceCommands;
-using Windows.Foundation;
 
 namespace Infomaniak.kDrive
 {
     public partial class App : Application
     {
         private Window? _currentWindow;
+        private UpdateWindow? _updateWindow;
 
         public int LegacyCommPort { get; private set; } = -1;
         public Window? CurrentWindow
@@ -50,7 +49,6 @@ namespace Infomaniak.kDrive
             private set => _currentWindow = value;
         }
 
-        private readonly IServiceCollection _services = new ServiceCollection();
         private static IServiceProvider? _serviceProvider = null;
         internal static IServiceProvider ServiceProvider => _serviceProvider ?? throw new InvalidOperationException("Service provider is not initialized.");
 
@@ -72,16 +70,24 @@ namespace Infomaniak.kDrive
 
         internal static IAppConstants Constants => new ProductionAppConstants();
 
-
         internal App()
         {
-            _services.AddSingleton<AppModel>();
-            _services.AddSingleton<IServerCommProtocol, SocketServerCommProtocol>();
-            _services.AddSingleton<IServerCommService, ServerCommService>();
-            _services.AddSingleton<UserDefaults>();
-            _services.AddSingleton<TrayIconManager>();
-            _services.AddSingleton<NotificationManager>();
-            _serviceProvider = _services.BuildServiceProvider();
+            var services = new ServiceCollection();
+            services.AddSingleton<AppModel>();
+            services.AddSingleton<IServerCommProtocol, SocketServerCommProtocol>();
+            services.AddSingleton<IServerCommService, ServerCommService>();
+            services.AddSingleton<UserDefaults>();
+            services.AddSingleton<TrayIconManager>();
+            services.AddSingleton<NotificationManager>();
+            var configuration = new ConfigurationBuilder().Build();
+            services.AddSingleton<IConfiguration>(configuration);
+            services.AddMatomoTracking(options =>
+            {
+                options.MatomoHostname = Constants.Matomo.Host;
+                options.SiteId = Constants.Matomo.SiteId;
+            });
+            services.AddSingleton<IAnalyticsService, MatomoService>();
+            _serviceProvider = services.BuildServiceProvider();
             AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
 
             Logger.StartSentry();
@@ -128,23 +134,18 @@ namespace Infomaniak.kDrive
 
             ServiceProvider.GetRequiredService<TrayIconManager>().Initialize();
 
-            AppModel appModel = ServiceProvider.GetRequiredService<AppModel>();
-
-
-            // Start all singleton services
-            foreach (var serviceDescriptor in _services.Where(sd => sd.Lifetime == ServiceLifetime.Singleton))
+            var serverCommService = ServiceProvider.GetRequiredService<IServerCommService>();
+            using (var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5)))
             {
-                // Force the initialization of singleton services
-                ServiceProvider.GetRequiredService(serviceDescriptor.ServiceType);
+                if (!await serverCommService.Init(cts.Token))
+                {
+                    Logger.Log(Logger.Level.Fatal, "Failed to initialize server communication service, exiting application.");
+                    ExitApplication();
+                    return;
+                }
             }
 
-            ServiceProvider.GetRequiredService<IServerCommProtocol>().ConnectionLost += (s, e) =>
-            {
-                Logger.Log(Logger.Level.Fatal, "Connection to server lost, this application will close.");
-                SentrySdk.Flush(new TimeSpan(0, 0, 5));
-                ExitApplication();
-            };
-
+            AppModel appModel = ServiceProvider.GetRequiredService<AppModel>();
             if (!await appModel.InitializeAsync())
             {
                 Logger.Log(Logger.Level.Fatal, "Application failed to initialize, exiting.");
@@ -252,8 +253,15 @@ namespace Infomaniak.kDrive
             return false;
         }
 
+        public static void RestartApplication()
+        {
+            Logger.Log(Logger.Level.Info, $"Restarting client app");
+            Windows.ApplicationModel.Core.AppRestartFailureReason failureReason = Microsoft.Windows.AppLifecycle.AppInstance.Restart(string.Join(" ", Environment.GetCommandLineArgs()));
+            Logger.Log(Logger.Level.Warning, $"Restarting application fail with reason: {failureReason}");
+        }
         public static void ExitApplication()
         {
+            SentrySdk.Flush(new TimeSpan(0, 0, 5));
             Logger.Log(Logger.Level.Info, "Exiting application.");
             Environment.Exit(0);
         }
@@ -263,6 +271,59 @@ namespace Infomaniak.kDrive
             Logger.Log(Logger.Level.Info, "Sending exit command to server.");
             App.ServiceProvider.GetRequiredService<IServerCommService>().Exit();
             ExitApplication();
+        }
+
+        public void ShowUpdateWindow()
+        {
+
+            AppModel.UIThreadDispatcher.TryEnqueue(async () =>
+            {
+                const int maxRetries = 10;
+                int retryCount = 0;
+
+                while (ServiceProvider.GetRequiredService<AppModel>().Settings.UpdateManager.AvailableUpdate is null &&
+                           retryCount < maxRetries)
+                {
+                    Logger.Log(Logger.Level.Info,
+                                   $"ShowUpdateWindow called but no available update found, retrying in 1 seconds ({retryCount + 1}/{maxRetries}).");
+
+                    retryCount++;
+                    await Task.Delay(TimeSpan.FromSeconds(1));
+                }
+
+                if (ServiceProvider.GetRequiredService<AppModel>().Settings.UpdateManager.AvailableUpdate is null)
+                {
+                    Logger.Log(Logger.Level.Warning,
+                                   "ShowUpdateWindow aborted after retries because no available update was found.");
+                    return;
+                }
+
+                if (_updateWindow is null)
+                {
+                    _updateWindow = new UpdateWindow();
+                    _updateWindow.Closed += (s, e) => _updateWindow = null;
+                    _updateWindow.Activate();
+                }
+                else
+                {
+                    Logger.Log(Logger.Level.Info,
+                                   "Update window is already open, bringing existing window to front.");
+                }
+                Utility.BringWindowToFront(_updateWindow);
+            });
+
+        }
+
+        public void CloseUpdateWindow()
+        {
+            AppModel.UIThreadDispatcher.TryEnqueue(() =>
+            {
+                if (_updateWindow is not null)
+                {
+                    _updateWindow.Close();
+                    _updateWindow = null;
+                }
+            });
         }
     }
 }

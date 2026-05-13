@@ -38,7 +38,7 @@ class TestSituationGeneratorException final : public std::runtime_error {
 
 TestSituationGenerator::TestSituationGenerator() {
     const auto syncDbPath = _temporaryDirectory.path() / ("dummySyncDb_" + CommonUtility::generateRandomStringAlphaNum());
-    _syncDb = std::make_shared<SyncDb>(syncDbPath.string(), KDRIVE_VERSION_STRING);
+    _syncDb = std::make_shared<SyncDb>(syncDbPath.string());
     (void) _syncDb->init(KDRIVE_VERSION_STRING);
     _syncDb->setAutoDelete(true);
 

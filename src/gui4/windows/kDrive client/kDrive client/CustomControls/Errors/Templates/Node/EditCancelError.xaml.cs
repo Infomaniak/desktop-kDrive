@@ -24,7 +24,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
     [ErrorMetadata(
         Levels = new[] { ErrorLevel.Node },
         NodeTypes = new[] { NodeType.File, NodeType.Directory },
-        CancelTypes = new[] { CancelType.Edit }
+        CancelTypes = new[] { CancelType.Edit },
+        ShowInSystemTray = true
     )]
     public sealed partial class EditCancelError : UserControl
     {

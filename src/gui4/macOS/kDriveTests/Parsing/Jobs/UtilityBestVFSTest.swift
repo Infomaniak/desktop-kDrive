@@ -47,6 +47,6 @@ struct UtilityBestVFSTest {
         let response = try decoder.decode(CallbackMessage<UtilityBestVFSResponse>.self, from: callbackData)
 
         // THEN
-        #expect(response.body.bestMode == .Mac)
+        #expect(response.body.bestMode == KDC.VirtualFileMode.Mac)
     }
 }
