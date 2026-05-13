@@ -60,8 +60,13 @@ class GetFilesInDirectoryJob : public AbstractTokenNetworkJob {
         // The node info list as returned by the backend API v2
         [[nodiscard]] ExitInfo v2RemoteNodeInfoList(RemoteNodeInfoList &nodeInfoList) const;
 
+        static ExitInfo extractName(const Poco::JSON::Object::Ptr &obj, SyncName &name);
+        ExitInfo extractPath(const Poco::JSON::Object::Ptr &obj, SyncName &path) const;
+        static ExitInfo extractAccessDenied(const Poco::JSON::Object::Ptr &obj, bool &accessDenied);
+
         // Fill the `_remoteNodeInfoList` data structure with the deserialization
         // of the JSON result's `data` field.
+        // Note: items with empty normalized name or path are ignored and not added to the list.
         ExitInfo deserializeDataArray();
         /// @throw JobException
 
