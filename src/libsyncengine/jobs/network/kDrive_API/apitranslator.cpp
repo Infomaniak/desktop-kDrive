@@ -189,7 +189,7 @@ ExitInfo ApiTranslator::translateV2ToV3(const DriveDbId driveDbId, RemoteNodeId 
     Account account;
     if (const auto exitInfo = getAccount(drive, account); !exitInfo) return exitInfo;
 
-    return translateV2ToV3(drive.driveId(), account.userDbId(), remoteDirectoryId);
+    return translateV2ToV3(account.userDbId(), drive.driveId(), remoteDirectoryId);
 }
 
 void ApiTranslator::translateV3ToV2(SyncPath &remotePath) {
