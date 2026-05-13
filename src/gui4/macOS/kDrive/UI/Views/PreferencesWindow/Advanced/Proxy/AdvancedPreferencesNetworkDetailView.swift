@@ -29,8 +29,6 @@ struct AdvancedPreferencesNetworkDetailView: View {
     @Binding var password: String
     @Binding var isAuthenticationRequired: Bool
 
-    let numberFormatter = NumberFormatter()
-
     var body: some View {
         Picker(KDriveLocalizable.proxyType, selection: $proxyType) {
             Text(verbatim: "HTTP(S)")
@@ -42,7 +40,7 @@ struct AdvancedPreferencesNetworkDetailView: View {
         TextField(KDriveLocalizable.proxyHost, text: $hostName)
             .textFieldStyle(.roundedBorder)
 
-        TextField(KDriveLocalizable.proxyPort, value: $port, formatter: numberFormatter)
+        TextField(KDriveLocalizable.proxyPort, value: $port, formatter: NumberFormatter())
             .textFieldStyle(.roundedBorder)
 
         Toggle(KDriveLocalizable.proxyNeedAuth, isOn: $isAuthenticationRequired)
@@ -60,12 +58,10 @@ struct AdvancedPreferencesNetworkDetailView: View {
 
     func getAuthenticationRequired() {
         isAuthenticationRequired = authType != .noAuth
-        if isAuthenticationRequired {
-            if case UIProxyAuthType.needsAuth(user: let user, password: let password) = authType {
-                username = user
-                self.password = password
-            }
-        }
+        guard isAuthenticationRequired,
+              case UIProxyAuthType.needsAuth(user: let user, password: let password) = authType else { return }
+        username = user
+        self.password = password
     }
 }
 

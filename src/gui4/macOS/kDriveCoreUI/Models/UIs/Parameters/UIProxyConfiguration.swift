@@ -36,7 +36,7 @@ public enum UIProxyType: Sendable, Equatable {
         case .none:
             return KDriveLocalizable.proxyTypeNone
         default:
-            return "No Label"
+            return ""
         }
     }
 }

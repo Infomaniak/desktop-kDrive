@@ -16,7 +16,6 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
@@ -121,13 +120,7 @@ struct AdvancedPreferencesNetworkView: View {
         isLoadingSaveButton = true
         defer { isLoadingSaveButton = false }
 
-        if port <= minPort || port > maxPort {
-            return
-        }
-
-        if username.isEmpty && password.isEmpty && isAuthenticationRequired {
-            return
-        }
+        guard !isConfigurationInvalid else { return }
 
         let authType: UIProxyAuthType = isAuthenticationRequired ? .needsAuth(user: username, password: password) : .noAuth
         proxyConfiguration = UIProxyConfiguration(type: proxyType, hostName: hostName, port: port, authType: authType)
