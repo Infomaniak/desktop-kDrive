@@ -479,7 +479,7 @@ ExitInfo DownloadJob::moveTmpFile() {
 
 
             // Move file
-            IoError ioError = IoError::Success;
+            auto ioError = IoError::Success;
             (void) IoHelper::moveItem(_tmpPath, _fileDownloadInfo.localPath, ioError);
             crossDeviceLinkError = ioError == IoError::CrossDeviceLink; // Unable to move between 2 distinct file systems
             if (ioError != IoError::Success && !crossDeviceLinkError) {
@@ -528,31 +528,29 @@ ExitInfo DownloadJob::moveTmpFile() {
             }
 #endif
 
-            if (accessDeniedError) {
-                return {ExitCode::SystemError, ExitCause::FileAccessError};
-            } else {
-                bool exists = false;
-                IoError ioError = IoError::Success;
-                if (!IoHelper::checkIfPathExists(_fileDownloadInfo.localPath.parent_path(), exists, ioError,
-                                                 IoHelper::PathCheckOption::Insensitive)) {
-                    LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
-                                               << Utility::formatIoError(_fileDownloadInfo.localPath.parent_path(), ioError));
-                    return ExitCode::SystemError;
-                }
-                if (ioError == IoError::AccessDenied) {
-                    LOGW_WARN(_logger,
-                              L"Access denied to item " << Utility::formatSyncPath(_fileDownloadInfo.localPath.parent_path()));
-                    return {ExitCode::SystemError, ExitCause::FileAccessError};
-                }
+            if (accessDeniedError) return {ExitCode::SystemError, ExitCause::FileAccessError};
 
-                if (!exists) {
-                    LOGW_INFO(_logger,
-                              L"Parent of item does not exist anymore " << Utility::formatSyncPath(_fileDownloadInfo.localPath));
-                    disableRetry();
-                }
-
-                return {};
+            bool exists = false;
+            IoError ioError = IoError::Success;
+            if (!IoHelper::checkIfPathExists(_fileDownloadInfo.localPath.parent_path(), exists, ioError,
+                                             IoHelper::PathCheckOption::Insensitive)) {
+                LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
+                                           << Utility::formatIoError(_fileDownloadInfo.localPath.parent_path(), ioError));
+                return ExitCode::SystemError;
             }
+            if (ioError == IoError::AccessDenied) {
+                LOGW_WARN(_logger,
+                          L"Access denied to item " << Utility::formatSyncPath(_fileDownloadInfo.localPath.parent_path()));
+                return {ExitCode::SystemError, ExitCause::FileAccessError};
+            }
+
+            if (!exists) {
+                LOGW_INFO(_logger,
+                          L"Parent of item does not exist anymore " << Utility::formatSyncPath(_fileDownloadInfo.localPath));
+                disableRetry();
+            }
+
+            return {};
         }
 #if defined(KD_WINDOWS)
     }
