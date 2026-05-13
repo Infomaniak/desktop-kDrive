@@ -60,11 +60,11 @@ ExitInfo SyncGetPublicLinkUrlJob::serializeOutputParms() {
 }
 
 ExitInfo SyncGetPublicLinkUrlJob::process() {
-    const auto exitCode = ServerRequests::getPublicLinkUrl(_driveDbId, _nodeId, _linkUrl);
-    if (exitCode != ExitCode::Ok) {
+    if (const auto exitInfo = ServerRequests::getPublicLinkUrl(_driveDbId, _nodeId, _linkUrl); !exitInfo) {
         LOG_WARN(_logger, "Error in ServerRequests::getPublicLinkUrl");
-        addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
-        return exitCode;
+        addError(Error(ERR_ID, exitInfo));
+
+        return exitInfo;
     }
 
     return ExitCode::Ok;
