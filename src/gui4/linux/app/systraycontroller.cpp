@@ -152,6 +152,7 @@ void SystemTrayController::initialize() {
 
 void SystemTrayController::observe(AppCache &appCache, const CommService &commService) {
     _appCache = &appCache;
+    _hasSyncErrors = !_appCache->syncErrors().empty();
 
     (void) connect(&appCache, &AppCache::syncsChanged, this, [this] {
         qCDebug(lcSystemTrayController) << "Sync cache changed, refreshing tray icon state";
@@ -160,6 +161,7 @@ void SystemTrayController::observe(AppCache &appCache, const CommService &commSe
     });
     (void) connect(&appCache, &AppCache::syncErrorsChanged, this, [this] {
         qCDebug(lcSystemTrayController) << "Sync errors changed, refreshing tray icon state";
+        _hasSyncErrors = !_appCache->syncErrors().empty();
         refreshIconState();
     });
     (void) connect(&commService, &CommService::syncProgressInfo, this,
@@ -326,7 +328,7 @@ void SystemTrayController::refreshIconState() {
         return;
     }
 
-    if (!_appCache->syncErrors().empty()) {
+    if (_hasSyncErrors) {
         setIconState(TrayIconState::Error);
         return;
     }
@@ -336,7 +338,8 @@ void SystemTrayController::refreshIconState() {
         return;
     }
 
-    if (std::ranges::all_of(_syncStatuses, [](const auto &entry) { return isPauseStatus(entry.second); })) {
+    if (!_syncStatuses.empty() &&
+        std::ranges::all_of(_syncStatuses, [](const auto &entry) { return isPauseStatus(entry.second); })) {
         setIconState(TrayIconState::Pause);
         return;
     }
