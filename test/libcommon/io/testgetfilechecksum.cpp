@@ -265,9 +265,15 @@ void TestIo::testGetFileChecksum() {
         std::ifstream ifs;
 
         auto checksum = IoHelper::getFileChecksum(path, ifs, ioError);
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT(!checksum.empty());
         CPPUNIT_ASSERT_EQUAL(std::string("91f9d1732ca53515"), checksum);
+#else
+        CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
+#endif
+        CPPUNIT_ASSERT(checksum.empty());
+        CPPUNIT_ASSERT_EQUAL(std::string(""), checksum);
 
         std::filesystem::permissions(path, std::filesystem::perms::all, std::filesystem::perm_options::add);
 
