@@ -150,7 +150,7 @@ void SystemTrayController::initialize() {
     _isInitialized = true;
 }
 
-void SystemTrayController::observe(AppCache &appCache, CommService &commService) {
+void SystemTrayController::observe(AppCache &appCache, const CommService &commService) {
     _appCache = &appCache;
 
     (void) connect(&appCache, &AppCache::syncsChanged, this, [this] {
