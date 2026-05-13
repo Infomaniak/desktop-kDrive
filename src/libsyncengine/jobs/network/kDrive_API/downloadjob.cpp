@@ -346,7 +346,6 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
                     LOGW_WARN(_logger,
                               L"Update fetch status not terminated: " << Utility::formatSyncPath(_fileDownloadInfo.localPath));
                 }
-
                 _responseHandlingCanceled = fetchCanceled || fetchError || (!fetchFinished);
             } else if (_isHydrated) {
                 // Replace file by tmp one
@@ -710,8 +709,22 @@ ExitInfo DownloadJob::moveTmpFile() {
                     return {ExitCode::SystemError, ExitCause::NotFound};
                 }
 
+
                 return ExitCode::SystemError;
             }
+            if (ioError == IoError::AccessDenied) {
+                LOGW_WARN(_logger,
+                          L"Access denied to item " << Utility::formatSyncPath(_fileDownloadInfo.localPath.parent_path()));
+                return {ExitCode::SystemError, ExitCause::FileAccessError};
+            }
+
+            if (!exists) {
+                LOGW_INFO(_logger,
+                          L"Parent of item does not exist anymore " << Utility::formatSyncPath(_fileDownloadInfo.localPath));
+                disableRetry();
+            }
+
+            return {};
         }
 #if defined(KD_WINDOWS)
     }
