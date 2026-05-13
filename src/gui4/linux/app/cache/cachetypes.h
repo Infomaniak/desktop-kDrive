@@ -26,6 +26,8 @@
 #include "libcommon/info/syncinfo.h"
 #include "libcommon/info/userinfo.h"
 
+#include <Poco/Hash.h>
+
 #include <QString>
 
 #include <cstddef>
@@ -102,10 +104,10 @@ struct PendingSyncConfig {
 template<>
 struct std::hash<KDC::AvailableDriveKey> {
         std::size_t operator()(const KDC::AvailableDriveKey &key) const noexcept {
-            constexpr auto hashConstant = static_cast<std::size_t>(0x9e3779b97f4a7c15ULL);
-            std::size_t seed = std::hash<KDC::UserDbId>{}(key.userDbId);
-            seed ^= std::hash<KDC::AccountId>{}(key.accountId) + hashConstant + (seed << 6U) + (seed >> 2U);
-            seed ^= std::hash<KDC::DriveId>{}(key.driveId) + hashConstant + (seed << 6U) + (seed >> 2U);
+            std::size_t seed = 0;
+            Poco::hashCombine(seed, key.userDbId);
+            Poco::hashCombine(seed, key.accountId);
+            Poco::hashCombine(seed, key.driveId);
             return seed;
         }
 };
