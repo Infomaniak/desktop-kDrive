@@ -128,7 +128,7 @@ void SystemTrayController::initialize() {
     _trayIcon.setToolTip(tr("kDrive"));
 
     _openAction = _trayMenu.addAction(tr("Open kDrive"));
-    _trayMenu.addSeparator();
+    (void) _trayMenu.addSeparator();
     _quitAction = _trayMenu.addAction(tr("Quit kDrive"));
     _trayIcon.setContextMenu(&_trayMenu);
 
