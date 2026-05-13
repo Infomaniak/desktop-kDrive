@@ -165,11 +165,12 @@ void SystemTrayController::observe(AppCache &appCache, const CommService &commSe
         refreshIconState();
     });
     (void) connect(&commService, &CommService::syncProgressInfo, this,
-                   [this](const SyncDbId syncDbId, const SyncStatus status, SyncStep, int64_t, int64_t, int64_t, int64_t,
-                          int64_t) { onSyncProgressInfo(syncDbId, status); });
+                   [this](const SyncDbId syncDbId, const SyncStatus status, const SyncStep, const int64_t, const int64_t,
+                          const int64_t, const int64_t, const int64_t) { onSyncProgressInfo(syncDbId, status); });
 
     reconcileKnownSyncStatuses();
     refreshIconState();
+    d
 }
 
 void SystemTrayController::setMainWindow(QWindow *window) {
