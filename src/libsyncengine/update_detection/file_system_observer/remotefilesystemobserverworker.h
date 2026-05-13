@@ -37,6 +37,8 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         RemoteFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName);
         ~RemoteFileSystemObserverWorker() override;
 
+        [[nodiscard]] bool updating() const override;
+
     protected:
         void execute() override;
         virtual ExitInfo sendLongPoll(const RemoteNodeId &remoteDirId, bool &changes);
@@ -97,7 +99,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         void countListingRequests();
         void deleteOrphans();
 
-        ExitInfo getMainDirectoriesRemoteIds(std::vector<RemoteNodeId> &mainDirectoriesRemoteIds) const;
+        ExitInfo getSpeciaFoldersRemoteIds(std::vector<RemoteNodeId> &specialFoldersRemoteIds) const;
 
         DriveDbId _driveDbId = -1;
 
@@ -111,8 +113,16 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         int _listingFullCounter = 0;
         std::chrono::steady_clock::time_point _listingFullTimer = std::chrono::steady_clock::now();
 
-        ExitInfo updateV3MainFolderItem(const RemoteNodeId &remoteNodeId);
-        ExitInfo getV3RemoteFolderName(const RemoteNodeId &remoteDirId, SyncName &folderName);
+        ExitInfo updateV3SpecialFolderItem(const RemoteNodeId &remoteNodeId);
+        ExitInfo getV3SpecialRemoteFolderName(const RemoteNodeId &remoteDirId, SyncName &folderName);
+
+        std::unordered_map<RemoteNodeId, bool> _specialFolderUpdateFlags;
+
+        void setUpdateFlagValue(const RemoteNodeId &specialFolderId, bool flag) {
+            _specialFolderUpdateFlags[specialFolderId] = flag;
+        }
+        void setUpdateFlagValue(bool isUpdating) { _updating = isUpdating; }
+        void setInitFlagValue(bool isInititializing) { _initializing = isInititializing; }
 
         friend class TestRemoteFileSystemObserverWorker;
 };
