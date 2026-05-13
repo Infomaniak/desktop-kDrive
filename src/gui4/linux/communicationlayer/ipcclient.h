@@ -46,6 +46,7 @@ class IpcClient : public QObject {
 #else
         void connectToServer(quint16 port);
 #endif
+        [[nodiscard]] bool isConnected() const { return _socket->state() == QAbstractSocket::ConnectedState; }
         void sendRequest(RequestNum num, const Poco::DynamicStruct &params = {}, ResponseCallback callback = nullptr);
 
     signals:
