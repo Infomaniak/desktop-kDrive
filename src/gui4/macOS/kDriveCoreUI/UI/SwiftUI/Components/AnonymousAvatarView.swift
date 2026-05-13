@@ -1,4 +1,3 @@
-//
 /*
  Infomaniak kDrive - Desktop
  Copyright (C) 2023-2026 Infomaniak Network SA
@@ -17,33 +16,28 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import kDriveCoreUI
+import kDriveResources
 import SwiftUI
 
-struct UserHeaderCellView: View {
-    let avatar: Image?
-    let name: String
-    let email: String
+public struct AnonymousAvatarView: View {
+    public init() {}
 
-    var body: some View {
-        HStack(spacing: AppPadding.padding8) {
-            if let avatar {
-                AvatarView(image: avatar)
+    public var body: some View {
+        KDriveResources.person.swiftUIImage
+            .resizable()
+            .scaledToFit()
+            .frame(size: AppIconSize.iconSize16)
+            .foregroundStyle(ColorToken.Text.tertiary.asColor)
+            .overlay {
+                Circle()
+                    .stroke(ColorToken.Surface.quaternary.asColor, lineWidth: 1)
                     .frame(width: 24, height: 24)
             }
-
-            VStack(alignment: .leading) {
-                Text(name)
-                    .font(.Tokens.body)
-                    .foregroundStyle(ColorToken.Text.primary.asColor)
-                Text(email)
-                    .font(.Tokens.subheadline)
-                    .foregroundStyle(ColorToken.Text.tertiary.asColor)
-            }
-        }
+            .accessibilityHidden(true)
     }
 }
 
 #Preview {
-    UserHeaderCellView(avatar: nil, name: "Tim Cook", email: "tim@apple.com")
+    AnonymousAvatarView()
+        .padding()
 }

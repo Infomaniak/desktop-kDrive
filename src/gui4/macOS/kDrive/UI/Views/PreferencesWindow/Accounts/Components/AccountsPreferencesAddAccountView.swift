@@ -1,7 +1,6 @@
-//
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2026 Infomaniak Network SA
+ Copyright (C) 2023-2025 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -18,32 +17,29 @@
  */
 
 import kDriveCoreUI
+import kDriveResources
 import SwiftUI
 
-struct UserHeaderCellView: View {
-    let avatar: Image?
-    let name: String
-    let email: String
-
+struct AccountsPreferencesAddAccountView: View {
     var body: some View {
-        HStack(spacing: AppPadding.padding8) {
-            if let avatar {
-                AvatarView(image: avatar)
-                    .frame(width: 24, height: 24)
-            }
+        Section {
+            HStack(spacing: AppPadding.padding8) {
+                AnonymousAvatarView()
 
-            VStack(alignment: .leading) {
-                Text(name)
+                Text(KDriveLocalizable.noAccountConnected)
                     .font(.Tokens.body)
                     .foregroundStyle(ColorToken.Text.primary.asColor)
-                Text(email)
-                    .font(.Tokens.subheadline)
-                    .foregroundStyle(ColorToken.Text.tertiary.asColor)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                Button(KDriveLocalizable.buttonConnectAccount) {
+                    // TODO: Add new user
+                }
+                .buttonStyle(.bordered)
             }
         }
     }
 }
 
 #Preview {
-    UserHeaderCellView(avatar: nil, name: "Tim Cook", email: "tim@apple.com")
+    AccountsPreferencesAddAccountView()
 }
