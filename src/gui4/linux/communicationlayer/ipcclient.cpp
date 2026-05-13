@@ -139,7 +139,7 @@ void IpcClient::attemptInitialConnection() {
  * outlives the response. Use `QPointer<T>` to guard against dangling pointers when lifetime is uncertain.
  */
 void IpcClient::sendRequest(const RequestNum num, const Poco::DynamicStruct &params, ResponseCallback callback) {
-    if (_socket->state() != QAbstractSocket::ConnectedState) {
+    if (!isConnected()) {
         qCCritical(lcIpcClient) << "Cannot send request, socket not in ConnectedState mode (state: " << _socket->state()
                                 << ")"; // See qabstractsocket.h#SocketState
         exit(EXIT_FAILURE);
