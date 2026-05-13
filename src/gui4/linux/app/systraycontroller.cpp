@@ -170,7 +170,6 @@ void SystemTrayController::observe(AppCache &appCache, const CommService &commSe
 
     reconcileKnownSyncStatuses();
     refreshIconState();
-    d
 }
 
 void SystemTrayController::setMainWindow(QWindow *window) {
