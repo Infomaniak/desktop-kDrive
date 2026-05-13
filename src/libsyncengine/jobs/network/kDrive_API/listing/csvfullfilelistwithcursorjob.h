@@ -42,6 +42,7 @@ class CsvFullFileListWithCursorJob final : public AbstractListingJob {
          */
         bool getItem(RemoteSnapshotItem &item, bool &error, bool &ignore, bool &eof);
         std::string getCursor();
+        RemoteNodeId remoteDirId() const { return _remoteDirId; }
 
     private:
         std::string getSpecificUrl() override;
@@ -51,7 +52,7 @@ class CsvFullFileListWithCursorJob final : public AbstractListingJob {
 
         ExitInfo handleResponse(std::istream &is) override;
 
-        NodeId _remoteDirId;
+        RemoteNodeId _remoteDirId;
         Zip _zip = Zip::On;
 
         std::stringstream _ss;
