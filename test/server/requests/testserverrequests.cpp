@@ -90,11 +90,11 @@ void TestServerRequests::testGetPublicLink() {
 
     // 1st call : sent POST request to generate the public share link
     std::string url;
-    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, ServerRequests::getPublicLinkUrl(_driveDbId, remoteTmpDir.id(), url));
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ServerRequests::getPublicLinkUrl(_driveDbId, remoteTmpDir.id(), url));
     CPPUNIT_ASSERT(!url.empty());
     // 2nd call : POST request will fail and a GET request should be sent to retrieve existing share link
     url.clear();
-    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, ServerRequests::getPublicLinkUrl(_driveDbId, remoteTmpDir.id(), url));
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ServerRequests::getPublicLinkUrl(_driveDbId, remoteTmpDir.id(), url));
     CPPUNIT_ASSERT(!url.empty());
 }
 
