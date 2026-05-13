@@ -427,61 +427,16 @@ void RemoteFileSystemObserverWorker::deleteOrphans() {
     }
 }
 
-ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const RemoteNodeId &remoteDirId,
-                                                       const CursorPersistence cursorPersistence) {
-    // Send request
-    sentry::pTraces::scoped::RFSOBackRequest perfMonitorBackRequest(cursorPersistence == CursorPersistence::None, syncDbId());
-    std::shared_ptr<CsvFullFileListWithCursorJob> job = nullptr;
-    try {
-        job = std::make_shared<CsvFullFileListWithCursorJob>(_driveDbId, remoteDirId, _blackList,
-                                                             CsvFullFileListWithCursorJob::Zip::On);
-    } catch (const std::bad_alloc &badAllocationException) {
-        return exception2ExitCode(badAllocationException);
-    } catch (const JobException &e) {
-        LOG_SYNCPAL_WARN(_logger, "Error in CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob for driveDbId="
-                                          << _driveDbId << " error=" << e.what());
-        return exception2ExitCode(e);
-    }
-
-    SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_LOW);
-    while (!SyncJobManagerSingleton::instance()->isJobFinished(job->jobId())) {
-        if (stopAsked()) return ExitCode::Ok;
-        Utility::msleep(100);
-    }
-
-    if (!job->exitInfo()) {
-        LOG_SYNCPAL_WARN(_logger, "Error in CsvFullFileListWithCursorJob: " << job->exitInfo());
-        if (job->exitInfo().code() == ExitCode::RateLimited) {
-            setPauseDuration(job->sleepDuration());
-        }
-
-        return job->exitInfo();
-    }
-
-    if (cursorPersistence == CursorPersistence::Save) {
-        if (const auto &cursor = job->getCursor();
-            !_listingCursorMap.contains(remoteDirId) || cursor != _listingCursorMap[remoteDirId].cursor) {
-            _listingCursorMap[remoteDirId] = CursorData{cursor, CommonUtility::now()};
-            LOG_SYNCPAL_DEBUG(_logger, "Cursor updated: " << _listingCursorMap[remoteDirId].cursor);
-            if (const ExitInfo exitInfo = saveListingCursor(remoteDirId, _listingCursorMap.at(remoteDirId)); !exitInfo) {
-                LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::saveListingCursor");
-
-                return exitInfo;
-            }
-        }
-    }
-
-    // Parse reply
-    LOG_SYNCPAL_DEBUG(_logger, "Start parsing of the CSV reply.");
+ExitInfo RemoteFileSystemObserverWorker::parseCsvReply(const CursorPersistence cursorPersistence,
+                                                       std::shared_ptr<CsvFullFileListWithCursorJob> csvFullListingJob) {
+    LOG_SYNCPAL_DEBUG(_logger, "Start parsing of the CSV reply for remote id=" << csvFullListingJob->remoteDirId() << ".");
     const TimerUtility timer;
     RemoteSnapshotItem item;
     SyncNameSet existingFiles;
     ParsingIterationState iterationState;
 
-    perfMonitorBackRequest.stop();
-
     sentry::pTraces::counterScoped::RFSOExploreItem itemHandlingMonitor(cursorPersistence == CursorPersistence::None, syncDbId());
-    while (job->getItem(item, iterationState.error, iterationState.ignore, iterationState.eof)) {
+    while (csvFullListingJob->getItem(item, iterationState.error, iterationState.ignore, iterationState.eof)) {
         if (const auto exitInfo = handleSnapshotItem(item, existingFiles, iterationState, itemHandlingMonitor); !exitInfo)
             return exitInfo;
 
@@ -501,6 +456,71 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const RemoteNodeId &remot
                                                        << iterationState.itemCount << " items");
 
     return ExitCode::Ok;
+}
+
+ExitInfo RemoteFileSystemObserverWorker::getItemsInDirJob(
+        const RemoteNodeId &remoteDirId, std::shared_ptr<CsvFullFileListWithCursorJob> csvFullFileListWithCursorJob) {
+    csvFullFileListWithCursorJob = nullptr;
+    try {
+        csvFullFileListWithCursorJob = std::make_shared<CsvFullFileListWithCursorJob>(_driveDbId, remoteDirId, _blackList,
+                                                                                      CsvFullFileListWithCursorJob::Zip::On);
+    } catch (const std::bad_alloc &badAllocationException) {
+        return exception2ExitCode(badAllocationException);
+    } catch (const JobException &e) {
+        LOG_SYNCPAL_WARN(_logger, "Error in CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob for driveDbId="
+                                          << _driveDbId << " error=" << e.what());
+        return exception2ExitCode(e);
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitInfo RemoteFileSystemObserverWorker::handleCsvReplyCursor(
+        const RemoteNodeId &remoteDirId, const CursorPersistence cursorPersistence,
+        std::shared_ptr<CsvFullFileListWithCursorJob> csvFullFileListWithCursorJob) {
+    if (cursorPersistence != CursorPersistence::Save) return ExitCode::Ok;
+
+    if (const auto &cursor = csvFullFileListWithCursorJob->getCursor();
+        !_listingCursorMap.contains(remoteDirId) || cursor != _listingCursorMap[remoteDirId].cursor) {
+        _listingCursorMap[remoteDirId] = CursorData{cursor, CommonUtility::now()};
+        LOG_SYNCPAL_DEBUG(_logger, "Cursor updated: " << _listingCursorMap[remoteDirId].cursor);
+        if (const auto exitInfo = saveListingCursor(remoteDirId, _listingCursorMap.at(remoteDirId)); !exitInfo) {
+            LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::saveListingCursor");
+
+            return exitInfo;
+        }
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const RemoteNodeId &remoteDirId,
+                                                       const CursorPersistence cursorPersistence) {
+    std::shared_ptr<CsvFullFileListWithCursorJob> job = nullptr;
+    if (const auto exitInfo = getItemsInDirJob(remoteDirId, job); !exitInfo) return exitInfo;
+
+    // Send request and monitor its performance.
+    sentry::pTraces::scoped::RFSOBackRequest perfMonitorBackRequest(cursorPersistence == CursorPersistence::None, syncDbId());
+
+    SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_LOW);
+    while (!SyncJobManagerSingleton::instance()->isJobFinished(job->jobId())) {
+        if (stopAsked()) return ExitCode::Ok;
+        Utility::msleep(100);
+    }
+    perfMonitorBackRequest.stop();
+
+    if (!job->exitInfo()) {
+        LOG_SYNCPAL_WARN(_logger, "Error in CsvFullFileListWithCursorJob: " << job->exitInfo());
+        if (job->exitInfo().code() == ExitCode::RateLimited) {
+            setPauseDuration(job->sleepDuration());
+        }
+
+        return job->exitInfo();
+    }
+
+    if (const auto exitInfo = handleCsvReplyCursor(remoteDirId, cursorPersistence, job); !exitInfo) return exitInfo;
+
+    return parseCsvReply(cursorPersistence, job);
 }
 
 ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(const RemoteNodeId &remoteDirId, bool &changes) {
