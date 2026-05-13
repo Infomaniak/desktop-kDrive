@@ -91,6 +91,7 @@ class SystemTrayController final : public QObject {
         QAction *_settingsAction = nullptr;
         QAction *_quitAction = nullptr;
         std::unordered_map<SyncDbId, SyncStatus> _syncStatuses;
+        bool _hasSyncErrors = false;
         TrayIconState _iconState = TrayIconState::Neutral;
         QTimer _trayAvailabilityRetryTimer;
         uint8_t _trayAvailabilityRetryCount = 0;
