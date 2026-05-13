@@ -77,7 +77,7 @@ ExitInfo GetFilesInRootDirJob::runJob() {
     return ExitCode::Ok;
 }
 
-std::string getFileListConstructorErrorMsg(FileListJob *job, const UserDbId userDbId, const DriveId driveId,
+std::string getFileListConstructorErrorMsg(FileListJob *const job, const UserDbId userDbId, const DriveId driveId,
                                            const JobException &e) {
     const auto coreMsg = dynamic_cast<GetFilesInRootDirJob *>(job) ? "GetFilesInRootDirJob::GetFilesInRootDirJob"
                                                                    : " GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob";
@@ -87,7 +87,8 @@ std::string getFileListConstructorErrorMsg(FileListJob *job, const UserDbId user
     return ss.str();
 }
 
-std::string getFileListExecErrorMsg(FileListJob *job, const UserDbId userDbId, const DriveId driveId, const ExitInfo &exitInfo) {
+std::string getFileListExecErrorMsg(FileListJob *const job, const UserDbId userDbId, const DriveId driveId,
+                                    const ExitInfo &exitInfo) {
     const auto coreMsg = dynamic_cast<GetFilesInRootDirJob *>(job) ? "GetFilesInRootDirJob::runSynchronously"
                                                                    : " GetAllFilesInDirectoryJob::runSynchronously";
     std::stringstream ss;
@@ -96,7 +97,7 @@ std::string getFileListExecErrorMsg(FileListJob *job, const UserDbId userDbId, c
     return ss.str();
 }
 
-std::string getFileListConstructorErrorMsg(FileListJob *job, const DriveDbId driveDbId, const RemoteNodeId &nodeId,
+std::string getFileListConstructorErrorMsg(FileListJob *const job, const DriveDbId driveDbId, const RemoteNodeId &nodeId,
                                            const JobException &e) {
     const std::string coreMsg = dynamic_cast<GetFilesInRootDirJob *>(job)
                                         ? "GetFilesInRootDirJob::GetFilesInRootDirJob"
@@ -107,7 +108,7 @@ std::string getFileListConstructorErrorMsg(FileListJob *job, const DriveDbId dri
     return ss.str();
 }
 
-std::string getFileListExecErrorMsg(FileListJob *job, const DriveDbId driveDbId, const RemoteNodeId &nodeId,
+std::string getFileListExecErrorMsg(FileListJob *const job, const DriveDbId driveDbId, const RemoteNodeId &nodeId,
                                     const ExitInfo &exitInfo) {
     const std::string coreMsg = dynamic_cast<GetFilesInRootDirJob *>(job) ? "GetFilesInRootDirJob::runSynchronously"
                                                                           : " GetAllFilesInDirectoryJob::runSynchronously";
