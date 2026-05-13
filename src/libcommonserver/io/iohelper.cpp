@@ -31,6 +31,9 @@
 #include <fstream>
 #include <log4cplus/loggingmacros.h> // LOGW_WARN
 
+#include <vector>
+#include <xxhash.h>
+
 namespace KDC {
 
 // Default `std::filesytem` implementation. This can be changed in unit tests.
