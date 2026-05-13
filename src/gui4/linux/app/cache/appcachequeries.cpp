@@ -262,7 +262,7 @@ std::optional<SyncContext> AppCache::syncContext(const SyncDbId syncDbId) const 
     }
 
     SyncContext context;
-    S context.userDisplayInfo = userIt->second.info;
+    context.userDisplayInfo = userIt->second.info;
     context.accountInfo = accountIt->second.info;
     context.driveInfo = driveIt->second.info;
     context.syncInfo = syncIt->second.info;
