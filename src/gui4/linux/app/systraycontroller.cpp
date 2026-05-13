@@ -128,11 +128,13 @@ void SystemTrayController::initialize() {
     _trayIcon.setToolTip(tr("kDrive"));
 
     _openAction = _trayMenu.addAction(tr("Open kDrive"));
+    _settingsAction = _trayMenu.addAction(tr("Settings"));
     (void) _trayMenu.addSeparator();
     _quitAction = _trayMenu.addAction(tr("Quit kDrive"));
     _trayIcon.setContextMenu(&_trayMenu);
 
     (void) connect(_openAction, &QAction::triggered, this, &SystemTrayController::showMainWindow);
+    (void) connect(_settingsAction, &QAction::triggered, this, &SystemTrayController::showSettingsWindow);
     (void) connect(_quitAction, &QAction::triggered, this, &SystemTrayController::quitRequested);
     (void) connect(&_trayIcon, &QSystemTrayIcon::activated, this, &SystemTrayController::onTrayActivated);
 
@@ -223,6 +225,9 @@ void SystemTrayController::showMainWindow() const {
     _mainWindow->show();
     _mainWindow->raise();
     _mainWindow->requestActivate();
+}
+void SystemTrayController::showSettingsWindow() {
+    qCWarning(lcSystemTrayController) << "Settings window action triggered from system tray, but not implemented yet";
 }
 
 void SystemTrayController::hideMainWindow() const {
