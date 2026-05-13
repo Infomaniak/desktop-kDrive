@@ -1677,13 +1677,13 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             const auto driveDbId = static_cast<DriveDbId>(tmpDriveDbId);
             std::string linkUrl;
-            const auto exitCode = ServerRequests::getPublicLinkUrl(driveDbId, nodeId.toStdString(), linkUrl);
-            if (exitCode != ExitCode::Ok) {
+            const auto exitInfo = ServerRequests::getPublicLinkUrl(driveDbId, nodeId.toStdString(), linkUrl);
+            if (!exitInfo) {
                 LOG_WARN(_logger, "Error in Requests::getLinkUrl");
-                addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
+                addError(Error(ERR_ID, exitInfo));
             }
 
-            resultStream << toInt(exitCode);
+            resultStream << toInt(exitInfo.code());
             resultStream << QString::fromStdString(linkUrl);
 
             sendShowNotification(tr("Share link copied to clipboard"), QString::fromStdString(linkUrl));
@@ -2849,11 +2849,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 
