@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -16,28 +16,28 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
-struct AccountsPreferencesAddAccountView: View {
-    var body: some View {
-        Section {
-            HStack {
-                AnonymousAvatarView()
+public struct AnonymousAvatarView: View {
+    public init() {}
 
-                Text(KDriveLocalizable.noAccountConnected)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(EdgeInsets(top: 0, leading: AppPadding.padding8, bottom: 0, trailing: 0))
-                Button(KDriveLocalizable.buttonConnectAccount) {
-                    // TODO: Add new user
-                }
-                .buttonStyle(.bordered)
+    public var body: some View {
+        KDriveResources.person.swiftUIImage
+            .resizable()
+            .scaledToFit()
+            .frame(size: AppIconSize.iconSize16)
+            .foregroundStyle(ColorToken.Text.tertiary.asColor)
+            .overlay {
+                Circle()
+                    .stroke(ColorToken.Surface.quaternary.asColor, lineWidth: 1)
+                    .frame(width: 24, height: 24)
             }
-        }
+            .accessibilityHidden(true)
     }
 }
 
 #Preview {
-    AccountsPreferencesAddAccountView()
+    AnonymousAvatarView()
+        .padding()
 }
