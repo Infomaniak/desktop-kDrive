@@ -22,8 +22,7 @@ import kDriveResources
 import SwiftUI
 
 struct AdvancedPreferencesNetworkView: View {
-    @State private var proxyType: UIProxyType? = nil
-
+    @State private var proxyType: UIProxyType = .none
     @State private var hostName = ""
     @State private var port = 0
     @State private var authType: UIProxyAuthType = .noAuth
@@ -31,10 +30,17 @@ struct AdvancedPreferencesNetworkView: View {
     @State private var username = ""
     @State private var password = ""
     @State private var isAuthenticationRequired = false
-
-    @State private var proxyConfiguration = UIProxyConfiguration(type: .none, hostName: "", port: 0, authType: .noAuth)
+    @State private var proxyConfiguration = UIProxyConfiguration(type: UIProxyType.none, hostName: "", port: 0, authType: .noAuth)
 
     let repository: PreferencesRepository
+
+    private let minPort = 0
+    private let maxPort = 65535
+
+    private var isConfigurationInvalid: Bool {
+        return hostName.isEmpty || port <= minPort || port > maxPort || ((username.isEmpty || password.isEmpty) &&
+            isAuthenticationRequired)
+    }
 
     var body: some View {
         Form {
@@ -49,7 +55,7 @@ struct AdvancedPreferencesNetworkView: View {
                         authType: $authType,
                         username: $username,
                         password: $password,
-                        authRequired: $isAuthenticationRequired
+                        isAuthenticationRequired: $isAuthenticationRequired
                     )
 
                     LoadingButton(isLoading: $isLoadingSaveButton, action: saveHTTPProxyChanges) {
@@ -57,6 +63,7 @@ struct AdvancedPreferencesNetworkView: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .frame(maxWidth: .infinity, alignment: .trailing)
+                    .disabled(isConfigurationInvalid)
                 }
             }
         }
@@ -113,6 +120,14 @@ struct AdvancedPreferencesNetworkView: View {
     private func saveHTTPProxyChanges() {
         isLoadingSaveButton = true
         defer { isLoadingSaveButton = false }
+
+        if port <= minPort || port > maxPort {
+            return
+        }
+
+        if username.isEmpty && password.isEmpty && isAuthenticationRequired {
+            return
+        }
 
         let authType: UIProxyAuthType = isAuthenticationRequired ? .needsAuth(user: username, password: password) : .noAuth
         proxyConfiguration = UIProxyConfiguration(type: proxyType, hostName: hostName, port: port, authType: authType)

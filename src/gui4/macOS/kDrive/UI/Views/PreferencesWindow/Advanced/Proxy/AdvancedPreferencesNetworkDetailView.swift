@@ -21,22 +21,23 @@ import kDriveResources
 import SwiftUI
 
 struct AdvancedPreferencesNetworkDetailView: View {
-    @Binding var proxyType: UIProxyType?
+    @Binding var proxyType: UIProxyType
     @Binding var hostName: String
     @Binding var port: Int
     @Binding var authType: UIProxyAuthType
     @Binding var username: String
     @Binding var password: String
-    @Binding var authRequired: Bool
+    @Binding var isAuthenticationRequired: Bool
 
     let numberFormatter = NumberFormatter()
 
     var body: some View {
         Picker(KDriveLocalizable.proxyType, selection: $proxyType) {
-            Text("HTTP(S)")
+            Text(verbatim: "HTTP(S)")
                 .tag(UIProxyType.http)
         }
         .disabled(true)
+        .onAppear(perform: getAuthenticationRequired)
 
         TextField(KDriveLocalizable.proxyHost, text: $hostName)
             .textFieldStyle(.roundedBorder)
@@ -44,9 +45,9 @@ struct AdvancedPreferencesNetworkDetailView: View {
         TextField(KDriveLocalizable.proxyPort, value: $port, formatter: numberFormatter)
             .textFieldStyle(.roundedBorder)
 
-        Toggle(KDriveLocalizable.proxyNeedAuth, isOn: $authRequired)
+        Toggle(KDriveLocalizable.proxyNeedAuth, isOn: $isAuthenticationRequired)
 
-        if authRequired {
+        if isAuthenticationRequired {
             TextField(KDriveLocalizable.proxyUser, text: $username)
                 .textFieldStyle(.roundedBorder)
                 .frame(alignment: .leading)
@@ -54,13 +55,12 @@ struct AdvancedPreferencesNetworkDetailView: View {
             SecureField(KDriveLocalizable.proxyPassword, text: $password)
                 .textFieldStyle(.roundedBorder)
                 .autocorrectionDisabled(true)
-                .onAppear(perform: getAuthRequired)
         }
     }
 
-    func getAuthRequired() {
-        authRequired = authType != .noAuth
-        if authRequired {
+    func getAuthenticationRequired() {
+        isAuthenticationRequired = authType != .noAuth
+        if isAuthenticationRequired {
             if case UIProxyAuthType.needsAuth(user: let user, password: let password) = authType {
                 username = user
                 self.password = password
@@ -77,6 +77,6 @@ struct AdvancedPreferencesNetworkDetailView: View {
         authType: .constant(.noAuth),
         username: .constant(""),
         password: .constant(""),
-        authRequired: .constant(false),
+        isAuthenticationRequired: .constant(false),
     )
 }

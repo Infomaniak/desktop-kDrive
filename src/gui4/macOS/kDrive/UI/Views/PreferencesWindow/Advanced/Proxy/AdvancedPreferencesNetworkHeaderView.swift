@@ -22,12 +22,14 @@ import kDriveResources
 import SwiftUI
 
 struct AdvancedPreferencesNetworkHeaderView: View {
-    @Binding var selectedProxyType: UIProxyType?
+    @Binding var selectedProxyType: UIProxyType
 
     var body: some View {
         HStack {
             VStack(alignment: .leading) {
                 Text(KDriveLocalizable.proxySettings)
+                    .font(.Tokens.body)
+                    .foregroundStyle(.primary)
 
                 Text(KDriveLocalizable.proxyConnectionDescription)
                     .font(.Tokens.callout)
@@ -36,15 +38,9 @@ struct AdvancedPreferencesNetworkHeaderView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
 
             Picker(KDriveLocalizable.proxyType, selection: $selectedProxyType) {
-                Text(KDriveLocalizable.proxyTypeNone)
-                    .tag(nil as UIProxyType?)
-
-                Text(KDriveLocalizable.labelSameAsSystem)
-                    .tag(UIProxyType.system as UIProxyType?)
-
-                Text(KDriveLocalizable.proxyTypeHTTP)
-                    .tag(UIProxyType.http as UIProxyType?)
-
+                ForEach(UIProxyType.selectionOptions, id: \.self) { proxyType in
+                    Text(proxyType.label)
+                }
             }
             .labelsHidden()
         }

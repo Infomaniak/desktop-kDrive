@@ -17,11 +17,28 @@
  */
 
 import Foundation
+import kDriveResources
 
 public enum UIProxyType: Sendable, Equatable {
     case system
     case http
     case socks5
+    case none
+
+    public static let selectionOptions: [UIProxyType] = [.none, .system, .http]
+
+    public var label: String {
+        switch self {
+        case .system:
+            return KDriveLocalizable.labelSameAsSystem
+        case .http:
+            return KDriveLocalizable.proxyTypeHTTP
+        case .none:
+            return KDriveLocalizable.proxyTypeNone
+        default:
+            return "No Label"
+        }
+    }
 }
 
 public enum UIProxyAuthType: Sendable, Equatable {

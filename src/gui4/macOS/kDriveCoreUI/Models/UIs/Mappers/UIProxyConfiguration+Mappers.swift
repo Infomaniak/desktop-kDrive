@@ -49,6 +49,8 @@ public extension UIProxyType {
             return .HTTP
         case .socks5:
             return .Socks5
+        case .none:
+            return .None
         }
     }
 }
