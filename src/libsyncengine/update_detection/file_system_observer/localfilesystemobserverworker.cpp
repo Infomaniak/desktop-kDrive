@@ -309,9 +309,8 @@ ExitInfo LocalFileSystemObserverWorker::processDetectedChanges(const std::list<s
                 }
 
                 if (!_liveSnapshot.removeItem(itemId)) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Failed to remove item: " << Utility::formatSyncPath(absolutePath) << L" ("
+                    LOGW_SYNCPAL_WARN(_logger, L"Failed to remove item from local snapshot: " << Utility::formatSyncPath(absolutePath) << L" ("
                                                                           << CommonUtility::s2ws(itemId) << L")");
-
                     return ExitCode::DataError;
                 }
 
@@ -329,7 +328,7 @@ ExitInfo LocalFileSystemObserverWorker::processDetectedChanges(const std::list<s
                 // will be inserted below anyway.
                 if (!previousItemId.empty()) {
                     if (!_liveSnapshot.removeItem(previousItemId)) {
-                        LOGW_SYNCPAL_WARN(_logger, L"Failed to delete item: " << Utility::formatSyncPath(absolutePath) << L" ("
+                        LOGW_SYNCPAL_WARN(_logger, L"Failed to remove item from local snapshot: " << Utility::formatSyncPath(absolutePath) << L" ("
                                                                               << CommonUtility::s2ws(previousItemId) << L")");
                         return ExitCode::DataError;
                     }
@@ -337,6 +336,7 @@ ExitInfo LocalFileSystemObserverWorker::processDetectedChanges(const std::list<s
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: "
                                                         << Utility::formatSyncPath(absolutePath) << L" ("
                                                         << CommonUtility::s2ws(previousItemId) << L")");
+
                 }
             } else {
                 if (exitInfo.cause() == ExitCause::NotFound) {
