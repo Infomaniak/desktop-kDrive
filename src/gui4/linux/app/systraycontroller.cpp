@@ -130,7 +130,7 @@ void SystemTrayController::initialize() {
     _openAction = _trayMenu.addAction(tr("Open kDrive"));
     _settingsAction = _trayMenu.addAction(tr("Settings"));
     (void) _trayMenu.addSeparator();
-    _quitAction = _trayMenu.addAction(tr("Quit kDrive"));
+    _quitAction = _trayMenu.addAction(tr("Quit"));
     _trayIcon.setContextMenu(&_trayMenu);
 
     (void) connect(_openAction, &QAction::triggered, this, &SystemTrayController::showMainWindow);
