@@ -68,11 +68,16 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     (void) connect(&_serverCommService, &CommService::quit, this, [] { QCoreApplication::quit(); });
     (void) connect(&_systemTrayController, &SystemTrayController::quitRequested, this, [this] {
         qCInfo(lcAppClientLinux) << "Quit requested from system tray";
+        if (!_ipcClient.isConnected()) {
+            qCWarning(lcAppClientLinux) << "IPC is not connected, quitting application directly";
+            quit();
+            return;
+        }
         _serverCommService.requestQuit([](const auto &exitInfo) {
             if (!exitInfo) {
                 qCWarning(lcAppClientLinux) << "Server quit request failed";
             }
-            QCoreApplication::quit();
+            quit();
         });
     });
 
