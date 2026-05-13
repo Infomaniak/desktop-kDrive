@@ -40,4 +40,20 @@ public struct ExclusionTemplateJobs: Sendable {
 
         return decodedMessage.body.isExcluded
     }
+
+    public func getExclusionTemplateList(default isDefault: Bool) async throws -> [ExclusionTemplateInfo] {
+        IKLogger.data.log("Query for exclusionTemplateGetList")
+        let query = ExclusionTemplateGetListQuery(default: isDefault)
+        let request = await RequestMessage<ExclusionTemplateGetListQuery>(
+            num: RequestNum.EXCLTEMPL_GETLIST,
+            body: query
+        )
+
+        let decodedMessage = try await queryFetcher.query(
+            request,
+            responseType: CallbackMessage<ExclusionTemplateGetListResponse>.self
+        )
+
+        return [ExclusionTemplateInfo](responses: decodedMessage.body.exclusionTemplateList)
+    }
 }

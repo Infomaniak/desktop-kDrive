@@ -18,24 +18,20 @@
 
 import Foundation
 
-struct ExclusionTemplateGetExcludedQuery: Codable, Sendable {
-    @Base64CodedString var name: String
+public struct ExclusionTemplateInfo: Codable, Sendable {
+    public let template: String
+    public let warning: Bool
+    public let `default`: Bool
 }
 
-struct ExclusionTemplateGetExcludedResponse: Codable, Sendable {
-    let isExcluded: Bool
+extension ExclusionTemplateInfo {
+    init(response: ExclusionTemplateInfoResponse) {
+        self.init(template: response.template, warning: response.warning, default: response.default)
+    }
 }
 
-struct ExclusionTemplateGetListQuery: Codable, Sendable {
-    let `default`: Bool
-}
-
-struct ExclusionTemplateGetListResponse: Codable, Sendable {
-    let exclusionTemplateList: [ExclusionTemplateInfoResponse]
-}
-
-struct ExclusionTemplateInfoResponse: Codable, Sendable {
-    @Base64CodedString public var template: String
-    let warning: Bool
-    let `default`: Bool
+extension [ExclusionTemplateInfo] {
+    init(responses: [ExclusionTemplateInfoResponse]) {
+        self = responses.map { ExclusionTemplateInfo(response: $0) }
+    }
 }
