@@ -17,6 +17,8 @@
  */
 
 #include "getappversionjob.h"
+
+#include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/jsonparserutility.h"
 #include "utility/utility.h"
 
@@ -35,8 +37,13 @@ GetAppVersionJob::GetAppVersionJob(const DistributionChannel currentChannel, con
 
 GetAppVersionJob::GetAppVersionJob(const DistributionChannel currentChannel, const std::string &appID,
                                    const std::vector<UserId> &userIdList) :
-    GetAppVersionJob(currentChannel, appID, userIdList,
-                     userIdList.empty() ? ApiType::InternalUnauthenticated : ApiType::Internal) {}
+    AbstractTokenNetworkJob(userIdList.empty() ? ApiType::InternalUnauthenticated : ApiType::Internal),
+    _currentChannel(currentChannel),
+    _appId(appID),
+    _userIdList(userIdList) {
+    _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
+    _apiVersion = 1;
+}
 
 std::string GetAppVersionJob::getSpecificUrl() {
     constexpr auto kStoreAuthenticatedEndpoint = "/app-information/applications/version";
@@ -82,16 +89,6 @@ ExitInfo GetAppVersionJob::handleResponse(std::istream &is) {
         return {ExitCode::BackError, ExitCause::MissingReplyData};
 
     return ExitCode::Ok;
-}
-
-GetAppVersionJob::GetAppVersionJob(const DistributionChannel currentChannel, const std::string &appID,
-                                   const std::vector<UserId> &userIdList, const ApiType apiType) :
-    AbstractTokenNetworkJob(apiType),
-    _currentChannel(currentChannel),
-    _appId(appID),
-    _userIdList(userIdList) {
-    _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
-    _apiVersion = 1;
 }
 
 } // namespace KDC

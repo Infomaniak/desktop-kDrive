@@ -794,17 +794,17 @@ std::string toString(const UpdateState e) {
 std::string toString(const DistributionChannel e) {
     switch (e) {
         case DistributionChannel::Prod:
-            return "Prod";
+            return "production";
         case DistributionChannel::Next:
-            return "Next";
+            return "production-next";
         case DistributionChannel::Beta:
-            return "Beta";
+            return "beta";
         case DistributionChannel::Internal:
-            return "Internal";
+            return "internal";
         case DistributionChannel::Legacy:
-            return "Legacy";
+            return "legacy";
         case DistributionChannel::Test:
-            return "Test";
+            return "test";
         case DistributionChannel::Unknown:
             return "Unknown";
         default:
@@ -814,15 +814,15 @@ std::string toString(const DistributionChannel e) {
 std::string toString(const Platform e) {
     switch (e) {
         case Platform::MacOS:
-            return "MacOS";
+            return "mac-os";
         case Platform::Windows:
-            return "Windows";
+            return "windows";
         case Platform::WindowsServer:
-            return "WindowsServer";
+            return "windows-server";
         case Platform::LinuxAMD:
-            return "LinuxAMD";
+            return "linux-amd";
         case Platform::LinuxARM:
-            return "LinuxARM";
+            return "linux-arm";
         case Platform::Unknown:
             return "Unknown";
         default:
