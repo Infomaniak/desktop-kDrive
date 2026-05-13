@@ -62,31 +62,31 @@ class UserDisplayInfo : public UserInfo {
 };
 
 struct SyncContext {
-        UserDisplayInfo user;
-        AccountInfo account;
-        DriveInfo drive;
-        SyncInfo sync;
-        std::vector<ErrorInfo> errors;
-        std::optional<ErrorInfo> latestError;
+        UserDisplayInfo userDisplayInfo;
+        AccountInfo accountInfo;
+        DriveInfo driveInfo;
+        SyncInfo syncInfo;
+        std::vector<ErrorInfo> errorInfoList;
+        std::optional<ErrorInfo> latestErrorInfo;
 
         friend bool operator==(const SyncContext &lhs, const SyncContext &rhs) = default;
 };
 
 struct DriveContext {
-        UserInfo user;
-        AccountInfo account;
-        DriveInfo drive;
-        std::vector<SyncInfo> syncs;
+        UserDisplayInfo userDisplayInfo;
+        AccountInfo accountInfo;
+        DriveInfo driveInfo;
+        std::vector<SyncInfo> syncInfos;
 
         friend bool operator==(const DriveContext &lhs, const DriveContext &rhs) = default;
 };
 
 struct AvailableDriveContext {
-        UserDisplayInfo user;
-        std::optional<AccountInfo> account;
-        DriveAvailableInfo availableDrive;
+        UserDisplayInfo userDisplayInfo;
+        std::optional<AccountInfo> accountInfo;
+        DriveAvailableInfo availableDriveInfo;
         bool alreadyConfigured{false};
-        std::optional<DriveInfo> configuredDrive;
+        std::optional<DriveInfo> configuredDriveInfo;
 
         friend bool operator==(const AvailableDriveContext &lhs, const AvailableDriveContext &rhs) = default;
 };
