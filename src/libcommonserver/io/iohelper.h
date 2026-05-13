@@ -161,6 +161,7 @@ struct IoHelper {
         //! Get the checksum of the file indicated by `path`.
         /*!
          \param path is a file system path to a directory entry (we also call it an item).
+         \param ifs is an input file stream used to read the file contents.
          \param ioError holds the error returned when an underlying OS API call fails.
          \return the checksum of the file indicated by `path`.
          */
