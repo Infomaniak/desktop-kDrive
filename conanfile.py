@@ -156,6 +156,7 @@ class KDriveDesktop(ConanFile):
             "shared": False,
             "build_executable": False
         })
+        self.requires("keychain/1.3.0")
         # log4cplus
         self.requires("log4cplus/2.1.2", options={
             "shared": True,

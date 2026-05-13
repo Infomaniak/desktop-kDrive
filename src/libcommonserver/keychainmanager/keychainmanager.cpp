@@ -17,8 +17,9 @@
  */
 
 #include "keychainmanager.h"
-#include "keychain/keychain.h"
 #include "log/log.h"
+
+#include "keychain/keychain.h"
 
 #include <log4cplus/loggingmacros.h>
 

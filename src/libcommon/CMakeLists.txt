@@ -111,14 +111,12 @@ if(WIN32)
     target_include_directories(${libcommon_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
-        "C:/Program Files (x86)/libzip/include"
-        ${CMAKE_SOURCE_DIR}/src/3rdparty/keychain/include)
+        "C:/Program Files (x86)/libzip/include")
 else()
     target_include_directories(${libcommon_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
-        "/usr/local/include"
-        ${CMAKE_SOURCE_DIR}/src/3rdparty/keychain/include)
+        "/usr/local/include")
 endif()
 
 # Link
@@ -127,7 +125,6 @@ target_link_libraries(${libcommon_NAME}
     Poco::Foundation Poco::JSON Poco::Util
     log4cplus::log4cplus
     sentry::sentry
-    keychain
     libzip::zip)
 
 if(UNIX)
