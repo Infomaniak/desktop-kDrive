@@ -58,6 +58,7 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("driveService"), &_driveService);
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("syncService"), &_syncService);
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("serviceEventBus"), &_serviceEventBus);
+    _qmlEngine.rootContext()->setContextProperty(QStringLiteral("onboardingState"), &_onboardingState);
     _qmlEngine.loadFromModule(QStringLiteral("kDrive.UI"), QStringLiteral("Main"));
     if (_qmlEngine.rootObjects().isEmpty()) {
         qCCritical(lcAppClientLinux) << "QML root object creation failed";

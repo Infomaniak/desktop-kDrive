@@ -44,7 +44,7 @@ void CachePopulator::bootstrap() {
 }
 
 void CachePopulator::loadUsers() {
-    _commService.requestUserInfoList([this](const ExitInfo &exitInfo, const std::vector<UserInfo> &list) {
+    _commService.requestUserDisplayInfoList([this](const ExitInfo &exitInfo, const std::vector<UserDisplayInfo> &list) {
         if (!exitInfo) {
             exitOnPopulationFailure("users", exitInfo);
         }
@@ -117,6 +117,16 @@ void CachePopulator::loadSyncErrors() {
         _appCache.replaceSyncErrors(syncErrors);
         _appCache.replaceServerErrors(serverErrors);
         emit bootstrapCompleted();
+        activateLiveInfoRefresh();
+    });
+}
+
+void CachePopulator::activateLiveInfoRefresh() const {
+    _commService.requestActivateLoadInfo([](const ExitInfo &exitInfo) {
+        if (!exitInfo) {
+            qCWarning(lcCachePopulator) << "Live info refresh activation failed | code:" << exitInfo.code()
+                                        << "/ cause:" << exitInfo.cause();
+        }
     });
 }
 

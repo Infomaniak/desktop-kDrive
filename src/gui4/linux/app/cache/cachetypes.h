@@ -26,6 +26,8 @@
 #include "libcommon/info/syncinfo.h"
 #include "libcommon/info/userinfo.h"
 
+#include <Poco/Hash.h>
+
 #include <QString>
 
 #include <cstddef>
@@ -43,32 +45,48 @@ struct AvailableDriveKey {
         friend bool operator==(const AvailableDriveKey &lhs, const AvailableDriveKey &rhs) = default;
 };
 
+class UserDisplayInfo : public UserInfo {
+    public:
+        using UserInfo::UserInfo;
+
+        [[nodiscard]] const QString &avatarSource() const { return _avatarSource; }
+        void setAvatarSource(const QString &avatarSource) { _avatarSource = avatarSource; }
+
+        friend bool operator==(const UserDisplayInfo &lhs, const UserDisplayInfo &rhs) {
+            return static_cast<const UserInfo &>(lhs) == static_cast<const UserInfo &>(rhs) &&
+                   lhs.avatarSource() == rhs.avatarSource();
+        }
+
+    private:
+        QString _avatarSource;
+};
+
 struct SyncContext {
-        UserInfo user;
-        AccountInfo account;
-        DriveInfo drive;
-        SyncInfo sync;
-        std::vector<ErrorInfo> errors;
-        std::optional<ErrorInfo> latestError;
+        UserDisplayInfo userDisplayInfo;
+        AccountInfo accountInfo;
+        DriveInfo driveInfo;
+        SyncInfo syncInfo;
+        std::vector<ErrorInfo> errorInfoList;
+        std::optional<ErrorInfo> latestErrorInfo;
 
         friend bool operator==(const SyncContext &lhs, const SyncContext &rhs) = default;
 };
 
 struct DriveContext {
-        UserInfo user;
-        AccountInfo account;
-        DriveInfo drive;
-        std::vector<SyncInfo> syncs;
+        UserDisplayInfo userDisplayInfo;
+        AccountInfo accountInfo;
+        DriveInfo driveInfo;
+        std::vector<SyncInfo> syncInfos;
 
         friend bool operator==(const DriveContext &lhs, const DriveContext &rhs) = default;
 };
 
 struct AvailableDriveContext {
-        UserInfo user;
-        std::optional<AccountInfo> account;
-        DriveAvailableInfo availableDrive;
+        UserDisplayInfo userDisplayInfo;
+        std::optional<AccountInfo> accountInfo;
+        DriveAvailableInfo availableDriveInfo;
         bool alreadyConfigured{false};
-        std::optional<DriveInfo> configuredDrive;
+        std::optional<DriveInfo> configuredDriveInfo;
 
         friend bool operator==(const AvailableDriveContext &lhs, const AvailableDriveContext &rhs) = default;
 };
@@ -86,9 +104,10 @@ struct PendingSyncConfig {
 template<>
 struct std::hash<KDC::AvailableDriveKey> {
         std::size_t operator()(const KDC::AvailableDriveKey &key) const noexcept {
-            const auto hashUser = std::hash<KDC::UserDbId>{}(key.userDbId);
-            const auto hashAccount = std::hash<KDC::AccountId>{}(key.accountId);
-            const auto hashDrive = std::hash<KDC::DriveId>{}(key.driveId);
-            return hashUser ^ (hashAccount << 1U) ^ (hashDrive << 2U);
+            std::size_t seed = 0;
+            Poco::hashCombine(seed, key.userDbId);
+            Poco::hashCombine(seed, key.accountId);
+            Poco::hashCombine(seed, key.driveId);
+            return seed;
         }
 };

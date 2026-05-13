@@ -25,6 +25,8 @@
   relevant).
 - In range-for loops over associative containers, prefer `std::views::keys` / `std::views::values` over structured
   bindings with an unused `_` element when only keys or only values are needed.
+- For Linux v4 model/UI checks, build only the `kdrive_qml` target unless a broader backend/server validation is
+  explicitly needed.
 
 ## Scope
 
@@ -55,7 +57,7 @@
       but the underlying cache graph changes.
 - `app/cache/onboardingstate.*`: onboarding-only selected user, selected available-drive keys, and pending sync configs.
 - `app/services/cachepopulator.*`: sequential initial snapshot loader for users, accounts, drives, syncs, and sync
-  errors.
+  errors; after bootstrap, activates the server live-info refresh so quota-only drive updates reach `CachePipeline`.
 - `app/services/driveservice.*`: targeted drive use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`;
   durable cache mutations stay signal-driven through `CachePipeline`.
 - `app/services/syncservice.*`: targeted sync use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`;

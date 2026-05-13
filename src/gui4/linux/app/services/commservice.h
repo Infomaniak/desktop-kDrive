@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "app/cache/cachetypes.h"
 #include "communicationlayer/ipcclient.h"
 #include "communicationlayer/signaldispatcher.h"
 #include "libcommon/utility/cstypes.h"
@@ -104,7 +105,7 @@ class CommService : public QObject {
         using BoolCallback = std::function<void(const ExitInfo &, bool)>;
         using LoginTokenCallback = std::function<void(const ExitInfo &, const LoginTokenResult &)>;
         using UserDbIdListCallback = std::function<void(const ExitInfo &, const std::vector<UserDbId> &)>;
-        using UserInfoListCallback = std::function<void(const ExitInfo &, const std::vector<UserInfo> &)>;
+        using UserDisplayInfoListCallback = std::function<void(const ExitInfo &, const std::vector<UserDisplayInfo> &)>;
         using DriveAvailableInfoListCallback = std::function<void(const ExitInfo &, const std::vector<DriveAvailableInfo> &)>;
         using AccountInfoListCallback = std::function<void(const ExitInfo &, const std::vector<AccountInfo> &)>;
         using DriveInfoListCallback = std::function<void(const ExitInfo &, const std::vector<DriveInfo> &)>;
@@ -143,7 +144,7 @@ class CommService : public QObject {
 
         // --- User ---
         void requestUserDbIdList(const UserDbIdListCallback &callback) const;
-        void requestUserInfoList(const UserInfoListCallback &callback) const;
+        void requestUserDisplayInfoList(const UserDisplayInfoListCallback &callback) const;
         void requestUserAvailableDrives(UserDbId userDbId, const DriveAvailableInfoListCallback &callback) const;
         void requestDeleteUser(UserDbId userDbId, const VoidCallback &callback) const;
 
@@ -227,8 +228,8 @@ class CommService : public QObject {
 
     signals:
         // --- User ---
-        void userAdded(const UserInfo &info);
-        void userUpdated(const UserInfo &info);
+        void userAdded(const UserDisplayInfo &info);
+        void userUpdated(const UserDisplayInfo &info);
         void userRemoved(UserDbId userDbId);
 
         // --- Account ---
