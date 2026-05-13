@@ -77,12 +77,12 @@ void TestRemoteFileSystemObserverWorker::setUp() {
 
 
     // Insert user, account, drive & sync
-    const int userId(atoi(testVariables.userId.c_str()));
+    const UserId userId(atoi(testVariables.userId.c_str()));
     User user(_userDbId, userId, keychainKey);
     (void) ParmsDb::instance()->insertUser(user);
 
-    const int accountId(atoi(testVariables.accountId.c_str()));
-    Account account(1, accountId, user.dbId(), "account1");
+    const AccountId accountId(atoi(testVariables.accountId.c_str()));
+    Account account(AccountDbId{1}, accountId, user.dbId(), "account1");
     (void) ParmsDb::instance()->insertAccount(account);
 
     _driveDbId = 1;
@@ -90,8 +90,8 @@ void TestRemoteFileSystemObserverWorker::setUp() {
     Drive drive(_driveDbId, _driveId, account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
 
-    Sync sync(1, drive.dbId(), testhelpers::localTestDirPath(), "", "/");
-    const auto syncDbPath = MockDb::makeDbName(userId, accountId, driveId, 1);
+    Sync sync(SyncDbId{1}, drive.dbId(), testhelpers::localTestDirPath(), "", "/");
+    const auto syncDbPath = MockDb::makeDbName(userId, accountId, _driveId, 1);
     sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(sync);
 
