@@ -778,7 +778,7 @@ std::string IoHelper::getFileChecksum(const SyncPath &path, std::ifstream &ifs, 
 
 #if defined(KD_MACOS)
     bool isAlias = false;
-    if (!IoHelper::checkIfIsAlias(path, isAlias, ioError)) {
+    if (!IoHelper::_checkIfAlias(path, isAlias, ioError)) {
         return "";
     }
     if (isAlias) {
@@ -800,7 +800,7 @@ std::string IoHelper::getFileChecksum(const SyncPath &path, std::ifstream &ifs, 
     XXH3_state_t *state = XXH3_createState();
     XXH3_64bits_reset(state);
 
-    size_t readBytes(0);
+    std::streamsize readBytes(0);
     while ((readBytes = ifs.read(buffer.data(), buffer.size()).gcount()) > 0) {
         XXH3_64bits_update(state, buffer.data(), readBytes);
     }
