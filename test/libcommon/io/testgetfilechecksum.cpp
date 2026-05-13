@@ -129,7 +129,7 @@ void TestIo::testGetFileChecksum() {
 #endif
         {
             std::ofstream ofs(path);
-            ofs << "Some content.\n";
+            ofs << "Some content.";
         }
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
@@ -142,7 +142,7 @@ void TestIo::testGetFileChecksum() {
         auto checksum = IoHelper::getFileChecksum(path, ifs, ioError);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT(!checksum.empty());
-        CPPUNIT_ASSERT_EQUAL(std::string("3d48b0e057db6f01"), checksum);
+        CPPUNIT_ASSERT_EQUAL(std::string("91f9d1732ca53515"), checksum);
     }
 
     // A file with dots and colons in its name
@@ -151,7 +151,7 @@ void TestIo::testGetFileChecksum() {
         const SyncPath path = temporaryDirectory.path() / ":.file.::.name.:";
         {
             std::ofstream ofs(path);
-            ofs << "Some content.\n";
+            ofs << "Some content.";
         }
 
         IoError ioError = IoError::Unknown;
@@ -163,7 +163,7 @@ void TestIo::testGetFileChecksum() {
         CPPUNIT_ASSERT(checksum.empty());
 #else
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-        CPPUNIT_ASSERT_EQUAL(std::string("3d48b0e057db6f01"), checksum);
+        CPPUNIT_ASSERT_EQUAL(std::string("91f9d1732ca53515"), checksum);
 #endif
     }
 
@@ -173,7 +173,7 @@ void TestIo::testGetFileChecksum() {
         const SyncPath path = temporaryDirectory.path() / makeFileNameWithEmojis();
         {
             std::ofstream ofs(path);
-            ofs << "Some content.\n";
+            ofs << "Some content.";
             ofs.close();
         }
 
@@ -183,7 +183,7 @@ void TestIo::testGetFileChecksum() {
         auto checksum = IoHelper::getFileChecksum(path, ifs, ioError);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT(!checksum.empty());
-        CPPUNIT_ASSERT_EQUAL(std::string("3d48b0e057db6f01"), checksum);
+        CPPUNIT_ASSERT_EQUAL(std::string("91f9d1732ca53515"), checksum);
     }
 
     // A dangling symbolic link
@@ -230,7 +230,7 @@ void TestIo::testGetFileChecksum() {
         const SyncPath path = temporaryDirectory.path() / "dangling_file_alias";
         {
             std::ofstream ofs(targetPath);
-            ofs << "Some content.\n";
+            ofs << "Some content.";
         }
 
         IoError aliasError = Unknown;
@@ -256,7 +256,7 @@ void TestIo::testGetFileChecksum() {
         const SyncPath path = temporaryDirectory.path() / "permission_less_file.txt";
         {
             std::ofstream ofs(path);
-            ofs << "Some content.\n";
+            ofs << "Some content.";
         }
 
         std::filesystem::permissions(path, std::filesystem::perms::all, std::filesystem::perm_options::remove);
@@ -267,14 +267,14 @@ void TestIo::testGetFileChecksum() {
         auto checksum = IoHelper::getFileChecksum(path, ifs, ioError);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT(!checksum.empty());
-        CPPUNIT_ASSERT_EQUAL(std::string("3d48b0e057db6f01"), checksum);
+        CPPUNIT_ASSERT_EQUAL(std::string("91f9d1732ca53515"), checksum);
 
         std::filesystem::permissions(path, std::filesystem::perms::all, std::filesystem::perm_options::add);
 
         checksum = IoHelper::getFileChecksum(path, ifs, ioError);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT(!checksum.empty());
-        CPPUNIT_ASSERT_EQUAL(std::string("3d48b0e057db6f01"), checksum);
+        CPPUNIT_ASSERT_EQUAL(std::string("91f9d1732ca53515"), checksum);
     }
 
     // A regular file within a subdirectory that misses owner read permission (no error expected)
@@ -285,7 +285,7 @@ void TestIo::testGetFileChecksum() {
         const SyncPath path = subdir / "file.txt";
         {
             std::ofstream ofs(path);
-            ofs << "Some content.\n";
+            ofs << "Some content.";
         }
         std::filesystem::permissions(subdir, std::filesystem::perms::owner_read, std::filesystem::perm_options::remove);
 
@@ -295,7 +295,7 @@ void TestIo::testGetFileChecksum() {
         auto checksum = IoHelper::getFileChecksum(path, ifs, ioError);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT(!checksum.empty());
-        CPPUNIT_ASSERT_EQUAL(std::string("3d48b0e057db6f01"), checksum);
+        CPPUNIT_ASSERT_EQUAL(std::string("91f9d1732ca53515"), checksum);
 
         // Restore permission to allow subdir removal
         std::filesystem::permissions(subdir, std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
@@ -303,7 +303,7 @@ void TestIo::testGetFileChecksum() {
         checksum = IoHelper::getFileChecksum(path, ifs, ioError);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT(!checksum.empty());
-        CPPUNIT_ASSERT_EQUAL(std::string("3d48b0e057db6f01"), checksum);
+        CPPUNIT_ASSERT_EQUAL(std::string("91f9d1732ca53515"), checksum);
     }
 
     // A regular file within a subdirectory that misses owner search/exec permission:
@@ -316,7 +316,7 @@ void TestIo::testGetFileChecksum() {
         const SyncPath path = subdir / "file.txt";
         {
             std::ofstream ofs(path);
-            ofs << "Some content.\n";
+            ofs << "Some content.";
         }
         std::filesystem::permissions(subdir, std::filesystem::perms::owner_exec, std::filesystem::perm_options::remove);
 
@@ -331,7 +331,7 @@ void TestIo::testGetFileChecksum() {
 #if defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT(!checksum.empty());
-        CPPUNIT_ASSERT_EQUAL(std::string("3d48b0e057db6f01"), checksum);
+        CPPUNIT_ASSERT_EQUAL(std::string("91f9d1732ca53515"), checksum);
 #else
         CPPUNIT_ASSERT_EQUAL(IoError::AccessDenied, ioError);
         CPPUNIT_ASSERT(checksum.empty());
