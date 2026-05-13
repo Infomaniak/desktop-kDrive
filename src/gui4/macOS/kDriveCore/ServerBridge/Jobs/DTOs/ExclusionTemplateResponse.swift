@@ -47,7 +47,7 @@ struct ExclusionTemplateInfoExchange: Codable, Sendable {
 }
 
 struct ExclusionTemplateInfoResponse: Codable, Sendable {
-    @Base64CodedString public var template: String
+    @Base64CodedString var template: String
     let warning: Bool
     let `default`: Bool
 }
