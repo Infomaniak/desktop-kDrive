@@ -92,7 +92,11 @@ void TestIo::testGetFileChecksum() {
         auto checksum = IoHelper::getFileChecksum(path, ifs, ioError);
         CPPUNIT_ASSERT(checksum.empty());
         CPPUNIT_ASSERT_EQUAL(std::string(""), checksum);
+#if defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
+#else
+        CPPUNIT_ASSERT_EQUAL(IoError::FileNameTooLong, ioError);
+#endif
     }
     // A non-existing file with a very long path
     {
