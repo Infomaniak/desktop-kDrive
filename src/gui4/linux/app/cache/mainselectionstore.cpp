@@ -110,7 +110,7 @@ SyncDbId MainSelectionStore::firstAvailableSyncDbId() const {
     if (contexts.empty()) {
         return 0;
     }
-    return contexts.front().sync.dbId();
+    return contexts.front().syncInfo.dbId();
 }
 
 } // namespace KDC
