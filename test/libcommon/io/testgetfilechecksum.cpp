@@ -270,7 +270,7 @@ void TestIo::testGetFileChecksum() {
         CPPUNIT_ASSERT(!checksum.empty());
         CPPUNIT_ASSERT_EQUAL(std::string("91f9d1732ca53515"), checksum);
 #else
-        CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::AccessDenied, ioError);
         CPPUNIT_ASSERT(checksum.empty());
         CPPUNIT_ASSERT_EQUAL(std::string(""), checksum);
 #endif
