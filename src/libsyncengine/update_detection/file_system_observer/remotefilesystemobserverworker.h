@@ -122,7 +122,14 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
             _specialFolderUpdateFlags[specialFolderId] = flag;
         }
         void setUpdateFlagValue(bool isUpdating) { _updating = isUpdating; }
-        void setInitFlagValue(bool isInititializing) { _initializing = isInititializing; }
+        void setInitFlagValue(bool isInitializing) { _initializing = isInitializing; }
+
+        ExitInfo parseCsvReply(CursorPersistence cursorPersistence,
+                               std::shared_ptr<CsvFullFileListWithCursorJob> csvFullListingJob);
+        ExitInfo handleCsvReplyCursor(const RemoteNodeId &remoteDirId, CursorPersistence cursorPersistence,
+                                      std::shared_ptr<CsvFullFileListWithCursorJob> csvFullFileListWithCursorJob);
+        ExitInfo getItemsInDirJob(const RemoteNodeId &remoteDirId,
+                                  std::shared_ptr<CsvFullFileListWithCursorJob> csvFullFileListWithCursorJob);
 
         friend class TestRemoteFileSystemObserverWorker;
 };
