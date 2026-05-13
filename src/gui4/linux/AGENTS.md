@@ -13,20 +13,20 @@
 
 ### Local Norms (Linux v4)
 
-- In versioned documentation, use repo-relative paths (no hardcoded absolute paths).
+- In versioned documentation, use repo-relative paths, not hardcoded absolute paths.
 - Do not add links to `.md` files that are not versioned in git.
 - On a Linux host, validate natively: run `./infomaniak-build-tools/conan/build_dependencies.sh Debug`, configure with
-  the generated Conan/CMake Debug preset, then build `kDrive`,
-  `kDrive_client`, and `kdrive_qml`. Do not use the Podman release script for this local Linux validation path.
+  the generated Conan/CMake Debug preset, then build `kDrive`, `kDrive_client`, and `kdrive_qml`. Do not use the Podman
+  release script for this local Linux validation path.
 - Prefer documenting private implementation helpers in `.cpp` rather than headers.
 - Do not introduce raw `int` in new code when a fixed-width type fits (`uint8_t`, `int32_t`, ...).
 - Do not run `clang-format` on `CMakeLists.txt` in this repository.
-- For shared infrastructure classes, document the class role explicitly in the header comment (and non-role when
-  relevant).
+- For shared infrastructure classes, document the class role explicitly in the header comment when relevant.
 - In range-for loops over associative containers, prefer `std::views::keys` / `std::views::values` over structured
   bindings with an unused `_` element when only keys or only values are needed.
 - For Linux v4 model/UI checks, build only the `kdrive_qml` target unless a broader backend/server validation is
   explicitly needed.
+- For tray fallback testing, `KDRIVE_FORCE_NO_TRAY=1` is Debug-only and forces the startup tray probe to stay disabled.
 
 ## Scope
 
@@ -38,8 +38,9 @@
 
 - `main.cpp`: process entry point + single-instance lock file.
 - `appclientlinux.*`: top-level app wiring (logging, IPC lifecycle, dispatcher/service ownership).
-- `app/systraycontroller.*`: Linux system tray ownership, 5-state tray icon selection, GNOME-compatible tray menu actions,
-  and main QML window show/hide behavior.
+- `app/systraycontroller.*`: Linux system tray ownership, 5-state tray icon selection, GNOME-compatible tray menu
+  actions, fallback-to-window startup behavior, retry loop for late tray availability, and main QML window show/hide
+  behavior.
 - `communicationlayer/ipcclient.*`: raw TCP JSON transport, request/reply correlation, reconnect-before-first-connect
   logic.
 - `communicationlayer/signaldispatcher.*`: server-push signal fanout to registered handlers.
@@ -48,18 +49,18 @@
   (`begin/end/isActionPending/isServicePending`).
 - `app/services/serviceeventbus.*`: shared high-level service event hub (single UI subscription point for generic
   cross-service failures). Owned once by `AppClientLinux` and injected by reference into app services.
-- `app/cache/appcache.*`: durable graph-backed cache (`AppCache` QObject) — owns configured users/accounts/drives/syncs,
+- `app/cache/appcache.*`: durable graph-backed cache (`AppCache` QObject) - owns configured users/accounts/drives/syncs,
   split sync/server errors, per-user available drives, cascade removals, and derived read models.
 - `app/cache/cachepipeline.*`: unique bridge for `CommService -> AppCache` push signals.
     - Drops push mutations before `CachePopulator::bootstrapCompleted()` and logs the invariant violation.
 - `app/cache/cachetypes.h`: cache read models and onboarding keys (`SyncContext`, `DriveContext`,
   `AvailableDriveContext`, `AvailableDriveKey`, `PendingSyncConfig`).
 - `app/cache/mainselectionstore.*`: sync-first main-shell selection owner (`currentSyncDbId`) and selection healing.
-    - emits `currentSyncContextChanged()` as a coarse invalidation signal when the current sync context stays selected
+    - Emits `currentSyncContextChanged()` as a coarse invalidation signal when the current sync context stays selected
       but the underlying cache graph changes.
 - `app/cache/onboardingstate.*`: onboarding-only selected user, selected available-drive keys, and pending sync configs.
 - `app/services/cachepopulator.*`: sequential initial snapshot loader for users, accounts, drives, syncs, and sync
-  errors; after bootstrap, activates the server live-info refresh so quota-only drive updates reach `CachePipeline`.
+  errors; after bootstrap, activates the server live-info refresh so only drive updates reach `CachePipeline`.
 - `app/services/driveservice.*`: targeted drive use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`;
   durable cache mutations stay signal-driven through `CachePipeline`.
 - `app/services/syncservice.*`: targeted sync use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`;
@@ -69,12 +70,12 @@
 ## Build And Validation
 
 ```bash
-# From repo root: install Debug dependencies and generate Conan/CMake presets
+# From repo root: install Debug dependencies and generate Conan / CMake presets
 ./infomaniak-build-tools/conan/build_dependencies.sh Debug
 
 # Configure the generated Debug preset, then build the relevant Linux targets
 cmake --preset conan-debug -S . -B build-linux/build/build/Debug
-cmake --build build-linux/build/build/Debug --target kDrive kdrive_qml -- -j 8
+cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive_qml -- -j 8
 ```
 
 ## Architecture Rules
@@ -101,10 +102,13 @@ cmake --build build-linux/build/build/Debug --target kDrive kdrive_qml -- -j 8
   available-drives snapshot.
 - `CachePipeline` owns the direct push-signal bridge from `CommService` to `AppCache`; service classes should not wire
   those pushes themselves.
-- `CachePipeline` must not let server pushes mutate `AppCache` before the initial `CachePopulator` snapshot has completed.
-- Full graph snapshots (`USER_INFOLIST`, `ACCOUNT_INFOLIST`, `DRIVE_INFOLIST`, `SYNC_INFOLIST`, initial error list) belong
-  to `CachePopulator` bootstrap/reconnect only. Do not expose user/drive/sync full-refresh methods to QML services.
-- QML-facing services should provide targeted actions only; user/account/drive/sync cache consistency is push-signal-driven.
+- `CachePipeline` must not let server pushes mutate `AppCache` before the initial `CachePopulator` snapshot has
+  completed.
+- Full graph snapshots (`USER_INFOLIST`, `ACCOUNT_INFOLIST`, `DRIVE_INFOLIST`, `SYNC_INFOLIST`, initial error list)
+  belong to `CachePopulator` bootstrap/reconnect only. Do not expose user/drive/sync full-refresh methods to QML
+  services.
+- QML-facing services should provide targeted actions only; user/account/drive/sync cache consistency is
+  push-signal-driven.
 
 ## IPC And Error Handling
 
