@@ -35,6 +35,10 @@ struct TestDataCoding: Codable {
     @Base64CodedData var data: Data
 }
 
+struct TestStringDictionaryCoding: Codable {
+    @Base64CodedStringDictionary var table: [String: String]
+}
+
 struct TestColorCoding: Codable {
     @Base64CodedColor var color: HexColor
 
@@ -64,10 +68,10 @@ struct Base64CodedStringPropertyWrapperTests {
 
         // WHEN
         let data = try JSONEncoder().encode(testStringCoding)
-        let jsonString = String(data: data, encoding: .utf8)
+        let decodedRaw = try JSONDecoder().decode([String: String].self, from: data)
 
         // THEN
-        #expect(jsonString == Self.sourceJson)
+        #expect(decodedRaw["string"] == "QmFzZTY0")
     }
 }
 
@@ -92,10 +96,10 @@ struct Base64CodedStringsPropertyWrapperTests {
 
         // WHEN
         let data = try JSONEncoder().encode(testStringCoding)
-        let jsonString = String(data: data, encoding: .utf8)
+        let decodedRaw = try JSONDecoder().decode([String: [String]].self, from: data)
 
         // THEN
-        #expect(jsonString == Self.sourceJson)
+        #expect(decodedRaw["strings"] == ["bGE=", "bGk=", "bHU=", "bGU=", "bG8="])
     }
 }
 
@@ -120,10 +124,10 @@ struct Base64CodedURLPropertyWrapperTests {
 
         // WHEN
         let data = try JSONEncoder().encode(testURLCoding)
-        let jsonString = String(data: data, encoding: .utf8)
+        let decodedRaw = try JSONDecoder().decode([String: String].self, from: data)
 
         // THEN
-        #expect(jsonString == Self.sourceJson)
+        #expect(decodedRaw["url"] == "aHR0cHM6Ly93d3cuYXBwbGUuY29t")
     }
 }
 
@@ -147,10 +151,10 @@ struct Base64CodedDataPropertyWrapperTests {
 
         // WHEN
         let encodedData = try JSONEncoder().encode(testDataCoding)
-        let jsonString = String(data: encodedData, encoding: .utf8)
+        let decodedRaw = try JSONDecoder().decode([String: String].self, from: encodedData)
 
         // THEN
-        #expect(jsonString == #"{"data":"QmFzZTY0"}"#)
+        #expect(decodedRaw["data"] == "QmFzZTY0")
     }
 }
 
@@ -188,9 +192,37 @@ struct Base64CodedColorPropertyWrapperTests {
 
         // WHEN
         let encodedData = try JSONEncoder().encode(testColorCoding)
-        let jsonString = String(data: encodedData, encoding: .utf8)
+        let decodedRaw = try JSONDecoder().decode([String: String].self, from: encodedData)
 
         // THEN
-        #expect(jsonString == #"{"color":"\#(base64Expected)"}"#)
+        #expect(decodedRaw["color"] == base64Expected)
+    }
+}
+
+struct Base64CodedStringDictionaryPropertyWrapperTests {
+    static let sourceJson = #"{"table":{"appId1":"YXBwbGljYXRpb25OYW1lMQ==","appId2":"YXBwbGljYXRpb25OYW1lMg=="}}"#
+    static let sourceDict = ["appId1": "applicationName1", "appId2": "applicationName2"]
+
+    @Test func decodingStringDictionaryWithBase64Coding() async throws {
+        // GIVEN
+        let data = Data(Self.sourceJson.utf8)
+
+        // WHEN
+        let parsed = try JSONDecoder().decode(TestStringDictionaryCoding.self, from: data)
+
+        // THEN
+        #expect(parsed.table == Self.sourceDict)
+    }
+
+    @Test func encodingStringDictionaryWithBase64Coding() async throws {
+        // GIVEN
+        let testCoding = TestStringDictionaryCoding(table: Self.sourceDict)
+
+        // WHEN
+        let data = try JSONEncoder().encode(testCoding)
+        let decodedRaw = try JSONDecoder().decode([String: [String: String]].self, from: data)
+
+        // THEN
+        #expect(decodedRaw["table"] == ["appId1": "YXBwbGljYXRpb25OYW1lMQ==", "appId2": "YXBwbGljYXRpb25OYW1lMg=="])
     }
 }
