@@ -16,12 +16,30 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Cocoa
-import kDriveCoreUI
 import SwiftUI
 
-final class AdvancedPreferencesViewController: TitledViewController<AdvancedPreferencesView> {
-    convenience init() {
-        self.init(toolbarTitle: SidebarItem.advanced.title, contentView: AdvancedPreferencesView())
+public struct LabelContainerView: View {
+    let title: String
+    let description: String
+
+    public init(title: String, description: String) {
+        self.title = title
+        self.description = description
     }
+
+    public var body: some View {
+        VStack(alignment: .leading) {
+            Text(title)
+                .font(.Tokens.body)
+
+            Text(description)
+                .font(.Tokens.subheadline)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+#Preview {
+    LabelContainerView(title: "My Title", description: "My Description")
 }

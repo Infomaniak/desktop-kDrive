@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2026 Infomaniak Network SA
+ Copyright (C) 2023-2025 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -16,12 +16,24 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Cocoa
 import kDriveCoreUI
 import SwiftUI
 
-final class AdvancedPreferencesViewController: TitledViewController<AdvancedPreferencesView> {
-    convenience init() {
-        self.init(toolbarTitle: SidebarItem.advanced.title, contentView: AdvancedPreferencesView())
+struct AdvancedPreferencesDebugView: View {
+    let repository: PreferencesRepository
+
+    var body: some View {
+        VStack(alignment: .leading) {
+            Form {
+                AdvancedPreferencesDebugEnableView(repository: repository)
+                AdvancedPreferencesDebugOptionsView(repository: repository)
+                AdvancedPreferencesDebugSendView()
+            }
+            .groupedFormatStyle()
+        }
     }
+}
+
+#Preview {
+    AdvancedPreferencesDebugView(repository: PreferencesRepository())
 }

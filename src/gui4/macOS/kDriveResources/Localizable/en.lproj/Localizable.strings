@@ -20,6 +20,9 @@
 /* loco:69a6d9dd08a75d40410b53f6 */
 "accessibilityBetaProgramPicker" = "Choosing a distribution channel";
 
+/* loco:69e1dcc78d162264ae0f2f52 */
+"accessibilityMoreInformation" = "Show more information";
+
 /* loco:69b275fb3440db13f0011c03 */
 "accessibilitySelectSynchroMode" = "Select a synchronization mode";
 
@@ -49,6 +52,12 @@
 
 /* loco:698af4376b386d18b9037522 */
 "appUpToDate" = "The application is up to date";
+
+/* loco:698b36f2eb276c03d00e7c07 */
+"autoCleanupLogsDescription" = "Deletes logs older than 7 days to save disk space.";
+
+/* loco:698b36d9eb276c03d00e7c03 */
+"autoCleanupLogsSetting" = "Automatic cleanup";
 
 /* loco:698af0b429d5e005bc08dfb2 */
 "automaticUpdatesSetting" = "Automatic updates";
@@ -135,6 +144,9 @@
 /* loco:697a2658a44fbad34f011962 */
 "buttonManage" = "Manage";
 
+/* loco:698b3ab789def0ffdd073952 */
+"buttonOpenDebugFolder" = "Open debug folder";
+
 /* loco:68b04d823f2b735c170caea2 */
 "buttonOpenInBrowser" = "Open in browser";
 
@@ -175,6 +187,12 @@
 /* loco:698c5cb5f86b52c6fc001fc4 */
 "buttonSelectFolders" = "Select folders";
 
+/* loco:6989f2b84f80e68db204aa55 */
+"buttonSend" = "Send";
+
+/* loco:6989e1e13690f28b9e0c8b92 */
+"buttonSendLog" = "Send debug folder";
+
 /* loco:69a7ed31e3754291a4029e52 */
 "buttonSettings" = "Open Settings";
 
@@ -213,6 +231,15 @@
 
 /* loco:698b15ec9e0aad20280f8c02 */
 "dataManagementSettings" = "Data management";
+
+/* loco:698b3a87553e334c1009a7e4 */
+"debugLevelDescription" = "Select the amount of information to log.";
+
+/* loco:698b3a4d553e334c1009a7e2 */
+"debugLevelSetting" = "Debug level";
+
+/* loco:698b35cccaddc9598c08a6c2 */
+"debugLogsDescription" = "Allows Infomaniak support to identify the cause of an incident.";
 
 /* loco:698b164a5f781b3d5203de12 */
 "dataManagementSubtitle" = "Infomaniak respects your privacy";
@@ -270,6 +297,12 @@
 
 /* loco:6979e389195e90fdc909d252 */
 "driveWakingUpErrorTitle" = "kDrive waking up";
+/* loco:698b3654af04fbae590cbf82 */
+"enableDebugLogDescription" = "Record diagnostic information on my computer.";
+
+/* loco:698b361c54ac23ef050755a2 */
+"enableDebugLogsSetting" = "Enable debug logging";
+
 
 /* loco:6998110a3f9ff4c3230a4eb2 */
 "errorConnectingToXPCServer" = "Looks like we cannot load the app…";
@@ -282,6 +315,15 @@
 
 /* loco:69b3e9128555b02b5001ee42 */
 "errorWhileChangingSynchroMode" = "Error while changing the mode of synchronization";
+
+/* loco:698b37a3ff1c8782250e1a74 */
+"extendedLogDescription" = "Enables collection of additional information useful for support.";
+
+/* loco:698b3778571c7248480ed4c2 */
+"extendedLogSetting" = "Extended detailed log";
+
+/* loco:698b37efff1c8782250e1a76 */
+"extendedLogWarning" = "When this option is enabled, kDrive runs more slowly.";
 
 /* loco:6992ec7abaf88a24990d3e13 */
 "feedbackSetting" = "Help us improve kDrive";
@@ -318,6 +360,9 @@
 
 /* loco:6964f0b575a31a8d9601a6d7 */
 "helpKDriveName" = "kDrive %@";
+
+/* loco:6989e175cdee4aba850e89b2 */
+"infomaniakSupport" = "Infomaniak Support";
 
 /* loco:696a481cf54b5acbc60209c2 */
 "informationBlockKDriveFullSubtitle" = "Free up space or upgrade your plan to continue syncing your files.";
@@ -420,11 +465,36 @@
 /* loco:698b0dd551a7a263e6030a72 */
 "languageSetting" = "Language";
 
+/* loco:698b02fbc4b83479960bbf92 */
+"largeFolderRecommendation" = "The full folder is large.\nTo speed up the upload, we recommend sending only the last kDrive session.";
+
 /* loco:698a1276e1c66ed33b03bf32 */
 "linkCopiedToClipboardTitle" = "Link copied to clipboard";
 
 /* loco:698b2e50ea6bcf51bf026fc2 */
 "matomoDescription" = "Matomo is an analytics tool hosted and managed exclusively by Infomaniak to understand how the application is used.\n\nAnalyzing this data allows our team to continuously improve the application’s interface.";
+/* loco:698b392cacfe189ede0cf082 */
+"logLevelDebug" = "Debug";
+
+/* loco:698b3972f0be39d922008ec3 */
+"logLevelError" = "Error";
+
+/* loco:698b391e693b9b942d0006a2
+ * Extended log level option in the debug level dropdown in advanced settings. */
+"logLevelExtended" = "Extended";
+
+/* loco:698b3982f6e48fd003019f52 */
+"logLevelFatal" = "Fatal";
+
+/* loco:698b393d2a881def5c0fe142 */
+"logLevelInfo" = "Info";
+
+/* loco:698b394a2a881def5c0fe144 */
+"logLevelWarning" = "Warning";
+
+/* loco:6989f263fe556601b70fe7a2 */
+"logUploadPopupTitle" = "Send debug folder to Infomaniak support";
+
 /* loco:698b11f969e305d1ce01e062 */
 "moveDeletedFilesToRecycleBinSetting" = "Move deleted files to the computer’s recycle bin";
 
@@ -550,6 +620,9 @@
 
 /* loco:698af24c3d21055870072b12 */
 "releaseChannelInternal" = "Internal";
+
+/* loco:698b02a302385f4ff103bd62 */
+"sendLastSessionOnly" = "Send last session only";
 
 /* loco:698b2df25c57be025b0ecfd2 */
 "sentryDescription" = "Sentry is a tool hosted and managed exclusively by Infomaniak to monitor the stability of the application in real time and automatically report any technical errors to our developers.\n\nThis data allows our team to quickly fix and optimize the application, resulting in a better user experience for you.";

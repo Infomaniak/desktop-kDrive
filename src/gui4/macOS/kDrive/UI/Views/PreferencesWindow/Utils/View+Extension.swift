@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2026 Infomaniak Network SA
+ Copyright (C) 2023-2025 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -16,12 +16,25 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Cocoa
+import Foundation
 import kDriveCoreUI
 import SwiftUI
 
-final class AdvancedPreferencesViewController: TitledViewController<AdvancedPreferencesView> {
-    convenience init() {
-        self.init(toolbarTitle: SidebarItem.advanced.title, contentView: AdvancedPreferencesView())
+extension View {
+    func updateRepositoryValue<T: Equatable>(
+        _ stateKeyPath: KeyPath<Self, Binding<T>>,
+        _ repositoryKeyPath: WritableKeyPath<UIParametersInfo, T>,
+        newValue: T,
+        repository: PreferencesRepository
+    ) {
+        Task {
+            guard newValue != repository.parametersInfo[keyPath: repositoryKeyPath] else { return }
+
+            do {
+                try await repository.update(repositoryKeyPath, value: newValue)
+            } catch {
+                self[keyPath: stateKeyPath].wrappedValue = repository.parametersInfo[keyPath: repositoryKeyPath]
+            }
+        }
     }
 }
