@@ -21,9 +21,6 @@
 
 #include "libcommon/comm.h"
 
-
-// Input parameters keys
-static const auto inParamsChannel = "channel";
 // Output parameters keys
 static const auto outParamsVersionInfo = "versionInfo";
 

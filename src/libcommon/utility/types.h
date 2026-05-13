@@ -602,10 +602,10 @@ struct ItemType {
 struct VersionInfo {
         DistributionChannel channel = DistributionChannel::Unknown;
         std::string tag; // Version number. Example: 3.6.4
-        // std::string changeLog; // List of changes in this version, not used for now.
-        uint64_t buildVersion{0}; // Example: 20240816
+        uint64_t buildVersion{0}; // Build number. Should be > 0.
         std::string buildMinOsVersion; // Optional. Minimum supported version of the OS. Examples: 10.15, 11, server 2005, ...
         std::string downloadUrl; // URL to download the version
+        std::string checksum; // Optional. Checksum of the file, used to verify the integrity of the downloaded installer.
 
         bool operator==(const VersionInfo &other) const {
             return channel == other.channel && tag == other.tag && buildVersion == other.buildVersion &&

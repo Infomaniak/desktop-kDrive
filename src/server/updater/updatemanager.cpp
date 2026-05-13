@@ -34,7 +34,6 @@ namespace KDC {
 
 UpdateManager::UpdateManager(QObject *parent) :
     QObject(parent) {
-
     initUpdater();
 
     (void) connect(&_updateCheckTimer, &QTimer::timeout, this, &UpdateManager::slotTimerFired);
@@ -53,6 +52,9 @@ UpdateManager::UpdateManager(QObject *parent) :
 }
 
 void UpdateManager::setDistributionChannel(const DistributionChannel channel) {
+    if (_currentChannel == channel) {
+        return;
+    }
     _currentChannel = channel;
     (void) _updater->checkUpdateAvailable(_currentChannel);
     ParametersCache::instance()->parameters().setDistributionChannel(_currentChannel);

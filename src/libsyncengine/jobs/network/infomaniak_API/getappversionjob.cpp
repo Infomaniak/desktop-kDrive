@@ -30,7 +30,8 @@ static const std::string tagKey = "tag";
 static const std::string buildVersionKey = "build_version";
 static const std::string downloadUrlKey = "download_link";
 static const std::string buildMinOsVersionKey = "build_min_os_version";
-static const std::string applicationMinVersionKey = "application_min_version";
+static const std::string applicationMinVersionKey = "min_version";
+static const std::string checksumKey = "checksum";
 
 GetAppVersionJob::GetAppVersionJob(const DistributionChannel currentChannel, const std::string &appID) :
     GetAppVersionJob(currentChannel, appID, {}) {}
@@ -65,7 +66,7 @@ void GetAppVersionJob::setQueryParameters(Poco::URI &uri) {
 
 ExitInfo GetAppVersionJob::handleError(const std::string &, const Poco::URI &uri) {
     LOG_DEBUG(_logger, "Request failed: " << Utility::formatRequest(uri, _backError.code(), _backError.description()));
-    return {};
+    return {ExitCode::BackError, ExitCause::HttpErr};
 }
 
 ExitInfo GetAppVersionJob::handleResponse(std::istream &is) {
@@ -84,6 +85,8 @@ ExitInfo GetAppVersionJob::handleResponse(std::istream &is) {
     if (!JsonParserUtility::extractValue(dataObj, buildMinOsVersionKey, _versionsInfo.buildMinOsVersion))
         return {ExitCode::BackError, ExitCause::MissingReplyData};
     if (!JsonParserUtility::extractValue(dataObj, downloadUrlKey, _versionsInfo.downloadUrl))
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+    if (!JsonParserUtility::extractValue(dataObj, checksumKey, _versionsInfo.checksum))
         return {ExitCode::BackError, ExitCause::MissingReplyData};
     if (!JsonParserUtility::extractValue(dataObj, applicationMinVersionKey, _minAppVersion))
         return {ExitCode::BackError, ExitCause::MissingReplyData};
