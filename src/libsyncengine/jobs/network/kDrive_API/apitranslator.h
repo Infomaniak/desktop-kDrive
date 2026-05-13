@@ -27,7 +27,7 @@ class ApiTranslator {
         ApiTranslator() = default;
         ~ApiTranslator() = default;
 
-        [[nodiscard]] static ExitInfo translateV2ToV3(UserDbId userDbId, DriveId driveId, NodeId &remoteDirectoryId);
+        [[nodiscard]] static ExitInfo translateV2ToV3(UserDbId userDbId, DriveId driveId, RemoteNodeId &remoteDirectoryId);
         [[nodiscard]] static ExitInfo translateV2ToV3(DriveDbId driveDbId, RemoteNodeId &remoteDirectoryId);
         static void translateV3ToV2(SyncPath &remotePath);
         [[nodiscard]] static ExitInfo translateV3ToV2(UserDbId userDbId, DriveId driveId, NodeId &remoteNodeId);
