@@ -55,15 +55,16 @@ QString syncStatusLogName(const SyncStatus status) {
 
 const char *trayIconStateLogName(const TrayIconState state) {
     switch (state) {
-        case TrayIconState::Neutral:
+        using enum TrayIconState;
+        case Neutral:
             return "Neutral";
-        case TrayIconState::Error:
+        case Error:
             return "Error";
-        case TrayIconState::Notification:
+        case Notification:
             return "Notification";
-        case TrayIconState::Pause:
+        case Pause:
             return "Pause";
-        case TrayIconState::Sync:
+        case Sync:
             return "Sync";
     }
 
@@ -72,15 +73,16 @@ const char *trayIconStateLogName(const TrayIconState state) {
 
 const char *trayIconPath(const TrayIconState state) {
     switch (state) {
-        case TrayIconState::Neutral:
+        using enum TrayIconState;
+        case Neutral:
             return ":/assets/tray/neutral.svg";
-        case TrayIconState::Error:
+        case Error:
             return ":/assets/tray/error.svg";
-        case TrayIconState::Notification:
+        case Notification:
             return ":/assets/tray/notif.svg";
-        case TrayIconState::Pause:
+        case Pause:
             return ":/assets/tray/pause.svg";
-        case TrayIconState::Sync:
+        case Sync:
             return ":/assets/tray/sync.svg";
     }
 
