@@ -23,12 +23,14 @@ import SwiftUI
 struct AccountsPreferencesAddAccountView: View {
     var body: some View {
         Section {
-            HStack {
+            HStack(spacing: AppPadding.padding8) {
                 AnonymousAvatarView()
 
                 Text(KDriveLocalizable.noAccountConnected)
+                    .font(.Tokens.body)
+                    .foregroundStyle(ColorToken.Text.primary.asColor)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(EdgeInsets(top: 0, leading: AppPadding.padding8, bottom: 0, trailing: 0))
+
                 Button(KDriveLocalizable.buttonConnectAccount) {
                     // TODO: Add new user
                 }
