@@ -250,7 +250,7 @@ void TestIo::testGetFileChecksum() {
     }
 #endif
 
-    // A regular file missing all permissions (no error expected)
+    // A regular file missing all permissions (no error expected on Windows ,error expected on Unix)
     {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path() / "permission_less_file.txt";
