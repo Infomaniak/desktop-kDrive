@@ -91,13 +91,8 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBaseWithParmsDb 
         void testGetAvatar();
         void testGetDriveList();
         void testGetFileInfo();
-<<<<<<< HEAD
-        void testGetFileList();
         void testCheckHashMatch();
-=======
         void testGetFilesInDirectory();
->>>>>>> 8656c9004 (refactor(get-file-list-job): Removes the version v2 of GetFileListJob instances from tests and CMakeLists.txt)
-        void testGetFileListWithCursor();
         void testFullFileListWithCursorCsv();
         void testFullFileListWithCursorCsvZip();
         void testFullFileListWithCursorCsvBlacklist();
