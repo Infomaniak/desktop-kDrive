@@ -569,7 +569,7 @@ ExitInfo AbstractNetworkJob::handleError(std::istream &inputStream, const Poco::
     return handleError(replyBody, uri);
 }
 
-void readStream(std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse, std::string &res,
+void readStream(const Poco::Net::HTTPResponse &httpResponse, std::istream &inputStream, std::string &res,
                 std::atomic_bool &finished, std::exception_ptr &threadException) {
     res = {};
     try {
@@ -591,7 +591,7 @@ void readStream(std::istream &inputStream, const Poco::Net::HTTPResponse &httpRe
 void AbstractNetworkJob::getStringFromStream(std::istream &inputStream, std::string &res) {
     std::atomic_bool finished = false;
     std::exception_ptr threadException = nullptr;
-    std::thread t(readStream, std::ref(inputStream), httpResponse(), std::ref(res), std::ref(finished),
+    std::thread t(readStream, httpResponse(), std::ref(inputStream), std::ref(res), std::ref(finished),
                   std::ref(threadException));
 
     // Wait
