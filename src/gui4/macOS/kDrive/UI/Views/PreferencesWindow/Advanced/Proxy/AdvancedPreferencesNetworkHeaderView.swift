@@ -36,13 +36,17 @@ struct AdvancedPreferencesNetworkHeaderView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
 
             Picker(KDriveLocalizable.proxyType, selection: $selectedProxyType) {
-                Text(KDriveLocalizable.proxyTypeNone).tag(nil as UIProxyType?)
+                Text(KDriveLocalizable.proxyTypeNone)
+                    .tag(nil as UIProxyType?)
 
-                Text(KDriveLocalizable.labelSameAsSystem).tag(UIProxyType.system as UIProxyType?)
+                Text(KDriveLocalizable.labelSameAsSystem)
+                    .tag(UIProxyType.system as UIProxyType?)
 
-                Text(KDriveLocalizable.proxyTypeHTTP).tag(UIProxyType.http as UIProxyType?)
+                Text(KDriveLocalizable.proxyTypeHTTP)
+                    .tag(UIProxyType.http as UIProxyType?)
 
-            }.labelsHidden()
+            }
+            .labelsHidden()
         }
     }
 }

@@ -33,7 +33,8 @@ struct AdvancedPreferencesNetworkDetailView: View {
 
     var body: some View {
         Picker(KDriveLocalizable.proxyType, selection: $proxyType) {
-            Text("HTTP(S)").tag(UIProxyType.http)
+            Text("HTTP(S)")
+                .tag(UIProxyType.http)
         }
         .disabled(true)
 

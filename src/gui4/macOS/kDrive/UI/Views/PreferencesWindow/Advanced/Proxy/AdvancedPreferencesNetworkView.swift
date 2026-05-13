@@ -22,14 +22,16 @@ import kDriveResources
 import SwiftUI
 
 struct AdvancedPreferencesNetworkView: View {
-    @State private var proxyType: UIProxyType? = .system
+    @State private var proxyType: UIProxyType? = nil
+
     @State private var hostName = ""
     @State private var port = 0
     @State private var authType: UIProxyAuthType = .noAuth
-    @State private var isLoading = false
+    @State private var isLoadingSaveButton = false
     @State private var username = ""
     @State private var password = ""
-    @State private var authRequired = false
+    @State private var isAuthenticationRequired = false
+
     @State private var proxyConfiguration = UIProxyConfiguration(type: .none, hostName: "", port: 0, authType: .noAuth)
 
     let repository: PreferencesRepository
@@ -47,11 +49,10 @@ struct AdvancedPreferencesNetworkView: View {
                         authType: $authType,
                         username: $username,
                         password: $password,
-                        authRequired: $authRequired,
-                        repository: repository
+                        authRequired: $isAuthenticationRequired
                     )
 
-                    LoadingButton(isLoading: $isLoading, action: saveChanges) {
+                    LoadingButton(isLoading: $isLoadingSaveButton, action: saveHTTPProxyChanges) {
                         Text(KDriveLocalizable.buttonSave)
                     }
                     .buttonStyle(.borderedProminent)
@@ -60,14 +61,15 @@ struct AdvancedPreferencesNetworkView: View {
             }
         }
         .groupedFormatStyle()
-        .onAppear(perform: getValues)
+        .onAppear(perform: getInitialValues)
         .onChange(of: proxyType) { newValue in
             updateProxyType(newValue: newValue)
         }
     }
 
-    func getValues() {
+    func getInitialValues() {
         let proxyConfiguration = repository.parametersInfo.proxyConfiguration
+
         if let type = proxyConfiguration.type {
             proxyType = type
         }
@@ -77,52 +79,44 @@ struct AdvancedPreferencesNetworkView: View {
 
         switch proxyConfiguration.authType {
         case .needsAuth(let user, let password):
-            authRequired = true
+            isAuthenticationRequired = true
             username = user
             self.password = password
         case .noAuth:
-            authRequired = false
+            isAuthenticationRequired = false
             username = ""
             password = ""
         }
     }
 
-    func updateProxyType(newValue: UIProxyType?) {
-        if newValue != .http {
-            hostName = ""
-            port = 0
-            authType = .noAuth
-            authRequired = false
-            username = ""
-            password = ""
-
-            proxyConfiguration = UIProxyConfiguration(type: proxyType, hostName: hostName, port: port, authType: authType)
-            updateValue(\.$proxyConfiguration, \.proxyConfiguration, newValue: proxyConfiguration)
+    private func updateProxyType(newValue: UIProxyType?) {
+        guard newValue != .http else {
+            return
         }
-    }
 
-    func saveChanges() {
-        isLoading.toggle()
-        let authType: UIProxyAuthType = authRequired ? .needsAuth(user: username, password: password) : .noAuth
+        hostName = ""
+        port = 0
+        authType = .noAuth
+        isAuthenticationRequired = false
+        username = ""
+        password = ""
+
         proxyConfiguration = UIProxyConfiguration(type: proxyType, hostName: hostName, port: port, authType: authType)
-        updateValue(\.$proxyConfiguration, \.proxyConfiguration, newValue: proxyConfiguration)
-        isLoading = false
+        updateRepositoryValue(
+            \.$proxyConfiguration,
+            \.proxyConfiguration,
+            newValue: proxyConfiguration,
+            repository: repository
+        )
     }
 
-    private func updateValue<T: Equatable>(
-        _ stateKeyPath: KeyPath<Self, Binding<T>>,
-        _ repositoryKeyPath: WritableKeyPath<UIParametersInfo, T>,
-        newValue: T
-    ) {
-        Task {
-            guard newValue != repository.parametersInfo[keyPath: repositoryKeyPath] else { return }
+    private func saveHTTPProxyChanges() {
+        isLoadingSaveButton = true
+        defer { isLoadingSaveButton = false }
 
-            do {
-                try await repository.update(repositoryKeyPath, value: newValue)
-            } catch {
-                self[keyPath: stateKeyPath].wrappedValue = repository.parametersInfo[keyPath: repositoryKeyPath]
-            }
-        }
+        let authType: UIProxyAuthType = isAuthenticationRequired ? .needsAuth(user: username, password: password) : .noAuth
+        proxyConfiguration = UIProxyConfiguration(type: proxyType, hostName: hostName, port: port, authType: authType)
+        updateRepositoryValue(\.$proxyConfiguration, \.proxyConfiguration, newValue: proxyConfiguration, repository: repository)
     }
 }
 
