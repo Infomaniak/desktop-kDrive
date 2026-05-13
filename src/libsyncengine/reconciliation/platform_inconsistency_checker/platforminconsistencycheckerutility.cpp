@@ -30,15 +30,19 @@
 #include <Poco/Util/WinRegistryKey.h>
 #endif
 
+namespace ForbiddenFilenameCharacters {
+static const std::vector<char> fat32Chars = {'\\', '/', ':', '*', '?', '"', '<', '>', '|', '\n', '\r', '\t', '\0'};
+
 #if defined(KD_WINDOWS)
-static const char forbiddenFilenameChars[] = {'\\', '/', ':', '*', '?', '"', '<', '>', '|', '\n'};
+static const std::vector<char> chars = {'\\', '/', ':', '*', '?', '"', '<', '>', '|', '\n'};
 #else
 #if defined(KD_MACOS)
-static const char forbiddenFilenameChars[] = {'/'};
+static const std::vector<char> chars = {'/'};
 #else
-static const char forbiddenFilenameChars[] = {'/', '\0'};
+static const std::vector<char> chars = {'/', '\0'};
 #endif
 #endif
+} // namespace ForbiddenFilenameCharacters
 
 static const int maxNameLengh = 255; // Max filename length is uniformized to 255 characters for all platforms and backends
 
@@ -95,12 +99,21 @@ ExitInfo PlatformInconsistencyCheckerUtility::renameLocalFile(const SyncPath &ab
     return moveJob.exitInfo();
 }
 
-bool PlatformInconsistencyCheckerUtility::nameHasForbiddenChars(const SyncName &name) {
-    for (auto c: forbiddenFilenameChars) {
+ExitInfo PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
+        const SyncName &name, [[maybe_unused]] std::shared_ptr<CacheDirectory> cacheDirectory, bool &hasForbiddenChars) {
+    hasForbiddenChars = false;
+    std::vector<char> forbiddenChars;
+
+    const auto exitInfo = getForbiddenFilenameChars(cacheDirectory, forbiddenChars);
+    if (!exitInfo) return exitInfo;
+
+    for (auto c: forbiddenChars) {
         if (name.find(c) != std::string::npos) {
             LOGW_INFO(Log::instance()->getLogger(),
                       L"Name '" << SyncName2WStr(name) << L"' contains forbidden character: '" << std::wstring(1, c) << L"'");
-            return true;
+            hasForbiddenChars = true;
+
+            return ExitCode::Ok;
         }
     }
 
@@ -110,27 +123,45 @@ bool PlatformInconsistencyCheckerUtility::nameHasForbiddenChars(const SyncName &
         const int64_t asciiCode(c);
         if (asciiCode <= 31) {
             LOGW_INFO(Log::instance()->getLogger(),
-                      L"Name '" << SyncName2WStr(name) << L"' contains forbidden character: '" << std::wstring(1, c) << L"'");
-            return true;
+                      L"Name '" << SyncName2WStr(name) << L"' contains a forbidden character: '" << std::wstring(1, c) << L"'");
+            hasForbiddenChars = true;
+
+            return ExitCode::Ok;
         }
     }
 #endif
 
-    return false;
+    return ExitCode::Ok;
 }
 
 bool PlatformInconsistencyCheckerUtility::isNameOnlySpaces(const SyncName &name) {
     return CommonUtility::ltrim(name).empty();
 }
 
-bool PlatformInconsistencyCheckerUtility::nameEndWithForbiddenSpace([[maybe_unused]] const SyncName &name) {
+ExitInfo PlatformInconsistencyCheckerUtility::checkIfNameEndsWithForbiddenSpace(
+        [[maybe_unused]] const SyncName &name, [[maybe_unused]] const std::shared_ptr<CacheDirectory> cacheDirectory,
+        bool &endsWithForbiddenSpace) {
+    endsWithForbiddenSpace = false;
 #if defined(KD_WINDOWS)
     // Can't finish with a space
     if (SyncName nameStr(name); nameStr[nameStr.size() - 1] == ' ') {
-        return true;
+        endsWithForbiddenSpace = true;
     }
+#elif defined(KD_LINUX)
+    SyncPath localSyncPath;
+    if (const auto exitInfo = cacheDirectory->path(localSyncPath); !exitInfo) return exitInfo;
+
+    if (!CommonUtility::isEXT234(localSyncPath)) return ExitCode::Ok;
+
+    // `statfs` can confuse more restrictive systems with EXT2/3/4 when a USB stick is used.
+    bool fileNamesCanEndWithSpace = true;
+    if (const auto exitInfo = Utility::checkIfFileNamesCanEndWithSpace(cacheDirectory, fileNamesCanEndWithSpace); !exitInfo)
+        return exitInfo;
+
+    endsWithForbiddenSpace = !fileNamesCanEndWithSpace && name.back() == ' ';
 #endif
-    return false; // Name ending with a space is only forbidden on Windows.
+    return ExitCode::Ok; // Name ending with a space is only forbidden on Windows or on a Linux when a USB stick with exFAT is
+                         // used.
 }
 
 #if defined(KD_WINDOWS)
@@ -229,6 +260,18 @@ SyncName PlatformInconsistencyCheckerUtility::generateSuffix(SuffixType suffixTy
     }
 
     return suffix + ss.str() + Str("_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10));
+}
+
+ExitInfo PlatformInconsistencyCheckerUtility::getForbiddenFilenameChars(
+        [[maybe_unused]] const std::shared_ptr<CacheDirectory> cacheDirectory, std::vector<char> &forbiddenChars) {
+    forbiddenChars = ForbiddenFilenameCharacters::chars;
+#if defined(KD_LINUX)
+    std::string fileSystemName;
+    const auto exitInfo = Utility::getFileSystemName(cacheDirectory, fileSystemName);
+    if (!exitInfo) return exitInfo;
+    if (fileSystemName == CommonUtility::exFAT()) forbiddenChars = ForbiddenFilenameCharacters::fat32Chars;
+#endif
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

@@ -43,13 +43,13 @@ class ISyncWorker {
         // Will not return until the internal thread has exited
         void waitForExit();
 
-        inline std::string name() const { return _name; }
-        inline std::string shortName() const { return _shortName; }
+        std::string name() const { return _name; }
+        std::string shortName() const { return _shortName; }
 
-        inline bool isRunning() const { return _isRunning; }
-        inline bool stopAsked() const { return _stopAsked; }
-        inline ExitCode exitCode() const { return _exitCode; }
-        inline ExitCause exitCause() const { return _exitCause; }
+        bool isRunning() const { return _isRunning; }
+        bool stopAsked() const { return _stopAsked; }
+        ExitCode exitCode() const { return _exitCode; }
+        ExitCause exitCause() const { return _exitCause; }
 
         [[nodiscard]] const int64_t &pauseDuration() const { return _pauseDuration; }
         void setPauseDuration(const int64_t &pauseDuration) {
@@ -57,7 +57,8 @@ class ISyncWorker {
         } // Minimum pause duration is 1 min
         void resetPauseDuration() { _pauseDuration = defaultPauseDuration; }
 
-        inline void setTesting(bool testing) { _testing = testing; }
+        void setTesting(bool testing) { _testing = testing; }
+        [[nodiscard]] std::shared_ptr<CacheDirectory> cacheDirectory() const { return _syncPal->cacheDirectory(); }
 
     protected:
         log4cplus::Logger _logger;

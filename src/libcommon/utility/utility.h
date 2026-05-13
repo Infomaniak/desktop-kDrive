@@ -80,8 +80,10 @@ struct COMMON_EXPORT CommonUtility {
         static void crash();
         static QString platformName();
         static std::string osVersion();
-#ifdef KD_LINUX
+#if defined(KD_LINUX)
         static std::string distributionName();
+        static bool isEXT234(const SyncPath &targetPath);
+        static std::string exFAT();
 #endif
         static Platform platform();
         static QString platformArch();
@@ -118,7 +120,7 @@ struct COMMON_EXPORT CommonUtility {
         static const QString norwegianCode;
         static const QString finnishCode;
         static const QString danishCode;
-        static const QString greekCode;      
+        static const QString greekCode;
         static Language strToLanguage(const QString &lang);
         static QString languageCode(Language language);
         static QStringList languageCodeList(Language enforcedLocale);
@@ -531,6 +533,7 @@ struct COMMON_EXPORT CommonUtility {
 
         static SyncPath getGenericAppSupportDir();
 
+        static std::string getRootFsType(const SyncPath &targetPath);
 
         friend class TestUtility;
 };
