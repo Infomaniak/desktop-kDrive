@@ -40,7 +40,7 @@ namespace Infomaniak.kDrive.CustomControls
         {
             // Register property change callbacks
             Foreground = null;
-           
+
             // Track Loaded state
             Loaded += OnLoaded;
             Unloaded += OnUnloaded;

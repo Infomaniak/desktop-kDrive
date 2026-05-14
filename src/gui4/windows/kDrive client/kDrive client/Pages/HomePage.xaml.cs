@@ -103,6 +103,7 @@ namespace Infomaniak.kDrive.Pages
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
             DetachHandlers();
+			Utility.VisualTreeDisposeUtility.DisposePageItems(this);
         }
 
         private static IEnumerable<T> FindVisualChildren<T>(DependencyObject parent) where T : DependencyObject

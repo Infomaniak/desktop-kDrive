@@ -96,6 +96,10 @@ namespace Infomaniak.kDrive.Pages.Settings
         {
             _lastVerticalOffset = SettingsScrollView.VerticalOffset;
         }
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            Utility.VisualTreeDisposeUtility.DisposePageItems(this);
+        }
 
         private void BringUserIntoView(User? user)
         {
@@ -262,6 +266,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             };
 
             var result = await dialog.ShowAsync();
+            Utility.VisualTreeDisposeUtility.DisposePageItems(dialog);
             if (result == ContentDialogResult.Secondary)
             {
                 _analyticsService.TrackClick(Analytics.Keys.Category.AccountsSettingsPage, Analytics.Keys.EventName.ConfirmDisconnect);
@@ -308,6 +313,7 @@ namespace Infomaniak.kDrive.Pages.Settings
         private async void MatomoButton_Click(object sender, RoutedEventArgs e)
         {
             ConsentResult result = await MatomoContentDialog.ShowAsync(this.XamlRoot);
+            Utility.VisualTreeDisposeUtility.DisposePageItems(MatomoContentDialog);
             if (result == ConsentResult.Cancelled)
                 return;
             if ((result == ConsentResult.Allowed) == ViewModel.Settings.MatomoEnabled)
@@ -324,6 +330,7 @@ namespace Infomaniak.kDrive.Pages.Settings
         private async void SentryButton_Click(object sender, RoutedEventArgs e)
         {
             ConsentResult result = await SentryContentDialog.ShowAsync(this.XamlRoot);
+            Utility.VisualTreeDisposeUtility.DisposePageItems(SentryContentDialog);
             if (result == ConsentResult.Cancelled)
                 return;
 

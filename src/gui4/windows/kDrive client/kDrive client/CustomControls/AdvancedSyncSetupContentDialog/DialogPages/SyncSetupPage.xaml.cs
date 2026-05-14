@@ -64,6 +64,7 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
             DetachEventHandlers();
+            Utility.VisualTreeDisposeUtility.DisposePageItems(this);
         }
 
         private void DetachEventHandlers()

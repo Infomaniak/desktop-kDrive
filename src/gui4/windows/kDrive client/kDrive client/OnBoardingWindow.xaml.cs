@@ -76,6 +76,7 @@ namespace Infomaniak.kDrive.OnBoarding
         private async void OnBoardingWindow_Closed(object sender, WindowEventArgs args)
         {
             await _onBoardingViewModel.DisposeAsync();
+            Utility.VisualTreeDisposeUtility.DisposePageItems(this.Content);
         }
 
         public async Task UpdateLottieSource(LottieTemplateKey lottieTemplateKey)

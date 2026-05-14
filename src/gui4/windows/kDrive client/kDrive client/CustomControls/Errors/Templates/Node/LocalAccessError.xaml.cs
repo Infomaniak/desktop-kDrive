@@ -71,8 +71,10 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
                 CloseButtonText = Localizer.Instance.GetString("buttonClose"),
             };
             dialog.Content = new LocalAccessErrorDialog(Error) { XamlRoot = xamlRoot };
+            var res = await dialog.ShowAsync();
+            Utility.VisualTreeDisposeUtility.DisposePageItems(dialog);
 
-            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+            if (res == ContentDialogResult.Primary)
             {
                 string absolutPath = Path.Combine(Error.Sync.LocalPath, Error.Path);
                 if (string.IsNullOrEmpty(Path.GetDirectoryName(absolutPath)))

@@ -22,6 +22,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
 {
@@ -63,6 +64,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
             dialog.Resources["ContentDialogMaxHeight"] = Application.Current.Resources["Infomaniak.Style.ContentDialog.MaxHeight"];
             _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageSingleConflict);
             _ = await dialog.ShowAsync();
+            Utility.VisualTreeDisposeUtility.DisposePageItems(dialog);
         }
     }
 }

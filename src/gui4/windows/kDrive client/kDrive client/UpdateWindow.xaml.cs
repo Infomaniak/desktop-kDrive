@@ -37,12 +37,17 @@ namespace Infomaniak.kDrive
             Utility.SetWindowProperties(this, _minimumWidth, _minimumHeight, Utility.WindowResizeOptions.None); // Set initial size and prevent resizing
             AppWindow.TitleBar.PreferredTheme = Microsoft.UI.Windowing.TitleBarTheme.UseDefaultAppMode;
             Activated += UpdateWindow_Activated;
+            Closed += UpdateWindow_Closed;
+        }
+
+        private void UpdateWindow_Closed(object sender, WindowEventArgs args)
+        {
+            Utility.VisualTreeDisposeUtility.DisposePageItems(this.Content);
         }
 
         private void UpdateWindow_Activated(object sender, WindowActivatedEventArgs args)
         {
             Utility.CenterWindow(this);
-            Activated -= UpdateWindow_Activated;
         }
     }
 }

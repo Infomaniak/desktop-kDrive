@@ -73,6 +73,7 @@ namespace Infomaniak.kDrive.Pages.Errors
 
             _lastVerticalOffset = ErrorScrollView.VerticalOffset;
 
+            Utility.VisualTreeDisposeUtility.DisposePageItems(this);
         }
 
         private void BreadcrumbActivity_Click(object sender, object e)

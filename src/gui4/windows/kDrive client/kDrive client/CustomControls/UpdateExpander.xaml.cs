@@ -27,13 +27,18 @@ using System.ComponentModel;
 using System.Linq;
 namespace Infomaniak.kDrive.CustomControls
 {
-    public sealed partial class UpdateExpander : SettingsExpander
+    public sealed partial class UpdateExpander : SettingsExpander, IDisposable
     {
         private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
 
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel => _viewModel;
 
+        public void Dispose()
+        {
+            UnregisterPropertyChangedHandlers();
+            Bindings.StopTracking();
+        }
         public UpdateExpander()
         {
             InitializeComponent();

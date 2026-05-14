@@ -55,6 +55,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             Logger.Log(Logger.Level.Info, "Navigating away from TemplateExclusionPage");
             _templateListModel?.Dispose();
             _templateListModel = null;
+            Utility.VisualTreeDisposeUtility.DisposePageItems(this);
         }
 
         private void SetupNavBar()
@@ -80,6 +81,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             };
 
             var result = await dialog.ShowAsync();
+            Utility.VisualTreeDisposeUtility.DisposePageItems(dialog);
             if (result == ContentDialogResult.Primary)
             {
                 var template = popupPage.ExclusionRuleTextBox.Text;

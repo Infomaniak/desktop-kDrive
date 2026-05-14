@@ -44,7 +44,10 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             if ((App.Current as App)?.CurrentWindow is OnBoardingWindow onBoardingWindow)
                 await onBoardingWindow.UpdateLottieSource(LottieTemplateKey.KDrive_LoaderStroke);
         }
-
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            Utility.VisualTreeDisposeUtility.DisposePageItems(this);
+        }
         private void FinishButton_Click(object sender, RoutedEventArgs e)
         {
             // Close this window
