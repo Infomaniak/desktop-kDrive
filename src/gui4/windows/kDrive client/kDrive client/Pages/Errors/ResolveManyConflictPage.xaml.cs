@@ -52,6 +52,7 @@ namespace Infomaniak.kDrive.Pages.Errors
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
             DetachEventHandlers();
+            Utility.VisualTreeDisposeUtility.DisposePageItems(this);
         }
         private void DetachEventHandlers()
         {
@@ -123,6 +124,7 @@ namespace Infomaniak.kDrive.Pages.Errors
 
             _analyticsService.TrackClick(Analytics.Keys.Category.IndividualConflictResolutionPage, Analytics.Keys.EventName.StartChoices);
             _ = await dialog.ShowAsync();
+            Utility.VisualTreeDisposeUtility.DisposePageItems(dialog);
         }
 
         private async void ResolveOneConflictButton_Click(object sender, RoutedEventArgs e)
@@ -163,6 +165,7 @@ namespace Infomaniak.kDrive.Pages.Errors
             dialog.Resources["ContentDialogMaxHeight"] = Application.Current.Resources["Infomaniak.Style.ContentDialog.MaxHeight"];
             _analyticsService.TrackClick(Analytics.Keys.Category.IndividualConflictResolutionPage, Analytics.Keys.EventName.ManageSingleConflict);
             _ = await dialog.ShowAsync();
+            Utility.VisualTreeDisposeUtility.DisposePageItems(dialog);
         }
 
         private void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)

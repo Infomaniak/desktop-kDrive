@@ -57,6 +57,7 @@ namespace Infomaniak.kDrive.Pages
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
+            Utility.VisualTreeDisposeUtility.DisposePageItems(this);
             DetachEventHandlers();
         }
 
@@ -122,7 +123,7 @@ namespace Infomaniak.kDrive.Pages
 
             if (comboBox.SelectedIndex == 0)
                 _analyticsService.TrackClick(Analytics.Keys.Category.ActivityPage, Analytics.Keys.EventName.ShowMyActivities);
-            else 
+            else
                 _analyticsService.TrackClick(Analytics.Keys.Category.ActivityPage, Analytics.Keys.EventName.ShowAllActivities);
 
         }

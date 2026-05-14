@@ -26,6 +26,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -530,18 +531,109 @@ namespace Infomaniak.kDrive
                 _currentTeachingTip = null;
             }
         }
+
+        public static class VisualTreeDisposeUtility
+        {
+            public static void DisposePageItems(UIElement root)
+            {
+                if (root == null)
+                    return;
+
+                var visited = new HashSet<object>();
+
+                Traverse(root, visited);
+            }
+
+            private static void Traverse(
+                DependencyObject node,
+                HashSet<object> visited)
+            {
+                if (node == null)
+                    return;
+
+                if (!visited.Add(node))
+                    return;
+
+                // Dispose controls/viewmodels/etc.
+                if (node is IDisposable disposable)
+                {
+                    try
+                    {
+                        disposable.Dispose();
+                    }
+                    catch
+                    {
+                        // Optional: log
+                    }
+                }
+
+                // Stop x:Bind tracking if available
+                TryStopBindings(node);
+
+                int childCount = VisualTreeHelper.GetChildrenCount(node);
+
+                for (int i = 0; i < childCount; i++)
+                {
+                    var child = VisualTreeHelper.GetChild(node, i);
+
+                    Traverse(child, visited);
+                }
+            }
+
+            private static void TryStopBindings(object obj)
+            {
+                try
+                {
+                    var type = obj.GetType();
+
+                    var property = type.GetProperty(
+                        "Bindings",
+                        System.Reflection.BindingFlags.Instance |
+                        System.Reflection.BindingFlags.Public |
+                        System.Reflection.BindingFlags.NonPublic);
+
+                    object? bindings = property?.GetValue(obj);
+
+                    // Some generated types expose a field instead
+                    if (bindings == null)
+                    {
+                        var field = type.GetField(
+                            "Bindings",
+                            System.Reflection.BindingFlags.Instance |
+                            System.Reflection.BindingFlags.Public |
+                            System.Reflection.BindingFlags.NonPublic);
+
+                        bindings = field?.GetValue(obj);
+                    }
+
+                    var stopTrackingMethod =
+                        bindings?.GetType().GetMethod("StopTracking");
+
+                    if (stopTrackingMethod is not null)
+                        stopTrackingMethod?.Invoke(bindings, null);
+                }
+                catch
+                {
+                }
+            }
+        }
     }
 
     public static class EnumExtensions
     {
+        private static readonly ConcurrentDictionary<Enum, string> _camelCaseCache = new();
+
         public static string ToCamelCase(this Enum value)
         {
-            string name = value.ToString();
+            return _camelCaseCache.GetOrAdd(value, static v =>
+            {
+                string name = v.ToString();
 
-            if (string.IsNullOrEmpty(name))
-                return name;
+                if (string.IsNullOrEmpty(name))
+                    return name;
 
-            return char.ToLowerInvariant(name[0]) + name[1..];
+                return char.ToLowerInvariant(name[0]) + name[1..];
+            });
         }
     }
 }

@@ -96,6 +96,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 
             _enableRestartCts.Cancel();
             _enableRestartCts.Dispose();
+            Utility.VisualTreeDisposeUtility.DisposePageItems(this);
         }
 
         private async void OnOnboardingViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)

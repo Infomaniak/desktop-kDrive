@@ -63,7 +63,7 @@ namespace Infomaniak.kDrive.CustomControls
             dialog.Content = popupPage;
 
             var result = await dialog.ShowAsync();
-
+            Utility.VisualTreeDisposeUtility.DisposePageItems(dialog);
             if (result == ContentDialogResult.Primary)
             {
                 _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.SendLogToSupport);

@@ -68,6 +68,7 @@ namespace Infomaniak.kDrive.Pages
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
             PageViewModel.Dispose();
+            Utility.VisualTreeDisposeUtility.DisposePageItems(this);
         }
 
         private async void RetryButton_click(object sender, RoutedEventArgs e)

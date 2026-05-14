@@ -93,6 +93,7 @@ namespace Infomaniak.kDrive
             Closed -= MainWindow_Closed;
             Activated -= MainWindow_Activated;
             this.Content.PointerPressed -= OnPointerPressed;
+            Utility.VisualTreeDisposeUtility.DisposePageItems(this.Content);
         }
 
         private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
