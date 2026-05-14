@@ -19,6 +19,8 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media;
 using Svg;
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -28,6 +30,9 @@ namespace Infomaniak.kDrive.CustomControls
 {
     internal static class SvgHelper
     {
+        private const int MaxCacheEntries = 128;
+        private static readonly ConcurrentDictionary<(string Path, uint Color), byte[]> _svgCache = new();
+        private static readonly ConcurrentQueue<(string Path, uint Color)> _cacheOrder = new();
         internal static Uri ResolveUri(Uri source)
         {
             if (source.Scheme != "ms-appx")
@@ -72,6 +77,23 @@ namespace Infomaniak.kDrive.CustomControls
 
             token.ThrowIfCancellationRequested();
 
+            uint colorKey = 0;
+            if (foreground is SolidColorBrush solid)
+            {
+                var c = solid.Color;
+                colorKey = ((uint)c.A << 24) | ((uint)c.R << 16) | ((uint)c.G << 8) | c.B;
+            }
+
+            var cacheKey = (fullUri.LocalPath, colorKey);
+
+            if (_svgCache.TryGetValue(cacheKey, out var cachedBytes))
+            {
+                token.ThrowIfCancellationRequested();
+                var cachedMs = new MemoryStream(cachedBytes, writable: false);
+                var cachedDoc = SvgDocument.Open<SvgDocument>(cachedMs);
+                return (cachedDoc, new MemoryStream(cachedBytes, writable: false));
+            }
+
             var svgDoc = SvgDocument.Open(fullUri.LocalPath);
             ApplyForeground(svgDoc, foreground);
 
@@ -79,6 +101,17 @@ namespace Infomaniak.kDrive.CustomControls
 
             var ms = new MemoryStream();
             svgDoc.Write(ms);
+            var bytes = ms.ToArray();
+
+            if (_svgCache.TryAdd(cacheKey, bytes))
+            {
+                _cacheOrder.Enqueue(cacheKey);
+                while (_svgCache.Count > MaxCacheEntries && _cacheOrder.TryDequeue(out var evictKey))
+                {
+                    _svgCache.TryRemove(evictKey, out _);
+                }
+            }
+
             ms.Seek(0, SeekOrigin.Begin);
 
             token.ThrowIfCancellationRequested();
