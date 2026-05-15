@@ -1572,18 +1572,21 @@ void TestNetworkJobs::testGetAppVersionInfo() {
 
 void TestNetworkJobs::testGetAppVersionInfoParsingEdgeCases() {
     const auto appUid = "1234567890";
+
+    // Valid "production" channel response: parsing succeeds and version info is valid.
     {
         GetAppVersionJobForTests job(appUid);
-        Poco::JSON::Object versionInfoObj = buildVersionInfo("production");
+        Poco::JSON::Object versionInfoObj = buildVersionInfo(toString(DistributionChannel::Prod));
 
         const ExitInfo exitInfo = job.parseResponse(buildAppVersionReply(versionInfoObj));
         CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitInfo.code());
         CPPUNIT_ASSERT(job.versionInfo().isValid());
     }
 
+    // Missing required fields in the reply: parsing fails with MissingReplyData and version info is invalid.
     {
         GetAppVersionJobForTests job(appUid);
-        Poco::JSON::Object versionInfoObj = buildVersionInfo("production", false);
+        Poco::JSON::Object versionInfoObj = buildVersionInfo(toString(DistributionChannel::Prod), false);
 
         const ExitInfo exitInfo = job.parseResponse(buildAppVersionReply(versionInfoObj));
         CPPUNIT_ASSERT_EQUAL(ExitCode::BackError, exitInfo.code());
@@ -1591,6 +1594,7 @@ void TestNetworkJobs::testGetAppVersionInfoParsingEdgeCases() {
         CPPUNIT_ASSERT(!job.versionInfo().isValid());
     }
 
+    // Unknown distribution channel: parsing succeeds but version info is invalid due to unrecognised channel.
     {
         GetAppVersionJobForTests job(appUid);
         Poco::JSON::Object versionInfoObj = buildVersionInfo("unknown-channel");
