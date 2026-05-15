@@ -103,7 +103,7 @@ std::string extractOSInfo(const std::string &key) {
 
 std::string CommonUtility::osVersion() {
     static std::string osVersion;
-    if (osVersion.empty()) osVersion = extractOSInfo("VERSION");
+    if (osVersion.empty()) osVersion = extractOSInfo("VERSION_ID");
     return osVersion;
 }
 
