@@ -27,6 +27,7 @@
 namespace KDC {
 
 class CsvFullFileListWithCursorJob;
+class LongPollJob;
 
 namespace sentry::pTraces::counterScoped {
 struct RFSOExploreItem;
@@ -111,22 +112,30 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         int _listingFullCounter = 0;
         std::chrono::steady_clock::time_point _listingFullTimer = std::chrono::steady_clock::now();
 
-        ExitInfo updateV3SpecialFolderItem(const RemoteNodeId &remoteNodeId);
-        ExitInfo getV3SpecialRemoteFolderName(const RemoteNodeId &remoteDirId, SyncName &folderName);
+        [[nodiscard]] ExitInfo updateV3SpecialFolderItem(const RemoteNodeId &remoteNodeId);
+        [[nodiscard]] ExitInfo getV3SpecialRemoteFolderName(const RemoteNodeId &remoteDirId, SyncName &folderName);
 
-        std::unordered_map<RemoteNodeId, bool> _specialFolderUpdateFlags;
+        [[nodiscard]] ExitInfo parseCsvReply(CursorPersistence cursorPersistence,
+                                             std::shared_ptr<CsvFullFileListWithCursorJob> csvFullListingJob);
+        [[nodiscard]] ExitInfo handleCsvReplyCursor(const RemoteNodeId &remoteDirId, CursorPersistence cursorPersistence,
+                                                    std::shared_ptr<CsvFullFileListWithCursorJob> csvFullFileListWithCursorJob);
+        [[nodiscard]] ExitInfo getItemsInDirJob(const RemoteNodeId &remoteDirId,
+                                                std::shared_ptr<CsvFullFileListWithCursorJob> &csvFullFileListWithCursorJob);
 
-        ExitInfo parseCsvReply(CursorPersistence cursorPersistence,
-                               std::shared_ptr<CsvFullFileListWithCursorJob> csvFullListingJob);
-        ExitInfo handleCsvReplyCursor(const RemoteNodeId &remoteDirId, CursorPersistence cursorPersistence,
-                                      std::shared_ptr<CsvFullFileListWithCursorJob> csvFullFileListWithCursorJob);
-        ExitInfo getItemsInDirJob(const RemoteNodeId &remoteDirId,
-                                  std::shared_ptr<CsvFullFileListWithCursorJob> &csvFullFileListWithCursorJob);
+        [[nodiscard]] ExitInfo createLongPollJob(const RemoteNodeId &remoteDirId, std::shared_ptr<LongPollJob> &longPollJob);
+
+        using LongPollJobMap =
+                std::unordered_map<RemoteNodeId, std::shared_ptr<LongPollJob>, StringHashFunction, std::equal_to<>>;
+        [[nodiscard]] ExitInfo updateLongPollJobs(const std::vector<RemoteNodeId> &remoteDirIds, LongPollJobMap &longPollJobs);
+
+        [[nodiscard]] ExitInfo checkIfRemoteDirHasChanges(const RemoteNodeId &remoteDirId,
+                                                          std::shared_ptr<LongPollJob> longPollJob, bool &changes);
+        [[nodiscard]] ExitInfo processEvents(const std::vector<RemoteNodeId> &specialFoldersRemoteIds,
+                                             LongPollJobMap &longPollJobs);
         using FullListingJobMap = std::unordered_map<RemoteNodeId, std::shared_ptr<CsvFullFileListWithCursorJob>,
                                                      StringHashFunction, std::equal_to<>>;
-
         // Run full listing jobs in parallel via the sync job manager.
-        ExitInfo executeFullListingJobs(const FullListingJobMap &fullListingJobs);
+        [[nodiscard]] ExitInfo executeFullListingJobs(const FullListingJobMap &fullListingJobs);
 
         friend class TestRemoteFileSystemObserverWorker;
 };
