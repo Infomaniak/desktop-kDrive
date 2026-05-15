@@ -177,15 +177,21 @@ Platform CommonUtility::platform() {
     }
 
     const QString name = platformName();
-    if (name.contains("macos", Qt::CaseInsensitive)) return Platform::MacOS;
-    if (name.contains("windows", Qt::CaseInsensitive)) {
-        if (name.contains("server", Qt::CaseInsensitive)) return Platform::WindowsServer;
-        return Platform::Windows;
+    if (name.contains("macos", Qt::CaseInsensitive))
+        platform = Platform::MacOS;
+    else if (name.contains("windows", Qt::CaseInsensitive)) {
+        if (name.contains("server", Qt::CaseInsensitive))
+            platform = Platform::WindowsServer;
+        else
+            platform = Platform::Windows;
     }
     // Otherwise we consider the OS to be Linux based
-    if (platformArch().contains("arm", Qt::CaseInsensitive)) return Platform::LinuxARM;
+    else if (platformArch().contains("arm", Qt::CaseInsensitive))
+        platform = Platform::LinuxARM;
+    else
+        platform = Platform::LinuxAMD;
 
-    return Platform::LinuxAMD;
+    return platform;
 }
 
 QString CommonUtility::platformArch() {
