@@ -79,7 +79,7 @@ bool CommonUtility::hasDarkSystray() {
  *  LOGO=ubuntu-logo
  * @return The value associated with the key
  */
-std::string extractOSInfo(const std::string &key) {
+std::string extractOsInfo(const std::string &key) {
     std::string value;
     // Try to get version from /etc/os-release (standard on modern Linux distributions)
     if (std::ifstream osRelease("/etc/os-release"); osRelease.is_open()) {
@@ -102,17 +102,14 @@ std::string extractOSInfo(const std::string &key) {
 }
 
 std::string CommonUtility::osVersion() {
-    static std::string osVersion;
-    if (osVersion.empty()) osVersion = extractOSInfo("VERSION_ID");
+    static const std::string osVersion = extractOsInfo("VERSION_ID");
     return osVersion;
 }
 
 std::string CommonUtility::distributionName() {
-    static std::string distributionName;
-    if (distributionName.empty()) distributionName = extractOSInfo("NAME");
+    static const std::string distributionName = extractOsInfo("NAME");
     return distributionName;
 }
-
 
 namespace {
 #ifndef EXFAT_SUPER_MAGIC

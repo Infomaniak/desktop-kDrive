@@ -139,27 +139,27 @@ std::string CommonUtility::toUnsafeStr(const SyncName &name) {
     return unsafeName;
 }
 
+std::string extractOsVersion() {
+    // Use RtlGetVersion to get the real Windows version (works on Windows 10/11)
+    typedef LONG(WINAPI * RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
+
+    HMODULE hMod = GetModuleHandleW(L"ntdll.dll");
+    if (!hMod) return {};
+
+    auto rtlGetVersion = (RtlGetVersionPtr) GetProcAddress(hMod, "RtlGetVersion");
+    if (!rtlGetVersion) return {};
+
+    RTL_OSVERSIONINFOW osInfo;
+    osInfo.dwOSVersionInfoSize = sizeof(osInfo);
+    if (rtlGetVersion(&osInfo) != 0) return {};
+
+    char versionStr[32];
+    snprintf(versionStr, sizeof(versionStr), "%lu.%lu.%lu", osInfo.dwMajorVersion, osInfo.dwMinorVersion, osInfo.dwBuildNumber);
+    return std::string(versionStr);
+}
+
 std::string CommonUtility::osVersion() {
-    static std::string osVersion;
-    if (osVersion.empty()) {
-        // Use RtlGetVersion to get the real Windows version (works on Windows 10/11)
-        typedef LONG(WINAPI * RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
-
-        HMODULE hMod = GetModuleHandleW(L"ntdll.dll");
-        if (!hMod) return {};
-
-        auto rtlGetVersion = (RtlGetVersionPtr) GetProcAddress(hMod, "RtlGetVersion");
-        if (!rtlGetVersion) return {};
-
-        RTL_OSVERSIONINFOW osInfo;
-        osInfo.dwOSVersionInfoSize = sizeof(osInfo);
-        if (rtlGetVersion(&osInfo) != 0) return {};
-
-        char versionStr[32];
-        snprintf(versionStr, sizeof(versionStr), "%lu.%lu.%lu", osInfo.dwMajorVersion, osInfo.dwMinorVersion,
-                 osInfo.dwBuildNumber);
-        osVersion = std::string(versionStr);
-    }
+    static const std::string osVersion = extractOsVersion();
     return osVersion;
 }
 
