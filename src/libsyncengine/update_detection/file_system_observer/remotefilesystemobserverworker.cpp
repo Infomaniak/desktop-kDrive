@@ -83,9 +83,10 @@ void RemoteFileSystemObserverWorker::execute() {
             }
         }
 
-        std::vector<std::string> specialFoldersRemoteIds;
-        if (const auto mainDirectoriesExitInfo = getSpeciaFoldersRemoteIds(specialFoldersRemoteIds); !mainDirectoriesExitInfo) {
-            LOG_SYNCPAL_DEBUG(_logger, "Error in getSpeciaFoldersRemoteIds: " << mainDirectoriesExitInfo);
+        std::vector<RemoteNodeId> specialFoldersRemoteIds;
+        exitInfo = getSpeciaFoldersRemoteIds(specialFoldersRemoteIds);
+        if (!exitInfo) {
+            LOG_SYNCPAL_DEBUG(_logger, "Error in getSpeciaFoldersRemoteIds: " << exitInfo);
             break;
         }
         for (const auto &remoteDirId: specialFoldersRemoteIds) {
@@ -104,11 +105,6 @@ void RemoteFileSystemObserverWorker::execute() {
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
     setExitCause(exitInfo.cause());
     setDone(exitInfo.code());
-}
-
-bool RemoteFileSystemObserverWorker::updating() const {
-    return _updating || std::any_of(_specialFolderUpdateFlags.cbegin(), _specialFolderUpdateFlags.cend(),
-                                    [](const auto &pair) { return pair.second; });
 }
 
 ExitInfo RemoteFileSystemObserverWorker::generateInitialSnapshot() {
@@ -168,7 +164,7 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
         return exitInfo;
     }
 
-    if (!initializing()) {
+    if (!initializing() && !updating()) {
         // Send long poll request
         bool changes = false;
         if (const auto exitInfo = sendLongPoll(remoteDirId, changes); !exitInfo) {
@@ -180,7 +176,7 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
     }
 
     // Retrieve changes
-    setUpdateFlagValue(remoteDirId, true);
+    setUpdateFlagValue(true);
 
     ExitInfo exitInfo = ExitCode::Ok;
     bool hasMore = true;
@@ -274,7 +270,7 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
             break;
         }
     }
-    setUpdateFlagValue(remoteDirId, false);
+    setUpdateFlagValue(false);
 
     return exitInfo;
 }
@@ -329,7 +325,7 @@ ExitInfo RemoteFileSystemObserverWorker::updateV3SpecialFolderItem(const RemoteN
 ExitInfo RemoteFileSystemObserverWorker::executeFullListingJobs(const FullListingJobMap &fullListingJobs) {
     constexpr auto fullListingSleepTimeMs = 100;
 
-    for (const auto &[remoteNodeId, fullListingJob]: fullListingJobs)
+    for (auto [_, fullListingJob]: fullListingJobs)
         SyncJobManagerSingleton::instance()->queueAsyncJob(fullListingJob, Poco::Thread::PRIO_LOW);
 
     bool allJobsFinished = false;
@@ -382,7 +378,7 @@ ExitInfo RemoteFileSystemObserverWorker::initWithCursor() {
     // Execute the full listings of the remote special folders in parallel.
     if (const auto exitInfo = executeFullListingJobs(fullListingJobs); !exitInfo) return exitInfo;
 
-    // Handle responses of the full listing requests and update the snapshot accordingly.
+    // Handle replies of the full listing requests and update the snapshot accordingly.
     for (const auto &specialFolderRemoteId: specialFoldersRemoteIds) {
         if (const auto exitInfo =
                     handleCsvReplyCursor(specialFolderRemoteId, CursorPersistence::Save, fullListingJobs[specialFolderRemoteId]);
@@ -406,7 +402,7 @@ ExitInfo RemoteFileSystemObserverWorker::exploreDirectory(const RemoteNodeId &no
     return getItemsInDir(nodeId, CursorPersistence::None);
 }
 
-ExitInfo RemoteFileSystemObserverWorker::handleSnapshotItem(
+ExitInfo RemoteFileSystemObserverWorker::handleRemoteSnapshotItem(
         const RemoteSnapshotItem &item, SyncNameSet &existingFiles, ParsingIterationState &iterationState,
         sentry::pTraces::counterScoped::RFSOExploreItem &itemHandlingMonitor) {
     if (iterationState.ignore || iterationState.eof) return ExitCode::Ok;
@@ -489,7 +485,7 @@ ExitInfo RemoteFileSystemObserverWorker::parseCsvReply(const CursorPersistence c
 
     sentry::pTraces::counterScoped::RFSOExploreItem itemHandlingMonitor(cursorPersistence == CursorPersistence::None, syncDbId());
     while (csvFullListingJob->getItem(item, iterationState.error, iterationState.ignore, iterationState.eof)) {
-        if (const auto exitInfo = handleSnapshotItem(item, existingFiles, iterationState, itemHandlingMonitor); !exitInfo)
+        if (const auto exitInfo = handleRemoteSnapshotItem(item, existingFiles, iterationState, itemHandlingMonitor); !exitInfo)
             return exitInfo;
 
         if (iterationState.eof) break;
@@ -511,7 +507,7 @@ ExitInfo RemoteFileSystemObserverWorker::parseCsvReply(const CursorPersistence c
 }
 
 ExitInfo RemoteFileSystemObserverWorker::getItemsInDirJob(
-        const RemoteNodeId &remoteDirId, std::shared_ptr<CsvFullFileListWithCursorJob> csvFullFileListWithCursorJob) {
+        const RemoteNodeId &remoteDirId, std::shared_ptr<CsvFullFileListWithCursorJob> &csvFullFileListWithCursorJob) {
     csvFullFileListWithCursorJob = nullptr;
     try {
         csvFullFileListWithCursorJob = std::make_shared<CsvFullFileListWithCursorJob>(_driveDbId, remoteDirId, _blackList,
@@ -575,9 +571,6 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const RemoteNodeId &remot
 
 
 ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(const RemoteNodeId &remoteDirId, bool &changes) {
-    LOG_MSG_IF_FAIL(!updating(), "Long poll request should not be sent while an update is in progress.")
-    if (updating()) return ExitCode::LogicError;
-
     changes = false;
     if (!_liveSnapshot.isValid()) return ExitCode::Ok;
 
@@ -603,6 +596,13 @@ ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(const RemoteNodeId &remote
         if (stopAsked()) {
             LOG_DEBUG(_logger, "Request " << notifyJob->jobId() << ": aborting LongPoll job");
             notifyJob->abort();
+
+            return ExitCode::Ok;
+        }
+
+        if (updating()) {
+            notifyJob->abort();
+            changes = true;
 
             return ExitCode::Ok;
         }

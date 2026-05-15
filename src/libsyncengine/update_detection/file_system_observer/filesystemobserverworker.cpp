@@ -60,13 +60,12 @@ void FileSystemObserverWorker::tryToInvalidateSnapshot() {
 }
 
 void FileSystemObserverWorker::forceUpdate() {
-    const std::scoped_lock lock(_mutex);
-    _updating = true;
+    setUpdateFlagValue(true);
 }
 
 void FileSystemObserverWorker::init() {
     ISyncWorker::init();
-    _updating = false;
+    setUpdateFlagValue(false);
     _initializing = true;
     invalidateSnapshot();
 }
