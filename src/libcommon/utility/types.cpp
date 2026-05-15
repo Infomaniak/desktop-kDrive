@@ -964,8 +964,8 @@ const std::string VersionInfo::versionInfoTag = "tag";
 const std::string VersionInfo::versionInfoBuildVersion = "buildVersion";
 const std::string VersionInfo::versionInfoDownloadUrl = "downloadUrl";
 const std::string VersionInfo::versionInfoChecksum = "checksum";
-const std::string VersionInfo::versionInfoMinOsVersion = "buildMinOsVersion";
-const std::string VersionInfo::versionInfoMinAppVersion = "buildMinAppVersion";
+const std::string VersionInfo::versionInfoMinOsVersion = "minOsVersion";
+const std::string VersionInfo::versionInfoMinAppVersion = "minAppVersion";
 
 VersionInfo VersionInfo::current() {
     VersionInfo versionInfo;

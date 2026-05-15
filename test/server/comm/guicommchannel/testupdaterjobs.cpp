@@ -51,8 +51,10 @@ void TestGuiCommChannel::testUpdaterVersionInfoJob() {
     (void) versionInfoObj.set("channel", toInt(DistributionChannel::Prod));
     (void) versionInfoObj.set("tag", toBase64(Str("3.8.2")));
     (void) versionInfoObj.set("buildVersion", 3);
-    (void) versionInfoObj.set("buildMinOsVersion", toBase64(Str("10.15")));
     (void) versionInfoObj.set("downloadUrl", toBase64(Str("https://downloads/kDrive-3.8.2.3.pkg")));
+    (void) versionInfoObj.set("checksum", toBase64(Str("a1b2c3d4e5f6g7h8i9")));
+    (void) versionInfoObj.set("minOsVersion", toBase64(Str("10.15")));
+    (void) versionInfoObj.set("minAppVersion", toBase64(Str("3.6.2.1")));
 
     Poco::JSON::Object paramsObj;
     (void) paramsObj.set("versionInfo", versionInfoObj);
@@ -73,8 +75,10 @@ void TestGuiCommChannel::testUpdaterVersionInfoJob() {
         versionInfo.channel = DistributionChannel::Prod;
         versionInfo.tag = "3.8.2";
         versionInfo.buildVersion = 3;
-        versionInfo.minOsVersion = "10.15";
         versionInfo.downloadUrl = "https://downloads/kDrive-3.8.2.3.pkg";
+        versionInfo.checksum = "a1b2c3d4e5f6g7h8i9";
+        versionInfo.minOsVersion = "10.15";
+        versionInfo.minAppVersion = "3.6.2.1";
 
         updaterVersionInfoJob->_versionInfo = versionInfo;
     };
