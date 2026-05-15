@@ -62,9 +62,95 @@ RemoteFileSystemObserverWorker::~RemoteFileSystemObserverWorker() {
     LOG_SYNCPAL_DEBUG(_logger, "~RemoteFileSystemObserverWorker");
 }
 
+ExitInfo RemoteFileSystemObserverWorker::updateLongPollJobs(const std::vector<RemoteNodeId> &remoteDirIds,
+                                                            LongPollJobMap &longPollJobs) {
+    if (stopAsked() || initializing() || updating()) {
+        for (const auto &[remoteDirId, longPollJob]: longPollJobs) {
+            if (longPollJob) longPollJob->abort();
+        }
+        longPollJobs.clear();
+
+        return ExitCode::Ok;
+    }
+
+    for (const auto &remoteDirId: remoteDirIds) {
+        if (!longPollJobs[remoteDirId]) continue;
+
+        if (const auto exitInfo = createLongPollJob(remoteDirId, longPollJobs[remoteDirId]); !exitInfo) return exitInfo;
+
+        SyncJobManagerSingleton::instance()->queueAsyncJob(longPollJobs[remoteDirId], Poco::Thread::PRIO_LOW);
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitInfo RemoteFileSystemObserverWorker::checkIfRemoteDirHasChanges(const RemoteNodeId &remoteDirId,
+                                                                    const std::shared_ptr<LongPollJob> longPollJob,
+                                                                    bool &changes) {
+    const std::string dataMessage = "for driveDbId=" + std::to_string(_driveDbId) + ", remoteDirId=" + remoteDirId +
+                                    " and cursor=" + _listingCursorMap.at(remoteDirId).cursor;
+
+    if (!longPollJob->exitInfo()) {
+        LOG_SYNCPAL_WARN(_logger, "Error in LongPollJob: " << longPollJob->exitInfo() << dataMessage);
+
+        if (longPollJob->exitInfo() == ExitInfo(ExitCode::NetworkError, ExitCause::NetworkTimeout)) {
+            _syncPal->addError(Error(_syncPal->syncDbId(), ERR_ID, longPollJob->exitInfo()));
+        }
+
+        return longPollJob->exitInfo();
+    }
+
+    Poco::JSON::Object::Ptr resObj = longPollJob->jsonRes();
+    if (!resObj) {
+        LOG_SYNCPAL_DEBUG(_logger, "(Long poll) No JSON response. Notify changes request failed " << dataMessage);
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+    }
+
+    if (!JsonParserUtility::extractValue(resObj, changesKey, changes)) {
+        LOG_SYNCPAL_DEBUG(_logger, "(Long poll) The key for changes is missing in JSON response. Notify changes request failed "
+                                           << dataMessage);
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitInfo RemoteFileSystemObserverWorker::processEvents(const std::vector<RemoteNodeId> &specialFoldersRemoteIds,
+                                                       LongPollJobMap &longPollJobs) {
+    const bool hasForcedChanges = longPollJobs.empty() && !initializing();
+
+    for (const auto &remoteDirId: specialFoldersRemoteIds) {
+        if (!hasForcedChanges && !SyncJobManagerSingleton::instance()->isJobFinished(longPollJobs.at(remoteDirId)->jobId()))
+            continue;
+
+        bool hasChanges = hasForcedChanges;
+        if (!hasForcedChanges) {
+            if (const auto exitInfo = checkIfRemoteDirHasChanges(remoteDirId, longPollJobs.at(remoteDirId), hasChanges);
+                !exitInfo) {
+                LOG_SYNCPAL_DEBUG(_logger, "Error in checkIfRemoteDirHasChanges: " << exitInfo);
+
+                return exitInfo;
+            }
+        }
+
+        if (!hasChanges) continue;
+
+        longPollJobs[remoteDirId].reset();
+        if (const auto exitInfo = processEvents(remoteDirId); !exitInfo) {
+            LOG_SYNCPAL_DEBUG(_logger, "Error in processEvents: remoteDirId=" << remoteDirId << ", ExitInfo: " << exitInfo);
+
+            return exitInfo;
+        }
+    }
+
+    return ExitCode::Ok;
+}
+
 void RemoteFileSystemObserverWorker::execute() {
     ExitInfo exitInfo = ExitCode::Ok;
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name());
+
+    LongPollJobMap longPollJobs;
 
     // Sync loop
     for (;;) {
@@ -89,14 +175,16 @@ void RemoteFileSystemObserverWorker::execute() {
             LOG_SYNCPAL_DEBUG(_logger, "Error in getSpeciaFoldersRemoteIds: " << exitInfo);
             break;
         }
-        for (const auto &remoteDirId: specialFoldersRemoteIds) {
-            exitInfo = processEvents(remoteDirId);
-            if (!exitInfo) {
-                LOG_SYNCPAL_DEBUG(_logger, "Error in processEvents: remoteDirId=" << remoteDirId << ", ExitInfo: " << exitInfo);
-                break;
-            }
+
+        exitInfo = updateLongPollJobs(specialFoldersRemoteIds, longPollJobs);
+        if (!exitInfo) break;
+
+        if (stopAsked()) {
+            exitInfo = ExitCode::Ok;
+            break;
         }
 
+        exitInfo = processEvents(specialFoldersRemoteIds, longPollJobs);
         if (!exitInfo) break;
 
         setInitFlagValue(false);
@@ -158,21 +246,10 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
 
     if (stopAsked()) return ExitCode::Ok;
 
-    // Get last listing cursor used
+    // Get the most recently used listing cursor.
     if (const auto exitInfo = getListingCursor(remoteDirId, _listingCursorMap[remoteDirId]); !exitInfo) {
         LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::listingCursor: " << exitInfo);
         return exitInfo;
-    }
-
-    if (!initializing() && !updating()) {
-        // Send long poll request
-        bool changes = false;
-        if (const auto exitInfo = sendLongPoll(remoteDirId, changes); !exitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::sendLongPoll: " << exitInfo);
-            return exitInfo;
-        }
-
-        if (!changes) return ExitCode::Ok;
     }
 
     // Retrieve changes
@@ -567,25 +644,28 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const RemoteNodeId &remot
     return parseCsvReply(cursorPersistence, job);
 }
 
+ExitInfo RemoteFileSystemObserverWorker::createLongPollJob(const RemoteNodeId &remoteDirId,
+                                                           std::shared_ptr<LongPollJob> &longPollJob) {
+    longPollJob = nullptr;
+    try {
+        longPollJob = std::make_shared<LongPollJob>(_driveDbId, _listingCursorMap.at(remoteDirId).cursor);
+    } catch (const JobException &e) {
+        LOG_SYNCPAL_WARN(_logger, "Exception thrown in LongPollJob::LongPollJob for driveDbId="
+                                          << _driveDbId << " and remoteDirId=" << remoteDirId << ", error=" << e.what());
+        return exception2ExitCode(e);
+    }
+
+    return ExitCode::Ok;
+}
+
 ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(const RemoteNodeId &remoteDirId, bool &changes) {
     changes = false;
     if (!_liveSnapshot.isValid()) return ExitCode::Ok;
 
     std::shared_ptr<LongPollJob> notifyJob = nullptr;
-    if (const auto exitInfo = getListingCursor(remoteDirId, _listingCursorMap[remoteDirId]); !exitInfo) {
-        LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::getListingCursor: remoteDirId="
-                                          << remoteDirId << ", exitInfo=" << exitInfo);
+    if (const auto exitInfo = createLongPollJob(remoteDirId, notifyJob); !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in createLongPollJob: " << exitInfo);
         return exitInfo;
-    }
-
-    const std::string dataMessage = "for driveDbId=" + std::to_string(_driveDbId) + ", remoteDirId=" + remoteDirId +
-                                    " and cursor=" + _listingCursorMap.at(remoteDirId).cursor;
-
-    try {
-        notifyJob = std::make_shared<LongPollJob>(_driveDbId, _listingCursorMap.at(remoteDirId).cursor);
-    } catch (const JobException &e) {
-        LOG_SYNCPAL_WARN(_logger, "Exception thrown in LongPollJob::LongPollJob" << dataMessage << ", error=" << e.what());
-        return exception2ExitCode(e);
     }
 
     SyncJobManagerSingleton::instance()->queueAsyncJob(notifyJob, Poco::Thread::PRIO_LOW);
@@ -607,6 +687,9 @@ ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(const RemoteNodeId &remote
         // Wait until the long poll job is finished.
         Utility::msleep(100);
     }
+
+    const std::string dataMessage = "for driveDbId=" + std::to_string(_driveDbId) + ", remoteDirId=" + remoteDirId +
+                                    " and cursor=" + _listingCursorMap.at(remoteDirId).cursor;
 
     if (!notifyJob->exitInfo()) {
         LOG_SYNCPAL_WARN(_logger, "Error in LongPollJob: " << notifyJob->exitInfo() << dataMessage);
