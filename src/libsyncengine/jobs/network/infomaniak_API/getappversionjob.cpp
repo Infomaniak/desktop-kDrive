@@ -26,6 +26,7 @@
 
 namespace KDC {
 
+static const std::string channelKey = "channel";
 static const std::string tagKey = "tag";
 static const std::string buildVersionKey = "build_version";
 static const std::string downloadUrlKey = "download_link";
@@ -77,9 +78,12 @@ ExitInfo GetAppVersionJob::handleResponse(std::istream &is) {
     const Poco::JSON::Object::Ptr dataObj = JsonParserUtility::extractJsonObject(jsonRes(), dataKey);
     if (!dataObj) return {ExitCode::BackError, ExitCause::MissingReplyData};
 
-    if (!JsonParserUtility::extractValue(dataObj, tagKey, _versionsInfo.tag))
+    toString(_versionsInfo.channel);
+
+    std::string channelStr;
+    if (!JsonParserUtility::extractValue(dataObj, channelKey, channelStr))
         return {ExitCode::BackError, ExitCause::MissingReplyData};
-    _versionsInfo.channel = _currentChannel;
+    _versionsInfo.channel = toDistributionChannel(channelStr);
     if (!JsonParserUtility::extractValue(dataObj, tagKey, _versionsInfo.tag))
         return {ExitCode::BackError, ExitCause::MissingReplyData};
     if (!JsonParserUtility::extractValue(dataObj, buildVersionKey, _versionsInfo.buildVersion))

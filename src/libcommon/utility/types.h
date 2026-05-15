@@ -507,6 +507,7 @@ std::string toString(SyncStep e);
 std::string toString(UploadSessionType e);
 std::string toString(UpdateState e);
 std::string toString(DistributionChannel e);
+DistributionChannel toDistributionChannel(const std::string &channel);
 std::string toString(VirtualFileMode e);
 std::string toString(SyncConfiguration e);
 

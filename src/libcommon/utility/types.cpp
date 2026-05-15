@@ -811,6 +811,17 @@ std::string toString(const DistributionChannel e) {
             return noConversionStr;
     }
 }
+DistributionChannel toDistributionChannel(const std::string &channel) {
+    if (channel == "production") return DistributionChannel::Prod;
+    if (channel == "next") return DistributionChannel::Next;
+    if (channel == "beta") return DistributionChannel::Beta;
+    if (channel == "internal") return DistributionChannel::Internal;
+    if (channel == "legacy") return DistributionChannel::Legacy;
+    if (channel == "test") return DistributionChannel::Test;
+    if (channel == "unknown") return DistributionChannel::Unknown;
+    return DistributionChannel::Unknown;
+}
+
 std::string toString(const Platform e) {
     switch (e) {
         case Platform::MacOS:

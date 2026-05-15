@@ -180,7 +180,7 @@ void BetaProgramDialog::onAcknowledgment() {
     _saveButton->setEnabled(_acknowledgmentCheckbox->isChecked());
 }
 
-DistributionChannel toDistributionChannel(const int index) {
+DistributionChannel indexToDistributionChannel(const int index) {
     switch (index) {
         case indexNo:
             return DistributionChannel::Prod;
@@ -197,7 +197,7 @@ DistributionChannel toDistributionChannel(const int index) {
 void BetaProgramDialog::onSave() {
     MatomoClient::sendEvent("betaProgramDialog", MatomoEventAction::Click, "saveButton");
     if (_isStaff) {
-        _newChannel = toDistributionChannel(_staffSelectionBox->currentIndex());
+        _newChannel = indexToDistributionChannel(_staffSelectionBox->currentIndex());
     } else {
         if (_isQuit) {
             _newChannel = DistributionChannel::Prod;
