@@ -16,16 +16,31 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import InfomaniakDI
-import kDriveCoreUI
+import kDriveResources
+import SwiftUI
 
-final class SynchroRulesPreferencesDetailViewController: TitledViewController<SynchroRulesPreferencesDetailView> {
-    convenience init(synchroRulesItem: SynchroRulesItem, exclusionRepository: ExclusionRepository) {
-        @InjectService var router: PreferencesViewRouter
-        self.init(
-            toolbarTitle: synchroRulesItem.title,
-            navigableRouter: router,
-            contentView: SynchroRulesPreferencesDetailView(item: synchroRulesItem, repository: exclusionRepository)
-        )
+public struct TextWithIcon: View {
+    let icon: Image
+    let text: String
+
+    public init(icon: Image, text: String) {
+        self.icon = icon
+        self.text = text
     }
+
+    public var body: some View {
+        HStack(alignment: .center) {
+            icon
+                .resizable()
+                .scaledToFit()
+                .frame(width: 16, height: 16)
+            Text(text)
+                .font(.body)
+                .foregroundColor(.primary)
+        }
+    }
+}
+
+#Preview {
+    TextWithIcon(icon: KDriveResources.folderFilled.swiftUIImage, text: "test")
 }

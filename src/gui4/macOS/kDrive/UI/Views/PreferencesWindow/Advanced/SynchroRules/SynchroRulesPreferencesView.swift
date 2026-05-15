@@ -49,6 +49,24 @@ enum SynchroRulesItem: String, Identifiable, CaseIterable {
             return KDriveLocalizable.excludeRuleAppDescription
         }
     }
+
+    var description: String {
+        switch self {
+        case .files:
+            return KDriveLocalizable.defaultExclusionFileListDescription
+        case .apps:
+            return KDriveLocalizable.defaultExclusionAppListDescription
+        }
+    }
+
+    var headerDescription: String {
+        switch self {
+        case .files:
+            return KDriveLocalizable.userExclusionFileListHeaderDescription
+        case .apps:
+            return KDriveLocalizable.userExclusionAppListHeaderDescription
+        }
+    }
 }
 
 struct SynchroRulesPreferencesView: View {

@@ -83,6 +83,12 @@
 /* loco:69a6d9b44d26dc09aa0d0643 */
 "betaProgramTitle" = "Partecipare al programma beta";
 
+/* loco:698af16617408ac0d8026b12 */
+"betaSettings" = "Programma beta";
+
+/* loco:698b580c716d616edb0efde2 */
+"buttonAddFileExclusionRule" = "Aggiungi una regola";
+
 /* loco:696a483470f3b70399021c12 */
 "buttonAddStorage" = "Aggiungere l’archiviazione";
 
@@ -254,6 +260,18 @@
 /* loco:698b35a408fd1ee25f08ab35 */
 "debugLogsSettings" = "Log di debug";
 
+/* loco:6a03193b7868f10c96083485 */
+"defaultExclusionAppListDescription" = "Queste app vengono ignorate per impostazione predefinita e non possono essere modificate.";
+
+/* loco:698b571c5bf251efd60b88f2 */
+"defaultExclusionFileListDescription" = "Questi file sono esclusi per impostazione predefinita e non possono essere modificati.";
+
+/* loco:698b56b72776ca5e2e084172 */
+"defaultExclusionFileListHeader" = "Esclusione automatica";
+
+/* loco:698c6c6e4f7e07503f0ba762 */
+"dialogNewExclusionRuleTitle" = "Aggiungi una regola di esclusione";
+
 /* loco:698c6bbd94b70c0d3d09cde4 */
 "dialogRemoveAccountContent" = "Si disconnette %@ dall'applicazione.\n\nLa cartella di sincronizzazione rimarrà sul computer, ma non sarà più sincronizzata con kDrive.\n\nTutti i dati rimarranno accessibili online su kDrive.";
 
@@ -345,6 +363,9 @@
 
 /* loco:69a560c0ef88a6b6b00e49a4 */
 "feedbackURL" = "https://feedback.userreport.com/191a0beb-797d-4ec1-b1ff-31889a0012ee";
+
+/* loco:6a072dcb891ba895c309fbc2 */
+"fileExclusionNotificationWarning" = "Una notifica ti informa quando un file viene escluso da questa regola.";
 
 /* loco:698b05aa9eefd9ba070ce4a2 */
 "fileSyncMode" = "Modalità di sincronizzazione dei file";
@@ -530,6 +551,9 @@
 
 /* loco:698b1086dc2a328c000cfd92 */
 "notificationsDisabledNever" = "Mai";
+
+/* loco:698b0181941b49c4f500aa15 */
+"notifyOnFileExcluded" = "Ricevi una notifica quando un file viene escluso";
 
 /* loco:698c5ab9945b7c6d260d4c22 */
 "onBoardingAdvancedSettingsDriveTitle" = "Impostare la sincronizzazione per questo kDrive";
@@ -850,6 +874,18 @@
 
 /* loco:698aec0b7bde6b6260001c02 */
 "updateSettings" = "Aggiornamento";
+
+/* loco:6a031b29945d3f97240ff954 */
+"userExclusionAppListHeaderDescription" = "Escludi alcune applicazioni dalla sincronizzazione.";
+
+/* loco:698b579544510089bf0fecf2 */
+"userExclusionFileListDescription" = "Aggiungi file da escludere dalla sincronizzazione.";
+
+/* loco:698b57bdb14da22c560da082 */
+"userExclusionFileListHeader" = "Regole di esclusione personalizzate";
+
+/* loco:6a031a88cfe46dc82b0c8162 */
+"userExclusionFileListHeaderDescription" = "Escludi alcuni tipi di file dalla sincronizzazione.";
 
 /* loco:698b1713c1e8210103081e12 */
 "viewSourceCode" = "Visualizza codice sorgente";

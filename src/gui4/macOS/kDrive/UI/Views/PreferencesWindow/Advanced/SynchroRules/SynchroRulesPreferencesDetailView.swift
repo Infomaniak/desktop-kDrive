@@ -16,16 +16,71 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import kDriveCoreUI
+import kDriveResources
 import SwiftUI
 
 struct SynchroRulesPreferencesDetailView: View {
     let item: SynchroRulesItem
+    let repository: ExclusionRepository
+
+    @State private var defaultExcludedApps = [UIExclusionAppInfo]()
+    @State private var userExcludedApps = [UIExclusionAppInfo]()
+
+    @State private var defaultExcludedTemplates = [UIExclusionTemplateInfo]()
+    @State private var userExcludedTemplates = [UIExclusionTemplateInfo]()
+
+    @State private var isShowingSheet = false
 
     var body: some View {
-        Text(item.rawValue)
+        VStack(alignment: .leading, spacing: 24) {
+            VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(KDriveLocalizable.defaultExclusionFileListHeader)
+                    Text(item.description)
+                        .font(.Tokens.callout)
+                        .foregroundStyle(.secondary)
+                }
+
+                if item == .apps {
+                    SynchroRulesPreferencesDefaultAppList(defaultExcludedApps: $defaultExcludedApps)
+                } else {
+                    SynchroRulesPreferencesDefaultTemplateList(defaultExcludedTemplates: $defaultExcludedTemplates)
+                }
+            }
+            VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(KDriveLocalizable.userExclusionFileListHeader)
+                    Text(item.headerDescription)
+                        .font(.Tokens.callout)
+                        .foregroundStyle(.secondary)
+                    Button(KDriveLocalizable.buttonAddFileExclusionRule) {
+                        isShowingSheet = true
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
+
+                if item == .apps {
+                    SynchroRulesPreferencesUserAppList(repository: repository, userExcludedApps: $userExcludedApps)
+                } else {
+                    SynchroRulesPreferencesUserTemplateList(repository: repository, userExcludedTemplates: $userExcludedTemplates)
+                }
+            }
+            .onAppear {
+                defaultExcludedApps = repository.exclusionInfo.defaultExcludedApps
+                userExcludedApps = repository.exclusionInfo.userExcludedApps
+
+                defaultExcludedTemplates = repository.exclusionInfo.defaultExcludedTemplates
+                userExcludedTemplates = repository.exclusionInfo.userExcludedTemplates
+            }
+            .sheet(isPresented: $isShowingSheet) {
+                SynchroRulesPreferencesSheet(item: item)
+            }
+        }
+        .padding(AppPadding.padding24)
     }
 }
 
 #Preview {
-    SynchroRulesPreferencesDetailView(item: .apps)
+    SynchroRulesPreferencesDetailView(item: .apps, repository: ExclusionRepository())
 }
