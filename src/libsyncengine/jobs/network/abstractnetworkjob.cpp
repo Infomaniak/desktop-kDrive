@@ -24,6 +24,7 @@
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/utility/jsonparserutility.h"
+#include "utility/timerutility.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -36,7 +37,9 @@
 #include <Poco/Error.h>
 
 #include <iostream> // std::ios, std::istream, std::cout, std::cerr
+#include <atomic>
 #include <functional>
+#include <thread>
 #include <Poco/JSON/Parser.h>
 #include <Poco/Net/HTTPRequest.h>
 
@@ -322,13 +325,6 @@ void AbstractNetworkJob::abort() {
     abortSession();
 }
 
-void AbstractNetworkJob::unzip(std::istream &is, std::stringstream &ss) {
-    Poco::InflatingInputStream inflater(is, Poco::InflatingStreamBuf::STREAM_GZIP);
-    while (is) {
-        Poco::StreamCopier::copyStream(inflater, ss);
-    }
-}
-
 void AbstractNetworkJob::createSession(const Poco::URI &uri) {
     const std::scoped_lock lock(_mutexSession);
 
@@ -573,14 +569,54 @@ ExitInfo AbstractNetworkJob::handleError(std::istream &inputStream, const Poco::
     return handleError(replyBody, uri);
 }
 
+void readStream(const Poco::Net::HTTPResponse &httpResponse, std::istream &inputStream, std::string &res,
+                std::atomic_bool &finished, std::exception_ptr &threadException) {
+    res = {};
+    try {
+        if (const std::string encoding = httpResponse.get("content-encoding", ""); encoding == "gzip") {
+            std::stringstream ss;
+            Utility::unzipStream(inputStream, ss);
+            res = ss.str();
+        } else {
+            std::string tmp(std::istreambuf_iterator<char>(inputStream), (std::istreambuf_iterator<char>()));
+            res = std::move(tmp);
+        }
+    } catch (...) {
+        threadException = std::current_exception();
+    }
+
+    finished.store(true);
+}
+
 void AbstractNetworkJob::getStringFromStream(std::istream &inputStream, std::string &res) {
-    if (const std::string encoding = httpResponse().get("content-encoding", ""); encoding == "gzip") {
-        std::stringstream ss;
-        unzip(inputStream, ss);
-        res = ss.str();
-    } else {
-        std::string tmp(std::istreambuf_iterator<char>(inputStream), (std::istreambuf_iterator<char>()));
-        res = std::move(tmp);
+    std::atomic_bool finished = false;
+    std::exception_ptr threadException = nullptr;
+    std::thread t(readStream, httpResponse(), std::ref(inputStream), std::ref(res), std::ref(finished),
+                  std::ref(threadException));
+
+    // Wait
+    TimerUtility timer;
+    while (timer.elapsed<std::chrono::milliseconds>() < std::chrono::milliseconds(sleepDurationThreshold) && !finished.load()) {
+        Utility::msleep(100);
+    }
+
+    if (!finished.load()) {
+        LOG_WARN(_logger, "Timed out while reading response stream for job " << jobId() << ", aborting session");
+        abortSession();
+    }
+
+    if (t.joinable()) {
+        t.join();
+    }
+
+    if (threadException) {
+        try {
+            std::rethrow_exception(threadException);
+        } catch (const std::exception &e) {
+            LOG_WARN(_logger, "Failed to read response stream for job " << jobId() << ": " << e.what());
+        } catch (...) {
+            LOG_WARN(_logger, "Failed to read response stream for job " << jobId() << ": unknown exception.");
+        }
     }
 }
 
