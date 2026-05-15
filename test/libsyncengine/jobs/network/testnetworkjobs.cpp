@@ -89,6 +89,42 @@ static const NodeId testDummyFileRemoteId = "98649"; // test_ci/dummy_dir/pictur
 static const std::string desktopTeamTestDriveName = "kDrive Desktop Team";
 static const std::string dummyDirName = "dummy_dir";
 static const std::string dummyFileName = "picture.jpg";
+
+class GetAppVersionJobForTests final : public GetAppVersionJob {
+    public:
+        explicit GetAppVersionJobForTests(const std::string &appId) :
+            GetAppVersionJob(DistributionChannel::Internal, appId) {}
+
+        ExitInfo parseResponse(const std::string &response) {
+            std::istringstream stream(response);
+            return handleResponse(stream);
+        }
+};
+
+Poco::JSON::Object buildVersionInfo(const std::string &channel, const bool includeTag = true) {
+    Poco::JSON::Object versionObj;
+    (void) versionObj.set("channel", channel);
+    if (includeTag) {
+        (void) versionObj.set("tag", "3.6.4");
+    }
+    (void) versionObj.set("build_version", 20240816);
+    (void) versionObj.set("build_min_os_version", "10.15");
+    (void) versionObj.set("download_link", "https://download.example.com/kDrive.pkg");
+    (void) versionObj.set("checksum", "abcd1234");
+    (void) versionObj.set("min_version", "3.6.0.0");
+
+    return versionObj;
+}
+
+std::string buildAppVersionReply(const Poco::JSON::Object &versionInfoObj) {
+    Poco::JSON::Object mainObj;
+    (void) mainObj.set("result", "success");
+    (void) mainObj.set("data", versionInfoObj);
+
+    std::ostringstream out;
+    mainObj.stringify(out);
+    return out.str();
+}
 } // namespace
 
 void TestNetworkJobs::setUp() {
@@ -1530,6 +1566,38 @@ void TestNetworkJobs::testGetAppVersionInfo() {
         GetAppVersionJob job(DistributionChannel::Unknown, appUid);
         job.runSynchronously();
         CPPUNIT_ASSERT(job.hasHttpError());
+        CPPUNIT_ASSERT(!job.versionInfo().isValid());
+    }
+}
+
+void TestNetworkJobs::testGetAppVersionInfoParsingEdgeCases() {
+    const auto appUid = "1234567890";
+    {
+        GetAppVersionJobForTests job(appUid);
+        Poco::JSON::Object versionInfoObj = buildVersionInfo("production");
+
+        const ExitInfo exitInfo = job.parseResponse(buildAppVersionReply(versionInfoObj));
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitInfo.code());
+        CPPUNIT_ASSERT(job.versionInfo().isValid());
+    }
+
+    {
+        GetAppVersionJobForTests job(appUid);
+        Poco::JSON::Object versionInfoObj = buildVersionInfo("production", false);
+
+        const ExitInfo exitInfo = job.parseResponse(buildAppVersionReply(versionInfoObj));
+        CPPUNIT_ASSERT_EQUAL(ExitCode::BackError, exitInfo.code());
+        CPPUNIT_ASSERT_EQUAL(ExitCause::MissingReplyData, exitInfo.cause());
+        CPPUNIT_ASSERT(!job.versionInfo().isValid());
+    }
+
+    {
+        GetAppVersionJobForTests job(appUid);
+        Poco::JSON::Object versionInfoObj = buildVersionInfo("unknown-channel");
+
+        const ExitInfo exitInfo = job.parseResponse(buildAppVersionReply(versionInfoObj));
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitInfo.code());
+        CPPUNIT_ASSERT_EQUAL(DistributionChannel::Unknown, job.versionInfo().channel);
         CPPUNIT_ASSERT(!job.versionInfo().isValid());
     }
 }
