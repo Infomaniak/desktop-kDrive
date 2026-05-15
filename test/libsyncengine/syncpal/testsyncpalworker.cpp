@@ -391,21 +391,19 @@ void TestSyncPalWorker::MockSyncPal::freeSnapshotsCopies() {
     _remoteSnapshot.reset();
 }
 
-ExitInfo TestSyncPalWorker::MockRemoteFileSystemObserverWorker::sendLongPoll(const RemoteNodeId &, bool &changes) {
+ExitInfo TestSyncPalWorker::MockRemoteFileSystemObserverWorker::updateLongPollJobs(
+        const std::vector<RemoteNodeId> &, RemoteFileSystemObserverWorker::LongPollJobMap &) {
+    if (!_networkAvailable) return ExitCode::NetworkError;
+
 
     using namespace std::chrono;
-    changes = false;
-    if (!_networkAvailable) {
-        return ExitCode::NetworkError;
-    }
-
     const auto start = steady_clock::now();
     while (_networkAvailable && !stopAsked() && start + _longPollDuration < steady_clock::now()) {
         Utility::msleep(100);
     }
-    if (!_networkAvailable) {
-        return ExitCode::NetworkError;
-    }
+
+    if (!_networkAvailable) return ExitCode::NetworkError;
+
     return ExitCode::Ok;
 }
 

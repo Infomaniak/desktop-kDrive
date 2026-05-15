@@ -40,8 +40,9 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
 
     protected:
         void execute() override;
-        virtual ExitInfo sendLongPoll(const RemoteNodeId &remoteDirId, bool &changes);
         ExitInfo generateInitialSnapshot() override;
+        using LongPollJobMap =
+                std::unordered_map<RemoteNodeId, std::shared_ptr<LongPollJob>, StringHashFunction, std::equal_to<>>;
 
     private:
         ExitInfo processEvents(const NodeId &remoteDirId) override;
@@ -124,9 +125,8 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
 
         [[nodiscard]] ExitInfo createLongPollJob(const RemoteNodeId &remoteDirId, std::shared_ptr<LongPollJob> &longPollJob);
 
-        using LongPollJobMap =
-                std::unordered_map<RemoteNodeId, std::shared_ptr<LongPollJob>, StringHashFunction, std::equal_to<>>;
-        [[nodiscard]] ExitInfo updateLongPollJobs(const std::vector<RemoteNodeId> &remoteDirIds, LongPollJobMap &longPollJobs);
+        [[nodiscard]] virtual ExitInfo updateLongPollJobs(const std::vector<RemoteNodeId> &remoteDirIds,
+                                                          LongPollJobMap &longPollJobs);
 
         [[nodiscard]] ExitInfo checkIfRemoteDirHasChanges(const RemoteNodeId &remoteDirId,
                                                           std::shared_ptr<LongPollJob> longPollJob, bool &changes);
