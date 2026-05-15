@@ -661,64 +661,6 @@ ExitInfo RemoteFileSystemObserverWorker::createLongPollJob(const RemoteNodeId &r
     return ExitCode::Ok;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(const RemoteNodeId &remoteDirId, bool &changes) {
-    changes = false;
-    if (!_liveSnapshot.isValid()) return ExitCode::Ok;
-
-    std::shared_ptr<LongPollJob> notifyJob = nullptr;
-    if (const auto exitInfo = createLongPollJob(remoteDirId, notifyJob); !exitInfo) {
-        LOG_SYNCPAL_WARN(_logger, "Error in createLongPollJob: " << exitInfo);
-        return exitInfo;
-    }
-
-    SyncJobManagerSingleton::instance()->queueAsyncJob(notifyJob, Poco::Thread::PRIO_LOW);
-    while (!SyncJobManagerSingleton::instance()->isJobFinished(notifyJob->jobId())) {
-        if (stopAsked()) {
-            LOG_DEBUG(_logger, "Request " << notifyJob->jobId() << ": aborting LongPoll job");
-            notifyJob->abort();
-
-            return ExitCode::Ok;
-        }
-
-        if (updating()) {
-            notifyJob->abort();
-            changes = true;
-
-            return ExitCode::Ok;
-        }
-
-        // Wait until the long poll job is finished.
-        Utility::msleep(100);
-    }
-
-    const std::string dataMessage = "for driveDbId=" + std::to_string(_driveDbId) + ", remoteDirId=" + remoteDirId +
-                                    " and cursor=" + _listingCursorMap.at(remoteDirId).cursor;
-
-    if (!notifyJob->exitInfo()) {
-        LOG_SYNCPAL_WARN(_logger, "Error in LongPollJob: " << notifyJob->exitInfo() << dataMessage);
-
-        if (notifyJob->exitInfo() == ExitInfo(ExitCode::NetworkError, ExitCause::NetworkTimeout)) {
-            _syncPal->addError(Error(_syncPal->syncDbId(), ERR_ID, notifyJob->exitInfo()));
-        }
-
-        return notifyJob->exitInfo();
-    }
-
-    Poco::JSON::Object::Ptr resObj = notifyJob->jsonRes();
-    if (!resObj) {
-        LOG_SYNCPAL_DEBUG(_logger, "(Long poll) No JSON response. Notify changes request failed " << dataMessage);
-        return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
-
-    if (!JsonParserUtility::extractValue(resObj, changesKey, changes)) {
-        LOG_SYNCPAL_DEBUG(_logger, "(Long poll) The key for changes is missing in JSON response. Notify changes request failed "
-                                           << dataMessage);
-        return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
-
-    return ExitCode::Ok;
-}
-
 ExitInfo RemoteFileSystemObserverWorker::createActionInfoList(const Poco::JSON::Array::Ptr actionArray,
                                                               ActionInfoList &actionInfoList) {
     actionInfoList.clear();
