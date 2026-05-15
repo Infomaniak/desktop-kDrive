@@ -130,6 +130,9 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
                                       std::shared_ptr<CsvFullFileListWithCursorJob> csvFullFileListWithCursorJob);
         ExitInfo getItemsInDirJob(const RemoteNodeId &remoteDirId,
                                   std::shared_ptr<CsvFullFileListWithCursorJob> csvFullFileListWithCursorJob);
+        using FullListingJobMap = std::unordered_map<RemoteNodeId, std::shared_ptr<CsvFullFileListWithCursorJob>>;
+        // Run full listing jobs in parallel via the sync job manager.
+        ExitInfo executeFullListingJobs(const FullListingJobMap &fullListingJobs);
 
         friend class TestRemoteFileSystemObserverWorker;
 };

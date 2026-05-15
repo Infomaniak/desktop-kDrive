@@ -325,24 +325,73 @@ ExitInfo RemoteFileSystemObserverWorker::updateV3SpecialFolderItem(const RemoteN
     return ExitCode::Ok;
 }
 
+ExitInfo RemoteFileSystemObserverWorker::executeFullListingJobs(const FullListingJobMap &fullListingJobs) {
+    constexpr auto fullListingSleepTimeMs = 100;
+
+    for (const auto &[remoteNodeId, fullListingJob]: fullListingJobs)
+        SyncJobManagerSingleton::instance()->queueAsyncJob(fullListingJob, Poco::Thread::PRIO_LOW);
+
+    bool allJobsFinished = false;
+    while (!allJobsFinished) {
+        if (stopAsked()) return ExitCode::Ok;
+
+        allJobsFinished = true;
+        for (const auto &[remoteNodeId, fullListingJob]: fullListingJobs) {
+            const bool jobIsFinished = SyncJobManagerSingleton::instance()->isJobFinished(fullListingJob->jobId());
+            if (jobIsFinished && !fullListingJob->exitInfo()) {
+                LOG_SYNCPAL_WARN(_logger, "Error in CsvFullFileListWithCursorJob for remoteNodeId="
+                                                  << remoteNodeId << ", exitInfo=" << fullListingJob->exitInfo());
+                if (fullListingJob->exitInfo().code() == ExitCode::RateLimited) setPauseDuration(fullListingJob->sleepDuration());
+
+                return fullListingJob->exitInfo();
+            }
+            allJobsFinished = allJobsFinished && jobIsFinished;
+        }
+
+        Utility::msleep(fullListingSleepTimeMs);
+    }
+
+    return ExitCode::Ok;
+}
+
 ExitInfo RemoteFileSystemObserverWorker::initWithCursor() {
     if (stopAsked()) return ExitCode::Ok;
 
-    std::vector<std::string> specialFoldersRemoteIds;
-    if (const auto mainDirectoriesExitInfo = getSpeciaFoldersRemoteIds(specialFoldersRemoteIds); !mainDirectoriesExitInfo) {
-        LOG_SYNCPAL_DEBUG(_logger, "Error in getSpecialFoldersRemoteIds: " << mainDirectoriesExitInfo);
-        return mainDirectoriesExitInfo;
+    std::vector<RemoteNodeId> specialFoldersRemoteIds;
+    if (const auto exitInfo = getSpeciaFoldersRemoteIds(specialFoldersRemoteIds); !exitInfo) {
+        LOG_SYNCPAL_DEBUG(_logger, "Error in getSpecialFoldersRemoteIds: " << exitInfo);
+
+        return exitInfo;
     }
 
-    ExitInfo exitInfo;
-    for (const auto &specialFoldersRemoteId: specialFoldersRemoteIds) {
-        if (_blackList.contains(specialFoldersRemoteId)) continue;
+    FullListingJobMap fullListingJobs;
+    for (const auto &specialFolderRemoteId: specialFoldersRemoteIds) {
+        fullListingJobs[specialFolderRemoteId] = nullptr;
+    }
 
-        exitInfo = updateV3SpecialFolderItem(specialFoldersRemoteId);
-        if (!exitInfo) return exitInfo;
+    for (const auto &specialFolderRemoteId: specialFoldersRemoteIds) {
+        if (_blackList.contains(specialFolderRemoteId)) continue;
 
-        exitInfo = getItemsInDir(specialFoldersRemoteId, CursorPersistence::Save);
-        if (!exitInfo) return exitInfo;
+        if (const auto exitInfo = updateV3SpecialFolderItem(specialFolderRemoteId); !exitInfo) return exitInfo;
+
+        if (const auto exitInfo = getItemsInDirJob(specialFolderRemoteId, fullListingJobs[specialFolderRemoteId]); !exitInfo)
+            return exitInfo;
+    }
+
+    // Execute the full listings of the remote special folders in parallel.
+    if (const auto exitInfo = executeFullListingJobs(fullListingJobs); !exitInfo) return exitInfo;
+
+    // Handle responses of the full listing requests and update the snapshot accordingly.
+    for (const auto &specialFolderRemoteId: specialFoldersRemoteIds) {
+        if (const auto exitInfo =
+                    handleCsvReplyCursor(specialFolderRemoteId, CursorPersistence::Save, fullListingJobs[specialFolderRemoteId]);
+            !exitInfo)
+            return exitInfo;
+    }
+
+    for (const auto &specialFolderRemoteId: specialFoldersRemoteIds) {
+        if (const auto exitInfo = parseCsvReply(CursorPersistence::Save, fullListingJobs[specialFolderRemoteId]); !exitInfo)
+            return exitInfo;
     }
 
     deleteOrphans();
@@ -429,7 +478,8 @@ void RemoteFileSystemObserverWorker::deleteOrphans() {
 
 ExitInfo RemoteFileSystemObserverWorker::parseCsvReply(const CursorPersistence cursorPersistence,
                                                        std::shared_ptr<CsvFullFileListWithCursorJob> csvFullListingJob) {
-    LOG_SYNCPAL_DEBUG(_logger, "Start parsing of the CSV reply for remote id=" << csvFullListingJob->remoteDirId() << ".");
+    LOG_SYNCPAL_DEBUG(_logger,
+                      "Start parsing of the CSV reply for directory wit remote id=" << csvFullListingJob->remoteDirId() << ".");
     const TimerUtility timer;
     RemoteSnapshotItem item;
     SyncNameSet existingFiles;
@@ -511,9 +561,7 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const RemoteNodeId &remot
 
     if (!job->exitInfo()) {
         LOG_SYNCPAL_WARN(_logger, "Error in CsvFullFileListWithCursorJob: " << job->exitInfo());
-        if (job->exitInfo().code() == ExitCode::RateLimited) {
-            setPauseDuration(job->sleepDuration());
-        }
+        if (job->exitInfo().code() == ExitCode::RateLimited) setPauseDuration(job->sleepDuration());
 
         return job->exitInfo();
     }
