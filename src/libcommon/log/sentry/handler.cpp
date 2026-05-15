@@ -303,7 +303,7 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
     if (res) {
         std::cerr << "sentry_init returned " << res << std::endl;
     }
-    // assert(res == 0);
+    assert(res == 0);
     _instance->setDistributionChannel(DistributionChannel::Unknown);
 }
 
