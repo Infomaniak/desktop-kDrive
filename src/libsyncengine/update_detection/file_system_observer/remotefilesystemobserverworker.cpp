@@ -74,7 +74,7 @@ ExitInfo RemoteFileSystemObserverWorker::updateLongPollJobs(const std::vector<Re
     }
 
     for (const auto &remoteDirId: remoteDirIds) {
-        if (!longPollJobs[remoteDirId]) continue;
+        if (longPollJobs.contains(remoteDirId)) continue;
 
         if (const auto exitInfo = createLongPollJob(remoteDirId, longPollJobs[remoteDirId]); !exitInfo) return exitInfo;
 
@@ -117,7 +117,7 @@ ExitInfo RemoteFileSystemObserverWorker::checkIfRemoteDirHasChanges(const Remote
 
 ExitInfo RemoteFileSystemObserverWorker::processEvents(const std::vector<RemoteNodeId> &specialFoldersRemoteIds,
                                                        LongPollJobMap &longPollJobs) {
-    const bool hasForcedChanges = longPollJobs.empty() && !initializing();
+    const bool hasForcedChanges = longPollJobs.empty();
 
     for (const auto &remoteDirId: specialFoldersRemoteIds) {
         if (!hasForcedChanges && !SyncJobManagerSingleton::instance()->isJobFinished(longPollJobs.at(remoteDirId)->jobId()))
@@ -135,7 +135,7 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const std::vector<RemoteN
 
         if (!hasChanges) continue;
 
-        longPollJobs[remoteDirId].reset();
+        (void) longPollJobs.erase(remoteDirId);
         if (const auto exitInfo = processEvents(remoteDirId); !exitInfo) {
             LOG_SYNCPAL_DEBUG(_logger, "Error in processEvents: remoteDirId=" << remoteDirId << ", ExitInfo: " << exitInfo);
 
