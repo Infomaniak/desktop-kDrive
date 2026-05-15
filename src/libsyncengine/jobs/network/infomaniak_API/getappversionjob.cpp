@@ -78,8 +78,6 @@ ExitInfo GetAppVersionJob::handleResponse(std::istream &is) {
     const Poco::JSON::Object::Ptr dataObj = JsonParserUtility::extractJsonObject(jsonRes(), dataKey);
     if (!dataObj) return {ExitCode::BackError, ExitCause::MissingReplyData};
 
-    toString(_versionsInfo.channel);
-
     std::string channelStr;
     if (!JsonParserUtility::extractValue(dataObj, channelKey, channelStr))
         return {ExitCode::BackError, ExitCause::MissingReplyData};
