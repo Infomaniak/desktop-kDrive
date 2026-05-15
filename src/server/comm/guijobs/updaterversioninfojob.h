@@ -31,7 +31,7 @@ class UpdaterVersionInfoJob : public AbstractGuiJob {
         // Output parameters
         VersionInfo _versionInfo;
 
-        ExitInfo deserializeInputParms() override;
+        ExitInfo deserializeInputParms() override { return ExitCode::Ok; };
         ExitInfo serializeOutputParms() override;
         ExitInfo process() override;
 

@@ -32,10 +32,6 @@ UpdaterVersionInfoJob::UpdaterVersionInfoJob(std::shared_ptr<CommManager> commMa
     _requestNum = RequestNum::UPDATER_VERSION_INFO;
 }
 
-ExitInfo UpdaterVersionInfoJob::deserializeInputParms() {
-    return ExitCode::Ok;
-}
-
 ExitInfo UpdaterVersionInfoJob::serializeOutputParms() {
     writeParamValue(outParamsVersionInfo, _versionInfo, info2DynamicVar<VersionInfo>);
     return ExitCode::Ok;
