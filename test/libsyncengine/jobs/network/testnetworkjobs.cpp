@@ -89,38 +89,6 @@ static const NodeId testDummyFileRemoteId = "98649"; // test_ci/dummy_dir/pictur
 static const std::string desktopTeamTestDriveName = "kDrive Desktop Team";
 static const std::string dummyDirName = "dummy_dir";
 static const std::string dummyFileName = "picture.jpg";
-
-// TODO : still useful?
-// Poco::JSON::Object buildPublishedVersion(const std::string &channel, const bool includeTag = true) {
-//     Poco::JSON::Object versionObj;
-//     if (includeTag) {
-//         (void) versionObj.set("tag", "3.6.4");
-//     }
-//     (void) versionObj.set("type", channel);
-//     (void) versionObj.set("build_version", 20240816);
-//     (void) versionObj.set("build_min_os_version", "10.15");
-//     (void) versionObj.set("download_link", "https://download.example.com/kDrive.pkg");
-//     return versionObj;
-// }
-//
-// std::string buildAppVersionReply(const Poco::JSON::Array &publishedVersions) {
-//     Poco::JSON::Object applicationObj;
-//     (void) applicationObj.set("min_version", "3.6.0.0");
-//     (void) applicationObj.set("published_versions", publishedVersions);
-//
-//     Poco::JSON::Object dataObj;
-//     (void) dataObj.set("prod_version", "production");
-//     (void) dataObj.set("application", applicationObj);
-//
-//     Poco::JSON::Object mainObj;
-//     (void) mainObj.set("result", "success");
-//     (void) mainObj.set("data", dataObj);
-//
-//     std::ostringstream out;
-//     mainObj.stringify(out);
-//     return out.str();
-// }
-
 } // namespace
 
 void TestNetworkJobs::setUp() {
@@ -1536,78 +1504,34 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronousAborted() {
 }
 
 void TestNetworkJobs::testGetAppVersionInfo() {
-    // TODO
-    //     const auto appUid = "1234567890";
-    //     // Without user IDs
-    //     {
-    //         GetAppVersionJob job(CommonUtility::platform(), appUid);
-    //         job.runSynchronously();
-    //         CPPUNIT_ASSERT(!job.hasHttpError());
-    //         CPPUNIT_ASSERT(job.versionInfo(DistributionChannel::Internal).isValid());
-    //         CPPUNIT_ASSERT(job.versionInfo(DistributionChannel::Beta).isValid());
-    //         CPPUNIT_ASSERT(job.versionInfo(DistributionChannel::Next).isValid());
-    //         CPPUNIT_ASSERT(job.versionInfo(DistributionChannel::Prod).isValid());
-    //         CPPUNIT_ASSERT(job.versionInfo(job.prodVersionChannel()).isValid());
-    //     }
-    //     // With 1 user ID
-    //     {
-    //         User user;
-    //         bool found = false;
-    //         ParmsDb::instance()->selectUser(_userDbId, user, found);
-    //
-    //         GetAppVersionJob job(CommonUtility::platform(), appUid, {user.userId()});
-    //         job.runSynchronously();
-    //         CPPUNIT_ASSERT(!job.hasHttpError());
-    //         CPPUNIT_ASSERT(job.versionInfo(DistributionChannel::Internal).isValid());
-    //         CPPUNIT_ASSERT(job.versionInfo(DistributionChannel::Beta).isValid());
-    //         CPPUNIT_ASSERT(job.versionInfo(DistributionChannel::Next).isValid());
-    //         CPPUNIT_ASSERT(job.versionInfo(DistributionChannel::Prod).isValid());
-    //         CPPUNIT_ASSERT(job.versionInfo(job.prodVersionChannel()).isValid());
-    //     }
-    //     // // With several user IDs
-    //     // TODO : commented out because we need valid user IDs but we have only one available in tests for now
-    //     // {
-    //     //     GetAppVersionJob job(CommonUtility::platform(), appUid, {123, 456, 789});
-    //     //     job.runSynchronously();
-    //     //     CPPUNIT_ASSERT(!job.hasHttpError());
-    //     //     CPPUNIT_ASSERT(job.getVersionInfo(VersionChannel::Internal).isValid());
-    //     //     CPPUNIT_ASSERT(job.getVersionInfo(VersionChannel::Beta).isValid());
-    //     //     CPPUNIT_ASSERT(job.getVersionInfo(VersionChannel::Next).isValid());
-    //     //     CPPUNIT_ASSERT(job.getVersionInfo(VersionChannel::Prod).isValid());
-    //     //     CPPUNIT_ASSERT(job.getProdVersionInfo().isValid());
-    //     // }
-}
+    const auto appUid = "1234567890";
+    // Without user IDs
+    {
+        GetAppVersionJob job(DistributionChannel::Internal, appUid);
+        job.runSynchronously();
+        CPPUNIT_ASSERT(!job.hasHttpError());
+        CPPUNIT_ASSERT_EQUAL(AbstractTokenNetworkJob::ApiType::InternalUnauthenticated, job._apiType);
+        CPPUNIT_ASSERT(job.versionInfo().isValid());
+    }
+    // With 1 user ID
+    {
+        User user;
+        bool found = false;
+        ParmsDb::instance()->selectUser(_userDbId, user, found);
 
-void TestNetworkJobs::testGetAppVersionInfoParsingEdgeCases() {
-    // TODO
-    //     const auto appUid = "1234567890";
-    //
-    //     {
-    //         GetAppVersionJobForTests job(CommonUtility::platform(), appUid);
-    //         Poco::JSON::Array publishedVersions;
-    //         (void) publishedVersions.add(buildPublishedVersion("production"));
-    //         (void) publishedVersions.add(buildPublishedVersion("beta", false));
-    //         (void) publishedVersions.add(buildPublishedVersion("unknown"));
-    //
-    //         const ExitInfo exitInfo = job.parseResponse(buildAppVersionReply(publishedVersions));
-    //
-    //         CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitInfo.code());
-    //         CPPUNIT_ASSERT_EQUAL(size_t{1}, job.versionsInfo().size());
-    //         CPPUNIT_ASSERT(job.versionsInfo().contains(DistributionChannel::Prod));
-    //         CPPUNIT_ASSERT(!job.versionsInfo().contains(DistributionChannel::Beta));
-    //     }
-    //
-    //     {
-    //         GetAppVersionJobForTests job(CommonUtility::platform(), appUid);
-    //         Poco::JSON::Array publishedVersions;
-    //         (void) publishedVersions.add(buildPublishedVersion("production", false));
-    //
-    //         const ExitInfo exitInfo = job.parseResponse(buildAppVersionReply(publishedVersions));
-    //
-    //         CPPUNIT_ASSERT_EQUAL(ExitCode::BackError, exitInfo.code());
-    //         CPPUNIT_ASSERT_EQUAL(ExitCause::MissingReplyData, exitInfo.cause());
-    //         CPPUNIT_ASSERT(job.versionsInfo().empty());
-    // }
+        GetAppVersionJob job(DistributionChannel::Internal, appUid, {user.userId()});
+        job.runSynchronously();
+        CPPUNIT_ASSERT(!job.hasHttpError());
+        CPPUNIT_ASSERT_EQUAL(AbstractTokenNetworkJob::ApiType::Internal, job._apiType);
+        CPPUNIT_ASSERT(job.versionInfo().isValid());
+    }
+    // Invalid distribution channel
+    {
+        GetAppVersionJob job(DistributionChannel::Unknown, appUid);
+        job.runSynchronously();
+        CPPUNIT_ASSERT(job.hasHttpError());
+        CPPUNIT_ASSERT(!job.versionInfo().isValid());
+    }
 }
 
 void TestNetworkJobs::testDirectDownload() {

@@ -127,6 +127,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         void checkParametersValidity();
 
         friend class TestServerRequests;
+        friend class TestNetworkJobs;
 };
 
 } // namespace KDC

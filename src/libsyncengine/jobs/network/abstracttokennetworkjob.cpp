@@ -562,14 +562,14 @@ ApiToken AbstractTokenNetworkJob::loadApiToken() {
     switch (_apiType) {
         case ApiType::Drive:
         case ApiType::Desktop:
-        case ApiType::NotifyDrive:
-        case ApiType::Internal: {
+        case ApiType::NotifyDrive: {
             if (_driveDbId) loadUserInfoFromDriveDbId();
             apiToken = retrieveApiTokenFromUserCache();
             break;
         }
         case ApiType::Profile:
-        case ApiType::DriveByUser: {
+        case ApiType::DriveByUser:
+        case ApiType::Internal: {
             loadUserInfoFromUserDbId();
             apiToken = retrieveApiTokenFromUserCache();
             break;
