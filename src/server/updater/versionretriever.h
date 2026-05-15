@@ -41,7 +41,7 @@ class VersionRetriever {
 
         void setCallback(const std::function<void()> &callback);
 
-        const VersionInfo &versionInfo() { return _versionsInfo; };
+        const VersionInfo &versionInfo() const { return _versionsInfo; };
 
         [[nodiscard]] bool isVersionReceived() const { return _isVersionReceived; }
 

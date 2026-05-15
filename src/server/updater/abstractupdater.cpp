@@ -30,8 +30,8 @@
 
 namespace KDC {
 
-AbstractUpdater::AbstractUpdater() :
-    _versionRetriever(std::make_shared<VersionRetriever>()) {
+AbstractUpdater::AbstractUpdater() {
+    _versionRetriever = std::make_shared<VersionRetriever>();
     const std::function callback = [this] { onAppVersionReceived(); };
     _versionRetriever->setCallback(callback);
 }

@@ -154,7 +154,8 @@ std::string extractOsVersion() {
     if (rtlGetVersion(&osInfo) != 0) return {};
 
     char versionStr[32];
-    snprintf(versionStr, sizeof(versionStr), "%lu.%lu.%lu", osInfo.dwMajorVersion, osInfo.dwMinorVersion, osInfo.dwBuildNumber);
+    (void) snprintf(versionStr, sizeof(versionStr), "%lu.%lu.%lu", osInfo.dwMajorVersion, osInfo.dwMinorVersion,
+                    osInfo.dwBuildNumber);
     return std::string(versionStr);
 }
 

@@ -133,7 +133,7 @@ void TestAbstractUpdater::testCheckUpdateAvailable() {
     {
         UniqueId jobId = 0;
         versionRetriever->setUpdateShouldBeAvailable(false);
-        updater.checkUpdateAvailable(DistributionChannel::Beta, &jobId);
+        (void) updater.checkUpdateAvailable(DistributionChannel::Beta, &jobId);
         while (!SyncJobManagerSingleton::instance()->isJobFinished(jobId)) Utility::msleep(10);
         CPPUNIT_ASSERT(!updater.appShouldBeBlocked());
         CPPUNIT_ASSERT_EQUAL(UpdateState::UpToDate, updater.state());
@@ -143,7 +143,7 @@ void TestAbstractUpdater::testCheckUpdateAvailable() {
     {
         UniqueId jobId = 0;
         versionRetriever->setUpdateShouldBeAvailable(true);
-        updater.checkUpdateAvailable(DistributionChannel::Beta, &jobId);
+        (void) updater.checkUpdateAvailable(DistributionChannel::Beta, &jobId);
         while (!SyncJobManagerSingleton::instance()->isJobFinished(jobId)) Utility::msleep(10);
         CPPUNIT_ASSERT(!updater.appShouldBeBlocked());
         CPPUNIT_ASSERT_EQUAL(UpdateState::Available, updater.state());
@@ -154,7 +154,7 @@ void TestAbstractUpdater::testCheckUpdateAvailable() {
         UniqueId jobId = 0;
         versionRetriever->setUpdateShouldBeAvailable(true);
         versionRetriever->setBigMinAppVersion(true);
-        updater.checkUpdateAvailable(DistributionChannel::Beta, &jobId);
+        (void) updater.checkUpdateAvailable(DistributionChannel::Beta, &jobId);
         while (!SyncJobManagerSingleton::instance()->isJobFinished(jobId)) Utility::msleep(10);
         CPPUNIT_ASSERT(updater.appShouldBeBlocked());
         CPPUNIT_ASSERT_EQUAL(UpdateState::Available, updater.state());
@@ -166,7 +166,7 @@ void TestAbstractUpdater::testCheckUpdateAvailable() {
         UniqueId jobId = 0;
         versionRetriever->setUpdateShouldBeAvailable(true);
         versionRetriever->setBigMinOsVersion(true);
-        updater.checkUpdateAvailable(DistributionChannel::Beta, &jobId);
+        (void) updater.checkUpdateAvailable(DistributionChannel::Beta, &jobId);
         while (!SyncJobManagerSingleton::instance()->isJobFinished(jobId)) Utility::msleep(10);
         CPPUNIT_ASSERT(!updater.appShouldBeBlocked());
         CPPUNIT_ASSERT_EQUAL(UpdateState::UpToDate, updater.state());
