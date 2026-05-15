@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "updatechecker.h"
+#include "versionretriever.h"
 #include "utility/types.h"
 #include "libcommon/utility/utility.h"
 
@@ -31,7 +31,7 @@ class AbstractUpdater {
         AbstractUpdater();
         virtual ~AbstractUpdater() = default;
 
-        [[nodiscard]] virtual const VersionInfo &versionInfo() const { return _updateChecker->versionInfo(); }
+        [[nodiscard]] virtual const VersionInfo &versionInfo() const { return _versionRetriever->versionInfo(); }
         [[nodiscard]] const UpdateState &state() const { return _state; }
 
         /**
@@ -64,22 +64,17 @@ class AbstractUpdater {
         virtual void unskipVersion();
         [[nodiscard]] static bool isVersionSkipped(const std::string &version);
 
-        void setCurrentChannel(const DistributionChannel currentChannel) { _currentChannel = currentChannel; }
-
         [[nodiscard]] bool appShouldBeBlocked() const { return _appShouldBeBlocked; }
 
     protected:
-        explicit AbstractUpdater(const std::shared_ptr<UpdateChecker> updateChecker);
         void setState(UpdateState newState);
-        inline virtual std::string getCurrentVersion() const { return CommonUtility::currentVersion(); }
         virtual bool checkMinOsVersion(const std::string &minOsVersion) const;
-
 
     private:
         void onAppVersionReceived();
 
         DistributionChannel _currentChannel{DistributionChannel::Unknown};
-        std::shared_ptr<UpdateChecker> _updateChecker;
+        std::shared_ptr<VersionRetriever> _versionRetriever;
         UpdateState _state{UpdateState::UpToDate}; // Current state of the update process.
         std::function<void(UpdateState)> _stateChangeCallback = nullptr;
         bool _appShouldBeBlocked{false};

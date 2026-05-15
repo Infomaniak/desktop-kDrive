@@ -34,8 +34,6 @@ class GetAppVersionJob : public AbstractTokenNetworkJob {
 
         [[nodiscard]] const VersionInfo &versionInfo() { return _versionsInfo; }
 
-        [[nodiscard]] const std::string &minAppVersion() const { return _minAppVersion; }
-
     protected:
         ExitInfo handleResponse(std::istream &is) override;
 
@@ -52,7 +50,8 @@ class GetAppVersionJob : public AbstractTokenNetworkJob {
         const std::vector<UserId> _userIdList;
 
         VersionInfo _versionsInfo;
-        std::string _minAppVersion;
+
+        friend class MockGetAppVersionJob;
 };
 
 } // namespace KDC

@@ -18,7 +18,7 @@
 
 #include "sparkleupdater.h"
 
-#include "updatechecker.h"
+#include "versionretriever.h"
 #include "libcommon/utility/utility.h"
 #include "libparms/db/parmsdb.h"
 #include "requests/parameterscache.h"

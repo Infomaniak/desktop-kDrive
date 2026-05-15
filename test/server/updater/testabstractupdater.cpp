@@ -19,6 +19,7 @@
 #include "testabstractupdater.h"
 
 #include "db/parmsdb.h"
+#include "jobs/syncjobmanager.h"
 #include "requests/parameterscache.h"
 
 #if defined(KD_MACOS)
@@ -33,11 +34,10 @@
 #include "version.h"
 
 #include "mockupdater.h"
-#include "mockupdatechecker.h"
+#include "mockversionretriever.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 
 namespace KDC {
-
 namespace {
 void unskipVersion() {
     createUpdater()->unskipVersion();
@@ -125,75 +125,53 @@ void TestAbstractUpdater::testIsVersionSkipped() {
     CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.3.3.20200101"));
 }
 
-// void generateValidAllVersionsInfo(AllVersionsInfo &versionsInfo) {
-//     versionsInfo[DistributionChannel::Next].channel = DistributionChannel::Next;
-//     versionsInfo[DistributionChannel::Next].tag = "10.0.0";
-//     versionsInfo[DistributionChannel::Next].buildVersion = 20210101;
-//     versionsInfo[DistributionChannel::Next].downloadUrl = "test";
-//
-//     versionsInfo[DistributionChannel::Prod].channel = DistributionChannel::Prod;
-//     versionsInfo[DistributionChannel::Prod].tag = "9.0.0";
-//     versionsInfo[DistributionChannel::Prod].buildVersion = 20210101;
-//     versionsInfo[DistributionChannel::Prod].downloadUrl = "test";
-//
-//     versionsInfo[DistributionChannel::Beta].channel = DistributionChannel::Beta;
-//     versionsInfo[DistributionChannel::Beta].tag = "11.0.0";
-//     versionsInfo[DistributionChannel::Beta].buildVersion = 20210101;
-//     versionsInfo[DistributionChannel::Beta].downloadUrl = "test";
-//
-//     versionsInfo[DistributionChannel::Internal].channel = DistributionChannel::Internal;
-//     versionsInfo[DistributionChannel::Internal].tag = "11.0.1";
-//     versionsInfo[DistributionChannel::Internal].buildVersion = 20210101;
-//     versionsInfo[DistributionChannel::Internal].downloadUrl = "test";
-// }
+void TestAbstractUpdater::testCheckUpdateAvailable() {
+    auto versionRetriever = std::make_shared<MockVersionRetriever>();
+    MockUpdater updater(versionRetriever);
 
-void TestAbstractUpdater::testCurrentVersionedChannel() {
-    // TODO
-    // const auto updateChecker = std::make_shared<MockUpdateChecker>();
-    // MockUpdater updater(updateChecker);
-    //
-    // AllVersionsInfo testVersions;
-    // generateValidAllVersionsInfo(testVersions);
-    // updateChecker->setAllVersionInfo(testVersions);
-    //
-    // std::string version;
-    // updater.setMockGetCurrentVersion([&version]() { return version; });
-    //
-    // // Check Next version
-    // version = "10.0.0.20210101";
-    // CPPUNIT_ASSERT_EQUAL(DistributionChannel::Next, updater.currentVersionChannel());
-    //
-    // // Check Prod version
-    // version = "9.0.0.20210101";
-    // CPPUNIT_ASSERT_EQUAL(DistributionChannel::Prod, updater.currentVersionChannel());
-    //
-    // // Check Beta version
-    // version = "11.0.0.20210101";
-    // CPPUNIT_ASSERT_EQUAL(DistributionChannel::Beta, updater.currentVersionChannel());
-    //
-    // // Check Internal version
-    // version = "11.0.1.20210101";
-    // CPPUNIT_ASSERT_EQUAL(DistributionChannel::Internal, updater.currentVersionChannel());
-    //
-    // // Check Legacy version
-    // version = "8.0.0.20210101";
-    // CPPUNIT_ASSERT_EQUAL(DistributionChannel::Legacy, updater.currentVersionChannel());
-    //
-    // // Check Unknown version (higher than prod)
-    // version = "9.0.0.20210102";
-    // CPPUNIT_ASSERT_EQUAL(DistributionChannel::Unknown, updater.currentVersionChannel());
-    //
-    // // Emtpy version info.
-    // updateChecker->setAllVersionInfo({});
-    // version = "11.0.1.20210101";
-    // CPPUNIT_ASSERT_EQUAL(DistributionChannel::Unknown, updater.currentVersionChannel());
-    //
-    // // Non-empty invalid version info.
-    // const AllVersionsInfo invalidVersions;
-    // testVersions[DistributionChannel::Unknown].tag = "10.0.0";
-    // updateChecker->setAllVersionInfo(invalidVersions);
-    // version = "11.0.1.20210101";
-    // CPPUNIT_ASSERT_EQUAL(DistributionChannel::Unknown, updater.currentVersionChannel());
+    // Version is up to date
+    {
+        UniqueId jobId = 0;
+        versionRetriever->setUpdateShouldBeAvailable(false);
+        updater.checkUpdateAvailable(DistributionChannel::Beta, &jobId);
+        while (!SyncJobManagerSingleton::instance()->isJobFinished(jobId)) Utility::msleep(10);
+        CPPUNIT_ASSERT(!updater.appShouldBeBlocked());
+        CPPUNIT_ASSERT_EQUAL(UpdateState::UpToDate, updater.state());
+    }
+
+    // New version available
+    {
+        UniqueId jobId = 0;
+        versionRetriever->setUpdateShouldBeAvailable(true);
+        updater.checkUpdateAvailable(DistributionChannel::Beta, &jobId);
+        while (!SyncJobManagerSingleton::instance()->isJobFinished(jobId)) Utility::msleep(10);
+        CPPUNIT_ASSERT(!updater.appShouldBeBlocked());
+        CPPUNIT_ASSERT_EQUAL(UpdateState::Available, updater.state());
+    }
+
+    // App is blocked
+    {
+        UniqueId jobId = 0;
+        versionRetriever->setUpdateShouldBeAvailable(true);
+        versionRetriever->setBigMinAppVersion(true);
+        updater.checkUpdateAvailable(DistributionChannel::Beta, &jobId);
+        while (!SyncJobManagerSingleton::instance()->isJobFinished(jobId)) Utility::msleep(10);
+        CPPUNIT_ASSERT(updater.appShouldBeBlocked());
+        CPPUNIT_ASSERT_EQUAL(UpdateState::Available, updater.state());
+        versionRetriever->setBigMinAppVersion(false);
+    }
+
+    // OS version is too low
+    {
+        UniqueId jobId = 0;
+        versionRetriever->setUpdateShouldBeAvailable(true);
+        versionRetriever->setBigMinOsVersion(true);
+        updater.checkUpdateAvailable(DistributionChannel::Beta, &jobId);
+        while (!SyncJobManagerSingleton::instance()->isJobFinished(jobId)) Utility::msleep(10);
+        CPPUNIT_ASSERT(!updater.appShouldBeBlocked());
+        CPPUNIT_ASSERT_EQUAL(UpdateState::UpToDate, updater.state());
+        versionRetriever->setBigMinOsVersion(false);
+    }
 }
 
 } // namespace KDC

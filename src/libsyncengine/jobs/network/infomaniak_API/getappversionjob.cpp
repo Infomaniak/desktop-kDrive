@@ -88,7 +88,7 @@ ExitInfo GetAppVersionJob::handleResponse(std::istream &is) {
         return {ExitCode::BackError, ExitCause::MissingReplyData};
     if (!JsonParserUtility::extractValue(dataObj, checksumKey, _versionsInfo.checksum))
         return {ExitCode::BackError, ExitCause::MissingReplyData};
-    if (!JsonParserUtility::extractValue(dataObj, applicationMinVersionKey, _minAppVersion))
+    if (!JsonParserUtility::extractValue(dataObj, applicationMinVersionKey, _versionsInfo.minAppVersion))
         return {ExitCode::BackError, ExitCause::MissingReplyData};
 
     return ExitCode::Ok;

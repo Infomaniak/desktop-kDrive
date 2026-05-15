@@ -26,10 +26,10 @@ namespace KDC {
 
 class AbstractNetworkJob;
 
-class UpdateChecker {
+class VersionRetriever {
     public:
-        UpdateChecker() = default;
-        virtual ~UpdateChecker() = default;
+        VersionRetriever() = default;
+        virtual ~VersionRetriever() = default;
 
         /**
          * @brief Asynchronously check for new version information.
@@ -37,14 +37,13 @@ class UpdateChecker {
          * @param id Optional. ID of the created asynchronous job. Useful in tests.
          * @return ExitCode::Ok if the job has been successfully created.
          */
-        ExitCode checkUpdateAvailability(const DistributionChannel channel, UniqueId *id = nullptr);
+        ExitCode retrieveVersion(const DistributionChannel channel, UniqueId *id = nullptr);
 
         void setCallback(const std::function<void()> &callback);
 
         const VersionInfo &versionInfo() { return _versionsInfo; };
 
         [[nodiscard]] bool isVersionReceived() const { return _isVersionReceived; }
-        [[nodiscard]] bool appShouldBeBlocked() const { return _appShouldBeBlocked; }
 
     private:
         /**
@@ -65,11 +64,10 @@ class UpdateChecker {
         std::function<void()> _callback = nullptr;
         VersionInfo _versionsInfo;
         bool _isVersionReceived{false};
-        bool _appShouldBeBlocked{false};
         std::mutex _mutex;
 
-        friend class MockUpdateChecker;
-        friend class TestUpdateChecker;
+        friend class MockVersionRetriever;
+        friend class TestVersionRetriever;
 };
 
 } // namespace KDC

@@ -31,21 +31,14 @@
 namespace KDC {
 
 AbstractUpdater::AbstractUpdater() :
-    _updateChecker(std::make_shared<UpdateChecker>()) {
+    _versionRetriever(std::make_shared<VersionRetriever>()) {
     const std::function callback = [this] { onAppVersionReceived(); };
-    _updateChecker->setCallback(callback);
-}
-
-AbstractUpdater::AbstractUpdater(const std::shared_ptr<UpdateChecker> updateChecker) :
-    _updateChecker(updateChecker) {
-    const std::function callback = [this] { onAppVersionReceived(); };
-    _updateChecker->setCallback(callback);
+    _versionRetriever->setCallback(callback);
 }
 
 ExitCode AbstractUpdater::checkUpdateAvailable(const DistributionChannel currentChannel, UniqueId *id /*= nullptr*/) {
-    _currentChannel = currentChannel;
     setState(UpdateState::Checking);
-    return _updateChecker->checkUpdateAvailability(_currentChannel, id);
+    return _versionRetriever->retrieveVersion(currentChannel, id);
 }
 
 void AbstractUpdater::setStateChangeCallback(const std::function<void(UpdateState)> &stateChangeCallback) {
@@ -54,15 +47,17 @@ void AbstractUpdater::setStateChangeCallback(const std::function<void(UpdateStat
 }
 
 void AbstractUpdater::onAppVersionReceived() {
-    if (!_updateChecker->isVersionReceived()) {
+    _appShouldBeBlocked = false;
+
+    if (!_versionRetriever->isVersionReceived()) {
         setState(UpdateState::CheckError);
         LOG_WARN(Log::instance()->getLogger(), "Error while retrieving latest app version");
         return;
     }
 
-    const VersionInfo &versionInfo = _updateChecker->versionInfo();
+    const auto &versionInfo = _versionRetriever->versionInfo();
     if (!versionInfo.isValid()) {
-        LOG_WARN(Log::instance()->getLogger(), "No valid update info retrieved for distribution channel: " << _currentChannel);
+        LOG_WARN(Log::instance()->getLogger(), "No valid update info retrieved!");
         setState(UpdateState::UpToDate);
         return;
     }
@@ -72,7 +67,13 @@ void AbstractUpdater::onAppVersionReceived() {
         return;
     }
 
-    _appShouldBeBlocked = _updateChecker->appShouldBeBlocked();
+    // Check if app should be blocked
+    if (CommonUtility::isVersionLower(CommonUtility::currentVersion(), versionInfo.minAppVersion)) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "The current version needs to be updated. Current version: " << CommonUtility::currentVersion()
+                                                                              << ", min version: " << versionInfo.minAppVersion);
+        _appShouldBeBlocked = true;
+    }
 
     const bool newVersionAvailable = CommonUtility::isVersionLower(CommonUtility::currentVersion(), versionInfo.fullVersion());
     setState(newVersionAvailable ? UpdateState::Available : UpdateState::UpToDate);

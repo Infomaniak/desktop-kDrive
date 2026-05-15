@@ -27,7 +27,6 @@
 #if defined(KD_WINDOWS)
 #include "updater/testwindowsupdater.h"
 #endif
-#include "updater/testupdatechecker.h"
 #include "requests/testserverrequests.h"
 #include "appserver/testappserver.h"
 #include "comm/guicommchannel/testguicommchannel.h"
@@ -44,7 +43,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestVfsMac);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLiteSyncCommClient);
 #endif
 CPPUNIT_TEST_SUITE_REGISTRATION(TestWorkers);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateChecker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractUpdater);
 #if defined(KD_WINDOWS)
 CPPUNIT_TEST_SUITE_REGISTRATION(TestWindowsUpdater);

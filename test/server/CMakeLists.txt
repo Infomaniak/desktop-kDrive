@@ -119,7 +119,7 @@ set(server_SRCS
     ${server_srcs_path}/migration/migrationparams.h ${server_srcs_path}/migration/migrationparams.cpp
     ${server_srcs_path}/requests/serverrequests.h ${server_srcs_path}/requests/serverrequests.cpp
     ${server_srcs_path}/updater/abstractupdater.h ${server_srcs_path}/updater/abstractupdater.cpp
-    ${server_srcs_path}/updater/updatechecker.h ${server_srcs_path}/updater/updatechecker.cpp
+    ${server_srcs_path}/updater/versionretriever.h ${server_srcs_path}/updater/versionretriever.cpp
     ${server_srcs_path}/requests/offlinefilessizeestimator.h ${server_srcs_path}/requests/offlinefilessizeestimator.cpp
     ${server_srcs_path}/app_resources.rc
 )
@@ -177,9 +177,9 @@ else()
 endif()
 
 set(testserver_SRCS
-    ../libsyncengine/jobs/network/mockgetappversionjob.h
     updater/mockupdater.h
-    updater/mockupdatechecker.h
+    updater/mockversionretriever.h
+    updater/mockgetappversionjob.h
     ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp
     ../test_utility/testbase.h
     ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
@@ -187,7 +187,6 @@ set(testserver_SRCS
     ../test.cpp
 
     test.cpp
-    updater/testupdatechecker.h updater/testupdatechecker.cpp
     updater/testabstractupdater.h updater/testabstractupdater.cpp
     workers/testworkers.h workers/testworkers.cpp
     requests/testserverrequests.h requests/testserverrequests.cpp
