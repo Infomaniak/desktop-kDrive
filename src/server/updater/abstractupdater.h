@@ -73,7 +73,6 @@ class AbstractUpdater {
     private:
         void onAppVersionReceived();
 
-        DistributionChannel _currentChannel{DistributionChannel::Unknown};
         std::shared_ptr<VersionRetriever> _versionRetriever;
         UpdateState _state{UpdateState::UpToDate}; // Current state of the update process.
         std::function<void(UpdateState)> _stateChangeCallback = nullptr;

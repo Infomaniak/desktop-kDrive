@@ -31,7 +31,6 @@ class MockUpdater : public AbstractUpdater {
             _versionRetriever = customVersionRetriever;
             const std::function callback = [this] { onAppVersionReceived(); };
             _versionRetriever->setCallback(callback);
-            _currentChannel = DistributionChannel::Beta;
         }
 
         void startInstaller() override {
