@@ -827,9 +827,8 @@ std::string toString(const Platform e) {
         case Platform::MacOS:
             return "mac-os";
         case Platform::Windows:
-            return "windows";
         case Platform::WindowsServer:
-            return "windows-server";
+            return "windows";
         case Platform::LinuxAMD:
             return "linux-amd";
         case Platform::LinuxARM:
