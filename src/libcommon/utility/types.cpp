@@ -818,7 +818,6 @@ DistributionChannel toDistributionChannel(const std::string &channel) {
     if (channel == "internal") return DistributionChannel::Internal;
     if (channel == "legacy") return DistributionChannel::Legacy;
     if (channel == "test") return DistributionChannel::Test;
-    if (channel == "unknown") return DistributionChannel::Unknown;
     return DistributionChannel::Unknown;
 }
 
