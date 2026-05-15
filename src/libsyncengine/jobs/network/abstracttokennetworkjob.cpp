@@ -553,7 +553,7 @@ void AbstractTokenNetworkJob::fetchFirstUserDbId() {
 
 ApiToken AbstractTokenNetworkJob::loadApiToken() {
     ApiToken apiToken;
-    if (_apiType == ApiType::Desktop || _apiType == ApiType::Internal) {
+    if (_apiType == ApiType::Desktop) {
         fetchDriveDbIdFromSync();
     } else if (_apiType == ApiType::Internal) {
         fetchFirstUserDbId();
