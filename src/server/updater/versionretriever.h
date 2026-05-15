@@ -17,7 +17,7 @@
  */
 
 #pragma once
-#include <mutex>
+
 #include "utility/types.h"
 
 #include <mutex>

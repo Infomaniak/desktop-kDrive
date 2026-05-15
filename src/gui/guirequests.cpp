@@ -1077,7 +1077,8 @@ ExitCode GuiRequests::changeDistributionChannel(const DistributionChannel channe
     return ExitCode::Ok;
 }
 
-ExitCode GuiRequests::versionInfo(VersionInfo &versionInfo, const DistributionChannel channel /*= VersionChannel::Unknown*/) {
+ExitCode GuiRequests::versionInfo(VersionInfo &versionInfo,
+                                  const DistributionChannel channel /*= DistributionChannel::Unknown*/) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << channel;
