@@ -70,7 +70,7 @@ void TestGuiCommChannel::testSignalUpdaterShowDialogJob() {
     versionInfo.channel = DistributionChannel::Beta;
     versionInfo.tag = "4.0.0";
     versionInfo.buildVersion = 1;
-    versionInfo.buildMinOsVersion = "15.1";
+    versionInfo.minOsVersion = "15.1";
     versionInfo.downloadUrl = "https://downloads/kDrive/latest";
 
     SignalUpdaterShowDialogJob job(versionInfo);

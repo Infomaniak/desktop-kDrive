@@ -604,13 +604,14 @@ struct VersionInfo {
         std::string tag; // Version number. Example: 3.6.4
         uint64_t buildVersion{0}; // Build number. Should be > 0.
         std::string downloadUrl; // URL to download the version
-        std::string buildMinOsVersion; // Optional. Minimum supported version of the OS. Examples: 26.3.1, 22.04, 10.0.26200, ...
         std::string checksum; // Optional. Checksum of the file, used to verify the integrity of the downloaded installer.
+        std::string minOsVersion; // Optional. Minimum supported version of the OS. Examples: 26.3.1, 22.04, 10.0.26200, ...
         std::string minAppVersion; // Optional. Minimum supported version of the application. Example: 3.6.4
 
         bool operator==(const VersionInfo &other) const {
             return channel == other.channel && tag == other.tag && buildVersion == other.buildVersion &&
-                   buildMinOsVersion == other.buildMinOsVersion && downloadUrl == other.downloadUrl;
+                   downloadUrl == other.downloadUrl && checksum == other.checksum && minOsVersion == other.minOsVersion &&
+                   minAppVersion == other.minAppVersion;
         }
 
         [[nodiscard]] bool isValid() const {
@@ -627,37 +628,49 @@ struct VersionInfo {
             channel = DistributionChannel::Unknown;
             tag.clear();
             buildVersion = 0;
-            buildMinOsVersion.clear();
             downloadUrl.clear();
+            checksum.clear();
+            minOsVersion.clear();
+            minAppVersion.clear();
         }
 
         static const std::string versionInfoChannel;
         static const std::string versionInfoTag;
         static const std::string versionInfoBuildVersion;
-        static const std::string versionInfoBuildMinOsVersion;
         static const std::string versionInfoDownloadUrl;
+        static const std::string versionInfoChecksum;
+        static const std::string versionInfoMinOsVersion;
+        static const std::string versionInfoMinAppVersion;
+
         static VersionInfo current();
         void fromDynamicStruct(const Poco::DynamicStruct &);
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
 
-
         friend QDataStream &operator>>(QDataStream &in, VersionInfo &versionInfo) {
             QString tmpTag;
             quint64 tmpBuildVersion = 0;
-            QString tmpBuildMinOsVersion;
             QString tmpDownloadUrl;
-            in >> versionInfo.channel >> tmpTag >> tmpBuildVersion >> tmpBuildMinOsVersion >> tmpDownloadUrl;
+            QString tmpChecksum;
+            QString tmpBuildMinOsVersion;
+            QString tmpBuildMinAppVersion;
+
+            in >> versionInfo.channel >> tmpTag >> tmpBuildVersion >> tmpDownloadUrl >> tmpChecksum >> tmpBuildMinOsVersion >>
+                    tmpBuildMinAppVersion;
             versionInfo.tag = tmpTag.toStdString();
             versionInfo.buildVersion = tmpBuildVersion;
-            versionInfo.buildMinOsVersion = tmpBuildMinOsVersion.toStdString();
             versionInfo.downloadUrl = tmpDownloadUrl.toStdString();
+            versionInfo.checksum = tmpChecksum.toStdString();
+            versionInfo.minOsVersion = tmpBuildMinOsVersion.toStdString();
+            versionInfo.minAppVersion = tmpBuildMinAppVersion.toStdString();
+
             return in;
         }
 
         friend QDataStream &operator<<(QDataStream &out, const VersionInfo &versionInfo) {
             out << versionInfo.channel << QString::fromStdString(versionInfo.tag)
-                << static_cast<quint64>(versionInfo.buildVersion) << QString::fromStdString(versionInfo.buildMinOsVersion)
-                << QString::fromStdString(versionInfo.downloadUrl);
+                << static_cast<quint64>(versionInfo.buildVersion) << QString::fromStdString(versionInfo.downloadUrl)
+                << QString::fromStdString(versionInfo.checksum) << QString::fromStdString(versionInfo.minOsVersion)
+                << QString::fromStdString(versionInfo.minAppVersion);
             return out;
         }
 };

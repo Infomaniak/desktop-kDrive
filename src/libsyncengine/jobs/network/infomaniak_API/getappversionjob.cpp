@@ -77,12 +77,14 @@ ExitInfo GetAppVersionJob::handleResponse(std::istream &is) {
     const Poco::JSON::Object::Ptr dataObj = JsonParserUtility::extractJsonObject(jsonRes(), dataKey);
     if (!dataObj) return {ExitCode::BackError, ExitCause::MissingReplyData};
 
+    if (!JsonParserUtility::extractValue(dataObj, tagKey, _versionsInfo.tag))
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
     _versionsInfo.channel = _currentChannel;
     if (!JsonParserUtility::extractValue(dataObj, tagKey, _versionsInfo.tag))
         return {ExitCode::BackError, ExitCause::MissingReplyData};
     if (!JsonParserUtility::extractValue(dataObj, buildVersionKey, _versionsInfo.buildVersion))
         return {ExitCode::BackError, ExitCause::MissingReplyData};
-    if (!JsonParserUtility::extractValue(dataObj, buildMinOsVersionKey, _versionsInfo.buildMinOsVersion))
+    if (!JsonParserUtility::extractValue(dataObj, buildMinOsVersionKey, _versionsInfo.minOsVersion))
         return {ExitCode::BackError, ExitCause::MissingReplyData};
     if (!JsonParserUtility::extractValue(dataObj, downloadUrlKey, _versionsInfo.downloadUrl))
         return {ExitCode::BackError, ExitCause::MissingReplyData};

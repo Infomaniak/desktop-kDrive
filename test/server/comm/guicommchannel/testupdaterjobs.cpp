@@ -73,7 +73,7 @@ void TestGuiCommChannel::testUpdaterVersionInfoJob() {
         versionInfo.channel = DistributionChannel::Prod;
         versionInfo.tag = "3.8.2";
         versionInfo.buildVersion = 3;
-        versionInfo.buildMinOsVersion = "10.15";
+        versionInfo.minOsVersion = "10.15";
         versionInfo.downloadUrl = "https://downloads/kDrive-3.8.2.3.pkg";
 
         updaterVersionInfoJob->_versionInfo = versionInfo;

@@ -953,8 +953,10 @@ long ExitInfo::indexInList(const ExitCode &exitCode, const std::vector<ExitCode>
 const std::string VersionInfo::versionInfoChannel = "channel";
 const std::string VersionInfo::versionInfoTag = "tag";
 const std::string VersionInfo::versionInfoBuildVersion = "buildVersion";
-const std::string VersionInfo::versionInfoBuildMinOsVersion = "buildMinOsVersion";
 const std::string VersionInfo::versionInfoDownloadUrl = "downloadUrl";
+const std::string VersionInfo::versionInfoChecksum = "checksum";
+const std::string VersionInfo::versionInfoMinOsVersion = "buildMinOsVersion";
+const std::string VersionInfo::versionInfoMinAppVersion = "buildMinAppVersion";
 
 VersionInfo VersionInfo::current() {
     VersionInfo versionInfo;
@@ -967,16 +969,20 @@ void VersionInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, versionInfoChannel, channel);
     CommonUtility::writeValueToStruct(dstruct, versionInfoTag, tag);
     CommonUtility::writeValueToStruct(dstruct, versionInfoBuildVersion, buildVersion);
-    CommonUtility::writeValueToStruct(dstruct, versionInfoBuildMinOsVersion, buildMinOsVersion);
     CommonUtility::writeValueToStruct(dstruct, versionInfoDownloadUrl, downloadUrl);
+    CommonUtility::writeValueToStruct(dstruct, versionInfoChecksum, checksum);
+    CommonUtility::writeValueToStruct(dstruct, versionInfoMinOsVersion, minOsVersion);
+    CommonUtility::writeValueToStruct(dstruct, versionInfoMinAppVersion, minAppVersion);
 }
 
 void VersionInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, versionInfoChannel, channel);
     CommonUtility::readValueFromStruct(dstruct, versionInfoTag, tag);
     CommonUtility::readValueFromStruct(dstruct, versionInfoBuildVersion, buildVersion);
-    CommonUtility::readValueFromStruct(dstruct, versionInfoBuildMinOsVersion, buildMinOsVersion);
     CommonUtility::readValueFromStruct(dstruct, versionInfoDownloadUrl, downloadUrl);
+    CommonUtility::readValueFromStruct(dstruct, versionInfoChecksum, checksum);
+    CommonUtility::readValueFromStruct(dstruct, versionInfoMinOsVersion, minOsVersion);
+    CommonUtility::readValueFromStruct(dstruct, versionInfoMinAppVersion, minAppVersion);
 }
 
 } // namespace KDC

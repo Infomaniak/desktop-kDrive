@@ -62,7 +62,7 @@ void AbstractUpdater::onAppVersionReceived() {
         return;
     }
 
-    if (!checkMinOsVersion(versionInfo.buildMinOsVersion)) {
+    if (!checkMinOsVersion(versionInfo.minOsVersion)) {
         setState(UpdateState::UpToDate);
         return;
     }
