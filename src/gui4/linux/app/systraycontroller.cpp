@@ -99,7 +99,7 @@ bool isSyncStatus(const SyncStatus status) {
 
 } // namespace
 
-SystemTrayController::SystemTrayController(QObject *parent) :
+SystemTrayController::SystemTrayController(QObject *const parent) :
     QObject(parent) {
     _trayAvailabilityRetryTimer.setParent(this);
     _trayAvailabilityRetryTimer.setSingleShot(true);
@@ -172,7 +172,7 @@ void SystemTrayController::observe(AppCache &appCache, const CommService &commSe
     refreshIconState();
 }
 
-void SystemTrayController::setMainWindow(QWindow *window) {
+void SystemTrayController::setMainWindow(QWindow *const window) {
     _mainWindow = window;
     qCInfo(lcSystemTrayController) << "Main window registered | valid:" << !_mainWindow.isNull()
                                    << "| visible:" << (_mainWindow ? _mainWindow->isVisible() : false);
@@ -354,7 +354,7 @@ void SystemTrayController::reconcileKnownSyncStatuses() {
     }
 
     const auto syncs = _appCache->syncs();
-    std::erase_if(_syncStatuses, [&syncs](const auto &entry) {
+    (void) std::erase_if(_syncStatuses, [&syncs](const auto &entry) {
         return std::ranges::none_of(syncs, [&entry](const SyncInfo &sync) { return sync.dbId() == entry.first; });
     });
 
