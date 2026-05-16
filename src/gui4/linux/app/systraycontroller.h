@@ -55,11 +55,11 @@ class SystemTrayController final : public QObject {
         Q_PROPERTY(bool trayModeActive READ trayModeActive NOTIFY trayModeActiveChanged)
 
     public:
-        explicit SystemTrayController(QObject *parent = nullptr);
+        explicit SystemTrayController(QObject *const parent = nullptr);
 
         void initialize();
         void observe(AppCache &appCache, const CommService &commService);
-        void setMainWindow(QWindow *window);
+        void setMainWindow(QWindow *const window);
         void setProductStateInitialized(bool initialized);
         void setNotificationActive(bool active);
         void setIconState(TrayIconState state);
