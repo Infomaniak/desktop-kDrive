@@ -47,7 +47,7 @@ bool forceNoTrayRequested() {
 #endif
 }
 
-QString syncStatusToString(const SyncStatus status) {
+QString ToQString(const SyncStatus status) {
     return QString::fromStdString(toString(status));
 }
 QString toString(const TrayIconState state) {
@@ -367,8 +367,8 @@ void SystemTrayController::onSyncProgressInfo(const SyncDbId syncDbId, const Syn
 
     qCInfo(lcSystemTrayController) << "Sync status changed for tray icon | syncDbId:" << syncDbId << "| from:"
                                    << (previousStatusIt == _syncStatuses.end() ? QStringLiteral("Unknown")
-                                                                               : syncStatusToString(previousStatusIt->second))
-                                   << "| to:" << syncStatusToString(status);
+                                                                               : ToQString(previousStatusIt->second))
+                                   << "| to:" << ToQString(status);
     _syncStatuses[syncDbId] = status;
     refreshIconState();
 }
