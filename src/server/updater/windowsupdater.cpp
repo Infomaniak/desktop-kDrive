@@ -57,6 +57,11 @@ void WindowsUpdater::onUpdateFound() {
         LOGW_INFO(Log::instance()->getLogger(), L"Installer already downloaded at " << Utility::formatSyncPath(filepath)
                                                                                     << L". Update is ready to be installed.");
 
+        if (!verifyFileChecksum(filepath)) {
+            retryDownload(filepath);
+            return;
+        }
+
         if (!verifyDigitalSignature(filepath)) {
             setState(UpdateState::UpdateError);
             return;
@@ -149,6 +154,16 @@ void WindowsUpdater::downloadFinished(const UniqueId jobId) {
     if (std::error_code ec; !std::filesystem::exists(filepath, ec)) {
         LOGW_WARN(Log::instance()->getLogger(), L"Installer file not found. " << Utility::formatStdError(filepath, ec));
         downloadUpdate();
+        return;
+    }
+
+    if (!verifyFileChecksum(filepath)) {
+        retryDownload(filepath);
+        return;
+    }
+
+    if (!verifyDigitalSignature(filepath)) {
+        setState(UpdateState::UpdateError);
         return;
     }
 
