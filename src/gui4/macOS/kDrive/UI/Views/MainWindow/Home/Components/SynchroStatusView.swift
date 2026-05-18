@@ -17,6 +17,7 @@
  */
 
 import InfomaniakDI
+import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import Lottie
@@ -85,6 +86,7 @@ extension HomeState {
 
 struct SynchroStatusView: View {
     let state: HomeState
+    let synchroDbId: Int?
 
     var body: some View {
         VStack(spacing: AppPadding.padding32) {
@@ -146,30 +148,40 @@ struct SynchroStatusView: View {
             @InjectService var router: MainViewRouter
             router.setCurrentTab(.activities)
         case .synchroIsPaused:
-            // TODO: Enable synchro
-            break
+            resumeSynchro()
         default:
             break
+        }
+    }
+
+    func resumeSynchro() {
+        guard let syncDbId = synchroDbId else { return }
+        Task {
+            do {
+                try await SyncJobs().startSync(syncDbId: Int32(syncDbId))
+            } catch {
+                IKLogger.general.error("Failed to resume synchro: \(error)")
+            }
         }
     }
 }
 
 #Preview("Up To Date") {
-    SynchroStatusView(state: .synchroIsUpToDate)
+    SynchroStatusView(state: .synchroIsUpToDate, synchroDbId: nil)
 }
 
 #Preview("Running") {
-    SynchroStatusView(state: .synchroIsRunning)
+    SynchroStatusView(state: .synchroIsRunning, synchroDbId: nil)
 }
 
 #Preview("Paused") {
-    SynchroStatusView(state: .synchroIsPaused)
+    SynchroStatusView(state: .synchroIsPaused, synchroDbId: nil)
 }
 
 #Preview("Offline") {
-    SynchroStatusView(state: .offline)
+    SynchroStatusView(state: .offline, synchroDbId: nil)
 }
 
 #Preview("Loading") {
-    SynchroStatusView(state: .loading)
+    SynchroStatusView(state: .loading, synchroDbId: nil)
 }
