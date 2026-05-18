@@ -176,6 +176,9 @@
 
 /* loco:69c106a55fd64fd95c00ef42 */
 "buttonReturnToDefaultFolder" = "Ritorno alla cartella predefinita";
+/* loco:6989c90fad75adcb2e05c302 */
+"buttonSave" = "Salva";
+
 
 /* loco:69a7f03b5fa9c90f560c1192 */
 "buttonSearch" = "Ricerca";
@@ -502,7 +505,7 @@
 /* loco:6992e9f20953b626df05ffc2 */
 "needHelpSetting" = "Avete bisogno di aiuto?";
 /* loco:69ce15f8ac7c0ee6d7099c02 */
-"networkSettings" = "Network";
+"networkSettings" = "Rete";
 
 /* loco:6992de465798e1839302bbc2 */
 "noAccountConnected" = "Aggiungi un account per iniziare";
@@ -612,6 +615,36 @@
 
 /* loco:698b0ee1587496f4f5035cd2 */
 "openKDriveAtStartupSetting" = "Aprire kDrive all’avvio del computer";
+/* loco:698b2ef3d4aa9d35260e3484 */
+"proxyConnectionDescription" = "Definisci come kDrive si connette a internet.";
+
+/* loco:698b3452210436b0e501a3a2 */
+"proxyHost" = "Server";
+
+/* loco:698b347b1d024ca9f20d69a2 */
+"proxyNeedAuth" = "Autenticazione richiesta";
+
+/* loco:698b349f7ad01ee67e0d5f92 */
+"proxyPassword" = "Password";
+
+/* loco:698b345c116156e70a073a42 */
+"proxyPort" = "Porta";
+
+/* loco:698b2e7edcb5f5b87b0d29e2
+ * Title of the proxy settings section in advanced settings. */
+"proxySettings" = "Impostazioni proxy";
+
+/* loco:698b2ff2aa06201dc403c422 */
+"proxyType" = "Tipo di proxy";
+
+/* loco:698b2f2e89df53c9e4039b02 */
+"proxyTypeHTTP" = "Configurazione manuale";
+
+/* loco:698b2f80dac62f80330a2412 */
+"proxyTypeNone" = "Nessuno";
+
+/* loco:698b34ab7ad01ee67e0d5f94 */
+"proxyUser" = "Nome utente";
 
 /* loco:698af22fb4f7b3f2640d1493 */
 "releaseChannelBeta" = "Beta";

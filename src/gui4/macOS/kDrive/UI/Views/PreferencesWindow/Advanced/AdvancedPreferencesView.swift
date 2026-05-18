@@ -46,9 +46,7 @@ enum AdvancedPreferencesItem: String, Identifiable, CaseIterable {
 
     var isDisabled: Bool {
         switch self {
-        case .debugLogs:
-            return false
-        case .dataManagement:
+        case .dataManagement, .debugLogs, .network:
             return false
         default:
             return true
@@ -61,6 +59,8 @@ enum AdvancedPreferencesItem: String, Identifiable, CaseIterable {
             return .debug
         case .dataManagement:
             return .dataManagement
+        case .network:
+            return .network
         default:
             fatalError("Not yet implemented")
         }
