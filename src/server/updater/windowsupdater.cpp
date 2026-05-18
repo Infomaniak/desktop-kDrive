@@ -25,7 +25,8 @@
 #include <format>
 #include <fstream>
 
-#include <openssl/sha.h>
+#include <Poco/SHA2Engine.h>
+#include <Poco/DigestStream.h>
 
 #include "windowsupdater.h"
 #include "log/log.h"
@@ -244,39 +245,19 @@ bool WindowsUpdater::verifyFileChecksum(const SyncPath &filepath) {
 
 std::string WindowsUpdater::computeFileChecksum(const SyncPath &filepath) {
     std::ifstream file(filepath, std::ios::binary);
-    if (!file) {
-        LOGW_WARN(Log::instance()->getLogger(), L"missing filepath for Checksum compute");
-        return "";
-    }
+    if (!file) return "";
 
-    SHA256_CTX sha256{}; // Using SHA256 instead of the project-standard XXH3 for security.
-                         // XXH3 is a non-cryptographic hash; an attacker could craft a malicious
-                         // file with the same XXH3 hash (collision attack).
-    if (SHA256_Init(&sha256) != 1) { // Check return value
-        LOGW_WARN(Log::instance()->getLogger(), L"SHA256_Init failed");
-        return "";
-    }
+    Poco::SHA2Engine sha256(Poco::SHA2Engine::ALGORITHM::SHA_256);
+    // Using SHA256 instead of the project-standard XXH3 for security.
+    // XXH3 is a non-cryptographic hash; an attacker could craft a malicious
+    // file with the same XXH3 hash (collision attack).
 
     std::array<char, 8192> buffer{};
-    while (file.read(buffer.data(), buffer.size())) {
-        (void) SHA256_Update(&sha256, buffer.data(), static_cast<std::size_t>(file.gcount()));
-    }
-    // Process remaining bytes
-    (void) SHA256_Update(&sha256, buffer.data(), static_cast<std::size_t>(file.gcount()));
-
-    std::array<std::uint8_t, SHA256_DIGEST_LENGTH> hash{};
-    if (SHA256_Final(hash.data(), &sha256) != 1) {
-        LOGW_WARN(Log::instance()->getLogger(), L"SHA256_Final failed");
-        return "";
+    while (file.read(buffer.data(), buffer.size()) || file.gcount() > 0) {
+        sha256.update(buffer.data(), static_cast<std::size_t>(file.gcount()));
     }
 
-    std::string result;
-    result.reserve(SHA256_DIGEST_LENGTH * 2);
-    for (const auto &byte: hash) {
-        result += std::format("{:02x}", static_cast<int32_t>(byte));
-    }
-
-    return result;
+    return Poco::DigestEngine::digestToHex(sha256.digest());
 }
 
 bool WindowsUpdater::verifyDigitalSignature(const SyncPath &filepath) {
