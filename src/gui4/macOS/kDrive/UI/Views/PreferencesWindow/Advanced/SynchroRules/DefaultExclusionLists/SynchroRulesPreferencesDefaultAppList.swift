@@ -21,49 +21,20 @@ import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
-struct AppListRow: View {
-    let item: UIExclusionAppInfo
-
-    var body: some View {
-        HStack {
-            TextWithIcon(icon: KDriveResources.file.swiftUIImage, text: item.description)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            Text(item.app)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .foregroundStyle(.secondary)
-        }
-    }
-}
-
 struct SynchroRulesPreferencesDefaultAppList: View {
     @Binding var defaultExcludedApps: [UIExclusionAppInfo]
     var body: some View {
         VStack(alignment: .leading) {
-            HStack {
-                Text(KDriveLocalizable.labelName)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+            Table(defaultExcludedApps) {
+                TableColumn(KDriveLocalizable.labelName) { item in
+                    Text(item.displayName)
+                }
 
-                Divider()
-
-                Text("Identifiant")
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .foregroundStyle(.secondary)
-            }
-            .frame(maxHeight: 24)
-            .padding(.trailing, AppPadding.padding16)
-
-            Divider()
-
-            ScrollView {
-                ForEach(defaultExcludedApps) { item in
-                    AppListRow(item: item)
+                TableColumn(KDriveLocalizable.labelAppID) { item in
+                    Text(item.app)
                 }
             }
         }
-        .padding(AppPadding.padding12)
-        .background(.quinary)
-        .cornerRadius(8)
     }
 }
 

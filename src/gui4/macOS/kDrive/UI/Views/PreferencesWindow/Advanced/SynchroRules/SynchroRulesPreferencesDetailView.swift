@@ -22,13 +22,7 @@ import SwiftUI
 
 struct SynchroRulesPreferencesDetailView: View {
     let item: SynchroRulesItem
-    let repository: ExclusionRepository
-
-    @State private var defaultExcludedApps = [UIExclusionAppInfo]()
-    @State private var userExcludedApps = [UIExclusionAppInfo]()
-
-    @State private var defaultExcludedTemplates = [UIExclusionTemplateInfo]()
-    @State private var userExcludedTemplates = [UIExclusionTemplateInfo]()
+    @ObservedObject var repository: ExclusionRepository
 
     @State private var isShowingSheet = false
 
@@ -43,9 +37,10 @@ struct SynchroRulesPreferencesDetailView: View {
                 }
 
                 if item == .apps {
-                    SynchroRulesPreferencesDefaultAppList(defaultExcludedApps: $defaultExcludedApps)
+                    SynchroRulesPreferencesDefaultAppList(defaultExcludedApps: $repository.exclusionInfo.defaultExcludedApps)
                 } else {
-                    SynchroRulesPreferencesDefaultTemplateList(defaultExcludedTemplates: $defaultExcludedTemplates)
+                    SynchroRulesPreferencesDefaultTemplateList(defaultExcludedTemplates: $repository.exclusionInfo
+                        .defaultExcludedTemplates)
                 }
             }
             VStack(alignment: .leading, spacing: 16) {
@@ -61,20 +56,24 @@ struct SynchroRulesPreferencesDetailView: View {
                 }
 
                 if item == .apps {
-                    SynchroRulesPreferencesUserAppList(repository: repository, userExcludedApps: $userExcludedApps)
+                    SynchroRulesPreferencesUserAppList(
+                        repository: repository,
+                        userExcludedApps: $repository.exclusionInfo.userExcludedApps
+                    )
                 } else {
-                    SynchroRulesPreferencesUserTemplateList(repository: repository, userExcludedTemplates: $userExcludedTemplates)
+                    SynchroRulesPreferencesUserTemplateList(
+                        repository: repository,
+                        userExcludedTemplates: $repository.exclusionInfo.userExcludedTemplates
+                    )
                 }
             }
-            .onAppear {
-                defaultExcludedApps = repository.exclusionInfo.defaultExcludedApps
-                userExcludedApps = repository.exclusionInfo.userExcludedApps
-
-                defaultExcludedTemplates = repository.exclusionInfo.defaultExcludedTemplates
-                userExcludedTemplates = repository.exclusionInfo.userExcludedTemplates
-            }
             .sheet(isPresented: $isShowingSheet) {
-                SynchroRulesPreferencesSheet(item: item)
+                SynchroRulesPreferencesSheet(
+                    item: item,
+                    repository: repository,
+                    userExcludedApps: $repository.exclusionInfo.userExcludedApps,
+                    userExcludedTemplates: $repository.exclusionInfo.userExcludedTemplates
+                )
             }
         }
         .padding(AppPadding.padding24)

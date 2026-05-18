@@ -4,7 +4,7 @@
  * Locale: it, Italian
  * Tagged: macOS
  * Exported by: Killian Mathias
- * Exported at: Mon, 11 May 2026 14:29:37 +0200
+ * Exported at: Mon, 18 May 2026 13:39:12 +0200
  */
 
 
@@ -58,6 +58,8 @@
 
 /* loco:698b07cec1d08f40b50bc702 */
 "advancedSyncTitle" = "Sincronizzazioni avanzate";
+/* loco:6a01c8e3ba328c320801c492 */
+"appToExclude" = "App da escludere";
 
 /* loco:698af4376b386d18b9037522 */
 "appUpToDate" = "L’applicazione è aggiornata";
@@ -456,6 +458,9 @@
 /* loco:6989c851ba57b190ff0ebbf2 */
 "labelAllowTracking" = "Consenti tracciamento";
 
+/* loco:6a0b062a269f9f6d54046565 */
+"labelAppID" = "ID applicazione";
+
 /* loco:6989ff5b78003eb4e20e2652 */
 "labelFolder" = "Cartella";
 
@@ -470,6 +475,10 @@
 
 /* loco:69a6e4aceff2d992ad059324 */
 "labelOff" = "Spento";
+
+
+/* loco:698b58377672899b9301a142 */
+"labelRules" = "Regole";
 
 /* loco:698b2f6aae1ca9d0290ad174 */
 "labelSameAsSystem" = "Come il sistema";

@@ -23,7 +23,7 @@ import kDriveCoreUI
 
 @MainActor
 public final class ExclusionRepository: ObservableObject {
-    @Published public private(set) var exclusionInfo = UIExclusionInfo()
+    @Published public var exclusionInfo = UIExclusionInfo()
 
     public init() {}
 
@@ -40,14 +40,38 @@ public final class ExclusionRepository: ObservableObject {
     }
 
     public func updateTemplates(updatedTemplates: [UIExclusionTemplateInfo]) async throws {
-        try await ExclusionTemplateJobs().setUserExclusionTemplateList(updatedTemplates.toExclusionTemplateInfo())
-
-        try? await refreshData()
+        try await updateItems(
+            \.exclusionInfo.userExcludedTemplates,
+            items: updatedTemplates,
+            remote: { items in
+                try await ExclusionTemplateJobs().setUserExclusionTemplateList(items.toExclusionTemplateInfo())
+            }
+        )
     }
 
     public func updateApps(updatedApps: [UIExclusionAppInfo]) async throws {
-        try await ExclusionAppJobs().setExclusionAppList(default: false, applicationList: updatedApps.toExclusionAppInfo())
+        try await updateItems(
+            \.exclusionInfo.userExcludedApps,
+            items: updatedApps,
+            remote: { items in
+                try await ExclusionAppJobs().setExclusionAppList(default: false, applicationList: items.toExclusionAppInfo())
+            }
+        )
+    }
 
-        try? await refreshData()
+    private func updateItems<T>(
+        _ keyPath: ReferenceWritableKeyPath<ExclusionRepository, [T]>,
+        items: [T],
+        remote: ([T]) async throws -> Void
+    ) async throws {
+        let oldItems = self[keyPath: keyPath]
+        do {
+            self[keyPath: keyPath] = items
+            try await remote(items)
+            try? await refreshData()
+        } catch {
+            self[keyPath: keyPath] = oldItems
+            throw error
+        }
     }
 }

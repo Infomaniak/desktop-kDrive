@@ -17,6 +17,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
@@ -29,13 +30,45 @@ struct SynchroRulesPreferencesUserTemplateList: View {
     @State var isShowingAlert = false
     var body: some View {
         VStack(alignment: .leading) {
-            TemplateTable(list: $userExcludedTemplates, selectedRows: $selectedTemplates, isShowingAlert: $isShowingAlert)
+            Table(userExcludedTemplates) {
+                TableColumn("") { item in
+                    Toggle("", isOn: Binding(
+                        get: { selectedTemplates.contains(item.id) },
+                        set: { isSelected in
+                            if isSelected {
+                                selectedTemplates.insert(item.id)
+                            } else {
+                                selectedTemplates.remove(item.id)
+                            }
+                        }
+                    ))
+                    .toggleStyle(.checkbox)
+                    .labelsHidden()
+                }
+                .width(24)
+
+                TableColumn(KDriveLocalizable.labelRules) { item in
+                    Text(item.displayName)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+
+                TableColumn(KDriveLocalizable.labelNotifications) { item in
+                    Toggle("", isOn: Binding(
+                        get: { item.warning },
+                        set: { isSelected in
+                            let index = userExcludedTemplates.firstIndex { $0.id == item.id }!
+                            userExcludedTemplates[index].warning = isSelected
+                            updateToggleInRepository()
+                        }
+                    ))
+                    .toggleStyle(.switch)
+                    .controlSize(.small)
+                }
+            }
 
             HStack {
-                Button(
-                    "Supprimer \(selectedTemplates.count) élément\(selectedTemplates.count > 1 ? "s" : "")",
-                    role: .destructive
-                ) {
+                Button(KDriveLocalizable.buttonRemoveFileExclusionRule(selectedTemplates.count),
+                       role: .destructive) {
                     let oldExcludedTemplates = userExcludedTemplates
                     let oldSelectedTemplates = selectedTemplates
 
@@ -47,14 +80,12 @@ struct SynchroRulesPreferencesUserTemplateList: View {
                         do {
                             try await repository.updateTemplates(updatedTemplates: userExcludedTemplates)
                         } catch {
-                            print("Error \(error.localizedDescription)")
                             userExcludedTemplates = oldExcludedTemplates
                             selectedTemplates = oldSelectedTemplates
                         }
                     }
                 }
-                .buttonStyle(.bordered)
-                .controlSize(.regular)
+                .foregroundStyle(.red)
 
                 Button(KDriveLocalizable.buttonCancel) {
                     selectedTemplates.removeAll()
@@ -64,6 +95,16 @@ struct SynchroRulesPreferencesUserTemplateList: View {
             .opacity(selectedTemplates.isEmpty ? 0 : 1)
         }
         .alert(KDriveLocalizable.fileExclusionNotificationWarning, isPresented: $isShowingAlert) {}
+    }
+
+    func updateToggleInRepository() {
+        Task {
+            do {
+                try await repository.updateTemplates(updatedTemplates: userExcludedTemplates)
+            } catch {
+                userExcludedTemplates = repository.exclusionInfo.userExcludedTemplates
+            }
+        }
     }
 }
 

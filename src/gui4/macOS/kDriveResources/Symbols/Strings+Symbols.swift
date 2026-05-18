@@ -46,7 +46,7 @@ public enum KDriveLocalizable {
   /// loco:698b07cec1d08f40b50bc702
   public static let advancedSyncTitle = KDriveLocalizable.tr("Localizable", "advancedSyncTitle", fallback: "Advanced synchronizations")
   /// loco:6a01c8e3ba328c320801c492
-  public static let appsToExclude = KDriveLocalizable.tr("Localizable", "appsToExclude", fallback: "Apps to exclude")
+  public static let appToExclude = KDriveLocalizable.tr("Localizable", "appToExclude", fallback: "App to exclude")
   /// loco:698af4376b386d18b9037522
   public static let appUpToDate = KDriveLocalizable.tr("Localizable", "appUpToDate", fallback: "The application is up to date")
   /// loco:698b36f2eb276c03d00e7c07
@@ -126,6 +126,10 @@ public enum KDriveLocalizable {
   public static let buttonRefresh = KDriveLocalizable.tr("Localizable", "buttonRefresh", fallback: "Refresh")
   /// loco:69b275c6f0de2ef07706b5b3
   public static let buttonRemove = KDriveLocalizable.tr("Localizable", "buttonRemove", fallback: "Remove")
+  /// Plural format key: "%#@value@"
+  public static func buttonRemoveFileExclusionRule(_ p1: Int) -> String {
+    return KDriveLocalizable.tr("Localizable", "buttonRemoveFileExclusionRule", p1, fallback: "Plural format key: \"%#@value@\"")
+  }
   /// loco:698b07467beec481020cef52
   public static let buttonRemoveSync = KDriveLocalizable.tr("Localizable", "buttonRemoveSync", fallback: "Remove synchronization")
   /// loco:6964e1fd78f375ec03073c88
@@ -324,6 +328,8 @@ public enum KDriveLocalizable {
   public static let instructionRestartIfNecessary = KDriveLocalizable.tr("Localizable", "instructionRestartIfNecessary", fallback: "Restart the application if required")
   /// loco:6989c851ba57b190ff0ebbf2
   public static let labelAllowTracking = KDriveLocalizable.tr("Localizable", "labelAllowTracking", fallback: "Allow tracking")
+  /// loco:6a0b062a269f9f6d54046565
+  public static let labelAppID = KDriveLocalizable.tr("Localizable", "labelAppID", fallback: "Application Identifier")
   /// loco:6989ff5b78003eb4e20e2652
   public static let labelFolder = KDriveLocalizable.tr("Localizable", "labelFolder", fallback: "Folder")
   /// loco:698c656e3e4e4bbf4f02bde2
@@ -336,6 +342,8 @@ public enum KDriveLocalizable {
   public static let labelNotifications = KDriveLocalizable.tr("Localizable", "labelNotifications", fallback: "Notification")
   /// loco:69a6e4aceff2d992ad059324
   public static let labelOff = KDriveLocalizable.tr("Localizable", "labelOff", fallback: "Off")
+  /// loco:698b58377672899b9301a142
+  public static let labelRules = KDriveLocalizable.tr("Localizable", "labelRules", fallback: "Rules")
   /// loco:698b2f6aae1ca9d0290ad174
   public static let labelSameAsSystem = KDriveLocalizable.tr("Localizable", "labelSameAsSystem", fallback: "Same as system")
   /// loco:6989ff974ef31503cb002e23

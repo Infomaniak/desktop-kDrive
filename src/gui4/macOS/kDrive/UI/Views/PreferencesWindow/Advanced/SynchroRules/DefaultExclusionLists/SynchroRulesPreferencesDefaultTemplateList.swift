@@ -21,29 +21,15 @@ import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
-struct TemplateListRow: View {
-    let item: UIExclusionTemplateInfo
-
-    var body: some View {
-        HStack {
-            TextWithIcon(icon: KDriveResources.file.swiftUIImage, text: item.template)
-                .frame(maxWidth: .infinity, alignment: .leading)
-        }
-    }
-}
-
 struct SynchroRulesPreferencesDefaultTemplateList: View {
     @Binding var defaultExcludedTemplates: [UIExclusionTemplateInfo]
     var body: some View {
         VStack(alignment: .leading) {
-            ScrollView {
-                ForEach(defaultExcludedTemplates) { item in
-                    TemplateListRow(item: item)
+            Table(defaultExcludedTemplates) {
+                TableColumn(KDriveLocalizable.labelName) { item in
+                    Text(item.displayName)
                 }
             }
-            .padding(AppPadding.padding12)
-            .background(.quinary)
-            .cornerRadius(8)
         }
         .frame(maxWidth: .infinity)
     }

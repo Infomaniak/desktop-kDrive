@@ -21,18 +21,25 @@ import kDriveCore
 
 public protocol UIExclusionItem: Identifiable, Hashable {
     var id: UUID { get set }
+    var displayName: String { get }
 }
 
 public struct UIExclusionTemplateInfo: Sendable, UIExclusionItem {
     public var id = UUID()
-    public var template: String
+    public var displayName: String
     public var `default`: Bool
     public var warning: Bool
 
     public init(exclusionTemplateInfo: ExclusionTemplateInfo) {
-        template = exclusionTemplateInfo.template
+        displayName = exclusionTemplateInfo.template
         self.default = exclusionTemplateInfo.default
         warning = exclusionTemplateInfo.warning
+    }
+
+    public init(template: String, warning: Bool) {
+        displayName = template
+        self.warning = warning
+        self.default = false
     }
 }
 
@@ -40,24 +47,30 @@ public struct UIExclusionAppInfo: Sendable, UIExclusionItem {
     public var id = UUID()
     public var app: String
     public var `default`: Bool
-    public var description: String
+    public var displayName: String
 
     public init(exclusionAppInfo: ExclusionAppInfo) {
         app = exclusionAppInfo.appId
         self.default = exclusionAppInfo.def
-        description = exclusionAppInfo.description
+        displayName = exclusionAppInfo.description
+    }
+
+    public init(app: String, description: String) {
+        self.app = app
+        self.default = false
+        displayName = description
     }
 }
 
 public extension [UIExclusionAppInfo] {
     func toExclusionAppInfo() -> [ExclusionAppInfo] {
-        return map { ExclusionAppInfo(appId: $0.app, description: $0.description, def: $0.default) }
+        return map { ExclusionAppInfo(appId: $0.app, description: $0.displayName, def: $0.default) }
     }
 }
 
 public extension [UIExclusionTemplateInfo] {
     func toExclusionTemplateInfo() -> [ExclusionTemplateInfo] {
-        return map { ExclusionTemplateInfo(template: $0.template, warning: $0.warning, default: $0.default) }
+        return map { ExclusionTemplateInfo(template: $0.displayName, warning: $0.warning, default: $0.default) }
     }
 }
 

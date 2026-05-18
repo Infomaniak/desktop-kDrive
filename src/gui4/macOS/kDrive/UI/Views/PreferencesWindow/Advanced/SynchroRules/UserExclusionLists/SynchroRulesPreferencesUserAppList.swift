@@ -27,17 +27,40 @@ struct SynchroRulesPreferencesUserAppList: View {
     @State var selectedApps = Set<UIExclusionAppInfo.ID>()
 
     var body: some View {
-        VStack {
-            AppTable(list: $userExcludedApps, selectedRows: $selectedApps)
+        VStack(alignment: .leading) {
+            Table(userExcludedApps) {
+                TableColumn("") { item in
+                    Toggle("", isOn: Binding(
+                        get: { selectedApps.contains(item.id) },
+                        set: { isSelected in
+                            if isSelected {
+                                selectedApps.insert(item.id)
+                            } else {
+                                selectedApps.remove(item.id)
+                            }
+                        }
+                    ))
+                    .toggleStyle(.checkbox)
+                    .labelsHidden()
+                }
+                .width(24)
+
+                TableColumn(KDriveLocalizable.labelName) { item in
+                    Text(item.app)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
 
             HStack {
-                Button("Supprimer \(selectedApps.count) élément\(selectedApps.count > 1 ? "s" : "")") {
+                Button(KDriveLocalizable.buttonRemoveFileExclusionRule(selectedApps.count),
+                       role: .destructive) {
                     let newExcludedApps: [UIExclusionAppInfo] = userExcludedApps.filter {
                         !selectedApps.contains($0.id)
                     }
                     Task {
                         do {
                             try await repository.updateApps(updatedApps: newExcludedApps)
+
                             userExcludedApps = newExcludedApps
                             selectedApps.removeAll()
                         } catch {
@@ -45,6 +68,7 @@ struct SynchroRulesPreferencesUserAppList: View {
                         }
                     }
                 }
+                .foregroundStyle(.red)
 
                 Button(KDriveLocalizable.buttonCancel) {
                     selectedApps.removeAll()

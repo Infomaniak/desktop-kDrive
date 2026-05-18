@@ -37,7 +37,7 @@ enum SynchroRulesItem: String, Identifiable, CaseIterable {
         case .files:
             return KDriveLocalizable.filesToExclude
         case .apps:
-            return KDriveLocalizable.appsToExclude
+            return KDriveLocalizable.appToExclude
         }
     }
 

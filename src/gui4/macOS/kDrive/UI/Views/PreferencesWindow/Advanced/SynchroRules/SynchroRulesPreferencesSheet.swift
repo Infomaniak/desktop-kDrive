@@ -17,56 +17,157 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
 struct SynchroRulesPreferencesSheet: View {
     @Environment(\.dismiss) private var dismiss
+
     let item: SynchroRulesItem
+    let repository: ExclusionRepository
+
+    @Binding var userExcludedApps: [UIExclusionAppInfo]
+    @Binding var userExcludedTemplates: [UIExclusionTemplateInfo]
+
+    @State private var appList: [String: String] = [:]
+    @State private var appId = ""
     @State private var input = ""
     @State private var isNotified = false
+    @State private var isCreatingExclusion = false
+
+    private var canAddRule: Bool {
+        if item == .files {
+            return !input.isEmpty
+        } else {
+            return !appId.isEmpty && !input.isEmpty
+        }
+    }
+
+    private var placeholderText: String {
+        switch item {
+        case .files:
+            return KDriveLocalizable.filesToExclude
+        case .apps:
+            return KDriveLocalizable.appToExclude
+        }
+    }
 
     var body: some View {
-        Text(KDriveLocalizable.dialogNewExclusionRuleTitle)
+        VStack(alignment: .leading) {
+            Text(KDriveLocalizable.dialogNewExclusionRuleTitle)
+                .font(.Tokens.headline)
+                .foregroundStyle(ColorToken.Text.primary.asColor)
+                .padding(.bottom, AppPadding.padding4)
 
-        Text(KDriveLocalizable.excludeRuleDescription)
-            .font(.Tokens.callout)
-            .foregroundStyle(.secondary)
-
-        TextField(KDriveLocalizable.filesToExclude, text: $input)
-
-        Toggle(isOn: $isNotified) {
-            Text(KDriveLocalizable.notifyOnFileExcluded)
-        }
-
-        HStack {
-            Button(KDriveLocalizable.buttonCancel) {
-                dismiss()
+            if item == .files {
+                Text(KDriveLocalizable.excludeRuleDescription)
+                    .font(.Tokens.callout)
+                    .foregroundStyle(.secondary)
             }
 
-            Button(KDriveLocalizable.buttonAddFileExclusionRule) {
-                switch item {
-                case .files:
-                    saveTemplate()
-                case .apps:
-                    saveApp()
+            if item == .apps {
+                Picker(KDriveLocalizable.labelAppID, selection: $appId) {
+                    ForEach(Array(appList.keys), id: \.self) { key in
+                        Text(key)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            TextField(placeholderText, text: $input)
+
+            if item == .files {
+                Toggle(isOn: $isNotified) {
+                    Text(KDriveLocalizable.notifyOnFileExcluded)
                 }
             }
+        }
+        .padding()
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button(KDriveLocalizable.buttonCancel, role: .cancel) {
+                    dismiss()
+                }
+            }
+            ToolbarItem(placement: .confirmationAction) {
+                LoadingButton(isLoading: $isCreatingExclusion) {
+                    switch item {
+                    case .files:
+                        saveTemplate()
+                    case .apps:
+                        saveApp()
+                    }
+                    dismiss()
+                } label: {
+                    Text(KDriveLocalizable.buttonAddFileExclusionRule)
+                }
+                .disabled(!canAddRule)
+            }
+        }
+        .onAppear(perform: getAppList)
+        .onChange(of: appId) { newValue in
+            guard let appDescription = appList[newValue] else { return }
+            input = appDescription
         }
     }
 
     func saveTemplate() {
-        // TODO: Save template
+        var templates = repository.exclusionInfo.userExcludedTemplates
+        let newTemplate = UIExclusionTemplateInfo(template: input, warning: isNotified)
+        templates.append(newTemplate)
+
+        Task {
+            do {
+                userExcludedTemplates = templates
+                try await repository.updateTemplates(updatedTemplates: templates)
+            } catch {
+                userExcludedTemplates = repository.exclusionInfo.userExcludedTemplates
+            }
+        }
         dismiss()
     }
 
     func saveApp() {
-        // TODO: Save app
+        var excludedApps = repository.exclusionInfo.userExcludedApps
+        let newExcludedApp = UIExclusionAppInfo(app: appId, description: input)
+        excludedApps.append(newExcludedApp)
+
+        Task {
+            do {
+                userExcludedApps = excludedApps
+                try await repository.updateApps(updatedApps: excludedApps)
+            } catch {
+                userExcludedApps = repository.exclusionInfo.userExcludedApps
+            }
+        }
+
         dismiss()
+    }
+
+    func getAppList() {
+        Task {
+            do {
+                let userExcludedAppIdentifiers = userExcludedApps.map(\.app)
+                let dict = try await ExclusionAppJobs().getFetchingAppList()
+                    .filter { !userExcludedAppIdentifiers.contains($0.key) }
+
+                self.appList = dict
+
+                appId = self.appList.keys.first ?? ""
+
+            } catch {
+                print("Error while fetching app list: \(error)")
+            }
+        }
     }
 }
 
 #Preview {
-    SynchroRulesPreferencesSheet(item: .apps)
+    SynchroRulesPreferencesSheet(
+        item: .apps,
+        repository: ExclusionRepository(),
+        userExcludedApps: .constant([]),
+        userExcludedTemplates: .constant([])
+    )
 }
