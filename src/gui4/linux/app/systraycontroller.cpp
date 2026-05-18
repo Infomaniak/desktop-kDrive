@@ -47,10 +47,10 @@ bool forceNoTrayRequested() {
 #endif
 }
 
-QString syncStatusLogName(const SyncStatus status) {
+QString syncStatusToString(const SyncStatus status) {
     return QString::fromStdString(toString(status));
 }
-QString trayIconStateLogName(const TrayIconState state) {
+QString toString(const TrayIconState state) {
     switch (state) {
         using enum TrayIconState;
         case Neutral:
@@ -120,7 +120,7 @@ void SystemTrayController::initialize() {
     _isTrayAvailable = QSystemTrayIcon::isSystemTrayAvailable();
 #endif
     qCInfo(lcSystemTrayController) << "Initializing system tray | available:" << _isTrayAvailable
-                                   << "| state:" << trayIconStateLogName(_iconState) << "| icon:" << trayIconPath(_iconState);
+                                   << "| state:" << toString(_iconState) << "| icon:" << trayIconPath(_iconState);
 
     _trayIcon.setIcon(QIcon(trayIconPath(_iconState)));
     _trayIcon.setToolTip(tr("kDrive"));
@@ -204,8 +204,8 @@ void SystemTrayController::setIconState(const TrayIconState state) {
         return;
     }
 
-    qCInfo(lcSystemTrayController) << "System tray icon state changed | from:" << trayIconStateLogName(_iconState)
-                                   << "| to:" << trayIconStateLogName(state) << "| icon:" << trayIconPath(state);
+    qCInfo(lcSystemTrayController) << "System tray icon state changed | from:" << toString(_iconState)
+                                   << "| to:" << toString(state) << "| icon:" << trayIconPath(state);
     _iconState = state;
 
     if (!_isInitialized) {
@@ -367,8 +367,8 @@ void SystemTrayController::onSyncProgressInfo(const SyncDbId syncDbId, const Syn
 
     qCInfo(lcSystemTrayController) << "Sync status changed for tray icon | syncDbId:" << syncDbId << "| from:"
                                    << (previousStatusIt == _syncStatuses.end() ? QStringLiteral("Unknown")
-                                                                               : syncStatusLogName(previousStatusIt->second))
-                                   << "| to:" << syncStatusLogName(status);
+                                                                               : syncStatusToString(previousStatusIt->second))
+                                   << "| to:" << syncStatusToString(status);
     _syncStatuses[syncDbId] = status;
     refreshIconState();
 }
