@@ -412,7 +412,10 @@ ExitInfo RemoteFileSystemObserverWorker::runFullListingJobs(const FullListingJob
         for (const auto &[remoteNodeId, fullListingJob]: fullListingJobs) {
             const bool jobIsFinished = SyncJobManagerSingleton::instance()->isJobFinished(fullListingJob->jobId());
             allJobsFinished = allJobsFinished && jobIsFinished;
-            if (!jobIsFinished || fullListingJob->exitInfo()) continue;
+            if (!jobIsFinished || fullListingJob->exitInfo()) {
+                Utility::msleep(fullListingSleepTimeMs);
+                continue;
+            }
 
             LOG_SYNCPAL_WARN(_logger, "Error in CsvFullFileListWithCursorJob::run for remoteNodeId="
                                               << remoteNodeId << ", exitInfo=" << fullListingJob->exitInfo());
@@ -420,8 +423,6 @@ ExitInfo RemoteFileSystemObserverWorker::runFullListingJobs(const FullListingJob
 
             return fullListingJob->exitInfo();
         }
-
-        Utility::msleep(fullListingSleepTimeMs);
     }
 
     return ExitCode::Ok;
