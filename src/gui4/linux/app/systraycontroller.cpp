@@ -219,7 +219,7 @@ void SystemTrayController::setIconState(const TrayIconState state) {
 }
 
 void SystemTrayController::showMainWindow() const {
-    if (!_mainWindow) {
+    if (_mainWindow == nullptr) {
         qCWarning(lcSystemTrayController) << "Cannot show main window: no window registered";
         return;
     }
@@ -234,7 +234,7 @@ void SystemTrayController::showSettingsWindow() {
 }
 
 void SystemTrayController::hideMainWindow() const {
-    if (!_mainWindow) {
+    if (_mainWindow == nullptr) {
         qCWarning(lcSystemTrayController) << "Cannot hide main window: no window registered";
         return;
     }
@@ -317,7 +317,7 @@ void SystemTrayController::activateTrayMode() {
 }
 
 void SystemTrayController::refreshIconState() {
-    if (!_isProductStateInitialized || !_appCache) {
+    if (!_isProductStateInitialized || (_appCache == nullptr)) {
         setIconState(TrayIconState::Neutral);
         return;
     }
