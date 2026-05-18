@@ -98,7 +98,6 @@ bool isSyncStatus(const SyncStatus status) {
 
 SystemTrayController::SystemTrayController(QObject *const parent) :
     QObject(parent) {
-    _trayAvailabilityRetryTimer.setParent(this);
     _trayAvailabilityRetryTimer.setSingleShot(true);
     _trayAvailabilityRetryTimer.setInterval(trayAvailabilityRetryIntervalMs);
     (void) connect(&_trayAvailabilityRetryTimer, &QTimer::timeout, this, &SystemTrayController::attemptTrayActivation);
