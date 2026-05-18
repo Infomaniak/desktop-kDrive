@@ -398,7 +398,7 @@ ExitInfo RemoteFileSystemObserverWorker::updateV3SpecialFolderItem(const RemoteN
     return ExitCode::Ok;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::executeFullListingJobs(const FullListingJobMap &fullListingJobs) {
+ExitInfo RemoteFileSystemObserverWorker::runFullListingJobs(const FullListingJobMap &fullListingJobs) {
     constexpr auto fullListingSleepTimeMs = 100;
 
     for (auto [_, fullListingJob]: fullListingJobs)
@@ -411,14 +411,14 @@ ExitInfo RemoteFileSystemObserverWorker::executeFullListingJobs(const FullListin
         allJobsFinished = true;
         for (const auto &[remoteNodeId, fullListingJob]: fullListingJobs) {
             const bool jobIsFinished = SyncJobManagerSingleton::instance()->isJobFinished(fullListingJob->jobId());
-            if (jobIsFinished && !fullListingJob->exitInfo()) {
-                LOG_SYNCPAL_WARN(_logger, "Error in CsvFullFileListWithCursorJob for remoteNodeId="
-                                                  << remoteNodeId << ", exitInfo=" << fullListingJob->exitInfo());
-                if (fullListingJob->exitInfo().code() == ExitCode::RateLimited) setPauseDuration(fullListingJob->sleepDuration());
-
-                return fullListingJob->exitInfo();
-            }
             allJobsFinished = allJobsFinished && jobIsFinished;
+            if (!jobIsFinished || fullListingJob->exitInfo()) continue;
+
+            LOG_SYNCPAL_WARN(_logger, "Error in CsvFullFileListWithCursorJob::run for remoteNodeId="
+                                              << remoteNodeId << ", exitInfo=" << fullListingJob->exitInfo());
+            if (fullListingJob->exitInfo().code() == ExitCode::RateLimited) setPauseDuration(fullListingJob->sleepDuration());
+
+            return fullListingJob->exitInfo();
         }
 
         Utility::msleep(fullListingSleepTimeMs);
@@ -452,7 +452,7 @@ ExitInfo RemoteFileSystemObserverWorker::initWithCursor() {
     }
 
     // Execute the full listings of the remote special folders in parallel.
-    if (const auto exitInfo = executeFullListingJobs(fullListingJobs); !exitInfo) return exitInfo;
+    if (const auto exitInfo = runFullListingJobs(fullListingJobs); !exitInfo) return exitInfo;
 
     // Handle replies of the full listing requests and update the snapshot accordingly.
     for (const auto &specialFolderRemoteId: specialFoldersRemoteIds) {
