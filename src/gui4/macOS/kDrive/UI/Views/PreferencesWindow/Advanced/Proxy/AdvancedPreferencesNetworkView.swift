@@ -84,9 +84,7 @@ struct AdvancedPreferencesNetworkView: View {
     func getInitialValues() {
         let proxyConfiguration = repository.parametersInfo.proxyConfiguration
 
-        if let type = proxyConfiguration.type {
-            proxyType = type
-        }
+        proxyType = proxyConfiguration.type
         hostName = proxyConfiguration.hostName
         port = proxyConfiguration.port
         authType = proxyConfiguration.authType

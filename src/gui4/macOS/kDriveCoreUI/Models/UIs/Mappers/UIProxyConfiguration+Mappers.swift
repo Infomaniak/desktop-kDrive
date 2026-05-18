@@ -19,10 +19,10 @@
 import kDriveCore
 
 public extension UIProxyType {
-    init?(proxyType: KDC.ProxyType) {
+    init(proxyType: KDC.ProxyType) {
         switch proxyType {
         case .None:
-            return nil
+            self = .none
         case .System:
             self = .system
         case .HTTP:
@@ -31,13 +31,13 @@ public extension UIProxyType {
             self = .socks5
         case .Undefined:
             ReportHelper.reportToSentryIfProd(message: "UIProxyType init received KDC.ProxyType.Undefined case")
-            return nil
+            self = .none
         case .EnumEnd:
             ReportHelper.reportToSentryIfProd(message: "UIProxyType init received KDC.ProxyType.EnumEnd case")
-            return nil
+            self = .none
         @unknown default:
             ReportHelper.reportToSentryIfProd(message: "UIProxyType init received @unknown case")
-            return nil
+            self = .none
         }
     }
 
@@ -80,7 +80,7 @@ public extension UIProxyConfiguration {
         }
 
         return ProxyConfigInfo(
-            type: type?.toKDCProxyType() ?? .None,
+            type: type.toKDCProxyType(),
             hostName: hostName,
             port: Int32(port),
             needsAuth: needsAuth,

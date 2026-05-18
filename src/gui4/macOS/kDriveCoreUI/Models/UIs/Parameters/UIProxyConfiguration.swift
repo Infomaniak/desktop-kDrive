@@ -47,12 +47,12 @@ public enum UIProxyAuthType: Sendable, Equatable {
 }
 
 public struct UIProxyConfiguration: Sendable, Equatable {
-    public let type: UIProxyType?
+    public let type: UIProxyType
     public let hostName: String
     public let port: Int
     public let authType: UIProxyAuthType
 
-    public init(type: UIProxyType?, hostName: String, port: Int, authType: UIProxyAuthType) {
+    public init(type: UIProxyType, hostName: String, port: Int, authType: UIProxyAuthType) {
         self.type = type
         self.hostName = hostName
         self.port = port
