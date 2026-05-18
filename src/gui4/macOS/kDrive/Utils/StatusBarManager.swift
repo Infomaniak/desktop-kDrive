@@ -82,7 +82,7 @@ final class StatusBarManager {
 
         statusItem = statusBar.statusItem(withLength: NSStatusItem.squareLength)
         statusItem.autosaveName = StatusBarManager.autosaveName
-        statusItem.button?.image = StatusItemState.idle.icon
+        setButtonImage(StatusItemState.idle.icon)
 
         statusItem.button?.target = self
         statusItem.button?.action = #selector(handleItemClick)
@@ -116,10 +116,16 @@ final class StatusBarManager {
 
     private func updateStatusItem(context: [UISynchroStateContext]) {
         let statusItemState = guessStatusItemState(from: context)
-        statusItem.button?.image = statusItemState.icon
+        setButtonImage(statusItemState.icon)
 
         let tooltip = generateTooltip(from: context)
         statusItem.button?.toolTip = tooltip
+    }
+
+    private func setButtonImage(_ image: NSImage) {
+        image.size = NSSize(width: 15, height: 15)
+        statusItem.button?.image = image
+        statusItem.button?.sizeToFit()
     }
 
     private func guessStatusItemState(from contexts: [UISynchroStateContext]) -> StatusItemState {
