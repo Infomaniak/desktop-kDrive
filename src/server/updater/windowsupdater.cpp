@@ -202,7 +202,7 @@ bool WindowsUpdater::verifyFileChecksum(const SyncPath &filepath) {
         return false;
     };
 
-    // Skip if API doesn't provide checksum (development)
+    // Skip if API doesn't provide checksum
     if (expectedChecksum.empty()) {
         LOGW_WARN(Log::instance()->getLogger(), L"Checksum not available from API. Skipping verification.");
         return true;
