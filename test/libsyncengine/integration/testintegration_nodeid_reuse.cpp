@@ -173,8 +173,7 @@ void TestIntegration::testNodeIdReuseFile2File() {
     // Expected behavior: Edit + Move on remote side
     {
         std::ofstream file(absoluteLocalWorkingDir / "testNodeIdReuseFile2");
-        file << "New content2"; // Content change -> edit
-        file.close();
+        file << "updated"; // Content change -> edit
     }
     mockIoHelper.setPathWithFakeInode(absoluteLocalWorkingDir / "testNodeIdReuseFile3", 2);
     (void) IoHelper::moveItem(absoluteLocalWorkingDir / "testNodeIdReuseFile2", absoluteLocalWorkingDir / "testNodeIdReuseFile3",
@@ -183,11 +182,15 @@ void TestIntegration::testNodeIdReuseFile2File() {
 
     _syncPal->unpause();
     waitForSyncToBeIdle(SourceLocation::currentLoc());
-    CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote)
-                           .getItemId(relativeWorkingDirPath / "testNodeIdReuseFile2", newRemoteFileId));
+    NodeId tmpId;
+    CPPUNIT_ASSERT_EQUAL(
+            ExitInfo(ExitCode::DataError, ExitCause::NotFound),
+            _syncPal->liveSnapshot(ReplicaSide::Remote).getItemId(relativeWorkingDirPath / "testNodeIdReuseFile2", tmpId));
+
     NodeId newRemoteFileId2;
-    CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote)
-                           .getItemId(relativeWorkingDirPath / "testNodeIdReuseFile3", newRemoteFileId2));
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
+                         _syncPal->liveSnapshot(ReplicaSide::Remote)
+                                 .getItemId(relativeWorkingDirPath / "testNodeIdReuseFile3", newRemoteFileId2));
     CPPUNIT_ASSERT_EQUAL(newRemoteFileId, newRemoteFileId2);
     CPPUNIT_ASSERT_EQUAL(_syncPal->liveSnapshot(ReplicaSide::Remote).size(newRemoteFileId2),
                          _syncPal->liveSnapshot(ReplicaSide::Local).size("2"));
