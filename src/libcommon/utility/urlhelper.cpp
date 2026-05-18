@@ -31,8 +31,8 @@ static const std::string preprodNotifyApiUrl = "https://notify.kdrive.preprod.de
 static const std::string prodLoginApiUrl = "https://login.infomaniak.com";
 static const std::string preprodLoginApiUrl = "https://login.preprod.dev.infomaniak.ch";
 
-std::string UrlHelper::infomaniakApiUrl(const uint8_t version /*= 2*/, const bool forceProd /*= false*/) {
-    return (usePreProdUrl() && !forceProd ? preprodInfomaniakApiUrl : prodInfomaniakApiUrl) + std::to_string(version);
+std::string UrlHelper::infomaniakApiUrl(const uint8_t version /*= 2*/) {
+    return (usePreProdUrl() ? preprodInfomaniakApiUrl : prodInfomaniakApiUrl) + std::to_string(version);
 }
 
 std::string UrlHelper::kDriveApiUrl(const uint8_t version /*= 2*/) {

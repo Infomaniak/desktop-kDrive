@@ -38,7 +38,6 @@ class GetAppVersionJob : public AbstractTokenNetworkJob {
         ExitInfo handleResponse(std::istream &is) override;
 
     private:
-        std::string getUrl() override { return UrlHelper::infomaniakApiUrl(_apiVersion, true) + getSpecificUrl(); }
         std::string getSpecificUrl() override;
 
         void setQueryParameters(Poco::URI &uri) override;
