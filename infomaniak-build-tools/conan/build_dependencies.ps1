@@ -354,18 +354,29 @@ if ($UpdateEnvironment)
     $currentUserPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
     $allowedNames = @("build", "bin")
 
-    $conanRoot = Join-Path $env:USERPROFILE ".conan2\p"
-    $conanBinPaths = Get-ChildItem -Path $conanRoot -Recurse -Include *.exe, *.dll | ForEach-Object { $_.Directory.FullName } | Sort-Object -Unique
+    $conanRoot = Join-Path $env:USERPROFILE ".conan2\p\b"
+    function Get-ConanBinaries {
+        param([string]$Path)
+        foreach ($item in Get-ChildItem -Path $Path -Force) {
 
-    # Get matching directories
-    $conanBinPaths = Get-ChildItem -Path $conanRoot -Recurse -Include *.exe, *.dll | Sort-Object -Unique | Where-Object {
-        $current = $_.Directory.Name
-        $parent = $_.Directory.Parent.Name
-        $grandparent = $_.Directory.Parent.Parent.Name
-        $allowedNames -contains $current -or
-                $allowedNames -contains $parent -or
-                $allowedNames -contains $grandparent
-    } | ForEach-Object { $_.Directory.FullName } | Sort-Object -Unique
+            # Skip unwanted Conan cache subtree early
+            if ($item.PSIsContainer -and $item.FullName -match '\\.conan2\\p\\b\\[^\\]+\\b\\') {
+                Log "Skipping Conan cache subtree: $($item.FullName)"
+                continue
+            } elseif ($item.PSIsContainer -and $item.Name -eq "bin") {
+                Log "Registering bin directory: '$($item.FullName)'"
+                return $item.FullName
+            } elseif ($item.PSIsContainer) {
+                Get-ConanBinaries -Path $item.FullName
+            }
+        }
+    }
+
+    Log "Starting Conan binary scan from root: $conanRoot"
+
+    $conanBinPaths = Get-ConanBinaries $conanRoot | Sort-Object -Unique
+
+    Log "Completed Conan scan. Found $($conanBinPaths.Count) unique binary directories."
 
     foreach ($path in $conanBinPaths)
     {
