@@ -834,17 +834,20 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<SyncJ
                 syncOp->correspondingNode()
                         ? _syncPal->snapshot(ReplicaSide::Local)->contentChecksum(syncOp->correspondingNode()->id().value_or(""))
                         : std::string{};
-        LOG_SYNCPAL_DEBUG(_logger, "Edit checksum comparison - remote: \"" << remoteChecksum << "\" local: \""
-                                                                           << localChecksum << "\"");
-        if (!remoteChecksum.empty() && remoteChecksum == localChecksum) {
+        const int64_t remoteSize = _syncPal->snapshot(ReplicaSide::Remote)->size(syncOp->affectedNode()->id().value_or(""));
+        const int64_t localSize = _syncPal->snapshot(ReplicaSide::Local)->size(syncOp->correspondingNode()->id().value_or(""));
+        if (ParametersCache::isExtendedLogEnabled())
+            LOG_SYNCPAL_DEBUG(_logger, "Edit checksum comparison - remote: \"" << remoteChecksum << "\" local: \""
+                                                                               << localChecksum << "\"");
+        if (!remoteChecksum.empty() && remoteChecksum == localChecksum && localSize != remoteSize) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Checksums match, skipping download and updating metadata only: "
                                                 << Utility::formatSyncPath(absoluteLocalFilePath));
             const SyncTime creationTime = syncOp->affectedNode()->createdAt().value_or(0);
             const SyncTime modificationTime = syncOp->affectedNode()->modificationTime().value_or(0);
             if (const IoError ioError = IoHelper::setFileDates(absoluteLocalFilePath, creationTime, modificationTime, false);
                 ioError != IoError::Success) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::setFileDates for "
-                                                   << Utility::formatSyncPath(absoluteLocalFilePath));
+                LOGW_SYNCPAL_WARN(_logger,
+                                  L"Error in IoHelper::setFileDates for " << Utility::formatSyncPath(absoluteLocalFilePath));
             }
             return ExitCode::Ok;
         }
@@ -876,11 +879,13 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<SyncJ
                 syncOp->correspondingNode()
                         ? _syncPal->snapshot(ReplicaSide::Remote)->contentChecksum(syncOp->correspondingNode()->id().value_or(""))
                         : std::string{};
-        LOG_SYNCPAL_DEBUG(_logger, "Edit upload checksum comparison - local: \"" << localChecksum << "\" remote: \""
-                                                                                 << remoteChecksum << "\"");
-        if (!localChecksum.empty() && localChecksum == remoteChecksum) {
-            LOGW_SYNCPAL_DEBUG(_logger, L"Checksums match, skipping upload: "
-                                                << Utility::formatSyncPath(absoluteLocalFilePath));
+        const int64_t remoteSize = _syncPal->snapshot(ReplicaSide::Remote)->size(syncOp->affectedNode()->id().value_or(""));
+        const int64_t localSize = _syncPal->snapshot(ReplicaSide::Local)->size(syncOp->correspondingNode()->id().value_or(""));
+        if (ParametersCache::isExtendedLogEnabled())
+            LOG_SYNCPAL_DEBUG(_logger, "Edit upload checksum comparison - local: \"" << localChecksum << "\" remote: \""
+                                                                                     << remoteChecksum << "\"");
+        if (!localChecksum.empty() && localChecksum == remoteChecksum && localSize == remoteSize) {
+            LOGW_SYNCPAL_DEBUG(_logger, L"Checksums match, skipping upload: " << Utility::formatSyncPath(absoluteLocalFilePath));
             return ExitCode::Ok;
         }
 
