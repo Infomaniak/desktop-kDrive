@@ -64,7 +64,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
             Save,
             None
         };
-        [[nodiscard]] ExitInfo getItemsInDir(const NodeId &dirId, CursorPersistence persistence = CursorPersistence::None);
+        [[nodiscard]] ExitInfo getItemsInRemoteDir(const NodeId &dirId, CursorPersistence persistence = CursorPersistence::None);
 
         struct ActionInfo {
                 ActionCode actionCode{ActionCode::ActionCodeUnknown};
@@ -113,15 +113,15 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         int _listingFullCounter = 0;
         std::chrono::steady_clock::time_point _listingFullTimer = std::chrono::steady_clock::now();
 
-        [[nodiscard]] ExitInfo updateV3SpecialFolderItem(const RemoteNodeId &remoteNodeId);
+        [[nodiscard]] ExitInfo updateSpecialFolderItem(const RemoteNodeId &remoteNodeId);
         [[nodiscard]] ExitInfo getV3SpecialRemoteFolderName(const RemoteNodeId &remoteDirId, SyncName &folderName);
 
         [[nodiscard]] ExitInfo parseCsvReply(CursorPersistence cursorPersistence,
                                              std::shared_ptr<CsvFullFileListWithCursorJob> csvFullListingJob);
         [[nodiscard]] ExitInfo handleCsvReplyCursor(const RemoteNodeId &remoteDirId, CursorPersistence cursorPersistence,
                                                     std::shared_ptr<CsvFullFileListWithCursorJob> csvFullFileListWithCursorJob);
-        [[nodiscard]] ExitInfo getItemsInDirJob(const RemoteNodeId &remoteDirId,
-                                                std::shared_ptr<CsvFullFileListWithCursorJob> &csvFullFileListWithCursorJob);
+        [[nodiscard]] ExitInfo getItemsInRemoteDirJob(
+                const RemoteNodeId &remoteDirId, std::shared_ptr<CsvFullFileListWithCursorJob> &csvFullFileListWithCursorJob);
 
         [[nodiscard]] ExitInfo createLongPollJob(const RemoteNodeId &remoteDirId, std::shared_ptr<LongPollJob> &longPollJob);
 

@@ -352,7 +352,7 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
     return exitInfo;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::updateV3SpecialFolderItem(const RemoteNodeId &remoteNodeId) {
+ExitInfo RemoteFileSystemObserverWorker::updateSpecialFolderItem(const RemoteNodeId &remoteNodeId) {
     SyncName folderName;
     if (const auto exitInfo = getV3SpecialRemoteFolderName(remoteNodeId, folderName); !exitInfo) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in RemoteFileSystemObserverWorker::getV3SpecialRemoteFolderName: remoteNodeId="
@@ -361,7 +361,7 @@ ExitInfo RemoteFileSystemObserverWorker::updateV3SpecialFolderItem(const RemoteN
     }
 
     // As long as the local folder hierarchy reflects the v2 API,
-    // we should not create a Private folder at the root of the local synchronization folder.
+    // we should not create a `Private` folder at the root of the local synchronization folder.
     if (const auto &privateFolderName = ApiTranslator::v3SpecialFolderNames.at(SpecialFolder::Private);
         folderName == privateFolderName)
         return ExitCode::Ok;
@@ -439,20 +439,19 @@ ExitInfo RemoteFileSystemObserverWorker::initWithCursor() {
     }
 
     FullListingJobMap fullListingJobs;
-    for (const auto &specialFolderRemoteId: specialFoldersRemoteIds) {
-        fullListingJobs[specialFolderRemoteId] = nullptr;
-    }
+    for (const auto &specialFolderRemoteId: specialFoldersRemoteIds) fullListingJobs[specialFolderRemoteId].reset();
 
     for (const auto &specialFolderRemoteId: specialFoldersRemoteIds) {
         if (_blackList.contains(specialFolderRemoteId)) continue;
 
-        if (const auto exitInfo = updateV3SpecialFolderItem(specialFolderRemoteId); !exitInfo) return exitInfo;
+        if (const auto exitInfo = updateSpecialFolderItem(specialFolderRemoteId); !exitInfo) return exitInfo;
 
-        if (const auto exitInfo = getItemsInDirJob(specialFolderRemoteId, fullListingJobs[specialFolderRemoteId]); !exitInfo)
+        if (const auto exitInfo = getItemsInRemoteDirJob(specialFolderRemoteId, fullListingJobs[specialFolderRemoteId]);
+            !exitInfo)
             return exitInfo;
     }
 
-    // Execute the full listings of the remote special folders in parallel.
+    // Execute the full listing HTTP requests for the remote special folders in parallel.
     if (const auto exitInfo = runFullListingJobs(fullListingJobs); !exitInfo) return exitInfo;
 
     // Handle replies of the full listing requests and update the snapshot accordingly.
@@ -476,7 +475,7 @@ ExitInfo RemoteFileSystemObserverWorker::initWithCursor() {
 ExitInfo RemoteFileSystemObserverWorker::exploreDirectory(const RemoteNodeId &nodeId) {
     if (stopAsked()) return ExitCode::Ok;
 
-    return getItemsInDir(nodeId, CursorPersistence::None);
+    return getItemsInRemoteDir(nodeId, CursorPersistence::None);
 }
 
 ExitInfo RemoteFileSystemObserverWorker::handleRemoteSnapshotItem(
@@ -572,7 +571,7 @@ ExitInfo RemoteFileSystemObserverWorker::parseCsvReply(const CursorPersistence c
     if (!iterationState.eof) {
         constexpr auto msg = "Failed to parse CSV reply: missing EOF delimiter";
         LOG_SYNCPAL_WARN(_logger, msg);
-        sentry::Handler::captureMessage(sentry::Level::Warning, "RemoteFileSystemObserverWorker::getItemsInDir", msg);
+        sentry::Handler::captureMessage(sentry::Level::Warning, "RemoteFileSystemObserverWorker::getItemsInRemoteDir", msg);
 
         return {ExitCode::NetworkError, ExitCause::FullListParsingError};
     }
@@ -583,7 +582,7 @@ ExitInfo RemoteFileSystemObserverWorker::parseCsvReply(const CursorPersistence c
     return ExitCode::Ok;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::getItemsInDirJob(
+ExitInfo RemoteFileSystemObserverWorker::getItemsInRemoteDirJob(
         const RemoteNodeId &remoteDirId, std::shared_ptr<CsvFullFileListWithCursorJob> &csvFullFileListWithCursorJob) {
     csvFullFileListWithCursorJob = nullptr;
     try {
@@ -619,10 +618,10 @@ ExitInfo RemoteFileSystemObserverWorker::handleCsvReplyCursor(
     return ExitCode::Ok;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const RemoteNodeId &remoteDirId,
-                                                       const CursorPersistence cursorPersistence) {
+ExitInfo RemoteFileSystemObserverWorker::getItemsInRemoteDir(const RemoteNodeId &remoteDirId,
+                                                             const CursorPersistence cursorPersistence) {
     std::shared_ptr<CsvFullFileListWithCursorJob> job = nullptr;
-    if (const auto exitInfo = getItemsInDirJob(remoteDirId, job); !exitInfo) return exitInfo;
+    if (const auto exitInfo = getItemsInRemoteDirJob(remoteDirId, job); !exitInfo) return exitInfo;
 
     // Send request and monitor its performance.
     sentry::pTraces::scoped::RFSOBackRequest perfMonitorBackRequest(cursorPersistence == CursorPersistence::None, syncDbId());
