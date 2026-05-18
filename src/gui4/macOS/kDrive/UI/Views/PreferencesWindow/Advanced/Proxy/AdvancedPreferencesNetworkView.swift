@@ -36,9 +36,17 @@ struct AdvancedPreferencesNetworkView: View {
     private let minPort = 0
     private let maxPort = 65535
 
-    private var isConfigurationInvalid: Bool {
-        return hostName.isEmpty || port <= minPort || port > maxPort || ((username.isEmpty || password.isEmpty) &&
-            isAuthenticationRequired)
+    private var isConfigurationValid: Bool {
+        if hostName.isEmpty {
+            return false
+        }
+        if port <= minPort || port > maxPort {
+            return false
+        }
+        if isAuthenticationRequired {
+            return !username.isEmpty && !password.isEmpty
+        }
+        return true
     }
 
     var body: some View {
@@ -62,7 +70,7 @@ struct AdvancedPreferencesNetworkView: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .frame(maxWidth: .infinity, alignment: .trailing)
-                    .disabled(isConfigurationInvalid)
+                    .disabled(!isConfigurationValid)
                 }
             }
         }
@@ -120,7 +128,7 @@ struct AdvancedPreferencesNetworkView: View {
         isLoadingSaveButton = true
         defer { isLoadingSaveButton = false }
 
-        guard !isConfigurationInvalid else { return }
+        guard isConfigurationValid else { return }
 
         let authType: UIProxyAuthType = isAuthenticationRequired ? .needsAuth(user: username, password: password) : .noAuth
         proxyConfiguration = UIProxyConfiguration(type: proxyType, hostName: hostName, port: port, authType: authType)
