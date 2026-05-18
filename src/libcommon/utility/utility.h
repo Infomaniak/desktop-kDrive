@@ -80,8 +80,10 @@ struct COMMON_EXPORT CommonUtility {
         static void crash();
         static QString platformName();
         static std::string osVersion();
-#ifdef KD_LINUX
+#if defined(KD_LINUX)
         static std::string distributionName();
+        static bool isEXT234(const SyncPath &targetPath);
+        static std::string exFAT();
 #endif
         static Platform platform();
         static QString platformArch();
@@ -111,6 +113,7 @@ struct COMMON_EXPORT CommonUtility {
         static const QString germanCode;
         static const QString spanishCode;
         static const QString italianCode;
+        static const QString dutchCode;
         static const QString swedishCode;
         static const QString portugueseCode;
         static const QString polishCode;
@@ -118,6 +121,7 @@ struct COMMON_EXPORT CommonUtility {
         static const QString finnishCode;
         static const QString danishCode;
         static const QString greekCode;
+        static Language strToLanguage(const QString &lang);
         static QString languageCode(Language language);
         static QStringList languageCodeList(Language enforcedLocale);
         static void setupTranslations(QCoreApplication *app, Language enforcedLocale);
@@ -171,6 +175,8 @@ struct COMMON_EXPORT CommonUtility {
         static std::string envVarValue(const std::string &name);
         static std::string envVarValue(const std::string &name, bool &isSet);
         static int setenv(const char *const name, const char *const value, const int overwrite);
+
+        static bool logToConsoleEnabled();
 
 #if defined(KD_LINUX)
         // Sets the working directory path and configures GIO_MODULE_DIR to prevent loading incompatible system GIO modules.
@@ -292,6 +298,7 @@ struct COMMON_EXPORT CommonUtility {
 
         // CommString conversion functions
         static CommString syncPath2CommString(const SyncPath &s) { return s.native(); }
+        static SyncPath commString2SyncPath(const CommString &s) { return SyncPath(s); }
 
 #if defined(KD_WINDOWS)
         static CommString str2CommString(const std::string &s) { return KDC::CommonUtility::s2ws(s); }
@@ -526,6 +533,7 @@ struct COMMON_EXPORT CommonUtility {
 
         static SyncPath getGenericAppSupportDir();
 
+        static std::string getRootFsType(const SyncPath &targetPath);
 
         friend class TestUtility;
 };

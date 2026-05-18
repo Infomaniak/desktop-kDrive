@@ -7,7 +7,7 @@
     <TargetFramework>net9.0-windows10.0.19041</TargetFramework>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <RootNamespace>Infomaniak.kDrive</RootNamespace>
-    <SupportedLocales>en-US;fr-FR;de-DE;es-ES;it-IT</SupportedLocales>
+    <SupportedLocales>da-DK;de-DE;el-GR;en-US;es-ES;fi-FI;fr-FR;it-It;nb-NO;nl-NL;pl-PL;pt-PT;sv-SE</SupportedLocales>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Platforms>x86;x64;ARM64</Platforms>
     <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
@@ -23,6 +23,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Remove="Assets\Custom\Animations\Readme.md" />
+    <Content Remove="Assets\DS\Icons\Actions\circle-information.svg" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="$(ApplicationManifest)" />
@@ -36,6 +37,7 @@
     <ProjectCapability Include="Msix" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="CodeArt.MatomoTracking" Version="1.0.5" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.2.251219" />
     <PackageReference Include="CommunityToolkit.WinUI.Lottie" Version="8.2.250604" />
@@ -82,9 +84,6 @@
     <SignAssembly>False</SignAssembly>
     <DelaySign>False</DelaySign>
   </PropertyGroup>
-  <Target Name="CheckTranslations" BeforeTargets="PreBuildEvent">
-    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\..\Check-TranslationKeys.ps1&quot;" />
-  </Target>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
   </PropertyGroup>
@@ -204,6 +203,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\Errors\Templates\Node\NotEnoughDiskSpaceError.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\SyncPal\InvalidTokenError.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\Errors\Templates\SyncPal\DataErrorSyncDirChanged.xaml">
@@ -355,17 +357,10 @@
       <Generator>MSBuild:Compile</Generator>
     </None>
   </ItemGroup>
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="powershell -ExecutionPolicy Bypass -NoProfile -File &quot;$(ProjectDir)Assets\Custom\Animations\lottieConverter.ps1&quot; -Directory &quot;$(ProjectDir)Assets\Custom\Animations&quot;" />
-  </Target>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <!-- Rename the generated .pri file to Resources.pri | This is a bug in the generations of unpackaged winui apps -->
-    <Exec Command="powershell -ExecutionPolicy Bypass -NoProfile -Command &quot;$src = '$(OutDir)$(AssemblyName).pri'; $dst = '$(OutDir)Resources.pri'; if (Test-Path $dst) { Remove-Item $dst -Force }; Rename-Item -Path $src -NewName 'Resources.pri';&quot;" />
-    <ItemGroup>
-      <!-- Keep only fr-FR, en-US, es-ES, it-IT, de-DE -->
-      <RemovingFiles Include="$(OutDir)*\*.mui" Exclude="&#xD;&#xA;            $(OutDir)fr-FR\*.mui;&#xD;&#xA;            $(OutDir)en-US\*.mui;&#xD;&#xA;            $(OutDir)es-ES\*.mui;&#xD;&#xA;            $(OutDir)it-IT\*.mui;&#xD;&#xA;            $(OutDir)de-DE\*.mui" />
-      <RemovingFolders Include="@(RemovingFiles-&gt;'%(RootDir)%(Directory)')" />
-    </ItemGroup>
-    <RemoveDir Directories="@(RemovingFolders)" />
+    <!-- Debug: keep original PRI and copy to avoid rebuild -->
+    <Exec Condition="'$(Configuration)' == 'Debug'" Command="powershell -ExecutionPolicy Bypass -NoProfile -Command &quot;Copy-Item '$(OutDir)$(AssemblyName).pri' '$(OutDir)Resources.pri' -Force&quot;" />
+    <!-- Release: rename PRI -->
+    <Exec Condition="'$(Configuration)' == 'Release'" Command="powershell -ExecutionPolicy Bypass -NoProfile -Command &quot;$src='$(OutDir)$(AssemblyName).pri'; $dst='$(OutDir)Resources.pri'; if (Test-Path $dst) { Remove-Item $dst -Force }; Rename-Item $src 'Resources.pri'&quot;" />
   </Target>
 </Project>

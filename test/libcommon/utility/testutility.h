@@ -40,6 +40,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testGenerateUuid);
         CPPUNIT_TEST(testLanguageCode);
         CPPUNIT_TEST(testIsSupportedLanguage);
+        CPPUNIT_TEST(testStrToLanguage);
         CPPUNIT_TEST(testLogIfFail);
         CPPUNIT_TEST(testRelativePath);
         CPPUNIT_TEST(testSplitSyncName);
@@ -89,6 +90,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testGenerateUuid();
         void testLanguageCode();
         void testIsSupportedLanguage();
+        void testStrToLanguage();
         void testLogIfFail();
         void testRelativePath();
         void testSplitSyncName();

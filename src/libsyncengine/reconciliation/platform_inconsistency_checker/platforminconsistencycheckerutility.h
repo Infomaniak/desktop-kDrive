@@ -38,9 +38,15 @@ class PlatformInconsistencyCheckerUtility {
 
         bool isNameTooLong(const SyncName &name) const;
         bool isPathTooLong(size_t pathSize);
-        bool nameHasForbiddenChars(const SyncName &name);
+        static ExitInfo checkIfNameHasForbiddenChars(const SyncName &name,
+                                                     [[maybe_unused]] std::shared_ptr<CacheDirectory> cacheDirectory,
+                                                     bool &hasForbiddenChars);
         static bool isNameOnlySpaces(const SyncName &name);
-        static bool nameEndWithForbiddenSpace(const SyncName &name);
+        static ExitInfo checkIfNameEndsWithForbiddenSpace([[maybe_unused]] const SyncName &name,
+                                                          [[maybe_unused]] std::shared_ptr<CacheDirectory> cacheDirectory,
+                                                          bool &endsWithForbiddenSpace);
+        static ExitInfo getForbiddenFilenameChars([[maybe_unused]] std::shared_ptr<CacheDirectory> cacheDirectory,
+                                                  std::vector<char> &forbiddenChars);
 
 #if defined(KD_WINDOWS)
         bool fixNameWithBackslash(const SyncName &name, SyncName &newName);

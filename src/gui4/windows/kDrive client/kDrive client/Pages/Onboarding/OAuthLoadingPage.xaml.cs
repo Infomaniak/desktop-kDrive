@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.OnBoarding;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
@@ -34,6 +35,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
     public sealed partial class OAuthLoadingPage : Page
     {
         private static readonly TimeSpan _oauthTimeOut = TimeSpan.FromMinutes(5);
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         private ViewModels.Onboarding? _onboardingViewModel;
 
@@ -157,6 +159,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     break;
 
                 case OAuth2State.Error:
+                    _analyticsService.TrackPageView(Analytics.Keys.Category.OnboardingConnectionFailedPage);
                     onBoardingWindow.SetLottiePosition(OnBoardingWindow.LottiePosition.Right);
                     TitleTextBlock.Text = Localizer.Instance.GetString("onboardingLoginErrorTitle");
                     SubtitleTextBlock.Text = Localizer.Instance.GetString("onboardingLoginErrorDescription");
@@ -169,6 +172,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 
         private async void RestartOAuthButton_Click(object sender, RoutedEventArgs e)
         {
+            _analyticsService.TrackClick(Analytics.Keys.Category.OnboardingConnectionFailedPage, Analytics.Keys.EventName.ReOpenLoginWeb);
             try
             {
                 // Cancel any ongoing authentication attempt

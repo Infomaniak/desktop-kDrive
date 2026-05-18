@@ -255,7 +255,7 @@ namespace Infomaniak.kDrive.Pages.Errors
                 typeof(CustomControls.Errors.Templates.SyncPal.SystemErrorUnableToStartVfs)
             ];
 
-            Type? errorType = ErrorFactory.GetBestControlType(error);
+            Type? errorType = ErrorFactory.GetErrorCardInfos(error)?.Type;
             if (errorType is null)
             {
                 return false;
@@ -272,7 +272,7 @@ namespace Infomaniak.kDrive.Pages.Errors
                 typeof(CustomControls.Errors.Templates.Node.QuotaExceededError)
             ];
 
-            Type? errorType = ErrorFactory.GetBestControlType(error);
+            Type? errorType = ErrorFactory.GetErrorCardInfos(error)?.Type;
             if (errorType is null)
             {
                 return false;

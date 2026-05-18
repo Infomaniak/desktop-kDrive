@@ -103,7 +103,8 @@
                                  MinWidth="0"
                                  Padding="0"
                                  IsChecked="True"
-                                 HorizontalAlignment="Stretch">
+                                 HorizontalAlignment="Stretch"
+                                 Checked="KeepMostRecentRadioButton_Checked">
 
                         <Grid Grid.Column="1"
                               Grid.Row="0"
@@ -150,7 +151,8 @@
                                  Loaded="RadioButton_Loaded"
                                  MinWidth="0"
                                  Padding="0"
-                                 HorizontalAlignment="Stretch">
+                                 HorizontalAlignment="Stretch"
+                                 Checked="KeepRemoteRadioButton_Checked">
                         <Grid Grid.Column="1"
                               Grid.Row="0"
                               HorizontalAlignment="Left"
@@ -185,7 +187,8 @@
                                  Loaded="RadioButton_Loaded"
                                  MinWidth="0"
                                  Padding="0"
-                                 HorizontalAlignment="Stretch">
+                                 HorizontalAlignment="Stretch"
+                                 Checked="KeepLocalRadioButton_Checked">
                         <Grid Grid.Column="1"
                               Grid.Row="0"
                               Padding="{StaticResource Infomaniak.Style.Thickness.Left.S}">

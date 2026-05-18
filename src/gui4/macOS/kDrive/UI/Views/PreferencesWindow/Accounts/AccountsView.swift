@@ -26,20 +26,24 @@ struct AccountsView: View {
 
     var body: some View {
         Form {
-            ForEach(viewModel.users) { user in
-                UserSection(
-                    user: user,
-                    synchronizedDrives: viewModel.synchronizedDrive[user.id, default: []],
-                    availableDrives: viewModel.availableDrive[user.id, default: []]
-                )
-            }
-
-            Section {
-                Button(KDriveLocalizable.buttonConnectAccount) {
-                    // TODO: Add new user
+            if viewModel.users.isEmpty {
+                AccountsPreferencesAddAccountView()
+            } else {
+                ForEach(viewModel.users) { user in
+                    UserSection(
+                        user: user,
+                        synchronizedDrives: viewModel.synchronizedDrive[user.id, default: []],
+                        availableDrives: viewModel.availableDrive[user.id, default: []]
+                    )
                 }
-                .buttonStyle(.bordered)
-                .frame(maxWidth: .infinity, alignment: .trailing)
+
+                Section {
+                    Button(KDriveLocalizable.buttonConnectAccount) {
+                        // TODO: Add new user
+                    }
+                    .buttonStyle(.bordered)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                }
             }
         }
         .groupedFormatStyle()

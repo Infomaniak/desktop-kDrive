@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,9 +30,11 @@ namespace Infomaniak.kDrive.Pages.Errors
 {
     public sealed partial class ConflictQuickResolvePage : Page
     {
+        private static readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel { get { return _viewModel; } }
         private ErrorPageVM? _errorPageVM;
+
         public ConflictQuickResolvePage()
         {
             Logger.Log(Logger.Level.Info, "Navigated to ConflictQuickResolvePage - Initializing components");
@@ -42,6 +45,7 @@ namespace Infomaniak.kDrive.Pages.Errors
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             _errorPageVM = new ErrorPageVM();
+            _analyticsService.TrackPageView(Analytics.Keys.Category.BatchConflictResolutionPage);
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
@@ -54,6 +58,7 @@ namespace Infomaniak.kDrive.Pages.Errors
         {
             Logger.Log(Logger.Level.Debug, "Navigating to ActivityPage");
             Frame.Navigate(typeof(ErrorPage));
+            _analyticsService.TrackClick(Analytics.Keys.Category.BatchConflictResolutionPage, Analytics.Keys.EventName.ErrorBreadcrumb);
         }
 
         private void OnSelectedSyncChanged(object sender, SelectedSyncChangedEventArgs e)
@@ -138,6 +143,7 @@ namespace Infomaniak.kDrive.Pages.Errors
             }
             else
             {
+                _analyticsService.TrackClick(Analytics.Keys.Category.BatchConflictResolutionPage, Analytics.Keys.EventName.Apply);
                 Frame.Navigate(typeof(ActivityPage));
             }
             ApplyButton.IsEnabled = true;
@@ -146,7 +152,29 @@ namespace Infomaniak.kDrive.Pages.Errors
 
         private void ManageIndividuallyButton_Click(object sender, RoutedEventArgs e)
         {
+            _analyticsService.TrackClick(Analytics.Keys.Category.BatchConflictResolutionPage, Analytics.Keys.EventName.OpenIndividualResolution);
             Frame.Navigate(typeof(ResolveManyConflictPage));
+        }
+
+        private void KeepMostRecentRadioButton_Checked(object sender, RoutedEventArgs e)
+        {
+            if (!IsLoaded)
+                return;
+            _analyticsService.TrackClick(Analytics.Keys.Category.BatchConflictResolutionPage, Analytics.Keys.EventName.KeepMostRecent);
+        }
+
+        private void KeepRemoteRadioButton_Checked(object sender, RoutedEventArgs e)
+        {
+            if (!IsLoaded)
+                return;
+            _analyticsService.TrackClick(Analytics.Keys.Category.BatchConflictResolutionPage, Analytics.Keys.EventName.KeepRemote);
+        }
+
+        private void KeepLocalRadioButton_Checked(object sender, RoutedEventArgs e)
+        {
+            if (!IsLoaded)
+                return;
+            _analyticsService.TrackClick(Analytics.Keys.Category.BatchConflictResolutionPage, Analytics.Keys.EventName.KeepLocal);
         }
     }
 }

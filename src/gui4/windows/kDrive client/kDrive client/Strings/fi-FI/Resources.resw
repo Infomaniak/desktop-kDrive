@@ -1,0 +1,1715 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<root> 
+  <!--
+  Loco xml export: ResX - .NET resources
+  Project: kDrive Desktop
+  Locale: fi, Finnish
+  Tagged: windows
+  Exported by: Herve Eruam
+  Exported at: Mon, 11 May 2026 09:31:50 +0200 
+  --> 
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <metadata name="locoLocaleCode">
+    <value>fi</value>
+  </metadata>
+  <metadata name="locoLocaleName" xml:space="preserve">
+    <value>Finnish</value>
+  </metadata> 
+  <data name="aboutAppVersionCopyright" xml:space="preserve"> 
+    <value>Versio %@.%@
+© 2019-%@ Infomaniak Network SA -</value> 
+  </data> 
+  <data name="aboutKDrive" xml:space="preserve"> 
+    <value>Tietoja kDrivesta</value> 
+  </data> 
+  <data name="aboutKDriveDescription" xml:space="preserve"> 
+    <value>kDrive on kehitetty ja isännöity yksinomaan Sveitsissä. Se varmistaa tietojesi täydellisen suojan ilman myyntiä tai vakoilua, ISO-sertifioiduissa datakeskuksissa, salauksella ja varmuuskopioinnilla useille tallennusvälineille.</value> 
+  </data> 
+  <data name="activitiesTitleIdle" xml:space="preserve"> 
+    <value>Synkronointi valmis</value> 
+  </data> 
+  <data name="activitiesTitleInProgress" xml:space="preserve"> 
+    <value>Synkronointi käynnissä</value> 
+  </data> 
+  <data name="activitiesTitleNoActivity" xml:space="preserve"> 
+    <value>Ei viimeaikaista toimintaa</value> 
+  </data> 
+  <data name="activitiesTitleOffline" xml:space="preserve"> 
+    <value>Olet offline-tilassa</value> 
+  </data> 
+  <data name="activitiesTitlePause" xml:space="preserve"> 
+    <value>Synkronointi keskeytetty</value> 
+  </data> 
+  <data name="activitiesTypeAllActivities" xml:space="preserve"> 
+    <value>Kaikki toiminnot</value> 
+  </data> 
+  <data name="activitiesTypeMyActivity" xml:space="preserve"> 
+    <value>Vain oma toimintani</value> 
+  </data> 
+  <data name="addAdvancedSyncDialogTitle" xml:space="preserve"> 
+    <value>Synkronoi kansio kDriven kanssa</value> 
+  </data> 
+  <data name="addAdvancedSyncLocalFolderDescription" xml:space="preserve"> 
+    <value>Valitse tietokoneeltasi kDriveen synkronoitava kansio:</value> 
+  </data> 
+  <data name="addAdvancedSyncLocalFolderTitle" xml:space="preserve"> 
+    <value>Synkronoitu kansio</value> 
+  </data> 
+  <data name="addAdvancedSyncRemoteFolderDescription" xml:space="preserve"> 
+    <value>Muokkaa tietokoneen kansion sijaintia kDrivessa:</value> 
+  </data> 
+  <data name="addAdvancedSyncRemoteFolderPageTitle" xml:space="preserve"> 
+    <value>Valitse kansion sijainti kDrivessa</value> 
+  </data> 
+  <data name="addAdvancedSyncRemoteFolderTitle" xml:space="preserve"> 
+    <value>kDrive-sijainti</value> 
+  </data> 
+  <data name="advancedSyncDescription" xml:space="preserve"> 
+    <value>Valitse tietokoneeltasi kDriven kanssa synkronoitava kansio.
+Voit käyttää kehittyneitä synkronointejasi kotisivun asemavalikosta.</value> 
+  </data> 
+  <data name="advancedSyncSubtitle" xml:space="preserve"> 
+    <value>Synkronoi kansio kDriven kanssa</value> 
+  </data> 
+  <data name="advancedSyncTitle" xml:space="preserve"> 
+    <value>Kehittynyt synkronointi</value> 
+  </data> 
+  <data name="appUpToDate" xml:space="preserve"> 
+    <value>Sovellus on ajan tasalla</value> 
+  </data> 
+  <data name="applyingChange" xml:space="preserve"> 
+    <value>Muutosta sovelletaan…</value> 
+  </data> 
+  <data name="autoCleanupLogsDescription" xml:space="preserve"> 
+    <value>Poistaa yli 7 päivää vanhat lokit levytilan säästämiseksi.</value> 
+  </data> 
+  <data name="autoCleanupLogsSetting" xml:space="preserve"> 
+    <value>Automaattinen siivous</value> 
+  </data> 
+  <data name="automaticUpdatesSetting" xml:space="preserve"> 
+    <value>Automaattiset päivitykset</value> 
+  </data> 
+  <data name="availableOffline" xml:space="preserve"> 
+    <value>Saatavilla offline-tilassa</value> 
+  </data> 
+  <data name="availableOfflineDescription" xml:space="preserve"> 
+    <value>Tiedostosi kopioidaan tietokoneellesi.
+Voit avata ne milloin tahansa, jopa ilman internet-yhteyttä.</value> 
+  </data> 
+  <data name="backErrorDriveAsleepDescription" xml:space="preserve"> 
+    <value>Voit herättää sen verkkokäyttöliittymästä.</value> 
+  </data> 
+  <data name="betaProgramDescription" xml:space="preserve"> 
+    <value>Saa varhainen pääsy uusiin sovellusversioihin ennen niiden julkaisua suurelle yleisölle ja osallistu sovelluksen kehittämiseen jakamalla parannusideoitasi kanssamme.</value> 
+  </data> 
+  <data name="betaProgramTitle" xml:space="preserve"> 
+    <value>Liity beta-ohjelmaan</value> 
+  </data> 
+  <data name="browserSignInInstruction" xml:space="preserve"> 
+    <value>Selaimesi pitäisi avautua automaattisesti kirjautumisen viimeistelemiseksi. Kun olet kirjautunut sisään, sinut palautetaan automaattisesti kDriveen.</value> 
+    <comment>Instruction shown during sign-in when waiting for browser-based authentication to complete.</comment> 
+  </data> 
+  <data name="buttonActivateOfflineSync" xml:space="preserve"> 
+    <value>Ota offline-synkronointi käyttöön</value> 
+  </data> 
+  <data name="buttonAddAdvancedSync" xml:space="preserve"> 
+    <value>Synkronoi kansio</value> 
+  </data> 
+  <data name="buttonAddFileExclusionRule" xml:space="preserve"> 
+    <value>Lisää sääntö</value> 
+  </data> 
+  <data name="buttonAddStorage" xml:space="preserve"> 
+    <value>Lisää tallennustilaa</value> 
+  </data> 
+  <data name="buttonAdvancedParameters" xml:space="preserve"> 
+    <value>Lisäasetukset</value> 
+  </data> 
+  <data name="buttonApplyToXFiles" xml:space="preserve"> 
+    <value>Käytä %@ tiedostoon</value> 
+  </data> 
+  <data name="buttonAskForAccess" xml:space="preserve"> 
+    <value>Pyydä käyttöoikeutta</value> 
+  </data> 
+  <data name="buttonCancel" xml:space="preserve"> 
+    <value>Peruuta</value> 
+  </data> 
+  <data name="buttonChangeFolder" xml:space="preserve"> 
+    <value>Vaihda kansio</value> 
+  </data> 
+  <data name="buttonChangeToOffline" xml:space="preserve"> 
+    <value>Tallenna offline-tilaan</value> 
+  </data> 
+  <data name="buttonChangeToOnline" xml:space="preserve"> 
+    <value>Tallenna verkossa</value> 
+  </data> 
+  <data name="buttonChangeUser" xml:space="preserve"> 
+    <value>Vaihda käyttäjä</value> 
+  </data> 
+  <data name="buttonClose" xml:space="preserve"> 
+    <value>Sulje</value> 
+  </data> 
+  <data name="buttonCloseKDrive" xml:space="preserve"> 
+    <value>Sulje kDrive</value> 
+    <comment>Button to quit the kDrive application entirely.</comment> 
+  </data> 
+  <data name="buttonConfigure" xml:space="preserve"> 
+    <value>Määritä</value> 
+  </data> 
+  <data name="buttonConfirm" xml:space="preserve"> 
+    <value>Vahvista</value> 
+  </data> 
+  <data name="buttonConnect" xml:space="preserve"> 
+    <value>Kirjaudu sisään</value> 
+  </data> 
+  <data name="buttonConnectAccount" xml:space="preserve"> 
+    <value>Yhdistä tili</value> 
+  </data> 
+  <data name="buttonCopyShareLink" xml:space="preserve"> 
+    <value>Kopioi jakolinkki</value> 
+  </data> 
+  <data name="buttonCreateAccount" xml:space="preserve"> 
+    <value>Luo tili</value> 
+  </data> 
+  <data name="buttonCreateNewSync" xml:space="preserve"> 
+    <value>Luo uusi synkronointi</value> 
+  </data> 
+  <data name="buttonCustomLocation" xml:space="preserve"> 
+    <value>Mukautettu sijainti</value> 
+  </data> 
+  <data name="buttonDisconnectAccount" xml:space="preserve"> 
+    <value>Katkaise yhteys tähän tiliin</value> 
+  </data> 
+  <data name="buttonDownloadInProgress" xml:space="preserve"> 
+    <value>Ladataan…</value> 
+  </data> 
+  <data name="buttonDownloadManually" xml:space="preserve"> 
+    <value>Lataa manuaalisesti</value> 
+  </data> 
+  <data name="buttonEnable" xml:space="preserve"> 
+    <value>Ota käyttöön</value> 
+  </data> 
+  <data name="buttonEnableInSettings" xml:space="preserve"> 
+    <value>Ota käyttöön Windows-asetuksissa</value> 
+  </data> 
+  <data name="buttonErrorResolutionTip" xml:space="preserve"> 
+    <value>Ymmärrä ongelma</value> 
+  </data> 
+  <data name="buttonFeedback" xml:space="preserve"> 
+    <value>Jaa idea</value> 
+  </data> 
+  <data name="buttonFixErrors" xml:space="preserve"> 
+    <value>Korjaa virheet</value> 
+  </data> 
+  <data name="buttonHelpdesk" xml:space="preserve"> 
+    <value>Tuki</value> 
+  </data> 
+  <data name="buttonKDriveOnline" xml:space="preserve"> 
+    <value>kDrive verkossa</value> 
+  </data> 
+  <data name="buttonKeepAccount" xml:space="preserve"> 
+    <value>Säilytä tili</value> 
+  </data> 
+  <data name="buttonLogOut" xml:space="preserve"> 
+    <value>Kirjaudu ulos</value> 
+  </data> 
+  <data name="buttonLogin" xml:space="preserve"> 
+    <value>Kirjaudu sisään</value> 
+  </data> 
+  <data name="buttonManage" xml:space="preserve"> 
+    <value>Hallitse</value> 
+  </data> 
+  <data name="buttonManageDiskSpace" xml:space="preserve"> 
+    <value>Hallitse levytilaa</value> 
+  </data> 
+  <data name="buttonManageIndividually" xml:space="preserve"> 
+    <value>Käsittele tiedostot yksitellen</value> 
+  </data> 
+  <data name="buttonManageStorage" xml:space="preserve"> 
+    <value>Hallitse tallennustilaa</value> 
+  </data> 
+  <data name="buttonOpenDebugFolder" xml:space="preserve"> 
+    <value>Avaa virheenkorjauskansio</value> 
+  </data> 
+  <data name="buttonOpenExplorer" xml:space="preserve"> 
+    <value>Avaa Resurssienhallinta</value> 
+  </data> 
+  <data name="buttonOpenFolder" xml:space="preserve"> 
+    <value>Avaa kansio</value> 
+  </data> 
+  <data name="buttonOpenInBrowser" xml:space="preserve"> 
+    <value>Avaa selaimessa</value> 
+  </data> 
+  <data name="buttonOpenInExplorer" xml:space="preserve"> 
+    <value>Avaa Resurssienhallinnassa</value> 
+    <comment>Button to reveal the selected item in Windows Explorer.</comment> 
+  </data> 
+  <data name="buttonOpenInKDrive" xml:space="preserve"> 
+    <value>Avaa kDrive Web:ssä</value> 
+  </data> 
+  <data name="buttonOpenKDrive" xml:space="preserve"> 
+    <value>Avaa kDrive</value> 
+  </data> 
+  <data name="buttonOpenParentFolder" xml:space="preserve"> 
+    <value>Avaa yläkansio</value> 
+  </data> 
+  <data name="buttonOpenSyncExclusionRules" xml:space="preserve"> 
+    <value>Hallitse poissulkemisia</value> 
+  </data> 
+  <data name="buttonOpenSyncSettings" xml:space="preserve"> 
+    <value>Avaa synkronointiasetukset</value> 
+  </data> 
+  <data name="buttonPause" xml:space="preserve"> 
+    <value>Keskeytä</value> 
+  </data> 
+  <data name="buttonRefresh" xml:space="preserve"> 
+    <value>Päivitä</value> 
+  </data> 
+  <data name="buttonReleaseNotes" xml:space="preserve"> 
+    <value>Julkaisutiedot</value> 
+  </data> 
+  <data name="buttonRemove" xml:space="preserve"> 
+    <value>Poista</value> 
+  </data> 
+  <data name="buttonRemoveSync" xml:space="preserve"> 
+    <value>Poista synkronointi</value> 
+  </data> 
+  <data name="buttonRenameItem" xml:space="preserve"> 
+    <value>Nimeä %@ uudelleen</value> 
+  </data> 
+  <data name="buttonRestartSignIn" xml:space="preserve"> 
+    <value>Käynnistä kirjautuminen uudelleen</value> 
+  </data> 
+  <data name="buttonRestartSync" xml:space="preserve"> 
+    <value>Jatka synkronointia</value> 
+  </data> 
+  <data name="buttonRestartSynchro" xml:space="preserve"> 
+    <value>Käynnistä synkronointi uudelleen</value> 
+  </data> 
+  <data name="buttonRetry" xml:space="preserve"> 
+    <value>Yritä uudelleen</value> 
+  </data> 
+  <data name="buttonReturnToDefaultFolder" xml:space="preserve"> 
+    <value>Palaa oletuskansioon</value> 
+  </data> 
+  <data name="buttonSave" xml:space="preserve"> 
+    <value>Tallenna</value> 
+  </data> 
+  <data name="buttonSaveMyChoices" xml:space="preserve"> 
+    <value>Tallenna valinnat</value> 
+  </data> 
+  <data name="buttonSearch" xml:space="preserve"> 
+    <value>Hae</value> 
+  </data> 
+  <data name="buttonSeeActivities" xml:space="preserve"> 
+    <value>Näytä toiminnot</value> 
+  </data> 
+  <data name="buttonSelect" xml:space="preserve"> 
+    <value>Valitse</value> 
+  </data> 
+  <data name="buttonSelectFolder" xml:space="preserve"> 
+    <value>Valitse kansio</value> 
+  </data> 
+  <data name="buttonSelectFolders" xml:space="preserve"> 
+    <value>Valitse kansiot</value> 
+  </data> 
+  <data name="buttonSelectLocation" xml:space="preserve"> 
+    <value>Valitse sijainti</value> 
+  </data> 
+  <data name="buttonSelected" xml:space="preserve"> 
+    <value>Valittu</value> 
+  </data> 
+  <data name="buttonSend" xml:space="preserve"> 
+    <value>Lähetä</value> 
+  </data> 
+  <data name="buttonSendLog" xml:space="preserve"> 
+    <value>Lähetä virheenkorjauskansio</value> 
+  </data> 
+  <data name="buttonSettings" xml:space="preserve"> 
+    <value>Avaa asetukset</value> 
+  </data> 
+  <data name="buttonShowOffers" xml:space="preserve"> 
+    <value>Näytä tarjoukset</value> 
+  </data> 
+  <data name="buttonSignOut" xml:space="preserve"> 
+    <value>Kirjaudu ulos</value> 
+  </data> 
+  <data name="buttonStart" xml:space="preserve"> 
+    <value>Käynnistä</value> 
+  </data> 
+  <data name="buttonStartConflictsResolution" xml:space="preserve"> 
+    <value>Aloita versioiden valinta</value> 
+  </data> 
+  <data name="buttonStartForFree" xml:space="preserve"> 
+    <value>Aloita ilmaiseksi</value> 
+  </data> 
+  <data name="buttonSynchronizeOffline" xml:space="preserve"> 
+    <value>Synkronoi offline-tilassa</value> 
+  </data> 
+  <data name="buttonUpdate" xml:space="preserve"> 
+    <value>Päivitä</value> 
+  </data> 
+  <data name="buttonUpdateNow" xml:space="preserve"> 
+    <value>Päivitä nyt</value> 
+  </data> 
+  <data name="buttonUpdateSubscription" xml:space="preserve"> 
+    <value>Päivitä tilaus</value> 
+  </data> 
+  <data name="buttonUpgradeOffer" xml:space="preserve"> 
+    <value>Päivitä</value> 
+  </data> 
+  <data name="buttonValidate" xml:space="preserve"> 
+    <value>Vahvista</value> 
+  </data> 
+  <data name="buttonValidateAndGoNext" xml:space="preserve"> 
+    <value>Vahvista ja siirry seuraavaan</value> 
+  </data> 
+  <data name="buttonWakeUp" xml:space="preserve"> 
+    <value>Herätä</value> 
+  </data> 
+  <data name="conflictErrorAction" xml:space="preserve"> 
+    <value>Valitse versio</value> 
+  </data> 
+  <data name="conflictErrorDescription" xml:space="preserve"> 
+    <value>Näistä tiedostoista havaittiin kaksi eri versiota.</value> 
+  </data> 
+  <data name="conflictErrorTitle" xml:space="preserve"> 
+    <value>Versioristiriidat</value> 
+  </data> 
+  <data name="conflictsSearchBoxPlaceholder" xml:space="preserve"> 
+    <value>Hae tiedostoa</value> 
+  </data> 
+  <data name="creatingShareLink" xml:space="preserve"> 
+    <value>Luodaan jakolinkkiä…</value> 
+  </data> 
+  <data name="dataManagementDescription" xml:space="preserve"> 
+    <value>Voit muokata Infomaniakille sovellusten virheiden korjaamiseksi ja kehittämiseksi lähetettäviä käyttö- ja toimintatietoja. Molemmat käytetyt työkalut ovat Infomaniakilla isännöityjä ja hallittuja.
+
+Tämän sovelluksen lähdekoodi on tarkistettavissa, kerätyt tiedot ovat anonyymejä ja henkilötietosi pysyvät tiukasti luottamuksellisina eikä niitä koskaan jaeta kolmansille osapuolille.</value> 
+  </data> 
+  <data name="dataManagementSettings" xml:space="preserve"> 
+    <value>Tietojen hallinta</value> 
+  </data> 
+  <data name="dataManagementSubtitle" xml:space="preserve"> 
+    <value>Infomaniak kunnioittaa yksityisyyttäsi</value> 
+  </data> 
+  <data name="debugLevelDescription" xml:space="preserve"> 
+    <value>Valitse kirjattavien tietojen määrä.</value> 
+  </data> 
+  <data name="debugLevelSetting" xml:space="preserve"> 
+    <value>Virheenkorjaustaso</value> 
+  </data> 
+  <data name="debugLogsDescription" xml:space="preserve"> 
+    <value>Antaa Infomaniakin tuelle mahdollisuuden tunnistaa vian syy.</value> 
+  </data> 
+  <data name="debugLogsSettings" xml:space="preserve"> 
+    <value>Virheenkorjauslokit</value> 
+  </data> 
+  <data name="defaultErrorDescription" xml:space="preserve"> 
+    <value>Synkronointi käynnistyy automaattisesti uudelleen.
+Jos ongelma jatkuu, ota yhteyttä tukeen ja liitä alla olevat tekniset tiedot.</value> 
+  </data> 
+  <data name="defaultErrorDetailsLabel" xml:space="preserve"> 
+    <value>Tekniset tiedot</value> 
+  </data> 
+  <data name="defaultErrorTitle" xml:space="preserve"> 
+    <value>Odottamaton virhe tapahtui</value> 
+  </data> 
+  <data name="defaultExclusionFileListDescription" xml:space="preserve"> 
+    <value>Nämä tiedostot on oletuksena poissuljettu, eikä niitä voi muokata.</value> 
+  </data> 
+  <data name="defaultExclusionFileListHeader" xml:space="preserve"> 
+    <value>Automaattinen poissulkeminen</value> 
+  </data> 
+  <data name="deleteCancelErrorTitle" xml:space="preserve"> 
+    <value>Poisto peruutettu</value> 
+  </data> 
+  <data name="dialogDataErrorSyncDirChangeDescription" xml:space="preserve"> 
+    <value>Näissä tilanteissa tarvitaan uusi synkronointi kDriven oikean käytön jatkamiseksi.</value> 
+  </data> 
+  <data name="dialogDriveSetupInvalidFolderDescription" xml:space="preserve"> 
+    <value>Valitse tyhjä kansio, joka ei sijaitse aseman juuressa.
+
+Tämä kansio ei saa sisältyä toiseen synkronointikansioon eikä sisältää synkronoinnin alikansioita.</value> 
+  </data> 
+  <data name="dialogDriveSetupInvalidFolderTitle" xml:space="preserve"> 
+    <value>Tätä kansiota ei voi valita</value> 
+  </data> 
+  <data name="dialogNewExclusionRulePrimaryButton" xml:space="preserve"> 
+    <value>Lisää sääntö</value> 
+  </data> 
+  <data name="dialogNewExclusionRuleTitle" xml:space="preserve"> 
+    <value>Lisää poissulkemissääntö</value> 
+  </data> 
+  <data name="dialogRemoveAccountContent" xml:space="preserve"> 
+    <value>Olet katkaisemassa yhteyden tiliin %@ sovelluksesta.
+Synkronointikansio pysyy tietokoneellasi, mutta sitä ei enää synkronoida kDriven kanssa.
+
+Kaikki tietosi pysyvät saatavilla verkossa kDrivessa.</value> 
+  </data> 
+  <data name="dialogRemoveAccountTitle" xml:space="preserve"> 
+    <value>Kirjaudutaanko ulos tältä tililtä?</value> 
+  </data> 
+  <data name="dialogSyncDeletionWarningContent" xml:space="preserve"> 
+    <value>Paikallinen kansio pysyy tietokoneellasi, mutta sitä ei enää synkronoida kDriven kanssa.
+Tämä toiminto on pysyvä.
+Aseman uudelleen synkronointia varten se on yhdistettävä myöhemmin uudelleen.
+
+Varmista ennen jatkamista, että kaikki tiedostosi ovat ajan tasalla ja täysin synkronoituina.</value> 
+  </data> 
+  <data name="dialogSyncDeletionWarningTitle" xml:space="preserve"> 
+    <value>Poistetaanko synkronointi?</value> 
+  </data> 
+  <data name="dialogSyncModeChangeErrorContent" xml:space="preserve"> 
+    <value>Synkronointitilan muutos peruutettiin.
+
+Nykyinen synkronointi pysyy muuttumattomana. Jos kuitenkin ilmenee poikkeavaa toimintaa, synkronointi on ehkä poistettava ja luotava uudelleen oikean toiminnan palauttamiseksi.</value> 
+  </data> 
+  <data name="dialogSyncModeChangeErrorTitle" xml:space="preserve"> 
+    <value>Virhe tapahtui</value> 
+  </data> 
+  <data name="dialogSyncModeChangeWarningContent" xml:space="preserve"> 
+    <value>Tämä toiminto voi kestää jonkin aikaa tietojesi koon mukaan. Jos se epäonnistuu, aseman täydellinen uudelleensynkronointi saattaa olla tarpeen.
+
+Varmista ennen jatkamista, että kaikki tiedostosi ovat ajan tasalla ja synkronoituina.
+
+Älä sulje sovellusta prosessin aikana.</value> 
+  </data> 
+  <data name="dialogSyncModeChangeWarningTitle" xml:space="preserve"> 
+    <value>Vaihdetaanko synkronointitila?</value> 
+  </data> 
+  <data name="dialogSystemErrorSyncDirAccessErrorDescription" xml:space="preserve"> 
+    <value>Näin synkronointi palautetaan:</value> 
+  </data> 
+  <data name="dialogSystemErrorSyncDirDiskMissingErrorDescription" xml:space="preserve"> 
+    <value>Synkronointikansion sisältävä levy ei ole enää yhdistettynä</value> 
+  </data> 
+  <data name="dialogSystemErrorSyncDirDiskMissingErrorTip" xml:space="preserve"> 
+    <value>Yhdistä se uudelleen synkronoinnin jatkamiseksi.</value> 
+  </data> 
+  <data name="disableNotificationsSetting" xml:space="preserve"> 
+    <value>Poista ilmoitukset käytöstä</value> 
+  </data> 
+  <data name="doNotJoin" xml:space="preserve"> 
+    <value>Älä liity</value> 
+  </data> 
+  <data name="downloadAppUrl" xml:space="preserve"> 
+    <value>https://www.infomaniak.com/en/apps/download-kdrive</value> 
+  </data> 
+  <data name="driveAccessDeniedErrorDescription" xml:space="preserve"> 
+    <value>Sinulla ei ole lupaa käyttää tätä kDrivea.
+Tarkista käyttöoikeutesi tai ota yhteyttä järjestelmänvalvojaasi.</value> 
+  </data> 
+  <data name="driveAccessDeniedErrorTitle" xml:space="preserve"> 
+    <value>Pääsy kDriveen estetty</value> 
+  </data> 
+  <data name="driveAsleepErrorTitle" xml:space="preserve"> 
+    <value>kDrivesi on lepotilassa</value> 
+  </data> 
+  <data name="driveLockedAdminErrorDescription" xml:space="preserve"> 
+    <value>Tätä kDrivea ei ole uusittu. Et enää pääse siihen.
+Uusi tilauksesi aktivoidaksesi palvelun uudelleen.</value> 
+  </data> 
+  <data name="driveLockedErrorDescription" xml:space="preserve"> 
+    <value>Tätä kDrivea ei ole uusittu. Et enää pääse siihen.
+Ota yhteyttä järjestelmänvalvojaasi aktivoidaksesi palvelun uudelleen.</value> 
+  </data> 
+  <data name="driveLockedErrorTitle" xml:space="preserve"> 
+    <value>kDrivesi on vanhentunut</value> 
+  </data> 
+  <data name="driveLoggingErrorDescription" xml:space="preserve"> 
+    <value>Kirjaudu sisään uudelleen jatkaaksesi kDriven käyttöä.</value> 
+  </data> 
+  <data name="driveLoggingErrorTitle" xml:space="preserve"> 
+    <value>Sinut on kirjattu ulos</value> 
+  </data> 
+  <data name="driveLoggingErrorUserMismatchDescription" xml:space="preserve"> 
+    <value>Tähän yhteyteen käytetty tili ei vastaa tämän kDriven tiliä.
+Kirjaudu uudelleen sisään oikealla sähköpostiosoitteella %@</value> 
+  </data> 
+  <data name="driveLoggingErrorUserMismatchTitle" xml:space="preserve"> 
+    <value>Tämä tili ei vastaa</value> 
+  </data> 
+  <data name="driveWakingUpErrorDescription" xml:space="preserve"> 
+    <value>kDrive herää… tämä voi kestää hetken.</value> 
+  </data> 
+  <data name="driveWakingUpErrorTitle" xml:space="preserve"> 
+    <value>kDrive herää</value> 
+  </data> 
+  <data name="duplicateNamesErrorTitle" xml:space="preserve"> 
+    <value>Nimien kaksoiskappale</value> 
+  </data> 
+  <data name="enableDebugLogDescription" xml:space="preserve"> 
+    <value>Tallenna diagnostiikkatiedot tietokoneelleni.</value> 
+  </data> 
+  <data name="enableDebugLogsSetting" xml:space="preserve"> 
+    <value>Ota virheenkorjauksen kirjaus käyttöön</value> 
+  </data> 
+  <data name="enterPasswordPlaceholder" xml:space="preserve"> 
+    <value>Syötä salasanasi</value> 
+  </data> 
+  <data name="errCreateCancelDescription" xml:space="preserve"> 
+    <value>Sinulla ei ole tarvittavia käyttöoikeuksia lisätäksesi %@ tähän sijaintiin.
+Pyydä käyttöoikeutta omistajalta tai järjestelmänvalvojalta.</value> 
+  </data> 
+  <data name="errDeleteCancelDescription" xml:space="preserve"> 
+    <value>Sinulla ei ole lupaa poistaa tätä %@. Se on palautettu alkuperäiseen sijaintiinsa. Pyydä käyttöoikeutta omistajalta tai järjestelmänvalvojalta.</value> 
+  </data> 
+  <data name="errDialogConfigChangedTitle" xml:space="preserve"> 
+    <value>Konfiguraatiossasi havaittiin muutos</value> 
+  </data> 
+  <data name="errDialogInvalidSyncSyncDirAccessDescription" xml:space="preserve"> 
+    <value>Näissä tilanteissa uusi synkronointi saattaa olla tarpeen kDriven oikean toiminnan jatkamiseksi.</value> 
+  </data> 
+  <data name="errDialogLocalFileAccessDescription" xml:space="preserve"> 
+    <value>Kohteen %@ käyttöoikeuksia muutettiin, mikä estää sen synkronoinnin.</value> 
+  </data> 
+  <data name="errDialogLocalFileAccessFaqLink" xml:space="preserve"> 
+    <value>Katso %@ palauttaaksesi käyttöoikeuden</value> 
+  </data> 
+  <data name="errDialogLocalFileAccessLocationLabel" xml:space="preserve"> 
+    <value>Kohteen %@ viimeinen sijainti:</value> 
+  </data> 
+  <data name="errDialogSystemSyncDirDiskMissingTitle" xml:space="preserve"> 
+    <value>Ulkoinen levy irrotettu</value> 
+  </data> 
+  <data name="errDialogSystemUnableToStartVfsDescription" xml:space="preserve"> 
+    <value>Tämä toiminto voi kestää jonkin aikaa käsiteltävän tietomäärän mukaan.
+
+Älä sulje sovellusta prosessin aikana.
+
+Jos se epäonnistuu, voit helposti käynnistää aseman täydellisen uudelleensynkronoinnin tai ottaa yhteyttä tukeemme.</value> 
+  </data> 
+  <data name="errDialogSystemUnableToStartVfsTitle" xml:space="preserve"> 
+    <value>Ota offline-synkronointi käyttöön</value> 
+  </data> 
+  <data name="errDriveMaintenanceDescription" xml:space="preserve"> 
+    <value>Tämä kDrive on tilapäisesti poissa käytöstä huollon vuoksi.
+Yritä uudelleen muutaman minuutin kuluttua.</value> 
+  </data> 
+  <data name="errDriveMaintenanceTitle" xml:space="preserve"> 
+    <value>Huolto käynnissä</value> 
+  </data> 
+  <data name="errDuplicateNamesDescription" xml:space="preserve"> 
+    <value>Tällä nimellä on jo olemassa tiedosto tai kansio.</value> 
+  </data> 
+  <data name="errEditCancelDescription" xml:space="preserve"> 
+    <value>Sinulla ei ole oikeuksia muokata tätä tiedostoa.
+Alkuperäinen versio on säilytetty ja muokkauksesi on tallennettu erilliseen tiedostoon, jonka nimessä on "konflikti". Pyydä käyttöoikeutta omistajalta tai järjestelmänvalvojalta.</value> 
+  </data> 
+  <data name="errEndWithSpaceDescription" xml:space="preserve"> 
+    <value>Tämän %@ nimi päättyy välilyöntiin, mikä estää sen synkronoinnin. Nimeä %@ uudelleen kDrive-verkkopalvelusta.</value> 
+  </data> 
+  <data name="errEndWithSpaceTitle" xml:space="preserve"> 
+    <value>Välilyönti %@ nimen lopussa</value> 
+  </data> 
+  <data name="errExcludedByTemplateDescription" xml:space="preserve"> 
+    <value>Poissulkemissääntö estää tämän %@ synkronoinnin.</value> 
+  </data> 
+  <data name="errExcludedByTemplateTitle" xml:space="preserve"> 
+    <value>Poissuljettu synkronoinnista</value> 
+  </data> 
+  <data name="errFileExistsDescription" xml:space="preserve"> 
+    <value>Tällä nimellä on jo olemassa tiedosto.</value> 
+  </data> 
+  <data name="errFileLockedDescription" xml:space="preserve"> 
+    <value>Toinen käyttäjä käyttää tätä tiedostoa parhaillaan.
+Muutoksesi synkronoidaan myöhemmin.</value> 
+  </data> 
+  <data name="errFileLockedTitle" xml:space="preserve"> 
+    <value>Tiedosto lukittu</value> 
+  </data> 
+  <data name="errFileRescuedDescription" xml:space="preserve"> 
+    <value>Tämä tiedosto poistettiin kDrive-verkkopalvelusta muokkauksen aikana. Kopio on säilytetty tietokoneellasi palautuskansiossa.</value> 
+  </data> 
+  <data name="errFileRescuedTitle" xml:space="preserve"> 
+    <value>Tiedosto pelastettu</value> 
+  </data> 
+  <data name="errFileTooBigAdminDescription" xml:space="preserve"> 
+    <value>Tämä tiedosto ylittää sallitun enimmäiskoon (50 Gt).
+Ota yhteyttä tukeen rajan poistamiseksi.</value> 
+  </data> 
+  <data name="errFileTooBigDescription" xml:space="preserve"> 
+    <value>Tämä tiedosto ylittää sallitun enimmäiskoon (50 Gt).
+Ota yhteyttä järjestelmänvalvojaasi tiedostokokorajan kasvattamiseksi.</value> 
+  </data> 
+  <data name="errFileTooBigTitle" xml:space="preserve"> 
+    <value>Tiedosto liian suuri</value> 
+  </data> 
+  <data name="errForbiddenActionTitle" xml:space="preserve"> 
+    <value>Pääsy kielletty</value> 
+    <comment>Title shown when a forbidden or unauthorized action is attempted.</comment> 
+  </data> 
+  <data name="errForbiddenCharDescription_win" xml:space="preserve"> 
+    <value>Tämän %@ nimi sisältää yhden tai useamman merkin, joita kDriven Windows-sovellus ei tue. Nimeä %@ uudelleen kDrive-verkkopalvelusta.</value> 
+  </data> 
+  <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
+    <value>Tämä nimi sisältää vain välilyöntejä eikä sitä voi käyttää. Nimeä %@ uudelleen kDrive-verkkopalvelusta.</value> 
+  </data> 
+  <data name="errForbiddenCharOnlySpacesTitle" xml:space="preserve"> 
+    <value>Virheellinen nimi</value> 
+  </data> 
+  <data name="errForbiddenCharTitle" xml:space="preserve"> 
+    <value>Ei-tuettu merkki</value> 
+  </data> 
+  <data name="errGenericForbiddenDescription" xml:space="preserve"> 
+    <value>Sinulla ei ole tarvittavia käyttöoikeuksia tämän toiminnon suorittamiseen.
+Pyydä käyttöoikeutta omistajalta tai järjestelmänvalvojalta.</value> 
+  </data> 
+  <data name="errGenericForbiddenTitle" xml:space="preserve"> 
+    <value>Pääsy kielletty</value> 
+  </data> 
+  <data name="errHardlinkDescription" xml:space="preserve"> 
+    <value>Tämä tiedosto on kiintolinkkitiedosto, jota ei voi synkronoida.</value> 
+  </data> 
+  <data name="errHardlinkTitle" xml:space="preserve"> 
+    <value>Ei-tuettu tiedostotyyppi</value> 
+  </data> 
+  <data name="errInvalidSyncSyncDirAccessDescription" xml:space="preserve"> 
+    <value>Tämä kansio ei ole enää käytettävissä alkuperäisessä sijainnissaan.</value> 
+  </data> 
+  <data name="errInvalidSyncSyncDirAccessTitle" xml:space="preserve"> 
+    <value>Synkronointikansiota ei löydy</value> 
+  </data> 
+  <data name="errInvalidSyncSyncDirNestingDescription" xml:space="preserve"> 
+    <value>Yksi kDriveistasi on synkronoitu toisen kDriven synkronointikansion sisälle.
+Siirrä toinen kansioista niin, ettei niitä enää ole sisäkkäin, tai poista synkronointi luodaksesi sen uudelleen.</value> 
+  </data> 
+  <data name="errInvalidSyncSyncDirNestingTitle" xml:space="preserve"> 
+    <value>Sisäkkäiset kDrivert</value> 
+  </data> 
+  <data name="errLocalFileAccessDescription" xml:space="preserve"> 
+    <value>Ei voi käyttää tätä %@ tietokoneella. Tarkista, että se on edelleen olemassa ja että sinulla on oikeudet käyttää sitä.</value> 
+  </data> 
+  <data name="errLocalFileAccessTitle" xml:space="preserve"> 
+    <value>%@ ei käytettävissä</value> 
+  </data> 
+  <data name="errMoveCancelDescription" xml:space="preserve"> 
+    <value>Sinulla ei ole oikeuksia siirtää tätä %@ tähän; se palautetaan alkuperäiseen sijaintiinsa. Pyydä käyttöoikeutta omistajalta tai järjestelmänvalvojalta.</value> 
+  </data> 
+  <data name="errNameLengthDescription" xml:space="preserve"> 
+    <value>Tämä nimi ylittää sallitun pituuden (250 merkkiä). Nimeä %@ uudelleen.</value> 
+  </data> 
+  <data name="errNameLengthTitle" xml:space="preserve"> 
+    <value>%@ nimi liian pitkä</value> 
+  </data> 
+  <data name="errNetworkErrorOtherDescription" xml:space="preserve"> 
+    <value>Ei voida muodostaa yhteyttä kDriveen.
+Synkronointi jatkuu automaattisesti, kun yhteys on palautettu.</value> 
+  </data> 
+  <data name="errNetworkErrorOtherTitle" xml:space="preserve"> 
+    <value>Yhteys tilapäisesti katkennut</value> 
+  </data> 
+  <data name="errNotEnoughDiskSpaceDescription" xml:space="preserve"> 
+    <value>Tietokoneellasi ei ole tarpeeksi tilaa tämän tiedoston synkronointiin.</value> 
+  </data> 
+  <data name="errNotEnoughDiskSpaceTitle" xml:space="preserve"> 
+    <value>Levytila riittämätön</value> 
+  </data> 
+  <data name="errNotYetSupportedCharDescription" xml:space="preserve"> 
+    <value>Tämän tiedoston nimi sisältää yhden tai useamman merkin, joita kDrive-sovellus ei vielä tue. Nimeä tiedosto uudelleen kDrive-verkkopalvelusta.</value> 
+  </data> 
+  <data name="errNotYetSupportedCharTitle" xml:space="preserve"> 
+    <value>Ei-tuettu merkki</value> 
+  </data> 
+  <data name="errPathLengthDescription" xml:space="preserve"> 
+    <value>Polku tähän %@ on liian pitkä synkronoitavaksi. Nimeä yksi tai useampi kansio, jossa se sijaitsee, lyhentääksesi polkua.</value> 
+  </data> 
+  <data name="errPathLengthTitle" xml:space="preserve"> 
+    <value>Polku kohteeseen %@ liian pitkä</value> 
+  </data> 
+  <data name="errQuotaExceededDescription" xml:space="preserve"> 
+    <value>kDrivesi on täynnä. Vapauta tilaa tai päivitä tilauksesi synkronoidaksesi tämän %@.</value> 
+  </data> 
+  <data name="errQuotaExceededTitle" xml:space="preserve"> 
+    <value>Tallennusraja saavutettu</value> 
+  </data> 
+  <data name="errReservedNameDescription" xml:space="preserve"> 
+    <value>Tämä nimi on tietokoneesi järjestelmän varausnimi. Nimeä %@ uudelleen kDrive-verkkopalvelusta.</value> 
+  </data> 
+  <data name="errReservedNameTitle" xml:space="preserve"> 
+    <value>%@ nimi varattu</value> 
+  </data> 
+  <data name="errSystemErrorSyncDirAccessErrorDescription" xml:space="preserve"> 
+    <value>Tarkista kansion sijainti tai käyttöoikeudet.</value> 
+  </data> 
+  <data name="errSystemErrorSyncDirAccessTitle" xml:space="preserve"> 
+    <value>Synkronointikansio ei ole käytettävissä</value> 
+  </data> 
+  <data name="errSystemNotEnoughDiskSpaceDescription" xml:space="preserve"> 
+    <value>Laitteesi levytila on täynnä. Synkronointi on keskeytetty. Vapauta tilaa jatkaaksesi synkronointia.</value> 
+  </data> 
+  <data name="errSystemNotEnoughDiskSpaceTitle" xml:space="preserve"> 
+    <value>Levytila riittämätön</value> 
+  </data> 
+  <data name="errSystemSyncDirChanged" xml:space="preserve"> 
+    <value>Tämä kansio ei ole enää käytettävissä alkuperäisessä sijainnissaan.</value> 
+  </data> 
+  <data name="errSystemSyncDirDiskMissingDescription" xml:space="preserve"> 
+    <value>Tämä kansio ei ole enää käytettävissä. Synkronoinnin jatkaminen vaatii toimia.</value> 
+  </data> 
+  <data name="errSystemSyncDirMissingTitle" xml:space="preserve"> 
+    <value>Synkronointikansiota ei löydy</value> 
+  </data> 
+  <data name="errSystemUnableToStartVfsDescription" xml:space="preserve"> 
+    <value>Lite Sync ei voi käynnistyä. Voit jatkaa tiedostojen synkronointia ottamalla offline-synkronoinnin käyttöön asetuksissa. Ota yhteyttä tukeen, jos ongelma jatkuu.</value> 
+  </data> 
+  <data name="errSystemUnableToStartVfsTitle" xml:space="preserve"> 
+    <value>Lite Sync ei käynnisty</value> 
+  </data> 
+  <data name="errTmpBlacklistedDescription" xml:space="preserve"> 
+    <value>Tämän kohteen synkronointi epäonnistui. Se yritetään uudelleen automaattisesti myöhemmin.</value> 
+  </data> 
+  <data name="errTmpBlacklistedTitle" xml:space="preserve"> 
+    <value>Synkronointi epäonnistui tilapäisesti</value> 
+  </data> 
+  <data name="errUploadNotTerminatedDescription" xml:space="preserve"> 
+    <value>Latausta ei voitu viimeistellä. Yritä myöhemmin uudelleen.</value> 
+  </data> 
+  <data name="errorListFilesToVerifyHeader" xml:space="preserve"> 
+    <value>Tarkistettavat tiedostot</value> 
+  </data> 
+  <data name="errorListOthersHeader" xml:space="preserve"> 
+    <value>Muut</value> 
+  </data> 
+  <data name="errorPageTitle" xml:space="preserve"> 
+    <value>Korjattavat virheet</value> 
+  </data> 
+  <data name="excludeRuleDescription" xml:space="preserve"> 
+    <value>Tätä sääntöä vastaavia tiedostoja ei synkronoida.</value> 
+  </data> 
+  <data name="extendedLogDescription" xml:space="preserve"> 
+    <value>Ottaa käyttöön tukea hyödyttävien lisätietojen keräämisen.</value> 
+  </data> 
+  <data name="extendedLogSetting" xml:space="preserve"> 
+    <value>Laajennettu yksityiskohtainen loki</value> 
+  </data> 
+  <data name="extendedLogWarning" xml:space="preserve"> 
+    <value>Kun tämä vaihtoehto on käytössä, kDrive toimii hitaammin.</value> 
+  </data> 
+  <data name="failedToCreateShareLinkError" xml:space="preserve"> 
+    <value>Jakolinkin luominen epäonnistui</value> 
+  </data> 
+  <data name="faqUrl" xml:space="preserve"> 
+    <value>https://www.infomaniak.com/en/support/faq/admin2/kdrive</value> 
+  </data> 
+  <data name="feedbackSetting" xml:space="preserve"> 
+    <value>Auta meitä parantamaan kDrivea</value> 
+  </data> 
+  <data name="feedbackURL" xml:space="preserve"> 
+    <value>https://feedback.userreport.com/652ad8f0-84c8-4a21-9e31-7a8bd7134f46</value> 
+  </data> 
+  <data name="fileExistsErrorTitle" xml:space="preserve"> 
+    <value>Tiedosto on jo olemassa</value> 
+  </data> 
+  <data name="fileSyncMode" xml:space="preserve"> 
+    <value>Tiedostojen synkronointitila</value> 
+  </data> 
+  <data name="fileSyncModeDescription" xml:space="preserve"> 
+    <value>Määritä, miten tiedostosi tallennetaan ja miten niihin pääsee.</value> 
+  </data> 
+  <data name="filesToExclude" xml:space="preserve"> 
+    <value>Poissuljetavat tiedostot</value> 
+  </data> 
+  <data name="folderFavorites" xml:space="preserve"> 
+    <value>Suosikit</value> 
+  </data> 
+  <data name="folderShares" xml:space="preserve"> 
+    <value>Jaot</value> 
+  </data> 
+  <data name="folderTrash" xml:space="preserve"> 
+    <value>Roskakori</value> 
+  </data> 
+  <data name="forOneHour" xml:space="preserve"> 
+    <value>1 tunniksi</value> 
+  </data> 
+  <data name="forOneWeek" xml:space="preserve"> 
+    <value>Viikoksi</value> 
+  </data> 
+  <data name="forThreeDays" xml:space="preserve"> 
+    <value>Kolmeksi päiväksi</value> 
+  </data> 
+  <data name="greetingLabel" xml:space="preserve"> 
+    <value>Hei %@, %@</value> 
+  </data> 
+  <data name="helpKDriveName" xml:space="preserve"> 
+    <value>kDrive %@</value> 
+  </data> 
+  <data name="helpUrl" xml:space="preserve"> 
+    <value>https://www.infomaniak.com/en/support</value> 
+  </data> 
+  <data name="infomaniakSupport" xml:space="preserve"> 
+    <value>Infomaniakin tuki</value> 
+  </data> 
+  <data name="informationBlockKDriveFullSubtitle" xml:space="preserve"> 
+    <value>Vapauta tilaa tai päivitä pakettisi jatkaaksesi tiedostojen synkronointia.</value> 
+  </data> 
+  <data name="informationBlockKDriveFullTitle" xml:space="preserve"> 
+    <value>kDrivesi on täynnä</value> 
+  </data> 
+  <data name="informationBlockSynchroErrorSubtitle" xml:space="preserve"> 
+    <value>Joitakin tiedostoja ei voitu synkronoida.</value> 
+  </data> 
+  <data name="informationBlockTmpDirAccessErrorSubtitle" xml:space="preserve"> 
+    <value>Emme pääse tiedostoihisi. Käynnistä sovellus uudelleen synkronoinnin jatkamiseksi. Jos ongelma jatkuu, ota yhteyttä tukeen.</value> 
+  </data> 
+  <data name="informationBlockTmpDirAccessErrorTitle" xml:space="preserve"> 
+    <value>Yhteys kDriveen keskeytyi</value> 
+  </data> 
+  <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
+    <value>Tämä kohde ei ole käytettävissä tällä laitteella.
+Se avautuu selaimessasi.</value> 
+  </data> 
+  <data name="labelAccessRightsModified" xml:space="preserve"> 
+    <value>Käyttöoikeuksia muutettu</value> 
+  </data> 
+  <data name="labelActivated" xml:space="preserve"> 
+    <value>Käytössä</value> 
+  </data> 
+  <data name="labelAgo" xml:space="preserve"> 
+    <value>%@ sitten</value> 
+    <comment>Suffix for relative timestamps in activity lists; %@ is the time period (e.g., 5 minutes).</comment> 
+  </data> 
+  <data name="labelAllFolders" xml:space="preserve"> 
+    <value>Kaikki kansiot</value> 
+  </data> 
+  <data name="labelAllkDrive" xml:space="preserve"> 
+    <value>Koko kDrive</value> 
+  </data> 
+  <data name="labelAllowTracking" xml:space="preserve"> 
+    <value>Salli seuranta</value> 
+  </data> 
+  <data name="labelAuthor" xml:space="preserve"> 
+    <value>Tekijä</value> 
+  </data> 
+  <data name="labelByDefault" xml:space="preserve"> 
+    <value>Oletuksena</value> 
+  </data> 
+  <data name="labelBytes" xml:space="preserve"> 
+    <value>B</value> 
+  </data> 
+  <data name="labelChooseConflictVersion" xml:space="preserve"> 
+    <value>Valitse, minkä version tiedostoistasi haluat säilyttää.</value> 
+  </data> 
+  <data name="labelChooseConflictVersionIndividual" xml:space="preserve"> 
+    <value>Valitse kullekin tiedostolle säilytettävä versio.</value> 
+  </data> 
+  <data name="labelConflictDialogQuestion" xml:space="preserve"> 
+    <value>Minkä version haluat säilyttää?</value> 
+  </data> 
+  <data name="labelConflictDialogTitle" xml:space="preserve"> 
+    <value>Valitse säilytettävä versio</value> 
+  </data> 
+  <data name="labelConflictStrategyKeepLocalDescription" xml:space="preserve"> 
+    <value>Näiden %@ tiedoston verkkoversiot korvataan paikallisilla versioillasi.
+Huomaa, että tämä voi ylikirjoittaa yhteistyötekijöittesi työn.</value> 
+  </data> 
+  <data name="labelConflictStrategyKeepLocalTitle" xml:space="preserve"> 
+    <value>Säilytä vain paikalliset versiot</value> 
+  </data> 
+  <data name="labelConflictStrategyKeepMostRecentDescription" xml:space="preserve"> 
+    <value>Kullekin ristiriidalle säilytetään automaattisesti viimeksi muokattu versio (paikallinen tai verkkoversio). Tämä on turvallisin valinta useimmissa tapauksissa.</value> 
+  </data> 
+  <data name="labelConflictStrategyKeepMostRecentTitle" xml:space="preserve"> 
+    <value>Säilytä uusimmat versiot</value> 
+  </data> 
+  <data name="labelConflictStrategyKeepRemoteDescription" xml:space="preserve"> 
+    <value>Kaikki näiden %@ tiedoston paikalliset muutokset hylätään.
+Hyödyllinen, jos tiedät tärkeän työn olevan verkossa kDrivessa.</value> 
+  </data> 
+  <data name="labelConflictStrategyKeepRemoteTitle" xml:space="preserve"> 
+    <value>Säilytä vain verkkoversiot</value> 
+  </data> 
+  <data name="labelConnectToStart" xml:space="preserve"> 
+    <value>Kirjaudu sisään aloittaaksesi.</value> 
+  </data> 
+  <data name="labelCreateNewSync" xml:space="preserve"> 
+    <value>Luo %@.</value> 
+  </data> 
+  <data name="labelDate" xml:space="preserve"> 
+    <value>Päivämäärä</value> 
+  </data> 
+  <data name="labelDeactivated" xml:space="preserve"> 
+    <value>Pois käytöstä</value> 
+  </data> 
+  <data name="labelFAQ" xml:space="preserve"> 
+    <value>UKK</value> 
+  </data> 
+  <data name="labelFileLowerCase" xml:space="preserve"> 
+    <value>tiedosto</value> 
+  </data> 
+  <data name="labelFolder" xml:space="preserve"> 
+    <value>Kansio</value> 
+  </data> 
+  <data name="labelFolderDeleted" xml:space="preserve"> 
+    <value>Kansio poistettu</value> 
+  </data> 
+  <data name="labelFolderDisplacedOrModified" xml:space="preserve"> 
+    <value>Kansio siirretty tai muokattu</value> 
+  </data> 
+  <data name="labelFolderDisplacedOrModifiedTip" xml:space="preserve"> 
+    <value>Kansio on ehkä siirretty toiselle levylle ja palautettu sitten takaisin alkuperäiseen sijaintiinsa.</value> 
+  </data> 
+  <data name="labelFolderLowerCase" xml:space="preserve"> 
+    <value>kansio</value> 
+  </data> 
+  <data name="labelFolderMovedOrRenamed" xml:space="preserve"> 
+    <value>Kansio siirretty tai nimetty uudelleen</value> 
+  </data> 
+  <data name="labelFolderRecreatedOrReplaced" xml:space="preserve"> 
+    <value>Kansio luotu uudelleen tai korvattu</value> 
+  </data> 
+  <data name="labelFolderRecreatedOrReplacedTip" xml:space="preserve"> 
+    <value>Kansio poistettiin ja luotiin uudelleen tai se korvattiin toisella samannimisellä kansiolla.</value> 
+  </data> 
+  <data name="labelGigaBytes" xml:space="preserve"> 
+    <value>Gt</value> 
+    <comment>Unit abbreviation for gigabytes, used in file size and storage displays.</comment> 
+  </data> 
+  <data name="labelJustNow" xml:space="preserve"> 
+    <value>Juuri nyt</value> 
+  </data> 
+  <data name="labelKDriveVersion" xml:space="preserve"> 
+    <value>kDrive %@</value> 
+  </data> 
+  <data name="labelKiloBytes" xml:space="preserve"> 
+    <value>kt</value> 
+    <comment>Unit abbreviation for kilobytes, used in file size displays.</comment> 
+  </data> 
+  <data name="labelLocal" xml:space="preserve"> 
+    <value>Paikallinen</value> 
+  </data> 
+  <data name="labelManyConflictTitle" xml:space="preserve"> 
+    <value>%@ tiedostoa on muokattu sekä tietokoneellasi että kDrivessa.</value> 
+  </data> 
+  <data name="labelMegaBytes" xml:space="preserve"> 
+    <value>Mt</value> 
+    <comment>Unit abbreviation for megabytes, used in file size displays.</comment> 
+  </data> 
+  <data name="labelMostRecent" xml:space="preserve"> 
+    <value>Uusin</value> 
+  </data> 
+  <data name="labelName" xml:space="preserve"> 
+    <value>Nimi</value> 
+  </data> 
+  <data name="labelNewDeviceDetected" xml:space="preserve"> 
+    <value>Uusi laite havaittu</value> 
+  </data> 
+  <data name="labelNewDeviceDetectedTip" xml:space="preserve"> 
+    <value>Käytät kDrivea uudella tietokoneella varmuuskopiosta palautuksen jälkeen.</value> 
+  </data> 
+  <data name="labelNewFolder" xml:space="preserve"> 
+    <value>Uusi kansio</value> 
+  </data> 
+  <data name="labelNewSync" xml:space="preserve"> 
+    <value>uusi synkronointi</value> 
+  </data> 
+  <data name="labelNoConflictsFound" xml:space="preserve"> 
+    <value>Ei hakuasi vastaavia ristiriitoja</value> 
+  </data> 
+  <data name="labelNoErrorsToFix" xml:space="preserve"> 
+    <value>Ei korjattavia virheitä.</value> 
+  </data> 
+  <data name="labelNotifications" xml:space="preserve"> 
+    <value>Ilmoitus</value> 
+  </data> 
+  <data name="labelOnline" xml:space="preserve"> 
+    <value>Verkossa</value> 
+  </data> 
+  <data name="labelOnlineFolderDeletedOrRenamed" xml:space="preserve"> 
+    <value>Verkkokansio poistettu</value> 
+  </data> 
+  <data name="labelOnlineFolderDeletedOrRenamedTip" xml:space="preserve"> 
+    <value>Synkronoitu kansio poistettiin kDrive-verkkopalvelusta tai se ei enää ole käytettävissä.</value> 
+  </data> 
+  <data name="labelOriginalLocation" xml:space="preserve"> 
+    <value>Alkuperäinen sijainti:</value> 
+  </data> 
+  <data name="labelRecommended" xml:space="preserve"> 
+    <value>Suositeltu</value> 
+  </data> 
+  <data name="labelRemoteAccessRightsModifiedTip" xml:space="preserve"> 
+    <value>Kansio on ehkä siirretty toiselle levylle ja palautettu sitten takaisin alkuperäiseen sijaintiinsa.</value> 
+  </data> 
+  <data name="labelRestoreToOriginalLocation" xml:space="preserve"> 
+    <value>Palauta se alkuperäiseen sijaintiinsa.</value> 
+  </data> 
+  <data name="labelRules" xml:space="preserve"> 
+    <value>Säännöt</value> 
+  </data> 
+  <data name="labelSameAsSystem" xml:space="preserve"> 
+    <value>Sama kuin järjestelmässä</value> 
+  </data> 
+  <data name="labelShortDay" xml:space="preserve"> 
+    <value>pv</value> 
+    <comment>Abbreviated unit for day used in relative timestamps (e.g., 3d ago).</comment> 
+  </data> 
+  <data name="labelShortHour" xml:space="preserve"> 
+    <value>t</value> 
+    <comment>Abbreviated unit for hour used in relative timestamps.</comment> 
+  </data> 
+  <data name="labelShortMinute" xml:space="preserve"> 
+    <value>min</value> 
+    <comment>Abbreviated unit for minute used in relative timestamps.</comment> 
+  </data> 
+  <data name="labelShortSecond" xml:space="preserve"> 
+    <value>s</value> 
+    <comment>Abbreviated unit for second used in relative timestamps.</comment> 
+  </data> 
+  <data name="labelSince" xml:space="preserve"> 
+    <value>Alkaen: %@</value> 
+    <comment>Label showing the start time of a synchronization pause or event; %@ is the formatted date/time.</comment> 
+  </data> 
+  <data name="labelSize" xml:space="preserve"> 
+    <value>Koko</value> 
+  </data> 
+  <data name="labelStatus" xml:space="preserve"> 
+    <value>Tila</value> 
+  </data> 
+  <data name="labelStorageFree" xml:space="preserve"> 
+    <value>%@ vapaana</value> 
+    <comment>Label showing available free storage space; %@ is the formatted size (singular form).</comment> 
+  </data> 
+  <data name="labelStorageFree-plural" xml:space="preserve"> 
+    <value>%@ vapaana</value> 
+  </data> 
+  <data name="labelStorageLoading" xml:space="preserve"> 
+    <value>Lasketaan…</value> 
+    <comment>Loading indicator text shown while storage usage is being calculated.</comment> 
+  </data> 
+  <data name="labelStorageUsed" xml:space="preserve"> 
+    <value>%@ käytössä</value> 
+    <comment>Label showing used storage space; %@ is the formatted size (singular form).</comment> 
+  </data> 
+  <data name="labelStorageUsed-plural" xml:space="preserve"> 
+    <value>%@ käytössä</value> 
+  </data> 
+  <data name="labelSyncExclusionEmptyDescription" xml:space="preserve"> 
+    <value>Tässä kDrivessa on vain tiedostoja. Kaikki tiedostot synkronoidaan tälle laitteelle.</value> 
+  </data> 
+  <data name="labelSyncExclusionEmptyTitle" xml:space="preserve"> 
+    <value>Ei valittavia kansioita</value> 
+  </data> 
+  <data name="labelSyncFolder" xml:space="preserve"> 
+    <value>Synkronointikansiot</value> 
+  </data> 
+  <data name="labelSyncLocation" xml:space="preserve"> 
+    <value>Sijainti</value> 
+  </data> 
+  <data name="labelSyncYourKDrive" xml:space="preserve"> 
+    <value>Synkronoi kDrivesi tällä laitteella</value> 
+  </data> 
+  <data name="labelSyncedFolders" xml:space="preserve"> 
+    <value>Synkronoidut kansiot</value> 
+  </data> 
+  <data name="labelSynchronisation" xml:space="preserve"> 
+    <value>Synkronointi</value> 
+  </data> 
+  <data name="labelTeraBytes" xml:space="preserve"> 
+    <value>Tt</value> 
+    <comment>Unit abbreviation for terabytes, used in storage displays.</comment> 
+  </data> 
+  <data name="labelWelcomeToKDrive" xml:space="preserve"> 
+    <value>Tervetuloa kDriveen</value> 
+  </data> 
+  <data name="labelXoverY" xml:space="preserve"> 
+    <value>%@ / %@</value> 
+  </data> 
+  <data name="labelkDriveManagement" xml:space="preserve"> 
+    <value>kDriven hallinta</value> 
+  </data> 
+  <data name="languageSetting" xml:space="preserve"> 
+    <value>Kieli</value> 
+  </data> 
+  <data name="languageSettingWarning" xml:space="preserve"> 
+    <value>Käynnistä sovellus uudelleen uuden kielen käyttöönoton viimeistelemiseksi.</value> 
+  </data> 
+  <data name="largeFolderRecommendation" xml:space="preserve"> 
+    <value>Koko kansio on suuri.
+Lähetyksen nopeuttamiseksi suosittelemme lähettämään vain viimeisen kDrive-istunnon.</value> 
+  </data> 
+  <data name="learnMore" xml:space="preserve"> 
+    <value>Lue lisää</value> 
+  </data> 
+  <data name="licensesHyperLink" xml:space="preserve"> 
+    <value>LGPL v3 -lisenssi - Git-lähteet</value> 
+  </data> 
+  <data name="linkCopiedToClipboardTitle" xml:space="preserve"> 
+    <value>Linkki kopioitu leikepöydälle</value> 
+  </data> 
+  <data name="liteSyncUnavailableDescription" xml:space="preserve"> 
+    <value>Yhteensopimaton asema tai kansio suoraan aseman juuressa (esim.: valitse kansio kuten D:/Oma asema D:/:n sijaan)</value> 
+  </data> 
+  <data name="localLocation" xml:space="preserve"> 
+    <value>Sijainti tietokoneella</value> 
+    <comment>Label for the local PC folder location field in sync settings.</comment> 
+  </data> 
+  <data name="logLevelDebug" xml:space="preserve"> 
+    <value>Virheenkorjaus</value> 
+  </data> 
+  <data name="logLevelError" xml:space="preserve"> 
+    <value>Virhe</value> 
+  </data> 
+  <data name="logLevelExtended" xml:space="preserve"> 
+    <value>Laajennettu</value> 
+    <comment>Extended log level option in the debug level dropdown in advanced settings.</comment> 
+  </data> 
+  <data name="logLevelFatal" xml:space="preserve"> 
+    <value>Kriittinen</value> 
+  </data> 
+  <data name="logLevelInfo" xml:space="preserve"> 
+    <value>Tiedot</value> 
+  </data> 
+  <data name="logLevelWarning" xml:space="preserve"> 
+    <value>Varoitus</value> 
+  </data> 
+  <data name="logUploadPopupTitle" xml:space="preserve"> 
+    <value>Lähetä virheenkorjauskansio Infomaniakin tukeen</value> 
+  </data> 
+  <data name="logicErrorFullListParsingErrorDescription" xml:space="preserve"> 
+    <value>Joidenkin tiedostonimien saattaa sisältää erikoismerkkejä, joita ei tueta (kuten kaksoislainausmerkit, kenoviivat tai rivinvaihdot).
+
+Tarkista ja nimeä tiedostot, joissa on epätavallisia merkkejä, uudelleen ja yritä sitten uudelleen.</value> 
+  </data> 
+  <data name="logicErrorFullListParsingErrorTitle" xml:space="preserve"> 
+    <value>Virheellinen tiedostonimi</value> 
+  </data> 
+  <data name="logsStatusCompression" xml:space="preserve"> 
+    <value>Tiivistetään lokeja…</value> 
+  </data> 
+  <data name="logsStatusUpload" xml:space="preserve"> 
+    <value>Ladataan lokeja tukeen…</value> 
+  </data> 
+  <data name="logsUploadErrorTooltip" xml:space="preserve"> 
+    <value>Viimeisin lähetys epäonnistui. Tarkista internet-yhteys ja varmista, että vähintään yksi kDrive-käyttäjä on kirjautunut sisään. Lähetyksiä on rajoitettu 10:een päivässä.</value> 
+  </data> 
+  <data name="manyConflictErrorDescription" xml:space="preserve"> 
+    <value>Näistä tiedostoista havaittiin eri versioita.</value> 
+  </data> 
+  <data name="manyConflictErrorTitle" xml:space="preserve"> 
+    <value>%@ versioristiriitaa havaittu</value> 
+  </data> 
+  <data name="matomoDescription" xml:space="preserve"> 
+    <value>Matomo on Infomaniakin yksinomaan isännöimä ja hallinnoima analytiikkatyökalu sovelluksen käytön ymmärtämiseksi.
+
+Näiden tietojen analysointi antaa tiimillemme mahdollisuuden jatkuvasti parantaa sovelluksen käyttöliittymää.</value> 
+  </data> 
+  <data name="moveCancelErrorTitle" xml:space="preserve"> 
+    <value>Siirto peruutettu</value> 
+  </data> 
+  <data name="moveDeletedFilesToRecycleBinSetting" xml:space="preserve"> 
+    <value>Siirrä poistetut tiedostot tietokoneen roskakoriin</value> 
+  </data> 
+  <data name="moveDeletedFilesToRecycleBinWarning" xml:space="preserve"> 
+    <value>Joitakin kohteita ei ehkä voi siirtää.</value> 
+  </data> 
+  <data name="myksuitePlusBannerDescription" xml:space="preserve"> 
+    <value>Enemmän tallennustilaa, enemmän ominaisuuksia my kSuite+:n avulla</value> 
+  </data> 
+  <data name="needHelpSetting" xml:space="preserve"> 
+    <value>Tarvitsetko apua?</value> 
+  </data> 
+  <data name="noAccountConnected" xml:space="preserve"> 
+    <value>Lisää tili aloittaaksesi</value> 
+  </data> 
+  <data name="noResultsFound" xml:space="preserve"> 
+    <value>Ei tuloksia löydetty</value> 
+  </data> 
+  <data name="notSyncedDrive" xml:space="preserve"> 
+    <value>Ei synkronoitu</value> 
+  </data> 
+  <data name="notificationsDisabledAlways" xml:space="preserve"> 
+    <value>Aina</value> 
+  </data> 
+  <data name="notificationsDisabledNever" xml:space="preserve"> 
+    <value>Ei koskaan</value> 
+  </data> 
+  <data name="notifyOnFileExcluded" xml:space="preserve"> 
+    <value>Vastaanota ilmoitus, kun tiedosto suljetaan pois</value> 
+  </data> 
+  <data name="onBoardingAdvancedSettingsDriveTitle" xml:space="preserve"> 
+    <value>Määritä tämän kDriven synkronointi</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsDriveCustomizeLocation" xml:space="preserve"> 
+    <value>Muokkaa kDrive-kansiosi sijaintia tietokoneella:</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsDriveCustomizeLocationTip" xml:space="preserve"> 
+    <value>Valitun kansion on oltava tyhjä, jotta synkronointi toimii oikein.</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsDriveExclusionDescription" xml:space="preserve"> 
+    <value>Valitse tällä tietokoneella synkronoitavat kansiot:</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsDriveExclusionTitle" xml:space="preserve"> 
+    <value>Synkronoidut kansiot</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsDriveSelectionDescription" xml:space="preserve"> 
+    <value>Jokaiselle kDrivelle voit valita, mihin se synkronoidaan tietokoneellesi ja mitkä kansiot synkronoidaan.</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsDriveSelectionExclusion" xml:space="preserve"> 
+    <value>Synkronoitu sisältö:</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsDriveSelectionLocation" xml:space="preserve"> 
+    <value>Sijainti:</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsDriveSelectionTitle" xml:space="preserve"> 
+    <value>Määritä kDrivesi</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsExclusionTitle" xml:space="preserve"> 
+    <value>Valitse tällä tietokoneella synkronoitavat kansiot</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsLiteSyncDescription" xml:space="preserve"> 
+    <value>Tiedostot ladataan vain avaamisen yhteydessä levytilan säästämiseksi.</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsLiteSyncTitle" xml:space="preserve"> 
+    <value>Ota Lite Sync käyttöön</value> 
+  </data> 
+  <data name="onboardingAlreadySyncedDriveTooltip" xml:space="preserve"> 
+    <value>Tämä kDrive on jo määritetty.
+Siirry asetuksiin muokataksesi sitä.</value> 
+  </data> 
+  <data name="onboardingDriveSelectionNoDriveDescription" xml:space="preserve"> 
+    <value>Aloita ilmaiseksi my kSuite -palvelulla,
+tai valitse tarpeisiisi sopiva paketti.</value> 
+  </data> 
+  <data name="onboardingDriveSelectionNoDriveTitle" xml:space="preserve"> 
+    <value>Sinulla ei vielä ole kDrivea.</value> 
+  </data> 
+  <data name="onboardingDriveSelectionSelectTitle" xml:space="preserve"> 
+    <value>Valitse tällä tietokoneella synkronoitavat kDrivert:</value> 
+  </data> 
+  <data name="onboardingDriveSelectionSyncInProgress" xml:space="preserve"> 
+    <value>Synkronointi käynnissä</value> 
+  </data> 
+  <data name="onboardingDriveSelectionTitle" xml:space="preserve"> 
+    <value>Mukava nähdä sinut!</value> 
+  </data> 
+  <data name="onboardingExclusionSummaryNone" xml:space="preserve"> 
+    <value>Kaikki kDrive-kansiot</value> 
+  </data> 
+  <data name="onboardingExclusionSummarySome" xml:space="preserve"> 
+    <value>Mukautettu valinta</value> 
+  </data> 
+  <data name="onboardingLoginDescription" xml:space="preserve"> 
+    <value>Yksityinen, nopea ja turvallinen pilvi, isännöity Sveitsissä.
+
+Kirjaudu sisään ja pidä asiakirjasi synkronoituina kaikilla laitteillasi.</value> 
+  </data> 
+  <data name="onboardingLoginErrorDescription" xml:space="preserve"> 
+    <value>Tapahtui virhe, yritä uudelleen.</value> 
+  </data> 
+  <data name="onboardingLoginErrorTitle" xml:space="preserve"> 
+    <value>Kirjautumisvirhe</value> 
+  </data> 
+  <data name="onboardingLoginProcessingDescription" xml:space="preserve"> 
+    <value>Haetaan tietojasi…</value> 
+  </data> 
+  <data name="onboardingLoginProcessingTitle" xml:space="preserve"> 
+    <value>Hetki…</value> 
+  </data> 
+  <data name="onboardingLoginTitle" xml:space="preserve"> 
+    <value>Tervetuloa kDriveen</value> 
+  </data> 
+  <data name="onboardingSynchronizationAppReadyDescription" xml:space="preserve"> 
+    <value>Tiedostosi ovat valmiita synkronoitavaksi
+turvallisesti tietokoneellesi.</value> 
+  </data> 
+  <data name="onboardingSynchronizationAppReadyTitle" xml:space="preserve"> 
+    <value>Kaikki valmista!</value> 
+  </data> 
+  <data name="onboardingSynchronizationInProgressDescription" xml:space="preserve"> 
+    <value>Viimeistelemme kDrivejesi määritystä.
+
+Odota hetki.</value> 
+  </data> 
+  <data name="onboardingSynchronizationInProgressTitle" xml:space="preserve"> 
+    <value>Synkronointi käynnissä…</value> 
+  </data> 
+  <data name="openKDriveAtStartupSetting" xml:space="preserve"> 
+    <value>Avaa kDrive tietokoneen käynnistyessä</value> 
+  </data> 
+  <data name="openLoginPage" xml:space="preserve"> 
+    <value>Avaa kirjautumissivu</value> 
+  </data> 
+  <data name="pathCopiedToClipboard" xml:space="preserve"> 
+    <value>Polku kopioitu leikepöydälle</value> 
+  </data> 
+  <data name="proxyConnectionDescription" xml:space="preserve"> 
+    <value>Määritä, miten kDrive muodostaa yhteyden internetiin.</value> 
+  </data> 
+  <data name="proxyHost" xml:space="preserve"> 
+    <value>Palvelin</value> 
+  </data> 
+  <data name="proxyNeedAuth" xml:space="preserve"> 
+    <value>Todennus vaaditaan</value> 
+  </data> 
+  <data name="proxyPassword" xml:space="preserve"> 
+    <value>Salasana</value> 
+  </data> 
+  <data name="proxyPort" xml:space="preserve"> 
+    <value>Portti</value> 
+  </data> 
+  <data name="proxySettings" xml:space="preserve"> 
+    <value>Välityspalvelimen asetukset</value> 
+    <comment>Title of the proxy settings section in advanced settings.</comment> 
+  </data> 
+  <data name="proxyType" xml:space="preserve"> 
+    <value>Välityspalvelimen tyyppi</value> 
+  </data> 
+  <data name="proxyTypeHTTP" xml:space="preserve"> 
+    <value>Manuaalinen määritys</value> 
+  </data> 
+  <data name="proxyTypeNone" xml:space="preserve"> 
+    <value>Ei mitään</value> 
+  </data> 
+  <data name="proxyUser" xml:space="preserve"> 
+    <value>Käyttäjätunnus</value> 
+  </data> 
+  <data name="releaseChannelBeta" xml:space="preserve"> 
+    <value>Beta</value> 
+  </data> 
+  <data name="releaseChannelInternal" xml:space="preserve"> 
+    <value>Sisäinen</value> 
+  </data> 
+  <data name="releaseChannelTest" xml:space="preserve"> 
+    <value>Testi</value> 
+  </data> 
+  <data name="remoteLocation" xml:space="preserve"> 
+    <value>Sijainti kDrivessa</value> 
+  </data> 
+  <data name="searchBoxPlaceholder" xml:space="preserve"> 
+    <value>Hae kohteesta %@</value> 
+  </data> 
+  <data name="selectFoldersToSync" xml:space="preserve"> 
+    <value>Valitse tällä tietokoneella synkronoitavat kansiot.</value> 
+  </data> 
+  <data name="selectFoldersToSyncDescription" xml:space="preserve"> 
+    <value>Valitsemattomia kansioita ei ladata laitteellesi. Ne pysyvät saatavilla verkossa eikä niitä poisteta.</value> 
+  </data> 
+  <data name="selectFoldersToSyncDescriptionShort" xml:space="preserve"> 
+    <value>Valitsemattomia kansioita ei ladata laitteellesi. Ne pysyvät saatavilla verkossa.</value> 
+  </data> 
+  <data name="sendLastSessionOnly" xml:space="preserve"> 
+    <value>Lähetä vain viimeisin istunto</value> 
+  </data> 
+  <data name="sentryDescription" xml:space="preserve"> 
+    <value>Sentry on Infomaniakin yksinomaan isännöimä ja hallinnoima työkalu, joka seuraa sovelluksen vakautta reaaliajassa ja raportoi automaattisesti mahdolliset tekniset virheet kehittäjillemme.
+
+Näiden tietojen avulla tiimimme voi nopeasti korjata ja optimoida sovellusta, mikä tarkoittaa parempaa käyttökokemusta sinulle.</value> 
+  </data> 
+  <data name="settingsTitle" xml:space="preserve"> 
+    <value>Asetukset</value> 
+  </data> 
+  <data name="sidebarItemAccounts" xml:space="preserve"> 
+    <value>Tilit</value> 
+  </data> 
+  <data name="sidebarItemAdvanced" xml:space="preserve"> 
+    <value>Lisäasetukset</value> 
+  </data> 
+  <data name="sidebarItemGeneral" xml:space="preserve"> 
+    <value>Yleiset</value> 
+  </data> 
+  <data name="sidebarItemKDriveTitle" xml:space="preserve"> 
+    <value>kDrive-kansio</value> 
+  </data> 
+  <data name="signInBrowser" xml:space="preserve"> 
+    <value>Kirjaudu sisään selaimessasi</value> 
+  </data> 
+  <data name="storageComputerFreeSpace" xml:space="preserve"> 
+    <value>Tietokoneen vapaa tila</value> 
+    <comment>Label for the free disk space segment in the local storage usage chart.</comment> 
+  </data> 
+  <data name="storageComputerUsedByKDrive" xml:space="preserve"> 
+    <value>kDrive-tiedostot tallennettu tietokoneelle</value> 
+    <comment>Label for the kDrive files segment in the local storage usage chart.</comment> 
+  </data> 
+  <data name="storageComputerUsedByOther" xml:space="preserve"> 
+    <value>Muut tietokoneella olevat tiedostot</value> 
+    <comment>Label for the other files segment in the local storage usage chart.</comment> 
+  </data> 
+  <data name="storageSyncBlockTitle" xml:space="preserve"> 
+    <value>Synkronointi</value> 
+  </data> 
+  <data name="storageThisComputerTitle" xml:space="preserve"> 
+    <value>Tämä tietokone - %@ - %@</value> 
+    <comment>Label for the local computer entry in the storage view; first %@ is computer name, second %@ is disk identifier.</comment> 
+  </data> 
+  <data name="storedOnline" xml:space="preserve"> 
+    <value>Tallennettu verkossa</value> 
+  </data> 
+  <data name="storedOnlineDescription" xml:space="preserve"> 
+    <value>Tiedostosi pysyvät pilvipalvelussa eivätkä käytä tilaa tietokoneellasi.
+Internet-yhteys vaaditaan niiden käyttämiseen.</value> 
+  </data> 
+  <data name="syncErrorTooltip" xml:space="preserve"> 
+    <value>Synkronointivirhe</value> 
+  </data> 
+  <data name="syncFolderCustomLocation" xml:space="preserve"> 
+    <value>Mukautettu kansio</value> 
+  </data> 
+  <data name="syncFolderDefaultLocation" xml:space="preserve"> 
+    <value>Oletuskansio</value> 
+  </data> 
+  <data name="syncInProgressTooltip" xml:space="preserve"> 
+    <value>Synkronointi</value> 
+  </data> 
+  <data name="syncModeApplying" xml:space="preserve"> 
+    <value>Uutta synkronointitilaa sovelletaan…</value> 
+  </data> 
+  <data name="syncRules" xml:space="preserve"> 
+    <value>Synkronointisäännöt</value> 
+  </data> 
+  <data name="syncShortStatusError" xml:space="preserve"> 
+    <value>Virhe tapahtui</value> 
+  </data> 
+  <data name="syncShortStatusIdle" xml:space="preserve"> 
+    <value>Viimeisin synkronointi onnistui</value> 
+  </data> 
+  <data name="syncShortStatusPaused" xml:space="preserve"> 
+    <value>Synkronointi on keskeytetty</value> 
+  </data> 
+  <data name="syncShortStatusRunning" xml:space="preserve"> 
+    <value>Synkronointi on käynnissä</value> 
+  </data> 
+  <data name="syncSuccessTooltip" xml:space="preserve"> 
+    <value>Synkronoitu</value> 
+  </data> 
+  <data name="syncedDrive" xml:space="preserve"> 
+    <value>Synkronoitu</value> 
+  </data> 
+  <data name="syncedFromComputer" xml:space="preserve"> 
+    <value>Synkronoitu tietokoneeltasi</value> 
+  </data> 
+  <data name="syncedFromKDriveWeb" xml:space="preserve"> 
+    <value>Synkronoitu kDrive-verkkopalvelusta</value> 
+  </data> 
+  <data name="synchroInProgress" xml:space="preserve"> 
+    <value>tiedostosi synkronoidaan</value> 
+  </data> 
+  <data name="synchroPaused" xml:space="preserve"> 
+    <value>synkronointi on keskeytetty</value> 
+  </data> 
+  <data name="synchroStatusInProgressDescription" xml:space="preserve"> 
+    <value>Viimeisimmät tiedostosi päivitetään.</value> 
+  </data> 
+  <data name="synchroStatusInProgressTitle" xml:space="preserve"> 
+    <value>Synkronointi käynnissä</value> 
+  </data> 
+  <data name="synchroStatusOfflineDescription" xml:space="preserve"> 
+    <value>Paikalliset tiedostosi ovat edelleen käytettävissä.
+Synkronointi jatkuu automaattisesti, kun yhteys on palautettu.</value> 
+  </data> 
+  <data name="synchroStatusOfflineTitle" xml:space="preserve"> 
+    <value>Offline-tila</value> 
+  </data> 
+  <data name="synchroStatusPausedDescription" xml:space="preserve"> 
+    <value>Synkronointi on tilapäisesti pysäytetty.</value> 
+  </data> 
+  <data name="synchroStatusPausedTitle" xml:space="preserve"> 
+    <value>Tauko aktivoitu</value> 
+  </data> 
+  <data name="synchroStatusUpToDateDescription" xml:space="preserve"> 
+    <value>Tiedostosi ovat käytettävissä ja synkronoitu.</value> 
+  </data> 
+  <data name="synchroStatusUpToDateTitle" xml:space="preserve"> 
+    <value>Ei toimintaa käynnissä</value> 
+  </data> 
+  <data name="synchroUpToDate" xml:space="preserve"> 
+    <value>tiedostosi ovat ajan tasalla</value> 
+  </data> 
+  <data name="synchronizationSettings" xml:space="preserve"> 
+    <value>Synkronointi</value> 
+  </data> 
+  <data name="systemErrorFileOrDirectoryCorruptedDescription" xml:space="preserve"> 
+    <value>Synkronointikansiossasi oleva tiedosto tai kansio näyttää olevan vioittunut.
+Synkronointi on keskeytetty. Tarkista tiedostosi ja yritä uudelleen.</value> 
+  </data> 
+  <data name="systemErrorFileOrDirectoryCorruptedTitle" xml:space="preserve"> 
+    <value>Vioittunut tiedosto havaittu</value> 
+  </data> 
+  <data name="tabTitleActivities" xml:space="preserve"> 
+    <value>Toiminta</value> 
+  </data> 
+  <data name="tabTitleHome" xml:space="preserve"> 
+    <value>Aloitus</value> 
+  </data> 
+  <data name="tabTitleStorage" xml:space="preserve"> 
+    <value>Tallennus</value> 
+  </data> 
+  <data name="teachingTipInvalidFolderAdvancedContent" xml:space="preserve"> 
+    <value>Kansio ei saa olla aseman juuri eikä se saa sisältää tai olla jo synkronoidun kansion sisällä.</value> 
+  </data> 
+  <data name="teachingTipInvalidFolderContent" xml:space="preserve"> 
+    <value>Kansion on oltava tyhjä, se ei saa olla aseman juuri, eikä se saa sisältää tai olla jo synkronoidun kansion sisällä.</value> 
+  </data> 
+  <data name="teachingTipInvalidFolderTitle" xml:space="preserve"> 
+    <value>Tätä kansiota ei voi käyttää</value> 
+  </data> 
+  <data name="titleConflictIndividualResolution" xml:space="preserve"> 
+    <value>Yksittäinen käsittely</value> 
+  </data> 
+  <data name="tooltipExclusionRuleNotifications" xml:space="preserve"> 
+    <value>Ilmoitus kertoo sinulle, kun tiedosto suljetaan pois tällä säännöllä</value> 
+  </data> 
+  <data name="trayIconButtonCloseKDrive.Label" xml:space="preserve"> 
+    <value>Sulje kDrive</value> 
+    <comment>This translation is used for the taskbar icon menu, which requires the x:Uid format (i.e., suffixed with .Label).</comment> 
+  </data> 
+  <data name="trayIconButtonOpenKDrive.Label" xml:space="preserve"> 
+    <value>Avaa kDrive</value> 
+    <comment>This translation is used for the taskbar icon menu, which requires the x:Uid format (i.e., suffixed with .Label).</comment> 
+  </data> 
+  <data name="unableToCreateRemoteFolderTeachingTipContent" xml:space="preserve"> 
+    <value>Tarkista, että internet-yhteysi on aktiivinen, että tätä nimeä ei ole jo käytössä ja ettei se sisällä virheellisiä merkkejä.</value> 
+  </data> 
+  <data name="unableToCreateRemoteFolderTeachingTipTitle" xml:space="preserve"> 
+    <value>Tätä kansiota ei voi luoda</value> 
+  </data> 
+  <data name="unauthorizedAccess" xml:space="preserve"> 
+    <value>Luvaton käyttö</value> 
+  </data> 
+  <data name="unavailableContentNoActivityDescription" xml:space="preserve"> 
+    <value>Tiedostosi ovat käytettävissä ja synkronoitu.</value> 
+  </data> 
+  <data name="unavailableContentNoActivityTitle" xml:space="preserve"> 
+    <value>Ei viimeaikaista toimintaa</value> 
+  </data> 
+  <data name="unexpectedErrorTeachingTipContent" xml:space="preserve"> 
+    <value>Yritä uudelleen hetken kuluttua.
+Jos ongelma jatkuu, ota yhteyttä tukeen.</value> 
+  </data> 
+  <data name="unexpectedErrorTeachingTipTitle" xml:space="preserve"> 
+    <value>Odottamaton virhe tapahtui</value> 
+  </data> 
+  <data name="untilTomorrow" xml:space="preserve"> 
+    <value>Huomiseen saakka</value> 
+  </data> 
+  <data name="updateAvailable" xml:space="preserve"> 
+    <value>kDrive %@ saatavilla</value> 
+  </data> 
+  <data name="updateDialogDescription" xml:space="preserve"> 
+    <value>Asennus kestää alle minuutin.
+Synkronointi jatkuu automaattisesti lopuksi.</value> 
+  </data> 
+  <data name="updateDialogIgnoreVersion" xml:space="preserve"> 
+    <value>Ohita tämä versio</value> 
+  </data> 
+  <data name="updateDialogInstallNow" xml:space="preserve"> 
+    <value>Asenna nyt</value> 
+  </data> 
+  <data name="updateDialogRemindLater" xml:space="preserve"> 
+    <value>Muistuta myöhemmin</value> 
+  </data> 
+  <data name="updateDialogSeeWhatsNew" xml:space="preserve"> 
+    <value>Katso uutuudet</value> 
+  </data> 
+  <data name="updateDialogSubtitle" xml:space="preserve"> 
+    <value>Versio %@ · Käytät versiota %@</value> 
+  </data> 
+  <data name="updateDialogTitle" xml:space="preserve"> 
+    <value>Päivitys saatavilla</value> 
+  </data> 
+  <data name="updateRequiredDescription" xml:space="preserve"> 
+    <value>Uusi kDrive-versio on tarpeen jatkamiseksi.
+Päivitä sovellus päästäksesi tiedostoihisi ja jatkaaksesi synkronointia.</value> 
+  </data> 
+  <data name="updateRequiredTitle" xml:space="preserve"> 
+    <value>Päivitys vaaditaan</value> 
+  </data> 
+  <data name="updateSettings" xml:space="preserve"> 
+    <value>Päivitys</value> 
+  </data> 
+  <data name="uploadNotTerminatedErrorTitle" xml:space="preserve"> 
+    <value>Keskeytynyt lataus</value> 
+  </data> 
+  <data name="userExclusionFileListDescription" xml:space="preserve"> 
+    <value>Lisää synkronoinnista poissuljetavat tiedostot.</value> 
+  </data> 
+  <data name="userExclusionFileListHeader" xml:space="preserve"> 
+    <value>Mukautetut poissulkemissäännöt</value> 
+  </data> 
+  <data name="viewSourceCode" xml:space="preserve"> 
+    <value>Näytä lähdekoodi</value> 
+  </data> 
+  <data name="winInformationBlockSynchroErrorTitle" xml:space="preserve"> 
+    <value>Sinulla on synkronointivirhe</value> 
+    <comment>Title in the Windows information banner when there is exactly one synchronization error.</comment> 
+  </data> 
+  <data name="winInformationBlockSynchroErrorTitle-plural" xml:space="preserve"> 
+    <value>Sinulla on {0} synkronointivirhettä</value> 
+    <comment>Title in the Windows information banner when there are multiple sync errors; {0} is the error count.</comment> 
+  </data> 
+  <data name="winStorageMissingDiskDescription" xml:space="preserve"> 
+    <value>kDrive ei pääse levylle %@
+Varmista, että se on kytketty,
+lukitsematon ja tietokoneeltasi käytettävissä.</value> 
+    <comment>Description shown when a storage disk is missing or inaccessible; %@ is the disk name or drive letter.</comment> 
+  </data> 
+  <data name="winStorageMissingDiskTitle" xml:space="preserve"> 
+    <value>Tallennuslevy %@ ei ole käytettävissä</value> 
+    <comment>Title shown when a storage disk is not accessible; %@ is the disk name or drive letter.</comment> 
+  </data> 
+  <data name="winbuttonRemoveFileExclusionRule" xml:space="preserve"> 
+    <value>Poista</value> 
+    <comment>Button to remove a single selected file exclusion rule from the exclusion list.</comment> 
+  </data> 
+  <data name="winbuttonRemoveFileExclusionRule-plural" xml:space="preserve"> 
+    <value>Poista (%@ sääntöä)</value> 
+    <comment>Button to remove multiple selected file exclusion rules; %@ is the number of rules to be removed.</comment> 
+  </data> 
+</root>

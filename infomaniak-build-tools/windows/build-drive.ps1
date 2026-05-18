@@ -1,4 +1,4 @@
-﻿<#
+<#
  Infomaniak kDrive - Desktop App
  Copyright (C) 2023-2026 Infomaniak Network SA
 
@@ -22,6 +22,9 @@ Param(
     [ValidateSet('Release', 'RelWithDebInfo', 'Debug')]
     [string] $buildType = "RelWithDebInfo",
 
+    # Thumbprint: The thumbprint of the debug or KSP certificate
+    [string] $thumbprint,
+
     # Path: The path to the root CMakeLists.txt
     [string] $path = $PWD.Path,
 
@@ -34,13 +37,10 @@ Param(
     # Ci: Build configured for CI
     [switch] $ci,
 
-    # Upload: Flag to trigger the use of the USB-key signing certificate
+    # Upload: Flag to trigger the use of the KSP client certificate
     [switch] $upload,
 
-    # tokenPass: The password to use for unlocking the USB-key signing certificate (only used if upload is set)
-    [String] $tokenPass,
-	
-	# Msi: Build MSI installer
+    # Msi: Build MSI installer
     [switch] $msi,
 
     # Coverage: Flag to enable or disable the code coverage computation
@@ -82,7 +82,7 @@ $archiveDataPath = ('{0}\build-windows\{1}' -f $path.Replace('/', '\'), $archive
 
 #################################################################################################
 #                                                                                               #
-#										  	 IMPORT                                             #
+#                                            IMPORT                                             #
 #                                                                                               #
 #################################################################################################
 . "$path\infomaniak-build-tools\version-helpers.ps1"
@@ -109,10 +109,8 @@ function Set-Bullseye-Coverage {
         $cmd = Get-Command cov01.exe -ErrorAction Stop
         & $cmd $cov01Parameter
      } catch {
-         Write-Host "BullseyeCoverage cov01.exe command not found."
-         if ($enable) {
-            exit 1
-         }
+        Write-Host "BullseyeCoverage cov01.exe command not found."
+        return 1
      }
      
      $outputString = "disabled"
@@ -121,6 +119,7 @@ function Set-Bullseye-Coverage {
     }
 
      Write-Host "BullseyeCoverage is $outputString."
+     return 0
 } 
 function Clean {
     param (
@@ -141,10 +140,11 @@ function Get-Version {
     
 }
 
-function Get-Thumbprint {
+function Get-Cert-Property {
     param (
-        [bool] $upload,
-        [bool] $ci # On CI build machines, the certificate are located in local computer store
+        [string] $thumbprint,
+        [bool] $ci, # On CI build machines, the certificate are located in local computer store
+        [string] $property
     )
     if ($ci) {
         $certStore = "Cert:\LocalMachine\My"
@@ -152,23 +152,26 @@ function Get-Thumbprint {
         $certStore = "Cert:\CurrentUser\My"
     }
     
-    $thumbprint = 
-    If ($upload) {
-         Get-ChildItem $certStore | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -match "EV" } | Select -ExpandProperty Thumbprint
-    } 
-    Else {
-        Get-ChildItem $certStore | Where-Object { $_.Subject -match "Windows11CI-1" -and $_.Issuer -match "Windows11CI-1" } | Select -ExpandProperty Thumbprint
-    }
-    Write-Host "Using thumbprint: $thumbprint"
+    $value = Get-ChildItem $certStore/$thumbprint | Select -ExpandProperty $property
 
-    return $thumbprint
+    return $value
+}
+
+function Get-Subject {
+    param (
+        [string] $thumbprint,
+        [bool] $ci # On CI build machines, the certificate are located in local computer store
+    )
+
+    $subject = Get-Cert-Property $thumbprint $ci "Subject"
+    return $subject
 }
 
 function Get-Aumid {
     param (
         [bool] $upload
     )
-   $aumid = if ($upload) { $env:KDC_PHYSICAL_AUMID } else { $env:KDC_VIRTUAL_AUMID }
+    $aumid = if ($upload) { $env:KDC_RELEASE_AUMID } else { $env:KDC_DEBUG_AUMID }
 
     if (!$aumid) {
         Write-Host "The AUMID value could not be read from env.
@@ -182,7 +185,7 @@ function Get-Aumid {
 function Get-Package-Name {
     param (
         [switch] $msi,
-		[switch] $exe
+	[switch] $exe
     )
 
     $prodName = "kDrive"
@@ -228,15 +231,13 @@ function Build-Extension {
 
     $configuration = $buildType
     if ($buildType -eq "RelWithDebInfo") { $configuration = "Release" }
-    if($upload) {
-        $publisher = "CN=Infomaniak Network SA, O=Infomaniak Network SA, S=Genève, C=CH, OID.2.5.4.15=Private Organization, OID.1.3.6.1.4.1.311.60.2.1.3=CH, SERIALNUMBER=CHE-103.167.648"
-    }else{
-        $publisher = "CN=Windows11CI-1"
-    }
+
+    $subject = Get-Subject -Thumbprint $thumbprint -Ci $ci
+    Write-Host "Subject: $subject"
 
     $appxManifestPath = "$extPath\FileExplorerExtensionPackage\Package.appxmanifest"
     if (Test-Path $appxManifestPath) {
-        (Get-Content $appxManifestPath -Raw) -replace 'Publisher="[^"]*"', "Publisher=`"$publisher`"" |
+        (Get-Content $appxManifestPath -Raw) -replace 'Publisher="[^"]*"', "Publisher=`"$subject`"" |
         Set-Content -Encoding UTF8 -Force $appxManifestPath
     } else {
         Write-Host "Package.appxmanifest not found at $appxManifestPath" -ForegroundColor Red
@@ -247,14 +248,14 @@ function Build-Extension {
     $version = Get-version -IncludeBuildVersion $true
     Write-Host "Extension version: $version"
 	
-	$aumid = Get-Aumid $upload
-	Write-Host "Building extension with AUMID: $aumid"
+    $aumid = Get-Aumid $upload
+    Write-Host "Building extension with AUMID: $aumid"
 	
     msbuild "$extPath\kDriveExt.sln" /p:Configuration=$configuration /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true /p:PackageCertificateThumbprint="$thumbprint" /p:KDC_AUMID="$aumid"
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     $bundlePath = "$extPath/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_${version}_Test/FileExplorerExtensionPackage_${version}_x64_arm64.msixbundle"
-    Sign-File -FilePath $bundlePath -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass -Description "FileExplorerExtensionPackage"
+    Sign-File -FilePath $bundlePath -Upload $upload -Thumbprint $thumbprint -Description "FileExplorerExtensionPackage"
 
     $srcVfsPath = "$path/src/libcommonserver/vfs/win/."
     Copy-Item -Path "$extPath/Vfs/../Common/debug.h" -Destination $srcVfsPath
@@ -434,11 +435,10 @@ function Sign-File {
         [string] $filePath,
         [bool] $upload = $false,
         [string] $thumbprint,
-        [string] $tokenPass = "",
-		[string] $description = ""
+        [string] $description = ""
     )
     Write-Host "Signing the file $filePath with thumbprint $thumbprint" -f Yellow
-    & "$path\infomaniak-build-tools\windows\ksigntool.exe" sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256 /fd sha256 /td sha256 /v /debug /sm /d $description $filePath /password:$tokenPass
+    & signtool.exe sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256 /fd sha256 /td sha256 /v /debug /sm /d $description $filePath
     $res = $LASTEXITCODE
     Write-Host "Signing exit code: $res" -ForegroundColor Yellow
     if ($res -ne 0) {
@@ -459,7 +459,8 @@ function Prepare-Archive {
         [string] $newGuiDir,
         [string] $archivePath,
         [bool] $upload,
-        [bool] $ci
+        [bool] $ci,
+        [string] $thumbprint
     )
 
     Write-Host "Preparing the archive ..."
@@ -529,8 +530,7 @@ function Prepare-Archive {
 
         $filename = Split-Path -Leaf $file
 
-        $thumbprint = Get-Thumbprint -Upload $upload -Ci $ci
-        Sign-File -FilePath $archivePath/$filename -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass -Description $filename
+        Sign-File -FilePath $archivePath/$filename -Upload $upload -Thumbprint $thumbprint -Description $filename
 
     }
 
@@ -548,7 +548,7 @@ function Prepare-Archive {
             $signature.Status -eq 'NotSigned'
         }
         foreach ($file in $filesToSign) {
-            Sign-File -FilePath $file.FullName -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass -Description $file.Name
+            Sign-File -FilePath $file.FullName -Upload $upload -Thumbprint $thumbprint -Description $file.Name
             Write-Host "Signed file: $($file.FullName)"
         }
     }
@@ -565,7 +565,8 @@ function Create-Archive {
         [string] $archiveName,
         [string] $archivePath,
         [bool] $upload,
-        [bool] $ci
+        [bool] $ci,
+        [string] $thumbprint
     )
 
     Write-Host "Creating the archive ..."
@@ -588,11 +589,10 @@ function Create-Archive {
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     # Sign final installer
-    $thumbprint = Get-Thumbprint -Upload $upload -Ci $ci
     $installerPath = Get-Installer-Path -ContentPath $contentPath
 
     if (Test-Path -Path $installerPath) {
-        Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass -Description $appName
+        Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -Description $appName
         Write-Host ("$installerPath signed successfully.") -f Green
     }
     else {
@@ -607,7 +607,8 @@ function Create-MSI-Package {
     param (
         [string] $path,
         [string] $buildPath,
-        [string] $contentPath
+        [string] $contentPath,
+        [string] $thumbprint
     )
 
     Write-Host "Creating MSI package ..."
@@ -623,14 +624,10 @@ function Create-MSI-Package {
 	if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 	# Sign final installer
-	if (!$thumbprint) {
-		$thumbprint = Get-Thumbprint $upload
-	}
-
 	$installerPath = Get-Installer-Path -ContentPath $contentPath -msi
 
 	if (Test-Path -Path $installerPath) {
-		Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass -Description $appName
+		Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -Description $appName
 		Write-Host ("$installerPath signed successfully.") -f Green
 	}
 	else {
@@ -694,7 +691,7 @@ Parameters :
     `t`tremake`t`t: Remove all the files, then rebuild the project
     `t-ext`t`t`t: Rebuild and redeploy the windows extension
     `t-ci`t`t`t: Use the CI build configuration
-    `t-upload`t`t: Upload flag to switch between the virtual and physical certificates. Also rebuilds the project
+    `t-upload`t`t: Upload flag to switch between the debug and release certificates. Also rebuilds the project
     `t-coverage`t`t: Enable coverage computation
     `t-unitTests`t`t: Enable unit tests build
     ") -f Cyan
@@ -766,12 +763,19 @@ if ($upload) {
 #                                                                                               #
 #################################################################################################
 
-Set-Bullseye-Coverage $coverage
-Write-Host
-
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "Failed to enable code coverage computation. Aborting." -f Red
-    exit $LASTEXITCODE
+$res = Set-Bullseye-Coverage $coverage
+if ($res -ne 0) {
+    if (($ci -and $buildType -eq "Release") -or $coverage) {
+        $outputString = "disable"
+        if ($coverage) {
+            $outputString = "enable"
+        }
+        Write-Host "Failed to $outputString code coverage computation. Aborting." -f Red
+        exit $res
+    }
+    else {
+        Write-Host "Ignoring error returned by Set-Bullseye-Coverage because this is not a CI build." -f Yellow
+    }
 }
 
 #################################################################################################
@@ -781,7 +785,6 @@ if ($LASTEXITCODE -ne 0) {
 #################################################################################################
 
 if (!(Test-Path "$vfsDir\vfs.dll") -or $ext) {
-    $thumbprint = Get-Thumbprint -Upload $upload -Ci $ci
     Build-Extension -Path $path -ContentPath $contentPath -ExtPath $extPath -BuildType $buildType -Thumbprint $thumbprint
 
     if ($LASTEXITCODE -ne 0) {
@@ -822,7 +825,7 @@ if ($LASTEXITCODE -ne 0) {
 #                                                                                               #
 #################################################################################################
 
-Prepare-Archive -BuildType $buildType -BuildPath $buildPath -VfsDir $vfsDir -ArchivePath $archivePath -Upload $upload -Ci $ci -NewGuiDir "$buildPath/bin/client" -NewGui $newGui
+Prepare-Archive -BuildType $buildType -BuildPath $buildPath -VfsDir $vfsDir -ArchivePath $archivePath -Upload $upload -Ci $ci -NewGuiDir "$buildPath/bin/client" -NewGui $newGui -Thumbprint $thumbprint
 if ($LASTEXITCODE -ne 0)
 {
     Write-Host "Archive preparation failed. Aborting." -f Red
@@ -835,7 +838,7 @@ if ($LASTEXITCODE -ne 0)
 #                                                                                               #
 #################################################################################################
 
-Create-Archive -Path $path -BuildPath $buildPath -ContentPath $contentPath -InstallPath $installPath -Archivename $archiveName -ArchivePath $archivePath -Upload $upload -Ci $ci
+Create-Archive -Path $path -BuildPath $buildPath -ContentPath $contentPath -InstallPath $installPath -Archivename $archiveName -ArchivePath $archivePath -Upload $upload -Ci $ci -Thumbprint $thumbprint
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Archive creation failed ($LASTEXITCODE) . Aborting." -f Red
     exit $LASTEXITCODE
@@ -849,7 +852,7 @@ if ($LASTEXITCODE -ne 0) {
 #################################################################################################
 
 if ($msi) {
-    Create-MSI-Package -Path $path -buildPath $buildPath -ContentPath $contentPath
+    Create-MSI-Package -Path $path -buildPath $buildPath -ContentPath $contentPath -Thumbprint $thumbprint
     if ($LASTEXITCODE -ne 0) {
         Write-Host "MSI package creation failed ($LASTEXITCODE) . Aborting." -f Red
         exit $LASTEXITCODE

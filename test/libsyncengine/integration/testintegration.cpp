@@ -120,8 +120,10 @@ void TestIntegration::setUp() {
     (void) IoHelper::getFileStat(_localSyncDir.path(), &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
 
     // This is an advanced sync. Define remote target path and remote target node ID.
-    const Sync sync(1, drive.dbId(), _localSyncDir.path(), std::to_string(fileStat.inode),
-                    remoteTestCiDirPath / _remoteSyncDir.name(), _remoteSyncDir.id());
+    Sync sync(1, drive.dbId(), _localSyncDir.path(), std::to_string(fileStat.inode), remoteTestCiDirPath / _remoteSyncDir.name(),
+              _remoteSyncDir.id());
+    const auto syncDbPath = MockDb::makeDbName(user.userId(), account.accountId(), drive.driveId(), sync.dbId());
+    sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(sync);
 
     // Setup proxy
@@ -311,7 +313,7 @@ void TestIntegration::testBlacklist() {
 
     CPPUNIT_ASSERT(!std::filesystem::exists(dirpath));
 #if defined(KD_LINUX)
-    CPPUNIT_ASSERT(testhelpers::isInTrash(dirpath));
+    CPPUNIT_ASSERT(!testhelpers::hasTrashInfo() || testhelpers::isInTrash(dirpath));
 #else
     CPPUNIT_ASSERT(testhelpers::isInTrash(dirpath.filename()));
 #endif
@@ -327,7 +329,7 @@ void TestIntegration::testBlacklist() {
 
     CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / filename));
 #if defined(KD_LINUX)
-    CPPUNIT_ASSERT(testhelpers::isInTrash(_syncPal->localPath() / filename));
+    CPPUNIT_ASSERT(!testhelpers::hasTrashInfo() || testhelpers::isInTrash(_syncPal->localPath() / filename));
 #else
     CPPUNIT_ASSERT(testhelpers::isInTrash(filename));
 #endif
@@ -488,7 +490,8 @@ void TestIntegration::testExclusionTemplates() {
                                             filename)); // The local file has been moved to trash.
     CPPUNIT_ASSERT(!std::filesystem::exists(filename));
 #if defined(KD_LINUX)
-    CPPUNIT_ASSERT(testhelpers::isInTrash(_syncPal->localPath() / tmpRemoteDir.name() / filename));
+    CPPUNIT_ASSERT(!testhelpers::hasTrashInfo() ||
+                   testhelpers::isInTrash(_syncPal->localPath() / tmpRemoteDir.name() / filename));
 #else
     CPPUNIT_ASSERT(testhelpers::isInTrash(filename));
 #endif

@@ -25,6 +25,8 @@
 
 #include "libcommon/utility/utility.h"
 
+#include <Poco/StreamCopier.h>
+
 #if defined(KD_MACOS)
 #include <sys/statvfs.h>
 #include <sys/mount.h>
@@ -339,6 +341,14 @@ std::string Utility::xxHashToStr(XXH64_hash_t hash) {
     return output;
 }
 
+void Utility::unzipStream(std::istream &inputStream, std::stringstream &ss,
+                          const Poco::InflatingStreamBuf::StreamType type /*= Poco::InflatingStreamBuf::STREAM_GZIP*/) {
+    Poco::InflatingInputStream inflater(inputStream, type);
+    while (inputStream) {
+        (void) Poco::StreamCopier::copyStream(inflater, ss);
+    }
+}
+
 #if defined(KD_MACOS)
 SyncPath Utility::getExcludedAppFilePath(const bool test /*= false*/) {
     if (test) return excludedAppFileName;
@@ -478,7 +488,7 @@ bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isM
     return true;
 }
 
-bool Utility::isLiteSyncExtError(const ExitInfo &exitInfo) {
+bool Utility::isLiteSyncExtError([[maybe_unused]] const ExitInfo &exitInfo) {
 #if defined(KD_MACOS)
     return (exitInfo.code() == ExitCode::SystemError &&
             (exitInfo.cause() == ExitCause::LiteSyncNotAllowed || exitInfo.cause() == ExitCause::LiteSyncExtNotRunning));
@@ -580,7 +590,7 @@ bool Utility::isError500(const Poco::Net::HTTPResponse::HTTPStatus httpErrorCode
 }
 
 static constexpr uint64_t maxNbCreationTmpFolderRetries = 3;
-ExitInfo Utility::tryCreateTmpDir(const std::shared_ptr<CacheDirectory> cacheDirectory,
+ExitInfo Utility::tryCreateTmpDir([[maybe_unused]] const std::shared_ptr<CacheDirectory> cacheDirectory,
                                   const SyncName &name /*= Str("testDir")*/) {
 #if defined(KD_MACOS)
     if (!cacheDirectory) {
@@ -645,24 +655,26 @@ ExitInfo Utility::tryCreateTmpFile(const std::shared_ptr<CacheDirectory> cacheDi
     }
 
     SyncPath cacheDirectoryPath;
-    if (const auto exitInfo = cacheDirectory->path(cacheDirectoryPath); !exitInfo) {
-        return exitInfo;
-    }
+    if (const auto exitInfo = cacheDirectory->path(cacheDirectoryPath); !exitInfo) return exitInfo;
+
     SyncPath tmpPath = cacheDirectoryPath / name;
-    uint64_t retries = 0;
-    bool ok = false;
+    Count retries = 0;
+    bool exists = false;
+
+    const auto createPathInCacheWithRandomSuffix = [&cacheDirectoryPath, &name]() {
+        return cacheDirectoryPath / (name + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()));
+    };
+
     do {
-        bool exists = false;
-        auto output = std::ofstream(tmpPath.native().c_str(), std::ios::binary);
-        if (!output) {
+        if (auto output = std::ofstream(tmpPath.native().c_str(), std::ios::binary); !output) {
             if (const auto exitInfo = checkTmpDirectoryRights(cacheDirectoryPath); !exitInfo) return exitInfo;
 
-            retries++;
-            // Retry with a random suffix added to item name
-            tmpPath = cacheDirectoryPath / (name + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()));
+            ++retries;
+            tmpPath = createPathInCacheWithRandomSuffix();
+
             continue;
-        }
-        output.close();
+        } else
+            output.close();
 
         // Check if item already exist (it should exist at this point)
         if (auto ioError = IoError::Unknown;
@@ -670,18 +682,51 @@ ExitInfo Utility::tryCreateTmpFile(const std::shared_ptr<CacheDirectory> cacheDi
             LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(tmpPath, ioError));
             return {ExitCode::SystemError, ioError == IoError::AccessDenied ? ExitCause::TmpDirAccessError : ExitCause::Unknown};
         }
-        if (!exists) {
-            retries++;
-            // Retry with a random suffix added to item name
-            tmpPath = cacheDirectoryPath / (name + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()));
-            continue;
-        }
-        ok = true;
-    } while (!ok && retries < maxNbCreationTmpFolderRetries);
 
-    auto ioError = IoError::Unknown;
-    (void) IoHelper::deleteItem(tmpPath, ioError);
-    return ok ? ExitCode::Ok : ExitCode::SystemError;
+        if (!exists) {
+            ++retries;
+            tmpPath = createPathInCacheWithRandomSuffix();
+        }
+    } while (!exists && retries < maxNbCreationTmpFolderRetries);
+
+    if (!exists) return {ExitCode::SystemError, ExitCause::InvalidName};
+
+    (void) IoHelper::deleteItem(tmpPath);
+
+    return ExitCode::Ok;
+}
+
+ExitInfo Utility::checkIfFileNamesCanEndWithSpace([[maybe_unused]] const std::shared_ptr<CacheDirectory> cacheDirectory,
+                                                  bool &canEndWithSpace) {
+    canEndWithSpace = true;
+
+#if defined(KD_LINUX)
+    SyncPath localSyncPath;
+    if (const auto exitInfo = cacheDirectory->path(localSyncPath); !exitInfo) {
+        if (exitInfo.cause() == ExitCause::TmpDirAccessError) {
+            LOG_WARN(logger(), "Cannot access tmp directory.");
+        }
+
+        return exitInfo;
+    }
+    if (CommonUtility::isEXT234(localSyncPath)) {
+        constexpr auto fileNameWithEndingSpace = "a ";
+
+        const auto exitInfo = tryCreateTmpFile(cacheDirectory, fileNameWithEndingSpace);
+        if (exitInfo.cause() == ExitCause::TmpDirAccessError) {
+            LOG_WARN(logger(), "Cannot access tmp directory.");
+
+            return exitInfo;
+        }
+
+        if (!exitInfo) {
+            LOG_DEBUG(logger(), "The file system in use does not support file names with an ending space.");
+            canEndWithSpace = false;
+        }
+    }
+#endif
+
+    return ExitCode::Ok;
 }
 
 void Utility::msleep(const int64_t msec) {

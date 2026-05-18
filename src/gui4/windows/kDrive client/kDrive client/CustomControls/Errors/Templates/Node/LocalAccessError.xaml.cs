@@ -15,8 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
@@ -35,6 +37,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
     )]
     public sealed partial class LocalAccessError : UserControl
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private Error Error { get; init; }
         public LocalAccessError(Error error)
         {
@@ -50,11 +53,14 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
                 return;
             }
 
-            if(Error.Sync is null) {          
+            if (Error.Sync is null)
+            {
                 Logger.Log(Logger.Level.Error, "Error.Sync is null");
                 Utility.ShowUnexpectedErrorTeachingTip();
                 return;
             }
+
+            _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageFileAccessError);
 
             ContentDialog dialog = new ContentDialog
             {
@@ -75,6 +81,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
                 }
                 else
                 {
+                    _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.FileAccessErrorOpenFolder);
                     await Utility.OpenFolderSecurely(absolutPath);
                 }
             }

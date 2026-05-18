@@ -87,7 +87,7 @@ public partial class SystemErrorSyncDirAccessErrorDialog : Page
 
     private async void RecreateSync_Click(Hyperlink sender, HyperlinkClickEventArgs args)
     {
-        var frame = ((App.Current as App)?.CurrentWindow as MainWindow)?.AppNavView.Frame;
+        var frame = Utility.GetFrame(this);
         if (frame is null)
         {
             Logger.Log(Logger.Level.Error, "Failed to navigate to the sync setup page after a sync directory change error because the main frame could not be found.");

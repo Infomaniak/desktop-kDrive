@@ -8,7 +8,10 @@
   </PropertyGroup>
 	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
 		<Exec Command="powershell -ExecutionPolicy Bypass -NoProfile -File &quot;$(ProjectDir)..\fetchVersion.ps1&quot; -CsProjPath &quot;$(ProjectDir)..\kDrive client\kDrive client.csproj&quot; -RepositoryRootPath &quot;$(ProjectDir)..\..\..\..\..\&quot;" />
+		<Exec Command="powershell -ExecutionPolicy Bypass -NoProfile -File &quot;$(ProjectDir)\..\checkTranslationKeys.ps1&quot;" />
+		<Exec Command="powershell -ExecutionPolicy Bypass -NoProfile -File &quot;$(ProjectDir)\..\lottieConverter.ps1&quot; -Directory &quot;$(ProjectDir)\..\kDrive client\Assets\Custom\Animations&quot;" />
 	</Target>
+	
 	<Target Name="CleanOutputAfterBuild" AfterTargets="Build">
 		<RemoveDir Directories="$(OutputPath)" />
 	</Target>

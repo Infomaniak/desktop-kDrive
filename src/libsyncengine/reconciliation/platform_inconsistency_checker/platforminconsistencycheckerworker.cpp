@@ -59,8 +59,8 @@ void PlatformInconsistencyCheckerWorker::execute() {
 ExitCode PlatformInconsistencyCheckerWorker::checkTree(ReplicaSide side) {
     std::shared_ptr<Node> node = _syncPal->updateTree(side)->rootNode();
     const SyncPath &parentPath = node->name();
-    assert(side == ReplicaSide::Remote ||
-           side == ReplicaSide::Local && "Invalid side in PlatformInconsistencyCheckerWorker::checkTree");
+    assert((side == ReplicaSide::Remote || side == ReplicaSide::Local) &&
+           "Invalid side in PlatformInconsistencyCheckerWorker::checkTree");
 
     ExitCode exitCode = ExitCode::Unknown;
     sentry::PTraceUPtr perfmonitor;
@@ -87,9 +87,14 @@ ExitCode PlatformInconsistencyCheckerWorker::checkRemoteTree(std::shared_ptr<Nod
         return ExitCode::Ok;
     }
 
-    if (pathChanged(remoteNode) && !checkPathAndName(remoteNode)) {
-        // Item has been blacklisted
-        return ExitCode::Ok;
+    if (pathChanged(remoteNode)) {
+        bool pathAndNameAreValid = true;
+        const auto exitInfo = checkIfPathAndNameAreValid(remoteNode, pathAndNameAreValid);
+
+        if (!exitInfo) return exitInfo;
+
+        // The item has been blacklisted.
+        if (!pathAndNameAreValid) return ExitCode::Ok;
     }
 
     bool checkAgainstSiblings = false;
@@ -171,28 +176,61 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(std::shared_ptr<Node> nod
     _idsToBeRemoved.emplace_back(nodeIDs);
 }
 
-bool PlatformInconsistencyCheckerWorker::checkPathAndName(std::shared_ptr<Node> remoteNode) {
+ExitInfo PlatformInconsistencyCheckerWorker::checkIfPathAndNameAreValid(std::shared_ptr<Node> remoteNode,
+                                                                        bool &pathAndNameAreValid) {
+    pathAndNameAreValid = true;
+
     const SyncPath relativePath = remoteNode->getPath();
-    if (PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(remoteNode->name())) {
-        blacklistNode(remoteNode, InconsistencyType::ForbiddenChar);
-        return false;
+    bool hasForbiddenCharacters = false;
+    if (const auto exitInfo = PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
+                remoteNode->name(), _syncPal->cacheDirectory(), hasForbiddenCharacters);
+        !exitInfo) {
+        pathAndNameAreValid = false;
+        LOGW_SYNCPAL_INFO(_logger,
+                          L"Error in PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars: exitInfo=" << exitInfo);
+        return exitInfo;
     }
 
-    if (PlatformInconsistencyCheckerUtility::nameEndWithForbiddenSpace(remoteNode->name())) {
-        blacklistNode(remoteNode, InconsistencyType::ForbiddenCharEndWithSpace);
-        return false;
+    if (hasForbiddenCharacters) {
+        blacklistNode(remoteNode, InconsistencyType::ForbiddenChar);
+        pathAndNameAreValid = false;
+
+        return ExitCode::Ok;
     }
+
+    bool endsWithForbiddenSpace = false;
+    if (const auto exitInfo = PlatformInconsistencyCheckerUtility::checkIfNameEndsWithForbiddenSpace(
+                remoteNode->name(), _syncPal->cacheDirectory(), endsWithForbiddenSpace);
+        !exitInfo) {
+        LOGW_SYNCPAL_INFO(_logger, L"Error in PlatformInconsistencyCheckerUtility::checkIfNameEndsWithForbiddenSpace: exitInfo="
+                                           << exitInfo);
+        pathAndNameAreValid = false;
+
+        return exitInfo;
+    }
+
+    if (endsWithForbiddenSpace) {
+        blacklistNode(remoteNode, InconsistencyType::ForbiddenCharEndWithSpace);
+        pathAndNameAreValid = false;
+
+        return ExitCode::Ok;
+    }
+
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(remoteNode->name())) {
         blacklistNode(remoteNode, InconsistencyType::ReservedName);
-        return false;
+        pathAndNameAreValid = false;
+
+        return ExitCode::Ok;
     }
 
     if (PlatformInconsistencyCheckerUtility::instance()->isNameTooLong(remoteNode->name())) {
         blacklistNode(remoteNode, InconsistencyType::NameLength);
-        return false;
+        pathAndNameAreValid = false;
+
+        return ExitCode::Ok;
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
 void PlatformInconsistencyCheckerWorker::checkNameClashAgainstSiblings(const std::shared_ptr<Node> remoteParentNode) {

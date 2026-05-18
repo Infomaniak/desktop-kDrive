@@ -49,7 +49,7 @@
                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                 </StackPanel>
                 <InfoBadge Grid.Column="1"
-                           Style="{StaticResource AttentionDotInfoBadgeStyle}"
+                           Style="{StaticResource CriticalDotInfoBadgeStyle}"
                            VerticalAlignment="Center"
                            HorizontalAlignment="Right"
                            Visibility="{x:Bind GetSyncSelectorInfoBadgeVisibility(SyncErrors, Drive.Account.User.AppModel.SelectedSync), Mode=OneWay, FallbackValue=Collapsed}" />
@@ -104,5 +104,6 @@
               HorizontalAlignment="Stretch"
               ItemsSource="{x:Bind ViewModel.AllSyncs, Mode=OneWay}"
               SelectedItem="{x:Bind ViewModel.SelectedSync, Mode=TwoWay}"
-              ItemTemplateSelector="{StaticResource ComboBoxItemTemplateSelector}" />
+              ItemTemplateSelector="{StaticResource ComboBoxItemTemplateSelector}" 
+              SelectionChanged="SyncCombo_SelectionChanged"/>
 </UserControl>

@@ -65,6 +65,7 @@ class SqliteDb {
         int extendedErrorCode() const;
         inline void setAutoDelete(bool value) { _autoDelete = value; }
 
+        bool walCheckpointTruncate();
         int createNormalizeSyncNameFunc();
 
     private:

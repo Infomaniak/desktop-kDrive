@@ -16,8 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 using CommunityToolkit.WinUI.Controls;
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
@@ -25,6 +27,8 @@ namespace Infomaniak.kDrive.CustomControls
 {
     public sealed partial class LogUploadSettingsCard : SettingsCard
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
+
         public LogUploadSettingsCard()
         {
             InitializeComponent();
@@ -61,14 +65,20 @@ namespace Infomaniak.kDrive.CustomControls
             var result = await dialog.ShowAsync();
 
             if (result == ContentDialogResult.Primary)
+            {
+                _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.SendLogToSupport);
                 await LogUploadManager.StartUpload(!(popupPage.LastSessionCheckBox.IsChecked ?? false));
+            }
             else
+            {
                 Logger.Log(Logger.Level.Info, "Log upload canceled");
+            }
         }
 
         private async void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             await LogUploadManager.CancelUpload();
+            _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.CancelLogToSupport);
         }
     }
 

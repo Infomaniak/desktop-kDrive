@@ -147,7 +147,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         virtual ~SyncPal();
 
         inline void setAddErrorCallback(const std::function<void(const Error &)> &addError) { _addError = addError; }
-        inline void setResolveSyncErrorsByExitCauseCallback(const std::function<void(SyncDbId syncDbId, ExitCause cause)> &resolveSyncErrors) {
+        inline void setResolveSyncErrorsByExitCauseCallback(
+                const std::function<void(SyncDbId syncDbId, ExitCause cause)> &resolveSyncErrors) {
             _resolveSyncErrors = resolveSyncErrors;
         }
 
@@ -193,8 +194,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         [[nodiscard]] std::shared_ptr<ConflictQueue> conflictQueue() const { return _conflictQueue; }
 
         // TODO : not ideal, to be refactored
-        bool checkIfExistsOnServer(const SyncPath &path, bool &exists) const;
-        bool checkIfCanShareItem(const SyncPath &path, bool &canShare) const;
+        ExitInfo checkIfExistsOnServer(const SyncPath &path, bool &exists) const;
+        ExitInfo checkIfCanShareItem(const SyncPath &path, bool &canShare) const;
 
         ExitCode fileRemoteIdFromLocalPath(const SyncPath &path, NodeId &nodeId) const;
         ExitCode syncIdSet(SyncNodeType type, NodeSet &nodeIdSet);

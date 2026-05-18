@@ -53,7 +53,6 @@ class MigrationParams {
     private:
         ExitCode loadAccount(QSettings &settings);
 
-        Language strToLanguage(QString lang);
         LogLevel intToLogLevel(int log);
         VirtualFileMode modeFromString(const QString &str);
         int extractDriveIdFromUrl(std::string url);

@@ -93,6 +93,21 @@ public enum UILogLevel: String, CaseIterable, Sendable, Equatable {
     case warning
     case error
     case fatal
+
+    public var label: String {
+        switch self {
+        case .info:
+            return KDriveLocalizable.logLevelInfo
+        case .debug:
+            return KDriveLocalizable.logLevelDebug
+        case .error:
+            return KDriveLocalizable.logLevelError
+        case .fatal:
+            return KDriveLocalizable.logLevelFatal
+        case .warning:
+            return KDriveLocalizable.logLevelWarning
+        }
+    }
 }
 
 public enum UIDistributionChannel: String, CaseIterable, Sendable, Equatable {

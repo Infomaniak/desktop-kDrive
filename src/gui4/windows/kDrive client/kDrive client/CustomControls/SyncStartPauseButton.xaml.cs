@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,6 +28,8 @@ namespace Infomaniak.kDrive.CustomControls;
 
 public sealed partial class SyncStartPauseButton : UserControl
 {
+    private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
+
     private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
     public AppModel ViewModel
     {
@@ -47,6 +50,7 @@ public sealed partial class SyncStartPauseButton : UserControl
                 Logger.Log(Logger.Level.Error, "Failed to pause sync.");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
+            _analyticsService.TrackClick(Analytics.Keys.Category.StartPauseButton, Analytics.Keys.EventName.PauseSync);
         }
         else if (ViewModel?.SelectedSync is not null)
         {
@@ -56,6 +60,7 @@ public sealed partial class SyncStartPauseButton : UserControl
                 Logger.Log(Logger.Level.Error, "Failed to start sync.");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
+            _analyticsService.TrackClick(Analytics.Keys.Category.StartPauseButton, Analytics.Keys.EventName.StartSync);
         }
     }
 }

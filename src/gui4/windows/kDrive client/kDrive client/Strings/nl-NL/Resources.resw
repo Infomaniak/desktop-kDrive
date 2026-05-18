@@ -1,0 +1,1715 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<root> 
+  <!--
+  Loco xml export: ResX - .NET resources
+  Project: kDrive Desktop
+  Locale: nl, Dutch; Flemish
+  Tagged: windows
+  Exported by: Herve Eruam
+  Exported at: Mon, 11 May 2026 09:31:50 +0200 
+  --> 
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <metadata name="locoLocaleCode">
+    <value>nl</value>
+  </metadata>
+  <metadata name="locoLocaleName" xml:space="preserve">
+    <value>Dutch; Flemish</value>
+  </metadata> 
+  <data name="aboutAppVersionCopyright" xml:space="preserve"> 
+    <value>Versie %@.%@
+© 2019-%@ Infomaniak Network SA -</value> 
+  </data> 
+  <data name="aboutKDrive" xml:space="preserve"> 
+    <value>Over kDrive</value> 
+  </data> 
+  <data name="aboutKDriveDescription" xml:space="preserve"> 
+    <value>Ontwikkeld en uitsluitend gehost in Zwitserland biedt kDrive totale bescherming van uw gegevens, zonder doorverkoop of bespionering, in ISO-gecertificeerde datacenters, met versleuteling en back-up op meerdere media.</value> 
+  </data> 
+  <data name="activitiesTitleIdle" xml:space="preserve"> 
+    <value>Synchronisatie voltooid</value> 
+  </data> 
+  <data name="activitiesTitleInProgress" xml:space="preserve"> 
+    <value>Synchronisatie bezig</value> 
+  </data> 
+  <data name="activitiesTitleNoActivity" xml:space="preserve"> 
+    <value>Geen recente activiteit</value> 
+  </data> 
+  <data name="activitiesTitleOffline" xml:space="preserve"> 
+    <value>U bent offline</value> 
+  </data> 
+  <data name="activitiesTitlePause" xml:space="preserve"> 
+    <value>Synchronisatie onderbroken</value> 
+  </data> 
+  <data name="activitiesTypeAllActivities" xml:space="preserve"> 
+    <value>Alle activiteiten</value> 
+  </data> 
+  <data name="activitiesTypeMyActivity" xml:space="preserve"> 
+    <value>Alleen mijn activiteit</value> 
+  </data> 
+  <data name="addAdvancedSyncDialogTitle" xml:space="preserve"> 
+    <value>Een map synchroniseren met kDrive</value> 
+  </data> 
+  <data name="addAdvancedSyncLocalFolderDescription" xml:space="preserve"> 
+    <value>Kies de map op uw computer die u wilt synchroniseren met kDrive:</value> 
+  </data> 
+  <data name="addAdvancedSyncLocalFolderTitle" xml:space="preserve"> 
+    <value>Gesynchroniseerde map</value> 
+  </data> 
+  <data name="addAdvancedSyncRemoteFolderDescription" xml:space="preserve"> 
+    <value>Pas de locatie van uw computermap op kDrive aan:</value> 
+  </data> 
+  <data name="addAdvancedSyncRemoteFolderPageTitle" xml:space="preserve"> 
+    <value>Kies de maplocatie op kDrive</value> 
+  </data> 
+  <data name="addAdvancedSyncRemoteFolderTitle" xml:space="preserve"> 
+    <value>kDrive-locatie</value> 
+  </data> 
+  <data name="advancedSyncDescription" xml:space="preserve"> 
+    <value>Selecteer een map op uw computer om te synchroniseren met kDrive.
+U kunt uw geavanceerde synchronisaties openen via de schijfkiezer op de startpagina.</value> 
+  </data> 
+  <data name="advancedSyncSubtitle" xml:space="preserve"> 
+    <value>Een map synchroniseren met kDrive</value> 
+  </data> 
+  <data name="advancedSyncTitle" xml:space="preserve"> 
+    <value>Geavanceerde synchronisatie</value> 
+  </data> 
+  <data name="appUpToDate" xml:space="preserve"> 
+    <value>De applicatie is up-to-date</value> 
+  </data> 
+  <data name="applyingChange" xml:space="preserve"> 
+    <value>Wijziging toepassen…</value> 
+  </data> 
+  <data name="autoCleanupLogsDescription" xml:space="preserve"> 
+    <value>Verwijdert logboeken ouder dan 7 dagen om schijfruimte te besparen.</value> 
+  </data> 
+  <data name="autoCleanupLogsSetting" xml:space="preserve"> 
+    <value>Automatisch opruimen</value> 
+  </data> 
+  <data name="automaticUpdatesSetting" xml:space="preserve"> 
+    <value>Automatische updates</value> 
+  </data> 
+  <data name="availableOffline" xml:space="preserve"> 
+    <value>Beschikbaar offline</value> 
+  </data> 
+  <data name="availableOfflineDescription" xml:space="preserve"> 
+    <value>Uw bestanden worden gekopieerd naar uw computer.
+U kunt ze op elk moment openen, zelfs zonder internetverbinding.</value> 
+  </data> 
+  <data name="backErrorDriveAsleepDescription" xml:space="preserve"> 
+    <value>U kunt het activeren vanuit de webinterface.</value> 
+  </data> 
+  <data name="betaProgramDescription" xml:space="preserve"> 
+    <value>Krijg vroeg toegang tot nieuwe versies van de applicatie voordat ze worden vrijgegeven aan het grote publiek en help de app te verbeteren door uw verbeterideeën met ons te delen.</value> 
+  </data> 
+  <data name="betaProgramTitle" xml:space="preserve"> 
+    <value>Deelnemen aan het bètaprogramma</value> 
+  </data> 
+  <data name="browserSignInInstruction" xml:space="preserve"> 
+    <value>Uw browser zou automatisch moeten openen om het inloggen te voltooien. Zodra u bent ingelogd, keert u automatisch terug naar kDrive.</value> 
+    <comment>Instruction shown during sign-in when waiting for browser-based authentication to complete.</comment> 
+  </data> 
+  <data name="buttonActivateOfflineSync" xml:space="preserve"> 
+    <value>Offline synchronisatie inschakelen</value> 
+  </data> 
+  <data name="buttonAddAdvancedSync" xml:space="preserve"> 
+    <value>Een map synchroniseren</value> 
+  </data> 
+  <data name="buttonAddFileExclusionRule" xml:space="preserve"> 
+    <value>Een regel toevoegen</value> 
+  </data> 
+  <data name="buttonAddStorage" xml:space="preserve"> 
+    <value>Opslag toevoegen</value> 
+  </data> 
+  <data name="buttonAdvancedParameters" xml:space="preserve"> 
+    <value>Geavanceerde instellingen</value> 
+  </data> 
+  <data name="buttonApplyToXFiles" xml:space="preserve"> 
+    <value>Toepassen op %@ bestanden</value> 
+  </data> 
+  <data name="buttonAskForAccess" xml:space="preserve"> 
+    <value>Toegang aanvragen</value> 
+  </data> 
+  <data name="buttonCancel" xml:space="preserve"> 
+    <value>Annuleren</value> 
+  </data> 
+  <data name="buttonChangeFolder" xml:space="preserve"> 
+    <value>Map wijzigen</value> 
+  </data> 
+  <data name="buttonChangeToOffline" xml:space="preserve"> 
+    <value>Offline opslaan</value> 
+  </data> 
+  <data name="buttonChangeToOnline" xml:space="preserve"> 
+    <value>Online opslaan</value> 
+  </data> 
+  <data name="buttonChangeUser" xml:space="preserve"> 
+    <value>Van gebruiker wisselen</value> 
+  </data> 
+  <data name="buttonClose" xml:space="preserve"> 
+    <value>Sluiten</value> 
+  </data> 
+  <data name="buttonCloseKDrive" xml:space="preserve"> 
+    <value>kDrive sluiten</value> 
+    <comment>Button to quit the kDrive application entirely.</comment> 
+  </data> 
+  <data name="buttonConfigure" xml:space="preserve"> 
+    <value>Configureren</value> 
+  </data> 
+  <data name="buttonConfirm" xml:space="preserve"> 
+    <value>Bevestigen</value> 
+  </data> 
+  <data name="buttonConnect" xml:space="preserve"> 
+    <value>Inloggen</value> 
+  </data> 
+  <data name="buttonConnectAccount" xml:space="preserve"> 
+    <value>Een account verbinden</value> 
+  </data> 
+  <data name="buttonCopyShareLink" xml:space="preserve"> 
+    <value>Deellink kopiëren</value> 
+  </data> 
+  <data name="buttonCreateAccount" xml:space="preserve"> 
+    <value>Een account aanmaken</value> 
+  </data> 
+  <data name="buttonCreateNewSync" xml:space="preserve"> 
+    <value>Een nieuwe synchronisatie aanmaken</value> 
+  </data> 
+  <data name="buttonCustomLocation" xml:space="preserve"> 
+    <value>Aangepaste locatie</value> 
+  </data> 
+  <data name="buttonDisconnectAccount" xml:space="preserve"> 
+    <value>Dit account loskoppelen</value> 
+  </data> 
+  <data name="buttonDownloadInProgress" xml:space="preserve"> 
+    <value>Downloaden…</value> 
+  </data> 
+  <data name="buttonDownloadManually" xml:space="preserve"> 
+    <value>Handmatig downloaden</value> 
+  </data> 
+  <data name="buttonEnable" xml:space="preserve"> 
+    <value>Inschakelen</value> 
+  </data> 
+  <data name="buttonEnableInSettings" xml:space="preserve"> 
+    <value>Inschakelen in Windows-instellingen</value> 
+  </data> 
+  <data name="buttonErrorResolutionTip" xml:space="preserve"> 
+    <value>Het probleem begrijpen</value> 
+  </data> 
+  <data name="buttonFeedback" xml:space="preserve"> 
+    <value>Een idee delen</value> 
+  </data> 
+  <data name="buttonFixErrors" xml:space="preserve"> 
+    <value>Fouten corrigeren</value> 
+  </data> 
+  <data name="buttonHelpdesk" xml:space="preserve"> 
+    <value>Ondersteuning</value> 
+  </data> 
+  <data name="buttonKDriveOnline" xml:space="preserve"> 
+    <value>kDrive online</value> 
+  </data> 
+  <data name="buttonKeepAccount" xml:space="preserve"> 
+    <value>Account bewaren</value> 
+  </data> 
+  <data name="buttonLogOut" xml:space="preserve"> 
+    <value>Uitloggen</value> 
+  </data> 
+  <data name="buttonLogin" xml:space="preserve"> 
+    <value>Inloggen</value> 
+  </data> 
+  <data name="buttonManage" xml:space="preserve"> 
+    <value>Beheren</value> 
+  </data> 
+  <data name="buttonManageDiskSpace" xml:space="preserve"> 
+    <value>Schijfruimte beheren</value> 
+  </data> 
+  <data name="buttonManageIndividually" xml:space="preserve"> 
+    <value>Bestanden afzonderlijk behandelen</value> 
+  </data> 
+  <data name="buttonManageStorage" xml:space="preserve"> 
+    <value>Opslag beheren</value> 
+  </data> 
+  <data name="buttonOpenDebugFolder" xml:space="preserve"> 
+    <value>Debugmap openen</value> 
+  </data> 
+  <data name="buttonOpenExplorer" xml:space="preserve"> 
+    <value>Verkenner openen</value> 
+  </data> 
+  <data name="buttonOpenFolder" xml:space="preserve"> 
+    <value>Map openen</value> 
+  </data> 
+  <data name="buttonOpenInBrowser" xml:space="preserve"> 
+    <value>Openen in browser</value> 
+  </data> 
+  <data name="buttonOpenInExplorer" xml:space="preserve"> 
+    <value>Openen in Verkenner</value> 
+    <comment>Button to reveal the selected item in Windows Explorer.</comment> 
+  </data> 
+  <data name="buttonOpenInKDrive" xml:space="preserve"> 
+    <value>Openen in kDrive Web</value> 
+  </data> 
+  <data name="buttonOpenKDrive" xml:space="preserve"> 
+    <value>kDrive openen</value> 
+  </data> 
+  <data name="buttonOpenParentFolder" xml:space="preserve"> 
+    <value>Bovenliggende map openen</value> 
+  </data> 
+  <data name="buttonOpenSyncExclusionRules" xml:space="preserve"> 
+    <value>Uitsluitingen beheren</value> 
+  </data> 
+  <data name="buttonOpenSyncSettings" xml:space="preserve"> 
+    <value>Synchronisatie-instellingen openen</value> 
+  </data> 
+  <data name="buttonPause" xml:space="preserve"> 
+    <value>Pauzeren</value> 
+  </data> 
+  <data name="buttonRefresh" xml:space="preserve"> 
+    <value>Vernieuwen</value> 
+  </data> 
+  <data name="buttonReleaseNotes" xml:space="preserve"> 
+    <value>Release-opmerkingen</value> 
+  </data> 
+  <data name="buttonRemove" xml:space="preserve"> 
+    <value>Verwijderen</value> 
+  </data> 
+  <data name="buttonRemoveSync" xml:space="preserve"> 
+    <value>Synchronisatie verwijderen</value> 
+  </data> 
+  <data name="buttonRenameItem" xml:space="preserve"> 
+    <value>%@ hernoemen</value> 
+  </data> 
+  <data name="buttonRestartSignIn" xml:space="preserve"> 
+    <value>Inloggen opnieuw starten</value> 
+  </data> 
+  <data name="buttonRestartSync" xml:space="preserve"> 
+    <value>Synchronisatie hervatten</value> 
+  </data> 
+  <data name="buttonRestartSynchro" xml:space="preserve"> 
+    <value>Synchronisatie opnieuw starten</value> 
+  </data> 
+  <data name="buttonRetry" xml:space="preserve"> 
+    <value>Opnieuw proberen</value> 
+  </data> 
+  <data name="buttonReturnToDefaultFolder" xml:space="preserve"> 
+    <value>Terug naar standaardmap</value> 
+  </data> 
+  <data name="buttonSave" xml:space="preserve"> 
+    <value>Opslaan</value> 
+  </data> 
+  <data name="buttonSaveMyChoices" xml:space="preserve"> 
+    <value>Mijn keuzes opslaan</value> 
+  </data> 
+  <data name="buttonSearch" xml:space="preserve"> 
+    <value>Zoeken</value> 
+  </data> 
+  <data name="buttonSeeActivities" xml:space="preserve"> 
+    <value>Activiteiten bekijken</value> 
+  </data> 
+  <data name="buttonSelect" xml:space="preserve"> 
+    <value>Selecteren</value> 
+  </data> 
+  <data name="buttonSelectFolder" xml:space="preserve"> 
+    <value>Een map selecteren</value> 
+  </data> 
+  <data name="buttonSelectFolders" xml:space="preserve"> 
+    <value>Mappen selecteren</value> 
+  </data> 
+  <data name="buttonSelectLocation" xml:space="preserve"> 
+    <value>Een locatie selecteren</value> 
+  </data> 
+  <data name="buttonSelected" xml:space="preserve"> 
+    <value>Geselecteerd</value> 
+  </data> 
+  <data name="buttonSend" xml:space="preserve"> 
+    <value>Verzenden</value> 
+  </data> 
+  <data name="buttonSendLog" xml:space="preserve"> 
+    <value>Debugmap verzenden</value> 
+  </data> 
+  <data name="buttonSettings" xml:space="preserve"> 
+    <value>Instellingen openen</value> 
+  </data> 
+  <data name="buttonShowOffers" xml:space="preserve"> 
+    <value>Aanbiedingen bekijken</value> 
+  </data> 
+  <data name="buttonSignOut" xml:space="preserve"> 
+    <value>Uitloggen</value> 
+  </data> 
+  <data name="buttonStart" xml:space="preserve"> 
+    <value>Starten</value> 
+  </data> 
+  <data name="buttonStartConflictsResolution" xml:space="preserve"> 
+    <value>Versieselectie starten</value> 
+  </data> 
+  <data name="buttonStartForFree" xml:space="preserve"> 
+    <value>Gratis aan de slag</value> 
+  </data> 
+  <data name="buttonSynchronizeOffline" xml:space="preserve"> 
+    <value>Offline synchroniseren</value> 
+  </data> 
+  <data name="buttonUpdate" xml:space="preserve"> 
+    <value>Bijwerken</value> 
+  </data> 
+  <data name="buttonUpdateNow" xml:space="preserve"> 
+    <value>Nu bijwerken</value> 
+  </data> 
+  <data name="buttonUpdateSubscription" xml:space="preserve"> 
+    <value>Abonnement bijwerken</value> 
+  </data> 
+  <data name="buttonUpgradeOffer" xml:space="preserve"> 
+    <value>Upgraden</value> 
+  </data> 
+  <data name="buttonValidate" xml:space="preserve"> 
+    <value>Bevestigen</value> 
+  </data> 
+  <data name="buttonValidateAndGoNext" xml:space="preserve"> 
+    <value>Bevestigen en naar volgende gaan</value> 
+  </data> 
+  <data name="buttonWakeUp" xml:space="preserve"> 
+    <value>Activeren</value> 
+  </data> 
+  <data name="conflictErrorAction" xml:space="preserve"> 
+    <value>Een versie kiezen</value> 
+  </data> 
+  <data name="conflictErrorDescription" xml:space="preserve"> 
+    <value>Er zijn twee verschillende versies van deze bestanden gedetecteerd.</value> 
+  </data> 
+  <data name="conflictErrorTitle" xml:space="preserve"> 
+    <value>Versieconflicten</value> 
+  </data> 
+  <data name="conflictsSearchBoxPlaceholder" xml:space="preserve"> 
+    <value>Zoek een bestand</value> 
+  </data> 
+  <data name="creatingShareLink" xml:space="preserve"> 
+    <value>Deellink aanmaken…</value> 
+  </data> 
+  <data name="dataManagementDescription" xml:space="preserve"> 
+    <value>U kunt de gebruiks- en operationele gegevens aanpassen die door Infomaniak worden verzameld om bugs op te lossen en de applicatie te verbeteren. Beide gebruikte tools worden uitsluitend door ons gehost en beheerd.
+
+De broncode van deze applicatie kan worden geverifieerd, de verzamelde informatie is anoniem en uw persoonlijke informatie blijft strikt vertrouwelijk en wordt nooit gedeeld met derden.</value> 
+  </data> 
+  <data name="dataManagementSettings" xml:space="preserve"> 
+    <value>Gegevensbeheer</value> 
+  </data> 
+  <data name="dataManagementSubtitle" xml:space="preserve"> 
+    <value>Infomaniak respecteert uw privacy</value> 
+  </data> 
+  <data name="debugLevelDescription" xml:space="preserve"> 
+    <value>Selecteer de hoeveelheid te registreren informatie.</value> 
+  </data> 
+  <data name="debugLevelSetting" xml:space="preserve"> 
+    <value>Debugniveau</value> 
+  </data> 
+  <data name="debugLogsDescription" xml:space="preserve"> 
+    <value>Stellen de Infomaniak-ondersteuning in staat de oorzaak van een incident te identificeren.</value> 
+  </data> 
+  <data name="debugLogsSettings" xml:space="preserve"> 
+    <value>Debuglogboeken</value> 
+  </data> 
+  <data name="defaultErrorDescription" xml:space="preserve"> 
+    <value>De synchronisatie wordt automatisch opnieuw gestart.
+Als het probleem aanhoudt, neem dan contact op met onze ondersteuning en voeg de onderstaande technische details bij.</value> 
+  </data> 
+  <data name="defaultErrorDetailsLabel" xml:space="preserve"> 
+    <value>Technische details</value> 
+  </data> 
+  <data name="defaultErrorTitle" xml:space="preserve"> 
+    <value>Er is een onverwachte fout opgetreden</value> 
+  </data> 
+  <data name="defaultExclusionFileListDescription" xml:space="preserve"> 
+    <value>Deze bestanden worden standaard uitgesloten en kunnen niet worden gewijzigd.</value> 
+  </data> 
+  <data name="defaultExclusionFileListHeader" xml:space="preserve"> 
+    <value>Automatische uitsluiting</value> 
+  </data> 
+  <data name="deleteCancelErrorTitle" xml:space="preserve"> 
+    <value>Verwijdering geannuleerd</value> 
+  </data> 
+  <data name="dialogDataErrorSyncDirChangeDescription" xml:space="preserve"> 
+    <value>In deze situaties is een nieuwe synchronisatie vereist om kDrive correct te blijven gebruiken.</value> 
+  </data> 
+  <data name="dialogDriveSetupInvalidFolderDescription" xml:space="preserve"> 
+    <value>Selecteer een lege map die zich niet bevindt in de root van een schijf.
+
+Deze map mag niet zijn opgenomen in een andere synchronisatiemap en mag geen synchronisatiesubmap bevatten.</value> 
+  </data> 
+  <data name="dialogDriveSetupInvalidFolderTitle" xml:space="preserve"> 
+    <value>Deze map kan niet worden geselecteerd</value> 
+  </data> 
+  <data name="dialogNewExclusionRulePrimaryButton" xml:space="preserve"> 
+    <value>Een regel toevoegen</value> 
+  </data> 
+  <data name="dialogNewExclusionRuleTitle" xml:space="preserve"> 
+    <value>Een uitsluitingsregel toevoegen</value> 
+  </data> 
+  <data name="dialogRemoveAccountContent" xml:space="preserve"> 
+    <value>U staat op het punt %@ te verwijderen uit de applicatie.
+De synchronisatiemap blijft op uw computer, maar wordt niet meer gesynchroniseerd met kDrive.
+
+Al uw gegevens blijven online toegankelijk op kDrive.</value> 
+  </data> 
+  <data name="dialogRemoveAccountTitle" xml:space="preserve"> 
+    <value>Uitloggen bij dit account?</value> 
+  </data> 
+  <data name="dialogSyncDeletionWarningContent" xml:space="preserve"> 
+    <value>De lokale map blijft op uw computer, maar wordt niet meer gesynchroniseerd met kDrive.
+Deze actie is permanent.
+Om uw schijf opnieuw te synchroniseren, moet u deze later opnieuw verbinden.
+
+Zorg er voor het doorgaan voor dat al uw bestanden up-to-date zijn en volledig gesynchroniseerd zijn.</value> 
+  </data> 
+  <data name="dialogSyncDeletionWarningTitle" xml:space="preserve"> 
+    <value>Synchronisatie verwijderen?</value> 
+  </data> 
+  <data name="dialogSyncModeChangeErrorContent" xml:space="preserve"> 
+    <value>De wijziging van de synchronisatiemodus is geannuleerd.
+
+De huidige synchronisatie blijft ongewijzigd. Als er echter abnormaal gedrag optreedt, moet u mogelijk de synchronisatie verwijderen en opnieuw aanmaken om de goede werking te herstellen.</value> 
+  </data> 
+  <data name="dialogSyncModeChangeErrorTitle" xml:space="preserve"> 
+    <value>Er is een fout opgetreden</value> 
+  </data> 
+  <data name="dialogSyncModeChangeWarningContent" xml:space="preserve"> 
+    <value>Deze bewerking kan enige tijd in beslag nemen, afhankelijk van de grootte van uw gegevens. Als dit mislukt, kan een volledige hersynchronisatie van de schijf nodig zijn.
+
+Zorg er voor het doorgaan voor dat al uw bestanden up-to-date en gesynchroniseerd zijn.
+
+Sluit de applicatie niet tijdens het proces.</value> 
+  </data> 
+  <data name="dialogSyncModeChangeWarningTitle" xml:space="preserve"> 
+    <value>Synchronisatiemodus wijzigen?</value> 
+  </data> 
+  <data name="dialogSystemErrorSyncDirAccessErrorDescription" xml:space="preserve"> 
+    <value>Dit is hoe u de synchronisatie kunt herstellen:</value> 
+  </data> 
+  <data name="dialogSystemErrorSyncDirDiskMissingErrorDescription" xml:space="preserve"> 
+    <value>De schijf met uw synchronisatiemap is niet meer verbonden</value> 
+  </data> 
+  <data name="dialogSystemErrorSyncDirDiskMissingErrorTip" xml:space="preserve"> 
+    <value>Sluit deze opnieuw aan om de synchronisatie te hervatten.</value> 
+  </data> 
+  <data name="disableNotificationsSetting" xml:space="preserve"> 
+    <value>Meldingen uitschakelen</value> 
+  </data> 
+  <data name="doNotJoin" xml:space="preserve"> 
+    <value>Niet deelnemen</value> 
+  </data> 
+  <data name="downloadAppUrl" xml:space="preserve"> 
+    <value>https://www.infomaniak.com/en/apps/download-kdrive</value> 
+  </data> 
+  <data name="driveAccessDeniedErrorDescription" xml:space="preserve"> 
+    <value>U heeft geen toestemming om toegang te krijgen tot dit kDrive.
+Controleer uw machtigingen of neem contact op met uw beheerder.</value> 
+  </data> 
+  <data name="driveAccessDeniedErrorTitle" xml:space="preserve"> 
+    <value>Toegang geweigerd tot kDrive</value> 
+  </data> 
+  <data name="driveAsleepErrorTitle" xml:space="preserve"> 
+    <value>Uw kDrive is in de slaapstand</value> 
+  </data> 
+  <data name="driveLockedAdminErrorDescription" xml:space="preserve"> 
+    <value>Dit kDrive is niet verlengd. U heeft er geen toegang meer toe.
+Vernieuw uw abonnement om de service opnieuw te activeren.</value> 
+  </data> 
+  <data name="driveLockedErrorDescription" xml:space="preserve"> 
+    <value>Dit kDrive is niet verlengd. U heeft er geen toegang meer toe.
+Neem contact op met uw beheerder om de service opnieuw te activeren.</value> 
+  </data> 
+  <data name="driveLockedErrorTitle" xml:space="preserve"> 
+    <value>Uw kDrive is verlopen</value> 
+  </data> 
+  <data name="driveLoggingErrorDescription" xml:space="preserve"> 
+    <value>Log opnieuw in om kDrive te blijven gebruiken.</value> 
+  </data> 
+  <data name="driveLoggingErrorTitle" xml:space="preserve"> 
+    <value>U bent uitgelogd</value> 
+  </data> 
+  <data name="driveLoggingErrorUserMismatchDescription" xml:space="preserve"> 
+    <value>Het account dat voor deze verbinding is gebruikt, komt niet overeen met dat van dit kDrive.
+Log opnieuw in met het juiste e-mailadres %@</value> 
+  </data> 
+  <data name="driveLoggingErrorUserMismatchTitle" xml:space="preserve"> 
+    <value>Dit account komt niet overeen</value> 
+  </data> 
+  <data name="driveWakingUpErrorDescription" xml:space="preserve"> 
+    <value>kDrive wordt geactiveerd… dit kan enkele ogenblikken duren.</value> 
+  </data> 
+  <data name="driveWakingUpErrorTitle" xml:space="preserve"> 
+    <value>kDrive wordt geactiveerd</value> 
+  </data> 
+  <data name="duplicateNamesErrorTitle" xml:space="preserve"> 
+    <value>Dubbele namen</value> 
+  </data> 
+  <data name="enableDebugLogDescription" xml:space="preserve"> 
+    <value>Diagnostische informatie opnemen op mijn computer.</value> 
+  </data> 
+  <data name="enableDebugLogsSetting" xml:space="preserve"> 
+    <value>Foutopsporingsregistratie inschakelen</value> 
+  </data> 
+  <data name="enterPasswordPlaceholder" xml:space="preserve"> 
+    <value>Voer uw wachtwoord in</value> 
+  </data> 
+  <data name="errCreateCancelDescription" xml:space="preserve"> 
+    <value>U heeft niet de vereiste rechten om een %@ toe te voegen aan deze locatie.
+Vraag toegang aan bij de eigenaar of beheerder.</value> 
+  </data> 
+  <data name="errDeleteCancelDescription" xml:space="preserve"> 
+    <value>U heeft geen toestemming om deze %@ te verwijderen. Het is hersteld naar de oorspronkelijke locatie. Vraag toegang aan bij de eigenaar of beheerder.</value> 
+  </data> 
+  <data name="errDialogConfigChangedTitle" xml:space="preserve"> 
+    <value>Er is een wijziging gedetecteerd in uw configuratie</value> 
+  </data> 
+  <data name="errDialogInvalidSyncSyncDirAccessDescription" xml:space="preserve"> 
+    <value>In deze situaties kan een nieuwe synchronisatie nodig zijn om kDrive correct te blijven gebruiken.</value> 
+  </data> 
+  <data name="errDialogLocalFileAccessDescription" xml:space="preserve"> 
+    <value>De toegangsrechten voor %@ zijn gewijzigd, waardoor het niet kan worden gesynchroniseerd.</value> 
+  </data> 
+  <data name="errDialogLocalFileAccessFaqLink" xml:space="preserve"> 
+    <value>Raadpleeg de %@ om de toegang te herstellen</value> 
+  </data> 
+  <data name="errDialogLocalFileAccessLocationLabel" xml:space="preserve"> 
+    <value>Laatste locatie van %@:</value> 
+  </data> 
+  <data name="errDialogSystemSyncDirDiskMissingTitle" xml:space="preserve"> 
+    <value>Externe schijf losgekoppeld</value> 
+  </data> 
+  <data name="errDialogSystemUnableToStartVfsDescription" xml:space="preserve"> 
+    <value>Deze bewerking kan enige tijd in beslag nemen, afhankelijk van de hoeveelheid te verwerken gegevens.
+
+Sluit de applicatie niet tijdens het proces.
+
+Als het mislukt, kunt u eenvoudig een volledige hersynchronisatie van de schijf starten of contact opnemen met onze ondersteuning.</value> 
+  </data> 
+  <data name="errDialogSystemUnableToStartVfsTitle" xml:space="preserve"> 
+    <value>Offline synchronisatie inschakelen</value> 
+  </data> 
+  <data name="errDriveMaintenanceDescription" xml:space="preserve"> 
+    <value>Dit kDrive is tijdelijk niet beschikbaar vanwege onderhoud.
+Probeer het over enkele minuten opnieuw.</value> 
+  </data> 
+  <data name="errDriveMaintenanceTitle" xml:space="preserve"> 
+    <value>Onderhoud bezig</value> 
+  </data> 
+  <data name="errDuplicateNamesDescription" xml:space="preserve"> 
+    <value>Er bestaat al een bestand of map met deze naam.</value> 
+  </data> 
+  <data name="errEditCancelDescription" xml:space="preserve"> 
+    <value>U heeft niet de rechten om dit bestand te bewerken.
+De originele versie is bewaard en uw bewerking is opgeslagen in een apart bestand met "conflict" in de naam. Vraag toegang aan bij de eigenaar of beheerder.</value> 
+  </data> 
+  <data name="errEndWithSpaceDescription" xml:space="preserve"> 
+    <value>De naam van dit %@ eindigt met een spatie, waardoor het niet kan worden gesynchroniseerd. Hernoem de %@ vanuit kDrive online.</value> 
+  </data> 
+  <data name="errEndWithSpaceTitle" xml:space="preserve"> 
+    <value>Spatie aan het einde van de naam van %@</value> 
+  </data> 
+  <data name="errExcludedByTemplateDescription" xml:space="preserve"> 
+    <value>Een uitsluitingsregel verhindert de synchronisatie van dit %@.</value> 
+  </data> 
+  <data name="errExcludedByTemplateTitle" xml:space="preserve"> 
+    <value>Uitgesloten van synchronisatie</value> 
+  </data> 
+  <data name="errFileExistsDescription" xml:space="preserve"> 
+    <value>Er bestaat al een bestand met deze naam.</value> 
+  </data> 
+  <data name="errFileLockedDescription" xml:space="preserve"> 
+    <value>Dit bestand wordt momenteel gebruikt door een andere gebruiker.
+Uw wijzigingen worden later gesynchroniseerd.</value> 
+  </data> 
+  <data name="errFileLockedTitle" xml:space="preserve"> 
+    <value>Bestand vergrendeld</value> 
+  </data> 
+  <data name="errFileRescuedDescription" xml:space="preserve"> 
+    <value>Dit bestand is verwijderd op kDrive online terwijl u het aan het bewerken was. Een kopie is bewaard op uw computer in de herstelmap.</value> 
+  </data> 
+  <data name="errFileRescuedTitle" xml:space="preserve"> 
+    <value>Bestand gered</value> 
+  </data> 
+  <data name="errFileTooBigAdminDescription" xml:space="preserve"> 
+    <value>Dit bestand overschrijdt de maximaal toegestane grootte (50 GB).
+Neem contact op met ondersteuning om de limiet op te heffen.</value> 
+  </data> 
+  <data name="errFileTooBigDescription" xml:space="preserve"> 
+    <value>Dit bestand overschrijdt de maximaal toegestane grootte (50 GB).
+Neem contact op met uw beheerder om de bestandsgroottelimiet te verhogen.</value> 
+  </data> 
+  <data name="errFileTooBigTitle" xml:space="preserve"> 
+    <value>Bestand te groot</value> 
+  </data> 
+  <data name="errForbiddenActionTitle" xml:space="preserve"> 
+    <value>Toegang geweigerd</value> 
+    <comment>Title shown when a forbidden or unauthorized action is attempted.</comment> 
+  </data> 
+  <data name="errForbiddenCharDescription_win" xml:space="preserve"> 
+    <value>De naam van dit %@ bevat een of meer tekens die niet worden ondersteund door de kDrive Windows-applicatie. Hernoem de %@ vanuit kDrive online.</value> 
+  </data> 
+  <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
+    <value>Deze naam bevat alleen spaties en kan niet worden gebruikt. Hernoem de %@ vanuit kDrive online.</value> 
+  </data> 
+  <data name="errForbiddenCharOnlySpacesTitle" xml:space="preserve"> 
+    <value>Ongeldige naam</value> 
+  </data> 
+  <data name="errForbiddenCharTitle" xml:space="preserve"> 
+    <value>Niet-ondersteund teken</value> 
+  </data> 
+  <data name="errGenericForbiddenDescription" xml:space="preserve"> 
+    <value>U heeft niet de vereiste rechten om deze actie uit te voeren.
+Vraag toegang aan bij de eigenaar of beheerder.</value> 
+  </data> 
+  <data name="errGenericForbiddenTitle" xml:space="preserve"> 
+    <value>Toegang geweigerd</value> 
+  </data> 
+  <data name="errHardlinkDescription" xml:space="preserve"> 
+    <value>Dit bestand is een harde koppeling (hard link) die niet kan worden gesynchroniseerd.</value> 
+  </data> 
+  <data name="errHardlinkTitle" xml:space="preserve"> 
+    <value>Niet-ondersteund bestandstype</value> 
+  </data> 
+  <data name="errInvalidSyncSyncDirAccessDescription" xml:space="preserve"> 
+    <value>Deze map is niet meer toegankelijk op de oorspronkelijke locatie.</value> 
+  </data> 
+  <data name="errInvalidSyncSyncDirAccessTitle" xml:space="preserve"> 
+    <value>Synchronisatiemap niet gevonden</value> 
+  </data> 
+  <data name="errInvalidSyncSyncDirNestingDescription" xml:space="preserve"> 
+    <value>Een van uw kDrives is gesynchroniseerd in de synchronisatiemap van een ander kDrive.
+Verplaats een van de mappen zodat ze niet meer genest zijn, of verwijder uw synchronisatie om deze opnieuw aan te maken.</value> 
+  </data> 
+  <data name="errInvalidSyncSyncDirNestingTitle" xml:space="preserve"> 
+    <value>Geneste kDrives</value> 
+  </data> 
+  <data name="errLocalFileAccessDescription" xml:space="preserve"> 
+    <value>Kan geen toegang krijgen tot dit %@ op uw computer. Controleer of het nog bestaat en of u de rechten heeft om er toegang toe te krijgen.</value> 
+  </data> 
+  <data name="errLocalFileAccessTitle" xml:space="preserve"> 
+    <value>%@ ontoegankelijk</value> 
+  </data> 
+  <data name="errMoveCancelDescription" xml:space="preserve"> 
+    <value>U heeft niet de rechten om dit %@ hier te verplaatsen; het wordt hersteld naar de oorspronkelijke locatie. Vraag toegang aan bij de eigenaar of beheerder.</value> 
+  </data> 
+  <data name="errNameLengthDescription" xml:space="preserve"> 
+    <value>Deze naam overschrijdt de toegestane lengte (250 tekens). Hernoem de %@.</value> 
+  </data> 
+  <data name="errNameLengthTitle" xml:space="preserve"> 
+    <value>Naam van %@ te lang</value> 
+  </data> 
+  <data name="errNetworkErrorOtherDescription" xml:space="preserve"> 
+    <value>Kan geen verbinding maken met kDrive.
+De synchronisatie wordt automatisch hervat zodra de verbinding is hersteld.</value> 
+  </data> 
+  <data name="errNetworkErrorOtherTitle" xml:space="preserve"> 
+    <value>Verbinding tijdelijk niet beschikbaar</value> 
+  </data> 
+  <data name="errNotEnoughDiskSpaceDescription" xml:space="preserve"> 
+    <value>Er is onvoldoende ruimte op uw computer om dit bestand te synchroniseren.</value> 
+  </data> 
+  <data name="errNotEnoughDiskSpaceTitle" xml:space="preserve"> 
+    <value>Onvoldoende schijfruimte</value> 
+  </data> 
+  <data name="errNotYetSupportedCharDescription" xml:space="preserve"> 
+    <value>De naam van dit bestand bevat een of meer tekens die nog niet worden ondersteund door de kDrive-applicatie. Hernoem het bestand vanuit kDrive online.</value> 
+  </data> 
+  <data name="errNotYetSupportedCharTitle" xml:space="preserve"> 
+    <value>Niet-ondersteund teken</value> 
+  </data> 
+  <data name="errPathLengthDescription" xml:space="preserve"> 
+    <value>Het pad naar dit %@ is te lang om te worden gesynchroniseerd. Hernoem een of meer mappen waarin het zich bevindt om het pad te verkorten.</value> 
+  </data> 
+  <data name="errPathLengthTitle" xml:space="preserve"> 
+    <value>Pad naar %@ te lang</value> 
+  </data> 
+  <data name="errQuotaExceededDescription" xml:space="preserve"> 
+    <value>Uw kDrive is vol. Maak ruimte vrij of upgrade uw abonnement om dit %@ te synchroniseren.</value> 
+  </data> 
+  <data name="errQuotaExceededTitle" xml:space="preserve"> 
+    <value>Opslaglimiet bereikt</value> 
+  </data> 
+  <data name="errReservedNameDescription" xml:space="preserve"> 
+    <value>Deze naam is gereserveerd door het systeem van uw computer. Hernoem de %@ vanuit kDrive online.</value> 
+  </data> 
+  <data name="errReservedNameTitle" xml:space="preserve"> 
+    <value>Naam van %@ gereserveerd</value> 
+  </data> 
+  <data name="errSystemErrorSyncDirAccessErrorDescription" xml:space="preserve"> 
+    <value>Controleer de locatie of de toegangsrechten van de map.</value> 
+  </data> 
+  <data name="errSystemErrorSyncDirAccessTitle" xml:space="preserve"> 
+    <value>Synchronisatiemap ontoegankelijk</value> 
+  </data> 
+  <data name="errSystemNotEnoughDiskSpaceDescription" xml:space="preserve"> 
+    <value>De schijfruimte van uw apparaat is vol. De synchronisatie is onderbroken. Maak ruimte vrij om de synchronisatie te hervatten.</value> 
+  </data> 
+  <data name="errSystemNotEnoughDiskSpaceTitle" xml:space="preserve"> 
+    <value>Onvoldoende schijfruimte</value> 
+  </data> 
+  <data name="errSystemSyncDirChanged" xml:space="preserve"> 
+    <value>Deze map is niet meer toegankelijk op de oorspronkelijke locatie.</value> 
+  </data> 
+  <data name="errSystemSyncDirDiskMissingDescription" xml:space="preserve"> 
+    <value>Deze map is niet meer toegankelijk. Er is actie vereist om de synchronisatie te hervatten.</value> 
+  </data> 
+  <data name="errSystemSyncDirMissingTitle" xml:space="preserve"> 
+    <value>Synchronisatiemap niet gevonden</value> 
+  </data> 
+  <data name="errSystemUnableToStartVfsDescription" xml:space="preserve"> 
+    <value>Lite Sync kan niet starten. U kunt uw bestanden blijven synchroniseren door offline synchronisatie in te schakelen in de instellingen. Neem contact op met ondersteuning als het probleem aanhoudt.</value> 
+  </data> 
+  <data name="errSystemUnableToStartVfsTitle" xml:space="preserve"> 
+    <value>Kan Lite Sync niet starten</value> 
+  </data> 
+  <data name="errTmpBlacklistedDescription" xml:space="preserve"> 
+    <value>De synchronisatie van dit item is mislukt. Het wordt later automatisch opnieuw geprobeerd.</value> 
+  </data> 
+  <data name="errTmpBlacklistedTitle" xml:space="preserve"> 
+    <value>Synchronisatie tijdelijk mislukt</value> 
+  </data> 
+  <data name="errUploadNotTerminatedDescription" xml:space="preserve"> 
+    <value>Het uploaden kon niet worden voltooid. Probeer het later opnieuw.</value> 
+  </data> 
+  <data name="errorListFilesToVerifyHeader" xml:space="preserve"> 
+    <value>Te controleren bestanden</value> 
+  </data> 
+  <data name="errorListOthersHeader" xml:space="preserve"> 
+    <value>Overige</value> 
+  </data> 
+  <data name="errorPageTitle" xml:space="preserve"> 
+    <value>Te corrigeren fouten</value> 
+  </data> 
+  <data name="excludeRuleDescription" xml:space="preserve"> 
+    <value>Bestanden die overeenkomen met deze regel worden niet gesynchroniseerd.</value> 
+  </data> 
+  <data name="extendedLogDescription" xml:space="preserve"> 
+    <value>Schakelt het verzamelen van aanvullende informatie in die nuttig is voor ondersteuning.</value> 
+  </data> 
+  <data name="extendedLogSetting" xml:space="preserve"> 
+    <value>Uitgebreid gedetailleerd logboek</value> 
+  </data> 
+  <data name="extendedLogWarning" xml:space="preserve"> 
+    <value>Wanneer deze optie is ingeschakeld, werkt kDrive langzamer.</value> 
+  </data> 
+  <data name="failedToCreateShareLinkError" xml:space="preserve"> 
+    <value>Aanmaken van deellink mislukt</value> 
+  </data> 
+  <data name="faqUrl" xml:space="preserve"> 
+    <value>https://www.infomaniak.com/en/support/faq/admin2/kdrive</value> 
+  </data> 
+  <data name="feedbackSetting" xml:space="preserve"> 
+    <value>Help ons kDrive te verbeteren</value> 
+  </data> 
+  <data name="feedbackURL" xml:space="preserve"> 
+    <value>https://feedback.userreport.com/652ad8f0-84c8-4a21-9e31-7a8bd7134f46</value> 
+  </data> 
+  <data name="fileExistsErrorTitle" xml:space="preserve"> 
+    <value>Bestand bestaat al</value> 
+  </data> 
+  <data name="fileSyncMode" xml:space="preserve"> 
+    <value>Bestandssynchronisatiemodus</value> 
+  </data> 
+  <data name="fileSyncModeDescription" xml:space="preserve"> 
+    <value>Bepaal hoe uw bestanden worden opgeslagen en geopend.</value> 
+  </data> 
+  <data name="filesToExclude" xml:space="preserve"> 
+    <value>Te uitsluiten bestanden</value> 
+  </data> 
+  <data name="folderFavorites" xml:space="preserve"> 
+    <value>Favorieten</value> 
+  </data> 
+  <data name="folderShares" xml:space="preserve"> 
+    <value>Gedeeld</value> 
+  </data> 
+  <data name="folderTrash" xml:space="preserve"> 
+    <value>Prullenbak</value> 
+  </data> 
+  <data name="forOneHour" xml:space="preserve"> 
+    <value>Gedurende 1 uur</value> 
+  </data> 
+  <data name="forOneWeek" xml:space="preserve"> 
+    <value>Gedurende een week</value> 
+  </data> 
+  <data name="forThreeDays" xml:space="preserve"> 
+    <value>Gedurende drie dagen</value> 
+  </data> 
+  <data name="greetingLabel" xml:space="preserve"> 
+    <value>Hallo %@, %@</value> 
+  </data> 
+  <data name="helpKDriveName" xml:space="preserve"> 
+    <value>kDrive %@</value> 
+  </data> 
+  <data name="helpUrl" xml:space="preserve"> 
+    <value>https://www.infomaniak.com/en/support</value> 
+  </data> 
+  <data name="infomaniakSupport" xml:space="preserve"> 
+    <value>Infomaniak Ondersteuning</value> 
+  </data> 
+  <data name="informationBlockKDriveFullSubtitle" xml:space="preserve"> 
+    <value>Maak ruimte vrij of upgrade uw abonnement om uw bestanden te blijven synchroniseren.</value> 
+  </data> 
+  <data name="informationBlockKDriveFullTitle" xml:space="preserve"> 
+    <value>Uw kDrive is vol</value> 
+  </data> 
+  <data name="informationBlockSynchroErrorSubtitle" xml:space="preserve"> 
+    <value>Sommige bestanden konden niet worden gesynchroniseerd.</value> 
+  </data> 
+  <data name="informationBlockTmpDirAccessErrorSubtitle" xml:space="preserve"> 
+    <value>We kunnen geen toegang krijgen tot uw bestanden. Start de applicatie opnieuw op om de synchronisatie te hervatten. Als het probleem aanhoudt, neem dan contact op met ondersteuning.</value> 
+  </data> 
+  <data name="informationBlockTmpDirAccessErrorTitle" xml:space="preserve"> 
+    <value>Verbinding met kDrive onderbroken</value> 
+  </data> 
+  <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
+    <value>Dit item is niet beschikbaar op dit apparaat.
+Het wordt geopend in uw browser.</value> 
+  </data> 
+  <data name="labelAccessRightsModified" xml:space="preserve"> 
+    <value>Toegangsrechten gewijzigd</value> 
+  </data> 
+  <data name="labelActivated" xml:space="preserve"> 
+    <value>Ingeschakeld</value> 
+  </data> 
+  <data name="labelAgo" xml:space="preserve"> 
+    <value>%@ geleden</value> 
+    <comment>Suffix for relative timestamps in activity lists; %@ is the time period (e.g., 5 minutes).</comment> 
+  </data> 
+  <data name="labelAllFolders" xml:space="preserve"> 
+    <value>Alle mappen</value> 
+  </data> 
+  <data name="labelAllkDrive" xml:space="preserve"> 
+    <value>Geheel kDrive</value> 
+  </data> 
+  <data name="labelAllowTracking" xml:space="preserve"> 
+    <value>Tracking toestaan</value> 
+  </data> 
+  <data name="labelAuthor" xml:space="preserve"> 
+    <value>Auteur</value> 
+  </data> 
+  <data name="labelByDefault" xml:space="preserve"> 
+    <value>Standaard</value> 
+  </data> 
+  <data name="labelBytes" xml:space="preserve"> 
+    <value>B</value> 
+  </data> 
+  <data name="labelChooseConflictVersion" xml:space="preserve"> 
+    <value>Kies welke versie van uw bestanden u wilt bewaren.</value> 
+  </data> 
+  <data name="labelChooseConflictVersionIndividual" xml:space="preserve"> 
+    <value>Selecteer voor elk bestand de te bewaren versie.</value> 
+  </data> 
+  <data name="labelConflictDialogQuestion" xml:space="preserve"> 
+    <value>Welke versie wilt u bewaren?</value> 
+  </data> 
+  <data name="labelConflictDialogTitle" xml:space="preserve"> 
+    <value>Kies de te bewaren versie</value> 
+  </data> 
+  <data name="labelConflictStrategyKeepLocalDescription" xml:space="preserve"> 
+    <value>De online versies van deze %@ bestanden worden vervangen door uw lokale versies.
+Let op: dit kan het werk van uw medewerkers overschrijven.</value> 
+  </data> 
+  <data name="labelConflictStrategyKeepLocalTitle" xml:space="preserve"> 
+    <value>Alleen lokale versies bewaren</value> 
+  </data> 
+  <data name="labelConflictStrategyKeepMostRecentDescription" xml:space="preserve"> 
+    <value>Voor elk conflict bewaren we automatisch de meest recentelijk gewijzigde versie (lokaal of online). Dit is in de meeste gevallen de veiligste keuze.</value> 
+  </data> 
+  <data name="labelConflictStrategyKeepMostRecentTitle" xml:space="preserve"> 
+    <value>De meest recente versies bewaren</value> 
+  </data> 
+  <data name="labelConflictStrategyKeepRemoteDescription" xml:space="preserve"> 
+    <value>Alle lokale wijzigingen voor deze %@ bestanden worden verwijderd.
+Handig als u weet dat het belangrijke werk online staat op kDrive.</value> 
+  </data> 
+  <data name="labelConflictStrategyKeepRemoteTitle" xml:space="preserve"> 
+    <value>Alleen online versies bewaren</value> 
+  </data> 
+  <data name="labelConnectToStart" xml:space="preserve"> 
+    <value>Log in om te beginnen.</value> 
+  </data> 
+  <data name="labelCreateNewSync" xml:space="preserve"> 
+    <value>Maak een %@ aan.</value> 
+  </data> 
+  <data name="labelDate" xml:space="preserve"> 
+    <value>Datum</value> 
+  </data> 
+  <data name="labelDeactivated" xml:space="preserve"> 
+    <value>Uitgeschakeld</value> 
+  </data> 
+  <data name="labelFAQ" xml:space="preserve"> 
+    <value>FAQ</value> 
+  </data> 
+  <data name="labelFileLowerCase" xml:space="preserve"> 
+    <value>bestand</value> 
+  </data> 
+  <data name="labelFolder" xml:space="preserve"> 
+    <value>Map</value> 
+  </data> 
+  <data name="labelFolderDeleted" xml:space="preserve"> 
+    <value>Map verwijderd</value> 
+  </data> 
+  <data name="labelFolderDisplacedOrModified" xml:space="preserve"> 
+    <value>Map verplaatst of gewijzigd</value> 
+  </data> 
+  <data name="labelFolderDisplacedOrModifiedTip" xml:space="preserve"> 
+    <value>De map is mogelijk verplaatst naar een andere schijf en daarna teruggezet naar de oorspronkelijke locatie.</value> 
+  </data> 
+  <data name="labelFolderLowerCase" xml:space="preserve"> 
+    <value>map</value> 
+  </data> 
+  <data name="labelFolderMovedOrRenamed" xml:space="preserve"> 
+    <value>Map verplaatst of hernoemd</value> 
+  </data> 
+  <data name="labelFolderRecreatedOrReplaced" xml:space="preserve"> 
+    <value>Map opnieuw aangemaakt of vervangen</value> 
+  </data> 
+  <data name="labelFolderRecreatedOrReplacedTip" xml:space="preserve"> 
+    <value>De map is verwijderd en opnieuw aangemaakt, of vervangen door een andere map met dezelfde naam.</value> 
+  </data> 
+  <data name="labelGigaBytes" xml:space="preserve"> 
+    <value>GB</value> 
+    <comment>Unit abbreviation for gigabytes, used in file size and storage displays.</comment> 
+  </data> 
+  <data name="labelJustNow" xml:space="preserve"> 
+    <value>Zojuist</value> 
+  </data> 
+  <data name="labelKDriveVersion" xml:space="preserve"> 
+    <value>kDrive %@</value> 
+  </data> 
+  <data name="labelKiloBytes" xml:space="preserve"> 
+    <value>KB</value> 
+    <comment>Unit abbreviation for kilobytes, used in file size displays.</comment> 
+  </data> 
+  <data name="labelLocal" xml:space="preserve"> 
+    <value>Lokaal</value> 
+  </data> 
+  <data name="labelManyConflictTitle" xml:space="preserve"> 
+    <value>%@ bestanden zijn zowel op uw computer als op kDrive gewijzigd.</value> 
+  </data> 
+  <data name="labelMegaBytes" xml:space="preserve"> 
+    <value>MB</value> 
+    <comment>Unit abbreviation for megabytes, used in file size displays.</comment> 
+  </data> 
+  <data name="labelMostRecent" xml:space="preserve"> 
+    <value>Meest recent</value> 
+  </data> 
+  <data name="labelName" xml:space="preserve"> 
+    <value>Naam</value> 
+  </data> 
+  <data name="labelNewDeviceDetected" xml:space="preserve"> 
+    <value>Nieuw apparaat gedetecteerd</value> 
+  </data> 
+  <data name="labelNewDeviceDetectedTip" xml:space="preserve"> 
+    <value>U gebruikt kDrive op een nieuwe computer, na het herstellen vanuit een back-up.</value> 
+  </data> 
+  <data name="labelNewFolder" xml:space="preserve"> 
+    <value>Nieuwe map</value> 
+  </data> 
+  <data name="labelNewSync" xml:space="preserve"> 
+    <value>nieuwe synchronisatie</value> 
+  </data> 
+  <data name="labelNoConflictsFound" xml:space="preserve"> 
+    <value>Geen conflicten gevonden voor uw zoekopdracht</value> 
+  </data> 
+  <data name="labelNoErrorsToFix" xml:space="preserve"> 
+    <value>Geen fouten te corrigeren.</value> 
+  </data> 
+  <data name="labelNotifications" xml:space="preserve"> 
+    <value>Melding</value> 
+  </data> 
+  <data name="labelOnline" xml:space="preserve"> 
+    <value>Online</value> 
+  </data> 
+  <data name="labelOnlineFolderDeletedOrRenamed" xml:space="preserve"> 
+    <value>Online map verwijderd</value> 
+  </data> 
+  <data name="labelOnlineFolderDeletedOrRenamedTip" xml:space="preserve"> 
+    <value>De gesynchroniseerde map is verwijderd op kDrive online of is niet meer toegankelijk.</value> 
+  </data> 
+  <data name="labelOriginalLocation" xml:space="preserve"> 
+    <value>Oorspronkelijke locatie:</value> 
+  </data> 
+  <data name="labelRecommended" xml:space="preserve"> 
+    <value>Aanbevolen</value> 
+  </data> 
+  <data name="labelRemoteAccessRightsModifiedTip" xml:space="preserve"> 
+    <value>De map is mogelijk verplaatst naar een andere schijf en daarna teruggezet naar de oorspronkelijke locatie.</value> 
+  </data> 
+  <data name="labelRestoreToOriginalLocation" xml:space="preserve"> 
+    <value>Zet het terug naar de oorspronkelijke locatie.</value> 
+  </data> 
+  <data name="labelRules" xml:space="preserve"> 
+    <value>Regels</value> 
+  </data> 
+  <data name="labelSameAsSystem" xml:space="preserve"> 
+    <value>Hetzelfde als het systeem</value> 
+  </data> 
+  <data name="labelShortDay" xml:space="preserve"> 
+    <value>d</value> 
+    <comment>Abbreviated unit for day used in relative timestamps (e.g., 3d ago).</comment> 
+  </data> 
+  <data name="labelShortHour" xml:space="preserve"> 
+    <value>u</value> 
+    <comment>Abbreviated unit for hour used in relative timestamps.</comment> 
+  </data> 
+  <data name="labelShortMinute" xml:space="preserve"> 
+    <value>min</value> 
+    <comment>Abbreviated unit for minute used in relative timestamps.</comment> 
+  </data> 
+  <data name="labelShortSecond" xml:space="preserve"> 
+    <value>sec</value> 
+    <comment>Abbreviated unit for second used in relative timestamps.</comment> 
+  </data> 
+  <data name="labelSince" xml:space="preserve"> 
+    <value>Sinds: %@</value> 
+    <comment>Label showing the start time of a synchronization pause or event; %@ is the formatted date/time.</comment> 
+  </data> 
+  <data name="labelSize" xml:space="preserve"> 
+    <value>Grootte</value> 
+  </data> 
+  <data name="labelStatus" xml:space="preserve"> 
+    <value>Status</value> 
+  </data> 
+  <data name="labelStorageFree" xml:space="preserve"> 
+    <value>%@ vrij</value> 
+    <comment>Label showing available free storage space; %@ is the formatted size (singular form).</comment> 
+  </data> 
+  <data name="labelStorageFree-plural" xml:space="preserve"> 
+    <value>%@ vrij</value> 
+  </data> 
+  <data name="labelStorageLoading" xml:space="preserve"> 
+    <value>Berekenen…</value> 
+    <comment>Loading indicator text shown while storage usage is being calculated.</comment> 
+  </data> 
+  <data name="labelStorageUsed" xml:space="preserve"> 
+    <value>%@ gebruikt</value> 
+    <comment>Label showing used storage space; %@ is the formatted size (singular form).</comment> 
+  </data> 
+  <data name="labelStorageUsed-plural" xml:space="preserve"> 
+    <value>%@ gebruikt</value> 
+  </data> 
+  <data name="labelSyncExclusionEmptyDescription" xml:space="preserve"> 
+    <value>Dit kDrive bevat alleen bestanden. Alle bestanden worden op dit apparaat gesynchroniseerd.</value> 
+  </data> 
+  <data name="labelSyncExclusionEmptyTitle" xml:space="preserve"> 
+    <value>Geen map te selecteren</value> 
+  </data> 
+  <data name="labelSyncFolder" xml:space="preserve"> 
+    <value>Synchronisatiemappen</value> 
+  </data> 
+  <data name="labelSyncLocation" xml:space="preserve"> 
+    <value>Locatie</value> 
+  </data> 
+  <data name="labelSyncYourKDrive" xml:space="preserve"> 
+    <value>Synchroniseer uw kDrives op dit apparaat</value> 
+  </data> 
+  <data name="labelSyncedFolders" xml:space="preserve"> 
+    <value>Gesynchroniseerde mappen</value> 
+  </data> 
+  <data name="labelSynchronisation" xml:space="preserve"> 
+    <value>Synchronisatie</value> 
+  </data> 
+  <data name="labelTeraBytes" xml:space="preserve"> 
+    <value>TB</value> 
+    <comment>Unit abbreviation for terabytes, used in storage displays.</comment> 
+  </data> 
+  <data name="labelWelcomeToKDrive" xml:space="preserve"> 
+    <value>Welkom bij kDrive</value> 
+  </data> 
+  <data name="labelXoverY" xml:space="preserve"> 
+    <value>%@ van %@</value> 
+  </data> 
+  <data name="labelkDriveManagement" xml:space="preserve"> 
+    <value>kDrive-beheer</value> 
+  </data> 
+  <data name="languageSetting" xml:space="preserve"> 
+    <value>Taal</value> 
+  </data> 
+  <data name="languageSettingWarning" xml:space="preserve"> 
+    <value>Start de applicatie opnieuw op om de nieuwe taal volledig toe te passen.</value> 
+  </data> 
+  <data name="largeFolderRecommendation" xml:space="preserve"> 
+    <value>De volledige map is groot.
+Om het uploaden te versnellen, raden we aan alleen de laatste kDrive-sessie te verzenden.</value> 
+  </data> 
+  <data name="learnMore" xml:space="preserve"> 
+    <value>Meer informatie</value> 
+  </data> 
+  <data name="licensesHyperLink" xml:space="preserve"> 
+    <value>LGPL v3-licentie - Git-bronnen</value> 
+  </data> 
+  <data name="linkCopiedToClipboardTitle" xml:space="preserve"> 
+    <value>Link gekopieerd naar klembord</value> 
+  </data> 
+  <data name="liteSyncUnavailableDescription" xml:space="preserve"> 
+    <value>Incompatibele schijf of map direct in de root van de schijf (bijv.: kies een map zoals D:/Mijn drive in plaats van D:/)</value> 
+  </data> 
+  <data name="localLocation" xml:space="preserve"> 
+    <value>Locatie op computer</value> 
+    <comment>Label for the local PC folder location field in sync settings.</comment> 
+  </data> 
+  <data name="logLevelDebug" xml:space="preserve"> 
+    <value>Foutopsporing</value> 
+  </data> 
+  <data name="logLevelError" xml:space="preserve"> 
+    <value>Fout</value> 
+  </data> 
+  <data name="logLevelExtended" xml:space="preserve"> 
+    <value>Uitgebreid</value> 
+    <comment>Extended log level option in the debug level dropdown in advanced settings.</comment> 
+  </data> 
+  <data name="logLevelFatal" xml:space="preserve"> 
+    <value>Kritiek</value> 
+  </data> 
+  <data name="logLevelInfo" xml:space="preserve"> 
+    <value>Info</value> 
+  </data> 
+  <data name="logLevelWarning" xml:space="preserve"> 
+    <value>Waarschuwing</value> 
+  </data> 
+  <data name="logUploadPopupTitle" xml:space="preserve"> 
+    <value>Debugmap naar Infomaniak-ondersteuning sturen</value> 
+  </data> 
+  <data name="logicErrorFullListParsingErrorDescription" xml:space="preserve"> 
+    <value>Sommige bestandsnamen kunnen speciale tekens bevatten die niet worden ondersteund (zoals dubbele aanhalingstekens, backslashes of regeleinden).
+
+Controleer en hernoem de bestanden met ongebruikelijke tekens en probeer het opnieuw.</value> 
+  </data> 
+  <data name="logicErrorFullListParsingErrorTitle" xml:space="preserve"> 
+    <value>Ongeldige bestandsnaam</value> 
+  </data> 
+  <data name="logsStatusCompression" xml:space="preserve"> 
+    <value>Logboeken comprimeren…</value> 
+  </data> 
+  <data name="logsStatusUpload" xml:space="preserve"> 
+    <value>Logboeken naar ondersteuning uploaden…</value> 
+  </data> 
+  <data name="logsUploadErrorTooltip" xml:space="preserve"> 
+    <value>De laatste upload is mislukt. Controleer uw internetverbinding en zorg ervoor dat er ten minste één kDrive-gebruiker is ingelogd. Uploads zijn beperkt tot 10 per dag.</value> 
+  </data> 
+  <data name="manyConflictErrorDescription" xml:space="preserve"> 
+    <value>Er zijn verschillende versies van deze bestanden gedetecteerd.</value> 
+  </data> 
+  <data name="manyConflictErrorTitle" xml:space="preserve"> 
+    <value>%@ versieconflicten gedetecteerd</value> 
+  </data> 
+  <data name="matomoDescription" xml:space="preserve"> 
+    <value>Matomo is een analysetool die uitsluitend door Infomaniak wordt gehost en beheerd om te begrijpen hoe de applicatie wordt gebruikt.
+
+Het analyseren van deze gegevens stelt ons team in staat de interface van de applicatie voortdurend te verbeteren.</value> 
+  </data> 
+  <data name="moveCancelErrorTitle" xml:space="preserve"> 
+    <value>Verplaatsing geannuleerd</value> 
+  </data> 
+  <data name="moveDeletedFilesToRecycleBinSetting" xml:space="preserve"> 
+    <value>Verwijderde bestanden naar de prullenbak van de computer verplaatsen</value> 
+  </data> 
+  <data name="moveDeletedFilesToRecycleBinWarning" xml:space="preserve"> 
+    <value>Sommige items kunnen mogelijk niet worden verplaatst.</value> 
+  </data> 
+  <data name="myksuitePlusBannerDescription" xml:space="preserve"> 
+    <value>Meer opslag, meer functies met my kSuite+</value> 
+  </data> 
+  <data name="needHelpSetting" xml:space="preserve"> 
+    <value>Hulp nodig?</value> 
+  </data> 
+  <data name="noAccountConnected" xml:space="preserve"> 
+    <value>Voeg een account toe om te beginnen</value> 
+  </data> 
+  <data name="noResultsFound" xml:space="preserve"> 
+    <value>Geen resultaten gevonden</value> 
+  </data> 
+  <data name="notSyncedDrive" xml:space="preserve"> 
+    <value>Niet gesynchroniseerd</value> 
+  </data> 
+  <data name="notificationsDisabledAlways" xml:space="preserve"> 
+    <value>Altijd</value> 
+  </data> 
+  <data name="notificationsDisabledNever" xml:space="preserve"> 
+    <value>Nooit</value> 
+  </data> 
+  <data name="notifyOnFileExcluded" xml:space="preserve"> 
+    <value>Een melding ontvangen wanneer een bestand wordt uitgesloten</value> 
+  </data> 
+  <data name="onBoardingAdvancedSettingsDriveTitle" xml:space="preserve"> 
+    <value>Synchronisatie voor dit kDrive configureren</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsDriveCustomizeLocation" xml:space="preserve"> 
+    <value>Pas de locatie van uw kDrive-map op uw computer aan:</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsDriveCustomizeLocationTip" xml:space="preserve"> 
+    <value>De gekozen map moet leeg zijn voor de synchronisatie correct te werken.</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsDriveExclusionDescription" xml:space="preserve"> 
+    <value>Kies de mappen om op deze computer te synchroniseren:</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsDriveExclusionTitle" xml:space="preserve"> 
+    <value>Gesynchroniseerde mappen</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsDriveSelectionDescription" xml:space="preserve"> 
+    <value>Voor elk kDrive kunt u kiezen waar het op uw computer wordt gesynchroniseerd en welke mappen worden gesynchroniseerd.</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsDriveSelectionExclusion" xml:space="preserve"> 
+    <value>Gesynchroniseerde inhoud:</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsDriveSelectionLocation" xml:space="preserve"> 
+    <value>Locatie:</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsDriveSelectionTitle" xml:space="preserve"> 
+    <value>Uw kDrives configureren</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsExclusionTitle" xml:space="preserve"> 
+    <value>Kies de mappen om op deze computer te synchroniseren</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsLiteSyncDescription" xml:space="preserve"> 
+    <value>Bestanden worden alleen gedownload bij het openen, om schijfruimte te besparen.</value> 
+  </data> 
+  <data name="onboardingAdvancedSettingsLiteSyncTitle" xml:space="preserve"> 
+    <value>Lite Sync inschakelen</value> 
+  </data> 
+  <data name="onboardingAlreadySyncedDriveTooltip" xml:space="preserve"> 
+    <value>Dit kDrive is al geconfigureerd.
+Ga naar uw instellingen om het te wijzigen.</value> 
+  </data> 
+  <data name="onboardingDriveSelectionNoDriveDescription" xml:space="preserve"> 
+    <value>Begin gratis met my kSuite,
+of kies een abonnement dat bij uw behoeften past.</value> 
+  </data> 
+  <data name="onboardingDriveSelectionNoDriveTitle" xml:space="preserve"> 
+    <value>U heeft nog geen kDrive.</value> 
+  </data> 
+  <data name="onboardingDriveSelectionSelectTitle" xml:space="preserve"> 
+    <value>Kies de kDrives om op deze computer te synchroniseren:</value> 
+  </data> 
+  <data name="onboardingDriveSelectionSyncInProgress" xml:space="preserve"> 
+    <value>Synchronisatie bezig</value> 
+  </data> 
+  <data name="onboardingDriveSelectionTitle" xml:space="preserve"> 
+    <value>Fijn u te zien!</value> 
+  </data> 
+  <data name="onboardingExclusionSummaryNone" xml:space="preserve"> 
+    <value>Alle kDrive-mappen</value> 
+  </data> 
+  <data name="onboardingExclusionSummarySome" xml:space="preserve"> 
+    <value>Aangepaste selectie</value> 
+  </data> 
+  <data name="onboardingLoginDescription" xml:space="preserve"> 
+    <value>De privé, snelle en veilige cloud, gehost in Zwitserland.
+
+Log in en houd uw documenten gesynchroniseerd op al uw apparaten.</value> 
+  </data> 
+  <data name="onboardingLoginErrorDescription" xml:space="preserve"> 
+    <value>Er is een fout opgetreden, probeer het opnieuw.</value> 
+  </data> 
+  <data name="onboardingLoginErrorTitle" xml:space="preserve"> 
+    <value>Inlogfout</value> 
+  </data> 
+  <data name="onboardingLoginProcessingDescription" xml:space="preserve"> 
+    <value>Uw gegevens ophalen…</value> 
+  </data> 
+  <data name="onboardingLoginProcessingTitle" xml:space="preserve"> 
+    <value>Een ogenblik…</value> 
+  </data> 
+  <data name="onboardingLoginTitle" xml:space="preserve"> 
+    <value>Welkom bij kDrive</value> 
+  </data> 
+  <data name="onboardingSynchronizationAppReadyDescription" xml:space="preserve"> 
+    <value>Uw bestanden zijn klaar om veilig
+te worden gesynchroniseerd op uw computer.</value> 
+  </data> 
+  <data name="onboardingSynchronizationAppReadyTitle" xml:space="preserve"> 
+    <value>Alles klaar!</value> 
+  </data> 
+  <data name="onboardingSynchronizationInProgressDescription" xml:space="preserve"> 
+    <value>We voltooien de configuratie van uw kDrives.
+
+Even geduld alstublieft.</value> 
+  </data> 
+  <data name="onboardingSynchronizationInProgressTitle" xml:space="preserve"> 
+    <value>Synchronisatie bezig…</value> 
+  </data> 
+  <data name="openKDriveAtStartupSetting" xml:space="preserve"> 
+    <value>kDrive openen wanneer de computer start</value> 
+  </data> 
+  <data name="openLoginPage" xml:space="preserve"> 
+    <value>De inlogpagina openen</value> 
+  </data> 
+  <data name="pathCopiedToClipboard" xml:space="preserve"> 
+    <value>Pad gekopieerd naar klembord</value> 
+  </data> 
+  <data name="proxyConnectionDescription" xml:space="preserve"> 
+    <value>Bepaal hoe kDrive verbinding maakt met internet.</value> 
+  </data> 
+  <data name="proxyHost" xml:space="preserve"> 
+    <value>Server</value> 
+  </data> 
+  <data name="proxyNeedAuth" xml:space="preserve"> 
+    <value>Authenticatie vereist</value> 
+  </data> 
+  <data name="proxyPassword" xml:space="preserve"> 
+    <value>Wachtwoord</value> 
+  </data> 
+  <data name="proxyPort" xml:space="preserve"> 
+    <value>Poort</value> 
+  </data> 
+  <data name="proxySettings" xml:space="preserve"> 
+    <value>Proxy-instellingen</value> 
+    <comment>Title of the proxy settings section in advanced settings.</comment> 
+  </data> 
+  <data name="proxyType" xml:space="preserve"> 
+    <value>Proxytype</value> 
+  </data> 
+  <data name="proxyTypeHTTP" xml:space="preserve"> 
+    <value>Handmatige configuratie</value> 
+  </data> 
+  <data name="proxyTypeNone" xml:space="preserve"> 
+    <value>Geen</value> 
+  </data> 
+  <data name="proxyUser" xml:space="preserve"> 
+    <value>Gebruikersnaam</value> 
+  </data> 
+  <data name="releaseChannelBeta" xml:space="preserve"> 
+    <value>Bèta</value> 
+  </data> 
+  <data name="releaseChannelInternal" xml:space="preserve"> 
+    <value>Intern</value> 
+  </data> 
+  <data name="releaseChannelTest" xml:space="preserve"> 
+    <value>Test</value> 
+  </data> 
+  <data name="remoteLocation" xml:space="preserve"> 
+    <value>Locatie op kDrive</value> 
+  </data> 
+  <data name="searchBoxPlaceholder" xml:space="preserve"> 
+    <value>Zoeken in %@</value> 
+  </data> 
+  <data name="selectFoldersToSync" xml:space="preserve"> 
+    <value>Selecteer de mappen om op deze computer te synchroniseren.</value> 
+  </data> 
+  <data name="selectFoldersToSyncDescription" xml:space="preserve"> 
+    <value>Niet-geselecteerde mappen worden niet gedownload naar uw apparaat. Ze blijven online beschikbaar en worden niet verwijderd.</value> 
+  </data> 
+  <data name="selectFoldersToSyncDescriptionShort" xml:space="preserve"> 
+    <value>Niet-geselecteerde mappen worden niet gedownload naar uw apparaat. Ze blijven online beschikbaar.</value> 
+  </data> 
+  <data name="sendLastSessionOnly" xml:space="preserve"> 
+    <value>Alleen de laatste sessie verzenden</value> 
+  </data> 
+  <data name="sentryDescription" xml:space="preserve"> 
+    <value>Sentry is een tool die uitsluitend door Infomaniak wordt gehost en beheerd om de stabiliteit van de applicatie in real time te bewaken en eventuele technische fouten automatisch aan onze ontwikkelaars te melden.
+
+Deze gegevens stellen ons team in staat de applicatie snel te corrigeren en te optimaliseren, wat resulteert in een betere gebruikerservaring voor u.</value> 
+  </data> 
+  <data name="settingsTitle" xml:space="preserve"> 
+    <value>Instellingen</value> 
+  </data> 
+  <data name="sidebarItemAccounts" xml:space="preserve"> 
+    <value>Accounts</value> 
+  </data> 
+  <data name="sidebarItemAdvanced" xml:space="preserve"> 
+    <value>Geavanceerd</value> 
+  </data> 
+  <data name="sidebarItemGeneral" xml:space="preserve"> 
+    <value>Algemeen</value> 
+  </data> 
+  <data name="sidebarItemKDriveTitle" xml:space="preserve"> 
+    <value>kDrive-map</value> 
+  </data> 
+  <data name="signInBrowser" xml:space="preserve"> 
+    <value>Inloggen via uw browser</value> 
+  </data> 
+  <data name="storageComputerFreeSpace" xml:space="preserve"> 
+    <value>Vrije ruimte op computer</value> 
+    <comment>Label for the free disk space segment in the local storage usage chart.</comment> 
+  </data> 
+  <data name="storageComputerUsedByKDrive" xml:space="preserve"> 
+    <value>kDrive-bestanden opgeslagen op computer</value> 
+    <comment>Label for the kDrive files segment in the local storage usage chart.</comment> 
+  </data> 
+  <data name="storageComputerUsedByOther" xml:space="preserve"> 
+    <value>Andere bestanden op computer</value> 
+    <comment>Label for the other files segment in the local storage usage chart.</comment> 
+  </data> 
+  <data name="storageSyncBlockTitle" xml:space="preserve"> 
+    <value>Synchronisatie</value> 
+  </data> 
+  <data name="storageThisComputerTitle" xml:space="preserve"> 
+    <value>Deze pc - %@ - %@</value> 
+    <comment>Label for the local computer entry in the storage view; first %@ is computer name, second %@ is disk identifier.</comment> 
+  </data> 
+  <data name="storedOnline" xml:space="preserve"> 
+    <value>Online opgeslagen</value> 
+  </data> 
+  <data name="storedOnlineDescription" xml:space="preserve"> 
+    <value>Uw bestanden blijven in de cloud en gebruiken geen ruimte op uw computer.
+Een internetverbinding is vereist om ze te openen.</value> 
+  </data> 
+  <data name="syncErrorTooltip" xml:space="preserve"> 
+    <value>Synchronisatiefout</value> 
+  </data> 
+  <data name="syncFolderCustomLocation" xml:space="preserve"> 
+    <value>Aangepaste map</value> 
+  </data> 
+  <data name="syncFolderDefaultLocation" xml:space="preserve"> 
+    <value>Standaardmap</value> 
+  </data> 
+  <data name="syncInProgressTooltip" xml:space="preserve"> 
+    <value>Synchronisatie</value> 
+  </data> 
+  <data name="syncModeApplying" xml:space="preserve"> 
+    <value>Uw nieuwe synchronisatiemodus wordt toegepast…</value> 
+  </data> 
+  <data name="syncRules" xml:space="preserve"> 
+    <value>Synchronisatieregels</value> 
+  </data> 
+  <data name="syncShortStatusError" xml:space="preserve"> 
+    <value>Er is een fout opgetreden</value> 
+  </data> 
+  <data name="syncShortStatusIdle" xml:space="preserve"> 
+    <value>Laatste synchronisatie geslaagd</value> 
+  </data> 
+  <data name="syncShortStatusPaused" xml:space="preserve"> 
+    <value>Synchronisatie is gepauzeerd</value> 
+  </data> 
+  <data name="syncShortStatusRunning" xml:space="preserve"> 
+    <value>Synchronisatie is bezig</value> 
+  </data> 
+  <data name="syncSuccessTooltip" xml:space="preserve"> 
+    <value>Gesynchroniseerd</value> 
+  </data> 
+  <data name="syncedDrive" xml:space="preserve"> 
+    <value>Gesynchroniseerd</value> 
+  </data> 
+  <data name="syncedFromComputer" xml:space="preserve"> 
+    <value>Gesynchroniseerd vanuit uw computer</value> 
+  </data> 
+  <data name="syncedFromKDriveWeb" xml:space="preserve"> 
+    <value>Gesynchroniseerd vanuit kDrive web</value> 
+  </data> 
+  <data name="synchroInProgress" xml:space="preserve"> 
+    <value>uw bestanden worden gesynchroniseerd</value> 
+  </data> 
+  <data name="synchroPaused" xml:space="preserve"> 
+    <value>synchronisatie is gepauzeerd</value> 
+  </data> 
+  <data name="synchroStatusInProgressDescription" xml:space="preserve"> 
+    <value>Uw recente bestanden worden bijgewerkt.</value> 
+  </data> 
+  <data name="synchroStatusInProgressTitle" xml:space="preserve"> 
+    <value>Synchronisatie bezig</value> 
+  </data> 
+  <data name="synchroStatusOfflineDescription" xml:space="preserve"> 
+    <value>Uw lokale bestanden blijven toegankelijk.
+De synchronisatie wordt automatisch hervat zodra u opnieuw verbinding heeft.</value> 
+  </data> 
+  <data name="synchroStatusOfflineTitle" xml:space="preserve"> 
+    <value>Offline</value> 
+  </data> 
+  <data name="synchroStatusPausedDescription" xml:space="preserve"> 
+    <value>De synchronisatie is tijdelijk gestopt.</value> 
+  </data> 
+  <data name="synchroStatusPausedTitle" xml:space="preserve"> 
+    <value>Gepauzeerd</value> 
+  </data> 
+  <data name="synchroStatusUpToDateDescription" xml:space="preserve"> 
+    <value>Uw bestanden zijn toegankelijk en gesynchroniseerd.</value> 
+  </data> 
+  <data name="synchroStatusUpToDateTitle" xml:space="preserve"> 
+    <value>Geen activiteit bezig</value> 
+  </data> 
+  <data name="synchroUpToDate" xml:space="preserve"> 
+    <value>uw bestanden zijn up-to-date</value> 
+  </data> 
+  <data name="synchronizationSettings" xml:space="preserve"> 
+    <value>Synchronisatie</value> 
+  </data> 
+  <data name="systemErrorFileOrDirectoryCorruptedDescription" xml:space="preserve"> 
+    <value>Een bestand of map in uw synchronisatiemap lijkt beschadigd te zijn.
+De synchronisatie is onderbroken. Controleer uw bestanden en probeer het opnieuw.</value> 
+  </data> 
+  <data name="systemErrorFileOrDirectoryCorruptedTitle" xml:space="preserve"> 
+    <value>Beschadigd bestand gedetecteerd</value> 
+  </data> 
+  <data name="tabTitleActivities" xml:space="preserve"> 
+    <value>Activiteit</value> 
+  </data> 
+  <data name="tabTitleHome" xml:space="preserve"> 
+    <value>Startpagina</value> 
+  </data> 
+  <data name="tabTitleStorage" xml:space="preserve"> 
+    <value>Opslag</value> 
+  </data> 
+  <data name="teachingTipInvalidFolderAdvancedContent" xml:space="preserve"> 
+    <value>De map mag niet de root van een schijf zijn en mag geen reeds gesynchroniseerde map bevatten of daarin opgenomen zijn.</value> 
+  </data> 
+  <data name="teachingTipInvalidFolderContent" xml:space="preserve"> 
+    <value>De map moet leeg zijn, mag niet de root van een schijf zijn en mag geen reeds gesynchroniseerde map bevatten of daarin opgenomen zijn.</value> 
+  </data> 
+  <data name="teachingTipInvalidFolderTitle" xml:space="preserve"> 
+    <value>Deze map kan niet worden gebruikt</value> 
+  </data> 
+  <data name="titleConflictIndividualResolution" xml:space="preserve"> 
+    <value>Afzonderlijke verwerking</value> 
+  </data> 
+  <data name="tooltipExclusionRuleNotifications" xml:space="preserve"> 
+    <value>Een melding informeert u wanneer een bestand door deze regel wordt uitgesloten</value> 
+  </data> 
+  <data name="trayIconButtonCloseKDrive.Label" xml:space="preserve"> 
+    <value>kDrive sluiten</value> 
+    <comment>This translation is used for the taskbar icon menu, which requires the x:Uid format (i.e., suffixed with .Label).</comment> 
+  </data> 
+  <data name="trayIconButtonOpenKDrive.Label" xml:space="preserve"> 
+    <value>kDrive openen</value> 
+    <comment>This translation is used for the taskbar icon menu, which requires the x:Uid format (i.e., suffixed with .Label).</comment> 
+  </data> 
+  <data name="unableToCreateRemoteFolderTeachingTipContent" xml:space="preserve"> 
+    <value>Controleer of uw internetverbinding actief is, of deze naam nog niet in gebruik is en of het geen ongeldige tekens bevat.</value> 
+  </data> 
+  <data name="unableToCreateRemoteFolderTeachingTipTitle" xml:space="preserve"> 
+    <value>Kan deze map niet aanmaken</value> 
+  </data> 
+  <data name="unauthorizedAccess" xml:space="preserve"> 
+    <value>Ongeautoriseerde toegang</value> 
+  </data> 
+  <data name="unavailableContentNoActivityDescription" xml:space="preserve"> 
+    <value>Uw bestanden zijn toegankelijk en gesynchroniseerd.</value> 
+  </data> 
+  <data name="unavailableContentNoActivityTitle" xml:space="preserve"> 
+    <value>Geen recente activiteit</value> 
+  </data> 
+  <data name="unexpectedErrorTeachingTipContent" xml:space="preserve"> 
+    <value>Probeer het over een paar ogenblikken opnieuw.
+Als het probleem aanhoudt, neem dan contact op met ondersteuning.</value> 
+  </data> 
+  <data name="unexpectedErrorTeachingTipTitle" xml:space="preserve"> 
+    <value>Er is een onverwachte fout opgetreden</value> 
+  </data> 
+  <data name="untilTomorrow" xml:space="preserve"> 
+    <value>Tot morgen</value> 
+  </data> 
+  <data name="updateAvailable" xml:space="preserve"> 
+    <value>kDrive %@ beschikbaar</value> 
+  </data> 
+  <data name="updateDialogDescription" xml:space="preserve"> 
+    <value>De installatie duurt minder dan een minuut.
+Uw synchronisatie wordt automatisch hervat na afloop.</value> 
+  </data> 
+  <data name="updateDialogIgnoreVersion" xml:space="preserve"> 
+    <value>Deze versie negeren</value> 
+  </data> 
+  <data name="updateDialogInstallNow" xml:space="preserve"> 
+    <value>Nu installeren</value> 
+  </data> 
+  <data name="updateDialogRemindLater" xml:space="preserve"> 
+    <value>Herinner me later</value> 
+  </data> 
+  <data name="updateDialogSeeWhatsNew" xml:space="preserve"> 
+    <value>Bekijk de nieuwigheden</value> 
+  </data> 
+  <data name="updateDialogSubtitle" xml:space="preserve"> 
+    <value>Versie %@ · U gebruikt %@</value> 
+  </data> 
+  <data name="updateDialogTitle" xml:space="preserve"> 
+    <value>Update beschikbaar</value> 
+  </data> 
+  <data name="updateRequiredDescription" xml:space="preserve"> 
+    <value>Een nieuwe versie van kDrive is vereist om door te gaan.
+Werk de applicatie bij om toegang te krijgen tot uw bestanden en de synchronisatie te hervatten.</value> 
+  </data> 
+  <data name="updateRequiredTitle" xml:space="preserve"> 
+    <value>Update vereist</value> 
+  </data> 
+  <data name="updateSettings" xml:space="preserve"> 
+    <value>Update</value> 
+  </data> 
+  <data name="uploadNotTerminatedErrorTitle" xml:space="preserve"> 
+    <value>Onvolledig uploaden</value> 
+  </data> 
+  <data name="userExclusionFileListDescription" xml:space="preserve"> 
+    <value>Bestanden toevoegen om uit de synchronisatie uit te sluiten.</value> 
+  </data> 
+  <data name="userExclusionFileListHeader" xml:space="preserve"> 
+    <value>Aangepaste uitsluitingsregels</value> 
+  </data> 
+  <data name="viewSourceCode" xml:space="preserve"> 
+    <value>Broncode bekijken</value> 
+  </data> 
+  <data name="winInformationBlockSynchroErrorTitle" xml:space="preserve"> 
+    <value>U heeft een synchronisatiefout</value> 
+    <comment>Title in the Windows information banner when there is exactly one synchronization error.</comment> 
+  </data> 
+  <data name="winInformationBlockSynchroErrorTitle-plural" xml:space="preserve"> 
+    <value>U heeft {0} synchronisatiefouten</value> 
+    <comment>Title in the Windows information banner when there are multiple sync errors; {0} is the error count.</comment> 
+  </data> 
+  <data name="winStorageMissingDiskDescription" xml:space="preserve"> 
+    <value>kDrive heeft geen toegang tot schijf %@
+Zorg ervoor dat deze correct is aangesloten,
+ontgrendeld en toegankelijk is vanaf uw computer.</value> 
+    <comment>Description shown when a storage disk is missing or inaccessible; %@ is the disk name or drive letter.</comment> 
+  </data> 
+  <data name="winStorageMissingDiskTitle" xml:space="preserve"> 
+    <value>Opslagschijf %@ is niet toegankelijk</value> 
+    <comment>Title shown when a storage disk is not accessible; %@ is the disk name or drive letter.</comment> 
+  </data> 
+  <data name="winbuttonRemoveFileExclusionRule" xml:space="preserve"> 
+    <value>Verwijderen</value> 
+    <comment>Button to remove a single selected file exclusion rule from the exclusion list.</comment> 
+  </data> 
+  <data name="winbuttonRemoveFileExclusionRule-plural" xml:space="preserve"> 
+    <value>Verwijderen (%@ regels)</value> 
+    <comment>Button to remove multiple selected file exclusion rules; %@ is the number of rules to be removed.</comment> 
+  </data> 
+</root>

@@ -67,8 +67,6 @@ class AbstractNetworkJob : public SyncJob {
         virtual std::string getSpecificUrl() = 0;
         virtual std::string getUrl() = 0;
 
-        void unzip(std::istream &inputStream, std::stringstream &ss);
-
         [[nodiscard]] std::string errorText(Poco::Exception const &e) const;
         [[nodiscard]] std::string errorText(std::exception const &e) const;
 

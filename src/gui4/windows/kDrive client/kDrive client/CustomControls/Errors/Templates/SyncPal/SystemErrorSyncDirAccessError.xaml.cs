@@ -15,8 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.IO;
@@ -27,10 +29,12 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
         Levels = new[] { ErrorLevel.SyncPal },
         ExitCodes = new[] { ExitCode.SystemError },
         ExitCauses = new[] { ExitCause.SyncDirAccessError },
-        NodeTypes = new[] { NodeType.File, NodeType.Directory, NodeType.Unknown }
+        NodeTypes = new[] { NodeType.File, NodeType.Directory, NodeType.Unknown },
+        ShowInSystemTray = true
     )]
     public sealed partial class SystemErrorSyncDirAccessError : UserControl
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private Error Error { get; init; }
         public SystemErrorSyncDirAccessError(Error error)
         {
@@ -57,6 +61,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
                 PrimaryButtonText = Localizer.Instance.GetString("buttonOpenParentFolder"),
                 Content = new SystemErrorSyncDirAccessErrorDialog(Error) { XamlRoot = xamlRoot }
             };
+            _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageSyncDirAccessError);
 
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
@@ -74,6 +79,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
                 }
                 else
                 {
+                    _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.SyncDirAccessErrorOpenFolder);
                     await Utility.OpenFolderSecurely(absolutPath);
                 }
             }

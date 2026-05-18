@@ -15,8 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
@@ -27,10 +29,12 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
         Levels = new[] { ErrorLevel.Node },
         NodeTypes = new[] { NodeType.File, NodeType.Directory },
         ExitCodes = new[] { ExitCode.SystemError },
-        ExitCauses = new[] { ExitCause.NotEnoughDiskSpace }
+        ExitCauses = new[] { ExitCause.NotEnoughDiskSpace },
+        ShowInSystemTray = true
     )]
     public sealed partial class NotEnoughDiskSpaceError : UserControl
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private Error Error { get; init; }
         public NotEnoughDiskSpaceError(Error error)
         {
@@ -46,6 +50,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
                 Utility.ShowUnexpectedErrorTeachingTip();
                 return;
             }
+            _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageNotEnoughDiskSpace);
 
             if (Error.Sync.LocalPath.StartsWith("C:"))
             {

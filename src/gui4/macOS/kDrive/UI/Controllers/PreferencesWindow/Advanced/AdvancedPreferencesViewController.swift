@@ -20,7 +20,7 @@ import Cocoa
 import kDriveCoreUI
 import SwiftUI
 
-class AdvancedPreferencesViewController: TitledViewController<AdvancedPreferencesView> {
+final class AdvancedPreferencesViewController: TitledViewController<AdvancedPreferencesView> {
     convenience init() {
         self.init(toolbarTitle: SidebarItem.advanced.title, contentView: AdvancedPreferencesView())
     }

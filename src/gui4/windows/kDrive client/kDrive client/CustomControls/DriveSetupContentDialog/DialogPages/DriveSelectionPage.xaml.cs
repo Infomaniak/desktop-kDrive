@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.CustomControls;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,6 +29,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 {
     public sealed partial class DriveSelectionPage : Page
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel { get { return _viewModel; } }
 
@@ -97,6 +99,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 
         private void EditButton_Click(object sender, RoutedEventArgs e)
         {
+            _analyticsService.TrackClick(Analytics.Keys.Category.DriveSetupDialog, Analytics.Keys.EventName.ConfigureSync);
             if (sender is Control control && control.DataContext is NewSync sync)
             {
                 GoToSyncSetupPagePage(sync);

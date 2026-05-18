@@ -2,17 +2,29 @@ name: Build Windows
 description: 'Build windows app'
 
 inputs:
-  virtual_cert:
-    description: 'The virtual certificate, mandatory for non-release builds'
+  debug_cert:
+    description: 'The debug certificate, mandatory for non-release builds'
     required: false
-  virtual_cert_pass:
-    description: 'Password of the virtual certificate, mandatory for non-release builds'
+  debug_cert_pass:
+    description: 'Password of the debug certificate, mandatory for non-release builds'
     required: false
-  physical_cert:
-    description: 'The physical certificate, mandatory for release builds'
+  debug_cert_thumbprint:
+    description: 'Thumbprint of the debug certificate, mandatory for non-release builds'
     required: false
-  physical_cert_pass:
-    description: 'Password of the physical certificate, mandatory for release builds'
+  ksp_host:
+    description: 'The KSP host, mandatory for release builds'
+    required: false
+  ksp_api_key:
+    description: 'The KSP API key, mandatory for release builds'
+    required: false
+  ksp_client_cert:
+    description: 'The KSP certificate, mandatory for release builds'
+    required: false
+  ksp_client_cert_pass:
+    description: 'Password of the KSP certificate, mandatory for release builds'
+    required: false
+  ksp_client_cert_thumbprint:
+    description: 'Thumbprint of the KSP certificate, mandatory for release builds'
     required: false
   release_build:
     description: 'If true, run the release build script'
@@ -42,25 +54,61 @@ runs:
 
       - name: Import Windows certificate
         env:
-          WINDOWS_VIRTUAL_CERT:  ${{ inputs.virtual_cert }}
-          WINDOWS_PHYSICAL_CERT: ${{ inputs.physical_cert }}
+          WINDOWS_KSP_CLIENT_CERT: ${{ inputs.ksp_client_cert }}
+          WINDOWS_DEBUG_CERT: ${{ inputs.debug_cert }}
         run: |
           if("${{ inputs.release_build }}" -eq "true") {
             New-Item -ItemType directory -Path certificate
-            Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_PHYSICAL_CERT
-            certutil -decode certificate/tempCert.txt certificate/certificate.cert
+            Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_KSP_CLIENT_CERT
+            certutil -decode certificate/tempCert.txt certificate/ksp_client_certificate.pfx
             Remove-Item -path certificate -include tempCert.txt
-            Import-Certificate -Filepath certificate/certificate.cert -CertStoreLocation Cert:\LocalMachine\My
-            Write-Host "Physical certificate imported successfully."
-            } else {
+            Import-PfxCertificate -FilePath certificate/ksp_client_certificate.pfx -CertStoreLocation Cert:\LocalMachine\My -Password (ConvertTo-SecureString -String "${{ inputs.ksp_client_cert_pass }}" -Force -AsPlainText)
+            Write-Host "KSP client certificate imported successfully."
+          } else {
             New-Item -ItemType directory -Path certificate
-            Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_VIRTUAL_CERT
-            certutil -decode certificate/tempCert.txt certificate/certificate.pfx
+            Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_DEBUG_CERT
+            certutil -decode certificate/tempCert.txt certificate/debug_certificate.pfx
             Remove-Item -path certificate -include tempCert.txt
-            Import-PfxCertificate -FilePath certificate/certificate.pfx -CertStoreLocation Cert:\LocalMachine\My -Password (ConvertTo-SecureString -String "${{ inputs.virtual_cert_pass }}" -Force -AsPlainText)
-            Write-Host "Virtual certificate imported successfully."
-            }
+            Import-PfxCertificate -FilePath certificate/debug_certificate.pfx -CertStoreLocation Cert:\LocalMachine\My -Password (ConvertTo-SecureString -String "${{ inputs.debug_cert_pass }}" -Force -AsPlainText)
+            Write-Host "Debug certificate imported successfully."
+          }
         shell: powershell
+
+      - name: Digicert KSP - Set variables
+        id: variables
+        run: |
+          if [ "${{ inputs.release_build }}" = "true" ]; then
+            echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+            echo "KEYPAIR_NAME=gt-standard-keypair" >> $GITHUB_OUTPUT
+            echo "CERTIFICATE_NAME=gt-certificate" >> $GITHUB_OUTPUT
+            echo "SM_HOST=${{ inputs.ksp_host }}" >> "$GITHUB_ENV"
+            echo "SM_API_KEY=${{ inputs.ksp_api_key }}" >> "$GITHUB_ENV"
+            echo "SM_CLIENT_CERT_FILE=${{ github.workspace }}/certificate/ksp_client_certificate.pfx" >> "$GITHUB_ENV"
+            echo "SM_CLIENT_CERT_PASSWORD=${{ inputs.ksp_client_cert_pass }}" >> "$GITHUB_ENV"
+            echo "C:\Program Files (x86)\Windows Kits\10\App Certification Kit" >> $GITHUB_PATH
+            echo "C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.8 Tools" >> $GITHUB_PATH
+            echo "C:\Program Files\DigiCert\DigiCert Keylocker Tools" >> $GITHUB_PATH
+          fi
+        shell: bash
+
+      - name: Digicert KSP - Setup SSM KSP on Windows latest
+        run: |
+          IF "${{ inputs.release_build }}"=="true" (
+            curl -X GET  https://one.digicert.com/signingmanager/api-ui/v1/releases/Keylockertools-windows-x64.msi/download -H "x-api-key:%SM_API_KEY%" -o Keylockertools-windows-x64.msi
+            msiexec /i Keylockertools-windows-x64.msi /quiet /qn
+          )
+        shell: cmd
+        continue-on-error: true
+
+      - name: Digicert KSP - Synchronize signature certificate
+        run: |
+          IF "${{ inputs.release_build }}"=="true" (
+            REM Verify the KSP
+            certutil.exe -csp "DigiCert Software Trust Manager KSP" -key -user
+            REM Synchronize certificate
+            smctl windows certsync --store="system"
+          )
+        shell: cmd
 
       - name: Build kDrive desktop
         id: build
@@ -70,15 +118,27 @@ runs:
             powershell "certutil -scinfo -Silent"
 
             IF "${{ inputs.build_new_client }}"=="true" (
-              powershell "./infomaniak-build-tools/windows/build-drive.ps1" -ci -ext -msi -clean remake -upload -tokenPass ${{ inputs.physical_cert_pass }} -newGui $true
+              powershell "./infomaniak-build-tools/windows/build-drive.ps1" -thumbprint ${{ inputs.ksp_client_cert_thumbprint }} -ci -ext -msi -clean remake -upload -newGui $true
             ) ELSE (
-              powershell "./infomaniak-build-tools/windows/build-drive.ps1" -ci -ext -msi -clean remake -upload -tokenPass ${{ inputs.physical_cert_pass }}
+              powershell "./infomaniak-build-tools/windows/build-drive.ps1" -thumbprint ${{ inputs.ksp_client_cert_thumbprint }} -ci -ext -msi -clean remake -upload
             )
 
           ) ELSE (
-            powershell -File "./infomaniak-build-tools/windows/build-drive.ps1" -ci -unitTests
+            $thumbprint = "${{ inputs.debug_cert_thumbprint }}"
+            powershell -File "./infomaniak-build-tools/windows/build-drive.ps1" -thumbprint ${{ inputs.debug_cert_thumbprint }} -ci -unitTests
           )
         shell: cmd
+
+      - name: Remove Windows certificate
+        run: |
+          if("${{ inputs.release_build }}" -eq "true") {
+            Get-ChildItem "Cert:\LocalMachine\My\${{ inputs.ksp_client_cert_thumbprint }}" | Remove-Item
+            Write-Host "KSP client certificate removed successfully."
+            } else {
+            Get-ChildItem "Cert:\LocalMachine\My\${{ inputs.debug_cert_thumbprint }}" | Remove-Item
+            Write-Host "Debug certificate removed successfully."
+            }
+        shell: powershell
 
       - name: Fetch dependencies
         run: |

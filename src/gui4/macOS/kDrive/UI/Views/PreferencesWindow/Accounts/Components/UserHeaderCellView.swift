@@ -29,7 +29,7 @@ struct UserHeaderCellView: View {
         HStack(spacing: AppPadding.padding8) {
             if let avatar {
                 AvatarView(image: avatar)
-                    .frame(width: 26, height: 26)
+                    .frame(width: 24, height: 24)
             }
 
             VStack(alignment: .leading) {

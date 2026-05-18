@@ -27,9 +27,11 @@ constexpr char host[] = "127.0.0.1";
 
 SocketCommChannel::SocketCommChannel(const Poco::Net::StreamSocket &socket) :
     AbstractCommChannel(),
-    _socket(socket) {
-    auto callbackHandlerFunc = std::function<void()>([this]() { callbackHandler(); });
-    _callbackThread = std::make_unique<StdLoggingThread>(callbackHandlerFunc);
+    _socket(socket) {}
+
+void SocketCommChannel::startCallbackThread() {
+    auto callbackHandlerFct = std::function<void()>([this]() { callbackHandler(); });
+    _callbackThread = std::make_unique<StdLoggingThread>(callbackHandlerFct);
 }
 
 SocketCommChannel::~SocketCommChannel() {
@@ -40,8 +42,10 @@ SocketCommChannel::~SocketCommChannel() {
         LOG_ERROR(Log::instance()->getLogger(), "Exception in SocketCommChannel::close: " << ex.what());
     }
 
-    if (_callbackThread && _callbackThread->joinable()) {
-        _callbackThread->join();
+    if (joinCallbackThread()) {
+        LOG_DEBUG(Log::instance()->getLogger(), "Callback thread joined successfully");
+    } else {
+        LOG_ERROR(Log::instance()->getLogger(), "Failed to join callback thread");
     }
 }
 
@@ -157,6 +161,20 @@ void SocketCommChannel::close() {
     }
 }
 
+bool SocketCommChannel::joinCallbackThread() noexcept {
+    try {
+        if (_callbackThread && _callbackThread->joinable()) {
+            _callbackThread->join();
+            return true;
+        }
+    } catch (std::exception &ex) {
+        LOG_ERROR(Log::instance()->getLogger(), "Exception in StdLoggingThread::join: " << ex.what());
+    } catch (...) {
+        LOG_ERROR(Log::instance()->getLogger(), "Unknown exception in StdLoggingThread::join");
+    }
+    return false;
+}
+
 SocketCommServer::SocketCommServer(const std::string &name) :
     AbstractCommServer(name) {}
 
@@ -166,6 +184,8 @@ SocketCommServer::~SocketCommServer() {
     } catch (std::exception &ex) {
         LOG_ERROR(Log::instance()->getLogger(), "Exception in SocketCommChannel::close: " << ex.what());
     }
+
+    joinAndClearPostponedLostConnectionCbks();
 }
 
 std::string SocketCommServer::getHost() {
@@ -280,12 +300,48 @@ void SocketCommServer::execute() {
 
         if (_stopAsked) break;
 
-        auto channel = makeCommChannel(socket);
-        const std::scoped_lock lock(_channelsMutex);
-        channel->setLostConnectionCbk([this](std::shared_ptr<AbstractCommChannel> ch) { lostConnectionCbk(ch); });
-        _channels.push_back(channel);
+        const auto channel = makeCommChannel(socket);
+        channel->setLostConnectionCbk([this](std::shared_ptr<AbstractCommChannel> ch) {
+            std::function<void()> postponedLostConnectionCbk = [this, ch]() {
+                auto channelPtr = std::dynamic_pointer_cast<SocketCommChannel>(ch);
+                if (channelPtr && channelPtr->joinCallbackThread()) {
+                    const std::scoped_lock lock(_channelsMutex);
+                    (void) _channels.remove(ch);
+                    lostConnectionCbk(ch);
+                } else {
+                    LOG_WARN(Log::instance()->getLogger(),
+                             "Failed to join callback thread for channel " << ch->id() << " on lost connection");
+                }
+            };
+
+            // Postpone _channels.remove(ch), as it may destroy the channel and its
+            // SocketCommChannel::callbackHandler thread while the current code
+            // (SocketCommChannel::lostConnectionCbk) is executing from this same callbackHandler thread.
+            (void) _postponedLostConnectionCbks.emplace_back(std::make_shared<StdLoggingThread>(postponedLostConnectionCbk));
+        });
+
+        {
+            const std::scoped_lock lock(_channelsMutex);
+            _channels.push_back(channel);
+        }
         newConnectionCbk();
+        channel->startCallbackThread();
+
+        // Clear terminated postponed lost-connection callback threads to avoid accumulating too many threads in case of many
+        // connections/disconnections (edge case as the application is not expected to handle more than one connection at a time,
+        // but better be safe)
+        joinAndClearPostponedLostConnectionCbks();
     }
     _isListening = false;
+}
+void SocketCommServer::joinAndClearPostponedLostConnectionCbks() {
+    // Join and remove all postponed lost-connection callback threads
+    for (const auto& thread: _postponedLostConnectionCbks) {
+        if (thread->joinable()) {
+            thread->join();
+        }
+    }
+
+    _postponedLostConnectionCbks.clear();
 }
 } // namespace KDC

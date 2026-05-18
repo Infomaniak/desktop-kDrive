@@ -25,7 +25,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
         Levels = new[] { ErrorLevel.Node },
         NodeTypes = new[] { NodeType.File, NodeType.Directory },
         ExitCodes = new[] { ExitCode.BackError },
-        ExitCauses = new[] { ExitCause.FileTooBig }
+        ExitCauses = new[] { ExitCause.FileTooBig },
+        ShowInSystemTray = true
     )]
     public sealed partial class FileTooBigError : UserControl
     {

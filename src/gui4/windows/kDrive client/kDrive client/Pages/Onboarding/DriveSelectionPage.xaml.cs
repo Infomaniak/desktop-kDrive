@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.OnBoarding;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
@@ -33,6 +34,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 {
     public sealed partial class DriveSelectionPage : Page
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         private ViewModels.Onboarding? _onBoardingViewModel;
         private readonly Dictionary<NewSync, string> _previousSyncPaths = []; // To store previous sync paths and allow reverting if needed in advanced settings
@@ -47,6 +49,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
+            _analyticsService.TrackPageView(Analytics.Keys.Category.OnboardingSyncConfigurationPage);
             if (e.Parameter is ViewModels.Onboarding obvm)
             {
                 _onBoardingViewModel = obvm;
@@ -88,6 +91,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
         {
             if (sender is CheckBox cb && cb.DataContext is IDrive drive && _onBoardingViewModel != null)
             {
+                _analyticsService.TrackClick(Analytics.Keys.Category.OnboardingSyncConfigurationPage, Analytics.Keys.EventName.SelectDrive);
                 cb.IsEnabled = false;
                 var commServices = App.ServiceProvider.GetRequiredService<IServerCommService>();
                 string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
@@ -115,6 +119,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
         {
             if (sender is CheckBox cb && cb.DataContext is IDrive drive && _onBoardingViewModel != null)
             {
+                _analyticsService.TrackClick(Analytics.Keys.Category.OnboardingSyncConfigurationPage, Analytics.Keys.EventName.UnselectDrive);
                 cb.IsEnabled = false;
                 var syncToRemove = _onBoardingViewModel.NewSyncs.FirstOrDefault(s => s.Drive == drive);
                 if (syncToRemove != null)
@@ -131,12 +136,14 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 
         private async void AdvancedSettingsButton_Click(object sender, RoutedEventArgs e)
         {
+            _analyticsService.TrackClick(Analytics.Keys.Category.OnboardingSyncConfigurationPage, Analytics.Keys.EventName.OpenAdvancedSettings);
             var driveSetupDialog = new CustomControls.DriveSetupContentDialog(this.XamlRoot, _onBoardingViewModel!.NewSyncs);
             await driveSetupDialog.ShowAsync();
         }
 
         private void Finish_Click(object sender, RoutedEventArgs e)
         {
+            _analyticsService.TrackClick(Analytics.Keys.Category.OnboardingSyncConfigurationPage, Analytics.Keys.EventName.Confirm);
             Frame.Navigate(typeof(FinishingPage), _onBoardingViewModel);
         }
 

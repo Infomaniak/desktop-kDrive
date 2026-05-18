@@ -32,6 +32,8 @@ class TestDb : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testColumnExist);
         CPPUNIT_TEST(testAddColumnIfMissing);
         CPPUNIT_TEST(testAddIntegerColumnIfMissing);
+        CPPUNIT_TEST(testWalSettings);
+        CPPUNIT_TEST(testWalTruncateOnClose);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -44,6 +46,8 @@ class TestDb : public CppUnit::TestFixture, public TestBase {
         void testColumnExist();
         void testAddColumnIfMissing();
         void testAddIntegerColumnIfMissing();
+        void testWalSettings();
+        void testWalTruncateOnClose();
 
     private:
         struct Test {
@@ -71,6 +75,10 @@ class TestDb : public CppUnit::TestFixture, public TestBase {
                 bool updateTest(const Test &test);
                 bool deleteTest(int64_t id);
                 std::vector<Test> selectTest();
+
+                bool isWalMode() const { return _journalMode == "WAL"; }
+                bool walAutocheckpointPragma(int &value);
+                bool journalSizeLimitPragma(int64_t &value);
         };
 
         MyTestDb *_testObj;

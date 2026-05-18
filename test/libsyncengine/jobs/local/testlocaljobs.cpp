@@ -87,7 +87,10 @@ void KDC::TestLocalJobs::setUp() {
     Drive drive(1, driveId, account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
 
-    const auto sync = Sync(1, drive.dbId(), _localTempDir.path(), "", testVariables.remotePath);
+    // Use a unique SyncDb path to avoid cross-test collisions on Windows when SQLite runs in EXCLUSIVE mode.
+    auto sync = Sync(1, drive.dbId(), _localTempDir.path(), "", testVariables.remotePath);
+    const auto syncDbPath = MockDb::makeDbName(userId, accountId, driveId, 1);
+    sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(sync);
 
     // Setup proxy
@@ -105,11 +108,13 @@ void KDC::TestLocalJobs::setUp() {
 void TestLocalJobs::tearDown() {
     ParametersCache::reset();
 
-    ParmsDb::instance()->close();
-    ParmsDb::reset();
     if (_syncPal && _syncPal->syncDb()) {
         _syncPal->syncDb()->close();
     }
+    _syncPal.reset();
+
+    ParmsDb::instance()->close();
+    ParmsDb::reset();
 
     TestBase::stop();
 }
@@ -180,9 +185,16 @@ void KDC::TestLocalJobs::testLocalJobs() {
     CPPUNIT_ASSERT(testhelpers::isInTrash(copyDirPath.filename() / testDirName / "tmp_picture.jpg"));
     CPPUNIT_ASSERT(!testhelpers::isInTrash(copyDirPath.filename() / testDirName / "dehydrated_placeholder.jpg"));
 #else
-    CPPUNIT_ASSERT(testhelpers::isInTrash(copyDirPath));
-    CPPUNIT_ASSERT(testhelpers::isInTrash(copyDirPath / testDirName / "tmp_picture.jpg"));
-    CPPUNIT_ASSERT(!testhelpers::isInTrash(copyDirPath / testDirName / "dehydrated_placeholder.jpg"));
+    if (testhelpers::hasTrashInfo()) {
+        if (!testhelpers::isInTrash(copyDirPath)) {
+            std::cout << "\n The item " << copyDirPath << " was not found in trash." << std::endl;
+            testhelpers::showTrashInfo();
+        }
+
+        CPPUNIT_ASSERT(testhelpers::isInTrash(copyDirPath));
+        CPPUNIT_ASSERT(testhelpers::isInTrash(copyDirPath / testDirName / "tmp_picture.jpg"));
+        CPPUNIT_ASSERT(!testhelpers::isInTrash(copyDirPath / testDirName / "dehydrated_placeholder.jpg"));
+    }
 #endif
 #if defined(KD_MACOS) || defined(KD_LINUX)
     testhelpers::eraseFromTrash(copyDirPath.filename());

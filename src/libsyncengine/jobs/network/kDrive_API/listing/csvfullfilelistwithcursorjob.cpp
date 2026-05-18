@@ -73,7 +73,7 @@ void CsvFullFileListWithCursorJob::setQueryParameters(Poco::URI &uri) {
 
 ExitInfo CsvFullFileListWithCursorJob::handleResponse(std::istream &is) {
     if (_zip) {
-        unzip(is, _ss);
+        Utility::unzipStream(is, _ss);
     } else {
         _ss << is.rdbuf();
     }

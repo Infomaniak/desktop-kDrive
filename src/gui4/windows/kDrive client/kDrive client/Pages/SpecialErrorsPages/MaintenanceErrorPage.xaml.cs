@@ -16,22 +16,34 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.Types;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Navigation;
 
 namespace Infomaniak.kDrive.Pages
 {
     public sealed partial class MaintenanceErrorPage : SpecialErroBasePage
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
+
         public MaintenanceErrorPage() : base([SyncErrorStates.Maintenance])
         {
             Logger.Log(Logger.Level.Info, "Navigated to MaintenanceErrorPage - Initializing MaintenanceErrorPage components");
             InitializeComponent();
             Logger.Log(Logger.Level.Debug, "MaintenanceErrorPage components initialized");
         }
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+            _analyticsService.TrackPageView(Analytics.Keys.Category.MaintenanceErrorPage);
+        }
         private async void RetryButton_Click(object sender, RoutedEventArgs e)
         {
             Logger.Log(Logger.Level.Info, "Retry button clicked - Starting sync");
+            _analyticsService.TrackClick(Analytics.Keys.Category.MaintenanceErrorPage, Analytics.Keys.EventName.StartSync);
             await RestartSync();
         }
     }

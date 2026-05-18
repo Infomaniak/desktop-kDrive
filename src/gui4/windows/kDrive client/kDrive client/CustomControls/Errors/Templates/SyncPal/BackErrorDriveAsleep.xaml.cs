@@ -15,8 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
 using System;
 
@@ -25,10 +27,13 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
     [ErrorMetadata(
         Levels = new[] { ErrorLevel.SyncPal },
         ExitCodes = new[] { ExitCode.BackError },
-        ExitCauses = new[] { ExitCause.DriveAsleep, ExitCause.DriveWakingUp }
+        ExitCauses = new[] { ExitCause.DriveAsleep, ExitCause.DriveWakingUp },
+        ShowInSystemTray = true
     )]
     public sealed partial class BackErrorDriveAsleep : UserControl
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
+
         private Error Error { get; init; }
         public BackErrorDriveAsleep(Error error)
         {
@@ -44,6 +49,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
                 Utility.ShowUnexpectedErrorTeachingTip();
                 return;
             }
+            _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageDriveAsleep);
 
             Control? control = sender as Control;
             if (control is not null)

@@ -15,23 +15,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using System.Collections;
 
 namespace Infomaniak.kDrive.CustomControls
 {
 
     public sealed partial class SyncSelector : UserControl
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         public AppModel ViewModel { get; } =
             App.ServiceProvider.GetRequiredService<AppModel>();
 
         public SyncSelector()
         {
             InitializeComponent();
+        }
+
+        private void SyncCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!IsLoaded || !ViewModel.IsInitialized)
+                return;
+
+            _analyticsService.TrackClick(Analytics.Keys.Category.SyncSelector, Analytics.Keys.EventName.SyncSelected);
         }
     }
 

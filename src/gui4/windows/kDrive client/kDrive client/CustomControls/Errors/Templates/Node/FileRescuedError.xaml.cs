@@ -15,8 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
@@ -24,10 +26,12 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
     [ErrorMetadata(
         Levels = new[] { ErrorLevel.Node },
         NodeTypes = new[] { NodeType.File, NodeType.Directory },
-        CancelTypes = new[] { CancelType.FileRescued }
+        CancelTypes = new[] { CancelType.FileRescued },
+        ShowInSystemTray = true
     )]
     public sealed partial class FileRescuedError : UserControl
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private Error Error { get; init; }
         public FileRescuedError(Error error)
         {
@@ -37,6 +41,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
 
         private async void ErrorCard_ActionClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
+            _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageRescuedFile);
+
             if (Error.Sync is not null && !await Utility.OpenFolderSecurely(Error.Sync.RescueFolderPath))
             {
                 Logger.Log(Logger.Level.Error, $"Failed to open rescue folder at path {Error.Sync?.RescueFolderPath}");

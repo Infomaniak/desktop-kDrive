@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 using CommunityToolkit.WinUI.Controls;
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,6 +29,8 @@ namespace Infomaniak.kDrive.CustomControls
 {
     public sealed partial class UpdateExpander : SettingsExpander
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
+
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel => _viewModel;
 
@@ -37,7 +40,7 @@ namespace Infomaniak.kDrive.CustomControls
 
         }
         private void UserControl_Unloaded(object sender, RoutedEventArgs e)
-        {            
+        {
             UnregisterPropertyChangedHandlers();
         }
         private void UpdateExpander_Loaded(object sender, RoutedEventArgs e)
@@ -102,13 +105,24 @@ namespace Infomaniak.kDrive.CustomControls
 
             if (sender is ComboBox comboBox && comboBox.SelectedItem is ComboBoxItem selectedItem)
             {
+                comboBox.IsEnabled = false;
                 string? channelString = selectedItem.Tag as string;
                 if (Enum.TryParse<VersionChannel>(channelString, out VersionChannel selectedChannel))
                 {
+                    if (selectedChannel == ViewModel.Settings.UpdateManager.CurrentChannel)
+                    {
+                        Logger.Log(Logger.Level.Info, $"Selected update channel {selectedChannel} is the same as the current channel, no change needed.");
+                        comboBox.IsEnabled = true;
+                        return;
+                    }
+
+                    _analyticsService.TrackClick(Analytics.Keys.Category.GeneralSettingsPage, Analytics.Keys.EventName.ChangeReleaseChannel);
+
                     if (!await ViewModel.Settings.UpdateManager.ChangeChannel(selectedChannel))
                     {
                         Logger.Log(Logger.Level.Error, $"Failed to change update channel to {selectedChannel}");
                         Utility.ShowUnexpectedErrorTeachingTip();
+                        comboBox.IsEnabled = true;
                         return;
                     }
                     Logger.Log(Logger.Level.Info, $"Update channel changed to {selectedChannel}");
@@ -117,6 +131,7 @@ namespace Infomaniak.kDrive.CustomControls
                 {
                     Logger.Log(Logger.Level.Error, $"Invalid update channel selected: {channelString}");
                 }
+                comboBox.IsEnabled = true;
             }
         }
 
@@ -133,6 +148,7 @@ namespace Infomaniak.kDrive.CustomControls
             {
                 btn.IsEnabled = false;
                 Logger.Log(Logger.Level.Info, "User clicked on Update button, starting update process.");
+                _analyticsService.TrackClick(Analytics.Keys.Category.GeneralSettingsPage, Analytics.Keys.EventName.StartUpdate);
             }
 
             if (!await UpdateManager.StartUpdate())
@@ -160,6 +176,16 @@ namespace Infomaniak.kDrive.CustomControls
                     toggleSwitch.IsEnabled = true;
                     return;
                 }
+
+                if (toggleSwitch.IsOn == ViewModel.Settings.UpdateManager.AutoUpdateEnabled)
+                {
+                    Logger.Log(Logger.Level.Info, "Auto-update toggle switch state is the same as the current setting, no change needed.");
+                    toggleSwitch.IsEnabled = true;
+                    return;
+                }
+
+                _analyticsService.TrackClick(Analytics.Keys.Category.GeneralSettingsPage, Analytics.Keys.EventName.ChangeAutoUpdate, toggleSwitch.IsOn ? 1 : 0 );
+
                 if (!await ViewModel.Settings.UpdateManager.ChangeAutoUpdate(toggleSwitch.IsOn))
                 {
                     Logger.Log(Logger.Level.Error, "Failed to change auto-update setting.");
@@ -167,6 +193,11 @@ namespace Infomaniak.kDrive.CustomControls
                 }
                 toggleSwitch.IsEnabled = true;
             }
+        }
+
+        private void KnowMoreButton_Click(object sender, RoutedEventArgs e)
+        {
+            (App.Current as App)?.ShowUpdateWindow();
         }
     }
 }

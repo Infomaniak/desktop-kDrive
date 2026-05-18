@@ -15,8 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
 using System;
 
@@ -25,10 +27,12 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
     [ErrorMetadata(
         Levels = new[] { ErrorLevel.SyncPal },
         ExitCodes = new[] { ExitCode.SystemError },
-        ExitCauses = new[] { ExitCause.UnableToStartVfs }
+        ExitCauses = new[] { ExitCause.UnableToStartVfs },
+        ShowInSystemTray = true
     )]
     public sealed partial class SystemErrorUnableToStartVfs : UserControl
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private Error Error { get; init; }
         public SystemErrorUnableToStartVfs(Error error)
         {
@@ -51,6 +55,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
                 CloseButtonText = Localizer.Instance.GetString("buttonCancel"),
                 PrimaryButtonText = Localizer.Instance.GetString("buttonSynchronizeOffline")
             };
+            _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageLiteSyncError);
 
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
@@ -60,6 +65,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
                     Utility.ShowUnexpectedErrorTeachingTip();
                     return;
                 }
+                _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.LiteSyncErrorSwitchMode);
 
                 if (!await Error.Sync.ChangeSyncType(Types.SyncType.Offline))
                 {

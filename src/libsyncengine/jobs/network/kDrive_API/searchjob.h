@@ -36,6 +36,8 @@ class SearchJob : public AbstractTokenNetworkJob {
         [[nodiscard]] bool hasMore() const { return _hasMore; }
 
     private:
+        friend class TestSearchJob;
+
         std::string getSpecificUrl() override;
         void setQueryParameters(Poco::URI &uri) override;
         ExitInfo handleResponse(std::istream &is) override;

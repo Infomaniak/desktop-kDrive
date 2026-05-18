@@ -33,6 +33,7 @@
 #include <filesystem>
 #include <unordered_set>
 #include <list>
+#include <Poco/InflatingStream.h>
 
 #include <Poco/DOM/Document.h>
 #include <Poco/Net/HTTPResponse.h>
@@ -56,7 +57,7 @@ class URI;
 
 namespace KDC {
 struct COMMONSERVER_EXPORT Utility {
-        inline static void setLogger(const log4cplus::Logger &logger) { _logger = logger; }
+        static void setLogger(const log4cplus::Logger &logger) { _logger = logger; }
 
         static bool init();
         static void free();
@@ -119,6 +120,9 @@ struct COMMONSERVER_EXPORT Utility {
         static std::string computeXxHash(const std::string &in);
         static std::string computeXxHash(const char *in, std::size_t length);
         static std::string xxHashToStr(XXH64_hash_t hash);
+
+        static void unzipStream(std::istream &inputStream, std::stringstream &ss,
+                                const Poco::InflatingStreamBuf::StreamType type = Poco::InflatingStreamBuf::STREAM_GZIP);
 
 #if defined(KD_MACOS)
         static SyncPath getExcludedAppFilePath(bool test = false);
@@ -198,6 +202,18 @@ struct COMMONSERVER_EXPORT Utility {
          * @return ExitInfo
          */
         static ExitInfo tryCreateTmpFile(std::shared_ptr<CacheDirectory> cacheDirectory, const SyncName &name = Str("testFile"));
+
+#if defined(KD_LINUX)
+        /*
+         This method makes a more accurate detection of the file system type on Linux, correcting the possibly wrong guess
+         of `Utility::fileSystemName` when it returns "EXT2/3/4". In this case, the method tries to create a file in the cache
+         directory. This method circumvents the fact that `statfs` can mistake "exFAT" with the more permissive "EXT2/3/4" when
+         a USB stick is used.
+        */
+        static ExitInfo getFileSystemName(std::shared_ptr<CacheDirectory> cacheDirectory, std::string &fileSystemName);
+#endif
+        static ExitInfo checkIfFileNamesCanEndWithSpace([[maybe_unused]] std::shared_ptr<CacheDirectory> cacheDirectory,
+                                                        bool &canEndWithSpace);
 
         static void msleep(int64_t msec);
 

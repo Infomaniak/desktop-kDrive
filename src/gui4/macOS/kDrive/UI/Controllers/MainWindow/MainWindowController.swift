@@ -20,6 +20,7 @@ import Cocoa
 import Combine
 import InfomaniakDI
 import kDriveCore
+import OrderedCollections
 
 final class MainWindowController: NSWindowController {
     enum WindowConstants {
@@ -31,6 +32,7 @@ final class MainWindowController: NSWindowController {
     @LazyInjectService private var router: MainWindowRouter
     @LazyInjectService private var xpcConnectionProvider: XPCConnectionProvider
     @LazyInjectService private var coherentCache: CoherentCache
+    @LazyInjectService private var cacheObservable: CoherentCacheObservable
 
     // periphery:ignore - We keep a strong reference on the viewController being presented
     private var viewController: NSViewController?
@@ -53,6 +55,7 @@ final class MainWindowController: NSWindowController {
 
         observeRouter()
         observeXPConnectionState()
+        observeUsersCache()
     }
 
     @available(*, unavailable)
@@ -71,6 +74,21 @@ final class MainWindowController: NSWindowController {
         xpcConnectionProvider.guiConnectionStatePublisher
             .receiveOnMain(store: &bindStore) { [weak self] state in
                 self?.navigateAfterPreloading(state: state)
+            }
+    }
+
+    private func observeUsersCache() {
+        cacheObservable.usersPublisher.map { $0.isEmpty }.removeDuplicates()
+            .receiveOnMain(store: &bindStore) { [weak self] noAccount in
+                guard let self else { return }
+
+                guard noAccount else { return }
+
+                guard case .mainWindow = router.currentRoute else {
+                    return
+                }
+
+                router.navigate(to: .onboarding())
             }
     }
 

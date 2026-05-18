@@ -49,7 +49,7 @@
                                          ConfiguredTemplate="{StaticResource ConfiguredDriveTemplate}"
                                          UnconfiguredTemplate="{StaticResource UnconfiguredDriveTemplate}" />
     </Page.Resources>
-    <Grid Margin="{StaticResource Infomaniak.Style.Thickness.Uniform.L}"
+    <Grid Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.L}"
           RowSpacing="{StaticResource Infomaniak.Style.Spacing.L}">
         <Grid.RowDefinitions>
             <!-- Title -->
@@ -58,10 +58,13 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <TextBlock Grid.Row="0"
+                   Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.L}"
                    Text="{x:Bind kDrive:Localizer.Instance.GetString('settingsTitle'), Mode=OneWay}"
                    Style="{StaticResource Infomaniak.Style.TextBlock.Title}" />
-        <ScrollView Grid.Row="1">
-            <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.L}">
+        <ScrollView x:Name="SettingsScrollView"
+                    Grid.Row="1">
+            <StackPanel Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.L}"
+                        Spacing="{StaticResource Infomaniak.Style.Spacing.L}">
                 <!-- General -->
                 <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                     <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('sidebarItemGeneral'), Mode=OneWay}"
@@ -76,26 +79,42 @@
                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                         </toolKit:SettingsCard.HeaderIcon>
                         <toolKit:SettingsCard.Description>
-                            <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('languageSettingWarning'), Mode=OneWay}"
-                                       Style="{StaticResource CaptionTextBlockStyle}"
-                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                       Visibility="{x:Bind ViewModel.Settings.RestartRequiredForLanguageChange, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+                            <HyperlinkButton Content="{x:Bind kDrive:Localizer.Instance.GetString('languageSettingWarning'), Mode=OneWay}"
+                                             Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                             Visibility="{x:Bind ViewModel.Settings.RestartRequiredForLanguageChange, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
+                                             Click="RestartAppHyperlinkButton_Click"/>
                         </toolKit:SettingsCard.Description>
                         <ComboBox SelectedValuePath="Tag"
                                   SelectedValue="{x:Bind ViewModel.Settings.Language, Converter={StaticResource ToStringConverter}, Mode=OneWay}"
                                   SelectionChanged="LanguageComboBox_Changed">
                             <ComboBoxItem Content="{x:Bind kDrive:Localizer.Instance.GetString('labelSameAsSystem'), Mode=OneWay}"
-                                          Tag="SystemDefault" />
+                                          Tag="Default" />
                             <ComboBoxItem Content="Français"
-                                          Tag="FR" />
+                                          Tag="French" />
                             <ComboBoxItem Content="English"
-                                          Tag="EN" />
+                                          Tag="English" />
                             <ComboBoxItem Content="Deutsch"
-                                          Tag="DE" />
+                                          Tag="German" />
                             <ComboBoxItem Content="Español"
-                                          Tag="ES" />
+                                          Tag="Spanish" />
                             <ComboBoxItem Content="Italiano"
-                                          Tag="IT" />
+                                          Tag="Italian" />
+                            <ComboBoxItem Content="Dansk"
+                                          Tag="Danish" />
+                            <ComboBoxItem Content="Nederlands"
+                                          Tag="Dutch" />
+                            <ComboBoxItem Content="Suomi"
+                                          Tag="Finnish" />
+                            <ComboBoxItem Content="Ελληνικά"
+                                          Tag="Greek" />
+                            <ComboBoxItem Content="Norsk (Bokmål)"
+                                          Tag="Norwegian" />
+                            <ComboBoxItem Content="Polski"
+                                          Tag="Polish" />
+                            <ComboBoxItem Content="Português"
+                                          Tag="Portuguese" />
+                            <ComboBoxItem Content="Svenska"
+                                          Tag="Swedish" />
                         </ComboBox>
                     </toolKit:SettingsCard>
                     <!-- General - Auto start -->
@@ -201,7 +220,8 @@
                     </toolKit:SettingsCard>
                 </StackPanel>
                 <!-- Account -->
-                <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                <StackPanel x:Name="AccountsStackPanel"
+                            Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                     <Grid>
                         <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('sidebarItemAccounts'), Mode=OneWay}"
                                    HorizontalAlignment="Left"
@@ -244,7 +264,8 @@
                     </toolKit:SettingsCard>
 
                     <!-- Account - List -->
-                    <ListView ItemsSource="{x:Bind ViewModel.Users}"
+                    <ListView x:Name="UsersListView"
+                              ItemsSource="{x:Bind ViewModel.Users, Mode=OneWay}"
                               SelectionMode="None"
                               Visibility="{x:Bind ViewModel.Users.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
                         <ListView.ItemContainerStyle>
@@ -260,7 +281,8 @@
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="viewmodel:User">
                                 <toolKit:SettingsExpander ItemsSource="{x:Bind AllDrives, Mode=OneWay}"
-                                                          Expanded="UserSettingsExpander_Expanded">
+                                                          Expanded="UserSettingsExpander_Expanded"
+                                                          Loaded="UserSettingsExpander_Loaded">
                                     <ProgressRing Height="6"
                                                   Width="Auto"
                                                   Visibility="{x:Bind DriveRefreshInProgress, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />

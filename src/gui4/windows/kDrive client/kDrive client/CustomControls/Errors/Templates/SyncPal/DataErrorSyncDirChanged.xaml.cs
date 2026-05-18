@@ -15,8 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
 using System;
 
@@ -26,10 +28,12 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
         Levels = new[] { ErrorLevel.SyncPal },
         ExitCodes = new[] { ExitCode.DataError },
         ExitCauses = new[] { ExitCause.SyncDirChanged },
-        NodeTypes = new[] { NodeType.File, NodeType.Directory, NodeType.Unknown }
+        NodeTypes = new[] { NodeType.File, NodeType.Directory, NodeType.Unknown },
+        ShowInSystemTray = true
     )]
     public sealed partial class DataErrorSyncDirChanged : UserControl
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private Error Error { get; init; }
         public DataErrorSyncDirChanged(Error error)
         {
@@ -56,16 +60,17 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
                 PrimaryButtonText = Localizer.Instance.GetString("buttonCreateNewSync"),
                 Content = new SystemErrorSyncDirChangedErrorDialog(Error) { XamlRoot = xamlRoot }
             };
+            _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageSyncDirChanged);
 
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
-                var frame = ((App.Current as App)?.CurrentWindow as MainWindow)?.AppNavView.Frame;
+                var frame = Utility.GetFrame(this);
                 if (frame is null)
                 {
                     Logger.Log(Logger.Level.Error, "Failed to navigate to the sync setup page after a sync directory change error because the main frame could not be found.");
                     return;
                 }
-
+                _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.SyncDirChangedRecreate);
                 var destPage = (Error.Sync?.IsAdvanced ?? false) ? typeof(Pages.Settings.DriveAdvancedSyncsPage) : typeof(Pages.Settings.DriveManagementPage);
                 frame.Navigate(destPage, Error.Sync?.Drive);
             }
