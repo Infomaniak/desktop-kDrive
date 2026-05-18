@@ -281,6 +281,7 @@ void WindowsUpdater::retryDownload(const SyncPath &filepath) {
     if (_autoUpdate) {
         LOG_ERROR(Log::instance()->getLogger(), "Already tried to re-download the installer before.");
         setState(UpdateState::UpdateError);
+        _autoUpdate = false;
         return;
     }
     _autoUpdate = true;
