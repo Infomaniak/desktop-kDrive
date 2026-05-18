@@ -52,8 +52,7 @@ bool forceNoTrayRequested() {
 QString syncStatusLogName(const SyncStatus status) {
     return QString::fromStdString(toString(status));
 }
-
-const char *trayIconStateLogName(const TrayIconState state) {
+QString trayIconStateLogName(const TrayIconState state) {
     switch (state) {
         using enum TrayIconState;
         case Neutral:
@@ -71,7 +70,7 @@ const char *trayIconStateLogName(const TrayIconState state) {
     return "Unknown";
 }
 
-const char *trayIconPath(const TrayIconState state) {
+QString trayIconPath(const TrayIconState state) {
     switch (state) {
         using enum TrayIconState;
         case Neutral:
@@ -126,7 +125,7 @@ void SystemTrayController::initialize() {
     qCInfo(lcSystemTrayController) << "Initializing system tray | available:" << _isTrayAvailable
                                    << "| state:" << trayIconStateLogName(_iconState) << "| icon:" << trayIconPath(_iconState);
 
-    _trayIcon.setIcon(QIcon(QString::fromUtf8(trayIconPath(_iconState))));
+    _trayIcon.setIcon(QIcon(trayIconPath(_iconState)));
     _trayIcon.setToolTip(tr("kDrive"));
 
     _openAction = _trayMenu.addAction(tr("Open kDrive"));
@@ -216,7 +215,7 @@ void SystemTrayController::setIconState(const TrayIconState state) {
         return;
     }
 
-    _trayIcon.setIcon(QIcon(QString::fromUtf8(trayIconPath(_iconState))));
+    _trayIcon.setIcon(QIcon(trayIconPath(_iconState)));
 }
 
 void SystemTrayController::showMainWindow() const {
