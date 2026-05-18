@@ -41,8 +41,8 @@ public struct FormNavigationCell: View {
                 VStack(alignment: .leading) {
                     Text(title)
 
-                    if let description = description {
-                        Text(description)
+                    if let descriptionText = description {
+                        Text(descriptionText)
                             .font(.Tokens.callout)
                             .foregroundStyle(.secondary)
                     }
