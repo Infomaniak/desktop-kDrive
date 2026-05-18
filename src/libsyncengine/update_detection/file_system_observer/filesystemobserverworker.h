@@ -60,8 +60,8 @@ class FileSystemObserverWorker : public ISyncWorker {
 
         void init() override;
 
-        void setUpdateFlagValue(bool isUpdating) { _updating = isUpdating; }
-        void setInitFlagValue(bool isInitializing) { _initializing = isInitializing; }
+        void setUpdateFlagValue(const bool isUpdating) { _updating = isUpdating; }
+        void setInitFlagValue(const bool isInitializing) { _initializing = isInitializing; }
 
     private:
         [[nodiscard]] virtual ReplicaSide getSnapshotType() const = 0;
