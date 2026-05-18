@@ -135,7 +135,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         using FullListingJobMap = std::unordered_map<RemoteNodeId, std::shared_ptr<CsvFullFileListWithCursorJob>,
                                                      StringHashFunction, std::equal_to<>>;
         // Run full listing jobs in parallel via the sync job manager.
-        [[nodiscard]] ExitInfo executeFullListingJobs(const FullListingJobMap &fullListingJobs);
+        [[nodiscard]] ExitInfo runFullListingJobs(const FullListingJobMap &fullListingJobs);
 
         friend class TestRemoteFileSystemObserverWorker;
 };
