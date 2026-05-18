@@ -57,7 +57,7 @@ void AbstractUpdater::onAppVersionReceived() {
 
     const auto &versionInfo = _versionRetriever->versionInfo();
     if (!versionInfo.isValid()) {
-        LOG_WARN(Log::instance()->getLogger(), "No valid update info retrieved!");
+        LOG_WARN(Log::instance()->getLogger(), "No valid update info retrieved: " << versionInfo.toString());
         setState(UpdateState::UpToDate);
         return;
     }

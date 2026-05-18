@@ -614,6 +614,11 @@ struct VersionInfo {
                    downloadUrl == other.downloadUrl && checksum == other.checksum && minOsVersion == other.minOsVersion &&
                    minAppVersion == other.minAppVersion;
         }
+        std::string toString() const {
+            return "VersionInfo{tag: " + tag + " / buildVersion: " + std::to_string(buildVersion) +
+                   " / downloadUrl: " + downloadUrl + " / checksum: " + checksum + " / minOsVersion: " + minOsVersion +
+                   " / minAppVersion: " + minAppVersion + "}";
+        }
 
         [[nodiscard]] bool isValid() const {
             return channel != DistributionChannel::Unknown && !tag.empty() && buildVersion != 0 && !downloadUrl.empty();
