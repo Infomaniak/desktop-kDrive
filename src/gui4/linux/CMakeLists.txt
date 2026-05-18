@@ -5,7 +5,7 @@ endif ()
 project(${APPLICATION_CLIENTV4_EXECUTABLE} LANGUAGES C CXX)
 
 
-find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui Network Qml Quick Widgets QuickControls2)
+find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui Network Qml Quick Sql Widgets QuickControls2)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
@@ -105,6 +105,7 @@ target_link_libraries(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
         Qt6::Qml
         Qt6::Quick
         Qt6::QuickControls2
+        Qt6::Sql     # Added because libcommon depends on it; Qt will warn if it's not linked.
         Qt6::Widgets # Added because libcommon depends on it; Qt will warn if it's not linked.
         ${libcommon_NAME}
         ${libcommongui_NAME}
