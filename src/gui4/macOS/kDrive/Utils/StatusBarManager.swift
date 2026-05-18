@@ -77,10 +77,12 @@ final class StatusBarManager {
     private var statusItem: NSStatusItem
     private var cancellable: AnyCancellable?
 
+    private static let iconSize = NSSize(width: 15, height: 15)
+
     init() {
         let statusBar = NSStatusBar.system
 
-        statusItem = statusBar.statusItem(withLength: NSStatusItem.squareLength)
+        statusItem = statusBar.statusItem(withLength: StatusBarManager.iconSize.width)
         statusItem.autosaveName = StatusBarManager.autosaveName
         setButtonImage(StatusItemState.idle.icon)
 
@@ -123,9 +125,9 @@ final class StatusBarManager {
     }
 
     private func setButtonImage(_ image: NSImage) {
-        image.size = NSSize(width: 15, height: 15)
-        statusItem.button?.image = image
-        statusItem.button?.sizeToFit()
+        let resizedImage = (image.copy() as? NSImage) ?? image
+        resizedImage.size = StatusBarManager.iconSize
+        statusItem.button?.image = resizedImage
     }
 
     private func guessStatusItemState(from contexts: [UISynchroStateContext]) -> StatusItemState {
