@@ -381,6 +381,16 @@ void TestSyncPalWorker::MockSyncPal::createWorkers(const std::chrono::seconds &s
     _tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(shared_from_this());
 }
 
+void TestSyncPalWorker::MockSyncPal::freeSnapshotsCopies() {
+    // Ensure that no shared_ptr outside of SyncPal holds a reference to the snapshots to avoid them being kept alive while the
+    // workers are being destroyed, which would cause use-after-free when the workers try to access them during their destruction.
+    assert(_localSnapshot.use_count() <= 1);
+    _localSnapshot.reset();
+
+    assert(_remoteSnapshot.use_count() <= 1);
+    _remoteSnapshot.reset();
+}
+
 ExitInfo TestSyncPalWorker::MockRemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
     using namespace std::chrono;
     changes = false;
@@ -441,10 +451,6 @@ void TestSyncPalWorker::testHandleBackError() {
     // Verify the counter resets when the Idle step is initialised (via initStep → resetConsecutiveBackErrors).
     std::shared_ptr<ISyncWorker> stepWorkers[2] = {nullptr, nullptr};
     std::shared_ptr<SharedObject> inputSharedObject[2] = {nullptr, nullptr};
-
-    // copySnapshots() must be called before entering Idle, mirroring the real sync loop
-    // (UpdateDetection1 always precedes Idle in production).
-    _syncPal->copySnapshots();
 
     syncPalWorker->initStep(SyncStep::Idle, stepWorkers, inputSharedObject);
 
