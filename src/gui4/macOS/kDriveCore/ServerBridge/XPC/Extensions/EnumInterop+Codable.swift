@@ -35,7 +35,7 @@ extension KDC.Language: Codable {}
 extension KDC.LogLevel: Codable {}
 extension KDC.NotificationsDisabled: Codable {}
 extension KDC.ProxyType: Codable {}
-extension KDC.VersionChannel: Codable {}
+extension KDC.DistributionChannel: Codable {}
 extension KDC.UpdateState: Codable {}
 extension KDC.ReplicaSide: Codable {}
 extension KDC.SyncConfiguration: Codable {}

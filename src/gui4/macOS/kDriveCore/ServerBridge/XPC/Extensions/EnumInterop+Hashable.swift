@@ -35,7 +35,7 @@ extension KDC.Language: Hashable {}
 extension KDC.LogLevel: Hashable {}
 extension KDC.NotificationsDisabled: Hashable {}
 extension KDC.ProxyType: Hashable {}
-extension KDC.VersionChannel: Hashable {}
+extension KDC.DistributionChannel: Hashable {}
 extension KDC.UpdateState: Hashable {}
 extension KDC.SyncConfiguration: Hashable {}
 extension MsgType: @retroactive Hashable {}

@@ -25,7 +25,7 @@ public struct UpdaterJobs: Sendable {
 
     public init() {}
 
-    public func versionInfo(channel: KDC.VersionChannel) async throws -> VersionInfo {
+    public func versionInfo(channel: KDC.DistributionChannel) async throws -> VersionInfo {
         IKLogger.data.log("Query for version info")
         let query = UpdaterVersionInfoQuery(channel: channel)
         let request = await RequestMessage<UpdaterVersionInfoQuery>(num: RequestNum.UPDATER_VERSION_INFO, body: query)
@@ -41,7 +41,8 @@ public struct UpdaterJobs: Sendable {
             tag: versionInfoResponse.tag,
             buildVersion: versionInfoResponse.buildVersion,
             buildMinOsVersion: versionInfoResponse.buildMinOsVersion,
-            downloadUrl: versionInfoResponse.downloadUrl
+            downloadUrl: versionInfoResponse.downloadUrl,
+            checksum: versionInfoResponse.checksum
         )
     }
 

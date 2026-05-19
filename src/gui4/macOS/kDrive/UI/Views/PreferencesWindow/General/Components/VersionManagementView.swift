@@ -105,7 +105,7 @@ struct VersionManagementView: View {
 
         versionTask?.cancel()
         versionTask = Task { @MainActor in
-            let channel: KDC.VersionChannel = repository.parametersInfo.distributionChannel.toKDCVersionChannel()
+            let channel: KDC.DistributionChannel = repository.parametersInfo.distributionChannel.toKDCDistributionChannel()
             guard let newVersion = try? await UpdaterJobs().versionInfo(channel: channel) else {
                 return
             }
