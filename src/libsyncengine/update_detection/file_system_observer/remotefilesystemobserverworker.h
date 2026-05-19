@@ -120,7 +120,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
                                              std::shared_ptr<CsvFullFileListWithCursorJob> csvFullListingJob);
         [[nodiscard]] ExitInfo handleCsvReplyCursor(const RemoteNodeId &remoteDirId, CursorPersistence cursorPersistence,
                                                     std::shared_ptr<CsvFullFileListWithCursorJob> csvFullFileListWithCursorJob);
-        [[nodiscard]] ExitInfo getItemsInRemoteDirJob(
+        [[nodiscard]] ExitInfo createGetItemsInRemoteDirJob(
                 const RemoteNodeId &remoteDirId, std::shared_ptr<CsvFullFileListWithCursorJob> &csvFullFileListWithCursorJob);
 
         [[nodiscard]] ExitInfo createLongPollJob(const RemoteNodeId &remoteDirId, std::shared_ptr<LongPollJob> &longPollJob);
@@ -128,8 +128,8 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         [[nodiscard]] virtual ExitInfo updateLongPollJobs(const std::vector<RemoteNodeId> &remoteDirIds,
                                                           LongPollJobMap &longPollJobs);
 
-        [[nodiscard]] ExitInfo checkIfRemoteDirHasChanges(const RemoteNodeId &remoteDirId,
-                                                          std::shared_ptr<LongPollJob> longPollJob, bool &changes);
+        [[nodiscard]] virtual ExitInfo checkIfRemoteDirHasChanges(const RemoteNodeId &remoteDirId, bool hasForcedChanges,
+                                                                  const LongPollJobMap &longPollJobs, bool &changes);
         [[nodiscard]] ExitInfo processEvents(const std::vector<RemoteNodeId> &specialFoldersRemoteIds,
                                              LongPollJobMap &longPollJobs);
         using FullListingJobMap = std::unordered_map<RemoteNodeId, std::shared_ptr<CsvFullFileListWithCursorJob>,
