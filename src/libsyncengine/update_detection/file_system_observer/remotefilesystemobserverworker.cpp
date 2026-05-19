@@ -202,8 +202,8 @@ void RemoteFileSystemObserverWorker::execute() {
 
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
-    LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
 
+    LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
     setExitCause(exitInfo.cause());
     setDone(exitInfo.code());
 }
