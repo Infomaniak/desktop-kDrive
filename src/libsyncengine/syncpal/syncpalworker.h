@@ -23,6 +23,12 @@
 
 #include <ctime>
 
+namespace backoffVariable {
+constexpr double multiplicativeFactor = 2; // binary exponential backoff
+constexpr int64_t baseDelay(60000); // 1 min
+constexpr int64_t maxDelay(14400000); // 4 hour
+} // namespace backoffVariable
+
 namespace KDC {
 
 class SyncPalWorker : public ISyncWorker {
@@ -91,6 +97,10 @@ class SyncPalWorker : public ISyncWorker {
         void removeSyncDirChangedErrorIfAny();
 
         bool shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr);
+        bool handleRateLimited(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr);
+        void handleBackError();
+
+        virtual double jitter() const;
 
         void checkForMassDeletions() const;
 
