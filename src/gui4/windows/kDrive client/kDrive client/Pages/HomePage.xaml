@@ -30,6 +30,8 @@
       xmlns:templateSelectors="using:Infomaniak.kDrive.TemplateSelectors"
       xmlns:kDrive="using:Infomaniak.kDrive"
       xmlns:types="using:Infomaniak.kDrive.Types"
+      xmlns:lottie="using:CommunityToolkit.WinUI.Lottie"
+      xmlns:animatedvisuals="using:AnimatedVisuals"
       mc:Ignorable="d">
     <Page.Resources>
         <!-- Converters -->
@@ -47,11 +49,11 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <controls:LottiePlayer Grid.Row="0"
-                                       UriSource="{ThemeResource Infomaniak.Custom.Animations.check}"
-                                       PlayCount="1"
-                                       MaxWidth="180"
-                                       Padding="50" />
+                <AnimatedVisualPlayer Grid.Row="0"
+                                      AutoPlay="True"
+                                      MaxWidth="180">
+                    <animatedvisuals:KDrive_Sync_TOKENS Color_446EDD="{ThemeResource SystemAccentColor}"/>
+                </AnimatedVisualPlayer>
 
                 <StackPanel Grid.Row="1"
                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">

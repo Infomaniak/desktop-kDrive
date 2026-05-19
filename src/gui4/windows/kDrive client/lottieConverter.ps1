@@ -84,6 +84,7 @@ Get-ChildItem -Path $Directory -Filter *.lottie | ForEach-Object {
         Move-Item -Path $animationFile.FullName -Destination $destinationFile -Force
 
         Write-Host "Extracted animation from '$($_.Name)' to '$destinationFile'"
+	dotnet tool run LottieGen -InputFile $_.Name -Language cs -WinUIVersion 3.0
     }
     finally {
         # Clean up: remove temp zip and temp folder
