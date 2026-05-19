@@ -144,7 +144,10 @@ ExitInfo ApiTranslator::updateCache(const UserDbId userDbId, const DriveId drive
         const auto it = std::find_if(nodeInfoList.cbegin(), nodeInfoList.cend(), [specialFolder](const NodeInfo &nodeInfo) {
             return nodeInfo.name() == SyncName2QStr(v3SpecialFolderNames.at(specialFolder));
         });
-        if (it != nodeInfoList.cend()) _specialFolderRemoteIdsCache[specialFolder][driveId] = it->nodeId().toStdString();
+        if (it != nodeInfoList.cend())
+            _specialFolderRemoteIdsCache[specialFolder][driveId] = it->nodeId().toStdString();
+        else
+            _specialFolderRemoteIdsCache[specialFolder][driveId] = {};
     }
 
     return ExitCode::Ok;
@@ -159,12 +162,12 @@ RemoteNodeId ApiTranslator::getValue(const DriveId driveId, const RemoteNodeIdCa
 
 ExitInfo ApiTranslator::getSpecialFolderRemoteId(const UserDbId userDbId, const DriveId driveId,
                                                  const SpecialFolder specialFolder, RemoteNodeId &folderRemoteId) {
-    if (const auto value = getValue(driveId, _specialFolderRemoteIdsCache[specialFolder]); value.empty()) {
+    folderRemoteId = {};
+
+    if (!_specialFolderRemoteIdsCache[specialFolder].contains(driveId)) {
         if (const auto exitInfo = updateCache(userDbId, driveId); !exitInfo) return exitInfo;
-    } else {
-        folderRemoteId = value;
-        return ExitCode::Ok;
     }
+
     folderRemoteId = getValue(driveId, _specialFolderRemoteIdsCache[specialFolder]);
 
     return ExitCode::Ok;
