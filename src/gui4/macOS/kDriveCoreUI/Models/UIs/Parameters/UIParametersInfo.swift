@@ -120,6 +120,7 @@ public enum UIDistributionChannel: String, CaseIterable, Sendable, Equatable {
     case beta
     case `internal`
     case legacy
+    case test
 }
 
 public struct UIParametersInfo: Sendable, Equatable {

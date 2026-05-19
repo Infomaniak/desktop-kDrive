@@ -20,11 +20,12 @@ import CppInterop
 import Foundation
 
 struct VersionInfoResponse: Codable, Sendable {
-    let channel: KDC.VersionChannel
+    let channel: KDC.DistributionChannel
     @Base64CodedString var tag: String
     let buildVersion: UInt64
     @Base64CodedString var buildMinOsVersion: String
     @Base64CodedString var downloadUrl: String
+    @Base64CodedString var checksum: String
 }
 
 struct UpdaterVersionInfoResponse: Codable, Sendable {

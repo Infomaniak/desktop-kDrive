@@ -64,6 +64,8 @@ enum BetaOption: String, Identifiable, CaseIterable, PreferenceOption {
             self = .internal
         case .legacy:
             self = .doNotJoin
+        case .test:
+            self = .doNotJoin
         }
     }
 }

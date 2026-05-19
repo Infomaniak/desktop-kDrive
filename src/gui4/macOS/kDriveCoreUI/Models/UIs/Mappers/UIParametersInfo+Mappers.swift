@@ -141,7 +141,7 @@ public extension UILogLevel {
 }
 
 public extension UIDistributionChannel {
-    init(versionChannel: KDC.VersionChannel) {
+    init(versionChannel: KDC.DistributionChannel) {
         switch versionChannel {
         case .Prod:
             self = .prod
@@ -153,6 +153,8 @@ public extension UIDistributionChannel {
             self = .internal
         case .Legacy:
             self = .legacy
+        case .Test:
+            self = .test
         case .Unknown:
             ReportHelper.reportToSentryIfProd(message: "UIDistributionChannel init received KDC.VersionChannel.Unknown case")
             self = .prod
@@ -165,7 +167,7 @@ public extension UIDistributionChannel {
         }
     }
 
-    func toKDCVersionChannel() -> KDC.VersionChannel {
+    func toKDCDistributionChannel() -> KDC.DistributionChannel {
         switch self {
         case .prod:
             return .Prod
@@ -177,6 +179,8 @@ public extension UIDistributionChannel {
             return .Internal
         case .legacy:
             return .Legacy
+        case .test:
+            return .Test
         }
     }
 }
@@ -213,7 +217,7 @@ public extension UIParametersInfo {
             proxyConfigInfo: proxyConfiguration.toProxyConfigInfo(),
             darkTheme: parametersInfo.darkTheme,
             maxAllowedCpu: parametersInfo.maxAllowedCpu,
-            distributionChannel: distributionChannel.toKDCVersionChannel(),
+            distributionChannel: distributionChannel.toKDCDistributionChannel(),
             sentryEnabled: isSentryEnabled,
             matomoEnabled: isMatomoEnabled
         )
