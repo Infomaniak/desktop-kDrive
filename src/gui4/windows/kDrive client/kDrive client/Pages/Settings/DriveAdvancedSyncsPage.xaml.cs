@@ -147,7 +147,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
             return;
         }
 
-        AutoDisposeDialog dialog = new AutoDisposeDialog
+        var dialog = new AutoDisposeDialog
         {
             XamlRoot = XamlRoot,
             Title = Localizer.Instance.GetString("dialogSyncDeletionWarningTitle"),
@@ -216,7 +216,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
             return;
         }
 
-        AutoDisposeDialog dialog = new AutoDisposeDialog
+        var dialog = new AutoDisposeDialog
         {
             XamlRoot = XamlRoot,
             Title = Localizer.Instance.GetString("dialogSyncModeChangeWarningTitle"),
@@ -346,7 +346,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
             return;
         }
 
-        AutoDisposeDialog dialog = new AutoDisposeDialog
+        var dialog = new AutoDisposeDialog
         {
             XamlRoot = this.XamlRoot,
             CloseButtonText = Localizer.Instance.GetString("buttonCancel"),

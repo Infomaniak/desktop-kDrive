@@ -51,7 +51,7 @@ namespace Infomaniak.kDrive.CustomControls
                 return;
             }
 
-            AutoDisposeDialog dialog = new AutoDisposeDialog
+            var dialog = new AutoDisposeDialog
             {
                 XamlRoot = XamlRoot,
                 Title = Localizer.Instance.GetString("logUploadPopupTitle"),

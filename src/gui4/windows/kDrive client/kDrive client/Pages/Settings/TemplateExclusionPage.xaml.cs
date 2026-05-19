@@ -71,7 +71,7 @@ namespace Infomaniak.kDrive.Pages.Settings
         {
             var popupPage = new Pages.Popup.AddExclusionRulePopup();
 
-            AutoDisposeDialog dialog = new AutoDisposeDialog()
+            var dialog = new AutoDisposeDialog()
             {
                 XamlRoot = this.XamlRoot,
                 Content = popupPage,
