@@ -29,7 +29,7 @@
 #include "test_utility/testhelpers.h"
 #include "updater/windowsupdater.h"
 #include "utility/digitalsignaturechecker_win.h"
-#include "mockupdatechecker.h"
+#include "mockversionretriever.h"
 #include "jobs/syncjobmanager.h"
 
 namespace KDC {
@@ -184,14 +184,13 @@ void TestWindowsUpdater::testIsChecksumValid() {
 
         WindowsUpdater updater;
 
-        AllVersionsInfo versionInfo;
-        TestAbstractUpdater::generateValidAllVersionsInfo(versionInfo);
-        auto testUpdateChecker = std::make_shared<MockUpdateChecker>();
-
-        testUpdateChecker->setAllVersionInfo(versionInfo);
-        testUpdateChecker->setVersionReceived(true);
-        testUpdateChecker->setChecksumForAllChannels(testCase.checksumValue);
-        updater._updateChecker = testUpdateChecker;
+        VersionInfo versionInfo;
+        TestAbstractUpdater::generateValidVersionInfo(versionInfo);
+        auto mockVersionRetriever = std::make_shared<MockVersionRetriever>();
+        mockVersionRetriever->setVersionInfo(versionInfo);
+        mockVersionRetriever->setVersionReceived(true);
+        mockVersionRetriever->setChecksum(testCase.checksumValue);
+        updater._versionRetriever = mockVersionRetriever;
 
         CPPUNIT_ASSERT_EQUAL(testCase.expectedValid, updater.verifyFileChecksum(tmpDir.path() / testCase.fileName));
     }
