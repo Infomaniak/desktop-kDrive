@@ -19,6 +19,7 @@
 using CodeArt.MatomoTracking;
 using DynamicData;
 using Infomaniak.kDrive.Analytics;
+using Infomaniak.kDrive.OnBoarding;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ServerCommunication.Services;
 using Infomaniak.kDrive.TrayIcon;
@@ -164,21 +165,32 @@ namespace Infomaniak.kDrive
         public enum CreateWindowOptions
         {
             Foreground = 1,
-            CancelOnboarding = 2
+            CancelOnboarding = 2,
+            OpenSettings = 4
         }
         public void CreateWindow(CreateWindowOptions options)
         {
+            if (CurrentWindow is OnBoardingWindow && options.HasFlag(CreateWindowOptions.CancelOnboarding))
+            {
+                CurrentWindow.Close();
+                CurrentWindow = null;
+            }
+
             if (CurrentWindow is null)
             {
                 var appModel = ServiceProvider.GetRequiredService<AppModel>();
                 if (options.HasFlag(CreateWindowOptions.CancelOnboarding) || !StartOnboardingIfNeeded())
                 {
-                    CurrentWindow = new MainWindow();
+                    CurrentWindow = new MainWindow(options.HasFlag(CreateWindowOptions.OpenSettings) ? typeof(Pages.Settings.SettingsPage) : null);
                 }
                 else
                 {
                     options &= ~CreateWindowOptions.Foreground; // StartOnboarding will handle bringing the window to the front, so we can skip it here to avoid unnecessary calls.
                 }
+            }
+            else if (CurrentWindow is MainWindow mainWindow && options.HasFlag(CreateWindowOptions.OpenSettings))
+            {
+                mainWindow?.AppNavView?.Frame?.Navigate(typeof(Pages.Settings.SettingsPage));
             }
 
             if (options.HasFlag(CreateWindowOptions.Foreground))

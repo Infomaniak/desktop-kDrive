@@ -73,10 +73,22 @@ namespace Infomaniak.kDrive.CustomControls
             InitializeComponent();
         }
 
+        public Type? LandingPageType
+        {
+            get { return (Type?)GetValue(LandingPageTypeProperty); }
+            set { SetValue(LandingPageTypeProperty, value); }
+        }
+
+        public static readonly DependencyProperty LandingPageTypeProperty =
+           DependencyProperty.Register(nameof(LandingPageType), typeof(Type), typeof(AppNavigationView), new PropertyMetadata(null));
+
         private void AppNavigationView_Loaded(object sender, RoutedEventArgs e)
         {
             Frame.Navigated += Frame_Navigated;
-            Frame.Navigate(typeof(Pages.HomePage));
+            if (LandingPageType is not null && LandingPageType.IsSubclassOf(typeof(Page)))
+                Frame.Navigate(LandingPageType);
+            else 
+                Frame.Navigate(typeof(Pages.HomePage));
 
             // Add an infobadge to SettingsItem
             var infoBadge = new InfoBadge()

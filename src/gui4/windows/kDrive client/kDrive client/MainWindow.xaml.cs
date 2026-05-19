@@ -37,9 +37,10 @@ namespace Infomaniak.kDrive
         public AppNavigationView AppNavView { get { return NavView; } }
         public AppModel ViewModel { get; } = App.ServiceProvider.GetRequiredService<AppModel>();
 
-        public MainWindow()
+        public MainWindow(Type? landingPageType = null)
         {
             InitializeComponent();
+            AppNavView.LandingPageType = landingPageType;
             this.ExtendsContentIntoTitleBar = true;  // enable custom titlebar
             this.SetTitleBar(AppTitleBar);
             Utility.SetWindowProperties(this, _minimumWidth, _minimumHeight, Utility.WindowResizeOptions.AllowMinimize | Utility.WindowResizeOptions.AllowResize); // Set initial size and allow resizing
