@@ -76,25 +76,25 @@ struct MainViewRouterTests {
     func pathCacheIsUsedWhenSwitchingTabs() async {
         // GIVEN
         let router = MainViewRouter(defaultTab: .home)
-        await router.append(.activityError)
+        await router.append(.errors)
 
         // WHEN - switch to activity and set some details
         await router.setCurrentTab(.activities)
-        await router.append(.versionConflict)
+        await router.append(.activities)
 
         // WHEN - switch back to home (should use cache)
         await router.setCurrentTab(.home)
 
         // THEN - should have the cached path with activityError
         #expect(router.currentPath.mainTab == .home)
-        #expect(router.currentPath.details == [.home, .activityError])
+        #expect(router.currentPath.details == [.home, .errors])
 
         // WHEN - switch back to activity (should use cache)
         await router.setCurrentTab(.activities)
 
         // THEN - should have the cached path with versionConflict
         #expect(router.currentPath.mainTab == .activities)
-        #expect(router.currentPath.details == [.activities, .versionConflict])
+        #expect(router.currentPath.details == [.activities, .activities])
     }
 
     @Test()
@@ -103,10 +103,10 @@ struct MainViewRouterTests {
         let router = MainViewRouter(defaultTab: .home)
 
         // WHEN
-        await router.append(.activityError)
+        await router.append(.errors)
 
         // THEN
-        #expect(router.currentPath.details == [.home, .activityError])
+        #expect(router.currentPath.details == [.home, .errors])
     }
 
     @Test()
@@ -115,14 +115,14 @@ struct MainViewRouterTests {
         let router = MainViewRouter(defaultTab: .home)
 
         // WHEN
-        await router.append(.activityError)
+        await router.append(.errors)
 
         // WHEN - switch away and back to verify cache
         await router.setCurrentTab(.activities)
         await router.setCurrentTab(.home)
 
         // THEN
-        #expect(router.currentPath.details == [.home, .activityError])
+        #expect(router.currentPath.details == [.home, .errors])
     }
 
     @Test()
@@ -131,19 +131,19 @@ struct MainViewRouterTests {
         let router = MainViewRouter(defaultTab: .home)
 
         // WHEN
-        await router.append(.activityError)
-        await router.append(.versionConflict)
+        await router.append(.errors)
+        await router.append(.activities)
 
         // THEN
-        #expect(router.currentPath.details == [.home, .activityError, .versionConflict])
+        #expect(router.currentPath.details == [.home, .errors, .activities])
     }
 
     @Test()
     func removeLastRemovesSingleElement() async {
         // GIVEN
         let router = MainViewRouter(defaultTab: .home)
-        await router.append(.activityError)
-        #expect(router.currentPath.details == [.home, .activityError])
+        await router.append(.errors)
+        #expect(router.currentPath.details == [.home, .errors])
 
         // WHEN
         await router.removeLast()
@@ -156,9 +156,9 @@ struct MainViewRouterTests {
     func removeLastRemovesMultipleElements() async {
         // GIVEN
         let router = MainViewRouter(defaultTab: .home)
-        await router.append(.activityError)
-        await router.append(.versionConflict)
-        #expect(router.currentPath.details == [.home, .activityError, .versionConflict])
+        await router.append(.errors)
+        await router.append(.activities)
+        #expect(router.currentPath.details == [.home, .errors, .activities])
 
         // WHEN
         await router.removeLast(2)
@@ -184,8 +184,8 @@ struct MainViewRouterTests {
     func removeLastUpdatesPathCache() async {
         // GIVEN
         let router = MainViewRouter(defaultTab: .home)
-        await router.append(.activityError)
-        await router.append(.versionConflict)
+        await router.append(.errors)
+        await router.append(.activities)
 
         // WHEN
         await router.removeLast()
@@ -195,7 +195,7 @@ struct MainViewRouterTests {
         await router.setCurrentTab(.home)
 
         // THEN
-        #expect(router.currentPath.details == [.home, .activityError])
+        #expect(router.currentPath.details == [.home, .errors])
     }
 
     @Test()

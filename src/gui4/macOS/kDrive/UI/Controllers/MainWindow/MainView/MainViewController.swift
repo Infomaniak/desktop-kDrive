@@ -141,13 +141,8 @@ final class MainViewController: IKSplitViewController {
                 contentViewController = HomeViewController(mainViewModel: viewModel)
                 #endif
             }
-        case .activityError:
-            contentViewController = TitledViewController(toolbarTitle: "activityError", contentView: Text("activityError - WIP"))
-        case .versionConflict:
-            contentViewController = TitledViewController(
-                toolbarTitle: "versionConflict",
-                contentView: Text("versionConflict - WIP")
-            )
+        case .errors:
+            contentViewController = ErrorsViewController()
         default:
             contentViewController = HomeViewController(mainViewModel: viewModel)
         }
