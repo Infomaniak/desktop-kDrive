@@ -88,7 +88,6 @@ class OnboardingFlowController final : public QObject {
         void currentStepChanged();
         void loginStateChanged();
         void loginRequested();
-        void accountCreationRequested();
         void cancelRequested();
         void completed();
 
