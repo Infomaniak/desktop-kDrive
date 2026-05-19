@@ -33,7 +33,7 @@ public struct TextWithIcon: View {
             icon
                 .resizable()
                 .scaledToFit()
-                .frame(width: 16, height: 16)
+                .frame(width: AppIconSize.iconSize16.width, height: AppIconSize.iconSize16.height)
             Text(text)
                 .font(.body)
                 .foregroundColor(.primary)

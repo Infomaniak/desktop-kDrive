@@ -31,6 +31,7 @@ struct SynchroRulesPreferencesDetailView: View {
             VStack(alignment: .leading, spacing: 16) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(KDriveLocalizable.defaultExclusionFileListHeader)
+
                     Text(item.description)
                         .font(.Tokens.callout)
                         .foregroundStyle(.secondary)
@@ -46,9 +47,11 @@ struct SynchroRulesPreferencesDetailView: View {
             VStack(alignment: .leading, spacing: 16) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(KDriveLocalizable.userExclusionFileListHeader)
+
                     Text(item.headerDescription)
                         .font(.Tokens.callout)
                         .foregroundStyle(.secondary)
+
                     Button(KDriveLocalizable.buttonAddFileExclusionRule) {
                         isShowingSheet = true
                     }

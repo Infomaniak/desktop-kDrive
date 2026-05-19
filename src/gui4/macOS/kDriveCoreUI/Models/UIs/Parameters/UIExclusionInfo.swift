@@ -20,12 +20,15 @@ import Foundation
 import kDriveCore
 
 public protocol UIExclusionItem: Identifiable, Hashable {
-    var id: UUID { get set }
+    var id: String { get }
     var displayName: String { get }
 }
 
 public struct UIExclusionTemplateInfo: Sendable, UIExclusionItem {
-    public var id = UUID()
+    public var id: String {
+        return displayName
+    }
+
     public var displayName: String
     public var `default`: Bool
     public var warning: Bool
@@ -44,7 +47,10 @@ public struct UIExclusionTemplateInfo: Sendable, UIExclusionItem {
 }
 
 public struct UIExclusionAppInfo: Sendable, UIExclusionItem {
-    public var id = UUID()
+    public var id: String {
+        return displayName
+    }
+
     public var app: String
     public var `default`: Bool
     public var displayName: String
@@ -85,5 +91,17 @@ public struct UIExclusionInfo: Sendable {
         userExcludedTemplates = []
         defaultExcludedApps = []
         userExcludedApps = []
+    }
+
+    public init(
+        defaultExcludedTemplates: [UIExclusionTemplateInfo],
+        userExcludedTemplates: [UIExclusionTemplateInfo],
+        defaultExcludedApps: [UIExclusionAppInfo],
+        userExcludedApps: [UIExclusionAppInfo]
+    ) {
+        self.defaultExcludedTemplates = defaultExcludedTemplates
+        self.userExcludedTemplates = userExcludedTemplates
+        self.defaultExcludedApps = defaultExcludedApps
+        self.userExcludedApps = userExcludedApps
     }
 }

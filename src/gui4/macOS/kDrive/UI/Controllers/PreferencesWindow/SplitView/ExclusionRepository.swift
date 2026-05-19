@@ -29,34 +29,39 @@ public final class ExclusionRepository: ObservableObject {
 
     public func refreshData() async throws {
         let userTemplates = try await ExclusionTemplateJobs().getExclusionTemplateList(default: false)
+            .map { UIExclusionTemplateInfo(exclusionTemplateInfo: $0) }
         let defaultTemplates = try await ExclusionTemplateJobs().getExclusionTemplateList(default: true)
-        exclusionInfo.userExcludedTemplates = userTemplates.map { UIExclusionTemplateInfo(exclusionTemplateInfo: $0) }
-        exclusionInfo.defaultExcludedTemplates = defaultTemplates.map { UIExclusionTemplateInfo(exclusionTemplateInfo: $0) }
+            .map { UIExclusionTemplateInfo(exclusionTemplateInfo: $0) }
 
         let userApps = try await ExclusionAppJobs().getExclusionAppList(default: false)
+            .map { UIExclusionAppInfo(exclusionAppInfo: $0) }
         let defaultApps = try await ExclusionAppJobs().getExclusionAppList(default: true)
-        exclusionInfo.userExcludedApps = userApps.map { UIExclusionAppInfo(exclusionAppInfo: $0) }
-        exclusionInfo.defaultExcludedApps = defaultApps.map { UIExclusionAppInfo(exclusionAppInfo: $0) }
+            .map { UIExclusionAppInfo(exclusionAppInfo: $0) }
+
+        exclusionInfo = UIExclusionInfo(
+            defaultExcludedTemplates: defaultTemplates,
+            userExcludedTemplates: userTemplates,
+            defaultExcludedApps: defaultApps,
+            userExcludedApps: userApps
+        )
     }
 
     public func updateTemplates(updatedTemplates: [UIExclusionTemplateInfo]) async throws {
         try await updateItems(
             \.exclusionInfo.userExcludedTemplates,
-            items: updatedTemplates,
-            remote: { items in
-                try await ExclusionTemplateJobs().setUserExclusionTemplateList(items.toExclusionTemplateInfo())
-            }
-        )
+            items: updatedTemplates
+        ) { items in
+            try await ExclusionTemplateJobs().setUserExclusionTemplateList(items.toExclusionTemplateInfo())
+        }
     }
 
     public func updateApps(updatedApps: [UIExclusionAppInfo]) async throws {
         try await updateItems(
             \.exclusionInfo.userExcludedApps,
-            items: updatedApps,
-            remote: { items in
-                try await ExclusionAppJobs().setExclusionAppList(default: false, applicationList: items.toExclusionAppInfo())
-            }
-        )
+            items: updatedApps
+        ) { items in
+            try await ExclusionAppJobs().setExclusionAppList(default: false, applicationList: items.toExclusionAppInfo())
+        }
     }
 
     private func updateItems<T>(

@@ -42,9 +42,11 @@ final class PreferencesSplitViewController: IKSplitViewController {
     override func viewWillAppear() {
         super.viewWillAppear()
         Task {
-            async let _ = repository.refreshData()
-            async let _ = exclusionRepository.refreshData()
-            async let _ = viewModel.fetchInitialData()
+            async let repositoryRefresh: Void? = try? repository.refreshData()
+            async let exclusionRefresh: Void? = try? exclusionRepository.refreshData()
+            async let initialDataFetch: Void = viewModel.fetchInitialData()
+
+            _ = await (repositoryRefresh, exclusionRefresh, initialDataFetch)
         }
     }
 

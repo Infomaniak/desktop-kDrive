@@ -27,7 +27,6 @@ struct SynchroRulesPreferencesUserTemplateList: View {
     @Binding var userExcludedTemplates: [UIExclusionTemplateInfo]
 
     @State var selectedTemplates = Set<UIExclusionTemplateInfo.ID>()
-    @State var isShowingAlert = false
     var body: some View {
         VStack(alignment: .leading) {
             Table(userExcludedTemplates) {
@@ -76,6 +75,7 @@ struct SynchroRulesPreferencesUserTemplateList: View {
                         !selectedTemplates.contains($0.id)
                     }
                     selectedTemplates.removeAll()
+
                     Task {
                         do {
                             try await repository.updateTemplates(updatedTemplates: userExcludedTemplates)
@@ -94,7 +94,6 @@ struct SynchroRulesPreferencesUserTemplateList: View {
             }
             .opacity(selectedTemplates.isEmpty ? 0 : 1)
         }
-        .alert(KDriveLocalizable.fileExclusionNotificationWarning, isPresented: $isShowingAlert) {}
     }
 
     func updateToggleInRepository() {

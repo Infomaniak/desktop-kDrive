@@ -57,10 +57,10 @@ struct SynchroRulesPreferencesUserAppList: View {
                     let newExcludedApps: [UIExclusionAppInfo] = userExcludedApps.filter {
                         !selectedApps.contains($0.id)
                     }
+
                     Task {
                         do {
                             try await repository.updateApps(updatedApps: newExcludedApps)
-
                             userExcludedApps = newExcludedApps
                             selectedApps.removeAll()
                         } catch {

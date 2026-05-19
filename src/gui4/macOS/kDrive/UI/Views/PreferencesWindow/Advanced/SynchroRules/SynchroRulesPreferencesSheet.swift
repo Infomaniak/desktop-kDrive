@@ -65,9 +65,7 @@ struct SynchroRulesPreferencesSheet: View {
                 Text(KDriveLocalizable.excludeRuleDescription)
                     .font(.Tokens.callout)
                     .foregroundStyle(.secondary)
-            }
-
-            if item == .apps {
+            } else {
                 Picker(KDriveLocalizable.labelAppID, selection: $appId) {
                     ForEach(Array(appList.keys), id: \.self) { key in
                         Text(key)
@@ -75,6 +73,7 @@ struct SynchroRulesPreferencesSheet: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
+
             TextField(placeholderText, text: $input)
 
             if item == .files {
@@ -94,11 +93,10 @@ struct SynchroRulesPreferencesSheet: View {
                 LoadingButton(isLoading: $isCreatingExclusion) {
                     switch item {
                     case .files:
-                        saveTemplate()
+                        await saveTemplate()
                     case .apps:
-                        saveApp()
+                        await saveApp()
                     }
-                    dismiss()
                 } label: {
                     Text(KDriveLocalizable.buttonAddFileExclusionRule)
                 }
@@ -112,34 +110,30 @@ struct SynchroRulesPreferencesSheet: View {
         }
     }
 
-    func saveTemplate() {
+    func saveTemplate() async {
         var templates = repository.exclusionInfo.userExcludedTemplates
         let newTemplate = UIExclusionTemplateInfo(template: input, warning: isNotified)
         templates.append(newTemplate)
 
-        Task {
-            do {
-                userExcludedTemplates = templates
-                try await repository.updateTemplates(updatedTemplates: templates)
-            } catch {
-                userExcludedTemplates = repository.exclusionInfo.userExcludedTemplates
-            }
+        do {
+            userExcludedTemplates = templates
+            try await repository.updateTemplates(updatedTemplates: templates)
+        } catch {
+            userExcludedTemplates = repository.exclusionInfo.userExcludedTemplates
         }
         dismiss()
     }
 
-    func saveApp() {
+    func saveApp() async {
         var excludedApps = repository.exclusionInfo.userExcludedApps
         let newExcludedApp = UIExclusionAppInfo(app: appId, description: input)
         excludedApps.append(newExcludedApp)
 
-        Task {
-            do {
-                userExcludedApps = excludedApps
-                try await repository.updateApps(updatedApps: excludedApps)
-            } catch {
-                userExcludedApps = repository.exclusionInfo.userExcludedApps
-            }
+        do {
+            userExcludedApps = excludedApps
+            try await repository.updateApps(updatedApps: excludedApps)
+        } catch {
+            userExcludedApps = repository.exclusionInfo.userExcludedApps
         }
 
         dismiss()
@@ -152,9 +146,9 @@ struct SynchroRulesPreferencesSheet: View {
                 let dict = try await ExclusionAppJobs().getFetchingAppList()
                     .filter { !userExcludedAppIdentifiers.contains($0.key) }
 
-                self.appList = dict
+                appList = dict
 
-                appId = self.appList.keys.first ?? ""
+                appId = appList.keys.first ?? ""
 
             } catch {
                 print("Error while fetching app list: \(error)")
