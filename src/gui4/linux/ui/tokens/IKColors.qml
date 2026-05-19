@@ -44,6 +44,7 @@ QtObject {
         readonly property color neutralBlue600: "#1F241D"
         readonly property color neutralBlue700: "#191D24"
         readonly property color neutralBlue800: "#101419"
+        readonly property color neutralBlue900: "#0C0F13"
 
         // Gray
         readonly property color gray400: "#6A768B"
@@ -92,6 +93,8 @@ QtObject {
     readonly property color surfacePrimary: darkMode ? _p.neutralBlue800 : _p.neutralBlue50
     readonly property color surfaceSecondary: darkMode ? _p.neutralBlue700 : _p.neutralBlue100
     readonly property color surfaceTertiary: darkMode ? _p.neutralBlue600 : _p.neutralBlue200
+    readonly property color onboardingSurfacePrimary: darkMode ? _p.neutralBlue900 : "#FFFFFF"
+    readonly property color onboardingSurfaceSecondary: darkMode ? _p.neutralBlue700 : "#F7F7F7"
 
     // Status — Strong
     readonly property color statusStrongWarning: darkMode ? _p.orange300 : _p.orange800
