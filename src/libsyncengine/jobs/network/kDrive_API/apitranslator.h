@@ -39,6 +39,10 @@ class ApiTranslator {
         [[nodiscard]] static ExitInfo getDriveDbId(DriveId driveId, DriveDbId &driveDbId);
         [[nodiscard]] static RemoteNodeId v2RootFolderRemoteId();
 
+        static void clearSharedCache(const DriveId driveId) {
+            (void) _specialFolderRemoteIdsCache[SpecialFolder::Shared].erase(driveId);
+        };
+
         static const SpecialFolderNames v3SpecialFolderNames;
 
     private:
