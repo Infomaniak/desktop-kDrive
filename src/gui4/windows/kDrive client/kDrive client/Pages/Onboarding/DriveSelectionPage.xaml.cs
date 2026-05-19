@@ -86,9 +86,9 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                 throw new Exception("OnBoardingViewModel parameter missing when navigating to DriveSelectionPage");
             }
         }
-        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        protected async override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            Utility.VisualTreeDisposeUtility.DisposePageItems(this);
+            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(this);
         }
         private async void DriveListCheckBox_Checked(object sender, RoutedEventArgs e)
         {
@@ -142,7 +142,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             _analyticsService.TrackClick(Analytics.Keys.Category.OnboardingSyncConfigurationPage, Analytics.Keys.EventName.OpenAdvancedSettings);
             var driveSetupDialog = new CustomControls.DriveSetupContentDialog(this.XamlRoot, _onBoardingViewModel!.NewSyncs);
             await driveSetupDialog.ShowAsync();
-            Utility.VisualTreeDisposeUtility.DisposePageItems(driveSetupDialog);
+            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(driveSetupDialog);
         }
 
         private void Finish_Click(object sender, RoutedEventArgs e)

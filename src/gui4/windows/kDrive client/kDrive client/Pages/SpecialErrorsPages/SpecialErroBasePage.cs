@@ -48,7 +48,6 @@ namespace Infomaniak.kDrive.Pages
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            Utility.VisualTreeDisposeUtility.DisposePageItems(this);
             DetachHandlers();
         }
 

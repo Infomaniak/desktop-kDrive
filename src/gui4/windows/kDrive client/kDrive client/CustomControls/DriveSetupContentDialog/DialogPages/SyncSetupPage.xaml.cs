@@ -62,10 +62,10 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
             }
         }
 
-        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        protected async override void OnNavigatedFrom(NavigationEventArgs e)
         {
             DetachEventHandlers();
-            Utility.VisualTreeDisposeUtility.DisposePageItems(this);
+            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(this);
         }
 
         private void DetachEventHandlers()

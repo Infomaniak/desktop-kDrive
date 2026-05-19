@@ -49,9 +49,9 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     onBoardingWindow.UpdateLottieSource("Infomaniak.Custom.Animations.loader-stroke", 130, 0);
             }
         }
-        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        protected async override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            Utility.VisualTreeDisposeUtility.DisposePageItems(this);
+            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(this);
         }
         private async void SignupButton_Click(object sender, RoutedEventArgs e)
         {

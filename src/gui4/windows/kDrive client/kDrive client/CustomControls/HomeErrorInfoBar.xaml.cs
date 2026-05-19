@@ -29,7 +29,7 @@ using Windows.System;
 
 namespace Infomaniak.kDrive.CustomControls
 {
-    public sealed partial class HomeErrorInfoBar : UserControl
+    public sealed partial class HomeErrorInfoBar : UserControl, IDisposable
     {
         private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         public HomeErrorInfoBarViewModel ControlViewModel { get; } = new HomeErrorInfoBarViewModel();
@@ -39,6 +39,8 @@ namespace Infomaniak.kDrive.CustomControls
         {
             InitializeComponent();
         }
+
+        public void Dispose() => ControlViewModel.Dispose();
 
         private async void kDriveFullInfoBar_Closed(InfoBar sender, InfoBarClosedEventArgs args)
         {
@@ -80,20 +82,20 @@ namespace Infomaniak.kDrive.CustomControls
     {
         private bool _showDriveFullError = false;
         private bool _showTmpDirAccessError = false;
-        private IDisposable? _appErrorsSubscriptions;
-        private IDisposable? _selectedSyncErrorsSubscriptions;
+        private IDisposable? _appErrorsSubscription;
+        private IDisposable? _selectedSyncErrorsSubscription;
         private bool _isDisposed = false;
         private AppModel ViewModel { get; } = App.ServiceProvider.GetRequiredService<AppModel>();
 
         public HomeErrorInfoBarViewModel()
         {
             // Subscribe to changes in the app errors and selected sync to update the error display
-            _appErrorsSubscriptions = ViewModel.AppErrors.ToObservableChangeSet().Subscribe(_ => Refresh());
+            _appErrorsSubscription = ViewModel.AppErrors.ToObservableChangeSet().Subscribe(_ => Refresh());
             ViewModel.SelectedSyncChanged += ViewModel_SelectedSyncChanged;
             if (ViewModel.SelectedSync is not null)
             {
                 ViewModel.SelectedSync.Drive.PropertyChanged += SelectedSyncDrive_PropertyChanged;
-                _selectedSyncErrorsSubscriptions = ViewModel.SelectedSync.SyncErrors.ToObservableChangeSet().Subscribe(_ => Refresh());
+                _selectedSyncErrorsSubscription = ViewModel.SelectedSync.SyncErrors.ToObservableChangeSet().Subscribe(_ => Refresh());
             }
             Refresh();
         }
@@ -102,8 +104,8 @@ namespace Infomaniak.kDrive.CustomControls
         {
             if (!_isDisposed)
             {
-                _appErrorsSubscriptions?.Dispose();
-                _selectedSyncErrorsSubscriptions?.Dispose();
+                _appErrorsSubscription?.Dispose();
+                _selectedSyncErrorsSubscription?.Dispose();
                 ViewModel.SelectedSyncChanged -= ViewModel_SelectedSyncChanged;
                 if (ViewModel.SelectedSync is not null)
                     ViewModel.SelectedSync.Drive.PropertyChanged -= SelectedSyncDrive_PropertyChanged;
@@ -114,14 +116,14 @@ namespace Infomaniak.kDrive.CustomControls
 
         private void ViewModel_SelectedSyncChanged(object? sender, AppModel.SelectedSyncChangedEventArgs e)
         {
-            _selectedSyncErrorsSubscriptions?.Dispose();
+            _selectedSyncErrorsSubscription?.Dispose();
 
             if (e.OldValue is not null)
                 e.OldValue.Drive.PropertyChanged -= SelectedSyncDrive_PropertyChanged;
 
             if (e.NewValue is not null)
             {
-                _selectedSyncErrorsSubscriptions = e.NewValue.SyncErrors.ToObservableChangeSet().Subscribe(_ => Refresh());
+                _selectedSyncErrorsSubscription = e.NewValue.SyncErrors.ToObservableChangeSet().Subscribe(_ => Refresh());
                 e.NewValue.Drive.PropertyChanged += SelectedSyncDrive_PropertyChanged;
             }
 

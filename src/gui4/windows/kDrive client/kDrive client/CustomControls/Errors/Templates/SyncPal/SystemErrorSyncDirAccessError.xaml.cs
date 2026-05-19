@@ -63,8 +63,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
             };
             _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageSyncDirAccessError);
             var res = await dialog.ShowAsync();
-            Utility.VisualTreeDisposeUtility.DisposePageItems(dialog);
-    
+            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(dialog);
+
             if (res == ContentDialogResult.Primary)
             {
                 if (Error.Sync is null)

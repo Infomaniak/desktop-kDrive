@@ -62,7 +62,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
             };
             _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageSyncDirDiskMissing);
             var res = await dialog.ShowAsync();
-            Utility.VisualTreeDisposeUtility.DisposePageItems(dialog);
+            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(dialog);
             if (res == ContentDialogResult.Primary)
             {
                 if (Error.Sync is null)

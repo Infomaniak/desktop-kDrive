@@ -80,12 +80,13 @@ namespace Infomaniak.kDrive
             UpdateControlsVisibility();
         }
 
-        private void MainWindow_Closed(object sender, WindowEventArgs args)
+        private async void MainWindow_Closed(object sender, WindowEventArgs args)
         {
             if ((App.Current as App)?.CurrentWindow == this)
             {
                 args.Handled = true;
                 this.Hide();
+                GC.Collect(GC.MaxGeneration, GCCollectionMode.Aggressive, true);
                 return;
             }
 
@@ -93,7 +94,7 @@ namespace Infomaniak.kDrive
             Closed -= MainWindow_Closed;
             Activated -= MainWindow_Activated;
             this.Content.PointerPressed -= OnPointerPressed;
-            Utility.VisualTreeDisposeUtility.DisposePageItems(this.Content);
+            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(this.Content);
         }
 
         private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)

@@ -80,10 +80,6 @@ namespace Infomaniak.kDrive.Pages.Settings
             }
             _analyticsService.TrackPageView(Analytics.Keys.Category.DriveManagementPage);
         }
-        protected override void OnNavigatedFrom(NavigationEventArgs e)
-        {
-            Utility.VisualTreeDisposeUtility.DisposePageItems(this);
-        }
 
         private void SetupNavBar(string driveName)
         {
@@ -163,7 +159,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             };
 
             bool canceledByUser = await dialog.ShowAsync() != ContentDialogResult.Primary;
-            Utility.VisualTreeDisposeUtility.DisposePageItems(dialog);
+            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(dialog);
             if (canceledByUser)
             {
                 _analyticsService.TrackClick(Analytics.Keys.Category.DriveManagementPage, Analytics.Keys.EventName.CancelSyncModeSwitch);
@@ -202,7 +198,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                     Content = Localizer.Instance.GetString("dialogSyncModeChangeErrorContent")
                 };
                 await errorDialog.ShowAsync();
-                Utility.VisualTreeDisposeUtility.DisposePageItems(errorDialog);
+                await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(errorDialog);
             }
         }
 
@@ -245,7 +241,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             };
 
             var dialogResult = await dialog.ShowAsync();
-            Utility.VisualTreeDisposeUtility.DisposePageItems(dialog);
+            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(dialog);
             if (dialogResult != ContentDialogResult.Primary)
             {
                 Logger.Log(Logger.Level.Info, "User canceled sync removal");
@@ -303,7 +299,7 @@ namespace Infomaniak.kDrive.Pages.Settings
 
             CustomControls.DriveSetupContentDialog dialog = new(this.XamlRoot, newSyncs);
             await dialog.ShowAsync();
-            Utility.VisualTreeDisposeUtility.DisposePageItems(dialog);
+            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(dialog);
             if (dialog.Result == CustomControls.DriveSetupContentDialog.DriveSetupResult.Cancelled)
             {
                 Logger.Log(Logger.Level.Info, $"User canceled main sync setup for drive '{BaseDrive.Name}'");

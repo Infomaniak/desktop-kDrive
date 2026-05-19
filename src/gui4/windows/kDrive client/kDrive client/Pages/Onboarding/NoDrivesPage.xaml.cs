@@ -62,10 +62,10 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             }
         }
 
-        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        protected async override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            DetachEventHandlers();  
-            Utility.VisualTreeDisposeUtility.DisposePageItems(this);
+            DetachEventHandlers();
+            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(this);
 
         }
 

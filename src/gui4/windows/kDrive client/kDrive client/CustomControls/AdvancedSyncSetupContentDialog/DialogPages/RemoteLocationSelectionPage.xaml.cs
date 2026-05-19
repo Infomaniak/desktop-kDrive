@@ -60,9 +60,9 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
             }
         }
 
-        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        protected override async void OnNavigatedFrom(NavigationEventArgs e)
         {
-            Utility.VisualTreeDisposeUtility.DisposePageItems(this);
+            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(this);
             DetachEventHandlers();
         }
 

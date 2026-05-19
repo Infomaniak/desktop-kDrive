@@ -72,7 +72,7 @@ namespace Infomaniak.kDrive.OnBoarding
             LottiePlayer.ActualThemeChanged -= LottiePlayer_ActualThemeChanged;
             LottiePlayer?.Cleanup();
             await _onBoardingViewModel.DisposeAsync();
-            Utility.VisualTreeDisposeUtility.DisposePageItems(this.Content);
+            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(this.Content);
         }
 
         private void LottiePlayer_ActualThemeChanged(FrameworkElement sender, object args)

@@ -64,7 +64,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
             dialog.Resources["ContentDialogMaxHeight"] = Application.Current.Resources["Infomaniak.Style.ContentDialog.MaxHeight"];
             _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageSingleConflict);
             _ = await dialog.ShowAsync();
-            Utility.VisualTreeDisposeUtility.DisposePageItems(dialog);
+            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(dialog);
         }
     }
 }

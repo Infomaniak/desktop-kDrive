@@ -104,7 +104,6 @@ namespace Infomaniak.kDrive.Pages
         {
             DetachHandlers();
             CleanupLottiePlayers();
-            Utility.VisualTreeDisposeUtility.DisposePageItems(this);
         }
 
         private void CleanupLottiePlayers()

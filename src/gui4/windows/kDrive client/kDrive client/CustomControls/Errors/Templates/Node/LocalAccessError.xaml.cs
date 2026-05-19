@@ -72,7 +72,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
             };
             dialog.Content = new LocalAccessErrorDialog(Error) { XamlRoot = xamlRoot };
             var res = await dialog.ShowAsync();
-            Utility.VisualTreeDisposeUtility.DisposePageItems(dialog);
+            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(dialog);
+
 
             if (res == ContentDialogResult.Primary)
             {

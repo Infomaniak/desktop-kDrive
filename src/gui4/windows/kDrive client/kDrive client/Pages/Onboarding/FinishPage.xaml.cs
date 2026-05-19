@@ -43,9 +43,9 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             if ((App.Current as App)?.CurrentWindow is OnBoardingWindow onBoardingWindow)
                 onBoardingWindow.UpdateLottieSource("Infomaniak.Custom.Animations.loader-stroke", 130, 1);
         }
-        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        protected async override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            Utility.VisualTreeDisposeUtility.DisposePageItems(this);
+            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(this);
         }
         private void FinishButton_Click(object sender, RoutedEventArgs e)
         {

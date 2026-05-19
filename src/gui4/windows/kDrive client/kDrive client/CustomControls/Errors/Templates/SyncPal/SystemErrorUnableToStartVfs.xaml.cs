@@ -57,7 +57,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
             };
             _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageLiteSyncError);
             var res = await dialog.ShowAsync();
-            Utility.VisualTreeDisposeUtility.DisposePageItems(dialog);
+            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(dialog);
 
             if (res == ContentDialogResult.Primary)
             {
@@ -79,7 +79,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
                         Content = Localizer.Instance.GetString("dialogSyncModeChangeErrorContent")
                     };
                     await errorDialog.ShowAsync();
-                    Utility.VisualTreeDisposeUtility.DisposePageItems(errorDialog);
+                    await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(errorDialog);
                 }
             }
         }
