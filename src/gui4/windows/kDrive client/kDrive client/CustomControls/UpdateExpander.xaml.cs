@@ -37,7 +37,6 @@ namespace Infomaniak.kDrive.CustomControls
         public void Dispose()
         {
             UnregisterPropertyChangedHandlers();
-            Bindings.StopTracking();
         }
         public UpdateExpander()
         {

@@ -553,20 +553,7 @@ namespace Infomaniak.kDrive
                 if (!visited.Add(node))
                     return;
 
-                //
-                // Dispose async first
-                //
-                if (node is IAsyncDisposable asyncDisposable)
-                {
-                    try
-                    {
-                        await asyncDisposable.DisposeAsync();
-                    }
-                    catch
-                    {
-                    }
-                }
-                else if (node is IDisposable disposable)
+                if (node is IDisposable disposable)
                 {
                     try
                     {
@@ -589,9 +576,7 @@ namespace Infomaniak.kDrive
 
                     await TraverseAsync(child, visited);
 
-                    //
                     // Prevent long UI freeze
-                    //
                     if ((i & 15) == 0)
                         await Task.Yield();
                 }
@@ -620,25 +605,13 @@ namespace Infomaniak.kDrive
                 {
                     var type = obj.GetType();
 
-                    var property = type.GetProperty(
+                    var field = type.GetField(
                         "Bindings",
                         System.Reflection.BindingFlags.Instance |
                         System.Reflection.BindingFlags.Public |
                         System.Reflection.BindingFlags.NonPublic);
 
-                    object? bindings = property?.GetValue(obj);
-
-                    // Some generated types expose a field instead
-                    if (bindings == null)
-                    {
-                        var field = type.GetField(
-                            "Bindings",
-                            System.Reflection.BindingFlags.Instance |
-                            System.Reflection.BindingFlags.Public |
-                            System.Reflection.BindingFlags.NonPublic);
-
-                        bindings = field?.GetValue(obj);
-                    }
+                    object? bindings = field?.GetValue(obj);
 
                     if (bindings is null)
                         bindings = obj;
