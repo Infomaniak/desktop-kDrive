@@ -189,8 +189,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         void stopSyncTask(SyncDbId syncDbId, const SyncPal::DbBehaviorAfterStop behavior = SyncPal::DbBehaviorAfterStop::Keep);
         [[nodiscard]] ExitInfo setSupportsVirtualFilesAsync(SyncDbId syncDbId, bool value);
         [[nodiscard]] ExitInfo setSupportsVirtualFiles(SyncDbId syncDbId, bool value);
-        void setDistributionChannel(VersionChannel versionChannel);
-        VersionInfo getVersionInfo(VersionChannel versionChannel) const;
+        void setDistributionChannel(DistributionChannel versionChannel);
+        VersionInfo getVersionInfo() const;
         UpdateState getUpdateState() const;
         void refreshUpdateState();
         void startInstaller();

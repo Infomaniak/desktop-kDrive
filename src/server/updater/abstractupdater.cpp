@@ -30,22 +30,15 @@
 
 namespace KDC {
 
-AbstractUpdater::AbstractUpdater() :
-    _updateChecker(std::make_shared<UpdateChecker>()) {
+AbstractUpdater::AbstractUpdater() {
+    _versionRetriever = std::make_shared<VersionRetriever>();
     const std::function callback = [this] { onAppVersionReceived(); };
-    _updateChecker->setCallback(callback);
+    _versionRetriever->setCallback(callback);
 }
 
-AbstractUpdater::AbstractUpdater(const std::shared_ptr<UpdateChecker> updateChecker) :
-    _updateChecker(updateChecker) {
-    const std::function callback = [this] { onAppVersionReceived(); };
-    _updateChecker->setCallback(callback);
-}
-
-ExitCode AbstractUpdater::checkUpdateAvailable(const VersionChannel currentChannel, UniqueId *id /*= nullptr*/) {
-    _currentChannel = currentChannel;
+ExitCode AbstractUpdater::checkUpdateAvailable(const DistributionChannel currentChannel, UniqueId *id /*= nullptr*/) {
     setState(UpdateState::Checking);
-    return _updateChecker->checkUpdateAvailability(id);
+    return _versionRetriever->retrieveVersion(currentChannel, id);
 }
 
 void AbstractUpdater::setStateChangeCallback(const std::function<void(UpdateState)> &stateChangeCallback) {
@@ -54,27 +47,33 @@ void AbstractUpdater::setStateChangeCallback(const std::function<void(UpdateStat
 }
 
 void AbstractUpdater::onAppVersionReceived() {
-    if (!_updateChecker->isVersionReceived()) {
+    _appShouldBeBlocked = false;
+
+    if (!_versionRetriever->isVersionReceived()) {
         setState(UpdateState::CheckError);
         LOG_WARN(Log::instance()->getLogger(), "Error while retrieving latest app version");
         return;
     }
 
-    const VersionInfo &versionInfo = _updateChecker->versionInfo(_currentChannel);
+    const auto &versionInfo = _versionRetriever->versionInfo();
     if (!versionInfo.isValid()) {
-        LOG_WARN(Log::instance()->getLogger(), "No valid update info retrieved for distribution channel: " << _currentChannel);
+        LOG_WARN(Log::instance()->getLogger(), "No valid update info retrieved: " << versionInfo.toString());
         setState(UpdateState::UpToDate);
         return;
     }
 
-    sentry::Handler::instance()->setDistributionChannel(currentVersionChannel());
-
-    if (!checkMinOsVersion(versionInfo.buildMinOsVersion)) {
+    if (!checkMinOsVersion(versionInfo.minOsVersion)) {
         setState(UpdateState::UpToDate);
         return;
     }
 
-    _appShouldBeBlocked = _updateChecker->appShouldBeBlocked();
+    // Check if app should be blocked
+    if (CommonUtility::isVersionLower(CommonUtility::currentVersion(), versionInfo.minAppVersion)) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "The current version needs to be updated. Current version: " << CommonUtility::currentVersion()
+                                                                              << ", min version: " << versionInfo.minAppVersion);
+        _appShouldBeBlocked = true;
+    }
 
     const bool newVersionAvailable = CommonUtility::isVersionLower(CommonUtility::currentVersion(), versionInfo.fullVersion());
     setState(newVersionAvailable ? UpdateState::Available : UpdateState::UpToDate);
@@ -118,35 +117,6 @@ bool AbstractUpdater::isVersionSkipped(const std::string &version) {
     }
 
     return false;
-}
-
-VersionChannel AbstractUpdater::currentVersionChannel() const {
-    const std::unordered_map<VersionChannel, VersionInfo> allVersions = _updateChecker->versionsInfo();
-    if (allVersions.empty()) return VersionChannel::Unknown;
-    const std::string currentVersion = getCurrentVersion();
-    if (allVersions.contains(VersionChannel::Prod) && allVersions.at(VersionChannel::Prod).fullVersion() == currentVersion) {
-        return VersionChannel::Prod;
-    }
-
-    if (allVersions.contains(VersionChannel::Next) && allVersions.at(VersionChannel::Next).fullVersion() == currentVersion) {
-        return VersionChannel::Next;
-    }
-
-    if (allVersions.contains(VersionChannel::Beta) && allVersions.at(VersionChannel::Beta).fullVersion() == currentVersion) {
-        return VersionChannel::Beta;
-    }
-
-    if (allVersions.contains(VersionChannel::Internal) &&
-        allVersions.at(VersionChannel::Internal).fullVersion() == currentVersion) {
-        return VersionChannel::Internal;
-    }
-
-    if (allVersions.contains(VersionChannel::Prod) &&
-        CommonUtility::isVersionLower(currentVersion, allVersions.at(VersionChannel::Prod).fullVersion())) {
-        return VersionChannel::Legacy;
-    }
-
-    return VersionChannel::Unknown;
 }
 
 void AbstractUpdater::setState(const UpdateState newState) {

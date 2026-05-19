@@ -152,7 +152,7 @@ set(server_SRCS
 set(updater_SRCS
     updater/abstractupdater.h updater/abstractupdater.cpp
     updater/updatemanager.h updater/updatemanager.cpp
-    updater/updatechecker.h updater/updatechecker.cpp
+    updater/versionretriever.h updater/versionretriever.cpp
 )
 
 if(APPLE OR WIN32)

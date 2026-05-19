@@ -93,13 +93,13 @@ BetaProgramDialog::BetaProgramDialog(const bool isQuit, const bool isStaff, QWid
         _staffSelectionBox->insertItem(indexInternal, tr("Internal beta version"));
 
         switch (ParametersCache::instance()->parametersInfo().distributionChannel()) {
-            case VersionChannel::Prod:
+            case DistributionChannel::Prod:
                 _initialIndex = indexNo;
                 break;
-            case VersionChannel::Beta:
+            case DistributionChannel::Beta:
                 _initialIndex = indexBeta;
                 break;
-            case VersionChannel::Internal:
+            case DistributionChannel::Internal:
                 _initialIndex = indexInternal;
                 break;
             default:
@@ -180,29 +180,29 @@ void BetaProgramDialog::onAcknowledgment() {
     _saveButton->setEnabled(_acknowledgmentCheckbox->isChecked());
 }
 
-VersionChannel toDistributionChannel(const int index) {
+DistributionChannel indexToDistributionChannel(const int index) {
     switch (index) {
         case indexNo:
-            return VersionChannel::Prod;
+            return DistributionChannel::Prod;
         case indexBeta:
-            return VersionChannel::Beta;
+            return DistributionChannel::Beta;
         case indexInternal:
-            return VersionChannel::Internal;
+            return DistributionChannel::Internal;
         default:
             break;
     }
-    return VersionChannel::Unknown;
+    return DistributionChannel::Unknown;
 }
 
 void BetaProgramDialog::onSave() {
     MatomoClient::sendEvent("betaProgramDialog", MatomoEventAction::Click, "saveButton");
     if (_isStaff) {
-        _newChannel = toDistributionChannel(_staffSelectionBox->currentIndex());
+        _newChannel = indexToDistributionChannel(_staffSelectionBox->currentIndex());
     } else {
         if (_isQuit) {
-            _newChannel = VersionChannel::Prod;
+            _newChannel = DistributionChannel::Prod;
         } else {
-            _newChannel = VersionChannel::Beta;
+            _newChannel = DistributionChannel::Beta;
         }
     }
 

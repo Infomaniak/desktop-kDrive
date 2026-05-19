@@ -103,7 +103,7 @@ class Handler {
         // Print a crash event description into a file (for debugging)
         static void writeCrashEvent(const std::string &eventStr) noexcept { writeEvent(eventStr, true); }
 
-        void setDistributionChannel(VersionChannel channel);
+        void setDistributionChannel(DistributionChannel channel);
         void setAppUUID(std::string appUUID);
         void setIsSentryActivated(bool isSentryActivated) { _isSentryActivated = isSentryActivated; }
 

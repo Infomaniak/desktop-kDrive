@@ -20,29 +20,29 @@
 
 #include "testincludes.h"
 #include "utility/types.h"
-#include "server/updater/updatechecker.h"
-#include "libsyncengine/jobs/network/mockgetappversionjob.h"
+#include "server/updater/versionretriever.h"
+#include "mockgetappversionjob.h"
 
 namespace KDC {
 
-class MockUpdateChecker : public UpdateChecker {
+class MockVersionRetriever : public VersionRetriever {
     public:
-        MockUpdateChecker() { _prodVersionChannel = VersionChannel::Prod; }
         void setUpdateShouldBeAvailable(const bool val) { _updateShouldBeAvailable = val; }
         void setBigMinAppVersion(const bool val) { _bigMinAppVersion = val; }
-        void setAllVersionInfo(const AllVersionsInfo &versionInfo) { _versionsInfo = versionInfo; }
-        void setVersionReceived(const bool isVersionReceived) { _isVersionReceived = isVersionReceived; }
+        void setBigMinOsVersion(const bool bigMinOsVersion) { _bigMinOsVersion = bigMinOsVersion; }
 
     private:
-        ExitCode generateGetAppVersionJob(std::shared_ptr<AbstractNetworkJob> &job) override {
+        ExitCode generateGetAppVersionJob(const DistributionChannel channel, std::shared_ptr<AbstractNetworkJob> &job) override {
             static const std::string appUid = "1234567890";
-            auto mockJob = std::make_shared<MockGetAppVersionJob>(CommonUtility::platform(), appUid, _updateShouldBeAvailable);
+            auto mockJob = std::make_shared<MockGetAppVersionJob>(channel, appUid, _updateShouldBeAvailable);
             mockJob->setBigMinAppVersion(_bigMinAppVersion);
+            mockJob->setBigMinOsVersion(_bigMinOsVersion);
             job = mockJob;
             return ExitCode::Ok;
         }
 
         bool _updateShouldBeAvailable{false};
         bool _bigMinAppVersion{false};
+        bool _bigMinOsVersion{false};
 };
 } // namespace KDC

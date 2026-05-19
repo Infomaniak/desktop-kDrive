@@ -946,7 +946,7 @@ bool AppServer::areMacVfsAuthsOk() const {
 }
 #endif
 
-void AppServer::setDistributionChannel(const VersionChannel versionChannel) {
+void AppServer::setDistributionChannel(const DistributionChannel versionChannel) {
     if (_noUpdate) return;
 
     if (!_updateManager) {
@@ -957,7 +957,7 @@ void AppServer::setDistributionChannel(const VersionChannel versionChannel) {
     _updateManager->setDistributionChannel(versionChannel);
 }
 
-VersionInfo AppServer::getVersionInfo(const VersionChannel versionChannel) const {
+VersionInfo AppServer::getVersionInfo() const {
     if (_noUpdate) {
         return VersionInfo::current();
     }
@@ -967,7 +967,7 @@ VersionInfo AppServer::getVersionInfo(const VersionChannel versionChannel) const
         return VersionInfo::current();
     }
 
-    return _updateManager->versionInfo(versionChannel);
+    return _updateManager->versionInfo();
 }
 
 UpdateState AppServer::getUpdateState() const {
@@ -2366,7 +2366,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             if (_noUpdate) {
                 assert(false);
             } else {
-                auto channel = VersionChannel::Unknown;
+                auto channel = DistributionChannel::Unknown;
                 QDataStream paramsStream(params);
                 paramsStream >> channel;
                 _updateManager.get()->setDistributionChannel(channel);
@@ -2380,10 +2380,10 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 versionInfo.buildVersion = CommonUtility::versionBuild();
                 resultStream << versionInfo;
             } else {
-                auto channel = VersionChannel::Unknown;
+                auto channel = DistributionChannel::Unknown;
                 QDataStream paramsStream(params);
                 paramsStream >> channel;
-                VersionInfo versionInfo = _updateManager.get()->versionInfo(channel);
+                VersionInfo versionInfo = _updateManager.get()->versionInfo();
                 resultStream << versionInfo;
             }
             break;

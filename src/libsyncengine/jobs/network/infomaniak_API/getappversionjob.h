@@ -25,44 +25,32 @@
 
 namespace KDC {
 
-class GetAppVersionJob : public AbstractNetworkJob {
+class GetAppVersionJob : public AbstractTokenNetworkJob {
     public:
-        GetAppVersionJob(Platform platform, const std::string &appID);
-        GetAppVersionJob(Platform platform, const std::string &appID, const std::vector<UserId> &userIdList);
+        GetAppVersionJob(const DistributionChannel currentChannel, const std::string &appID);
+        GetAppVersionJob(const DistributionChannel currentChannel, const std::string &appID,
+                         const std::vector<UserId> &userIdList);
         ~GetAppVersionJob() override = default;
 
-        /**
-         * @brief Return the adequate version info between Production or Production-Next.
-         * @return `VersionChannel` enum value.
-         */
-        [[nodiscard]] VersionChannel prodVersionChannel() const { return _prodVersionChannel; }
-        [[nodiscard]] const VersionInfo &versionInfo(const VersionChannel channel) { return _versionsInfo[channel]; }
-        [[nodiscard]] const AllVersionsInfo &versionsInfo() const { return _versionsInfo; }
-
-        [[nodiscard]] const std::string &minAppVersion() const { return _minAppVersion; }
-
-        std::string getUrl() override { return UrlHelper::infomaniakApiUrl(1, true) + getSpecificUrl(); }
-
-        static std::string toStr(Platform platform);
-        static std::string toStr(VersionChannel channel);
+        [[nodiscard]] const VersionInfo &versionInfo() { return _versionsInfo; }
 
     protected:
         ExitInfo handleResponse(std::istream &is) override;
 
     private:
         std::string getSpecificUrl() override;
+
         void setQueryParameters(Poco::URI &uri) override;
         ExitInfo handleError(const std::string &replyBody, const Poco::URI &uri) override;
 
-        [[nodiscard]] VersionChannel toDistributionChannel(const std::string &val) const;
+        const DistributionChannel _currentChannel{DistributionChannel::Unknown};
 
-        const Platform _platform{Platform::Unknown};
         const std::string _appId;
         const std::vector<UserId> _userIdList;
 
-        VersionChannel _prodVersionChannel{VersionChannel::Unknown};
-        AllVersionsInfo _versionsInfo;
-        std::string _minAppVersion;
+        VersionInfo _versionsInfo;
+
+        friend class MockGetAppVersionJob;
 };
 
 } // namespace KDC

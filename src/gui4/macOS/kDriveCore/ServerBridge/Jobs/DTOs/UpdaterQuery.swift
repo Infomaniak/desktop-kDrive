@@ -20,7 +20,7 @@ import CppInterop
 import Foundation
 
 struct UpdaterVersionInfoQuery: Codable, Sendable {
-    let channel: KDC.VersionChannel
+    let channel: KDC.DistributionChannel
 }
 
 struct UpdaterSkipVersionQuery: Codable, Sendable {

@@ -139,7 +139,7 @@ std::string CommonUtility::toUnsafeStr(const SyncName &name) {
     return unsafeName;
 }
 
-std::string CommonUtility::osVersion() {
+std::string extractOsVersion() {
     // Use RtlGetVersion to get the real Windows version (works on Windows 10/11)
     typedef LONG(WINAPI * RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
 
@@ -154,8 +154,14 @@ std::string CommonUtility::osVersion() {
     if (rtlGetVersion(&osInfo) != 0) return {};
 
     char versionStr[32];
-    snprintf(versionStr, sizeof(versionStr), "%lu.%lu.%lu", osInfo.dwMajorVersion, osInfo.dwMinorVersion, osInfo.dwBuildNumber);
+    (void) snprintf(versionStr, sizeof(versionStr), "%lu.%lu.%lu", osInfo.dwMajorVersion, osInfo.dwMinorVersion,
+                    osInfo.dwBuildNumber);
     return std::string(versionStr);
+}
+
+std::string CommonUtility::osVersion() {
+    static const std::string osVersion = extractOsVersion();
+    return osVersion;
 }
 
 std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {
