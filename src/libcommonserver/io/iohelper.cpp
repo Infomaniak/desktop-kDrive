@@ -794,6 +794,7 @@ std::string IoHelper::getFileChecksum(const SyncPath &path, std::ifstream &ifs, 
         const bool isOpen = IoHelper::openFile(path, ifs, ioError);
 
         if (!isOpen || !ifs) {
+            ioError = IoError::InvalidArgument;
             return "";
         }
 
