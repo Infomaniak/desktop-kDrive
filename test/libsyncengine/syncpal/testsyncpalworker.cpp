@@ -428,7 +428,7 @@ void TestSyncPalWorker::testHandleBackError() {
 
     // Simulate several consecutive BackError exits and verify exponential growth.
     for (int64_t i = 0; i < 10; ++i) {
-        const int64_t expected = std::min(static_cast<int64_t>(backoffvarible::baseDelay * std::pow(backoffvarible::multiplicativeFactor, i)), backoffvarible::maxDelay);
+        const int64_t expected = std::min(static_cast<int64_t>(backoffVariable::baseDelay * std::pow(backoffVariable::multiplicativeFactor, i)), backoffVariable::maxDelay);
 
         auto w = makeBackErrorWorker();
         w->start();
@@ -456,7 +456,7 @@ void TestSyncPalWorker::testHandleBackError() {
     w->waitForExit();
 
     syncPalWorker->handleBackError();
-    CPPUNIT_ASSERT_EQUAL(backoffvarible::baseDelay, syncPalWorker->pauseDuration());
+    CPPUNIT_ASSERT_EQUAL(backoffVariable::baseDelay, syncPalWorker->pauseDuration());
 }
 
 } // namespace KDC
