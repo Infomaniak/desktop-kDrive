@@ -37,8 +37,8 @@ class FileSystemObserverWorker : public ISyncWorker {
         void invalidateSnapshot();
         void resetInvalidateCounter() { _invalidateCounter = 0; }
         virtual void forceUpdate();
-        [[nodiscard]] virtual bool updating() const { return _updating; }
-        [[nodiscard]] bool initializing() const { return _initializing; }
+        [[nodiscard]] virtual bool updating() const;
+        [[nodiscard]] bool initializing() const;
 
         [[nodiscard]] const LiveSnapshot &liveSnapshot() const { return _liveSnapshot; }
         bool forceUpdateLastChangeRevision(const NodeId &itemId) { return _liveSnapshot.forceUpdateLastChangeRevision(itemId); }
@@ -49,8 +49,8 @@ class FileSystemObserverWorker : public ISyncWorker {
 
         std::list<std::pair<SyncPath, OperationType>> _pendingFileEvents;
 
-        bool _updating{false};
-        bool _initializing{true};
+        std::atomic<bool> _updating{false};
+        std::atomic<bool> _initializing{true};
         std::mutex _mutex;
 
         virtual ExitInfo generateInitialSnapshot() = 0;
@@ -60,8 +60,8 @@ class FileSystemObserverWorker : public ISyncWorker {
 
         void init() override;
 
-        void setUpdateFlagValue(const bool isUpdating) { _updating = isUpdating; }
-        void setInitFlagValue(const bool isInitializing) { _initializing = isInitializing; }
+        void setUpdateFlagValue(bool isUpdating);
+        void setInitFlagValue(bool isInitializing);
 
     private:
         [[nodiscard]] virtual ReplicaSide getSnapshotType() const = 0;
