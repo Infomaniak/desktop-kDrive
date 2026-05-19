@@ -19,11 +19,17 @@
 import QtQuick
 import QtQuick.Controls
 import kDrive.UI
+import "onboarding"
 
 Window {
     id: mainWindow
     visible: false
-    title: "kDrive"
+    width: 900
+    height: 600
+    minimumWidth: 720
+    minimumHeight: 520
+    title: onboardingFlowController.title
+    color: IKColors.onboardingSurfacePrimary
 
     onClosing: (close) => {
         if (systemTrayController.trayModeActive) {
@@ -35,40 +41,7 @@ Window {
         }
     }
 
-    // This rectangle is only there to test the dark mode management
-    // and will be removed once the gui implem will start.
-    Rectangle {
+    OnboardingWindow {
         anchors.fill: parent
-        color: IKColors.accentPrimary
-
-        Column {
-            anchors {
-                bottom: parent.bottom
-                horizontalCenter: parent.horizontalCenter
-                bottomMargin: 16
-            }
-            spacing: 8
-
-            Text {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: ThemeMode._mode === ThemeMode.System ? "System"
-                    : ThemeMode._mode === ThemeMode.Light  ? "Light"
-                    : "Dark"
-                color: IKColors.textPrimary
-            }
-
-            Button {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: "Toggle theme"
-                onClicked: {
-                    if (ThemeMode._mode === ThemeMode.System)
-                        ThemeMode.set(ThemeMode.Dark);
-                    else if (ThemeMode._mode === ThemeMode.Dark)
-                        ThemeMode.set(ThemeMode.Light);
-                    else
-                        ThemeMode.set(ThemeMode.System);
-                }
-            }
-        }
     }
 }
