@@ -298,13 +298,11 @@ bool LiveSnapshot::forceUpdateLastChangeRevision(const NodeId &itemId) {
 
 
 bool LiveSnapshot::isValid() const {
-    const std::scoped_lock lock(_mutex);
-    return _isValid;
+    return _isValid.load(std::memory_order_acquire);
 }
 
 void LiveSnapshot::setValid(const bool newIsValid) {
-    const std::scoped_lock lock(_mutex);
-    _isValid = newIsValid;
+    _isValid.store(newIsValid, std::memory_order_release);
 }
 
 SnapshotRevision LiveSnapshot::revision() const {

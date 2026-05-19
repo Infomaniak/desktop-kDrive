@@ -84,12 +84,29 @@ ExitInfo RemoteFileSystemObserverWorker::updateLongPollJobs(const std::vector<Re
     return ExitCode::Ok;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::checkIfRemoteDirHasChanges(const RemoteNodeId &remoteDirId,
-                                                                    const std::shared_ptr<LongPollJob> longPollJob,
-                                                                    bool &changes) {
+ExitInfo RemoteFileSystemObserverWorker::checkIfRemoteDirHasChanges(const RemoteNodeId &remoteDirId, const bool hasForcedChanges,
+                                                                    const LongPollJobMap &longPollJobs, bool &hasChanges) {
+    hasChanges = false;
+
+    if (hasForcedChanges) {
+        hasChanges = true;
+        return ExitCode::Ok;
+    }
+
+    const std::string logicErrorMsg = std::string("No long poll job for the queried remote directory id=") + remoteDirId;
+
+    LOG_MSG_IF_FAIL(longPollJobs.contains(remoteDirId), logicErrorMsg);
+    if (!longPollJobs.contains(remoteDirId)) return ExitCode::LogicError;
+
+    const auto longPollJob = longPollJobs.at(remoteDirId);
+
+    LOG_MSG_IF_FAIL(longPollJob, logicErrorMsg);
+    if (!longPollJob) return ExitCode::LogicError;
+
+    if (!SyncJobManagerSingleton::instance()->isJobFinished(longPollJob->jobId())) return ExitCode::Ok;
+
     const std::string dataMessage = "for driveDbId=" + std::to_string(_driveDbId) + ", remoteDirId=" + remoteDirId +
                                     " and cursor=" + _listingCursorMap.at(remoteDirId).cursor;
-
     if (!longPollJob->exitInfo()) {
         LOG_SYNCPAL_WARN(_logger, "Error in LongPollJob: " << longPollJob->exitInfo() << dataMessage);
 
@@ -106,7 +123,7 @@ ExitInfo RemoteFileSystemObserverWorker::checkIfRemoteDirHasChanges(const Remote
         return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
-    if (!JsonParserUtility::extractValue(resObj, changesKey, changes)) {
+    if (!JsonParserUtility::extractValue(resObj, changesKey, hasChanges)) {
         LOG_SYNCPAL_DEBUG(_logger, "(Long poll) The key for changes is missing in JSON response. Notify changes request failed "
                                            << dataMessage);
         return {ExitCode::BackError, ExitCause::MissingReplyData};
@@ -115,23 +132,15 @@ ExitInfo RemoteFileSystemObserverWorker::checkIfRemoteDirHasChanges(const Remote
     return ExitCode::Ok;
 }
 
+
 ExitInfo RemoteFileSystemObserverWorker::processEvents(const std::vector<RemoteNodeId> &specialFoldersRemoteIds,
                                                        LongPollJobMap &longPollJobs) {
-    const bool hasForcedChanges = longPollJobs.empty();
+    const bool hasForcedChanges = updating();
 
     for (const auto &remoteDirId: specialFoldersRemoteIds) {
-        if (!hasForcedChanges && !SyncJobManagerSingleton::instance()->isJobFinished(longPollJobs.at(remoteDirId)->jobId()))
-            continue;
-
-        bool hasChanges = hasForcedChanges;
-        if (!hasForcedChanges) {
-            if (const auto exitInfo = checkIfRemoteDirHasChanges(remoteDirId, longPollJobs.at(remoteDirId), hasChanges);
-                !exitInfo) {
-                LOG_SYNCPAL_DEBUG(_logger, "Error in checkIfRemoteDirHasChanges: " << exitInfo);
-
-                return exitInfo;
-            }
-        }
+        bool hasChanges = false;
+        if (const auto exitInfo = checkIfRemoteDirHasChanges(remoteDirId, hasForcedChanges, longPollJobs, hasChanges); exitInfo)
+            return exitInfo;
 
         if (!hasChanges) continue;
 
@@ -181,6 +190,7 @@ void RemoteFileSystemObserverWorker::execute() {
 
         if (stopAsked()) {
             exitInfo = ExitCode::Ok;
+            tryToInvalidateSnapshot();
             break;
         }
 
@@ -188,6 +198,7 @@ void RemoteFileSystemObserverWorker::execute() {
         if (!exitInfo) break;
 
         setInitFlagValue(false);
+
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
@@ -209,7 +220,7 @@ ExitInfo RemoteFileSystemObserverWorker::generateInitialSnapshot() {
 
     countListingRequests();
 
-    exitInfo = initWithCursor();
+    ExitInfo exitInfo = initWithCursor();
 
     const auto end = std::chrono::steady_clock::now();
     const std::chrono::duration<double> elapsedSeconds = end - start;
@@ -248,7 +259,10 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
 
     // Get the most recently used listing cursor.
     if (const auto exitInfo = getListingCursor(remoteDirId, _listingCursorMap[remoteDirId]); !exitInfo) {
-        LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::listingCursor: " << exitInfo);
+        LOG_SYNCPAL_WARN(_logger,
+                         "Error in "
+                         "RemoteFileSystemObserverWorker::listingCursor: "
+                                 << exitInfo);
         return exitInfo;
     }
 
@@ -278,8 +292,11 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
             job = std::make_shared<ContinueFileListWithCursorJob>(_driveDbId, remoteDirId, _listingCursorMap[remoteDirId].cursor,
                                                                   _blackList);
         } catch (const JobException &e) {
-            LOG_SYNCPAL_WARN(_logger, "Error in ContinueFileListWithCursorJob::ContinueFileListWithCursorJob for driveDbId="
-                                              << _driveDbId << " error=" << e.what());
+            LOG_SYNCPAL_WARN(_logger,
+                             "Error in "
+                             "ContinueFileListWithCursorJob::"
+                             "ContinueFileListWithCursorJob for driveDbId="
+                                     << _driveDbId << " error=" << e.what());
             exitInfo = exception2ExitCode(e);
             break;
         }
@@ -293,9 +310,11 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
 
         Poco::JSON::Object::Ptr resObj = job->jsonRes();
         if (!resObj) {
-            LOG_SYNCPAL_WARN(_logger, "Continue cursor listing request failed for drive: "
-                                              << std::to_string(_driveDbId).c_str()
-                                              << " and cursor: " << _listingCursorMap[remoteDirId].cursor);
+            LOG_SYNCPAL_WARN(_logger,
+                             "Continue cursor listing request failed for "
+                             "drive: "
+                                     << std::to_string(_driveDbId).c_str()
+                                     << " and cursor: " << _listingCursorMap[remoteDirId].cursor);
             exitInfo = ExitCode::BackError;
             break;
         }
@@ -325,11 +344,15 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
 
         if (cursor != _listingCursorMap[remoteDirId].cursor) {
             _listingCursorMap[remoteDirId] = CursorData{cursor, CommonUtility::now()};
-            LOG_SYNCPAL_DEBUG(_logger, "Sync cursor for remoteDirId=" << remoteDirId
-                                                                      << " updated: " << _listingCursorMap[remoteDirId].cursor);
+            LOG_SYNCPAL_DEBUG(_logger, "Listing cursor for remoteDirId=" << remoteDirId << " updated: "
+                                                                         << _listingCursorMap[remoteDirId].cursor);
             exitInfo = saveListingCursor(remoteDirId, _listingCursorMap.at(remoteDirId));
             if (!exitInfo) {
-                LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::saveListingCursor: " << exitInfo);
+                LOG_SYNCPAL_WARN(_logger,
+                                 "Error in "
+                                 "RemoteFileSystemObserverWorker::"
+                                 "saveListingCursor: "
+                                         << exitInfo);
                 break;
             }
         }
@@ -342,7 +365,10 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
         // Look for new actions
         exitInfo = processActions(dataObj->getArray(actionsKey), dataObj->getArray(actionsFilesKey));
         if (!exitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::processActions: " << exitInfo);
+            LOG_SYNCPAL_WARN(_logger,
+                             "Error in "
+                             "RemoteFileSystemObserverWorker::processActions: "
+                                     << exitInfo);
             tryToInvalidateSnapshot();
             break;
         }
@@ -355,13 +381,17 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
 ExitInfo RemoteFileSystemObserverWorker::updateSpecialFolderItem(const RemoteNodeId &remoteNodeId) {
     SyncName folderName;
     if (const auto exitInfo = getV3SpecialRemoteFolderName(remoteNodeId, folderName); !exitInfo) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in RemoteFileSystemObserverWorker::getV3SpecialRemoteFolderName: remoteNodeId="
-                                           << CommonUtility::s2ws(remoteNodeId) << L", exitInfo=" << exitInfo);
+        LOGW_SYNCPAL_WARN(_logger,
+                          L"Error in "
+                          L"RemoteFileSystemObserverWorker::"
+                          L"getV3SpecialRemoteFolderName: remoteNodeId="
+                                  << CommonUtility::s2ws(remoteNodeId) << L", exitInfo=" << exitInfo);
         return exitInfo;
     }
 
     // As long as the local folder hierarchy reflects the v2 API,
-    // we should not create a `Private` folder at the root of the local synchronization folder.
+    // we should not create a `Private` folder at the root of the
+    // local synchronization folder.
     if (const auto &privateFolderName = ApiTranslator::v3SpecialFolderNames.at(SpecialFolder::Private);
         folderName == privateFolderName)
         return ExitCode::Ok;
@@ -405,6 +435,8 @@ ExitInfo RemoteFileSystemObserverWorker::runFullListingJobs(const FullListingJob
     for (auto [_, fullListingJob]: fullListingJobs)
         SyncJobManagerSingleton::instance()->queueAsyncJob(fullListingJob, Poco::Thread::PRIO_LOW);
 
+    LOG_SYNCPAL_DEBUG(_logger, "Full listing jobs in async queue.");
+
     bool allJobsFinished = false;
     while (!allJobsFinished) {
         if (stopAsked()) return ExitCode::Ok;
@@ -418,8 +450,10 @@ ExitInfo RemoteFileSystemObserverWorker::runFullListingJobs(const FullListingJob
                 continue;
             }
 
-            LOG_SYNCPAL_WARN(_logger, "Error in CsvFullFileListWithCursorJob::run for remoteNodeId="
-                                              << remoteNodeId << ", exitInfo=" << fullListingJob->exitInfo());
+            LOG_SYNCPAL_WARN(_logger,
+                             "Error in CsvFullFileListWithCursorJob::run for "
+                             "remoteNodeId="
+                                     << remoteNodeId << ", exitInfo=" << fullListingJob->exitInfo());
             if (fullListingJob->exitInfo().code() == ExitCode::RateLimited) setPauseDuration(fullListingJob->sleepDuration());
 
             return fullListingJob->exitInfo();
@@ -439,33 +473,12 @@ ExitInfo RemoteFileSystemObserverWorker::initWithCursor() {
         return exitInfo;
     }
 
-    FullListingJobMap fullListingJobs;
-    for (const auto &specialFolderRemoteId: specialFoldersRemoteIds) fullListingJobs[specialFolderRemoteId].reset();
-
     for (const auto &specialFolderRemoteId: specialFoldersRemoteIds) {
         if (_blackList.contains(specialFolderRemoteId)) continue;
 
         if (const auto exitInfo = updateSpecialFolderItem(specialFolderRemoteId); !exitInfo) return exitInfo;
 
-        if (const auto exitInfo = getItemsInRemoteDirJob(specialFolderRemoteId, fullListingJobs[specialFolderRemoteId]);
-            !exitInfo)
-            return exitInfo;
-    }
-
-    // Execute the full listing HTTP requests for the remote special folders in parallel.
-    if (const auto exitInfo = runFullListingJobs(fullListingJobs); !exitInfo) return exitInfo;
-
-    // Handle replies of the full listing requests and update the snapshot accordingly.
-    for (const auto &specialFolderRemoteId: specialFoldersRemoteIds) {
-        if (const auto exitInfo =
-                    handleCsvReplyCursor(specialFolderRemoteId, CursorPersistence::Save, fullListingJobs[specialFolderRemoteId]);
-            !exitInfo)
-            return exitInfo;
-    }
-
-    for (const auto &specialFolderRemoteId: specialFoldersRemoteIds) {
-        if (const auto exitInfo = parseCsvReply(CursorPersistence::Save, fullListingJobs[specialFolderRemoteId]); !exitInfo)
-            return exitInfo;
+        if (const auto exitInfo = getItemsInRemoteDir(specialFolderRemoteId, CursorPersistence::Save); !exitInfo) return exitInfo;
     }
 
     deleteOrphans();
@@ -507,7 +520,8 @@ ExitInfo RemoteFileSystemObserverWorker::handleRemoteSnapshotItem(
     }
 
     if (const auto &[_, inserted] = existingFiles.insert(Str2SyncName(item.parentId()) + item.name()); !inserted) {
-        // An item with the exact same name already exists in the parent folder.
+        // An item with the exact same name already exists in the
+        // parent folder.
         LOGW_SYNCPAL_DEBUG(_logger, L"Item with " << Utility::formatSyncName(item.name()) << L" already exists in directory with "
                                                   << Utility::formatSyncName(_liveSnapshot.name(item.parentId())));
 
@@ -554,7 +568,9 @@ void RemoteFileSystemObserverWorker::deleteOrphans() {
 ExitInfo RemoteFileSystemObserverWorker::parseCsvReply(const CursorPersistence cursorPersistence,
                                                        std::shared_ptr<CsvFullFileListWithCursorJob> csvFullListingJob) {
     LOG_SYNCPAL_DEBUG(_logger,
-                      "Start parsing of the CSV reply for directory wit remote id=" << csvFullListingJob->remoteDirId() << ".");
+                      "Start parsing of the CSV reply for directory "
+                      "with remote id="
+                              << csvFullListingJob->remoteDirId() << ".");
     const TimerUtility timer;
     RemoteSnapshotItem item;
     SyncNameSet existingFiles;
@@ -583,7 +599,7 @@ ExitInfo RemoteFileSystemObserverWorker::parseCsvReply(const CursorPersistence c
     return ExitCode::Ok;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::getItemsInRemoteDirJob(
+ExitInfo RemoteFileSystemObserverWorker::createGetItemsInRemoteDirJob(
         const RemoteNodeId &remoteDirId, std::shared_ptr<CsvFullFileListWithCursorJob> &csvFullFileListWithCursorJob) {
     csvFullFileListWithCursorJob = nullptr;
     try {
@@ -592,8 +608,11 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInRemoteDirJob(
     } catch (const std::bad_alloc &badAllocationException) {
         return exception2ExitCode(badAllocationException);
     } catch (const JobException &e) {
-        LOG_SYNCPAL_WARN(_logger, "Error in CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob for driveDbId="
-                                          << _driveDbId << " error=" << e.what());
+        LOG_SYNCPAL_WARN(_logger,
+                         "Error in "
+                         "CsvFullFileListWithCursorJob::"
+                         "CsvFullFileListWithCursorJob for driveDbId="
+                                 << _driveDbId << " error=" << e.what());
         return exception2ExitCode(e);
     }
 
@@ -608,9 +627,13 @@ ExitInfo RemoteFileSystemObserverWorker::handleCsvReplyCursor(
     if (const auto &cursor = csvFullFileListWithCursorJob->getCursor();
         !_listingCursorMap.contains(remoteDirId) || cursor != _listingCursorMap[remoteDirId].cursor) {
         _listingCursorMap[remoteDirId] = CursorData{cursor, CommonUtility::now()};
-        LOG_SYNCPAL_DEBUG(_logger, "Cursor updated: " << _listingCursorMap[remoteDirId].cursor);
+        LOG_SYNCPAL_DEBUG(_logger,
+                          "Cursor for remoteDirId=" << remoteDirId << " updated: " << _listingCursorMap[remoteDirId].cursor);
         if (const auto exitInfo = saveListingCursor(remoteDirId, _listingCursorMap.at(remoteDirId)); !exitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::saveListingCursor");
+            LOG_SYNCPAL_WARN(_logger,
+                             "Error in "
+                             "RemoteFileSystemObserverWorker::"
+                             "saveListingCursor");
 
             return exitInfo;
         }
@@ -622,7 +645,7 @@ ExitInfo RemoteFileSystemObserverWorker::handleCsvReplyCursor(
 ExitInfo RemoteFileSystemObserverWorker::getItemsInRemoteDir(const RemoteNodeId &remoteDirId,
                                                              const CursorPersistence cursorPersistence) {
     std::shared_ptr<CsvFullFileListWithCursorJob> job = nullptr;
-    if (const auto exitInfo = getItemsInRemoteDirJob(remoteDirId, job); !exitInfo) return exitInfo;
+    if (const auto exitInfo = createGetItemsInRemoteDirJob(remoteDirId, job); !exitInfo) return exitInfo;
 
     // Send request and monitor its performance.
     sentry::pTraces::scoped::RFSOBackRequest perfMonitorBackRequest(cursorPersistence == CursorPersistence::None, syncDbId());
@@ -635,7 +658,7 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInRemoteDir(const RemoteNodeId 
     perfMonitorBackRequest.stop();
 
     if (!job->exitInfo()) {
-        LOG_SYNCPAL_WARN(_logger, "Error in CsvFullFileListWithCursorJob: " << job->exitInfo());
+        LOG_SYNCPAL_WARN(_logger, "Error in CsvFullFileListWithCursorJob::run: " << job->exitInfo());
         if (job->exitInfo().code() == ExitCode::RateLimited) setPauseDuration(job->sleepDuration());
 
         return job->exitInfo();
@@ -653,8 +676,10 @@ ExitInfo RemoteFileSystemObserverWorker::createLongPollJob(const RemoteNodeId &r
     try {
         longPollJob = std::make_shared<LongPollJob>(_driveDbId, _listingCursorMap.at(remoteDirId).cursor);
     } catch (const JobException &e) {
-        LOG_SYNCPAL_WARN(_logger, "Exception thrown in LongPollJob::LongPollJob for driveDbId="
-                                          << _driveDbId << " and remoteDirId=" << remoteDirId << ", error=" << e.what());
+        LOG_SYNCPAL_WARN(_logger,
+                         "Exception thrown in "
+                         "LongPollJob::LongPollJob for driveDbId="
+                                 << _driveDbId << " and remoteDirId=" << remoteDirId << ", error=" << e.what());
         return exception2ExitCode(e);
     }
 
@@ -671,8 +696,9 @@ ExitInfo RemoteFileSystemObserverWorker::createActionInfoList(const Poco::JSON::
         ActionInfo actionInfo;
         if (const auto exitInfo = extractActionInfo(actionObj, actionInfo); !exitInfo) return exitInfo;
 
-        // The relative path "Private" from API v3 is translated into the empty relative path "" via ActionInfo::setPath.
-        // We do not record the ActionInfo in this case.
+        // The relative path "Private" from API v3 is translated into
+        // the empty relative path "" via ActionInfo::setPath. We do
+        // not record the ActionInfo in this case.
         if (actionInfo.path().empty()) continue;
 
         bool isWarning = false;
@@ -741,8 +767,10 @@ ExitInfo RemoteFileSystemObserverWorker::processActions(const Poco::JSON::Array:
                                                         const Poco::JSON::Array::Ptr actionsFilesArray) {
     if (!actionArray) return ExitCode::Ok;
 
-    // The information about backend actions is split into two arrays in the API reply: `actions` and `actions_files`. We need to
-    // combine the information from these two arrays to be able to process the actions.
+    // The information about backend actions is split into two arrays
+    // in the API reply: `actions` and `actions_files`. We need to
+    // combine the information from these two arrays to be able to
+    // process the actions.
     ActionInfoList actionInfoList;
     if (const auto exitInfo = createActionInfoList(actionArray, actionInfoList); !exitInfo) return exitInfo;
     if (const auto exitInfo = fillActionsFilesInfo(actionsFilesArray, actionInfoList); !exitInfo) return exitInfo;
@@ -767,13 +795,17 @@ ExitInfo RemoteFileSystemObserverWorker::processActions(const Poco::JSON::Array:
     for (auto &actionInfo: actionInfoList) {
         sentry::pTraces::scoped::RFSOChangeDetected perfMonitor(syncDbId());
         if (const auto exitInfo = processAction(actionInfo, movedItems); !exitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::processAction: " << exitInfo);
+            LOG_SYNCPAL_WARN(_logger,
+                             "Error in "
+                             "RemoteFileSystemObserverWorker::processAction: "
+                                     << exitInfo);
             return exitInfo;
         }
     }
 
     for (const auto &[nodeId, actionCode]: movedItems) {
-        // Items remaining in "movedItems" have been either blacklisted or whitelisted.
+        // Items remaining in "movedItems" have been either
+        // blacklisted or whitelisted.
         switch (actionCode) {
             case ActionCode::ActionCodeMoveIn: {
                 if (_liveSnapshot.type(nodeId) != NodeType::Directory) break; // Do not explore if moved item is a file
@@ -819,7 +851,8 @@ ExitInfo RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
         return {ExitCode::BackError, ExitCause::MissingReplyData};
 
     if (!tmpDestPathStr.empty()) {
-        // This a move operation. Get the name from the `destination` field
+        // This a move operation. Get the name from the `destination`
+        // field
         actionInfo.snapshotItem.setName(tmpDestPathStr.substr(tmpDestPathStr.find_last_of('/') + 1)); // +1 to ignore the last "/"
         actionInfo.setPath(tmpDestPathStr);
     } else {
@@ -918,15 +951,18 @@ ExitInfo RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, M
                 !exitInfo) {
                 return exitInfo;
             }
-            if (!rightsOk) break; // Current user does not have the right to access this item, ignore action.
+            if (!rightsOk)
+                break; // Current user does not have the right to
+                       // access this item, ignore action.
             [[fallthrough]];
         }
         case ActionCode::ActionCodeMoveIn:
         case ActionCode::ActionCodeRestore:
         case ActionCode::ActionCodeCreate:
         case ActionCode::ActionCodeRename: {
-            const bool directoryExplorationRequired =
-                    isDirectoryExplorationRequired(actionInfo, movedItems); // Must be called before updateItem
+            const bool directoryExplorationRequired = isDirectoryExplorationRequired(actionInfo,
+                                                                                     movedItems); // Must be called before
+                                                                                                  // updateItem
             (void) _liveSnapshot.updateItem(actionInfo.snapshotItem);
             if (directoryExplorationRequired) {
                 // Retrieve all children
@@ -974,7 +1010,9 @@ ExitInfo RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, M
                 !exitInfo) {
                 return exitInfo;
             }
-            if (rightsOk) break; // Current user still have the right to access this item, ignore action.
+            if (rightsOk)
+                break; // Current user still have the right to access
+                       // this item, ignore action.
             [[fallthrough]];
         }
         case ActionCode::ActionCodeTrash:
@@ -994,7 +1032,8 @@ void RemoteFileSystemObserverWorker::keepTrackOfMovedItem(const ActionInfo &acti
         // Keep track of moved items
         (void) movedItems.try_emplace(actionInfo.snapshotItem.id(), actionInfo.actionCode);
     } else {
-        // Move out event already received, no need to keep track anymore
+        // Move out event already received, no need to keep track
+        // anymore
         (void) movedItems.erase(actionInfo.snapshotItem.id());
     }
 }
@@ -1003,12 +1042,14 @@ bool RemoteFileSystemObserverWorker::isDirectoryExplorationRequired(const Action
                                                                     const MoveItemMap &movedItems) const {
     if (actionInfo.snapshotItem.type() != NodeType::Directory) return false;
     if (_liveSnapshot.exists(actionInfo.snapshotItem.id()) || movedItems.contains(actionInfo.snapshotItem.id())) {
-        // The item is already synchronized, exploration is not required.
+        // The item is already synchronized, exploration is not
+        // required.
         return false;
     }
 
     if (actionInfo.actionCode == ActionCode::ActionCodeCreate) {
-        // Create events are sent on each child, exploration is not required.
+        // Create events are sent on each child, exploration is not
+        // required.
         return false;
     }
 
@@ -1035,8 +1076,9 @@ ExitInfo RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &
         job = std::make_unique<GetFileInfoJob>(_syncPal->driveDbId(), nodeId);
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(),
-                 "Error in GetFileInfoJob::GetFileInfoJob for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << nodeId.c_str()
-                                                                          << " error=" << e.what());
+                 "Error in GetFileInfoJob::GetFileInfoJob for "
+                 "driveDbId="
+                         << _syncPal->driveDbId() << " nodeId=" << nodeId.c_str() << " error=" << e.what());
         return exception2ExitCode(e);
     }
     job->setScope(Scope::Sync);
@@ -1074,7 +1116,8 @@ ExitInfo RemoteFileSystemObserverWorker::checkForUnsupportedCharacters([[maybe_u
     ExitInfo exitInfo = ExitCode::Ok;
 
 #if defined(KD_MACOS)
-    // Check that the name doesn't contain a character not yet supported by the filesystem (ex: U+1FA77 on pre macOS 13.4).
+    // Check that the name doesn't contain a character not yet
+    // supported by the filesystem (ex: U+1FA77 on pre macOS 13.4).
     switch (type) {
         case NodeType::File:
             exitInfo = Utility::tryCreateTmpFile(_syncPal->cacheDirectory(), name);
@@ -1092,7 +1135,9 @@ ExitInfo RemoteFileSystemObserverWorker::checkForUnsupportedCharacters([[maybe_u
         _syncPal->addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
     } else if (!exitInfo) {
         LOGW_SYNCPAL_DEBUG(_logger,
-                           L"The file name or directory name contains a character not yet supported by the filesystem: exitInfo="
+                           L"The file name or directory name "
+                           L"contains a character not yet supported "
+                           L"by the filesystem: exitInfo="
                                    << exitInfo << L", " << Utility::formatSyncName(name) << L". Item is ignored.");
         _syncPal->addError(
                 Error(_syncPal->syncDbId(), "", nodeId, type, name, ConflictType::None, InconsistencyType::NotYetSupportedChar));
@@ -1108,8 +1153,11 @@ void RemoteFileSystemObserverWorker::countListingRequests() {
     const std::chrono::duration<double> elapsedTime = listingFullTimerEnd - _listingFullTimer;
     bool resetTimer = elapsedTime.count() > 3600; // 1h
     if (_listingFullCounter > 60) {
-        // If there is more then 1 listing/full request per minute for an hour -> send a sentry
-        sentry::Handler::captureMessage(sentry::Level::Warning, "RemoteFileSystemObserverWorker::countListingRequests",
+        // If there is more then 1 listing/full request per minute for
+        // an hour -> send a sentry
+        sentry::Handler::captureMessage(sentry::Level::Warning,
+                                        "RemoteFileSystemObserverWorker::"
+                                        "countListingRequests",
                                         "Too many listing/full requests, sync is looping");
         resetTimer = true;
     }
