@@ -60,7 +60,7 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
             }
         }
 
-        protected override async void OnNavigatedFrom(NavigationEventArgs e)
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
             DetachEventHandlers();
         }

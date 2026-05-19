@@ -105,7 +105,7 @@ namespace Infomaniak.kDrive.Pages.Errors
             {
                 return;
             }
-            AutoDisposeDialog dialog = new AutoDisposeDialog
+            var dialog = new AutoDisposeDialog
             {
                 XamlRoot = xamlRoot,
                 DefaultButton = ContentDialogButton.Primary,
@@ -133,7 +133,7 @@ namespace Infomaniak.kDrive.Pages.Errors
             {
                 return;
             }
-            AutoDisposeDialog dialog = new AutoDisposeDialog
+            var dialog = new AutoDisposeDialog
             {
                 XamlRoot = xamlRoot,
                 DefaultButton = ContentDialogButton.Primary,

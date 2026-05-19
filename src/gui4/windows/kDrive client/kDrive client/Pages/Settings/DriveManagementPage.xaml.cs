@@ -149,7 +149,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                 return;
             }
 
-            AutoDisposeDialog dialog = new AutoDisposeDialog
+            var dialog = new AutoDisposeDialog
             {
                 XamlRoot = XamlRoot,
                 Title = Localizer.Instance.GetString("dialogSyncModeChangeWarningTitle"),
@@ -229,7 +229,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             control.IsEnabled = false;
             bool goBackOnceDone = ManagedDrive.Syncs.Count() == 1; // If we are removing the last sync of the drive, go back to settings page once done.
 
-            AutoDisposeDialog dialog = new AutoDisposeDialog
+            var dialog = new AutoDisposeDialog
             {
                 XamlRoot = XamlRoot,
                 Title = Localizer.Instance.GetString("dialogSyncDeletionWarningTitle"),

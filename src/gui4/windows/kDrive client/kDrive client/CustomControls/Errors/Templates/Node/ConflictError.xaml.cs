@@ -22,7 +22,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
 {
@@ -49,7 +48,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
             {
                 return;
             }
-            AutoDisposeDialog dialog = new AutoDisposeDialog
+            var dialog = new AutoDisposeDialog
             {
                 XamlRoot = xamlRoot,
                 DefaultButton = ContentDialogButton.Secondary,

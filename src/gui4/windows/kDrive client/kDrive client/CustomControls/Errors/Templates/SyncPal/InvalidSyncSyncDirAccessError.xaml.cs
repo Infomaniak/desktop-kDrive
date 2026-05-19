@@ -48,7 +48,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
             {
                 return;
             }
-            AutoDisposeDialog dialog = new AutoDisposeDialog
+            var dialog = new AutoDisposeDialog
             {
                 XamlRoot = xamlRoot,
                 Title = Localizer.Instance.GetString("errDialogConfigChangedTitle"),

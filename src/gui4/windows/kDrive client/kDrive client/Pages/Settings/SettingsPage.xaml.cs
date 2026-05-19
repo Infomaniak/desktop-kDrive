@@ -244,7 +244,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                 control.IsEnabled = false;
             _analyticsService.TrackClick(Analytics.Keys.Category.AccountsSettingsPage, Analytics.Keys.EventName.Disconnect);
 
-            AutoDisposeDialog dialog = new AutoDisposeDialog
+            var dialog = new AutoDisposeDialog
             {
                 XamlRoot = this.XamlRoot,
                 Title = Localizer.Instance.GetString("dialogRemoveAccountTitle"),
