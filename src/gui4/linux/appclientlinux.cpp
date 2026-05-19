@@ -66,6 +66,40 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     (void) connect(&_serverCommService, &CommService::showSynthesis, &_systemTrayController,
                    &SystemTrayController::showMainWindow);
     (void) connect(&_serverCommService, &CommService::quit, this, [] { QCoreApplication::quit(); });
+    (void) connect(&_onboardingFlowController, &OnboardingFlowController::cancelRequested, &_systemTrayController,
+                   &SystemTrayController::hideMainWindow);
+    (void) connect(&_onboardingFlowController, &OnboardingFlowController::completed, &_systemTrayController,
+                   &SystemTrayController::showMainWindow);
+    (void) connect(&_onboardingFlowController, &OnboardingFlowController::loginRequested, this,
+                   [] { qCWarning(lcAppClientLinux) << "Linux onboarding OAuth launcher is not implemented yet"; });
+    (void) connect(&_onboardingFlowController, &OnboardingFlowController::accountCreationRequested, this,
+                   [] { qCWarning(lcAppClientLinux) << "Linux onboarding account creation launcher is not implemented yet"; });
+    const auto completeOnboardingLogin = [this](const UserDbId userDbId) {
+        if (!_appCache.user(userDbId).has_value()) {
+            qCInfo(lcAppClientLinux) << "Waiting for logged-in user cache update | userDbId:" << userDbId;
+            _pendingOnboardingUserDbId = userDbId;
+            return;
+        }
+
+        _pendingOnboardingUserDbId.reset();
+        _onboardingState.selectUser(static_cast<qint64>(userDbId));
+        _userService.loadAvailableDrives(static_cast<qint64>(userDbId));
+        _onboardingFlowController.completeLogin(static_cast<qint64>(userDbId));
+    };
+    (void) connect(&_userService, &UserService::loginTokenSucceeded, &_onboardingFlowController,
+                   &OnboardingFlowController::handleLoginTokenSucceeded);
+    (void) connect(&_userService, &UserService::loginTokenSucceeded, this, [completeOnboardingLogin](const qint64 userDbId) {
+        completeOnboardingLogin(static_cast<UserDbId>(userDbId));
+    });
+    (void) connect(&_userService, &UserService::loginTokenFailed, &_onboardingFlowController,
+                   &OnboardingFlowController::handleLoginFailed);
+    (void) connect(&_appCache, &AppCache::usersChanged, this, [this, completeOnboardingLogin] {
+        if (!_pendingOnboardingUserDbId.has_value()) {
+            return;
+        }
+
+        completeOnboardingLogin(*_pendingOnboardingUserDbId);
+    });
     (void) connect(&_systemTrayController, &SystemTrayController::quitRequested, this, [this] {
         qCInfo(lcAppClientLinux) << "Quit requested from system tray";
         if (!_ipcClient.isConnected()) {
@@ -87,6 +121,7 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("syncService"), &_syncService);
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("serviceEventBus"), &_serviceEventBus);
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("onboardingState"), &_onboardingState);
+    _qmlEngine.rootContext()->setContextProperty(QStringLiteral("onboardingFlowController"), &_onboardingFlowController);
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("systemTrayController"), &_systemTrayController);
     _qmlEngine.loadFromModule(QStringLiteral("kDrive.UI"), QStringLiteral("Main"));
     if (_qmlEngine.rootObjects().isEmpty()) {
