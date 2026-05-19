@@ -141,8 +141,8 @@ public extension UILogLevel {
 }
 
 public extension UIDistributionChannel {
-    init(versionChannel: KDC.DistributionChannel) {
-        switch versionChannel {
+    init(distributionChannel: KDC.DistributionChannel) {
+        switch distributionChannel {
         case .Prod:
             self = .prod
         case .Next:
@@ -156,10 +156,10 @@ public extension UIDistributionChannel {
         case .Test:
             self = .test
         case .Unknown:
-            ReportHelper.reportToSentryIfProd(message: "UIDistributionChannel init received KDC.VersionChannel.Unknown case")
+            ReportHelper.reportToSentryIfProd(message: "UIDistributionChannel init received KDC.DistributionChannel.Unknown case")
             self = .prod
         case .EnumEnd:
-            ReportHelper.reportToSentryIfProd(message: "UIDistributionChannel init received KDC.VersionChannel.EnumEnd case")
+            ReportHelper.reportToSentryIfProd(message: "UIDistributionChannel init received KDC.DistributionChannel.EnumEnd case")
             self = .prod
         @unknown default:
             ReportHelper.reportToSentryIfProd(message: "UIDistributionChannel init received @unknown case")
@@ -197,7 +197,7 @@ public extension UIParametersInfo {
             isExtendedLogEnabled: parametersInfo.extendedLog,
             shouldPurgeOldLogs: parametersInfo.purgeOldLogs,
             proxyConfiguration: UIProxyConfiguration(proxyConfigInfo: parametersInfo.proxyConfigInfo),
-            distributionChannel: UIDistributionChannel(versionChannel: parametersInfo.distributionChannel),
+            distributionChannel: UIDistributionChannel(distributionChannel: parametersInfo.distributionChannel),
             isSentryEnabled: parametersInfo.sentryEnabled,
             isMatomoEnabled: parametersInfo.matomoEnabled
         )
