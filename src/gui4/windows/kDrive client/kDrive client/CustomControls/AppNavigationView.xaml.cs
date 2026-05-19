@@ -85,6 +85,8 @@ namespace Infomaniak.kDrive.CustomControls
         private void AppNavigationView_Loaded(object sender, RoutedEventArgs e)
         {
             Frame.Navigated += Frame_Navigated;
+            Frame.Navigating += Frame_Navigating;
+            
             if (LandingPageType is not null && LandingPageType.IsSubclassOf(typeof(Page)))
                 Frame.Navigate(LandingPageType);
             else 
@@ -115,6 +117,13 @@ namespace Infomaniak.kDrive.CustomControls
 
             settingItem.InfoBadge = infoBadge;
 
+        }
+
+        private async void Frame_Navigating(object sender, NavigatingCancelEventArgs e)
+        {
+            var frame = (Microsoft.UI.Xaml.Controls.Frame)sender;
+            if (frame.Content is UIElement oldPage)
+                await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(oldPage);
         }
 
         private void Frame_Navigated(object sender, Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)

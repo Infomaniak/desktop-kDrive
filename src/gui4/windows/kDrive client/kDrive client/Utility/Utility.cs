@@ -30,6 +30,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.Graphics;
 using Windows.Storage;
@@ -534,28 +535,45 @@ namespace Infomaniak.kDrive
 
         public static class VisualTreeDisposeUtility
         {
-            public static void DisposePageItems(UIElement root)
+            public static async Task DisposeItemsAsync(
+                UIElement root,
+                CancellationToken cancellationToken = default)
             {
                 if (root == null)
                     return;
 
                 var visited = new HashSet<object>();
 
-                Traverse(root, visited);
+                await TraverseAsync(root, visited, cancellationToken);
             }
 
-            private static void Traverse(
+            private static async Task TraverseAsync(
                 DependencyObject node,
-                HashSet<object> visited)
+                HashSet<object> visited,
+                CancellationToken cancellationToken)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 if (node == null)
                     return;
 
                 if (!visited.Add(node))
                     return;
 
-                // Dispose controls/viewmodels/etc.
-                if (node is IDisposable disposable)
+                //
+                // Dispose async first
+                //
+                if (node is IAsyncDisposable asyncDisposable)
+                {
+                    try
+                    {
+                        await asyncDisposable.DisposeAsync();
+                    }
+                    catch
+                    {
+                    }
+                }
+                else if (node is IDisposable disposable)
                 {
                     try
                     {
@@ -563,20 +581,45 @@ namespace Infomaniak.kDrive
                     }
                     catch
                     {
-                        // Optional: log
                     }
                 }
 
-                // Stop x:Bind tracking if available
                 TryStopBindings(node);
+
+                TryResetDataTemplateBindings(node);
 
                 int childCount = VisualTreeHelper.GetChildrenCount(node);
 
                 for (int i = 0; i < childCount; i++)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     var child = VisualTreeHelper.GetChild(node, i);
 
-                    Traverse(child, visited);
+                    await TraverseAsync(child, visited, cancellationToken);
+
+                    //
+                    // Prevent long UI freeze
+                    //
+                    if ((i & 15) == 0)
+                        await Task.Yield();
+                }
+            }
+
+            private static void TryResetDataTemplateBindings(DependencyObject node)
+            {
+                if (node is not FrameworkElement fe)
+                    return;
+
+                try
+                {
+                    var extension = Microsoft.UI.Xaml.DataTemplate.GetExtensionInstance(fe);
+                    if (extension is not null)
+                        TryStopBindings(extension);
+                }
+                catch
+                {
+                    // Element may not have an extension instance
                 }
             }
 
@@ -606,6 +649,8 @@ namespace Infomaniak.kDrive
                         bindings = field?.GetValue(obj);
                     }
 
+                    if (bindings is null)
+                        bindings = obj;
                     var stopTrackingMethod =
                         bindings?.GetType().GetMethod("StopTracking");
 

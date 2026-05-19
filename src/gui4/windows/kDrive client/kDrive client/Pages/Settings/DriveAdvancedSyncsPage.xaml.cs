@@ -75,10 +75,6 @@ public sealed partial class DriveAdvancedSyncsPage : Page
             return;
         }
     }
-    protected override void OnNavigatedFrom(NavigationEventArgs e)
-    {
-        Utility.VisualTreeDisposeUtility.DisposePageItems(this);
-    }
 
     private void SetupNavBar(string driveName)
     {
@@ -162,7 +158,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
         };
 
         var dialogResult = await dialog.ShowAsync();
-        Utility.VisualTreeDisposeUtility.DisposePageItems(dialog);
+        await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(dialog);
         if (dialogResult != ContentDialogResult.Primary)
         {
             Logger.Log(Logger.Level.Info, "User canceled sync removal");
@@ -232,7 +228,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
         };
 
         bool canceledByUser = await dialog.ShowAsync() != ContentDialogResult.Primary;
-        Utility.VisualTreeDisposeUtility.DisposePageItems(dialog);
+        await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(dialog);
         if (canceledByUser)
         {
             _analyticsService.TrackClick(Analytics.Keys.Category.DriveAdvancedSyncsPage, Analytics.Keys.EventName.CancelSyncModeSwitch);
@@ -270,7 +266,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
                 Content = Localizer.Instance.GetString("dialogSyncModeChangeErrorContent")
             };
             await errorDialog.ShowAsync();
-            Utility.VisualTreeDisposeUtility.DisposePageItems(dialog);
+            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(dialog);
         }
     }
 
@@ -298,7 +294,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
 
         CustomControls.AdvancedSyncSetupContentDialog dialog = new(this.XamlRoot, _baseDrive);
         _ = await dialog.ShowAsync();
-        Utility.VisualTreeDisposeUtility.DisposePageItems(dialog);
+        await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(dialog);
 
         if (dialog.Result == CustomControls.AdvancedSyncSetupContentDialog.AdvancedSyncSetupResult.Cancelled)
         {
@@ -366,7 +362,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
 
         _analyticsService.TrackClick(Analytics.Keys.Category.DriveAdvancedSyncsPage, Analytics.Keys.EventName.ShowItemExclusion);
         var result = await dialog.ShowAsync();
-        Utility.VisualTreeDisposeUtility.DisposePageItems(dialog);
+        await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(dialog);
         if (result == ContentDialogResult.Primary)
         {
             Logger.Log(Logger.Level.Info, "User confirmed sync exclusion changes");

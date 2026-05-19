@@ -50,9 +50,9 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     await onBoardingWindow.UpdateLottieSource(LottieTemplateKey.KDrive_LoaderStroke);
             }
         }
-        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        protected async override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            Utility.VisualTreeDisposeUtility.DisposePageItems(this);
+            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(this);
         }
         private async void SignupButton_Click(object sender, RoutedEventArgs e)
         {

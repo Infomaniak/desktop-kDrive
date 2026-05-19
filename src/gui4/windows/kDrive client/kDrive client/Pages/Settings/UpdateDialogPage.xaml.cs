@@ -55,10 +55,11 @@ namespace Infomaniak.kDrive.Pages.Settings
         {
             _analyticsService.TrackPageView(Analytics.Keys.Category.UpdateDialog);
         }
-        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        protected async override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            Utility.VisualTreeDisposeUtility.DisposePageItems(this);
+            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(this);
         }
+
         private async Task LoadReleaseNotesAsync()
         {
             ReleaseNotesScrollView.Visibility = Visibility.Collapsed;

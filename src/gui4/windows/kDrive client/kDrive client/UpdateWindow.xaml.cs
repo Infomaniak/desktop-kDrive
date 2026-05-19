@@ -40,9 +40,9 @@ namespace Infomaniak.kDrive
             Closed += UpdateWindow_Closed;
         }
 
-        private void UpdateWindow_Closed(object sender, WindowEventArgs args)
+        private async void UpdateWindow_Closed(object sender, WindowEventArgs args)
         {
-            Utility.VisualTreeDisposeUtility.DisposePageItems(this.Content);
+            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(this.Content);
         }
 
         private void UpdateWindow_Activated(object sender, WindowActivatedEventArgs args)

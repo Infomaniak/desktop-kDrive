@@ -52,8 +52,6 @@ namespace Infomaniak.kDrive.Pages.Errors
         {
             if (_errorPageVM is not null)
                 _errorPageVM.Dispose();
-
-            Utility.VisualTreeDisposeUtility.DisposePageItems(this);
         }
 
         private void BreadcrumbError_Click(object sender, object e)
