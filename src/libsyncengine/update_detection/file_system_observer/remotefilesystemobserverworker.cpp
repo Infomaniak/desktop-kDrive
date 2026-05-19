@@ -135,7 +135,7 @@ ExitInfo RemoteFileSystemObserverWorker::checkIfRemoteDirHasChanges(const Remote
 
 ExitInfo RemoteFileSystemObserverWorker::processEvents(const std::vector<RemoteNodeId> &specialFoldersRemoteIds,
                                                        LongPollJobMap &longPollJobs) {
-    const bool hasForcedChanges = updating();
+    const bool hasForcedChanges = initializing() || updating();
 
     for (const auto &remoteDirId: specialFoldersRemoteIds) {
         bool hasChanges = false;
@@ -156,9 +156,10 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const std::vector<RemoteN
 }
 
 void RemoteFileSystemObserverWorker::execute() {
-    ExitInfo exitInfo = ExitCode::Ok;
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name());
 
+    ExitInfo exitInfo = ExitCode::Ok;
+    ApiTranslator::clearSharedCache(_syncPal->driveId());
     LongPollJobMap longPollJobs;
 
     // Sync loop
@@ -202,6 +203,7 @@ void RemoteFileSystemObserverWorker::execute() {
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
+
     setExitCause(exitInfo.cause());
     setDone(exitInfo.code());
 }
