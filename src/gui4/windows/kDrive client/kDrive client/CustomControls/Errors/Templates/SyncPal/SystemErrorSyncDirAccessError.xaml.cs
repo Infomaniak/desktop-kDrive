@@ -62,9 +62,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
                 Content = new SystemErrorSyncDirAccessErrorDialog(Error) { XamlRoot = xamlRoot }
             };
             _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageSyncDirAccessError);
-            var res = await dialog.ShowAsync();
 
-            if (res == ContentDialogResult.Primary)
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
                 if (Error.Sync is null)
                 {

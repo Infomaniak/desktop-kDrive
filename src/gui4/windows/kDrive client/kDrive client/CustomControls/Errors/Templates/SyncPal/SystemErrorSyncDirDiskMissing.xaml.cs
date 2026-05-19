@@ -61,8 +61,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
                 Content = new SystemErrorSyncDirDiskMissingErrorDialog(Error) { XamlRoot = xamlRoot }
             };
             _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageSyncDirDiskMissing);
-            var res = await dialog.ShowAsync();
-            if (res == ContentDialogResult.Primary)
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
                 if (Error.Sync is null)
                 {

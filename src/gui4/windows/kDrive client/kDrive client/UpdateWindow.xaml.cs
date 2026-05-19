@@ -48,6 +48,7 @@ namespace Infomaniak.kDrive
         private void UpdateWindow_Activated(object sender, WindowActivatedEventArgs args)
         {
             Utility.CenterWindow(this);
+            Activated -= UpdateWindow_Activated;
         }
     }
 }

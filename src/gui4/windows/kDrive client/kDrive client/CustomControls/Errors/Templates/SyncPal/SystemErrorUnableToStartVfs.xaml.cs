@@ -56,9 +56,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
                 PrimaryButtonText = Localizer.Instance.GetString("buttonSynchronizeOffline")
             };
             _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageLiteSyncError);
-            var res = await dialog.ShowAsync();
 
-            if (res == ContentDialogResult.Primary)
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
                 if (Error.Sync is null)
                 {

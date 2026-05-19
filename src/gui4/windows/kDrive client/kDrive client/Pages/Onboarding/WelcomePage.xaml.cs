@@ -49,6 +49,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     onBoardingWindow.UpdateLottieSource("Infomaniak.Custom.Animations.loader-stroke", 130, 0);
             }
         }
+
         private async void SignupButton_Click(object sender, RoutedEventArgs e)
         {
             Logger.Log(Logger.Level.Info, "Create account button clicked, opening sign up URL");

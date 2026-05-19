@@ -61,9 +61,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
                 Content = new SystemErrorSyncDirChangedErrorDialog(Error) { XamlRoot = xamlRoot }
             };
             _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageSyncDirChanged);
-            var res = await dialog.ShowAsync();
 
-            if (res == ContentDialogResult.Primary)
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
                 var frame = Utility.GetFrame(this);
                 if (frame is null)

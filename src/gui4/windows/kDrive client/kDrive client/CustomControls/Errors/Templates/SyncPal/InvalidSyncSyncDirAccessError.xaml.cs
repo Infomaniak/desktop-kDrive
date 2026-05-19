@@ -58,9 +58,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
                 Content = new InvalidSyncSyncDirAccessErrorDialog(Error) { XamlRoot = xamlRoot }
             };
             _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageInvalidRemoteSyncDir);
-            var res = await dialog.ShowAsync();
 
-            if (res == ContentDialogResult.Primary)
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
                 var frame = Utility.GetFrame(this);
                 if (frame is null)
