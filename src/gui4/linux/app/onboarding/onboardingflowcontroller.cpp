@@ -18,6 +18,10 @@
 
 #include "onboardingflowcontroller.h"
 
+#include "app/appconstants.h"
+
+#include <QDesktopServices>
+
 #include <type_traits>
 
 namespace KDC {
@@ -94,8 +98,11 @@ void OnboardingFlowController::requestAccountCreation() {
         return;
     }
 
-    qCInfo(lcOnboardingFlowController) << "Onboarding account creation requested";
-    emit accountCreationRequested();
+    const auto url = AppConstants::Login::signupUri();
+    qCInfo(lcOnboardingFlowController) << "Opening onboarding account creation URL:" << url;
+    if (!QDesktopServices::openUrl(url)) {
+        qCWarning(lcOnboardingFlowController) << "Failed to open onboarding account creation URL:" << url;
+    }
 }
 
 void OnboardingFlowController::cancel() {
