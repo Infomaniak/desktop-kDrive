@@ -767,53 +767,32 @@ void IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, Pa
 
 IoError IoHelper::getFileChecksum(const SyncPath &path, std::ifstream &ifs, std::string &checksum) noexcept {
     checksum.clear();
-    IoError ioError = IoError::Success;
 
     try {
         std::error_code ec;
-        auto status = std::filesystem::symlink_status(path, ec);
-        ioError = stdError2ioError(ec);
-
-        if (ioError != IoError::Success) return ioError;
-
-        if (std::filesystem::is_symlink(status)) {
-            ioError = IoError::InvalidArgument;
-            return ioError;
-        }
+        const bool isSymlink = _isSymlink(path, ec);
+        if (const IoError ioError = stdError2ioError(ec); ioError != IoError::Success) return ioError;
+        if (isSymlink) return IoError::InvalidArgument;
 
 #if defined(KD_MACOS)
         bool isAlias = false;
-        if (!IoHelper::_checkIfAlias(path, isAlias, ioError)) {
-            return ioError;
-        }
-        if (isAlias) {
-            ioError = IoError::InvalidArgument;
-            return ioError;
-        }
+        IoError aliasError = IoError::Success;
+        if (!IoHelper::_checkIfAlias(path, isAlias, aliasError)) return aliasError;
+        if (isAlias) return IoError::InvalidArgument;
 #endif
 
-        const bool isOpen = IoHelper::openFile(path, ifs, ioError);
-
-        if (!isOpen || !ifs) {
-            ioError = IoError::InvalidArgument;
-            return ioError;
-        }
+        IoError openError = IoError::Success;
+        if (!IoHelper::openFile(path, ifs, openError) || !ifs) return openError;
 
         constexpr size_t chunkSize = 8 * 1024 * 1024; // 8 MB
         std::vector<char> buffer(chunkSize);
 
         XXH3_state_t *state = XXH3_createState();
+        if (state == nullptr) return IoError::Unknown;
 
-        if (state == nullptr) {
-            ifs.close();
-            ioError = IoError::Unknown;
-            return ioError;
-        }
         if (XXH3_64bits_reset(state) == XXH_ERROR) {
-            ifs.close();
             XXH3_freeState(state);
-            ioError = IoError::Unknown;
-            return ioError;
+            return IoError::Unknown;
         }
 
         std::streamsize readBytes(0);
@@ -821,8 +800,7 @@ IoError IoHelper::getFileChecksum(const SyncPath &path, std::ifstream &ifs, std:
             if (XXH3_64bits_update(state, buffer.data(), readBytes) == XXH_ERROR) {
                 ifs.close();
                 XXH3_freeState(state);
-                ioError = IoError::Unknown;
-                return ioError;
+                return IoError::Unknown;
             }
         }
 
@@ -832,18 +810,15 @@ IoError IoHelper::getFileChecksum(const SyncPath &path, std::ifstream &ifs, std:
 
         checksum = Utility::xxHashToStr(hash);
         return IoError::Success;
-    } catch (const std::bad_alloc &e) {
+    } catch (const std::bad_alloc &) {
         LOGW_WARN(logger(), L"Memory allocation failed in getFileChecksum");
-        ioError = IoError::Unknown;
-        return ioError;
+        return IoError::Unknown;
     } catch (const std::exception &e) {
         LOGW_WARN(logger(), L"Exception in getFileChecksum: " << CommonUtility::s2ws(e.what()));
-        ioError = IoError::Unknown;
-        return ioError;
+        return IoError::Unknown;
     } catch (...) {
         LOGW_WARN(logger(), L"Unknown exception in getFileChecksum");
-        ioError = IoError::Unknown;
-        return ioError;
+        return IoError::Unknown;
     }
 }
 
