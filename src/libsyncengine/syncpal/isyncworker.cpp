@@ -32,11 +32,26 @@ ISyncWorker::ISyncWorker(std::shared_ptr<SyncPal> syncPal, const std::string &na
     _startDelay(startDelay) {}
 
 ISyncWorker::~ISyncWorker() {
-    if (_isRunning) {
-        ISyncWorker::stop();
-    }
+    if (isRunning()) ISyncWorker::stop();
+
     waitForExit();
     LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name << " destroyed");
+}
+
+bool ISyncWorker::stopAsked() const {
+    return _stopAsked.load(std::memory_order_acquire);
+}
+
+void ISyncWorker::setStopAsked(const bool stopAsked) {
+    _stopAsked.store(stopAsked, std::memory_order_release);
+}
+
+bool ISyncWorker::isRunning() const {
+    return _isRunning.load(std::memory_order_acquire);
+}
+
+void ISyncWorker::setIsRunning(const bool isRunning) {
+    _isRunning.store(isRunning, std::memory_order_release);
 }
 
 void ISyncWorker::start() {
@@ -48,26 +63,26 @@ void ISyncWorker::start() {
     LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name << " start");
 
     init();
-    _isRunning = true;
+    setIsRunning(true);
     auto executeFunc = std::function<void()>([this]() { execute(); });
     _thread = (std::make_unique<StdLoggingThread>(executeFunc));
 }
 
 
 void ISyncWorker::stop() {
-    if (!_isRunning) {
+    if (!isRunning()) {
         LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name << " is not running");
         return;
     }
 
-    if (_stopAsked) {
+    if (stopAsked()) {
         LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name << " is already stopping");
         return;
     }
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name << " stop");
 
-    _stopAsked = true;
+    setStopAsked(true);
 }
 
 void ISyncWorker::waitForExit() {
@@ -79,7 +94,7 @@ void ISyncWorker::waitForExit() {
 }
 
 void ISyncWorker::init() {
-    _stopAsked = false;
+    setStopAsked(false);
     _exitCode = ExitCode::Unknown;
     _exitCause = ExitCause::Unknown;
 }
@@ -117,8 +132,9 @@ void ISyncWorker::setDone(const ExitCode exitCode) {
         _syncPal->addError(Error(_syncPal->syncDbId(), _shortName, exitCode, _exitCause));
     }
 
-    _isRunning = false;
-    _stopAsked = false;
+    setIsRunning(false);
+    setStopAsked(false);
+
     _exitCode = exitCode;
 }
 
