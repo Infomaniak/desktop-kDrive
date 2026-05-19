@@ -251,7 +251,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                 control.IsEnabled = false;
             _analyticsService.TrackClick(Analytics.Keys.Category.AccountsSettingsPage, Analytics.Keys.EventName.Disconnect);
 
-            ContentDialog dialog = new ContentDialog
+            AutoDisposeDialog dialog = new AutoDisposeDialog
             {
                 XamlRoot = this.XamlRoot,
                 Title = Localizer.Instance.GetString("dialogRemoveAccountTitle"),
@@ -262,7 +262,6 @@ namespace Infomaniak.kDrive.Pages.Settings
             };
 
             var result = await dialog.ShowAsync();
-            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(dialog);
             if (result == ContentDialogResult.Secondary)
             {
                 _analyticsService.TrackClick(Analytics.Keys.Category.AccountsSettingsPage, Analytics.Keys.EventName.ConfirmDisconnect);
@@ -309,7 +308,6 @@ namespace Infomaniak.kDrive.Pages.Settings
         private async void MatomoButton_Click(object sender, RoutedEventArgs e)
         {
             ConsentResult result = await MatomoContentDialog.ShowAsync(this.XamlRoot);
-            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(MatomoContentDialog);
             if (result == ConsentResult.Cancelled)
                 return;
             if ((result == ConsentResult.Allowed) == ViewModel.Settings.MatomoEnabled)
@@ -326,7 +324,6 @@ namespace Infomaniak.kDrive.Pages.Settings
         private async void SentryButton_Click(object sender, RoutedEventArgs e)
         {
             ConsentResult result = await SentryContentDialog.ShowAsync(this.XamlRoot);
-            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(SentryContentDialog);
             if (result == ConsentResult.Cancelled)
                 return;
 

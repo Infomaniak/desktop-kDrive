@@ -24,7 +24,7 @@ using System.ComponentModel;
 
 namespace Infomaniak.kDrive.CustomControls
 {
-    public partial class AdvancedSyncSetupContentDialog : ContentDialog
+    public partial class AdvancedSyncSetupContentDialog : AutoDisposeDialog
     {
         public enum AdvancedSyncSetupResult
         {
@@ -45,7 +45,7 @@ namespace Infomaniak.kDrive.CustomControls
             base.IsPrimaryButtonEnabled = false;
             base.CloseButtonText = Localizer.Instance.GetString("buttonCancel");
             base.DefaultButton = ContentDialogButton.Primary;
-            var frame = new Frame();
+            var frame = new AutoDisposeFrame();
             base.Content = frame;
             frame.Navigate(typeof(SyncSetupPage), _advancedSyncSetupContentDialogVM);
             base.PrimaryButtonClick += AdvancedSyncSetupContentDialog_PrimaryButtonClick;

@@ -35,7 +35,7 @@ namespace Infomaniak.kDrive.CustomControls
         public AppModel ViewModel { get; } =
            App.ServiceProvider.GetRequiredService<AppModel>();
 
-        public Frame Frame { get { return ContentFrame; } }
+        public AutoDisposeFrame Frame { get { return ContentFrame; } }
         private readonly Dictionary<string, Tuple<List<Type>, Analytics.Keys.EventName>> _navigationItemToPage = new Dictionary<string, Tuple<List<Type>, Analytics.Keys.EventName>>()
         {
             {
@@ -117,13 +117,6 @@ namespace Infomaniak.kDrive.CustomControls
 
             settingItem.InfoBadge = infoBadge;
 
-        }
-
-        private async void Frame_Navigating(object sender, NavigatingCancelEventArgs e)
-        {
-            var frame = (Microsoft.UI.Xaml.Controls.Frame)sender;
-            if (frame.Content is UIElement oldPage)
-                await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(oldPage);
         }
 
         private void Frame_Navigated(object sender, Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)

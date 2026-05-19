@@ -62,7 +62,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
 
             _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageFileAccessError);
 
-            ContentDialog dialog = new ContentDialog
+            AutoDisposeDialog dialog = new AutoDisposeDialog
             {
                 XamlRoot = xamlRoot,
                 Title = Localizer.Instance.GetStringCombine1s("errLocalFileAccessTitle", Error.NodeTypeTranslationKey),
@@ -72,8 +72,6 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
             };
             dialog.Content = new LocalAccessErrorDialog(Error) { XamlRoot = xamlRoot };
             var res = await dialog.ShowAsync();
-            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(dialog);
-
 
             if (res == ContentDialogResult.Primary)
             {

@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 using Infomaniak.kDrive.Analytics;
+using Infomaniak.kDrive.CustomControls;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
@@ -153,7 +154,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                 return;
             }
 
-            ContentDialog dialog = new ContentDialog
+            AutoDisposeDialog dialog = new AutoDisposeDialog
             {
                 XamlRoot = XamlRoot,
                 Title = Localizer.Instance.GetString("dialogSyncModeChangeWarningTitle"),
@@ -164,7 +165,6 @@ namespace Infomaniak.kDrive.Pages.Settings
             };
 
             bool canceledByUser = await dialog.ShowAsync() != ContentDialogResult.Primary;
-            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(dialog);
             if (canceledByUser)
             {
                 _analyticsService.TrackClick(Analytics.Keys.Category.DriveManagementPage, Analytics.Keys.EventName.CancelSyncModeSwitch);
@@ -195,7 +195,7 @@ namespace Infomaniak.kDrive.Pages.Settings
 
             if (!success)
             {
-                ContentDialog errorDialog = new ContentDialog
+                AutoDisposeDialog errorDialog = new AutoDisposeDialog
                 {
                     XamlRoot = XamlRoot,
                     Title = Localizer.Instance.GetString("dialogSyncModeChangeErrorTitle"),
@@ -203,7 +203,6 @@ namespace Infomaniak.kDrive.Pages.Settings
                     Content = Localizer.Instance.GetString("dialogSyncModeChangeErrorContent")
                 };
                 await errorDialog.ShowAsync();
-                await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(errorDialog);
             }
         }
 
@@ -235,7 +234,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             control.IsEnabled = false;
             bool goBackOnceDone = ManagedDrive.Syncs.Count() == 1; // If we are removing the last sync of the drive, go back to settings page once done.
 
-            ContentDialog dialog = new ContentDialog
+            AutoDisposeDialog dialog = new AutoDisposeDialog
             {
                 XamlRoot = XamlRoot,
                 Title = Localizer.Instance.GetString("dialogSyncDeletionWarningTitle"),
@@ -246,7 +245,6 @@ namespace Infomaniak.kDrive.Pages.Settings
             };
 
             var dialogResult = await dialog.ShowAsync();
-            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(dialog);
             if (dialogResult != ContentDialogResult.Primary)
             {
                 Logger.Log(Logger.Level.Info, "User canceled sync removal");
@@ -304,7 +302,6 @@ namespace Infomaniak.kDrive.Pages.Settings
 
             CustomControls.DriveSetupContentDialog dialog = new(this.XamlRoot, newSyncs);
             await dialog.ShowAsync();
-            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(dialog);
             if (dialog.Result == CustomControls.DriveSetupContentDialog.DriveSetupResult.Cancelled)
             {
                 Logger.Log(Logger.Level.Info, $"User canceled main sync setup for drive '{BaseDrive.Name}'");

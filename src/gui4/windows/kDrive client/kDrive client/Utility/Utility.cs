@@ -535,25 +535,18 @@ namespace Infomaniak.kDrive
 
         public static class VisualTreeDisposeUtility
         {
-            public static async Task DisposeItemsAsync(
-                UIElement root,
-                CancellationToken cancellationToken = default)
+            public static async Task DisposeItemsAsync(UIElement root)
             {
                 if (root == null)
                     return;
 
                 var visited = new HashSet<object>();
 
-                await TraverseAsync(root, visited, cancellationToken);
+                await TraverseAsync(root, visited);
             }
 
-            private static async Task TraverseAsync(
-                DependencyObject node,
-                HashSet<object> visited,
-                CancellationToken cancellationToken)
+            private static async Task TraverseAsync(DependencyObject node, HashSet<object> visited)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
                 if (node == null)
                     return;
 
@@ -592,11 +585,9 @@ namespace Infomaniak.kDrive
 
                 for (int i = 0; i < childCount; i++)
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
-
                     var child = VisualTreeHelper.GetChild(node, i);
 
-                    await TraverseAsync(child, visited, cancellationToken);
+                    await TraverseAsync(child, visited);
 
                     //
                     // Prevent long UI freeze

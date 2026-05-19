@@ -91,7 +91,7 @@
         </AnimatedVisualPlayer>
         <Border Grid.Row="1"
                 Grid.Column="0">
-            <Frame x:Name="ContentFrame" />
+            <controls:AutoDisposeFrame x:Name="ContentFrame" />
         </Border>
     </Grid>
 </Window>

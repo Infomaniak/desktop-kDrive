@@ -106,5 +106,5 @@
         </NavigationViewItem>
     </NavigationView.PaneFooter>
 
-    <Frame x:Name="ContentFrame" />
+    <controls:AutoDisposeFrame x:Name="ContentFrame" />
 </NavigationView>

@@ -18,14 +18,12 @@
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Xaml.Controls;
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace Infomaniak.kDrive.CustomControls.Errors;
 
-public partial class ConflictDialog : Page
+public partial class ConflictDialogPage : Page
 {
     private List<Error> _errors { get; init; }
 
@@ -33,7 +31,7 @@ public partial class ConflictDialog : Page
 
     private ConflictDialogVM ViewModel { get; set; }
 
-    public ConflictDialog(Error error, ContentDialog dialog)
+    public ConflictDialogPage(Error error, ContentDialog dialog)
     {
         _dialog = dialog;
         _errors = new List<Error> { error };
@@ -43,7 +41,7 @@ public partial class ConflictDialog : Page
         InitializeComponent();
     }
 
-    public ConflictDialog(List<Error> errors, ContentDialog dialog)
+    public ConflictDialogPage(List<Error> errors, ContentDialog dialog)
     {
         _dialog = dialog;
         _errors = errors;
