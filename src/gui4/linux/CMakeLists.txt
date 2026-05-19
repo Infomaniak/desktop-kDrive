@@ -9,6 +9,8 @@ find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui Network Qml Quick Sql Widgets 
 
 qt_standard_project_setup(REQUIRES 6.8)
 
+set(QT_QML_GENERATE_QMLLS_INI ON)
+
 
 set(GUI_SOURCE_FILES # C++ files for the GUI application
         main.cpp
@@ -25,6 +27,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/cache/mainselectionstore.h
         app/cache/onboardingstate.cpp
         app/cache/onboardingstate.h
+        app/onboarding/onboardingflowcontroller.cpp
+        app/onboarding/onboardingflowcontroller.h
         communicationlayer/ipcclient.cpp
         communicationlayer/ipcclient.h
         communicationlayer/signaldispatcher.cpp
@@ -60,6 +64,9 @@ set_source_files_properties(${GUI_QML_SINGLETON_FILES} PROPERTIES QT_QML_SINGLET
 
 set(GUI_QML_FILES # .qml files for the app
         ui/Main.qml
+        ui/onboarding/LoginView.qml
+        ui/onboarding/OnboardingAnimationsView.qml
+        ui/onboarding/OnboardingWindow.qml
         ${GUI_QML_SINGLETON_FILES}
 )
 
@@ -68,6 +75,22 @@ set(GUI_QML_RESOURCE_FILES # Resources for the QML files (e.g. qmldir, js files,
 )
 
 set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
+        ui/assets/onboarding/lotties/dark/check.lottie
+        ui/assets/onboarding/lotties/dark/disk-access-on.lottie
+        ui/assets/onboarding/lotties/dark/extension-on.lottie
+        ui/assets/onboarding/lotties/dark/loader-stroke.lottie
+        ui/assets/onboarding/lotties/dark/offline.lottie
+        ui/assets/onboarding/lotties/dark/pause.lottie
+        ui/assets/onboarding/lotties/dark/sync.lottie
+        ui/assets/onboarding/lotties/dark/syncro-file.lottie
+        ui/assets/onboarding/lotties/light/check.lottie
+        ui/assets/onboarding/lotties/light/disk-access-on.lottie
+        ui/assets/onboarding/lotties/light/extension-on.lottie
+        ui/assets/onboarding/lotties/light/loader-stroke.lottie
+        ui/assets/onboarding/lotties/light/offline.lottie
+        ui/assets/onboarding/lotties/light/pause.lottie
+        ui/assets/onboarding/lotties/light/sync.lottie
+        ui/assets/onboarding/lotties/light/syncro-file.lottie
         ui/assets/tray/error.svg
         ui/assets/tray/neutral.svg
         ui/assets/tray/notif.svg
