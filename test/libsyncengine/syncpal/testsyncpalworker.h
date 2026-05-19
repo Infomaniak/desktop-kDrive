@@ -232,6 +232,7 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
 
             private:
                 void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0)) override;
+                void freeSnapshotsCopies() override;
         };
 };
 
