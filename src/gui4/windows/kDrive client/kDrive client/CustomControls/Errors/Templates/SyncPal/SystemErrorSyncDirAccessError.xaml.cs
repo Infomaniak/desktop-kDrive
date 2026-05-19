@@ -52,7 +52,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
             {
                 return;
             }
-            ContentDialog dialog = new ContentDialog
+            AutoDisposeDialog dialog = new AutoDisposeDialog
             {
                 XamlRoot = xamlRoot,
                 Title = Localizer.Instance.GetString("errSystemErrorSyncDirAccessTitle"),
@@ -63,7 +63,6 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
             };
             _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageSyncDirAccessError);
             var res = await dialog.ShowAsync();
-            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(dialog);
 
             if (res == ContentDialogResult.Primary)
             {

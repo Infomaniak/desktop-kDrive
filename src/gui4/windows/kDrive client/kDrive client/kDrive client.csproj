@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyVersion>4.0.0.4</AssemblyVersion>
     <OutputType>WinExe</OutputType>
@@ -124,7 +124,7 @@
     <Page Update="CustomControls\Errors\Dialogs\SystemErrorSyncDirDiskMissingErrorDialog.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="CustomControls\Errors\Dialogs\ConflictDialog.xaml">
+    <Page Update="CustomControls\Errors\Dialogs\ConflictDialogPage.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\Errors\Dialogs\LocalAccessErrorDialog.xaml">

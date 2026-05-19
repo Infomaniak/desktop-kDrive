@@ -46,7 +46,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
             {
                 return;
             }
-            ContentDialog dialog = new ContentDialog
+            AutoDisposeDialog dialog = new AutoDisposeDialog
             {
                 XamlRoot = xamlRoot,
                 Title = Localizer.Instance.GetString("errDialogSystemUnableToStartVfsTitle"),
@@ -57,7 +57,6 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
             };
             _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageLiteSyncError);
             var res = await dialog.ShowAsync();
-            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(dialog);
 
             if (res == ContentDialogResult.Primary)
             {
@@ -71,7 +70,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
 
                 if (!await Error.Sync.ChangeSyncType(Types.SyncType.Offline))
                 {
-                    ContentDialog errorDialog = new ContentDialog
+                    AutoDisposeDialog errorDialog = new AutoDisposeDialog
                     {
                         XamlRoot = xamlRoot,
                         Title = Localizer.Instance.GetString("dialogSyncModeChangeErrorTitle"),
@@ -79,7 +78,6 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
                         Content = Localizer.Instance.GetString("dialogSyncModeChangeErrorContent")
                     };
                     await errorDialog.ShowAsync();
-                    await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(errorDialog);
                 }
             }
         }

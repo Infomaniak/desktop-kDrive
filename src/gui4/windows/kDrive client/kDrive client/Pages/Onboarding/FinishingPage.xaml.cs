@@ -69,9 +69,5 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                 throw new Exception(errorMessage);
             }
         }
-        protected async override void OnNavigatedFrom(NavigationEventArgs e)
-        {
-            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(this);
-        }
     }
 }

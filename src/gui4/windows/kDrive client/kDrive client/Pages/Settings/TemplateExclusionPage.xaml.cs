@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.CustomControls;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -70,7 +71,7 @@ namespace Infomaniak.kDrive.Pages.Settings
         {
             var popupPage = new Pages.Popup.AddExclusionRulePopup();
 
-            ContentDialog dialog = new ContentDialog()
+            AutoDisposeDialog dialog = new AutoDisposeDialog()
             {
                 XamlRoot = this.XamlRoot,
                 Content = popupPage,
@@ -80,7 +81,6 @@ namespace Infomaniak.kDrive.Pages.Settings
             };
 
             var result = await dialog.ShowAsync();
-            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(dialog);
             if (result == ContentDialogResult.Primary)
             {
                 var template = popupPage.ExclusionRuleTextBox.Text;

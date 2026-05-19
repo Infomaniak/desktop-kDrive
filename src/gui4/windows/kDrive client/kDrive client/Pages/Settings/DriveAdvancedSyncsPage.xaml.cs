@@ -147,7 +147,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
             return;
         }
 
-        ContentDialog dialog = new ContentDialog
+        AutoDisposeDialog dialog = new AutoDisposeDialog
         {
             XamlRoot = XamlRoot,
             Title = Localizer.Instance.GetString("dialogSyncDeletionWarningTitle"),
@@ -158,7 +158,6 @@ public sealed partial class DriveAdvancedSyncsPage : Page
         };
 
         var dialogResult = await dialog.ShowAsync();
-        await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(dialog);
         if (dialogResult != ContentDialogResult.Primary)
         {
             Logger.Log(Logger.Level.Info, "User canceled sync removal");
@@ -217,7 +216,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
             return;
         }
 
-        ContentDialog dialog = new ContentDialog
+        AutoDisposeDialog dialog = new AutoDisposeDialog
         {
             XamlRoot = XamlRoot,
             Title = Localizer.Instance.GetString("dialogSyncModeChangeWarningTitle"),
@@ -228,7 +227,6 @@ public sealed partial class DriveAdvancedSyncsPage : Page
         };
 
         bool canceledByUser = await dialog.ShowAsync() != ContentDialogResult.Primary;
-        await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(dialog);
         if (canceledByUser)
         {
             _analyticsService.TrackClick(Analytics.Keys.Category.DriveAdvancedSyncsPage, Analytics.Keys.EventName.CancelSyncModeSwitch);
@@ -258,7 +256,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
 
         if (!success)
         {
-            ContentDialog errorDialog = new ContentDialog
+            AutoDisposeDialog errorDialog = new AutoDisposeDialog
             {
                 XamlRoot = XamlRoot,
                 Title = Localizer.Instance.GetString("dialogSyncModeChangeErrorTitle"),
@@ -266,7 +264,6 @@ public sealed partial class DriveAdvancedSyncsPage : Page
                 Content = Localizer.Instance.GetString("dialogSyncModeChangeErrorContent")
             };
             await errorDialog.ShowAsync();
-            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(dialog);
         }
     }
 
@@ -294,7 +291,6 @@ public sealed partial class DriveAdvancedSyncsPage : Page
 
         CustomControls.AdvancedSyncSetupContentDialog dialog = new(this.XamlRoot, _baseDrive);
         _ = await dialog.ShowAsync();
-        await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(dialog);
 
         if (dialog.Result == CustomControls.AdvancedSyncSetupContentDialog.AdvancedSyncSetupResult.Cancelled)
         {
@@ -350,7 +346,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
             return;
         }
 
-        ContentDialog dialog = new ContentDialog
+        AutoDisposeDialog dialog = new AutoDisposeDialog
         {
             XamlRoot = this.XamlRoot,
             CloseButtonText = Localizer.Instance.GetString("buttonCancel"),
@@ -362,7 +358,6 @@ public sealed partial class DriveAdvancedSyncsPage : Page
 
         _analyticsService.TrackClick(Analytics.Keys.Category.DriveAdvancedSyncsPage, Analytics.Keys.EventName.ShowItemExclusion);
         var result = await dialog.ShowAsync();
-        await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(dialog);
         if (result == ContentDialogResult.Primary)
         {
             Logger.Log(Logger.Level.Info, "User confirmed sync exclusion changes");

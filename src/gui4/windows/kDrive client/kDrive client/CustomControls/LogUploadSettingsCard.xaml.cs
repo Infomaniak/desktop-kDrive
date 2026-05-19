@@ -51,7 +51,7 @@ namespace Infomaniak.kDrive.CustomControls
                 return;
             }
 
-            ContentDialog dialog = new ContentDialog
+            AutoDisposeDialog dialog = new AutoDisposeDialog
             {
                 XamlRoot = XamlRoot,
                 Title = Localizer.Instance.GetString("logUploadPopupTitle"),
@@ -63,7 +63,6 @@ namespace Infomaniak.kDrive.CustomControls
             dialog.Content = popupPage;
 
             var result = await dialog.ShowAsync();
-            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(dialog);
             if (result == ContentDialogResult.Primary)
             {
                 _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.SendLogToSupport);

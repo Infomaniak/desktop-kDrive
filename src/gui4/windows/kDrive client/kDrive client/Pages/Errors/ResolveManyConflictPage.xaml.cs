@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 using Infomaniak.kDrive.Analytics;
+using Infomaniak.kDrive.CustomControls;
 using Infomaniak.kDrive.CustomControls.Errors;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -104,7 +105,7 @@ namespace Infomaniak.kDrive.Pages.Errors
             {
                 return;
             }
-            ContentDialog dialog = new ContentDialog
+            AutoDisposeDialog dialog = new AutoDisposeDialog
             {
                 XamlRoot = xamlRoot,
                 DefaultButton = ContentDialogButton.Primary,
@@ -115,7 +116,7 @@ namespace Infomaniak.kDrive.Pages.Errors
             _errorPageVM.ConflictFilterText = "";
 
             // Set the content first to allow the dialog to measure properly
-            dialog.Content = new ConflictDialog(_errorPageVM.FilteredConflictErrors.ToList(), dialog) { XamlRoot = xamlRoot };
+            dialog.Content = new ConflictDialogPage(_errorPageVM.FilteredConflictErrors.ToList(), dialog) { XamlRoot = xamlRoot };
 
             // Apply the style to allow wider content
             dialog.Resources["ContentDialogMaxWidth"] = Application.Current.Resources["Infomaniak.Style.ContentDialog.MaxWidth"];
@@ -123,7 +124,6 @@ namespace Infomaniak.kDrive.Pages.Errors
 
             _analyticsService.TrackClick(Analytics.Keys.Category.IndividualConflictResolutionPage, Analytics.Keys.EventName.StartChoices);
             _ = await dialog.ShowAsync();
-            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(dialog);
         }
 
         private async void ResolveOneConflictButton_Click(object sender, RoutedEventArgs e)
@@ -133,7 +133,7 @@ namespace Infomaniak.kDrive.Pages.Errors
             {
                 return;
             }
-            ContentDialog dialog = new ContentDialog
+            AutoDisposeDialog dialog = new AutoDisposeDialog
             {
                 XamlRoot = xamlRoot,
                 DefaultButton = ContentDialogButton.Primary,
@@ -157,14 +157,13 @@ namespace Infomaniak.kDrive.Pages.Errors
             }
 
             // Set the content first to allow the dialog to measure properly
-            dialog.Content = new ConflictDialog(error, dialog) { XamlRoot = xamlRoot };
+            dialog.Content = new ConflictDialogPage(error, dialog) { XamlRoot = xamlRoot };
 
             // Apply the style to allow wider content
             dialog.Resources["ContentDialogMaxWidth"] = Application.Current.Resources["Infomaniak.Style.ContentDialog.MaxWidth"];
             dialog.Resources["ContentDialogMaxHeight"] = Application.Current.Resources["Infomaniak.Style.ContentDialog.MaxHeight"];
             _analyticsService.TrackClick(Analytics.Keys.Category.IndividualConflictResolutionPage, Analytics.Keys.EventName.ManageSingleConflict);
             _ = await dialog.ShowAsync();
-            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(dialog);
         }
 
         private void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)

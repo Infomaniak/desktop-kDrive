@@ -25,7 +25,7 @@ using System.Collections.Generic;
 
 namespace Infomaniak.kDrive.CustomControls
 {
-    public partial class DriveSetupContentDialog : ContentDialog
+    public partial class DriveSetupContentDialog : AutoDisposeDialog
     {
         private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         public enum DriveSetupResult
@@ -45,7 +45,7 @@ namespace Infomaniak.kDrive.CustomControls
             base.PrimaryButtonText = Localizer.Instance.GetString("buttonValidate");
             base.CloseButtonText = Localizer.Instance.GetString("buttonCancel");
             base.DefaultButton = ContentDialogButton.Primary;
-            var frame = new Frame();
+            var frame = new AutoDisposeFrame();
             base.Content = frame;
             frame.Navigate(typeof(DriveSelectionPage), _driveSetupContentDialogVM);
             base.PrimaryButtonClick += DriveSetupContentDialog_PrimaryButtonClick;

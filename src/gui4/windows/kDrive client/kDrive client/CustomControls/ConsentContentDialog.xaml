@@ -23,20 +23,21 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="using:Infomaniak.kDrive.CustomControls"
              xmlns:kDrive="using:Infomaniak.kDrive">
-    <ContentDialog x:Name="Dialog"
-                   PrimaryButtonText="{x:Bind kDrive:Localizer.Instance.GetString('buttonSave')}"
-                   CloseButtonText="{x:Bind kDrive:Localizer.Instance.GetString('buttonCancel')}"
-                   DefaultButton="Primary">
+    <local:AutoDisposeDialog x:Name="Dialog"
+                             PrimaryButtonText="{x:Bind kDrive:Localizer.Instance.GetString('buttonSave')}"
+                             CloseButtonText="{x:Bind kDrive:Localizer.Instance.GetString('buttonCancel')}"
+                             DefaultButton="Primary"
+                             Style="{ThemeResource DefaultContentDialogStyle}">
 
-        <ContentDialog.TitleTemplate>
+        <local:AutoDisposeDialog.TitleTemplate>
             <DataTemplate>
                 <local:SvgIcon UriString="{Binding ElementName=Root,Path=LogoUriStr}"
                                Height="{StaticResource Infomaniak.Style.Spacing.L}"
                                HorizontalAlignment="Left" />
             </DataTemplate>
-        </ContentDialog.TitleTemplate>
+        </local:AutoDisposeDialog.TitleTemplate>
 
-        <ContentDialog.Content>
+        <local:AutoDisposeDialog.Content>
             <StackPanel Spacing="12">
                 <TextBlock Text="{x:Bind Description, Mode=OneWay}"
                            TextWrapping="WrapWholeWords"
@@ -47,6 +48,6 @@
                               OffContent="{x:Bind kDrive:Localizer.Instance.GetString('labelAllowTracking')}"
                               IsOn="{x:Bind CurrentValue, Mode=OneWay}" />
             </StackPanel>
-        </ContentDialog.Content>
-    </ContentDialog>
+        </local:AutoDisposeDialog.Content>
+    </local:AutoDisposeDialog>
 </UserControl>

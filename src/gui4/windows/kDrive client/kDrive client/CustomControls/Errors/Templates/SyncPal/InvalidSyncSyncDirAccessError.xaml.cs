@@ -48,7 +48,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
             {
                 return;
             }
-            ContentDialog dialog = new ContentDialog
+            AutoDisposeDialog dialog = new AutoDisposeDialog
             {
                 XamlRoot = xamlRoot,
                 Title = Localizer.Instance.GetString("errDialogConfigChangedTitle"),
@@ -59,7 +59,6 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
             };
             _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageInvalidRemoteSyncDir);
             var res = await dialog.ShowAsync();
-            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(dialog);
 
             if (res == ContentDialogResult.Primary)
             {

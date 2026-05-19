@@ -51,7 +51,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
             {
                 return;
             }
-            ContentDialog dialog = new ContentDialog
+            AutoDisposeDialog dialog = new AutoDisposeDialog
             {
                 XamlRoot = xamlRoot,
                 Title = Localizer.Instance.GetString("errDialogSystemSyncDirDiskMissingTitle"),
@@ -62,7 +62,6 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
             };
             _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageSyncDirDiskMissing);
             var res = await dialog.ShowAsync();
-            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(dialog);
             if (res == ContentDialogResult.Primary)
             {
                 if (Error.Sync is null)

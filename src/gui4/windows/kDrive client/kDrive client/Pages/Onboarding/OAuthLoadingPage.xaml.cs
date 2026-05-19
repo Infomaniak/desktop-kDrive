@@ -74,7 +74,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             }
         }
 
-        protected async override void OnNavigatedFrom(NavigationEventArgs e)
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
             base.OnNavigatedFrom(e);
             if (_onboardingViewModel is not null)
@@ -96,7 +96,6 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 
             _enableRestartCts.Cancel();
             _enableRestartCts.Dispose();
-            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(this);
         }
 
         private async void OnOnboardingViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)

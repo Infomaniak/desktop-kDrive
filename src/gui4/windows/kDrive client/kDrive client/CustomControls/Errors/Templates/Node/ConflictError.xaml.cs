@@ -49,7 +49,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
             {
                 return;
             }
-            ContentDialog dialog = new ContentDialog
+            AutoDisposeDialog dialog = new AutoDisposeDialog
             {
                 XamlRoot = xamlRoot,
                 DefaultButton = ContentDialogButton.Secondary,
@@ -57,14 +57,13 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
             };
 
             // Set the content first to allow the dialog to measure properly
-            dialog.Content = new ConflictDialog(Error, dialog) { XamlRoot = xamlRoot };
+            dialog.Content = new ConflictDialogPage(Error, dialog) { XamlRoot = xamlRoot };
 
             // Apply the style to allow wider content
             dialog.Resources["ContentDialogMaxWidth"] = Application.Current.Resources["Infomaniak.Style.ContentDialog.MaxWidth"];
             dialog.Resources["ContentDialogMaxHeight"] = Application.Current.Resources["Infomaniak.Style.ContentDialog.MaxHeight"];
             _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageSingleConflict);
             _ = await dialog.ShowAsync();
-            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(dialog);
         }
     }
 }

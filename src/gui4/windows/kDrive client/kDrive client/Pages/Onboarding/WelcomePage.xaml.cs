@@ -49,10 +49,6 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     onBoardingWindow.UpdateLottieSource("Infomaniak.Custom.Animations.loader-stroke", 130, 0);
             }
         }
-        protected async override void OnNavigatedFrom(NavigationEventArgs e)
-        {
-            await Utility.VisualTreeDisposeUtility.DisposeItemsAsync(this);
-        }
         private async void SignupButton_Click(object sender, RoutedEventArgs e)
         {
             Logger.Log(Logger.Level.Info, "Create account button clicked, opening sign up URL");
