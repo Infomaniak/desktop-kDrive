@@ -8,7 +8,8 @@
       "buildVersion": 5,
       "channel": 3,
       "downloadUrl": "aHR0cHM6Ly9kb3dubG9hZC5zdG9yYWdlLmluZm9tYW5pYWsuY29tL2RyaXZlL2Rlc2t0b3BjbGllbnQvdXBkYXRlLW1hY29zLTMuOC4yLjUueG1s",
-      "tag": "My44LjI="
+      "tag": "My44LjI=",
+      "checksum": "MTIzNDU="
     }
   }
 }
