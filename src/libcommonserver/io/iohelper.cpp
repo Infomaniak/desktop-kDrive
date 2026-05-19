@@ -798,8 +798,8 @@ std::string IoHelper::getFileChecksum(const SyncPath &path, std::ifstream &ifs, 
             return "";
         }
 
-        constexpr size_t CHUNK_SIZE = 8 * 1024 * 1024; // 8 MB
-        std::vector<char> buffer(CHUNK_SIZE);
+        constexpr size_t chunkSize = 8 * 1024 * 1024; // 8 MB
+        std::vector<char> buffer(chunkSize);
 
         XXH3_state_t *state = XXH3_createState();
 
