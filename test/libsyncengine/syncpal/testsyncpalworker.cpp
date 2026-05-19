@@ -103,7 +103,7 @@ void TestSyncPalWorker::tearDown() {
     SyncJobManagerSingleton::clear();
 }
 
-void TestSyncPalWorker::setUpTestInternalPause(const std::chrono::steady_clock::duration &longPollDuration) {
+void TestSyncPalWorker::setUpTestInternalPause() {
     // Setup SyncPal
     _syncPal = std::make_shared<MockSyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), _sync.dbId(),
                                              KDRIVE_VERSION_STRING);
@@ -130,7 +130,6 @@ void TestSyncPalWorker::setUpTestInternalPause(const std::chrono::steady_clock::
     auto mockLfso = mockSyncPal->getMockLFSOWorker();
     auto mockRfso = mockSyncPal->getMockRFSOWorker();
 
-    mockRfso->setLongPollDuration(longPollDuration);
     mockRfso->stop(); // Will be restarted by SyncPal
 
     // Let the first sync finish
@@ -142,7 +141,7 @@ void TestSyncPalWorker::setUpTestInternalPause(const std::chrono::steady_clock::
 }
 
 void TestSyncPalWorker::testInternalPause1() {
-    setUpTestInternalPause(std::chrono::seconds(1));
+    setUpTestInternalPause();
 
     // Constants
     constexpr auto testTimeout = std::chrono::seconds(10);
@@ -190,7 +189,7 @@ void TestSyncPalWorker::testInternalPause1() {
 }
 
 void TestSyncPalWorker::testInternalPause2() {
-    setUpTestInternalPause(std::chrono::seconds(1));
+    setUpTestInternalPause();
 
     // Constants
     constexpr auto testTimeout = std::chrono::seconds(20);
@@ -273,7 +272,7 @@ void TestSyncPalWorker::testInternalPause2() {
 }
 
 void TestSyncPalWorker::testInternalPause3() {
-    setUpTestInternalPause(std::chrono::seconds(1));
+    setUpTestInternalPause();
 
     // Constants
     constexpr auto testTimeout = std::chrono::seconds(60);
@@ -382,6 +381,7 @@ void TestSyncPalWorker::MockSyncPal::createWorkers(const std::chrono::seconds &s
     _tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(shared_from_this());
 }
 
+
 void TestSyncPalWorker::MockSyncPal::freeSnapshotsCopies() {
     // Ensure that no shared_ptr outside of SyncPal holds a reference to the snapshots to avoid them being kept alive while the
     // workers are being destroyed, which would cause use-after-free when the workers try to access them during their destruction.
@@ -392,17 +392,16 @@ void TestSyncPalWorker::MockSyncPal::freeSnapshotsCopies() {
     _remoteSnapshot.reset();
 }
 
+ExitInfo TestSyncPalWorker::MockRemoteFileSystemObserverWorker::checkIfRemoteDirHasChanges(const RemoteNodeId &, const bool,
+                                                                                           const LongPollJobMap &,
+                                                                                           bool &hasChanges) {
+    hasChanges = false;
+
+    return ExitCode::Ok;
+}
+
 ExitInfo TestSyncPalWorker::MockRemoteFileSystemObserverWorker::updateLongPollJobs(
         const std::vector<RemoteNodeId> &, RemoteFileSystemObserverWorker::LongPollJobMap &) {
-    if (!_networkAvailable) return ExitCode::NetworkError;
-
-
-    using namespace std::chrono;
-    const auto start = steady_clock::now();
-    while (_networkAvailable && !stopAsked() && start + _longPollDuration < steady_clock::now()) {
-        Utility::msleep(100);
-    }
-
     if (!_networkAvailable) return ExitCode::NetworkError;
 
     return ExitCode::Ok;
@@ -414,7 +413,7 @@ ExitInfo TestSyncPalWorker::MockRemoteFileSystemObserverWorker::generateInitialS
     } else {
         _liveSnapshot.init();
         invalidateSnapshot();
-        _updating = false;
+        setUpdateFlagValue(false);
         return ExitCode::NetworkError;
     }
 }
