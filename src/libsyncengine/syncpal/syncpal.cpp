@@ -922,7 +922,7 @@ ExitInfo SyncPal::updateSync(const Sync &sync) {
     return ExitCode::Ok;
 }
 
-ExitInfo SyncPal::setFolderCursor(const SpecialFolder specialFolder, const CursorData &cursorData) {
+ExitInfo SyncPal::setFolderCursor(const SpecialRemoteFolder specialFolder, const CursorData &cursorData) {
     Sync sync;
     if (const auto exitInfo = selectSync(sync); !exitInfo) return exitInfo;
 
@@ -931,7 +931,7 @@ ExitInfo SyncPal::setFolderCursor(const SpecialFolder specialFolder, const Curso
     return updateSync(sync);
 }
 
-ExitInfo SyncPal::getFolderCursor(const SpecialFolder specialFolder, CursorData &cursorData) {
+ExitInfo SyncPal::getFolderCursor(const SpecialRemoteFolder specialFolder, CursorData &cursorData) {
     Sync sync;
     if (const auto exitInfo = selectSync(sync); !exitInfo) return exitInfo;
 

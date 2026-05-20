@@ -223,7 +223,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         ExitCode clearNodes();
 
         void syncPalStartCallback(UniqueId jobId);
-        void handlePropagatorJobsCompletion(const std::shared_ptr<AbstractJob> jobPtr);
+        void handlePropagatorJobsCompletion(std::shared_ptr<AbstractJob> jobPtr);
 
         //! Start SyncPal.
         /*!
@@ -433,8 +433,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         ExitInfo selectSync(Sync &sync);
         ExitInfo updateSync(const Sync &sync);
 
-        ExitInfo setFolderCursor(SpecialFolder specialFolder, const CursorData &cursorData);
-        ExitInfo getFolderCursor(SpecialFolder specialFolder, CursorData &cursorData);
+        ExitInfo setFolderCursor(SpecialRemoteFolder specialFolder, const CursorData &cursorData);
+        ExitInfo getFolderCursor(SpecialRemoteFolder specialFolder, CursorData &cursorData);
 
         ExitCode updateSyncNode(SyncNodeType syncNodeType);
         ExitCode updateSyncNode();

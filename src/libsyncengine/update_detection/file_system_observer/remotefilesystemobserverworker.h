@@ -99,7 +99,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         void countListingRequests();
         void deleteOrphans();
 
-        ExitInfo getSpeciaFoldersRemoteIds(std::vector<RemoteNodeId> &specialFoldersRemoteIds) const;
+        ExitInfo getSpecialFoldersRemoteIds(std::vector<RemoteNodeId> &specialFoldersRemoteIds) const;
 
         DriveDbId _driveDbId = -1;
 
@@ -113,8 +113,10 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         int _listingFullCounter = 0;
         std::chrono::steady_clock::time_point _listingFullTimer = std::chrono::steady_clock::now();
 
+        [[nodiscard]] bool syncIsAdvancedWithNonRootFolder() const;
+        [[nodiscard]] RemoteNodeId rootFolderRemoteId() const;
         [[nodiscard]] ExitInfo updateSpecialFolderItem(const RemoteNodeId &remoteNodeId);
-        [[nodiscard]] ExitInfo getV3SpecialRemoteFolderName(const RemoteNodeId &remoteDirId, SyncName &folderName);
+        [[nodiscard]] ExitInfo getSpecialRemoteFolderName(const RemoteNodeId &remoteDirId, SyncName &folderName);
 
         [[nodiscard]] ExitInfo parseCsvReply(CursorPersistence cursorPersistence,
                                              std::shared_ptr<CsvFullFileListWithCursorJob> csvFullListingJob);
@@ -134,9 +136,6 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
                                              LongPollJobMap &longPollJobs);
         using FullListingJobMap = std::unordered_map<RemoteNodeId, std::shared_ptr<CsvFullFileListWithCursorJob>,
                                                      StringHashFunction, std::equal_to<>>;
-        // Run full listing jobs in parallel via the sync job manager.
-        [[nodiscard]] ExitInfo runFullListingJobs(const FullListingJobMap &fullListingJobs);
-
         friend class TestRemoteFileSystemObserverWorker;
 };
 
