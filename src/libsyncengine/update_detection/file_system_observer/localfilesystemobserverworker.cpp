@@ -138,7 +138,7 @@ ExitInfo LocalFileSystemObserverWorker::processDetectedChanges(const std::list<s
 
         sentry::pTraces::scoped::LFSOChangeDetected perfMonitor(syncDbId());
         // Raise flag _updating in order to wait 1sec without local changes before starting the sync
-        _updating = true;
+        setUpdateFlagValue(true);
         _needUpdateTimerStart = std::chrono::steady_clock::now();
 
         const std::string ext = CommonUtility::toLower(absolutePath.extension().string());
@@ -496,7 +496,7 @@ void LocalFileSystemObserverWorker::execute() {
 
         if (checkAndClearUpdateDelay(exitInfo)) break;
 
-        if (_initializing) _initializing = false;
+        if (initializing()) setInitFlagValue(false);
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
@@ -530,17 +530,17 @@ bool LocalFileSystemObserverWorker::checkStopCondition(ExitInfo &exitInfo) {
 
 bool LocalFileSystemObserverWorker::checkAndClearUpdateDelay(ExitInfo &exitInfo) {
     std::chrono::steady_clock::time_point needUpdateTimerStart;
-    bool updating = false;
+    bool updating_ = false;
     bool useExtendedDelay = false;
 
     {
         const std::scoped_lock lock(_recursiveMutex);
-        updating = _updating;
+        updating_ = updating();
         useExtendedDelay = _useExtendedDelay;
         needUpdateTimerStart = _needUpdateTimerStart;
     }
 
-    if (!updating) return false;
+    if (!updating_) return false;
 
     // Wait 1 sec after the last update or 5 if the file has a slow-writing extension, before starting the sync
     const auto diff_ms =
@@ -557,7 +557,7 @@ bool LocalFileSystemObserverWorker::checkAndClearUpdateDelay(ExitInfo &exitInfo)
 
     {
         const std::scoped_lock lock(_recursiveMutex);
-        _updating = false;
+        setUpdateFlagValue(false);
         _useExtendedDelay = false;
     }
     return false;
@@ -571,7 +571,7 @@ ExitInfo LocalFileSystemObserverWorker::generateInitialSnapshot() {
     auto perfMonitor = sentry::pTraces::scoped::LFSOGenerateInitialSnapshot(syncDbId());
 
     _liveSnapshot.init();
-    _updating = true;
+    setUpdateFlagValue(true);
 
     if (const auto exitInfo = exploreDir(_rootFolder); exitInfo.code() == ExitCode::Ok && !stopAsked()) {
         _liveSnapshot.setValid(true);
@@ -597,7 +597,7 @@ ExitInfo LocalFileSystemObserverWorker::generateInitialSnapshot() {
         LOG_SYNCPAL_DEBUG(_logger, "Pending file events processed");
     }
 
-    _updating = false;
+    setUpdateFlagValue(false);
 
     return mainExitInfo;
 }
