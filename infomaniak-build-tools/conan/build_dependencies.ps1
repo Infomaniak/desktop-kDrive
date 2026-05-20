@@ -352,25 +352,57 @@ if ($UpdateEnvironment)
 {
     Log "Adding new conan path to user Path environment variable..."
     $currentUserPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
-    $allowedNames = @("build", "bin")
 
-    $conanRoot = Join-Path $env:USERPROFILE ".conan2\p\b"
+    $conanRoot = Join-Path $env:USERPROFILE ".conan2\p"
     function Get-ConanBinaries {
-        param([string]$Path)
-        foreach ($item in Get-ChildItem -Path $Path -Force) {
+    param(
+        [string]$Path,
 
-            # Skip unwanted Conan cache subtree early
-            if ($item.PSIsContainer -and $item.FullName -match '\\.conan2\\p\\b\\[^\\]+\\b\\') {
-                Log "Skipping Conan cache subtree: $($item.FullName)"
-                continue
-            } elseif ($item.PSIsContainer -and $item.Name -eq "bin") {
-                Log "Registering bin directory: '$($item.FullName)'"
-                return $item.FullName
-            } elseif ($item.PSIsContainer) {
-                Get-ConanBinaries -Path $item.FullName
+        [string[]]$ExcludedFolderPatterns = @(
+            "^straw.*",
+            "qml",
+            "plugins",
+            "external"
+        )
+    )
+
+    foreach ($item in Get-ChildItem -Path $Path -Force) {
+
+        if (-not $item.PSIsContainer) {
+            continue
+        }
+
+        # Skip excluded folders using regex patterns
+        $isExcluded = $false
+
+        foreach ($pattern in $ExcludedFolderPatterns) {
+            if ($item.Name -match $pattern) {
+                Log "Skipping excluded folder: $($item.FullName)"
+                $isExcluded = $true
+                break
             }
         }
+
+        if ($isExcluded) {
+            continue
+        }
+
+        # Skip unwanted Conan cache subtree early
+        if ($item.FullName -match '\\.conan2\\p\\b\\[^\\]+\\b') {
+            Log "Skipping Conan cache subtree: $($item.FullName)"
+            continue
+        }
+
+        # Register folders containing DLLs
+        if (Get-ChildItem -Path $item.FullName -Filter "*.dll" -File -ErrorAction SilentlyContinue) {
+            Log "Registering bin directory: '$($item.FullName)'"
+            $item.FullName
+        }
+        else {
+            Get-ConanBinaries -Path $item.FullName -ExcludedFolderPatterns $ExcludedFolderPatterns
+        }
     }
+}
 
     Log "Starting Conan binary scan from root: $conanRoot"
 
