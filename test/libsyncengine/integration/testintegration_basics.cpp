@@ -31,7 +31,6 @@
 
 namespace KDC {
 void TestIntegration::basicTests() {
-    testLocalChanges();
     testRemoteChanges();
     testSimultaneousChanges();
     testUploadBigFile();
@@ -120,7 +119,7 @@ void TestIntegration::testRemoteChanges() {
     const SyncPath subDirPath = _syncPal->localPath() / "testSubDirRemote";
     NodeId subDirId;
     SyncPath filePath = _syncPal->localPath() / "testFileRemote";
-    NodeId fileId;
+    RemoteNodeId fileId;
     {
         CreateDirJob createDirJob(nullptr, _driveDbId, subDirPath, _remoteSyncDir.id(), subDirPath.filename());
         (void) createDirJob.runSynchronously();

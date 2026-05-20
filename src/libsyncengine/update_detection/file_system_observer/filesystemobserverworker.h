@@ -37,7 +37,7 @@ class FileSystemObserverWorker : public ISyncWorker {
         void invalidateSnapshot();
         void resetInvalidateCounter() { _invalidateCounter = 0; }
         virtual void forceUpdate();
-        [[nodiscard]] virtual bool updating() const;
+        [[nodiscard]] bool updating() const;
         [[nodiscard]] bool initializing() const;
 
         [[nodiscard]] const LiveSnapshot &liveSnapshot() const { return _liveSnapshot; }

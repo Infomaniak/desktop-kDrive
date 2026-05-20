@@ -21,9 +21,9 @@
 #include "jobs/network/jobexceptions.h"
 
 namespace KDC {
-const SpecialFolderNames ApiTranslator::v3SpecialFolderNames = {{SpecialFolder::CommonDocuments, Str("Common documents")},
-                                                                {SpecialFolder::Private, Str("Private")},
-                                                                {SpecialFolder::Shared, Str("Shared")}};
+const SpecialFolderNames ApiTranslator::v3SpecialFolderNames = {{SpecialRemoteFolder::CommonDocuments, Str("Common documents")},
+                                                                {SpecialRemoteFolder::Private, Str("Private")},
+                                                                {SpecialRemoteFolder::Shared, Str("Shared")}};
 
 std::mutex ApiTranslator::_mutex;
 
@@ -140,7 +140,8 @@ ExitInfo ApiTranslator::updateCache(const UserDbId userDbId, const DriveId drive
 
     const std::scoped_lock lock(_mutex);
 
-    for (const auto specialFolder: {SpecialFolder::CommonDocuments, SpecialFolder::Private, SpecialFolder::Shared}) {
+    for (const auto specialFolder:
+         {SpecialRemoteFolder::CommonDocuments, SpecialRemoteFolder::Private, SpecialRemoteFolder::Shared}) {
         const auto it = std::find_if(nodeInfoList.cbegin(), nodeInfoList.cend(), [specialFolder](const NodeInfo &nodeInfo) {
             return nodeInfo.name() == SyncName2QStr(v3SpecialFolderNames.at(specialFolder));
         });
@@ -161,7 +162,7 @@ RemoteNodeId ApiTranslator::getValue(const DriveId driveId, const RemoteNodeIdCa
 }
 
 ExitInfo ApiTranslator::getSpecialFolderRemoteId(const UserDbId userDbId, const DriveId driveId,
-                                                 const SpecialFolder specialFolder, RemoteNodeId &folderRemoteId) {
+                                                 const SpecialRemoteFolder specialFolder, RemoteNodeId &folderRemoteId) {
     folderRemoteId = {};
 
     if (!_specialFolderRemoteIdsCache[specialFolder].contains(driveId)) {
@@ -177,7 +178,8 @@ ExitInfo ApiTranslator::translateV2ToV3(const UserDbId userDbId, const DriveId d
     if (remoteDirectoryId != v2RootFolderRemoteId()) return ExitCode::Ok;
 
     RemoteNodeId userPrivateFolderRemoteId;
-    if (const auto exitInfo = getSpecialFolderRemoteId(userDbId, driveId, SpecialFolder::Private, userPrivateFolderRemoteId);
+    if (const auto exitInfo =
+                getSpecialFolderRemoteId(userDbId, driveId, SpecialRemoteFolder::Private, userPrivateFolderRemoteId);
         !exitInfo)
         return exitInfo;
     remoteDirectoryId = userPrivateFolderRemoteId;
@@ -198,15 +200,16 @@ ExitInfo ApiTranslator::translateV2ToV3(const DriveDbId driveDbId, RemoteNodeId 
 }
 
 void ApiTranslator::translateV3ToV2(SyncPath &remotePath) {
-    if (remotePath.empty() || *remotePath.begin() != v3SpecialFolderNames.at(SpecialFolder::Private)) return;
+    if (remotePath.empty() || *remotePath.begin() != v3SpecialFolderNames.at(SpecialRemoteFolder::Private)) return;
 
-    remotePath = std::filesystem::relative(remotePath, v3SpecialFolderNames.at(SpecialFolder::Private));
+    remotePath = std::filesystem::relative(remotePath, v3SpecialFolderNames.at(SpecialRemoteFolder::Private));
     if (remotePath == ".") remotePath = SyncPath{};
 }
 
 ExitInfo ApiTranslator::translateV3ToV2(const UserDbId userDbId, const DriveId driveId, RemoteNodeId &remoteNodeId) {
     RemoteNodeId userPrivateFolderRemoteId;
-    if (const auto exitInfo = getSpecialFolderRemoteId(userDbId, driveId, SpecialFolder::Private, userPrivateFolderRemoteId);
+    if (const auto exitInfo =
+                getSpecialFolderRemoteId(userDbId, driveId, SpecialRemoteFolder::Private, userPrivateFolderRemoteId);
         !exitInfo)
         return exitInfo;
 
@@ -220,7 +223,8 @@ ExitInfo ApiTranslator::translateV3ToV2(const UserDbId userDbId, const DriveId d
 ExitInfo ApiTranslator::translateV3ToV2(const UserDbId userDbId, const DriveId driveId,
                                         RemoteNodeInfoList &v3RemoteNodeInfoList) {
     RemoteNodeId privateFolderId;
-    if (const auto exitInfo = getSpecialFolderRemoteId(userDbId, driveId, SpecialFolder::Private, privateFolderId); !exitInfo)
+    if (const auto exitInfo = getSpecialFolderRemoteId(userDbId, driveId, SpecialRemoteFolder::Private, privateFolderId);
+        !exitInfo)
         return exitInfo;
 
     (void) std::erase_if(v3RemoteNodeInfoList, [&privateFolderId](const NodeInfo &nodeInfo) {
