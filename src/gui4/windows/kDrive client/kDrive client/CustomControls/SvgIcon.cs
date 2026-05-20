@@ -32,6 +32,7 @@ namespace Infomaniak.kDrive.CustomControls
     {
         private bool _isLoaded;
         private CancellationTokenSource? _refreshCts;
+        private long? _foregroundColorToken;
         private List<KeyValuePair<DependencyProperty, long>> _subscriptionTokens = new List<KeyValuePair<DependencyProperty, long>>();
 
         public SvgIcon()
@@ -112,11 +113,11 @@ namespace Infomaniak.kDrive.CustomControls
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
-            _subscriptionTokens.Add(new KeyValuePair<DependencyProperty, long>(ForegroundProperty, RegisterPropertyChangedCallback(ForegroundProperty, OnDependencyPropertyChanged)));
+            _subscriptionTokens.Add(new KeyValuePair<DependencyProperty, long>(ForegroundProperty, RegisterPropertyChangedCallback(ForegroundProperty, OnForegroundChanged)));
             _subscriptionTokens.Add(new KeyValuePair<DependencyProperty, long>(WidthProperty, RegisterPropertyChangedCallback(WidthProperty, OnDependencyPropertyChanged)));
             _subscriptionTokens.Add(new KeyValuePair<DependencyProperty, long>(HeightProperty, RegisterPropertyChangedCallback(HeightProperty, OnDependencyPropertyChanged)));
 
-
+            HookForegroundBrush();
             _isLoaded = true;
             ScheduleRefresh();
 
@@ -124,6 +125,45 @@ namespace Infomaniak.kDrive.CustomControls
             ActualThemeChanged += OnThemeChanged;
             Utility.DpiHelper.DpiChanged += OnDpiChanged;
         }
+
+        private void OnForegroundChanged(DependencyObject sender, DependencyProperty dp)
+        {
+            if (dp == ForegroundProperty)
+            {
+                HookForegroundBrush();
+                if (_isLoaded)
+                    ScheduleRefresh();
+            }
+        }
+
+        private void HookForegroundBrush()
+        {
+            if (_foregroundColorToken.HasValue)
+            {
+                if (Foreground is SolidColorBrush oldBrush)
+                {
+                    oldBrush.UnregisterPropertyChangedCallback(
+                        SolidColorBrush.ColorProperty,
+                        _foregroundColorToken.Value);
+                }
+
+                _foregroundColorToken = null;
+            }
+
+            if (Foreground is SolidColorBrush brush)
+            {
+                _foregroundColorToken =
+                    brush.RegisterPropertyChangedCallback(
+                        SolidColorBrush.ColorProperty,
+                        OnForegroundColorChanged);
+            }
+        }
+        private void OnForegroundColorChanged(DependencyObject sender, DependencyProperty dp)
+        {
+            if (_isLoaded)
+                ScheduleRefresh();
+        }
+
 
         private void OnUnloaded(object sender, RoutedEventArgs e)
         {
@@ -135,6 +175,12 @@ namespace Infomaniak.kDrive.CustomControls
             foreach (var token in _subscriptionTokens)
             {
                 UnregisterPropertyChangedCallback(token.Key, token.Value);
+            }
+            if (_foregroundColorToken.HasValue && Foreground is SolidColorBrush brush)
+            {
+                brush.UnregisterPropertyChangedCallback(
+                    SolidColorBrush.ColorProperty,
+                    _foregroundColorToken.Value);
             }
             _subscriptionTokens.Clear();
         }
