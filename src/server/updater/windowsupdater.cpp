@@ -64,7 +64,7 @@ void WindowsUpdater::onUpdateFound() {
         }
 
         if (!verifyDigitalSignature(filepath)) {
-            setState(UpdateState::UpdateError);
+            retryDownload(filepath);
             return;
         }
 
@@ -92,7 +92,7 @@ void WindowsUpdater::startInstaller() {
     }
 
     if (!verifyDigitalSignature(filepath)) {
-        setState(UpdateState::UpdateError);
+        retryDownload(filepath);
         return;
     }
 
@@ -164,7 +164,7 @@ void WindowsUpdater::downloadFinished(const UniqueId jobId) {
     }
 
     if (!verifyDigitalSignature(filepath)) {
-        setState(UpdateState::UpdateError);
+        retryDownload(filepath);
         return;
     }
 
