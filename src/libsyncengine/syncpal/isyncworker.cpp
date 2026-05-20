@@ -55,7 +55,7 @@ void ISyncWorker::setIsRunning(const bool isRunning) {
 }
 
 void ISyncWorker::start() {
-    if (_isRunning) {
+    if (isRunning()) {
         LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name << " is already running");
         return;
     }
