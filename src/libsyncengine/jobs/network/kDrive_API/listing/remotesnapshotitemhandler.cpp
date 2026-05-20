@@ -44,15 +44,15 @@ void RemoteSnapshotItemHandler::logError(const std::wstring &methodName, const s
 bool RemoteSnapshotItemHandler::updateRemoteSnapshotItem(const std::string &str, const CsvIndex index, RemoteSnapshotItem &item) {
     switch (index) {
         case CsvIndexId: {
-            if (const auto exitInfo = item.setId(_userDbId, _driveId, str); !exitInfo) {
+            if (const auto exitInfo = item.setV2Id(_userDbId, _driveId, str); !exitInfo) {
                 LOG_WARN(_logger, "Error in SnapshotItem::setId");
                 return false;
             }
             break;
         }
         case CsvIndexParentId: {
-            if (const auto exitInfo = item.setParentId(_userDbId, _driveId, str); !exitInfo) {
-                LOG_WARN(_logger, "Error in SnapshotItem::setParentId");
+            if (const auto exitInfo = item.setV2ParentId(_userDbId, _driveId, str); !exitInfo) {
+                LOG_WARN(_logger, "Error in SnapshotItem::setV2ParentId");
                 return false;
             };
             break;
