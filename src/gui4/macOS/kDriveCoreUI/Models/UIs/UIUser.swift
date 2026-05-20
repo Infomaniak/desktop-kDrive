@@ -34,6 +34,7 @@ public struct UIUser: Sendable, Equatable, Hashable, Identifiable {
     public let firstName: String
     public let email: String
     public let avatarData: Data?
+    public let isStaff: Bool
 
     public var nsAvatar: NSImage? {
         guard let avatarData else { return nil }
@@ -45,13 +46,14 @@ public struct UIUser: Sendable, Equatable, Hashable, Identifiable {
         return Image(nsImage: nsAvatar)
     }
 
-    public init(dbId: Int, userId: Int, name: String, firstName: String, email: String, avatar: Data?) {
+    public init(dbId: Int, userId: Int, name: String, firstName: String, email: String, avatar: Data?, isStaff: Bool) {
         self.dbId = dbId
         self.userId = userId
         self.name = name
         self.firstName = firstName
         self.email = email
         avatarData = avatar
+        self.isStaff = isStaff
     }
 }
 
@@ -63,7 +65,8 @@ public extension UIUser {
             name: user.name,
             firstName: user.firstName,
             email: user.email,
-            avatar: user.avatar
+            avatar: user.avatar,
+            isStaff: user.isStaff
         )
     }
 }
