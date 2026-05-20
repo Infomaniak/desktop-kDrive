@@ -1266,8 +1266,7 @@ bool ExecutorWorker::isValidDestination(const SyncOpPtr syncOp) {
             return false;
         }
 
-        if (_syncPal->syncInfo().isAdvancedSync() &&
-            CommonUtility::endsWith(_syncPal->syncInfo().targetPath, Utility::commonDocumentsFolderName()) &&
+        if (_syncPal->syncInfo().isAdvancedSync() && _syncPal->syncInfo().targetPath == Utility::commonDocumentsFolderPath() &&
             newCorrespondingParentNode->isRoot()) {
             return false;
         }

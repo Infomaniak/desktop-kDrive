@@ -562,12 +562,24 @@ bool Utility::runDetachedProcess(std::wstring cmd) {
 
 #endif
 
-SyncPath Utility::commonDocumentsFolderName() {
-    return Str2SyncName(COMMON_DOC_FOLDER);
+SyncName Utility::commonDocumentsFolderName() {
+    constexpr auto name = Str2SyncName(COMMON_DOC_FOLDER);
+    return name;
 }
 
-SyncPath Utility::sharedFolderName() {
-    return Str2SyncName(SHARED_FOLDER);
+SyncPath Utility::commonDocumentsFolderPath() {
+    constexpr auto path = Str("/") + Str2SyncName(COMMON_DOC_FOLDER);
+    return path;
+}
+
+SyncName Utility::sharedFolderName() {
+    constexpr auto name = Str2SyncName(SHARED_FOLDER);
+    return name;
+}
+
+SyncPath Utility::sharedFolderPath() {
+    constexpr auto path = Str("/") + Str2SyncName(SHARED_FOLDER);
+    return path;
 }
 
 bool Utility::isError500(const Poco::Net::HTTPResponse::HTTPStatus httpErrorCode) {
