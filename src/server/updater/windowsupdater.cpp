@@ -199,7 +199,7 @@ std::streamsize WindowsUpdater::getExpectedInstallerSize(const std::string &down
 }
 
 bool WindowsUpdater::verifyFileChecksum(const SyncPath &filepath) {
-    const std::string &expectedChecksum = CommonUtility::trim(CommonUtility::toLower(versionInfo().checksum));
+    const std::string expectedChecksum = CommonUtility::trim(CommonUtility::toLower(versionInfo().checksum));
 
     auto cleanupAndFail = [&](const std::string &reason) {
         auto ioError = IoError::Success;
