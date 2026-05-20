@@ -213,8 +213,10 @@ bool WindowsUpdater::verifyFileChecksum(const SyncPath &filepath) {
         }
 
         // Send to Sentry
-        KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "Updater::verifyChecksum::" + reason,
+        KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "Updater::verifyChecksum",
                                              "Checksum verification failed: " + reason);
+
+        LOGW_ERROR(Log::instance()->getLogger(), L"Checksum verification failed: " << CommonUtility::s2ws(reason));
         return false;
     };
 
