@@ -18,6 +18,7 @@
 
 import Combine
 import InfomaniakDI
+import kDriveCore
 import kDriveCoreUI
 import OrderedCollections
 import SwiftUI
@@ -71,6 +72,9 @@ struct HomeView: View {
             }
         }
         .padding(AppPadding.page)
+        .task {
+            try? await UtilityJobs().activateLoadInfo()
+        }
     }
 }
 
