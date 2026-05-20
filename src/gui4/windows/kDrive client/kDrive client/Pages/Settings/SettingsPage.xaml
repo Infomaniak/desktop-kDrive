@@ -267,6 +267,7 @@
                     <ListView x:Name="UsersListView"
                               ItemsSource="{x:Bind ViewModel.Users, Mode=OneWay}"
                               SelectionMode="None"
+                              ScrollViewer.VerticalScrollMode="Disabled"
                               Visibility="{x:Bind ViewModel.Users.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
                         <ListView.ItemContainerStyle>
                             <Style TargetType="ListViewItem">

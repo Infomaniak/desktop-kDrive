@@ -6,7 +6,7 @@
   Locale: fi, Finnish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 11 May 2026 09:31:50 +0200 
+  Exported at: Tue, 19 May 2026 14:16:33 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -1456,7 +1456,7 @@ Näiden tietojen avulla tiimimme voi nopeasti korjata ja optimoida sovellusta, m
     <value>Asetukset</value> 
   </data> 
   <data name="sidebarItemAccounts" xml:space="preserve"> 
-    <value>Tilit</value> 
+    <value>Tilit ja synkronoinnit</value> 
   </data> 
   <data name="sidebarItemAdvanced" xml:space="preserve"> 
     <value>Lisäasetukset</value> 
@@ -1614,6 +1614,9 @@ Synkronointi on keskeytetty. Tarkista tiedostosi ja yritä uudelleen.</value>
     <value>Avaa kDrive</value> 
     <comment>This translation is used for the taskbar icon menu, which requires the x:Uid format (i.e., suffixed with .Label).</comment> 
   </data> 
+  <data name="trayIconButtonOpenSettings.Label" xml:space="preserve"> 
+    <value>Asetukset</value> 
+  </data> 
   <data name="unableToCreateRemoteFolderTeachingTipContent" xml:space="preserve"> 
     <value>Tarkista, että internet-yhteysi on aktiivinen, että tätä nimeä ei ole jo käytössä ja ettei se sisällä virheellisiä merkkejä.</value> 
   </data> 
@@ -1682,6 +1685,9 @@ Päivitä sovellus päästäksesi tiedostoihisi ja jatkaaksesi synkronointia.</v
   </data> 
   <data name="userExclusionFileListHeader" xml:space="preserve"> 
     <value>Mukautetut poissulkemissäännöt</value> 
+  </data> 
+  <data name="userExclusionFileListHeaderDescription" xml:space="preserve"> 
+    <value>Sulje tietyt tiedostotyypit synkronoinnin ulkopuolelle.</value> 
   </data> 
   <data name="viewSourceCode" xml:space="preserve"> 
     <value>Näytä lähdekoodi</value> 

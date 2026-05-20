@@ -6,7 +6,7 @@
   Locale: el, Greek
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 11 May 2026 09:31:50 +0200 
+  Exported at: Tue, 19 May 2026 14:16:33 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -73,7 +73,7 @@
     <value>Greek</value>
   </metadata> 
   <data name="aboutAppVersionCopyright" xml:space="preserve"> 
-    <value>Έκδοση %@.%@
+    <value>Version %@.%@
 © 2019-%@ Infomaniak Network SA -</value> 
   </data> 
   <data name="aboutKDrive" xml:space="preserve"> 
@@ -1456,7 +1456,7 @@
     <value>Ρυθμίσεις</value> 
   </data> 
   <data name="sidebarItemAccounts" xml:space="preserve"> 
-    <value>Λογαριασμοί</value> 
+    <value>Λογαριασμοί &amp; Συγχρονισμοί</value> 
   </data> 
   <data name="sidebarItemAdvanced" xml:space="preserve"> 
     <value>Προηγμένα</value> 
@@ -1614,6 +1614,9 @@
     <value>Άνοιγμα kDrive</value> 
     <comment>This translation is used for the taskbar icon menu, which requires the x:Uid format (i.e., suffixed with .Label).</comment> 
   </data> 
+  <data name="trayIconButtonOpenSettings.Label" xml:space="preserve"> 
+    <value>Ρυθμίσεις</value> 
+  </data> 
   <data name="unableToCreateRemoteFolderTeachingTipContent" xml:space="preserve"> 
     <value>Ελέγξτε ότι η σύνδεσή σας στο διαδίκτυο είναι ενεργή, ότι αυτό το όνομα δεν χρησιμοποιείται ήδη και ότι δεν περιέχει μη έγκυρους χαρακτήρες.</value> 
   </data> 
@@ -1682,6 +1685,9 @@
   </data> 
   <data name="userExclusionFileListHeader" xml:space="preserve"> 
     <value>Προσαρμοσμένοι κανόνες εξαίρεσης</value> 
+  </data> 
+  <data name="userExclusionFileListHeaderDescription" xml:space="preserve"> 
+    <value>Εξαιρέστε ορισμένους τύπους αρχείων από τον συγχρονισμό.</value> 
   </data> 
   <data name="viewSourceCode" xml:space="preserve"> 
     <value>Προβολή πηγαίου κώδικα</value> 

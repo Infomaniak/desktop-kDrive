@@ -528,10 +528,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             }
 
             if (!control.IsEnabled)
-            {
-                Logger.Log(Logger.Level.Error, "control is disabled");
                 return;
-            }
 
             control.IsEnabled = false;
 
@@ -572,10 +569,8 @@ namespace Infomaniak.kDrive.Pages.Settings
             }
 
             if (!control.IsEnabled)
-            {
-                Logger.Log(Logger.Level.Error, "control is disabled");
                 return;
-            }
+
             _analyticsService.TrackClick(Analytics.Keys.Category.GeneralSettingsPage, Analytics.Keys.EventName.ChangeLanguage);
 
             control.IsEnabled = false;
@@ -667,7 +662,11 @@ namespace Infomaniak.kDrive.Pages.Settings
             }
         }
 
-        private void RestartAppHyperlinkButton_Click(object sender, RoutedEventArgs e) => App.RestartApplication();
+        private void RestartAppHyperlinkButton_Click(object sender, RoutedEventArgs e)
+        {
+            App.RestartApplicationWindows();
+            ViewModel.Settings.RestartRequiredForLanguageChange = false;
+        }
     }
     // templateSelector for the drives listview
     public partial class DriveDataTemplateSelector : DataTemplateSelector

@@ -6,7 +6,7 @@
   Locale: sv, Swedish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 11 May 2026 09:31:50 +0200 
+  Exported at: Tue, 19 May 2026 14:16:33 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -1456,7 +1456,7 @@ Dessa data gör det möjligt för vårt team att snabbt åtgärda och optimera p
     <value>Inställningar</value> 
   </data> 
   <data name="sidebarItemAccounts" xml:space="preserve"> 
-    <value>Konton</value> 
+    <value>Konton och synkroniseringar</value> 
   </data> 
   <data name="sidebarItemAdvanced" xml:space="preserve"> 
     <value>Avancerat</value> 
@@ -1614,6 +1614,9 @@ Synkroniseringen har pausats. Kontrollera dina filer och försök igen.</value>
     <value>Öppna kDrive</value> 
     <comment>This translation is used for the taskbar icon menu, which requires the x:Uid format (i.e., suffixed with .Label).</comment> 
   </data> 
+  <data name="trayIconButtonOpenSettings.Label" xml:space="preserve"> 
+    <value>Inställningar</value> 
+  </data> 
   <data name="unableToCreateRemoteFolderTeachingTipContent" xml:space="preserve"> 
     <value>Kontrollera att din internetanslutning är aktiv, att det här namnet inte redan används och att det inte innehåller ogiltiga tecken.</value> 
   </data> 
@@ -1682,6 +1685,9 @@ Uppdatera programmet för att komma åt dina filer och återuppta synkronisering
   </data> 
   <data name="userExclusionFileListHeader" xml:space="preserve"> 
     <value>Anpassade undantagsregler</value> 
+  </data> 
+  <data name="userExclusionFileListHeaderDescription" xml:space="preserve"> 
+    <value>Undanta vissa filtyper från synkronisering.</value> 
   </data> 
   <data name="viewSourceCode" xml:space="preserve"> 
     <value>Visa källkod</value> 
