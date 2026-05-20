@@ -85,17 +85,20 @@ struct CursorData {
         friend bool operator==(const CursorData &lhs, const CursorData &rhs) = default;
 };
 
-enum class SpecialFolder {
+enum class SpecialRemoteFolder {
     CommonDocuments = 0,
     Private = 1,
-    Shared = 2
+    Shared = 2,
+    CustomTarget = 3 // For an advanced synchronization.
 };
 
-using CursorStore = std::unordered_map<SpecialFolder, CursorData>;
-[[maybe_unused]] static const CursorStore defaultCursorStore =
-        CursorStore{{SpecialFolder::Private, {}}, {SpecialFolder::CommonDocuments, {}}, {SpecialFolder::Shared, {}}};
+using CursorStore = std::unordered_map<SpecialRemoteFolder, CursorData>;
+[[maybe_unused]] static const CursorStore defaultCursorStore = CursorStore{{SpecialRemoteFolder::Private, {}},
+                                                                           {SpecialRemoteFolder::CommonDocuments, {}},
+                                                                           {SpecialRemoteFolder::Shared, {}},
+                                                                           {SpecialRemoteFolder::CustomTarget, {}}};
 
-using SpecialFolderNames = std::unordered_map<SpecialFolder, SyncName>;
+using SpecialFolderNames = std::unordered_map<SpecialRemoteFolder, SyncName>;
 
 using Url = std::string;
 struct SessionInfo {

@@ -139,7 +139,7 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const std::vector<RemoteN
 
     for (const auto &remoteDirId: specialFoldersRemoteIds) {
         bool hasChanges = false;
-        if (const auto exitInfo = checkIfRemoteDirHasChanges(remoteDirId, hasForcedChanges, longPollJobs, hasChanges); exitInfo)
+        if (const auto exitInfo = checkIfRemoteDirHasChanges(remoteDirId, hasForcedChanges, longPollJobs, hasChanges); !exitInfo)
             return exitInfo;
 
         if (!hasChanges) continue;
@@ -151,6 +151,8 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const std::vector<RemoteN
             return exitInfo;
         }
     }
+
+    setUpdateFlagValue(false); // A reset is required if the update has been forced by the Executor.
 
     return ExitCode::Ok;
 }
@@ -180,9 +182,9 @@ void RemoteFileSystemObserverWorker::execute() {
         }
 
         std::vector<RemoteNodeId> specialFoldersRemoteIds;
-        exitInfo = getSpeciaFoldersRemoteIds(specialFoldersRemoteIds);
+        exitInfo = getSpecialFoldersRemoteIds(specialFoldersRemoteIds);
         if (!exitInfo) {
-            LOG_SYNCPAL_DEBUG(_logger, "Error in getSpeciaFoldersRemoteIds: " << exitInfo);
+            LOG_SYNCPAL_DEBUG(_logger, "Error in getSpecialFoldersRemoteIds: " << exitInfo);
             break;
         }
 
@@ -374,26 +376,34 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
             break;
         }
     }
+
     setUpdateFlagValue(false);
 
     return exitInfo;
 }
 
+bool RemoteFileSystemObserverWorker::syncIsAdvancedWithNonRootFolder() const {
+    return _syncPal->isAdvancedSync() && ApiTranslator::v2RootFolderRemoteId() != rootFolderRemoteId();
+}
+
 ExitInfo RemoteFileSystemObserverWorker::updateSpecialFolderItem(const RemoteNodeId &remoteNodeId) {
+    if (syncIsAdvancedWithNonRootFolder()) return ExitCode::Ok;
+
     SyncName folderName;
-    if (const auto exitInfo = getV3SpecialRemoteFolderName(remoteNodeId, folderName); !exitInfo) {
+    if (const auto exitInfo = getSpecialRemoteFolderName(remoteNodeId, folderName); !exitInfo) {
         LOGW_SYNCPAL_WARN(_logger,
                           L"Error in "
                           L"RemoteFileSystemObserverWorker::"
-                          L"getV3SpecialRemoteFolderName: remoteNodeId="
+                          L"getSpecialRemoteFolderName: remoteNodeId="
                                   << CommonUtility::s2ws(remoteNodeId) << L", exitInfo=" << exitInfo);
         return exitInfo;
     }
 
+
     // As long as the local folder hierarchy reflects the v2 API,
     // we should not create a `Private` folder at the root of the
     // local synchronization folder.
-    if (const auto &privateFolderName = ApiTranslator::v3SpecialFolderNames.at(SpecialFolder::Private);
+    if (const auto &privateFolderName = ApiTranslator::v3SpecialFolderNames.at(SpecialRemoteFolder::Private);
         folderName == privateFolderName)
         return ExitCode::Ok;
 
@@ -410,10 +420,8 @@ ExitInfo RemoteFileSystemObserverWorker::updateSpecialFolderItem(const RemoteNod
     remoteSnapshotItem.setName(folderName);
     remoteSnapshotItem.setCreatedAt(now);
     remoteSnapshotItem.setLastModified(now);
-    if (const auto exitInfo =
-                remoteSnapshotItem.setParentId(_syncPal->userDbId(), _syncPal->driveId(), ApiTranslator::v2RootFolderRemoteId());
-        !exitInfo)
-        return exitInfo;
+    remoteSnapshotItem.setParentId(ApiTranslator::v2RootFolderRemoteId());
+
     if (found) {
         assert(dbNode.type() == NodeType::Directory && "Invalid node type.");
         remoteSnapshotItem.setCreatedAt(dbNode.created().value_or(now));
@@ -430,50 +438,16 @@ ExitInfo RemoteFileSystemObserverWorker::updateSpecialFolderItem(const RemoteNod
     return ExitCode::Ok;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::runFullListingJobs(const FullListingJobMap &fullListingJobs) {
-    constexpr auto fullListingSleepTimeMs = 100;
-
-    for (auto [_, fullListingJob]: fullListingJobs)
-        SyncJobManagerSingleton::instance()->queueAsyncJob(fullListingJob, Poco::Thread::PRIO_LOW);
-
-    LOG_SYNCPAL_DEBUG(_logger, "Full listing jobs in async queue.");
-
-    bool allJobsFinished = false;
-    while (!allJobsFinished) {
-        if (stopAsked()) return ExitCode::Ok;
-
-        allJobsFinished = true;
-        for (const auto &[remoteNodeId, fullListingJob]: fullListingJobs) {
-            const bool jobIsFinished = SyncJobManagerSingleton::instance()->isJobFinished(fullListingJob->jobId());
-            allJobsFinished = allJobsFinished && jobIsFinished;
-            if (!jobIsFinished || fullListingJob->exitInfo()) {
-                Utility::msleep(fullListingSleepTimeMs);
-                continue;
-            }
-
-            LOG_SYNCPAL_WARN(_logger,
-                             "Error in CsvFullFileListWithCursorJob::run for "
-                             "remoteNodeId="
-                                     << remoteNodeId << ", exitInfo=" << fullListingJob->exitInfo());
-            if (fullListingJob->exitInfo().code() == ExitCode::RateLimited) setPauseDuration(fullListingJob->sleepDuration());
-
-            return fullListingJob->exitInfo();
-        }
-    }
-
-    return ExitCode::Ok;
-}
-
 ExitInfo RemoteFileSystemObserverWorker::initWithCursor() {
     if (stopAsked()) return ExitCode::Ok;
 
     std::vector<RemoteNodeId> specialFoldersRemoteIds;
-    if (const auto exitInfo = getSpeciaFoldersRemoteIds(specialFoldersRemoteIds); !exitInfo) {
+
+    if (const auto exitInfo = getSpecialFoldersRemoteIds(specialFoldersRemoteIds); !exitInfo) {
         LOG_SYNCPAL_DEBUG(_logger, "Error in getSpecialFoldersRemoteIds: " << exitInfo);
 
         return exitInfo;
     }
-
     for (const auto &specialFolderRemoteId: specialFoldersRemoteIds) {
         if (_blackList.contains(specialFolderRemoteId)) continue;
 
@@ -833,7 +807,7 @@ ExitInfo RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
     RemoteFileId tmpInt = 0;
     if (!JsonParserUtility::extractValue(actionObj, fileIdKey, tmpInt)) return {ExitCode::BackError, ExitCause::MissingReplyData};
 
-    if (const auto exitInfo = actionInfo.snapshotItem.setId(_syncPal->userDbId(), _syncPal->driveId(), std::to_string(tmpInt));
+    if (const auto exitInfo = actionInfo.snapshotItem.setV2Id(_syncPal->userDbId(), _syncPal->driveId(), std::to_string(tmpInt));
         !exitInfo)
         return exitInfo;
 
@@ -841,7 +815,7 @@ ExitInfo RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
         return {ExitCode::BackError, ExitCause::MissingReplyData};
 
     if (const auto exitInfo =
-                actionInfo.snapshotItem.setParentId(_syncPal->userDbId(), _syncPal->driveId(), std::to_string(tmpInt));
+                actionInfo.snapshotItem.setV2ParentId(_syncPal->userDbId(), _syncPal->driveId(), std::to_string(tmpInt));
         !exitInfo)
         return exitInfo;
 
@@ -1174,24 +1148,34 @@ void RemoteFileSystemObserverWorker::ActionInfo::setPath(const KDC::SyncName &re
     _path = remotePath_.native();
 }
 
-ExitInfo RemoteFileSystemObserverWorker::getSpeciaFoldersRemoteIds(std::vector<RemoteNodeId> &specialFoldersRemoteIds) const {
+RemoteNodeId RemoteFileSystemObserverWorker::rootFolderRemoteId() const {
+    return _syncPal->syncDb()->rootNode().nodeIdRemote().value();
+}
+
+ExitInfo RemoteFileSystemObserverWorker::getSpecialFoldersRemoteIds(std::vector<RemoteNodeId> &specialFoldersRemoteIds) const {
     specialFoldersRemoteIds.clear();
+
+    if (syncIsAdvancedWithNonRootFolder()) {
+        specialFoldersRemoteIds.push_back(rootFolderRemoteId());
+
+        return ExitCode::Ok;
+    }
 
     RemoteNodeId userPrivateFolderRemoteId;
     if (const auto exitInfo = ApiTranslator::getSpecialFolderRemoteId(_syncPal->userDbId(), _syncPal->driveId(),
-                                                                      SpecialFolder::Private, userPrivateFolderRemoteId);
+                                                                      SpecialRemoteFolder::Private, userPrivateFolderRemoteId);
         !exitInfo)
         return exitInfo;
 
     RemoteNodeId commonDocumentsFolderRemoteId;
     if (const auto exitInfo = ApiTranslator::getSpecialFolderRemoteId(
-                _syncPal->userDbId(), _syncPal->driveId(), SpecialFolder::CommonDocuments, commonDocumentsFolderRemoteId);
+                _syncPal->userDbId(), _syncPal->driveId(), SpecialRemoteFolder::CommonDocuments, commonDocumentsFolderRemoteId);
         !exitInfo)
         return exitInfo;
 
     RemoteNodeId sharedFolderRemoteId;
     if (const auto exitInfo = ApiTranslator::getSpecialFolderRemoteId(_syncPal->userDbId(), _syncPal->driveId(),
-                                                                      SpecialFolder::Shared, sharedFolderRemoteId);
+                                                                      SpecialRemoteFolder::Shared, sharedFolderRemoteId);
         !exitInfo)
         return exitInfo;
 
@@ -1202,7 +1186,10 @@ ExitInfo RemoteFileSystemObserverWorker::getSpeciaFoldersRemoteIds(std::vector<R
 }
 
 ExitInfo RemoteFileSystemObserverWorker::getListingCursor(const RemoteNodeId &remoteDirId, CursorData &cursorData) {
-    for (const auto specialFolder: {SpecialFolder::Private, SpecialFolder::CommonDocuments, SpecialFolder::Shared}) {
+    if (syncIsAdvancedWithNonRootFolder()) return _syncPal->getFolderCursor(SpecialRemoteFolder::CustomTarget, cursorData);
+
+    for (const auto specialFolder:
+         {SpecialRemoteFolder::Private, SpecialRemoteFolder::CommonDocuments, SpecialRemoteFolder::Shared}) {
         RemoteNodeId specialFolderRemoteId;
         if (const auto exitInfo = ApiTranslator::getSpecialFolderRemoteId(_syncPal->userDbId(), _syncPal->driveId(),
                                                                           specialFolder, specialFolderRemoteId);
@@ -1218,7 +1205,10 @@ ExitInfo RemoteFileSystemObserverWorker::getListingCursor(const RemoteNodeId &re
 }
 
 ExitInfo RemoteFileSystemObserverWorker::saveListingCursor(const RemoteNodeId &remoteDirId, const CursorData &cursorData) {
-    for (const auto specialFolder: {SpecialFolder::Private, SpecialFolder::CommonDocuments, SpecialFolder::Shared}) {
+    if (syncIsAdvancedWithNonRootFolder()) return _syncPal->setFolderCursor(SpecialRemoteFolder::CustomTarget, cursorData);
+
+    for (const auto specialFolder:
+         {SpecialRemoteFolder::Private, SpecialRemoteFolder::CommonDocuments, SpecialRemoteFolder::Shared}) {
         RemoteNodeId specialFolderRemoteId;
         if (const auto exitInfo = ApiTranslator::getSpecialFolderRemoteId(_syncPal->userDbId(), _syncPal->driveId(),
                                                                           specialFolder, specialFolderRemoteId);
@@ -1233,39 +1223,39 @@ ExitInfo RemoteFileSystemObserverWorker::saveListingCursor(const RemoteNodeId &r
     return {ExitCode::LogicError, ExitCause::InvalidArgument};
 }
 
-ExitInfo RemoteFileSystemObserverWorker::getV3SpecialRemoteFolderName(const RemoteNodeId &remoteDirId, SyncName &folderName) {
+ExitInfo RemoteFileSystemObserverWorker::getSpecialRemoteFolderName(const RemoteNodeId &remoteDirId, SyncName &folderName) {
     folderName = SyncName{};
 
     RemoteNodeId userPrivateFolderRemoteId;
     if (const auto exitInfo = ApiTranslator::getSpecialFolderRemoteId(_syncPal->userDbId(), _syncPal->driveId(),
-                                                                      SpecialFolder::Private, userPrivateFolderRemoteId);
+                                                                      SpecialRemoteFolder::Private, userPrivateFolderRemoteId);
         !exitInfo)
         return exitInfo;
 
     if (remoteDirId == userPrivateFolderRemoteId) {
-        folderName = ApiTranslator::v3SpecialFolderNames.at(SpecialFolder::Private);
+        folderName = ApiTranslator::v3SpecialFolderNames.at(SpecialRemoteFolder::Private);
         return ExitCode::Ok;
     }
 
     RemoteNodeId commonDocumentsFolderRemoteId;
     if (const auto exitInfo = ApiTranslator::getSpecialFolderRemoteId(
-                _syncPal->userDbId(), _syncPal->driveId(), SpecialFolder::CommonDocuments, commonDocumentsFolderRemoteId);
+                _syncPal->userDbId(), _syncPal->driveId(), SpecialRemoteFolder::CommonDocuments, commonDocumentsFolderRemoteId);
         !exitInfo)
         return exitInfo;
 
     if (remoteDirId == commonDocumentsFolderRemoteId) {
-        folderName = ApiTranslator::v3SpecialFolderNames.at(SpecialFolder::CommonDocuments);
+        folderName = ApiTranslator::v3SpecialFolderNames.at(SpecialRemoteFolder::CommonDocuments);
         return ExitCode::Ok;
     }
 
     RemoteNodeId sharedFolderRemoteId;
     if (const auto exitInfo = ApiTranslator::getSpecialFolderRemoteId(_syncPal->userDbId(), _syncPal->driveId(),
-                                                                      SpecialFolder::Shared, sharedFolderRemoteId);
+                                                                      SpecialRemoteFolder::Shared, sharedFolderRemoteId);
         !exitInfo)
         return exitInfo;
 
     if (remoteDirId == sharedFolderRemoteId) {
-        folderName = ApiTranslator::v3SpecialFolderNames.at(SpecialFolder::Shared);
+        folderName = ApiTranslator::v3SpecialFolderNames.at(SpecialRemoteFolder::Shared);
         return ExitCode::Ok;
     }
 

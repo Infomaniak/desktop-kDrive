@@ -101,7 +101,7 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(const std::list<std::pai
 
         sentry::pTraces::scoped::LFSOChangeDetected perfMonitor(syncDbId());
         // Raise flag _updating in order to wait 1sec without local changes before starting the sync
-        _updating = true;
+        setUpdateFlagValue(true);
         _needUpdateTimerStart = std::chrono::steady_clock::now();
 
         _syncPal->removeItemFromTmpBlacklist(relativePath);
@@ -478,7 +478,7 @@ void LocalFileSystemObserverWorker::execute() {
         }
 
         // Wait 1 sec after the last update
-        if (_updating) {
+        if (updating()) {
             const auto diff_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() -
                                                                                        _needUpdateTimerStart);
             if (diff_ms.count() > waitForUpdateDelay) {
@@ -491,11 +491,11 @@ void LocalFileSystemObserverWorker::execute() {
                 }
 
                 const std::scoped_lock lock(_recursiveMutex);
-                _updating = false;
+                setUpdateFlagValue(false);
             }
         }
 
-        if (_initializing) _initializing = false;
+        if (initializing()) setInitFlagValue(false);
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
@@ -511,7 +511,7 @@ ExitInfo LocalFileSystemObserverWorker::generateInitialSnapshot() {
     auto perfMonitor = sentry::pTraces::scoped::LFSOGenerateInitialSnapshot(syncDbId());
 
     _liveSnapshot.init();
-    _updating = true;
+    setUpdateFlagValue(true);
 
     if (const auto exitInfo = exploreDir(_rootFolder); exitInfo.code() == ExitCode::Ok && !stopAsked()) {
         _liveSnapshot.setValid(true);
@@ -537,7 +537,7 @@ ExitInfo LocalFileSystemObserverWorker::generateInitialSnapshot() {
         LOG_SYNCPAL_DEBUG(_logger, "Pending file events processed");
     }
 
-    _updating = false;
+    setUpdateFlagValue(false);
 
     return mainExitInfo;
 }
