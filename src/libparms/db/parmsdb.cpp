@@ -278,6 +278,8 @@
     "commonDocumentsFolderCursorTimestamp INTEGER,"                                          \
     "sharedFolderCursor TEXT,"                                                               \
     "sharedFolderCursorTimestamp INTEGER,"                                                   \
+    "customTargetFolderCursor TEXT,"                                                         \
+    "customTargetFolderCursorTimestamp INTEGER,"                                             \
     "toDelete INTEGER,"                                                                      \
     "FOREIGN KEY (driveDbId) REFERENCES drive(dbId) ON DELETE CASCADE ON UPDATE NO ACTION) " \
     "WITHOUT ROWID;"
@@ -289,9 +291,9 @@
     "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, "                                                   \
     "userPrivateFolderCursor, userPrivateFolderCursorTimestamp, "                                                       \
     "commonDocumentsFolderCursor, commonDocumentsFolderCursorTimestamp, "                                               \
-    "sharedFolderCursor, sharedFolderCursorTimestamp, toDelete) "                                                       \
-    "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20);"
-
+    "sharedFolderCursor, sharedFolderCursorTimestamp, "                                                                 \
+    "customTargetFolderCursor, customTargetFolderCursorTimestamp, toDelete) "                                           \
+    "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22);"
 
 #define UPDATE_SYNC_REQUEST_ID "update_sync"
 #define UPDATE_SYNC_REQUEST                                                                                              \
@@ -300,8 +302,9 @@
     "virtualFileMode=?9, notificationsDisabled=?10, hasFullyCompleted=?11, navigationPaneClsid=?12, "                    \
     "userPrivateFolderCursor=?13, userPrivateFolderCursorTimestamp=?14, "                                                \
     "commonDocumentsFolderCursor=?15, commonDocumentsFolderCursorTimestamp=?16, "                                        \
-    "sharedFolderCursor=?17, sharedFolderCursorTimestamp=?18, toDelete=?19 "                                             \
-    "WHERE dbId=?20;"
+    "sharedFolderCursor=?17, sharedFolderCursorTimestamp=?18, "                                                          \
+    "customTargetFolderCursor=?19, customTargetFolderCursorTimestamp=?20, toDelete=?21 "                                 \
+    "WHERE dbId=?22;"
 
 #define UPDATE_SYNC_PAUSED_REQUEST_ID "update_sync_paused"
 #define UPDATE_SYNC_PAUSED_REQUEST \
@@ -330,7 +333,8 @@
 
     "userPrivateFolderCursor, userPrivateFolderCursorTimestamp, "                                                             \
     "commonDocumentsFolderCursor, commonDocumentsFolderCursorTimestamp, "                                                     \
-    "sharedFolderCursor, sharedFolderCursorTimestamp, toDelete "                                                              \
+    "sharedFolderCursor, sharedFolderCursorTimestamp, "                                                                       \
+    "customTargetFolderCursor, customTargetFolderCursorTimestamp, toDelete "                                                  \
     "FROM sync "                                                                                                              \
     "WHERE dbId=?1;"
 
@@ -340,7 +344,8 @@
     "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, "                                                         \
     "userPrivateFolderCursor, userPrivateFolderCursorTimestamp, "                                                             \
     "commonDocumentsFolderCursor, commonDocumentsFolderCursorTimestamp, "                                                     \
-    "sharedFolderCursor, sharedFolderCursorTimestamp, toDelete "                                                              \
+    "sharedFolderCursor, sharedFolderCursorTimestamp, "                                                                       \
+    "customTargetFolderCursor, customTargetFolderCursorTimestamp, toDelete "                                                  \
     "FROM sync "                                                                                                              \
     "WHERE dbPath=?1;"
 
@@ -351,7 +356,8 @@
     "notificationsDisabled, hasFullyCompleted, navigationPaneClsid,  "                                                        \
     "userPrivateFolderCursor, userPrivateFolderCursorTimestamp, "                                                             \
     "commonDocumentsFolderCursor, commonDocumentsFolderCursorTimestamp, "                                                     \
-    "sharedFolderCursor, sharedFolderCursorTimestamp, toDelete "                                                              \
+    "sharedFolderCursor, sharedFolderCursorTimestamp, "                                                                       \
+    "customTargetFolderCursor, customTargetFolderCursorTimestamp, toDelete  "                                                 \
     "FROM sync "                                                                                                              \
     "ORDER BY dbId;"
 
@@ -362,7 +368,8 @@
     "hasFullyCompleted, navigationPaneClsid, "                                                                     \
     "userPrivateFolderCursor, userPrivateFolderCursorTimestamp, "                                                  \
     "commonDocumentsFolderCursor, commonDocumentsFolderCursorTimestamp, "                                          \
-    "sharedFolderCursor, sharedFolderCursorTimestamp, toDelete "                                                   \
+    "sharedFolderCursor, sharedFolderCursorTimestamp, "                                                            \
+    "customTargetFolderCursor, customTargetFolderCursorTimestamp, toDelete "                                       \
     "FROM sync "                                                                                                   \
     "WHERE driveDbId=?1 "                                                                                          \
     "ORDER BY dbId;"
@@ -1395,6 +1402,8 @@ bool ParmsDb::upgradeTables() {
     if (!addIntegerColumnIfMissing(tableName, "commonDocumentsFolderCursorTimestamp")) return false;
     if (!addTextColumnIfMissing(tableName, "sharedFolderCursor")) return false;
     if (!addIntegerColumnIfMissing(tableName, "sharedFolderCursorTimestamp")) return false;
+    if (!addTextColumnIfMissing(tableName, "customTargetFolderCursor")) return false;
+    if (!addIntegerColumnIfMissing(tableName, "customTargetFolderCursorTimestamp")) return false;
 
     // Account table
     tableName = "account";
@@ -2492,12 +2501,14 @@ bool ParmsDb::bindQueryToSyncValues(const Sync &sync, const char *requestId, con
 
     const auto &cursorStore = sync.getCursorStore();
 
-    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.at(SpecialFolder::Private).cursor));
-    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.at(SpecialFolder::Private).timestamp));
-    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.at(SpecialFolder::CommonDocuments).cursor));
-    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.at(SpecialFolder::CommonDocuments).timestamp));
-    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.at(SpecialFolder::Shared).cursor));
-    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.at(SpecialFolder::Shared).timestamp));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.at(SpecialRemoteFolder::Private).cursor));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.at(SpecialRemoteFolder::Private).timestamp));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.at(SpecialRemoteFolder::CommonDocuments).cursor));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.at(SpecialRemoteFolder::CommonDocuments).timestamp));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.at(SpecialRemoteFolder::Shared).cursor));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.at(SpecialRemoteFolder::Shared).timestamp));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.at(SpecialRemoteFolder::CustomTarget).cursor));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.at(SpecialRemoteFolder::CustomTarget).timestamp));
 
     LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, static_cast<int>(sync.toDelete())));
 
@@ -2696,14 +2707,17 @@ void ParmsDb::fillSyncWithQueryResult(Sync &sync, const char *requestId, const s
 
     // Cursors
     CursorStore cursorStore;
-    LOG_IF_FAIL(queryStringValue(requestId, fieldIndex++, cursorStore[SpecialFolder::Private].cursor));
-    LOG_IF_FAIL(queryInt64Value(requestId, fieldIndex++, cursorStore[SpecialFolder::Private].timestamp));
+    LOG_IF_FAIL(queryStringValue(requestId, fieldIndex++, cursorStore[SpecialRemoteFolder::Private].cursor));
+    LOG_IF_FAIL(queryInt64Value(requestId, fieldIndex++, cursorStore[SpecialRemoteFolder::Private].timestamp));
 
-    LOG_IF_FAIL(queryStringValue(requestId, fieldIndex++, cursorStore[SpecialFolder::CommonDocuments].cursor));
-    LOG_IF_FAIL(queryInt64Value(requestId, fieldIndex++, cursorStore[SpecialFolder::CommonDocuments].timestamp));
+    LOG_IF_FAIL(queryStringValue(requestId, fieldIndex++, cursorStore[SpecialRemoteFolder::CommonDocuments].cursor));
+    LOG_IF_FAIL(queryInt64Value(requestId, fieldIndex++, cursorStore[SpecialRemoteFolder::CommonDocuments].timestamp));
 
-    LOG_IF_FAIL(queryStringValue(requestId, fieldIndex++, cursorStore[SpecialFolder::Shared].cursor));
-    LOG_IF_FAIL(queryInt64Value(requestId, fieldIndex++, cursorStore[SpecialFolder::Shared].timestamp));
+    LOG_IF_FAIL(queryStringValue(requestId, fieldIndex++, cursorStore[SpecialRemoteFolder::Shared].cursor));
+    LOG_IF_FAIL(queryInt64Value(requestId, fieldIndex++, cursorStore[SpecialRemoteFolder::Shared].timestamp));
+
+    LOG_IF_FAIL(queryStringValue(requestId, fieldIndex++, cursorStore[SpecialRemoteFolder::CustomTarget].cursor));
+    LOG_IF_FAIL(queryInt64Value(requestId, fieldIndex++, cursorStore[SpecialRemoteFolder::CustomTarget].timestamp));
 
     sync.setCursorStore(cursorStore);
 

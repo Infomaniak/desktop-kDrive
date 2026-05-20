@@ -73,7 +73,7 @@ void TestApiTranslator::testTranslateV2ToV3() {
 
 void TestApiTranslator::testTranslateV3ToV2() {
     SyncPath remotePath =
-            SyncPath{ApiTranslator::v3SpecialFolderNames.at(SpecialFolder::Private)} / Str("folder_A") / Str("text.txt");
+            SyncPath{ApiTranslator::v3SpecialFolderNames.at(SpecialRemoteFolder::Private)} / Str("folder_A") / Str("text.txt");
     ApiTranslator::translateV3ToV2(remotePath);
 
     const auto expectedPath = SyncPath{Str("folder_A")} / Str("text.txt");
@@ -87,25 +87,26 @@ void TestApiTranslator::testTranslateV3ToV2() {
     ApiTranslator::translateV3ToV2(remotePath);
     CPPUNIT_ASSERT_EQUAL(SyncPath{}, remotePath);
 
-    remotePath = SyncPath{ApiTranslator::v3SpecialFolderNames.at(SpecialFolder::Private)};
+    remotePath = SyncPath{ApiTranslator::v3SpecialFolderNames.at(SpecialRemoteFolder::Private)};
     ApiTranslator::translateV3ToV2(remotePath);
     CPPUNIT_ASSERT_EQUAL(SyncPath{}, remotePath);
 
     RemoteNodeId remoteNodeId;
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
-                         ApiTranslator::getSpecialFolderRemoteId(_userDbId, _driveId, SpecialFolder::Private, remoteNodeId));
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ApiTranslator::getSpecialFolderRemoteId(
+                                                         _userDbId, _driveId, SpecialRemoteFolder::Private, remoteNodeId));
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ApiTranslator::translateV3ToV2(_userDbId, _driveId, remoteNodeId));
     CPPUNIT_ASSERT_EQUAL(ApiTranslator::v2RootFolderRemoteId(), remoteNodeId);
 
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ApiTranslator::getSpecialFolderRemoteId(
-                                                         _userDbId, _driveId, SpecialFolder::CommonDocuments, remoteNodeId));
+    CPPUNIT_ASSERT_EQUAL(
+            ExitInfo(ExitCode::Ok),
+            ApiTranslator::getSpecialFolderRemoteId(_userDbId, _driveId, SpecialRemoteFolder::CommonDocuments, remoteNodeId));
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ApiTranslator::translateV3ToV2(_userDbId, _driveId, remoteNodeId));
     CPPUNIT_ASSERT(ApiTranslator::v2RootFolderRemoteId() != remoteNodeId);
 }
 
 void TestApiTranslator::translateRemoteNodeInfoListFromV3ToV2() {
     RemoteNodeId privateFolderId;
-    (void) ApiTranslator::getSpecialFolderRemoteId(_userDbId, _driveId, SpecialFolder::Private, privateFolderId);
+    (void) ApiTranslator::getSpecialFolderRemoteId(_userDbId, _driveId, SpecialRemoteFolder::Private, privateFolderId);
     const auto privateFolderIdQStr = QString::fromStdString(privateFolderId);
 
     NodeInfo nodeInfo1;
@@ -118,7 +119,7 @@ void TestApiTranslator::translateRemoteNodeInfoListFromV3ToV2() {
 
     NodeInfo nodeInfo3;
     RemoteNodeId parentId;
-    (void) ApiTranslator::getSpecialFolderRemoteId(_userDbId, _driveId, SpecialFolder::CommonDocuments, parentId);
+    (void) ApiTranslator::getSpecialFolderRemoteId(_userDbId, _driveId, SpecialRemoteFolder::CommonDocuments, parentId);
     nodeInfo3.setParentNodeId(QString::fromStdString(parentId));
     nodeInfo3.setNodeId("sub_common_documents_folder");
 
@@ -134,17 +135,17 @@ void TestApiTranslator::translateRemoteNodeInfoListFromV3ToV2() {
 void TestApiTranslator::testGetSpecialFolders() {
     RemoteNodeId id1;
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
-                         ApiTranslator::getSpecialFolderRemoteId(_userDbId, _driveId, SpecialFolder::CommonDocuments, id1));
+                         ApiTranslator::getSpecialFolderRemoteId(_userDbId, _driveId, SpecialRemoteFolder::CommonDocuments, id1));
     CPPUNIT_ASSERT(!id1.empty());
 
     RemoteNodeId id2;
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
-                         ApiTranslator::getSpecialFolderRemoteId(_userDbId, _driveId, SpecialFolder::Private, id2));
+                         ApiTranslator::getSpecialFolderRemoteId(_userDbId, _driveId, SpecialRemoteFolder::Private, id2));
     CPPUNIT_ASSERT(!id2.empty());
 
     RemoteNodeId id3;
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
-                         ApiTranslator::getSpecialFolderRemoteId(_userDbId, _driveId, SpecialFolder::Shared, id3));
+                         ApiTranslator::getSpecialFolderRemoteId(_userDbId, _driveId, SpecialRemoteFolder::Shared, id3));
     CPPUNIT_ASSERT(id3.empty()); // There is no 'Shared' sub-folder in the test drive.
 
     const RemoteNodeIdSet folderIds{id1, id2, id3};
