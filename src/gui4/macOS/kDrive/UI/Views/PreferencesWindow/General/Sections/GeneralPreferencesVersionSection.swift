@@ -76,6 +76,8 @@ struct GeneralPreferencesVersionSection: View {
     @State private var isShowingDistributionChannelSheet = false
     @State private var betaOption = BetaOption.doNotJoin
 
+    let containsStaffUser: Bool
+
     var body: some View {
         Section {
             VersionManagementView(repository: repository)
@@ -107,7 +109,7 @@ struct GeneralPreferencesVersionSection: View {
             updatePropertiesFromParametersInfo(newValue)
         }
         .sheet(isPresented: $isShowingDistributionChannelSheet) {
-            DistributionChannelView(repository: repository)
+            DistributionChannelView(repository: repository, containsStaffUser: containsStaffUser)
         }
     }
 
@@ -117,5 +119,5 @@ struct GeneralPreferencesVersionSection: View {
 }
 
 #Preview {
-    GeneralPreferencesVersionSection(repository: PreferencesRepository())
+    GeneralPreferencesVersionSection(repository: PreferencesRepository(), containsStaffUser: false)
 }

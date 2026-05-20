@@ -21,10 +21,15 @@ import SwiftUI
 
 struct GeneralPreferencesView: View {
     @ObservedObject var repository: PreferencesRepository
+    @ObservedObject var viewModel: PreferencesViewModel
+
+    private var containsStaffUser: Bool {
+        return viewModel.users.contains(where: \.isStaff)
+    }
 
     var body: some View {
         Form {
-            GeneralPreferencesVersionSection(repository: repository)
+            GeneralPreferencesVersionSection(repository: repository, containsStaffUser: containsStaffUser)
             GeneralPreferencesMiscSection(repository: repository)
             GeneralPreferencesHelpSection()
         }
@@ -33,5 +38,5 @@ struct GeneralPreferencesView: View {
 }
 
 #Preview {
-    GeneralPreferencesView(repository: PreferencesRepository())
+    GeneralPreferencesView(repository: PreferencesRepository(), viewModel: PreferencesViewModel())
 }
