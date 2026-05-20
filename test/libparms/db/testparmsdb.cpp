@@ -268,16 +268,16 @@ SyncSetupData createSyncs() {
     sync2.setDbPath("/Users/me/Library/Application Support/kDrive/.parms.db");
 
     CursorStore cursorStore1;
-    cursorStore1[SpecialFolder::Private] = CursorData{"xxx", 1};
-    cursorStore1[SpecialFolder::CommonDocuments] = CursorData{"yyy", 2};
-    cursorStore1[SpecialFolder::Shared] = CursorData{"zzz", 3};
+    cursorStore1[SpecialRemoteFolder::Private] = CursorData{"xxx", 1};
+    cursorStore1[SpecialRemoteFolder::CommonDocuments] = CursorData{"yyy", 2};
+    cursorStore1[SpecialRemoteFolder::Shared] = CursorData{"zzz", 3};
 
     sync1.setCursorStore(cursorStore1);
 
     CursorStore cursorStore2;
-    cursorStore2[SpecialFolder::Private] = CursorData{"aaa", 10};
-    cursorStore2[SpecialFolder::CommonDocuments] = CursorData{"bbb", 20};
-    cursorStore2[SpecialFolder::Shared] = CursorData{"ccc", 30};
+    cursorStore2[SpecialRemoteFolder::Private] = CursorData{"aaa", 10};
+    cursorStore2[SpecialRemoteFolder::CommonDocuments] = CursorData{"bbb", 20};
+    cursorStore2[SpecialRemoteFolder::Shared] = CursorData{"ccc", 30};
 
     sync2.setCursorStore(cursorStore2);
 
@@ -810,6 +810,8 @@ void TestParmsDb::testAddMissingColumnsDuringUpgrade() {
     CPPUNIT_ASSERT(parmsDb->columnExists("sync", "commonDocumentsFolderCursorTimestamp", exists) && exists);
     CPPUNIT_ASSERT(parmsDb->columnExists("sync", "sharedFolderCursor", exists) && exists);
     CPPUNIT_ASSERT(parmsDb->columnExists("sync", "sharedFolderCursorTimestamp", exists) && exists);
+    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "customTargetFolderCursor", exists) && exists);
+    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "customTargetFolderCursorTimestamp", exists) && exists);
 
     CPPUNIT_ASSERT(parmsDb->columnExists("account", "name", exists) && exists);
     CPPUNIT_ASSERT(parmsDb->columnExists("user", "firstName", exists) && exists);

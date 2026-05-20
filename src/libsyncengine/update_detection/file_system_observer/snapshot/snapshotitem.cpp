@@ -173,16 +173,16 @@ RemoteSnapshotItem::RemoteSnapshotItem(const RemoteNodeId &id, const RemoteNodeI
     SnapshotItem(id, parentId, name, createdAt, lastModified, type, size, isLink, canWrite, canShare) {}
 
 
-ExitInfo RemoteSnapshotItem::setId(const UserDbId userDbId, const DriveId driveId, const NodeId &id) {
-    _id = id;
+ExitInfo RemoteSnapshotItem::setV2Id(const UserDbId userDbId, const DriveId driveId, const RemoteNodeId &v3Id) {
+    _id = v3Id;
     if (const auto exitInfo = ApiTranslator::translateV3ToV2(userDbId, driveId, _id); !exitInfo) return exitInfo;
     _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
 
     return ExitCode::Ok;
 }
 
-ExitInfo RemoteSnapshotItem::setParentId(const UserDbId userDbId, const DriveId driveId, const RemoteNodeId &newParentId) {
-    _parentId = newParentId;
+ExitInfo RemoteSnapshotItem::setV2ParentId(const UserDbId userDbId, const DriveId driveId, const RemoteNodeId &v3NewParentId) {
+    _parentId = v3NewParentId;
     if (const auto exitInfo = ApiTranslator::translateV3ToV2(userDbId, driveId, _parentId); !exitInfo) return exitInfo;
     _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
 
