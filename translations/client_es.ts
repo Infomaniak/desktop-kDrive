@@ -327,8 +327,8 @@ Seleccione otra carpeta. Si continúa, Lite Sync se deshabilitará.&lt;br&gt;
         <location filename="../src/server/appserver.cpp" line="3818"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
-            <numerusform>%1 y % otros archivo(s) han sido añadidos.</numerusform>
-            <numerusform>%1 y % otros archivo(s) han sido añadidos.</numerusform>
+            <numerusform>%1 y otros %n archivo(s) han sido añadidos.</numerusform>
+            <numerusform>%1 y otros %n archivo(s) han sido añadidos.</numerusform>
         </translation>
     </message>
     <message>
