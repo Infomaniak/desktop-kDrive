@@ -199,7 +199,7 @@ std::streamsize WindowsUpdater::getExpectedInstallerSize(const std::string &down
 }
 
 bool WindowsUpdater::verifyFileChecksum(const SyncPath &filepath) {
-    const std::string &expectedChecksum = CommonUtility::toLower(versionInfo().checksum);
+    const std::string &expectedChecksum = CommonUtility::trim(CommonUtility::toLower(versionInfo().checksum));
 
     auto cleanupAndFail = [&](const std::string &reason) {
         auto ioError = IoError::Success;
@@ -227,7 +227,7 @@ bool WindowsUpdater::verifyFileChecksum(const SyncPath &filepath) {
     }
 
     // Compute actual checksum
-    const std::string actualChecksum = CommonUtility::toLower(computeFileChecksum(filepath));
+    const std::string actualChecksum = CommonUtility::trim(CommonUtility::toLower(computeFileChecksum(filepath)));
     if (actualChecksum.empty()) {
         LOGW_ERROR(Log::instance()->getLogger(), L"Failed to compute file checksum.");
         return cleanupAndFail("computeFailed");
