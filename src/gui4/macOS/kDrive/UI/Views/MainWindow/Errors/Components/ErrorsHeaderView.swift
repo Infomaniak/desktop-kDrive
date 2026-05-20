@@ -16,17 +16,15 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import InfomaniakDI
-import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
-struct SynchroErrorsInformationBlockView: View {
-    let errorCount: Int
+struct ErrorsHeaderView: View {
+    let errorsCount: Int
 
     private var title: AttributedString {
         do {
-            return try AttributedString(markdown: KDriveLocalizable.informationBlockSynchroErrorTitle(errorCount))
+            return try AttributedString(markdown: KDriveLocalizable.informationBlockSynchroErrorTitle(errorsCount))
         } catch {
             #if DEBUG
             fatalError("Failed decoding AttributedString: \(error)")
@@ -37,26 +35,18 @@ struct SynchroErrorsInformationBlockView: View {
     }
 
     var body: some View {
-        InformationBlockView(
-            title: title,
-            subtitle: AttributedString(KDriveLocalizable.informationBlockSynchroErrorSubtitle),
-            button: .init(title: KDriveLocalizable.buttonFixErrors, action: navigateToErrors)
-        )
+        HStack {
+            Text(title)
+
+            Button(KDriveLocalizable.buttonRefresh, action: refreshList)
+        }
     }
 
-    private func navigateToErrors() {
-        @InjectService var router: MainViewRouter
-        router.setCurrentTab(.activities)
-        router.append(.errors)
+    private func refreshList() {
+
     }
 }
 
-#Preview("One error") {
-    SynchroErrorsInformationBlockView(errorCount: 1)
-        .padding(AppPadding.padding32)
-}
-
-#Preview("Multiple errors") {
-    SynchroErrorsInformationBlockView(errorCount: 5)
-        .padding(AppPadding.padding32)
+#Preview {
+    ErrorsHeaderView(errorsCount: 42)
 }
