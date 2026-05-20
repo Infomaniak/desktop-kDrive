@@ -277,11 +277,14 @@ bool WindowsUpdater::verifyDigitalSignature(const SyncPath &filepath) {
 
 void WindowsUpdater::retryDownload(const SyncPath &filepath) {
     if (_autoUpdate) {
-        LOG_ERROR(Log::instance()->getLogger(), "Already tried to re-download the installer before.");
+        LOGW_ERROR(Log::instance()->getLogger(),
+                  L"Already tried to re-download the installer at " + Utility::formatSyncPath(filepath) + L" before.");
         setState(UpdateState::UpdateError);
         _autoUpdate = false;
         return;
     }
+    LOGW_WARN(Log::instance()->getLogger(),
+              L"Retrying download of installer after failure of checksum or signature verification.");
     _autoUpdate = true;
     downloadUpdate();
 }
