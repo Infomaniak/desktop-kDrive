@@ -66,7 +66,7 @@ void FileSystemObserverWorker::forceUpdate() {
 void FileSystemObserverWorker::init() {
     ISyncWorker::init();
     setUpdateFlagValue(false);
-    _initializing = true;
+    setInitFlagValue(true);
     invalidateSnapshot();
 }
 
@@ -75,7 +75,7 @@ bool FileSystemObserverWorker::initializing() const {
 }
 
 void FileSystemObserverWorker::setInitFlagValue(const bool value) {
-    _initializing.store(value);
+    _initializing.store(value, std::memory_order_release);
 }
 
 bool FileSystemObserverWorker::updating() const {
@@ -83,7 +83,7 @@ bool FileSystemObserverWorker::updating() const {
 }
 
 void FileSystemObserverWorker::setUpdateFlagValue(const bool value) {
-    _updating.store(value);
+    _updating.store(value, std::memory_order_release);
 }
 
 } // namespace KDC
