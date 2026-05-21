@@ -563,22 +563,22 @@ bool Utility::runDetachedProcess(std::wstring cmd) {
 #endif
 
 SyncName Utility::commonDocumentsFolderName() {
-    constexpr auto name = Str2SyncName(COMMON_DOC_FOLDER);
+    static const auto name = Str2SyncName(COMMON_DOC_FOLDER);
     return name;
 }
 
 SyncPath Utility::commonDocumentsFolderPath() {
-    constexpr auto path = Str("/") + Str2SyncName(COMMON_DOC_FOLDER);
+    static const auto path = Str("/") + Str2SyncName(COMMON_DOC_FOLDER);
     return path;
 }
 
 SyncName Utility::sharedFolderName() {
-    constexpr auto name = Str2SyncName(SHARED_FOLDER);
+    static const auto name = Str2SyncName(SHARED_FOLDER);
     return name;
 }
 
 SyncPath Utility::sharedFolderPath() {
-    constexpr auto path = Str("/") + Str2SyncName(SHARED_FOLDER);
+    static const auto path = Str("/") + Str2SyncName(SHARED_FOLDER);
     return path;
 }
 
