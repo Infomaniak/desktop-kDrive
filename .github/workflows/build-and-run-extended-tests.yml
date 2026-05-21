@@ -55,21 +55,25 @@ jobs:
       - name: Restore extension packages
         run : nuget restore extensions/windows/cfapi/kDriveExt.sln
 
-      - name: Import Windows virtual certificate
+      - name: Import Windows certificate
         env:
-          WINDOWS_VIRTUAL_CERT: ${{ secrets.WINDOWS_VIRTUAL_CERT }}
-          WINDOWS_VIRTUAL_CERT_PASSWORD: ${{ secrets.WINDOWS_VIRTUAL_CERT_PASSWORD }}
+          WINDOWS_DEBUG_CERT: ${{ secrets.WINDOWS_DEBUG_CERT_THUMBPRINT }}
         run: |
-          New-Item -ItemType directory -Path certificate
-          Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_VIRTUAL_CERT
-          certutil -decode certificate/tempCert.txt certificate/certificate.pfx
-          Remove-Item -path certificate -include tempCert.txt
-          Import-PfxCertificate -FilePath certificate/certificate.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String $env:WINDOWS_VIRTUAL_CERT_PASSWORD -Force -AsPlainText)
+            New-Item -ItemType directory -Path certificate
+            Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_DEBUG_CERT
+            certutil -decode certificate/tempCert.txt certificate/debug_certificate.pfx
+            Remove-Item -path certificate -include tempCert.txt
+            Import-PfxCertificate -FilePath certificate/debug_certificate.pfx -CertStoreLocation Cert:\LocalMachine\My -Password (ConvertTo-SecureString -String "$env:WINDOWS_DEBUG_CERT" -Force -AsPlainText)
+            Write-Host "Debug certificate imported successfully."
+
+        shell: powershell
 
       - name: Build kDrive desktop
+        env:
+          WINDOWS_DEBUG_CERT: ${{ secrets.WINDOWS_DEBUG_CERT_THUMBPRINT }}
         run: |
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
-          powershell ./infomaniak-build-tools/windows/build-drive.ps1 -thumbprint ${{ secrets.WINDOWS_DEBUG_CERT_THUMBPRINT }} -ci -coverage -unitTests
+          powershell ./infomaniak-build-tools/windows/build-drive.ps1 -thumbprint $env:WINDOWS_DEBUG_CERT -ci -coverage -unitTests
         shell: cmd
 
       - name: Execute tests
