@@ -24,6 +24,7 @@
 #include "db/syncdb.h"
 #include "libcommon/utility/types.h"
 
+#include <atomic>
 #include <list>
 
 namespace KDC {
