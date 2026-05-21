@@ -238,7 +238,7 @@ static QString modeToPluginName(const VirtualFileMode virtualFileMode) {
 bool KDC::isVfsPluginAvailable(const VirtualFileMode virtualFileMode, QString &error) {
     if (virtualFileMode == VirtualFileMode::Off) return true;
 
-#if not defined(KD_LINUX)
+#if !defined(KD_LINUX)
     if (virtualFileMode == VirtualFileMode::Win) {
         if (CommonUtility::platform() == Platform::WindowsServer) return false; // LiteSync not available on Windows Server
 
