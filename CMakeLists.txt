@@ -166,8 +166,11 @@ option(BUILD_DOCS "BUILD_DOCS" OFF)
 # this option needs to be refactored out BUILD_CLIENT needs to be ON.
 option(BUILD_LIBRARIES_ONLY "BUILD_LIBRARIES_ONLY" OFF)
 
-# this option adds src/gui to the subdirectories when building the src folder 
+# this option adds src/gui4 to the subdirectories when building the src folder 
 option(BUILD_GUI "BUILD_GUI" ON)
+
+# this option adds src/gui to the subdirectories when building the src folder 
+option(BUILD_GUI_LEGACY "BUILD_GUI_LEGACY" OFF)
 
 # build the tests
 option(BUILD_UNIT_TESTS "BUILD_UNIT_TESTS" OFF)
@@ -295,6 +298,7 @@ elseif(BUILD_CLIENT)
         set(CMAKE_FIND_LIBRARY_SUFFIXES .dll)
         find_library(VFS_SHARED_LIBRARY NAMES vfs PATHS ${VFS_DIRECTORY} NO_DEFAULT_PATH NO_CACHE)
         message(STATUS "vfs dll found in ${VFS_SHARED_LIBRARY}")
+        file(COPY ${VFS_SHARED_LIBRARY} DESTINATION ${BIN_OUTPUT_DIRECTORY})  
         install(FILES ${VFS_SHARED_LIBRARY} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
         # Sentry
@@ -304,6 +308,7 @@ elseif(BUILD_CLIENT)
                 NO_DEFAULT_PATH NO_CACHE
         )
         message(STATUS "sentry dll found in ${SENTRY_SHARED_LIBRARY}")
+        file(COPY ${SENTRY_SHARED_LIBRARY} DESTINATION ${BIN_OUTPUT_DIRECTORY})  
         install(FILES ${SENTRY_SHARED_LIBRARY} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
         # Crashpad_handler
@@ -313,11 +318,8 @@ elseif(BUILD_CLIENT)
                 NO_DEFAULT_PATH NO_CACHE
         )
         message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
+        file(COPY ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${BIN_OUTPUT_DIRECTORY})  
         install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_INSTALL_BINDIR})
-
-        # Client
-        install(DIRECTORY ${BIN_OUTPUT_DIRECTORY}/client DESTINATION ${CMAKE_INSTALL_BINDIR} OPTIONAL)
-
     else()
         # Default sync exclude list
         if(CMAKE_BUILD_TYPE STREQUAL "Debug")
