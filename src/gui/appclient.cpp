@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,9 +66,39 @@ static const QList<QString> fontFiles = QList<QString>() << QString(":/client/re
                                                          << QString(":/client/resources/fonts/SuisseIntl-Black.otf");
 // static const QString defaultFontFamily("Suisse Int'l");
 
+void log(const std::string &str) {
+    qCInfo(lcAppClient) << "Connected to server";
+    std::cout << str << std::endl;
+}
+
 AppClient::AppClient(int &argc, char **argv) :
     SharedTools::QtSingleApplication(QString::fromStdString(Theme::instance()->appClientName()), argc, argv) {
     _startedAt.start();
+
+#if defined(Q_OS_WIN)
+    if (AllocConsole()) {
+        FILE *fp = nullptr;
+        (void) freopen_s(&fp, "CONOUT$", "w", stdout);
+        (void) freopen_s(&fp, "CONOUT$", "w", stderr);
+
+        // freopen_s may leave the stream in an error state on failure.
+        // Clear C++ stream flags to ensure std::cout/std::cerr remain usable.
+        std::cout.clear();
+        std::cerr.clear();
+    }
+#endif
+
+    std::cout << "AppClient started" << std::endl;
+
+    // Update Sentry configuration
+    sentry::Handler::instance()->setIsSentryActivated(true);
+
+    std::cout << "Sentry initialized" << std::endl;
+
+    // Setup logging
+    setupLogging();
+
+    log("Logging initialized");
 
     setOrganizationDomain(QLatin1String(APPLICATION_REV_DOMAIN));
     setApplicationName(QString::fromStdString(_theme->appClientName()));
@@ -76,12 +106,16 @@ AppClient::AppClient(int &argc, char **argv) :
     setApplicationVersion(QString::fromStdString(_theme->version()));
     setStyle(new KDC::CustomProxyStyle);
 
+    log("App info setup");
+
     // Load fonts
     for (const QString &fontFile: fontFiles) {
         if (QFontDatabase::addApplicationFont(fontFile) < 0) {
             std::cout << "Error adding font file!" << std::endl;
         }
     }
+
+    log("Fonts loaded");
 
 #ifdef QT_DEBUG
     // Read comm port value from .comm file
@@ -104,6 +138,8 @@ AppClient::AppClient(int &argc, char **argv) :
     }
 #endif
 
+    log("Comm port read: " + std::to_string(_commPort));
+
     if (isRunning()) {
         QMessageBox msgBox;
         msgBox.setText(tr("kDrive client is already running!"));
@@ -111,6 +147,8 @@ AppClient::AppClient(int &argc, char **argv) :
         QTimer::singleShot(0, qApp, SLOT(quit()));
         return;
     }
+
+    log("No other client is running");
 
     // Connect to server
     if (connectToServer()) {
@@ -120,22 +158,20 @@ AppClient::AppClient(int &argc, char **argv) :
         return;
     }
 
+    log("Connected to server");
+
     // Init ParametersCache instance
     if (!ParametersCache::instance()) {
         qCWarning(lcAppClient) << "Error in ParametersCache::instance";
         throw std::runtime_error("Unable to initialize parameters cache.");
     }
 
-    // Update Sentry configuration
-    sentry::Handler::instance()->setIsSentryActivated(true);
-
-    // Setup logging
-    setupLogging();
+    log("Parameters cache initialized");
 
     // Set style
     KDC::GuiUtility::setStyle(qApp);
 
-    CommonUtility::setupTranslations(QApplication::instance(), ParametersCache::instance()->parametersInfo().language());
+    log("GUI style set");
 
 #ifdef PLUGINDIR
     // Setup extra plugin search path
@@ -146,12 +182,17 @@ AppClient::AppClient(int &argc, char **argv) :
         qCInfo(lcAppClient) << "Adding extra plugin search path:" << extraPluginPath;
         addLibraryPath(extraPluginPath);
     }
+    log("Plugins loaded");
 #endif
 
     setQuitOnLastWindowClosed(false);
 
+    log("Quit on last window close deactivated");
+
     // Setup translations
     CommonUtility::setupTranslations(this, ParametersCache::instance()->parametersInfo().language());
+
+    log("Translations setup");
 
     // Remove the files that keep a record of former crash or kill events
     SignalType signalType = SignalType::None;
@@ -165,11 +206,15 @@ AppClient::AppClient(int &argc, char **argv) :
         qCInfo(lcAppClient) << "Restarting after a" << SignalCategory::Kill << "with signal" << signalType;
     }
 
+    log("Files keeping track of crash removed");
+
     // Setup debug crash mode
     bool isSet = false;
     if (CommonUtility::envVarValue("KDRIVE_DEBUG_CRASH", isSet); isSet) {
         _debugCrash = true;
     }
+
+    log("Setup debug crash mode: " + std::to_string(_debugCrash));
 
     // Setup Gui
     _gui = std::shared_ptr<ClientGui>(new ClientGui(this));
@@ -179,11 +224,17 @@ AppClient::AppClient(int &argc, char **argv) :
     _theme->setSystrayUseMonoIcons(ParametersCache::instance()->parametersInfo().monoIcons());
     connect(_theme, &Theme::systrayUseMonoIconsChanged, this, &AppClient::onUseMonoIconsChanged);
 
+    log("GUI initialized");
+
     // Cleanup at Quit
     connect(this, &QCoreApplication::aboutToQuit, this, &AppClient::onCleanup);
 
+    log("Cleanup at Quit");
+
     // Refresh status
     _gui->computeOverallSyncStatus();
+
+    log("Refresh status");
 
     if (_gui->userInfoMap().empty()) {
         // Open the setup wizard
@@ -197,9 +248,13 @@ AppClient::AppClient(int &argc, char **argv) :
         }
     }
 
+    log("Login asked");
+
     // Update Sentry user
     updateSentryUser();
     connect(_gui.get(), &ClientGui::userListRefreshed, this, &AppClient::updateSentryUser);
+
+    log("Sentry user updated");
 }
 
 AppClient::~AppClient() {
@@ -569,22 +624,22 @@ void AppClient::setupLogging() {
     logger->setLogDebug(_logDebug);
     logger->enterNextLogFile();
 
-    logger->setMinLogLevel(toInt(ParametersCache::instance()->parametersInfo().logLevel()));
+    logger->setMinLogLevel(toInt(/*ParametersCache::instance()->parametersInfo().logLevel()*/ LogLevel::Debug));
 
-    if (ParametersCache::instance()->parametersInfo().useLog()) {
-        // Don't override other configured logging
-        if (logger->isLoggingToFile()) return;
+    // if (ParametersCache::instance()->parametersInfo().useLog()) {
+    // Don't override other configured logging
+    if (logger->isLoggingToFile()) return;
 
-        logger->setupTemporaryFolderLogDir();
-        if (ParametersCache::instance()->parametersInfo().purgeOldLogs()) {
-            logger->setLogExpire(std::chrono::hours(CommonUtility::logsPurgeRate * 24)); // C++20 offers std::chrono::day.
-        } else {
-            logger->setLogExpire(std::chrono::hours(0));
-        }
-        logger->enterNextLogFile();
-    } else {
-        logger->disableTemporaryFolderLogDir();
-    }
+    logger->setupTemporaryFolderLogDir();
+    // if (ParametersCache::instance()->parametersInfo().purgeOldLogs()) {
+    //     logger->setLogExpire(std::chrono::hours(CommonUtility::logsPurgeRate * 24)); // C++20 offers std::chrono::day.
+    // } else {
+    logger->setLogExpire(std::chrono::hours(0));
+    // }
+    logger->enterNextLogFile();
+    // } else {
+    //     logger->disableTemporaryFolderLogDir();
+    // }
 
     connect(logger, &KDC::Logger::logTooBig, this, &AppClient::onLogTooBig);
     connect(logger, &KDC::Logger::showNotification, this, &AppClient::showNotification);
