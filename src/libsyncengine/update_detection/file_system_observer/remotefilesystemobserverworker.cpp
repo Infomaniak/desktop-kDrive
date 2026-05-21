@@ -454,6 +454,8 @@ ExitInfo RemoteFileSystemObserverWorker::initWithCursor() {
         return exitInfo;
     }
     for (const auto &specialFolderRemoteId: specialFoldersRemoteIds) {
+        if (stopAsked()) return ExitCode::Ok;
+
         if (_blackList.contains(specialFolderRemoteId)) continue;
 
         if (const auto exitInfo = updateSpecialFolderItem(specialFolderRemoteId); !exitInfo) return exitInfo;
@@ -623,11 +625,14 @@ ExitInfo RemoteFileSystemObserverWorker::handleCsvReplyCursor(
 
 ExitInfo RemoteFileSystemObserverWorker::getItemsInRemoteDir(const RemoteNodeId &remoteDirId,
                                                              const CursorPersistence cursorPersistence) {
+    if (stopAsked()) return ExitCode::Ok;
+
     std::shared_ptr<CsvFullFileListWithCursorJob> job = nullptr;
     if (const auto exitInfo = createGetItemsInRemoteDirJob(remoteDirId, job); !exitInfo) return exitInfo;
 
     // Send request and monitor its performance.
     sentry::pTraces::scoped::RFSOBackRequest perfMonitorBackRequest(cursorPersistence == CursorPersistence::None, syncDbId());
+
 
     SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_LOW);
     while (!SyncJobManagerSingleton::instance()->isJobFinished(job->jobId())) {
