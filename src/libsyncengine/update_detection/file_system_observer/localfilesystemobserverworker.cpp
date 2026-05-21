@@ -348,7 +348,7 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(const std::list<std::pai
 
             if (nodeType == NodeType::Directory) {
                 // A new directory must be explored
-                // NB: When a directory is moved inside the sync directory, it is deleted & added to the snapshot
+                // NB: When a directory is moved while staying inside the sync directory, it is deleted & added to the snapshot
                 if (absolutePath.native().length() > CommonUtility::maxPathLength()) {
                     LOGW_SYNCPAL_WARN(_logger, L"Ignore item: " << Utility::formatSyncPath(absolutePath) << L" because size > "
                                                                 << CommonUtility::maxPathLength());

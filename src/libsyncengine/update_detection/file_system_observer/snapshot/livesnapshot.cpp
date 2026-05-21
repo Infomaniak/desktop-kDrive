@@ -52,7 +52,11 @@ void LiveSnapshot::init() {
 bool LiveSnapshot::updateItem(const SnapshotItem &newItem) {
     NodeId removedNodeId;
     const auto res = updateItem(newItem, removedNodeId);
-    assert(removedNodeId.empty());
+    if (!removedNodeId.empty()) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Item " << newItem.id() << " replaced item " << removedNodeId << " in the snapshot");
+        assert(false);
+    }
     return res;
 }
 
