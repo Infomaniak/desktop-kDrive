@@ -53,7 +53,7 @@ public extension UIUpdateState {
 public extension UIVersionInfo {
     init(versionInfo: VersionInfo) {
         self.init(
-            channel: UIDistributionChannel(versionChannel: versionInfo.channel),
+            channel: UIDistributionChannel(distributionChannel: versionInfo.channel),
             tag: versionInfo.tag,
             buildVersion: Int(versionInfo.buildVersion)
         )

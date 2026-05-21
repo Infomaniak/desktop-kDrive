@@ -31,6 +31,9 @@
 #include <fstream>
 #include <log4cplus/loggingmacros.h> // LOGW_WARN
 
+#include <vector>
+#include <xxhash.h>
+
 namespace KDC {
 
 // Default `std::filesytem` implementation. This can be changed in unit tests.
@@ -760,6 +763,84 @@ void IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, Pa
         std::string message = ioError2StdString(ioError);
         throw std::runtime_error("IoHelper::getFileStat error: " + message);
     }
+}
+
+IoError IoHelper::getFileChecksum(const SyncPath &path, std::ifstream &ifs, std::string &checksum) noexcept {
+    using enum IoError;
+    checksum.clear();
+
+    try {
+        std::error_code ec;
+        const bool isSymlink = _isSymlink(path, ec);
+        if (const IoError ioError = stdError2ioError(ec); ioError != Success) return ioError;
+        if (isSymlink) return InvalidArgument;
+
+#if defined(KD_MACOS)
+        bool isAlias = false;
+        IoError aliasError = Success;
+        if (!IoHelper::_checkIfAlias(path, isAlias, aliasError)) return aliasError;
+        if (isAlias) return InvalidArgument;
+#endif
+
+        IoError openError = Success;
+        if (!IoHelper::openFile(path, ifs, openError) || !ifs) return openError;
+
+        constexpr size_t chunkSize = 8 * 1024 * 1024; // 8 MB
+        std::vector<char> buffer(chunkSize);
+
+        XXH3_state_t *state = XXH3_createState();
+        if (state == nullptr) return Unknown;
+
+        if (XXH3_64bits_reset(state) == XXH_ERROR) {
+            XXH3_freeState(state);
+            return Unknown;
+        }
+
+        std::streamsize readBytes(0);
+        while ((readBytes = ifs.read(buffer.data(), buffer.size()).gcount()) > 0) {
+            if (XXH3_64bits_update(state, buffer.data(), readBytes) == XXH_ERROR) {
+                ifs.close();
+                XXH3_freeState(state);
+                return Unknown;
+            }
+        }
+
+        ifs.close();
+        XXH64_hash_t hash = XXH3_64bits_digest(state);
+        XXH3_freeState(state);
+
+        checksum = Utility::xxHashToStr(hash);
+        return Success;
+    } catch (const std::bad_alloc &) {
+        LOGW_WARN(logger(), L"Memory allocation failed in getFileChecksum");
+        return Unknown;
+    } catch (const std::exception &e) {
+        LOGW_WARN(logger(), L"Exception in getFileChecksum: " << CommonUtility::s2ws(e.what()));
+        return Unknown;
+    } catch (...) {
+        LOGW_WARN(logger(), L"Unknown exception in getFileChecksum");
+        return Unknown;
+    }
+}
+
+bool IoHelper::checkIfFileChanged(const SyncPath &path, int64_t previousSize, SyncTime previousMtime,
+                                  SyncTime previousCreationTime, bool &changed, IoError &ioError) noexcept {
+    changed = false;
+
+    FileStat fileStat;
+    if (!getFileStat(path, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive)) {
+        LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << Utility::formatIoError(path, ioError));
+        return false;
+    }
+
+    if (ioError != IoError::Success) {
+        return isExpectedError(ioError);
+    }
+
+    changed = (previousSize != fileStat.size) || (previousMtime != fileStat.modificationTime) ||
+              (previousCreationTime != fileStat.creationTime);
+
+    return true;
 }
 
 bool IoHelper::checkIfIsHiddenFile(const SyncPath &path, bool checkAncestors, bool &isHidden, IoError &ioError) noexcept {

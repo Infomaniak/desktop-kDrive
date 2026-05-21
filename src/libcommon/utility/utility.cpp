@@ -179,7 +179,6 @@ Platform CommonUtility::platform() {
     }
     // Otherwise we consider the OS to be Linux based
     if (platformArch().contains("arm", Qt::CaseInsensitive)) return Platform::LinuxARM;
-
     return Platform::LinuxAMD;
 }
 
@@ -188,32 +187,19 @@ QString CommonUtility::platformArch() {
 }
 
 const std::string &CommonUtility::userAgentString() {
-    static std::string str;
-    if (str.empty()) {
-        std::stringstream ss;
-        ss << APPLICATION_NAME << " / " << KDRIVE_VERSION_STRING << " (" << platformName().toStdString() << ")";
-        str = ss.str();
-    }
+    static const std::string str =
+            std::string(APPLICATION_NAME) + " / " + currentVersion() + " (" + platformName().toStdString() + ")";
     return str;
 }
 
 const std::string &CommonUtility::currentVersion() {
-    static std::string str;
-    if (str.empty()) {
-        std::stringstream ss;
-        ss << KDRIVE_VERSION_MAJOR << "." << KDRIVE_VERSION_MINOR << "." << KDRIVE_VERSION_PATCH << "." << KDRIVE_VERSION_BUILD;
-        str = ss.str();
-    }
+    static const std::string str = KDRIVE_VERSION_STRING;
     return str;
 }
 
 const std::string &CommonUtility::versionTag() {
-    static std::string str;
-    if (str.empty()) {
-        std::stringstream ss;
-        ss << KDRIVE_VERSION_MAJOR << "." << KDRIVE_VERSION_MINOR << "." << KDRIVE_VERSION_PATCH;
-        str = ss.str();
-    }
+    static const std::string str = std::to_string(KDRIVE_VERSION_MAJOR) + "." + std::to_string(KDRIVE_VERSION_MINOR) + "." +
+                                   std::to_string(KDRIVE_VERSION_PATCH);
     return str;
 }
 

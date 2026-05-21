@@ -229,7 +229,7 @@ void TestTypes::testToString() {
     testToStringIntValues<AppStateKey>();
     testToStringIntValues<LogUploadState>();
     testToStringIntValues<UpdateState>();
-    testToStringIntValues<VersionChannel>();
+    testToStringIntValues<DistributionChannel>();
     testToStringIntValues<Platform>();
     testToStringIntValues<ConflictResolutionStrategy>();
     testToStringIntValues<sentry::ConfidentialityLevel>();

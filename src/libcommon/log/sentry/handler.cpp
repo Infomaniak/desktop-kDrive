@@ -304,7 +304,7 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
         std::cerr << "sentry_init returned " << res << std::endl;
     }
     assert(res == 0);
-    _instance->setDistributionChannel(VersionChannel::Unknown);
+    _instance->setDistributionChannel(DistributionChannel::Unknown);
 }
 
 void Handler::setAuthenticatedUser(const SentryUser &user) {
@@ -499,37 +499,12 @@ void Handler::writeEvent(const std::string &eventStr, bool crash) noexcept {
     }
 }
 
-void Handler::setDistributionChannel(const VersionChannel channel) {
+void Handler::setDistributionChannel(const DistributionChannel channel) {
     // Editing the "distribution_channel" value implies reflecting the change in the Sentry project settings.
     // (Settings > Projects > kdrive-[client/server] > Tags & Context).
     // It is not recommended to change this value or the channelStr values, as some Sentry dashboards/alerts might rely
     // on them and should be updated accordingly.
-
-    std::string channelStr;
-    switch (channel) {
-        case VersionChannel::Prod:
-            channelStr = "Production";
-            break;
-        case VersionChannel::Next:
-            channelStr = "Next";
-            break;
-        case VersionChannel::Beta:
-            channelStr = "Beta";
-            break;
-        case VersionChannel::Internal:
-            channelStr = "Internal";
-            break;
-        case VersionChannel::Legacy:
-            channelStr = "Legacy";
-            break;
-        case VersionChannel::Unknown:
-            channelStr = "Unknown";
-            break;
-        default:
-            channelStr = "Error";
-            break;
-    }
-    setTag("distribution_channel", channelStr);
+    setTag("distribution_channel", toString(channel));
 }
 
 void Handler::setAppUUID(std::string appUUID) {

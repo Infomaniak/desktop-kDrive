@@ -35,7 +35,7 @@ void WindowsUpdater::onUpdateFound() {
         return;
     }
 
-    const auto expectedSize = getExpectedInstallerSize(versionInfo(_currentChannel).downloadUrl);
+    const auto expectedSize = getExpectedInstallerSize(versionInfo().downloadUrl);
 
     // Check if an installer is already downloaded and get its size.
     uint64_t localSize = 0;
@@ -97,7 +97,7 @@ void WindowsUpdater::downloadUpdate() noexcept {
         LOGW_WARN(Log::instance()->getLogger(), L"Failed to to remove existing installer " << Utility::formatSyncPath(filepath));
     }
 
-    const auto job = std::make_shared<DirectDownloadJob>(filepath, versionInfo(_currentChannel).downloadUrl);
+    const auto job = std::make_shared<DirectDownloadJob>(filepath, versionInfo().downloadUrl);
     const std::function<void(UniqueId)> callback = std::bind_front(&WindowsUpdater::downloadFinished, this);
     job->setAdditionalCallback(callback);
     SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
@@ -153,7 +153,7 @@ void WindowsUpdater::downloadFinished(const UniqueId jobId) {
 }
 
 bool WindowsUpdater::getInstallerPath(SyncPath &path) const {
-    const auto url = versionInfo(_currentChannel).downloadUrl;
+    const auto url = versionInfo().downloadUrl;
     const auto pos = url.find_last_of('/');
     const auto installerName = url.substr(pos + 1);
     SyncPath tmpDirPath;

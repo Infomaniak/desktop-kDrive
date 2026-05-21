@@ -141,8 +141,8 @@ public extension UILogLevel {
 }
 
 public extension UIDistributionChannel {
-    init(versionChannel: KDC.VersionChannel) {
-        switch versionChannel {
+    init(distributionChannel: KDC.DistributionChannel) {
+        switch distributionChannel {
         case .Prod:
             self = .prod
         case .Next:
@@ -153,11 +153,13 @@ public extension UIDistributionChannel {
             self = .internal
         case .Legacy:
             self = .legacy
+        case .Test:
+            self = .test
         case .Unknown:
-            ReportHelper.reportToSentryIfProd(message: "UIDistributionChannel init received KDC.VersionChannel.Unknown case")
+            ReportHelper.reportToSentryIfProd(message: "UIDistributionChannel init received KDC.DistributionChannel.Unknown case")
             self = .prod
         case .EnumEnd:
-            ReportHelper.reportToSentryIfProd(message: "UIDistributionChannel init received KDC.VersionChannel.EnumEnd case")
+            ReportHelper.reportToSentryIfProd(message: "UIDistributionChannel init received KDC.DistributionChannel.EnumEnd case")
             self = .prod
         @unknown default:
             ReportHelper.reportToSentryIfProd(message: "UIDistributionChannel init received @unknown case")
@@ -165,7 +167,7 @@ public extension UIDistributionChannel {
         }
     }
 
-    func toKDCVersionChannel() -> KDC.VersionChannel {
+    func toKDCDistributionChannel() -> KDC.DistributionChannel {
         switch self {
         case .prod:
             return .Prod
@@ -177,6 +179,8 @@ public extension UIDistributionChannel {
             return .Internal
         case .legacy:
             return .Legacy
+        case .test:
+            return .Test
         }
     }
 }
@@ -193,7 +197,7 @@ public extension UIParametersInfo {
             isExtendedLogEnabled: parametersInfo.extendedLog,
             shouldPurgeOldLogs: parametersInfo.purgeOldLogs,
             proxyConfiguration: UIProxyConfiguration(proxyConfigInfo: parametersInfo.proxyConfigInfo),
-            distributionChannel: UIDistributionChannel(versionChannel: parametersInfo.distributionChannel),
+            distributionChannel: UIDistributionChannel(distributionChannel: parametersInfo.distributionChannel),
             isSentryEnabled: parametersInfo.sentryEnabled,
             isMatomoEnabled: parametersInfo.matomoEnabled
         )
@@ -213,7 +217,7 @@ public extension UIParametersInfo {
             proxyConfigInfo: proxyConfiguration.toProxyConfigInfo(),
             darkTheme: parametersInfo.darkTheme,
             maxAllowedCpu: parametersInfo.maxAllowedCpu,
-            distributionChannel: distributionChannel.toKDCVersionChannel(),
+            distributionChannel: distributionChannel.toKDCDistributionChannel(),
             sentryEnabled: isSentryEnabled,
             matomoEnabled: isMatomoEnabled
         )

@@ -26,9 +26,11 @@ namespace KDC {
 
 class MockUpdater : public AbstractUpdater {
     public:
-        explicit MockUpdater(const std::shared_ptr<UpdateChecker> &customUpdateChecker = std::make_shared<UpdateChecker>()) :
-            AbstractUpdater(customUpdateChecker) {
-            _currentChannel = VersionChannel::Beta;
+        explicit MockUpdater(
+                const std::shared_ptr<VersionRetriever> &customVersionRetriever = std::make_shared<VersionRetriever>()) {
+            _versionRetriever = customVersionRetriever;
+            const std::function callback = [this] { onAppVersionReceived(); };
+            _versionRetriever->setCallback(callback);
         }
 
         void startInstaller() override {
@@ -37,11 +39,6 @@ class MockUpdater : public AbstractUpdater {
 
         void onUpdateFound() override {
             if (_quitCallback) _quitCallback();
-        }
-
-        std::string getCurrentVersion() const override {
-            if (_mockGetCurrentVersion) return _mockGetCurrentVersion();
-            return AbstractUpdater::getCurrentVersion();
         }
 
         void setMockGetCurrentVersion(const std::function<std::string()> &mockGetCurrentVersion) {

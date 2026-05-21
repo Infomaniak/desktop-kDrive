@@ -36,7 +36,7 @@ public struct ParametersInfo: Codable, Sendable {
     public let proxyConfigInfo: ProxyConfigInfo
     public let darkTheme: Bool
     public let maxAllowedCpu: Int32
-    public let distributionChannel: KDC.VersionChannel
+    public let distributionChannel: KDC.DistributionChannel
     public let sentryEnabled: Bool
     public let matomoEnabled: Bool
 
@@ -53,7 +53,7 @@ public struct ParametersInfo: Codable, Sendable {
         proxyConfigInfo: ProxyConfigInfo,
         darkTheme: Bool,
         maxAllowedCpu: Int32,
-        distributionChannel: KDC.VersionChannel,
+        distributionChannel: KDC.DistributionChannel,
         sentryEnabled: Bool,
         matomoEnabled: Bool
     ) {

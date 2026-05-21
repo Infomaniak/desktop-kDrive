@@ -97,6 +97,16 @@ bool SyncPalWorker::shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const 
     const auto invalidOperation =
             (w1 && w1->exitCode() == ExitCode::InvalidOperation) || (w2 && w2->exitCode() == ExitCode::InvalidOperation);
 
+    if (handleRateLimited(w1, w2)) return true;
+    if (httpBlockingError) {
+        handleBackError();
+        return true;
+    }
+
+    return networkIssue || httpBlockingError || syncDirNotAccessible || invalidOperation;
+}
+
+bool SyncPalWorker::handleRateLimited(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2) {
     if ((w1 && w1->exitCode() == ExitCode::RateLimited) || (w2 && w2->exitCode() == ExitCode::RateLimited)) {
         const auto newPauseDuration =
                 std::max(w1 ? w1->pauseDuration() : defaultPauseDuration, w2 ? w2->pauseDuration() : defaultPauseDuration);
@@ -106,8 +116,22 @@ bool SyncPalWorker::shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const 
         }
         return true;
     }
+    return false;
+}
 
-    return networkIssue || httpBlockingError || syncDirNotAccessible || invalidOperation;
+void SyncPalWorker::handleBackError(void) {
+    auto computedDelay = static_cast<int64_t>(
+            backoffVariable::baseDelay * std::pow(backoffVariable::multiplicativeFactor, std::min(_syncPal->consecutiveBackErrors(), (int64_t)10)));
+    _syncPal->incrementConsecutiveBackErrors();
+
+    const double jitterFactor = jitter(); // 40% of the computed delay
+    const auto newPauseDuration = static_cast<int64_t>(std::min(static_cast<int64_t>(computedDelay * jitterFactor), backoffVariable::maxDelay));
+    LOG_SYNCPAL_INFO(_logger, "Changing pause duration to " << newPauseDuration << " ms");
+    setPauseDuration(newPauseDuration);
+}
+
+double SyncPalWorker::jitter() const {
+    return CommonUtility::generateRandomNumber(1000, 1400) / 1000.0;
 }
 
 void SyncPalWorker::checkForMassDeletions() const {
@@ -397,6 +421,7 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             _syncPal->refreshTmpBlacklist();
             _syncPal->freeSnapshotsCopies();
             _syncPal->syncDb()->cache().clear();
+            _syncPal->resetConsecutiveBackErrors();
             break;
         case SyncStep::UpdateDetection1:
             workers[0] = _syncPal->computeFSOperationsWorker();

@@ -61,6 +61,17 @@ namespace Infomaniak.kDrive.TrayIcon
                 Logger.Log(Logger.Level.Error, "ShowWindowCommand not found in application resources.");
             }
 
+
+            if (Application.Current.Resources["OpenSettingsCommand"] is XamlUICommand settingsCommand)
+            {
+                settingsCommand.ExecuteRequested -= OpenSettingsCommand_ExecuteRequested;
+                settingsCommand.ExecuteRequested += OpenSettingsCommand_ExecuteRequested;
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Error, "OpenSettingsCommand not found in application resources.");
+            }
+
             if (Application.Current.Resources["ExitApplicationCommand"] is XamlUICommand exitCommand)
             {
                 exitCommand.ExecuteRequested -= ExitApplicationCommand_ExecuteRequested;
@@ -187,6 +198,15 @@ namespace Infomaniak.kDrive.TrayIcon
             Logger.Log(Logger.Level.Info, "ExitApplicationCommand executed - exiting application");
             _trayIcon?.Dispose();
             App.ExitApplicationAndShutdownServer();
+        }
+
+        private void OpenSettingsCommand_ExecuteRequested(XamlUICommand sender, ExecuteRequestedEventArgs args)
+        {
+            Logger.Log(Logger.Level.Info, "OpenSettingsCommand executed");
+            if (Application.Current is App app)
+            {
+                app.CreateWindow(CreateWindowOptions.Foreground | CreateWindowOptions.CancelOnboarding | CreateWindowOptions.OpenSettings);
+            }
         }
 
         [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = CharSet.Auto)]

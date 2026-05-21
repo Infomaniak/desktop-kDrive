@@ -50,6 +50,7 @@ namespace Infomaniak.kDrive.OnBoarding
 
             this.SetTitleBar(AppTitleBar);
             Utility.SetWindowProperties(this, _minimumWidth, _minimumHeight, Utility.WindowResizeOptions.AllowMinimize | Utility.WindowResizeOptions.AllowResize); // Set initial size and allow resizing
+            Utility.CenterWindow(this);
             LottiePlayer.ActualThemeChanged += LottiePlayer_ActualThemeChanged;
             UpdateLottieSource(_lottieRessourceKey, 130, 1);
             Closed += OnBoardingWindow_Closed;

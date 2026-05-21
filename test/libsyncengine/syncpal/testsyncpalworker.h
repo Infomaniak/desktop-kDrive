@@ -48,6 +48,7 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST(testInternalPause1);
         CPPUNIT_TEST(testInternalPause2);
         CPPUNIT_TEST(testInternalPause3);
+        CPPUNIT_TEST(testHandleBackError);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -80,6 +81,11 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
          * state.
          */
         void testInternalPause3();
+
+        /* This test verifies that consecutive BackError exits produce an exponentially increasing pause duration (capped at
+         * maxDelay), and that the counter resets when the sync reaches the Idle step.
+         */
+        void testHandleBackError();
 
         void testStopDuringInternalPause();
         void testDestroyDuringInternalPause();
@@ -203,6 +209,14 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
                 }
         };
 
+        class MockSyncPalWorker : public SyncPalWorker {
+            public:
+                using SyncPalWorker::SyncPalWorker;
+
+            private:
+                double jitter() const override { return 1.0; }
+        };
+
         class MockSyncPal : public SyncPal {
             public:
                 using SyncPal::SyncPal;
@@ -218,6 +232,7 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
 
             private:
                 void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0)) override;
+                void freeSnapshotsCopies() override;
         };
 };
 

@@ -18,7 +18,7 @@
 
 #include "sparkleupdater.h"
 
-#include "updatechecker.h"
+#include "versionretriever.h"
 #include "libcommon/utility/utility.h"
 #include "libparms/db/parmsdb.h"
 #include "requests/parameterscache.h"
@@ -199,9 +199,8 @@ SparkleUpdater::~SparkleUpdater() {
 }
 
 void SparkleUpdater::onUpdateFound() {
-    if (isVersionSkipped(versionInfo(_currentChannel).fullVersion())) {
-        LOG_INFO(KDC::Log::instance()->getLogger(),
-                 "Version " << versionInfo(_currentChannel).fullVersion().c_str() << " is skipped.");
+    if (isVersionSkipped(versionInfo().fullVersion())) {
+        LOG_INFO(KDC::Log::instance()->getLogger(), "Version " << versionInfo().fullVersion().c_str() << " is skipped.");
         return;
     }
 
@@ -227,7 +226,7 @@ void SparkleUpdater::setQuitCallback(const std::function<void()> &quitCallback) 
 }
 
 void SparkleUpdater::startInstaller() {
-    reset(versionInfo(_currentChannel).downloadUrl);
+    reset(versionInfo().downloadUrl);
 
     if (!d->updater || !d->spuStandardUserDriver) {
         LOG_WARN(KDC::Log::instance()->getLogger(), "Initialization error!");
@@ -300,7 +299,7 @@ bool SparkleUpdater::startSparkleUpdater() {
 }
 
 void SparkleUpdater::skipVersionCallback() {
-    skipVersion(versionInfo(_currentChannel).fullVersion());
+    skipVersion(versionInfo().fullVersion());
 }
 
 } // namespace KDC

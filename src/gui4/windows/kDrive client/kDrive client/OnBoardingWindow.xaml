@@ -48,8 +48,7 @@
         <TitleBar x:Name="AppTitleBar"
                   Grid.Row="0"
                   Grid.ColumnSpan="2"
-                  Title="kDrive"
-                  Subtitle="Beta">
+                  Title="kDrive">
             <TitleBar.IconSource>
                 <ImageIconSource>
                     <ImageIconSource.ImageSource>

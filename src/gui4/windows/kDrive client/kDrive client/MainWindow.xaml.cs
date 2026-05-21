@@ -30,20 +30,22 @@ namespace Infomaniak.kDrive
 {
     public sealed partial class MainWindow : Window
     {
-        private const int _defaultWidth = 900;
-        private const int _defaultHeight = 600;
+        private const int _defaultWidth = 1025;
+        private const int _defaultHeight = 683;
         private const int _minimumWidth = 900;
         private const int _minimumHeight = 600;
         public AppNavigationView AppNavView { get { return NavView; } }
         public AppModel ViewModel { get; } = App.ServiceProvider.GetRequiredService<AppModel>();
 
-        public MainWindow()
+        public MainWindow(Type? landingPageType = null)
         {
             InitializeComponent();
+            AppNavView.LandingPageType = landingPageType;
             this.ExtendsContentIntoTitleBar = true;  // enable custom titlebar
             this.SetTitleBar(AppTitleBar);
-            Utility.SetWindowProperties(this, _minimumWidth, _minimumHeight, Utility.WindowResizeOptions.AllowMinimize | Utility.WindowResizeOptions.AllowResize); // Set initial size and allow resizing
-            Utility.SetWindowCurrentSize(this, _defaultWidth, _defaultHeight); // Set to the minimum size keeping the nav bar panel open by default
+            Utility.SetWindowProperties(this, _minimumWidth, _minimumHeight, Utility.WindowResizeOptions.AllowMinimize | Utility.WindowResizeOptions.AllowResize); // Set the minimum size and allow resizing
+            Utility.SetWindowCurrentSize(this, _defaultWidth, _defaultHeight); // Default size sized for the navigation pane expanded state
+            Utility.CenterWindow(this);
             AppModel.UIThreadDispatcher = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread(); // Save the UI thread dispatcher for later use in view models
             AppWindow.TitleBar.PreferredTheme = Microsoft.UI.Windowing.TitleBarTheme.UseDefaultAppMode;
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
