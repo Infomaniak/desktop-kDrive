@@ -907,6 +907,44 @@ void TestOperationSorterWorker::testBreakCycle2() {
     CPPUNIT_ASSERT(breakCycleOp->newParentNode());
 }
 
+void TestOperationSorterWorker::testSwapNames() {
+    // Initial situation
+    // .
+    // └── A(a)
+    // └── B(b)
+
+    // Final situation
+    // .
+    // └── A(b)
+    //     └── AA(a)
+    // └── B(c)
+
+    // Move A(a) to B(b)/AA(a)
+    const auto nodeA = _testSituationGenerator.moveNode(ReplicaSide::Local, "a", "b", Str("AA"));
+    const auto moveOp1 = generateSyncOperation(OperationType::Move, nodeA);
+
+    // Rename B(b) to A(b)
+    const auto nodeB = _testSituationGenerator.moveNode(ReplicaSide::Local, "b", {}, Str("A"));
+    const auto moveOp2 = generateSyncOperation(OperationType::Move, nodeB);
+
+    // Create B(c)
+    const auto nodeC = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::Directory, "c", "");
+    nodeC->setName(Str("B"));
+    const auto createOp = generateSyncOperation(OperationType::Create, nodeC);
+
+    (void) _syncPal->syncOps()->pushOp(moveOp1);
+    (void) _syncPal->syncOps()->pushOp(moveOp2);
+    (void) _syncPal->syncOps()->pushOp(createOp);
+
+    _syncPal->_operationsSorterWorker->_filter.filterOperations();
+    _syncPal->_operationsSorterWorker->sortOperations();
+
+    std::vector<UniqueId> ops = {std::begin(_syncPal->syncOps()->opSortedList()), std::end(_syncPal->syncOps()->opSortedList())};
+    CPPUNIT_ASSERT_EQUAL(moveOp1->id(), ops[0]);
+    CPPUNIT_ASSERT_EQUAL(moveOp2->id(), ops[1]);
+    CPPUNIT_ASSERT_EQUAL(createOp->id(), ops[2]);
+}
+
 void TestOperationSorterWorker::testExtractOpsByType() {
     const auto dummyNode = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::File, "dummy", "", false);
     {
