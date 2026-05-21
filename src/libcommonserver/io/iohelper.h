@@ -158,20 +158,6 @@ struct IoHelper {
         // file status. This is a convenience function to be used in tests only.
         static void getFileStat(const SyncPath &path, FileStat *filestat, bool &exists, PathCheckOption option);
 
-        //! Check if the item indicated by path has a size or a modification date different from the specified ones.
-        /*!
-         \param path is a file system path to a directory entry (we also call it an item).
-         \param previousSize is a file size in bytes to be checked against.
-         \param previousMtime is the previous modification date to be checked against.
-         \param previousBirthtime is the previous creation date to be checked against.
-         \param ioError holds the error returned when an underlying OS API call fails.
-         \param changed is a boolean set with true if the check is successful and the file has changed with respect to size or
-         modification time. False otherwise.
-         \return true if no unexpected error occurred, false otherwise.
-         */
-        static bool checkIfFileChanged(const SyncPath &path, int64_t previousSize, SyncTime previousMtime,
-                                       SyncTime previousCreationTime, bool &changed, IoError &ioError) noexcept;
-
         //! Check if the item indicated by path is hidden.
         /*!
          \param path is a file system path to a directory entry (we also call it an item).

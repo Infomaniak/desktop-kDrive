@@ -50,6 +50,13 @@ void LiveSnapshot::init() {
 }
 
 bool LiveSnapshot::updateItem(const SnapshotItem &newItem) {
+    NodeId removedNodeId;
+    auto res = updateItem(newItem, removedNodeId);
+    assert(removedNodeId.empty());
+    return res;
+}
+
+bool LiveSnapshot::updateItem(const SnapshotItem &newItem, NodeId &removedNodeId) {
     const std::scoped_lock lock(_mutex);
 
     if (newItem.parentId().empty()) {
@@ -72,6 +79,7 @@ bool LiveSnapshot::updateItem(const SnapshotItem &newItem) {
                            L"Item: " << Utility::formatSyncName(newItem.name()) << L" (" << CommonUtility::s2ws(newItem.id())
                                      << L") already exists in parent: " << CommonUtility::s2ws(newItem.parentId())
                                      << L" with a different id. Removing it and adding the new one.");
+                removedNodeId = child->id();
                 auto child2 = child; // removeItem cannot be called on a const ref, we need to make a copy.
                 if (!removeItem(child2)) return false;
                 break; // There should be at most one item with the same normalized name in a folder.

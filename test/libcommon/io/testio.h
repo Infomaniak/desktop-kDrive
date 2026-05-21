@@ -46,7 +46,6 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testGetFileStat);
         CPPUNIT_TEST(testGetRights);
         // CPPUNIT_TEST(testIsFileAccessible); // Temporary disabled: Infinite loop on Linux CI
-        CPPUNIT_TEST(testFileChanged);
         CPPUNIT_TEST(testCheckIfIsHiddenFile);
         CPPUNIT_TEST(testCheckDirectoryIterator);
         CPPUNIT_TEST(testCheckDirectoryIteratorSkipAccessDenied);
@@ -96,7 +95,6 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         void testGetFileStat(void);
         void testGetRights(void);
         void testIsFileAccessible(void);
-        void testFileChanged(void);
         void testCheckIfIsHiddenFile(void);
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         void testGetXAttrValue(void);

@@ -762,26 +762,6 @@ void IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, Pa
     }
 }
 
-bool IoHelper::checkIfFileChanged(const SyncPath &path, int64_t previousSize, SyncTime previousMtime,
-                                  SyncTime previousCreationTime, bool &changed, IoError &ioError) noexcept {
-    changed = false;
-
-    FileStat fileStat;
-    if (!getFileStat(path, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << Utility::formatIoError(path, ioError));
-        return false;
-    }
-
-    if (ioError != IoError::Success) {
-        return isExpectedError(ioError);
-    }
-
-    changed = (previousSize != fileStat.size) || (previousMtime != fileStat.modificationTime) ||
-              (previousCreationTime != fileStat.creationTime);
-
-    return true;
-}
-
 bool IoHelper::checkIfIsHiddenFile(const SyncPath &path, bool checkAncestors, bool &isHidden, IoError &ioError) noexcept {
     ioError = IoError::Success;
     isHidden = false;

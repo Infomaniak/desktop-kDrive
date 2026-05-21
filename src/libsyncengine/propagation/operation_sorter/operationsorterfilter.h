@@ -17,6 +17,7 @@
 #pragma once
 
 #include "libsyncengine/reconciliation/syncoperation.h"
+#include "libcommon/utility/utility.h"
 
 #include <Poco/Hash.h>
 

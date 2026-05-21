@@ -295,6 +295,7 @@ ExitInfo FolderWatcher_linux::changeDetected(const SyncPath &path, OperationType
     (void) list.emplace_back(path, opType);
     if (const auto exitInfo = _parent->changesDetected(list); !exitInfo) {
         LOGW_WARN(_logger, L"Error in LocalFileSystemObserverWorker::changesDetected: " << exitInfo);
+        _parent->invalidateSnapshot();
         return exitInfo;
     }
 
