@@ -16,10 +16,14 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import kDriveCore
+import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
 struct ErrorsHeaderView: View {
+    @State private var isLoading = false
+
     let errorsCount: Int
 
     private var title: AttributedString {
@@ -37,13 +41,18 @@ struct ErrorsHeaderView: View {
     var body: some View {
         HStack {
             Text(title)
+                .font(.Tokens.title2)
+                .foregroundStyle(ColorToken.Text.primary.asColor)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
-            Button(KDriveLocalizable.buttonRefresh, action: refreshList)
+            LoadingButton(isLoading: $isLoading, action: refreshList) {
+                Text(KDriveLocalizable.buttonRefresh)
+            }
         }
     }
 
-    private func refreshList() {
-
+    private func refreshList() async {
+        _ = try? await ErrorInfoListJob().errorInfoList()
     }
 }
 

@@ -16,11 +16,17 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import kDriveCoreUI
 import SwiftUI
 
 struct ErrorsView: View {
     var body: some View {
-        Text("Hello, World!")
+        ScrollView {
+            VStack(spacing: AppPadding.padding32) {
+                ErrorsHeaderView(errorsCount: 0)
+            }
+            .padding(AppPadding.page)
+        }
     }
 }
 

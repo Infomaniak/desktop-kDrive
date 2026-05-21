@@ -148,7 +148,7 @@ extension SynchroNode {
 public enum SynchroError: Error, Hashable, Sendable, CaseIterable {
     case asleep
     case wakingUp
-    case notRenew // "drive locked"
+    case notRenew
     case maintenance
     case accessDenied
     case loggingError
