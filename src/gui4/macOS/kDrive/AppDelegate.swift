@@ -63,14 +63,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         mainWindow.showWindow(nil)
-        mainWindow.window?.makeKeyAndOrderFront(nil)
+        mainWindow.window?.orderFrontRegardless()
+        mainWindow.window?.makeKey()
+        mainWindow.window?.makeFirstResponder(nil)
     }
 
     @objc func openPreferencesWindow() {
         if preferencesWindow == nil {
             preferencesWindow = PreferencesWindowController()
         }
-        preferencesWindow?.showWindow(nil)
+
         preferencesWindow?.window?.makeKeyAndOrderFront(nil)
         preferencesWindow?.window?.isReleasedWhenClosed = false
     }

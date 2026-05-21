@@ -298,7 +298,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         //! Makes copies of real-time snapshots to be used by synchronization workers.
         void copySnapshots();
-        void freeSnapshotsCopies();
+        virtual void freeSnapshotsCopies();
         void tryToInvalidateSnapshots();
         void forceInvalidateSnapshots();
 
@@ -351,6 +351,10 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void resetNbOfPropagatedLocalDeleteOps() { _nbOfPropagatedLocalDeleteOps = 0; }
 
         [[nodiscard]] std::shared_ptr<CacheDirectory> cacheDirectory() const { return _cacheDirectory; }
+
+        int64_t consecutiveBackErrors() const { return _consecutiveBackErrors; }
+        void incrementConsecutiveBackErrors() { _consecutiveBackErrors++; }
+        void resetConsecutiveBackErrors() { _consecutiveBackErrors = 0; }
 
     protected:
         virtual void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
@@ -441,6 +445,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void setUpConflictingFilesCorrector(const std::vector<Error> &keepLocalErrorList,
                                             const std::vector<Error> &keepRemoteErrorList);
         log4cplus::Logger _logger;
+
+        int64_t _consecutiveBackErrors{0};
 
         std::shared_ptr<CacheDirectory> _cacheDirectory;
 

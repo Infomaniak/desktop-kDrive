@@ -76,7 +76,9 @@ AbstractTokenNetworkJob::AbstractTokenNetworkJob(const ApiType apiType, const Us
     checkParametersValidity();
     _apiToken = loadApiToken();
 
-    addRawHeader("Authorization", "Bearer " + _apiToken.accessToken());
+    if (!_apiToken.accessToken().empty()) {
+        addRawHeader("Authorization", "Bearer " + _apiToken.accessToken());
+    }
 }
 
 AbstractTokenNetworkJob::AbstractTokenNetworkJob(const ApiType apiType, const bool returnJson /*= true*/) :
@@ -132,6 +134,9 @@ std::string AbstractTokenNetworkJob::getSpecificUrl() {
             str += API_PREFIX_DESKTOP;
             break;
         case ApiType::Profile:
+        case ApiType::Internal:
+        case ApiType::InternalUnauthenticated:
+        default:
             break;
     }
 
@@ -142,6 +147,8 @@ ExitInfo AbstractTokenNetworkJob::handleUnauthorizedResponse() {
     switch (_apiType) {
         case ApiType::Drive:
         case ApiType::NotifyDrive:
+        case ApiType::Internal:
+        case ApiType::InternalUnauthenticated:
             disableRetry();
             return {ExitCode::BackError, ExitCause::DriveAccessError};
         case ApiType::DriveByUser:
@@ -284,6 +291,8 @@ std::string AbstractTokenNetworkJob::getUrl() {
             apiUrl = UrlHelper::notifyApiUrl(_apiVersion);
             break;
         case ApiType::Profile:
+        case ApiType::Internal:
+        case ApiType::InternalUnauthenticated:
             apiUrl = UrlHelper::infomaniakApiUrl(_apiVersion);
             break;
     }
@@ -502,26 +511,52 @@ ApiToken AbstractTokenNetworkJob::retrieveApiTokenFromUserCache() {
     }
 }
 
+void AbstractTokenNetworkJob::fetchDriveDbIdFromSync() {
+    // Fetch the drive identifier of the first available sync.
+    std::vector<Sync> syncList;
+    if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
+        assert(false);
+        const std::string err{"Error in ParmsDb::selectAllSyncs"};
+        LOG_WARN(_logger, err);
+        throw DbError(err);
+    }
+
+    if (syncList.empty()) {
+        assert(false);
+        const std::string err{"No sync found"};
+        LOG_WARN(_logger, err);
+        throw DataError(err);
+    }
+
+    _driveDbId = syncList[0].driveDbId();
+}
+
+void AbstractTokenNetworkJob::fetchFirstUserDbId() {
+    // Fetch the first user ID from DB.
+    std::vector<User> userList;
+    if (!ParmsDb::instance()->selectAllUsers(userList)) {
+        assert(false);
+        const std::string err{"Error in ParmsDb::selectAllUsers"};
+        LOG_WARN(_logger, err);
+        throw DbError(err);
+    }
+
+    if (userList.empty()) {
+        assert(false);
+        const std::string err{"No user found"};
+        LOG_WARN(_logger, err);
+        throw DataError(err);
+    }
+
+    _userDbId = userList[0].dbId();
+}
+
 ApiToken AbstractTokenNetworkJob::loadApiToken() {
     ApiToken apiToken;
     if (_apiType == ApiType::Desktop) {
-        // Fetch the drive identifier of the first available sync.
-        std::vector<Sync> syncList;
-        if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
-            assert(false);
-            const std::string err{"Error in ParmsDb::selectAllSyncs"};
-            LOG_WARN(_logger, err);
-            throw DbError(err);
-        }
-
-        if (syncList.empty()) {
-            assert(false);
-            const std::string err{"No sync found"};
-            LOG_WARN(_logger, err);
-            throw DataError(err);
-        }
-
-        _driveDbId = syncList[0].driveDbId();
+        fetchDriveDbIdFromSync();
+    } else if (_apiType == ApiType::Internal) {
+        fetchFirstUserDbId();
     }
 
     switch (_apiType) {
@@ -533,11 +568,13 @@ ApiToken AbstractTokenNetworkJob::loadApiToken() {
             break;
         }
         case ApiType::Profile:
-        case ApiType::DriveByUser: {
+        case ApiType::DriveByUser:
+        case ApiType::Internal: {
             loadUserInfoFromUserDbId();
             apiToken = retrieveApiTokenFromUserCache();
             break;
         }
+        case ApiType::InternalUnauthenticated:
         default:
             // No token required
             break;

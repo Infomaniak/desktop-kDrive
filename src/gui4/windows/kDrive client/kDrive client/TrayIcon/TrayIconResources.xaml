@@ -23,6 +23,9 @@
     <XamlUICommand x:Key="ShowWindowCommand"
                    x:Uid="trayIconButtonOpenKDrive">
     </XamlUICommand>
+    <XamlUICommand x:Key="OpenSettingsCommand"
+                   x:Uid="trayIconButtonOpenSettings">
+    </XamlUICommand>
     <XamlUICommand x:Key="ExitApplicationCommand"
                    x:Uid="trayIconButtonCloseKDrive">
     </XamlUICommand>
@@ -35,6 +38,7 @@
         <tb:TaskbarIcon.ContextFlyout>
             <MenuFlyout>
                 <MenuFlyoutItem Command="{StaticResource ShowWindowCommand}" />
+                <MenuFlyoutItem Command="{StaticResource OpenSettingsCommand}" />
                 <MenuFlyoutSeparator />
                 <MenuFlyoutItem Command="{StaticResource ExitApplicationCommand}" />
             </MenuFlyout>

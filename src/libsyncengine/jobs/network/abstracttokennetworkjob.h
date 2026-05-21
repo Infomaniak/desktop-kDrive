@@ -41,7 +41,9 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
             DriveByUser,
             Profile,
             NotifyDrive,
-            Desktop
+            Desktop,
+            Internal,
+            InternalUnauthenticated
         };
 
         /// @throw std::runtime_error
@@ -102,6 +104,8 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
 
         bool _accessTokenAlreadyRefreshed{false};
 
+        void fetchDriveDbIdFromSync();
+        void fetchFirstUserDbId();
         virtual ApiToken loadApiToken();
 
         std::string getUrl() override;
@@ -123,6 +127,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         void checkParametersValidity();
 
         friend class TestServerRequests;
+        friend class TestNetworkJobs;
 };
 
 } // namespace KDC

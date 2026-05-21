@@ -1418,7 +1418,7 @@ bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
     // Job pool capacity factor (28): not used anymore
 
     LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 29, intResult));
-    parameters.setDistributionChannel(static_cast<VersionChannel>(intResult));
+    parameters.setDistributionChannel(static_cast<DistributionChannel>(intResult));
 
     LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 30, intResult));
     parameters.setSentryEnabled(intResult);

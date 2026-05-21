@@ -92,8 +92,8 @@ static const std::string dummyFileName = "picture.jpg";
 
 class GetAppVersionJobForTests final : public GetAppVersionJob {
     public:
-        GetAppVersionJobForTests(const Platform platform, const std::string &appID) :
-            GetAppVersionJob(platform, appID) {}
+        explicit GetAppVersionJobForTests(const std::string &appId) :
+            GetAppVersionJob(DistributionChannel::Internal, appId) {}
 
         ExitInfo parseResponse(const std::string &response) {
             std::istringstream stream(response);
@@ -101,36 +101,30 @@ class GetAppVersionJobForTests final : public GetAppVersionJob {
         }
 };
 
-Poco::JSON::Object buildPublishedVersion(const std::string &channel, const bool includeTag = true) {
+Poco::JSON::Object buildVersionInfo(const std::string &channel, const bool includeTag = true) {
     Poco::JSON::Object versionObj;
+    (void) versionObj.set("channel", channel);
     if (includeTag) {
         (void) versionObj.set("tag", "3.6.4");
     }
-    (void) versionObj.set("type", channel);
     (void) versionObj.set("build_version", 20240816);
     (void) versionObj.set("build_min_os_version", "10.15");
     (void) versionObj.set("download_link", "https://download.example.com/kDrive.pkg");
+    (void) versionObj.set("checksum", "abcd1234");
+    (void) versionObj.set("min_version", "3.6.0.0");
+
     return versionObj;
 }
 
-std::string buildAppVersionReply(const Poco::JSON::Array &publishedVersions) {
-    Poco::JSON::Object applicationObj;
-    (void) applicationObj.set("min_version", "3.6.0.0");
-    (void) applicationObj.set("published_versions", publishedVersions);
-
-    Poco::JSON::Object dataObj;
-    (void) dataObj.set("prod_version", "production");
-    (void) dataObj.set("application", applicationObj);
-
+std::string buildAppVersionReply(const Poco::JSON::Object &versionInfoObj) {
     Poco::JSON::Object mainObj;
     (void) mainObj.set("result", "success");
-    (void) mainObj.set("data", dataObj);
+    (void) mainObj.set("data", versionInfoObj);
 
     std::ostringstream out;
     mainObj.stringify(out);
     return out.str();
 }
-
 } // namespace
 
 void TestNetworkJobs::setUp() {
@@ -1549,14 +1543,11 @@ void TestNetworkJobs::testGetAppVersionInfo() {
     const auto appUid = "1234567890";
     // Without user IDs
     {
-        GetAppVersionJob job(CommonUtility::platform(), appUid);
+        GetAppVersionJob job(DistributionChannel::Internal, appUid);
         job.runSynchronously();
         CPPUNIT_ASSERT(!job.hasHttpError());
-        CPPUNIT_ASSERT(job.versionInfo(VersionChannel::Internal).isValid());
-        CPPUNIT_ASSERT(job.versionInfo(VersionChannel::Beta).isValid());
-        CPPUNIT_ASSERT(job.versionInfo(VersionChannel::Next).isValid());
-        CPPUNIT_ASSERT(job.versionInfo(VersionChannel::Prod).isValid());
-        CPPUNIT_ASSERT(job.versionInfo(job.prodVersionChannel()).isValid());
+        CPPUNIT_ASSERT_EQUAL(AbstractTokenNetworkJob::ApiType::InternalUnauthenticated, job._apiType);
+        CPPUNIT_ASSERT(job.versionInfo().isValid());
     }
     // With 1 user ID
     {
@@ -1564,57 +1555,54 @@ void TestNetworkJobs::testGetAppVersionInfo() {
         bool found = false;
         ParmsDb::instance()->selectUser(_userDbId, user, found);
 
-        GetAppVersionJob job(CommonUtility::platform(), appUid, {user.userId()});
+        GetAppVersionJob job(DistributionChannel::Internal, appUid, {user.userId()});
         job.runSynchronously();
         CPPUNIT_ASSERT(!job.hasHttpError());
-        CPPUNIT_ASSERT(job.versionInfo(VersionChannel::Internal).isValid());
-        CPPUNIT_ASSERT(job.versionInfo(VersionChannel::Beta).isValid());
-        CPPUNIT_ASSERT(job.versionInfo(VersionChannel::Next).isValid());
-        CPPUNIT_ASSERT(job.versionInfo(VersionChannel::Prod).isValid());
-        CPPUNIT_ASSERT(job.versionInfo(job.prodVersionChannel()).isValid());
+        CPPUNIT_ASSERT_EQUAL(AbstractTokenNetworkJob::ApiType::Internal, job._apiType);
+        CPPUNIT_ASSERT(job.versionInfo().isValid());
     }
-    // // With several user IDs
-    // TODO : commented out because we need valid user IDs but we have only one available in tests for now
-    // {
-    //     GetAppVersionJob job(CommonUtility::platform(), appUid, {123, 456, 789});
-    //     job.runSynchronously();
-    //     CPPUNIT_ASSERT(!job.hasHttpError());
-    //     CPPUNIT_ASSERT(job.getVersionInfo(VersionChannel::Internal).isValid());
-    //     CPPUNIT_ASSERT(job.getVersionInfo(VersionChannel::Beta).isValid());
-    //     CPPUNIT_ASSERT(job.getVersionInfo(VersionChannel::Next).isValid());
-    //     CPPUNIT_ASSERT(job.getVersionInfo(VersionChannel::Prod).isValid());
-    //     CPPUNIT_ASSERT(job.getProdVersionInfo().isValid());
-    // }
+    // Invalid distribution channel
+    {
+        GetAppVersionJob job(DistributionChannel::Unknown, appUid);
+        job.runSynchronously();
+        CPPUNIT_ASSERT(job.hasHttpError());
+        CPPUNIT_ASSERT(!job.versionInfo().isValid());
+    }
 }
 
 void TestNetworkJobs::testGetAppVersionInfoParsingEdgeCases() {
     const auto appUid = "1234567890";
 
+    // Valid "production" channel response: parsing succeeds and version info is valid.
     {
-        GetAppVersionJobForTests job(CommonUtility::platform(), appUid);
-        Poco::JSON::Array publishedVersions;
-        (void) publishedVersions.add(buildPublishedVersion("production"));
-        (void) publishedVersions.add(buildPublishedVersion("beta", false));
-        (void) publishedVersions.add(buildPublishedVersion("unknown"));
+        GetAppVersionJobForTests job(appUid);
+        Poco::JSON::Object versionInfoObj = buildVersionInfo(toString(DistributionChannel::Prod));
 
-        const ExitInfo exitInfo = job.parseResponse(buildAppVersionReply(publishedVersions));
-
+        const ExitInfo exitInfo = job.parseResponse(buildAppVersionReply(versionInfoObj));
         CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitInfo.code());
-        CPPUNIT_ASSERT_EQUAL(size_t{1}, job.versionsInfo().size());
-        CPPUNIT_ASSERT(job.versionsInfo().contains(VersionChannel::Prod));
-        CPPUNIT_ASSERT(!job.versionsInfo().contains(VersionChannel::Beta));
+        CPPUNIT_ASSERT(job.versionInfo().isValid());
     }
 
+    // Missing required fields in the reply: parsing fails with MissingReplyData and version info is invalid.
     {
-        GetAppVersionJobForTests job(CommonUtility::platform(), appUid);
-        Poco::JSON::Array publishedVersions;
-        (void) publishedVersions.add(buildPublishedVersion("production", false));
+        GetAppVersionJobForTests job(appUid);
+        Poco::JSON::Object versionInfoObj = buildVersionInfo(toString(DistributionChannel::Prod), false);
 
-        const ExitInfo exitInfo = job.parseResponse(buildAppVersionReply(publishedVersions));
-
+        const ExitInfo exitInfo = job.parseResponse(buildAppVersionReply(versionInfoObj));
         CPPUNIT_ASSERT_EQUAL(ExitCode::BackError, exitInfo.code());
         CPPUNIT_ASSERT_EQUAL(ExitCause::MissingReplyData, exitInfo.cause());
-        CPPUNIT_ASSERT(job.versionsInfo().empty());
+        CPPUNIT_ASSERT(!job.versionInfo().isValid());
+    }
+
+    // Unknown distribution channel: parsing succeeds but version info is invalid due to unrecognised channel.
+    {
+        GetAppVersionJobForTests job(appUid);
+        Poco::JSON::Object versionInfoObj = buildVersionInfo("unknown-channel");
+
+        const ExitInfo exitInfo = job.parseResponse(buildAppVersionReply(versionInfoObj));
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitInfo.code());
+        CPPUNIT_ASSERT_EQUAL(DistributionChannel::Unknown, job.versionInfo().channel);
+        CPPUNIT_ASSERT(!job.versionInfo().isValid());
     }
 }
 

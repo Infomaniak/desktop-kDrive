@@ -156,7 +156,7 @@ void VersionWidget::onJoinBetaButtonClicked() {
     MatomoClient::sendEvent("versionWidget", MatomoEventAction::Click, "joinBetaButton");
     MatomoClient::sendVisit(MatomoNameField::PG_Preferences_Beta);
     if (auto dialog = BetaProgramDialog(
-                ParametersCache::instance()->parametersInfo().distributionChannel() != VersionChannel::Prod, _isStaff, this);
+                ParametersCache::instance()->parametersInfo().distributionChannel() != DistributionChannel::Prod, _isStaff, this);
         dialog.exec() == QDialog::Accepted) {
         saveDistributionChannel(dialog.selectedDistributionChannel());
         refresh();
@@ -187,7 +187,7 @@ void VersionWidget::refresh(UpdateState state /*= UpdateState::Unknown*/) const 
         qCWarning(lcVersionWidget) << "Error in GuiRequests::versionInfo";
     }
 
-    const QString versionStr = versionInfo.beautifulVersion().c_str();
+    const QString versionStr = QString::fromStdString(versionInfo.fullVersion());
 
     QString statusString;
     bool showReleaseNote = false;
@@ -252,14 +252,14 @@ void VersionWidget::refresh(UpdateState state /*= UpdateState::Unknown*/) const 
         _betaVersionDescription->setText(tr("Get early access to new versions of the application"));
 
         if (const auto channel = ParametersCache::instance()->parametersInfo().distributionChannel();
-            channel == VersionChannel::Prod) {
+            channel == DistributionChannel::Prod) {
             _joinBetaButton->setText(tr("Join"));
             _betaTag->setVisible(false);
         } else {
             _joinBetaButton->setText(_isStaff ? tr("Modify") : tr("Quit"));
             _betaTag->setVisible(true);
-            _betaTag->setBackgroundColor(channel == VersionChannel::Beta ? betaTagColor : internalTagColor);
-            _betaTag->setText(channel == VersionChannel::Beta ? "BETA" : "INTERNAL");
+            _betaTag->setBackgroundColor(channel == DistributionChannel::Beta ? betaTagColor : internalTagColor);
+            _betaTag->setText(channel == DistributionChannel::Beta ? "BETA" : "INTERNAL");
         }
     }
 }
@@ -339,7 +339,7 @@ void VersionWidget::initBetaBloc(PreferencesBlocWidget *prefBloc) {
     betaLayout->addWidget(_joinBetaButton);
 }
 
-void VersionWidget::saveDistributionChannel(const VersionChannel channel) const {
+void VersionWidget::saveDistributionChannel(const DistributionChannel channel) const {
     GuiRequests::changeDistributionChannel(channel);
     ParametersCache::instance()->parametersInfo().setDistributionChannel(channel);
     ParametersCache::instance()->saveParametersInfo();

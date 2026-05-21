@@ -298,12 +298,13 @@ enum class SyncStep {
     EnumEnd
 };
 
-enum class VersionChannel {
+enum class DistributionChannel {
     Prod,
     Next,
     Beta,
     Internal,
     Legacy,
+    Test,
     Unknown,
     EnumEnd
 };

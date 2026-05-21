@@ -19,17 +19,26 @@
 import CppInterop
 
 public struct VersionInfo: Codable, Sendable {
-    public init(channel: KDC.VersionChannel, tag: String, buildVersion: UInt64, buildMinOsVersion: String, downloadUrl: String) {
+    public init(
+        channel: KDC.DistributionChannel,
+        tag: String,
+        buildVersion: UInt64,
+        buildMinOsVersion: String,
+        downloadUrl: String,
+        checksum: String
+    ) {
         self.channel = channel
         self.tag = tag
         self.buildVersion = buildVersion
         self.buildMinOsVersion = buildMinOsVersion
         self.downloadUrl = downloadUrl
+        self.checksum = checksum
     }
 
-    public let channel: KDC.VersionChannel
+    public let channel: KDC.DistributionChannel
     public let tag: String
     public let buildVersion: UInt64
     public let buildMinOsVersion: String
     public let downloadUrl: String
+    public let checksum: String
 }

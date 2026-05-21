@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2026 Infomaniak Network SA
+ Copyright (C) 2023-2025 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -16,13 +16,19 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import CppInterop
-import Foundation
+import Cocoa
+import InfomaniakDI
+import kDriveCoreUI
+import kDriveResources
+import SwiftUI
 
-struct UpdaterVersionInfoQuery: Codable, Sendable {
-    let channel: KDC.DistributionChannel
-}
-
-struct UpdaterSkipVersionQuery: Codable, Sendable {
-    @Base64CodedString var skippedVersion: String
+final class AdvancedPreferencesNetworkViewController: TitledViewController<AdvancedPreferencesNetworkView> {
+    convenience init(repository: PreferencesRepository) {
+        @InjectService var router: PreferencesViewRouter
+        self.init(
+            toolbarTitle: KDriveLocalizable.networkSettings,
+            navigableRouter: router,
+            contentView: AdvancedPreferencesNetworkView(repository: repository)
+        )
+    }
 }

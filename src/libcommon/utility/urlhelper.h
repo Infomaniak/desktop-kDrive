@@ -22,7 +22,7 @@ namespace KDC {
 
 class UrlHelper {
     public:
-        static std::string infomaniakApiUrl(uint8_t version = 2, bool forceProd = false);
+        static std::string infomaniakApiUrl(uint8_t version = 2);
         static std::string kDriveApiUrl(uint8_t version = 2);
         static std::string notifyApiUrl(uint8_t version = 2);
         static std::string loginApiUrl();

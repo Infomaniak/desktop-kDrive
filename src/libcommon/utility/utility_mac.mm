@@ -90,12 +90,17 @@ void CommonUtility::convertToBase64Str(NSString *const _Nonnull str, NSString **
     }
 }
 
-std::string CommonUtility::osVersion() {
+std::string extractOsVersion() {
     const NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     const NSOperatingSystemVersion osVersion = [processInfo operatingSystemVersion];
     return [@(osVersion.majorVersion) stringValue].UTF8String + std::string(".") +
            [@(osVersion.minorVersion) stringValue].UTF8String + std::string(".") +
            [@(osVersion.patchVersion) stringValue].UTF8String;
+}
+
+std::string CommonUtility::osVersion() {
+    static const std::string osVersion = extractOsVersion();
+    return osVersion;
 }
 
 std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {

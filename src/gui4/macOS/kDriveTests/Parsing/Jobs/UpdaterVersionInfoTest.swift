@@ -58,5 +58,6 @@ struct UpdaterVersionInfoTest {
         #expect(response.body.versionInfo.buildMinOsVersion == "10.15")
         #expect(response.body.versionInfo
             .downloadUrl == "https://download.storage.infomaniak.com/drive/desktopclient/update-macos-3.8.2.5.xml")
+        #expect(response.body.versionInfo.checksum == "12345")
     }
 }

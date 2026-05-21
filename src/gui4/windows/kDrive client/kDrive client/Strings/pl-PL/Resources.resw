@@ -6,7 +6,7 @@
   Locale: pl, Polish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 11 May 2026 09:31:50 +0200 
+  Exported at: Tue, 19 May 2026 14:16:33 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -1456,7 +1456,7 @@ Dane te pozwalają naszemu zespołowi na szybkie naprawianie i optymalizację ap
     <value>Ustawienia</value> 
   </data> 
   <data name="sidebarItemAccounts" xml:space="preserve"> 
-    <value>Konta</value> 
+    <value>Konta i synchronizacje</value> 
   </data> 
   <data name="sidebarItemAdvanced" xml:space="preserve"> 
     <value>Zaawansowane</value> 
@@ -1614,6 +1614,9 @@ Synchronizacja została wstrzymana. Sprawdź pliki i spróbuj ponownie.</value>
     <value>Otwórz kDrive</value> 
     <comment>This translation is used for the taskbar icon menu, which requires the x:Uid format (i.e., suffixed with .Label).</comment> 
   </data> 
+  <data name="trayIconButtonOpenSettings.Label" xml:space="preserve"> 
+    <value>Ustawienia</value> 
+  </data> 
   <data name="unableToCreateRemoteFolderTeachingTipContent" xml:space="preserve"> 
     <value>Sprawdź, czy Twoje połączenie z Internetem jest aktywne, czy ta nazwa nie jest już używana i czy nie zawiera nieprawidłowych znaków.</value> 
   </data> 
@@ -1682,6 +1685,9 @@ Zaktualizuj aplikację, aby uzyskać dostęp do plików i wznowić synchronizacj
   </data> 
   <data name="userExclusionFileListHeader" xml:space="preserve"> 
     <value>Niestandardowe reguły wykluczenia</value> 
+  </data> 
+  <data name="userExclusionFileListHeaderDescription" xml:space="preserve"> 
+    <value>Wyklucz niektóre typy plików z synchronizacji.</value> 
   </data> 
   <data name="viewSourceCode" xml:space="preserve"> 
     <value>Wyświetl kod źródłowy</value> 

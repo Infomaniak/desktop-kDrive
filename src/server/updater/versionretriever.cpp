@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "updatechecker.h"
+#include "versionretriever.h"
 
 #include "db/parmsdb.h"
 #include "jobs/syncjobmanager.h"
@@ -28,59 +28,27 @@
 
 namespace KDC {
 
-ExitCode UpdateChecker::checkUpdateAvailability(UniqueId *id /*= nullptr*/) {
+ExitCode VersionRetriever::retrieveVersion(const DistributionChannel channel, UniqueId *id /*= nullptr*/) {
+    _isVersionReceived = false;
+
     std::shared_ptr<AbstractNetworkJob> job;
-    if (const auto exitCode = generateGetAppVersionJob(job); exitCode != ExitCode::Ok) return exitCode;
+    if (const auto exitCode = generateGetAppVersionJob(channel, job); exitCode != ExitCode::Ok) return exitCode;
     if (id) *id = job->jobId();
 
     LOG_INFO(Log::instance()->getLogger(), "Looking for new app version...");
 
-    const std::function<void(UniqueId)> callback = std::bind_front(&UpdateChecker::versionInfoReceived, this);
+    const std::function<void(UniqueId)> callback = std::bind_front(&VersionRetriever::versionInfoReceived, this);
     job->setAdditionalCallback(callback);
     SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
     return ExitCode::Ok;
 }
 
-void UpdateChecker::setCallback(const std::function<void()> &callback) {
+void VersionRetriever::setCallback(const std::function<void()> &callback) {
     LOG_INFO(Log::instance()->getLogger(), "Set callback");
     _callback = callback;
 }
 
-class VersionInfoCmp {
-    public:
-        bool operator()(const VersionInfo &v1, const VersionInfo &v2) const {
-            if (v1.fullVersion() == v2.fullVersion()) {
-                // Same build version, use the channel to define priority
-                return v1.channel < v2.channel;
-            }
-            return CommonUtility::isVersionLower(v2.fullVersion(), v1.fullVersion());
-        }
-};
-
-const VersionInfo &UpdateChecker::versionInfo(const VersionChannel chosenChannel) {
-    if (!_isVersionReceived) return _defaultVersionInfo;
-    const VersionInfo &prodVersion = prodVersionInfo();
-
-    // If the user wants only `Production` versions, just return the current `Production` version.
-    if (chosenChannel == VersionChannel::Prod) return prodVersion;
-
-    // Otherwise, we need to check if there is not a newer version in other channels.
-    const VersionInfo &betaVersion =
-            _versionsInfo.contains(VersionChannel::Beta) ? _versionsInfo[VersionChannel::Beta] : _defaultVersionInfo;
-    const VersionInfo &internalVersion =
-            _versionsInfo.contains(VersionChannel::Internal) ? _versionsInfo[VersionChannel::Internal] : _defaultVersionInfo;
-    std::set<std::reference_wrapper<const VersionInfo>, VersionInfoCmp> sortedVersionList;
-    (void) sortedVersionList.insert(prodVersion);
-    (void) sortedVersionList.insert(betaVersion);
-    (void) sortedVersionList.insert(internalVersion);
-    for (const auto &versionInfo: sortedVersionList) {
-        if (versionInfo.get().channel <= chosenChannel) return versionInfo;
-    }
-
-    return _defaultVersionInfo;
-}
-
-void UpdateChecker::versionInfoReceived(const UniqueId jobId) {
+void VersionRetriever::versionInfoReceived(const UniqueId jobId) {
     // A mutex is needed because this function can be run multiple times simultaneously when the computer wakes from sleep.
     const std::scoped_lock<std::mutex> lock(_mutex);
     _isVersionReceived = false;
@@ -104,25 +72,14 @@ void UpdateChecker::versionInfoReceived(const UniqueId jobId) {
         LOG_ERROR(Log::instance()->getLogger(),
                   "Error in UpdateChecker::versionInfoReceived : " << getAppVersionJobPtr->exitInfo());
     } else {
-        _versionsInfo = getAppVersionJobPtr->versionsInfo();
-        _prodVersionChannel = getAppVersionJobPtr->prodVersionChannel();
+        _versionsInfo = getAppVersionJobPtr->versionInfo();
         _isVersionReceived = true;
-    }
-
-    // Check if app should be blocked
-    _appShouldBeBlocked = false;
-    if (_isVersionReceived &&
-        CommonUtility::isVersionLower(CommonUtility::currentVersion(), getAppVersionJobPtr->minAppVersion())) {
-        LOG_WARN(Log::instance()->getLogger(), "The current version needs to be updated. Current version: "
-                                                       << CommonUtility::currentVersion()
-                                                       << ", min version: " << getAppVersionJobPtr->minAppVersion());
-        _appShouldBeBlocked = true;
     }
 
     _callback();
 }
 
-ExitCode UpdateChecker::generateGetAppVersionJob(std::shared_ptr<AbstractNetworkJob> &job) {
+ExitCode VersionRetriever::generateGetAppVersionJob(const DistributionChannel channel, std::shared_ptr<AbstractNetworkJob> &job) {
     AppStateValue appStateValue = "";
     if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::AppUid, appStateValue, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAppState");
@@ -143,7 +100,7 @@ ExitCode UpdateChecker::generateGetAppVersionJob(std::shared_ptr<AbstractNetwork
     }
 
     const auto &appUid = std::get<std::string>(appStateValue);
-    job = std::make_shared<GetAppVersionJob>(CommonUtility::platform(), appUid, userIdList);
+    job = std::make_shared<GetAppVersionJob>(channel, appUid, userIdList);
     return ExitCode::Ok;
 }
 
