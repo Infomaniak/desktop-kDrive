@@ -27,6 +27,7 @@
 
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
+#include "libcommonserver/io/cachedirectory.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <log4cplus/loggingmacros.h>
@@ -87,7 +88,7 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
         const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), absolutePath);
 
         if (relativePath.empty()) {
-            // Ignore events on the sync folder
+            // Ignore events on the sync folder itself, or paths that are not under the sync folder
             continue;
         }
 

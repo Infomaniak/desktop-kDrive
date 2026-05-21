@@ -56,7 +56,7 @@ ExitInfo CacheDirectory::path(SyncPath &cacheDirectory) noexcept {
     return ExitCode::Ok;
 }
 
-const std::string CacheDirectory::name() {
+std::string_view CacheDirectory::name() noexcept {
     static auto name = Poco::format(".%s-cache", std::string(APPLICATION_NAME));
     return name;
 }
