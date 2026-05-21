@@ -16,12 +16,29 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Cocoa
-import kDriveCoreUI
-import SwiftUI
+import Foundation
 
-final class AdvancedPreferencesViewController: TitledViewController<AdvancedPreferencesView> {
-    convenience init() {
-        self.init(toolbarTitle: SidebarItem.advanced.title, contentView: AdvancedPreferencesView())
-    }
+struct ExclusionAppInfoExchange: Codable, Sendable {
+    @Base64CodedString var appId: String
+    @Base64CodedString var description: String
+    let def: Bool
+}
+
+struct ExclusionAppGetListQuery: Codable, Sendable {
+    let `default`: Bool
+}
+
+struct ExclusionAppGetListResponse: Codable, Sendable {
+    let applicationList: [ExclusionAppInfoExchange]
+}
+
+struct ExclusionAppSetListQuery: Codable, Sendable {
+    let `default`: Bool
+    let applicationList: [ExclusionAppInfoExchange]
+}
+
+struct ExclusionAppSetListResponse: Codable, Sendable {}
+
+struct ExclusionAppGetFetchingAppListResponse: Codable, Sendable {
+    @Base64CodedStringDictionary var applicationTable: [String: String]
 }

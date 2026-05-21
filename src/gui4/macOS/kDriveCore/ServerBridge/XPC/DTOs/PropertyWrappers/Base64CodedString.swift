@@ -88,3 +88,42 @@ public struct Base64CodedStrings: Codable, Sendable {
         }
     }
 }
+
+@propertyWrapper
+public struct Base64CodedStringDictionary: Codable, Sendable {
+    public let wrappedValue: [String: String]
+
+    public init(wrappedValue: [String: String]) {
+        self.wrappedValue = wrappedValue
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        var decoded: [String: String] = [:]
+        for key in container.allKeys {
+            let encoded = try container.decode(String.self, forKey: key)
+            decoded[key.stringValue] = try Base64Helper.decode(encoded)
+        }
+        wrappedValue = decoded
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        for (key, value) in wrappedValue {
+            try container.encode(Base64Helper.encode(value), forKey: CodingKeys(stringValue: key))
+        }
+    }
+
+    private struct CodingKeys: CodingKey {
+        var stringValue: String
+        var intValue: Int? { nil }
+
+        init(stringValue: String) {
+            self.stringValue = stringValue
+        }
+
+        init?(intValue: Int) {
+            nil
+        }
+    }
+}

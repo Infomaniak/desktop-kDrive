@@ -16,12 +16,28 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Cocoa
-import kDriveCoreUI
-import SwiftUI
+import Foundation
 
-final class AdvancedPreferencesViewController: TitledViewController<AdvancedPreferencesView> {
-    convenience init() {
-        self.init(toolbarTitle: SidebarItem.advanced.title, contentView: AdvancedPreferencesView())
+public struct ExclusionTemplateInfo: Codable, Sendable {
+    public let template: String
+    public let warning: Bool
+    public let `default`: Bool
+
+    public init(template: String, warning: Bool, default: Bool) {
+        self.template = template
+        self.warning = warning
+        self.default = `default`
+    }
+}
+
+extension ExclusionTemplateInfo {
+    init(response: ExclusionTemplateInfoResponse) {
+        self.init(template: response.template, warning: response.warning, default: response.default)
+    }
+}
+
+extension [ExclusionTemplateInfo] {
+    init(responses: [ExclusionTemplateInfoResponse]) {
+        self = responses.map { ExclusionTemplateInfo(response: $0) }
     }
 }

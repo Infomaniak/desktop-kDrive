@@ -16,12 +16,28 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Cocoa
-import kDriveCoreUI
+import kDriveResources
 import SwiftUI
 
-final class AdvancedPreferencesViewController: TitledViewController<AdvancedPreferencesView> {
-    convenience init() {
-        self.init(toolbarTitle: SidebarItem.advanced.title, contentView: AdvancedPreferencesView())
+public struct AnonymousAvatarView: View {
+    public init() {}
+
+    public var body: some View {
+        KDriveResources.person.swiftUIImage
+            .resizable()
+            .scaledToFit()
+            .frame(size: AppIconSize.iconSize16)
+            .foregroundStyle(ColorToken.Text.tertiary.asColor)
+            .overlay {
+                Circle()
+                    .stroke(ColorToken.Surface.quaternary.asColor, lineWidth: 1)
+                    .frame(width: 24, height: 24)
+            }
+            .accessibilityHidden(true)
     }
+}
+
+#Preview {
+    AnonymousAvatarView()
+        .padding()
 }

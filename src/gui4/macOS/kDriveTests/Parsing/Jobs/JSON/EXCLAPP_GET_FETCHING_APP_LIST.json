@@ -1,0 +1,11 @@
+{
+  "cause": 0,
+  "code": 0,
+  "id": 1,
+  "params": {
+    "applicationTable": {
+      "appId1": "YXBwbGljYXRpb25OYW1lMQ==",
+      "appId2": "YXBwbGljYXRpb25OYW1lMg=="
+    }
+  }
+}
