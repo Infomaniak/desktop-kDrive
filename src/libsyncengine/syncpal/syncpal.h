@@ -164,7 +164,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         [[nodiscard]] std::shared_ptr<Vfs> vfs() { return _vfs; }
 
         // SyncPalInfo
-        [[nodiscard]] [[nodiscard]] std::shared_ptr<SyncDb> syncDb() const { return _syncDb; }
+        [[nodiscard]] std::shared_ptr<SyncDb> syncDb() const { return _syncDb; }
         [[nodiscard]] const SyncPalInfo &syncInfo() const { return _syncInfo; }
         [[nodiscard]] SyncDbId syncDbId() const { return _syncInfo.syncDbId; }
         [[nodiscard]] DriveDbId driveDbId() const { return _syncInfo.driveDbId; }
