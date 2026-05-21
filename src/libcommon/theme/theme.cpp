@@ -55,20 +55,19 @@ QIcon Theme::themeIcon(const QString &name, bool sysTray, bool sysTrayMenuVisibl
     QString osType;
     QString flavor;
 
-    if (QOperatingSystemVersion::current().currentType() == QOperatingSystemVersion::OSType::MacOS) {
-        osType = "mac";
-    } else {
-        osType = "windows";
-    }
+    osType = "windows";
+#if defined(KD_MACOS)
+    osType = "mac";
+#endif
 
     if (sysTray) {
         if (_mono) {
-            if (QOperatingSystemVersion::current().currentType() == QOperatingSystemVersion::OSType::MacOS &&
-                QOperatingSystemVersion::current() > QOperatingSystemVersion::MacOSCatalina) {
+            flavor = CommonUtility::hasDarkSystray() ? QString("white") : QString("black");
+#if defined(KD_MACOS)
+            if (QOperatingSystemVersion::current() > QOperatingSystemVersion::MacOSCatalina) {
                 flavor = QString("black");
-            } else {
-                flavor = CommonUtility::hasDarkSystray() ? QString("white") : QString("black");
             }
+#endif
         } else {
             flavor = QString("colored");
         }
