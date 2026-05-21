@@ -74,7 +74,12 @@ ExitInfo RemoteFileSystemObserverWorker::updateLongPollJobs(const std::vector<Re
     }
 
     for (const auto &remoteDirId: remoteDirIds) {
-        if (longPollJobs.contains(remoteDirId)) continue;
+        if (longPollJobs.contains(remoteDirId)) {
+            if (SyncJobManagerSingleton::instance()->isJobFinished(longPollJobs[remoteDirId]->jobId()))
+                (void) longPollJobs.erase(remoteDirId);
+            else
+                continue;
+        }
 
         if (const auto exitInfo = createLongPollJob(remoteDirId, longPollJobs[remoteDirId]); !exitInfo) return exitInfo;
 
