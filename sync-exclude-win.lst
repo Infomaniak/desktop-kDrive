@@ -35,4 +35,5 @@ desktop.ini
 *.filepart
 *.app
 ~BROMIUM
-$RecycleBin
+$Recycle.Bin
+$RECYCLE.BIN
