@@ -83,8 +83,16 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
             break;
         }
 
-        if (path == _syncPal->localPath()) {
+        const SyncPath absolutePath = path.native();
+        const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), absolutePath);
+
+        if (relativePath.empty()) {
             // Ignore events on the sync folder
+            continue;
+        }
+
+        if (CommonUtility::isSubDir(CacheDirectory::name(), relativePath)) {
+            // Ignore events on the cache folder content
             continue;
         }
 
@@ -93,8 +101,6 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
         _updating = true;
         _needUpdateTimerStart = std::chrono::steady_clock::now();
 
-        const SyncPath absolutePath = path.native();
-        const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), absolutePath);
         _syncPal->removeItemFromTmpBlacklist(relativePath);
 
         if (opTypeFromOS == OperationType::Delete) {

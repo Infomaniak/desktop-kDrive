@@ -31,6 +31,7 @@ class CacheDirectory {
         ~CacheDirectory();
 
         ExitInfo path(SyncPath &cacheDirectory) noexcept;
+        static const std::string name();
 
         // Shared naming contract used by creators and cleanup logic.
         static std::string createTmpFileName();
