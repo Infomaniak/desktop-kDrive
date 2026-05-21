@@ -40,6 +40,7 @@ class ApiTranslator {
         [[nodiscard]] static RemoteNodeId v2RootFolderRemoteId();
 
         static void clearSharedCache(const DriveId driveId) {
+            const std::lock_guard<std::mutex> lock(_mutex);
             (void) _specialFolderRemoteIdsCache[SpecialRemoteFolder::Shared].erase(driveId);
         };
 
