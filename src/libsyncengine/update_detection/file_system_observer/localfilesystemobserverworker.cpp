@@ -77,7 +77,9 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(const std::list<std::pai
     }
 
     auto tmpChanges = changes;
-    for (const auto &[path, opTypeFromOS]: tmpChanges) {
+    for (auto changeIt = tmpChanges.begin(); changeIt != tmpChanges.end(); ++changeIt) {
+        const auto [path, opTypeFromOS] = std::move(*changeIt);
+
         if (stopAsked()) {
             _pendingFileEvents.clear();
             break;
@@ -704,7 +706,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 LOGW_SYNCPAL_DEBUG(_logger, L"getItemType failed for item: "
                                                     << Utility::formatIoError(absolutePath, itemType.ioError)
                                                     << L". Blacklisting it temporarily");
-                sendAccessDeniedError(absolutePath);
+                sendAccessDeniedError(relativePath);
             }
 
             bool toExclude = false;
@@ -728,7 +730,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 LOGW_SYNCPAL_DEBUG(_logger, L"Directory misses search permission: "
                                                     << Utility::formatIoError(absoluteParentDirPath, entryIoError));
                 dirIt.disableRecursionPending();
-                sendAccessDeniedError(absolutePath);
+                sendAccessDeniedError(relativePath);
                 continue;
             }
 
@@ -764,7 +766,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 } else if (entryIoError == IoError::AccessDenied) {
                     LOGW_SYNCPAL_INFO(
                             _logger, L"Item: " << Utility::formatSyncPath(absolutePath) << L" rejected because access is denied");
-                    sendAccessDeniedError(absolutePath);
+                    sendAccessDeniedError(relativePath);
                     toExclude = true;
                 }
                 nodeId = std::to_string(fileStat.inode);
@@ -799,7 +801,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                             LOGW_SYNCPAL_DEBUG(_logger, L"Directory misses search permission: "
                                                                 << Utility::formatSyncPath(absolutePath.parent_path()));
                             dirIt.disableRecursionPending();
-                            sendAccessDeniedError(absolutePath);
+                            sendAccessDeniedError(relativePath);
                             continue;
                         }
                         parentNodeId = std::to_string(parentFileStat.inode);
