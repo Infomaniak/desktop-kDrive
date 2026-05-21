@@ -67,7 +67,7 @@ static const QList<QString> fontFiles = QList<QString>() << QString(":/client/re
 // static const QString defaultFontFamily("Suisse Int'l");
 
 void log(const std::string &str) {
-    qCInfo(lcAppClient) << "Connected to server";
+    qCInfo(lcAppClient) << QString::fromStdString(str);
     std::cout << str << std::endl;
 }
 
