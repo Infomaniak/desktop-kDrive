@@ -121,17 +121,19 @@ bool SyncPalWorker::handleRateLimited(const std::shared_ptr<ISyncWorker> w1, con
 
 void SyncPalWorker::handleBackError(void) {
     auto computedDelay = static_cast<int64_t>(
-            backoffVariable::baseDelay * std::pow(backoffVariable::multiplicativeFactor, std::min(_syncPal->consecutiveBackErrors(), (int64_t)10)));
+            backoffVariable::baseDelay *
+            std::pow(backoffVariable::multiplicativeFactor, std::min(_syncPal->consecutiveBackErrors(), (int64_t) 10)));
     _syncPal->incrementConsecutiveBackErrors();
 
     const double jitterFactor = jitter(); // 40% of the computed delay
-    const auto newPauseDuration = static_cast<int64_t>(std::min(static_cast<int64_t>(computedDelay * jitterFactor), backoffVariable::maxDelay));
+    const int64_t newPauseDuration =
+            std::min(static_cast<int64_t>(static_cast<double>(computedDelay) * jitterFactor), backoffVariable::maxDelay);
     LOG_SYNCPAL_INFO(_logger, "Changing pause duration to " << newPauseDuration << " ms");
     setPauseDuration(newPauseDuration);
 }
 
 double SyncPalWorker::jitter() const {
-    return CommonUtility::generateRandomNumber(1000, 1400) / 1000.0;
+    return static_cast<double>(CommonUtility::generateRandomNumber(1000, 1400)) / 1000.0;
 }
 
 void SyncPalWorker::checkForMassDeletions() const {

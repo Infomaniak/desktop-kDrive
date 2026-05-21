@@ -797,8 +797,8 @@ IoError IoHelper::getFileChecksum(const SyncPath &path, std::ifstream &ifs, std:
         }
 
         std::streamsize readBytes(0);
-        while ((readBytes = ifs.read(buffer.data(), buffer.size()).gcount()) > 0) {
-            if (XXH3_64bits_update(state, buffer.data(), readBytes) == XXH_ERROR) {
+        while ((readBytes = ifs.read(buffer.data(), static_cast<std::streamsize>(buffer.size())).gcount()) > 0) {
+            if (XXH3_64bits_update(state, buffer.data(), static_cast<size_t>(readBytes)) == XXH_ERROR) {
                 ifs.close();
                 XXH3_freeState(state);
                 return Unknown;
