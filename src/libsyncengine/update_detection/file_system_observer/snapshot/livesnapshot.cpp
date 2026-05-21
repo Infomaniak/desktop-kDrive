@@ -51,7 +51,7 @@ void LiveSnapshot::init() {
 
 bool LiveSnapshot::updateItem(const SnapshotItem &newItem) {
     NodeId removedNodeId;
-    auto res = updateItem(newItem, removedNodeId);
+    const auto res = updateItem(newItem, removedNodeId);
     assert(removedNodeId.empty());
     return res;
 }

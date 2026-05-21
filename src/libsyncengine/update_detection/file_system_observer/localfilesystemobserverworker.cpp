@@ -415,7 +415,7 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(const std::list<std::pai
                     LOGW_SYNCPAL_DEBUG(_logger, L"Raise a Move operation for item: "
                                                         << Utility::formatSyncPath(removedPath) << L" ("
                                                         << CommonUtility::s2ws(removedNodeId) << L")");
-                    tmpChanges.push_back(std::make_pair(_syncPal->localPath() / removedPath, OperationType::Move));
+                    tmpChanges.emplace_back(_syncPal->localPath() / removedPath, OperationType::Move);
                 }
             }
         } else {
