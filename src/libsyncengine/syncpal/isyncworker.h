@@ -22,6 +22,7 @@
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
 
+#include <atomic>
 #include <thread>
 
 #define LOOP_PAUSE_SLEEP_PERIOD 200 // 0.2 sec
