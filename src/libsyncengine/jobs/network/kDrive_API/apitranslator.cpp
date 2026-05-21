@@ -165,6 +165,7 @@ ExitInfo ApiTranslator::getSpecialFolderRemoteId(const UserDbId userDbId, const 
                                                  const SpecialRemoteFolder specialFolder, RemoteNodeId &folderRemoteId) {
     folderRemoteId = {};
 
+    const std::lock_guard<std::mutex> lock(_mutex);
     if (!_specialFolderRemoteIdsCache[specialFolder].contains(driveId)) {
         if (const auto exitInfo = updateCache(userDbId, driveId); !exitInfo) return exitInfo;
     }

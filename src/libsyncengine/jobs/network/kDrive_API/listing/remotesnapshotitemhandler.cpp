@@ -45,7 +45,7 @@ bool RemoteSnapshotItemHandler::updateRemoteSnapshotItem(const std::string &str,
     switch (index) {
         case CsvIndexId: {
             if (const auto exitInfo = item.setV2Id(_userDbId, _driveId, str); !exitInfo) {
-                LOG_WARN(_logger, "Error in SnapshotItem::setId");
+                LOG_WARN(_logger, "Error in SnapshotItem::setV2Id");
                 return false;
             }
             break;
