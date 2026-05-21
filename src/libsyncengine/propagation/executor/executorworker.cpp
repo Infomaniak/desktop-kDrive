@@ -1265,8 +1265,16 @@ bool ExecutorWorker::isValidDestination(const SyncOpPtr syncOp) {
         if (newCorrespondingParentNode->isCommonDocumentsFolder() && syncOp->nodeType() != NodeType::Directory) {
             return false;
         }
+        if (_syncPal->syncInfo().isAdvancedSync() && _syncPal->syncInfo().targetPath == Utility::commonDocumentsFolderPath() &&
+            newCorrespondingParentNode->isRoot() && syncOp->nodeType() != NodeType::Directory) {
+            return false;
+        }
 
         if (newCorrespondingParentNode->isSharedFolder()) {
+            return false;
+        }
+        if (_syncPal->syncInfo().isAdvancedSync() && _syncPal->syncInfo().targetPath == Utility::sharedFolderPath() &&
+            newCorrespondingParentNode->isRoot()) {
             return false;
         }
     }
@@ -1481,24 +1489,22 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<SyncJob> job, SyncOpP
 }
 
 ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &relativeLocalPath, bool &ignored) {
-    ExitInfo exitInfo = ExitCode::Ok;
     ignored = false;
-
     const SyncPath absoluteLocalFilePath = _syncPal->localPath() / relativeLocalPath;
-
     bool removeFromDb = true;
     CancelType cancelType = CancelType::None;
     switch (syncOp->type()) {
         case OperationType::Create: {
+            // Just ignore the item
             cancelType = CancelType::Create;
             ignored = true;
-            if (!PlatformInconsistencyCheckerUtility::renameLocalFile(
-                        absoluteLocalFilePath, PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted)) {
-                LOGW_SYNCPAL_WARN(_logger, L"PlatformInconsistencyCheckerUtility::renameLocalFile failed for "
-                                                   << Utility::formatSyncPath(absoluteLocalFilePath));
-                return _syncPal->handleAccessDeniedItem(relativeLocalPath, false);
-            }
             removeFromDb = false;
+            if (const std::shared_ptr<UpdateTree> sourceUpdateTree = affectedUpdateTree(syncOp);
+                !sourceUpdateTree->deleteNode(syncOp->affectedNode())) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node "
+                                                   << Utility::formatSyncName(syncOp->affectedNode()->name()));
+                return ExitCode::DataError;
+            }
             break;
         }
         case OperationType::Move: {
@@ -1543,18 +1549,17 @@ ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath 
         _syncPal->addError(err);
     }
 
-    if (!exitInfo) return exitInfo;
-
     if (removeFromDb) {
         //  Remove the node from DB and tree so it will be re-created at its
         //  original location on next sync
         _syncPal->setRestart(true);
-        if (exitInfo = propagateDeleteToDbAndTree(syncOp); !exitInfo) {
+        if (const auto exitInfo = propagateDeleteToDbAndTree(syncOp); !exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for "
                                                << Utility::formatSyncName(syncOp->affectedNode()->name()));
+            return exitInfo;
         }
     }
-    return exitInfo;
+    return ExitCode::Ok;
 }
 
 ExitInfo ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &propagateChange) {

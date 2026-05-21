@@ -158,8 +158,10 @@ struct COMMONSERVER_EXPORT Utility {
         static bool cpuUsage(uint64_t &previousTotalTicks, uint64_t &_previousIdleTicks, double &percent);
         static bool cpuUsageByProcess(double &percent);
 
-        static SyncPath commonDocumentsFolderName();
-        static SyncPath sharedFolderName();
+        static SyncName commonDocumentsFolderName();
+        static SyncPath commonDocumentsFolderPath();
+        static SyncName sharedFolderName();
+        static SyncPath sharedFolderPath();
         static std::string userName();
 
         static bool hasSystemLaunchOnStartup(const std::string &appName);
