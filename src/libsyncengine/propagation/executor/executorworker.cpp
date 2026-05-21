@@ -1265,13 +1265,16 @@ bool ExecutorWorker::isValidDestination(const SyncOpPtr syncOp) {
         if (newCorrespondingParentNode->isCommonDocumentsFolder() && syncOp->nodeType() != NodeType::Directory) {
             return false;
         }
-
         if (_syncPal->syncInfo().isAdvancedSync() && _syncPal->syncInfo().targetPath == Utility::commonDocumentsFolderPath() &&
-            newCorrespondingParentNode->isRoot()) {
+            newCorrespondingParentNode->isRoot() && syncOp->nodeType() != NodeType::Directory) {
             return false;
         }
 
         if (newCorrespondingParentNode->isSharedFolder()) {
+            return false;
+        }
+        if (_syncPal->syncInfo().isAdvancedSync() && _syncPal->syncInfo().targetPath == Utility::sharedFolderPath() &&
+            newCorrespondingParentNode->isRoot()) {
             return false;
         }
     }
