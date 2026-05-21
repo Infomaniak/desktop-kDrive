@@ -34,7 +34,7 @@ inputs:
     description: 'If true, build the Windows app with the new client'
     required: false
     default: 'false'
-    
+
 outputs:
   kDrive_version:
     description: 'The version of the kDrive app built'
@@ -43,7 +43,7 @@ outputs:
 runs:
     using: "composite"
     steps:
-      
+
       - name: Load system Path into Github environment
         run : echo Path=%Path%>> %GITHUB_ENV%
         shell: cmd
@@ -124,7 +124,6 @@ runs:
             )
 
           ) ELSE (
-            $thumbprint = "${{ inputs.debug_cert_thumbprint }}"
             powershell -File "./infomaniak-build-tools/windows/build-drive.ps1" -thumbprint ${{ inputs.debug_cert_thumbprint }} -ci -unitTests
           )
         shell: cmd
@@ -169,7 +168,7 @@ runs:
             Write-Host "No conanrun.ps1 found, skipping Conan dependencies fetch."
             exit 0
           }
-          
+
           New-Item -ItemType Directory -Path "./dependencies/platforms" -Force *> $null
           $patterns = @(
               "xxhash*.dll",

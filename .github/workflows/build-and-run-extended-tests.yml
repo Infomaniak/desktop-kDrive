@@ -1,17 +1,17 @@
 name: Build and run extended tests
 on:
     # Allows manual execution
-    workflow_dispatch:  
+    workflow_dispatch:
     # Runs every day at midnight
     schedule:
         - cron: '0 0 * * *'
     # Runs on PR to a release branch
-    pull_request: 
+    pull_request:
       types: [synchronize, opened]
       branches:
         - 'release/**'
         - 'main'
- 
+
 concurrency:
   group: extended-tests-${{ github.event.pull_request.number || github.ref_name || github.run_id }}
   cancel-in-progress: true
@@ -48,7 +48,7 @@ jobs:
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || (github.event_name == 'workflow_dispatch' && github.ref_name || 'develop') }}
           submodules: recursive
-        
+
       - name: Clean the log directory
         run : rm -r -force C:/Windows/Temp/kDrive-logdir/*
 
@@ -69,7 +69,7 @@ jobs:
       - name: Build kDrive desktop
         run: |
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
-          powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci -coverage -unitTests
+          powershell ./infomaniak-build-tools/windows/build-drive.ps1 -thumbprint ${{ secrets.WINDOWS_DEBUG_CERT_THUMBPRINT }} -ci -coverage -unitTests
         shell: cmd
 
       - name: Execute tests
@@ -80,7 +80,7 @@ jobs:
           ./infomaniak-build-tools/run-tests.ps1
 
       - name: Compute code coverage
-        run : |          
+        run : |
           & "covselect.exe" "--add" 'exclude folder c:/'
           & "covselect.exe" "--add" 'exclude folder ../'
           & "covselect.exe" "--add" 'exclude folder 3rdparty/'
@@ -120,7 +120,7 @@ jobs:
     steps:
       - name: Clean-up XCode DerivedData
         run : rm -rf /Users/runner/Library/Developer/Xcode/DerivedData
-        
+
       - name: Checkout the code
         uses: actions/checkout@v6.0.2
         with:
@@ -202,7 +202,7 @@ jobs:
 
       - name: Clean-up generated code
         run : rm -rf build-linux
-  
+
   kChat_notification:
     if: ((github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && always())
     needs: [ Windows-extended-tests, MacOS-extended-tests, Linux-extended-tests ]
