@@ -45,6 +45,7 @@ static const QString downloadPageLink = "downloadPageLink";
 static constexpr int statusLayoutSpacing = 8;
 static constexpr auto betaTagColor = QColor(214, 56, 100);
 static constexpr auto internalTagColor = QColor(120, 116, 176);
+static constexpr auto testTagColor = QColor(62, 160, 146);
 
 Q_LOGGING_CATEGORY(lcVersionWidget, "gui.versionwidget", QtInfoMsg)
 
@@ -258,8 +259,26 @@ void VersionWidget::refresh(UpdateState state /*= UpdateState::Unknown*/) const 
         } else {
             _joinBetaButton->setText(_isStaff ? tr("Modify") : tr("Quit"));
             _betaTag->setVisible(true);
-            _betaTag->setBackgroundColor(channel == DistributionChannel::Beta ? betaTagColor : internalTagColor);
-            _betaTag->setText(channel == DistributionChannel::Beta ? "BETA" : "INTERNAL");
+            auto tagColor = betaTagColor;
+            auto tagText = "BETA";
+            switch (channel) {
+                case DistributionChannel::Beta:
+                    tagColor = betaTagColor;
+                    tagText = "BETA";
+                    break;
+                case DistributionChannel::Internal:
+                    tagColor = internalTagColor;
+                    tagText = "INTERNAL";
+                    break;
+                case DistributionChannel::Test:
+                    tagColor = testTagColor;
+                    tagText = "TEST";
+                    break;
+                default:
+                    break;
+            }
+            _betaTag->setBackgroundColor(tagColor);
+            _betaTag->setText(tagText);
         }
     }
 }

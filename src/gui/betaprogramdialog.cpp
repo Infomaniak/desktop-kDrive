@@ -34,6 +34,7 @@ static constexpr auto iconColor = QColor(239, 139, 52);
 static constexpr int indexNo = 0;
 static constexpr int indexBeta = 1;
 static constexpr int indexInternal = 2;
+static constexpr int indexTest = 3;
 
 namespace KDC {
 
@@ -91,6 +92,7 @@ BetaProgramDialog::BetaProgramDialog(const bool isQuit, const bool isStaff, QWid
         _staffSelectionBox->insertItem(indexNo, tr("No"));
         _staffSelectionBox->insertItem(indexBeta, tr("Public beta version"));
         _staffSelectionBox->insertItem(indexInternal, tr("Internal beta version"));
+        _staffSelectionBox->insertItem(indexTest, tr("Test version"));
 
         switch (ParametersCache::instance()->parametersInfo().distributionChannel()) {
             case DistributionChannel::Prod:
@@ -101,6 +103,9 @@ BetaProgramDialog::BetaProgramDialog(const bool isQuit, const bool isStaff, QWid
                 break;
             case DistributionChannel::Internal:
                 _initialIndex = indexInternal;
+                break;
+            case DistributionChannel::Test:
+                _initialIndex = indexTest;
                 break;
             default:
                 break;
@@ -188,6 +193,8 @@ DistributionChannel indexToDistributionChannel(const int index) {
             return DistributionChannel::Beta;
         case indexInternal:
             return DistributionChannel::Internal;
+        case indexTest:
+            return DistributionChannel::Test;
         default:
             break;
     }
@@ -217,7 +224,7 @@ void BetaProgramDialog::onChannelChange(const int index) {
     }
 
     _acknowledgmentFrame->setVisible(true);
-    if (index > _initialIndex)
+    if (_initialIndex == indexNo)
         setInstabilityMessage();
     else
         setTooRecentMessage();
