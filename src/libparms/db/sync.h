@@ -35,7 +35,7 @@ class PARMS_EXPORT Sync {
              const SyncPath &dbPath = SyncPath(), bool hasFullyCompleted = false,
              const std::string &navigationPaneClsid = std::string(), CursorStore cursorStore = defaultCursorStore);
 
-        void setDbId(SyncDbId dbId) { _dbId = dbId; }
+        void setDbId(const SyncDbId dbId) { _dbId = dbId; }
         SyncDbId dbId() const { return _dbId; }
         void setDriveDbId(const DriveDbId driveDbId) { _driveDbId = driveDbId; }
         DriveDbId driveDbId() const { return _driveDbId; }
@@ -49,7 +49,7 @@ class PARMS_EXPORT Sync {
         const RemoteNodeId &targetNodeId() const { return _targetNodeId; }
         void setDbPath(const SyncPath &dbPath) { _dbPath = dbPath; }
         const SyncPath &dbPath() const { return _dbPath; }
-        void setPaused(bool paused) { _paused = paused; }
+        void setPaused(const bool paused) { _paused = paused; }
         bool paused() const { return _paused; }
         void setSupportVfs(const bool supportVfs) { _supportVfs = supportVfs; }
         bool supportVfs() const { return _supportVfs; }
@@ -57,7 +57,7 @@ class PARMS_EXPORT Sync {
         VirtualFileMode virtualFileMode() const { return _virtualFileMode; }
         void setNotificationsDisabled(const bool notificationsDisabled) { _notificationsDisabled = notificationsDisabled; }
         bool notificationsDisabled() const { return _notificationsDisabled; }
-        void setHasFullyCompleted(bool hasFullyCompleted) { _hasFullyCompleted = hasFullyCompleted; }
+        void setHasFullyCompleted(const bool hasFullyCompleted) { _hasFullyCompleted = hasFullyCompleted; }
         bool hasFullyCompleted() const { return _hasFullyCompleted; }
         void setNavigationPaneClsid(const std::string &navigationPaneClsid) { _navigationPaneClsid = navigationPaneClsid; }
         const std::string &navigationPaneClsid() const { return _navigationPaneClsid; }
