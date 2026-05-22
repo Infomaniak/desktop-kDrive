@@ -71,19 +71,19 @@ void FileSystemObserverWorker::init() {
 }
 
 bool FileSystemObserverWorker::initializing() const {
-    return _initializing.load(std::memory_order_acquire);
+    return _initializing.load();
 }
 
 void FileSystemObserverWorker::setInitFlagValue(const bool value) {
-    _initializing.store(value, std::memory_order_release);
+    _initializing.store(value);
 }
 
 bool FileSystemObserverWorker::updating() const {
-    return _updating.load(std::memory_order_acquire);
+    return _updating.load();
 }
 
 void FileSystemObserverWorker::setUpdateFlagValue(const bool value) {
-    _updating.store(value, std::memory_order_release);
+    _updating.store(value);
 }
 
 } // namespace KDC
