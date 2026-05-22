@@ -19,13 +19,31 @@
 import Foundation
 
 struct SyncErrorMatcher {
-    var levels: Set<KDC.ErrorLevel> = [.Unknown]
-    var nodeTypes: Set<KDC.NodeType> = [.Unknown]
-    var cancelTypes: Set<KDC.CancelType> = [.None]
-    var inconsistencyTypes: Set<KDC.InconsistencyType> = [.None]
-    var conflictTypes: Set<KDC.ConflictType> = [.None]
-    var exitCodes: Set<KDC.ExitCode> = [.Unknown]
-    var exitCauses: Set<KDC.ExitCause> = [.Unknown]
+    var levels: Set<KDC.ErrorLevel>
+    var nodeTypes: Set<KDC.NodeType>
+    var cancelTypes: Set<KDC.CancelType>
+    var inconsistencyTypes: Set<KDC.InconsistencyType>
+    var conflictTypes: Set<KDC.ConflictType>
+    var exitCodes: Set<KDC.ExitCode>
+    var exitCauses: Set<KDC.ExitCause>
+
+    init(
+        levels: Set<KDC.ErrorLevel>? = nil,
+        nodeTypes: Set<KDC.NodeType>? = nil,
+        cancelTypes: Set<KDC.CancelType>? = nil,
+        inconsistencyTypes: Set<KDC.InconsistencyType>? = nil,
+        conflictTypes: Set<KDC.ConflictType>? = nil,
+        exitCodes: Set<KDC.ExitCode>? = nil,
+        exitCauses: Set<KDC.ExitCause>? = nil
+    ) {
+        self.levels = levels ?? [.Unknown]
+        self.nodeTypes = nodeTypes ?? [.Unknown]
+        self.cancelTypes = cancelTypes ?? [.None]
+        self.inconsistencyTypes = inconsistencyTypes ?? [.None]
+        self.conflictTypes = conflictTypes ?? [.None]
+        self.exitCodes = exitCodes ?? [.Unknown]
+        self.exitCauses = exitCauses ?? [.Unknown]
+    }
 
     func matches(error: ErrorInfo) -> Bool {
         return levels.contains(error.level)
@@ -35,5 +53,44 @@ struct SyncErrorMatcher {
             && conflictTypes.contains(error.conflictType)
             && exitCodes.contains(error.exitCode)
             && exitCauses.contains(error.exitCause)
+    }
+}
+
+extension SyncErrorMatcher {
+    static func node(
+        cancelTypes: Set<KDC.CancelType>? = nil,
+        inconsistencyTypes: Set<KDC.InconsistencyType>? = nil,
+        conflictTypes: Set<KDC.ConflictType>? = nil,
+        exitCodes: Set<KDC.ExitCode>? = nil,
+        exitCauses: Set<KDC.ExitCause>? = nil
+    ) -> SyncErrorMatcher {
+        return SyncErrorMatcher(
+            levels: [.Node],
+            nodeTypes: [.File, .Directory],
+            cancelTypes: cancelTypes,
+            inconsistencyTypes: inconsistencyTypes,
+            conflictTypes: conflictTypes,
+            exitCodes: exitCodes,
+            exitCauses: exitCauses
+        )
+    }
+
+    static func syncPal(
+        nodeTypes: Set<KDC.NodeType>? = nil,
+        cancelTypes: Set<KDC.CancelType>? = nil,
+        inconsistencyTypes: Set<KDC.InconsistencyType>? = nil,
+        conflictTypes: Set<KDC.ConflictType>? = nil,
+        exitCodes: Set<KDC.ExitCode>? = nil,
+        exitCauses: Set<KDC.ExitCause>? = nil
+    ) -> SyncErrorMatcher {
+        return SyncErrorMatcher(
+            levels: [.SyncPal],
+            nodeTypes: nodeTypes,
+            cancelTypes: cancelTypes,
+            inconsistencyTypes: inconsistencyTypes,
+            conflictTypes: conflictTypes,
+            exitCodes: exitCodes,
+            exitCauses: exitCauses
+        )
     }
 }

@@ -18,7 +18,7 @@
 
 import Foundation
 
-public enum SyncError: Sendable, Hashable {
+public enum SyncError: Sendable, Hashable, CaseIterable {
     case conflict
 
     case createCancel
@@ -40,7 +40,7 @@ public enum SyncError: Sendable, Hashable {
     case notEnoughDiskSpace
     case quotaExceeded
     case reservedName
-    case temporaryBlacklist
+    case temporaryBlacklisted
 
     case backErrorDriveAccess
     case backErrorDriveAsleep
@@ -64,6 +64,8 @@ public enum SyncError: Sendable, Hashable {
     case localAccess
     case dataSyncDirChanged
     case temporaryDirAccess
+
+    case unknown
 
     var shouldBeShownInStatusBar: Bool {
         switch self {
