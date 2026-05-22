@@ -26,6 +26,9 @@
 // Input parameters keys
 static const auto inParamsSyncDbId = "syncDbId";
 
+// User action lock timeout duration
+static const int userActionLockTimeoutMs = 5000;
+
 namespace KDC {
 
 SyncDeleteJob::SyncDeleteJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
@@ -50,6 +53,19 @@ ExitInfo SyncDeleteJob::serializeOutputParms() {
 }
 
 ExitInfo SyncDeleteJob::process() {
+    std::shared_ptr<SyncPal> syncPal;
+    if (ExitInfo exitInfo = getSyncPal(_syncDbId, syncPal); !exitInfo) {
+        LOG_INFO(_logger, "Error in getSyncPal for syncDbId=" << _syncDbId << " : " << exitInfo,
+                 " This means that the syncPal is not running, which can be expected at this step.");
+    }
+
+    UserActionScopedLock lock;
+    if (syncPal != nullptr && !lock.tryLock(syncPal, std::chrono::milliseconds(userActionLockTimeoutMs))) {
+        LOG_WARN(_logger, "Could not acquire user action lock for syncDbId="
+                                  << _syncDbId << ". Another user action is running. Aborting SyncDeleteJob.");
+        return ExitCode::OperationCanceled;
+    }
+
     _commManager->appServer().stopSyncTask(_syncDbId, SyncPal::DbBehaviorAfterStop::Remove);
 
     // Delete sync from DB

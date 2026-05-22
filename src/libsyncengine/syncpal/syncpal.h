@@ -200,11 +200,14 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         ExitCode fileRemoteIdFromLocalPath(const SyncPath &path, NodeId &nodeId) const;
         ExitCode syncIdSet(SyncNodeType type, NodeSet &nodeIdSet);
         ExitCode setSyncIdSet(SyncNodeType type, const NodeSet &nodeIdSet);
-        ExitCode propagateSyncIdSetChange(bool restartSync);
+        ExitInfo propagateSyncIdSetChange(bool restartSync);
         // TODO: Remove this in favor of `propagateSyncIdSetChange`.
         // The asynchronous behavior is now handled by the new CommLayer design.
         ExitCode propagateSyncIdSetChangeAsync(bool restartSync);
-        ExitCode excludeListUpdated();
+        ExitInfo PropagateExcludeListChange();
+        // TODO: Remove this in favor of `PropagateExcludeListChange`.
+        // The asynchronous behavior is now handled by the new CommLayer design.
+        ExitCode PropagateExcludeListChangeAsync();
         ExitCode fixConflictingFiles(const std::vector<Error> &keepLocalErrorList, const std::vector<Error> &keepRemoteErrorList,
                                      std::vector<ErrorDbId> &removedErrorsDbIds);
 
@@ -447,9 +450,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         // Direct download callback
         void directDownloadCallback(UniqueId jobId);
-
     private:
         void setUpBlacklistPropagator(bool restartSync);
+        void setUpExcludelistPropagator();
         void setUpConflictingFilesCorrector(const std::vector<Error> &keepLocalErrorList,
                                             const std::vector<Error> &keepRemoteErrorList);
         log4cplus::Logger _logger;
