@@ -1,4 +1,3 @@
-//
 /*
  Infomaniak kDrive - Desktop
  Copyright (C) 2023-2026 Infomaniak Network SA
@@ -18,3 +17,26 @@
  */
 
 import Foundation
+
+enum UISyncErrorCategory {
+    case systemAndPermissions
+    case conflicts
+    case filesToCheck
+    case synchronizationDirectories
+    case storage
+
+    var title: String {
+        switch self {
+        case .systemAndPermissions:
+            return "!Système et permissions"
+        case .conflicts:
+            return "!Conflits"
+        case .filesToCheck:
+            return "!Fichiers à vérifier"
+        case .synchronizationDirectories:
+            return "!Dossiers de synchronisation"
+        case .storage:
+            return "!Stockage"
+        }
+    }
+}
