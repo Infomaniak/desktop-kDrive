@@ -24,6 +24,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Threading.Tasks;
+using static Infomaniak.kDrive.OnBoarding.OnBoardingWindow;
 
 namespace Infomaniak.kDrive.Pages.Onboarding
 {
@@ -39,14 +40,14 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             InitializeComponent();
             Logger.Log(Logger.Level.Debug, "WelcomePage components initialized");
         }
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        protected async override void OnNavigatedTo(NavigationEventArgs e)
         {
             _analyticsService.TrackPageView(Analytics.Keys.Category.OnboardingWelcomePage);
             if (e.Parameter is ViewModels.Onboarding obvm)
             {
                 _onBoardingViewModel = obvm;
                 if ((App.Current as App)?.CurrentWindow is OnBoardingWindow onBoardingWindow)
-                    onBoardingWindow.UpdateLottieSource("Infomaniak.Custom.Animations.loader-stroke", 130, 0);
+                    await onBoardingWindow.UpdateLottieSource(LottieTemplateKey.KDrive_LoaderStroke);
             }
         }
 

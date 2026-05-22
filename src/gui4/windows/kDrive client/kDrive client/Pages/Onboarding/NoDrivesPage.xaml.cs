@@ -26,6 +26,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Threading.Tasks;
+using static Infomaniak.kDrive.OnBoarding.OnBoardingWindow;
 
 namespace Infomaniak.kDrive.Pages.Onboarding
 {
@@ -44,13 +45,13 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             Logger.Log(Logger.Level.Debug, "NoDrivesPage components initialized");
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        protected async override void OnNavigatedTo(NavigationEventArgs e)
         {
             if (e.Parameter is ViewModels.Onboarding onboardingVm)
             {
                 _onboardingViewModel = onboardingVm;
                 if ((App.Current as App)?.CurrentWindow is OnBoardingWindow onBoardingWindow)
-                    onBoardingWindow.UpdateLottieSource("Infomaniak.Custom.Animations.synchro-file", 219);
+                    await onBoardingWindow.UpdateLottieSource(LottieTemplateKey.kDrive_SyncroFile);
 
                 onboardingVm.DrivesAvailable += OnDrivesAvailable;
                 onboardingVm.StartDriveAvailabilityWatcher();

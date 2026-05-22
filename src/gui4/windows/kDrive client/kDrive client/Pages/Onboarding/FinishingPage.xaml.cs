@@ -22,6 +22,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
+using static Infomaniak.kDrive.OnBoarding.OnBoardingWindow;
 
 namespace Infomaniak.kDrive.Pages.Onboarding
 {
@@ -50,7 +51,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     return;
                 }
                 if ((App.Current as App)?.CurrentWindow is OnBoardingWindow onBoardingWindow)
-                    onBoardingWindow.UpdateLottieSource("Infomaniak.Custom.Animations.synchro-file", 219);
+                    await onBoardingWindow.UpdateLottieSource(LottieTemplateKey.kDrive_SyncroFile);
 
                 if (await _onBoardingViewModel.FinishOnboarding())
                     Frame.Navigate(typeof(FinishPage), _onBoardingViewModel);

@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using static Infomaniak.kDrive.OnBoarding.OnBoardingWindow;
 
 namespace Infomaniak.kDrive.Pages.Onboarding
 {
@@ -78,7 +79,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     return;
                 }
                 if (App.Current is App { CurrentWindow: OnBoardingWindow onBoardingWindow })
-                    onBoardingWindow.UpdateLottieSource("Infomaniak.Custom.Animations.synchro-file", 219);
+                    await onBoardingWindow.UpdateLottieSource(LottieTemplateKey.kDrive_SyncroFile);
             }
             else
             {

@@ -104,24 +104,6 @@ namespace Infomaniak.kDrive.Pages
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
             DetachHandlers();
-            CleanupLottiePlayers();
-        }
-
-        private void CleanupLottiePlayers()
-        {
-            try
-            {
-                // Find and cleanup all LottiePlayer controls in the visual tree
-                var lottiePlayers = FindVisualChildren<CustomControls.LottiePlayer>(this);
-                foreach (var player in lottiePlayers)
-                {
-                    player?.Cleanup();
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.Log(Logger.Level.Warning, $"Error cleaning up Lottie players: {ex.Message}");
-            }
         }
 
         private static IEnumerable<T> FindVisualChildren<T>(DependencyObject parent) where T : DependencyObject

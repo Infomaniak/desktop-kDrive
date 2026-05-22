@@ -20,6 +20,7 @@ using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using System;
+using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.OnBoarding
 {
@@ -30,18 +31,24 @@ namespace Infomaniak.kDrive.OnBoarding
         private bool _isInitialized = false;
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         private readonly ViewModels.Onboarding _onBoardingViewModel = new(App.ServiceProvider.GetRequiredService<ServerCommunication.Interfaces.IServerCommService>());
-        private string _lottieRessourceKey = "Infomaniak.Custom.Animations.loader-stroke";
         private DispatcherTimer? _columnAnimationTimer;
         private double _contentStartWidth;
         private double _lottieStartWidth;
         private double _contentTargetWidth;
         private double _lottieTargetWidth;
         private LottiePosition _targetPosition = LottiePosition.Right;
+        private LottieTemplateKey? _currentLottieTemplateKey;
         private DateTimeOffset _animationStartTime;
         private const double _animationDurationMs = 300;
         private const double _contentColumnWeight = 1.63;
         private const double _lottieColumnWeight = 1.0;
         private const double _defaultContentWidthRatio = _contentColumnWeight / (_contentColumnWeight + _lottieColumnWeight);
+
+        public enum LottieTemplateKey
+        {
+            kDrive_SyncroFile,
+            KDrive_LoaderStroke
+        }
         public AppModel ViewModel { get { return _viewModel; } }
         public OnBoardingWindow()
         {
@@ -51,8 +58,7 @@ namespace Infomaniak.kDrive.OnBoarding
             this.SetTitleBar(AppTitleBar);
             Utility.SetWindowProperties(this, _minimumWidth, _minimumHeight, Utility.WindowResizeOptions.AllowMinimize | Utility.WindowResizeOptions.AllowResize); // Set initial size and allow resizing
             Utility.CenterWindow(this);
-            LottiePlayer.ActualThemeChanged += LottiePlayer_ActualThemeChanged;
-            UpdateLottieSource(_lottieRessourceKey, 130, 1);
+            _ = UpdateLottieSource(LottieTemplateKey.KDrive_LoaderStroke);
             Closed += OnBoardingWindow_Closed;
             Activated += OnBoardingWindow_Activated;
         }
@@ -69,31 +75,42 @@ namespace Infomaniak.kDrive.OnBoarding
 
         private async void OnBoardingWindow_Closed(object sender, WindowEventArgs args)
         {
-            LottiePlayer.ActualThemeChanged -= LottiePlayer_ActualThemeChanged;
-            LottiePlayer?.Cleanup();
             await _onBoardingViewModel.DisposeAsync();
         }
 
-        private void LottiePlayer_ActualThemeChanged(FrameworkElement sender, object args)
+        public async Task UpdateLottieSource(LottieTemplateKey lottieTemplateKey)
         {
-            UpdateLottieSource(_lottieRessourceKey, null, 1);
+            if (_currentLottieTemplateKey == lottieTemplateKey)
+                return;
+
+            await FadeOutInLottie(lottieTemplateKey, _currentLottieTemplateKey);
+            _currentLottieTemplateKey = lottieTemplateKey;
         }
 
-        public void UpdateLottieSource(string ressourceKey, int? height, int repeat = 0)
+        private async Task FadeOutInLottie(LottieTemplateKey Inkey, LottieTemplateKey? outkey)
         {
-            App.Current.Resources.TryGetValue(ressourceKey, out var sourceObj);
-            if (sourceObj is string source)
+            FrameworkElement? inElement = getLottieElement(Inkey);
+            FrameworkElement? outElement = getLottieElement(outkey);
+
+            for (double i = 0.0; i <= 1.0; i+=0.1)
             {
-                _lottieRessourceKey = ressourceKey;
-                LottiePlayer.UriSource = new System.Uri(source);
-                LottiePlayer.PlayCount = repeat;
-                if (height is not null)
-                    LottiePlayer.Height = height.Value;
+                if (inElement is not null)
+                    inElement.Opacity = i;
+                if (outElement is not null)
+                    outElement.Opacity = 1-i;
+                await Task.Delay(30);
             }
-            else
+        }
+
+        private FrameworkElement? getLottieElement(LottieTemplateKey? key)
+        {
+            if (key is null) return null;
+            return key switch
             {
-                Logger.Log(Logger.Level.Warning, $"Lottie resource key '{ressourceKey}' not found or is not a string.");
-            }
+                LottieTemplateKey.KDrive_LoaderStroke => KDrive_LoaderStrokePlayer,
+                LottieTemplateKey.kDrive_SyncroFile => kDrive_SyncroFilePlayer,
+                _ => null
+            };
         }
 
         public enum LottiePosition

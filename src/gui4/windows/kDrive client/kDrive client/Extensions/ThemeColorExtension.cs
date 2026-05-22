@@ -92,6 +92,9 @@ namespace Infomaniak.kDrive
             if (Application.Current.Resources[Key] is SolidColorBrush brush)
                 return brush.Color;
 
+            if (Application.Current.Resources[Key] is Color color)
+                return color;
+
             return default;
         }
     }

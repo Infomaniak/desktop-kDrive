@@ -26,6 +26,8 @@
         xmlns:viewModel="using:Infomaniak.kDrive.ViewModels"
         xmlns:converters="using:Infomaniak.kDrive.Converters"
         xmlns:controls="using:Infomaniak.kDrive.CustomControls"
+        xmlns:kDrive="using:Infomaniak.kDrive"
+        xmlns:animatedvisuals="using:AnimatedVisuals"
         mc:Ignorable="d"
         Title="kDrive">
 
@@ -66,11 +68,43 @@
                 Background="{ThemeResource LayerFillColorDefaultBrush}">
         </Border>
 
-        <controls:LottiePlayer x:Name="LottiePlayer"
-                               Grid.Row="1"
-                               Grid.Column="2"
-                               Height="120"
-                               UriSource="{ThemeResource Infomaniak.Custom.Animations.loader-stroke}" />
+        <AnimatedVisualPlayer x:Name="kDrive_SyncroFilePlayer"
+                              AutoPlay="True"
+                              MaxWidth="219"
+                              Grid.Row="1"
+                              Grid.Column="2"
+                              Opacity="0"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center">     
+            <!--
+             Color_446EDD= turning dot & main button in web view
+             Color_1A47FF= second kDrive folder sheet
+             Color_5287FF= first kDrive folder sheet
+             Color_A0BCFF= third kDrive folder sheet
+             Color_A2BEFF= fourth kDrive folder sheet
+             Color_C5CDDB= computer outer border
+             Color_DCE2EF= computer view elements
+             Color_EDF0F8= computer main border and nav bar components
+             Color_F6F8FB= navbar background
+             Color_FFFFFF= computer & kDrive logo background
+            -->
+            <animatedvisuals:KDrive_SyncroFile Color_446EDD="{kDrive:ThemeColor Key=AccentFillColorDefaultBrush}"
+                                               Color_C5CDDB="{kDrive:ThemeColor Key=SolidBackgroundFillColorBaseBrush}"
+                                               Color_DCE2EF="{kDrive:ThemeColor Key=SolidBackgroundFillColorBaseAltBrush}"
+                                               Color_EDF0F8="{kDrive:ThemeColor Key=SolidBackgroundFillColorBaseAltBrush}"
+                                               Color_F6F8FB="{kDrive:ThemeColor Key=LayerOnMicaBaseAltFillColorDefaultBrush}"
+                                               Color_FFFFFF="{kDrive:ThemeColor Key=LayerOnMicaBaseAltFillColorDefaultBrush}"/>
+        </AnimatedVisualPlayer>
+        <AnimatedVisualPlayer x:Name="KDrive_LoaderStrokePlayer"
+                              AutoPlay="True"
+                              MaxWidth="130"
+                              Grid.Row="1"
+                              Grid.Column="2"
+                              Opacity="0"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center">
+            <animatedvisuals:KDrive_LoaderStroke Color_446EDD="{kDrive:ThemeColor Key=SystemFillColorAttentionBrush}"/>
+        </AnimatedVisualPlayer>
         <Border Grid.Row="1"
                 Grid.Column="0">
             <Frame x:Name="ContentFrame" />
