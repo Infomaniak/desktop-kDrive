@@ -39,19 +39,19 @@ ISyncWorker::~ISyncWorker() {
 }
 
 bool ISyncWorker::stopAsked() const {
-    return _stopAsked.load(std::memory_order_acquire);
+    return _stopAsked.load();
 }
 
 void ISyncWorker::setStopAsked(const bool stopAsked) {
-    _stopAsked.store(stopAsked, std::memory_order_release);
+    _stopAsked.store(stopAsked);
 }
 
 bool ISyncWorker::isRunning() const {
-    return _isRunning.load(std::memory_order_acquire);
+    return _isRunning.load();
 }
 
 void ISyncWorker::setIsRunning(const bool isRunning) {
-    _isRunning.store(isRunning, std::memory_order_release);
+    _isRunning.store(isRunning);
 }
 
 void ISyncWorker::start() {
