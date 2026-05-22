@@ -30,7 +30,7 @@ static const auto inParamsSyncDbId = "syncDbId";
 static const auto inParamsNodeIdList = "nodeIdList";
 
 // User action lock timeout duration
-static const int userActionLockTimeoutMs = 5000;
+static const int32_t userActionLockTimeoutMs = 5000;
 
 namespace KDC {
 

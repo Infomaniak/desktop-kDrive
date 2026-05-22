@@ -35,6 +35,9 @@ class ErrorResolveConflictsQuickJob : public AbstractErrorResolveConflictsJob {
         ConflictResolutionStrategy _strategy = ConflictResolutionStrategy::Unknown;
 
         ExitInfo deserializeInputParms() override;
+        ExitInfo getErrorsForDbIds(const std::vector<int32_t> &dbIdList, std::vector<Error> &errorList);
+        void handleKeepMostRecent(const SyncPath &localPath, const Error &error, std::vector<Error> &keepLocalErrors,
+                                  std::vector<Error> &keepRemoteErrors);
         ExitInfo process() override;
 
         friend class TestGuiCommChannel;

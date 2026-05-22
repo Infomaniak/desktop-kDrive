@@ -29,7 +29,7 @@
 static const auto inParamsSyncDbId = "syncDbId";
 
 // User action lock timeout duration
-static const int userActionLockTimeoutMs = 1000;
+static const int32_t userActionLockTimeoutMs = 1000;
 namespace KDC {
 
 SyncStopJob::SyncStopJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,

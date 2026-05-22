@@ -11,7 +11,7 @@
 static const auto inParamsExclusionTemplateList = "exclusionTemplateList";
 
 // User action lock timeout duration
-static const int userActionLockTimeoutMs = 1000;
+static const int32_t userActionLockTimeoutMs = 1000;
 
 namespace KDC {
 
