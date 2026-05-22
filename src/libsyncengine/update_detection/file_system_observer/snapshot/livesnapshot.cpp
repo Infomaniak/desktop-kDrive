@@ -298,11 +298,11 @@ bool LiveSnapshot::forceUpdateLastChangeRevision(const NodeId &itemId) {
 
 
 bool LiveSnapshot::isValid() const {
-    return _isValid.load(std::memory_order_acquire);
+    return _isValid.load();
 }
 
 void LiveSnapshot::setValid(const bool newIsValid) {
-    _isValid.store(newIsValid, std::memory_order_release);
+    _isValid.store(newIsValid);
 }
 
 SnapshotRevision LiveSnapshot::revision() const {
