@@ -1,5 +1,9 @@
 if(WIN32)
     project(gui4 LANGUAGES C CXX)
+    if(NOT DEFINED CLIENT_DEST OR CLIENT_DEST STREQUAL "")
+         message(FATAL_ERROR "CLIENT_DEST must be defined before including src/gui4/CMakeLists.txt.")
+     endif()
+
     set(CLIENT_PATH "${CMAKE_SOURCE_DIR}/src/gui4/windows/kDrive client")
     set(CLIENT_PROJECT "${CLIENT_PATH}/kDrive client/kDrive client.csproj")
     set(CLIENT_BOOTSTRAP_PROJECT "${CLIENT_PATH}/Bootstrapper/Bootstrapper.csproj")

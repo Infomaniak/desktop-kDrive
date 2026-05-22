@@ -350,10 +350,10 @@ function CMake-Build-And-Install {
     if($newGui) {
         $flags += ("'-DBUILD_GUI:BOOL=TRUE'")
         $flags += ("'-DBUILD_GUI_LEGACY:BOOL=FALSE'")
-    }else{
+    } else {
         $flags += ("'-DBUILD_GUI:BOOL=FALSE'")
         $flags += ("'-DBUILD_GUI_LEGACY:BOOL=TRUE'")
-    }
+    } 
 
     $args += $flags
 
@@ -389,7 +389,7 @@ function Get-Icon-Path {
     # NSIS needs the path to use backslash
     if(-not $newGui) {
         $iconPath = "$buildPath\src\gui\kdrive-win.ico".Replace('/', '\')
-    }else {
+    } else {
         $iconPath = "$buildPath\bin\client\Assets\kdrive.ico".Replace('/', '\')
     }
 
@@ -412,7 +412,7 @@ function Set-Up-NSIS {
     Write-Host "Setting up NSIS."
 
     # NSIS needs the path to use backslash
-    $iconPath = Get-Icon-Path $buildpath -newGui $newGui
+    $iconPath = Get-Icon-Path -buildPath $buildPath -newGui $newGui
     $appName = Get-Package-Name -exe
    
     $installerPath = Get-Installer-Path -ContentPath $contentPath
