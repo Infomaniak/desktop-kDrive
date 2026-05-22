@@ -38,6 +38,7 @@
 #include "jobs/network/infomaniak_API/getappversionjob.h"
 #include "jobs/network/directdownloadjob.h"
 #include "jobs/network/kDrive_API/createdirjob.h"
+#include "jobs/network/kDrive_API/checkhashmatchjob.h"
 #include "jobs/network/kDrive_API/itemsexistjob.h"
 #include "jobs/network/kDrive_API/searchjob.h"
 #include "jobs/network/kDrive_API/listing/csvfullfilelistwithcursorjob.h"
@@ -961,6 +962,79 @@ void TestNetworkJobs::testGetFileList() {
                 CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), dataArray->size());
             }
         }
+    }
+}
+
+void TestNetworkJobs::testGetFileHashMatch() {
+    // Download picture-1.jpg once to use as a valid local reference file
+    const LocalTemporaryDirectory tmpDir("testGetFileHashMatch");
+    const SyncPath validLocalFile = tmpDir.path() / "picture-1.jpg";
+    {
+        DownloadJob downloadJob(nullptr, _cacheDirectory,
+                                DownloadJob::FileDownloadInfo{_driveDbId, picture1RemoteId, validLocalFile, 0, 0, 0, false},
+                                DownloadJob::DateTimePolicy::ApplyDateTime);
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, downloadJob.runSynchronously().code());
+    }
+    CPPUNIT_ASSERT(std::filesystem::exists(validLocalFile));
+
+    FileStat validFileStat;
+    IoError ioError = IoError::Success;
+    IoHelper::getFileStat(validLocalFile, &validFileStat, ioError, IoHelper::PathCheckOption::Insensitive);
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    const int64_t validSize = validFileStat.size;
+
+    // Create a tampered copy (wrong local content, same remote node)
+    const SyncPath tamperedLocalFile = tmpDir.path() / "picture-1-tampered.jpg";
+    std::filesystem::copy_file(validLocalFile, tamperedLocalFile);
+    {
+        std::ofstream ofs(tamperedLocalFile, std::ios::binary | std::ios::app);
+        ofs << "corrupted";
+    }
+
+    // Create a dummy file that has the same size as the valid file (to bypass size check but fail hash)
+    const SyncPath sameSizeDifferentContentFile = tmpDir.path() / "picture-1-same-size.jpg";
+    {
+        std::ofstream ofs(sameSizeDifferentContentFile, std::ios::binary);
+        ofs << std::string(static_cast<size_t>(validSize), 'X');
+    }
+
+    // Create an empty file (wrong size → should skip API call and trigger download)
+    const SyncPath emptyLocalFile = tmpDir.path() / "picture-1-empty.jpg";
+    std::ofstream(emptyLocalFile).close();
+
+    struct TestCase {
+            std::string name;
+            SyncPath localFile;
+            NodeId remoteNodeId;
+            int64_t localSize;
+            int64_t remoteSize;
+            bool expectedShouldDownload;
+            ExitCode expectedExitCode;
+    };
+
+    const std::vector<TestCase> testCases = {
+            // Both hash and size match → file is in sync
+            {"MatchingHashAndSize", validLocalFile, picture1RemoteId, validSize, validSize, false, ExitCode::Ok},
+
+            // Local file is corrupted but size is provided as matching → hash mismatch detected
+            {"LocalFileTampered_SizeForcedMatch", tamperedLocalFile, picture1RemoteId, validSize, validSize, true, ExitCode::Ok},
+
+            // Wrong remote node ID → API returns a different hash → mismatch
+            {"WrongRemoteNodeId", validLocalFile, testFileRemoteId, validSize, validSize, true, ExitCode::Ok},
+
+            // Sizes differ → job aborts immediately, no API call, shouldDownload stays true
+            {"SizeMismatch_EmptyLocal", emptyLocalFile, picture1RemoteId, 0, validSize, true, ExitCode::Ok},
+
+            // Same size, different content → passes size check, hash mismatch detected
+            {"SameSizeDifferentContent", sameSizeDifferentContentFile, picture1RemoteId, validSize, validSize, true,
+             ExitCode::Ok},
+    };
+
+    for (const auto &tc: testCases) {
+        CheckHashMatchJob job(_driveDbId, tc.localFile, tc.remoteNodeId, tc.localSize, tc.remoteSize);
+        job.runSynchronously();
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(tc.name + ": unexpected exit code", tc.expectedExitCode, job.exitInfo().code());
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(tc.name + ": unexpected shouldDownload", tc.expectedShouldDownload, job.shouldDownload());
     }
 }
 

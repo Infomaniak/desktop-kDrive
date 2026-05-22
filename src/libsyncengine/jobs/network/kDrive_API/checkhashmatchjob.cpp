@@ -23,17 +23,31 @@
 
 namespace KDC {
 
-CheckHashMatchJob::CheckHashMatchJob(const DriveDbId driveDbId, const SyncPath &filepath, const NodeId &nodeId, int localsize,
-                                     int remotesize) :
+CheckHashMatchJob::CheckHashMatchJob(const DriveDbId driveDbId, const SyncPath &filepath, const NodeId &nodeId, int64_t localsize,
+                                     int64_t remotesize) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
     _filePath(filepath),
-    _nodeId(nodeId) {
-    if (localsize != remotesize) abort();
-
+    _nodeId(nodeId),
+    _localSize(localsize),
+    _remoteSize(remotesize) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
-CheckHashMatchJob::~CheckHashMatchJob() {}
+ExitInfo CheckHashMatchJob::runJob() noexcept {
+    if (_localSize != _remoteSize) return ExitCode::Ok;
+
+    if (const ExitInfo exitInfo = AbstractTokenNetworkJob::runJob(); !exitInfo) {
+        return exitInfo;
+    }
+
+    std::ifstream ifs;
+    IoError ioError = IoError::Unknown;
+    _localHash = "xxh3:" + IoHelper::getFileChecksum(_filePath, ifs, ioError);
+
+    if (_localHash != _remoteHash) return ExitCode::Ok;
+    _shouldDownload = false;
+    return ExitCode::Ok;
+}
 
 std::string CheckHashMatchJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
@@ -50,18 +64,11 @@ ExitInfo CheckHashMatchJob::handleResponse(std::istream &is) {
 
     if (jsonRes()) {
         if (const auto dataObj = jsonRes()->getObject(dataKey); dataObj) {
-            if (!JsonParserUtility::extractValue(dataObj, hashKey, _distantHash)) {
+            if (!JsonParserUtility::extractValue(dataObj, hashKey, _remoteHash)) {
                 return {ExitCode::BackError, ExitCause::MissingReplyData};
             }
         }
     }
-
-    std::ifstream ifs;
-    IoError ioError = IoError::Unknown;
-    _localHash = "xxh3:" + IoHelper::getFileChecksum(_filePath, ifs, ioError);
-
-    if (_localHash != _distantHash) return ExitCode::Ok;
-    _shouldDownload = false;
 
     return ExitCode::Ok;
 }
