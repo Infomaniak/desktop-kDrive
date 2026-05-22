@@ -28,6 +28,9 @@
 static const auto inParamsErrorDbIdList = "errorDbIdList";
 static const auto inParamsStrategy = "strategy";
 
+// User action lock timeout duration
+static const int userActionLockTimeoutMs = 5000;
+
 namespace KDC {
 
 ErrorResolveConflictsQuickJob::ErrorResolveConflictsQuickJob(std::shared_ptr<CommManager> commManager, int32_t requestId,
@@ -148,6 +151,13 @@ ExitInfo ErrorResolveConflictsQuickJob::process() {
     std::shared_ptr<SyncPal> syncPal;
     if (ExitInfo exitInfo = getSyncPal(syncDbId, syncPal); !exitInfo) {
         return exitInfo;
+    }
+
+    UserActionScopedLock lock;
+    if (syncPal != nullptr && !lock.tryLock(syncPal, std::chrono::milliseconds(userActionLockTimeoutMs))) {
+        LOG_WARN(_logger, "Could not acquire user action lock for syncDbId="
+                                  << syncDbId << ". Another user action is running. Aborting ErrorResolveConflictsQuickJob.");
+        return ExitCode::OperationCanceled;
     }
 
     return fixConflictsAndNotify(syncPal, keepLocalErrors, keepRemoteErrors);

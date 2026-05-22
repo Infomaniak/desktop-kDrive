@@ -200,7 +200,10 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         ExitCode fileRemoteIdFromLocalPath(const SyncPath &path, NodeId &nodeId) const;
         ExitCode syncIdSet(SyncNodeType type, NodeSet &nodeIdSet);
         ExitCode setSyncIdSet(SyncNodeType type, const NodeSet &nodeIdSet);
-        ExitCode syncListUpdated(bool restartSync);
+        ExitCode propagateSyncIdSetChange(bool restartSync);
+        // TODO: Remove this in favor of `propagateSyncIdSetChange`.
+        // The asynchronous behavior is now handled by the new CommLayer design.
+        ExitCode propagateSyncIdSetChangeAsync(bool restartSync);
         ExitCode excludeListUpdated();
         ExitCode fixConflictingFiles(const std::vector<Error> &keepLocalErrorList, const std::vector<Error> &keepRemoteErrorList,
                                      std::vector<ErrorDbId> &removedErrorsDbIds);
@@ -355,11 +358,15 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         int64_t consecutiveBackErrors() const { return _consecutiveBackErrors; }
         void incrementConsecutiveBackErrors() { _consecutiveBackErrors++; }
         void resetConsecutiveBackErrors() { _consecutiveBackErrors = 0; }
+        std::timed_mutex &userActionsMutex() { return _userActionsMutex; }
 
     protected:
         virtual void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
 
         SyncPalInfo _syncInfo;
+
+        std::timed_mutex _userActionsMutex; // Mutex protecting the start/stop/pause/unpause/changeVFS/ operations to ensure that
+                                            // only one of these operations can be performed at a time.
 
         std::shared_ptr<ExcludeListPropagator> _excludeListPropagator = nullptr;
         std::shared_ptr<BlacklistPropagator> _blacklistPropagator = nullptr;
@@ -442,6 +449,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void directDownloadCallback(UniqueId jobId);
 
     private:
+        void setUpBlacklistPropagator(bool restartSync);
         void setUpConflictingFilesCorrector(const std::vector<Error> &keepLocalErrorList,
                                             const std::vector<Error> &keepRemoteErrorList);
         log4cplus::Logger _logger;

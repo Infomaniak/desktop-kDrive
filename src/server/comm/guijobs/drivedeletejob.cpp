@@ -26,6 +26,9 @@
 // Input parameters keys
 static const auto inParamsDriveDbId = "driveDbId";
 
+// User action lock timeout duration
+static const int userActionLockTimeoutMs = 5000;
+
 namespace KDC {
 
 DriveDeleteJob::DriveDeleteJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
@@ -52,22 +55,29 @@ ExitInfo DriveDeleteJob::serializeOutputParms() {
 ExitInfo DriveDeleteJob::process() {
     // Get syncs to delete
     std::vector<SyncDbId> syncDbIdList;
+    std::list<UserActionScopedLock> locks;
+
     const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
     for (const auto &[syncDbId, syncPal]: _commManager->appServer().syncPalMap) {
         if (!syncPal) continue;
         if (syncPal->driveDbId() == _driveDbId) {
             syncDbIdList.push_back(syncDbId);
+            UserActionScopedLock &lock = locks.emplace_back();
+            if (!lock.tryLock(syncPal, std::chrono::milliseconds(userActionLockTimeoutMs))) {
+                LOG_WARN(_logger, "Could not acquire user action lock for syncDbId="
+                                          << syncDbId << ". Another user action is running. Aborting DriveDeleteJob.");
+                return ExitCode::OperationCanceled;
+            }
         }
-    }
 
-    // Stop syncs for this user and remove them from syncPalMap.
-    _commManager->appServer().stopAllSyncsTask(syncDbIdList, SyncPal::DbBehaviorAfterStop::Remove);
-    _commManager->appServer().deleteDrive(_driveDbId);
+        // Stop syncs for this user and remove them from syncPalMap.
+        _commManager->appServer().stopAllSyncsTask(syncDbIdList, SyncPal::DbBehaviorAfterStop::Remove);
+        _commManager->appServer().deleteDrive(_driveDbId);
 #if defined(KD_MACOS)
-    Utility::restartFinderExtension();
+        Utility::restartFinderExtension();
 #endif
 
-    return ExitCode::Ok;
-}
+        return ExitCode::Ok;
+    }
 
 } // namespace KDC

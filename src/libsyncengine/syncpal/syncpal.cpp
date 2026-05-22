@@ -1057,23 +1057,14 @@ ExitCode SyncPal::setSyncIdSet(SyncNodeType type, const NodeSet &nodeIdSet) {
     return ExitCode::Ok;
 }
 
-ExitCode SyncPal::syncListUpdated(bool restartSync) {
-    restartSync &= isRunning();
-    if (restartSync) {
-        stop();
-    }
+ExitCode SyncPal::propagateSyncIdSetChange(bool restartSync) {
+    setUpBlacklistPropagator(restartSync);
+    return _blacklistPropagator->runSynchronously();
+}
 
-    if (_blacklistPropagator) {
-        LOG_SYNCPAL_INFO(_logger, "BlacklistPropagator is already running, aborting the current process");
-        _blacklistPropagator->abort();
-        restartSync = _blacklistPropagator->restartSyncPal();
-    }
-
-    _blacklistPropagator.reset(new BlacklistPropagator(shared_from_this()));
-    _blacklistPropagator->setRestartSyncPal(restartSync);
-    _blacklistPropagator->setAdditionalCallback(std::bind_front(&SyncPal::syncPalStartCallback, this));
+ExitCode SyncPal::propagateSyncIdSetChangeAsync(bool restartSync) {
+    setUpBlacklistPropagator(restartSync);
     SyncJobManagerSingleton::instance()->queueAsyncJob(_blacklistPropagator, Poco::Thread::PRIO_HIGHEST);
-
     return ExitCode::Ok;
 }
 
@@ -1135,6 +1126,23 @@ void SyncPal::setUpConflictingFilesCorrector(const std::vector<Error> &keepLocal
 
     _conflictingFilesCorrector.reset(new ConflictingFilesCorrector(shared_from_this(), keepLocalErrorList, keepRemoteErrorList));
     _conflictingFilesCorrector->setRestartSyncPal(restartSync);
+}
+
+void SyncPal::setUpBlacklistPropagator(bool restartSync) {
+    restartSync &= isRunning();
+    if (restartSync) {
+        stop();
+    }
+
+    if (_blacklistPropagator) {
+        LOG_SYNCPAL_WARN(_logger, "BlacklistPropagator is already running, aborting the current process");
+        _blacklistPropagator->abort();
+        restartSync = _blacklistPropagator->restartSyncPal();
+    }
+
+    _blacklistPropagator.reset(new BlacklistPropagator(shared_from_this()));
+    _blacklistPropagator->setRestartSyncPal(restartSync);
+    _blacklistPropagator->setAdditionalCallback(std::bind_front(&SyncPal::syncPalStartCallback, this));
 }
 
 ExitCode SyncPal::fixCorruptedFile(const std::unordered_map<NodeId, SyncPath> &localFileMap) {

@@ -30,6 +30,37 @@
 
 namespace KDC {
 
+
+class UserActionScopedLock {
+    public:
+        UserActionScopedLock() = default;
+        explicit UserActionScopedLock(std::shared_ptr<SyncPal> syncPal) { lock(syncPal); }
+
+        UserActionScopedLock(std::shared_ptr<SyncPal> syncPal, std::chrono::milliseconds timeout) { tryLock(syncPal, timeout); }
+
+        void lock(std::shared_ptr<SyncPal> syncPal) {
+            if (_lock.has_value() && _lock->owns_lock()) return;
+            _lock = std::unique_lock(syncPal->userActionsMutex());
+        }
+
+        bool tryLock(std::shared_ptr<SyncPal> syncPal, std::chrono::milliseconds timeout = std::chrono::milliseconds(0)) {
+            if (_lock.has_value() && _lock->owns_lock()) return true;
+
+            std::unique_lock<std::timed_mutex> lock(syncPal->userActionsMutex(), std::defer_lock);
+            if (lock.try_lock_for(timeout)) {
+                _lock = std::move(lock);
+                return true;
+            }
+            return false;
+        }
+
+        bool ownsLock() const { return _lock.has_value() && _lock->owns_lock(); }
+
+    private:
+        std::optional<std::unique_lock<std::timed_mutex>> _lock;
+};
+
+
 class AbstractGuiJob : public AbstractJob {
     public:
         // Request

@@ -1783,9 +1783,9 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 LOG_WARN(_logger, "Error in SyncPal::setSyncIdSet: code=" << exitCode);
                 addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
             }
-            exitCode = syncPalMapIt->second->syncListUpdated(true);
+            exitCode = syncPalMapIt->second->propagateSyncIdSetChangeAsync(true);
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in SyncPal::syncListUpdated: code=" << exitCode);
+                LOG_WARN(_logger, "Error in SyncPal::propagateSyncIdSetChangeAsync: code=" << exitCode);
                 addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
             }
             resultStream << toInt(exitCode);
