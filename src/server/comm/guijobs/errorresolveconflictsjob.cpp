@@ -17,6 +17,7 @@
  */
 
 #include "errorresolveconflictsjob.h"
+#include "useractionscopedlock.h"
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
 

@@ -17,6 +17,7 @@
  */
 
 #include "syncstartjob.h"
+#include "useractionscopedlock.h"
 #include "appserver.h"
 #include "requests/serverrequests.h"
 #include "server/comm/guijobmanager.h"

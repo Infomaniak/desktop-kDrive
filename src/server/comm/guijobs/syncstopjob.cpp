@@ -17,6 +17,7 @@
  */
 
 #include "syncstopjob.h"
+#include "useractionscopedlock.h"
 #include "appserver.h"
 #include "requests/serverrequests.h"
 #include "server/comm/guijobmanager.h"
@@ -27,6 +28,8 @@
 // Input parameters keys
 static const auto inParamsSyncDbId = "syncDbId";
 
+// User action lock timeout duration
+static const int userActionLockTimeoutMs = 1000;
 namespace KDC {
 
 SyncStopJob::SyncStopJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
@@ -51,6 +54,20 @@ ExitInfo SyncStopJob::serializeOutputParms() {
 }
 
 ExitInfo SyncStopJob::process() {
+    std::shared_ptr<SyncPal> syncPal;
+    if (ExitInfo exitInfo = getSyncPal(_syncDbId, syncPal); !exitInfo) {
+        LOG_INFO(_logger, "Error in getSyncPal for syncDbId=" << _syncDbId << " : " << exitInfo,
+                 " This means that the sync pal is not running, which is expected at this step. The sync will be started later "
+                 "in the process.");
+    }
+
+    UserActionScopedLock lock;
+    if (syncPal != nullptr && !lock.tryLock(syncPal, std::chrono::milliseconds(userActionLockTimeoutMs))) {
+        LOG_WARN(_logger, "Could not acquire user action lock for syncDbId="
+                                  << _syncDbId << ". Another user action is running. Aborting SyncStartJob.");
+        return ExitCode::OperationCanceled;
+    }
+
     _commManager->appServer().clearSyncCacheMap();
 
     // Stop SyncPal

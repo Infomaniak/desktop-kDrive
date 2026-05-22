@@ -1,6 +1,7 @@
 /*ExclTemplSetUserListJob*/
 
 #include "excltemplsetlistjob.h"
+#include "useractionscopedlock.h"
 #include "appserver.h"
 
 #include "libcommon/comm.h"
@@ -42,20 +43,23 @@ ExitInfo ExclTemplSetUserListJob::deserializeInputParms() {
 ExitInfo ExclTemplSetUserListJob::process() {
     ExclusionTemplateInfo::updateExclusionTemplateInfoList(_exclusionTemplateList);
     std::list<std::shared_ptr<SyncPal>> syncPalList;
-    std::list<UserActionScopedLock> locks;
 
     {
         const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
         for (const auto &[_, syncPal]: _commManager->appServer().syncPalMap) {
             if (!syncPal) continue;
             syncPalList.push_back(syncPal);
-            auto &lock = locks.emplace_front();
-            if (!lock.tryLock(syncPal, std::chrono::milliseconds(userActionLockTimeoutMs))) {
-                LOG_WARN(_logger, "Could not acquire user action lock for syncDbId="
-                                          << syncPal->syncDbId()
-                                          << ". Another user action is running. Aborting ExclTemplSetUserListJob.");
-                return ExitCode::OperationCanceled;
-            }
+        }
+    }
+
+    std::list<UserActionScopedLock> locks;
+    for (auto syncPal: syncPalList) {
+        auto &lock = locks.emplace_front();
+        if (!lock.tryLock(syncPal, std::chrono::milliseconds(userActionLockTimeoutMs))) {
+            LOG_WARN(_logger, "Could not acquire user action lock for syncDbId="
+                                      << syncPal->syncDbId()
+                                      << ". Another user action is running. Aborting ExclTemplSetUserListJob.");
+            return ExitCode::OperationCanceled;
         }
     }
 
@@ -68,7 +72,7 @@ ExitInfo ExclTemplSetUserListJob::process() {
     for (auto syncPal: syncPalList) {
         _commManager->appServer().unregisterSync(syncPal);
 
-        if (const auto exitInfo = syncPal->PropagateExcludeListChange(); !exitInfo) {
+        if (const auto exitInfo = syncPal->propagateExcludeListChange(); !exitInfo) {
             LOG_WARN(_logger, "Error in SyncPal::PropagateExcludeListChange: code=" << exitInfo);
         }
 

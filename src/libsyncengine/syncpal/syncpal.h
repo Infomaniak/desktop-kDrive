@@ -204,10 +204,10 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         // TODO: Remove this in favor of `propagateSyncIdSetChange`.
         // The asynchronous behavior is now handled by the new CommLayer design.
         ExitCode propagateSyncIdSetChangeAsync(bool restartSync);
-        ExitInfo PropagateExcludeListChange();
-        // TODO: Remove this in favor of `PropagateExcludeListChange`.
+        ExitInfo propagateExcludeListChange();
+        // TODO: Remove this in favor of `propagateExcludeListChange`.
         // The asynchronous behavior is now handled by the new CommLayer design.
-        ExitCode PropagateExcludeListChangeAsync();
+        ExitCode propagateExcludeListChangeAsync();
         ExitCode fixConflictingFiles(const std::vector<Error> &keepLocalErrorList, const std::vector<Error> &keepRemoteErrorList,
                                      std::vector<ErrorDbId> &removedErrorsDbIds);
 

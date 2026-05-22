@@ -1071,14 +1071,14 @@ ExitCode SyncPal::propagateSyncIdSetChangeAsync(bool restartSync) {
     return ExitCode::Ok;
 }
 
-ExitInfo SyncPal::PropagateExcludeListChange() {
+ExitInfo SyncPal::propagateExcludeListChange() {
     setUpExcludelistPropagator();
     ExitInfo exitInfo = _excludeListPropagator->runSynchronously();
     handlePropagatorJobsCompletion(_excludeListPropagator);
     return exitInfo;
 }
 
-ExitCode SyncPal::PropagateExcludeListChangeAsync() {
+ExitCode SyncPal::propagateExcludeListChangeAsync() {
     setUpExcludelistPropagator();
     _excludeListPropagator->setAdditionalCallback(std::bind_front(&SyncPal::syncPalStartCallback, this));
     SyncJobManagerSingleton::instance()->queueAsyncJob(_excludeListPropagator, Poco::Thread::PRIO_HIGHEST);

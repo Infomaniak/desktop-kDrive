@@ -17,6 +17,7 @@
  */
 
 #include "exclappsetlistjob.h"
+#include "useractionscopedlock.h"
 #include "appserver.h"
 
 #include "libcommon/comm.h"
@@ -26,6 +27,9 @@
 static const auto inParamsDefault = "default";
 static const auto inParamsApplicationList = "applicationList";
 
+
+// User action lock timeout duration
+static const int userActionLockTimeoutMs = 1000;
 
 namespace KDC {
 

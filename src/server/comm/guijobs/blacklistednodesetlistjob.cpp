@@ -17,6 +17,7 @@
  */
 
 #include "blacklistednodesetlistjob.h"
+#include "useractionscopedlock.h"
 #include "appserver.h"
 #include "requests/serverrequests.h"
 #include "server/comm/guijobmanager.h"
@@ -61,7 +62,7 @@ ExitInfo BlacklistedNodeSetListJob::process() {
     UserActionScopedLock lock;
     if (syncPal != nullptr && !lock.tryLock(syncPal, std::chrono::milliseconds(userActionLockTimeoutMs))) {
         LOG_WARN(_logger, "Could not acquire user action lock for syncDbId="
-                                  << _syncDbId << ". Another user action is running. Aborting SyncSetSupportsVirtualFilesJob.");
+                                  << _syncDbId << ". Another user action is running. Aborting BlacklistedNodeSetListJob.");
         return ExitCode::OperationCanceled;
     }
 

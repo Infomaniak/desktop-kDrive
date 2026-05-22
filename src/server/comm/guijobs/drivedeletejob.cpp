@@ -17,6 +17,7 @@
  */
 
 #include "drivedeletejob.h"
+#include "useractionscopedlock.h"
 #include "appserver.h"
 #include "requests/serverrequests.h"
 #include "libcommon/utility/utility.h"
@@ -69,15 +70,16 @@ ExitInfo DriveDeleteJob::process() {
                 return ExitCode::OperationCanceled;
             }
         }
+    }
 
-        // Stop syncs for this user and remove them from syncPalMap.
-        _commManager->appServer().stopAllSyncsTask(syncDbIdList, SyncPal::DbBehaviorAfterStop::Remove);
-        _commManager->appServer().deleteDrive(_driveDbId);
+    // Stop syncs for this user and remove them from syncPalMap.
+    _commManager->appServer().stopAllSyncsTask(syncDbIdList, SyncPal::DbBehaviorAfterStop::Remove);
+    _commManager->appServer().deleteDrive(_driveDbId);
 #if defined(KD_MACOS)
-        Utility::restartFinderExtension();
+    Utility::restartFinderExtension();
 #endif
 
-        return ExitCode::Ok;
-    }
+    return ExitCode::Ok;
+}
 
 } // namespace KDC
