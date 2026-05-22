@@ -348,7 +348,7 @@ void TestIntegration::testMoveDeleteConflict() {
         const SyncPath localPathAB = localPathB / "AB";
         (void) IoHelper::deleteItem(localPathAB, ioError);
 
-        _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
+        _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure remote changes are detected immediately.
         waitForSyncToBeIdle(std::source_location::current());
 
         // Delete operation wins
@@ -362,6 +362,8 @@ void TestIntegration::testMoveDeleteConflict() {
         const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
         RemoteNodeInfo info;
         generateInitialTestSituation(_driveDbId, tmpRemoteDir.id(), info);
+
+        _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure remote changes are detected immediately.
         waitForSyncToBeIdle(std::source_location::current());
 
         // Delete A on remote replica
@@ -381,7 +383,7 @@ void TestIntegration::testMoveDeleteConflict() {
         const SyncPath localPathABA = localPathB / "AB" / "ABA";
         testhelpers::generateOrEditTestFile(localPathABA);
 
-        _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
+        _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure remote changes are detected immediately.
         waitForSyncToBeIdle(std::source_location::current());
 
         // Delete operation wins
