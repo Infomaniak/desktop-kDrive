@@ -110,6 +110,7 @@ static const std::string avatarKey = "avatar";
 static const std::string isStaffKey = "is_staff";
 static const std::string updatedAtKey = "updated_at";
 static const std::string versionsKey = "versions";
+static const std::string hashKey = "hash";
 
 static const std::string totalNbItemKey = "total";
 static const std::string pageKey = "page";

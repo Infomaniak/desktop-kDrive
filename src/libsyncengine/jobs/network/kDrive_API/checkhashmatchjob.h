@@ -19,23 +19,15 @@
 #pragma once
 
 #include "jobs/network/abstracttokennetworkjob.h"
-#include "libcommonserver/vfs/vfs.h"
 
 namespace KDC {
 
-class CreateDirJob : public AbstractTokenNetworkJob {
+class CheckHashMatchJob : public AbstractTokenNetworkJob {
     public:
-        CreateDirJob(const std::shared_ptr<Vfs> vfs, DriveDbId driveDbId, const SyncPath &filepath, const NodeId &parentId,
-                     const SyncName &name, const std::string &color = "");
-        CreateDirJob(const std::shared_ptr<Vfs> vfs, DriveDbId driveDbId, const NodeId &parentId, const SyncName &name);
-        CreateDirJob(const std::shared_ptr<Vfs> vfs, UserDbId userDbId, DriveId driveId, const NodeId &parentId,
-                     const SyncName &name);
-        ~CreateDirJob() override;
+        CheckHashMatchJob(DriveDbId driveDbId, const SyncPath &filepath, const NodeId &nodeId, int localsize, int remotesize);
 
-        [[nodiscard]] inline const NodeId &parentDirId() const { return _parentDirId; }
-
-        [[nodiscard]] inline const NodeId &nodeId() const { return _nodeId; }
-        [[nodiscard]] inline SyncTime modtime() const { return _modtime; }
+        [[nodiscard]] const NodeId &nodeId() const { return _nodeId; }
+        [[nodiscard]] bool shouldDownload() const { return _shouldDownload; }
 
     protected:
         ExitInfo handleResponse(std::istream &is) override;
@@ -45,13 +37,13 @@ class CreateDirJob : public AbstractTokenNetworkJob {
         ExitInfo setData() override;
 
         SyncPath _filePath;
-        NodeId _parentDirId;
         SyncName _name;
-        std::string _color;
 
         NodeId _nodeId;
-        SyncTime _modtime = 0;
-        const std::shared_ptr<Vfs> _vfs;
+        std::string _distantHash;
+        std::string _localHash;
+
+        bool _shouldDownload = true;
 };
 
 } // namespace KDC
