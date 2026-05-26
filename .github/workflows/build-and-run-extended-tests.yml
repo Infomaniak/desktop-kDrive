@@ -63,7 +63,7 @@ jobs:
             Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_DEBUG_CERT
             certutil -decode certificate/tempCert.txt certificate/debug_certificate.pfx
             Remove-Item -path certificate -include tempCert.txt
-            Import-PfxCertificate -FilePath certificate/debug_certificate.pfx -CertStoreLocation Cert:\LocalMachine\My -Password (ConvertTo-SecureString -String "${{ secrets.WINDOWS_DEBUG_CERT_THUMBPRINT }}" -Force -AsPlainText)
+            Import-PfxCertificate -FilePath certificate/debug_certificate.pfx -CertStoreLocation Cert:\LocalMachine\My -Password (ConvertTo-SecureString -String "${{ secrets.WINDOWS_DEBUG_CERT_PASSWORD }}" -Force -AsPlainText)
             Write-Host "Debug certificate imported successfully."
 
         shell: powershell
