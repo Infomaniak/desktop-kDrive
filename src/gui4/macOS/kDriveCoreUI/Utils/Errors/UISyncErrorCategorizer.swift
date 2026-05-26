@@ -19,11 +19,6 @@
 import Foundation
 import kDriveCore
 
-struct UISyncError: Sendable {
-    let kind: SyncErrorKind
-    let info: ErrorInfo
-}
-
 struct UISyncErrorCategorizer {
     func categorize(errors: [UISyncError]) -> [UISyncErrorCategory: [UISyncError]] {
         var categorizedErrors: [UISyncErrorCategory: [UISyncError]] = [:]
