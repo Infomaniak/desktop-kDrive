@@ -31,6 +31,40 @@ final class SearchViewModel: ObservableObject {
         currentSearchTask != nil
     }
 
+    var hasResults: Bool {
+        !searchResults.isEmpty
+    }
+
+    var hasSearchQuery: Bool {
+        !searchText.isEmpty
+    }
+
+    var displayedResults: [UISearchResponse] {
+        if hasResults {
+            return searchResults
+        } else if isSearching {
+            return Self.placeholderResults
+        } else {
+            return []
+        }
+    }
+
+    var shouldRedact: Bool {
+        isSearching
+    }
+
+    private static let placeholderResults: [UISearchResponse] = (0 ..< 5).map { index in
+        UISearchResponse(
+            id: "placeholder-\(index)",
+            name: "Loading file name",
+            type: .file,
+            path: "/Placeholder/Path",
+            modifiedDate: Date(),
+            size: 1024,
+            isAvailableLocally: true
+        )
+    }
+
     private let syncDbId: Int32
     private let driveId: Int
     private let synchroLocalPath: URL

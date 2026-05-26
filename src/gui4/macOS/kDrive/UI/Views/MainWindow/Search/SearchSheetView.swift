@@ -25,40 +25,6 @@ struct SearchSheetView: View {
 
     @FocusState private var isSearchFieldFocused: Bool
 
-    private var hasResults: Bool {
-        !viewModel.searchResults.isEmpty
-    }
-
-    private var hasSearchQuery: Bool {
-        !viewModel.searchText.isEmpty
-    }
-
-    private var displayedResults: [UISearchResponse] {
-        if hasResults {
-            return viewModel.searchResults
-        } else if viewModel.isSearching {
-            return Self.placeholderResults
-        } else {
-            return []
-        }
-    }
-
-    private var shouldRedact: Bool {
-        viewModel.isSearching
-    }
-
-    private static let placeholderResults: [UISearchResponse] = (0 ..< 5).map { index in
-        UISearchResponse(
-            id: "placeholder-\(index)",
-            name: "Loading file name",
-            type: .file,
-            path: "/Placeholder/Path",
-            modifiedDate: Date(),
-            size: 1024,
-            isAvailableLocally: true
-        )
-    }
-
     var body: some View {
         VStack(spacing: 0) {
             SearchBarView(
@@ -66,7 +32,7 @@ struct SearchSheetView: View {
                 focusState: $isSearchFieldFocused
             )
 
-            List(displayedResults) { file in
+            List(viewModel.displayedResults) { file in
                 Button {
                     viewModel.openFile(file)
                 } label: {
@@ -84,13 +50,13 @@ struct SearchSheetView: View {
                 .hideRowSeparatorIfAvailable()
             }
             .listStyle(.plain)
-            .redacted(reason: shouldRedact ? .placeholder : [])
-            .disabled(shouldRedact)
-            .opacity(displayedResults.isEmpty ? 0 : 1)
-            .accessibilityElement(children: shouldRedact ? .ignore : .contain)
-            .accessibilityLabel(shouldRedact ? KDriveLocalizable.accessibilitySearching : "")
+            .redacted(reason: viewModel.shouldRedact ? .placeholder : [])
+            .disabled(viewModel.shouldRedact)
+            .opacity(viewModel.displayedResults.isEmpty ? 0 : 1)
+            .accessibilityElement(children: viewModel.shouldRedact ? .ignore : .contain)
+            .accessibilityLabel(viewModel.shouldRedact ? KDriveLocalizable.accessibilitySearching : "")
             .overlay {
-                if displayedResults.isEmpty {
+                if viewModel.displayedResults.isEmpty {
                     emptyStateView
                 }
             }
@@ -104,7 +70,7 @@ struct SearchSheetView: View {
 
     @ViewBuilder
     private var emptyStateView: some View {
-        if hasSearchQuery {
+        if viewModel.hasSearchQuery {
             IKContentUnavailableView(
                 image: KDriveResources.mountainsTreesSun.swiftUIImage,
                 title: KDriveLocalizable.noResultsFound,
