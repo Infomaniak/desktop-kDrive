@@ -288,10 +288,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         private async Task<CommData> UpdaterVersionInfo(JsonObject parameters)
         {
             Logger.Log(Logger.Level.Debug, "Received UpdateVersionInfo request.");
-            VersionChannel channel = _mockData.Settings.DistributionChannel ?? throw new InvalidOperationException("Distribution channel is not set in mocked settings.");
+            DistributionChannel channel = _mockData.Settings.DistributionChannel ?? throw new InvalidOperationException("Distribution channel is not set in mocked settings.");
             if (parameters.ContainsKey(JsonKeys.UpdateChannel) && parameters[JsonKeys.UpdateChannel] != null)
             {
-                channel = (VersionChannel)parameters[JsonKeys.UpdateChannel]!.GetValue<int>();
+                channel = (DistributionChannel)parameters[JsonKeys.UpdateChannel]!.GetValue<int>();
             }
 
             AppVersion update = _mockData.VersionsByChannel[channel] ?? _mockData.CurrentVersion;
@@ -317,7 +317,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             Logger.Log(Logger.Level.Debug, "Received UpdaterChangeChannel request.");
             if (parameters.ContainsKey(JsonKeys.UpdateChannel) && parameters[JsonKeys.UpdateChannel] != null)
             {
-                _mockData.Settings.DistributionChannel = (VersionChannel)parameters[JsonKeys.UpdateChannel]!.GetValue<int>();
+                _mockData.Settings.DistributionChannel = (DistributionChannel)parameters[JsonKeys.UpdateChannel]!.GetValue<int>();
             }
             else
             {
@@ -457,11 +457,11 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         public AppVersion CurrentVersion { get; set; } = new AppVersion() { BuildVersion = 1, Tag = "3.7.6" };
         public ParmsInfo Settings { get; set; } = new ParmsInfo();
 
-        public Dictionary<VersionChannel, AppVersion?> VersionsByChannel { get; set; } = new Dictionary<VersionChannel, AppVersion?>()
+        public Dictionary<DistributionChannel, AppVersion?> VersionsByChannel { get; set; } = new Dictionary<DistributionChannel, AppVersion?>()
         {
-            {VersionChannel.Prod, new AppVersion() { BuildVersion = 1, Tag = "3.7.6" } },
-            {VersionChannel.Beta, new AppVersion() { BuildVersion = 2, Tag = "3.7.7" } },
-            {VersionChannel.Internal, new AppVersion() { BuildVersion = 2, Tag = "3.7.8" }},
+            {DistributionChannel.Prod, new AppVersion() { BuildVersion = 1, Tag = "3.7.6" } },
+            {DistributionChannel.Beta, new AppVersion() { BuildVersion = 2, Tag = "3.7.7" } },
+            {DistributionChannel.Internal, new AppVersion() { BuildVersion = 2, Tag = "3.7.8" }},
         };
 
         public MockServerData()
@@ -559,7 +559,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 AutoStart = true,
                 MoveToTrash = true,
                 NotificationsDisabled = NotificationsDisabled.Always,
-                DistributionChannel = VersionChannel.Prod,
+                DistributionChannel = DistributionChannel.Prod,
                 UseLog = false,
                 LogLevel = Logger.Level.Debug,
                 ExtendedLog = false,
