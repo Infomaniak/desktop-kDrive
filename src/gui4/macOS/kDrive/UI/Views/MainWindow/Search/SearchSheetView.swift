@@ -139,17 +139,6 @@ struct SearchSheetView: View {
     }
 }
 
-private extension View {
-    @ViewBuilder
-    func hideRowSeparatorIfAvailable() -> some View {
-        if #available(macOS 13.0, *) {
-            listRowSeparator(.hidden)
-        } else {
-            self
-        }
-    }
-}
-
 #Preview {
     SearchSheetView(viewModel: SearchViewModel(syncDbId: 0, driveId: 0, synchroLocalPath: URL(fileURLWithPath: "/")))
 }
