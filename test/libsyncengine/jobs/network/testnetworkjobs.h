@@ -43,6 +43,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testGetFileInfo);
         CPPUNIT_TEST(testGetFileList);
         CPPUNIT_TEST(testCheckHashMatch);
+        CPPUNIT_TEST(testGetFileListWithCursor);
         CPPUNIT_TEST(testFullFileListWithCursorCsv);
         CPPUNIT_TEST(testFullFileListWithCursorCsvZip);
         CPPUNIT_TEST(testFullFileListWithCursorCsvBlacklist);
