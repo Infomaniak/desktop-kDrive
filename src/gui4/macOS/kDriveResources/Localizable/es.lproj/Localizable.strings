@@ -4,7 +4,7 @@
  * Locale: es, Spanish
  * Tagged: macOS
  * Exported by: Killian Mathias
- * Exported at: Mon, 18 May 2026 13:39:12 +0200
+ * Exported at: Tue, 26 May 2026 10:35:21 +0200
  */
 
 
@@ -457,6 +457,9 @@
 
 /* loco:6a0b062a269f9f6d54046565 */
 "labelAppID" = "Identificador de la app";
+
+/* loco:6a155a770336fcc4820ebf57 */
+"labelApplicationName" = "Nombre de la aplicación";
 
 /* loco:6989ff5b78003eb4e20e2652 */
 "labelFolder" = "Carpeta";

@@ -30,8 +30,8 @@ struct SynchroRulesPreferencesSheet: View {
 
     @Binding var userExcludedApps: [UIExclusionAppInfo]
     @Binding var userExcludedTemplates: [UIExclusionTemplateInfo]
+    @Binding var appList: [String: String]
 
-    @State private var appList: [String: String] = [:]
     @State private var appId = ""
     @State private var input = ""
     @State private var isNotified = false
@@ -50,7 +50,7 @@ struct SynchroRulesPreferencesSheet: View {
         case .files:
             return KDriveLocalizable.filesToExclude
         case .apps:
-            return KDriveLocalizable.appToExclude
+            return KDriveLocalizable.labelApplicationName
         }
     }
 
@@ -60,25 +60,26 @@ struct SynchroRulesPreferencesSheet: View {
                 .font(.Tokens.headline)
                 .foregroundStyle(ColorToken.Text.primary.asColor)
                 .padding(.bottom, AppPadding.padding4)
-
-            if item == .files {
-                Text(KDriveLocalizable.excludeRuleDescription)
-                    .font(.Tokens.callout)
-                    .foregroundStyle(.secondary)
-            } else {
-                Picker(KDriveLocalizable.labelAppID, selection: $appId) {
-                    ForEach(Array(appList.keys), id: \.self) { key in
-                        Text(key)
+            Form {
+                if item == .files {
+                    Text(KDriveLocalizable.excludeRuleDescription)
+                        .font(.Tokens.callout)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Picker(KDriveLocalizable.labelAppID, selection: $appId) {
+                        ForEach(Array(appList.keys), id: \.self) { key in
+                            Text(key)
+                        }
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
 
-            TextField(placeholderText, text: $input)
+                TextField(placeholderText, text: $input)
 
-            if item == .files {
-                Toggle(isOn: $isNotified) {
-                    Text(KDriveLocalizable.notifyOnFileExcluded)
+                if item == .files {
+                    Toggle(isOn: $isNotified) {
+                        Text(KDriveLocalizable.notifyOnFileExcluded)
+                    }
                 }
             }
         }
@@ -140,20 +141,7 @@ struct SynchroRulesPreferencesSheet: View {
     }
 
     func getAppList() {
-        Task {
-            do {
-                let userExcludedAppIdentifiers = userExcludedApps.map(\.app)
-                let dict = try await ExclusionAppJobs().getFetchingAppList()
-                    .filter { !userExcludedAppIdentifiers.contains($0.key) }
-
-                appList = dict
-
-                appId = appList.keys.first ?? ""
-
-            } catch {
-                print("Error while fetching app list: \(error)")
-            }
-        }
+        appId = appList.keys.first ?? ""
     }
 }
 
@@ -162,6 +150,7 @@ struct SynchroRulesPreferencesSheet: View {
         item: .apps,
         repository: ExclusionRepository(),
         userExcludedApps: .constant([]),
-        userExcludedTemplates: .constant([])
+        userExcludedTemplates: .constant([]),
+        appList: .constant([:])
     )
 }

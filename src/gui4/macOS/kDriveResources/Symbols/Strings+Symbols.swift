@@ -330,6 +330,8 @@ public enum KDriveLocalizable {
   public static let labelAllowTracking = KDriveLocalizable.tr("Localizable", "labelAllowTracking", fallback: "Allow tracking")
   /// loco:6a0b062a269f9f6d54046565
   public static let labelAppID = KDriveLocalizable.tr("Localizable", "labelAppID", fallback: "Application Identifier")
+  /// loco:6a155a770336fcc4820ebf57
+  public static let labelApplicationName = KDriveLocalizable.tr("Localizable", "labelApplicationName", fallback: "Application Name")
   /// loco:6989ff5b78003eb4e20e2652
   public static let labelFolder = KDriveLocalizable.tr("Localizable", "labelFolder", fallback: "Folder")
   /// loco:698c656e3e4e4bbf4f02bde2

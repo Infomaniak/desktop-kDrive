@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
@@ -25,6 +26,11 @@ struct SynchroRulesPreferencesDetailView: View {
     @ObservedObject var repository: ExclusionRepository
 
     @State private var isShowingSheet = false
+    @State private var appList: [String: String] = [:]
+
+    private var isButtonDisabled: Bool {
+        return item == .apps && appList.isEmpty
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
@@ -56,6 +62,7 @@ struct SynchroRulesPreferencesDetailView: View {
                         isShowingSheet = true
                     }
                     .buttonStyle(.borderedProminent)
+                    .disabled(isButtonDisabled)
                 }
 
                 if item == .apps {
@@ -75,11 +82,27 @@ struct SynchroRulesPreferencesDetailView: View {
                     item: item,
                     repository: repository,
                     userExcludedApps: $repository.exclusionInfo.userExcludedApps,
-                    userExcludedTemplates: $repository.exclusionInfo.userExcludedTemplates
+                    userExcludedTemplates: $repository.exclusionInfo.userExcludedTemplates, appList: $appList
                 )
             }
         }
         .padding(AppPadding.padding24)
+        .onAppear(perform: getAppList)
+    }
+
+    func getAppList() {
+        Task {
+            do {
+                let userExcludedAppIdentifiers = repository.exclusionInfo.userExcludedApps.map(\.app)
+                let dict = try await ExclusionAppJobs().getFetchingAppList()
+                    .filter { !userExcludedAppIdentifiers.contains($0.key) }
+
+                appList = dict
+
+            } catch {
+                print("Error while fetching app list: \(error)")
+            }
+        }
     }
 }
 
