@@ -36,11 +36,15 @@ struct SearchBarView: View {
                 Button {
                     searchText = ""
                 } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(ColorToken.Text.tertiary.asColor)
+                    Label {
+                        Text(KDriveLocalizable.accessibilitySearchClear)
+                    } icon: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(ColorToken.Text.tertiary.asColor)
+                    }
+                    .labelStyle(.iconOnly)
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(KDriveLocalizable.accessibilitySearchClear)
             }
         }
         .padding(.horizontal, AppPadding.padding12)
