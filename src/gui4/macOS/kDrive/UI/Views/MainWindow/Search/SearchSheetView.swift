@@ -82,7 +82,7 @@ struct SearchSheetView: View {
             .padding(.horizontal, AppPadding.padding12)
             .frame(height: 36)
             .background(ColorToken.Surface.secondary.asColor)
-            .clipShape(RoundedRectangle(cornerRadius: 18))
+            .clipShape(RoundedRectangle(cornerRadius: AppRadius.radius16))
             .padding(AppPadding.padding16)
 
             List(displayedResults) { file in
