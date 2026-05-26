@@ -959,7 +959,7 @@ void TestNetworkJobs::testGetFileList() {
     }
 }
 
-void TestNetworkJobs::testGetFileHashMatch() {
+void TestNetworkJobs::testCheckHashMatch() {
     // Download picture-1.jpg once to use as a valid local reference file
     const LocalTemporaryDirectory tmpDir("testGetFileHashMatch");
     const SyncPath validLocalFile = tmpDir.path() / "picture-1.jpg";
