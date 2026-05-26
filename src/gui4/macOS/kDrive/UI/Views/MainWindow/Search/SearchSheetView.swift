@@ -61,29 +61,10 @@ struct SearchSheetView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack(spacing: AppPadding.padding8) {
-                Image(systemName: "magnifyingglass")
-                    .foregroundStyle(ColorToken.Text.secondary.asColor)
-                    .accessibilityHidden(true)
-                TextField(KDriveLocalizable.searchPlaceholder, text: $viewModel.searchText)
-                    .textFieldStyle(.plain)
-                    .focused($isSearchFieldFocused)
-                if hasSearchQuery {
-                    Button {
-                        viewModel.searchText = ""
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(ColorToken.Text.tertiary.asColor)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(KDriveLocalizable.accessibilitySearchClear)
-                }
-            }
-            .padding(.horizontal, AppPadding.padding12)
-            .frame(height: 36)
-            .background(ColorToken.Surface.secondary.asColor)
-            .clipShape(RoundedRectangle(cornerRadius: AppRadius.radius16))
-            .padding(AppPadding.padding16)
+            SearchBarView(
+                searchText: $viewModel.searchText,
+                focusState: $isSearchFieldFocused
+            )
 
             List(displayedResults) { file in
                 Button {
