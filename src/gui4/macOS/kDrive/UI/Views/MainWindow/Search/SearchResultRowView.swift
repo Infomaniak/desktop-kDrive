@@ -34,17 +34,21 @@ struct SearchResultRowView: View {
             FileTypeView(fileTypeRepresentation: file.fileTypeRepresentation)
                 .frame(size: AppIconSize.iconSize12)
                 .accessibilityHidden(true)
+
             VStack(alignment: .leading) {
                 Text(file.name)
                     .font(.Tokens.title3)
                     .lineLimit(1)
                     .foregroundStyle(ColorToken.Text.primary.asColor)
+
                 Text(formattedSubtitle)
                     .font(.Tokens.subheadline)
                     .lineLimit(1)
                     .foregroundStyle(ColorToken.Text.tertiary.asColor)
             }
+
             Spacer()
+
             if !file.isAvailableLocally {
                 Image(systemName: "arrow.up.forward.square")
                     .foregroundStyle(ColorToken.Text.secondary.asColor)
