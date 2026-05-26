@@ -297,7 +297,6 @@ extension MainViewController {
         unregisterSheetClickMonitor()
         guard let presentedViewController = presentedViewControllers?.first else { return }
         dismiss(presentedViewController)
-        // router.setCurrentTab(router.currentPath.mainTab)
     }
 
     @objc private func togglePauseResume() {
