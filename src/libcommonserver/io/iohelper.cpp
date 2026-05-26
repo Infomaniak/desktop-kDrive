@@ -662,18 +662,6 @@ bool IoHelper::logDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexc
     return true;
 }
 
-bool IoHelper::logArchiverDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
-    SyncPath tempDir;
-    (void) deviceTempDirectoryPath(tempDir, ioError);
-    if (ioError != IoError::Success) {
-        return false;
-    }
-    const SyncName logArchiverDirName = SyncName(Str2SyncName(APPLICATION_NAME)) + SyncName(Str2SyncName("-logarchiverdir/"));
-    directoryPath = tempDir / logArchiverDirName;
-    return true;
-}
-
-
 bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &ioError,
                                  [[maybe_unused]] const PathCheckOption option) noexcept {
     exists = false;
