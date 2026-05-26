@@ -826,32 +826,6 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<SyncJ
         SyncPath relativeLocalFilePath = syncOp->nodePath(ReplicaSide::Local);
         SyncPath absoluteLocalFilePath = _syncPal->localPath() / relativeLocalFilePath;
 
-        // If both checksums are available and identical, the file content is already up-to-date locally.
-        // Skip the download and only update the local metadata (dates).
-        const std::string remoteChecksum =
-                _syncPal->snapshot(ReplicaSide::Remote)->contentChecksum(syncOp->affectedNode()->id().value_or(""));
-        const std::string localChecksum =
-                syncOp->correspondingNode()
-                        ? _syncPal->snapshot(ReplicaSide::Local)->contentChecksum(syncOp->correspondingNode()->id().value_or(""))
-                        : std::string{};
-        const int64_t remoteSize = _syncPal->snapshot(ReplicaSide::Remote)->size(syncOp->affectedNode()->id().value_or(""));
-        const int64_t localSize = _syncPal->snapshot(ReplicaSide::Local)->size(syncOp->correspondingNode()->id().value_or(""));
-        if (ParametersCache::isExtendedLogEnabled())
-            LOG_SYNCPAL_DEBUG(_logger, "Edit checksum comparison - remote: \"" << remoteChecksum << "\" local: \""
-                                                                               << localChecksum << "\"");
-        if (!remoteChecksum.empty() && remoteChecksum == localChecksum && localSize != remoteSize) {
-            LOGW_SYNCPAL_DEBUG(_logger, L"Checksums match, skipping download and updating metadata only: "
-                                                << Utility::formatSyncPath(absoluteLocalFilePath));
-            const SyncTime creationTime = syncOp->affectedNode()->createdAt().value_or(0);
-            const SyncTime modificationTime = syncOp->affectedNode()->modificationTime().value_or(0);
-            if (const IoError ioError = IoHelper::setFileDates(absoluteLocalFilePath, creationTime, modificationTime, false);
-                ioError != IoError::Success) {
-                LOGW_SYNCPAL_WARN(_logger,
-                                  L"Error in IoHelper::setFileDates for " << Utility::formatSyncPath(absoluteLocalFilePath));
-            }
-            return ExitCode::Ok;
-        }
-
         try {
             job = std::make_shared<DownloadJob>(
                     _syncPal->vfs(), _syncPal->cacheDirectory(),
@@ -870,24 +844,6 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<SyncJ
     } else {
         SyncPath relativeLocalFilePath = syncOp->nodePath(ReplicaSide::Local);
         SyncPath absoluteLocalFilePath = _syncPal->localPath() / relativeLocalFilePath;
-
-        // If both checksums are available and identical, the remote already has the same content.
-        // Skip the upload entirely.
-        const std::string localChecksum =
-                _syncPal->snapshot(ReplicaSide::Local)->contentChecksum(syncOp->affectedNode()->id().value_or(""));
-        const std::string remoteChecksum =
-                syncOp->correspondingNode()
-                        ? _syncPal->snapshot(ReplicaSide::Remote)->contentChecksum(syncOp->correspondingNode()->id().value_or(""))
-                        : std::string{};
-        const int64_t remoteSize = _syncPal->snapshot(ReplicaSide::Remote)->size(syncOp->affectedNode()->id().value_or(""));
-        const int64_t localSize = _syncPal->snapshot(ReplicaSide::Local)->size(syncOp->correspondingNode()->id().value_or(""));
-        if (ParametersCache::isExtendedLogEnabled())
-            LOG_SYNCPAL_DEBUG(_logger, "Edit upload checksum comparison - local: \"" << localChecksum << "\" remote: \""
-                                                                                     << remoteChecksum << "\"");
-        if (!localChecksum.empty() && localChecksum == remoteChecksum && localSize == remoteSize) {
-            LOGW_SYNCPAL_DEBUG(_logger, L"Checksums match, skipping upload: " << Utility::formatSyncPath(absoluteLocalFilePath));
-            return ExitCode::Ok;
-        }
 
         uint64_t filesize;
         if (ExitInfo exitInfo = getFileSize(absoluteLocalFilePath, filesize); !exitInfo) {
