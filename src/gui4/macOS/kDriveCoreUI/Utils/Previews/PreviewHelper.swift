@@ -51,7 +51,8 @@ public enum PreviewHelper {
         name: "Tim Cook",
         firstName: "Tim",
         email: "tim@apple.com",
-        avatar: nil
+        avatar: nil,
+        isStaff: false
     )
 
     public static let account = UIAccount(
