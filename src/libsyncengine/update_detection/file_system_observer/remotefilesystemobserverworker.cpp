@@ -105,9 +105,12 @@ ExitInfo RemoteFileSystemObserverWorker::generateInitialSnapshot() {
     _updating = true;
     countListingRequests();
 
+    exitInfo = initWithCursor();
+
     const auto end = std::chrono::steady_clock::now();
     const std::chrono::duration<double> elapsedSeconds = end - start;
-    if (exitInfo = initWithCursor(); exitInfo && !stopAsked()) {
+
+    if (exitInfo && !stopAsked()) {
         _liveSnapshot.setValid(true);
         LOG_SYNCPAL_INFO(_logger, "Remote snapshot generated in: " << elapsedSeconds.count() << "s for "
                                                                    << _liveSnapshot.nbItems() << " items");
