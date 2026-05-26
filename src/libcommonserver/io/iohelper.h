@@ -162,10 +162,10 @@ struct IoHelper {
         /*!
          \param path is a file system path to a directory entry (we also call it an item).
          \param ifs is an input file stream used to read the file contents.
-         \param checksum is set with the checksum of the file indicated by `path`, or empty on error.
-         \return the IoError representing the success or failure of the operation.
+         \param ioError holds the error returned when an underlying OS API call fails.
+         \return the checksum of the file indicated by `path`.
          */
-        static IoError getFileChecksum(const SyncPath &path, std::ifstream &ifs, std::string &checksum) noexcept;
+        static std::string getFileChecksum(const SyncPath &path, std::ifstream &ifs, IoError &ioError) noexcept;
 
         //! Check if the item indicated by path has a size or a modification date different from the specified ones.
         /*!
