@@ -51,7 +51,7 @@ struct SynchroRulesPreferencesUserTemplateList: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
-                TableColumn(KDriveLocalizable.labelNotifications) { item in
+                TableColumn(KDriveLocalizable.labelNotifyIfFileExcluded) { item in
                     Toggle("", isOn: Binding(
                         get: { item.warning },
                         set: { isSelected in

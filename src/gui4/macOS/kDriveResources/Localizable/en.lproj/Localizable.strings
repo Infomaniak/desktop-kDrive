@@ -4,7 +4,7 @@
  * Locale: en, English
  * Tagged: macOS
  * Exported by: Killian Mathias
- * Exported at: Tue, 26 May 2026 10:35:21 +0200
+ * Exported at: Tue, 26 May 2026 11:05:08 +0200
  */
 
 
@@ -476,6 +476,9 @@
 
 /* loco:698b5869ab41083f11042b52 */
 "labelNotifications" = "Notification";
+
+/* loco:6a1561e8fb5669a82f04fe44 */
+"labelNotifyIfFileExcluded" = "Notify if file excluded";
 
 /* loco:69a6e4aceff2d992ad059324 */
 "labelOff" = "Off";

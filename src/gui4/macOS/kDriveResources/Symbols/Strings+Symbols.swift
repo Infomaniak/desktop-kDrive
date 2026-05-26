@@ -342,6 +342,8 @@ public enum KDriveLocalizable {
   public static let labelName = KDriveLocalizable.tr("Localizable", "labelName", fallback: "Name")
   /// loco:698b5869ab41083f11042b52
   public static let labelNotifications = KDriveLocalizable.tr("Localizable", "labelNotifications", fallback: "Notification")
+  /// loco:6a1561e8fb5669a82f04fe44
+  public static let labelNotifyIfFileExcluded = KDriveLocalizable.tr("Localizable", "labelNotifyIfFileExcluded", fallback: "Notify if file excluded")
   /// loco:69a6e4aceff2d992ad059324
   public static let labelOff = KDriveLocalizable.tr("Localizable", "labelOff", fallback: "Off")
   /// loco:698b58377672899b9301a142
