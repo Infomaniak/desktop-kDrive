@@ -32,6 +32,10 @@ extension NSToolbarItem.Identifier {
     static let pauseResumeButton = NSToolbarItem.Identifier("PauseResumeButton")
 }
 
+private extension UInt16 {
+    static let escapeKeyCode: UInt16 = 53
+}
+
 final class MainViewController: IKSplitViewController {
     @LazyInjectService private var router: MainViewRouter
     @LazyInjectService private var synchroStateObserver: UISynchroStateObserving
@@ -268,7 +272,7 @@ extension MainViewController {
                 return event
             }
 
-            if event.type == .keyDown && event.keyCode == 53 {
+            if event.type == .keyDown && event.keyCode == .escapeKeyCode {
                 dismissSearchSheet()
                 return nil
             }
