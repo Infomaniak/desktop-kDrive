@@ -59,8 +59,6 @@ struct SearchResultRowView: View {
         .padding(.horizontal, AppPadding.padding8)
         .background(isHovered ? ColorToken.Surface.secondary.asColor : Color.clear, in: .rect(cornerRadius: AppRadius.radius4))
         .contentShape(Rectangle())
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(file.name), \(formattedSubtitle)")
         .accessibilityHint(file.isAvailableLocally ? KDriveLocalizable.buttonOpenInFinder : KDriveLocalizable.buttonOpenInBrowser)
         .onHover { hovering in
             isHovered = hovering
