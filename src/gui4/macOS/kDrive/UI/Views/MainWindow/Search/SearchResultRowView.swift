@@ -57,8 +57,7 @@ struct SearchResultRowView: View {
         }
         .padding(.vertical, AppPadding.padding8)
         .padding(.horizontal, AppPadding.padding8)
-        .background(isHovered ? ColorToken.Surface.secondary.asColor : Color.clear)
-        .clipShape(RoundedRectangle(cornerRadius: AppRadius.radius4))
+        .background(isHovered ? ColorToken.Surface.secondary.asColor : Color.clear, in: .rect(cornerRadius: AppRadius.radius4))
         .contentShape(Rectangle())
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(file.name), \(formattedSubtitle)")
