@@ -207,6 +207,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             {
                 Logger.Log(Logger.Level.Warning, "Error while refreshing available drives for user.");
             }
+
         }
 
         private async void UserSettingsExpander_Expanded(object sender, EventArgs e)

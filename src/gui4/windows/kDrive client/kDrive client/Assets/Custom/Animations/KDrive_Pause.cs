@@ -9,7 +9,7 @@
 //           LottieGen -GenerateColorBindings -GenerateDependencyObject -Language CSharp -Public -WinUIVersion 3.0 -InputFile kDrive-Pause.json
 //       
 //       Input file:
-//           kDrive-Pause.json (35758 bytes created 12:57+02:00 May 21 2026)
+//           kDrive-Pause.json (35758 bytes created 9:10+02:00 May 26 2026)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
