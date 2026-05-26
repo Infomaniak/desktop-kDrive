@@ -36,10 +36,6 @@ void IoHelperTestUtilities::setFileSizeFunction(std::function<std::uintmax_t(con
     _fileSize = f;
 }
 
-void IoHelperTestUtilities::setTempDirectoryPathFunction(std::function<SyncPath(std::error_code &ec)> f) {
-    _tempDirectoryPath = f;
-}
-
 #if defined(KD_MACOS)
 void IoHelperTestUtilities::setReadAliasFunction(
         std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> f) {
@@ -55,7 +51,6 @@ void IoHelperTestUtilities::resetFunctions() {
     setIsSymlinkFunction(static_cast<bool (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::is_symlink));
     setReadSymlinkFunction(static_cast<SyncPath (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::read_symlink));
     setFileSizeFunction(static_cast<std::uintmax_t (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::file_size));
-    setTempDirectoryPathFunction(static_cast<SyncPath (*)(std::error_code &ec)>(&std::filesystem::temp_directory_path));
 
 #if defined(KD_MACOS)
     // Default Utility::readAlias implementation

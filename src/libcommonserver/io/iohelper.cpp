@@ -47,8 +47,6 @@ std::function<SyncPath(const SyncPath &path, std::error_code &ec)> IoHelper::_re
         static_cast<SyncPath (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::read_symlink);
 std::function<std::uintmax_t(const SyncPath &path, std::error_code &ec)> IoHelper::_fileSize =
         static_cast<std::uintmax_t (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::file_size);
-std::function<SyncPath(std::error_code &ec)> IoHelper::_tempDirectoryPath =
-        static_cast<SyncPath (*)(std::error_code &ec)>(&std::filesystem::temp_directory_path);
 
 std::function<bool(const SyncPath &path, FileStat *filestat, IoError &ioError)> IoHelper::_getFileStat = IoHelper::_getFileStatFn;
 
@@ -618,45 +616,6 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
     if (!endOfDirectory) {
         LOGW_WARN(logger(), L"Error in DirectoryIterator for " << Utility::formatIoError(path, ioError));
         return isExpectedError(ioError);
-    }
-
-    return true;
-}
-
-bool IoHelper::deviceTempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
-    // Warning: never log anything in this method. If the logger is not set, the app will crash.
-    ioError = IoError::Success;
-    std::error_code ec;
-    if (const auto value = CommonUtility::envVarValue("KDRIVE_TMP_PATH"); !value.empty()) {
-        directoryPath = SyncPath(value);
-        (void) std::filesystem::create_directories(directoryPath, ec);
-    } else {
-        directoryPath = _tempDirectoryPath(ec); // The std::filesystem implementation returns an empty path on error.
-    }
-
-    ioError = stdError2ioError(ec);
-
-    return ioError == IoError::Success;
-}
-
-bool IoHelper::logDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
-    if (Log::instance()) {
-        SyncPath filePath = Log::instance()->getLogFilePath();
-        if (!filePath.empty()) {
-            directoryPath = filePath.parent_path();
-        } else {
-            LOG_WARN(logger(), "Empty log file path");
-            return false;
-        }
-    } else {
-        // Generate directory path
-        if (!deviceTempDirectoryPath(directoryPath, ioError)) {
-            return false;
-        }
-
-        static const std::string LOGDIR_SUFFIX = "-logdir/";
-        const SyncName logDirName = SyncName(Str2SyncName(APPLICATION_NAME)) + SyncName(Str2SyncName(LOGDIR_SUFFIX));
-        directoryPath /= logDirName;
     }
 
     return true;

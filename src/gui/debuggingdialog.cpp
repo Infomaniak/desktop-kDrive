@@ -698,7 +698,7 @@ void DebuggingDialog::onSaveButtonTriggered(bool checked) {
 void DebuggingDialog::onLinkActivated(const QString &link) {
     QString folderPath;
     if (link == debuggingFolderLink) {
-        folderPath = Logger::instance()->temporaryFolderLogDirPath();
+        folderPath = Logger::instance()->logDirectoryPath();
         MatomoClient::sendEvent("preferencesDebugging", MatomoEventAction::Click, "debuggingFolderLink");
     } else {
         folderPath = link;

@@ -502,6 +502,23 @@ struct COMMON_EXPORT CommonUtility {
         static bool isMac();
         static bool isLinux();
 
+        //! Returns the directory location suitable for temporary files.
+        /*!
+         \param directoryPath is a path to a directory suitable for temporary files. Empty if there is an error.
+         \return An ExitInfo representing the return value of the underlying OS API call.
+         */
+        static ExitInfo deviceTempDirectoryPath(SyncPath &directoryPath) noexcept;
+
+        //! Returns the log directory path of the application.
+        /*!
+         \param directoryPath is set with the path of to the log directory of the application. Empty if there is an error.
+         \return An ExitInfo representing the return value of the underlying OS API call.
+         */
+        static ExitInfo logDirectoryPath(SyncPath &directoryPath) noexcept;
+
+        static ExitInfo stdErrorToExitInfo(int error) noexcept;
+        static ExitInfo stdErrorToExitInfo(const std::error_code &ec) noexcept { return stdErrorToExitInfo(ec.value()); }
+
     private:
         static std::mutex _generateRandomStringMutex;
 

@@ -487,11 +487,6 @@ void TestNetworkJobs::testDownload() {
         const LocalTemporaryDirectory temporaryDirectory("tmp");
         const LocalTemporaryDirectory temporaryDirectorySync("syncDir");
         SyncPath localDestFilePath = temporaryDirectorySync.path() / "test_file.txt";
-
-        std::function<SyncPath(std::error_code & ec)> MockTempDirectoryPath = [&temporaryDirectory](std::error_code &ec) {
-            ec.clear();
-            return temporaryDirectory.path();
-        };
         std::function<void(const SyncPath &srcPath, const SyncPath &destPath, std::error_code &ec)> MockRename =
                 []([[maybe_unused]] const SyncPath &, [[maybe_unused]] const SyncPath &, std::error_code &ec) {
 #if defined(KD_WINDOWS)
@@ -501,7 +496,6 @@ void TestNetworkJobs::testDownload() {
 #endif
                 };
         IoHelperTestUtilities::setRename(MockRename);
-        IoHelperTestUtilities::setTempDirectoryPathFunction(MockTempDirectoryPath);
         // CREATE
         {
             DownloadJob job(nullptr, _cacheDirectory,

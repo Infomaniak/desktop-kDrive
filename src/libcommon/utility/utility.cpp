@@ -1517,4 +1517,58 @@ bool CommonUtility::isLinux() {
 #endif
 }
 
+ExitInfo CommonUtility::deviceTempDirectoryPath(SyncPath &directoryPath) noexcept {
+    // Warning: never log anything in this method. If the logger is not set, the app will crash.
+    std::error_code ec;
+    if (const auto value = CommonUtility::envVarValue("KDRIVE_TMP_PATH"); !value.empty()) {
+        directoryPath = SyncPath(value);
+        (void) std::filesystem::create_directories(directoryPath, ec);
+    } else {
+        directoryPath =
+                std::filesystem::temp_directory_path(ec); // The std::filesystem implementation returns an empty path on error.
+    }
+
+    return stdErrorToExitInfo(ec);
+}
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
+    // Generate directory path
+    if (const auto exitInfo = deviceTempDirectoryPath(directoryPath); !exitInfo) {
+        return exitInfo;
+    }
+
+    static const std::string LOGDIR_SUFFIX = "-logdir/";
+    const SyncName logDirName = SyncName(Str2SyncName(APPLICATION_NAME)) + SyncName(Str2SyncName(LOGDIR_SUFFIX));
+    directoryPath /= logDirName;
+
+    return ExitCode::Ok;
+}
+#endif
+
+ExitInfo CommonUtility::stdErrorToExitInfo(int error) noexcept {
+    switch (error) {
+        case 0:
+            return ExitCode::Ok;
+        case static_cast<int>(std::errc::file_exists):
+            return {ExitCode::SystemError, ExitCause::FileExists};
+        case static_cast<int>(std::errc::filename_too_long):
+            return {ExitCode::SystemError, ExitCause::InvalidName};
+        case static_cast<int>(std::errc::invalid_argument):
+        case static_cast<int>(std::errc::is_a_directory):
+            return {ExitCode::SystemError, ExitCause::InvalidArgument};
+        case static_cast<int>(std::errc::no_such_file_or_directory):
+        case static_cast<int>(std::errc::not_a_directory): // Occurs in particular when converting a bundle into a single file
+            return {ExitCode::SystemError, ExitCause::NotFound};
+        case static_cast<int>(std::errc::no_space_on_device):
+            return {ExitCode::SystemError, ExitCause::NotEnoughDiskSpace};
+        case static_cast<int>(std::errc::permission_denied):
+        case static_cast<int>(std::errc::operation_not_permitted):
+            return {ExitCode::SystemError, ExitCause::FileAccessError};
+        case static_cast<int>(std::errc::cross_device_link):
+        default:
+            return {ExitCode::SystemError, ExitCause::Unknown};
+    }
+}
+
 } // namespace KDC

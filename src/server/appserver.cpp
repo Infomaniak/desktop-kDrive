@@ -3379,9 +3379,8 @@ ExitInfo AppServer::processMigratedSyncOnceConnected(const UserDbId userDbId, co
 }
 
 bool AppServer::initLogging() noexcept {
-    IoError ioError = IoError::Success;
     SyncPath logDirPath;
-    if (!IoHelper::logDirectoryPath(logDirPath, ioError)) {
+    if (const auto exitInfo = CommonUtility::logDirectoryPath(logDirPath); !exitInfo) {
         return false;
     }
 
