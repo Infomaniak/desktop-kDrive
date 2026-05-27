@@ -973,13 +973,13 @@ void TestNetworkJobs::testCheckHashMatch() {
 
     FileStat validFileStat;
     IoError ioError = IoError::Success;
-    IoHelper::getFileStat(validLocalFile, &validFileStat, ioError, IoHelper::PathCheckOption::Insensitive);
+    CPPUNIT_ASSERT(IoHelper::getFileStat(validLocalFile, &validFileStat, ioError, IoHelper::PathCheckOption::Insensitive));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     const int64_t validSize = validFileStat.size;
 
     // Create a tampered copy (wrong local content, same remote node)
     const SyncPath tamperedLocalFile = tmpDir.path() / "picture-1-tampered.jpg";
-    std::filesystem::copy_file(validLocalFile, tamperedLocalFile);
+    CPPUNIT_ASSERT(std::filesystem::copy_file(validLocalFile, tamperedLocalFile));
     {
         std::ofstream ofs(tamperedLocalFile, std::ios::binary | std::ios::app);
         ofs << "corrupted";
