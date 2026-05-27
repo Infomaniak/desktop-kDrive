@@ -562,13 +562,7 @@ void AppClient::setupLogging() {
     // might be called from second instance
     auto logger = KDC::Logger::instance();
     logger->setIsCLientLog(true);
-    logger->setLogFile(_logFile);
-    logger->setLogDir(_logDir);
-    logger->setLogExpire(_logExpire);
-    logger->setLogFlush(_logFlush);
-    logger->setLogDebug(_logDebug);
     logger->enterNextLogFile();
-
     logger->setMinLogLevel(toInt(ParametersCache::instance()->parametersInfo().logLevel()));
 
     if (ParametersCache::instance()->parametersInfo().useLog()) {

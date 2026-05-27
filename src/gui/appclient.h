@@ -123,12 +123,6 @@ class AppClient : public SharedTools::QtSingleApplication {
         QElapsedTimer _startedAt;
         quint16 _commPort = 0;
 
-        // options from command line:
-        QString _logFile;
-        QString _logDir;
-        std::chrono::hours _logExpire = std::chrono::hours(0);
-        bool _logFlush = false;
-        bool _logDebug = false;
         bool _debugCrash = false;
         bool _quitInProcess = false;
 
