@@ -18,10 +18,132 @@
 
 import Foundation
 import kDriveCore
+import SwiftUI
 
 struct ErrorCellFactory {
-    func make(error: SynchroError) -> ErrorCellView {
-        return ErrorCellView.unknownError(error)
+    func make(error: SynchroError) -> some View {
+        guard let cell = generateCellForErrorKind(error) else {
+            return ErrorCellView.unknownError(error)
+        }
+
+        return cell
+    }
+
+    private func generateCellForErrorKind(_ error: SynchroError) -> ErrorCellView? {
+        switch error.kind {
+        case .conflict:
+            return ErrorCellView(
+                title: "!Conflit de versions",
+                description: "!Deux versions différentes de ce fichier ont été détectées.",
+                action: .init(title: "Choisir une version") {
+                    print("Help")
+                }
+            )
+        case .createCancel:
+            // TODO: Implement it
+            return nil
+        case .deleteCancel:
+            // TODO: Implement it
+            return nil
+        case .editCancel:
+            // TODO: Implement it
+            return nil
+        case .moveCancel:
+            // TODO: Implement it
+            return nil
+        case .fileLockedError:
+            // TODO: Implement it
+            return nil
+        case .fileRescuedError:
+            // TODO: Implement it
+            return nil
+        case .fileTooBig:
+            // TODO: Implement it
+            return nil
+        case .forbiddenCharEndWithSpace:
+            // TODO: Implement it
+            return nil
+        case .forbiddenChar:
+            // TODO: Implement it
+            return nil
+        case .forbiddenCharOnlySpaces:
+            // TODO: Implement it
+            return nil
+        case .nameLength:
+            // TODO: Implement it
+            return nil
+        case .pathLength:
+            // TODO: Implement it
+            return nil
+        case .notEnoughDiskSpace:
+            // TODO: Implement it
+            return nil
+        case .quotaExceeded:
+            // TODO: Implement it
+            return nil
+        case .reservedName:
+            // TODO: Implement it
+            return nil
+        case .temporaryBlacklisted:
+            // TODO: Implement it
+            return nil
+        case .backErrorDriveAccess:
+            // TODO: Implement it
+            return nil
+        case .backErrorDriveAsleep:
+            // TODO: Implement it
+            return nil
+        case .backErrorDriveMaintenance:
+            // TODO: Implement it
+            return nil
+        case .backErrorDriveNotRenew:
+            // TODO: Implement it
+            return nil
+        case .invalidSyncDirAccess:
+            // TODO: Implement it
+            return nil
+        case .invalidSyncDirNesting:
+            // TODO: Implement it
+            return nil
+        case .invalidToken:
+            // TODO: Implement it
+            return nil
+        case .networkOther:
+            // TODO: Implement it
+            return nil
+        case .systemNotEnoughDiskSpace:
+            // TODO: Implement it
+            return nil
+        case .systemSyncDirAccess:
+            // TODO: Implement it
+            return nil
+        case .systemSyncDirDiskMissing:
+            // TODO: Implement it
+            return nil
+        case .systemUnableToStartVFS:
+            // TODO: Implement it
+            return nil
+        case .excludedByTemplate:
+            // TODO: Implement it
+            return nil
+        case .genericErrForbidden:
+            // TODO: Implement it
+            return nil
+        case .hardLink:
+            // TODO: Implement it
+            return nil
+        case .localAccess:
+            // TODO: Implement it
+            return nil
+        case .dataSyncDirChanged:
+            // TODO: Implement it
+            return nil
+        case .temporaryDirAccess:
+            // TODO: Implement it
+            return nil
+        case .unknown:
+            return nil
+        }
     }
 }
 

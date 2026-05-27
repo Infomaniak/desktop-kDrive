@@ -16,9 +16,12 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import kDriveCoreUI
 import SwiftUI
 
 struct ErrorCellView: View {
+    @State private var isLoading = false
+
     let title: String
     let description: String
     let path: String?
@@ -33,26 +36,44 @@ struct ErrorCellView: View {
 
     var body: some View {
         HStack {
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: AppPadding.padding8) {
                 Text(title)
+                    .font(.Tokens.bodyEmphasized)
+                    .foregroundStyle(.primary)
 
                 if let path {
                     Text(path)
+                        .lineLimit(1)
                 }
 
                 Text(description)
+                    .font(.Tokens.subheadline)
+                    .foregroundStyle(.secondary)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
-            if let action = action {
-                Button(action.title, action: action.action)
-                    .buttonStyle(.bordered)
+            if let action {
+                LoadingButton(isLoading: $isLoading) {
+                    performAction(action)
+                } label: {
+                    Text(action.title)
+                }
+                .buttonStyle(.bordered)
             }
+        }
+    }
+
+    private func performAction(_ action: Action) {
+        Task {
+            isLoading = true
+            action.action()
+            isLoading = false
         }
     }
 }
 
 extension ErrorCellView {
-    struct Action: Sendable {
+    struct Action {
         let title: String
         let action: @Sendable () -> Void
     }
