@@ -1529,21 +1529,6 @@ ExitInfo CommonUtility::deviceTempDirectoryPath(SyncPath &directoryPath) noexcep
     return stdErrorToExitInfo(ec);
 }
 
-#if defined(KD_WINDOWS)
-ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
-    // Generate directory path
-    if (const auto exitInfo = deviceTempDirectoryPath(directoryPath); !exitInfo) {
-        return exitInfo;
-    }
-
-    static const std::string LOGDIR_SUFFIX = "-logdir/";
-    const SyncName logDirName = SyncName(Str2SyncName(APPLICATION_NAME)) + SyncName(Str2SyncName(LOGDIR_SUFFIX));
-    directoryPath /= logDirName;
-
-    return ExitCode::Ok;
-}
-#endif
-
 ExitInfo CommonUtility::stdErrorToExitInfo(const int64_t error) noexcept {
     switch (error) {
         case 0:
