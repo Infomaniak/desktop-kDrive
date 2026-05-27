@@ -23,14 +23,14 @@ import kDriveCoreUI
 import SwiftUI
 import OrderedCollections
 
-public protocol UISynchroErrorObserving: Sendable {
+public protocol SynchroErrorsObserving: Sendable {
     var synchroErrors: [UISynchroErrorCategory: [SynchroError]] { get }
     var synchroErrorsPublisher: AnyPublisher<[UISynchroErrorCategory: [SynchroError]], Never> { get }
 
     func observeSynchro(_ synchroDbId: UISynchro.ID)
 }
 
-public final class UISynchroErrorObserver: UISynchroErrorObserving {
+public final class SynchroErrorsObserver: SynchroErrorsObserving {
     @MainActor public private(set) var synchroErrors: [UISynchroErrorCategory: [SynchroError]] = [:] {
         didSet {
             synchroErrorsSubject.send(synchroErrors)
