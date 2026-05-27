@@ -38,14 +38,13 @@ struct SearchResultRowView: View {
             VStack(alignment: .leading) {
                 Text(file.name)
                     .font(.Tokens.title3)
-                    .lineLimit(1)
                     .foregroundStyle(ColorToken.Text.primary.asColor)
 
                 Text(formattedSubtitle)
                     .font(.Tokens.subheadline)
-                    .lineLimit(1)
                     .foregroundStyle(ColorToken.Text.tertiary.asColor)
             }
+            .lineLimit(1)
 
             Spacer()
 
