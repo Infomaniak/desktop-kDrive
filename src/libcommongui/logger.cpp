@@ -19,7 +19,6 @@
 #include "logger.h"
 #include "config.h"
 #include "libcommon/utility/utility.h"
-#include "libcommonserver/io/iohelper.h"
 
 #include <QDir>
 #include <QStringList>
@@ -241,6 +240,7 @@ void Logger::setupLogDir() {
     SyncPath path;
     (void) CommonUtility::logDirectoryPath(path);
     const QString logDirPath = Path2QStr(path);
+    if (logDirPath.isEmpty()) return;
     if (!QDir().mkpath(logDirPath)) return;
     setLogDebug(true);
     setLogDir(logDirPath);

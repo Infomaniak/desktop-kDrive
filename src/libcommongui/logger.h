@@ -67,12 +67,7 @@ class Logger : public QObject {
         /** Returns where the automatic logdir would be */
         QString logDirectoryPath() const { return _logDirectoryPath; }
 
-        /** Sets up default dir log setup.
-         *
-         * logdir: a temporary folder
-         * logdebug: true
-         *
-         */
+        /** Sets up default dir log setup. */
         void setupLogDir();
 
         /** For switching off via logwindow */
