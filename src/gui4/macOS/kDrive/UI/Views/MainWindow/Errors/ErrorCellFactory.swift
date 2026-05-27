@@ -16,14 +16,17 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import SwiftUI
+import Foundation
+import kDriveCore
 
-struct ErrorCellView: View {
-    var body: some View {
-        Text("Hello, World!")
+struct ErrorCellFactory {
+    func make(error: SynchroError) -> ErrorCellView {
+        return ErrorCellView.unknownError(error)
     }
 }
 
-#Preview {
-    ErrorCellView()
+extension ErrorCellView {
+    static func unknownError(_ error: SynchroError) -> ErrorCellView {
+        return ErrorCellView(title: "!Erreur inconnue", description: "!Aie aie aie")
+    }
 }
