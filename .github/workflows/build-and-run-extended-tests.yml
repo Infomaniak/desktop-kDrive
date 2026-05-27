@@ -57,7 +57,7 @@ jobs:
 
       - name: Import Windows certificate
         env:
-          WINDOWS_DEBUG_CERT: ${{ secrets.WINDOWS_DEBUG_CERT_THUMBPRINT }}
+          WINDOWS_DEBUG_CERT: ${{ secrets.WINDOWS_DEBUG_CERT }}
         run: |
             New-Item -ItemType directory -Path certificate
             Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_DEBUG_CERT
@@ -70,10 +70,10 @@ jobs:
 
       - name: Build kDrive desktop
         env:
-          WINDOWS_DEBUG_CERT: ${{ secrets.WINDOWS_DEBUG_CERT_THUMBPRINT }}
+          WINDOWS_DEBUG_CERT_THUMBPRINT: ${{ secrets.WINDOWS_DEBUG_CERT_THUMBPRINT }}
         run: |
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
-          powershell ./infomaniak-build-tools/windows/build-drive.ps1 -thumbprint $env:WINDOWS_DEBUG_CERT -ci -coverage -unitTests
+          powershell ./infomaniak-build-tools/windows/build-drive.ps1 -thumbprint $env:WINDOWS_DEBUG_CERT_THUMBPRINT -ci -coverage -unitTests
         shell: cmd
 
       - name: Execute tests
