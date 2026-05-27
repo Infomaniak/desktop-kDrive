@@ -89,7 +89,9 @@ ExitInfo ErrorResolveConflictsQuickJob::process() {
 
     // Pre-fetch localPath for KeepMostRecent strategy
     SyncPath localPath;
-    if (_strategy == ConflictResolutionStrategy::KeepMostRecent) {
+
+    using enum ConflictResolutionStrategy;
+    if (_strategy == KeepMostRecent) {
         std::shared_ptr<SyncPal> syncPal;
         if (ExitInfo exitInfo = getSyncPal(syncDbId, syncPal); !exitInfo) {
             return exitInfo;
@@ -99,13 +101,13 @@ ExitInfo ErrorResolveConflictsQuickJob::process() {
 
     for (const auto &error: errorList) {
         switch (_strategy) {
-            case ConflictResolutionStrategy::KeepLocal:
+            case KeepLocal:
                 keepLocalErrors.push_back(error);
                 break;
-            case ConflictResolutionStrategy::KeepRemote:
+            case KeepRemote:
                 keepRemoteErrors.push_back(error);
                 break;
-            case ConflictResolutionStrategy::KeepMostRecent: {
+            case KeepMostRecent: {
                 handleKeepMostRecent(localPath, error, keepLocalErrors, keepRemoteErrors);
                 break;
             }
@@ -141,11 +143,10 @@ void ErrorResolveConflictsQuickJob::handleKeepMostRecent(const SyncPath &localPa
     FileStat originalStat;
     FileStat conflictStat;
 
-    std::function<bool(const SyncPath &, FileStat &)> tryGetFileStatOrKeepLocal = [this, error, &keepLocalErrors](
-                                                                                          const SyncPath &path,
-                                                                                                    FileStat &stat) {
-        IoError ioError = IoError::Success;
-        if (!IoHelper::getFileStat(path, &stat, ioError, IoHelper::PathCheckOption::Insensitive) || ioError != IoError::Success) {
+    std::function<bool(const SyncPath &, FileStat &)> tryGetFileStatOrKeepLocal = [&error, &keepLocalErrors](const SyncPath &path,
+                                                                                                            FileStat &stat) {
+        if (IoError ioError = IoError::Success;
+            !IoHelper::getFileStat(path, &stat, ioError, IoHelper::PathCheckOption::Insensitive) || ioError != IoError::Success) {
             // If we cannot retrieve the file information, we fall back to keeping the local version.
             // This is the safest choice to avoid accidental data loss. If the file no longer exists,
             // the conflict will resolve itself later.
