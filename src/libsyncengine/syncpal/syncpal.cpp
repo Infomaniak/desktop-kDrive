@@ -406,7 +406,7 @@ bool SyncPal::wipeOldPlaceholders() {
         LOG_SYNCPAL_WARN(_logger, "Error in VirtualFilesCleaner::removeDehydratedPlaceholders");
         for (auto &failedItem: failedToRemovePlaceholders) {
             addError(Error(syncDbId(), "", "", NodeType::File, failedItem, ConflictType::None, InconsistencyType::None,
-                           CancelType::None, "", virtualFileCleaner.exitCode(), virtualFileCleaner.exitCause()));
+                           CancelType::None, "", ExitInfo{virtualFileCleaner.exitCode(), virtualFileCleaner.exitCause()}));
         }
         return false;
     }
@@ -1515,7 +1515,7 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool
 
     // File type cannot be fetched for an access denied item, using File as default.
     Error error(syncDbId(), localNodeId, remoteNodeId, NodeType::File, relativeLocalPath, ConflictType::None,
-                InconsistencyType::None, CancelType::None, "", ExitCode::SystemError, cause);
+                InconsistencyType::None, CancelType::None, "", ExitInfo{ExitCode::SystemError, cause});
     addError(error);
 
     if (localNodeId.empty()) {

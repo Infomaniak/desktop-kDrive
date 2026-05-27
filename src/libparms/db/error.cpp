@@ -59,11 +59,11 @@ Error::Error(const SyncDbId syncDbId, const NodeId &localNodeId, const NodeId &r
              const SyncPath &path, const ConflictType conflictType,
              const InconsistencyType inconsistencyType /*= InconsistencyType::None */,
              const CancelType cancelType /*= CancelType::None*/, const SyncPath &destinationPath /*= ""*/,
-             const ExitCode exitCode /*= ExitCode::Unknown*/, const ExitCause exitCause /*= ExitCause::Unknown*/) :
+             const ExitInfo &exitInfo /*= ExitCode::Unknown*/) :
     _level(ErrorLevel::Node),
     _syncDbId(syncDbId),
-    _exitCode(exitCode),
-    _exitCause(exitCause),
+    _exitCode(exitInfo.code()),
+    _exitCause(exitInfo.cause()),
     _localNodeId(localNodeId),
     _remoteNodeId(remoteNodeId),
     _nodeType(nodeType),
