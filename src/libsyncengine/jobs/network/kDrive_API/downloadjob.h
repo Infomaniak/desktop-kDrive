@@ -19,6 +19,7 @@
 #pragma once
 
 #include "jobs/network/abstracttokennetworkjob.h"
+#include "jobs/network/kDrive_api/checkhashmatchjob.h"
 
 #include "libcommonserver/vfs/vfs.h"
 #include "libcommonserver/io/cachedirectory.h"
@@ -62,6 +63,7 @@ class DownloadJob : public AbstractTokenNetworkJob {
         ExitInfo canRun() override;
         ExitInfo runJob() noexcept override;
         ExitInfo handleResponse(std::istream &is) override;
+        ExitInfo checkHashMatch(bool &shouldDownload);
 
         ExitInfo createLink(const std::string &mimeType, const std::string &data);
         bool removeTmpFile();

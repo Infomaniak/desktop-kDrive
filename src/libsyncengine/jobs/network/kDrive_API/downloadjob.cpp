@@ -141,7 +141,68 @@ ExitInfo DownloadJob::canRun() {
     return ExitCode::Ok;
 }
 
+ExitInfo DownloadJob::checkHashMatch(bool &shouldDownload) {
+    shouldDownload = true;
+    CheckHashMatchJob hashJob(_fileDownloadInfo.driveDbId, _fileDownloadInfo.localpath, _fileDownloadInfo.remoteFileId,
+                              _fileDownloadInfo.expectedSize);
+    if (const ExitInfo exitInfo = hashJob.runSynchronously(); !exitInfo) {
+        LOG_WARN(_logger, "CheckHashMatchJob failed: " << exitInfo);
+        return ExitCode::Ok; // Non-fatal: fall through to download
+    }
+    if (hashJob.shouldDownload()) {
+        LOGW_DEBUG(_logger, L"Hash mismatch, downloading file: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
+        return ExitCode::Ok;
+    }
+
+    LOGW_DEBUG(_logger, L"Hash match, skipping download: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
+    if (_dateTimePolicy == DateTimePolicy::ApplyDateTime) {
+        if (const IoError ioError = IoHelper::setFileDates(_fileDownloadInfo.localpath, _fileDownloadInfo.creationTime,
+                                                           _fileDownloadInfo.modificationTime, false);
+            ioError == IoError::Unknown) {
+            LOGW_WARN(_logger, L"Error in IoHelper::setFileDates: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
+        } else if (ioError == IoError::NoSuchFileOrDirectory || ioError == IoError::AccessDenied) {
+            return {ExitCode::DataError, ExitCause::InvalidSnapshot};
+        }
+    }
+
+    FileStat filestat;
+    IoError ioError = IoError::Success;
+    if (!IoHelper::getFileStat(_fileDownloadInfo.localpath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive) ||
+        ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_fileDownloadInfo.localpath, ioError));
+        return ExitCode::SystemError;
+    }
+    _localNodeId = std::to_string(filestat.inode);
+    _creationTimeOut = filestat.creationTime;
+    _modificationTimeOut = filestat.modificationTime;
+    _sizeOut = filestat.size;
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+    if (_fileDownloadInfo.creationTime != _creationTimeOut || _fileDownloadInfo.modificationTime != _modificationTimeOut) {
+        LOGW_INFO(_logger, L"Impossible to set creation and/or modification time(s) on local file."
+                                   << L" Desired values: " << _fileDownloadInfo.creationTime << L"/"
+                                   << _fileDownloadInfo.modificationTime << L" Set values: " << _creationTimeOut << L"/"
+                                   << _modificationTimeOut << L" for " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
+    }
+#else
+    if (_fileDownloadInfo.modificationTime != _modificationTimeOut) {
+        LOGW_INFO(_logger, L"Impossible to set modification time on local file."
+                                   << L" Desired value: " << _fileDownloadInfo.modificationTime << L" Set value: "
+                                   << _modificationTimeOut << L" for " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
+    }
+#endif
+    shouldDownload = false;
+    return ExitCode::Ok;
+}
+
 ExitInfo DownloadJob::runJob() noexcept {
+    if (!_fileDownloadInfo.isCreate) {
+        bool shouldDownload = true;
+        if (const ExitInfo exitInfo = checkHashMatch(shouldDownload); !exitInfo) {
+            return exitInfo;
+        }
+        if (!shouldDownload) return ExitCode::Ok;
+    }
+
     if (!_fileDownloadInfo.isCreate && _vfs) {
         // Get hydration status
         VfsStatus vfsStatus;
