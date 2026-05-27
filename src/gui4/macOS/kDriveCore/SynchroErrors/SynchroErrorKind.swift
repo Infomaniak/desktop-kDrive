@@ -67,10 +67,11 @@ public enum SynchroErrorKind: Sendable, Hashable, CaseIterable {
 
     case unknown
 
+    // periphery:ignore - Will be used later
     var shouldBeShownInStatusBar: Bool {
         switch self {
         case .conflict,
-             .createCancel,.deleteCancel, .editCancel, .moveCancel,
+             .createCancel, .deleteCancel, .editCancel, .moveCancel,
              .fileRescuedError, .fileTooBig,
              .notEnoughDiskSpace, .quotaExceeded,
              .backErrorDriveAccess, .backErrorDriveAsleep, .backErrorDriveMaintenance, .backErrorDriveNotRenew,

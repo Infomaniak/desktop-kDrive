@@ -20,7 +20,7 @@ import Foundation
 import kDriveCore
 
 extension ErrorInfo {
-    // The compiler struggles to see the level property
+    // periphery:ignore - The compiler struggles to see the level property
     var errorLevel: KDC.ErrorLevel {
         return level
     }

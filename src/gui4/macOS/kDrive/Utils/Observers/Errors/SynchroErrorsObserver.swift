@@ -20,8 +20,8 @@ import Combine
 import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
-import SwiftUI
 import OrderedCollections
+import SwiftUI
 
 public protocol SynchroErrorsObserving: Sendable {
     var synchroErrors: [UISynchroErrorCategory: [SynchroError]] { get }
@@ -69,7 +69,6 @@ public final class SynchroErrorsObserver: SynchroErrorsObserving {
 
             @InjectService var cacheObservable: CoherentCacheObservable
             cancellable = cacheObservable.usersPublisher.synchroPublisher(dbId: Int32(synchroDbId))
-                .throttle(for: 1, scheduler: RunLoop.main, latest: true)
                 .compactMap { $0?.errors.values }
                 .removeDuplicates()
                 .map { self.categorizeErrors(Array($0)) }
@@ -88,7 +87,6 @@ public final class SynchroErrorsObserver: SynchroErrorsObserving {
 
             categorizedErrors[category, default: []].append(synchroError)
         }
-
 
         return categorizedErrors
     }
