@@ -1561,7 +1561,7 @@ ExitCode ServerRequests::getExclusionTemplateList(const bool def, QList<Exclusio
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::setUserExclusionTemplateList(const std::vector<ExclusionTemplateInfo> &list) {
+ExitInfo ServerRequests::setUserExclusionTemplateList(const std::vector<ExclusionTemplateInfo> &list) {
     std::vector<ExclusionTemplate> exclusionList;
     for (const ExclusionTemplateInfo &exclusionTemplateInfo: list) {
         ExclusionTemplate exclusionTemplate;

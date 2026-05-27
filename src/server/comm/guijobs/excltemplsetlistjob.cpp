@@ -63,10 +63,10 @@ ExitInfo ExclTemplSetUserListJob::process() {
         }
     }
 
-    if (const auto exitCode = ServerRequests::setUserExclusionTemplateList(_exclusionTemplateList); exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in Requests::setExclusionTemplateList: code=" << exitCode);
-        addError(Error(ERR_ID, exitCode));
-        return exitCode;
+    if (const auto exitInfo = ServerRequests::setUserExclusionTemplateList(_exclusionTemplateList); !exitInfo) {
+        LOG_WARN(_logger, "Error in Requests::setExclusionTemplateList: " << exitInfo);
+        addError(Error(ERR_ID, exitInfo));
+        return exitInfo;
     }
 
     for (auto syncPal: syncPalList) {

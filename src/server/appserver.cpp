@@ -2048,15 +2048,15 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             ExclusionTemplateInfo::updateExclusionTemplateInfoList(exclusionTemplateList);
 
 
-            const auto exitCode = ServerRequests::setUserExclusionTemplateList(exclusionTemplateList);
-            if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::setExclusionTemplateList: code=" << exitCode);
-                addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
-                resultStream << toInt(exitCode);
+            const auto exitInfo = ServerRequests::setUserExclusionTemplateList(exclusionTemplateList);
+            if (!exitInfo) {
+                LOG_WARN(_logger, "Error in Requests::setExclusionTemplateList: " << exitInfo);
+                addError(Error(ERR_ID, exitInfo, ExitCause::Unknown));
+                resultStream << toInt(exitInfo.code());
                 break;
             }
 
-            resultStream << toInt(exitCode);
+            resultStream << toInt(exitInfo.code());
             break;
         }
 #if defined(KD_MACOS)

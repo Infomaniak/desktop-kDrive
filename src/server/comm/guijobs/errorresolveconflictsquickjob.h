@@ -31,11 +31,11 @@ class ErrorResolveConflictsQuickJob : public AbstractErrorResolveConflictsJob {
 
     private:
         // Input parameters
-        std::vector<int32_t> _errorDbIdList;
+        std::vector<ErrorDbId> _errorDbIdList;
         ConflictResolutionStrategy _strategy = ConflictResolutionStrategy::Unknown;
 
         ExitInfo deserializeInputParms() override;
-        ExitInfo getErrorsForDbIds(const std::vector<int32_t> &dbIdList, std::vector<Error> &errorList);
+        ExitInfo getErrorsForDbIds(const std::vector<ErrorDbId> &dbIdList, std::vector<Error> &errorList);
         void handleKeepMostRecent(const SyncPath &localPath, const Error &error, std::vector<Error> &keepLocalErrors,
                                   std::vector<Error> &keepRemoteErrors);
         ExitInfo process() override;
