@@ -89,7 +89,7 @@
              Color_FFFFFF= computer & kDrive logo background
             -->
             <animatedvisuals:KDrive_SyncroFile Color_446EDD="{kDrive:ThemeColor Key=AccentFillColorDefaultBrush}"
-                                               Color_FFFFFF="{kDrive:ThemeColor Key=CardBackgroundFillColorDefaultBrush}"/>
+                                               Color_FFFFFF="{kDrive:ThemeColor Key=SolidBackgroundFillColorBaseBrush}"/>
         </AnimatedVisualPlayer>
         <AnimatedVisualPlayer x:Name="KDrive_LoaderStrokePlayer"
                               AutoPlay="True"

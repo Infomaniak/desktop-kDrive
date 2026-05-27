@@ -20,7 +20,6 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <!-- Images -->
-    <x:String x:Key="Infomaniak.Custom.Images.servin">ms-appx:///Assets/Custom/Images/servin-light.svg</x:String>
     <x:String x:Key="Infomaniak.Custom.Images.kDrive-folder">ms-appx:///Assets/Custom/Images/kDrive-folder-light.svg</x:String>
     <x:String x:Key="Infomaniak.Custom.Images.kDrive-folder-sync-warning">ms-appx:///Assets/Custom/Images/kDrive-folder-sync-warning-light.svg</x:String>
     <x:String x:Key="Infomaniak.Custom.Icons.logo-myksuiteplus">ms-appx:///Assets/Custom/Icons/logo-myksuiteplus-light.svg</x:String>

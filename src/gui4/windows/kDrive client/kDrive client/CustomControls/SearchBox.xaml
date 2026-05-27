@@ -192,7 +192,8 @@
                 </Grid.RowDefinitions>
                 <local:SvgIcon UriString="{ThemeResource Infomaniak.Custom.Images.servin}"
                                Height="100"
-                               HorizontalAlignment="Center" />
+                               HorizontalAlignment="Center"
+                               Foreground="{ThemeResource AccentFillColorTertiaryBrush}"/>
                 <TextBlock Grid.Row="1"
                            Text="{x:Bind kDrive:Localizer.Instance.GetString('noResultsFound'), Mode=OneWay}"
                            HorizontalAlignment="Center" />

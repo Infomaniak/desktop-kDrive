@@ -59,7 +59,8 @@
             </Grid.RowDefinitions>
             <controls:SvgIcon Grid.Row="0"
                               Width="120"
-                              UriString="{StaticResource Infomaniak.Custom.Images.hardware}" />
+                              UriString="{StaticResource Infomaniak.Custom.Images.hardware}"
+                              Foreground="{ThemeResource AccentFillColorTertiaryBrush}"/>
             <StackPanel Grid.Row="1"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                 <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString1s('winStorageMissingDiskTitle', PageViewModel.TrimmedDiskRoot), Mode=OneWay}"
