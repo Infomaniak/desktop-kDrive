@@ -21,8 +21,8 @@ import Combine
 import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
-import SwiftUI
 import OrderedCollections
+import SwiftUI
 
 final class MainWindowController: NSWindowController {
     enum WindowConstants {
