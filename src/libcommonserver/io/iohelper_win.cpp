@@ -499,9 +499,8 @@ void IoHelper::initRightsWindowsApi() {
 
     // Check getRights method performance
     SyncPath tmpDir;
-    IoError ioError = IoError::Success;
     if (const auto exitInfo = CommonUtility::deviceTempDirectoryPath(tmpDir); !exitInfo) {
-        LOGW_WARN(logger(), L"Error in CommonUtility::deviceTempDirectoryPath: " << Utility::formatIoError(tmpDir, ioError));
+        LOGW_WARN(logger(), L"Error in CommonUtility::deviceTempDirectoryPath: " << Utility::formatExitInfo(tmpDir, exitInfo));
         return;
     }
 
@@ -511,7 +510,7 @@ void IoHelper::initRightsWindowsApi() {
 
     auto start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < 10; i++) {
-        if (!IoHelper::getRights(tmpDir, read, write, execute, ioError)) {
+        if (auto ioError = IoError::Unknown; !IoHelper::getRights(tmpDir, read, write, execute, ioError)) {
             LOGW_WARN(logger(), L"Error in IoHelper::getRights: " << Utility::formatIoError(tmpDir, ioError));
             _getAndSetRightsMethod = 1; // Fallback method
             return;
