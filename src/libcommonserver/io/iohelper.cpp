@@ -829,7 +829,7 @@ std::string IoHelper::getFileChecksum(const SyncPath &path, std::ifstream &ifs, 
         XXH3_freeState(state);
 
         return Utility::xxHashToStr(hash);
-    } catch (const std::bad_alloc &e) {
+    } catch (const std::bad_alloc &) {
         LOGW_WARN(logger(), L"Memory allocation failed in getFileChecksum");
         ioError = IoError::Unknown;
         return "";
