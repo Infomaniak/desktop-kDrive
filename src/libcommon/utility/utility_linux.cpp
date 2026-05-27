@@ -201,14 +201,20 @@ ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
     directoryPath /= "logs";
 
     std::error_code ec;
-    if (!std::filesystem::exists(directoryPath, ec)) {
-        if (ec.value() != 0) {
-            return stdErrorToExitInfo(ec);
-        }
+    const bool directoryPathExists = std::filesystem::exists(directoryPath, ec);
+    if (ec.value() != 0) {
+        return stdErrorToExitInfo(ec);
+    }
 
-        if (!std::filesystem::create_directories(directoryPath, ec)) {
-            return stdErrorToExitInfo(ec);
+    if (directoryPathExists) {
+        if (!std::filesystem::is_directory(directoryPath, ec)) {
+            if (ec.value() != 0) {
+                return stdErrorToExitInfo(ec);
+            }
+            return stdErrorToExitInfo(std::make_error_code(std::errc::not_a_directory));
         }
+    } else if (!std::filesystem::create_directories(directoryPath, ec)) {
+        return stdErrorToExitInfo(ec);
     }
 
     return ExitCode::Ok;
