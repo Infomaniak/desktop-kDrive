@@ -51,7 +51,7 @@ ExitInfo ExclTemplSetUserListJob::process() {
 
     std::list<UserActionScopedLock> locks;
     for (auto syncPal: syncPalList) {
-        auto &lock = locks.emplace_front();
+        auto &lock = locks.emplace_back();
         if (!lock.tryLock(syncPal, std::chrono::milliseconds(userActionLockShortTimeoutMs))) {
             LOG_WARN(_logger, "Could not acquire user action lock for syncDbId="
                                       << syncPal->syncDbId()
