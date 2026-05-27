@@ -21,22 +21,22 @@ import kDriveCore
 import SwiftUI
 
 struct ErrorCellFactory {
-    func make(error: SynchroError) -> some View {
-        guard let cell = generateCellForErrorKind(error) else {
+    func make(error: SynchroError, manager: SynchroErrorManager) -> some View {
+        guard let cell = generateCellForErrorKind(error, manager: manager) else {
             return ErrorCellView.unknownError(error)
         }
 
         return cell
     }
 
-    private func generateCellForErrorKind(_ error: SynchroError) -> ErrorCellView? {
+    private func generateCellForErrorKind(_ error: SynchroError, manager: SynchroErrorManager) -> ErrorCellView? {
         switch error.kind {
         case .conflict:
             return ErrorCellView(
                 title: "!Conflit de versions",
                 description: "!Deux versions différentes de ce fichier ont été détectées.",
                 action: .init(title: "Choisir une version") {
-                    print("Help")
+                    manager.resolveConflict(error)
                 }
             )
         case .createCancel:

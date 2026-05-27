@@ -21,6 +21,8 @@ import kDriveCoreUI
 import SwiftUI
 
 struct ErrorsListView: View {
+    @StateObject private var synchroErrorManager = SynchroErrorManager()
+
     let errors: [UISynchroErrorCategory: [SynchroError]]
 
     private var categories: [UISynchroErrorCategory] {
@@ -32,7 +34,7 @@ struct ErrorsListView: View {
             ForEach(categories) { category in
                 Section {
                     ForEach(errors[category, default: []], id: \.kind) { error in
-                        ErrorCellFactory().make(error: error)
+                        ErrorCellFactory().make(error: error, manager: synchroErrorManager)
                     }
                 } header: {
                     Text(category.title)
