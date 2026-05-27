@@ -1546,26 +1546,26 @@ ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
 }
 #endif
 
-ExitInfo CommonUtility::stdErrorToExitInfo(int error) noexcept {
+ExitInfo CommonUtility::stdErrorToExitInfo(const int64_t error) noexcept {
     switch (error) {
         case 0:
             return ExitCode::Ok;
-        case static_cast<int>(std::errc::file_exists):
+        case static_cast<int64_t>(std::errc::file_exists):
             return {ExitCode::SystemError, ExitCause::FileExists};
-        case static_cast<int>(std::errc::filename_too_long):
+        case static_cast<int64_t>(std::errc::filename_too_long):
             return {ExitCode::SystemError, ExitCause::InvalidName};
-        case static_cast<int>(std::errc::invalid_argument):
-        case static_cast<int>(std::errc::is_a_directory):
+        case static_cast<int64_t>(std::errc::invalid_argument):
+        case static_cast<int64_t>(std::errc::is_a_directory):
             return {ExitCode::SystemError, ExitCause::InvalidArgument};
-        case static_cast<int>(std::errc::no_such_file_or_directory):
-        case static_cast<int>(std::errc::not_a_directory): // Occurs in particular when converting a bundle into a single file
+        case static_cast<int64_t>(std::errc::no_such_file_or_directory):
+        case static_cast<int64_t>(std::errc::not_a_directory): // Occurs in particular when converting a bundle into a single file
             return {ExitCode::SystemError, ExitCause::NotFound};
-        case static_cast<int>(std::errc::no_space_on_device):
+        case static_cast<int64_t>(std::errc::no_space_on_device):
             return {ExitCode::SystemError, ExitCause::NotEnoughDiskSpace};
-        case static_cast<int>(std::errc::permission_denied):
-        case static_cast<int>(std::errc::operation_not_permitted):
+        case static_cast<int64_t>(std::errc::permission_denied):
+        case static_cast<int64_t>(std::errc::operation_not_permitted):
             return {ExitCode::SystemError, ExitCause::FileAccessError};
-        case static_cast<int>(std::errc::cross_device_link):
+        case static_cast<int64_t>(std::errc::cross_device_link):
         default:
             return {ExitCode::SystemError, ExitCause::Unknown};
     }
