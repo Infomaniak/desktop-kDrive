@@ -33,10 +33,10 @@ namespace KDC {
 static std::string getHomeDirFromPasswd() {
     struct passwd pwd;
     struct passwd *result = nullptr;
-    long bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
+    auto bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
     if (bufsize == -1) bufsize = 16384;
-    std::vector<char> buf(static_cast<size_t>(bufsize));
-    if (getpwuid_r(getuid(), &pwd, buf.data(), buf.size(), &result) == 0 && result != nullptr) {
+    if (std::vector<char> buf(static_cast<size_t>(bufsize));
+        getpwuid_r(getuid(), &pwd, buf.data(), buf.size(), &result) == 0 && result != nullptr) {
         return std::string(result->pw_dir);
     }
     return {};
