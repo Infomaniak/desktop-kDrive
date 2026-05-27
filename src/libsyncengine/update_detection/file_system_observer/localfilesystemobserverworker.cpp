@@ -865,10 +865,10 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             res = {ExitCode::SystemError};
             break;
     }
-    const Error error(_syncPal->syncDbId(), "", "", itemType.nodeType,
-                      CommonUtility::relativePath(_syncPal->localPath(), entry.path()), ConflictType::None,
-                      InconsistencyType::None, CancelType::None, "", res.code(), res.cause());
-    _syncPal->addError(error);
+
+    _syncPal->addError(Error(_syncPal->syncDbId(), "", "", itemType.nodeType,
+                             CommonUtility::relativePath(_syncPal->localPath(), entry.path()), ConflictType::None,
+                             InconsistencyType::None, CancelType::None, "", res.code(), res.cause()));
     return res;
 }
 
