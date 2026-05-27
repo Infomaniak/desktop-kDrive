@@ -27,22 +27,23 @@
 
 namespace KDC {
 
-CheckHashMatchJob::CheckHashMatchJob(const DriveDbId driveDbId, const SyncPath &filepath, const NodeId &nodeId, const int64_t remotesize) :
+CheckHashMatchJob::CheckHashMatchJob(const DriveDbId driveDbId, const SyncPath &filepath, const NodeId &nodeId,
+                                     const int64_t remoteSize) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
     _filePath(filepath),
     _nodeId(nodeId),
     _localSize(0),
-    _remoteSize(remotesize) {
+    _remoteSize(remoteSize) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
 CheckHashMatchJob::CheckHashMatchJob(const DriveDbId driveDbId, const SyncPath &filepath, const NodeId &nodeId,
-                                     const int64_t localsize, const int64_t remotesize) :
+                                     const int64_t localSize, const int64_t remoteSize) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
     _filePath(filepath),
     _nodeId(nodeId),
-    _localSize(localsize),
-    _remoteSize(remotesize) {
+    _localSize(localSize),
+    _remoteSize(remoteSize) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
@@ -86,8 +87,7 @@ ExitInfo CheckHashMatchJob::runJob() noexcept {
     }
 
     std::ifstream ifs;
-    IoError ioError = IoError::Unknown;
-    _localHash = "xxh3:" + IoHelper::getFileChecksum(_filePath, ifs, ioError);
+    const IoError ioError = IoHelper::getFileChecksum(_filePath, ifs, _localHash);
 
     if (ioError == IoError::NoSuchFileOrDirectory) {
         LOGW_WARN(_logger, L"File doesn't exist while computing checksum: " << Utility::formatSyncPath(_filePath));
