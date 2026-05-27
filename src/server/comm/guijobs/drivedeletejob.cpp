@@ -27,9 +27,6 @@
 // Input parameters keys
 static const auto inParamsDriveDbId = "driveDbId";
 
-// User action lock timeout duration
-static const int32_t userActionLockTimeoutMs = 5000;
-
 namespace KDC {
 
 DriveDeleteJob::DriveDeleteJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
@@ -64,7 +61,7 @@ ExitInfo DriveDeleteJob::process() {
         if (syncPal->driveDbId() == _driveDbId) {
             syncDbIdList.push_back(syncDbId);
             UserActionScopedLock &userLock = locks.emplace_back();
-            if (!userLock.tryLock(syncPal, std::chrono::milliseconds(userActionLockTimeoutMs))) {
+            if (!userLock.tryLock(syncPal, std::chrono::milliseconds(userActionLockLongTimeoutMs))) {
                 LOG_WARN(_logger, "Could not acquire user action lock for syncDbId="
                                           << syncDbId << ". Another user action is running. Aborting DriveDeleteJob.");
                 return ExitCode::OperationCanceled;

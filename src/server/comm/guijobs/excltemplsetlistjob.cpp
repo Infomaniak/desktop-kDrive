@@ -10,9 +10,6 @@
 // Input parameters keys
 static const auto inParamsExclusionTemplateList = "exclusionTemplateList";
 
-// User action lock timeout duration
-static const int32_t userActionLockTimeoutMs = 1000;
-
 namespace KDC {
 
 ExclTemplSetUserListJob::ExclTemplSetUserListJob(std::shared_ptr<CommManager> commManager, int requestId,
@@ -55,7 +52,7 @@ ExitInfo ExclTemplSetUserListJob::process() {
     std::list<UserActionScopedLock> locks;
     for (auto syncPal: syncPalList) {
         auto &lock = locks.emplace_front();
-        if (!lock.tryLock(syncPal, std::chrono::milliseconds(userActionLockTimeoutMs))) {
+        if (!lock.tryLock(syncPal, std::chrono::milliseconds(userActionLockShortTimeoutMs))) {
             LOG_WARN(_logger, "Could not acquire user action lock for syncDbId="
                                       << syncPal->syncDbId()
                                       << ". Another user action is running. Aborting ExclTemplSetUserListJob.");

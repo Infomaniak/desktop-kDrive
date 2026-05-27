@@ -28,8 +28,6 @@
 // Input parameters keys
 static const auto inParamsSyncDbId = "syncDbId";
 
-// User action lock timeout duration
-static const int32_t userActionLockTimeoutMs = 1000;
 namespace KDC {
 
 SyncStopJob::SyncStopJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
@@ -63,9 +61,9 @@ ExitInfo SyncStopJob::process() {
     }
 
     UserActionScopedLock lock;
-    if (syncPal != nullptr && !lock.tryLock(syncPal, std::chrono::milliseconds(userActionLockTimeoutMs))) {
+    if (syncPal != nullptr && !lock.tryLock(syncPal, std::chrono::milliseconds(userActionLockShortTimeoutMs))) {
         LOG_WARN(_logger, "Could not acquire user action lock for syncDbId="
-                                  << _syncDbId << ". Another user action is running. Aborting SyncStartJob.");
+                                  << _syncDbId << ". Another user action is running. Aborting SyncStopJob.");
         return ExitCode::OperationCanceled;
     }
 

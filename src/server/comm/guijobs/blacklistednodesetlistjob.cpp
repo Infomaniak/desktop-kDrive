@@ -29,9 +29,6 @@
 static const auto inParamsSyncDbId = "syncDbId";
 static const auto inParamsNodeIdList = "nodeIdList";
 
-// User action lock timeout duration
-static const int32_t userActionLockTimeoutMs = 5000;
-
 namespace KDC {
 
 BlacklistedNodeSetListJob::BlacklistedNodeSetListJob(std::shared_ptr<CommManager> commManager, int requestId,
@@ -60,7 +57,7 @@ ExitInfo BlacklistedNodeSetListJob::process() {
     }
 
     UserActionScopedLock lock;
-    if (syncPal != nullptr && !lock.tryLock(syncPal, std::chrono::milliseconds(userActionLockTimeoutMs))) {
+    if (syncPal != nullptr && !lock.tryLock(syncPal, std::chrono::milliseconds(userActionLockLongTimeoutMs))) {
         LOG_WARN(_logger, "Could not acquire user action lock for syncDbId="
                                   << _syncDbId << ". Another user action is running. Aborting BlacklistedNodeSetListJob.");
         return ExitCode::OperationCanceled;

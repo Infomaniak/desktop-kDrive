@@ -27,10 +27,6 @@
 static const auto inParamsDefault = "default";
 static const auto inParamsApplicationList = "applicationList";
 
-
-// User action lock timeout duration
-static const int32_t userActionLockTimeoutMs = 1000;
-
 namespace KDC {
 
 ExclAppSetListJob::ExclAppSetListJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
