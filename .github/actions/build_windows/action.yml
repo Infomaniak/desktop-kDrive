@@ -336,6 +336,23 @@ runs:
           compression-level: 0
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 
+      - name: Process installer hash
+        shell: powershell
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
+        run: |
+          $file = Get-ChildItem "${{ github.workspace }}\build-windows\kDrive-*.exe" | Select-Object -First 1
+
+          $hash = (Get-FileHash -Path $file.FullName).Hash
+
+          # Write to GitHub Step Summary
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "### 🔐 Windows installer SHA256"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ""
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value $hash
+
+          # Create .sha256 file next to installer
+          $shaFile = "$($file.FullName).sha256"
+          Set-Content -Path $shaFile -Value $hash
+
       - name: Upload app installer
         uses: actions/upload-artifact@v7.0.1
         with:

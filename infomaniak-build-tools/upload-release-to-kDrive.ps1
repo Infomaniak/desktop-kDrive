@@ -163,6 +163,7 @@ if ($os -eq "win") {
     Write-Host " - Windows Files - " # Windows
     $win_files = @(
         "$app.exe",
+        "$app.sha256",
         "$app.msi",
         "kDrive.pdb",
         "kDrive_client.pdb",
@@ -177,6 +178,7 @@ if ($os -eq "macos") {
     Write-Host " - macOS Files - " # macOS
     $macos_files = @(
         "$app.pkg",
+        "$app.sha256",
         "$app.zip", # Sparkle zip
         "update-macos-$version.xml", # Sparkle update xml
         "kDrive.dSYM",
@@ -192,6 +194,7 @@ if ($os -eq "linux-amd") {
     Write-Host " - Linux AMD64 Files - " # Linux AMD
     $linux_amd_files = @(
         "$app-amd64.AppImage",
+        "$app-amd64.sha256",
         "kDrive.dbg",
         "kDrive_client.dbg",
         "kDrive.src.zip",
@@ -205,6 +208,7 @@ if ($os -eq "linux-arm") {
     Write-Host " - Linux ARM64 Files - " # Linux ARM
     $linux_arm_files = @(
         "$app-arm64.AppImage",
+        "$app-arm64.sha256",
         "kDrive.dbg",
         "kDrive_client.dbg",
         "kDrive.src.zip",

@@ -20,11 +20,25 @@ runs:
           /usr/bin/env bash ${{ github.workspace }}/infomaniak-build-tools/linux/build-release.sh -d ${{ github.workspace }}
         shell: bash
 
+      - name: Display AppImage info in summary
+        shell: bash
+        if: steps.build.outcome == 'success'
+        run: |
+          FILE=$(ls "${{ github.workspace }}/build-linux/install/kDrive-"*-arm64.AppImage | head -n 1)
+
+          HASH=$(sha256sum "$FILE" | awk '{print $1}')
+
+          echo "### 🔐 Linux arm64 AppImage SHA256" >> "$GITHUB_STEP_SUMMARY"
+          echo "$HASH" >> "$GITHUB_STEP_SUMMARY"
+
+          # Create .sha256 file next to the AppImage
+          echo "$HASH  $(basename "$FILE")" > "${FILE}.sha256"
+
       - name: Upload app AppImage
         uses: actions/upload-artifact@v7.0.1
         with:
           name: linux-release-artifacts-appimage-arm64
-          path: ${{ github.workspace }}/build-linux-arm64/install/kDrive-*-arm64.AppImage # kDrive-<full_version>-arm64.AppImage
+          path: ${{ github.workspace }}/build-linux-arm64/install/kDrive-*-arm64.* # kDrive-<full_version>-arm64.AppImage
           retention-days: 1
         if: steps.build.outcome == 'success'
 
