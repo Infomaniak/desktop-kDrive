@@ -18,7 +18,7 @@
 
 import Foundation
 
-public enum SyncErrorKind: Sendable, Hashable, CaseIterable {
+public enum SynchroErrorKind: Sendable, Hashable, CaseIterable {
     case conflict
 
     case createCancel

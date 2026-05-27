@@ -19,24 +19,22 @@
 import Foundation
 import kDriveCore
 
-struct UISyncErrorCategorizer {
-    func categorize(errors: [UISyncError]) -> [UISyncErrorCategory: [UISyncError]] {
-        var categorizedErrors: [UISyncErrorCategory: [UISyncError]] = [:]
-
-        for error in errors {
-            let category = categorize(error: error)
-            categorizedErrors[category, default: []].append(error)
-        }
-
-        return categorizedErrors
+extension ErrorInfo {
+    // The compiler struggles to see the level property
+    var errorLevel: KDC.ErrorLevel {
+        return level
     }
+}
 
-    func categorize(error: UISyncError) -> UISyncErrorCategory {
-        if isInSynchronizationDirectoriesList(error: error) {
+public struct UISynchroErrorCategorizer: Sendable {
+    public init() {}
+
+    public func categorize(error: ErrorInfo, kind: SynchroErrorKind) -> UISynchroErrorCategory {
+        if isInSynchronizationDirectoriesList(kind: kind) {
             return .synchronizationDirectories
         }
 
-        if isInFilesToCheckList(error: error) {
+        if isInFilesToCheckList(error: error, kind: kind) {
             return .filesToCheck
         }
 
@@ -44,15 +42,15 @@ struct UISyncErrorCategorizer {
             return .conflicts
         }
 
-        if isInStorageList(error: error) {
+        if isInStorageList(kind: kind) {
             return .storage
         }
 
         return .systemAndPermissions
     }
 
-    private func isInFilesToCheckList(error: UISyncError) -> Bool {
-        guard error.info.level == .Node else {
+    private func isInFilesToCheckList(error: ErrorInfo, kind: SynchroErrorKind) -> Bool {
+        guard error.level == .Node else {
             return false
         }
 
@@ -60,23 +58,23 @@ struct UISyncErrorCategorizer {
             return false
         }
 
-        if isInStorageList(error: error) {
+        if isInStorageList(kind: kind) {
             return false
         }
 
         return true
     }
 
-    private func isInConflictsList(error: UISyncError) -> Bool {
-        guard error.info.level == .Node else {
+    private func isInConflictsList(error: ErrorInfo) -> Bool {
+        guard error.level == .Node else {
             return false
         }
 
         return isConflictResolvableByUser(error: error)
     }
 
-    private func isInSynchronizationDirectoriesList(error: UISyncError) -> Bool {
-        switch error.kind {
+    private func isInSynchronizationDirectoriesList(kind: SynchroErrorKind) -> Bool {
+        switch kind {
         case .systemSyncDirAccess,
              .systemSyncDirDiskMissing,
              .dataSyncDirChanged,
@@ -89,8 +87,8 @@ struct UISyncErrorCategorizer {
         }
     }
 
-    private func isInStorageList(error: UISyncError) -> Bool {
-        switch error.kind {
+    private func isInStorageList(kind: SynchroErrorKind) -> Bool {
+        switch kind {
         case .systemNotEnoughDiskSpace,
              .quotaExceeded:
             return true
@@ -99,7 +97,7 @@ struct UISyncErrorCategorizer {
         }
     }
 
-    private func isConflictResolvableByUser(error: UISyncError) -> Bool {
-        return error.info.level == .Node && (error.info.conflictType == .CreateCreate || error.info.conflictType == .EditEdit)
+    private func isConflictResolvableByUser(error: ErrorInfo) -> Bool {
+        return error.level == .Node && (error.conflictType == .CreateCreate || error.conflictType == .EditEdit)
     }
 }

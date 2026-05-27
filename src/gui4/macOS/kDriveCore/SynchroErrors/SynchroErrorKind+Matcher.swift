@@ -18,8 +18,8 @@
 
 import Foundation
 
-extension SyncErrorKind {
-    private var matcher: SyncErrorKindMatcher? {
+extension SynchroErrorKind {
+    private var matcher: SynchroErrorKindMatcher? {
         switch self {
         case .conflict:
             return .node(conflictTypes: [.CreateCreate])
@@ -105,7 +105,7 @@ extension SyncErrorKind {
     }
 
     public init(errorInfo: ErrorInfo) {
-        guard let matchingError = SyncErrorKind.allCases.first(where: { $0.matcher?.matches(error: errorInfo) == true }) else {
+        guard let matchingError = SynchroErrorKind.allCases.first(where: { $0.matcher?.matches(error: errorInfo) == true }) else {
             self = .unknown
             return
         }

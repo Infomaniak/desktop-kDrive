@@ -42,6 +42,7 @@ final class MainViewModel: ObservableObject {
 
             synchroStateObserver.observeSynchro(currentSynchroContext.synchro.id)
             synchroNodesObserver.observeSynchro(currentSynchroContext.synchro.id)
+            // TODO: observe synchro for errors
         }
     }
 

@@ -16,9 +16,27 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import kDriveCore
+import Foundation
 
-public struct UISyncError {
-    public let kind: SyncErrorKind
-    public let info: ErrorInfo
+public enum UISynchroErrorCategory {
+    case systemAndPermissions
+    case conflicts
+    case filesToCheck
+    case synchronizationDirectories
+    case storage
+
+    public var title: String {
+        switch self {
+        case .systemAndPermissions:
+            return "!Système et permissions"
+        case .conflicts:
+            return "!Conflits"
+        case .filesToCheck:
+            return "!Fichiers à vérifier"
+        case .synchronizationDirectories:
+            return "!Dossiers de synchronisation"
+        case .storage:
+            return "!Stockage"
+        }
+    }
 }

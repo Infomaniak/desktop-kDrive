@@ -18,7 +18,7 @@
 
 import Foundation
 
-struct SyncErrorKindMatcher {
+struct SynchroErrorKindMatcher {
     var levels: Set<KDC.ErrorLevel>
     var nodeTypes: Set<KDC.NodeType>
     var cancelTypes: Set<KDC.CancelType>
@@ -56,15 +56,15 @@ struct SyncErrorKindMatcher {
     }
 }
 
-extension SyncErrorKindMatcher {
+extension SynchroErrorKindMatcher {
     static func node(
         cancelTypes: Set<KDC.CancelType>? = nil,
         inconsistencyTypes: Set<KDC.InconsistencyType>? = nil,
         conflictTypes: Set<KDC.ConflictType>? = nil,
         exitCodes: Set<KDC.ExitCode>? = nil,
         exitCauses: Set<KDC.ExitCause>? = nil
-    ) -> SyncErrorKindMatcher {
-        return SyncErrorKindMatcher(
+    ) -> SynchroErrorKindMatcher {
+        return SynchroErrorKindMatcher(
             levels: [.Node],
             nodeTypes: [.File, .Directory],
             cancelTypes: cancelTypes,
@@ -82,8 +82,8 @@ extension SyncErrorKindMatcher {
         conflictTypes: Set<KDC.ConflictType>? = nil,
         exitCodes: Set<KDC.ExitCode>? = nil,
         exitCauses: Set<KDC.ExitCause>? = nil
-    ) -> SyncErrorKindMatcher {
-        return SyncErrorKindMatcher(
+    ) -> SynchroErrorKindMatcher {
+        return SynchroErrorKindMatcher(
             levels: [.SyncPal],
             nodeTypes: nodeTypes,
             cancelTypes: cancelTypes,
