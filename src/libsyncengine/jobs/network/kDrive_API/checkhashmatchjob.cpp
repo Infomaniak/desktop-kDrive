@@ -17,8 +17,11 @@
  */
 
 #include "checkhashmatchjob.h"
+#include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/jsonparserutility.h"
+#include "libcommonserver/utility/utility.h"
 
+#include <fstream>
 #include <Poco/Net/HTTPRequest.h>
 #include <log4cplus/loggingmacros.h>
 
