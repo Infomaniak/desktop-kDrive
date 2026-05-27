@@ -121,7 +121,8 @@
         </Grid>
 
         <!-- Error view -->
-        <ScrollView Grid.Row="1"
+        <ScrollView x:Name="ErrorScrollView"
+                    Grid.Row="1"
                     Padding="0"
                     Margin="0"
                     Visibility="{x:Bind _errorPageVM.HasError, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
