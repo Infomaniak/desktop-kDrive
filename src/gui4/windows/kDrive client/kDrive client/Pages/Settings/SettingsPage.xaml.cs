@@ -38,7 +38,7 @@ namespace Infomaniak.kDrive.Pages.Settings
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         private const string _skipNextRefreshKey = "skipNextRefresh";
         private NavigationParameter? _navigationParameter;
-
+        static private double _lastVerticalOffset = 0;
 
         public AppModel ViewModel => _viewModel;
 
@@ -47,7 +47,8 @@ namespace Infomaniak.kDrive.Pages.Settings
             public enum SettingsTab
             {
                 Default,
-                Users
+                Users,
+                LastVerticalOffset
             }
 
             public SettingsTab Tab { get; set; }
@@ -72,6 +73,9 @@ namespace Infomaniak.kDrive.Pages.Settings
                 case NavigationParameter.SettingsTab.Users:
                     BringUserIntoView(_navigationParameter.Value.UserToShow);
                     break;
+                case NavigationParameter.SettingsTab.LastVerticalOffset:
+                    SettingsScrollView.ScrollTo(0, _lastVerticalOffset, new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
+                    break;
                 default:
                     break;
             }
@@ -81,6 +85,16 @@ namespace Infomaniak.kDrive.Pages.Settings
         {
             _analyticsService.TrackPageView(Analytics.Keys.Category.SettingsPage);
             _navigationParameter = e.Parameter as NavigationParameter?;
+
+            if (e.NavigationMode != NavigationMode.New)
+            {
+                _navigationParameter = new NavigationParameter { Tab = NavigationParameter.SettingsTab.LastVerticalOffset };
+            }
+        }
+
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            _lastVerticalOffset = SettingsScrollView.VerticalOffset;
         }
 
         private void BringUserIntoView(User? user)
