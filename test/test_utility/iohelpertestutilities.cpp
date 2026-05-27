@@ -44,7 +44,7 @@ void IoHelperTestUtilities::setReadAliasFunction(
 #endif
 
 void IoHelperTestUtilities::resetFunctions() {
-    // Reset to default std::filesytem implementation.
+    // Reset to default std::filesystem implementation.
     setRename(static_cast<void (*)(const SyncPath &srcPath, const SyncPath &destPath, std::error_code &ec)>(
             &std::filesystem::rename));
     setIsDirectoryFunction(static_cast<bool (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::is_directory));
