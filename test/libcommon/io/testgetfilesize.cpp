@@ -252,6 +252,7 @@ void TestIo::testGetFileSizeAllBranches() {
 #else
         CPPUNIT_ASSERT(ioError == IoError::AccessDenied);
 #endif
+        _testObj->resetFunctions();
     }
 }
 

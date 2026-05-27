@@ -57,7 +57,7 @@ void TestIo::tearDown() {
 
 void TestIo::testAccessDeniedOnLockedFiles() {
 #if defined(KD_WINDOWS) // This test is only relevant on Windows, as on Unix systems, there is no standard way to lock files.
-    LocalTemporaryDirectory tmpDir("TestIo-testAccesDeniedOnLockedFiles");
+    LocalTemporaryDirectory tmpDir("TestIo-testAccessDeniedOnLockedFiles");
     const SyncPath lockedFile = tmpDir.path() / "lockedFile.txt";
     std::ofstream file(lockedFile);
     CPPUNIT_ASSERT(file.is_open());
