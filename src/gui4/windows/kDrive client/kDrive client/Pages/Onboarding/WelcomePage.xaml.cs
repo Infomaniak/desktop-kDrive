@@ -54,26 +54,26 @@ namespace Infomaniak.kDrive.Pages.Onboarding
         {
             Logger.Log(Logger.Level.Info, "Create account button clicked, opening sign up URL");
             _analyticsService.TrackClick(Analytics.Keys.Category.OnboardingWelcomePage, Analytics.Keys.EventName.OpenSignUpWeb);
-            if (sender is Button btn)
+            if (sender is Control control)
             {
-                btn.IsEnabled = false;
+                control.IsEnabled = false;
 
                 await Windows.System.Launcher.LaunchUriAsync(App.Constants.kSuite.HomeUri);
                 Logger.Log(Logger.Level.Debug, "Create account URL opened");
 
                 await Task.Delay(2000);
-                btn.IsEnabled = true;
+                control.IsEnabled = true;
             }
         }
         private void SigninButton_Click(object sender, RoutedEventArgs e)
         {
             Logger.Log(Logger.Level.Info, "Sign in button clicked, starting authentication process");
             _analyticsService.TrackClick(Analytics.Keys.Category.OnboardingWelcomePage, Analytics.Keys.EventName.OpenSignInWeb);
-            if (sender is Button btn)
+            if (sender is Control control)
             {
-                btn.IsEnabled = false;
+                control.IsEnabled = false;
                 Frame.Navigate(typeof(OAuthLoadingPage), _onBoardingViewModel);
-                btn.IsEnabled = true;
+                control.IsEnabled = true;
             }
         }
     }
