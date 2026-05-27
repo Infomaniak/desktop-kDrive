@@ -29,6 +29,7 @@
 
 namespace KDC {
 
+namespace {
 ExitInfo nsErrorToExitInfo(NSError *nsError) noexcept {
     // See https://developer.apple.com/documentation/foundation/
     if ([nsError.domain isEqualToString:NSCocoaErrorDomain]) {
@@ -47,6 +48,7 @@ ExitInfo nsErrorToExitInfo(NSError *nsError) noexcept {
     }
     return {ExitCode::SystemError, ExitCause::Unknown};
 }
+} // namespace
 
 SyncPath CommonUtility::getAppDir() {
     NSError *error;
