@@ -26,6 +26,8 @@ using namespace CppUnit;
 namespace KDC {
 
 void TestIo::testGetFileChecksum() {
+    constexpr std::string_view hash1 = "xxh3:5dcc477e35136516";
+    constexpr std::string_view hash2 = "xxh3:91f9d1732ca53515";
     // A regular file
     {
         const SyncPath path = _localTestDirPath / "test_pictures/picture-1.jpg";
@@ -34,7 +36,7 @@ void TestIo::testGetFileChecksum() {
         const IoError ioError = IoHelper::getFileChecksum(path, ifs, checksum);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT(!checksum.empty());
-        CPPUNIT_ASSERT_EQUAL(std::string("5dcc477e35136516"), checksum);
+        CPPUNIT_ASSERT_EQUAL(std::string(hash1), checksum);
     }
 
     // A regular file whose name exists with a different capitalization
@@ -46,7 +48,7 @@ void TestIo::testGetFileChecksum() {
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT(!checksum.empty());
-        CPPUNIT_ASSERT_EQUAL(std::string("5dcc477e35136516"), checksum);
+        CPPUNIT_ASSERT_EQUAL(std::string(hash1), checksum);
 #else
         CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
         CPPUNIT_ASSERT(checksum.empty());
@@ -129,7 +131,7 @@ void TestIo::testGetFileChecksum() {
         const IoError ioError = IoHelper::getFileChecksum(path, ifs, checksum);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT(!checksum.empty());
-        CPPUNIT_ASSERT_EQUAL(std::string("91f9d1732ca53515"), checksum);
+        CPPUNIT_ASSERT_EQUAL(std::string(hash2), checksum);
     }
 
     // A file with dots and colons in its name
@@ -148,7 +150,7 @@ void TestIo::testGetFileChecksum() {
         CPPUNIT_ASSERT(checksum.empty());
 #else
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-        CPPUNIT_ASSERT_EQUAL(std::string("91f9d1732ca53515"), checksum);
+        CPPUNIT_ASSERT_EQUAL(std::string(hash2), checksum);
 #endif
     }
 
@@ -165,7 +167,7 @@ void TestIo::testGetFileChecksum() {
         const IoError ioError = IoHelper::getFileChecksum(path, ifs, checksum);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT(!checksum.empty());
-        CPPUNIT_ASSERT_EQUAL(std::string("91f9d1732ca53515"), checksum);
+        CPPUNIT_ASSERT_EQUAL(std::string(hash2), checksum);
     }
 
     // A dangling symbolic link
@@ -238,7 +240,7 @@ void TestIo::testGetFileChecksum() {
 #if defined(KD_WINDOWS)
             CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
             CPPUNIT_ASSERT(!checksum.empty());
-            CPPUNIT_ASSERT_EQUAL(std::string("91f9d1732ca53515"), checksum);
+            CPPUNIT_ASSERT_EQUAL(std::string(hash2), checksum);
 #else
             CPPUNIT_ASSERT_EQUAL(IoError::AccessDenied, ioError);
             CPPUNIT_ASSERT(checksum.empty());
@@ -251,7 +253,7 @@ void TestIo::testGetFileChecksum() {
             const IoError ioError = IoHelper::getFileChecksum(path, ifs, checksum);
             CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
             CPPUNIT_ASSERT(!checksum.empty());
-            CPPUNIT_ASSERT_EQUAL(std::string("91f9d1732ca53515"), checksum);
+            CPPUNIT_ASSERT_EQUAL(std::string(hash2), checksum);
         }
     }
 
@@ -272,7 +274,7 @@ void TestIo::testGetFileChecksum() {
             const IoError ioError = IoHelper::getFileChecksum(path, ifs, checksum);
             CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
             CPPUNIT_ASSERT(!checksum.empty());
-            CPPUNIT_ASSERT_EQUAL(std::string("91f9d1732ca53515"), checksum);
+            CPPUNIT_ASSERT_EQUAL(std::string(hash2), checksum);
         }
         // Restore permission to allow subdir removal
         std::filesystem::permissions(subdir, std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
@@ -282,7 +284,7 @@ void TestIo::testGetFileChecksum() {
             const IoError ioError = IoHelper::getFileChecksum(path, ifs, checksum);
             CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
             CPPUNIT_ASSERT(!checksum.empty());
-            CPPUNIT_ASSERT_EQUAL(std::string("91f9d1732ca53515"), checksum);
+            CPPUNIT_ASSERT_EQUAL(std::string(hash2), checksum);
         }
     }
 
@@ -307,7 +309,7 @@ void TestIo::testGetFileChecksum() {
 #if defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT(!checksum.empty());
-        CPPUNIT_ASSERT_EQUAL(std::string("91f9d1732ca53515"), checksum);
+        CPPUNIT_ASSERT_EQUAL(std::string(hash2), checksum);
 #else
         CPPUNIT_ASSERT_EQUAL(IoError::AccessDenied, ioError);
         CPPUNIT_ASSERT(checksum.empty());
