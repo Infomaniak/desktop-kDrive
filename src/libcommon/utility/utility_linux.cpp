@@ -184,10 +184,12 @@ std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {
 }
 
 ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
-    // XDG Base Directory Specification: use $XDG_STATE_HOME, fallback to ~/.local/state
+    // XDG Base Directory Specification: use $XDG_STATE_HOME if it is absolute,
+    // otherwise fallback to ~/.local/state
     const auto xdgStateHome = envVarValue("XDG_STATE_HOME");
-    if (!xdgStateHome.empty()) {
-        directoryPath = SyncPath(xdgStateHome);
+    const auto xdgStateHomePath = SyncPath(xdgStateHome);
+    if (!xdgStateHome.empty() && xdgStateHomePath.is_absolute()) {
+        directoryPath = xdgStateHomePath;
     } else {
         auto homeDir = envVarValue("HOME");
         if (homeDir.empty()) homeDir = getHomeDirFromPasswd();
