@@ -60,7 +60,7 @@ set(syncengine_SRCS
     jobs/network/kDrive_API/getfileinfojobV3.h jobs/network/kDrive_API/getfileinfojobV3.cpp
     jobs/network/kDrive_API/deletejob.h jobs/network/kDrive_API/deletejob.cpp
     jobs/network/kDrive_API/createdirjob.h jobs/network/kDrive_API/createdirjob.cpp
-    jobs/network/kDrive_API/createdirjob.h jobs/network/kDrive_API/checkhashmatchjob.cpp
+    jobs/network/kDrive_API/checkhashmatchjob.h jobs/network/kDrive_API/checkhashmatchjob.cpp
     jobs/network/kDrive_API/movejob.h jobs/network/kDrive_API/movejob.cpp
     jobs/network/kDrive_API/renamejob.h jobs/network/kDrive_API/renamejob.cpp
     jobs/network/kDrive_API/duplicatejob.h jobs/network/kDrive_API/duplicatejob.cpp
