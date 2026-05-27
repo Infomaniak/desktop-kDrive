@@ -1246,7 +1246,10 @@ bool ServerRequests::isDisplayableError(const Error &error) {
             }
         }
         case ExitCode::SystemError:
-            return error.exitCause() != ExitCause::FileAccessError || error.level() != ErrorLevel::SyncPal;
+            // LFSO already emit a node level error, so we don't want to emit another one from SyncPal level
+            return (error.level() != ErrorLevel::SyncPal || error.workerName() != "LFSO" ||
+                    (error.exitCause() != ExitCause::FileAccessError &&
+                     error.exitCause() != ExitCause::FileOrDirectoryCorrupted));
         case ExitCode::RateLimited:
             return false;
         case ExitCode::Unknown: {

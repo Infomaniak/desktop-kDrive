@@ -846,9 +846,6 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
         return ExitCode::SystemError;
     }
 
-    if (ioError != IoError::Success) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in directory iteration at " << Utility::formatIoError(entry.path(), ioError));
-    }
 
     ExitInfo res = ExitCode::Ok;
     switch (ioError) {
@@ -866,9 +863,11 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             break;
     }
 
-    _syncPal->addError(Error(_syncPal->syncDbId(), "", "", itemType.nodeType,
-                             CommonUtility::relativePath(_syncPal->localPath(), entry.path()), ConflictType::None,
-                             InconsistencyType::None, CancelType::None, "", res.code(), res.cause()));
+    if (!res) {
+        _syncPal->addError(Error(_syncPal->syncDbId(), "", "", itemType.nodeType,
+                                 CommonUtility::relativePath(_syncPal->localPath(), entry.path()), ConflictType::None,
+                                 InconsistencyType::None, CancelType::None, "", res.code(), res.cause()));
+    }
     return res;
 }
 
