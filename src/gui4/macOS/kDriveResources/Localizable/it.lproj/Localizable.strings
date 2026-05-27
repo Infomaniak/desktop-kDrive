@@ -61,8 +61,10 @@
 
 /* loco:698af4376b386d18b9037522 */
 "appUpToDate" = "L’applicazione è aggiornata";
+
 /* loco:698b36f2eb276c03d00e7c07 */
 "autoCleanupLogsDescription" = "Elimina i log più vecchi di 7 giorni per risparmiare spazio su disco.";
+
 /* loco:698b36d9eb276c03d00e7c03 */
 "autoCleanupLogsSetting" = "Pulizia automatica";
 
@@ -146,6 +148,7 @@
 
 /* loco:697a2658a44fbad34f011962 */
 "buttonManage" = "Gestire";
+
 /* loco:698b3ab789def0ffdd073952 */
 "buttonOpenDebugFolder" = "Apri cartella debug";
 
@@ -178,6 +181,7 @@
 
 /* loco:69c106a55fd64fd95c00ef42 */
 "buttonReturnToDefaultFolder" = "Ritorno alla cartella predefinita";
+
 /* loco:6989c90fad75adcb2e05c302 */
 "buttonSave" = "Salva";
 
@@ -189,8 +193,10 @@
 
 /* loco:698c5cb5f86b52c6fc001fc4 */
 "buttonSelectFolders" = "Selezionare le cartelle";
+
 /* loco:6989f2b84f80e68db204aa55 */
 "buttonSend" = "Invia";
+
 /* loco:6989e1e13690f28b9e0c8b92 */
 "buttonSendLog" = "Invia cartella debug";
 
@@ -235,15 +241,18 @@
 
 /* loco:698b164a5f781b3d5203de12 */
 "dataManagementSubtitle" = "Infomaniak rispetta la tua privacy";
+
 /* loco:698b3a87553e334c1009a7e4 */
 "debugLevelDescription" = "Seleziona la quantità di informazioni da registrare.";
+
 /* loco:698b3a4d553e334c1009a7e2 */
 "debugLevelSetting" = "Livello di debug";
+
 /* loco:698b35cccaddc9598c08a6c2 */
 "debugLogsDescription" = "Consente al supporto Infomaniak di identificare la causa di un incidente.";
+
 /* loco:698b35a408fd1ee25f08ab35 */
 "debugLogsSettings" = "Log di debug";
-
 
 /* loco:698c6bbd94b70c0d3d09cde4 */
 "dialogRemoveAccountContent" = "Si disconnette %@ dall'applicazione.\n\nLa cartella di sincronizzazione rimarrà sul computer, ma non sarà più sincronizzata con kDrive.\n\nTutti i dati rimarranno accessibili online su kDrive.";
@@ -295,8 +304,10 @@
 
 /* loco:6979e389195e90fdc909d252 */
 "driveWakingUpErrorTitle" = "Risveglio del kDrive in corso";
+
 /* loco:698b3654af04fbae590cbf82 */
 "enableDebugLogDescription" = "Registra informazioni diagnostiche sul mio computer.";
+
 /* loco:698b361c54ac23ef050755a2 */
 "enableDebugLogsSetting" = "Abilita log di debug";
 
@@ -305,15 +316,19 @@
 
 /* loco:69aa7fb3753c400c81087842 */
 "errorDeletingAccount" = "Si è verificato un errore durante la cancellazione dell'account.";
+
 /* loco:69afcc9e14a34ba0f30ee2a2 */
 "errorStartingInstaller" = "Errore durante il tentativo di avviare il programma di installazione";
 
 /* loco:69b3e9128555b02b5001ee42 */
 "errorWhileChangingSynchroMode" = "Errore durante la modifica della modalità di sincronizzazione";
+
 /* loco:698b37a3ff1c8782250e1a74 */
 "extendedLogDescription" = "Abilita la raccolta di informazioni aggiuntive utili per il supporto.";
+
 /* loco:698b3778571c7248480ed4c2 */
 "extendedLogSetting" = "Log dettagliato esteso";
+
 /* loco:698b37efff1c8782250e1a76 */
 "extendedLogWarning" = "Quando questa opzione è abilitata, kDrive funziona più lentamente.";
 
@@ -352,6 +367,7 @@
 
 /* loco:6964f0b575a31a8d9601a6d7 */
 "helpKDriveName" = "kDrive %@";
+
 /* loco:6989e175cdee4aba850e89b2 */
 "infomaniakSupport" = "Supporto Infomaniak";
 
@@ -450,26 +466,34 @@
 
 /* loco:698b0dd551a7a263e6030a72 */
 "languageSetting" = "Lingua";
+
 /* loco:698b02fbc4b83479960bbf92 */
 "largeFolderRecommendation" = "La cartella completa è grande.\nPer velocizzare il caricamento, ti consigliamo di inviare solo l'ultima sessione kDrive.";
 
 /* loco:698a1276e1c66ed33b03bf32 */
 "linkCopiedToClipboardTitle" = "Link copiato negli appunti";
+
 /* loco:698b392cacfe189ede0cf082 */
 "logLevelDebug" = "Debug";
+
 /* loco:698b3972f0be39d922008ec3 */
 "logLevelError" = "Errore";
+
 /* loco:698b3982f6e48fd003019f52 */
 "logLevelFatal" = "Fatale";
+
 /* loco:698b393d2a881def5c0fe142 */
 "logLevelInfo" = "Info";
+
 /* loco:698b394a2a881def5c0fe144 */
 "logLevelWarning" = "Avviso";
+
 /* loco:6989f263fe556601b70fe7a2 */
 "logUploadPopupTitle" = "Invia cartella debug al supporto Infomaniak";
 
 /* loco:698b2e50ea6bcf51bf026fc2 */
 "matomoDescription" = "Matomo è uno strumento di analisi ospitato e gestito esclusivamente da Infomaniak per comprendere come viene utilizzata l’applicazione.\n\nL’analisi di questi dati consente al nostro team di migliorare continuamente l’interfaccia dell’applicazione.";
+
 /* loco:698b11f969e305d1ce01e062 */
 "moveDeletedFilesToRecycleBinSetting" = "Spostare i file eliminati nel cestino del computer";
 
@@ -478,8 +502,10 @@
 
 /* loco:6992e9f20953b626df05ffc2 */
 "needHelpSetting" = "Avete bisogno di aiuto?";
+
 /* loco:69ce15f8ac7c0ee6d7099c02 */
 "networkSettings" = "Network";
+
 /* loco:6992de465798e1839302bbc2 */
 "noAccountConnected" = "Aggiungi un account per iniziare";
 
@@ -587,25 +613,35 @@
 
 /* loco:698b0ee1587496f4f5035cd2 */
 "openKDriveAtStartupSetting" = "Aprire kDrive all’avvio del computer";
+
 /* loco:698b2ef3d4aa9d35260e3484 */
 "proxyConnectionDescription" = "Definisci come kDrive si connette a internet.";
+
 /* loco:698b3452210436b0e501a3a2 */
 "proxyHost" = "Server";
+
 /* loco:698b347b1d024ca9f20d69a2 */
 "proxyNeedAuth" = "Autenticazione richiesta";
+
 /* loco:698b349f7ad01ee67e0d5f92 */
 "proxyPassword" = "Password";
+
 /* loco:698b345c116156e70a073a42 */
 "proxyPort" = "Porta";
+
 /* loco:698b2e7edcb5f5b87b0d29e2
  * Title of the proxy settings section in advanced settings. */
 "proxySettings" = "Impostazioni proxy";
+
 /* loco:698b2ff2aa06201dc403c422 */
 "proxyType" = "Tipo di proxy";
+
 /* loco:698b2f2e89df53c9e4039b02 */
 "proxyTypeHTTP" = "Configurazione manuale";
+
 /* loco:698b2f80dac62f80330a2412 */
 "proxyTypeNone" = "Nessuno";
+
 /* loco:698b34ab7ad01ee67e0d5f94 */
 "proxyUser" = "Nome utente";
 
@@ -634,6 +670,7 @@
 
 /* loco:698b2df25c57be025b0ecfd2 */
 "sentryDescription" = "Sentry è uno strumento ospitato e gestito esclusivamente da Infomaniak per monitorare la stabilità dell’applicazione in tempo reale e segnalare automaticamente eventuali errori tecnici ai nostri sviluppatori.\n\nQuesti dati consentono al nostro team di correggere e ottimizzare rapidamente l’applicazione, garantendoti un’esperienza utente migliore.";
+
 /* loco:68cd386502633dee14000352 */
 "sidebarItemAccounts" = "Conti";
 
