@@ -20,11 +20,21 @@
 #include "libcommonserver/utility/jsonparserutility.h"
 
 #include <Poco/Net/HTTPRequest.h>
+#include <log4cplus/loggingmacros.h>
 
 namespace KDC {
 
-CheckHashMatchJob::CheckHashMatchJob(const DriveDbId driveDbId, const SyncPath &filepath, const NodeId &nodeId, int64_t localsize,
-                                     int64_t remotesize) :
+CheckHashMatchJob::CheckHashMatchJob(const DriveDbId driveDbId, const SyncPath &filepath, const NodeId &nodeId, const int64_t remotesize) :
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
+    _filePath(filepath),
+    _nodeId(nodeId),
+    _localSize(0),
+    _remoteSize(remotesize) {
+    _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
+}
+
+CheckHashMatchJob::CheckHashMatchJob(const DriveDbId driveDbId, const SyncPath &filepath, const NodeId &nodeId,
+                                     const int64_t localsize, const int64_t remotesize) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
     _filePath(filepath),
     _nodeId(nodeId),
@@ -33,7 +43,39 @@ CheckHashMatchJob::CheckHashMatchJob(const DriveDbId driveDbId, const SyncPath &
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
+ExitInfo CheckHashMatchJob::getFileSize(const SyncPath &path, int64_t &size) {
+    IoError ioError = IoError::Unknown;
+    uint64_t tmpSize = 0;
+    if (!IoHelper::getFileSize(path, tmpSize, ioError)) {
+        LOGW_WARN(_logger, L"Error in IoHelper::getFileSize for " << Utility::formatIoError(path, ioError));
+        return ExitCode::SystemError;
+    }
+    size = static_cast<int64_t>(tmpSize);
+
+    if (ioError == IoError::NoSuchFileOrDirectory) { // The synchronization will
+                                                     // be re-started.
+        LOGW_WARN(_logger, L"File doesn't exist: " << Utility::formatSyncPath(path));
+        return ExitCode::DataError;
+    }
+
+    if (ioError == IoError::AccessDenied) { // An action from the user is requested.
+        LOGW_WARN(_logger, L"File search permission missing: " << Utility::formatSyncPath(path));
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
+    }
+
+    assert(ioError == IoError::Success);
+    if (ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Unable to read file size for " << Utility::formatSyncPath(path));
+        return ExitCode::SystemError;
+    }
+
+    return ExitCode::Ok;
+}
+
 ExitInfo CheckHashMatchJob::runJob() noexcept {
+    if (!_localSize)
+        if (const ExitInfo exitInfo = getFileSize(_filePath, _localSize); !exitInfo) return exitInfo;
+
     if (_localSize != _remoteSize) return ExitCode::Ok;
 
     if (const ExitInfo exitInfo = AbstractTokenNetworkJob::runJob(); !exitInfo) {
