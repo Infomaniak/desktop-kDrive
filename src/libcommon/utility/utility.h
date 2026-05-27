@@ -517,7 +517,7 @@ struct COMMON_EXPORT CommonUtility {
         static ExitInfo logDirectoryPath(SyncPath &directoryPath) noexcept;
 
         static ExitInfo stdErrorToExitInfo(int64_t error) noexcept;
-        static ExitInfo stdErrorToExitInfo(const std::error_code &ec) noexcept { return stdErrorToExitInfo(ec.value()); }
+        static ExitInfo stdErrorToExitInfo(const std::error_code &ec) noexcept;
 
     private:
         static std::mutex _generateRandomStringMutex;

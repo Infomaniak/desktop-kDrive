@@ -1571,4 +1571,15 @@ ExitInfo CommonUtility::stdErrorToExitInfo(const int64_t error) noexcept {
     }
 }
 
+ExitInfo CommonUtility::stdErrorToExitInfo(const std::error_code &ec) noexcept {
+    if (!ec) {
+        return stdErrorToExitInfo(0);
+    }
+    const std::error_condition defaultCondition = ec.default_error_condition();
+    if (defaultCondition) {
+        return stdErrorToExitInfo(defaultCondition.value());
+    }
+    return stdErrorToExitInfo(ec.value());
+}
+
 } // namespace KDC
