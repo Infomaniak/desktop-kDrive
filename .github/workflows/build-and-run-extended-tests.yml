@@ -57,10 +57,10 @@ jobs:
 
       - name: Import Windows certificate
         env:
-          WINDOWS_DEBUG_CERT: ${{ secrets.WINDOWS_DEBUG_CERT }}
+          WINDOWS_DEBUG_CERT_FILE_B64: ${{ secrets.WINDOWS_DEBUG_CERT_FILE_B64 }}
         run: |
             New-Item -ItemType directory -Path certificate
-            Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_DEBUG_CERT
+            Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_DEBUG_CERT_FILE_B64
             certutil -decode certificate/tempCert.txt certificate/debug_certificate.pfx
             Remove-Item -path certificate -include tempCert.txt
             Import-PfxCertificate -FilePath certificate/debug_certificate.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String "${{ secrets.WINDOWS_DEBUG_CERT_PASSWORD }}" -Force -AsPlainText)
