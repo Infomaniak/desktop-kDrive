@@ -511,7 +511,7 @@ struct COMMON_EXPORT CommonUtility {
 
         //! Returns the log directory path of the application.
         /*!
-         \param directoryPath is set with the path of to the log directory of the application. Empty if there is an error.
+         \param directoryPath is set with the path to the log directory of the application. Empty if there is an error.
          \return An ExitInfo representing the return value of the underlying OS API call.
          */
         static ExitInfo logDirectoryPath(SyncPath &directoryPath) noexcept;

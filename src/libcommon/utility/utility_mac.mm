@@ -153,7 +153,7 @@ ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
 
     directoryPath = SyncPath([url.path UTF8String]);
     directoryPath /= "Logs";
-    directoryPath /= APPLICATION_NAME;
+    directoryPath /= APPLICATION_NAME; // On macOS, logs in "Logs" folder are stored in a subfolder named after the application
 
     return ExitCode::Ok;
 }
