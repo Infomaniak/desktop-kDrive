@@ -17,6 +17,7 @@
  */
 
 import kDriveCoreUI
+import kDriveResources
 import SwiftUI
 
 struct ErrorsView: View {
@@ -30,12 +31,28 @@ struct ErrorsView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: AppPadding.padding32) {
-                ErrorsHeaderView(synchroDbId: mainViewModel.currentSynchro?.dbId, errorsCount: errorsCount)
+            if errorCount == 0 {
+                IKContentUnavailableView(
+                    image: KDriveResources.mountainsTreesSun.swiftUIImage,
+                    title: "!Aucune activité récente",
+                    action: .init(
+                        title: "Voir les activités",
+                        action: navigateBackToActivities
+                    )
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .padding(AppPadding.page)
+            } else {
+                VStack(spacing: AppPadding.padding12) {
+                    ErrorsHeaderView(synchroDbId: mainViewModel.currentSynchro?.dbId, errorsCount: errorsCount)
+                        .padding([.horizontal, .top], AppPadding.page)
+                    ErrorsListView(errors: synchroErrors)
+                }
             }
-            .padding(AppPadding.page)
         }
     }
+
+    private func navigateBackToActivities() {}
 }
 
 #Preview {

@@ -16,31 +16,31 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Foundation
+import kDriveCore
+import kDriveCoreUI
+import SwiftUI
 
-public enum UISynchroErrorCategory: String, Identifiable, Sendable {
-    case systemAndPermissions
-    case conflicts
-    case filesToCheck
-    case synchronizationDirectories
-    case storage
+struct ErrorsListView: View {
+    let errors: [UISynchroErrorCategory: [SynchroError]]
 
-    public var id: String {
-        return rawValue
+    private var categories: [UISynchroErrorCategory] {
+        return Array(errors.keys)
     }
 
-    public var title: String {
-        switch self {
-        case .systemAndPermissions:
-            return "!Système et permissions"
-        case .conflicts:
-            return "!Conflits"
-        case .filesToCheck:
-            return "!Fichiers à vérifier"
-        case .synchronizationDirectories:
-            return "!Dossiers de synchronisation"
-        case .storage:
-            return "!Stockage"
+    var body: some View {
+        Form {
+            ForEach(categories) { category in
+                Section {
+                    Text("Hello")
+                } header: {
+                    Text(category.title)
+                }
+            }
         }
+        .groupedFormatStyle()
     }
+}
+
+#Preview {
+    ErrorsListView(errors: [:])
 }
