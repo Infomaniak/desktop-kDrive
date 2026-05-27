@@ -1201,10 +1201,11 @@ ExitCode ServerRequests::fixProxyConfig() {
 }
 
 bool ServerRequests::isDisplayableError(const Error &error) {
+    using enum ExitCode;
     switch (error.exitCode()) {
-        case ExitCode::UpdateRequired:
+        case UpdateRequired:
             return true;
-        case ExitCode::NetworkError: {
+        case NetworkError: {
             switch (error.exitCause()) {
                 // case ExitCause::NetworkTimeout:
                 case ExitCause::SocketsDefuncted:
@@ -1213,11 +1214,11 @@ bool ServerRequests::isDisplayableError(const Error &error) {
                     return false;
             }
         }
-        case ExitCode::InvalidOperation:
-        case ExitCode::LogicError: {
+        case InvalidOperation:
+        case LogicError: {
             return true;
         }
-        case ExitCode::DataError: {
+        case DataError: {
             switch (error.exitCause()) {
                 case ExitCause::MigrationError:
                 case ExitCause::MigrationProxyNotImplemented:
@@ -1227,7 +1228,7 @@ bool ServerRequests::isDisplayableError(const Error &error) {
                     return false;
             }
         }
-        case ExitCode::BackError: {
+        case BackError: {
             switch (error.exitCause()) {
                 case ExitCause::DriveMaintenance:
                 case ExitCause::DriveNotRenew:
@@ -1245,14 +1246,14 @@ bool ServerRequests::isDisplayableError(const Error &error) {
                     return false;
             }
         }
-        case ExitCode::SystemError:
+        case SystemError:
             // LFSO already emit a node level error, so we don't want to emit another one from SyncPal level
             return (error.level() != ErrorLevel::SyncPal || error.workerName() != "LFSO" ||
                     (error.exitCause() != ExitCause::FileAccessError &&
                      error.exitCause() != ExitCause::FileOrDirectoryCorrupted));
-        case ExitCode::RateLimited:
+        case RateLimited:
             return false;
-        case ExitCode::Unknown: {
+        case Unknown: {
             return error.inconsistencyType() != InconsistencyType::PathLength;
         }
         default:
