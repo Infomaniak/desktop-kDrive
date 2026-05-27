@@ -324,7 +324,8 @@ ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, SyncConfigu
 
     // Check if the path is the root of a drive, which is not allowed for sync*
     if (CommonUtility::isDiskRootFolder(path)) {
-        LOGW_INFO(Log::instance()->getLogger(), L"Path is the root of a drive, which is not allowed for sync: " << Utility::formatSyncPath(path));
+        LOGW_INFO(Log::instance()->getLogger(),
+                  L"Path is the root of a drive, which is not allowed for sync: " << Utility::formatSyncPath(path));
         return ExitCode::Ok;
     }
 
@@ -1244,6 +1245,8 @@ bool ServerRequests::isDisplayableError(const Error &error) {
                     return false;
             }
         }
+        case ExitCode::SystemError:
+            return error.exitCause() != ExitCause::FileAccessError || error.level() != ErrorLevel::SyncPal;
         case ExitCode::RateLimited:
             return false;
         case ExitCode::Unknown: {
