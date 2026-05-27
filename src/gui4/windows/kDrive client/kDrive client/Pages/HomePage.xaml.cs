@@ -183,5 +183,11 @@ namespace Infomaniak.kDrive.Pages
             _analyticsService.TrackClick(Analytics.Keys.Category.HomePage, Analytics.Keys.EventName.OpenSignInWeb);
             (App.Current as App)?.StartOnboarding();
         }
+
+        private async void SyncUpToDateMainTemplateAnimatedVisualPlayer_Loaded(object sender, RoutedEventArgs e)
+        {
+            if(sender is AnimatedVisualPlayer player)
+                await player.PlayAsync(0.0, 1.0, false);
+        }
     }
 }

@@ -50,9 +50,10 @@
                 </Grid.RowDefinitions>
 
                 <AnimatedVisualPlayer Grid.Row="0"
-                                      AutoPlay="True"
-                                      MaxWidth="180">
-                    <animatedvisuals:KDrive_SyncCheck Color_446EDD="{kDrive:ThemeColor Key=SystemFillColorAttentionBrush}"/>
+                                      AutoPlay="False"
+                                      MaxWidth="180"
+                                      Loaded="SyncUpToDateMainTemplateAnimatedVisualPlayer_Loaded">
+                    <animatedvisuals:KDrive_Check Color_446EDD="{kDrive:ThemeColor Key=SystemFillColorAttentionBrush}"/>
                 </AnimatedVisualPlayer>
 
                 <StackPanel Grid.Row="1"

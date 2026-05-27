@@ -9,7 +9,7 @@
 //           LottieGen -GenerateColorBindings -GenerateDependencyObject -Language CSharp -Public -WinUIVersion 3.0 -InputFile kDrive-SyncroFile.json
 //       
 //       Input file:
-//           kDrive-SyncroFile.json (76548 bytes created 8:53+02:00 May 27 2026)
+//           kDrive-SyncroFile.json (76548 bytes created 14:58+02:00 May 27 2026)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
