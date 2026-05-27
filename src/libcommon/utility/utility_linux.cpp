@@ -18,6 +18,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <vector>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/vfs.h>
@@ -29,13 +30,24 @@
 
 namespace KDC {
 
-SyncPath CommonUtility::getGenericAppSupportDir() {
-    const char *homeDir;
-    if ((homeDir = getenv("HOME")) == NULL) {
-        homeDir = getpwuid(getuid())->pw_dir;
+static std::string getHomeDirFromPasswd() {
+    struct passwd pwd;
+    struct passwd *result = nullptr;
+    long bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
+    if (bufsize == -1) bufsize = 16384;
+    std::vector<char> buf(static_cast<size_t>(bufsize));
+    if (getpwuid_r(getuid(), &pwd, buf.data(), buf.size(), &result) == 0 && result != nullptr) {
+        return std::string(result->pw_dir);
     }
-    SyncPath homePath(homeDir);
+    return {};
+}
 
+SyncPath CommonUtility::getGenericAppSupportDir() {
+    auto homeDir = CommonUtility::envVarValue("HOME");
+    if (homeDir.empty()) homeDir = getHomeDirFromPasswd();
+    if (homeDir.empty()) return {};
+
+    SyncPath homePath(homeDir);
     std::string appSupportName(".config");
     SyncPath appSupportPath(homePath / appSupportName);
 
@@ -173,17 +185,13 @@ std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {
 
 ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
     // XDG Base Directory Specification: use $XDG_STATE_HOME, fallback to ~/.local/state
-    const char *xdgStateHome = getenv("XDG_STATE_HOME");
-    if (xdgStateHome && *xdgStateHome != '\0') {
+    const auto xdgStateHome = envVarValue("XDG_STATE_HOME");
+    if (!xdgStateHome.empty()) {
         directoryPath = SyncPath(xdgStateHome);
     } else {
-        const char *homeDir = getenv("HOME");
-        if (!homeDir || *homeDir == '\0') {
-            homeDir = getpwuid(getuid())->pw_dir;
-        }
-        if (!homeDir || *homeDir == '\0') {
-            return {ExitCode::SystemError, ExitCause::NotFound};
-        }
+        auto homeDir = envVarValue("HOME");
+        if (homeDir.empty()) homeDir = getHomeDirFromPasswd();
+        if (homeDir.empty()) return {ExitCode::SystemError, ExitCause::NotFound};
         directoryPath = SyncPath(homeDir) / ".local" / "state";
     }
 
@@ -193,11 +201,11 @@ ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
     std::error_code ec;
     if (!std::filesystem::exists(directoryPath, ec)) {
         if (ec.value() != 0) {
-            return CommonUtility::stdErrorToExitInfo(ec);
+            return stdErrorToExitInfo(ec);
         }
 
         if (!std::filesystem::create_directories(directoryPath, ec)) {
-            return CommonUtility::stdErrorToExitInfo(ec);
+            return stdErrorToExitInfo(ec);
         }
     }
 
