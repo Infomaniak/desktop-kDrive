@@ -202,8 +202,6 @@ namespace Infomaniak.kDrive.Pages.Settings
                     Logger.Log(Logger.Level.Error, "Unable to find the SettingsExpander from sender.");
                     return;
                 }
-                senderExpander.Tag = _skipNextRefreshKey;
-                senderExpander.IsExpanded = true;
             }
             else
             {
@@ -213,13 +211,8 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private async void UserSettingsExpander_Expanded(object sender, EventArgs e)
         {
-            var control = sender as Control;
-            if (control?.Tag?.ToString() == _skipNextRefreshKey)
-            {
-                control.Tag = "";
+            if (!IsLoaded)
                 return;
-
-            }
 
             User? user = (sender as FrameworkElement)?.DataContext as User;
             if (user is null)
