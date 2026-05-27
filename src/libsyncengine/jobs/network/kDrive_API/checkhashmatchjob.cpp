@@ -89,6 +89,22 @@ ExitInfo CheckHashMatchJob::runJob() noexcept {
     IoError ioError = IoError::Unknown;
     _localHash = "xxh3:" + IoHelper::getFileChecksum(_filePath, ifs, ioError);
 
+    if (ioError == IoError::NoSuchFileOrDirectory) {
+        LOGW_WARN(_logger, L"File doesn't exist while computing checksum: " << Utility::formatSyncPath(_filePath));
+        return ExitCode::DataError;
+    }
+
+    if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(_logger, L"File read permission missing while computing checksum: " << Utility::formatSyncPath(_filePath));
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
+    }
+
+    assert(ioError == IoError::Success);
+    if (ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Unable to compute checksum for " << Utility::formatIoError(_filePath, ioError));
+        return ExitCode::SystemError;
+    }
+
     if (_localHash != _remoteHash) return ExitCode::Ok;
     _shouldDownload = false;
     return ExitCode::Ok;
