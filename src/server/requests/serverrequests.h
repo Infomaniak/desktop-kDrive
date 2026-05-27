@@ -75,7 +75,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode getPrivateLinkUrl(DriveDbId driveDbId, const QString &fileId, QString &linkUrl);
         static ExitCode getExclusionTemplateList(bool def, std::vector<ExclusionTemplateInfo> &list);
         static ExitCode getExclusionTemplateList(bool def, QList<ExclusionTemplateInfo> &list);
-        static ExitCode setUserExclusionTemplateList(const std::vector<ExclusionTemplateInfo> &list);
+        static ExitInfo setUserExclusionTemplateList(const std::vector<ExclusionTemplateInfo> &list);
         static ExitCode setExclusionAppList(const bool def, const std::vector<ExclusionAppInfo> &list);
         static ExitCode setUserExclusionTemplateList(const QList<ExclusionTemplateInfo> &list);
         static ExitCode getExclusionAppList(bool def, QList<ExclusionAppInfo> &list);

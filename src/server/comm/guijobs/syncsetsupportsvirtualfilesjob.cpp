@@ -17,6 +17,7 @@
  */
 
 #include "syncsetsupportsvirtualfilesjob.h"
+#include "useractionscopedlock.h"
 #include "appserver.h"
 
 #include "libcommon/utility/utility.h"
@@ -55,6 +56,19 @@ ExitInfo SyncSetSupportsVirtualFilesJob::deserializeInputParms() {
 }
 
 ExitInfo SyncSetSupportsVirtualFilesJob::process() {
+    std::shared_ptr<SyncPal> syncPal;
+    if (ExitInfo exitInfo = getSyncPal(_syncDbId, syncPal); !exitInfo) {
+        LOG_WARN(_logger, "Error in getSyncPal for syncDbId=" << _syncDbId << " : " << exitInfo);
+        return exitInfo;
+    }
+
+    UserActionScopedLock lock;
+    if (syncPal != nullptr && !lock.tryLock(syncPal, std::chrono::milliseconds(1000))) {
+        LOG_WARN(_logger, "Could not acquire user action lock for syncDbId="
+                                  << _syncDbId << ". Another user action is running. Aborting SyncSetSupportsVirtualFilesJob.");
+        return ExitCode::OperationCanceled;
+    }
+
     if (const auto exitInfo = _commManager->appServer().setSupportsVirtualFiles(_syncDbId, _value); !exitInfo) {
         LOG_WARN(_logger, "Error in setSupportsVirtualFiles for syncDbId=" << _syncDbId);
 
