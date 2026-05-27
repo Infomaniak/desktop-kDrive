@@ -16,33 +16,14 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import kDriveCore
-import kDriveCoreUI
 import SwiftUI
 
-struct ErrorsListView: View {
-    let errors: [UISynchroErrorCategory: [SynchroError]]
-
-    private var categories: [UISynchroErrorCategory] {
-        return Array(errors.keys)
-    }
-
+struct ErrorCellView: View {
     var body: some View {
-        Form {
-            ForEach(categories) { category in
-                Section {
-                    ForEach(errors[category, default: []], id: \.kind) { _ in
-                        ErrorCellView()
-                    }
-                } header: {
-                    Text(category.title)
-                }
-            }
-        }
-        .groupedFormatStyle()
+        Text("Hello, World!")
     }
 }
 
 #Preview {
-    ErrorsListView(errors: [:])
+    ErrorCellView()
 }
