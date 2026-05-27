@@ -58,7 +58,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             {
                 control.IsEnabled = false;
 
-                await Windows.System.Launcher.LaunchUriAsync(App.Constants.kSuite.HomeUri);
+                await Localizer.Instance.TryLaunchUriAsync("kSuiteOfferUrl");
                 Logger.Log(Logger.Level.Debug, "Create account URL opened");
 
                 await Task.Delay(2000);
