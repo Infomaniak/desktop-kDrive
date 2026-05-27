@@ -831,6 +831,12 @@ std::wstring Utility::formatSyncPath(const SyncPath &path) {
     return ss.str();
 }
 
+std::wstring Utility::formatExitInfo(const SyncPath &path, const ExitInfo &exitInfo) {
+    std::wstringstream ss;
+    ss << L"path='" << Path2WStr(path) << L"' " << exitInfo;
+    return ss.str();
+}
+
 std::wstring Utility::formatPath(const QString &path) {
     std::wstringstream ss;
     ss << L"path='" << QStr2WStr(path) << L"'";

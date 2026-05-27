@@ -65,18 +65,13 @@ class Logger : public QObject {
         void setLogDebug(bool debug);
 
         /** Returns where the automatic logdir would be */
-        QString temporaryFolderLogDirPath() const;
+        QString logDirectoryPath() const { return _logDirectoryPath; }
 
-        /** Sets up default dir log setup.
-         *
-         * logdir: a temporary folder
-         * logdebug: true
-         *
-         */
-        void setupTemporaryFolderLogDir();
+        /** Sets up default dir log setup. */
+        void setupLogDir();
 
         /** For switching off via logwindow */
-        void disableTemporaryFolderLogDir();
+        void disableLog();
 
         int minLogLevel() const;
         void setMinLogLevel(int level);
@@ -107,8 +102,8 @@ class Logger : public QObject {
         bool _logDebug;
         QScopedPointer<QTextStream> _logstream;
         mutable QMutex _mutex;
-        QString _logDirectory;
-        bool _temporaryFolderLogDir = false;
+        QString _logDirectoryPath;
+        bool _logEnabled = false;
         int _minLogLevel;
         QTimer _watchLogSizeTimer;
         bool _isCLientLog = false;

@@ -235,6 +235,7 @@ struct COMMONSERVER_EXPORT Utility {
         static std::wstring quotedSyncName(const SyncName &name);
         static std::wstring formatSyncName(const SyncName &name);
         static std::wstring formatSyncPath(const SyncPath &path);
+        static std::wstring formatExitInfo(const SyncPath &path, const ExitInfo &exitInfo);
         static std::wstring formatPath(const QString &path);
         static std::wstring formatSystemError(const std::system_error &exception);
 

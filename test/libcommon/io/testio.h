@@ -36,8 +36,6 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testPermissionsGiver);
         CPPUNIT_TEST(testGetItemType);
         CPPUNIT_TEST(testGetFileSize);
-        CPPUNIT_TEST(testTempDirectoryPath);
-        CPPUNIT_TEST(testLogDirectoryPath);
         CPPUNIT_TEST(testCheckIfPathExists);
         CPPUNIT_TEST(testCheckIfIsDirectory);
         CPPUNIT_TEST(testCreateDirectory);
@@ -67,7 +65,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testGetShortPathName);
 #endif
         CPPUNIT_TEST(testCheckIfFileIsDehydrated);
-        CPPUNIT_TEST(testAccesDeniedOnLockedFiles);
+        CPPUNIT_TEST(testAccessDeniedOnLockedFiles);
         CPPUNIT_TEST(testOpenFileSuccess);
         CPPUNIT_TEST(testOpenFileAccessDenied);
         CPPUNIT_TEST(testOpenFileNonExisting);
@@ -86,8 +84,6 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
     protected:
         void testGetItemType(void);
         void testGetFileSize(void);
-        void testTempDirectoryPath(void);
-        void testLogDirectoryPath(void);
         void testGetNodeId(void);
         void testCheckDirectoryIterator(void);
         void testCheckIfPathExists(void);
@@ -141,7 +137,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         void testCheckDirectoryIteratorUnexpectedDelete();
         void testCheckDirectoryPermissionLost();
         void testCheckDirectoryIteratorSymlinkEntry();
-        void testAccesDeniedOnLockedFiles();
+        void testAccessDeniedOnLockedFiles();
         void testOpenFileSuccess();
         void testOpenFileAccessDenied();
         void testOpenFileNonExisting();

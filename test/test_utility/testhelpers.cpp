@@ -162,9 +162,8 @@ void createSymLinkLoop(const SyncPath &filepath1, const SyncPath &filepath2, con
 }
 
 void setupLogging() {
-    IoError ioError = IoError::Success;
     SyncPath logDirPath;
-    if (!IoHelper::logDirectoryPath(logDirPath, ioError)) {}
+    (void) CommonUtility::logDirectoryPath(logDirPath);
 
     // Setup log4cplus
     const std::filesystem::path logFilePath = logDirPath / Utility::logFileNameWithTime();

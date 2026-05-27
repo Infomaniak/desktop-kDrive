@@ -182,7 +182,7 @@ bool WindowsUpdater::getInstallerPath(SyncPath &path) const {
     const auto pos = url.find_last_of('/');
     const auto installerName = url.substr(pos + 1);
     SyncPath tmpDirPath;
-    if (IoError ioError = IoError::Unknown; !IoHelper::deviceTempDirectoryPath(tmpDirPath, ioError)) {
+    if (const auto exitInfo = CommonUtility::deviceTempDirectoryPath(tmpDirPath); !exitInfo) {
         sentry::Handler::captureMessage(sentry::Level::Warning, "WindowsUpdater::getInstallerPath",
                                         "Impossible to retrieve installer destination directory.");
         return false;
@@ -278,7 +278,7 @@ bool WindowsUpdater::verifyDigitalSignature(const SyncPath &filepath) {
 void WindowsUpdater::retryDownload(const SyncPath &filepath) {
     if (_autoUpdate) {
         LOGW_ERROR(Log::instance()->getLogger(),
-                  L"Already tried to re-download the installer at " + Utility::formatSyncPath(filepath) + L" before.");
+                   L"Already tried to re-download the installer at " + Utility::formatSyncPath(filepath) + L" before.");
         setState(UpdateState::UpdateError);
         _autoUpdate = false;
         return;

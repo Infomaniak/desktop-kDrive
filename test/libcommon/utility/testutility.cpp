@@ -1310,4 +1310,35 @@ void TestUtility::isLikeSomeError() {
     CPPUNIT_ASSERT(utility_base::isLikeFileNotFoundError(errorCode));
 }
 
+void TestUtility::testTempDirectoryPath() {
+    {
+        SyncPath tmpPath;
+        CPPUNIT_ASSERT(CommonUtility::deviceTempDirectoryPath(tmpPath));
+        CPPUNIT_ASSERT(!tmpPath.empty());
+    }
+
+    {
+        // Saves the current value of "KDRIVE_TMP_PATH".
+        const std::string previousPathString = CommonUtility::envVarValue("KDRIVE_TMP_PATH");
+
+        LocalTemporaryDirectory temporaryDirectory;
+        const auto pathStringToSet = Path2Str(SyncPath(temporaryDirectory.path() / "testTempDirectoryPath"));
+        (void) CommonUtility::setenv("KDRIVE_TMP_PATH", pathStringToSet.c_str(), 1);
+
+        SyncPath tmpPath;
+        CPPUNIT_ASSERT(CommonUtility::deviceTempDirectoryPath(tmpPath));
+        CPPUNIT_ASSERT_EQUAL(temporaryDirectory.path() / "testTempDirectoryPath", tmpPath);
+        CPPUNIT_ASSERT(std::filesystem::exists(tmpPath));
+
+        // Restores previous value.
+        (void) CommonUtility::setenv("KDRIVE_TMP_PATH", previousPathString.c_str(), 1);
+    }
+}
+
+void TestUtility::testLogDirectoryPath() {
+    SyncPath logDirPath;
+    CPPUNIT_ASSERT(CommonUtility::logDirectoryPath(logDirPath));
+    CPPUNIT_ASSERT(!logDirPath.empty());
+}
+
 } // namespace KDC
