@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "syncdeletejob.h" 
+#include "syncdeletejob.h"
 #include "useractionscopedlock.h"
 #include "appserver.h"
 #include "requests/serverrequests.h"
@@ -56,8 +56,9 @@ ExitInfo SyncDeleteJob::serializeOutputParms() {
 ExitInfo SyncDeleteJob::process() {
     std::shared_ptr<SyncPal> syncPal;
     if (ExitInfo exitInfo = getSyncPal(_syncDbId, syncPal); !exitInfo) {
-        LOG_INFO(_logger, "Error in getSyncPal for syncDbId=" << _syncDbId << " : " << exitInfo,
-                 " This means that the syncPal is not running, which can be expected at this step.");
+        LOG_INFO(_logger, "Error in getSyncPal for syncDbId="
+                                  << _syncDbId << " : " << exitInfo
+                                  << " This means that the syncPal is not running, which can be expected at this step.");
     }
 
     UserActionScopedLock lock;
