@@ -81,6 +81,7 @@ set(syncengine_SRCS
     jobs/network/kDrive_API/getdriveslistjob.h jobs/network/kDrive_API/getdriveslistjob.cpp
     jobs/network/kDrive_API/getthumbnailjob.h jobs/network/kDrive_API/getthumbnailjob.cpp
     jobs/network/kDrive_API/postfilelinkjob.h jobs/network/kDrive_API/postfilelinkjob.cpp
+    jobs/network/kDrive_API/postfilemodificationdatejob.h "jobs/network/kDrive_API/postfilemodificationdatejob.cpp"
     jobs/network/kDrive_API/getfilelinkjob.h jobs/network/kDrive_API/getfilelinkjob.cpp
     jobs/network/kDrive_API/getsizejob.h jobs/network/kDrive_API/getsizejob.cpp
     jobs/network/kDrive_API/searchjob.h jobs/network/kDrive_API/searchjob.cpp
