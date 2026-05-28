@@ -59,7 +59,7 @@ ExitInfo CheckHashMatchJob::getFileSize(const SyncPath &path, int64_t &size) {
     if (ioError == IoError::NoSuchFileOrDirectory) { // The synchronization will
                                                      // be re-started.
         LOGW_WARN(_logger, L"File doesn't exist: " << Utility::formatSyncPath(path));
-        return ExitCode::DataError;
+        return {ExitCode::SystemError, ExitCause::NotFound};
     }
 
     if (ioError == IoError::AccessDenied) { // An action from the user is requested.
@@ -96,6 +96,11 @@ ExitInfo CheckHashMatchJob::runJob() noexcept {
 
     if (ioError == IoError::AccessDenied) {
         LOGW_WARN(_logger, L"File read permission missing while computing checksum: " << Utility::formatSyncPath(_filePath));
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
+    }
+
+    if (ioError == IoError::InvalidArgument) {
+        LOGW_WARN(_logger, L"File is a symlink: " << Utility::formatSyncPath(_filePath));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
