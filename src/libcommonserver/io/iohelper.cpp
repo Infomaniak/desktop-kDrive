@@ -785,24 +785,17 @@ IoError IoHelper::getFileChecksum(const SyncPath &path, std::ifstream &ifs, std:
         IoError openError = Success;
         if (!IoHelper::openFile(path, ifs, openError) || !ifs) return openError;
 
-        struct IfstreamCloser {
-            std::ifstream &stream;
-            explicit IfstreamCloser(std::ifstream &s) : stream(s) {}
-            IfstreamCloser(const IfstreamCloser &) = delete;
-            IfstreamCloser &operator=(const IfstreamCloser &) = delete;
-            ~IfstreamCloser() noexcept {
-                if (stream.is_open()) stream.close();
-            }
-        };
-        IfstreamCloser ifstreamCloser(ifs);
-
         constexpr size_t chunkSize = 8 * 1024 * 1024; // 8 MB
         std::vector<char> buffer(chunkSize);
 
         XXH3_state_t *state = XXH3_createState();
-        if (state == nullptr) return Unknown;
+        if (state == nullptr) {
+            ifs.close();
+            return Unknown;
+        }
 
         if (XXH3_64bits_reset(state) == XXH_ERROR) {
+            ifs.close();
             XXH3_freeState(state);
             return Unknown;
         }
@@ -810,16 +803,19 @@ IoError IoHelper::getFileChecksum(const SyncPath &path, std::ifstream &ifs, std:
         std::streamsize readBytes(0);
         while ((readBytes = ifs.read(buffer.data(), static_cast<std::streamsize>(buffer.size())).gcount()) > 0) {
             if (XXH3_64bits_update(state, buffer.data(), static_cast<size_t>(readBytes)) == XXH_ERROR) {
+                ifs.close();
                 XXH3_freeState(state);
                 return Unknown;
             }
         }
 
         if (ifs.bad()) {
+            ifs.close();
             XXH3_freeState(state);
             return Unknown;
         }
 
+        ifs.close();
         XXH64_hash_t hash = XXH3_64bits_digest(state);
         XXH3_freeState(state);
 
