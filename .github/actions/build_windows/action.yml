@@ -370,7 +370,7 @@ runs:
           $summary += $hash
           $summary += ""
 
-          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ($summary -join "\n")
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ($summary -join "`n")
 
           # Create .sha256 file next to installer
           $shaFile = "$($file.FullName).sha256"
