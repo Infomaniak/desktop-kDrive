@@ -169,26 +169,25 @@ function Get-Subject {
 
 function Get-Publisher-Hash {
     param (
-        [string] $publisher
+        [string] $publisherName
     )
 
-    # Compute SHA256 hash of the publisher string
-    $sha256 = [System.Security.Cryptography.SHA256]::Create()
-    $publisherBytes = [System.Text.Encoding]::Unicode.GetBytes($publisher)
-    $hashBytes = $sha256.ComputeHash($publisherBytes)
+    $publisherNameAsUnicode = [System.Text.Encoding]::Unicode.GetBytes($publisherName);
+    $publisherSha256 = [System.Security.Cryptography.HashAlgorithm]::Create("SHA256").ComputeHash($publisherNameAsUnicode);
+    $publisherSha256First8Bytes = $publisherSha256 | Select-Object -First 8;
+    $publisherSha256AsBinary = $publisherSha256First8Bytes | ForEach-Object { [System.Convert]::ToString($_, 2).PadLeft(8, '0') };
+    $asBinaryStringWithPadding = [System.String]::Concat($publisherSha256AsBinary).PadRight(65, '0');
 
-    # Take the first 8 bytes and convert to base32 (13 characters)
-    # Windows uses a specific base32 alphabet for package family names
-    $base32Alphabet = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
-    $hashValue = [System.BitConverter]::ToUInt64($hashBytes, 0)
+    $encodingTable = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 
-    $result = ""
-    for ($i = 0; $i -lt 13; $i++) {
-        $result = $base32Alphabet[[int]($hashValue -band 0x1F)] + $result
-        $hashValue = $hashValue -shr 5
+    $result = "";
+    for ($i = 0; $i -lt $asBinaryStringWithPadding.Length; $i += 5)
+    {
+        $asIndex = [System.Convert]::ToInt32($asBinaryStringWithPadding.Substring($i, 5), 2);
+        $result += $encodingTable[$asIndex];
     }
 
-    return $result.ToLower()
+    return $result.ToLower();
 }
 
 function Get-Aumid {
@@ -208,20 +207,8 @@ function Get-Aumid {
 
     Write-Host "Certificate subject: $subject"
 
-    # Extract the CN (Common Name) from the subject DN
-    # The subject format is typically: CN=..., O=..., etc.
-    if ($subject -match "CN=([^,]+)") {
-        $publisher = $matches[1]
-    } else {
-        Write-Host "Could not extract publisher (CN) from certificate subject.
-                   Exiting." -f Red
-        exit 1
-    }
-
-    Write-Host "Publisher: $publisher"
-
-    # Compute the publisher hash (AUMID suffix)
-    $aumid = Get-Publisher-Hash -Publisher $subject
+    # Compute the publisher hash (AUMID suffix) from the full subject DN
+    $aumid = Get-Publisher-Hash -PublisherName $subject
 
     Write-Host "Computed AUMID: $aumid"
 
