@@ -3,8 +3,8 @@
  * Project: kDrive Desktop
  * Locale: de, German
  * Tagged: macOS
- * Exported by: Killian Mathias
- * Exported at: Tue, 26 May 2026 11:05:08 +0200
+ * Exported by: Valentin Perignon
+ * Exported at: Tue, 02 Jun 2026 08:50:54 +0200
  */
 
 
@@ -79,6 +79,9 @@
 /* loco:69943068b17a2d5a500e16b2 */
 "availableOfflineDescription" = "Ihre Dateien werden auf Ihren Computer kopiert.\nSie können sie jederzeit öffnen, auch ohne Internetzugang.";
 
+/* loco:699db8a1a58425c60d06a902 */
+"backErrorDriveAsleepDescription" = "Sie können es über die Web-Oberfläche aktivieren.";
+
 /* loco:698af17b4dd554948901a8b2 */
 "betaProgramDescription" = "Erhalten Sie frühzeitigen Zugang zu neuen Versionen der Anwendung, bevor sie für die Allgemeinheit freigegeben werden, und helfen Sie uns, die Anwendung zu verbessern, indem Sie uns Ihre Ideen für Verbesserungen mitteilen.";
 
@@ -88,6 +91,9 @@
 /* loco:698af16617408ac0d8026b12 */
 "betaSettings" = "Beta-Programm";
 
+/* loco:69c11aacce7b3b9139008044 */
+"buttonActivateOfflineSync" = "Offline-Synchronisierung aktivieren";
+
 /* loco:698b580c716d616edb0efde2 */
 "buttonAddFileExclusionRule" = "Eine Regel hinzufügen";
 
@@ -96,6 +102,9 @@
 
 /* loco:691deb2291b20ac7fd045012 */
 "buttonAdvancedParameters" = "Erweiterte Einstellungen";
+
+/* loco:69bd7281cd515cd190042de2 */
+"buttonAskForAccess" = "Zugriff anfragen";
 
 /* loco:6989c98657a76723c20d0e92 */
 "buttonCancel" = "Abbrechen";
@@ -109,8 +118,14 @@
 /* loco:698c5e4ec95ac47af70ec115 */
 "buttonConfigure" = "Konfigurieren Sie";
 
+/* loco:698af6e7b8da51abf504d482 */
+"buttonConfirm" = "Bestätigen";
+
 /* loco:698b1376f55227e2c30a2fe4 */
 "buttonConnectAccount" = "Ein Konto verbinden";
+
+/* loco:6a1e7c41bd3ff43c8d05a542 */
+"buttonContactSupport" = "Support kontaktieren";
 
 /* loco:691deb0be15255c13908ba42 */
 "buttonContinue" = "Weiter";
@@ -126,6 +141,9 @@
 
 /* loco:698b0aefb16a3916fc004f32 */
 "buttonEnable" = "Aktivieren Sie";
+
+/* loco:699ef0304ba9f8b4d4046cb4 */
+"buttonErrorResolutionTip" = "Das Problem verstehen";
 
 /* loco:6992eca9a8cb168fe70c0922 */
 "buttonFeedback" = "Eine Idee teilen";
@@ -157,8 +175,20 @@
 /* loco:697a2658a44fbad34f011962 */
 "buttonManage" = "Verwalten";
 
+/* loco:699c5de6289e5ec7bf009722 */
+"buttonManageDiskSpace" = "Speicherplatz verwalten";
+
+/* loco:69aad5b46c5c742d75057663 */
+"buttonManageIndividually" = "Dateien einzeln verwalten";
+
+/* loco:69c120cf7ef61aa7d5019a33 */
+"buttonManageStorage" = "Speicher verwalten";
+
 /* loco:698b3ab789def0ffdd073952 */
 "buttonOpenDebugFolder" = "Debug-Ordner öffnen";
+
+/* loco:69c0f107d389e919d90b8280 */
+"buttonOpenFolder" = "Ordner öffnen";
 
 /* loco:68b04d823f2b735c170caea2 */
 "buttonOpenInBrowser" = "Im Browser öffnen";
@@ -168,6 +198,12 @@
 
 /* loco:6931a5687031691272002314 */
 "buttonOpenKDrive" = "KDrive öffnen";
+
+/* loco:6995ec42567e96a27b08a0f2 */
+"buttonOpenParentFolder" = "Übergeordneten Ordner öffnen";
+
+/* loco:699c79a3de97a50065067d72 */
+"buttonOpenSyncExclusionRules" = "Ausschlüsse verwalten";
 
 /* loco:69a7ed0ecbb2fb59660bfa12 */
 "buttonPause" = "Pause";
@@ -180,6 +216,12 @@
 
 /* loco:698b07467beec481020cef52 */
 "buttonRemoveSync" = "Synchronisierung entfernen";
+
+/* loco:69bd1fa570d32107fa0f0163 */
+"buttonRenameItem" = "%@ umbenennen";
+
+/* loco:69a04f0d2417523ff30850b2 */
+"buttonRestartSync" = "Synchronisierung fortsetzen";
 
 /* loco:6964e1fd78f375ec03073c88 */
 "buttonRestartSynchro" = "Synchronisierung neu starten";
@@ -220,8 +262,14 @@
 /* loco:69a7ecff1619fbbe5a0c75b3 */
 "buttonStart" = "Start";
 
+/* loco:69aae9bfc9000e66e10bb5c2 */
+"buttonStartConflictsResolution" = "Versionsauswahl starten";
+
 /* loco:69240f6d4433e24658054fd4 */
 "buttonStartForFree" = "Kostenlos anfangen";
+
+/* loco:69c11c88f553aeb0d204aa82 */
+"buttonSynchronizeOffline" = "Offline synchronisieren";
 
 /* loco:698aec47dbcc2bef330cf7a9 */
 "buttonUpdate" = "Update";
@@ -232,11 +280,26 @@
 /* loco:69a69d71b2261fc281078712 */
 "buttonValidate" = "Bestätigen";
 
+/* loco:69a69d809805f64236014d34 */
+"buttonValidateAndGoNext" = "Bestätigen und weiter";
+
 /* loco:697b65886840f9d35605a132 */
 "buttonWakeUp" = "Aufwachen";
 
 /* loco:69c0f0398ae1831b640e5a62 */
 "changeFolder" = "Ändern Sie den Ordner";
+
+/* loco:69a6aaafc13f93081e04db42 */
+"conflictErrorAction" = "Eine Version auswählen";
+
+/* loco:69a6a9cae09fee6611099002 */
+"conflictErrorDescription" = "Zwei verschiedene Versionen dieser Dateien wurden erkannt.";
+
+/* loco:69a6a9a346b023df2c088bf2 */
+"conflictErrorTitle" = "Versionskonflikte";
+
+/* loco:69aae8ecbd2a6e29890401b2 */
+"conflictsSearchBoxPlaceholder" = "Nach einer Datei suchen";
 
 /* loco:698b244d7e73966ce3096b02 */
 "copyingLink" = "Kopieren von Link…";
@@ -274,6 +337,21 @@
 /* loco:698c6c6e4f7e07503f0ba762 */
 "dialogNewExclusionRuleTitle" = "Eine Ausschlussregel hinzufügen";
 
+/* loco:699c52b6ec7d62ceec060242 */
+"defaultErrorDescription" = "Die Synchronisierung wird automatisch neu gestartet.\nWenn das Problem weiterhin besteht, wenden Sie sich an unseren Support und fügen Sie die nachstehenden technischen Details bei.";
+
+/* loco:699c52baf0c09a8cdb0b6f92 */
+"defaultErrorDetailsLabel" = "Technische Details";
+
+/* loco:699c52a6b2445603690d7062 */
+"defaultErrorTitle" = "Ein unerwarteter Fehler ist aufgetreten";
+
+/* loco:699c5deee592726401053956 */
+"deleteCancelErrorTitle" = "Löschvorgang abgebrochen";
+
+/* loco:69a066863a852bbb830bd326 */
+"dialogDataErrorSyncDirChangeDescription" = "In diesen Situationen ist eine neue Synchronisierung erforderlich, um kDrive korrekt weiter zu verwenden.";
+
 /* loco:698c6bbd94b70c0d3d09cde4 */
 "dialogRemoveAccountContent" = "Sie werden %@ von der Anwendung abmelden.\n\nDer Synchronisationsordner bleibt auf Ihrem Computer, wird aber nicht mehr mit kDrive synchronisiert.\n\nAlle Ihre Daten bleiben online auf kDrive zugänglich.";
 
@@ -285,6 +363,15 @@
 
 /* loco:698c7b5c30ae98f0e6043132 */
 "dialogSyncDeletionWarningTitle" = "Synchronisierung entfernen?";
+
+/* loco:699ffc60759bb427a3087a02 */
+"dialogSystemErrorSyncDirAccessErrorDescription" = "So stellen Sie die Synchronisierung wieder her:";
+
+/* loco:69a04c38b125963a990be812 */
+"dialogSystemErrorSyncDirDiskMissingErrorDescription" = "Das Laufwerk, das Ihren Synchronisierungsordner enthält, ist nicht mehr verbunden";
+
+/* loco:69a04d3d9f59db90d2034a02 */
+"dialogSystemErrorSyncDirDiskMissingErrorTip" = "Verbinden Sie es erneut, um die Synchronisierung fortzusetzen.";
 
 /* loco:698af1c80126fd2db302b783 */
 "doNotJoin" = "Nicht beitreten";
@@ -325,17 +412,232 @@
 /* loco:6979e389195e90fdc909d252 */
 "driveWakingUpErrorTitle" = "Aufwecken des kDrive läuft";
 
+/* loco:699c5de5e592726401053953 */
+"duplicateNamesErrorTitle" = "Doppelte Namen";
+
 /* loco:698b3654af04fbae590cbf82 */
 "enableDebugLogDescription" = "Diagnoseinformationen auf meinem Computer aufzeichnen.";
 
 /* loco:698b361c54ac23ef050755a2 */
 "enableDebugLogsSetting" = "Debug-Protokollierung aktivieren";
 
+/* loco:699c5e30252e8a13e30ccaa6 */
+"errCreateCancelDescription" = "Sie haben nicht die erforderlichen Berechtigungen, um %@ zu diesem Speicherort hinzuzufügen.\nFordern Sie den Zugriff beim Eigentümer oder Administrator an.";
+
+/* loco:699c5de63e952e3a3908b794 */
+"errDeleteCancelDescription" = "Sie haben keine Berechtigung, %@ zu löschen. Es wurde an seinen ursprünglichen Speicherort wiederhergestellt. Fordern Sie den Zugriff beim Eigentümer oder Administrator an.";
+
+/* loco:69a051ea38b756bc510d07b2 */
+"errDialogConfigChangedTitle" = "Eine Änderung in Ihrer Konfiguration wurde erkannt";
+
+/* loco:69c11647693dd774a40a7922 */
+"errDialogInvalidSyncSyncDirAccessDescription" = "In diesen Situationen kann eine neue Synchronisierung erforderlich sein, um kDrive korrekt weiter zu verwenden.";
+
+/* loco:6995ec41f214efe144009444 */
+"errDialogLocalFileAccessDescription" = "Die Zugriffsberechtigungen für %@ wurden geändert, was die Synchronisierung verhindert.";
+
+/* loco:6995ec4239c94dab2908c002 */
+"errDialogLocalFileAccessFaqLink" = "Überprüfen Sie %@, um den Zugriff wiederherzustellen";
+
+/* loco:6995ec41baed71172b0a6182 */
+"errDialogLocalFileAccessLocationLabel" = "Letzter Speicherort von %@:";
+
+/* loco:69a04b8fbd2b846c4c0dfa42 */
+"errDialogSystemSyncDirDiskMissingTitle" = "Externes Laufwerk getrennt";
+
+/* loco:69c11bf158364c02530e18a3 */
+"errDialogSystemUnableToStartVfsDescription" = "Dieser Vorgang kann je nach Datenmenge einige Zeit in Anspruch nehmen.\n\nSchliessen Sie die Anwendung während des Vorgangs nicht.\n\nWenn er fehlschlägt, können Sie einfach eine vollständige Neusynchronisierung des Laufwerks starten oder unseren Support kontaktieren.";
+
+/* loco:69c11b11df0a817d8a01a312 */
+"errDialogSystemUnableToStartVfsTitle" = "Offline-Synchronisierung aktivieren";
+
+/* loco:696a29351c25c87abb045892 */
+"errDriveMaintenanceDescription" = "Dieses kDrive ist vorübergehend aufgrund von Wartungsarbeiten nicht verfügbar.\nBitte versuchen Sie es in einigen Minuten erneut.";
+
+/* loco:696a2779d558c16f7d0a7ff9 */
+"errDriveMaintenanceTitle" = "Wartung in Bearbeitung";
+
+/* loco:699c5de55ac1efa46908d312 */
+"errDuplicateNamesDescription" = "Eine Datei oder ein Ordner mit diesem Namen existiert bereits.";
+
+/* loco:699c5de689c9f608fc070e32 */
+"errEditCancelDescription" = "Sie haben keine Rechte, diese Datei zu bearbeiten.\nDie Originalversion wurde beibehalten und Ihre Bearbeitung wurde in einer separaten Datei mit „Konflikt“ im Namen gespeichert. Fordern Sie den Zugriff beim Eigentümer oder Administrator an.";
+
+/* loco:699c5dfc89c9f608fc070e36 */
+"errEndWithSpaceDescription" = "Der Name dieses %@ endet mit einem Leerzeichen, was die Synchronisierung verhindert. Benennen Sie %@ über kDrive online um.";
+
+/* loco:699c5614411d7368440846f6 */
+"errEndWithSpaceTitle" = "Abschliessendes Leerzeichen im Namen von %@";
+
+/* loco:699c5de592db098f7b0fd183 */
+"errExcludedByTemplateDescription" = "Eine Ausschlussregel verhindert die Synchronisierung dieses %@.";
+
+/* loco:699c561e7c51c239760379d2 */
+"errExcludedByTemplateTitle" = "Von der Synchronisierung ausgeschlossen";
+
+/* loco:699c5df3d6fc7731d507e5e3 */
+"errFileExistsDescription" = "Eine Datei mit diesem Namen existiert bereits.";
+
+/* loco:699c5df6d6fc7731d507e5e5 */
+"errFileLockedDescription" = "Diese Datei wird derzeit von einem anderen Benutzer verwendet.\nIhre Änderungen werden später synchronisiert.";
+
+/* loco:699c5613411d7368440846f4 */
+"errFileLockedTitle" = "Datei gesperrt";
+
+/* loco:699c5de6b7e26cbaa70f2f62 */
+"errFileRescuedDescription" = "Diese Datei wurde auf kDrive online gelöscht, während Sie sie bearbeiteten. Eine Kopie wurde auf Ihrem Computer im Wiederherstellungsordner gespeichert.";
+
+/* loco:699c5615411d7368440846f8 */
+"errFileRescuedTitle" = "Datei gerettet";
+
+/* loco:699c74f5a495a84f970d7b72 */
+"errFileTooBigAdminDescription" = "Diese Datei überschreitet die maximal zulässige Grösse (50 GB).\nWenden Sie sich an den Support, um das Limit aufzuheben.";
+
+/* loco:699c5df989c9f608fc070e34 */
+"errFileTooBigDescription" = "Diese Datei überschreitet die maximal zulässige Grösse (50 GB).\nWenden Sie sich an Ihren Administrator, um das Dateigrössenlimit zu erhöhen.";
+
+/* loco:699dbc6b6214e7b523066c22 */
+"errFileTooBigTitle" = "Datei zu gross";
+
+"errForbiddenActionTitle" = "Zugriff verboten";
+
+/* loco:698c50d3ad9b9055a00cca42 */
+"errForbiddenCharDescription" = "Der Name dieses %@ enthält ein oder mehrere Zeichen, die von der kDrive Windows-Anwendung nicht unterstützt werden. Benennen Sie %@ über kDrive online um.";
+
+/* loco:699c5dff17e678a1990c53c4 */
+"errForbiddenCharOnlySpacesDescription" = "Dieser Name enthält nur Leerzeichen und kann nicht verwendet werden. Benennen Sie %@ über kDrive online um.";
+
+/* loco:699c562252bdaf14430f36e4 */
+"errForbiddenCharOnlySpacesTitle" = "Ungültiger Name";
+
+/* loco:698c50bd552fc86c5c043624 */
+"errForbiddenCharTitle" = "Nicht unterstütztes Zeichen";
+
+/* loco:69c12bf8540dd631890205a4 */
+"errGenericForbiddenDescription" = "Sie haben nicht die erforderlichen Berechtigungen, um diese Aktion auszuführen.\nFordern Sie den Zugriff beim Eigentümer oder Administrator an.";
+
+/* loco:69c12be5d526565a35067654 */
+"errGenericForbiddenTitle" = "Zugriff verboten";
+
+/* loco:699c5de53e952e3a3908b792 */
+"errHardlinkDescription" = "Diese Datei ist ein Hardlink, der nicht synchronisiert werden kann.";
+
+/* loco:699c56147f87ce6dc70c3e02 */
+"errHardlinkTitle" = "Nicht unterstützter Dateityp";
+
+/* loco:699dad0f767bc678ce0a7e62 */
+"errInvalidSyncSyncDirAccessDescription" = "Dieser Ordner ist an seinem ursprünglichen Speicherort nicht mehr zugänglich.";
+
+/* loco:699dacde9cc743edb40cc832 */
+"errInvalidSyncSyncDirAccessTitle" = "Synchronisierungsordner nicht gefunden";
+
+/* loco:699dadab7e62db51ff089bc4 */
+"errInvalidSyncSyncDirNestingDescription" = "Eines Ihrer kDrives wird innerhalb des Synchronisierungsordners eines anderen kDrive synchronisiert.\nVerschieben Sie einen der Ordner, damit sie nicht mehr verschachtelt sind, oder löschen Sie Ihre Synchronisierung, um sie neu zu erstellen.";
+
+/* loco:699dad8cada34c581005db42 */
+"errInvalidSyncSyncDirNestingTitle" = "Verschachtelte kDrives";
+
+/* loco:698c507a552fc86c5c043622 */
+"errLocalFileAccessDescription" = "Auf %@ kann auf Ihrem Computer nicht zugegriffen werden. Überprüfen Sie, ob es noch vorhanden ist und ob Sie die Rechte haben, darauf zuzugreifen.";
+
+/* loco:698c5065d2a68e9e0e01f7e5 */
+"errLocalFileAccessTitle" = "%@ nicht zugänglich";
+
+/* loco:699c5e029d64978ac00c7d12 */
+"errMoveCancelDescription" = "Sie haben keine Rechte, %@ hierhin zu verschieben; es wird an seinen ursprünglichen Speicherort wiederhergestellt. Fordern Sie den Zugriff beim Eigentümer oder Administrator an.";
+
+/* loco:699c5de73e952e3a3908b796 */
+"errNameLengthDescription" = "Dieser Name überschreitet die zulässige Länge (250 Zeichen). Benennen Sie %@ um.";
+
+/* loco:699c5629411d7368440846fa */
+"errNameLengthTitle" = "Name von %@ zu lang";
+
+/* loco:699daf73372e300aeb066ac3 */
+"errNetworkErrorOtherDescription" = "Verbindung zu kDrive nicht möglich.\nDie Synchronisierung wird automatisch fortgesetzt, sobald die Verbindung wiederhergestellt ist.";
+
+/* loco:699daf5b0ff22f32d50a7033 */
+"errNetworkErrorOtherTitle" = "Verbindung vorübergehend nicht verfügbar";
+
+/* loco:699c5e04289e5ec7bf009725 */
+"errNotEnoughDiskSpaceDescription" = "Auf Ihrem Computer ist nicht genügend Speicherplatz vorhanden, um diese Datei zu synchronisieren.";
+
+/* loco:699c562b1a58312b250e8e92 */
+"errNotEnoughDiskSpaceTitle" = "Unzureichender Speicherplatz";
+
+/* loco:699c5e073e952e3a3908b798 */
+"errNotYetSupportedCharDescription" = "Der Name dieser Datei enthält ein oder mehrere Zeichen, die von der kDrive-Anwendung noch nicht unterstützt werden. Benennen Sie die Datei über kDrive online um.";
+
+/* loco:699c562e1a58312b250e8e94 */
+"errNotYetSupportedCharTitle" = "Nicht unterstütztes Zeichen";
+
+/* loco:699c5615d46e9facca0bfdb2 */
+"errPathLengthDescription" = "Der Pfad zu diesem %@ ist zu lang, um synchronisiert zu werden. Benennen Sie einen oder mehrere Ordner, in denen es sich befindet, um den Pfad zu verkürzen.";
+
+/* loco:699c5613f3c45c54e50247f3 */
+"errPathLengthTitle" = "Pfad zu %@ zu lang";
+
+/* loco:699c56ad13d88a808b01e104 */
+"errQuotaExceededDescription" = "Ihr kDrive ist voll. Geben Sie Speicherplatz frei oder upgraden Sie Ihr Abonnement, um %@ zu synchronisieren.";
+
+/* loco:699c56a42dfefb66850e69d2 */
+"errQuotaExceededTitle" = "Speicherlimit erreicht";
+
+/* loco:699c56b32dfefb66850e69d4 */
+"errReservedNameDescription" = "Dieser Name ist vom System Ihres Computers reserviert. Benennen Sie %@ über kDrive online um.";
+
+/* loco:699c561418805cf2a2010952 */
+"errReservedNameTitle" = "Name von %@ reserviert";
+
+/* loco:699ef321392a1b1fe30afd33 */
+"errSystemErrorSyncDirAccessErrorDescription" = "Überprüfen Sie den Speicherort oder die Zugriffsrechte des Ordners.";
+
+/* loco:699ef2b8af5e8f5e2a00eeb5 */
+"errSystemErrorSyncDirAccessTitle" = "Synchronisierungsordner nicht zugänglich";
+
+/* loco:699db2cb55ec6730790b6d02 */
+"errSystemNotEnoughDiskSpaceDescription" = "Der Speicherplatz Ihres Geräts ist voll. Die Synchronisierung wurde pausiert. Geben Sie Speicherplatz frei, um die Synchronisierung fortzusetzen.";
+
+/* loco:699db2adcb59caa0180bfb43 */
+"errSystemNotEnoughDiskSpaceTitle" = "Unzureichender Speicherplatz";
+
+/* loco:69c113aefce2723e4e02a8b2 */
+"errSystemSyncDirChanged" = "Dieser Ordner ist an seinem ursprünglichen Speicherort nicht mehr zugänglich.";
+
+/* loco:69a04af840d83256d50795e2 */
+"errSystemSyncDirDiskMissingDescription" = "Dieser Ordner ist nicht mehr zugänglich. Eine Aktion ist erforderlich, um die Synchronisierung fortzusetzen.";
+
+/* loco:69a04aad8185890f2a0fa5d2 */
+"errSystemSyncDirMissingTitle" = "Synchronisierungsordner nicht gefunden";
+
+/* loco:699db4392a821651780b5842 */
+"errSystemUnableToStartVfsDescription" = "Lite Sync kann nicht gestartet werden. Sie können Ihre Dateien weiterhin synchronisieren, indem Sie die Offline-Synchronisierung in den Einstellungen aktivieren. Wenden Sie sich an den Support, wenn das Problem weiterhin besteht.";
+
+/* loco:699db42197d59a4659020b42 */
+"errSystemUnableToStartVfsTitle" = "Lite Sync kann nicht gestartet werden";
+
+/* loco:699c561552bdaf14430f36e2 */
+"errTmpBlacklistedDescription" = "Die Synchronisierung dieses Elements ist fehlgeschlagen. Es wird später automatisch erneut versucht.";
+
+/* loco:699c561523c0dac10d09b052 */
+"errTmpBlacklistedTitle" = "Synchronisierung vorübergehend fehlgeschlagen";
+
+/* loco:699c56b82dfefb66850e69d6 */
+"errUploadNotTerminatedDescription" = "Der Upload konnte nicht abgeschlossen werden. Bitte versuchen Sie es später erneut.";
+
 /* loco:6998110a3f9ff4c3230a4eb2 */
 "errorConnectingToXPCServer" = "Es scheint, dass wir die App nicht laden können…";
 
 /* loco:69aa7fb3753c400c81087842 */
 "errorDeletingAccount" = "Bei der Löschung Ihres Kontos ist ein Fehler aufgetreten.";
+
+/* loco:6995e49c8f25367fa9049f42 */
+"errorListFilesToVerifyHeader" = "Zu prüfende Dateien";
+
+/* loco:6a1e7c960b63328e7a01f812 */
+"errorListSystemHeader" = "System und Berechtigungen";
+
+/* loco:6995dff99537658db20fabb3 */
+"errorPageTitle" = "Zu behebende Fehler";
 
 /* loco:69afcc9e14a34ba0f30ee2a2 */
 "errorStartingInstaller" = "Error while trying to start the installer";
@@ -351,6 +653,7 @@
 
 /* loco:6a01ca75fd0cd802c903fca3 */
 "excludeRuleFileDescription" = "Vermeiden Sie, dass bestimmte temporäre oder Systemdateien in kDrive kopiert werden.";
+
 /* loco:698b37a3ff1c8782250e1a74 */
 "extendedLogDescription" = "Aktiviert die Erfassung zusätzlicher Informationen, die für den Support nützlich sind.";
 
@@ -360,6 +663,9 @@
 /* loco:698b37efff1c8782250e1a76 */
 "extendedLogWarning" = "Wenn diese Option aktiviert ist, läuft kDrive langsamer.";
 
+/* loco:69cb941c26bf3e633e097a82 */
+"faqUrl" = "https://www.infomaniak.com/de/support/faq/admin2/kdrive";
+
 /* loco:6992ec7abaf88a24990d3e13 */
 "feedbackSetting" = "Helfen Sie uns, kDrive zu verbessern";
 
@@ -368,6 +674,9 @@
 
 /* loco:6a072dcb891ba895c309fbc2 */
 "fileExclusionNotificationWarning" = "Eine Benachrichtigung informiert Sie, wenn eine Datei von dieser Regel ausgeschlossen wird.";
+
+/* loco:699c56142c8d937001054c82 */
+"fileExistsErrorTitle" = "Datei existiert bereits";
 
 /* loco:698b05aa9eefd9ba070ce4a2 */
 "fileSyncMode" = "Datei-Synchronisationsmodus";
@@ -398,6 +707,10 @@
 
 /* loco:6964f0b575a31a8d9601a6d7 */
 "helpKDriveName" = "kDrive %@";
+
+/* loco:69b278d512cd069835039fe2 */
+"helpUrl" = "https://www.infomaniak.com/de/support";
+
 /* loco:6989e175cdee4aba850e89b2 */
 "infomaniakSupport" = "Infomaniak Support";
 
@@ -409,6 +722,12 @@
 
 /* loco:698053a65bddc8df790d0212 */
 "informationBlockSynchroErrorSubtitle" = "Einige Dateien konnten nicht synchronisiert werden.";
+
+/* loco:69c4e8bed4e0fde818045ab2 */
+"informationBlockTmpDirAccessErrorSubtitle" = "Wir können nicht auf Ihre Dateien zugreifen. Starten Sie die Anwendung neu, um die Synchronisierung fortzusetzen. Wenn das Problem weiterhin besteht, wenden Sie sich an den Support.";
+
+/* loco:69c4e8b82884a264150d2583 */
+"informationBlockTmpDirAccessErrorTitle" = "Verbindung zu kDrive unterbrochen";
 
 /* loco:6930595e7664999c6a08c8a4 */
 "instructionEnableKDrive" = "Aktivieren Sie kDrive.app";
@@ -452,6 +771,9 @@
 /* loco:69314d1a739c205c410aa087 */
 "instructionRestartIfNecessary" = "Starten Sie die Anwendung auf Wunsch neu";
 
+/* loco:69a0079a3f0464f2af0a25d3 */
+"labelAccessRightsModified" = "Zugriffsrechte geändert";
+
 /* loco:6989c851ba57b190ff0ebbf2 */
 "labelAllowTracking" = "Tracking erlauben";
 
@@ -461,14 +783,86 @@
 /* loco:6a155a770336fcc4820ebf57 */
 "labelApplicationName" = "Anwendungsname";
 
+/* loco:69aac15193f089df1a016352 */
+"labelChooseConflictVersion" = "Wählen Sie aus, welche Version Ihrer Dateien Sie behalten möchten.";
+
+/* loco:69aae4641dd9b6d9260b1dd2 */
+"labelChooseConflictVersionIndividual" = "Wählen Sie für jede Datei die zu behaltende Version aus.";
+
+/* loco:69a6a189b148a1a71e0ed432 */
+"labelConflictDialogQuestion" = "Welche Version möchten Sie behalten?";
+
+/* loco:69a6a149ab7804a872011ae3 */
+"labelConflictDialogTitle" = "Zu behaltende Version auswählen";
+
+/* loco:69aad32560082fe51d04e453 */
+"labelConflictStrategyKeepLocalDescription" = "Die Online-Versionen der folgenden %@ Dateien werden durch Ihre lokalen Versionen ersetzt.\nAchtung: Dies kann die Arbeit Ihrer Mitarbeiter überschreiben.";
+
+/* loco:69aad31a1e6f4653e90deca2 */
+"labelConflictStrategyKeepLocalTitle" = "Nur lokale Versionen behalten";
+
+/* loco:69aacea7c2c6d1b9ad00e592 */
+"labelConflictStrategyKeepMostRecentDescription" = "Bei jedem Konflikt behalten wir automatisch die zuletzt geänderte Version (lokal oder online). Dies ist in den meisten Fällen die sicherste Wahl.";
+
+/* loco:69aacd5d37efef69510a4112 */
+"labelConflictStrategyKeepMostRecentTitle" = "Die neuesten Versionen behalten";
+
+/* loco:69aad30606787d9e31090c12 */
+"labelConflictStrategyKeepRemoteDescription" = "Alle lokalen Änderungen für diese %@ Dateien werden verworfen.\nNützlich, wenn Sie wissen, dass die wichtige Arbeit online auf kDrive ist.";
+
+/* loco:69aad2fb60082fe51d04e452 */
+"labelConflictStrategyKeepRemoteTitle" = "Nur Online-Versionen behalten";
+
+/* loco:69a00df5cee58fe1c90de9e2 */
+"labelFAQ" = "FAQ";
+
+/* loco:69bd5439d1397465ce0d8572 */
+"labelFileLowerCase" = "datei";
+
 /* loco:6989ff5b78003eb4e20e2652 */
 "labelFolder" = "Mappe";
+
+/* loco:69a007e73eee9bc51f08bae3 */
+"labelFolderDeleted" = "Ordner gelöscht";
+
+/* loco:69a067f92558059af802c6f2 */
+"labelFolderDisplacedOrModified" = "Ordner verschoben oder geändert";
+
+/* loco:69a06836f878b875f20414c2 */
+"labelFolderDisplacedOrModifiedTip" = "Der Ordner wurde möglicherweise auf ein anderes Laufwerk verschoben und dann an seinen ursprünglichen Speicherort zurückgebracht.";
+
+/* loco:69bd54253484750cc508b092 */
+"labelFolderLowerCase" = "ordner";
+
+/* loco:69a004c4b20bdca67000eba2 */
+"labelFolderMovedOrRenamed" = "Ordner verschoben oder umbenannt";
+
+/* loco:69a06865762f35915703bd32 */
+"labelFolderRecreatedOrReplaced" = "Ordner neu erstellt oder ersetzt";
+
+/* loco:69a06888a8f938beef0635f2 */
+"labelFolderRecreatedOrReplacedTip" = "Der Ordner wurde gelöscht und neu erstellt oder durch einen anderen Ordner mit demselben Namen ersetzt.";
 
 /* loco:698c656e3e4e4bbf4f02bde2 */
 "labelJustNow" = "Gerade jetzt";
 
+/* loco:69aac3530302ea9cb209d153 */
+"labelManyConflictTitle" = "%@ Dateien wurden sowohl auf Ihrem Computer als auch auf kDrive geändert.";
+
+/* loco:69a6a3ed7dda553eac028752 */
+"labelMostRecent" = "Am neuesten";
+
 /* loco:6989fec57ca0d7305008b1e2 */
 "labelName" = "Name";
+
+/* loco:69a067979b511e9c830b1642 */
+"labelNewDeviceDetectedTip" = "Sie verwenden kDrive auf einem neuen Computer nach der Wiederherstellung aus einer Sicherungskopie.";
+
+/* loco:69aafa69b473f615ee031a64 */
+"labelNoConflictsFound" = "Keine Konflikte entsprechen Ihrer Suche";
+
+/* loco:69c2644abc5e9a04d80150f4 */
+"labelNoErrorsToFix" = "Keine Fehler zu beheben.";
 
 /* loco:698b5869ab41083f11042b52 */
 "labelNotifications" = "Benachrichtigung";
@@ -478,6 +872,27 @@
 
 /* loco:69a6e4aceff2d992ad059324 */
 "labelOff" = "Deaktiviert";
+
+/* loco:69a81e31f454e9ee2b012722 */
+"labelOnline" = "Online";
+
+/* loco:69c116cc1eebd82cd2031674 */
+"labelOnlineFolderDeletedOrRenamed" = "Online-Ordner gelöscht";
+
+/* loco:69c116b9a39e29283f05d3e4 */
+"labelOnlineFolderDeletedOrRenamedTip" = "Der synchronisierte Ordner wurde auf kDrive online gelöscht oder ist nicht mehr zugänglich.";
+
+/* loco:69a0040b768059140500484a */
+"labelOriginalLocation" = "Ursprünglicher Speicherort:";
+
+/* loco:69aace12c2ddcf448e017c32 */
+"labelRecommended" = "Empfohlen";
+
+/* loco:69c117446ac92c1902088ab4 */
+"labelRemoteAccessRightsModifiedTip" = "Der Ordner wurde möglicherweise auf ein anderes Laufwerk verschoben und dann an seinen ursprünglichen Speicherort zurückgebracht.";
+
+/* loco:69a0058cb6529d830904d094 */
+"labelRestoreToOriginalLocation" = "An den ursprünglichen Speicherort wiederherstellen.";
 
 /* loco:698b58377672899b9301a142 */
 "labelRules" = "Regeln";
@@ -513,6 +928,15 @@
 
 /* loco:698a1276e1c66ed33b03bf32 */
 "linkCopiedToClipboardTitle" = "Link in die Zwischenablage kopiert";
+
+/* loco:69aaacf3df901b5cea00cd92 */
+"manyConflictErrorDescription" = "Verschiedene Versionen dieser Dateien wurden erkannt.";
+
+/* loco:69aaac472fbbf3de57090942 */
+"manyConflictErrorTitle" = "%@ Versionskonflikte erkannt";
+
+/* loco:698b2e50ea6bcf51bf026fc2 */
+"matomoDescription" = "Matomo ist ein Analysetool, das ausschliesslich von Infomaniak gehostet und verwaltet wird, um zu verstehen, wie die Anwendung verwendet wird.\n\nDie Analyse dieser Daten ermöglicht es unserem Team, die Benutzeroberfläche der Anwendung kontinuierlich zu verbessern.";
 
 /* loco:698b392cacfe189ede0cf082 */
 "logLevelDebug" = "Debug";
