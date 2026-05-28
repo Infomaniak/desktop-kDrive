@@ -310,7 +310,7 @@ Seleziona un&apos;altra cartella. Se continui, Lite Sync verrà disabilitato.&lt
         <translation>Link di condivisione copiato negli appunti</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3811"/>
+        <location filename="../src/server/appserver.cpp" line="3810"/>
         <source>%1 and %n other file(s) have been removed.</source>
         <translation>
             <numerusform>%1 e %n altri file sono stati rimossi.</numerusform>
@@ -318,13 +318,13 @@ Seleziona un&apos;altra cartella. Se continui, Lite Sync verrà disabilitato.&lt
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3813"/>
+        <location filename="../src/server/appserver.cpp" line="3812"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 è stato rimosso.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3818"/>
+        <location filename="../src/server/appserver.cpp" line="3817"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
             <numerusform>%1 e %n altri file sono stati aggiunti.</numerusform>
@@ -332,13 +332,13 @@ Seleziona un&apos;altra cartella. Se continui, Lite Sync verrà disabilitato.&lt
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3820"/>
+        <location filename="../src/server/appserver.cpp" line="3819"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 è stato aggiunto.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3825"/>
+        <location filename="../src/server/appserver.cpp" line="3824"/>
         <source>%1 and %n other file(s) have been updated.</source>
         <translation>
             <numerusform>%1 e %n altri file sono stati aggiornati.</numerusform>
@@ -346,13 +346,13 @@ Seleziona un&apos;altra cartella. Se continui, Lite Sync verrà disabilitato.&lt
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3827"/>
+        <location filename="../src/server/appserver.cpp" line="3826"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 è stato aggiornato.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3832"/>
+        <location filename="../src/server/appserver.cpp" line="3831"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
         <translation>
             <numerusform>%1 è stato spostato in %2 e %n altri file sono stati spostati.</numerusform>
@@ -360,12 +360,12 @@ Seleziona un&apos;altra cartella. Se continui, Lite Sync verrà disabilitato.&lt
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3835"/>
+        <location filename="../src/server/appserver.cpp" line="3834"/>
         <source>%1 has been moved to %2.</source>
         <translation>%1 è stato spostato in %2.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3843"/>
+        <location filename="../src/server/appserver.cpp" line="3842"/>
         <source>Sync Activity</source>
         <translation>Sincronizza attività</translation>
     </message>
@@ -381,67 +381,72 @@ Seleziona un&apos;altra cartella. Se continui, Lite Sync verrà disabilitato.&lt
 <context>
     <name>KDC::BetaProgramDialog</name>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="69"/>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="70"/>
         <source>Quit the beta program</source>
         <translation>Abbandonare il programma beta</translation>
     </message>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="69"/>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="70"/>
         <source>Join the beta program</source>
         <translation>Partecipare al programma beta</translation>
     </message>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="77"/>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="78"/>
         <source>Get early access to new versions of the application before they are released to the general public, and take part in improving the application by sending us your comments.</source>
         <translation>Ottenete l&apos;accesso anticipato alle nuove versioni dell&apos;applicazione prima che vengano rilasciate al pubblico e partecipate al miglioramento dell&apos;applicazione inviandoci i vostri commenti.</translation>
     </message>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="87"/>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="88"/>
         <source>Benefit from application beta updates</source>
         <translation>Beneficiare degli aggiornamenti beta delle applicazioni</translation>
     </message>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="91"/>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="92"/>
         <source>No</source>
         <translation>No</translation>
     </message>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="92"/>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="93"/>
         <source>Public beta version</source>
         <translation>Versione beta pubblica</translation>
     </message>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="93"/>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="94"/>
         <source>Internal beta version</source>
         <translation>Versione beta interna</translation>
     </message>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="141"/>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="95"/>
+        <source>Test version</source>
+        <translation>Versione di prova</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="146"/>
         <source>I understand</source>
         <translation>Capisco</translation>
     </message>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="147"/>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="152"/>
         <source>Are you sure you want to leave the beta program?</source>
         <translation>Siete sicuri di voler abbandonare il programma beta?</translation>
     </message>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="161"/>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="166"/>
         <source>Save</source>
         <translation>Salva</translation>
     </message>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="167"/>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="172"/>
         <source>Cancel</source>
         <translation>Annulla</translation>
     </message>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="228"/>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="235"/>
         <source>Your current version of the application may be too recent, your choice will be effective when the next update is available.</source>
         <translation>La tua attuale versione dell&apos;applicazione potrebbe essere troppo recente, la tua scelta sarà effettiva dal prossimo aggiornamento disponibile.</translation>
     </message>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="233"/>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="240"/>
         <source>Beta versions may leave unexpectedly or cause instabilities.</source>
         <translation>Le versioni beta possono uscire inaspettatamente o causare instabilità.</translation>
     </message>
@@ -2641,92 +2646,92 @@ Accedi alla versione web per verificare lo stato del tuo kDrive oppure contatta 
 <context>
     <name>KDC::VersionWidget</name>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="295"/>
+        <location filename="../src/gui/versionwidget.cpp" line="314"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%3&lt;/a&gt;</source>
         <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%3&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="169"/>
+        <location filename="../src/gui/versionwidget.cpp" line="170"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Show release note&lt;/a&gt;</source>
         <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Mostra nota di rilascio&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="172"/>
+        <location filename="../src/gui/versionwidget.cpp" line="173"/>
         <source>Version</source>
         <translation>Versione</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="173"/>
+        <location filename="../src/gui/versionwidget.cpp" line="174"/>
         <source>UPDATE</source>
         <translation>AGGIORNAMENTO</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="197"/>
+        <location filename="../src/gui/versionwidget.cpp" line="198"/>
         <source>%1 is up to date!</source>
         <translation>%1 è aggiornato!</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="201"/>
+        <location filename="../src/gui/versionwidget.cpp" line="202"/>
         <source>Checking update on server...</source>
         <translation>Controllo dell&apos;aggiornamento sul server...</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="205"/>
+        <location filename="../src/gui/versionwidget.cpp" line="206"/>
         <source>An update is available: %1.&lt;br&gt;Please download it from &lt;a style=&quot;%2&quot; href=&quot;%3&quot;&gt;here&lt;/a&gt;.</source>
         <translation>È disponibile un aggiornamento: %1.&lt;br&gt;Scaricalo da &lt;a style=&quot;%2&quot; href=&quot;%3&quot;&gt;qui&lt;/a&gt;.</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="212"/>
+        <location filename="../src/gui/versionwidget.cpp" line="213"/>
         <source>An update is available: %1</source>
         <translation>È disponibile un aggiornamento: %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="218"/>
+        <location filename="../src/gui/versionwidget.cpp" line="219"/>
         <source>Downloading %1. Please wait...</source>
         <translation>Download in corso %1. Attendere...</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="223"/>
+        <location filename="../src/gui/versionwidget.cpp" line="224"/>
         <source>Could not check for new updates.</source>
         <translation>Impossibile verificare la presenza di nuovi aggiornamenti.</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="227"/>
+        <location filename="../src/gui/versionwidget.cpp" line="228"/>
         <source>An error occurred during update.</source>
         <translation>Si è verificato un errore durante l&apos;aggiornamento.</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="231"/>
+        <location filename="../src/gui/versionwidget.cpp" line="232"/>
         <source>Could not download update.</source>
         <translation>Impossibile scaricare l&apos;aggiornamento.</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="235"/>
+        <location filename="../src/gui/versionwidget.cpp" line="236"/>
         <source>Update disabled.</source>
         <translation>Aggiornamento disabilitato.</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="251"/>
+        <location filename="../src/gui/versionwidget.cpp" line="252"/>
         <source>Beta program</source>
         <translation>Beta program</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="252"/>
+        <location filename="../src/gui/versionwidget.cpp" line="253"/>
         <source>Get early access to new versions of the application</source>
         <translation>Ottenere l&apos;accesso anticipato alle nuove versioni dell&apos;applicazione</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="256"/>
+        <location filename="../src/gui/versionwidget.cpp" line="257"/>
         <source>Join</source>
         <translation>Contatto</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="259"/>
+        <location filename="../src/gui/versionwidget.cpp" line="260"/>
         <source>Modify</source>
         <translation>Modificare</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="259"/>
+        <location filename="../src/gui/versionwidget.cpp" line="260"/>
         <source>Quit</source>
         <translation>Esci</translation>
     </message>
