@@ -32,9 +32,8 @@
 
 namespace KDC {
 
-static std::string homeDirectory() {
-    auto homeDir = CommonUtility::envVarValue("HOME");
-    if (!homeDir.empty()) return homeDir;
+static std::string homeDirectoryStr() {
+    if (auto homeDir = CommonUtility::envVarValue("HOME"); !homeDir.empty()) return homeDir;
 
     // The "HOME" environment variable might not be set. In this case, fallback on a more robust method by using getpwuid_r. The
     // "passwd" struct retrieved contains information such as username, user id, encrypted password or  home directory.
@@ -50,7 +49,7 @@ static std::string homeDirectory() {
 }
 
 SyncPath CommonUtility::getGenericAppSupportDir() {
-    auto homeDir = homeDirectory();
+    const auto homeDir = homeDirectoryStr();
     if (homeDir.empty()) return {};
 
     SyncPath homePath(homeDir);
@@ -197,7 +196,7 @@ ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
     if (!xdgStateHome.empty() && xdgStateHomePath.is_absolute()) {
         directoryPath = xdgStateHomePath;
     } else {
-        auto homeDir = homeDirectory();
+        const auto homeDir = homeDirectoryStr();
         if (homeDir.empty()) return {ExitCode::SystemError, ExitCause::NotFound};
         directoryPath = SyncPath(homeDir) / ".local" / "state";
     }
