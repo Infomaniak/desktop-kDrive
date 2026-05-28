@@ -24,7 +24,7 @@ runs:
         shell: bash
         if: steps.build.outcome == 'success'
         run: |
-          FILE=$(ls "${{ github.workspace }}/build-linux/install/kDrive-"*-arm64.AppImage | head -n 1)
+          FILE=$(ls "${{ github.workspace }}/build-linux-arm64/install/kDrive-"*-arm64.AppImage | head -n 1)
 
           HASH=$(sha256sum "$FILE" | awk '{print $1}')
 
