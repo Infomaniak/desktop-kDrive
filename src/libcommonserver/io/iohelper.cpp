@@ -811,6 +811,11 @@ IoError IoHelper::getFileChecksum(const SyncPath &path, std::ifstream &ifs, std:
             }
         }
 
+        if (ifs.bad()) {
+            XXH3_freeState(state);
+            return Unknown;
+        }
+
         XXH64_hash_t hash = XXH3_64bits_digest(state);
         XXH3_freeState(state);
 

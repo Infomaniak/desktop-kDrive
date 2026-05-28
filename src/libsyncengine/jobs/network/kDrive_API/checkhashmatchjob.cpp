@@ -32,8 +32,8 @@ CheckHashMatchJob::CheckHashMatchJob(const DriveDbId driveDbId, const SyncPath &
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
     _filePath(filepath),
     _nodeId(nodeId),
-    _localSize(0),
     _remoteSize(remoteSize) {
+    _localSize = 0;
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
@@ -77,11 +77,11 @@ ExitInfo CheckHashMatchJob::getFileSize(const SyncPath &path, int64_t &size) {
 }
 
 ExitInfo CheckHashMatchJob::runJob() noexcept {
+    using enum KDC::ExitCode;
     if (!_localSize)
         if (const ExitInfo exitInfo = getFileSize(_filePath, _localSize); !exitInfo) return exitInfo;
 
-    if (_localSize != _remoteSize) return ExitCode::Ok;
-
+    if (_localSize != _remoteSize) return Ok;
     if (const ExitInfo exitInfo = AbstractTokenNetworkJob::runJob(); !exitInfo) {
         return exitInfo;
     }
@@ -91,28 +91,28 @@ ExitInfo CheckHashMatchJob::runJob() noexcept {
 
     if (ioError == IoError::NoSuchFileOrDirectory) {
         LOGW_WARN(_logger, L"File doesn't exist while computing checksum: " << Utility::formatSyncPath(_filePath));
-        return ExitCode::DataError;
+        return DataError;
     }
 
     if (ioError == IoError::AccessDenied) {
         LOGW_WARN(_logger, L"File read permission missing while computing checksum: " << Utility::formatSyncPath(_filePath));
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
+        return {SystemError, ExitCause::FileAccessError};
     }
 
     if (ioError == IoError::InvalidArgument) {
         LOGW_WARN(_logger, L"File is a symlink: " << Utility::formatSyncPath(_filePath));
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
+        return {SystemError, ExitCause::FileAccessError};
     }
 
     assert(ioError == IoError::Success);
     if (ioError != IoError::Success) {
         LOGW_WARN(_logger, L"Unable to compute checksum for " << Utility::formatIoError(_filePath, ioError));
-        return ExitCode::SystemError;
+        return SystemError;
     }
 
-    if (_localHash != _remoteHash) return ExitCode::Ok;
+    if (_localHash != _remoteHash) return Ok;
     _shouldDownload = false;
-    return ExitCode::Ok;
+    return Ok;
 }
 
 std::string CheckHashMatchJob::getSpecificUrl() {
