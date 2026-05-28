@@ -27,6 +27,7 @@
 
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
+#include "libcommonserver/io/cachedirectory.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <log4cplus/loggingmacros.h>
@@ -85,8 +86,16 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(const std::list<std::pai
             break;
         }
 
-        if (path == _syncPal->localPath()) {
-            // Ignore events on the sync folder
+        const SyncPath absolutePath = path.native();
+        const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), absolutePath);
+
+        if (relativePath.empty()) {
+            // Ignore events on the sync folder itself, or paths that are not under the sync folder
+            continue;
+        }
+
+        if (CommonUtility::isSubDir(CacheDirectory::name(), relativePath)) {
+            // Ignore events on the cache folder content
             continue;
         }
 
@@ -95,8 +104,6 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(const std::list<std::pai
         _updating = true;
         _needUpdateTimerStart = std::chrono::steady_clock::now();
 
-        const SyncPath absolutePath = path.native();
-        const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), absolutePath);
         _syncPal->removeItemFromTmpBlacklist(relativePath);
 
         if (opTypeFromOS == OperationType::Delete) {
@@ -642,8 +649,6 @@ ExitInfo LocalFileSystemObserverWorker::handleIoError(const SyncPath &relativePa
 
 ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParentDirPath, bool fromChangeDetected) {
     // Check if root dir exists
-    auto ioError = IoError::Success;
-
     ItemType itemType;
     if (!IoHelper::getItemType(absoluteParentDirPath, itemType)) {
         LOGW_WARN(_logger,
@@ -666,6 +671,8 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
     }
 
     // Process all files
+    auto ioError = IoError::Success;
+    DirectoryEntry entry;
     try {
         IoHelper::DirectoryIterator dirIt;
         if (!IoHelper::getRecursiveDirectoryIterator(absoluteParentDirPath, ioError, dirIt, false)) {
@@ -678,11 +685,9 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             return {ExitCode::SystemError, Utility::exitCauseFromInaccessibleSyncDirectory(absoluteParentDirPath)};
         }
 
-        DirectoryEntry entry;
         bool endOfDirectory = false;
         sentry::pTraces::counterScoped::LFSOExploreItem perfMonitor(fromChangeDetected, syncDbId());
         while (dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
-            auto entryIoError = IoError::Success;
             perfMonitor.start();
 
             if (ParametersCache::isExtendedLogEnabled()) {
@@ -714,6 +719,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
 
             // Check if the directory entry is managed
             bool isManaged = false;
+            auto entryIoError = IoError::Success;
             if (!Utility::checkIfDirEntryIsManaged(entry, isManaged, entryIoError, itemType)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::checkIfDirEntryIsManaged: "
                                                    << Utility::formatIoError(absoluteParentDirPath, entryIoError));
@@ -748,8 +754,8 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 }
             }
 
-            FileStat fileStat;
             NodeId nodeId;
+            FileStat fileStat;
             if (!toExclude) {
                 if (!IoHelper::getFileStat(absolutePath, &fileStat, entryIoError, IoHelper::PathCheckOption::Insensitive)) {
                     LOGW_SYNCPAL_DEBUG(_logger,
@@ -838,6 +844,10 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
     } catch (...) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Exception caught in LocalFileSystemObserverWorker::exploreDir");
         return ExitCode::SystemError;
+    }
+
+    if (ioError != IoError::Success) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in directory iteration at " << Utility::formatIoError(entry.path(), ioError));
     }
 
     ExitInfo res = ExitCode::Ok;

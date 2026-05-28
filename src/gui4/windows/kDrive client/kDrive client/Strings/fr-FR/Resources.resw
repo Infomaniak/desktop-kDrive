@@ -6,7 +6,7 @@
   Locale: fr, French
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 19 May 2026 14:16:33 +0200 
+  Exported at: Wed, 27 May 2026 14:49:19 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -915,6 +915,9 @@ La synchronisation reprendra automatiquement dès que la connexion sera rétabli
   <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
     <value>Cet élément n’est pas disponible sur cet appareil.
 Il s’ouvrira dans votre navigateur.</value> 
+  </data> 
+  <data name="kSuiteOfferUrl" xml:space="preserve"> 
+    <value>https://www.infomaniak.com/fr/ksuite</value> 
   </data> 
   <data name="labelAccessRightsModified" xml:space="preserve"> 
     <value>Droits d’accès modifiés</value> 

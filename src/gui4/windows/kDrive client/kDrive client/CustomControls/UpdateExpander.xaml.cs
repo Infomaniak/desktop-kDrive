@@ -56,8 +56,9 @@ namespace Infomaniak.kDrive.CustomControls
 
         private void UpdateInternalChannelComboBoxVisibility()
         {
-            UpdateChannelComboBox_Internal.Visibility =
-                IsStaffUserConnected() ? Visibility.Visible : Visibility.Collapsed;
+            Visibility visibility = IsStaffUserConnected() ? Visibility.Visible : Visibility.Collapsed;
+            UpdateChannelComboBox_Internal.Visibility = visibility;
+            UpdateChannelComboBox_Test.Visibility = visibility;
         }
 
         private void RegisterPropertyChangedHandlers()
@@ -107,7 +108,7 @@ namespace Infomaniak.kDrive.CustomControls
             {
                 comboBox.IsEnabled = false;
                 string? channelString = selectedItem.Tag as string;
-                if (Enum.TryParse<VersionChannel>(channelString, out VersionChannel selectedChannel))
+                if (Enum.TryParse<DistributionChannel>(channelString, out DistributionChannel selectedChannel))
                 {
                     if (selectedChannel == ViewModel.Settings.UpdateManager.CurrentChannel)
                     {
@@ -184,7 +185,7 @@ namespace Infomaniak.kDrive.CustomControls
                     return;
                 }
 
-                _analyticsService.TrackClick(Analytics.Keys.Category.GeneralSettingsPage, Analytics.Keys.EventName.ChangeAutoUpdate, toggleSwitch.IsOn ? 1 : 0 );
+                _analyticsService.TrackClick(Analytics.Keys.Category.GeneralSettingsPage, Analytics.Keys.EventName.ChangeAutoUpdate, toggleSwitch.IsOn ? 1 : 0);
 
                 if (!await ViewModel.Settings.UpdateManager.ChangeAutoUpdate(toggleSwitch.IsOn))
                 {

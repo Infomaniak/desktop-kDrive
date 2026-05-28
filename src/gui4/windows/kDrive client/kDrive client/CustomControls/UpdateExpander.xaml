@@ -103,6 +103,13 @@
                 <ComboBoxItem Tag="Internal"
                               x:Name="UpdateChannelComboBox_Internal"
                               Content="{x:Bind kDrive:Localizer.Instance.GetString('releaseChannelInternal'), Mode=OneWay}"
+                              Background="{ThemeResource SystemFillColorCautionBackgroundBrush}"
+                              Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                              Visibility="Collapsed" />
+                <ComboBoxItem Tag="Test"
+                              x:Name="UpdateChannelComboBox_Test"
+                              Content="{x:Bind kDrive:Localizer.Instance.GetString('releaseChannelTest'), Mode=OneWay}"
+                              Background="{ThemeResource SystemFillColorCriticalBackgroundBrush}"
                               Foreground="{ThemeResource SystemFillColorCriticalBrush}"
                               Visibility="Collapsed" />
             </ComboBox>

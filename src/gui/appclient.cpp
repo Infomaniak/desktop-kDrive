@@ -575,7 +575,7 @@ void AppClient::setupLogging() {
         // Don't override other configured logging
         if (logger->isLoggingToFile()) return;
 
-        logger->setupTemporaryFolderLogDir();
+        logger->setupLogDir();
         if (ParametersCache::instance()->parametersInfo().purgeOldLogs()) {
             logger->setLogExpire(std::chrono::hours(CommonUtility::logsPurgeRate * 24)); // C++20 offers std::chrono::day.
         } else {
@@ -583,7 +583,7 @@ void AppClient::setupLogging() {
         }
         logger->enterNextLogFile();
     } else {
-        logger->disableTemporaryFolderLogDir();
+        logger->disableLog();
     }
 
     connect(logger, &KDC::Logger::logTooBig, this, &AppClient::onLogTooBig);

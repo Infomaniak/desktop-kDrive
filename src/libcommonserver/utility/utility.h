@@ -158,8 +158,10 @@ struct COMMONSERVER_EXPORT Utility {
         static bool cpuUsage(uint64_t &previousTotalTicks, uint64_t &_previousIdleTicks, double &percent);
         static bool cpuUsageByProcess(double &percent);
 
-        static SyncPath commonDocumentsFolderName();
-        static SyncPath sharedFolderName();
+        static SyncName commonDocumentsFolderName();
+        static SyncPath commonDocumentsFolderPath();
+        static SyncName sharedFolderName();
+        static SyncPath sharedFolderPath();
         static std::string userName();
 
         static bool hasSystemLaunchOnStartup(const std::string &appName);
@@ -233,6 +235,7 @@ struct COMMONSERVER_EXPORT Utility {
         static std::wstring quotedSyncName(const SyncName &name);
         static std::wstring formatSyncName(const SyncName &name);
         static std::wstring formatSyncPath(const SyncPath &path);
+        static std::wstring formatExitInfo(const SyncPath &path, const ExitInfo &exitInfo);
         static std::wstring formatPath(const QString &path);
         static std::wstring formatSystemError(const std::system_error &exception);
 

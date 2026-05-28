@@ -27,6 +27,16 @@ struct DistributionChannelView: View {
 
     @State private var betaOption = BetaOption.doNotJoin
 
+    let containsStaffUser: Bool
+
+    private var availableOptions: [BetaOption] {
+        var minimumOptions: [BetaOption] = [.doNotJoin, .beta]
+        if containsStaffUser {
+            minimumOptions.append(.internal)
+        }
+        return minimumOptions
+    }
+
     var body: some View {
         VStack(alignment: .leading) {
             Text(KDriveLocalizable.betaProgramTitle)
@@ -38,7 +48,7 @@ struct DistributionChannelView: View {
                 .font(.Tokens.body)
                 .foregroundStyle(ColorToken.Text.tertiary.asColor)
 
-            OptionPicker(KDriveLocalizable.accessibilityBetaProgramPicker, options: BetaOption.allCases, selection: $betaOption)
+            OptionPicker(KDriveLocalizable.accessibilityBetaProgramPicker, options: availableOptions, selection: $betaOption)
                 .labelsHidden()
         }
         .onAppear {
@@ -83,5 +93,5 @@ struct DistributionChannelView: View {
 }
 
 #Preview {
-    DistributionChannelView(repository: PreferencesRepository())
+    DistributionChannelView(repository: PreferencesRepository(), containsStaffUser: false)
 }

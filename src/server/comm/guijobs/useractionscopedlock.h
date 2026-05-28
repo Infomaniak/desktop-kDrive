@@ -17,29 +17,31 @@
  */
 
 #pragma once
-
-#include "testincludes.h"
-#include "server/updater/abstractupdater.h"
+#include <memory>
+#include <optional>
+#include <mutex>
+#include <chrono>
 
 namespace KDC {
 
-class TestAbstractUpdater final : public CppUnit::TestFixture, public TestBase {
-        CPPUNIT_TEST_SUITE(TestAbstractUpdater);
-        CPPUNIT_TEST(testSkipUnskipVersion);
-        CPPUNIT_TEST(testIsVersionSkipped);
-        CPPUNIT_TEST(testCheckUpdateAvailable);
-        CPPUNIT_TEST_SUITE_END();
-
+class UserActionScopedLock {
     public:
-        void setUp() override;
-        void tearDown() override;
+        UserActionScopedLock() = default;
 
-        static void generateValidVersionInfo(VersionInfo &versionInfo);
+        bool tryLock(const std::shared_ptr<SyncPal> syncPal,
+                     const std::chrono::milliseconds timeout = std::chrono::milliseconds(0)) {
+            if (_lock.has_value() && _lock->owns_lock()) return true;
 
-    protected:
-        void testSkipUnskipVersion();
-        void testIsVersionSkipped();
-        void testCheckUpdateAvailable();
+            if (!syncPal) return false;
+
+            if (std::unique_lock lock(syncPal->userActionsMutex(), std::defer_lock); lock.try_lock_for(timeout)) {
+                _lock = std::move(lock);
+                return true;
+            }
+            return false;
+        }
+
+    private:
+        std::optional<std::unique_lock<std::timed_mutex>> _lock;
 };
-
 } // namespace KDC

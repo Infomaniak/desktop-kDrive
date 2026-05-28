@@ -451,7 +451,7 @@ void PreferencesWidget::onLiteSyncWidgetClicked() {
 
 void PreferencesWidget::onLinkActivated(const QString &link) {
     if (link == debuggingFolderLink) {
-        const QString debuggingFolderPath = KDC::Logger::instance()->temporaryFolderLogDirPath();
+        const QString debuggingFolderPath = KDC::Logger::instance()->logDirectoryPath();
         const QUrl debuggingFolderUrl = KDC::GuiUtility::getUrlFromLocalPath(debuggingFolderPath);
         if (debuggingFolderUrl.isValid()) {
             MatomoClient::sendEvent("preferences", MatomoEventAction::Click, "debuggingFolderLink");

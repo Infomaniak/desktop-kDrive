@@ -18,6 +18,7 @@
 using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
@@ -31,23 +32,47 @@ namespace Infomaniak.kDrive.Pages.Errors
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel { get { return _viewModel; } }
         private ErrorPageVM? _errorPageVM;
+        private NavigationParameter _navigationParameter = NavigationParameter.Default;
+        static private double _lastVerticalOffset = 0;
+        public enum NavigationParameter
+        {
+            Default,
+            LastVerticalOffset
+        }
+
         public ErrorPage()
         {
             Logger.Log(Logger.Level.Info, "Navigated to ErrorPage - Initializing ErrorPage components");
             InitializeComponent();
             Logger.Log(Logger.Level.Debug, "ErrorPage components initialized");
+            Loaded += ErrorPage_Loaded;
+        }
+
+        private void ErrorPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (_navigationParameter == NavigationParameter.LastVerticalOffset)
+            {
+                ErrorScrollView.ScrollTo(0, _lastVerticalOffset, new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
+            }
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             _errorPageVM = new ErrorPageVM();
             _analyticsService.TrackPageView(Analytics.Keys.Category.ErrorPage);
+            if (e.NavigationMode != NavigationMode.New)
+            {
+                _navigationParameter = NavigationParameter.LastVerticalOffset;
+            }
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
             if (_errorPageVM is not null)
                 _errorPageVM.Dispose();
+
+            _lastVerticalOffset = ErrorScrollView.VerticalOffset;
+
         }
 
         private void BreadcrumbActivity_Click(object sender, object e)

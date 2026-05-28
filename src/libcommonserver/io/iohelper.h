@@ -109,30 +109,6 @@ struct IoHelper {
         */
         [[nodiscard]] static bool getItemType(const SyncPath &path, ItemType &itemType) noexcept;
 
-        //! Returns the directory location suitable for temporary files.
-        /*!
-         \param directoryPath is a path to a directory suitable for temporary files. Empty if there is an error.
-         \param ioError holds the error returned when an underlying OS API call fails.
-         \return true if no unexpected error occurred, false otherwise.
-         */
-        static bool deviceTempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept;
-
-        //! Returns the log directory path of the application.
-        /*!
-         \param directoryPath is set with the path of to the log directory of the application. Empty if there is an error.
-         \param ioError holds the error returned when an underlying OS API call fails.
-         \return true if no unexpected error occurred, false otherwise.
-         */
-        static bool logDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept;
-
-        //! Returns the log archiver directory path of the application.
-        /*!
-         \param directoryPath is set with the path of to the log directory of the application. Empty if there is an error.
-         \param ioError holds the error returned when an underlying OS API call fails.
-         \return true if no unexpected error occurred, false otherwise.
-         */
-        static bool logArchiverDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept;
-
         //! Retrieves the node identifier of the item indicated by a file system path.
         /*!
          \param path is a file system path to a directory entry (we also call it an item).
@@ -574,7 +550,7 @@ struct IoHelper {
         static std::function<void(const SyncPath &srcPath, const SyncPath &destPath, std::error_code &ec)> _rename;
         static std::function<SyncPath(const SyncPath &path, std::error_code &ec)> _readSymlink;
         static std::function<std::uintmax_t(const SyncPath &path, std::error_code &ec)> _fileSize;
-        static std::function<SyncPath(std::error_code &ec)> _tempDirectoryPath;
+
 #if defined(KD_MACOS)
         // Can be modified in tests.
         static std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> _readAlias;

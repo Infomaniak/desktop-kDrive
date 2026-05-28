@@ -26,7 +26,6 @@ struct IoHelperTestUtilities : public IoHelper {
         static void setIsSymlinkFunction(std::function<bool(const SyncPath &path, std::error_code &ec)> f);
         static void setReadSymlinkFunction(std::function<SyncPath(const SyncPath &path, std::error_code &ec)> f);
         static void setFileSizeFunction(std::function<std::uintmax_t(const SyncPath &path, std::error_code &ec)> f);
-        static void setTempDirectoryPathFunction(std::function<SyncPath(std::error_code &ec)> f);
 
 #if defined(KD_MACOS)
         static void setReadAliasFunction(std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> f);

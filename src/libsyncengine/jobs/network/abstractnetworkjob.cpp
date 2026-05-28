@@ -540,6 +540,11 @@ ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
             }
             return ExitCode::RateLimited;
         }
+        case Poco::Net::HTTPResponse::HTTP_BAD_REQUEST:
+        case Poco::Net::HTTPResponse::HTTP_FORBIDDEN: {
+            disableRetry();
+            [[fallthrough]];
+        }
         default: {
             if (!isAborted()) {
                 ExitInfo exitInfo;

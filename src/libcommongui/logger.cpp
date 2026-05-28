@@ -222,7 +222,7 @@ void Logger::setLogExpire(std::chrono::hours expire) {
 }
 
 void Logger::setLogDir(const QString &dir) {
-    _logDirectory = dir;
+    _logDirectoryPath = dir;
 }
 
 void Logger::setLogFlush(bool flush) {
@@ -236,40 +236,30 @@ void Logger::setLogDebug(bool debug) {
     _logDebug = debug;
 }
 
-QString Logger::temporaryFolderLogDirPath() const {
-    static const QString dirName = APPLICATION_NAME + QString("-logdir");
-
-    QDir kDriveTempDirectory;
-    if (const auto &value = CommonUtility::envVarValue("KDRIVE_TMP_PATH"); !value.empty()) {
-        kDriveTempDirectory = QDir(QString::fromStdString(value));
-    } else {
-        kDriveTempDirectory = QDir::temp();
-    }
-
-    return kDriveTempDirectory.filePath(dirName);
-}
-
-void Logger::setupTemporaryFolderLogDir() {
-    auto dir = temporaryFolderLogDirPath();
-    if (!QDir().mkpath(dir)) return;
+void Logger::setupLogDir() {
+    SyncPath path;
+    (void) CommonUtility::logDirectoryPath(path);
+    const QString logDirPath = Path2QStr(path);
+    if (logDirPath.isEmpty()) return;
+    if (!QDir().mkpath(logDirPath)) return;
     setLogDebug(true);
-    setLogDir(dir);
-    _temporaryFolderLogDir = true;
+    setLogDir(logDirPath);
+    _logEnabled = true;
 }
 
-void Logger::disableTemporaryFolderLogDir() {
-    if (!_temporaryFolderLogDir) return;
+void Logger::disableLog() {
+    if (!_logEnabled) return;
 
     enterNextLogFile();
     setLogDir(QString());
     setLogDebug(false);
     setLogFile(QString());
-    _temporaryFolderLogDir = false;
+    _logEnabled = false;
 }
 
 void Logger::enterNextLogFile() {
-    if (!_logDirectory.isEmpty()) {
-        QDir dir(_logDirectory);
+    if (!_logDirectoryPath.isEmpty()) {
+        QDir dir(_logDirectoryPath);
         if (!dir.exists()) {
             dir.mkpath(".");
         }

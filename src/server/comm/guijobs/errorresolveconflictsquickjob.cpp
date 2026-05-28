@@ -17,6 +17,7 @@
  */
 
 #include "errorresolveconflictsquickjob.h"
+#include "useractionscopedlock.h"
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/io/iohelper.h"
@@ -49,22 +50,28 @@ ExitInfo ErrorResolveConflictsQuickJob::deserializeInputParms() {
     return ExitCode::Ok;
 }
 
-ExitInfo ErrorResolveConflictsQuickJob::process() {
-    std::vector<Error> errorList;
-    if (ExitInfo exitInfo = fetchAllErrors(errorList); !exitInfo) {
+ExitInfo ErrorResolveConflictsQuickJob::getErrorsForDbIds(const std::vector<ErrorDbId> &dbIdList, std::vector<Error> &errorList) {
+    std::vector<Error> allErrors;
+    if (ExitInfo exitInfo = fetchAllErrors(allErrors); !exitInfo) {
         return exitInfo;
     }
 
-    // Filter errors matching the provided dbIds
-    const std::unordered_set<int64_t> errorDbIdSet(_errorDbIdList.begin(), _errorDbIdList.end());
-    std::vector<Error> matchedErrors;
-    for (const auto &error: errorList) {
+    const std::unordered_set<int64_t> errorDbIdSet(dbIdList.begin(), dbIdList.end());
+    for (const auto &error: allErrors) {
         if (errorDbIdSet.contains(error.dbId())) {
-            matchedErrors.push_back(error);
+            errorList.push_back(error);
         }
     }
+    return ExitCode::Ok;
+}
 
-    if (matchedErrors.empty()) {
+ExitInfo ErrorResolveConflictsQuickJob::process() {
+    std::vector<Error> errorList;
+    if (ExitInfo exitInfo = getErrorsForDbIds(_errorDbIdList, errorList); !exitInfo) {
+        return exitInfo;
+    }
+
+    if (errorList.empty()) {
         LOG_INFO(Log::instance()->getLogger(),
                  "ErrorResolveConflictsQuickJob::process: No errors found for the provided dbId list");
         return ExitCode::Ok;
@@ -72,7 +79,7 @@ ExitInfo ErrorResolveConflictsQuickJob::process() {
 
     // Validate that all errors share the same syncDbId
     SyncDbId syncDbId = 0;
-    if (ExitInfo exitInfo = getSyncDbIdFromErrors(matchedErrors, syncDbId); !exitInfo) {
+    if (ExitInfo exitInfo = getSyncDbIdFromErrors(errorList, syncDbId); !exitInfo) {
         return exitInfo;
     }
 
@@ -82,7 +89,9 @@ ExitInfo ErrorResolveConflictsQuickJob::process() {
 
     // Pre-fetch localPath for KeepMostRecent strategy
     SyncPath localPath;
-    if (_strategy == ConflictResolutionStrategy::KeepMostRecent) {
+
+    using enum ConflictResolutionStrategy;
+    if (_strategy == KeepMostRecent) {
         std::shared_ptr<SyncPal> syncPal;
         if (ExitInfo exitInfo = getSyncPal(syncDbId, syncPal); !exitInfo) {
             return exitInfo;
@@ -90,53 +99,16 @@ ExitInfo ErrorResolveConflictsQuickJob::process() {
         localPath = syncPal->localPath();
     }
 
-    for (const auto &error: matchedErrors) {
+    for (const auto &error: errorList) {
         switch (_strategy) {
-            case ConflictResolutionStrategy::KeepLocal:
+            case KeepLocal:
                 keepLocalErrors.push_back(error);
                 break;
-            case ConflictResolutionStrategy::KeepRemote:
+            case KeepRemote:
                 keepRemoteErrors.push_back(error);
                 break;
-            case ConflictResolutionStrategy::KeepMostRecent: {
-                // path = original filename (remote version on disk)
-                // destinationPath = conflict-renamed copy (local version on disk)
-                const SyncPath originalAbsPath = localPath / error.destinationPath().parent_path() / error.path().filename();
-                const SyncPath conflictAbsPath = localPath / error.destinationPath();
-
-                FileStat originalStat;
-                FileStat conflictStat;
-                IoError ioError = IoError::Success;
-
-                if (!IoHelper::getFileStat(originalAbsPath, &originalStat, ioError, IoHelper::PathCheckOption::Insensitive) ||
-                    ioError != IoError::Success) {
-                    LOG_WARN(_logger,
-                             "Error getting file stat for original path, defaulting to keepLocal for errorDbId=" << error.dbId());
-                    // If we cannot retrieve the file information, we fall back to keeping the local version.
-                    // This is the safest choice to avoid accidental data loss. If the file no longer exists,
-                    // the conflict will resolve itself later.
-                    keepLocalErrors.push_back(error);
-                    break;
-                }
-
-                if (!IoHelper::getFileStat(conflictAbsPath, &conflictStat, ioError, IoHelper::PathCheckOption::Insensitive) ||
-                    ioError != IoError::Success) {
-                    LOG_WARN(_logger,
-                             "Error getting file stat for conflict path, defaulting to keepLocal for errorDbId=" << error.dbId());
-                    // If we cannot retrieve the file information, we fall back to keeping the local version.
-                    // This is the safest choice to avoid accidental data loss. If the file no longer exists,
-                    // the conflict will resolve itself later.
-                    keepLocalErrors.push_back(error);
-                    break;
-                }
-
-                if (conflictStat.modificationTime >= originalStat.modificationTime) {
-                    // Conflict copy (local version) is more recent or equal -> keep local
-                    keepLocalErrors.push_back(error);
-                } else {
-                    // Original (remote version) is more recent -> keep remote
-                    keepRemoteErrors.push_back(error);
-                }
+            case KeepMostRecent: {
+                handleKeepMostRecent(localPath, error, keepLocalErrors, keepRemoteErrors);
                 break;
             }
             default:
@@ -150,7 +122,57 @@ ExitInfo ErrorResolveConflictsQuickJob::process() {
         return exitInfo;
     }
 
+    UserActionScopedLock lock;
+    if (syncPal != nullptr && !lock.tryLock(syncPal, std::chrono::milliseconds(userActionLockShortTimeoutMs))) {
+        LOG_WARN(_logger, "Could not acquire user action lock for syncDbId="
+                                  << syncDbId << ". Another user action is running. Aborting ErrorResolveConflictsQuickJob.");
+        return ExitCode::OperationCanceled;
+    }
+
     return fixConflictsAndNotify(syncPal, keepLocalErrors, keepRemoteErrors);
+}
+
+void ErrorResolveConflictsQuickJob::handleKeepMostRecent(const SyncPath &localPath, const Error &error,
+                                                         std::vector<Error> &keepLocalErrors,
+                                                         std::vector<Error> &keepRemoteErrors) {
+    // path = original filename (remote version on disk)
+    // destinationPath = conflict-renamed copy (local version on disk)
+    const SyncPath originalAbsPath = localPath / error.destinationPath().parent_path() / error.path().filename();
+    const SyncPath conflictAbsPath = localPath / error.destinationPath();
+
+    FileStat originalStat;
+    FileStat conflictStat;
+
+    std::function<bool(const SyncPath &, FileStat &)> tryGetFileStatOrKeepLocal = [&error, &keepLocalErrors](const SyncPath &path,
+                                                                                                            FileStat &stat) {
+        if (IoError ioError = IoError::Success;
+            !IoHelper::getFileStat(path, &stat, ioError, IoHelper::PathCheckOption::Insensitive) || ioError != IoError::Success) {
+            // If we cannot retrieve the file information, we fall back to keeping the local version.
+            // This is the safest choice to avoid accidental data loss. If the file no longer exists,
+            // the conflict will resolve itself later.
+            keepLocalErrors.push_back(error);
+            return false;
+        }
+        return true;
+    };
+
+    if (!tryGetFileStatOrKeepLocal(originalAbsPath, originalStat)) {
+        LOG_WARN(_logger, "Error getting file stat for original path, defaulting to keepLocal for errorDbId=" << error.dbId());
+        return;
+    }
+
+    if (!tryGetFileStatOrKeepLocal(conflictAbsPath, conflictStat)) {
+        LOG_WARN(_logger, "Error getting file stat for conflict path, defaulting to keepLocal for errorDbId=" << error.dbId());
+        return;
+    }
+
+    if (conflictStat.modificationTime >= originalStat.modificationTime) {
+        // Conflict copy (local version) is more recent or equal -> keep local
+        keepLocalErrors.push_back(error);
+    } else {
+        // Original (remote version) is more recent -> keep remote
+        keepRemoteErrors.push_back(error);
+    }
 }
 
 } // namespace KDC

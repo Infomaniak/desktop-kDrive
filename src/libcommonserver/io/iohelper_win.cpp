@@ -499,9 +499,8 @@ void IoHelper::initRightsWindowsApi() {
 
     // Check getRights method performance
     SyncPath tmpDir;
-    IoError ioError = IoError::Success;
-    if (!IoHelper::deviceTempDirectoryPath(tmpDir, ioError)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::tempDirectoryPath: " << Utility::formatIoError(tmpDir, ioError));
+    if (const auto exitInfo = CommonUtility::deviceTempDirectoryPath(tmpDir); !exitInfo) {
+        LOGW_WARN(logger(), L"Error in CommonUtility::deviceTempDirectoryPath: " << Utility::formatExitInfo(tmpDir, exitInfo));
         return;
     }
 
@@ -511,7 +510,7 @@ void IoHelper::initRightsWindowsApi() {
 
     auto start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < 10; i++) {
-        if (!IoHelper::getRights(tmpDir, read, write, execute, ioError)) {
+        if (auto ioError = IoError::Unknown; !IoHelper::getRights(tmpDir, read, write, execute, ioError)) {
             LOGW_WARN(logger(), L"Error in IoHelper::getRights: " << Utility::formatIoError(tmpDir, ioError));
             _getAndSetRightsMethod = 1; // Fallback method
             return;
@@ -535,7 +534,7 @@ void IoHelper::initRightsWindowsApi() {
 
 // Always return false if ioError != IoError::Success, caller should call _isExpectedError
 static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_MODE accessMode, IoError &ioError,
-                                log4cplus::Logger logger, bool inherite = false) noexcept {
+                                log4cplus::Logger logger, bool inherit = false) noexcept {
     PACL pACLold = nullptr; // Current ACL
     PACL pACLnew = nullptr; // New ACL
     PSECURITY_DESCRIPTOR pSecurityDescriptor = nullptr;
@@ -544,7 +543,7 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
 
     explicitAccess.grfAccessPermissions = permission;
     explicitAccess.grfAccessMode = accessMode;
-    if (!inherite) {
+    if (!inherit) {
         explicitAccess.grfInheritance = NO_INHERITANCE;
     } else {
         explicitAccess.grfInheritance = SUB_CONTAINERS_AND_OBJECTS_INHERIT;

@@ -296,11 +296,12 @@ void CustomRollingFileAppender::customRollover() {
 void CustomRollingFileAppender::checkForExpiredFiles() {
     _lastExpireCheck = std::chrono::system_clock::now();
     // Archive previous log files and delete expired files
-    IoError ioError = IoError::Success;
     SyncPath logDirPath;
-    if (!IoHelper::logDirectoryPath(logDirPath, ioError) || ioError != IoError::Success) {
+    if (const auto exitInfo = CommonUtility::logDirectoryPath(logDirPath); !exitInfo) {
         return;
     }
+
+    IoError ioError = IoError::Success;
     IoHelper::DirectoryIterator dirIt(logDirPath, false, ioError);
     bool endOfDir = false;
     DirectoryEntry entry;
