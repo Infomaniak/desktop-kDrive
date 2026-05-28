@@ -308,7 +308,7 @@ struct LogFileInfo {
 };
 
 void reduceLogFolderSizeIfNeeded(const int64_t maxLogFolderSize, const int64_t totalSize,
-                                 std::priority_queue<LogFileInfo> logFiles) noexcept {
+                                 std::priority_queue<LogFileInfo> &logFiles) noexcept {
     // Delete files until the total size of the folder is < 2GB
     auto currentSize = totalSize;
     while (currentSize > maxLogFolderSize) {
