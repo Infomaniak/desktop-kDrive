@@ -20,7 +20,7 @@ param (
     [string]$version,
 
     [ValidateSet('win', 'macos', 'linux-arm', 'linux-amd')]
-    [string] $os
+    [string] $os,
 
     [bool] $test = $true
 )
