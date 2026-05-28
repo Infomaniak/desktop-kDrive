@@ -27,7 +27,7 @@ namespace Infomaniak.kDrive.ViewModels
     {
         private bool _updateEnabled = false;
         private bool _autoUpdateEnabled = false;
-        private VersionChannel _currentChannel = VersionChannel.Beta;
+        private DistributionChannel _currentChannel = DistributionChannel.Beta;
         private AppVersion? _availableUpdate;
         private bool _fetchingUpdate = false;
         private bool _showNotification = false;
@@ -44,7 +44,7 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _autoUpdateEnabled, value);
         }
 
-        public VersionChannel CurrentChannel
+        public DistributionChannel CurrentChannel
         {
             get => _currentChannel;
             set => SetPropertyInUIThread(ref _currentChannel, value);
@@ -83,7 +83,7 @@ namespace Infomaniak.kDrive.ViewModels
             return res;
         }
 
-        public async Task<bool> ChangeChannel(VersionChannel newChannel)
+        public async Task<bool> ChangeChannel(DistributionChannel newChannel)
         {
             var previousChannel = CurrentChannel;
             CurrentChannel = newChannel;

@@ -85,7 +85,7 @@ final class PreferencesSplitViewController: IKSplitViewController {
         let contentViewController: NSViewController
         switch path.details.last {
         case .general:
-            contentViewController = GeneralPreferencesViewController(repository: repository)
+            contentViewController = GeneralPreferencesViewController(repository: repository, viewModel: viewModel)
         case .accounts:
             contentViewController = AccountsPreferencesViewController(viewModel: viewModel)
         case .advanced:
@@ -104,7 +104,7 @@ final class PreferencesSplitViewController: IKSplitViewController {
                 repository: repository
             )
         default:
-            contentViewController = GeneralPreferencesViewController(repository: repository)
+            contentViewController = GeneralPreferencesViewController(repository: repository, viewModel: viewModel)
         }
 
         switchContentViewController(destination: contentViewController)

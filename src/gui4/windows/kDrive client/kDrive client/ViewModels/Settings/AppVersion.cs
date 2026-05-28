@@ -24,7 +24,7 @@ namespace Infomaniak.kDrive.ViewModels
 {
     public class AppVersion
     {
-        public VersionChannel Channel { get; set; } = VersionChannel.Prod;
+        public DistributionChannel Channel { get; set; } = DistributionChannel.Prod;
         public string Tag { get; set; } = string.Empty; // e.g., "1.2.3"
         public int BuildVersion { get; set; } = 0;
 
@@ -59,7 +59,7 @@ namespace Infomaniak.kDrive.ViewModels
                 {
                     Tag = $"{version.Major}.{version.Minor}.{version.Build}",
                     BuildVersion = version.Revision,
-                    Channel = VersionChannel.Prod
+                    Channel = DistributionChannel.Prod
                 };
             }
             else
@@ -69,7 +69,7 @@ namespace Infomaniak.kDrive.ViewModels
                 {
                     Tag = "0.0.0",
                     BuildVersion = 0,
-                    Channel = VersionChannel.Prod
+                    Channel = DistributionChannel.Prod
                 };
             }
         }

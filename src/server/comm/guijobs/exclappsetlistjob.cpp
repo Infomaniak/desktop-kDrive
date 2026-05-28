@@ -17,6 +17,7 @@
  */
 
 #include "exclappsetlistjob.h"
+#include "useractionscopedlock.h"
 #include "appserver.h"
 
 #include "libcommon/comm.h"
@@ -25,7 +26,6 @@
 // Input parameters keys
 static const auto inParamsDefault = "default";
 static const auto inParamsApplicationList = "applicationList";
-
 
 namespace KDC {
 

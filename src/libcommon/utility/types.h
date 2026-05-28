@@ -605,7 +605,7 @@ struct VersionInfo {
         std::string tag; // Version number. Example: 3.6.4
         uint64_t buildVersion{0}; // Build number. Should be > 0.
         std::string downloadUrl; // URL to download the version
-        std::string checksum; // Optional. Checksum of the file, used to verify the integrity of the downloaded installer.
+        std::string checksum; // Verify if the downloaded file is correct, and not corrupted. Uses a SHA-256
         std::string minOsVersion; // Optional. Minimum supported version of the OS. Examples: 26.3.1, 22.04, 10.0.26200, ...
         std::string minAppVersion; // Optional. Minimum supported version of the application. Example: 3.6.4
 

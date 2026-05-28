@@ -1057,43 +1057,31 @@ ExitCode SyncPal::setSyncIdSet(SyncNodeType type, const NodeSet &nodeIdSet) {
     return ExitCode::Ok;
 }
 
-ExitCode SyncPal::syncListUpdated(bool restartSync) {
-    restartSync &= isRunning();
-    if (restartSync) {
-        stop();
-    }
+ExitInfo SyncPal::propagateSyncIdSetChange(const bool restartSync) {
+    setUpBlacklistPropagator(restartSync);
+    ExitInfo exitInfo = _blacklistPropagator->runSynchronously();
+    handlePropagatorJobsCompletion(_blacklistPropagator);
+    return exitInfo;
+}
 
-    if (_blacklistPropagator) {
-        LOG_SYNCPAL_INFO(_logger, "BlacklistPropagator is already running, aborting the current process");
-        _blacklistPropagator->abort();
-        restartSync = _blacklistPropagator->restartSyncPal();
-    }
-
-    _blacklistPropagator.reset(new BlacklistPropagator(shared_from_this()));
-    _blacklistPropagator->setRestartSyncPal(restartSync);
+ExitCode SyncPal::propagateSyncIdSetChangeAsync(const bool restartSync) {
+    setUpBlacklistPropagator(restartSync);
     _blacklistPropagator->setAdditionalCallback(std::bind_front(&SyncPal::syncPalStartCallback, this));
     SyncJobManagerSingleton::instance()->queueAsyncJob(_blacklistPropagator, Poco::Thread::PRIO_HIGHEST);
-
     return ExitCode::Ok;
 }
 
-ExitCode SyncPal::excludeListUpdated() {
-    bool restartSync = isRunning();
-    if (restartSync) {
-        stop();
-    }
+ExitInfo SyncPal::propagateExcludeListChange() {
+    setUpExcludelistPropagator();
+    ExitInfo exitInfo = _excludeListPropagator->runSynchronously();
+    handlePropagatorJobsCompletion(_excludeListPropagator);
+    return exitInfo;
+}
 
-    if (_excludeListPropagator) {
-        LOG_SYNCPAL_INFO(_logger, "ExcludeListPropagator is already running, aborting the current process");
-        _excludeListPropagator->abort();
-        restartSync = _excludeListPropagator->restartSyncPal();
-    }
-
-    _excludeListPropagator.reset(new ExcludeListPropagator(shared_from_this()));
-    _excludeListPropagator->setRestartSyncPal(restartSync);
+ExitCode SyncPal::propagateExcludeListChangeAsync() {
+    setUpExcludelistPropagator();
     _excludeListPropagator->setAdditionalCallback(std::bind_front(&SyncPal::syncPalStartCallback, this));
     SyncJobManagerSingleton::instance()->queueAsyncJob(_excludeListPropagator, Poco::Thread::PRIO_HIGHEST);
-
     return ExitCode::Ok;
 }
 
@@ -1115,7 +1103,7 @@ ExitCode SyncPal::fixConflictingFiles(const std::vector<Error> &keepLocalErrorLi
     handlePropagatorJobsCompletion(_conflictingFilesCorrector);
     if (!exitInfo) {
         LOG_SYNCPAL_WARN(_logger, "Error in ConflictingFilesCorrector::runSynchronously: " << exitInfo);
-        return exitInfo.code();
+        return exitInfo;
     }
     return ExitCode::Ok;
 }
@@ -1135,6 +1123,38 @@ void SyncPal::setUpConflictingFilesCorrector(const std::vector<Error> &keepLocal
 
     _conflictingFilesCorrector.reset(new ConflictingFilesCorrector(shared_from_this(), keepLocalErrorList, keepRemoteErrorList));
     _conflictingFilesCorrector->setRestartSyncPal(restartSync);
+}
+
+void SyncPal::setUpBlacklistPropagator(const bool restartSync) {
+    bool shouldRestartSync = restartSync && isRunning();
+    if (shouldRestartSync) {
+        stop();
+    }
+
+    if (_blacklistPropagator) {
+        LOG_SYNCPAL_WARN(_logger, "BlacklistPropagator is already running, aborting the current process.");
+        _blacklistPropagator->abort();
+        shouldRestartSync = _blacklistPropagator->restartSyncPal();
+    }
+
+    _blacklistPropagator.reset(new BlacklistPropagator(shared_from_this()));
+    _blacklistPropagator->setRestartSyncPal(shouldRestartSync);
+}
+
+void SyncPal::setUpExcludelistPropagator() {
+    bool restartSync = isRunning();
+    if (restartSync) {
+        stop();
+    }
+
+    if (_excludeListPropagator) {
+        LOG_SYNCPAL_INFO(_logger, "ExcludeListPropagator is already running, aborting the current process.");
+        _excludeListPropagator->abort();
+        restartSync = _excludeListPropagator->restartSyncPal();
+    }
+
+    _excludeListPropagator.reset(new ExcludeListPropagator(shared_from_this()));
+    _excludeListPropagator->setRestartSyncPal(restartSync);
 }
 
 ExitCode SyncPal::fixCorruptedFile(const std::unordered_map<NodeId, SyncPath> &localFileMap) {
@@ -1520,8 +1540,8 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool
                                          << CommonUtility::s2ws(localNodeId)
                                          << L" is blacklisted temporarily because of a denied access.");
 
-    if (bool found; remoteNodeId.empty() && !localNodeId.empty() &&
-                    !_syncDb->correspondingNodeId(ReplicaSide::Local, localNodeId, remoteNodeId, found)) {
+    if (bool found = false; remoteNodeId.empty() && !localNodeId.empty() &&
+                            !_syncDb->correspondingNodeId(ReplicaSide::Local, localNodeId, remoteNodeId, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::correspondingNodeId");
         return {ExitCode::DbError, ExitCause::Unknown};
     }

@@ -18,6 +18,7 @@
 
 #include "testwindowsupdater.h"
 
+#include "testabstractupdater.h"
 #include "db/parmsdb.h"
 #include "requests/parameterscache.h"
 #include "io/iohelper.h"
@@ -28,6 +29,8 @@
 #include "test_utility/testhelpers.h"
 #include "updater/windowsupdater.h"
 #include "utility/digitalsignaturechecker_win.h"
+#include "mockversionretriever.h"
+#include "jobs/syncjobmanager.h"
 
 namespace KDC {
 
@@ -71,6 +74,8 @@ void TestWindowsUpdater::tearDown() {
     ParmsDb::instance()->close();
     ParmsDb::reset();
     ParametersCache::reset();
+    SyncJobManagerSingleton::instance()->stop();
+    SyncJobManagerSingleton::clear();
     TestBase::stop();
 }
 
@@ -145,6 +150,49 @@ void TestWindowsUpdater::testIsSignatureValid() {
                         DownloadJob::DateTimePolicy::ApplyDateTime);
         (void) job.runSynchronously();
         CPPUNIT_ASSERT(DigitalSignatureChecker_win(SyncPath(signedFilePath)).isSignatureValid());
+    }
+}
+
+void TestWindowsUpdater::testIsChecksumValid() {
+    struct TestCase {
+            std::string checksumValue;
+            std::string fileName;
+            bool expectedValid;
+    };
+
+    static const std::string noChecksumValue("");
+    static const std::string invalidChecksumValue("083a301369cd711e9803f7d90d342a3778f9cb864ab22992b49fccddc3b9256c");
+    static const std::string validChecksumValue("3d735840895bcb958f359009b06cbe9b840ae9e2df22651f431bfec4ac7b696f");
+
+    const std::vector<TestCase> testCases = {
+            {noChecksumValue, "picture-1.jpg", true}, // kstore is missing checksum
+            {invalidChecksumValue, "picture-1111.jpg", false}, // can't calculate checksum (file doesn't exist)
+            {invalidChecksumValue, "picture-1.jpg", false}, // checksum is invalid
+            {validChecksumValue, "picture-1.jpg", true}, // checksum is valid
+    };
+
+    for (const auto &testCase: testCases) {
+        LocalTemporaryDirectory tmpDir;
+        IoError ioError = IoError::Success;
+
+        // Only copy file if it's expected to exist
+        if (testCase.fileName == "picture-1.jpg") {
+            (void) IoHelper::copyFileOrDirectory(testhelpers::localTestDirPath() / "test_pictures/picture-1.jpg", tmpDir.path(),
+                                                 ioError);
+            CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+        }
+
+        WindowsUpdater updater;
+
+        VersionInfo versionInfo;
+        TestAbstractUpdater::generateValidVersionInfo(versionInfo);
+        auto mockVersionRetriever = std::make_shared<MockVersionRetriever>();
+        mockVersionRetriever->setVersionInfo(versionInfo);
+        mockVersionRetriever->setVersionReceived(true);
+        mockVersionRetriever->setChecksum(testCase.checksumValue);
+        updater._versionRetriever = mockVersionRetriever;
+
+        CPPUNIT_ASSERT_EQUAL(testCase.expectedValid, updater.verifyFileChecksum(tmpDir.path() / testCase.fileName));
     }
 }
 

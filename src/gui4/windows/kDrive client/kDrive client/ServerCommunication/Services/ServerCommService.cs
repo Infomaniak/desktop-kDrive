@@ -1862,6 +1862,17 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return;
             }
 
+            if (errorInfo.Level == ErrorLevel.Server)
+            {
+                lock (_errorLock)
+                {
+                    ++_errorCount;
+                }
+                Error error = new(errorInfo);
+                await _viewModel.AddErrorAsync(error).ConfigureAwait(false);
+                return;
+            }
+
             var sync = App.ServiceProvider.GetRequiredService<AppModel>().AllSyncs.FirstOrDefault(s => s.DbId == errorInfo.SyncDbId);
             if (sync is not null)
             {

@@ -18,6 +18,8 @@
 
 #include "utility.h"
 
+#include "config.h"
+
 #include <system_error>
 #include <fstream>
 #include <sys/mount.h>
@@ -26,6 +28,27 @@
 #import <AppKit/NSImage.h>
 
 namespace KDC {
+
+namespace {
+ExitInfo nsErrorToExitInfo(NSError *nsError) noexcept {
+    // See https://developer.apple.com/documentation/foundation/
+    if ([nsError.domain isEqualToString:NSCocoaErrorDomain]) {
+        switch (nsError.code) {
+            case NSFileNoSuchFileError:
+            case NSFileReadNoSuchFileError:
+                return {ExitCode::SystemError, ExitCause::NotFound};
+            case NSFileReadNoPermissionError:
+            case NSFileWriteNoPermissionError:
+                return {ExitCode::SystemError, ExitCause::FileAccessError};
+            case NSFileReadInvalidFileNameError:
+                return {ExitCode::SystemError, ExitCause::InvalidName};
+            default:
+                break;
+        }
+    }
+    return {ExitCode::SystemError, ExitCause::Unknown};
+}
+} // namespace
 
 SyncPath CommonUtility::getAppDir() {
     NSError *error;
@@ -111,6 +134,28 @@ std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {
     }
 
     return "UNIDENTIFIED";
+}
+
+ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
+    NSError *error = nil;
+    NSURL *url = [[NSFileManager defaultManager] URLForDirectory:NSLibraryDirectory
+                                                        inDomain:NSUserDomainMask
+                                               appropriateForURL:nil
+                                                          create:NO
+                                                           error:&error];
+    if (error) {
+        return nsErrorToExitInfo(error);
+    }
+
+    if (!url) {
+        return {ExitCode::SystemError, ExitCause::Unknown};
+    }
+
+    directoryPath = SyncPath([url.path UTF8String]);
+    directoryPath /= "Logs";
+    directoryPath /= APPLICATION_NAME; // On macOS, logs in "Logs" folder are stored in a subfolder named after the application
+
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

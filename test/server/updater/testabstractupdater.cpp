@@ -44,6 +44,16 @@ void unskipVersion() {
 }
 } // namespace
 
+void TestAbstractUpdater::generateValidVersionInfo(VersionInfo &versionInfo) {
+    versionInfo.channel = DistributionChannel::Prod;
+    versionInfo.tag = "3.8.2";
+    versionInfo.buildVersion = 3;
+    versionInfo.downloadUrl = "https://downloads/kDrive-3.8.2.3.exe";
+    versionInfo.checksum = "";
+    versionInfo.minOsVersion = "";
+    versionInfo.minAppVersion = "";
+}
+
 void TestAbstractUpdater::setUp() {
     TestBase::start();
     // Init parmsDb

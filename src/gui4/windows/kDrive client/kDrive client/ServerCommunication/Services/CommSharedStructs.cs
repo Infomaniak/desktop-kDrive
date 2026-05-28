@@ -246,7 +246,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         public ProxyConfigInfo? ProxyConfigInfo { get; set; }
         public bool? MatomoEnabled { get; set; }
         public bool? SentryEnabled { get; set; }
-        public VersionChannel? DistributionChannel { get; set; }
+        public DistributionChannel? DistributionChannel { get; set; }
     }
     public static partial class ConversionHelper
     {

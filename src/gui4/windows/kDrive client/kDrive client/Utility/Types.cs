@@ -97,13 +97,14 @@ namespace Infomaniak.kDrive.Types
         Online // (Ex liteSync)
     };
 
-    public enum VersionChannel
+    public enum DistributionChannel
     {
         Prod,
         Next,
         Beta,
         Internal,
         Legacy,
+        Test,
         Unknown
     };
 

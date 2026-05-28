@@ -1,6 +1,7 @@
 /*ExclTemplSetUserListJob*/
 
 #include "excltemplsetlistjob.h"
+#include "useractionscopedlock.h"
 #include "appserver.h"
 
 #include "libcommon/comm.h"
@@ -38,22 +39,38 @@ ExitInfo ExclTemplSetUserListJob::deserializeInputParms() {
 
 ExitInfo ExclTemplSetUserListJob::process() {
     ExclusionTemplateInfo::updateExclusionTemplateInfoList(_exclusionTemplateList);
+    std::list<std::shared_ptr<SyncPal>> syncPalList;
 
-    if (const auto exitCode = ServerRequests::setUserExclusionTemplateList(_exclusionTemplateList); exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in Requests::setExclusionTemplateList: code=" << exitCode);
-        addError(Error(ERR_ID, exitCode));
-
-        return exitCode;
+    {
+        const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
+        for (const auto &[_, syncPal]: _commManager->appServer().syncPalMap) {
+            if (!syncPal) continue;
+            syncPalList.push_back(syncPal);
+        }
     }
 
-    const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
-    for (const auto &[_, syncPal]: _commManager->appServer().syncPalMap) {
-        if (!syncPal) continue;
+    std::list<UserActionScopedLock> locks;
+    for (auto syncPal: syncPalList) {
+        auto &lock = locks.emplace_back();
+        if (!lock.tryLock(syncPal, std::chrono::milliseconds(userActionLockShortTimeoutMs))) {
+            LOG_WARN(_logger, "Could not acquire user action lock for syncDbId="
+                                      << syncPal->syncDbId()
+                                      << ". Another user action is running. Aborting ExclTemplSetUserListJob.");
+            return ExitCode::OperationCanceled;
+        }
+    }
 
+    if (const auto exitInfo = ServerRequests::setUserExclusionTemplateList(_exclusionTemplateList); !exitInfo) {
+        LOG_WARN(_logger, "Error in Requests::setExclusionTemplateList: " << exitInfo);
+        addError(Error(ERR_ID, exitInfo));
+        return exitInfo;
+    }
+
+    for (auto syncPal: syncPalList) {
         _commManager->appServer().unregisterSync(syncPal);
 
-        if (const auto exitCode = syncPal->excludeListUpdated(); exitCode != ExitCode::Ok) {
-            LOG_WARN(_logger, "Error in SyncPal::excludeListUpdated: code=" << exitCode);
+        if (const auto exitInfo = syncPal->propagateExcludeListChange(); !exitInfo) {
+            LOG_WARN(_logger, "Error in SyncPal::PropagateExcludeListChange: code=" << exitInfo);
         }
 
         _commManager->appServer().registerSync(syncPal);
