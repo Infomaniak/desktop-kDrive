@@ -22,7 +22,7 @@ param (
     [ValidateSet('win', 'macos', 'linux-arm', 'linux-amd')]
     [string] $os,
 
-    [bool] $test = $true
+    [bool] $test = $false
 )
 
 if (-not $env:KDRIVE_TOKEN) {

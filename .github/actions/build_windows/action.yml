@@ -365,7 +365,7 @@ runs:
           # Write to GitHub Step Summary
           # Step Summary
           $summary = @()
-          $summary += "### 🔐 Windows installer SHA256"
+          $summary += "### Windows installer SHA256"
           $summary += ""
           $summary += $hash
           $summary += ""
