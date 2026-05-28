@@ -791,9 +791,7 @@ IoError IoHelper::getFileChecksum(const SyncPath &path, std::ifstream &ifs, std:
             IfstreamCloser(const IfstreamCloser &) = delete;
             IfstreamCloser &operator=(const IfstreamCloser &) = delete;
             ~IfstreamCloser() noexcept {
-                try {
-                    if (stream.is_open()) stream.close();
-                } catch (...) {}
+                if (stream.is_open()) stream.close();
             }
         };
         IfstreamCloser ifstreamCloser(ifs);
