@@ -498,31 +498,31 @@ void TestLocalFileSystemObserverWorker::testLFSODirReplacement() {
 
     // Init SyncDb (we need only A and B nodes)
     bool constraintError = false;
-    DbNode dbNodeDir1(1, "A", "A", dirId1, "1234", std::nullopt, std::nullopt, std::nullopt, NodeType::Directory, 0);
+    DbNode dbNodeDir1(1, Str("A"), Str("A"), dirId1, "1234", std::nullopt, std::nullopt, std::nullopt, NodeType::Directory, 0);
     DbNodeId dbDirId1 = 0;
     CPPUNIT_ASSERT(_syncPal->syncDb()->insertNode(dbNodeDir1, dbDirId1, constraintError) && !constraintError);
     dbNodeDir1.setNodeId(dbDirId1);
 
-    DbNode dbNodeDir2(1, "B", "B", dirId2, "5678", std::nullopt, std::nullopt, std::nullopt, NodeType::Directory, 0);
+    DbNode dbNodeDir2(1, Str("B"), Str("B"), dirId2, "5678", std::nullopt, std::nullopt, std::nullopt, NodeType::Directory, 0);
     DbNodeId dbDirId2 = 0;
     CPPUNIT_ASSERT(_syncPal->syncDb()->insertNode(dbNodeDir2, dbDirId2, constraintError) && !constraintError);
     dbNodeDir2.setNodeId(dbDirId2);
 
     // Execute operations
     auto ioError = IoError::Unknown;
-    CPPUNIT_ASSERT(IoHelper::moveItem(testDirPath1, testDirPath2 / "AA", ioError));
+    CPPUNIT_ASSERT(IoHelper::moveItem(testDirPath1, testDirPath2 / Str("AA"), ioError));
     CPPUNIT_ASSERT(IoHelper::renameItem(testDirPath2, testDirPath1, ioError));
     CPPUNIT_ASSERT(testhelpers::generateTestFolder(testDirPath2));
 
     // Update SyncDb to reflect the operations
     bool found = false;
-    dbNodeDir1.setNameLocal("AA");
-    dbNodeDir1.setNameRemote("AA");
+    dbNodeDir1.setNameLocal(Str("AA"));
+    dbNodeDir1.setNameRemote(Str("AA"));
     dbNodeDir1.setParentNodeId(std::make_optional<DbNodeId>(dbDirId2));
     CPPUNIT_ASSERT(_syncPal->syncDb()->updateNode(dbNodeDir1, found) && found);
 
-    dbNodeDir2.setNameLocal("A");
-    dbNodeDir2.setNameRemote("A");
+    dbNodeDir2.setNameLocal(Str("A"));
+    dbNodeDir2.setNameRemote(Str("A"));
     CPPUNIT_ASSERT(_syncPal->syncDb()->updateNode(dbNodeDir2, found) && found);
 
     Utility::msleep(1000); // Wait 1sec
@@ -530,10 +530,10 @@ void TestLocalFileSystemObserverWorker::testLFSODirReplacement() {
     // Check that the final situation is correct
     SyncPath path;
     bool ignore = false;
-    CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).path(dirId1, path, ignore) && path == "A/AA");
-    CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).path(fileId1, path, ignore) && path == "A/AA/F1");
-    CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).path(dirId2, path, ignore) && path == "A");
-    CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).path(fileId2, path, ignore) && path == "A/F2");
+    CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).path(dirId1, path, ignore) && path == Str("A/AA"));
+    CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).path(fileId1, path, ignore) && path == Str("A/AA/F1"));
+    CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).path(dirId2, path, ignore) && path == Str("A"));
+    CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).path(fileId2, path, ignore) && path == Str("A/F2"));
 }
 
 void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMove() { // MS Office test
