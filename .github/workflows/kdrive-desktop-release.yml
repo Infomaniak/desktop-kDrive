@@ -231,6 +231,7 @@ jobs:
           keychain_password: ${{ secrets.KEYCHAIN_PASSWORD }}
           release_build: true    
           release_build_altool_username: ${{ secrets.ALTOOL_USERNAME }}
+          release_build_notary_app_password: ${{ secrets.NOTARY_APP_PASSWORD }}
 
 # Upload the installer and sentry artifacts
   upload-to-kDrive-and-sentry-Windows:

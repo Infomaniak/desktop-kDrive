@@ -13,6 +13,10 @@ inputs:
     description: 'Username for altool upload'
     required: false
     default: ''
+  release_build_notary_app_password:
+    description: 'Password for notary app'
+    required: false
+    default: ''
 
 runs:
     using: "composite"
@@ -45,7 +49,7 @@ runs:
       - name: Build kDrive desktop
         id: build
         env:
-          NOTARY_APP_PASSWORD: ${{ secrets.NOTARY_APP_PASSWORD }}
+          NOTARY_APP_PASSWORD: ${{ secrets.release_build_notary_app_password }}
           ALTOOL_USERNAME: ${{ inputs.release_build_altool_username }}
         run : |
             if [ "${{ inputs.release_build }}" = "true" ]; then
