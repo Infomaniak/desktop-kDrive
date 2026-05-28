@@ -786,7 +786,7 @@ std::wstring Utility::formatSystemError(const std::system_error &exception) {
     return ss.str();
 }
 
-ExitCause Utility::exitCauseFromInaccessibleSyncDirectory(const SyncPath &syncDir, SourceLocation srcLoc) {
+ExitCause Utility::exitCauseFromInaccessibleSyncDirectory(const SyncPath &syncDir, std::source_location srcLoc) {
     IoError ioError = IoError::Unknown;
     bool diskMounted = false;
     if (!IoHelper::isPathOnMountedDisk(syncDir, diskMounted, ioError) || ioError != IoError::Success) {
@@ -795,7 +795,7 @@ ExitCause Utility::exitCauseFromInaccessibleSyncDirectory(const SyncPath &syncDi
     }
 
     if (!diskMounted) {
-        LOGW_INFO(logger(), CommonUtility::s2ws(srcLoc.toString())
+        LOGW_INFO(logger(), CommonUtility::s2ws(toString(srcLoc))
                                     << L" Disk is not mounted for " << Utility::formatSyncPath(syncDir));
         return ExitCause::SyncDirDiskMissing;
     }

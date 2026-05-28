@@ -30,7 +30,7 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     const SyncPath relativeWorkingDirPath = remoteTempDir.name();
     const SyncPath absoluteLocalWorkingDir = _syncPal->localPath() / relativeWorkingDirPath;
     _syncPal->start();
-    waitForSyncToBeIdle(SourceLocation::currentLoc());
+    waitForSyncToBeIdle(std::source_location::current());
 
     NodeId nodeId;
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).getItemId(relativeWorkingDirPath, nodeId));
@@ -42,7 +42,7 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     // Create a file with a custom inode on the local side
     mockIoHelper.setPathWithFakeInode(absoluteLocalWorkingDir / "testNodeIdReuseFile", 2);
     { const std::ofstream file(absoluteLocalWorkingDir / "testNodeIdReuseFile"); }
-    waitForSyncToBeIdle(SourceLocation::currentLoc());
+    waitForSyncToBeIdle(std::source_location::current());
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).getItemId(relativeWorkingDirPath / "testNodeIdReuseFile", nodeId));
     CPPUNIT_ASSERT_EQUAL(NodeId("2"), nodeId);
     NodeId remoteFileId;
@@ -66,7 +66,7 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     { const std::ofstream childFile(absoluteLocalWorkingDir / "testNodeIdReuseDir" / "childFile.txt"); }
 
     _syncPal->unpause();
-    waitForSyncToBeIdle(SourceLocation::currentLoc());
+    waitForSyncToBeIdle(std::source_location::current());
 
     // Check that the file has been replaced by a directory on the remote replica with a different ID.
     NodeId newRemoteDirId;
@@ -93,7 +93,7 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     { const std::ofstream file(absoluteLocalWorkingDir / "testNodeIdReuseFile"); }
 
     _syncPal->unpause();
-    waitForSyncToBeIdle(SourceLocation::currentLoc());
+    waitForSyncToBeIdle(std::source_location::current());
 
     // Check that the directory has been replaced by a file on the remote with a different ID.
     NodeId newRemoteFileId;
@@ -116,7 +116,7 @@ void TestIntegration::testNodeIdReuseFile2File() {
     const SyncPath relativeWorkingDirPath = remoteTempDir.name();
     const SyncPath absoluteLocalWorkingDir = _syncPal->localPath() / relativeWorkingDirPath;
     _syncPal->start();
-    waitForSyncToBeIdle(SourceLocation::currentLoc());
+    waitForSyncToBeIdle(std::source_location::current());
 
     NodeId nodeId;
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).getItemId(relativeWorkingDirPath, nodeId));
@@ -127,7 +127,7 @@ void TestIntegration::testNodeIdReuseFile2File() {
     MockIoHelperFileStat mockIoHelper;
     mockIoHelper.setPathWithFakeInode(absoluteLocalWorkingDir / "testNodeIdReuseFile", 2);
     { const std::ofstream file(absoluteLocalWorkingDir / "testNodeIdReuseFile"); }
-    waitForSyncToBeIdle(SourceLocation::currentLoc());
+    waitForSyncToBeIdle(std::source_location::current());
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).getItemId(relativeWorkingDirPath / "testNodeIdReuseFile", nodeId));
     CPPUNIT_ASSERT_EQUAL(NodeId("2"), nodeId);
     NodeId remoteFileId;
@@ -161,7 +161,7 @@ void TestIntegration::testNodeIdReuseFile2File() {
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     _syncPal->unpause();
-    waitForSyncToBeIdle(SourceLocation::currentLoc());
+    waitForSyncToBeIdle(std::source_location::current());
     _syncPal->pause();
     NodeId newRemoteFileId;
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote)
@@ -181,7 +181,7 @@ void TestIntegration::testNodeIdReuseFile2File() {
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     _syncPal->unpause();
-    waitForSyncToBeIdle(SourceLocation::currentLoc());
+    waitForSyncToBeIdle(std::source_location::current());
     NodeId tmpId;
     CPPUNIT_ASSERT_EQUAL(
             ExitInfo(ExitCode::DataError, ExitCause::NotFound),
@@ -210,7 +210,7 @@ void TestIntegration::nodeIdReuseFalsePositiveInitialSituation(const LocalTempor
     testhelpers::generateOrEditTestFile(localTmpDir.path() / "B" / "BA");
 
     _syncPal->start();
-    waitForSyncToBeIdle(SourceLocation::currentLoc());
+    waitForSyncToBeIdle(std::source_location::current());
 
     _syncPal->pause();
 }
@@ -244,7 +244,7 @@ void TestIntegration::testNodeIdReuseFalsePositive() {
         (void) IoHelper::renameItem(absoluteLocalPathA, newAbsoluteLocalPathA, ioError);
 
         _syncPal->unpause();
-        waitForSyncToBeIdle(SourceLocation::currentLoc());
+        waitForSyncToBeIdle(std::source_location::current());
 
         CPPUNIT_ASSERT(std::filesystem::exists(newAbsoluteLocalPathA));
         CPPUNIT_ASSERT(std::filesystem::exists(newAbsoluteLocalPathA / "AA"));
@@ -275,7 +275,7 @@ void TestIntegration::testNodeIdReuseFalsePositive() {
         (void) IoHelper::renameItem(absoluteLocalPathA, newAbsoluteLocalPathA, ioError);
 
         _syncPal->unpause();
-        waitForSyncToBeIdle(SourceLocation::currentLoc());
+        waitForSyncToBeIdle(std::source_location::current());
 
         CPPUNIT_ASSERT(std::filesystem::exists(newAbsoluteLocalPathA));
         CPPUNIT_ASSERT(std::filesystem::exists(absoluteLocalPathB / "AA"));
@@ -307,7 +307,7 @@ void TestIntegration::testNodeIdReuseFalsePositive() {
         (void) IoHelper::renameItem(absoluteLocalPathA, newAbsoluteLocalPathA, ioError);
 
         _syncPal->unpause();
-        waitForSyncToBeIdle(SourceLocation::currentLoc());
+        waitForSyncToBeIdle(std::source_location::current());
 
         CPPUNIT_ASSERT(std::filesystem::exists(newAbsoluteLocalPathA));
         CPPUNIT_ASSERT(std::filesystem::exists(newAbsoluteLocalPathA / "AA"));

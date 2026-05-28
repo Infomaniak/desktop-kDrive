@@ -113,14 +113,14 @@ void Vfs::stop(bool unregister) {
     }
 }
 
-ExitInfo Vfs::handleVfsError(const SyncPath &itemPath, const SourceLocation &location) const {
+ExitInfo Vfs::handleVfsError(const SyncPath &itemPath, const std::source_location &location) const {
     if (ExitInfo exitInfo = checkIfPathIsValid(itemPath, true, location); !exitInfo) {
         return exitInfo;
     }
     return defaultVfsError(location);
 }
 
-ExitInfo Vfs::checkIfPathIsValid(const SyncPath &itemPath, bool shouldExist, const SourceLocation &location) const {
+ExitInfo Vfs::checkIfPathIsValid(const SyncPath &itemPath, bool shouldExist, const std::source_location &location) const {
     if (itemPath.empty()) {
         LOGW_WARN(logger(), L"Empty path provided in Vfs::checkIfPathIsValid");
         assert(false && "Empty path in a VFS call");

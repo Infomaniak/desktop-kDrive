@@ -34,7 +34,6 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testArgsWriter);
         CPPUNIT_TEST(testCompressFile);
         CPPUNIT_TEST(testCurrentVersion);
-        CPPUNIT_TEST(testSourceLocation);
         CPPUNIT_TEST(testGenerateRandomStringAlphaNum);
         CPPUNIT_TEST(testGenerateRandomNumber);
         CPPUNIT_TEST(testGenerateUuid);
@@ -86,7 +85,6 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testArgsWriter();
         void testCompressFile();
         void testCurrentVersion();
-        void testSourceLocation();
         void testGenerateRandomStringAlphaNum();
         void testGenerateRandomNumber();
         void testGenerateUuid();

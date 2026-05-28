@@ -49,7 +49,7 @@ if (const auto exitInfo = doSomething(); !exitInfo) {
 
 - `operator bool()` → true if `ExitCode::Ok` or `ExitCode::TokenRefreshed`
 - `merge(other)` → keeps highest-priority error from two `ExitInfo` values
-- Carries `SourceLocation` for traceability — use `currentLoc()` macro
+- Carries `std::source_location` for traceability — use `currentLoc()` macro
 
 ## DTO Classes (`info/`)
 All info classes are plain-data DTOs. Pattern is identical across all of them:
@@ -84,7 +84,7 @@ using SyncName    = std::filesystem::path::string_type; // std::string (Unix) | 
 using NodeId      = std::string;   // server-assigned, stable across renames
 using DbNodeId    = int64_t;       // internal SQLite ROWID
 using SyncTime    = int64_t;
-// ExitInfo is a struct{ExitCode, ExitCause, SourceLocation} — see "Error Propagation" section above
+// ExitInfo is a struct{ExitCode, ExitCause, std::source_location} — see "Error Propagation" section above
 ```
 
 Platform string helpers — always use these, never raw casts:
