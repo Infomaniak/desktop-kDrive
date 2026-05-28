@@ -128,6 +128,40 @@ void TestLog::testExpiredLogFiles(void) {
     appender->setExpire(CommonUtility::logsPurgeRate * 24 * 3600);
 }
 
+void TestLog::testLargeLogFolder() {
+    // This test checks that old archived log files are deleted after a certain time
+    clearLogDirectory();
+
+    // Generate a fake old log file
+    for (auto i = 0; i < 10; i++) {
+        const auto filepath = _logDir / (APPLICATION_NAME "_fake_" + std::to_string(i) + ".log.gz");
+        testhelpers::generateTestFile(filepath, 1024 * 1024); // 1 MB
+        IoHelper::setFileDates(filepath, testhelpers::defaultTime - i * 60, testhelpers::defaultTime - i * 60, false);
+    }
+
+    // Check that we got 11 log files (the current one and the fake ones)
+    CPPUNIT_ASSERT_EQUAL(11, countFilesInDirectory(_logDir));
+
+    auto *appender = static_cast<CustomRollingFileAppender *>(_logger.getAppender(Log::rfName).get());
+    appender->checkForExpiredFiles();
+
+    // Check that checkForExpiredFiles does not remove any files for now
+    CPPUNIT_ASSERT_EQUAL(11, countFilesInDirectory(_logDir));
+    const auto existingFilepath = _logDir / (APPLICATION_NAME "_fake_1.log.gz");
+    CPPUNIT_ASSERT(std::filesystem::exists(existingFilepath));
+    const auto nonExistingFilepath = _logDir / (APPLICATION_NAME "_fake_5.log.gz");
+    CPPUNIT_ASSERT(std::filesystem::exists(nonExistingFilepath));
+
+    // Set the max log folder size to 3 MB
+    appender->setMaxLogFolderSize(3 * 1024 * 1024);
+
+    appender->checkForExpiredFiles();
+
+    CPPUNIT_ASSERT_EQUAL(3, countFilesInDirectory(_logDir));
+    CPPUNIT_ASSERT(std::filesystem::exists(existingFilepath));
+    CPPUNIT_ASSERT(!std::filesystem::exists(nonExistingFilepath));
+}
+
 int TestLog::countFilesInDirectory(const SyncPath &directory) const {
     bool endOfDirectory = false;
     IoError ioError = IoError::Success;
