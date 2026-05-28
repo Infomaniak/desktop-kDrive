@@ -50,7 +50,7 @@
     </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <WapProjPath Condition="'$(WapProjPath)'==''">$(MSBuildExtensionsPath)\Microsoft\DesktopBridge\</WapProjPath>
+	  <WapProjPath Condition="'$(WapProjPath)'==''">$(MSBuildExtensionsPath)\Microsoft\DesktopBridge\</WapProjPath>
   </PropertyGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.props" />
   <PropertyGroup>
@@ -68,7 +68,7 @@
     <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
     <EntryPointProjectUniqueName>..\FileExplorerExtension\FileExplorerExtension.vcxproj</EntryPointProjectUniqueName>
     <AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
-    <PackageCertificateThumbprint>95C8D8A52FA3834BAC5625A36F73F3FD82E75135</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>363AF9BC37EFB528940DA0E733F3E1F57116849E</PackageCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <DefaultLanguage>en-US</DefaultLanguage>

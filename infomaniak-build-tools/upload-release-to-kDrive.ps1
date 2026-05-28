@@ -21,6 +21,8 @@ param (
 
     [ValidateSet('win', 'macos', 'linux-arm', 'linux-amd')]
     [string] $os
+
+    [bool] $test = $true
 )
 
 if (-not $env:KDRIVE_TOKEN) {
@@ -145,7 +147,13 @@ function Upload-FilesToKDrive {
                 Pop-Location
                 exit 1
             }
-            $uri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/upload?directory_id=$env:KDRIVE_DIR_ID&total_size=$size&file_name=$file&directory_path=$versionNumber/$buildNumber/$targetSubDir&conflict=version"
+            $directoryPath = "$versionNumber/$buildNumber/$targetSubDir"
+
+            if ($test) {
+                $directoryPath = "Test/$directoryPath"
+            }
+
+            $uri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/upload?directory_id=$env:KDRIVE_DIR_ID&total_size=$size&file_name=$file&directory_path=$directoryPath&conflict=version"           
             Write-Host "Uploading $file to kDrive at $uri"
             Invoke-RestMethod -Method "POST" -Uri $uri -Header $headers -ContentType 'application/octet-stream' -InFile $file
             Write-Host "\t\t => ✅" -f Green

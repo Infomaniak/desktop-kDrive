@@ -433,7 +433,6 @@ function Set-Up-NSIS {
 function Sign-File {
     param (
         [string] $filePath,
-        [bool] $upload = $false,
         [string] $thumbprint,
         [string] $description = ""
     )
