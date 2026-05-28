@@ -42,7 +42,7 @@ class CustomRollingFileAppender : public log4cplus::RollingFileAppender {
 
         inline void setMaxFileSize(long newMaxFileSize) { _maxFileSize = newMaxFileSize; }
         inline long getMaxFileSize() const { return _maxFileSize; }
-        void checkForExpiredFiles() noexcept(false);
+        void managePreviousSessionLogs() noexcept(false);
         int64_t maxLogFolderSize() const { return _maxLogFolderSize; }
         void setMaxLogFolderSize(const int64_t maxLogFolderSize) { _maxLogFolderSize = maxLogFolderSize; }
 

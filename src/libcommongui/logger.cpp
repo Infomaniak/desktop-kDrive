@@ -252,7 +252,7 @@ void Logger::enterNextLogFile() {
     }
 
     // Tentative new log name, will be adjusted if one like this already exists
-    QDateTime now = QDateTime::currentDateTime();
+    const QDateTime now = QDateTime::currentDateTime();
     QString appName(APPLICATION_NAME);
     if (_isClientLog) {
         appName += QString("_client");
@@ -260,18 +260,18 @@ void Logger::enterNextLogFile() {
     QString newLogName = now.toString("yyyyMMdd_HHmm") + QString("_%1.log").arg(appName);
 
     // Expire old log files and deal with conflicts
-    QStringList unzippedFiles;
-    QStringList files = dir.entryList(QStringList(QString("*%1.log.*").arg(appName)), QDir::Files, QDir::Name);
+    const QStringList files = dir.entryList(QStringList(QString("*%1.log.*").arg(appName)), QDir::Files, QDir::Name);
     QString rxPattern(QString(R"(.*%1\.log\.(\d+).*)").arg(appName));
     rxPattern = QRegularExpression::anchoredPattern(rxPattern);
 
     QString unzippedPattern(QString(R"(.*%1\.log\.\d$)").arg(appName));
     unzippedPattern = QRegularExpression::anchoredPattern(unzippedPattern);
 
-    int maxNumber = -1;
+    int32_t maxNumber = -1;
+    QStringList unzippedFiles;
     foreach (const QString &s, files) {
         if (_logExpire.count() > 0) {
-            QFileInfo fileInfo(dir.absoluteFilePath(s));
+            const QFileInfo fileInfo(dir.absoluteFilePath(s));
             if (fileInfo.lastModified().addDays(_logExpire.count()) < now) {
                 dir.remove(s);
             }

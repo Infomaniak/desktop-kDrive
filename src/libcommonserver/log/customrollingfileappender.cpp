@@ -1,18 +1,20 @@
-// Infomaniak kDrive - Desktop
-// Copyright (C) 2023-2026 Infomaniak Network SA
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include "config.h"
 #include "customrollingfileappender.h"
@@ -305,10 +307,11 @@ struct LogFileInfo {
         }
 };
 
-void checkForMaxLogFolderSize(const int64_t maxLogFolderSize, int64_t totalSize,
-                              std::priority_queue<LogFileInfo> logFiles) noexcept {
+void reduceLogFolderSizeIfNeeded(const int64_t maxLogFolderSize, const int64_t totalSize,
+                                 std::priority_queue<LogFileInfo> logFiles) noexcept {
     // Delete files until the total size of the folder is < 2GB
-    while (totalSize > maxLogFolderSize) {
+    auto currentSize = totalSize;
+    while (currentSize > maxLogFolderSize) {
         if (logFiles.empty()) break;
 
         const auto fileToDelete = logFiles.top();
@@ -317,11 +320,11 @@ void checkForMaxLogFolderSize(const int64_t maxLogFolderSize, int64_t totalSize,
             continue; // Ignore current file
         }
         log4cplus::file_remove(CommonUtility::s2ws(fileToDelete.path.string()));
-        totalSize -= fileToDelete.size;
+        currentSize -= fileToDelete.size;
     }
 }
 
-void CustomRollingFileAppender::checkForExpiredFiles() {
+void CustomRollingFileAppender::managePreviousSessionLogs() {
     _lastExpireCheck = std::chrono::system_clock::now();
     // Archive previous log files and delete expired files
     SyncPath logDirPath;
@@ -361,7 +364,7 @@ void CustomRollingFileAppender::checkForExpiredFiles() {
         logFiles.emplace(fileStat.modificationTime, filePath, fileStat.size);
     }
 
-    checkForMaxLogFolderSize(maxLogFolderSize(), totalSize, logFiles);
+    reduceLogFolderSizeIfNeeded(maxLogFolderSize(), totalSize, logFiles);
 }
 
 bool CustomRollingFileAppender::compressPreviousSessionLogs(SyncPath &filePath) noexcept {
@@ -374,7 +377,7 @@ bool CustomRollingFileAppender::compressPreviousSessionLogs(SyncPath &filePath) 
             log4cplus::file_remove(CommonUtility::s2ws(sourceFileName));
             filePath = targetFileName;
             FileStat fileStat;
-            IoError ioError = IoError::Unknown;
+            auto ioError = IoError::Unknown;
             (void) IoHelper::getFileStat(filePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
             if (ioError != IoError::Success || fileStat.nodeType != NodeType::File) {
                 return false;

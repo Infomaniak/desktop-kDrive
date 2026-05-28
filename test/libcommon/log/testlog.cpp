@@ -113,7 +113,7 @@ void TestLog::testExpiredLogFiles(void) {
         const auto now = std::chrono::duration_cast<std::chrono::seconds>(epochNow);
         (void) IoHelper::setFileDates(Log::instance()->getLogFilePath(), now.count(), now.count(),
                                       false); // Prevent the current log file from being deleted.
-        appender->checkForExpiredFiles();
+        appender->managePreviousSessionLogs();
         if (timer.elapsed<std::chrono::seconds>() < seconds(1)) { // The fake log file should not be deleted yet.
             CPPUNIT_ASSERT_EQUAL_MESSAGE(("File unexpectedly deleted after " +
                                           std::to_string(timer.elapsed<std::chrono::seconds>().count()) + " seconds"),
@@ -143,7 +143,7 @@ void TestLog::testLargeLogFolder() {
     CPPUNIT_ASSERT_EQUAL(11, countFilesInDirectory(_logDir));
 
     auto *appender = static_cast<CustomRollingFileAppender *>(_logger.getAppender(Log::rfName).get());
-    appender->checkForExpiredFiles();
+    appender->managePreviousSessionLogs();
 
     // Check that checkForExpiredFiles does not remove any files for now
     CPPUNIT_ASSERT_EQUAL(11, countFilesInDirectory(_logDir));
@@ -155,7 +155,7 @@ void TestLog::testLargeLogFolder() {
     // Set the max log folder size to 3 MB
     appender->setMaxLogFolderSize(3 * 1024 * 1024);
 
-    appender->checkForExpiredFiles();
+    appender->managePreviousSessionLogs();
 
     CPPUNIT_ASSERT_EQUAL(3, countFilesInDirectory(_logDir));
     CPPUNIT_ASSERT(std::filesystem::exists(existingFilepath));
