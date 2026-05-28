@@ -181,6 +181,9 @@ jobs:
           ksp_client_cert: ${{ secrets.WINDOWS_KSP_CLIENT_CERT_FILE_B64 }}
           ksp_client_cert_pass: ${{ secrets.WINDOWS_KSP_CLIENT_CERT_PASSWORD }}
           ksp_client_cert_thumbprint: ${{ secrets.WINDOWS_KSP_CLIENT_CERT_THUMBPRINT }}
+          debug_cert: ${{ secrets.WINDOWS_DEBUG_CERT_FILE_B64 }}
+          debug_cert_pass: ${{ secrets.WINDOWS_DEBUG_CERT_PASSWORD }}
+          debug_cert_thumbprint: ${{ secrets.WINDOWS_DEBUG_CERT_THUMBPRINT }}
           use_ksp_cert: ${{ inputs.use_ksp_cert }}
           release_build: true
           build_new_client: ${{ inputs.build_windows == 'New client' }}
