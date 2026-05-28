@@ -18,10 +18,11 @@
 
 import Cocoa
 import kDriveCoreUI
+import kDriveResources
 import SwiftUI
 
 final class ErrorsViewController: TitledViewController<ErrorsView> {
     init(mainViewModel: MainViewModel) {
-        super.init(toolbarTitle: "!Erreurs à corriger", contentView: ErrorsView(mainViewModel: mainViewModel))
+        super.init(toolbarTitle: KDriveLocalizable.errorPageTitle, contentView: ErrorsView(mainViewModel: mainViewModel))
     }
 }

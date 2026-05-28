@@ -17,6 +17,7 @@
  */
 
 import Foundation
+import kDriveResources
 
 public enum UISynchroErrorCategory: String, Identifiable, Sendable {
     case systemAndPermissions
@@ -34,13 +35,13 @@ public enum UISynchroErrorCategory: String, Identifiable, Sendable {
         case .systemAndPermissions:
             return "!Système et permissions"
         case .conflicts:
-            return "!Conflits"
+            return KDriveLocalizable.conflictErrorTitle
         case .filesToCheck:
-            return "!Fichiers à vérifier"
+            return KDriveLocalizable.errorListFilesToVerifyHeader
         case .synchronizationDirectories:
-            return "!Dossiers de synchronisation"
+            return KDriveLocalizable.labelSyncFolder
         case .storage:
-            return "!Stockage"
+            return KDriveLocalizable.tabTitleStorage
         }
     }
 }

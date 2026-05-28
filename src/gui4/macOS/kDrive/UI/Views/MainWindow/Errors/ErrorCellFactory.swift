@@ -18,6 +18,7 @@
 
 import Foundation
 import kDriveCore
+import kDriveResources
 import SwiftUI
 
 struct ErrorCellFactory {
@@ -149,6 +150,9 @@ struct ErrorCellFactory {
 
 extension ErrorCellView {
     static func unknownError(_ error: SynchroError) -> ErrorCellView {
-        return ErrorCellView(title: "!Erreur inconnue", description: "!Aie aie aie")
+        return ErrorCellView(
+            title: KDriveLocalizable.defaultErrorTitle,
+            description: KDriveLocalizable.unexpectedErrorTeachingTipContent
+        )
     }
 }
