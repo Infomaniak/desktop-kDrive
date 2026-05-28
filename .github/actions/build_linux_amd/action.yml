@@ -29,7 +29,7 @@ runs:
 
       - name: Display AppImage info in summary
         shell: bash
-        if: steps.build.outcome == 'success'
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
         run: |
           FILE=$(ls "${{ github.workspace }}/build-linux/install/kDrive-"*-amd64.AppImage | head -n 1)
 
