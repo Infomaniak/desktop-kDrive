@@ -293,6 +293,19 @@ void CustomRollingFileAppender::customRollover() {
     log4cplus::loglog_opening_result(loglog, out, filename);
 }
 
+struct LogFileInfo {
+        SyncTime modificationTime{0};
+        SyncPath path;
+        int64_t size{0};
+
+        friend bool operator<(LogFileInfo const &lhs, LogFileInfo const &rhs) {
+            if (lhs.modificationTime == rhs.modificationTime) {
+                return lhs.path < rhs.path;
+            }
+            return lhs.modificationTime > rhs.modificationTime;
+        }
+};
+
 void CustomRollingFileAppender::checkForExpiredFiles() {
     _lastExpireCheck = std::chrono::system_clock::now();
     // Archive previous log files and delete expired files
@@ -300,6 +313,9 @@ void CustomRollingFileAppender::checkForExpiredFiles() {
     if (const auto exitInfo = CommonUtility::logDirectoryPath(logDirPath); !exitInfo) {
         return;
     }
+
+    int64_t totalSize = 0;
+    std::priority_queue<LogFileInfo> logFiles;
 
     IoError ioError = IoError::Success;
     IoHelper::DirectoryIterator dirIt(logDirPath, false, ioError);
@@ -324,15 +340,37 @@ void CustomRollingFileAppender::checkForExpiredFiles() {
         }
 
         // Compress previous log sessions
+        auto filePath = entry.path();
         if (const SyncPath currentLogName = DirectoryEntry(filename).path().filename().replace_extension("");
             entry.path().filename().string().find(".gz") == std::string::npos &&
             entry.path().string().find(currentLogName.string()) == std::string::npos) {
-            if (CommonUtility::compressFile(entry.path().string(), entry.path().string() + ".gz")) {
-                log4cplus::file_remove(CommonUtility::s2ws(entry.path().string()));
+            const auto sourceFileName = entry.path().string();
+            const auto targetFileName = sourceFileName + ".gz";
+            if (CommonUtility::compressFile(sourceFileName, targetFileName)) {
+                log4cplus::file_remove(CommonUtility::s2ws(sourceFileName));
+                filePath = targetFileName;
+                IoHelper::getFileStat(filePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
+                if (ioError != IoError::Success || fileStat.nodeType != NodeType::File) {
+                    continue;
+                }
             } else {
-                log4cplus::file_remove(CommonUtility::s2ws(entry.path().string()) + LOG4CPLUS_TEXT(".gz"));
+                log4cplus::file_remove(CommonUtility::s2ws(sourceFileName) + LOG4CPLUS_TEXT(".gz"));
             }
         }
+
+        totalSize += fileStat.size;
+        logFiles.push({fileStat.modificationTime, filePath, fileStat.size});
+    }
+
+    // Delete files until the total size of the folder is < 2GB
+    while (totalSize > _maxLogFolderSize) {
+        if (logFiles.empty()) break;
+
+        const auto fileToDelete = logFiles.top();
+        logFiles.pop();
+        log4cplus::file_remove(CommonUtility::s2ws(fileToDelete.path.string()));
+        totalSize -= fileToDelete.size;
     }
 }
+
 } // namespace KDC
