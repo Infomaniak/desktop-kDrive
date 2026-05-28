@@ -233,7 +233,7 @@ function Build-Extension {
     if ($buildType -eq "RelWithDebInfo") { $configuration = "Release" }
 
     $subject = Get-Subject -Thumbprint $thumbprint -Ci $ci
-    Write-Host "Subject: $subject"
+    Write-Host "Subject: $subject for thumbprint $thumbprint"
 
     $appxManifestPath = "$extPath\FileExplorerExtensionPackage\Package.appxmanifest"
     if (Test-Path $appxManifestPath) {

@@ -129,7 +129,7 @@ runs:
           IF "%{ inputs.release_build }%"=="true" (
             IF "%{ inputs.build_new_client }%"=="true" (
               powershell -File "./infomaniak-build-tools/windows/build-drive.ps1" ^
-                -thumbprint "%thumbprint%" -ci -ext -msi -clean remake -upload -newGui $true
+                -thumbprint "%thumbprint%" -ci -ext -clean remake -upload -newGui $true
             ) ELSE (
               powershell -File "./infomaniak-build-tools/windows/build-drive.ps1" ^
                 -thumbprint "%thumbprint%" -ci -ext -msi -clean remake -upload
