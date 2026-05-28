@@ -17,37 +17,31 @@
  */
 
 #pragma once
-
-#include "libcommon/utility/types.h"
-
+#include <memory>
+#include <optional>
 #include <mutex>
-#include <string_view>
+#include <chrono>
 
 namespace KDC {
 
-class CacheDirectory {
+class UserActionScopedLock {
     public:
-        explicit CacheDirectory(const SyncPath &localSyncPath);
-        ~CacheDirectory();
+        UserActionScopedLock() = default;
 
-        ExitInfo path(SyncPath &cacheDirectory) noexcept;
-        static std::string_view name() noexcept;
+        bool tryLock(const std::shared_ptr<SyncPal> syncPal,
+                     const std::chrono::milliseconds timeout = std::chrono::milliseconds(0)) {
+            if (_lock.has_value() && _lock->owns_lock()) return true;
 
-        // Shared naming contract used by creators and cleanup logic.
-        static std::string createTmpFileName();
-        static bool isTmpFileName(std::string_view fileName) noexcept;
+            if (!syncPal) return false;
+
+            if (std::unique_lock lock(syncPal->userActionsMutex(), std::defer_lock); lock.try_lock_for(timeout)) {
+                _lock = std::move(lock);
+                return true;
+            }
+            return false;
+        }
 
     private:
-        static constexpr std::string_view tmpFilePrefix = "kdrive_";
-        static constexpr uint32_t tmpFileRandomPartLength = 10;
-
-        ExitInfo initDirectory() noexcept;
-        void cleanUp() const;
-
-        const SyncPath _syncDirectoryPath;
-
-        mutable std::mutex _mutex;
-        SyncPath _cacheDirectoryPath;
+        std::optional<std::unique_lock<std::timed_mutex>> _lock;
 };
-
 } // namespace KDC

@@ -107,7 +107,7 @@ ExitInfo BlacklistPropagator::checkNodes() {
                 break;
             }
 
-            exitInfo = removeItem(localNodeId, remoteNodeId, dbId).code();
+            exitInfo = removeItem(localNodeId, remoteNodeId, dbId);
             if (!exitInfo) break;
         }
     }

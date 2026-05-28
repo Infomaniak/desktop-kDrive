@@ -17,6 +17,7 @@
  */
 
 #include "blacklistednodesetlistjob.h"
+#include "useractionscopedlock.h"
 #include "appserver.h"
 #include "requests/serverrequests.h"
 #include "server/comm/guijobmanager.h"
@@ -54,6 +55,14 @@ ExitInfo BlacklistedNodeSetListJob::process() {
     if (ExitInfo exitInfo = getSyncPal(_syncDbId, syncPal); !exitInfo) {
         return exitInfo;
     }
+
+    UserActionScopedLock lock;
+    if (syncPal != nullptr && !lock.tryLock(syncPal, std::chrono::milliseconds(userActionLockLongTimeoutMs))) {
+        LOG_WARN(_logger, "Could not acquire user action lock for syncDbId="
+                                  << _syncDbId << ". Another user action is running. Aborting BlacklistedNodeSetListJob.");
+        return ExitCode::OperationCanceled;
+    }
+
     NodeSet nodeIdSet;
     nodeIdSet.insert(_nodeIdList.begin(), _nodeIdList.end());
     if (ExitInfo exitInfo = syncPal->setSyncIdSet(SyncNodeType::BlackList, nodeIdSet); !exitInfo) {
@@ -62,8 +71,8 @@ ExitInfo BlacklistedNodeSetListJob::process() {
         return exitInfo;
     }
 
-    if (ExitInfo exitInfo = syncPal->syncListUpdated(syncPal->isRunning()); !exitInfo) {
-        LOG_WARN(_logger, "BlacklistedNodeSetListJob::process: syncListUpdated failed for syncDbId=" << _syncDbId);
+    if (ExitInfo exitInfo = syncPal->propagateSyncIdSetChange(syncPal->isRunning()); !exitInfo) {
+        LOG_WARN(_logger, "BlacklistedNodeSetListJob::process: propagateSyncIdSetChangeAsync failed for syncDbId=" << _syncDbId);
         addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
         return exitInfo;
     }

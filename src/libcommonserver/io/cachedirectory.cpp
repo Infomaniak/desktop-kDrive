@@ -56,13 +56,17 @@ ExitInfo CacheDirectory::path(SyncPath &cacheDirectory) noexcept {
     return ExitCode::Ok;
 }
 
+std::string_view CacheDirectory::name() noexcept {
+    static const auto name = Poco::format(".%s-cache", std::string(APPLICATION_NAME));
+    return name;
+}
+
 ExitInfo CacheDirectory::initDirectory() noexcept {
     if (_syncDirectoryPath.empty()) {
         return {ExitCode::LogicError, ExitCause::InvalidArgument};
     }
 
-    const auto cacheDirName = Poco::format(".%s-cache", std::string(APPLICATION_NAME));
-    _cacheDirectoryPath = _syncDirectoryPath / cacheDirName;
+    _cacheDirectoryPath = _syncDirectoryPath / name();
 
     if (auto ioError = IoError::Success;
         !IoHelper::createDirectory(_cacheDirectoryPath, false, ioError) && ioError != IoError::DirectoryExists) {

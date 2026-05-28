@@ -38,7 +38,7 @@ inputs:
     description: 'If true, build the Windows app with the new client'
     required: false
     default: 'false'
-    
+
 outputs:
   kDrive_version:
     description: 'The version of the kDrive app built'
@@ -47,7 +47,7 @@ outputs:
 runs:
     using: "composite"
     steps:
-      
+
       - name: Load system Path into Github environment
         run : echo Path=%Path%>> %GITHUB_ENV%
         shell: cmd
@@ -61,7 +61,7 @@ runs:
           WINDOWS_KSP_CLIENT_CERT: ${{ inputs.ksp_client_cert }}
           WINDOWS_DEBUG_CERT: ${{ inputs.debug_cert }}
         run: |
-          if("${{ inputs.use_ksp_cert }}" -eq "true") {
+          if ("${{ inputs.use_ksp_cert }}" -eq "true") {
             New-Item -ItemType directory -Path certificate
             Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_KSP_CLIENT_CERT
             certutil -decode certificate/tempCert.txt certificate/ksp_client_certificate.pfx
@@ -175,7 +175,7 @@ runs:
             Write-Host "No conanrun.ps1 found, skipping Conan dependencies fetch."
             exit 0
           }
-          
+
           New-Item -ItemType Directory -Path "./dependencies/platforms" -Force *> $null
           $patterns = @(
               "xxhash*.dll",

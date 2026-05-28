@@ -189,9 +189,9 @@ void TestGuiCommChannel::testErrorResolveConflictsQuickJob() {
         auto quickJob = std::dynamic_pointer_cast<ErrorResolveConflictsQuickJob>(job);
         CPPUNIT_ASSERT(quickJob);
         CPPUNIT_ASSERT_EQUAL(size_t{3}, quickJob->_errorDbIdList.size());
-        CPPUNIT_ASSERT_EQUAL(int32_t{100}, quickJob->_errorDbIdList.at(0));
-        CPPUNIT_ASSERT_EQUAL(int32_t{200}, quickJob->_errorDbIdList.at(1));
-        CPPUNIT_ASSERT_EQUAL(int32_t{300}, quickJob->_errorDbIdList.at(2));
+        CPPUNIT_ASSERT_EQUAL(ErrorDbId{100}, quickJob->_errorDbIdList.at(0));
+        CPPUNIT_ASSERT_EQUAL(ErrorDbId{200}, quickJob->_errorDbIdList.at(1));
+        CPPUNIT_ASSERT_EQUAL(ErrorDbId{300}, quickJob->_errorDbIdList.at(2));
         CPPUNIT_ASSERT(ConflictResolutionStrategy::KeepLocal == quickJob->_strategy);
     };
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
