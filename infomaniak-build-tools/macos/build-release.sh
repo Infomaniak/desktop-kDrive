@@ -174,5 +174,21 @@ if [ -n "$sign_files" ]; then
 	/usr/bin/ditto -c -k --keepParent "$install_dir/notarization" "$install_dir/InfomaniakDrive.zip"
 	# Send to notarization
 	echo "Sending notarization request"
-	xcrun notarytool submit --apple-id "$ALTOOL_USERNAME" --keychain-profile "notarytool" "$install_dir/InfomaniakDrive.zip" --progress --wait
+	
+	if [ -n "$NOTARY_APP_PASSWORD" ] && [ -n "$NOTARY_TEAM_ID" ]; then
+		echo "Using environment credentials for notarization"
+		xcrun notarytool submit \
+			--apple-id "$ALTOOL_USERNAME" \
+			--password "$NOTARY_APP_PASSWORD" \
+			--team-id "$NOTARY_TEAM_ID" \
+			"$install_dir/InfomaniakDrive.zip" \
+			--progress --wait
+	else
+		echo "Using keychain profile for notarization"
+		xcrun notarytool submit \
+			--apple-id "$ALTOOL_USERNAME" \
+			--keychain-profile "notarytool" \
+			"$install_dir/InfomaniakDrive.zip" \
+			--progress --wait
+	fi
 fi
