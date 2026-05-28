@@ -121,27 +121,27 @@ bool Snapshot::path(const NodeId &itemId, SyncPath &path, bool &ignore) const no
         return false;
     }
 
+    const std::scoped_lock lock(_mutex);
+
     bool ok = true;
     std::deque<std::pair<NodeId, SyncName>> ancestors;
-    {
-        bool parentIsRoot = false;
-        NodeId id = itemId;
-        const std::scoped_lock lock(_mutex);
-        while (!parentIsRoot) {
-            if (const auto item = findItem(id); item) {
-                if (!item->path().empty()) {
-                    path = item->path();
-                    break;
-                }
-                ancestors.push_back({item->id(), item->name()});
-                id = item->parentId();
-                parentIsRoot = id == _rootFolderId;
-                continue;
+    bool parentIsRoot = false;
+    NodeId id = itemId;
+    while (!parentIsRoot) {
+        if (const auto item = findItem(id); item) {
+            if (!item->path().empty()) {
+                path = item->path();
+                break;
             }
-            ok = false;
-            break;
+            (void) ancestors.emplace_back(item->id(), item->name());
+            id = item->parentId();
+            parentIsRoot = id == _rootFolderId;
+            continue;
         }
+        ok = false;
+        break;
     }
+
 
     // Construct path
     SyncPath tmpParentPath(path);
