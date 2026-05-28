@@ -299,12 +299,11 @@ struct LogFileInfo {
         SyncPath path;
         int64_t size{0};
 
-        friend bool operator<(LogFileInfo const &lhs, LogFileInfo const &rhs) {
-            if (lhs.modificationTime == rhs.modificationTime) {
-                return lhs.path < rhs.path;
-            }
-            return lhs.modificationTime > rhs.modificationTime;
+        auto operator<=>(const LogFileInfo &rhs) const {
+            if (auto cmp = rhs.modificationTime <=> modificationTime; cmp != 0) return cmp;
+            return path <=> rhs.path;
         }
+        bool operator==(const LogFileInfo &rhs) const = default;
 };
 
 void reduceLogFolderSizeIfNeeded(const int64_t maxLogFolderSize, const int64_t totalSize,
