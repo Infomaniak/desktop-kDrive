@@ -47,41 +47,38 @@ CheckHashMatchJob::CheckHashMatchJob(const DriveDbId driveDbId, const SyncPath &
 }
 
 ExitInfo CheckHashMatchJob::getFileSize(const SyncPath &path, int64_t &size) {
-    using enum KDC::ExitCode;
-    IoError fileSizeIoError = IoError::Unknown;
+    IoError ioError = IoError::Unknown;
     uint64_t tmpSize = 0;
-    if (!IoHelper::getFileSize(path, tmpSize, fileSizeIoError)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::getFileSize for " << Utility::formatIoError(path, fileSizeIoError));
-        return SystemError;
+    if (!IoHelper::getFileSize(path, tmpSize, ioError)) {
+        LOGW_WARN(_logger, L"Error in IoHelper::getFileSize for " << Utility::formatIoError(path, ioError));
+        return ExitCode::SystemError;
     }
     size = static_cast<int64_t>(tmpSize);
 
-    if (fileSizeIoError == IoError::NoSuchFileOrDirectory) { // The synchronization will
-                                                             // be re-started.
+    if (ioError == IoError::NoSuchFileOrDirectory) { // The synchronization will be re-started.
         LOGW_WARN(_logger, L"File doesn't exist: " << Utility::formatSyncPath(path));
-        return {SystemError, ExitCause::NotFound};
+        return {ExitCode::SystemError, ExitCause::NotFound};
     }
 
-    if (fileSizeIoError == IoError::AccessDenied) { // An action from the user is requested.
+    if (ioError == IoError::AccessDenied) { // An action from the user is requested.
         LOGW_WARN(_logger, L"File search permission missing: " << Utility::formatSyncPath(path));
-        return {SystemError, ExitCause::FileAccessError};
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
-    assert(fileSizeIoError == IoError::Success);
-    if (fileSizeIoError != IoError::Success) {
+    assert(ioError == IoError::Success);
+    if (ioError != IoError::Success) {
         LOGW_WARN(_logger, L"Unable to read file size for " << Utility::formatSyncPath(path));
-        return SystemError;
+        return ExitCode::SystemError;
     }
 
-    return Ok;
+    return ExitCode::Ok;
 }
 
 ExitInfo CheckHashMatchJob::runJob() noexcept {
-    using enum KDC::ExitCode;
     if (!_localSize)
         if (const ExitInfo exitInfo = getFileSize(_filePath, _localSize); !exitInfo) return exitInfo;
 
-    if (_localSize != _remoteSize) return Ok;
+    if (_localSize != _remoteSize) return ExitCode::Ok;
     if (const ExitInfo exitInfo = AbstractTokenNetworkJob::runJob(); !exitInfo) {
         return exitInfo;
     }
@@ -91,28 +88,28 @@ ExitInfo CheckHashMatchJob::runJob() noexcept {
 
     if (checksumIoError == IoError::NoSuchFileOrDirectory) {
         LOGW_WARN(_logger, L"File doesn't exist while computing checksum: " << Utility::formatSyncPath(_filePath));
-        return DataError;
+        return ExitCode::DataError;
     }
 
     if (checksumIoError == IoError::AccessDenied) {
         LOGW_WARN(_logger, L"File read permission missing while computing checksum: " << Utility::formatSyncPath(_filePath));
-        return {SystemError, ExitCause::FileAccessError};
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     if (checksumIoError == IoError::InvalidArgument) {
         LOGW_WARN(_logger, L"File is a symlink: " << Utility::formatSyncPath(_filePath));
-        return {SystemError, ExitCause::FileAccessError};
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     assert(checksumIoError == IoError::Success);
     if (checksumIoError != IoError::Success) {
         LOGW_WARN(_logger, L"Unable to compute checksum for " << Utility::formatIoError(_filePath, checksumIoError));
-        return SystemError;
+        return ExitCode::SystemError;
     }
 
-    if (_localHash != _remoteHash) return Ok;
+    if (_localHash != _remoteHash) return ExitCode::Ok;
     _shouldDownload = false;
-    return Ok;
+    return ExitCode::Ok;
 }
 
 std::string CheckHashMatchJob::getSpecificUrl() {
