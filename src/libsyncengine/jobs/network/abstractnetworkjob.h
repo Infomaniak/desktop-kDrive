@@ -119,6 +119,7 @@ class AbstractNetworkJob : public SyncJob {
         void clearSession();
         void abortSession();
         ExitInfo sendRequest(const Poco::URI &uri);
+        void setHeaders(Poco::Net::HTTPRequest &req);
         ExitInfo followRedirect();
         ExitInfo processSocketError(const std::string &msg, UniqueId jobId);
         ExitInfo processSocketError(const std::string &msg, UniqueId jobId, const std::exception &e);

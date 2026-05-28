@@ -393,13 +393,7 @@ ExitInfo AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
     Poco::Net::HTTPRequest req(_httpMethod, path, Poco::Net::HTTPMessage::HTTP_1_1);
 
     // Set headers
-    req.set("User-Agent", _userAgent);
-    req.setContentType(contentType());
-    req.add("Accept", acceptHeader());
-    req.add("X-Request-ID", _requestUuid);
-    for (const auto &[headerKey, headerValue]: _rawHeaders) {
-        req.add(headerKey, headerValue);
-    }
+    setHeaders(req);
 
     if (!_data.empty()) {
         req.setContentLength(static_cast<std::streamsize>(_data.size()));
@@ -451,6 +445,18 @@ ExitInfo AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
     }
 
     return ExitCode::Ok;
+}
+
+void AbstractNetworkJob::setHeaders(Poco::Net::HTTPRequest &req) {
+    req.set("User-Agent", _userAgent);
+    req.setContentType(contentType());
+    req.add("Accept", acceptHeader());
+    req.add("X-Request-ID", _requestUuid);
+    for (const auto &[headerKey, headerValue]: _rawHeaders) {
+        req.add(headerKey, headerValue);
+    }
+    if (scope() != Scope::None) req.add("ik-client-scope", toString(scope()));
+    if (!context().empty()) req.add("ik-client-context", context());
 }
 
 ExitInfo AbstractNetworkJob::receiveResponseFromSession(StreamVector &stream) {
