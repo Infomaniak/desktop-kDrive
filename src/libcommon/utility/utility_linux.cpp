@@ -1,18 +1,20 @@
-// Infomaniak kDrive - Desktop
-// Copyright (C) 2023-2026 Infomaniak Network SA
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include "utility.h"
 
@@ -30,7 +32,12 @@
 
 namespace KDC {
 
-static std::string getHomeDirFromPasswd() {
+static std::string homeDirectory() {
+    auto homeDir = CommonUtility::envVarValue("HOME");
+    if (!homeDir.empty()) return homeDir;
+
+    // The "HOME" environment variable might not be set. In this case, fallback on a more robust method by using getpwuid_r. The
+    // "passwd" struct retrieved contains information such as username, user id, encrypted password or  home directory.
     struct passwd pwd;
     struct passwd *result = nullptr;
     auto bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
@@ -43,8 +50,7 @@ static std::string getHomeDirFromPasswd() {
 }
 
 SyncPath CommonUtility::getGenericAppSupportDir() {
-    auto homeDir = CommonUtility::envVarValue("HOME");
-    if (homeDir.empty()) homeDir = getHomeDirFromPasswd();
+    auto homeDir = homeDirectory();
     if (homeDir.empty()) return {};
 
     SyncPath homePath(homeDir);
@@ -191,8 +197,7 @@ ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
     if (!xdgStateHome.empty() && xdgStateHomePath.is_absolute()) {
         directoryPath = xdgStateHomePath;
     } else {
-        auto homeDir = envVarValue("HOME");
-        if (homeDir.empty()) homeDir = getHomeDirFromPasswd();
+        auto homeDir = homeDirectory();
         if (homeDir.empty()) return {ExitCode::SystemError, ExitCause::NotFound};
         directoryPath = SyncPath(homeDir) / ".local" / "state";
     }
@@ -202,13 +207,13 @@ ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
 
     std::error_code ec;
     const bool directoryPathExists = std::filesystem::exists(directoryPath, ec);
-    if (ec.value() != 0) {
+    if (ec) {
         return stdErrorToExitInfo(ec);
     }
 
     if (directoryPathExists) {
         if (!std::filesystem::is_directory(directoryPath, ec)) {
-            if (ec.value() != 0) {
+            if (ec) {
                 return stdErrorToExitInfo(ec);
             }
             return stdErrorToExitInfo(std::make_error_code(std::errc::not_a_directory));
