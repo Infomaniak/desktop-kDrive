@@ -785,6 +785,13 @@ IoError IoHelper::getFileChecksum(const SyncPath &path, std::ifstream &ifs, std:
         IoError openError = Success;
         if (!IoHelper::openFile(path, ifs, openError) || !ifs) return openError;
 
+        struct IfstreamCloser {
+            std::ifstream &stream;
+            ~IfstreamCloser() {
+                if (stream.is_open()) stream.close();
+            }
+        } ifstreamCloser{ifs};
+
         constexpr size_t chunkSize = 8 * 1024 * 1024; // 8 MB
         std::vector<char> buffer(chunkSize);
 
@@ -799,13 +806,11 @@ IoError IoHelper::getFileChecksum(const SyncPath &path, std::ifstream &ifs, std:
         std::streamsize readBytes(0);
         while ((readBytes = ifs.read(buffer.data(), static_cast<std::streamsize>(buffer.size())).gcount()) > 0) {
             if (XXH3_64bits_update(state, buffer.data(), static_cast<size_t>(readBytes)) == XXH_ERROR) {
-                ifs.close();
                 XXH3_freeState(state);
                 return Unknown;
             }
         }
 
-        ifs.close();
         XXH64_hash_t hash = XXH3_64bits_digest(state);
         XXH3_freeState(state);
 
