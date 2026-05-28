@@ -85,7 +85,6 @@ namespace Infomaniak.kDrive
     }
     internal interface IkSuiteConstants
     {
-        public Uri HomeUri { get; }
         public Uri TarrifsUri { get; }
         public Uri HelpUri { get; }
     }
@@ -176,7 +175,6 @@ namespace Infomaniak.kDrive
 
     internal sealed class ProductionKSuite : IkSuiteConstants
     {
-        public Uri HomeUri { get; } = new Uri("https://www.infomaniak.com/fr/ksuite");
         public Uri TarrifsUri { get; } = new Uri("https://www.infomaniak.com/gtl/myksuite#prices");
         public Uri HelpUri { get; } = new Uri("https://www.infomaniak.com/gtl/support");
     }
