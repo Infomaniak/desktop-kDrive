@@ -21,6 +21,8 @@
 #include <log4cplus/logger.h>
 #include <log4cplus/fileappender.h>
 
+#include <cstdint>
+
 namespace KDC {
 
 constexpr int64_t defaultMaxLogFolderSize = 2147483648; // 2GB
