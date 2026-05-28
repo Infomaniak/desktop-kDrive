@@ -313,6 +313,9 @@ void checkForMaxLogFolderSize(const int64_t maxLogFolderSize, int64_t totalSize,
 
         const auto fileToDelete = logFiles.top();
         logFiles.pop();
+        if (fileToDelete.path.filename().string() == Log::instance()->getLogFilePath().filename().string()) {
+            continue; // Ignore current file
+        }
         log4cplus::file_remove(CommonUtility::s2ws(fileToDelete.path.string()));
         totalSize -= fileToDelete.size;
     }
