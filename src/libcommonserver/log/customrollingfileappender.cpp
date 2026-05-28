@@ -358,35 +358,36 @@ void CustomRollingFileAppender::managePreviousSessionLogs() {
         }
 
         auto filePath = entry.path();
-        if (!compressPreviousSessionLogs(filePath)) continue;
+        SyncPath finalFilePath;
+        tryCompressFile(filePath, finalFilePath);
+
+        // Get FileStat again to retrieve the updated file size after compression
+        (void) IoHelper::getFileStat(finalFilePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
+        if (ioError != IoError::Success || fileStat.nodeType != NodeType::File) {
+            continue;
+        }
 
         totalSize += fileStat.size;
-        logFiles.emplace(fileStat.modificationTime, filePath, fileStat.size);
+        logFiles.emplace(fileStat.modificationTime, finalFilePath, fileStat.size);
     }
 
     reduceLogFolderSizeIfNeeded(maxLogFolderSize(), totalSize, logFiles);
 }
 
-bool CustomRollingFileAppender::compressPreviousSessionLogs(SyncPath &filePath) noexcept {
+void CustomRollingFileAppender::tryCompressFile(const SyncPath &inputPath, SyncPath &outputPath) noexcept {
+    outputPath = inputPath;
     if (const SyncPath currentLogName = DirectoryEntry(filename).path().filename().replace_extension("");
-        filePath.filename().string().find(".gz") == std::string::npos &&
-        filePath.string().find(currentLogName.string()) == std::string::npos) {
-        const auto sourceFileName = filePath.string();
+        inputPath.filename().string().find(".gz") == std::string::npos &&
+        inputPath.string().find(currentLogName.string()) == std::string::npos) {
+        const auto sourceFileName = inputPath.string();
         const auto targetFileName = sourceFileName + ".gz";
         if (CommonUtility::compressFile(sourceFileName, targetFileName)) {
             log4cplus::file_remove(CommonUtility::s2ws(sourceFileName));
-            filePath = targetFileName;
-            FileStat fileStat;
-            auto ioError = IoError::Unknown;
-            (void) IoHelper::getFileStat(filePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
-            if (ioError != IoError::Success || fileStat.nodeType != NodeType::File) {
-                return false;
-            }
+            outputPath = targetFileName;
         } else {
             log4cplus::file_remove(CommonUtility::s2ws(sourceFileName) + LOG4CPLUS_TEXT(".gz"));
         }
     }
-    return true;
 }
 
 } // namespace KDC
