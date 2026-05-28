@@ -49,6 +49,8 @@ class CustomRollingFileAppender : public log4cplus::RollingFileAppender {
         void customRollover();
 
     private:
+        bool compressPreviousSessionLogs(SyncPath &filePath) noexcept;
+
         int _expire = 0;
         long _maxFileSize = 0;
         int64_t _maxLogFolderSize = defaultMaxLogFolderSize;
