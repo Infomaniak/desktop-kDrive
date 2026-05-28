@@ -48,32 +48,33 @@ CheckHashMatchJob::CheckHashMatchJob(const DriveDbId driveDbId, const SyncPath &
 }
 
 ExitInfo CheckHashMatchJob::getFileSize(const SyncPath &path, int64_t &size) {
+    using enum KDC::ExitCode;
     IoError ioError = IoError::Unknown;
     uint64_t tmpSize = 0;
     if (!IoHelper::getFileSize(path, tmpSize, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::getFileSize for " << Utility::formatIoError(path, ioError));
-        return ExitCode::SystemError;
+        return SystemError;
     }
     size = static_cast<int64_t>(tmpSize);
 
     if (ioError == IoError::NoSuchFileOrDirectory) { // The synchronization will
                                                      // be re-started.
         LOGW_WARN(_logger, L"File doesn't exist: " << Utility::formatSyncPath(path));
-        return {ExitCode::SystemError, ExitCause::NotFound};
+        return {SystemError, ExitCause::NotFound};
     }
 
     if (ioError == IoError::AccessDenied) { // An action from the user is requested.
         LOGW_WARN(_logger, L"File search permission missing: " << Utility::formatSyncPath(path));
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
+        return {SystemError, ExitCause::FileAccessError};
     }
 
     assert(ioError == IoError::Success);
     if (ioError != IoError::Success) {
         LOGW_WARN(_logger, L"Unable to read file size for " << Utility::formatSyncPath(path));
-        return ExitCode::SystemError;
+        return SystemError;
     }
 
-    return ExitCode::Ok;
+    return Ok;
 }
 
 ExitInfo CheckHashMatchJob::runJob() noexcept {

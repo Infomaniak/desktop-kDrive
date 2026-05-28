@@ -787,10 +787,16 @@ IoError IoHelper::getFileChecksum(const SyncPath &path, std::ifstream &ifs, std:
 
         struct IfstreamCloser {
             std::ifstream &stream;
-            ~IfstreamCloser() {
-                if (stream.is_open()) stream.close();
+            explicit IfstreamCloser(std::ifstream &s) : stream(s) {}
+            IfstreamCloser(const IfstreamCloser &) = delete;
+            IfstreamCloser &operator=(const IfstreamCloser &) = delete;
+            ~IfstreamCloser() noexcept {
+                try {
+                    if (stream.is_open()) stream.close();
+                } catch (...) {}
             }
-        } ifstreamCloser{ifs};
+        };
+        IfstreamCloser ifstreamCloser(ifs);
 
         constexpr size_t chunkSize = 8 * 1024 * 1024; // 8 MB
         std::vector<char> buffer(chunkSize);
