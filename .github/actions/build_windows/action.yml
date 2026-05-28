@@ -116,28 +116,36 @@ runs:
 
       - name: Build kDrive desktop
         id: build
-        shell: cmd
+        shell: powershell
         run: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
+          & "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
 
-          set "thumbprint=${{ inputs.debug_cert_thumbprint }}"
+          $thumbprint = "${{ inputs.debug_cert_thumbprint }}"
 
-          IF "${{ inputs.use_ksp_cert }}"=="true" (
-            set "thumbprint=${{ inputs.ksp_client_cert_thumbprint }}"
-          )
+          if ("${{ inputs.use_ksp_cert }}" -eq "true") {
+            $thumbprint = "${{ inputs.ksp_client_cert_thumbprint }}"
+          }
 
-          IF "${{ inputs.release_build }}"=="true" (
-            IF "${{ inputs.build_new_client }}"=="true" (
-              powershell -File "./infomaniak-build-tools/windows/build-drive.ps1" ^
-                -thumbprint "%thumbprint%" -ci -ext -clean remake -upload -newGui $true
-            ) ELSE (
-              powershell -File "./infomaniak-build-tools/windows/build-drive.ps1" ^
-                -thumbprint "%thumbprint%" -ci -ext -msi -clean remake -upload
-            )
-          ) ELSE (
-            powershell -File "./infomaniak-build-tools/windows/build-drive.ps1" ^
-              -thumbprint "%thumbprint%" -ci -unitTests
-          )
+          if (-not $thumbprint) {
+            throw "Thumbprint is empty. Check CI inputs (debug_cert_thumbprint / ksp_client_cert_thumbprint)."
+          }
+
+          Write-Host "Using certificate thumbprint: $thumbprint" -ForegroundColor Cyan
+
+          $script = "./infomaniak-build-tools/windows/build-drive.ps1"
+
+          if ("${{ inputs.release_build }}" -eq "true") {
+
+            if ("${{ inputs.build_new_client }}" -eq "true") {
+              & $script -thumbprint $thumbprint -ci -ext -clean remake -upload -newGui $true
+            }
+            else {
+              & $script -thumbprint $thumbprint -ci -ext -msi -clean remake -upload
+            }
+          }
+          else {
+            & $script -thumbprint $thumbprint -ci -unitTests
+          }
 
       - name: Remove Windows certificate
         run: |
