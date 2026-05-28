@@ -45,11 +45,9 @@ runs:
       - name: Build kDrive desktop
         id: build
         env:
-          NOTARY_APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
           NOTARY_APP_PASSWORD: ${{ secrets.NOTARY_APP_PASSWORD }}
-          NOTARY_TEAM_ID: ${{ secrets.NOTARY_TEAM_ID }}
+          ALTOOL_USERNAME: ${{ inputs.release_build_altool_username }}
         run : |
-            export ALTOOL_USERNAME="${{ inputs.release_build_altool_username }}"
             if [ "${{ inputs.release_build }}" = "true" ]; then
                 ./infomaniak-build-tools/macos/build-release.sh
             else

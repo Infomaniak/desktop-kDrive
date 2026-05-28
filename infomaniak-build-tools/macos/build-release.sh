@@ -175,12 +175,12 @@ if [ -n "$sign_files" ]; then
 	# Send to notarization
 	echo "Sending notarization request"
 	
-	if [ -n "$NOTARY_APP_PASSWORD" ] && [ -n "$NOTARY_TEAM_ID" ]; then
+	if [ -n "$NOTARY_APP_PASSWORD" ] && [ -n "$TEAM_IDENTIFIER" ]; then
 		echo "Using environment credentials for notarization"
 		xcrun notarytool submit \
 			--apple-id "$ALTOOL_USERNAME" \
 			--password "$NOTARY_APP_PASSWORD" \
-			--team-id "$NOTARY_TEAM_ID" \
+			--team-id "$TEAM_IDENTIFIER" \
 			"$install_dir/InfomaniakDrive.zip" \
 			--progress --wait
 	else
