@@ -469,19 +469,19 @@ void TestLocalFileSystemObserverWorker::testLFSODirReplacement() {
     LOGW_DEBUG(_logger, L"***** Test dir replacement *****")
 
     // Setup initial situation
-    SyncName dirName1 = Str("A");
+    SyncPath dirName1{Str("A")};
     SyncPath testDirPath1 = _rootFolderPath / dirName1;
     CPPUNIT_ASSERT(testhelpers::generateTestFolder(testDirPath1));
 
-    SyncName dirName2 = Str("B");
+    SyncPath dirName2{Str("B")};
     SyncPath testDirPath2 = _rootFolderPath / dirName2;
     CPPUNIT_ASSERT(testhelpers::generateTestFolder(testDirPath2));
 
-    SyncName fileName1 = Str("F1");
+    SyncPath fileName1{Str("F1")};
     SyncPath testFilePath1 = testDirPath1 / fileName1;
     KDC::testhelpers::generateOrEditTestFile(testFilePath1);
 
-    SyncName fileName2 = Str("F2");
+    SyncPath fileName2{Str("F2")};
     SyncPath testFilePath2 = testDirPath2 / fileName2;
     KDC::testhelpers::generateOrEditTestFile(testFilePath2);
 
@@ -499,12 +499,12 @@ void TestLocalFileSystemObserverWorker::testLFSODirReplacement() {
     // Init SyncDb (we need only A and B nodes)
     bool constraintError = false;
     DbNode dbNodeDir1(1, "A", "A", dirId1, "1234", std::nullopt, std::nullopt, std::nullopt, NodeType::Directory, 0);
-    DbNodeId dbDirId1;
+    DbNodeId dbDirId1 = 0;
     CPPUNIT_ASSERT(_syncPal->syncDb()->insertNode(dbNodeDir1, dbDirId1, constraintError) && !constraintError);
     dbNodeDir1.setNodeId(dbDirId1);
 
     DbNode dbNodeDir2(1, "B", "B", dirId2, "5678", std::nullopt, std::nullopt, std::nullopt, NodeType::Directory, 0);
-    DbNodeId dbDirId2;
+    DbNodeId dbDirId2 = 0;
     CPPUNIT_ASSERT(_syncPal->syncDb()->insertNode(dbNodeDir2, dbDirId2, constraintError) && !constraintError);
     dbNodeDir2.setNodeId(dbDirId2);
 

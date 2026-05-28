@@ -1548,9 +1548,10 @@ ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath 
         //  Remove the node from DB and tree so it will be re-created at its
         //  original location on next sync
         _syncPal->setRestart(true);
-        if (exitInfo = propagateDeleteToDbAndTree(syncOp); !exitInfo) {
+        exitInfo = propagateDeleteToDbAndTree(syncOp);
+        if (!exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for "
-                                               << Utility::formatSyncName(syncOp->affectedNode()->name()));
+                                               << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" : " << exitInfo);
         }
     }
     return exitInfo;
