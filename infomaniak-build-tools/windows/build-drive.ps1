@@ -167,17 +167,63 @@ function Get-Subject {
     return $subject
 }
 
+function Get-Publisher-Hash {
+    param (
+        [string] $publisher
+    )
+
+    # Compute SHA256 hash of the publisher string
+    $sha256 = [System.Security.Cryptography.SHA256]::Create()
+    $publisherBytes = [System.Text.Encoding]::Unicode.GetBytes($publisher)
+    $hashBytes = $sha256.ComputeHash($publisherBytes)
+
+    # Take the first 8 bytes and convert to base32 (13 characters)
+    # Windows uses a specific base32 alphabet for package family names
+    $base32Alphabet = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
+    $hashValue = [System.BitConverter]::ToUInt64($hashBytes, 0)
+
+    $result = ""
+    for ($i = 0; $i -lt 13; $i++) {
+        $result = $base32Alphabet[[int]($hashValue -band 0x1F)] + $result
+        $hashValue = $hashValue -shr 5
+    }
+
+    return $result.ToLower()
+}
+
 function Get-Aumid {
     param (
-        [bool] $upload
+        [string] $thumbprint,
+        [bool] $ci
     )
-    $aumid = if ($upload) { $env:KDC_RELEASE_AUMID } else { $env:KDC_DEBUG_AUMID }
 
-    if (!$aumid) {
-        Write-Host "The AUMID value could not be read from env.
+    # Get the certificate subject (publisher)
+    $subject = Get-Subject -Thumbprint $thumbprint -Ci $ci
+
+    if (!$subject) {
+        Write-Host "The certificate subject could not be retrieved.
                    Exiting." -f Red
         exit 1
     }
+
+    Write-Host "Certificate subject: $subject"
+
+    # Extract the CN (Common Name) from the subject DN
+    # The subject format is typically: CN=..., O=..., etc.
+    if ($subject -match "CN=([^,]+)") {
+        $publisher = $matches[1]
+    } else {
+        Write-Host "Could not extract publisher (CN) from certificate subject.
+                   Exiting." -f Red
+        exit 1
+    }
+
+    Write-Host "Publisher: $publisher"
+
+    # Compute the publisher hash (AUMID suffix)
+    $aumid = Get-Publisher-Hash -Publisher $subject
+
+    Write-Host "Computed AUMID: $aumid"
 
     return $aumid
 }
@@ -247,10 +293,10 @@ function Build-Extension {
 
     $version = Get-version -IncludeBuildVersion $true
     Write-Host "Extension version: $version"
-	
-    $aumid = Get-Aumid $upload
+
+    $aumid = Get-Aumid -Thumbprint $thumbprint -Ci $ci
     Write-Host "Building extension with AUMID: $aumid"
-	
+
     msbuild "$extPath\kDriveExt.sln" /p:Configuration=$configuration /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true /p:PackageCertificateThumbprint="$thumbprint" /p:KDC_AUMID="$aumid"
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
@@ -391,7 +437,9 @@ function Set-Up-NSIS {
         [string] $archiveName,
         [string] $archivePath,
         [string] $archiveDataPath,
-        [bool] $upload
+        [bool] $upload,
+        [string] $thumbprint,
+        [bool] $ci
     )
 
     Write-Host "Setting up NSIS."
@@ -406,7 +454,7 @@ function Set-Up-NSIS {
 
     Clean $installerPath
 
-    $aumid = Get-Aumid $upload
+    $aumid = Get-Aumid -Thumbprint $thumbprint -Ci $ci
     $prodName = "kDrive"
     $compName = "Infomaniak Network SA"
     $version = Get-Version -IncludeBuildVersion $true
@@ -436,7 +484,7 @@ function Sign-File {
         [string] $thumbprint,
         [string] $description = ""
     )
-    Write-Host "Signing the file $filePath with thumbprint $thumbprint" -f Yellow
+    Write-Host "Signing the file $filePath with thumbprint $thumbprint"
     & signtool.exe sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256 /fd sha256 /td sha256 /v /debug /sm /d $description $filePath
     $res = $LASTEXITCODE
     Write-Host "Signing exit code: $res" -ForegroundColor Yellow
@@ -782,6 +830,12 @@ if ($res -ne 0) {
 #                                           EXTENSION                                           #
 #                                                                                               #
 #################################################################################################
+if($thumbprint) {
+    Write-Host "Using certificate with thumbprint: $thumbprint" -f Green
+} else {
+    Write-Warning "No certificate thumbprint provided. The extension will not be signed."
+    Exit 1
+}
 
 if (!(Test-Path "$vfsDir\vfs.dll") -or $ext) {
     Build-Extension -Path $path -ContentPath $contentPath -ExtPath $extPath -BuildType $buildType -Thumbprint $thumbprint
@@ -811,7 +865,7 @@ if ($LASTEXITCODE -ne 0) {
 #                                                                                               #
 #################################################################################################
 
-Set-Up-NSIS -BuildPath $buildPath -ContentPath $contentPath -ExtPath $extPath -VfsDir $vfsDir -ArchiveName $archiveName -ArchivePath $archivePath -ArchiveDataPath $archiveDataPath -Upload $upload
+Set-Up-NSIS -BuildPath $buildPath -ContentPath $contentPath -ExtPath $extPath -VfsDir $vfsDir -ArchiveName $archiveName -ArchivePath $archivePath -ArchiveDataPath $archiveDataPath -Upload $upload -Thumbprint $thumbprint -Ci $ci
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "NSIS setup failed. Aborting." -f Red
