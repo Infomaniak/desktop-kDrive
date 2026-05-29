@@ -77,9 +77,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors
                 {
                     try
                     {
-                        var value = prop.GetValue(Error);
                         if (prop.Name == nameof(Error.NodeTypeTranslationKey)) continue;
-
+                        var value = prop.GetValue(Error);
                         AddIfNotEmpty($"{prop.Name}", value);
                     }
                     catch (Exception ex)
