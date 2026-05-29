@@ -53,34 +53,39 @@ UpdateTreeWorker::~UpdateTreeWorker() {
     _updateTree.reset();
 }
 
-void UpdateTreeWorker::resetNodes() {
+bool UpdateTreeWorker::resetNodes() {
     // Reset nodes working properties
+    NodeSet tmpBlacklist;
+    SyncNodeCache::instance()->syncNodes(
+            syncDbId(), _side == ReplicaSide::Remote ? SyncNodeType::TmpRemoteBlacklist : SyncNodeType::TmpLocalBlacklist,
+            tmpBlacklist);
+
     auto nodeIt = _updateTree->nodes().begin();
     while (nodeIt != _updateTree->nodes().end()) {
-        if (nodeIt->second->status() == NodeStatus::ToDelete) {
-            nodeIt = _updateTree->nodes().erase(nodeIt);
+        const auto node = nodeIt->second;
+        if (node->status() == NodeStatus::ToDelete) {
+            nodeIt++;
+            if (!_updateTree->deleteNode(node)) return false;
             continue;
         }
 
         // Make sure no blacklist node remains in the update tree
-        NodeSet tmpBlacklist;
-        SyncNodeCache::instance()->syncNodes(
-                syncDbId(), _side == ReplicaSide::Remote ? SyncNodeType::TmpRemoteBlacklist : SyncNodeType::TmpLocalBlacklist,
-                tmpBlacklist);
-        if (nodeIt->second->id().has_value() && tmpBlacklist.contains(nodeIt->second->id().value())) {
+        if (node->id().has_value() && tmpBlacklist.contains(node->id().value())) {
             // Remove blacklisted nodes from the update tree
-            nodeIt = _updateTree->nodes().erase(nodeIt);
+            nodeIt++;
+            if (!_updateTree->deleteNode(node)) return false;
             continue;
         }
 
-        nodeIt->second->clearChangeEvents();
-        nodeIt->second->clearConflictAlreadyConsidered();
-        nodeIt->second->setInconsistencyType(InconsistencyType::None);
-        nodeIt->second->setPreviousId(std::nullopt);
-        nodeIt->second->setStatus(NodeStatus::Unprocessed);
-        nodeIt->second->clearMoveOriginInfos();
+        node->clearChangeEvents();
+        node->clearConflictAlreadyConsidered();
+        node->setInconsistencyType(InconsistencyType::None);
+        node->setPreviousId(std::nullopt);
+        node->setStatus(NodeStatus::Unprocessed);
+        node->clearMoveOriginInfos();
         ++nodeIt;
     }
+    return true;
 }
 
 void UpdateTreeWorker::execute() {
@@ -92,7 +97,10 @@ void UpdateTreeWorker::execute() {
 
     _updateTree->startUpdate();
 
-    resetNodes();
+    if (!resetNodes()) {
+        LOG_SYNCPAL_WARN(_logger, "Failed to reset nodes. Rebuilding update tree from scratch!");
+        _updateTree->clear();
+    }
 
     _updateTree->previousIdSet().clear();
 
