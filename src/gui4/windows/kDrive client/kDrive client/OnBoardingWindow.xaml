@@ -76,18 +76,6 @@
                               Opacity="0"
                               HorizontalAlignment="Center"
                               VerticalAlignment="Center">     
-            <!--
-             Color_446EDD= turning dot & main button in web view
-             Color_1A47FF= second kDrive folder sheet
-             Color_5287FF= first kDrive folder sheet
-             Color_A0BCFF= third kDrive folder sheet
-             Color_A2BEFF= fourth kDrive folder sheet
-             Color_C5CDDB= computer outer border
-             Color_DCE2EF= computer view elements
-             Color_EDF0F8= computer main border and nav bar components
-             Color_F6F8FB= navbar background
-             Color_FFFFFF= computer & kDrive logo background
-            -->
             <animatedvisuals:KDrive_SyncroFile Color_446EDD="{kDrive:ThemeColor Key=AccentFillColorDefaultBrush}"
                                                Color_FFFFFF="{kDrive:ThemeColor Key=SolidBackgroundFillColorBaseBrush}"/>
         </AnimatedVisualPlayer>

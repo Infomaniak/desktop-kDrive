@@ -51,7 +51,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     return;
                 }
                 if ((App.Current as App)?.CurrentWindow is OnBoardingWindow onBoardingWindow)
-                    await onBoardingWindow.UpdateLottieSource(LottieTemplateKey.kDrive_SyncroFile);
+                    await onBoardingWindow.UpdateLottieSource(LottieTemplateKey.KDrive_SyncroFile);
 
                 if (await _onBoardingViewModel.FinishOnboarding())
                     Frame.Navigate(typeof(FinishPage), _onBoardingViewModel);

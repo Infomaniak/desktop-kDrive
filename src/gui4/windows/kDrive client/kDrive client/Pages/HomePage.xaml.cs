@@ -26,7 +26,6 @@ using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Infomaniak.kDrive.Pages
 {

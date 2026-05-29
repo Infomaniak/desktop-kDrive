@@ -79,7 +79,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     return;
                 }
                 if (App.Current is App { CurrentWindow: OnBoardingWindow onBoardingWindow })
-                    await onBoardingWindow.UpdateLottieSource(LottieTemplateKey.kDrive_SyncroFile);
+                    await onBoardingWindow.UpdateLottieSource(LottieTemplateKey.KDrive_SyncroFile);
             }
             else
             {

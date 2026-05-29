@@ -33,6 +33,7 @@ namespace Infomaniak.kDrive.CustomControls
         private bool _isLoaded;
         private CancellationTokenSource? _refreshCts;
         private long? _foregroundColorToken;
+        private SolidColorBrush? _foregroundColorBrush;
         private List<KeyValuePair<DependencyProperty, long>> _subscriptionTokens = new List<KeyValuePair<DependencyProperty, long>>();
 
         public SvgIcon()
@@ -140,18 +141,20 @@ namespace Infomaniak.kDrive.CustomControls
         {
             if (_foregroundColorToken.HasValue)
             {
-                if (Foreground is SolidColorBrush oldBrush)
+                if (_foregroundColorBrush is SolidColorBrush oldBrush)
                 {
                     oldBrush.UnregisterPropertyChangedCallback(
                         SolidColorBrush.ColorProperty,
                         _foregroundColorToken.Value);
                 }
-
+                
+                _foregroundColorBrush = null;
                 _foregroundColorToken = null;
             }
 
             if (Foreground is SolidColorBrush brush)
             {
+                _foregroundColorBrush = brush;
                 _foregroundColorToken =
                     brush.RegisterPropertyChangedCallback(
                         SolidColorBrush.ColorProperty,

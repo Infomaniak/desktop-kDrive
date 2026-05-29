@@ -27,14 +27,6 @@
     <!-- Icons -->
     <x:String x:Key="Infomaniak.Custom.Icons.logo-matomo">ms-appx:///Assets/Custom/Icons/logo-matomo-light.svg</x:String>
     <x:String x:Key="Infomaniak.Custom.Icons.logo-sentry">ms-appx:///Assets/Custom/Icons/logo-sentry-light.svg</x:String>
-    
-    <!-- Animations -->
-    <x:String x:Key="Infomaniak.Custom.Animations.check">ms-appx:///Assets/Custom/Animations/check-light.json</x:String>
-    <x:String x:Key="Infomaniak.Custom.Animations.loader-stroke">ms-appx:///Assets/Custom/Animations/loader-stroke-light.json</x:String>
-    <x:String x:Key="Infomaniak.Custom.Animations.offline">ms-appx:///Assets/Custom/Animations/offline-light.json</x:String>
-    <x:String x:Key="Infomaniak.Custom.Animations.pause">ms-appx:///Assets/Custom/Animations/pause-light.json</x:String>
-    <x:String x:Key="Infomaniak.Custom.Animations.sync">ms-appx:///Assets/Custom/Animations/sync-light.json</x:String>
-    <x:String x:Key="Infomaniak.Custom.Animations.synchro-file">ms-appx:///Assets/Custom/Animations/synchro-file-light.json</x:String>
 
     <!--  colors  -->
     <Color x:Key="Infomaniak.Custom.colors.storage.other">#BA68C8</Color>

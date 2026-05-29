@@ -32,7 +32,7 @@ namespace Infomaniak.kDrive
         protected override object ProvideValue(IXamlServiceProvider serviceProvider)
         {
             if (serviceProvider.GetService(typeof(IProvideValueTarget)) is not IProvideValueTarget pvt)
-                return Color.FromArgb(255,255,255,255);
+                return Color.FromArgb(255, 255, 255, 255);
 
             if (pvt?.TargetObject is not DependencyObject targetObject)
                 return Color.FromArgb(255, 255, 255, 255);
@@ -45,8 +45,25 @@ namespace Infomaniak.kDrive
             _targetProperty = FindDP(targetObject.GetType(), targetProperty.Name);
 
             ThemeChanged += OnThemeChanged;
-            var res = ResolveColor().Result;
+
+
+            var res = ResolveColor();
             return res;
+        }
+        private void OnTargetUnloaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement fe)
+            {
+                fe.Unloaded -= OnTargetUnloaded;
+            }
+            Unsubscribe();
+        }
+
+        private void Unsubscribe()
+        {
+            ThemeChanged -= OnThemeChanged;
+            _targetRef = null;
+            _targetProperty = null;
         }
 
         static DependencyProperty? FindDP(Type type, string propertyName)
@@ -59,32 +76,41 @@ namespace Infomaniak.kDrive
         }
         private async void OnThemeChanged()
         {
-            if (_targetRef == null) return;
+            if (_targetRef is null || _targetProperty is null)
+            {
+                Unsubscribe();
+                return;
+            }
 
             if (_targetRef.TryGetTarget(out var target))
             {
-                var newValue = await ResolveColor();
+                var newValue = ResolveColor();
                 await AppModel.UIThreadDispatcher.EnqueueAsync(() =>
                 {
                     target.SetValue(_targetProperty, newValue);
                 });
             }
+            else
+            {
+                Unsubscribe();
+            }
         }
 
-        private async Task<Color> ResolveColor()
+        private Color ResolveColor()
         {
             // Resolve on UI thread
             Color color = default;
-           await AppModel.UIThreadDispatcher.EnqueueAsync(() =>
+            if (AppModel.UIThreadDispatcher.HasThreadAccess)
+                color = ResolveColorInternal();
+            else
             {
-                if (_targetRef == null) return;
-                if (_targetRef.TryGetTarget(out var target))
+                AppModel.UIThreadDispatcher.EnqueueAsync(() =>
                 {
                     color = ResolveColorInternal();
-                }
-            });
-
+                }).Wait();
+            }
             return color;
+
         }
 
         private Color ResolveColorInternal()

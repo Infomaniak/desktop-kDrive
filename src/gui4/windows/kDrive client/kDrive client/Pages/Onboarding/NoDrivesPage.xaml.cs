@@ -51,7 +51,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             {
                 _onboardingViewModel = onboardingVm;
                 if ((App.Current as App)?.CurrentWindow is OnBoardingWindow onBoardingWindow)
-                    await onBoardingWindow.UpdateLottieSource(LottieTemplateKey.kDrive_SyncroFile);
+                    await onBoardingWindow.UpdateLottieSource(LottieTemplateKey.KDrive_SyncroFile);
 
                 onboardingVm.DrivesAvailable += OnDrivesAvailable;
                 onboardingVm.StartDriveAvailabilityWatcher();

@@ -46,7 +46,7 @@ namespace Infomaniak.kDrive.OnBoarding
 
         public enum LottieTemplateKey
         {
-            kDrive_SyncroFile,
+            KDrive_SyncroFile,
             KDrive_LoaderStroke
         }
         public AppModel ViewModel { get { return _viewModel; } }
@@ -58,19 +58,19 @@ namespace Infomaniak.kDrive.OnBoarding
             this.SetTitleBar(AppTitleBar);
             Utility.SetWindowProperties(this, _minimumWidth, _minimumHeight, Utility.WindowResizeOptions.AllowMinimize | Utility.WindowResizeOptions.AllowResize); // Set initial size and allow resizing
             Utility.CenterWindow(this);
-            _ = UpdateLottieSource(LottieTemplateKey.KDrive_LoaderStroke);
             Closed += OnBoardingWindow_Closed;
             Activated += OnBoardingWindow_Activated;
         }
 
-        private void OnBoardingWindow_Activated(object sender, WindowActivatedEventArgs args)
+        private async void OnBoardingWindow_Activated(object sender, WindowActivatedEventArgs args)
         {
             if (_isInitialized)
                 return;
-            ContentFrame.Navigate(typeof(Pages.Onboarding.WelcomePage), _onBoardingViewModel);
             _isInitialized = true;
-            ApplyLottiePosition(_targetPosition);
 
+            ContentFrame.Navigate(typeof(Pages.Onboarding.WelcomePage), _onBoardingViewModel);
+            ApplyLottiePosition(_targetPosition);
+            await UpdateLottieSource(LottieTemplateKey.KDrive_LoaderStroke);
         }
 
         private async void OnBoardingWindow_Closed(object sender, WindowEventArgs args)
@@ -92,12 +92,12 @@ namespace Infomaniak.kDrive.OnBoarding
             FrameworkElement? inElement = getLottieElement(Inkey);
             FrameworkElement? outElement = getLottieElement(outkey);
 
-            for (double i = 0.0; i <= 1.0; i+=0.1)
+            for (double i = 0; i <= 10; ++i)
             {
                 if (inElement is not null)
-                    inElement.Opacity = i;
+                    inElement.Opacity = i/10.0;
                 if (outElement is not null)
-                    outElement.Opacity = 1-i;
+                    outElement.Opacity = (1 - i)/10.0;
                 await Task.Delay(30);
             }
         }
@@ -108,7 +108,7 @@ namespace Infomaniak.kDrive.OnBoarding
             return key switch
             {
                 LottieTemplateKey.KDrive_LoaderStroke => KDrive_LoaderStrokePlayer,
-                LottieTemplateKey.kDrive_SyncroFile => kDrive_SyncroFilePlayer,
+                LottieTemplateKey.KDrive_SyncroFile => kDrive_SyncroFilePlayer,
                 _ => null
             };
         }
