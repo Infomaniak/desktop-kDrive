@@ -866,7 +866,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
     if (!res) {
         _syncPal->addError(Error(_syncPal->syncDbId(), "", "", itemType.nodeType,
                                  CommonUtility::relativePath(_syncPal->localPath(), entry.path()), ConflictType::None,
-                                 InconsistencyType::None, CancelType::None, "", res));
+                                 InconsistencyType::None, CancelType::None, "", res.code(), res.cause()));
     }
     return res;
 }
