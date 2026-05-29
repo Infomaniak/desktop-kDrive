@@ -165,7 +165,7 @@ struct IoHelper {
          \param checksum is set with the checksum of the file indicated by `path`, or empty on error.
          \return the IoError representing the success or failure of the operation.
          */
-        static IoError getFileChecksum(const SyncPath &path, std::ifstream &ifs, std::string &checksum) noexcept;
+        static IoError getFileChecksum(const SyncPath &path, std::string &checksum) noexcept;
 
         //! Check if the item indicated by path has a size or a modification date different from the specified ones.
         /*!

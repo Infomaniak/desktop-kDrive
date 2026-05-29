@@ -83,9 +83,7 @@ ExitInfo CheckHashMatchJob::runJob() noexcept {
         return exitInfo;
     }
 
-    std::ifstream ifs;
-    const IoError checksumIoError = IoHelper::getFileChecksum(_filePath, ifs, _localHash);
-
+    const IoError checksumIoError = IoHelper::getFileChecksum(_filePath, _localHash);
     if (checksumIoError == IoError::NoSuchFileOrDirectory) {
         LOGW_WARN(_logger, L"File doesn't exist while computing checksum: " << Utility::formatSyncPath(_filePath));
         return ExitCode::DataError;
