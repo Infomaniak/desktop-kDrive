@@ -64,12 +64,14 @@ public enum PreviewHelper {
         dbId: 1,
         driveId: 1,
         name: "Tim Drive",
+        isAdmin: true,
         hexColor: UIHexColor(red: 0, green: 0, blue: 255)
     )
     public static let drive2 = UIDrive(
         dbId: 2,
         driveId: 2,
         name: "Drive Pro Max",
+        isAdmin: true,
         hexColor: UIHexColor(red: 255, green: 0, blue: 0)
     )
 
