@@ -41,6 +41,14 @@ clang-format -i <file>
 - **Commits:** Conventional commits format (`feat(scope):`, `fix(scope):`, `refactor(scope):`), validated by `.githooks/commit-msg`.
 - **Branch naming:** No enforced convention currently.
 
+## Pull Requests & Commits
+- **Language:** All PR titles, PR descriptions, and commit messages must be written in **English**.
+- **PR Title Format:** PR titles must follow the same Conventional Commits format as commit messages.
+- **PR Target Branch:** Use `develop` as the default target branch unless the user explicitly asks for a different base branch.
+- **PR Status:** Create the PR as **Draft** by default.
+- **Branch creation (AI/automation):** If the user requests a PR but has not created a branch, create one with an appropriate name before opening the PR.
+- **Commit Format:** Follow the project's semantic-commit validation rules defined in [`.github/workflows/semantic-commit.yml`](https://github.com/Infomaniak/.github/blob/main/.github/workflows/semantic-commit.yml).
+
 ## Security & Secrets
 - Never commit API tokens, passwords, or credentials. Use env vars (`KDRIVE_TEST_CI_API_TOKEN`, etc.).
 - Keychain access is managed by `libcommonserver/keychainmanager/`.
