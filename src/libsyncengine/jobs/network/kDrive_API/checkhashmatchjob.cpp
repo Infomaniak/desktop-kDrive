@@ -75,11 +75,20 @@ ExitInfo CheckHashMatchJob::getFileSize(const SyncPath &path, int64_t &size) {
 }
 
 ExitInfo CheckHashMatchJob::runJob() noexcept {
-    if (!_localSize)
-        if (const ExitInfo exitInfo = getFileSize(_filePath, _localSize); !exitInfo) return exitInfo;
+    if (const ExitInfo exitInfo = getFileSize(_filePath, _localSize); !exitInfo) {
+        LOGW_DEBUG(_logger, L"Failed to get local file size for " << Utility::formatSyncPath(_filePath)
+                                                                  << L", skipping hash check: " << exitInfo);
+        return exitInfo;
+    }
 
-    if (_localSize != _remoteSize) return ExitCode::Ok;
+    if (_localSize != _remoteSize) {
+        LOGW_DEBUG(_logger, L"File size mismatch for " << Utility::formatSyncPath(_filePath) << L": local size = " << _localSize
+                                                       << L", remote size = " << _remoteSize << L", skipping hash check");
+        return ExitCode::Ok;
+    }
     if (const ExitInfo exitInfo = AbstractTokenNetworkJob::runJob(); !exitInfo) {
+        LOGW_DEBUG(_logger, L"Failed to get remote hash for " << Utility::formatSyncPath(_filePath) << L", skipping hash check: "
+                                                              << exitInfo);
         return exitInfo;
     }
 
@@ -96,7 +105,7 @@ ExitInfo CheckHashMatchJob::runJob() noexcept {
 
     if (checksumIoError == IoError::InvalidArgument) {
         LOGW_WARN(_logger, L"File is a symlink: " << Utility::formatSyncPath(_filePath));
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
+        return ExitCode::Ok;
     }
 
     assert(checksumIoError == IoError::Success);
