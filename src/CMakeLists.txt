@@ -33,20 +33,29 @@ add_subdirectory(libsyncengine)
 add_subdirectory(libparms)
 
 if(NOT BUILD_LIBRARIES_ONLY)
-    if(BUILD_GUI)
-        add_subdirectory(gui)
-        add_subdirectory(gui4)
-    endif()
     add_subdirectory(server)
 
-endif(NOT BUILD_LIBRARIES_ONLY)
+    # At most one GUI type can be built, fail if both are enabled
+    if(BUILD_GUI AND BUILD_GUI_LEGACY)
+        message(FATAL_ERROR "Both BUILD_GUI and BUILD_GUI_LEGACY are enabled. Please choose only one.")
+    endif()
 
-find_program(KRAZY2_EXECUTABLE krazy2)
-if(KRAZY2_EXECUTABLE)
-    # s/y k/y ALL k/ for building this target always
-    add_custom_target( krazy krazy2 --check-sets c++,qt4,foss
-                       ${PROJECT_SOURCE_DIR}/src/gui/*.ui
-                       ${PROJECT_SOURCE_DIR}/src/gui/*.h
-                       ${PROJECT_SOURCE_DIR}/src/gui/*.cpp)
-endif()
+    set(CLIENT_DEST "${BIN_OUTPUT_DIRECTORY}/client")
+    if(WIN32)
+        if(BUILD_GUI)
+            add_subdirectory(gui4)
+        else()
+            # delete the client build directory if GUI is disabled to avoid confusion
+            file(REMOVE_RECURSE "${CLIENT_DEST}")
+        endif()
+
+        if(BUILD_GUI_LEGACY)
+            add_subdirectory(gui)
+        endif()
+    else()
+        if(BUILD_GUI)
+            add_subdirectory(gui)
+        endif()
+    endif()
+endif(NOT BUILD_LIBRARIES_ONLY)
 

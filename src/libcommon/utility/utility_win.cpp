@@ -1,20 +1,18 @@
-/*
- * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2026 Infomaniak Network SA
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// Infomaniak kDrive - Desktop
+// Copyright (C) 2023-2026 Infomaniak Network SA
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "utility.h"
 #include "utility_base.h"
@@ -35,6 +33,7 @@
 #include <QSettings>
 #include <QVariant>
 #include <QCoreApplication>
+#include <config.h>
 #include <sentry.h>
 
 static const char systemRunPathC[] = "HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows\\CurrentVersion\\Run";
@@ -186,6 +185,19 @@ std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {
 
 
     return "UNIDENTIFIED";
+}
+
+ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
+    // Generate directory path
+    if (const auto exitInfo = deviceTempDirectoryPath(directoryPath); !exitInfo) {
+        return exitInfo;
+    }
+
+    static const std::string LOGDIR_SUFFIX = "-logdir/";
+    const SyncName logDirName = SyncName(Str2SyncName(APPLICATION_NAME)) + SyncName(Str2SyncName(LOGDIR_SUFFIX));
+    directoryPath /= logDirName;
+
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

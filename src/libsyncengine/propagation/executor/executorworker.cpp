@@ -142,7 +142,8 @@ void ExecutorWorker::execute() {
 
         // If an operation fails but is correctly handled by handleExecutorError, execution can proceed.
         if (executorExitInfo.cause() == ExitCause::OperationCanceled) {
-            if (!bypassProgressComplete) setProgressComplete(syncOp, SyncFileStatus::Error);
+            if (!bypassProgressComplete)
+                setProgressComplete(job ? job->affectedFilePath() : SyncPath{}, syncOp, SyncFileStatus::Error);
             continue;
         }
 
@@ -155,7 +156,8 @@ void ExecutorWorker::execute() {
             }
 
             // If the error is handled, continue the execution
-            if (!bypassProgressComplete) setProgressComplete(syncOp, SyncFileStatus::Error);
+            if (!bypassProgressComplete)
+                setProgressComplete(job ? job->affectedFilePath() : SyncPath{}, syncOp, SyncFileStatus::Error);
             continue;
         }
 
@@ -189,11 +191,11 @@ void ExecutorWorker::execute() {
         } else {
             if (!bypassProgressComplete) {
                 if (ignored) {
-                    setProgressComplete(syncOp, SyncFileStatus::Ignored);
+                    setProgressComplete(SyncPath{}, syncOp, SyncFileStatus::Ignored);
                 } else if (syncOp->affectedNode() && syncOp->affectedNode()->inconsistencyType() != InconsistencyType::None) {
-                    setProgressComplete(syncOp, SyncFileStatus::Inconsistency);
+                    setProgressComplete(SyncPath{}, syncOp, SyncFileStatus::Inconsistency);
                 } else {
-                    setProgressComplete(syncOp, hydrating ? SyncFileStatus::Syncing : SyncFileStatus::Success);
+                    setProgressComplete(SyncPath{}, syncOp, hydrating ? SyncFileStatus::Syncing : SyncFileStatus::Success);
                 }
             }
         }
@@ -286,13 +288,10 @@ void ExecutorWorker::initSyncFileItem(SyncOpPtr syncOp, SyncFileItem &syncItem) 
     }
 }
 
-void ExecutorWorker::setProgressComplete(const SyncOpPtr syncOp, SyncFileStatus status, const NodeId &newRemoteNodeId) {
-    SyncPath relativeLocalFilePath;
-    if (syncOp->type() == OperationType::Create || syncOp->type() == OperationType::Edit) {
-        relativeLocalFilePath = syncOp->nodePath(ReplicaSide::Local);
-    } else {
-        relativeLocalFilePath = syncOp->affectedNode()->getPath();
-    }
+void ExecutorWorker::setProgressComplete(const SyncPath &relativePath, const SyncOpPtr syncOp, SyncFileStatus status,
+                                         const NodeId &newRemoteNodeId) {
+    assert(syncOp->affectedNode());
+    SyncPath relativeLocalFilePath = relativePath.empty() ? syncOp->affectedNode()->getPath() : relativePath;
 
     if (syncOp->hasConflict() && status == SyncFileStatus::Success &&
         (syncOp->conflict().type() == ConflictType::CreateCreate || syncOp->conflict().type() == ConflictType::EditEdit)) {
@@ -971,7 +970,7 @@ ExitInfo ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &byp
 ExitInfo ExecutorWorker::getPathFromDb(const std::shared_ptr<Node> node, SyncPath &path) {
     bool found = false;
     if (!_syncPal->syncDb()->path(node->side(), node->id().value(), path, found)) {
-        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb:: path");
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path");
         return ExitCode::DbError;
     }
     if (!found) {
@@ -1160,7 +1159,7 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
         return ExitCode::Ok;
     }
 
-    return handleFinishedJob(job, syncOp, syncOp->affectedNode()->getPath(), ignored, bypassProgressComplete);
+    return handleFinishedJob(job, syncOp, relativeDestLocalFilePath, ignored, bypassProgressComplete);
 }
 
 ExitInfo ExecutorWorker::handleDeleteOp(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete) {
@@ -1359,18 +1358,18 @@ ExitInfo ExecutorWorker::deleteFinishedAsyncJobs() {
             exitInfo = handleFinishedJob(job, syncOp, relativeLocalPath, ignored, bypassProgressComplete);
             if (exitInfo) {
                 if (!ignored && exitInfo.cause() == ExitCause::OperationCanceled) {
-                    setProgressComplete(syncOp, SyncFileStatus::Error);
+                    setProgressComplete(job->affectedFilePath(), syncOp, SyncFileStatus::Error);
                     exitInfo = ExitCode::Ok;
                 } else {
                     if (ignored) {
-                        setProgressComplete(syncOp, SyncFileStatus::Ignored);
+                        setProgressComplete(job->affectedFilePath(), syncOp, SyncFileStatus::Ignored);
                     } else if (syncOp->type() == OperationType::Create && syncOp->targetSide() == ReplicaSide::Remote) {
                         std::shared_ptr<UploadJob> uploadJob = std::dynamic_pointer_cast<UploadJob>(job);
                         NodeId newRemoteNodeId;
                         if (uploadJob) newRemoteNodeId = uploadJob->nodeId();
-                        setProgressComplete(syncOp, SyncFileStatus::Success, newRemoteNodeId);
+                        setProgressComplete(job->affectedFilePath(), syncOp, SyncFileStatus::Success, newRemoteNodeId);
                     } else {
-                        setProgressComplete(syncOp, SyncFileStatus::Success);
+                        setProgressComplete(job->affectedFilePath(), syncOp, SyncFileStatus::Success);
                     }
                 }
             } else {
@@ -1469,7 +1468,7 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<SyncJob> job, SyncOpP
         } else { // The error is managed and the execution can continue.
             LOGW_DEBUG(_logger, L"Error successfully managed: " << job->exitInfo() << L" on " << syncOp->type()
                                                                 << L" operation for "
-                                                                << Utility::formatSyncPath(syncOp->affectedNode()->getPath()));
+                                                                << Utility::formatSyncPath(relativeLocalPath));
             bypassProgressComplete = true;
             return {ExitCode::Ok, ExitCause::OperationCanceled};
         }
@@ -2000,10 +1999,10 @@ ExitInfo ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
 
         correspondingNode->setName(syncOp->newName());
 
-        if (!correspondingNode->parentNode()->insertChildren(correspondingNode)) {
+        if (!parentNode->insertChildren(correspondingNode)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node "
                                                << Utility::formatSyncName(correspondingNode->name()) << L" parent node "
-                                               << Utility::formatSyncName(correspondingNode->parentNode()->name()));
+                                               << Utility::formatSyncName(parentNode->name()));
             return ExitCode::DataError;
         }
     }

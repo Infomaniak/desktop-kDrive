@@ -308,7 +308,8 @@ function CMake-Build-And-Install {
         [string] $path,
         [string] $installPath,
         [string] $vfsDir,
-        [bool] $ci
+        [bool] $ci,
+        [bool] $newGui
     )
     Write-Host "1) Installing Conan dependencies…"
     $conanFolder = Join-Path $buildPath "conan"
@@ -378,6 +379,14 @@ function CMake-Build-And-Install {
         $flags += ("'-DKD_COVERAGE:BOOL=TRUE'")
     }
 
+    if($newGui) {
+        $flags += ("'-DBUILD_GUI:BOOL=TRUE'")
+        $flags += ("'-DBUILD_GUI_LEGACY:BOOL=FALSE'")
+    } else {
+        $flags += ("'-DBUILD_GUI:BOOL=FALSE'")
+        $flags += ("'-DBUILD_GUI_LEGACY:BOOL=TRUE'")
+    } 
+
     $args += $flags
 
     $args += ("'-B$buildPath'")
@@ -405,11 +414,16 @@ function CMake-Build-And-Install {
 
 function Get-Icon-Path {
     param (
-        [string] $buildPath
+        [string] $buildPath,
+        [bool] $newGui
     )
 
     # NSIS needs the path to use backslash
-    $iconPath = "$buildPath\src\gui\kdrive-win.ico".Replace('/', '\')
+    if(-not $newGui) {
+        $iconPath = "$buildPath\src\gui\kdrive-win.ico".Replace('/', '\')
+    } else {
+        $iconPath = "$buildPath\bin\client\Assets\kdrive.ico".Replace('/', '\')
+    }
 
     return $iconPath
 }
@@ -425,13 +439,14 @@ function Set-Up-NSIS {
         [string] $archiveDataPath,
         [bool] $upload,
         [string] $thumbprint,
-        [bool] $ci
+        [bool] $ci,
+        [bool] $newGui
     )
 
     Write-Host "Setting up NSIS."
 
     # NSIS needs the path to use backslash
-    $iconPath = Get-Icon-Path $buildpath
+    $iconPath = Get-Icon-Path -buildPath $buildPath -newGui $newGui
     $appName = Get-Package-Name -exe
    
     $installerPath = Get-Installer-Path -ContentPath $contentPath
@@ -547,9 +562,12 @@ function Prepare-Archive {
 
     $binaries = @(
         "$crashpad_folder/crashpad_handler.exe",
-        "kDrive.exe",
-        "kDrive_client.exe"
+        "kDrive.exe"
     )
+
+    if(-not $newGui) {
+        $binaries += "kDrive_client.exe"
+    }
 
     # Move each executable to the bin folder and sign them
     foreach ($file in $binaries) {
@@ -576,7 +594,7 @@ function Prepare-Archive {
         Copy-Item -Path "$newGuiDir/." -Destination "$archivePath/client" -Recurse -ErrorAction Stop
 
         # Sign all the .exe, .dll and .xbf that have no signature yet
-        $filesToSign = Get-ChildItem -Path "$archivePath/client" -Recurse -Include *.exe, *.dll, *.xbf | Where-Object {
+        $filesToSign = Get-ChildItem -Path "$archivePath/client" -Recurse -Include *.exe, *.dll | Where-Object {
             $signature = Get-AuthenticodeSignature $_.FullName
             $signature.Status -eq 'NotSigned'
         }
@@ -838,7 +856,7 @@ if (!(Test-Path "$vfsDir\vfs.dll") -or $ext) {
 #                                                                                               #
 #################################################################################################
 
-CMake-Build-And-Install -Path $path -InstallPath $installPath -VfsDir $vfsDir -Ci $ci
+CMake-Build-And-Install -Path $path -InstallPath $installPath -VfsDir $vfsDir -Ci $ci -NewGui $newGui
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "CMake build failed. Aborting." -f Red
@@ -851,7 +869,7 @@ if ($LASTEXITCODE -ne 0) {
 #                                                                                               #
 #################################################################################################
 
-Set-Up-NSIS -BuildPath $buildPath -ContentPath $contentPath -ExtPath $extPath -VfsDir $vfsDir -ArchiveName $archiveName -ArchivePath $archivePath -ArchiveDataPath $archiveDataPath -Upload $upload -Thumbprint $thumbprint -Ci $ci
+Set-Up-NSIS -BuildPath $buildPath -ContentPath $contentPath -ExtPath $extPath -VfsDir $vfsDir -ArchiveName $archiveName -ArchivePath $archivePath -ArchiveDataPath $archiveDataPath -Upload $upload -Thumbprint $thumbprint -Ci $ci -NewGui $newGui
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "NSIS setup failed. Aborting." -f Red

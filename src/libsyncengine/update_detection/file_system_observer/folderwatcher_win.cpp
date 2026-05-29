@@ -41,6 +41,7 @@ ExitInfo FolderWatcher_win::changeDetected(const SyncPath &path, OperationType o
     list.push_back({path, opType});
     if (const auto exitInfo = _parent->changesDetected(list); exitInfo.code() != ExitCode::Ok) {
         LOGW_WARN(_logger, L"Error in LocalFileSystemObserverWorker::changesDetected: " << exitInfo);
+        _parent->invalidateSnapshot();
         return exitInfo;
     }
 

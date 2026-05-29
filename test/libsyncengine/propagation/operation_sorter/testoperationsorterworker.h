@@ -48,6 +48,7 @@ class TestOperationSorterWorker final : public CppUnit::TestFixture, public Test
         CPPUNIT_TEST(testFindCompleteCycles);
         CPPUNIT_TEST(testBreakCycle);
         CPPUNIT_TEST(testBreakCycle2);
+        CPPUNIT_TEST(testSwapNames);
         CPPUNIT_TEST(testExtractOpsByType);
         CPPUNIT_TEST_SUITE_END();
 
@@ -77,6 +78,7 @@ class TestOperationSorterWorker final : public CppUnit::TestFixture, public Test
         void testFindCompleteCycles();
         void testBreakCycle();
         void testBreakCycle2();
+        void testSwapNames();
         void testExtractOpsByType();
 
     private:
