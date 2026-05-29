@@ -27,7 +27,7 @@
              mc:Ignorable="d">
     <local:ErrorCard x:Name="ErrorCard"
                      Title="{x:Bind kDrive:Localizer.Instance.GetString('errForbiddenCharTitle')}"
-                     Description="{x:Bind kDrive:Localizer.Instance.GetStringCombine1s('errForbiddenCharDescription_win', Error.NodeTypeTranslationKey)}"
+                     Description="{x:Bind kDrive:Localizer.Instance.GetStringCombine1s('errForbiddenCharDescription', Error.NodeTypeTranslationKey)}"
                      ActionText="{x:Bind kDrive:Localizer.Instance.GetStringCombine1s('buttonRenameItem', Error.NodeTypeTranslationKey)}"
                      ActionClick="ErrorCard_ActionClick"
                      Error="{x:Bind Error}" />

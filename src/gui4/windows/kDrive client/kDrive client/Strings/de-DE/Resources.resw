@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 29 May 2026 15:21:01 +0200 
+  Exported at: Fri, 29 May 2026 15:49:15 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -605,11 +605,11 @@ Bitte melden Sie sich erneut mit der korrekten E-Mail-Adresse %@ an</value>
     <value>Geben Sie Ihr Passwort ein</value> 
   </data> 
   <data name="errCaseDescription" xml:space="preserve"> 
-    <value>Ein weiteres %@, dessen Name sich nur in der Groß-/Kleinschreibung unterscheidet, existiert bereits in diesem Ordner. Dieser Namenstyp wird von der kDrive Windows-Anwendung nicht unterstützt. Benennen Sie eines der %@ aus kDrive online um, damit Sie es auf Ihrem PC synchronisieren können.
+    <value>Ein weiteres %@, dessen Name sich nur in der Gross-/Kleinschreibung unterscheidet, existiert bereits in diesem Ordner. Dieser Namenstyp wird von der kDrive Windows-Anwendung nicht unterstützt. Benennen Sie eines der %@ aus kDrive online um, damit Sie es auf Ihrem PC synchronisieren können.
 </value> 
   </data> 
   <data name="errCaseTitle" xml:space="preserve"> 
-    <value>Namenskonflikte in Groß- und Kleinschreibung</value> 
+    <value>Namenskonflikte in Gross- und Kleinschreibung</value> 
   </data> 
   <data name="errCreateCancelDescription" xml:space="preserve"> 
     <value>Sie haben nicht die erforderlichen Berechtigungen, um %@ zu diesem Speicherort hinzuzufügen.

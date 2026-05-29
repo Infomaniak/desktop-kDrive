@@ -20,7 +20,7 @@ if (-not $reswFiles) {
     exit 1
 }
 
-$literalPattern = 'Localizer\.Instance\.GetString\(\s*[''"](?<key>[^''"]+)[''"]'
+$literalPattern = 'Localizer\.Instance\.GetString\w*\(\s*[''"](?<key>[^''"]+)[''"]'
 $converterPattern = 'ConverterParameter\s*=\s*[''"][^''"]*key=(?<key>[^''";]+)'
 $dynamicPattern = 'Localizer\.Instance\.GetString\(\s*(?![''"])(?<arg>[^)]*)\)'
 
