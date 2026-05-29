@@ -685,6 +685,9 @@
 /* loco:698b00c7f04008f614070e52 */
 "filesToExclude" = "Archivos a excluir";
 
+/* loco:698b00c7f04008f614070e52 */
+"filesToExclude" = "Archivos a excluir";
+
 /* loco:695e57f549f806b5ef0a3ac2 */
 "folderFavorites" = "Favoritos";
 

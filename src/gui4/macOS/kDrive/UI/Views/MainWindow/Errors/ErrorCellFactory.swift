@@ -95,12 +95,9 @@ struct ErrorCellFactory {
             return ErrorCellView(
                 title: KDriveLocalizable.errEndWithSpaceTitle(error.metadata.nodeType?.label ?? ""),
                 description: KDriveLocalizable.errEndWithSpaceDescription(
-                    error.metadata.nodeType?.label ?? "",
-                    error.metadata.nodeType?.label ?? ""
+                    error.metadata.nodeType?.label ?? "", error.metadata.nodeType?.label ?? ""
                 ),
-                action: .init(title: KDriveLocalizable.buttonRenameItem(error.metadata.nodeType?.label ?? "")) {
-                    // TODO:
-                }
+                action: .renameItem(error, manager: manager)
             )
         case .forbiddenChar:
             return ErrorCellView(
@@ -109,25 +106,19 @@ struct ErrorCellFactory {
                     error.metadata.nodeType?.label ?? "",
                     error.metadata.nodeType?.label ?? ""
                 ),
-                action: .init(title: KDriveLocalizable.buttonRenameItem(error.metadata.nodeType?.label ?? "")) {
-                    // TODO:
-                }
+                action: .renameItem(error, manager: manager)
             )
         case .forbiddenCharOnlySpaces:
             return ErrorCellView(
                 title: KDriveLocalizable.errForbiddenCharOnlySpacesTitle,
                 description: KDriveLocalizable.errForbiddenCharOnlySpacesDescription(error.metadata.nodeType?.label ?? ""),
-                action: .init(title: KDriveLocalizable.buttonRenameItem(error.metadata.nodeType?.label ?? "")) {
-                    // TODO:
-                }
+                action: .renameItem(error, manager: manager)
             )
         case .nameLength:
             return ErrorCellView(
                 title: KDriveLocalizable.errNameLengthTitle(error.metadata.nodeType?.label ?? ""),
                 description: KDriveLocalizable.errNameLengthDescription(error.metadata.nodeType?.label ?? ""),
-                action: .init(title: KDriveLocalizable.buttonRenameItem(error.metadata.nodeType?.label ?? "")) {
-                    // TODO:
-                }
+                action: .renameItem(error, manager: manager)
             )
         case .pathLength:
             // TODO: Implement it
@@ -142,9 +133,7 @@ struct ErrorCellFactory {
             return ErrorCellView(
                 title: KDriveLocalizable.errNotEnoughDiskSpaceTitle,
                 description: KDriveLocalizable.errNotEnoughDiskSpaceDescription,
-                action: .init(title: KDriveLocalizable.buttonManageDiskSpace) {
-                    // TODO:
-                }
+                action: .manageDiskSpace(error, manager: manager)
             )
         case .quotaExceeded:
             return ErrorCellView(
@@ -158,9 +147,7 @@ struct ErrorCellFactory {
             return ErrorCellView(
                 title: KDriveLocalizable.errReservedNameTitle(error.metadata.nodeType?.label ?? ""),
                 description: KDriveLocalizable.errReservedNameDescription(error.metadata.nodeType?.label ?? ""),
-                action: .init(title: KDriveLocalizable.buttonRenameItem(error.metadata.nodeType?.label ?? "")) {
-                    // TODO:
-                }
+                action: .renameItem(error, manager: manager)
             )
         case .temporaryBlacklisted:
             return ErrorCellView(
@@ -201,9 +188,7 @@ struct ErrorCellFactory {
             return ErrorCellView(
                 title: KDriveLocalizable.errInvalidSyncSyncDirAccessTitle,
                 description: KDriveLocalizable.errInvalidSyncSyncDirAccessDescription,
-                action: .init(title: KDriveLocalizable.buttonErrorResolutionTip) {
-                    // TODO:
-                }
+                action: .errorResolutionTip(error, manager: manager)
             )
         case .invalidSyncDirNesting:
             return ErrorCellView(
@@ -227,25 +212,19 @@ struct ErrorCellFactory {
             return ErrorCellView(
                 title: KDriveLocalizable.errSystemNotEnoughDiskSpaceTitle,
                 description: KDriveLocalizable.errSystemNotEnoughDiskSpaceDescription,
-                action: .init(title: KDriveLocalizable.buttonManageDiskSpace) {
-                    // TODO:
-                }
+                action: .manageDiskSpace(error, manager: manager)
             )
         case .systemSyncDirAccess:
             return ErrorCellView(
                 title: KDriveLocalizable.errSystemErrorSyncDirAccessTitle,
                 description: KDriveLocalizable.errSystemErrorSyncDirAccessErrorDescription,
-                action: .init(title: KDriveLocalizable.buttonErrorResolutionTip) {
-                    // TODO:
-                }
+                action: .errorResolutionTip(error, manager: manager)
             )
         case .systemSyncDirDiskMissing:
             return ErrorCellView(
                 title: KDriveLocalizable.errSystemSyncDirMissingTitle,
                 description: KDriveLocalizable.errSystemSyncDirDiskMissingDescription,
-                action: .init(title: KDriveLocalizable.buttonErrorResolutionTip) {
-                    // TODO:
-                }
+                action: .errorResolutionTip(error, manager: manager)
             )
         case .systemUnableToStartVFS:
             return ErrorCellView(
@@ -285,9 +264,7 @@ struct ErrorCellFactory {
             return ErrorCellView(
                 title: KDriveLocalizable.errSystemSyncDirMissingTitle,
                 description: KDriveLocalizable.errSystemSyncDirChanged,
-                action: .init(title: KDriveLocalizable.buttonErrorResolutionTip) {
-                    // TODO:
-                }
+                action: .errorResolutionTip(error, manager: manager)
             )
         case .temporaryDirAccess:
             return ErrorCellView(
@@ -309,5 +286,25 @@ extension ErrorCellView {
             title: KDriveLocalizable.defaultErrorTitle,
             description: KDriveLocalizable.unexpectedErrorTeachingTipContent
         )
+    }
+}
+
+extension ErrorCellView.Action {
+    static func renameItem(_ error: SynchroError, manager: SynchroErrorManager) -> Self {
+        return ErrorCellView.Action(title: KDriveLocalizable.buttonRenameItem(error.metadata.nodeType?.label ?? "")) {
+            // TODO:
+        }
+    }
+
+    static func manageDiskSpace(_ error: SynchroError, manager: SynchroErrorManager) -> Self {
+        return ErrorCellView.Action(title: KDriveLocalizable.buttonManageDiskSpace) {
+            // TODO:
+        }
+    }
+
+    static func errorResolutionTip(_ error: SynchroError, manager: SynchroErrorManager) -> Self {
+        return ErrorCellView.Action(title: KDriveLocalizable.buttonErrorResolutionTip) {
+            // TODO:
+        }
     }
 }

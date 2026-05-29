@@ -31,7 +31,7 @@ struct ErrorsView: View {
 
     var body: some View {
         ScrollView {
-            if errorCount == 0 {
+            if errorsCount == 0 {
                 IKContentUnavailableView(
                     image: KDriveResources.mountainsTreesSun.swiftUIImage,
                     title: KDriveLocalizable.labelNoErrorsToFix,

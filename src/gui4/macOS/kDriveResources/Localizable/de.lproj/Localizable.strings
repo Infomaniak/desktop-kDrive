@@ -684,6 +684,9 @@
 /* loco:698b05ecfd0cddb0b90c8b72 */
 "fileSyncModeDescription" = "Legen Sie fest, wie Ihre Dateien gespeichert und abgerufen werden sollen.";
 
+/* loco:698b00c7f04008f614070e52 */
+"filesToExclude" = "Auszuschliessende Dateien";
+
 /* loco:695e57f549f806b5ef0a3ac2 */
 "folderFavorites" = "Favoriten";
 
