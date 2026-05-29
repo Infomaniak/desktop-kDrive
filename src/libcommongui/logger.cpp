@@ -85,11 +85,7 @@ Logger *Logger::instance() {
 }
 
 Logger::Logger(QObject *parent) :
-    QObject(parent),
-    _showTime(true),
-    _doFileFlush(false),
-    _logExpire(0),
-    _logDebug(false) {
+    QObject(parent) {
 #if defined(Q_OS_WIN)
     if (CommonUtility::logToConsoleEnabled() && AllocConsole()) {
         FILE *fp = nullptr;
@@ -123,7 +119,7 @@ Logger::~Logger() {
 }
 
 void Logger::setIsCLientLog(bool newIsCLientLog) {
-    _isCLientLog = newIsCLientLog;
+    _isClientLog = newIsCLientLog;
 }
 
 int Logger::minLogLevel() const {
@@ -139,14 +135,9 @@ void Logger::postNotification(const QString &title, const QString &message) {
 }
 
 void Logger::log(GuiLog log) {
-    QString msg;
-    if (_showTime) {
-        msg = log.timeStamp.toString(QLatin1String("MM-dd hh:mm:ss:zzz")) + QLatin1Char(' ');
-    }
-
+    QString msg = log.timeStamp.toString(QLatin1String("MM-dd hh:mm:ss:zzz")) + QLatin1Char(' ');
     msg += QString().asprintf("%p ", (void *) QThread::currentThread());
     msg += log.message;
-
     doLog(msg);
 }
 
@@ -168,7 +159,6 @@ void Logger::doLog(const QString &msg) {
         QMutexLocker lock(&_mutex);
         if (_logstream) {
             (*_logstream) << msg << Qt::endl;
-            if (_doFileFlush) _logstream->flush();
         }
     }
 #ifndef NDEBUG
@@ -217,7 +207,7 @@ void Logger::setLogFile(const QString &name) {
     _logstream.reset(new QTextStream(&_logFile));
 }
 
-void Logger::setLogExpire(std::chrono::hours expire) {
+void Logger::setLogExpire(const std::chrono::days expire) {
     _logExpire = expire;
 }
 
@@ -225,11 +215,7 @@ void Logger::setLogDir(const QString &dir) {
     _logDirectoryPath = dir;
 }
 
-void Logger::setLogFlush(bool flush) {
-    _doFileFlush = flush;
-}
-
-void Logger::setLogDebug(bool debug) {
+void Logger::setLogDebug(const bool debug) {
     QLoggingCategory::setFilterRules(debug ? QStringLiteral("*=false\nsync.*=true\nsync.database.sql=false\nserver.*=true\ngui.*="
                                                             "true\ncommon.*=true\nlibcommon.*=true\nvfs.*=true")
                                            : QString());
@@ -258,71 +244,70 @@ void Logger::disableLog() {
 }
 
 void Logger::enterNextLogFile() {
-    if (!_logDirectoryPath.isEmpty()) {
-        QDir dir(_logDirectoryPath);
-        if (!dir.exists()) {
-            dir.mkpath(".");
-        }
+    if (_logDirectoryPath.isEmpty()) return;
 
-        // Tentative new log name, will be adjusted if one like this already exists
-        QDateTime now = QDateTime::currentDateTime();
-        QString appName(APPLICATION_NAME);
-        if (_isCLientLog) {
-            appName += QString("_client");
-        }
-        QString newLogName = now.toString("yyyyMMdd_HHmm") + QString("_%1.log").arg(appName);
+    QDir dir(_logDirectoryPath);
+    if (!dir.exists()) {
+        dir.mkpath(".");
+    }
 
-        // Expire old log files and deal with conflicts
-        QStringList unzippedFiles;
-        QStringList files = dir.entryList(QStringList(QString("*%1.log.*").arg(appName)), QDir::Files, QDir::Name);
-        QString rxPattern(QString(R"(.*%1\.log\.(\d+).*)").arg(appName));
-        rxPattern = QRegularExpression::anchoredPattern(rxPattern);
+    // Tentative new log name, will be adjusted if one like this already exists
+    const QDateTime now = QDateTime::currentDateTime();
+    QString appName(APPLICATION_NAME);
+    if (_isClientLog) {
+        appName += QString("_client");
+    }
+    QString newLogName = now.toString("yyyyMMdd_HHmm") + QString("_%1.log").arg(appName);
 
-        QString unzippedPattern(QString(R"(.*%1\.log\.\d$)").arg(appName));
-        unzippedPattern = QRegularExpression::anchoredPattern(unzippedPattern);
+    // Expire old log files and deal with conflicts
+    const QStringList files = dir.entryList(QStringList(QString("*%1.log.*").arg(appName)), QDir::Files, QDir::Name);
+    QString rxPattern(QString(R"(.*%1\.log\.(\d+).*)").arg(appName));
+    rxPattern = QRegularExpression::anchoredPattern(rxPattern);
 
-        int maxNumber = -1;
-        foreach (const QString &s, files) {
-            if (_logExpire.count() > 0) {
-                std::chrono::seconds expireSeconds(_logExpire);
-                QFileInfo fileInfo(dir.absoluteFilePath(s));
-                if (fileInfo.lastModified().addSecs(expireSeconds.count()) < now) {
-                    dir.remove(s);
-                }
-            }
+    QString unzippedPattern(QString(R"(.*%1\.log\.\d$)").arg(appName));
+    unzippedPattern = QRegularExpression::anchoredPattern(unzippedPattern);
 
-            QRegularExpressionMatch rxMatch = QRegularExpression(rxPattern).match(s);
-            if (s.startsWith(newLogName) && rxMatch.hasMatch()) {
-                maxNumber = qMax(maxNumber, rxMatch.captured(1).toInt());
-            } else if (QRegularExpression(unzippedPattern).match(s).hasMatch()) {
-                unzippedFiles.append(dir.absoluteFilePath(s));
+    int32_t maxNumber = -1;
+    QStringList unzippedFiles;
+    foreach (const QString &s, files) {
+        if (_logExpire.count() > 0) {
+            const QFileInfo fileInfo(dir.absoluteFilePath(s));
+            if (fileInfo.lastModified().addDays(_logExpire.count()) < now) {
+                dir.remove(s);
             }
         }
-        newLogName.append("." + QString::number(maxNumber + 1));
 
-        setLogFile(dir.filePath(newLogName));
+        QRegularExpressionMatch rxMatch = QRegularExpression(rxPattern).match(s);
+        if (s.startsWith(newLogName) && rxMatch.hasMatch()) {
+            maxNumber = qMax(maxNumber, rxMatch.captured(1).toInt());
+        } else if (QRegularExpression(unzippedPattern).match(s).hasMatch()) {
+            unzippedFiles.append(dir.absoluteFilePath(s));
+        }
+    }
+    newLogName.append("." + QString::number(maxNumber + 1));
 
-        // Compress the previous log file. On a restart this can be the most recent
-        // log file.
-        for (const QString &logToCompress: unzippedFiles) {
-            if (!logToCompress.isEmpty()) {
-                QString compressedName = logToCompress + ".gz";
-                if (QFile::exists(compressedName)) {
-                    QFile::remove(compressedName);
-                }
+    setLogFile(dir.filePath(newLogName));
 
-                if (KDC::CommonUtility::compressFile(logToCompress, compressedName)) {
-                    QFile::remove(logToCompress);
-                } else {
-                    QFile::remove(compressedName);
-                }
+    // Compress the previous log file. On a restart this can be the most recent
+    // log file.
+    for (const QString &logToCompress: unzippedFiles) {
+        if (!logToCompress.isEmpty()) {
+            QString compressedName = logToCompress + ".gz";
+            if (QFile::exists(compressedName)) {
+                QFile::remove(compressedName);
+            }
+
+            if (KDC::CommonUtility::compressFile(logToCompress, compressedName)) {
+                QFile::remove(logToCompress);
+            } else {
+                QFile::remove(compressedName);
             }
         }
     }
 }
 
 void Logger::slotWatchLogSize() {
-    if (_isCLientLog) {
+    if (_isClientLog) {
         // Do not check log size from client
         _watchLogSizeTimer.stop();
     } else {

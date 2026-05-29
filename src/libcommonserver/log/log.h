@@ -232,7 +232,7 @@ class Log {
          */
         SyncPath getLogFilePath() const;
 
-        void checkForExpiredFiles();
+        void managePreviousSessionLogs();
 
         static const std::wstring instanceName;
         static const std::wstring rfName;

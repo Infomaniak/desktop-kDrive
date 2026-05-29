@@ -64,7 +64,7 @@ std::shared_ptr<Log> Log::instance(const log4cplus::tstring &filePath) {
 
         try {
             _instance = std::shared_ptr<Log>(new Log(filePath));
-            _instance->checkForExpiredFiles();
+            _instance->managePreviousSessionLogs();
         } catch (...) {
             return nullptr;
         }
@@ -138,9 +138,9 @@ SyncPath Log::getLogFilePath() const {
     return _filePath;
 }
 
-void Log::checkForExpiredFiles() {
+void Log::managePreviousSessionLogs() {
     auto *customRollingFileAppender = static_cast<CustomRollingFileAppender *>(_logger.getAppender(Log::rfName).get());
-    customRollingFileAppender->checkForExpiredFiles();
+    customRollingFileAppender->managePreviousSessionLogs();
 }
 
 } // namespace KDC

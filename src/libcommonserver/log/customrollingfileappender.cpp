@@ -57,6 +57,7 @@
 // For _wrename() and _wremove() on Windows.
 #include <stdio.h>
 #include <cerrno>
+#include <queue>
 #ifdef LOG4CPLUS_HAVE_ERRNO_H
 #include <errno.h>
 #endif
@@ -293,13 +294,50 @@ void CustomRollingFileAppender::customRollover() {
     log4cplus::loglog_opening_result(loglog, out, filename);
 }
 
-void CustomRollingFileAppender::checkForExpiredFiles() {
+struct LogFileInfo {
+        SyncTime modificationTime{0};
+        SyncPath path;
+        int64_t size{0};
+
+        LogFileInfo(const int64_t modificationTime, const SyncPath path, const int64_t size) :
+            modificationTime(modificationTime),
+            path(std::move(path)),
+            size(size) {}
+
+        auto operator<=>(const LogFileInfo &rhs) const {
+            if (auto cmp = rhs.modificationTime <=> modificationTime; cmp != 0) return cmp;
+            return path <=> rhs.path;
+        }
+        bool operator==(const LogFileInfo &rhs) const = default;
+};
+
+void reduceLogFolderSizeIfNeeded(const int64_t maxLogFolderSize, const int64_t totalSize,
+                                 std::priority_queue<LogFileInfo> &logFiles) noexcept {
+    // Delete files until the total size of the folder is < 2GB
+    auto currentSize = totalSize;
+    while (currentSize > maxLogFolderSize) {
+        if (logFiles.empty()) break;
+
+        const auto fileToDelete = logFiles.top();
+        logFiles.pop();
+        if (fileToDelete.path.filename().string() == Log::instance()->getLogFilePath().filename().string()) {
+            continue; // Ignore current file
+        }
+        log4cplus::file_remove(CommonUtility::s2ws(fileToDelete.path.string()));
+        currentSize -= fileToDelete.size;
+    }
+}
+
+void CustomRollingFileAppender::managePreviousSessionLogs() {
     _lastExpireCheck = std::chrono::system_clock::now();
     // Archive previous log files and delete expired files
     SyncPath logDirPath;
     if (const auto exitInfo = CommonUtility::logDirectoryPath(logDirPath); !exitInfo) {
         return;
     }
+
+    int64_t totalSize = 0;
+    std::priority_queue<LogFileInfo> logFiles;
 
     IoError ioError = IoError::Success;
     IoHelper::DirectoryIterator dirIt(logDirPath, false, ioError);
@@ -323,16 +361,37 @@ void CustomRollingFileAppender::checkForExpiredFiles() {
             }
         }
 
-        // Compress previous log sessions
-        if (const SyncPath currentLogName = DirectoryEntry(filename).path().filename().replace_extension("");
-            entry.path().filename().string().find(".gz") == std::string::npos &&
-            entry.path().string().find(currentLogName.string()) == std::string::npos) {
-            if (CommonUtility::compressFile(entry.path().string(), entry.path().string() + ".gz")) {
-                log4cplus::file_remove(CommonUtility::s2ws(entry.path().string()));
-            } else {
-                log4cplus::file_remove(CommonUtility::s2ws(entry.path().string()) + LOG4CPLUS_TEXT(".gz"));
-            }
+        auto filePath = entry.path();
+        SyncPath finalFilePath;
+        tryCompressFile(filePath, finalFilePath);
+
+        // Get FileStat again to retrieve the updated file size after compression
+        (void) IoHelper::getFileStat(finalFilePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
+        if (ioError != IoError::Success || fileStat.nodeType != NodeType::File) {
+            continue;
+        }
+
+        totalSize += fileStat.size;
+        logFiles.emplace(fileStat.modificationTime, finalFilePath, fileStat.size);
+    }
+
+    reduceLogFolderSizeIfNeeded(maxLogFolderSize(), totalSize, logFiles);
+}
+
+void CustomRollingFileAppender::tryCompressFile(const SyncPath &inputPath, SyncPath &outputPath) noexcept {
+    outputPath = inputPath;
+    if (const SyncPath currentLogName = DirectoryEntry(filename).path().filename().replace_extension("");
+        inputPath.filename().string().find(".gz") == std::string::npos &&
+        inputPath.string().find(currentLogName.string()) == std::string::npos) {
+        const auto sourceFileName = inputPath.string();
+        const auto targetFileName = sourceFileName + ".gz";
+        if (CommonUtility::compressFile(sourceFileName, targetFileName)) {
+            log4cplus::file_remove(CommonUtility::s2ws(sourceFileName));
+            outputPath = targetFileName;
+        } else {
+            log4cplus::file_remove(CommonUtility::s2ws(sourceFileName) + LOG4CPLUS_TEXT(".gz"));
         }
     }
 }
+
 } // namespace KDC

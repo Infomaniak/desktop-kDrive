@@ -27,6 +27,7 @@ class TestLog : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestLog);
         CPPUNIT_TEST(testLog);
         CPPUNIT_TEST(testExpiredLogFiles);
+        CPPUNIT_TEST(testLargeLogFolder);
         CPPUNIT_TEST(testLargeLogRolling);
         CPPUNIT_TEST_SUITE_END();
 
@@ -34,8 +35,9 @@ class TestLog : public CppUnit::TestFixture, public TestBase {
         void setUp(void) final;
         void tearDown(void) final { TestBase::stop(); }
 
-        void testLargeLogRolling(void);
         void testExpiredLogFiles(void);
+        void testLargeLogFolder(void);
+        void testLargeLogRolling(void);
 
     private:
         log4cplus::Logger _logger;

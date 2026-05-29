@@ -21,7 +21,11 @@
 #include <log4cplus/logger.h>
 #include <log4cplus/fileappender.h>
 
+#include <cstdint>
+
 namespace KDC {
+
+constexpr int64_t defaultMaxLogFolderSize = 2147483648; // 2GB
 
 class CustomRollingFileAppender : public log4cplus::RollingFileAppender {
     public:
@@ -38,15 +42,20 @@ class CustomRollingFileAppender : public log4cplus::RollingFileAppender {
 
         inline void setMaxFileSize(long newMaxFileSize) { _maxFileSize = newMaxFileSize; }
         inline long getMaxFileSize() const { return _maxFileSize; }
-        void checkForExpiredFiles() noexcept(false);
+        void managePreviousSessionLogs() noexcept(false);
+        int64_t maxLogFolderSize() const { return _maxLogFolderSize; }
+        void setMaxLogFolderSize(const int64_t maxLogFolderSize) { _maxLogFolderSize = maxLogFolderSize; }
 
     protected:
         void append(const log4cplus::spi::InternalLoggingEvent &event) override;
         void customRollover();
 
     private:
+        void tryCompressFile(const SyncPath &inputPath, SyncPath &outputPath) noexcept;
+
         int _expire = 0;
         long _maxFileSize = 0;
+        int64_t _maxLogFolderSize = defaultMaxLogFolderSize;
         std::chrono::time_point<std::chrono::system_clock> _lastExpireCheck;
 };
 
