@@ -128,6 +128,7 @@ ExitInfo FolderWatcher_mac::doNotifyParent(const std::list<std::pair<std::filesy
     if (!_stop && _parent) {
         if (const auto exitInfo = _parent->changesDetected(changes); exitInfo.code() != ExitCode::Ok) {
             LOGW_WARN(_logger, L"Error in LocalFileSystemObserverWorker::changesDetected: " << exitInfo);
+            _parent->invalidateSnapshot();
             return exitInfo;
         }
     }

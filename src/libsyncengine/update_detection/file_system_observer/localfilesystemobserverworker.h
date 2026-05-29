@@ -31,7 +31,7 @@ class LocalFileSystemObserverWorker : public FileSystemObserverWorker {
         void start() override;
         void stop() override;
 
-        virtual ExitInfo changesDetected(const std::list<std::pair<std::filesystem::path, OperationType>> &changes);
+        virtual ExitInfo changesDetected(const std::list<std::pair<SyncPath, OperationType>> &changes);
         virtual void forceUpdate() override;
 
     protected:
@@ -54,7 +54,9 @@ class LocalFileSystemObserverWorker : public FileSystemObserverWorker {
                              bool &valid) const;
 #endif
 
-        void sendAccessDeniedError(const SyncPath &absolutePath);
+        void sendAccessDeniedError(const SyncPath &relativePath);
+
+        ExitInfo handleIoError(const SyncPath &relativePath, IoError ioError);
 
         std::chrono::steady_clock::time_point _needUpdateTimerStart = std::chrono::steady_clock::now();
 

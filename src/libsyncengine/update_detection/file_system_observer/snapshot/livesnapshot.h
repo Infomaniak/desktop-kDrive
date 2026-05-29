@@ -40,6 +40,7 @@ class LiveSnapshot : public Snapshot, public SharedObject {
         void init();
 
         bool updateItem(const SnapshotItem &newItem);
+        bool updateItem(const SnapshotItem &newItem, NodeId &removedNodeId);
         bool removeItem(const NodeId itemId); // Do not pass by reference to avoid dangling references
 
         bool path(const NodeId &itemId, SyncPath &path, bool &ignore) const noexcept override;

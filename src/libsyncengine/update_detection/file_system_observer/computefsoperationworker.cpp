@@ -145,7 +145,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
 
     const NodeId &nodeId = dbNode.nodeId(side);
     if (nodeId.empty()) {
-        LOGW_SYNCPAL_WARN(_logger, side << L" node ID empty for for dbId=" << dbNode.nodeId());
+        LOG_SYNCPAL_WARN(_logger, side << " node ID empty: dbId=" << dbNode.nodeId());
         setExitCause(ExitCause::DbEntryNotFound);
         return ExitCode::DataError;
     }
