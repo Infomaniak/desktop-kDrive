@@ -31,5 +31,3 @@ Before proposing code or review comments:
 
 ## Pull Request & Commit Rules (MANDATORY)
 See `AGENTS.md` for the canonical version.
-
-When the user asks to create a PR or prepare PR content:

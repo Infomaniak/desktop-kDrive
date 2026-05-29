@@ -47,6 +47,8 @@ clang-format -i <file>
 - **PR Target Branch:** Use `develop` as the default target branch unless the user explicitly asks for a different base branch.
 - **PR Status:** Create the PR as **Draft** by default.
 - **Branch creation (AI/automation):** If the user requests a PR but has not created a branch, create one with an appropriate name before opening the PR.
+- **History rewriting (AI/automation):** Never amend, rebase, or force-push commits unless the user explicitly asks for it.
+- **Commit & push:** Only commit and push when the user explicitly asks for it.
 - **Commit Format:** Follow the project's semantic-commit validation rules defined in [`.github/workflows/semantic-commit.yml`](https://github.com/Infomaniak/.github/blob/main/.github/workflows/semantic-commit.yml).
 
 ## Security & Secrets
@@ -64,6 +66,8 @@ clang-format -i <file>
 - In versioned documentation such as `AGENTS.md`, use repo-relative paths, not hardcoded absolute filesystem paths.
 - For Linux builds/validation, use `infomaniak-build-tools/linux/build-release-via-podman.sh` rather than direct `cmake --build`.
 - For dependency builds, use `infomaniak-build-tools/conan/build_dependencies.sh <Debug|Release|RelWithDebInfo>` rather than direct `conan install` so the project-specific environment is set correctly.
+- Never rewrite commit history (amend, rebase, force-push) unless explicitly asked by the user.
+- Only commit and push when explicitly asked by the user.
 <!-- Add project-specific user corrections here -->
 
 ## JIT Index
