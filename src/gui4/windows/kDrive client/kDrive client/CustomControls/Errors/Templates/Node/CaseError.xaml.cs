@@ -27,7 +27,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
     [ErrorMetadata(
         Levels = new[] { ErrorLevel.Node },
         NodeTypes = new[] { NodeType.File, NodeType.Directory },
-        InconsistencyTypes = new[] { InconsistencyType.None }
+        InconsistencyTypes = new[] { InconsistencyType.Case }
     )]
     public sealed partial class CaseError : UserControl
     {
