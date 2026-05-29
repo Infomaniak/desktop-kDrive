@@ -1808,11 +1808,10 @@ void TestNetworkJobs::testGetAllFilesInDirectory() {
 void TestNetworkJobs::testPostFileModificationDate() {
     const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testPostFileModificationDate");
     const LocalTemporaryDirectory localTmpDir("testPostFileModificationDate");
-    const uint64_t newModificationDate = static_cast<uint64_t>(testhelpers::defaultTime) + 3600;
-    const auto futureTimestamp = static_cast<uint64_t>(
-            std::chrono::duration_cast<std::chrono::seconds>(
-                    (std::chrono::system_clock::now() + std::chrono::hours(24) + std::chrono::minutes(1)).time_since_epoch())
-                    .count());
+    const auto nowSecForTest = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::seconds>(
+            std::chrono::system_clock::now().time_since_epoch()).count());
+    const uint64_t newModificationDate = nowSecForTest - 3600; // keep it in the past to avoid backend "future timestamp" rejection
+    const uint64_t futureTimestamp = nowSecForTest + 24ULL * 3600ULL + 60ULL;
 
     struct TestCase {
         std::string fileName;
