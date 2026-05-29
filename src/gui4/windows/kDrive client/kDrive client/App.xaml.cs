@@ -69,7 +69,7 @@ namespace Infomaniak.kDrive
          *     new ProductionKSuite());
          */
 
-        internal static IAppConstants Constants => new ProductionAppConstants();
+        internal static IAppConstants Constants => Environment.GetEnvironmentVariable("KDRIVE_USE_PREPROD_URL") == "1" ? new PreProdAppConstants() : new ProductionAppConstants();
 
         internal App()
         {

@@ -19,6 +19,7 @@
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
@@ -36,6 +37,25 @@ namespace Infomaniak.kDrive.Pages
         public SpecialErroBasePage(List<SyncErrorStates> syncErrorStates)
         {
             _handledErrorStates = syncErrorStates;
+            Loaded += SpecialErroBasePage_Loaded;
+        }
+
+        private void SpecialErroBasePage_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Remove all the previous pages in the back stack that are of a type derived from SpecialErroBasePage and the page -1 in the back stack to prevent navigation to error state by back navigation
+            if (Frame?.BackStackDepth > 0)
+            {
+                Logger.Log(Logger.Level.Info, "Removing previous page from back stack to prevent navigation to error state");
+                for (int i = Frame.BackStackDepth - 1; i >= 0; i--)
+                {
+                    if (Frame.BackStack[i].SourcePageType == typeof(SpecialErroBasePage) || Frame.BackStack[i].SourcePageType.IsSubclassOf(typeof(SpecialErroBasePage)))
+                    {
+                        Logger.Log(Logger.Level.Info, $"Removing page of type {Frame.BackStack[i].SourcePageType} from back stack to prevent navigation to error state");
+                        Frame.BackStack.RemoveAt(i);
+                    }
+                }
+                Frame.BackStack.RemoveAt(Frame.BackStackDepth - 1);
+            }
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)

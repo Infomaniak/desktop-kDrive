@@ -36,12 +36,12 @@ namespace Infomaniak.kDrive
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(((App)Application.Current).CurrentWindow);
             var parentWindowId = Win32Interop.GetWindowIdFromWindow(hWnd);
 
-            var authRequestParams = AuthRequestParams.CreateForAuthorizationCodeRequest(App.Constants.Login.OAtuhClientId, App.Constants.Login.OAtuhRedirectUri);
+            var authRequestParams = AuthRequestParams.CreateForAuthorizationCodeRequest(App.Constants.Login.OAuthClientId, App.Constants.Login.OAuthRedirectUri);
             authRequestParams.CodeChallengeMethod = CodeChallengeMethodKind.S256;
             try
             {
                 var authRequestResult = await OAuth2Manager
-                    .RequestAuthWithParamsAsync(parentWindowId, App.Constants.Login.OAtuhAuthorizationEndpoint, authRequestParams)
+                    .RequestAuthWithParamsAsync(parentWindowId, App.Constants.Login.OAuthAuthorizationEndpoint, authRequestParams)
                     .AsTask(cancellationToken);
 
                 if (authRequestResult.Response is AuthResponse authResponse)

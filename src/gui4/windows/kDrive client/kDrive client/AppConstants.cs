@@ -62,9 +62,9 @@ namespace Infomaniak.kDrive
 
     internal interface ILoginConstants
     {
-        Uri OAtuhRedirectUri { get; }
-        Uri OAtuhAuthorizationEndpoint { get; }
-        string OAtuhClientId { get; }
+        Uri OAuthRedirectUri { get; }
+        Uri OAuthAuthorizationEndpoint { get; }
+        string OAuthClientId { get; }
     }
     internal interface ISyncConstants
     {
@@ -168,9 +168,9 @@ namespace Infomaniak.kDrive
 
     internal sealed class ProductionLogin : ILoginConstants
     {
-        public Uri OAtuhRedirectUri { get; } = new Uri("kdrive://auth-desktop");
-        public Uri OAtuhAuthorizationEndpoint { get; } = new Uri("https://login.infomaniak.com/authorize?skipAutoRedirect=true");
-        public string OAtuhClientId { get; } = "5EA39279-FF64-4BB8-A872-4A40B5786317";
+        public Uri OAuthRedirectUri { get; } = new Uri("kdrive://auth-desktop");
+        public Uri OAuthAuthorizationEndpoint { get; } = new Uri("https://login.infomaniak.com/authorize?skipAutoRedirect=true");
+        public string OAuthClientId { get; } = "5EA39279-FF64-4BB8-A872-4A40B5786317";
     }
 
     internal sealed class ProductionKSuite : IkSuiteConstants
@@ -196,9 +196,9 @@ namespace Infomaniak.kDrive
 
     internal sealed class PreProdLogin : ILoginConstants
     {
-        public Uri OAtuhRedirectUri { get; } = new ProductionLogin().OAtuhRedirectUri;
-        public Uri OAtuhAuthorizationEndpoint { get; } = new Uri("https://login.preprod.dev.infomaniak.ch/authorize?skipAutoRedirect=true");
-        public string OAtuhClientId { get; } = new ProductionLogin().OAtuhClientId;
+        public Uri OAuthRedirectUri { get; } = new ProductionLogin().OAuthRedirectUri;
+        public Uri OAuthAuthorizationEndpoint { get; } = new Uri("https://login.preprod.dev.infomaniak.ch/authorize?skipAutoRedirect=true");
+        public string OAuthClientId { get; } = new ProductionLogin().OAuthClientId;
     }
 
     internal sealed class PreProdAppConstants : IAppConstants
