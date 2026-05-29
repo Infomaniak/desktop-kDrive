@@ -27,8 +27,8 @@ class PostFileModificationDateJob : public AbstractTokenNetworkJob {
         PostFileModificationDateJob(DriveDbId driveDbId, const NodeId &nodeId, uint64_t lastModifiedAt);
 
     private:
-        virtual std::string getSpecificUrl() override;
-        inline virtual ExitInfo setData() override;
+        std::string getSpecificUrl() override;
+        inline ExitInfo setData() override;
 
         NodeId _nodeId;
         uint64_t _lastModifiedAt;

@@ -39,7 +39,7 @@ std::string PostFileModificationDateJob::getSpecificUrl() {
 
 ExitInfo PostFileModificationDateJob::setData() {
     Poco::JSON::Object json;
-    json.set("last_modified_at", _lastModifiedAt);
+    (void) json.set("last_modified_at", _lastModifiedAt);
 
     std::stringstream ss;
     json.stringify(ss);
