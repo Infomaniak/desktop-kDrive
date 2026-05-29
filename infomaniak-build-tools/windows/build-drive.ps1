@@ -276,7 +276,6 @@ function Build-Extension {
         Write-Host "Package.appxmanifest not found at $appxManifestPath" -ForegroundColor Red
         exit 1
     }
-    Write-Host "Publisher set to: $publisher" -ForegroundColor Yellow
 
     $version = Get-version -IncludeBuildVersion $true
     Write-Host "Extension version: $version"

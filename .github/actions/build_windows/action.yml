@@ -137,7 +137,7 @@ runs:
           if ("${{ inputs.release_build }}" -eq "true") {
 
             if ("${{ inputs.build_new_client }}" -eq "true") {
-              & $script -thumbprint $thumbprint -ci -ext -clean remake -upload -newGui $true
+              & $script -thumbprint $thumbprint -ci -ext -msi -clean remake -upload -newGui $true
             }
             else {
               & $script -thumbprint $thumbprint -ci -ext -msi -clean remake -upload
