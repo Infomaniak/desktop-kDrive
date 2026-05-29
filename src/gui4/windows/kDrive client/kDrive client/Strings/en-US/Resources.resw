@@ -6,7 +6,7 @@
   Locale: en, English
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 29 May 2026 15:49:15 +0200 
+  Exported at: Fri, 29 May 2026 15:56:50 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -182,7 +182,7 @@ You can open them at any time, even without an internet connection.</value>
     <value>Advanced settings</value> 
   </data> 
   <data name="buttonApplyToXFiles" xml:space="preserve"> 
-    <value>Apply to %d files</value> 
+    <value>Apply to %@ files</value> 
   </data> 
   <data name="buttonAskForAccess" xml:space="preserve"> 
     <value>Request access</value> 
