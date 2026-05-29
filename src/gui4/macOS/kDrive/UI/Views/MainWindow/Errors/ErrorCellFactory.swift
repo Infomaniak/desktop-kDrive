@@ -34,114 +34,252 @@ struct ErrorCellFactory {
         switch error.kind {
         case .conflict:
             return ErrorCellView(
-                title: "!Conflit de versions",
-                description: "!Deux versions différentes de ce fichier ont été détectées.",
-                action: .init(title: "Choisir une version") {
+                title: KDriveLocalizable.conflictErrorTitle,
+                description: KDriveLocalizable.conflictErrorDescription,
+                action: .init(title: KDriveLocalizable.conflictErrorAction) {
                     manager.resolveConflict(error)
                 }
             )
         case .createCancel:
-            // TODO: Implement it
-            return nil
+            return ErrorCellView(
+                title: KDriveLocalizable.errForbiddenActionTitle,
+                description: KDriveLocalizable.errCreateCancelDescription("TODO")
+            )
         case .deleteCancel:
-            // TODO: Implement it
-            return nil
+            return ErrorCellView(
+                title: KDriveLocalizable.errForbiddenActionTitle,
+                description: KDriveLocalizable.errDeleteCancelDescription("TODO")
+            )
         case .editCancel:
-            // TODO: Implement it
-            return nil
+            return ErrorCellView(
+                title: KDriveLocalizable.errForbiddenActionTitle,
+                description: KDriveLocalizable.errEditCancelDescription
+            )
         case .moveCancel:
-            // TODO: Implement it
-            return nil
-        case .fileLockedError:
-            // TODO: Implement it
-            return nil
-        case .fileRescuedError:
-            // TODO: Implement it
-            return nil
+            // TODO: Add destination path copy
+            return ErrorCellView(
+                title: KDriveLocalizable.errForbiddenActionTitle,
+                description: KDriveLocalizable.errMoveCancelDescription("TODO")
+            )
+        case .fileLocked:
+            return ErrorCellView(
+                title: KDriveLocalizable.errFileLockedTitle,
+                description: KDriveLocalizable.errFileLockedDescription
+            )
+        case .fileRescued:
+            return ErrorCellView(
+                title: KDriveLocalizable.errFileRescuedTitle,
+                description: KDriveLocalizable.errFileRescuedDescription,
+                action: .init(title: KDriveLocalizable.buttonOpenFolder) {
+                    // TODO
+                }
+            )
         case .fileTooBig:
-            // TODO: Implement it
-            return nil
+            let description = ""
+            return ErrorCellView(
+                title: KDriveLocalizable.errFileTooBigTitle,
+                description: description
+            )
         case .forbiddenCharEndWithSpace:
-            // TODO: Implement it
-            return nil
+            return ErrorCellView(
+                title: KDriveLocalizable.errEndWithSpaceTitle("TODO"),
+                description: KDriveLocalizable.errEndWithSpaceDescription("TODO", "TODO"),
+                action: .init(title: KDriveLocalizable.buttonRenameItem("TODO")) {
+                    // TODO
+                }
+            )
         case .forbiddenChar:
-            // TODO: Implement it
-            return nil
+            return ErrorCellView(
+                title: KDriveLocalizable.errForbiddenCharTitle,
+                description: KDriveLocalizable.errForbiddenCharDescription("TODO", "TODO"),
+                action: .init(title: KDriveLocalizable.buttonRenameItem("TODO")) {
+                    // TODO
+                }
+            )
         case .forbiddenCharOnlySpaces:
-            // TODO: Implement it
-            return nil
+            return ErrorCellView(
+                title: KDriveLocalizable.errForbiddenCharOnlySpacesTitle,
+                description: KDriveLocalizable.errForbiddenCharOnlySpacesDescription("TODO"),
+                action: .init(title: KDriveLocalizable.buttonRenameItem("TODO")) {
+                    // TODO
+                }
+            )
         case .nameLength:
-            // TODO: Implement it
-            return nil
+            return ErrorCellView(
+                title: KDriveLocalizable.errNameLengthTitle("TODO"),
+                description: KDriveLocalizable.errNameLengthDescription("TODO"),
+                action: .init(title: KDriveLocalizable.buttonRenameItem("TODO")) {
+                    // TODO
+                }
+            )
         case .pathLength:
             // TODO: Implement it
-            return nil
+            return ErrorCellView(
+                title: KDriveLocalizable.errPathLengthTitle("TODO"),
+                description: KDriveLocalizable.errPathLengthDescription("TODO"),
+                action: .init(title: KDriveLocalizable.buttonOpenParentFolder) {
+                    // TODO
+                }
+            )
         case .notEnoughDiskSpace:
-            // TODO: Implement it
-            return nil
+            return ErrorCellView(
+                title: KDriveLocalizable.errNotEnoughDiskSpaceTitle,
+                description: KDriveLocalizable.errNotEnoughDiskSpaceDescription,
+                action: .init(title: KDriveLocalizable.buttonManageDiskSpace) {
+                    // TODO
+                }
+            )
         case .quotaExceeded:
-            // TODO: Implement it
-            return nil
+            return ErrorCellView(
+                title: KDriveLocalizable.errQuotaExceededTitle,
+                description: KDriveLocalizable.errQuotaExceededDescription("TODO"),
+                action: .init(title: KDriveLocalizable.buttonManageStorage) {
+                    // TODO
+                }
+            )
         case .reservedName:
-            // TODO: Implement it
-            return nil
+            return ErrorCellView(
+                title: KDriveLocalizable.errReservedNameTitle("TODO"),
+                description: KDriveLocalizable.errReservedNameDescription("TODO"),
+                action: .init(title: KDriveLocalizable.buttonRenameItem("TODO")) {
+                    // TODO
+                }
+            )
         case .temporaryBlacklisted:
-            // TODO: Implement it
-            return nil
+            return ErrorCellView(
+                title: KDriveLocalizable.errTmpBlacklistedTitle,
+                description: KDriveLocalizable.errTmpBlacklistedDescription
+            )
         case .backErrorDriveAccess:
-            // TODO: Implement it
-            return nil
+            return ErrorCellView(
+                title: KDriveLocalizable.driveAccessDeniedErrorTitle,
+                description: KDriveLocalizable.driveAccessDeniedErrorDescription,
+                action: .init(title: KDriveLocalizable.buttonRetry) {
+                    // TODO
+                }
+            )
         case .backErrorDriveAsleep:
-            // TODO: Implement it
-            return nil
+            return ErrorCellView(
+                title: KDriveLocalizable.driveAsleepErrorTitle,
+                description: KDriveLocalizable.backErrorDriveAsleepDescription,
+                action: .init(title: KDriveLocalizable.buttonWakeUp) {
+                    // TODO
+                }
+            )
         case .backErrorDriveMaintenance:
-            // TODO: Implement it
-            return nil
+            return ErrorCellView(
+                title: KDriveLocalizable.errDriveMaintenanceTitle,
+                description: KDriveLocalizable.errDriveMaintenanceDescription,
+                action: .init(title: KDriveLocalizable.buttonRefresh) {
+                    // TODO
+                }
+            )
         case .backErrorDriveNotRenew:
-            // TODO: Implement it
-            return nil
+            // TODO: Check if user is admin
+            return ErrorCellView(
+                title: KDriveLocalizable.driveLockedErrorTitle,
+                description: ""
+            )
         case .invalidSyncDirAccess:
-            // TODO: Implement it
-            return nil
+            return ErrorCellView(
+                title: KDriveLocalizable.errInvalidSyncSyncDirAccessTitle,
+                description: KDriveLocalizable.errInvalidSyncSyncDirAccessDescription,
+                action: .init(title: KDriveLocalizable.buttonErrorResolutionTip) {
+                    // TODO
+                }
+            )
         case .invalidSyncDirNesting:
-            // TODO: Implement it
-            return nil
+            return ErrorCellView(
+                title: KDriveLocalizable.errInvalidSyncSyncDirNestingTitle,
+                description: KDriveLocalizable.errInvalidSyncSyncDirNestingDescription
+            )
         case .invalidToken:
-            // TODO: Implement it
-            return nil
+            return ErrorCellView(
+                title: KDriveLocalizable.driveLoggingErrorTitle,
+                description: KDriveLocalizable.driveLoggingErrorDescription,
+                action: .init(title: KDriveLocalizable.buttonConnectAccount) {
+                    // TODO
+                }
+            )
         case .networkOther:
-            // TODO: Implement it
-            return nil
+            return ErrorCellView(
+                title: KDriveLocalizable.errNetworkErrorOtherTitle,
+                description: KDriveLocalizable.errNetworkErrorOtherDescription
+            )
         case .systemNotEnoughDiskSpace:
-            // TODO: Implement it
-            return nil
+            return ErrorCellView(
+                title: KDriveLocalizable.errSystemNotEnoughDiskSpaceTitle,
+                description: KDriveLocalizable.errSystemNotEnoughDiskSpaceDescription,
+                action: .init(title: KDriveLocalizable.buttonManageDiskSpace) {
+                    // TODO
+                }
+            )
         case .systemSyncDirAccess:
-            // TODO: Implement it
-            return nil
+            return ErrorCellView(
+                title: KDriveLocalizable.errSystemErrorSyncDirAccessTitle,
+                description: KDriveLocalizable.errSystemErrorSyncDirAccessErrorDescription,
+                action: .init(title: KDriveLocalizable.buttonErrorResolutionTip) {
+                    // TODO
+                }
+            )
         case .systemSyncDirDiskMissing:
-            // TODO: Implement it
-            return nil
+            return ErrorCellView(
+                title: KDriveLocalizable.errSystemSyncDirMissingTitle,
+                description: KDriveLocalizable.errSystemSyncDirDiskMissingDescription,
+                action: .init(title: KDriveLocalizable.buttonErrorResolutionTip) {
+                    // TODO
+                }
+            )
         case .systemUnableToStartVFS:
-            // TODO: Implement it
-            return nil
+            return ErrorCellView(
+                title: KDriveLocalizable.errSystemUnableToStartVfsTitle,
+                description: KDriveLocalizable.errSystemUnableToStartVfsDescription,
+                action: .init(title: KDriveLocalizable.buttonActivateOfflineSync) {
+                    // TODO
+                }
+            )
         case .excludedByTemplate:
-            // TODO: Implement it
-            return nil
+            return ErrorCellView(
+                title: KDriveLocalizable.errExcludedByTemplateTitle,
+                description: KDriveLocalizable.errExcludedByTemplateDescription("TODO"),
+                action: .init(title: KDriveLocalizable.buttonOpenSyncExclusionRules) {
+                    // TODO
+                }
+            )
         case .genericErrForbidden:
-            // TODO: Implement it
-            return nil
+            return ErrorCellView(
+                title: KDriveLocalizable.errGenericForbiddenTitle,
+                description: KDriveLocalizable.errGenericForbiddenDescription
+            )
         case .hardLink:
-            // TODO: Implement it
-            return nil
+            return ErrorCellView(
+                title: KDriveLocalizable.errHardlinkTitle,
+                description: KDriveLocalizable.errHardlinkDescription
+            )
         case .localAccess:
-            // TODO: Implement it
-            return nil
+            return ErrorCellView(
+                title: KDriveLocalizable.errLocalFileAccessTitle("TODO"),
+                description: KDriveLocalizable.errLocalFileAccessDescription("TODO"),
+                action: .init(title: KDriveLocalizable.buttonManage) {
+                    // TODO
+                }
+            )
         case .dataSyncDirChanged:
-            // TODO: Implement it
-            return nil
+            return ErrorCellView(
+                title: KDriveLocalizable.errSystemSyncDirMissingTitle,
+                description: KDriveLocalizable.errSystemSyncDirChanged,
+                action: .init(title: KDriveLocalizable.buttonErrorResolutionTip) {
+                    // TODO
+                }
+            )
         case .temporaryDirAccess:
-            // TODO: Implement it
-            return nil
+            return ErrorCellView(
+                title: KDriveLocalizable.informationBlockTmpDirAccessErrorTitle,
+                description: KDriveLocalizable.informationBlockTmpDirAccessErrorSubtitle,
+                action: .init(title: KDriveLocalizable.buttonClose) {
+                    // TODO
+                }
+            )
         case .unknown:
             return nil
         }

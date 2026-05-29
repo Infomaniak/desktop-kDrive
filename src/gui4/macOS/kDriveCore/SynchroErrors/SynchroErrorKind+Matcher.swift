@@ -31,9 +31,9 @@ extension SynchroErrorKind {
             return .node(cancelTypes: [.Edit])
         case .moveCancel:
             return .node(cancelTypes: [.Move])
-        case .fileLockedError:
+        case .fileLocked:
             return .node(exitCodes: [.BackError], exitCauses: [.FileLocked])
-        case .fileRescuedError:
+        case .fileRescued:
             return .node(cancelTypes: [.FileRescued])
         case .fileTooBig:
             return .node(exitCodes: [.BackError], exitCauses: [.FileTooBig])
