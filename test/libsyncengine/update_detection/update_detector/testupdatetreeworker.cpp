@@ -56,7 +56,7 @@ void TestUpdateTreeWorker::setUp() {
     _localUpdateTree->init();
     _remoteUpdateTree->init();
 
-    SyncNodeCache::instance()->initCache(testSyncDbId, _syncDb);
+    (void) SyncNodeCache::instance()->initCache(testSyncDbId, _syncDb);
 }
 
 void TestUpdateTreeWorker::tearDown() {
@@ -65,6 +65,7 @@ void TestUpdateTreeWorker::tearDown() {
     // As the two singletons are instantiated in different translation units, the order of their destruction is unknown.
     ParmsDb::reset();
     ParametersCache::reset();
+    (void) SyncNodeCache::instance()->clear(testSyncDbId);
     TestBase::stop();
 }
 
@@ -1227,26 +1228,25 @@ void TestUpdateTreeWorker::testIntegrityCheck() {
 }
 
 void TestUpdateTreeWorker::testResetNodes() {
-    auto updateTree = std::make_shared<UpdateTree>(ReplicaSide::Remote, SyncDb::driveRootNode());
     // Normal unmodified node
-    const auto nodeA = std::make_shared<Node>(ReplicaSide::Remote, Str("A"), NodeType::Directory, updateTree->rootNode());
+    const auto nodeA = std::make_shared<Node>(ReplicaSide::Remote, Str("A"), NodeType::Directory, _remoteUpdateTree->rootNode());
     _remoteUpdateTree->insertNode(nodeA);
     // Node created on previous sync
-    const auto nodeB = std::make_shared<Node>(ReplicaSide::Remote, Str("B"), NodeType::Directory, updateTree->rootNode());
+    const auto nodeB = std::make_shared<Node>(ReplicaSide::Remote, Str("B"), NodeType::Directory, _remoteUpdateTree->rootNode());
     nodeB->setChangeEvents(OperationType::Create);
     nodeB->setStatus(NodeStatus::Processed);
     _remoteUpdateTree->insertNode(nodeB);
     // Node moved on previous sync
-    const auto nodeC = std::make_shared<Node>(ReplicaSide::Remote, Str("C2"), NodeType::Directory, updateTree->rootNode());
+    const auto nodeC = std::make_shared<Node>(ReplicaSide::Remote, Str("C2"), NodeType::Directory, _remoteUpdateTree->rootNode());
     nodeC->setMoveOriginInfos({"C1", "1"});
     nodeC->setChangeEvents(OperationType::Move);
     _remoteUpdateTree->insertNode(nodeC);
     // Node to be removed from the UpdateTree
-    const auto nodeD = std::make_shared<Node>(ReplicaSide::Remote, Str("D"), NodeType::Directory, updateTree->rootNode());
+    const auto nodeD = std::make_shared<Node>(ReplicaSide::Remote, Str("D"), NodeType::Directory, _remoteUpdateTree->rootNode());
     nodeD->setStatus(NodeStatus::ToDelete);
     _remoteUpdateTree->insertNode(nodeD);
     // Blacklisted node
-    const auto nodeE = std::make_shared<Node>(ReplicaSide::Remote, Str("E"), NodeType::Directory, updateTree->rootNode());
+    const auto nodeE = std::make_shared<Node>(ReplicaSide::Remote, Str("E"), NodeType::Directory, _remoteUpdateTree->rootNode());
     (void) SyncNodeCache::instance()->update(testSyncDbId, SyncNodeType::TmpRemoteBlacklist, {nodeE->id().value()});
     _remoteUpdateTree->insertNode(nodeE);
 
