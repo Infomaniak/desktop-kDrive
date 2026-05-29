@@ -15,16 +15,8 @@ namespace Infomaniak.kDrive
     {
         public string Key { get; set; }
 
-        private static UISettings _uiSettings = new();
-        private static event Action ThemeChanged = delegate { };
-
-        static ThemeColorExtension()
-        {
-            _uiSettings.ColorValuesChanged += (_, __) =>
-            {
-                ThemeChanged?.Invoke();
-            };
-        }
+        private UISettings _uiSettings = new();
+        private event Action ThemeChanged = delegate { };
 
         private WeakReference<DependencyObject>? _targetRef;
         private DependencyProperty? _targetProperty;
@@ -44,43 +36,17 @@ namespace Infomaniak.kDrive
             _targetRef = new WeakReference<DependencyObject>(targetObject);
             _targetProperty = FindDP(targetObject.GetType(), targetProperty.Name);
 
-            ThemeChanged += OnThemeChanged;
+            _uiSettings.ColorValuesChanged += OnThemeChanged;
 
 
             var res = ResolveColor();
             return res;
         }
-        private void OnTargetUnloaded(object sender, RoutedEventArgs e)
-        {
-            if (sender is FrameworkElement fe)
-            {
-                fe.Unloaded -= OnTargetUnloaded;
-            }
-            Unsubscribe();
-        }
 
-        private void Unsubscribe()
-        {
-            ThemeChanged -= OnThemeChanged;
-            _targetRef = null;
-            _targetProperty = null;
-        }
-
-        static DependencyProperty? FindDP(Type type, string propertyName)
-        {
-            var field = type.GetField(
-                propertyName + "Property",
-                BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
-
-            return field?.GetValue(null) as DependencyProperty;
-        }
-        private async void OnThemeChanged()
+        private async void OnThemeChanged(UISettings sender, object args)
         {
             if (_targetRef is null || _targetProperty is null)
-            {
-                Unsubscribe();
                 return;
-            }
 
             if (_targetRef.TryGetTarget(out var target))
             {
@@ -90,10 +56,23 @@ namespace Infomaniak.kDrive
                     target.SetValue(_targetProperty, newValue);
                 });
             }
-            else
+        }
+
+        private void OnTargetUnloaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement fe)
             {
-                Unsubscribe();
+                fe.Unloaded -= OnTargetUnloaded;
             }
+        }
+
+        static DependencyProperty? FindDP(Type type, string propertyName)
+        {
+            var field = type.GetField(
+                propertyName + "Property",
+                BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+
+            return field?.GetValue(null) as DependencyProperty;
         }
 
         private Color ResolveColor()
