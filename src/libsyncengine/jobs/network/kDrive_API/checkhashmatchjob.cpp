@@ -36,16 +36,6 @@ CheckHashMatchJob::CheckHashMatchJob(const DriveDbId driveDbId, const SyncPath &
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
-CheckHashMatchJob::CheckHashMatchJob(const DriveDbId driveDbId, const SyncPath &filepath, const NodeId &nodeId,
-                                     const int64_t localSize, const int64_t remoteSize) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
-    _filePath(filepath),
-    _nodeId(nodeId),
-    _localSize(localSize),
-    _remoteSize(remoteSize) {
-    _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
-}
-
 ExitInfo CheckHashMatchJob::getFileSize(const SyncPath &path, int64_t &size) {
     IoError ioError = IoError::Unknown;
     uint64_t tmpSize = 0;

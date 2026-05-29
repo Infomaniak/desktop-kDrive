@@ -1026,7 +1026,7 @@ void TestNetworkJobs::testCheckHashMatch() {
     };
 
     for (const auto &tc: testCases) {
-        CheckHashMatchJob job(_driveDbId, tc.localFile, tc.remoteNodeId, tc.localSize, tc.remoteSize);
+        CheckHashMatchJob job(_driveDbId, tc.localFile, tc.remoteNodeId, tc.remoteSize);
         job.runSynchronously();
         CPPUNIT_ASSERT_EQUAL_MESSAGE(tc.name + ": unexpected exit code", tc.expectedExitCode, job.exitInfo().code());
         CPPUNIT_ASSERT_EQUAL_MESSAGE(tc.name + ": unexpected shouldDownload", tc.expectedShouldDownload, job.shouldDownload());
