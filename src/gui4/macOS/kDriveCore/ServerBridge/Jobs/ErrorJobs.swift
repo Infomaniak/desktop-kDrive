@@ -21,7 +21,7 @@ import Foundation
 import InfomaniakConcurrency
 import InfomaniakDI
 
-public struct ErrorInfoListJob: Sendable {
+public struct ErrorJobs: Sendable {
     @LazyInjectService private var coherentCache: CoherentCache
     @LazyInjectService private var queryFetcher: XPCQueryFetcherProtocol
 
@@ -45,5 +45,13 @@ public struct ErrorInfoListJob: Sendable {
         try? await coherentCache.updateErrors(errorList)
 
         return errorList
+    }
+
+    public func refreshSyncErrors(syncDbId: Int32) async throws {
+        IKLogger.data.log("Query to refresh sync errors")
+        let query = SyncQuery(syncDbId: syncDbId)
+        let request = await RequestMessage<SyncQuery>(num: RequestNum.ERROR_SYNC_REFRESH, body: query)
+
+        try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
     }
 }
