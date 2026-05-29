@@ -38,7 +38,7 @@ runs:
         uses: actions/upload-artifact@v7.0.1
         with:
           name: linux-release-artifacts-appimage-arm64
-          path: ${{ github.workspace }}/build-linux-arm64/install/kDrive-*-arm64.* # kDrive-<full_version>-arm64.AppImage
+          path: ${{ github.workspace }}/build-linux-arm64/install/kDrive-*-arm64.* # kDrive-<full_version>-arm64.<extension>
           retention-days: 1
         if: steps.build.outcome == 'success'
 
