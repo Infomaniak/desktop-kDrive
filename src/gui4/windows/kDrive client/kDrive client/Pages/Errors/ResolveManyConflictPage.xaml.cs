@@ -42,7 +42,7 @@ namespace Infomaniak.kDrive.Pages.Errors
             Logger.Log(Logger.Level.Debug, "ResolveManyConflictPage components initialized");
         }
 
-        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             _errorPageVM = new ErrorPageVM();
             _errorPageVM.PropertyChanged += OnErrorPageVMPropertyChanged;

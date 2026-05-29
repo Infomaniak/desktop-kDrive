@@ -110,7 +110,7 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
             AdvancedSyncSetupContentDialogVM.FinishSetup(CustomControls.AdvancedSyncSetupContentDialog.AdvancedSyncSetupResult.Confirmed);
         }
 
-        private async void AdvancedSyncSetupContentDialogVM_CurrentStepCancelled(object? sender, EventArgs e)
+        private void AdvancedSyncSetupContentDialogVM_CurrentStepCancelled(object? sender, EventArgs e)
         {
             if (AdvancedSyncSetupContentDialogVM is null)
             {

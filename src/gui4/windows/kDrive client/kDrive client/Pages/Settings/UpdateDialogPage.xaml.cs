@@ -51,7 +51,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             await LoadReleaseNotesAsync();
         }
 
-        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             _analyticsService.TrackPageView(Analytics.Keys.Category.BatchConflictResolutionPage);
         }

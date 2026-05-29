@@ -47,7 +47,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
         }
 
         // Navigation method
-        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             if (e.Parameter is DriveSetupContentDialogVM viewModel)
             {

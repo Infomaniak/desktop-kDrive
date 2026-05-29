@@ -85,7 +85,7 @@ public partial class SystemErrorSyncDirAccessErrorDialog : Page
             FolderDeletedTextBlock.Inlines.Add(new Run { Text = parts[1] });
     }
 
-    private async void RecreateSync_Click(Hyperlink sender, HyperlinkClickEventArgs args)
+    private void RecreateSync_Click(Hyperlink sender, HyperlinkClickEventArgs args)
     {
         var frame = Utility.GetFrame(this);
         if (frame is null)

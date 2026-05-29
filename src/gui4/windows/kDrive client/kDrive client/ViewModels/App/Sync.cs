@@ -287,7 +287,7 @@ namespace Infomaniak.kDrive.ViewModels
 
         public async Task RefreshErrorState()
         {
-            await Utility.RunOnUIThread(async () =>
+            await Utility.RunOnUIThread(() =>
             {
 
                 SyncErrorState = SyncErrorStates.Undefined;

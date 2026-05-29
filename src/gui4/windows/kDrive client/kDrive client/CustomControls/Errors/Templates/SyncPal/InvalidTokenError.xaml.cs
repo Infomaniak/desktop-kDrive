@@ -38,7 +38,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
             Error = error;
         }
 
-        private async void ErrorCard_ActionClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        private void ErrorCard_ActionClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             var frame = Utility.GetFrame(this);
             if (frame is null)

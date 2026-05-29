@@ -1408,7 +1408,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     await HandleUpdaterStateChangedAsync(sender, args);
                     break;
                 case SignalNum.SYNC_PROGRESSINFO:
-                    await HandleSyncProgressInfo(sender, args);
+                    HandleSyncProgressInfo(sender, args);
                     break;
                 case SignalNum.SYNC_COMPLETEDITEM:
                     await HandleSyncCompletedItem(sender, args);
@@ -1420,10 +1420,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     await HandleErrorRemovedAsync(sender, args);
                     break;
                 case SignalNum.UTILITY_LOG_UPLOAD_STATUS_UPDATED:
-                    await HandleLogUploadProgressAsync(sender, args);
+                    HandleLogUploadProgressAsync(sender, args);
                     break;
                 case SignalNum.UTILITY_SHOW_NOTIFICATION:
-                    await HandleUtilityShowNotification(sender, args);
+                    HandleUtilityShowNotification(sender, args);
                     break;
                 case SignalNum.UTILITY_SHOW_SYNTHESIS:
                     await HandleUtilityShowSynthesis(sender, args);
@@ -1622,7 +1622,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
             await Utility.RunOnUIThread(() => { deletedSync.Drive.Syncs.Remove(deletedSync); });
         }
-        public async Task HandleSyncProgressInfo(object? sender, SignalEventArgs args)
+        public void HandleSyncProgressInfo(object? sender, SignalEventArgs args)
         {
             var signalData = args.SignalData;
 
@@ -1794,7 +1794,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             await RefreshUpdaterVersionInfo((UpdateState?)args?.SignalData[JsonKeys.UpdateState]?.GetValue<int>(), CancellationToken.None);
         }
 
-        public async Task HandleLogUploadProgressAsync(object? sender, SignalEventArgs args)
+        public void HandleLogUploadProgressAsync(object? sender, SignalEventArgs args)
         {
             var signalData = args.SignalData;
             if (signalData == null || !signalData.ContainsKey(JsonKeys.State) || !signalData.ContainsKey(JsonKeys.Percentage))
@@ -1930,7 +1930,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
         }
 
-        public async Task HandleUtilityShowNotification(object? sender, SignalEventArgs args)
+        public void HandleUtilityShowNotification(object? sender, SignalEventArgs args)
         {
             var signalData = args.SignalData;
             if (signalData == null || !signalData.ContainsKey(JsonKeys.Title) || !signalData.ContainsKey(JsonKeys.Message))
