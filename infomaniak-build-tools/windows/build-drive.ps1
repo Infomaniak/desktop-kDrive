@@ -167,17 +167,50 @@ function Get-Subject {
     return $subject
 }
 
+function Get-Publisher-Hash {
+    param (
+        [string] $publisherName
+    )
+
+    $publisherNameAsUnicode = [System.Text.Encoding]::Unicode.GetBytes($publisherName);
+    $publisherSha256 = [System.Security.Cryptography.HashAlgorithm]::Create("SHA256").ComputeHash($publisherNameAsUnicode);
+    $publisherSha256First8Bytes = $publisherSha256 | Select-Object -First 8;
+    $publisherSha256AsBinary = $publisherSha256First8Bytes | ForEach-Object { [System.Convert]::ToString($_, 2).PadLeft(8, '0') };
+    $asBinaryStringWithPadding = [System.String]::Concat($publisherSha256AsBinary).PadRight(65, '0');
+
+    $encodingTable = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+
+    $result = "";
+    for ($i = 0; $i -lt $asBinaryStringWithPadding.Length; $i += 5)
+    {
+        $asIndex = [System.Convert]::ToInt32($asBinaryStringWithPadding.Substring($i, 5), 2);
+        $result += $encodingTable[$asIndex];
+    }
+
+    return $result.ToLower();
+}
+
 function Get-Aumid {
     param (
-        [bool] $upload
+        [string] $thumbprint,
+        [bool] $ci
     )
-    $aumid = if ($upload) { $env:KDC_RELEASE_AUMID } else { $env:KDC_DEBUG_AUMID }
 
-    if (!$aumid) {
-        Write-Host "The AUMID value could not be read from env.
+    # Get the certificate subject (publisher)
+    $subject = Get-Subject -Thumbprint $thumbprint -Ci $ci
+
+    if (!$subject) {
+        Write-Host "The certificate subject could not be retrieved.
                    Exiting." -f Red
         exit 1
     }
+
+    Write-Host "Certificate subject: $subject"
+
+    # Compute the publisher hash (AUMID suffix) from the full subject DN
+    $aumid = Get-Publisher-Hash -PublisherName $subject
+
+    Write-Host "Computed AUMID: $aumid"
 
     return $aumid
 }
@@ -233,7 +266,7 @@ function Build-Extension {
     if ($buildType -eq "RelWithDebInfo") { $configuration = "Release" }
 
     $subject = Get-Subject -Thumbprint $thumbprint -Ci $ci
-    Write-Host "Subject: $subject"
+    Write-Host "Subject: $subject for thumbprint $thumbprint"
 
     $appxManifestPath = "$extPath\FileExplorerExtensionPackage\Package.appxmanifest"
     if (Test-Path $appxManifestPath) {
@@ -243,15 +276,14 @@ function Build-Extension {
         Write-Host "Package.appxmanifest not found at $appxManifestPath" -ForegroundColor Red
         exit 1
     }
-    Write-Host "Publisher set to: $publisher" -ForegroundColor Yellow
 
     $version = Get-version -IncludeBuildVersion $true
     Write-Host "Extension version: $version"
-	
-    $aumid = Get-Aumid $upload
+
+    $aumid = Get-Aumid -Thumbprint $thumbprint -Ci $ci
     Write-Host "Building extension with AUMID: $aumid"
-	
-    msbuild "$extPath\kDriveExt.sln" /p:Configuration=$configuration /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true /p:PackageCertificateThumbprint="$thumbprint" /p:KDC_AUMID="$aumid"
+
+    msbuild "$extPath\kDriveExt.sln" /p:Configuration=$configuration /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true /p:PackageCertificateThumbprint="$thumbprint" /p:KDC_DEBUG_AUMID="$aumid" /p:KDC_RELEASE_AUMID="$aumid"
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     $bundlePath = "$extPath/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_${version}_Test/FileExplorerExtensionPackage_${version}_x64_arm64.msixbundle"
@@ -406,6 +438,8 @@ function Set-Up-NSIS {
         [string] $archivePath,
         [string] $archiveDataPath,
         [bool] $upload,
+        [string] $thumbprint,
+        [bool] $ci,
         [bool] $newGui
     )
 
@@ -421,7 +455,7 @@ function Set-Up-NSIS {
 
     Clean $installerPath
 
-    $aumid = Get-Aumid $upload
+    $aumid = Get-Aumid -Thumbprint $thumbprint -Ci $ci
     $prodName = "kDrive"
     $compName = "Infomaniak Network SA"
     $version = Get-Version -IncludeBuildVersion $true
@@ -448,11 +482,10 @@ function Set-Up-NSIS {
 function Sign-File {
     param (
         [string] $filePath,
-        [bool] $upload = $false,
         [string] $thumbprint,
         [string] $description = ""
     )
-    Write-Host "Signing the file $filePath with thumbprint $thumbprint" -f Yellow
+    Write-Host "Signing the file $filePath with thumbprint $thumbprint"
     & signtool.exe sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256 /fd sha256 /td sha256 /v /debug /sm /d $description $filePath
     $res = $LASTEXITCODE
     Write-Host "Signing exit code: $res" -ForegroundColor Yellow
@@ -801,6 +834,12 @@ if ($res -ne 0) {
 #                                           EXTENSION                                           #
 #                                                                                               #
 #################################################################################################
+if($thumbprint) {
+    Write-Host "Using certificate with thumbprint: $thumbprint" -f Green
+} else {
+    Write-Warning "No certificate thumbprint provided. The extension will not be signed."
+    Exit 1
+}
 
 if (!(Test-Path "$vfsDir\vfs.dll") -or $ext) {
     Build-Extension -Path $path -ContentPath $contentPath -ExtPath $extPath -BuildType $buildType -Thumbprint $thumbprint
@@ -830,7 +869,7 @@ if ($LASTEXITCODE -ne 0) {
 #                                                                                               #
 #################################################################################################
 
-Set-Up-NSIS -BuildPath $buildPath -ContentPath $contentPath -ExtPath $extPath -VfsDir $vfsDir -ArchiveName $archiveName -ArchivePath $archivePath -ArchiveDataPath $archiveDataPath -Upload $upload -NewGui $newGui
+Set-Up-NSIS -BuildPath $buildPath -ContentPath $contentPath -ExtPath $extPath -VfsDir $vfsDir -ArchiveName $archiveName -ArchivePath $archivePath -ArchiveDataPath $archiveDataPath -Upload $upload -Thumbprint $thumbprint -Ci $ci -NewGui $newGui
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "NSIS setup failed. Aborting." -f Red

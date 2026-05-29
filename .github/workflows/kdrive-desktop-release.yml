@@ -11,6 +11,10 @@ on:
           - Legacy client
           - New client
         default: Legacy client
+      use_ksp_cert:
+        type: boolean
+        description: Use release certificate
+        default: true
       build_macos:
         type: choice
         description: Build macOS executables
@@ -177,6 +181,10 @@ jobs:
           ksp_client_cert: ${{ secrets.WINDOWS_KSP_CLIENT_CERT_FILE_B64 }}
           ksp_client_cert_pass: ${{ secrets.WINDOWS_KSP_CLIENT_CERT_PASSWORD }}
           ksp_client_cert_thumbprint: ${{ secrets.WINDOWS_KSP_CLIENT_CERT_THUMBPRINT }}
+          debug_cert: ${{ secrets.WINDOWS_DEBUG_CERT_FILE_B64 }}
+          debug_cert_pass: ${{ secrets.WINDOWS_DEBUG_CERT_PASSWORD }}
+          debug_cert_thumbprint: ${{ secrets.WINDOWS_DEBUG_CERT_THUMBPRINT }}
+          use_ksp_cert: ${{ inputs.use_ksp_cert }}
           release_build: true
           build_new_client: ${{ inputs.build_windows == 'New client' }}
 
@@ -223,6 +231,7 @@ jobs:
           keychain_password: ${{ secrets.KEYCHAIN_PASSWORD }}
           release_build: true    
           release_build_altool_username: ${{ secrets.ALTOOL_USERNAME }}
+          release_build_notary_app_password: ${{ secrets.NOTARY_APP_PASSWORD }}
 
 # Upload the installer and sentry artifacts
   upload-to-kDrive-and-sentry-Windows:
@@ -251,7 +260,10 @@ jobs:
           merge-multiple: true
 
       - name: Upload debug files and installers/appimage to kDrive
-        run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version }}" -os "win"
+        run: |
+          $testFlag = if ("${{ inputs.use_ksp_cert }}" -eq "false") { "-test" } else { "" }
+          powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version }}" -os "win" $testFlag
+
 
       - name: Download sentry-cli and login
         run: |

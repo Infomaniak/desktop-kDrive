@@ -13,6 +13,10 @@ inputs:
     description: 'Username for altool upload'
     required: false
     default: ''
+  release_build_notary_app_password:
+    description: 'Password for notary app'
+    required: false
+    default: ''
 
 runs:
     using: "composite"
@@ -44,8 +48,10 @@ runs:
 
       - name: Build kDrive desktop
         id: build
+        env:
+          NOTARY_APP_PASSWORD: ${{ inputs.release_build_notary_app_password }}
+          ALTOOL_USERNAME: ${{ inputs.release_build_altool_username }}
         run : |
-            export ALTOOL_USERNAME="${{ inputs.release_build_altool_username }}"
             if [ "${{ inputs.release_build }}" = "true" ]; then
                 ./infomaniak-build-tools/macos/build-release.sh
             else
@@ -264,12 +270,25 @@ runs:
           retention-days: 1
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 
+      - name: Display macOS package info in summary
+        shell: bash
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
+        run: |
+          FILE=$(ls "${{ github.workspace }}/build-macos/client/install/"*.pkg | head -n 1)
+
+          HASH=$(shasum -a 256 "$FILE" | awk '{print $1}')
+
+          echo "### 🔐 macOS pkg SHA256" >> "$GITHUB_STEP_SUMMARY"
+          echo "$HASH" >> "$GITHUB_STEP_SUMMARY"
+
+          # Create .sha256 file next to the pkg
+          echo "$HASH  $(basename "$FILE")" > "${FILE}.sha256"
 
       - name: Upload kDrive Package
         uses: actions/upload-artifact@v7.0.1
         with:
           name: macos-release-artifacts-package
-          path: ${{ github.workspace }}/build-macos/client/install/*.pkg
+          path: ${{ github.workspace }}/build-macos/client/install/kDrive-*.*
           retention-days: 1
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 

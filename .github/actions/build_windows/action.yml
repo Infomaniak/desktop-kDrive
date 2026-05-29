@@ -26,6 +26,10 @@ inputs:
   ksp_client_cert_thumbprint:
     description: 'Thumbprint of the KSP certificate, mandatory for release builds'
     required: false
+  use_ksp_cert:
+    description: 'If true, use the KSP certificate for signing'
+    required: false
+    default: 'false'
   release_build:
     description: 'If true, run the release build script'
     required: false
@@ -57,7 +61,7 @@ runs:
           WINDOWS_KSP_CLIENT_CERT: ${{ inputs.ksp_client_cert }}
           WINDOWS_DEBUG_CERT: ${{ inputs.debug_cert }}
         run: |
-          if ("${{ inputs.release_build }}" -eq "true") {
+          if ("${{ inputs.use_ksp_cert }}" -eq "true") {
             New-Item -ItemType directory -Path certificate
             Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_KSP_CLIENT_CERT
             certutil -decode certificate/tempCert.txt certificate/ksp_client_certificate.pfx
@@ -77,7 +81,7 @@ runs:
       - name: Digicert KSP - Set variables
         id: variables
         run: |
-          if [ "${{ inputs.release_build }}" = "true" ]; then
+          if [ "${{ inputs.use_ksp_cert }}" = "true" ]; then
             echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
             echo "KEYPAIR_NAME=gt-standard-keypair" >> $GITHUB_OUTPUT
             echo "CERTIFICATE_NAME=gt-certificate" >> $GITHUB_OUTPUT
@@ -93,7 +97,7 @@ runs:
 
       - name: Digicert KSP - Setup SSM KSP on Windows latest
         run: |
-          IF "${{ inputs.release_build }}"=="true" (
+          IF "${{ inputs.use_ksp_cert }}"=="true" (
             curl -X GET  https://one.digicert.com/signingmanager/api-ui/v1/releases/Keylockertools-windows-x64.msi/download -H "x-api-key:%SM_API_KEY%" -o Keylockertools-windows-x64.msi
             msiexec /i Keylockertools-windows-x64.msi /quiet /qn
           )
@@ -102,7 +106,7 @@ runs:
 
       - name: Digicert KSP - Synchronize signature certificate
         run: |
-          IF "${{ inputs.release_build }}"=="true" (
+          IF "${{ inputs.use_ksp_cert }}"=="true" (
             REM Verify the KSP
             certutil.exe -csp "DigiCert Software Trust Manager KSP" -key -user
             REM Synchronize certificate
@@ -112,31 +116,46 @@ runs:
 
       - name: Build kDrive desktop
         id: build
+        shell: powershell
         run: |
-          call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
-          IF "${{ inputs.release_build }}"=="true" (
-            powershell "certutil -scinfo -Silent"
+          & "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
 
-            IF "${{ inputs.build_new_client }}"=="true" (
-              powershell "./infomaniak-build-tools/windows/build-drive.ps1" -thumbprint ${{ inputs.ksp_client_cert_thumbprint }} -ci -ext -msi -clean remake -upload -newGui $true
-            ) ELSE (
-              powershell "./infomaniak-build-tools/windows/build-drive.ps1" -thumbprint ${{ inputs.ksp_client_cert_thumbprint }} -ci -ext -msi -clean remake -upload
-            )
+          $thumbprint = "${{ inputs.debug_cert_thumbprint }}"
 
-          ) ELSE (
-            powershell -File "./infomaniak-build-tools/windows/build-drive.ps1" -thumbprint ${{ inputs.debug_cert_thumbprint }} -ci -unitTests
-          )
-        shell: cmd
+          if ("${{ inputs.use_ksp_cert }}" -eq "true") {
+            $thumbprint = "${{ inputs.ksp_client_cert_thumbprint }}"
+          }
+
+          if (-not $thumbprint) {
+            throw "Thumbprint is empty. Check CI inputs (debug_cert_thumbprint / ksp_client_cert_thumbprint)."
+          }
+
+          Write-Host "Using certificate thumbprint: $thumbprint" -ForegroundColor Cyan
+
+          $script = "./infomaniak-build-tools/windows/build-drive.ps1"
+
+          if ("${{ inputs.release_build }}" -eq "true") {
+
+            if ("${{ inputs.build_new_client }}" -eq "true") {
+              & $script -thumbprint $thumbprint -ci -ext -msi -clean remake -upload -newGui $true
+            }
+            else {
+              & $script -thumbprint $thumbprint -ci -ext -msi -clean remake -upload
+            }
+          }
+          else {
+            & $script -thumbprint $thumbprint -ci -unitTests
+          }
 
       - name: Remove Windows certificate
         run: |
-          if("${{ inputs.release_build }}" -eq "true") {
+          if("${{ inputs.use_ksp_cert }}" -eq "true") {
             Get-ChildItem "Cert:\LocalMachine\My\${{ inputs.ksp_client_cert_thumbprint }}" | Remove-Item
             Write-Host "KSP client certificate removed successfully."
-            } else {
+          } else {
             Get-ChildItem "Cert:\LocalMachine\My\${{ inputs.debug_cert_thumbprint }}" | Remove-Item
             Write-Host "Debug certificate removed successfully."
-            }
+          }
         shell: powershell
 
       - name: Fetch dependencies
@@ -334,6 +353,28 @@ runs:
           retention-days: 1
           compression-level: 0
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
+
+      - name: Process installer hash
+        shell: powershell
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
+        run: |
+          $file = Get-ChildItem "${{ github.workspace }}\build-windows\kDrive-*.exe" | Select-Object -First 1
+
+          $hash = (Get-FileHash -Path $file.FullName).Hash
+
+          # Write to GitHub Step Summary
+          # Step Summary
+          $summary = @()
+          $summary += "### Windows installer SHA256"
+          $summary += ""
+          $summary += $hash
+          $summary += ""
+
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ($summary -join "`n")
+
+          # Create .sha256 file next to installer
+          $shaFile = "$($file.FullName).sha256"
+          Set-Content -Path $shaFile -Value $hash
 
       - name: Upload app installer
         uses: actions/upload-artifact@v7.0.1
