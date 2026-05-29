@@ -299,6 +299,11 @@ struct LogFileInfo {
         SyncPath path;
         int64_t size{0};
 
+        LogFileInfo(const int64_t modificationTime, const SyncPath path, const int64_t size) :
+            modificationTime(modificationTime),
+            path(std::move(path)),
+            size(size) {}
+
         auto operator<=>(const LogFileInfo &rhs) const {
             if (auto cmp = rhs.modificationTime <=> modificationTime; cmp != 0) return cmp;
             return path <=> rhs.path;
