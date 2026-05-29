@@ -92,7 +92,7 @@ namespace Infomaniak.kDrive.Pages
             return true;
         }
 
-        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             ViewModel.SelectedSyncChanged += OnSelectedSyncChanged;
             OnSelectedSyncChanged(null, new(null, ViewModel.SelectedSync));

@@ -41,7 +41,7 @@ namespace Infomaniak.kDrive.Pages
             UpdateTitleTemplate();
         }
 
-        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             if (ViewModel.SelectedSync is null)
             {

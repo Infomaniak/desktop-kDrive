@@ -56,7 +56,7 @@ namespace Infomaniak.kDrive.Pages.Errors
             }
         }
 
-        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             _errorPageVM = new ErrorPageVM();
             _analyticsService.TrackPageView(Analytics.Keys.Category.ErrorPage);

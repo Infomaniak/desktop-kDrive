@@ -1622,19 +1622,19 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
             await Utility.RunOnUIThread(() => { deletedSync.Drive.Syncs.Remove(deletedSync); });
         }
-        public async Task HandleSyncProgressInfo(object? sender, SignalEventArgs args)
+        public Task HandleSyncProgressInfo(object? sender, SignalEventArgs args)
         {
             var signalData = args.SignalData;
 
             if (signalData == null || !signalData.ContainsKey(JsonKeys.SyncDbId))
             {
                 Logger.Log(Logger.Level.Error, $"{JsonKeys.SyncDbId} not found in parameters.");
-                return;
+                return Task.CompletedTask;
             }
             if (signalData == null || !signalData.ContainsKey(JsonKeys.SyncStatus))
             {
                 Logger.Log(Logger.Level.Error, $"{JsonKeys.SyncStatus} not found in parameters.");
-                return;
+                return Task.CompletedTask;
             }
 
             DbId? syncDbID = signalData[JsonKeys.SyncDbId]?.AsValue().GetValue<DbId>();
@@ -1643,21 +1643,22 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             if (syncDbID is null)
             {
                 Logger.Log(Logger.Level.Error, "syncDbID is null.");
-                return;
+                return Task.CompletedTask;
             }
             if (syncStatus is null)
             {
                 Logger.Log(Logger.Level.Error, "syncStatus is null.");
-                return;
+                return Task.CompletedTask;
             }
 
             Sync? updatedSync = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == syncDbID);
             if (updatedSync == null)
             {
                 Logger.Log(Logger.Level.Error, $"Sync with dbID {syncDbID} not found in the model.");
-                return;
+                return Task.CompletedTask;
             }
             updatedSync.SyncStatus = syncStatus ?? SyncStatus.Undefined;
+            return Task.CompletedTask;
         }
 
         public async Task HandleSyncCompletedItem(object? sender, SignalEventArgs args)
@@ -1794,28 +1795,29 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             await RefreshUpdaterVersionInfo((UpdateState?)args?.SignalData[JsonKeys.UpdateState]?.GetValue<int>(), CancellationToken.None);
         }
 
-        public async Task HandleLogUploadProgressAsync(object? sender, SignalEventArgs args)
+        public Task HandleLogUploadProgressAsync(object? sender, SignalEventArgs args)
         {
             var signalData = args.SignalData;
             if (signalData == null || !signalData.ContainsKey(JsonKeys.State) || !signalData.ContainsKey(JsonKeys.Percentage))
             {
                 Logger.Log(Logger.Level.Error, $"{JsonKeys.State} or {JsonKeys.Percentage} not found in parameters ${signalData}.");
-                return;
+                return Task.CompletedTask;
             }
             LogUploadState? state = signalData[JsonKeys.State]?.Deserialize<LogUploadState>();
             int? percentage = signalData[JsonKeys.Percentage]?.GetValue<int>();
             if (state is null)
             {
                 Logger.Log(Logger.Level.Error, "state is null.");
-                return;
+                return Task.CompletedTask;
             }
             if (percentage is null)
             {
                 Logger.Log(Logger.Level.Error, "percentage is null.");
-                return;
+                return Task.CompletedTask;
             }
             _viewModel.Settings.LogUploadManager.State = state ?? LogUploadState.Failed;
             _viewModel.Settings.LogUploadManager.PercentComplete = percentage ?? 0;
+            return Task.CompletedTask;
         }
 
         public async Task HandleUserRemovedAsync(object? sender, SignalEventArgs args)
@@ -1930,13 +1932,13 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
         }
 
-        public async Task HandleUtilityShowNotification(object? sender, SignalEventArgs args)
+        public Task HandleUtilityShowNotification(object? sender, SignalEventArgs args)
         {
             var signalData = args.SignalData;
             if (signalData == null || !signalData.ContainsKey(JsonKeys.Title) || !signalData.ContainsKey(JsonKeys.Message))
             {
                 Logger.Log(Logger.Level.Error, $"{JsonKeys.Title} or {JsonKeys.Message} not found in parameters.");
-                return;
+                return Task.CompletedTask;
             }
             string? title = signalData[JsonKeys.Title]?.GetValue<string>();
             string? message = signalData[JsonKeys.Message]?.GetValue<string>();
@@ -1950,21 +1952,22 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             catch (FormatException ex)
             {
                 Logger.Log(Logger.Level.Error, $"Failed to decode title or message from base64. Title: {title}, Message: {message}. Exception: {ex}");
-                return;
+                return Task.CompletedTask;
             }
             catch (Exception ex)
             {
                 Logger.Log(Logger.Level.Error, $"Unexpected error while decoding title or message from base64. Title: {title}, Message: {message}. Exception: {ex}");
-                return;
+                return Task.CompletedTask;
             }
 
             if (title is null || message is null)
             {
                 Logger.Log(Logger.Level.Error, "title or message is null.");
-                return;
+                return Task.CompletedTask;
             }
 
             App.ServiceProvider.GetRequiredService<NotificationManager>().ShowNotification(title, message);
+            return Task.CompletedTask;
         }
 
         public async Task HandleUpdaterShowDialog(object? sender, SignalEventArgs args)

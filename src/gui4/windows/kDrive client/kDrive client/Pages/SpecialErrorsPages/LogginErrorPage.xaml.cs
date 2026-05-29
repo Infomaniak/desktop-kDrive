@@ -45,7 +45,7 @@ namespace Infomaniak.kDrive.Pages
             Loaded += OnLoaded;
         }
 
-        private async void OnLoaded(object sender, RoutedEventArgs e)
+        private void OnLoaded(object sender, RoutedEventArgs e)
         {
             if(_navigationParams?.TryReconnectOnLoad == true)
             {
@@ -53,7 +53,7 @@ namespace Infomaniak.kDrive.Pages
             }
         }
 
-        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
             _navigationParams = e.Parameter as NavigationParams?;

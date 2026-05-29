@@ -285,7 +285,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             };
         }
 
-        private async Task<CommData> UpdaterVersionInfo(JsonObject parameters)
+        private Task<CommData> UpdaterVersionInfo(JsonObject parameters)
         {
             Logger.Log(Logger.Level.Debug, "Received UpdateVersionInfo request.");
             DistributionChannel channel = _mockData.Settings.DistributionChannel ?? throw new InvalidOperationException("Distribution channel is not set in mocked settings.");
@@ -304,15 +304,15 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 { "downloadUrl", "" }, // Not used
             };
 
-            return new CommData
+            return Task.FromResult(new CommData
             {
                 Type = CommMessageType.Request,
                 Id = (int)NextId,
                 RequestNum = RequestNum.UPDATER_VERSION_INFO,
                 Params = new JsonObject() { { JsonKeys.VersionInfo, versionInfo } }
-            };
+            });
         }
-        private async Task<CommData> UpdaterChangeChannel(JsonObject parameters)
+        private Task<CommData> UpdaterChangeChannel(JsonObject parameters)
         {
             Logger.Log(Logger.Level.Debug, "Received UpdaterChangeChannel request.");
             if (parameters.ContainsKey(JsonKeys.UpdateChannel) && parameters[JsonKeys.UpdateChannel] != null)
@@ -325,16 +325,16 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             }
             EnqueueSignal(SignalNum.UPDATER_STATE_CHANGED, []);
-            return new CommData
+            return Task.FromResult(new CommData
             {
                 Type = CommMessageType.Request,
                 Id = (int)NextId,
                 RequestNum = RequestNum.UPDATER_CHANGE_CHANNEL,
                 Params = new JsonObject()
-            };
+            });
         }
 
-        private async Task<CommData> ParametersInfo(JsonObject parameters)
+        private Task<CommData> ParametersInfo(JsonObject parameters)
         {
             Logger.Log(Logger.Level.Debug, "Received ParametersInfo request.");
             var options = new JsonSerializerOptions
@@ -343,7 +343,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             };
             string parametersInfo = JsonSerializer.Serialize(_mockData.Settings, options);
 
-            return new CommData
+            return Task.FromResult(new CommData
             {
                 Type = CommMessageType.Request,
                 Id = (int)NextId,
@@ -352,23 +352,23 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 {
                     [JsonKeys.ParmsInfo] = JsonNode.Parse(parametersInfo)
                 }
-            };
+            });
         }
 
-        private async Task<CommData> ParametersUpdate(JsonObject parameters)
+        private Task<CommData> ParametersUpdate(JsonObject parameters)
         {
             Logger.Log(Logger.Level.Debug, "Received ParametersUpdate request.");
             if (!parameters.ContainsKey(JsonKeys.ParmsInfo) || parameters[JsonKeys.ParmsInfo] == null)
             {
                 Logger.Log(Logger.Level.Warning, "No parmsInfo specified in ParametersUpdate request, using existing settings.");
 
-                return new CommData
+                return Task.FromResult(new CommData
                 {
                     Type = CommMessageType.Request,
                     Id = (int)NextId,
                     RequestNum = RequestNum.PARAMETERS_UPDATE,
                     Params = new JsonObject()
-                };
+                });
             }
 
             var options = new JsonSerializerOptions
@@ -384,13 +384,13 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
             _mockData.Settings = updatedSettings;
 
-            return new CommData
+            return Task.FromResult(new CommData
             {
                 Type = CommMessageType.Request,
                 Id = (int)NextId,
                 RequestNum = RequestNum.PARAMETERS_UPDATE,
                 Params = new JsonObject()
-            };
+            });
         }
 
         private Task<CommData> ErrorDelete(JsonObject parameters)

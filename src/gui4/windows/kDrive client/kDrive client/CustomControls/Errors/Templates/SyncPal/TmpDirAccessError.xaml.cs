@@ -38,7 +38,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
             this.InitializeComponent();
             Error = error;
         }
-        private async void ErrorCard_ActionClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        private void ErrorCard_ActionClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageTmpDirError);
             App.ExitApplicationAndShutdownServer();
