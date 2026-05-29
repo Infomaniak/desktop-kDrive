@@ -21,6 +21,17 @@ import kDriveCore
 import kDriveResources
 import SwiftUI
 
+extension NodeType {
+    var label: String {
+        switch self {
+        case .file:
+            return KDriveLocalizable.labelFileLowerCase
+        case .directory:
+            return KDriveLocalizable.labelFolderLowerCase
+        }
+    }
+}
+
 struct ErrorCellFactory {
     func make(error: SynchroError, manager: SynchroErrorManager) -> some View {
         guard let cell = generateCellForErrorKind(error, manager: manager) else {
@@ -43,12 +54,12 @@ struct ErrorCellFactory {
         case .createCancel:
             return ErrorCellView(
                 title: KDriveLocalizable.errForbiddenActionTitle,
-                description: KDriveLocalizable.errCreateCancelDescription("TODO")
+                description: KDriveLocalizable.errCreateCancelDescription(error.metadata.nodeType?.label ?? "")
             )
         case .deleteCancel:
             return ErrorCellView(
                 title: KDriveLocalizable.errForbiddenActionTitle,
-                description: KDriveLocalizable.errDeleteCancelDescription("TODO")
+                description: KDriveLocalizable.errDeleteCancelDescription(error.metadata.nodeType?.label ?? "")
             )
         case .editCancel:
             return ErrorCellView(
@@ -59,7 +70,7 @@ struct ErrorCellFactory {
             // TODO: Add destination path copy
             return ErrorCellView(
                 title: KDriveLocalizable.errForbiddenActionTitle,
-                description: KDriveLocalizable.errMoveCancelDescription("TODO")
+                description: KDriveLocalizable.errMoveCancelDescription(error.metadata.nodeType?.label ?? "")
             )
         case .fileLocked:
             return ErrorCellView(
@@ -71,7 +82,7 @@ struct ErrorCellFactory {
                 title: KDriveLocalizable.errFileRescuedTitle,
                 description: KDriveLocalizable.errFileRescuedDescription,
                 action: .init(title: KDriveLocalizable.buttonOpenFolder) {
-                    // TODO
+                    // TODO:
                 }
             )
         case .fileTooBig:
@@ -82,43 +93,49 @@ struct ErrorCellFactory {
             )
         case .forbiddenCharEndWithSpace:
             return ErrorCellView(
-                title: KDriveLocalizable.errEndWithSpaceTitle("TODO"),
-                description: KDriveLocalizable.errEndWithSpaceDescription("TODO", "TODO"),
-                action: .init(title: KDriveLocalizable.buttonRenameItem("TODO")) {
-                    // TODO
+                title: KDriveLocalizable.errEndWithSpaceTitle(error.metadata.nodeType?.label ?? ""),
+                description: KDriveLocalizable.errEndWithSpaceDescription(
+                    error.metadata.nodeType?.label ?? "",
+                    error.metadata.nodeType?.label ?? ""
+                ),
+                action: .init(title: KDriveLocalizable.buttonRenameItem(error.metadata.nodeType?.label ?? "")) {
+                    // TODO:
                 }
             )
         case .forbiddenChar:
             return ErrorCellView(
                 title: KDriveLocalizable.errForbiddenCharTitle,
-                description: KDriveLocalizable.errForbiddenCharDescription("TODO", "TODO"),
-                action: .init(title: KDriveLocalizable.buttonRenameItem("TODO")) {
-                    // TODO
+                description: KDriveLocalizable.errForbiddenCharDescription(
+                    error.metadata.nodeType?.label ?? "",
+                    error.metadata.nodeType?.label ?? ""
+                ),
+                action: .init(title: KDriveLocalizable.buttonRenameItem(error.metadata.nodeType?.label ?? "")) {
+                    // TODO:
                 }
             )
         case .forbiddenCharOnlySpaces:
             return ErrorCellView(
                 title: KDriveLocalizable.errForbiddenCharOnlySpacesTitle,
-                description: KDriveLocalizable.errForbiddenCharOnlySpacesDescription("TODO"),
-                action: .init(title: KDriveLocalizable.buttonRenameItem("TODO")) {
-                    // TODO
+                description: KDriveLocalizable.errForbiddenCharOnlySpacesDescription(error.metadata.nodeType?.label ?? ""),
+                action: .init(title: KDriveLocalizable.buttonRenameItem(error.metadata.nodeType?.label ?? "")) {
+                    // TODO:
                 }
             )
         case .nameLength:
             return ErrorCellView(
-                title: KDriveLocalizable.errNameLengthTitle("TODO"),
-                description: KDriveLocalizable.errNameLengthDescription("TODO"),
-                action: .init(title: KDriveLocalizable.buttonRenameItem("TODO")) {
-                    // TODO
+                title: KDriveLocalizable.errNameLengthTitle(error.metadata.nodeType?.label ?? ""),
+                description: KDriveLocalizable.errNameLengthDescription(error.metadata.nodeType?.label ?? ""),
+                action: .init(title: KDriveLocalizable.buttonRenameItem(error.metadata.nodeType?.label ?? "")) {
+                    // TODO:
                 }
             )
         case .pathLength:
             // TODO: Implement it
             return ErrorCellView(
-                title: KDriveLocalizable.errPathLengthTitle("TODO"),
-                description: KDriveLocalizable.errPathLengthDescription("TODO"),
+                title: KDriveLocalizable.errPathLengthTitle(error.metadata.nodeType?.label ?? ""),
+                description: KDriveLocalizable.errPathLengthDescription(error.metadata.nodeType?.label ?? ""),
                 action: .init(title: KDriveLocalizable.buttonOpenParentFolder) {
-                    // TODO
+                    // TODO:
                 }
             )
         case .notEnoughDiskSpace:
@@ -126,23 +143,23 @@ struct ErrorCellFactory {
                 title: KDriveLocalizable.errNotEnoughDiskSpaceTitle,
                 description: KDriveLocalizable.errNotEnoughDiskSpaceDescription,
                 action: .init(title: KDriveLocalizable.buttonManageDiskSpace) {
-                    // TODO
+                    // TODO:
                 }
             )
         case .quotaExceeded:
             return ErrorCellView(
                 title: KDriveLocalizable.errQuotaExceededTitle,
-                description: KDriveLocalizable.errQuotaExceededDescription("TODO"),
+                description: KDriveLocalizable.errQuotaExceededDescription(error.metadata.nodeType?.label ?? ""),
                 action: .init(title: KDriveLocalizable.buttonManageStorage) {
-                    // TODO
+                    // TODO:
                 }
             )
         case .reservedName:
             return ErrorCellView(
-                title: KDriveLocalizable.errReservedNameTitle("TODO"),
-                description: KDriveLocalizable.errReservedNameDescription("TODO"),
-                action: .init(title: KDriveLocalizable.buttonRenameItem("TODO")) {
-                    // TODO
+                title: KDriveLocalizable.errReservedNameTitle(error.metadata.nodeType?.label ?? ""),
+                description: KDriveLocalizable.errReservedNameDescription(error.metadata.nodeType?.label ?? ""),
+                action: .init(title: KDriveLocalizable.buttonRenameItem(error.metadata.nodeType?.label ?? "")) {
+                    // TODO:
                 }
             )
         case .temporaryBlacklisted:
@@ -155,7 +172,7 @@ struct ErrorCellFactory {
                 title: KDriveLocalizable.driveAccessDeniedErrorTitle,
                 description: KDriveLocalizable.driveAccessDeniedErrorDescription,
                 action: .init(title: KDriveLocalizable.buttonRetry) {
-                    // TODO
+                    // TODO:
                 }
             )
         case .backErrorDriveAsleep:
@@ -163,7 +180,7 @@ struct ErrorCellFactory {
                 title: KDriveLocalizable.driveAsleepErrorTitle,
                 description: KDriveLocalizable.backErrorDriveAsleepDescription,
                 action: .init(title: KDriveLocalizable.buttonWakeUp) {
-                    // TODO
+                    // TODO:
                 }
             )
         case .backErrorDriveMaintenance:
@@ -171,7 +188,7 @@ struct ErrorCellFactory {
                 title: KDriveLocalizable.errDriveMaintenanceTitle,
                 description: KDriveLocalizable.errDriveMaintenanceDescription,
                 action: .init(title: KDriveLocalizable.buttonRefresh) {
-                    // TODO
+                    // TODO:
                 }
             )
         case .backErrorDriveNotRenew:
@@ -185,7 +202,7 @@ struct ErrorCellFactory {
                 title: KDriveLocalizable.errInvalidSyncSyncDirAccessTitle,
                 description: KDriveLocalizable.errInvalidSyncSyncDirAccessDescription,
                 action: .init(title: KDriveLocalizable.buttonErrorResolutionTip) {
-                    // TODO
+                    // TODO:
                 }
             )
         case .invalidSyncDirNesting:
@@ -198,7 +215,7 @@ struct ErrorCellFactory {
                 title: KDriveLocalizable.driveLoggingErrorTitle,
                 description: KDriveLocalizable.driveLoggingErrorDescription,
                 action: .init(title: KDriveLocalizable.buttonConnectAccount) {
-                    // TODO
+                    // TODO:
                 }
             )
         case .networkOther:
@@ -211,7 +228,7 @@ struct ErrorCellFactory {
                 title: KDriveLocalizable.errSystemNotEnoughDiskSpaceTitle,
                 description: KDriveLocalizable.errSystemNotEnoughDiskSpaceDescription,
                 action: .init(title: KDriveLocalizable.buttonManageDiskSpace) {
-                    // TODO
+                    // TODO:
                 }
             )
         case .systemSyncDirAccess:
@@ -219,7 +236,7 @@ struct ErrorCellFactory {
                 title: KDriveLocalizable.errSystemErrorSyncDirAccessTitle,
                 description: KDriveLocalizable.errSystemErrorSyncDirAccessErrorDescription,
                 action: .init(title: KDriveLocalizable.buttonErrorResolutionTip) {
-                    // TODO
+                    // TODO:
                 }
             )
         case .systemSyncDirDiskMissing:
@@ -227,7 +244,7 @@ struct ErrorCellFactory {
                 title: KDriveLocalizable.errSystemSyncDirMissingTitle,
                 description: KDriveLocalizable.errSystemSyncDirDiskMissingDescription,
                 action: .init(title: KDriveLocalizable.buttonErrorResolutionTip) {
-                    // TODO
+                    // TODO:
                 }
             )
         case .systemUnableToStartVFS:
@@ -235,15 +252,15 @@ struct ErrorCellFactory {
                 title: KDriveLocalizable.errSystemUnableToStartVfsTitle,
                 description: KDriveLocalizable.errSystemUnableToStartVfsDescription,
                 action: .init(title: KDriveLocalizable.buttonActivateOfflineSync) {
-                    // TODO
+                    // TODO:
                 }
             )
         case .excludedByTemplate:
             return ErrorCellView(
                 title: KDriveLocalizable.errExcludedByTemplateTitle,
-                description: KDriveLocalizable.errExcludedByTemplateDescription("TODO"),
+                description: KDriveLocalizable.errExcludedByTemplateDescription(error.metadata.nodeType?.label ?? ""),
                 action: .init(title: KDriveLocalizable.buttonOpenSyncExclusionRules) {
-                    // TODO
+                    // TODO:
                 }
             )
         case .genericErrForbidden:
@@ -258,10 +275,10 @@ struct ErrorCellFactory {
             )
         case .localAccess:
             return ErrorCellView(
-                title: KDriveLocalizable.errLocalFileAccessTitle("TODO"),
-                description: KDriveLocalizable.errLocalFileAccessDescription("TODO"),
+                title: KDriveLocalizable.errLocalFileAccessTitle(error.metadata.nodeType?.label ?? ""),
+                description: KDriveLocalizable.errLocalFileAccessDescription(error.metadata.nodeType?.label ?? ""),
                 action: .init(title: KDriveLocalizable.buttonManage) {
-                    // TODO
+                    // TODO:
                 }
             )
         case .dataSyncDirChanged:
@@ -269,7 +286,7 @@ struct ErrorCellFactory {
                 title: KDriveLocalizable.errSystemSyncDirMissingTitle,
                 description: KDriveLocalizable.errSystemSyncDirChanged,
                 action: .init(title: KDriveLocalizable.buttonErrorResolutionTip) {
-                    // TODO
+                    // TODO:
                 }
             )
         case .temporaryDirAccess:
@@ -277,7 +294,7 @@ struct ErrorCellFactory {
                 title: KDriveLocalizable.informationBlockTmpDirAccessErrorTitle,
                 description: KDriveLocalizable.informationBlockTmpDirAccessErrorSubtitle,
                 action: .init(title: KDriveLocalizable.buttonClose) {
-                    // TODO
+                    // TODO:
                 }
             )
         case .unknown:

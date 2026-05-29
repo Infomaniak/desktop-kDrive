@@ -18,19 +18,8 @@
 
 import Foundation
 
-public struct SynchroError: Error, Sendable {
-    public let kind: SynchroErrorKind
-    public let metadata: SynchroErrorMetadata
-
-    public init(kind: SynchroErrorKind, metadata: SynchroErrorMetadata) {
-        self.kind = kind
-        self.metadata = metadata
-    }
-}
-
-public extension SynchroError {
-    init(errorInfo: ErrorInfo) {
-        kind = SynchroErrorKind(errorInfo: errorInfo)
-        metadata = SynchroErrorMetadata(errorInfo: errorInfo)
+public extension String {
+    var capitalizedFirstLetter: String {
+        return prefix(1).capitalized + dropFirst()
     }
 }

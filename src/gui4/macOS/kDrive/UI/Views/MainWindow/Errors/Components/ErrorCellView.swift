@@ -17,6 +17,7 @@
  */
 
 import kDriveCoreUI
+import kDriveCore
 import SwiftUI
 
 struct ErrorCellView: View {
@@ -37,7 +38,7 @@ struct ErrorCellView: View {
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: AppPadding.padding8) {
-                Text(title)
+                Text(title.capitalizedFirstLetter)
                     .font(.Tokens.bodyEmphasized)
                     .foregroundStyle(.primary)
 
@@ -46,7 +47,7 @@ struct ErrorCellView: View {
                         .lineLimit(1)
                 }
 
-                Text(description)
+                Text(description.capitalizedFirstLetter)
                     .font(.Tokens.subheadline)
                     .foregroundStyle(.secondary)
             }
