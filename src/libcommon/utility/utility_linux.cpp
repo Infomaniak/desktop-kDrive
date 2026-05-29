@@ -20,6 +20,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <vector>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/vfs.h>
@@ -27,15 +28,31 @@
 
 #include "utility/types.h"
 
+#include <config.h>
+
 namespace KDC {
 
-SyncPath CommonUtility::getGenericAppSupportDir() {
-    const char *homeDir;
-    if ((homeDir = getenv("HOME")) == NULL) {
-        homeDir = getpwuid(getuid())->pw_dir;
-    }
-    SyncPath homePath(homeDir);
+static std::string homeDirectoryStr() {
+    if (auto homeDir = CommonUtility::envVarValue("HOME"); !homeDir.empty()) return homeDir;
 
+    // The "HOME" environment variable might not be set. In this case, fallback on a more robust method by using getpwuid_r. The
+    // "passwd" struct retrieved contains information such as username, user id, encrypted password or  home directory.
+    struct passwd pwd;
+    struct passwd *result = nullptr;
+    auto bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
+    if (bufsize == -1) bufsize = 16384;
+    if (std::vector<char> buf(static_cast<size_t>(bufsize));
+        getpwuid_r(getuid(), &pwd, buf.data(), buf.size(), &result) == 0 && result != nullptr) {
+        return std::string(result->pw_dir);
+    }
+    return {};
+}
+
+SyncPath CommonUtility::getGenericAppSupportDir() {
+    const auto homeDir = homeDirectoryStr();
+    if (homeDir.empty()) return {};
+
+    SyncPath homePath(homeDir);
     std::string appSupportName(".config");
     SyncPath appSupportPath(homePath / appSupportName);
 
@@ -169,6 +186,42 @@ std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {
     }
 
     return "UNIDENTIFIED";
+}
+
+ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
+    // XDG Base Directory Specification: use $XDG_STATE_HOME if it is absolute,
+    // otherwise fallback to ~/.local/state
+    const auto xdgStateHome = envVarValue("XDG_STATE_HOME");
+    const auto xdgStateHomePath = SyncPath(xdgStateHome);
+    if (!xdgStateHome.empty() && xdgStateHomePath.is_absolute()) {
+        directoryPath = xdgStateHomePath;
+    } else {
+        const auto homeDir = homeDirectoryStr();
+        if (homeDir.empty()) return {ExitCode::SystemError, ExitCause::NotFound};
+        directoryPath = SyncPath(homeDir) / ".local" / "state";
+    }
+
+    directoryPath /= Str2SyncName(APPLICATION_NAME);
+    directoryPath /= "logs";
+
+    std::error_code ec;
+    const bool directoryPathExists = std::filesystem::exists(directoryPath, ec);
+    if (ec) {
+        return stdErrorToExitInfo(ec);
+    }
+
+    if (directoryPathExists) {
+        if (!std::filesystem::is_directory(directoryPath, ec)) {
+            if (ec) {
+                return stdErrorToExitInfo(ec);
+            }
+            return stdErrorToExitInfo(std::make_error_code(std::errc::not_a_directory));
+        }
+    } else if (!std::filesystem::create_directories(directoryPath, ec)) {
+        return stdErrorToExitInfo(ec);
+    }
+
+    return ExitCode::Ok;
 }
 
 } // namespace KDC
