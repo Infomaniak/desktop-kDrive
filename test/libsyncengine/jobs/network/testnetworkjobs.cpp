@@ -967,7 +967,8 @@ void TestNetworkJobs::testCheckHashMatch() {
         DownloadJob downloadJob(nullptr, _cacheDirectory,
                                 DownloadJob::FileDownloadInfo{_driveDbId, picture1RemoteId, validLocalFile, 0, 0, 0, false},
                                 DownloadJob::DateTimePolicy::ApplyDateTime);
-        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, downloadJob.runSynchronously().code());
+        const ExitInfo exitInfo = downloadJob.runSynchronously();
+        CPPUNIT_ASSERT_MESSAGE(toString(exitInfo), exitInfo);
     }
     CPPUNIT_ASSERT(std::filesystem::exists(validLocalFile));
 
