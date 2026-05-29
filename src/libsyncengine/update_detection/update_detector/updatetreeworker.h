@@ -167,6 +167,8 @@ class UpdateTreeWorker : public ISyncWorker {
         bool checkNodeIntegrity(const std::shared_ptr<Node> node);
         bool checkOperationTypes(const std::shared_ptr<Node> node);
 
+        void resetNodes();
+
         friend class TestUpdateTreeWorker;
 };
 
