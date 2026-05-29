@@ -28,8 +28,7 @@ class PostFileModificationDateJob : public AbstractTokenNetworkJob {
 
     private:
         virtual std::string getSpecificUrl() override;
-        virtual void setQueryParameters(Poco::URI &uri) override;
-        inline virtual ExitInfo setData() override { return ExitCode::Ok; }
+        inline virtual ExitInfo setData() override;
 
         NodeId _nodeId;
         uint64_t _lastModifiedAt;

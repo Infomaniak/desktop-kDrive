@@ -17,6 +17,7 @@
  */
 
 #include "testnetworkjobs.h"
+#include "jobs/network/kDrive_API/postfilemodificationdatejob.h"
 #include "jobs/network/kDrive_API/copytodirectoryjob.h"
 #include "jobs/network/kDrive_API/deletejob.h"
 #include "jobs/network/kDrive_API/downloadjob.h"
@@ -1802,6 +1803,70 @@ void TestNetworkJobs::testGetAllFilesInDirectory() {
     exitInfo = listFilesInDirectoryJob.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
     CPPUNIT_ASSERT_EQUAL(size_t{3}, listFilesInDirectoryJob.v3RemoteNodeInfoList().size());
+}
+
+void TestNetworkJobs::testPostFileModificationDate() {
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testPostFileModificationDate");
+    const LocalTemporaryDirectory localTmpDir("testPostFileModificationDate");
+    const uint64_t newModificationDate = static_cast<uint64_t>(testhelpers::defaultTime) + 3600;
+    const auto futureTimestamp = static_cast<uint64_t>(
+            std::chrono::duration_cast<std::chrono::seconds>(
+                    (std::chrono::system_clock::now() + std::chrono::hours(24) + std::chrono::minutes(1)).time_since_epoch())
+                    .count());
+
+    struct TestCase {
+        std::string fileName;
+        uint64_t timestampToPost;
+        std::string targetNodeIdOverride; // non-empty overrides the uploaded node's ID
+        bool primeWithNewModificationDate; // set newModificationDate on the node before the actual test job
+        bool expectSuccess;
+        SyncTime expectedServerValue;
+    };
+
+    const std::vector<TestCase> testCases = {
+            // clang-format off
+            // fileName                              timestampToPost    targetOverride  prime   expectSuccess  expectedServerValue
+            {"test_valid.txt",                       newModificationDate, "",            false,  true,          static_cast<SyncTime>(newModificationDate)},
+            {"test_nonExistent.txt",                 newModificationDate, "0",           true,   false,         static_cast<SyncTime>(newModificationDate)},
+            {"test_future.txt",                      futureTimestamp,    "",             true,   false,         static_cast<SyncTime>(newModificationDate)},
+            {"test_zero.txt",                        0,                  "",             false,  true,          0},
+            // clang-format on
+    };
+
+    for (const auto &testCase: testCases) {
+        const SyncPath localFilePath = localTmpDir.path() / testCase.fileName;
+        testhelpers::generateOrEditTestFile(localFilePath);
+        const auto nowSec =
+                std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+        UploadJob uploadJob(nullptr, _driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(), nowSec,
+                            nowSec);
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, uploadJob.runSynchronously().code());
+        const NodeId nodeId = uploadJob.nodeId();
+        CPPUNIT_ASSERT(!nodeId.empty());
+
+        if (testCase.primeWithNewModificationDate) {
+            PostFileModificationDateJob primeJob(_driveDbId, nodeId, newModificationDate);
+            CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, primeJob.runSynchronously().code());
+        }
+
+        const std::string targetId = testCase.targetNodeIdOverride.empty() ? nodeId : testCase.targetNodeIdOverride;
+        PostFileModificationDateJob testJob(_driveDbId, targetId, testCase.timestampToPost);
+        const auto exitInfo = testJob.runSynchronously();
+        if (testCase.expectSuccess) {
+            CPPUNIT_ASSERT_MESSAGE(toString(exitInfo), exitInfo);
+        } else {
+            CPPUNIT_ASSERT_MESSAGE(toString(exitInfo), !exitInfo);
+        }
+
+        // Verify the modification date on the server.
+        GetFileInfoJob verifyJob(_driveDbId, nodeId);
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, verifyJob.runSynchronously().code());
+        Poco::JSON::Object::Ptr verifyDataObj = verifyJob.jsonRes()->getObject(dataKey);
+        CPPUNIT_ASSERT(verifyDataObj);
+        SyncTime verifyLastModifiedAt = 0;
+        CPPUNIT_ASSERT(JsonParserUtility::extractValue(verifyDataObj, lastModifiedAtKey, verifyLastModifiedAt, false));
+        CPPUNIT_ASSERT_EQUAL(testCase.expectedServerValue, verifyLastModifiedAt);
+    }
 }
 
 } // namespace KDC
