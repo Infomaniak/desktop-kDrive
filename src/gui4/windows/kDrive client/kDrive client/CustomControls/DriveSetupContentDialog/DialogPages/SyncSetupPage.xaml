@@ -326,7 +326,7 @@
 
                     <TextBlock Grid.ColumnSpan="2"
                                Grid.Row="2"
-                               Text="{x:Bind kDrive:Localizer.Instance.GetString('liteSyncUnavailableDescription')}"
+                               Text="{x:Bind kDrive:Localizer.Instance.GetString('liteSyncUnavailableDescriptionWin')}"
                                TextWrapping="WrapWholeWords"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                Style="{StaticResource CaptionTextBlockStyle}"

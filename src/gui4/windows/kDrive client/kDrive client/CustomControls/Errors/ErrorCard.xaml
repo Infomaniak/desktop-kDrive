@@ -40,6 +40,7 @@
           RowSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -59,16 +60,13 @@
                                         Visibility="{x:Bind HasItemPath, Converter={StaticResource BooleanToVisibilityConverter}}" />
         </StackPanel>
         <!-- Description & CustomContent-->
-        <StackPanel Grid.Row="1"
-                    Grid.Column="0">
-            <TextBlock Text="{x:Bind Description, Mode=OneWay}"
-                       TextWrapping="Wrap"
-                       Style="{StaticResource BodyTextBlockStyle}"
-                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                       Visibility="{x:Bind HasDescription}"/>
-
-            <ContentPresenter Content="{x:Bind CustomContent, Mode=OneWay}" />
-        </StackPanel>
+        <TextBlock Grid.Row="1"
+                   Grid.Column="0"
+                   Text="{x:Bind Description, Mode=OneWay}"
+                   TextWrapping="Wrap"
+                   Style="{StaticResource BodyTextBlockStyle}"
+                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                   Visibility="{x:Bind HasDescription}"/>
 
         <!-- Action button -->
         <Button Grid.Row="0"
@@ -81,5 +79,10 @@
                 Content="{x:Bind ActionText}"
                 Click="ActionButton_Click"
                 Visibility="{x:Bind ActionText, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True'}" />
+
+        <ContentPresenter Grid.Row="2"
+                          Grid.ColumnSpan="2"
+                          Content="{x:Bind CustomContent, Mode=OneWay}" />
+
     </Grid>
 </UserControl>

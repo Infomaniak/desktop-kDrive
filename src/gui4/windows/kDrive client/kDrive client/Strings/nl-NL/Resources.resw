@@ -6,7 +6,7 @@
   Locale: nl, Dutch; Flemish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Wed, 27 May 2026 14:49:19 +0200 
+  Exported at: Fri, 29 May 2026 15:21:01 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -604,6 +604,13 @@ Log opnieuw in met het juiste e-mailadres %@</value>
   <data name="enterPasswordPlaceholder" xml:space="preserve"> 
     <value>Voer uw wachtwoord in</value> 
   </data> 
+  <data name="errCaseDescription" xml:space="preserve"> 
+    <value>Er bestaat al een andere %@ waarvan de naam alleen verschilt in hoofdletters/kleine letters in deze map. Dit type naam wordt niet ondersteund door de kDrive Windows applicatie. Hernoem een van de %@ mappen van kDrive online zodat u deze op uw pc kunt synchroniseren.
+</value> 
+  </data> 
+  <data name="errCaseTitle" xml:space="preserve"> 
+    <value>Conflicterende namen, hoofdlettergevoelig</value> 
+  </data> 
   <data name="errCreateCancelDescription" xml:space="preserve"> 
     <value>U heeft niet de vereiste rechten om een %@ toe te voegen aan deze locatie.
 Vraag toegang aan bij de eigenaar of beheerder.</value> 
@@ -696,7 +703,7 @@ Neem contact op met uw beheerder om de bestandsgroottelimiet te verhogen.</value
     <value>Toegang geweigerd</value> 
     <comment>Title shown when a forbidden or unauthorized action is attempted.</comment> 
   </data> 
-  <data name="errForbiddenCharDescription_win" xml:space="preserve"> 
+  <data name="errForbiddenCharDescription" xml:space="preserve"> 
     <value>De naam van dit %@ bevat een of meer tekens die niet worden ondersteund door de kDrive Windows-applicatie. Hernoem de %@ vanuit kDrive online.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
@@ -1067,7 +1074,7 @@ Handig als u weet dat het belangrijke werk online staat op kDrive.</value>
     <value>Geen conflicten gevonden voor uw zoekopdracht</value> 
   </data> 
   <data name="labelNoErrorsToFix" xml:space="preserve"> 
-    <value>Geen fouten te corrigeren.</value> 
+    <value>Geen fouten te corrigeren</value> 
   </data> 
   <data name="labelNotifications" xml:space="preserve"> 
     <value>Melding</value> 
@@ -1196,7 +1203,7 @@ Om het uploaden te versnellen, raden we aan alleen de laatste kDrive-sessie te v
   <data name="linkCopiedToClipboardTitle" xml:space="preserve"> 
     <value>Link gekopieerd naar klembord</value> 
   </data> 
-  <data name="liteSyncUnavailableDescription" xml:space="preserve"> 
+  <data name="liteSyncUnavailableDescriptionWin" xml:space="preserve"> 
     <value>Incompatibele schijf of map direct in de root van de schijf (bijv.: kies een map zoals D:/Mijn drive in plaats van D:/)</value> 
   </data> 
   <data name="localLocation" xml:space="preserve"> 

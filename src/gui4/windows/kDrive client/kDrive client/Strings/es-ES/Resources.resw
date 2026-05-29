@@ -6,7 +6,7 @@
   Locale: es, Spanish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Wed, 27 May 2026 14:49:19 +0200 
+  Exported at: Fri, 29 May 2026 15:21:01 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -604,6 +604,13 @@ Inicie sesión nuevamente con la dirección de correo electrónico correcta %@</
   <data name="enterPasswordPlaceholder" xml:space="preserve"> 
     <value>Introduzca su contraseña</value> 
   </data> 
+  <data name="errCaseDescription" xml:space="preserve"> 
+    <value>En esta carpeta ya existe otro %@ cuyo nombre sólo difiere en mayúsculas/minúsculas. Este tipo de nombre no es compatible con la aplicación kDrive Windows. Cambie el nombre de una de las carpetas %@ desde kDrive online para poder sincronizarla en su PC.
+</value> 
+  </data> 
+  <data name="errCaseTitle" xml:space="preserve"> 
+    <value>Nombres contradictorios, distingue mayúsculas de minúsculas</value> 
+  </data> 
   <data name="errCreateCancelDescription" xml:space="preserve"> 
     <value>No tiene los permisos necesarios para agregar un %@ en esta ubicación.
 Solicite acceso al propietario o al administrador.</value> 
@@ -696,7 +703,7 @@ Contacte con su administrador para aumentar el límite de tamaño de archivo.</v
     <value>Acceso prohibido</value> 
     <comment>Title shown when a forbidden or unauthorized action is attempted.</comment> 
   </data> 
-  <data name="errForbiddenCharDescription_win" xml:space="preserve"> 
+  <data name="errForbiddenCharDescription" xml:space="preserve"> 
     <value>El nombre de este %@ contiene uno o más caracteres no admitidos por la aplicación kDrive Windows. Cambie el nombre del %@ desde kDrive en línea.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
@@ -1067,7 +1074,7 @@ Tenga cuidado, esto puede sobrescribir el trabajo de sus colaboradores.</value>
     <value>Ningún conflicto coincide con su búsqueda</value> 
   </data> 
   <data name="labelNoErrorsToFix" xml:space="preserve"> 
-    <value>No hay errores que corregir.</value> 
+    <value>No hay errores que corregir</value> 
   </data> 
   <data name="labelNotifications" xml:space="preserve"> 
     <value>Notificación</value> 
@@ -1196,7 +1203,7 @@ Para acelerar el envío, recomendamos enviar solo la última sesión de kDrive.<
   <data name="linkCopiedToClipboardTitle" xml:space="preserve"> 
     <value>Enlace copiado al portapapeles</value> 
   </data> 
-  <data name="liteSyncUnavailableDescription" xml:space="preserve"> 
+  <data name="liteSyncUnavailableDescriptionWin" xml:space="preserve"> 
     <value>Disco incompatible o carpeta directamente en la raíz del disco (ej: elige una carpeta como D:/Mon drive en lugar de D:/)</value> 
   </data> 
   <data name="localLocation" xml:space="preserve"> 

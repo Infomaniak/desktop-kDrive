@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyVersion>3.8.4.1</AssemblyVersion>
     <OutputType>WinExe</OutputType>
@@ -140,6 +140,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\Errors\Templates\Node\ConflictError.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\Node\CaseError.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\Errors\Templates\Node\LocalAccessError.xaml">

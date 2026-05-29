@@ -6,7 +6,7 @@
   Locale: en, English
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Wed, 27 May 2026 14:49:19 +0200 
+  Exported at: Fri, 29 May 2026 15:21:01 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -182,7 +182,7 @@ You can open them at any time, even without an internet connection.</value>
     <value>Advanced settings</value> 
   </data> 
   <data name="buttonApplyToXFiles" xml:space="preserve"> 
-    <value>Apply to %@ files</value> 
+    <value>Apply to %d files</value> 
   </data> 
   <data name="buttonAskForAccess" xml:space="preserve"> 
     <value>Request access</value> 
@@ -604,6 +604,13 @@ Please sign in again with the correct email address %@</value>
   <data name="enterPasswordPlaceholder" xml:space="preserve"> 
     <value>Enter your password</value> 
   </data> 
+  <data name="errCaseDescription" xml:space="preserve"> 
+    <value>Another %@ with a name differing only in upper/lower case already exists in this folder. This type of name is not supported by the kDrive Windows application. Rename one of the %@ folders in kDrive online to synchronize it on your PC.
+</value> 
+  </data> 
+  <data name="errCaseTitle" xml:space="preserve"> 
+    <value>Case-sensitive name conflict</value> 
+  </data> 
   <data name="errCreateCancelDescription" xml:space="preserve"> 
     <value>You do not have the required permissions to add a %@ to this location.
 Request access from the owner or administrator.</value> 
@@ -696,7 +703,7 @@ Contact your administrator to increase the file size limit.</value>
     <value>Access forbidden</value> 
     <comment>Title shown when a forbidden or unauthorized action is attempted.</comment> 
   </data> 
-  <data name="errForbiddenCharDescription_win" xml:space="preserve"> 
+  <data name="errForbiddenCharDescription" xml:space="preserve"> 
     <value>The name of this %@ contains one or more characters not supported by the kDrive Windows application. Rename the %@ from kDrive online.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
@@ -1067,7 +1074,7 @@ Useful if you know the important work is online on kDrive.</value>
     <value>No conflicts match your search</value> 
   </data> 
   <data name="labelNoErrorsToFix" xml:space="preserve"> 
-    <value>No errors to fix.</value> 
+    <value>No errors to fix</value> 
   </data> 
   <data name="labelNotifications" xml:space="preserve"> 
     <value>Notification</value> 
@@ -1196,7 +1203,7 @@ To speed up the upload, we recommend sending only the last kDrive session.</valu
   <data name="linkCopiedToClipboardTitle" xml:space="preserve"> 
     <value>Link copied to clipboard</value> 
   </data> 
-  <data name="liteSyncUnavailableDescription" xml:space="preserve"> 
+  <data name="liteSyncUnavailableDescriptionWin" xml:space="preserve"> 
     <value>Incompatible drive or folder directly at the root of the drive (e.g., choose a folder like D:/My drive instead of D:/)</value> 
   </data> 
   <data name="localLocation" xml:space="preserve"> 
