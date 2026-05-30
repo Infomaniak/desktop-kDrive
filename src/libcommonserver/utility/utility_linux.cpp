@@ -23,9 +23,13 @@
 #include "libcommon/utility/utility.h"
 
 #include <config.h>
+#include <algorithm>
 #include <filesystem>
+#include <fstream>
 #include <regex>
 #include <string>
+#include <system_error>
+#include <vector>
 #include <pwd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -41,6 +45,91 @@
 namespace KDC {
 
 static const auto mimeType = "x-scheme-handler/kdrive";
+
+namespace {
+// Escape a string to be used as a quoted argument in a .desktop `Exec=` field
+// (freedesktop.org Desktop Entry Specification §"The Exec key"). Reserved
+// characters inside double quotes (`"`, `` ` ``, `$`, `\\`) must be prefixed
+// with an additional backslash.
+std::string escapeDesktopExecArg(const std::string &arg) {
+    std::string out;
+    out.reserve(arg.size() + 2);
+    out.push_back('"');
+    for (const char c: arg) {
+        if (c == '"' || c == '\\' || c == '`' || c == '$') {
+            out.push_back('\\');
+        }
+        out.push_back(c);
+    }
+    out.push_back('"');
+    return out;
+}
+
+// POSIX single-quote escape for safe interpolation into a /bin/sh command line
+// passed to `system()`. Single quotes are closed, the literal quote inserted
+// via `'\''`, and the surrounding quoting re-opened.
+std::string shellQuote(const std::string &arg) {
+    std::string out;
+    out.reserve(arg.size() + 2);
+    out.push_back('\'');
+    for (const char c: arg) {
+        if (c == '\'') {
+            out.append("'\\''");
+        } else {
+            out.push_back(c);
+        }
+    }
+    out.push_back('\'');
+    return out;
+}
+
+// Direct write to ~/.config/mimeapps.list, replicating what
+// `xdg-mime default <desktop> <mime>` does, so the association is still set
+// when xdg-utils is missing or returns a non-zero status (which happens on
+// some minimal/Wayland-only setups).
+bool writeMimeAppsDefault(const SyncPath &mimeAppsPath, const std::string &desktopFileName, const std::string &mimeTypeStr) {
+    std::vector<std::string> lines;
+    if (std::ifstream in{mimeAppsPath}; in.is_open()) {
+        std::string line;
+        while (std::getline(in, line)) lines.push_back(line);
+    }
+
+    const std::string sectionHeader = "[Default Applications]";
+    const std::string keyPrefix = mimeTypeStr + "=";
+    const std::string assocLine = keyPrefix + desktopFileName;
+
+    auto sectionIt = std::find(lines.begin(), lines.end(), sectionHeader);
+    if (sectionIt == lines.end()) {
+        if (!lines.empty() && !lines.back().empty()) lines.emplace_back();
+        lines.push_back(sectionHeader);
+        lines.push_back(assocLine);
+    } else {
+        auto sectionEnd = std::find_if(std::next(sectionIt), lines.end(),
+                                       [](const std::string &l) { return !l.empty() && l.front() == '['; });
+        const auto existing =
+                std::find_if(std::next(sectionIt), sectionEnd, [&](const std::string &l) { return l.rfind(keyPrefix, 0) == 0; });
+        if (existing != sectionEnd) {
+            *existing = assocLine;
+        } else {
+            lines.insert(sectionEnd, assocLine);
+        }
+    }
+
+    const auto tmpPath = SyncPath(mimeAppsPath.string() + ".kdrive.tmp");
+    {
+        std::ofstream out{tmpPath, std::ios::trunc};
+        if (!out.is_open()) return false;
+        for (const auto &l: lines) out << l << '\n';
+    }
+    std::error_code ec;
+    std::filesystem::rename(tmpPath, mimeAppsPath, ec);
+    if (ec) {
+        std::filesystem::remove(tmpPath, ec);
+        return false;
+    }
+    return true;
+}
+} // namespace
 
 namespace {
 int parseLineForRamStatus(char *line) {
@@ -264,15 +353,30 @@ SyncPath Utility::getTrashPath() {
 }
 
 bool Utility::registerLoginRedirection() {
-    // Create file .desktop
+    // Register kDrive as the handler for the `kdrive://` URL scheme used by the
+    // OAuth flow. Without this, the OAuth redirect from the browser cannot
+    // reach kDrive and login fails with errors like "Could not read file
+    // kdrive://auth-desktop?..." (see issue #1627).
+    //
+    // We do three things, each independently best-effort:
+    //   1. Write `~/.local/share/applications/<exe>.desktop` declaring the
+    //      MIME type `x-scheme-handler/kdrive` and the right `Exec=` path
+    //      (for AppImage builds this comes from the $APPIMAGE env var).
+    //   2. Run `update-desktop-database` so the desktop entry shows up in
+    //      the user-level MIME cache.
+    //   3. Set the default association via `xdg-mime default ...`, with a
+    //      direct edit of `~/.config/mimeapps.list` as fallback for systems
+    //      where xdg-utils is missing or returns a non-zero status.
     const char *homePathEnv = std::getenv("HOME");
     if (!homePathEnv) {
         LOG_WARN(Log::instance()->getLogger(), "Path to HOME not found");
         return false;
     }
+    const std::string homePath(homePathEnv);
 
-    const auto urlSchemeDirPath = SyncPath(std::string(homePathEnv) + "/.local/share/applications");
-    const auto urlSchemeFilePath = urlSchemeDirPath / (std::string(APPLICATION_EXECUTABLE) + ".desktop");
+    const auto urlSchemeDirPath = SyncPath(homePath + "/.local/share/applications");
+    const std::string desktopFileName = std::string(APPLICATION_EXECUTABLE) + ".desktop";
+    const auto urlSchemeFilePath = urlSchemeDirPath / desktopFileName;
 
     IoError ioError = IoError::Unknown;
     bool exists = false;
@@ -281,13 +385,8 @@ bool Utility::registerLoginRedirection() {
         return false;
     }
     if (!exists && !IoHelper::createDirectory(urlSchemeDirPath, false, ioError)) {
-        LOGW_WARN(logger(), L"Could register login redirection: " << Utility::formatIoError(urlSchemeDirPath, ioError));
-        return false;
-    }
-
-    std::ofstream urlSchemeFile{urlSchemeFilePath};
-    if (!urlSchemeFile.is_open()) {
-        LOGW_WARN(logger(), L"Could register login redirection: " << Utility::formatSyncPath(urlSchemeFilePath));
+        LOGW_WARN(logger(),
+                  L"Could not create login-redirection directory: " << Utility::formatIoError(urlSchemeDirPath, ioError));
         return false;
     }
 
@@ -298,30 +397,59 @@ bool Utility::registerLoginRedirection() {
     } else {
         execPath = KDC::CommonUtility::getAppWorkingDir() / APPLICATION_EXECUTABLE;
     }
-    urlSchemeFile << "[Desktop Entry]" << std::endl;
-    urlSchemeFile << "Name=" << APPLICATION_EXECUTABLE << std::endl;
-    urlSchemeFile << "Exec=" << "\"" << execPath.string() << "\"" << " %u" << std::endl;
-    urlSchemeFile << "Type=Application" << std::endl;
-    urlSchemeFile << "Terminal=false" << std::endl;
-    urlSchemeFile << "MimeType=" << mimeType << ";" << std::endl;
-    urlSchemeFile.close();
 
-    // Update database
-    bool res = true;
-    const std::string updateDesktopDbCmd =
-            std::string("update-desktop-database ") + std::string(homePathEnv) + "/.local/share/applications/";
-    if (const int updateResult = system(updateDesktopDbCmd.c_str()); updateResult != 0) {
-        LOGW_WARN(logger(), L"Failed to update desktop database with command: " << CommonUtility::s2ws(updateDesktopDbCmd)
-                                                                                << L", result: " << updateResult);
-        res = false; // Do not return yet, try to register scheme anyway.
+    {
+        std::ofstream urlSchemeFile{urlSchemeFilePath, std::ios::trunc};
+        if (!urlSchemeFile.is_open()) {
+            LOGW_WARN(logger(), L"Could not open login-redirection desktop file for writing: "
+                                        << Utility::formatSyncPath(urlSchemeFilePath));
+            return false;
+        }
+        urlSchemeFile << "[Desktop Entry]\n"
+                      << "Type=Application\n"
+                      << "Name=" << APPLICATION_NAME << "\n"
+                      << "GenericName=Folder Sync\n"
+                      << "Comment=" << APPLICATION_NAME << " desktop synchronization client\n"
+                      << "Icon=" << APPLICATION_ICON_NAME << "\n"
+                      << "Exec=" << escapeDesktopExecArg(execPath.string()) << " %u\n"
+                      << "Terminal=false\n"
+                      << "Categories=Utility;\n"
+                      << "MimeType=" << mimeType << ";\n"
+                      << "NoDisplay=true\n"
+                      << "StartupNotify=false\n";
     }
 
-    // Register scheme
-    const auto registerSchemeStr = std::string("xdg-mime default kDrive.desktop ") + mimeType;
-    if (const int registerResult = system(registerSchemeStr.c_str()); registerResult != 0) {
-        LOGW_WARN(logger(), L"Failed to register URL scheme with command: " << CommonUtility::s2ws(registerSchemeStr)
-                                                                            << L", result: " << registerResult);
+    bool res = true;
+
+    // Update desktop database. Failure is non-fatal: `xdg-mime` below still
+    // works because it reads the .desktop file we just wrote directly.
+    const std::string updateDesktopDbCmd = "update-desktop-database " + shellQuote(urlSchemeDirPath.string());
+    if (const int updateResult = system(updateDesktopDbCmd.c_str()); updateResult != 0) {
+        LOGW_INFO(logger(), L"update-desktop-database not available or failed: " << CommonUtility::s2ws(updateDesktopDbCmd)
+                                                                                 << L", result: " << updateResult);
         res = false;
+    }
+
+    // Register the scheme via xdg-mime, then verify with a direct mimeapps.list
+    // edit as fallback. On some minimal/Wayland-only Arch derivatives (e.g.
+    // CachyOS with Hyprland) the xdg-utils invocation succeeds but the
+    // mimeapps.list entry is not picked up by browsers; writing it ourselves
+    // guarantees the association.
+    const std::string registerSchemeCmd = "xdg-mime default " + shellQuote(desktopFileName) + " " + shellQuote(mimeType);
+    if (const int registerResult = system(registerSchemeCmd.c_str()); registerResult != 0) {
+        LOGW_INFO(logger(), L"xdg-mime not available or failed: " << CommonUtility::s2ws(registerSchemeCmd) << L", result: "
+                                                                  << registerResult);
+        res = false;
+    }
+
+    const auto mimeAppsPath = SyncPath(homePath + "/.config/mimeapps.list");
+    if (writeMimeAppsDefault(mimeAppsPath, desktopFileName, mimeType)) {
+        LOGW_INFO(logger(), L"Registered " << CommonUtility::s2ws(mimeType) << L" -> " << CommonUtility::s2ws(desktopFileName)
+                                           << L" in " << Utility::formatSyncPath(mimeAppsPath));
+        // Direct write succeeded: even if xdg-mime failed, the scheme is set.
+        res = true;
+    } else {
+        LOGW_WARN(logger(), L"Failed to write " << Utility::formatSyncPath(mimeAppsPath));
     }
 
     return res;
