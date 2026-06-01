@@ -21,9 +21,13 @@ import kDriveCore
 import kDriveResources
 import SwiftUI
 
-extension NodeType {
-    var label: String {
-        switch self {
+extension SynchroError {
+    var nodeLabel: String {
+        guard let nodeType = metadata.nodeType else {
+            return ""
+        }
+
+        switch nodeType {
         case .file:
             return KDriveLocalizable.labelFileLowerCase
         case .directory:
@@ -54,12 +58,12 @@ struct ErrorCellFactory {
         case .createCancel:
             return ErrorCellView(
                 title: KDriveLocalizable.errForbiddenActionTitle,
-                description: KDriveLocalizable.errCreateCancelDescription(error.metadata.nodeType?.label ?? "")
+                description: KDriveLocalizable.errCreateCancelDescription(error.nodeLabel)
             )
         case .deleteCancel:
             return ErrorCellView(
                 title: KDriveLocalizable.errForbiddenActionTitle,
-                description: KDriveLocalizable.errDeleteCancelDescription(error.metadata.nodeType?.label ?? "")
+                description: KDriveLocalizable.errDeleteCancelDescription(error.nodeLabel)
             )
         case .editCancel:
             return ErrorCellView(
@@ -70,7 +74,7 @@ struct ErrorCellFactory {
             // TODO: Add destination path copy
             return ErrorCellView(
                 title: KDriveLocalizable.errForbiddenActionTitle,
-                description: KDriveLocalizable.errMoveCancelDescription(error.metadata.nodeType?.label ?? "")
+                description: KDriveLocalizable.errMoveCancelDescription(error.nodeLabel)
             )
         case .fileLocked:
             return ErrorCellView(
@@ -93,9 +97,9 @@ struct ErrorCellFactory {
             )
         case .forbiddenCharEndWithSpace:
             return ErrorCellView(
-                title: KDriveLocalizable.errEndWithSpaceTitle(error.metadata.nodeType?.label ?? ""),
+                title: KDriveLocalizable.errEndWithSpaceTitle(error.nodeLabel),
                 description: KDriveLocalizable.errEndWithSpaceDescription(
-                    error.metadata.nodeType?.label ?? "", error.metadata.nodeType?.label ?? ""
+                    error.nodeLabel, error.nodeLabel
                 ),
                 action: .renameItem(error, manager: manager)
             )
@@ -103,28 +107,28 @@ struct ErrorCellFactory {
             return ErrorCellView(
                 title: KDriveLocalizable.errForbiddenCharTitle,
                 description: KDriveLocalizable.errForbiddenCharDescription(
-                    error.metadata.nodeType?.label ?? "",
-                    error.metadata.nodeType?.label ?? ""
+                    error.nodeLabel,
+                    error.nodeLabel
                 ),
                 action: .renameItem(error, manager: manager)
             )
         case .forbiddenCharOnlySpaces:
             return ErrorCellView(
                 title: KDriveLocalizable.errForbiddenCharOnlySpacesTitle,
-                description: KDriveLocalizable.errForbiddenCharOnlySpacesDescription(error.metadata.nodeType?.label ?? ""),
+                description: KDriveLocalizable.errForbiddenCharOnlySpacesDescription(error.nodeLabel),
                 action: .renameItem(error, manager: manager)
             )
         case .nameLength:
             return ErrorCellView(
-                title: KDriveLocalizable.errNameLengthTitle(error.metadata.nodeType?.label ?? ""),
-                description: KDriveLocalizable.errNameLengthDescription(error.metadata.nodeType?.label ?? ""),
+                title: KDriveLocalizable.errNameLengthTitle(error.nodeLabel),
+                description: KDriveLocalizable.errNameLengthDescription(error.nodeLabel),
                 action: .renameItem(error, manager: manager)
             )
         case .pathLength:
             // TODO: Implement it
             return ErrorCellView(
-                title: KDriveLocalizable.errPathLengthTitle(error.metadata.nodeType?.label ?? ""),
-                description: KDriveLocalizable.errPathLengthDescription(error.metadata.nodeType?.label ?? ""),
+                title: KDriveLocalizable.errPathLengthTitle(error.nodeLabel),
+                description: KDriveLocalizable.errPathLengthDescription(error.nodeLabel),
                 action: .init(title: KDriveLocalizable.buttonOpenParentFolder) {
                     // TODO:
                 }
@@ -138,15 +142,15 @@ struct ErrorCellFactory {
         case .quotaExceeded:
             return ErrorCellView(
                 title: KDriveLocalizable.errQuotaExceededTitle,
-                description: KDriveLocalizable.errQuotaExceededDescription(error.metadata.nodeType?.label ?? ""),
+                description: KDriveLocalizable.errQuotaExceededDescription(error.nodeLabel),
                 action: .init(title: KDriveLocalizable.buttonManageStorage) {
                     // TODO:
                 }
             )
         case .reservedName:
             return ErrorCellView(
-                title: KDriveLocalizable.errReservedNameTitle(error.metadata.nodeType?.label ?? ""),
-                description: KDriveLocalizable.errReservedNameDescription(error.metadata.nodeType?.label ?? ""),
+                title: KDriveLocalizable.errReservedNameTitle(error.nodeLabel),
+                description: KDriveLocalizable.errReservedNameDescription(error.nodeLabel),
                 action: .renameItem(error, manager: manager)
             )
         case .temporaryBlacklisted:
@@ -237,7 +241,7 @@ struct ErrorCellFactory {
         case .excludedByTemplate:
             return ErrorCellView(
                 title: KDriveLocalizable.errExcludedByTemplateTitle,
-                description: KDriveLocalizable.errExcludedByTemplateDescription(error.metadata.nodeType?.label ?? ""),
+                description: KDriveLocalizable.errExcludedByTemplateDescription(error.nodeLabel),
                 action: .init(title: KDriveLocalizable.buttonOpenSyncExclusionRules) {
                     // TODO:
                 }
@@ -254,8 +258,8 @@ struct ErrorCellFactory {
             )
         case .localAccess:
             return ErrorCellView(
-                title: KDriveLocalizable.errLocalFileAccessTitle(error.metadata.nodeType?.label ?? ""),
-                description: KDriveLocalizable.errLocalFileAccessDescription(error.metadata.nodeType?.label ?? ""),
+                title: KDriveLocalizable.errLocalFileAccessTitle(error.nodeLabel),
+                description: KDriveLocalizable.errLocalFileAccessDescription(error.nodeLabel),
                 action: .init(title: KDriveLocalizable.buttonManage) {
                     // TODO:
                 }
@@ -291,7 +295,7 @@ extension ErrorCellView {
 
 extension ErrorCellView.Action {
     static func renameItem(_ error: SynchroError, manager: SynchroErrorManager) -> Self {
-        return ErrorCellView.Action(title: KDriveLocalizable.buttonRenameItem(error.metadata.nodeType?.label ?? "")) {
+        return ErrorCellView.Action(title: KDriveLocalizable.buttonRenameItem(error.nodeLabel)) {
             // TODO:
         }
     }
