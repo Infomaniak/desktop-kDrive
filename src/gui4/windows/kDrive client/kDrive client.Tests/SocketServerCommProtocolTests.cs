@@ -301,7 +301,7 @@ public class SocketServerCommProtocolTests
         CommData result = await protocol.SendRequestAsync(RequestNum.UTILITY_GET_APPSTATE, new JsonObject(), requestCts.Token);
 
         await captureRequest;
-        Assert.Equal(RequestNum.Unknown, result.RequestNum);
+        Assert.Equal(-1, result.Num);
         await ShutdownProtocolAsync(protocol);
     }
 
@@ -330,16 +330,22 @@ public class SocketServerCommProtocolTests
 
             var tasks = protocols.Select((protocol, index) => Task.Run(async () =>
             {
-                JsonObject request = await servers[index].ReceiveJsonAsync();
-                var response = new JsonObject
+                var requestTask = servers[index].ReceiveJsonAsync();
+                var responseTask = Task.Run(async () =>
                 {
-                    ["type"] = (int)CommMessageType.Request,
-                    ["id"] = request["id"]!.GetValue<int>(),
-                    ["num"] = request["num"]!.GetValue<int>(),
-                    ["params"] = new JsonObject { ["instance"] = index }
-                };
-                await servers[index].SendJsonAsync(response);
+                    JsonObject request = await requestTask;
+                    var response = new JsonObject
+                    {
+                        ["type"] = (int)CommMessageType.Request,
+                        ["id"] = request["id"]!.GetValue<int>(),
+                        ["num"] = request["num"]!.GetValue<int>(),
+                        ["params"] = new JsonObject { ["instance"] = index }
+                    };
+                    await servers[index].SendJsonAsync(response);
+                });
+
                 var result = await protocol.SendRequestAsync(RequestNum.UTILITY_GET_APPSTATE, new JsonObject());
+                await responseTask;
                 return result.Params["instance"]?.GetValue<int>();
             }));
 
