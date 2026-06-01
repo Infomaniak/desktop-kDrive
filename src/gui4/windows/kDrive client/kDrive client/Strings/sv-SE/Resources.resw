@@ -6,7 +6,7 @@
   Locale: sv, Swedish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Wed, 27 May 2026 14:49:19 +0200 
+  Exported at: Fri, 29 May 2026 15:56:50 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -604,6 +604,13 @@ Logga in igen med rätt e-postadress %@</value>
   <data name="enterPasswordPlaceholder" xml:space="preserve"> 
     <value>Ange ditt lösenord</value> 
   </data> 
+  <data name="errCaseDescription" xml:space="preserve"> 
+    <value>En annan %@ vars namn endast skiljer sig åt i versaler/ gemener finns redan i den här mappen. Denna typ av namn stöds inte av Windows-programmet kDrive. Byt namn på en av %@-mapparna från kDrive online så att du kan synkronisera den på din dator.
+</value> 
+  </data> 
+  <data name="errCaseTitle" xml:space="preserve"> 
+    <value>Motstridiga namn, skiftlägeskänsliga</value> 
+  </data> 
   <data name="errCreateCancelDescription" xml:space="preserve"> 
     <value>Du har inte nödvändiga behörigheter för att lägga till en %@ på den här platsen.
 Begär åtkomst från ägaren eller administratören.</value> 
@@ -696,7 +703,7 @@ Kontakta din administratör för att öka filstorleksgränsen.</value>
     <value>Åtkomst förbjuden</value> 
     <comment>Title shown when a forbidden or unauthorized action is attempted.</comment> 
   </data> 
-  <data name="errForbiddenCharDescription_win" xml:space="preserve"> 
+  <data name="errForbiddenCharDescription" xml:space="preserve"> 
     <value>Namnet på denna %@ innehåller ett eller flera tecken som inte stöds av kDrive Windows-programmet. Byt namn på %@ från kDrive online.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
@@ -1067,7 +1074,7 @@ Användbart om du vet att det viktiga arbetet finns online på kDrive.</value>
     <value>Inga konflikter matchar din sökning</value> 
   </data> 
   <data name="labelNoErrorsToFix" xml:space="preserve"> 
-    <value>Inga fel att åtgärda.</value> 
+    <value>Inga fel att åtgärda</value> 
   </data> 
   <data name="labelNotifications" xml:space="preserve"> 
     <value>Avisering</value> 
@@ -1196,7 +1203,7 @@ För att påskynda uppladdningen rekommenderar vi att du bara skickar den senast
   <data name="linkCopiedToClipboardTitle" xml:space="preserve"> 
     <value>Länk kopierad till urklipp</value> 
   </data> 
-  <data name="liteSyncUnavailableDescription" xml:space="preserve"> 
+  <data name="liteSyncUnavailableDescriptionWin" xml:space="preserve"> 
     <value>Inkompatibel enhet eller mapp direkt i roten av enheten (t.ex. välj en mapp som D:/Min enhet istället för D:/)</value> 
   </data> 
   <data name="localLocation" xml:space="preserve"> 

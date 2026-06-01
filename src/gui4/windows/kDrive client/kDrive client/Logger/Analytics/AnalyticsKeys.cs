@@ -132,6 +132,7 @@
         FileAccessErrorOpenFolder,
         ManageNotEnoughDiskSpace,
         ManageUnsupportedChar,
+        ManageCaseConflictError,
         ManageEndsWithSpace,
         ManageFileNameReserved,
         ManageFileNameTooLong,

@@ -6,7 +6,7 @@
   Locale: da, Danish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Wed, 27 May 2026 14:49:19 +0200 
+  Exported at: Fri, 29 May 2026 15:56:50 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -604,6 +604,13 @@ Log venligst ind igen med den korrekte e-mailadresse %@</value>
   <data name="enterPasswordPlaceholder" xml:space="preserve"> 
     <value>Indtast din adgangskode</value> 
   </data> 
+  <data name="errCaseDescription" xml:space="preserve"> 
+    <value>En anden %@, hvis navn kun adskiller sig ved store/små bogstaver, findes allerede i denne mappe. Denne type navn understøttes ikke af kDrive Windows-applikationen. Omdøb en af %@-mapperne fra kDrive online, så du kan synkronisere den på din pc.
+</value> 
+  </data> 
+  <data name="errCaseTitle" xml:space="preserve"> 
+    <value>Modstridende navne, skelner mellem store og små bogstaver</value> 
+  </data> 
   <data name="errCreateCancelDescription" xml:space="preserve"> 
     <value>Du har ikke de nødvendige tilladelser til at tilføje en %@ til denne placering.
 Anmod om adgang fra ejeren eller administratoren.</value> 
@@ -696,7 +703,7 @@ Kontakt din administrator for at øge filstørrelsesgrænsen.</value>
     <value>Adgang forbudt</value> 
     <comment>Title shown when a forbidden or unauthorized action is attempted.</comment> 
   </data> 
-  <data name="errForbiddenCharDescription_win" xml:space="preserve"> 
+  <data name="errForbiddenCharDescription" xml:space="preserve"> 
     <value>Navnet på dette %@ indeholder et eller flere tegn, der ikke understøttes af kDrive Windows-programmet. Omdøb %@ fra kDrive online.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
@@ -1067,7 +1074,7 @@ Nyttigt, hvis du ved, at det vigtige arbejde er online på kDrive.</value>
     <value>Ingen konflikter matcher din søgning</value> 
   </data> 
   <data name="labelNoErrorsToFix" xml:space="preserve"> 
-    <value>Ingen fejl at rette.</value> 
+    <value>Ingen fejl at rette</value> 
   </data> 
   <data name="labelNotifications" xml:space="preserve"> 
     <value>Notifikation</value> 
@@ -1196,7 +1203,7 @@ For at fremskynde overførslen anbefaler vi at sende kun den seneste kDrive-sess
   <data name="linkCopiedToClipboardTitle" xml:space="preserve"> 
     <value>Link kopieret til udklipsholder</value> 
   </data> 
-  <data name="liteSyncUnavailableDescription" xml:space="preserve"> 
+  <data name="liteSyncUnavailableDescriptionWin" xml:space="preserve"> 
     <value>Inkompatibelt drev eller mappe direkte i roden af drevet (f.eks. vælg en mappe som D:/Mit drev i stedet for D:/)</value> 
   </data> 
   <data name="localLocation" xml:space="preserve"> 

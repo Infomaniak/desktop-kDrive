@@ -6,7 +6,7 @@
   Locale: fi, Finnish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Wed, 27 May 2026 14:49:19 +0200 
+  Exported at: Fri, 29 May 2026 15:56:50 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -604,6 +604,13 @@ Kirjaudu uudelleen sisään oikealla sähköpostiosoitteella %@</value>
   <data name="enterPasswordPlaceholder" xml:space="preserve"> 
     <value>Syötä salasanasi</value> 
   </data> 
+  <data name="errCaseDescription" xml:space="preserve"> 
+    <value>Tässä kansiossa on jo toinen %@, jonka nimi eroaa vain isojen ja pienten kirjainten osalta. Tämäntyyppistä nimeä ei tueta kDrive Windows -sovelluksessa. Nimeä yksi %@-kansioista uudelleen kDrive online -ohjelmassa, jotta voit synkronoida sen tietokoneellasi.
+</value> 
+  </data> 
+  <data name="errCaseTitle" xml:space="preserve"> 
+    <value>Ristiriitaiset nimet, isojen ja pienten kirjainten huomioiminen</value> 
+  </data> 
   <data name="errCreateCancelDescription" xml:space="preserve"> 
     <value>Sinulla ei ole tarvittavia käyttöoikeuksia lisätäksesi %@ tähän sijaintiin.
 Pyydä käyttöoikeutta omistajalta tai järjestelmänvalvojalta.</value> 
@@ -696,7 +703,7 @@ Ota yhteyttä järjestelmänvalvojaasi tiedostokokorajan kasvattamiseksi.</value
     <value>Pääsy kielletty</value> 
     <comment>Title shown when a forbidden or unauthorized action is attempted.</comment> 
   </data> 
-  <data name="errForbiddenCharDescription_win" xml:space="preserve"> 
+  <data name="errForbiddenCharDescription" xml:space="preserve"> 
     <value>Tämän %@ nimi sisältää yhden tai useamman merkin, joita kDriven Windows-sovellus ei tue. Nimeä %@ uudelleen kDrive-verkkopalvelusta.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
@@ -1067,7 +1074,7 @@ Hyödyllinen, jos tiedät tärkeän työn olevan verkossa kDrivessa.</value>
     <value>Ei hakuasi vastaavia ristiriitoja</value> 
   </data> 
   <data name="labelNoErrorsToFix" xml:space="preserve"> 
-    <value>Ei korjattavia virheitä.</value> 
+    <value>Ei korjattavia virheitä</value> 
   </data> 
   <data name="labelNotifications" xml:space="preserve"> 
     <value>Ilmoitus</value> 
@@ -1196,7 +1203,7 @@ Lähetyksen nopeuttamiseksi suosittelemme lähettämään vain viimeisen kDrive-
   <data name="linkCopiedToClipboardTitle" xml:space="preserve"> 
     <value>Linkki kopioitu leikepöydälle</value> 
   </data> 
-  <data name="liteSyncUnavailableDescription" xml:space="preserve"> 
+  <data name="liteSyncUnavailableDescriptionWin" xml:space="preserve"> 
     <value>Yhteensopimaton asema tai kansio suoraan aseman juuressa (esim.: valitse kansio kuten D:/Oma asema D:/:n sijaan)</value> 
   </data> 
   <data name="localLocation" xml:space="preserve"> 

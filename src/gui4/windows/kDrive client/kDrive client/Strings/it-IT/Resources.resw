@@ -6,7 +6,7 @@
   Locale: it, Italian
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Wed, 27 May 2026 14:49:19 +0200 
+  Exported at: Fri, 29 May 2026 15:56:50 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -604,6 +604,13 @@ Accedi di nuovo con l’indirizzo email corretto %@</value>
   <data name="enterPasswordPlaceholder" xml:space="preserve"> 
     <value>Inserisci la tua password</value> 
   </data> 
+  <data name="errCaseDescription" xml:space="preserve"> 
+    <value>In questa cartella esiste già un altro %@ il cui nome differisce solo per le lettere maiuscole/minuscole. Questo tipo di nome non è supportato dall'applicazione kDrive per Windows. Rinominare una delle cartelle %@ da kDrive online per poterla sincronizzare sul PC.
+</value> 
+  </data> 
+  <data name="errCaseTitle" xml:space="preserve"> 
+    <value>Nomi contrastanti, sensibili alle maiuscole e alle minuscole</value> 
+  </data> 
   <data name="errCreateCancelDescription" xml:space="preserve"> 
     <value>Non hai le autorizzazioni necessarie per aggiungere un %@ in questa posizione.
 Richiedi l’accesso al proprietario o all’amministratore.</value> 
@@ -696,7 +703,7 @@ Contatta il tuo amministratore per aumentare il limite di dimensione del file.</
     <value>Accesso vietato</value> 
     <comment>Title shown when a forbidden or unauthorized action is attempted.</comment> 
   </data> 
-  <data name="errForbiddenCharDescription_win" xml:space="preserve"> 
+  <data name="errForbiddenCharDescription" xml:space="preserve"> 
     <value>Il nome di questo %@ contiene uno o più caratteri non supportati dall’applicazione kDrive per Windows. Rinomina il %@ da kDrive online.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
@@ -1067,7 +1074,7 @@ Attenzione, questa operazione potrebbe sovrascrivere il lavoro dei tuoi collabor
     <value>Nessun conflitto corrisponde alla tua ricerca</value> 
   </data> 
   <data name="labelNoErrorsToFix" xml:space="preserve"> 
-    <value>Nessun errore da correggere.</value> 
+    <value>Nessun errore da correggere</value> 
   </data> 
   <data name="labelNotifications" xml:space="preserve"> 
     <value>Notifica</value> 
@@ -1196,7 +1203,7 @@ Per velocizzare il caricamento, ti consigliamo di inviare solo l’ultima sessio
   <data name="linkCopiedToClipboardTitle" xml:space="preserve"> 
     <value>Link copiato negli appunti</value> 
   </data> 
-  <data name="liteSyncUnavailableDescription" xml:space="preserve"> 
+  <data name="liteSyncUnavailableDescriptionWin" xml:space="preserve"> 
     <value>Disco incompatibile o cartella direttamente nella radice del disco (es: scegli una cartella come D:/Mon drive invece di D:/)</value> 
   </data> 
   <data name="localLocation" xml:space="preserve"> 
