@@ -24,6 +24,7 @@ import SwiftUI
 struct ErrorsHeaderView: View {
     @State private var isLoading = false
 
+    let synchroDbId: UISynchro.ID?
     let errorsCount: Int
 
     private var title: AttributedString {
@@ -52,10 +53,11 @@ struct ErrorsHeaderView: View {
     }
 
     private func refreshList() async {
-        _ = try? await ErrorInfoListJob().errorInfoList()
+        guard let synchroDbId else { return }
+        _ = try? await ErrorJobs().refreshSyncErrors(syncDbId: Int32(synchroDbId))
     }
 }
 
 #Preview {
-    ErrorsHeaderView(errorsCount: 42)
+    ErrorsHeaderView(synchroDbId: 0, errorsCount: 42)
 }

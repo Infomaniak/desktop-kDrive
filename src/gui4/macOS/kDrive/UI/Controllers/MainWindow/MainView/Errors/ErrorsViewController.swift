@@ -21,7 +21,7 @@ import kDriveCoreUI
 import SwiftUI
 
 final class ErrorsViewController: TitledViewController<ErrorsView> {
-    init() {
-        super.init(toolbarTitle: "!Erreurs à corriger", contentView: ErrorsView())
+    init(mainViewModel: MainViewModel) {
+        super.init(toolbarTitle: "!Erreurs à corriger", contentView: ErrorsView(mainViewModel: MainViewModel))
     }
 }

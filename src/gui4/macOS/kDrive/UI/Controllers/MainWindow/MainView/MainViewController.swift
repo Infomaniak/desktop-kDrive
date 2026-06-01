@@ -142,7 +142,7 @@ final class MainViewController: IKSplitViewController {
                 #endif
             }
         case .errors:
-            contentViewController = ErrorsViewController()
+            contentViewController = ErrorsViewController(mainViewModel: viewModel)
         default:
             contentViewController = HomeViewController(mainViewModel: viewModel)
         }

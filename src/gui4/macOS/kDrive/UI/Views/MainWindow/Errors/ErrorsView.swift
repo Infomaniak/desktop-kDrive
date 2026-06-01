@@ -20,12 +20,18 @@ import kDriveCoreUI
 import SwiftUI
 
 struct ErrorsView: View {
+    @ObservedObject var mainViewModel: MainViewModel
+
     @ObservedSynchroErrors private var synchroErrors
+
+    private var errorsCount: Int {
+        return synchroErrors.flatMap(\.value).count
+    }
 
     var body: some View {
         ScrollView {
             VStack(spacing: AppPadding.padding32) {
-                ErrorsHeaderView(errorsCount: synchroErrors.flatMap(\.value).count)
+                ErrorsHeaderView(synchroDbId: mainViewModel.currentSynchro?.dbId, errorsCount: errorsCount)
             }
             .padding(AppPadding.page)
         }
@@ -33,5 +39,5 @@ struct ErrorsView: View {
 }
 
 #Preview {
-    ErrorsView()
+    ErrorsView(mainViewModel: MainViewModel())
 }
