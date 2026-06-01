@@ -132,9 +132,11 @@ runs:
         run: |
           if("${{ inputs.release_build }}" -eq "true") {
             Get-ChildItem "Cert:\LocalMachine\My\${{ inputs.ksp_client_cert_thumbprint }}" | Remove-Item
+            Remove-Item -path certificate -include ksp_client_certificate.pfx
             Write-Host "KSP client certificate removed successfully."
             } else {
             Get-ChildItem "Cert:\LocalMachine\My\${{ inputs.debug_cert_thumbprint }}" | Remove-Item
+            Remove-Item -path certificate -include debug_certificate.pfx
             Write-Host "Debug certificate removed successfully."
             }
         shell: powershell
