@@ -30,12 +30,4 @@ Before proposing code or review comments:
 - Do not duplicate SonarCloud findings verbatim unless they identify a concrete actionable problem in the changed code.
 
 ## Pull Request & Commit Rules (MANDATORY)
-When the user asks to create a PR or prepare PR content:
-1. Use English only for PR title and PR description.
-2. Create the PR as Draft by default.
-3. Use `develop` as the default target branch unless the user explicitly asks for a different base branch.
-
-When proposing commit messages:
-1. Use English only.
-2. Use Conventional Commits format: `<type>(<scope>): <subject>`.
-3. Allowed types: `feat`, `fix`, `refactor`, `perf`, `test`, `docs`, `chore`, `ci`.
+See `AGENTS.md` for the canonical version.
