@@ -72,8 +72,6 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
                    &SystemTrayController::showMainWindow);
     (void) connect(&_onboardingFlowController, &OnboardingFlowController::loginRequested, this,
                    [] { qCWarning(lcAppClientLinux) << "Linux onboarding OAuth launcher is not implemented yet"; });
-    (void) connect(&_onboardingFlowController, &OnboardingFlowController::accountCreationRequested, this,
-                   [] { qCWarning(lcAppClientLinux) << "Linux onboarding account creation launcher is not implemented yet"; });
     const auto completeOnboardingLogin = [this](const UserDbId userDbId) {
         if (!_appCache.user(userDbId).has_value()) {
             qCInfo(lcAppClientLinux) << "Waiting for logged-in user cache update | userDbId:" << userDbId;
