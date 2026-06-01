@@ -1808,54 +1808,45 @@ void TestNetworkJobs::testGetAllFilesInDirectory() {
 void TestNetworkJobs::testPostFileModificationDate() {
     const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testPostFileModificationDate");
     const LocalTemporaryDirectory localTmpDir("testPostFileModificationDate");
-    const auto nowSecForTest = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::seconds>(
-            std::chrono::system_clock::now().time_since_epoch()).count());
-    const uint64_t newModificationDate = nowSecForTest - 3600; // keep it in the past to avoid backend "future timestamp" rejection
-    const uint64_t futureTimestamp = nowSecForTest + 24ULL * 3600ULL + 60ULL;
+    using namespace std::chrono;
+    const auto nowTimeStamp = system_clock::now().time_since_epoch();
+    const SyncTime pastModificationDateSec = duration_cast<seconds>(nowTimeStamp - hours(1)).count();
+    const SyncTime valideFutureModificationDate = duration_cast<seconds>(nowTimeStamp + hours(1)).count();
+    const SyncTime invalideFutureModificationDate = duration_cast<seconds>(nowTimeStamp + hours(25)).count();
+    const SyncTime nowTimeStampSec = duration_cast<seconds>(nowTimeStamp).count();
 
     struct TestCase {
-        std::string fileName;
-        uint64_t timestampToPost;
-        std::string targetNodeIdOverride; // non-empty overrides the uploaded node's ID
-        bool primeWithNewModificationDate; // set newModificationDate on the node before the actual test job
-        bool expectSuccess;
-        SyncTime expectedServerValue;
+            std::string fileName;
+            SyncTime timestampToPost;
+            std::string targetNodeIdOverride; // non-empty overrides the uploaded node's ID
+            bool expectSuccess;
+            SyncTime expectedServerValue;
     };
 
     const std::vector<TestCase> testCases = {
             // clang-format off
-            // fileName                              timestampToPost    targetOverride  prime   expectSuccess  expectedServerValue
-            {"test_valid.txt",                       newModificationDate, "",            false,  true,          static_cast<SyncTime>(newModificationDate)},
-            {"test_nonExistent.txt",                 newModificationDate, "0",           true,   false,         static_cast<SyncTime>(newModificationDate)},
-            {"test_future.txt",                      futureTimestamp,    "",             true,   false,         static_cast<SyncTime>(newModificationDate)},
-            {"test_zero.txt",                        0,                  "",             false,  true,          0},
+            // fileName                   timestampToPost         targetOverride    expectSuccess  expectedServerValue
+            {"test_valid.txt",            pastModificationDateSec,           "",     true,        pastModificationDateSec},
+            {"test_valid_future.txt",     valideFutureModificationDate,      "",     true,        valideFutureModificationDate},
+            {"test_nonExistent.txt",      pastModificationDateSec,           "0",     false,       nowTimeStampSec},
+            {"test_future.txt",           invalideFutureModificationDate,    "",      false,       nowTimeStampSec},
+            {"test_zero.txt",             0,                                 "",     true,        static_cast<SyncTime>(0)},
             // clang-format on
     };
 
     for (const auto &testCase: testCases) {
         const SyncPath localFilePath = localTmpDir.path() / testCase.fileName;
         testhelpers::generateOrEditTestFile(localFilePath);
-        const auto nowSec =
-                std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-        UploadJob uploadJob(nullptr, _driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(), nowSec,
-                            nowSec);
-        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, uploadJob.runSynchronously().code());
+        UploadJob uploadJob(nullptr, _driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
+                            nowTimeStampSec, nowTimeStampSec);
+        ExitInfo exitInfo = uploadJob.runSynchronously();
+        CPPUNIT_ASSERT_MESSAGE(toString(exitInfo), exitInfo);
         const NodeId nodeId = uploadJob.nodeId();
         CPPUNIT_ASSERT(!nodeId.empty());
-
-        if (testCase.primeWithNewModificationDate) {
-            PostFileModificationDateJob primeJob(_driveDbId, nodeId, newModificationDate);
-            CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, primeJob.runSynchronously().code());
-        }
-
         const std::string targetId = testCase.targetNodeIdOverride.empty() ? nodeId : testCase.targetNodeIdOverride;
         PostFileModificationDateJob testJob(_driveDbId, targetId, testCase.timestampToPost);
-        const auto exitInfo = testJob.runSynchronously();
-        if (testCase.expectSuccess) {
-            CPPUNIT_ASSERT_MESSAGE(toString(exitInfo), exitInfo);
-        } else {
-            CPPUNIT_ASSERT_MESSAGE(toString(exitInfo), !exitInfo);
-        }
+        exitInfo = testJob.runSynchronously();
+        CPPUNIT_ASSERT_MESSAGE(toString(exitInfo), exitInfo == testCase.expectSuccess);
 
         // Verify the modification date on the server.
         GetFileInfoJob verifyJob(_driveDbId, nodeId);
