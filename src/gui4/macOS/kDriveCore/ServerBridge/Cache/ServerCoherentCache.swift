@@ -480,7 +480,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         try await AccountJobs().accountInfoList()
         try await DriveJobs().driveInfoList()
         try await SyncJobs().availableSync()
-        try await ErrorInfoListJob().errorInfoList()
+        try await ErrorJobs().errorInfoList()
     }
 
     public func clearAndRefresh() async throws {
