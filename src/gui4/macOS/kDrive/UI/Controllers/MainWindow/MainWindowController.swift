@@ -20,7 +20,9 @@ import Cocoa
 import Combine
 import InfomaniakDI
 import kDriveCore
+import kDriveCoreUI
 import OrderedCollections
+import SwiftUI
 
 final class MainWindowController: NSWindowController {
     enum WindowConstants {
@@ -167,6 +169,13 @@ final class MainWindowController: NSWindowController {
 
         return true
         #endif
+    }
+
+    // MARK: - Search
+
+    @objc func showSearchSheet() {
+        guard let mainViewController = viewController as? MainViewController else { return }
+        mainViewController.showSearchSheet()
     }
 }
 

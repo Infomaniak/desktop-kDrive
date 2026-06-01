@@ -69,7 +69,7 @@ struct FolderFoldersSelectionSection: View {
                     .foregroundStyle(ColorToken.Text.tertiary.asColor)
                 }
 
-                Text(KDriveLocalizable.onboardingAdvancedSettingsDriveExclusionTip)
+                Text(KDriveLocalizable.selectFoldersToSyncDescription)
                     .font(.Tokens.subheadline)
                     .foregroundStyle(ColorToken.Text.tertiary.asColor)
             }

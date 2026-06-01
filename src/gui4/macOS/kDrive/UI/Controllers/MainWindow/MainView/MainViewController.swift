@@ -32,6 +32,10 @@ extension NSToolbarItem.Identifier {
     static let pauseResumeButton = NSToolbarItem.Identifier("PauseResumeButton")
 }
 
+private extension UInt16 {
+    static let escapeKeyCode: UInt16 = 53
+}
+
 final class MainViewController: IKSplitViewController {
     @LazyInjectService private var router: MainViewRouter
     @LazyInjectService private var synchroStateObserver: UISynchroStateObserving
@@ -39,6 +43,8 @@ final class MainViewController: IKSplitViewController {
     private let viewModel = MainViewModel()
 
     private var bindStore = Set<AnyCancellable>()
+
+    private var sheetClickMonitor: Any?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -56,6 +62,10 @@ final class MainViewController: IKSplitViewController {
         Task {
             try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])
         }
+    }
+
+    deinit {
+        unregisterSheetClickMonitor()
     }
 
     private func bindViewModel() {
@@ -226,8 +236,8 @@ extension MainViewController {
         let searchButton = NSToolbarItem(itemIdentifier: .init("SearchButton"))
         searchButton.image = KDriveResources.magnifyingGlass.image
         searchButton.label = KDriveLocalizable.buttonSearch
-        searchButton.target = nil
-        searchButton.action = nil
+        searchButton.target = self
+        searchButton.action = #selector(showSearchSheet)
 
         let group = NSToolbarItemGroup(itemIdentifier: .searchGroup)
         group.subitems = [searchButton]
@@ -238,6 +248,55 @@ extension MainViewController {
 
     @objc private func openHelpURL() {
         NSWorkspace.shared.open(URLConstants.help)
+    }
+
+    @objc func showSearchSheet() {
+        guard let synchroContext = viewModel.currentSynchroContext else { return }
+        let syncDbId = Int32(synchroContext.synchro.dbId)
+        let driveId = synchroContext.drive.driveId
+
+        let searchViewModel = SearchViewModel(
+            syncDbId: syncDbId,
+            driveId: driveId,
+            synchroLocalPath: synchroContext.synchro.localPath
+        )
+        let searchSheetView = SearchSheetView(viewModel: searchViewModel)
+        let hostingController = NSHostingController(rootView: searchSheetView)
+        presentAsSheet(hostingController)
+
+        unregisterSheetClickMonitor()
+        sheetClickMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .keyDown]) { [weak self] event in
+            guard let self,
+                  let sheetWindow = presentedViewControllers?.first?.view.window
+            else {
+                return event
+            }
+
+            if event.type == .keyDown && event.keyCode == .escapeKeyCode {
+                dismissSearchSheet()
+                return nil
+            }
+
+            if event.type == .leftMouseDown, let eventWindow = event.window, eventWindow != sheetWindow {
+                dismissSearchSheet()
+                return nil
+            }
+
+            return event
+        }
+    }
+
+    private func unregisterSheetClickMonitor() {
+        if let sheetClickMonitor {
+            NSEvent.removeMonitor(sheetClickMonitor)
+        }
+        sheetClickMonitor = nil
+    }
+
+    private func dismissSearchSheet() {
+        unregisterSheetClickMonitor()
+        guard let presentedViewController = presentedViewControllers?.first else { return }
+        dismiss(presentedViewController)
     }
 
     @objc private func togglePauseResume() {

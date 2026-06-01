@@ -18,8 +18,15 @@ public enum KDriveLocalizable {
   public static let accessibilityActivityTypePicker = KDriveLocalizable.tr("Localizable", "accessibilityActivityTypePicker", fallback: "Visible activities")
   /// loco:69a6d9dd08a75d40410b53f6
   public static let accessibilityBetaProgramPicker = KDriveLocalizable.tr("Localizable", "accessibilityBetaProgramPicker", fallback: "Choosing a distribution channel")
-  /// loco:69e1dcc78d162264ae0f2f52
-  public static let accessibilityMoreInformation = KDriveLocalizable.tr("Localizable", "accessibilityMoreInformation", fallback: "Show more information")
+  /// loco:69fa0b22dbdab357240dcb12
+  ///  * VoiceOver reads this when the user focuses the X button that clears the search field
+  public static let accessibilitySearchClear = KDriveLocalizable.tr("Localizable", "accessibilitySearchClear", fallback: "Clear search")
+  /// loco:69fa0b2455ed5e00570ecf12
+  ///  * VoiceOver reads this when placeholder skeleton rows are shown during search
+  public static let accessibilitySearching = KDriveLocalizable.tr("Localizable", "accessibilitySearching", fallback: "Searching…")
+  /// loco:69fa0b2668d2d58f030a2422
+  ///  * VoiceOver reads this when the search sheet opens so the user knows what modal they entered
+  public static let accessibilitySearchSheetLabel = KDriveLocalizable.tr("Localizable", "accessibilitySearchSheetLabel", fallback: "Search your files")
   /// loco:69b275fb3440db13f0011c03
   public static let accessibilitySelectSynchroMode = KDriveLocalizable.tr("Localizable", "accessibilitySelectSynchroMode", fallback: "Select a synchronization mode")
   /// loco:6981cb92c70239c9ed0d45a3
@@ -54,8 +61,6 @@ public enum KDriveLocalizable {
   public static let betaProgramDescription = KDriveLocalizable.tr("Localizable", "betaProgramDescription", fallback: "Get early access to new versions of the application before they are released to the general public and help improve the app by sharing your ideas for enhancements with us.")
   /// loco:69a6d9b44d26dc09aa0d0643
   public static let betaProgramTitle = KDriveLocalizable.tr("Localizable", "betaProgramTitle", fallback: "Join the beta program")
-  /// loco:698af16617408ac0d8026b12
-  public static let betaSettings = KDriveLocalizable.tr("Localizable", "betaSettings", fallback: "Beta program")
   /// loco:696a483470f3b70399021c12
   public static let buttonAddStorage = KDriveLocalizable.tr("Localizable", "buttonAddStorage", fallback: "Add Storage")
   /// loco:691deb2291b20ac7fd045012
@@ -86,6 +91,12 @@ public enum KDriveLocalizable {
   public static let buttonFinishInstallation = KDriveLocalizable.tr("Localizable", "buttonFinishInstallation", fallback: "Finish installation")
   /// loco:698052d464e4b53cef0e9272
   public static let buttonFixErrors = KDriveLocalizable.tr("Localizable", "buttonFixErrors", fallback: "Fix errors")
+  /// loco:698b37a3ff1c8782250e1a74
+  public static let extendedLogDescription = KDriveLocalizable.tr("Localizable", "extendedLogDescription", fallback: "Enables collection of additional information useful for support.")
+  /// loco:698b3778571c7248480ed4c2
+  public static let extendedLogSetting = KDriveLocalizable.tr("Localizable", "extendedLogSetting", fallback: "Extended detailed log")
+  /// loco:698b37efff1c8782250e1a76
+  public static let extendedLogWarning = KDriveLocalizable.tr("Localizable", "extendedLogWarning", fallback: "When this option is enabled, kDrive runs more slowly.")
   /// loco:6992eabc63e4de22f10535b2
   public static let buttonHelpdesk = KDriveLocalizable.tr("Localizable", "buttonHelpdesk", fallback: "Support")
   /// loco:69304d546385bb9cfc03e524
@@ -160,14 +171,10 @@ public enum KDriveLocalizable {
   public static let dataManagementDescription = KDriveLocalizable.tr("Localizable", "dataManagementDescription", fallback: "You can customize the usage and operational data collected by Infomaniak to fix bugs and improve the application. Both tools used are hosted and managed exclusively by us.\n\nThe source code of this application can be verified, the information collected is anonymous and your personal information remains strictly confidential and is never shared with third parties.")
   /// loco:698b15ec9e0aad20280f8c02
   public static let dataManagementSettings = KDriveLocalizable.tr("Localizable", "dataManagementSettings", fallback: "Data management")
-  /// loco:698b3a87553e334c1009a7e4
-  public static let debugLevelDescription = KDriveLocalizable.tr("Localizable", "debugLevelDescription", fallback: "Select the amount of information to log.")
-  /// loco:698b3a4d553e334c1009a7e2
-  public static let debugLevelSetting = KDriveLocalizable.tr("Localizable", "debugLevelSetting", fallback: "Debug level")
-  /// loco:698b35cccaddc9598c08a6c2
-  public static let debugLogsDescription = KDriveLocalizable.tr("Localizable", "debugLogsDescription", fallback: "Allows Infomaniak support to identify the cause of an incident.")
   /// loco:698b164a5f781b3d5203de12
   public static let dataManagementSubtitle = KDriveLocalizable.tr("Localizable", "dataManagementSubtitle", fallback: "Infomaniak respects your privacy")
+  /// loco:698b35cccaddc9598c08a6c2
+  public static let debugLogsDescription = KDriveLocalizable.tr("Localizable", "debugLogsDescription", fallback: "Allows Infomaniak support to identify the cause of an incident.")
   /// loco:698b35a408fd1ee25f08ab35
   public static let debugLogsSettings = KDriveLocalizable.tr("Localizable", "debugLogsSettings", fallback: "Debug logs")
   /// loco:698c6bbd94b70c0d3d09cde4
@@ -206,6 +213,10 @@ public enum KDriveLocalizable {
   public static let driveWakingUpErrorDescription = KDriveLocalizable.tr("Localizable", "driveWakingUpErrorDescription", fallback: "kDrive is waking up… this may take a few moments.")
   /// loco:6979e389195e90fdc909d252
   public static let driveWakingUpErrorTitle = KDriveLocalizable.tr("Localizable", "driveWakingUpErrorTitle", fallback: "kDrive waking up")
+  /// loco:698b3a87553e334c1009a7e4
+  public static let debugLevelDescription = KDriveLocalizable.tr("Localizable", "debugLevelDescription", fallback: "Select the amount of information to log.")
+  /// loco:698b3a4d553e334c1009a7e2
+  public static let debugLevelSetting = KDriveLocalizable.tr("Localizable", "debugLevelSetting", fallback: "Debug level")
   /// loco:698b3654af04fbae590cbf82
   public static let enableDebugLogDescription = KDriveLocalizable.tr("Localizable", "enableDebugLogDescription", fallback: "Record diagnostic information on my computer.")
   /// loco:698b361c54ac23ef050755a2
@@ -218,12 +229,6 @@ public enum KDriveLocalizable {
   public static let errorStartingInstaller = KDriveLocalizable.tr("Localizable", "errorStartingInstaller", fallback: "Error while trying to start the installer")
   /// loco:69b3e9128555b02b5001ee42
   public static let errorWhileChangingSynchroMode = KDriveLocalizable.tr("Localizable", "errorWhileChangingSynchroMode", fallback: "Error while changing the mode of synchronization")
-  /// loco:698b37a3ff1c8782250e1a74
-  public static let extendedLogDescription = KDriveLocalizable.tr("Localizable", "extendedLogDescription", fallback: "Enables collection of additional information useful for support.")
-  /// loco:698b3778571c7248480ed4c2
-  public static let extendedLogSetting = KDriveLocalizable.tr("Localizable", "extendedLogSetting", fallback: "Extended detailed log")
-  /// loco:698b37efff1c8782250e1a76
-  public static let extendedLogWarning = KDriveLocalizable.tr("Localizable", "extendedLogWarning", fallback: "When this option is enabled, kDrive runs more slowly.")
   /// loco:6992ec7abaf88a24990d3e13
   public static let feedbackSetting = KDriveLocalizable.tr("Localizable", "feedbackSetting", fallback: "Help us improve kDrive")
   /// loco:69a560c0ef88a6b6b00e49a4
@@ -330,9 +335,6 @@ public enum KDriveLocalizable {
   public static let logLevelDebug = KDriveLocalizable.tr("Localizable", "logLevelDebug", fallback: "Debug")
   /// loco:698b3972f0be39d922008ec3
   public static let logLevelError = KDriveLocalizable.tr("Localizable", "logLevelError", fallback: "Error")
-  /// loco:698b391e693b9b942d0006a2
-  ///  * Extended log level option in the debug level dropdown in advanced settings.
-  public static let logLevelExtended = KDriveLocalizable.tr("Localizable", "logLevelExtended", fallback: "Extended")
   /// loco:698b3982f6e48fd003019f52
   public static let logLevelFatal = KDriveLocalizable.tr("Localizable", "logLevelFatal", fallback: "Fatal")
   /// loco:698b393d2a881def5c0fe142
@@ -353,6 +355,8 @@ public enum KDriveLocalizable {
   public static let networkSettings = KDriveLocalizable.tr("Localizable", "networkSettings", fallback: "Network")
   /// loco:6992de465798e1839302bbc2
   public static let noAccountConnected = KDriveLocalizable.tr("Localizable", "noAccountConnected", fallback: "Add an account to get started")
+  /// loco:6989f957dd64bb04d70f39a2
+  public static let noResultsFound = KDriveLocalizable.tr("Localizable", "noResultsFound", fallback: "No results found")
   /// loco:698b10ad0c20e31c9c00a5c2
   public static let notificationsDisabledAlways = KDriveLocalizable.tr("Localizable", "notificationsDisabledAlways", fallback: "Always")
   /// loco:698b1086dc2a328c000cfd92
@@ -365,8 +369,6 @@ public enum KDriveLocalizable {
   public static let onboardingAdvancedSettingsDriveCustomizeLocationTip = KDriveLocalizable.tr("Localizable", "onboardingAdvancedSettingsDriveCustomizeLocationTip", fallback: "The selected folder must be empty for synchronization to work correctly.")
   /// loco:698c5c378bdea123d60afff7
   public static let onboardingAdvancedSettingsDriveExclusionDescription = KDriveLocalizable.tr("Localizable", "onboardingAdvancedSettingsDriveExclusionDescription", fallback: "Choose the folders to synchronize on this computer:")
-  /// loco:698c5d476258b6cb2e047e2a
-  public static let onboardingAdvancedSettingsDriveExclusionTip = KDriveLocalizable.tr("Localizable", "onboardingAdvancedSettingsDriveExclusionTip", fallback: "Unselected folders will remain accessible online.")
   /// loco:698c62f8bde3b880ce05ea53
   public static let onboardingAdvancedSettingsDriveSelectionDescription = KDriveLocalizable.tr("Localizable", "onboardingAdvancedSettingsDriveSelectionDescription", fallback: "For each kDrive, you can choose where it is synced on your computer and which folders to synchronize.")
   /// loco:698c5f7af0e0abf8b4088952
@@ -413,8 +415,8 @@ public enum KDriveLocalizable {
   public static let onboardingLoginHintLoading = KDriveLocalizable.tr("Localizable", "onboardingLoginHintLoading", fallback: "Just a few more moments, and we’ll load your account…")
   /// loco:691deb477145f10ab4052cd4
   public static let onboardingLoginHintWebAuth = KDriveLocalizable.tr("Localizable", "onboardingLoginHintWebAuth", fallback: "Login from your browser…")
-  /// loco:68e673754d80559c460bdf02
-  public static let onboardingLoginTitle = KDriveLocalizable.tr("Localizable", "onboardingLoginTitle", fallback: "Welcome to kDrive!")
+  /// loco:68e8fa27d09187683c0679b2
+  public static let onboardingLoginTitle = KDriveLocalizable.tr("Localizable", "onboardingLoginTitle", fallback: "Welcome to kDrive")
   /// loco:6931a1769dc60cb1820f5fe3
   public static let onboardingSynchronizationAppReadyDescription = KDriveLocalizable.tr("Localizable", "onboardingSynchronizationAppReadyDescription", fallback: "Your files are ready to be securely synchronized on your computer.")
   /// loco:6931a16c3498d5205b0380d3
@@ -452,6 +454,17 @@ public enum KDriveLocalizable {
   public static let releaseChannelBeta = KDriveLocalizable.tr("Localizable", "releaseChannelBeta", fallback: "Beta")
   /// loco:698af24c3d21055870072b12
   public static let releaseChannelInternal = KDriveLocalizable.tr("Localizable", "releaseChannelInternal", fallback: "Internal")
+  /// loco:69eb8137c1ea8e116a0ba282
+  ///  * Search field placeholder in SearchSheetView.
+  public static let searchPlaceholder = KDriveLocalizable.tr("Localizable", "searchPlaceholder", fallback: "Search...")
+  /// loco:69eb8290d3fa21c4fb096d82
+  ///  * Tooltip shown on search results when file is not available locally and will open in browser.
+  public static let searchResultOpenInBrowserTooltip = KDriveLocalizable.tr("Localizable", "searchResultOpenInBrowserTooltip", fallback: "This file is not available locally and will be opened in your browser")
+  /// loco:69eb8061e9130678990a5972
+  ///  * Empty search state title in SearchSheetView before any query is entered.
+  public static let searchYourFiles = KDriveLocalizable.tr("Localizable", "searchYourFiles", fallback: "Search your files")
+  /// loco:698b07172a4fff6e66027c94
+  public static let selectFoldersToSyncDescription = KDriveLocalizable.tr("Localizable", "selectFoldersToSyncDescription", fallback: "Unselected folders will not be downloaded to your device. They will remain available online and will not be deleted.")
   /// loco:698b02a302385f4ff103bd62
   public static let sendLastSessionOnly = KDriveLocalizable.tr("Localizable", "sendLastSessionOnly", fallback: "Send last session only")
   /// loco:698b2df25c57be025b0ecfd2
@@ -550,6 +563,12 @@ public enum KDriveLocalizable {
   public static let tabTitleHome = KDriveLocalizable.tr("Localizable", "tabTitleHome", fallback: "Home")
   /// loco:68a70c659c53feed83039c42
   public static let tabTitleStorage = KDriveLocalizable.tr("Localizable", "tabTitleStorage", fallback: "Storage")
+  /// loco:69eb7b41376492d2de0d0242
+  ///  * Empty search state subtitle when no result matches the user query in SearchSheetView.
+  public static let tryDifferentSearchTerm = KDriveLocalizable.tr("Localizable", "tryDifferentSearchTerm", fallback: "Try a different search term")
+  /// loco:69eb809ce1364c763a050862
+  ///  * Empty search state subtitle in SearchSheetView before the user enters a query.
+  public static let typeToStartSearching = KDriveLocalizable.tr("Localizable", "typeToStartSearching", fallback: "Type to start searching")
   /// loco:6981e8f0b024a7b4e00f7262
   public static let unavailableContentNoActivityDescription = KDriveLocalizable.tr("Localizable", "unavailableContentNoActivityDescription", fallback: "Your files are accessible and synchronized.")
   /// loco:6981e8f0f994e5f7bc040692

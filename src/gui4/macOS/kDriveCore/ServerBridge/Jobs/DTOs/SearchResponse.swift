@@ -20,15 +20,15 @@ import CppInterop
 import Foundation
 
 struct SearchInfoList: Codable, Sendable {
-    let searchInfoList: [FileResponse]
+    let searchInfoList: [SearchResponse]
 }
 
-public struct FileResponse: Codable, Sendable {
-    @Base64CodedString var id: String
-    @Base64CodedString var name: String
-    let type: KDC.NodeType
-    @Base64CodedString var path: String
-    let modifiedTime: Int64
-    let size: Int64
-    let isAvailableLocally: Bool
+public struct SearchResponse: Codable, Sendable {
+    @Base64CodedString public var id: String
+    @Base64CodedString public var name: String
+    public let type: KDC.NodeType
+    @Base64CodedString public var path: String
+    public let modifiedTime: Int64
+    public let size: Int64
+    public let isAvailableLocally: Bool
 }

@@ -4,7 +4,7 @@
  * Locale: fr, French
  * Tagged: macOS
  * Exported by: Killian Mathias
- * Exported at: Thu, 23 Apr 2026 14:56:15 +0200
+ * Exported at: Tue, 14 Apr 2026 11:05:52 +0200
  */
 
 
@@ -20,8 +20,17 @@
 /* loco:69a6d9dd08a75d40410b53f6 */
 "accessibilityBetaProgramPicker" = "Choisir le canal de distribution";
 
-/* loco:69e1dcc78d162264ae0f2f52 */
-"accessibilityMoreInformation" = "Voir plus d’informations";
+/* loco:69fa0b22dbdab357240dcb12
+ * VoiceOver reads this when the user focuses the X button that clears the search field */
+"accessibilitySearchClear" = "Effacer la recherche";
+
+/* loco:69fa0b2668d2d58f030a2422
+ * VoiceOver reads this when the search sheet opens so the user knows what modal they entered */
+"accessibilitySearchSheetLabel" = "Rechercher vos fichiers";
+
+/* loco:69fa0b2455ed5e00570ecf12
+ * VoiceOver reads this when placeholder skeleton rows are shown during search */
+"accessibilitySearching" = "Recherche en cours…";
 
 /* loco:69b275fb3440db13f0011c03 */
 "accessibilitySelectSynchroMode" = "Sélectionner un mode de synchronisation";
@@ -109,9 +118,6 @@
 /* loco:69a6d9b44d26dc09aa0d0643 */
 "betaProgramTitle" = "Rejoindre le programme bêta";
 
-/* loco:698af16617408ac0d8026b12 */
-"betaSettings" = "Programme bêta";
-
 /* loco:696a483470f3b70399021c12 */
 "buttonAddStorage" = "Ajouter du stockage";
 
@@ -141,7 +147,6 @@
 
 /* loco:68e673c48af12c42e80027c8 */
 "buttonCreateAccount" = "Créer un compte";
-
 
 /* loco:698b14e52445668d9d0495a2 */
 "buttonDisconnectAccount" = "Déconnecter ce compte";
@@ -177,7 +182,6 @@
 
 /* loco:697a2658a44fbad34f011962 */
 "buttonManage" = "Gérer";
-
 /* loco:698b3ab789def0ffdd073952 */
 "buttonOpenDebugFolder" = "Ouvrir le dossier de débogage";
 
@@ -201,6 +205,7 @@
 
 /* loco:698b07467beec481020cef52 */
 "buttonRemoveSync" = "Supprimer la synchronisation";
+
 /* loco:6964e1fd78f375ec03073c88 */
 "buttonRestartSynchro" = "Redémarrer la synchronisation";
 
@@ -218,7 +223,6 @@
 
 /* loco:6964e1dfed4b6acb0107409a */
 "buttonSeeActivities" = "Voir les activités";
-
 
 /* loco:698c5cb5f86b52c6fc001fc4 */
 "buttonSelectFolders" = "Sélectionner les dossiers";
@@ -240,6 +244,7 @@
 
 /* loco:69a7ecff1619fbbe5a0c75b3 */
 "buttonStart" = "Démarrage";
+
 /* loco:69240f6d4433e24658054fd4 */
 "buttonStartForFree" = "Commencer gratuitement";
 
@@ -251,6 +256,7 @@
 
 /* loco:69a69d71b2261fc281078712 */
 "buttonValidate" = "Valider";
+
 /* loco:697b65886840f9d35605a132 */
 "buttonWakeUp" = "Réveil";
 
@@ -266,8 +272,11 @@
 /* loco:698b15ec9e0aad20280f8c02 */
 "dataManagementSettings" = "Gestion des données";
 
+/* loco:698b164a5f781b3d5203de12 */
+"dataManagementSubtitle" = "Infomaniak respecte votre vie privée";
+
 /* loco:698b3a87553e334c1009a7e4 */
-"debugLevelDescription" = "Sélectionner la quantité d’informations enregistrées.";
+"debugLevelDescription" = "Sélectionner la quantité d'informations enregistrées.";
 
 /* loco:698b3a4d553e334c1009a7e2 */
 "debugLevelSetting" = "Niveau de débogage";
@@ -275,11 +284,8 @@
 /* loco:698b35cccaddc9598c08a6c2 */
 "debugLogsDescription" = "Permettent au support Infomaniak d’identifier l’origine d’un incident.";
 
-/* loco:698b164a5f781b3d5203de12 */
-"dataManagementSubtitle" = "Infomaniak respecte votre vie privée";
 /* loco:698b35a408fd1ee25f08ab35 */
 "debugLogsSettings" = "Journaux de débogage";
-
 
 /* loco:698c6bbd94b70c0d3d09cde4 */
 "dialogRemoveAccountContent" = "Vous allez déconnecter %@ de l’application.\n\nLe dossier de synchronisation restera sur votre ordinateur, mais ne sera plus synchronisé avec kDrive.\n\nToutes vos données resteront accessibles en ligne sur kDrive.";
@@ -343,6 +349,7 @@
 
 /* loco:69aa7fb3753c400c81087842 */
 "errorDeletingAccount" = "Une erreur s'est produite lors de la suppression de votre compte.";
+
 /* loco:69afcc9e14a34ba0f30ee2a2 */
 "errorStartingInstaller" = "Erreur lors du démarrage du programme d'installation";
 
@@ -350,7 +357,7 @@
 "errorWhileChangingSynchroMode" = "Erreur lors du changement de mode de synchronisation";
 
 /* loco:698b37a3ff1c8782250e1a74 */
-"extendedLogDescription" = "Active la collecte d’informations supplémentaires utiles au support.";
+"extendedLogDescription" = "Active la collecte d'informations supplémentaires utiles au support.";
 
 /* loco:698b3778571c7248480ed4c2 */
 "extendedLogSetting" = "Journal détaillé étendu";
@@ -460,16 +467,11 @@
 /* loco:6989fec57ca0d7305008b1e2 */
 "labelName" = "Nom";
 
-
-
-
 /* loco:698b5869ab41083f11042b52 */
 "labelNotifications" = "Notification";
 
 /* loco:69a6e4aceff2d992ad059324 */
 "labelOff" = "Désactivé";
-
-
 
 /* loco:698b2f6aae1ca9d0290ad174 */
 "labelSameAsSystem" = "Identique au système";
@@ -499,22 +501,16 @@
 "languageSetting" = "Langue";
 
 /* loco:698b02fbc4b83479960bbf92 */
-"largeFolderRecommendation" = "Le dossier complet est volumineux.\nPour accélérer l’envoi, nous vous recommandons de n’envoyer que la dernière session kDrive.";
+"largeFolderRecommendation" = "Le dossier complet est volumineux.\nPour accélérer l'envoi, nous vous recommandons de n'envoyer que la dernière session kDrive.";
 
 /* loco:698a1276e1c66ed33b03bf32 */
 "linkCopiedToClipboardTitle" = "Lien copié dans le presse-papiers";
 
-/* loco:698b2e50ea6bcf51bf026fc2 */
-"matomoDescription" = "Matomo est un outil d’analyse hébergé et géré exclusivement par Infomaniak pour comprendre comment l’application est utilisée.\n\nL’étude de ces données permet à notre équipe d’améliorer en continu l’interface de l’application.";
 /* loco:698b392cacfe189ede0cf082 */
 "logLevelDebug" = "Débogage";
 
 /* loco:698b3972f0be39d922008ec3 */
 "logLevelError" = "Erreur";
-
-/* loco:698b391e693b9b942d0006a2
- * Extended log level option in the debug level dropdown in advanced settings. */
-"logLevelExtended" = "Étendu";
 
 /* loco:698b3982f6e48fd003019f52 */
 "logLevelFatal" = "Critique";
@@ -528,6 +524,9 @@
 /* loco:6989f263fe556601b70fe7a2 */
 "logUploadPopupTitle" = "Envoyer le dossier de débogage au support Infomaniak";
 
+/* loco:698b2e50ea6bcf51bf026fc2 */
+"matomoDescription" = "Matomo est un outil d’analyse hébergé et géré exclusivement par Infomaniak pour comprendre comment l’application est utilisée.\n\nL’étude de ces données permet à notre équipe d’améliorer en continu l’interface de l’application.";
+
 /* loco:698b11f969e305d1ce01e062 */
 "moveDeletedFilesToRecycleBinSetting" = "Déplacer les fichiers supprimés vers la corbeille de l’ordinateur";
 
@@ -538,10 +537,13 @@
 "needHelpSetting" = "Besoin d’aide ?";
 
 /* loco:69ce15f8ac7c0ee6d7099c02 */
-"networkSettings" = "Réseau";
+"networkSettings" = "Network";
 
 /* loco:6992de465798e1839302bbc2 */
 "noAccountConnected" = "Ajoutez un compte pour commencer";
+
+/* loco:6989f957dd64bb04d70f39a2 */
+"noResultsFound" = "Aucun résultat trouvé";
 
 /* loco:698b0aaddee0bf9fb206a694 */
 "notSyncedDrive" = "Non synchronisé";
@@ -563,9 +565,6 @@
 
 /* loco:698c5c378bdea123d60afff7 */
 "onboardingAdvancedSettingsDriveExclusionDescription" = "Choisissez les dossiers à synchroniser sur cet ordinateur :";
-
-/* loco:698c5d476258b6cb2e047e2a */
-"onboardingAdvancedSettingsDriveExclusionTip" = "Les dossiers non sélectionnés resteront accessibles en ligne.";
 
 /* loco:698c62f8bde3b880ce05ea53 */
 "onboardingAdvancedSettingsDriveSelectionDescription" = "Pour chaque kDrive, vous pouvez choisir l’endroit où il est synchronisé sur votre ordinateur et les dossiers à synchroniser.";
@@ -621,8 +620,8 @@
 /* loco:691deb477145f10ab4052cd4 */
 "onboardingLoginHintWebAuth" = "Connexion depuis votre navigateur…";
 
-/* loco:68e673754d80559c460bdf02 */
-"onboardingLoginTitle" = "Bienvenue dans kDrive !";
+/* loco:68e8fa27d09187683c0679b2 */
+"onboardingLoginTitle" = "Bienvenue dans kDrive";
 
 /* loco:6931a1769dc60cb1820f5fe3 */
 "onboardingSynchronizationAppReadyDescription" = "Vos fichiers sont prêts à être synchronisés en toute sécurité sur votre ordinateur.";
@@ -671,17 +670,34 @@
 "proxyTypeNone" = "Aucun";
 
 /* loco:698b34ab7ad01ee67e0d5f94 */
-"proxyUser" = "Nom d’utilisateur";
+"proxyUser" = "Nom d'utilisateur";
 
 /* loco:698af22fb4f7b3f2640d1493 */
 "releaseChannelBeta" = "Bêta";
 
 /* loco:698af24c3d21055870072b12 */
 "releaseChannelInternal" = "Interne";
-/* loco:698b2df25c57be025b0ecfd2 */
-"sentryDescription" = "Sentry est un outil hébergé et géré exclusivement par Infomaniak pour surveiller en temps réel la stabilité de l’application et signaler automatiquement d’éventuelles erreurs techniques à nos développeurs.\n\nCes données permettent à notre équipe de rapidement corriger et optimiser l’application, ce qui se traduit par une meilleure expérience d’utilisation pour vous.";
+
+/* loco:69eb8137c1ea8e116a0ba282
+ * Search field placeholder in SearchSheetView. */
+"searchPlaceholder" = "Rechercher…";
+
+/* loco:69eb8290d3fa21c4fb096d82
+ * Tooltip shown on search results when file is not available locally and will open in browser. */
+"searchResultOpenInBrowserTooltip" = "Ce fichier n'est pas disponible localement et sera ouvert dans votre navigateur";
+
+/* loco:69eb8061e9130678990a5972
+ * Empty search state title in SearchSheetView before any query is entered. */
+"searchYourFiles" = "Rechercher vos fichiers";
+
+/* loco:698b07172a4fff6e66027c94 */
+"selectFoldersToSyncDescription" = "Les dossiers non sélectionnés ne seront pas téléchargés sur votre appareil. Ils resteront disponibles en ligne et ne seront pas supprimés.";
+
 /* loco:698b02a302385f4ff103bd62 */
 "sendLastSessionOnly" = "Envoyer uniquement la dernière session";
+
+/* loco:698b2df25c57be025b0ecfd2 */
+"sentryDescription" = "Sentry est un outil hébergé et géré exclusivement par Infomaniak pour surveiller en temps réel la stabilité de l’application et signaler automatiquement d’éventuelles erreurs techniques à nos développeurs.\n\nCes données permettent à notre équipe de rapidement corriger et optimiser l’application, ce qui se traduit par une meilleure expérience d’utilisation pour vous.";
 
 /* loco:68cd386502633dee14000352 */
 "sidebarItemAccounts" = "Comptes";
@@ -823,6 +839,14 @@
 
 /* loco:68a70c659c53feed83039c42 */
 "tabTitleStorage" = "Stockage";
+
+/* loco:69eb7b41376492d2de0d0242
+ * Empty search state subtitle when no result matches the user query in SearchSheetView. */
+"tryDifferentSearchTerm" = "Essayez un terme de recherche différent";
+
+/* loco:69eb809ce1364c763a050862
+ * Empty search state subtitle in SearchSheetView before the user enters a query. */
+"typeToStartSearching" = "Tapez pour commencer la recherche";
 
 /* loco:6981e8f0b024a7b4e00f7262 */
 "unavailableContentNoActivityDescription" = "Vos fichiers sont accessibles et synchronisés.";
