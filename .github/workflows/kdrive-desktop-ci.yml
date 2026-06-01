@@ -37,11 +37,11 @@ jobs:
           submodules: recursive
       - name: Build Windows
         uses: ./.github/actions/build_windows
-        with:  
+        with:
           debug_cert: ${{ secrets.WINDOWS_DEBUG_CERT_FILE_B64 }}
           debug_cert_pass: ${{ secrets.WINDOWS_DEBUG_CERT_PASSWORD }}
           debug_cert_thumbprint: ${{ secrets.WINDOWS_DEBUG_CERT_THUMBPRINT }}
-    
+
   build-Linux:
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
     steps:
@@ -109,7 +109,7 @@ jobs:
         uses: ./.github/actions/test_linux
         with:
           test_name: ${{ matrix.test_name }}
-          test_dependencies_version: linux_v4.2 # Non-default cache entry used to rely on Qt 6.8.3 instead of the default 6.2.3. # ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+          test_dependencies_version: linux_v4.3 # Non-default cache entry used to rely on Qt 6.8.3 instead of the default 6.2.3. # ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
   # Tests macOS
   Test-macOS:
