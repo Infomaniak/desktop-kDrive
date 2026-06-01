@@ -70,7 +70,8 @@ class QtConan(ConanFile):
         if self.settings.os == "Macos":
             return self._resolve_installer_name_from_index(r"^qt-online-installer-macOS-.*\.dmg$")
         if self.settings.os == "Linux":
-            return self._resolve_installer_name_from_index(rf"^qt-online-installer-linux-{self._get_linux_arch()}-online\.run$")
+            return self._resolve_installer_name_from_index(
+                rf"^qt-online-installer-linux-{self._get_linux_arch()}-online\.run$")
         if self.settings.os == "Windows":
             return self._resolve_installer_name_from_index(r"^qt-online-installer-windows-x64-online\.exe$")
         raise ConanInvalidConfiguration(f"Unsupported OS for Qt installation: {self.settings.os}")
@@ -191,10 +192,12 @@ class QtConan(ConanFile):
         else:
             modules.append(f"qt.qt{major}.{compact}.qt5compat")
             if self.options.debug_symbols:
-                modules.append(f"qt.qt{major}.{compact}.debug_info") # Qt Debug Information Files
+                modules.append(f"qt.qt{major}.{compact}.debug_info")  # Qt Debug Information Files
 
         if self.settings.os == "Linux":
             modules.append(f"qt.qt{major}.{compact}.addons.qtserialport")
+            if version == "6.11.1":
+                modules.append(f"qt.qt{major}.{compact}.addons.qtlottie")
             modules.append("qt.tools.qtcreator_gui")
 
         # Add vcredist module if requested (Windows MSVC only)
@@ -272,7 +275,8 @@ class QtConan(ConanFile):
 
         valid_operating_systems = ["Macos", "Linux", "Windows"]
         if self.settings.os not in valid_operating_systems:
-            raise ConanInvalidConfiguration(f"Unsupported OS for Qt installation. Supported OS are: {', '.join(valid_operating_systems)}.")
+            raise ConanInvalidConfiguration(
+                f"Unsupported OS for Qt installation. Supported OS are: {', '.join(valid_operating_systems)}.")
 
         self._check_envvars_login_type(check_option=True, raise_error=True)
         self._check_credentials_login_type()
@@ -314,7 +318,7 @@ class QtConan(ConanFile):
             os.chmod(exec_path, 0o755)
             return exec_path
         if self.settings.os == "Windows":
-            return os.path.abspath(downloaded_file_name) # On Windows, we can run the installer directly
+            return os.path.abspath(downloaded_file_name)  # On Windows, we can run the installer directly
         if self.settings.os != "Macos":
             raise ConanInvalidConfiguration("Unsupported OS for Qt installation")
 
@@ -340,7 +344,8 @@ class QtConan(ConanFile):
             if not app_bundles:
                 raise ConanException("Failed to find app folder for DMG file")
             if len(app_bundles) > 1:
-                raise ConanException(f"Found multiple app bundles in the DMG file: {', '.join(app_bundles)}. Please ensure there is only one app bundle in the DMG file.")
+                raise ConanException(
+                    f"Found multiple app bundles in the DMG file: {', '.join(app_bundles)}. Please ensure there is only one app bundle in the DMG file.")
             mounted_bundle = app_bundles[0]
 
             app_bundle = pjoin(self.build_folder, "qt-online-installer-macOS.app")
@@ -363,7 +368,8 @@ class QtConan(ConanFile):
                     self.output.warning(f"Failed to remove mount point: {e}")
 
         exec_folder = pjoin(app_bundle, "Contents", "MacOS")
-        exec_files = glob.glob(pjoin(exec_folder, "qt-online-installer-macOS*")) # Find the executable file in the MacOS folder of the app bundle.
+        exec_files = glob.glob(pjoin(exec_folder,
+                                     "qt-online-installer-macOS*"))  # Find the executable file in the MacOS folder of the app bundle.
         if not exec_files:
             raise ConanException("Failed to find executable for Qt installation")
 
@@ -397,10 +403,10 @@ class QtConan(ConanFile):
         mkdir(self, cache_path)
 
         args = [
-            "--confirm-command",        # Confirms starting of installation
-            "--accept-obligations",     # Accepts Qt Open Source usage obligations without user input
-            "--accept-licenses",        # Accepts all licenses without user input.
-            "--default-answer",         # Automatically answers to message queries with their default values.
+            "--confirm-command",  # Confirms starting of installation
+            "--accept-obligations",  # Accepts Qt Open Source usage obligations without user input
+            "--accept-licenses",  # Accepts all licenses without user input.
+            "--default-answer",  # Automatically answers to message queries with their default values.
             "--cache-path", cache_path  # Set cache path to build folder to avoid polluting system
         ]
 
@@ -433,7 +439,8 @@ class QtConan(ConanFile):
         except Exception as e:
             self.output.warning(f"Cleanup failed: {e}")
 
-        find_wrap_open_gl = pjoin(self.build_folder, "install", self.version, self._subfolder_install(), "lib", "cmake", "Qt6", "FindWrapOpenGL.cmake")
+        find_wrap_open_gl = pjoin(self.build_folder, "install", self.version, self._subfolder_install(), "lib", "cmake",
+                                  "Qt6", "FindWrapOpenGL.cmake")
         if os.path.exists(find_wrap_open_gl) and self.settings.os == "Macos":
             self.output.highlight("Patching Qt installation...")
             from conan.tools.files import replace_in_file
@@ -467,7 +474,6 @@ class QtConan(ConanFile):
             raise ConanException(f"Installer not found: {path}")
         if not os.access(path, os.X_OK):
             raise ConanException(f"The installer is not executable: {path}")
-
 
     def _subfolder_install(self):
         """
@@ -509,7 +515,7 @@ class QtConan(ConanFile):
                  src=pjoin(self.build_folder, "Tools", "QtCreator", "lib", "Qt", "lib"),
                  dst=pjoin(self.package_folder, "lib"),
                  keep_path=False
-            )
+                 )
         elif self.settings.os == "Windows":
             tools_folder = pjoin(self.package_folder, "tools")
             vcredist_folder = pjoin(tools_folder, "vcredist")
@@ -517,18 +523,16 @@ class QtConan(ConanFile):
             copy(self, "*",
                  pjoin(self.build_folder, "install", "Tools"),
                  tools_folder
-            )
+                 )
             copy(self, "vcredist_msvc*",
                  pjoin(self.build_folder, "install", "vcredist"),
                  vcredist_folder,
                  keep_path=False
-            )
-
+                 )
 
         # Save space by removing not needed folder (/!\ modules folder is needed by <os>deployqt from at least Qt 6.11.1)
         for folder in ("doc",):
             rmdir(self, pjoin(self.package_folder, folder))
-
 
     def package_info(self):
         """
@@ -538,7 +542,8 @@ class QtConan(ConanFile):
         We only specify the main CMake configuration file so that CMake can find the package.
         """
         self.cpp_info.set_property("cmake_file_name", "Qt6")
-        self.cpp_info.set_property("cmake_build_modules", [ pjoin(self.package_folder, "lib", "cmake", "Qt6", "Qt6Config.cmake") ])
+        self.cpp_info.set_property("cmake_build_modules",
+                                   [pjoin(self.package_folder, "lib", "cmake", "Qt6", "Qt6Config.cmake")])
         self.cpp_info.set_property("cmake_find_mode", "none")
 
         for env in (self.runenv_info, self.buildenv_info):
@@ -549,9 +554,8 @@ class QtConan(ConanFile):
             if self.settings.os in ("Macos", "Linux"):
                 env.prepend_path("PATH", pjoin(self.package_folder, "libexec"))
 
-
         self.cpp_info.includedirs = []
-        self.cpp_info.bindirs = [ "bin" ]
+        self.cpp_info.bindirs = ["bin"]
         if self.settings.os in ("Macos", "Linux"):
             self.cpp_info.bindirs.append("libexec")
 
