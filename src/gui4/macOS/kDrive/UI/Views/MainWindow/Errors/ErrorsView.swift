@@ -46,7 +46,7 @@ struct ErrorsView: View {
                 VStack(spacing: AppPadding.padding12) {
                     ErrorsHeaderView(synchroDbId: mainViewModel.currentSynchro?.dbId, errorsCount: errorsCount)
                         .padding([.horizontal, .top], AppPadding.page)
-                    ErrorsListView(errors: synchroErrors)
+                    ErrorsListView(errors: synchroErrors, isAdmin: mainViewModel.currentDrive?.isAdmin ?? false)
                 }
             }
         }

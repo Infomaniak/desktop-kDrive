@@ -37,15 +37,15 @@ extension SynchroError {
 }
 
 struct ErrorCellFactory {
-    func make(error: SynchroError, manager: SynchroErrorManager) -> some View {
-        guard let cell = generateCellForErrorKind(error, manager: manager) else {
+    func make(error: SynchroError, isAdmin: Bool, manager: SynchroErrorManager) -> some View {
+        guard let cell = generateCellForErrorKind(error, isAdmin: isAdmin, manager: manager) else {
             return ErrorCellView.unknownError(error)
         }
 
         return cell
     }
 
-    private func generateCellForErrorKind(_ error: SynchroError, manager: SynchroErrorManager) -> ErrorCellView? {
+    private func generateCellForErrorKind(_ error: SynchroError, isAdmin: Bool, manager: SynchroErrorManager) -> ErrorCellView? {
         switch error.kind {
         case .conflict:
             return ErrorCellView(
@@ -90,7 +90,9 @@ struct ErrorCellFactory {
                 }
             )
         case .fileTooBig:
-            let description = ""
+            let description = isAdmin
+                ? KDriveLocalizable.errFileTooBigAdminDescription
+                : KDriveLocalizable.errFileTooBigDescription
             return ErrorCellView(
                 title: KDriveLocalizable.errFileTooBigTitle,
                 description: description
@@ -183,10 +185,16 @@ struct ErrorCellFactory {
                 }
             )
         case .backErrorDriveNotRenew:
-            // TODO: Check if user is admin
+            let description = isAdmin
+                ? KDriveLocalizable.driveLockedAdminErrorDescription
+                : KDriveLocalizable.driveLockedErrorDescription
+            let action = isAdmin ? KDriveLocalizable.buttonUpdateSubscription : KDriveLocalizable.buttonRefresh
             return ErrorCellView(
                 title: KDriveLocalizable.driveLockedErrorTitle,
-                description: ""
+                description: description,
+                action: .init(title: action) {
+                    // TODO
+                }
             )
         case .invalidSyncDirAccess:
             return ErrorCellView(

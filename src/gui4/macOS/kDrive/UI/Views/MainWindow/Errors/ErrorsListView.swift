@@ -24,6 +24,7 @@ struct ErrorsListView: View {
     @StateObject private var synchroErrorManager = SynchroErrorManager()
 
     let errors: [UISynchroErrorCategory: [SynchroError]]
+    let isAdmin: Bool
 
     private var categories: [UISynchroErrorCategory] {
         return Array(errors.keys)
@@ -34,7 +35,7 @@ struct ErrorsListView: View {
             ForEach(categories) { category in
                 Section {
                     ForEach(errors[category, default: []], id: \.kind) { error in
-                        ErrorCellFactory().make(error: error, manager: synchroErrorManager)
+                        ErrorCellFactory().make(error: error, isAdmin: isAdmin, manager: synchroErrorManager)
                     }
                 } header: {
                     Text(category.title)
@@ -46,5 +47,5 @@ struct ErrorsListView: View {
 }
 
 #Preview {
-    ErrorsListView(errors: [:])
+    ErrorsListView(errors: [:], isAdmin: false)
 }
