@@ -143,7 +143,6 @@ Key controls:
 - `CustomControls/SyncActivityTable.xaml` — activity feed table
 - `CustomControls/Errors/ErrorPresenter.xaml` — error list with `ErrorFactory` for template selection
 - `CustomControls/Errors/ErrorBar.xaml` — compact inline error bar
-- `CustomControls/LottiePlayer.xaml` — Lottie animation player
 - `CustomControls/DriveSetupContentDialog/` — add-drive dialog (multi-page flow)
 
 ### Styles & Design Tokens

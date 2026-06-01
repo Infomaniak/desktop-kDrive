@@ -106,8 +106,9 @@
                               Height="120"
                               Width="183"
                               HorizontalAlignment="Center"
-                              
-                              UriString="{ThemeResource Infomaniak.Custom.Images.servin}" />
+                              UriString="{ThemeResource Infomaniak.Custom.Images.servin}"
+                              Foreground="{ThemeResource AccentFillColorTertiaryBrush}"/>
+
             <StackPanel Grid.Row="1"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                 <TextBlock HorizontalAlignment="Center"

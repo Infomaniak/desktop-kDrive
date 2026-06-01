@@ -30,6 +30,8 @@
       xmlns:templateSelectors="using:Infomaniak.kDrive.TemplateSelectors"
       xmlns:kDrive="using:Infomaniak.kDrive"
       xmlns:types="using:Infomaniak.kDrive.Types"
+      xmlns:lottie="using:CommunityToolkit.WinUI.Lottie"
+      xmlns:animatedvisuals="using:AnimatedVisuals"
       mc:Ignorable="d">
     <Page.Resources>
         <!-- Converters -->
@@ -47,11 +49,12 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <controls:LottiePlayer Grid.Row="0"
-                                       UriSource="{ThemeResource Infomaniak.Custom.Animations.check}"
-                                       PlayCount="1"
-                                       MaxWidth="180"
-                                       Padding="50" />
+                <AnimatedVisualPlayer Grid.Row="0"
+                                      AutoPlay="False"
+                                      MaxWidth="180"
+                                      Loaded="SyncUpToDateMainTemplateAnimatedVisualPlayer_Loaded">
+                    <animatedvisuals:KDrive_Check Color_446EDD="{kDrive:ThemeColor Key=SystemFillColorAttentionBrush}"/>
+                </AnimatedVisualPlayer>
 
                 <StackPanel Grid.Row="1"
                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
@@ -78,9 +81,11 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <controls:LottiePlayer Grid.Row="0"
-                                       UriSource="{ThemeResource Infomaniak.Custom.Animations.sync}"
-                                       MaxWidth="180" />
+                <AnimatedVisualPlayer Grid.Row="0"
+                                      AutoPlay="True"
+                                      MaxWidth="180">
+                    <animatedvisuals:KDrive_Sync Color_446EDD="{kDrive:ThemeColor Key=SystemFillColorAttentionBrush}"/>
+                </AnimatedVisualPlayer>
 
                 <StackPanel Grid.Row="1"
                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
@@ -112,10 +117,11 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <controls:LottiePlayer Grid.Row="0"
-                                       PlayCount="1"
-                                       UriSource="{ThemeResource Infomaniak.Custom.Animations.pause}"
-                                       MaxWidth="180" />
+                <AnimatedVisualPlayer Grid.Row="0"
+                                      AutoPlay="True"
+                                      MaxWidth="180">
+                    <animatedvisuals:KDrive_Pause Color_446EDD="{kDrive:ThemeColor Key=SystemFillColorAttentionBrush}"/>
+                </AnimatedVisualPlayer>
 
                 <StackPanel Grid.Row="1"
                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
@@ -148,10 +154,11 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <controls:LottiePlayer Grid.Row="0"
-                                       UriSource="{ThemeResource Infomaniak.Custom.Animations.offline}"
-                                       PlayCount="1"
-                                       MaxWidth="227" />
+                <AnimatedVisualPlayer Grid.Row="0"
+                                      AutoPlay="True"
+                                      MaxWidth="227">
+                    <animatedvisuals:KDrive_Offline Color_446EDD="{kDrive:ThemeColor Key=SystemFillColorAttentionBrush}"/>
+                </AnimatedVisualPlayer>
 
                 <StackPanel Grid.Row="1"
                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">

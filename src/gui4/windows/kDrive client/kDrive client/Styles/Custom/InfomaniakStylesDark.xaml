@@ -21,7 +21,6 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     
     <!-- Images -->
-    <x:String x:Key="Infomaniak.Custom.Images.servin">ms-appx:///Assets/Custom/Images/servin-dark.svg</x:String>
     <x:String x:Key="Infomaniak.Custom.Images.kDrive-folder">ms-appx:///Assets/Custom/Images/kDrive-folder-dark.svg</x:String>
     <x:String x:Key="Infomaniak.Custom.Images.kDrive-folder-sync-warning">ms-appx:///Assets/Custom/Images/kDrive-folder-sync-warning-light.svg</x:String> <!-- TODO: Replace with dark version when available -->
     <x:String x:Key="Infomaniak.Custom.Icons.logo-myksuiteplus">ms-appx:///Assets/Custom/Icons/logo-myksuiteplus-dark.svg</x:String>
@@ -29,14 +28,6 @@
     <!-- Icons -->
     <x:String x:Key="Infomaniak.Custom.Icons.logo-matomo">ms-appx:///Assets/Custom/Icons/logo-matomo-dark.svg</x:String>
     <x:String x:Key="Infomaniak.Custom.Icons.logo-sentry">ms-appx:///Assets/Custom/Icons/logo-sentry-dark.svg</x:String>
-    
-    <!-- Animations -->
-    <x:String x:Key="Infomaniak.Custom.Animations.check">ms-appx:///Assets/Custom/Animations/check-dark.json</x:String>
-    <x:String x:Key="Infomaniak.Custom.Animations.loader-stroke">ms-appx:///Assets/Custom/Animations/loader-stroke-dark.json</x:String>
-    <x:String x:Key="Infomaniak.Custom.Animations.offline">ms-appx:///Assets/Custom/Animations/offline-dark.json</x:String>
-    <x:String x:Key="Infomaniak.Custom.Animations.pause">ms-appx:///Assets/Custom/Animations/pause-dark.json</x:String>
-    <x:String x:Key="Infomaniak.Custom.Animations.sync">ms-appx:///Assets/Custom/Animations/sync-dark.json</x:String>
-    <x:String x:Key="Infomaniak.Custom.Animations.synchro-file">ms-appx:///Assets/Custom/Animations/synchro-file-dark.json</x:String>
 
     <!--  colors  -->
     <Color x:Key="Infomaniak.Custom.colors.storage.other">#F19DFF</Color>

@@ -46,7 +46,7 @@
                             Canvas.ZIndex="0"
                             Canvas.Left="0"
                             Canvas.Top="0"
-                            BorderBrush="{ThemeResource SystemAccentColor}"
+                            BorderBrush="{ThemeResource SystemFillColorAttentionBrush}"
                             BorderThickness="1.2">
 
                         <Button x:Name="PersonPictureButton"
@@ -75,7 +75,7 @@
                             Canvas.Top="0.8"
                             Height="45"
                             Width="45"
-                            Background="{ThemeResource SystemAccentColor}"
+                            Background="{ThemeResource SystemFillColorAttentionBrush}"
                             Opacity="0"
                             CornerRadius="100"
                             IsHitTestVisible="False">
@@ -116,7 +116,7 @@
                             Canvas.Top="30"
                             Height="20"
                             Width="20"
-                            Background="{ThemeResource SystemAccentColor}"
+                            Background="{ThemeResource SystemFillColorAttentionBrush}"
                             Opacity="0"
                             CornerRadius="100"
                             IsHitTestVisible="False"
@@ -149,7 +149,7 @@
                                                   VerticalAlignment="Center"
                                                   HorizontalAlignment="Right"
                                                   UriString="{StaticResource Infomaniak.DS.Icons.Actions.star}"
-                                                  Foreground="{ThemeResource SystemAccentColor}" />
+                                                  Foreground="{ThemeResource SystemFillColorAttentionBrush}" />
                                 <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('folderFavorites')}"
                                            Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                             </StackPanel>
@@ -177,7 +177,7 @@
                                 <controls:SvgIcon Height="13"
                                                   Width="13"
                                                   UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-share}"
-                                                  Foreground="{ThemeResource SystemAccentColor}" />
+                                                  Foreground="{ThemeResource SystemFillColorAttentionBrush}" />
                                 <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('folderShares')}"
                                            Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                             </StackPanel>
@@ -206,7 +206,7 @@
                                 <controls:SvgIcon Height="13"
                                                   Width="13"
                                                   UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive-outline}"
-                                                  Foreground="{ThemeResource SystemAccentColor}" />
+                                                  Foreground="{ThemeResource SystemFillColorAttentionBrush}" />
                                 <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('buttonKDriveOnline')}"
                                            Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                             </StackPanel>
@@ -238,7 +238,7 @@
                         <controls:SvgIcon Height="13"
                                           Width="13"
                                           UriString="{StaticResource Infomaniak.DS.Icons.Actions.trashbin}"
-                                          Foreground="{ThemeResource SystemAccentColor}" />
+                                          Foreground="{ThemeResource SystemFillColorAttentionBrush}" />
 
                         <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('folderTrash')}"
                                    Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />

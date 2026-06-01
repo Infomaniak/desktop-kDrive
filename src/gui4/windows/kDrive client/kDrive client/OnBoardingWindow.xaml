@@ -26,6 +26,8 @@
         xmlns:viewModel="using:Infomaniak.kDrive.ViewModels"
         xmlns:converters="using:Infomaniak.kDrive.Converters"
         xmlns:controls="using:Infomaniak.kDrive.CustomControls"
+        xmlns:kDrive="using:Infomaniak.kDrive"
+        xmlns:animatedvisuals="using:AnimatedVisuals"
         mc:Ignorable="d"
         Title="kDrive">
 
@@ -66,11 +68,27 @@
                 Background="{ThemeResource LayerFillColorDefaultBrush}">
         </Border>
 
-        <controls:LottiePlayer x:Name="LottiePlayer"
-                               Grid.Row="1"
-                               Grid.Column="2"
-                               Height="120"
-                               UriSource="{ThemeResource Infomaniak.Custom.Animations.loader-stroke}" />
+        <AnimatedVisualPlayer x:Name="kDrive_SyncroFilePlayer"
+                              AutoPlay="True"
+                              MaxWidth="219"
+                              Grid.Row="1"
+                              Grid.Column="2"
+                              Opacity="0"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center">     
+            <animatedvisuals:KDrive_SyncroFile Color_446EDD="{kDrive:ThemeColor Key=AccentFillColorDefaultBrush}"
+                                               Color_FFFFFF="{kDrive:ThemeColor Key=SolidBackgroundFillColorBaseBrush}"/>
+        </AnimatedVisualPlayer>
+        <AnimatedVisualPlayer x:Name="KDrive_LoaderStrokePlayer"
+                              AutoPlay="True"
+                              MaxWidth="130"
+                              Grid.Row="1"
+                              Grid.Column="2"
+                              Opacity="0"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center">
+            <animatedvisuals:KDrive_LoaderStroke Color_446EDD="{kDrive:ThemeColor Key=SystemFillColorAttentionBrush}"/>
+        </AnimatedVisualPlayer>
         <Border Grid.Row="1"
                 Grid.Column="0">
             <Frame x:Name="ContentFrame" />

@@ -103,24 +103,6 @@ namespace Infomaniak.kDrive.Pages
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
             DetachHandlers();
-            CleanupLottiePlayers();
-        }
-
-        private void CleanupLottiePlayers()
-        {
-            try
-            {
-                // Find and cleanup all LottiePlayer controls in the visual tree
-                var lottiePlayers = FindVisualChildren<CustomControls.LottiePlayer>(this);
-                foreach (var player in lottiePlayers)
-                {
-                    player?.Cleanup();
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.Log(Logger.Level.Warning, $"Error cleaning up Lottie players: {ex.Message}");
-            }
         }
 
         private static IEnumerable<T> FindVisualChildren<T>(DependencyObject parent) where T : DependencyObject
@@ -199,6 +181,12 @@ namespace Infomaniak.kDrive.Pages
         {
             _analyticsService.TrackClick(Analytics.Keys.Category.HomePage, Analytics.Keys.EventName.OpenSignInWeb);
             (App.Current as App)?.StartOnboarding();
+        }
+
+        private async void SyncUpToDateMainTemplateAnimatedVisualPlayer_Loaded(object sender, RoutedEventArgs e)
+        {
+            if(sender is AnimatedVisualPlayer player)
+                await player.PlayAsync(0.0, 1.0, false);
         }
     }
 }

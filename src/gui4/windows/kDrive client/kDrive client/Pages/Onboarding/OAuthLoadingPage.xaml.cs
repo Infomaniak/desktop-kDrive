@@ -28,6 +28,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using static Infomaniak.kDrive.OnBoarding.OnBoardingWindow;
 
 
 namespace Infomaniak.kDrive.Pages.Onboarding
@@ -53,7 +54,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             InitializeComponent();
             Logger.Log(Logger.Level.Debug, "OAuthLoadingPage components initialized");
         }
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        protected async override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
 
@@ -65,7 +66,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                 _onBoardingTask = _onboardingViewModel.ConnectUser(_oauthCts.Token);
                 ScheduleRestartButtonEnableAsync();
                 if ((App.Current as App)?.CurrentWindow is OnBoardingWindow onBoardingWindow)
-                    onBoardingWindow.UpdateLottieSource("Infomaniak.Custom.Animations.loader-stroke", 130);
+                    await onBoardingWindow.UpdateLottieSource(LottieTemplateKey.KDrive_LoaderStroke);
             }
             else
             {
