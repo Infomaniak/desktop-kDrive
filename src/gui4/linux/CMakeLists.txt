@@ -5,9 +5,9 @@ endif ()
 project(${APPLICATION_CLIENTV4_EXECUTABLE} LANGUAGES C CXX)
 
 
-find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui Network Qml Quick Sql Widgets QuickControls2)
+find_package(Qt6 6.11 REQUIRED COMPONENTS Core Gui Network Qml Quick Sql Widgets QuickControls2)
 
-qt_standard_project_setup(REQUIRES 6.8)
+qt_standard_project_setup(REQUIRES 6.11)
 
 set(QT_QML_GENERATE_QMLLS_INI ON)
 
@@ -16,6 +16,7 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         main.cpp
         appclientlinux.cpp
         appclientlinux.h
+        app/appconstants.h
         app/cache/appcache.cpp
         app/cache/appcache.h
         app/cache/appcachegraph.cpp
@@ -58,12 +59,15 @@ set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
         ui/tokens/IKRadius.qml
         ui/tokens/IKFonts.qml
         ui/tokens/IKIconSizes.qml
+        ui/tokens/IKOnboarding.qml
 )
 
 set_source_files_properties(${GUI_QML_SINGLETON_FILES} PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
 
 set(GUI_QML_FILES # .qml files for the app
         ui/Main.qml
+        ui/onboarding/animations/LoaderStrokeDarkAnimation.qml
+        ui/onboarding/animations/LoaderStrokeLightAnimation.qml
         ui/onboarding/LoginView.qml
         ui/onboarding/OnboardingAnimationsView.qml
         ui/onboarding/OnboardingWindow.qml
@@ -76,16 +80,12 @@ set(GUI_QML_RESOURCE_FILES # Resources for the QML files (e.g. qmldir, js files,
 
 set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/onboarding/lotties/dark/check.lottie
-        ui/assets/onboarding/lotties/dark/disk-access-on.lottie
-        ui/assets/onboarding/lotties/dark/extension-on.lottie
         ui/assets/onboarding/lotties/dark/loader-stroke.lottie
         ui/assets/onboarding/lotties/dark/offline.lottie
         ui/assets/onboarding/lotties/dark/pause.lottie
         ui/assets/onboarding/lotties/dark/sync.lottie
         ui/assets/onboarding/lotties/dark/syncro-file.lottie
         ui/assets/onboarding/lotties/light/check.lottie
-        ui/assets/onboarding/lotties/light/disk-access-on.lottie
-        ui/assets/onboarding/lotties/light/extension-on.lottie
         ui/assets/onboarding/lotties/light/loader-stroke.lottie
         ui/assets/onboarding/lotties/light/offline.lottie
         ui/assets/onboarding/lotties/light/pause.lottie
