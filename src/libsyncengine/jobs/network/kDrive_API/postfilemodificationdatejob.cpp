@@ -25,10 +25,11 @@
 
 namespace KDC {
 
-PostFileModificationDateJob::PostFileModificationDateJob(const DriveDbId driveDbId, const NodeId &nodeId, SyncTime lastModifiedAt) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
-    _nodeId(nodeId),
-    _lastModifiedAt(lastModifiedAt){
+PostFileModificationDateJob::PostFileModificationDateJob(const DriveDbId driveDbId, RemoteNodeId nodeId,
+                                                         const SyncTime lastModifiedAt) :
+    AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
+    _nodeId(std::move(nodeId)),
+    _lastModifiedAt(lastModifiedAt) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
     _apiVersion = 3;
 }
@@ -38,6 +39,7 @@ std::string PostFileModificationDateJob::getSpecificUrl() {
     str += "/files/";
     str += _nodeId;
     str += "/last-modified";
+
     return str;
 }
 
@@ -48,6 +50,7 @@ ExitInfo PostFileModificationDateJob::setData() {
     std::stringstream ss;
     json.stringify(ss);
     _data = ss.str();
+
     return ExitCode::Ok;
 }
 
