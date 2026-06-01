@@ -138,7 +138,7 @@ bool PipeCommServer::listen() {
 
     _stopAsked = false;
     _isRunning = true;
-    _thread = (std::make_unique<std::thread>(executeFunc, this));
+    _thread = (std::make_unique<StdLoggingThread>(executeFunc, this));
 
     return true;
 }
