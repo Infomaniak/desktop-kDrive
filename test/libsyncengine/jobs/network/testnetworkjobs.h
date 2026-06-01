@@ -42,6 +42,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testGetDriveList);
         CPPUNIT_TEST(testGetFileInfo);
         CPPUNIT_TEST(testGetFileList);
+        CPPUNIT_TEST(testCheckHashMatch);
         CPPUNIT_TEST(testGetFileListWithCursor);
         CPPUNIT_TEST(testFullFileListWithCursorCsv);
         CPPUNIT_TEST(testFullFileListWithCursorCsvZip);
@@ -88,6 +89,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         void testGetDriveList();
         void testGetFileInfo();
         void testGetFileList();
+        void testCheckHashMatch();
         void testGetFileListWithCursor();
         void testFullFileListWithCursorCsv();
         void testFullFileListWithCursorCsvZip();
