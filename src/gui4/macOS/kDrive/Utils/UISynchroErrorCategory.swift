@@ -19,7 +19,7 @@
 import Foundation
 import kDriveResources
 
-public enum UISynchroErrorCategory: String, Identifiable, Sendable {
+public enum UISynchroErrorCategory: String, Identifiable, Sendable, Comparable {
     case systemAndPermissions
     case conflicts
     case filesToCheck
@@ -43,5 +43,24 @@ public enum UISynchroErrorCategory: String, Identifiable, Sendable {
         case .storage:
             return KDriveLocalizable.tabTitleStorage
         }
+    }
+
+    public var order: Int {
+        switch self {
+        case .systemAndPermissions:
+            return 0
+        case .conflicts:
+            return 1
+        case .filesToCheck:
+            return 2
+        case .synchronizationDirectories:
+            return 3
+        case .storage:
+            return 4
+        }
+    }
+
+    public static func < (lhs: UISynchroErrorCategory, rhs: UISynchroErrorCategory) -> Bool {
+        return lhs.order < rhs.order
     }
 }

@@ -27,7 +27,7 @@ struct ErrorsListView: View {
     let isAdmin: Bool
 
     private var categories: [UISynchroErrorCategory] {
-        return Array(errors.keys)
+        return errors.keys.sorted()
     }
 
     var body: some View {
