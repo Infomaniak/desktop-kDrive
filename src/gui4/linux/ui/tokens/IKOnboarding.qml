@@ -28,6 +28,18 @@ QtObject {
     readonly property real illustrationAnimationMaxSize: 260
     readonly property real illustrationAnimationFillRatio: 0.8
 
+    // Login screen layout.
+    readonly property real loginCompactBreakpointWidth: 520
+    readonly property real loginContentMaxWidth: 378
+    readonly property real loginContentExpandedLeftMargin: 80
+    readonly property real loginButtonSpacing: 10
+    readonly property real loginButtonHeight: 24
+    readonly property real loginButtonCornerRadius: 6
+    readonly property real loginCreateAccountButtonMinWidth: 128
+    readonly property real loginButtonMinWidth: 105
+    readonly property real loginTitleLineHeight: 32
+    readonly property real loginBodyLineHeight: 16
+
     // Source dimensions of the loader-stroke animation.
     readonly property int loaderStrokeAnimationWidth: 302
     readonly property int loaderStrokeAnimationHeight: 260
