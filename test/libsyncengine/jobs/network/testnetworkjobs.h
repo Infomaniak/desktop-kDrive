@@ -71,6 +71,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testGetInfoDriveOn401Error);
         CPPUNIT_TEST(testExists);
         CPPUNIT_TEST(testGetAllFilesInDirectory);
+        CPPUNIT_TEST(testPostFileModificationDate);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -116,6 +117,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         void testGetInfoDriveOn401Error();
         void testExists();
         void testGetAllFilesInDirectory();
+        void testPostFileModificationDate();
 
     private:
         bool createTestFiles();
