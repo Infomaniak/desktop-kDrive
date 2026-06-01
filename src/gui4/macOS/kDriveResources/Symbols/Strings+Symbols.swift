@@ -93,12 +93,6 @@ public enum KDriveLocalizable {
   public static let buttonFinishInstallation = KDriveLocalizable.tr("Localizable", "buttonFinishInstallation", fallback: "Finish installation")
   /// loco:698052d464e4b53cef0e9272
   public static let buttonFixErrors = KDriveLocalizable.tr("Localizable", "buttonFixErrors", fallback: "Fix errors")
-  /// loco:698b37a3ff1c8782250e1a74
-  public static let extendedLogDescription = KDriveLocalizable.tr("Localizable", "extendedLogDescription", fallback: "Enables collection of additional information useful for support.")
-  /// loco:698b3778571c7248480ed4c2
-  public static let extendedLogSetting = KDriveLocalizable.tr("Localizable", "extendedLogSetting", fallback: "Extended detailed log")
-  /// loco:698b37efff1c8782250e1a76
-  public static let extendedLogWarning = KDriveLocalizable.tr("Localizable", "extendedLogWarning", fallback: "When this option is enabled, kDrive runs more slowly.")
   /// loco:6992eabc63e4de22f10535b2
   public static let buttonHelpdesk = KDriveLocalizable.tr("Localizable", "buttonHelpdesk", fallback: "Support")
   /// loco:69304d546385bb9cfc03e524
@@ -175,6 +169,10 @@ public enum KDriveLocalizable {
   public static let dataManagementSettings = KDriveLocalizable.tr("Localizable", "dataManagementSettings", fallback: "Data management")
   /// loco:698b164a5f781b3d5203de12
   public static let dataManagementSubtitle = KDriveLocalizable.tr("Localizable", "dataManagementSubtitle", fallback: "Infomaniak respects your privacy")
+  /// loco:698b3a87553e334c1009a7e4
+  public static let debugLevelDescription = KDriveLocalizable.tr("Localizable", "debugLevelDescription", fallback: "Select the amount of information to log.")
+  /// loco:698b3a4d553e334c1009a7e2
+  public static let debugLevelSetting = KDriveLocalizable.tr("Localizable", "debugLevelSetting", fallback: "Debug level")
   /// loco:698b35cccaddc9598c08a6c2
   public static let debugLogsDescription = KDriveLocalizable.tr("Localizable", "debugLogsDescription", fallback: "Allows Infomaniak support to identify the cause of an incident.")
   /// loco:698b35a408fd1ee25f08ab35
@@ -215,10 +213,6 @@ public enum KDriveLocalizable {
   public static let driveWakingUpErrorDescription = KDriveLocalizable.tr("Localizable", "driveWakingUpErrorDescription", fallback: "kDrive is waking up… this may take a few moments.")
   /// loco:6979e389195e90fdc909d252
   public static let driveWakingUpErrorTitle = KDriveLocalizable.tr("Localizable", "driveWakingUpErrorTitle", fallback: "kDrive waking up")
-  /// loco:698b3a87553e334c1009a7e4
-  public static let debugLevelDescription = KDriveLocalizable.tr("Localizable", "debugLevelDescription", fallback: "Select the amount of information to log.")
-  /// loco:698b3a4d553e334c1009a7e2
-  public static let debugLevelSetting = KDriveLocalizable.tr("Localizable", "debugLevelSetting", fallback: "Debug level")
   /// loco:698b3654af04fbae590cbf82
   public static let enableDebugLogDescription = KDriveLocalizable.tr("Localizable", "enableDebugLogDescription", fallback: "Record diagnostic information on my computer.")
   /// loco:698b361c54ac23ef050755a2
@@ -233,6 +227,8 @@ public enum KDriveLocalizable {
   public static let errorWhileChangingSynchroMode = KDriveLocalizable.tr("Localizable", "errorWhileChangingSynchroMode", fallback: "Error while changing the mode of synchronization")
   /// loco:6a01cb10947c595e7c030a83
   public static let excludeRuleAppDescription = KDriveLocalizable.tr("Localizable", "excludeRuleAppDescription", fallback: "Block apps that might download or modify your files.")
+  /// loco:698b0107941b49c4f500aa12
+  public static let excludeRuleDescription = KDriveLocalizable.tr("Localizable", "excludeRuleDescription", fallback: "Files matching this rule will not be synced.")
   /// loco:6a01ca75fd0cd802c903fca3
   public static let excludeRuleFileDescription = KDriveLocalizable.tr("Localizable", "excludeRuleFileDescription", fallback: "Prevent certain temporary or system files from being copied to kDrive.")
   /// loco:698b37a3ff1c8782250e1a74
