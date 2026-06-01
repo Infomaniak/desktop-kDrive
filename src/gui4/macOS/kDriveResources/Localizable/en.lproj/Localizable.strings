@@ -62,6 +62,8 @@
 /* loco:698af4376b386d18b9037522 */
 "appUpToDate" = "The application is up to date";
 
+/* loco:6a01c8e3ba328c320801c492 */
+"appsToExclude" = "Apps to exclude";
 /* loco:698b36f2eb276c03d00e7c07 */
 "autoCleanupLogsDescription" = "Deletes logs older than 7 days to save disk space.";
 
@@ -323,6 +325,14 @@
 /* loco:69b3e9128555b02b5001ee42 */
 "errorWhileChangingSynchroMode" = "Error while changing the mode of synchronization";
 
+/* loco:6a01cb10947c595e7c030a83 */
+"excludeRuleAppDescription" = "Block apps that might download or modify your files.";
+
+/* loco:698b0107941b49c4f500aa12 */
+"excludeRuleDescription" = "Files matching this rule will not be synced.";
+
+/* loco:6a01ca75fd0cd802c903fca3 */
+"excludeRuleFileDescription" = "Prevent certain temporary or system files from being copied to kDrive.";
 /* loco:698b37a3ff1c8782250e1a74 */
 "extendedLogDescription" = "Enables collection of additional information useful for support.";
 
@@ -343,6 +353,9 @@
 
 /* loco:698b05ecfd0cddb0b90c8b72 */
 "fileSyncModeDescription" = "Define how your files are stored and accessed.";
+
+/* loco:698b00c7f04008f614070e52 */
+"filesToExclude" = "Files to exclude";
 
 /* loco:695e57f549f806b5ef0a3ac2 */
 "folderFavorites" = "Favorites";

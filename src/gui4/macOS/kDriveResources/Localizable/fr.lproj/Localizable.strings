@@ -356,6 +356,14 @@
 /* loco:69b3e9128555b02b5001ee42 */
 "errorWhileChangingSynchroMode" = "Erreur lors du changement de mode de synchronisation";
 
+/* loco:6a01cb10947c595e7c030a83 */
+"excludeRuleAppDescription" = "Bloquez les applications susceptibles de télécharger ou modifier vos fichiers.";
+
+/* loco:698b0107941b49c4f500aa12 */
+"excludeRuleDescription" = "Les fichiers correspondant à cette règle ne seront pas synchronisés.";
+
+/* loco:6a01ca75fd0cd802c903fca3 */
+"excludeRuleFileDescription" = "Évitez que certains fichiers temporaires ou système ne soient copiés dans kDrive.";
 /* loco:698b37a3ff1c8782250e1a74 */
 "extendedLogDescription" = "Active la collecte d'informations supplémentaires utiles au support.";
 
@@ -376,6 +384,9 @@
 
 /* loco:698b05ecfd0cddb0b90c8b72 */
 "fileSyncModeDescription" = "Définissez comment vos fichiers sont stockés et accessibles.";
+
+/* loco:698b00c7f04008f614070e52 */
+"filesToExclude" = "Fichiers à exclure";
 
 /* loco:695e57f549f806b5ef0a3ac2 */
 "folderFavorites" = "Favoris";

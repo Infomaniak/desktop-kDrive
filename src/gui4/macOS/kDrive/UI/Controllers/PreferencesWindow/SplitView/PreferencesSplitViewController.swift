@@ -103,6 +103,10 @@ final class PreferencesSplitViewController: IKSplitViewController {
                 dataManagementItem: dataManagementItem,
                 repository: repository
             )
+        case .synchroRules:
+            contentViewController = SynchroRulesPreferencesViewController()
+        case .synchroRulesDetail(let synchroRulesItem):
+            contentViewController = SynchroRulesPreferencesDetailViewController(synchroRulesItem: synchroRulesItem)
         default:
             contentViewController = GeneralPreferencesViewController(repository: repository, viewModel: viewModel)
         }

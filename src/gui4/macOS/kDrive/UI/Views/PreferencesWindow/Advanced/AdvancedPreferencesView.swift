@@ -44,17 +44,10 @@ enum AdvancedPreferencesItem: String, Identifiable, CaseIterable {
         }
     }
 
-    var isDisabled: Bool {
-        switch self {
-        case .dataManagement, .debugLogs, .network:
-            return false
-        default:
-            return true
-        }
-    }
-
     var preferencesViewDetail: PreferencesViewDetail {
         switch self {
+        case .synchroRules:
+            return .synchroRules
         case .debugLogs:
             return .debug
         case .dataManagement:
@@ -71,10 +64,9 @@ struct AdvancedPreferencesView: View {
     var body: some View {
         Form {
             ForEach(AdvancedPreferencesItem.allCases) { item in
-                FormNavigationCell(label: item.label) {
+                FormNavigationCell(title: item.label) {
                     navigate(to: item)
                 }
-                .disabled(item.isDisabled)
             }
         }
         .groupedFormatStyle()

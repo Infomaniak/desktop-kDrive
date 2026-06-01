@@ -18,21 +18,15 @@
 
 import InfomaniakDI
 import kDriveCoreUI
-import SwiftUI
+import kDriveResources
 
-struct DataManagementPreferencesButtonsView: View {
-    var body: some View {
-        Section {
-            ForEach(DataManagementItem.allCases) { item in
-                FormNavigationCell(title: item.label) {
-                    @InjectService var router: PreferencesViewRouter
-                    router.append(item.preferencesViewDetail)
-                }
-            }
-        }
+final class SynchroRulesPreferencesViewController: TitledViewController<SynchroRulesPreferencesView> {
+    convenience init() {
+        @InjectService var router: PreferencesViewRouter
+        self.init(
+            toolbarTitle: KDriveLocalizable.syncRules,
+            navigableRouter: router,
+            contentView: SynchroRulesPreferencesView()
+        )
     }
-}
-
-#Preview {
-    DataManagementPreferencesButtonsView()
 }
