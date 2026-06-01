@@ -18,7 +18,11 @@
 
 import Foundation
 
-public struct SynchroError: Error, Sendable {
+public struct SynchroError: Error, Identifiable, Sendable {
+    public var id: Int {
+        return metadata.dbId
+    }
+
     public let kind: SynchroErrorKind
     public let metadata: SynchroErrorMetadata
 

@@ -34,7 +34,7 @@ struct ErrorsListView: View {
         Form {
             ForEach(categories) { category in
                 Section {
-                    ForEach(errors[category, default: []], id: \.kind) { error in
+                    ForEach(errors[category, default: []]) { error in
                         ErrorCellFactory().make(error: error, isAdmin: isAdmin, manager: synchroErrorManager)
                     }
                 } header: {
