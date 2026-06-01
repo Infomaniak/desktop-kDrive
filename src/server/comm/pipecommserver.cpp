@@ -138,7 +138,9 @@ bool PipeCommServer::listen() {
 
     _stopAsked = false;
     _isRunning = true;
-    _thread = (std::make_unique<StdLoggingThread>(executeFunc, this));
+
+    const std::function<void()> runFunction = std::bind(executeFunc, this);
+    _thread = (std::make_unique<StdLoggingThread>(runFunction));
 
     return true;
 }
@@ -161,7 +163,6 @@ std::list<std::shared_ptr<AbstractCommChannel>> PipeCommServer::connections() {
 
 void PipeCommServer::executeFunc(PipeCommServer *server) {
     server->execute();
-    log4cplus::threadCleanup();
 }
 
 void PipeCommServer::execute() {
