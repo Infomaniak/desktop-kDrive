@@ -18,19 +18,45 @@
 
 import QtQuick
 import kDrive.UI
+import "animations"
 
 Item {
     id: root
 
-    readonly property url lottieSource: ThemeMode.isDark
-        ? "qrc:/assets/onboarding/lotties/dark/loader-stroke.lottie"
-        : "qrc:/assets/onboarding/lotties/light/loader-stroke.lottie"
-
-    // Qt's Lottie renderer is not linked in the Linux target yet. Keep the onboarding panel wired to the asset
-    // source so the renderer can be dropped in here without changing the screen structure.
     Item {
-        id: lottieSlot
+        id: animationFrame
 
-        anchors.fill: parent
+        anchors.centerIn: parent
+        width: IKOnboarding.loaderStrokeAnimationWidth
+        height: IKOnboarding.loaderStrokeAnimationHeight
+        scale: Math.min(root.width / width, root.height / height)
+        transformOrigin: Item.Center
+
+        Loader {
+            id: loader
+
+            anchors.centerIn: parent
+            width: IKOnboarding.loaderStrokeVectorSourceWidth
+            height: IKOnboarding.loaderStrokeVectorSourceHeight
+            scale: Math.min(animationFrame.width / width, animationFrame.height / height)
+            transformOrigin: Item.Center
+            sourceComponent: ThemeMode.isDark ? loaderStrokeDarkComponent : loaderStrokeLightComponent
+        }
+    }
+
+    Component {
+        id: loaderStrokeDarkComponent
+
+        LoaderStrokeDarkAnimation {
+            animations.loops: Animation.Infinite
+        }
+    }
+
+    Component {
+        id: loaderStrokeLightComponent
+
+        LoaderStrokeLightAnimation {
+            animations.loops: Animation.Infinite
+        }
     }
 }
