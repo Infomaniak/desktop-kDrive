@@ -24,11 +24,9 @@
 
 #include <type_traits>
 
-namespace KDC {
-
-namespace {
 Q_LOGGING_CATEGORY(lcOnboardingFlowController, "gui.v4.onboardingflow", QtInfoMsg)
-}
+
+namespace KDC {
 
 namespace {
 [[nodiscard]] qint32 stepToIndex(const OnboardingFlowController::Step step) {
@@ -90,6 +88,7 @@ void OnboardingFlowController::requestLogin() {
     }
 
     qCInfo(lcOnboardingFlowController) << "Onboarding login requested";
+    setLoginState(WaitingForWebAuthentication);
     emit loginRequested();
 }
 
