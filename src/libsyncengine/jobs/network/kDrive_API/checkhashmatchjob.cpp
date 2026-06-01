@@ -122,13 +122,13 @@ ExitInfo CheckHashMatchJob::handleResponse(std::istream &is) {
         return exitInfo;
     }
 
-    if (jsonRes()) {
-        if (const auto dataObj = jsonRes()->getObject(dataKey); dataObj) {
-            if (!JsonParserUtility::extractValue(dataObj, hashKey, _remoteHash)) {
-                return {ExitCode::BackError, ExitCause::MissingReplyData};
-            }
-        }
-    }
+    if (!jsonRes()) return {ExitCode::BackError, ExitCause::MissingReplyData};
+
+    const auto dataObj = jsonRes()->getObject(dataKey);
+    if (!dataObj) return {ExitCode::BackError, ExitCause::MissingReplyData};
+
+    if (!JsonParserUtility::extractValue(dataObj, hashKey, _remoteHash))
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
 
     return ExitCode::Ok;
 }
