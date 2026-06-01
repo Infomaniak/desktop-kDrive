@@ -9,7 +9,7 @@ from urllib.request import urlopen
 
 from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration, ConanException
-from conan.tools.files import copy, rmdir, mkdir, download
+from conan.tools.files import copy, rmdir, mkdir, download, rm
 
 
 class QtConan(ConanFile):
@@ -510,6 +510,14 @@ class QtConan(ConanFile):
 
         for folder in ("doc", "modules"):
             rmdir(self, pjoin(self.package_folder, folder))
+
+        # The official Qt binary package ships the CMake files for the QML
+        # 'AssetDownloader' plugin but not its private 'Qt6TaskTree' dependency,
+        # which triggers a spurious "Could NOT find Qt6TaskTree" warning when
+        # find_package(Qt6 ... Qml) auto-includes QML plugin packages. kDrive
+        # does not use this plugin, so remove the orphaned CMake files.
+        rm(self, "Qt6QmlAssetDownloaderPrivateplugin*",
+           pjoin(self.package_folder, "lib", "cmake", "Qt6Qml", "QmlPlugins"))
 
     def package_info(self):
         """
