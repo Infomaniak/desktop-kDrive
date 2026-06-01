@@ -38,6 +38,7 @@ extension KDC.ProxyType: Hashable {}
 extension KDC.DistributionChannel: Hashable {}
 extension KDC.UpdateState: Hashable {}
 extension KDC.SyncConfiguration: Hashable {}
+extension KDC.ConflictResolutionStrategy: Hashable {}
 extension MsgType: @retroactive Hashable {}
 extension SignalNum: @retroactive Hashable {}
 extension RequestNum: @retroactive Hashable {}

@@ -28,6 +28,11 @@ struct ErrorResolveConflictsQuery: Codable, Sendable {
     let keepRemoteErrorDbIdList: [Int32]
 }
 
+struct ErrorResolveConflictsQuickQuery: Codable, Sendable {
+    let errorDbIdList: [Int32]
+    let strategy: KDC.ConflictResolutionStrategy
+}
+
 struct ErrorInfoListResponse: Codable, Sendable {
     let errorInfoList: [ErrorInfoMetadata]
 }

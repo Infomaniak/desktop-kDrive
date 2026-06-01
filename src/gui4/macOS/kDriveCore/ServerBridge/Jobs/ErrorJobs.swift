@@ -65,4 +65,15 @@ public struct ErrorJobs: Sendable {
 
         try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
     }
+
+    public func resolveConflictsQuick(errorDbIds: [Int32], strategy: KDC.ConflictResolutionStrategy) async throws {
+        IKLogger.data.log("Query to resolve conflicts quickly")
+        let query = ErrorResolveConflictsQuickQuery(errorDbIdList: errorDbIds, strategy: strategy)
+        let request = await RequestMessage<ErrorResolveConflictsQuickQuery>(
+            num: RequestNum.ERROR_RESOLVE_CONFLICTS_QUICK,
+            body: query
+        )
+
+        try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+    }
 }
