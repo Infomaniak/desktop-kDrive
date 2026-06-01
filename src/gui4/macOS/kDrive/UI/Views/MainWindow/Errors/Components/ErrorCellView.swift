@@ -16,22 +16,53 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import kDriveCoreUI
+import Foundation
 import kDriveCore
+import kDriveCoreUI
 import SwiftUI
+
+struct PathInfoChipView: View {
+    let pathInfo: ErrorCellView.PathInfo
+
+    var body: some View {
+        HStack(spacing: AppPadding.padding4) {
+            switch pathInfo.nodeType {
+            case .directory:
+                let folderRepresentation = FileTypeRepresentation.folder
+                folderRepresentation.icon
+                    .resizable()
+                    .scaledToFit()
+                    .foregroundStyle(folderRepresentation.color)
+                    .frame(size: AppIconSize.iconSize12)
+            case .file:
+                FileTypeView(fileTypeRepresentation: pathInfo.fileTypeRepresentation)
+                    .frame(size: AppIconSize.iconSize12)
+            }
+
+            Text(pathInfo.name)
+                .lineLimit(1)
+                .truncationMode(.middle)
+        }
+        .font(.Tokens.body)
+        .foregroundStyle(ColorToken.Text.primary.asColor)
+        .padding(.horizontal, AppPadding.padding8)
+        .padding(.vertical, AppPadding.padding4)
+        .background(.white, in: .rect(cornerRadius: AppRadius.radius4))
+    }
+}
 
 struct ErrorCellView: View {
     @State private var isLoading = false
 
     let title: String
     let description: String
-    let path: String?
+    let pathInfo: PathInfo?
     let action: Action?
 
-    init(title: String, description: String, path: String? = nil, action: Action? = nil) {
+    init(title: String, description: String, pathInfo: PathInfo? = nil, action: Action? = nil) {
         self.title = title
         self.description = description
-        self.path = path
+        self.pathInfo = pathInfo
         self.action = action
     }
 
@@ -42,9 +73,8 @@ struct ErrorCellView: View {
                     .font(.Tokens.bodyEmphasized)
                     .foregroundStyle(.primary)
 
-                if let path {
-                    Text(path)
-                        .lineLimit(1)
+                if let pathInfo {
+                    PathInfoChipView(pathInfo: pathInfo)
                 }
 
                 Text(description.capitalizedFirstLetter)
@@ -78,8 +108,21 @@ extension ErrorCellView {
         let title: String
         let action: @Sendable () -> Void
     }
+
+    struct PathInfo {
+        let path: String
+        let nodeType: NodeType
+
+        var name: String {
+            URL(fileURLWithPath: path).lastPathComponent
+        }
+
+        var fileTypeRepresentation: FileTypeRepresentation {
+            FileTypeRepresentation(filenameExtension: URL(fileURLWithPath: path).pathExtension)
+        }
+    }
 }
 
 #Preview {
-    ErrorCellView(title: "Title", description: "Description", path: nil, action: nil)
+    ErrorCellView(title: "Title", description: "Description", pathInfo: nil, action: nil)
 }
