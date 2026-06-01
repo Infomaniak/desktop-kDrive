@@ -35,22 +35,27 @@ Item {
         spacing: 0
 
         LoginView {
-            width: parent.width - illustrationPanel.width
+            id: contentPanel
+
+            width: parent.width * IKOnboarding.contentPanelWidthRatio
             height: parent.height
         }
 
         Rectangle {
             id: illustrationPanel
 
-            width: Math.min(330, Math.max(260, root.width * 0.37))
+            width: parent.width * IKOnboarding.illustrationPanelWidthRatio
             height: parent.height
             color: IKColors.onboardingSurfaceSecondary
             radius: IKRadius.r16
+            topRightRadius: 0
+            bottomRightRadius: 0
 
             OnboardingAnimationsView {
                 anchors.centerIn: parent
-                width: Math.min(260, parent.width * 0.8)
-                height: width
+                width: Math.min(IKOnboarding.illustrationAnimationMaxSize,
+                                parent.width * IKOnboarding.illustrationAnimationFillRatio)
+                height: width * IKOnboarding.loaderStrokeAnimationHeightRatio
             }
         }
     }
