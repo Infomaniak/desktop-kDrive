@@ -32,7 +32,6 @@ class LocalFileSystemObserverWorker : public FileSystemObserverWorker {
         void stop() override;
 
         virtual ExitInfo changesDetected(const std::list<std::pair<SyncPath, OperationType>> &changes);
-        virtual void forceUpdate() override;
         void forceUpdate() override;
 
     protected:
