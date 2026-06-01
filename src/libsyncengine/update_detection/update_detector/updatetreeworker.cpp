@@ -63,15 +63,9 @@ bool UpdateTreeWorker::resetNodes() {
     auto nodeIt = _updateTree->nodes().begin();
     while (nodeIt != _updateTree->nodes().end()) {
         const auto node = nodeIt->second;
-        if (node->status() == NodeStatus::ToDelete) {
-            nodeIt++;
-            if (!_updateTree->deleteNode(node)) return false;
-            continue;
-        }
 
-        // Make sure no blacklist node remains in the update tree
-        if (node->id().has_value() && tmpBlacklist.contains(node->id().value())) {
-            // Remove blacklisted nodes from the update tree
+        // Make sure no node flagged with status "ToDelete" or blacklisted node remains in the update tree
+        if (node->status() == NodeStatus::ToDelete || (node->id().has_value() && tmpBlacklist.contains(node->id().value()))) {
             nodeIt++;
             if (!_updateTree->deleteNode(node)) return false;
             continue;
