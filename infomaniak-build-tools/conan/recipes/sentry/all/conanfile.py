@@ -1,5 +1,6 @@
 from os.path import join as pjoin
 import os
+import shlex
 
 import shutil
 
@@ -145,7 +146,11 @@ class SentryNativeConan(ConanFile):
         if self.settings.os == "Linux":
             crashpad_handler_path = os.path.join(self.package_folder, "bin", "crashpad_handler")
             if os.path.exists(crashpad_handler_path):
-                self.run(f"strip --strip-all {crashpad_handler_path}")
+                strip_path = shutil.which("strip")
+                if strip_path:
+                    self.run(f"{shlex.quote(strip_path)} --strip-all {shlex.quote(crashpad_handler_path)}")
+                else:
+                    self.output.warning("strip not found; crashpad_handler debug symbols were not removed")
 
         # Remove auto-generated CMake config files (we use Conan's generated ones)
         cmake_dir = os.path.join(self.package_folder, "lib", "cmake", "sentry")
