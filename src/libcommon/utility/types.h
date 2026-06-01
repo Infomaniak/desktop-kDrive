@@ -510,7 +510,7 @@ std::string toString(DistributionChannel e);
 DistributionChannel toDistributionChannel(const std::string &channel);
 std::string toString(VirtualFileMode e);
 std::string toString(SyncConfiguration e);
-std::string toString(const std::source_location& e);
+std::string toString(const std::source_location &e);
 
 inline ReplicaSide otherSide(const ReplicaSide side) {
     if (side == ReplicaSide::Unknown) return ReplicaSide::Unknown;
