@@ -1846,7 +1846,7 @@ void TestNetworkJobs::testPostFileModificationDate() {
         const std::string targetId = testCase.targetNodeIdOverride.empty() ? nodeId : testCase.targetNodeIdOverride;
         PostFileModificationDateJob testJob(_driveDbId, targetId, testCase.timestampToPost);
         exitInfo = testJob.runSynchronously();
-        CPPUNIT_ASSERT_MESSAGE(toString(exitInfo), exitInfo == testCase.expectSuccess);
+        CPPUNIT_ASSERT_MESSAGE(toString(exitInfo), exitInfo.operator bool() == testCase.expectSuccess);
 
         // Verify the modification date on the server.
         GetFileInfoJob verifyJob(_driveDbId, nodeId);
