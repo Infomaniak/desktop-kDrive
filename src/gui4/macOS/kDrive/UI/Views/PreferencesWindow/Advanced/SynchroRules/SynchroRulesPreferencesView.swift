@@ -37,7 +37,7 @@ enum SynchroRulesItem: String, Identifiable, CaseIterable {
         case .files:
             return KDriveLocalizable.filesToExclude
         case .apps:
-            return KDriveLocalizable.appsToExclude
+            return KDriveLocalizable.appToExclude
         }
     }
 
@@ -47,6 +47,24 @@ enum SynchroRulesItem: String, Identifiable, CaseIterable {
             return KDriveLocalizable.excludeRuleFileDescription
         case .apps:
             return KDriveLocalizable.excludeRuleAppDescription
+        }
+    }
+
+    var description: String {
+        switch self {
+        case .files:
+            return KDriveLocalizable.defaultExclusionFileListDescription
+        case .apps:
+            return KDriveLocalizable.defaultExclusionAppListDescription
+        }
+    }
+
+    var headerDescription: String {
+        switch self {
+        case .files:
+            return KDriveLocalizable.userExclusionFileListHeaderDescription
+        case .apps:
+            return KDriveLocalizable.userExclusionAppListHeaderDescription
         }
     }
 }

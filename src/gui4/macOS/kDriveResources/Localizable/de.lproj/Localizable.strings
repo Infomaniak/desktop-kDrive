@@ -4,7 +4,7 @@
  * Locale: de, German
  * Tagged: macOS
  * Exported by: Killian Mathias
- * Exported at: Tue, 14 Apr 2026 11:05:52 +0200
+ * Exported at: Tue, 26 May 2026 11:05:08 +0200
  */
 
 
@@ -58,12 +58,12 @@
 
 /* loco:698b07cec1d08f40b50bc702 */
 "advancedSyncTitle" = "Erweiterte Synchronisationen";
+/* loco:6a01c8e3ba328c320801c492 */
+"appToExclude" = "Auszuschliessende App";
 
 /* loco:698af4376b386d18b9037522 */
 "appUpToDate" = "Die Anwendung ist auf dem neuesten Stand";
 
-/* loco:6a01c8e3ba328c320801c492 */
-"appsToExclude" = "Auszuschliessende Apps";
 /* loco:698b36f2eb276c03d00e7c07 */
 "autoCleanupLogsDescription" = "Löscht Protokolle, die älter als 7 Tage sind, um Speicherplatz zu sparen.";
 
@@ -84,6 +84,12 @@
 
 /* loco:69a6d9b44d26dc09aa0d0643 */
 "betaProgramTitle" = "Am Betaprogramm teilnehmen";
+
+/* loco:698af16617408ac0d8026b12 */
+"betaSettings" = "Beta-Programm";
+
+/* loco:698b580c716d616edb0efde2 */
+"buttonAddFileExclusionRule" = "Eine Regel hinzufügen";
 
 /* loco:696a483470f3b70399021c12 */
 "buttonAddStorage" = "Speicher hinzufügen";
@@ -256,6 +262,17 @@
 /* loco:698b35a408fd1ee25f08ab35 */
 "debugLogsSettings" = "Debug-Protokolle";
 
+/* loco:6a03193b7868f10c96083485 */
+"defaultExclusionAppListDescription" = "Diese Apps werden standardmässig ignoriert und können nicht geändert werden.";
+
+/* loco:698b571c5bf251efd60b88f2 */
+"defaultExclusionFileListDescription" = "Diese Dateien sind standardmässig ausgeschlossen und können nicht geändert werden.";
+
+/* loco:698b56b72776ca5e2e084172 */
+"defaultExclusionFileListHeader" = "Automatischer Ausschluss";
+
+/* loco:698c6c6e4f7e07503f0ba762 */
+"dialogNewExclusionRuleTitle" = "Eine Ausschlussregel hinzufügen";
 
 /* loco:698c6bbd94b70c0d3d09cde4 */
 "dialogRemoveAccountContent" = "Sie werden %@ von der Anwendung abmelden.\n\nDer Synchronisationsordner bleibt auf Ihrem Computer, wird aber nicht mehr mit kDrive synchronisiert.\n\nAlle Ihre Daten bleiben online auf kDrive zugänglich.";
@@ -349,6 +366,9 @@
 /* loco:69a560c0ef88a6b6b00e49a4 */
 "feedbackURL" = "https://feedback.userreport.com/074f5c5a-372b-40a6-b82f-9157fdb3d2d7";
 
+/* loco:6a072dcb891ba895c309fbc2 */
+"fileExclusionNotificationWarning" = "Eine Benachrichtigung informiert Sie, wenn eine Datei von dieser Regel ausgeschlossen wird.";
+
 /* loco:698b05aa9eefd9ba070ce4a2 */
 "fileSyncMode" = "Datei-Synchronisationsmodus";
 
@@ -435,6 +455,12 @@
 /* loco:6989c851ba57b190ff0ebbf2 */
 "labelAllowTracking" = "Tracking erlauben";
 
+/* loco:6a0b062a269f9f6d54046565 */
+"labelAppID" = "App-Kennung";
+
+/* loco:6a155a770336fcc4820ebf57 */
+"labelApplicationName" = "Anwendungsname";
+
 /* loco:6989ff5b78003eb4e20e2652 */
 "labelFolder" = "Mappe";
 
@@ -447,8 +473,14 @@
 /* loco:698b5869ab41083f11042b52 */
 "labelNotifications" = "Benachrichtigung";
 
+/* loco:6a1561e8fb5669a82f04fe44 */
+"labelNotifyIfFileExcluded" = "Benachrichtigen, wenn Datei ausgeschlossen ist";
+
 /* loco:69a6e4aceff2d992ad059324 */
 "labelOff" = "Deaktiviert";
+
+/* loco:698b58377672899b9301a142 */
+"labelRules" = "Regeln";
 
 /* loco:698b2f6aae1ca9d0290ad174 */
 "labelSameAsSystem" = "Gleiches wie System";
@@ -529,6 +561,8 @@
 
 /* loco:698b1086dc2a328c000cfd92 */
 "notificationsDisabledNever" = "Niemals";
+/* loco:698b0181941b49c4f500aa15 */
+"notifyOnFileExcluded" = "Eine Benachrichtigung erhalten, wenn eine Datei ausgeschlossen wird";
 
 /* loco:698c5ab9945b7c6d260d4c22 */
 "onBoardingAdvancedSettingsDriveTitle" = "Synchronisation für dieses kDrive einrichten";
@@ -847,6 +881,17 @@
 
 /* loco:698aec0b7bde6b6260001c02 */
 "updateSettings" = "Update";
+/* loco:6a031b29945d3f97240ff954 */
+"userExclusionAppListHeaderDescription" = "Bestimmte Apps von der Synchronisierung ausschliessen.";
+
+/* loco:698b579544510089bf0fecf2 */
+"userExclusionFileListDescription" = "Fügen Sie Dateien hinzu, die von der Synchronisierung ausgeschlossen werden sollen.";
+
+/* loco:698b57bdb14da22c560da082 */
+"userExclusionFileListHeader" = "Benutzerdefinierte Ausschlussregeln";
+
+/* loco:6a031a88cfe46dc82b0c8162 */
+"userExclusionFileListHeaderDescription" = "Schliessen Sie bestimmte Dateitypen von der Synchronisierung aus.";
 
 /* loco:698b1713c1e8210103081e12 */
 "viewSourceCode" = "Quellcode anzeigen";

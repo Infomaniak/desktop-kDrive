@@ -16,16 +16,28 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import InfomaniakDI
 import kDriveCoreUI
+import kDriveResources
+import SwiftUI
 
-final class SynchroRulesPreferencesDetailViewController: TitledViewController<SynchroRulesPreferencesDetailView> {
-    convenience init(synchroRulesItem: SynchroRulesItem, exclusionRepository: ExclusionRepository) {
-        @InjectService var router: PreferencesViewRouter
-        self.init(
-            toolbarTitle: synchroRulesItem.title,
-            navigableRouter: router,
-            contentView: SynchroRulesPreferencesDetailView(repository: exclusionRepository, item: synchroRulesItem)
-        )
+struct SynchroRulesPreferencesDefaultAppList: View {
+    let defaultExcludedApps: [UIExclusionAppInfo]
+
+    var body: some View {
+        VStack(alignment: .leading) {
+            Table(defaultExcludedApps) {
+                TableColumn(KDriveLocalizable.labelName) { item in
+                    Text(item.displayName)
+                }
+
+                TableColumn(KDriveLocalizable.labelAppID) { item in
+                    Text(item.app)
+                }
+            }
+        }
     }
+}
+
+#Preview {
+    SynchroRulesPreferencesDefaultAppList(defaultExcludedApps: [])
 }

@@ -46,7 +46,7 @@ public enum KDriveLocalizable {
   /// loco:698b07cec1d08f40b50bc702
   public static let advancedSyncTitle = KDriveLocalizable.tr("Localizable", "advancedSyncTitle", fallback: "Advanced synchronizations")
   /// loco:6a01c8e3ba328c320801c492
-  public static let appsToExclude = KDriveLocalizable.tr("Localizable", "appsToExclude", fallback: "Apps to exclude")
+  public static let appToExclude = KDriveLocalizable.tr("Localizable", "appToExclude", fallback: "App to exclude")
   /// loco:698af4376b386d18b9037522
   public static let appUpToDate = KDriveLocalizable.tr("Localizable", "appUpToDate", fallback: "The application is up to date")
   /// loco:698b36f2eb276c03d00e7c07
@@ -63,6 +63,10 @@ public enum KDriveLocalizable {
   public static let betaProgramDescription = KDriveLocalizable.tr("Localizable", "betaProgramDescription", fallback: "Get early access to new versions of the application before they are released to the general public and help improve the app by sharing your ideas for enhancements with us.")
   /// loco:69a6d9b44d26dc09aa0d0643
   public static let betaProgramTitle = KDriveLocalizable.tr("Localizable", "betaProgramTitle", fallback: "Join the beta program")
+  /// loco:698af16617408ac0d8026b12
+  public static let betaSettings = KDriveLocalizable.tr("Localizable", "betaSettings", fallback: "Beta program")
+  /// loco:698b580c716d616edb0efde2
+  public static let buttonAddFileExclusionRule = KDriveLocalizable.tr("Localizable", "buttonAddFileExclusionRule", fallback: "Add a rule")
   /// loco:696a483470f3b70399021c12
   public static let buttonAddStorage = KDriveLocalizable.tr("Localizable", "buttonAddStorage", fallback: "Add Storage")
   /// loco:691deb2291b20ac7fd045012
@@ -121,6 +125,10 @@ public enum KDriveLocalizable {
   public static let buttonRefresh = KDriveLocalizable.tr("Localizable", "buttonRefresh", fallback: "Refresh")
   /// loco:69b275c6f0de2ef07706b5b3
   public static let buttonRemove = KDriveLocalizable.tr("Localizable", "buttonRemove", fallback: "Remove")
+  /// Plural format key: "%#@value@"
+  public static func buttonRemoveFileExclusionRule(_ p1: Int) -> String {
+    return KDriveLocalizable.tr("Localizable", "buttonRemoveFileExclusionRule", p1, fallback: "Plural format key: \"%#@value@\"")
+  }
   /// loco:698b07467beec481020cef52
   public static let buttonRemoveSync = KDriveLocalizable.tr("Localizable", "buttonRemoveSync", fallback: "Remove synchronization")
   /// loco:6964e1fd78f375ec03073c88
@@ -177,6 +185,14 @@ public enum KDriveLocalizable {
   public static let debugLogsDescription = KDriveLocalizable.tr("Localizable", "debugLogsDescription", fallback: "Allows Infomaniak support to identify the cause of an incident.")
   /// loco:698b35a408fd1ee25f08ab35
   public static let debugLogsSettings = KDriveLocalizable.tr("Localizable", "debugLogsSettings", fallback: "Debug logs")
+  /// loco:6a03193b7868f10c96083485
+  public static let defaultExclusionAppListDescription = KDriveLocalizable.tr("Localizable", "defaultExclusionAppListDescription", fallback: "These apps are ignored by default and cannot be modified.")
+  /// loco:698b571c5bf251efd60b88f2
+  public static let defaultExclusionFileListDescription = KDriveLocalizable.tr("Localizable", "defaultExclusionFileListDescription", fallback: "These files are excluded by default and cannot be modified.")
+  /// loco:698b56b72776ca5e2e084172
+  public static let defaultExclusionFileListHeader = KDriveLocalizable.tr("Localizable", "defaultExclusionFileListHeader", fallback: "Automatic exclusion")
+  /// loco:698c6c6e4f7e07503f0ba762
+  public static let dialogNewExclusionRuleTitle = KDriveLocalizable.tr("Localizable", "dialogNewExclusionRuleTitle", fallback: "Add an exclusion rule")
   /// loco:698c6bbd94b70c0d3d09cde4
   public static func dialogRemoveAccountContent(_ p1: Any) -> String {
     return KDriveLocalizable.tr("Localizable", "dialogRemoveAccountContent", String(describing: p1), fallback: "You will disconnect %@ from the application.\n\nThe synchronization folder will remain on your computer, but will no longer be synchronized with kDrive.\n\nAll your data will remain accessible online on kDrive.")
@@ -241,6 +257,8 @@ public enum KDriveLocalizable {
   public static let feedbackSetting = KDriveLocalizable.tr("Localizable", "feedbackSetting", fallback: "Help us improve kDrive")
   /// loco:69a560c0ef88a6b6b00e49a4
   public static let feedbackURL = KDriveLocalizable.tr("Localizable", "feedbackURL", fallback: "https://feedback.userreport.com/652ad8f0-84c8-4a21-9e31-7a8bd7134f46")
+  /// loco:6a072dcb891ba895c309fbc2
+  public static let fileExclusionNotificationWarning = KDriveLocalizable.tr("Localizable", "fileExclusionNotificationWarning", fallback: "A notification informs you when a file is excluded by this rule.")
   /// loco:698b00c7f04008f614070e52
   public static let filesToExclude = KDriveLocalizable.tr("Localizable", "filesToExclude", fallback: "Files to exclude")
   /// loco:698b05aa9eefd9ba070ce4a2
@@ -309,6 +327,10 @@ public enum KDriveLocalizable {
   public static let instructionRestartIfNecessary = KDriveLocalizable.tr("Localizable", "instructionRestartIfNecessary", fallback: "Restart the application if required")
   /// loco:6989c851ba57b190ff0ebbf2
   public static let labelAllowTracking = KDriveLocalizable.tr("Localizable", "labelAllowTracking", fallback: "Allow tracking")
+  /// loco:6a0b062a269f9f6d54046565
+  public static let labelAppID = KDriveLocalizable.tr("Localizable", "labelAppID", fallback: "Application Identifier")
+  /// loco:6a155a770336fcc4820ebf57
+  public static let labelApplicationName = KDriveLocalizable.tr("Localizable", "labelApplicationName", fallback: "Application Name")
   /// loco:6989ff5b78003eb4e20e2652
   public static let labelFolder = KDriveLocalizable.tr("Localizable", "labelFolder", fallback: "Folder")
   /// loco:698c656e3e4e4bbf4f02bde2
@@ -319,8 +341,12 @@ public enum KDriveLocalizable {
   public static let labelName = KDriveLocalizable.tr("Localizable", "labelName", fallback: "Name")
   /// loco:698b5869ab41083f11042b52
   public static let labelNotifications = KDriveLocalizable.tr("Localizable", "labelNotifications", fallback: "Notification")
+  /// loco:6a1561e8fb5669a82f04fe44
+  public static let labelNotifyIfFileExcluded = KDriveLocalizable.tr("Localizable", "labelNotifyIfFileExcluded", fallback: "Notify if file excluded")
   /// loco:69a6e4aceff2d992ad059324
   public static let labelOff = KDriveLocalizable.tr("Localizable", "labelOff", fallback: "Off")
+  /// loco:698b58377672899b9301a142
+  public static let labelRules = KDriveLocalizable.tr("Localizable", "labelRules", fallback: "Rules")
   /// loco:698b2f6aae1ca9d0290ad174
   public static let labelSameAsSystem = KDriveLocalizable.tr("Localizable", "labelSameAsSystem", fallback: "Same as system")
   /// loco:6989ff974ef31503cb002e23
@@ -371,6 +397,8 @@ public enum KDriveLocalizable {
   public static let notificationsDisabledAlways = KDriveLocalizable.tr("Localizable", "notificationsDisabledAlways", fallback: "Always")
   /// loco:698b1086dc2a328c000cfd92
   public static let notificationsDisabledNever = KDriveLocalizable.tr("Localizable", "notificationsDisabledNever", fallback: "Never")
+  /// loco:698b0181941b49c4f500aa15
+  public static let notifyOnFileExcluded = KDriveLocalizable.tr("Localizable", "notifyOnFileExcluded", fallback: "Receive a notification when a file is excluded")
   /// loco:698b0aaddee0bf9fb206a694
   public static let notSyncedDrive = KDriveLocalizable.tr("Localizable", "notSyncedDrive", fallback: "Not synchronized")
   /// loco:698c5b3fa3cb0fe14205ddb5
@@ -595,6 +623,14 @@ public enum KDriveLocalizable {
   }
   /// loco:698aec0b7bde6b6260001c02
   public static let updateSettings = KDriveLocalizable.tr("Localizable", "updateSettings", fallback: "Update")
+  /// loco:6a031b29945d3f97240ff954
+  public static let userExclusionAppListHeaderDescription = KDriveLocalizable.tr("Localizable", "userExclusionAppListHeaderDescription", fallback: "Exclude certain apps from synchronization.")
+  /// loco:698b579544510089bf0fecf2
+  public static let userExclusionFileListDescription = KDriveLocalizable.tr("Localizable", "userExclusionFileListDescription", fallback: "Add files to exclude from sync.")
+  /// loco:698b57bdb14da22c560da082
+  public static let userExclusionFileListHeader = KDriveLocalizable.tr("Localizable", "userExclusionFileListHeader", fallback: "Custom exclusion rules")
+  /// loco:6a031a88cfe46dc82b0c8162
+  public static let userExclusionFileListHeaderDescription = KDriveLocalizable.tr("Localizable", "userExclusionFileListHeaderDescription", fallback: "Exclude certain file types from synchronization.")
   /// loco:698b1713c1e8210103081e12
   public static let viewSourceCode = KDriveLocalizable.tr("Localizable", "viewSourceCode", fallback: "View source code")
 }

@@ -4,7 +4,7 @@
  * Locale: fr, French
  * Tagged: macOS
  * Exported by: Killian Mathias
- * Exported at: Tue, 14 Apr 2026 11:05:52 +0200
+ * Exported at: Tue, 26 May 2026 11:05:08 +0200
  */
 
 
@@ -83,6 +83,8 @@
 /* loco:6989c851ba57b190ff0ebbf2
  * Allow tracking */
 "allowTrackingLabel" = "Permettre le suivi";
+/* loco:6a01c8e3ba328c320801c492 */
+"appToExclude" = "Application à exclure";
 
 /* loco:698af4376b386d18b9037522 */
 "appUpToDate" = "L’application est à jour";
@@ -117,6 +119,12 @@
 
 /* loco:69a6d9b44d26dc09aa0d0643 */
 "betaProgramTitle" = "Rejoindre le programme bêta";
+
+/* loco:698af16617408ac0d8026b12 */
+"betaSettings" = "Programme bêta";
+
+/* loco:698b580c716d616edb0efde2 */
+"buttonAddFileExclusionRule" = "Ajouter une règle";
 
 /* loco:696a483470f3b70399021c12 */
 "buttonAddStorage" = "Ajouter du stockage";
@@ -287,6 +295,18 @@
 /* loco:698b35a408fd1ee25f08ab35 */
 "debugLogsSettings" = "Journaux de débogage";
 
+/* loco:6a03193b7868f10c96083485 */
+"defaultExclusionAppListDescription" = "Ces applications sont ignorées par défaut et ne peuvent pas être modifiées.";
+
+/* loco:698b571c5bf251efd60b88f2 */
+"defaultExclusionFileListDescription" = "Ces fichiers sont ignorés par défaut et ne peuvent pas être modifiés.";
+
+/* loco:698b56b72776ca5e2e084172 */
+"defaultExclusionFileListHeader" = "Exclusion automatique";
+
+/* loco:698c6c6e4f7e07503f0ba762 */
+"dialogNewExclusionRuleTitle" = "Ajouter une règle d’exclusion";
+
 /* loco:698c6bbd94b70c0d3d09cde4 */
 "dialogRemoveAccountContent" = "Vous allez déconnecter %@ de l’application.\n\nLe dossier de synchronisation restera sur votre ordinateur, mais ne sera plus synchronisé avec kDrive.\n\nToutes vos données resteront accessibles en ligne sur kDrive.";
 
@@ -379,6 +399,9 @@
 /* loco:69a560c0ef88a6b6b00e49a4 */
 "feedbackURL" = "https://feedback.userreport.com/fe6ca4b6-5812-4f39-8ca6-5f2300aecda6";
 
+/* loco:6a072dcb891ba895c309fbc2 */
+"fileExclusionNotificationWarning" = "Une notification vous informe lorsqu’un fichier est exclu par cette règle.";
+
 /* loco:698b05aa9eefd9ba070ce4a2 */
 "fileSyncMode" = "Mode de synchronisation des fichiers";
 
@@ -469,6 +492,12 @@
 /* loco:6989c851ba57b190ff0ebbf2 */
 "labelAllowTracking" = "Autoriser le suivi";
 
+/* loco:6a0b062a269f9f6d54046565 */
+"labelAppID" = "Identifiant de l’application";
+
+/* loco:6a155a770336fcc4820ebf57 */
+"labelApplicationName" = "Nom de l’application";
+
 /* loco:6989ff5b78003eb4e20e2652 */
 "labelFolder" = "Dossier";
 
@@ -481,8 +510,14 @@
 /* loco:698b5869ab41083f11042b52 */
 "labelNotifications" = "Notification";
 
+/* loco:6a1561e8fb5669a82f04fe44 */
+"labelNotifyIfFileExcluded" = "Notifier si fichier exclu";
+
 /* loco:69a6e4aceff2d992ad059324 */
 "labelOff" = "Désactivé";
+
+/* loco:698b58377672899b9301a142 */
+"labelRules" = "Règles";
 
 /* loco:698b2f6aae1ca9d0290ad174 */
 "labelSameAsSystem" = "Identique au système";
@@ -564,6 +599,9 @@
 
 /* loco:698b1086dc2a328c000cfd92 */
 "notificationsDisabledNever" = "Jamais";
+
+/* loco:698b0181941b49c4f500aa15 */
+"notifyOnFileExcluded" = "Recevoir une notification lorsqu’un fichier est exclu";
 
 /* loco:698c5ab9945b7c6d260d4c22 */
 "onBoardingAdvancedSettingsDriveTitle" = "Configurer la synchronisation pour ce kDrive";
@@ -879,6 +917,18 @@
 
 /* loco:698aec0b7bde6b6260001c02 */
 "updateSettings" = "Mise à jour";
+
+/* loco:6a031b29945d3f97240ff954 */
+"userExclusionAppListHeaderDescription" = "Excluez certaines applications de la synchronisation.";
+
+/* loco:698b579544510089bf0fecf2 */
+"userExclusionFileListDescription" = "Ajouter des fichiers à exclure de la synchronisation.";
+
+/* loco:698b57bdb14da22c560da082 */
+"userExclusionFileListHeader" = "Règles d’exclusion personnalisées";
+
+/* loco:6a031a88cfe46dc82b0c8162 */
+"userExclusionFileListHeaderDescription" = "Excluez certains types de fichiers de la synchronisation.";
 
 /* loco:698b1713c1e8210103081e12 */
 "viewSourceCode" = "Voir le code source";

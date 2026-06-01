@@ -29,6 +29,7 @@ final class PreferencesSplitViewController: IKSplitViewController {
 
     private let viewModel = PreferencesViewModel()
     private let repository = PreferencesRepository()
+    private let exclusionRepository = ExclusionRepository()
 
     private var bindStore = Set<AnyCancellable>()
 
@@ -41,8 +42,11 @@ final class PreferencesSplitViewController: IKSplitViewController {
     override func viewWillAppear() {
         super.viewWillAppear()
         Task {
-            async let _ = repository.refreshData()
-            async let _ = viewModel.fetchInitialData()
+            async let repositoryRefresh: Void? = try? repository.refreshData()
+            async let exclusionRefresh: Void? = try? exclusionRepository.refreshData()
+            async let initialDataFetch: Void = viewModel.fetchInitialData()
+
+            _ = await (repositoryRefresh, exclusionRefresh, initialDataFetch)
         }
     }
 
@@ -106,7 +110,10 @@ final class PreferencesSplitViewController: IKSplitViewController {
         case .synchroRules:
             contentViewController = SynchroRulesPreferencesViewController()
         case .synchroRulesDetail(let synchroRulesItem):
-            contentViewController = SynchroRulesPreferencesDetailViewController(synchroRulesItem: synchroRulesItem)
+            contentViewController = SynchroRulesPreferencesDetailViewController(
+                synchroRulesItem: synchroRulesItem,
+                exclusionRepository: exclusionRepository
+            )
         default:
             contentViewController = GeneralPreferencesViewController(repository: repository, viewModel: viewModel)
         }
