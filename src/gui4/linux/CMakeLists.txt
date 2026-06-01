@@ -79,18 +79,6 @@ set(GUI_QML_RESOURCE_FILES # Resources for the QML files (e.g. qmldir, js files,
 )
 
 set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
-        ui/assets/onboarding/lotties/dark/check.lottie
-        ui/assets/onboarding/lotties/dark/loader-stroke.lottie
-        ui/assets/onboarding/lotties/dark/offline.lottie
-        ui/assets/onboarding/lotties/dark/pause.lottie
-        ui/assets/onboarding/lotties/dark/sync.lottie
-        ui/assets/onboarding/lotties/dark/syncro-file.lottie
-        ui/assets/onboarding/lotties/light/check.lottie
-        ui/assets/onboarding/lotties/light/loader-stroke.lottie
-        ui/assets/onboarding/lotties/light/offline.lottie
-        ui/assets/onboarding/lotties/light/pause.lottie
-        ui/assets/onboarding/lotties/light/sync.lottie
-        ui/assets/onboarding/lotties/light/syncro-file.lottie
         ui/assets/tray/error.svg
         ui/assets/tray/neutral.svg
         ui/assets/tray/notif.svg
