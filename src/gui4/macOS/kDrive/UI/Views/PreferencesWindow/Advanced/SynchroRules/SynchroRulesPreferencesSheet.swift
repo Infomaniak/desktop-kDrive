@@ -1,4 +1,3 @@
-//
 /*
  Infomaniak kDrive - Desktop
  Copyright (C) 2023-2026 Infomaniak Network SA
@@ -25,17 +24,17 @@ import SwiftUI
 struct SynchroRulesPreferencesSheet: View {
     @Environment(\.dismiss) private var dismiss
 
-    let item: SynchroRulesItem
-    let repository: ExclusionRepository
+    @State private var appId = ""
+    @State private var input = ""
+    @State private var isNotified = false
+    @State private var isCreatingExclusion = false
 
     @Binding var userExcludedApps: [UIExclusionAppInfo]
     @Binding var userExcludedTemplates: [UIExclusionTemplateInfo]
     @Binding var appList: [String: String]
 
-    @State private var appId = ""
-    @State private var input = ""
-    @State private var isNotified = false
-    @State private var isCreatingExclusion = false
+    let item: SynchroRulesItem
+    let repository: ExclusionRepository
 
     private var canAddRule: Bool {
         if item == .files {
@@ -60,6 +59,7 @@ struct SynchroRulesPreferencesSheet: View {
                 .font(.Tokens.headline)
                 .foregroundStyle(ColorToken.Text.primary.asColor)
                 .padding(.bottom, AppPadding.padding4)
+
             Form {
                 if item == .files {
                     Text(KDriveLocalizable.excludeRuleDescription)
@@ -90,6 +90,7 @@ struct SynchroRulesPreferencesSheet: View {
                     dismiss()
                 }
             }
+
             ToolbarItem(placement: .confirmationAction) {
                 LoadingButton(isLoading: $isCreatingExclusion) {
                     switch item {
@@ -147,10 +148,10 @@ struct SynchroRulesPreferencesSheet: View {
 
 #Preview {
     SynchroRulesPreferencesSheet(
-        item: .apps,
-        repository: ExclusionRepository(),
         userExcludedApps: .constant([]),
         userExcludedTemplates: .constant([]),
-        appList: .constant([:])
+        appList: .constant([:]),
+        item: .apps,
+        repository: ExclusionRepository()
     )
 }

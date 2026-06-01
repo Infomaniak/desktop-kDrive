@@ -1,4 +1,3 @@
-//
 /*
  Infomaniak kDrive - Desktop
  Copyright (C) 2023-2026 Infomaniak Network SA
@@ -22,7 +21,8 @@ import kDriveResources
 import SwiftUI
 
 struct SynchroRulesPreferencesDefaultAppList: View {
-    @Binding var defaultExcludedApps: [UIExclusionAppInfo]
+    let defaultExcludedApps: [UIExclusionAppInfo]
+
     var body: some View {
         VStack(alignment: .leading) {
             Table(defaultExcludedApps) {
@@ -39,5 +39,5 @@ struct SynchroRulesPreferencesDefaultAppList: View {
 }
 
 #Preview {
-    SynchroRulesPreferencesDefaultAppList(defaultExcludedApps: .constant([]))
+    SynchroRulesPreferencesDefaultAppList(defaultExcludedApps: [])
 }

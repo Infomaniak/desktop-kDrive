@@ -65,7 +65,6 @@ public enum KDriveLocalizable {
   public static let betaProgramTitle = KDriveLocalizable.tr("Localizable", "betaProgramTitle", fallback: "Join the beta program")
   /// loco:698af16617408ac0d8026b12
   public static let betaSettings = KDriveLocalizable.tr("Localizable", "betaSettings", fallback: "Beta program")
-
   /// loco:698b580c716d616edb0efde2
   public static let buttonAddFileExclusionRule = KDriveLocalizable.tr("Localizable", "buttonAddFileExclusionRule", fallback: "Add a rule")
   /// loco:696a483470f3b70399021c12

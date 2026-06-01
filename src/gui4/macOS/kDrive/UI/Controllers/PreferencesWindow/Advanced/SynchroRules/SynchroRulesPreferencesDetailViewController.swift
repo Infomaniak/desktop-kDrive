@@ -25,7 +25,7 @@ final class SynchroRulesPreferencesDetailViewController: TitledViewController<Sy
         self.init(
             toolbarTitle: synchroRulesItem.title,
             navigableRouter: router,
-            contentView: SynchroRulesPreferencesDetailView(item: synchroRulesItem, repository: exclusionRepository)
+            contentView: SynchroRulesPreferencesDetailView(repository: exclusionRepository, item: synchroRulesItem)
         )
     }
 }

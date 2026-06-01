@@ -1,4 +1,3 @@
-//
 /*
  Infomaniak kDrive - Desktop
  Copyright (C) 2023-2026 Infomaniak Network SA
@@ -23,10 +22,12 @@ import kDriveResources
 import SwiftUI
 
 struct SynchroRulesPreferencesUserTemplateList: View {
-    let repository: ExclusionRepository
+    @State var selectedTemplates = Set<UIExclusionTemplateInfo.ID>()
+
     @Binding var userExcludedTemplates: [UIExclusionTemplateInfo]
 
-    @State var selectedTemplates = Set<UIExclusionTemplateInfo.ID>()
+    let repository: ExclusionRepository
+
     var body: some View {
         VStack(alignment: .leading) {
             Table(userExcludedTemplates) {
@@ -66,28 +67,12 @@ struct SynchroRulesPreferencesUserTemplateList: View {
             }
 
             HStack {
-                Button(KDriveLocalizable.buttonRemoveFileExclusionRule(selectedTemplates.count),
-                       role: .destructive) {
-                    let oldExcludedTemplates = userExcludedTemplates
-                    let oldSelectedTemplates = selectedTemplates
-
-                    userExcludedTemplates = userExcludedTemplates.filter {
-                        !selectedTemplates.contains($0.id)
-                    }
-                    selectedTemplates.removeAll()
-
-                    Task {
-                        do {
-                            try await repository.updateTemplates(updatedTemplates: userExcludedTemplates)
-                        } catch {
-                            userExcludedTemplates = oldExcludedTemplates
-                            selectedTemplates = oldSelectedTemplates
-                        }
-                    }
+                Button(KDriveLocalizable.buttonRemoveFileExclusionRule(selectedTemplates.count), role: .destructive) {
+                    removeFileExclusionRule()
                 }
                 .foregroundStyle(.red)
 
-                Button(KDriveLocalizable.buttonCancel) {
+                Button(KDriveLocalizable.buttonCancel, role: .cancel) {
                     selectedTemplates.removeAll()
                 }
                 .buttonStyle(.borderless)
@@ -96,7 +81,26 @@ struct SynchroRulesPreferencesUserTemplateList: View {
         }
     }
 
-    func updateToggleInRepository() {
+    private func removeFileExclusionRule() {
+        let oldExcludedTemplates = userExcludedTemplates
+        let oldSelectedTemplates = selectedTemplates
+
+        userExcludedTemplates = userExcludedTemplates.filter {
+            !selectedTemplates.contains($0.id)
+        }
+        selectedTemplates.removeAll()
+
+        Task {
+            do {
+                try await repository.updateTemplates(updatedTemplates: userExcludedTemplates)
+            } catch {
+                userExcludedTemplates = oldExcludedTemplates
+                selectedTemplates = oldSelectedTemplates
+            }
+        }
+    }
+
+    private func updateToggleInRepository() {
         Task {
             do {
                 try await repository.updateTemplates(updatedTemplates: userExcludedTemplates)
@@ -108,5 +112,5 @@ struct SynchroRulesPreferencesUserTemplateList: View {
 }
 
 #Preview {
-    SynchroRulesPreferencesUserTemplateList(repository: ExclusionRepository(), userExcludedTemplates: .constant([]))
+    SynchroRulesPreferencesUserTemplateList(userExcludedTemplates: .constant([]), repository: ExclusionRepository())
 }

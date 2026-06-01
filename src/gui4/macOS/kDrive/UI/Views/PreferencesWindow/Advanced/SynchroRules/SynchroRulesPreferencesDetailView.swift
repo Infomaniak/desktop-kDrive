@@ -22,11 +22,12 @@ import kDriveResources
 import SwiftUI
 
 struct SynchroRulesPreferencesDetailView: View {
-    let item: SynchroRulesItem
-    @ObservedObject var repository: ExclusionRepository
-
     @State private var isShowingSheet = false
     @State private var appList: [String: String] = [:]
+
+    @ObservedObject var repository: ExclusionRepository
+
+    let item: SynchroRulesItem
 
     private var isButtonDisabled: Bool {
         return item == .apps && appList.isEmpty
@@ -44,14 +45,18 @@ struct SynchroRulesPreferencesDetailView: View {
                 }
 
                 if item == .apps {
-                    SynchroRulesPreferencesDefaultAppList(defaultExcludedApps: $repository.exclusionInfo.defaultExcludedApps)
+                    SynchroRulesPreferencesDefaultAppList(
+                        defaultExcludedApps: repository.exclusionInfo.defaultExcludedApps
+                    )
                 } else {
-                    SynchroRulesPreferencesDefaultTemplateList(defaultExcludedTemplates: $repository.exclusionInfo
-                        .defaultExcludedTemplates)
+                    SynchroRulesPreferencesDefaultTemplateList(
+                        defaultExcludedTemplates: repository.exclusionInfo.defaultExcludedTemplates
+                    )
                 }
             }
-            VStack(alignment: .leading, spacing: 16) {
-                VStack(alignment: .leading, spacing: 8) {
+
+            VStack(alignment: .leading, spacing: AppPadding.padding16) {
+                VStack(alignment: .leading, spacing: AppPadding.padding8) {
                     Text(KDriveLocalizable.userExclusionFileListHeader)
 
                     Text(item.headerDescription)
@@ -67,26 +72,27 @@ struct SynchroRulesPreferencesDetailView: View {
 
                 if item == .apps {
                     SynchroRulesPreferencesUserAppList(
-                        repository: repository,
-                        userExcludedApps: $repository.exclusionInfo.userExcludedApps
+                        userExcludedApps: $repository.exclusionInfo.userExcludedApps,
+                        repository: repository
                     )
                 } else {
                     SynchroRulesPreferencesUserTemplateList(
-                        repository: repository,
-                        userExcludedTemplates: $repository.exclusionInfo.userExcludedTemplates
+                        userExcludedTemplates: $repository.exclusionInfo.userExcludedTemplates,
+                        repository: repository
                     )
                 }
             }
             .sheet(isPresented: $isShowingSheet) {
                 SynchroRulesPreferencesSheet(
-                    item: item,
-                    repository: repository,
                     userExcludedApps: $repository.exclusionInfo.userExcludedApps,
-                    userExcludedTemplates: $repository.exclusionInfo.userExcludedTemplates, appList: $appList
+                    userExcludedTemplates: $repository.exclusionInfo.userExcludedTemplates,
+                    appList: $appList,
+                    item: item,
+                    repository: repository
                 )
             }
         }
-        .padding(AppPadding.padding24)
+        .padding(AppPadding.page)
         .onAppear(perform: getAppList)
     }
 
@@ -98,7 +104,6 @@ struct SynchroRulesPreferencesDetailView: View {
                     .filter { !userExcludedAppIdentifiers.contains($0.key) }
 
                 appList = dict
-
             } catch {
                 print("Error while fetching app list: \(error)")
             }
@@ -107,5 +112,5 @@ struct SynchroRulesPreferencesDetailView: View {
 }
 
 #Preview {
-    SynchroRulesPreferencesDetailView(item: .apps, repository: ExclusionRepository())
+    SynchroRulesPreferencesDetailView(repository: ExclusionRepository(), item: .apps)
 }

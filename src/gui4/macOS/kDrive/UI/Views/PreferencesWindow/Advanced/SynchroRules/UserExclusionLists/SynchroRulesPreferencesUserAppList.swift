@@ -21,10 +21,11 @@ import kDriveResources
 import SwiftUI
 
 struct SynchroRulesPreferencesUserAppList: View {
-    let repository: ExclusionRepository
+    @State var selectedApps = Set<UIExclusionAppInfo.ID>()
+
     @Binding var userExcludedApps: [UIExclusionAppInfo]
 
-    @State var selectedApps = Set<UIExclusionAppInfo.ID>()
+    let repository: ExclusionRepository
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -52,33 +53,36 @@ struct SynchroRulesPreferencesUserAppList: View {
             }
 
             HStack {
-                Button(KDriveLocalizable.buttonRemoveFileExclusionRule(selectedApps.count),
-                       role: .destructive) {
-                    let newExcludedApps: [UIExclusionAppInfo] = userExcludedApps.filter {
-                        !selectedApps.contains($0.id)
-                    }
-
-                    Task {
-                        do {
-                            try await repository.updateApps(updatedApps: newExcludedApps)
-                            userExcludedApps = newExcludedApps
-                            selectedApps.removeAll()
-                        } catch {
-                            print("Error \(error.localizedDescription)")
-                        }
-                    }
+                Button(KDriveLocalizable.buttonRemoveFileExclusionRule(selectedApps.count), role: .destructive) {
+                    removeFileExclusionRule()
                 }
                 .foregroundStyle(.red)
 
-                Button(KDriveLocalizable.buttonCancel) {
+                Button(KDriveLocalizable.buttonCancel, role: .cancel) {
                     selectedApps.removeAll()
                 }
             }
             .opacity(selectedApps.isEmpty ? 0 : 1)
         }
     }
+
+    private func removeFileExclusionRule() {
+        let newExcludedApps: [UIExclusionAppInfo] = userExcludedApps.filter {
+            !selectedApps.contains($0.id)
+        }
+
+        Task {
+            do {
+                try await repository.updateApps(updatedApps: newExcludedApps)
+                userExcludedApps = newExcludedApps
+                selectedApps.removeAll()
+            } catch {
+                print("Error \(error.localizedDescription)")
+            }
+        }
+    }
 }
 
 #Preview {
-    SynchroRulesPreferencesUserAppList(repository: ExclusionRepository(), userExcludedApps: .constant([]))
+    SynchroRulesPreferencesUserAppList(userExcludedApps: .constant([]), repository: ExclusionRepository())
 }

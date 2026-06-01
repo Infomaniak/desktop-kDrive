@@ -1,4 +1,3 @@
-//
 /*
  Infomaniak kDrive - Desktop
  Copyright (C) 2023-2026 Infomaniak Network SA
@@ -22,7 +21,8 @@ import kDriveResources
 import SwiftUI
 
 struct SynchroRulesPreferencesDefaultTemplateList: View {
-    @Binding var defaultExcludedTemplates: [UIExclusionTemplateInfo]
+    let defaultExcludedTemplates: [UIExclusionTemplateInfo]
+
     var body: some View {
         VStack(alignment: .leading) {
             Table(defaultExcludedTemplates) {
@@ -36,5 +36,5 @@ struct SynchroRulesPreferencesDefaultTemplateList: View {
 }
 
 #Preview {
-    SynchroRulesPreferencesDefaultTemplateList(defaultExcludedTemplates: .constant([]))
+    SynchroRulesPreferencesDefaultTemplateList(defaultExcludedTemplates: [])
 }
