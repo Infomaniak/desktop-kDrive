@@ -86,7 +86,7 @@ extension HomeState {
 
 struct SynchroStatusView: View {
     let state: HomeState
-    let synchroDbId: Int?
+    let synchroDbId: UISynchro.ID?
 
     var body: some View {
         VStack(spacing: AppPadding.padding32) {
@@ -155,10 +155,11 @@ struct SynchroStatusView: View {
     }
 
     func resumeSynchro() {
-        guard let syncDbId = synchroDbId else { return }
+        guard let synchroDbId else { return }
+
         Task {
             do {
-                try await SyncJobs().startSync(syncDbId: Int32(syncDbId))
+                try await SyncJobs().startSync(syncDbId: Int32(synchroDbId))
             } catch {
                 IKLogger.general.error("Failed to resume synchro: \(error)")
             }
