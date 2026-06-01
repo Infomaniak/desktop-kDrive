@@ -23,6 +23,11 @@ struct ErrorInfoListQuery: Codable, Sendable {
     let limit: Int32
 }
 
+struct ErrorResolveConflictsQuery: Codable, Sendable {
+    let keepLocalErrorDbIdList: [Int32]
+    let keepRemoteErrorDbIdList: [Int32]
+}
+
 struct ErrorInfoListResponse: Codable, Sendable {
     let errorInfoList: [ErrorInfoMetadata]
 }
