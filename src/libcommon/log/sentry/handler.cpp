@@ -192,6 +192,13 @@ void Handler::init(AppType appType, int breadCrumbsSize, const std::string &dsnO
 
     // Sentry init
     sentry_options_t *options = sentry_options_new();
+    const auto cleanupBeforeSentryInit = [&options] {
+        sentry_options_free(options);
+        options = nullptr;
+        _instance.reset();
+        _appType = AppType::None;
+    };
+
     if (!dsnOverride.empty()) {
         sentry_options_set_dsn(options, dsnOverride.c_str());
     } else {
@@ -207,6 +214,7 @@ void Handler::init(AppType appType, int breadCrumbsSize, const std::string &dsnO
                 break;
             default:
                 assert(false && "Invalid app type for sentry initialization");
+                cleanupBeforeSentryInit();
                 return;
         }
     }
@@ -229,6 +237,7 @@ void Handler::init(AppType appType, int breadCrumbsSize, const std::string &dsnO
                 break;
             default:
                 assert(false && "Invalid app type for sentry initialization");
+                cleanupBeforeSentryInit();
                 return;
         }
     }
@@ -262,8 +271,7 @@ void Handler::init(AppType appType, int breadCrumbsSize, const std::string &dsnO
         sentry_options_set_environment(options, "dev_unknown");
 #endif
     } else if (environment.empty()) { // Disable sentry
-        _instance.reset();
-        _appType = AppType::None;
+        cleanupBeforeSentryInit();
         return;
     } else {
         environment = "dev_" + environment; // We add a prefix to avoid any conflict with the sentry environment.
