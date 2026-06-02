@@ -261,6 +261,17 @@ bool Utility::runCommand(const std::string &launchPath, const std::vector<std::s
         [task setArguments:args];
 
         NSPipe *pipe = [NSPipe pipe];
+        NSFileHandle *readHandle = [pipe fileHandleForReading];
+        NSMutableData *outputData = [NSMutableData data];
+        [readHandle setReadabilityHandler:^(NSFileHandle *fileHandle) {
+          NSData *data = [fileHandle availableData];
+          if ([data length] == 0) {
+              [fileHandle setReadabilityHandler:nil];
+              return;
+          }
+
+          [outputData appendData:data];
+        }];
         [task setStandardOutput:pipe];
         [task setStandardError:pipe];
 
@@ -271,11 +282,17 @@ bool Utility::runCommand(const std::string &launchPath, const std::vector<std::s
         }
 
         [task waitUntilExit];
+        [readHandle setReadabilityHandler:nil];
+
+        NSData *remainingData = [readHandle readDataToEndOfFile];
+        if ([remainingData length] != 0) {
+            [outputData appendData:remainingData];
+        }
+
         const int status = [task terminationStatus];
 
         if (status != 0) {
-            NSData *data = [[pipe fileHandleForReading] readDataToEndOfFile];
-            NSString *output = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+            NSString *output = [[NSString alloc] initWithData:outputData encoding:NSUTF8StringEncoding];
             LOG_WARN(logger(),
                      "Command " << launchPath << " exited with status " << status << ", output: " << [output UTF8String]);
         }
