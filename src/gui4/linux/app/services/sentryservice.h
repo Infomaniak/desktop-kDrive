@@ -18,10 +18,7 @@
 
 #pragma once
 
-#include "app/cache/appcache.h"
-#include "app/services/commservice.h"
 #include "libcommon/info/parametersinfo.h"
-#include "libcommon/log/sentry/handler.h"
 
 #include <QObject>
 #include <QString>
@@ -30,6 +27,9 @@
 #include <string>
 
 namespace KDC {
+
+class AppCache;
+class CommService;
 
 /**
  * Linux v4 Sentry coordinator.
@@ -50,6 +50,7 @@ class SentryService final : public QObject {
         [[nodiscard]] static bool isInitialized();
 
         static void reportError(const std::string &title, const std::string &message);
+        static void reportError(const QString &title, const QString &message);
         [[noreturn]] static void reportFatalAndExit(const std::string &title, const std::string &message);
 
         void reconcileConsentWithServer();
