@@ -382,8 +382,6 @@ bool Utility::runCommand(const std::string &launchPath, const std::vector<std::s
     argv.push_back(nullptr);
 
     pid_t pid = 0;
-    extern char **environ;
-
     int spawnStatus = posix_spawnp(&pid, launchPath.c_str(), nullptr, nullptr, argv.data(), environ);
     if (spawnStatus != 0) {
         LOG_ERROR(logger(), "Failed to spawn process " << launchPath << ": " << strerror(spawnStatus));
