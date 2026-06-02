@@ -50,6 +50,10 @@ bool OnboardingFlowController::loginInProgress() const {
     return _loginState == WaitingForWebAuthentication || _loginState == LoadingUser;
 }
 
+bool OnboardingFlowController::waitingForWebAuthentication() const {
+    return _loginState == WaitingForWebAuthentication;
+}
+
 bool OnboardingFlowController::loginFailed() const {
     return _loginState == LoginError;
 }
@@ -83,7 +87,7 @@ QString OnboardingFlowController::title() const {
 }
 
 void OnboardingFlowController::requestLogin() {
-    if (_currentStep != Login || loginInProgress()) {
+    if (_currentStep != Login || _loginState == LoadingUser) {
         return;
     }
 
@@ -92,7 +96,7 @@ void OnboardingFlowController::requestLogin() {
     emit loginRequested();
 }
 
-void OnboardingFlowController::requestAccountCreation() {
+void OnboardingFlowController::requestAccountCreation() const {
     if (_currentStep != Login || loginInProgress()) {
         return;
     }
