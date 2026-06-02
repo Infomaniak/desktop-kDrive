@@ -74,13 +74,20 @@ ExitInfo RemoteFileSystemObserverWorker::updateLongPollJobs(const std::vector<Re
     }
 
     for (const auto &remoteDirId: remoteDirIds) {
-        if (longPollJobs.contains(remoteDirId)) {
-            if (SyncJobManagerSingleton::instance()->isJobFinished(longPollJobs[remoteDirId]->jobId()))
-                (void) longPollJobs.erase(remoteDirId);
-            else
-                continue;
-        }
+        if (longPollJobs.contains(remoteDirId) &&
+            !SyncJobManagerSingleton::instance()->isJobFinished(longPollJobs[remoteDirId]->jobId()))
+            continue;
 
+        bool hasChanges = false;
+        if (const auto exitInfo = checkIfRemoteDirHasChanges(remoteDirId, ForcedUpdate::None, longPollJobs, hasChanges);
+            !exitInfo)
+            return exitInfo;
+
+        if (hasChanges) continue;
+
+        // The long poll job has finished and no changes were detected: we can start a new long poll job for this remote
+        // directory.
+        (void) longPollJobs.erase(remoteDirId);
         if (const auto exitInfo = createLongPollJob(remoteDirId, longPollJobs[remoteDirId]); !exitInfo) return exitInfo;
 
         SyncJobManagerSingleton::instance()->queueAsyncJob(longPollJobs[remoteDirId], Poco::Thread::PRIO_LOW);
@@ -89,12 +96,20 @@ ExitInfo RemoteFileSystemObserverWorker::updateLongPollJobs(const std::vector<Re
     return ExitCode::Ok;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::checkIfRemoteDirHasChanges(const RemoteNodeId &remoteDirId, const bool hasForcedChanges,
+ExitInfo RemoteFileSystemObserverWorker::checkIfRemoteDirHasChanges(const RemoteNodeId &remoteDirId,
+                                                                    const ForcedUpdate updateFlag,
                                                                     const LongPollJobMap &longPollJobs, bool &hasChanges) {
     hasChanges = false;
 
-    if (hasForcedChanges) {
+    if (updateFlag == ForcedUpdate::Asked) {
         hasChanges = true;
+
+        return ExitCode::Ok;
+    }
+
+    if (!longPollJobs.contains(remoteDirId)) {
+        hasChanges = false;
+
         return ExitCode::Ok;
     }
 
@@ -140,11 +155,11 @@ ExitInfo RemoteFileSystemObserverWorker::checkIfRemoteDirHasChanges(const Remote
 
 ExitInfo RemoteFileSystemObserverWorker::processEvents(const std::vector<RemoteNodeId> &specialFoldersRemoteIds,
                                                        LongPollJobMap &longPollJobs) {
-    const bool hasForcedChanges = initializing() || updating();
+    const ForcedUpdate updateFlag = initializing() || updating() ? ForcedUpdate::Asked : ForcedUpdate::None;
 
     for (const auto &remoteDirId: specialFoldersRemoteIds) {
         bool hasChanges = false;
-        if (const auto exitInfo = checkIfRemoteDirHasChanges(remoteDirId, hasForcedChanges, longPollJobs, hasChanges); !exitInfo)
+        if (const auto exitInfo = checkIfRemoteDirHasChanges(remoteDirId, updateFlag, longPollJobs, hasChanges); !exitInfo)
             return exitInfo;
 
         if (!hasChanges) continue;
