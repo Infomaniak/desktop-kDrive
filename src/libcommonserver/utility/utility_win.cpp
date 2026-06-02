@@ -605,4 +605,67 @@ void Utility::unixTimeToFiletime(time_t t, FILETIME *filetime) {
     filetime->dwLowDateTime = (DWORD) ll;
     filetime->dwHighDateTime = ll >> 32;
 }
+
+bool Utility::longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound) {
+    int length = GetLongPathNameW(shortPathIn.native().c_str(), 0, 0);
+    if (!length) {
+        const bool exists = !utility_base::isLikeFileNotFoundError(GetLastError());
+        if (!exists) {
+            notFound = true;
+        }
+        return false;
+    }
+
+    SyncChar *buffer = new SyncChar[length + 1];
+    if (!buffer) {
+        return false;
+    }
+
+    length = GetLongPathNameW(shortPathIn.native().c_str(), buffer, length);
+    if (!length) {
+        const bool exists = !utility_base::isLikeFileNotFoundError(GetLastError());
+        if (!exists) {
+            notFound = true;
+        }
+        delete[] buffer;
+        return false;
+    }
+
+    buffer[length] = 0;
+    longPathOut = SyncPath(buffer);
+    delete[] buffer;
+
+    return true;
+}
+
+bool Utility::runDetachedProcess(std::wstring cmd) {
+    PROCESS_INFORMATION pinfo;
+    STARTUPINFOW startupInfo = {sizeof(STARTUPINFO),
+                                0,
+                                0,
+                                0,
+                                (ulong) CW_USEDEFAULT,
+                                (ulong) CW_USEDEFAULT,
+                                (ulong) CW_USEDEFAULT,
+                                (ulong) CW_USEDEFAULT,
+                                0,
+                                0,
+                                0,
+                                0,
+                                0,
+                                0,
+                                0,
+                                0,
+                                0,
+                                0};
+    bool success = success = CreateProcess(0, cmd.data(), 0, 0, FALSE, CREATE_UNICODE_ENVIRONMENT | CREATE_NEW_CONSOLE, 0, 0,
+                                           &startupInfo, &pinfo);
+
+    if (success) {
+        CloseHandle(pinfo.hThread);
+        CloseHandle(pinfo.hProcess);
+    }
+    return success;
+}
+
 } // namespace KDC
