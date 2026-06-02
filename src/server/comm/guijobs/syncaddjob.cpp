@@ -56,27 +56,19 @@ ExitInfo SyncAddJob::deserializeInputParms() {
 
 ExitInfo SyncAddJob::process() {
     // Add sync in DB
-#if defined(KD_WINDOWS)
-    bool showInNavigationPane = _commManager->appServer().navigationPaneHelper()->showInExplorerNavigationPane();
-#else
-    bool showInNavigationPane = false;
-#endif
-
     SyncInfo syncInfo;
     AccountInfo accountInfo;
     DriveInfo driveInfo;
-    if (const auto exitCode =
-                ServerRequests::addSync(_userDbId, _accountId, _driveId, localFolderPath(), serverFolderPath(),
-                                        serverFolderNodeId(), liteSync(), showInNavigationPane, accountInfo, driveInfo, syncInfo);
-        exitCode != ExitCode::Ok) {
+    if (const auto exitInfo = ServerRequests::addSync(_userDbId, _accountId, _driveId, localFolderPath(), serverFolderPath(),
+                                                      serverFolderNodeId(), liteSync(), accountInfo, driveInfo, syncInfo);
+        !exitInfo) {
         LOGW_WARN(_logger, L"Error in Requests::addSync - userDbId="
                                    << _userDbId << L" accountId=" << _accountId << L" driveId=" << _driveId << L" local "
                                    << Utility::formatSyncPath(localFolderPath()) << L" server "
                                    << Utility::formatSyncPath(serverFolderPath()) << L" serverFolderNodeId="
-                                   << Utility::v2ws(serverFolderNodeId()) << L" liteSync=" << liteSync()
-                                   << L" showInNavigationPane=" << showInNavigationPane);
-        AppServer::addError(Error(ERR_ID, exitCode));
-        return exitCode;
+                                   << Utility::v2ws(serverFolderNodeId()) << L" liteSync=" << liteSync());
+        addError(Error(ERR_ID, exitInfo));
+        return exitInfo;
     }
 
     if (accountInfo.dbId() != 0) {

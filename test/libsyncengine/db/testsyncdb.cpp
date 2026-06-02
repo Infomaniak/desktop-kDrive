@@ -87,7 +87,7 @@ void TestSyncDb::setUp() {
     const std::filesystem::path syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
 
     // Delete previous DB
-    (void) std::filesystem::remove(syncDbPath);
+    (void) IoHelper::deleteItem(syncDbPath);
 
     // Create DB
     _testObj = new SyncDbMock(syncDbPath.string(), KDRIVE_VERSION_STRING);
@@ -112,7 +112,7 @@ void createParmsDb(const SyncPath &syncDbPath, const SyncPath &localPath) {
 
     const User user(1, 5555555, "123");
     (void) ParmsDb::instance()->insertUser(user);
-    const Account acc(1, 12345678, user.dbId());
+    const Account acc(1, 12345678, user.dbId(), "account1");
     (void) ParmsDb::instance()->insertAccount(acc);
     Drive drive(1, 99999991, acc.dbId(), "Drive 1", 2000000000, "#000000");
     (void) ParmsDb::instance()->insertDrive(drive);
@@ -258,6 +258,9 @@ void TestSyncDb::testUpgradeTo3_6_5() {
     const auto initialDbNodes = setupSyncDb3_6_5(syncFilesInfo.nodeIds);
 
     _testObj->freeRequest("update_node_name_local"); // Request created within init() call.
+    _testObj->freeRequest("delete_all_sync_node_by_type"); // Request created within init() call.
+    _testObj->freeRequest("select_sync_node"); // Request created within init() call.
+    _testObj->freeRequest("insert_sync_node"); // Request created within init() call.
     _testObj->upgrade("3.6.4", "3.6.5");
 
     CPPUNIT_ASSERT_EQUAL(initialDbNodes.size(), syncFilesInfo.localCreationFileNames.size());

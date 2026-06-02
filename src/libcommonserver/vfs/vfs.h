@@ -98,16 +98,18 @@ class Vfs : public QObject {
 
         ~Vfs() override;
 
-        void setSyncFileStatusCallback(void (*syncFileStatus)(int, const SyncPath &, SyncFileStatus &)) {
+        void setSyncFileStatusCallback(const std::function<void(int, const SyncPath &, SyncFileStatus &)> &syncFileStatus) {
             _syncFileStatus = syncFileStatus;
         }
-        void setSyncFileSyncingCallback(void (*syncFileSyncing)(int, const SyncPath &, bool &)) {
+        void setSyncFileSyncingCallback(const std::function<void(int, const SyncPath &, bool &)> &syncFileSyncing) {
             _syncFileSyncing = syncFileSyncing;
         }
-        void setSetSyncFileSyncingCallback(void (*setSyncFileSyncing)(int, const SyncPath &, bool)) {
+        void setSetSyncFileSyncingCallback(const std::function<void(int, const SyncPath &, bool)> &setSyncFileSyncing) {
             _setSyncFileSyncing = setSyncFileSyncing;
         }
-        void setExclusionAppListCallback(void (*exclusionAppList)(QString &)) { _exclusionAppList = exclusionAppList; }
+        void setExclusionAppListCallback(const std::function<void(QString &)> &exclusionAppList) {
+            _exclusionAppList = exclusionAppList;
+        }
 
         virtual VirtualFileMode mode() const = 0;
 
@@ -262,7 +264,7 @@ class Vfs : public QObject {
          * - ExitCode::Ok: Everything went fine, the status was retrieved.
          * - ExitCode::SystemError, ExitCause::Unknown: An unknown error occurred.
          * - ExitCode::SystemError, ExitCause::NotFound: The item could not be found.
-         * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked.
+         * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item or the item is locked.
          */
         virtual ExitInfo status(const SyncPath &filePath, VfsStatus &vfsStatus) = 0;
 
@@ -331,10 +333,10 @@ class Vfs : public QObject {
         const std::array<size_t, nbWorkers> s_nb_threads = {5, 5};
 
         // Callbacks
-        void (*_syncFileStatus)(int syncDbId, const KDC::SyncPath &itemPath, KDC::SyncFileStatus &status) = nullptr;
-        void (*_syncFileSyncing)(int syncDbId, const KDC::SyncPath &itemPath, bool &syncing) = nullptr;
-        void (*_setSyncFileSyncing)(int syncDbId, const KDC::SyncPath &itemPath, bool syncing) = nullptr;
-        void (*_exclusionAppList)(QString &appList) = nullptr;
+        std::function<void(int, const SyncPath &, SyncFileStatus &)> _syncFileStatus;
+        std::function<void(int, const SyncPath &, bool &)> _syncFileSyncing;
+        std::function<void(int, const SyncPath &, bool)> _setSyncFileSyncing;
+        std::function<void(QString &)> _exclusionAppList;
 
         bool extendedLog() { return _extendedLog; }
 

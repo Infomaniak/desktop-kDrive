@@ -17,9 +17,10 @@
  */
 
 #include "directdownloadjob.h"
-#include "log/log.h"
 #include "io/iohelper.h"
 #include "utility/utility.h"
+
+#include "libcommonserver/log/log.h"
 
 #include <Poco/Net/HTTPRequest.h>
 #include <fstream>
@@ -75,6 +76,7 @@ ExitInfo DirectDownloadJob::readFromStream(std::istream &is, std::ofstream &outp
         return ExitCode::Ok;
     }
 
+    setProgressExpectedFinalValue(expectedSize);
     setProgress(0);
 
     const std::unique_ptr<char[]> buffer(new char[bufferSize]);

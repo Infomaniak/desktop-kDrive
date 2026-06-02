@@ -67,16 +67,17 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode getSyncInfoList(std::vector<SyncInfo> &list);
         static ExitCode getParameters(ParametersInfo &parametersInfo);
         static ExitCode updateParameters(const ParametersInfo &parametersInfo);
-        static ExitInfo isPathValidForNewSync(const SyncPath &path, bool &valid);
+        static ExitInfo isPathValidForNewSync(const SyncPath &path, SyncConfiguration syncConfig, bool &valid);
+        static ExitInfo folderContainsNonExcludedItem(const SyncPath &path, bool &containsNonExcludedFile);
         static ExitInfo findGoodPathForNewSync(const SyncPath &basePath, SyncPath &path, std::string &error);
-        static ExitCode findGoodPathForNewSync(const QString &basePath, QString &path, QString &error);
+        static ExitInfo findGoodPathForNewSync(const QString &basePath, QString &path, QString &error);
         static ExitCode getPrivateLinkUrl(int driveDbId, const std::string &fileId, std::string &linkUrl);
         static ExitCode getPrivateLinkUrl(int driveDbId, const QString &fileId, QString &linkUrl);
         static ExitCode getExclusionTemplateList(bool def, std::vector<ExclusionTemplateInfo> &list);
         static ExitCode getExclusionTemplateList(bool def, QList<ExclusionTemplateInfo> &list);
-        static ExitCode setExclusionTemplateList(const bool def, const std::vector<ExclusionTemplateInfo> &list);
+        static ExitCode setUserExclusionTemplateList(const std::vector<ExclusionTemplateInfo> &list);
         static ExitCode setExclusionAppList(const bool def, const std::vector<ExclusionAppInfo> &list);
-        static ExitCode setExclusionTemplateList(bool def, const QList<ExclusionTemplateInfo> &list);
+        static ExitCode setUserExclusionTemplateList(const QList<ExclusionTemplateInfo> &list);
         static ExitCode getExclusionAppList(bool def, QList<ExclusionAppInfo> &list);
         static ExitCode getExclusionAppList(bool def, std::vector<ExclusionAppInfo> &list);
         static ExitCode setExclusionAppList(bool def, const QList<ExclusionAppInfo> &list);
@@ -99,19 +100,19 @@ struct SYNCENGINE_EXPORT ServerRequests {
                                      bool &userCreated, std::string &error, std::string &errorDescr);
         static ExitCode requestToken(const QString &code, const QString &codeVerifier, UserInfo &userInfo, bool &userCreated,
                                      std::string &error, std::string &errorDescr);
-        static ExitCode getUserAvailableDrives(
-                int userDbId, QHash<int, DriveAvailableInfo> &list); // TODO: Delete after switching to the new comm layer
-        static ExitCode getUserAvailableDrives(int userDbId, std::vector<DriveAvailableInfo> &list);
-        static ExitCode addSync(int userDbId, int accountId, int driveId, const SyncPath &localFolderPath,
+        static ExitInfo getUserAvailableDrives(
+                int userDbId, QList<DriveAvailableInfo> &list); // TODO: Delete after switching to the new comm layer
+        static ExitInfo getUserAvailableDrives(int userDbId, std::vector<DriveAvailableInfo> &list);
+        static ExitInfo addSync(int userDbId, int accountId, int driveId, const SyncPath &localFolderPath,
                                 const SyncPath &serverFolderPath, const NodeId &serverFolderNodeId, bool liteSync,
-                                bool showInNavigationPane, AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo);
-        static ExitCode addSync(int userDbId, int accountId, int driveId, const QString &localFolderPath,
+                                AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo);
+        static ExitInfo addSync(int userDbId, int accountId, int driveId, const QString &localFolderPath,
                                 const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync,
-                                bool showInNavigationPane, AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo);
-        static ExitCode addSync(int driveDbId, const SyncPath &localFolderPath, const SyncPath &serverFolderPath,
-                                const NodeId &serverFolderNodeId, bool liteSync, bool showInNavigationPane, SyncInfo &syncInfo);
-        static ExitCode addSync(int driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
-                                const QString &serverFolderNodeId, bool liteSync, bool showInNavigationPane, SyncInfo &syncInfo);
+                                AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo);
+        static ExitInfo addSync(int driveDbId, const SyncPath &localFolderPath, const SyncPath &serverFolderPath,
+                                const NodeId &serverFolderNodeId, bool liteSync, SyncInfo &syncInfo);
+        static ExitInfo addSync(int driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
+                                const QString &serverFolderNodeId, bool liteSync, SyncInfo &syncInfo);
         static ExitInfo getNodeInfo(int userDbId, int driveId, const std::string &nodeId, NodeInfo &nodeInfo,
                                     bool withPath = false);
         static ExitInfo getNodeInfo(int userDbId, int driveId, const QString &nodeId, NodeInfo &nodeInfo, bool withPath = false);
@@ -124,6 +125,8 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitInfo getSubFolders(int driveDbId, const NodeId &nodeId, std::vector<NodeInfo> &list, bool withPath = false);
         static ExitInfo getSubFolders(int driveDbId, const QString &nodeId, QList<NodeInfo> &list, bool withPath = false);
         static ExitCode createDir(int driveDbId, const NodeId &parentNodeId, const CommString &dirName, NodeId &newNodeId);
+        static ExitCode createDir(int32_t userDbId, int32_t driveId, const NodeId &parentNodeId, const SyncName &dirName,
+                                  NodeId &newNodeId);
         static ExitCode createDir(int driveDbId, const QString &parentNodeId, const QString &dirName, QString &newNodeId);
         static ExitCode getPublicLinkUrl(int driveDbId, const NodeId &nodeId, std::string &linkUrl);
         static ExitInfo getFolderSizeWithCallback(int userDbId, int driveId, const NodeId &nodeId,
@@ -134,13 +137,15 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitInfo getPathByNodeId(int userDbId, int driveId, const NodeId &nodeId, CommString &path);
 
         // C/S requests (others)
-        static ExitCode deleteUser(int userDbId); // !!! Use COMM_LONG_TIMEOUT !!!
+        static ExitInfo deleteUser(int userDbId); // !!! Use COMM_LONG_TIMEOUT !!!
         static ExitInfo deleteAccount(int accountDbId); // !!! Use COMM_LONG_TIMEOUT !!!
-        static ExitCode deleteDrive(int driveDbId); // !!! Use COMM_LONG_TIMEOUT !!!
+        static ExitInfo deleteDrive(int32_t driveDbId); // !!! Use COMM_LONG_TIMEOUT !!!
         static ExitCode deleteSync(int syncDbId); // !!! Use COMM_LONG_TIMEOUT !!!
 
         // Server requests
-        static ExitInfo loadDriveInfo(Drive &drive, Account &account, bool &updated, bool &quotaUpdated, bool &accountUpdated);
+        static ExitInfo loadAccountInfo(Account &account, bool &updated);
+        static ExitInfo loadDriveInfo(Drive &drive, const uint64_t previousAccountId, uint64_t &newAccountId, bool &updated,
+                                      bool &quotaUpdated);
         static ExitInfo loadUserInfo(User &user, bool &updated);
         static ExitInfo loadUserAvatar(User &user);
         static ExitInfo getThumbnail(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail);
@@ -172,7 +177,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode processRequestTokenFinished(const Login &login, UserInfo &userInfo, bool &userCreated);
         static QString canonicalPath(const QString &path);
         static ExitCode checkPathValidityRecursive(const QString &path, QString &error);
-        static ExitInfo checkPathValidityForNewFolder(const std::vector<Sync> &syncList, const QString &path, QString &error);
+        static ExitInfo checkSyncNesting(const std::vector<Sync> &syncList, const QString &path, QString &error);
         static ExitCode syncForPath(const std::vector<Sync> &syncList, const QString &path, int &syncDbId);
         static QString excludeFile(bool liteSync);
         static ExitCode createUser(const User &user, UserInfo &userInfo);

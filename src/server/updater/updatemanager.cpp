@@ -27,7 +27,7 @@
 #endif
 
 #include "libcommon/utility/utility.h"
-#include "log/log.h"
+#include "libcommonserver/log/log.h"
 #include "requests/parameterscache.h"
 
 namespace KDC {
@@ -121,6 +121,7 @@ void UpdateManager::initUpdater() {
 void UpdateManager::onUpdateStateChanged(const UpdateState newState) {
     // Emit signal in order to run `slotUpdateStateChanged` in main thread
     emit updateStateChanged(newState);
+    if (_updater->appShouldBeBlocked()) emit requireUpdate();
 }
 
 } // namespace KDC

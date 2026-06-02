@@ -18,6 +18,7 @@
 
 #include "drive.h"
 #include "account.h"
+
 #include "libcommonserver/log/log.h"
 
 #include <log4cplus/loggingmacros.h>
@@ -25,18 +26,7 @@
 namespace KDC {
 
 Drive::Drive() :
-    _logger(Log::instance()->getLogger()),
-    _dbId(0),
-    _driveId(0),
-    _accountDbId(0),
-    _name(std::string()),
-    _size(0),
-    _color(std::string()),
-    _notifications(true),
-    _admin(false),
-    _locked(false),
-    _usedSize(0),
-    _accessDenied(false) {}
+    _logger(Log::instance()->getLogger()) {}
 
 Drive::Drive(int dbId, int driveId, int accountDbId, const std::string &name, int64_t size, const std::string &color,
              bool notifications, bool admin) :

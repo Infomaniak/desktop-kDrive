@@ -142,8 +142,7 @@ ExitCode PlatformInconsistencyCheckerWorker::checkLocalTree(std::shared_ptr<Node
     return ExitCode::Ok;
 }
 
-void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Node> node,
-                                                       const InconsistencyType inconsistencyType) {
+void PlatformInconsistencyCheckerWorker::blacklistNode(std::shared_ptr<Node> node, const InconsistencyType inconsistencyType) {
     // Local node needs to be excluded before call to blacklistTemporarily because
     // we need the DB entry to retrieve the corresponding node
     NodeIdPair nodeIDs;
@@ -164,7 +163,7 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
     LOGW_SYNCPAL_INFO(_logger, L"Blacklisting " << node->side() << L" item with " << Utility::formatSyncPath(node->getPath())
                                                 << L" because " << inconsistencyType << L".");
 
-    auto safeNodeId = [](const std::shared_ptr<Node> &unsafeNodePtr) {
+    auto safeNodeId = [](const std::shared_ptr<Node> unsafeNodePtr) {
         return (unsafeNodePtr && unsafeNodePtr->id().has_value()) ? *unsafeNodePtr->id() : NodeId();
     };
     nodeIDs.remoteId = safeNodeId(remoteNode);
@@ -183,7 +182,6 @@ bool PlatformInconsistencyCheckerWorker::checkPathAndName(std::shared_ptr<Node> 
         blacklistNode(remoteNode, InconsistencyType::ForbiddenCharEndWithSpace);
         return false;
     }
-
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(remoteNode->name())) {
         blacklistNode(remoteNode, InconsistencyType::ReservedName);
         return false;
@@ -197,7 +195,7 @@ bool PlatformInconsistencyCheckerWorker::checkPathAndName(std::shared_ptr<Node> 
     return true;
 }
 
-void PlatformInconsistencyCheckerWorker::checkNameClashAgainstSiblings(const std::shared_ptr<Node> &remoteParentNode) {
+void PlatformInconsistencyCheckerWorker::checkNameClashAgainstSiblings(const std::shared_ptr<Node> remoteParentNode) {
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
     std::unordered_map<SyncName, std::shared_ptr<Node>> processedNodesByName; // key: lowercase name
     auto childrenCopy = remoteParentNode->children();
@@ -221,8 +219,7 @@ void PlatformInconsistencyCheckerWorker::checkNameClashAgainstSiblings(const std
             // Some software save their files by deleting and re-creating them (Delete-Create), or by deleting the original file
             // and renaming a temporary file that contains the latest version (Delete-Move) In those cases, we should not check
             // for name clash, it is ok to have 2 children with the same name
-            const auto oneNodeIsDeleted = [this](const std::shared_ptr<Node> &node,
-                                                 const std::shared_ptr<Node> &prevNode) -> bool {
+            const auto oneNodeIsDeleted = [this](const std::shared_ptr<Node> node, const std::shared_ptr<Node> prevNode) {
                 return pathChanged(node) && prevNode->hasChangeEvent(OperationType::Delete);
             };
 

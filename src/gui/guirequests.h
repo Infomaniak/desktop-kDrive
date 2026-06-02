@@ -60,7 +60,7 @@ struct GuiRequests {
         static ExitCode getPrivateLinkUrl(int driveDbId, const QString &fileId, QString &linkUrl);
         static ExitCode getNameExcluded(const QString &name, bool excluded);
         static ExitCode getExclusionTemplateList(bool def, QList<ExclusionTemplateInfo> &templateList);
-        static ExitCode setExclusionTemplateList(bool def, const QList<ExclusionTemplateInfo> &templateList);
+        static ExitCode setUserExclusionTemplateList(const QList<ExclusionTemplateInfo> &templateList);
 #ifdef Q_OS_MAC
         static ExitCode getExclusionAppList(bool def, QList<ExclusionAppInfo> &appList);
         static ExitCode setExclusionAppList(bool def, const QList<ExclusionAppInfo> &appList);
@@ -74,18 +74,12 @@ struct GuiRequests {
         static ExitCode resolveConflictErrors(int driveDbId, bool keepLocalVersion);
         static ExitCode resolveUnsupportedCharErrors(int driveDbId);
         static ExitCode setSupportsVirtualFiles(int syncDbId, bool value);
-        static ExitCode setRootPinState(int syncDbId, PinState pinState);
-
-#ifdef Q_OS_WIN
-        static ExitCode showInExplorerNavigationPane(bool &show);
-        static ExitCode setShowInExplorerNavigationPane(const bool &show);
-#endif
 
         // C/S requests (access to network)
         // !!! Use COMM_AVERAGE_TIMEOUT !!!
         static ExitCode requestToken(const QString &code, const QString &codeVerifier, int &userDbId, QString &error,
                                      QString &errorDescr);
-        static ExitCode getUserAvailableDrives(int userDbId, QHash<int, DriveAvailableInfo> &list);
+        static ExitCode getUserAvailableDrives(int userDbId, QList<DriveAvailableInfo> &list);
         static ExitCode addSync(int userDbId, int accountId, int driveId, const QString &localFolderPath,
                                 const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync,
                                 const QSet<QString> &blackList, const QSet<QString> &whiteList, int &syncDbId);
@@ -114,7 +108,6 @@ struct GuiRequests {
                                           QString &cursor); // !!! Use COMM_LONG_TIMEOUT !!!
         static ExitCode deleteSync(int syncDbId); // Asynchronous because it can be time consuming
         static ExitCode bestAvailableVfsMode(VirtualFileMode &mode);
-        static ExitCode propagateExcludeListChange(); // !!! Use COMM_LONG_TIMEOUT !!!
         static ExitCode hasSystemLaunchOnStartup(bool &enabled);
         static ExitCode hasLaunchOnStartup(bool &enabled);
         static ExitCode setLaunchOnStartup(bool enabled);

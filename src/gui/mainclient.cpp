@@ -46,7 +46,7 @@ Q_LOGGING_CATEGORY(lcMain, "gui.mainclient", QtInfoMsg)
 void warnSystray() {
     QMessageBox::critical(0, qApp->translate("main.cpp", "System Tray not available"),
                           qApp->translate("main.cpp",
-                                          "%1 requires on a working system tray. "
+                                          "%1 requires a working system tray. "
                                           "If you are running XFCE, please follow "
                                           "<a href=\"http://docs.xfce.org/xfce/xfce4-panel/systray\">these instructions</a>. "
                                           "Otherwise, please install a system tray application such as 'trayer' and try again.")

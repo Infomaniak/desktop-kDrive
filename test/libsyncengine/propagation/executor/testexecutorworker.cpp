@@ -60,7 +60,7 @@ void TestExecutorWorker::setUp() {
     (void) ParmsDb::instance()->insertUser(user);
 
     int accountId(atoi(testVariables.accountId.c_str()));
-    Account account(1, accountId, user.dbId());
+    Account account(1, accountId, user.dbId(), "account1");
     (void) ParmsDb::instance()->insertAccount(account);
 
     _driveDbId = 1;
@@ -616,36 +616,6 @@ void TestExecutorWorker::testCheckAlreadyExcluded() {
 
     exitInfo = _executorWorker->checkAlreadyExcluded(localFilePath2, remoteTmpDir.id());
     CPPUNIT_ASSERT(exitInfo == ExitInfo(ExitCode::DataError, ExitCause::FileExists));
-}
-
-void TestExecutorWorker::testFixModificationDate() {
-    // Create temp directory
-    const LocalTemporaryDirectory temporaryDirectory;
-    // Create file
-    const SyncName filename = Str("test_file.txt");
-    const SyncPath path = temporaryDirectory.path() / filename;
-    {
-        std::ofstream ofs(path);
-        ofs << "abc";
-        ofs.close();
-    }
-
-    // Update DB
-    DbNode dbNode(0, _syncPal->syncDb()->rootNode().nodeId(), filename, filename, "lid", "rid", testhelpers::defaultTime,
-                  testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize, "cs");
-    DbNodeId dbNodeId;
-    bool constraintError = false;
-    _syncPal->syncDb()->insertNode(dbNode, dbNodeId, constraintError);
-
-    SyncOpPtr op = generateSyncOperation(dbNodeId, filename);
-    CPPUNIT_ASSERT(_executorWorker->fixModificationDate(op, path));
-
-    FileStat filestat;
-    IoError ioError = IoError::Unknown;
-    IoHelper::getFileStat(path, &filestat, ioError, IoHelper::PathCheckOption::Insensitive);
-
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-    CPPUNIT_ASSERT_EQUAL(testhelpers::defaultTime, filestat.modificationTime);
 }
 
 void TestExecutorWorker::testAffectedUpdateTree() {

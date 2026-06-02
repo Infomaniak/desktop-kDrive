@@ -18,6 +18,10 @@ inputs:
     description: 'If true, run the release build script'
     required: false
     default: 'false'
+  build_new_client:
+    description: 'If true, build the Windows app with the new client'
+    required: false
+    default: 'false'
     
 outputs:
   kDrive_version:
@@ -64,7 +68,9 @@ runs:
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
           IF "${{ inputs.release_build }}"=="true" (
             powershell "certutil -scinfo -Silent"
-            powershell "./infomaniak-build-tools/windows/build-drive.ps1" -ci -ext -clean remake -upload -tokenPass ${{ inputs.physical_cert_pass }}
+            SET "NEW_GUI_PARAM="
+            IF "${{ inputs.build_new_client }}"=="true" SET "NEW_GUI_PARAM=-newGui $true"
+            powershell "./infomaniak-build-tools/windows/build-drive.ps1" -ci -ext -msi -clean remake -upload -tokenPass ${{ inputs.physical_cert_pass }} %NEW_GUI_PARAM%
           ) ELSE (
             powershell -File "./infomaniak-build-tools/windows/build-drive.ps1" -ci -unitTests
           )

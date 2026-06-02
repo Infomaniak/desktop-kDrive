@@ -156,16 +156,15 @@ SyncPal::SyncPal(std::shared_ptr<Vfs> vfs, const int syncDbId_, const std::strin
 
         if (alreadyExist) {
             // Old DB => delete it
-            std::error_code ec;
-            std::filesystem::remove(dbPath, ec);
+            (void) IoHelper::deleteItem(dbPath);
 
             SyncPath dbPathShm(dbPath);
             dbPathShm.replace_filename(dbPathShm.filename().native() + Str("-shm"));
-            std::filesystem::remove(dbPathShm, ec);
+            (void) IoHelper::deleteItem(dbPathShm);
 
             SyncPath dbPathWal(dbPath);
             dbPathWal.replace_filename(dbPathWal.filename().native() + Str("-wal"));
-            std::filesystem::remove(dbPathWal, ec);
+            (void) IoHelper::deleteItem(dbPathWal);
         }
 
         sync.setDbPath(dbPath);
@@ -323,7 +322,10 @@ ExitCode SyncPal::clearNodes() {
 }
 
 void SyncPal::syncPalStartCallback([[maybe_unused]] UniqueId jobId) {
-    auto jobPtr = SyncJobManagerSingleton::instance()->getJob(jobId);
+    handlePropagatorJobsCompletion(SyncJobManagerSingleton::instance()->getJob(jobId));
+}
+
+void SyncPal::handlePropagatorJobsCompletion(const std::shared_ptr<AbstractJob> jobPtr) {
     if (jobPtr) {
         if (jobPtr->exitInfo().code() != ExitCode::Ok) {
             LOG_SYNCPAL_WARN(_logger, "Error in PropagatorJob");
@@ -335,7 +337,6 @@ void SyncPal::syncPalStartCallback([[maybe_unused]] UniqueId jobId) {
             LOG_SYNCPAL_INFO(_logger, "Job aborted, not restarting SyncPal");
             return;
         }
-
         std::shared_ptr<AbstractPropagatorJob> abstractJob = std::dynamic_pointer_cast<AbstractPropagatorJob>(jobPtr);
         if (abstractJob && abstractJob->restartSyncPal()) {
             LOG_SYNCPAL_INFO(_logger, "Restarting SyncPal");
@@ -347,7 +348,7 @@ void SyncPal::syncPalStartCallback([[maybe_unused]] UniqueId jobId) {
         } else if (std::dynamic_pointer_cast<ExcludeListPropagator>(jobPtr)) {
             _excludeListPropagator = nullptr;
         } else if (std::dynamic_pointer_cast<ConflictingFilesCorrector>(jobPtr)) {
-            _sendSignal(SignalNum::NODE_FIX_CONFLICTED_FILES_COMPLETED, syncDbId(), _conflictingFilesCorrector->nbErrors());
+            fixConflictedFilesCompleted(syncDbId(), _conflictingFilesCorrector->nbErrors());
             _conflictingFilesCorrector = nullptr;
         }
     }
@@ -362,6 +363,12 @@ void SyncPal::addError(const Error &error) {
 void SyncPal::addCompletedItem(int syncDbId, const SyncFileItem &item) {
     if (_addCompletedItem) {
         _addCompletedItem(syncDbId, item, syncHasFullyCompleted());
+    }
+}
+
+void SyncPal::fixConflictedFilesCompleted(int syncDbId, uint64_t nbErrors) {
+    if (_fixConflictedFilesCompleted) {
+        _fixConflictedFilesCompleted(syncDbId, nbErrors);
     }
 }
 
@@ -569,8 +576,8 @@ bool SyncPal::initProgress(const SyncFileItem &item) {
     return _progressInfo->initProgress(item);
 }
 
-bool SyncPal::setProgress(const SyncPath &relativePath, int64_t current) {
-    if (!_progressInfo->setProgress(relativePath, current)) {
+bool SyncPal::setProgress(const SyncPath &relativePath, int progress) {
+    if (!_progressInfo->setProgress(relativePath, progress)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ProgressInfo::setProgress");
         return false;
     }
@@ -717,16 +724,29 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
             LOG_SYNCPAL_WARN(_logger, "Memory allocation error");
             return ExitCode::SystemError;
         }
-        job->setAffectedFilePath(absoluteLocalPath);
     } catch (const std::exception &e) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in DownloadJob::DownloadJob: error=" << e.what());
         addError(Error(syncDbId(), ERR_ID, ExitCode::Unknown, ExitCause::Unknown));
         return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
-    // Queue job
+    job->setAffectedFilePath(relativePath);
+
     std::function<void(UniqueId)> callback = std::bind_front(&SyncPal::directDownloadCallback, this);
     job->setAdditionalCallback(callback);
+
+    const auto progressPercentCallback = [jobWeak = std::weak_ptr<DownloadJob>(job), this](UniqueId, int progress) {
+        if (auto job = jobWeak.lock()) {
+            if (!setProgress(job->affectedFilePath(), progress)) {
+                LOGW_SYNCPAL_WARN(_logger,
+                                  L"Error in SyncPal::setProgress: " << Utility::formatSyncPath(job->affectedFilePath()));
+            }
+        }
+    };
+
+    job->setProgressPercentCallback(progressPercentCallback);
+
+    // Queue job
     SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_HIGH);
 
     const std::scoped_lock lock(_directDownloadJobsMapMutex);
@@ -803,7 +823,7 @@ ExitInfo SyncPal::isRootFolderValid() {
     if (NodeId rootNodeId; IoHelper::getNodeId(localPath(), rootNodeId)) {
         if (rootNodeId.empty()) {
             LOGW_SYNCPAL_WARN(_logger, L"Unable to get root folder nodeId: " << Utility::formatSyncPath(localPath()));
-            return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
+            return {ExitCode::SystemError, Utility::exitCauseFromInaccessibleSyncDirectory(localPath())};
         }
 
         if (localNodeId().empty()) {
@@ -817,7 +837,7 @@ ExitInfo SyncPal::isRootFolderValid() {
         return localNodeId() == rootNodeId ? ExitInfo(ExitCode::Ok) : ExitInfo(ExitCode::DataError, ExitCause::SyncDirChanged);
     } else {
         LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getNodeId for root folder: " << Utility::formatSyncPath(localPath()));
-        return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
+        return {ExitCode::SystemError, Utility::exitCauseFromInaccessibleSyncDirectory(localPath())};
     }
 }
 
@@ -1045,7 +1065,31 @@ ExitCode SyncPal::excludeListUpdated() {
     return ExitCode::Ok;
 }
 
-ExitCode SyncPal::fixConflictingFiles(bool keepLocalVersion, std::vector<Error> &errorList) {
+ExitCode SyncPal::fixConflictingFilesAsync(const std::vector<Error> &keepLocalErrorList,
+                                           const std::vector<Error> &keepRemoteErrorList) {
+    setUpConflictingFilesCorrector(keepLocalErrorList, keepRemoteErrorList);
+    _conflictingFilesCorrector->setAdditionalCallback(std::bind_front(&SyncPal::syncPalStartCallback, this));
+    SyncJobManagerSingleton::instance()->queueAsyncJob(_conflictingFilesCorrector, Poco::Thread::PRIO_HIGHEST);
+    return ExitCode::Ok;
+}
+
+ExitCode SyncPal::fixConflictingFiles(const std::vector<Error> &keepLocalErrorList, const std::vector<Error> &keepRemoteErrorList,
+                                      std::vector<int32_t> &removedErrorsDbIds) {
+    setUpConflictingFilesCorrector(keepLocalErrorList, keepRemoteErrorList);
+    ExitInfo exitInfo = _conflictingFilesCorrector->runSynchronously();
+
+    if (exitInfo) removedErrorsDbIds = _conflictingFilesCorrector->removedErrorsDbIds();
+
+    handlePropagatorJobsCompletion(_conflictingFilesCorrector);
+    if (!exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in ConflictingFilesCorrector::runSynchronously: " << exitInfo);
+        return exitInfo.code();
+    }
+    return ExitCode::Ok;
+}
+
+void SyncPal::setUpConflictingFilesCorrector(const std::vector<Error> &keepLocalErrorList,
+                                             const std::vector<Error> &keepRemoteErrorList) {
     bool restartSync = isRunning();
     if (restartSync) {
         stop();
@@ -1057,12 +1101,8 @@ ExitCode SyncPal::fixConflictingFiles(bool keepLocalVersion, std::vector<Error> 
         restartSync = _conflictingFilesCorrector->restartSyncPal();
     }
 
-    _conflictingFilesCorrector.reset(new ConflictingFilesCorrector(shared_from_this(), keepLocalVersion, errorList));
+    _conflictingFilesCorrector.reset(new ConflictingFilesCorrector(shared_from_this(), keepLocalErrorList, keepRemoteErrorList));
     _conflictingFilesCorrector->setRestartSyncPal(restartSync);
-    _conflictingFilesCorrector->setAdditionalCallback(std::bind_front(&SyncPal::syncPalStartCallback, this));
-    SyncJobManagerSingleton::instance()->queueAsyncJob(_conflictingFilesCorrector, Poco::Thread::PRIO_HIGHEST);
-
-    return ExitCode::Ok;
 }
 
 ExitCode SyncPal::fixCorruptedFile(const std::unordered_map<NodeId, SyncPath> &localFileMap) {
@@ -1373,7 +1413,7 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool
                                          std::shared_ptr<Node> &remoteBlacklistedNode, ExitCause cause) {
     if (relativeLocalPath.empty()) {
         LOG_SYNCPAL_WARN(_logger, "Access error on root folder");
-        return ExitInfo(ExitCode::SystemError, ExitCause::SyncDirAccessError);
+        return ExitInfo(ExitCode::SystemError, Utility::exitCauseFromInaccessibleSyncDirectory(localPath()));
     }
     Error error(syncDbId(), "", "", relativeLocalPath.extension() == SyncPath() ? NodeType::Directory : NodeType::File,
                 relativeLocalPath, ConflictType::None, InconsistencyType::None, CancelType::None, "", ExitCode::SystemError,

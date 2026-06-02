@@ -33,7 +33,7 @@ UtilityGetLogEstimatedSizeJob::UtilityGetLogEstimatedSizeJob(std::shared_ptr<Com
                                                              const Poco::DynamicStruct &inParams,
                                                              std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
-    _requestNum = RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE;
+    _requestNum = RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY;
 }
 
 ExitInfo UtilityGetLogEstimatedSizeJob::deserializeInputParms() {
@@ -50,7 +50,7 @@ ExitInfo UtilityGetLogEstimatedSizeJob::process() {
     const bool res = LogUploadJob::getLogDirEstimatedSize(_logSize, ioError);
     if (!res || ioError != IoError::Success) {
         LOG_WARN(_logger, "Error in LogUploadJob::getLogDirEstimatedSize: " << IoHelper::ioError2StdString(ioError));
-        AppServer::addError(Error(ERR_ID, ExitCode::SystemError, ExitCause::Unknown));
+        addError(Error(ERR_ID, ExitCode::SystemError, ExitCause::Unknown));
         return ExitCode::SystemError;
     }
 

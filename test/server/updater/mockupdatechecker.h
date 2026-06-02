@@ -27,17 +27,22 @@ namespace KDC {
 
 class MockUpdateChecker : public UpdateChecker {
     public:
-        using UpdateChecker::UpdateChecker;
+        MockUpdateChecker() { _prodVersionChannel = VersionChannel::Prod; }
         void setUpdateShouldBeAvailable(const bool val) { _updateShouldBeAvailable = val; }
+        void setBigMinAppVersion(const bool val) { _bigMinAppVersion = val; }
         void setAllVersionInfo(const AllVersionsInfo &versionInfo) { _versionsInfo = versionInfo; }
+        void setVersionReceived(const bool isVersionReceived) { _isVersionReceived = isVersionReceived; }
 
     private:
         ExitCode generateGetAppVersionJob(std::shared_ptr<AbstractNetworkJob> &job) override {
             static const std::string appUid = "1234567890";
-            job = std::make_shared<MockGetAppVersionJob>(CommonUtility::platform(), appUid, _updateShouldBeAvailable);
+            auto mockJob = std::make_shared<MockGetAppVersionJob>(CommonUtility::platform(), appUid, _updateShouldBeAvailable);
+            mockJob->setBigMinAppVersion(_bigMinAppVersion);
+            job = mockJob;
             return ExitCode::Ok;
         }
 
         bool _updateShouldBeAvailable{false};
+        bool _bigMinAppVersion{false};
 };
 } // namespace KDC

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page x:Class="Infomaniak.kDrive.Pages.Popup.AddExclusionRulePopup"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:kDrive="using:Infomaniak.kDrive"
+      >
+
+    <StackPanel VerticalAlignment="Stretch"
+                HorizontalAlignment="Stretch"
+                Spacing="{StaticResource Infomaniak.Style.Spacing.L}">
+        <StackPanel VerticalAlignment="Stretch"
+                    HorizontalAlignment="Stretch"
+                    Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+            <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('dialogNewExclusionRuleTitle')}"
+                       Style="{StaticResource SubtitleTextBlockStyle}" />
+            <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('excludeRuleDescription')}"
+                       TextWrapping="WrapWholeWords"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+        </StackPanel>
+        <TextBox PlaceholderText="{x:Bind kDrive:Localizer.Instance.GetString('filesToExclude')}"
+                 x:Name="TextBox" />
+        <CheckBox x:Name="CheckBox"
+                  Content="{x:Bind kDrive:Localizer.Instance.GetString('notifyOnFileExcluded')}"
+                  IsChecked="False" />
+    </StackPanel>
+</Page>

@@ -59,8 +59,8 @@
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _availableVersion = @"";
-        _feedUrl = @"";
+        _availableVersion = @ "";
+        _feedUrl = @ "";
         _quitCallback = nullptr;
         _skipCallback = nullptr;
     }

@@ -702,7 +702,7 @@ bool ComputeFSOperationWorker::isPathTooLong(const SyncPath &path, const NodeId 
 
 #if defined(KD_LINUX)
 void ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, const DbNode &dbNode,
-                                              const std::shared_ptr<const Snapshot> &snapshot, bool &isReused) const {
+                                              const std::shared_ptr<const Snapshot> snapshot, bool &isReused) const {
     isReused = false;
     // Check if the node is in the liveSnapshot
     if (snapshot->side() != ReplicaSide::Local || !snapshot->exists(localNodeId)) {

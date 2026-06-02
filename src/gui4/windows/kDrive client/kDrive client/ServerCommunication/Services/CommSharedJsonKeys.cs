@@ -22,7 +22,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
     public struct JsonKeys
     {
         static public string ExitCode = "code";
-        static public string ExitCause= "cause";
+        static public string ExitCause = "cause";
 
         static public string OAuthCode = "code";
         static public string OAuthCodeVerifier = "codeVerifier";
@@ -34,6 +34,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
 
         static public string AccountDbId = "accountDbId";
         static public string AccountId = "accountId";
+        static public string AccountName = "accountName";
         static public string AccountInfoList = "accountInfoList";
         static public string AccountInfo = "accountInfo";
 
@@ -54,8 +55,14 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public string ErrorDbId = "errorDbId";
         static public string ErrorInfo = "errorInfo";
         static public string ErrorInfoList = "errorInfoList";
+        static public string ErrorMessage = "errorMessage";
+        static public string KeepLocalErrorDbIdList = "keepLocalErrorDbIdList";
+        static public string KeepRemoteErrorDbIdList = "keepRemoteErrorDbIdList";
+        static public string ErrorDbIdList = "errorDbIdList";
+        static public string Strategy = "strategy";
 
         static public string NodeId = "nodeId";
+        static public string ParentNodeId = "parentNodeId";
         static public string NodeInfo = "nodeInfo";
         static public string NodeIdList = "nodeIdList";
         static public string LocalFolderPath = "localFolderPath";
@@ -64,16 +71,41 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public string LiteSync = "liteSync";
         static public string BlackList = "blackList";
 
+        static public string SearchString = "searchString";
+        static public string SearchInfoList = "searchInfoList";
+
         static public string NodeSubFolderInfoList = "nodeSubFolderInfoList";
         static public string FolderSize = "folderSize";
         static public string WithPath = "withPath";
         static public string ParmsInfo = "parametersInfo";
 
+        static public string ExclusionTemplatesList = "exclusionTemplateList";
+        static public string Default = "default";
+
         static public string Limit = "limit";
+        static public string IsValid = "isValid";
+        static public string Path = "path";
+        static public string SyncConfiguration = "syncConfiguration";
+        static public string BasePath = "basePath";
+        static public string GoodPath = "goodPath";
+        static public string BestMode = "bestMode";
+        static public string Value = "value";
+        static public string Size= "size";
+
+        static public string LinkUrl = "linkUrl";
 
         static public string VersionInfo = "versionInfo";
         static public string DriveAvailableInfoList = "driveAvailableInfoList";
 
         static public string UpdateChannel = "channel";
+        static public string UpdateState = "updateState";
+        static public string State = "state";
+        static public string Percentage = "percentage";
+
+        static public string IncludeArchivedLogs = "includeArchivedLogs";
+
+        static public string RelativePath = "relativePath";
+        static public string ReplicaSide = "replicaSide";
+        static public string NodeConflictInfo = "nodeConflictInfo";
     }
 }

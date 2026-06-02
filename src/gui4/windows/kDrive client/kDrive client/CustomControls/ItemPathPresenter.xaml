@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="Infomaniak.kDrive.CustomControls.ItemPathPresenter"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:Infomaniak.kDrive.CustomControls"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:converters="using:Infomaniak.kDrive.Converters"
+             xmlns:controls="using:Infomaniak.kDrive.CustomControls"
+             mc:Ignorable="d">
+    <UserControl.Resources>
+        <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
+        <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
+        <converters:FilePathToIconConverter x:Key="FilePathToIconConverter" />
+    </UserControl.Resources>
+
+    <Border Background="{ThemeResource ControlFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource ControlElevationBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.XS}"
+            Padding="11,4"
+            Visibility="{x:Bind DisplayedPath, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True'}"
+            VerticalAlignment="Top">
+        <ToolTipService.ToolTip>
+            <ToolTip Content="{x:Bind ToolTipPath, Mode=OneWay}"
+                     Placement="Mouse" />
+        </ToolTipService.ToolTip>
+        <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0"
+                       Text="{x:Bind DisplayedPath, Mode=OneWay}"
+                       TextTrimming="CharacterEllipsis"
+                       VerticalAlignment="Center"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                       MinWidth="80"
+                       Style="{StaticResource BodyTextBlockStyle}" />
+
+            <Button Grid.Column="1"
+                    Click="CopyPathButton_Click"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Padding="0"
+                    MinWidth="0"
+                    MinHeight="0"
+                    Width="16"
+                    Height="16"
+                    VerticalAlignment="Center">
+                <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.copy-paste}"
+                                  Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                  Style="{StaticResource Infomaniak.Style.Icon.Size.XS}" />
+            </Button>
+        </Grid>
+    </Border>
+</UserControl>

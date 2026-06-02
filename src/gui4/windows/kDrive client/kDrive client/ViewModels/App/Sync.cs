@@ -16,37 +16,41 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using DynamicData;
 using DynamicData.Binding;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.ViewModels
 {
-    public class Sync : UISafeObservableObject
+    public class Sync : UISafeObservableObject, ISync
     {
         // Sync properties
         private DbId _dbId;
         private readonly Drive _drive;
-        private SyncId _id = -1;
         private SyncPath _localPath = "";
         private SyncPath _remotePath = "";
+        private NodeId _remoteNodeId = "";
         private bool _supportOnlineMode = true;
-        private readonly ObservableCollection<SyncFileItem> _syncActivities = new();
         private SyncStatus _syncStatus = SyncStatus.Paused;
-        private SyncErrorStates _syncErrorState = SyncErrorStates.Undefined;
         private SyncType _syncType = SyncType.Unknown;
         private bool _isTypeOnline = false;
-        private bool _syncTypeMigrationInProgress = false;
-        private SyncFileItem? _lastActivity;
 
         // Sync UI properties
         private bool _showIncomingActivity = true;
+        private SyncErrorStates _syncErrorState = SyncErrorStates.Undefined;
+        private readonly ObservableCollection<SyncFileItem> _syncActivities = [];
+        private bool _syncTypeMigrationInProgress = false;
+        private SyncFileItem? _lastActivity;
+
 
         public SyncStatus SyncStatus
         {
@@ -56,11 +60,16 @@ namespace Infomaniak.kDrive.ViewModels
                 {
                     return SyncStatus.Offline;
                 }
-                if (_syncStatus == SyncStatus.Error)
-                    return SyncStatus.Paused;
+
                 return _syncStatus;
             }
-            set => SetPropertyInUIThread(ref _syncStatus, value);
+            set
+            {
+                if (SetPropertyInUIThread(ref _syncStatus, value) && (value == SyncStatus.Paused || value == SyncStatus.Stopped))
+                {
+                    AppModel.UIThreadDispatcher.TryEnqueue(ClearOngoingActivities);
+                }
+            }
         }
 
         public Sync(DbId dbId, Drive drive)
@@ -79,6 +88,11 @@ namespace Infomaniak.kDrive.ViewModels
 
             SyncActivities.CollectionChanged += (s, args) =>
             {
+                if (!SyncActivities.Any())
+                {
+                    LastActivity = null;
+                    return;
+                }
                 try
                 {
                     LastActivity = SyncActivities[0];
@@ -94,12 +108,6 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _dbId;
             set => SetPropertyInUIThread(ref _dbId, value);
-        }
-
-        public SyncId Id
-        {
-            get => _id;
-            set => SetPropertyInUIThread(ref _id, value);
         }
 
         public SyncPath LocalPath
@@ -123,6 +131,12 @@ namespace Infomaniak.kDrive.ViewModels
             }
         }
 
+        public NodeId RemoteNodeId
+        {
+            get => _remoteNodeId;
+            set => SetPropertyInUIThread(ref _remoteNodeId, value);
+        }
+
         public bool SupportOnlineMode
         {
             get => _supportOnlineMode;
@@ -142,12 +156,16 @@ namespace Infomaniak.kDrive.ViewModels
         public bool SyncTypeMigrationInProgress
         {
             get => _syncTypeMigrationInProgress;
+            set
+            {
+                SetPropertyInUIThread(ref _syncTypeMigrationInProgress, value);
+            }
         }
 
-        public bool IsTypeOnline
-        {
-            get => _isTypeOnline;
-        }
+        public bool IsTypeOnline => _isTypeOnline;
+
+        public bool IsAdvanced => RemoteNodeId.Count() >= 1;
+
 
         public ObservableCollection<SyncFileItem> SyncActivities
         {
@@ -155,7 +173,7 @@ namespace Infomaniak.kDrive.ViewModels
         }
 
         // The list of sync and node errors
-        public ObservableCollection<Error> SyncErrors = new();
+        public ObservableCollection<Error> SyncErrors = [];
 
         public SyncErrorStates SyncErrorState
         {
@@ -167,6 +185,7 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _drive;
         }
+        IDrive ISync.Drive => _drive;
 
         public SyncFileItem? LastActivity
         {
@@ -180,25 +199,29 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _showIncomingActivity, value);
         }
 
-        public async Task Start()
+        public async Task<bool> Start()
         {
-            var serverComm = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            await serverComm.StartSync(DbId, CancellationToken.None);
+            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            return await commService.StartSync(DbId, CancellationToken.None);
         }
 
-        public async Task Pause()
+        public async Task<bool> Pause()
         {
-            var serverComm = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            await serverComm.PauseSync(DbId, CancellationToken.None);
+            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            return await commService.PauseSync(DbId, CancellationToken.None);
         }
 
-        public async Task ChangeSyncType(SyncType newType)
+        public async Task<bool> ChangeSyncType(SyncType newType)
         {
-            SetPropertyInUIThread(ref _syncTypeMigrationInProgress, true, nameof(SyncTypeMigrationInProgress));
-            Logger.Log(Logger.Level.Error, "Changing sync type is not yet implemented.");
-            await Task.Delay(5000); // TODO: Replace with actual implementation
-            SetPropertyInUIThread(ref _syncTypeMigrationInProgress, false, nameof(SyncTypeMigrationInProgress));
-
+            SyncTypeMigrationInProgress = true;
+            var previousType = SyncType;
+            SyncType = newType;
+            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            bool result = await commService.SetSyncType(DbId, newType, CancellationToken.None);
+            if (!result)
+                SyncType = previousType;
+            SyncTypeMigrationInProgress = false;
+            return result;
         }
 
         public async Task AddErrorAsync(Error error)
@@ -211,7 +234,11 @@ namespace Infomaniak.kDrive.ViewModels
 
             Logger.Log(Logger.Level.Info, $"Sync {DbId}: Adding error {error.ExitCode} - {error.Path}");
             await Utility.RunOnUIThread(() => SyncErrors.Add(error));
-            RefreshErrorState();
+
+            if (error.ExitCause == ExitCause.QuotaExceeded)
+                Drive.DisplayRemoteSpaceWarning = true;
+
+            await RefreshErrorState();
         }
 
         public async Task RemoveErrorAsync(Error error, bool refreshErrorState = true)
@@ -224,56 +251,87 @@ namespace Infomaniak.kDrive.ViewModels
             });
 
             if (refreshErrorState)
-                RefreshErrorState();
+                await RefreshErrorState();
         }
 
         public async Task ClearAllErrorsAsync()
         {
-            // Call RemoveError for each error to ensure proper handling (RemoveError is responsible for some viewmodel updates)
-            foreach (var error in SyncErrors)
+            await Utility.RunOnUIThread(async () =>
             {
-                Logger.Log(Logger.Level.Info, $"Sync {DbId}: Clearing error {error.ExitCode} - {error.Path}");
-                await RemoveErrorAsync(error, false);
-            }
-            RefreshErrorState();
+                // Call RemoveError for each error to ensure proper handling (RemoveError is responsible for some viewmodel updates)
+                while (SyncErrors.Any())
+                {
+                    var error = SyncErrors[0];
+                    Logger.Log(Logger.Level.Info, $"Sync {DbId}: Clearing error {error.ExitCode} - {error.Path}");
+                    await RemoveErrorAsync(error, false);
+                }
+            });
+            await RefreshErrorState();
         }
 
-        public void RefreshErrorState()
+        public async Task RefreshErrorState()
         {
-            if (SyncErrors.Count == 0)
+            await Utility.RunOnUIThread(async () =>
             {
+
                 SyncErrorState = SyncErrorStates.Undefined;
-                return;
-            }
 
-            foreach (var error in SyncErrors)
-            {
-                SyncErrorState = error.ExitCause switch
+                foreach (var error in SyncErrors)
                 {
-                    Types.ExitCause.DriveAccessError => SyncErrorStates.AccessDenied,
-                    Types.ExitCause.DriveAsleep => SyncErrorStates.Asleep,
-                    Types.ExitCause.DriveWakingUp => SyncErrorStates.WakingUp,
-                    Types.ExitCause.DriveMaintenance => SyncErrorStates.Maintenance,
-                    Types.ExitCause.DriveNotRenew => SyncErrorStates.NotRenew,
-                    Types.ExitCause.LoginError => SyncErrorStates.LoggingError,
-                    _ => SyncErrorStates.Undefined
-                };
-                if (error.ExitCode == ExitCode.InvalidToken)
-                {
-                    SyncErrorState = SyncErrorStates.LoggingError;
+                    SyncErrorState = error.ExitCause switch
+                    {
+                        Types.ExitCause.DriveAccessError => SyncErrorStates.AccessDenied,
+                        Types.ExitCause.DriveAsleep => SyncErrorStates.Asleep,
+                        Types.ExitCause.DriveWakingUp => SyncErrorStates.WakingUp,
+                        Types.ExitCause.DriveMaintenance => SyncErrorStates.Maintenance,
+                        Types.ExitCause.DriveNotRenew => SyncErrorStates.NotRenew,
+                        Types.ExitCause.LoginError => SyncErrorStates.LoggingError,
+                        _ => SyncErrorStates.Undefined
+                    };
+                    if (error.ExitCode == ExitCode.InvalidToken)
+                    {
+                        SyncErrorState = SyncErrorStates.LoggingError;
+                    }
+
+                    if (SyncErrorState != SyncErrorStates.Undefined)
+                    {
+                        Logger.Log(Logger.Level.Info, $"Sync {DbId}: Setting SyncErrorState to {SyncErrorState} based on error {error.ExitCode} - {error.Path}");
+                        return;
+                    }
                 }
 
-                if (SyncErrorState != SyncErrorStates.Undefined)
+                if (SyncErrorState == SyncErrorStates.Undefined && !Drive.Account.User.IsConnected)
                 {
-                    Logger.Log(Logger.Level.Info, $"Sync {DbId}: Setting SyncErrorState to {SyncErrorState} based on error {error.ExitCode} - {error.Path}");
-                    return;
+                    //SyncErrorState = SyncErrorStates.LoggedOut;
                 }
-            }
-
-            if (SyncErrorState == SyncErrorStates.Undefined && !Drive.Account.User.IsConnected)
-            {
-                //SyncErrorState = SyncErrorStates.LoggedOut;
-            }
+            });
         }
+
+        public async Task<bool> SolveConflictsQuick(ConflictResolutionStrategy resolutionStrategy)
+        {
+            List<DbId> conflictsToResolve = SyncErrors.Where(e => e.IsConflictUserResolvable()).Select(e => e.DbId).ToList() ?? new List<DbId>();
+
+            if (conflictsToResolve.Count == 0)
+            {
+                Logger.Log(Logger.Level.Info, "No user-resolvable conflicts found to resolve.");
+                return true;
+            }
+
+            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            return await commService.ResolveConflictsQuick(conflictsToResolve, resolutionStrategy, CancellationToken.None);
+        }
+
+        public async Task<List<NodeId>?> GetExcludedNodeIds()
+        {
+            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            return await commService.GetBlacklistedNodeIdList(DbId, CancellationToken.None);
+        }
+
+        public void ClearOngoingActivities()
+        {
+            var toBeRemoved = SyncActivities.Where(a => a.Status == SyncFileStatus.Syncing);
+            SyncActivities.RemoveMany(toBeRemoved);
+        }
+
     }
 }

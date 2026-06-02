@@ -34,10 +34,11 @@
 #include "enablestateholder.h"
 #include "libcommongui/logger.h"
 #include "guirequests.h"
+
 #include "libcommongui/matomoclient.h"
+
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/utility.h"
-
 #ifdef Q_OS_WIN
 #include "libcommon/info/parametersinfo.h"
 #endif
@@ -59,12 +60,6 @@ static constexpr int textHSpacing = 10;
 
 static const QString debuggingFolderLink = "debuggingFolderLink";
 static const QString moveToTrashFAQLink = "https://faq.infomaniak.com/2383#desktop";
-
-static const QString englishCode = "en";
-static const QString frenchCode = "fr";
-static const QString germanCode = "de";
-static const QString spanishCode = "es";
-static const QString italianCode = "it";
 
 Q_LOGGING_CATEGORY(lcPreferencesWidget, "gui.preferenceswidget", QtInfoMsg)
 
@@ -202,7 +197,7 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
         launchAtStartupSwitch->setDisabled(true);
     } else {
         bool hasLaunchAtStartup = false;
-        ExitCode exitCode = GuiRequests::hasLaunchOnStartup(hasLaunchAtStartup);
+        exitCode = GuiRequests::hasLaunchOnStartup(hasLaunchAtStartup);
         if (exitCode != ExitCode::Ok) {
             qCWarning(lcPreferencesWidget()) << "Error in GuiRequests::hasLaunchOnStartup";
         }
@@ -264,26 +259,6 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
 
     languageSelectorBox->addWidget(_languageSelectorComboBox);
     generalBloc->addSeparator();
-
-#ifdef Q_OS_WIN
-    // Drive shortcuts
-    CustomSwitch *shortcutsSwitch = nullptr;
-    if (CommonUtility::isWindows()) {
-        QBoxLayout *shortcutsBox = generalBloc->addLayout(QBoxLayout::Direction::LeftToRight);
-
-        _shortcutsLabel = new QLabel(this);
-        _shortcutsLabel->setWordWrap(true);
-        shortcutsBox->addWidget(_shortcutsLabel);
-
-        shortcutsSwitch = new CustomSwitch(this);
-        shortcutsSwitch->setLayoutDirection(Qt::RightToLeft);
-        shortcutsSwitch->setAttribute(Qt::WA_MacShowFocusRect, false);
-        shortcutsSwitch->setCheckState(ParametersCache::instance()->parametersInfo().showShortcuts() ? Qt::Checked
-                                                                                                     : Qt::Unchecked);
-        shortcutsBox->addWidget(shortcutsSwitch);
-        shortcutsBox->setStretchFactor(_shortcutsLabel, 1);
-    }
-#endif
 
     //
     // Advanced bloc
@@ -347,9 +322,6 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     connect(_languageSelectorComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onLanguageChange()));
     connect(moveToTrashSwitch, &CustomSwitch::clicked, this, &PreferencesWidget::onMoveToTrashSwitchClicked);
     connect(_moveToTrashKnowMoreLabel, &QLabel::linkActivated, this, &PreferencesWidget::onLinkActivated);
-#ifdef Q_OS_WIN
-    connect(shortcutsSwitch, &CustomSwitch::clicked, this, &PreferencesWidget::onShortcutsSwitchClicked);
-#endif
     connect(debuggingWidget, &ClickableWidget::clicked, this, &PreferencesWidget::onDebuggingWidgetClicked);
     connect(_debuggingFolderLabel, &QLabel::linkActivated, this, &PreferencesWidget::onLinkActivated);
     connect(filesToExcludeWidget, &ClickableWidget::clicked, this, &PreferencesWidget::onFilesToExcludeWidgetClicked);
@@ -436,22 +408,6 @@ void PreferencesWidget::onMoveToTrashSwitchClicked(bool checked) {
     _moveTotrashDisclaimerWidget->setVisible(checked);
     MatomoClient::sendEvent("preferences", MatomoEventAction::Click, "moveToTrashSwitch", checked ? 1 : 0);
 }
-
-#ifdef Q_OS_WIN
-void PreferencesWidget::onShortcutsSwitchClicked(bool checked) {
-    ParametersCache::instance()->parametersInfo().setShowShortcuts(checked);
-    if (!ParametersCache::instance()->saveParametersInfo()) {
-        return;
-    }
-
-    GuiRequests::setShowInExplorerNavigationPane(checked);
-    CustomMessageBox msgBox(QMessageBox::Information,
-                            tr("You must restart your opened File Explorers for this change to take effect."), QMessageBox::Ok,
-                            this);
-    msgBox.exec();
-    MatomoClient::sendEvent("preferences", MatomoEventAction::Click, "windowsShortcutsSwitch", checked ? 1 : 0);
-}
-#endif
 
 void PreferencesWidget::onDebuggingWidgetClicked() {
     EnableStateHolder _(this);
@@ -546,14 +502,12 @@ void PreferencesWidget::retranslateUi() const {
     _languageSelectorComboBox->addItem(tr("German"), toInt(Language::German));
     _languageSelectorComboBox->addItem(tr("Spanish"), toInt(Language::Spanish));
     _languageSelectorComboBox->addItem(tr("Italian"), toInt(Language::Italian));
+    _languageSelectorComboBox->addItem(tr("Dutch"), toInt(Language::Dutch));
     const int languageIndex =
             _languageSelectorComboBox->findData(toInt(ParametersCache::instance()->parametersInfo().language()));
     _languageSelectorComboBox->setCurrentIndex(languageIndex);
     _languageSelectorComboBox->blockSignals(false);
 
-#ifdef Q_OS_WIN
-    _shortcutsLabel->setText(tr("Show synchronized folders in File Explorer navigation pane"));
-#endif
     _advancedLabel->setText(tr("Advanced"));
     _debuggingLabel->setText(tr("Debugging information"));
     _debuggingFolderLabel->setText(

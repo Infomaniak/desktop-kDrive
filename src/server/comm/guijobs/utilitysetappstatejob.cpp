@@ -56,9 +56,10 @@ ExitInfo UtilitySetAppStateJob::serializeOutputParms() {
 }
 
 ExitInfo UtilitySetAppStateJob::process() {
-    if (bool found = true; !ParmsDb::instance()->updateAppState(_key, _value, found)) {
+    std::string strValue = CommonUtility::commString2Str(_value);
+    if (bool found = true; !ParmsDb::instance()->updateAppState(_key, strValue, found)) {
         LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
-        AppServer::addError(Error(ERR_ID, ExitCode::DbError, ExitCause::DbAccessError));
+        addError(Error(ERR_ID, ExitCode::DbError, ExitCause::DbAccessError));
         return ExitCode::DbError;
     } else if (!found) {
         LOG_WARN(_logger, _key << " not found in appState table");

@@ -23,7 +23,7 @@
 
 namespace KDC {
 
-DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> &vfs, const int driveDbId, const std::shared_ptr<SyncDb> syncDb,
+DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> vfs, const int driveDbId, const std::shared_ptr<SyncDb> syncDb,
                                        const SyncPath &filepath, const SyncName &filename, const NodeId &remoteParentDirId,
                                        const SyncTime creationTime, const SyncTime modificationTime, const bool liteSyncActivated,
                                        const uint64_t nbParallelThread) :
@@ -38,7 +38,7 @@ DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> &vfs, const in
     _uploadSessionType = UploadSessionType::Drive;
 }
 
-DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> &vfs, const int driveDbId, const std::shared_ptr<SyncDb> syncDb,
+DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> vfs, const int driveDbId, const std::shared_ptr<SyncDb> syncDb,
                                        const SyncPath &filepath, const NodeId &fileId, const SyncTime modificationTime,
                                        const bool liteSyncActivated, const uint64_t nbParallelThread) :
     DriveUploadSession(vfs, driveDbId, syncDb, filepath, SyncName(), fileId, 0, modificationTime, liteSyncActivated,
@@ -92,7 +92,7 @@ std::shared_ptr<UploadSessionCancelJob> DriveUploadSession::createCancelJob() {
     return std::make_shared<UploadSessionCancelJob>(UploadSessionType::Drive, _driveDbId, getFilePath(), getSessionToken());
 }
 
-ExitInfo DriveUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &startJob,
+ExitInfo DriveUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> startJob,
                                                   const std::string &uploadToken) {
     (void) startJob;
     if (_syncDb && !_syncDb->insertUploadSessionToken(UploadSessionToken(uploadToken), _uploadSessionTokenDbId)) {
@@ -102,7 +102,7 @@ ExitInfo DriveUploadSession::handleStartJobResult(const std::shared_ptr<UploadSe
     return ExitCode::Ok;
 }
 
-ExitInfo DriveUploadSession::handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) {
+ExitInfo DriveUploadSession::handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> finishJob) {
     _nodeId = finishJob->nodeId();
     _creationTimeOut = finishJob->creationTime();
     _modificationTimeOut = finishJob->modificationTime();
@@ -116,7 +116,7 @@ ExitInfo DriveUploadSession::handleFinishJobResult(const std::shared_ptr<UploadS
     return ExitCode::Ok;
 }
 
-ExitInfo DriveUploadSession::handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob) {
+ExitInfo DriveUploadSession::handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> cancelJob) {
     if (const auto exitInfo = AbstractUploadSession::handleCancelJobResult(cancelJob); !exitInfo) {
         return exitInfo;
     }

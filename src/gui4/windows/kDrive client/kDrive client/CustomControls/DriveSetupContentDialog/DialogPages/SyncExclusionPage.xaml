@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page x:Class="Infomaniak.kDrive.Pages.DriveSetupContentDialog.SyncExclusionPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:controls="using:Infomaniak.kDrive.CustomControls"
+      xmlns:controlsErrors="using:Infomaniak.kDrive.CustomControls.Errors"
+      xmlns:converters="using:Infomaniak.kDrive.Converters"
+      xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
+      xmlns:templateSelectors="using:Infomaniak.kDrive.TemplateSelectors"
+      xmlns:kDrive="using:Infomaniak.kDrive"
+      mc:Ignorable="d">
+    <Page.Transitions>
+        <TransitionCollection>
+            <NavigationThemeTransition />
+        </TransitionCollection>
+    </Page.Transitions>
+    <Grid RowSpacing="{StaticResource Infomaniak.Style.Spacing.S}">
+        <Grid.RowDefinitions>
+            <!-- Title -->
+            <RowDefinition Height="Auto" />
+
+            <!-- Message -->
+            <RowDefinition Height="Auto" />
+
+            <!-- Remote folder exclusion -->
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <!-- Title -->
+        <TextBlock Grid.Row="0"
+                   Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingAdvancedSettingsExclusionTitle')}"
+                   TextWrapping="WrapWholeWords"
+                   Style="{StaticResource SubtitleTextBlockStyle}" />
+
+        <!-- Message -->
+        <TextBlock Grid.Row="1"
+                   Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingAdvancedSettingsExclusionDescription')}"
+                   TextWrapping="WrapWholeWords"
+                   Style="{StaticResource BodyTextBlockStyle}"
+                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+
+        <!-- Remote folder exclusion -->
+        <controls:SyncExclusionSelector x:Name="ExclusionSelector"
+                                        Grid.Row="3"
+                                        Sync="{x:Bind DriveSetupContentDialogVM.CurrentSync}"
+                                        CanShowSaveMenu="False" />
+    </Grid>
+</Page>

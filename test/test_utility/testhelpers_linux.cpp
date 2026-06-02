@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@
 #include <utime.h>
 
 namespace KDC::testhelpers {
-
+namespace {
 SyncPath removeNumericSuffix(const SyncPath &relativePath) {
     if (relativePath.empty()) return {};
 
@@ -61,6 +61,45 @@ SyncPath removeNumericSuffix(const SyncPath &relativePath) {
     return SyncPath{ss.str()};
 }
 
+enum class TrashSubDirectory {
+    Info,
+    Files
+};
+
+// Get the user trash subdirectory
+SyncPath getTrashSubDir(const TrashSubDirectory trashSubDir) {
+    switch (trashSubDir) {
+        case TrashSubDirectory::Info:
+            return SyncPath{Utility::getTrashPath()}.parent_path().parent_path() / "info";
+            break;
+        case TrashSubDirectory::Files:
+            return Utility::getTrashPath();
+            break;
+        default:
+            throw std::invalid_argument("Unrecognized trash subdirectory type.");
+    }
+
+    return {};
+}
+
+
+// Parse the mandatory `Path` entry from a .trashinfo file
+std::string getOriginalPath(const SyncPath &infoFile) {
+    std::ifstream file(infoFile);
+    if (!file.is_open()) return "";
+
+    std::string line;
+    static const std::string pathKey = "Path=";
+    while (std::getline(file, line)) {
+        if (line.rfind(pathKey, 0) != 0) continue;
+        return line.substr(pathKey.size());
+    }
+
+    return "";
+}
+
+} // namespace
+
 void eraseFromTrash(const KDC::SyncPath &relativePath) {
     const auto trashPath = Utility::getTrashPath();
     std::error_code ec;
@@ -77,32 +116,43 @@ void eraseFromTrash(const KDC::SyncPath &relativePath) {
         const auto p = dirIt->path();
         const auto dirItemRelativePath = std::filesystem::relative(dirIt->path(), trashPath, ec);
         // Filter out the numerical suffix of the root directory name, e.g: `dirname.15` is replaced with `dirname`.
-        const auto suffixFreedirectorEntryPath = removeNumericSuffix(dirItemRelativePath);
-        if (relativePath == suffixFreedirectorEntryPath) itemsToErase.push_back(dirIt->path());
+        const auto suffixFreeDirectorEntryPath = removeNumericSuffix(dirItemRelativePath);
+        if (relativePath == suffixFreeDirectorEntryPath) itemsToErase.push_back(dirIt->path());
     }
 
-    for (const auto &pathToErase: itemsToErase) (void) std::filesystem::remove_all(pathToErase, ec);
+    auto ioError = IoError::Success;
+    for (const auto &pathToErase: itemsToErase) (void) IoHelper::deleteItem(pathToErase, ioError);
 }
 
-bool isInTrash(const SyncPath &relativePath) {
-    const auto trashPath = Utility::getTrashPath();
-    std::error_code ec;
+// Check if a file is in the trash
+bool isInTrash(const SyncPath &absoluteFilePath) {
+    try {
+        const SyncPath trashInfoDir = getTrashSubDir(TrashSubDirectory::Info);
+        if (!std::filesystem::exists(trashInfoDir)) return false;
 
-    auto dirIt = std::filesystem::recursive_directory_iterator(trashPath,
-                                                               std::filesystem::directory_options::skip_permission_denied, ec);
-    if (ec) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in testhelpers::isInTrash: " << Utility::formatStdError(ec));
-        return false;
-    }
+        const SyncPath targetPath = std::filesystem::absolute(absoluteFilePath);
 
-    for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
-        const auto dirItemRelativePath = std::filesystem::relative(dirIt->path(), trashPath, ec);
-        // Filter out the numerical suffix of the root directory name, e.g.: `dirname.15` is replaced with `dirname`.
-        const auto suffixFreedirectorEntryPath = removeNumericSuffix(dirItemRelativePath);
-        if (relativePath == suffixFreedirectorEntryPath) return true;
+        for (const auto &entry: std::filesystem::directory_iterator(trashInfoDir)) {
+            if (entry.path().extension() != ".trashinfo") continue;
+
+            const std::string originalPathStr = getOriginalPath(entry.path());
+            if (originalPathStr.empty()) continue;
+
+            const auto originalPath = std::filesystem::absolute(originalPathStr);
+            if (!CommonUtility::isSubDir(originalPath, absoluteFilePath)) continue;
+
+            const auto relativePath = std::filesystem::relative(absoluteFilePath, originalPath);
+            if (relativePath.begin() == relativePath.end() || relativePath == ".") return true;
+
+            const auto fileTrashParentName = entry.path().filename().stem();
+            return std::filesystem::exists(getTrashSubDir(TrashSubDirectory::Files) / fileTrashParentName / relativePath);
+        }
+    } catch (const std::filesystem::filesystem_error &e) {
+        std::cerr << "File system exception caught in `isInTrash`: " << e.what() << std::endl;
     }
 
     return false;
 }
+
 
 } // namespace KDC::testhelpers

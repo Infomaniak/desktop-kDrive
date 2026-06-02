@@ -64,15 +64,15 @@ class SnapshotItem {
         void setLastChangedSnapshotVersion(SnapshotRevision snapshotVersion);
         SnapshotRevision lastChangeRevision() const { return _lastChangeRevision; }
 
-        void setSnapshotRevisionHandler(const std::shared_ptr<SnapshotRevisionHandler> &snapshotRevisionHandler) {
+        void setSnapshotRevisionHandler(const std::shared_ptr<SnapshotRevisionHandler> snapshotRevisionHandler) {
             _snapshotRevisionHandler = snapshotRevisionHandler;
             _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
         }
         SnapshotItem &operator=(const SnapshotItem &other);
 
         void copyExceptChildren(const SnapshotItem &other);
-        void addChild(const std::shared_ptr<SnapshotItem> &child);
-        void removeChild(const std::shared_ptr<SnapshotItem> &child);
+        void addChild(const std::shared_ptr<SnapshotItem> child);
+        void removeChild(const std::shared_ptr<SnapshotItem> child);
         void removeAllChildren();
 
     private:

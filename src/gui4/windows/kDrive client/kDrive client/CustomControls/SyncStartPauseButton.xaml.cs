@@ -6,14 +6,11 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using System;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace Infomaniak.kDrive.CustomControls;
 
 public sealed partial class SyncStartPauseButton : UserControl
 {
-    private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
+    private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
     public AppModel ViewModel
     {
         get { return _viewModel; }
@@ -29,12 +26,20 @@ public sealed partial class SyncStartPauseButton : UserControl
         if (ViewModel?.SelectedSync is not null && (ViewModel.SelectedSync.SyncStatus == SyncStatus.Running || ViewModel.SelectedSync.SyncStatus == SyncStatus.Idle))
         {
             Logger.Log(Logger.Level.Info, "Pausing sync...");
-            await ViewModel.SelectedSync.Pause();
+            if (!await ViewModel.SelectedSync.Pause())
+            {
+                Logger.Log(Logger.Level.Error, "Failed to pause sync.");
+                Utility.ShowUnexpectedErrorTeachingTip();
+            }
         }
         else if (ViewModel?.SelectedSync is not null)
         {
             Logger.Log(Logger.Level.Info, "Starting sync...");
-            await ViewModel.SelectedSync.Start();
+            if (!await ViewModel.SelectedSync.Start())
+            {
+                Logger.Log(Logger.Level.Error, "Failed to start sync.");
+                Utility.ShowUnexpectedErrorTeachingTip();
+            }
         }
     }
 }
@@ -76,8 +81,8 @@ public class SyncToButtonEnabledConverter : IValueConverter
     {
         if (value is Sync sync)
         {
-            SyncStatus syncStatus = sync.SyncStatus; ;
-            return (syncStatus == SyncStatus.Running || syncStatus == SyncStatus.Paused || syncStatus == SyncStatus.Idle || syncStatus == SyncStatus.Stopped || syncStatus == SyncStatus.Error);
+            SyncStatus syncStatus = sync.SyncStatus;
+            return syncStatus == SyncStatus.Running || syncStatus == SyncStatus.Paused || syncStatus == SyncStatus.Idle || syncStatus == SyncStatus.Stopped || syncStatus == SyncStatus.Error;
         }
         return false;
     }

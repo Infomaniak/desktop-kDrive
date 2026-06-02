@@ -38,7 +38,7 @@ ExitInfo UtilityActivateLoadInfoJob::serializeOutputParms() {
 }
 
 ExitInfo UtilityActivateLoadInfoJob::process() {
-    _commManager->appServer().clearSyncCacheMap();
+    _commManager->appServer().triggerSyncProgressUpdate();
     _commManager->appServer().loadUsersInfo();
     return ExitCode::Ok;
 }

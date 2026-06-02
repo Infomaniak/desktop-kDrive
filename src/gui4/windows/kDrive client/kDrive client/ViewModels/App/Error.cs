@@ -16,8 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Infomaniak.kDrive.ServerCommunication.CommStruct;
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
+using Infomaniak.kDrive.ServerCommunication.Services;
 using Infomaniak.kDrive.Types;
+using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.ViewModels
 {
@@ -82,13 +88,13 @@ namespace Infomaniak.kDrive.ViewModels
         public string Path
         {
             get => _path;
-            set => SetPropertyInUIThread(ref _path, value);
+            set => SetPropertyInUIThread(ref _path, value.Replace('\\', '/'));
         }
 
         public string DestinationPath
         {
             get => _destinationPath;
-            set => SetPropertyInUIThread(ref _destinationPath, value);
+            set => SetPropertyInUIThread(ref _destinationPath, value.Replace('\\', '/'));
         }
 
         public ConflictType ConflictType
@@ -113,6 +119,24 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _autoResolved;
             set => SetPropertyInUIThread(ref _autoResolved, value);
+        }
+
+        public async Task<NodeConflictInfo?> GetConflictNodeVersionInfo(ReplicaSide side, CancellationToken cancellationToken)
+        {
+            if (Sync is null) return null;
+            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            var path = side == ReplicaSide.Local ? DestinationPath : Path;
+            return await commService.GetNodeConflictInfo(Sync.DbId, path, side, cancellationToken);
+        }
+
+        public bool IsConflictUserResolvable()
+        {
+            return ErrorLevel == ErrorLevel.Node && IsConflictUserResolvable(ConflictType);
+        }
+
+        public static bool IsConflictUserResolvable(ConflictType conflictType)
+        {
+            return conflictType == ConflictType.CreateCreate || conflictType == ConflictType.EditEdit;
         }
     }
 }

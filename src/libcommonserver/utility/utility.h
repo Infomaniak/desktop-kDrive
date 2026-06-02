@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,9 +18,10 @@
 
 #pragma once
 
-#include "libcommonserver/log/log.h"
 #include "libcommonserver/commonserverlib.h"
 #include "libcommonserver/db/dbdefs.h"
+#include "libcommonserver/log/log.h"
+
 #include "libcommon/utility/filename.h"
 #include "libcommon/utility/types.h"
 
@@ -34,6 +35,7 @@
 
 #include <Poco/DOM/Document.h>
 #include <Poco/Net/HTTPResponse.h>
+#include <log4cplus/logger.h>
 
 #if defined(KD_WINDOWS)
 #include <windows.h>
@@ -62,22 +64,7 @@ struct COMMONSERVER_EXPORT Utility {
         static bool enoughSpace(const SyncPath &path);
         static bool findNodeValue(const Poco::XML::Document &doc, const std::string &nodeName, std::string *outValue);
         static bool isCreationDateValid(int64_t creationDate);
-
-        static void msleep(int msec);
         static std::wstring v2ws(const dbtype &v);
-
-        static std::wstring formatStdError(const std::error_code &ec);
-        static std::wstring formatStdError(const SyncPath &path, const std::error_code &ec);
-        static std::wstring formatIoError(IoError ioError);
-        static std::wstring formatIoError(const SyncPath &path, IoError ioError);
-        static std::wstring formatIoError(const QString &path, IoError ioError);
-        static std::wstring formatErrno(const SyncPath &path, long cError);
-        static std::wstring formatErrno(const QString &path, long cError);
-        static std::wstring quotedSyncName(const SyncName &name);
-        static std::wstring formatSyncName(const SyncName &name);
-        static std::wstring formatSyncPath(const SyncPath &path);
-        static std::wstring formatPath(const QString &path);
-        static std::wstring formatSystemError(const std::system_error &exception);
 
         static std::string formatRequest(const Poco::URI &uri, const std::string &code, const std::string &description);
 
@@ -110,8 +97,6 @@ struct COMMONSERVER_EXPORT Utility {
          */
         static bool checkIfSameNormalization(const SyncPath &a, const SyncPath &b, bool &areSame);
 
-
-        static SyncPath getTrashPath();
 #if defined(KD_MACOS)
         static bool preventSleeping(bool enable);
         static void restartFinderExtension();
@@ -119,8 +104,6 @@ struct COMMONSERVER_EXPORT Utility {
         static bool isLiteSyncExtRunning();
 #endif
         static bool isLiteSyncExtError(const ExitInfo &exitInfo);
-
-        static bool getLinuxDesktopType(std::string &currentDesktop);
 
         static void str2hexstr(const std::string &str, std::string &hexstr, bool capital = false);
         static void strhex2str(const std::string &hexstr, std::string &str);
@@ -214,6 +197,31 @@ struct COMMONSERVER_EXPORT Utility {
          * @return IoError
          */
         static IoError tryCreateTmpFile(const SyncName &name = Str("testFile"));
+
+        static void msleep(int msec);
+
+        static bool getLinuxDesktopType(std::string &currentDesktop);
+        static SyncPath getTrashPath();
+
+        static bool registerLoginRedirection();
+
+        // Format utility functions
+        static std::wstring formatStdError(const std::error_code &ec);
+        static std::wstring formatStdError(const SyncPath &path, const std::error_code &ec);
+        static std::wstring formatIoError(IoError ioError);
+        static std::wstring formatIoError(const SyncPath &path, IoError ioError);
+        static std::wstring formatIoError(const QString &path, IoError ioError);
+        static std::wstring formatErrno(const SyncPath &path, long cError);
+        static std::wstring formatErrno(const QString &path, long cError);
+        static std::wstring quotedSyncName(const SyncName &name);
+        static std::wstring formatSyncName(const SyncName &name);
+        static std::wstring formatSyncPath(const SyncPath &path);
+        static std::wstring formatPath(const QString &path);
+        static std::wstring formatSystemError(const std::system_error &exception);
+
+        static ExitCause exitCauseFromInaccessibleSyncDirectory(const SyncPath &syncDir,
+                                                                SourceLocation srcLoc = SourceLocation::currentLoc());
+
 
     private:
         static log4cplus::Logger _logger;

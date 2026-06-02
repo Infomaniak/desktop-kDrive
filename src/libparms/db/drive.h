@@ -37,52 +37,64 @@ class PARMS_EXPORT Drive {
                 int64_t _maintenanceFrom{0};
         };
 
+        struct PackInfo {
+                uint64_t id{0};
+                std::string name;
+                std::string displayName;
+                bool isFree{false}; // False by default in order not to offer to upgrade when this value is not yet up to date.
+        };
+
         Drive();
         Drive(int dbId, int driveId, int accountDbId, const std::string &name = std::string(), int64_t size = int64_t(),
               const std::string &color = std::string(), bool notifications = true, bool admin = true);
 
         void setDbId(int dbId) { _dbId = dbId; }
-        int dbId() const { return _dbId; }
+        [[nodiscard]] int dbId() const { return _dbId; }
         void setDriveId(int driveId) { _driveId = driveId; }
-        int driveId() const { return _driveId; }
+        [[nodiscard]] int driveId() const { return _driveId; }
         void setAccountDbId(int accountDbId) { _accountDbId = accountDbId; }
-        int accountDbId() const { return _accountDbId; }
+        [[nodiscard]] int accountDbId() const { return _accountDbId; }
         void setName(const std::string &newDriveName) { _name = newDriveName; }
-        const std::string &name() const { return _name; }
-        int64_t size() const { return _size; }
+        [[nodiscard]] const std::string &name() const { return _name; }
         void setSize(int64_t newSize) { _size = newSize; }
-        std::string color() const { return _color; }
-        void setColor(std::string color) { _color = color; }
-        bool notifications() const { return _notifications; }
+        [[nodiscard]] int64_t size() const { return _size; }
+        [[nodiscard]] const std::string &color() const { return _color; }
+        void setColor(const std::string &color) { _color = std::move(color); }
+        [[nodiscard]] bool notifications() const { return _notifications; }
         void setNotifications(bool newNotifications) { _notifications = newNotifications; }
-        bool admin() const { return _admin; }
+        [[nodiscard]] bool admin() const { return _admin; }
         void setAdmin(bool admin) { _admin = admin; }
 
-        const MaintenanceInfo &maintenanceInfo() const { return _maintenanceInfo; }
+        [[nodiscard]] const MaintenanceInfo &maintenanceInfo() const { return _maintenanceInfo; }
         void setMaintenanceInfo(const MaintenanceInfo &info) { _maintenanceInfo = info; }
-        bool locked() const { return _locked; }
+        [[nodiscard]] bool locked() const { return _locked; }
         void setLocked(bool newLocked) { _locked = newLocked; }
-        int64_t usedSize() { return _usedSize; }
+        [[nodiscard]] int64_t usedSize() const { return _usedSize; }
         void setUsedSize(int64_t newUsedSize) { _usedSize = newUsedSize; }
-        bool accessDenied() const { return _accessDenied; }
+        [[nodiscard]] bool accessDenied() const { return _accessDenied; }
         void setAccessDenied(bool accessDenied) { _accessDenied = accessDenied; }
+
+        [[nodiscard]] const PackInfo &packInfo() const { return _packInfo; }
+        void setPackInfo(const PackInfo &packInfo) { _packInfo = packInfo; }
 
     private:
         log4cplus::Logger _logger;
-        int _dbId;
-        int _driveId;
-        int _accountDbId;
+        int _dbId{0};
+        int _driveId{0};
+        int _accountDbId{0};
         std::string _name;
-        int64_t _size;
+        int64_t _size{0};
         std::string _color; // #RRGGBB format
-        bool _notifications;
-        bool _admin;
+        bool _notifications{true};
+        bool _admin{false};
 
         // Non DB attributes
         MaintenanceInfo _maintenanceInfo;
-        bool _locked;
-        int64_t _usedSize;
-        bool _accessDenied;
+        bool _locked{false};
+        int64_t _usedSize{0};
+        bool _accessDenied{false};
+
+        PackInfo _packInfo;
 };
 
 } // namespace KDC

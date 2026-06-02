@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 #include "utility.h"
 #include "utility_base.h"
-#include "libcommon/log/sentry/handler.h"
+#include "log/sentry/handler.h"
 #include "config.h"
 #include "version.h"
 
@@ -96,7 +96,7 @@ const QString CommonUtility::frenchCode = "fr";
 const QString CommonUtility::germanCode = "de";
 const QString CommonUtility::spanishCode = "es";
 const QString CommonUtility::italianCode = "it";
-
+const QString CommonUtility::dutchCode = "nl";
 static std::random_device rd;
 static std::default_random_engine gen(rd());
 
@@ -235,6 +235,31 @@ bool CommonUtility::isAPFS(const SyncPath &targetPath) {
 bool CommonUtility::isFAT(const SyncPath &targetPath) {
     static const std::string fat("FAT");
     return contains(getRootFsType(targetPath), fat);
+}
+
+bool CommonUtility::isSyncCompatible(const SyncPath &targetPath) {
+#if defined(KD_MACOS)
+    // Tested OK: APFS, HFS+, exFAT
+    // Tested KO: FAT32
+    return !CommonUtility::isFAT(targetPath);
+#elif defined(KD_WINDOWS)
+    // Tested OK: NTFS, exFAT, FAT32
+    return true;
+#else
+    // Tested OK: EXT4
+    return true;
+#endif
+}
+
+bool CommonUtility::isLiteSyncCompatible(const SyncPath &targetPath) {
+    // Only File Systems supporting sparse files are compatible
+#if defined(KD_MACOS)
+    return CommonUtility::isAPFS(targetPath);
+#elif defined(KD_WINDOWS)
+    return CommonUtility::isNTFS(targetPath);
+#else
+    return false;
+#endif
 }
 
 std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {
@@ -774,8 +799,25 @@ bool CommonUtility::languageCodeIsEnglish(const QString &languageCode) {
 }
 
 bool CommonUtility::isSupportedLanguage(const QString &languageCode) {
-    static const std::unordered_set<QString> supportedLanguages = {englishCode, frenchCode, germanCode, italianCode, spanishCode};
-    return supportedLanguages.contains(languageCode);
+    return strToLanguage(languageCode) != Language::Default;
+}
+
+Language CommonUtility::strToLanguage(const QString &lang) {
+    if (lang == CommonUtility::englishCode) {
+        return Language::English;
+    } else if (lang == CommonUtility::frenchCode) {
+        return Language::French;
+    } else if (lang == CommonUtility::germanCode) {
+        return Language::German;
+    } else if (lang == CommonUtility::spanishCode) {
+        return Language::Spanish;
+    } else if (lang == CommonUtility::italianCode) {
+        return Language::Italian;
+    } else if (lang == CommonUtility::dutchCode) {
+        return Language::Dutch;
+    }
+
+    return Language::Default;
 }
 
 QString CommonUtility::languageCode(const Language language) {
@@ -794,6 +836,8 @@ QString CommonUtility::languageCode(const Language language) {
             return italianCode;
         case Language::Spanish:
             return spanishCode;
+        case Language::Dutch:
+            return dutchCode;
         case Language::English:
             break;
         case Language::EnumEnd:
@@ -1034,10 +1078,6 @@ bool CommonUtility::isVersionLower(const std::string &currentVersion, const std:
     std::vector<uint32_t> targetTabVersion;
     extractIntFromStrVersion(targetVersion, targetTabVersion);
 
-    if (currTabVersion.size() != targetTabVersion.size()) {
-        return false; // Should not happen
-    }
-
     return std::lexicographical_compare(currTabVersion.begin(), currTabVersion.end(), targetTabVersion.begin(),
                                         targetTabVersion.end());
 }
@@ -1148,19 +1188,19 @@ void CommonUtility::clearSignalFile(const AppType appType, const SignalCategory 
         signalType = KDC::fromInt<SignalType>(value);
 
         // Remove file
-        std::filesystem::remove(sigFilePath, ec);
+        (void) std::filesystem::remove(sigFilePath);
     }
 }
 
 #ifdef KD_MACOS
 bool CommonUtility::isLiteSyncExtEnabled() {
-    QProcess *process = new QProcess();
-    process->start("bash", QStringList() << "-c"
-                                         << QString("systemextensionsctl list | grep %1 | grep enabled | wc -l")
-                                                    .arg(liteSyncExtBundleIdStr.data()));
-    process->waitForStarted();
-    process->waitForFinished();
-    QByteArray result = process->readAll();
+    QProcess process;
+    process.start("bash", QStringList() << "-c"
+                                        << QString("systemextensionsctl list | grep %1 | grep enabled | wc -l")
+                                                   .arg(liteSyncExtBundleIdStr.data()));
+    process.waitForStarted();
+    process.waitForFinished();
+    QByteArray result = process.readAll();
 
     return result.trimmed().toInt() == 1;
 }
@@ -1392,30 +1432,6 @@ ReplicaSide CommonUtility::syncNodeTypeSide(SyncNodeType type) {
     }
 }
 
-bool CommonUtility::isWindows() {
-#ifdef _WIN32
-    return true;
-#else
-    return false;
-#endif
-}
-
-bool CommonUtility::isMac() {
-#ifdef __APPLE__
-    return true;
-#else
-    return false;
-#endif
-}
-
-bool CommonUtility::isLinux() {
-#if defined(__unix__)
-    return true;
-#else
-    return false;
-#endif
-}
-
 void CommonUtility::convertFromBase64Str(const std::string &base64Str, std::string &value) {
     value.clear();
     std::istringstream istr(base64Str);
@@ -1463,6 +1479,30 @@ void CommonUtility::convertToBase64Str(const CommBLOB &blob, std::string &base64
     (void) std::copy(blob.begin(), blob.end(), std::ostream_iterator<char>(b64out));
     (void) b64out.close();
     base64Str = ostr.str();
+}
+
+bool CommonUtility::isWindows() {
+#if defined(KD_WINDOWS)
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool CommonUtility::isMac() {
+#if defined(KD_MACOS)
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool CommonUtility::isLinux() {
+#if defined(KD_LINUX)
+    return true;
+#else
+    return false;
+#endif
 }
 
 } // namespace KDC

@@ -29,15 +29,17 @@ namespace KDC {
 
 class AccountInfo {
     public:
+        AccountInfo() = default;
         AccountInfo(int dbId, int userDbId);
-        AccountInfo();
 
-        inline void setDbId(int dbId) { _dbId = dbId; }
-        inline int dbId() const { return _dbId; }
-        inline void setUserDbId(int userDbId) { _userDbId = userDbId; }
-        inline int userDbId() const { return _userDbId; }
-        inline void setAccountId(const int accountId) { _accountId = accountId; }
-        inline int accountId() const { return _accountId; }
+        [[nodiscard]] int dbId() const { return _dbId; }
+        void setDbId(const int dbId) { _dbId = dbId; }
+        [[nodiscard]] int userDbId() const { return _userDbId; }
+        void setUserDbId(const int userDbId) { _userDbId = userDbId; }
+        [[nodiscard]] int id() const { return _id; }
+        void setId(const int accountId) { _id = accountId; }
+        [[nodiscard]] std::string name() const { return _name; }
+        void setName(const std::string &name) { _name = name; }
 
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
         void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
@@ -48,10 +50,15 @@ class AccountInfo {
         friend QDataStream &operator>>(QDataStream &in, QList<AccountInfo> &list);
         friend QDataStream &operator<<(QDataStream &out, const QList<AccountInfo> &list);
 
+        friend bool operator==(const AccountInfo &lhs, const AccountInfo &rhs) {
+            return (lhs.dbId() == rhs.dbId()) && (lhs.userDbId() == rhs.userDbId()) && (lhs.id() == rhs.id());
+        }
+
     private:
-        int _dbId;
-        int _userDbId;
-        int _accountId{-1};
+        int _dbId{0};
+        int _userDbId{0};
+        int _id{-1};
+        std::string _name;
 };
 
 } // namespace KDC

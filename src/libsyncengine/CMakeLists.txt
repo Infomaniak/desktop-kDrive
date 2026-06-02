@@ -29,6 +29,7 @@ set(syncengine_SRCS
     ## Network jobs
     jobs/network/networkjobsparams.h jobs/network/networkjobsparams.cpp
     jobs/network/abstractnetworkjob.h jobs/network/abstractnetworkjob.cpp
+    jobs/network/abstracttokennetworkjob.h jobs/network/abstracttokennetworkjob.cpp
     jobs/network/getavatarjob.h jobs/network/getavatarjob.cpp
     jobs/network/login/abstractloginjob.h jobs/network/login/abstractloginjob.cpp
     jobs/network/login/gettokenjob.h jobs/network/login/gettokenjob.cpp
@@ -36,9 +37,10 @@ set(syncengine_SRCS
     jobs/network/login/gettokenfromapppasswordjob.h jobs/network/login/gettokenfromapppasswordjob.cpp
     jobs/network/infomaniak_API/getappversionjob.h jobs/network/infomaniak_API/getappversionjob.cpp
     jobs/network/directdownloadjob.h jobs/network/directdownloadjob.cpp
+    jobs/network/infomaniak_API/getaccountinfojob.h jobs/network/infomaniak_API/getaccountinfojob.cpp
+    jobs/network/infomaniak_API/getinfouserjob.h jobs/network/infomaniak_API/getinfouserjob.cpp
     ### API v2 jobs
     jobs/network/kDrive_API/backerror.h jobs/network/kDrive_API/backerror.cpp
-    jobs/network/abstracttokennetworkjob.h jobs/network/abstracttokennetworkjob.cpp
     jobs/network/kDrive_API/getrootfilelistjob.h jobs/network/kDrive_API/getrootfilelistjob.cpp
     jobs/network/kDrive_API/getfilelistjob.h jobs/network/kDrive_API/getfilelistjob.cpp
     jobs/network/kDrive_API/listing/initfilelistwithcursorjob.h jobs/network/kDrive_API/listing/initfilelistwithcursorjob.cpp
@@ -48,6 +50,7 @@ set(syncengine_SRCS
     jobs/network/kDrive_API/listing/continuefilelistwithcursorjob.h jobs/network/kDrive_API/listing/continuefilelistwithcursorjob.cpp
     jobs/network/kDrive_API/listing/longpolljob.h jobs/network/kDrive_API/listing/longpolljob.cpp
     jobs/network/kDrive_API/getfileinfojob.h jobs/network/kDrive_API/getfileinfojob.cpp
+    jobs/network/kDrive_API/getfileinfojobV3.h jobs/network/kDrive_API/getfileinfojobV3.cpp
     jobs/network/kDrive_API/deletejob.h jobs/network/kDrive_API/deletejob.cpp
     jobs/network/kDrive_API/createdirjob.h jobs/network/kDrive_API/createdirjob.cpp
     jobs/network/kDrive_API/movejob.h jobs/network/kDrive_API/movejob.cpp
@@ -67,14 +70,14 @@ set(syncengine_SRCS
     jobs/network/kDrive_API/upload/loguploadjob.h jobs/network/kDrive_API/upload/loguploadjob.cpp
     jobs/network/kDrive_API/upload/uploadjobreplyhandler.h jobs/network/kDrive_API/upload/uploadjobreplyhandler.cpp
     jobs/network/kDrive_API/getinfodrivejob.h jobs/network/kDrive_API/getinfodrivejob.cpp
-    jobs/network/kDrive_API/getinfodriveuserjob.h jobs/network/kDrive_API/getinfodriveuserjob.cpp
+    jobs/network/kDrive_API/getdriveuserinfojob.h jobs/network/kDrive_API/getdriveuserinfojob.cpp
     jobs/network/kDrive_API/getdriveslistjob.h jobs/network/kDrive_API/getdriveslistjob.cpp
-    jobs/network/infomaniak_API/getinfouserjob.h jobs/network/infomaniak_API/getinfouserjob.cpp
     jobs/network/kDrive_API/getthumbnailjob.h jobs/network/kDrive_API/getthumbnailjob.cpp
     jobs/network/kDrive_API/postfilelinkjob.h jobs/network/kDrive_API/postfilelinkjob.cpp
     jobs/network/kDrive_API/getfilelinkjob.h jobs/network/kDrive_API/getfilelinkjob.cpp
     jobs/network/kDrive_API/getsizejob.h jobs/network/kDrive_API/getsizejob.cpp
     jobs/network/kDrive_API/searchjob.h jobs/network/kDrive_API/searchjob.cpp
+    jobs/network/kDrive_API/itemsexistjob.h jobs/network/kDrive_API/itemsexistjob.cpp
     ## Local jobs
     jobs/local/localmovejob.h jobs/local/localmovejob.cpp
     jobs/local/localcopyjob.h jobs/local/localcopyjob.cpp
@@ -142,6 +145,7 @@ set(syncengine_SRCS
     requests/parameterscache.h requests/parameterscache.cpp
     requests/syncnodecache.h requests/syncnodecache.cpp
     requests/exclusiontemplatecache.h requests/exclusiontemplatecache.cpp
+    requests/driveuserinfocache.h requests/driveuserinfocache.cpp
     # Performance watcher
     performance_watcher/performancewatcher.h performance_watcher/performancewatcher.cpp
 )

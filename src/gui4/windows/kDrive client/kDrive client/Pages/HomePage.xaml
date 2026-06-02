@@ -26,49 +26,18 @@
       xmlns:controls="using:Infomaniak.kDrive.CustomControls"
       xmlns:converters="using:Infomaniak.kDrive.Converters"
       xmlns:viewmodel="using:Infomaniak.kDrive.ViewModels"
+      xmlns:errors="using:Infomaniak.kDrive.CustomControls.Errors"
       xmlns:templateSelectors="using:Infomaniak.kDrive.TemplateSelectors"
+      xmlns:kDrive="using:Infomaniak.kDrive"
+      xmlns:types="using:Infomaniak.kDrive.Types"
       mc:Ignorable="d">
     <Page.Resources>
         <!-- Converters -->
         <converters:BooleanToVisibilityConverter  x:Key="BooleanToVisibilityConverter" />
 
-        <!-- SyncStatus Text templates -->
-        <DataTemplate x:Key="SyncUpToDateTemplate">
-            <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}">
-                    <Run x:Uid="Page_HomePage_Status_SyncUpToDate" />
-            </TextBlock>
-        </DataTemplate>
-
-        <DataTemplate x:Key="SyncInProgressTemplate">
-            <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}">
-                    <Run x:Uid="Page_HomePage_Status_SyncInProgress" />
-            </TextBlock>
-        </DataTemplate>
-
-        <DataTemplate x:Key="SyncInPauseTemplate">
-            <TextBlock x:Uid="Page_HomePage_Status_SyncInPause"
-                       Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
-        </DataTemplate>
-
-        <DataTemplate x:Key="SyncOfflineTemplate"
-                      x:DataType="viewmodel:Sync">
-            <TextBlock x:Uid="Page_HomePage_Status_SyncOffline"
-                       Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
-        </DataTemplate>
-
-        <DataTemplate x:Key="SyncLoadingTemplate">
-
-        </DataTemplate>
-
-        <templateSelectors:SyncStatusTemplateSelector x:Key="SyncStatusMessageTemplateSelector"
-                                                      SyncUpToDateTemplate="{StaticResource SyncUpToDateTemplate}"
-                                                      SyncInProgressTemplate="{StaticResource SyncInProgressTemplate}"
-                                                      SyncInPauseTemplate="{StaticResource SyncInPauseTemplate}"
-                                                      SyncOfflineTemplate="{StaticResource SyncOfflineTemplate}"
-                                                      SyncLoadingTemplate="{StaticResource SyncLoadingTemplate}" />
-
         <!-- SyncStatus main template-->
-        <DataTemplate x:Key="SyncUpToDateMainTemplate">
+        <DataTemplate x:Key="SyncUpToDateMainTemplate"
+                      x:DataType="types:SyncStatus">
             <Grid HorizontalAlignment="Center"
                   VerticalAlignment="Center"
                   RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}">
@@ -79,31 +48,28 @@
 
                 <controls:LottiePlayer Grid.Row="0"
                                        UriSource="{ThemeResource Infomaniak.Custom.Animations.check}"
-                                       MaxWidth="230" 
-                                       Padding="50"/>
+                                       PlayCount="1"
+                                       MaxWidth="180"
+                                       Padding="50" />
 
                 <StackPanel Grid.Row="1"
                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
                     <!-- Title -->
-                    <TextBlock x:Uid="Page_HomePage_Main_SyncUpToDate_Title"
-                               Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
+                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
+                               Text="{x:Bind kDrive:Localizer.Instance.GetString('synchroStatusUpToDateTitle')}"
                                HorizontalAlignment="Center" />
 
                     <!-- Description -->
-                    <TextBlock x:Uid="Page_HomePage_Main_SyncUpToDate_Description"
-                               Style="{StaticResource Infomaniak.Style.TextBlock.CaptionSb}"
+                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.CaptionSb}"
+                               Text="{x:Bind kDrive:Localizer.Instance.GetString('synchroStatusUpToDateDescription')}"
                                HorizontalAlignment="Center"
                                TextWrapping="WrapWholeWords" />
-
-                    <!-- Link -->
-                    <HyperlinkButton x:Uid="Page_HomePage_Main_SyncUpToDate_HyperLink"
-                                     HorizontalAlignment="Center"
-                                     Click="SyncUpToDateHyperlinkButton_Click" />
                 </StackPanel>
             </Grid>
         </DataTemplate>
 
-        <DataTemplate x:Key="SyncInProgressMainTemplate">
+        <DataTemplate x:Key="SyncInProgressMainTemplate"
+                      x:DataType="types:SyncStatus">
             <Grid HorizontalAlignment="Center"
                   VerticalAlignment="Center"
                   RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}">
@@ -114,30 +80,31 @@
 
                 <controls:LottiePlayer Grid.Row="0"
                                        UriSource="{ThemeResource Infomaniak.Custom.Animations.sync}"
-                                       MaxWidth="230" />
+                                       MaxWidth="180" />
 
                 <StackPanel Grid.Row="1"
                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
                     <!-- Title -->
-                    <TextBlock x:Uid="Page_HomePage_Main_SyncInProgress_Title"
-                               Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
+                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
+                               Text="{x:Bind kDrive:Localizer.Instance.GetString('synchroStatusInProgressTitle')}"
                                HorizontalAlignment="Center" />
 
                     <!-- Description -->
-                    <TextBlock x:Uid="Page_HomePage_Main_SyncInProgress_Description"
-                               Style="{StaticResource Infomaniak.Style.TextBlock.CaptionSb}"
+                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.CaptionSb}"
+                               Text="{x:Bind kDrive:Localizer.Instance.GetString('synchroStatusInProgressDescription')}"
                                HorizontalAlignment="Center"
                                TextWrapping="Wrap" />
 
                     <!-- Link -->
-                    <HyperlinkButton x:Uid="Page_HomePage_Main_SyncInProgress_HyperLink"
-                                     HorizontalAlignment="Center"
+                    <HyperlinkButton HorizontalAlignment="Center"
+                                     Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonSeeActivities')}"
                                      Click="SyncInProgressHyperlinkButton_Click" />
                 </StackPanel>
             </Grid>
         </DataTemplate>
 
-        <DataTemplate x:Key="SyncInPauseMainTemplate">
+        <DataTemplate x:Key="SyncInPauseMainTemplate"
+                      x:DataType="types:SyncStatus">
             <Grid HorizontalAlignment="Center"
                   VerticalAlignment="Center"
                   RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}">
@@ -147,31 +114,33 @@
                 </Grid.RowDefinitions>
 
                 <controls:LottiePlayer Grid.Row="0"
+                                       PlayCount="1"
                                        UriSource="{ThemeResource Infomaniak.Custom.Animations.pause}"
-                                       MaxWidth="230" />
+                                       MaxWidth="180" />
 
                 <StackPanel Grid.Row="1"
                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
                     <!-- Title -->
-                    <TextBlock x:Uid="Page_HomePage_Main_SyncInPause_Title"
-                               Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
+                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
+                               Text="{x:Bind kDrive:Localizer.Instance.GetString('synchroStatusPausedTitle')}"
                                HorizontalAlignment="Center" />
 
                     <!-- Description -->
-                    <TextBlock x:Uid="Page_HomePage_Main_SyncInPause_Description"
-                               Style="{StaticResource Infomaniak.Style.TextBlock.CaptionSb}"
+                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.CaptionSb}"
+                               Text="{x:Bind kDrive:Localizer.Instance.GetString('synchroPaused')}"
                                HorizontalAlignment="Center"
-                               TextWrapping="Wrap" />
+                               TextWrapping="WrapWholeWords" />
 
                     <!-- Link -->
-                    <HyperlinkButton x:Uid="Page_HomePage_Main_SyncInPause_HyperLink"
-                                     HorizontalAlignment="Center"
-                                     Click="SyncInPauseHyperlinkButton_Click" />
+                    <HyperlinkButton HorizontalAlignment="Center"
+                                     Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonRestartSynchro')}"
+                                     Click="RestartButton_Click" />
                 </StackPanel>
             </Grid>
         </DataTemplate>
 
-        <DataTemplate x:Key="SyncOfflineMainTemplate">
+        <DataTemplate x:Key="SyncOfflineMainTemplate"
+                      x:DataType="types:SyncStatus">
             <Grid HorizontalAlignment="Center"
                   VerticalAlignment="Center"
                   RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}">
@@ -182,33 +151,33 @@
 
                 <controls:LottiePlayer Grid.Row="0"
                                        UriSource="{ThemeResource Infomaniak.Custom.Animations.offline}"
-                                       MaxWidth="230" />
+                                       PlayCount="1"
+                                       MaxWidth="180" />
 
                 <StackPanel Grid.Row="1"
                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
                     <!-- Title -->
-                    <TextBlock Grid.Row="1"
-                               x:Uid="Page_HomePage_Main_SyncOffline_Title"
-                               Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
+                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
+                               Text="{x:Bind kDrive:Localizer.Instance.GetString('synchroStatusOfflineTitle')}"
                                HorizontalAlignment="Center" />
 
                     <!-- Description -->
-                    <TextBlock x:Name="subtitle"
-                               Style="{StaticResource Infomaniak.Style.TextBlock.CaptionSb}"
-                               Grid.Row="2"
-                               TextWrapping="WrapWholeWords"
-                               TextAlignment="Center"
+                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.CaptionSb}"
+                               Text="{x:Bind kDrive:Localizer.Instance.GetString('synchroStatusOfflineDescription')}"
                                HorizontalAlignment="Center"
-                               MaxWidth="300">
-                        <Run x:Uid="Page_HomePage_Main_SyncOffline_Description_Line1" />
-                        <LineBreak />
-                        <Run x:Uid="Page_HomePage_Main_SyncOffline_Description_Line2" />
-                    </TextBlock>
+                               TextAlignment="Center"
+                               TextWrapping="WrapWholeWords" />
+
+                    <!-- Link -->
+                    <HyperlinkButton HorizontalAlignment="Center"
+                                     Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonRestartSynchro')}"
+                                     Click="RestartButton_Click" />
                 </StackPanel>
             </Grid>
         </DataTemplate>
 
-        <DataTemplate x:Key="SyncLoadingMainTemplate">
+        <DataTemplate x:Key="SyncLoadingMainTemplate"
+                      x:DataType="types:SyncStatus">
             <Grid HorizontalAlignment="Center"
                   VerticalAlignment="Center"
                   RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}">
@@ -219,27 +188,27 @@
 
                 <controls:ContentLoader Grid.Row="0"
                                         IsLoading="True"
-                                        CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}"
-                                        Height="130"
-                                        Width="180" />
+                                        CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.M}"
+                                        Height="100"
+                                        Width="150" />
 
                 <StackPanel Grid.Row="1"
                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
                     <!-- Title -->
                     <controls:ContentLoader IsLoading="True"
-                                            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}"
+                                            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
                                             Height="{StaticResource Infomaniak.Style.Spacing.L}"
                                             Width="150" />
 
                     <!-- Description -->
                     <controls:ContentLoader IsLoading="True"
-                                            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}"
+                                            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
                                             Height="{StaticResource Infomaniak.Style.Spacing.L}"
                                             Width="300" />
 
                     <!-- Link -->
                     <controls:ContentLoader IsLoading="True"
-                                            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}"
+                                            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
                                             Height="{StaticResource Infomaniak.Style.Spacing.L}"
                                             Width="100" />
                 </StackPanel>
@@ -264,18 +233,13 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- Update Available Banner -->
-        <controls:UpdateAvailableBar Grid.Row="0"
-                                     Visibility="Collapsed"
-                                     Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.M}" />
-
         <!-- Main content-->
         <Grid Grid.Row="1"
               RowSpacing="{StaticResource Infomaniak.Style.Spacing.L}"
               ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.M}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <!-- Sync status bar -->
@@ -287,25 +251,27 @@
             <!-- Sync Status Bar -->
             <StackPanel Grid.Column="0"
                         Grid.ColumnSpan="2"
-                        Grid.Row="0"
-                        Orientation="Horizontal">
-                <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.SubtitleSl}">
-                    <Run x:Uid="Page_HomePage_Hello" />
-                    <Run Text="{x:Bind ViewModel.SelectedSync.Drive.Account.User.Name, Mode=OneWay}" />
-                </TextBlock>
-                <ContentControl ContentTemplateSelector="{StaticResource SyncStatusMessageTemplateSelector}"
-                                Content="{x:Bind ViewModel.SelectedSync.SyncStatus,Mode=OneWay}" />
+                        Grid.Row="0">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}"
+                               Text="{x:Bind GetGreetingLabel(ViewModel.SelectedSync.Drive.Account.User.Name, ViewModel.SelectedSync.SyncStatus), Mode=OneWay}" />
+                </StackPanel>
+
+                <errors:RemoteDiskFullBar Grid.Row="0"
+                                          Visibility="Visible"
+                                          Drive="{x:Bind ViewModel.SelectedSync.Drive, Mode=OneWay}"
+                                          Margin="{StaticResource Infomaniak.Style.Thickness.Top.M}" />
             </StackPanel>
             <!-- State widget -->
             <Border Grid.Column="0"
                     Grid.Row="1"
-                    CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}"
+                    CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
                     Padding="24">
                 <Border.Background>
                     <LinearGradientBrush StartPoint="0,0"
                                          EndPoint="0,1"
                                          Opacity="0.4">
-                        <GradientStop Color="#446FDD"
+                        <GradientStop Color="{ThemeResource SystemAccentColor}"
                                       Offset="0.0" />
                         <GradientStop Color="{ThemeResource LayerFillColorDefault}"
                                       Offset="0.6" />
@@ -323,9 +289,10 @@
             <controls:QuickAccess Grid.Row="1"
                                   Grid.Column="1" />
         </Grid>
+        <!-- Make conditionally visible once we fetch the offer type -->
         <controls:KSuiteUpgradeBar Grid.Row="2"
                                    Grid.ColumnSpan="2"
-                                   Visibility="{x:Bind ViewModel.SelectedSync.Drive.IsPaidOffer, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True'}"
+                                   Visibility="Collapsed"
                                    Margin="{StaticResource Infomaniak.Style.Thickness.Top.M}" />
     </Grid>
 </Page>

@@ -10,7 +10,7 @@ namespace Infomaniak.kDrive.Converters
         public object Convert(object value, Type targetType, object parameter, string language)
         {
             if (value is Color color)
-            {   
+            {
                 return new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(color.A, color.R, color.G, color.B));
             }
             Logger.Log(Logger.Level.Fatal, "ColorToBrushConverter: value is not a Windows.UI.Color.");

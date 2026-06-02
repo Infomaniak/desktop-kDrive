@@ -1,6 +1,4 @@
-﻿using DynamicData;
-using Infomaniak.kDrive.Types;
-using System.Threading.Tasks;
+﻿using Infomaniak.kDrive.Types;
 
 namespace Infomaniak.kDrive.ViewModels
 {
@@ -57,6 +55,19 @@ namespace Infomaniak.kDrive.ViewModels
         private void UpdateManualConfigurationRequired()
         {
             ManualConfigrationRequired = Type == ProxyType.HTTP;
+        }
+
+        internal ProxyConfig Clone()
+        {
+            return new ProxyConfig
+            {
+                Type = this.Type,
+                HostName = this.HostName,
+                Port = this.Port,
+                NeedsAuth = this.NeedsAuth,
+                User = this.User,
+                Pwd = this.Pwd
+            };
         }
     }
 }

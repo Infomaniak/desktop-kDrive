@@ -30,7 +30,18 @@ ProgressInfo::~ProgressInfo() {
     LOG_DEBUG(Log::instance()->getLogger(), "~ProgressInfo");
 }
 
+auto ProgressInfo::GetItemIterator(const SyncPath &path) {
+    // The caller must acquire a lock on _mutex before calling this method.
+    SyncPath normalizedPath;
+    if (!Utility::normalizedSyncPath(path, normalizedPath)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(path));
+        return _currentItems.end();
+    }
+    return _currentItems.find(normalizedPath);
+}
+
 void ProgressInfo::reset() {
+    const std::scoped_lock lock(_mutex);
     _currentItems.clear();
     _sizeProgress = Progress();
     _fileProgress = Progress();
@@ -60,11 +71,12 @@ void ProgressInfo::updateEstimates() {
     if (!_update) {
         return;
     }
-
+    const std::scoped_lock lock(_mutex);
     _sizeProgress.update();
     _fileProgress.update();
 
     // Update progress of all running items.
+
     for (auto &item: _currentItems) {
         if (item.second.empty()) {
             continue;
@@ -89,6 +101,8 @@ bool ProgressInfo::initProgress(const SyncFileItem &item) {
         return false;
     }
 
+
+    const std::scoped_lock lock(_mutex);
     _currentItems[normalizedPath].push(progressItem);
 
     _fileProgress.setTotal(_fileProgress.total() + 1);
@@ -97,13 +111,8 @@ bool ProgressInfo::initProgress(const SyncFileItem &item) {
 }
 
 bool ProgressInfo::getSyncFileItem(const SyncPath &path, SyncFileItem &item) {
-    SyncPath normalizedPath;
-    if (!Utility::normalizedSyncPath(path, normalizedPath)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(path));
-        return false;
-    }
-
-    const auto it = _currentItems.find(normalizedPath);
+    const std::scoped_lock lock(_mutex);
+    const auto it = GetItemIterator(path);
     if (it == _currentItems.end() || it->second.empty()) {
         return false;
     }
@@ -111,35 +120,31 @@ bool ProgressInfo::getSyncFileItem(const SyncPath &path, SyncFileItem &item) {
     return true;
 }
 
-bool ProgressInfo::setProgress(const SyncPath &path, const int64_t completed) {
-    SyncPath normalizedPath;
-    if (!Utility::normalizedSyncPath(path, normalizedPath)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(path));
-        return false;
-    }
-
-    const auto it = _currentItems.find(normalizedPath);
+bool ProgressInfo::setProgress(const SyncPath &path, int progress) {
+    const std::scoped_lock lock(_mutex);
+    const auto it = GetItemIterator(path);
     if (it == _currentItems.end() || it->second.empty()) {
         return true;
     }
 
-    if (const SyncFileItem &item = it->second.front().item(); !shouldCountProgress(item)) {
+    SyncFileItem &item = it->second.front().item();
+    item.setStatus(SyncFileStatus::Syncing);
+    item.setProgress(progress);
+
+    _syncPal->addCompletedItem(_syncPal->syncDbId(), item);
+
+    if (!shouldCountProgress(item)) {
         return true;
     }
 
-    it->second.front().progress().setCompleted(completed);
+    it->second.front().progress().setCompleted(progress * it->second.front().progress().total() / 100);
     recomputeCompletedSize();
     return true;
 }
 
 bool ProgressInfo::setProgressComplete(const SyncPath &path, const SyncFileStatus status) {
-    SyncPath normalizedPath;
-    if (!Utility::normalizedSyncPath(path, normalizedPath)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(path));
-        return false;
-    }
-
-    const auto it = _currentItems.find(normalizedPath);
+    const std::scoped_lock lock(_mutex);
+    const auto it = GetItemIterator(path);
     if (it == _currentItems.end() || it->second.empty()) {
         LOGW_INFO(Log::instance()->getLogger(),
                   L"Item not found in ProgressInfo list (normal for ommited operation): " << Utility::formatSyncPath(path));
@@ -148,6 +153,8 @@ bool ProgressInfo::setProgressComplete(const SyncPath &path, const SyncFileStatu
 
     SyncFileItem &item = it->second.front().item();
     item.setStatus(status);
+
+    item.setProgress(100); // 100%
 
     _syncPal->addCompletedItem(_syncPal->syncDbId(), item);
 
@@ -162,6 +169,7 @@ bool ProgressInfo::setProgressComplete(const SyncPath &path, const SyncFileStatu
 
     it->second.pop();
     if (it->second.empty()) {
+        const auto normalizedPath = it->first;
         _currentItems.erase(normalizedPath);
     }
 
@@ -172,12 +180,8 @@ bool ProgressInfo::setProgressComplete(const SyncPath &path, const SyncFileStatu
 }
 
 bool ProgressInfo::setSyncFileItemRemoteId(const SyncPath &path, const NodeId &remoteId) {
-    SyncPath normalizedPath;
-    if (!Utility::normalizedSyncPath(path, normalizedPath)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(path));
-        return false;
-    }
-    const auto it = _currentItems.find(normalizedPath);
+    const std::scoped_lock lock(_mutex);
+    const auto it = GetItemIterator(path);
     if (it == _currentItems.end() || it->second.empty()) {
         LOGW_INFO(Log::instance()->getLogger(),
                   L"Item not found in ProgressInfo list (normal for omitted operation): " << Utility::formatSyncPath(path));
@@ -196,6 +200,7 @@ bool ProgressInfo::isSizeDependent(const SyncFileItem &item) const {
 }
 
 Estimates ProgressInfo::totalProgress() const {
+    const std::scoped_lock lock(_mutex);
     Estimates file = _fileProgress.estimates();
     if (_sizeProgress.total() == 0) {
         return file;
@@ -224,6 +229,7 @@ Estimates ProgressInfo::totalProgress() const {
 }
 
 int64_t ProgressInfo::optimisticEta() const {
+    const std::scoped_lock lock(_mutex);
     return static_cast<int64_t>(static_cast<double>(_fileProgress.remaining()) / _maxFilesPerSecond * 1000 +
                                 static_cast<double>(_sizeProgress.remaining()) / _maxBytesPerSecond * 1000);
 }
@@ -233,6 +239,7 @@ bool ProgressInfo::trustEta() const {
 }
 
 void ProgressInfo::recomputeCompletedSize() {
+    const std::scoped_lock lock(_mutex);
     int64_t r = _totalSizeOfCompletedJobs;
     for (auto &itemElt: _currentItems) {
         if (isSizeDependent(itemElt.second.front().item())) {

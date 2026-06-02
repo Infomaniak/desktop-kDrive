@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "info/driveavailableinfo.h"
 #include "jobs/network/abstracttokennetworkjob.h"
 
 namespace KDC {
@@ -26,10 +27,16 @@ class GetDrivesListJob : public AbstractTokenNetworkJob {
     public:
         GetDrivesListJob(int userDbId);
 
+        [[nodiscard]] std::list<DriveAvailableInfo> &availableDrives() { return _availableDrives; }
+
     private:
         virtual void setQueryParameters(Poco::URI &uri) override;
         inline virtual ExitInfo setData() override { return ExitCode::Ok; }
         virtual std::string getSpecificUrl() override;
+
+        ExitInfo handleJsonResponse(const std::string &replyBody) override;
+
+        std::list<DriveAvailableInfo> _availableDrives;
 };
 
 } // namespace KDC

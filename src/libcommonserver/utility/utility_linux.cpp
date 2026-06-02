@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,10 +17,12 @@
  */
 
 #include "utility.h"
+#include "io/iohelper.h"
 
 #include "log/log.h"
 #include "libcommon/utility/utility.h"
 
+#include <config.h>
 #include <filesystem>
 #include <regex>
 #include <string>
@@ -38,19 +40,7 @@
 
 namespace KDC {
 
-SyncPath Utility::getTrashPath() {
-    const char *homePathEnv = std::getenv("HOME");
-    if (!homePathEnv) {
-        LOG_WARN(logger(), "Path to HOME not found");
-        return {};
-    }
-
-    if (const char *xdgDataHomeEnv = std::getenv("XDG_DATA_HOME"); xdgDataHomeEnv) {
-        return std::string(xdgDataHomeEnv) + "/Trash/files/";
-    }
-
-    return std::string(homePathEnv) + "/.local/share/Trash/files/";
-}
+static const auto mimeType = "x-scheme-handler/kdrive";
 
 namespace {
 int parseLineForRamStatus(char *line) {
@@ -257,6 +247,84 @@ bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &
 
 bool Utility::hasSystemLaunchOnStartup(const std::string &) {
     return false;
+}
+
+SyncPath Utility::getTrashPath() {
+    const char *homePathEnv = std::getenv("HOME");
+    if (!homePathEnv) {
+        LOG_WARN(Log::instance()->getLogger(), "Path to HOME not found");
+        return {};
+    }
+
+    if (const char *xdgDataHomeEnv = std::getenv("XDG_DATA_HOME"); xdgDataHomeEnv) {
+        return std::string(xdgDataHomeEnv) + "/Trash/files/";
+    }
+
+    return std::string(homePathEnv) + "/.local/share/Trash/files/";
+}
+
+bool Utility::registerLoginRedirection() {
+    // Create file .desktop
+    const char *homePathEnv = std::getenv("HOME");
+    if (!homePathEnv) {
+        LOG_WARN(Log::instance()->getLogger(), "Path to HOME not found");
+        return false;
+    }
+
+    const auto urlSchemeDirPath = SyncPath(std::string(homePathEnv) + "/.local/share/applications");
+    const auto urlSchemeFilePath = urlSchemeDirPath / (std::string(APPLICATION_EXECUTABLE) + ".desktop");
+
+    IoError ioError = IoError::Unknown;
+    bool exists = false;
+    if (!IoHelper::checkIfPathExists(urlSchemeDirPath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
+        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists:" << Utility::formatIoError(urlSchemeDirPath, ioError));
+        return false;
+    }
+    if (!exists && !IoHelper::createDirectory(urlSchemeDirPath, false, ioError)) {
+        LOGW_WARN(logger(), L"Could register login redirection: " << Utility::formatIoError(urlSchemeDirPath, ioError));
+        return false;
+    }
+
+    std::ofstream urlSchemeFile{urlSchemeFilePath};
+    if (!urlSchemeFile.is_open()) {
+        LOGW_WARN(logger(), L"Could register login redirection: " << Utility::formatSyncPath(urlSchemeFilePath));
+        return false;
+    }
+
+    SyncPath execPath;
+    const std::string appImageEnv = KDC::CommonUtility::envVarValue("APPIMAGE");
+    if (!appImageEnv.empty()) {
+        execPath = SyncPath(appImageEnv);
+    } else {
+        execPath = KDC::CommonUtility::getAppWorkingDir() / APPLICATION_EXECUTABLE;
+    }
+    urlSchemeFile << "[Desktop Entry]" << std::endl;
+    urlSchemeFile << "Name=" << APPLICATION_EXECUTABLE << std::endl;
+    urlSchemeFile << "Exec=" << "\"" << execPath.string() << "\"" << " %u" << std::endl;
+    urlSchemeFile << "Type=Application" << std::endl;
+    urlSchemeFile << "Terminal=false" << std::endl;
+    urlSchemeFile << "MimeType=" << mimeType << ";" << std::endl;
+    urlSchemeFile.close();
+
+    // Update database
+    bool res = true;
+    const std::string updateDesktopDbCmd =
+            std::string("update-desktop-database ") + std::string(homePathEnv) + "/.local/share/applications/";
+    if (const int updateResult = system(updateDesktopDbCmd.c_str()); updateResult != 0) {
+        LOGW_WARN(logger(), L"Failed to update desktop database with command: " << CommonUtility::s2ws(updateDesktopDbCmd)
+                                                                                << L", result: " << updateResult);
+        res = false; // Do not return yet, try to register scheme anyway.
+    }
+
+    // Register scheme
+    const auto registerSchemeStr = std::string("xdg-mime default kDrive.desktop ") + mimeType;
+    if (const int registerResult = system(registerSchemeStr.c_str()); registerResult != 0) {
+        LOGW_WARN(logger(), L"Failed to register URL scheme with command: " << CommonUtility::s2ws(registerSchemeStr)
+                                                                            << L", result: " << registerResult);
+        res = false;
+    }
+
+    return res;
 }
 
 } // namespace KDC

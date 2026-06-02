@@ -46,7 +46,7 @@ static const QString gitLink = "gitLink";
 static const QString gnuLink = "gnuLink";
 
 static const QString githubPrefix = "https://github.com/infomaniak/desktop-kDrive";
-static const QUrl gnuUrl("https://www.gnu.org/licenses/lgpl-3.0.fr.html#license-text");
+static const QUrl gnuUrl("https://www.gnu.org/licenses/gpl-3.0.html#license-text");
 
 Q_LOGGING_CATEGORY(lcAboutDialog, "gui.aboutdialog", QtInfoMsg)
 
@@ -127,7 +127,7 @@ QString AboutDialog::aboutText() const {
     about += tr("Distributed by %1 and licensed under the <a style=\"%3\" href=\"%4\">%5</a>.<br><br>"
                 "%2 and the %2 logo are registered trademarks of %1.<br><br>")
                      .arg(KDC::CommonUtility::escape(APPLICATION_VENDOR), KDC::CommonUtility::escape(APPLICATION_NAME),
-                          CommonUtility::linkStyle, gnuLink, "GNU Lesser General Public License (LGPL) Version 3.0");
+                          CommonUtility::linkStyle, gnuLink, "GNU General Public License (GPL) Version 3.0");
 
     about += tr("<p><small>Built from <a style=\"color: #489EF3\" href=\"%1\">Git sources</a> on %2, %3 using Qt %4, "
                 "%5</small></p>")

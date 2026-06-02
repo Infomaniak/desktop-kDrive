@@ -43,6 +43,7 @@ namespace Infomaniak.kDrive.TemplateSelectors
                     return SyncInProgressTemplate;
                 case SyncStatus.Paused:
                 case SyncStatus.Stopped:
+                case SyncStatus.Error:
                     return SyncInPauseTemplate;
                 case SyncStatus.Offline:
                     return SyncOfflineTemplate;

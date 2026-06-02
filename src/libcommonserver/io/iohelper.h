@@ -18,8 +18,10 @@
 
 #pragma once
 
-#include "libcommon/utility/types.h"
+#include "utility/types.h"
+
 #include "libcommon/utility/utility.h"
+
 #include "libcommonserver/log/log.h"
 
 #if defined(KD_WINDOWS)
@@ -85,6 +87,10 @@ struct IoHelper {
             Insensitive,
             EnumEnd
         };
+
+        static bool recursiveDirectoryIterator(const SyncPath &path, IoHelper::DirectoryIterator &dirIt);
+        static ExitInfo checkDirectoryIteratorInterruption(bool endOfDir, IoError ioError, const DirectoryEntry &entry,
+                                                           bool directoryIterationException = false);
 
         IoHelper() = default;
 
@@ -193,6 +199,8 @@ struct IoHelper {
          */
         static bool checkIfIsHiddenFile(const SyncPath &path, bool checkAncestors, bool &isHidden, IoError &ioError) noexcept;
         static bool checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoError &ioError) noexcept;
+
+        static bool isPathOnMountedDisk(const SyncPath &path, bool &isMounted, IoError &ioError) noexcept;
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         //! Hides or reveals the item indicated by path.
@@ -328,6 +336,12 @@ struct IoHelper {
          \return true if no unexpected error occurred, false otherwise.
          */
         static bool deleteItem(const SyncPath &path, IoError &ioError) noexcept;
+        /**
+         * @brief Remove an item located under the specified path silently.
+         * @param path is the file system path of the item to remove.
+         * @return true if no unexpected error occurred, false otherwise.
+         */
+        static bool deleteItem(const SyncPath &path) noexcept;
 
         //! Create a directory iterator for the specified path. The iterator can be used to iterate over the items in the
         //! directory.

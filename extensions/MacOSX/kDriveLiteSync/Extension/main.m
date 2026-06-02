@@ -30,6 +30,20 @@ es_client_t *g_client = NULL;
 XPCService *g_xpcService = NULL;
 static dispatch_queue_t g_event_queue = NULL;
 
+static BOOL isExtendedLogEnabled(void)
+{
+    static BOOL extendedLogEnabled = FALSE;
+    static BOOL extendedLogEnabledIsInitialized = FALSE;
+    
+    if (!extendedLogEnabledIsInitialized) {
+        NSString *value = [[[NSProcessInfo processInfo]environment]objectForKey:@"KDRIVE_DEBUG_LITESYNC"];
+        extendedLogEnabled = (value != NULL && [value isEqualToString:@"1"]);
+        extendedLogEnabledIsInitialized = TRUE;
+    }
+     
+    return extendedLogEnabled;
+}
+
 static void initDispatchQueue(void)
 {
     dispatch_queue_attr_t queue_attrs = dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_CONCURRENT, QOS_CLASS_USER_INITIATED, 0);
@@ -103,10 +117,12 @@ static BOOL processAuthOpen(const es_message_t *msg, BOOL *thumbnail)
     if (!(g_xpcService && [g_xpcService isFileMonitored:filePath])) {
         return FALSE;
     }
-        
-    /*NSLog(@"[KD] Open file %s with flags %d asked by %s",
-          msg->event.open.file->path.data, msg->event.open.fflag,
-          msg->process->signing_id.data);*/
+    
+    if (isExtendedLogEnabled()) {
+        NSLog(@"[KD] Open file %s with flags %d asked by %s",
+              msg->event.open.file->path.data, msg->event.open.fflag,
+              msg->process->signing_id.data);
+    }
     
     // Check file status
     long bufferLength = getxattr([filePath UTF8String], [EXT_ATTR_STATUS UTF8String], NULL, 0, 0, 0);

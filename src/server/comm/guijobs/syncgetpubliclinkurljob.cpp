@@ -54,7 +54,7 @@ ExitInfo SyncGetPublicLinkUrlJob::deserializeInputParms() {
 }
 
 ExitInfo SyncGetPublicLinkUrlJob::serializeOutputParms() {
-    writeParamValue(outParamsLinkUrl, _linkUrl);
+    writeParamValue(outParamsLinkUrl, CommonUtility::str2CommString(_linkUrl));
 
     return ExitCode::Ok;
 }
@@ -63,7 +63,7 @@ ExitInfo SyncGetPublicLinkUrlJob::process() {
     const auto exitCode = ServerRequests::getPublicLinkUrl(_driveDbId, _nodeId, _linkUrl);
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in ServerRequests::getPublicLinkUrl");
-        AppServer::addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
+        addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
         return exitCode;
     }
 

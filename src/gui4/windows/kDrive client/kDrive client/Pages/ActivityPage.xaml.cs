@@ -12,41 +12,48 @@ namespace Infomaniak.kDrive.Pages
 {
     public sealed partial class ActivityPage : Page
     {
-        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
+        private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel { get { return _viewModel; } }
         public ActivityPage()
         {
             Logger.Log(Logger.Level.Info, "Navigated to ActivityPage - Initializing ActivityPage components");
             InitializeComponent();
             Logger.Log(Logger.Level.Debug, "ActivityPage components initialized");
-            ViewModel.PropertyChanging += ViewModel_PropertyChanging;
-            ViewModel.PropertyChanged += ViewModel_PropertyChanged;
-            if (ViewModel.SelectedSync is not null)
-                ViewModel.SelectedSync.PropertyChanged += ViewModel_SelectedSync_PropertyChanged;
-
-
             UpdateTitleTemplate();
         }
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
-            if (ViewModel.SelectedSync is null) AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(SettingsPage)));
+            if (ViewModel.SelectedSync is null)
+            {
+                AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(SettingsPage)));
+            }
+            else
+            {
+                ViewModel.SelectedSyncChanged += ViewModel_SelectedSyncChanged;
+                ViewModel.SelectedSync.PropertyChanged += ViewModel_SelectedSync_PropertyChanged;
+            }
         }
 
-        private void ViewModel_PropertyChanging(object? sender, System.ComponentModel.PropertyChangingEventArgs e)
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            if (e.PropertyName == nameof(ViewModel.SelectedSync) && ViewModel.SelectedSync != null)
+            ViewModel.SelectedSyncChanged -= ViewModel_SelectedSyncChanged;
+            if (ViewModel.SelectedSync is not null)
             {
                 ViewModel.SelectedSync.PropertyChanged -= ViewModel_SelectedSync_PropertyChanged;
             }
         }
 
-        private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void ViewModel_SelectedSyncChanged(object? sender, AppModel.SelectedSyncChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(ViewModel.SelectedSync) && ViewModel.SelectedSync != null)
+            if (e.OldValue != null)
             {
-                ViewModel.SelectedSync.PropertyChanged += ViewModel_SelectedSync_PropertyChanged;
-                UpdateTitleTemplate();
+                e.OldValue.PropertyChanged -= ViewModel_SelectedSync_PropertyChanged;
             }
+            if (e.NewValue != null)
+            {
+                e.NewValue.PropertyChanged += ViewModel_SelectedSync_PropertyChanged;
+            }
+            UpdateTitleTemplate();
         }
 
         private void ViewModel_SelectedSync_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -63,9 +70,7 @@ namespace Infomaniak.kDrive.Pages
                     TitleContentControl.ContentTemplate = (DataTemplate)this.Resources["InProgressTitleTemplate"];
                     break;
                 case SyncStatus.Idle:
-                   /* if (ViewModel.SelectedSync.SyncErrors.Any())
-                        TitleContentControl.ContentTemplate = (DataTemplate)this.Resources["ErrorTitleTemplate"];
-                    else*/ if (!ViewModel.SelectedSync.SyncActivities.Any())
+                    if (!ViewModel.SelectedSync.SyncActivities.Any())
                         TitleContentControl.ContentTemplate = (DataTemplate)this.Resources["NoActivityTitleTemplate"];
                     else
                         TitleContentControl.ContentTemplate = (DataTemplate)this.Resources["UpToDateTitleTemplate"];
@@ -74,6 +79,7 @@ namespace Infomaniak.kDrive.Pages
                     TitleContentControl.ContentTemplate = (DataTemplate)this.Resources["OfflineTitleTemplate"];
                     break;
                 case SyncStatus.Stopped:
+                case SyncStatus.Error:
                     TitleContentControl.ContentTemplate = (DataTemplate)this.Resources["InPauseTitleTemplate"];
                     break;
                 default:

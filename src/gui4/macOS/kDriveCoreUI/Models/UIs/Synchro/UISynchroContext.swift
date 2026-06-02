@@ -1,0 +1,49 @@
+/*
+ Infomaniak kDrive - Desktop
+ Copyright (C) 2023-2025 Infomaniak Network SA
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+import Foundation
+import kDriveCore
+import OrderedCollections
+
+public typealias UIIndexedSynchroContext = OrderedDictionary<UISynchro.ID, UISynchroContext>
+
+public extension UIIndexedSynchroContext {
+    init(indexedSynchro: [SynchroContext]) {
+        self.init(uniqueKeysWithValues: indexedSynchro.map {
+            (UISynchro.ID($0.synchro.dbId), UISynchroContext(synchroContext: $0))
+        })
+    }
+}
+
+public struct UISynchroContext: Sendable, Equatable {
+    public let synchro: UISynchro
+    public let drive: UIDrive
+    public let account: UIAccount
+    public let user: UIUser
+    public let blockingError: UIBlockingError?
+}
+
+public extension UISynchroContext {
+    init(synchroContext: SynchroContext) {
+        account = .init(account: synchroContext.account)
+        drive = .init(drive: synchroContext.drive)
+        synchro = .init(synchro: synchroContext.synchro)
+        user = .init(user: synchroContext.user)
+        blockingError = .init(drive: synchroContext.drive, error: synchroContext.synchro.latestError)
+    }
+}

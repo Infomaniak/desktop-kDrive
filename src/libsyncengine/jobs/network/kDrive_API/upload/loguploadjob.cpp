@@ -37,14 +37,14 @@ namespace KDC {
 std::mutex LogUploadJob::_runningJobMutex = std::mutex();
 std::shared_ptr<LogUploadJob> LogUploadJob::_runningJob = nullptr;
 
-LogUploadJob::LogUploadJob(const bool includeArchivedLog, const std::function<void(LogUploadState, int)> &progressCallback,
+LogUploadJob::LogUploadJob(const bool includeArchivedLog, const std::function<void(LogUploadState, int)> &progressStatusCallback,
                            const std::function<void(const Error &error)> &addErrorCallback) :
     _includeArchivedLog(includeArchivedLog),
-    _progressCallback(progressCallback),
+    _progressStatusCallback(progressStatusCallback),
     _addErrorCallback(addErrorCallback) {
-    if (!_progressCallback) {
-        assert(_progressCallback && "progressCallback must be set");
-        _progressCallback = [](LogUploadState, int) { return true; };
+    if (!_progressStatusCallback) {
+        assert(_progressStatusCallback && "statusCallback must be set");
+        _progressStatusCallback = [](LogUploadState, int) { return true; };
     }
     if (!_addErrorCallback) {
         assert(_addErrorCallback && "addErrorCallback must be set");
@@ -507,19 +507,20 @@ ExitInfo LogUploadJob::upload(const SyncPath &archivePath) {
     };
 
     bool canceledByUser = false;
-    const std::function<void(UniqueId, int percent)> progressCallbackUploadingWrapper =
-            [&uploadSessionLog, &canceledByUser, this](UniqueId, int percent) { // Progress callback
-                if (notifyLogUploadProgress(LogUploadState::Uploading, percent).code() == ExitCode::OperationCanceled) {
-                    uploadSessionLog->abort();
-                    canceledByUser = true;
-                }
-            };
-    uploadSessionLog->setProgressPercentCallback(progressCallbackUploadingWrapper);
+    const auto progressPercentCallback = [&uploadSessionLog, &canceledByUser, this](UniqueId,
+                                                                                    int progress // %
+                                         ) {
+        if (notifyLogUploadProgress(LogUploadState::Uploading, progress).code() == ExitCode::OperationCanceled) {
+            uploadSessionLog->abort();
+            canceledByUser = true;
+        }
+    };
+    uploadSessionLog->setProgressPercentCallback(progressPercentCallback);
 
-    const std::function<void(uint64_t)> uploadSessionLogFinisCallback = [&canceledByUser, this](uint64_t) {
+    const std::function<void(uint64_t)> uploadSessionLogFinishCallback = [&canceledByUser, this](uint64_t) {
         canceledByUser = notifyLogUploadProgress(LogUploadState::Uploading, 100).code() == ExitCode::OperationCanceled;
     };
-    uploadSessionLog->setAdditionalCallback(uploadSessionLogFinisCallback);
+    uploadSessionLog->setAdditionalCallback(uploadSessionLogFinishCallback);
     (void) uploadSessionLog->runSynchronously();
     if (canceledByUser) {
         return {ExitCode::OperationCanceled, ExitCause::Unknown};
@@ -565,20 +566,15 @@ void LogUploadJob::updateDbUploadState(LogUploadState newState) const {
     }
 }
 
-ExitInfo LogUploadJob::notifyLogUploadProgress(const LogUploadState newState, const int progressPercent) {
+ExitInfo LogUploadJob::notifyLogUploadProgress(const LogUploadState state, const int progressPercent) {
     const LogUploadState logUploadState = getDbUploadState();
     const bool canceled = logUploadState == LogUploadState::Canceled || logUploadState == LogUploadState::CancelRequested ||
-                          newState == LogUploadState::Canceled || newState == LogUploadState::CancelRequested;
+                          state == LogUploadState::Canceled || state == LogUploadState::CancelRequested;
 
-    if (newState != _previousState || progressPercent != _previousProgress) {
-        LOG_DEBUG(_logger, "Log transfert progress: " << newState << " | " << progressPercent << " %");
-        if (_progressCallback && (_lastProgressUpdateTimeStamp + std::chrono::seconds(1) < std::chrono::system_clock::now() ||
-                                  newState != _previousState || progressPercent - _previousProgress > 10)) {
-            _lastProgressUpdateTimeStamp = std::chrono::system_clock::now();
-            _previousProgress = progressPercent;
-            _previousState = newState;
-            _progressCallback(newState, progressPercent);
-        }
+    if (_progressStatusCallback && state != _lastState) {
+        LOG_DEBUG(_logger, "Log transfert progress: " << state << " | " << progressPercent << " %");
+        _lastState = state;
+        _progressStatusCallback(state, progressPercent);
     }
 
     return canceled ? ExitCode::OperationCanceled : ExitCode::Ok;
@@ -590,17 +586,13 @@ void LogUploadJob::handleJobFailure(const ExitInfo &exitInfo, const bool clearTm
     updateLogUploadState(logUploadState);
     (void) notifyLogUploadProgress(logUploadState, 0);
     if (clearTmpDir || exitInfo.code() == ExitCode::OperationCanceled) {
-        IoError ioError = IoError::Success;
-        (void) IoHelper::deleteItem(_tmpJobWorkingDir, ioError);
-        if (ioError != IoError::Success) {
+        if (auto ioError = IoError::Unknown; IoHelper::deleteItem(_tmpJobWorkingDir, ioError)) {
             LOGW_INFO(Log::instance()->getLogger(),
                       L"Error in IoHelper::deleteItem: " << Utility::formatIoError(_tmpJobWorkingDir, ioError));
         }
     }
 
-    IoError ioError = IoError::Success;
-    IoHelper::deleteItem(_tmpJobWorkingDir, ioError);
-    if (ioError != IoError::Success) {
+    if (auto ioError = IoError::Unknown; !IoHelper::deleteItem(_tmpJobWorkingDir, ioError)) {
         LOGW_INFO(Log::instance()->getLogger(),
                   L"Error in IoHelper::deleteItem: " << Utility::formatIoError(_tmpJobWorkingDir, ioError));
     }

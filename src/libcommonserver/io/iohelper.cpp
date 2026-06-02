@@ -15,11 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "libcommon/log/sentry/handler.h"
-#include "libcommonserver/io/filestat.h"
-#include "libcommonserver/io/iohelper.h"
-#include <mutex>
-#include "libcommonserver/utility/utility.h" // Path2WStr
+#include "log/sentry/handler.h"
+#include "filestat.h"
+#include "iohelper.h"
 
 #include "config.h" // APPLICATION
 
@@ -221,10 +219,10 @@ ExitInfo IoHelper::openFile(const SyncPath &path, std::ifstream &file, int timeO
 bool IoHelper::isExpectedError(IoError ioError) noexcept {
     return (ioError == IoError::NoSuchFileOrDirectory) || (ioError == IoError::AccessDenied);
 }
-//! Set the target type of a link item.
+//! Set the target type of link item.
 /*!
   \param targetPath is the file system path of the target of inspected link item.
-  \param itemType is the type of a link item whose targetPath is `targetPath`.
+  \param itemType is the type of link item whose targetPath is `targetPath`.
   \return true if no error occurred or if the error is expected, false otherwise.
 */
 bool IoHelper::_setTargetType(ItemType &itemType) noexcept {
@@ -985,9 +983,17 @@ bool IoHelper::renameItem(const SyncPath &sourcePath, const SyncPath &destinatio
 
 bool IoHelper::deleteItem(const SyncPath &path, IoError &ioError) noexcept {
     std::error_code ec;
-    std::filesystem::remove_all(path, ec);
+    (void) std::filesystem::remove_all(path, ec);
     ioError = stdError2ioError(ec);
+    if (ioError != IoError::Success) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::deleteItem: " << Utility::formatIoError(path, ioError));
+    }
     return ioError == IoError::Success;
+}
+
+bool IoHelper::deleteItem(const SyncPath &path) noexcept {
+    auto ioError = IoError::Unknown;
+    return IoHelper::deleteItem(path, ioError);
 }
 
 bool IoHelper::copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept {
@@ -1054,19 +1060,19 @@ IoHelper::DirectoryIterator::DirectoryIterator(const SyncPath &directoryPath, bo
 
 
 bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDirectory, IoError &ioError) {
-    std::error_code ec;
     endOfDirectory = false;
     ioError = IoError::Success;
 
     if (_invalid) {
         ioError = IoError::InvalidDirectoryIterator;
-        return true;
+        return false;
     }
 
     if (_directoryPath == "") {
         ioError = IoError::InvalidArgument;
         return false;
     }
+
     const auto dirIteratorEnd = std::filesystem::end(_dirIterator);
     if (_dirIterator == dirIteratorEnd) {
         endOfDirectory = true;
@@ -1078,15 +1084,15 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
     }
 
     if (!_firstElement) {
+        std::error_code ec;
         _dirIterator.increment(ec);
         if (ec) {
             ioError = IoHelper::stdError2ioError(ec);
             if (ioError != IoError::Success) {
                 _invalid = true;
-                return true;
+                return false;
             }
         }
-
     } else {
         _firstElement = false;
     }
@@ -1106,15 +1112,41 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
 
 #endif
         nextEntry = *_dirIterator;
-        return true;
     } else {
         endOfDirectory = true;
-        return true;
     }
+
+    return true;
 }
 
 void IoHelper::DirectoryIterator::disableRecursionPending() {
     _dirIterator.disable_recursion_pending();
+}
+
+bool IoHelper::recursiveDirectoryIterator(const SyncPath &path, IoHelper::DirectoryIterator &dirIt) {
+    auto ioError = IoError::Success;
+    dirIt = IoHelper::DirectoryIterator(path, true, ioError);
+
+    if (ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Error in IoHelper::DirectoryIterator: " << Utility::formatIoError(path, ioError));
+        return false;
+    }
+
+    return true;
+}
+
+ExitInfo IoHelper::checkDirectoryIteratorInterruption(const bool endOfDir, const IoError ioError, const DirectoryEntry &entry,
+                                                      const bool directoryIterationException) {
+    if (!endOfDir || ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Error in IoHelper::DirectoryIterator causing early interruption: "
+                                   << Utility::formatIoError(entry.path(), ioError));
+    }
+
+    if (const bool success = (ioError == IoError::Success) && endOfDir && !directoryIterationException; !success) {
+        return ExitCode::SystemError;
+    }
+
+    return ExitCode::Ok;
 }
 
 #ifndef KD_WINDOWS

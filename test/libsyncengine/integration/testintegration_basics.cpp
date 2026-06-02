@@ -25,6 +25,7 @@
 #include "jobs/network/kDrive_API/renamejob.h"
 #include "jobs/network/kDrive_API/upload/uploadjob.h"
 #include "propagation/executor/filerescuer.h"
+#include "test_utility/testhelpers_requests.h"
 #include "test_utility/testhelpers.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 
@@ -99,7 +100,12 @@ void TestIntegration::testLocalChanges() {
     remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, remoteTestDirInfo.id, filePath.filename());
     CPPUNIT_ASSERT(!remoteTestFileInfo.isValid());
 
+#if defined(KD_LINUX)
+    CPPUNIT_ASSERT(testhelpers::isInTrash(subDirPath));
+#else
     CPPUNIT_ASSERT(testhelpers::isInTrash(subDirPath.filename()));
+#endif
+
 #if defined(KD_MACOS) || defined(KD_LINUX)
     testhelpers::eraseFromTrash(subDirPath.filename());
 #endif
@@ -120,7 +126,7 @@ void TestIntegration::testRemoteChanges() {
         (void) createDirJob.runSynchronously();
         subDirId = createDirJob.nodeId();
 
-        fileId = duplicateRemoteFile(_driveDbId, _testFileRemoteId, filePath.filename());
+        fileId = testhelpers::duplicateRemoteItem(_driveDbId, _testFileRemoteId, filePath.filename());
     }
     GetFileInfoJob fileInfoJob(_driveDbId, fileId);
     (void) fileInfoJob.runSynchronously();
@@ -141,7 +147,7 @@ void TestIntegration::testRemoteChanges() {
     // Generate an edit operation.
     SyncTime modificationTime = 0;
     int64_t size = 0;
-    editRemoteFile(_driveDbId, fileId, nullptr, &modificationTime, &size);
+    testhelpers::editRemoteFile(_driveDbId, fileId, nullptr, &modificationTime, &size);
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
@@ -154,7 +160,7 @@ void TestIntegration::testRemoteChanges() {
 
     // Generate a move operation.
     filePath = subDirPath / "testFileRemote_renamed";
-    moveRemoteFile(_driveDbId, fileId, subDirId, filePath.filename());
+    testhelpers::moveRemoteItem(_driveDbId, fileId, subDirId, filePath.filename());
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
@@ -172,7 +178,12 @@ void TestIntegration::testRemoteChanges() {
 
     CPPUNIT_ASSERT(!std::filesystem::exists(subDirPath));
     CPPUNIT_ASSERT(!std::filesystem::exists(filePath));
+#if defined(KD_LINUX)
+    CPPUNIT_ASSERT(testhelpers::isInTrash(subDirPath));
+#else
     CPPUNIT_ASSERT(testhelpers::isInTrash(subDirPath.filename()));
+#endif
+
 #if defined(KD_MACOS) || defined(KD_LINUX)
     testhelpers::eraseFromTrash(subDirPath.filename());
 #endif

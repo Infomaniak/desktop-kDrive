@@ -32,8 +32,7 @@ namespace KDC::testhelpers {
 
 
 void eraseFromTrash(const KDC::SyncPath &relativePath) {
-    std::error_code ec;
-    (void) std::filesystem::remove_all(Utility::getTrashPath() / relativePath, ec);
+    (void) IoHelper::deleteItem(Utility::getTrashPath() / relativePath);
 }
 
 bool isInTrash(const SyncPath &path) {

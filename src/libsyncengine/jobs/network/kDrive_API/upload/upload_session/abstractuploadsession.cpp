@@ -21,11 +21,12 @@
 #include "io/iohelper.h"
 #include "jobs/network/networkjobsparams.h"
 #include "jobs/syncjobmanager.h"
-#include "log/log.h"
+#include "utility/timerutility.h"
+
+#include "libcommonserver/log/log.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
-#include "utility/jsonparserutility.h"
-#include "utility/timerutility.h"
+#include "libcommonserver/utility/jsonparserutility.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -68,8 +69,9 @@ AbstractUploadSession::AbstractUploadSession(const SyncPath &filepath, const Syn
     }
 
     _isAsynchronous = _nbParallelThread > 1;
-    setProgress(0);
+
     setProgressExpectedFinalValue(static_cast<int64_t>(_filesize));
+    setProgress(0);
 }
 
 ExitInfo AbstractUploadSession::runJob() {
@@ -141,7 +143,7 @@ void AbstractUploadSession::abort() {
     SyncJob::abort();
 }
 
-ExitInfo AbstractUploadSession::handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob) {
+ExitInfo AbstractUploadSession::handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> cancelJob) {
     if (cancelJob->hasHttpError()) {
         LOGW_WARN(_logger, L"Failed to cancel upload session for " << Utility::formatSyncPath(_filePath.filename()));
         return ExitCode::DataError;
@@ -487,9 +489,9 @@ void AbstractUploadSession::waitForJobsToComplete(const bool all) {
     }
 
     if (isAborted()) {
-        LOG_DEBUG(_logger, "Upload session job " << jobId() << " cancelation after abort");
+        LOG_DEBUG(_logger, "Upload session job " << jobId() << " cancellation after abort");
     } else if (_jobExecutionError) {
-        LOG_DEBUG(_logger, "Upload session job " << jobId() << " cancelation after an execution error of a chunk job");
+        LOG_DEBUG(_logger, "Upload session job " << jobId() << " cancellation after an execution error of a chunk job");
     } else {
         if (isExtendedLog()) {
             LOG_DEBUG(_logger, "Upload session job " << jobId() << " wait end");

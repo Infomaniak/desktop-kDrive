@@ -1,0 +1,56 @@
+/*
+ Infomaniak kDrive - Desktop
+ Copyright (C) 2023-2025 Infomaniak Network SA
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+import Cocoa
+import InfomaniakDI
+import InfomaniakLogin
+import kDriveCore
+import kDriveCoreUI
+
+final class DriveTargetAssembly: TargetAssembly {
+    static let loginConfig = InfomaniakLogin.Config(
+        clientId: "5EA39279-FF64-4BB8-A872-4A40B5786317",
+        redirectURI: "kdrive://auth-desktop"
+    )
+
+    override static func getTargetServices() -> [Factory] {
+        return [
+            Factory(type: MainWindowRouter.self) { _, _ in
+                MainWindowRouter()
+            },
+            Factory(type: MainViewRouter.self) { _, _ in
+                MainViewRouter(defaultTab: .home)
+            },
+            Factory(type: PreferencesViewRouter.self) { _, _ in
+                PreferencesViewRouter(defaultTab: .general)
+            },
+            Factory(type: InfomaniakLoginable.self) { _, _ in
+                InfomaniakLogin(config: Self.loginConfig)
+            },
+            Factory(type: SidebarNotificationPresenting.self) { _, _ in
+                SidebarNotificationPresenter()
+            },
+            Factory(type: UISynchroStateObserving.self) { _, _ in
+                UISynchroStateObserver()
+            },
+            Factory(type: UISynchroNodesObserving.self) { _, _ in
+                UISynchroNodesObserver()
+            }
+        ]
+    }
+}

@@ -56,13 +56,11 @@ ExitInfo SyncStatusJob::serializeOutputParms() {
 }
 
 ExitInfo SyncStatusJob::process() {
-    const auto syncPalMapIt = AppServer::syncPalMap.find(_syncDbId);
-    if (syncPalMapIt == AppServer::syncPalMap.end()) {
-        LOG_WARN(_logger, "SyncPal not found in syncPalMap for syncDbId=" << _syncDbId);
-        return ExitCode::DataError;
+    std::shared_ptr<SyncPal> syncPal;
+    if (ExitInfo exitInfo = getSyncPal(_syncDbId, syncPal); !exitInfo) {
+        return exitInfo;
     }
-
-    _syncStatus = syncPalMapIt->second->status();
+    _syncStatus = syncPal->status();
 
     return ExitCode::Ok;
 }

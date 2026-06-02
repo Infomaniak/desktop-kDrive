@@ -146,7 +146,7 @@ ExitCode GuiRequests::resolveConflictErrors(const int driveDbId, const bool keep
     paramsStream << keepLocalVersion;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::ERROR_RESOLVE_CONFLICTS, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::ERROR_RESOLVE_CONFLICTS_LEGACY, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -163,7 +163,7 @@ ExitCode GuiRequests::resolveUnsupportedCharErrors(const int driveDbId) {
     paramsStream << driveDbId;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::ERROR_RESOLVE_UNSUPPORTED_CHAR, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::ERROR_RESOLVE_UNSUPPORTED_CHAR_LEGACY, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -182,24 +182,6 @@ ExitCode GuiRequests::setSupportsVirtualFiles(const int syncDbId, const bool val
 
     QByteArray results;
     if (!CommClient::instance()->execute(RequestNum::SYNC_SETSUPPORTSVIRTUALFILES, params, results, COMM_LONG_TIMEOUT)) {
-        return ExitCode::SystemError;
-    }
-
-    auto exitCode = ExitCode::Unknown;
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
-
-    return exitCode;
-}
-
-ExitCode GuiRequests::setRootPinState(const int syncDbId, const PinState pinState) {
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << syncDbId;
-    paramsStream << pinState;
-
-    QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::SYNC_SETROOTPINSTATE, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -482,39 +464,6 @@ ExitCode GuiRequests::findGoodPathForNewSync(const QString &basePath, QString &p
     return exitCode;
 }
 
-#ifdef Q_OS_WIN
-ExitCode GuiRequests::showInExplorerNavigationPane(bool &show) {
-    QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::UTILITY_SHOWSHORTCUT, {}, results)) {
-        return ExitCode::SystemError;
-    }
-
-    auto exitCode = ExitCode::Unknown;
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
-    resultStream >> show;
-
-    return exitCode;
-}
-
-ExitCode GuiRequests::setShowInExplorerNavigationPane(const bool &show) {
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << show;
-
-    QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::UTILITY_SETSHOWSHORTCUT, params, results)) {
-        return ExitCode::SystemError;
-    }
-
-    auto exitCode = ExitCode::Unknown;
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
-
-    return exitCode;
-}
-#endif
-
 ExitCode GuiRequests::requestToken(const QString &code, const QString &codeVerifier, int &userDbId, QString &error,
                                    QString &errorDescr) {
     QByteArray params;
@@ -562,7 +511,7 @@ ExitCode GuiRequests::getNodeInfo(const int userDbId, const int driveId, const Q
     return exitCode;
 }
 
-ExitCode GuiRequests::getUserAvailableDrives(const int userDbId, QHash<int, DriveAvailableInfo> &list) {
+ExitCode GuiRequests::getUserAvailableDrives(const int userDbId, QList<DriveAvailableInfo> &list) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << userDbId;
@@ -683,19 +632,6 @@ ExitCode GuiRequests::bestAvailableVfsMode(VirtualFileMode &mode) {
     return exitCode;
 }
 
-ExitCode GuiRequests::propagateExcludeListChange() {
-    QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::EXCLTEMPL_PROPAGATE_CHANGE, {}, results, COMM_LONG_TIMEOUT)) {
-        return ExitCode::SystemError;
-    }
-
-    auto exitCode = ExitCode::Unknown;
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
-
-    return exitCode;
-}
-
 ExitCode GuiRequests::hasSystemLaunchOnStartup(bool &enabled) {
     QByteArray results;
     if (!CommClient::instance()->execute(RequestNum::UTILITY_HASSYSTEMLAUNCHONSTARTUP, {}, results)) {
@@ -791,7 +727,7 @@ ExitCode GuiRequests::updateAppState(const AppStateKey key, const AppStateValue 
 
 ExitCode GuiRequests::getLogDirEstimatedSize(uint64_t &size) {
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE, {}, results, COMM_AVERAGE_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY, {}, results, COMM_AVERAGE_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
@@ -900,7 +836,7 @@ ExitCode GuiRequests::createMissingFolders(int driveDbId, const QList<QPair<QStr
     paramsStream << serverFolderList;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::NODE_CREATEMISSINGFOLDERS, params, results, COMM_AVERAGE_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::NODE_CREATEMISSINGFOLDERS_LEGACY, params, results, COMM_AVERAGE_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
@@ -1005,14 +941,13 @@ ExitCode GuiRequests::getExclusionTemplateList(bool def, QList<ExclusionTemplate
     return exitCode;
 }
 
-ExitCode GuiRequests::setExclusionTemplateList(bool def, const QList<ExclusionTemplateInfo> &templateList) {
+ExitCode GuiRequests::setUserExclusionTemplateList(const QList<ExclusionTemplateInfo> &templateList) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << def;
     paramsStream << templateList;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::EXCLTEMPL_SETLIST, params, results, COMM_SHORT_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::EXCLTEMPL_SETUSERLIST, params, results, COMM_SHORT_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
@@ -1094,7 +1029,7 @@ ExitCode GuiRequests::activateLoadInfo(const bool activate) {
 
 ExitCode GuiRequests::askForStatus() {
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::SYNC_ASKFORSTATUS, {}, results)) {
+    if (!CommClient::instance()->execute(RequestNum::SYNC_TRIGGER_PROGRESS_UPDATE, {}, results)) {
         return ExitCode::SystemError;
     }
 
@@ -1176,7 +1111,7 @@ ExitCode GuiRequests::skipUpdate(const std::string &version) {
 }
 
 ExitCode GuiRequests::reportClientDisplayed() {
-    CommClient::instance()->execute(RequestNum::UTILITY_DISPLAY_CLIENT_REPORT);
+    CommClient::instance()->execute(RequestNum::UTILITY_SEND_APP_START_TRACE);
     return ExitCode::Ok;
 }
 

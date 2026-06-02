@@ -1,6 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssemblyVersion>3.8.7.100</AssemblyVersion>
+    <AssemblyVersion>3.8.3.2</AssemblyVersion>
     <OutputType>WinExe</OutputType>
     <FileVersion>$(AssemblyVersion)</FileVersion>
     <Version>$(AssemblyVersion)</Version>
@@ -54,6 +54,9 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.6584" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.250916003" />
     <PackageReference Include="Sentry" Version="6.0.0" />
+    <PackageReference Include="Sentry.Profiling" Version="6.0.0" />
+    <PackageReference Include="Serilog" Version="4.2.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
     <PackageReference Include="Svg" Version="3.4.7" />
   </ItemGroup>
   <!--
@@ -85,6 +88,9 @@
     <SignAssembly>False</SignAssembly>
     <DelaySign>False</DelaySign>
   </PropertyGroup>
+  <!--  <Target Name="CheckTranslations" BeforeTargets="PreBuildEvent">
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\..\Check-TranslationKeys.ps1&quot;" />
+  </Target>-->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
   </PropertyGroup>
@@ -104,7 +110,28 @@
     <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
   </PropertyGroup>
   <ItemGroup>
-    <Page Update="CustomControls\DynamicTextBlock.xaml">
+    <Page Update="CustomControls\DriveSetupContentDialog\SyncSetupPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\ErrorBar.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Dialogs\ConflictVersionPresenter.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Dialogs\SystemErrorSyncDirChangedErrorDialog.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Dialogs\SystemErrorSyncDirAccessErrorDialog.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Dialogs\SystemErrorSyncDirDiskMissingErrorDialog.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Dialogs\ConflictDialog.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Dialogs\LocalAccessErrorDialog.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\Errors\ErrorPresenter.xaml">
@@ -116,19 +143,130 @@
     <Page Update="CustomControls\Errors\ErrorBar.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="CustomControls\Errors\Templates\Node\ConflictError.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="CustomControls\Errors\Templates\Node\LocalAccessError.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\Errors\Templates\Node\ForbiddenCharError.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="CustomControls\Errors\Templates\Node\ForbiddenCharEndWithSpaceError.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\Node\ReservedNameError.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\Node\NameLengthError.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\Node\PathLengthError.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\Node\NotYetSupportedCharError.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\Node\ForbiddenCharOnlySpacesError.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\Node\CreateCancelError.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\Node\EditCancelError.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\Node\MoveCancelError.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\Node\DeleteCancelError.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\Node\TmpBlacklistedError.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\Node\ExcludedByTemplateError.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\Node\HardlinkError.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\Node\FileRescuedError.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\Node\HttpErrForbiddenError.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\Node\FileTooBigError.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\Node\QuotaExceededError.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\Node\FileLockedError.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\Node\NotEnoughDiskSpaceError.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\SyncPal\DataErrorSyncDirChanged.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\SyncPal\SystemErrorSyncDirDiskMissing.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\SyncPal\UnknownError.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\SyncPal\NetworkErrorOther.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\SyncPal\BackErrorDriveMaintenance.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\SyncPal\BackErrorDriveNotRenew.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\SyncPal\BackErrorDriveAsleep.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\SyncPal\BackErrorDriveAccessError.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\SyncPal\SystemErrorSyncDirAccessError.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\SyncPal\SystemErrorNotEnoughDiskSpace.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\SyncPal\SystemErrorUnableToStartVfs.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\SyncPal\SystemErrorFileOrDirectoryCorrupted.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\SyncPal\InvalidSyncSyncDirNestingError.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\SyncPal\InvalidSyncSyncDirAccessError.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\SyncPal\LogicErrorFullListParsingError.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="CustomControls\DriveStatusIndicator.xaml">
-		  <SubType>Designer</SubType>
-		</Page>
-		<Page Update="CustomControls\StatusBadge.xaml">
-		  <SubType>Designer</SubType>
-		</Page>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\ItemPathPresenter.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\StatusBadge.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="CustomControls\SplashScreen.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\RemoteLocationSelector.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\SyncExclusionSelector.xaml">
@@ -152,10 +290,22 @@
     <Page Update="Pages\ErrorPage.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="Pages\Errors\ResolveManyConflictPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Pages\Onboarding\FinishingPage.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="Pages\Popup\AddExclusionRulePopup.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Pages\Popup\LogUploadPopup.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Pages\Settings\DriveManagementPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Pages\SpecialErrorsPages\AsleepErrorPage.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Styles\Custom\InfomaniakStylesDark.xaml">
@@ -178,21 +328,9 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <PRIResource Update="Strings\fr-FR\Resources.resw">
-      <Generator>
-      </Generator>
-    </PRIResource>
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="AnimatedElements\" />
     <Folder Include="Assets\DS\Icons\Communication\" />
-    <Folder Include="CustomControls\Errors\Templates\Server\" />
-    <Folder Include="CustomControls\Errors\Templates\SyncPal\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="Pages\Onboarding\NoDrivesPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </None>
+    <Folder Include="CustomControls\DriveSetupContentDialog\DialogPages\" />
   </ItemGroup>
   <ItemGroup>
     <Page Update="CustomControls\AppTitleBarLogo.xaml">
@@ -229,7 +367,7 @@
     <ItemGroup>
       <!-- Keep only fr-FR, en-US, es-ES, it-IT, de-DE -->
       <RemovingFiles Include="$(OutDir)*\*.mui" Exclude="&#xD;&#xA;            $(OutDir)fr-FR\*.mui;&#xD;&#xA;            $(OutDir)en-US\*.mui;&#xD;&#xA;            $(OutDir)es-ES\*.mui;&#xD;&#xA;            $(OutDir)it-IT\*.mui;&#xD;&#xA;            $(OutDir)de-DE\*.mui" />
-      <RemovingFolders Include="@(RemovingFiles-&gt;'%(RootDir)%(Directory)')" />
+      <RemovingFolders Include="@(RemovingFiles->'%(RootDir)%(Directory)')" />
     </ItemGroup>
     <RemoveDir Directories="@(RemovingFolders)" />
   </Target>

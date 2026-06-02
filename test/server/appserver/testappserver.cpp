@@ -18,9 +18,10 @@
 
 #include "testappserver.h"
 
+#include "comm/guijobmanager.h"
 #include "utility/types.h"
 #include "requests/parameterscache.h"
-#include "libcommon/keychainmanager/keychainmanager.h"
+#include "libcommonserver/keychainmanager/keychainmanager.h"
 #include "libcommon/utility/utility.h"
 #include "libsyncengine/jobs/syncjobmanager.h"
 #include "mocks/libcommonserver/db/mockdb.h"
@@ -58,7 +59,7 @@ void TestAppServer::setUp() {
     (void) ParmsDb::instance()->insertUser(user);
 
     const int accountId(atoi(testVariables.accountId.c_str()));
-    const Account account(1, accountId, user.dbId());
+    const Account account(1, accountId, user.dbId(), "account1");
     (void) ParmsDb::instance()->insertAccount(account);
 
     const int driveId = atoi(testVariables.driveId.c_str());
@@ -145,37 +146,44 @@ void TestAppServer::testStartAndStopSync() {
     // Start syncs (ie. Vfs & SyncPal) for a user
     ExitInfo exitInfo = _appPtr->startSyncs(user);
     CPPUNIT_ASSERT(exitInfo);
-    CPPUNIT_ASSERT(AppServer::syncPalMap[syncDbId]->isRunning());
+    CPPUNIT_ASSERT(_appPtr->syncPalMap[syncDbId]->isRunning());
     CPPUNIT_ASSERT(syncIsActive(syncDbId));
 
     // Stop sync & clear maps
     _appPtr->stopSyncTask(syncDbId);
-    CPPUNIT_ASSERT(AppServer::syncPalMap.empty());
-    CPPUNIT_ASSERT(AppServer::vfsMap.empty());
+    CPPUNIT_ASSERT(_appPtr->syncPalMap.empty());
+    CPPUNIT_ASSERT(_appPtr->vfsMap.empty());
 
     // Start syncs for all users
     exitInfo = _appPtr->startSyncs();
     CPPUNIT_ASSERT(exitInfo);
-    CPPUNIT_ASSERT(AppServer::syncPalMap[syncDbId]->isRunning());
+    CPPUNIT_ASSERT(_appPtr->syncPalMap[syncDbId]->isRunning());
     CPPUNIT_ASSERT(syncIsActive(syncDbId));
 
     // Stop syncs & clear maps for all users
     _appPtr->stopAllSyncsTask({syncDbId});
-    CPPUNIT_ASSERT(AppServer::syncPalMap.empty());
-    CPPUNIT_ASSERT(AppServer::vfsMap.empty());
+    CPPUNIT_ASSERT(_appPtr->syncPalMap.empty());
+    CPPUNIT_ASSERT(_appPtr->vfsMap.empty());
 
     // Update sync local folder with a dummy value
     Sync sync;
     found = false;
     CPPUNIT_ASSERT(ParmsDb::instance()->selectSync(syncDbId, sync, found) && found);
 
-    sync.setLocalPath("/dummy");
+#ifdef KD_WINDOWS
+    sync.setLocalPath("Y:\\dummy");
+#elif KD_MACOS
+    sync.setLocalPath("/Volumes/dummy");
+#else
+    sync.setLocalPath("/mnt/dummy");
+#endif
+
     CPPUNIT_ASSERT(ParmsDb::instance()->updateSync(sync, found) && found);
 
     // Start syncs
     exitInfo = _appPtr->startSyncs();
     CPPUNIT_ASSERT_EQUAL(ExitCode::SystemError, exitInfo.code());
-    CPPUNIT_ASSERT_EQUAL(ExitCause::SyncDirAccessError, exitInfo.cause());
+    CPPUNIT_ASSERT(exitInfo.cause() == ExitCause::SyncDirDiskMissing);
 
     // Update sync local folder with the good value
     CPPUNIT_ASSERT(ParmsDb::instance()->updateSync(sync, found) && found);
@@ -188,17 +196,88 @@ void TestAppServer::testCleanup() {
     CPPUNIT_ASSERT(true);
 }
 
+/**
+ * Test:
+ * - "driveA" has been moved from "accountA" to "accountB"
+ */
+
+ExitInfo mockLoadUserInfo([[maybe_unused]] User &user, bool &updated) {
+    updated = false;
+    return ExitCode::Ok;
+}
+
+const std::string accountNameA = "accountA";
+const std::string accountNameB = "accountB";
+const uint64_t accountIdA = 111;
+const uint64_t accountIdB = 222;
+ExitInfo mockLoadAccountInfo(Account &account, bool &updated) {
+    const auto accountName = account.dbId() == 11 ? accountNameA : accountNameB;
+    updated = account.name() == accountName;
+    account.setName(accountName);
+    return ExitCode::Ok;
+}
+
+ExitInfo mockLoadDriveInfo(Drive &drive, const uint64_t previousAccountId, uint64_t &newAccountId, bool &updated,
+                           bool &quotaUpdated) {
+    if (drive.dbId() == 11 && previousAccountId == accountIdA) {
+        newAccountId = accountIdB;
+        updated = true;
+    }
+    quotaUpdated = false;
+    return ExitCode::Ok;
+}
+
+void TestAppServer::testUpdateUserInfo() {
+    _appPtr->setLoadUserInfoFunction(mockLoadUserInfo);
+    _appPtr->setLoadAccountInfoFunction(mockLoadAccountInfo);
+    _appPtr->setLoadDriveInfoFunction(mockLoadDriveInfo);
+
+    // Insert user, account, drive & sync
+    User userA(11, 111, "dummy", "userA", "userA@mail.com");
+    (void) ParmsDb::instance()->insertUser(userA);
+
+    Account accountA(11, accountIdA, userA.dbId(), accountNameA);
+    (void) ParmsDb::instance()->insertAccount(accountA);
+
+    Drive driveA(11, 111, accountA.dbId(), "driveA", 123, "#FF0000");
+    (void) ParmsDb::instance()->insertDrive(driveA);
+
+    _appPtr->updateUserInfo(userA);
+
+    std::vector<Account> accounts;
+    (void) ParmsDb::instance()->selectAllAccounts(accounts);
+    bool foundAccountA = false;
+    bool foundAccountB = false;
+    uint64_t accountDbIdB = 0;
+    for (const auto &account: accounts) {
+        if (account.accountId() == accountIdA) foundAccountA = true;
+        if (account.accountId() == accountIdB) {
+            foundAccountB = true;
+            accountDbIdB = static_cast<uint64_t>(account.dbId());
+        }
+    }
+    CPPUNIT_ASSERT(!foundAccountA);
+    CPPUNIT_ASSERT(foundAccountB);
+
+    Drive drive;
+    bool found = false;
+    (void) ParmsDb::instance()->selectDrive(driveA.dbId(), drive, found);
+    CPPUNIT_ASSERT(found);
+    CPPUNIT_ASSERT(drive.accountDbId() != 11);
+    CPPUNIT_ASSERT_EQUAL(accountDbIdB, static_cast<uint64_t>(drive.accountDbId()));
+}
+
 bool TestAppServer::waitForSyncStatus(int syncDbId, SyncStatus targetStatus) const {
     int count = 0;
     while (count++ < 100) {
-        if (auto status = AppServer::syncPalMap[syncDbId]->status(); status == targetStatus) return true;
+        if (auto status = _appPtr->syncPalMap[syncDbId]->status(); status == targetStatus) return true;
         Utility::msleep(100);
     }
     return false;
 }
 
 bool TestAppServer::syncIsActive(int syncDbId) const {
-    SyncStatus status = AppServer::syncPalMap[syncDbId]->status();
+    SyncStatus status = _appPtr->syncPalMap[syncDbId]->status();
     return status == SyncStatus::Starting || status == SyncStatus::Running || status == SyncStatus::Idle;
 }
 

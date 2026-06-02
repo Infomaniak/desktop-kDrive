@@ -20,7 +20,7 @@
 
 #include "mocks/libsyncengine/vfs/mockvfs.h"
 #include "io/iohelper.h"
-#include "log/log.h"
+#include "libcommonserver/log/log.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/testhelpers.h"
 

@@ -19,7 +19,6 @@
 #include "comm/guijobs/excltemplgetexcludedjob.h"
 #include "comm/guijobs/excltemplgetlistjob.h"
 #include "comm/guijobs/excltemplsetlistjob.h"
-#include "comm/guijobs/excltemplpropagatechangejob.h"
 
 #include "testguicommchannel.h"
 #include "../testcommhelpers.h"
@@ -54,10 +53,11 @@ void TestGuiCommChannel::testExclTemplGetExcludedJob() {
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::EXCLTEMPL_GETEXCLUDED));
     (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
-    // Job expected answers
+    // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
-    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-        auto exclTemplGetExcludedJob = std::dynamic_pointer_cast<ExclTemplGetExcludedJob>(job);
+
+    auto processFct = [](const std::shared_ptr<AbstractGuiJob> job) {
+        const auto exclTemplGetExcludedJob = std::dynamic_pointer_cast<ExclTemplGetExcludedJob>(job);
         CPPUNIT_ASSERT(exclTemplGetExcludedJob);
         CPPUNIT_ASSERT(CommString{Str("templateName")} == exclTemplGetExcludedJob->_name);
 
@@ -94,13 +94,11 @@ void TestGuiCommChannel::testExclTemplGetListJob() {
     (void) exclusionTemplateInfo1.set("template", toBase64(Str("template1")));
     (void) exclusionTemplateInfo1.set("warning", true);
     (void) exclusionTemplateInfo1.set("default", true);
-    (void) exclusionTemplateInfo1.set("deleted", true);
 
     Poco::JSON::Object exclusionTemplateInfo2;
     (void) exclusionTemplateInfo2.set("template", toBase64(Str("template2")));
     (void) exclusionTemplateInfo2.set("warning", false);
     (void) exclusionTemplateInfo2.set("default", true);
-    (void) exclusionTemplateInfo2.set("deleted", false);
 
     Poco::JSON::Array exclusionTemplateList;
     (void) exclusionTemplateList.add(exclusionTemplateInfo1);
@@ -114,15 +112,16 @@ void TestGuiCommChannel::testExclTemplGetListJob() {
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::EXCLTEMPL_GETLIST));
     (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
-    // Job expected answers
+    // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto exclTemplGetListJob = std::dynamic_pointer_cast<ExclTemplGetListJob>(job);
         CPPUNIT_ASSERT(exclTemplGetListJob);
         CPPUNIT_ASSERT(exclTemplGetListJob->_default);
 
-        exclTemplGetListJob->_exclusionTemplateList = {ExclusionTemplateInfo("template1", true, true, true),
-                                                       ExclusionTemplateInfo("template2", false, true, false)};
+        exclTemplGetListJob->_exclusionTemplateList = {ExclusionTemplateInfo("template1", true, true),
+                                                       ExclusionTemplateInfo("template2", false, true)};
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
@@ -133,31 +132,26 @@ void TestGuiCommChannel::testExclTemplGetListJob() {
 #endif
 }
 
-void TestGuiCommChannel::testExclTemplSetListJob() {
+void TestGuiCommChannel::testExclTemplSetUserListJob() {
     Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     (void) queryObj.set("id", 1);
 #endif
-    (void) queryObj.set("num", toInt(RequestNum::EXCLTEMPL_SETLIST));
-    Poco::JSON::Object queryParamsObj;
-    (void) queryParamsObj.set("default", true);
+    (void) queryObj.set("num", toInt(RequestNum::EXCLTEMPL_SETUSERLIST));
 
     Poco::JSON::Object exclusionTemplateInfo1;
     (void) exclusionTemplateInfo1.set("template", toBase64(Str("template1")));
     (void) exclusionTemplateInfo1.set("warning", true);
-    (void) exclusionTemplateInfo1.set("default", true);
-    (void) exclusionTemplateInfo1.set("deleted", true);
 
     Poco::JSON::Object exclusionTemplateInfo2;
     (void) exclusionTemplateInfo2.set("template", toBase64(Str("template2")));
     (void) exclusionTemplateInfo2.set("warning", false);
-    (void) exclusionTemplateInfo2.set("default", true);
-    (void) exclusionTemplateInfo2.set("deleted", false);
 
     Poco::JSON::Array exclusionTemplateList;
     (void) exclusionTemplateList.add(exclusionTemplateInfo1);
     (void) exclusionTemplateList.add(exclusionTemplateInfo2);
 
+    Poco::JSON::Object queryParamsObj;
     (void) queryParamsObj.set("exclusionTemplateList", exclusionTemplateList);
     (void) queryObj.set("params", queryParamsObj);
 
@@ -173,58 +167,18 @@ void TestGuiCommChannel::testExclTemplSetListJob() {
     (void) answerObj.set("params", paramsObj);
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
-    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::EXCLTEMPL_SETLIST));
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::EXCLTEMPL_SETUSERLIST));
     (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
-    // Job expected answers
+    // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-        auto exclTemplSetListJob = std::dynamic_pointer_cast<ExclTemplSetListJob>(job);
+        auto exclTemplSetListJob = std::dynamic_pointer_cast<ExclTemplSetUserListJob>(job);
         CPPUNIT_ASSERT(exclTemplSetListJob);
-        CPPUNIT_ASSERT(exclTemplSetListJob->_default);
         CPPUNIT_ASSERT_EQUAL(size_t{2}, exclTemplSetListJob->_exclusionTemplateList.size());
-        CPPUNIT_ASSERT(ExclusionTemplateInfo("template1", true, true, true) == exclTemplSetListJob->_exclusionTemplateList.at(0));
-        CPPUNIT_ASSERT(ExclusionTemplateInfo("template2", false, true, false) ==
-                       exclTemplSetListJob->_exclusionTemplateList.at(1));
-    };
-
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(queryStr, answerStr, {}, processFct);
-#else
-    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
-    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
-#endif
-}
-
-void TestGuiCommChannel::testExclTemplPropagateChangeJob() {
-    Poco::JSON::Object queryObj;
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    (void) queryObj.set("id", 1);
-#endif
-    (void) queryObj.set("num", toInt(RequestNum::EXCLTEMPL_PROPAGATE_CHANGE));
-    Poco::JSON::Object queryParamsObj;
-    (void) queryObj.set("params", queryParamsObj);
-
-    const auto queryStr = stringifyQueryObj(queryObj);
-
-    // Answer
-    Poco::JSON::Object answerObj;
-    (void) answerObj.set("cause", 0);
-    (void) answerObj.set("code", 0);
-    (void) answerObj.set("id", 1);
-
-    Poco::JSON::Object paramsObj;
-    (void) answerObj.set("params", paramsObj);
-
-    Poco::JSON::Object answerObjWithNumAndType = answerObj;
-    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::EXCLTEMPL_PROPAGATE_CHANGE));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
-
-    // Job expected answers
-    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
-    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-        auto exclTemplPropagateChangeJob = std::dynamic_pointer_cast<ExclTemplPropagateChangeJob>(job);
-        CPPUNIT_ASSERT(exclTemplPropagateChangeJob);
+        CPPUNIT_ASSERT(ExclusionTemplateInfo("template1", true, false) == exclTemplSetListJob->_exclusionTemplateList.at(0));
+        CPPUNIT_ASSERT(ExclusionTemplateInfo("template2", false, false) == exclTemplSetListJob->_exclusionTemplateList.at(1));
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)

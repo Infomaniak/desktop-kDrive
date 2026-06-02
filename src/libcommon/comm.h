@@ -57,6 +57,7 @@ enum class RequestNum {
     DRIVE_DELETE,
     DRIVE_SEARCH,
     SYNC_INFOLIST,
+    SYNC_OFFLINE_FILES_SIZE,
     SYNC_START,
     SYNC_STOP,
     SYNC_STATUS,
@@ -66,9 +67,8 @@ enum class RequestNum {
     SYNC_DELETE,
     SYNC_GETPUBLICLINKURL,
     SYNC_GETPRIVATELINKURL,
-    SYNC_ASKFORSTATUS,
+    SYNC_TRIGGER_PROGRESS_UPDATE,
     SYNC_SETSUPPORTSVIRTUALFILES,
-    SYNC_SETROOTPINSTATE,
     BLACKLISTED_NODE_LIST,
     BLACKLISTED_NODE_SETLIST,
     NODE_PATH,
@@ -77,18 +77,21 @@ enum class RequestNum {
     NODE_SUBFOLDERS2,
     NODE_FOLDER_SIZE,
     NODE_CREATEMISSINGFOLDERS,
+    NODE_CREATEMISSINGFOLDERS_LEGACY,
+    NODE_CONFLICT_INFO,
     ERROR_INFOLIST,
     ERROR_INFOLIST_LEGACY,
     ERROR_GET_CONFLICTS_LEGACY,
     ERROR_DELETE_SERVER,
     ERROR_DELETE_SYNC,
     ERROR_DELETE_INVALIDTOKEN,
+    ERROR_RESOLVE_CONFLICTS_LEGACY,
     ERROR_RESOLVE_CONFLICTS,
-    ERROR_RESOLVE_UNSUPPORTED_CHAR,
+    ERROR_RESOLVE_CONFLICTS_QUICK,
+    ERROR_RESOLVE_UNSUPPORTED_CHAR_LEGACY,
     EXCLTEMPL_GETEXCLUDED,
     EXCLTEMPL_GETLIST,
-    EXCLTEMPL_SETLIST,
-    EXCLTEMPL_PROPAGATE_CHANGE,
+    EXCLTEMPL_SETUSERLIST,
 #if defined(KD_MACOS)
     EXCLAPP_GETLIST,
     EXCLAPP_SETLIST,
@@ -100,10 +103,6 @@ enum class RequestNum {
     UTILITY_BESTVFSAVAILABLEMODE_LEGACY,
     UTILITY_FINDGOODPATHFORNEWSYNC,
     UTILITY_ISPATHVALIDFORNEWSYNC,
-#if defined(KD_WINDOWS)
-    UTILITY_SHOWSHORTCUT,
-    UTILITY_SETSHOWSHORTCUT,
-#endif
     UTILITY_ACTIVATELOADINFO,
     UTILITY_CHECKCOMMSTATUS,
     UTILITY_HASSYSTEMLAUNCHONSTARTUP,
@@ -113,10 +112,10 @@ enum class RequestNum {
     UTILITY_GET_APPSTATE,
     UTILITY_SEND_LOG_TO_SUPPORT,
     UTILITY_CANCEL_LOG_TO_SUPPORT,
-    UTILITY_GET_LOG_ESTIMATED_SIZE,
+    UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY, // Not used anymore but kept for backward compatibility
     UTILITY_CRASH,
     UTILITY_QUIT,
-    UTILITY_DISPLAY_CLIENT_REPORT, // Sent by the Client process as soon the UI is visible for the user.
+    UTILITY_SEND_APP_START_TRACE, // Sent by the Client process as soon the UI is visible for the user.
     UPDATER_CHANGE_CHANNEL,
     UPDATER_VERSION_INFO,
     UPDATER_STATE,
@@ -165,12 +164,10 @@ inline std::string toString(RequestNum e) {
             return "SYNC_GETPUBLICLINKURL";
         case RequestNum::SYNC_GETPRIVATELINKURL:
             return "SYNC_GETPRIVATELINKURL";
-        case RequestNum::SYNC_ASKFORSTATUS:
-            return "SYNC_ASKFORSTATUS";
+        case RequestNum::SYNC_TRIGGER_PROGRESS_UPDATE:
+            return "SYNC_TRIGGER_PROGRESS_UPDATE";
         case RequestNum::SYNC_SETSUPPORTSVIRTUALFILES:
             return "SYNC_SETSUPPORTSVIRTUALFILES";
-        case RequestNum::SYNC_SETROOTPINSTATE:
-            return "SYNC_SETROOTPINSTATE";
         case RequestNum::BLACKLISTED_NODE_LIST:
             return "BLACKLISTED_NODE_LIST";
         case RequestNum::BLACKLISTED_NODE_SETLIST:
@@ -187,6 +184,10 @@ inline std::string toString(RequestNum e) {
             return "NODE_FOLDER_SIZE";
         case RequestNum::NODE_CREATEMISSINGFOLDERS:
             return "NODE_CREATEMISSINGFOLDERS";
+        case RequestNum::NODE_CREATEMISSINGFOLDERS_LEGACY:
+            return "NODE_CREATEMISSINGFOLDERS_LEGACY";
+        case RequestNum::NODE_CONFLICT_INFO:
+            return "NODE_CONFLICT_INFO";
         case RequestNum::ERROR_INFOLIST:
             return "ERROR_INFOLIST";
         case RequestNum::ERROR_INFOLIST_LEGACY:
@@ -199,18 +200,20 @@ inline std::string toString(RequestNum e) {
             return "ERROR_DELETE_SYNC";
         case RequestNum::ERROR_DELETE_INVALIDTOKEN:
             return "ERROR_DELETE_INVALIDTOKEN";
+        case RequestNum::ERROR_RESOLVE_CONFLICTS_LEGACY:
+            return "ERROR_RESOLVE_CONFLICTS_LEGACY";
         case RequestNum::ERROR_RESOLVE_CONFLICTS:
             return "ERROR_RESOLVE_CONFLICTS";
-        case RequestNum::ERROR_RESOLVE_UNSUPPORTED_CHAR:
-            return "ERROR_RESOLVE_UNSUPPORTED_CHAR";
+        case RequestNum::ERROR_RESOLVE_CONFLICTS_QUICK:
+            return "ERROR_RESOLVE_CONFLICTS_QUICK";
+        case RequestNum::ERROR_RESOLVE_UNSUPPORTED_CHAR_LEGACY:
+            return "ERROR_RESOLVE_UNSUPPORTED_CHAR_LEGACY";
         case RequestNum::EXCLTEMPL_GETEXCLUDED:
             return "EXCLTEMPL_GETEXCLUDED";
         case RequestNum::EXCLTEMPL_GETLIST:
             return "EXCLTEMPL_GETLIST";
-        case RequestNum::EXCLTEMPL_SETLIST:
-            return "EXCLTEMPL_SETLIST";
-        case RequestNum::EXCLTEMPL_PROPAGATE_CHANGE:
-            return "EXCLTEMPL_PROPAGATE_CHANGE";
+        case RequestNum::EXCLTEMPL_SETUSERLIST:
+            return "EXCLTEMPL_SETUSERLIST";
 #if defined(KD_MACOS)
         case RequestNum::EXCLAPP_GETLIST:
             return "EXCLAPP_GETLIST";
@@ -231,12 +234,6 @@ inline std::string toString(RequestNum e) {
             return "UTILITY_FINDGOODPATHFORNEWSYNC";
         case RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC:
             return "UTILITY_ISPATHVALIDFORNEWSYNC";
-#if defined(KD_WINDOWS)
-        case RequestNum::UTILITY_SHOWSHORTCUT:
-            return "UTILITY_SHOWSHORTCUT";
-        case RequestNum::UTILITY_SETSHOWSHORTCUT:
-            return "UTILITY_SETSHOWSHORTCUT";
-#endif
         case RequestNum::UTILITY_ACTIVATELOADINFO:
             return "UTILITY_ACTIVATELOADINFO";
         case RequestNum::UTILITY_CHECKCOMMSTATUS:
@@ -255,14 +252,14 @@ inline std::string toString(RequestNum e) {
             return "UTILITY_SEND_LOG_TO_SUPPORT";
         case RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT:
             return "UTILITY_CANCEL_LOG_TO_SUPPORT";
-        case RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE:
-            return "UTILITY_GET_LOG_ESTIMATED_SIZE";
+        case RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY:
+            return "UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY";
         case RequestNum::UTILITY_CRASH:
             return "UTILITY_CRASH";
         case RequestNum::UTILITY_QUIT:
             return "UTILITY_QUIT";
-        case RequestNum::UTILITY_DISPLAY_CLIENT_REPORT:
-            return "UTILITY_DISPLAY_CLIENT_REPORT";
+        case RequestNum::UTILITY_SEND_APP_START_TRACE:
+            return "UTILITY_SEND_APP_START_TRACE";
         case RequestNum::UPDATER_VERSION_INFO:
             return "UPDATER_VERSION_INFO";
         case RequestNum::UPDATER_STATE:
@@ -290,7 +287,7 @@ enum class SignalNum {
     // Drive
     DRIVE_ADDED,
     DRIVE_UPDATED,
-    DRIVE_QUOTAUPDATED,
+    DRIVE_QUOTAUPDATED_LEGACY,
     DRIVE_REMOVED,
     DRIVE_DELETE_FAILED,
     // Sync
@@ -307,6 +304,8 @@ enum class SignalNum {
     // Updater
     UPDATER_SHOW_DIALOG,
     UPDATER_STATE_CHANGED,
+    // Login
+    LOGIN_SEND_AUTHORIZATION_CODE,
     // Utility
     UTILITY_SHOW_NOTIFICATION,
     UTILITY_ERROR_ADDED_LEGACY,
@@ -340,7 +339,7 @@ inline std::string toString(SignalNum e) {
             return "DRIVE_ADDED";
         case SignalNum::DRIVE_UPDATED:
             return "DRIVE_UPDATED";
-        case SignalNum::DRIVE_QUOTAUPDATED:
+        case SignalNum::DRIVE_QUOTAUPDATED_LEGACY:
             return "DRIVE_QUOTAUPDATED";
         case SignalNum::DRIVE_REMOVED:
             return "DRIVE_REMOVED";

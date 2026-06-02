@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include "log/log.h"
 #include "libcommon/utility/utility.h"
 
+#include <config.h>
 #include <sstream>
 #include <string>
 #include <unistd.h>
@@ -150,4 +151,16 @@ SyncPath Utility::getTrashPath() {
 
     return SyncPath(homePathEnv) / ".Trash";
 }
+
+bool Utility::registerLoginRedirection() {
+    // Working directory path is like "<path to the app bundle>/Contents/MacOS"
+    const std::string appBundlePath = CommonUtility::getAppWorkingDir().parent_path().parent_path().native();
+    const std::string registerCommand =
+            "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/"
+            "lsregister -f \"" +
+            appBundlePath + "\"";
+    (void) system(registerCommand.c_str());
+    return true;
+}
+
 } // namespace KDC

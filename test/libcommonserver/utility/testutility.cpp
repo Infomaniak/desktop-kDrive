@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,9 +20,11 @@
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/testhelpers.h"
 #include "config.h"
+
 #include "libcommon/utility/utility.h" // CommonUtility::isSubDir
-#include "libcommonserver/io/iohelper.h"
-#include "libcommonserver/log/log.h"
+
+#include "log/log.h"
+#include "io/iohelper.h"
 
 #include <Poco/URI.h>
 

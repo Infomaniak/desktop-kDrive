@@ -20,8 +20,9 @@
 
 #include "libcommon/utility/utility.h"
 #include "libcommon/utility/logiffail.h"
-#include "libcommonserver/utility/utility.h"
+
 #include "libcommonserver/log/log.h"
+#include "libcommonserver/utility/utility.h"
 
 namespace KDC {
 
@@ -177,6 +178,16 @@ bool Node::insertChildren(std::shared_ptr<Node> child) {
         }
     }
 
+    if (child->parentNode() != shared_from_this()) {
+        if (!child->setParentNode(shared_from_this())) {
+            LOGW_WARN(Log::instance()->getLogger(), L"Error in Node::setParentNode: node "
+                                                            << Utility::formatSyncName(child->name()) << L" parent node "
+                                                            << Utility::formatSyncName(name()));
+
+            return false;
+        }
+    }
+
     _childrenById[*child->id()] = child;
 
     return true;
@@ -249,6 +260,10 @@ SyncPath Node::getPath() const {
     return path;
 }
 
+bool Node::isTmp() const {
+    return _isTmp;
+}
+
 bool Node::isParentOf(std::shared_ptr<const Node> potentialChild) const {
     if (!potentialChild) return false; // `parentNode` is the root node,
     if (potentialChild->id().has_value() && potentialChild->id() == _id) return false; // potentialChild cannot be its own parent
@@ -263,6 +278,10 @@ bool Node::isParentOf(std::shared_ptr<const Node> potentialChild) const {
     }
 
     return false;
+}
+
+bool Node::isValid() const {
+    return _id.has_value() && !_id.value().empty() && !_isTmp;
 }
 
 bool Node::isParentValid(std::shared_ptr<const Node> parentNode) const {

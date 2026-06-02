@@ -32,7 +32,7 @@ namespace KDC {
 static const SyncPath defaultInvalidPath = ":\0/:\0"; // Invalid path for increased safety
 static const NodeId defaultInvalidNodeId = "-1"; // Invalid node id for increased safety
 
-class Node {
+class Node : public std::enable_shared_from_this<Node> {
     public:
         class MoveOriginInfos {
             public:
@@ -160,8 +160,9 @@ class Node {
 
         [[nodiscard]] SyncPath getPath() const;
 
-        [[nodiscard]] inline bool isTmp() const { return _isTmp; }
+        [[nodiscard]] bool isTmp() const;
         inline void setIsTmp(bool newIsTmp) { _isTmp = newIsTmp; }
+        [[nodiscard]] bool isValid() const;
 
     private:
         friend class UpdateTree;

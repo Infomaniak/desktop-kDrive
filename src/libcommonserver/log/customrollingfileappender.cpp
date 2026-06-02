@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,10 +18,10 @@
 
 #include "config.h"
 #include "customrollingfileappender.h"
-#include "libcommon/utility/utility.h"
-#include "libcommonserver/io/iohelper.h"
-#include "libcommonserver/io/filestat.h"
-#include "libcommonserver/utility/utility.h"
+#include "utility/utility.h"
+#include "io/iohelper.h"
+#include "io/filestat.h"
+#include "utility/utility.h"
 
 /*****************************************/
 /********** namespace log4cplus **********/
@@ -291,7 +291,7 @@ void CustomRollingFileAppender::checkForExpiredFiles() {
     IoHelper::DirectoryIterator dirIt(logDirPath, false, ioError);
     bool endOfDir = false;
     DirectoryEntry entry;
-    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
+    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
         FileStat fileStat;
         IoHelper::getFileStat(entry.path(), &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
         if (ioError != IoError::Success || fileStat.nodeType != NodeType::File) {

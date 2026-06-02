@@ -51,7 +51,7 @@ Param(
 
     # include new GUI: Flag to enable or disable the new GUI build. If included, any user in the internal release channel will be able to test it. 
     # The legacy GUI will still be built and installed alongside and can be launched by clicking on kDrive logo on the top left corner of the new GUI.
-    [switch] $newGui,
+    [bool] $newGui,
 
     # Help: Displays the help message and exits
     [switch] $help
@@ -72,9 +72,6 @@ $installPath = "$contentPath/install"
 $extPath = "$path/extensions/windows/cfapi"
 $clientPath = "$path/src/gui4/windows/kDrive client"
 $vfsDir = "$extPath/x64/Release"
-
-$msiInstallerFolderPath = "$path/installer/windows/kDriveInstaller"
-$msiPackageFolderPath = "$msiInstallerFolderPath/bin/x64/Release/en-US"
 
 # Files to be added to the archive and then packaged
 $archivePath = "$installPath/bin"
@@ -160,7 +157,7 @@ function Get-Thumbprint {
          Get-ChildItem $certStore | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -match "EV" } | Select -ExpandProperty Thumbprint
     } 
     Else {
-        Get-ChildItem $certStore | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -notmatch "EV" } | Select -ExpandProperty Thumbprint
+        Get-ChildItem $certStore | Where-Object { $_.Subject -match "Windows11CI-1" -and $_.Issuer -match "Windows11CI-1" } | Select -ExpandProperty Thumbprint
     }
     Write-Host "Using thumbprint: $thumbprint"
 
@@ -388,9 +385,12 @@ function Set-Up-NSIS {
 
     # NSIS needs the path to use backslash
     $iconPath = Get-Icon-Path $buildpath
-    $appName = Get-Package-Name $buildpath -exe
+    $appName = Get-Package-Name -exe
    
-    $installerPath = Get-Installer-Path $buildPath $contentPath
+    $installerPath = Get-Installer-Path -ContentPath $contentPath
+
+    Write-Host "NSIS installer path: '$installerPath'."
+
     Clean $installerPath
 
     $aumid = Get-Aumid $upload
@@ -574,13 +574,13 @@ function Create-Archive {
     & makensis "$buildPath\NSIS.template.nsi"
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-    $appName = Get-Package-Name $buildPath -exe
+    $appName = Get-Package-Name -exe
     Move-Item -Path "$buildPath\$appName" -Destination "$contentPath"
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     # Sign final installer
     $thumbprint = Get-Thumbprint -Upload $upload -Ci $ci
-    $installerPath = Get-Installer-Path $contentPath
+    $installerPath = Get-Installer-Path -ContentPath $contentPath
 
     if (Test-Path -Path $installerPath) {
         Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass -Description $appName
@@ -595,9 +595,17 @@ function Create-Archive {
 }
 
 function Create-MSI-Package {
+    param (
+        [string] $path,
+        [string] $buildPath,
+        [string] $contentPath
+    )
+
     Write-Host "Creating MSI package ..."
 
-	$appName = Get-Package-Name $buildPath
+	$appName = Get-Package-Name
+    $msiInstallerFolderPath = "$path/installer/windows/kDriveInstaller"
+    $msiPackageFolderPath = "$msiInstallerFolderPath/bin/x64/Release/en-US"
 	
 	dotnet build "$msiInstallerFolderPath/kDriveInstaller.sln" /p:Configuration="Release" /p:Platform="x64" /p:OutputName=$appName
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -610,7 +618,7 @@ function Create-MSI-Package {
 		$thumbprint = Get-Thumbprint $upload
 	}
 
-	$installerPath = Get-Installer-Path $contentPath -msi
+	$installerPath = Get-Installer-Path -ContentPath $contentPath -msi
 
 	if (Test-Path -Path $installerPath) {
 		Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass -Description $appName
@@ -824,6 +832,7 @@ if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
 
+
 #################################################################################################
 #                                                                                               #
 #                                     MSI PACKAGE CREATION                                      #
@@ -831,7 +840,7 @@ if ($LASTEXITCODE -ne 0) {
 #################################################################################################
 
 if ($msi) {
-    Create-MSI-Package
+    Create-MSI-Package -Path $path -buildPath $buildPath -ContentPath $contentPath
     if ($LASTEXITCODE -ne 0) {
         Write-Host "MSI package creation failed ($LASTEXITCODE) . Aborting." -f Red
         exit $LASTEXITCODE

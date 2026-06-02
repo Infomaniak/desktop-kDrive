@@ -30,7 +30,7 @@ class SyncDb;
 
 class VirtualFilesCleaner {
     public:
-        VirtualFilesCleaner(const SyncPath &path, std::shared_ptr<SyncDb> syncDb, const std::shared_ptr<Vfs> &vfs);
+        VirtualFilesCleaner(const SyncPath &path, std::shared_ptr<SyncDb> syncDb, const std::shared_ptr<Vfs> vfs);
 
         explicit VirtualFilesCleaner(const SyncPath &path);
 
@@ -42,7 +42,6 @@ class VirtualFilesCleaner {
 
     private:
         bool removePlaceholdersRecursively(const SyncPath &parentPath);
-        bool recursiveDirectoryIterator(const SyncPath &path, IoHelper::DirectoryIterator &dirIt);
         bool folderCanBeProcessed(const DirectoryEntry &directoryEntry);
 
         log4cplus::Logger _logger;

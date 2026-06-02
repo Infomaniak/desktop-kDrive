@@ -18,9 +18,10 @@
 
 #include "uploadjobreplyhandler.h"
 #include "io/filestat.h"
+
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
-#include "libcommon/utility/jsonparserutility.h"
+#include "libcommonserver/utility/jsonparserutility.h"
 
 #include <fstream>
 #include <Poco/Net/HTTPRequest.h>
@@ -29,7 +30,7 @@
 
 namespace KDC {
 
-UploadJob::UploadJob(const std::shared_ptr<Vfs> &vfs, const int driveDbId, const SyncPath &absoluteFilePath,
+UploadJob::UploadJob(const std::shared_ptr<Vfs> vfs, const int driveDbId, const SyncPath &absoluteFilePath,
                      const SyncName &filename, const NodeId &remoteParentDirId, const SyncTime creationTime,
                      const SyncTime modificationTime) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
@@ -42,10 +43,9 @@ UploadJob::UploadJob(const std::shared_ptr<Vfs> &vfs, const int driveDbId, const
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
     _customTimeout = 60;
     _trials = TRIALS;
-    setProgress(0);
 }
 
-UploadJob::UploadJob(const std::shared_ptr<Vfs> &vfs, const int driveDbId, const SyncPath &absoluteFilePath, const NodeId &fileId,
+UploadJob::UploadJob(const std::shared_ptr<Vfs> vfs, const int driveDbId, const SyncPath &absoluteFilePath, const NodeId &fileId,
                      const SyncTime modificationTime) :
     UploadJob(vfs, driveDbId, absoluteFilePath, SyncName(), "", 0, modificationTime) {
     _fileId = fileId;
@@ -141,6 +141,9 @@ void UploadJob::setQueryParameters(Poco::URI &uri) {
         auto str2HtmlStr = [](const std::string &str) { return str.empty() ? "%02%03" : str; };
         uri.addQueryParameter(symbolicLinkKey, str2HtmlStr(Path2Str(_linkTarget)));
     }
+
+    setProgressExpectedFinalValue(static_cast<int64_t>(_data.size()));
+    setProgress(0);
 }
 
 ExitInfo UploadJob::setData() {

@@ -31,17 +31,26 @@ namespace Infomaniak.kDrive.ViewModels
 {
     public class Drive : UISafeObservableObject, IDrive
     {
-        private DbId _dbId = -1;
+        // Drive properties
+        private DbId _dbId;
         private DriveId _driveId = -1;
         private string _name = "";
         private Color _color = Color.Blue;
-        private bool _isPaidOffer = true; // Indicates if the drive is a paid offer (i.e. myKsuite+/pro +, ...)
-        private ObservableCollection<Sync> _syncs = new ObservableCollection<Sync>();
+        private bool _isFreeOffer = true; // Indicates if the drive is a free offer
+        private readonly ObservableCollection<Sync> _syncs = [];
         private Sync? _mainSync;
         private bool _isConfigured = false; // Indicates if at least one sync (which is not an advanced sync) is set up for this drive
-        private ObservableCollection<Sync> _advancedSyncs = new ObservableCollection<Sync>();
+        private bool _isAdmin = false; // Indicates if the user is admin of this drive
+        private System.Int64 _size = 0;
+        private System.Int64 _usedSize = 0;
 
         private Account _account;
+
+        // Drive UI properties
+        private bool _displayRemoteSpaceWarning = false;
+        private readonly ObservableCollection<Sync> _advancedSyncs = [];
+
+
         public Drive(DbId dbId, Account account)
         {
             _dbId = dbId;
@@ -53,10 +62,12 @@ namespace Infomaniak.kDrive.ViewModels
 
         private void RefreshAdvancedSyncsMap()
         {
+            MainSync = Syncs.FirstOrDefault(s => s.RemotePath == "/" || s.RemotePath == "");
+
             var advancedSyncs = Syncs.Where(s => s != MainSync);
             foreach (int i in Enumerable.Range(0, _advancedSyncs.Count).Reverse())
             {
-                Sync? sync = _advancedSyncs.ElementAt(i);
+                Sync? sync = _advancedSyncs[i];
                 if (!advancedSyncs.Contains(sync))
                     _advancedSyncs.Remove(sync);
             }
@@ -64,8 +75,6 @@ namespace Infomaniak.kDrive.ViewModels
             foreach (var sync in advancedSyncs)
                 if (!_advancedSyncs.Contains(sync))
                     _advancedSyncs.Add(sync);
-
-            MainSync = Syncs.FirstOrDefault(s => s.RemotePath == "/" || s.RemotePath == "");
         }
 
         public DbId DbId
@@ -82,7 +91,7 @@ namespace Infomaniak.kDrive.ViewModels
 
         public AccountId AccountId
         {
-            get => _account.AccountId;
+            get => _account.Id;
         }
 
         public string AccountName
@@ -101,11 +110,28 @@ namespace Infomaniak.kDrive.ViewModels
             get => _color;
             set => SetPropertyInUIThread(ref _color, value);
         }
-
-        public bool IsPaidOffer
+        public bool IsAdmin
         {
-            get => _isPaidOffer;
-            set => SetPropertyInUIThread(ref _isPaidOffer, value);
+            get => _isAdmin;
+            set => SetPropertyInUIThread(ref _isAdmin, value);
+        }
+
+        public bool IsFreeOffer
+        {
+            get => _isFreeOffer;
+            set => SetPropertyInUIThread(ref _isFreeOffer, value);
+        }
+
+        public System.Int64 Size
+        {
+            get => _size;
+            set => SetPropertyInUIThread(ref _size, value);
+        }
+
+        public System.Int64 UsedSize
+        {
+            get => _usedSize;
+            set => SetPropertyInUIThread(ref _usedSize, value);
         }
 
         public ObservableCollection<Sync> Syncs
@@ -116,8 +142,8 @@ namespace Infomaniak.kDrive.ViewModels
         public Sync? MainSync
         {
             get => _mainSync;
-            set 
-            { 
+            set
+            {
                 SetPropertyInUIThread(ref _mainSync, value);
                 IsConfigured = value is not null;
             }
@@ -134,24 +160,30 @@ namespace Infomaniak.kDrive.ViewModels
             get => _advancedSyncs;
         }
 
+        public bool DisplayRemoteSpaceWarning
+        {
+            get => _displayRemoteSpaceWarning;
+            set => SetPropertyInUIThread(ref _displayRemoteSpaceWarning, value);
+        }
+
         public Uri GetWebUri()
         {
-            return new Uri($"https://ksuite.infomaniak.com/kdrive/app/drive/{DriveId}");
+            return App.Constants.Drive.kSuiteHomeUrl(DriveId);
         }
 
         public Uri GetWebTrashUri()
         {
-            return new Uri($"https://ksuite.infomaniak.com/kdrive/app/drive/{DriveId}/trash");
+            return App.Constants.Drive.TrashUrl(DriveId);
         }
 
         public Uri GetWebFavoritesUri()
         {
-            return new Uri($"https://ksuite.infomaniak.com/kdrive/app/drive/{DriveId}/favorites");
+            return App.Constants.Drive.FavoriteUrl(DriveId);
         }
 
         public Uri GetWebSharedUri()
         {
-            return new Uri($"https://ksuite.infomaniak.com/kdrive/app/drive/{DriveId}/shared-with-me");
+            return App.Constants.Drive.SharedUrl(DriveId);
         }
 
         public Account Account
@@ -160,11 +192,10 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _account, value);
         }
 
-        public async Task RemoveSync(Sync sync, CancellationToken cancellationToken)
+        public async Task<bool> RemoveSync(Sync sync, CancellationToken cancellationToken)
         {
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            await commService.RemoveSync(sync.DbId, cancellationToken);
+            return await commService.RemoveSync(sync.DbId, cancellationToken);
         }
-
     }
 }

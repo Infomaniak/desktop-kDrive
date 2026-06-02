@@ -19,10 +19,12 @@
 #include "testoperationprocessor.h"
 #include "testsyncpal.h"
 #include "syncpal/tmpblacklistmanager.h"
-#include "libcommon/keychainmanager/keychainmanager.h"
+#include "libsyncengine/jobs/network/kDrive_API/movejob.h"
+
+#include "libcommonserver/keychainmanager/keychainmanager.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/network/proxy.h"
-#include "libsyncengine/jobs/network/kDrive_API/movejob.h"
+
 #include "mocks/libcommonserver/db/mockdb.h"
 
 #include "test_utility/testhelpers.h"
@@ -57,7 +59,7 @@ void TestOperationProcessor::setUp() {
     (void) ParmsDb::instance()->insertUser(user);
 
     int accountId(atoi(testVariables.accountId.c_str()));
-    Account account(1, accountId, user.dbId());
+    Account account(1, accountId, user.dbId(), "account1");
     (void) ParmsDb::instance()->insertAccount(account);
 
     _driveDbId = 1;

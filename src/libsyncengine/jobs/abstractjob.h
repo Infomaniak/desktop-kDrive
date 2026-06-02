@@ -21,6 +21,7 @@
 #include "utility/types.h"
 
 #include <Poco/Runnable.h>
+#include <Poco/Thread.h>
 
 #include <log4cplus/logger.h>
 
@@ -57,9 +58,13 @@ class AbstractJob : public Poco::Runnable {
         virtual void abort();
         bool isAborted() const;
 
+        [[nodiscard]] Poco::Thread::Priority jobPriority() const { return _jobPriority; }
+
     protected:
         void run() override;
         virtual ExitInfo canRun() { return ExitCode::Ok; }
+
+        void setJobPriority(Poco::Thread::Priority jobPriority) { _jobPriority = jobPriority; }
 
         log4cplus::Logger _logger;
 
@@ -80,6 +85,8 @@ class AbstractJob : public Poco::Runnable {
         ExitInfo _exitInfo;
         bool _aborted = false;
         bool _isExtendedLog = false;
+
+        Poco::Thread::Priority _jobPriority = Poco::Thread::PRIO_NORMAL;
 };
 
 } // namespace KDC

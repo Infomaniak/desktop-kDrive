@@ -31,8 +31,11 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
                 set { Num = (int)value; }
             }
 
+            public ExitCode Code { get; set; } = ExitCode.Unknown;
+            public ExitCause Cause { get; set; } = ExitCause.Unknown;
+
             // Parameters for requests or data for signals
-            public JsonObject? Params { get; set; }
+            public JsonObject Params { get; set; } = [];
         }
 
         public Task<CommData> SendRequestAsync(RequestNum requestNum, JsonObject parameters, CancellationToken cancellationToken = default);
@@ -51,5 +54,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         }
 
         event EventHandler<SignalEventArgs> SignalReceived;
+        event EventHandler ConnectionLost;
     }
 }

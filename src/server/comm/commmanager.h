@@ -55,7 +55,7 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
 #endif
 
         // Broadcast a signal to all the gui channels
-        void sendGuiSignal(std::shared_ptr<AbstractGuiJob> signal);
+        void sendGuiSignal(const std::shared_ptr<AbstractGuiJob> signal);
 
     private:
         // AppServer maps

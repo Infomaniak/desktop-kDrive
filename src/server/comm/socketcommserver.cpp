@@ -18,12 +18,15 @@
 
 #include "socketcommserver.h"
 
+#include "libcommon/utility/utility.h"
+
 namespace KDC {
 
 SocketCommChannel::SocketCommChannel(const Poco::Net::StreamSocket &socket) :
     AbstractCommChannel(),
     _socket(socket) {
-    _callbackThread = std::thread(&SocketCommChannel::callbackHandler, this);
+    auto callbackHandlerFunc = std::function<void()>([this]() { callbackHandler(); });
+    _callbackThread = std::make_unique<StdLoggingThread>(callbackHandlerFunc);
 }
 
 SocketCommChannel::~SocketCommChannel() {
@@ -34,8 +37,8 @@ SocketCommChannel::~SocketCommChannel() {
         LOG_ERROR(Log::instance()->getLogger(), "Exception in SocketCommChannel::close: " << ex.what());
     }
 
-    if (_callbackThread.joinable()) {
-        _callbackThread.join();
+    if (_callbackThread && _callbackThread->joinable()) {
+        _callbackThread->join();
     }
 }
 
@@ -198,7 +201,8 @@ bool SocketCommServer::listen() {
     }
 
     LOG_DEBUG(Log::instance()->getLogger(), name() << " start");
-    _serverSocketThread = std::make_unique<std::thread>(&SocketCommServer::execute, this);
+    auto executeFunc = std::function<void()>([this]() { execute(); });
+    _serverSocketThread = std::make_unique<StdLoggingThread>(executeFunc);
 
     // Wait until the server socket is listening (or timeout after 20s)
     int remainTries = 500;
@@ -265,6 +269,5 @@ void SocketCommServer::execute() {
         newConnectionCbk();
     }
     _isListening = false;
-    log4cplus::threadCleanup();
 }
 } // namespace KDC

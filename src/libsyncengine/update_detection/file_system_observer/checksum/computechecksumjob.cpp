@@ -17,10 +17,12 @@
  */
 
 #include "computechecksumjob.h"
-#include "libcommonserver/log/log.h"
-#include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
 #include "utility/timerutility.h"
+
+#include "libcommonserver/log/log.h"
+
+#include "libcommonserver/utility/utility.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -53,6 +55,7 @@ ExitInfo ComputeChecksumJob::runJob() {
     // Initialize state with selected seed
     if (XXH3_64bits_reset(state) == XXH_ERROR) {
         LOGW_WARN(_logger, L"Checksum computation " << jobId() << L" failed for file " << Path2WStr(_filePath));
+        XXH3_freeState(state);
         return {};
     }
 
@@ -65,6 +68,8 @@ ExitInfo ComputeChecksumJob::runJob() {
                 len = fread(buf, 1, BUFSIZ, f);
                 if (XXH3_64bits_update(state, buf, len) == XXH_ERROR) {
                     LOGW_WARN(_logger, L"Checksum computation " << jobId() << L" failed for file " << Path2WStr(_filePath));
+                    fclose(f);
+                    XXH3_freeState(state);
                     return {};
                 }
             } while (len == BUFSIZ);
@@ -74,8 +79,6 @@ ExitInfo ComputeChecksumJob::runJob() {
                 XXH64_hash_t const hash = XXH3_64bits_digest(state);
                 _localSnapshot->setContentChecksum(_nodeId, Utility::xxHashToStr(hash));
             }
-
-            XXH3_freeState(state);
 
             fclose(f);
 
@@ -93,6 +96,8 @@ ExitInfo ComputeChecksumJob::runJob() {
     } catch (...) {
         LOGW_DEBUG(_logger, L"File " << Path2WStr(_filePath) << L" is not readable");
     }
+
+    XXH3_freeState(state);
 
     if (isExtendedLog()) {
         LOG_DEBUG(_logger, "Checksum job finished: id=" << jobId());

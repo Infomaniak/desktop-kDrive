@@ -56,7 +56,7 @@ ExitInfo UtilitySendLogToSupportJob::serializeOutputParms() {
 }
 
 ExitInfo UtilitySendLogToSupportJob::process() {
-    AppServer::uploadLog(_includeArchivedLogs);
+    _commManager->appServer().uploadLog(_includeArchivedLogs);
 
     return ExitCode::Ok;
 }

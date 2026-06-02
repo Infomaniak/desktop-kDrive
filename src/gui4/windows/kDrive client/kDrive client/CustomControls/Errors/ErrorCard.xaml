@@ -11,65 +11,55 @@
 
     <UserControl.Resources>
         <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
     </UserControl.Resources>
-    <Grid Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}"
-          Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.XXS}"
-          Background="{ThemeResource LayerFillColorDefault}"
-          CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}">
+    <Grid Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.S}"
+          Margin="{StaticResource Infomaniak.Style.Thickness.Top.XS}"
+          Background="{ThemeResource CardBackgroundFillColorDefault}"
+          BorderThickness="1"
+          BorderBrush="{ThemeResource CardStrokeColorDefault}"
+          CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
+          RowSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="auto" />
-            <RowDefinition Height="auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="auto" />
+            <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
-
-        <!-- Title -->
-        <TextBlock Grid.Row="0"
-                   Grid.Column="0"
-                   Text="{x:Bind Title, Mode=OneWay}"
-                   Style="{StaticResource BodyTextBlockStyle}" />
-
-        <!-- Item infos -->
-        <StackPanel Grid.Row="1"
+        <StackPanel Grid.Row="0"
                     Grid.Column="0"
-                    Orientation="Horizontal"
-                    Spacing="{StaticResource Infomaniak.Style.Spacing.S}"
-                    Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.XS}"
-                    Visibility="{x:Bind ItemPath, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True'}">
-            <ToolTipService.ToolTip>
-                <ToolTip Content="{x:Bind ItemPath, Mode=OneWay}"
-                         Placement="Right" />
-            </ToolTipService.ToolTip>
-            <controls:SvgIcon UriString="{x:Bind ItemIconUri, Mode=OneWay}"
-                              Width="16"
-                              Height="16" />
-
-            <TextBlock Text="{x:Bind ItemPath, Converter={StaticResource StringPathToFileNameConverter}, Mode=OneWay}"
+                    Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+            <!-- Title -->
+            <TextBlock Text="{x:Bind Title, Mode=OneWay}"
                        Style="{StaticResource BodyTextBlockStyle}" />
-        </StackPanel>
 
+            <!-- Item infos -->
+            <controls:ItemNamePresenter ItemPath="{x:Bind Error.Path , Mode=OneWay}"
+                                        NodeType="{x:Bind Error.NodeType}"
+                                        Visibility="{x:Bind HasItemPath, Converter={StaticResource BooleanToVisibilityConverter}}" />
+        </StackPanel>
         <!-- Description & CustomContent-->
-        <StackPanel Grid.Row="2"
+        <StackPanel Grid.Row="1"
                     Grid.Column="0">
             <TextBlock Text="{x:Bind Description, Mode=OneWay}"
                        TextWrapping="Wrap"
                        Style="{StaticResource BodyTextBlockStyle}"
-                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                       Visibility="{x:Bind HasDescription}"/>
 
             <ContentPresenter Content="{x:Bind CustomContent, Mode=OneWay}" />
         </StackPanel>
 
         <!-- Action button -->
         <Button Grid.Row="0"
-                Grid.RowSpan="3"
+                Grid.RowSpan="2"
                 Grid.Column="1"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Center"
-                Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.M}"
+                Margin="{StaticResource Infomaniak.Style.Thickness.Left.XL}"
                 Content="{x:Bind ActionText}"
                 Click="ActionButton_Click"
                 Visibility="{x:Bind ActionText, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True'}" />

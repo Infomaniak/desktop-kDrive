@@ -20,8 +20,8 @@
 #include "libcommonserver/utility/utility.h"
 
 namespace KDC {
-bool TimeoutHelper::waitFor(std::function<bool()> condition, const std::chrono::steady_clock::duration& duration,
-                            const std::chrono::steady_clock::duration& loopWait) {
+bool TimeoutHelper::waitFor(std::function<bool()> condition, const std::chrono::steady_clock::duration &duration,
+                            const std::chrono::steady_clock::duration &loopWait) {
     TimeoutHelper timeout(duration, loopWait);
     while (!condition()) {
         if (timeout.timedOut()) return false;
@@ -31,8 +31,8 @@ bool TimeoutHelper::waitFor(std::function<bool()> condition, const std::chrono::
 
 
 bool TimeoutHelper::waitFor(std::function<bool()> condition, std::function<void()> stateCheck,
-                            const std::chrono::steady_clock::duration& duration,
-                            const std::chrono::steady_clock::duration& loopWait) {
+                            const std::chrono::steady_clock::duration &duration,
+                            const std::chrono::steady_clock::duration &loopWait) {
     TimeoutHelper timeout(duration, loopWait);
     while (!condition()) {
         stateCheck();

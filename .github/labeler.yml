@@ -3,11 +3,15 @@
 WinUI:
   - changed-files:
     - any-glob-to-any-file: 'src/gui4/windows/**'
-    
+
 macOS UI:
- - changed-files:
-   - any-glob-to-any-file: 'src/front/macOS/**'
+  - changed-files:
+    - any-glob-to-any-file: 'src/gui4/macOS/**'
+
+XPC:
+  - changed-files:
+    - any-glob-to-any-file: ['src/gui4/macOS/kDriveCore/ServerBridge/**', 'extensions/MacOSX/kDriveFinderSync/**', 'src/server/comm/**']
 
 GUI job:
- - changed-files:
-   - any-glob-to-any-file: 'src/server/comm/guijobs/**'
+  - changed-files:
+    - any-glob-to-any-file: 'src/server/comm/guijobs/**'

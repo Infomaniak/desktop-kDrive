@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 #pragma clang diagnostic ignored "-Wnullability-completeness"
 #endif
 
-#include "libcommon/libcommon.h"
+#include "libcommon.h"
 #include "types.h"
 
 #include <string>
@@ -71,11 +71,17 @@ struct COMMON_EXPORT CommonUtility {
         static bool isNTFS(const SyncPath &targetPath);
         static bool isAPFS(const SyncPath &targetPath);
         static bool isFAT(const SyncPath &targetPath);
+        static bool isSyncCompatible(const SyncPath &targetPath);
+        static bool isLiteSyncCompatible(const SyncPath &targetPath);
         static std::string fileSystemName(const SyncPath &targetPath);
 
         static qint64 freeDiskSpace(const QString &path);
         static void crash();
         static QString platformName();
+        static std::string osVersion();
+#ifdef KD_LINUX
+        static std::string distributionName();
+#endif
         static Platform platform();
         static QString platformArch();
         static const std::string &userAgentString();
@@ -104,6 +110,8 @@ struct COMMON_EXPORT CommonUtility {
         static const QString germanCode;
         static const QString spanishCode;
         static const QString italianCode;
+        static const QString dutchCode;
+        static Language strToLanguage(const QString &lang);
         static QString languageCode(Language language);
         static QStringList languageCodeList(Language enforcedLocale);
         static void setupTranslations(QCoreApplication *app, Language enforcedLocale);
@@ -118,7 +126,7 @@ struct COMMON_EXPORT CommonUtility {
         static SyncPath getAppDir();
         static SyncPath getAppSupportDir();
         static SyncPath getAppWorkingDir();
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         static SyncPath getExtensionPath();
 #endif
 
@@ -139,6 +147,12 @@ struct COMMON_EXPORT CommonUtility {
          */
         static bool isDiskRootFolder(const SyncPath &absolutePath, SyncPath &suggestedPath);
         static const std::string dbVersionNumber(const std::string &dbVersion);
+        /**
+         * @brief Compare versions.
+         * @param currentVersion
+         * @param targetVersion
+         * @return return true if currentVersion < targetVersion.
+         */
         static bool isVersionLower(const std::string &currentVersion, const std::string &targetVersion);
 
 #if defined(KD_MACOS)
@@ -203,6 +217,7 @@ struct COMMON_EXPORT CommonUtility {
 
         static bool normalizedSyncName(const SyncName &name, SyncName &normalizedName,
                                        UnicodeNormalization normalization = UnicodeNormalization::NFC) noexcept;
+
         /**
          * Split the input path into a vector of file and directory names.
          * @param path the path to split.
@@ -263,12 +278,9 @@ struct COMMON_EXPORT CommonUtility {
 
         static ReplicaSide syncNodeTypeSide(SyncNodeType type);
 
-        // Convenience OS detection methods
-        static bool isWindows();
-        static bool isMac();
-        static bool isLinux();
-
         // CommString conversion functions
+        static CommString syncPath2CommString(const SyncPath &s) { return s.native(); }
+
 #if defined(KD_WINDOWS)
         static CommString str2CommString(const std::string &s) { return KDC::CommonUtility::s2ws(s); }
         static std::string commString2Str(const CommString &s) { return KDC::CommonUtility::ws2s(s); }
@@ -298,7 +310,7 @@ struct COMMON_EXPORT CommonUtility {
         class InvalidEnumerationValue : public std::runtime_error {
             public:
                 InvalidEnumerationValue() :
-                    std::runtime_error("Invalid enumeration value") {};
+                    std::runtime_error("Invalid enumeration value") {}
         };
         //! Read an input built-in/std::string/std::wstring/CommBLOB parameter from a Poco::DynamicStruct.
         /*!
@@ -463,6 +475,11 @@ struct COMMON_EXPORT CommonUtility {
 #if defined(KD_MACOS)
         static void convertToBase64Str(NSString *const _Nonnull str, NSString **_Nullable base64Str);
 #endif
+
+        // Convenience OS detection methods
+        static bool isWindows();
+        static bool isMac();
+        static bool isLinux();
 
     private:
         static std::mutex _generateRandomStringMutex;

@@ -21,9 +21,10 @@
 #include "plugin.h"
 #include "version.h"
 #include "utility/types.h"
+#include "io/iohelper.h"
+
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h" // Path2WStr
-#include "libcommonserver/io/iohelper.h"
 
 #include <QOperatingSystemVersion>
 #include <QPluginLoader>
@@ -71,8 +72,6 @@ CommString Vfs::modeToString(KDC::VirtualFileMode virtualFileMode) {
     switch (virtualFileMode) {
         case KDC::VirtualFileMode::Off:
             return Str("off");
-        case KDC::VirtualFileMode::Suffix:
-            return Str("suffix");
         case KDC::VirtualFileMode::Win:
             return Str("wincfapi");
         case KDC::VirtualFileMode::Mac:
@@ -89,8 +88,6 @@ KDC::VirtualFileMode Vfs::modeFromString(const QString &str) {
     // Note: Strings are used for config and must be stable
     if (str == "off") {
         return KDC::VirtualFileMode::Off;
-    } else if (str == "suffix") {
-        return KDC::VirtualFileMode::Suffix;
     } else if (str == "wincfapi") {
         return KDC::VirtualFileMode::Win;
     } else if (str == "mac") {
@@ -241,27 +238,19 @@ static QString modeToPluginName(const VirtualFileMode virtualFileMode) {
 bool KDC::isVfsPluginAvailable(const VirtualFileMode virtualFileMode, QString &error) {
     if (virtualFileMode == VirtualFileMode::Off) return true;
 
-    if (virtualFileMode == VirtualFileMode::Suffix) {
-        return false;
-    }
-
     if (virtualFileMode == VirtualFileMode::Win) {
         if (CommonUtility::platform() == Platform::WindowsServer) return false; // LiteSync not available on Windows Server
 
-        if (QOperatingSystemVersion::current().currentType() == QOperatingSystemVersion::OSType::Windows &&
-            QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows10 &&
-            QOperatingSystemVersion::current().microVersion() >= MIN_WINDOWS10_MICROVERSION_FOR_CFAPI) {
-            return true;
-        } else {
+        if (QOperatingSystemVersion::current().currentType() != QOperatingSystemVersion::OSType::Windows ||
+            QOperatingSystemVersion::current() < QOperatingSystemVersion::Windows10 ||
+            QOperatingSystemVersion::current().microVersion() < MIN_WINDOWS10_MICROVERSION_FOR_CFAPI) {
             return false;
         }
     }
 
     if (virtualFileMode == KDC::VirtualFileMode::Mac) {
-        if (QOperatingSystemVersion::current().currentType() == QOperatingSystemVersion::OSType::MacOS &&
-            QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSCatalina) {
-            return true;
-        } else {
+        if (QOperatingSystemVersion::current().currentType() != QOperatingSystemVersion::OSType::MacOS ||
+            QOperatingSystemVersion::current() < QOperatingSystemVersion::MacOSCatalina) {
             return false;
         }
     }
@@ -306,9 +295,8 @@ VirtualFileMode KDC::bestAvailableVfsMode() {
         return VirtualFileMode::Win;
     } else if (isVfsPluginAvailable(VirtualFileMode::Mac, error)) {
         return VirtualFileMode::Mac;
-    } else if (isVfsPluginAvailable(VirtualFileMode::Suffix, error)) {
-        return VirtualFileMode::Suffix;
     }
+
     return VirtualFileMode::Off;
 }
 

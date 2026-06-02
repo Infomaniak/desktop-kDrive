@@ -1,9 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace Infomaniak.kDrive.CustomControls
 {
     public sealed partial class ContentLoader : UserControl
@@ -20,13 +17,19 @@ namespace Infomaniak.kDrive.CustomControls
         }
         public object LoaderContent
         {
-            get { return (object)GetValue(LoaderContentProperty); }
+            get { return GetValue(LoaderContentProperty); }
             set { SetValue(LoaderContentProperty, value); }
         }
         public double LoaderMinHeight
         {
             get { return (double)GetValue(MinLoaderHeightProperty); }
             set { SetValue(MinLoaderHeightProperty, value); }
+        }
+
+        public double LoaderMinWidth
+        {
+            get { return (double)GetValue(MinLoaderWidthProperty); }
+            set { SetValue(MinLoaderWidthProperty, value); }
         }
 
         public static readonly DependencyProperty IsLoadingProperty =
@@ -37,5 +40,8 @@ namespace Infomaniak.kDrive.CustomControls
 
         public static readonly DependencyProperty MinLoaderHeightProperty =
             DependencyProperty.Register(nameof(LoaderMinHeight), typeof(double), typeof(ContentLoader), new PropertyMetadata(0.0));
+
+        public static readonly DependencyProperty MinLoaderWidthProperty =
+            DependencyProperty.Register(nameof(LoaderMinWidth), typeof(double), typeof(ContentLoader), new PropertyMetadata(0.0));
     }
 }

@@ -63,12 +63,25 @@ void OperationGeneratorWorker::execute() {
             continue;
         }
 
-        assert(currentNode->id().has_value());
+        LOG_IF_FAIL(currentNode->id().has_value());
 
         // Explore children even if node is processed
-        for (const auto &child: currentNode->children()) {
-            _queuedToExplore.push(child.second);
-            assert(child.second->parentNode() == currentNode);
+        for (const auto &[_, child]: currentNode->children()) {
+            _queuedToExplore.push(child);
+            LOG_IF_FAIL(child->parentNode() == currentNode);
+            if (child->parentNode() != currentNode) {
+                // Only occurs if there is a bug before.
+                sentry::Handler::captureMessage(sentry::Level::Warning, "OperationGeneratorWorker::execute",
+                                                "Invalid parent node");
+                // Fix the issue
+                LOGW_SYNCPAL_WARN(_logger, L"Update the node's parent: " << Utility::formatSyncName(child->name()));
+                if (!child->setParentNode(currentNode)) {
+                    LOGW_SYNCPAL_WARN(_logger, L"Error in Node::setParentNode: node "
+                                                       << Utility::formatSyncName(child->name()) << L" parent node "
+                                                       << Utility::formatSyncName(currentNode->name()));
+                    continue;
+                }
+            }
         }
 
         if (currentNode->status() == NodeStatus::Processed) {
@@ -79,7 +92,7 @@ void OperationGeneratorWorker::execute() {
         if (!correspondingNode &&
             (currentNode->hasChangeEvent(OperationType::Delete) || currentNode->hasChangeEvent(OperationType::Edit) ||
              currentNode->hasChangeEvent(OperationType::Move))) {
-            LOGW_SYNCPAL_WARN(_logger, L"Failed to get corresponding node: " << SyncName2WStr(currentNode->name()));
+            LOGW_SYNCPAL_WARN(_logger, L"Failed to get corresponding node: " << Utility::formatSyncName(currentNode->name()));
             exitCode = ExitCode::DataError;
             break;
         }
@@ -189,10 +202,10 @@ void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> curre
 
     // If only elements that are not synced with the corresponding side change (e.g., creation date), the operation can be omitted
     bool propagateEdit = true;
-    if (auto exitInfo = editChangeShouldBePropagated(currentNode, propagateEdit); !exitInfo) {
+    if (const auto exitInfo = editChangeShouldBePropagated(currentNode, propagateEdit); !exitInfo) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in OperationProcessor::editChangeShouldBePropagated: "
                                            << Utility::formatSyncPath(currentNode->getPath()) << L" " << exitInfo);
-        _syncPal->addError(Error(ERR_ID, exitInfo));
+        _syncPal->addError(Error(_syncPal->syncDbId(), shortName(), exitInfo));
     }
 
     if (!propagateEdit) {
@@ -239,7 +252,11 @@ void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> curre
 void OperationGeneratorWorker::generateMoveOperation(std::shared_ptr<Node> currentNode, std::shared_ptr<Node> correspondingNode) {
     SyncOpPtr op = std::make_shared<SyncOperation>();
 
-    assert(correspondingNode);
+    LOG_IF_FAIL(currentNode);
+    LOG_IF_FAIL(currentNode->parentNode());
+    LOG_IF_FAIL(currentNode->id().has_value());
+
+    LOG_IF_FAIL(correspondingNode);
 
     // Check for Move-Move (Source) pseudo conflict
     if (isPseudoConflict(currentNode, correspondingNode)) {

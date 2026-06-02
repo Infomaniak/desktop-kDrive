@@ -27,10 +27,12 @@
 #endif
 #include "syncpal/tmpblacklistmanager.h"
 #include "requests/parameterscache.h"
+
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/log/log.h"
+
 #include "mocks/libcommonserver/db/mockdb.h"
 
 #include "test_utility/testhelpers.h"
@@ -79,7 +81,7 @@ void TestLocalFileSystemObserverWorker::setUp() {
     (void) ParmsDb::instance()->insertUser(user);
 
     const int accountId(atoi(testVariables.accountId.c_str()));
-    const Account account(1, accountId, user.dbId());
+    const Account account(1, accountId, user.dbId(), "account1");
     (void) ParmsDb::instance()->insertAccount(account);
 
     const int driveId = atoi(testVariables.driveId.c_str());

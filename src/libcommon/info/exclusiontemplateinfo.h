@@ -28,7 +28,7 @@ namespace KDC {
 
 class ExclusionTemplateInfo {
     public:
-        ExclusionTemplateInfo(const QString &templ, bool warning = false, bool def = false, bool deleted = false);
+        ExclusionTemplateInfo(const QString &templ, bool warning = false, bool def = false);
         ExclusionTemplateInfo() = default;
 
         inline void setTempl(const QString &templ) { _templ = templ; }
@@ -37,16 +37,33 @@ class ExclusionTemplateInfo {
         inline bool warning() const { return _warning; }
         inline void setDef(bool def) { _def = def; }
         inline bool def() const { return _def; }
-        inline void setDeleted(bool deleted) { _deleted = deleted; }
-        inline bool deleted() const { return _deleted; }
-
         friend bool operator==(const ExclusionTemplateInfo &lhs, const ExclusionTemplateInfo &rhs) {
-            return (lhs.templ() == rhs.templ()) && (lhs.warning() == rhs.warning()) && (lhs.def() == rhs.def()) &&
-                   (lhs.deleted() == rhs.deleted());
+            return (lhs.templ() == rhs.templ()) && (lhs.warning() == rhs.warning()) && (lhs.def() == rhs.def());
         }
 
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
         void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
+
+        //! NFC normalizes the patterns in the list passed as a parameter and removes duplicates.
+        /*!
+          \param templateList is the pattern list the normalization of which is queried.
+        */
+        static void normalizeExclusionTemplateInfoList(std::vector<ExclusionTemplateInfo> &templateList);
+
+        //! Update the pattern list passed as a parameter with the NFC and NFD versions of the patterns.
+        /*!
+          \param templateList is the pattern list the update of which is queried.
+        */
+        static void updateExclusionTemplateInfoList(std::vector<ExclusionTemplateInfo> &templateList);
+
+        //! Computes and returns all possible NFC and NFD normalizations of `templateString` segments
+        //! interpreted as a file system path.
+        /*!
+          \param templateString is the pattern string the normalizations of which are queried.
+          \return a set of std::string containing the NFC and NFD normalizations of exclusionTemplate, if those have been
+          successful. The returned set contains additionally the string exclusionTemplate in any case.
+        */
+        static SyncNameSet computeNormalizations(const SyncName &templateString);
 
         friend QDataStream &operator>>(QDataStream &in, ExclusionTemplateInfo &exclusionTemplateInfo);
         friend QDataStream &operator<<(QDataStream &out, const ExclusionTemplateInfo &exclusionTemplateInfo);
@@ -58,7 +75,6 @@ class ExclusionTemplateInfo {
         QString _templ;
         bool _warning = false;
         bool _def = false;
-        bool _deleted = false;
 };
 
 } // namespace KDC

@@ -58,8 +58,6 @@ using DirectoryEntry = std::filesystem::directory_entry;
 using DirectoryOptions = std::filesystem::directory_options;
 using DoubleSeconds = std::chrono::duration<double>; // Use double instead of std::chrono::seconds to keep the precision
 
-using SigValueType = std::variant<bool, int, int64_t, uint64_t, double, std::string, std::wstring>;
-
 #if defined(KD_WINDOWS)
 using StringStream = std::wstringstream;
 using OStringStream = std::wostringstream;
@@ -268,17 +266,6 @@ enum class LinkType {
     EnumEnd
 };
 
-enum class LogUploadState {
-    None,
-    Archiving,
-    Uploading,
-    Success,
-    Failed,
-    CancelRequested,
-    Canceled,
-    EnumEnd
-};
-
 enum class NodeStatus {
     Unknown = 0,
     Unprocessed,
@@ -319,13 +306,6 @@ enum class Platform {
     EnumEnd
 };
 
-enum class ReplicaSide {
-    Unknown,
-    Local,
-    Remote,
-    EnumEnd
-};
-
 enum class SignalCategory {
     Kill,
     Crash,
@@ -349,21 +329,6 @@ enum class UploadSessionType {
     Unknown,
     Drive,
     Log,
-    EnumEnd
-};
-
-enum class UpdateState {
-    UpToDate,
-    Checking,
-    Available,
-    ManualUpdateAvailable,
-    Downloading,
-    Ready,
-    CheckError,
-    DownloadError,
-    UpdateError,
-    NoUpdate,
-    Unknown,
     EnumEnd
 };
 
@@ -474,6 +439,7 @@ std::string toString(AppType e);
 std::string toString(CancelType e);
 std::string toString(sentry::ConfidentialityLevel e);
 std::string toString(ConflictType e);
+std::string toString(ConflictResolutionStrategy e);
 std::string toString(ErrorLevel e);
 std::string toString(ExclusionTemplateComplexity e);
 std::string toString(ExitCode e);
@@ -504,6 +470,7 @@ std::string toString(UploadSessionType e);
 std::string toString(UpdateState e);
 std::string toString(VersionChannel e);
 std::string toString(VirtualFileMode e);
+std::string toString(SyncConfiguration e);
 
 inline ReplicaSide otherSide(const ReplicaSide side) {
     if (side == ReplicaSide::Unknown) return ReplicaSide::Unknown;
@@ -631,6 +598,13 @@ struct VersionInfo {
             downloadUrl.clear();
         }
 
+        static const std::string versionInfoChannel;
+        static const std::string versionInfoTag;
+        static const std::string versionInfoBuildVersion;
+        static const std::string versionInfoBuildMinOsVersion;
+        static const std::string versionInfoDownloadUrl;
+
+        void fromDynamicStruct(const Poco::DynamicStruct &);
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
 
 

@@ -43,13 +43,16 @@ class JobManager {
         void clear();
 
         /**
-         * @brief Queue a job to be executed as soon as a thread is available in the default thread pool.
+         * @brief Queue a job to be executed as soon as a thread is available in the thread pool.
          * @param job The job to be run asynchronously.
-         * @param priority Job's priority level.
-         * @param externalCallback Callback to be run once the job is done.
+         * @param priority Job's priority level. Bypass the internal job's priority.
          */
-        void queueAsyncJob(std::shared_ptr<AbstractJob> job,
-                           Poco::Thread::Priority priority = Poco::Thread::PRIO_NORMAL) noexcept;
+        void queueAsyncJob(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority) noexcept;
+        /**
+         * Queue a job to be executed as soon as a thread is available in the thread pool. The job's internal priority is used.
+         * @param job The job to be run asynchronously.
+         */
+        void queueAsyncJob(std::shared_ptr<AbstractJob> job) noexcept;
 
         bool isJobFinished(const UniqueId jobId) const;
         std::shared_ptr<AbstractJob> getJob(const UniqueId jobId) const;
@@ -78,7 +81,7 @@ class JobManager {
         Poco::ThreadPool _threadPool;
 
         log4cplus::Logger _logger;
-        std::unique_ptr<std::thread> _mainThread;
+        std::unique_ptr<StdLoggingThread> _mainThread{nullptr};
 
         friend class TestSyncJobManagerSingleton;
 };

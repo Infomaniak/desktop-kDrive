@@ -17,15 +17,17 @@
  */
 
 #include "localfilesystemobserverworker.h"
-#include "libcommon/utility/utility.h"
-#include "libcommon/log/sentry/ptraces.h"
-#include "libcommonserver/io/filestat.h"
-#include "libcommonserver/io/iohelper.h"
-#include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
 #include "requests/exclusiontemplatecache.h"
 #include "snapshot/snapshotitem.h"
 #include "utility/timerutility.h"
+
+#include "libcommon/utility/utility.h"
+#include "libcommon/log/sentry/ptraces.h"
+
+#include "libcommonserver/io/filestat.h"
+#include "libcommonserver/io/iohelper.h"
+#include "libcommonserver/utility/utility.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -577,7 +579,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
 
     if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
         LOGW_SYNCPAL_WARN(_logger, L"Local " << Utility::formatSyncPath(absoluteParentDirPath) << L" doesn't exist");
-        return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
+        return {ExitCode::SystemError, Utility::exitCauseFromInaccessibleSyncDirectory(absoluteParentDirPath)};
     }
 
     if (itemType.ioError == IoError::AccessDenied) {
@@ -596,19 +598,16 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             assert(ioError != IoError::Success && "Unexpected IoHelper::getDirectoryIterator return value.");
             LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getDirectoryIterator: Local "
                                                << Utility::formatIoError(absoluteParentDirPath, ioError));
-            switch (ioError) {
-                case IoError::NoSuchFileOrDirectory:
-                case IoError::AccessDenied:
-                    return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
-                default:
-                    return ExitCode::SystemError;
+            if (ioError == IoError::AccessDenied) {
+                return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
             }
+            return {ExitCode::SystemError, Utility::exitCauseFromInaccessibleSyncDirectory(absoluteParentDirPath)};
         }
 
         DirectoryEntry entry;
         bool endOfDirectory = false;
         sentry::pTraces::counterScoped::LFSOExploreItem perfMonitor(fromChangeDetected, syncDbId());
-        while (dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory && ioError == IoError::Success) {
+        while (dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
             auto entryIoError = IoError::Success;
             perfMonitor.start();
 

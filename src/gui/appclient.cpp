@@ -182,14 +182,6 @@ AppClient::AppClient(int &argc, char **argv) :
     // Cleanup at Quit
     connect(this, &QCoreApplication::aboutToQuit, this, &AppClient::onCleanup);
 
-#ifdef Q_OS_WIN
-    ExitCode exitCode =
-            GuiRequests::setShowInExplorerNavigationPane(ParametersCache::instance()->parametersInfo().showShortcuts());
-    if (exitCode != ExitCode::Ok) {
-        qCWarning(lcAppClient) << "Error in Requests::setShowInExplorerNavigationPane";
-    }
-#endif
-
     // Refresh status
     _gui->computeOverallSyncStatus();
 
@@ -291,7 +283,7 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             emit driveUpdated(driveInfo);
             break;
         }
-        case SignalNum::DRIVE_QUOTAUPDATED: {
+        case SignalNum::DRIVE_QUOTAUPDATED_LEGACY: {
             int driveDbId;
             qint64 total;
             qint64 used;
@@ -400,6 +392,15 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             uint64_t nbErrors = var.toULongLong();
 
             emit fixConflictingFilesCompleted(syncDbId, nbErrors);
+            break;
+        }
+        case SignalNum::LOGIN_SEND_AUTHORIZATION_CODE: {
+            QString code;
+            QString state;
+            paramsStream >> code;
+            paramsStream >> state;
+
+            emit authorizationCodeReceived(code, state);
             break;
         }
         case SignalNum::UTILITY_SHOW_NOTIFICATION: {
@@ -549,7 +550,7 @@ void AppClient::onWizardDone(int res) {
         shouldSetAutoStart = shouldSetAutoStart && QCoreApplication::applicationDirPath().startsWith("/Applications/");
 #endif
         if (shouldSetAutoStart) {
-            ExitCode exitCode = GuiRequests::setLaunchOnStartup(true);
+            exitCode = GuiRequests::setLaunchOnStartup(true);
             if (exitCode != ExitCode::Ok) {
                 qCWarning(lcAppClient()) << "Error in GuiRequests::setLaunchOnStartup";
             }

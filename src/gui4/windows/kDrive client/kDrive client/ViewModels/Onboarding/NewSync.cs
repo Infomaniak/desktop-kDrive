@@ -16,28 +16,62 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
+using Microsoft.Extensions.DependencyInjection;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.ViewModels
 {
-    public class NewSync : UISafeObservableObject
+    public class NewSync : UISafeObservableObject, ISync
     {
         // Sync properties
+        private string _defaultPath = "";
         private string _localPath = "";
+        private bool _isDefaultLocalPath = false;
         private string _remotePath = "";
         private NodeId _remoteNodeId = "";
         private SyncType _syncType = SyncType.Unknown;
-        private bool _supportOnlineMode = true;
         private IDrive? drive;
+        private ObservableCollection<NodeId> _excludedNodeIds = [];
 
-        private ObservableCollection<NodeId> _excludedNodeIds = new ObservableCollection<NodeId>();
+        public NewSync() { }
+        public NewSync(NewSync other)
+        {
+            DefaultPath = other.DefaultPath;
+            LocalPath = other.LocalPath;
+            RemotePath = other.RemotePath;
+            RemoteNodeId = other.RemoteNodeId;
+            SyncType = other.SyncType;
+            Drive = other.Drive;
+            ExcludedNodeIds = new ObservableCollection<NodeId>(other.ExcludedNodeIds);
+        }
+
+        public string DefaultPath
+        {
+            get => _defaultPath;
+            init => SetPropertyInUIThread(ref _defaultPath, value);
+        }
 
         public string LocalPath
         {
             get => _localPath;
-            set => SetPropertyInUIThread(ref _localPath, value);
+            set
+            {
+                SetPropertyInUIThread(ref _localPath, value);
+                IsDefaultLocalPath = _localPath == _defaultPath;
+            }
         }
+
+        public bool IsDefaultLocalPath
+        {
+            get => _isDefaultLocalPath;
+            set => SetPropertyInUIThread(ref _isDefaultLocalPath, value);
+        }
+
         public string RemotePath
         {
             get => _remotePath;
@@ -51,7 +85,7 @@ namespace Infomaniak.kDrive.ViewModels
         public IDrive? Drive
         {
             get => drive;
-            set => SetPropertyInUIThread(ref drive, value);
+            init => SetPropertyInUIThread(ref drive, value);
         }
 
         public SyncType SyncType
@@ -59,15 +93,27 @@ namespace Infomaniak.kDrive.ViewModels
             get => _syncType;
             set => SetPropertyInUIThread(ref _syncType, value);
         }
-        public bool SupportOnlineMode
-        {
-            get => _supportOnlineMode;
-            set => SetPropertyInUIThread(ref _supportOnlineMode, value);
-        }
+
         public ObservableCollection<NodeId> ExcludedNodeIds
         {
             get => _excludedNodeIds;
             set => SetPropertyInUIThread(ref _excludedNodeIds, value);
         }
+
+        public async Task SelectBestVfsMode()
+        {
+            var commServices = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            bool? CanSupportOnlineMode = await commServices.CanPathSupportLiteSync(LocalPath, CancellationToken.None);
+            if (CanSupportOnlineMode is null)
+                Logger.Log(Logger.Level.Error, $"Could not determine if the path '{LocalPath}' supports online mode. Defaulting to offline sync.");
+
+            SyncType = (CanSupportOnlineMode ?? false) ? SyncType.Online : SyncType.Offline;
+        }
+
+        public Task<List<NodeId>?> GetExcludedNodeIds()
+        {
+            return Task.FromResult(new List<NodeId>(ExcludedNodeIds));
+        }
+
     }
 }

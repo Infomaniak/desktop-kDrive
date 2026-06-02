@@ -19,7 +19,7 @@
 #pragma once
 
 #include "abstractcommchannel.h"
-#include "log/log.h"
+#include "libcommonserver/log/log.h"
 
 namespace KDC {
 
@@ -30,10 +30,7 @@ class AbstractCommServer {
             LOG_DEBUG(Log::instance()->getLogger(), _name << " created");
         }
 
-        virtual ~AbstractCommServer() {
-            LOG_DEBUG(Log::instance()->getLogger(), _name << " destroyed");
-            log4cplus::threadCleanup();
-        }
+        virtual ~AbstractCommServer() { LOG_DEBUG(Log::instance()->getLogger(), _name << " destroyed"); }
 
         std::string name() { return _name; }
 

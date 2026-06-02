@@ -12,6 +12,8 @@ set(testcommon_NAME ${APPLICATION_NAME}_test_common)
 set(testcommon_SRCS
         ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
         ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp
+        ../test_utility/timeouthelper.h ../test_utility/timeouthelper.cpp
+        ../test_utility/iohelpertestutilities.h ../test_utility/iohelpertestutilities.cpp
         ../test_utility/testbase.h
         ../test.cpp
 
@@ -21,13 +23,19 @@ set(testcommon_SRCS
         utility/testtypes.cpp utility/testtypes.h
         utility/testurlhelper.h utility/testurlhelper.cpp
         utility/testjsonparserutility.h utility/testjsonparserutility.cpp
+        # Log
         log/sentry/testsentryhandler.h log/sentry/testsentryhandler.cpp
+        log/testlog.h log/testlog.cpp
+        # io
+        io/testio.h io/testio.cpp io/testgetitemtype.cpp io/testgetfilesize.cpp io/testcheckifpathexists.cpp io/testgetnodeid.cpp io/testgetfilestat.cpp io/testgetrights.cpp io/testisfileaccessible.cpp io/testfilechanged.cpp
+        io/testcheckifisdirectory.cpp io/testcreatesymlink.cpp io/testcheckifdehydrated.cpp io/testcheckdirectoryiterator.cpp io/testrights.cpp io/testopenfile.cpp io/testgetdirectorysize.cpp
+        io/testmoveitemtotrash.cpp io/testispathonmounteddisk.cpp
 )
 
 if(APPLE)
-    list(APPEND testcommon_SRCS ../test_utility/testhelpers_mac.cpp)
+    list(APPEND testcommon_SRCS ../test_utility/testhelpers_mac.cpp io/testcreatealias.cpp io/testgetxattrvalue.cpp io/testsetxattrvalue.cpp io/testremovexattr.cpp)
 elseif (WIN32)
-    list(APPEND testcommon_SRCS ../test_utility/testhelpers_win.cpp)
+    list(APPEND testcommon_SRCS ../test_utility/testhelpers_win.cpp io/testcreatejunction.cpp io/testgetxattrvalue.cpp io/testsetxattrvalue.cpp io/testgetlongpathname.cpp)
 else ()
     list(APPEND testcommon_SRCS ../test_utility/testhelpers_linux.cpp)
 endif()

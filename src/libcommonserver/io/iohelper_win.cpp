@@ -15,11 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "libcommon/utility/utility.h"
-#include "libcommonserver/io/filestat.h"
-#include "libcommonserver/io/iohelper.h"
-#include "libcommonserver/io/iohelper_win.h"
-#include "libcommonserver/utility/utility.h"
+#include "io/filestat.h"
+#include "io/iohelper.h"
+#include "io/iohelper_win.h"
+
+#include "utility/utility.h"
 
 #include "log/log.h"
 
@@ -1180,6 +1180,28 @@ bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
     CoUninitialize();
 
     return result;
+}
+
+bool IoHelper::isPathOnMountedDisk(const SyncPath &path, bool &isMounted, IoError &ioError) noexcept {
+    isMounted = false;
+    ioError = IoError::Success;
+
+    switch (const UINT driveType = GetDriveTypeW(path.root_name().c_str()); driveType) {
+        case DRIVE_REMOVABLE:
+        case DRIVE_FIXED:
+        case DRIVE_REMOTE:
+        case DRIVE_CDROM:
+        case DRIVE_RAMDISK:
+            isMounted = true;
+            break;
+        case DRIVE_NO_ROOT_DIR:
+        case DRIVE_UNKNOWN:
+        default:
+            isMounted = false;
+            break;
+    }
+
+    return true;
 }
 
 PZW_QUERY_DIRECTORY_FILE pzwQueryDirectoryFileFct(IoError &ioError, const log4cplus::Logger &logger) {

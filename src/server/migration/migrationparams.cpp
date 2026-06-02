@@ -34,7 +34,7 @@
 #include "migrationparams.h"
 #include "config.h"
 #include "keychainmanager/keychainmanager.h"
-#include "log/log.h"
+#include "libcommonserver/log/log.h"
 #include "requests/serverrequests.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
@@ -96,22 +96,6 @@ MigrationParams::MigrationParams() :
     _logger(Log::instance()->getLogger()),
     _proxyNotSupported(false) {}
 
-Language MigrationParams::strToLanguage(QString lang) {
-    if (lang == "en") {
-        return Language::English;
-    } else if (lang == "fr") {
-        return Language::French;
-    } else if (lang == "de") {
-        return Language::German;
-    } else if (lang == "es") {
-        return Language::Spanish;
-    } else if (lang == "it") {
-        return Language::Italian;
-    } else {
-        return Language::Default;
-    }
-}
-
 LogLevel MigrationParams::intToLogLevel(int log) {
     switch (log) {
         case 0:
@@ -130,9 +114,7 @@ LogLevel MigrationParams::intToLogLevel(int log) {
 }
 
 VirtualFileMode MigrationParams::modeFromString(const QString &str) {
-    if (str == "suffix") {
-        return VirtualFileMode::Suffix;
-    } else if (str == "wincfapi") {
+    if (str == "wincfapi") {
         return VirtualFileMode::Win;
     } else if (str == "mac") {
         return VirtualFileMode::Mac;
@@ -217,7 +199,7 @@ ExitCode MigrationParams::migrateGeneralParams() {
     ParametersCache::instance()->parameters().setMonoIcons(monoIcons);
     ParametersCache::instance()->parameters().setUseLog(automaticLogDir);
     ParametersCache::instance()->parameters().setLogLevel(logLevel);
-    ParametersCache::instance()->parameters().setLanguage(strToLanguage(language));
+    ParametersCache::instance()->parameters().setLanguage(CommonUtility::strToLanguage(language));
     bool purgeOldLogs = false;
     if (deleteOldLogsAfterHours == QString() || deleteOldLogsAfterHours != "-1") {
         purgeOldLogs = true;
@@ -260,7 +242,7 @@ ExitCode MigrationParams::migrateAccountsParams() {
 }
 
 ExitCode MigrationParams::loadAccount(QSettings &settings) {
-    bool found;
+    bool found = false;
     User user;
     int userId = settings.value(QString(userIdC)).toInt();
 
@@ -289,7 +271,8 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
     }
 
     Account account;
-    int accountDbId;
+    int accountDbId = 0;
+    std::string accountName;
 
     // Drive
     Drive drive;
@@ -307,7 +290,7 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
             LOG_WARN(_logger, "Error in ParmsDb::getNewAccountDbId");
             return ExitCode::DbError;
         }
-        account = Account(accountDbId, 0, user.dbId());
+        account = Account(accountDbId, 0, user.dbId(), accountName);
         if (!ParmsDb::instance()->insertAccount(account)) {
             LOG_WARN(_logger, "Error in ParmsDb::insertAccount");
             return ExitCode::DbError;
@@ -324,7 +307,7 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
             return ExitCode::DbError;
         }
     } else {
-        // get existing accound
+        // get existing account
         if (!ParmsDb::instance()->selectAccount(drive.accountDbId(), account, found)) {
             LOG_WARN(_logger, "Error in ParmsDb::insertAccount");
             return ExitCode::DbError;

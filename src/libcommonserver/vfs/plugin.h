@@ -18,9 +18,10 @@
 
 #pragma once
 
-#include "libcommon/utility/types.h"
-#include "libcommonserver/log/log.h"
+#include "log/log.h"
 #include "vfs.h"
+
+#include "libcommon/utility/types.h"
 
 #include <QObject>
 

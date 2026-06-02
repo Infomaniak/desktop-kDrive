@@ -33,10 +33,11 @@
 #include "jobs/network/kDrive_API/getinfodrivejob.h"
 #include "jobs/network/kDrive_API/getthumbnailjob.h"
 #include "jobs/network/getavatarjob.h"
+#include "jobs/network/infomaniak_API/getaccountinfojob.h"
 #include "jobs/network/kDrive_API/getdriveslistjob.h"
 #include "jobs/network/kDrive_API/createdirjob.h"
 #include "jobs/network/kDrive_API/getsizejob.h"
-#include "utility/jsonparserutility.h"
+#include "libcommonserver/utility/jsonparserutility.h"
 #include "libparms/db/parmsdb.h"
 #include "libparms/db/user.h"
 #include "libcommon/utility/utility.h" // fileSystemName(const QString&)
@@ -108,7 +109,7 @@ ExitCode ServerRequests::getUserInfoList(std::vector<UserInfo> &list) {
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::deleteUser(int userDbId) {
+ExitInfo ServerRequests::deleteUser(int userDbId) {
     // Delete user (and linked accounts/drives/syncs by cascade)
     bool found;
     if (!ParmsDb::instance()->deleteUser(userDbId, found)) {
@@ -117,10 +118,10 @@ ExitCode ServerRequests::deleteUser(int userDbId) {
     }
     if (!found) {
         LOG_WARN(Log::instance()->getLogger(), "User with id=" << userDbId << " not found");
-        return ExitCode::DataError;
+        return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
 
-    AbstractTokenNetworkJob::clearCacheForUser(userDbId);
+    AbstractTokenNetworkJob::clearCache();
 
     return ExitCode::Ok;
 }
@@ -136,11 +137,12 @@ ExitInfo ServerRequests::deleteAccount(int accountDbId) {
         LOG_WARN(Log::instance()->getLogger(), "Account with id=" << accountDbId << " not found");
         return ExitCode::DataError;
     }
+    AbstractTokenNetworkJob::clearCache();
 
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::deleteDrive(int driveDbId) {
+ExitInfo ServerRequests::deleteDrive(int32_t driveDbId) {
     // Delete drive (and linked syncs by cascade)
     bool found;
     if (!ParmsDb::instance()->deleteDrive(driveDbId, found)) {
@@ -151,8 +153,7 @@ ExitCode ServerRequests::deleteDrive(int driveDbId) {
         LOG_WARN(Log::instance()->getLogger(), "Drive with id=" << driveDbId << " not found");
         return ExitCode::DataError;
     }
-
-    AbstractTokenNetworkJob::clearCacheForDrive(driveDbId);
+    AbstractTokenNetworkJob::clearCache();
 
     return ExitCode::Ok;
 }
@@ -311,64 +312,131 @@ ExitCode ServerRequests::updateParameters(const ParametersInfo &parametersInfo) 
     return exitCode;
 }
 
-ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, bool &valid) {
+ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, SyncConfiguration syncConfig, bool &valid) {
+    valid = false;
+
+    // Check the FS
+    if (!CommonUtility::isSyncCompatible(path)) {
+        LOGW_INFO(Log::instance()->getLogger(), L"Unsupported File System: " << Utility::formatSyncPath(path));
+        return ExitCode::Ok;
+    }
+
     // Check for nested syncs
     std::vector<Sync> syncList;
-    valid = false;
     if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs");
         return ExitCode::DbError;
     }
 
-    const QString qPath = QString::fromStdString(path.string());
+    const QString qPath = Path2QStr(path);
     QString qError;
-    ExitInfo exitInfo = checkPathValidityForNewFolder(syncList, qPath, qError);
-    bool alreadyExists = exitInfo == ExitInfo(ExitCode::SystemError, ExitCause::DirExists);
-    if (!exitInfo && !alreadyExists) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityForNewFolder: " << exitInfo << qError.toStdString());
+
+    if (ExitInfo exitInfo = checkSyncNesting(syncList, qPath, qError); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in checkSyncNesting: " << exitInfo << qError.toStdString());
+        return exitInfo.code() == ExitCode::InvalidSync ? ExitInfo(ExitCode::Ok) : exitInfo;
+    }
+
+    if (syncConfig == SyncConfiguration::Advanced) {
+        valid = true;
         return ExitCode::Ok;
+    }
+
+    // Check if the local directory already exists
+    auto ioError = IoError::Success;
+    bool alreadyExists = false;
+    if (const bool success = IoHelper::checkIfPathExists(path, alreadyExists, ioError, IoHelper::PathCheckOption::Insensitive);
+        !success) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(ioError));
+        return ExitCode::SystemError;
     }
 
     // If the directory exists, check if it is empty
-    bool isEmpty = true;
-    std::error_code ec;
-    if (alreadyExists) {
-        if (!std::filesystem::is_directory(path, ec)) {
-            LOGW_WARN(Log::instance()->getLogger(), L"The path exists but is not a directory: " << Utility::formatSyncPath(path));
-            return ExitCode::Ok;
-        }
-        if (ec) {
-            LOG_WARN(Log::instance()->getLogger(), "Error checking if path is a directory: " << ec.message());
-            return ExitCode::SystemError;
-        }
-
-        isEmpty = std::filesystem::is_empty(path, ec);
-        if (ec) {
-            LOG_WARN(Log::instance()->getLogger(), "Error checking if path is empty: " << ec.message());
-            return ExitCode::SystemError;
-        }
-    }
-
-    if (!isEmpty && CommonUtility::envVarValue("KD_ALLOW_NON_EMPTY_SYNC_FOLDER") != "1") {
-        LOGW_WARN(Log::instance()->getLogger(), L"The path exists but is not empty: " << Utility::formatSyncPath(path));
+    if (!alreadyExists) {
+        valid = true;
         return ExitCode::Ok;
     }
 
-    valid = true;
+    if (CommonUtility::envVarValue("KD_ALLOW_NON_EMPTY_SYNC_FOLDER") == "1") {
+        valid = true;
+        return ExitCode::Ok;
+    }
+
+    bool isEmpty = true;
+    std::error_code ec;
+    if (!std::filesystem::is_directory(path, ec)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"The path exists but is not a directory: " << Utility::formatSyncPath(path));
+        return ExitCode::Ok;
+    }
+    if (ec) {
+        LOG_WARN(Log::instance()->getLogger(), "Error checking if path is a directory: " << ec.message());
+        return ExitCode::SystemError;
+    }
+
+    isEmpty = std::filesystem::is_empty(path, ec);
+    if (ec) {
+        LOG_WARN(Log::instance()->getLogger(), "Error checking if path is empty: " << ec.message());
+        return ExitCode::SystemError;
+    }
+
+    if (isEmpty) {
+        valid = true;
+        return ExitCode::Ok;
+    }
+
+    bool containsNonExcludedItem = false;
+    if (ExitInfo exitInfo = folderContainsNonExcludedItem(path, containsNonExcludedItem); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in folderContainsNonExcludedItem: " << exitInfo);
+        return exitInfo;
+    }
+    if (!containsNonExcludedItem) {
+        valid = true;
+        return ExitCode::Ok;
+    }
+
+    LOGW_WARN(Log::instance()->getLogger(), L"The directory is not empty: " << Utility::formatSyncPath(path));
+    return ExitCode::Ok;
+}
+
+ExitInfo ServerRequests::folderContainsNonExcludedItem(const SyncPath &path, bool &containsNonExcludedFile) {
+    auto ioError = IoError::Unknown;
+    IoHelper::DirectoryIterator dirIt(path, false, ioError);
+    if (ioError != IoError::Success) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in IoHelper::DirectoryIterator " << Utility::formatIoError(path, ioError));
+        return ExitCode::SystemError;
+    }
+
+    containsNonExcludedFile = false;
+
+    DirectoryEntry entry;
+    bool endOfDirectory = false;
+    while (dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
+        if (!ExclusionTemplateCache::instance()->isExcluded(entry.path())) {
+            containsNonExcludedFile = true;
+            return ExitCode::Ok;
+        }
+    }
+
+    if (!endOfDirectory || ioError != IoError::Success) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error iterating directory with IoHelper::DirectoryIterator " << Utility::formatIoError(path, ioError));
+        return ExitCode::SystemError;
+    }
+
     return ExitCode::Ok;
 }
 
 ExitInfo ServerRequests::findGoodPathForNewSync(const SyncPath &basePath, SyncPath &path, std::string &error) {
-    const QString qBasePath = QString::fromStdString(basePath.string());
+    const QString qBasePath = Path2QStr(basePath);
     QString qPath;
     QString qError;
     const ExitInfo exitInfo = findGoodPathForNewSync(qBasePath, qPath, qError);
-    path = qPath.toStdString();
-    error = qError.toStdString();
+    path = QStr2Path(qPath);
+    error = QStr2Str(qError);
     return exitInfo;
 }
 
-ExitCode ServerRequests::findGoodPathForNewSync(const QString &basePath, QString &path, QString &error) {
+ExitInfo ServerRequests::findGoodPathForNewSync(const QString &basePath, QString &path, QString &error) {
     std::vector<Sync> syncList;
     if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs");
@@ -395,25 +463,40 @@ ExitCode ServerRequests::findGoodPathForNewSync(const QString &basePath, QString
 
     int attempt = 1;
     forever {
-        ExitInfo exitInfo = checkPathValidityForNewFolder(syncList, folder, error);
-        if (!exitInfo && exitInfo != ExitInfo(ExitCode::SystemError, ExitCause::DirExists)) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityForNewFolder: " << exitInfo);
+        const ExitInfo exitInfo = checkSyncNesting(syncList, folder, error);
+        if (!exitInfo && (exitInfo.code() != ExitCode::InvalidSync ||
+                          attempt >= 100)) { // If the error is a sync nesting error, we can try another
+                                             // as the folder can just be already used by another sync
+            LOG_WARN(Log::instance()->getLogger(), "Error in checkSyncNesting:" << exitInfo);
             return exitInfo;
         }
 
-        if (exitInfo.cause() != ExitCause::DirExists) {
-            break;
+        if (exitInfo) {
+            // Check if the local directory already exists
+            auto ioError = IoError::Success;
+            bool alreadyExists = false;
+            const bool success = IoHelper::checkIfPathExists(QStr2Path(folder), alreadyExists, ioError,
+                                                             IoHelper::PathCheckOption::Insensitive);
+            if (!success) {
+                LOGW_WARN(Log::instance()->getLogger(),
+                          L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(folder, ioError));
+                return ExitCode::SystemError;
+            }
+
+            if (!alreadyExists) {
+                break;
+            }
         }
 
         // Count attempts and give up eventually
-        attempt++;
-        if (attempt > 100) {
+        if (attempt >= 100) {
             LOG_WARN(Log::instance()->getLogger(), "Can't find a valid path");
             error = QObject::tr("Can't find a valid path");
             return ExitCode::SystemError;
         }
+        attempt++;
 
-        folder = basePath + QString::number(attempt);
+        folder = basePath + " " + QString::number(attempt);
     }
 
     path = folder;
@@ -519,7 +602,7 @@ ExitInfo ServerRequests::getNodeInfo(int userDbId, int driveId, const QString &n
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getUserAvailableDrives(int userDbId, QHash<int, DriveAvailableInfo> &list) {
+ExitInfo ServerRequests::getUserAvailableDrives(int userDbId, QList<DriveAvailableInfo> &list) {
     std::shared_ptr<GetDrivesListJob> job = nullptr;
     try {
         job = std::make_shared<GetDrivesListJob>(userDbId);
@@ -529,79 +612,32 @@ ExitCode ServerRequests::getUserAvailableDrives(int userDbId, QHash<int, DriveAv
         return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
-    ExitCode exitCode = job->runSynchronously();
-    if (exitCode != ExitCode::Ok) {
+    if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(),
-                 "Error in GetDrivesListJob::runSynchronously for userDbId=" << userDbId << " code=" << exitCode);
-        return exitCode;
-    }
-
-    Poco::JSON::Object::Ptr resObj = job->jsonRes();
-    if (!resObj) {
-        LOG_WARN(Log::instance()->getLogger(), "GetDrivesListJob failed for userDbId=" << userDbId);
-        return ExitCode::BackError;
-    }
-
-    Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
-    if (!dataArray) {
-        LOG_WARN(Log::instance()->getLogger(), "GetDrivesListJob failed for userDbId=" << userDbId);
-        return ExitCode::BackError;
+                 "Error in GetDrivesListJob::runSynchronously for userDbId=" << userDbId << " exitInfo=" << exitInfo);
+        return exitInfo;
     }
 
     list.clear();
-    for (size_t i = 0; i < dataArray->size(); i++) {
-        Poco::JSON::Object::Ptr obj = dataArray->getObject(static_cast<unsigned int>(i));
-        if (!obj) {
-            continue;
-        }
-
-        int driveId = -1;
-        if (!JsonParserUtility::extractValue(obj, driveIdKey, driveId)) {
-            return ExitCode::BackError;
-        }
-
-        int userId = -1;
-        if (!JsonParserUtility::extractValue(obj, idKey, userId)) {
-            return ExitCode::BackError;
-        }
-
-        int accountId = -1;
-        if (!JsonParserUtility::extractValue(obj, accountIdKey, accountId)) {
-            return ExitCode::BackError;
-        }
-
-        std::string driveName;
-        if (!JsonParserUtility::extractValue(obj, driveNameKey, driveName)) {
-            return ExitCode::BackError;
-        }
-
-        std::string colorHex;
-        if (Poco::JSON::Object::Ptr prefObj = obj->getObject(preferenceKey)) {
-            if (!JsonParserUtility::extractValue(prefObj, colorKey, colorHex, false)) {
-                return ExitCode::BackError;
-            }
-        }
-        DriveAvailableInfo driveInfo(driveId, userId, accountId, QString::fromStdString(driveName),
-                                     QString::fromStdString(colorHex));
-
+    for (auto &availableDriveInfo: job->availableDrives()) {
         // Search user in DB
         User user;
         bool found = false;
-        if (!ParmsDb::instance()->selectUserByUserId(userId, user, found)) {
+        if (!ParmsDb::instance()->selectUserByUserId(availableDriveInfo.userId(), user, found)) {
             LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectUserByUserId");
             return ExitCode::DbError;
         }
         if (found) {
-            driveInfo.setUserDbId(user.dbId());
+            availableDriveInfo.setUserDbId(user.dbId());
         }
 
-        list.insert(driveId, driveInfo);
+        (void) list.push_back(availableDriveInfo);
     }
 
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getUserAvailableDrives(int userDbId, std::vector<DriveAvailableInfo> &list) {
+ExitInfo ServerRequests::getUserAvailableDrives(int userDbId, std::vector<DriveAvailableInfo> &list) {
     std::shared_ptr<GetDrivesListJob> job = nullptr;
     try {
         job = std::make_shared<GetDrivesListJob>(userDbId);
@@ -611,121 +647,71 @@ ExitCode ServerRequests::getUserAvailableDrives(int userDbId, std::vector<DriveA
         return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
-    ExitCode exitCode = job->runSynchronously();
-    if (exitCode != ExitCode::Ok) {
+    if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(),
-                 "Error in GetDrivesListJob::runSynchronously for userDbId=" << userDbId << " code=" << exitCode);
-        return exitCode;
-    }
-
-    Poco::JSON::Object::Ptr resObj = job->jsonRes();
-    if (!resObj) {
-        LOG_WARN(Log::instance()->getLogger(), "GetDrivesListJob failed for userDbId=" << userDbId);
-        return ExitCode::BackError;
-    }
-
-    Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
-    if (!dataArray) {
-        LOG_WARN(Log::instance()->getLogger(), "GetDrivesListJob failed for userDbId=" << userDbId);
-        return ExitCode::BackError;
+                 "Error in GetDrivesListJob::runSynchronously for userDbId=" << userDbId << " exitInfo=" << exitInfo);
+        return exitInfo;
     }
 
     list.clear();
-    for (size_t i = 0; i < dataArray->size(); i++) {
-        Poco::JSON::Object::Ptr obj = dataArray->getObject(static_cast<unsigned int>(i));
-        if (!obj) {
-            continue;
-        }
-
-        int driveId = -1;
-        if (!JsonParserUtility::extractValue(obj, driveIdKey, driveId)) {
-            return ExitCode::BackError;
-        }
-
-        int userId = -1;
-        if (!JsonParserUtility::extractValue(obj, idKey, userId)) {
-            return ExitCode::BackError;
-        }
-
-        int accountId = -1;
-        if (!JsonParserUtility::extractValue(obj, accountIdKey, accountId)) {
-            return ExitCode::BackError;
-        }
-
-        std::string driveName;
-        if (!JsonParserUtility::extractValue(obj, driveNameKey, driveName)) {
-            return ExitCode::BackError;
-        }
-
-        std::string colorHex;
-        if (Poco::JSON::Object::Ptr prefObj = obj->getObject(preferenceKey)) {
-            if (!JsonParserUtility::extractValue(prefObj, colorKey, colorHex, false)) {
-                return ExitCode::BackError;
-            }
-        }
-        DriveAvailableInfo driveInfo(driveId, userId, accountId, QString::fromStdString(driveName),
-                                     QString::fromStdString(colorHex));
-
+    for (auto &availableDriveInfo: job->availableDrives()) {
         // Search user in DB
         User user;
         bool found = false;
-        if (!ParmsDb::instance()->selectUserByUserId(userId, user, found)) {
+        if (!ParmsDb::instance()->selectUserByUserId(availableDriveInfo.userId(), user, found)) {
             LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectUserByUserId");
             return ExitCode::DbError;
         }
         if (found) {
-            driveInfo.setUserDbId(user.dbId());
+            availableDriveInfo.setUserDbId(user.dbId());
         }
 
-        list.push_back(driveInfo);
+        list.push_back(availableDriveInfo);
     }
 
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::addSync(int userDbId, int accountId, int driveId, const SyncPath &localFolderPath,
+ExitInfo ServerRequests::addSync(int userDbId, int accountId, int driveId, const SyncPath &localFolderPath,
                                  const SyncPath &serverFolderPath, const NodeId &serverFolderNodeId, bool liteSync,
-                                 bool showInNavigationPane, AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo) {
+                                 AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo) {
     LOGW_INFO(Log::instance()->getLogger(), L"Adding new sync - userDbId="
                                                     << userDbId << L" accountId=" << accountId << L" driveId=" << driveId
                                                     << L" localFolderPath=" << Path2WStr(localFolderPath).c_str()
                                                     << L" serverFolderPath=" << Path2WStr(serverFolderPath).c_str()
                                                     << L" liteSync=" << liteSync);
 
-#ifndef Q_OS_WIN
-    Q_UNUSED(showInNavigationPane)
-#endif
-
     // Create Account in DB if needed
-    int accountDbId;
-    if (!ParmsDb::instance()->accountDbId(userDbId, accountId, accountDbId)) {
+    Account account;
+    bool found = false;
+    if (!ParmsDb::instance()->accountFromUserDbIdAndAccountId(userDbId, accountId, account, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::accountDbId");
         return ExitCode::DbError;
     }
 
-    if (!accountDbId) {
+    if (!found) {
+        int accountDbId = 0;
         if (!ParmsDb::instance()->getNewAccountDbId(accountDbId)) {
             LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::getNewAccountDbId");
             return ExitCode::DbError;
         }
 
-        Account account;
         account.setDbId(accountDbId);
         account.setAccountId(accountId);
         account.setUserDbId(userDbId);
-        if (ExitCode exitCode = createAccount(account, accountInfo); exitCode != ExitCode::Ok) {
+        if (const auto exitCode = createAccount(account, accountInfo); exitCode != ExitCode::Ok) {
             LOG_WARN(Log::instance()->getLogger(), "Error in createAccount");
             return exitCode;
         }
 
-        LOG_INFO(Log::instance()->getLogger(), "New account created in DB - accountDbId=" << accountDbId
-                                                                                          << " accountId= " << accountId
-                                                                                          << " userDbId= " << userDbId);
+        LOG_INFO(Log::instance()->getLogger(),
+                 "New account created in DB - accountDbId=" << accountDbId << " accountId= " << accountId
+                                                            << " accountName= " << account.name() << " userDbId= " << userDbId);
     }
 
     // Create Drive in DB if needed
-    int driveDbId;
-    if (!ParmsDb::instance()->driveDbId(accountDbId, driveId, driveDbId)) {
+    int driveDbId = 0;
+    if (!ParmsDb::instance()->driveDbId(account.dbId(), driveId, driveDbId)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::driveDbId");
         return ExitCode::DbError;
     }
@@ -739,28 +725,28 @@ ExitCode ServerRequests::addSync(int userDbId, int accountId, int driveId, const
         Drive drive;
         drive.setDbId(driveDbId);
         drive.setDriveId(driveId);
-        drive.setAccountDbId(accountDbId);
-        if (ExitCode exitCode = createDrive(drive, driveInfo); exitCode != ExitCode::Ok) {
+        drive.setAccountDbId(account.dbId());
+        if (const auto exitCode = createDrive(drive, driveInfo); exitCode != ExitCode::Ok) {
             LOG_WARN(Log::instance()->getLogger(), "Error in createDrive");
             return exitCode;
         }
 
         LOGW_INFO(Log::instance()->getLogger(), L"New drive created in DB - driveDbId=" << driveDbId << L" driveId=" << driveId
-                                                                                        << L" accountDbId=" << accountDbId);
+                                                                                        << L" accountDbId=" << account.dbId());
     }
 
-    return addSync(driveDbId, localFolderPath, serverFolderPath, serverFolderNodeId, liteSync, showInNavigationPane, syncInfo);
+    return addSync(driveDbId, localFolderPath, serverFolderPath, serverFolderNodeId, liteSync, syncInfo);
 }
 
-ExitCode ServerRequests::addSync(int userDbId, int accountId, int driveId, const QString &localFolderPath,
+ExitInfo ServerRequests::addSync(int userDbId, int accountId, int driveId, const QString &localFolderPath,
                                  const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync,
-                                 bool showInNavigationPane, AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo) {
+                                 AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo) {
     return addSync(userDbId, accountId, driveId, QStr2Path(localFolderPath), QStr2Path(serverFolderPath),
-                   serverFolderNodeId.toStdString(), liteSync, showInNavigationPane, accountInfo, driveInfo, syncInfo);
+                   serverFolderNodeId.toStdString(), liteSync, accountInfo, driveInfo, syncInfo);
 }
 
-ExitCode ServerRequests::addSync(int driveDbId, const SyncPath &localFolderPath, const SyncPath &serverFolderPath,
-                                 const NodeId &serverFolderNodeId, bool liteSync, bool showInNavigationPane, SyncInfo &syncInfo) {
+ExitInfo ServerRequests::addSync(int driveDbId, const SyncPath &localFolderPath, const SyncPath &serverFolderPath,
+                                 const NodeId &serverFolderNodeId, bool liteSync, SyncInfo &syncInfo) {
     LOGW_INFO(Log::instance()->getLogger(), L"Adding new sync - driveDbId=" << driveDbId << L" localFolderPath="
                                                                             << Path2WStr(localFolderPath) << L" serverFolderPath="
                                                                             << Path2WStr(serverFolderPath) << L" liteSync="
@@ -773,10 +759,6 @@ ExitCode ServerRequests::addSync(int driveDbId, const SyncPath &localFolderPath,
                   L"Error creating local sync folder - path=" << Path2WStr(localFolderPath) << L" ioError=" << ioError);
         return ExitCode::SystemError;
     }
-
-#ifndef Q_OS_WIN
-    Q_UNUSED(showInNavigationPane)
-#endif
 
 #if !defined(Q_OS_MAC) && !defined(Q_OS_WIN)
     Q_UNUSED(liteSync)
@@ -839,11 +821,10 @@ ExitCode ServerRequests::addSync(int driveDbId, const SyncPath &localFolderPath,
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::addSync(int driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
-                                 const QString &serverFolderNodeId, bool liteSync, bool showInNavigationPane,
-                                 SyncInfo &syncInfo) {
+ExitInfo ServerRequests::addSync(int driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
+                                 const QString &serverFolderNodeId, bool liteSync, SyncInfo &syncInfo) {
     return addSync(driveDbId, QStr2Path(localFolderPath), QStr2Path(serverFolderPath), serverFolderNodeId.toStdString(), liteSync,
-                   showInNavigationPane, syncInfo);
+                   syncInfo);
 }
 
 ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, const QString &nodeId, QList<NodeInfo> &list,
@@ -1135,12 +1116,21 @@ ExitCode ServerRequests::updateUser(const User &user, UserInfo &userInfo) {
 }
 
 ExitCode ServerRequests::createAccount(const Account &account, AccountInfo &accountInfo) {
-    if (!ParmsDb::instance()->insertAccount(account)) {
+    // Load account info
+    bool updated = false;
+    Account updatedAccount(account);
+    ExitCode exitCode = loadAccountInfo(updatedAccount, updated);
+    if (exitCode != ExitCode::Ok) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ServerRequests::loadAccountInfo");
+        return exitCode;
+    }
+
+    if (!ParmsDb::instance()->insertAccount(updatedAccount)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::insertAccount");
         return ExitCode::DbError;
     }
 
-    accountToAccountInfo(account, accountInfo);
+    accountToAccountInfo(updatedAccount, accountInfo);
 
     return ExitCode::Ok;
 }
@@ -1154,17 +1144,18 @@ ExitCode ServerRequests::createDrive(const Drive &drive, DriveInfo &driveInfo) {
     // Load Drive info
     Drive driveUpdated(drive);
     Account account;
-    bool updated;
-    bool accountUpdated;
-    bool quotaUpdated;
-    ExitCode exitCode = loadDriveInfo(driveUpdated, account, updated, quotaUpdated, accountUpdated);
-    if (exitCode != ExitCode::Ok) {
+    bool updated = false;
+    bool quotaUpdated = false;
+    uint64_t newAccountId = 0;
+    if (const auto exitInfo =
+                loadDriveInfo(driveUpdated, static_cast<uint64_t>(account.accountId()), newAccountId, updated, quotaUpdated);
+        !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in User::loadDriveInfo");
-        return exitCode;
+        return exitInfo;
     }
 
     if (updated) {
-        bool found;
+        bool found = false;
         if (!ParmsDb::instance()->updateDrive(driveUpdated, found)) {
             LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateDrive");
             return ExitCode::DbError;
@@ -1220,7 +1211,6 @@ bool ServerRequests::isDisplayableError(const Error &error) {
             switch (error.exitCause()) {
                 case ExitCause::MigrationError:
                 case ExitCause::MigrationProxyNotImplemented:
-                case ExitCause::FileExists:
                 case ExitCause::SyncDirChanged:
                     return true;
                 default:
@@ -1237,7 +1227,6 @@ bool ServerRequests::isDisplayableError(const Error &error) {
                 case ExitCause::HttpErrForbidden:
                 case ExitCause::ApiErr:
                 case ExitCause::FileTooBig:
-                case ExitCause::NotFound:
                 case ExitCause::QuotaExceeded:
                 case ExitCause::FileLocked:
                 case ExitCause::Http5xx:
@@ -1246,17 +1235,8 @@ bool ServerRequests::isDisplayableError(const Error &error) {
                     return false;
             }
         }
-        case ExitCode::SystemError: {
-            switch (error.exitCause()) {
-                case ExitCause::SyncDirAccessError:
-                    return false;
-                default:
-                    return true;
-            }
-        }
         case ExitCode::Unknown: {
-            return error.inconsistencyType() != InconsistencyType::PathLength &&
-                   error.cancelType() != CancelType::AlreadyExistRemote;
+            return error.inconsistencyType() != InconsistencyType::PathLength;
         }
         default:
             return true;
@@ -1343,6 +1323,37 @@ ExitCode ServerRequests::createDir(const int driveDbId, const NodeId &parentNode
 
     if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in CreateDirJob::runSynchronously for driveDbId=" << driveDbId);
+        return exitInfo.code();
+    }
+
+    // Extract file ID
+    if (job->jsonRes()) {
+        if (Poco::JSON::Object::Ptr dataObj = job->jsonRes()->getObject(dataKey); dataObj) {
+            NodeId tmp;
+            if (!JsonParserUtility::extractValue(dataObj, idKey, tmp)) return ExitCode::BackError;
+            newNodeId = tmp;
+        }
+    }
+
+    if (newNodeId.empty()) return ExitCode::BackError;
+
+    return ExitCode::Ok;
+}
+
+ExitCode ServerRequests::createDir(int32_t userDbId, int32_t driveId, const NodeId &parentNodeId, const SyncName &dirName,
+                                   NodeId &newNodeId) {
+    // Get drive data
+    std::shared_ptr<CreateDirJob> job = nullptr;
+    try {
+        job = std::make_shared<CreateDirJob>(nullptr, userDbId, driveId, parentNodeId, dirName);
+    } catch (const std::exception &e) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in CreateDirJob::CreateDirJob for driveId=" << driveId << " error=" << e.what());
+        return AbstractTokenNetworkJob::exception2ExitCode(e);
+    }
+
+    if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in CreateDirJob::runSynchronously for driveId=" << driveId);
         return exitInfo.code();
     }
 
@@ -1540,7 +1551,7 @@ ExitCode ServerRequests::getExclusionTemplateList(const bool def, QList<Exclusio
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::setExclusionTemplateList(const bool def, const std::vector<ExclusionTemplateInfo> &list) {
+ExitCode ServerRequests::setUserExclusionTemplateList(const std::vector<ExclusionTemplateInfo> &list) {
     std::vector<ExclusionTemplate> exclusionList;
     for (const ExclusionTemplateInfo &exclusionTemplateInfo: list) {
         ExclusionTemplate exclusionTemplate;
@@ -1548,7 +1559,7 @@ ExitCode ServerRequests::setExclusionTemplateList(const bool def, const std::vec
         exclusionList.push_back(std::move(exclusionTemplate));
     }
 
-    if (const auto exitCode = ExclusionTemplateCache::instance()->update(def, exclusionList); exitCode != ExitCode::Ok) {
+    if (const auto exitCode = ExclusionTemplateCache::instance()->update(false, exclusionList); exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ExclusionTemplateCache::save");
         return exitCode;
     }
@@ -1556,11 +1567,11 @@ ExitCode ServerRequests::setExclusionTemplateList(const bool def, const std::vec
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::setExclusionTemplateList(bool def, const QList<ExclusionTemplateInfo> &list) {
+ExitCode ServerRequests::setUserExclusionTemplateList(const QList<ExclusionTemplateInfo> &list) {
     std::vector<ExclusionTemplateInfo> exclusionStdVector;
     for (const auto &exclusionTemplateInfo: list) exclusionStdVector.push_back(exclusionTemplateInfo);
 
-    return setExclusionTemplateList(def, exclusionStdVector);
+    return setUserExclusionTemplateList(exclusionStdVector);
 }
 
 #if defined(KD_MACOS)
@@ -1699,7 +1710,9 @@ ExitCode ServerRequests::deleteErrorsServer() {
     }
 
     for (const Error &error: errorList) {
-        AppServer::commManager()->sendGuiSignal(std::make_shared<SignalErrorRemovedJob>(error.dbId()));
+        if (AppServer::useCommManager()) {
+            AppServer::commManager()->sendGuiSignal(std::make_shared<SignalErrorRemovedJob>(error.dbId()));
+        }
     }
 
     if (!ParmsDb::instance()->deleteErrors(ErrorLevel::Server)) {
@@ -1773,7 +1786,9 @@ ExitCode ServerRequests::deleteErrorsForSync(const int syncDbId, const bool auto
                 LOG_WARN(Log::instance()->getLogger(), "Error not found for dbId=" << error.dbId());
                 return ExitCode::DataError;
             }
-            AppServer::commManager()->sendGuiSignal(std::make_shared<SignalErrorRemovedJob>(error.dbId()));
+            if (AppServer::useCommManager()) {
+                AppServer::commManager()->sendGuiSignal(std::make_shared<SignalErrorRemovedJob>(error.dbId()));
+            }
         }
     }
 
@@ -1804,11 +1819,33 @@ ExitCode ServerRequests::deleteLiteSyncErrors() {
 }
 #endif
 
-ExitInfo ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &updated, bool &quotaUpdated, bool &accountUpdated) {
+ExitInfo ServerRequests::loadAccountInfo(Account &account, bool &updated) {
     updated = false;
-    accountUpdated = false;
-    quotaUpdated = false;
 
+    // Get drive data
+    std::shared_ptr<GetAccountInfoJob> job = nullptr;
+    try {
+        job = std::make_shared<GetAccountInfoJob>(account.userDbId(), account.accountId());
+    } catch (const std::exception &e) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in GetAccountInfoJob::GetAccountInfoJob for account DB ID=" << account.dbId() << " error=" << e.what());
+        return AbstractTokenNetworkJob::exception2ExitCode(e);
+    }
+
+    if (const auto exitInfo = job->runSynchronously(); !exitInfo) return exitInfo;
+
+    if (account.name() != job->name()) {
+        account.setName(job->name());
+        updated = true;
+    }
+    return ExitCode::Ok;
+}
+
+ExitInfo ServerRequests::loadDriveInfo(Drive &drive, const uint64_t previousAccountId, uint64_t &newAccountId, bool &updated,
+                                       bool &quotaUpdated) {
+    newAccountId = 0;
+    updated = false;
+    quotaUpdated = false; // TODO: variable to be removed once migrated to the new UI
     // Get drive data
     std::shared_ptr<GetInfoDriveJob> job = nullptr;
     try {
@@ -1839,93 +1876,51 @@ ExitInfo ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &upd
         return exitInfo;
     }
 
-    Poco::JSON::Object::Ptr dataObj = job->jsonRes()->getObject(dataKey);
-    if (!dataObj || dataObj->size() == 0) {
-        LOG_WARN(Log::instance()->getLogger(), "Unable to read drive info for driveDbId=" << drive.dbId());
-        return ExitCode::DataError;
-    }
-
-    std::string name;
-    if (!JsonParserUtility::extractValue(dataObj, nameKey, name)) {
-        return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
-    if (drive.name() != name) {
-        drive.setName(name);
+    if (drive.name() != job->name()) {
+        drive.setName(job->name());
         updated = true;
     }
 
-    int64_t size = 0;
-    if (!JsonParserUtility::extractValue(dataObj, sizeKey, size)) {
-        return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
-    if (drive.size() != size) {
-        drive.setSize(size);
+    if (drive.size() != job->size()) {
+        drive.setSize(job->size());
         updated = true;
         quotaUpdated = true;
     }
 
-    bool admin = false;
-    if (!JsonParserUtility::extractValue(dataObj, accountAdminKey, admin)) {
-        return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
-    if (drive.admin() != admin) {
-        drive.setAdmin(admin);
+    if (drive.admin() != job->isAdmin()) {
+        drive.setAdmin(job->isAdmin());
         updated = true;
     }
 
-    int accountId = 0;
-    if (!JsonParserUtility::extractValue(dataObj, accountIdKey, accountId)) {
-        return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
-    if (account.accountId() != accountId) {
-        account.setAccountId(accountId);
-        accountUpdated = true;
+    if (previousAccountId != job->accountId()) {
+        newAccountId = job->accountId();
     }
 
-    std::string colorHex;
-    if (Poco::JSON::Object::Ptr prefObj = dataObj->getObject(preferencesKey)) {
-        if (!JsonParserUtility::extractValue(prefObj, colorKey, colorHex, false)) {
-            return {ExitCode::BackError, ExitCause::MissingReplyData};
-        }
-        if (drive.color() != colorHex) {
-            drive.setColor(colorHex);
+    if (!job->colorHex().empty()) {
+        if (drive.color() != job->colorHex()) {
+            drive.setColor(job->colorHex());
             updated = true;
         }
     }
 
     // Non DB attributes
-    bool inMaintenance = false;
-    if (!JsonParserUtility::extractValue(dataObj, inMaintenanceKey, inMaintenance)) {
-        return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
-
-    int64_t maintenanceFrom = 0;
-    if (drive.maintenanceInfo()._maintenance) {
-        if (!JsonParserUtility::extractValue(dataObj, maintenanceAtKey, maintenanceFrom, false)) {
-            return {ExitCode::BackError, ExitCause::MissingReplyData};
-        }
-    }
-
-    bool isLocked = false;
-    if (!JsonParserUtility::extractValue(dataObj, isLockedKey, isLocked)) {
-        return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
-    drive.setLocked(isLocked);
+    drive.setLocked(job->isLocked());
     drive.setAccessDenied(false);
-    drive.setMaintenanceInfo({._maintenance = inMaintenance,
+    drive.setMaintenanceInfo({._maintenance = job->isInMaintenance(),
                               ._notRenew = job->exitInfo().cause() == ExitCause::DriveNotRenew,
                               ._asleep = job->exitInfo().cause() == ExitCause::DriveAsleep,
                               ._wakingUp = job->exitInfo().cause() == ExitCause::DriveWakingUp,
-                              ._maintenanceFrom = maintenanceFrom});
+                              ._maintenanceFrom = job->maintenanceFrom()});
 
-    int64_t usedSize = 0;
-    if (!JsonParserUtility::extractValue(dataObj, usedSizeKey, usedSize)) {
-        return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
-    if (drive.usedSize() != usedSize) {
-        drive.setUsedSize(usedSize);
+    if (drive.usedSize() != job->usedSize()) {
+        drive.setUsedSize(job->usedSize());
         quotaUpdated = true;
     }
+
+    drive.setPackInfo({.id = job->packInfo().id,
+                       .name = job->packInfo().name,
+                       .displayName = job->packInfo().displayName,
+                       .isFree = job->packInfo().isFree});
 
     return ExitCode::Ok;
 }
@@ -2128,7 +2123,8 @@ ExitCode ServerRequests::checkPathValidityRecursive(const QString &path, QString
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::checkPathValidityForNewFolder(const std::vector<Sync> &syncList, const QString &path, QString &error) {
+ExitInfo ServerRequests::checkSyncNesting(const std::vector<Sync> &syncList, const QString &path, QString &error) {
+    error.clear();
     ExitCode exitCode = checkPathValidityRecursive(path, error);
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityRecursive: code=" << exitCode);
@@ -2138,21 +2134,6 @@ ExitInfo ServerRequests::checkPathValidityForNewFolder(const std::vector<Sync> &
     auto cs = Qt::CaseSensitive;
 
     const QString userDir = QDir::cleanPath(canonicalPath(path)) + '/';
-
-    // Check if the local directory already exists
-    IoError ioError = IoError::Success;
-    bool found = false;
-    const bool success = IoHelper::checkIfPathExists(QStr2Path(userDir), found, ioError, IoHelper::PathCheckOption::Insensitive);
-    if (!success) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(ioError));
-        error = QObject::tr("An error occurred while checking the local folder. Please try again.");
-        return ExitCode::SystemError;
-    }
-
-    if (found) {
-        error = QObject::tr("The local folder %1 already exists. Please pick another one!").arg(QDir::toNativeSeparators(path));
-        return {ExitCode::SystemError, ExitCause::DirExists};
-    }
 
     // check if the local directory isn't used yet in another sync
     QList<std::filesystem::path> existingSyncFolderList;
@@ -2169,7 +2150,7 @@ ExitInfo ServerRequests::checkPathValidityForNewFolder(const std::vector<Sync> &
                             "The local folder %1 contains a folder already synced. "
                             "Please pick another one!")
                             .arg(QDir::toNativeSeparators(path));
-            return ExitCode::SystemError;
+            return {ExitCode::InvalidSync, ExitCause::SyncDirNestingError};
         }
 
         if (differentPaths && userDir.startsWith(existingSyncFolderDir, cs)) {
@@ -2177,13 +2158,13 @@ ExitInfo ServerRequests::checkPathValidityForNewFolder(const std::vector<Sync> &
                             "The local folder %1 is contained in a folder already synced. "
                             "Please pick another one!")
                             .arg(QDir::toNativeSeparators(path));
-            return ExitCode::SystemError;
+            return {ExitCode::InvalidSync, ExitCause::SyncDirNestingError};
         }
 
         if (!differentPaths) {
             error = QObject::tr("The local folder %1 is already synced. Please pick another one!")
                             .arg(QDir::toNativeSeparators(path));
-            return {ExitCode::SystemError, ExitCause::DirExists};
+            return {ExitCode::InvalidSync, ExitCause::SyncDirNestingError};
         }
     }
 
@@ -2226,7 +2207,8 @@ void ServerRequests::userToUserInfo(const User &user, UserInfo &userInfo) {
 void ServerRequests::accountToAccountInfo(const Account &account, AccountInfo &accountInfo) {
     accountInfo.setDbId(account.dbId());
     accountInfo.setUserDbId(account.userDbId());
-    accountInfo.setAccountId(account.accountId());
+    accountInfo.setId(account.accountId());
+    accountInfo.setName(account.name());
 }
 
 void ServerRequests::driveToDriveInfo(const Drive &drive, DriveInfo &driveInfo) {
@@ -2234,11 +2216,13 @@ void ServerRequests::driveToDriveInfo(const Drive &drive, DriveInfo &driveInfo) 
     driveInfo.setId(drive.driveId());
     driveInfo.setAccountDbId(drive.accountDbId());
     driveInfo.setName(QString::fromStdString(drive.name()));
+    driveInfo.setSize(drive.size());
     driveInfo.setColor(QColor(QString::fromStdString(drive.color())));
     driveInfo.setNotifications(drive.notifications());
     driveInfo.setAdmin(drive.admin());
     driveInfo.setMaintenance(drive.maintenanceInfo()._maintenance);
     driveInfo.setLocked(drive.locked());
+    driveInfo.setUsedSize(drive.usedSize());
     driveInfo.setAccessDenied(drive.accessDenied());
 }
 
@@ -2297,6 +2281,9 @@ void ServerRequests::syncFileItemToSyncFileItemInfo(const SyncFileItem &item, Sy
     itemInfo.setInconsistency(item.inconsistency());
     itemInfo.setCancelType(item.cancelType());
     itemInfo.setError(QString::fromStdString(item.error()));
+    itemInfo.setSize(item.size());
+    itemInfo.setProgress(item.progress());
+    itemInfo.setOperationId(item.operationId());
 }
 
 void ServerRequests::parametersToParametersInfo(const Parameters &parameters, ParametersInfo &parametersInfo) {
@@ -2313,9 +2300,7 @@ void ServerRequests::parametersToParametersInfo(const Parameters &parameters, Pa
     ProxyConfigInfo proxyConfigInfo;
     proxyConfigToProxyConfigInfo(parameters.proxyConfig(), proxyConfigInfo);
     parametersInfo.setProxyConfigInfo(proxyConfigInfo);
-
     parametersInfo.setDarkTheme(parameters.darkTheme());
-    parametersInfo.setShowShortcuts(parameters.showShortcuts());
 
     if (parameters.dialogGeometry()) {
         QByteArray dialogGeometryArr;
@@ -2331,6 +2316,8 @@ void ServerRequests::parametersToParametersInfo(const Parameters &parameters, Pa
     }
     parametersInfo.setMaxAllowedCpu(parameters.maxAllowedCpu());
     parametersInfo.setDistributionChannel(parameters.distributionChannel());
+    parametersInfo.setSentryEnabled(parameters.sentryEnabled());
+    parametersInfo.setMatomoEnabled(parameters.matomoEnabled());
 }
 
 void ServerRequests::parametersInfoToParameters(const ParametersInfo &parametersInfo, Parameters &parameters) {
@@ -2348,7 +2335,6 @@ void ServerRequests::parametersInfoToParameters(const ParametersInfo &parameters
     parameters.setProxyConfig(proxyConfig);
 
     parameters.setDarkTheme(parametersInfo.darkTheme());
-    parameters.setShowShortcuts(parametersInfo.showShortcuts());
     parameters.setMoveToTrash(parametersInfo.moveToTrash());
 
     if (parametersInfo.dialogGeometry().size()) {
@@ -2364,6 +2350,8 @@ void ServerRequests::parametersInfoToParameters(const ParametersInfo &parameters
     }
     parameters.setMaxAllowedCpu(parametersInfo.maxAllowedCpu());
     parameters.setDistributionChannel(parametersInfo.distributionChannel());
+    parameters.setSentryEnabled(parametersInfo.sentryEnabled());
+    parameters.setMatomoEnabled(parametersInfo.matomoEnabled());
 }
 
 void ServerRequests::proxyConfigToProxyConfigInfo(const ProxyConfig &proxyConfig, ProxyConfigInfo &proxyConfigInfo) {
@@ -2419,7 +2407,6 @@ void ServerRequests::exclusionTemplateToExclusionTemplateInfo(const ExclusionTem
     exclusionTemplateInfo.setTempl(QString::fromStdString(exclusionTemplate.templ()));
     exclusionTemplateInfo.setWarning(exclusionTemplate.warning());
     exclusionTemplateInfo.setDef(exclusionTemplate.def());
-    exclusionTemplateInfo.setDeleted(exclusionTemplate.deleted());
 }
 
 void ServerRequests::exclusionTemplateInfoToExclusionTemplate(const ExclusionTemplateInfo &exclusionTemplateInfo,
@@ -2427,7 +2414,6 @@ void ServerRequests::exclusionTemplateInfoToExclusionTemplate(const ExclusionTem
     exclusionTemplate.setTempl(exclusionTemplateInfo.templ().toStdString());
     exclusionTemplate.setWarning(exclusionTemplateInfo.warning());
     exclusionTemplate.setDef(exclusionTemplateInfo.def());
-    exclusionTemplate.setDeleted(exclusionTemplateInfo.deleted());
 }
 
 void ServerRequests::exclusionAppToExclusionAppInfo(const ExclusionApp &exclusionApp, ExclusionAppInfo &exclusionAppInfo) {

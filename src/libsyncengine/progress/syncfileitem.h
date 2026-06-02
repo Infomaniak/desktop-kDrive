@@ -61,6 +61,10 @@ class SyncFileItem {
         inline void setError(const std::string &error) { _error = error; }
         inline int64_t size() const { return _size; }
         inline void setSize(int64_t newSize) { _size = newSize; }
+        inline int progress() const { return _progress; }
+        inline void setProgress(const int newProgress) { _progress = newProgress; }
+        inline UniqueId operationId() const { return _operationId; }
+        inline void setOperationId(const UniqueId newOperationId) { _operationId = newOperationId; }
         inline SyncTime modTime() const { return _modTime; }
         inline void setModTime(SyncTime newModTime) { _modTime = newModTime; }
         inline SyncTime creationTime() const { return _creationTime; }
@@ -81,8 +85,9 @@ class SyncFileItem {
                    _localNodeId == other._localNodeId && _remoteNodeId == other._remoteNodeId && _direction == other._direction &&
                    _instruction == other._instruction && _status == other._status && _conflict == other._conflict &&
                    _inconsistency == other._inconsistency && _cancelType == other._cancelType && _error == other._error &&
-                   _size == other._size && _modTime == other._modTime && _creationTime == other._creationTime &&
-                   _dehydrated == other._dehydrated && _confirmed == other._confirmed && _timestamp == other._timestamp;
+                   _size == other._size && _progress == other._progress && _modTime == other._modTime &&
+                   _creationTime == other._creationTime && _dehydrated == other._dehydrated && _confirmed == other._confirmed &&
+                   _timestamp == other._timestamp;
         }
 
     private:
@@ -99,6 +104,8 @@ class SyncFileItem {
         CancelType _cancelType{CancelType::None};
         std::string _error;
         int64_t _size{0};
+        int _progress{0}; // %
+        UniqueId _operationId{0};
         SyncTime _modTime{0};
         SyncTime _creationTime{0};
         bool _dehydrated{false};

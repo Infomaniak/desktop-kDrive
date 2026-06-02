@@ -40,7 +40,7 @@
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
 #include "requests/syncnodecache.h"
-#include "utility/jsonparserutility.h"
+#include "libcommonserver/utility/jsonparserutility.h"
 
 #include <iostream>
 #include <log4cplus/loggingmacros.h>
@@ -78,8 +78,6 @@ void ExecutorWorker::execute() {
             cancelAllOngoingJobs();
             break;
         }
-
-        sendProgress();
 
         if (stopAsked()) {
             cancelAllOngoingJobs();
@@ -221,6 +219,7 @@ void ExecutorWorker::initSyncFileItem(SyncOpPtr syncOp, SyncFileItem &syncItem) 
     syncItem.setConflict(syncOp->conflict().type());
     syncItem.setInconsistency(syncOp->affectedNode()->inconsistencyType());
     syncItem.setSize(syncOp->affectedNode()->size());
+    syncItem.setOperationId(syncOp->id());
     syncItem.setModTime(syncOp->affectedNode()->modificationTime().value_or(0));
     syncItem.setCreationTime(syncOp->affectedNode()->createdAt().value_or(0));
 
@@ -263,6 +262,11 @@ void ExecutorWorker::setProgressComplete(const SyncOpPtr syncOp, SyncFileStatus 
         relativeLocalFilePath = syncOp->affectedNode()->getPath();
     }
 
+    if (syncOp->hasConflict() && status == SyncFileStatus::Success &&
+        (syncOp->conflict().type() == ConflictType::CreateCreate || syncOp->conflict().type() == ConflictType::EditEdit)) {
+        status = SyncFileStatus::Conflict;
+    }
+
     if (!_syncPal->setProgressComplete(relativeLocalFilePath, status, newRemoteNodeId)) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::setProgressComplete: " << Utility::formatSyncPath(relativeLocalFilePath));
     }
@@ -282,23 +286,15 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<SyncJo
     SyncPath absoluteLocalFilePath = _syncPal->localPath() / relativeLocalFilePath;
     if (isLiteSyncActivated() && !syncOp->omit()) {
         bool isDehydratedPlaceholder = false;
-        if (ExitInfo exitInfo = checkLiteSyncInfoForCreate(syncOp, absoluteLocalFilePath, isDehydratedPlaceholder); !exitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error in checkLiteSyncInfoForCreate" << " " << exitInfo);
+        if (const auto exitInfo = checkLiteSyncInfoForCreate(syncOp, absoluteLocalFilePath, isDehydratedPlaceholder); !exitInfo) {
+            LOG_SYNCPAL_WARN(_logger, "Error in checkLiteSyncInfoForCreate " << exitInfo);
             return exitInfo;
         }
 
         if (isDehydratedPlaceholder) {
-            // Blacklist dehydrated placeholder
-            PlatformInconsistencyCheckerUtility::renameLocalFile(absoluteLocalFilePath,
-                                                                 PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted);
-
-            // Clear update tree
-            if (!deleteOpNodes(syncOp)) {
-                LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::deleteOpNodes");
-                return ExitCode::DataError;
-            }
-
-            return ExitCode::Ok;
+            LOGW_SYNCPAL_WARN(_logger,
+                              L"Do not upload dehydrated placeholder " << Utility::formatSyncPath(absoluteLocalFilePath));
+            return excludeFileFromSync(syncOp, absoluteLocalFilePath);
         }
     }
 
@@ -353,8 +349,8 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<SyncJo
         }
 
         if (ExitInfo exitInfo = generateCreateJob(syncOp, job, hydrating); !exitInfo) {
-            LOGW_SYNCPAL_WARN(_logger, L"Failed to generate create job for: " << SyncName2WStr(syncOp->affectedNode()->name())
-                                                                              << L" " << exitInfo);
+            LOGW_SYNCPAL_WARN(_logger, L"Failed to generate create job for: "
+                                               << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
             return exitInfo;
         }
 
@@ -578,7 +574,7 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
                 _syncPal->setRestart(true);
 
                 if (!_syncPal->updateTree(ReplicaSide::Local)->deleteNode(syncOp->affectedNode())) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
+                    LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node "
                                                        << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" "
                                                        << exitInfo);
                 }
@@ -783,8 +779,8 @@ ExitInfo ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<SyncJob>
     }
 
     if (ExitInfo exitInfo = generateEditJob(syncOp, job); !exitInfo) {
-        LOGW_SYNCPAL_WARN(_logger, L"Failed to generate edit job for: " << SyncName2WStr(syncOp->affectedNode()->name()) << L" "
-                                                                        << exitInfo);
+        LOGW_SYNCPAL_WARN(_logger, L"Failed to generate edit job for: " << Utility::formatSyncName(syncOp->affectedNode()->name())
+                                                                        << L" " << exitInfo);
         return exitInfo;
     }
     return ExitCode::Ok;
@@ -856,38 +852,6 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<SyncJ
     return ExitCode::Ok;
 }
 
-ExitInfo ExecutorWorker::fixModificationDate(SyncOpPtr syncOp, const SyncPath &absolutePath) {
-    const auto id = syncOp->affectedNode()->id().value_or("");
-    LOGW_SYNCPAL_DEBUG(_logger, L"Do not upload dehydrated placeholders: " << Utility::formatSyncPath(absolutePath) << L" ("
-                                                                           << CommonUtility::s2ws(id) << L")");
-
-    // Update last modification date in order to avoid generating more EDIT operations.
-    bool found = false;
-    DbNode dbNode;
-    if (!_syncPal->syncDb()->node(*syncOp->correspondingNode()->idb(), dbNode, found)) {
-        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
-        return {ExitCode::DbError, ExitCause::DbAccessError};
-    }
-    if (!found) {
-        LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node for dbId=" << *syncOp->correspondingNode()->idb());
-        return {ExitCode::DataError, ExitCause::DbEntryNotFound};
-    }
-
-    if (const IoError ioError = IoHelper::setFileDates(absolutePath, dbNode.created().value_or(0),
-                                                       dbNode.lastModifiedRemote().value_or(0), false);
-        ioError == IoError::Success) {
-        LOGW_SYNCPAL_INFO(_logger,
-                          L"Last modification date updated locally to avoid further wrongly generated EDIT operations for file: "
-                                  << Utility::formatSyncPath(absolutePath));
-    } else if (ioError == IoError::NoSuchFileOrDirectory) {
-        // If file does not exist anymore, do nothing special. This is fine, it will not generate EDIT operations anymore.
-    } else {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::setFileDates: " << Utility::formatSyncPath(absolutePath));
-    }
-
-    return ExitCode::Ok;
-}
-
 ExitInfo ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPath &absolutePath, bool &ignoreItem,
                                                   bool &isSyncing) {
     ignoreItem = false;
@@ -903,7 +867,8 @@ ExitInfo ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPa
         case ReplicaSide::Remote:
             if (vfsStatus.isPlaceholder && !vfsStatus.isHydrated) {
                 ignoreItem = true;
-                return fixModificationDate(syncOp, absolutePath);
+                LOGW_SYNCPAL_WARN(_logger, L"Do not upload dehydrated placeholder " << Utility::formatSyncPath(absolutePath));
+                return excludeFileFromSync(syncOp, absolutePath);
             }
             break;
         case ReplicaSide::Local:
@@ -1263,8 +1228,6 @@ ExitInfo ExecutorWorker::waitForAllJobsToFinish() {
             cancelAllOngoingJobs();
             return exitInfo;
         }
-
-        sendProgress();
     }
     return ExitCode::Ok;
 }
@@ -1499,19 +1462,6 @@ ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath 
         }
     }
     return exitInfo;
-}
-
-void ExecutorWorker::sendProgress() {
-    if (_timer.elapsed<DoubleSeconds>().count() > SEND_PROGRESS_DELAY) {
-        _timer.restart();
-
-        for (const auto &jobInfo: _ongoingJobs) {
-            if (!_syncPal->setProgress(jobInfo.second->affectedFilePath(), jobInfo.second->getProgress())) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::setProgress: "
-                                                   << Utility::formatSyncPath(jobInfo.second->affectedFilePath()));
-            }
-        }
-    }
 }
 
 ExitInfo ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &propagateChange) {
@@ -1951,16 +1901,9 @@ ExitInfo ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
 
         correspondingNode->setName(syncOp->newName());
 
-        if (!correspondingNode->setParentNode(parentNode)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::setParentNode: node name="
-                                               << Utility::formatSyncName(parentNode->name()) << L" parent node name="
-                                               << Utility::formatSyncName(correspondingNode->name()));
-            return ExitCode::DataError;
-        }
-
-        if (!correspondingNode->parentNode()->insertChildren(correspondingNode)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name="
-                                               << Utility::formatSyncName(correspondingNode->name()) << L" parent node name="
+        if (!parentNode->insertChildren(correspondingNode)) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node "
+                                               << Utility::formatSyncName(correspondingNode->name()) << L" parent node "
                                                << Utility::formatSyncName(correspondingNode->parentNode()->name()));
             return ExitCode::DataError;
         }
@@ -2101,7 +2044,8 @@ void ExecutorWorker::cancelAllOngoingJobs() {
 }
 
 void ExecutorWorker::increaseErrorCount(const SyncOpPtr syncOp, const ExitInfo exitInfo /*= ExitInfo()*/) {
-    if (exitInfo == ExitInfo(ExitCode::SystemError, ExitCause::SyncDirAccessError)) {
+    if (exitInfo == ExitInfo(ExitCode::SystemError, ExitCause::SyncDirAccessError) ||
+        exitInfo == ExitInfo(ExitCode::SystemError, ExitCause::SyncDirDiskMissing)) {
         return; // Ignore error if sync folder is not accessible.
     }
 
@@ -2183,7 +2127,7 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, const ExitInfo &o
         if (!exists) {
             LOGW_DEBUG(_logger, L"Sync dir " << Utility::formatSyncPath(_syncPal->localPath()) << L" not accessible anymore");
             _snapshotToInvalidate = true; // The snapshot must be invalidated before the next sync
-            return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
+            return {ExitCode::SystemError, Utility::exitCauseFromInaccessibleSyncDirectory(_syncPal->localPath())};
         }
     }
 
@@ -2363,6 +2307,34 @@ ExitInfo ExecutorWorker::removeDependentOps(const std::shared_ptr<Node> localNod
     }
     if (!dependentOps.empty()) {
         LOGW_SYNCPAL_DEBUG(_logger, L"Removed " << dependentOps.size() << L" dependent operations.");
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitInfo ExecutorWorker::excludeFileFromSync(SyncOpPtr syncOp, const SyncPath &absoluteLocalFilepath) {
+    // Blacklist placeholder
+    (void) PlatformInconsistencyCheckerUtility::renameLocalFile(absoluteLocalFilepath,
+                                                                PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted);
+
+    // Clear update tree
+    if (!deleteOpNodes(syncOp)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::deleteOpNodes");
+        return ExitCode::DataError;
+    }
+
+    if (syncOp->type() == OperationType::Edit) {
+        // Clear node table
+        const auto dbNodeId = syncOp->affectedNode()->idb();
+        assert(dbNodeId.has_value());
+        if (dbNodeId.has_value()) {
+            bool found = false;
+            if (!_syncPal->syncDb()->deleteNode(*dbNodeId, found)) {
+                LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::deleteNode");
+                return {ExitCode::DbError, ExitCause::DbAccessError};
+            }
+            assert(found);
+        }
     }
 
     return ExitCode::Ok;

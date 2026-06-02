@@ -47,7 +47,7 @@ struct None : public AbstractPTrace {
 namespace basic {
 struct AppStart : public AbstractPTrace {
         [[nodiscard]] AppStart() :
-            AbstractPTrace({"AppStart", "Strat the application", PTraceName::AppStart}) {}
+            AbstractPTrace({"AppStart", "Start the application", PTraceName::AppStart}) {}
 };
 
 struct Sync : public AbstractPTrace {

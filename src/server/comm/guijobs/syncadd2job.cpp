@@ -52,23 +52,16 @@ ExitInfo SyncAdd2Job::deserializeInputParms() {
 
 ExitInfo SyncAdd2Job::process() {
     // Add sync in DB
-#if defined(KD_WINDOWS)
-    bool showInNavigationPane = _commManager->appServer().navigationPaneHelper()->showInExplorerNavigationPane();
-#else
-    bool showInNavigationPane = false;
-#endif
-
     SyncInfo syncInfo;
-    if (const auto exitCode = ServerRequests::addSync(_driveDbId, localFolderPath(), serverFolderPath(), serverFolderNodeId(),
-                                                      liteSync(), showInNavigationPane, syncInfo);
-        exitCode != ExitCode::Ok) {
+    if (const auto exitInfo = ServerRequests::addSync(_driveDbId, localFolderPath(), serverFolderPath(), serverFolderNodeId(),
+                                                      liteSync(), syncInfo);
+        !exitInfo) {
         LOGW_WARN(_logger, L"Error in Requests::addSync - driveDbId="
                                    << _driveDbId << L" local " << Utility::formatSyncPath(localFolderPath()) << L" server "
                                    << Utility::formatSyncPath(serverFolderPath()) << L" serverFolderNodeId="
-                                   << Utility::v2ws(serverFolderNodeId()) << L" liteSync=" << liteSync()
-                                   << L" showInNavigationPane=" << showInNavigationPane);
-        AppServer::addError(Error(ERR_ID, exitCode));
-        return exitCode;
+                                   << Utility::v2ws(serverFolderNodeId()) << L" liteSync=" << liteSync());
+        addError(Error(ERR_ID, exitInfo));
+        return exitInfo;
     }
 
     auto signalSyncAddedJob = std::make_shared<SignalSyncAddedJob>(syncInfo);

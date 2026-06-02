@@ -3,13 +3,11 @@ using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace Infomaniak.kDrive.CustomControls
 {
@@ -19,23 +17,77 @@ namespace Infomaniak.kDrive.CustomControls
            App.ServiceProvider.GetRequiredService<AppModel>();
 
         public Frame Frame { get { return ContentFrame; } }
-        private Dictionary<string, List<Type>> _navigationItemToPage = new Dictionary<string, List<Type>>()
+        private readonly Dictionary<string, List<Type>> _navigationItemToPage = new Dictionary<string, List<Type>>()
         {
-            { "HomePage", new List<Type>() { typeof(Pages.HomePage), typeof(Pages.DriveAccessDeniedPage), typeof(Pages.LoggingErrorPage )} },
-            { "ActivityPage", new List<Type>() { typeof(Pages.ActivityPage), typeof(Pages.ErrorPage) } },
-            { "SettingsPage", new List<Type>() { typeof(Pages.Settings.SettingsPage), typeof(Pages.Settings.DriveManagementPage) } },
-            { "StoragePage", new List<Type>() { typeof(Pages.StoragePage) } }
+            {
+                "HomePage", new List<Type>() {
+                typeof(Pages.HomePage),
+                typeof(Pages.DriveAccessDeniedPage),
+                typeof(Pages.LogginErrorPage),
+                typeof(Pages.NotRenewErrorPage),
+                typeof(Pages.MaintenanceErrorPage),
+                typeof(Pages.AsleepErrorPage)
+            }},
+            {
+                "ActivityPage", new List<Type>() {
+                typeof(Pages.ActivityPage),
+                typeof(Pages.Errors.ErrorPage),
+                typeof(Pages.Errors.ConflictQuickResolvePage),
+                typeof(Pages.Errors.ResolveManyConflictPage)
+            }},
+            {
+                "SettingsPage", new List<Type>() {
+                typeof(Pages.Settings.SettingsPage),
+                typeof(Pages.Settings.DriveManagementPage),
+                typeof(Pages.Settings.DriveAdvancedSyncsPage),
+                typeof(Pages.Settings.TemplateExclusionPage)
+            }},
+            {
+                "StoragePage", new List<Type>() {
+                typeof(Pages.StoragePage)
+            }}
         };
 
         public AppNavigationView()
         {
             InitializeComponent();
-            Loaded += AppNavigationView_Loaded;
         }
 
         private void AppNavigationView_Loaded(object sender, RoutedEventArgs e)
         {
             Frame.Navigated += Frame_Navigated;
+            Frame.Navigate(typeof(Pages.HomePage));
+
+            // Add an infobadge to SettingsItem
+            var infoBadge = new InfoBadge()
+            {
+                HorizontalAlignment = HorizontalAlignment.Right,
+                VerticalAlignment = VerticalAlignment.Center,
+            };
+
+            // Bind the visibility of the infobadge to the HasAvailableUpdates property of the ViewModel
+            infoBadge.SetBinding(InfoBadge.VisibilityProperty, new Binding()
+            {
+                Source = ViewModel.Settings.UpdateManager,
+                Path = new PropertyPath(nameof(ViewModel.Settings.UpdateManager.AvailableUpdate)),
+                Converter = new Converters.IsNullToBoolOrVisibilityConverter(),
+                ConverterParameter = "Inverted=True",
+                Mode = BindingMode.OneWay
+            });
+
+            NavigationViewItem? settingItem = SettingsItem as NavigationViewItem;
+            if (settingItem is null)
+            {
+                Logger.Log(Logger.Level.Error, "SettingsItem is not a NavigationViewItem. Cannot add InfoBadge.");
+                return;
+            }
+
+            settingItem.InfoBadge = infoBadge;
+
+        }
+        private void AppNavigationView_Unloaded(object sender, RoutedEventArgs e)
+        {
+            Frame.Navigated -= Frame_Navigated;
         }
 
         private void Frame_Navigated(object sender, Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
@@ -43,31 +95,45 @@ namespace Infomaniak.kDrive.CustomControls
             UpdateSelectedItem();
         }
 
-        private void OnSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
-        {
-            GoToNavigationViewItemPage(args.SelectedItem as NavigationViewItem);
-        }
 
         private void OnItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
         {
-            GoToNavigationViewItemPage(args.InvokedItem as NavigationViewItem);
+            GoToNavigationViewItemPage(args.InvokedItemContainer as NavigationViewItem);
 
         }
 
-        private void GoToNavigationViewItemPage(NavigationViewItem? item)
+        private void GoToNavigationViewItemPage(NavigationViewItemBase? item)
         {
             if (item is not null)
             {
+                // If the selected item is already displayed, do nothing
+                if (ContentFrame.CurrentSourcePageType?.Name == item?.Tag?.ToString())
+                    return;
+
+                // We cannot set the tag of the SettingsItem because it is handled by the navigationView it self.
+                if (item == SettingsItem as NavigationViewItemBase && ContentFrame.CurrentSourcePageType?.Name == "SettingsPage")
+                    return;
+
                 // Navigate to the selected page
                 if (_navigationItemToPage.TryGetValue(item?.Tag?.ToString() ?? "", out List<Type>? pageTypes))
-                {
                     ContentFrame.Navigate(pageTypes.FirstOrDefault());
-                    return;
-                }
-
-                Logger.Log(Logger.Level.Info, $"Unknown navigation tag: {item.Tag}... Going to HomePage");
-                ContentFrame.Navigate(typeof(SettingsPage));
+                else
+                    ContentFrame.Navigate(typeof(SettingsPage));
             }
+        }
+
+        private bool GetSyncSelectorIsEnabled(Sync? SelectedSync, object currentContent)
+        {
+            if (SelectedSync is null)
+                return false;
+
+            if (currentContent is null)
+                return false;
+
+            if (_navigationItemToPage.TryGetValue("SettingsPage", out var settingsPages) && settingsPages.Contains(currentContent.GetType()))
+                return false;
+
+            return true;
         }
 
         private void UpdateSelectedItem()
@@ -79,18 +145,18 @@ namespace Infomaniak.kDrive.CustomControls
                 newSelectedItem = SettingsItem as NavigationViewItem;
             SelectedItem = newSelectedItem;
         }
+
         private void OnBackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
         {
             if (ContentFrame.CanGoBack)
             {
                 ContentFrame.GoBack();
-                SelectedItem = MenuItems.OfType<NavigationViewItem>().FirstOrDefault(item => item.Tag.ToString() == ((Frame)ContentFrame).Content.GetType().Name);
             }
         }
 
-        private void NavigationViewItem_Tapped(object sender, TappedRoutedEventArgs e)
+        private async void NavigationViewItem_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            Utility.OpenFolderSecurely(ViewModel.SelectedSync?.LocalPath ?? "");
+            await Utility.OpenFolderSecurely(ViewModel.SelectedSync?.LocalPath ?? "");
         }
     }
 }

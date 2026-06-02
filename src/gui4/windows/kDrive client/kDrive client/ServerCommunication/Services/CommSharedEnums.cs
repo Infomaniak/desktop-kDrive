@@ -18,6 +18,20 @@
 
 namespace Infomaniak.kDrive.Types
 {
+    public enum UpdateState
+    {
+        UpToDate,
+        Checking,
+        Available,
+        ManualUpdateAvailable,
+        Downloading,
+        Ready,
+        CheckError,
+        DownloadError,
+        UpdateError,
+        NoUpdate,
+        Unknown
+    };
     public enum RequestNum
     {
         Unknown = 0,
@@ -32,6 +46,7 @@ namespace Infomaniak.kDrive.Types
         DRIVE_DELETE,
         DRIVE_SEARCH,
         SYNC_INFOLIST,
+        SYNC_OFFLINE_FILES_SIZE,
         SYNC_START,
         SYNC_STOP,
         SYNC_STATUS,
@@ -41,9 +56,8 @@ namespace Infomaniak.kDrive.Types
         SYNC_DELETE,
         SYNC_GETPUBLICLINKURL,
         SYNC_GETPRIVATELINKURL,
-        SYNC_ASKFORSTATUS,
+        SYNC_TRIGGER_PROGRESS_UPDATE,
         SYNC_SETSUPPORTSVIRTUALFILES,
-        SYNC_SETROOTPINSTATE,
         BLACKLISTED_NODE_LIST,
         BLACKLISTED_NODE_SETLIST,
         NODE_PATH,
@@ -52,26 +66,27 @@ namespace Infomaniak.kDrive.Types
         NODE_SUBFOLDERS2,
         NODE_FOLDER_SIZE,
         NODE_CREATEMISSINGFOLDERS,
+        NODE_CREATEMISSINGFOLDERS_LEGACY,
+        NODE_CONFLICT_INFO,
         ERROR_INFOLIST,
         ERROR_INFOLIST_LEGACY,
         ERROR_GET_CONFLICTS_LEGACY,
         ERROR_DELETE_SERVER,
         ERROR_DELETE_SYNC,
         ERROR_DELETE_INVALIDTOKEN,
+        ERROR_RESOLVE_CONFLICTS_LEGACY,
         ERROR_RESOLVE_CONFLICTS,
-        ERROR_RESOLVE_UNSUPPORTED_CHAR,
+        ERROR_RESOLVE_CONFLICTS_QUICK,
+        ERROR_RESOLVE_UNSUPPORTED_CHAR_LEGACY,
         EXCLTEMPL_GETEXCLUDED,
         EXCLTEMPL_GETLIST,
-        EXCLTEMPL_SETLIST,
-        EXCLTEMPL_PROPAGATE_CHANGE,
+        EXCLTEMPL_SETUSERLIST,
         PARAMETERS_INFO,
         PARAMETERS_UPDATE,
         UTILITY_BESTVFSAVAILABLEMODE,
         UTILITY_BESTVFSAVAILABLEMODE_LEGACY,
         UTILITY_FINDGOODPATHFORNEWSYNC,
         UTILITY_ISPATHVALIDFORNEWSYNC,
-        UTILITY_SHOWSHORTCUT,
-        UTILITY_SETSHOWSHORTCUT,
         UTILITY_ACTIVATELOADINFO,
         UTILITY_CHECKCOMMSTATUS,
         UTILITY_HASSYSTEMLAUNCHONSTARTUP,
@@ -81,10 +96,10 @@ namespace Infomaniak.kDrive.Types
         UTILITY_GET_APPSTATE,
         UTILITY_SEND_LOG_TO_SUPPORT,
         UTILITY_CANCEL_LOG_TO_SUPPORT,
-        UTILITY_GET_LOG_ESTIMATED_SIZE,
+        UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY, // Not used anymore but kept for backward compatibility
         UTILITY_CRASH,
         UTILITY_QUIT,
-        UTILITY_DISPLAY_CLIENT_REPORT, // Sent by the Client process as soon the UI is visible for the user.
+        UTILITY_SEND_APP_START_TRACE, // Sent by the Client process as soon the UI is visible for the user.
         UPDATER_CHANGE_CHANNEL,
         UPDATER_VERSION_INFO,
         UPDATER_STATE,
@@ -107,7 +122,7 @@ namespace Infomaniak.kDrive.Types
         // Drive
         DRIVE_ADDED,
         DRIVE_UPDATED,
-        DRIVE_QUOTAUPDATED,
+        DRIVE_QUOTAUPDATED_LEGACY,
         DRIVE_REMOVED,
         DRIVE_DELETE_FAILED,
         // Sync
@@ -124,11 +139,13 @@ namespace Infomaniak.kDrive.Types
         // Updater
         UPDATER_SHOW_DIALOG,
         UPDATER_STATE_CHANGED,
+        // Login
+        LOGIN_SEND_AUTHORIZATION_CODE,
         // Utility
         UTILITY_SHOW_NOTIFICATION,
         UTILITY_ERROR_ADDED_LEGACY,
         UTILITY_ERROR_ADDED,
-        UTILITY_ERRORS_REMOVED,
+        UTILITY_ERROR_REMOVED,
         UTILITY_ERRORS_CLEARED,
         UTILITY_SHOW_SETTINGS,
         UTILITY_SHOW_SYNTHESIS,
@@ -201,9 +218,8 @@ namespace Infomaniak.kDrive.Types
         OperationCanceled,
         UpdateRequired,
         LogUploadFailed,
-        UpdateFailed,
+        UpdateFailed
     };
-
 
     public enum ExitCause
     {
@@ -214,6 +230,7 @@ namespace Infomaniak.kDrive.Types
         InvalidSnapshot,
         SyncDirDoesntExist,
         SyncDirAccessError,
+        SyncDirDiskMissing,
         SyncDirNestingError,
         SyncDirChanged,
         HttpErr,
@@ -235,12 +252,13 @@ namespace Infomaniak.kDrive.Types
         InconsistentPinState,
         FileSizeMismatch,
         UploadNotTerminated,
-        UnableToCreateVfs,
+        UnableToStartVfs,
         NotEnoughMemory,
         FileTooBig,
         MoveToTrashFailed,
         InvalidName,
         LiteSyncNotAllowed,
+        LiteSyncExtNotRunning,
         NotPlaceHolder,
         NetworkTimeout,
         SocketsDefuncted, // macOS: sockets defuncted by kernel
@@ -257,8 +275,10 @@ namespace Infomaniak.kDrive.Types
         NotEnoughINotifyWatches,
         FileOrDirectoryCorrupted,
         TmpDirAccessError,
-        UpdateTreeIntegrityCheckFailed
+        UpdateTreeIntegrityCheckFailed,
+        MissingReplyData
     };
+
 
     public enum ConflictType
     {
@@ -282,9 +302,7 @@ namespace Infomaniak.kDrive.Types
         Edit,
         Move,
         Delete,
-        AlreadyExistRemote,
         MoveToBinFailed,
-        AlreadyExistLocal,
         TmpBlacklisted,
         ExcludedByTemplate,
         Hardlink,
@@ -300,8 +318,44 @@ namespace Infomaniak.kDrive.Types
         NameLength = 0x008,
         PathLength = 0x010,
         NotYetSupportedChar = 0x020, // Char not yet supported, ie recent Unicode char (ex: U+1FA77 on pre macOS 13.4)
-        DuplicateNames = 0x040, // Two items have the same standardized paths with possibly different encodings (Windows 10 and 11).
         ForbiddenCharOnlySpaces = 0x080, // The name contains only spaces (not supported by back end)
         ForbiddenCharEndWithSpace = 0x100, // The name ends with a space
+    };
+
+    public enum VirtualFileMode
+    {
+        Off,
+        Win,
+        Mac,
+        Suffix
+    };
+
+    public enum LogUploadState
+    {
+        None,
+        Archiving,
+        Uploading,
+        Success,
+        Failed,
+        CancelRequested,
+        Canceled
+    };
+    public enum ReplicaSide
+    {
+        Unknown,
+        Local,
+        Remote
+    };
+    public enum ConflictResolutionStrategy
+    {
+        Unknown,
+        KeepMostRecent,
+        KeepLocal,
+        KeepRemote
+    }
+    public enum SyncConfiguration
+    {
+        Classic,
+        Advanced
     };
 }

@@ -29,7 +29,7 @@ namespace KDC {
 
 void TestUpdateChecker::setUp() {
     TestBase::start();
-    ParametersCache::instance(true);
+    (void) ParametersCache::instance(true);
 }
 
 void TestUpdateChecker::tearDown() {
@@ -45,7 +45,7 @@ void TestUpdateChecker::testCheckUpdateAvailable() {
         MockUpdateChecker testObj;
         UniqueId jobId = 0;
         testObj.setUpdateShouldBeAvailable(true);
-        testObj.checkUpdateAvailability(&jobId);
+        (void) testObj.checkUpdateAvailability(&jobId);
         while (!SyncJobManagerSingleton::instance()->isJobFinished(jobId)) Utility::msleep(10);
         CPPUNIT_ASSERT(testObj.versionInfo(VersionChannel::Beta).isValid());
     }
@@ -55,7 +55,7 @@ void TestUpdateChecker::testCheckUpdateAvailable() {
         MockUpdateChecker testObj;
         UniqueId jobId = 0;
         testObj.setUpdateShouldBeAvailable(false);
-        testObj.checkUpdateAvailability(&jobId);
+        (void) testObj.checkUpdateAvailability(&jobId);
         while (!SyncJobManagerSingleton::instance()->isJobFinished(jobId)) Utility::msleep(10);
         CPPUNIT_ASSERT(testObj.versionInfo(VersionChannel::Beta).isValid());
     }
@@ -86,9 +86,10 @@ void TestUpdateChecker::testVersionInfo() {
                                const CPPUNIT_NS::SourceLine &sourceline) {
         testObj._versionsInfo.clear();
         testObj._isVersionReceived = true;
-        testObj._versionsInfo.try_emplace(VersionChannel::Prod, getVersionInfo(VersionChannel::Prod, versionsNumber[0]));
-        testObj._versionsInfo.try_emplace(VersionChannel::Beta, getVersionInfo(VersionChannel::Beta, versionsNumber[1]));
-        testObj._versionsInfo.try_emplace(VersionChannel::Internal, getVersionInfo(VersionChannel::Internal, versionsNumber[2]));
+        (void) testObj._versionsInfo.try_emplace(VersionChannel::Prod, getVersionInfo(VersionChannel::Prod, versionsNumber[0]));
+        (void) testObj._versionsInfo.try_emplace(VersionChannel::Beta, getVersionInfo(VersionChannel::Beta, versionsNumber[1]));
+        (void) testObj._versionsInfo.try_emplace(VersionChannel::Internal,
+                                                 getVersionInfo(VersionChannel::Internal, versionsNumber[2]));
         const auto &versionInfo = testObj.versionInfo(selectedChannel);
         CPPUNIT_NS::assertEquals(expectedChannel, versionInfo.channel, sourceline, "");
         CPPUNIT_NS::assertEquals(tag(expectedValue), versionInfo.tag, sourceline, "");
@@ -130,6 +131,28 @@ void TestUpdateChecker::testVersionInfo() {
     testFunc(Medium, VersionChannel::Beta, VersionChannel::Internal, {Low, Medium, Medium}, CPPUNIT_SOURCELINE());
     /// versions values: Prod == Internal > Beta
     testFunc(Medium, VersionChannel::Prod, VersionChannel::Internal, {Medium, Low, Medium}, CPPUNIT_SOURCELINE());
+}
+
+void TestUpdateChecker::testAppIsBlocked() {
+    // App version is NOT blocked
+    {
+        MockUpdateChecker testObj;
+        UniqueId jobId = 0;
+        (void) testObj.checkUpdateAvailability(&jobId);
+        while (!SyncJobManagerSingleton::instance()->isJobFinished(jobId)) Utility::msleep(10);
+        CPPUNIT_ASSERT(testObj.versionInfo(VersionChannel::Beta).isValid());
+        CPPUNIT_ASSERT(!testObj.appShouldBeBlocked());
+    }
+
+    // App version is blocked
+    {
+        MockUpdateChecker testObj;
+        testObj.setBigMinAppVersion(true);
+        UniqueId jobId = 0;
+        (void) testObj.checkUpdateAvailability(&jobId);
+        while (!SyncJobManagerSingleton::instance()->isJobFinished(jobId)) Utility::msleep(10);
+        CPPUNIT_ASSERT(testObj.appShouldBeBlocked());
+    }
 }
 
 } // namespace KDC

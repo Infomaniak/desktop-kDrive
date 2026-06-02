@@ -22,15 +22,17 @@
 #include "config.h"
 #include "guirequests.h"
 #include "custommessagebox.h"
+#include "custompushbutton.h"
+#include "matomoclient.h"
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/utility.h"
 #include "libcommongui/utility/utility.h"
+#include "log/sentry/handler.h"
 #include "utility/urlhelper.h"
 
 #include <QBoxLayout>
 #include <QLabel>
-#include <QLoggingCategory>
-#include <QProcessEnvironment>
+#include <QDesktopServices>
 #include <QUrlQuery>
 
 namespace KDC {
@@ -41,6 +43,7 @@ const QString redirectUriKey = "redirect_uri";
 const QString codeChallengeMethodKey = "code_challenge_method";
 const QString codeChallengeKey = "code_challenge";
 const QString stateKey = "state";
+const QString skipAutoRedirectKey = "skipAutoRedirect";
 
 const QString hashMode = "S256"; // SHA-256
 const QString responseType = "code";
@@ -53,38 +56,69 @@ Q_LOGGING_CATEGORY(lcAddDriveLoginWidget, "gui.adddriveloginwidget", QtInfoMsg)
 
 AddDriveLoginWidget::AddDriveLoginWidget(QWidget *parent) :
     QWidget(parent) {
-    auto *const mainLayout = new QVBoxLayout();
+    auto *const mainLayout = new QHBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
     setLayout(mainLayout);
-    refreshPage();
-}
+    mainLayout->addStretch();
 
-void AddDriveLoginWidget::init(const QString &serverUrl) {
-    QString loginUrl(serverUrl);
-    if (!loginUrl.endsWith(dirSeparator)) {
-        loginUrl += dirSeparator;
-    }
+    // Left part
+    auto *leftPartLayout = new QVBoxLayout(this);
+    mainLayout->addItem(leftPartLayout);
+    leftPartLayout->addStretch(10);
 
-    _webView->setUrl(QUrl(loginUrl));
+    auto *titleLabel = new QLabel(tr("Log in from your browser"), this);
+    titleLabel->setObjectName("titleLabel");
+    leftPartLayout->addWidget(titleLabel);
+
+    leftPartLayout->addStretch(1);
+
+    auto *subTitleLabel = new QLabel(tr("Your browser should open automatically to complete the connection. Once connected, you "
+                                        "will automatically return to kDrive."),
+                                     this);
+    subTitleLabel->setObjectName("textLabel");
+    subTitleLabel->setWordWrap(true);
+    subTitleLabel->setMinimumWidth(400);
+    leftPartLayout->addWidget(subTitleLabel);
+
+    leftPartLayout->addStretch(1);
+
+    auto *connectButton = new CustomPushButton(tr("Open the login page"), this);
+    connectButton->setObjectName("nondefaultbutton");
+    connectButton->setFlat(true);
+    connectButton->setMaximumWidth(250);
+    leftPartLayout->addWidget(connectButton);
+    (void) connect(connectButton, &CustomPushButton::clicked, this, &AddDriveLoginWidget::onOpenLoginInBrowser);
+
+    leftPartLayout->addStretch(10);
+
+    mainLayout->addStretch();
+    mainLayout->addStretch();
+
+    // Right part
+    auto *logoIconLabel = new QLabel(this);
+    logoIconLabel->setPixmap(
+            KDC::GuiUtility::getIconWithColor(":/client/resources/logos/kdrive-loader-stroke.svg").pixmap(150, 130));
+    mainLayout->addWidget(logoIconLabel);
+
+    mainLayout->addStretch();
 }
 
 void AddDriveLoginWidget::init() {
-    refreshPage();
-    _webView->setUrl(generateUrl());
+    onOpenLoginInBrowser();
 }
 
-void AddDriveLoginWidget::onAuthorizationCodeReceived(const QString code, const QString state) {
+void AddDriveLoginWidget::onAuthorizationCodeReceived(const QString &code, const QString &state) {
     Q_UNUSED(state)
 
     QString error;
     QString errorDescr;
-    ExitCode exitCode = GuiRequests::requestToken(code, _codeVerifier, _userDbId, error, errorDescr);
+    const auto exitCode = GuiRequests::requestToken(code, _codeVerifier, _userDbId, error, errorDescr);
     if (exitCode != ExitCode::Ok) {
         qCWarning(lcAddDriveLoginWidget()) << "Error in Requests::requestToken: code=" << exitCode;
 
         CustomMessageBox msgBox(QMessageBox::Warning, tr("Token request failed: %1 - %2").arg(error, errorDescr),
                                 QMessageBox::Ok);
-        msgBox.exec();
+        (void) msgBox.exec();
 
         emit terminated(false);
     } else {
@@ -97,12 +131,26 @@ void AddDriveLoginWidget::onErrorReceived(const QString error, const QString err
                                      << errorDescr.toStdString().c_str();
 
     CustomMessageBox msgBox(QMessageBox::Warning, tr("Login failed: %1 - %2").arg(error, errorDescr), QMessageBox::Ok);
-    msgBox.exec();
+    (void) msgBox.exec();
 
     emit terminated(false);
 }
 
-QUrl AddDriveLoginWidget::generateUrl() {
+void AddDriveLoginWidget::onOpenLoginInBrowser() {
+    if (!QDesktopServices::openUrl(generateAuthorizeUrl())) {
+        const auto errorMsg = tr("Failed to open the login page in your web browser");
+        sentry::Handler::captureMessage(sentry::Level::Warning, "Login failed", errorMsg.toStdString());
+        CustomMessageBox msgBox(QMessageBox::Warning, errorMsg, QMessageBox::Ok);
+        (void) msgBox.exec();
+
+
+        emit terminated(false);
+        return;
+    }
+    MatomoClient::sendVisit(MatomoNameField::WV_LoginPage);
+}
+
+QUrl AddDriveLoginWidget::generateAuthorizeUrl() {
     QUrl url(UrlHelper::loginApiUrl().c_str());
     url.setPath(authorizePath);
 
@@ -113,33 +161,25 @@ QUrl AddDriveLoginWidget::generateUrl() {
     query.addQueryItem(responseTypeKey, responseType);
     query.addQueryItem(clientIdKey, CLIENT_ID);
     query.addQueryItem(redirectUriKey, REDIRECT_URI);
-    query.addQueryItem(codeChallengeMethodKey,
-                       hashMode); // TODO : server return an error : invalid_request - invalid+challenge_code+format
+    query.addQueryItem(codeChallengeMethodKey, hashMode);
     query.addQueryItem(codeChallengeKey, codeChallenge);
     query.addQueryItem(stateKey, CommonUtility::generateRandomStringAlphaNum(stateStringLength).c_str());
+    query.addQueryItem(skipAutoRedirectKey, "true");
 
     url.setQuery(query);
 
     return url;
 }
 
-const QString AddDriveLoginWidget::generateCodeVerifier() {
-    std::string str = CommonUtility::generateRandomStringPKCE(32);
+QString AddDriveLoginWidget::generateCodeVerifier() const {
+    const std::string str = CommonUtility::generateRandomStringPKCE(32);
     return QByteArray::fromStdString(str).toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals);
 }
 
-const QString AddDriveLoginWidget::generateCodeChallenge(const QString &codeVerifier) {
+QString AddDriveLoginWidget::generateCodeChallenge(const QString &codeVerifier) const {
     QCryptographicHash hash(QCryptographicHash::Sha256);
     hash.addData(codeVerifier.toUtf8());
     return hash.result().toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals);
-}
-
-void AddDriveLoginWidget::refreshPage() {
-    delete _webView;
-    _webView = new WebView(this);
-    layout()->addWidget(_webView);
-    connect(_webView, &WebView::authorizationCodeUrlCatched, this, &AddDriveLoginWidget::onAuthorizationCodeReceived);
-    connect(_webView, &WebView::errorCatched, this, &AddDriveLoginWidget::onErrorReceived);
 }
 
 } // namespace KDC

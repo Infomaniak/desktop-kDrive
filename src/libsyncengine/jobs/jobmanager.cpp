@@ -19,12 +19,12 @@
 #include "jobmanager.h"
 #include "jobs/network/networkjobsparams.h"
 #include "jobs/network/abstractnetworkjob.h"
-#include "log/log.h"
-#include "libcommonserver/utility/utility.h"
 #include "network/kDrive_API/downloadjob.h"
 #include "network/kDrive_API/upload/upload_session/driveuploadsession.h"
-#include "performance_watcher/performancewatcher.h"
 #include "requests/parameterscache.h"
+
+#include "libcommonserver/log/log.h"
+#include "libcommonserver/utility/utility.h"
 
 #include <algorithm> // std::max
 
@@ -38,7 +38,7 @@ namespace KDC {
 void JobManager::startMainThreadIfNeeded() {
     if (!_mainThread) {
         const std::function<void()> runFunction = std::bind_front(&JobManager::run, this);
-        _mainThread = std::make_unique<std::thread>(runFunction);
+        _mainThread = std::make_unique<StdLoggingThread>(runFunction);
     }
 }
 
@@ -57,12 +57,15 @@ void JobManager::clear() {
     _stop = false;
 }
 
-void JobManager::queueAsyncJob(const std::shared_ptr<AbstractJob> job,
-                               const Poco::Thread::Priority priority /*= Poco::Thread::PRIO_NORMAL*/) noexcept {
+void JobManager::queueAsyncJob(const std::shared_ptr<AbstractJob> job, const Poco::Thread::Priority priority) noexcept {
     startMainThreadIfNeeded();
     const std::function<void(const UniqueId)> callback = std::bind_front(&JobManager::eraseJob, this);
     job->setMainCallback(callback);
     _data.queue(job, priority);
+}
+
+void JobManager::queueAsyncJob(const std::shared_ptr<AbstractJob> job) noexcept {
+    queueAsyncJob(job, job->jobPriority());
 }
 
 bool JobManager::isJobFinished(const UniqueId jobId) const {
@@ -132,7 +135,7 @@ void JobManager::run() noexcept {
     }
 }
 
-void JobManager::startJob(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority) {
+void JobManager::startJob(const std::shared_ptr<AbstractJob> job, const Poco::Thread::Priority priority) {
     try {
         if (job->isAborted()) {
             LOG_DEBUG(Log::instance()->getLogger(), "Job " << job->jobId() << " has been canceled");
@@ -166,7 +169,7 @@ void JobManager::addToPendingJobs(const std::shared_ptr<AbstractJob> job, const 
 
 int JobManager::availableThreadsInPool() const {
     try {
-        return static_cast<int>(_threadPool.available());
+        return _threadPool.available();
     } catch (Poco::Exception &) {
         return 0;
     }

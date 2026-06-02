@@ -173,9 +173,10 @@ void SynthesisPopover::forceRedraw() {
     });
 #endif
 }
+
 void SynthesisPopover::refreshLockedStatus() {
     auto updateState = UpdateState::Unknown;
-    GuiRequests::updateState(updateState);
+    (void) GuiRequests::updateState(updateState);
     onUpdateAvailabilityChange(updateState);
 }
 
@@ -976,8 +977,7 @@ void SynthesisPopover::onUpdateAvailabilityChange(const UpdateState updateState)
             break;
         default:
             _lockedAppUpdateButton->setText(tr("Unavailable"));
-            sentry::Handler::captureMessage(sentry::Level::Fatal, "AppLocked",
-                                            "HTTP Error426 received but unable to fetch an update");
+            sentry::Handler::captureMessage(sentry::Level::Fatal, "AppLocked", "Update required but unable to fetch an update");
             break;
     }
 }
@@ -1170,7 +1170,6 @@ void SynthesisPopover::retranslateUi() {
     _lockedAppupdateAppLabel->setText(tr("Update kDrive App"));
     _lockedAppLabel->setText(tr(
             "This kDrive app version is not supported anymore. To access the latest features and enhancements, please update."));
-    _lockedAppUpdateButton->setText(tr("Update"));
 #ifdef Q_OS_LINUX
     _lockedAppUpdateManualLabel->setText(tr("Please download the latest version on the website."));
 #endif // Q_OS_LINUX

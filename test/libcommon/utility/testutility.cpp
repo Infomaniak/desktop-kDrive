@@ -144,11 +144,11 @@ void TestUtility::testIsVersionLower() {
     CPPUNIT_ASSERT(!CommonUtility::isVersionLower("255.85.0 (build 2)", "255.85.0 (build 1)"));
 
     // With an invalid version
-    CPPUNIT_ASSERT(!CommonUtility::isVersionLower(".155.75.0", "156.75.0"));
+    CPPUNIT_ASSERT(CommonUtility::isVersionLower(".155.75.0", "156.75.0"));
     CPPUNIT_ASSERT(!CommonUtility::isVersionLower("155.75.0", ".156.75.0"));
-    CPPUNIT_ASSERT(!CommonUtility::isVersionLower("1.x.0", "156.75.0"));
+    CPPUNIT_ASSERT(CommonUtility::isVersionLower("1.x.0", "156.75.0"));
     CPPUNIT_ASSERT(!CommonUtility::isVersionLower("156.75.0", "1.x.0"));
-    CPPUNIT_ASSERT(!CommonUtility::isVersionLower("a.0.0", "156.75.0"));
+    CPPUNIT_ASSERT(CommonUtility::isVersionLower("a.0.0", "156.75.0"));
     CPPUNIT_ASSERT(!CommonUtility::isVersionLower("156.75.0", "a.0.0"));
 }
 
@@ -462,6 +462,7 @@ void TestUtility::testLanguageCode() {
     CPPUNIT_ASSERT_EQUAL(std::string("de"), CommonUtility::languageCode(Language::German).toStdString());
     CPPUNIT_ASSERT_EQUAL(std::string("es"), CommonUtility::languageCode(Language::Spanish).toStdString());
     CPPUNIT_ASSERT_EQUAL(std::string("it"), CommonUtility::languageCode(Language::Italian).toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("nl"), CommonUtility::languageCode(Language::Dutch).toStdString());
 
     const auto systemLanguage = QLocale::languageToCode(QLocale::system().language());
     CPPUNIT_ASSERT_EQUAL(systemLanguage.toStdString(), CommonUtility::languageCode(Language::Default).toStdString());
@@ -476,6 +477,7 @@ void TestUtility::testIsSupportedLanguage() {
     CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("de"));
     CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("es"));
     CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("it"));
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("nl"));
     CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isSupportedLanguage("ita"));
     CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isSupportedLanguage("zc"));
     CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isSupportedLanguage(""));

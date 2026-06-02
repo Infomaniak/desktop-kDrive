@@ -58,6 +58,8 @@ class SyncLocalDeleteJob : public GenericLocalDeleteJob {
         bool matchRelativePaths(const SyncPath &targetPath, const SyncPath &localRelativePath,
                                 const SyncPath &remoteRelativePath);
 
+        ExitInfo checkIfRemoteFileHasBeenMoved();
+
         const std::shared_ptr<SyncPal> _syncPal;
         SyncPath _relativeLocalPath;
         NodeId _remoteNodeId;

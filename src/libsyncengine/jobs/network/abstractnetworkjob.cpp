@@ -23,7 +23,7 @@
 #include "jobs/syncjob.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
-#include "utility/jsonparserutility.h"
+#include "libcommonserver/utility/jsonparserutility.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -109,7 +109,8 @@ void AbstractNetworkJob::logRequestInfo() {
     }
 
     LOG_DEBUG(_logger, "*** Request headers: ***");
-    LOG_DEBUG(_logger, "User-Agent: " << _userAgent);
+    // /!\ The user-agent could contain special characters
+    LOGW_DEBUG(_logger, L"User-Agent: " << KDC::CommonUtility::s2ws(_userAgent));
     LOG_DEBUG(_logger, "Content-Type: " << contentType());
     LOG_DEBUG(_logger, "Accept: " << acceptHeader());
     LOG_DEBUG(_logger, "X-Request-ID: " << _requestUuid);
@@ -124,7 +125,7 @@ void AbstractNetworkJob::logRequestInfo() {
     if (contentType() != mimeTypeJson || _data.empty()) return; // Log the body only for JSON MIME type
 
     LOG_DEBUG(_logger, "*** Body: ***");
-    LOG_DEBUG(_logger, _data);
+    LOGW_DEBUG(_logger, KDC::CommonUtility::s2ws(_data));
 }
 
 void AbstractNetworkJob::logReplyInfo() {
@@ -645,9 +646,7 @@ ExitInfo AbstractNetworkJob::extractJson(const std::string &replyBody, Poco::JSO
     }
 
     if (isExtendedLog()) {
-        std::ostringstream os;
-        jsonObj->stringify(os);
-        LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << CommonUtility::s2ws(os.str()));
+        LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << CommonUtility::s2ws(replyBody));
     }
     return ExitCode::Ok;
 }

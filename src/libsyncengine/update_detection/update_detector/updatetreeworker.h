@@ -32,6 +32,10 @@ typedef ExitCode (UpdateTreeWorker::*stepptr)();
 
 class UpdateTreeWorker : public ISyncWorker {
     public:
+        struct IntegrityError : std::runtime_error {
+                using std::runtime_error::runtime_error;
+        };
+
         UpdateTreeWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
                          ReplicaSide side);
         UpdateTreeWorker(SyncDbReadOnlyCache &syncDbReadOnlyCache, std::shared_ptr<FSOperationSet> operationSet,
@@ -141,7 +145,7 @@ class UpdateTreeWorker : public ISyncWorker {
         [[nodiscard]] ExitCode getOrCreateNodeFromPath(const SyncPath &path, std::shared_ptr<Node> &node,
                                                        bool existingBranchOnly = true);
         [[nodiscard]] ExitCode createTmpNode(std::shared_ptr<Node> &tmpNode, const SyncName &name,
-                                             const std::shared_ptr<Node> &parentNode);
+                                             const std::shared_ptr<Node> parentNode);
         [[nodiscard]] ExitCode getOrCreateNodeFromExistingPath(const SyncPath &path, std::shared_ptr<Node> &node) {
             return getOrCreateNodeFromPath(path, node, true);
         }
@@ -159,7 +163,8 @@ class UpdateTreeWorker : public ISyncWorker {
          * Check that there is no temporary node remaining in the update tree
          * @return true if no temporary node is found
          */
-        bool integrityCheck();
+        bool checkTreeIntegrity();
+        bool checkNodeIntegrity(const std::shared_ptr<Node> node);
         bool checkOperationTypes(const std::shared_ptr<Node> node);
 
         friend class TestUpdateTreeWorker;

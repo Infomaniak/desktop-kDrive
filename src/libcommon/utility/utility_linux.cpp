@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@
 #include <sys/types.h>
 #include <pwd.h>
 
-#include "libcommon/utility/types.h"
+#include "utility/types.h"
 
 #include <log4cplus/logger.h>
 #include <log4cplus/loggingmacros.h>
@@ -66,6 +66,54 @@ SyncPath CommonUtility::getAppDir() {
 
 bool CommonUtility::hasDarkSystray() {
     return true;
+}
+
+/**
+ * @brief On Linux, version information are extracted from the file /etc/os-release
+ * Example of content:
+ *  PRETTY_NAME="Ubuntu 24.04.3 LTS"
+ *  NAME="Ubuntu"
+ *  VERSION_ID="24.04"
+ *  VERSION="24.04.3 LTS (Noble Numbat)"
+ *  VERSION_CODENAME=noble
+ *  ID=ubuntu
+ *  ID_LIKE=debian
+ *  HOME_URL="https://www.ubuntu.com/"
+ *  SUPPORT_URL="https://help.ubuntu.com/"
+ *  BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+ *  PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+ *  UBUNTU_CODENAME=noble
+ *  LOGO=ubuntu-logo
+ * @return The value associated with the key
+ */
+std::string extractOSInfo(const std::string &key) {
+    std::string value;
+    // Try to get version from /etc/os-release (standard on modern Linux distributions)
+    if (std::ifstream osRelease("/etc/os-release"); osRelease.is_open()) {
+        std::string line;
+        while (std::getline(osRelease, line)) {
+            if (line.find(key) != 0) continue;
+
+            value = line.substr(key.length() + 1); // +1 because the file is formatted "key=value"
+            // Remove quotes if present
+            if (!value.empty() && value.front() == '"') {
+                value = value.substr(1);
+            }
+            if (!value.empty() && value.back() == '"') {
+                value.pop_back();
+            }
+            break;
+        }
+    }
+    return value;
+}
+
+std::string CommonUtility::osVersion() {
+    return extractOSInfo("VERSION_ID");
+}
+
+std::string CommonUtility::distributionName() {
+    return extractOSInfo("NAME");
 }
 
 } // namespace KDC

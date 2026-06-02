@@ -29,7 +29,9 @@
 #include "genericerroritemwidget.h"
 #include "guirequests.h"
 #include "parameterscache.h"
+
 #include "libcommongui/matomoclient.h"
+
 #include "libcommon/utility/qlogiffail.h"
 #include "libcommon/utility/utility.h"
 
@@ -383,6 +385,10 @@ QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, const Ex
             return tr("The synchronization folder is no longer accessible (error %1).<br>"
                       "Synchronization will resume as soon as the folder is accessible.")
                     .arg(err);
+        case ExitCause::SyncDirDiskMissing:
+            return tr("The drive containing your synchronization folder is no longer connected (error %1).<br>"
+                      "Please reconnect it to resume synchronization.")
+                    .arg(err);
         case ExitCause::NotEnoughDiskSpace:
             return tr(
                     "There is not enough space left on your computer.<br>"
@@ -680,12 +686,6 @@ QString ParametersDialog::getInconsistencyText(const InconsistencyType inconsist
                 tr("The item name contains a recent UNICODE character not yet supported by your filesystem.<br>"
                    "It has been excluded from synchronization.");
     }
-    if (bitWiseEnumToBool(inconsistencyType & InconsistencyType::DuplicateNames)) {
-        text += (text.isEmpty() ? "" : "\n");
-        text +=
-                tr("The item name coincides with the name of another item in the same directory.<br>"
-                   "It has been temporarily blacklisted. Consider removing duplicate items.");
-    }
     if (bitWiseEnumToBool(inconsistencyType & InconsistencyType::ForbiddenCharOnlySpaces)) {
         text += (text.isEmpty() ? "" : "\n");
         text +=
@@ -728,14 +728,8 @@ QString ParametersDialog::getCancelText(const CancelType cancelType, const QStri
                     "You are not allowed to delete item.<br>"
                     "It will be restored to its original location.");
         }
-        case CancelType::AlreadyExistRemote: {
-            return tr("This item already exists on remote kDrive. It is not synced.");
-        }
         case CancelType::MoveToBinFailed: {
             return tr("Failed to move this item to trash, it has been blacklisted.");
-        }
-        case CancelType::AlreadyExistLocal: {
-            return tr("This item already exists on local file system. It is not synced.");
         }
         case CancelType::TmpBlacklisted: {
             return tr(

@@ -66,10 +66,8 @@ In `QT 6.2.3`, select:
 - QT 5 Compatibility Module
 
 In `Qt 6.2.3 Additional Libraries`, select:
-- Qt WebEngine
 - Qt Positioning
 - Qt WebChannel
-- Qt WebView
 
 Add `CMake` in `PATH` by appending the following lines to your `.zshrc`:
 

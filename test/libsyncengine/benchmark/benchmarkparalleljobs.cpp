@@ -32,7 +32,7 @@
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/remotetemporarydirectory.h"
 #include "test_utility/testhelpers.h"
-#include "utility/jsonparserutility.h"
+#include "../../../src/libcommonserver/utility/jsonparserutility.h"
 
 
 using namespace CppUnit;
@@ -62,7 +62,7 @@ void BenchmarkParallelJobs::setUp() {
     (void) ParmsDb::instance()->insertUser(user);
 
     int accountId(atoi(_testVariables.accountId.c_str()));
-    Account account(1, accountId, user.dbId());
+    Account account(1, accountId, user.dbId(), "account1");
     (void) ParmsDb::instance()->insertAccount(account);
 
     int driveId = atoi(_testVariables.driveId.c_str());

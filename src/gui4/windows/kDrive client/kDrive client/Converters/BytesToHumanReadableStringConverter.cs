@@ -11,7 +11,7 @@ namespace Infomaniak.kDrive.Converters
         {
             if (value is null)
             {
-                return $"? {Utility.GetLocalizedString("Global_MegaBytes")}";
+                return $"? {Localizer.Instance.GetString("labelMegaBytes")}";
             }
 
             long byteCount;
@@ -25,13 +25,18 @@ namespace Infomaniak.kDrive.Converters
                 throw new ArgumentException("Invalid value type", nameof(value));
             }
 
+            if (byteCount < 0)
+            {
+                return $"? {Localizer.Instance.GetString("labelMegaBytes")}";
+            }
+
             var units = new (long Threshold, string ResourceKey)[]
             {
-                (0L,                      "Global_Bytes"),
-                (1024L,                   "Global_KiloBytes"),
-                (1024L * 1024L,           "Global_MegaBytes"),
-                (1024L * 1024L * 1024L,   "Global_GigaBytes"),
-                (1024L * 1024L * 1024L * 1024L, "Global_TeraBytes")
+                (0L,                      "labelBytes"),
+                (1024L,                   "labelKiloBytes"),
+                (1024L * 1024L,           "labelMegaBytes"),
+                (1024L * 1024L * 1024L,   "labelGigaBytes"),
+                (1024L * 1024L * 1024L * 1024L, "labelTeraBytes")
             };
 
             double displayValue = byteCount;
@@ -46,8 +51,19 @@ namespace Infomaniak.kDrive.Converters
                     break;
                 }
             }
+            ParameterParser parameterParser = new ParameterParser(parameter);
+            string? decimals = parameterParser.Get("Decimals");
+            string template = "0.##"; // default
 
-            return $"{displayValue.ToString("0.##")} {Utility.GetLocalizedString(unitKey)}";
+            if (decimals is not null && int.TryParse(decimals, out int decimalCount) && decimalCount >= 0)
+            {
+                decimalCount = Math.Clamp(decimalCount, 0, 6);
+                template = "0." + new string('#', decimalCount);
+                template = template.TrimEnd('.');
+            }
+
+            return $"{displayValue.ToString(template)} {Localizer.Instance.GetString(unitKey)}";
+
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

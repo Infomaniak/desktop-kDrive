@@ -74,10 +74,13 @@ class AbstractUpdater {
          */
         [[nodiscard]] VersionChannel currentVersionChannel() const;
 
+        [[nodiscard]] bool appShouldBeBlocked() const { return _appShouldBeBlocked; }
+
     protected:
-        explicit AbstractUpdater(const std::shared_ptr<UpdateChecker> &updateChecker);
+        explicit AbstractUpdater(const std::shared_ptr<UpdateChecker> updateChecker);
         void setState(UpdateState newState);
         inline virtual std::string getCurrentVersion() const { return CommonUtility::currentVersion(); }
+        virtual bool checkMinOsVersion(const std::string &minOsVersion) const;
 
         VersionChannel _currentChannel{VersionChannel::Unknown};
 
@@ -87,8 +90,10 @@ class AbstractUpdater {
         std::shared_ptr<UpdateChecker> _updateChecker;
         UpdateState _state{UpdateState::UpToDate}; // Current state of the update process.
         std::function<void(UpdateState)> _stateChangeCallback = nullptr;
-};
+        bool _appShouldBeBlocked{false};
 
+        friend class TestAbstractUpdater;
+};
 
 std::unique_ptr<AbstractUpdater> createUpdater();
 

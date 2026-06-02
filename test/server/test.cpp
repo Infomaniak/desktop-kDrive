@@ -36,9 +36,9 @@
 #include "comm/testpipecomm.h"
 #endif
 #include "comm/guijobs/testabstractguijob.h"
+#include "comm/testguijobpriority.h"
 
 namespace KDC {
-
 #if defined(KD_MACOS)
 CPPUNIT_TEST_SUITE_REGISTRATION(TestVfsMac);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLiteSyncCommClient);
@@ -57,7 +57,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestPipeComm);
 #endif
 CPPUNIT_TEST_SUITE_REGISTRATION(TestGuiCommChannel);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractGuiJob);
-
+CPPUNIT_TEST_SUITE_REGISTRATION(TestGuiJobPriority);
 } // namespace KDC
 
 int main(int, char **) {

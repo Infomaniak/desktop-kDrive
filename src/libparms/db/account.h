@@ -17,25 +17,29 @@
  */
 
 #pragma once
+#include "utility/types.h"
 
 namespace KDC {
 
 class Account {
     public:
-        Account();
-        Account(int dbId, int accountId, int userDbId);
+        Account() = default;
+        Account(int dbId, int accountId, int userDbId, const std::string &name);
 
-        inline void setDbId(int dbId) { _dbId = dbId; }
-        inline int dbId() const { return _dbId; }
-        inline void setAccountId(int accountId) { _accountId = accountId; }
-        inline int accountId() const { return _accountId; }
-        inline void setUserDbId(int userDbId) { _userDbId = userDbId; }
-        inline int userDbId() const { return _userDbId; }
+        [[nodiscard]] int dbId() const { return _dbId; }
+        void setDbId(const int dbId) { _dbId = dbId; }
+        [[nodiscard]] int accountId() const { return _accountId; }
+        void setAccountId(const int accountId) { _accountId = accountId; }
+        [[nodiscard]] int userDbId() const { return _userDbId; }
+        void setUserDbId(const int userDbId) { _userDbId = userDbId; }
+        [[nodiscard]] std::string name() const { return _name; }
+        void setName(const std::string &name) { _name = name; }
 
     private:
-        int _dbId;
-        int _accountId;
-        int _userDbId;
+        int _dbId{0};
+        int _accountId{0};
+        int _userDbId{0};
+        std::string _name;
 };
 
 } // namespace KDC

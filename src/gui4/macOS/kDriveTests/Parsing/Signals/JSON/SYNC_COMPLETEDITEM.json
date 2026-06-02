@@ -1,0 +1,24 @@
+{
+  "id": 16967,
+  "num": 17,
+  "params": {
+    "itemInfo": {
+      "operationId": 1,
+      "cancelType": 0,
+      "conflict": 0,
+      "direction": 2,
+      "error": "",
+      "inconsistency": 0,
+      "instruction": 1,
+      "localNodeId": "MzIxNTcwMjgz",
+      "newPath": "",
+      "path": "L2Jpbi9udWxs",
+      "progress": 100,
+      "remoteNodeId": "NjIxNDY2MQ==",
+      "size": 12719,
+      "status": 2,
+      "type": 1
+    },
+    "syncDbId": 1
+  }
+}

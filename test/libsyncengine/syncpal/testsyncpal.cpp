@@ -18,12 +18,14 @@
 
 #include "testsyncpal.h"
 #include "syncpal/tmpblacklistmanager.h"
-#include "libcommon/keychainmanager/keychainmanager.h"
-#include "libcommonserver/utility/utility.h"
-#include "libcommonserver/network/proxy.h"
-#include "libsyncengine/jobs/network/kDrive_API/movejob.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
+
+#include "libcommonserver/keychainmanager/keychainmanager.h"
+#include "libcommonserver/utility/utility.h"
+#include "libcommonserver/network/proxy.h"
+
+#include "libsyncengine/jobs/network/kDrive_API/movejob.h"
 
 #include "test_utility/testhelpers.h"
 
@@ -54,7 +56,7 @@ void TestSyncPal::setUp() {
     (void) ParmsDb::instance()->insertUser(user);
 
     int accountId(atoi(testVariables.accountId.c_str()));
-    Account account(1, accountId, user.dbId());
+    Account account(1, accountId, user.dbId(), "account1");
     (void) ParmsDb::instance()->insertAccount(account);
 
     _driveDbId = 1;
@@ -180,7 +182,7 @@ void TestSyncPal::testSyncFileItem() {
     CPPUNIT_ASSERT(_syncPal->setProgress(nfdPath, progress));
     CPPUNIT_ASSERT(_syncPal->getSyncFileItem(nfdPath, testItem));
 
-    CPPUNIT_ASSERT_EQUAL(progress, _syncPal->_progressInfo->completedSize());
+    CPPUNIT_ASSERT_EQUAL(progress * _syncPal->_progressInfo->totalSize() / 100, _syncPal->_progressInfo->completedSize());
     CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(0), _syncPal->_progressInfo->completedFiles());
     CPPUNIT_ASSERT_EQUAL(testhelpers::defaultFileSize, _syncPal->_progressInfo->totalSize());
     CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(1), _syncPal->_progressInfo->totalFiles());

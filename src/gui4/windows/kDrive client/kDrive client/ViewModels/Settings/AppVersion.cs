@@ -1,6 +1,7 @@
 ﻿using Infomaniak.kDrive.Types;
 using System;
-using System.Globalization;
+using System.Linq;
+using System.Reflection;
 
 namespace Infomaniak.kDrive.ViewModels
 {
@@ -8,42 +9,88 @@ namespace Infomaniak.kDrive.ViewModels
     {
         public VersionChannel Channel { get; set; } = VersionChannel.Prod;
         public string Tag { get; set; } = string.Empty; // e.g., "1.2.3"
-        public string BuildVersion { get; set; } = string.Empty; // e.g., "20250401"
+        public int BuildVersion { get; set; } = 0;
         public Uri ChangeLogUrl
         {
             get
             {
                 string languageCode = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
-                string res = String.Format(App.Constants.StorageUrl.ToString() + "/ kDrive-{0}-win-{1}.html",
-                    Tag,
-                    languageCode);
-
-                return new Uri(res);
+                return App.Constants.Storage.ReleaseNoteUrl(Tag, languageCode);
             }
         }
 
-        public DateTime BuildDate
+        public static AppVersion Current()
         {
-            get
+            var assembly = Assembly.GetExecutingAssembly();
+            var version = assembly.GetName().Version;
+
+            if (version != null)
             {
-                if (DateTime.TryParseExact(BuildVersion, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedDate))
+                return new AppVersion
                 {
-                    return parsedDate;
-                }
-                else
+                    Tag = $"{version.Major}.{version.Minor}.{version.Build}",
+                    BuildVersion = version.Revision,
+                    Channel = VersionChannel.Prod
+                };
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Error, "Unable to retrieve assembly version.");
+                return new AppVersion
                 {
-                    Logger.Log(Logger.Level.Warning, "BuildVersion string is not in the expected format 'yyyyMMdd'.");
-                    return DateTime.MinValue;
-                }
+                    Tag = "0.0.0",
+                    BuildVersion = 0,
+                    Channel = VersionChannel.Prod
+                };
             }
         }
 
-        public string PrettyBuildDate
+        // Compare versions based on BuildVersion, then Tag, then Channel
+        // isHigherThan returns true if this version is higher than the other version
+        public bool IsHigherThan(AppVersion other)
         {
-            get
+            if (other == null)
+                return true;
+
+            try
             {
-                return BuildDate.ToString("D", CultureInfo.CurrentCulture);
+                var thisTagParts = Tag.Split('.').Select(int.Parse).ToArray();
+                var otherTagParts = other.Tag.Split('.').Select(int.Parse).ToArray();
+
+
+                for (int i = 0; i < Math.Min(thisTagParts.Length, otherTagParts.Length); i++)
+                {
+                    if (thisTagParts[i] > otherTagParts[i])
+                        return true;
+                    else if (thisTagParts[i] < otherTagParts[i])
+                        return false;
+                }
+
+                if (thisTagParts.Length != otherTagParts.Length)
+                {
+                    Logger.Log(Logger.Level.Error, $"Tag format mismatch: '{Tag}' vs '{other.Tag}' with same prefix. Considering the longer tag as higher.");
+                    return thisTagParts.Length > otherTagParts.Length;
+                }
             }
+            catch (System.FormatException)
+            {
+                Logger.Log(Logger.Level.Error, "Unable to parse the version tag");
+                return false;
+            }
+
+            return this.BuildVersion > other.BuildVersion;
+        }
+
+        public bool IsSameVersion(AppVersion other)
+        {
+            if (other == null)
+                return false;
+            return this.BuildVersion == other.BuildVersion && this.Tag == other.Tag && this.Channel == other.Channel;
+        }
+
+        public bool IsLowerThan(AppVersion other)
+        {
+            return !IsHigherThan(other) && !IsSameVersion(other);
         }
     }
 }

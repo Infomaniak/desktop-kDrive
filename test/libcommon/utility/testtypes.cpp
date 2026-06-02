@@ -18,11 +18,13 @@
 
 #include "config.h"
 #include "testutility.h"
-#include "libcommon/utility/utility.h"
-#include "libcommonserver/log/log.h"
+
 #include "testtypes.h"
 
 #include "utility/utility.h"
+#include "log/log.h"
+
+#include "libcommon/utility/utility.h"
 
 namespace KDC {
 
@@ -229,7 +231,9 @@ void TestTypes::testToString() {
     testToStringIntValues<UpdateState>();
     testToStringIntValues<VersionChannel>();
     testToStringIntValues<Platform>();
+    testToStringIntValues<ConflictResolutionStrategy>();
     testToStringIntValues<sentry::ConfidentialityLevel>();
+    testToStringIntValues<SyncConfiguration>();
 }
 
 } // namespace KDC

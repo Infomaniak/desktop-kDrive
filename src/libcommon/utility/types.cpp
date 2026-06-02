@@ -19,9 +19,9 @@
 
 #include "types.h"
 
+#include "utility/utility.h"
 #include "utility.h"
 
-#include <string>
 #include <Poco/UnicodeConverter.h>
 
 namespace KDC {
@@ -142,6 +142,8 @@ std::string toString(const ExitCause e) {
             return "SyncDirDoesntExist";
         case ExitCause::SyncDirAccessError:
             return "SyncDirAccessError";
+        case ExitCause::SyncDirDiskMissing:
+            return "SyncDirDiskMissing";
         case ExitCause::SyncDirNestingError:
             return "SyncDirNestingError";
         case ExitCause::SyncDirChanged:
@@ -288,8 +290,6 @@ std::string toString(const InconsistencyType e) {
             return "PathLength";
         case InconsistencyType::NotYetSupportedChar:
             return "NotYetSupportedChar";
-        case InconsistencyType::DuplicateNames:
-            return "DuplicateNames";
         case InconsistencyType::ForbiddenCharOnlySpaces:
             return "ForbiddenCharOnlySpaces";
         case InconsistencyType::ForbiddenCharEndWithSpace:
@@ -311,12 +311,8 @@ std::string toString(const CancelType e) {
             return "Move";
         case CancelType::Delete:
             return "Delete";
-        case CancelType::AlreadyExistRemote:
-            return "AlreadyExistRemote";
         case CancelType::MoveToBinFailed:
             return "MoveToBinFailed";
-        case CancelType::AlreadyExistLocal:
-            return "AlreadyExistLocal";
         case CancelType::TmpBlacklisted:
             return "TmpBlacklisted";
         case CancelType::ExcludedByTemplate:
@@ -541,6 +537,8 @@ std::string toString(const Language e) {
             return "Spanish";
         case Language::Italian:
             return "Italian";
+        case Language::Dutch:
+            return "Dutch";
         default:
             return noConversionStr;
     }
@@ -590,8 +588,6 @@ std::string toString(const VirtualFileMode e) {
             return "Win";
         case VirtualFileMode::Mac:
             return "Mac";
-        case VirtualFileMode::Suffix:
-            return "Suffix";
         default:
             return noConversionStr;
     }
@@ -884,6 +880,32 @@ std::string toString(const SignalType e) {
     }
 }
 
+std::string toString(const ConflictResolutionStrategy e) {
+    switch (e) {
+        case ConflictResolutionStrategy::Unknown:
+            return "Unknown";
+        case ConflictResolutionStrategy::KeepMostRecent:
+            return "KeepMostRecent";
+        case ConflictResolutionStrategy::KeepLocal:
+            return "KeepLocal";
+        case ConflictResolutionStrategy::KeepRemote:
+            return "KeepRemote";
+        default:
+            return noConversionStr;
+    }
+}
+
+std::string toString(const SyncConfiguration e) {
+    switch (e) {
+        case SyncConfiguration::Classic:
+            return "Classic";
+        case SyncConfiguration::Advanced:
+            return "Advanced";
+        default:
+            return noConversionStr;
+    }
+}
+
 void ExitInfo::merge(const ExitInfo &exitInfoToMerge, const std::vector<ExitCode> &exitCodeList) {
     const long index = indexInList(exitInfoToMerge.code(), exitCodeList);
     const long thisIndex = indexInList(this->code(), exitCodeList);
@@ -899,12 +921,26 @@ long ExitInfo::indexInList(const ExitCode &exitCode, const std::vector<ExitCode>
     return index;
 }
 
+const std::string VersionInfo::versionInfoChannel = "channel";
+const std::string VersionInfo::versionInfoTag = "tag";
+const std::string VersionInfo::versionInfoBuildVersion = "buildVersion";
+const std::string VersionInfo::versionInfoBuildMinOsVersion = "buildMinOsVersion";
+const std::string VersionInfo::versionInfoDownloadUrl = "downloadUrl";
+
 void VersionInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
-    CommonUtility::writeValueToStruct(dstruct, "channel", channel);
-    CommonUtility::writeValueToStruct(dstruct, "tag", tag);
-    CommonUtility::writeValueToStruct(dstruct, "buildVersion", buildVersion);
-    CommonUtility::writeValueToStruct(dstruct, "buildMinOsVersion", buildMinOsVersion);
-    CommonUtility::writeValueToStruct(dstruct, "downloadUrl", downloadUrl);
+    CommonUtility::writeValueToStruct(dstruct, versionInfoChannel, channel);
+    CommonUtility::writeValueToStruct(dstruct, versionInfoTag, tag);
+    CommonUtility::writeValueToStruct(dstruct, versionInfoBuildVersion, buildVersion);
+    CommonUtility::writeValueToStruct(dstruct, versionInfoBuildMinOsVersion, buildMinOsVersion);
+    CommonUtility::writeValueToStruct(dstruct, versionInfoDownloadUrl, downloadUrl);
+}
+
+void VersionInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
+    CommonUtility::readValueFromStruct(dstruct, versionInfoChannel, channel);
+    CommonUtility::readValueFromStruct(dstruct, versionInfoTag, tag);
+    CommonUtility::readValueFromStruct(dstruct, versionInfoBuildVersion, buildVersion);
+    CommonUtility::readValueFromStruct(dstruct, versionInfoBuildMinOsVersion, buildMinOsVersion);
+    CommonUtility::readValueFromStruct(dstruct, versionInfoDownloadUrl, downloadUrl);
 }
 
 } // namespace KDC

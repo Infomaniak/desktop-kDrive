@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "libcommon/utility/types.h"
+#include "utility/types.h"
 
 #include <QDataStream>
 #include <QString>
@@ -58,6 +58,12 @@ class SyncFileItemInfo {
         inline void setCancelType(CancelType newCancelType) { _cancelType = newCancelType; }
         inline const QString &error() const { return _error; }
         inline void setError(const QString &newError) { _error = newError; }
+        inline int64_t size() const { return _size; }
+        inline void setSize(const int64_t newSize) { _size = newSize; }
+        inline int progress() const { return _progress; }
+        inline void setProgress(const int newProgress) { _progress = newProgress; }
+        inline UniqueId operationId() const { return _operationId; }
+        inline void setOperationId(const UniqueId newOperationId) { _operationId = newOperationId; }
 
         friend QDataStream &operator>>(QDataStream &in, SyncFileItemInfo &info);
         friend QDataStream &operator<<(QDataStream &out, const SyncFileItemInfo &info);
@@ -80,6 +86,9 @@ class SyncFileItemInfo {
         InconsistencyType _inconsistency;
         CancelType _cancelType;
         QString _error;
+        int64_t _size{0};
+        int _progress{0}; // %
+        UniqueId _operationId{0};
 };
 
 } // namespace KDC

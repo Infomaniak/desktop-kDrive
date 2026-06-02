@@ -17,7 +17,7 @@
  */
 
 #include "getappversionjob.h"
-#include "utility/jsonparserutility.h"
+#include "libcommonserver/utility/jsonparserutility.h"
 #include "utility/utility.h"
 
 #include <Poco/Net/HTTPRequest.h>
@@ -39,6 +39,7 @@ static const std::string tagKey = "tag";
 static const std::string buildVersionKey = "build_version";
 static const std::string buildMinOsVersionKey = "build_min_os_version";
 static const std::string downloadUrlKey = "download_link";
+static const std::string minVersionKey = "min_version";
 
 GetAppVersionJob::GetAppVersionJob(const Platform platform, const std::string &appID) :
     GetAppVersionJob(platform, appID, {}) {}
@@ -120,35 +121,44 @@ ExitInfo GetAppVersionJob::handleResponse(std::istream &is) {
     if (const auto exitCode = AbstractNetworkJob::handleJsonResponse(replyBody); !exitCode) return exitCode;
 
     const Poco::JSON::Object::Ptr dataObj = JsonParserUtility::extractJsonObject(jsonRes(), dataKey);
-    if (!dataObj) return {};
+    if (!dataObj) return {ExitCode::BackError, ExitCause::MissingReplyData};
 
     std::string tmpStr;
-    if (!JsonParserUtility::extractValue(dataObj, prodVersionKey, tmpStr)) return {};
+    if (!JsonParserUtility::extractValue(dataObj, prodVersionKey, tmpStr))
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
     _prodVersionChannel = toDistributionChannel(tmpStr);
 
     const Poco::JSON::Object::Ptr applicationObj = JsonParserUtility::extractJsonObject(dataObj, applicationKey);
-    if (!applicationObj) return {};
+    if (!applicationObj) return {ExitCode::BackError, ExitCause::MissingReplyData};
+
+    if (!JsonParserUtility::extractValue(applicationObj, minVersionKey, _minAppVersion))
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+
 
     const Poco::JSON::Array::Ptr publishedVersions = JsonParserUtility::extractArrayObject(applicationObj, publishedVersionsKey);
-    if (!publishedVersions) return {};
+    if (!publishedVersions) return {ExitCode::BackError, ExitCause::MissingReplyData};
 
     for (const auto &versionInfo: *publishedVersions) {
         const auto &obj = versionInfo.extract<Poco::JSON::Object::Ptr>();
         std::string versionType;
-        if (!JsonParserUtility::extractValue(obj, typeKey, versionType)) return {};
+        if (!JsonParserUtility::extractValue(obj, typeKey, versionType))
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
 
         const VersionChannel channel = toDistributionChannel(versionType);
         _versionsInfo[channel].channel = channel;
 
-        if (!JsonParserUtility::extractValue(obj, tagKey, _versionsInfo[channel].tag)) return {};
-        if (!JsonParserUtility::extractValue(obj, buildVersionKey, _versionsInfo[channel].buildVersion)) return {};
-        if (!JsonParserUtility::extractValue(obj, buildMinOsVersionKey, _versionsInfo[channel].buildMinOsVersion, false))
-            return {};
-        if (!JsonParserUtility::extractValue(obj, downloadUrlKey, _versionsInfo[channel].downloadUrl)) return {};
+        if (!JsonParserUtility::extractValue(obj, tagKey, _versionsInfo[channel].tag))
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
+        if (!JsonParserUtility::extractValue(obj, buildVersionKey, _versionsInfo[channel].buildVersion))
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
+        if (!JsonParserUtility::extractValue(obj, buildMinOsVersionKey, _versionsInfo[channel].buildMinOsVersion))
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
+        if (!JsonParserUtility::extractValue(obj, downloadUrlKey, _versionsInfo[channel].downloadUrl))
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
 
         if (!_versionsInfo[channel].isValid()) {
             LOG_WARN(_logger, "Missing mandatory value.");
-            return {};
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
     }
 

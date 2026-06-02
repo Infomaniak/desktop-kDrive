@@ -8,15 +8,18 @@
                           xmlns:toolKit="using:CommunityToolkit.WinUI.Controls"
                           xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
                           xmlns:converters="using:Infomaniak.kDrive.Converters"
+                          xmlns:kDrive="using:Infomaniak.kDrive"
+                          Loaded="UpdateExpander_Loaded"
+                          Unloaded="UpdateExpander_Unloaded"
                           mc:Ignorable="d">
     <toolKit:SettingsExpander.Resources>
         <!-- Converters -->
-        <converters:DateToStringConverter x:Key="DateToStringConverter" />
         <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
+        <converters:ToStringConverter x:Key="ToStringConverter" />
     </toolKit:SettingsExpander.Resources>
 
     <toolKit:SettingsExpander.Header>
-        <TextBlock x:Uid="CC_UpdateExpander_Header" />
+        <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('updateSettings'), Mode=OneWay}" />
     </toolKit:SettingsExpander.Header>
 
     <toolKit:SettingsExpander.HeaderIcon>
@@ -25,49 +28,46 @@
                        Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
     </toolKit:SettingsExpander.HeaderIcon>
 
-    <Button x:Uid="CC_UpdateExpander_UpdateButton"
+    <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonUpdate'), Mode=OneWay}"
             Style="{ThemeResource AccentButtonStyle}"
             Visibility="{x:Bind ViewModel.Settings.UpdateManager.AvailableUpdate, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
             Click="UpdateButton_Click" />
 
     <toolKit:SettingsExpander.Items>
-        <toolKit:SettingsCard Background="{ThemeResource LayerFillColorDefault}">
-            <toolKit:SettingsCard.Header>
-                <TextBlock  Style="{StaticResource Infomaniak.Style.TextBlock.Body}">
-                    <Run Text="kDrive" />
-                    <Run Text="{x:Bind DisplayedVersion.Tag , Mode=OneWay}" />
-                </TextBlock>
-            </toolKit:SettingsCard.Header>
+        <toolKit:SettingsCard Background="{ThemeResource LayerFillColorDefault}"
+                              Header="{x:Bind kDrive:Localizer.Instance.GetString1s('labelKDriveVersion', ViewModel.Settings.AppVersion.Tag), Mode=OneWay}">
             <toolKit:SettingsCard.Description>
-                <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-                    <TextBlock x:Uid="CC_UpdateExpander_UpdateAvailable_UpdateDetails"
-                               Visibility="{x:Bind ViewModel.Settings.UpdateManager.AvailableUpdate, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}" />
-                    <local:LicensesHyperlink DisplayedVersion="{x:Bind DisplayedVersion, Mode=OneWay}" />
-                </StackPanel>
+                <local:LicensesHyperlink DisplayedVersion="{x:Bind ViewModel.Settings.AppVersion, Mode=OneWay}" />
             </toolKit:SettingsCard.Description>
-            <HyperlinkButton x:Uid="
-                           CC_UpdateExpander_ChangeLogHyperLink"
-                             NavigateUri="{x:Bind DisplayedVersion.ChangeLogUrl, Mode=OneWay}" />
         </toolKit:SettingsCard>
-        <toolKit:SettingsCard x:Uid="Page_SettingsPage_AutoUpdate"
-                              IsEnabled="False"
-                              Background="{ThemeResource LayerFillColorDefault}">
+        <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('automaticUpdatesSetting'), Mode=OneWay}"
+                              Background="{ThemeResource LayerFillColorDefault}"
+                              Visibility="Collapsed">
             <!-- TODO: Make it enabled once auto-update is implemented on the server side (see: UpdateManager.ChangeAutoUpdate) -->
+            <toolKit:SettingsCard.HeaderIcon>
+                <local:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Arrows.arrows-loop-automatic}"
+                               Height="32"
+                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+            </toolKit:SettingsCard.HeaderIcon>
             <ToggleSwitch IsOn="{x:Bind ViewModel.Settings.UpdateManager.AutoUpdateEnabled, Mode=OneWay}"
-                          Toggled="AutoUpdateToggleSwitch_Toggled" />
+                          Tapped="AutoUpdateToggleSwitch_Tapped"
+                          IsEnabled="False" />
         </toolKit:SettingsCard>
 
-        <toolKit:SettingsCard x:Uid="Page_SettingsPage_Beta_Expander"
+        <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('betaSettings'), Mode=OneWay}"
+                              Description="{x:Bind kDrive:Localizer.Instance.GetString('betaProgramDescription'), Mode=OneWay}"
                               Background="{ThemeResource LayerFillColorDefault}">
             <ComboBox x:Name="UpdateChannelComboBox"
+                      SelectedValuePath="Tag"
+                      SelectedValue="{x:Bind ViewModel.Settings.UpdateManager.CurrentChannel, Converter={StaticResource ToStringConverter}, Mode=OneWay}"
                       SelectionChanged="UpdateChannel_SelectionChanged">
                 <ComboBoxItem Tag="Prod"
-                              x:Uid="Page_SettingsPage_Beta_ComboBox_Stable" />
+                              Content="{x:Bind kDrive:Localizer.Instance.GetString('doNotJoin'), Mode=OneWay}" />
                 <ComboBoxItem Tag="Beta"
-                              x:Uid="Page_SettingsPage_Beta_ComboBox_Beta" />
+                              Content="{x:Bind kDrive:Localizer.Instance.GetString('releaseChannelbeta'), Mode=OneWay}" />
                 <ComboBoxItem Tag="Internal"
                               x:Name="UpdateChannelComboBox_Internal"
-                              x:Uid="Page_SettingsPage_Beta_ComboBox_Internal"
+                              Content="{x:Bind kDrive:Localizer.Instance.GetString('releaseChannelInternal'), Mode=OneWay}"
                               Foreground="{ThemeResource SystemErrorTextColor}"
                               Visibility="Collapsed" />
             </ComboBox>

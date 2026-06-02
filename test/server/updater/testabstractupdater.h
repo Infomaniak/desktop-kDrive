@@ -28,6 +28,7 @@ class TestAbstractUpdater final : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSkipUnskipVersion);
         CPPUNIT_TEST(testIsVersionSkipped);
         CPPUNIT_TEST(testCurrentVersionedChannel);
+        CPPUNIT_TEST(testOsTooOld);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -38,6 +39,7 @@ class TestAbstractUpdater final : public CppUnit::TestFixture, public TestBase {
         void testSkipUnskipVersion();
         void testIsVersionSkipped();
         void testCurrentVersionedChannel();
+        void testOsTooOld();
 };
 
 } // namespace KDC

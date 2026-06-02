@@ -33,21 +33,25 @@
 #include "jobs/network/kDrive_API/getsizejob.h"
 #include "jobs/syncjobmanager.h"
 #include "network/proxy.h"
-#include "utility/jsonparserutility.h"
 #include "requests/parameterscache.h"
 #include "jobs/network/infomaniak_API/getappversionjob.h"
 #include "jobs/network/directdownloadjob.h"
 #include "jobs/network/kDrive_API/createdirjob.h"
+#include "jobs/network/kDrive_API/itemsexistjob.h"
 #include "jobs/network/kDrive_API/searchjob.h"
 #include "jobs/network/kDrive_API/listing/csvfullfilelistwithcursorjob.h"
 #include "jobs/network/kDrive_API/listing/initfilelistwithcursorjob.h"
 #include "jobs/network/kDrive_API/upload/uploadjob.h"
 #include "jobs/network/kDrive_API/upload/upload_session/driveuploadsession.h"
-#include "libcommon/keychainmanager/keychainmanager.h"
+
+#include "libcommonserver/keychainmanager/keychainmanager.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
+#include "libcommonserver/utility/jsonparserutility.h"
+
 #include "libparms/db/parmsdb.h"
+
 #include "mocks/libsyncengine/vfs/mockvfs.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 
@@ -108,7 +112,7 @@ void TestNetworkJobs::setUp() {
     _userDbId = user.dbId();
 
     const int accountId(atoi(testVariables.accountId.c_str()));
-    Account account(1, accountId, user.dbId());
+    Account account(1, accountId, user.dbId(), "account1");
     (void) ParmsDb::instance()->insertAccount(account);
 
     _driveDbId = 1;
@@ -134,7 +138,7 @@ void TestNetworkJobs::tearDown() {
         job.setBypassCheck(true);
         job.runSynchronously();
     }
-    if (!_dummyLocalFilePath.empty()) std::filesystem::remove_all(_dummyLocalFilePath);
+    if (!_dummyLocalFilePath.empty()) (void) IoHelper::deleteItem(_dummyLocalFilePath);
 
     ParmsDb::instance()->close();
     ParmsDb::reset();
@@ -1040,8 +1044,9 @@ void TestNetworkJobs::testGetInfoDrive() {
     const ExitCode exitCode = job.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
-    Poco::JSON::Object::Ptr data = job.jsonRes()->getObject(dataKey);
-    CPPUNIT_ASSERT(data->get(nameKey).toString() == "kDrive Desktop Team");
+    CPPUNIT_ASSERT_EQUAL(std::string("kDrive Desktop Team"), job.name());
+    CPPUNIT_ASSERT_EQUAL(std::string("pro"), job.packInfo().name);
+    CPPUNIT_ASSERT(!job.packInfo().isFree);
 }
 
 void TestNetworkJobs::testThumbnail() {
@@ -1587,6 +1592,22 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
         CPPUNIT_ASSERT_EQUAL(ExitCode::InvalidToken, exitInfo.code());
         CPPUNIT_ASSERT_EQUAL(0, job.trials());
     }
+}
+
+void TestNetworkJobs::testExists() {
+    const NodeId dummyId("1234567890");
+    const auto ids = {pictureDirRemoteId, picture1RemoteId, dummyId};
+    ItemsExistJob job(_driveDbId, ids);
+    job.runSynchronously();
+    IoError ioError = IoError::Unknown;
+    CPPUNIT_ASSERT(job.exists(pictureDirRemoteId, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    CPPUNIT_ASSERT(job.exists(picture1RemoteId, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    CPPUNIT_ASSERT(!job.exists(dummyId, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
+    CPPUNIT_ASSERT(!job.exists("0987654321", ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, ioError);
 }
 
 } // namespace KDC

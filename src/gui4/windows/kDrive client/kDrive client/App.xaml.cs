@@ -19,17 +19,19 @@
 using DynamicData;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ServerCommunication.Services;
+using Infomaniak.kDrive.TrayIcon;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Security.Authentication.OAuth;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.Win32;
+using Microsoft.Windows.AppLifecycle;
 using Sentry;
 using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
+using Windows.ApplicationModel.Core;
+using Windows.Foundation;
 
 
 namespace Infomaniak.kDrive
@@ -44,38 +46,48 @@ namespace Infomaniak.kDrive
             private set
             {
                 _currentWindow = value;
-                TrayIcoManager.ConfigureWindowEventHandler();
+                ServiceProvider.GetRequiredService<TrayIconManager>().ConfigureWindowEventHandler();
             }
         }
-        public TrayIcon.TrayIconManager TrayIcoManager { get; private set; }
 
         private readonly IServiceCollection _services = new ServiceCollection();
         private static IServiceProvider? _serviceProvider = null;
         internal static IServiceProvider ServiceProvider => _serviceProvider ?? throw new InvalidOperationException("Service provider is not initialized.");
 
-        internal static IAppConstants Constants => new ProductionConstants();
+        /* 
+         * Application-wide constants instance.
+         * 
+         * By default, the app uses ProductionAppConstants. For testing purposes, you can switch to a custom instance 
+         * with mock or staging values by returning a CustomAppConstants instead.
+         * 
+         * Example for testing:
+         * internal static IAppConstants Constants => new CustomAppConstants(
+         *     new ProductionSentry(),
+         *     new ProductionGitHub(),
+         *     new ProductionDrive(),
+         *     new ProductionStorage(),
+         *     new PreProdLogin(),
+         *     new ProductionKSuite());
+         */
+
+        internal static IAppConstants Constants => new ProductionAppConstants();
+
+
         internal App()
         {
-            SentrySdk.Init(options =>
-            {
-                options.Dsn = Constants.SentryDSN;
-                options.Debug = true;
-                options.SendDefaultPii = true;
-                options.AutoSessionTracking = true;
-                options.IsGlobalModeEnabled = true;
-                options.Environment = "production";
-            });
-            InitializeComponent();
-            TrayIcoManager = new TrayIcon.TrayIconManager();
             _services.AddSingleton<AppModel>();
             _services.AddSingleton<IServerCommProtocol, SocketServerCommProtocol>();
-            //_services.AddSingleton<IServerCommProtocol, MockServerCommProtocol>();
             _services.AddSingleton<IServerCommService, ServerCommService>();
+            _services.AddSingleton<UserDefaults>();
+            _services.AddSingleton<TrayIconManager>();
             _serviceProvider = _services.BuildServiceProvider();
+
+            Logger.StartSentry();
+            InitializeComponent();
             Logger.Log(Logger.Level.Info, "Application started");
         }
 
-        protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
+        protected override async void OnLaunched(LaunchActivatedEventArgs args)
         {
             string[] arguments = Environment.GetCommandLineArgs();
             if (arguments.Length > 1)
@@ -96,11 +108,29 @@ namespace Infomaniak.kDrive
                     current.Kill();
                     return;
                 }
-                LegacyCommPort = Int32.Parse(arguments[1]);
+                try
+                {
+                    LegacyCommPort = Int32.Parse(arguments[1]);
+                    Logger.Log(Logger.Level.Info, $"Parsed legacy communication port from arguments: {LegacyCommPort}");
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log(Logger.Level.Error, $"Failed to parse legacy communication port from arguments {ex}");
+                }
             }
 
             // Register oAuth protocol handler
             RegisterOAuthProtocol();
+
+            CurrentWindow = new MainWindow();
+            var currentWindowContent = CurrentWindow.Content;
+
+            // Display splash screen
+            CurrentWindow.Content = new CustomControls.SplashScreen();
+            ServiceProvider.GetRequiredService<TrayIconManager>().Initialize();
+
+            AppModel appModel = ServiceProvider.GetRequiredService<AppModel>();
+
 
             // Start all singleton services
             foreach (var serviceDescriptor in _services.Where(sd => sd.Lifetime == ServiceLifetime.Singleton))
@@ -108,18 +138,24 @@ namespace Infomaniak.kDrive
                 // Force the initialization of singleton services
                 ServiceProvider.GetRequiredService(serviceDescriptor.ServiceType);
             }
+            ServiceProvider.GetRequiredService<IServerCommProtocol>().ConnectionLost += (s, e) =>
+            {
+                Logger.Log(Logger.Level.Fatal, "Connection to server lost, attempting to restart application.");
+                SentrySdk.Flush(new TimeSpan(0, 0, 5));
+                AppRestartFailureReason restartError = AppInstance.Restart(LegacyCommPort.ToString());
+                if (restartError != AppRestartFailureReason.Other)
+                {
+                    Logger.Log(Logger.Level.Error, $"Failed to restart application after connection lost: {restartError}");
+                }
+            };
 
-            CurrentWindow = new MainWindow();
-            var currentWindowContent = CurrentWindow.Content;
-
-            // Affiche le spinning wheel
-            CurrentWindow.Content = new CustomControls.SplashScreen();
-
-            TrayIcoManager.Initialize();
-            AppModel appModel = ServiceProvider.GetRequiredService<AppModel>();
-            await appModel.InitializeAsync();
+            if (!await appModel.InitializeAsync())
+            {
+                Logger.Log(Logger.Level.Fatal, "Application failed to initialize, exiting.");
+                ExitApplication();
+                return;
+            }
             CurrentWindow.Content = currentWindowContent;
-            (CurrentWindow as MainWindow)?.AppNavView.Frame.Navigate(typeof(Pages.HomePage));
             StartOnboardingIfNeeded();
             appModel.AllSyncs.AsObservableChangeSet()
             .Subscribe(_ =>
@@ -161,17 +197,36 @@ namespace Infomaniak.kDrive
                 }
                 CurrentWindow?.Close();
                 CurrentWindow = new OnBoarding.OnBoardingWindow();
-                ((OnBoarding.OnBoardingWindow)CurrentWindow).Closed += (s, e) =>
+                TypedEventHandler<object, WindowEventArgs> closedEventHandler = (s, e) =>
                 {
                     if (ServiceProvider.GetRequiredService<AppModel>().Users.Any())
                     {
                         Logger.Log(Logger.Level.Info, "OnBoardingWindow closed, restarting MainWindow.");
+                        // Detach the event handler to avoid multiple calls
+                        ((OnBoarding.OnBoardingWindow)CurrentWindow).Closed += OnOnboardingClosed;
+
                         CurrentWindow = new MainWindow();
                         CurrentWindow.Activate();
                     }
                 };
+
+                ((OnBoarding.OnBoardingWindow)CurrentWindow).Closed += closedEventHandler;
                 CurrentWindow.Activate();
             });
+        }
+
+        private void OnOnboardingClosed(object sender, WindowEventArgs e)
+        {
+            if (!ServiceProvider.GetRequiredService<AppModel>().Users.Any())
+                return;
+
+            Logger.Log(Logger.Level.Info, "OnBoardingWindow closed, restarting MainWindow.");
+
+            var onboardingWindow = (OnBoarding.OnBoardingWindow)sender;
+            onboardingWindow.Closed -= OnOnboardingClosed;
+
+            CurrentWindow = new MainWindow();
+            CurrentWindow.Activate();
         }
 
         public void StartOnboardingIfNeeded()

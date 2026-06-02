@@ -86,7 +86,7 @@
     <array>
         <dict>
             <key>CFBundleTypeRole</key>
-            <string>None</string>
+            <string>Editor</string>
             <key>CFBundleURLName</key>
             <string>oauth-desktop</string>
             <key>CFBundleURLSchemes</key>

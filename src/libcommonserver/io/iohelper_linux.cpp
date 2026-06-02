@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,15 +16,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "libcommonserver/io/filestat.h"
-#include "libcommonserver/io/iohelper.h"
-#include "libcommonserver/log/log.h"
+#include "io/iohelper.h"
+
+#include "io/filestat.h"
+#include "log/log.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
+#include <filesystem>
+#include <mntent.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/xattr.h>
@@ -33,6 +36,9 @@
 #include <log4cplus/loggingmacros.h>
 
 #include <Poco/File.h>
+#include "utility/utility.h"
+
+#include <QFile>
 
 #include <QFile>
 
@@ -128,8 +134,61 @@ IoError IoHelper::isLocked(const SyncPath &, bool &locked) noexcept {
 }
 
 bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
-    QFile file(itemPath);
-    return file.moveToTrash();
+    return QFile(itemPath).moveToTrash();
 }
 
+bool IoHelper::isPathOnMountedDisk(const SyncPath &path, bool &isMounted, IoError &ioError) noexcept {
+    isMounted = false;
+    ioError = IoError::Success;
+    std::error_code ec;
+    std::string absPath = std::filesystem::absolute(path, ec).string();
+    if (ec) {
+        ioError = IoHelper::stdError2ioError(ec);
+        LOGW_WARN(logger(), L"Error in std::filesystem::absolute - " << Utility::formatStdError(ec));
+        return false;
+    }
+
+    FILE *mtab = setmntent("/proc/mounts", "r");
+    if (!mtab) {
+        ioError = posixError2ioError(errno);
+        LOGW_WARN(logger(), L"Error in setmntent: " << Utility::formatIoError(path, ioError));
+        return false;
+    }
+
+    struct mntent *ent = nullptr;
+    size_t bestMatchLen = 0;
+    std::string bestMount;
+
+    while ((ent = getmntent(mtab)) != nullptr) {
+        std::string mountPoint = ent->mnt_dir;
+        bool matches = false;
+        if (mountPoint == "/" || (absPath.compare(0, mountPoint.size(), mountPoint) == 0 &&
+                                  (absPath.size() == mountPoint.size() || absPath[mountPoint.size()] == '/'))) {
+            matches = true;
+        }
+
+        if (matches && mountPoint.size() > bestMatchLen) {
+            bestMatchLen = mountPoint.size();
+            bestMount = std::move(mountPoint);
+        }
+    }
+
+    if (endmntent(mtab) != 1) {
+        LOGW_WARN(logger(), L"Error in endmntent: " << Utility::formatSyncPath(path));
+    }
+
+    if (bestMatchLen == 0) {
+        isMounted = false;
+        return true;
+    }
+
+    if (bestMount == "/" &&
+        (absPath.starts_with("/mnt/") || absPath.starts_with("/media/") || absPath.starts_with("/run/media/"))) {
+        isMounted = false;
+        return true;
+    }
+
+    isMounted = true;
+    return true;
+}
 } // namespace KDC

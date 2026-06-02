@@ -75,10 +75,8 @@ In QT 6.2.3, select :
 - Qt 5 Compatibility Module
 
 In Qt 6.2.3 Additional Libraries, select :
-- Qt WebEngine
 - Qt Positioning
 - Qt WebChannel
-- Qt WebView
 
 If, following the installation, you cannot load the Qt platform plugin xcb, you can run the following command :
 ```bash

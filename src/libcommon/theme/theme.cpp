@@ -19,7 +19,7 @@
 #include "theme.h"
 #include "config.h"
 #include "version.h"
-#include "libcommon/utility/utility.h"
+#include "utility/utility.h"
 
 #include <QIcon>
 #include <QOperatingSystemVersion>
@@ -28,14 +28,8 @@
 
 namespace KDC {
 
-Theme *Theme::_instance = 0;
-
 Theme *Theme::instance() {
-    if (!_instance) {
-        _instance = new Theme;
-        _instance->_mono = false;
-    }
-    return _instance;
+    return &_instance;
 }
 
 Theme::~Theme() {}
@@ -105,11 +99,11 @@ QIcon Theme::themeIcon(const QString &name, bool sysTray, bool sysTrayMenuVisibl
 }
 
 void Theme::updateIconWithText(QIcon &icon, QString text) const {
-    QList<QSize> sizes = icon.availableSizes();
-    for (QSize size: sizes) {
+    const QList<QSize> &sizes = icon.availableSizes();
+    for (const QSize &size: sizes) {
         QPixmap px = icon.pixmap(size);
         QPainter painter(&px);
-        int pictSize = size.width() / 2;
+        const int pictSize = size.width() / 2;
         QRect rect(size.width() - pictSize, size.height() - pictSize, pictSize, pictSize);
 
         // Draw red circle
@@ -127,8 +121,7 @@ void Theme::updateIconWithText(QIcon &icon, QString text) const {
 }
 
 Theme::Theme() :
-    QObject(0),
-    _mono(false) {}
+    QObject(nullptr) {}
 
 QString Theme::helpUrl() const {
 #ifdef APPLICATION_HELP_URL
@@ -148,6 +141,7 @@ QString Theme::feedbackUrl(const Language language) const {
             return FEEDBACK_ES_URL;
         case Language::Italian:
             return FEEDBACK_IT_URL;
+        case Language::Dutch:
         default:
             break;
     }
@@ -206,9 +200,7 @@ QIcon Theme::syncStateIcon(KDC::SyncStatus status, bool sysTray, bool sysTrayMen
 
     QIcon icon = themeIcon(statusIcon, sysTray, sysTrayMenuVisible);
 
-    if (sysTray && alert) {
-        updateIconWithText(icon, QString("!"));
-    }
+    if (sysTray && alert) updateIconWithText(icon, QString("!"));
 
     return icon;
 }
@@ -232,6 +224,7 @@ QString Theme::versionSwitchOutput() const {
     stream << QString::fromStdString(appName()) << QLatin1String(" version ") << QString::fromStdString(version()) << Qt::endl;
     stream << "Using Qt " << qVersion() << ", built against Qt " << QT_VERSION_STR << Qt::endl;
     stream << "Using '" << QSslSocket::sslLibraryVersionString() << "'" << Qt::endl;
+
     return helpText;
 }
 

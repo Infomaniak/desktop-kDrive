@@ -18,8 +18,9 @@
 
 #pragma once
 
-#include "server/comm/guijobs/abstractguijob.h"
+#include "comm/guijobs/abstractguijob.h"
 #include "libcommon/info/nodeinfo.h"
+
 namespace KDC {
 
 class NodeFolderSizeJob : public AbstractGuiJob {

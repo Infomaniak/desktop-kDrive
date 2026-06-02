@@ -26,25 +26,29 @@ set(libcommonserver_SRCS
     # Utility
     utility/utility.h utility/utility.cpp
     utility/stateholder.h
+    utility/jsonparserutility.h
     # Db
     db/sqlitedb.h db/sqlitedb.cpp
     db/sqlitequery.h db/sqlitequery.cpp
     db/db.h db/db.cpp
     db/dbdefs.h
-    # Log
-    log/log.h log/log.cpp
-    log/customrollingfileappender.h log/customrollingfileappender.cpp
     # Network
     network/proxy.h network/proxy.cpp
     network/proxyconfig.h network/proxyconfig.cpp
-    # Io
-    io/filestat.h
-    io/iohelper.h io/iohelper.cpp
-    io/permissionsholder.h io/permissionsholder.cpp
     # VFS
     vfs/vfs.h vfs/vfs.cpp
     vfs/workerinfo.h vfs/vfsworker.h
     vfs/plugin.h vfs/plugin.cpp
+    # Io
+    io/filestat.h
+    io/iohelper.h io/iohelper.cpp
+    io/permissionsholder.h io/permissionsholder.cpp
+    # Log
+    log/log.h log/log.cpp
+    log/customrollingfileappender.h log/customrollingfileappender.cpp
+    # Keychain manager
+    keychainmanager/apitoken.h keychainmanager/apitoken.cpp
+    keychainmanager/keychainmanager.h keychainmanager/keychainmanager.cpp
 )
 
 if(APPLE)

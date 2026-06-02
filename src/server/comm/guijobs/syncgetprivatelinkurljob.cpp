@@ -26,7 +26,7 @@
 
 // Input parameters keys
 static const auto inParamsDriveDbId = "driveDbId";
-static const auto inParamsFileId = "fileId";
+static const auto inParamsNodeId = "nodeId";
 
 // Output parameters keys
 static const auto outParamsLinkUrl = "linkUrl";
@@ -45,7 +45,7 @@ ExitInfo SyncGetPrivateLinkUrlJob::deserializeInputParms() {
     constexpr auto logMessage = "Exception in SyncGetPrivateLinkUrlJob::readParamValue: error=";
     try {
         readParamValue(inParamsDriveDbId, _driveDbId);
-        readParamValue(inParamsFileId, _fileId);
+        readParamValue(inParamsNodeId, _nodeId);
     } catch (const Poco::Exception &pocoException) {
         LOG_WARN(_logger, logMessage << pocoException.message());
 
@@ -60,16 +60,16 @@ ExitInfo SyncGetPrivateLinkUrlJob::deserializeInputParms() {
 }
 
 ExitInfo SyncGetPrivateLinkUrlJob::serializeOutputParms() {
-    writeParamValue(outParamsLinkUrl, _linkUrl);
+    writeParamValue(outParamsLinkUrl, CommonUtility::str2CommString(_linkUrl));
 
     return ExitCode::Ok;
 }
 
 ExitInfo SyncGetPrivateLinkUrlJob::process() {
-    if (const auto exitCode = ServerRequests::getPrivateLinkUrl(_driveDbId, CommonUtility::commString2Str(_fileId), _linkUrl);
+    if (const auto exitCode = ServerRequests::getPrivateLinkUrl(_driveDbId, CommonUtility::commString2Str(_nodeId), _linkUrl);
         exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in ServerRequests::getPrivateLinkUrl");
-        AppServer::addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
+        addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
 
         return exitCode;
     }

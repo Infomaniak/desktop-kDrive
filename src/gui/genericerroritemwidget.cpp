@@ -60,8 +60,7 @@ void GenericErrorItemWidget::init() {
             setDriveName(driveInfoMapIt->second.name(), syncInfoMapIt->second.localPath());
             setPathIconColor(driveInfoMapIt->second.color());
         } else if (_errorInfo.level() == ErrorLevel::Node) {
-            const bool useDestPath = _errorInfo.cancelType() == CancelType::AlreadyExistRemote ||
-                                     _errorInfo.cancelType() == CancelType::MoveToBinFailed ||
+            const bool useDestPath = _errorInfo.cancelType() == CancelType::MoveToBinFailed ||
                                      _errorInfo.cancelType() == CancelType::FileRescued ||
                                      _errorInfo.conflictType() == ConflictType::EditDelete;
             const QString &filePath = useDestPath ? _errorInfo.destinationPath() : _errorInfo.path();
@@ -111,7 +110,6 @@ bool GenericErrorItemWidget::openInWebview() const {
            _errorInfo.inconsistencyType() == InconsistencyType::ReservedName ||
            _errorInfo.inconsistencyType() == InconsistencyType::NameLength ||
            _errorInfo.inconsistencyType() == InconsistencyType::NotYetSupportedChar ||
-           _errorInfo.cancelType() == CancelType::AlreadyExistLocal ||
            (_errorInfo.conflictType() == ConflictType::EditDelete && !_errorInfo.remoteNodeId().isEmpty()) ||
            (_errorInfo.exitCode() == ExitCode::BackError && _errorInfo.exitCause() == ExitCause::NotFound);
 }

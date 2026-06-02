@@ -18,13 +18,13 @@
 
 #include "duplicatejob.h"
 #include "libcommonserver/utility/utility.h"
-#include "libcommon/utility/jsonparserutility.h"
+#include "libcommonserver/utility/jsonparserutility.h"
 
 #include <Poco/Net/HTTPRequest.h>
 
 namespace KDC {
 
-DuplicateJob::DuplicateJob(const std::shared_ptr<Vfs> &vfs, const int driveDbId, const NodeId &remoteFileId,
+DuplicateJob::DuplicateJob(const std::shared_ptr<Vfs> vfs, const int driveDbId, const NodeId &remoteFileId,
                            const SyncPath &absoluteFinalPath) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
     _remoteFileId(remoteFileId),

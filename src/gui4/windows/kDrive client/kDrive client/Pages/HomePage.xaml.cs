@@ -30,13 +30,12 @@ namespace Infomaniak.kDrive.Pages
 {
     public sealed partial class HomePage : Page
     {
-        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
+        private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel => _viewModel;
         public HomePage()
         {
             Logger.Log(Logger.Level.Info, "Navigated to HomePage - Initializing HomePage components");
             InitializeComponent();
-            Unloaded += (_, _) => DetachHandlers();
             Logger.Log(Logger.Level.Debug, "HomePage components initialized");
         }
 
@@ -70,7 +69,16 @@ namespace Infomaniak.kDrive.Pages
                     AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(DriveAccessDeniedPage)));
                     break;
                 case SyncErrorStates.LoggingError:
-                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(LoggingErrorPage)));
+                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(LogginErrorPage)));
+                    break;
+                case SyncErrorStates.NotRenew:
+                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(NotRenewErrorPage)));
+                    break;
+                case SyncErrorStates.Maintenance:
+                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(MaintenanceErrorPage)));
+                    break;
+                case SyncErrorStates.Asleep:
+                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(AsleepErrorPage)));
                     break;
                 default:
                     Logger.Log(Logger.Level.Warning, $"Unexpected SyncErrorState: {ViewModel.SelectedSync?.SyncErrorState}. Staying on HomePage.");
@@ -107,25 +115,40 @@ namespace Infomaniak.kDrive.Pages
                 ViewModel.SelectedSync.PropertyChanged -= OnSelectedSyncPropertyChanged;
         }
 
-        private void SyncUpToDateHyperlinkButton_Click(object sender, RoutedEventArgs e)
-        {
-            ((App)Application.Current).CurrentWindow?.AppWindow.Hide();
-        }
-
         private void SyncInProgressHyperlinkButton_Click(object sender, RoutedEventArgs e)
         {
             DetachHandlers();
             Frame.Navigate(typeof(ActivityPage));
         }
 
-        private void SyncInPauseHyperlinkButton_Click(object sender, RoutedEventArgs e)
+        private async void RestartButton_Click(object sender, RoutedEventArgs e)
         {
-            if (ViewModel.SelectedSync == null)
+            if (ViewModel.SelectedSync is null)
             {
                 Logger.Log(Logger.Level.Warning, "No sync is selected, cannot resume sync.");
                 return;
             }
-            ViewModel.SelectedSync.SyncStatus = SyncStatus.Running; // Todo: Replace with actual resume logic
+            await ViewModel.SelectedSync.Start();
+        }
+
+        public string GetGreetingLabel(string userName, SyncStatus status)
+        {
+            const string transitionStr = "...";
+            string syncStateStr = status switch
+            {
+                SyncStatus.Undefined => transitionStr,
+                SyncStatus.Starting => transitionStr,
+                SyncStatus.Running => Localizer.Instance.GetString("synchroInProgress"),
+                SyncStatus.Idle => Localizer.Instance.GetString("synchroUpToDate"),
+                SyncStatus.PauseAsked => transitionStr,
+                SyncStatus.Paused => Localizer.Instance.GetString("synchroPaused"),
+                SyncStatus.StopAsked => transitionStr,
+                SyncStatus.Stopped => Localizer.Instance.GetString("synchroPaused"),
+                SyncStatus.Error => transitionStr,
+                SyncStatus.Offline => Localizer.Instance.GetString("synchroPaused")
+            };
+
+            return Localizer.Instance.GetString("greetingLabel", userName, syncStateStr);
         }
     }
 }

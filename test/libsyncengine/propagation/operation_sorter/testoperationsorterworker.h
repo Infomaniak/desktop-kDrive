@@ -80,7 +80,7 @@ class TestOperationSorterWorker final : public CppUnit::TestFixture, public Test
         void testExtractOpsByType();
 
     private:
-        SyncOpPtr generateSyncOperation(OperationType opType, const std::shared_ptr<Node> &affectedNode) const;
+        SyncOpPtr generateSyncOperation(OperationType opType, const std::shared_ptr<Node> affectedNode) const;
         void generateLotsOfDummySyncOperations(OperationType opType1, OperationType opType2 = OperationType::None,
                                                NodeType nodeType = NodeType::File) const;
 
