@@ -32,12 +32,12 @@ namespace {
 Q_LOGGING_CATEGORY(lcSentryService, "gui.v4.sentry", QtInfoMsg)
 
 constexpr char settingsOrganization[] = "Infomaniak";
-constexpr char settingsApplication[] = "kDrive";
+constexpr char settingsApplication[] = APPLICATION_NAME;
 constexpr char sentryConsentKey[] = "sentry/enabled";
 
 [[nodiscard]] std::string qStringToUtf8String(const QString &value) {
     const QByteArray utf8 = value.toUtf8();
-    return std::string(utf8.constData(), static_cast<size_t>(utf8.size()));
+    return {utf8.constData(), static_cast<size_t>(utf8.size())};
 }
 } // namespace
 
@@ -50,7 +50,7 @@ SentryService::SentryService(CommService &commService, AppCache &appCache, QObje
     _sentryInitialized(isInitialized()) {}
 
 std::optional<bool> SentryService::readCachedConsent() {
-    QSettings settings(QSettings::IniFormat, QSettings::UserScope, settingsOrganization, settingsApplication);
+    const QSettings settings(QSettings::IniFormat, QSettings::UserScope, settingsOrganization, settingsApplication);
     if (!settings.contains(sentryConsentKey)) {
         return std::nullopt;
     }
@@ -132,7 +132,7 @@ void SentryService::setConsentEnabled(const bool enabled) {
     });
 }
 
-void SentryService::updateAuthenticatedUser() {
+void SentryService::updateAuthenticatedUser() const {
     if (!isInitialized()) {
         return;
     }
