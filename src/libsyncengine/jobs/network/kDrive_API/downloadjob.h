@@ -19,7 +19,7 @@
 #pragma once
 
 #include "jobs/network/abstracttokennetworkjob.h"
-#include "jobs/network/kDrive_api/checkhashmatchjob.h"
+#include "jobs/network/kDrive_API/checkhashmatchjob.h"
 
 #include "libcommonserver/vfs/vfs.h"
 #include "libcommonserver/io/cachedirectory.h"
