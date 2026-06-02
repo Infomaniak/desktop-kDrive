@@ -33,6 +33,21 @@ extension NodeType {
     }
 }
 
+public struct ErrorNodeID: Sendable {
+    public let local: String?
+    public let remote: String?
+
+    public init(local: String?, remote: String?) {
+        self.local = local
+        self.remote = remote
+    }
+
+    init(errorInfo: ErrorInfo) {
+        self.local = !errorInfo.remoteNodeId.isEmpty ? errorInfo.localNodeId : nil
+        self.remote = !errorInfo.remoteNodeId.isEmpty ? errorInfo.remoteNodeId : nil
+    }
+}
+
 public struct SynchroErrorMetadata: Sendable {
     public let dbId: Int
     public let synchroDbId: Int
@@ -41,6 +56,8 @@ public struct SynchroErrorMetadata: Sendable {
     public let path: String
     public let destinationPath: String
     public let nodeType: NodeType?
+
+    public let nodeId: ErrorNodeID
 
     public let isAutoResolved: Bool
     public let level: KDC.ErrorLevel
@@ -54,6 +71,7 @@ public struct SynchroErrorMetadata: Sendable {
         path: String,
         destinationPath: String,
         nodeType: NodeType?,
+        nodeId: ErrorNodeID,
         isAutoResolved: Bool,
         level: KDC.ErrorLevel,
         exitCode: KDC.ExitCode,
@@ -65,6 +83,7 @@ public struct SynchroErrorMetadata: Sendable {
         self.path = path
         self.destinationPath = destinationPath
         self.nodeType = nodeType
+        self.nodeId = nodeId
         self.isAutoResolved = isAutoResolved
         self.level = level
         self.exitCode = exitCode
@@ -80,6 +99,7 @@ public extension SynchroErrorMetadata {
         path = errorInfo.path
         destinationPath = errorInfo.destinationPath
         nodeType = NodeType(nodeType: errorInfo.nodeType)
+        nodeId = ErrorNodeID(errorInfo: errorInfo)
         isAutoResolved = errorInfo.autoResolved
         level = errorInfo.level
         exitCode = errorInfo.exitCode

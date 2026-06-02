@@ -319,7 +319,7 @@ struct ErrorCellFactory {
 extension ErrorCellView.Action {
     static func renameItem(_ error: SynchroError, manager: SynchroErrorManager) -> Self {
         return ErrorCellView.Action(title: KDriveLocalizable.buttonRenameItem(error.nodeLabel)) {
-            // TODO:
+            await manager.renameItem(error)
         }
     }
 

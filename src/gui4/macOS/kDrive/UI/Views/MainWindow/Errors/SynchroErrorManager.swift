@@ -23,6 +23,29 @@ import SwiftUI
 
 @MainActor
 final class SynchroErrorManager: ObservableObject {
+    func renameItem(_ error: SynchroError) async {
+        if error.metadata.nodeId.remote != nil {
+            await openItemRemotely(error)
+        } else {
+            openFolder(error)
+        }
+    }
+
+    func openItemRemotely(_ error: SynchroError) async {
+        guard let remoteNodeId = error.metadata.nodeId.remote else {
+            return
+        }
+
+        @InjectService var cache: CoherentCache
+        guard let synchroContext = await cache.getSynchroContext(Int32(error.metadata.synchroDbId)) else {
+            return
+        }
+
+        @InjectService var nodeURLGenerator: NodeURLGenerator
+        let remoteURL = nodeURLGenerator.remoteURL(for: remoteNodeId, driveId: Int(synchroContext.drive.id))
+        NSWorkspace.shared.open(remoteURL)
+    }
+
     func refreshErrors(_ error: SynchroError) async {
         _ = try? await ErrorJobs().refreshSyncErrors(syncDbId: Int32(error.metadata.synchroDbId))
     }

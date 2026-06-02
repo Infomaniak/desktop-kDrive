@@ -75,6 +75,7 @@ struct UnknownErrorCellView: View {
             path: "",
             destinationPath: "",
             nodeType: .file,
+            nodeId: .init(local: nil, remote: nil),
             isAutoResolved: true,
             level: KDC.ErrorLevel.Node,
             exitCode: .Unknown,
