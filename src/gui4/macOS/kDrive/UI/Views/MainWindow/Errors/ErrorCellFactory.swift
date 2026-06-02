@@ -37,255 +37,224 @@ extension SynchroError {
 }
 
 struct ErrorCellFactory {
-    func make(error: SynchroError, isAdmin: Bool, manager: SynchroErrorManager) -> some View {
+    func make(error: SynchroError, isAdmin: Bool, manager: SynchroErrorManager) -> AnyView {
         guard let cell = generateCellForErrorKind(error, isAdmin: isAdmin, manager: manager) else {
-            return ErrorCellView.unknownError(error)
+            return AnyView(UnknownErrorCellView(error: error))
         }
 
         return cell
     }
 
-    private func generateCellForErrorKind(_ error: SynchroError, isAdmin: Bool, manager: SynchroErrorManager) -> ErrorCellView? {
+    private func generateCellForErrorKind(
+        _ error: SynchroError,
+        isAdmin: Bool,
+        manager: SynchroErrorManager
+    ) -> AnyView? {
         switch error.kind {
         case .conflict:
             return makeCell(error: error,
-                title: KDriveLocalizable.conflictErrorTitle,
-                description: KDriveLocalizable.conflictErrorDescription,
-                action: .init(title: KDriveLocalizable.conflictErrorAction) {
-                    manager.resolveConflict(error)
-                }
-            )
+                            title: KDriveLocalizable.conflictErrorTitle,
+                            description: KDriveLocalizable.conflictErrorDescription,
+                            action: .init(title: KDriveLocalizable.conflictErrorAction) {
+                                manager.resolveConflict(error)
+                            })
         case .createCancel:
             return makeCell(error: error,
-                title: KDriveLocalizable.errForbiddenActionTitle,
-                description: KDriveLocalizable.errCreateCancelDescription(error.nodeLabel)
-            )
+                            title: KDriveLocalizable.errForbiddenActionTitle,
+                            description: KDriveLocalizable.errCreateCancelDescription(error.nodeLabel))
         case .deleteCancel:
             return makeCell(error: error,
-                title: KDriveLocalizable.errForbiddenActionTitle,
-                description: KDriveLocalizable.errDeleteCancelDescription(error.nodeLabel)
-            )
+                            title: KDriveLocalizable.errForbiddenActionTitle,
+                            description: KDriveLocalizable.errDeleteCancelDescription(error.nodeLabel))
         case .editCancel:
             return makeCell(error: error,
-                title: KDriveLocalizable.errForbiddenActionTitle,
-                description: KDriveLocalizable.errEditCancelDescription
-            )
+                            title: KDriveLocalizable.errForbiddenActionTitle,
+                            description: KDriveLocalizable.errEditCancelDescription)
         case .moveCancel:
             // TODO: Add destination path copy
             return makeCell(error: error,
-                title: KDriveLocalizable.errForbiddenActionTitle,
-                description: KDriveLocalizable.errMoveCancelDescription(error.nodeLabel)
-            )
+                            title: KDriveLocalizable.errForbiddenActionTitle,
+                            description: KDriveLocalizable.errMoveCancelDescription(error.nodeLabel))
         case .fileLocked:
             return makeCell(error: error,
-                title: KDriveLocalizable.errFileLockedTitle,
-                description: KDriveLocalizable.errFileLockedDescription
-            )
+                            title: KDriveLocalizable.errFileLockedTitle,
+                            description: KDriveLocalizable.errFileLockedDescription)
         case .fileRescued:
             return makeCell(error: error,
-                title: KDriveLocalizable.errFileRescuedTitle,
-                description: KDriveLocalizable.errFileRescuedDescription,
-                action: .init(title: KDriveLocalizable.buttonOpenFolder) {
-                    // TODO:
-                }
-            )
+                            title: KDriveLocalizable.errFileRescuedTitle,
+                            description: KDriveLocalizable.errFileRescuedDescription,
+                            action: .init(title: KDriveLocalizable.buttonOpenFolder) {
+                                // TODO:
+                            })
         case .fileTooBig:
             let description = isAdmin
                 ? KDriveLocalizable.errFileTooBigAdminDescription
                 : KDriveLocalizable.errFileTooBigDescription
             return makeCell(error: error,
-                title: KDriveLocalizable.errFileTooBigTitle,
-                description: description
-            )
+                            title: KDriveLocalizable.errFileTooBigTitle,
+                            description: description)
         case .forbiddenCharEndWithSpace:
             return makeCell(error: error,
-                title: KDriveLocalizable.errEndWithSpaceTitle(error.nodeLabel),
-                description: KDriveLocalizable.errEndWithSpaceDescription(
-                    error.nodeLabel, error.nodeLabel
-                ),
-                action: .renameItem(error, manager: manager)
-            )
+                            title: KDriveLocalizable.errEndWithSpaceTitle(error.nodeLabel),
+                            description: KDriveLocalizable.errEndWithSpaceDescription(
+                                error.nodeLabel, error.nodeLabel
+                            ),
+                            action: .renameItem(error, manager: manager))
         case .forbiddenChar:
             return makeCell(error: error,
-                title: KDriveLocalizable.errForbiddenCharTitle,
-                description: KDriveLocalizable.errForbiddenCharDescription(
-                    error.nodeLabel,
-                    error.nodeLabel
-                ),
-                action: .renameItem(error, manager: manager)
-            )
+                            title: KDriveLocalizable.errForbiddenCharTitle,
+                            description: KDriveLocalizable.errForbiddenCharDescription(
+                                error.nodeLabel,
+                                error.nodeLabel
+                            ),
+                            action: .renameItem(error, manager: manager))
         case .forbiddenCharOnlySpaces:
             return makeCell(error: error,
-                title: KDriveLocalizable.errForbiddenCharOnlySpacesTitle,
-                description: KDriveLocalizable.errForbiddenCharOnlySpacesDescription(error.nodeLabel),
-                action: .renameItem(error, manager: manager)
-            )
+                            title: KDriveLocalizable.errForbiddenCharOnlySpacesTitle,
+                            description: KDriveLocalizable.errForbiddenCharOnlySpacesDescription(error.nodeLabel),
+                            action: .renameItem(error, manager: manager))
         case .nameLength:
             return makeCell(error: error,
-                title: KDriveLocalizable.errNameLengthTitle(error.nodeLabel),
-                description: KDriveLocalizable.errNameLengthDescription(error.nodeLabel),
-                action: .renameItem(error, manager: manager)
-            )
+                            title: KDriveLocalizable.errNameLengthTitle(error.nodeLabel),
+                            description: KDriveLocalizable.errNameLengthDescription(error.nodeLabel),
+                            action: .renameItem(error, manager: manager))
         case .pathLength:
             // TODO: Implement it
             return makeCell(error: error,
-                title: KDriveLocalizable.errPathLengthTitle(error.nodeLabel),
-                description: KDriveLocalizable.errPathLengthDescription(error.nodeLabel),
-                action: .init(title: KDriveLocalizable.buttonOpenParentFolder) {
-                    // TODO:
-                }
-            )
+                            title: KDriveLocalizable.errPathLengthTitle(error.nodeLabel),
+                            description: KDriveLocalizable.errPathLengthDescription(error.nodeLabel),
+                            action: .init(title: KDriveLocalizable.buttonOpenParentFolder) {
+                                // TODO:
+                            })
         case .notEnoughDiskSpace:
             return makeCell(error: error,
-                title: KDriveLocalizable.errNotEnoughDiskSpaceTitle,
-                description: KDriveLocalizable.errNotEnoughDiskSpaceDescription,
-                action: .manageDiskSpace(error, manager: manager)
-            )
+                            title: KDriveLocalizable.errNotEnoughDiskSpaceTitle,
+                            description: KDriveLocalizable.errNotEnoughDiskSpaceDescription,
+                            action: .manageDiskSpace(error, manager: manager))
         case .quotaExceeded:
             return makeCell(error: error,
-                title: KDriveLocalizable.errQuotaExceededTitle,
-                description: KDriveLocalizable.errQuotaExceededDescription(error.nodeLabel),
-                action: .init(title: KDriveLocalizable.buttonManageStorage) {
-                    // TODO:
-                }
-            )
+                            title: KDriveLocalizable.errQuotaExceededTitle,
+                            description: KDriveLocalizable.errQuotaExceededDescription(error.nodeLabel),
+                            action: .init(title: KDriveLocalizable.buttonManageStorage) {
+                                // TODO:
+                            })
         case .reservedName:
             return makeCell(error: error,
-                title: KDriveLocalizable.errReservedNameTitle(error.nodeLabel),
-                description: KDriveLocalizable.errReservedNameDescription(error.nodeLabel),
-                action: .renameItem(error, manager: manager)
-            )
+                            title: KDriveLocalizable.errReservedNameTitle(error.nodeLabel),
+                            description: KDriveLocalizable.errReservedNameDescription(error.nodeLabel),
+                            action: .renameItem(error, manager: manager))
         case .temporaryBlacklisted:
             return makeCell(error: error,
-                title: KDriveLocalizable.errTmpBlacklistedTitle,
-                description: KDriveLocalizable.errTmpBlacklistedDescription
-            )
+                            title: KDriveLocalizable.errTmpBlacklistedTitle,
+                            description: KDriveLocalizable.errTmpBlacklistedDescription)
         case .backErrorDriveAccess:
             return makeCell(error: error,
-                title: KDriveLocalizable.driveAccessDeniedErrorTitle,
-                description: KDriveLocalizable.driveAccessDeniedErrorDescription,
-                action: .init(title: KDriveLocalizable.buttonRetry) {
-                    // TODO:
-                }
-            )
+                            title: KDriveLocalizable.driveAccessDeniedErrorTitle,
+                            description: KDriveLocalizable.driveAccessDeniedErrorDescription,
+                            action: .init(title: KDriveLocalizable.buttonRetry) {
+                                // TODO:
+                            })
         case .backErrorDriveAsleep:
             return makeCell(error: error,
-                title: KDriveLocalizable.driveAsleepErrorTitle,
-                description: KDriveLocalizable.backErrorDriveAsleepDescription,
-                action: .init(title: KDriveLocalizable.buttonWakeUp) {
-                    // TODO:
-                }
-            )
+                            title: KDriveLocalizable.driveAsleepErrorTitle,
+                            description: KDriveLocalizable.backErrorDriveAsleepDescription,
+                            action: .init(title: KDriveLocalizable.buttonWakeUp) {
+                                // TODO:
+                            })
         case .backErrorDriveMaintenance:
             return makeCell(error: error,
-                title: KDriveLocalizable.errDriveMaintenanceTitle,
-                description: KDriveLocalizable.errDriveMaintenanceDescription,
-                action: .init(title: KDriveLocalizable.buttonRefresh) {
-                    // TODO:
-                }
-            )
+                            title: KDriveLocalizable.errDriveMaintenanceTitle,
+                            description: KDriveLocalizable.errDriveMaintenanceDescription,
+                            action: .init(title: KDriveLocalizable.buttonRefresh) {
+                                // TODO:
+                            })
         case .backErrorDriveNotRenew:
             let description = isAdmin
                 ? KDriveLocalizable.driveLockedAdminErrorDescription
                 : KDriveLocalizable.driveLockedErrorDescription
             let action = isAdmin ? KDriveLocalizable.buttonUpdateSubscription : KDriveLocalizable.buttonRefresh
             return makeCell(error: error,
-                title: KDriveLocalizable.driveLockedErrorTitle,
-                description: description,
-                action: .init(title: action) {
-                    // TODO
-                }
-            )
+                            title: KDriveLocalizable.driveLockedErrorTitle,
+                            description: description,
+                            action: .init(title: action) {
+                                // TODO:
+                            })
         case .invalidSyncDirAccess:
             return makeCell(error: error,
-                title: KDriveLocalizable.errInvalidSyncSyncDirAccessTitle,
-                description: KDriveLocalizable.errInvalidSyncSyncDirAccessDescription,
-                action: .errorResolutionTip(error, manager: manager)
-            )
+                            title: KDriveLocalizable.errInvalidSyncSyncDirAccessTitle,
+                            description: KDriveLocalizable.errInvalidSyncSyncDirAccessDescription,
+                            action: .errorResolutionTip(error, manager: manager))
         case .invalidSyncDirNesting:
             return makeCell(error: error,
-                title: KDriveLocalizable.errInvalidSyncSyncDirNestingTitle,
-                description: KDriveLocalizable.errInvalidSyncSyncDirNestingDescription
-            )
+                            title: KDriveLocalizable.errInvalidSyncSyncDirNestingTitle,
+                            description: KDriveLocalizable.errInvalidSyncSyncDirNestingDescription)
         case .invalidToken:
             return makeCell(error: error,
-                title: KDriveLocalizable.driveLoggingErrorTitle,
-                description: KDriveLocalizable.driveLoggingErrorDescription,
-                action: .init(title: KDriveLocalizable.buttonConnectAccount) {
-                    // TODO:
-                }
-            )
+                            title: KDriveLocalizable.driveLoggingErrorTitle,
+                            description: KDriveLocalizable.driveLoggingErrorDescription,
+                            action: .init(title: KDriveLocalizable.buttonConnectAccount) {
+                                // TODO:
+                            })
         case .networkOther:
             return makeCell(error: error,
-                title: KDriveLocalizable.errNetworkErrorOtherTitle,
-                description: KDriveLocalizable.errNetworkErrorOtherDescription
-            )
+                            title: KDriveLocalizable.errNetworkErrorOtherTitle,
+                            description: KDriveLocalizable.errNetworkErrorOtherDescription)
         case .systemNotEnoughDiskSpace:
             return makeCell(error: error,
-                title: KDriveLocalizable.errSystemNotEnoughDiskSpaceTitle,
-                description: KDriveLocalizable.errSystemNotEnoughDiskSpaceDescription,
-                action: .manageDiskSpace(error, manager: manager)
-            )
+                            title: KDriveLocalizable.errSystemNotEnoughDiskSpaceTitle,
+                            description: KDriveLocalizable.errSystemNotEnoughDiskSpaceDescription,
+                            action: .manageDiskSpace(error, manager: manager))
         case .systemSyncDirAccess:
             return makeCell(error: error,
-                title: KDriveLocalizable.errSystemErrorSyncDirAccessTitle,
-                description: KDriveLocalizable.errSystemErrorSyncDirAccessErrorDescription,
-                action: .errorResolutionTip(error, manager: manager)
-            )
+                            title: KDriveLocalizable.errSystemErrorSyncDirAccessTitle,
+                            description: KDriveLocalizable.errSystemErrorSyncDirAccessErrorDescription,
+                            action: .errorResolutionTip(error, manager: manager))
         case .systemSyncDirDiskMissing:
             return makeCell(error: error,
-                title: KDriveLocalizable.errSystemSyncDirMissingTitle,
-                description: KDriveLocalizable.errSystemSyncDirDiskMissingDescription,
-                action: .errorResolutionTip(error, manager: manager)
-            )
+                            title: KDriveLocalizable.errSystemSyncDirMissingTitle,
+                            description: KDriveLocalizable.errSystemSyncDirDiskMissingDescription,
+                            action: .errorResolutionTip(error, manager: manager))
         case .systemUnableToStartVFS:
             return makeCell(error: error,
-                title: KDriveLocalizable.errSystemUnableToStartVfsTitle,
-                description: KDriveLocalizable.errSystemUnableToStartVfsDescription,
-                action: .init(title: KDriveLocalizable.buttonActivateOfflineSync) {
-                    // TODO:
-                }
-            )
+                            title: KDriveLocalizable.errSystemUnableToStartVfsTitle,
+                            description: KDriveLocalizable.errSystemUnableToStartVfsDescription,
+                            action: .init(title: KDriveLocalizable.buttonActivateOfflineSync) {
+                                // TODO:
+                            })
         case .excludedByTemplate:
             return makeCell(error: error,
-                title: KDriveLocalizable.errExcludedByTemplateTitle,
-                description: KDriveLocalizable.errExcludedByTemplateDescription(error.nodeLabel),
-                action: .init(title: KDriveLocalizable.buttonOpenSyncExclusionRules) {
-                    // TODO:
-                }
-            )
+                            title: KDriveLocalizable.errExcludedByTemplateTitle,
+                            description: KDriveLocalizable.errExcludedByTemplateDescription(error.nodeLabel),
+                            action: .init(title: KDriveLocalizable.buttonOpenSyncExclusionRules) {
+                                // TODO:
+                            })
         case .genericErrForbidden:
             return makeCell(error: error,
-                title: KDriveLocalizable.errGenericForbiddenTitle,
-                description: KDriveLocalizable.errGenericForbiddenDescription
-            )
+                            title: KDriveLocalizable.errGenericForbiddenTitle,
+                            description: KDriveLocalizable.errGenericForbiddenDescription)
         case .hardLink:
             return makeCell(error: error,
-                title: KDriveLocalizable.errHardlinkTitle,
-                description: KDriveLocalizable.errHardlinkDescription
-            )
+                            title: KDriveLocalizable.errHardlinkTitle,
+                            description: KDriveLocalizable.errHardlinkDescription)
         case .localAccess:
             return makeCell(error: error,
-                title: KDriveLocalizable.errLocalFileAccessTitle(error.nodeLabel),
-                description: KDriveLocalizable.errLocalFileAccessDescription(error.nodeLabel),
-                action: .init(title: KDriveLocalizable.buttonManage) {
-                    // TODO:
-                }
-            )
+                            title: KDriveLocalizable.errLocalFileAccessTitle(error.nodeLabel),
+                            description: KDriveLocalizable.errLocalFileAccessDescription(error.nodeLabel),
+                            action: .init(title: KDriveLocalizable.buttonManage) {
+                                // TODO:
+                            })
         case .dataSyncDirChanged:
             return makeCell(error: error,
-                title: KDriveLocalizable.errSystemSyncDirMissingTitle,
-                description: KDriveLocalizable.errSystemSyncDirChanged,
-                action: .errorResolutionTip(error, manager: manager)
-            )
+                            title: KDriveLocalizable.errSystemSyncDirMissingTitle,
+                            description: KDriveLocalizable.errSystemSyncDirChanged,
+                            action: .errorResolutionTip(error, manager: manager))
         case .temporaryDirAccess:
             return makeCell(error: error,
-                title: KDriveLocalizable.informationBlockTmpDirAccessErrorTitle,
-                description: KDriveLocalizable.informationBlockTmpDirAccessErrorSubtitle,
-                action: .init(title: KDriveLocalizable.buttonClose) {
-                    // TODO:
-                }
-            )
+                            title: KDriveLocalizable.informationBlockTmpDirAccessErrorTitle,
+                            description: KDriveLocalizable.informationBlockTmpDirAccessErrorSubtitle,
+                            action: .init(title: KDriveLocalizable.buttonClose) {
+                                // TODO:
+                            })
         case .unknown:
             return nil
         }
@@ -296,22 +265,14 @@ struct ErrorCellFactory {
         title: String,
         description: String,
         action: ErrorCellView.Action? = nil
-    ) -> ErrorCellView {
-        return ErrorCellView(
-            title: title,
-            description: description,
-            pathInfo: ErrorCellView.PathInfo(metadata: error.metadata),
-            action: action
-        )
-    }
-}
-
-extension ErrorCellView {
-    static func unknownError(_ error: SynchroError) -> ErrorCellView {
-        return ErrorCellView(
-            title: KDriveLocalizable.defaultErrorTitle,
-            description: KDriveLocalizable.unexpectedErrorTeachingTipContent,
-            pathInfo: ErrorCellView.PathInfo(metadata: error.metadata)
+    ) -> AnyView {
+        return AnyView(
+            ErrorCellView(
+                title: title,
+                description: description,
+                pathInfo: ErrorCellView.PathInfo(metadata: error.metadata),
+                action: action
+            )
         )
     }
 }
