@@ -23,32 +23,21 @@ import SwiftUI
 
 @MainActor
 final class SynchroErrorManager: ObservableObject {
-    func renameItem(_ error: SynchroError) async {
-        if error.metadata.nodeId.remote != nil {
-            await openItemRemotely(error)
-        } else {
-            openFolder(error)
-        }
-    }
+    @Published var isShowingActivateOfflineSynchroSheet = false
+    @Published var isShowingLocalAccessSheet = false
+    @Published var isShowingResolutionTipsSheet = false
 
-    func openItemRemotely(_ error: SynchroError) async {
-        guard let remoteNodeId = error.metadata.nodeId.remote else {
-            return
-        }
-
-        @InjectService var cache: CoherentCache
-        guard let synchroContext = await cache.getSynchroContext(Int32(error.metadata.synchroDbId)) else {
-            return
-        }
-
-        @InjectService var nodeURLGenerator: NodeURLGenerator
-        let remoteURL = nodeURLGenerator.remoteURL(for: remoteNodeId, driveId: Int(synchroContext.drive.id))
-        NSWorkspace.shared.open(remoteURL)
-    }
+    // MARK: - Manage sync
 
     func refreshErrors(_ error: SynchroError) async {
         _ = try? await ErrorJobs().refreshSyncErrors(syncDbId: Int32(error.metadata.synchroDbId))
     }
+
+    func tryToRestartSynchro(_ error: SynchroError) async {
+        try? await SyncJobs().startSync(syncDbId: Int32(error.metadata.synchroDbId))
+    }
+
+    // MARK: - Open URLs
 
     func openFolder(_ error: SynchroError) {
         let url = URL(fileURLWithPath: error.metadata.path)
@@ -61,12 +50,84 @@ final class SynchroErrorManager: ObservableObject {
         NSWorkspace.shared.open(parentURL)
     }
 
-    func wakeUpDrive(_ error: SynchroError) async {
-        try? await SyncJobs().startSync(syncDbId: Int32(error.metadata.synchroDbId))
+    func openShopURL(_ error: SynchroError) async {
+        guard let drive = await getDrive(error) else {
+            return
+        }
+
+        @InjectService var nodeURLGenerator: NodeURLGenerator
+        let shopURL = nodeURLGenerator.shopURL(forDriveId: Int(drive.driveId))
+        NSWorkspace.shared.open(shopURL)
+    }
+
+    func openItemRemotely(_ error: SynchroError) async {
+        guard let remoteNodeId = error.metadata.nodeId.remote, let drive = await getDrive(error) else {
+            return
+        }
+
+        @InjectService var nodeURLGenerator: NodeURLGenerator
+        let remoteURL = nodeURLGenerator.remoteURL(for: remoteNodeId, driveId: Int(drive.driveId))
+        NSWorkspace.shared.open(remoteURL)
+    }
+
+    func openPreferencesSystemStorage() {
+        NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.settings.Storage")!)
+    }
+
+    // MARK: - App navigation
+
+    func navigateToLoginPage() {
+        // TODO: Open login page
+    }
+
+    func navigateToExclusionRules() {
+        // TODO: Navigate to exclusion rules
+    }
+
+    // MARK: - Sheets
+
+    func showActivateOfflineSynchroSheet() {
+        // TODO: Show modal
+        isShowingActivateOfflineSynchroSheet = true
+    }
+
+    func showLocalAccessSheet() {
+        // TODO: Show modal
+        isShowingLocalAccessSheet = true
+    }
+
+    func showResolutionTipsSheet() {
+        // TODO: Show modal
+        isShowingResolutionTipsSheet = true
+    }
+
+    // MARK: - Misc
+
+    func handleConflict() {
+        // TODO: Will be done in a next PR
+    }
+
+    func renameItem(_ error: SynchroError) async {
+        if error.metadata.nodeId.remote != nil {
+            await openItemRemotely(error)
+        } else {
+            openFolder(error)
+        }
     }
 
     func closeApp() async {
         try? await UtilityJobs().quit()
         NSApp.terminate(nil)
+    }
+
+    // MARK: - Helpers
+
+    private func getDrive(_ error: SynchroError) async -> Drive? {
+        @InjectService var cache: CoherentCache
+        guard let synchroContext = await cache.getSynchroContext(Int32(error.metadata.synchroDbId)) else {
+            return nil
+        }
+
+        return synchroContext.drive
     }
 }
