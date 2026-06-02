@@ -27,9 +27,11 @@
 #include <regex>
 #include <string>
 #include <pwd.h>
+#include <spawn.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/sysinfo.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #include <log4cplus/loggingmacros.h>
@@ -308,19 +310,15 @@ bool Utility::registerLoginRedirection() {
 
     // Update database
     bool res = true;
-    const std::string updateDesktopDbCmd =
-            std::string("update-desktop-database ") + std::string(homePathEnv) + "/.local/share/applications/";
-    if (const int updateResult = system(updateDesktopDbCmd.c_str()); updateResult != 0) {
-        LOGW_WARN(logger(), L"Failed to update desktop database with command: " << CommonUtility::s2ws(updateDesktopDbCmd)
-                                                                                << L", result: " << updateResult);
+    const std::string applicationsDir = std::string(homePathEnv) + "/.local/share/applications/";
+    if (!Utility::runCommand("update-desktop-database", {applicationsDir})) {
+        LOGW_WARN(logger(), L"Failed to update desktop database for: " << CommonUtility::s2ws(applicationsDir));
         res = false; // Do not return yet, try to register scheme anyway.
     }
 
     // Register scheme
-    const auto registerSchemeStr = std::string("xdg-mime default kDrive.desktop ") + mimeType;
-    if (const int registerResult = system(registerSchemeStr.c_str()); registerResult != 0) {
-        LOGW_WARN(logger(), L"Failed to register URL scheme with command: " << CommonUtility::s2ws(registerSchemeStr)
-                                                                            << L", result: " << registerResult);
+    if (!Utility::runCommand("xdg-mime", std::vector<std::string>{"default", "kDrive.desktop", mimeType})) {
+        LOGW_WARN(logger(), L"Failed to register URL scheme with xdg-mime");
         res = false;
     }
 
@@ -372,6 +370,42 @@ ExitInfo Utility::getFileSystemName(const std::shared_ptr<CacheDirectory> cacheD
     }
 
     return exitInfo;
+}
+
+bool Utility::runCommand(const std::string &launchPath, const std::vector<std::string> &arguments) {
+    // Build argv array
+    std::vector<char *> argv;
+    argv.push_back(const_cast<char *>(launchPath.c_str()));
+    for (const auto &arg: arguments) {
+        argv.push_back(const_cast<char *>(arg.c_str()));
+    }
+    argv.push_back(nullptr);
+
+    pid_t pid;
+    extern char **environ;
+
+    int spawnStatus = posix_spawnp(&pid, launchPath.c_str(), nullptr, nullptr, argv.data(), environ);
+    if (spawnStatus != 0) {
+        LOG_ERROR(logger(), "Failed to spawn process " << launchPath << ": " << strerror(spawnStatus));
+        return false;
+    }
+
+    int waitStatus;
+    if (waitpid(pid, &waitStatus, 0) == -1) {
+        LOG_ERROR(logger(), "Failed to wait for process " << launchPath << ": " << strerror(errno));
+        return false;
+    }
+
+    if (WIFEXITED(waitStatus)) {
+        const int exitStatus = WEXITSTATUS(waitStatus);
+        if (exitStatus != 0) {
+            LOG_WARN(logger(), "Command " << launchPath << " exited with status " << exitStatus);
+        }
+        return exitStatus == 0;
+    }
+
+    LOG_WARN(logger(), "Command " << launchPath << " terminated abnormally");
+    return false;
 }
 
 
