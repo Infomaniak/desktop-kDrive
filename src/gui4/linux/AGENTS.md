@@ -62,6 +62,8 @@
   (`begin/end/isActionPending/isServicePending`).
 - `app/services/serviceeventbus.*`: shared high-level service event hub (single UI subscription point for generic
   cross-service failures). Owned once by `AppClientLinux` and injected by reference into app services.
+- `app/services/sentryservice.*`: Linux v4 Sentry coordinator. Owns cached consent reconciliation, delayed
+  linux-v4-specific Sentry initialization, authenticated user binding, and UI/process capture helpers.
 - `app/cache/appcache.*`: durable graph-backed cache (`AppCache` QObject) - owns configured users/accounts/drives/syncs,
   split sync/server errors, per-user available drives, cascade removals, and derived read models.
 - `app/cache/cachepipeline.*`: unique bridge for `CommService -> AppCache` push signals.
@@ -191,6 +193,8 @@ cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive
 - Request methods should parse `Poco::DynamicStruct` into typed DTOs before exposing data upward.
 - Generic UI-facing request failures from high-level services should be emitted through `ServiceEventBus` so UI can
   subscribe once (`genericErrorOccurred()`).
+- Sentry captures in Linux v4 should go through `SentryService`; capture helpers must tolerate Sentry being uninitialized
+  because consent can disable the native SDK.
 - Action-level and per-service loading state should come from `ServiceActionTracker`
   (`isActionPending(...)`, `isServicePending(...)`).
 - Use shared `msgParam*` keys and enums from `libcommon`; avoid ad-hoc string keys.
