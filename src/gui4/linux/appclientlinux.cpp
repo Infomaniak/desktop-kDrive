@@ -32,6 +32,7 @@
 #include <QSysInfo>
 #include <QWindow>
 
+#include <chrono>
 #include <cstdlib>
 #include <thread>
 #include <unistd.h>
@@ -149,7 +150,8 @@ void AppClientLinux::setupLogging() {
     auto *const logger = Logger::instance();
     logger->setIsClientLog(true);
     logger->setLogDebug(true);
-    logger->setupTemporaryFolderLogDir();
+    logger->setupLogDir();
+    logger->setLogExpire(std::chrono::days(CommonUtility::logsPurgeRate));
     logger->enterNextLogFile();
     // TODO: Set the minimum log level from parameters once the parameters cache is available (Logger::minLogLevel)
 
@@ -157,7 +159,7 @@ void AppClientLinux::setupLogging() {
     qCInfo(lcAppClientLinux) << "app version:" << CommonUtility::currentVersion();
     qCInfo(lcAppClientLinux) << "version tag:" << CommonUtility::versionTag();
     qCInfo(lcAppClientLinux) << "version build:" << CommonUtility::versionBuild();
-    qCInfo(lcAppClientLinux) << "log directory:" << logger->temporaryFolderLogDirPath();
+    qCInfo(lcAppClientLinux) << "log directory:" << logger->logDirectoryPath();
     qCInfo(lcAppClientLinux) << "executable path:" << QDir::toNativeSeparators(QCoreApplication::applicationFilePath());
     qCInfo(lcAppClientLinux) << "application dir:" << QDir::toNativeSeparators(QCoreApplication::applicationDirPath());
     qCInfo(lcAppClientLinux) << "working directory:" << QDir::toNativeSeparators(QDir::currentPath());
