@@ -47,7 +47,7 @@ struct PathInfoChipView: View {
         .foregroundStyle(ColorToken.Text.primary.asColor)
         .padding(.horizontal, AppPadding.padding8)
         .padding(.vertical, AppPadding.padding4)
-        .background(.white, in: .rect(cornerRadius: AppRadius.radius4))
+        .background(Color(NSColor.windowBackgroundColor), in: .rect(cornerRadius: AppRadius.radius4))
     }
 }
 

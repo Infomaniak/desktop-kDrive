@@ -39,6 +39,7 @@ public struct SynchroErrorMetadata: Sendable {
     public let date: Date
 
     public let path: String
+    public let destinationPath: String
     public let nodeType: NodeType?
 
     public let isAutoResolved: Bool
@@ -51,6 +52,7 @@ public struct SynchroErrorMetadata: Sendable {
         synchroDbId: Int,
         date: Date,
         path: String,
+        destinationPath: String,
         nodeType: NodeType?,
         isAutoResolved: Bool,
         level: KDC.ErrorLevel,
@@ -61,6 +63,7 @@ public struct SynchroErrorMetadata: Sendable {
         self.synchroDbId = synchroDbId
         self.date = date
         self.path = path
+        self.destinationPath = destinationPath
         self.nodeType = nodeType
         self.isAutoResolved = isAutoResolved
         self.level = level
@@ -75,6 +78,7 @@ public extension SynchroErrorMetadata {
         synchroDbId = Int(errorInfo.synchroDbId)
         date = Date(timeIntervalSince1970: errorInfo.time)
         path = errorInfo.path
+        destinationPath = errorInfo.destinationPath
         nodeType = NodeType(nodeType: errorInfo.nodeType)
         isAutoResolved = errorInfo.autoResolved
         level = errorInfo.level

@@ -71,10 +71,14 @@ struct ErrorCellFactory {
                             title: KDriveLocalizable.errForbiddenActionTitle,
                             description: KDriveLocalizable.errEditCancelDescription)
         case .moveCancel:
-            // TODO: Add destination path copy
-            return makeCell(error: error,
-                            title: KDriveLocalizable.errForbiddenActionTitle,
-                            description: KDriveLocalizable.errMoveCancelDescription(error.nodeLabel))
+            return AnyView(
+                CopyablePathErrorCellView(
+                    title: KDriveLocalizable.errForbiddenActionTitle,
+                    description: KDriveLocalizable.errMoveCancelDescription(error.nodeLabel),
+                    pathInfo: .init(metadata: error.metadata),
+                    copyablePath: error.metadata.destinationPath
+                )
+            )
         case .fileLocked:
             return makeCell(error: error,
                             title: KDriveLocalizable.errFileLockedTitle,
