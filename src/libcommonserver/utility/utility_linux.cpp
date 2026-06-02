@@ -381,7 +381,7 @@ bool Utility::runCommand(const std::string &launchPath, const std::vector<std::s
     }
     argv.push_back(nullptr);
 
-    pid_t pid;
+    pid_t pid = 0;
     extern char **environ;
 
     int spawnStatus = posix_spawnp(&pid, launchPath.c_str(), nullptr, nullptr, argv.data(), environ);
@@ -390,7 +390,7 @@ bool Utility::runCommand(const std::string &launchPath, const std::vector<std::s
         return false;
     }
 
-    int waitStatus;
+    int waitStatus = 0;
     if (waitpid(pid, &waitStatus, 0) == -1) {
         LOG_ERROR(logger(), "Failed to wait for process " << launchPath << ": " << strerror(errno));
         return false;
