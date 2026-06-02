@@ -43,6 +43,12 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         ExitInfo generateInitialSnapshot() override;
         using LongPollJobMap =
                 std::unordered_map<RemoteNodeId, std::shared_ptr<LongPollJob>, StringHashFunction, std::equal_to<>>;
+        enum class ForcedUpdate {
+            Asked,
+            None
+        };
+        [[nodiscard]] virtual ExitInfo checkIfRemoteDirHasChanges(const RemoteNodeId &remoteDirId, ForcedUpdate updateFlag,
+                                                                  const LongPollJobMap &longPollJobs, bool &changes);
 
     private:
         ExitInfo processEvents(const NodeId &remoteDirId) override;
@@ -129,9 +135,6 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
 
         [[nodiscard]] virtual ExitInfo updateLongPollJobs(const std::vector<RemoteNodeId> &remoteDirIds,
                                                           LongPollJobMap &longPollJobs);
-
-        [[nodiscard]] virtual ExitInfo checkIfRemoteDirHasChanges(const RemoteNodeId &remoteDirId, bool hasForcedChanges,
-                                                                  const LongPollJobMap &longPollJobs, bool &changes);
         [[nodiscard]] ExitInfo processEvents(const std::vector<RemoteNodeId> &specialFoldersRemoteIds,
                                              LongPollJobMap &longPollJobs);
         using FullListingJobMap = std::unordered_map<RemoteNodeId, std::shared_ptr<CsvFullFileListWithCursorJob>,

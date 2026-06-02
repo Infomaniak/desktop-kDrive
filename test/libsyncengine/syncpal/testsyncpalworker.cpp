@@ -391,7 +391,8 @@ void TestSyncPalWorker::MockSyncPal::freeSnapshotsCopies() {
     _remoteSnapshot.reset();
 }
 
-ExitInfo TestSyncPalWorker::MockRemoteFileSystemObserverWorker::checkIfRemoteDirHasChanges(const RemoteNodeId &, const bool,
+ExitInfo TestSyncPalWorker::MockRemoteFileSystemObserverWorker::checkIfRemoteDirHasChanges(const RemoteNodeId &,
+                                                                                           const ForcedUpdate,
                                                                                            const LongPollJobMap &,
                                                                                            bool &hasChanges) {
     hasChanges = false;
@@ -407,14 +408,13 @@ ExitInfo TestSyncPalWorker::MockRemoteFileSystemObserverWorker::updateLongPollJo
 }
 
 ExitInfo TestSyncPalWorker::MockRemoteFileSystemObserverWorker::generateInitialSnapshot() {
-    if (_networkAvailable) {
-        return RemoteFileSystemObserverWorker::generateInitialSnapshot();
-    } else {
-        _liveSnapshot.init();
-        invalidateSnapshot();
-        setUpdateFlagValue(false);
-        return ExitCode::NetworkError;
-    }
+    if (_networkAvailable) return RemoteFileSystemObserverWorker::generateInitialSnapshot();
+
+    _liveSnapshot.init();
+    invalidateSnapshot();
+    setUpdateFlagValue(false);
+
+    return ExitCode::NetworkError;
 }
 
 void TestSyncPalWorker::testHandleBackError() {
