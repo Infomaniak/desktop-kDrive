@@ -66,7 +66,10 @@ class Handler {
     public:
         virtual ~Handler();
         static std::shared_ptr<Handler> instance();
-        static void init(AppType appType, int breadCrumbsSize = 100);
+        static void init(AppType appType, int breadCrumbsSize = 100, const std::string &dsnOverride = "",
+                         const std::string &dbPathSubdirOverride = "");
+        static void shutdown();
+        [[nodiscard]] static bool isInitialized() { return _instance != nullptr; }
         void setAuthenticatedUser(const SentryUser &user);
         void setGlobalConfidentialityLevel(sentry::ConfidentialityLevel level);
 
