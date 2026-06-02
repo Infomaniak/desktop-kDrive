@@ -1952,4 +1952,74 @@ void TestNetworkJobs::testPostFileModificationDate() {
     }
 }
 
+void TestNetworkJobs::testDownloadChecksumMismatch() {
+    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDownloadChecksumMismatch");
+
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDownloadChecksumMismatch");
+    const LocalTemporaryDirectory localTmpDir("testDownloadChecksumMismatch");
+
+    // Both versions have the same size so the size check passes and hash comparison is reached.
+    constexpr size_t fileSize = 64;
+    const std::string contentV1(fileSize, 'A');
+    const std::string contentV2(fileSize, 'B');
+
+    const SyncPath localFileV1 = localTmpDir.path() / "file_v1.txt";
+    {
+        std::ofstream ofs(localFileV1, std::ios::binary);
+        ofs << contentV1;
+    }
+    UploadJob uploadV1(nullptr, _driveDbId, localFileV1, localFileV1.filename().native(), remoteTmpDir.id(),
+                       testhelpers::defaultTime, testhelpers::defaultTime);
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, uploadV1.runSynchronously().code());
+    const NodeId remoteFileId = uploadV1.nodeId();
+    CPPUNIT_ASSERT(!remoteFileId.empty());
+
+    const SyncPath localDestFile = localTmpDir.path() / "file_local.txt";
+    {
+        DownloadJob downloadV1(nullptr, _cacheDirectory,
+                               DownloadJob::FileDownloadInfo{_driveDbId, remoteFileId, localDestFile,
+                                                             static_cast<int64_t>(fileSize),
+                                                             testhelpers::defaultTime, testhelpers::defaultTime, true},
+                               DownloadJob::DateTimePolicy::IgnoreDateTime);
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, downloadV1.runSynchronously().code());
+    }
+    CPPUNIT_ASSERT(std::filesystem::exists(localDestFile));
+
+    const SyncPath localFileV2 = localTmpDir.path() / "file_v2.txt";
+    {
+        std::ofstream ofs(localFileV2, std::ios::binary);
+        ofs << contentV2;
+    }
+    UploadJob uploadV2(nullptr, _driveDbId, localFileV2, remoteFileId, testhelpers::defaultTime);
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, uploadV2.runSynchronously().code());
+
+    // Local file holds v1, remote holds v2: CheckHashMatchJob must detect the mismatch.
+    {
+        DownloadJob downloadJob(nullptr, _cacheDirectory,
+                                DownloadJob::FileDownloadInfo{_driveDbId, remoteFileId, localDestFile,
+                                                              static_cast<int64_t>(fileSize),
+                                                              testhelpers::defaultTime, testhelpers::defaultTime, false},
+                                DownloadJob::DateTimePolicy::IgnoreDateTime);
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, downloadJob.runSynchronously().code());
+        CPPUNIT_ASSERT_EQUAL_MESSAGE("Checksum mismatch should trigger a download", true, downloadJob.shouldDownload());
+
+        // Verify the file content has been updated to v2.
+        {
+            std::ifstream ifs(localDestFile, std::ios::binary);
+            const std::string actualContent((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+            CPPUNIT_ASSERT_EQUAL_MESSAGE("File content should have been updated to v2", contentV2, actualContent);
+        }
+
+        // Verify the modification date is unchanged (IgnoreDateTime policy was used).
+        {
+            FileStat fileStat;
+            IoError ioError = IoError::Success;
+            IoHelper::getFileStat(localDestFile, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
+            CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+            CPPUNIT_ASSERT_EQUAL_MESSAGE("Modification time should be unchanged (IgnoreDateTime policy)",
+                                         downloadJob.modificationTime(), fileStat.modificationTime);
+        }
+    }
+}
+
 } // namespace KDC

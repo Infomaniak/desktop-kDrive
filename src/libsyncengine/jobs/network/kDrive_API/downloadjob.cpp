@@ -141,12 +141,14 @@ ExitInfo DownloadJob::canRun() {
     return ExitCode::Ok;
 }
 
-ExitInfo DownloadJob::checkHashMatch(bool &shouldDownload) {
-    shouldDownload = true;
+ExitInfo DownloadJob::checkHashMatch() {
+    _shouldDownload = true;
     CheckHashMatchJob hashJob(_fileDownloadInfo.driveDbId, _fileDownloadInfo.localpath, _fileDownloadInfo.remoteFileId,
                               _fileDownloadInfo.expectedSize);
-    if (const ExitInfo exitInfo = hashJob.runSynchronously(); !exitInfo) {
-        LOG_WARN(_logger, "CheckHashMatchJob failed: " << exitInfo);
+    const ExitInfo exitInfo = hashJob.runSynchronously();
+    if (!exitInfo) {
+        LOGW_WARN(_logger, L"CheckHashMatchJob failed: " << exitInfo);
+        LOGW_DEBUG(_logger, L"Proceeding DownloadJob normally.");
         return ExitCode::Ok; // Non-fatal: fall through to download
     }
     if (hashJob.shouldDownload()) {
@@ -155,52 +157,18 @@ ExitInfo DownloadJob::checkHashMatch(bool &shouldDownload) {
     }
 
     LOGW_DEBUG(_logger, L"Hash match, skipping download: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
-    if (_dateTimePolicy == DateTimePolicy::ApplyDateTime) {
-        if (const IoError ioError = IoHelper::setFileDates(_fileDownloadInfo.localpath, _fileDownloadInfo.creationTime,
-                                                           _fileDownloadInfo.modificationTime, false);
-            ioError == IoError::Unknown) {
-            LOGW_WARN(_logger, L"Error in IoHelper::setFileDates: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
-        } else if (ioError == IoError::NoSuchFileOrDirectory || ioError == IoError::AccessDenied) {
-            return {ExitCode::DataError, ExitCause::InvalidSnapshot};
-        }
-    }
+    if (const ExitInfo exitInfo = applyFileDatesIfRequired(false); !exitInfo) return exitInfo;
 
-    FileStat filestat;
-    IoError ioError = IoError::Success;
-    if (!IoHelper::getFileStat(_fileDownloadInfo.localpath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive) ||
-        ioError != IoError::Success) {
-        LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_fileDownloadInfo.localpath, ioError));
-        return ExitCode::SystemError;
-    }
-    _localNodeId = std::to_string(filestat.inode);
-    _creationTimeOut = filestat.creationTime;
-    _modificationTimeOut = filestat.modificationTime;
-    _sizeOut = filestat.size;
-#if defined(KD_MACOS) || defined(KD_WINDOWS)
-    if (_fileDownloadInfo.creationTime != _creationTimeOut || _fileDownloadInfo.modificationTime != _modificationTimeOut) {
-        LOGW_INFO(_logger, L"Impossible to set creation and/or modification time(s) on local file."
-                                   << L" Desired values: " << _fileDownloadInfo.creationTime << L"/"
-                                   << _fileDownloadInfo.modificationTime << L" Set values: " << _creationTimeOut << L"/"
-                                   << _modificationTimeOut << L" for " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
-    }
-#else
-    if (_fileDownloadInfo.modificationTime != _modificationTimeOut) {
-        LOGW_INFO(_logger, L"Impossible to set modification time on local file."
-                                   << L" Desired value: " << _fileDownloadInfo.modificationTime << L" Set value: "
-                                   << _modificationTimeOut << L" for " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
-    }
-#endif
-    shouldDownload = false;
-    return ExitCode::Ok;
+    _shouldDownload = false;
+    return readBackAndStoreLocalFileStats();
 }
 
 ExitInfo DownloadJob::runJob() noexcept {
     if (!_fileDownloadInfo.isCreate) {
-        bool shouldDownload = true;
-        if (const ExitInfo exitInfo = checkHashMatch(shouldDownload); !exitInfo) {
+        if (const ExitInfo exitInfo = checkHashMatch(); !exitInfo) {
             return exitInfo;
         }
-        if (!shouldDownload) return ExitCode::Ok;
+        if (!_shouldDownload) return ExitCode::Ok;
     }
 
     if (!_fileDownloadInfo.isCreate && _vfs) {
@@ -333,23 +301,28 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
             }
         }
     }
-    if (_dateTimePolicy == DateTimePolicy::ApplyDateTime) {
-        if (const IoError ioError = IoHelper::setFileDates(_fileDownloadInfo.localpath, _fileDownloadInfo.creationTime,
-                                                           _fileDownloadInfo.modificationTime, isLink);
-            ioError == IoError::Unknown) {
-            LOGW_WARN(_logger, L"Error in IoHelper::setFileDates: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
-            // Do nothing (remote file will be updated during the next sync)
-            sentry::Handler::captureMessage(sentry::Level::Warning, "DownloadJob::handleResponse", "Unable to set file dates");
-        } else if (ioError == IoError::NoSuchFileOrDirectory) {
-            LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
-            return {ExitCode::SystemError, ExitCause::NotFound};
-        } else if (ioError == IoError::AccessDenied) {
-            LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
-            return {ExitCode::SystemError, ExitCause::FileAccessError};
-        }
-    }
+    if (const ExitInfo exitInfo = applyFileDatesIfRequired(isLink); !exitInfo) return exitInfo;
+    return readBackAndStoreLocalFileStats();
+}
 
-    // Retrieve inode
+ExitInfo DownloadJob::applyFileDatesIfRequired(const bool isLink) {
+    if (_dateTimePolicy != DateTimePolicy::ApplyDateTime) return ExitCode::Ok;
+
+    if (const IoError ioError = IoHelper::setFileDates(_fileDownloadInfo.localpath, _fileDownloadInfo.creationTime,
+                                                       _fileDownloadInfo.modificationTime, isLink);
+        ioError == IoError::Unknown) {
+        LOGW_WARN(_logger, L"Error in IoHelper::setFileDates: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
+        // Do nothing (remote file will be updated during the next sync)
+        sentry::Handler::captureMessage(sentry::Level::Warning, "DownloadJob::handleResponse", "Unable to set file dates");
+    } else if (ioError == IoError::NoSuchFileOrDirectory || ioError == IoError::AccessDenied) {
+        LOGW_INFO(_logger, L"Item does not exist anymore or access is denied. Restarting sync: "
+                                   << Utility::formatSyncPath(_fileDownloadInfo.localpath));
+        return {ExitCode::DataError, ExitCause::InvalidSnapshot};
+    }
+    return ExitCode::Ok;
+}
+
+ExitInfo DownloadJob::readBackAndStoreLocalFileStats() {
     FileStat filestat;
     IoError ioError = IoError::Success;
     if (!IoHelper::getFileStat(_fileDownloadInfo.localpath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive)) {
