@@ -24,6 +24,7 @@ Item {
     id: root
 
     readonly property bool compact: width < IKOnboarding.loginCompactBreakpointWidth
+    readonly property bool waitingForWebAuthentication: onboardingFlowController.waitingForWebAuthentication
 
     Column {
         width: Math.min(IKOnboarding.loginContentMaxWidth, root.width - IKSpacing.s64)
@@ -31,6 +32,7 @@ Item {
         anchors.left: parent.left
         anchors.leftMargin: root.compact ? IKSpacing.s32 : IKOnboarding.loginContentExpandedLeftMargin
         spacing: IKSpacing.s24
+        visible: !root.waitingForWebAuthentication
 
         Column {
             width: parent.width
@@ -143,6 +145,71 @@ Item {
             lineHeightMode: Text.FixedHeight
             lineHeight: IKOnboarding.loginBodyLineHeight
             wrapMode: Text.WordWrap
+        }
+    }
+
+    Column {
+        width: Math.min(IKOnboarding.loginContentMaxWidth, root.width - IKSpacing.s64)
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.left: parent.left
+        anchors.leftMargin: root.compact ? IKSpacing.s32 : IKOnboarding.loginContentExpandedLeftMargin
+        spacing: IKOnboarding.loginBrowserContentSpacing
+        visible: root.waitingForWebAuthentication
+
+        Column {
+            width: parent.width
+            spacing: IKOnboarding.loginBrowserTextSpacing
+
+            Text {
+                width: parent.width
+                text: qsTr("Connectez-vous\ndans votre navigateur")
+                color: IKColors.textPrimary
+                font.pixelSize: IKOnboarding.loginBrowserTitleSize
+                font.weight: IKFonts.emphasized
+                lineHeightMode: Text.FixedHeight
+                lineHeight: IKOnboarding.loginBrowserTitleLineHeight
+                wrapMode: Text.WordWrap
+            }
+
+            Text {
+                width: parent.width
+                text: qsTr("Votre navigateur devrait s’ouvrir automatiquement\npour finaliser la connexion. Une fois connecté,\nvous reviendrez automatiquement dans kDrive.")
+                color: IKColors.textSecondary
+                font.pixelSize: IKOnboarding.loginBrowserBodySize
+                lineHeightMode: Text.FixedHeight
+                lineHeight: IKOnboarding.loginBrowserBodyLineHeight
+                wrapMode: Text.WordWrap
+            }
+        }
+
+        Button {
+            id: openLoginPageButton
+
+            height: IKOnboarding.loginBrowserButtonHeight
+            text: qsTr("Ouvrir la page de connexion")
+            onClicked: onboardingFlowController.requestLogin()
+
+            contentItem: Text {
+                text: openLoginPageButton.text
+                color: IKColors.actionOnPrimary
+                font.pixelSize: IKOnboarding.loginBrowserBodySize
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                elide: Text.ElideRight
+            }
+
+            background: Rectangle {
+                implicitWidth: IKOnboarding.loginBrowserButtonMinWidth
+                implicitHeight: IKOnboarding.loginBrowserButtonHeight
+                radius: IKRadius.r4
+                color: IKColors.actionPrimary
+            }
+
+            padding: 0
+            leftPadding: IKSpacing.s12
+            rightPadding: IKSpacing.s12
+            topPadding: 0
+            bottomPadding: 0
         }
     }
 }
