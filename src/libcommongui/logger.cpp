@@ -39,17 +39,17 @@
 #endif
 
 static const int logSizeWatcherTimeout = 60000;
+constexpr char logMessagePattern[] =
+        "%{time yyyy-MM-dd hh:mm:ss:zzz} "
+        "[%{if-debug}D%{endif}%{if-info}I%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] "
+        "(%{threadid}) %{file}:%{line} - %{message}";
 
 namespace KDC {
 
 static const QMap<QtMsgType, int> qtMsgTypeLevel = {{QtInfoMsg, 0},     {QtDebugMsg, 1},  {QtWarningMsg, 2},
                                                     {QtCriticalMsg, 3}, {QtSystemMsg, 3}, {QtFatalMsg, 4}};
 
-static void kdriveLogCatcher(QtMsgType type, const QMessageLogContext &ctx, const QString &message) {
-    auto logger = Logger::instance();
-    if (qtMsgTypeLevel[type] < logger->minLogLevel()) return;
-
-    // Create new context
+static QString formatLogMessageWithShortFile(const QtMsgType type, const QMessageLogContext &ctx, const QString &message) {
     SyncName fileName;
     if (ctx.file) {
         const SyncPath filePath(ctx.file);
@@ -62,12 +62,22 @@ static void kdriveLogCatcher(QtMsgType type, const QMessageLogContext &ctx, cons
 #else
     const char *fileNamePtr = fileName.c_str();
 #endif
-    QMessageLogContext ctxNew(fileNamePtr, ctx.line, ctx.function, ctx.category);
+    const QMessageLogContext ctxNew(fileNamePtr, ctx.line, ctx.function, ctx.category);
+    return qFormatLogMessage(type, ctxNew, message);
+}
+
+static void earlyLogCatcher(const QtMsgType type, const QMessageLogContext &ctx, const QString &message) {
+    std::cerr << qPrintable(formatLogMessageWithShortFile(type, ctx, message)) << std::endl;
+}
+
+static void kdriveLogCatcher(QtMsgType type, const QMessageLogContext &ctx, const QString &message) {
+    auto logger = Logger::instance();
+    if (qtMsgTypeLevel[type] < logger->minLogLevel()) return;
 
     if (!logger->isNoop()) {
-        logger->doLog(qFormatLogMessage(type, ctxNew, message));
+        logger->doLog(formatLogMessageWithShortFile(type, ctx, message));
     } else if (type >= QtCriticalMsg) {
-        std::cerr << qPrintable(qFormatLogMessage(type, ctxNew, message)) << std::endl;
+        std::cerr << qPrintable(formatLogMessageWithShortFile(type, ctx, message)) << std::endl;
     }
 
 #if defined(Q_OS_WIN)
@@ -84,6 +94,19 @@ Logger *Logger::instance() {
     return &log;
 }
 
+void Logger::installMessagePattern() {
+    qSetMessagePattern(QString::fromLatin1(logMessagePattern));
+}
+
+void Logger::installEarlyMessageHandler() {
+    installMessagePattern();
+#ifndef NO_MSG_HANDLER
+    qInstallMessageHandler(earlyLogCatcher);
+#else
+    Q_UNUSED(earlyLogCatcher)
+#endif
+}
+
 Logger::Logger(QObject *parent) :
     QObject(parent) {
 #if defined(Q_OS_WIN)
@@ -98,10 +121,7 @@ Logger::Logger(QObject *parent) :
         std::cerr.clear();
     }
 #endif
-    qSetMessagePattern(
-            "%{time yyyy-MM-dd hh:mm:ss:zzz} "
-            "[%{if-debug}D%{endif}%{if-info}I%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] "
-            "(%{threadid}) %{file}:%{line} - %{message}");
+    installMessagePattern();
 #ifndef NO_MSG_HANDLER
     qInstallMessageHandler(kdriveLogCatcher);
 #else
