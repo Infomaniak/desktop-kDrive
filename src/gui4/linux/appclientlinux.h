@@ -28,6 +28,7 @@
 #include "app/services/driveservice.h"
 #include "app/services/serviceactiontracker.h"
 #include "app/services/serviceeventbus.h"
+#include "app/services/sentryservice.h"
 #include "app/services/syncservice.h"
 #include "app/services/userservice.h"
 #include "app/systraycontroller.h"
@@ -96,6 +97,7 @@ class AppClientLinux : public QApplication {
         OnboardingFlowController _onboardingFlowController{this};
         ServiceActionTracker _serviceActionTracker{this};
         ServiceEventBus _serviceEventBus{this};
+        SentryService _sentryService{_serverCommService, _appCache, this};
         CachePopulator _cachePopulator{_serverCommService, _appCache, this};
         UserService _userService{_serverCommService, _appCache, _serviceActionTracker, _serviceEventBus, this};
         DriveService _driveService{_serverCommService, _serviceActionTracker, _serviceEventBus, this};
