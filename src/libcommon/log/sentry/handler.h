@@ -64,9 +64,11 @@ inline std::string toString(sentry::Level level) {
 namespace sentry {
 class Handler {
     public:
+        static constexpr int32_t defaultBreadcrumbsSize{100};
+
         virtual ~Handler();
         static std::shared_ptr<Handler> instance();
-        static void init(AppType appType, int breadCrumbsSize = 100, const std::string &dsnOverride = "",
+        static void init(AppType appType, int breadCrumbsSize = defaultBreadcrumbsSize, const std::string &dsnOverride = "",
                          const std::string &dbPathSubdirOverride = "");
         static void shutdown();
         [[nodiscard]] static bool isInitialized() { return _instance != nullptr; }
