@@ -20,25 +20,50 @@ pragma Singleton
 import QtQuick
 
 QtObject {
+    // Local primitives.
+    readonly property real contentMaxWidth: 378
+    readonly property real compactBreakpointWidth: 520
+    readonly property real expandedContentLeftMargin: 80
+    readonly property real compactButtonHeight: 24
+    readonly property real largeButtonHeight: 36
+    readonly property real buttonCornerRadius: 6
+    readonly property real titleLineHeight: 32
+    readonly property real bodyLineHeight: 16
+    readonly property real browserTitleSize: 28
+    readonly property real browserTitleLineHeight: 36
+    readonly property real browserBodySize: IKFonts.headlineSize
+    readonly property real browserBodyLineHeight: IKFonts.title2Size
+    readonly property real primaryButtonMinWidth: 105
+    readonly property real secondaryButtonMinWidth: 128
+    readonly property real browserButtonMinWidth: 190
+
     // Splits the onboarding window between the form area and the illustration area.
     readonly property real contentPanelWidthRatio: 0.63
-    readonly property real illustrationPanelWidthRatio: 0.37
+    readonly property real illustrationPanelWidthRatio: 1 - contentPanelWidthRatio
 
     // Leaves breathing room around the Lottie animation inside the illustration panel.
-    readonly property real illustrationAnimationMaxSize: 260
+    readonly property real illustrationAnimationMaxSize: loaderStrokeAnimationHeight
     readonly property real illustrationAnimationFillRatio: 0.8
 
     // Login screen layout.
-    readonly property real loginCompactBreakpointWidth: 520
-    readonly property real loginContentMaxWidth: 378
-    readonly property real loginContentExpandedLeftMargin: 80
-    readonly property real loginButtonSpacing: 10
-    readonly property real loginButtonHeight: 24
-    readonly property real loginButtonCornerRadius: 6
-    readonly property real loginCreateAccountButtonMinWidth: 128
-    readonly property real loginButtonMinWidth: 105
-    readonly property real loginTitleLineHeight: 32
-    readonly property real loginBodyLineHeight: 16
+    readonly property real loginCompactBreakpointWidth: compactBreakpointWidth
+    readonly property real loginContentMaxWidth: contentMaxWidth
+    readonly property real loginContentExpandedLeftMargin: expandedContentLeftMargin
+    readonly property real loginButtonSpacing: IKSpacing.s8
+    readonly property real loginButtonHeight: compactButtonHeight
+    readonly property real loginButtonCornerRadius: buttonCornerRadius
+    readonly property real loginCreateAccountButtonMinWidth: secondaryButtonMinWidth
+    readonly property real loginButtonMinWidth: primaryButtonMinWidth
+    readonly property real loginTitleLineHeight: titleLineHeight
+    readonly property real loginBodyLineHeight: bodyLineHeight
+    readonly property real loginBrowserContentSpacing: IKSpacing.s24
+    readonly property real loginBrowserTextSpacing: IKSpacing.s12
+    readonly property real loginBrowserTitleSize: browserTitleSize
+    readonly property real loginBrowserTitleLineHeight: browserTitleLineHeight
+    readonly property real loginBrowserBodySize: browserBodySize
+    readonly property real loginBrowserBodyLineHeight: browserBodyLineHeight
+    readonly property real loginBrowserButtonHeight: largeButtonHeight
+    readonly property real loginBrowserButtonMinWidth: browserButtonMinWidth
 
     // Source dimensions of the loader-stroke animation.
     readonly property int loaderStrokeAnimationWidth: 302
