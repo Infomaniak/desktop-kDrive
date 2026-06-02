@@ -18,14 +18,21 @@
 
 #include "postfilemodificationdatejob.h"
 
+#include "jobs/network/networkjobsparams.h"
+#include "libcommonserver/io/iohelper.h"
+#include "libcommonserver/utility/jsonparserutility.h"
+#include "libcommonserver/utility/utility.h"
+
 #include <Poco/Net/HTTPRequest.h>
 
 namespace KDC {
 
-PostFileModificationDateJob::PostFileModificationDateJob(const DriveDbId driveDbId, const NodeId &nodeId, uint64_t lastModifiedAt) :
+PostFileModificationDateJob::PostFileModificationDateJob(const DriveDbId driveDbId, const NodeId &nodeId, SyncTime lastModifiedAt,
+                                                         const SyncPath &filePath) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
     _nodeId(nodeId),
-    _lastModifiedAt(lastModifiedAt) {
+    _lastModifiedAt(lastModifiedAt),
+    _filePath(filePath) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
     _apiVersion = 3;
 }
@@ -44,6 +51,33 @@ ExitInfo PostFileModificationDateJob::setData() {
     std::stringstream ss;
     json.stringify(ss);
     _data = ss.str();
+    return ExitCode::Ok;
+}
+
+ExitInfo PostFileModificationDateJob::runJob() noexcept {
+    if (const ExitInfo exitInfo = AbstractTokenNetworkJob::runJob(); !exitInfo) return exitInfo;
+
+    if (_filePath.empty()) return ExitCode::Ok;
+
+    if (const IoError ioError = IoHelper::setFileDates(_filePath, 0, _lastModifiedAtOut, false); ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Error in IoHelper::setFileDates: " << Utility::formatIoError(_filePath, ioError));
+    }
+    return ExitCode::Ok;
+}
+
+ExitInfo PostFileModificationDateJob::handleResponse(std::istream &is) {
+    if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) {
+        return exitInfo;
+    }
+
+    if (!jsonRes()) return {ExitCode::BackError, ExitCause::MissingReplyData};
+
+    const auto dataObj = jsonRes()->getObject(dataKey);
+    if (!dataObj) return {ExitCode::BackError, ExitCause::MissingReplyData};
+
+    if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _lastModifiedAtOut))
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+
     return ExitCode::Ok;
 }
 

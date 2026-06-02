@@ -1903,8 +1903,7 @@ void TestNetworkJobs::testPostFileModificationDate() {
             // fileName                   timestampToPost         targetOverride    expectSuccess  expectedServerValue
             {"test_valid.txt",            pastModificationDateSec,           "",     true,        pastModificationDateSec},
             {"test_valid_future.txt",     valideFutureModificationDate,      "",     true,        valideFutureModificationDate},
-            {"test_nonExistent.txt",      pastModificationDateSec,           "0",     false,       nowTimeStampSec},
-            {"test_future.txt",           invalideFutureModificationDate,    "",      false,       nowTimeStampSec},
+            {"test_nonExistent.txt",      pastModificationDateSec,           "0",    false,       nowTimeStampSec},
             {"test_zero.txt",             0,                                 "",     true,        static_cast<SyncTime>(0)},
             // clang-format on
     };
@@ -1919,7 +1918,7 @@ void TestNetworkJobs::testPostFileModificationDate() {
         const NodeId nodeId = uploadJob.nodeId();
         CPPUNIT_ASSERT(!nodeId.empty());
         const std::string targetId = testCase.targetNodeIdOverride.empty() ? nodeId : testCase.targetNodeIdOverride;
-        PostFileModificationDateJob testJob(_driveDbId, targetId, testCase.timestampToPost);
+        PostFileModificationDateJob testJob(_driveDbId, targetId, testCase.timestampToPost, localFilePath);
         exitInfo = testJob.runSynchronously();
         CPPUNIT_ASSERT_MESSAGE(toString(exitInfo), exitInfo.operator bool() == testCase.expectSuccess);
 
@@ -1931,6 +1930,29 @@ void TestNetworkJobs::testPostFileModificationDate() {
         SyncTime verifyLastModifiedAt = 0;
         CPPUNIT_ASSERT(JsonParserUtility::extractValue(verifyDataObj, lastModifiedAtKey, verifyLastModifiedAt, false));
         CPPUNIT_ASSERT_EQUAL(testCase.expectedServerValue, verifyLastModifiedAt);
+    }
+
+    // A timestamp more than 24h in the future is capped by the server to its current time.
+    // We only know the capped value is strictly less than what we sent.
+    {
+        const SyncPath localFilePath = localTmpDir.path() / "test_future.txt";
+        testhelpers::generateOrEditTestFile(localFilePath);
+        UploadJob uploadJob(nullptr, _driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
+                            nowTimeStampSec, nowTimeStampSec);
+        const ExitInfo uploadExitInfo = uploadJob.runSynchronously();
+        CPPUNIT_ASSERT_MESSAGE(toString(uploadExitInfo), uploadExitInfo);
+        const NodeId nodeId = uploadJob.nodeId();
+        CPPUNIT_ASSERT(!nodeId.empty());
+        PostFileModificationDateJob testJob(_driveDbId, nodeId, invalideFutureModificationDate, localFilePath);
+        CPPUNIT_ASSERT(testJob.runSynchronously());
+
+        GetFileInfoJob verifyJob(_driveDbId, nodeId);
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, verifyJob.runSynchronously().code());
+        Poco::JSON::Object::Ptr verifyDataObj = verifyJob.jsonRes()->getObject(dataKey);
+        CPPUNIT_ASSERT(verifyDataObj);
+        SyncTime verifyLastModifiedAt = 0;
+        CPPUNIT_ASSERT(JsonParserUtility::extractValue(verifyDataObj, lastModifiedAtKey, verifyLastModifiedAt, false));
+        CPPUNIT_ASSERT_LESS(invalideFutureModificationDate, verifyLastModifiedAt);
     }
 }
 
