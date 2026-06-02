@@ -2014,7 +2014,7 @@ void TestNetworkJobs::testDownloadChecksumMismatch() {
         {
             FileStat fileStat;
             IoError ioError = IoError::Success;
-            IoHelper::getFileStat(localDestFile, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
+            CPPUNIT_ASSERT(IoHelper::getFileStat(localDestFile, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive));
             CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
             CPPUNIT_ASSERT_EQUAL_MESSAGE("Modification time should be unchanged (IgnoreDateTime policy)",
                                          downloadJob.modificationTime(), fileStat.modificationTime);

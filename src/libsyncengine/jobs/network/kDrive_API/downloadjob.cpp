@@ -157,7 +157,7 @@ ExitInfo DownloadJob::checkHashMatch() {
     }
 
     LOGW_DEBUG(_logger, L"Hash match, skipping download: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
-    if (const ExitInfo exitInfo = applyFileDatesIfRequired(false); !exitInfo) return exitInfo;
+    if (const ExitInfo ApplyExitInfo = applyFileDatesIfRequired(false); !ApplyExitInfo) return ApplyExitInfo;
 
     _shouldDownload = false;
     return readBackAndStoreLocalFileStats();
@@ -306,15 +306,16 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
 }
 
 ExitInfo DownloadJob::applyFileDatesIfRequired(const bool isLink) {
+    using enum KDC::IoError;
     if (_dateTimePolicy != DateTimePolicy::ApplyDateTime) return ExitCode::Ok;
 
     if (const IoError ioError = IoHelper::setFileDates(_fileDownloadInfo.localpath, _fileDownloadInfo.creationTime,
                                                        _fileDownloadInfo.modificationTime, isLink);
-        ioError == IoError::Unknown) {
+        ioError == Unknown) {
         LOGW_WARN(_logger, L"Error in IoHelper::setFileDates: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
         // Do nothing (remote file will be updated during the next sync)
         sentry::Handler::captureMessage(sentry::Level::Warning, "DownloadJob::handleResponse", "Unable to set file dates");
-    } else if (ioError == IoError::NoSuchFileOrDirectory || ioError == IoError::AccessDenied) {
+    } else if (ioError == NoSuchFileOrDirectory || ioError == AccessDenied) {
         LOGW_INFO(_logger, L"Item does not exist anymore or access is denied. Restarting sync: "
                                    << Utility::formatSyncPath(_fileDownloadInfo.localpath));
         return {ExitCode::DataError, ExitCause::InvalidSnapshot};
