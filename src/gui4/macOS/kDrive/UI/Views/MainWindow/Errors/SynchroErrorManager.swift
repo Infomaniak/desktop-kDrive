@@ -60,6 +60,10 @@ final class SynchroErrorManager: ObservableObject {
         NSWorkspace.shared.open(shopURL)
     }
 
+    func openSupportURL() {
+        NSWorkspace.shared.open(URLConstants.help)
+    }
+
     func openItemRemotely(_ error: SynchroError) async {
         guard let remoteNodeId = error.metadata.nodeId.remote, let drive = await getDrive(error) else {
             return

@@ -43,6 +43,7 @@ struct ErrorsListView: View {
             }
         }
         .groupedFormatStyle()
+        // TODO: Attach sheets here
     }
 }
 

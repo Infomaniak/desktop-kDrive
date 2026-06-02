@@ -39,7 +39,7 @@ extension SynchroError {
 struct ErrorCellFactory {
     func make(error: SynchroError, isAdmin: Bool, manager: SynchroErrorManager) -> AnyView {
         guard let cell = generateCellForErrorKind(error, isAdmin: isAdmin, manager: manager) else {
-            return AnyView(UnknownErrorCellView(error: error))
+            return AnyView(UnknownErrorCellView(error: error, manager: manager))
         }
 
         return cell
