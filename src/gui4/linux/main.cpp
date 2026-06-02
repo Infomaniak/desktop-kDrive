@@ -17,12 +17,17 @@
  */
 
 #include "appclientlinux.h"
+#include "app/services/sentryservice.h"
 #include "libcommon/utility/utility.h"
 
 #include <QLockFile>
 #include <QString>
 
 int main(int argc, char *argv[]) {
+    KDC::CommonUtility::_workingDirPath = KDC::SyncPath(argv[0]).parent_path();
+    KDC::CommonUtility::initAppImageEnvironment();
+    KDC::SentryService::initializeFromCachedConsent();
+
     if (QLockFile lockFile(QString::fromStdString((KDC::CommonUtility::getAppSupportDir() / "kdrive-client.lock").string()));
         !lockFile.tryLock()) {
         qWarning("kDrive client is already running.");
