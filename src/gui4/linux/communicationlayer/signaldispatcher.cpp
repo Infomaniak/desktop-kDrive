@@ -18,6 +18,7 @@
 
 #include "signaldispatcher.h"
 
+#include "app/services/sentryservice.h"
 #include "libcommon/log/customlogstreams.h"
 
 #include <exception>
@@ -50,8 +51,12 @@ void SignalDispatcher::dispatch(const SignalNum num, const Poco::DynamicStruct &
             handler(params);
         } catch (const std::exception &e) {
             qCCritical(lcSignalDispatcher) << "Exception in signal handler for signal:" << num << "-" << e.what();
+            SentryService::reportError("Error processing server signal",
+                                       "SignalNum: " + std::to_string(toInt(num)) + " | exception: " + e.what());
         } catch (...) {
             qCCritical(lcSignalDispatcher) << "Unknown exception in signal handler for signal:" << num;
+            SentryService::reportError("Error processing server signal",
+                                       "SignalNum: " + std::to_string(toInt(num)) + " | unknown exception");
         }
     }
 }
