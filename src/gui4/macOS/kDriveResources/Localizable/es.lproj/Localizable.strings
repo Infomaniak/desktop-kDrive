@@ -1090,6 +1090,8 @@
 
 /* loco:698b0ee1587496f4f5035cd2 */
 "openKDriveAtStartupSetting" = "Abrir kDrive al iniciar el ordenador";
+/* loco:6996f06bd9578b02ee0eb1b4 */
+"pathCopiedToClipboard" = "Ruta copiada al portapapeles";
 
 /* loco:698b2ef3d4aa9d35260e3484 */
 "proxyConnectionDescription" = "Defina cómo kDrive se conecta a Internet.";

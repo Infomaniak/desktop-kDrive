@@ -797,6 +797,8 @@ public enum KDriveLocalizable {
   public static let onboardingWindowTitle = KDriveLocalizable.tr("Localizable", "onboardingWindowTitle", fallback: "Welcome to kDrive")
   /// loco:698b0ee1587496f4f5035cd2
   public static let openKDriveAtStartupSetting = KDriveLocalizable.tr("Localizable", "openKDriveAtStartupSetting", fallback: "Open kDrive at computer startup")
+  /// loco:6996f06bd9578b02ee0eb1b4
+  public static let pathCopiedToClipboard = KDriveLocalizable.tr("Localizable", "pathCopiedToClipboard", fallback: "Path copied to clipboard")
   /// loco:698b2ef3d4aa9d35260e3484
   public static let proxyConnectionDescription = KDriveLocalizable.tr("Localizable", "proxyConnectionDescription", fallback: "Define how kDrive connects to the internet.")
   /// loco:698b3452210436b0e501a3a2

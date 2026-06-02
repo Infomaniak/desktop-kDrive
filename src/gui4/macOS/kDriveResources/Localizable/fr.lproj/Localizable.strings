@@ -1106,6 +1106,9 @@
 /* loco:698b0ee1587496f4f5035cd2 */
 "openKDriveAtStartupSetting" = "Ouvrir kDrive au démarrage de l’ordinateur";
 
+/* loco:6996f06bd9578b02ee0eb1b4 */
+"pathCopiedToClipboard" = "Chemin copié dans le presse-papiers";
+
 /* loco:698b2ef3d4aa9d35260e3484 */
 "proxyConnectionDescription" = "Définissez comment kDrive se connecte à Internet.";
 
