@@ -18,8 +18,32 @@
 
 import Combine
 import kDriveCore
+import InfomaniakDI
 import SwiftUI
 
+@MainActor
 final class SynchroErrorManager: ObservableObject {
-    func resolveConflict(_ error: SynchroError) {}
+    func refreshErrors(_ error: SynchroError) async {
+        _ = try? await ErrorJobs().refreshSyncErrors(syncDbId: Int32(error.metadata.synchroDbId))
+    }
+
+    func openFolder(_ error: SynchroError) {
+        let url = URL(fileURLWithPath: error.metadata.path)
+        NSWorkspace.shared.open(url)
+    }
+
+    func openParentFolder(_ error: SynchroError) {
+        let url = URL(fileURLWithPath: error.metadata.path)
+        let parentURL = url.deletingLastPathComponent()
+        NSWorkspace.shared.open(parentURL)
+    }
+
+    func wakeUpDrive(_ error: SynchroError) async {
+        try? await SyncJobs().startSync(syncDbId: Int32(error.metadata.synchroDbId))
+    }
+
+    func closeApp() async {
+        try? await UtilityJobs().quit()
+        NSApp.terminate(nil)
+    }
 }
