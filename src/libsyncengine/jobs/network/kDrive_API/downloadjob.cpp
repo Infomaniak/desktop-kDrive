@@ -311,7 +311,7 @@ ExitInfo DownloadJob::applyFileDatesIfRequired(const bool isLink) {
 
     if (const IoError ioError = IoHelper::setFileDates(_fileDownloadInfo.localpath, _fileDownloadInfo.creationTime,
                                                        _fileDownloadInfo.modificationTime, isLink);
-        ioError == Unknown) {
+        ioError == IoError::Unknown) {
         LOGW_WARN(_logger, L"Error in IoHelper::setFileDates: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
         // Do nothing (remote file will be updated during the next sync)
         sentry::Handler::captureMessage(sentry::Level::Warning, "DownloadJob::handleResponse", "Unable to set file dates");
