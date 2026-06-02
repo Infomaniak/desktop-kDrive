@@ -779,7 +779,7 @@ void CommService::requestUpdaterState(const UpdateStateCallback &callback) const
                            });
 }
 
-void CommService::requestUpdaterVersionInfo(const VersionChannel channel, const VersionInfoCallback &callback) const {
+void CommService::requestUpdaterVersionInfo(const DistributionChannel channel, const VersionInfoCallback &callback) const {
     Poco::DynamicStruct params;
     params[msgParamChannel] = toInt(channel);
     _ipcClient.sendRequest(RequestNum::UPDATER_VERSION_INFO, params,
