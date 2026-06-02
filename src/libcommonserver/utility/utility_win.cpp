@@ -40,6 +40,7 @@
 #include <Accctrl.h>
 #define SECURITY_WIN32
 #include "utility/logiffail.h"
+#include "utility/utility_base.h"
 
 
 #include <security.h>
