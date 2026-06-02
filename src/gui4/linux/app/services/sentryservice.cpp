@@ -28,6 +28,9 @@
 #include <cstdlib>
 
 namespace {
+
+Q_LOGGING_CATEGORY(lcSentryService, "gui.v4.sentry", QtInfoMsg)
+
 constexpr char settingsOrganization[] = "Infomaniak";
 constexpr char settingsApplication[] = "kDrive";
 constexpr char sentryConsentKey[] = "sentry/enabled";
@@ -39,8 +42,6 @@ constexpr char sentryConsentKey[] = "sentry/enabled";
 } // namespace
 
 namespace KDC {
-
-Q_LOGGING_CATEGORY(lcSentryService, "gui.v4.sentry", QtInfoMsg)
 
 SentryService::SentryService(CommService &commService, AppCache &appCache, QObject *const parent) :
     QObject(parent),
