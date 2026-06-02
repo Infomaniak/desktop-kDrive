@@ -36,15 +36,36 @@ extension NodeType {
 public struct SynchroErrorMetadata: Sendable {
     public let dbId: Int
     public let synchroDbId: Int
+    public let date: Date
 
     public let path: String
     public let nodeType: NodeType?
 
-    public init(dbId: Int, synchroDbId: Int, path: String, nodeType: NodeType?) {
+    public let isAutoResolved: Bool
+    public let level: KDC.ErrorLevel
+    public let exitCode: KDC.ExitCode
+    public let exitCause: KDC.ExitCause
+
+    public init(
+        dbId: Int,
+        synchroDbId: Int,
+        date: Date,
+        path: String,
+        nodeType: NodeType?,
+        isAutoResolved: Bool,
+        level: KDC.ErrorLevel,
+        exitCode: KDC.ExitCode,
+        exitCause: KDC.ExitCause
+    ) {
         self.dbId = dbId
         self.synchroDbId = synchroDbId
+        self.date = date
         self.path = path
         self.nodeType = nodeType
+        self.isAutoResolved = isAutoResolved
+        self.level = level
+        self.exitCode = exitCode
+        self.exitCause = exitCause
     }
 }
 
@@ -52,7 +73,12 @@ public extension SynchroErrorMetadata {
     init(errorInfo: ErrorInfo) {
         dbId = Int(errorInfo.dbId)
         synchroDbId = Int(errorInfo.synchroDbId)
+        date = Date(timeIntervalSince1970: errorInfo.time)
         path = errorInfo.path
         nodeType = NodeType(nodeType: errorInfo.nodeType)
+        isAutoResolved = errorInfo.autoResolved
+        level = errorInfo.level
+        exitCode = errorInfo.exitCode
+        exitCause = errorInfo.exitCause
     }
 }
