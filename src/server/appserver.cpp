@@ -3924,7 +3924,7 @@ ExitInfo AppServer::updateAllUsersInfo(const UpdateFollowUpAction action) {
     for (auto &user: users) {
         std::vector<Account> accounts;
         if (!ParmsDb::instance()->selectAllAccounts(user.dbId(), accounts)) {
-            LOG_WARN(_logger, "Error in ParmsDb::selectAllUsers");
+            LOG_WARN(_logger, "Error in ParmsDb::selectAllAccounts");
             return ExitCode::DbError;
         }
         if (action == UpdateFollowUpAction::CleanUserDbEntry && accounts.empty()) {
