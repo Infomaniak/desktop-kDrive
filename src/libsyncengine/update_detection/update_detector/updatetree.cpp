@@ -56,6 +56,7 @@ bool UpdateTree::deleteNode(std::shared_ptr<Node> node, bool deleteNodeLater, in
 
     if (depth > MAX_DEPTH) {
         assert(false);
+        LOG_WARN(Log::instance()->getLogger(), "Update tree depth is too big");
         sentry::Handler::captureMessage(sentry::Level::Warning, "UpdateTree::deleteNode", "Update tree depth is too big");
         return false;
     }

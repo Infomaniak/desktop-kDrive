@@ -19,6 +19,7 @@
 #include "testupdatetreeworker.h"
 #include "requests/parameterscache.h"
 #include "mocks/libcommonserver/db/mockdb.h"
+#include "requests/syncnodecache.h"
 
 #include "test_utility/testhelpers.h"
 
@@ -36,7 +37,7 @@ void TestUpdateTreeWorker::setUp() {
 
     // Create DB
     bool alreadyExists = false;
-    const SyncPath syncDbPath = MockDb::makeDbName(1, 1, 1, 1, alreadyExists);
+    const SyncPath syncDbPath = MockDb::makeDbName(1, 1, 1, testSyncDbId, alreadyExists);
     _syncDb = std::make_shared<SyncDb>(syncDbPath.string());
     _syncDb->init(KDRIVE_VERSION_STRING);
     _syncDb->setAutoDelete(true);
@@ -45,15 +46,17 @@ void TestUpdateTreeWorker::setUp() {
     _localUpdateTree = std::make_shared<UpdateTree>(ReplicaSide::Local, SyncDb::driveRootNode());
     _remoteUpdateTree = std::make_shared<UpdateTree>(ReplicaSide::Remote, SyncDb::driveRootNode());
 
-    _localUpdateTreeWorker = std::make_shared<UpdateTreeWorker>(_syncDb->cache(), _operationSet, _localUpdateTree,
-                                                                "Test Tree Updater", "LTRU", ReplicaSide::Local);
-    _remoteUpdateTreeWorker = std::make_shared<UpdateTreeWorker>(_syncDb->cache(), _operationSet, _remoteUpdateTree,
-                                                                 "Test Tree Updater", "RTRU", ReplicaSide::Remote);
+    _localUpdateTreeWorker = std::make_shared<MockUpdateTreeWorker>(_syncDb->cache(), _operationSet, _localUpdateTree,
+                                                                    "Test Tree Updater", "LTRU", ReplicaSide::Local);
+    _remoteUpdateTreeWorker = std::make_shared<MockUpdateTreeWorker>(_syncDb->cache(), _operationSet, _remoteUpdateTree,
+                                                                     "Test Tree Updater", "RTRU", ReplicaSide::Remote);
 
     setUpDbTree();
 
     _localUpdateTree->init();
     _remoteUpdateTree->init();
+
+    (void) SyncNodeCache::instance()->initCache(testSyncDbId, _syncDb);
 }
 
 void TestUpdateTreeWorker::tearDown() {
@@ -62,6 +65,7 @@ void TestUpdateTreeWorker::tearDown() {
     // As the two singletons are instantiated in different translation units, the order of their destruction is unknown.
     ParmsDb::reset();
     ParametersCache::reset();
+    (void) SyncNodeCache::instance()->clear(testSyncDbId);
     TestBase::stop();
 }
 
@@ -1221,6 +1225,42 @@ void TestUpdateTreeWorker::testIntegrityCheck() {
         integrityExceptionCaught = true;
     }
     CPPUNIT_ASSERT(integrityExceptionCaught);
+}
+
+void TestUpdateTreeWorker::testResetNodes() {
+    // Normal unmodified node
+    const auto nodeA = std::make_shared<Node>(ReplicaSide::Remote, Str("A"), NodeType::Directory, _remoteUpdateTree->rootNode());
+    _remoteUpdateTree->insertNode(nodeA);
+    // Node created on previous sync
+    const auto nodeB = std::make_shared<Node>(ReplicaSide::Remote, Str("B"), NodeType::Directory, _remoteUpdateTree->rootNode());
+    nodeB->setChangeEvents(OperationType::Create);
+    nodeB->setStatus(NodeStatus::Processed);
+    _remoteUpdateTree->insertNode(nodeB);
+    // Node moved on previous sync
+    const auto nodeC = std::make_shared<Node>(ReplicaSide::Remote, Str("C2"), NodeType::Directory, _remoteUpdateTree->rootNode());
+    nodeC->setMoveOriginInfos({"C1", "1"});
+    nodeC->setChangeEvents(OperationType::Move);
+    _remoteUpdateTree->insertNode(nodeC);
+    // Node to be removed from the UpdateTree
+    const auto nodeD = std::make_shared<Node>(ReplicaSide::Remote, Str("D"), NodeType::Directory, _remoteUpdateTree->rootNode());
+    nodeD->setStatus(NodeStatus::ToDelete);
+    _remoteUpdateTree->insertNode(nodeD);
+    // Blacklisted node
+    const auto nodeE = std::make_shared<Node>(ReplicaSide::Remote, Str("E"), NodeType::Directory, _remoteUpdateTree->rootNode());
+    (void) SyncNodeCache::instance()->update(testSyncDbId, SyncNodeType::TmpRemoteBlacklist, {nodeE->id().value()});
+    _remoteUpdateTree->insertNode(nodeE);
+
+    _remoteUpdateTreeWorker->resetNodes();
+
+    CPPUNIT_ASSERT(_remoteUpdateTree->exists(nodeA->id().value()));
+    CPPUNIT_ASSERT(_remoteUpdateTree->exists(nodeB->id().value()));
+    CPPUNIT_ASSERT_EQUAL(OperationType::None, nodeB->changeEvents());
+    CPPUNIT_ASSERT_EQUAL(NodeStatus::Unprocessed, nodeB->status());
+    CPPUNIT_ASSERT(_remoteUpdateTree->exists(nodeC->id().value()));
+    CPPUNIT_ASSERT_EQUAL(OperationType::None, nodeC->changeEvents());
+    CPPUNIT_ASSERT(!nodeC->moveOriginInfos().isValid());
+    CPPUNIT_ASSERT(!_remoteUpdateTree->exists(nodeD->id().value()));
+    CPPUNIT_ASSERT(!_remoteUpdateTree->exists(nodeE->id().value()));
 }
 
 } // namespace KDC

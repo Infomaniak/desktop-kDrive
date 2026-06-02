@@ -22,6 +22,7 @@
 #include "libcommon/utility/logiffail.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
+#include "requests/syncnodecache.h"
 #include "utility/timerutility.h"
 
 #include <iostream>
@@ -52,6 +53,35 @@ UpdateTreeWorker::~UpdateTreeWorker() {
     _updateTree.reset();
 }
 
+bool UpdateTreeWorker::resetNodes() {
+    // Reset nodes working properties
+    NodeSet tmpBlacklist;
+    SyncNodeCache::instance()->syncNodes(
+            syncDbId(), _side == ReplicaSide::Remote ? SyncNodeType::TmpRemoteBlacklist : SyncNodeType::TmpLocalBlacklist,
+            tmpBlacklist);
+
+    auto nodeIt = _updateTree->nodes().begin();
+    while (nodeIt != _updateTree->nodes().end()) {
+        const auto node = nodeIt->second;
+
+        // Make sure no node flagged with status "ToDelete" or blacklisted node remains in the update tree
+        if (node->status() == NodeStatus::ToDelete || (node->id().has_value() && tmpBlacklist.contains(node->id().value()))) {
+            nodeIt++;
+            if (!_updateTree->deleteNode(node)) return false;
+            continue;
+        }
+
+        node->clearChangeEvents();
+        node->clearConflictAlreadyConsidered();
+        node->setInconsistencyType(InconsistencyType::None);
+        node->setPreviousId(std::nullopt);
+        node->setStatus(NodeStatus::Unprocessed);
+        node->clearMoveOriginInfos();
+        ++nodeIt;
+    }
+    return true;
+}
+
 void UpdateTreeWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
 
@@ -61,20 +91,9 @@ void UpdateTreeWorker::execute() {
 
     _updateTree->startUpdate();
 
-    // Reset nodes working properties
-    auto nodeIt = _updateTree->nodes().begin();
-    while (nodeIt != _updateTree->nodes().end()) {
-        if (nodeIt->second->status() == NodeStatus::ToDelete) {
-            nodeIt = _updateTree->nodes().erase(nodeIt);
-        } else {
-            nodeIt->second->clearChangeEvents();
-            nodeIt->second->clearConflictAlreadyConsidered();
-            nodeIt->second->setInconsistencyType(InconsistencyType::None);
-            nodeIt->second->setPreviousId(std::nullopt);
-            nodeIt->second->setStatus(NodeStatus::Unprocessed);
-            nodeIt->second->clearMoveOriginInfos();
-            ++nodeIt;
-        }
+    if (!resetNodes()) {
+        LOG_SYNCPAL_WARN(_logger, "Failed to reset nodes. Rebuilding update tree from scratch!");
+        _updateTree->clear();
     }
 
     _updateTree->previousIdSet().clear();

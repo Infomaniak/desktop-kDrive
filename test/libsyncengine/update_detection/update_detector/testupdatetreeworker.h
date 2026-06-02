@@ -27,6 +27,19 @@ using namespace CppUnit;
 
 namespace KDC {
 
+constexpr SyncDbId testSyncDbId = 1;
+
+class MockUpdateTreeWorker : public UpdateTreeWorker {
+    public:
+        MockUpdateTreeWorker(SyncDbReadOnlyCache &syncDbReadOnlyCache, std::shared_ptr<FSOperationSet> operationSet,
+                             std::shared_ptr<UpdateTree> updateTree, const std::string &name, const std::string &shortName,
+                             ReplicaSide side) :
+            UpdateTreeWorker(syncDbReadOnlyCache, operationSet, updateTree, name, shortName, side) {}
+
+    protected:
+        SyncDbId syncDbId() const override { return testSyncDbId; }
+};
+
 class TestUpdateTreeWorker : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestUpdateTreeWorker);
         CPPUNIT_TEST(testUtilsFunctions);
@@ -61,6 +74,7 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testDeleteRecreateBranch);
         CPPUNIT_TEST(testGetNodeFromDeletedPath);
         CPPUNIT_TEST(testIntegrityCheck);
+        CPPUNIT_TEST(testResetNodes);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -116,10 +130,11 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture, public TestBase {
 
         void testGetNodeFromDeletedPath();
         void testIntegrityCheck();
+        void testResetNodes();
 
     private:
-        std::shared_ptr<UpdateTreeWorker> _localUpdateTreeWorker;
-        std::shared_ptr<UpdateTreeWorker> _remoteUpdateTreeWorker;
+        std::shared_ptr<MockUpdateTreeWorker> _localUpdateTreeWorker;
+        std::shared_ptr<MockUpdateTreeWorker> _remoteUpdateTreeWorker;
         std::shared_ptr<SyncDb> _syncDb;
         std::shared_ptr<FSOperationSet> _operationSet;
         std::shared_ptr<UpdateTree> _localUpdateTree;
