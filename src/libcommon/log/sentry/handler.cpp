@@ -333,8 +333,10 @@ void Handler::shutdown() {
     instance->_isSentryActivated = false;
     try {
         sentry_close();
+    } catch (const std::exception &e) {
+        std::cerr << "sentry_close threw during shutdown: " << e.what() << std::endl;
     } catch (...) {
-        // Do nothing
+        std::cerr << "sentry_close threw during shutdown" << std::endl;
     }
     _appType = AppType::None;
 }
@@ -407,7 +409,7 @@ void Handler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
     }
 
     auto &storedEvent = it->second;
-    storedEvent.captureCount = (std::min) (storedEvent.captureCount + 1, UINT_MAX - 1);
+    storedEvent.captureCount = (std::min)(storedEvent.captureCount + 1, UINT_MAX - 1);
     event.captureCount = storedEvent.captureCount;
 
     if (lastEventCaptureIsOutdated(storedEvent)) { // Reset the capture count if the last capture was more than 10 minutes ago
