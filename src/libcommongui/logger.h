@@ -53,6 +53,8 @@ class Logger : public QObject {
         static void kdriveLog(const QString &message);
 
         static Logger *instance();
+        static void installMessagePattern();
+        static void installEarlyMessageHandler();
 
         void postNotification(const QString &title, const QString &message);
 
