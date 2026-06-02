@@ -146,7 +146,8 @@ struct COMMONSERVER_EXPORT Utility {
 #if defined(KD_WINDOWS)
         static bool longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound);
         static bool runDetachedProcess(std::wstring cmd);
-#elif defined(KD_MACOS)
+#endif
+#if defined(KD_MACOS) || defined(KD_LINUX)
         static bool runCommand(const std::string &launchPath, const std::vector<std::string> &arguments = {});
 #endif
 
