@@ -60,7 +60,10 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     (void) connect(&_cachePopulator, &CachePopulator::bootstrapCompleted, &_cachePipeline, &CachePipeline::markPopulated);
     (void) connect(&_cachePopulator, &CachePopulator::bootstrapCompleted, &_systemTrayController,
                    [this] { _systemTrayController.setProductStateInitialized(true); });
+    (void) connect(&_cachePopulator, &CachePopulator::bootstrapCompleted, &_sentryService,
+                   &SentryService::updateAuthenticatedUser);
     (void) connect(this, &AppClientLinux::ipcConnected, this, [this] { _cachePopulator.bootstrap(); });
+    (void) connect(this, &AppClientLinux::ipcConnected, &_sentryService, &SentryService::reconcileConsentWithServer);
     (void) connect(this, &QCoreApplication::aboutToQuit, this, [] { qCInfo(lcAppClientLinux) << "Qt aboutToQuit emitted"; });
     (void) connect(&_serverCommService, &CommService::showSettings, &_systemTrayController,
                    &SystemTrayController::showMainWindow);
@@ -93,6 +96,7 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     (void) connect(&_userService, &UserService::loginTokenFailed, &_onboardingFlowController,
                    &OnboardingFlowController::handleLoginFailed);
     (void) connect(&_appCache, &AppCache::usersChanged, this, [this, completeOnboardingLogin] {
+        _sentryService.updateAuthenticatedUser();
         if (!_pendingOnboardingUserDbId.has_value()) {
             return;
         }
@@ -125,12 +129,13 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     _qmlEngine.loadFromModule(QStringLiteral("kDrive.UI"), QStringLiteral("Main"));
     if (_qmlEngine.rootObjects().isEmpty()) {
         qCCritical(lcAppClientLinux) << "QML root object creation failed";
-        std::exit(EXIT_FAILURE); // TODO add a sentry message here.
+        SentryService::reportFatalAndExit("QML root object creation failed", "QQmlApplicationEngine returned no root object.");
     }
     auto *const mainWindow = qobject_cast<QWindow *>(_qmlEngine.rootObjects().constFirst());
-    if (!mainWindow) {
+    if (mainWindow == nullptr) {
         qCCritical(lcAppClientLinux) << "QML root object is not a window";
-        std::exit(EXIT_FAILURE); // TODO add a sentry message here.
+        SentryService::reportFatalAndExit("QML root object is not a window",
+                                          "The first QML root object is not a QWindow instance.");
     }
     _systemTrayController.setMainWindow(mainWindow);
 
