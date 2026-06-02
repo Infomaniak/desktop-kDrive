@@ -75,7 +75,8 @@ void SentryService::initializeWithLinuxConfig() {
         return;
     }
 
-    sentry::Handler::init(AppType::Client, 100, SENTRY_CLIENT_LINUX_DSN, SENTRY_CLIENT_LINUX_DB_PATH);
+    sentry::Handler::init(AppType::Client, sentry::Handler::defaultBreadcrumbsSize, SENTRY_CLIENT_LINUX_DSN,
+                          SENTRY_CLIENT_LINUX_DB_PATH);
     if (!sentry::Handler::isInitialized()) {
         return;
     }
