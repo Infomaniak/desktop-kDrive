@@ -18,12 +18,15 @@
 
 #include "appclientlinux.h"
 #include "app/services/sentryservice.h"
+#include "libcommongui/logger.h"
 #include "libcommon/utility/utility.h"
 
 #include <QLockFile>
 #include <QString>
 
 int main(int argc, char *argv[]) {
+    KDC::Logger::installEarlyMessageHandler();
+
     KDC::CommonUtility::_workingDirPath = KDC::SyncPath(argv[0]).parent_path();
     KDC::CommonUtility::initAppImageEnvironment();
     KDC::SentryService::initializeFromCachedConsent();
