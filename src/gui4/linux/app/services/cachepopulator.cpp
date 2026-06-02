@@ -18,9 +18,9 @@
 
 #include "cachepopulator.h"
 
-#include <QLoggingCategory>
+#include "app/services/sentryservice.h"
 
-#include <cstdlib>
+#include <QLoggingCategory>
 
 namespace KDC {
 
@@ -30,7 +30,7 @@ Q_LOGGING_CATEGORY(lcCachePopulator, "gui.v4.cachepopulator", QtInfoMsg)
 [[noreturn]] void exitOnPopulationFailure(const char *const stage, const ExitInfo &exitInfo) {
     qCCritical(lcCachePopulator) << "Cache population failed at" << stage << "| code:" << exitInfo.code()
                                  << "/ cause:" << exitInfo.cause();
-    std::exit(EXIT_FAILURE); // TODO send a sentry message
+    SentryService::reportFatalAndExit("Cache population failed", "stage: " + std::string(stage) + " | " + toString(exitInfo));
 }
 } // namespace
 
