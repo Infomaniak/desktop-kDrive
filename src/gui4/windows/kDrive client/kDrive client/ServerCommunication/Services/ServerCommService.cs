@@ -38,6 +38,60 @@ using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommService
 
 namespace Infomaniak.kDrive.ServerCommunication.Services
 {
+
+    // This class manages the queue of requests to ensure that we don't send too many concurrent requests to the server which could lead to performance issues.
+    // It uses a semaphore to limit the number of concurrent requests and queues additional requests until one of the ongoing requests is completed.
+    public class RequestQueue
+    {
+        private readonly IServerCommProtocol _commClient;
+        private readonly SemaphoreSlim _semaphore;
+        public RequestQueue(IServerCommProtocol commClient, int maxConcurrentRequests)
+        {
+            _commClient = commClient;
+            _semaphore = new SemaphoreSlim(maxConcurrentRequests, maxConcurrentRequests);
+        }
+
+        // If concurrent request is < max, the request is sent immediately, otherwise it is queued and sent when one of the ongoing request is completed.
+        public async Task<CommData> SendRequestAsync(RequestNum requestNum, JsonObject parameters, CancellationToken cancellationToken)
+        {
+            try
+            {
+                const int timeout = 1000 * 60 * 5; // 5 minutes 
+                cancellationToken.ThrowIfCancellationRequested();
+                if (!await _semaphore.WaitAsync(timeout, cancellationToken).ConfigureAwait(false))
+                {
+                    return new CommData
+                    {
+                        Code = ExitCode.OperationCanceled
+                    };
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                return new CommData
+                {
+                    Code = ExitCode.OperationCanceled
+                };
+            }
+
+            try
+            {
+                return await _commClient.SendRequestAsync(requestNum, parameters, cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                return new CommData
+                {
+                    Code = ExitCode.OperationCanceled
+                };
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+        }
+    }
+
     public class ServerCommService : IServerCommService
     {
         private readonly IServerCommProtocol _commClient;
@@ -53,6 +107,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             _viewModel = viewModel;
             _commClient.SignalReceived += OnSignalReceived;
             _commClient.ConnectionLost += OnConnectionLost;
+
+            _getFolderSizeQueue = new RequestQueue(_commClient, 5);
+            _getSubFolderQueue = new RequestQueue(_commClient, 5);
         }
 
         private void OnConnectionLost(object? sender, EventArgs e)
@@ -793,6 +850,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return size;
         }
 
+        private readonly RequestQueue _getSubFolderQueue;
         public async Task<List<Node>?> GetSubFolders(DbId userDbId, DriveId driveId, NodeId parentNodeId, CancellationToken cancellationToken)
         {
             var parms = new JsonObject
@@ -802,7 +860,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.NodeId] = Utility.ToBase64String(parentNodeId) ?? "",
                 [JsonKeys.WithPath] = true
             };
-            CommData data = await _commClient.SendRequestAsync(RequestNum.NODE_SUBFOLDERS, parms, cancellationToken).ConfigureAwait(false);
+            CommData data = await _getSubFolderQueue.SendRequestAsync(RequestNum.NODE_SUBFOLDERS, parms, cancellationToken).ConfigureAwait(false);
             if (!CheckJobResultAndLogIfError(data, parms))
                 return null;
 
@@ -858,6 +916,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return new GetNodeInfoResult(data.Cause, new Node(nodeInfo.NodeId ?? "", nodeInfo.Name ?? "", nodeInfo.Size ?? 0, nodeInfo.ParentNodeId ?? "", nodeInfo.Path ?? "", userDbId, driveId, nodeInfo?.AccessDenied ?? false));
         }
 
+        private readonly RequestQueue _getFolderSizeQueue;
         public async Task<Int64?> GetFolderSize(long userDbId, long driveId, string nodeId, CancellationToken cancellationToken)
         {
             var parms = new JsonObject
@@ -866,7 +925,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.DriveId] = driveId,
                 [JsonKeys.NodeId] = Utility.ToBase64String(nodeId),
             };
-            CommData data = await _commClient.SendRequestAsync(RequestNum.NODE_FOLDER_SIZE, parms, cancellationToken).ConfigureAwait(false);
+            CommData data = await _getFolderSizeQueue.SendRequestAsync(RequestNum.NODE_FOLDER_SIZE, parms, cancellationToken).ConfigureAwait(false);
             if (!CheckJobResultAndLogIfError(data, parms))
                 return null;
 

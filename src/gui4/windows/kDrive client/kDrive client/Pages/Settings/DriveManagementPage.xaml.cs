@@ -80,6 +80,10 @@ namespace Infomaniak.kDrive.Pages.Settings
             }
             _analyticsService.TrackPageView(Analytics.Keys.Category.DriveManagementPage);
         }
+        protected async override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            await SyncExclusionSelector.DisposeAsync();
+        }
 
         private void SetupNavBar(string driveName)
         {
@@ -136,13 +140,13 @@ namespace Infomaniak.kDrive.Pages.Settings
                 return;
             }
 
-            if(targetOffline && sync.SyncType == Types.SyncType.Offline)
+            if (targetOffline && sync.SyncType == Types.SyncType.Offline)
             {
                 Logger.Log(Logger.Level.Info, "User clicked on Offline sync mode radio button while already in Offline mode");
                 return;
             }
 
-            if(targetOnline && sync.SyncType == Types.SyncType.Online)
+            if (targetOnline && sync.SyncType == Types.SyncType.Online)
             {
                 Logger.Log(Logger.Level.Info, "User clicked on Online sync mode radio button while already in Online mode");
                 return;

@@ -98,7 +98,7 @@ namespace Infomaniak.kDrive.ViewModels
             get => _accessDenied;
             set => SetPropertyInUIThread(ref _accessDenied, value);
         }
-        public async Task LoadSize()
+        public async Task LoadSize(CancellationToken cancellationToken)
         {
             if (UserDbId == -1 || DriveId == -1 || string.IsNullOrEmpty(NodeId))
             {
@@ -111,7 +111,7 @@ namespace Infomaniak.kDrive.ViewModels
             }
             IsLoadingSize = true;
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            var res = await commService.GetFolderSize(_userDbId, _driveId, _nodeId, CancellationToken.None);
+            var res = await commService.GetFolderSize(_userDbId, _driveId, _nodeId, cancellationToken);
             if (res is null)
                 Logger.Log(Logger.Level.Warning, $"Failed to fecth size for NodeId: {NodeId} ");
 
