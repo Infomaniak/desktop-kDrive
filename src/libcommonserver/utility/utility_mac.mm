@@ -28,6 +28,10 @@
 #include "log/log.h"
 #include <log4cplus/loggingmacros.h>
 
+#include <signal.h>
+#include <errno.h>
+#include <string.h>
+
 #import <AppKit/NSApplication.h>
 #import <AppKit/NSRunningApplication.h>
 #import <IOKit/pwr_mgt/IOPMLib.h>
@@ -59,8 +63,7 @@ void runKillCommand(pid_t pid) {
     assert(pid > 1);
     if (pid <= 1) return;
 
-    NSString *killCommand = [NSString stringWithFormat:@"kill -9 %d", pid];
-    system(killCommand.UTF8String);
+    kill(pid, SIGKILL);
 }
 
 void Utility::restartFinderExtension() {
@@ -80,15 +83,13 @@ void Utility::restartFinderExtension() {
     // in Finder.
     // The commands below aims to simulate this manipulation.
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t) (0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-      NSString *runCommand = [NSString stringWithFormat:@"pluginkit -e ignore -i %@", processName];
-      LOG_DEBUG(logger(), "Running ignore Finder Extension command: " << runCommand.UTF8String);
-      system(runCommand.UTF8String);
+      LOG_DEBUG(logger(), "Running ignore Finder Extension command for " << [processName UTF8String]);
+      Utility::runCommand("/usr/bin/pluginkit", {"-e", "ignore", "-i", [processName UTF8String]});
     });
 
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t) (1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-      NSString *runCommand = [NSString stringWithFormat:@"pluginkit -e use -i %@", processName];
-      LOG_DEBUG(logger(), "Running use Finder Extension command: " << runCommand.UTF8String);
-      system(runCommand.UTF8String);
+      LOG_DEBUG(logger(), "Running use Finder Extension command for " << [processName UTF8String]);
+      Utility::runCommand("/usr/bin/pluginkit", {"-e", "use", "-i", [processName UTF8String]});
     });
 }
 
@@ -246,6 +247,41 @@ bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &
 
 bool Utility::hasSystemLaunchOnStartup(const std::string &) {
     return false;
+}
+
+bool Utility::runCommand(const std::string &launchPath, const std::vector<std::string> &arguments) {
+    @autoreleasepool {
+        NSTask *task = [[NSTask alloc] init];
+        [task setLaunchPath:[NSString stringWithUTF8String:launchPath.c_str()]];
+
+        NSMutableArray<NSString *> *args = [NSMutableArray arrayWithCapacity:arguments.size()];
+        for (const auto &arg: arguments) {
+            [args addObject:[NSString stringWithUTF8String:arg.c_str()]];
+        }
+        [task setArguments:args];
+
+        NSPipe *pipe = [NSPipe pipe];
+        [task setStandardOutput:pipe];
+        [task setStandardError:pipe];
+
+        NSError *error = nil;
+        if (![task launchAndReturnError:&error]) {
+            LOG_ERROR(logger(), "Failed to launch " << launchPath << ": " << [error.localizedDescription UTF8String]);
+            return false;
+        }
+
+        [task waitUntilExit];
+        const int status = [task terminationStatus];
+
+        if (status != 0) {
+            NSData *data = [[pipe fileHandleForReading] readDataToEndOfFile];
+            NSString *output = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+            LOG_WARN(logger(),
+                     "Command " << launchPath << " exited with status " << status << ", output: " << [output UTF8String]);
+        }
+
+        return status == 0;
+    }
 }
 
 } // namespace KDC

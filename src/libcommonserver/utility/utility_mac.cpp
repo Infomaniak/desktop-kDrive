@@ -155,11 +155,10 @@ SyncPath Utility::getTrashPath() {
 bool Utility::registerLoginRedirection() {
     // Working directory path is like "<path to the app bundle>/Contents/MacOS"
     const std::string appBundlePath = CommonUtility::getAppWorkingDir().parent_path().parent_path().native();
-    const std::string registerCommand =
+    (void) Utility::runCommand(
             "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/"
-            "lsregister -f \"" +
-            appBundlePath + "\"";
-    (void) system(registerCommand.c_str());
+            "lsregister",
+            {"-f", appBundlePath});
     return true;
 }
 
