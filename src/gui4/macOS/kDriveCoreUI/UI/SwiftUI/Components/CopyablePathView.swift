@@ -29,8 +29,9 @@ public struct CopyablePathView: View {
     public var body: some View {
         HStack {
             Text(path)
-                .frame(maxWidth: .infinity, alignment: .leading)
                 .font(.Tokens.bodyEmphasized)
+                .textSelection(.enabled)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
             Button(action: copyPathToClipboard) {
                 Label {
