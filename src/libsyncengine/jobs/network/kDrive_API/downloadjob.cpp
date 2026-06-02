@@ -306,7 +306,6 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
 }
 
 ExitInfo DownloadJob::applyFileDatesIfRequired(const bool isLink) {
-    using enum KDC::IoError;
     if (_dateTimePolicy != DateTimePolicy::ApplyDateTime) return ExitCode::Ok;
 
     if (const IoError ioError = IoHelper::setFileDates(_fileDownloadInfo.localpath, _fileDownloadInfo.creationTime,
@@ -315,7 +314,7 @@ ExitInfo DownloadJob::applyFileDatesIfRequired(const bool isLink) {
         LOGW_WARN(_logger, L"Error in IoHelper::setFileDates: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
         // Do nothing (remote file will be updated during the next sync)
         sentry::Handler::captureMessage(sentry::Level::Warning, "DownloadJob::handleResponse", "Unable to set file dates");
-    } else if (ioError == NoSuchFileOrDirectory || ioError == AccessDenied) {
+    } else if (ioError == IoError::NoSuchFileOrDirectory || ioError == IoError::AccessDenied) {
         LOGW_INFO(_logger, L"Item does not exist anymore or access is denied. Restarting sync: "
                                    << Utility::formatSyncPath(_fileDownloadInfo.localpath));
         return {ExitCode::DataError, ExitCause::InvalidSnapshot};
