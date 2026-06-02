@@ -2425,6 +2425,20 @@ ExitInfo ExecutorWorker::excludeFileFromSync(SyncOpPtr syncOp, const SyncPath &a
         return ExitCode::DataError;
     }
 
+    if (syncOp->type() == OperationType::Edit) {
+        // Clear node table
+        const auto dbNodeId = syncOp->affectedNode()->idb();
+        assert(dbNodeId.has_value());
+        if (dbNodeId.has_value()) {
+            bool found = false;
+            if (!_syncPal->syncDb()->deleteNode(*dbNodeId, found)) {
+                LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::deleteNode");
+                return {ExitCode::DbError, ExitCause::DbAccessError};
+            }
+            assert(found);
+        }
+    }
+
     return ExitCode::Ok;
 }
 

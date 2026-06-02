@@ -393,9 +393,10 @@ void AppServer::init() {
                 &AppServer::onClientDisconnectedReceived);
     }
 
-    // Update users/accounts/drives info
-    if (const auto exitInfo = updateAllUsersInfo(); exitInfo.code() == ExitCode::InvalidToken) {
-        // The user will be asked to enter its credentials later
+    // Update users,accounts and drives info.
+    if (const auto exitInfo = updateAllUsersInfo(UpdateFollowUpAction::CleanUserDbEntry);
+        exitInfo.code() == ExitCode::InvalidToken) {
+        // The user will be asked to enter its credentials later.
     } else if (!exitInfo) {
         LOG_WARN(_logger, "Error in updateAllUsersInfo: " << exitInfo);
         addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
@@ -2897,7 +2898,9 @@ ExitInfo AppServer::updateUserInfo(User &user) {
             continue;
         }
 
-        if (const auto exitInfo = updateAccount(account); !exitInfo) return exitInfo;
+        if (const auto exitInfo = updateAccount(account); !exitInfo) {
+            LOG_WARN(_logger, "Error in updateAccount for accountDbId=" << account.dbId() << ": " << exitInfo);
+        }
 
         for (auto &drive: drives) {
             if (const auto exitInfo = updateDrive(user, account, drive); !exitInfo) return exitInfo;
@@ -3911,7 +3914,7 @@ bool AppServer::startClient() {
     return true;
 }
 
-ExitInfo AppServer::updateAllUsersInfo() {
+ExitInfo AppServer::updateAllUsersInfo(const UpdateFollowUpAction action) {
     std::vector<User> users;
     if (!ParmsDb::instance()->selectAllUsers(users)) {
         LOG_WARN(_logger, "Error in ParmsDb::selectAllUsers");
@@ -3924,7 +3927,7 @@ ExitInfo AppServer::updateAllUsersInfo() {
             LOG_WARN(_logger, "Error in ParmsDb::selectAllUsers");
             return ExitCode::DbError;
         }
-        if (accounts.empty()) {
+        if (action == UpdateFollowUpAction::CleanUserDbEntry && accounts.empty()) {
             LOG_INFO(_logger,
                      "User: " << user.email() << " (id:" << user.userId() << ") is not used anymore. It will be removed.");
             ServerRequests::deleteUser(user.dbId());
@@ -4909,10 +4912,9 @@ void AppServer::sendSyncAdded(const SyncInfo &syncInfo) const {
 }
 
 void AppServer::onLoadInfo() {
-    ExitCode exitCode = updateAllUsersInfo();
-    if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in updateAllUsersInfo: code=" << exitCode);
-        addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
+    if (const auto exitInfo = updateAllUsersInfo(UpdateFollowUpAction::None); !exitInfo) {
+        LOG_WARN(_logger, "Error in updateAllUsersInfo: " << exitInfo);
+        addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
     }
 }
 
