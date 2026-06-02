@@ -181,8 +181,10 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(const std::list<std::pai
             continue;
         }
 
-        const auto nodeType = itemType.nodeType;
-        auto isLink = itemType.linkType != LinkType::None;
+
+        const auto nodeType = itemType.nodeType; // The actual type of the item, even if it is a link (e.g. a symlink to a
+                                                 // directory will have NodeType::File).
+        const auto isLink = itemType.linkType != LinkType::None;
 
         // Check if the item is excluded by a file exclusion rule
         if (bool isWarning = false; ExclusionTemplateCache::instance()->isExcluded(relativePath, isWarning)) {
@@ -291,8 +293,9 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(const std::list<std::pai
                 }
 
                 if (!_liveSnapshot.removeItem(itemId)) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Failed to remove item from local snapshot: " << Utility::formatSyncPath(absolutePath) << L" ("
-                                                                          << CommonUtility::s2ws(itemId) << L")");
+                    LOGW_SYNCPAL_WARN(_logger, L"Failed to remove item from local snapshot: "
+                                                       << Utility::formatSyncPath(absolutePath) << L" ("
+                                                       << CommonUtility::s2ws(itemId) << L")");
                     return ExitCode::DataError;
                 }
 
@@ -310,15 +313,15 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(const std::list<std::pai
                 // inserted below anyway.
                 if (!previousItemId.empty()) {
                     if (!_liveSnapshot.removeItem(previousItemId)) {
-                        LOGW_SYNCPAL_WARN(_logger, L"Failed to remove item from local snapshot: " << Utility::formatSyncPath(absolutePath) << L" ("
-                                                                              << CommonUtility::s2ws(previousItemId) << L")");
+                        LOGW_SYNCPAL_WARN(_logger, L"Failed to remove item from local snapshot: "
+                                                           << Utility::formatSyncPath(absolutePath) << L" ("
+                                                           << CommonUtility::s2ws(previousItemId) << L")");
                         return ExitCode::DataError;
                     }
 
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: "
                                                         << Utility::formatSyncPath(absolutePath) << L" ("
                                                         << CommonUtility::s2ws(previousItemId) << L")");
-
                 }
             } else {
                 if (exitInfo.cause() == ExitCause::NotFound) {
