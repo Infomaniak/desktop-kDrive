@@ -44,7 +44,7 @@ struct UnknownErrorCellView: View {
             ErrorCellView(
                 title: KDriveLocalizable.defaultErrorTitle,
                 description: KDriveLocalizable.unexpectedErrorTeachingTipContent,
-                action: .init(title: "!Contacter le support") {
+                action: .init(title: KDriveLocalizable.buttonContactSupport) {
                     // TODO:
                 }
             )

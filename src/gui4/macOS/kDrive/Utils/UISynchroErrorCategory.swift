@@ -33,7 +33,7 @@ public enum UISynchroErrorCategory: String, Identifiable, Sendable, Comparable {
     public var title: String {
         switch self {
         case .systemAndPermissions:
-            return "!Système et permissions"
+            return KDriveLocalizable.errorListSystemHeader
         case .conflicts:
             return KDriveLocalizable.conflictErrorTitle
         case .filesToCheck:
