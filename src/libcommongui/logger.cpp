@@ -118,7 +118,7 @@ Logger::~Logger() {
 #endif
 }
 
-void Logger::setIsCLientLog(bool newIsCLientLog) {
+void Logger::setIsClientLog(bool newIsCLientLog) {
     _isClientLog = newIsCLientLog;
 }
 
