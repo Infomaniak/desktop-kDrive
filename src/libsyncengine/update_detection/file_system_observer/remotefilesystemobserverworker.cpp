@@ -1019,7 +1019,7 @@ ExitInfo RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, M
             if (const auto exitInfo = removeItemFromSnapshot(actionInfo.snapshotItem.id()); !exitInfo) return exitInfo;
             break;
         default:
-            LOGW_SYNCPAL_DEBUG(_logger, L"Unknown operation received on item with "
+            LOGW_SYNCPAL_DEBUG(_logger, L"Unknown action code received on item with "
                                                 << Utility::formatSyncName(actionInfo.snapshotItem.name()) << L" ("
                                                 << CommonUtility::s2ws(actionInfo.snapshotItem.id()) << L")");
     }
@@ -1111,7 +1111,7 @@ ExitInfo RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &
 }
 
 ExitInfo RemoteFileSystemObserverWorker::checkForUnsupportedCharacters([[maybe_unused]] const SyncName &name,
-                                                                       [[maybe_unused]] const NodeId &nodeId,
+                                                                       [[maybe_unused]] const NodeId &remoteNodeId,
                                                                        [[maybe_unused]] const NodeType type) {
     ExitInfo exitInfo = ExitCode::Ok;
 
@@ -1126,7 +1126,8 @@ ExitInfo RemoteFileSystemObserverWorker::checkForUnsupportedCharacters([[maybe_u
             exitInfo = Utility::tryCreateTmpDir(_syncPal->cacheDirectory(), name);
             break;
         default:
-            LOG_MSG_IF_FAIL(false, "Unknown NodeType.");
+            const std::string errorMsg = "Unknown NodeType for nodeId=" + remoteNodeId;
+            LOG_MSG_IF_FAIL(false, errorMsg);
             exitInfo = ExitCode::LogicError;
     }
 
@@ -1139,8 +1140,8 @@ ExitInfo RemoteFileSystemObserverWorker::checkForUnsupportedCharacters([[maybe_u
                            L"contains a character not yet supported "
                            L"by the filesystem: exitInfo="
                                    << exitInfo << L", " << Utility::formatSyncName(name) << L". Item is ignored.");
-        _syncPal->addError(
-                Error(_syncPal->syncDbId(), "", nodeId, type, name, ConflictType::None, InconsistencyType::NotYetSupportedChar));
+        _syncPal->addError(Error(_syncPal->syncDbId(), "", remoteNodeId, type, name, ConflictType::None,
+                                 InconsistencyType::NotYetSupportedChar));
         exitInfo = {ExitCode::SystemError, ExitCause::InvalidName};
     }
 #endif
@@ -1153,7 +1154,7 @@ void RemoteFileSystemObserverWorker::countListingRequests() {
     const std::chrono::duration<double> elapsedTime = listingFullTimerEnd - _listingFullTimer;
     bool resetTimer = elapsedTime.count() > 3600; // 1h
     if (_listingFullCounter > 60) {
-        // If there is more then 1 listing/full request per minute for
+        // If there is more than 1 listing/full request per minute for
         // an hour -> send a sentry
         sentry::Handler::captureMessage(sentry::Level::Warning,
                                         "RemoteFileSystemObserverWorker::"
