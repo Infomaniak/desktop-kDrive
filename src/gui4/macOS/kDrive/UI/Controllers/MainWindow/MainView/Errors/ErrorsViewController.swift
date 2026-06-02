@@ -22,6 +22,6 @@ import SwiftUI
 
 final class ErrorsViewController: TitledViewController<ErrorsView> {
     init(mainViewModel: MainViewModel) {
-        super.init(toolbarTitle: "!Erreurs à corriger", contentView: ErrorsView(mainViewModel: MainViewModel))
+        super.init(toolbarTitle: "!Erreurs à corriger", contentView: ErrorsView(mainViewModel: mainViewModel))
     }
 }
