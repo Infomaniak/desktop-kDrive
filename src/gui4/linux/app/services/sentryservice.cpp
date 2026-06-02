@@ -18,11 +18,14 @@
 
 #include "sentryservice.h"
 
+#include "app/cache/appcache.h"
+#include "app/services/commservice.h"
 #include "config.h"
+#include "libcommon/log/sentry/handler.h"
 
+#include <QByteArray>
 #include <QLoggingCategory>
 #include <QSettings>
-#include <QByteArray>
 
 #include <algorithm>
 #include <cstdlib>
@@ -114,6 +117,10 @@ void SentryService::reportError(const std::string &title, const std::string &mes
     sentry::Handler::captureMessage(sentry::Level::Error, title, message);
 }
 
+void SentryService::reportError(const QString &title, const QString &message) {
+    reportError(qStringToUtf8String(title), qStringToUtf8String(message));
+}
+
 void SentryService::reportFatalAndExit(const std::string &title, const std::string &message) {
     if (isInitialized()) {
         sentry::Handler::captureMessage(sentry::Level::Fatal, title, message);
@@ -139,7 +146,12 @@ void SentryService::reconcileConsentWithServer() {
 
 void SentryService::setConsentEnabled(const bool enabled) {
     qCInfo(lcSentryService) << "Sentry consent update requested | enabled:" << enabled;
-    ParametersInfo updatedParametersInfo = _currentParametersInfo.value_or(ParametersInfo());
+    if (!_currentParametersInfo.has_value()) {
+        qCWarning(lcSentryService) << "Sentry consent update ignored because server parameters are not loaded yet";
+        return;
+    }
+
+    ParametersInfo updatedParametersInfo = *_currentParametersInfo;
     updatedParametersInfo.setSentryEnabled(enabled);
     _commService.requestParametersUpdate(updatedParametersInfo, [this, updatedParametersInfo, enabled](const ExitInfo &exitInfo) {
         if (!exitInfo) {

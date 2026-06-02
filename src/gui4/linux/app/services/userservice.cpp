@@ -20,7 +20,6 @@
 
 #include "app/services/sentryservice.h"
 
-#include <QByteArray>
 #include <QLoggingCategory>
 
 namespace {
@@ -28,11 +27,6 @@ constexpr char serviceKeyUser[] = "user";
 constexpr char actionLoadAvailableDrives[] = "loadAvailableDrives";
 constexpr char actionDeleteUser[] = "deleteUser";
 constexpr char actionRequestLoginToken[] = "requestLoginToken";
-
-[[nodiscard]] std::string qStringToUtf8String(const QString &value) {
-    const QByteArray utf8 = value.toUtf8();
-    return std::string(utf8.constData(), static_cast<size_t>(utf8.size()));
-}
 } // namespace
 
 namespace KDC {
@@ -104,8 +98,8 @@ void UserService::requestLoginToken(const QString &code, const QString &codeVeri
         endAction(actionRequestLoginToken);
         if (!result.error.isEmpty() || !result.errorDescription.isEmpty()) {
             _serviceEventBus.notifyGenericError(exitInfo, RequestNum::LOGIN_REQUESTTOKEN);
-            SentryService::reportError("Login failed", "error: " + qStringToUtf8String(result.error) +
-                                                               " | description: " + qStringToUtf8String(result.errorDescription));
+            SentryService::reportError(QStringLiteral("Login failed"),
+                                       QStringLiteral("error: %1 | description: %2").arg(result.error, result.errorDescription));
             emit loginTokenFailed(result.error, result.errorDescription);
             return;
         }
