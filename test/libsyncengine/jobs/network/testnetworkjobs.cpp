@@ -1887,7 +1887,7 @@ void TestNetworkJobs::testPostFileModificationDate() {
     const auto nowTimeStamp = system_clock::now().time_since_epoch();
     const SyncTime pastModificationDateSec = duration_cast<seconds>(nowTimeStamp - hours(1)).count();
     const SyncTime valideFutureModificationDate = duration_cast<seconds>(nowTimeStamp + hours(1)).count();
-    const SyncTime invalideFutureModificationDate = duration_cast<seconds>(nowTimeStamp + hours(25)).count();
+    const SyncTime invalidFutureModificationDate = duration_cast<seconds>(nowTimeStamp + hours(25)).count();
     const SyncTime nowTimeStampSec = duration_cast<seconds>(nowTimeStamp).count();
 
     struct TestCase {
@@ -1943,7 +1943,7 @@ void TestNetworkJobs::testPostFileModificationDate() {
         CPPUNIT_ASSERT_MESSAGE(toString(uploadExitInfo), uploadExitInfo);
         const NodeId nodeId = uploadJob.nodeId();
         CPPUNIT_ASSERT(!nodeId.empty());
-        PostFileModificationDateJob testJob(_driveDbId, nodeId, invalideFutureModificationDate, localFilePath);
+        PostFileModificationDateJob testJob(_driveDbId, nodeId, invalidFutureModificationDate, localFilePath);
         CPPUNIT_ASSERT(testJob.runSynchronously());
 
         GetFileInfoJob verifyJob(_driveDbId, nodeId);
@@ -1952,7 +1952,7 @@ void TestNetworkJobs::testPostFileModificationDate() {
         CPPUNIT_ASSERT(verifyDataObj);
         SyncTime verifyLastModifiedAt = 0;
         CPPUNIT_ASSERT(JsonParserUtility::extractValue(verifyDataObj, lastModifiedAtKey, verifyLastModifiedAt, false));
-        CPPUNIT_ASSERT_LESS(invalideFutureModificationDate, verifyLastModifiedAt);
+        CPPUNIT_ASSERT_LESS(invalidFutureModificationDate, verifyLastModifiedAt);
     }
 }
 
