@@ -54,7 +54,7 @@ class SentryService final : public QObject {
 
         void reconcileConsentWithServer();
         void setConsentEnabled(bool enabled);
-        void updateAuthenticatedUser();
+        void updateAuthenticatedUser() const;
 
     private:
         void applyConsent(bool enabled);
