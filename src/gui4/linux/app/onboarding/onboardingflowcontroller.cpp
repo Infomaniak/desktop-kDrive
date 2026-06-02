@@ -30,7 +30,7 @@ namespace KDC {
 
 namespace {
 [[nodiscard]] qint32 stepToIndex(const OnboardingFlowController::Step step) {
-    return static_cast<qint32>(static_cast<std::underlying_type_t<OnboardingFlowController::Step>>(step));
+    return static_cast<uint8_t>(step);
 }
 
 } // namespace
