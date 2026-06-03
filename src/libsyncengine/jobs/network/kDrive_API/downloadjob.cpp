@@ -147,8 +147,7 @@ ExitInfo DownloadJob::checkHashMatch() {
                               _fileDownloadInfo.expectedSize);
     const ExitInfo exitInfo = hashJob.runSynchronously();
     if (!exitInfo) {
-        LOGW_WARN(_logger, L"CheckHashMatchJob failed: " << exitInfo);
-        LOGW_DEBUG(_logger, L"Proceeding DownloadJob normally.");
+        LOGW_DEBUG(_logger, L"CheckHashMatchJob failed: " << exitInfo << L"Proceeding DownloadJob normally.");
         return ExitCode::Ok; // Non-fatal: fall through to download
     }
     if (hashJob.shouldDownload()) {
