@@ -2001,7 +2001,7 @@ void TestNetworkJobs::testDownloadChecksumMismatch() {
                                                               testhelpers::defaultTime, testhelpers::defaultTime, false},
                                 DownloadJob::DateTimePolicy::IgnoreDateTime);
         CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, downloadJob.runSynchronously().code());
-        CPPUNIT_ASSERT_EQUAL_MESSAGE("Checksum mismatch should trigger a download", true, downloadJob.shouldDownload());
+        CPPUNIT_ASSERT_MESSAGE("Checksum mismatch should trigger a download", downloadJob.shouldDownload());
 
         // Verify the file content has been updated to v2.
         {
