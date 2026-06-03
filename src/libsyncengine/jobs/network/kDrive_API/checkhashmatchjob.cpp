@@ -27,11 +27,11 @@
 
 namespace KDC {
 
-CheckHashMatchJob::CheckHashMatchJob(const DriveDbId driveDbId, const SyncPath &filepath, const NodeId &nodeId,
+CheckHashMatchJob::CheckHashMatchJob(const DriveDbId driveDbId, SyncPath filepath, RemoteNodeId remoteNodeId,
                                      const int64_t remoteSize) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
-    _filePath(filepath),
-    _nodeId(nodeId),
+    _filePath(std::move(filepath)),
+    _remoteNodeId(std::move(remoteNodeId)),
     _remoteSize(remoteSize) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _apiVersion = 2;
@@ -113,7 +113,7 @@ ExitInfo CheckHashMatchJob::runJob() noexcept {
 std::string CheckHashMatchJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
     str += "/files/";
-    str += _nodeId;
+    str += _remoteNodeId;
     str += "/hash";
     return str;
 }
