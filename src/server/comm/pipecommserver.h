@@ -101,7 +101,7 @@ class PipeCommServer : public AbstractCommServer {
         void stop();
         void waitForExit();
 
-        static void executeFunc(PipeCommServer *server);
+        static void executeFunc(PipeCommServer *const server);
 
 #if defined(KD_WINDOWS)
         std::recursive_mutex _channelsMutex;

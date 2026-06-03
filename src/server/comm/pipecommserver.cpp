@@ -139,7 +139,7 @@ bool PipeCommServer::listen() {
     _stopAsked = false;
     _isRunning = true;
 
-    const std::function<void()> runFunction = std::bind(executeFunc, this);
+    const std::function<void()> runFunction = std::bind_front(executeFunc, this);
     _thread = (std::make_unique<StdLoggingThread>(runFunction));
 
     return true;
@@ -161,7 +161,7 @@ std::list<std::shared_ptr<AbstractCommChannel>> PipeCommServer::connections() {
     return channelList;
 }
 
-void PipeCommServer::executeFunc(PipeCommServer *server) {
+void PipeCommServer::executeFunc(PipeCommServer *const server) {
     server->execute();
 }
 
