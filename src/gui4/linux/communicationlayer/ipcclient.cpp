@@ -147,7 +147,7 @@ void IpcClient::sendRequest(const RequestNum num, const Poco::DynamicStruct &par
                                 << ")"; // See qabstractsocket.h#SocketState
         SentryService::reportFatalAndExit(
                 QStringLiteral("IPC send on disconnected socket"),
-                QStringLiteral("RequestNum: %1 | socket state: %2").arg(toInt(num)).arg(static_cast<int32_t>(_socket->state())));
+                QStringLiteral("RequestNum: %1 | socket state: %2").arg(toInt(num)).arg(toInt(_socket->state())));
     }
     const int32_t id = _nextId;
     ++_nextId;
@@ -228,9 +228,8 @@ void IpcClient::onErrorOccurred(const QAbstractSocket::SocketError socketError) 
 
     qCCritical(lcIpcClient) << "Socket error:" << socketError << "-" << _socket->errorString();
     qCCritical(lcIpcClient) << "This error is considered fatal, exiting.";
-    SentryService::reportFatalAndExit(
-            QStringLiteral("Fatal IPC socket error"),
-            QStringLiteral("socketError: %1 | %2").arg(static_cast<int32_t>(socketError)).arg(_socket->errorString()));
+    SentryService::reportFatalAndExit(QStringLiteral("Fatal IPC socket error"),
+                                      QStringLiteral("socketError: %1 | %2").arg(toInt(socketError)).arg(_socket->errorString()));
 }
 
 /** Appends incoming bytes to the read buffer and triggers message extraction with IpcClient::processBuffer. */
