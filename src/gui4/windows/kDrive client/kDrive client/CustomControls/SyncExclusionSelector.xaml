@@ -131,7 +131,7 @@
     </local:FolderTreeSelectorBase.Resources>
 
     <local:ContentLoader x:Name="TreeViewContentLoader"
-                         IsLoading="{Binding IsLoading, ElementName=RootControl, Mode=OneWay}"
+                         IsLoading="{x:Bind IsLoading, Mode=OneWay}"
                          CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
                          LoaderMinHeight="200">
         <local:ContentLoader.LoaderContent>
@@ -220,11 +220,11 @@
                                     Visibility="{x:Bind ShowSaveMenu, Mode=OneWay}">
                         <Button Click="CancelSyncSelection_click"
                                     Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonCancel')}"
-                                    IsEnabled="{Binding IsLoading, ElementName=RootControl, Converter={StaticResource BooleanToInvertedBooleanConverter}, Mode=OneWay}" />
+                                    IsEnabled="{x:Bind IsLoading, Converter={StaticResource BooleanToInvertedBooleanConverter}, Mode=OneWay}" />
                         <Button Style="{ThemeResource AccentButtonStyle}"
                                     Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonSaveMyChoices')}"
                                     Click="SaveSyncSelection_click"
-                                    IsEnabled="{Binding IsLoading, ElementName=RootControl, Converter={StaticResource BooleanToInvertedBooleanConverter}, Mode=OneWay}" />
+                                    IsEnabled="{x:Bind IsLoading, Converter={StaticResource BooleanToInvertedBooleanConverter}, Mode=OneWay}" />
                     </StackPanel>
                 </Grid>
             </Grid>

@@ -41,7 +41,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
     // This class manages the queue of requests to ensure that we don't send too many concurrent requests to the server which could lead to performance issues.
     // It uses a semaphore to limit the number of concurrent requests and queues additional requests until one of the ongoing requests is completed.
-    public class RequestQueue
+    internal class RequestQueue
     {
         private readonly IServerCommProtocol _commClient;
         private readonly SemaphoreSlim _semaphore;

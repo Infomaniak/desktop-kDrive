@@ -204,7 +204,7 @@ namespace Infomaniak.kDrive.CustomControls
 
             control.EffectiveViewportChanged -= TreeViewItem_EffectiveViewportChanged;
 
-            if (treeItem.LoadableNode.Size != -1)
+            if (treeItem.LoadableNode.Size != -1 && treeItem.ChildrenLoaded)
             {
                 // Size already loaded, no need to load again
                 return;
@@ -229,7 +229,7 @@ namespace Infomaniak.kDrive.CustomControls
             if (control is null || treeItem is null || treeItem.LoadableNode is null)
                 return;
 
-            if (treeItem.LoadableNode.Size != -1)
+            if (treeItem.LoadableNode.Size != -1 && treeItem.ChildrenLoaded)
             {
                 // Size already loaded, no need to load again
                 return;
@@ -255,20 +255,21 @@ namespace Infomaniak.kDrive.CustomControls
             if (!isVisible)
                 return;
 
+            control.EffectiveViewportChanged -= TreeViewItem_EffectiveViewportChanged;
+
             if (CancellationTokenSource.IsCancellationRequested)
             {
                 Logger.Log(Logger.Level.Debug, "TreeViewItem_EffectiveViewportChanged: Cancellation requested, skipping size load.");
                 return;
             }
 
-            control.EffectiveViewportChanged -= TreeViewItem_EffectiveViewportChanged;
             await LoadChildrenAndSizeAsync(treeItem);
         }
 
         private async Task LoadChildrenAndSizeAsync(LazyLoadedTreeItemBase treeItem)
         {
-            var loadChildrenTask = treeItem.LoadImmediateChildrenAsync(CancellationTokenSource.Token);
-            var loadSizeTask = treeItem.LoadableNode!.LoadSize(CancellationTokenSource.Token);
+            Task loadChildrenTask = !treeItem.ChildrenLoaded ? treeItem.LoadImmediateChildrenAsync(CancellationTokenSource.Token) : Task.CompletedTask;
+            Task loadSizeTask = (treeItem?.Node?.Size == -1) ? treeItem.Node!.LoadSize(CancellationTokenSource.Token) : Task.CompletedTask;
             await Task.WhenAll(loadChildrenTask, loadSizeTask);
         }
         #endregion

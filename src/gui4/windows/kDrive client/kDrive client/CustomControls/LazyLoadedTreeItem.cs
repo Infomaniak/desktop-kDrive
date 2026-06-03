@@ -68,8 +68,6 @@ namespace Infomaniak.kDrive.CustomControls
             get => _isSelected;
             set => SetPropertyInUIThread(ref _isSelected, value);
         }
-
-        public virtual Node? LoadableNode => Node;
         #endregion
 
         // Lazy load direct child directories.
