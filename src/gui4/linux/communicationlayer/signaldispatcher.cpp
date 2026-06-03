@@ -21,8 +21,10 @@
 #include "app/services/sentryservice.h"
 #include "libcommon/log/customlogstreams.h"
 
-#include <exception>
 #include <QLoggingCategory>
+
+#include <exception>
+#include <format>
 
 Q_LOGGING_CATEGORY(lcSignalDispatcher, "gui.v4.signals", QtInfoMsg)
 
@@ -52,11 +54,11 @@ void SignalDispatcher::dispatch(const SignalNum num, const Poco::DynamicStruct &
         } catch (const std::exception &e) {
             qCCritical(lcSignalDispatcher) << "Exception in signal handler for signal:" << num << "-" << e.what();
             SentryService::reportError("Error processing server signal",
-                                       "SignalNum: " + std::to_string(toInt(num)) + " | exception: " + e.what());
+                                       std::format("SignalNum: {} | exception: {}", toInt(num), e.what()));
         } catch (...) {
             qCCritical(lcSignalDispatcher) << "Unknown exception in signal handler for signal:" << num;
             SentryService::reportError("Error processing server signal",
-                                       "SignalNum: " + std::to_string(toInt(num)) + " | unknown exception");
+                                       std::format("SignalNum: {} | unknown exception", toInt(num)));
         }
     }
 }
