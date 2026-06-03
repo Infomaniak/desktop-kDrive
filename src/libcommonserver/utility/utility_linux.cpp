@@ -390,20 +390,20 @@ bool Utility::runCommand(const std::string &launchPath, const std::vector<std::s
     argv.push_back(nullptr);
 
     pid_t pid = 0;
-    int spawnStatus = posix_spawnp(&pid, launchPath.c_str(), nullptr, nullptr, argv.data(), environ);
+    auto spawnStatus = posix_spawnp(&pid, launchPath.c_str(), nullptr, nullptr, argv.data(), environ);
     if (spawnStatus != 0) {
         LOG_ERROR(logger(), "Failed to spawn process " << launchPath << ": " << strerror(spawnStatus));
         return false;
     }
 
-    int waitStatus = 0;
+    auto waitStatus = 0;
     if (waitpid(pid, &waitStatus, 0) == -1) {
         LOG_ERROR(logger(), "Failed to wait for process " << launchPath << ": " << strerror(errno));
         return false;
     }
 
     if (WIFEXITED(waitStatus)) {
-        const int exitStatus = WEXITSTATUS(waitStatus);
+        const auto exitStatus = WEXITSTATUS(waitStatus);
         if (exitStatus != 0) {
             LOG_WARN(logger(), "Command " << launchPath << " exited with status " << exitStatus);
         }
