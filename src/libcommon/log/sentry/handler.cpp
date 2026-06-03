@@ -189,7 +189,7 @@ std::shared_ptr<Handler> Handler::instance() {
     return _instance;
 }
 
-void Handler::init(AppType appType, int breadCrumbsSize, const std::string &dsnOverride,
+void Handler::init(AppType appType, int32_t breadCrumbsSize, const std::string &dsnOverride,
                    const std::string &dbPathSubdirOverride) {
     if (_instance) {
         assert(false && "Handler already initialized");
@@ -409,7 +409,7 @@ void Handler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
     }
 
     auto &storedEvent = it->second;
-    storedEvent.captureCount = (std::min)(storedEvent.captureCount + 1, UINT_MAX - 1);
+    storedEvent.captureCount = (std::min) (storedEvent.captureCount + 1, UINT_MAX - 1);
     event.captureCount = storedEvent.captureCount;
 
     if (lastEventCaptureIsOutdated(storedEvent)) { // Reset the capture count if the last capture was more than 10 minutes ago
