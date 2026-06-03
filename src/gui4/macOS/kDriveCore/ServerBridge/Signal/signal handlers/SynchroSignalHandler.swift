@@ -67,6 +67,10 @@ extension CoherentCache {
             throw ServerCoherentCache.CacheError.synchroNotFound(syncDbId)
         }
 
+        if syncSignal.syncStatus == .Paused || syncSignal.syncStatus == .Stopped {
+            synchro.removeSyncingActivities()
+        }
+
         synchro.progress = syncSignal.asSynchroProgressInfo
 
         try await updateSynchro(synchro)
