@@ -160,7 +160,11 @@ ExitInfo DownloadJob::runJob() noexcept {
             LOGW_DEBUG(_logger, L"Error in checkHashMatch: " << exitInfo);
             return exitInfo;
         }
-        if (!_shouldDownload) return ExitCode::Ok;
+        if (!_shouldDownload) {
+            LOGW_DEBUG(_logger, L"hanging last modified date without downloading")
+            if (const ExitInfo exitInfo = applyFileDatesIfRequired(FileType::Regular); !exitInfo) return exitInfo;
+            return setOutputParamaters();
+        }
     }
 
     if (!_fileDownloadInfo.isCreate && _vfs) {
