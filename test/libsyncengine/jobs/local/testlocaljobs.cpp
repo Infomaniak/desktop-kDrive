@@ -231,21 +231,6 @@ void KDC::TestLocalJobs::testDeleteFilesWithDuplicateNames() {
 }
 
 void KDC::TestLocalJobs::testLocalDeleteJob() {
-    CPPUNIT_ASSERT(SyncLocalDeleteJob::Path(SyncPath(SyncPath{})).endsWith(SyncPath{}));
-    CPPUNIT_ASSERT(SyncLocalDeleteJob::Path(SyncPath("remote drive name") / "A" / "B" / "C").endsWith(SyncPath("B") / "C"));
-    CPPUNIT_ASSERT(SyncLocalDeleteJob::Path(SyncPath("remote drive name") / "A" / "B" / "C").endsWith(SyncPath("A") / "B" / "C"));
-    CPPUNIT_ASSERT(SyncLocalDeleteJob::Path(SyncPath("remote drive name") / "A" / "B" / "C")
-                           .endsWith(SyncPath("remote drive name") / "A" / "B" / "C"));
-
-
-    CPPUNIT_ASSERT(!SyncLocalDeleteJob::Path(SyncPath("remote drive name")).endsWith(SyncPath{}));
-    CPPUNIT_ASSERT(!SyncLocalDeleteJob::Path(SyncPath("remote drive name") / "A" / "B" / "C").endsWith(SyncPath{}));
-    CPPUNIT_ASSERT(!SyncLocalDeleteJob::Path(SyncPath(SyncPath{})).endsWith("A"));
-    CPPUNIT_ASSERT(!SyncLocalDeleteJob::Path(SyncPath("remote drive name") / "A" / "B" / "C").endsWith("D"));
-    CPPUNIT_ASSERT(!SyncLocalDeleteJob::Path(SyncPath("remote drive name") / "A" / "B" / "C").endsWith(SyncPath("E") / "C"));
-    CPPUNIT_ASSERT(
-            !SyncLocalDeleteJob::Path(SyncPath("remote drive name") / "A" / "B" / "C").endsWith(SyncPath("F") / "B" / "C"));
-
     SyncLocalDeleteJob dummyJob(nullptr, "");
     {
         const SyncPath targetPath = {};
@@ -255,14 +240,20 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
     }
 
     {
-        const SyncPath targetPath = SyncPath{"remote drive name"} / "dir" / "subdir" / "targetDir";
+        const SyncPath targetPath = SyncPath{} / "dir" / "subdir" / "targetDir";
         const SyncPath localRelativePath = SyncPath("somewhere") / "deep" / "deeper";
         CPPUNIT_ASSERT(dummyJob.matchRelativePaths(targetPath, localRelativePath,
-                                                   SyncPath("above") / "targetDir" / "somewhere" / "deep" / "deeper"));
+                                                   SyncPath{"dir"} / "subdir" / "targetDir" / localRelativePath));
         CPPUNIT_ASSERT(!dummyJob.matchRelativePaths(targetPath, localRelativePath,
-                                                    SyncPath("above") / "notTheTargetDir" / "somewhere" / "deep" / "deeper"));
+                                                    SyncPath("above") / "notTheTargetDir" / localRelativePath));
         CPPUNIT_ASSERT(!dummyJob.matchRelativePaths(targetPath, localRelativePath,
                                                     SyncPath("above") / "targetDir" / "elsewhere" / "deep" / "deeper"));
+    }
+
+    {
+        const SyncPath targetPath = SyncPath{} / "dir" / "targetDir";
+        const SyncPath localRelativePath = SyncPath{"targetDir"} / "deep";
+        CPPUNIT_ASSERT(!dummyJob.matchRelativePaths(targetPath, localRelativePath, SyncPath{"targetDir"} / "deep"));
     }
 
     {
@@ -281,7 +272,7 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
         public:
             LocalDeleteJobMock(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath, bool isDehydratedPlaceholder,
                                RemoteNodeId remoteId, ForceToTrash forceToTrash = ForceToTrash::No) :
-                SyncLocalDeleteJob(syncPal, relativePath, isDehydratedPlaceholder, remoteId, forceToTrash){
+                SyncLocalDeleteJob(syncPal, relativePath, isDehydratedPlaceholder, std::move(remoteId), forceToTrash){
 
                 };
             void setRemoteItemPath(const SyncPath &remoteItemPath) { _remoteItemPath = remoteItemPath; }
@@ -311,7 +302,7 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
     // Local and remote item paths are the same: cannot run
     {
         LocalDeleteJobMock deleteJob(_syncPal, SyncPath{_localTempDir.path().filename()}, false, NodeId{"1234"});
-        deleteJob.setRemoteItemPath(_syncPal->syncInfo().targetPath / SyncPath{_localTempDir.path().filename()});
+        deleteJob.setRemoteItemPath(SyncPath{_localTempDir.path().filename()});
 
         CPPUNIT_ASSERT(!deleteJob.checkIfRemoteFileHasBeenMoved());
     }
@@ -325,7 +316,7 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
         CPPUNIT_ASSERT(!deleteJob.checkIfRemoteFileHasBeenMoved());
     }
 
-    // Advanced synchronisation, local and remote item paths are different: cannot run
+    // Advanced synchronisation, local and remote item paths are different: can run
     {
         LocalDeleteJobMock deleteJob(_syncPal, SyncPath{_localTempDir.path().filename()}, false, NodeId{"1234"});
         deleteJob.setRemoteItemPath(SyncPath{"tmp_dir_diff"});

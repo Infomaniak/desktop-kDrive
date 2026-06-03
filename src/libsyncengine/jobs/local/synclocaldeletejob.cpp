@@ -36,29 +36,20 @@
 
 namespace KDC {
 
-SyncLocalDeleteJob::Path::Path(SyncPath path) :
-    _path(std::move(path)){};
-
-bool SyncLocalDeleteJob::Path::endsWith(SyncPath &&ending) const {
-    if (!_path.empty() && ending.empty()) return false;
-
-    SyncPath path = _path;
-
-    while (!ending.empty() && !path.empty()) {
-        if (ending.filename() != path.filename()) return false;
-        ending = ending.parent_path();
-        path = path.parent_path();
-    }
-
-    return !path.empty() || ending.empty();
-};
-
-bool SyncLocalDeleteJob::matchRelativePaths(const SyncPath &targetPath, const SyncPath &localRelativePath,
+bool SyncLocalDeleteJob::matchRelativePaths(const SyncPath &remoteTargetPath, const SyncPath &localRelativePath,
                                             const SyncPath &remoteRelativePath) {
-    if (targetPath.empty()) return localRelativePath == remoteRelativePath;
+    // Standard synchronization case: the target path is empty and the local and remote relative paths should match.
+    if (remoteTargetPath.empty()) return remoteRelativePath == localRelativePath;
 
-    // Case of an advanced synchronization
-    return Path(remoteRelativePath).endsWith(SyncPath(targetPath.filename()) / localRelativePath);
+    // Case of an advanced synchronization.
+    // The remote target path is of the form /path/to/target_folder where to root is the remote drive root.
+    // We remove the "/" at the beginning to compare it with a reconstructed relative path.
+    const auto relativeRemoteTargetPath = std::filesystem::relative(remoteTargetPath, remoteTargetPath.root_path());
+
+    if (relativeRemoteTargetPath.empty() || relativeRemoteTargetPath == SyncPath{"."})
+        return remoteRelativePath == localRelativePath;
+
+    return remoteRelativePath == relativeRemoteTargetPath / localRelativePath;
 }
 
 SyncLocalDeleteJob::SyncLocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath,

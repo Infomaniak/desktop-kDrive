@@ -53,14 +53,14 @@ class SyncLocalDeleteJob : public GenericLocalDeleteJob {
         ExitInfo handleLiteSyncFile(const SyncPath &path);
         ExitInfo deleteFromDB(const SyncPath &path);
 
-        //! Returns `true` if `localRelativePath` and `remoteRelativePath` indicate the same synchronised item.
+        //! Returns `true` if `localRelativePath` and `remoteRelativePath` indicates the same synchronised item.
         /*!
-          \param targetPath is the path of the remote sync folder if the sync is advanced; it is empty otherwise.
+          \param remoteTargetPath is the path of the remote sync folder if the sync is advanced; it is empty otherwise.
           \param localRelativePath is the path of the item relative to the local sync folder.
           \param remoteRelativePath is the path of the item relative to the remote drive root folder.
           \return true if the two relative paths indicate the same synchronised item.
         */
-        bool matchRelativePaths(const SyncPath &targetPath, const SyncPath &localRelativePath,
+        bool matchRelativePaths(const SyncPath &remoteTargetPath, const SyncPath &localRelativePath,
                                 const SyncPath &remoteRelativePath);
 
         ExitInfo checkIfRemoteFileHasBeenMoved();
@@ -69,14 +69,6 @@ class SyncLocalDeleteJob : public GenericLocalDeleteJob {
         SyncPath _relativeLocalPath;
         RemoteNodeId _remoteNodeId;
         bool _forceToTrash = false;
-
-        struct Path {
-                Path(SyncPath path);
-                bool endsWith(SyncPath &&ending) const;
-
-            private:
-                SyncPath _path;
-        };
 
         friend class TestLocalJobs;
 };
