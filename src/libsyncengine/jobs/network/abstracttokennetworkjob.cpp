@@ -276,6 +276,13 @@ ExitInfo AbstractTokenNetworkJob::handleError(const std::string &replyBody, cons
             exitInfo.setCause(exitCause);
             break;
     }
+
+    if (exitInfo.cause() == ExitCause::Unknown && Utility::isError500(httpResponse().getStatus())) {
+        LOG_WARN(_logger, "Reply " << jobId() << ": " << replyBody);
+        disableRetry();
+        exitInfo.setCause(ExitCause::Http5xx);
+    }
+
     return exitInfo;
 }
 

@@ -488,14 +488,6 @@ ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
                                   << httpResponse().getReason());
     logReplyInfo();
 
-    if (Utility::isError500(httpResponse().getStatus())) {
-        std::string replyBody;
-        getStringFromStream(stream[0].get(), replyBody);
-        LOG_WARN(_logger, "Reply " << jobId() << ": " << replyBody);
-        disableRetry();
-        return {ExitCode::BackError, ExitCause::Http5xx};
-    }
-
     switch (httpResponse().getStatus()) {
         case Poco::Net::HTTPResponse::HTTP_OK: {
             try {
