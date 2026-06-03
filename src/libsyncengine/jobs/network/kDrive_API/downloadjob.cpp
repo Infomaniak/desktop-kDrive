@@ -155,7 +155,7 @@ ExitInfo DownloadJob::checkHashMatch() {
 }
 
 ExitInfo DownloadJob::runJob() noexcept {
-    if (!_fileDownloadInfo.isCreate) {
+    if (!_fileDownloadInfo.isCreate && !_vfs) {
         if (const ExitInfo exitInfo = checkHashMatch(); !exitInfo) {
             return exitInfo;
         }
