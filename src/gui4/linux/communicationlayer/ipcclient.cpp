@@ -25,12 +25,12 @@
 
 #include <QHostAddress>
 #include <QLoggingCategory>
+#include <QString>
 
 #include <Poco/Dynamic/Struct.h>
 
 #include <exception>
 #include <filesystem>
-#include <format>
 #include <fstream>
 #include <limits>
 #include <utility>
@@ -146,8 +146,8 @@ void IpcClient::sendRequest(const RequestNum num, const Poco::DynamicStruct &par
         qCCritical(lcIpcClient) << "Cannot send request, socket not in ConnectedState mode (state: " << _socket->state()
                                 << ")"; // See qabstractsocket.h#SocketState
         SentryService::reportFatalAndExit(
-                "IPC send on disconnected socket",
-                std::format("RequestNum: {} | socket state: {}", toInt(num), static_cast<int32_t>(_socket->state())));
+                QStringLiteral("IPC send on disconnected socket"),
+                QStringLiteral("RequestNum: %1 | socket state: %2").arg(toInt(num)).arg(static_cast<int32_t>(_socket->state())));
     }
     const int32_t id = _nextId;
     ++_nextId;
@@ -159,7 +159,8 @@ void IpcClient::sendRequest(const RequestNum num, const Poco::DynamicStruct &par
 
     if (const bool insertResult = ipcMessage.insert(msgRequestParams, params).second; !insertResult) {
         qCCritical(lcIpcClient) << "Failed to insert request parameters into message";
-        SentryService::reportFatalAndExit("Failed to insert request params", std::format("RequestNum: {}", toInt(num)));
+        SentryService::reportFatalAndExit(QStringLiteral("Failed to insert request params"),
+                                          QStringLiteral("RequestNum: %1").arg(toInt(num)));
     }
 
     const std::string json = Poco::Dynamic::structToString(ipcMessage);
@@ -173,9 +174,11 @@ void IpcClient::sendRequest(const RequestNum num, const Poco::DynamicStruct &par
             // another issue is probably occurring on its side.
             qCCritical(lcIpcClient) << "Partial write detected, expected:" << jsonSize << "written:" << writtenData;
         }
-        SentryService::reportFatalAndExit(
-                "Failed to send IPC request",
-                std::format("RequestNum: {} | expected bytes: {} | written bytes: {}", toInt(num), jsonSize, writtenData));
+        SentryService::reportFatalAndExit(QStringLiteral("Failed to send IPC request"),
+                                          QStringLiteral("RequestNum: %1 | expected bytes: %2 | written bytes: %3")
+                                                  .arg(toInt(num))
+                                                  .arg(jsonSize)
+                                                  .arg(writtenData));
     }
 
     if (callback) {
@@ -226,8 +229,8 @@ void IpcClient::onErrorOccurred(const QAbstractSocket::SocketError socketError) 
     qCCritical(lcIpcClient) << "Socket error:" << socketError << "-" << _socket->errorString();
     qCCritical(lcIpcClient) << "This error is considered fatal, exiting.";
     SentryService::reportFatalAndExit(
-            "Fatal IPC socket error",
-            std::format("socketError: {} | {}", static_cast<int32_t>(socketError), _socket->errorString().toStdString()));
+            QStringLiteral("Fatal IPC socket error"),
+            QStringLiteral("socketError: %1 | %2").arg(static_cast<int32_t>(socketError)).arg(_socket->errorString()));
 }
 
 /** Appends incoming bytes to the read buffer and triggers message extraction with IpcClient::processBuffer. */
@@ -274,7 +277,7 @@ void IpcClient::scheduleInitialConnectionRetry(const QString &reason) {
 void IpcClient::handleResponseMessage(const Poco::DynamicStruct &ipcMessage, const int32_t id) {
     if (!ipcMessage.contains(msgResponseCode) || !ipcMessage.contains(msgResponseCause)) {
         qCCritical(lcIpcClient) << "Response missing code/cause fields for id:" << id;
-        SentryService::reportFatalAndExit("Response missing code/cause fields", std::format("id: {}", id));
+        SentryService::reportFatalAndExit(QStringLiteral("Response missing code/cause fields"), QStringLiteral("id: %1").arg(id));
     }
 
     auto requestNum = RequestNum::Unknown;
@@ -282,7 +285,7 @@ void IpcClient::handleResponseMessage(const Poco::DynamicStruct &ipcMessage, con
 
     if (!ipcMessage[msgRequestParams].isStruct()) {
         qCCritical(lcIpcClient) << "params field is not a JSON object for id:" << id;
-        SentryService::reportFatalAndExit("Response params not a JSON object", std::format("id: {}", id));
+        SentryService::reportFatalAndExit(QStringLiteral("Response params not a JSON object"), QStringLiteral("id: %1").arg(id));
     }
     const Poco::DynamicStruct params = ipcMessage[msgRequestParams].extract<Poco::DynamicStruct>();
 
@@ -303,13 +306,17 @@ void IpcClient::handleResponseMessage(const Poco::DynamicStruct &ipcMessage, con
         } catch (const std::exception &e) {
             qCCritical(lcIpcClient) << "Exception in response callback for request id:" << id << "(RequestNum:" << requestNum
                                     << ") -" << e.what();
-            SentryService::reportError("Exception in IPC response callback",
-                                       std::format("RequestNum: {} | id: {} | exception: {}", toInt(requestNum), id, e.what()));
+            SentryService::reportError(QStringLiteral("Exception in IPC response callback"),
+                                       QStringLiteral("RequestNum: %1 | id: %2 | exception: %3")
+                                               .arg(toInt(requestNum))
+                                               .arg(id)
+                                               .arg(QString::fromUtf8(e.what())));
         } catch (...) {
             qCCritical(lcIpcClient) << "Unknown exception in response callback for request id:" << id
                                     << "(RequestNum:" << requestNum << ")";
-            SentryService::reportError("Exception in IPC response callback",
-                                       std::format("RequestNum: {} | id: {} | unknown exception", toInt(requestNum), id));
+            SentryService::reportError(
+                    QStringLiteral("Exception in IPC response callback"),
+                    QStringLiteral("RequestNum: %1 | id: %2 | unknown exception").arg(toInt(requestNum)).arg(id));
         }
     } else {
         qCWarning(lcIpcClient) << "Received response without pending callback | RequestNum:" << requestNum << "/ id:" << id;
@@ -331,7 +338,7 @@ void IpcClient::handleServerSignal(const Poco::DynamicStruct &ipcMessage, const 
 
     if (!ipcMessage[msgRequestParams].isStruct()) {
         qCCritical(lcIpcClient) << "params field is not a JSON object for signal id:" << id;
-        SentryService::reportFatalAndExit("Signal params not a JSON object", std::format("id: {}", id));
+        SentryService::reportFatalAndExit(QStringLiteral("Signal params not a JSON object"), QStringLiteral("id: %1").arg(id));
     }
     const Poco::DynamicStruct params = ipcMessage[msgRequestParams].extract<Poco::DynamicStruct>();
 
@@ -377,7 +384,8 @@ void IpcClient::processBuffer() {
                 }
                 default:
                     qCCritical(lcIpcClient) << "Received message with unknown type:" << type;
-                    SentryService::reportFatalAndExit("Unknown IPC message type", std::format("type: {}", toInt(type)));
+                    SentryService::reportFatalAndExit(QStringLiteral("Unknown IPC message type"),
+                                                      QStringLiteral("type: %1").arg(toInt(type)));
             }
         } catch (const Poco::Exception &e) {
             qCCritical(lcIpcClient) << "Poco exception while processing message:" << e.what();
