@@ -114,7 +114,7 @@ void SentryService::reportError(const std::string &title, const std::string &mes
 }
 
 void SentryService::reportError(const QString &title, const QString &message) {
-    reportError(qStringToUtf8String(title), qStringToUtf8String(message));
+    reportError(title.toStdString(), message.toStdString());
 }
 
 void SentryService::reportFatalAndExit(const std::string &title, const std::string &message) {
