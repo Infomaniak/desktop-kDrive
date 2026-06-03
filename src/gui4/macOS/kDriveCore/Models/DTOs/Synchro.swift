@@ -60,6 +60,16 @@ public struct Synchro: Identifiable, Hashable, Sendable {
         synchNodes.removeLast(itemsToRemove)
     }
 
+    public mutating func removeSyncingActivities() {
+        let syncingNodeIds = synchNodes.compactMap { nodeId, node in
+            node.status == .Syncing ? nodeId : nil
+        }
+
+        for nodeId in syncingNodeIds {
+            synchNodes.removeValue(forKey: nodeId)
+        }
+    }
+
     public func getSynchNode(by operationId: Int32) -> SynchroNode? {
         return synchNodes[operationId]
     }
