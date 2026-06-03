@@ -373,11 +373,19 @@ ExitInfo Utility::getFileSystemName(const std::shared_ptr<CacheDirectory> cacheD
 }
 
 bool Utility::runCommand(const std::string &launchPath, const std::vector<std::string> &arguments) {
-    // Build argv array
-    std::vector<char *> argv;
-    argv.push_back(const_cast<char *>(launchPath.c_str()));
+    // Build mutable copies of the strings so argv holds non-const char* as required by posix_spawnp,
+    // without resorting to const_cast.
+    std::vector<std::string> argCopies;
+    argCopies.reserve(arguments.size() + 1);
+    argCopies.push_back(launchPath);
     for (const auto &arg: arguments) {
-        argv.push_back(const_cast<char *>(arg.c_str()));
+        argCopies.push_back(arg);
+    }
+
+    std::vector<char *> argv;
+    argv.reserve(argCopies.size() + 1);
+    for (auto &arg: argCopies) {
+        argv.push_back(arg.data());
     }
     argv.push_back(nullptr);
 
