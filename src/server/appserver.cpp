@@ -3214,6 +3214,11 @@ ExitInfo AppServer::startSyncs(User &user) {
             }
 
             for (Sync &sync: syncList) {
+                auto syncPalMapIt = syncPalMap.find(sync.dbId());
+
+                // If the syncPal already exists, no need to recreate it.
+                if (syncPalMapIt != syncPalMap.end()) continue;
+
                 QSet<QString> blackList;
                 bool syncUpdated = false;
 
