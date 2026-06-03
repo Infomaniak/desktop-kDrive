@@ -125,6 +125,14 @@ void SentryService::reportFatalAndExit(const std::string &title, const std::stri
     std::exit(EXIT_FAILURE);
 }
 
+void SentryService::reportFatalAndExit(const char *title, const char *message) {
+    reportFatalAndExit(std::string(title), std::string(message));
+}
+
+void SentryService::reportFatalAndExit(const QString &title, const QString &message) {
+    reportFatalAndExit(qStringToUtf8String(title), qStringToUtf8String(message));
+}
+
 void SentryService::reconcileConsentWithServer() {
     qCInfo(lcSentryService) << "Reconciling Sentry consent with server";
     _commService.requestParametersInfo([this](const ExitInfo &exitInfo, const ParametersInfo &parametersInfo) {
