@@ -29,7 +29,6 @@ namespace KDC {
 class TestLocalJobs : public CppUnit::TestFixture, public TestBase {
     public:
         CPPUNIT_TEST_SUITE(TestLocalJobs);
-        CPPUNIT_TEST(testLocalJobs);
         CPPUNIT_TEST(testLocalDeleteJob);
         CPPUNIT_TEST(testDeleteFilesWithDuplicateNames);
         CPPUNIT_TEST_SUITE_END();

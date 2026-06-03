@@ -46,7 +46,7 @@ bool SyncLocalDeleteJob::matchRelativePaths(const SyncPath &remoteTargetPath, co
     // We remove the "/" at the beginning to compare it with a reconstructed relative path.
     const auto relativeRemoteTargetPath = std::filesystem::relative(remoteTargetPath, remoteTargetPath.root_path());
 
-    if (relativeRemoteTargetPath.empty() || relativeRemoteTargetPath == SyncPath{"."})
+    if (relativeRemoteTargetPath.begin() == relativeRemoteTargetPath.end() || relativeRemoteTargetPath == SyncPath{"."})
         return remoteRelativePath == localRelativePath;
 
     return remoteRelativePath == relativeRemoteTargetPath / localRelativePath;
@@ -95,13 +95,13 @@ ExitInfo SyncLocalDeleteJob::checkIfRemoteFileHasBeenMoved() {
     if (const bool remoteItemIsFound = findRemoteItem(remoteRelativePath); !remoteItemIsFound)
         return ExitCode::Ok; // Safe deletion.
 
-    SyncPath normalizedPath;
-    if (!Utility::normalizedSyncPath(_relativeLocalPath, normalizedPath)) {
+    SyncPath normalizedRelativeLocalPath;
+    if (!Utility::normalizedSyncPath(_relativeLocalPath, normalizedRelativeLocalPath)) {
         LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(_relativeLocalPath));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
-    if (matchRelativePaths(_syncPal->syncInfo().targetPath, normalizedPath, remoteRelativePath)) {
+    if (matchRelativePaths(_syncPal->syncInfo().targetPath, normalizedRelativeLocalPath, remoteRelativePath)) {
         // Item is found at the same path on remote
         LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(absoluteLocalPath()).c_str()
                                           << L" still exists on remote replica. Aborting current sync and restarting.");
