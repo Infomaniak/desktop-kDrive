@@ -150,7 +150,7 @@ ExitInfo DownloadJob::checkHashMatch() {
         LOGW_DEBUG(_logger, L"CheckHashMatchJob failed: " << exitInfo << L"Proceeding DownloadJob normally.");
         return ExitCode::Ok; // Non-fatal: fall through to download
     }
-    _shouldDownload = hashJob.shouldDownload();
+    _shouldDownload = !hashJob.hashMatch();
     return ExitCode::Ok;
 }
 
