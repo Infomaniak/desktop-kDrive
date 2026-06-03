@@ -1952,12 +1952,8 @@ void TestNetworkJobs::testPostFileModificationDate() {
 
         GetFileInfoJob verifyJob(_driveDbId, nodeId);
         CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, verifyJob.runSynchronously().code());
-        Poco::JSON::Object::Ptr verifyDataObj = verifyJob.jsonRes()->getObject(dataKey);
-        CPPUNIT_ASSERT(verifyDataObj);
-        SyncTime verifyLastModifiedAt = 0;
-        CPPUNIT_ASSERT(JsonParserUtility::extractValue(verifyDataObj, lastModifiedAtKey, verifyLastModifiedAt, false));
-        CPPUNIT_ASSERT_LESS(invalidFutureModificationDate, verifyLastModifiedAt);
-        CPPUNIT_ASSERT_EQUAL(testJob.lastModifiedAt(), verifyLastModifiedAt);
+        CPPUNIT_ASSERT_LESS(verifyJob.modificationTime(), invalidFutureModificationDate);
+        CPPUNIT_ASSERT_EQUAL(testJob.lastModifiedAt(), verifyJob.modificationTime());
     }
 }
 
