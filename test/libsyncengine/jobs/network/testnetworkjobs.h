@@ -38,7 +38,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testDelete);
         CPPUNIT_TEST(testDownload);
         CPPUNIT_TEST(testDownloadAborted);
-        CPPUNIT_TEST(testDownloadChecksumMismatch);
+        CPPUNIT_TEST(testDownloadChecksumHandling);
         CPPUNIT_TEST(testGetDriveList);
         CPPUNIT_TEST(testGetFileInfo);
         CPPUNIT_TEST(testGetFileList);
@@ -84,7 +84,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         void testCopyToDir();
         void testDelete();
         void testDownload();
-        void testDownloadChecksumMismatch();
+        void testDownloadChecksumHandling();
         void testDownloadAborted();
         void testGetAvatar();
         void testGetDriveList();
