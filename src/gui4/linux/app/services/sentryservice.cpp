@@ -149,7 +149,7 @@ void SentryService::reconcileConsentWithServer() {
     });
 }
 
-void SentryService::setConsentEnabled(const bool enabled) {
+void SentryService::setConsent(const bool enabled) {
     qCInfo(lcSentryService) << "Sentry consent update requested | enabled:" << enabled;
     if (!_currentParametersInfo.has_value()) {
         qCWarning(lcSentryService) << "Sentry consent update ignored because server parameters are not loaded yet";
