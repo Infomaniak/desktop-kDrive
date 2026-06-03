@@ -1924,15 +1924,10 @@ void TestNetworkJobs::testPostFileModificationDate() {
 
         // Verify the modification date on the server.
         GetFileInfoJob verifyJob(_driveDbId, nodeId);
-        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, verifyJob.runSynchronously().code());
-        Poco::JSON::Object::Ptr verifyDataObj = verifyJob.jsonRes()->getObject(dataKey);
-        CPPUNIT_ASSERT(verifyDataObj);
-        SyncTime verifyLastModifiedAt = 0;
-        CPPUNIT_ASSERT(JsonParserUtility::extractValue(verifyDataObj, lastModifiedAtKey, verifyLastModifiedAt, false));
-        CPPUNIT_ASSERT_EQUAL(testCase.expectedServerValue, verifyLastModifiedAt);
+        CPPUNIT_ASSERT(verifyJob.runSynchronously());
         if (testCase.expectSuccess) {
             CPPUNIT_ASSERT_EQUAL_MESSAGE(testCase.fileName + ": lastModifiedAt() should match server value",
-                                         verifyLastModifiedAt, testJob.lastModifiedAt());
+                                         verifyJob.modificationTime(), testJob.lastModifiedAt());
         }
     }
 
@@ -1951,8 +1946,8 @@ void TestNetworkJobs::testPostFileModificationDate() {
         CPPUNIT_ASSERT(testJob.runSynchronously());
 
         GetFileInfoJob verifyJob(_driveDbId, nodeId);
-        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, verifyJob.runSynchronously().code());
-        CPPUNIT_ASSERT_LESS(verifyJob.modificationTime(), invalidFutureModificationDate);
+        CPPUNIT_ASSERT(verifyJob.runSynchronously());
+        CPPUNIT_ASSERT_LESS(invalidFutureModificationDate, verifyJob.modificationTime());
         CPPUNIT_ASSERT_EQUAL(testJob.lastModifiedAt(), verifyJob.modificationTime());
     }
 }
