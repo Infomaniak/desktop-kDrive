@@ -199,12 +199,12 @@ namespace Infomaniak.kDrive.CustomControls
 
             var control = sender as Control;
             var treeItem = control?.DataContext as LazyLoadedTreeItemBase;
-            if (control is null || treeItem is null || treeItem.LoadableNode is null)
+            if (control is null || treeItem is null || treeItem.Node is null)
                 return;
 
             control.EffectiveViewportChanged -= TreeViewItem_EffectiveViewportChanged;
 
-            if (treeItem.LoadableNode.Size != -1 && treeItem.ChildrenLoaded)
+            if (treeItem.Node.Size != -1 && treeItem.ChildrenLoaded)
             {
                 // Size already loaded, no need to load again
                 return;
@@ -226,10 +226,10 @@ namespace Infomaniak.kDrive.CustomControls
 
             var control = sender as Control;
             var treeItem = control?.DataContext as LazyLoadedTreeItemBase;
-            if (control is null || treeItem is null || treeItem.LoadableNode is null)
+            if (control is null || treeItem is null || treeItem.Node is null)
                 return;
 
-            if (treeItem.LoadableNode.Size != -1 && treeItem.ChildrenLoaded)
+            if (treeItem.Node.Size != -1 && treeItem.ChildrenLoaded)
             {
                 // Size already loaded, no need to load again
                 return;

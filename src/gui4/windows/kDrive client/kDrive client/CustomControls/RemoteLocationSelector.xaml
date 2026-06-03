@@ -94,6 +94,7 @@
                                   Visibility="{x:Bind IsLoadingChildren, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
                                   IsIndeterminate="True"
                                   Height="16"
+								  HorizontalAlignement="Left"
                                   VerticalAlignment="Center"
                                   Width="16" />
 
@@ -160,7 +161,6 @@
                                      KeyDown="NewItemTextBox_KeyDown" />
                         </controls:ContentLoader.LoaderContent>
                     </controls:ContentLoader>
-
                 </Grid>
             </TreeViewItem>
         </DataTemplate>

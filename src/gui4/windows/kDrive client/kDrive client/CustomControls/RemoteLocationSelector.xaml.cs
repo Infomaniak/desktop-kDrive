@@ -348,12 +348,6 @@ namespace Infomaniak.kDrive.CustomControls
         #endregion
 
         #region Public properties
-        public bool IsSelected
-        {
-            get => base.IsSelected == true;
-            set => base.IsSelected = value;
-        }
-
         public bool CanCreateSubFolder
         {
             get => _canCreateSubfolder;

@@ -559,14 +559,6 @@ namespace Infomaniak.kDrive.CustomControls
         private readonly CompositeDisposable _disposables = [];
         #endregion
 
-        #region Public properties
-        public override bool? IsSelected
-        {
-            get => base.IsSelected;
-            set => base.IsSelected = value;
-        }
-        #endregion
-
         public TreeItem(Node node, DbId userDbId, DriveId driveId, TreeItem? parentItem, Dictionary<NodeId, string> excluded)
             : base(parentItem)
         {

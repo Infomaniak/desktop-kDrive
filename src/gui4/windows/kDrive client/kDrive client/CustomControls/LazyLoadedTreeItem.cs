@@ -124,13 +124,12 @@ namespace Infomaniak.kDrive.CustomControls
         // Lazy load direct child directories
         public override async Task LoadImmediateChildrenAsync(CancellationToken cancellationToken)
         {
-            Node? node = LoadableNode;
-            if (ChildrenLoaded || node is null || node.AccessDenied || IsLoadingChildren)
+            if (ChildrenLoaded || Node is null || Node.AccessDenied || IsLoadingChildren)
                 return;
 
             IsLoadingChildren = true;
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            List<Node>? nodes = await commService.GetSubFolders(UserDbId, DriveId, node.NodeId, cancellationToken);
+            List<Node>? nodes = await commService.GetSubFolders(UserDbId, DriveId, Node.NodeId, cancellationToken);
             if (nodes is null)
             {
                 if (!cancellationToken.IsCancellationRequested)
