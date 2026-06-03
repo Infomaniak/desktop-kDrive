@@ -49,8 +49,7 @@ namespace KDC {
 SentryService::SentryService(CommService &commService, AppCache &appCache, QObject *const parent) :
     QObject(parent),
     _commService(commService),
-    _appCache(appCache),
-    _sentryInitialized(isInitialized()) {}
+    _appCache(appCache) {}
 
 std::optional<bool> SentryService::readCachedConsent() {
     const QSettings settings(QSettings::IniFormat, QSettings::UserScope, settingsOrganization, settingsApplication);
@@ -111,9 +110,6 @@ bool SentryService::isInitialized() {
 }
 
 void SentryService::reportError(const std::string &title, const std::string &message) {
-    if (!isInitialized()) {
-        return;
-    }
     sentry::Handler::captureMessage(sentry::Level::Error, title, message);
 }
 
@@ -124,6 +120,7 @@ void SentryService::reportError(const QString &title, const QString &message) {
 void SentryService::reportFatalAndExit(const std::string &title, const std::string &message) {
     if (isInitialized()) {
         sentry::Handler::captureMessage(sentry::Level::Fatal, title, message);
+        sentry::Handler::shutdown();
     }
     std::exit(EXIT_FAILURE);
 }
@@ -189,12 +186,11 @@ void SentryService::updateAuthenticatedUser() const {
 }
 
 void SentryService::applyConsent(const bool enabled) {
-    qCInfo(lcSentryService) << "Applying Sentry consent | enabled:" << enabled << "/ initialized:" << _sentryInitialized;
+    qCInfo(lcSentryService) << "Applying Sentry consent | enabled:" << enabled << "/ initialized:" << isInitialized();
     if (enabled) {
-        if (!_sentryInitialized) {
+        if (!isInitialized()) {
             initializeWithLinuxConfig();
-            _sentryInitialized = isInitialized();
-            qCInfo(lcSentryService) << "Sentry deferred initialization result | initialized:" << _sentryInitialized;
+            qCInfo(lcSentryService) << "Sentry deferred initialization result | initialized:" << isInitialized();
         } else if (isInitialized()) {
             sentry::Handler::instance()->setIsSentryActivated(true);
             qCInfo(lcSentryService) << "Sentry handler activated after consent update";
@@ -203,10 +199,9 @@ void SentryService::applyConsent(const bool enabled) {
         return;
     }
 
-    if (_sentryInitialized) {
+    if (isInitialized()) {
         qCInfo(lcSentryService) << "Shutting down Sentry after consent opt-out";
         sentry::Handler::shutdown();
-        _sentryInitialized = false;
         return;
     }
 
