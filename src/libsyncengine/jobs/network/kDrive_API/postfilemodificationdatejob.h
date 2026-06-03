@@ -26,6 +26,8 @@ class PostFileModificationDateJob : public AbstractTokenNetworkJob {
     public:
         PostFileModificationDateJob(DriveDbId driveDbId, RemoteNodeId nodeId, SyncTime lastModifiedAt);
 
+        [[nodiscard]] SyncTime lastModifiedAt() const { return _lastModifiedAtOut; }
+
     private:
         std::string getSpecificUrl() override;
         ExitInfo setData() override;
