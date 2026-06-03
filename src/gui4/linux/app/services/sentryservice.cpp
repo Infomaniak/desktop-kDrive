@@ -23,7 +23,6 @@
 #include "config.h"
 #include "libcommon/log/sentry/handler.h"
 
-#include <QByteArray>
 #include <QLoggingCategory>
 #include <QSettings>
 
@@ -37,11 +36,6 @@ Q_LOGGING_CATEGORY(lcSentryService, "gui.v4.sentry", QtInfoMsg)
 constexpr char settingsOrganization[] = "Infomaniak";
 constexpr char settingsApplication[] = APPLICATION_NAME;
 constexpr char sentryConsentKey[] = "sentry/enabled";
-
-[[nodiscard]] std::string qStringToUtf8String(const QString &value) {
-    const QByteArray utf8 = value.toUtf8();
-    return {utf8.constData(), static_cast<size_t>(utf8.size())};
-}
 } // namespace
 
 namespace KDC {
@@ -130,7 +124,7 @@ void SentryService::reportFatalAndExit(const char *title, const char *message) {
 }
 
 void SentryService::reportFatalAndExit(const QString &title, const QString &message) {
-    reportFatalAndExit(qStringToUtf8String(title), qStringToUtf8String(message));
+    reportFatalAndExit(title.toStdString(), message.toStdString());
 }
 
 void SentryService::reconcileConsentWithServer() {
@@ -188,8 +182,8 @@ void SentryService::updateAuthenticatedUser() const {
     }
 
     sentry::Handler::instance()->setGlobalConfidentialityLevel(sentry::ConfidentialityLevel::Authenticated);
-    sentry::Handler::instance()->setAuthenticatedUser(SentryUser(
-            qStringToUtf8String(userIt->email()), qStringToUtf8String(userIt->name()), std::to_string(userIt->userId())));
+    sentry::Handler::instance()->setAuthenticatedUser(
+            SentryUser(userIt->email().toStdString(), userIt->name().toStdString(), std::to_string(userIt->userId())));
     qCInfo(lcSentryService) << "Sentry authenticated user updated | userId:" << userIt->userId()
                             << "/ connected:" << userIt->connected();
 }
