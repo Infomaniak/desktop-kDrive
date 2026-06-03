@@ -94,7 +94,7 @@ class DownloadJob : public AbstractTokenNetworkJob {
         static bool hasEnoughPlace(const SyncPath &tmpDirPath, const SyncPath &destDirPath, int64_t neededPlace,
                                    log4cplus::Logger logger);
         ExitInfo applyFileDatesIfRequired(FileType fileType);
-        ExitInfo readBackAndStoreLocalFileStats();
+        ExitInfo setOutputParamaters();
 
         const std::shared_ptr<Vfs> _vfs;
         std::shared_ptr<CacheDirectory> _cacheDirectory;

@@ -294,7 +294,7 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
         }
     }
     if (const ExitInfo exitInfo = applyFileDatesIfRequired(fileType); !exitInfo) return exitInfo;
-    return readBackAndStoreLocalFileStats();
+    return setOutputParamaters();
 }
 
 ExitInfo DownloadJob::applyFileDatesIfRequired(const FileType fileType) {
@@ -314,7 +314,7 @@ ExitInfo DownloadJob::applyFileDatesIfRequired(const FileType fileType) {
     return ExitCode::Ok;
 }
 
-ExitInfo DownloadJob::readBackAndStoreLocalFileStats() {
+ExitInfo DownloadJob::setOutputParamaters() {
     FileStat filestat;
     IoError ioError = IoError::Success;
     if (!IoHelper::getFileStat(_fileDownloadInfo.localpath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive)) {
