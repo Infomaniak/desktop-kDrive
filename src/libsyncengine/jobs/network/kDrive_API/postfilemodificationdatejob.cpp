@@ -19,23 +19,20 @@
 #include "postfilemodificationdatejob.h"
 
 #include "jobs/network/networkjobsparams.h"
-#include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/jsonparserutility.h"
-#include "libcommonserver/utility/utility.h"
 
 #include <Poco/Net/HTTPRequest.h>
 
 namespace KDC {
 
-PostFileModificationDateJob::PostFileModificationDateJob(const DriveDbId driveDbId, const NodeId &nodeId, SyncTime lastModifiedAt,
-                                                         const SyncPath &filePath) :
+PostFileModificationDateJob::PostFileModificationDateJob(const DriveDbId driveDbId, const NodeId &nodeId, SyncTime lastModifiedAt) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
     _nodeId(nodeId),
-    _lastModifiedAt(lastModifiedAt),
-    _filePath(filePath) {
+    _lastModifiedAt(lastModifiedAt){
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
     _apiVersion = 3;
 }
+
 std::string PostFileModificationDateJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
     str += "/files/";
@@ -51,17 +48,6 @@ ExitInfo PostFileModificationDateJob::setData() {
     std::stringstream ss;
     json.stringify(ss);
     _data = ss.str();
-    return ExitCode::Ok;
-}
-
-ExitInfo PostFileModificationDateJob::runJob() noexcept {
-    if (const ExitInfo exitInfo = AbstractTokenNetworkJob::runJob(); !exitInfo) return exitInfo;
-
-    if (_filePath.empty()) return ExitCode::Ok;
-
-    if (const IoError ioError = IoHelper::setFileDates(_filePath, 0, _lastModifiedAtOut, false); ioError != IoError::Success) {
-        LOGW_WARN(_logger, L"Error in IoHelper::setFileDates: " << Utility::formatIoError(_filePath, ioError));
-    }
     return ExitCode::Ok;
 }
 

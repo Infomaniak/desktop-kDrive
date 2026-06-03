@@ -1918,7 +1918,7 @@ void TestNetworkJobs::testPostFileModificationDate() {
         const NodeId nodeId = uploadJob.nodeId();
         CPPUNIT_ASSERT(!nodeId.empty());
         const std::string targetId = testCase.targetNodeIdOverride.empty() ? nodeId : testCase.targetNodeIdOverride;
-        PostFileModificationDateJob testJob(_driveDbId, targetId, testCase.timestampToPost, localFilePath);
+        PostFileModificationDateJob testJob(_driveDbId, targetId, testCase.timestampToPost);
         exitInfo = testJob.runSynchronously();
         CPPUNIT_ASSERT_MESSAGE(toString(exitInfo), exitInfo.operator bool() == testCase.expectSuccess);
 
@@ -1930,6 +1930,10 @@ void TestNetworkJobs::testPostFileModificationDate() {
         SyncTime verifyLastModifiedAt = 0;
         CPPUNIT_ASSERT(JsonParserUtility::extractValue(verifyDataObj, lastModifiedAtKey, verifyLastModifiedAt, false));
         CPPUNIT_ASSERT_EQUAL(testCase.expectedServerValue, verifyLastModifiedAt);
+        if (testCase.expectSuccess) {
+            CPPUNIT_ASSERT_EQUAL_MESSAGE(testCase.fileName + ": lastModifiedAt() should match server value",
+                                         verifyLastModifiedAt, testJob.lastModifiedAt());
+        }
     }
 
     // A timestamp more than 24h in the future is capped by the server to its current time.
@@ -1943,7 +1947,7 @@ void TestNetworkJobs::testPostFileModificationDate() {
         CPPUNIT_ASSERT_MESSAGE(toString(uploadExitInfo), uploadExitInfo);
         const NodeId nodeId = uploadJob.nodeId();
         CPPUNIT_ASSERT(!nodeId.empty());
-        PostFileModificationDateJob testJob(_driveDbId, nodeId, invalidFutureModificationDate, localFilePath);
+        PostFileModificationDateJob testJob(_driveDbId, nodeId, invalidFutureModificationDate);
         CPPUNIT_ASSERT(testJob.runSynchronously());
 
         GetFileInfoJob verifyJob(_driveDbId, nodeId);
@@ -1953,6 +1957,7 @@ void TestNetworkJobs::testPostFileModificationDate() {
         SyncTime verifyLastModifiedAt = 0;
         CPPUNIT_ASSERT(JsonParserUtility::extractValue(verifyDataObj, lastModifiedAtKey, verifyLastModifiedAt, false));
         CPPUNIT_ASSERT_LESS(invalidFutureModificationDate, verifyLastModifiedAt);
+        CPPUNIT_ASSERT_EQUAL(testJob.lastModifiedAt(), verifyLastModifiedAt);
     }
 }
 
