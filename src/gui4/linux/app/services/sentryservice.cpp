@@ -179,14 +179,15 @@ void SentryService::updateAuthenticatedUser() const {
     }
 
     const auto users = _appCache.users();
-    const auto selectedUserIt = std::ranges::find_if(users, [](const UserInfo &user) { return user.connected(); });
-    const auto userIt = selectedUserIt != users.end() ? selectedUserIt : users.begin();
+    const auto userIt = std::ranges::find_if(users, [](const UserInfo &user) { return user.connected(); });
     if (userIt == users.end()) {
-        sentry::Handler::instance()->setAuthenticatedUser(SentryUser("No user logged", "No user logged", "0"));
-        qCInfo(lcSentryService) << "Sentry user set to anonymous fallback";
+        sentry::Handler::instance()->setGlobalConfidentialityLevel(sentry::ConfidentialityLevel::Anonymous);
+        sentry::Handler::instance()->setAuthenticatedUser(SentryUser());
+        qCInfo(lcSentryService) << "Sentry user set to anonymous because no connected user is available";
         return;
     }
 
+    sentry::Handler::instance()->setGlobalConfidentialityLevel(sentry::ConfidentialityLevel::Authenticated);
     sentry::Handler::instance()->setAuthenticatedUser(SentryUser(
             qStringToUtf8String(userIt->email()), qStringToUtf8String(userIt->name()), std::to_string(userIt->userId())));
     qCInfo(lcSentryService) << "Sentry authenticated user updated | userId:" << userIt->userId()
@@ -194,12 +195,17 @@ void SentryService::updateAuthenticatedUser() const {
 }
 
 void SentryService::applyConsent(const bool enabled) {
-    qCInfo(lcSentryService) << "Applying Sentry consent | enabled:" << enabled << "/ initialized:" << isInitialized();
+    const bool initialized = isInitialized();
+    qCInfo(lcSentryService) << "Applying Sentry consent | enabled:" << enabled << "/ initialized:" << initialized;
     if (enabled) {
-        if (!isInitialized()) {
+        if (!initialized) {
             initializeWithLinuxConfig();
-            qCInfo(lcSentryService) << "Sentry deferred initialization result | initialized:" << isInitialized();
-        } else if (isInitialized()) {
+            const bool initializedAfterInit = isInitialized();
+            qCInfo(lcSentryService) << "Sentry deferred initialization result | initialized:" << initializedAfterInit;
+            if (!initializedAfterInit) {
+                return;
+            }
+        } else {
             sentry::Handler::instance()->setIsSentryActivated(true);
             qCInfo(lcSentryService) << "Sentry handler activated after consent update";
         }
@@ -207,7 +213,7 @@ void SentryService::applyConsent(const bool enabled) {
         return;
     }
 
-    if (isInitialized()) {
+    if (initialized) {
         qCInfo(lcSentryService) << "Shutting down Sentry after consent opt-out";
         sentry::Handler::shutdown();
         return;
