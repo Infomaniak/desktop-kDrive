@@ -150,16 +150,8 @@ ExitInfo DownloadJob::checkHashMatch() {
         LOGW_DEBUG(_logger, L"CheckHashMatchJob failed: " << exitInfo << L"Proceeding DownloadJob normally.");
         return ExitCode::Ok; // Non-fatal: fall through to download
     }
-    if (hashJob.shouldDownload()) {
-        LOGW_DEBUG(_logger, L"Hash mismatch, downloading file: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
-        return ExitCode::Ok;
-    }
-
-    LOGW_DEBUG(_logger, L"Hash match, skipping download: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
-    if (const ExitInfo ApplyExitInfo = applyFileDatesIfRequired(false); !ApplyExitInfo) return ApplyExitInfo;
-
-    _shouldDownload = false;
-    return readBackAndStoreLocalFileStats();
+    _shouldDownload = hashJob.shouldDownload();
+    return ExitCode::Ok;
 }
 
 ExitInfo DownloadJob::runJob() noexcept {
