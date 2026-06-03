@@ -64,7 +64,6 @@ class SentryService final : public QObject {
         CommService &_commService;
         AppCache &_appCache;
         std::optional<ParametersInfo> _currentParametersInfo;
-        bool _sentryInitialized{false};
 };
 
 } // namespace KDC
