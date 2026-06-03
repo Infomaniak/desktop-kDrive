@@ -68,7 +68,7 @@ class Handler {
 
         virtual ~Handler();
         static std::shared_ptr<Handler> instance();
-        static void init(AppType appType, int breadCrumbsSize = defaultBreadcrumbsSize, const std::string &dsnOverride = "",
+        static void init(AppType appType, int32_t breadCrumbsSize = defaultBreadcrumbsSize, const std::string &dsnOverride = "",
                          const std::string &dbPathSubdirOverride = "");
         static void shutdown();
         [[nodiscard]] static bool isInitialized() { return _instance != nullptr; }
