@@ -553,8 +553,11 @@ ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
                 }
 
                 if (!exitInfo) {
-                    if (exitInfo.code() != ExitCode::DataError && exitInfo.code() != ExitCode::InvalidToken &&
-                        (exitInfo.code() != ExitCode::BackError || exitInfo.cause() != ExitCause::NotFound)) {
+                    if (exitInfo.cause() == ExitCause::Unknown && Utility::isError500(httpResponse().getStatus())) {
+                        disableRetry();
+                        exitInfo.setCause(ExitCause::Http5xx);
+                    } else if (exitInfo.code() != ExitCode::DataError && exitInfo.code() != ExitCode::InvalidToken &&
+                               (exitInfo.code() != ExitCode::BackError || exitInfo.cause() != ExitCause::NotFound)) {
                         LOG_WARN(_logger, "Error handling failed");
                     }
                     return exitInfo;
