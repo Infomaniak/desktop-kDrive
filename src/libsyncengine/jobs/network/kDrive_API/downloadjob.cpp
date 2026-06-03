@@ -215,18 +215,18 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
         mimeType = contentTypeElts[0];
     }
 
-    bool isLink = false;
+    FileType fileType = FileType::Regular;
     std::string linkData;
     if (mimeType == mimeTypeSymlink || mimeType == mimeTypeSymlinkFolder || mimeType == mimeTypeHardlink ||
         (mimeType == mimeTypeFinderAlias && CommonUtility::isMac()) ||
         (mimeType == mimeTypeJunction && CommonUtility::isWindows())) {
         // Read link data
         getStringFromStream(is, linkData);
-        isLink = true;
+        fileType = FileType::IsLink;
     }
 
     // Process download
-    if (isLink) {
+    if (fileType == FileType::IsLink) {
         // Create link
         LOG_DEBUG(_logger, "Create link: mimeType=" << mimeType);
         if (const ExitInfo exitInfo = createLink(mimeType, linkData); !exitInfo) {
@@ -293,15 +293,15 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
             }
         }
     }
-    if (const ExitInfo exitInfo = applyFileDatesIfRequired(isLink); !exitInfo) return exitInfo;
+    if (const ExitInfo exitInfo = applyFileDatesIfRequired(fileType); !exitInfo) return exitInfo;
     return readBackAndStoreLocalFileStats();
 }
 
-ExitInfo DownloadJob::applyFileDatesIfRequired(const bool isLink) {
+ExitInfo DownloadJob::applyFileDatesIfRequired(const FileType fileType) {
     if (_dateTimePolicy != DateTimePolicy::ApplyDateTime) return ExitCode::Ok;
 
     if (const IoError ioError = IoHelper::setFileDates(_fileDownloadInfo.localpath, _fileDownloadInfo.creationTime,
-                                                       _fileDownloadInfo.modificationTime, isLink);
+                                                       _fileDownloadInfo.modificationTime, fileType == FileType::IsLink);
         ioError == IoError::Unknown) {
         LOGW_WARN(_logger, L"Error in IoHelper::setFileDates: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
         // Do nothing (remote file will be updated during the next sync)

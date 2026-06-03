@@ -41,6 +41,10 @@ class DownloadJob : public AbstractTokenNetworkJob {
             IgnoreDateTime,
             ApplyDateTime
         };
+        enum class FileType {
+            Regular,
+            IsLink
+        };
 
         DownloadJob(const std::shared_ptr<Vfs> vfs, std::shared_ptr<CacheDirectory> cacheDirectory,
                     const FileDownloadInfo &fileDownloadInfo, DateTimePolicy dateTimePolicy);
@@ -89,7 +93,7 @@ class DownloadJob : public AbstractTokenNetworkJob {
         ExitInfo createTmpFile(const std::string &data, bool &writeError);
         static bool hasEnoughPlace(const SyncPath &tmpDirPath, const SyncPath &destDirPath, int64_t neededPlace,
                                    log4cplus::Logger logger);
-        ExitInfo applyFileDatesIfRequired(bool isLink);
+        ExitInfo applyFileDatesIfRequired(FileType fileType);
         ExitInfo readBackAndStoreLocalFileStats();
 
         const std::shared_ptr<Vfs> _vfs;
