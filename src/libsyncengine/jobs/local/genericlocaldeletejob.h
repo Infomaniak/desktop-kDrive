@@ -29,7 +29,7 @@ class GenericLocalDeleteJob : public SyncJob {
             Yes,
             No
         };
-        GenericLocalDeleteJob(SyncPath absolutePath, ForceHardDelete forceHardDelete = ForceHardDelete::No);
+        explicit GenericLocalDeleteJob(SyncPath absolutePath, ForceHardDelete forceHardDelete = ForceHardDelete::No);
 
         [[nodiscard]] const SyncPath &absoluteLocalPath() const { return _absoluteLocalPath; }
 
