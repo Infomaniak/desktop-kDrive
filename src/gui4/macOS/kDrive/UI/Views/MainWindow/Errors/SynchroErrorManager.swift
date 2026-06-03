@@ -81,11 +81,16 @@ final class SynchroErrorManager: ObservableObject {
     // MARK: - App navigation
 
     func navigateToLoginPage() {
-        // TODO: Open login page
+        @InjectService var router: MainWindowRouter
+        router.navigate(to: .onboarding())
     }
 
     func navigateToExclusionRules() {
-        // TODO: Navigate to exclusion rules
+        (NSApp.delegate as? AppDelegate)?.openPreferencesWindow()
+
+        @InjectService var router: PreferencesViewRouter
+        router.setCurrentTab(.advanced)
+        router.append(.synchroRules)
     }
 
     // MARK: - Sheets
