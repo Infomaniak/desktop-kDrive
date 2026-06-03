@@ -36,8 +36,8 @@
 
 namespace KDC {
 
-SyncLocalDeleteJob::Path::Path(const SyncPath &path) :
-    _path(path) {};
+SyncLocalDeleteJob::Path::Path(SyncPath path) :
+    _path(std::move(path)){};
 
 bool SyncLocalDeleteJob::Path::endsWith(SyncPath &&ending) const {
     if (!_path.empty() && ending.empty()) return false;
@@ -62,13 +62,14 @@ bool SyncLocalDeleteJob::matchRelativePaths(const SyncPath &targetPath, const Sy
 }
 
 SyncLocalDeleteJob::SyncLocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath,
-                                       bool liteSyncIsEnabled, const NodeId &remoteId, bool forceToTrash /* = false */) :
+                                       const bool liteSyncIsEnabled, RemoteNodeId remoteNodeId,
+                                       ForceToTrash forceToTrash /* = ForceToTrash::No */) :
     GenericLocalDeleteJob(syncPal ? syncPal->localPath() / relativePath : ""),
     _liteSyncIsEnabled(liteSyncIsEnabled),
     _syncPal(syncPal),
     _relativeLocalPath(relativePath),
-    _remoteNodeId(remoteId),
-    _forceToTrash(forceToTrash) {}
+    _remoteNodeId(std::move(remoteNodeId)),
+    _forceToTrash(forceToTrash == ForceToTrash::Yes) {}
 
 SyncLocalDeleteJob::SyncLocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, const SyncPath &absolutePath) :
     GenericLocalDeleteJob(absolutePath),

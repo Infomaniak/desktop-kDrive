@@ -29,9 +29,14 @@ namespace KDC {
  */
 class SyncLocalDeleteJob : public GenericLocalDeleteJob {
     public:
-        SyncLocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath, bool liteSyncIsEnabled,
-                           const NodeId &remoteId,
-                           bool forceToTrash = false); // Check existence of remote counterpart and abort if needed.
+        enum class ForceToTrash {
+            No,
+            Yes
+        };
+        SyncLocalDeleteJob(
+                const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath, bool liteSyncIsEnabled,
+                RemoteNodeId remoteNodeId,
+                ForceToTrash forceToTrash = ForceToTrash::No); // Check existence of remote counterpart and abort if needed.
         SyncLocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, const SyncPath &absolutePath); // Delete without checks
 
     protected:
@@ -62,11 +67,11 @@ class SyncLocalDeleteJob : public GenericLocalDeleteJob {
 
         const std::shared_ptr<SyncPal> _syncPal;
         SyncPath _relativeLocalPath;
-        NodeId _remoteNodeId;
+        RemoteNodeId _remoteNodeId;
         bool _forceToTrash = false;
 
         struct Path {
-                Path(const SyncPath &path);
+                Path(SyncPath path);
                 bool endsWith(SyncPath &&ending) const;
 
             private:

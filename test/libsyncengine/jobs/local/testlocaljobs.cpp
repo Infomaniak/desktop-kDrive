@@ -280,7 +280,7 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
     class LocalDeleteJobMock : public SyncLocalDeleteJob {
         public:
             LocalDeleteJobMock(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath, bool isDehydratedPlaceholder,
-                               NodeId remoteId, bool forceToTrash = false) :
+                               RemoteNodeId remoteId, ForceToTrash forceToTrash = ForceToTrash::No) :
                 SyncLocalDeleteJob(syncPal, relativePath, isDehydratedPlaceholder, remoteId, forceToTrash){
 
                 };
