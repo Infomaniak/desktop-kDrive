@@ -29,7 +29,7 @@ namespace KDC {
 
 CheckHashMatchJob::CheckHashMatchJob(const DriveDbId driveDbId, const SyncPath &filepath, const NodeId &nodeId,
                                      const int64_t remoteSize) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
+    AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
     _filePath(filepath),
     _nodeId(nodeId),
     _remoteSize(remoteSize) {
