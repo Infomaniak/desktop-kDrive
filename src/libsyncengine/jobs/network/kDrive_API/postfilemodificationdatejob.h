@@ -24,14 +24,18 @@ namespace KDC {
 
 class PostFileModificationDateJob : public AbstractTokenNetworkJob {
     public:
-        PostFileModificationDateJob(DriveDbId driveDbId, const NodeId &nodeId, uint64_t lastModifiedAt);
+        PostFileModificationDateJob(DriveDbId driveDbId, const NodeId &nodeId, SyncTime lastModifiedAt);
+
+        [[nodiscard]] SyncTime lastModifiedAt() const { return _lastModifiedAtOut; }
 
     private:
         std::string getSpecificUrl() override;
-        inline ExitInfo setData() override;
+        ExitInfo setData() override;
+        ExitInfo handleResponse(std::istream &is) override;
 
         NodeId _nodeId;
-        uint64_t _lastModifiedAt;
+        SyncTime _lastModifiedAt = 0;
+        SyncTime _lastModifiedAtOut = 0;
 };
 
 } // namespace KDC

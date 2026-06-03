@@ -18,17 +18,21 @@
 
 #include "postfilemodificationdatejob.h"
 
+#include "jobs/network/networkjobsparams.h"
+#include "libcommonserver/utility/jsonparserutility.h"
+
 #include <Poco/Net/HTTPRequest.h>
 
 namespace KDC {
 
-PostFileModificationDateJob::PostFileModificationDateJob(const DriveDbId driveDbId, const NodeId &nodeId, uint64_t lastModifiedAt) :
+PostFileModificationDateJob::PostFileModificationDateJob(const DriveDbId driveDbId, const NodeId &nodeId, SyncTime lastModifiedAt) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
     _nodeId(nodeId),
-    _lastModifiedAt(lastModifiedAt) {
+    _lastModifiedAt(lastModifiedAt){
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
     _apiVersion = 3;
 }
+
 std::string PostFileModificationDateJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
     str += "/files/";
@@ -44,6 +48,22 @@ ExitInfo PostFileModificationDateJob::setData() {
     std::stringstream ss;
     json.stringify(ss);
     _data = ss.str();
+    return ExitCode::Ok;
+}
+
+ExitInfo PostFileModificationDateJob::handleResponse(std::istream &is) {
+    if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) {
+        return exitInfo;
+    }
+
+    if (!jsonRes()) return {ExitCode::BackError, ExitCause::MissingReplyData};
+
+    const auto dataObj = jsonRes()->getObject(dataKey);
+    if (!dataObj) return {ExitCode::BackError, ExitCause::MissingReplyData};
+
+    if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _lastModifiedAtOut))
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+
     return ExitCode::Ok;
 }
 

@@ -1887,7 +1887,7 @@ void TestNetworkJobs::testPostFileModificationDate() {
     const auto nowTimeStamp = system_clock::now().time_since_epoch();
     const SyncTime pastModificationDateSec = duration_cast<seconds>(nowTimeStamp - hours(1)).count();
     const SyncTime valideFutureModificationDate = duration_cast<seconds>(nowTimeStamp + hours(1)).count();
-    const SyncTime invalideFutureModificationDate = duration_cast<seconds>(nowTimeStamp + hours(25)).count();
+    const SyncTime invalidFutureModificationDate = duration_cast<seconds>(nowTimeStamp + hours(25)).count();
     const SyncTime nowTimeStampSec = duration_cast<seconds>(nowTimeStamp).count();
 
     struct TestCase {
@@ -1903,8 +1903,7 @@ void TestNetworkJobs::testPostFileModificationDate() {
             // fileName                   timestampToPost         targetOverride    expectSuccess  expectedServerValue
             {"test_valid.txt",            pastModificationDateSec,           "",     true,        pastModificationDateSec},
             {"test_valid_future.txt",     valideFutureModificationDate,      "",     true,        valideFutureModificationDate},
-            {"test_nonExistent.txt",      pastModificationDateSec,           "0",     false,       nowTimeStampSec},
-            {"test_future.txt",           invalideFutureModificationDate,    "",      false,       nowTimeStampSec},
+            {"test_nonExistent.txt",      pastModificationDateSec,           "0",    false,       nowTimeStampSec},
             {"test_zero.txt",             0,                                 "",     true,        static_cast<SyncTime>(0)},
             // clang-format on
     };
@@ -1925,12 +1924,31 @@ void TestNetworkJobs::testPostFileModificationDate() {
 
         // Verify the modification date on the server.
         GetFileInfoJob verifyJob(_driveDbId, nodeId);
-        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, verifyJob.runSynchronously().code());
-        Poco::JSON::Object::Ptr verifyDataObj = verifyJob.jsonRes()->getObject(dataKey);
-        CPPUNIT_ASSERT(verifyDataObj);
-        SyncTime verifyLastModifiedAt = 0;
-        CPPUNIT_ASSERT(JsonParserUtility::extractValue(verifyDataObj, lastModifiedAtKey, verifyLastModifiedAt, false));
-        CPPUNIT_ASSERT_EQUAL(testCase.expectedServerValue, verifyLastModifiedAt);
+        CPPUNIT_ASSERT(verifyJob.runSynchronously());
+        if (testCase.expectSuccess) {
+            CPPUNIT_ASSERT_EQUAL_MESSAGE(testCase.fileName + ": lastModifiedAt() should match server value",
+                                         verifyJob.modificationTime(), testJob.lastModifiedAt());
+        }
+    }
+
+    // A timestamp more than 24h in the future is capped by the server to its current time.
+    // We only know the capped value is strictly less than what we sent.
+    {
+        const SyncPath localFilePath = localTmpDir.path() / "test_future.txt";
+        testhelpers::generateOrEditTestFile(localFilePath);
+        UploadJob uploadJob(nullptr, _driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
+                            nowTimeStampSec, nowTimeStampSec);
+        const ExitInfo uploadExitInfo = uploadJob.runSynchronously();
+        CPPUNIT_ASSERT_MESSAGE(toString(uploadExitInfo), uploadExitInfo);
+        const NodeId nodeId = uploadJob.nodeId();
+        CPPUNIT_ASSERT(!nodeId.empty());
+        PostFileModificationDateJob testJob(_driveDbId, nodeId, invalidFutureModificationDate);
+        CPPUNIT_ASSERT(testJob.runSynchronously());
+
+        GetFileInfoJob verifyJob(_driveDbId, nodeId);
+        CPPUNIT_ASSERT(verifyJob.runSynchronously());
+        CPPUNIT_ASSERT_LESS(invalidFutureModificationDate, verifyJob.modificationTime());
+        CPPUNIT_ASSERT_EQUAL(testJob.lastModifiedAt(), verifyJob.modificationTime());
     }
 }
 
