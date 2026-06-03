@@ -47,8 +47,8 @@ class LocalDeleteJobMockingTrash : public SyncLocalDeleteJob {
     protected:
         ExitInfo moveToTrash() final {
             if (_moveToTrashIsMocked) {
-                (void) IoHelper::deleteItem(absolutePath());
-                moveToTrashOrHardDeleteIfNeeded(absolutePath());
+                (void) IoHelper::deleteItem(absoluteLocalPath());
+                moveToTrashOrHardDeleteIfNeeded(absoluteLocalPath());
                 return _moveToTrashFailed ? ExitCode::SystemError : ExitCode::Ok;
             }
 

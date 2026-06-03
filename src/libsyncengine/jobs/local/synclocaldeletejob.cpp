@@ -71,8 +71,8 @@ SyncLocalDeleteJob::SyncLocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, c
     _remoteNodeId(std::move(remoteNodeId)),
     _forceToTrash(forceToTrash == ForceToTrash::Yes) {}
 
-SyncLocalDeleteJob::SyncLocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, const SyncPath &absolutePath) :
-    GenericLocalDeleteJob(absolutePath),
+SyncLocalDeleteJob::SyncLocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, const SyncPath &absoluteLocalPath) :
+    GenericLocalDeleteJob(absoluteLocalPath),
     _syncPal(syncPal) {
     setBypassCheck(true);
 }
@@ -90,7 +90,7 @@ bool SyncLocalDeleteJob::findRemoteItem(SyncPath &remoteItemPath) const {
         using namespace Poco::Net;
         if (job.getStatusCode() == HTTPResponse::HTTP_FORBIDDEN || job.getStatusCode() == HTTPResponse::HTTP_NOT_FOUND) {
             found = false;
-            LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(absolutePath())
+            LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(absoluteLocalPath())
                                           << L" not found on remote replica. This is normal and expected.");
         }
     }
@@ -100,8 +100,9 @@ bool SyncLocalDeleteJob::findRemoteItem(SyncPath &remoteItemPath) const {
 
 ExitInfo SyncLocalDeleteJob::checkIfRemoteFileHasBeenMoved() {
     SyncPath remoteRelativePath;
-    const bool remoteItemIsFound = findRemoteItem(remoteRelativePath);
-    if (!remoteItemIsFound) return ExitCode::Ok; // Safe deletion.
+
+    if (const bool remoteItemIsFound = findRemoteItem(remoteRelativePath); !remoteItemIsFound)
+        return ExitCode::Ok; // Safe deletion.
 
     SyncPath normalizedPath;
     if (!Utility::normalizedSyncPath(_relativeLocalPath, normalizedPath)) {
@@ -111,7 +112,7 @@ ExitInfo SyncLocalDeleteJob::checkIfRemoteFileHasBeenMoved() {
 
     if (matchRelativePaths(_syncPal->syncInfo().targetPath, normalizedPath, remoteRelativePath)) {
         // Item is found at the same path on remote
-        LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(absolutePath()).c_str()
+        LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(absoluteLocalPath()).c_str()
                                           << L" still exists on remote replica. Aborting current sync and restarting.");
         return {ExitCode::DataError, ExitCause::InvalidSnapshot}; // We need to rebuild the remote snapshot from scratch
     }
@@ -127,17 +128,17 @@ ExitInfo SyncLocalDeleteJob::canRun() {
     // The item must exist locally for the job to run
     bool exists = false;
     IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(absolutePath(), exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(absolutePath(), ioError));
+    if (!IoHelper::checkIfPathExists(absoluteLocalPath(), exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(absoluteLocalPath(), ioError));
         return ExitCode::SystemError;
     }
     if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(absolutePath()));
+        LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(absoluteLocalPath()));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     if (!exists) {
-        LOGW_DEBUG(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(absolutePath()));
+        LOGW_DEBUG(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(absoluteLocalPath()));
         return {ExitCode::DataError, ExitCause::NotFound};
     }
 
@@ -214,9 +215,9 @@ ExitInfo SyncLocalDeleteJob::deleteFromDB(const SyncPath &relativeLocalPath) {
 ExitInfo SyncLocalDeleteJob::hardDeleteDehydratedPlaceholders() {
     IoError ioError = IoError::Success;
     IoHelper::DirectoryIterator dir;
-    if (!IoHelper::getDirectoryIterator(absolutePath(), true, ioError, dir)) {
+    if (!IoHelper::getDirectoryIterator(absoluteLocalPath(), true, ioError, dir)) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in DirectoryIterator: " << Utility::formatIoError(absolutePath(), ioError));
+                  L"Error in DirectoryIterator: " << Utility::formatIoError(absoluteLocalPath(), ioError));
     }
 
     DirectoryEntry entry;
@@ -233,7 +234,7 @@ ExitInfo SyncLocalDeleteJob::hardDeleteDehydratedPlaceholders() {
     }
 
     if (!endOfDirectory) {
-        LOGW_WARN(_logger, L"Error in DirectoryIterator: " << Utility::formatIoError(absolutePath(), ioError));
+        LOGW_WARN(_logger, L"Error in DirectoryIterator: " << Utility::formatIoError(absoluteLocalPath(), ioError));
         return {ExitCode::SystemError, ExitCause::FileOrDirectoryCorrupted};
     }
 
@@ -242,22 +243,23 @@ ExitInfo SyncLocalDeleteJob::hardDeleteDehydratedPlaceholders() {
 
 
 ExitInfo SyncLocalDeleteJob::moveToTrash() {
-    if (!_liteSyncIsEnabled) return moveToTrashOrHardDeleteIfNeeded(absolutePath());
+    if (!_liteSyncIsEnabled) return moveToTrashOrHardDeleteIfNeeded(absoluteLocalPath());
 
     bool isDirectory = false;
     auto ioErrorCheckIfIsDirectory = IoError::Success;
-    if (const bool success = IoHelper::checkIfIsDirectory(absolutePath(), isDirectory, ioErrorCheckIfIsDirectory); !success) {
+    if (const bool success = IoHelper::checkIfIsDirectory(absoluteLocalPath(), isDirectory, ioErrorCheckIfIsDirectory);
+        !success) {
         LOGW_WARN(_logger, L"Failed to check if path is a directory: "
-                                   << Utility::formatIoError(absolutePath(), ioErrorCheckIfIsDirectory));
+                                   << Utility::formatIoError(absoluteLocalPath(), ioErrorCheckIfIsDirectory));
 
-        return hardDelete(absolutePath());
+        return hardDelete(absoluteLocalPath());
     }
 
-    if (!isDirectory) return handleLiteSyncFile(absolutePath());
+    if (!isDirectory) return handleLiteSyncFile(absoluteLocalPath());
 
     if (const auto exitInfo = hardDeleteDehydratedPlaceholders(); !exitInfo) return exitInfo;
 
-    return moveToTrashOrHardDeleteIfNeeded(absolutePath());
+    return moveToTrashOrHardDeleteIfNeeded(absoluteLocalPath());
 }
 
 ExitInfo SyncLocalDeleteJob::runJob() {
@@ -268,14 +270,14 @@ ExitInfo SyncLocalDeleteJob::runJob() {
     if (const auto exitInfo = canRun(); !exitInfo) return exitInfo;
 
     // Make sure we are allowed to propagate the change
-    PermissionsGiver permsGiver(absolutePath().parent_path(), _logger);
-    PermissionsGiver permsGiver2(absolutePath(), _logger);
+    PermissionsGiver permsGiver(absoluteLocalPath().parent_path(), _logger);
+    PermissionsGiver permsGiver2(absoluteLocalPath(), _logger);
 
     if (const bool tryMoveToTrash = ParametersCache::instance()->parameters().moveToTrash(); tryMoveToTrash || _forceToTrash) {
         return moveToTrash();
     }
 
-    return hardDelete(absolutePath());
+    return hardDelete(absoluteLocalPath());
 }
 
 } // namespace KDC
