@@ -302,7 +302,13 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
     // Local and remote item paths are the same: cannot run
     {
         LocalDeleteJobMock deleteJob(_syncPal, SyncPath{_localTempDir.path().filename()}, false, NodeId{"1234"});
-        deleteJob.setRemoteItemPath(SyncPath{_localTempDir.path().filename()});
+
+        // Remote item names are NFC-normalized, but in this test we have mocked the backend response,
+        // so we need to normalize the response.
+        SyncPath normalizedCommonPath;
+        (void) Utility::normalizedSyncPath(SyncPath{_localTempDir.path().filename()}, normalizedCommonPath);
+
+        deleteJob.setRemoteItemPath(normalizedCommonPath);
 
         CPPUNIT_ASSERT(!deleteJob.checkIfRemoteFileHasBeenMoved());
     }
