@@ -17,8 +17,8 @@
  */
 
 import Combine
-import kDriveCore
 import InfomaniakDI
+import kDriveCore
 import SwiftUI
 
 @MainActor

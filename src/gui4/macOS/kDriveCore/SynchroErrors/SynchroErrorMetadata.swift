@@ -43,8 +43,8 @@ public struct ErrorNodeID: Sendable {
     }
 
     init(errorInfo: ErrorInfo) {
-        self.local = !errorInfo.remoteNodeId.isEmpty ? errorInfo.localNodeId : nil
-        self.remote = !errorInfo.remoteNodeId.isEmpty ? errorInfo.remoteNodeId : nil
+        local = !errorInfo.remoteNodeId.isEmpty ? errorInfo.localNodeId : nil
+        remote = !errorInfo.remoteNodeId.isEmpty ? errorInfo.remoteNodeId : nil
     }
 }
 
