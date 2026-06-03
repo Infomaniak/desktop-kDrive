@@ -52,6 +52,8 @@ class SentryService final : public QObject {
         static void reportError(const std::string &title, const std::string &message);
         static void reportError(const QString &title, const QString &message);
         [[noreturn]] static void reportFatalAndExit(const std::string &title, const std::string &message);
+        [[noreturn]] static void reportFatalAndExit(const char *title, const char *message);
+        [[noreturn]] static void reportFatalAndExit(const QString &title, const QString &message);
 
         void reconcileConsentWithServer();
         void setConsentEnabled(bool enabled);
