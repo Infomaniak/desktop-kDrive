@@ -314,7 +314,7 @@ SnapshotRevision LiveSnapshot::revision() const {
 void LiveSnapshot::removeChildrenRecursively(const std::shared_ptr<SnapshotItem> parent) {
     auto it = parent->children().begin();
     while (it != parent->children().end()) {
-        const auto &child = *it;
+        const auto child = *it;
         const NodeId childId = child->id();
 
         removeChildrenRecursively(child);
