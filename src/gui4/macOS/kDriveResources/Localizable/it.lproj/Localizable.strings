@@ -815,6 +815,9 @@
 /* loco:69aad2fb60082fe51d04e452 */
 "labelConflictStrategyKeepRemoteTitle" = "Mantieni solo le versioni online";
 
+/* loco:69a012ce9c6aefa11d0c0a22 */
+"labelCreateNewSync" = "Crea un %@.";
+
 /* loco:69a00df5cee58fe1c90de9e2 */
 "labelFAQ" = "FAQ";
 
@@ -859,6 +862,9 @@
 
 /* loco:69a067979b511e9c830b1642 */
 "labelNewDeviceDetectedTip" = "Stai utilizzando kDrive su un nuovo computer, dopo il ripristino da un backup.";
+
+/* loco:69a0130cbdb1efd10d0939a3 */
+"labelNewSync" = "nuova sincronizzazione";
 
 /* loco:69aafa69b473f615ee031a64 */
 "labelNoConflictsFound" = "Nessun conflitto corrisponde alla tua ricerca";

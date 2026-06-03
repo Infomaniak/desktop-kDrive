@@ -611,6 +611,10 @@ public enum KDriveLocalizable {
   }
   /// loco:69aad2fb60082fe51d04e452
   public static let labelConflictStrategyKeepRemoteTitle = KDriveLocalizable.tr("Localizable", "labelConflictStrategyKeepRemoteTitle", fallback: "Keep online versions only")
+  /// loco:69a012ce9c6aefa11d0c0a22
+  public static func labelCreateNewSync(_ p1: Any) -> String {
+    return KDriveLocalizable.tr("Localizable", "labelCreateNewSync", String(describing: p1), fallback: "Create a %@.")
+  }
   /// loco:69a00df5cee58fe1c90de9e2
   public static let labelFAQ = KDriveLocalizable.tr("Localizable", "labelFAQ", fallback: "FAQ")
   /// loco:69bd5439d1397465ce0d8572
@@ -645,6 +649,8 @@ public enum KDriveLocalizable {
   public static let labelName = KDriveLocalizable.tr("Localizable", "labelName", fallback: "Name")
   /// loco:69a067979b511e9c830b1642
   public static let labelNewDeviceDetectedTip = KDriveLocalizable.tr("Localizable", "labelNewDeviceDetectedTip", fallback: "You are using kDrive on a new computer, after restoring from a backup.")
+  /// loco:69a0130cbdb1efd10d0939a3
+  public static let labelNewSync = KDriveLocalizable.tr("Localizable", "labelNewSync", fallback: "new sync")
   /// loco:69aafa69b473f615ee031a64
   public static let labelNoConflictsFound = KDriveLocalizable.tr("Localizable", "labelNoConflictsFound", fallback: "No conflicts match your search")
   /// loco:69c2644abc5e9a04d80150f4
