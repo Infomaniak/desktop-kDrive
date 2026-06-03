@@ -31,7 +31,7 @@ using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.CustomControls
 {
-    public sealed partial class RemoteLocationSelector : UserControl
+    public sealed partial class RemoteLocationSelector : FolderTreeSelectorBase
     {
         #region Private fields
         // Root level items displayed in the TreeView, it should only contain the drive itself
@@ -43,19 +43,13 @@ namespace Infomaniak.kDrive.CustomControls
         public RemoteLocationSelector()
         {
             InitializeComponent();
+            EnableTreeScrollChaining();
         }
 
-        // Initial load of data once control is displayed
-        private async void RemoteLocationSelector_Loaded(object sender, RoutedEventArgs e)
-        {
-            await ReloadAsync();
-        }
+        #endregion
 
- 
-        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
-        {         
-            ClearAllTreeItems();
-        }
+        #region Abstract overrides
+        protected override TreeView FolderTreeView => FolderTree;
         #endregion
 
         #region Dependency Properties
@@ -67,14 +61,6 @@ namespace Infomaniak.kDrive.CustomControls
         }
         public static readonly DependencyProperty DriveProperty =
             DependencyProperty.Register(nameof(Drive), typeof(IDrive), typeof(RemoteLocationSelector), new PropertyMetadata(null));
-
-        public bool IsLoading
-        {
-            get => (bool)GetValue(IsLoadingProperty);
-            set => SetValue(IsLoadingProperty, value);
-        }
-        public static readonly DependencyProperty IsLoadingProperty =
-            DependencyProperty.Register(nameof(IsLoading), typeof(bool), typeof(RemoteLocationSelector), new PropertyMetadata(true));
 
         public bool HasSelectedNode
         {
@@ -96,16 +82,8 @@ namespace Infomaniak.kDrive.CustomControls
         #endregion
 
         #region Loading / refreshing
-        private async Task ReloadAsync()
-        {
-            IsLoading = true;
-            ClearAllTreeItems();
-            await BuildRootLevelItemsAsync();
-            IsLoading = false;
-        }
-
         // Clear all tree items and dispose them
-        private void ClearAllTreeItems()
+        protected override void ClearAllTreeItems()
         {
             foreach (var item in _rootLevelItems)
             {
@@ -114,7 +92,7 @@ namespace Infomaniak.kDrive.CustomControls
             _rootLevelItems.Clear();
         }
 
-        public async Task BuildRootLevelItemsAsync()
+        protected override async Task BuildRootLevelItemsAsync()
         {
             _rootLevelItems.Clear();
 
@@ -128,33 +106,8 @@ namespace Infomaniak.kDrive.CustomControls
             // Logical root node
             Node rootNode = new Node(App.Constants.Sync.RootNodeId, Drive.Name, -1, "", "", Drive.UserDbId, Drive.DriveId, false);
             _rootLevelItems.Add(new RemoteLocationSelectorTreeItem(rootNode, Drive, null));
-            await _rootLevelItems[0].LoadImmediateChildrenAsync();
-            await rootNode.LoadSize();
-        }
-        #endregion
-
-        #region TreeView events
-        private async void TreeView_Expanding(TreeView sender, TreeViewExpandingEventArgs args)
-        {
-            List<Task> tasks = [];
-            if (args.Item is RemoteLocationSelectorTreeItem item)
-            {
-                foreach (var child in item.Children.Where(i => i.Node is not null))
-                {
-                    tasks.Add(child.LoadImmediateChildrenAsync());
-                }
-                await Task.WhenAll(tasks);
-            }
-        }
-        #endregion
-
-        #region Misc UI helpers
-
-        // Lazy load size
-        private async void SizeContentLoader_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
-        {
-            if ((sender as Control)?.DataContext is RemoteLocationSelectorTreeItem treeItem && treeItem.Node is not null && treeItem.Node.Size == -1)
-                await treeItem.Node.LoadSize();
+            await _rootLevelItems[0].LoadImmediateChildrenAsync(CancellationTokenSource.Token);
+            await rootNode.LoadSize(CancellationTokenSource.Token);
         }
         #endregion
 
@@ -202,7 +155,7 @@ namespace Infomaniak.kDrive.CustomControls
 
             if (control.DataContext is not RemoteLocationSelectorTreeItem treeItem)
             {
-                Logger.Log(Logger.Level.Error, "CreateFolderButton_Click: DataContext is not a TreeItem2.");
+                Logger.Log(Logger.Level.Error, "CreateFolderButton_Click: DataContext is not a RemoteLocationSelectorTreeItem.");
                 Utility.ShowUnexpectedErrorTeachingTip();
                 return;
             }
@@ -227,7 +180,7 @@ namespace Infomaniak.kDrive.CustomControls
                 return;
 
             // Set the focus on the TextBox in the new item's template to allow the user to enter the folder name easily
-            var textBox = FindChild(container, typeof(TextBox)) as TextBox;
+            var textBox = FindDescendant<TextBox>(container);
             if (textBox is not null)
             {
                 textBox.Focus(FocusState.Programmatic);
@@ -334,7 +287,7 @@ namespace Infomaniak.kDrive.CustomControls
             }
 
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            NodeId? newNodeId = await commService.CreateMissingDirectories(Drive!, parentNodeId, folderName, CancellationToken.None);
+            NodeId? newNodeId = await commService.CreateMissingDirectories(Drive!, parentNodeId, folderName, CancellationTokenSource.Token);
             if (newNodeId is null)
             {
                 Logger.Log(Logger.Level.Error, "Failed to create folder.");
@@ -357,28 +310,6 @@ namespace Infomaniak.kDrive.CustomControls
                 return parent;
 
             return FindParent(parent, ancestorType);
-        }
-
-        private static object? FindChild(DependencyObject parent, Type childType)
-        {
-            if (parent is null)
-                return null;
-
-            int count = VisualTreeHelper.GetChildrenCount(parent);
-
-            for (int i = 0; i < count; i++)
-            {
-                DependencyObject child = VisualTreeHelper.GetChild(parent, i);
-
-                if (childType.IsAssignableFrom(child.GetType()))
-                    return child;
-
-                object? result = FindChild(child, childType);
-                if (result is not null)
-                    return result;
-            }
-
-            return null;
         }
 
         private void TreeViewItem_PointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
@@ -408,37 +339,19 @@ namespace Infomaniak.kDrive.CustomControls
         }
     }
 
-    public class RemoteLocationSelectorTreeItem : UISafeObservableObject, IDisposable
+    public class RemoteLocationSelectorTreeItem : LazyLoadedTreeItem<RemoteLocationSelectorTreeItem>
     {
         #region Private fields
         private readonly IDrive _drive;
-        private bool _isSelected = false;
-        private bool _isLoadingChildren = false;
-        private bool _childrenLoaded = false;
         private bool _canCreateSubfolder = false;
         private Visibility _createSubFolderButtonVisibility = Visibility.Collapsed;
-        private bool _disposed = false;
         #endregion
 
         #region Public properties
-        public Node? Node { get; private set; }
-
         public bool IsSelected
         {
-            get => _isSelected;
-            set => SetPropertyInUIThread(ref _isSelected, value);
-        }
-
-        public bool IsLoadingChildren
-        {
-            get => _isLoadingChildren;
-            private set => SetPropertyInUIThread(ref _isLoadingChildren, value);
-        }
-
-        public bool ChildrenLoaded
-        {
-            get => _childrenLoaded;
-            private set => SetPropertyInUIThread(ref _childrenLoaded, value);
+            get => base.IsSelected == true;
+            set => base.IsSelected = value;
         }
 
         public bool CanCreateSubFolder
@@ -455,82 +368,39 @@ namespace Infomaniak.kDrive.CustomControls
 
         public IDrive Drive => _drive;
 
-        public ObservableCollection<RemoteLocationSelectorTreeItem> Children { get; } = [];
-        public RemoteLocationSelectorTreeItem? ParentItem { get; }
         public bool IsRoot => ParentItem is null;
         public bool IsNotRoot => ParentItem is not null;
         #endregion
 
         public RemoteLocationSelectorTreeItem(Node node, IDrive drive, RemoteLocationSelectorTreeItem? parentItem)
+            : base(parentItem)
         {
             Node = node;
-            ParentItem = parentItem;
             _drive = drive;
             _canCreateSubfolder = true;
         }
 
         // Constructor used for tmp nodes (the user is creating a new folder)
         public RemoteLocationSelectorTreeItem(IDrive drive, RemoteLocationSelectorTreeItem? parentItem)
+            : base(parentItem)
         {
-            ParentItem = parentItem;
             _canCreateSubfolder = false;
             _drive = drive;
         }
 
-        // Lazy load direct child directories
-        public async Task LoadImmediateChildrenAsync()
-        {
-            if (_childrenLoaded || Node is null || Node.AccessDenied)
-                return;
-            IsLoadingChildren = true;
-            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            List<Node>? nodes = await commService.GetSubFolders(_drive.UserDbId, _drive.DriveId, Node.NodeId, CancellationToken.None);
-            if (nodes is null)
-            {
-                Logger.Log(Logger.Level.Error, "Failed to load nodes for SyncExclusionSelector.");
-                IsLoadingChildren = false;
-                Utility.ShowUnexpectedErrorTeachingTip();
-                _childrenLoaded = true;
-                IsLoadingChildren = false;
-                return;
-            }
-
-            foreach (Node node in nodes)
-                Children.Add(new RemoteLocationSelectorTreeItem(node, _drive, this));
-            _childrenLoaded = true;
-            IsLoadingChildren = false;
-        }
-
-        public void Dispose()
-        {
-            if (_disposed)
-                return;
-
-            _disposed = true;
-
-            foreach (var child in Children)
-            {
-                child.Dispose();
-            }
-            Children.Clear();
-        }
+        #region LazyLoadedTreeItem overrides
+        protected override DbId UserDbId => _drive.UserDbId;
+        protected override DriveId DriveId => _drive.DriveId;
+        protected override RemoteLocationSelectorTreeItem CreateChild(Node node) => new RemoteLocationSelectorTreeItem(node, _drive, this);
+        #endregion
     }
 
-    public partial class RemoteLocationSelectorTreeViewTemplateSelector : DataTemplateSelector
+    public partial class RemoteLocationSelectorTreeViewTemplateSelector : FolderTreeItemTemplateSelectorBase<RemoteLocationSelectorTreeItem>
     {
-        public DataTemplate? FolderTemplate { get; set; }
-        public DataTemplate? AccessDeniedTemplate { get; set; }
-        public DataTemplate? NewNodeTemplate { get; set; }
-
-        protected override DataTemplate? SelectTemplateCore(object item)
+        public DataTemplate? NewNodeTemplate
         {
-            if (item is not RemoteLocationSelectorTreeItem treeItem)
-                return base.SelectTemplateCore(item);
-
-            if (treeItem.Node is null)
-                return NewNodeTemplate;
-
-            return treeItem.Node.AccessDenied ? AccessDeniedTemplate : FolderTemplate;
+            get => NullNodeTemplate;
+            set => NullNodeTemplate = value;
         }
     }
 }

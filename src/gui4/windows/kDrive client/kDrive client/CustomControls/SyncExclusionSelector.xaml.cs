@@ -68,7 +68,7 @@ namespace Infomaniak.kDrive.CustomControls
     //  - Uses DynamicData for reactive collections and binding.
     //  - AccessDenied nodes are read-only and cannot be modified.
     */
-    public sealed partial class SyncExclusionSelector : UserControl, IAsyncDisposable
+    public sealed partial class SyncExclusionSelector : FolderTreeSelectorBase
     {
         #region Private fields
         private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
@@ -81,94 +81,19 @@ namespace Infomaniak.kDrive.CustomControls
 
         // Root level items displayed in the TreeView (children of the logical root folder)
         private readonly ObservableCollection<TreeItem> _rootLevelItems = [];
-
-        private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-
-        private bool _disposed = false;
         #endregion
 
         #region Constructor / lifecycle
         public SyncExclusionSelector()
         {
             InitializeComponent();
-
-            FolderTree.AddHandler(
-                UIElement.PointerWheelChangedEvent,
-                new PointerEventHandler(FolderTree_PointerWheelChanged),
-                true);
+            EnableTreeScrollChaining();
         }
 
-        private void FolderTree_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
-        {
-            if (_disposed)
-            {
-                return;
-            }
+        #endregion
 
-            var scrollViewer = FindDescendant<ScrollViewer>(FolderTree);
-            if (scrollViewer == null)
-            {
-                return;
-            }
-
-            int delta = e.GetCurrentPoint(FolderTree).Properties.MouseWheelDelta;
-
-            bool scrollingUp = delta > 0;
-            bool scrollingDown = delta < 0;
-
-            bool canScrollUp = scrollViewer.VerticalOffset > 0;
-            bool canScrollDown = scrollViewer.VerticalOffset < scrollViewer.ScrollableHeight;
-
-            // If the tree can still scroll in the requested direction,
-            // consume the event so the parent ScrollViewer does not scroll.
-            if ((scrollingUp && !canScrollUp) ||
-                (scrollingDown && !canScrollDown))
-            {
-                e.Handled = false;
-            }
-
-            // Otherwise do nothing and let the event bubble to the parent.
-        }
-
-        private static T? FindDescendant<T>(DependencyObject root)
-            where T : DependencyObject
-        {
-            if (root is T match)
-            {
-                return match;
-            }
-
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
-            {
-                var child = VisualTreeHelper.GetChild(root, i);
-
-                var result = FindDescendant<T>(child);
-                if (result != null)
-                {
-                    return result;
-                }
-            }
-
-            return null;
-        }
-
-        // Initial load of data once control is displayed
-        private async void SyncExclusionSelector_Loaded(object sender, RoutedEventArgs e)
-        {
-            await ReloadAsync();
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            if (!_disposed)
-            {
-                _disposed = true;
-                await cancellationTokenSource.CancelAsync();
-                cancellationTokenSource.Dispose();
-                ClearAllTreeItems();
-            }
-        }
-
+        #region Abstract overrides
+        protected override TreeView FolderTreeView => FolderTree;
         #endregion
 
         #region Dependency Properties
@@ -234,14 +159,6 @@ namespace Infomaniak.kDrive.CustomControls
         }
         public static readonly DependencyProperty HasSubDirectoryProperty =
             DependencyProperty.Register(nameof(HasSubDirectory), typeof(bool), typeof(SyncExclusionSelector), new PropertyMetadata(false));
-
-        public bool IsLoading
-        {
-            get => (bool)GetValue(IsLoadingProperty);
-            set => SetValue(IsLoadingProperty, value);
-        }
-        public static readonly DependencyProperty IsLoadingProperty =
-            DependencyProperty.Register(nameof(IsLoading), typeof(bool), typeof(SyncExclusionSelector), new PropertyMetadata(true));
 
         public bool CanShowSaveMenu
         {
@@ -375,34 +292,8 @@ namespace Infomaniak.kDrive.CustomControls
         #endregion
 
         #region Loading / refreshing
-        // Reload full state: exclusion map + tree items
-        private async Task ReloadAsync()
-        {
-            if (_disposed) return;
-            IsLoading = true;
-            await cancellationTokenSource.CancelAsync();
-            if (cancellationTokenSource.TryReset())
-            {
-                Logger.Log(Logger.Level.Debug, "CancellationTokenSource reset successfully on ReloadAsync.");
-            }
-            else
-            {
-                Logger.Log(Logger.Level.Warning, "Failed to reset CancellationTokenSource on Loaded event. A new instance will be created.");
-                cancellationTokenSource = new CancellationTokenSource();
-            }
-            ClearAllTreeItems();
-            if (!await RefreshExcludedNodesAsync())
-            {
-                Utility.ShowUnexpectedErrorTeachingTip();
-                IsLoading = false;
-                return;
-            }
-            await BuildRootLevelItemsAsync();
-            IsLoading = false;
-        }
-
         // Clear all tree items and dispose them
-        private void ClearAllTreeItems()
+        protected override void ClearAllTreeItems()
         {
             if (RootTreeItem is not null)
             {
@@ -416,8 +307,11 @@ namespace Infomaniak.kDrive.CustomControls
             _rootLevelItems.Clear();
         }
 
+        // Refresh exclusion map before rebuilding the tree
+        protected override Task<bool> RefreshDataBeforeBuildAsync() => RefreshExcludedNodesAsync();
+
         // (Re)build root level items under the logical root folder using current exclusion map
-        public async Task BuildRootLevelItemsAsync()
+        protected override async Task BuildRootLevelItemsAsync()
         {
 
             ClearAllTreeItems();
@@ -426,13 +320,13 @@ namespace Infomaniak.kDrive.CustomControls
             Node rootNode = new Node(RemoteRootNodeId, "", -1, "", "", UserDbId, DriveId, false);
             RootTreeItem = new TreeItem(rootNode, UserDbId, DriveId, null, _excludedNodePathsMap);
 
-            await RootTreeItem.LoadImmediateChildrenAsync(cancellationTokenSource.Token);
+            await RootTreeItem.LoadImmediateChildrenAsync(CancellationTokenSource.Token);
             HasSubDirectory = RootTreeItem.Children.Any();
             _rootLevelItems.AddRange(RootTreeItem.Children);
             List<Task> tasks = new List<Task>();
             foreach (var item in _rootLevelItems)
             {
-                tasks.Add(item.LoadImmediateChildrenAsync(cancellationTokenSource.Token));
+                tasks.Add(item.LoadImmediateChildrenAsync(CancellationTokenSource.Token));
             }
             await Task.WhenAll(tasks);
             HasPendingChanges = false;
@@ -614,84 +508,6 @@ namespace Infomaniak.kDrive.CustomControls
 
         #region Misc UI helpers
 
-        // Lazy load size
-        private async void TreeViewItem_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
-        {
-            if (_disposed) return;
-
-            var control = sender as Control;
-            var treeItem = control?.DataContext as TreeItem;
-            if (control is null || treeItem is null || treeItem.Node is null)
-            {
-                Logger.Log(Logger.Level.Error, "TreeViewItem_DataContextChanged: sender is not a Control or DataContext is not a TreeItem.");
-                return;
-            }
-
-            control.EffectiveViewportChanged -= TreeViewItem_EffectiveViewportChanged;
-
-            if (treeItem.Node.Size != -1)
-            {
-                // Size already loaded, no need to load again
-                return;
-            }
-
-            if (control.ActualHeight > 0 && control.ActualWidth > 0)
-            {
-                var loadChildrenTask = treeItem.LoadImmediateChildrenAsync(cancellationTokenSource.Token);
-                var loadSizeTask = treeItem.Node.LoadSize(cancellationTokenSource.Token);
-                await Task.WhenAll(loadChildrenTask, loadSizeTask);
-            }
-            else
-            {
-                control.EffectiveViewportChanged += TreeViewItem_EffectiveViewportChanged;
-            }
-
-        }
-        private async void TreeViewItem_EffectiveViewportChanged(FrameworkElement sender, EffectiveViewportChangedEventArgs args)
-        {
-            if (_disposed) return;
-
-            var control = sender as Control;
-            var treeItem = control?.DataContext as TreeItem;
-            if (control is null || treeItem is null || treeItem.Node is null)
-            {
-                Logger.Log(Logger.Level.Error, "TreeViewItem_EffectiveViewportChanged: sender is not a Control or DataContext is not a TreeItem.");
-                return;
-            }
-
-            if (treeItem.Node.Size != -1)
-            {
-                // Size already loaded, no need to load again
-                return;
-            }
-
-            if (args.EffectiveViewport == Windows.Foundation.Rect.Empty)
-                return;
-
-            Windows.Foundation.Rect viewport = args.EffectiveViewport;
-
-            bool isVisible =
-                viewport.Width > 0 &&
-                viewport.Height > 0 &&
-                viewport.IntersectsWith(new Windows.Foundation.Rect(0, 0, sender.ActualWidth, sender.ActualHeight));
-
-            if (!isVisible)
-            {
-                return;
-            }
-
-            if (cancellationTokenSource.IsCancellationRequested)
-            {
-                Logger.Log(Logger.Level.Debug, "ContentLoader_EffectiveViewportChanged: Cancellation requested, skipping size load.");
-                return;
-            }
-
-            control.EffectiveViewportChanged -= TreeViewItem_EffectiveViewportChanged;
-            var loadChildrenTask = treeItem.LoadImmediateChildrenAsync(cancellationTokenSource.Token);
-            var loadSizeTask = treeItem.Node.LoadSize(cancellationTokenSource.Token);
-            await Task.WhenAll(loadChildrenTask, loadSizeTask);
-        }
-
         // Recompute HasPendingChanges by comparing current excluded ids with original server exclusion set
         private void UpdateHasPendingChanges()
         {
@@ -734,50 +550,27 @@ namespace Infomaniak.kDrive.CustomControls
     /// <summary>
     /// TreeItem wraps a Node and adds UI-only state: tri-state selection plus lazy child loading logic.
     /// </summary>
-    public class TreeItem : UISafeObservableObject, IDisposable
+    public class TreeItem : LazyLoadedTreeItem<TreeItem>
     {
         #region Private fields
         private readonly DbId _userDbId = 0;
         private readonly DriveId _driveId;
-        private bool _isLoadingChildren = false;
-        private bool _childrenLoaded = false;
-        private bool? _isSelected = true; // true=include, false=exclude, null=partial
         private readonly Dictionary<NodeId, string> _excludedNodes;
         private readonly CompositeDisposable _disposables = [];
-        private bool _disposed = false;
         #endregion
 
         #region Public properties
-        public Node Node { get; private set; }
-
-        public bool IsLoadingChildren
+        public override bool? IsSelected
         {
-            get => _isLoadingChildren;
-            private set => SetPropertyInUIThread(ref _isLoadingChildren, value);
+            get => base.IsSelected;
+            set => base.IsSelected = value;
         }
-
-        public bool ChildrenLoaded
-        {
-            get => _childrenLoaded;
-            private set => SetPropertyInUIThread(ref _childrenLoaded, value);
-        }
-        public bool? IsSelected
-        {
-            get => _isSelected;
-            set
-            {
-                SetPropertyInUIThread(ref _isSelected, value);
-            }
-        }
-
-        public ObservableCollection<TreeItem> Children { get; } = [];
-        public TreeItem? ParentItem { get; }
         #endregion
 
         public TreeItem(Node node, DbId userDbId, DriveId driveId, TreeItem? parentItem, Dictionary<NodeId, string> excluded)
+            : base(parentItem)
         {
             Node = node;
-            ParentItem = parentItem;
             _userDbId = userDbId;
             _driveId = driveId;
             _excludedNodes = excluded;
@@ -789,6 +582,12 @@ namespace Infomaniak.kDrive.CustomControls
 
             RecomputeSelectionFromExclusionMap();
         }
+
+        #region LazyLoadedTreeItem overrides
+        protected override DbId UserDbId => _userDbId;
+        protected override DriveId DriveId => _driveId;
+        protected override TreeItem CreateChild(Node node) => new TreeItem(node, _userDbId, _driveId, this, _excludedNodes);
+        #endregion
 
         // Recompute tri-state based on exclusion map
         public void RecomputeSelectionFromExclusionMap()
@@ -866,63 +665,19 @@ namespace Infomaniak.kDrive.CustomControls
             }
         }
 
-        // Lazy load direct child directories
-        public async Task LoadImmediateChildrenAsync(CancellationToken cancellationToken)
+        protected override void DisposeManagedResources()
         {
-            if (_childrenLoaded || Node.AccessDenied || IsLoadingChildren)
-                return;
-            IsLoadingChildren = true;
-            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            List<Node>? nodes = await commService.GetSubFolders(_userDbId, _driveId, Node.NodeId, cancellationToken);
-            if (nodes is null)
-            {
-                if (!cancellationToken.IsCancellationRequested)
-                {
-                    Logger.Log(Logger.Level.Error, "Failed to load nodes for SyncExclusionSelector.");
-                    Utility.ShowUnexpectedErrorTeachingTip();
-                }
-                IsLoadingChildren = false;
-                _childrenLoaded = true;
-                IsLoadingChildren = false;
-                return;
-            }
-
-            foreach (Node node in nodes)
-                await Utility.RunOnUIThread(() => Children.Add(new TreeItem(node, _userDbId, _driveId, this, _excludedNodes)));
-            _childrenLoaded = true;
-            IsLoadingChildren = false;
-        }
-
-        public void Dispose()
-        {
-            if (_disposed)
-                return;
-
-            _disposed = true;
-
-            foreach (var child in Children)
-            {
-                child.Dispose();
-            }
             Children.CollectionChanged -= OnChildrenCollectionChanged;
-
-            Children.Clear();
-
             _disposables?.Dispose();
         }
     }
 
-    public partial class FolderTreeViewItemTemplateSelector : DataTemplateSelector
+    public partial class FolderTreeViewItemTemplateSelector : FolderTreeItemTemplateSelectorBase<TreeItem>
     {
-        public DataTemplate? DirectoryTemplate { get; set; }
-        public DataTemplate? AccessDeniedTemplate { get; set; }
-
-        protected override DataTemplate? SelectTemplateCore(object item)
+        public DataTemplate? DirectoryTemplate
         {
-            if (item is not TreeItem treeItem)
-                return base.SelectTemplateCore(item);
-
-            return treeItem.Node.AccessDenied ? AccessDeniedTemplate : DirectoryTemplate;
+            get => FolderTemplate;
+            set => FolderTemplate = value;
         }
     }
 }

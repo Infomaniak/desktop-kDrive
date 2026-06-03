@@ -30,4 +30,4 @@ Before proposing code or review comments:
 - Do not duplicate SonarCloud findings verbatim unless they identify a concrete actionable problem in the changed code.
 
 ## Pull Request & Commit Rules (MANDATORY)
-See `AGENTS.md` for the canonical version.
+- **Commit Format:** Follow the project's semantic-commit validation rules defined in [`.github/workflows/semantic-commit.yml`](https://github.com/Infomaniak/.github/blob/main/.github/workflows/semantic-commit.yml) and always write them in english.
