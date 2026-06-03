@@ -2435,7 +2435,6 @@ ExitInfo ExecutorWorker::excludeFileFromSync(SyncOpPtr syncOp, const SyncPath &a
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::deleteNode");
                 return {ExitCode::DbError, ExitCause::DbAccessError};
             }
-            assert(found);
         }
     }
 
