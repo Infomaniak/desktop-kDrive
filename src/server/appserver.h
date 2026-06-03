@@ -151,7 +151,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void addError(const Error &error) const;
         void manageError(const Error &error, std::vector<Error> &errorList, bool errorAlreadyExists) const;
         void manageDriveAccessError(Drive &drive) const;
-        void manageInvalidTokenError(User& user) const;
+        void manageInvalidTokenError(User &user) const;
         void manageSocketsDefunctedError() const;
         void manageFileAccessErrorError(const std::vector<Error> &errorList) const;
         void manageUpdateRequiredErrorError() const;
@@ -300,7 +300,11 @@ class AppServer : public SharedTools::QtSingleApplication {
         void processInterruptedLogsUpload();
 
         ExitCode migrateConfiguration(bool &proxyNotSupported);
-        ExitInfo updateAllUsersInfo();
+        enum class UpdateFollowUpAction {
+            None,
+            CleanUserDbEntry
+        };
+        ExitInfo updateAllUsersInfo(UpdateFollowUpAction action = UpdateFollowUpAction::None);
         ExitInfo updateUserInfo(User &user);
         ExitInfo updateUser(User &user);
         ExitInfo createAccount(Account &newAccount);

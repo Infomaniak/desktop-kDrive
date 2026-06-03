@@ -1287,57 +1287,55 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
         bool found = false;
 
         // update myself
-        // if it's a create we don't have node's database data
-        if (node->hasChangeEvent(OperationType::Create)) {
-            continue;
-        }
-
-        // if node is temporary node
-        if (node->isTmp()) {
-            if (const ExitCode exitCode = updateTmpNode(node); exitCode != ExitCode::Ok) {
-                return exitCode;
+        // if it's a Create we don't have node's database data
+        if (!node->hasChangeEvent(OperationType::Create)) {
+            // if node is temporary node
+            if (node->isTmp()) {
+                if (const ExitCode exitCode = updateTmpNode(node); exitCode != ExitCode::Ok) {
+                    return exitCode;
+                }
             }
-        }
 
-        // use previous nodeId if it's an Edit from Delete-Create
-        if (!node->id().has_value()) {
-            LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve ID for node= " << SyncName2WStr(node->name()));
-            return ExitCode::DataError;
-        }
-
-        NodeId usableNodeId = node->id().value();
-        if (node->isEditFromDeleteCreate()) {
-            if (!node->previousId().has_value()) {
-                LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve previousId for node= " << SyncName2WStr(node->name()));
+            // use previous nodeId if it's an Edit from Delete-Create
+            if (!node->id().has_value()) {
+                LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve ID for node= " << SyncName2WStr(node->name()));
                 return ExitCode::DataError;
             }
-            usableNodeId = node->previousId().value();
-        }
 
-        DbNode dbNode;
-        if (!_syncDbReadOnlyCache.node(_side, usableNodeId, dbNode, found)) {
-            LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
-            return ExitCode::DbError;
-        }
-        if (!found) {
-            LOG_SYNCPAL_WARN(_logger, "Failed to retrieve node for id=" << usableNodeId);
-            return ExitCode::DataError;
-        }
+            NodeId usableNodeId = node->id().value();
+            if (node->isEditFromDeleteCreate()) {
+                if (!node->previousId().has_value()) {
+                    LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve previousId for node= " << SyncName2WStr(node->name()));
+                    return ExitCode::DataError;
+                }
+                usableNodeId = node->previousId().value();
+            }
 
-        // if it's dbNodeId is null
-        if (!node->idb().has_value() && dbNode.nodeId()) {
-            node->setIdb(dbNode.nodeId());
-        }
+            DbNode dbNode;
+            if (!_syncDbReadOnlyCache.node(_side, usableNodeId, dbNode, found)) {
+                LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
+                return ExitCode::DbError;
+            }
+            if (!found) {
+                LOG_SYNCPAL_WARN(_logger, "Failed to retrieve node for id=" << usableNodeId);
+                return ExitCode::DataError;
+            }
 
-        // if it's meta-data is null
-        if (!node->createdAt().has_value()) {
-            node->setCreatedAt(dbNode.created());
-        }
-        if (!node->modificationTime().has_value()) {
-            node->setModificationTime(_side == ReplicaSide::Local ? dbNode.lastModifiedLocal() : dbNode.lastModifiedRemote());
-        }
-        if (node->size() == 0) {
-            node->setSize(dbNode.size());
+            // if its dbNodeId is null
+            if (!node->idb().has_value() && dbNode.nodeId()) {
+                node->setIdb(dbNode.nodeId());
+            }
+
+            // if its meta-data is null
+            if (!node->createdAt().has_value()) {
+                node->setCreatedAt(dbNode.created());
+            }
+            if (!node->modificationTime().has_value()) {
+                node->setModificationTime(_side == ReplicaSide::Local ? dbNode.lastModifiedLocal() : dbNode.lastModifiedRemote());
+            }
+            if (node->size() == 0) {
+                node->setSize(dbNode.size());
+            }
         }
 
         for (auto &nodeChild: node->children()) {

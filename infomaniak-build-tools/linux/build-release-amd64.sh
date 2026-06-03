@@ -83,6 +83,12 @@ fi
 
 
 build_dir="$src_dir/build-linux"
+
+if [ -d "$build_dir" ]; then
+    echo "Build directory already exists: '$build_dir'. Cleaning it."
+    rm -rf "$build_dir"
+fi
+
 app_dir="$build_dir/install"
 build_type="RelWithDebInfo"
 
