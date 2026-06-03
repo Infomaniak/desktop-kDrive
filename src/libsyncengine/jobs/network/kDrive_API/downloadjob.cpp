@@ -163,7 +163,7 @@ ExitInfo DownloadJob::runJob() noexcept {
         if (!_shouldDownload) {
             LOGW_DEBUG(_logger, L"hanging last modified date without downloading")
             if (const ExitInfo exitInfo = applyFileDatesIfRequired(FileType::Regular); !exitInfo) return exitInfo;
-            return setOutputParamaters();
+            return setOutputParameters();
         }
     }
 
@@ -298,7 +298,7 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
         }
     }
     if (const ExitInfo exitInfo = applyFileDatesIfRequired(fileType); !exitInfo) return exitInfo;
-    return setOutputParamaters();
+    return setOutputParameters();
 }
 
 ExitInfo DownloadJob::applyFileDatesIfRequired(const FileType fileType) {
@@ -318,7 +318,7 @@ ExitInfo DownloadJob::applyFileDatesIfRequired(const FileType fileType) {
     return ExitCode::Ok;
 }
 
-ExitInfo DownloadJob::setOutputParamaters() {
+ExitInfo DownloadJob::setOutputParameters() {
     FileStat filestat;
     IoError ioError = IoError::Success;
     if (!IoHelper::getFileStat(_fileDownloadInfo.localpath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive)) {
