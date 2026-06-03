@@ -96,7 +96,7 @@ class DownloadJob : public AbstractTokenNetworkJob {
         static bool hasEnoughPlace(const SyncPath &tmpDirPath, const SyncPath &destDirPath, int64_t neededPlace,
                                    log4cplus::Logger logger);
         ExitInfo applyFileDatesIfRequired(FileType fileType);
-        ExitInfo readBackAndStoreLocalFileStats();
+        ExitInfo setOutputParamaters();
 
         // Function used to retrieve the free disk space (in bytes) for a given path. Injectable to ease testing.
         static std::function<int64_t(const SyncPath &)> _getFreeDiskSpaceFn;
