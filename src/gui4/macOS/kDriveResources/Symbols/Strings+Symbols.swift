@@ -649,6 +649,8 @@ public enum KDriveLocalizable {
   public static let labelMostRecent = KDriveLocalizable.tr("Localizable", "labelMostRecent", fallback: "Most recent")
   /// loco:6989fec57ca0d7305008b1e2
   public static let labelName = KDriveLocalizable.tr("Localizable", "labelName", fallback: "Name")
+  /// loco:69a0675de82f7e271b0c54d2
+  public static let labelNewDeviceDetected = KDriveLocalizable.tr("Localizable", "labelNewDeviceDetected", fallback: "New device detected")
   /// loco:69a067979b511e9c830b1642
   public static let labelNewDeviceDetectedTip = KDriveLocalizable.tr("Localizable", "labelNewDeviceDetectedTip", fallback: "You are using kDrive on a new computer, after restoring from a backup.")
   /// loco:69a0130cbdb1efd10d0939a3

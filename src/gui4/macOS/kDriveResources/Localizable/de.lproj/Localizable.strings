@@ -864,6 +864,9 @@
 /* loco:6989fec57ca0d7305008b1e2 */
 "labelName" = "Name";
 
+/* loco:69a0675de82f7e271b0c54d2 */
+"labelNewDeviceDetected" = "Neues Gerät erkannt";
+
 /* loco:69a067979b511e9c830b1642 */
 "labelNewDeviceDetectedTip" = "Sie verwenden kDrive auf einem neuen Computer nach der Wiederherstellung aus einer Sicherungskopie.";
 

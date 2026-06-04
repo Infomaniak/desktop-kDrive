@@ -863,6 +863,9 @@
 /* loco:6989fec57ca0d7305008b1e2 */
 "labelName" = "Nome";
 
+/* loco:69a0675de82f7e271b0c54d2 */
+"labelNewDeviceDetected" = "Nuovo dispositivo rilevato";
+
 /* loco:69a067979b511e9c830b1642 */
 "labelNewDeviceDetectedTip" = "Stai utilizzando kDrive su un nuovo computer, dopo il ripristino da un backup.";
 
