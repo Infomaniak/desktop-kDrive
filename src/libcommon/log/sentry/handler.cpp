@@ -328,7 +328,9 @@ void Handler::shutdown() {
     if (!_instance) {
         return;
     }
-
+    // Here, the std::move makes _instance empty,
+    // and Handler::shutdown's scope owns the shared_ptr and decrements the refcount at the end of the method, so it is properly
+    // destroyed once sentry_close() has returned, ensuring the Handler outlives any in-flight Sentry callbacks.
     const auto instance = std::move(_instance);
     instance->_isSentryActivated = false;
     try {
