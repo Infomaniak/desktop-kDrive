@@ -467,6 +467,10 @@ public enum KDriveLocalizable {
   public static let errSystemErrorSyncDirAccessErrorDescription = KDriveLocalizable.tr("Localizable", "errSystemErrorSyncDirAccessErrorDescription", fallback: "Check the location or access rights of the folder.")
   /// loco:699ef2b8af5e8f5e2a00eeb5
   public static let errSystemErrorSyncDirAccessTitle = KDriveLocalizable.tr("Localizable", "errSystemErrorSyncDirAccessTitle", fallback: "Sync folder inaccessible")
+  /// loco:6a2197c042aa240e310a72b2
+  public static let errSystemLiteSyncNotAllowedDescription = KDriveLocalizable.tr("Localizable", "errSystemLiteSyncNotAllowedDescription", fallback: "LiteSync does not have the necessary permissions to function.\nopen macOS Preferences to enable them.")
+  /// loco:6a2197a5620b19f3600003a2
+  public static let errSystemLiteSyncNotAllowedTitle = KDriveLocalizable.tr("Localizable", "errSystemLiteSyncNotAllowedTitle", fallback: "Authorization required")
   /// loco:699db2cb55ec6730790b6d02
   public static let errSystemNotEnoughDiskSpaceDescription = KDriveLocalizable.tr("Localizable", "errSystemNotEnoughDiskSpaceDescription", fallback: "Your device’s disk space is full. Sync has been paused. Free up space to resume sync.")
   /// loco:699db2adcb59caa0180bfb43

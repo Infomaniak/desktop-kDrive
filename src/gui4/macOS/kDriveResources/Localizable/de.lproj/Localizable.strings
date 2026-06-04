@@ -597,6 +597,12 @@
 /* loco:699ef2b8af5e8f5e2a00eeb5 */
 "errSystemErrorSyncDirAccessTitle" = "Synchronisierungsordner nicht zugänglich";
 
+/* loco:6a2197c042aa240e310a72b2 */
+"errSystemLiteSyncNotAllowedDescription" = "LiteSync hat nicht die nötigen Berechtigungen, um zu funktionieren.\nöffnen Sie die macOS-Einstellungen, um sie zu aktivieren.";
+
+/* loco:6a2197a5620b19f3600003a2 */
+"errSystemLiteSyncNotAllowedTitle" = "Genehmigung erforderlich";
+
 /* loco:699db2cb55ec6730790b6d02 */
 "errSystemNotEnoughDiskSpaceDescription" = "Der Speicherplatz Ihres Geräts ist voll. Die Synchronisierung wurde pausiert. Geben Sie Speicherplatz frei, um die Synchronisierung fortzusetzen.";
 

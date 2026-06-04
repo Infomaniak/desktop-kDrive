@@ -630,6 +630,12 @@
 /* loco:699ef2b8af5e8f5e2a00eeb5 */
 "errSystemErrorSyncDirAccessTitle" = "Dossier de synchronisation inaccessible";
 
+/* loco:6a2197c042aa240e310a72b2 */
+"errSystemLiteSyncNotAllowedDescription" = "LiteSync n’a pas les autorisations nécessaires pour fonctionner.\n Ouvrez les Préférences macOS pour les activer.";
+
+/* loco:6a2197a5620b19f3600003a2 */
+"errSystemLiteSyncNotAllowedTitle" = "Autorisation requise";
+
 /* loco:699db2cb55ec6730790b6d02 */
 "errSystemNotEnoughDiskSpaceDescription" = "L’espace disque de votre appareil est plein. La synchronisation est interrompue. Libérez de l’espace pour reprendre la synchronisation.";
 

@@ -32,4 +32,6 @@ public enum SystemPreferencesURL {
     }
 
     public static let fullDiskAccess = URL(string: "\(systemPreferencesWindow).preference.security?Privacy_AllFiles")!
+
+    public static let storage = URL(string: "\(systemPreferencesWindow).settings.Storage")!
 }

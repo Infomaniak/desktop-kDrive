@@ -87,6 +87,8 @@ extension SynchroErrorKind {
             )
         case .systemUnableToStartVFS:
             return .syncPal(exitCodes: [.SystemError], exitCauses: [.UnableToStartVfs])
+        case .systemLiteSyncNotAllowed:
+            return .syncPal(exitCodes: [.SystemError], exitCauses: [.LiteSyncNotAllowed])
         case .excludedByTemplate:
             return .node(cancelTypes: [.ExcludedByTemplate])
         case .genericErrForbidden:

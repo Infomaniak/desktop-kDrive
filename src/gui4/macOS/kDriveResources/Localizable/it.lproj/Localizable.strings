@@ -597,6 +597,12 @@
 /* loco:699ef2b8af5e8f5e2a00eeb5 */
 "errSystemErrorSyncDirAccessTitle" = "Cartella di sincronizzazione non accessibile";
 
+/* loco:6a2197c042aa240e310a72b2 */
+"errSystemLiteSyncNotAllowedDescription" = "LiteSync non dispone delle autorizzazioni necessarie per funzionare.\naprite le Preferenze di macOS per abilitarli.";
+
+/* loco:6a2197a5620b19f3600003a2 */
+"errSystemLiteSyncNotAllowedTitle" = "Autorizzazione necessaria";
+
 /* loco:699db2cb55ec6730790b6d02 */
 "errSystemNotEnoughDiskSpaceDescription" = "Lo spazio su disco del tuo dispositivo è esaurito. La sincronizzazione è stata sospesa. Libera spazio per riprendere la sincronizzazione.";
 
