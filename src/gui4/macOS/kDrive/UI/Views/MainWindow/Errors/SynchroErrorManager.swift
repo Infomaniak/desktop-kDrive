@@ -85,6 +85,13 @@ final class SynchroErrorManager: ObservableObject {
         router.navigate(to: .onboarding())
     }
 
+    func navigateToSynchroCreation() {
+        (NSApp.delegate as? AppDelegate)?.openPreferencesWindow()
+
+        @InjectService var router: PreferencesViewRouter
+        router.setCurrentTab(.accounts)
+    }
+
     func navigateToExclusionRules() {
         (NSApp.delegate as? AppDelegate)?.openPreferencesWindow()
 

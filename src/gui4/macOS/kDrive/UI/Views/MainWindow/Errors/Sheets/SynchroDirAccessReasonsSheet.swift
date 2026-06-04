@@ -16,6 +16,8 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import kDriveCore
+import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
@@ -32,6 +34,9 @@ extension AttributedString {
 }
 
 struct SynchroDirAccessReasonsSheet: View {
+    let synchroErrorManager: SynchroErrorManager
+    let error: SynchroError
+
     private let explanations: [ErrorExplainingSheetView.Explanation] = [
         .init(
             id: 0,
@@ -53,7 +58,7 @@ struct SynchroDirAccessReasonsSheet: View {
             description: .withLink(
                 KDriveLocalizable.labelCreateNewSync(KDriveLocalizable.labelNewSync),
                 pattern: KDriveLocalizable.labelNewSync,
-                url: URL(string: "custom-action://new-sync")!
+                url: URL(string: "custom-action://navigate-to-sync-creation")!
             )
         )
     ]
@@ -76,14 +81,14 @@ struct SynchroDirAccessReasonsSheet: View {
     }
 
     private func openParentFolder() {
-
+        synchroErrorManager.openParentFolder(error)
     }
 
     private func navigateToSyncCreation() {
-
+        synchroErrorManager.navigateToSynchroCreation()
     }
 }
 
 #Preview {
-    SynchroDirAccessReasonsSheet()
+    SynchroDirAccessReasonsSheet(synchroErrorManager: SynchroErrorManager(), error: PreviewHelper.synchroError)
 }
