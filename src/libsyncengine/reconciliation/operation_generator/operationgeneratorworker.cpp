@@ -142,9 +142,8 @@ void OperationGeneratorWorker::execute() {
     }
 
     if (_nbLocalDeleteOperations >= maxNbOfDeleteOperationSoftLimit) {
-        LOGW_SYNCPAL_WARN(_logger, L"Many local delete operations detected!");
-        exitCode = ExitCode::SystemError;
-        setExitCause(ExitCause::TooManyDeleteOperations);
+        LOGW_SYNCPAL_WARN(_logger, L"Too many local delete operations detected!");
+        exitCode = ExitCode::TooManyDeleteOperations;
     }
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());

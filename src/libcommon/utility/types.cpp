@@ -121,6 +121,8 @@ std::string toString(const ExitCode e) {
             return "LogUploadFailed";
         case ExitCode::UpdateFailed:
             return "UpdateFailed";
+        case ExitCode::TooManyDeleteOperations:
+            return "TooManyDeleteOperations";
         default:
             return noConversionStr;
     }
