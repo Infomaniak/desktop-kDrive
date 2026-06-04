@@ -116,7 +116,8 @@ void SentryService::reportFatalAndExit(const std::string &title, const std::stri
         sentry::Handler::captureMessage(sentry::Level::Fatal, title, message);
         sentry::Handler::shutdown();
     }
-    qCCritical(lcSentryService) << "Fatal error occurred, exiting application | title:" << QString::fromStdString(title) << "/ message:" << QString::fromStdString(message);
+    qCCritical(lcSentryService) << "Fatal error occurred, exiting application | title:" << QString::fromStdString(title)
+                                << "/ message:" << QString::fromStdString(message);
     std::exit(EXIT_FAILURE);
 }
 
