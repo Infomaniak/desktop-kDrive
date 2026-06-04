@@ -134,6 +134,16 @@ void OnboardingFlowController::setCurrentStep(const Step step) {
     emit currentStepChanged();
 }
 
+void OnboardingFlowController::handleAuthorizationCodeReady() {
+    if (_currentStep != Login) {
+        return;
+    }
+
+    if (_loginState == LoginIdle || _loginState == WaitingForWebAuthentication || _loginState == LoginError) {
+        setLoginState(LoadingUser);
+    }
+}
+
 void OnboardingFlowController::handleLoginTokenSucceeded(const qint64 userDbId) {
     qCInfo(lcOnboardingFlowController) << "Onboarding login token succeeded | userDbId:" << userDbId;
     setLoginState(LoadingUser);
