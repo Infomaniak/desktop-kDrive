@@ -3141,7 +3141,7 @@ void AppServer::resolveErrors(std::vector<Error> errorList) const {
 }
 
 ExitInfo AppServer::startSyncs() {
-    std::unordered_set<SyncDbId> emptyList;
+    const std::unordered_set<SyncDbId> emptyList;
     std::unordered_set<SyncDbId> startedSyncDbIds;
     return startSyncs(emptyList, startedSyncDbIds);
 }
@@ -3304,7 +3304,7 @@ ExitInfo AppServer::startSyncs(User &user, std::unordered_set<SyncDbId> toIgnore
                     mainExitInfo.merge(exitInfo, {ExitCode::SystemError});
                 }
 
-                startedSyncDbIds.insert(sync.dbId());
+                (void) startedSyncDbIds.insert(sync.dbId());
             }
         }
     }
