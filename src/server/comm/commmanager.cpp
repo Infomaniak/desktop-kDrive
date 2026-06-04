@@ -69,14 +69,14 @@ CommManager::CommManager(AppServer &appServer) :
 
 #if defined(KD_MACOS)
     // Tell the Finder to use the Extension (checking it from System Preferences -> Extensions)
-    Utility::runCommand("/usr/bin/pluginkit", {"-v", "-e", "use", "-i", std::string(APPLICATION_REV_DOMAIN) + ".Extension"});
+    Utility::runCommand("pluginkit", {"-v", "-e", "use", "-i", std::string(APPLICATION_REV_DOMAIN) + ".Extension"});
 
     // Add it again. This was needed for Mojave to trigger a load.
     // TODO: Still needed?
     SyncPath extPath(CommonUtility::getExtensionPath());
     if (std::filesystem::exists(extPath)) {
         // Bundled app (i.e. not test executable)
-        Utility::runCommand("/usr/bin/pluginkit", {"-v", "-a", extPath.native()});
+        Utility::runCommand("pluginkit", {"-v", "-a", extPath.native()});
     }
 #endif
 

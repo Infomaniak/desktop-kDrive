@@ -84,12 +84,12 @@ void Utility::restartFinderExtension() {
     // The commands below aims to simulate this manipulation.
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t) (0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
       LOG_DEBUG(logger(), "Running ignore Finder Extension command for " << [processName UTF8String]);
-      Utility::runCommand("/usr/bin/pluginkit", {"-e", "ignore", "-i", [processName UTF8String]});
+      Utility::runCommand("pluginkit", {"-e", "ignore", "-i", [processName UTF8String]});
     });
 
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t) (1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
       LOG_DEBUG(logger(), "Running use Finder Extension command for " << [processName UTF8String]);
-      Utility::runCommand("/usr/bin/pluginkit", {"-e", "use", "-i", [processName UTF8String]});
+      Utility::runCommand("pluginkit", {"-e", "use", "-i", [processName UTF8String]});
     });
 }
 
