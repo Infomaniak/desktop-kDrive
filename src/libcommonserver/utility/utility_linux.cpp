@@ -296,7 +296,7 @@ bool Utility::registerLoginRedirection() {
     if (!appImageEnv.empty()) {
         execPath = SyncPath(appImageEnv);
     } else {
-        execPath = KDC::CommonUtility::getAppWorkingDir() / APPLICATION_EXECUTABLE;
+        execPath = KDC::CommonUtility::applicationFilePath();
     }
     urlSchemeFile << "[Desktop Entry]" << std::endl;
     urlSchemeFile << "Name=" << APPLICATION_EXECUTABLE << std::endl;
