@@ -21,23 +21,11 @@ import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
-extension AttributedString {
-    static func withLink(_ string: String, pattern: String, url: URL) -> AttributedString {
-        var attributedString = AttributedString(stringLiteral: string)
-        if let range = attributedString.range(of: pattern) {
-            attributedString[range].link = url
-            attributedString[range].foregroundColor = .accent
-            attributedString[range].cursor = .pointingHand
-        }
-        return attributedString
-    }
-}
-
 struct SynchroDirAccessReasonsSheet: View {
     let synchroErrorManager: SynchroErrorManager
     let error: SynchroError
 
-    private let explanations: [ErrorExplainingSheetView.Explanation] = [
+    private static let explanations: [ErrorExplainingSheetView.Explanation] = [
         .init(
             id: 0,
             title: KDriveLocalizable.labelFolderMovedOrRenamed,
@@ -64,20 +52,33 @@ struct SynchroDirAccessReasonsSheet: View {
     ]
 
     var body: some View {
-        ErrorExplainingSheetView(
-            title: KDriveLocalizable.errSystemErrorSyncDirAccessTitle,
-            description: KDriveLocalizable.dialogSystemErrorSyncDirAccessErrorDescription,
-            explanations: explanations,
-            mainAction: .init(title: KDriveLocalizable.buttonOpenParentFolder, handler: openParentFolder)
-        )
-        .environment(\.openURL, OpenURLAction { url in
-            guard url.scheme != "https" else {
-                return .systemAction
-            }
+        ScrollView {
+            VStack(spacing: 0) {
+                ErrorExplainingSheetView(
+                    title: KDriveLocalizable.errSystemErrorSyncDirAccessTitle,
+                    description: KDriveLocalizable.dialogSystemErrorSyncDirAccessErrorDescription,
+                    explanations: SynchroDirAccessReasonsSheet.explanations,
+                    mainAction: .init(title: KDriveLocalizable.buttonOpenParentFolder, handler: openParentFolder)
+                )
+                .environment(\.openURL, OpenURLAction { url in
+                    guard url.scheme != "https" else {
+                        return .systemAction
+                    }
 
-            navigateToSyncCreation()
-            return .handled
-        })
+                    navigateToSyncCreation()
+                    return .handled
+                })
+
+                VStack(alignment: .leading, spacing: AppPadding.padding12) {
+                    Text(KDriveLocalizable.labelOriginalLocation)
+                        .foregroundStyle(ColorToken.Text.primary.asColor)
+                        .font(.Tokens.bodyEmphasized)
+
+                    CopyablePathView(path: error.metadata.path)
+                }
+                .padding([.bottom, .horizontal], AppPadding.padding16)
+            }
+        }
     }
 
     private func openParentFolder() {

@@ -38,34 +38,40 @@ struct ErrorExplainingSheetView: View {
     }
 
     var body: some View {
-        Form {
-            Section {} header: {
-                VStack(alignment: .leading, spacing: AppPadding.padding8) {
-                    Text(title)
-                        .foregroundStyle(ColorToken.Text.primary.asColor)
-                        .font(.Tokens.title3Emphasized)
+        VStack(alignment: .leading, spacing: AppPadding.padding16) {
+            VStack(alignment: .leading, spacing: AppPadding.padding8) {
+                Text(title)
+                    .foregroundStyle(ColorToken.Text.primary.asColor)
+                    .font(.Tokens.title3Emphasized)
 
-                    Text(description)
-                        .foregroundStyle(ColorToken.Text.primary.asColor)
-                        .font(.Tokens.body)
-                }
+                Text(description)
+                    .foregroundStyle(ColorToken.Text.primary.asColor)
+                    .font(.Tokens.body)
             }
 
             ForEach(explanations) { explanation in
-                Section {
+                GroupBox {
                     VStack(alignment: .leading, spacing: AppPadding.padding8) {
                         Text(explanation.title)
                             .foregroundStyle(ColorToken.Text.primary.asColor)
                             .font(.Tokens.bodyEmphasized)
 
-                        Text(explanation.description)
-                            .foregroundStyle(ColorToken.Text.primary.asColor)
-                            .font(.Tokens.callout)
+                        HStack(spacing: AppPadding.padding4) {
+                            KDriveResources.arrowRight.swiftUIImage
+                                .resizable(at: AppIconSize.iconSize12)
+                                .foregroundStyle(ColorToken.Text.tertiary.asColor)
+
+                            Text(explanation.description)
+                                .foregroundStyle(ColorToken.Text.primary.asColor)
+                                .font(.Tokens.callout)
+                        }
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(AppPadding.padding8)
                 }
             }
         }
-        .groupedFormatStyle()
+        .padding()
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button(KDriveLocalizable.buttonClose, role: .cancel) {}
