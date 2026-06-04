@@ -56,9 +56,14 @@ struct ErrorsListView: View {
         Form {
             ForEach(categories) { category in
                 Section {
-                    ForEach(computedErrors[category, default: []]) { error in
-                        ErrorCellFactory().make(error: error, isAdmin: isAdmin, manager: synchroErrorManager)
+                    if category == .conflicts {
+                        Text("List Of Conflicts")
+                    } else {
+                        ForEach(computedErrors[category, default: []]) { error in
+                            ErrorCellFactory().make(error: error, isAdmin: isAdmin, manager: synchroErrorManager)
+                        }
                     }
+
                 } header: {
                     Text(category.title)
                 }
