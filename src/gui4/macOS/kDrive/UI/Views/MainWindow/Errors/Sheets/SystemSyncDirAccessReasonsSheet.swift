@@ -21,7 +21,7 @@ import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
-struct SynchroDirAccessReasonsSheet: View {
+struct SystemSyncDirAccessReasonsSheet: View {
     let synchroErrorManager: SynchroErrorManager
     let error: SynchroError
 
@@ -57,7 +57,7 @@ struct SynchroDirAccessReasonsSheet: View {
                 ErrorExplainingSheetView(
                     title: KDriveLocalizable.errSystemErrorSyncDirAccessTitle,
                     description: KDriveLocalizable.dialogSystemErrorSyncDirAccessErrorDescription,
-                    explanations: SynchroDirAccessReasonsSheet.explanations,
+                    explanations: SystemSyncDirAccessReasonsSheet.explanations,
                     mainAction: .init(title: KDriveLocalizable.buttonOpenParentFolder, handler: openParentFolder)
                 )
                 .environment(\.openURL, OpenURLAction { url in
@@ -79,6 +79,7 @@ struct SynchroDirAccessReasonsSheet: View {
                 .padding([.bottom, .horizontal], AppPadding.padding16)
             }
         }
+        .scrollBounceBehaviorBasedOnSize()
     }
 
     private func openParentFolder() {
@@ -91,5 +92,5 @@ struct SynchroDirAccessReasonsSheet: View {
 }
 
 #Preview {
-    SynchroDirAccessReasonsSheet(synchroErrorManager: SynchroErrorManager(), error: PreviewHelper.synchroError)
+    SystemSyncDirAccessReasonsSheet(synchroErrorManager: SynchroErrorManager(), error: PreviewHelper.synchroError)
 }
