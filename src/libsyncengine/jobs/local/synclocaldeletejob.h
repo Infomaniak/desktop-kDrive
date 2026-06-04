@@ -63,6 +63,8 @@ class SyncLocalDeleteJob : public GenericLocalDeleteJob {
         bool matchRelativePaths(const SyncPath &remoteTargetPath, const SyncPath &localRelativePath,
                                 const SyncPath &remoteRelativePath);
 
+        //! Returns an ExitInfo that evaluates to `true` if and only if the item has been found on the remote replica
+        //! with remote relative path equal to `_relativeLocalPath`.
         ExitInfo checkIfRemoteFileHasBeenMoved();
 
         const std::shared_ptr<SyncPal> _syncPal;

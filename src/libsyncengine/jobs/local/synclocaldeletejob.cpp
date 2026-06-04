@@ -92,19 +92,22 @@ bool SyncLocalDeleteJob::findRemoteItemRelativePath(SyncPath &remoteItemPath) co
 ExitInfo SyncLocalDeleteJob::checkIfRemoteFileHasBeenMoved() {
     SyncPath remoteRelativePath;
 
-    if (const bool remoteItemIsFound = findRemoteItemRelativePath(remoteRelativePath); !remoteItemIsFound)
+    if (const bool remoteItemIsFound = findRemoteItemRelativePath(remoteRelativePath); !remoteItemIsFound) {
         return ExitCode::Ok; // Safe deletion.
+    }
 
     SyncPath normalizedRelativeLocalPath;
     if (!Utility::normalizedSyncPath(_relativeLocalPath, normalizedRelativeLocalPath)) {
         LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(_relativeLocalPath));
+
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     if (matchRelativePaths(_syncPal->syncInfo().targetPath, normalizedRelativeLocalPath, remoteRelativePath)) {
-        // Item is found at the same path on remote
+        // The item was found at the same path on remote drive.
         LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(absoluteLocalPath()).c_str()
                                           << L" still exists on remote replica. Aborting current sync and restarting.");
+
         return {ExitCode::DataError, ExitCause::InvalidSnapshot}; // We need to rebuild the remote snapshot from scratch
     }
 
@@ -142,6 +145,7 @@ ExitInfo SyncLocalDeleteJob::canRun() {
     ItemsExistJob existsJob(_syncPal->syncInfo().driveDbId, {_remoteNodeId});
     if (ExitInfo exitInfo = existsJob.runSynchronously(); !exitInfo) {
         LOG_WARN(_logger, "Error in ItemsExistJob: " << exitInfo);
+
         return exitInfo;
     }
 
