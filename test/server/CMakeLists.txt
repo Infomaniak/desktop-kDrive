@@ -107,6 +107,7 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/signalsyncprogressinfojob.h ${server_srcs_path}/comm/guijobs/signalsyncprogressinfojob.cpp
     ${server_srcs_path}/comm/guijobs/signalsynccompleteditemjob.h ${server_srcs_path}/comm/guijobs/signalsynccompleteditemjob.cpp
     ${server_srcs_path}/comm/guijobs/signalsyncupdatedjob.h ${server_srcs_path}/comm/guijobs/signalsyncupdatedjob.cpp
+    ${server_srcs_path}/comm/guijobs/signalloginsendauthorizationcodejob.h ${server_srcs_path}/comm/guijobs/signalloginsendauthorizationcodejob.cpp
     ${server_srcs_path}/comm/guijobs/signalerroraddedjob.h ${server_srcs_path}/comm/guijobs/signalerroraddedjob.cpp
     ${server_srcs_path}/comm/guijobs/signalerrorremovedjob.h ${server_srcs_path}/comm/guijobs/signalerrorremovedjob.cpp
     ${server_srcs_path}/comm/guijobs/signalupdatershowdialogjob.h ${server_srcs_path}/comm/guijobs/signalupdatershowdialogjob.cpp
