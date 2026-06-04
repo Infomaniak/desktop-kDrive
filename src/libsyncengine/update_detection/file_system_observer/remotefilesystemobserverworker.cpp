@@ -189,6 +189,7 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents() {
             exitInfo = exception2ExitCode(e);
             break;
         }
+        job->setScope(Scope::Sync);
 
         if (exitInfo = job->runSynchronously(); exitInfo.code() != ExitCode::Ok) {
             LOG_SYNCPAL_WARN(_logger, "Error in ContinuousCursorListingJob: " << exitInfo);
@@ -281,6 +282,7 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
                                           << _driveDbId << " error=" << e.what());
         return exception2ExitCode(e);
     }
+    job->setScope(Scope::Sync);
 
     SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_LOW);
     while (!SyncJobManagerSingleton::instance()->isJobFinished(job->jobId())) {
@@ -425,6 +427,7 @@ ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
             LOG_SYNCPAL_WARN(_logger, "Error in LongPollJob::LongPollJob for driveDbId=" << _driveDbId << " error=" << e.what());
             return exception2ExitCode(e);
         }
+        notifyJob->setScope(Scope::Sync);
 
         SyncJobManagerSingleton::instance()->queueAsyncJob(notifyJob, Poco::Thread::PRIO_LOW);
         while (!SyncJobManagerSingleton::instance()->isJobFinished(notifyJob->jobId())) {
@@ -782,6 +785,7 @@ ExitInfo RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &
                                                                           << " error=" << e.what());
         return exception2ExitCode(e);
     }
+    job->setScope(Scope::Sync);
 
     job->runSynchronously();
     if (job->hasHttpError() || !job->exitInfo()) {
