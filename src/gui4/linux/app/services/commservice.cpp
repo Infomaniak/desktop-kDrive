@@ -25,6 +25,7 @@
 #include <QLoggingCategory>
 
 #include <cstdint>
+#include <exception>
 
 namespace {
 constexpr KDC::Count maxErrorsToLoad = 1000;
@@ -60,6 +61,7 @@ Q_LOGGING_CATEGORY(lcCommService, "gui.v4.commservice", QtInfoMsg)
 CommService::CommService(IpcClient &client, SignalDispatcher &dispatcher, QObject *parent) :
     QObject(parent),
     _ipcClient(client) {
+    registerLoginHandlers(dispatcher);
     registerUserHandlers(dispatcher);
     registerAccountHandlers(dispatcher);
     registerDriveHandlers(dispatcher);
@@ -67,6 +69,27 @@ CommService::CommService(IpcClient &client, SignalDispatcher &dispatcher, QObjec
     registerErrorHandlers(dispatcher);
     registerUpdaterHandlers(dispatcher);
     registerUtilityHandlers(dispatcher);
+}
+
+// -- Login --------------------------------------------------------------------
+
+void CommService::registerLoginHandlers(SignalDispatcher &dispatcher) {
+    dispatcher.registerHandler(SignalNum::LOGIN_SEND_AUTHORIZATION_CODE, [this](const Poco::DynamicStruct &params) {
+        CommString code;
+        CommString state;
+        try {
+            CommonUtility::readValueFromStruct(params, msgParamAuthCode, code);
+            CommonUtility::readValueFromStruct(params, msgParamState, state);
+        } catch (const std::exception &e) {
+            qCWarning(lcCommService) << "Invalid OAuth authorization signal ignored | exception:" << e.what();
+            return;
+        } catch (...) {
+            qCWarning(lcCommService) << "Invalid OAuth authorization signal ignored";
+            return;
+        }
+
+        emit authorizationCodeReceived(CommonUtility::commString2QStr(code), CommonUtility::commString2QStr(state));
+    });
 }
 
 // -- User ---------------------------------------------------------------------
@@ -270,12 +293,16 @@ void CommService::requestLoginToken(const QString &code, const QString &codeVeri
                                if (exitInfo) {
                                    CommonUtility::readValueFromStruct(result, msgParamUserDbId, loginResult.userDbId);
                                } else {
-                                   CommString error;
-                                   CommString errorDescr;
-                                   CommonUtility::readValueFromStruct(result, msgParamError, error);
-                                   CommonUtility::readValueFromStruct(result, msgParamErrorDescr, errorDescr);
-                                   loginResult.error = CommonUtility::commString2QStr(error);
-                                   loginResult.errorDescription = CommonUtility::commString2QStr(errorDescr);
+                                   if (result.contains(msgParamError)) {
+                                       CommString error;
+                                       CommonUtility::readValueFromStruct(result, msgParamError, error);
+                                       loginResult.error = CommonUtility::commString2QStr(error);
+                                   }
+                                   if (result.contains(msgParamErrorDescr)) {
+                                       CommString errorDescr;
+                                       CommonUtility::readValueFromStruct(result, msgParamErrorDescr, errorDescr);
+                                       loginResult.errorDescription = CommonUtility::commString2QStr(errorDescr);
+                                   }
                                }
                                callback(exitInfo, loginResult);
                            });
