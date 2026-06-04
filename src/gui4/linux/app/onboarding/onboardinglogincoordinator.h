@@ -48,8 +48,12 @@ class OnboardingLoginCoordinator : public QObject {
                                             UserService &userService, AppCache &appCache, OnboardingState &onboardingState,
                                             QObject *parent = nullptr);
 
+    signals:
+        void windowActivationRequested();
+
     private:
         void clearPendingLogin();
+        void handleLoginStateChanged();
         void loadAvailableDrivesWhenUserIsCached(UserDbId userDbId);
         void completeLoginWhenAvailableDrivesAreCached(UserDbId userDbId);
         void handleAvailableDrivesLoadFailed(qint64 userDbId);
