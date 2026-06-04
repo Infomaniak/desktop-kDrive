@@ -39,6 +39,11 @@ ISyncWorker::~ISyncWorker() {
     LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name << " destroyed");
 }
 
+void ISyncWorker::startExecutionThread() {
+    auto executeFunc = std::function<void()>([this]() { execute(); });
+    _thread = (std::make_unique<StdLoggingThread>(executeFunc));
+}
+
 void ISyncWorker::start() {
     if (_isRunning) {
         LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name << " is already running");
@@ -48,11 +53,11 @@ void ISyncWorker::start() {
     LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name << " start");
 
     init();
-    _isRunning = true;
-    auto executeFunc = std::function<void()>([this]() { execute(); });
-    _thread = (std::make_unique<StdLoggingThread>(executeFunc));
-}
 
+    _isRunning = true;
+
+    startExecutionThread();
+}
 
 void ISyncWorker::stop() {
     if (!_isRunning) {

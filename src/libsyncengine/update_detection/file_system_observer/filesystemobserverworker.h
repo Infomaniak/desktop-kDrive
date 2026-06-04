@@ -59,6 +59,7 @@ class FileSystemObserverWorker : public ISyncWorker {
         [[nodiscard]] virtual bool isFolderWatcherReliable() const { return true; }
 
         void init() override;
+        void setUpdateFlagValue(bool isUpdating) { _updating = isUpdating; }
 
     private:
         [[nodiscard]] virtual ReplicaSide getSnapshotType() const = 0;

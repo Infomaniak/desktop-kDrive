@@ -67,7 +67,7 @@ void RemoteFileSystemObserverWorker::execute() {
     for (;;) {
         if (stopAsked()) {
             exitInfo = ExitCode::Ok;
-            tryToInvalidateSnapshot();
+            // tryToInvalidateSnapshot();
             break;
         }
         // We never pause this thread
@@ -855,6 +855,22 @@ void RemoteFileSystemObserverWorker::countListingRequests() {
     }
 
     _listingFullCounter++;
+}
+
+void RemoteFileSystemObserverWorker::resume() {
+    if (isRunning()) {
+        LOG_SYNCPAL_DEBUG(_logger, "Worker " << name() << " is already running");
+        return;
+    }
+
+    LOG_SYNCPAL_DEBUG(_logger, "Worker " << name() << " resuming.");
+
+    ISyncWorker::init();
+
+    setRunningFlagValue(true);
+    setUpdateFlagValue(false);
+
+    startExecutionThread();
 }
 
 } // namespace KDC
