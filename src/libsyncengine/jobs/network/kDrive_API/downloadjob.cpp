@@ -73,7 +73,7 @@ DownloadJob::~DownloadJob() {
     if (!_vfs) return;
 
     // If the download job intent is to create a new local file, then there is no downloaded file after cancellation.
-    if (_responseHandlingCanceled && _fileDownloadInfo.isCreate) return;
+    if (!_shouldDownload) return;
 
     if (_responseHandlingCanceled) {
         if (const ExitInfo exitInfo = _vfs->setPinState(_fileDownloadInfo.localpath, PinState::OnlineOnly); !exitInfo) {
@@ -155,15 +155,21 @@ ExitInfo DownloadJob::checkHashMatch() {
 }
 
 ExitInfo DownloadJob::runJob() noexcept {
-    if (!_fileDownloadInfo.isCreate && !_vfs) {
-        if (const ExitInfo exitInfo = checkHashMatch(); !exitInfo) {
-            LOGW_DEBUG(_logger, L"Error in checkHashMatch: " << exitInfo);
-            return exitInfo;
-        }
-        if (!_shouldDownload) {
-            LOGW_DEBUG(_logger, L"hanging last modified date without downloading")
-            if (const ExitInfo exitInfo = applyFileDatesIfRequired(FileType::Regular); !exitInfo) return exitInfo;
-            return setOutputParameters();
+    if (!_fileDownloadInfo.isCreate && _vfs) {
+        // Get hydration status
+        VfsStatus vfsStatus;
+        (void) _vfs->status(_fileDownloadInfo.localpath, vfsStatus);
+        _isHydrated = vfsStatus.isHydrated;
+        if (_isHydrated) {
+            if (const ExitInfo exitInfo = checkHashMatch(); !exitInfo) {
+                LOGW_DEBUG(_logger, L"Error in checkHashMatch: " << exitInfo);
+                return exitInfo;
+            }
+            if (!_shouldDownload) {
+                LOGW_DEBUG(_logger, L"C hanging last modified date without downloading")
+                if (const ExitInfo exitInfo = applyFileDatesIfRequired(FileType::Regular); !exitInfo) return exitInfo;
+                return setOutputParameters();
+            }
         }
     }
 
