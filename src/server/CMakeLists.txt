@@ -136,6 +136,7 @@ set(server_SRCS
     comm/guijobs/signalsyncupdatedjob.h comm/guijobs/signalsyncupdatedjob.cpp
     comm/guijobs/signalloginsendauthorizationcodejob.h comm/guijobs/signalloginsendauthorizationcodejob.cpp
     comm/guijobs/signalsyncnotifymanydeletesjob.h comm/guijobs/signalsyncnotifymanydeletesjob.cpp
+    comm/guijobs/signalloginsendauthorizationcodejob.h comm/guijobs/signalloginsendauthorizationcodejob.cpp
     comm/guijobs/signalerroraddedjob.h comm/guijobs/signalerroraddedjob.cpp
     comm/guijobs/signalerrorremovedjob.h comm/guijobs/signalerrorremovedjob.cpp
     comm/guijobs/signalupdatershowdialogjob.h comm/guijobs/signalupdatershowdialogjob.cpp
