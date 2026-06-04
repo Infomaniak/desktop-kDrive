@@ -16,26 +16,23 @@
 
 
 # ==============================================================================================
-# Description:  This PowerShell script converts all `.lottie` animation files within a specified 
-#               directory into their `.json` Lottie equivalents.
+# Description:  This PowerShell script converts all `.json` Lottie animation files within a 
+#               specified directory into C# code using LottieGen.
 #
-#               Each `.lottie` file is a ZIP-based container that may include multiple animations, 
-#               assets, and metadata. Since WinUI 3 currently supports only `.json`-based Lottie 
-#               animations, this script automates the extraction of the JSON animation file.
+#               The script includes hash-based change detection to avoid unnecessary regeneration:
+#                 1. Calculates SHA256 hashes of all `.json` files in the directory.
+#                 2. Compares the combined hash with the previous run (stored in `.lottie-hashes`).
+#                 3. Only regenerates C# files if the hashes differ.
+#                 4. Saves the new hash for future comparisons.
 #
-#               For each `.lottie` file found:
-#                 1. The file is temporarily renamed to `.zip`.
-#                 2. The contents are extracted to a temporary directory.
-#                 3. The first animation file located in the `animations` subfolder is extracted.
-#                 4. The extracted animation is renamed to match the original `.lottie` filename, 
-#                    but with a `.json` extension, and placed in the source directory.
-#                 5. All temporary files and directories are cleaned up automatically.
+#               For each `.json` file found:
+#                 - Generates C# code using LottieGen with WinUI 3.0 target.
+#                 - Enables color bindings and dependency object generation.
 #
 # Usage:        .\lottieConverter.ps1 -Directory "C:\Path\To\Your\LottieFiles"
 #
-# Notes:        This script is especially useful for WinUI 3 wich
-#               do not yet support the `.lottie` file format directly.
-#               kDrive client project automatically run this script as a pre-build event.
+# Notes:        This script is especially useful for WinUI 3 projects.
+#               kDrive client project automatically runs this script as a pre-build event.
 # ==============================================================================================
 
 param(
@@ -49,8 +46,48 @@ if (-not (Test-Path $Directory)) {
 	exit 1
 }
 
-# Run LottieGen on every .json file in the animations directory
-Get-ChildItem -Path $Directory -Filter *.json | ForEach-Object {
-	Write-Host "Generating code for '$($_.Name)'..."
-	dotnet tool run LottieGen -InputFile $_.FullName -OutputFolder $Directory -Language cs -WinUIVersion 3.0 -GenerateColorBindings -GenerateDependencyObject
+# Define the hash file path
+$hashFilePath = Join-Path $Directory ".lottie-hashes"
+
+# Get all .json files in the directory
+$jsonFiles = Get-ChildItem -Path $Directory -Filter *.json | Sort-Object Name
+
+if ($jsonFiles.Count -eq 0) {
+	Write-Host "No .json files found in directory '$Directory'."
+	exit 0
+}
+
+# Calculate combined hash of all .json files
+$combinedHash = ""
+foreach ($file in $jsonFiles) {
+	$fileHash = (Get-FileHash -Path $file.FullName -Algorithm SHA256).Hash
+	$combinedHash += "$($file.Name):$fileHash`n"
+}
+$currentHash = (Get-FileHash -InputStream ([System.IO.MemoryStream]::new([System.Text.Encoding]::UTF8.GetBytes($combinedHash))) -Algorithm SHA256).Hash
+
+# Check if hash file exists and compare
+$shouldRegenerate = $true
+if (Test-Path $hashFilePath) {
+	$previousHash = Get-Content $hashFilePath -Raw
+	if ($previousHash.Trim() -eq $currentHash) {
+		Write-Host "No changes detected in Lottie files. Skipping regeneration."
+		$shouldRegenerate = $false
+	}
+}
+
+# Only regenerate if hashes differ
+if ($shouldRegenerate) {
+	Write-Host "Changes detected in Lottie files. Regenerating C# code..."
+
+	# Run LottieGen on every .json file in the animations directory
+	foreach ($file in $jsonFiles) {
+		Write-Host "Generating code for '$($file.Name)'..."
+		dotnet tool run LottieGen -InputFile $file.FullName -OutputFolder $Directory -Language cs -WinUIVersion 3.0 -GenerateColorBindings -GenerateDependencyObject
+	}
+
+	# Save the new hash
+	Set-Content -Path $hashFilePath -Value $currentHash -NoNewline
+	Write-Host "Successfully generated C# code for $($jsonFiles.Count) file(s)."
+} else {
+	Write-Host "All generated files are up to date."
 }
