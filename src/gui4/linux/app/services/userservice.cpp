@@ -71,6 +71,7 @@ void UserService::loadAvailableDrives(const qint64 userDbId) {
 
                 if (!exitInfo) {
                     notifyRequestFailure(exitInfo, RequestNum::USER_AVAILABLEDRIVES);
+                    emit availableDrivesLoadFailed(scopedUserDbId);
                     return;
                 }
 
