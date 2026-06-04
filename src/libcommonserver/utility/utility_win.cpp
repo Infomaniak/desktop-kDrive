@@ -40,6 +40,7 @@
 #include <Accctrl.h>
 #define SECURITY_WIN32
 #include "utility/logiffail.h"
+#include "utility/utility_base.h"
 
 
 #include <security.h>
@@ -605,4 +606,65 @@ void Utility::unixTimeToFiletime(time_t t, FILETIME *filetime) {
     filetime->dwLowDateTime = (DWORD) ll;
     filetime->dwHighDateTime = ll >> 32;
 }
+
+bool Utility::longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound) {
+    auto length = GetLongPathNameW(shortPathIn.native().c_str(), nullptr, 0);
+    if (!length) {
+        if (const auto exists = !utility_base::isLikeFileNotFoundError(GetLastError()); !exists) {
+            notFound = true;
+        }
+        return false;
+    }
+
+    auto *buffer = new SyncChar[length + 1];
+    if (!buffer) {
+        return false;
+    }
+
+    length = GetLongPathNameW(shortPathIn.native().c_str(), buffer, length);
+    if (!length) {
+        if (const auto exists = !utility_base::isLikeFileNotFoundError(GetLastError()); !exists) {
+            notFound = true;
+        }
+        delete[] buffer;
+        return false;
+    }
+
+    buffer[length] = 0;
+    longPathOut = SyncPath(buffer);
+    delete[] buffer;
+
+    return true;
+}
+
+bool Utility::runDetachedProcess(std::wstring cmd) {
+    PROCESS_INFORMATION pinfo;
+    STARTUPINFOW startupInfo = {sizeof(STARTUPINFO),
+                                nullptr,
+                                nullptr,
+                                nullptr,
+                                static_cast<ulong>(CW_USEDEFAULT),
+                                static_cast<ulong>(CW_USEDEFAULT),
+                                static_cast<ulong>(CW_USEDEFAULT),
+                                static_cast<ulong>(CW_USEDEFAULT),
+                                0,
+                                0,
+                                0,
+                                0,
+                                0,
+                                0,
+                                nullptr,
+                                nullptr,
+                                nullptr,
+                                nullptr};
+
+    const auto success = CreateProcess(0, cmd.data(), 0, 0, FALSE, CREATE_UNICODE_ENVIRONMENT | CREATE_NEW_CONSOLE, 0, 0,
+                                       &startupInfo, &pinfo);
+    if (success) {
+        (void) CloseHandle(pinfo.hThread);
+        (void) CloseHandle(pinfo.hProcess);
+    }
+    return success;
+}
+
 } // namespace KDC

@@ -147,6 +147,10 @@ struct COMMONSERVER_EXPORT Utility {
         static bool longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound);
         static bool runDetachedProcess(std::wstring cmd);
 #endif
+#if defined(KD_MACOS) || defined(KD_LINUX)
+        static bool runCommand(const std::string &launchPath, const std::vector<std::string> &arguments = {});
+#endif
+
         static bool checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, IoError &ioError,
                                              const ItemType &itemType = ItemType());
         /* Resource analyzer */
