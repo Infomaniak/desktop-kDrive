@@ -43,6 +43,8 @@ OnboardingLoginCoordinator::OnboardingLoginCoordinator(OnboardingFlowController 
     _onboardingState(onboardingState) {
     (void) connect(&_flowController, &OnboardingFlowController::loginRequested, &_oauthLoginService,
                    &OAuthLoginService::startAuthorization);
+    (void) connect(&_flowController, &OnboardingFlowController::loginStateChanged, this,
+                   &OnboardingLoginCoordinator::handleLoginStateChanged);
     (void) connect(&_commService, &CommService::authorizationCodeReceived, &_oauthLoginService,
                    &OAuthLoginService::handleAuthorizationCode);
     (void) connect(&_oauthLoginService, &OAuthLoginService::authorizationCodeReady, &_flowController,
@@ -76,6 +78,20 @@ OnboardingLoginCoordinator::OnboardingLoginCoordinator(OnboardingFlowController 
 void OnboardingLoginCoordinator::clearPendingLogin() {
     _pendingUserDbId.reset();
     _pendingAvailableDrivesUserDbId.reset();
+}
+
+void OnboardingLoginCoordinator::handleLoginStateChanged() {
+    switch (_flowController.loginState()) {
+        using enum OnboardingFlowController::LoginState;
+        case LoginIdle:
+        case WaitingForWebAuthentication:
+            return;
+        case LoadingUser:
+        case LoginSucceeded:
+        case LoginError:
+            emit windowActivationRequested();
+            return;
+    }
 }
 
 void OnboardingLoginCoordinator::loadAvailableDrivesWhenUserIsCached(const UserDbId userDbId) {
