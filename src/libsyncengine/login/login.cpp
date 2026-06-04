@@ -52,11 +52,12 @@ ExitInfo Login::requestToken(const std::string &authorizationCode, const std::st
 
     try {
         GetTokenJob job(authorizationCode, codeVerifier);
-        if (const ExitCode exitCode = job.runSynchronously(); exitCode != ExitCode::Ok) {
-            LOG_WARN(_logger, "Error in GetTokenJob::runSynchronously: code=" << exitCode);
+        job.setScope(Scope::UserInitiated);
+        if (const auto exitInfo = job.runSynchronously(); !exitInfo) {
+            LOG_WARN(_logger, "Error in GetTokenJob::runSynchronously: " << exitInfo);
             _error = std::string();
             _errorDescr = std::string();
-            return exitCode;
+            return exitInfo;
         }
 
         LOG_DEBUG(_logger, "job.runSynchronously() done");

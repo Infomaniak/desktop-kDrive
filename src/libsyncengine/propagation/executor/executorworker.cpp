@@ -379,11 +379,12 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<SyncJo
             return {ExitCode::Ok, ExitCause::OperationCanceled};
         }
 
-        if (ExitInfo exitInfo = generateCreateJob(syncOp, job, hydrating); !exitInfo) {
+        if (const auto exitInfo = generateCreateJob(syncOp, job, hydrating); !exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to generate create job for: "
                                                << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
             return exitInfo;
         }
+        if (job) job->setScope(Scope::Sync);
 
         if (job && syncOp->affectedNode()->type() == NodeType::Directory) {
             // Propagate the directory creation immediately in order to avoid blocking other dependant job creation
@@ -438,6 +439,7 @@ ExitInfo ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, cons
         return exception2ExitCode(e);
     }
 
+    job->setScope(Scope::Sync);
     if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
         LOG_SYNCPAL_WARN(_logger, "Error in GetFileListJob::runSynchronously for driveDbId="
                                           << _syncPal->driveDbId() << " nodeId=" << parentId << " : " << job->exitInfo());
@@ -511,7 +513,7 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
         }
 
         if (placeholderCreation) {
-            if (ExitInfo exitInfo = createPlaceholder(relativeLocalFilePath); !exitInfo) {
+            if (const auto exitInfo = createPlaceholder(relativeLocalFilePath); !exitInfo) {
                 LOGW_SYNCPAL_WARN(_logger, L"Failed to create placeholder for: "
                                                    << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" "
                                                    << exitInfo);
@@ -795,9 +797,9 @@ ExitInfo ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<SyncJob>
     if (syncOp->omit()) {
         // Do not generate job, only push changes in DB and update tree
         std::shared_ptr<Node> node;
-        if (ExitInfo exitInfo = propagateEditToDbAndTree(syncOp, syncOp->correspondingNode()->id().value_or(""),
-                                                         syncOp->affectedNode()->createdAt(),
-                                                         syncOp->affectedNode()->modificationTime().value_or(0), node);
+        if (const auto exitInfo = propagateEditToDbAndTree(syncOp, syncOp->correspondingNode()->id().value_or(""),
+                                                           syncOp->affectedNode()->createdAt(),
+                                                           syncOp->affectedNode()->modificationTime().value_or(0), node);
             !exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for "
                                                << Utility::formatSyncName(syncOp->affectedNode()->name()));
@@ -811,11 +813,12 @@ ExitInfo ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<SyncJob>
         return {ExitCode::SystemError, ExitCause::NotEnoughDiskSpace};
     }
 
-    if (ExitInfo exitInfo = generateEditJob(syncOp, job); !exitInfo) {
+    if (const auto exitInfo = generateEditJob(syncOp, job); !exitInfo) {
         LOGW_SYNCPAL_WARN(_logger, L"Failed to generate edit job for: " << Utility::formatSyncName(syncOp->affectedNode()->name())
                                                                         << L" " << exitInfo);
         return exitInfo;
     }
+    job->setScope(Scope::Sync);
     return ExitCode::Ok;
 }
 
@@ -958,7 +961,7 @@ ExitInfo ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &byp
         FileRescuer fileRescuer(_syncPal);
         if (const auto exitInfo = fileRescuer.executeRescueMoveJob(syncOp); !exitInfo) return exitInfo;
     } else {
-        if (ExitInfo exitInfo = generateMoveJob(syncOp, ignored, bypassProgressComplete); !exitInfo) {
+        if (const auto exitInfo = generateMoveJob(syncOp, ignored, bypassProgressComplete); !exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to generate move job for: "
                                                << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
             return exitInfo;
@@ -1118,6 +1121,7 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
         }
     }
 
+    job->setScope(Scope::Sync);
     job->setAffectedFilePath(relativeDestLocalFilePath);
     job->runSynchronously();
 
@@ -1176,18 +1180,18 @@ ExitInfo ExecutorWorker::handleDeleteOp(SyncOpPtr syncOp, bool &ignored, bool &b
         // Do not generate job, only push changes in DB and update tree
         if (syncOp->hasConflict()) { // Error message handled with move operation in case Edit-Delete conflict
             bool propagateChange = true;
-            if (const ExitInfo exitInfo = propagateConflictToDbAndTree(syncOp, propagateChange); !propagateChange || !exitInfo) {
+            if (const auto exitInfo = propagateConflictToDbAndTree(syncOp, propagateChange); !propagateChange || !exitInfo) {
                 return exitInfo;
             }
         }
 
-        if (const ExitInfo exitInfo = propagateDeleteToDbAndTree(syncOp); !exitInfo) {
+        if (const auto exitInfo = propagateDeleteToDbAndTree(syncOp); !exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for: "
                                                << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
             return exitInfo;
         }
     } else {
-        if (const ExitInfo exitInfo = generateDeleteJob(syncOp, ignored, bypassProgressComplete); !exitInfo) {
+        if (const auto exitInfo = generateDeleteJob(syncOp, ignored, bypassProgressComplete); !exitInfo) {
             return exitInfo;
         }
     }
@@ -1243,6 +1247,7 @@ ExitInfo ExecutorWorker::generateDeleteJob(SyncOpPtr syncOp, bool &ignored, bool
                         syncOp->affectedNode()->isSharedFolder() ||
                         (syncOp->conflict().type() != ConflictType::None && isDehydratedPlaceholder));
 
+    job->setScope(Scope::Sync);
     job->setAffectedFilePath(relativeLocalFilePath);
     job->runSynchronously();
     return handleFinishedJob(job, syncOp, relativeLocalFilePath, ignored, bypassProgressComplete);

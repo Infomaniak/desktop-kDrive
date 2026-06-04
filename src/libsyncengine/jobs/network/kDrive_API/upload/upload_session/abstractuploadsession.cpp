@@ -212,6 +212,7 @@ ExitInfo AbstractUploadSession::startSession() {
         LOG_WARN(_logger, "Error in UploadSessionStartJob::UploadSessionStartJob: error=" << e.what());
         return exception2ExitCode(e);
     }
+    startJob->setScope(scope());
 
     if (const auto exitInfo = startJob->runSynchronously(); startJob->hasHttpError() || exitInfo.code() != ExitCode::Ok) {
         LOGW_ERROR(_logger, L"Failed to start upload session for " << Utility::formatSyncPath(_filePath.filename()));
@@ -318,6 +319,7 @@ ExitInfo AbstractUploadSession::sendChunks() {
             jobCreationError = true;
             break;
         }
+        chunkJob->setScope(scope());
 
         if (XXH3_64bits_update(state, chunkJob->chunkHash().data(), chunkJob->chunkHash().length()) == XXH_ERROR) {
             LOGW_WARN(_logger, L"Checksum computation " << jobId() << L" failed for file " << Path2WStr(_filePath));
@@ -418,6 +420,7 @@ ExitInfo AbstractUploadSession::closeSession() {
         LOG_WARN(_logger, "Error in UploadSessionFinishJob::UploadSessionFinishJob: error=" << e.what());
         return exception2ExitCode(e);
     }
+    finishJob->setScope(scope());
 
     if (const auto exitInfo = finishJob->runSynchronously(); !exitInfo || finishJob->hasHttpError()) {
         LOGW_WARN(_logger, L"Error in UploadSessionFinishJob::runSynchronously: "
@@ -467,6 +470,7 @@ ExitInfo AbstractUploadSession::cancelSession() {
         LOG_WARN(_logger, "Error in UploadSessionCancelJob::UploadSessionCancelJob: error=" << e.what());
         return exception2ExitCode(e);
     }
+    cancelJob->setScope(scope());
 
     if (const auto exitInfo = cancelJob->runSynchronously(); !exitInfo) {
         LOG_WARN(_logger, "Error in UploadSessionCancelJob::runSynchronously: " << exitInfo);
