@@ -89,4 +89,49 @@ struct CoherentCacheDriveTests {
             Issue.record("unexpected error: \(error)")
         }
     }
+
+    @Test(.timeLimit(.minutes(1)))
+    func updateDriveSignalMovesDriveToNewAccount() async throws {
+        // GIVEN
+        let cache = ServerCoherentCache()
+        let newAccountDbId = CacheData.expectedAccountDbId + 1
+        let newAccount = Account(dbId: newAccountDbId,
+                                 userDbId: CacheData.expectedUserDbId,
+                                 name: "newAccount",
+                                 drives: [:])
+        var driveWithSynchro = CacheData.expectedDrive
+        driveWithSynchro.synchros[CacheData.expectedSynchroDbId] = CacheData.expectedSynchro
+
+        await cache.addUser(CacheData.expectedUser)
+        try await cache.addOrUpdateAccount(CacheData.expectedAccount)
+        try await cache.addOrUpdateAccount(newAccount)
+        try await cache.addDrive(driveWithSynchro, accountDbId: CacheData.expectedAccountDbId)
+
+        let driveSignal = DriveInfoSignalMetadata(dbId: CacheData.expectedDriveDbId,
+                                                  id: CacheData.updatedDriveId,
+                                                  accountDbId: newAccountDbId,
+                                                  name: CacheData.updatedDriveName,
+                                                  color: CacheData.updatedDriveColor,
+                                                  notifications: true,
+                                                  admin: true,
+                                                  maintenance: false,
+                                                  locked: false,
+                                                  accessDenied: false)
+
+        // WHEN
+        try await cache.addOrUpdateDriveSignal(driveSignal)
+
+        // THEN
+        let oldAccountDrive = await cache.getDrive(driveDbId: CacheData.expectedDriveDbId,
+                                                   accountDbId: CacheData.expectedAccountDbId,
+                                                   userDbId: CacheData.expectedUserDbId)
+        let newAccountDrive = await cache.getDrive(driveDbId: CacheData.expectedDriveDbId,
+                                                   accountDbId: newAccountDbId,
+                                                   userDbId: CacheData.expectedUserDbId)
+
+        #expect(oldAccountDrive == nil)
+        #expect(newAccountDrive?.accountDbId == newAccountDbId)
+        #expect(newAccountDrive?.name == CacheData.updatedDriveName)
+        #expect(newAccountDrive?.synchros[CacheData.expectedSynchroDbId] == CacheData.expectedSynchro)
+    }
 }
