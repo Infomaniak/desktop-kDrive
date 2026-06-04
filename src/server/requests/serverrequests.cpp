@@ -614,38 +614,11 @@ ExitInfo ServerRequests::getNodeInfo(const UserDbId userDbId, const DriveId driv
 }
 
 ExitInfo ServerRequests::getUserAvailableDrives(const UserDbId userDbId, QList<DriveAvailableInfo> &list) {
-    std::shared_ptr<GetDrivesListJob> job = nullptr;
-    try {
-        job = std::make_shared<GetDrivesListJob>(userDbId);
-    } catch (const std::exception &e) {
-        LOG_WARN(Log::instance()->getLogger(),
-                 "Error in GetDrivesListJob::GetDrivesListJob for userDbId=" << userDbId << " error=" << e.what());
-        return exception2ExitCode(e);
+    std::vector<DriveAvailableInfo> availableDriveInfoList;
+    if (const auto exitInfo = getUserAvailableDrives(userDbId, availableDriveInfoList); !exitInfo) return exitInfo;
+    for (const auto &driveInfo: availableDriveInfoList) {
+        list.push_back(driveInfo);
     }
-    job->setScope(Scope::UserInitiated);
-
-    if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
-        LOG_WARN(Log::instance()->getLogger(),
-                 "Error in GetDrivesListJob::runSynchronously for userDbId=" << userDbId << " exitInfo=" << exitInfo);
-        return exitInfo;
-    }
-
-    list.clear();
-    for (auto &availableDriveInfo: job->availableDrives()) {
-        // Search user in DB
-        User user;
-        bool found = false;
-        if (!ParmsDb::instance()->selectUserByUserId(availableDriveInfo.userId(), user, found)) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectUserByUserId");
-            return ExitCode::DbError;
-        }
-        if (found) {
-            availableDriveInfo.setUserDbId(user.dbId());
-        }
-
-        (void) list.push_back(availableDriveInfo);
-    }
-
     return ExitCode::Ok;
 }
 
@@ -1350,6 +1323,8 @@ ExitInfo generateCreateDirJob(std::shared_ptr<CreateDirJob> &job, const UserDbId
 }
 
 ExitInfo runCreateDirJob(const std::shared_ptr<CreateDirJob> job, NodeId &newNodeId) {
+    if (!job) return ExitCode::LogicError;
+
     job->setScope(Scope::UserInitiated);
     if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in CreateDirJob::runSynchronously");
@@ -1419,6 +1394,7 @@ ExitCode ServerRequests::getPublicLinkUrl(const DriveDbId driveDbId, const NodeI
         logWarning("PostFileLinkJob", driveDbId, nodeId, e.what());
         return exception2ExitCode(e);
     }
+    job->setScope(Scope::UserInitiated);
 
     if (!job->runSynchronously()) {
         if (job->exitInfo().code() == ExitCode::BackError && job->exitInfo().cause() == ExitCause::ShareLinkAlreadyExists) {
@@ -1430,6 +1406,7 @@ ExitCode ServerRequests::getPublicLinkUrl(const DriveDbId driveDbId, const NodeI
                 logWarning("GetFileLinkJob", driveDbId, nodeId, e.what());
                 return exception2ExitCode(e);
             }
+            job->setScope(Scope::UserInitiated);
 
             if (!job->runSynchronously()) {
                 logWarning("GetFileLinkJob", driveDbId, nodeId, toString(job->exitInfo().code()));
@@ -1464,7 +1441,7 @@ ExitCode ServerRequests::getPublicLinkUrl(const DriveDbId driveDbId, const NodeI
 ExitInfo ServerRequests::getFolderSizeWithCallback(const UserDbId userDbId, const DriveId driveId, const NodeId &nodeId,
                                                    std::function<void(const QString &, qint64)> callback) {
     int64_t result = 0;
-    if (ExitInfo exitInfo = ServerRequests::getFolderSize(userDbId, driveId, nodeId, result); !exitInfo) {
+    if (const auto exitInfo = ServerRequests::getFolderSize(userDbId, driveId, nodeId, result); !exitInfo) {
         return exitInfo;
     }
 
@@ -1488,13 +1465,13 @@ ExitInfo ServerRequests::getFolderSize(const UserDbId userDbId, const DriveId dr
                                                                  << " error=" << e.what());
         return exception2ExitCode(e);
     }
+    job->setScope(Scope::UserInitiated);
 
-    ExitCode exitCode = job->runSynchronously();
-    if (exitCode != ExitCode::Ok) {
+    if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in GetSizeJob::runSynchronously for userDbId=" << userDbId << " driveId=" << driveId
-                                                                       << " nodeId=" << nodeId << " code=" << exitCode);
-        return exitCode;
+                                                                       << " nodeId=" << nodeId << " " << exitInfo);
+        return exitInfo;
     }
 
     Poco::JSON::Object::Ptr resObj = job->jsonRes();
@@ -1956,6 +1933,7 @@ ExitInfo ServerRequests::getThumbnail(const DriveDbId driveDbId, const NodeId &n
                                                        << driveDbId << " and nodeId=" << nodeId << " error=" << e.what());
         return exception2ExitCode(e);
     }
+    job->setScope(Scope::Extension);
 
     if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
         return exitInfo;
