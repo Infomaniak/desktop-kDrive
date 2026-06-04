@@ -26,15 +26,37 @@ struct ErrorsListView: View {
     let errors: [UISynchroErrorCategory: [SynchroError]]
     let isAdmin: Bool
 
+    static let maximumConflictsToDisplay = 5
+
+    private var computedErrors: [UISynchroErrorCategory: [SynchroError]] {
+        let filesErrors = errors[.filesToCheck, default: []]
+        guard !filesErrors.isEmpty else {
+            return errors
+        }
+
+        var computedErrors = errors
+
+        if filesErrors.count(where: { $0.kind == .conflict }) >= Self.maximumConflictsToDisplay {
+            computedErrors[.conflicts] = Array(filesErrors.filter { $0.kind == .conflict })
+            computedErrors[.filesToCheck] = Array(filesErrors.filter { $0.kind != .conflict })
+
+            if computedErrors[.filesToCheck]?.isEmpty == true {
+                computedErrors.removeValue(forKey: .filesToCheck)
+            }
+        }
+
+        return computedErrors
+    }
+
     private var categories: [UISynchroErrorCategory] {
-        return errors.keys.sorted()
+        return computedErrors.keys.sorted()
     }
 
     var body: some View {
         Form {
             ForEach(categories) { category in
                 Section {
-                    ForEach(errors[category, default: []]) { error in
+                    ForEach(computedErrors[category, default: []]) { error in
                         ErrorCellFactory().make(error: error, isAdmin: isAdmin, manager: synchroErrorManager)
                     }
                 } header: {
