@@ -77,6 +77,7 @@ inline constexpr char msgParamLimit[] = "limit";
 // Request parameter keys
 inline constexpr char msgParamAuthCode[] = "code";
 inline constexpr char msgParamCodeVerifier[] = "codeVerifier";
+inline constexpr char msgParamState[] = "state";
 inline constexpr char msgParamError[] = "error";
 inline constexpr char msgParamErrorDescr[] = "errorDescr";
 inline constexpr char msgParamDriveAvailableInfoList[] = "driveAvailableInfoList";
