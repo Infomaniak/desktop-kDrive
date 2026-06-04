@@ -264,9 +264,13 @@ class CommService : public QObject {
         void logUploadStatusUpdated(LogUploadState state, int32_t percentage);
         void quit();
 
+        // --- Login ---
+        void authorizationCodeReceived(const QString &code, const QString &state);
+
     private:
         IpcClient &_ipcClient;
 
+        void registerLoginHandlers(SignalDispatcher &dispatcher);
         void registerUserHandlers(SignalDispatcher &dispatcher);
         void registerAccountHandlers(SignalDispatcher &dispatcher);
         void registerDriveHandlers(SignalDispatcher &dispatcher);
