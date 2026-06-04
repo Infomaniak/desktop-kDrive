@@ -40,18 +40,34 @@ class CustomMessageBox : public CustomDialog {
         CustomMessageBox(QMessageBox::Icon icon, const QString &text, const QString &warningText, bool warning,
                          QMessageBox::StandardButtons buttons = QMessageBox::NoButton, QWidget *parent = nullptr);
 
+        /**
+         * @brief Constructor with checkbox. Especially, useful for "Don't show this message again" use case.
+         * @param icon The icon to show.
+         * @param text  The main text to show in the message box.
+         * @param checkBoxText The text to show next to the checkbox. If empty, the checkbox won't be shown.
+         * @param buttons The buttons to display.
+         * @param parent Parent QObject.
+         */
+        CustomMessageBox(QMessageBox::Icon icon, const QString &text, const QString &checkBoxText,
+                         QMessageBox::StandardButtons buttons = QMessageBox::NoButton, QWidget *parent = nullptr);
+
         void addButton(const QString &text, QMessageBox::StandardButton button);
         void setDefaultButton(QMessageBox::StandardButton buttonType);
 
+        bool isChecked() const { return _checkBox ? _checkBox->isChecked() : false; }
+
     private:
-        QMessageBox::Icon _icon;
-        QLabel *_warningLabel;
-        QLabel *_textLabel;
-        QLabel *_iconLabel;
-        QHBoxLayout *_buttonsHBox;
+        QMessageBox::Icon _icon{QMessageBox::NoIcon};
+        QLabel *_warningLabel{nullptr};
+        QLabel *_textLabel{nullptr};
+        QLabel *_iconLabel{nullptr};
+        QHBoxLayout *_buttonsHBox{nullptr};
         QColor _backgroundColor;
         QSize _iconSize;
-        int _buttonCount;
+        int _buttonCount{0};
+        CustomCheckBox *_checkBox{nullptr};
+        bool _showCheckBox{false};
+        QString _checkBoxText;
 
         inline QSize iconSize() const { return _iconSize; }
         inline void setIconSize(const QSize &size) {
@@ -61,6 +77,8 @@ class CustomMessageBox : public CustomDialog {
 
         void setIcon();
         QSize sizeHint() const override;
+
+        void initUi(const QString &text, const QString &warningText, bool warning, QMessageBox::StandardButtons buttons);
 
     private slots:
         void showEvent(QShowEvent *event) override;
