@@ -3140,7 +3140,12 @@ void AppServer::resolveErrors(std::vector<Error> errorList) const {
     }
 }
 
-ExitInfo AppServer::startSyncs(std::unordered_set<SyncDbId> toIgnoreSyncDbIds, std::unordered_set<SyncDbId> &startedSyncDbIds) {
+ExitInfo AppServer::startSyncs() {
+    std::unordered_set<SyncDbId> emptyList;
+    std::unordered_set<SyncDbId> startedSyncDbIds;
+    return startSyncs(emptyList, startedSyncDbIds);
+}
+ExitInfo AppServer::startSyncs(const std::unordered_set<SyncDbId> &toIgnoreSyncDbIds, std::unordered_set<SyncDbId> &startedSyncDbIds) {
     // Load user list
     std::vector<User> userList;
     if (!ParmsDb::instance()->selectAllUsers(userList)) {

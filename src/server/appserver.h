@@ -327,7 +327,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         void startSyncsAndRetryOnError(const std::unordered_set<SyncDbId> &toIgnoreSyncDbIds = {});
         [[nodiscard]] ExitInfo startSyncs();
-        [[nodiscard]] ExitInfo startSyncs(std::unordered_set<SyncDbId> toIgnoreSyncDbIds,
+        [[nodiscard]] ExitInfo startSyncs(const std::unordered_set<SyncDbId> &toIgnoreSyncDbIds,
                                           std::unordered_set<SyncDbId> &startedSyncDbIds);
         [[nodiscard]] ExitInfo processMigratedSyncOnceConnected(UserDbId userDbId, DriveId driveId, Sync &sync,
                                                                 QSet<QString> &blackList, bool &syncUpdated);
