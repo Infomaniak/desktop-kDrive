@@ -745,7 +745,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
 
     std::function<void(UniqueId)> callback = std::bind_front(&SyncPal::directDownloadCallback, this);
     job->setAdditionalCallback(callback);
-
+    job->setScope(Scope::Extension);
 
     // Use a weak_ptr to avoid a reference cycle:
     // The job owns the progress callback, and capturing a shared_ptr<SyncJob> inside
