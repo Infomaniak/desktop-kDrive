@@ -63,7 +63,7 @@ class AbstractJob : public Poco::Runnable {
         [[nodiscard]] Scope scope() const { return _scope; }
         void setScope(const Scope scope) { _scope = scope; }
         [[nodiscard]] const std::string &context() const { return _context; }
-        void setContext(const std::string &context) { _context = context; }
+        void setContext(const std::string_view context) { _context = context; }
 
     protected:
         void run() override;
