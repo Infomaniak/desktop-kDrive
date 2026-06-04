@@ -53,7 +53,7 @@ class SyncLocalDeleteJob : public GenericLocalDeleteJob {
         ExitInfo handleLiteSyncFile(const SyncPath &path);
         ExitInfo deleteFromDB(const SyncPath &path);
 
-        //! Returns `true` if `localRelativePath` and `remoteRelativePath` indicates the same synchronised item.
+        //! Returns `true` if `localRelativePath` and `remoteRelativePath` indicate the same synchronised item.
         /*!
           \param remoteTargetPath is the path of the remote sync folder if the sync is advanced; it is empty otherwise.
           \param localRelativePath is the path of the item relative to the local sync folder.
