@@ -39,108 +39,23 @@ Q_LOGGING_CATEGORY(lcCustomMessageBox, "gui.custommessagebox", QtInfoMsg)
 CustomMessageBox::CustomMessageBox(QMessageBox::Icon icon, const QString &text, const QString &warningText, bool warning,
                                    QMessageBox::StandardButtons buttons, QWidget *parent) :
     CustomDialog(true, parent),
-    _icon(icon),
-    _warningLabel(nullptr),
-    _textLabel(nullptr),
-    _iconLabel(nullptr),
-    _buttonsHBox(nullptr),
-    _buttonCount(0) {
-    QVBoxLayout *mainLayout = this->mainLayout();
-
-    // Warning text
-    if (!warningText.isEmpty()) {
-        QHBoxLayout *warningHBox = new QHBoxLayout();
-        warningHBox->setContentsMargins(boxHMargin, messageVTMargin, boxHMargin, messageVBMargin);
-        mainLayout->addLayout(warningHBox);
-
-        _warningLabel = new QLabel(this);
-        _warningLabel->setObjectName(warning ? "warningTextLabel" : "okTextLabel");
-        _warningLabel->setText(warningText);
-        _warningLabel->setWordWrap(true);
-        _warningLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
-        warningHBox->addWidget(_warningLabel);
-    }
-
-    // Icon + text
-    QHBoxLayout *messageHBox = new QHBoxLayout();
-    messageHBox->setContentsMargins(boxHMargin, 0, boxHMargin, messageVBMargin);
-    messageHBox->setSpacing(boxHSpacing);
-    mainLayout->addLayout(messageHBox);
-
-    QVBoxLayout *messageVBox = new QVBoxLayout();
-    messageVBox->setContentsMargins(0, 0, 0, 0);
-    messageHBox->addLayout(messageVBox);
-
-    _iconLabel = new QLabel(this);
-    messageVBox->addWidget(_iconLabel);
-    messageVBox->setAlignment(Qt::AlignCenter);
-
-    _textLabel = new QLabel(this);
-    _textLabel->setObjectName("textLabel");
-    _textLabel->setTextFormat(Qt::RichText);
-    _textLabel->setOpenExternalLinks(true);
-    _textLabel->setText(text);
-    _textLabel->setWordWrap(true);
-    _textLabel->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::LinksAccessibleByMouse);
-    messageHBox->addWidget(_textLabel);
-    messageHBox->setStretchFactor(_textLabel, 1);
-
-    mainLayout->addStretch();
-
-    // Add dialog buttons
-    _buttonsHBox = new QHBoxLayout();
-    _buttonsHBox->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
-    _buttonsHBox->setSpacing(boxHSpacing);
-    mainLayout->addLayout(_buttonsHBox);
-
-    if (buttons & QMessageBox::Ok) {
-        QPushButton *button = new QPushButton(this);
-        button->setObjectName("nondefaultbutton");
-        button->setFlat(true);
-        button->setText(tr("OK"));
-        _buttonsHBox->insertWidget(_buttonCount++, button);
-        button->setProperty(buttonTypeProperty.c_str(), QMessageBox::Ok);
-        connect(button, &QPushButton::clicked, this, &CustomMessageBox::onButtonClicked);
-    }
-
-    if (buttons & QMessageBox::Cancel) {
-        QPushButton *button = new QPushButton(this);
-        button->setObjectName("nondefaultbutton");
-        button->setFlat(true);
-        button->setText(tr("CANCEL"));
-        _buttonsHBox->insertWidget(_buttonCount++, button);
-        button->setProperty(buttonTypeProperty.c_str(), QMessageBox::Cancel);
-        connect(button, &QPushButton::clicked, this, &CustomMessageBox::onButtonClicked);
-    }
-
-    if (buttons & QMessageBox::Yes) {
-        QPushButton *button = new QPushButton(this);
-        button->setObjectName("nondefaultbutton");
-        button->setFlat(true);
-        button->setText(tr("YES"));
-        _buttonsHBox->insertWidget(_buttonCount++, button);
-        button->setProperty(buttonTypeProperty.c_str(), QMessageBox::Yes);
-        connect(button, &QPushButton::clicked, this, &CustomMessageBox::onButtonClicked);
-    }
-
-    if (buttons & QMessageBox::No) {
-        QPushButton *button = new QPushButton(this);
-        button->setObjectName("nondefaultbutton");
-        button->setFlat(true);
-        button->setText(tr("NO"));
-        _buttonsHBox->insertWidget(_buttonCount++, button);
-        button->setProperty(buttonTypeProperty.c_str(), QMessageBox::No);
-        connect(button, &QPushButton::clicked, this, &CustomMessageBox::onButtonClicked);
-    }
-
-    _buttonsHBox->addStretch();
-
-    connect(this, &CustomDialog::exit, this, &CustomMessageBox::onExit);
+    _icon(icon) {
+    initUi(text, warningText, warning, buttons);
 }
 
 CustomMessageBox::CustomMessageBox(QMessageBox::Icon icon, const QString &text, QMessageBox::StandardButtons buttons,
                                    QWidget *parent) :
     CustomMessageBox(icon, text, QString(), false, buttons, parent) {}
+
+CustomMessageBox::CustomMessageBox(QMessageBox::Icon icon, const QString &text, const QString &checkBoxText,
+                                   QMessageBox::StandardButtons buttons /*= QMessageBox::NoButton*/,
+                                   QWidget *parent /*= nullptr*/) :
+    CustomDialog(true, parent),
+    _icon(icon) {
+    _checkBoxText = checkBoxText;
+    _showCheckBox = !_checkBoxText.isEmpty();
+    initUi(text, {}, false, buttons);
+}
 
 void CustomMessageBox::addButton(const QString &text, QMessageBox::StandardButton buttonType) {
     QPushButton *button = new QPushButton(this);
@@ -201,9 +116,115 @@ QSize CustomMessageBox::sizeHint() const {
 
     const auto heightHint = contentsMargins().top() + contentsMargins().bottom() + messageVTMargin + 2 * messageVBMargin +
                             (_warningLabel ? _warningLabel->height() : 0) + (_textLabel ? _textLabel->height() : 0) +
-                            QPushButton().height();
+                            (_checkBox ? _checkBox->height() : 0) + QPushButton().height();
 
     return QSize(widthHint, heightHint);
+}
+
+void CustomMessageBox::initUi(const QString &text, const QString &warningText, bool warning,
+                              QMessageBox::StandardButtons buttons) {
+    QVBoxLayout *mainLayout = this->mainLayout();
+
+    // Warning text
+    if (!warningText.isEmpty()) {
+        QHBoxLayout *warningHBox = new QHBoxLayout();
+        warningHBox->setContentsMargins(boxHMargin, messageVTMargin, boxHMargin, messageVBMargin);
+        mainLayout->addLayout(warningHBox);
+
+        _warningLabel = new QLabel(this);
+        _warningLabel->setObjectName(warning ? "warningTextLabel" : "okTextLabel");
+        _warningLabel->setText(warningText);
+        _warningLabel->setWordWrap(true);
+        _warningLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+        warningHBox->addWidget(_warningLabel);
+    }
+
+    // Icon + text
+    QHBoxLayout *messageHBox = new QHBoxLayout();
+    messageHBox->setContentsMargins(boxHMargin, 0, boxHMargin, messageVBMargin);
+    messageHBox->setSpacing(boxHSpacing);
+    mainLayout->addLayout(messageHBox);
+
+    QVBoxLayout *messageVBox = new QVBoxLayout();
+    messageVBox->setContentsMargins(0, 0, 0, 0);
+    messageHBox->addLayout(messageVBox);
+
+    _iconLabel = new QLabel(this);
+    messageVBox->addWidget(_iconLabel);
+    messageVBox->setAlignment(Qt::AlignCenter);
+
+    _textLabel = new QLabel(this);
+    _textLabel->setObjectName("textLabel");
+    _textLabel->setTextFormat(Qt::RichText);
+    _textLabel->setOpenExternalLinks(true);
+    _textLabel->setText(text);
+    _textLabel->setWordWrap(true);
+    _textLabel->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::LinksAccessibleByMouse);
+    messageHBox->addWidget(_textLabel);
+    messageHBox->setStretchFactor(_textLabel, 1);
+
+    mainLayout->addStretch();
+
+    // Add checkbox
+    if (_showCheckBox) {
+        QHBoxLayout *checkBoxLayout = new QHBoxLayout();
+        checkBoxLayout->setContentsMargins(2 * boxHMargin, 0, boxHMargin, messageVBMargin);
+        checkBoxLayout->setSpacing(boxHSpacing);
+        _checkBox = new CustomCheckBox(this);
+        _checkBox->setText(_checkBoxText);
+        checkBoxLayout->addWidget(_checkBox);
+        mainLayout->addLayout(checkBoxLayout);
+    }
+
+    // Add dialog buttons
+    _buttonsHBox = new QHBoxLayout();
+    _buttonsHBox->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
+    _buttonsHBox->setSpacing(boxHSpacing);
+    mainLayout->addLayout(_buttonsHBox);
+
+    if (buttons & QMessageBox::Ok) {
+        QPushButton *button = new QPushButton(this);
+        button->setObjectName("nondefaultbutton");
+        button->setFlat(true);
+        button->setText(tr("OK"));
+        _buttonsHBox->insertWidget(_buttonCount++, button);
+        button->setProperty(buttonTypeProperty.c_str(), QMessageBox::Ok);
+        connect(button, &QPushButton::clicked, this, &CustomMessageBox::onButtonClicked);
+    }
+
+    if (buttons & QMessageBox::Cancel) {
+        QPushButton *button = new QPushButton(this);
+        button->setObjectName("nondefaultbutton");
+        button->setFlat(true);
+        button->setText(tr("CANCEL"));
+        _buttonsHBox->insertWidget(_buttonCount++, button);
+        button->setProperty(buttonTypeProperty.c_str(), QMessageBox::Cancel);
+        connect(button, &QPushButton::clicked, this, &CustomMessageBox::onButtonClicked);
+    }
+
+    if (buttons & QMessageBox::Yes) {
+        QPushButton *button = new QPushButton(this);
+        button->setObjectName("nondefaultbutton");
+        button->setFlat(true);
+        button->setText(tr("YES"));
+        _buttonsHBox->insertWidget(_buttonCount++, button);
+        button->setProperty(buttonTypeProperty.c_str(), QMessageBox::Yes);
+        connect(button, &QPushButton::clicked, this, &CustomMessageBox::onButtonClicked);
+    }
+
+    if (buttons & QMessageBox::No) {
+        QPushButton *button = new QPushButton(this);
+        button->setObjectName("nondefaultbutton");
+        button->setFlat(true);
+        button->setText(tr("NO"));
+        _buttonsHBox->insertWidget(_buttonCount++, button);
+        button->setProperty(buttonTypeProperty.c_str(), QMessageBox::No);
+        connect(button, &QPushButton::clicked, this, &CustomMessageBox::onButtonClicked);
+    }
+
+    _buttonsHBox->addStretch();
+
+    connect(this, &CustomDialog::exit, this, &CustomMessageBox::onExit);
 }
 
 void CustomMessageBox::showEvent(QShowEvent *event) {
