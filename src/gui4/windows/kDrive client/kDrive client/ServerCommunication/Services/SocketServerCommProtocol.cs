@@ -138,7 +138,15 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     Logger.Log(Logger.Level.Warning, $"Connection failed: {ex.Message}. Retrying in 0.5 seconds...");
                     _socket?.Dispose();
                     _socket = null;
-                    await Task.Delay(500, cancellationToken).ConfigureAwait(false);
+                    try
+                    {
+                        await Task.Delay(500, cancellationToken).ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        Logger.Log(Logger.Level.Info, "Connection retry delay was canceled.");
+                        return false;
+                    }
                     continue;
                 }
             }

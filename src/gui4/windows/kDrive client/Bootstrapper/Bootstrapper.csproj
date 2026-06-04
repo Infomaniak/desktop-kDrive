@@ -5,6 +5,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
 		<Exec Command="powershell -ExecutionPolicy Bypass -NoProfile -File &quot;$(ProjectDir)..\fetchVersion.ps1&quot; -CsProjPath &quot;$(ProjectDir)..\kDrive client\kDrive client.csproj&quot; -RepositoryRootPath &quot;$(ProjectDir)..\..\..\..\..\&quot;" />
