@@ -137,7 +137,7 @@ ExitInfo SyncLocalDeleteJob::canRun() {
 
     if (!exists) {
         LOGW_DEBUG(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(absolutePath()));
-        return {ExitCode::DataError, ExitCause::NotFound};
+        return {ExitCode::SystemError, ExitCause::NotFound};
     }
 
     if (_remoteNodeId.empty()) {

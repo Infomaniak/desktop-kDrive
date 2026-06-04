@@ -52,6 +52,11 @@ ExitInfo GenericLocalDeleteJob::hardDelete(const SyncPath &path) {
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
 
+        if (ioError == IoError::NoSuchFileOrDirectory) {
+            LOGW_WARN(_logger, L"Item doesn't exist: " << Utility::formatSyncPath(path));
+            return {ExitCode::SystemError, ExitCause::NotFound};
+        }
+
         return ExitCode::SystemError;
     }
 

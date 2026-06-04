@@ -61,7 +61,7 @@ ExitInfo LocalMoveJob::canRun() {
 
         if (exists) {
             LOGW_DEBUG(_logger, L"Item already exists: " << Utility::formatSyncPath(_dest));
-            return {ExitCode::DataError, ExitCause::FileExists};
+            return {ExitCode::SystemError, ExitCause::FileExists};
         }
     }
 
@@ -74,7 +74,7 @@ ExitInfo LocalMoveJob::canRun() {
 
     if (!exists) {
         LOGW_DEBUG(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_source));
-        return {ExitCode::DataError, ExitCause::InvalidDestination};
+        return {ExitCode::SystemError, ExitCause::NotFound};
     }
 
     return ExitCode::Ok;

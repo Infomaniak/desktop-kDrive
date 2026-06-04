@@ -65,7 +65,7 @@ ExitInfo LocalCopyJob::canRun() {
     if (!exists) {
         LOGW_DEBUG(_logger, L"Item does not exist anymore. Aborting current sync and restart. Item with "
                                     << Utility::formatSyncPath(_source));
-        return {ExitCode::DataError, ExitCause::NotFound};
+        return {ExitCode::SystemError, ExitCause::NotFound};
     }
 
     return ExitCode::Ok;
