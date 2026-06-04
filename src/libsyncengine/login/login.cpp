@@ -54,7 +54,7 @@ ExitInfo Login::requestToken(const std::string &authorizationCode, const std::st
         GetTokenJob job(authorizationCode, codeVerifier);
         job.setScope(Scope::UserInitiated);
         if (const auto exitInfo = job.runSynchronously(); !exitInfo) {
-            LOG_WARN(_logger, "Error in GetTokenJob::runSynchronously: code=" << exitInfo);
+            LOG_WARN(_logger, "Error in GetTokenJob::runSynchronously: " << exitInfo);
             _error = std::string();
             _errorDescr = std::string();
             return exitInfo;
