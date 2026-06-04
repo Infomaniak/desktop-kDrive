@@ -80,7 +80,7 @@ class OnboardingFlowController final : public QObject {
         Q_INVOKABLE void cancel();
         Q_INVOKABLE void restart();
         Q_INVOKABLE void setCurrentStep(Step step);
-        Q_INVOKABLE void handleAuthorizationCodeReady();
+        void handleAuthorizationCodeReady();
 
     public slots:
         void handleLoginTokenSucceeded(qint64 userDbId);
