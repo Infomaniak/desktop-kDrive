@@ -73,7 +73,12 @@ void OAuthLoginService::startAuthorization() {
 }
 
 void OAuthLoginService::handleAuthorizationCode(const QString &code, const QString &state) {
-    if (!_authorizationActive || code.isEmpty() || state.isEmpty() || state != _state) {
+    if (!_authorizationActive) {
+        qCInfo(lcOAuthLoginService) << "Stale OAuth authorization callback ignored";
+        return;
+    }
+
+    if (code.isEmpty() || state.isEmpty() || state != _state) {
         qCWarning(lcOAuthLoginService) << "Invalid OAuth authorization callback ignored";
         emit authorizationFailed(QString::fromLatin1(authorizationCallbackInvalid), QString());
         return;
