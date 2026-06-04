@@ -45,6 +45,7 @@
 #include "server/comm/guijobs/signalsyncremovedjob.h"
 #include "server/comm/guijobs/signalsynccompleteditemjob.h"
 #include "server/comm/guijobs/signalsyncupdatedjob.h"
+#include "server/comm/guijobs/signalloginsendauthorizationcodejob.h"
 #include "server/comm/guijobs/signalerroraddedjob.h"
 #include "server/comm/guijobs/signalerrorremovedjob.h"
 #include "server/comm/guijobs/signalsyncprogressinfojob.h"
@@ -2670,13 +2671,20 @@ void AppServer::onSendNotifAsked(const QString &title, const QString &message) {
 }
 
 void AppServer::onAuthorizationCodeReceived(const QString &code, const QString &state) {
-    int id = 0;
+    if (useOldCommServer()) {
+        int id = 0;
 
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << code;
-    paramsStream << state;
-    (void) OldCommServer::instance()->sendSignal(SignalNum::LOGIN_SEND_AUTHORIZATION_CODE, params, id);
+        QByteArray params;
+        QDataStream paramsStream(&params, QIODevice::WriteOnly);
+        paramsStream << code;
+        paramsStream << state;
+        (void) OldCommServer::instance()->sendSignal(SignalNum::LOGIN_SEND_AUTHORIZATION_CODE, params, id);
+    }
+
+    if (useCommManager()) {
+        _commManager->sendGuiSignal(std::make_shared<SignalLoginSendAuthorizationCodeJob>(CommonUtility::qStr2CommString(code),
+                                                                                          CommonUtility::qStr2CommString(state)));
+    }
 }
 
 void AppServer::sendShowNotification(const QString &title, const QString &message) const {
