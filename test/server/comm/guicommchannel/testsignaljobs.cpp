@@ -144,15 +144,15 @@ void TestGuiCommChannel::testSignalLoginSendAuthorizationCodeJob() {
     SignalLoginSendAuthorizationCodeJob job(code, state);
     checkSignalCommonMethods(job, SignalNum::LOGIN_SEND_AUTHORIZATION_CODE);
 
-    CPPUNIT_ASSERT_EQUAL(code, job._code);
-    CPPUNIT_ASSERT_EQUAL(state, job._state);
+    CPPUNIT_ASSERT_EQUAL(CommonUtility::commString2Str(code), CommonUtility::commString2Str(job._code));
+    CPPUNIT_ASSERT_EQUAL(CommonUtility::commString2Str(state), CommonUtility::commString2Str(job._state));
 
     CommString serializedCode;
     CommString serializedState;
     CommonUtility::readValueFromStruct(job._outParams, msgParamAuthCode, serializedCode);
     CommonUtility::readValueFromStruct(job._outParams, msgParamState, serializedState);
-    CPPUNIT_ASSERT_EQUAL(code, serializedCode);
-    CPPUNIT_ASSERT_EQUAL(state, serializedState);
+    CPPUNIT_ASSERT_EQUAL(CommonUtility::commString2Str(code), CommonUtility::commString2Str(serializedCode));
+    CPPUNIT_ASSERT_EQUAL(CommonUtility::commString2Str(state), CommonUtility::commString2Str(serializedState));
 }
 
 } // namespace KDC
