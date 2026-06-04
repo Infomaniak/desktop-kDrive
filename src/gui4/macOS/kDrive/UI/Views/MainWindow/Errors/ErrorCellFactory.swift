@@ -236,7 +236,7 @@ struct ErrorCellFactory {
                 error: error,
                 title: KDriveLocalizable.errSystemNotEnoughDiskSpaceTitle,
                 description: KDriveLocalizable.errSystemNotEnoughDiskSpaceDescription,
-                action: .manageDiskSpace(error, manager: manager)
+                action: .manageDiskSpace(manager: manager)
             )
         case .systemSyncDirAccess:
             return makeCell(
@@ -338,7 +338,7 @@ extension ErrorCellView.Action {
 
     static func errorResolutionTip(_ error: SynchroError, manager: SynchroErrorManager) -> Self {
         return ErrorCellView.Action(title: KDriveLocalizable.buttonErrorResolutionTip) {
-            manager.showResolutionTipsSheet()
+            manager.showResolutionTipsSheet(error)
         }
     }
 }

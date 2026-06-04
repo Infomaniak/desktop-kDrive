@@ -25,7 +25,27 @@ import SwiftUI
 final class SynchroErrorManager: ObservableObject {
     @Published var isShowingActivateOfflineSynchroSheet: SynchroError?
     @Published var isShowingLocalAccessSheet: SynchroError?
-    @Published var isShowingResolutionTipsSheet = false
+    @Published var isShowingResolutionTipsSheet: ExplanationsSheetType?
+
+    enum ExplanationsSheetType: Identifiable, Sendable {
+        var id: String {
+            switch self {
+            case .invalidSyncDirAccess(let synchroError):
+                return "invalidSyncDirAccess_\(synchroError.metadata.dbId)"
+            case .systemSyncDirAccess(let synchroError):
+                return "systemSyncDirAccess_\(synchroError.metadata.dbId)"
+            case .systemSyncDirDiskMissing:
+                return "systemSyncDirDiskMissing"
+            case .dataSyncDirChanged:
+                return "dataSyncDirChanged"
+            }
+        }
+
+        case invalidSyncDirAccess(SynchroError)
+        case systemSyncDirAccess(SynchroError)
+        case systemSyncDirDiskMissing
+        case dataSyncDirChanged
+    }
 
     // MARK: - Manage sync
 
@@ -110,9 +130,19 @@ final class SynchroErrorManager: ObservableObject {
         isShowingLocalAccessSheet = error
     }
 
-    func showResolutionTipsSheet() {
-        // TODO: Show modal
-        isShowingResolutionTipsSheet = true
+    func showResolutionTipsSheet(_ error: SynchroError) {
+        switch error.kind {
+        case .invalidSyncDirAccess:
+            isShowingResolutionTipsSheet = .invalidSyncDirAccess(error)
+        case .systemSyncDirAccess:
+            isShowingResolutionTipsSheet = .systemSyncDirAccess(error)
+        case .systemSyncDirDiskMissing:
+            isShowingResolutionTipsSheet = .systemSyncDirDiskMissing
+        case .dataSyncDirChanged:
+            isShowingResolutionTipsSheet = .dataSyncDirChanged
+        default:
+            break
+        }
     }
 
     // MARK: - Misc
