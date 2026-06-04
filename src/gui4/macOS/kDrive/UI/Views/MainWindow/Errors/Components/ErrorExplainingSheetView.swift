@@ -32,7 +32,7 @@ struct ErrorExplainingSheetView: View {
         let description: AttributedString
     }
 
-    struct Action {
+    struct Action: Sendable {
         let title: String
         let handler: @MainActor () -> Void
     }
