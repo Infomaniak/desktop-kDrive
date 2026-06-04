@@ -23,7 +23,6 @@ import SwiftUI
 
 struct DataSyncDirChangedReasonsSheet: View {
     let synchroErrorManager: SynchroErrorManager
-    let error: SynchroError
 
     private static let explanations: [ErrorExplainingSheetView.Explanation] = [
         .init(
@@ -61,5 +60,5 @@ struct DataSyncDirChangedReasonsSheet: View {
 }
 
 #Preview {
-    DataSyncDirChangedReasonsSheet(synchroErrorManager: SynchroErrorManager(), error: PreviewHelper.synchroError)
+    DataSyncDirChangedReasonsSheet(synchroErrorManager: SynchroErrorManager())
 }
