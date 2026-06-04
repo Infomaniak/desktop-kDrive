@@ -25,7 +25,6 @@
 #include <QLoggingCategory>
 
 #include <cstdint>
-#include <exception>
 
 namespace {
 constexpr KDC::Count maxErrorsToLoad = 1000;
@@ -77,16 +76,8 @@ void CommService::registerLoginHandlers(SignalDispatcher &dispatcher) {
     dispatcher.registerHandler(SignalNum::LOGIN_SEND_AUTHORIZATION_CODE, [this](const Poco::DynamicStruct &params) {
         CommString code;
         CommString state;
-        try {
-            CommonUtility::readValueFromStruct(params, msgParamAuthCode, code);
-            CommonUtility::readValueFromStruct(params, msgParamState, state);
-        } catch (const std::exception &e) {
-            qCWarning(lcCommService) << "Invalid OAuth authorization signal ignored | exception:" << e.what();
-            return;
-        } catch (...) {
-            qCWarning(lcCommService) << "Invalid OAuth authorization signal ignored";
-            return;
-        }
+        CommonUtility::readValueFromStruct(params, msgParamAuthCode, code);
+        CommonUtility::readValueFromStruct(params, msgParamState, state);
 
         emit authorizationCodeReceived(CommonUtility::commString2QStr(code), CommonUtility::commString2QStr(state));
     });
