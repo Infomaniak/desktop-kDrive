@@ -317,7 +317,8 @@ bool Utility::registerLoginRedirection() {
     }
 
     // Register scheme
-    const auto registerSchemeStr = std::string("xdg-mime default kDrive.desktop ") + mimeType;
+    const auto registerSchemeStr =
+            std::string("xdg-mime default ") + std::string(APPLICATION_EXECUTABLE) + ".desktop " + mimeType;
     if (const int registerResult = system(registerSchemeStr.c_str()); registerResult != 0) {
         LOGW_WARN(logger(), L"Failed to register URL scheme with command: " << CommonUtility::s2ws(registerSchemeStr)
                                                                             << L", result: " << registerResult);
