@@ -543,27 +543,26 @@ ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
             [[fallthrough]];
         }
         default: {
-            if (!isAborted()) {
-                ExitInfo exitInfo;
-                try {
-                    exitInfo = handleError(stream[0].get(), uri);
-                } catch (const std::exception &e) {
-                    LOG_WARN(_logger, "handleError failed: " << errorText(e));
-                    return {};
-                }
+            if (isAborted()) return ExitCode::Ok;
 
-                if (!exitInfo) {
-                    if (exitInfo.cause() == ExitCause::Unknown && Utility::isError500(httpResponse().getStatus())) {
-                        disableRetry();
-                        exitInfo.setCause(ExitCause::Http5xx);
-                    } else if (exitInfo.code() != ExitCode::DataError && exitInfo.code() != ExitCode::InvalidToken &&
-                               (exitInfo.code() != ExitCode::BackError || exitInfo.cause() != ExitCause::NotFound)) {
-                        LOG_WARN(_logger, "Error handling failed");
-                    }
-                    return exitInfo;
-                }
+            ExitInfo exitInfo;
+            try {
+                exitInfo = handleError(stream[0].get(), uri);
+            } catch (const std::exception &e) {
+                LOG_WARN(_logger, "handleError failed: " << errorText(e));
+                return ExitCode::NetworkError;
             }
-            break;
+
+            if (exitInfo.code() == ExitCode::Ok) return exitInfo;
+
+            if (exitInfo.cause() == ExitCause::Unknown && Utility::isError500(httpResponse().getStatus())) {
+                disableRetry();
+                exitInfo.setCause(ExitCause::Http5xx);
+            } else if (exitInfo.code() != ExitCode::DataError && exitInfo.code() != ExitCode::InvalidToken &&
+                       (exitInfo.code() != ExitCode::BackError || exitInfo.cause() != ExitCause::NotFound)) {
+                LOG_WARN(_logger, "Error handling failed");
+            }
+            return exitInfo;
         }
     }
 
