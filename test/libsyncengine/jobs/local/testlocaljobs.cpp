@@ -231,7 +231,6 @@ void KDC::TestLocalJobs::testDeleteFilesWithDuplicateNames() {
 }
 
 void KDC::TestLocalJobs::testLocalDeleteJob() {
-    /*
     SyncLocalDeleteJob dummyJob(nullptr, "");
     {
         const SyncPath targetPath = {};
@@ -263,7 +262,6 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
         CPPUNIT_ASSERT(!dummyJob.matchRelativePaths(targetPath, SyncPath{"nonEmpty"}, {}));
         CPPUNIT_ASSERT(!dummyJob.matchRelativePaths(targetPath, {}, SyncPath{"nonEmpty"}));
     }
-     */
 
 
     const LocalTemporaryDirectory temporaryDirectory("testLocalJobs_testLocalDeleteJob");
