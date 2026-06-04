@@ -43,7 +43,12 @@ struct ErrorsListView: View {
             }
         }
         .groupedFormatStyle()
-        // TODO: Attach sheets here
+        .sheet(item: $synchroErrorManager.isShowingLocalAccessSheet) { error in
+            LocalAccessErrorSheet(synchroErrorManager: synchroErrorManager, error: error)
+        }
+        .sheet(item: $synchroErrorManager.isShowingActivateOfflineSynchroSheet) { error in
+            SystemUnableToStartVFSReasonSheet(error: error)
+        }
     }
 }
 

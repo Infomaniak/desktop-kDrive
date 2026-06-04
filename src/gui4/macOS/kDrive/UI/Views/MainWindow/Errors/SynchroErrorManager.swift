@@ -23,8 +23,8 @@ import SwiftUI
 
 @MainActor
 final class SynchroErrorManager: ObservableObject {
-    @Published var isShowingActivateOfflineSynchroSheet = false
-    @Published var isShowingLocalAccessSheet = false
+    @Published var isShowingActivateOfflineSynchroSheet: SynchroError?
+    @Published var isShowingLocalAccessSheet: SynchroError?
     @Published var isShowingResolutionTipsSheet = false
 
     // MARK: - Manage sync
@@ -102,14 +102,12 @@ final class SynchroErrorManager: ObservableObject {
 
     // MARK: - Sheets
 
-    func showActivateOfflineSynchroSheet() {
-        // TODO: Show modal
-        isShowingActivateOfflineSynchroSheet = true
+    func showActivateOfflineSynchroSheet(_ error: SynchroError) {
+        isShowingActivateOfflineSynchroSheet = error
     }
 
-    func showLocalAccessSheet() {
-        // TODO: Show modal
-        isShowingLocalAccessSheet = true
+    func showLocalAccessSheet(_ error: SynchroError) {
+        isShowingLocalAccessSheet = error
     }
 
     func showResolutionTipsSheet() {
