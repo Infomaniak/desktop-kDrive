@@ -68,7 +68,7 @@ SyncLocalDeleteJob::SyncLocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, c
     setBypassCheck(true);
 }
 
-bool SyncLocalDeleteJob::findRemoteItem(SyncPath &remoteItemPath) const {
+bool SyncLocalDeleteJob::findRemoteItemRelativePath(SyncPath &remoteItemPath) const {
     bool found = true;
     remoteItemPath.clear();
 
@@ -92,7 +92,7 @@ bool SyncLocalDeleteJob::findRemoteItem(SyncPath &remoteItemPath) const {
 ExitInfo SyncLocalDeleteJob::checkIfRemoteFileHasBeenMoved() {
     SyncPath remoteRelativePath;
 
-    if (const bool remoteItemIsFound = findRemoteItem(remoteRelativePath); !remoteItemIsFound)
+    if (const bool remoteItemIsFound = findRemoteItemRelativePath(remoteRelativePath); !remoteItemIsFound)
         return ExitCode::Ok; // Safe deletion.
 
     SyncPath normalizedRelativeLocalPath;

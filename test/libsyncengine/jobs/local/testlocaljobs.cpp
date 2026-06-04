@@ -257,7 +257,7 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
     }
 
     {
-        const SyncPath targetPath = SyncPath{"/"};
+        const auto targetPath = SyncPath{"/"};
         CPPUNIT_ASSERT(dummyJob.matchRelativePaths(targetPath, {}, {}));
         CPPUNIT_ASSERT(!dummyJob.matchRelativePaths(targetPath, SyncPath{"nonEmpty"}, {}));
         CPPUNIT_ASSERT(!dummyJob.matchRelativePaths(targetPath, {}, SyncPath{"nonEmpty"}));
@@ -275,14 +275,14 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
                 SyncLocalDeleteJob(syncPal, relativePath, isDehydratedPlaceholder, std::move(remoteId), forceToTrash){
 
                 };
-            void setRemoteItemPath(const SyncPath &remoteItemPath) { _remoteItemPath = remoteItemPath; }
+            void setRemoteItemRelativePath(const SyncPath &remoteItemPath) { _remoteItemRelativePath = remoteItemPath; }
 
         protected:
-            virtual bool findRemoteItem(SyncPath &remoteItemPath) const {
-                remoteItemPath = _remoteItemPath;
+            bool findRemoteItemRelativePath(SyncPath &remoteItemRelativePath) const override {
+                remoteItemRelativePath = _remoteItemRelativePath;
                 return true;
             };
-            SyncPath _remoteItemPath;
+            SyncPath _remoteItemRelativePath;
     };
 
     _syncPal->setLocalPath(temporaryDirectory.path());
@@ -303,12 +303,7 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
     {
         LocalDeleteJobMock deleteJob(_syncPal, SyncPath{_localTempDir.path().filename()}, false, NodeId{"1234"});
 
-        // Remote item names are NFC-normalized, but in this test we have mocked the backend response,
-        // so we need to normalize the response.
-        SyncPath normalizedCommonPath;
-        (void) Utility::normalizedSyncPath(SyncPath{_localTempDir.path().filename()}, normalizedCommonPath);
-
-        deleteJob.setRemoteItemPath(normalizedCommonPath);
+        deleteJob.setRemoteItemRelativePath(SyncPath{_localTempDir.path().filename()});
 
         CPPUNIT_ASSERT(!deleteJob.checkIfRemoteFileHasBeenMoved());
     }
@@ -317,7 +312,7 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
     _syncPal->_syncInfo.targetPath = "/";
     {
         LocalDeleteJobMock deleteJob(_syncPal, SyncPath{_localTempDir.path().filename()}, false, NodeId{"1234"});
-        deleteJob.setRemoteItemPath(SyncPath{_localTempDir.path().filename()});
+        deleteJob.setRemoteItemRelativePath(SyncPath{_localTempDir.path().filename()});
 
         CPPUNIT_ASSERT(!deleteJob.checkIfRemoteFileHasBeenMoved());
     }
@@ -325,7 +320,7 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
     // Advanced synchronisation, local and remote item paths are different: can run
     {
         LocalDeleteJobMock deleteJob(_syncPal, SyncPath{_localTempDir.path().filename()}, false, NodeId{"1234"});
-        deleteJob.setRemoteItemPath(SyncPath{"tmp_dir_diff"});
+        deleteJob.setRemoteItemRelativePath(SyncPath{"tmp_dir_diff"});
 
         CPPUNIT_ASSERT(deleteJob.checkIfRemoteFileHasBeenMoved());
 
