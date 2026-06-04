@@ -46,6 +46,7 @@ class OperationGeneratorWorker : public OperationProcessor {
         NodeSet _deletedNodes;
 
         int64_t _bytesToDownload = 0;
+        uint64_t _nbLocalDeleteOperations = 0;
 
         friend class TestOperationGeneratorWorker;
 };
