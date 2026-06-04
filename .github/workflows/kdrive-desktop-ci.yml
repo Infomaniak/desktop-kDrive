@@ -79,8 +79,6 @@ jobs:
     steps:
        - name: Checkout the PR
          uses: actions/checkout@v6.0.2
-         with:
-          ref: ${{ github.head_ref }}
 
        - name: Run test
          uses: ./.github/actions/test_windows
@@ -102,8 +100,6 @@ jobs:
     steps:
        - name: Checkout the PR
          uses: actions/checkout@v6.0.2
-         with:
-          ref: ${{ github.head_ref }}
 
        - name: Run test
          uses: ./.github/actions/test_linux
@@ -125,8 +121,6 @@ jobs:
     steps:
        - name: Checkout the PR
          uses: actions/checkout@v6.0.2
-         with:
-          ref: ${{ github.head_ref }}
 
        - name: Run test
          uses: ./.github/actions/test_macos

@@ -1,14 +1,14 @@
 [Desktop Entry]
 Categories=Utility;
 Type=Application
-Exec=@APPLICATION_EXECUTABLE@
+Exec=@APPLICATION_EXECUTABLE@ %u
 Comment=@APPLICATION_NAME@ desktop synchronization client
 GenericName=Folder Sync
 Name=@APPLICATION_NAME@
 Icon=@APPLICATION_ICON_NAME@
 Keywords=@APPLICATION_NAME@;syncing;file;sharing;
 X-GNOME-Autostart-Delay=3
-MimeType=application/vnd.@APPLICATION_EXECUTABLE@;
+MimeType=application/vnd.@APPLICATION_EXECUTABLE@;x-scheme-handler/kdrive;
 
 
 # Translations

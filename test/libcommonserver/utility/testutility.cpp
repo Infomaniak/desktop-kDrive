@@ -29,8 +29,9 @@
 #include <Poco/URI.h>
 
 #include <climits>
-#include <iostream>
 #include <filesystem>
+#include <fstream>
+#include <iostream>
 
 #if defined(KD_WINDOWS)
 #include <Windows.h>
@@ -565,5 +566,71 @@ void TestUtility::testTryCreateTmpFile() {
         CPPUNIT_ASSERT(Utility::tryCreateTmpFile(cacheDirectory));
     }
 }
+
+#if defined(KD_LINUX)
+namespace {
+std::string readFileToString(const SyncPath &p) {
+    std::ifstream in{p};
+    return std::string{std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>()};
+}
+} // namespace
+
+// Issue #1627: on Linux the OAuth flow needs the `kdrive://` URL scheme to be
+// registered with the desktop. Verify that `registerLoginRedirection()` writes
+// a well-formed `.desktop` file declaring the scheme and a `mimeapps.list`
+// entry that points to it.
+void TestUtility::testRegisterLoginRedirection() {
+    const LocalTemporaryDirectory tmpDir;
+    const SyncPath fakeHome = tmpDir.path();
+
+    const std::string originalHome = std::getenv("HOME") ? std::getenv("HOME") : "";
+    CPPUNIT_ASSERT_EQUAL(0, setenv("HOME", fakeHome.string().c_str(), 1));
+
+    const bool ok = Utility::registerLoginRedirection();
+
+    if (!originalHome.empty()) {
+        (void) setenv("HOME", originalHome.c_str(), 1);
+    } else {
+        (void) unsetenv("HOME");
+    }
+    CPPUNIT_ASSERT(ok);
+
+    // The runtime .desktop file must claim the kdrive scheme and have a
+    // properly quoted Exec= line (paths with spaces would break a launcher
+    // that doesn't handle unquoted whitespace).
+    const SyncPath desktopFile = fakeHome / ".local/share/applications" / (std::string(APPLICATION_EXECUTABLE) + ".desktop");
+    CPPUNIT_ASSERT(std::filesystem::exists(desktopFile));
+    const std::string desktopContent = readFileToString(desktopFile);
+    CPPUNIT_ASSERT(desktopContent.find("MimeType=x-scheme-handler/kdrive;") != std::string::npos);
+    CPPUNIT_ASSERT(desktopContent.find("Exec=\"") != std::string::npos);
+    CPPUNIT_ASSERT(desktopContent.find("\" %u") != std::string::npos);
+    CPPUNIT_ASSERT(desktopContent.find("Type=Application") != std::string::npos);
+
+    // The mimeapps.list fallback must point the kdrive scheme at our .desktop
+    // file regardless of whether xdg-mime is available on the test runner.
+    const SyncPath mimeApps = fakeHome / ".config/mimeapps.list";
+    CPPUNIT_ASSERT(std::filesystem::exists(mimeApps));
+    const std::string mimeContent = readFileToString(mimeApps);
+    CPPUNIT_ASSERT(mimeContent.find("[Default Applications]") != std::string::npos);
+    CPPUNIT_ASSERT(mimeContent.find(std::string("x-scheme-handler/kdrive=") + APPLICATION_EXECUTABLE + ".desktop") !=
+                   std::string::npos);
+
+    // A second invocation must replace the existing entry, not duplicate it.
+    CPPUNIT_ASSERT_EQUAL(0, setenv("HOME", fakeHome.string().c_str(), 1));
+    CPPUNIT_ASSERT(Utility::registerLoginRedirection());
+    if (!originalHome.empty()) {
+        (void) setenv("HOME", originalHome.c_str(), 1);
+    } else {
+        (void) unsetenv("HOME");
+    }
+    const std::string mimeContent2 = readFileToString(mimeApps);
+    size_t count = 0, pos = 0;
+    while ((pos = mimeContent2.find("x-scheme-handler/kdrive=", pos)) != std::string::npos) {
+        ++count;
+        ++pos;
+    }
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), count);
+}
+#endif
 
 } // namespace KDC
