@@ -24,6 +24,8 @@ Item {
     id: root
 
     readonly property bool compact: width < IKOnboarding.loginCompactBreakpointWidth
+    readonly property bool loginFailed: onboardingFlowController.loginFailed
+    readonly property bool loginSucceeded: onboardingFlowController.loginSucceeded
     readonly property bool waitingForWebAuthentication: onboardingFlowController.waitingForWebAuthentication
 
     Column {
@@ -31,7 +33,7 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         anchors.left: parent.left
         anchors.leftMargin: root.compact ? IKSpacing.s32 : IKOnboarding.loginContentExpandedLeftMargin
-        spacing: IKSpacing.s24
+        spacing: root.loginFailed ? IKSpacing.s32 : IKSpacing.s24
         visible: !root.waitingForWebAuthentication
 
         Column {
@@ -40,7 +42,8 @@ Item {
 
             Text {
                 width: parent.width
-                text: qsTr("Bienvenue dans kDrive !")
+                text: root.loginFailed ? qsTr("Erreur de connexion")
+                                       : root.loginSucceeded ? qsTr("Connexion réussie !") : qsTr("Bienvenue dans kDrive !")
                 color: IKColors.textPrimary
                 font.pixelSize: IKFonts.largeTitleSize
                 font.weight: Font.Bold
@@ -51,7 +54,9 @@ Item {
 
             Text {
                 width: parent.width
-                text: qsTr("Le cloud privé, rapide et sécurisé, hébergé en Suisse.")
+                text: root.loginFailed ? qsTr("Une erreur est survenue, veuillez réessayer.")
+                                       : root.loginSucceeded ? qsTr("Vous allez passer à l’étape suivante automatiquement.")
+                                       : qsTr("Le cloud privé, rapide et sécurisé, hébergé en Suisse.")
                 color: IKColors.textSecondary
                 font.pixelSize: IKFonts.bodySize
                 lineHeightMode: Text.FixedHeight
@@ -61,6 +66,7 @@ Item {
 
             Text {
                 width: parent.width
+                visible: !root.loginFailed && !root.loginSucceeded
                 text: qsTr("Connectez-vous et gardez vos documents synchronisés\nsur tous vos appareils.")
                 color: IKColors.textSecondary
                 font.pixelSize: IKFonts.bodySize
@@ -72,6 +78,7 @@ Item {
 
         Row {
             spacing: IKOnboarding.loginButtonSpacing
+            visible: !root.loginSucceeded
 
             Button {
                 id: createAccountButton
@@ -138,9 +145,9 @@ Item {
 
         Text {
             width: parent.width
-            visible: onboardingFlowController.loginStatusText.length > 0
+            visible: !root.loginFailed && onboardingFlowController.loginStatusText.length > 0
             text: onboardingFlowController.loginStatusText
-            color: onboardingFlowController.loginFailed ? IKColors.statusStrongWarning : IKColors.textTertiary
+            color: IKColors.textTertiary
             font.pixelSize: IKFonts.bodySize
             lineHeightMode: Text.FixedHeight
             lineHeight: IKOnboarding.loginBodyLineHeight
