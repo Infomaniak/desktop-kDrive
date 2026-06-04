@@ -74,6 +74,8 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
                    &SystemTrayController::hideMainWindow);
     (void) connect(&_onboardingFlowController, &OnboardingFlowController::completed, &_systemTrayController,
                    &SystemTrayController::showMainWindow);
+    (void) connect(&_onboardingLoginCoordinator, &OnboardingLoginCoordinator::windowActivationRequested, &_systemTrayController,
+                   &SystemTrayController::showMainWindow);
     (void) connect(&_appCache, &AppCache::usersChanged, &_sentryService, &SentryService::updateAuthenticatedUser);
     (void) connect(&_systemTrayController, &SystemTrayController::quitRequested, this, [this] {
         qCInfo(lcAppClientLinux) << "Quit requested from system tray";
