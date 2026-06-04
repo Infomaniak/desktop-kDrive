@@ -2423,14 +2423,17 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
     OldCommServer::instance()->sendReply(id, results);
 }
 
-void AppServer::startSyncsAndRetryOnError() {
+void AppServer::startSyncsAndRetryOnError(const std::unordered_set<SyncDbId>& toIgnoreSyncDbIds) {
     LOG_DEBUG(_logger, "Start syncs");
-    if (const auto exitInfo = startSyncs(); !exitInfo) {
+    std::unordered_set<SyncDbId> startedSyncDbIds;
+    if (const auto exitInfo = startSyncs(toIgnoreSyncDbIds, startedSyncDbIds); !exitInfo) {
         LOG_WARN(_logger, "Error in startSyncsAndRetryOnError: " << exitInfo);
         if (exitInfo.code() == ExitCode::SystemError &&
             (exitInfo.cause() == ExitCause::SyncDirAccessError || exitInfo.cause() == ExitCause::SyncDirDiskMissing)) {
             LOG_DEBUG(_logger, "Retry to start syncs in " << START_SYNCPALS_RETRY_INTERVAL << " ms");
-            QTimer::singleShot(START_SYNCPALS_RETRY_INTERVAL, this, [=, this]() { startSyncsAndRetryOnError(); });
+            startedSyncDbIds.insert(toIgnoreSyncDbIds.begin(), toIgnoreSyncDbIds.end());
+            QTimer::singleShot(START_SYNCPALS_RETRY_INTERVAL, this,
+                               [&startedSyncDbIds, this]() { startSyncsAndRetryOnError(startedSyncDbIds); });
         }
     }
 }
@@ -3137,7 +3140,7 @@ void AppServer::resolveErrors(std::vector<Error> errorList) const {
     }
 }
 
-ExitInfo AppServer::startSyncs() {
+ExitInfo AppServer::startSyncs(std::unordered_set<SyncDbId> toIgnoreSyncDbIds, std::unordered_set<SyncDbId> &startedSyncDbIds) {
     // Load user list
     std::vector<User> userList;
     if (!ParmsDb::instance()->selectAllUsers(userList)) {
@@ -3147,10 +3150,12 @@ ExitInfo AppServer::startSyncs() {
 
     ExitInfo mainExitInfo = ExitCode::Ok;
     for (User &user: userList) {
-        if (const auto exitInfo = startSyncs(user); !exitInfo) {
+        std::unordered_set<SyncDbId> userStartedSyncDbIds;
+        if (const auto exitInfo = startSyncs(user, toIgnoreSyncDbIds, userStartedSyncDbIds); !exitInfo) {
             LOG_WARN(_logger, "Error in startSyncs for userDbId=" << user.dbId() << " " << exitInfo);
             mainExitInfo.merge(exitInfo, {ExitCode::SystemError});
         }
+        startedSyncDbIds.insert(userStartedSyncDbIds.begin(), userStartedSyncDbIds.end());
     }
 #if defined(KD_MACOS)
     Utility::restartFinderExtension();
@@ -3183,8 +3188,12 @@ ExitInfo AppServer::tryCreateAndStartVfs(const Sync &sync, bool &startPostponed)
 
     return ExitCode::Ok;
 }
-
 ExitInfo AppServer::startSyncs(User &user) {
+    std::unordered_set<SyncDbId> emptyList;
+    return startSyncs(user, emptyList, emptyList);
+}
+ExitInfo AppServer::startSyncs(User &user, std::unordered_set<SyncDbId> toIgnoreSyncDbIds,
+                               std::unordered_set<SyncDbId> &startedSyncDbIds) {
     logExtendedLogActivationMessage(ParametersCache::isExtendedLogEnabled());
 
     ExitInfo mainExitInfo = ExitCode::Ok;
@@ -3214,11 +3223,12 @@ ExitInfo AppServer::startSyncs(User &user) {
             }
 
             for (Sync &sync: syncList) {
+                if (toIgnoreSyncDbIds.contains(sync.dbId())) {
+                    LOG_INFO(_logger, "Skipping sync with dbId=" << sync.dbId() << " as it is in the ignore list");
+                    continue;
+                }
+
                 auto syncPalMapIt = syncPalMap.find(sync.dbId());
-
-                // If the syncPal already exists, no need to recreate it.
-                if (syncPalMapIt != syncPalMap.end()) continue;
-
                 QSet<QString> blackList;
                 bool syncUpdated = false;
 
@@ -3288,6 +3298,8 @@ ExitInfo AppServer::startSyncs(User &user) {
                     addError(Error(sync.dbId(), ERR_ID, exitInfo));
                     mainExitInfo.merge(exitInfo, {ExitCode::SystemError});
                 }
+
+                startedSyncDbIds.insert(sync.dbId());
             }
         }
     }

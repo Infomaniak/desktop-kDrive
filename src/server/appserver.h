@@ -186,6 +186,8 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         [[nodiscard]] ExitInfo stopVfs(SyncDbId syncDbId, bool unregister);
         [[nodiscard]] ExitInfo startSyncs(User &user);
+        [[nodiscard]] ExitInfo startSyncs(User &user, std::unordered_set<SyncDbId> toIgnoreSyncDbIds,
+                                          std::unordered_set<SyncDbId> &startedSyncDbIds);
         void stopSyncTask(SyncDbId syncDbId, const SyncPal::DbBehaviorAfterStop behavior = SyncPal::DbBehaviorAfterStop::Keep);
         [[nodiscard]] ExitInfo setSupportsVirtualFilesAsync(SyncDbId syncDbId, bool value);
         [[nodiscard]] ExitInfo setSupportsVirtualFiles(SyncDbId syncDbId, bool value);
@@ -323,8 +325,10 @@ class AppServer : public SharedTools::QtSingleApplication {
         [[nodiscard]] ExitInfo createAndStartVfs(const Sync &sync) noexcept;
         [[nodiscard]] ExitInfo setSupportsVirtualFiles(SyncDbId syncDbId, bool value, bool asyncResponse);
 
-        void startSyncsAndRetryOnError();
+        void startSyncsAndRetryOnError(const std::unordered_set<SyncDbId> &toIgnoreSyncDbIds = {});
         [[nodiscard]] ExitInfo startSyncs();
+        [[nodiscard]] ExitInfo startSyncs(std::unordered_set<SyncDbId> toIgnoreSyncDbIds,
+                                          std::unordered_set<SyncDbId> &startedSyncDbIds);
         [[nodiscard]] ExitInfo processMigratedSyncOnceConnected(UserDbId userDbId, DriveId driveId, Sync &sync,
                                                                 QSet<QString> &blackList, bool &syncUpdated);
 
