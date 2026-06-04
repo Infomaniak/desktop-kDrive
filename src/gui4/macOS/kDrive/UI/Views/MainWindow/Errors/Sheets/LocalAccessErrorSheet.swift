@@ -54,7 +54,7 @@ struct LocalAccessErrorSheet: View {
                 Button(KDriveLocalizable.buttonClose, role: .cancel) {}
             }
             ToolbarItem(placement: .confirmationAction) {
-                Button(KDriveLocalizable.buttonOpenParentFolder) {}
+                Button(KDriveLocalizable.buttonOpenParentFolder, action: openParentFolder)
                     .buttonStyle(.borderedProminent)
             }
         }
