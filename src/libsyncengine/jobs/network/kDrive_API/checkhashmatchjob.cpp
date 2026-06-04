@@ -105,7 +105,7 @@ ExitInfo CheckHashMatchJob::runJob() noexcept {
     }
 
     if (_localHash != _remoteHash) return ExitCode::Ok;
-    _shouldDownload = false;
+    _hashMatch = true;
     return ExitCode::Ok;
 }
 
