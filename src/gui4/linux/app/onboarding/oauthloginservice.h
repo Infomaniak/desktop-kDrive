@@ -38,7 +38,6 @@ class OAuthLoginService final : public QObject {
         void handleAuthorizationCode(const QString &code, const QString &state);
 
     signals:
-        void authorizationStarted();
         void authorizationCodeReady(const QString &code, const QString &codeVerifier);
         void authorizationFailed(const QString &error, const QString &errorDescription);
 
