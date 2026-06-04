@@ -22,6 +22,8 @@ import kDriveResources
 import SwiftUI
 
 struct LocalAccessErrorSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
     let synchroErrorManager: SynchroErrorManager
     let error: SynchroError
 
@@ -51,7 +53,9 @@ struct LocalAccessErrorSheet: View {
         .padding()
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button(KDriveLocalizable.buttonClose, role: .cancel) {}
+                Button(KDriveLocalizable.buttonClose, role: .cancel) {
+                    dismiss()
+                }
             }
             ToolbarItem(placement: .confirmationAction) {
                 Button(KDriveLocalizable.buttonOpenParentFolder, action: openParentFolder)
@@ -62,6 +66,7 @@ struct LocalAccessErrorSheet: View {
 
     private func openParentFolder() {
         synchroErrorManager.openParentFolder(error)
+        dismiss()
     }
 }
 

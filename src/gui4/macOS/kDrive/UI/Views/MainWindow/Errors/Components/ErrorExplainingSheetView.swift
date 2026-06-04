@@ -21,6 +21,8 @@ import kDriveResources
 import SwiftUI
 
 struct ErrorExplainingSheetView: View {
+    @Environment(\.dismiss) private var dismiss
+
     let title: String
     let description: String
     let explanations: [Explanation]
@@ -74,7 +76,9 @@ struct ErrorExplainingSheetView: View {
         .padding()
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button(KDriveLocalizable.buttonClose, role: .cancel) {}
+                Button(KDriveLocalizable.buttonClose, role: .cancel) {
+                    dismiss()
+                }
             }
             ToolbarItem(placement: .primaryAction) {
                 Button(mainAction.title, action: mainAction.handler)

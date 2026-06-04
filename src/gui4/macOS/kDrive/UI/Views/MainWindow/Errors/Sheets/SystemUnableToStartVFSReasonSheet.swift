@@ -22,6 +22,8 @@ import kDriveResources
 import SwiftUI
 
 struct SystemUnableToStartVFSReasonSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
     @State private var isLoading = false
 
     let error: SynchroError
@@ -38,7 +40,9 @@ struct SystemUnableToStartVFSReasonSheet: View {
         .padding()
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button(KDriveLocalizable.buttonClose, role: .cancel) {}
+                Button(KDriveLocalizable.buttonClose, role: .cancel) {
+                    dismiss()
+                }
             }
             ToolbarItem(placement: .confirmationAction) {
                 LoadingButton(isLoading: $isLoading, action: synchronizeOffline) {
@@ -53,6 +57,8 @@ struct SystemUnableToStartVFSReasonSheet: View {
         isLoading = true
         try? await SyncJobs().setSupportsVirtualFiles(syncDbId: Int32(error.metadata.synchroDbId), value: false)
         isLoading = false
+
+        dismiss()
     }
 }
 

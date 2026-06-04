@@ -22,6 +22,8 @@ import kDriveResources
 import SwiftUI
 
 struct SystemSyncDirAccessReasonsSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
     let synchroErrorManager: SynchroErrorManager
     let error: SynchroError
 
@@ -84,6 +86,7 @@ struct SystemSyncDirAccessReasonsSheet: View {
 
     private func openParentFolder() {
         synchroErrorManager.openParentFolder(error)
+        dismiss()
     }
 
     private func navigateToSyncCreation() {

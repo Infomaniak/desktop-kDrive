@@ -22,6 +22,8 @@ import kDriveResources
 import SwiftUI
 
 struct DataSyncDirChangedReasonsSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
     let synchroErrorManager: SynchroErrorManager
 
     private static let explanations: [ErrorExplainingSheetView.Explanation] = [
@@ -56,6 +58,7 @@ struct DataSyncDirChangedReasonsSheet: View {
 
     private func navigateToSyncCreation() {
         synchroErrorManager.navigateToSynchroCreation()
+        dismiss()
     }
 }
 

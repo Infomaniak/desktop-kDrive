@@ -22,6 +22,8 @@ import kDriveResources
 import SwiftUI
 
 struct SystemSyncDirDiskMissingReasonsSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
     var body: some View {
         VStack(alignment: .leading, spacing: AppPadding.padding16) {
             Text(KDriveLocalizable.errDialogSystemSyncDirDiskMissingTitle)
@@ -38,7 +40,9 @@ struct SystemSyncDirDiskMissingReasonsSheet: View {
         .padding()
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button(KDriveLocalizable.buttonClose, role: .cancel) {}
+                Button(KDriveLocalizable.buttonClose, role: .cancel) {
+                    dismiss()
+                }
             }
         }
     }
