@@ -106,6 +106,7 @@ enum class ExitCode {
     UpdateRequired,
     LogUploadFailed,
     UpdateFailed,
+    TooManyDeleteOperations,
     EnumEnd
 };
 

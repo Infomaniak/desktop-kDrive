@@ -87,6 +87,7 @@ ClientGui::ClientGui(AppClient *parent) :
 
     connect(this, &ClientGui::refreshStatusNeeded, this, &ClientGui::onRefreshStatusNeeded);
     connect(this, &ClientGui::appVersionLocked, this, &ClientGui::onAppVersionLocked);
+    // connect(this, &ClientGui::filesDeletionAcknowledgementRequired, this, &ClientGui::onAppVersionLocked);
 
     connect(&_refreshErrorListTimer, &QTimer::timeout, this, &ClientGui::onRefreshErrorList);
 
@@ -143,15 +144,24 @@ bool ClientGui::isConnected() {
 }
 
 void ClientGui::onErrorAdded(bool serverLevel, ExitCode exitCode, const SyncDbId syncDbId) {
-    if (exitCode == ExitCode::InvalidToken) {
-        auto userIt = _userInfoMap.find(_currentUserDbId);
-        if (userIt != _userInfoMap.end() && !userIt->second.credentialsAsked()) {
-            userIt->second.setCredentialsAsked(true);
-            if (_addDriveWizard) {
-                emit _addDriveWizard->exit();
+    switch (exitCode) {
+        case ExitCode::InvalidToken: {
+            auto userIt = _userInfoMap.find(_currentUserDbId);
+            if (userIt != _userInfoMap.end() && !userIt->second.credentialsAsked()) {
+                userIt->second.setCredentialsAsked(true);
+                if (_addDriveWizard) {
+                    emit _addDriveWizard->exit();
+                }
+                _app->askUserToLoginAgain(_currentUserDbId, userIt->second.email(), true);
             }
-            _app->askUserToLoginAgain(_currentUserDbId, userIt->second.email(), true);
+            break;
         }
+        case ExitCode::TooManyDeleteOperations: {
+            _app->tooManyLocalDeleteOpsDetected();
+            break;
+        }
+        default:
+            break;
     }
 
     // Refresh errorlist
@@ -960,6 +970,7 @@ void ClientGui::onRefreshErrorList() {
     }
 
     // Drive level errors (SyncPal or Node).
+    auto requireFilesDeletionAcknowledgment = false;
     for (auto it = _driveWithNewErrorSet.begin(); it != _driveWithNewErrorSet.end();) {
         const auto driveDbId = *it;
         _errorInfoMap[driveDbId].clear();
@@ -978,24 +989,26 @@ void ClientGui::onRefreshErrorList() {
         }
 
         Count unresolvedErrorsCount = 0;
-        Count autoresolvedErrorsCount = 0;
+        Count autoResolvedErrorsCount = 0;
         for (const auto &errorInfo: _errorInfoMap[driveDbId]) {
             versionLocked = versionLocked || errorInfo.exitCode() == ExitCode::UpdateRequired;
+            requireFilesDeletionAcknowledgment |= errorInfo.exitCode() == ExitCode::TooManyDeleteOperations;
 
             if (errorInfo.autoResolved()) {
-                ++autoresolvedErrorsCount;
+                ++autoResolvedErrorsCount;
             } else {
                 ++unresolvedErrorsCount;
             }
         }
         driveInfoMapIt->second.setUnresolvedErrorsCount(unresolvedErrorsCount);
-        driveInfoMapIt->second.setAutoresolvedErrorsCount(autoresolvedErrorsCount);
+        driveInfoMapIt->second.setAutoresolvedErrorsCount(autoResolvedErrorsCount);
         emit errorAdded(driveDbId);
 
         it = _driveWithNewErrorSet.erase(it);
     }
 
     if (versionLocked) emit appVersionLocked(versionLocked);
+    // if (requireFilesDeletionAcknowledgment) emit filesDeletionAcknowledgementRequired();
 }
 
 void ClientGui::closeAllExcept(const QWidget *exceptWidget) {
