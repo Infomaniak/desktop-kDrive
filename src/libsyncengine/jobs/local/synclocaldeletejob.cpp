@@ -39,26 +39,40 @@ namespace KDC {
 bool SyncLocalDeleteJob::matchRelativePaths(const SyncPath &remoteTargetPath, const SyncPath &localRelativePath,
                                             const SyncPath &remoteRelativePath) {
     // Standard synchronization case: the target path is empty and the local and remote relative paths should match.
-    if (remoteTargetPath.empty()) return remoteRelativePath == localRelativePath;
+    if (remoteTargetPath.empty()) {
+        if (remoteRelativePath != localRelativePath) {
+            std::cout << "Relative paths mismatch (1): " << remoteRelativePath << " != " << localRelativePath << std::endl;
+        }
+
+        return remoteRelativePath == localRelativePath;
+    }
 
     // Case of an advanced synchronization.
     // The remote target path is of the form /path/to/target_folder where to root is the remote drive root.
     // We remove the "/" at the beginning to compare it with a reconstructed relative path.
     const auto relativeRemoteTargetPath = std::filesystem::relative(remoteTargetPath, remoteTargetPath.root_path());
 
-    if (relativeRemoteTargetPath.begin() == relativeRemoteTargetPath.end() || relativeRemoteTargetPath == SyncPath{"."})
+    if (relativeRemoteTargetPath.begin() == relativeRemoteTargetPath.end() || relativeRemoteTargetPath == SyncPath{"."}) {
+        if (remoteRelativePath != localRelativePath)
+            std::cout << "Relative paths mismatch (2): " << remoteRelativePath << " != " << localRelativePath << std::endl;
+
         return remoteRelativePath == localRelativePath;
+    }
+
+    if (remoteRelativePath != relativeRemoteTargetPath / localRelativePath)
+        std::cout << "Relative paths mismatch (3): " << remoteRelativePath
+                  << " != " << relativeRemoteTargetPath / localRelativePath << std::endl;
 
     return remoteRelativePath == relativeRemoteTargetPath / localRelativePath;
 }
 
-SyncLocalDeleteJob::SyncLocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath,
+SyncLocalDeleteJob::SyncLocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativeLocalPath,
                                        const bool liteSyncIsEnabled, RemoteNodeId remoteNodeId,
                                        ForceToTrash forceToTrash /* = ForceToTrash::No */) :
-    GenericLocalDeleteJob(syncPal ? syncPal->localPath() / relativePath : ""),
+    GenericLocalDeleteJob(syncPal ? syncPal->localPath() / relativeLocalPath : ""),
     _liteSyncIsEnabled(liteSyncIsEnabled),
     _syncPal(syncPal),
-    _relativeLocalPath(relativePath),
+    _relativeLocalPath(relativeLocalPath),
     _remoteNodeId(std::move(remoteNodeId)),
     _forceToTrash(forceToTrash == ForceToTrash::Yes) {}
 
@@ -68,15 +82,16 @@ SyncLocalDeleteJob::SyncLocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, c
     setBypassCheck(true);
 }
 
-bool SyncLocalDeleteJob::findRemoteItemRelativePath(SyncPath &remoteItemPath) const {
+bool SyncLocalDeleteJob::findRemoteItemRelativePath(SyncPath &remoteItemRelativePath) const {
     bool found = true;
-    remoteItemPath.clear();
+    remoteItemRelativePath.clear();
 
     // The item must be absent of remote replica for the job to run
     GetFileInfoJob job(_syncPal->driveDbId(), _remoteNodeId);
     job.setWithPath(true);
     job.runSynchronously();
-    remoteItemPath = job.path();
+    remoteItemRelativePath = job.path();
+
     if (job.hasHttpError()) {
         using namespace Poco::Net;
         if (job.getStatusCode() == HTTPResponse::HTTP_FORBIDDEN || job.getStatusCode() == HTTPResponse::HTTP_NOT_FOUND) {
@@ -92,9 +107,8 @@ bool SyncLocalDeleteJob::findRemoteItemRelativePath(SyncPath &remoteItemPath) co
 ExitInfo SyncLocalDeleteJob::checkIfRemoteFileHasBeenMoved() {
     SyncPath remoteRelativePath;
 
-    if (const bool remoteItemIsFound = findRemoteItemRelativePath(remoteRelativePath); !remoteItemIsFound) {
+    if (const bool remoteItemIsFound = findRemoteItemRelativePath(remoteRelativePath); !remoteItemIsFound)
         return ExitCode::Ok; // Safe deletion.
-    }
 
     SyncPath normalizedRelativeLocalPath;
     if (!Utility::normalizedSyncPath(_relativeLocalPath, normalizedRelativeLocalPath)) {
