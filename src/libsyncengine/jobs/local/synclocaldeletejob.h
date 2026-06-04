@@ -29,16 +29,21 @@ namespace KDC {
  */
 class SyncLocalDeleteJob : public GenericLocalDeleteJob {
     public:
-        SyncLocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath, bool liteSyncIsEnabled,
-                           const NodeId &remoteId,
-                           bool forceToTrash = false); // Check existence of remote counterpart and abort if needed.
+        enum class ForceToTrash {
+            No,
+            Yes
+        };
+        SyncLocalDeleteJob(
+                const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath, bool liteSyncIsEnabled,
+                RemoteNodeId remoteNodeId,
+                ForceToTrash forceToTrash = ForceToTrash::No); // Check existence of remote counterpart and abort if needed.
         SyncLocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, const SyncPath &absolutePath); // Delete without checks
 
     protected:
         bool _liteSyncIsEnabled = false;
 
         ExitInfo canRun() override;
-        virtual bool findRemoteItem(SyncPath &remoteItemPath) const;
+        virtual bool findRemoteItemRelativePath(SyncPath &remoteItemRelativePath) const;
         virtual ExitInfo moveToTrash();
 
     private:
@@ -50,28 +55,22 @@ class SyncLocalDeleteJob : public GenericLocalDeleteJob {
 
         //! Returns `true` if `localRelativePath` and `remoteRelativePath` indicate the same synchronised item.
         /*!
-          \param targetPath is the path of the remote sync folder if the sync is advanced; it is empty otherwise.
+          \param remoteTargetPath is the path of the remote sync folder if the sync is advanced; it is empty otherwise.
           \param localRelativePath is the path of the item relative to the local sync folder.
           \param remoteRelativePath is the path of the item relative to the remote drive root folder.
           \return true if the two relative paths indicate the same synchronised item.
         */
-        bool matchRelativePaths(const SyncPath &targetPath, const SyncPath &localRelativePath,
+        bool matchRelativePaths(const SyncPath &remoteTargetPath, const SyncPath &localRelativePath,
                                 const SyncPath &remoteRelativePath);
 
+        //! Returns an ExitInfo that evaluates to `true` if and only if the item has not been found on the remote replica  with
+        //! remote relative path equal to `_relativeLocalPath`. and no error occurred while performing this check.
         ExitInfo checkIfRemoteFileHasBeenMoved();
 
         const std::shared_ptr<SyncPal> _syncPal;
         SyncPath _relativeLocalPath;
-        NodeId _remoteNodeId;
+        RemoteNodeId _remoteNodeId;
         bool _forceToTrash = false;
-
-        struct Path {
-                Path(const SyncPath &path);
-                bool endsWith(SyncPath &&ending) const;
-
-            private:
-                SyncPath _path;
-        };
 
         friend class TestLocalJobs;
 };

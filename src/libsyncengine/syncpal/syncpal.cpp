@@ -1420,8 +1420,10 @@ void SyncPal::fixInconsistentFileNames() {
                 continue;
             }
 
-            GenericLocalDeleteJob deleteJob(oldLocalPath,
-                                            true); // Hard delete to make sure we do not put dehydrated placeholder in the trash.
+            GenericLocalDeleteJob deleteJob(
+                    oldLocalPath,
+                    GenericLocalDeleteJob::ForceHardDelete::Yes); // Hard delete to make sure we do not put dehydrated placeholder
+                                                                  // in the trash.
             deleteJob.runSynchronously();
         }
     }
