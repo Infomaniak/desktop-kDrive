@@ -136,6 +136,9 @@
 /* loco:68e673c48af12c42e80027c8 */
 "buttonCreateAccount" = "Create an account";
 
+/* loco:69a05e947011da04b4061f23 */
+"buttonCreateNewSync" = "Create a new sync";
+
 /* loco:698b14e52445668d9d0495a2 */
 "buttonDisconnectAccount" = "Disconnect this account";
 
