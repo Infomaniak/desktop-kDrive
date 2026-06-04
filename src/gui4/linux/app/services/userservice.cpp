@@ -18,6 +18,8 @@
 
 #include "userservice.h"
 
+#include "app/services/sentryservice.h"
+
 #include <QLoggingCategory>
 
 namespace {
@@ -96,12 +98,15 @@ void UserService::requestLoginToken(const QString &code, const QString &codeVeri
         endAction(actionRequestLoginToken);
         if (!result.error.isEmpty() || !result.errorDescription.isEmpty()) {
             _serviceEventBus.notifyGenericError(exitInfo, RequestNum::LOGIN_REQUESTTOKEN);
+            SentryService::reportError(QStringLiteral("Login failed"),
+                                       QStringLiteral("error: %1 | description: %2").arg(result.error, result.errorDescription));
             emit loginTokenFailed(result.error, result.errorDescription);
             return;
         }
 
         if (!exitInfo) {
             notifyRequestFailure(exitInfo, RequestNum::LOGIN_REQUESTTOKEN);
+            SentryService::reportError("Login failed", toString(exitInfo));
             emit loginTokenFailed(QString(), QString());
             return;
         }

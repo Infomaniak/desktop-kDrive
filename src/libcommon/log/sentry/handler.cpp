@@ -189,20 +189,20 @@ std::shared_ptr<Handler> Handler::instance() {
     return _instance;
 }
 
-void Handler::init(AppType appType, int breadCrumbsSize) {
+void Handler::init(AppType appType, int32_t breadCrumbsSize, const std::string &dsnOverride,
+                   const std::string &dbPathSubdirOverride) {
     if (_instance) {
         assert(false && "Handler already initialized");
+        return;
+    }
+
+    if (appType == AppType::None) {
         return;
     }
 
     _instance = std::shared_ptr<Handler>(new Handler());
     if (!_instance) {
         assert(false);
-        return;
-    }
-
-    if (appType == AppType::None) {
-        _instance->_isSentryActivated = false;
         return;
     }
 
@@ -223,37 +223,54 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
 
     // Sentry init
     sentry_options_t *options = sentry_options_new();
-    switch (_appType) {
-        case AppType::Server:
-            sentry_options_set_dsn(options, SENTRY_SERVER_DSN);
-            break;
-        case AppType::Client:
-            sentry_options_set_dsn(options, SENTRY_CLIENT_DSN);
-            break;
-        case AppType::Test:
-            sentry_options_set_dsn(options, SENTRY_TEST_DSN);
-            break;
-        default:
-            assert(false && "Invalid app type for sentry initialization");
-            return;
+    const auto cleanupBeforeSentryInit = [&options] {
+        sentry_options_free(options);
+        options = nullptr;
+        _instance.reset();
+        _appType = AppType::None;
+    };
+
+    if (!dsnOverride.empty()) {
+        sentry_options_set_dsn(options, dsnOverride.c_str());
+    } else {
+        switch (_appType) {
+            case AppType::Server:
+                sentry_options_set_dsn(options, SENTRY_SERVER_DSN);
+                break;
+            case AppType::Client:
+                sentry_options_set_dsn(options, SENTRY_CLIENT_DSN);
+                break;
+            case AppType::Test:
+                sentry_options_set_dsn(options, SENTRY_TEST_DSN);
+                break;
+            default:
+                assert(false && "Invalid app type for sentry initialization");
+                cleanupBeforeSentryInit();
+                return;
+        }
     }
 
     const SyncPath appWorkingPath = CommonUtility::getAppWorkingDir() / SENTRY_CRASHPAD_HANDLER_NAME;
 
     SyncPath appSupportPath = CommonUtility::getAppSupportDir();
-    switch (_appType) {
-        case AppType::Server:
-            appSupportPath /= SENTRY_SERVER_DB_PATH;
-            break;
-        case AppType::Client:
-            appSupportPath /= SENTRY_CLIENT_DB_PATH;
-            break;
-        case AppType::Test:
-            appSupportPath /= SENTRY_TEST_DB_PATH;
-            break;
-        default:
-            assert(false && "Invalid app type for sentry initialization");
-            return;
+    if (!dbPathSubdirOverride.empty()) {
+        appSupportPath /= dbPathSubdirOverride;
+    } else {
+        switch (_appType) {
+            case AppType::Server:
+                appSupportPath /= SENTRY_SERVER_DB_PATH;
+                break;
+            case AppType::Client:
+                appSupportPath /= SENTRY_CLIENT_DB_PATH;
+                break;
+            case AppType::Test:
+                appSupportPath /= SENTRY_TEST_DB_PATH;
+                break;
+            default:
+                assert(false && "Invalid app type for sentry initialization");
+                cleanupBeforeSentryInit();
+                return;
+        }
     }
 #if defined(Q_OS_WIN)
     sentry_options_set_handler_pathw(options, appWorkingPath.c_str());
@@ -284,7 +301,7 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
         sentry_options_set_environment(options, "dev_unknown");
 #endif
     } else if (environment.empty()) { // Disable sentry
-        _instance->_isSentryActivated = false;
+        cleanupBeforeSentryInit();
         return;
     } else {
         environment = "dev_" + environment; // We add a prefix to avoid any conflict with the sentry environment.
@@ -305,6 +322,25 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
     }
     assert(res == 0);
     _instance->setDistributionChannel(DistributionChannel::Unknown);
+}
+
+void Handler::shutdown() {
+    if (!_instance) {
+        return;
+    }
+    // Here, the std::move makes _instance empty,
+    // and Handler::shutdown's scope owns the shared_ptr and decrements the refcount at the end of the method, so it is properly
+    // destroyed once sentry_close() has returned, ensuring the Handler outlives any in-flight Sentry callbacks.
+    const auto instance = std::move(_instance);
+    instance->_isSentryActivated = false;
+    try {
+        sentry_close();
+    } catch (const std::exception &e) {
+        std::cerr << "sentry_close threw during shutdown: " << e.what() << std::endl;
+    } catch (...) {
+        std::cerr << "sentry_close threw during shutdown" << std::endl;
+    }
+    _appType = AppType::None;
 }
 
 void Handler::setAuthenticatedUser(const SentryUser &user) {
@@ -375,7 +411,7 @@ void Handler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
     }
 
     auto &storedEvent = it->second;
-    storedEvent.captureCount = (std::min)(storedEvent.captureCount + 1, UINT_MAX - 1);
+    storedEvent.captureCount = (std::min) (storedEvent.captureCount + 1, UINT_MAX - 1);
     event.captureCount = storedEvent.captureCount;
 
     if (lastEventCaptureIsOutdated(storedEvent)) { // Reset the capture count if the last capture was more than 10 minutes ago
@@ -514,13 +550,11 @@ void Handler::setAppUUID(std::string appUUID) {
 Handler::~Handler() {
     if (this == _instance.get()) {
         _instance.reset();
-#if !defined(Q_OS_LINUX)
         try {
             sentry_close();
         } catch (...) {
             // Do nothing
         }
-#endif
     }
 }
 

@@ -18,10 +18,13 @@
 
 #include "signaldispatcher.h"
 
+#include "app/services/sentryservice.h"
 #include "libcommon/log/customlogstreams.h"
 
-#include <exception>
 #include <QLoggingCategory>
+#include <QString>
+
+#include <exception>
 
 Q_LOGGING_CATEGORY(lcSignalDispatcher, "gui.v4.signals", QtInfoMsg)
 
@@ -50,8 +53,13 @@ void SignalDispatcher::dispatch(const SignalNum num, const Poco::DynamicStruct &
             handler(params);
         } catch (const std::exception &e) {
             qCCritical(lcSignalDispatcher) << "Exception in signal handler for signal:" << num << "-" << e.what();
+            SentryService::reportError(
+                    QStringLiteral("Error processing server signal"),
+                    QStringLiteral("SignalNum: %1 | exception: %2").arg(toInt(num)).arg(QString::fromUtf8(e.what())));
         } catch (...) {
             qCCritical(lcSignalDispatcher) << "Unknown exception in signal handler for signal:" << num;
+            SentryService::reportError(QStringLiteral("Error processing server signal"),
+                                       QStringLiteral("SignalNum: %1 | unknown exception").arg(toInt(num)));
         }
     }
 }
