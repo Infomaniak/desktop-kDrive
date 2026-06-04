@@ -23,7 +23,7 @@ namespace KDC {
 GenericLocalDeleteJob::GenericLocalDeleteJob(SyncPath absoluteLocalPath,
                                              ForceHardDelete forceHardDelete /*= ForceHardDelete::No*/) :
     _absoluteLocalPath(std::move(absoluteLocalPath)),
-    _forceHardDelete(forceHardDelete == ForceHardDelete::No) {}
+    _forceHardDelete(forceHardDelete == ForceHardDelete::Yes) {}
 
 ExitInfo GenericLocalDeleteJob::runJob() {
     if (!_forceHardDelete && ParametersCache::instance()->parameters().moveToTrash())
