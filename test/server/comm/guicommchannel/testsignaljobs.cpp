@@ -21,6 +21,7 @@
 #include "comm/guijobs/signaldriveupdatedjob.h"
 #include "comm/guijobs/signalupdatershowdialogjob.h"
 #include "comm/guijobs/signalupdaterstatechangedjob.h"
+#include "comm/guijobs/signalloginsendauthorizationcodejob.h"
 #include "comm/guijobs/signalutilityshownotificationjob.h"
 #include "comm/guijobs/signalutilityshowsettingsjob.h"
 #include "comm/guijobs/signalutilityshowsynthesisjob.h"
@@ -29,6 +30,8 @@
 
 #include "testguicommchannel.h"
 #include "../testcommhelpers.h"
+
+#include "libcommon/utility/utility.h"
 
 namespace KDC {
 
@@ -132,6 +135,24 @@ void TestGuiCommChannel::testSignalUtilityLogUploadStateJob() {
 void TestGuiCommChannel::testSignalUtilityQuitJob() {
     SignalUtilityQuitJob job;
     checkSignalCommonMethods(job, SignalNum::UTILITY_QUIT);
+}
+
+void TestGuiCommChannel::testSignalLoginSendAuthorizationCodeJob() {
+    const CommString code = Str("authorization_code");
+    const CommString state = Str("state_123");
+
+    SignalLoginSendAuthorizationCodeJob job(code, state);
+    checkSignalCommonMethods(job, SignalNum::LOGIN_SEND_AUTHORIZATION_CODE);
+
+    CPPUNIT_ASSERT_EQUAL(code, job._code);
+    CPPUNIT_ASSERT_EQUAL(state, job._state);
+
+    CommString serializedCode;
+    CommString serializedState;
+    CommonUtility::readValueFromStruct(job._outParams, msgParamAuthCode, serializedCode);
+    CommonUtility::readValueFromStruct(job._outParams, msgParamState, serializedState);
+    CPPUNIT_ASSERT_EQUAL(code, serializedCode);
+    CPPUNIT_ASSERT_EQUAL(state, serializedState);
 }
 
 } // namespace KDC
