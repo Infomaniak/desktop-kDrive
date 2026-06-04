@@ -43,6 +43,7 @@ class OnboardingFlowController final : public QObject {
         Q_PROPERTY(bool loginInProgress READ loginInProgress NOTIFY loginStateChanged)
         Q_PROPERTY(bool waitingForWebAuthentication READ waitingForWebAuthentication NOTIFY loginStateChanged)
         Q_PROPERTY(bool loginFailed READ loginFailed NOTIFY loginStateChanged)
+        Q_PROPERTY(bool loginSucceeded READ loginSucceeded NOTIFY loginStateChanged)
         Q_PROPERTY(QString loginStatusText READ loginStatusText NOTIFY loginStateChanged)
         Q_PROPERTY(QString title READ title NOTIFY currentStepChanged)
 
@@ -59,6 +60,7 @@ class OnboardingFlowController final : public QObject {
             LoginIdle = 0,
             WaitingForWebAuthentication,
             LoadingUser,
+            LoginSucceeded,
             LoginError,
         };
         Q_ENUM(LoginState)
@@ -72,6 +74,7 @@ class OnboardingFlowController final : public QObject {
         [[nodiscard]] bool loginInProgress() const;
         [[nodiscard]] bool waitingForWebAuthentication() const;
         [[nodiscard]] bool loginFailed() const;
+        [[nodiscard]] bool loginSucceeded() const;
         [[nodiscard]] QString loginStatusText() const;
         [[nodiscard]] QString title() const;
 
