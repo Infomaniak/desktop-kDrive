@@ -70,7 +70,6 @@ void OAuthLoginService::startAuthorization() {
     }
 
     qCInfo(lcOAuthLoginService) << "OAuth authorization browser launch requested";
-    emit authorizationStarted();
 }
 
 void OAuthLoginService::handleAuthorizationCode(const QString &code, const QString &state) {
