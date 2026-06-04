@@ -184,6 +184,7 @@ ExitInfo AbstractNetworkJob::runJob() noexcept {
 
     Poco::URI uri;
     ExitInfo outputExitInfo = ExitCode::Ok;
+    _trials = _defaultTrials;
     for (int trials = 1; trials <= std::min(_trials, MAX_TRIALS); trials++) {
         outputExitInfo = ExitCode::Ok;
 
