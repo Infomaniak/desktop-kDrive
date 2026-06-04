@@ -110,6 +110,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSignalUtilityShowSynthesisJob);
         CPPUNIT_TEST(testSignalUtilityLogUploadStateJob);
         CPPUNIT_TEST(testSignalUtilityQuitJob);
+        CPPUNIT_TEST(testSignalLoginSendAuthorizationCodeJob);
         CPPUNIT_TEST(testUtilityCheckCommStatusJob);
         CPPUNIT_TEST(testUtilityHasSystemLaunchOnStartupJob);
         CPPUNIT_TEST(testUtilityQuitJob);
@@ -209,6 +210,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testSignalUtilityShowSynthesisJob();
         void testSignalUtilityLogUploadStateJob();
         void testSignalUtilityQuitJob();
+        void testSignalLoginSendAuthorizationCodeJob();
 
         void testSignalUserUpdatedJob();
         void testSignalAccountUpdatedJob();
