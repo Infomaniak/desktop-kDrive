@@ -48,10 +48,9 @@ ExitInfo GenericLocalDeleteJob::hardDelete(const SyncPath &path) {
     LOGW_DEBUG(_logger, L"Try to hard delete item with " << Utility::formatSyncPath(path));
 
     if (auto ioError = IoError::Unknown; !IoHelper::deleteItem(path, ioError)) {
-        LOGW_WARN(_logger, L"Failed to delete item with " << Utility::formatIoError(absoluteLocalPath(), ioError));
-        if (ioError == IoError::AccessDenied) {
-            return {ExitCode::SystemError, ExitCause::FileAccessError};
-        }
+        LOGW_WARN(_logger, L"Failed to delete item with " << Utility::formatIoError(path, ioError));
+        if (ioError == IoError::AccessDenied) return {ExitCode::SystemError, ExitCause::FileAccessError};
+
 
         return ExitCode::SystemError;
     }

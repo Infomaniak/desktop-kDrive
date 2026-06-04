@@ -270,9 +270,9 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
 
     class LocalDeleteJobMock : public SyncLocalDeleteJob {
         public:
-            LocalDeleteJobMock(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath, bool isDehydratedPlaceholder,
-                               RemoteNodeId remoteId, ForceToTrash forceToTrash = ForceToTrash::No) :
-                SyncLocalDeleteJob(syncPal, relativePath, isDehydratedPlaceholder, std::move(remoteId), forceToTrash){
+            LocalDeleteJobMock(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath, const bool isLiteSyncEnabled,
+                               RemoteNodeId remoteNodeId, ForceToTrash forceToTrash = ForceToTrash::No) :
+                SyncLocalDeleteJob(syncPal, relativePath, isLiteSyncEnabled, std::move(remoteNodeId), forceToTrash){
 
                 };
             void setRemoteItemRelativePath(const SyncPath &remoteItemPath) { _remoteItemRelativePath = remoteItemPath; }
