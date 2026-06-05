@@ -280,7 +280,11 @@ void SocketCommServer::execute() {
     } while (!bindSuccess); // Loop until bind is successful
 
     LOG_DEBUG(Log::instance()->getLogger(), name() << " listening on port " << getPort());
+#ifdef NDEBUG
+    // In release mode, the port is provided to the GUI process via launch arguments, no need to save it in a file.
+#else
     saveCommPort(getPort());
+#endif // NDEBUG
     while (!_stopAsked) {
         try {
             _serverSocket.listen();
@@ -336,7 +340,7 @@ void SocketCommServer::execute() {
 }
 void SocketCommServer::joinAndClearPostponedLostConnectionCbks() {
     // Join and remove all postponed lost-connection callback threads
-    for (const auto& thread: _postponedLostConnectionCbks) {
+    for (const auto &thread: _postponedLostConnectionCbks) {
         if (thread->joinable()) {
             thread->join();
         }

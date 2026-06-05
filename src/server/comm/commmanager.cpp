@@ -298,6 +298,20 @@ bool CommManager::hasActiveGuiConnection() {
     return _guiCommServer && _guiCommServer->hasActiveConnexion();
 }
 
+int32_t CommManager::tryGetCommPort() const {
+    const std::scoped_lock lock(_mutex);
+    if (!_guiCommServer) {
+        LOG_WARN(Log::instance()->getLogger(), "GUI Comm Server not initialized");
+        return -1;
+    }
+    const std::shared_ptr<SocketCommServer> socketServer = std::dynamic_pointer_cast<SocketCommServer>(_guiCommServer);
+    if (!socketServer) {
+        LOG_WARN(Log::instance()->getLogger(), "GUI Comm Server is not a SocketCommServer");
+        return -1;
+    }
+    return socketServer->getPort();
+}
+
 void CommManager::onNewGuiConnection() {
     const std::scoped_lock lock(_mutex);
     if (!_guiCommServer) return;
