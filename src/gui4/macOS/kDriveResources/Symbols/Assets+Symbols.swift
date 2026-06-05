@@ -43,6 +43,7 @@ public enum KDriveResources {
   public static let checkmarkCircle = ImageAsset(name: "checkmark-circle")
   public static let checkmark = ImageAsset(name: "checkmark")
   public static let circularArrowsClockwise = ImageAsset(name: "circular-arrows-clockwise")
+  public static let clock = ImageAsset(name: "clock")
   public static let cloudArrowDown = ImageAsset(name: "cloud-arrow-down")
   public static let cloud = ImageAsset(name: "cloud")
   public static let cog = ImageAsset(name: "cog")

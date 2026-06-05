@@ -75,6 +75,10 @@ public enum KDriveLocalizable {
   public static let buttonAddStorage = KDriveLocalizable.tr("Localizable", "buttonAddStorage", fallback: "Add Storage")
   /// loco:691deb2291b20ac7fd045012
   public static let buttonAdvancedParameters = KDriveLocalizable.tr("Localizable", "buttonAdvancedParameters", fallback: "Advanced settings")
+  /// loco:69aad577c1fb41f6e204de02
+  public static func buttonApplyToXFiles(_ p1: Any) -> String {
+    return KDriveLocalizable.tr("Localizable", "buttonApplyToXFiles", String(describing: p1), fallback: "Apply to %@ files")
+  }
   /// loco:69bd7281cd515cd190042de2
   public static let buttonAskForAccess = KDriveLocalizable.tr("Localizable", "buttonAskForAccess", fallback: "Request access")
   /// loco:6989c98657a76723c20d0e92

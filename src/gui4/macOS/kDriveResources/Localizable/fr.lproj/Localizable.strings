@@ -135,6 +135,9 @@
 /* loco:691deb2291b20ac7fd045012 */
 "buttonAdvancedParameters" = "Paramètres avancés";
 
+/* loco:69aad577c1fb41f6e204de02 */
+"buttonApplyToXFiles" = "Appliquer aux %@ fichiers";
+
 /* loco:69bd7281cd515cd190042de2 */
 "buttonAskForAccess" = "Demander l’accès";
 

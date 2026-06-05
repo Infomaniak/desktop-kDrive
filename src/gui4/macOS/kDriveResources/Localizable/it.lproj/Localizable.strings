@@ -103,6 +103,9 @@
 /* loco:691deb2291b20ac7fd045012 */
 "buttonAdvancedParameters" = "Impostazioni avanzate";
 
+/* loco:69aad577c1fb41f6e204de02 */
+"buttonApplyToXFiles" = "Applica a %@ file";
+
 /* loco:69bd7281cd515cd190042de2 */
 "buttonAskForAccess" = "Richiedi accesso";
 
