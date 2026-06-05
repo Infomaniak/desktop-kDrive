@@ -119,18 +119,15 @@ int64_t Utility::getFreeDiskSpace(const SyncPath &path) {
 }
 
 int64_t Utility::freeDiskSpaceLimit() {
-    static int64_t limit = 250 * 1000 * 1000LL; // 250MB
+    static const int64_t limit = 250 * 1000 * 1000LL; // 250MB
+
     return limit;
 }
 
 bool Utility::enoughSpace(const SyncPath &path) {
-    const int64_t freeBytes = getFreeDiskSpace(path);
-    if (freeBytes >= 0) {
-        if (freeBytes < freeDiskSpaceLimit()) {
-            return false;
-        }
-    }
-    return true;
+    const auto freeBytes = getFreeDiskSpace(path);
+
+    return (freeBytes < 0 || freeBytes >= freeDiskSpaceLimit());
 }
 
 bool Utility::findNodeValue(const Poco::XML::Document &doc, const std::string &nodeName, std::string *outValue) {

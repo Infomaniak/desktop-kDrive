@@ -565,18 +565,18 @@ void TestNetworkJobs::testDownload() {
 
         CPPUNIT_ASSERT(!smallPartitionPath.empty());
         IoError ioError = IoError::Unknown;
-        bool exist = false;
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::checkIfPathExists(smallPartitionPath, exist, ioError,
+        bool exists = false;
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::checkIfPathExists(smallPartitionPath, exists, ioError,
                                                                               IoHelper::PathCheckOption::Insensitive));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-        CPPUNIT_ASSERT_MESSAGE("Small partition not found", exist);
+        CPPUNIT_ASSERT_MESSAGE("Small partition not found", exists);
 
         const auto cacheDirectory = std::make_shared<CacheDirectory>(smallPartitionPath);
 
         // Not Enough disk space (destination dir)
         {
-            // Trying to download a file with size 9Mo in a 8Mo disk should fail with SystemError,
-            // NotEnoughDiskSpace.
+            //  Trying to download a file with size 9Mo in a 8Mo disk should fail with SystemError,
+            //  NotEnoughDiskSpace.
             const SyncPath localDestFilePath = smallPartitionPath / "9Mo.txt";
             DownloadJob downloadJob(
                     nullptr, cacheDirectory,
@@ -1728,7 +1728,7 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
         public:
             explicit GetInfoUserJobMock(const UserDbId userDbId, const ApiToken &apiToken) :
                 GetInfoUserJob(userDbId),
-                _apiToken(apiToken) {};
+                _apiToken(apiToken){};
 
             [[nodiscard]] Poco::Net::HTTPResponse httpResponse() const override {
                 return Poco::Net::HTTPResponse(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
