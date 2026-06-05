@@ -68,7 +68,7 @@
     ",distributionChannel INTEGER"           \
     ",sentryEnabled INTEGER"                 \
     ",matomoEnabled INTEGER"                 \
-    ",askBeforeDelete INTEGER"               \
+    ",notifyBeforeDelete INTEGER"            \
     ");"
 
 #define INSERT_PARAMETERS_REQUEST_ID "insert_parameters"
@@ -77,7 +77,7 @@
     "syncHiddenFiles, proxyType, proxyHostName, proxyPort, proxyNeedsAuth, proxyUser, proxyToken, useBigFolderSizeLimit, "    \
     "bigFolderSizeLimit, darkTheme, showShortcuts, updateFileAvailable, updateTargetVersion, updateTargetVersionString, "     \
     "autoUpdateAttempted, seenVersion, dialogGeometry, extendedLog, maxAllowedCpu, uploadSessionParallelJobs, "               \
-    "jobPoolCapacityFactor, distributionChannel, sentryEnabled, matomoEnabled, askBeforeDelete) "                             \
+    "jobPoolCapacityFactor, distributionChannel, sentryEnabled, matomoEnabled, notifyBeforeDelete) "                          \
     "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23, ?24, " \
     "?25, ?26, ?27, ?28, ?29, ?30, ?31, ?32, ?33);"
 
@@ -91,7 +91,7 @@
     "updateTargetVersionString=?22, "                                                                                           \
     "autoUpdateAttempted=?23, seenVersion=?24, dialogGeometry=?25, extendedLog=?26, maxAllowedCpu=?27, "                        \
     "uploadSessionParallelJobs=?28, jobPoolCapacityFactor=?29, distributionChannel=?30, sentryEnabled=?31, matomoEnabled=?32, " \
-    "askBeforeDelete=?33;"
+    "notifyBeforeDelete=?33;"
 
 #define SELECT_PARAMETERS_REQUEST_ID "select_parameters"
 #define SELECT_PARAMETERS_REQUEST                                                                                          \
@@ -99,7 +99,7 @@
     "syncHiddenFiles, proxyType, proxyHostName, proxyPort, proxyNeedsAuth, proxyUser, proxyToken, useBigFolderSizeLimit, " \
     "bigFolderSizeLimit, darkTheme, showShortcuts, updateFileAvailable, updateTargetVersion, updateTargetVersionString, "  \
     "autoUpdateAttempted, seenVersion, dialogGeometry, extendedLog, maxAllowedCpu, uploadSessionParallelJobs, "            \
-    "jobPoolCapacityFactor, distributionChannel, sentryEnabled, matomoEnabled, askBeforeDelete "                           \
+    "jobPoolCapacityFactor, distributionChannel, sentryEnabled, matomoEnabled, notifyBeforeDelete "                        \
     "FROM parameters;"
 
 #define UPDATE_PARAMETERS_JOB_REQUEST_ID "update_parameters_job"
@@ -660,7 +660,7 @@ bool ParmsDb::insertDefaultParameters() {
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, static_cast<int>(parameters.distributionChannel())));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.sentryEnabled()));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.matomoEnabled()));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.askBeforeDelete()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.notifyBeforeDelete()));
 
     if (!queryExec(INSERT_PARAMETERS_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << INSERT_PARAMETERS_REQUEST_ID);
@@ -1151,24 +1151,10 @@ bool ParmsDb::upgradeTables() {
         queryFree(UPDATE_PARAMETERS_JOB_REQUEST_ID);
     }
 
-    columnName = "distributionChannel";
-    if (!addIntegerColumnIfMissing(tableName, columnName)) {
-        return false;
-    }
-
-    columnName = "sentryEnabled";
-    if (!addIntegerColumnIfMissing(tableName, columnName)) {
-        return false;
-    }
-
-    columnName = "matomoEnabled";
-    if (!addIntegerColumnIfMissing(tableName, columnName)) {
-        return false;
-    }
-
-    columnName = "askBeforeDelete";
-    if (!addIntegerColumnIfMissing(tableName, columnName)) {
-        return false;
+    for (const auto &columnName: {"distributionChannel", "sentryEnabled", "matomoEnabled", "notifyBeforeDelete"}) {
+        if (!addIntegerColumnIfMissing(tableName, columnName)) {
+            return false;
+        }
     }
 
     // AppState table
@@ -1318,7 +1304,7 @@ bool ParmsDb::updateParameters(const Parameters &parameters, bool &found) {
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, static_cast<int>(parameters.distributionChannel())));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.sentryEnabled()));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.matomoEnabled()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.askBeforeDelete()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.notifyBeforeDelete()));
 
     if (!queryExec(UPDATE_PARAMETERS_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << UPDATE_PARAMETERS_REQUEST_ID);
@@ -1444,7 +1430,7 @@ bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
     parameters.setMatomoEnabled(intResult);
 
     LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, index++, intResult));
-    parameters.setAskBeforeDelete(intResult);
+    parameters.setNotifyBeforeDelete(intResult);
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_PARAMETERS_REQUEST_ID));
 
