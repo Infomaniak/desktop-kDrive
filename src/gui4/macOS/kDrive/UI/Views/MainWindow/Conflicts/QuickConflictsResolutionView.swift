@@ -32,6 +32,8 @@ enum UIConflictResolutionStrategy: String, Identifiable, CaseIterable {
     case keepRemote
     case keepLocal
 
+    static let bestOption = UIConflictResolutionStrategy.keepMostRecent
+
     var icon: Image {
         switch self {
         case .keepMostRecent:
@@ -70,6 +72,7 @@ struct StrategyView: View {
     let icon: Image
     let title: String
     let description: String
+    let isBestOption: Bool
 
     var body: some View {
         GroupBox {
@@ -77,9 +80,15 @@ struct StrategyView: View {
                 BadgeView(image: icon, color: .accentColor)
 
                 VStack(alignment: .leading) {
-                    Text(title)
-                        .font(.Tokens.body)
-                        .foregroundStyle(.primary)
+                    HStack {
+                        Text(title)
+                            .font(.Tokens.body)
+                            .foregroundStyle(.primary)
+
+                        if isBestOption {
+                            TagView(text: KDriveLocalizable.labelRecommended)
+                        }
+                    }
                     Text(description)
                         .font(.Tokens.callout)
                         .foregroundStyle(.secondary)
@@ -120,7 +129,8 @@ struct QuickConflictsResolutionView: View {
                         StrategyView(
                             icon: strategy.icon,
                             title: strategy.title,
-                            description: strategy.description(count: errorsCount)
+                            description: strategy.description(count: errorsCount),
+                            isBestOption: strategy == .bestOption
                         )
                         .padding(.vertical, AppPadding.padding4)
                         .tag(strategy)
