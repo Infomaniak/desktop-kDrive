@@ -4010,6 +4010,7 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, bool
         syncPalMapIt->second->setAddCompletedItemCallback(std::bind_front(&AppServer::addCompletedItem, this));
         syncPalMapIt->second->setFixConflictedFilesCompletedCallback(
                 std::bind_front(&AppServer::sendNodeFixConflictedFilesCompleted, this));
+        syncPalMapIt->second->setSendManyDeletesNotification(std::bind_front(&AppServer::sendManyDeletesNotification, this));
 
         if (!blackList.empty()) {
             // Set blackList (create or overwrite the possible existing list in DB)
@@ -4858,6 +4859,17 @@ void AppServer::sendSyncDeletionFailed(const SyncDbId syncDbId) const {
     }
 }
 
+void AppServer::sendManyDeletesNotification(const SyncDbId syncDbId, const bool softLimit) const {
+    if (useOldCommServer()) {
+        int id = 0;
+        const auto params = QByteArray(ArgsReader(static_cast<qint64>(syncDbId), softLimit));
+
+        (void) OldCommServer::instance()->sendSignal(SignalNum::SYNC_NOTIFY_MANY_DELETES, params, id);
+    }
+    if (useCommManager()) {
+        // TODO
+    }
+}
 
 void AppServer::sendDriveDeletionFailed(const DriveDbId driveDbId) const {
     if (useOldCommServer()) {
@@ -4870,7 +4882,6 @@ void AppServer::sendDriveDeletionFailed(const DriveDbId driveDbId) const {
         // TODO
     }
 }
-
 
 void AppServer::sendGetFolderSizeCompleted(const QString &nodeId, const qint64 size) const {
     if (useOldCommServer()) {

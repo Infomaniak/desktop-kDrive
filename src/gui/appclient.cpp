@@ -374,6 +374,15 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             emit syncDeletionFailed(syncDbId);
             break;
         }
+        case SignalNum::SYNC_NOTIFY_MANY_DELETES: {
+            qint64 syncDbId = 0;
+            bool softLimit = false;
+            paramsStream >> syncDbId;
+            paramsStream >> softLimit;
+
+            emit tooManyDeletesNotification(syncDbId, softLimit);
+            break;
+        }
         case SignalNum::NODE_FOLDER_SIZE_COMPLETED: {
             QString nodeId;
             qint64 size;

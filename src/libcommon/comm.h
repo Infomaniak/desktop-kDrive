@@ -307,6 +307,7 @@ enum class SignalNum {
     SYNC_COMPLETEDITEM,
     SYNC_VFS_CONVERSION_COMPLETED,
     SYNC_DELETE_FAILED,
+    SYNC_NOTIFY_MANY_DELETES,
     // Node
     NODE_FOLDER_SIZE_COMPLETED,
     NODE_FIX_CONFLICTED_FILES_COMPLETED,
@@ -368,6 +369,8 @@ inline std::string toString(SignalNum e) {
             return "SYNC_VFS_CONVERSION_COMPLETED";
         case SignalNum::SYNC_DELETE_FAILED:
             return "SYNC_DELETE_FAILED";
+        case SignalNum::SYNC_NOTIFY_MANY_DELETES:
+            return "SYNC_NOTIFY_MANY_DELETES";
         case SignalNum::NODE_FOLDER_SIZE_COMPLETED:
             return "NODE_FOLDER_SIZE_COMPLETED";
         case SignalNum::NODE_FIX_CONFLICTED_FILES_COMPLETED:

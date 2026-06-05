@@ -72,8 +72,8 @@ class ParametersInfo {
         void setSentryEnabled(bool value) { _sentryEnabled = value; }
         bool matomoEnabled() const { return _matomoEnabled; }
         void setMatomoEnabled(bool value) { _matomoEnabled = value; }
-        [[nodiscard]] bool askBeforeDelete() const { return _askBeforeDelete; }
-        void setAskBeforeDelete(const bool askBeforeDelete) { _askBeforeDelete = askBeforeDelete; }
+        [[nodiscard]] bool notifyBeforeDelete() const { return _notifyBeforeDelete; }
+        void setNotifyBeforeDelete(const bool notifyBeforeDelete) { _notifyBeforeDelete = notifyBeforeDelete; }
 
         friend bool operator==(const ParametersInfo &lhs, const ParametersInfo &rhs) {
             return (lhs.language() == rhs.language()) && (lhs.monoIcons() == rhs.monoIcons()) &&
@@ -83,7 +83,7 @@ class ParametersInfo {
                    (lhs.purgeOldLogs() == rhs.purgeOldLogs()) && (lhs.darkTheme() == rhs.darkTheme()) &&
                    (lhs.dialogGeometry() == rhs.dialogGeometry()) && (lhs.maxAllowedCpu() == rhs.maxAllowedCpu()) &&
                    (lhs.distributionChannel() == rhs.distributionChannel()) && (lhs.sentryEnabled() == rhs.sentryEnabled()) &&
-                   (lhs.matomoEnabled() == rhs.matomoEnabled()) && (lhs.askBeforeDelete() == rhs.askBeforeDelete());
+                   (lhs.matomoEnabled() == rhs.matomoEnabled()) && (lhs.notifyBeforeDelete() == rhs.notifyBeforeDelete());
         }
 
         void toDynamicStruct(Poco::DynamicStruct &) const;
@@ -109,7 +109,7 @@ class ParametersInfo {
         DistributionChannel _distributionChannel{DistributionChannel::Prod};
         bool _sentryEnabled{true};
         bool _matomoEnabled{true};
-        bool _askBeforeDelete{true};
+        bool _notifyBeforeDelete{true};
 };
 
 } // namespace KDC

@@ -73,6 +73,7 @@ ClientGui::ClientGui(AppClient *parent) :
     connect(_app, &AppClient::syncUpdated, this, &ClientGui::onSyncUpdated);
     connect(_app, &AppClient::syncRemoved, this, &ClientGui::onSyncRemoved);
     connect(_app, &AppClient::syncDeletionFailed, this, &ClientGui::onSyncDeletionFailed);
+    connect(_app, &AppClient::tooManyDeletesNotification, this, &ClientGui::onTooManyDeletesNotification);
     connect(_app, &AppClient::syncProgressInfo, this, &ClientGui::onProgressInfo);
     connect(_app, &AppClient::itemCompleted, this, &ClientGui::itemCompleted);
     connect(_app, &AppClient::vfsConversionCompleted, this, &ClientGui::vfsConversionCompleted);
@@ -143,44 +144,15 @@ bool ClientGui::isConnected() {
 }
 
 void ClientGui::onErrorAdded(bool serverLevel, const ExitCode exitCode, const SyncDbId syncDbId) {
-    switch (exitCode) {
-        case ExitCode::InvalidToken: {
-            auto userIt = _userInfoMap.find(_currentUserDbId);
-            if (userIt != _userInfoMap.end() && !userIt->second.credentialsAsked()) {
-                userIt->second.setCredentialsAsked(true);
-                if (_addDriveWizard) {
-                    emit _addDriveWizard->exit();
-                }
-                _app->askUserToLoginAgain(_currentUserDbId, userIt->second.email(), true);
+    if (exitCode == ExitCode::InvalidToken) {
+        auto userIt = _userInfoMap.find(_currentUserDbId);
+        if (userIt != _userInfoMap.end() && !userIt->second.credentialsAsked()) {
+            userIt->second.setCredentialsAsked(true);
+            if (_addDriveWizard) {
+                emit _addDriveWizard->exit();
             }
-            break;
+            _app->askUserToLoginAgain(_currentUserDbId, userIt->second.email(), true);
         }
-        case ExitCode::TooManyDeleteOperations: {
-            CustomMessageBox msgBox(QMessageBox::Warning, tr("Too many local delete operations detected."),
-                                    QMessageBox::Yes | QMessageBox::No);
-            msgBox.setCheckboxVisible(true);
-            msgBox.setCheckBoxText(tr("Don't ask again"));
-            const auto res = msgBox.exec();
-
-            ParametersCache::instance()->parametersInfo().setAskBeforeDelete(!msgBox.isChecked());
-            ParametersCache::instance()->saveParametersInfo();
-
-            const auto syncInfoMapIt = _syncInfoMap.find(syncDbId);
-            if (syncInfoMapIt == _syncInfoMap.end()) {
-                qCWarning(lcClientGui()) << "Sync not found in sync map for syncDbId=" << syncDbId;
-                return;
-            }
-
-            if (const auto exitInfo = GuiRequests::acknowledgeManyDelete(syncDbId, res == QMessageBox::Yes); !exitInfo) {
-                qCWarning(lcClientGui()) << "Error in Requests::syncStart for syncDbId=" << syncDbId << ", " << exitInfo;
-                syncInfoMapIt->second.setStatus(SyncStatus::Paused);
-                emit updateProgress(syncDbId);
-            }
-
-            break;
-        }
-        default:
-            break;
     }
 
     // Refresh errorlist
@@ -989,7 +961,6 @@ void ClientGui::onRefreshErrorList() {
     }
 
     // Drive level errors (SyncPal or Node).
-    auto requireFilesDeletionAcknowledgment = false;
     for (auto it = _driveWithNewErrorSet.begin(); it != _driveWithNewErrorSet.end();) {
         const auto driveDbId = *it;
         _errorInfoMap[driveDbId].clear();
@@ -1011,7 +982,6 @@ void ClientGui::onRefreshErrorList() {
         Count autoResolvedErrorsCount = 0;
         for (const auto &errorInfo: _errorInfoMap[driveDbId]) {
             versionLocked = versionLocked || errorInfo.exitCode() == ExitCode::UpdateRequired;
-            requireFilesDeletionAcknowledgment |= errorInfo.exitCode() == ExitCode::TooManyDeleteOperations;
 
             if (errorInfo.autoResolved()) {
                 ++autoResolvedErrorsCount;
@@ -1027,7 +997,6 @@ void ClientGui::onRefreshErrorList() {
     }
 
     if (versionLocked) emit appVersionLocked(versionLocked);
-    // if (requireFilesDeletionAcknowledgment) emit filesDeletionAcknowledgementRequired();
 }
 
 void ClientGui::closeAllExcept(const QWidget *exceptWidget) {
@@ -1390,6 +1359,43 @@ void ClientGui::onSyncDeletionFailed(const SyncDbId syncDbId) {
 
     emit syncListRefreshed();
     emit refreshStatusNeeded();
+}
+
+void ClientGui::onTooManyDeletesNotificationHardLimit(SyncDbId syncDbId) {
+    CustomMessageBox msgBox(QMessageBox::Warning, tr("Too many local delete operations detected."),
+                            QMessageBox::Yes | QMessageBox::No);
+    const auto res = msgBox.exec();
+
+    const auto syncInfoMapIt = _syncInfoMap.find(syncDbId);
+    if (syncInfoMapIt == _syncInfoMap.end()) {
+        qCWarning(lcClientGui()) << "Sync not found in sync map for syncDbId=" << syncDbId;
+        return;
+    }
+
+    if (const auto exitInfo = GuiRequests::acknowledgeManyDelete(syncDbId, res == QMessageBox::Yes); !exitInfo) {
+        qCWarning(lcClientGui()) << "Error in Requests::syncStart for syncDbId=" << syncDbId << ", " << exitInfo;
+        syncInfoMapIt->second.setStatus(SyncStatus::Paused);
+        emit updateProgress(syncDbId);
+    }
+}
+
+void ClientGui::onTooManyDeletesNotificationSoftLimit() {
+    CustomMessageBox msgBox(QMessageBox::Information, tr("Too many local delete operations detected."), QMessageBox::Ok);
+    msgBox.setCheckboxVisible(true);
+    msgBox.setCheckBoxText(tr("Don't ask again"));
+
+    (void) msgBox.exec();
+
+    ParametersCache::instance()->parametersInfo().setNotifyBeforeDelete(!msgBox.isChecked());
+    ParametersCache::instance()->saveParametersInfo();
+}
+
+void ClientGui::onTooManyDeletesNotification(const SyncDbId syncDbId, const bool softLimit) {
+    if (softLimit) {
+        onTooManyDeletesNotificationSoftLimit();
+    } else {
+        onTooManyDeletesNotificationHardLimit(syncDbId);
+    }
 }
 
 void ClientGui::onSyncRemoved(const SyncDbId syncDbId) {

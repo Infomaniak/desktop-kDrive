@@ -325,7 +325,7 @@ ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, SyncConfigu
     // Check if the path is the root of a drive, which is not allowed for sync*
     if (CommonUtility::isDiskRootFolder(path)) {
         LOGW_INFO(Log::instance()->getLogger(),
-                  L"The provided path indicates the root of a drive, which is not allowed for sync: " << Utility::formatSyncPath(path));
+                  L"Path is the root of a drive, which is not allowed for sync: " << Utility::formatSyncPath(path));
         return ExitCode::Ok;
     }
 
@@ -1231,6 +1231,7 @@ bool ServerRequests::isDisplayableError(const Error &error) {
                     (error.exitCause() != ExitCause::FileAccessError &&
                      error.exitCause() != ExitCause::FileOrDirectoryCorrupted));
         case RateLimited:
+        case TooManyDeleteOperations:
             return false;
         case Unknown: {
             return error.inconsistencyType() != InconsistencyType::PathLength;
@@ -2332,6 +2333,7 @@ void ServerRequests::parametersToParametersInfo(const Parameters &parameters, Pa
     parametersInfo.setDistributionChannel(parameters.distributionChannel());
     parametersInfo.setSentryEnabled(parameters.sentryEnabled());
     parametersInfo.setMatomoEnabled(parameters.matomoEnabled());
+    parametersInfo.setNotifyBeforeDelete(parameters.notifyBeforeDelete());
 }
 
 void ServerRequests::parametersInfoToParameters(const ParametersInfo &parametersInfo, Parameters &parameters) {
@@ -2366,6 +2368,7 @@ void ServerRequests::parametersInfoToParameters(const ParametersInfo &parameters
     parameters.setDistributionChannel(parametersInfo.distributionChannel());
     parameters.setSentryEnabled(parametersInfo.sentryEnabled());
     parameters.setMatomoEnabled(parametersInfo.matomoEnabled());
+    parameters.setNotifyBeforeDelete(parametersInfo.notifyBeforeDelete());
 }
 
 void ServerRequests::proxyConfigToProxyConfigInfo(const ProxyConfig &proxyConfig, ProxyConfigInfo &proxyConfigInfo) {

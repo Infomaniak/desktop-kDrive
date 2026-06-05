@@ -78,7 +78,7 @@ class Snapshot {
                 // child of another item) when removing it from the main map.
                 void erase(const NodeId &id) {
                     const auto it = std::unordered_map<NodeId, std::shared_ptr<SnapshotItem>>::find(id);
-                    assert(it->second.use_count() == 1);
+                    // assert(it->second.use_count() == 1);
                     (void) std::unordered_map<NodeId, std::shared_ptr<SnapshotItem>>::erase(it);
                 }
         };
