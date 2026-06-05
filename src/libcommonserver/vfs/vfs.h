@@ -21,12 +21,12 @@
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/log/sentry/handler.h"
-#include "libcommon/utility/sourcelocation.h"
 #include "libcommonserver/vfs/workerinfo.h"
 #include "libsyncengine/progress/syncfileitem.h"
 
 #include <memory>
 #include <deque>
+#include <source_location>
 
 #include <QObject>
 
@@ -361,7 +361,7 @@ class Vfs : public QObject {
          *  the error provided to the application will only be based on the existence/permission of the file/directory.
          *  If there is no issue with the file/directory, the error will be Vfs::defaultVfsError().         *
          */
-        ExitInfo handleVfsError(const SyncPath &itemPath, const SourceLocation &location = SourceLocation::currentLoc()) const;
+        ExitInfo handleVfsError(const SyncPath &itemPath, const std::source_location &location = std::source_location::current()) const;
 
         /* Check if a path exists and return an ExitInfo with the appropriate error code.
          *
@@ -378,12 +378,12 @@ class Vfs : public QObject {
          *   - ExitCode::SystemError, ExitCause::InvalidArguments if the path is empty.
          */
         ExitInfo checkIfPathIsValid(const SyncPath &itemPath, bool shouldExist,
-                                    const SourceLocation &location = SourceLocation::currentLoc()) const;
+                                    const std::source_location &location = std::source_location::current()) const;
 
         /* By default, we will return file access error.
          *  The file will be blacklisted for 1h or until the user edit, move or delete it (or the sync is restarted).
          */
-        ExitInfo defaultVfsError(const SourceLocation &location = SourceLocation::currentLoc()) const {
+        ExitInfo defaultVfsError(const std::source_location &location = std::source_location::current()) const {
             return {ExitCode::SystemError, ExitCause::FileAccessError, location};
         }
 

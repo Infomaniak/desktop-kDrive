@@ -23,10 +23,11 @@
 #include "test_utility/localtemporarydirectory.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/io/filestat.h"
-#include "libcommon/utility/sourcelocation.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/remotetemporarydirectory.h"
 #include "utility/timerutility.h"
+
+#include <source_location>
 
 using namespace CppUnit;
 
@@ -120,7 +121,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testNodeIdReuseFalsePositive();
         void nodeIdReuseFalsePositiveInitialSituation(const LocalTemporaryDirectory &localTmpDir) const;
 #endif
-        void waitForSyncToBeIdle(const SourceLocation &srcLoc,
+        void waitForSyncToBeIdle(const std::source_location &srcLoc,
                                  std::chrono::milliseconds minWaitTime = std::chrono::milliseconds(3000)) const;
         void logStep(const std::string &str);
 

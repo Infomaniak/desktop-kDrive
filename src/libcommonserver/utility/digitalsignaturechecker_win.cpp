@@ -35,11 +35,11 @@ namespace KDC {
 
 DigitalSignatureChecker_win::DigitalSignatureChecker_win(const SyncPath &packageAbsolutePath) :
     _packageAbsolutePath(packageAbsolutePath) {
-    SourceLocation srcLoc;
+    std::source_location srcLoc;
     _signatureIsValid = extractSignatureInfo(_signatureInfo, srcLoc);
     if (!_signatureIsValid) {
         LOG_WARN(Log::instance()->getLogger(), "DigitalSignatureChecker_win::extractSignatureInfo failed on line: "
-                                                       << srcLoc.toString() << " with error: " << GetLastError());
+                                                       << toString(srcLoc) << " with error: " << GetLastError());
     }
 }
 
@@ -51,7 +51,7 @@ using SPROG_PUBLISHERINFO = struct {
 };
 using PSPROG_PUBLISHERINFO = SPROG_PUBLISHERINFO *;
 
-BOOL extractCertificateInfo(const PCCERT_CONTEXT pCertContext, DigitalSignatureInfo &signatureInfo, SourceLocation &srcLoc) {
+BOOL extractCertificateInfo(const PCCERT_CONTEXT pCertContext, DigitalSignatureInfo &signatureInfo, std::source_location &srcLoc) {
     // Get Serial Number.
     std::wstringstream ss;
     for (DWORD i = 0; i < pCertContext->pCertInfo->SerialNumber.cbData; i++) {
@@ -114,7 +114,7 @@ LPWSTR allocateAndCopyWideString(const LPCWSTR inputString) {
     return outputString;
 }
 
-BOOL getProgAndPublisherInfo(const PCMSG_SIGNER_INFO pSignerInfo, PSPROG_PUBLISHERINFO info, SourceLocation &srcLoc) {
+BOOL getProgAndPublisherInfo(const PCMSG_SIGNER_INFO pSignerInfo, PSPROG_PUBLISHERINFO info, std::source_location &srcLoc) {
     BOOL fReturn = FALSE;
     PSPC_SP_OPUS_INFO opusInfo = nullptr;
     DWORD dwData = 0;
@@ -129,14 +129,14 @@ BOOL getProgAndPublisherInfo(const PCMSG_SIGNER_INFO pSignerInfo, PSPROG_PUBLISH
                 fResult = CryptDecodeObject(ENCODING, SPC_SP_OPUS_INFO_OBJID, pSignerInfo->AuthAttrs.rgAttr[n].rgValue[0].pbData,
                                             pSignerInfo->AuthAttrs.rgAttr[n].rgValue[0].cbData, 0, nullptr, &dwData);
                 if (!fResult) {
-                    srcLoc = SourceLocation::currentLoc();
+                    srcLoc = std::source_location::current();
                     __leave;
                 }
 
                 // Allocate memory for SPC_SP_OPUS_INFO structure.
                 opusInfo = (PSPC_SP_OPUS_INFO) LocalAlloc(LPTR, dwData);
                 if (!opusInfo) {
-                    srcLoc = SourceLocation::currentLoc();
+                    srcLoc = std::source_location::current();
                     __leave;
                 }
 
@@ -144,7 +144,7 @@ BOOL getProgAndPublisherInfo(const PCMSG_SIGNER_INFO pSignerInfo, PSPROG_PUBLISH
                 fResult = CryptDecodeObject(ENCODING, SPC_SP_OPUS_INFO_OBJID, pSignerInfo->AuthAttrs.rgAttr[n].rgValue[0].pbData,
                                             pSignerInfo->AuthAttrs.rgAttr[n].rgValue[0].cbData, 0, opusInfo, &dwData);
                 if (!fResult) {
-                    srcLoc = SourceLocation::currentLoc();
+                    srcLoc = std::source_location::current();
                     __leave;
                 }
 
@@ -206,7 +206,7 @@ BOOL getProgAndPublisherInfo(const PCMSG_SIGNER_INFO pSignerInfo, PSPROG_PUBLISH
 }
 } // namespace
 
-bool DigitalSignatureChecker_win::extractSignatureInfo(DigitalSignatureInfo &signatureInfo, SourceLocation &srcLoc) {
+bool DigitalSignatureChecker_win::extractSignatureInfo(DigitalSignatureInfo &signatureInfo, std::source_location &srcLoc) {
     WCHAR szFileName[MAX_PATH];
     HCERTSTORE hStore = nullptr;
     HCRYPTMSG hMsg = nullptr;
@@ -236,28 +236,28 @@ bool DigitalSignatureChecker_win::extractSignatureInfo(DigitalSignatureInfo &sig
                                    CERT_QUERY_FORMAT_FLAG_BINARY, 0, &dwEncoding, &dwContentType, &dwFormatType, &hStore, &hMsg,
                                    nullptr);
         if (!fResult) {
-            srcLoc = SourceLocation::currentLoc();
+            srcLoc = std::source_location::current();
             __leave;
         }
 
         // Get signer information size.
         fResult = CryptMsgGetParam(hMsg, CMSG_SIGNER_INFO_PARAM, 0, nullptr, &dwSignerInfo);
         if (!fResult) {
-            srcLoc = SourceLocation::currentLoc();
+            srcLoc = std::source_location::current();
             __leave;
         }
 
         // Allocate memory for signer information.
         pSignerInfo = (PCMSG_SIGNER_INFO) LocalAlloc(LPTR, dwSignerInfo);
         if (!pSignerInfo) {
-            srcLoc = SourceLocation::currentLoc();
+            srcLoc = std::source_location::current();
             __leave;
         }
 
         // Get Signer Information.
         fResult = CryptMsgGetParam(hMsg, CMSG_SIGNER_INFO_PARAM, 0, (PVOID) pSignerInfo, &dwSignerInfo);
         if (!fResult) {
-            srcLoc = SourceLocation::currentLoc();
+            srcLoc = std::source_location::current();
             __leave;
         }
 
@@ -274,7 +274,7 @@ bool DigitalSignatureChecker_win::extractSignatureInfo(DigitalSignatureInfo &sig
         CertInfo.SerialNumber = pSignerInfo->SerialNumber;
         pCertContext = CertFindCertificateInStore(hStore, ENCODING, 0, CERT_FIND_SUBJECT_CERT, (PVOID) &CertInfo, nullptr);
         if (!pCertContext) {
-            srcLoc = SourceLocation::currentLoc();
+            srcLoc = std::source_location::current();
             __leave;
         }
 

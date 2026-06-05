@@ -244,7 +244,7 @@ struct COMMONSERVER_EXPORT Utility {
         static std::wstring formatSystemError(const std::system_error &exception);
 
         static ExitCause exitCauseFromInaccessibleSyncDirectory(const SyncPath &syncDir,
-                                                                SourceLocation srcLoc = SourceLocation::currentLoc());
+                                                                std::source_location srcLoc = std::source_location::current());
 
 
     private:

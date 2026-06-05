@@ -944,6 +944,10 @@ std::string toString(const TranslationMode e) {
     }
 }
 
+std::string toString(const std::source_location &e) {
+    return e.file_name() + std::string(":") + std::to_string(e.line()) + std::string("[") + e.function_name() + "]";
+}
+  
 std::string toString(const Scope e) {
     switch (e) {
         case Scope::None:

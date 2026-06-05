@@ -24,8 +24,8 @@
 #endif
 
 #include "cstypes.h"
-#include "sourcelocation.h"
 
+#include <source_location>
 #include <filesystem>
 #include <functional>
 #include <cctype>
@@ -517,6 +517,7 @@ std::string toString(DistributionChannel e);
 DistributionChannel toDistributionChannel(const std::string &channel);
 std::string toString(VirtualFileMode e);
 std::string toString(SyncConfiguration e);
+std::string toString(const std::source_location &e);
 std::string toString(Scope e);
 
 inline ReplicaSide otherSide(const ReplicaSide side) {
@@ -540,12 +541,12 @@ inline bool bitWiseEnumToBool(const C a) {
 struct ExitInfo {
         ExitInfo() = default;
         constexpr ExitInfo(const ExitCode &code, const ExitCause &cause,
-                           const SourceLocation srcLoc = SourceLocation::currentLoc()) :
+                           const std::source_location srcLoc = std::source_location::current()) :
             _code(code),
             _cause(cause),
             _srcLoc(srcLoc) {}
 
-        ExitInfo(const ExitCode &code, const SourceLocation srcLoc = SourceLocation::currentLoc()) :
+        ExitInfo(const ExitCode &code, const std::source_location srcLoc = std::source_location::current()) :
             _code(code),
             _srcLoc(srcLoc) {}
 
@@ -579,11 +580,11 @@ struct ExitInfo {
     private:
         ExitCode _code{ExitCode::Unknown};
         ExitCause _cause{ExitCause::Unknown};
-        SourceLocation _srcLoc;
+        std::source_location _srcLoc;
 
         std::string srcLocStr() const {
             if (_code == ExitCode::Ok) return "";
-            return " from (" + _srcLoc.toString() + ")";
+            return " from (" + toString(_srcLoc) + ")";
         }
 
         static long indexInList(const ExitCode &exitCode, const std::vector<ExitCode> &exitCodeList);
