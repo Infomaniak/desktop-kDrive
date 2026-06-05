@@ -155,11 +155,12 @@ ExitInfo DownloadJob::checkHashMatch() {
 }
 
 ExitInfo DownloadJob::runJob() noexcept {
-    if (!_fileDownloadInfo.isCreate && _vfs) {
+    if (!_fileDownloadInfo.isCreate) {
         // Get hydration status
         VfsStatus vfsStatus;
-        (void) _vfs->status(_fileDownloadInfo.localpath, vfsStatus);
-        _isHydrated = vfsStatus.isHydrated;
+        if (_vfs) (void) _vfs->status(_fileDownloadInfo.localpath, vfsStatus);
+        _isHydrated = !_vfs || vfsStatus.isHydrated;
+
         if (_isHydrated) {
             if (const ExitInfo exitInfo = checkHashMatch(); !exitInfo) {
                 LOGW_DEBUG(_logger, L"Error in checkHashMatch: " << exitInfo);
@@ -171,43 +172,39 @@ ExitInfo DownloadJob::runJob() noexcept {
                 return setOutputParameters();
             }
         }
-    }
 
-    if (!_fileDownloadInfo.isCreate && _vfs) {
-        // Get hydration status
-        VfsStatus vfsStatus;
-        (void) _vfs->status(_fileDownloadInfo.localpath, vfsStatus);
-        _isHydrated = vfsStatus.isHydrated;
+        if (_vfs) {
+            // Update size on file system
+            FileStat filestat;
+            IoError ioError = IoError::Success;
+            if (!IoHelper::getFileStat(_fileDownloadInfo.localpath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive)) {
+                LOGW_WARN(_logger,
+                          L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_fileDownloadInfo.localpath, ioError));
+                return ExitCode::SystemError;
+            }
+            if (ioError == IoError::NoSuchFileOrDirectory) {
+                LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
+                return {ExitCode::SystemError, ExitCause::NotFound};
+            } else if (ioError == IoError::AccessDenied) {
+                LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
+                return {ExitCode::SystemError, ExitCause::FileAccessError};
+            }
 
-        // Update size on file system
-        FileStat filestat;
-        IoError ioError = IoError::Success;
-        if (!IoHelper::getFileStat(_fileDownloadInfo.localpath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive)) {
-            LOGW_WARN(_logger,
-                      L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_fileDownloadInfo.localpath, ioError));
-            return ExitCode::SystemError;
-        }
-        if (ioError == IoError::NoSuchFileOrDirectory) {
-            LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
-            return {ExitCode::SystemError, ExitCause::NotFound};
-        } else if (ioError == IoError::AccessDenied) {
-            LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
-            return {ExitCode::SystemError, ExitCause::FileAccessError};
-        }
+            if (const ExitInfo exitInfo =
+                        _vfs->updateMetadata(_fileDownloadInfo.localpath, filestat.creationTime, filestat.modificationTime,
+                                             _fileDownloadInfo.expectedSize, std::to_string(filestat.inode));
+                !exitInfo) {
+                LOGW_WARN(_logger,
+                          L"Update metadata failed " << exitInfo << L" " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
+                return exitInfo;
+            }
 
-        if (const ExitInfo exitInfo =
-                    _vfs->updateMetadata(_fileDownloadInfo.localpath, filestat.creationTime, filestat.modificationTime,
-                                         _fileDownloadInfo.expectedSize, std::to_string(filestat.inode));
-            !exitInfo) {
-            LOGW_WARN(_logger,
-                      L"Update metadata failed " << exitInfo << L" " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
-            return exitInfo;
-        }
-
-        if (const ExitInfo exitInfo = _vfs->forceStatus(_fileDownloadInfo.localpath, VfsStatus({.isSyncing = true})); !exitInfo) {
-            LOGW_WARN(_logger,
-                      L"Error in vfsForceStatus: " << Utility::formatSyncPath(_fileDownloadInfo.localpath) << L": " << exitInfo);
-            return exitInfo;
+            if (const ExitInfo exitInfo = _vfs->forceStatus(_fileDownloadInfo.localpath, VfsStatus({.isSyncing = true}));
+                !exitInfo) {
+                LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_fileDownloadInfo.localpath) << L": "
+                                                                << exitInfo);
+                return exitInfo;
+            }
         }
     }
 
