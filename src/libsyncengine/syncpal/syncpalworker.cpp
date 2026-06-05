@@ -74,8 +74,10 @@ bool shouldBeStopped(const std::shared_ptr<ISyncWorker> w1, const std::shared_pt
             (w1 && w1->exitCode() == ExitCode::InvalidToken) || (w2 && w2->exitCode() == ExitCode::InvalidToken);
     const auto driveNotFound = (w1 && w1->exitCode() == ExitCode::BackError && w1->exitCause() == ExitCause::DriveAccessError) ||
                                (w2 && w2->exitCode() == ExitCode::BackError && w2->exitCause() == ExitCause::DriveAccessError);
+    const auto tooManyDeletes = (w1 && w1->exitCode() == ExitCode::TooManyDeleteOperations) ||
+                                (w2 && w2->exitCode() == ExitCode::TooManyDeleteOperations);
 
-    return dbError || systemError || updateRequired || invalidSyncError || invalidToken || driveNotFound;
+    return dbError || systemError || updateRequired || invalidSyncError || invalidToken || driveNotFound || tooManyDeletes;
 }
 
 } // namespace
