@@ -23,6 +23,9 @@
 #include "libcommon/utility/utility.h"
 
 #include <config.h>
+#include <QFile>
+#include <array>
+#include <cstdint>
 #include <filesystem>
 #include <regex>
 #include <string>
@@ -43,6 +46,9 @@ namespace KDC {
 static const auto mimeType = "x-scheme-handler/kdrive";
 
 namespace {
+static constexpr auto applicationIconResourcePath = ":/assets/taskbar/logo_kdrive.svg";
+static constexpr auto applicationIconFileName = "logo_kdrive.svg";
+
 int parseLineForRamStatus(char *line) {
     int i = static_cast<int>(strlen(line));
     const char *p = line;
@@ -76,6 +82,45 @@ std::string executeCommand(const std::string &command) {
     }
     pclose(pipe);
     return result;
+}
+
+SyncPath applicationIconPath(const SyncPath &homePath) {
+    return homePath / ".local/share/icons/hicolor/scalable/apps" / applicationIconFileName;
+}
+
+bool installApplicationIcon(const SyncPath &homePath) {
+    const auto utilityLogger = Log::instance()->getLogger();
+    const SyncPath iconDir = homePath / ".local/share/icons/hicolor/scalable/apps";
+
+    IoError ioError = IoError::Unknown;
+    bool exists = false;
+    if (!IoHelper::checkIfPathExists(iconDir, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
+        LOGW_WARN(utilityLogger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(iconDir, ioError));
+        return false;
+    }
+    if (!exists && !IoHelper::createDirectory(iconDir, true, ioError)) {
+        LOGW_WARN(utilityLogger, L"Could not create application icon folder: " << Utility::formatIoError(iconDir, ioError));
+        return false;
+    }
+
+    const QString sourceIconPath = QString::fromLatin1(applicationIconResourcePath);
+    const SyncPath destinationIconPath = applicationIconPath(homePath);
+    const QString destinationIconQPath = QString::fromStdString(destinationIconPath.string());
+
+    if (!QFile::exists(sourceIconPath)) {
+        LOG_WARN(utilityLogger, "Could not find bundled application icon resource");
+        return false;
+    }
+    if (QFile::exists(destinationIconQPath) && !QFile::remove(destinationIconQPath)) {
+        LOGW_WARN(utilityLogger, L"Could not replace application icon: " << Utility::formatSyncPath(destinationIconPath));
+        return false;
+    }
+    if (!QFile::copy(sourceIconPath, destinationIconQPath)) {
+        LOGW_WARN(utilityLogger, L"Could not install application icon: " << Utility::formatSyncPath(destinationIconPath));
+        return false;
+    }
+
+    return true;
 }
 } // namespace
 
@@ -208,8 +253,8 @@ bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &
     const auto userAutoStartDirPath = getUserAutostartDir();
     const auto userAutoStartFilePath = userAutoStartDirPath / (appName + ".desktop");
     if (enable) {
-        IoError ioError = IoError::Unknown;
-        if (!std::filesystem::exists(userAutoStartDirPath) && !IoHelper::createDirectory(userAutoStartDirPath, false, ioError)) {
+        if (auto ioError = IoError::Unknown;
+            !std::filesystem::exists(userAutoStartDirPath) && !IoHelper::createDirectory(userAutoStartDirPath, false, ioError)) {
             LOGW_WARN(logger(), L"Could not create autostart folder: " << Utility::formatIoError(userAutoStartDirPath, ioError));
             return false;
         }
@@ -226,7 +271,7 @@ bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &
         autoStartFile << "GenericName=File Synchronizer" << std::endl;
         autoStartFile << "Exec=" << "'" << appimageDir.native() << "'" << std::endl;
         autoStartFile << "Terminal=false" << std::endl;
-        autoStartFile << "Icon=" << CommonUtility::toLower(appName) << std::endl;
+        autoStartFile << "Icon=" << APPLICATION_ICON_NAME << std::endl;
         autoStartFile << "Categories=Network" << std::endl;
         autoStartFile << "Type=Application" << std::endl;
         autoStartFile << "StartupNotify=false" << std::endl;
@@ -300,14 +345,17 @@ bool Utility::registerLoginRedirection() {
     }
     urlSchemeFile << "[Desktop Entry]" << std::endl;
     urlSchemeFile << "Name=" << APPLICATION_EXECUTABLE << std::endl;
+    urlSchemeFile << "Icon=" << applicationIconPath(SyncPath(homePathEnv)).string() << std::endl;
     urlSchemeFile << "Exec=" << "\"" << execPath.string() << "\"" << " %u" << std::endl;
     urlSchemeFile << "Type=Application" << std::endl;
     urlSchemeFile << "Terminal=false" << std::endl;
+    urlSchemeFile << "StartupWMClass=" << APPLICATION_CLIENTV4_EXECUTABLE << std::endl;
     urlSchemeFile << "MimeType=" << mimeType << ";" << std::endl;
     urlSchemeFile.close();
 
+    bool res = installApplicationIcon(SyncPath(homePathEnv));
+
     // Update database
-    bool res = true;
     const std::string updateDesktopDbCmd =
             std::string("update-desktop-database ") + std::string(homePathEnv) + "/.local/share/applications/";
     if (const int updateResult = system(updateDesktopDbCmd.c_str()); updateResult != 0) {
