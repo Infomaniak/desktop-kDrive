@@ -65,5 +65,5 @@ enum MainViewDetail: RouterDetail {
     case errors
 
     case quickConflictsResolution([SynchroError])
-    case conflictsList
+    case conflictsList([SynchroError])
 }

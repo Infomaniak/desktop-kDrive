@@ -173,7 +173,10 @@ struct QuickConflictsResolutionView: View {
         }
     }
 
-    private func navigateToConflictList() {}
+    private func navigateToConflictList() {
+        @InjectService var router: MainViewRouter
+        router.append(.conflictsList(errors))
+    }
 }
 
 #Preview {
