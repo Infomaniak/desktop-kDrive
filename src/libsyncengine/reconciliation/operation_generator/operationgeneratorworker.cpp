@@ -141,7 +141,8 @@ void OperationGeneratorWorker::execute() {
         }
     }
 
-    if (_nbLocalDeleteOperations >= maxNbOfDeleteOperationSoftLimit) {
+    if (_nbLocalDeleteOperations >= maxNbOfDeleteOperationSoftLimit &&
+        _syncPal->manyDeleteOpsBehavior() == SyncPal::ManyDeleteOpsBehavior::None) {
         LOGW_SYNCPAL_WARN(_logger, L"Too many local delete operations detected!");
         exitCode = ExitCode::TooManyDeleteOperations;
     }
@@ -325,8 +326,9 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
         return;
     }
 
-    // Check if corresponding node has been also deleted
-    if (correspondingNode->hasChangeEvent(OperationType::Delete)) {
+    if (correspondingNode->hasChangeEvent(OperationType::Delete) || // Corresponding node has been also deleted
+        _syncPal->manyDeleteOpsBehavior() == SyncPal::ManyDeleteOpsBehavior::Revert // Delete operations must be cancelled
+    ) {
         op->setOmit(true);
     }
 
