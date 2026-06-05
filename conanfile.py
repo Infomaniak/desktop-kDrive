@@ -9,7 +9,6 @@ from conan.tools.cmake.toolchain.blocks import VSRuntimeBlock
 
 
 class KDriveDesktop(ConanFile):
-
     name = "desktop-kdrive"
     url = "https://github.com/Infomaniak/desktop-kdrive"
 
@@ -157,13 +156,17 @@ class KDriveDesktop(ConanFile):
         """
         self.requires("zlib/[>=1.2.11 <2]", transitive_headers=True, options={"shared": True})
         # Qt version selection:
-        #   - (repo version >= 4.0.0.0 or arm) on Linux  -> Qt 6.8.3
-        #   - otherwise                           -> Qt 6.2.3
+        #   - v4 on Linux         -> Qt 6.11.1
+        #   - non-v4 Linux arm64  -> Qt 6.8.3
+        #   - otherwise           -> Qt 6.2.3
         qt_version = "6.2.3"
-        if self.settings.os == "Linux" and (self._repo_version() >= (4, 0, 0, 0) or str(self.settings.arch) == "armv8"):
-            qt_version = "6.8.3"
+        if self.settings.os == "Linux":
+            if self._repo_version() >= (4, 0, 0, 0):
+                qt_version = "6.11.1"
+            elif str(self.settings.arch) == "armv8":
+                qt_version = "6.8.3"
         self.requires(f"qt/{qt_version}")
-        self.requires("xxhash/0.8.2") # From local recipe
+        self.requires("xxhash/0.8.2")  # From local recipe
         self.requires("sqlite3/3.53.0", options={
             "shared": False,
             "build_executable": False
@@ -178,12 +181,13 @@ class KDriveDesktop(ConanFile):
         # openssl depends on zlib, which is already inside the conanfile.py of openssl
         # but since we build openssl two times (for x86_64 and arm64) in single arch and then merge them, we need to add zlib in 'armv8|x86_64' arch mode.
         if self.settings.os == "Macos":
-            self.requires("openssl-macos/3.2.4", options={ "shared": True }) # on macOS => Using the local recipe, using the openssl universal build script.
+            self.requires("openssl-macos/3.2.4", options={
+                "shared": True})  # on macOS => Using the local recipe, using the openssl universal build script.
         else:
-            self.requires("openssl/3.2.4", options={ "shared": True }) # Otherwise, using the conan center recipe.
+            self.requires("openssl/3.2.4", options={"shared": True})  # Otherwise, using the conan center recipe.
 
-        self.requires("sentry/0.7.10", options={ "shared": True, "qt_version": qt_version })
-        self.requires("poco/1.13.3", options={ "shared": True })
+        self.requires("sentry/0.7.10", options={"shared": True, "qt_version": qt_version})
+        self.requires("poco/1.13.3", options={"shared": True})
 
     def _append_conan_vars_normalization(self):
         """
@@ -225,6 +229,7 @@ class KDriveDesktop(ConanFile):
 
         with open(helper_file, "w") as f:
             f.write(normalization_code)
+
 
 class OverrideVSRuntimeBlock(VSRuntimeBlock):
     def __init__(self, conanfile, toolchain, name):

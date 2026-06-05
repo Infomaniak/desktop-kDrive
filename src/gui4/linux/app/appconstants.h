@@ -16,32 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import QtQuick
-import QtQuick.Controls
-import kDrive.UI
-import "onboarding"
+#pragma once
 
-Window {
-    id: mainWindow
-    visible: false
-    width: 900
-    height: 600
-    minimumWidth: 720
-    minimumHeight: 520
-    title: onboardingFlowController.title
-    color: IKColors.onboardingSurfacePrimary
+#include <QString>
+#include <QUrl>
 
-    onClosing: (close) => {
-        if (systemTrayController.trayModeActive) {
-            close.accepted = false;
-            systemTrayController.hideMainWindow();
-        } else {
-            close.accepted = true;
-            Qt.quit();
-        }
-    }
+namespace KDC::AppConstants::Login {
 
-    OnboardingWindow {
-        anchors.fill: parent
-    }
+[[nodiscard]] inline QUrl signupUri() {
+    return QUrl{QStringLiteral("https://welcome.infomaniak.com/signup")};
 }
+
+} // namespace KDC::AppConstants::Login

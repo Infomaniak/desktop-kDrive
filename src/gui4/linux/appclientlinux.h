@@ -22,11 +22,13 @@
 #include "app/cache/cachepipeline.h"
 #include "app/cache/mainselectionstore.h"
 #include "app/cache/onboardingstate.h"
+#include "app/onboarding/onboardingflowcontroller.h"
 #include "app/services/cachepopulator.h"
 #include "app/services/commservice.h"
 #include "app/services/driveservice.h"
 #include "app/services/serviceactiontracker.h"
 #include "app/services/serviceeventbus.h"
+#include "app/services/sentryservice.h"
 #include "app/services/syncservice.h"
 #include "app/services/userservice.h"
 #include "app/systraycontroller.h"
@@ -36,6 +38,8 @@
 #include <QApplication>
 #include <QLoggingCategory>
 #include <QQmlApplicationEngine>
+
+#include <optional>
 
 namespace KDC {
 
@@ -70,6 +74,7 @@ class AppClientLinux : public QApplication {
         AppCache &appCache() { return _appCache; }
         MainSelectionStore &mainSelectionStore() { return _mainSelectionStore; }
         OnboardingState &onboardingState() { return _onboardingState; }
+        OnboardingFlowController &onboardingFlowController() { return _onboardingFlowController; }
         ServiceActionTracker &serviceActionTracker() { return _serviceActionTracker; }
         ServiceEventBus &serviceEventBus() { return _serviceEventBus; }
 
@@ -89,14 +94,17 @@ class AppClientLinux : public QApplication {
         CachePipeline _cachePipeline{_serverCommService, _appCache, this};
         MainSelectionStore _mainSelectionStore{_appCache, this};
         OnboardingState _onboardingState{_appCache, this};
+        OnboardingFlowController _onboardingFlowController{this};
         ServiceActionTracker _serviceActionTracker{this};
         ServiceEventBus _serviceEventBus{this};
+        SentryService _sentryService{_serverCommService, _appCache, this};
         CachePopulator _cachePopulator{_serverCommService, _appCache, this};
         UserService _userService{_serverCommService, _appCache, _serviceActionTracker, _serviceEventBus, this};
         DriveService _driveService{_serverCommService, _serviceActionTracker, _serviceEventBus, this};
         SyncService _syncService{_serverCommService, _serviceActionTracker, _serviceEventBus, this};
         SystemTrayController _systemTrayController{this};
         QQmlApplicationEngine _qmlEngine;
+        std::optional<UserDbId> _pendingOnboardingUserDbId;
 };
 
 } // namespace KDC

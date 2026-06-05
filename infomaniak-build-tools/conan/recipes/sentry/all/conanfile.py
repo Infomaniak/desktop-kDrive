@@ -1,5 +1,6 @@
 from os.path import join as pjoin
 import os
+import shlex
 
 import shutil
 
@@ -28,7 +29,7 @@ class SentryNativeConan(ConanFile):
 
     options = {
         "shared": [True, False],
-        "qt_version": ["6.2.3", "6.5.3", "6.8.3"],
+        "qt_version": ["6.2.3", "6.5.3", "6.8.3", "6.11.1"],
     }
     default_options = {"shared": True, "qt_version": "6.2.3"}
 
@@ -138,6 +139,18 @@ class SentryNativeConan(ConanFile):
             dsym_path = os.path.join(self.package_folder, "lib", "libsentry.dylib.dSYM")
             if os.path.exists(dsym_path):
                 shutil.rmtree(dsym_path)
+
+        # On Linux, DWARF debug info is embedded directly in the ELF binary by default,
+        # bloating crashpad_handler to ~21 MB. Symbols are not needed at runtime: minidumps
+        # are symbolicated server-side using the main app's debug files.
+        if self.settings.os == "Linux":
+            crashpad_handler_path = os.path.join(self.package_folder, "bin", "crashpad_handler")
+            if os.path.exists(crashpad_handler_path):
+                strip_path = shutil.which("strip")
+                if strip_path:
+                    self.run(f"{shlex.quote(strip_path)} --strip-all {shlex.quote(crashpad_handler_path)}")
+                else:
+                    self.output.warning("strip not found; crashpad_handler debug symbols were not removed")
 
         # Remove auto-generated CMake config files (we use Conan's generated ones)
         cmake_dir = os.path.join(self.package_folder, "lib", "cmake", "sentry")
