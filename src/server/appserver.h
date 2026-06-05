@@ -324,6 +324,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         [[nodiscard]] ExitInfo createAndStartVfs(const Sync &sync) noexcept;
         [[nodiscard]] ExitInfo setSupportsVirtualFiles(SyncDbId syncDbId, bool value, bool asyncResponse);
+        [[nodiscard]] ExitInfo acknowledgeManyDeletes(SyncDbId syncDbId, bool value);
 
         void startSyncsAndRetryOnError(const std::unordered_set<SyncDbId> &toIgnoreSyncDbIds = {});
         [[nodiscard]] ExitInfo startSyncs();

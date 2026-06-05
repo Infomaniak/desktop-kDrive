@@ -142,6 +142,13 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
             EnumEnd
         };
 
+        enum class ManyDeleteOpsBehavior {
+            Unknown = 0,
+            Continue,
+            Revert,
+            EnumEnd
+        };
+
         SyncPal(std::shared_ptr<Vfs> vfs, const SyncPath &syncDbPath, const std::string &version, const bool hasFullyCompleted);
         SyncPal(std::shared_ptr<Vfs> vfs, const int syncDbId, const std::string &version);
         virtual ~SyncPal();
@@ -363,6 +370,11 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void resetConsecutiveBackErrors() { _consecutiveBackErrors = 0; }
         std::timed_mutex &userActionsMutex() { return _userActionsMutex; }
 
+        [[nodiscard]] ManyDeleteOpsBehavior manyDeleteOpsBehavior() const { return _manyDeleteOpsBehavior; }
+        void setManyDeleteOpsBehavior(const ManyDeleteOpsBehavior manyDeleteOpsBehavior) {
+            _manyDeleteOpsBehavior = manyDeleteOpsBehavior;
+        }
+
     protected:
         virtual void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
 
@@ -462,6 +474,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         int64_t _consecutiveBackErrors{0};
 
         std::shared_ptr<CacheDirectory> _cacheDirectory;
+
+        ManyDeleteOpsBehavior _manyDeleteOpsBehavior{ManyDeleteOpsBehavior::Unknown};
 
         // TODO : Refactor to not use friend classes (should be reserved for test purpose).
         friend class SyncPalWorker;

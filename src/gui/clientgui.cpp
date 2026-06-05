@@ -143,7 +143,7 @@ bool ClientGui::isConnected() {
     return GuiRequests::isConnnected();
 }
 
-void ClientGui::onErrorAdded(bool serverLevel, ExitCode exitCode, const SyncDbId syncDbId) {
+void ClientGui::onErrorAdded(bool serverLevel, const ExitCode exitCode, const SyncDbId syncDbId) {
     switch (exitCode) {
         case ExitCode::InvalidToken: {
             auto userIt = _userInfoMap.find(_currentUserDbId);
@@ -157,7 +157,26 @@ void ClientGui::onErrorAdded(bool serverLevel, ExitCode exitCode, const SyncDbId
             break;
         }
         case ExitCode::TooManyDeleteOperations: {
-            _app->tooManyLocalDeleteOpsDetected();
+            CustomMessageBox msgBox(QMessageBox::Warning, tr("Too many local delete operations detected."),
+                                    QMessageBox::Yes | QMessageBox::No);
+            msgBox.setCheckboxVisible(true);
+            msgBox.setCheckBoxText(tr("Don't ask again"));
+            const auto res = msgBox.exec();
+
+            // TODO : save don't ask again
+
+            const auto syncInfoMapIt = _syncInfoMap.find(syncDbId);
+            if (syncInfoMapIt == _syncInfoMap.end()) {
+                qCWarning(lcClientGui()) << "Sync not found in sync map for syncDbId=" << syncDbId;
+                return;
+            }
+
+            if (const auto exitInfo = GuiRequests::acknowledgeManyDelete(syncDbId, res == QMessageBox::Yes); !exitInfo) {
+                qCWarning(lcClientGui()) << "Error in Requests::syncStart for syncDbId=" << syncDbId << ", " << exitInfo;
+                syncInfoMapIt->second.setStatus(SyncStatus::Paused);
+                emit updateProgress(syncDbId);
+            }
+
             break;
         }
         default:

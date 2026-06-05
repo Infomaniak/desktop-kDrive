@@ -53,7 +53,6 @@ class AppClient : public SharedTools::QtSingleApplication {
         void showSynthesisDialog();
         void updateSystrayIcon();
         void askUserToLoginAgain(UserDbId userDbId, QString userEmail, bool invalidTokenError);
-        void tooManyLocalDeleteOpsDetected();
 
     signals:
         // User signals

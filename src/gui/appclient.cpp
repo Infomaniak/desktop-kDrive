@@ -717,12 +717,6 @@ void AppClient::askUserToLoginAgain(const UserDbId userDbId, QString userEmail, 
     _gui->openLoginDialog(userDbId, invalidTokenError);
 }
 
-void AppClient::tooManyLocalDeleteOpsDetected() {
-    CustomMessageBox msgBox(QMessageBox::Warning, tr("Too many local delete operations detected."), tr("Don't ask again"),
-                            QMessageBox::Yes | QMessageBox::No);
-    msgBox.exec();
-}
-
 void AppClient::onTryTrayAgain() {
     qCInfo(lcAppClient) << "Trying tray icon, tray available:" << QSystemTrayIcon::isSystemTrayAvailable();
     _gui->hideAndShowTray();

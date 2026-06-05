@@ -2356,8 +2356,20 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             const auto exitInfo = setSupportsVirtualFilesAsync(syncDbId, value);
             if (!exitInfo) {
                 LOG_WARN(_logger, "Error in setSupportsVirtualFiles for syncDbId=" << syncDbId << " : " << exitInfo);
-                resultStream << toInt(exitInfo.code());
-                break;
+            }
+
+            resultStream << toInt(exitInfo.code());
+            break;
+        }
+        case RequestNum::SYNC_ACKNOWLEDGE_MANY_DELETES: {
+            qint64 tmpSyncDbId = 0;
+            bool value = false;
+            ArgsWriter(params).write(tmpSyncDbId, value);
+
+            const auto syncDbId = static_cast<SyncDbId>(tmpSyncDbId);
+            const auto exitInfo = acknowledgeManyDeletes(syncDbId, value);
+            if (!exitInfo) {
+                LOG_WARN(_logger, "Error in acknowledgeManyDeletes for syncDbId=" << syncDbId << " : " << exitInfo);
             }
 
             resultStream << toInt(exitInfo.code());
@@ -4378,6 +4390,26 @@ ExitInfo AppServer::setSupportsVirtualFiles(const SyncDbId syncDbId, const bool 
         }
         return mainExitInfo;
     }
+
+    return ExitCode::Ok;
+}
+
+ExitInfo AppServer::acknowledgeManyDeletes(const SyncDbId syncDbId, const bool value) {
+    const std::scoped_lock lock(syncPalMapMutex);
+    auto syncPalMapIt = syncPalMap.find(syncDbId);
+    if (syncPalMapIt == syncPalMap.end()) {
+        std::stringstream msg;
+        msg << "SyncPal not found in syncPalMap for syncDbId=" << syncDbId;
+        LOG_WARN(_logger, msg.str());
+        sentry::Handler::captureMessage(sentry::Level::Error, "Error in setSupportsVirtualFiles", msg.str());
+        return ExitCode::LogicError;
+    }
+
+    syncPalMapIt->second->setManyDeleteOpsBehavior(value ? SyncPal::ManyDeleteOpsBehavior::Continue
+                                                         : SyncPal::ManyDeleteOpsBehavior::Revert);
+    LOG_INFO(_logger, "Set acknowledge many deletes to " << value << " for syncDbId=" << syncDbId);
+
+    syncPalMapIt->second->start();
 
     return ExitCode::Ok;
 }
