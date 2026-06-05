@@ -155,7 +155,9 @@ final class SynchroErrorManager: ObservableObject {
         if errors.count <= 1, let error = errors.first {
             // TODO: Display single conflict sheet
         } else {
-            // TODO: Navigate to several conflits management
+            @InjectService var router: MainViewRouter
+            router.setCurrentTabIfNecessary(.activities)
+            router.append(.quickConflictsResolution(errors))
         }
     }
 
