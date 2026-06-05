@@ -167,7 +167,7 @@ ExitInfo ApiTranslator::getSpecialFolderRemoteId(const UserDbId userDbId, const 
 
     bool updateIsRequired = false;
     {
-        const std::lock_guard<std::mutex> lock(_mutex);
+        const std::scoped_lock lock(_mutex);
         updateIsRequired = !_specialFolderRemoteIdsCache[specialFolder].contains(driveId);
     }
     if (updateIsRequired) {
