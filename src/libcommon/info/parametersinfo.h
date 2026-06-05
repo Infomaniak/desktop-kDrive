@@ -33,9 +33,6 @@ namespace KDC {
 class ParametersInfo {
     public:
         using DialogGeometry = QMap<QString, QByteArray>;
-        ParametersInfo(Language language, bool monoIcons, bool autoStart, bool moveToTrash,
-                       NotificationsDisabled notificationsDisabled, bool useLog, LogLevel logLevel, bool extendedLog,
-                       bool purgeOldLogs, bool darkTheme, DialogGeometry dialogGeometry, int maxAllowedCpu);
         ParametersInfo() = default;
 
         inline void setLanguage(Language language) { _language = language; }
@@ -75,6 +72,8 @@ class ParametersInfo {
         void setSentryEnabled(bool value) { _sentryEnabled = value; }
         bool matomoEnabled() const { return _matomoEnabled; }
         void setMatomoEnabled(bool value) { _matomoEnabled = value; }
+        [[nodiscard]] bool askBeforeDelete() const { return _askBeforeDelete; }
+        void setAskBeforeDelete(const bool askBeforeDelete) { _askBeforeDelete = askBeforeDelete; }
 
         friend bool operator==(const ParametersInfo &lhs, const ParametersInfo &rhs) {
             return (lhs.language() == rhs.language()) && (lhs.monoIcons() == rhs.monoIcons()) &&
@@ -84,7 +83,7 @@ class ParametersInfo {
                    (lhs.purgeOldLogs() == rhs.purgeOldLogs()) && (lhs.darkTheme() == rhs.darkTheme()) &&
                    (lhs.dialogGeometry() == rhs.dialogGeometry()) && (lhs.maxAllowedCpu() == rhs.maxAllowedCpu()) &&
                    (lhs.distributionChannel() == rhs.distributionChannel()) && (lhs.sentryEnabled() == rhs.sentryEnabled()) &&
-                   (lhs.matomoEnabled() == rhs.matomoEnabled());
+                   (lhs.matomoEnabled() == rhs.matomoEnabled()) && (lhs.askBeforeDelete() == rhs.askBeforeDelete());
         }
 
         void toDynamicStruct(Poco::DynamicStruct &) const;
@@ -108,8 +107,9 @@ class ParametersInfo {
         DialogGeometry _dialogGeometry;
         int _maxAllowedCpu{50};
         DistributionChannel _distributionChannel{DistributionChannel::Prod};
-        bool _sentryEnabled{false};
-        bool _matomoEnabled{false};
+        bool _sentryEnabled{true};
+        bool _matomoEnabled{true};
+        bool _askBeforeDelete{true};
 };
 
 } // namespace KDC

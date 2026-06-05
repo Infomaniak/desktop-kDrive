@@ -32,17 +32,8 @@ ParametersInfo getExpectedParametersInfo() {
     const ParametersInfo::DialogGeometry dialogGeometry = {{"preferencesWindow", "blob1234"},
                                                            {"drivePreferencesPanel", "blob4567"}};
 
-    ParametersInfo parametersInfo(Language::Default, false, true, true, NotificationsDisabled::Never, true, LogLevel::Debug, true,
-                                  true,
-#ifdef KD_MACOS // darkTheme only on macOS
-                                  true,
-#else
-                                  false,
-#endif
-                                  dialogGeometry, 50);
-
+    ParametersInfo parametersInfo;
     parametersInfo.setProxyConfigInfo(proxyConfigInfo);
-
     return parametersInfo;
 };
 

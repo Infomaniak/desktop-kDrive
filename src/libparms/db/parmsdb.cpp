@@ -36,38 +36,39 @@
 #define CREATE_PARAMETERS_TABLE_ID "create_parameters"
 #define CREATE_PARAMETERS_TABLE              \
     "CREATE TABLE IF NOT EXISTS parameters(" \
-    "language INTEGER,"                      \
-    "monoIcons INTEGER,"                     \
-    "autoStart INTEGER,"                     \
-    "moveToTrash INTEGER,"                   \
-    "notifications INTEGER,"                 \
-    "uselog INTEGER,"                        \
-    "logLevel INTEGER,"                      \
-    "purgeOldLogs INTEGER,"                  \
-    "syncHiddenFiles INTEGER,"               \
-    "proxyType INTEGER,"                     \
-    "proxyHostName TEXT,"                    \
-    "proxyPort INTEGER,"                     \
-    "proxyNeedsAuth INTEGER,"                \
-    "proxyUser TEXT,"                        \
-    "proxyToken TEXT,"                       \
-    "useBigFolderSizeLimit INTEGER,"         \
-    "bigFolderSizeLimit INTEGER,"            \
-    "darkTheme INTEGER,"                     \
-    "showShortcuts INTEGER,"                 \
-    "updateFileAvailable TEXT,"              \
-    "updateTargetVersion TEXT,"              \
-    "updateTargetVersionString TEXT,"        \
-    "autoUpdateAttempted INTEGER,"           \
-    "seenVersion TEXT,"                      \
-    "dialogGeometry BLOB,"                   \
-    "extendedLog INTEGER,"                   \
-    "maxAllowedCpu INTEGER,"                 \
-    "uploadSessionParallelJobs INTEGER,"     \
-    "jobPoolCapacityFactor INTEGER,"         \
-    "distributionChannel INTEGER,"           \
-    "sentryEnabled INTEGER,"                 \
-    "matomoEnabled INTEGER"                  \
+    "language INTEGER"                       \
+    ",monoIcons INTEGER"                     \
+    ",autoStart INTEGER"                     \
+    ",moveToTrash INTEGER"                   \
+    ",notifications INTEGER"                 \
+    ",uselog INTEGER"                        \
+    ",logLevel INTEGER"                      \
+    ",purgeOldLogs INTEGER"                  \
+    ",syncHiddenFiles INTEGER"               \
+    ",proxyType INTEGER"                     \
+    ",proxyHostName TEXT"                    \
+    ",proxyPort INTEGER"                     \
+    ",proxyNeedsAuth INTEGER"                \
+    ",proxyUser TEXT"                        \
+    ",proxyToken TEXT"                       \
+    ",useBigFolderSizeLimit INTEGER"         \
+    ",bigFolderSizeLimit INTEGER"            \
+    ",darkTheme INTEGER"                     \
+    ",showShortcuts INTEGER"                 \
+    ",updateFileAvailable TEXT"              \
+    ",updateTargetVersion TEXT"              \
+    ",updateTargetVersionString TEXT"        \
+    ",autoUpdateAttempted INTEGER"           \
+    ",seenVersion TEXT"                      \
+    ",dialogGeometry BLOB"                   \
+    ",extendedLog INTEGER"                   \
+    ",maxAllowedCpu INTEGER"                 \
+    ",uploadSessionParallelJobs INTEGER"     \
+    ",jobPoolCapacityFactor INTEGER"         \
+    ",distributionChannel INTEGER"           \
+    ",sentryEnabled INTEGER"                 \
+    ",matomoEnabled INTEGER"                 \
+    ",askBeforeDelete INTEGER"               \
     ");"
 
 #define INSERT_PARAMETERS_REQUEST_ID "insert_parameters"
@@ -76,9 +77,9 @@
     "syncHiddenFiles, proxyType, proxyHostName, proxyPort, proxyNeedsAuth, proxyUser, proxyToken, useBigFolderSizeLimit, "    \
     "bigFolderSizeLimit, darkTheme, showShortcuts, updateFileAvailable, updateTargetVersion, updateTargetVersionString, "     \
     "autoUpdateAttempted, seenVersion, dialogGeometry, extendedLog, maxAllowedCpu, uploadSessionParallelJobs, "               \
-    "jobPoolCapacityFactor, distributionChannel, sentryEnabled, matomoEnabled) "                                              \
+    "jobPoolCapacityFactor, distributionChannel, sentryEnabled, matomoEnabled, askBeforeDelete) "                             \
     "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23, ?24, " \
-    "?25, ?26, ?27, ?28, ?29, ?30, ?31, ?32);"
+    "?25, ?26, ?27, ?28, ?29, ?30, ?31, ?32, ?33);"
 
 #define UPDATE_PARAMETERS_REQUEST_ID "update_parameters"
 #define UPDATE_PARAMETERS_REQUEST                                                                                               \
@@ -89,7 +90,8 @@
     "bigFolderSizeLimit=?17, darkTheme=?18, showShortcuts=?19, updateFileAvailable=?20, updateTargetVersion=?21, "              \
     "updateTargetVersionString=?22, "                                                                                           \
     "autoUpdateAttempted=?23, seenVersion=?24, dialogGeometry=?25, extendedLog=?26, maxAllowedCpu=?27, "                        \
-    "uploadSessionParallelJobs=?28, jobPoolCapacityFactor=?29, distributionChannel=?30, sentryEnabled=?31, matomoEnabled=?32;"
+    "uploadSessionParallelJobs=?28, jobPoolCapacityFactor=?29, distributionChannel=?30, sentryEnabled=?31, matomoEnabled=?32, " \
+    "askBeforeDelete=?33;"
 
 #define SELECT_PARAMETERS_REQUEST_ID "select_parameters"
 #define SELECT_PARAMETERS_REQUEST                                                                                          \
@@ -97,7 +99,7 @@
     "syncHiddenFiles, proxyType, proxyHostName, proxyPort, proxyNeedsAuth, proxyUser, proxyToken, useBigFolderSizeLimit, " \
     "bigFolderSizeLimit, darkTheme, showShortcuts, updateFileAvailable, updateTargetVersion, updateTargetVersionString, "  \
     "autoUpdateAttempted, seenVersion, dialogGeometry, extendedLog, maxAllowedCpu, uploadSessionParallelJobs, "            \
-    "jobPoolCapacityFactor, distributionChannel, sentryEnabled, matomoEnabled "                                            \
+    "jobPoolCapacityFactor, distributionChannel, sentryEnabled, matomoEnabled, askBeforeDelete "                           \
     "FROM parameters;"
 
 #define UPDATE_PARAMETERS_JOB_REQUEST_ID "update_parameters_job"
@@ -624,39 +626,41 @@ bool ParmsDb::insertDefaultParameters() {
     int errId = 0;
     std::string error;
 
+    auto index = 1;
     LOG_IF_FAIL(queryResetAndClearBindings(INSERT_PARAMETERS_REQUEST_ID));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 1, static_cast<int>(parameters.language())));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 2, parameters.monoIcons()));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 3, parameters.autoStart()));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 4, parameters.moveToTrash()));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 5, static_cast<int>(parameters.notificationsDisabled())));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 6, parameters.useLog()));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 7, static_cast<int>(parameters.logLevel())));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 8, parameters.purgeOldLogs()));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 9, 0)); // Sync hidden files : not used anymore
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 10, static_cast<int>(parameters.proxyConfig().type())));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 11, parameters.proxyConfig().hostName()));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 12, parameters.proxyConfig().port()));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 13, parameters.proxyConfig().needsAuth()));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 14, parameters.proxyConfig().user()));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 15, parameters.proxyConfig().token()));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 16, false)); // useBigFolderSizeLimit : not used anymore
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 17, 0)); // bigFolderSizeLimit : not used anymore
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 18, parameters.darkTheme()));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 19, true)); // showShortcuts : not used anymore
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 20, parameters.updateFileAvailable()));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 21, parameters.updateTargetVersion()));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 22, parameters.updateTargetVersionString()));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 23, parameters.autoUpdateAttempted()));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 24, parameters.seenVersion()));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 25, parameters.dialogGeometry()));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 26, static_cast<int>(_test ? true : parameters.extendedLog())));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 27, parameters.maxAllowedCpu()));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 28, parameters.uploadSessionParallelJobs()));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 29, 0));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 30, static_cast<int>(parameters.distributionChannel())));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 31, parameters.sentryEnabled()));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 32, parameters.matomoEnabled()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, static_cast<int>(parameters.language())));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.monoIcons()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.autoStart()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.moveToTrash()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, static_cast<int>(parameters.notificationsDisabled())));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.useLog()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, static_cast<int>(parameters.logLevel())));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.purgeOldLogs()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, 0)); // Sync hidden files : not used anymore
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, static_cast<int>(parameters.proxyConfig().type())));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.proxyConfig().hostName()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.proxyConfig().port()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.proxyConfig().needsAuth()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.proxyConfig().user()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.proxyConfig().token()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, false)); // useBigFolderSizeLimit : not used anymore
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, 0)); // bigFolderSizeLimit : not used anymore
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.darkTheme()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, true)); // showShortcuts : not used anymore
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.updateFileAvailable()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.updateTargetVersion()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.updateTargetVersionString()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.autoUpdateAttempted()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.seenVersion()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.dialogGeometry()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, static_cast<int>(_test ? true : parameters.extendedLog())));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.maxAllowedCpu()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.uploadSessionParallelJobs()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, 0));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, static_cast<int>(parameters.distributionChannel())));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.sentryEnabled()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.matomoEnabled()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.askBeforeDelete()));
 
     if (!queryExec(INSERT_PARAMETERS_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << INSERT_PARAMETERS_REQUEST_ID);
@@ -1162,6 +1166,11 @@ bool ParmsDb::upgradeTables() {
         return false;
     }
 
+    columnName = "askBeforeDelete";
+    if (!addIntegerColumnIfMissing(tableName, columnName)) {
+        return false;
+    }
+
     // AppState table
     tableName = "app_state";
     bool exist = false;
@@ -1275,39 +1284,41 @@ bool ParmsDb::updateParameters(const Parameters &parameters, bool &found) {
     int errId;
     std::string error;
 
+    auto index = 1;
     LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_PARAMETERS_REQUEST_ID));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 1, static_cast<int>(parameters.language())));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 2, parameters.monoIcons()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 3, parameters.autoStart()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 4, parameters.moveToTrash()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 5, static_cast<int>(parameters.notificationsDisabled())));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 6, parameters.useLog()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 7, static_cast<int>(parameters.logLevel())));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 8, parameters.purgeOldLogs()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 9, 0)); // Sync hidden files : not used anymore
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 10, static_cast<int>(parameters.proxyConfig().type())));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 11, parameters.proxyConfig().hostName()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 12, parameters.proxyConfig().port()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 13, parameters.proxyConfig().needsAuth()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 14, parameters.proxyConfig().user()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 15, parameters.proxyConfig().token()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 16, false)); // useBigFolderSizeLimit : not used anymore
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 17, 0)); // bigFolderSizeLimit : not used anymore
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 18, parameters.darkTheme()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 19, true)); // showShortcuts : not used anymore
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 20, parameters.updateFileAvailable()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 21, parameters.updateTargetVersion()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 22, parameters.updateTargetVersionString()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 23, parameters.autoUpdateAttempted()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 24, parameters.seenVersion()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 25, parameters.dialogGeometry()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 26, static_cast<int>(parameters.extendedLog())));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 27, parameters.maxAllowedCpu()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 28, parameters.uploadSessionParallelJobs()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 29, 0));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 30, static_cast<int>(parameters.distributionChannel())));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 31, parameters.sentryEnabled()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 32, parameters.matomoEnabled()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, static_cast<int>(parameters.language())));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.monoIcons()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.autoStart()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.moveToTrash()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, static_cast<int>(parameters.notificationsDisabled())));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.useLog()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, static_cast<int>(parameters.logLevel())));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.purgeOldLogs()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, 0)); // Sync hidden files : not used anymore
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, static_cast<int>(parameters.proxyConfig().type())));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.proxyConfig().hostName()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.proxyConfig().port()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.proxyConfig().needsAuth()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.proxyConfig().user()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.proxyConfig().token()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, false)); // useBigFolderSizeLimit : not used anymore
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, 0)); // bigFolderSizeLimit : not used anymore
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.darkTheme()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, true)); // showShortcuts : not used anymore
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.updateFileAvailable()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.updateTargetVersion()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.updateTargetVersionString()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.autoUpdateAttempted()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.seenVersion()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.dialogGeometry()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, static_cast<int>(parameters.extendedLog())));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.maxAllowedCpu()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.uploadSessionParallelJobs()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, 0));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, static_cast<int>(parameters.distributionChannel())));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.sentryEnabled()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.matomoEnabled()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.askBeforeDelete()));
 
     if (!queryExec(UPDATE_PARAMETERS_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << UPDATE_PARAMETERS_REQUEST_ID);
@@ -1335,32 +1346,34 @@ bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
         return true;
     }
 
+    auto index = 0;
     int intResult{0};
-    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 0, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, index++, intResult));
     parameters.setLanguage(static_cast<Language>(intResult));
 
-    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 1, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, index++, intResult));
     parameters.setMonoIcons(intResult);
 
-    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 2, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, index++, intResult));
     parameters.setAutoStart(intResult);
 
-    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 3, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, index++, intResult));
     parameters.setMoveToTrash(intResult);
 
-    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 4, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, index++, intResult));
     parameters.setNotificationsDisabled(static_cast<NotificationsDisabled>(intResult));
 
-    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 5, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, index++, intResult));
     parameters.setUseLog(intResult);
 
-    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 6, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, index++, intResult));
     parameters.setLogLevel(static_cast<LogLevel>(intResult));
 
-    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 7, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, index++, intResult));
     parameters.setPurgeOldLogs(intResult);
 
     // Sync hidden files (8): not used anymore
+    index++;
 
     auto proxyType = ProxyType::Undefined;
     std::string hostName;
@@ -1368,63 +1381,70 @@ bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
     bool needsAuth = false;
     std::string user;
     std::string token;
-    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 9, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, index++, intResult));
     proxyType = static_cast<ProxyType>(intResult);
-    LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, 10, hostName));
-    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 11, port));
-    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 12, intResult));
+    LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, index++, hostName));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, index++, port));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, index++, intResult));
     needsAuth = static_cast<bool>(intResult);
-    LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, 13, user));
-    LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, 14, token));
+    LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, index++, user));
+    LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, index++, token));
     parameters.setProxyConfig(ProxyConfig(proxyType, hostName, port, needsAuth, user, token));
 
     // 15: useBigFolderSizeLimit : not used anymore
+    index++;
     // 16: bigFolderSizeLimit : not used anymore
+    index++;
 
-    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 17, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, index++, intResult));
     parameters.setDarkTheme(intResult);
 
     // 18: showShortcuts : not used anymore
+    index++;
 
     std::string strResult;
-    LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, 19, strResult));
+    LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, index++, strResult));
     parameters.setUpdateFileAvailable(strResult);
 
-    LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, 20, strResult));
+    LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, index++, strResult));
     parameters.setUpdateTargetVersion(strResult);
 
-    LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, 21, strResult));
+    LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, index++, strResult));
     parameters.setUpdateTargetVersionString(strResult);
 
-    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 22, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, index++, intResult));
     parameters.setAutoUpdateAttempted(intResult);
 
-    LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, 23, strResult));
+    LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, index++, strResult));
     parameters.setSeenVersion(strResult);
 
     std::shared_ptr<std::vector<char>> blobResult;
-    LOG_IF_FAIL(queryBlobValue(SELECT_PARAMETERS_REQUEST_ID, 24, blobResult));
+    LOG_IF_FAIL(queryBlobValue(SELECT_PARAMETERS_REQUEST_ID, index++, blobResult));
     parameters.setDialogGeometry(blobResult);
 
-    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 25, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, index++, intResult));
     parameters.setExtendedLog(intResult);
 
-    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 26, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, index++, intResult));
     parameters.setMaxAllowedCpu(intResult);
 
-    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 27, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, index++, intResult));
     parameters.setUploadSessionParallelJobs(intResult);
 
     // Job pool capacity factor (28): not used anymore
+    index++;
 
-    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 29, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, index++, intResult));
     parameters.setDistributionChannel(static_cast<DistributionChannel>(intResult));
 
-    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 30, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, index++, intResult));
     parameters.setSentryEnabled(intResult);
 
-    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 31, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, index++, intResult));
     parameters.setMatomoEnabled(intResult);
+
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, index++, intResult));
+    parameters.setAskBeforeDelete(intResult);
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_PARAMETERS_REQUEST_ID));
 
@@ -1434,7 +1454,7 @@ bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
 bool ParmsDb::insertUser(const User &user) {
     const std::scoped_lock lock(_mutex);
 
-    int errId;
+    int errId = 0;
     std::string error;
 
     LOG_IF_FAIL(queryResetAndClearBindings(INSERT_USER_REQUEST_ID));
