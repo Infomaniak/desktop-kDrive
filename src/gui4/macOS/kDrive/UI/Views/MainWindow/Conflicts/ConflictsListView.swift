@@ -60,6 +60,18 @@ struct ConflictsListView: View {
 
     var body: some View {
         Form {
+            Section {} header: {
+                VStack(alignment: .leading) {
+                    Text(KDriveLocalizable.labelManyConflictTitle(errors.count))
+                        .font(.Tokens.body)
+                        .foregroundStyle(ColorToken.Text.primary.asColor)
+                    Text(KDriveLocalizable.labelChooseConflictVersionIndividual)
+                        .font(.Tokens.callout)
+                        .foregroundStyle(ColorToken.Text.tertiary.asColor)
+                }
+                .padding(.bottom, AppPadding.padding16)
+            }
+
             Section {
                 ForEach(filteredErrors) { error in
                     ConflictCellView(path: error.metadata.path) {
