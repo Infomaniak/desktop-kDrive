@@ -142,7 +142,8 @@ void OperationGeneratorWorker::execute() {
     }
 
     if (_nbLocalDeleteOperations >= maxNbOfDeleteOperationSoftLimit &&
-        _syncPal->manyDeleteOpsBehavior() == SyncPal::ManyDeleteOpsBehavior::None) {
+        _syncPal->manyDeleteOpsBehavior() == SyncPal::ManyDeleteOpsBehavior::None &&
+        ParametersCache::instance()->parameters().askBeforeDelete()) {
         LOGW_SYNCPAL_WARN(_logger, L"Too many local delete operations detected!");
         exitCode = ExitCode::TooManyDeleteOperations;
     }

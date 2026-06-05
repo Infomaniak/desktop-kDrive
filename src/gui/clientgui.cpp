@@ -163,7 +163,8 @@ void ClientGui::onErrorAdded(bool serverLevel, const ExitCode exitCode, const Sy
             msgBox.setCheckBoxText(tr("Don't ask again"));
             const auto res = msgBox.exec();
 
-            // TODO : save don't ask again
+            ParametersCache::instance()->parametersInfo().setAskBeforeDelete(!msgBox.isChecked());
+            ParametersCache::instance()->saveParametersInfo();
 
             const auto syncInfoMapIt = _syncInfoMap.find(syncDbId);
             if (syncInfoMapIt == _syncInfoMap.end()) {

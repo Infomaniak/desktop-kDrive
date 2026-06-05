@@ -78,6 +78,7 @@ struct VariantPrinter {
         std::wstring operator()(std::monostate) { return std::wstring(L"NULL"); }
         std::wstring operator()(int value) { return std::to_wstring(value); }
         std::wstring operator()(int64_t value) { return std::to_wstring(value); }
+        std::wstring operator()(uint64_t value) { return std::to_wstring(value); }
         std::wstring operator()(double value) { return std::to_wstring(value); }
         std::wstring operator()(const std::string &value) { return CommonUtility::s2ws(value); }
         std::wstring operator()(const std::wstring &value) { return value; }
