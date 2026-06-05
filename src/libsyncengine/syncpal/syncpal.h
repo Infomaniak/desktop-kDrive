@@ -143,7 +143,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         };
 
         enum class ManyDeleteOpsBehavior {
-            Unknown = 0,
+            None = 0,
             Continue,
             Revert,
             EnumEnd
@@ -475,7 +475,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         std::shared_ptr<CacheDirectory> _cacheDirectory;
 
-        ManyDeleteOpsBehavior _manyDeleteOpsBehavior{ManyDeleteOpsBehavior::Unknown};
+        ManyDeleteOpsBehavior _manyDeleteOpsBehavior{ManyDeleteOpsBehavior::None};
 
         // TODO : Refactor to not use friend classes (should be reserved for test purpose).
         friend class SyncPalWorker;
