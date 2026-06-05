@@ -31,7 +31,9 @@
 - Store Linux v4 app-level non-translatable constants in `app/appconstants.h`; keep it header-only while constants stay
   simple.
 - Keep simple onboarding external-link actions in `OnboardingFlowController` when they do not mutate app/backend state;
-  reserve `AppClientLinux` wiring for cross-service, OAuth, lifecycle, or backend effects.
+  put multi-service onboarding backend effects in a dedicated onboarding coordinator.
+- Keep `AppClientLinux` as an application composition root. Move multi-step feature workflows such as onboarding login into
+  dedicated coordinators instead of accumulating workflow lambdas in `AppClientLinux`.
 - `Qt.labs.lottieqt` renders Lottie JSON assets, not `.lottie` zip containers.
 - For Qt 6.11+ onboarding Lottie assets, prefer generated QML from `lottietoqml` over PNG spritesheets when the
   generated output builds and visually matches the source animation.
@@ -49,7 +51,7 @@
 ## Current Structure
 
 - `main.cpp`: process entry point + single-instance lock file.
-- `appclientlinux.*`: top-level app wiring (logging, IPC lifecycle, dispatcher/service ownership).
+- `appclientlinux.*`: top-level app wiring (logging, IPC lifecycle, dispatcher/service/coordinator ownership).
 - `app/appconstants.h`: app-level non-translatable constants, mirroring the Windows `AppConstants` role where useful.
 - `app/systraycontroller.*`: Linux system tray ownership, 5-state tray icon selection, GNOME-compatible tray menu
   actions, fallback-to-window startup behavior, retry loop for late tray availability, and main QML window show/hide
@@ -77,7 +79,13 @@
 - `app/onboarding/onboardingflowcontroller.*`: QML-facing onboarding flow controller aligned with the macOS flow
   (`login -> drive selection -> synchronization -> ready`, with macOS permission steps omitted on Linux). It owns simple
   onboarding UI actions such as opening the account signup URL; OAuth launch, `LOGIN_REQUESTTOKEN`, available-drive
-  loading, and sync creation stay in service facades and app wiring.
+  loading, and sync creation stay outside QML-facing flow state.
+- `app/onboarding/onboardinglogincoordinator.*`: login workflow coordinator for onboarding. It wires the flow controller,
+  OAuth service, comm service, user service, app cache, and onboarding state so `AppClientLinux` does not accumulate
+  login-specific workflow logic.
+- `app/onboarding/oauthloginservice.*`: Linux v4 OAuth browser-launch service. It owns PKCE/state generation, idempotent
+  browser relaunch during an active authorization, callback validation, and emits the authorization code to app wiring.
+  Do not expose OAuth details to QML.
 - `app/services/cachepopulator.*`: sequential initial snapshot loader for users, accounts, drives, syncs, and sync
   errors; after bootstrap, activates the server live-info refresh so only drive updates reach `CachePipeline`.
 - `app/services/driveservice.*`: targeted drive use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`;

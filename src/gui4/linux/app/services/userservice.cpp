@@ -65,12 +65,16 @@ void UserService::loadAvailableDrives(const qint64 userDbId) {
                 }
 
                 if (!_appCache.user(scopedUserDbId).has_value()) {
+                    qCWarning(lcUserService)
+                            << "Available drives load ignored because user disappeared | userDbId:" << scopedUserDbId;
                     (void) _availableDriveLoadGenerations.erase(scopedUserDbId);
+                    emit availableDrivesLoadFailed(scopedUserDbId);
                     return;
                 }
 
                 if (!exitInfo) {
                     notifyRequestFailure(exitInfo, RequestNum::USER_AVAILABLEDRIVES);
+                    emit availableDrivesLoadFailed(scopedUserDbId);
                     return;
                 }
 
