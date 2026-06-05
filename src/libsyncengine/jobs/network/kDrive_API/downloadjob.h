@@ -69,6 +69,7 @@ class DownloadJob : public AbstractTokenNetworkJob {
         ExitInfo runJob() noexcept override;
         ExitInfo handleResponse(std::istream &is) override;
         ExitInfo checkHashMatch();
+        ExitInfo getHydrationStatus();
 
         ExitInfo createLink(const std::string &mimeType, const std::string &data);
         bool removeTmpFile();
