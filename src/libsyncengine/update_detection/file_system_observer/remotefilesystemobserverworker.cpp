@@ -158,6 +158,8 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const std::vector<RemoteN
     const ForcedUpdate updateFlag = initializing() || updating() ? ForcedUpdate::Asked : ForcedUpdate::None;
 
     for (const auto &remoteDirId: specialFoldersRemoteIds) {
+        if (_blackList.contains(remoteDirId)) continue;
+
         bool hasChanges = false;
         if (const auto exitInfo = checkIfRemoteDirHasChanges(remoteDirId, updateFlag, longPollJobs, hasChanges); !exitInfo)
             return exitInfo;
@@ -471,8 +473,6 @@ ExitInfo RemoteFileSystemObserverWorker::initWithCursor() {
     }
     for (const auto &specialFolderRemoteId: specialFoldersRemoteIds) {
         if (stopAsked()) return ExitCode::Ok;
-
-        if (_blackList.contains(specialFolderRemoteId)) continue;
 
         if (const auto exitInfo = updateSpecialFolderItem(specialFolderRemoteId); !exitInfo) return exitInfo;
 
@@ -1209,7 +1209,8 @@ ExitInfo RemoteFileSystemObserverWorker::getSpecialFoldersRemoteIds(std::vector<
         return exitInfo;
 
     specialFoldersRemoteIds = {userPrivateFolderRemoteId, commonDocumentsFolderRemoteId, sharedFolderRemoteId};
-    (void) std::erase_if(specialFoldersRemoteIds, [](const std::string_view s) { return s.empty(); });
+    (void) std::erase_if(specialFoldersRemoteIds,
+                         [this](const auto &remoteNodeId) { return remoteNodeId.empty() || _blackList.contains(remoteNodeId); });
 
     return ExitCode::Ok;
 }
