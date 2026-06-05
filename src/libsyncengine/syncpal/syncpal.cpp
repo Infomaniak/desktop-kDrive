@@ -383,6 +383,11 @@ void SyncPal::resolveSyncErrorsByExitCause(const ExitCause cause) {
         _resolveSyncErrors(syncDbId(), cause);
     }
 }
+void SyncPal::sendManyDeletesNotification(bool softLimit) {
+    if (_sendManyDeletesNotification) {
+        _sendManyDeletesNotification(syncDbId(), softLimit);
+    }
+}
 
 bool SyncPal::wipeVirtualFiles() {
     LOG_SYNCPAL_INFO(_logger, "Wiping virtual files");

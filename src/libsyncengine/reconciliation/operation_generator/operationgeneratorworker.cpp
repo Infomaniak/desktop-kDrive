@@ -141,11 +141,16 @@ void OperationGeneratorWorker::execute() {
         }
     }
 
-    if (_nbLocalDeleteOperations >= maxNbOfDeleteOperationSoftLimit &&
-        _syncPal->manyDeleteOpsBehavior() == SyncPal::ManyDeleteOpsBehavior::None &&
-        ParametersCache::instance()->parameters().askBeforeDelete()) {
-        LOGW_SYNCPAL_WARN(_logger, L"Too many local delete operations detected!");
-        exitCode = ExitCode::TooManyDeleteOperations;
+    if (_syncPal->manyDeleteOpsBehavior() == SyncPal::ManyDeleteOpsBehavior::None) {
+        if (_nbLocalDeleteOperations >= maxNbOfDeleteOperationHardLimit) {
+            LOGW_SYNCPAL_WARN(_logger, L"Local delete operations detected: hard limit triggered!");
+            exitCode = ExitCode::TooManyDeleteOperations;
+            _syncPal->sendManyDeletesNotification(false);
+        } else if (_nbLocalDeleteOperations >= maxNbOfDeleteOperationSoftLimit &&
+                   ParametersCache::instance()->parameters().notifyBeforeDelete()) {
+            LOGW_SYNCPAL_INFO(_logger, L"Local delete operations detected: soft limit triggered!");
+            _syncPal->sendManyDeletesNotification(true);
+        }
     }
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
