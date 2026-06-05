@@ -55,6 +55,8 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testRename);
         CPPUNIT_TEST(testUpload);
         CPPUNIT_TEST(testUploadAborted);
+        CPPUNIT_TEST(testUploadChecksumMismatch);
+        CPPUNIT_TEST(testUploadChecksumMatch);
         CPPUNIT_TEST(testDriveUploadSessionConstructorException);
         CPPUNIT_TEST(testDriveUploadSessionSynchronous);
         CPPUNIT_TEST(testDriveUploadSessionAsynchronous);
