@@ -17,6 +17,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         appclientlinux.cpp
         appclientlinux.h
         app/appconstants.h
+        app/applicationidentity.cpp
+        app/applicationidentity.h
         app/cache/appcache.cpp
         app/cache/appcache.h
         app/cache/appcachegraph.cpp
@@ -85,6 +87,7 @@ set(GUI_QML_RESOURCE_FILES # Resources for the QML files (e.g. qmldir, js files,
 )
 
 set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
+        ui/assets/taskbar/logo_kdrive.svg
         ui/assets/tray/error.svg
         ui/assets/tray/neutral.svg
         ui/assets/tray/notif.svg
