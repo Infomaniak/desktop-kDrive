@@ -60,6 +60,11 @@ class AbstractJob : public Poco::Runnable {
 
         [[nodiscard]] Poco::Thread::Priority jobPriority() const { return _jobPriority; }
 
+        [[nodiscard]] Scope scope() const { return _scope; }
+        void setScope(const Scope scope) { _scope = scope; }
+        [[nodiscard]] const std::string &context() const { return _context; }
+        void setContext(const std::string_view context) { _context = context; }
+
     protected:
         void run() override;
         virtual ExitInfo canRun() { return ExitCode::Ok; }
@@ -69,7 +74,6 @@ class AbstractJob : public Poco::Runnable {
         log4cplus::Logger _logger;
 
         virtual void callback(UniqueId) final;
-
 
     private:
         std::function<void(UniqueId)> _mainCallback = nullptr; // Used by the job manager to keep track of running jobs
@@ -87,6 +91,9 @@ class AbstractJob : public Poco::Runnable {
         bool _isExtendedLog = false;
 
         Poco::Thread::Priority _jobPriority = Poco::Thread::PRIO_NORMAL;
+
+        Scope _scope = Scope::None;
+        std::string _context;
 };
 
 } // namespace KDC

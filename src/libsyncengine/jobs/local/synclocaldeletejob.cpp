@@ -36,60 +36,53 @@
 
 namespace KDC {
 
-SyncLocalDeleteJob::Path::Path(const SyncPath &path) :
-    _path(path) {};
-
-bool SyncLocalDeleteJob::Path::endsWith(SyncPath &&ending) const {
-    if (!_path.empty() && ending.empty()) return false;
-
-    SyncPath path = _path;
-
-    while (!ending.empty() && !path.empty()) {
-        if (ending.filename() != path.filename()) return false;
-        ending = ending.parent_path();
-        path = path.parent_path();
-    }
-
-    return !path.empty() || ending.empty();
-};
-
-bool SyncLocalDeleteJob::matchRelativePaths(const SyncPath &targetPath, const SyncPath &localRelativePath,
+bool SyncLocalDeleteJob::matchRelativePaths(const SyncPath &remoteTargetPath, const SyncPath &localRelativePath,
                                             const SyncPath &remoteRelativePath) {
-    if (targetPath.empty()) return localRelativePath == remoteRelativePath;
+    // Standard synchronization case: the target path is empty and the local and remote relative paths should match.
+    if (remoteTargetPath.empty()) return remoteRelativePath == localRelativePath;
 
-    // Case of an advanced synchronization
-    return Path(remoteRelativePath).endsWith(SyncPath(targetPath.filename()) / localRelativePath);
+    // Case of an advanced synchronization.
+    // The remote target path is of the form /path/to/target_folder where to root is the remote drive root.
+    // We remove the "/" at the beginning to compare it with a reconstructed relative path.
+    const auto relativeRemoteTargetPath = std::filesystem::relative(remoteTargetPath, remoteTargetPath.root_path());
+
+    if (relativeRemoteTargetPath.begin() == relativeRemoteTargetPath.end() || relativeRemoteTargetPath == SyncPath{"."})
+        return remoteRelativePath == localRelativePath;
+
+    return remoteRelativePath == relativeRemoteTargetPath / localRelativePath;
 }
 
-SyncLocalDeleteJob::SyncLocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath,
-                                       bool liteSyncIsEnabled, const NodeId &remoteId, bool forceToTrash /* = false */) :
-    GenericLocalDeleteJob(syncPal ? syncPal->localPath() / relativePath : ""),
+SyncLocalDeleteJob::SyncLocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativeLocalPath,
+                                       const bool liteSyncIsEnabled, RemoteNodeId remoteNodeId,
+                                       ForceToTrash forceToTrash /* = ForceToTrash::No */) :
+    GenericLocalDeleteJob(syncPal ? syncPal->localPath() / relativeLocalPath : ""),
     _liteSyncIsEnabled(liteSyncIsEnabled),
     _syncPal(syncPal),
-    _relativeLocalPath(relativePath),
-    _remoteNodeId(remoteId),
-    _forceToTrash(forceToTrash) {}
+    _relativeLocalPath(relativeLocalPath),
+    _remoteNodeId(std::move(remoteNodeId)),
+    _forceToTrash(forceToTrash == ForceToTrash::Yes) {}
 
-SyncLocalDeleteJob::SyncLocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, const SyncPath &absolutePath) :
-    GenericLocalDeleteJob(absolutePath),
+SyncLocalDeleteJob::SyncLocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, const SyncPath &absoluteLocalPath) :
+    GenericLocalDeleteJob(absoluteLocalPath),
     _syncPal(syncPal) {
     setBypassCheck(true);
 }
 
-bool SyncLocalDeleteJob::findRemoteItem(SyncPath &remoteItemPath) const {
+bool SyncLocalDeleteJob::findRemoteItemRelativePath(SyncPath &remoteItemRelativePath) const {
     bool found = true;
-    remoteItemPath.clear();
+    remoteItemRelativePath.clear();
 
     // The item must be absent of remote replica for the job to run
     GetFileInfoJob job(_syncPal->driveDbId(), _remoteNodeId);
     job.setWithPath(true);
     job.runSynchronously();
-    remoteItemPath = job.path();
+    remoteItemRelativePath = job.path();
+
     if (job.hasHttpError()) {
         using namespace Poco::Net;
         if (job.getStatusCode() == HTTPResponse::HTTP_FORBIDDEN || job.getStatusCode() == HTTPResponse::HTTP_NOT_FOUND) {
             found = false;
-            LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(absolutePath())
+            LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(absoluteLocalPath())
                                           << L" not found on remote replica. This is normal and expected.");
         }
     }
@@ -99,19 +92,22 @@ bool SyncLocalDeleteJob::findRemoteItem(SyncPath &remoteItemPath) const {
 
 ExitInfo SyncLocalDeleteJob::checkIfRemoteFileHasBeenMoved() {
     SyncPath remoteRelativePath;
-    const bool remoteItemIsFound = findRemoteItem(remoteRelativePath);
-    if (!remoteItemIsFound) return ExitCode::Ok; // Safe deletion.
 
-    SyncPath normalizedPath;
-    if (!Utility::normalizedSyncPath(_relativeLocalPath, normalizedPath)) {
+    if (const bool remoteItemIsFound = findRemoteItemRelativePath(remoteRelativePath); !remoteItemIsFound)
+        return ExitCode::Ok; // Safe deletion.
+
+    SyncPath normalizedRelativeLocalPath;
+    if (!Utility::normalizedSyncPath(_relativeLocalPath, normalizedRelativeLocalPath)) {
         LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(_relativeLocalPath));
+
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
-    if (matchRelativePaths(_syncPal->syncInfo().targetPath, normalizedPath, remoteRelativePath)) {
-        // Item is found at the same path on remote
-        LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(absolutePath()).c_str()
+    if (matchRelativePaths(_syncPal->syncInfo().targetPath, normalizedRelativeLocalPath, remoteRelativePath)) {
+        // The item was found at the same path on remote drive.
+        LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(absoluteLocalPath()).c_str()
                                           << L" still exists on remote replica. Aborting current sync and restarting.");
+
         return {ExitCode::DataError, ExitCause::InvalidSnapshot}; // We need to rebuild the remote snapshot from scratch
     }
 
@@ -126,17 +122,17 @@ ExitInfo SyncLocalDeleteJob::canRun() {
     // The item must exist locally for the job to run
     bool exists = false;
     IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(absolutePath(), exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(absolutePath(), ioError));
+    if (!IoHelper::checkIfPathExists(absoluteLocalPath(), exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(absoluteLocalPath(), ioError));
         return ExitCode::SystemError;
     }
     if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(absolutePath()));
+        LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(absoluteLocalPath()));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     if (!exists) {
-        LOGW_DEBUG(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(absolutePath()));
+        LOGW_DEBUG(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(absoluteLocalPath()));
         return {ExitCode::DataError, ExitCause::NotFound};
     }
 
@@ -149,6 +145,7 @@ ExitInfo SyncLocalDeleteJob::canRun() {
     ItemsExistJob existsJob(_syncPal->syncInfo().driveDbId, {_remoteNodeId});
     if (ExitInfo exitInfo = existsJob.runSynchronously(); !exitInfo) {
         LOG_WARN(_logger, "Error in ItemsExistJob: " << exitInfo);
+
         return exitInfo;
     }
 
@@ -213,9 +210,9 @@ ExitInfo SyncLocalDeleteJob::deleteFromDB(const SyncPath &relativeLocalPath) {
 ExitInfo SyncLocalDeleteJob::hardDeleteDehydratedPlaceholders() {
     IoError ioError = IoError::Success;
     IoHelper::DirectoryIterator dir;
-    if (!IoHelper::getDirectoryIterator(absolutePath(), true, ioError, dir)) {
+    if (!IoHelper::getDirectoryIterator(absoluteLocalPath(), true, ioError, dir)) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in DirectoryIterator: " << Utility::formatIoError(absolutePath(), ioError));
+                  L"Error in DirectoryIterator: " << Utility::formatIoError(absoluteLocalPath(), ioError));
     }
 
     DirectoryEntry entry;
@@ -232,7 +229,7 @@ ExitInfo SyncLocalDeleteJob::hardDeleteDehydratedPlaceholders() {
     }
 
     if (!endOfDirectory) {
-        LOGW_WARN(_logger, L"Error in DirectoryIterator: " << Utility::formatIoError(absolutePath(), ioError));
+        LOGW_WARN(_logger, L"Error in DirectoryIterator: " << Utility::formatIoError(absoluteLocalPath(), ioError));
         return {ExitCode::SystemError, ExitCause::FileOrDirectoryCorrupted};
     }
 
@@ -241,22 +238,23 @@ ExitInfo SyncLocalDeleteJob::hardDeleteDehydratedPlaceholders() {
 
 
 ExitInfo SyncLocalDeleteJob::moveToTrash() {
-    if (!_liteSyncIsEnabled) return moveToTrashOrHardDeleteIfNeeded(absolutePath());
+    if (!_liteSyncIsEnabled) return moveToTrashOrHardDeleteIfNeeded(absoluteLocalPath());
 
     bool isDirectory = false;
     auto ioErrorCheckIfIsDirectory = IoError::Success;
-    if (const bool success = IoHelper::checkIfIsDirectory(absolutePath(), isDirectory, ioErrorCheckIfIsDirectory); !success) {
+    if (const bool success = IoHelper::checkIfIsDirectory(absoluteLocalPath(), isDirectory, ioErrorCheckIfIsDirectory);
+        !success) {
         LOGW_WARN(_logger, L"Failed to check if path is a directory: "
-                                   << Utility::formatIoError(absolutePath(), ioErrorCheckIfIsDirectory));
+                                   << Utility::formatIoError(absoluteLocalPath(), ioErrorCheckIfIsDirectory));
 
-        return hardDelete(absolutePath());
+        return hardDelete(absoluteLocalPath());
     }
 
-    if (!isDirectory) return handleLiteSyncFile(absolutePath());
+    if (!isDirectory) return handleLiteSyncFile(absoluteLocalPath());
 
     if (const auto exitInfo = hardDeleteDehydratedPlaceholders(); !exitInfo) return exitInfo;
 
-    return moveToTrashOrHardDeleteIfNeeded(absolutePath());
+    return moveToTrashOrHardDeleteIfNeeded(absoluteLocalPath());
 }
 
 ExitInfo SyncLocalDeleteJob::runJob() {
@@ -267,14 +265,14 @@ ExitInfo SyncLocalDeleteJob::runJob() {
     if (const auto exitInfo = canRun(); !exitInfo) return exitInfo;
 
     // Make sure we are allowed to propagate the change
-    PermissionsGiver permsGiver(absolutePath().parent_path(), _logger);
-    PermissionsGiver permsGiver2(absolutePath(), _logger);
+    PermissionsGiver permsGiver(absoluteLocalPath().parent_path(), _logger);
+    PermissionsGiver permsGiver2(absoluteLocalPath(), _logger);
 
     if (const bool tryMoveToTrash = ParametersCache::instance()->parameters().moveToTrash(); tryMoveToTrash || _forceToTrash) {
         return moveToTrash();
     }
 
-    return hardDelete(absolutePath());
+    return hardDelete(absoluteLocalPath());
 }
 
 } // namespace KDC
