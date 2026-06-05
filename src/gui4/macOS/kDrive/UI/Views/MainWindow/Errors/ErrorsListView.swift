@@ -57,13 +57,12 @@ struct ErrorsListView: View {
             ForEach(categories) { category in
                 Section {
                     if category == .conflicts {
-                        Text("List Of Conflicts")
+                        ManyConflictsCellView(errors: computedErrors[category, default: []], manager: synchroErrorManager)
                     } else {
                         ForEach(computedErrors[category, default: []]) { error in
                             ErrorCellFactory().make(error: error, isAdmin: isAdmin, manager: synchroErrorManager)
                         }
                     }
-
                 } header: {
                     Text(category.title)
                 }
