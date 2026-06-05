@@ -83,6 +83,10 @@ if ($shouldRegenerate) {
 	foreach ($file in $jsonFiles) {
 		Write-Host "Generating code for '$($file.Name)'..."
 		dotnet tool run LottieGen -InputFile $file.FullName -OutputFolder $Directory -Language cs -WinUIVersion 3.0 -GenerateColorBindings -GenerateDependencyObject
+		if ($LASTEXITCODE -ne 0) {
+			Write-Error "LottieGen failed for '$($file.Name)' (exit code $LASTEXITCODE)."
+			exit $LASTEXITCODE
+		}
 	}
 
 	# Save the new hash
