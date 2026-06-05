@@ -56,7 +56,7 @@ struct ErrorCellFactory {
                 error: error,
                 title: KDriveLocalizable.conflictErrorTitle,
                 description: KDriveLocalizable.conflictErrorDescription,
-                action: .init(title: KDriveLocalizable.conflictErrorAction) { manager.handleConflict() }
+                action: .init(title: KDriveLocalizable.conflictErrorAction) { manager.handleConflicts([error]) }
             )
         case .createCancel:
             return makeCell(

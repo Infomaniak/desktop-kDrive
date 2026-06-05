@@ -31,7 +31,7 @@ struct ManyConflictsCellView: View {
                 title: KDriveLocalizable.manyConflictErrorTitle(errors.count),
                 description: KDriveLocalizable.manyConflictErrorDescription,
                 action: .init(title: KDriveLocalizable.buttonManage) {
-                    // TODO: Manager
+                    manager.handleConflicts(errors)
                 }
             )
         }

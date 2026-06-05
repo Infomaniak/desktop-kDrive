@@ -151,7 +151,7 @@ final class SynchroErrorManager: ObservableObject {
 
     // MARK: - Misc
 
-    func handleConflict() {
+    func handleConflicts(_ errors: [SynchroError]) {
         // TODO: Will be done in a next PR
     }
 
