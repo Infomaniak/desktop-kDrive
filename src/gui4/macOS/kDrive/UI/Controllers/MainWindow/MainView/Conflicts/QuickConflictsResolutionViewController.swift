@@ -27,7 +27,7 @@ final class QuickConflictsResolutionViewController: TitledViewController<QuickCo
     init(errors: [SynchroError]) {
         @InjectService var router: MainViewRouter
         super.init(
-            toolbarTitle: KDriveLocalizable.errorPageTitle,
+            toolbarTitle: KDriveLocalizable.conflictErrorTitle,
             navigableRouter: router,
             contentView: QuickConflictsResolutionView(errors: errors)
         )
