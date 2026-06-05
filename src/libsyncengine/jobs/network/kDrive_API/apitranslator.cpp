@@ -163,6 +163,9 @@ RemoteNodeId ApiTranslator::getValue(const DriveId driveId, const RemoteNodeIdCa
 
 ExitInfo ApiTranslator::getSpecialFolderRemoteId(const UserDbId userDbId, const DriveId driveId,
                                                  const SpecialRemoteFolder specialFolder, RemoteNodeId &folderRemoteId) {
+    LOG_MSG_IF_FAIL(Log::instance()->getLogger(), specialFolder != SpecialRemoteFolder::CustomTarget,
+                    "Invalid special folder. CustomTarget folder is not supported.");
+
     folderRemoteId = {};
 
     bool updateIsRequired = false;
