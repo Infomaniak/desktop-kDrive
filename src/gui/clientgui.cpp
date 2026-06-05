@@ -87,7 +87,6 @@ ClientGui::ClientGui(AppClient *parent) :
 
     connect(this, &ClientGui::refreshStatusNeeded, this, &ClientGui::onRefreshStatusNeeded);
     connect(this, &ClientGui::appVersionLocked, this, &ClientGui::onAppVersionLocked);
-    // connect(this, &ClientGui::filesDeletionAcknowledgementRequired, this, &ClientGui::onAppVersionLocked);
 
     connect(&_refreshErrorListTimer, &QTimer::timeout, this, &ClientGui::onRefreshErrorList);
 

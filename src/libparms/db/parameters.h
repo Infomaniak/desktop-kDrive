@@ -104,8 +104,8 @@ class PARMS_EXPORT Parameters {
         bool matomoEnabled() const { return _matomoEnabled; }
         void setMatomoEnabled(bool value) { _matomoEnabled = value; }
 
-        [[nodiscard]] bool askBeforeDelete() const { return _askBeforeDelete; }
-        void setAskBeforeDelete(const bool askBeforeDelete) { _askBeforeDelete = askBeforeDelete; }
+        [[nodiscard]] bool notifyBeforeDelete() const { return _notifyBeforeDelete; }
+        void setNotifyBeforeDelete(const bool notifyBeforeDelete) { _notifyBeforeDelete = notifyBeforeDelete; }
 
         static int _uploadSessionParallelJobsDefault;
 
@@ -132,7 +132,7 @@ class PARMS_EXPORT Parameters {
         DistributionChannel _distributionChannel{DistributionChannel::Prod};
         bool _sentryEnabled{true};
         bool _matomoEnabled{true};
-        bool _askBeforeDelete{true};
+        bool _notifyBeforeDelete{true};
 };
 
 } // namespace KDC
