@@ -47,7 +47,7 @@ class CheckHashMatchJob : public AbstractTokenNetworkJob {
         int64_t _localSize = 0;
         int64_t _remoteSize = 0;
 
-        bool _hashMatch = true;
+        bool _hashMatch = false;
 };
 
 } // namespace KDC
