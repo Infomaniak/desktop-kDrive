@@ -18,14 +18,13 @@
 
 #include "appclientlinux.h"
 
+#include "app/applicationidentity.h"
 #include "libcommongui/logger.h"
-#include "libcommon/theme/theme.h"
 #include "libcommon/utility/utility.h"
 
 #include <Poco/Dynamic/Struct.h>
 
 #include <QDir>
-#include <QGuiApplication>
 #include <QLocale>
 #include <QQmlContext>
 #include <QScreen>
@@ -45,6 +44,7 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     QApplication(argc, argv) {
     setupLogging();
     setQuitOnLastWindowClosed(false);
+    const QIcon appIcon = ApplicationIdentity::applyTo();
 
     qCInfo(lcAppClientLinux) << "Linux v4 GUI bootstrap started";
     _systemTrayController.initialize();
@@ -111,6 +111,7 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
         SentryService::reportFatalAndExit("QML root object is not a window",
                                           "The first QML root object is not a QWindow instance.");
     }
+    mainWindow->setIcon(appIcon);
     _systemTrayController.setMainWindow(mainWindow);
 
     qCDebug(lcAppClientLinux) << "IPC/cache/QML wiring initialized";
