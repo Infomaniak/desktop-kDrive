@@ -152,7 +152,11 @@ final class SynchroErrorManager: ObservableObject {
     // MARK: - Misc
 
     func handleConflicts(_ errors: [SynchroError]) {
-        // TODO: Will be done in a next PR
+        if errors.count <= 1, let error = errors.first {
+            // TODO: Display single conflict sheet
+        } else {
+            // TODO: Navigate to several conflits management
+        }
     }
 
     func renameItem(_ error: SynchroError) async {

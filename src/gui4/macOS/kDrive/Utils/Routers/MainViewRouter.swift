@@ -62,4 +62,7 @@ enum MainViewDetail: RouterDetail {
     case blockingError
 
     case errors
+
+    case quickConflictsResolution
+    case conflictsList
 }
