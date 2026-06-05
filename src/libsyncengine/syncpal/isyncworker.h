@@ -29,7 +29,8 @@
 
 namespace KDC {
 
-const int64_t defaultPauseDuration = 60000; // 1 min
+constexpr int64_t defaultPauseDuration = 60000; // 1 min
+constexpr int64_t longPauseDuration = 60000 * 60; // 1 h
 
 class ISyncWorker {
     public:

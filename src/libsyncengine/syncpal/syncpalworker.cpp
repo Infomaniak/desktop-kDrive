@@ -74,10 +74,8 @@ bool shouldBeStopped(const std::shared_ptr<ISyncWorker> w1, const std::shared_pt
             (w1 && w1->exitCode() == ExitCode::InvalidToken) || (w2 && w2->exitCode() == ExitCode::InvalidToken);
     const auto driveNotFound = (w1 && w1->exitCode() == ExitCode::BackError && w1->exitCause() == ExitCause::DriveAccessError) ||
                                (w2 && w2->exitCode() == ExitCode::BackError && w2->exitCause() == ExitCause::DriveAccessError);
-    const auto tooManyDeletes = (w1 && w1->exitCode() == ExitCode::TooManyDeleteOperations) ||
-                                (w2 && w2->exitCode() == ExitCode::TooManyDeleteOperations);
 
-    return dbError || systemError || updateRequired || invalidSyncError || invalidToken || driveNotFound || tooManyDeletes;
+    return dbError || systemError || updateRequired || invalidSyncError || invalidToken || driveNotFound;
 }
 
 } // namespace
@@ -112,7 +110,14 @@ bool SyncPalWorker::shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const 
         return true;
     }
 
-    return networkIssue || httpBlockingError || syncDirNotAccessible || invalidOperation;
+    if ((w1 && w1->exitCode() == ExitCode::TooManyDeleteOperations) ||
+        (w2 && w2->exitCode() == ExitCode::TooManyDeleteOperations)) {
+        // Too many delete operations detected, pause the sync for a long time
+        setPauseDuration(longPauseDuration);
+        return true;
+    }
+
+    return networkIssue || syncDirNotAccessible || invalidOperation;
 }
 
 bool SyncPalWorker::handleRateLimited(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2) {
