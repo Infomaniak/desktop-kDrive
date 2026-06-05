@@ -261,6 +261,16 @@ if(NOT BUILD_KDRIVE_OSX_BUNDLE)
 
     # we may not add MACOSX_BUNDLE here, if not building one
     add_executable(${APPLICATION_EXECUTABLE} WIN32 mainserver.cpp ${final_src})
+    if(UNIX AND NOT APPLE)
+        qt_add_resources(${APPLICATION_EXECUTABLE} "linux_gui_taskbar_icon"
+            PREFIX
+            "/assets"
+            BASE
+            "${CMAKE_SOURCE_DIR}/src/gui4/linux/ui/assets"
+            FILES
+            "${CMAKE_SOURCE_DIR}/src/gui4/linux/ui/assets/taskbar/logo_kdrive.svg"
+        )
+    endif()
 else()
     # we must add MACOSX_BUNDLE only if building a bundle
     add_executable(${APPLICATION_EXECUTABLE} WIN32 MACOSX_BUNDLE mainserver.cpp ${final_src})
