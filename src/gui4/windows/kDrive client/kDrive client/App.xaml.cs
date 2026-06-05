@@ -43,7 +43,6 @@ namespace Infomaniak.kDrive
         private Window? _currentWindow;
         private UpdateWindow? _updateWindow;
 
-        public int LegacyCommPort { get; private set; } = -1;
         public Window? CurrentWindow
         {
             get => _currentWindow;
@@ -117,16 +116,8 @@ namespace Infomaniak.kDrive
                     current.Kill();
                     return;
                 }
-                try
-                {
-                    LegacyCommPort = Int32.Parse(arguments[1]);
-                    Logger.Log(Logger.Level.Info, $"Parsed legacy communication port from arguments: {LegacyCommPort}");
-                }
-                catch (Exception ex)
-                {
-                    Logger.Log(Logger.Level.Error, $"Failed to parse legacy communication port from arguments {ex}");
-                }
             }
+
             // Register oAuth protocol handler
             RegisterOAuthProtocol();
 
