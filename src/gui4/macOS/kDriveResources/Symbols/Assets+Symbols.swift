@@ -39,6 +39,7 @@ public enum KDriveResources {
     public static let fileVideo = ImageAsset(name: "FileTypes/fileVideo")
   }
   public static let alert = ImageAsset(name: "alert")
+  public static let arrowRight = ImageAsset(name: "arrow-right")
   public static let checkmarkCircle = ImageAsset(name: "checkmark-circle")
   public static let checkmark = ImageAsset(name: "checkmark")
   public static let circularArrowsClockwise = ImageAsset(name: "circular-arrows-clockwise")
@@ -47,6 +48,7 @@ public enum KDriveResources {
   public static let cog = ImageAsset(name: "cog")
   public static let computerArrowUp = ImageAsset(name: "computer-arrow-up")
   public static let computer = ImageAsset(name: "computer")
+  public static let documentOnDocument = ImageAsset(name: "document-on-document")
   public static let doorArrowRight = ImageAsset(name: "door-arrow-right")
   public static let dotsVertical = ImageAsset(name: "dots-vertical")
   public static let finder = ImageAsset(name: "finder")

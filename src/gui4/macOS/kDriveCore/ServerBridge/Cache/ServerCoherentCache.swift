@@ -371,7 +371,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
 
         synchro.errors[error.dbId] = error
         if synchro.latestError == nil {
-            synchro.latestError = SynchroError(errorInfo: error)
+            synchro.latestError = BlockingSynchroError(errorInfo: error)
         }
 
         try updateSynchro(synchro)
@@ -398,7 +398,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
                 }
                 synchro.errors[error.dbId] = error
                 if synchro.latestError == nil {
-                    synchro.latestError = SynchroError(errorInfo: error)
+                    synchro.latestError = BlockingSynchroError(errorInfo: error)
                 }
                 try? updateSynchro(synchro)
             }
@@ -419,7 +419,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
                         }
 
                         if let remainingError = synchro.errors.values.first {
-                            synchro.latestError = SynchroError(errorInfo: remainingError)
+                            synchro.latestError = BlockingSynchroError(errorInfo: remainingError)
                         } else {
                             synchro.latestError = nil
                         }

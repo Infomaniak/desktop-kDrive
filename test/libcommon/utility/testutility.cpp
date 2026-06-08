@@ -21,16 +21,14 @@
 #include "test_utility/testhelpers.h"
 #include "libcommon/utility/logiffail.h"
 #include "libcommon/utility/utility.h"
-#include "libcommon/utility/sourcelocation.h"
 #include "libcommonserver/io/iohelper.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "utility/utility_base.h"
 
 #include <QLocale>
-
+#include <source_location>
 #include <iostream>
 #include <regex>
-#include <source_location>
 
 #include <Poco/DynamicStruct.h>
 
@@ -386,39 +384,6 @@ void TestUtility::testCompressFile() {
 void TestUtility::testCurrentVersion() {
     const std::string test = CommonUtility::currentVersion();
     CPPUNIT_ASSERT(std::regex_match(test, std::regex(R"(\d{1,2}\.{1}\d{1,2}\.{1}\d{1,2}\.{1}\d{0,8}$)")));
-}
-
-SourceLocation testSourceLocationFooFunc(uint32_t &constructLine, SourceLocation location = SourceLocation::currentLoc()) {
-    constructLine = std::source_location::current().line() - 1;
-    return location;
-}
-
-void TestUtility::testSourceLocation() {
-    SourceLocation location = SourceLocation::currentLoc();
-    uint32_t correctLine = std::source_location::current().line() - 1;
-
-    CPPUNIT_ASSERT_EQUAL(std::string("testutility.cpp"), location.fileName());
-    CPPUNIT_ASSERT_EQUAL(correctLine, location.line());
-
-#ifdef SRC_LOC_AVALAIBALE
-    CPPUNIT_ASSERT_EQUAL(std::string("testSourceLocation"), location.functionName());
-#else
-    CPPUNIT_ASSERT_EQUAL(std::string(""), location.functionName());
-#endif
-
-    // Test as a default argument
-    uint32_t fooFuncLine = 0;
-    location = testSourceLocationFooFunc(fooFuncLine);
-    correctLine = std::source_location::current().line() - 1;
-
-    CPPUNIT_ASSERT_EQUAL(std::string("testutility.cpp"), location.fileName());
-#ifdef SRC_LOC_AVALAIBALE
-    CPPUNIT_ASSERT_EQUAL(std::string("testSourceLocation"), location.functionName());
-    CPPUNIT_ASSERT_EQUAL(correctLine, location.line());
-#else
-    CPPUNIT_ASSERT_EQUAL(std::string(""), location.functionName());
-    CPPUNIT_ASSERT_EQUAL(fooFuncLine, location.line());
-#endif
 }
 
 void TestUtility::testGenerateRandomStringAlphaNum() {

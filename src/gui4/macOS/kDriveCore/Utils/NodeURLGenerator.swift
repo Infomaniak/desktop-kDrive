@@ -23,6 +23,7 @@ public protocol NodeURLGenerator: Sendable {
     func remoteURL(for nodeId: String, driveId: Int) -> URL
     func shareURL(for nodeId: String, driveDbId: Int) async throws -> URL
     func redirectURL(forDriveId driveId: Int, fileId: String) -> URL?
+    func shopURL(forDriveId driveId: Int) -> URL
 }
 
 public struct DriveNodeURLGenerator: NodeURLGenerator {
@@ -41,5 +42,9 @@ public struct DriveNodeURLGenerator: NodeURLGenerator {
     public func redirectURL(forDriveId driveId: Int, fileId: String) -> URL? {
         let urlString = "https://kdrive.infomaniak.com/app/drive/\(driveId)/redirect/\(fileId)"
         return URL(string: urlString)
+    }
+
+    public func shopURL(forDriveId driveId: Int) -> URL {
+        return URL(string: "https://shop.infomaniak.com/order/drive/\(driveId)")!
     }
 }

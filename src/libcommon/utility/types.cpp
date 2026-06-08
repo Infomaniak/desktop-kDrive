@@ -944,6 +944,25 @@ std::string toString(const TranslationMode e) {
     }
 }
 
+std::string toString(const std::source_location &e) {
+    return e.file_name() + std::string(":") + std::to_string(e.line()) + std::string("[") + e.function_name() + "]";
+}
+  
+std::string toString(const Scope e) {
+    switch (e) {
+        case Scope::None:
+            return "None";
+        case Scope::Sync:
+            return "Sync";
+        case Scope::Extension:
+            return "LiteSync";
+        case Scope::UserInitiated:
+            return "UserInitiated";
+        default:
+            return noConversionStr;
+    }
+}
+
 void ExitInfo::merge(const ExitInfo &exitInfoToMerge, const std::vector<ExitCode> &exitCodeList) {
     const long index = indexInList(exitInfoToMerge.code(), exitCodeList);
     const long thisIndex = indexInList(this->code(), exitCodeList);

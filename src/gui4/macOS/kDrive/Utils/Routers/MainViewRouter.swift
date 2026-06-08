@@ -61,6 +61,5 @@ enum MainViewDetail: RouterDetail {
     case storage
     case blockingError
 
-    case activityError
-    case versionConflict
+    case errors
 }

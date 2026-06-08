@@ -20,14 +20,15 @@
 
 namespace KDC {
 
-GenericLocalDeleteJob::GenericLocalDeleteJob(const SyncPath &absolutePath, bool forceHardDelete /*= false*/) :
-    _absolutePath(absolutePath),
-    _forceHardDelete(forceHardDelete) {}
+GenericLocalDeleteJob::GenericLocalDeleteJob(SyncPath absoluteLocalPath,
+                                             ForceHardDelete forceHardDelete /*= ForceHardDelete::No*/) :
+    _absoluteLocalPath(std::move(absoluteLocalPath)),
+    _forceHardDelete(forceHardDelete == ForceHardDelete::Yes) {}
 
 ExitInfo GenericLocalDeleteJob::runJob() {
     if (!_forceHardDelete && ParametersCache::instance()->parameters().moveToTrash())
-        return moveToTrashOrHardDeleteIfNeeded(_absolutePath);
-    return hardDelete(absolutePath());
+        return moveToTrashOrHardDeleteIfNeeded(_absoluteLocalPath);
+    return hardDelete(absoluteLocalPath());
 }
 
 ExitInfo GenericLocalDeleteJob::moveToTrashOrHardDeleteIfNeeded(const SyncPath &path) {
@@ -47,10 +48,9 @@ ExitInfo GenericLocalDeleteJob::hardDelete(const SyncPath &path) {
     LOGW_DEBUG(_logger, L"Try to hard delete item with " << Utility::formatSyncPath(path));
 
     if (auto ioError = IoError::Unknown; !IoHelper::deleteItem(path, ioError)) {
-        LOGW_WARN(_logger, L"Failed to delete item with " << Utility::formatIoError(_absolutePath, ioError));
-        if (ioError == IoError::AccessDenied) {
-            return {ExitCode::SystemError, ExitCause::FileAccessError};
-        }
+        LOGW_WARN(_logger, L"Failed to delete item with " << Utility::formatIoError(path, ioError));
+        if (ioError == IoError::AccessDenied) return {ExitCode::SystemError, ExitCause::FileAccessError};
+
 
         if (ioError == IoError::NoSuchFileOrDirectory) {
             LOGW_WARN(_logger, L"Item doesn't exist: " << Utility::formatSyncPath(path));

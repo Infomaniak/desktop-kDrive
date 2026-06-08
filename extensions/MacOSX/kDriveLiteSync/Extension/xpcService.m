@@ -59,8 +59,7 @@ const NSString *timeoutBlockKey = @"timeoutBlock";
 
 - (void)initOpenWhiteListThumbnailSet {
     _defaultOpenWhiteListThumbnailSet =
-            [NSSet setWithObjects:@"com.apple.quicklook.QuickLookUIService", // Quicklook
-                                  @"com.apple.quicklook.satellite", // Quicklook
+            [NSSet setWithObjects:@"com.apple.quicklook.satellite", // Quicklook
                                   @"com.apple.quicklook.thumbnail.ImageExtension", // Quicklook Thumbnail
                                   @"com.apple.quicklook.thumbnail.AudiovisualExtension", // Quicklook Thumbnail
                                   @"com.apple.quicklook.ThumbnailsAgent", // Quicklook

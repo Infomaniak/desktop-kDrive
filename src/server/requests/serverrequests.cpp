@@ -324,7 +324,8 @@ ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, SyncConfigu
 
     // Check if the path is the root of a drive, which is not allowed for sync*
     if (CommonUtility::isDiskRootFolder(path)) {
-        LOGW_INFO(Log::instance()->getLogger(), L"Path is the root of a drive, which is not allowed for sync: " << Utility::formatSyncPath(path));
+        LOGW_INFO(Log::instance()->getLogger(),
+                  L"The provided path indicates the root of a drive, which is not allowed for sync: " << Utility::formatSyncPath(path));
         return ExitCode::Ok;
     }
 
@@ -543,6 +544,7 @@ ExitInfo ServerRequests::getNodeInfo(const UserDbId userDbId, const DriveId driv
                                      NodeInfo &nodeInfo, bool withPath) {
     return getNodeInfo(userDbId, driveId, QString::fromStdString(nodeId), nodeInfo, withPath);
 }
+
 ExitInfo ServerRequests::getNodeInfo(const UserDbId userDbId, const DriveId driveId, const QString &nodeId, NodeInfo &nodeInfo,
                                      bool withPath /*= false*/) {
     std::shared_ptr<GetFileInfoJob> job;
@@ -556,6 +558,7 @@ ExitInfo ServerRequests::getNodeInfo(const UserDbId userDbId, const DriveId driv
     }
 
     job->setWithPath(withPath);
+    job->setScope(Scope::UserInitiated);
 
     if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetFileInfoJob::runSynchronously for userDbId="
@@ -611,37 +614,11 @@ ExitInfo ServerRequests::getNodeInfo(const UserDbId userDbId, const DriveId driv
 }
 
 ExitInfo ServerRequests::getUserAvailableDrives(const UserDbId userDbId, QList<DriveAvailableInfo> &list) {
-    std::shared_ptr<GetDrivesListJob> job = nullptr;
-    try {
-        job = std::make_shared<GetDrivesListJob>(userDbId);
-    } catch (const std::exception &e) {
-        LOG_WARN(Log::instance()->getLogger(),
-                 "Error in GetDrivesListJob::GetDrivesListJob for userDbId=" << userDbId << " error=" << e.what());
-        return exception2ExitCode(e);
+    std::vector<DriveAvailableInfo> availableDriveInfoList;
+    if (const auto exitInfo = getUserAvailableDrives(userDbId, availableDriveInfoList); !exitInfo) return exitInfo;
+    for (const auto &driveInfo: availableDriveInfoList) {
+        list.push_back(driveInfo);
     }
-
-    if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
-        LOG_WARN(Log::instance()->getLogger(),
-                 "Error in GetDrivesListJob::runSynchronously for userDbId=" << userDbId << " exitInfo=" << exitInfo);
-        return exitInfo;
-    }
-
-    list.clear();
-    for (auto &availableDriveInfo: job->availableDrives()) {
-        // Search user in DB
-        User user;
-        bool found = false;
-        if (!ParmsDb::instance()->selectUserByUserId(availableDriveInfo.userId(), user, found)) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectUserByUserId");
-            return ExitCode::DbError;
-        }
-        if (found) {
-            availableDriveInfo.setUserDbId(user.dbId());
-        }
-
-        (void) list.push_back(availableDriveInfo);
-    }
-
     return ExitCode::Ok;
 }
 
@@ -654,6 +631,7 @@ ExitInfo ServerRequests::getUserAvailableDrives(const UserDbId userDbId, std::ve
                  "Error in GetDrivesListJob::GetDrivesListJob for userDbId=" << userDbId << " error=" << e.what());
         return exception2ExitCode(e);
     }
+    job->setScope(Scope::UserInitiated);
 
     if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(),
@@ -878,6 +856,7 @@ ExitInfo ServerRequests::getSubFolders(const UserDbId userDbId, const DriveId dr
             }
         }
 
+        job->setScope(Scope::UserInitiated);
         job->setWithPath(withPath);
         if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
             LOG_WARN(Log::instance()->getLogger(),
@@ -1200,10 +1179,11 @@ ExitCode ServerRequests::fixProxyConfig() {
 }
 
 bool ServerRequests::isDisplayableError(const Error &error) {
+    using enum ExitCode;
     switch (error.exitCode()) {
-        case ExitCode::UpdateRequired:
+        case UpdateRequired:
             return true;
-        case ExitCode::NetworkError: {
+        case NetworkError: {
             switch (error.exitCause()) {
                 // case ExitCause::NetworkTimeout:
                 case ExitCause::SocketsDefuncted:
@@ -1212,11 +1192,11 @@ bool ServerRequests::isDisplayableError(const Error &error) {
                     return false;
             }
         }
-        case ExitCode::InvalidOperation:
-        case ExitCode::LogicError: {
+        case InvalidOperation:
+        case LogicError: {
             return true;
         }
-        case ExitCode::DataError: {
+        case DataError: {
             switch (error.exitCause()) {
                 case ExitCause::MigrationError:
                 case ExitCause::MigrationProxyNotImplemented:
@@ -1226,7 +1206,7 @@ bool ServerRequests::isDisplayableError(const Error &error) {
                     return false;
             }
         }
-        case ExitCode::BackError: {
+        case BackError: {
             switch (error.exitCause()) {
                 case ExitCause::DriveMaintenance:
                 case ExitCause::DriveNotRenew:
@@ -1244,9 +1224,14 @@ bool ServerRequests::isDisplayableError(const Error &error) {
                     return false;
             }
         }
-        case ExitCode::RateLimited:
+        case SystemError:
+            // LFSO already emit a node level error, so we don't want to emit another one from SyncPal level
+            return (error.level() != ErrorLevel::SyncPal || error.workerName() != "LFSO" ||
+                    (error.exitCause() != ExitCause::FileAccessError &&
+                     error.exitCause() != ExitCause::FileOrDirectoryCorrupted));
+        case RateLimited:
             return false;
-        case ExitCode::Unknown: {
+        case Unknown: {
             return error.inconsistencyType() != InconsistencyType::PathLength;
         }
         default:
@@ -1318,10 +1303,9 @@ ExitCode ServerRequests::getDbStructsFromSyncDbId(SyncDbId syncDbId, User &user,
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::createDir(const DriveDbId driveDbId, const NodeId &parentNodeId, const CommString &dirName,
-                                   NodeId &newNodeId) {
-    // Get drive data
-    std::shared_ptr<CreateDirJob> job = nullptr;
+namespace {
+ExitInfo generateCreateDirJob(std::shared_ptr<CreateDirJob> &job, const DriveDbId driveDbId, const NodeId &parentNodeId,
+                              const CommString &dirName) {
     try {
         job = std::make_shared<CreateDirJob>(nullptr, driveDbId, dirName, parentNodeId, dirName);
     } catch (const std::exception &e) {
@@ -1329,30 +1313,11 @@ ExitCode ServerRequests::createDir(const DriveDbId driveDbId, const NodeId &pare
                  "Error in CreateDirJob::CreateDirJob for driveDbId=" << driveDbId << " error=" << e.what());
         return exception2ExitCode(e);
     }
-
-    if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in CreateDirJob::runSynchronously for driveDbId=" << driveDbId);
-        return exitInfo.code();
-    }
-
-    // Extract file ID
-    if (job->jsonRes()) {
-        if (Poco::JSON::Object::Ptr dataObj = job->jsonRes()->getObject(dataKey); dataObj) {
-            NodeId tmp;
-            if (!JsonParserUtility::extractValue(dataObj, idKey, tmp)) return ExitCode::BackError;
-            newNodeId = tmp;
-        }
-    }
-
-    if (newNodeId.empty()) return ExitCode::BackError;
-
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::createDir(const UserDbId userDbId, const DriveId driveId, const NodeId &parentNodeId,
-                                   const SyncName &dirName, NodeId &newNodeId) {
-    // Get drive data
-    std::shared_ptr<CreateDirJob> job = nullptr;
+ExitInfo generateCreateDirJob(std::shared_ptr<CreateDirJob> &job, const UserDbId userDbId, const DriveId driveId,
+                              const NodeId &parentNodeId, const SyncName &dirName) {
     try {
         job = std::make_shared<CreateDirJob>(nullptr, userDbId, driveId, parentNodeId, dirName);
     } catch (const std::exception &e) {
@@ -1360,10 +1325,16 @@ ExitCode ServerRequests::createDir(const UserDbId userDbId, const DriveId driveI
                  "Error in CreateDirJob::CreateDirJob for driveId=" << driveId << " error=" << e.what());
         return exception2ExitCode(e);
     }
+    return ExitCode::Ok;
+}
 
+ExitInfo runCreateDirJob(const std::shared_ptr<CreateDirJob> job, NodeId &newNodeId) {
+    if (!job) return ExitCode::LogicError;
+
+    job->setScope(Scope::UserInitiated);
     if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in CreateDirJob::runSynchronously for driveId=" << driveId);
-        return exitInfo.code();
+        LOG_WARN(Log::instance()->getLogger(), "Error in CreateDirJob::runSynchronously");
+        return exitInfo;
     }
 
     // Extract file ID
@@ -1374,9 +1345,32 @@ ExitCode ServerRequests::createDir(const UserDbId userDbId, const DriveId driveI
             newNodeId = tmp;
         }
     }
-
     if (newNodeId.empty()) return ExitCode::BackError;
+    return ExitCode::Ok;
+}
+} // namespace
 
+ExitCode ServerRequests::createDir(const DriveDbId driveDbId, const NodeId &parentNodeId, const CommString &dirName,
+                                   NodeId &newNodeId) {
+    std::shared_ptr<CreateDirJob> job = nullptr;
+    if (const auto exitCode = generateCreateDirJob(job, driveDbId, parentNodeId, dirName); !exitCode) {
+        return exitCode;
+    }
+    if (const auto exitInfo = runCreateDirJob(job, newNodeId); !exitInfo) {
+        return exitInfo;
+    }
+    return ExitCode::Ok;
+}
+
+ExitCode ServerRequests::createDir(const UserDbId userDbId, const DriveId driveId, const NodeId &parentNodeId,
+                                   const SyncName &dirName, NodeId &newNodeId) {
+    std::shared_ptr<CreateDirJob> job = nullptr;
+    if (const auto exitCode = generateCreateDirJob(job, userDbId, driveId, parentNodeId, dirName); !exitCode) {
+        return exitCode;
+    }
+    if (const auto exitInfo = runCreateDirJob(job, newNodeId); !exitInfo) {
+        return exitInfo;
+    }
     return ExitCode::Ok;
 }
 
@@ -1406,6 +1400,7 @@ ExitCode ServerRequests::getPublicLinkUrl(const DriveDbId driveDbId, const NodeI
         logWarning("PostFileLinkJob", driveDbId, nodeId, e.what());
         return exception2ExitCode(e);
     }
+    job->setScope(Scope::UserInitiated);
 
     if (!job->runSynchronously()) {
         if (job->exitInfo().code() == ExitCode::BackError && job->exitInfo().cause() == ExitCause::ShareLinkAlreadyExists) {
@@ -1417,6 +1412,7 @@ ExitCode ServerRequests::getPublicLinkUrl(const DriveDbId driveDbId, const NodeI
                 logWarning("GetFileLinkJob", driveDbId, nodeId, e.what());
                 return exception2ExitCode(e);
             }
+            job->setScope(Scope::UserInitiated);
 
             if (!job->runSynchronously()) {
                 logWarning("GetFileLinkJob", driveDbId, nodeId, toString(job->exitInfo().code()));
@@ -1451,7 +1447,7 @@ ExitCode ServerRequests::getPublicLinkUrl(const DriveDbId driveDbId, const NodeI
 ExitInfo ServerRequests::getFolderSizeWithCallback(const UserDbId userDbId, const DriveId driveId, const NodeId &nodeId,
                                                    std::function<void(const QString &, qint64)> callback) {
     int64_t result = 0;
-    if (ExitInfo exitInfo = ServerRequests::getFolderSize(userDbId, driveId, nodeId, result); !exitInfo) {
+    if (const auto exitInfo = ServerRequests::getFolderSize(userDbId, driveId, nodeId, result); !exitInfo) {
         return exitInfo;
     }
 
@@ -1475,13 +1471,13 @@ ExitInfo ServerRequests::getFolderSize(const UserDbId userDbId, const DriveId dr
                                                                  << " error=" << e.what());
         return exception2ExitCode(e);
     }
+    job->setScope(Scope::UserInitiated);
 
-    ExitCode exitCode = job->runSynchronously();
-    if (exitCode != ExitCode::Ok) {
+    if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in GetSizeJob::runSynchronously for userDbId=" << userDbId << " driveId=" << driveId
-                                                                       << " nodeId=" << nodeId << " code=" << exitCode);
-        return exitCode;
+                                                                       << " nodeId=" << nodeId << " " << exitInfo);
+        return exitInfo;
     }
 
     Poco::JSON::Object::Ptr resObj = job->jsonRes();
@@ -1943,6 +1939,7 @@ ExitInfo ServerRequests::getThumbnail(const DriveDbId driveDbId, const NodeId &n
                                                        << driveDbId << " and nodeId=" << nodeId << " error=" << e.what());
         return exception2ExitCode(e);
     }
+    job->setScope(Scope::Extension);
 
     if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
         return exitInfo;

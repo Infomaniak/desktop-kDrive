@@ -34,13 +34,13 @@
 
 namespace KDC {
 
-class SourceLocation {
+class std::source_location {
     public:
-        constexpr SourceLocation() = default;
+        constexpr std::source_location() = default;
 #ifdef SRC_LOC_AVALAIBALE
-        [[nodiscard]] static consteval SourceLocation currentLoc(
+        [[nodiscard]] static consteval std::source_location currentLoc(
                 const std::source_location &loc = std::source_location::current()) {
-            SourceLocation result;
+            std::source_location result;
             result._line = loc.line();
             result._fileName = loc.file_name();
             result._functionName = loc.function_name();
@@ -49,10 +49,10 @@ class SourceLocation {
 #else
         // This is a workaround for the lack of support for std::source_location.
         // It is not as accurate as std::source_location but it is better than nothing.
-        // void foo(SourceLocation loc = currentLoc()) -> loc will be evaluated at the definition site instead of the call site.
+        // void foo(std::source_location loc = currentLoc()) -> loc will be evaluated at the definition site instead of the call site.
 #define currentLoc() currentLocCompatibility(__LINE__, __FILE__)
-        [[nodiscard]] static constexpr SourceLocation currentLocCompatibility(uint32_t line, const char *file) {
-            SourceLocation result;
+        [[nodiscard]] static constexpr std::source_location currentLocCompatibility(uint32_t line, const char *file) {
+            std::source_location result;
             result._line = line;
             result._fileName = file;
             return result;

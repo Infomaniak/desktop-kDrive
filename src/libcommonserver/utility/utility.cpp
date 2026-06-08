@@ -119,18 +119,15 @@ int64_t Utility::getFreeDiskSpace(const SyncPath &path) {
 }
 
 int64_t Utility::freeDiskSpaceLimit() {
-    static int64_t limit = 250 * 1000 * 1000LL; // 250MB
+    static const int64_t limit = 250 * 1000 * 1000LL; // 250MB
+
     return limit;
 }
 
 bool Utility::enoughSpace(const SyncPath &path) {
-    const int64_t freeBytes = getFreeDiskSpace(path);
-    if (freeBytes >= 0) {
-        if (freeBytes < freeDiskSpaceLimit()) {
-            return false;
-        }
-    }
-    return true;
+    const auto freeBytes = getFreeDiskSpace(path);
+
+    return (freeBytes < 0 || freeBytes >= freeDiskSpaceLimit());
 }
 
 bool Utility::findNodeValue(const Poco::XML::Document &doc, const std::string &nodeName, std::string *outValue) {
@@ -497,71 +494,6 @@ bool Utility::isLiteSyncExtError([[maybe_unused]] const ExitInfo &exitInfo) {
 #endif
 }
 
-#if defined(KD_WINDOWS)
-bool Utility::longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound) {
-    int length = GetLongPathNameW(shortPathIn.native().c_str(), 0, 0);
-    if (!length) {
-        const bool exists = !utility_base::isLikeFileNotFoundError(GetLastError());
-        if (!exists) {
-            notFound = true;
-        }
-        return false;
-    }
-
-    SyncChar *buffer = new SyncChar[length + 1];
-    if (!buffer) {
-        return false;
-    }
-
-    length = GetLongPathNameW(shortPathIn.native().c_str(), buffer, length);
-    if (!length) {
-        const bool exists = !utility_base::isLikeFileNotFoundError(GetLastError());
-        if (!exists) {
-            notFound = true;
-        }
-        delete[] buffer;
-        return false;
-    }
-
-    buffer[length] = 0;
-    longPathOut = SyncPath(buffer);
-    delete[] buffer;
-
-    return true;
-}
-
-bool Utility::runDetachedProcess(std::wstring cmd) {
-    PROCESS_INFORMATION pinfo;
-    STARTUPINFOW startupInfo = {sizeof(STARTUPINFO),
-                                0,
-                                0,
-                                0,
-                                (ulong) CW_USEDEFAULT,
-                                (ulong) CW_USEDEFAULT,
-                                (ulong) CW_USEDEFAULT,
-                                (ulong) CW_USEDEFAULT,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0};
-    bool success = success = CreateProcess(0, cmd.data(), 0, 0, FALSE, CREATE_UNICODE_ENVIRONMENT | CREATE_NEW_CONSOLE, 0, 0,
-                                           &startupInfo, &pinfo);
-
-    if (success) {
-        CloseHandle(pinfo.hThread);
-        CloseHandle(pinfo.hProcess);
-    }
-    return success;
-}
-
-#endif
-
 SyncName Utility::commonDocumentsFolderName() {
     static const auto name = Str2SyncName(COMMON_DOC_FOLDER);
     return name;
@@ -851,7 +783,7 @@ std::wstring Utility::formatSystemError(const std::system_error &exception) {
     return ss.str();
 }
 
-ExitCause Utility::exitCauseFromInaccessibleSyncDirectory(const SyncPath &syncDir, SourceLocation srcLoc) {
+ExitCause Utility::exitCauseFromInaccessibleSyncDirectory(const SyncPath &syncDir, std::source_location srcLoc) {
     IoError ioError = IoError::Unknown;
     bool diskMounted = false;
     if (!IoHelper::isPathOnMountedDisk(syncDir, diskMounted, ioError) || ioError != IoError::Success) {
@@ -860,7 +792,7 @@ ExitCause Utility::exitCauseFromInaccessibleSyncDirectory(const SyncPath &syncDi
     }
 
     if (!diskMounted) {
-        LOGW_INFO(logger(), CommonUtility::s2ws(srcLoc.toString())
+        LOGW_INFO(logger(), CommonUtility::s2ws(toString(srcLoc))
                                     << L" Disk is not mounted for " << Utility::formatSyncPath(syncDir));
         return ExitCause::SyncDirDiskMissing;
     }

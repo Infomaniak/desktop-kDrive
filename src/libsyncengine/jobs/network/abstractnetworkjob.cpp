@@ -109,27 +109,25 @@ bool AbstractNetworkJob::isManagedError(const ExitInfo exitInfo) noexcept {
     }
 }
 
-void AbstractNetworkJob::logRequestInfo() {
+void AbstractNetworkJob::logRequestInfo(const Poco::Net::HTTPRequest &req) {
     if (!isExtendedLog()) { // If not in extended mode, log only the request ID.
         LOG_DEBUG(_logger, "X-Request-ID: " << _requestUuid);
         return;
     }
 
     LOG_DEBUG(_logger, "*** Request headers: ***");
-    // /!\ The user-agent could contain special characters
-    LOGW_DEBUG(_logger, L"User-Agent: " << KDC::CommonUtility::s2ws(_userAgent));
-    LOG_DEBUG(_logger, "Content-Type: " << contentType());
-    LOG_DEBUG(_logger, "Accept: " << acceptHeader());
-    LOG_DEBUG(_logger, "X-Request-ID: " << _requestUuid);
-    for (const auto &[headerKey, headerValue]: _rawHeaders) {
+
+    for (const auto &[headerKey, headerValue]: req) {
         if (headerKey == "Authorization") {
             LOG_DEBUG(_logger, "Authorization: Bearer *****");
             continue;
         }
+        if (headerKey == "User-Agent") {
+            // The user-agent could contain special characters
+            LOGW_DEBUG(_logger, L"User-Agent: " << KDC::CommonUtility::s2ws(_userAgent));
+            continue;
+        }
         LOG_DEBUG(_logger, headerKey << ": " << headerValue);
-    }
-    if (!_data.empty()) {
-        LOG_DEBUG(_logger, "Content-Length: " << static_cast<std::streamsize>(_data.size()));
     }
 
     if (contentType() != mimeTypeJson || _data.empty()) return; // Log the body only for JSON MIME type
@@ -393,18 +391,12 @@ ExitInfo AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
     Poco::Net::HTTPRequest req(_httpMethod, path, Poco::Net::HTTPMessage::HTTP_1_1);
 
     // Set headers
-    req.set("User-Agent", _userAgent);
-    req.setContentType(contentType());
-    req.add("Accept", acceptHeader());
-    req.add("X-Request-ID", _requestUuid);
-    for (const auto &[headerKey, headerValue]: _rawHeaders) {
-        req.add(headerKey, headerValue);
-    }
+    setHeaders(req);
 
     if (!_data.empty()) {
         req.setContentLength(static_cast<std::streamsize>(_data.size()));
     }
-    logRequestInfo();
+    logRequestInfo(req);
 
     // Send request, retrieve an open stream
     std::vector<std::reference_wrapper<std::ostream>> stream;
@@ -451,6 +443,18 @@ ExitInfo AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
     }
 
     return ExitCode::Ok;
+}
+
+void AbstractNetworkJob::setHeaders(Poco::Net::HTTPRequest &req) {
+    req.set("User-Agent", _userAgent);
+    req.setContentType(contentType());
+    req.add("Accept", acceptHeader());
+    req.add("X-Request-ID", _requestUuid);
+    for (const auto &[headerKey, headerValue]: _rawHeaders) {
+        req.add(headerKey, headerValue);
+    }
+    if (scope() != Scope::None) req.add("ik-client-scope", toString(scope()));
+    if (!context().empty()) req.add("ik-client-context", context());
 }
 
 ExitInfo AbstractNetworkJob::receiveResponseFromSession(StreamVector &stream) {

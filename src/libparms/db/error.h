@@ -38,11 +38,11 @@ class PARMS_EXPORT Error {
         Error(SyncDbId syncDbId, const std::string &workerName, const ExitInfo &exitInfo);
 
         // Error level Node constructor
-        Error(SyncDbId syncDbId, const NodeId &localNodeId, const NodeId &remoteNodeId, NodeType nodeType, const SyncPath &path,
-              ConflictType conflictType, InconsistencyType inconsistencyType = InconsistencyType::None,
-              CancelType cancelType = CancelType::None, const SyncPath &destinationPath = "",
-              ExitCode exitCode = ExitCode::Unknown, ExitCause exitCause = ExitCause::Unknown);
-
+        explicit Error(SyncDbId syncDbId, const NodeId &localNodeId, const NodeId &remoteNodeId, NodeType nodeType,
+                       const SyncPath &path, ConflictType conflictType,
+                       InconsistencyType inconsistencyType = InconsistencyType::None, CancelType cancelType = CancelType::None,
+                       const SyncPath &destinationPath = "", ExitCode exitCode = ExitCode::Unknown,
+                       ExitCause exitCause = ExitCause::Unknown); // The curent msvc compil
         Error(ErrorDbId dbId, int64_t time, ErrorLevel level, const std::string &functionName, SyncDbId syncDbId,
               const std::string &workerName, ExitCode exitCode, ExitCause exitCause, const NodeId &localNodeId,
               const NodeId &remoteNodeId, NodeType nodeType, const SyncPath &path, ConflictType conflictType,

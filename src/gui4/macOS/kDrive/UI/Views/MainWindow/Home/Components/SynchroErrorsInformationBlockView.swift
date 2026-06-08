@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
@@ -39,10 +40,14 @@ struct SynchroErrorsInformationBlockView: View {
         InformationBlockView(
             title: title,
             subtitle: AttributedString(KDriveLocalizable.informationBlockSynchroErrorSubtitle),
-            button: .init(title: KDriveLocalizable.buttonFixErrors) {
-                // TODO: Connect to MainViewState implementation
-            }
+            button: .init(title: KDriveLocalizable.buttonFixErrors, action: navigateToErrors)
         )
+    }
+
+    private func navigateToErrors() {
+        @InjectService var router: MainViewRouter
+        router.setCurrentTab(.activities)
+        router.append(.errors)
     }
 }
 

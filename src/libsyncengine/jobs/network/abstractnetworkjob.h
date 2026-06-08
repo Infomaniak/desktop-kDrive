@@ -119,6 +119,7 @@ class AbstractNetworkJob : public SyncJob {
         void clearSession();
         void abortSession();
         ExitInfo sendRequest(const Poco::URI &uri);
+        void setHeaders(Poco::Net::HTTPRequest &req);
         ExitInfo followRedirect();
         ExitInfo processSocketError(const std::string &msg, UniqueId jobId);
         ExitInfo processSocketError(const std::string &msg, UniqueId jobId, const std::exception &e);
@@ -127,7 +128,7 @@ class AbstractNetworkJob : public SyncJob {
         bool ioOrLogicalErrorOccurred(std::ios &stream);
         static bool isManagedError(ExitInfo exitInfo) noexcept;
 
-        void logRequestInfo();
+        void logRequestInfo(const Poco::Net::HTTPRequest &req);
         void logReplyInfo();
         /**
          * @brief Try to extract the waiting time from the reply header. Especially useful when receiving a 429 error.

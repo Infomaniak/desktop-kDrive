@@ -38,7 +38,7 @@ class DigitalSignatureChecker_win {
         }
 
     private:
-        bool extractSignatureInfo(DigitalSignatureInfo &signatureInfo, SourceLocation &location);
+        bool extractSignatureInfo(DigitalSignatureInfo &signatureInfo, std::source_location &location);
 
         SyncPath _packageAbsolutePath;
         DigitalSignatureInfo _signatureInfo;

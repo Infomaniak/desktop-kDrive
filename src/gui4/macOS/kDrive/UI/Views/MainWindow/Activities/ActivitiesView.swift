@@ -59,6 +59,10 @@ struct ActivitiesView: View {
                 hasAnyActivity: hasAnyActivity
             )
 
+            if synchroState.errorCount > 0 {
+                SynchroErrorsInformationBlockView(errorCount: synchroState.errorCount)
+            }
+
             ActivitiesTable(contexts: visibleNodes)
                 .opacity(hasAnyActivity ? 1 : 0)
                 .overlay(alignment: .top) {

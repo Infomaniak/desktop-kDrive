@@ -61,7 +61,10 @@ struct COMMONSERVER_EXPORT Utility {
 
         static bool init();
         static void free();
+        // Returns free disk space in bytes for the given path, or -1 if an error occurs
         static int64_t getFreeDiskSpace(const SyncPath &path);
+        // Returns the minimum free disk space in bytes that should be available to consider that there is enough space for a
+        // download or an upload.
         static int64_t freeDiskSpaceLimit();
         static bool enoughSpace(const SyncPath &path);
         static bool findNodeValue(const Poco::XML::Document &doc, const std::string &nodeName, std::string *outValue);
@@ -147,6 +150,10 @@ struct COMMONSERVER_EXPORT Utility {
         static bool longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound);
         static bool runDetachedProcess(std::wstring cmd);
 #endif
+#if defined(KD_MACOS) || defined(KD_LINUX)
+        static bool runCommand(const std::string &launchPath, const std::vector<std::string> &arguments = {});
+#endif
+
         static bool checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, IoError &ioError,
                                              const ItemType &itemType = ItemType());
         /* Resource analyzer */
@@ -240,7 +247,7 @@ struct COMMONSERVER_EXPORT Utility {
         static std::wstring formatSystemError(const std::system_error &exception);
 
         static ExitCause exitCauseFromInaccessibleSyncDirectory(const SyncPath &syncDir,
-                                                                SourceLocation srcLoc = SourceLocation::currentLoc());
+                                                                std::source_location srcLoc = std::source_location::current());
 
 
     private:
