@@ -37,6 +37,7 @@
 #include <log4cplus/loggingmacros.h>
 
 #include <cmath>
+#include "useractionscopedlock.h"
 
 #define UPDATE_PROGRESS_DELAY 1
 
@@ -196,6 +197,15 @@ ExitInfo SyncPalWorker::ensureBlackListIsPropagated() {
         if (!found) break;
 
         if (retry < 2) {
+            UserActionScopedLock lock;
+            const std::chrono::milliseconds timeout(5000);
+            if (!lock.tryLock(_syncPal, timeout)) {
+                LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
+                                 "Could not acquire user action lock for propagateSyncIdSetChange. Another user action is "
+                                 "running, aborting.");
+                return ExitCode::OperationCanceled;
+            }
+
             if (ExitInfo exitInfo = _syncPal->propagateSyncIdSetChange(false); !exitInfo) {
                 LOG_SYNCPAL_WARN(_logger, "Error propagating blacklist changes");
                 return exitInfo;
