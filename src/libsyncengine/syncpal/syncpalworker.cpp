@@ -171,7 +171,11 @@ ExitInfo SyncPalWorker::ensureBlackListIsPropagated() {
     // Check if any of the Blacklisted directory still in the db, if yes, restart the blacklist propagator.
     // It might happen if it as previously been stopped or encountered a locked directory / file.
     NodeSet blacklistedNodes;
-    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, blacklistedNodes);
+    if (ExitInfo exitInfo = SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, blacklistedNodes);
+        !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncNodeCache::syncNodes");
+        return exitInfo;
+    }
 
     int32_t retry = 0;
     bool found = false;
@@ -183,7 +187,6 @@ ExitInfo SyncPalWorker::ensureBlackListIsPropagated() {
             DbNodeId dbNodeId = 0;
             if (!_syncPal->syncDb()->dbId(ReplicaSide::Remote, nodeId, dbNodeId, found)) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId");
-                LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " stopped");
                 return {ExitCode::DbError, ExitCause::DbAccessError};
             }
             if (!found) {
