@@ -2423,7 +2423,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
     OldCommServer::instance()->sendReply(id, results);
 }
 
-void AppServer::startSyncsAndRetryOnError(const std::unordered_set<SyncDbId>& toIgnoreSyncDbIds) {
+void AppServer::startSyncsAndRetryOnError(const std::unordered_set<SyncDbId> &toIgnoreSyncDbIds) {
     LOG_DEBUG(_logger, "Start syncs");
     std::unordered_set<SyncDbId> startedSyncDbIds;
     if (const auto exitInfo = startSyncs(toIgnoreSyncDbIds, startedSyncDbIds); !exitInfo) {
@@ -3145,7 +3145,8 @@ ExitInfo AppServer::startSyncs() {
     std::unordered_set<SyncDbId> startedSyncDbIds;
     return startSyncs(emptyList, startedSyncDbIds);
 }
-ExitInfo AppServer::startSyncs(const std::unordered_set<SyncDbId> &toIgnoreSyncDbIds, std::unordered_set<SyncDbId> &startedSyncDbIds) {
+ExitInfo AppServer::startSyncs(const std::unordered_set<SyncDbId> &toIgnoreSyncDbIds,
+                               std::unordered_set<SyncDbId> &startedSyncDbIds) {
     // Load user list
     std::vector<User> userList;
     if (!ParmsDb::instance()->selectAllUsers(userList)) {
@@ -3197,7 +3198,7 @@ ExitInfo AppServer::startSyncs(User &user) {
     std::unordered_set<SyncDbId> emptyList;
     return startSyncs(user, emptyList, emptyList);
 }
-ExitInfo AppServer::startSyncs(User &user, std::unordered_set<SyncDbId> toIgnoreSyncDbIds,
+ExitInfo AppServer::startSyncs(User &user, const std::unordered_set<SyncDbId> toIgnoreSyncDbIds,
                                std::unordered_set<SyncDbId> &startedSyncDbIds) {
     logExtendedLogActivationMessage(ParametersCache::isExtendedLogEnabled());
 
@@ -3233,7 +3234,6 @@ ExitInfo AppServer::startSyncs(User &user, std::unordered_set<SyncDbId> toIgnore
                     continue;
                 }
 
-                auto syncPalMapIt = syncPalMap.find(sync.dbId());
                 QSet<QString> blackList;
                 bool syncUpdated = false;
 
