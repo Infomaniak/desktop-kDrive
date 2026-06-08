@@ -219,7 +219,7 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
         bool fetchFinished = false;
         bool fetchError = false;
         if (const auto exitInfo = createTmpFile(is, readError, writeError, fetchCanceled, fetchFinished, fetchError); !exitInfo) {
-            LOGW_WARN(_logger, L"Error in createTmpFile");
+            LOGW_WARN(_logger, L"Error in createTmpFile: " << Utility::formatSyncPath(_tmpPath) << L" : " << exitInfo);
             return exitInfo;
         }
 
@@ -581,6 +581,7 @@ ExitInfo DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::is
 
     SyncPath cacheDirectoryPath;
     if (const auto exitInfo = _cacheDirectory->path(cacheDirectoryPath); !exitInfo) {
+        std::cout << "Cache directory: " << cacheDirectoryPath << std::endl;
         return exitInfo;
     }
 
