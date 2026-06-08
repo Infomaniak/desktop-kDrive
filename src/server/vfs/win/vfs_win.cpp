@@ -46,7 +46,7 @@ VfsWin::VfsWin(const VfsSetupParams &vfsSetupParams, QObject *parent) :
 
     if (vfsInit(debugCallback, QString(APPLICATION_NAME).toStdWString().c_str(), (DWORD) _getpid(),
                 KDC::CommonUtility::escape(KDRIVE_VERSION_STRING).toStdWString().c_str(),
-                QString(APPLICATION_TRASH_URL).toStdWString().c_str()) != S_OK) {
+                QString(APPLICATION_TRASH_URL_WINAPI).toStdWString().c_str()) != S_OK) {
         LOG_WARN(logger(), "Error in vfsInit!");
         throw std::runtime_error("Error in vfsInit!");
         return;
