@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
@@ -32,7 +33,8 @@ struct AccountsPreferencesAddAccountView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                 Button(KDriveLocalizable.buttonConnectAccount) {
-                    // TODO: Add new user
+                    @InjectService var router: MainWindowRouter
+                    router.navigate(to: .onboarding())
                 }
                 .buttonStyle(.bordered)
             }

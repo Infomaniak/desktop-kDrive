@@ -116,7 +116,10 @@ struct StorageView: View {
     }
 
     private func didTapFreeUpSpace() {
-        // TODO: Redirect to Settings/Synchro
+        (NSApp.delegate as? AppDelegate)?.openPreferencesWindow()
+
+        @InjectService var router: PreferencesViewRouter
+        router.setCurrentTab(.accounts)
     }
 
     private func fetchStorageData() async {
