@@ -214,7 +214,7 @@ void SyncPalWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
     LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " started");
 
-    // Ensure the pin states are coherant with hydration states.
+    // Ensure the pin states are coherent with hydration states.
     if (_syncPal->vfsMode() != VirtualFileMode::Off) {
 #if defined(KD_WINDOWS)
         auto resetFunc = std::function<void()>([this]() { resetVfsFilesStatus(); });
@@ -226,7 +226,7 @@ void SyncPalWorker::execute() {
 
     // Ensure blacklist is propagated
     if (ExitInfo exitInfo = ensureBlackListIsPropagated(); !exitInfo) {
-        LOG_SYNCPAL_INFO(_logger, "Worker " << name() << "p stoped");
+        LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " stopped");
         setExitCause(exitInfo.cause());
         setDone(exitInfo.code());
         return;
