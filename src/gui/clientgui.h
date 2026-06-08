@@ -22,6 +22,7 @@
 #include "synthesispopover.h"
 #include "parametersdialog.h"
 #include "adddrivewizard.h"
+#include "custommessagebox.h"
 #include "logindialog.h"
 #include "info/userinfoclient.h"
 #include "info/accountinfo.h"
@@ -143,6 +144,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         QSet<DriveDbId> _driveWithNewErrorSet;
         QTimer _refreshErrorListTimer;
         std::map<ErrorDbId, QList<ErrorInfo>> _errorInfoMap;
+        CustomMessageBox *_msgBox{nullptr};
 
 #ifdef Q_OS_LINUX
         QAction *_actionSynthesis = nullptr;
@@ -167,7 +169,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         ExitCode handleErrors(DriveDbId driveDbId, SyncDbId syncDbId, ErrorLevel level);
 
         void onTooManyDeletesNotificationHardLimit(SyncDbId syncDbId);
-        void onTooManyDeletesNotificationSoftLimit();
+        void onTooManyDeletesNotificationSoftLimit(SyncDbId syncDbId);
 
     private slots:
         void onShowTrayMessage(const QString &title, const QString &msg);
