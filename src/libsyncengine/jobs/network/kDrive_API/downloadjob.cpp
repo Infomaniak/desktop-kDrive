@@ -219,7 +219,7 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
         bool fetchFinished = false;
         bool fetchError = false;
         if (const auto exitInfo = createTmpFile(is, readError, writeError, fetchCanceled, fetchFinished, fetchError); !exitInfo) {
-            LOGW_WARN(_logger, L"Error in createTmpFile: " << Utility::formatSyncPath(_tmpPath) << L" : " << exitInfo);
+            LOGW_WARN(_logger, L"Error in createTmpFile");
             return exitInfo;
         }
 
@@ -581,7 +581,6 @@ ExitInfo DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::is
 
     SyncPath cacheDirectoryPath;
     if (const auto exitInfo = _cacheDirectory->path(cacheDirectoryPath); !exitInfo) {
-        std::cout << "Cache directory: " << cacheDirectoryPath << std::endl;
         return exitInfo;
     }
 
@@ -592,9 +591,7 @@ ExitInfo DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::is
 
         output.open(_tmpPath.native().c_str(), std::ofstream::out | std::ofstream::binary);
         if (!output.is_open()) {
-            const bool enoughSpace = Utility::enoughSpace(cacheDirectoryPath);
-            std::cout << "Cache directory: " << cacheDirectoryPath << ", enough space: " << enoughSpace << std::endl;
-
+            const bool enoughSpace = Utility::enoughSpace(_tmpPath);
             LOGW_WARN(_logger, L"Failed to open tmp file: " << Utility::formatSyncPath(_tmpPath) << L". Reason: "
                                                             << (enoughSpace ? L"file access error." : L"not enough space."));
             return {ExitCode::SystemError, enoughSpace ? ExitCause::TmpDirAccessError : ExitCause::NotEnoughDiskSpace};
