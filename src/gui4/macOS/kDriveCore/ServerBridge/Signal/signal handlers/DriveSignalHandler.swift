@@ -50,7 +50,13 @@ extension CoherentCache {
             throw ServerCoherentCache.CacheError.accountNotFound(accountDbId)
         }
 
-        let existingDrive = account.drives[driveSignal.dbId]
+        let existingDrive = await getDrive(driveDbId: driveSignal.dbId)
+        if let existingDrive, existingDrive.accountDbId != accountDbId {
+            await removeDrive(driveDbId: driveSignal.dbId,
+                              accountDbId: existingDrive.accountDbId,
+                              userDbId: existingDrive.userDbId)
+        }
+
         let updatedDrive = driveSignal.asDrive(accountId: account.id,
                                                userDbId: account.userDbId,
                                                synchros: existingDrive?.synchros ?? [:])
