@@ -175,6 +175,8 @@ inline std::string toString(RequestNum e) {
             return "SYNC_TRIGGER_PROGRESS_UPDATE";
         case RequestNum::SYNC_SETSUPPORTSVIRTUALFILES:
             return "SYNC_SETSUPPORTSVIRTUALFILES";
+        case RequestNum::SYNC_ACKNOWLEDGE_MANY_DELETES:
+            return "SYNC_ACKNOWLEDGE_MANY_DELETES";
         case RequestNum::BLACKLISTED_NODE_LIST:
             return "BLACKLISTED_NODE_LIST";
         case RequestNum::BLACKLISTED_NODE_SETLIST:

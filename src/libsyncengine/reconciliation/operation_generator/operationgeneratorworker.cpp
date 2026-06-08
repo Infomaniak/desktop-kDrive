@@ -25,7 +25,7 @@
 namespace KDC {
 
 constexpr uint64_t maxNbOfDeleteOperationSoftLimit = 2;
-constexpr uint64_t maxNbOfDeleteOperationHardLimit = 100;
+constexpr uint64_t maxNbOfDeleteOperationHardLimit = 5;
 
 OperationGeneratorWorker::OperationGeneratorWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                    const std::string &shortName) :
@@ -145,11 +145,11 @@ void OperationGeneratorWorker::execute() {
         if (_nbLocalDeleteOperations >= maxNbOfDeleteOperationHardLimit) {
             LOGW_SYNCPAL_WARN(_logger, L"Local delete operations detected: hard limit triggered!");
             exitCode = ExitCode::TooManyDeleteOperations;
-            _syncPal->sendManyDeletesNotification(false);
+            _syncPal->sendManyDeletesNotification(TooManyDeletesNotificationType::HardLimit);
         } else if (_nbLocalDeleteOperations >= maxNbOfDeleteOperationSoftLimit &&
                    ParametersCache::instance()->parameters().notifyBeforeDelete()) {
             LOGW_SYNCPAL_INFO(_logger, L"Local delete operations detected: soft limit triggered!");
-            _syncPal->sendManyDeletesNotification(true);
+            _syncPal->sendManyDeletesNotification(TooManyDeletesNotificationType::SoftLimit);
         }
     }
 

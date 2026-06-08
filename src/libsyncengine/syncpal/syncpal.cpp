@@ -383,9 +383,9 @@ void SyncPal::resolveSyncErrorsByExitCause(const ExitCause cause) {
         _resolveSyncErrors(syncDbId(), cause);
     }
 }
-void SyncPal::sendManyDeletesNotification(bool softLimit) {
+void SyncPal::sendManyDeletesNotification(const TooManyDeletesNotificationType notificationType) {
     if (_sendManyDeletesNotification) {
-        _sendManyDeletesNotification(syncDbId(), softLimit);
+        _sendManyDeletesNotification(syncDbId(), notificationType);
     }
 }
 
