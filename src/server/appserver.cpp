@@ -2190,10 +2190,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
 
             // Sentry activation change propagation
-            if (KDRIVE_VERSION_MAJOR >= 4) {
-                if (parameters.sentryEnabled() != parametersInfo.sentryEnabled()) {
-                    sentry::Handler::instance()->setIsSentryActivated(parametersInfo.sentryEnabled());
-                }
+            if (KDRIVE_VERSION_MAJOR >= 4 && parameters.sentryEnabled() != parametersInfo.sentryEnabled()) {
+                sentry::Handler::instance()->setIsSentryActivated(parametersInfo.sentryEnabled());
             }
 
             resultStream << toInt(exitCode);

@@ -106,6 +106,8 @@ class Handler {
         void setDistributionChannel(DistributionChannel channel);
         void setAppUUID(std::string appUUID);
         void setIsSentryActivated(bool isSentryActivated) { _isSentryActivated = isSentryActivated; }
+        // Returns whether the Sentry handler is active. Safe to call after init() and before shutdown,
+        // matching the same access pattern used by the other static accessors (appType, debugCrashCallback…).
         static bool isActivated() { return _instance && _instance->_isSentryActivated; }
 
         // Returns the file path where non-crash events of type `appType` are written locally.

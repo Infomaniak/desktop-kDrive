@@ -151,7 +151,8 @@ static sentry_value_t crashCallback(const sentry_ucontext_t *uctx, sentry_value_
 
     std::cerr << "Sentry detected a crash in the app " << Handler::appType() << std::endl;
 
-    // As `signum` is unknown, a crash is considered as a kill.
+    // Write the signal file regardless of Sentry activation status: this is our own
+    // crash-tracking mechanism, independent of whether the user has enabled Sentry.
     const int signum{0};
     KDC::CommonUtility::writeSignalFile(Handler::appType(), KDC::fromInt<KDC::SignalType>(signum));
 
