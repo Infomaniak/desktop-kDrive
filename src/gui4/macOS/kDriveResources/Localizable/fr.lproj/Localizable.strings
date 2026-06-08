@@ -20,8 +20,10 @@
 /* loco:69a6d9dd08a75d40410b53f6 */
 "accessibilityBetaProgramPicker" = "Choisir le canal de distribution";
 
-/* loco:69fa0b22dbdab357240dcb12
- * VoiceOver reads this when the user focuses the X button that clears the search field */
+/* loco:69e1dcc78d162264ae0f2f52 */
+"accessibilityMoreInformation" = "Voir plus d’informations";
+
+/* loco:69fa0b22dbdab357240dcb12 */
 "accessibilitySearchClear" = "Effacer la recherche";
 
 /* loco:69fa0b2668d2d58f030a2422
@@ -279,8 +281,14 @@
 /* loco:6964e1dfed4b6acb0107409a */
 "buttonSeeActivities" = "Voir les activités";
 
+/* loco:69a6a31c97f5f5084b09e612 */
+"buttonSelect" = "Sélectionner";
+
 /* loco:698c5cb5f86b52c6fc001fc4 */
 "buttonSelectFolders" = "Sélectionner les dossiers";
+
+/* loco:69a6a32d8e33a191f90115f2 */
+"buttonSelected" = "Sélectionné";
 
 /* loco:6989f2b84f80e68db204aa55 */
 "buttonSend" = "Envoyer";
@@ -834,6 +842,9 @@
 /* loco:6a155a770336fcc4820ebf57 */
 "labelApplicationName" = "Nom de l’application";
 
+/* loco:69a6a42b7dda553eac028754 */
+"labelAuthor" = "Auteur";
+
 /* loco:69aac15193f089df1a016352 */
 "labelChooseConflictVersion" = "Choisissez la version de vos fichiers que vous souhaitez conserver.";
 
@@ -867,6 +878,9 @@
 /* loco:69a012ce9c6aefa11d0c0a22 */
 "labelCreateNewSync" = "Créez une %@.";
 
+/* loco:69a6a43c586562e1ae0e9142 */
+"labelDate" = "Date";
+
 /* loco:69a00df5cee58fe1c90de9e2 */
 "labelFAQ" = "FAQ";
 
@@ -899,6 +913,9 @@
 
 /* loco:698c656e3e4e4bbf4f02bde2 */
 "labelJustNow" = "A l’instant";
+/* loco:69a81e43ec7b4ff05a0b50d2 */
+"labelLocal" = "Locale";
+
 /* loco:69aac3530302ea9cb209d153 */
 "labelManyConflictTitle" = "%@ fichiers ont été modifiés à la fois sur votre ordinateur et sur kDrive.";
 
