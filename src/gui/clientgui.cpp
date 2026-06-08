@@ -1362,6 +1362,7 @@ void ClientGui::onSyncDeletionFailed(const SyncDbId syncDbId) {
 }
 
 void ClientGui::onTooManyDeletesNotificationHardLimit(const SyncDbId syncDbId) {
+    // TODO : how to handle popup on different syncs
     if (_msgBox) {
         _msgBox->accept();
         _msgBox->deleteLater();
@@ -1383,13 +1384,14 @@ void ClientGui::onTooManyDeletesNotificationHardLimit(const SyncDbId syncDbId) {
     if (const auto exitInfo = GuiRequests::acknowledgeManyDelete(
                 syncDbId, res == QMessageBox::Yes ? TooManyDeletesUserChoice::Continue : TooManyDeletesUserChoice::Revert);
         !exitInfo) {
-        qCWarning(lcClientGui()) << "Error in Requests::syncStart for syncDbId=" << syncDbId << ", " << exitInfo;
+        qCWarning(lcClientGui()) << "Error in Requests::acknowledgeManyDelete for syncDbId=" << syncDbId << ", " << exitInfo;
         syncInfoMapIt->second.setStatus(SyncStatus::Paused);
         emit updateProgress(syncDbId);
     }
 }
 
 void ClientGui::onTooManyDeletesNotificationSoftLimit(const SyncDbId syncDbId) {
+    // TODO : how to handle popup on different syncs
     if (_msgBox) {
         _msgBox->accept();
         _msgBox->deleteLater();
