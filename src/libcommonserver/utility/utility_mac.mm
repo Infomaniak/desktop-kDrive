@@ -277,7 +277,7 @@ bool Utility::runCommand(const std::string &launchPath, const std::vector<std::s
 
         NSError *error = nil;
         if (![task launchAndReturnError:&error]) {
-            LOG_ERROR(logger(), "Failed to launch " << launchPath << ": " << [error.localizedDescription UTF8String]);
+            LOG_ERROR(logger(), "Failed to launch " << launchPath);
             return false;
         }
 
