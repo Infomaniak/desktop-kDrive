@@ -154,7 +154,9 @@ ExitInfo DownloadJob::checkHashMatch() {
     return ExitCode::Ok;
 }
 
-ExitInfo DownloadJob::getHydrationStatus() {
+ExitInfo DownloadJob::getHydrationStatus(bool &shouldReturn) {
+    shouldReturn = false;
+
     // Get hydration status
     VfsStatus vfsStatus;
     if (_vfs) (void) _vfs->status(_fileDownloadInfo.localpath, vfsStatus);
@@ -163,23 +165,24 @@ ExitInfo DownloadJob::getHydrationStatus() {
     if (_isHydrated) {
         if (const ExitInfo exitInfo = checkHashMatch(); !exitInfo) {
             LOGW_DEBUG(_logger, L"Error in checkHashMatch: " << exitInfo);
+            shouldReturn = false;
             return exitInfo;
         }
         if (!_shouldDownload) {
             LOGW_DEBUG(_logger, L"Changing last modified date without downloading")
+            shouldReturn = true;
             if (const ExitInfo exitInfo = applyFileDatesIfRequired(FileType::Regular); !exitInfo) return exitInfo;
             return setOutputParameters();
         }
     }
+    return ExitCode::Ok;
 }
 
 ExitInfo DownloadJob::runJob() noexcept {
     if (_fileDownloadInfo.isCreate) return AbstractTokenNetworkJob::runJob();
 
-    if (const ExitInfo exitInfo = getHydrationStatus(); !exitInfo) {
-        LOGW_WARN(_logger, L"Error in getHydrationStatus: " << exitInfo);
-        return exitInfo;
-    }
+    bool shouldReturn = false;
+    if (const ExitInfo exitInfo = getHydrationStatus(shouldReturn); shouldReturn) return exitInfo;
 
     if (_vfs) {
         // Update size on file system
