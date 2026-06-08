@@ -49,6 +49,8 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST(testInternalPause2);
         CPPUNIT_TEST(testInternalPause3);
         CPPUNIT_TEST(testHandleBackError);
+        CPPUNIT_TEST(testEnsureBlackListIsPropagatedIgnoresMissingNode);
+        CPPUNIT_TEST(testEnsureBlackListIsPropagatedReturnsBlackListPropagationError);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -86,6 +88,8 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
          * maxDelay), and that the counter resets when the sync reaches the Idle step.
          */
         void testHandleBackError();
+        void testEnsureBlackListIsPropagatedIgnoresMissingNode();
+        void testEnsureBlackListIsPropagatedReturnsBlackListPropagationError();
 
         void testStopDuringInternalPause();
         void testDestroyDuringInternalPause();
