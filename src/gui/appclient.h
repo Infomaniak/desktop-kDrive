@@ -79,7 +79,7 @@ class AppClient : public SharedTools::QtSingleApplication {
         void itemCompleted(SyncDbId syncDbId, const SyncFileItemInfo &itemInfo);
         void vfsConversionCompleted(SyncDbId syncDbId);
         void syncDeletionFailed(SyncDbId syncDbId);
-        void tooManyDeletesNotification(SyncDbId syncDbId, bool softLimit);
+        void tooManyDeletesNotification(SyncDbId syncDbId, TooManyDeletesNotificationType notificationType);
         // Node signals
         void folderSizeCompleted(QString nodeId, qint64 size);
         void fixConflictingFilesCompleted(SyncDbId syncDbId, uint64_t nbErrors);

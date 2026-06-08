@@ -1418,11 +1418,16 @@ void ClientGui::onTooManyDeletesNotificationSoftLimit(const SyncDbId syncDbId) {
     ParametersCache::instance()->saveParametersInfo();
 }
 
-void ClientGui::onTooManyDeletesNotification(const SyncDbId syncDbId, const bool softLimit) {
-    if (softLimit) {
-        onTooManyDeletesNotificationSoftLimit(syncDbId);
-    } else {
-        onTooManyDeletesNotificationHardLimit(syncDbId);
+void ClientGui::onTooManyDeletesNotification(const SyncDbId syncDbId, const TooManyDeletesNotificationType notificationType) {
+    switch (notificationType) {
+        case TooManyDeletesNotificationType::SoftLimit:
+            onTooManyDeletesNotificationSoftLimit(syncDbId);
+            break;
+        case TooManyDeletesNotificationType::HardLimit:
+            onTooManyDeletesNotificationHardLimit(syncDbId);
+            break;
+        default:
+            break;
     }
 }
 

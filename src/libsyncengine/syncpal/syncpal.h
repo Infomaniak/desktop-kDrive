@@ -168,7 +168,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
             _fixConflictedFilesCompleted = fixConflictedFilesCompleted;
         }
 
-        inline void setSendManyDeletesNotification(const std::function<void(int, uint64_t)> &sendManyDeletesNotification) {
+        inline void setSendManyDeletesNotification(
+                const std::function<void(SyncDbId, TooManyDeletesNotificationType)> &sendManyDeletesNotification) {
             _sendManyDeletesNotification = sendManyDeletesNotification;
         }
 
@@ -268,7 +269,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void addCompletedItem(SyncDbId syncDbId, const SyncFileItem &item);
         void fixConflictedFilesCompleted(SyncDbId syncDbId, uint64_t nbErrors);
         void resolveSyncErrorsByExitCause(ExitCause cause);
-        void sendManyDeletesNotification(bool softLimit);
+        void sendManyDeletesNotification(TooManyDeletesNotificationType notificationType);
 
         bool wipeVirtualFiles();
         bool wipeOldPlaceholders();
@@ -409,7 +410,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::function<void(SyncDbId syncDbId, ExitCause cause)> _resolveSyncErrors;
         std::function<void(SyncDbId syncDbId, const SyncFileItem &item, bool notify)> _addCompletedItem;
         std::function<void(SyncDbId syncDbId, uint64_t nbErrors)> _fixConflictedFilesCompleted;
-        std::function<void(SyncDbId syncDbId, bool softLimit)> _sendManyDeletesNotification;
+        std::function<void(SyncDbId syncDbId, TooManyDeletesNotificationType notificationType)> _sendManyDeletesNotification;
         std::shared_ptr<Vfs> _vfs;
 
         // DB

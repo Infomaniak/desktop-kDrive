@@ -376,7 +376,7 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
         }
         case SignalNum::SYNC_NOTIFY_MANY_DELETES: {
             qint64 syncDbId = 0;
-            bool softLimit = false;
+            TooManyDeletesNotificationType softLimit = TooManyDeletesNotificationType::Unknown;
             paramsStream >> syncDbId;
             paramsStream >> softLimit;
 

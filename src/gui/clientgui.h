@@ -211,7 +211,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void onRemoveSync(SyncDbId syncDbId);
         void onSyncRemoved(SyncDbId syncDbId);
         void onSyncDeletionFailed(SyncDbId syncDbId);
-        void onTooManyDeletesNotification(SyncDbId syncDbId, bool softLimit);
+        void onTooManyDeletesNotification(SyncDbId syncDbId, TooManyDeletesNotificationType notificationType);
         void onProgressInfo(SyncDbId syncDbId, SyncStatus status, SyncStep step, int64_t currentFile, int64_t totalFiles,
                             int64_t completedSize, int64_t totalSize, int64_t estimatedRemainingTime);
         void onExecuteSyncAction(ActionType type, ActionTarget target, GenericId dbId);

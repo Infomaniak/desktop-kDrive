@@ -344,4 +344,11 @@ enum class SyncConfiguration {
     EnumEnd
 };
 
+enum class TooManyDeletesNotificationType {
+    Unknown = 0,
+    SoftLimit,
+    HardLimit,
+    EnumEnd
+};
+
 } // namespace KDC

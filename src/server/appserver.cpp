@@ -26,6 +26,7 @@
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
 #include "comm/extjobmanager.h"
 #endif
+#include "comm/guijobs/signalsyncnotifymanydeletes.h"
 #include "updater/updatemanager.h"
 
 #include "jobs/network/kDrive_API/searchjob.h"
@@ -4859,14 +4860,16 @@ void AppServer::sendSyncDeletionFailed(const SyncDbId syncDbId) const {
     }
 }
 
-void AppServer::sendManyDeletesNotification(const SyncDbId syncDbId, const bool softLimit) const {
+void AppServer::sendManyDeletesNotification(const SyncDbId syncDbId,
+                                            const TooManyDeletesNotificationType notificationType) const {
     if (useOldCommServer()) {
         int id = 0;
-        const auto params = QByteArray(ArgsReader(static_cast<qint64>(syncDbId), softLimit));
+        const auto params = QByteArray(ArgsReader(static_cast<qint64>(syncDbId), notificationType));
 
         (void) OldCommServer::instance()->sendSignal(SignalNum::SYNC_NOTIFY_MANY_DELETES, params, id);
     }
     if (useCommManager()) {
+        _commManager->sendGuiSignal(std::make_shared<SignalSyncNotifyManyDeletes>(syncDbId));
         // TODO
     }
 }
