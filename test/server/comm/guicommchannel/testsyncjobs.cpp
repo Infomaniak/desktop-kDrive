@@ -650,10 +650,10 @@ void TestGuiCommChannel::testSignalSyncNotifyManyDeletes() {
     const auto jsonObj = Poco::JSON::Parser{}.parse(job._outputParamsStr).extract<Poco::JSON::Object::Ptr>();
     const auto paramsObj = JsonParserUtility::extractJsonObject(jsonObj, "params");
     SyncDbId syncDbIdOut = 0;
-    JsonParserUtility::extractValue(paramsObj, "syncDbId", syncDbIdOut);
+    (void) JsonParserUtility::extractValue(paramsObj, "syncDbId", syncDbIdOut);
     CPPUNIT_ASSERT_EQUAL(static_cast<SyncDbId>(1), syncDbIdOut);
     auto notificationTypeOut = 0;
-    JsonParserUtility::extractValue(paramsObj, "notificationType", notificationTypeOut);
+    (void) JsonParserUtility::extractValue(paramsObj, "notificationType", notificationTypeOut);
     CPPUNIT_ASSERT_EQUAL(TooManyDeletesNotificationType::HardLimit,
                          static_cast<TooManyDeletesNotificationType>(notificationTypeOut));
 }

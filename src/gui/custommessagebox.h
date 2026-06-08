@@ -44,7 +44,7 @@ class CustomMessageBox : public CustomDialog {
         void setDefaultButton(QMessageBox::StandardButton buttonType);
 
         bool isChecked() const { return _checkBox->isChecked(); }
-        void setCheckboxVisible(bool visible) { _checkBox->setVisible(visible); }
+        void setCheckboxVisible(const bool visible) { _checkBox->setVisible(visible); }
         void setCheckBoxText(const QString &text) { _checkBox->setText(text); }
 
     private:

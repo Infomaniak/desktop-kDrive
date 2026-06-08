@@ -73,7 +73,7 @@ ClientGui::ClientGui(AppClient *parent) :
     connect(_app, &AppClient::syncUpdated, this, &ClientGui::onSyncUpdated);
     connect(_app, &AppClient::syncRemoved, this, &ClientGui::onSyncRemoved);
     connect(_app, &AppClient::syncDeletionFailed, this, &ClientGui::onSyncDeletionFailed);
-    connect(_app, &AppClient::tooManyDeletesNotification, this, &ClientGui::onTooManyDeletesNotification);
+    (void) connect(_app, &AppClient::tooManyDeletesNotification, this, &ClientGui::onTooManyDeletesNotification);
     connect(_app, &AppClient::syncProgressInfo, this, &ClientGui::onProgressInfo);
     connect(_app, &AppClient::itemCompleted, this, &ClientGui::itemCompleted);
     connect(_app, &AppClient::vfsConversionCompleted, this, &ClientGui::vfsConversionCompleted);
@@ -143,7 +143,7 @@ bool ClientGui::isConnected() {
     return GuiRequests::isConnnected();
 }
 
-void ClientGui::onErrorAdded(bool serverLevel, const ExitCode exitCode, const SyncDbId syncDbId) {
+void ClientGui::onErrorAdded(const bool serverLevel, const ExitCode exitCode, const SyncDbId syncDbId) {
     if (exitCode == ExitCode::InvalidToken) {
         auto userIt = _userInfoMap.find(_currentUserDbId);
         if (userIt != _userInfoMap.end() && !userIt->second.credentialsAsked()) {
@@ -1419,7 +1419,7 @@ void ClientGui::onTooManyDeletesNotificationSoftLimit(const SyncDbId syncDbId) {
     (void) _msgBox->exec();
 
     ParametersCache::instance()->parametersInfo().setNotifyBeforeDelete(!_msgBox->isChecked());
-    ParametersCache::instance()->saveParametersInfo();
+    (void) ParametersCache::instance()->saveParametersInfo();
 }
 
 void ClientGui::onTooManyDeletesNotification(const SyncDbId syncDbId, const TooManyDeletesNotificationType notificationType) {
