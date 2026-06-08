@@ -65,6 +65,7 @@
 #include "excltemplsetlistjob.h"
 #include "parametersinfojob.h"
 #include "parametersupdatejob.h"
+#include "syncacknowledgemanydeletesjob.h"
 
 #include "utilityfindgoodpathfornewsyncjob.h"
 #include "utilitybestvfsavailablemodejob.h"
@@ -112,6 +113,7 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::SYNC_GETPRIVATELINKURL, makeShared<SyncGetPrivateLinkUrlJob>},
                 {RequestNum::SYNC_TRIGGER_PROGRESS_UPDATE, makeShared<SyncTriggerProgressUpdateJob>},
                 {RequestNum::SYNC_SETSUPPORTSVIRTUALFILES, makeShared<SyncSetSupportsVirtualFilesJob>},
+                {RequestNum::SYNC_ACKNOWLEDGE_MANY_DELETES, makeShared<SyncAcknowledgeManyDeletesJob>},
                 {RequestNum::BLACKLISTED_NODE_LIST, makeShared<BlacklistedNodeListJob>},
                 {RequestNum::BLACKLISTED_NODE_SETLIST, makeShared<BlacklistedNodeSetListJob>},
                 {RequestNum::NODE_PATH, makeShared<NodePathJob>},
@@ -160,8 +162,7 @@ std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::
                                                     std::shared_ptr<AbstractCommChannel> channel) {
     if (const auto makeElt = _makeMap.find(requestNum); makeElt != _makeMap.end())
         return makeElt->second(commManager, requestId, inParams, channel);
-    else 
-    {
+    else {
         LOG_WARN(Log::instance()->getLogger(), "Received unknown request " << requestNum << " with id " << requestId);
         return std::make_shared<UnknownRequestJob>(commManager, requestId, inParams, channel);
     }

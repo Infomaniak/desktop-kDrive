@@ -30,6 +30,8 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobmanager.h ${server_srcs_path}/comm/guijobmanager.cpp
     ${server_srcs_path}/comm/guijobs/abstractguijob.h ${server_srcs_path}/comm/guijobs/abstractguijob.cpp
     ${server_srcs_path}/comm/guijobs/guijobfactory.h ${server_srcs_path}/comm/guijobs/guijobfactory.cpp
+
+    # requests
     ${server_srcs_path}/comm/guijobs/unknownrequestjob.h ${server_srcs_path}/comm/guijobs/unknownrequestjob.cpp
     ${server_srcs_path}/comm/guijobs/loginrequesttokenjob.h ${server_srcs_path}/comm/guijobs/loginrequesttokenjob.cpp
     ${server_srcs_path}/comm/guijobs/nodepathjob.h ${server_srcs_path}/comm/guijobs/nodepathjob.cpp
@@ -56,6 +58,7 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/syncgetprivatelinkurljob.h ${server_srcs_path}/comm/guijobs/syncgetprivatelinkurljob.cpp
     ${server_srcs_path}/comm/guijobs/synctriggerprogressupdatejob.h ${server_srcs_path}/comm/guijobs/synctriggerprogressupdatejob.cpp
     ${server_srcs_path}/comm/guijobs/syncsetsupportsvirtualfilesjob.h ${server_srcs_path}/comm/guijobs/syncsetsupportsvirtualfilesjob.cpp
+    ${server_srcs_path}/comm/guijobs/syncacknowledgemanydeletesjob.h ${server_srcs_path}/comm/guijobs/syncacknowledgemanydeletesjob.cpp
     ${server_srcs_path}/comm/guijobs/blacklistednodelistjob.h ${server_srcs_path}/comm/guijobs/blacklistednodelistjob.cpp
     ${server_srcs_path}/comm/guijobs/blacklistednodesetlistjob.h ${server_srcs_path}/comm/guijobs/blacklistednodesetlistjob.cpp
     ${server_srcs_path}/comm/guijobs/nodeinfojob.h ${server_srcs_path}/comm/guijobs/nodeinfojob.cpp
@@ -92,6 +95,8 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/updaterstatejob.h ${server_srcs_path}/comm/guijobs/updaterstatejob.cpp
     ${server_srcs_path}/comm/guijobs/updaterstartinstallerjob.h ${server_srcs_path}/comm/guijobs/updaterstartinstallerjob.cpp
     ${server_srcs_path}/comm/guijobs/updaterskipversionjob.h ${server_srcs_path}/comm/guijobs/updaterskipversionjob.cpp
+
+    # signals
     ${server_srcs_path}/comm/guijobs/signaluseraddedjob.h ${server_srcs_path}/comm/guijobs/signaluseraddedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.h ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluserremovedjob.h ${server_srcs_path}/comm/guijobs/signaluserremovedjob.cpp
@@ -106,7 +111,7 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/signalsyncprogressinfojob.h ${server_srcs_path}/comm/guijobs/signalsyncprogressinfojob.cpp
     ${server_srcs_path}/comm/guijobs/signalsynccompleteditemjob.h ${server_srcs_path}/comm/guijobs/signalsynccompleteditemjob.cpp
     ${server_srcs_path}/comm/guijobs/signalsyncupdatedjob.h ${server_srcs_path}/comm/guijobs/signalsyncupdatedjob.cpp
-    ${server_srcs_path}/comm/guijobs/signalsyncnotifymanydeletes.h ${server_srcs_path}/comm/guijobs/signalsyncnotifymanydeletes.cpp
+    ${server_srcs_path}/comm/guijobs/signalsyncnotifymanydeletesjob.h ${server_srcs_path}/comm/guijobs/signalsyncnotifymanydeletesjob.cpp
     ${server_srcs_path}/comm/guijobs/signalerroraddedjob.h ${server_srcs_path}/comm/guijobs/signalerroraddedjob.cpp
     ${server_srcs_path}/comm/guijobs/signalerrorremovedjob.h ${server_srcs_path}/comm/guijobs/signalerrorremovedjob.cpp
     ${server_srcs_path}/comm/guijobs/signalupdatershowdialogjob.h ${server_srcs_path}/comm/guijobs/signalupdatershowdialogjob.cpp

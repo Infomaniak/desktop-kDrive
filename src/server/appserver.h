@@ -242,6 +242,8 @@ class AppServer : public SharedTools::QtSingleApplication {
 #endif
         }
 
+        [[nodiscard]] ExitInfo acknowledgeManyDeletes(SyncDbId syncDbId, TooManyDeletesUserChoice userChoice);
+
     protected:
         // ServerRequests methods are accessible through std::function pointers in order to be mocked in tests
         std::function<ExitInfo(User &user, bool &updated)> _loadUserInfo =
@@ -324,7 +326,6 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         [[nodiscard]] ExitInfo createAndStartVfs(const Sync &sync) noexcept;
         [[nodiscard]] ExitInfo setSupportsVirtualFiles(SyncDbId syncDbId, bool value, bool asyncResponse);
-        [[nodiscard]] ExitInfo acknowledgeManyDeletes(SyncDbId syncDbId, ManyDeleteOpsBehavior userChoice);
 
         void startSyncsAndRetryOnError(const std::unordered_set<SyncDbId> &toIgnoreSyncDbIds = {});
         [[nodiscard]] ExitInfo startSyncs();

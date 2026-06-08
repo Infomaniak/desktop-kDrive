@@ -26,7 +26,7 @@
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
 #include "comm/extjobmanager.h"
 #endif
-#include "comm/guijobs/signalsyncnotifymanydeletes.h"
+#include "comm/guijobs/signalsyncnotifymanydeletesjob.h"
 #include "updater/updatemanager.h"
 
 #include "jobs/network/kDrive_API/searchjob.h"
@@ -2364,7 +2364,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
         }
         case RequestNum::SYNC_ACKNOWLEDGE_MANY_DELETES: {
             qint64 tmpSyncDbId = 0;
-            ManyDeleteOpsBehavior userChoice = ManyDeleteOpsBehavior::None;
+            TooManyDeletesUserChoice userChoice = TooManyDeletesUserChoice::None;
             ArgsWriter(params).write(tmpSyncDbId, userChoice);
 
             const auto syncDbId = static_cast<SyncDbId>(tmpSyncDbId);
@@ -4396,7 +4396,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(const SyncDbId syncDbId, const bool 
     return ExitCode::Ok;
 }
 
-ExitInfo AppServer::acknowledgeManyDeletes(const SyncDbId syncDbId, const ManyDeleteOpsBehavior userChoice) {
+ExitInfo AppServer::acknowledgeManyDeletes(const SyncDbId syncDbId, const TooManyDeletesUserChoice userChoice) {
     const std::scoped_lock lock(syncPalMapMutex);
     auto syncPalMapIt = syncPalMap.find(syncDbId);
     if (syncPalMapIt == syncPalMap.end()) {
@@ -4407,7 +4407,7 @@ ExitInfo AppServer::acknowledgeManyDeletes(const SyncDbId syncDbId, const ManyDe
         return ExitCode::LogicError;
     }
 
-    syncPalMapIt->second->setManyDeleteOpsBehavior(userChoice);
+    syncPalMapIt->second->setManyDeleteOpsUserChoice(userChoice);
     LOG_INFO(_logger, "Set acknowledge many deletes to " << userChoice << " for syncDbId=" << syncDbId);
 
     syncPalMapIt->second->start();
@@ -4868,7 +4868,7 @@ void AppServer::sendManyDeletesNotification(const SyncDbId syncDbId,
         (void) OldCommServer::instance()->sendSignal(SignalNum::SYNC_NOTIFY_MANY_DELETES, params, id);
     }
     if (useCommManager()) {
-        _commManager->sendGuiSignal(std::make_shared<SignalSyncNotifyManyDeletes>(syncDbId, notificationType));
+        _commManager->sendGuiSignal(std::make_shared<SignalSyncNotifyManyDeletesJob>(syncDbId, notificationType));
     }
 }
 

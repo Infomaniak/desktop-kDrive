@@ -197,11 +197,11 @@ ExitCode GuiRequests::setSupportsVirtualFiles(const SyncDbId syncDbId, const boo
     return exitCode;
 }
 
-ExitInfo GuiRequests::acknowledgeManyDelete(const SyncDbId syncDbId, const bool value) {
+ExitInfo GuiRequests::acknowledgeManyDelete(const SyncDbId syncDbId, const TooManyDeletesUserChoice userChoice) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << static_cast<qint64>(syncDbId);
-    paramsStream << value;
+    paramsStream << userChoice;
 
     QByteArray results;
     if (!CommClient::instance()->execute(RequestNum::SYNC_ACKNOWLEDGE_MANY_DELETES, params, results)) {

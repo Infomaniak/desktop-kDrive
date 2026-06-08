@@ -1380,7 +1380,9 @@ void ClientGui::onTooManyDeletesNotificationHardLimit(const SyncDbId syncDbId) {
         return;
     }
 
-    if (const auto exitInfo = GuiRequests::acknowledgeManyDelete(syncDbId, res == QMessageBox::Yes); !exitInfo) {
+    if (const auto exitInfo = GuiRequests::acknowledgeManyDelete(
+                syncDbId, res == QMessageBox::Yes ? TooManyDeletesUserChoice::Continue : TooManyDeletesUserChoice::Revert);
+        !exitInfo) {
         qCWarning(lcClientGui()) << "Error in Requests::syncStart for syncDbId=" << syncDbId << ", " << exitInfo;
         syncInfoMapIt->second.setStatus(SyncStatus::Paused);
         emit updateProgress(syncDbId);

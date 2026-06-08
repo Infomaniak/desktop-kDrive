@@ -969,13 +969,26 @@ std::string toString(const Scope e) {
     }
 }
 
-std::string toString(const ManyDeleteOpsBehavior e) {
+std::string toString(TooManyDeletesNotificationType e) {
     switch (e) {
-        case ManyDeleteOpsBehavior::None:
+        case TooManyDeletesNotificationType::Unknown:
+            return "Unknown";
+        case TooManyDeletesNotificationType::SoftLimit:
+            return "SoftLimit";
+        case TooManyDeletesNotificationType::HardLimit:
+            return "HardLimit";
+        default:
+            return noConversionStr;
+    }
+}
+
+std::string toString(const TooManyDeletesUserChoice e) {
+    switch (e) {
+        case TooManyDeletesUserChoice::None:
             return "None";
-        case ManyDeleteOpsBehavior::Continue:
+        case TooManyDeletesUserChoice::Continue:
             return "Continue";
-        case ManyDeleteOpsBehavior::Revert:
+        case TooManyDeletesUserChoice::Revert:
             return "Revert";
         default:
             return noConversionStr;
