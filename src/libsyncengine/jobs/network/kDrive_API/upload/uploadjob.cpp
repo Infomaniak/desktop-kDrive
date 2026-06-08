@@ -121,7 +121,7 @@ ExitInfo UploadJob::runJob() noexcept {
     if (!isCreate && _vfs) {
         // Get hydration status
         VfsStatus vfsStatus;
-        (void) _vfs->status(_linkTarget, vfsStatus);
+        (void) _vfs->status(_absoluteFilePath, vfsStatus);
         _isHydrated = vfsStatus.isHydrated;
         if (_isHydrated) {
             if (const ExitInfo exitInfo = checkHashMatch(); !exitInfo) {
