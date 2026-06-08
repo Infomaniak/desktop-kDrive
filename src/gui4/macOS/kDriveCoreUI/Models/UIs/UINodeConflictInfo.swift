@@ -33,9 +33,9 @@ public struct UINodeConflictInfo: Sendable, Equatable {
 
 public extension UINodeConflictInfo {
     init(nodeConflictInfo: NodeConflictInfo) {
-        self.authorName = nodeConflictInfo.authorName
-        self.fileSize = Int(nodeConflictInfo.fileSize)
-        self.lastModificationDate = Date(timeIntervalSince1970: nodeConflictInfo.lastModificationDate)
+        authorName = nodeConflictInfo.authorName
+        fileSize = Int(nodeConflictInfo.fileSize)
+        lastModificationDate = Date(timeIntervalSince1970: nodeConflictInfo.lastModificationDate)
     }
 }
 

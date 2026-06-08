@@ -154,7 +154,7 @@ final class SynchroErrorManager: ObservableObject {
 
     func handleConflicts(_ errors: [SynchroError]) {
         if errors.count <= 1, let error = errors.first {
-            // TODO: Display single conflict sheet
+            isShowingVersionSelectorSheet = ConflictsToResolve(errors: [error])
         } else {
             @InjectService var router: MainViewRouter
             router.setCurrentTabIfNecessary(.activities)

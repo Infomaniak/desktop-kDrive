@@ -106,7 +106,7 @@ struct InvalidSyncDirAccessReasonsSheet: View {
         @InjectService var nodeURLGenerator: NodeURLGenerator
         let url = nodeURLGenerator.localURL(for: error.metadata.path, synchroPath: URL(fileURLWithPath: synchro.localPath))
 
-        copyablePath = url.absoluteString
+        copyablePath = url.path
     }
 }
 

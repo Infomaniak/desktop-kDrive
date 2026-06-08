@@ -74,14 +74,16 @@ struct SystemSyncDirAccessReasonsSheet: View {
                     return .handled
                 })
 
-                VStack(alignment: .leading, spacing: AppPadding.padding12) {
-                    Text(KDriveLocalizable.labelOriginalLocation)
-                        .foregroundStyle(ColorToken.Text.primary.asColor)
-                        .font(.Tokens.bodyEmphasized)
+                if let copyablePath {
+                    VStack(alignment: .leading, spacing: AppPadding.padding12) {
+                        Text(KDriveLocalizable.labelOriginalLocation)
+                            .foregroundStyle(ColorToken.Text.primary.asColor)
+                            .font(.Tokens.bodyEmphasized)
 
-                    CopyablePathView(path: error.metadata.path)
+                        CopyablePathView(path: copyablePath)
+                    }
+                    .padding([.bottom, .horizontal], AppPadding.padding16)
                 }
-                .padding([.bottom, .horizontal], AppPadding.padding16)
             }
         }
         .scrollBounceBehaviorBasedOnSize()
@@ -108,7 +110,7 @@ struct SystemSyncDirAccessReasonsSheet: View {
         @InjectService var nodeURLGenerator: NodeURLGenerator
         let url = nodeURLGenerator.localURL(for: error.metadata.path, synchroPath: URL(fileURLWithPath: synchro.localPath))
 
-        copyablePath = url.absoluteString
+        copyablePath = url.path
     }
 }
 

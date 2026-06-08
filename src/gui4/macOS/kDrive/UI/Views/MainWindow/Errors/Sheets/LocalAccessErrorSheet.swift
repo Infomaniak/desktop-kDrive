@@ -47,9 +47,11 @@ struct LocalAccessErrorSheet: View {
             }
             .font(.Tokens.body)
 
-            VStack(alignment: .leading, spacing: AppPadding.padding12) {
-                Text(KDriveLocalizable.errDialogLocalFileAccessLocationLabel(error.nodeLabel))
-                CopyablePathView(path: error.metadata.path)
+            if let copyablePath {
+                VStack(alignment: .leading, spacing: AppPadding.padding12) {
+                    Text(KDriveLocalizable.errDialogLocalFileAccessLocationLabel(error.nodeLabel))
+                    CopyablePathView(path: copyablePath)
+                }
             }
         }
         .foregroundStyle(ColorToken.Text.primary.asColor)
@@ -84,7 +86,7 @@ struct LocalAccessErrorSheet: View {
         @InjectService var nodeURLGenerator: NodeURLGenerator
         let url = nodeURLGenerator.localURL(for: error.metadata.path, synchroPath: URL(fileURLWithPath: synchro.localPath))
 
-        copyablePath = url.absoluteString
+        copyablePath = url.path
     }
 }
 
