@@ -571,7 +571,7 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             inputSharedObject[0] = nullptr;
             inputSharedObject[1] = nullptr;
             _syncPal->stopEstimateUpdates();
-            _syncPal->setManyDeleteOpsBehavior(ManyDeleteOpsBehavior::None);
+            _syncPal->setManyDeleteOpsUserChoice(TooManyDeletesUserChoice::None);
             if (!_syncPal->restart()) {
                 _syncPal->resetSnapshotInvalidationCounters();
                 _syncPal->setSyncHasFullyCompletedInParams(true);

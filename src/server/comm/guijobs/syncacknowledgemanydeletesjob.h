@@ -16,25 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "signalsyncnotifymanydeletes.h"
+#pragma once
 
-// Output parameters keys
-static const auto outParamsSyncDbId = "syncDbId";
-static const auto outParamsSyncNotificationType = "notificationType";
+#include "abstractguijob.h"
 
 namespace KDC {
 
-SignalSyncNotifyManyDeletes::SignalSyncNotifyManyDeletes(const SyncDbId syncDbId,
-                                                         const TooManyDeletesNotificationType notificationType) :
-    _syncDbId(syncDbId),
-    _notificationType(notificationType) {
-    _signalNum = SignalNum::SYNC_NOTIFY_MANY_DELETES;
-}
+class SyncAcknowledgeManyDeletesJob : public AbstractGuiJob {
+    public:
+        explicit SyncAcknowledgeManyDeletesJob(std::shared_ptr<CommManager> commManager, int requestId,
+                                               const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel);
 
-ExitInfo SignalSyncNotifyManyDeletes::serializeOutputParms() {
-    writeParamValue(outParamsSyncDbId, _syncDbId);
-    writeParamValue(outParamsSyncNotificationType, _notificationType);
-    return ExitCode::Ok;
-}
+    private:
+        ExitInfo deserializeInputParms() override;
+        ExitInfo serializeOutputParms() override;
+        ExitInfo process() override;
+
+        // Input parameters
+        SyncDbId _syncDbId{0};
+        TooManyDeletesUserChoice _userChoice{TooManyDeletesUserChoice::None};
+
+        friend class TestGuiCommChannel;
+};
 
 } // namespace KDC

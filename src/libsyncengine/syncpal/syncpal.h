@@ -369,9 +369,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void resetConsecutiveBackErrors() { _consecutiveBackErrors = 0; }
         std::timed_mutex &userActionsMutex() { return _userActionsMutex; }
 
-        [[nodiscard]] ManyDeleteOpsBehavior manyDeleteOpsBehavior() const { return _manyDeleteOpsBehavior; }
-        void setManyDeleteOpsBehavior(const ManyDeleteOpsBehavior manyDeleteOpsBehavior) {
-            _manyDeleteOpsBehavior = manyDeleteOpsBehavior;
+        [[nodiscard]] TooManyDeletesUserChoice manyDeleteOpsUserChoice() const { return _manyDeleteOpsUserChoice; }
+        void setManyDeleteOpsUserChoice(const TooManyDeletesUserChoice manyDeleteOpsUserChoice) {
+            _manyDeleteOpsUserChoice = manyDeleteOpsUserChoice;
         }
 
     protected:
@@ -475,7 +475,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         std::shared_ptr<CacheDirectory> _cacheDirectory;
 
-        ManyDeleteOpsBehavior _manyDeleteOpsBehavior{ManyDeleteOpsBehavior::None};
+        TooManyDeletesUserChoice _manyDeleteOpsUserChoice{TooManyDeletesUserChoice::None};
 
         // TODO : Refactor to not use friend classes (should be reserved for test purpose).
         friend class SyncPalWorker;

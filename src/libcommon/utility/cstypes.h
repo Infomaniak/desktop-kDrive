@@ -351,7 +351,7 @@ enum class TooManyDeletesNotificationType {
     EnumEnd
 };
 
-enum class ManyDeleteOpsBehavior {
+enum class TooManyDeletesUserChoice {
     None = 0,
     Continue,
     Revert,
