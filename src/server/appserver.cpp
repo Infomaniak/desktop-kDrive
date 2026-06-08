@@ -4869,8 +4869,7 @@ void AppServer::sendManyDeletesNotification(const SyncDbId syncDbId,
         (void) OldCommServer::instance()->sendSignal(SignalNum::SYNC_NOTIFY_MANY_DELETES, params, id);
     }
     if (useCommManager()) {
-        _commManager->sendGuiSignal(std::make_shared<SignalSyncNotifyManyDeletes>(syncDbId));
-        // TODO
+        _commManager->sendGuiSignal(std::make_shared<SignalSyncNotifyManyDeletes>(syncDbId, notificationType));
     }
 }
 
