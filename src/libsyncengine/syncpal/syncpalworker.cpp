@@ -195,7 +195,7 @@ ExitInfo SyncPalWorker::ensureBlackListIsPropagated() {
         }
         if (!found) break;
 
-        if (retry < 1) {
+        if (retry < 2) {
             if (ExitInfo exitInfo = _syncPal->propagateSyncIdSetChange(false); !exitInfo) {
                 LOG_SYNCPAL_WARN(_logger, "Error propagating blacklist changes");
                 return exitInfo;
