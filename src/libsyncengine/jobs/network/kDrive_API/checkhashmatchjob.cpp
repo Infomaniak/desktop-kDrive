@@ -65,7 +65,7 @@ ExitInfo CheckHashMatchJob::getFileSize(const SyncPath &path, int64_t &size) {
 }
 
 ExitInfo CheckHashMatchJob::runJob() noexcept {
-    bool _hashMatch = false;
+    _hashMatch = false;
     if (const ExitInfo exitInfo = getFileSize(_filePath, _localSize); !exitInfo) {
         LOGW_DEBUG(_logger, L"Failed to get local file size for " << Utility::formatSyncPath(_filePath)
                                                                   << L", skipping hash check: " << exitInfo);
