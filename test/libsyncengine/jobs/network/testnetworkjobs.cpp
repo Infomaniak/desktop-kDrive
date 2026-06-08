@@ -577,6 +577,15 @@ void TestNetworkJobs::testDownload() {
         {
             //  Trying to download a file with size 9Mo in a 8Mo disk should fail with SystemError,
             //  NotEnoughDiskSpace.
+            LOG_DEBUG(Log::instance()->getLogger(), "Testing download with not enough disk space. Space available at "
+                                                            << smallPartitionPath.string() << " -> "
+                                                            << Utility::getFreeDiskSpace(smallPartitionPath) << " bytes");
+
+            SyncPath logPath;
+            CommonUtility::logDirectoryPath(logPath);
+
+            std::cout << "Log dir path: " << logPath << std::endl;
+
             const SyncPath localDestFilePath = smallPartitionPath / "9Mo.txt";
             DownloadJob downloadJob(
                     nullptr, cacheDirectory,
