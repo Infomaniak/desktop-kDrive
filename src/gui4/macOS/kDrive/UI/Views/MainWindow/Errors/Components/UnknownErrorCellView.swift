@@ -38,6 +38,7 @@ struct MetadataItemView: View {
 
 struct UnknownErrorCellView: View {
     let error: SynchroError
+    let manager: SynchroErrorManager
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppPadding.padding8) {
@@ -45,7 +46,7 @@ struct UnknownErrorCellView: View {
                 title: KDriveLocalizable.defaultErrorTitle,
                 description: KDriveLocalizable.unexpectedErrorTeachingTipContent,
                 action: .init(title: KDriveLocalizable.buttonContactSupport) {
-                    // TODO:
+                    manager.openSupportURL()
                 }
             )
 
@@ -66,19 +67,5 @@ struct UnknownErrorCellView: View {
 }
 
 #Preview {
-    UnknownErrorCellView(error: SynchroError(
-        kind: .unknown,
-        metadata: .init(
-            dbId: 0,
-            synchroDbId: 0,
-            date: .now,
-            path: "",
-            destinationPath: "",
-            nodeType: .file,
-            isAutoResolved: true,
-            level: KDC.ErrorLevel.Node,
-            exitCode: .Unknown,
-            exitCause: .Unknown
-        )
-    ))
+    UnknownErrorCellView(error: PreviewHelper.synchroError, manager: SynchroErrorManager())
 }

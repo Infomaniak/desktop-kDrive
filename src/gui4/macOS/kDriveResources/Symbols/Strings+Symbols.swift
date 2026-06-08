@@ -97,6 +97,8 @@ public enum KDriveLocalizable {
   public static let buttonCopyShareLink = KDriveLocalizable.tr("Localizable", "buttonCopyShareLink", fallback: "Copy share link")
   /// loco:68e673c48af12c42e80027c8
   public static let buttonCreateAccount = KDriveLocalizable.tr("Localizable", "buttonCreateAccount", fallback: "Create an account")
+  /// loco:69a05e947011da04b4061f23
+  public static let buttonCreateNewSync = KDriveLocalizable.tr("Localizable", "buttonCreateNewSync", fallback: "Create a new sync")
   /// loco:698b14e52445668d9d0495a2
   public static let buttonDisconnectAccount = KDriveLocalizable.tr("Localizable", "buttonDisconnectAccount", fallback: "Disconnect this account")
   /// loco:698b0aefb16a3916fc004f32
@@ -611,6 +613,10 @@ public enum KDriveLocalizable {
   }
   /// loco:69aad2fb60082fe51d04e452
   public static let labelConflictStrategyKeepRemoteTitle = KDriveLocalizable.tr("Localizable", "labelConflictStrategyKeepRemoteTitle", fallback: "Keep online versions only")
+  /// loco:69a012ce9c6aefa11d0c0a22
+  public static func labelCreateNewSync(_ p1: Any) -> String {
+    return KDriveLocalizable.tr("Localizable", "labelCreateNewSync", String(describing: p1), fallback: "Create a %@.")
+  }
   /// loco:69a00df5cee58fe1c90de9e2
   public static let labelFAQ = KDriveLocalizable.tr("Localizable", "labelFAQ", fallback: "FAQ")
   /// loco:69bd5439d1397465ce0d8572
@@ -643,8 +649,12 @@ public enum KDriveLocalizable {
   public static let labelMostRecent = KDriveLocalizable.tr("Localizable", "labelMostRecent", fallback: "Most recent")
   /// loco:6989fec57ca0d7305008b1e2
   public static let labelName = KDriveLocalizable.tr("Localizable", "labelName", fallback: "Name")
+  /// loco:69a0675de82f7e271b0c54d2
+  public static let labelNewDeviceDetected = KDriveLocalizable.tr("Localizable", "labelNewDeviceDetected", fallback: "New device detected")
   /// loco:69a067979b511e9c830b1642
   public static let labelNewDeviceDetectedTip = KDriveLocalizable.tr("Localizable", "labelNewDeviceDetectedTip", fallback: "You are using kDrive on a new computer, after restoring from a backup.")
+  /// loco:69a0130cbdb1efd10d0939a3
+  public static let labelNewSync = KDriveLocalizable.tr("Localizable", "labelNewSync", fallback: "new sync")
   /// loco:69aafa69b473f615ee031a64
   public static let labelNoConflictsFound = KDriveLocalizable.tr("Localizable", "labelNoConflictsFound", fallback: "No conflicts match your search")
   /// loco:69c2644abc5e9a04d80150f4

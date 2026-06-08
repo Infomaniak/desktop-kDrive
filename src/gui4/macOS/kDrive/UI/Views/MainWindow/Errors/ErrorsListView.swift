@@ -43,6 +43,24 @@ struct ErrorsListView: View {
             }
         }
         .groupedFormatStyle()
+        .sheet(item: $synchroErrorManager.isShowingLocalAccessSheet) { error in
+            LocalAccessErrorSheet(synchroErrorManager: synchroErrorManager, error: error)
+        }
+        .sheet(item: $synchroErrorManager.isShowingActivateOfflineSynchroSheet) { error in
+            SystemUnableToStartVFSReasonSheet(error: error)
+        }
+        .sheet(item: $synchroErrorManager.isShowingResolutionTipsSheet) { type in
+            switch type {
+            case .invalidSyncDirAccess(let error):
+                InvalidSyncDirAccessReasonsSheet(synchroErrorManager: synchroErrorManager, error: error)
+            case .systemSyncDirAccess(let error):
+                SystemSyncDirAccessReasonsSheet(synchroErrorManager: synchroErrorManager, error: error)
+            case .systemSyncDirDiskMissing:
+                SystemSyncDirDiskMissingReasonsSheet()
+            case .dataSyncDirChanged:
+                DataSyncDirChangedReasonsSheet(synchroErrorManager: synchroErrorManager)
+            }
+        }
     }
 }
 

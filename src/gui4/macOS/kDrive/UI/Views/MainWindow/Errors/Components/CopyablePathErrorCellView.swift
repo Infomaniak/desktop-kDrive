@@ -18,7 +18,6 @@
 
 import kDriveCore
 import kDriveCoreUI
-import kDriveResources
 import SwiftUI
 
 struct CopyablePathErrorCellView: View {

@@ -97,7 +97,7 @@ struct ErrorCellView: View {
     private func performAction(_ action: Action) {
         Task {
             isLoading = true
-            action.action()
+            await action.action()
             isLoading = false
         }
     }
@@ -106,7 +106,7 @@ struct ErrorCellView: View {
 extension ErrorCellView {
     struct Action {
         let title: String
-        let action: @Sendable () -> Void
+        let action: @MainActor () async -> Void
     }
 
     struct PathInfo {
