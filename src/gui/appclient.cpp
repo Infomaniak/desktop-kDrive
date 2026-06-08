@@ -376,11 +376,11 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
         }
         case SignalNum::SYNC_NOTIFY_MANY_DELETES: {
             qint64 syncDbId = 0;
-            TooManyDeletesNotificationType softLimit = TooManyDeletesNotificationType::Unknown;
+            TooManyDeletesNotificationType notificationType = TooManyDeletesNotificationType::Unknown;
             paramsStream >> syncDbId;
-            paramsStream >> softLimit;
+            paramsStream >> notificationType;
 
-            emit tooManyDeletesNotification(syncDbId, softLimit);
+            emit tooManyDeletesNotification(syncDbId, notificationType);
             break;
         }
         case SignalNum::NODE_FOLDER_SIZE_COMPLETED: {
