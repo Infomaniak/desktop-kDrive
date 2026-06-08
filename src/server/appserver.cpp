@@ -2364,11 +2364,11 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
         }
         case RequestNum::SYNC_ACKNOWLEDGE_MANY_DELETES: {
             qint64 tmpSyncDbId = 0;
-            bool value = false;
-            ArgsWriter(params).write(tmpSyncDbId, value);
+            ManyDeleteOpsBehavior userChoice = ManyDeleteOpsBehavior::None;
+            ArgsWriter(params).write(tmpSyncDbId, userChoice);
 
             const auto syncDbId = static_cast<SyncDbId>(tmpSyncDbId);
-            const auto exitInfo = acknowledgeManyDeletes(syncDbId, value);
+            const auto exitInfo = acknowledgeManyDeletes(syncDbId, userChoice);
             if (!exitInfo) {
                 LOG_WARN(_logger, "Error in acknowledgeManyDeletes for syncDbId=" << syncDbId << " : " << exitInfo);
             }
@@ -4396,7 +4396,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(const SyncDbId syncDbId, const bool 
     return ExitCode::Ok;
 }
 
-ExitInfo AppServer::acknowledgeManyDeletes(const SyncDbId syncDbId, const bool value) {
+ExitInfo AppServer::acknowledgeManyDeletes(const SyncDbId syncDbId, const ManyDeleteOpsBehavior userChoice) {
     const std::scoped_lock lock(syncPalMapMutex);
     auto syncPalMapIt = syncPalMap.find(syncDbId);
     if (syncPalMapIt == syncPalMap.end()) {
@@ -4407,9 +4407,8 @@ ExitInfo AppServer::acknowledgeManyDeletes(const SyncDbId syncDbId, const bool v
         return ExitCode::LogicError;
     }
 
-    syncPalMapIt->second->setManyDeleteOpsBehavior(value ? SyncPal::ManyDeleteOpsBehavior::Continue
-                                                         : SyncPal::ManyDeleteOpsBehavior::Revert);
-    LOG_INFO(_logger, "Set acknowledge many deletes to " << value << " for syncDbId=" << syncDbId);
+    syncPalMapIt->second->setManyDeleteOpsBehavior(userChoice);
+    LOG_INFO(_logger, "Set acknowledge many deletes to " << userChoice << " for syncDbId=" << syncDbId);
 
     syncPalMapIt->second->start();
 

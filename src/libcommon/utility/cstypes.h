@@ -351,4 +351,11 @@ enum class TooManyDeletesNotificationType {
     EnumEnd
 };
 
+enum class ManyDeleteOpsBehavior {
+    None = 0,
+    Continue,
+    Revert,
+    EnumEnd
+};
+
 } // namespace KDC
