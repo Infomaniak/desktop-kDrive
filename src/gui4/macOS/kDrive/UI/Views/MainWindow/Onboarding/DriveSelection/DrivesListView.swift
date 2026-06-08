@@ -123,6 +123,23 @@ class DrivesListView: NSView {
                 cell.state = .off
             }
         }
+
+        scrollToTop()
+    }
+
+    private func scrollToTop() {
+        guard let documentView = scrollView.documentView else { return }
+
+        layoutSubtreeIfNeeded()
+        documentView.layoutSubtreeIfNeeded()
+
+        let yPosition = documentView.isFlipped
+            ? 0
+            : max(0, documentView.bounds.height - scrollView.contentView.bounds.height)
+
+        let topPoint = NSPoint(x: 0, y: yPosition)
+        scrollView.contentView.scroll(to: topPoint)
+        scrollView.reflectScrolledClipView(scrollView.contentView)
     }
 
     private func updateSelectedCells(newValue: Set<UIAvailableDrive>, oldValue: Set<UIAvailableDrive>) {
