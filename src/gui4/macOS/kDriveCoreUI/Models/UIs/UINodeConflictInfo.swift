@@ -19,7 +19,7 @@
 import Foundation
 import kDriveCore
 
-public struct UINodeConflictInfo: Sendable {
+public struct UINodeConflictInfo: Sendable, Equatable {
     public let authorName: String
     public let fileSize: Int
     public let lastModificationDate: Date

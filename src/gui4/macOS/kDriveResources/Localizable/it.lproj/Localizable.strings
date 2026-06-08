@@ -959,6 +959,9 @@
 /* loco:698aeefb604e522161001392 */
 "labelTime" = "Tempo";
 
+/* loco:69a6994cc60d93f50404f812 */
+"labelXoverY" = "%@ di %@";
+
 /* loco:698c6a57a5f62ca5f1091942 */
 "labelkDriveManagement" = "Gestione kDrive";
 

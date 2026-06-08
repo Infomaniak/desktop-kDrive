@@ -21,27 +21,6 @@ import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
-struct CardGroupBoxStyle: GroupBoxStyle {
-    let isSelected: Bool
-
-    func makeBody(configuration: Configuration) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            configuration.content
-        }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: AppRadius.radius12, style: .continuous)
-                .fill(.background)
-        )
-        .overlay {
-            if isSelected {
-                RoundedRectangle(cornerRadius: AppRadius.radius12, style: .continuous)
-                    .stroke(Color.accentColor, lineWidth: 1)
-            }
-        }
-    }
-}
-
 struct InfoLabel: View {
     let label: String
     let value: String
@@ -60,9 +39,9 @@ struct InfoLabel: View {
 }
 
 struct ConflictBoxView: View {
-    enum ConflictType {
-        case local
+    enum ConflictType: String, CaseIterable {
         case remote
+        case local
 
         var icon: Image {
             switch self {
@@ -91,66 +70,83 @@ struct ConflictBoxView: View {
     let toggleState: () -> Void
 
     var body: some View {
-        GroupBox {
-            VStack(spacing: AppPadding.padding8) {
-                HStack {
-                    HStack(spacing: AppPadding.padding8) {
-                        type.icon
-                            .resizable(at: AppIconSize.iconSize12)
+        VStack(spacing: AppPadding.padding8) {
+            HStack {
+                HStack(spacing: AppPadding.padding8) {
+                    type.icon
+                        .resizable(at: AppIconSize.iconSize12)
 
-                        Text(type.title)
-                            .font(.Tokens.body)
+                    Text(type.title)
+                        .font(.Tokens.body)
 
-                        TagView(text: KDriveLocalizable.labelMostRecent)
-                            .opacity(isSelected ? 1 : 0)
-                            .accessibilityHidden(isSelected ? false : true)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                    Button(action: openPreview) {
-                        Label {
-                            Text(KDriveLocalizable.accessibilityMoreInformation)
-                        } icon: {
-                            KDriveResources.eye.swiftUIImage
-                                .resizable(at: AppIconSize.iconSize16)
-                        }
-                        .labelStyle(.iconOnly)
-                    }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(.accent)
+                    TagView(text: KDriveLocalizable.labelMostRecent)
+                        .opacity(isMostRecent ? 1 : 0)
+                        .accessibilityHidden(isMostRecent ? false : true)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
 
-                VStack(spacing: AppPadding.padding4) {
-                    InfoLabel(label: KDriveLocalizable.labelAuthor, value: info.authorName)
-                    Divider()
-                    InfoLabel(label: KDriveLocalizable.labelSize, value: info.fileSize.formatted(.byteCount(style: .file)))
-                    Divider()
-                    InfoLabel(label: KDriveLocalizable.labelDate, value: info.lastModificationDate.formatted(.dateTime))
+                Button(action: openPreview) {
+                    Label {
+                        Text(KDriveLocalizable.accessibilityMoreInformation)
+                    } icon: {
+                        KDriveResources.eye.swiftUIImage
+                            .resizable(at: AppIconSize.iconSize16)
+                    }
+                    .labelStyle(.iconOnly)
                 }
-                .padding(AppPadding.padding8)
-                .background(Color(NSColor.windowBackgroundColor), in: .rect(cornerRadius: AppRadius.radius8))
+                .buttonStyle(.plain)
+                .foregroundStyle(.accent)
+            }
 
-                if isSelected {
-                    Button(action: toggleState) {
-                        Label {
-                            Text(KDriveLocalizable.buttonSelected)
-                        } icon: {
-                            KDriveResources.checkmarkCircle.swiftUIImage
-                        }
+            VStack(spacing: AppPadding.padding4) {
+                InfoLabel(label: KDriveLocalizable.labelAuthor, value: info.authorName)
+                Divider()
+                InfoLabel(label: KDriveLocalizable.labelSize, value: info.fileSize.formatted(.byteCount(style: .file)))
+                Divider()
+                InfoLabel(label: KDriveLocalizable.labelDate, value: info.lastModificationDate.formatted(.dateTime))
+            }
+            .padding(AppPadding.padding8)
+            .background(Color(NSColor.windowBackgroundColor), in: .rect(cornerRadius: AppRadius.radius8))
+
+            if isSelected {
+                Button(action: toggleState) {
+                    Label {
+                        Text(KDriveLocalizable.buttonSelected)
+                    } icon: {
+                        KDriveResources.checkmarkCircle.swiftUIImage
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+            } else {
+                Button(action: toggleState) {
+                    Text(KDriveLocalizable.buttonSelect)
                         .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.borderedProminent)
-                } else {
-                    Button(action: toggleState) {
-                        Text(KDriveLocalizable.buttonSelect)
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.bordered)
                 }
+                .buttonStyle(.bordered)
             }
         }
-        .groupBoxStyle(CardGroupBoxStyle(isSelected: isSelected))
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: AppRadius.radius12, style: .continuous)
+                .fill(ColorToken.Surface.primary.asColor)
+        )
+        .overlay {
+            if isSelected {
+                RoundedRectangle(cornerRadius: AppRadius.radius12, style: .continuous)
+                    .stroke(Color.accentColor, lineWidth: 1)
+            }
+        }
     }
+}
+
+extension ConflictBoxView {
+    static let placeholder = ConflictBoxView(
+        type: .local,
+        isMostRecent: false,
+        isSelected: false,
+        info: .placeholder
+    ) {} toggleState: {}
 }
 
 #Preview {

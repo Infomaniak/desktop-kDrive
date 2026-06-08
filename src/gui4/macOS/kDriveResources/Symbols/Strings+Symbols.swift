@@ -716,6 +716,10 @@ public enum KDriveLocalizable {
   public static let labelSyncLocation = KDriveLocalizable.tr("Localizable", "labelSyncLocation", fallback: "Location")
   /// loco:698aeefb604e522161001392
   public static let labelTime = KDriveLocalizable.tr("Localizable", "labelTime", fallback: "Time")
+  /// loco:69a6994cc60d93f50404f812
+  public static func labelXoverY(_ p1: Any, _ p2: Any) -> String {
+    return KDriveLocalizable.tr("Localizable", "labelXoverY", String(describing: p1), String(describing: p2), fallback: "%@ of %@")
+  }
   /// loco:698b0dd551a7a263e6030a72
   public static let languageSetting = KDriveLocalizable.tr("Localizable", "languageSetting", fallback: "Language")
   /// loco:698b02fbc4b83479960bbf92
