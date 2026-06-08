@@ -24,11 +24,11 @@ namespace KDC {
 
 class SignalSyncRemovedJob : public AbstractGuiJob {
     public:
-        explicit SignalSyncRemovedJob(int syncDbId);
+        explicit SignalSyncRemovedJob(SyncDbId syncDbId);
 
     private:
         // Output parameters
-        int _syncDbId;
+        SyncDbId _syncDbId{0};
 
         ExitInfo deserializeInputParms() override { return ExitCode::Ok; }
         ExitInfo serializeOutputParms() override;

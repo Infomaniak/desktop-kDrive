@@ -19,6 +19,7 @@
 #include "testguicommchannel.h"
 
 #include "../testcommhelpers.h"
+#include "comm/guijobs/signalsyncnotifymanydeletes.h"
 
 #include "comm/guijobs/syncinfolistjob.h"
 #include "comm/guijobs/syncofflinefilessizejob.h"
@@ -29,6 +30,7 @@
 #include "comm/guijobs/syncgetprivatelinkurljob.h"
 #include "comm/guijobs/synctriggerprogressupdatejob.h"
 #include "comm/guijobs/syncsetsupportsvirtualfilesjob.h"
+#include "utility/jsonparserutility.h"
 
 namespace KDC {
 
@@ -631,6 +633,28 @@ void TestGuiCommChannel::testSyncOfflineFilesSizeJob() {
     const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
+}
+
+void TestGuiCommChannel::testSignalSyncNotifyManyDeletes() {
+    const SyncDbId syncDbId = 1;
+    const TooManyDeletesNotificationType notificationType = TooManyDeletesNotificationType::HardLimit;
+    SignalSyncNotifyManyDeletes job(syncDbId, notificationType);
+
+    checkSignalCommonMethods(job, SignalNum::SYNC_NOTIFY_MANY_DELETES);
+
+    if (!job.serializeGenericOutputParms(ExitCode::Ok)) {
+        CPPUNIT_ASSERT(false);
+    }
+
+    const auto jsonObj = Poco::JSON::Parser{}.parse(job._outputParamsStr).extract<Poco::JSON::Object::Ptr>();
+    const auto paramsObj = JsonParserUtility::extractJsonObject(jsonObj, "params");
+    SyncDbId syncDbIdOut = 0;
+    JsonParserUtility::extractValue(paramsObj, "syncDbId", syncDbIdOut);
+    CPPUNIT_ASSERT_EQUAL(static_cast<SyncDbId>(1), syncDbIdOut);
+    auto notificationTypeOut = 0;
+    JsonParserUtility::extractValue(paramsObj, "notificationType", notificationTypeOut);
+    CPPUNIT_ASSERT_EQUAL(TooManyDeletesNotificationType::HardLimit,
+                         static_cast<TooManyDeletesNotificationType>(notificationTypeOut));
 }
 
 } // namespace KDC
