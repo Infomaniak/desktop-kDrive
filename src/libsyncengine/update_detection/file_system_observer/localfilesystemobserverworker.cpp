@@ -161,7 +161,6 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(const std::list<std::pai
         }
 
         NodeId nodeId = std::to_string(fileStat.inode);
-        auto nodeType = fileStat.nodeType;
 
         // Determines if the item is a link
         ItemType itemType;
@@ -182,7 +181,7 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(const std::list<std::pai
             continue;
         }
 
-        assert(nodeType == itemType.nodeType);
+        const auto nodeType = itemType.nodeType;
         auto isLink = itemType.linkType != LinkType::None;
 
         // Check if the item is excluded by a file exclusion rule
