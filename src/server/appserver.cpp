@@ -390,8 +390,8 @@ void AppServer::init() {
         }
 
         connect(OldCommServer::instance().get(), &OldCommServer::requestReceived, this, &AppServer::onRequestReceived);
-        connect(OldCommServer::instance().get(), &OldCommServer::clientDisconnected, this,
-                &AppServer::onClientDisconnectedReceived);
+        (void) connect(OldCommServer::instance().get(), &OldCommServer::clientDisconnected, this,
+                       &AppServer::onClientDisconnectedReceived);
     }
 
     // Update users,accounts and drives info.

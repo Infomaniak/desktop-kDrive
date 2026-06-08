@@ -1151,8 +1151,8 @@ bool ParmsDb::upgradeTables() {
         queryFree(UPDATE_PARAMETERS_JOB_REQUEST_ID);
     }
 
-    for (const auto &columnName: {"distributionChannel", "sentryEnabled", "matomoEnabled", "notifyBeforeDelete"}) {
-        if (!addIntegerColumnIfMissing(tableName, columnName)) {
+    for (const auto &name: {"distributionChannel", "sentryEnabled", "matomoEnabled", "notifyBeforeDelete"}) {
+        if (!addIntegerColumnIfMissing(tableName, name)) {
             return false;
         }
     }

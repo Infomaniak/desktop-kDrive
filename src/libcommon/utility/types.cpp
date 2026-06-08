@@ -969,13 +969,14 @@ std::string toString(const Scope e) {
     }
 }
 
-std::string toString(TooManyDeletesNotificationType e) {
+std::string toString(const TooManyDeletesNotificationType e) {
+    using enum TooManyDeletesNotificationType;
     switch (e) {
-        case TooManyDeletesNotificationType::Unknown:
+        case Unknown:
             return "Unknown";
-        case TooManyDeletesNotificationType::SoftLimit:
+        case SoftLimit:
             return "SoftLimit";
-        case TooManyDeletesNotificationType::HardLimit:
+        case HardLimit:
             return "HardLimit";
         default:
             return noConversionStr;
@@ -983,12 +984,13 @@ std::string toString(TooManyDeletesNotificationType e) {
 }
 
 std::string toString(const TooManyDeletesUserChoice e) {
+    using enum TooManyDeletesUserChoice;
     switch (e) {
-        case TooManyDeletesUserChoice::None:
+        case None:
             return "None";
-        case TooManyDeletesUserChoice::Continue:
+        case Continue:
             return "Continue";
-        case TooManyDeletesUserChoice::Revert:
+        case Revert:
             return "Revert";
         default:
             return noConversionStr;
