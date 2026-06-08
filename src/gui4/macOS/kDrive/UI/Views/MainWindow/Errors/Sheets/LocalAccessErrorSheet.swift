@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
@@ -23,6 +24,8 @@ import SwiftUI
 
 struct LocalAccessErrorSheet: View {
     @Environment(\.dismiss) private var dismiss
+
+    @State private var copyablePath: String?
 
     let synchroErrorManager: SynchroErrorManager
     let error: SynchroError
@@ -62,11 +65,26 @@ struct LocalAccessErrorSheet: View {
                     .buttonStyle(.borderedProminent)
             }
         }
+        .task {
+            await computeCopyablePath()
+        }
     }
 
     private func openParentFolder() {
         synchroErrorManager.openParentFolder(error)
         dismiss()
+    }
+
+    private func computeCopyablePath() async {
+        @InjectService var cache: CoherentCache
+        guard let synchro = await cache.getSynchro(synchroDbId: Int32(error.metadata.synchroDbId)) else {
+            return
+        }
+
+        @InjectService var nodeURLGenerator: NodeURLGenerator
+        let url = nodeURLGenerator.localURL(for: error.metadata.path, synchroPath: URL(fileURLWithPath: synchro.localPath))
+
+        copyablePath = url.absoluteString
     }
 }
 
