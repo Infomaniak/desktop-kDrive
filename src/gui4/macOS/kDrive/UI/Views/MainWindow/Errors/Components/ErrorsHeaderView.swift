@@ -42,7 +42,7 @@ struct ErrorsHeaderView: View {
     var body: some View {
         HStack {
             Text(title)
-                .font(.Tokens.title2)
+                .font(.Tokens.body)
                 .foregroundStyle(ColorToken.Text.primary.asColor)
                 .frame(maxWidth: .infinity, alignment: .leading)
 

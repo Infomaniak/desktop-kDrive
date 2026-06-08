@@ -32,10 +32,10 @@ public struct IKContentUnavailableView: View {
 
     let image: Image
     let title: String
-    let subtitle: String
+    let subtitle: String?
     let action: IKContentUnavailableView.Action?
 
-    public init(image: Image, title: String, subtitle: String, action: IKContentUnavailableView.Action? = nil) {
+    public init(image: Image, title: String, subtitle: String? = nil, action: IKContentUnavailableView.Action? = nil) {
         self.image = image
         self.title = title
         self.subtitle = subtitle
@@ -54,10 +54,12 @@ public struct IKContentUnavailableView: View {
                     .font(.Tokens.title3)
                     .foregroundStyle(ColorToken.Text.primary.asColor)
 
-                Text(subtitle)
-                    .font(.Tokens.body)
-                    .foregroundStyle(ColorToken.Text.primary.asColor)
-                    .fixedSize()
+                if let subtitle {
+                    Text(subtitle)
+                        .font(.Tokens.body)
+                        .foregroundStyle(ColorToken.Text.primary.asColor)
+                        .fixedSize()
+                }
 
                 if let action {
                     Button(action.title, action: action.action)

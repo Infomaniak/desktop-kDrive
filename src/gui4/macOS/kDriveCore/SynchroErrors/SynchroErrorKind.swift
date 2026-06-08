@@ -26,8 +26,8 @@ public enum SynchroErrorKind: Sendable, Hashable, CaseIterable {
     case editCancel
     case moveCancel
 
-    case fileLockedError
-    case fileRescuedError
+    case fileLocked
+    case fileRescued
     case fileTooBig
 
     case forbiddenCharEndWithSpace
@@ -72,7 +72,7 @@ public enum SynchroErrorKind: Sendable, Hashable, CaseIterable {
         switch self {
         case .conflict,
              .createCancel, .deleteCancel, .editCancel, .moveCancel,
-             .fileRescuedError, .fileTooBig,
+             .fileRescued, .fileTooBig,
              .notEnoughDiskSpace, .quotaExceeded,
              .backErrorDriveAccess, .backErrorDriveAsleep, .backErrorDriveMaintenance, .backErrorDriveNotRenew,
              .invalidSyncDirAccess, .invalidSyncDirNesting,

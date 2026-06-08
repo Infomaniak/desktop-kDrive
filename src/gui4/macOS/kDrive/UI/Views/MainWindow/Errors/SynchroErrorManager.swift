@@ -16,25 +16,10 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Foundation
+import Combine
+import kDriveCore
+import SwiftUI
 
-public struct SynchroError: Error, Identifiable, Sendable {
-    public var id: Int {
-        return metadata.dbId
-    }
-
-    public let kind: SynchroErrorKind
-    public let metadata: SynchroErrorMetadata
-
-    public init(kind: SynchroErrorKind, metadata: SynchroErrorMetadata) {
-        self.kind = kind
-        self.metadata = metadata
-    }
-}
-
-public extension SynchroError {
-    init(errorInfo: ErrorInfo) {
-        kind = SynchroErrorKind(errorInfo: errorInfo)
-        metadata = SynchroErrorMetadata(errorInfo: errorInfo)
-    }
+final class SynchroErrorManager: ObservableObject {
+    func resolveConflict(_ error: SynchroError) {}
 }

@@ -21,6 +21,15 @@ import InfomaniakFoundation
 import UniformTypeIdentifiers
 
 public extension FileTypeRepresentation {
+    init(filenameExtension: String) {
+        guard let utType = UTType(filenameExtension: filenameExtension) else {
+            self = .unknown
+            return
+        }
+
+        self.init(utType: utType)
+    }
+
     init(utType: UTType) {
         if utType.conforms(to: .archive) {
             self = .archive

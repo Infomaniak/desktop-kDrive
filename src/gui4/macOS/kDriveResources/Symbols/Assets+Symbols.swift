@@ -47,6 +47,7 @@ public enum KDriveResources {
   public static let cog = ImageAsset(name: "cog")
   public static let computerArrowUp = ImageAsset(name: "computer-arrow-up")
   public static let computer = ImageAsset(name: "computer")
+  public static let documentOnDocument = ImageAsset(name: "document-on-document")
   public static let doorArrowRight = ImageAsset(name: "door-arrow-right")
   public static let dotsVertical = ImageAsset(name: "dots-vertical")
   public static let finder = ImageAsset(name: "finder")
