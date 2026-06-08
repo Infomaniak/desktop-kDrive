@@ -46,9 +46,6 @@ ExitInfo CacheDirectory::path(SyncPath &cacheDirectory) noexcept {
         !IoHelper::checkIfPathExists(_cacheDirectoryPath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
         sentry::Handler::captureMessage(sentry::Level::Error, "Failed to check if kDrive-cache exist",
                                         CommonUtility::ws2s(Utility::formatIoError(_cacheDirectoryPath, ioError)));
-
-        std::cout << "Failed to check if kDrive-cache exists: " << _cacheDirectoryPath << ", IoError " << ioError << std::endl;
-
         return {ExitCode::SystemError, ExitCause::TmpDirAccessError};
     }
     if (!exists) {
@@ -75,9 +72,6 @@ ExitInfo CacheDirectory::initDirectory() noexcept {
         !IoHelper::createDirectory(_cacheDirectoryPath, false, ioError) && ioError != IoError::DirectoryExists) {
         sentry::Handler::captureMessage(sentry::Level::Error, "Failed to create kDrive-cache",
                                         CommonUtility::ws2s(Utility::formatIoError(_cacheDirectoryPath, ioError)));
-
-        std::cout << "Failed to create kDrive-cache: " << _cacheDirectoryPath << ", IoError: " << ioError << std::endl;
-
         return {ExitCode::SystemError, ExitCause::TmpDirAccessError};
     }
 

@@ -45,7 +45,6 @@
 #include <filesystem>
 #include <sstream>
 #include <ctime>
-#include <iostream>
 
 #include <Poco/MD5Engine.h>
 #include <Poco/UnicodeConverter.h>
@@ -127,8 +126,6 @@ int64_t Utility::freeDiskSpaceLimit() {
 
 bool Utility::enoughSpace(const SyncPath &path) {
     const auto freeBytes = getFreeDiskSpace(path);
-
-    std::cout << "Free space: " << freeBytes << " bytes, limit: " << freeDiskSpaceLimit() << " bytes" << std::endl;
 
     return (freeBytes < 0 || freeBytes >= freeDiskSpaceLimit());
 }

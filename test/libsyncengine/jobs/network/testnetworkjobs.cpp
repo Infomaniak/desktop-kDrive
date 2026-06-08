@@ -565,27 +565,18 @@ void TestNetworkJobs::testDownload() {
 
         CPPUNIT_ASSERT(!smallPartitionPath.empty());
         IoError ioError = IoError::Unknown;
-        bool exists = false;
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::checkIfPathExists(smallPartitionPath, exists, ioError,
+        bool exist = false;
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::checkIfPathExists(smallPartitionPath, exist, ioError,
                                                                               IoHelper::PathCheckOption::Insensitive));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-        CPPUNIT_ASSERT_MESSAGE("Small partition not found", exists);
+        CPPUNIT_ASSERT_MESSAGE("Small partition not found", exist);
 
         const auto cacheDirectory = std::make_shared<CacheDirectory>(smallPartitionPath);
 
         // Not Enough disk space (destination dir)
         {
-            //  Trying to download a file with size 9Mo in a 8Mo disk should fail with SystemError,
-            //  NotEnoughDiskSpace.
-            LOG_DEBUG(Log::instance()->getLogger(), "Testing download with not enough disk space. Space available at "
-                                                            << smallPartitionPath.string() << " -> "
-                                                            << Utility::getFreeDiskSpace(smallPartitionPath) << " bytes");
-
-            SyncPath logPath;
-            CommonUtility::logDirectoryPath(logPath);
-
-            std::cout << "Log dir path: " << logPath << std::endl;
-
+            // Trying to download a file with size 9Mo in a 8Mo disk should fail with SystemError,
+            // NotEnoughDiskSpace.
             const SyncPath localDestFilePath = smallPartitionPath / "9Mo.txt";
             DownloadJob downloadJob(
                     nullptr, cacheDirectory,
