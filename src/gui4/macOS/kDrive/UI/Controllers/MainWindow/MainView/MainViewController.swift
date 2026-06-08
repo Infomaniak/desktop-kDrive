@@ -145,8 +145,8 @@ final class MainViewController: IKSplitViewController {
             contentViewController = ErrorsViewController(mainViewModel: viewModel)
         case .quickConflictsResolution(let errors):
             contentViewController = QuickConflictsResolutionViewController(errors: errors)
-        case .conflictsList(let errors):
-            contentViewController = ConflictsListViewController(errors: errors)
+        case .conflictsList:
+            contentViewController = ConflictsListViewController()
         default:
             contentViewController = HomeViewController(mainViewModel: viewModel)
         }

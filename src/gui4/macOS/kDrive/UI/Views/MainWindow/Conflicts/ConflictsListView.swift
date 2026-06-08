@@ -33,7 +33,9 @@ struct ConflictsListView: View {
     @State private var search = ""
     @State private var isShowingVersionSelectorSheet: ConflictsToResolve?
 
-    let errors: [SynchroError]
+    @State private var errors: [SynchroError] = []
+
+    @ObservedSynchroErrors private var synchroErrors
 
     private var filteredErrors: [SynchroError] {
         guard !search.isEmpty else {
@@ -84,6 +86,14 @@ struct ConflictsListView: View {
         .sheet(item: $isShowingVersionSelectorSheet) { conflictsToResolve in
             ConflictVersionSelectorView(errors: conflictsToResolve.errors)
         }
+        .onAppear(perform: refreshConflicts)
+        .onChange(of: synchroErrors[.filesToCheck]) { _ in
+            refreshConflicts()
+        }
+    }
+
+    private func refreshConflicts() {
+        errors = (synchroErrors[.filesToCheck] ?? []).filter { $0.kind == .conflict }
     }
 
     private func startConflictsResolution() {
@@ -96,5 +106,5 @@ struct ConflictsListView: View {
 }
 
 #Preview {
-    ConflictsListView(errors: Array(repeating: PreviewHelper.synchroError, count: 4))
+    ConflictsListView()
 }

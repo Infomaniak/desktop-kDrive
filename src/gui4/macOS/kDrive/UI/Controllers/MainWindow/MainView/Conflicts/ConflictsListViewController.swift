@@ -24,12 +24,12 @@ import kDriveResources
 import SwiftUI
 
 final class ConflictsListViewController: TitledViewController<ConflictsListView> {
-    init(errors: [SynchroError]) {
+    init() {
         @InjectService var router: MainViewRouter
         super.init(
             toolbarTitle: KDriveLocalizable.conflictErrorTitle,
             navigableRouter: router,
-            contentView: ConflictsListView(errors: errors)
+            contentView: ConflictsListView()
         )
     }
 }
