@@ -4403,7 +4403,7 @@ ExitInfo AppServer::acknowledgeManyDeletes(const SyncDbId syncDbId, const TooMan
         std::stringstream msg;
         msg << "SyncPal not found in syncPalMap for syncDbId=" << syncDbId;
         LOG_WARN(_logger, msg.str());
-        sentry::Handler::captureMessage(sentry::Level::Error, "Error in setSupportsVirtualFiles", msg.str());
+        sentry::Handler::captureMessage(sentry::Level::Error, "Error in acknowledgeManyDeletes", msg.str());
         return ExitCode::LogicError;
     }
 

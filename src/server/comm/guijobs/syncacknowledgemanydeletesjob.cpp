@@ -49,8 +49,7 @@ ExitInfo SyncAcknowledgeManyDeletesJob::serializeOutputParms() {
 }
 
 ExitInfo SyncAcknowledgeManyDeletesJob::process() {
-    const auto exitInfo = _commManager->appServer().acknowledgeManyDeletes(_syncDbId, _userChoice);
-    if (!exitInfo) {
+    if (const auto exitInfo = _commManager->appServer().acknowledgeManyDeletes(_syncDbId, _userChoice); !exitInfo) {
         LOG_WARN(_logger, "Error in acknowledgeManyDeletes for syncDbId=" << _syncDbId << " : " << exitInfo);
         return exitInfo;
     }
