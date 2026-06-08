@@ -155,6 +155,11 @@ static sentry_value_t crashCallback(const sentry_ucontext_t *uctx, sentry_value_
     const int signum{0};
     KDC::CommonUtility::writeSignalFile(Handler::appType(), KDC::fromInt<KDC::SignalType>(signum));
 
+    if (!Handler::isActivated()) {
+        sentry_value_decref(event);
+        return sentry_value_new_null();
+    }
+
     if (Handler::debugCrashCallback()) {
         std::stringstream ss;
         readObject(event, ss);
@@ -167,6 +172,11 @@ static sentry_value_t crashCallback(const sentry_ucontext_t *uctx, sentry_value_
 sentry_value_t beforeSendCallback(sentry_value_t event, void *hint, void *closure) {
     (void) hint;
     (void) closure;
+
+    if (!Handler::isActivated()) {
+        sentry_value_decref(event);
+        return sentry_value_new_null();
+    }
 
     std::cout << "Sentry will send an event for the app " << Handler::appType() << std::endl;
 
