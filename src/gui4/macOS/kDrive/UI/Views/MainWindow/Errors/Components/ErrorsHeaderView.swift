@@ -16,17 +16,20 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import InfomaniakDI
+import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
-struct SynchroErrorsInformationBlockView: View {
-    let errorCount: Int
+struct ErrorsHeaderView: View {
+    @State private var isLoading = false
+
+    let synchroDbId: UISynchro.ID?
+    let errorsCount: Int
 
     private var title: AttributedString {
         do {
-            return try AttributedString(markdown: KDriveLocalizable.informationBlockSynchroErrorTitle(errorCount))
+            return try AttributedString(markdown: KDriveLocalizable.informationBlockSynchroErrorTitle(errorsCount))
         } catch {
             #if DEBUG
             fatalError("Failed decoding AttributedString: \(error)")
@@ -37,26 +40,24 @@ struct SynchroErrorsInformationBlockView: View {
     }
 
     var body: some View {
-        InformationBlockView(
-            title: title,
-            subtitle: AttributedString(KDriveLocalizable.informationBlockSynchroErrorSubtitle),
-            button: .init(title: KDriveLocalizable.buttonFixErrors, action: navigateToErrors)
-        )
+        HStack {
+            Text(title)
+                .font(.Tokens.title2)
+                .foregroundStyle(ColorToken.Text.primary.asColor)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            LoadingButton(isLoading: $isLoading, action: refreshList) {
+                Text(KDriveLocalizable.buttonRefresh)
+            }
+        }
     }
 
-    private func navigateToErrors() {
-        @InjectService var router: MainViewRouter
-        router.setCurrentTab(.activities)
-        router.append(.errors)
+    private func refreshList() async {
+        guard let synchroDbId else { return }
+        _ = try? await ErrorJobs().refreshSyncErrors(syncDbId: Int32(synchroDbId))
     }
 }
 
-#Preview("One error") {
-    SynchroErrorsInformationBlockView(errorCount: 1)
-        .padding(AppPadding.padding32)
-}
-
-#Preview("Multiple errors") {
-    SynchroErrorsInformationBlockView(errorCount: 5)
-        .padding(AppPadding.padding32)
+#Preview {
+    ErrorsHeaderView(synchroDbId: 0, errorsCount: 42)
 }

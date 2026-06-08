@@ -89,7 +89,7 @@ struct BlockingErrorView: View {
 
 #Preview {
     VStack {
-        ForEach(SynchroError.allCases, id: \.self) { error in
+        ForEach(BlockingSynchroError.allCases, id: \.self) { error in
             BlockingErrorView(
                 blockingError: PreviewHelper.blockingErrorFor(syncError: error, isDriveAdmin: true)
             )

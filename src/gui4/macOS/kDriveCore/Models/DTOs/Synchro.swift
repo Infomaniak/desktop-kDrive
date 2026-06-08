@@ -39,7 +39,7 @@ public struct Synchro: Identifiable, Hashable, Sendable {
     public var progress: SynchroProgressInfo?
     public var synchNodes: OrderedDictionary<Int32, SynchroNode> = [:]
     public var errors: IndexedErrors = [:]
-    public var latestError: SynchroError?
+    public var latestError: BlockingSynchroError?
 
     private static let maxSynchNodesCount = 100
 
@@ -145,10 +145,10 @@ extension SynchroNode {
     }
 }
 
-public enum SynchroError: Error, Hashable, Sendable, CaseIterable {
+public enum BlockingSynchroError: Error, Hashable, Sendable, CaseIterable {
     case asleep
     case wakingUp
-    case notRenew // "drive locked"
+    case notRenew
     case maintenance
     case accessDenied
     case loggingError

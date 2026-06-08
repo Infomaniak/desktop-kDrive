@@ -50,6 +50,9 @@ final class DriveTargetAssembly: TargetAssembly {
             },
             Factory(type: UISynchroNodesObserving.self) { _, _ in
                 UISynchroNodesObserver()
+            },
+            Factory(type: SynchroErrorsObserving.self) { _, _ in
+                SynchroErrorsObserver()
             }
         ]
     }
