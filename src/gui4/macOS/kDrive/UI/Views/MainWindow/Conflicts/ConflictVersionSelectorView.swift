@@ -27,10 +27,12 @@ struct ConflictInfo: Equatable {
     let local: UINodeConflictInfo
     let remote: UINodeConflictInfo
 
-    subscript(type: ConflictBoxView.ConflictType) -> UINodeConflictInfo {
+    subscript(type: ConflictType) -> UINodeConflictInfo {
         switch type {
-        case .local: return local
-        case .remote: return remote
+        case .local:
+            return local
+        case .remote:
+            return remote
         }
     }
 }
@@ -44,7 +46,7 @@ struct ConflictVersionSelectorView: View {
     @State private var currentErrorIndex = 0
     @State private var currentConflict: ConflictInfo?
 
-    @State private var selection = [Int: ConflictBoxView.ConflictType]()
+    @State private var selection = [Int: ConflictType]()
 
     let errors: [SynchroError]
 
@@ -52,7 +54,7 @@ struct ConflictVersionSelectorView: View {
         return errors[currentErrorIndex]
     }
 
-    private var currentSelection: ConflictBoxView.ConflictType {
+    private var currentSelection: ConflictType {
         return selection[currentError.metadata.dbId, default: .local]
     }
 
@@ -90,7 +92,7 @@ struct ConflictVersionSelectorView: View {
 
             HStack(spacing: AppPadding.padding24) {
                 if let currentConflict {
-                    ForEach(ConflictBoxView.ConflictType.allCases, id: \.rawValue) { type in
+                    ForEach(ConflictType.allCases, id: \.rawValue) { type in
                         ConflictBoxView(
                             type: type,
                             isMostRecent: isMostRecent(type),
@@ -166,11 +168,11 @@ struct ConflictVersionSelectorView: View {
         }
     }
 
-    private func selectVersion(_ type: ConflictBoxView.ConflictType) {
+    private func selectVersion(_ type: ConflictType) {
         selection[currentError.metadata.dbId] = type
     }
 
-    private func previewVersion(_ type: ConflictBoxView.ConflictType, error: SynchroError) {
+    private func previewVersion(_ type: ConflictType, error: SynchroError) {
         Task {
             @InjectService var cache: CoherentCache
             guard let context = await cache.getSynchroContext(Int32(error.metadata.synchroDbId)) else {
@@ -191,7 +193,7 @@ struct ConflictVersionSelectorView: View {
         }
     }
 
-    private func isMostRecent(_ type: ConflictBoxView.ConflictType) -> Bool {
+    private func isMostRecent(_ type: ConflictType) -> Bool {
         guard let currentConflict else {
             return false
         }

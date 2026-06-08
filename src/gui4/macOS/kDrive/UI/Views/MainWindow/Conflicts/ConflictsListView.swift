@@ -21,30 +21,6 @@ import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
-struct ConflictCellView: View {
-    let path: String
-    let action: () -> Void
-
-    private var fileTypeRepresentation: FileTypeRepresentation {
-        let fileExtension = URL(fileURLWithPath: path).pathExtension
-        return FileTypeRepresentation(filenameExtension: fileExtension)
-    }
-
-    var body: some View {
-        HStack {
-            HStack(spacing: AppPadding.padding4) {
-                FileTypeView(fileTypeRepresentation: fileTypeRepresentation)
-                    .frame(size: AppIconSize.iconSize12)
-
-                Text(path)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-
-            Button(KDriveLocalizable.conflictErrorAction, action: action)
-        }
-    }
-}
-
 struct ConflictsToResolve: Sendable, Identifiable {
     var id: String {
         return errors.map(\.metadata.path).joined(separator: ",")

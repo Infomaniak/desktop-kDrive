@@ -39,29 +39,6 @@ struct InfoLabel: View {
 }
 
 struct ConflictBoxView: View {
-    enum ConflictType: String, CaseIterable {
-        case remote
-        case local
-
-        var icon: Image {
-            switch self {
-            case .local:
-                return KDriveResources.computer.swiftUIImage
-            case .remote:
-                return KDriveResources.cloud.swiftUIImage
-            }
-        }
-
-        var title: String {
-            switch self {
-            case .local:
-                return KDriveLocalizable.labelLocal
-            case .remote:
-                return KDriveLocalizable.labelOnline
-            }
-        }
-    }
-
     let type: ConflictType
     let isMostRecent: Bool
     let isSelected: Bool
