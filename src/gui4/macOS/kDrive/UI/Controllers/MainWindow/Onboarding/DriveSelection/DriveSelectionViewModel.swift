@@ -39,6 +39,7 @@ final class DriveSelectionViewModel: ObservableObject {
     @Published private(set) var selectedDrives = Set<UIAvailableDrive>()
 
     @Published private(set) var availableDrives = [UIAvailableDrive]()
+    @Published private(set) var synchronizedDrives = [UIDrive]()
     var synchroConfigurations = [UIAvailableDrive.ID: SynchroConfiguration]()
 
     var selectedSynchroConfigurations: [SynchroConfiguration] {
@@ -55,6 +56,7 @@ final class DriveSelectionViewModel: ObservableObject {
     init(flowCoordinator: OnboardingFlowCoordinator) {
         self.flowCoordinator = flowCoordinator
         observeAvailableDrives()
+        observeSynchronizedDrives()
     }
 
     private func observeAvailableDrives() {
@@ -68,6 +70,23 @@ final class DriveSelectionViewModel: ObservableObject {
             }
     }
 
+    private func observeSynchronizedDrives() {
+        coherentCacheObservable.usersPublisher.allSynchrosPublisher()
+            .map { synchroContexts in
+                // Group by driveId to get unique drives
+                var uniqueDrives = [Int32: Drive]()
+                for context in synchroContexts {
+                    uniqueDrives[context.drive.driveId] = context.drive
+                }
+                return uniqueDrives.values.map { UIDrive(drive: $0) }
+            }
+            .receiveOnMain(store: &bindStore) { [weak self] synchronizedDrives in
+                self?.synchronizedDrives = synchronizedDrives.sorted {
+                    return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+                }
+            }
+    }
+
     func loadAvailableDrives() async throws {
         guard let user = flowCoordinator.currentUser else {
             flowCoordinator.navigate(to: .login)
@@ -75,6 +94,7 @@ final class DriveSelectionViewModel: ObservableObject {
         }
 
         _ = try await DriveJobs().availableDrives(userDbId: Int32(user.dbId))
+        _ = try await SyncJobs().availableSync()
     }
 
     func toggleDriveSelection(_ drive: UIAvailableDrive) {
