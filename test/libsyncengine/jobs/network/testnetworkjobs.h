@@ -103,6 +103,8 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         void testDuplicateRenameMove();
         void testRename();
         void testUpload();
+        void testUploadChecksumMismatch();
+        void testUploadChecksumMatch();
         void testUploadAborted();
         void testDriveUploadSessionConstructorException();
         void testDriveUploadSessionSynchronous();
