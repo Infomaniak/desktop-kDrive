@@ -142,13 +142,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
             EnumEnd
         };
 
-        enum class ManyDeleteOpsBehavior {
-            None = 0,
-            Continue,
-            Revert,
-            EnumEnd
-        };
-
         SyncPal(std::shared_ptr<Vfs> vfs, const SyncPath &syncDbPath, const std::string &version, const bool hasFullyCompleted);
         SyncPal(std::shared_ptr<Vfs> vfs, const int syncDbId, const std::string &version);
         virtual ~SyncPal();

@@ -74,7 +74,7 @@ struct GuiRequests {
         static ExitCode resolveConflictErrors(DriveDbId driveDbId, bool keepLocalVersion);
         static ExitCode resolveUnsupportedCharErrors(DriveDbId driveDbId);
         static ExitCode setSupportsVirtualFiles(SyncDbId syncDbId, bool value);
-        static ExitInfo acknowledgeManyDelete(SyncDbId syncDbId, bool value);
+        static ExitInfo acknowledgeManyDelete(SyncDbId syncDbId, ManyDeleteOpsBehavior value);
 
         // C/S requests (access to network)
         // !!! Use COMM_AVERAGE_TIMEOUT !!!
