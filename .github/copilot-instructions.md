@@ -31,3 +31,4 @@ Before proposing code or review comments:
 
 ## Pull Request & Commit Rules (MANDATORY)
 - **Commit Format:** Follow the project's semantic-commit validation rules defined in [`.github/workflows/semantic-commit.yml`](https://github.com/Infomaniak/.github/blob/main/.github/workflows/semantic-commit.yml) and always write them in english.
+- Follow the project's rules from section "Pull Requests & Commits" in [AGENTS.md](https://github.com/Infomaniak/desktop-kDrive/blob/develop/AGENTS.md).
