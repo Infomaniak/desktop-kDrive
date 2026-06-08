@@ -75,6 +75,9 @@ struct ErrorsListView: View {
         .sheet(item: $synchroErrorManager.isShowingActivateOfflineSynchroSheet) { error in
             SystemUnableToStartVFSReasonSheet(error: error)
         }
+        .sheet(item: $synchroErrorManager.isShowingVersionSelectorSheet) { conflictsToResolve in
+            ConflictVersionSelectorView(errors: conflictsToResolve.errors)
+        }
         .sheet(item: $synchroErrorManager.isShowingResolutionTipsSheet) { type in
             switch type {
             case .invalidSyncDirAccess(let error):

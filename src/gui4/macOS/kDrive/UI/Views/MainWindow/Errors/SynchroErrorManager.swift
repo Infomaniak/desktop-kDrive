@@ -26,6 +26,7 @@ final class SynchroErrorManager: ObservableObject {
     @Published var isShowingActivateOfflineSynchroSheet: SynchroError?
     @Published var isShowingLocalAccessSheet: SynchroError?
     @Published var isShowingResolutionTipsSheet: ExplanationsSheetType?
+    @Published var isShowingVersionSelectorSheet: ConflictsToResolve?
 
     enum ExplanationsSheetType: Identifiable, Sendable {
         var id: String {
