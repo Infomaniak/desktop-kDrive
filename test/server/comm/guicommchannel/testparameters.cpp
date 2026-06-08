@@ -29,10 +29,25 @@ using namespace testcommhelpers;
 namespace {
 ParametersInfo getExpectedParametersInfo() {
     const ProxyConfigInfo proxyConfigInfo(ProxyType::HTTP, "myHostName", 6666, true, "john.doe", "1234");
-    const ParametersInfo::DialogGeometry dialogGeometry = {{"preferencesWindow", "blob1234"},
-                                                           {"drivePreferencesPanel", "blob4567"}};
 
     ParametersInfo parametersInfo;
+    parametersInfo.setLanguage(Language::Default);
+    parametersInfo.setMonoIcons(false);
+    parametersInfo.setAutoStart(true);
+    parametersInfo.setMoveToTrash(true);
+    parametersInfo.setNotificationsDisabled(NotificationsDisabled::Never);
+    parametersInfo.setUseLog(true);
+    parametersInfo.setLogLevel(LogLevel::Debug);
+    parametersInfo.setExtendedLog(true);
+    parametersInfo.setPurgeOldLogs(true);
+#ifdef KD_MACOS // darkTheme only on macOS
+    parametersInfo.setDarkTheme(true);
+#else
+    parametersInfo.setDarkTheme(false);
+#endif
+    parametersInfo.setDialogGeometry("preferencesWindow", "blob1234");
+    parametersInfo.setDialogGeometry("drivePreferencesPanel", "blob4567");
+    parametersInfo.setMaxAllowedCpu(50);
     parametersInfo.setProxyConfigInfo(proxyConfigInfo);
     return parametersInfo;
 };
@@ -69,8 +84,9 @@ Poco::JSON::Object createParametersInfoObject() {
     (void) parametersInfoObj.set("dialogGeometry", dialogGeometryObj);
     (void) parametersInfoObj.set("maxAllowedCpu", 50);
     (void) parametersInfoObj.set("distributionChannel", toInt(DistributionChannel::Prod));
-    (void) parametersInfoObj.set("sentryEnabled", false);
-    (void) parametersInfoObj.set("matomoEnabled", false);
+    (void) parametersInfoObj.set("sentryEnabled", true);
+    (void) parametersInfoObj.set("matomoEnabled", true);
+    (void) parametersInfoObj.set("askBeforeDelete", true);
 
     return parametersInfoObj;
 };
