@@ -30,6 +30,17 @@ class DrivesListView: NSView {
         return stackView
     }()
 
+    private lazy var scrollView: NSScrollView = {
+        let scrollView = NSScrollView()
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.hasVerticalScroller = true
+        scrollView.hasHorizontalScroller = false
+        scrollView.autohidesScrollers = true
+        scrollView.borderType = .noBorder
+        scrollView.drawsBackground = false
+        return scrollView
+    }()
+
     private(set) var cells = [Int: DriveCellView]()
 
     var selectedDrives = Set<UIAvailableDrive>() {
@@ -62,18 +73,34 @@ class DrivesListView: NSView {
         titleLabel.font = NSFont.Tokens.subheadline
         titleLabel.textColor = ColorToken.Text.tertiary.asNSColor
 
-        let stackView = NSStackView(views: [titleLabel, drivesStackView])
+        // Configure scroll view with document view
+        scrollView.documentView = drivesStackView
+
+        let stackView = NSStackView(views: [titleLabel, scrollView])
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.orientation = .vertical
         stackView.alignment = .leading
         stackView.spacing = AppPadding.padding12
         addSubview(stackView)
 
+        // Calculate height for approximately 2.5 cells
+        // Each cell is ~36pt tall (DriveSquareView 20pt + 8pt top + 8pt bottom padding)
+        // Plus spacing of 8pt between cells
+        // For 2.5 cells: (36 * 2.5) + (8 * 1.5) = 102pt
+        let preferredScrollViewHeight: CGFloat = 110
+
         NSLayoutConstraint.activate([
             stackView.leadingAnchor.constraint(equalTo: leadingAnchor),
             stackView.trailingAnchor.constraint(equalTo: trailingAnchor),
             stackView.topAnchor.constraint(equalTo: topAnchor),
-            stackView.bottomAnchor.constraint(equalTo: bottomAnchor)
+            stackView.bottomAnchor.constraint(equalTo: bottomAnchor),
+
+            // ScrollView height constraint to show ~2.5 cells
+            scrollView.heightAnchor.constraint(equalToConstant: preferredScrollViewHeight),
+
+            // Ensure drivesStackView fits within scrollView width
+            drivesStackView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
+            drivesStackView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor)
         ])
     }
 
