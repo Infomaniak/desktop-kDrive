@@ -23,6 +23,7 @@ import InfomaniakDI
 import InfomaniakLogin
 import kDriveCore
 import kDriveCoreUI
+import kDriveResources
 
 @MainActor
 final class LoginViewModel: ObservableObject {
@@ -56,7 +57,7 @@ final class LoginViewModel: ObservableObject {
     }
 
     func openAccountRegistrationProcess() {
-        // TODO: Handle account registration
+        NSWorkspace.shared.open(URL(string: KDriveLocalizable.kSuiteOfferUrl)!)
     }
 
     private func handleConnectedUser(_ user: User?) {

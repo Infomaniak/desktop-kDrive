@@ -776,6 +776,9 @@
 /* loco:69314d1a739c205c410aa087 */
 "instructionRestartIfNecessary" = "Riavviare l’applicazione, se necessario";
 
+/* loco:6a16da43bc4d91f15c0416e2 */
+"kSuiteOfferUrl" = "https://www.infomaniak.com/it/ksuite";
+
 /* loco:69a0079a3f0464f2af0a25d3 */
 "labelAccessRightsModified" = "Diritti di accesso modificati";
 
