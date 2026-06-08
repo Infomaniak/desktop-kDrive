@@ -45,8 +45,17 @@ struct ConflictCellView: View {
     }
 }
 
+struct ConflictsToResolve: Sendable, Identifiable {
+    var id: String {
+        return errors.map(\.metadata.path).joined(separator: ",")
+    }
+
+    let errors: [SynchroError]
+}
+
 struct ConflictsListView: View {
     @State private var search = ""
+    @State private var isShowingVersionSelectorSheet: ConflictsToResolve?
 
     let errors: [SynchroError]
 
@@ -96,11 +105,18 @@ struct ConflictsListView: View {
             }
         }
         .groupedFormatStyle()
+        .sheet(item: $isShowingVersionSelectorSheet) { conflictsToResolve in
+            ConflictVersionSelectorView(errors: conflictsToResolve.errors)
+        }
     }
 
-    private func startConflictsResolution() {}
+    private func startConflictsResolution() {
+        isShowingVersionSelectorSheet = ConflictsToResolve(errors: errors)
+    }
 
-    private func resolveConflict(_ error: SynchroError) {}
+    private func resolveConflict(_ error: SynchroError) {
+        isShowingVersionSelectorSheet = ConflictsToResolve(errors: [error])
+    }
 }
 
 #Preview {

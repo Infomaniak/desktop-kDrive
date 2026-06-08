@@ -20,6 +20,7 @@ import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
+import Sentry
 import SwiftUI
 
 struct ConflictInfo: Equatable {
@@ -38,6 +39,7 @@ struct ConflictVersionSelectorView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var isLoadingConfirmButton = false
+    @State private var isShowingGenericErrorAlert = false
 
     @State private var currentErrorIndex = 0
     @State private var currentConflict: ConflictInfo?
@@ -119,6 +121,7 @@ struct ConflictVersionSelectorView: View {
                 .disabled(currentConflict == nil)
             }
         }
+        .genericErrorAlert(isPresented: $isShowingGenericErrorAlert)
         .task(id: currentErrorIndex) {
             await fetchConflictInfo(currentError)
         }
@@ -134,15 +137,6 @@ struct ConflictVersionSelectorView: View {
     }
 
     private func fetchConflictInfo(_ error: SynchroError) async {
-        try? await Task.sleep(nanoseconds: 400_000_000)
-        currentConflict = ConflictInfo(
-            local: .placeholder,
-            remote: UINodeConflictInfo(authorName: "Tim Cook", fileSize: 31415, lastModificationDate: .distantPast)
-        )
-        return
-
-        // -- FAKE IT
-
         do {
             async let localInfo = NodeJobs().getNodeConflictInfo(
                 syncDbId: Int32(error.metadata.synchroDbId),
@@ -167,7 +161,8 @@ struct ConflictVersionSelectorView: View {
                 selection[error.metadata.dbId] = .remote
             }
         } catch {
-            // TODO:
+            isShowingGenericErrorAlert = true
+            SentrySDK.capture(error: error)
         }
     }
 
@@ -215,6 +210,7 @@ struct ConflictVersionSelectorView: View {
             dismiss()
         } else {
             currentErrorIndex += 1
+            currentConflict = nil
         }
     }
 
@@ -236,7 +232,8 @@ struct ConflictVersionSelectorView: View {
                 keepRemoteErrorDbIds: keepRemoteErrorDbIds
             )
         } catch {
-            // TODO:
+            isShowingGenericErrorAlert = true
+            SentrySDK.capture(error: error)
         }
     }
 }
