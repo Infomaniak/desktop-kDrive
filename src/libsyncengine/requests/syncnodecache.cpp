@@ -67,19 +67,6 @@ ExitCode SyncNodeCache::checkIfSyncNodeListExists(const SyncDbId syncDbId, const
     return ExitCode::Ok;
 }
 
-ReplicaSide SyncNodeCache::side(SyncNodeType type) const {
-    using enum SyncNodeType;
-    switch (type) {
-        case TmpRemoteBlacklist:
-        case BlackList:
-            return ReplicaSide::Remote;
-        case TmpLocalBlacklist:
-            return ReplicaSide::Local;
-        default:
-            return ReplicaSide::Unknown;
-    }
-}
-
 ExitCode SyncNodeCache::syncNodes(const SyncDbId syncDbId, const SyncNodeType type, NodeSet &syncNodes) {
     const std::scoped_lock lock(_mutex);
 
@@ -97,28 +84,6 @@ bool SyncNodeCache::contains(const SyncDbId syncDbId, const SyncNodeType type, c
 
     return _syncNodesMap.at(syncDbId).at(type).contains(nodeId);
 }
-
-bool SyncNodeCache::containsRecursive(const SyncDbId syncDbId, const SyncNodeType type, const NodeId &nodeId) const noexcept {
-    if (auto exitCode = checkIfSyncExists(syncDbId); exitCode != ExitCode::Ok) return false;
-    if (auto exitCode = checkIfSyncNodeListExists(syncDbId, type); exitCode != ExitCode::Ok) return false;
-
-    const auto syncDb = _syncDbMap.at(syncDbId);
-    auto currentNodeId = nodeId;
-    while (!currentNodeId.empty()) {
-        if (_syncNodesMap.at(syncDbId).at(type).contains(currentNodeId)) return true;
-
-        bool found = false;
-
-        if (!syncDb->parentId(side(type), currentNodeId, currentNodeId, found)) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in SyncDb::parentId");
-            return false;
-        }
-
-        if (!found) break; // We reach the sync root
-    };
-    return false;
-}
-
 bool SyncNodeCache::contains(const SyncDbId syncDbId, const NodeId &nodeId) const noexcept {
     if (auto exitCode = checkIfSyncExists(syncDbId); exitCode != ExitCode::Ok) return false;
 

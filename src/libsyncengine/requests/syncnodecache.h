@@ -43,12 +43,7 @@ class SYNCENGINE_EXPORT SyncNodeCache {
         ExitCode initCache(const SyncDbId syncDbId, std::shared_ptr<SyncDb> syncDb);
         ExitCode clear(const SyncDbId syncDbId);
 
-        // Indicates whether the nodeId is explicitly present in the SyncNodeType blacklist.
         bool contains(const SyncDbId syncDbId, const SyncNodeType type, const NodeId &nodeId) const noexcept;
-
-        // Indicates whether the nodeId or any of its parents is present in the SyncNodeType blacklist.
-        bool containsRecursive(const SyncDbId syncDbId, const SyncNodeType type, const NodeId &nodeId) const noexcept;
-
         bool contains(const SyncDbId syncDbId, const NodeId &nodeId) const noexcept;
 
     private:
@@ -61,8 +56,6 @@ class SYNCENGINE_EXPORT SyncNodeCache {
         SyncNodeCache();
         ExitCode checkIfSyncExists(const SyncDbId syncDbId) const noexcept;
         ExitCode checkIfSyncNodeListExists(const SyncDbId syncDbId, const SyncNodeType type) const;
-
-        ReplicaSide side(SyncNodeType type) const;
 };
 
 } // namespace KDC
