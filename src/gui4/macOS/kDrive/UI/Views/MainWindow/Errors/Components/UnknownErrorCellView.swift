@@ -67,23 +67,5 @@ struct UnknownErrorCellView: View {
 }
 
 #Preview {
-    UnknownErrorCellView(
-        error: SynchroError(
-            kind: .unknown,
-            metadata: .init(
-                dbId: 0,
-                synchroDbId: 0,
-                date: .now,
-                path: "",
-                destinationPath: "",
-                nodeType: .file,
-                nodeId: .init(local: nil, remote: nil),
-                isAutoResolved: true,
-                level: KDC.ErrorLevel.Node,
-                exitCode: .Unknown,
-                exitCause: .Unknown
-            )
-        ),
-        manager: SynchroErrorManager()
-    )
+    UnknownErrorCellView(error: PreviewHelper.synchroError, manager: SynchroErrorManager())
 }

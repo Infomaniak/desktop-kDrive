@@ -23,9 +23,29 @@ import SwiftUI
 
 @MainActor
 final class SynchroErrorManager: ObservableObject {
-    @Published var isShowingActivateOfflineSynchroSheet = false
-    @Published var isShowingLocalAccessSheet = false
-    @Published var isShowingResolutionTipsSheet = false
+    @Published var isShowingActivateOfflineSynchroSheet: SynchroError?
+    @Published var isShowingLocalAccessSheet: SynchroError?
+    @Published var isShowingResolutionTipsSheet: ExplanationsSheetType?
+
+    enum ExplanationsSheetType: Identifiable, Sendable {
+        var id: String {
+            switch self {
+            case .invalidSyncDirAccess(let synchroError):
+                return "invalidSyncDirAccess_\(synchroError.metadata.dbId)"
+            case .systemSyncDirAccess(let synchroError):
+                return "systemSyncDirAccess_\(synchroError.metadata.dbId)"
+            case .systemSyncDirDiskMissing:
+                return "systemSyncDirDiskMissing"
+            case .dataSyncDirChanged:
+                return "dataSyncDirChanged"
+            }
+        }
+
+        case invalidSyncDirAccess(SynchroError)
+        case systemSyncDirAccess(SynchroError)
+        case systemSyncDirDiskMissing
+        case dataSyncDirChanged
+    }
 
     // MARK: - Manage sync
 
@@ -85,6 +105,13 @@ final class SynchroErrorManager: ObservableObject {
         router.navigate(to: .onboarding())
     }
 
+    func navigateToSynchroCreation() {
+        (NSApp.delegate as? AppDelegate)?.openPreferencesWindow()
+
+        @InjectService var router: PreferencesViewRouter
+        router.setCurrentTab(.accounts)
+    }
+
     func navigateToExclusionRules() {
         (NSApp.delegate as? AppDelegate)?.openPreferencesWindow()
 
@@ -95,19 +122,27 @@ final class SynchroErrorManager: ObservableObject {
 
     // MARK: - Sheets
 
-    func showActivateOfflineSynchroSheet() {
-        // TODO: Show modal
-        isShowingActivateOfflineSynchroSheet = true
+    func showActivateOfflineSynchroSheet(_ error: SynchroError) {
+        isShowingActivateOfflineSynchroSheet = error
     }
 
-    func showLocalAccessSheet() {
-        // TODO: Show modal
-        isShowingLocalAccessSheet = true
+    func showLocalAccessSheet(_ error: SynchroError) {
+        isShowingLocalAccessSheet = error
     }
 
-    func showResolutionTipsSheet() {
-        // TODO: Show modal
-        isShowingResolutionTipsSheet = true
+    func showResolutionTipsSheet(_ error: SynchroError) {
+        switch error.kind {
+        case .invalidSyncDirAccess:
+            isShowingResolutionTipsSheet = .invalidSyncDirAccess(error)
+        case .systemSyncDirAccess:
+            isShowingResolutionTipsSheet = .systemSyncDirAccess(error)
+        case .systemSyncDirDiskMissing:
+            isShowingResolutionTipsSheet = .systemSyncDirDiskMissing
+        case .dataSyncDirChanged:
+            isShowingResolutionTipsSheet = .dataSyncDirChanged
+        default:
+            break
+        }
     }
 
     // MARK: - Misc

@@ -140,4 +140,21 @@ public enum PreviewHelper {
     public static func blockingErrorFor(syncError: BlockingSynchroError, isDriveAdmin: Bool) -> UIBlockingError {
         return UIBlockingError(uiDrive: drive1, isDriveAdmin: isDriveAdmin, error: syncError)
     }
+
+    public static let synchroError = SynchroError(
+        kind: .unknown,
+        metadata: .init(
+            dbId: 0,
+            synchroDbId: 0,
+            date: .now,
+            path: "/this/is/a/lovely/path.jpg",
+            destinationPath: "/the/vision/pro/is/great.pdf",
+            nodeType: .file,
+            nodeId: .init(local: nil, remote: nil),
+            isAutoResolved: true,
+            level: KDC.ErrorLevel.Node,
+            exitCode: .Unknown,
+            exitCause: .Unknown
+        )
+    )
 }

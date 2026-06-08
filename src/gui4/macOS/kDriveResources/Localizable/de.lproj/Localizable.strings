@@ -136,6 +136,9 @@
 /* loco:68e673c48af12c42e80027c8 */
 "buttonCreateAccount" = "Ein Konto erstellen";
 
+/* loco:69a05e947011da04b4061f23 */
+"buttonCreateNewSync" = "Eine neue Synchronisierung erstellen";
+
 /* loco:698b14e52445668d9d0495a2 */
 "buttonDisconnectAccount" = "Trennen Sie dieses Konto";
 
@@ -816,6 +819,9 @@
 /* loco:69aad2fb60082fe51d04e452 */
 "labelConflictStrategyKeepRemoteTitle" = "Nur Online-Versionen behalten";
 
+/* loco:69a012ce9c6aefa11d0c0a22 */
+"labelCreateNewSync" = "Eine %@ erstellen.";
+
 /* loco:69a00df5cee58fe1c90de9e2 */
 "labelFAQ" = "FAQ";
 
@@ -858,8 +864,14 @@
 /* loco:6989fec57ca0d7305008b1e2 */
 "labelName" = "Name";
 
+/* loco:69a0675de82f7e271b0c54d2 */
+"labelNewDeviceDetected" = "Neues Gerät erkannt";
+
 /* loco:69a067979b511e9c830b1642 */
 "labelNewDeviceDetectedTip" = "Sie verwenden kDrive auf einem neuen Computer nach der Wiederherstellung aus einer Sicherungskopie.";
+
+/* loco:69a0130cbdb1efd10d0939a3 */
+"labelNewSync" = "neue Synchronisierung";
 
 /* loco:69aafa69b473f615ee031a64 */
 "labelNoConflictsFound" = "Keine Konflikte entsprechen Ihrer Suche";

@@ -146,7 +146,7 @@ struct ErrorCellFactory {
                 error: error,
                 title: KDriveLocalizable.errNotEnoughDiskSpaceTitle,
                 description: KDriveLocalizable.errNotEnoughDiskSpaceDescription,
-                action: .manageDiskSpace(error, manager: manager)
+                action: .manageDiskSpace(manager: manager)
             )
         case .quotaExceeded:
             return makeCell(
@@ -236,7 +236,7 @@ struct ErrorCellFactory {
                 error: error,
                 title: KDriveLocalizable.errSystemNotEnoughDiskSpaceTitle,
                 description: KDriveLocalizable.errSystemNotEnoughDiskSpaceDescription,
-                action: .manageDiskSpace(error, manager: manager)
+                action: .manageDiskSpace(manager: manager)
             )
         case .systemSyncDirAccess:
             return makeCell(
@@ -258,7 +258,7 @@ struct ErrorCellFactory {
                 title: KDriveLocalizable.errSystemUnableToStartVfsTitle,
                 description: KDriveLocalizable.errSystemUnableToStartVfsDescription,
                 action: .init(title: KDriveLocalizable.buttonActivateOfflineSync) {
-                    manager.showActivateOfflineSynchroSheet()
+                    manager.showActivateOfflineSynchroSheet(error)
                 }
             )
         case .excludedByTemplate:
@@ -285,7 +285,7 @@ struct ErrorCellFactory {
                 error: error,
                 title: KDriveLocalizable.errLocalFileAccessTitle(error.nodeLabel),
                 description: KDriveLocalizable.errLocalFileAccessDescription(error.nodeLabel),
-                action: .init(title: KDriveLocalizable.buttonManage) { manager.showLocalAccessSheet() }
+                action: .init(title: KDriveLocalizable.buttonManage) { manager.showLocalAccessSheet(error) }
             )
         case .dataSyncDirChanged:
             return makeCell(
@@ -330,7 +330,7 @@ extension ErrorCellView.Action {
         }
     }
 
-    static func manageDiskSpace(_ error: SynchroError, manager: SynchroErrorManager) -> Self {
+    static func manageDiskSpace(manager: SynchroErrorManager) -> Self {
         return ErrorCellView.Action(title: KDriveLocalizable.buttonManageDiskSpace) {
             manager.openPreferencesSystemStorage()
         }
@@ -338,7 +338,7 @@ extension ErrorCellView.Action {
 
     static func errorResolutionTip(_ error: SynchroError, manager: SynchroErrorManager) -> Self {
         return ErrorCellView.Action(title: KDriveLocalizable.buttonErrorResolutionTip) {
-            manager.showResolutionTipsSheet()
+            manager.showResolutionTipsSheet(error)
         }
     }
 }
