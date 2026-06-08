@@ -28,29 +28,8 @@ struct ErrorsListView: View {
 
     static let maximumConflictsToDisplay = 5
 
-    private var computedErrors: [UISynchroErrorCategory: [SynchroError]] {
-        let filesErrors = errors[.filesToCheck, default: []]
-        guard !filesErrors.isEmpty else {
-            return errors
-        }
-
-        var computedErrors = errors
-
-        if filesErrors.count(where: { $0.kind == .conflict }) >= Self.maximumConflictsToDisplay {
-            computedErrors[.conflicts] = Array(filesErrors.filter { $0.kind == .conflict })
-            computedErrors[.filesToCheck] = Array(filesErrors.filter { $0.kind != .conflict })
-
-            if computedErrors[.filesToCheck]?.isEmpty == true {
-                computedErrors.removeValue(forKey: .filesToCheck)
-            }
-        }
-
-        return computedErrors
-    }
-
-    private var categories: [UISynchroErrorCategory] {
-        return computedErrors.keys.sorted()
-    }
+    @State private var computedErrors: [UISynchroErrorCategory: [SynchroError]] = [:]
+    @State private var categories: [UISynchroErrorCategory] = []
 
     var body: some View {
         Form {
@@ -90,6 +69,45 @@ struct ErrorsListView: View {
                 DataSyncDirChangedReasonsSheet(synchroErrorManager: synchroErrorManager)
             }
         }
+        .onAppear(perform: recomputeErrors)
+        .onChange(of: errors) { _ in
+            recomputeErrors()
+        }
+    }
+
+    private func recomputeErrors() {
+        let filesErrors = errors[.filesToCheck, default: []]
+        guard !filesErrors.isEmpty else {
+            computedErrors = errors
+            categories = errors.keys.sorted()
+            return
+        }
+
+        var conflicts: [SynchroError] = []
+        var nonConflicts: [SynchroError] = []
+        conflicts.reserveCapacity(filesErrors.count)
+        nonConflicts.reserveCapacity(filesErrors.count)
+
+        for error in filesErrors {
+            if error.kind == .conflict {
+                conflicts.append(error)
+            } else {
+                nonConflicts.append(error)
+            }
+        }
+
+        var result = errors
+        if conflicts.count >= Self.maximumConflictsToDisplay {
+            result[.conflicts] = conflicts
+            if nonConflicts.isEmpty {
+                result.removeValue(forKey: .filesToCheck)
+            } else {
+                result[.filesToCheck] = nonConflicts
+            }
+        }
+
+        computedErrors = result
+        categories = result.keys.sorted()
     }
 }
 
