@@ -53,6 +53,7 @@
 
 #include "tmpblacklistmanager.h"
 #include "jobs/network/kDrive_API/upload/upload_session/uploadsessioncanceljob.h"
+#include "useractionscopedlock.h"
 
 #define SYNCPAL_NEW_ERROR_MSG "Failed to create SyncPal instance!"
 
@@ -1058,6 +1059,13 @@ ExitCode SyncPal::setSyncIdSet(SyncNodeType type, const NodeSet &nodeIdSet) {
 }
 
 ExitInfo SyncPal::propagateSyncIdSetChange(const bool restartSync) {
+    UserActionScopedLock lock;
+    if (!lock.tryLock(shared_from_this(), std::chrono::milliseconds(1000))) {
+        LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
+                 "Could not acquire user action lock for propagateSyncIdSetChange. Another user action is running, aborting.");
+        return ExitCode::OperationCanceled;
+    }
+
     setUpBlacklistPropagator(restartSync);
     ExitInfo exitInfo = _blacklistPropagator->runSynchronously();
     handlePropagatorJobsCompletion(_blacklistPropagator);

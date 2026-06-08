@@ -17,7 +17,7 @@
  */
 
 #include "syncdeletejob.h"
-#include "useractionscopedlock.h"
+#include "libsyncengine/syncpal/useractionscopedlock.h"
 #include "appserver.h"
 #include "requests/serverrequests.h"
 #include "libcommon/utility/utility.h"

@@ -236,6 +236,8 @@ std::string toString(const ExitCause e) {
             return "UpdateTreeIntegrityCheckFailed";
         case ExitCause::MissingReplyData:
             return "MissingReplyData";
+        case ExitCause::BlackListPropagationError:
+            return "BlackListPropagationError";
         default:
             return noConversionStr;
     }

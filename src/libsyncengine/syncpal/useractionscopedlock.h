@@ -30,11 +30,11 @@ class UserActionScopedLock {
 
         bool tryLock(const std::shared_ptr<SyncPal> syncPal,
                      const std::chrono::milliseconds timeout = std::chrono::milliseconds(0)) {
-            if (_lock.has_value() && _lock->owns_lock()) return true;
 
             if (!syncPal) return false;
 
-            if (std::unique_lock lock(syncPal->userActionsMutex(), std::defer_lock); lock.try_lock_for(timeout)) {
+            if (std::unique_lock<std::recursive_timed_mutex> lock(syncPal->userActionsMutex(), std::defer_lock);
+                lock.try_lock_for(timeout)) {
                 _lock = std::move(lock);
                 return true;
             }
@@ -42,6 +42,6 @@ class UserActionScopedLock {
         }
 
     private:
-        std::optional<std::unique_lock<std::timed_mutex>> _lock;
+        std::optional<std::unique_lock<std::recursive_timed_mutex>> _lock;
 };
 } // namespace KDC

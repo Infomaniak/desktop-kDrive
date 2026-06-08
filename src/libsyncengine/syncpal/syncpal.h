@@ -361,15 +361,16 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         int64_t consecutiveBackErrors() const { return _consecutiveBackErrors; }
         void incrementConsecutiveBackErrors() { _consecutiveBackErrors++; }
         void resetConsecutiveBackErrors() { _consecutiveBackErrors = 0; }
-        std::timed_mutex &userActionsMutex() { return _userActionsMutex; }
+        std::recursive_timed_mutex &userActionsMutex() { return _userActionsMutex; }
 
     protected:
         virtual void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
 
         SyncPalInfo _syncInfo;
 
-        std::timed_mutex _userActionsMutex; // Mutex protecting the start/stop/pause/unpause/changeVFS/ operations to ensure that
-                                            // only one of these operations can be performed at a time.
+        std::recursive_timed_mutex _userActionsMutex; // Mutex protecting the start/stop/pause/unpause/changeVFS/ operations to
+                                                      // ensure that
+                                                      // only one of these operations can be performed at a time.
 
         std::shared_ptr<ExcludeListPropagator> _excludeListPropagator = nullptr;
         std::shared_ptr<BlacklistPropagator> _blacklistPropagator = nullptr;
@@ -450,6 +451,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         // Direct download callback
         void directDownloadCallback(UniqueId jobId);
+
     private:
         void setUpBlacklistPropagator(bool restartSync);
         void setUpExcludelistPropagator();

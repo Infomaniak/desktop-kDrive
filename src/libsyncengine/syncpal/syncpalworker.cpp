@@ -26,6 +26,7 @@
 #include "reconciliation/operation_generator/operationgeneratorworker.h"
 #include "propagation/operation_sorter/operationsorterworker.h"
 #include "propagation/executor/executorworker.h"
+#include "requests/syncnodecache.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/io/filestat.h"
@@ -165,9 +166,55 @@ void SyncPalWorker::checkForMassDeletions() const {
     }
 }
 
+ExitInfo SyncPalWorker::ensureBlackListIsPropagated() {
+    // Check if any of the Blacklisted directory still in the db, if yes, restart the blacklist propagator.
+    // It might happen if it as previously been stopped or encountered a locked directory / file.
+    NodeSet blacklistedNodes;
+    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, blacklistedNodes);
+
+    int32_t retry = 0;
+    bool found = false;
+    while (retry < 2) {
+        found = false;
+        ++retry;
+
+        for (const auto &nodeId: blacklistedNodes) {
+            DbNodeId dbNodeId = 0;
+            if (!_syncPal->syncDb()->dbId(ReplicaSide::Remote, nodeId, dbNodeId, found)) {
+                LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId");
+                LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " stopped");
+                return {ExitCode::DbError, ExitCause::DbAccessError};
+            }
+            if (!found) {
+                // The blacklisted node doesn't exist anymore, this is expected
+                continue;
+            }
+
+            LOG_WARN(_logger, "Blacklisted node " << nodeId << " still exists in SyncDb, restarting blacklist propagator");
+            break;
+        }
+        if (!found) break;
+
+        if (retry < 1) {
+            if (ExitInfo exitInfo = _syncPal->propagateSyncIdSetChange(false); !exitInfo) {
+                LOG_SYNCPAL_WARN(_logger, "Error propagating blacklist changes");
+                return exitInfo;
+            }
+        }
+    }
+
+    if (found) {
+        LOG_SYNCPAL_WARN(_logger, "Blacklisted nodes still exist after retry, giving up");
+        return {ExitCode::DataError, ExitCause::BlackListPropagationError};
+    }
+    return ExitCode::Ok;
+}
+
 void SyncPalWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
     LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " started");
+
+    // Ensure the pin states are coherant with hydration states.
     if (_syncPal->vfsMode() != VirtualFileMode::Off) {
 #if defined(KD_WINDOWS)
         auto resetFunc = std::function<void()>([this]() { resetVfsFilesStatus(); });
@@ -175,6 +222,14 @@ void SyncPalWorker::execute() {
 #else
         resetVfsFilesStatus();
 #endif
+    }
+
+    // Ensure blacklist is propagated
+    if (ExitInfo exitInfo = ensureBlackListIsPropagated(); !exitInfo) {
+        LOG_SYNCPAL_INFO(_logger, "Worker " << name() << "p stoped");
+        setExitCause(exitInfo.cause());
+        setDone(exitInfo.code());
+        return;
     }
 
     // Wait before really starting

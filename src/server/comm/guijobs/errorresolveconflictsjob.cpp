@@ -17,7 +17,7 @@
  */
 
 #include "errorresolveconflictsjob.h"
-#include "useractionscopedlock.h"
+#include "libsyncengine/syncpal/useractionscopedlock.h"
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
 

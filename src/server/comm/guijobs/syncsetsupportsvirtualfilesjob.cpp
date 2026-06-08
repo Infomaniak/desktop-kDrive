@@ -17,7 +17,7 @@
  */
 
 #include "syncsetsupportsvirtualfilesjob.h"
-#include "useractionscopedlock.h"
+#include "libsyncengine/syncpal/useractionscopedlock.h"
 #include "appserver.h"
 
 #include "libcommon/utility/utility.h"
