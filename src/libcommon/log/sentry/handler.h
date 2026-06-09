@@ -235,7 +235,7 @@ class Handler {
         static bool _debugCrashCallback;
         static bool _debugBeforeSendCallback;
 
-        // True once sentry_init() has been called successfully, so we know sentry_close() is safe.
+        // True once sentry_init() has been called and returned 0 (success), so we know sentry_close() is safe.
         static bool _sentryInitialized;
         // True once sentry_close() has been called (either by setIsSentryActivated(false) or the destructor).
         // When true, re-activation via setIsSentryActivated(true) is silently ignored.

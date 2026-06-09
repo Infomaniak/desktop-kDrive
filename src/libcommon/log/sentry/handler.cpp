@@ -307,24 +307,32 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
         std::cerr << "sentry_init returned " << res << std::endl;
     }
     assert(res == 0);
-    _sentryInitialized = true;
+    _sentryInitialized = (res == 0);
     _instance->setDistributionChannel(DistributionChannel::Unknown);
 }
 
 void Handler::setIsSentryActivated(bool activate) {
     if (_sentryShutDown) {
         // Sentry has been permanently shut down for this process; re-activation is not allowed.
+        _isSentryActivated = false;
         return;
     }
 
-    if (!activate && _sentryInitialized) {
+    if (!_sentryInitialized) {
+        // sentry_init() was never called (e.g. AppType::None or disabled via env var),
+        // so neither activation nor close makes sense; keep Sentry off.
+        _isSentryActivated = false;
+        return;
+    }
+
+    if (!activate) {
         // Disable Sentry: flush all pending events and shut down the SDK cleanly.
         // Once closed, Sentry remains disabled for the lifetime of this process.
         _isSentryActivated = false;
         _sentryShutDown = true;
         sentry_close();
     } else {
-        _isSentryActivated = activate;
+        _isSentryActivated = true;
     }
 }
 
