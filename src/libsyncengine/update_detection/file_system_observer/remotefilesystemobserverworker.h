@@ -38,6 +38,8 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         RemoteFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName);
         ~RemoteFileSystemObserverWorker() override;
 
+        void resume() override;
+
     protected:
         void execute() override;
         ExitInfo generateInitialSnapshot() override;

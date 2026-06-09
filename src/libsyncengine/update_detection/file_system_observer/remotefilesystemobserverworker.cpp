@@ -186,14 +186,13 @@ void RemoteFileSystemObserverWorker::execute() {
     ApiTranslator::clearSharedCache(_syncPal->driveId());
     LongPollJobMap longPollJobs;
 
-    // Sync loop
+    // We never pause this thread, but we stop it as soon as the synchronization leaves its Idle state, or if stop is asked.
+    // The RFSO worker will be restarted when the synchronization reaches the Done state.
     for (;;) {
         if (stopAsked()) {
             exitInfo = ExitCode::Ok;
-            tryToInvalidateSnapshot();
             break;
         }
-        // We never pause this thread
 
         if (!_liveSnapshot.isValid()) {
             exitInfo = generateInitialSnapshot();
@@ -1290,6 +1289,22 @@ ExitInfo RemoteFileSystemObserverWorker::getSpecialRemoteFolderName(const Remote
     }
 
     return {ExitCode::LogicError, ExitCause::InvalidArgument};
+}
+
+void RemoteFileSystemObserverWorker::resume() {
+    if (isRunning()) {
+        LOG_SYNCPAL_DEBUG(_logger, "Worker " << name() << " is already running");
+        return;
+    }
+
+    LOG_SYNCPAL_DEBUG(_logger, "Worker " << name() << " resuming.");
+
+    ISyncWorker::init();
+
+    setRunningFlagValue(true);
+    setUpdateFlagValue(false);
+
+    startExecutionThread();
 }
 
 } // namespace KDC
