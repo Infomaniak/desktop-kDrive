@@ -25,7 +25,7 @@ struct SelectSynchroFoldersView: View {
     @EnvironmentObject private var viewModel: SynchroConfigurationFlowViewModel
 
     @State private var root = [FileTreeItem]()
-    @State private var selection = Set<String>()
+    @State private var blackList = Set<String>()
 
     let userDbId: Int
     let configuration: SynchroConfiguration
@@ -42,12 +42,17 @@ struct SelectSynchroFoldersView: View {
                     .foregroundStyle(ColorToken.Text.tertiary.asColor)
             }
 
-            FileTreeView(rootItems: root) { await fetchSubFolders(for: $0) } onBlacklistChange: { _ in }
+            FileTreeView(rootItems: root, initialBlacklist: Set(configuration.blackList)) {
+                await fetchSubFolders(for: $0)
+            } onBlacklistChange: {
+                updateBacklist($0)
+            }
         }
         .padding()
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button(KDriveLocalizable.buttonValidate) {
+                    viewModel.updateConfiguration(configuration.id, blackList: Array(blackList))
                     viewModel.navigate(to: .configureSynchro(configuration))
                 }
                 .keyboardShortcut(.defaultAction)
@@ -59,6 +64,9 @@ struct SelectSynchroFoldersView: View {
                 }
                 .keyboardShortcut(.cancelAction)
             }
+        }
+        .onAppear {
+            blackList = Set(configuration.blackList)
         }
         .task {
             await fetchRoot()
@@ -85,8 +93,8 @@ struct SelectSynchroFoldersView: View {
         }
     }
 
-    private func updateSelection(_ selection: Set<String>) {
-        self.selection = selection
+    private func updateBacklist(_ blackList: Set<String>) {
+        self.blackList = blackList
     }
 }
 
