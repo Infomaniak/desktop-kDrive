@@ -25,6 +25,7 @@
 #include "libcommonserver/network/proxy.h"
 
 #include "libsyncengine/jobs/network/kDrive_API/movejob.h"
+#include "libsyncengine/requests/syncnodecache.h"
 
 #include "mocks/libcommonserver/db/mockdb.h"
 
@@ -465,6 +466,58 @@ void TestSyncPalWorker::testHandleBackError() {
 
     syncPalWorker->handleBackError();
     CPPUNIT_ASSERT_EQUAL(backoffVariable::baseDelay, syncPalWorker->pauseDuration());
+}
+
+void TestSyncPalWorker::testEnsureBlackListIsPropagatedIgnoresMissingNode() {
+    using enum ExitCode;
+
+    _syncPal = std::make_shared<MockSyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), _sync.dbId(),
+                                             KDRIVE_VERSION_STRING);
+    const auto mockSyncPal = std::dynamic_pointer_cast<MockSyncPal>(_syncPal);
+    CPPUNIT_ASSERT(mockSyncPal);
+
+    auto syncPalWorker = std::make_shared<MockSyncPalWorker>(mockSyncPal, "Mock Main", "M_MAIN", std::chrono::seconds(0));
+    CPPUNIT_ASSERT_EQUAL(Ok, SyncNodeCache::instance()->initCache(mockSyncPal->syncDbId(), mockSyncPal->syncDb()));
+
+    NodeSet blacklistedNodes = {"missing-remote-node-id"};
+    CPPUNIT_ASSERT_EQUAL(Ok,
+                         SyncNodeCache::instance()->update(mockSyncPal->syncDbId(), SyncNodeType::BlackList, blacklistedNodes));
+
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(Ok), syncPalWorker->ensureBlackListIsPropagated());
+}
+
+void TestSyncPalWorker::testEnsureBlackListIsPropagated() {
+    using enum ExitCode;
+    _syncPal = std::make_shared<MockSyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), _sync.dbId(),
+                                             KDRIVE_VERSION_STRING);
+    const auto mockSyncPal = std::dynamic_pointer_cast<MockSyncPal>(_syncPal);
+    CPPUNIT_ASSERT(mockSyncPal);
+
+    auto syncPalWorker = std::make_shared<MockSyncPalWorker>(mockSyncPal, "Mock Main", "M_MAIN", std::chrono::seconds(0));
+    CPPUNIT_ASSERT_EQUAL(Ok, SyncNodeCache::instance()->initCache(mockSyncPal->syncDbId(), mockSyncPal->syncDb()));
+
+    const NodeId blacklistedNodeId = "existing-remote-node-id";
+    const DbNode node(0, mockSyncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "existing-local-node-id",
+                      blacklistedNodeId, testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime,
+                      NodeType::Directory, 0, std::nullopt);
+    DbNodeId dbNodeId = 0;
+    bool constraintError = false;
+    CPPUNIT_ASSERT(mockSyncPal->syncDb()->insertNode(node, dbNodeId, constraintError));
+    CPPUNIT_ASSERT(!constraintError);
+
+    NodeSet blacklistedNodes = {blacklistedNodeId};
+    CPPUNIT_ASSERT_EQUAL(Ok,
+                         SyncNodeCache::instance()->update(mockSyncPal->syncDbId(), SyncNodeType::BlackList, blacklistedNodes));
+
+    bool found = false;
+    DbNode dbNode;
+    CPPUNIT_ASSERT(mockSyncPal->syncDb()->node(dbNodeId, dbNode, found));
+    CPPUNIT_ASSERT(found);
+
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(Ok), syncPalWorker->ensureBlackListIsPropagated());
+
+    CPPUNIT_ASSERT(mockSyncPal->syncDb()->node(dbNodeId, dbNode, found));
+    CPPUNIT_ASSERT(!found);
 }
 
 } // namespace KDC
