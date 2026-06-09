@@ -351,7 +351,7 @@ void SyncPalWorker::execute() {
                 stopAndWaitForExitOfWorker(_syncPal->_remoteFSObserverWorker);
                 isFSOInProgress[1] = false;
             } else if (_step == SyncStep::Done) {
-                LOG_DEBUG(_logger, "Restarting RFSO as long as the synchronization is in the Idle state.");
+                LOG_DEBUG(_logger, "Restarting RFSO until the synchronization leaves the Idle state.");
                 _syncPal->_remoteFSObserverWorker->resume();
                 isFSOInProgress[1] = true;
             }

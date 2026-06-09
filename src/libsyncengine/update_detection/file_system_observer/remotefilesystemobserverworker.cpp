@@ -64,13 +64,13 @@ void RemoteFileSystemObserverWorker::execute() {
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name());
 
     // Sync loop
+    // We never pause this thread, but we stop it as soon as the synchronization leaves its Idle state, or if stop is asked.
+    // The RFSO worker will be restarted when the synchronization reaches the Done state.
     for (;;) {
         if (stopAsked()) {
             exitInfo = ExitCode::Ok;
-            // tryToInvalidateSnapshot();
             break;
         }
-        // We never pause this thread
 
         if (!_liveSnapshot.isValid()) {
             if (exitInfo = generateInitialSnapshot(); !exitInfo) {
