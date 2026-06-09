@@ -318,14 +318,17 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
     }
 
     // Process download
+
     if (fileType == FileType::IsLink) {
         // Create link
-
         LOG_DEBUG(_logger, "Create link: mimeType=" << mimeType);
         if (const ExitInfo exitInfo = createLink(mimeType, linkData); !exitInfo) {
             return exitInfo;
         }
     } else {
+        // Create file
+        bool readError = false;
+        bool writeError = false;
         bool fetchCanceled = false;
         bool fetchFinished = false;
         bool fetchError = false;
@@ -417,7 +420,6 @@ ExitInfo DownloadJob::setOutputParameters() {
 
     if (ioError == IoError::NoSuchFileOrDirectory) {
         LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_fileDownloadInfo.localPath));
-
         return {ExitCode::SystemError, ExitCause::NotFound};
     } else if (ioError == IoError::AccessDenied) {
         LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_fileDownloadInfo.localPath));
@@ -486,6 +488,10 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
     } else if (mimeType == mimeTypeHardlink) {
         // For safety, cannot happen (Mime Type forbidden on the drive)
         LOGW_WARN(_logger, L"Unable to sync hardlink: " << Utility::formatSyncPath(_fileDownloadInfo.localPath));
+<<<<<<< HEAD
+=======
+
+>>>>>>> 573d6c144 (fix(compile-errors): Fixes errors introduced while merging)
         return {ExitCode::SystemError, ExitCause::OperationCanceled};
 
     } else if (mimeType == mimeTypeJunction) {
@@ -499,7 +505,11 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
             return {ExitCode::SystemError, ExitCause::FileSystemNotSupported};
         }
 
+<<<<<<< HEAD
         IoError ioError = IoError::Success;
+=======
+        auto ioError = IoError::Success;
+>>>>>>> 573d6c144 (fix(compile-errors): Fixes errors introduced while merging)
         if (!IoHelper::createJunction(data, _fileDownloadInfo.localPath, ioError)) {
             LOGW_WARN(_logger, L"Failed to create junction: " << Utility::formatIoError(_fileDownloadInfo.localPath, ioError));
             if (ioError == IoError::NoSuchFileOrDirectory) {
@@ -714,22 +724,8 @@ ExitInfo DownloadJob::moveTmpFile() {
                     return {ExitCode::SystemError, ExitCause::NotFound};
                 }
 
-
                 return ExitCode::SystemError;
             }
-            if (ioError == IoError::AccessDenied) {
-                LOGW_WARN(_logger,
-                          L"Access denied to item " << Utility::formatSyncPath(_fileDownloadInfo.localPath.parent_path()));
-                return {ExitCode::SystemError, ExitCause::FileAccessError};
-            }
-
-            if (!exists) {
-                LOGW_INFO(_logger,
-                          L"Parent of item does not exist anymore " << Utility::formatSyncPath(_fileDownloadInfo.localPath));
-                disableRetry();
-            }
-
-            return {};
         }
 #if defined(KD_WINDOWS)
     }
