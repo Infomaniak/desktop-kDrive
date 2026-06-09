@@ -2189,11 +2189,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 Proxy::instance()->setProxyConfig(ParametersCache::instance()->parameters().proxyConfig());
             }
 
-            // Sentry activation change propagation
-            if (KDRIVE_VERSION_MAJOR >= 4 && parameters.sentryEnabled() != parametersInfo.sentryEnabled()) {
-                sentry::Handler::instance()->setIsSentryActivated(parametersInfo.sentryEnabled());
-            }
-
             resultStream << toInt(exitCode);
             break;
         }
