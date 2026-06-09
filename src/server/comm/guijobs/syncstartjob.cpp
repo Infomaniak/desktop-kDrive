@@ -54,11 +54,12 @@ ExitInfo SyncStartJob::serializeOutputParms() {
 ExitInfo SyncStartJob::process() {
     std::shared_ptr<SyncPal> syncPal;
     if (ExitInfo exitInfo = getSyncPal(_syncDbId, syncPal); !exitInfo) {
-        LOG_INFO(_logger, "Error in getSyncPal for syncDbId=" << _syncDbId << " : " << exitInfo <<
-                 " This means that the sync pal is not running, which is expected at this step. The sync will be started later "
-                 "in the process.");
+        LOG_INFO(_logger, "Error in getSyncPal for syncDbId=" << _syncDbId << " : " << exitInfo
+                                                              << " This means that the sync pal is not running, which is "
+                                                                 "expected at this step. The sync will be started later "
+                                                                 "in the process.");
     }
-    
+
     UserActionScopedLock lock;
     if (syncPal != nullptr && !lock.tryLock(syncPal, std::chrono::milliseconds(userActionLockShortTimeoutMs))) {
         LOG_WARN(_logger, "Could not acquire user action lock for syncDbId="
