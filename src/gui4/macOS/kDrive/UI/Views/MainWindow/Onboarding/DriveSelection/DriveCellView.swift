@@ -18,6 +18,7 @@
 
 import Cocoa
 import kDriveCoreUI
+import kDriveResources
 
 final class NonInteractiveButton: NSButton {
     override func hitTest(_ point: NSPoint) -> NSView? {
@@ -121,6 +122,8 @@ final class DriveCellView: NSView {
         checkbox.alphaValue = alphaValue
         driveIcon.alphaValue = alphaValue
         titleLabel.alphaValue = alphaValue
+
+        toolTip = isEnabled ? nil : KDriveLocalizable.onboardingAlreadySyncedDriveTooltip
     }
 
     override func mouseDown(with event: NSEvent) {

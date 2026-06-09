@@ -786,6 +786,8 @@ public enum KDriveLocalizable {
   public static let onboardingAdvancedSettingsDriveSelectionTitle = KDriveLocalizable.tr("Localizable", "onboardingAdvancedSettingsDriveSelectionTitle", fallback: "Configure your kDrive")
   /// loco:698c5ab9945b7c6d260d4c22
   public static let onBoardingAdvancedSettingsDriveTitle = KDriveLocalizable.tr("Localizable", "onBoardingAdvancedSettingsDriveTitle", fallback: "Set up synchronization for this kDrive")
+  /// loco:698c4e054842cd371c0d94f2
+  public static let onboardingAlreadySyncedDriveTooltip = KDriveLocalizable.tr("Localizable", "onboardingAlreadySyncedDriveTooltip", fallback: "This kDrive is already configured.\nGo to your settings to modify it.")
   /// loco:693050ed6a0836d25507da22
   public static let onboardingAuthorizationExtensionDescription = KDriveLocalizable.tr("Localizable", "onboardingAuthorizationExtensionDescription", fallback: "Authorize kDrive in macOS settings:")
   /// loco:6930509e14b396d6fc04b0f2
