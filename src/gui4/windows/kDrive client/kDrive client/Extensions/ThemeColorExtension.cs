@@ -5,7 +5,6 @@ using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
 using System;
 using System.Reflection;
-using System.Threading.Tasks;
 using Windows.UI;
 using Windows.UI.ViewManagement;
 
@@ -13,7 +12,7 @@ namespace Infomaniak.kDrive
 {
     public sealed class ThemeColorExtension : MarkupExtension
     {
-        public string Key { get; set; }
+        public string Key { get; set; } = "";
 
         private UISettings _uiSettings = new();
         private event Action ThemeChanged = delegate { };

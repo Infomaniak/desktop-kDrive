@@ -57,7 +57,8 @@
         </StackPanel>
 
         <!-- Drive management -->
-        <ScrollView Grid.Row="1">
+        <ScrollViewer Grid.Row="1"
+                      IsVerticalScrollChainingEnabled="True">
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
                         Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.L}">
                 <StackPanel Orientation="Horizontal"
@@ -107,10 +108,12 @@
                                                Text="{x:Bind kDrive:Localizer.Instance.GetString('selectFoldersToSync')}"
                                                TextWrapping="Wrap" />
 
-                                    <controls:SyncExclusionSelector Grid.Row="1"
+                                    <controls:SyncExclusionSelector x:Name="SyncExclusionSelector"
+                                                                    Grid.Row="1"
+                                                                    MaxHeight="500"
                                                                     Sync="{x:Bind ManagedDrive.MainSync, Mode=OneWay}"
                                                                     CanShowSaveMenu="True"
-                                                                    HorizontalAlignment="Stretch" />
+                                                                    HorizontalAlignment="Stretch"/>
                                 </Grid>
                             </toolKit:SettingsCard>
                         </toolKit:SettingsExpander.Items>
@@ -240,6 +243,6 @@
                     </toolKit:SettingsCard.HeaderIcon>
                 </toolKit:SettingsCard>
             </StackPanel>
-        </ScrollView>
+        </ScrollViewer>
     </Grid>
 </Page>

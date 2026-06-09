@@ -65,9 +65,10 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
                 throw new Exception("Invalid parameter type when navigating to SyncExclusionPage");
             }
         }
-        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        protected async override void OnNavigatedFrom(NavigationEventArgs e)
         {
             DetachEventHandlers();
+            await ExclusionSelector.DisposeAsync();
         }
 
         private void DetachEventHandlers()
