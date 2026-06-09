@@ -36,6 +36,7 @@ extension KDC.LogLevel: Hashable {}
 extension KDC.NotificationsDisabled: Hashable {}
 extension KDC.ProxyType: Hashable {}
 extension KDC.DistributionChannel: Hashable {}
+extension KDC.LogUploadState: Hashable {}
 extension KDC.UpdateState: Hashable {}
 extension KDC.SyncConfiguration: Hashable {}
 extension KDC.ConflictResolutionStrategy: Hashable {}
