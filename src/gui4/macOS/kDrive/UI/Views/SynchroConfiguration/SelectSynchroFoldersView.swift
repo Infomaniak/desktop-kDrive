@@ -21,46 +21,11 @@ import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
-public struct UINodeInfo: Sendable {
-    public typealias ID = String
-
-    public let id: ID
-    public let name: String
-    public let accessDenied: Bool
-
-    public init(id: ID, name: String, accessDenied: Bool) {
-        self.id = id
-        self.name = name
-        self.accessDenied = accessDenied
-    }
-}
-
-public extension UINodeInfo {
-    static let root = UINodeInfo(id: "", name: "Root", accessDenied: false)
-
-    init(_ nodeInfo: NodeInfo) {
-        id = nodeInfo.nodeId
-        name = nodeInfo.name
-        accessDenied = nodeInfo.accessDenied
-    }
-}
-
-struct NodesTree: Sendable, Identifiable {
-    var id: UINodeInfo.ID {
-        return node.id
-    }
-
-    let node: UINodeInfo
-    // periphery:ignore - Will be used later
-    var children: [NodesTree]
-
-    var isLeaf = false
-}
-
 struct SelectSynchroFoldersView: View {
     @EnvironmentObject private var viewModel: SynchroConfigurationFlowViewModel
 
-    @State private var tree = [NodesTree]()
+    @State private var root = [FileTreeItem]()
+    @State private var selection = Set<String>()
 
     let userDbId: Int
     let configuration: SynchroConfiguration
@@ -77,7 +42,7 @@ struct SelectSynchroFoldersView: View {
                     .foregroundStyle(ColorToken.Text.tertiary.asColor)
             }
 
-            Text("Table goes here")
+            FileTreeView(rootItems: root) { await fetchSubFolders(for: $0) } onSelectionChange: { updateSelection($0) }
         }
         .padding()
         .toolbar {
@@ -101,21 +66,27 @@ struct SelectSynchroFoldersView: View {
     }
 
     private func fetchRoot() async {
-        let nodes = await fetchSubFolders(for: UINodeInfo.root)
-        tree = nodes
+        root = await fetchSubFolders(for: nil)
     }
 
-    private func fetchSubFolders(for node: UINodeInfo) async -> [NodesTree] {
+    private func fetchSubFolders(for node: FileTreeItem?) async -> [FileTreeItem] {
         let userDbId = Int32(userDbId)
         let driveId = Int32(configuration.drive.id)
-        let rootNodeId = node.id
+        let rootNodeId = node?.id ?? ""
 
         do {
             let nodes = try await NodeJobs().getNodeSubfolders(userDbId: userDbId, driveId: driveId, nodeId: rootNodeId)
-            return nodes.map { NodesTree(node: UINodeInfo($0), children: []) }
+            return nodes.map {
+                let size = $0.size == -1 ? nil : $0.size
+                return FileTreeItem(id: $0.nodeId, name: $0.name, size: size, isFolder: true, isEnabled: !$0.accessDenied)
+            }
         } catch {
             return []
         }
+    }
+
+    private func updateSelection(_ selection: Set<String>) {
+        self.selection = selection
     }
 }
 
