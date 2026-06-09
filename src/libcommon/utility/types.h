@@ -92,8 +92,6 @@ enum class SpecialRemoteFolder {
     CustomTarget = 3 // For an advanced synchronization.
 };
 
-using SpecialFolderNames = std::unordered_map<SpecialFolder, SyncName>;
-
 using CursorStore = std::unordered_map<SpecialRemoteFolder, CursorData>;
 [[maybe_unused]] static const CursorStore defaultCursorStore = CursorStore{{SpecialRemoteFolder::Private, {}},
                                                                            {SpecialRemoteFolder::CommonDocuments, {}},
