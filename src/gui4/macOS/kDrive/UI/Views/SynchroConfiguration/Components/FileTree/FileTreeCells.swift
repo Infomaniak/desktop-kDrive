@@ -18,12 +18,7 @@
 
 import AppKit
 import kDriveCoreUI
-import UniformTypeIdentifiers
-
-enum FileTreeIcons {
-    static let folder = NSWorkspace.shared.icon(for: .folder)
-    static let file = NSWorkspace.shared.icon(for: .data)
-}
+import kDriveResources
 
 final class FileTreeCheckboxCell: NSTableCellView {
     private let checkbox = NSButton()
@@ -93,7 +88,15 @@ final class FileTreeNameCell: NSTableCellView {
     }
 
     func configure(with item: FileTreeItem) {
-        icon.image = item.isFolder ? FileTreeIcons.folder : FileTreeIcons.file
+        if item.isFolder {
+            icon.image = KDriveResources.folderFilled.image
+        } else {
+            let pathExtension = (item.name as NSString).pathExtension
+            let fileRepresentation = FileTypeRepresentation(filenameExtension: pathExtension)
+            icon.image = fileRepresentation.icon.image.withSymbolConfiguration(.init(paletteColors: [
+                fileRepresentation.color.color
+            ]))
+        }
         label.stringValue = item.name
         label.textColor = item.isEnabled ? .labelColor : .disabledControlTextColor
         alphaValue = item.isEnabled ? 1 : 0.5

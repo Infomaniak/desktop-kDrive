@@ -21,79 +21,79 @@ import kDriveResources
 import SwiftUI
 import UniformTypeIdentifiers
 
-public struct FileTypeRepresentation: Sendable {
-    public let icon: Image
-    public let color: Color
+public struct FileTypeRepresentation {
+    public let icon: ImageAsset
+    public let color: ColorAsset
 }
 
 public extension FileTypeRepresentation {
     static let folder = FileTypeRepresentation(
-        icon: KDriveResources.FileTypes.fileFolder.swiftUIImage,
-        color: KDriveColors.FileTypes.fileFolder.swiftUIColor
+        icon: KDriveResources.FileTypes.fileFolder,
+        color: KDriveColors.FileTypes.fileFolder
     )
 
     static let archive = FileTypeRepresentation(
-        icon: KDriveResources.FileTypes.fileArchive.swiftUIImage,
-        color: KDriveColors.FileTypes.fileArchive.swiftUIColor
+        icon: KDriveResources.FileTypes.fileArchive,
+        color: KDriveColors.FileTypes.fileArchive
     )
 
     static let audio = FileTypeRepresentation(
-        icon: KDriveResources.FileTypes.fileAudio.swiftUIImage,
-        color: KDriveColors.FileTypes.fileAudio.swiftUIColor
+        icon: KDriveResources.FileTypes.fileAudio,
+        color: KDriveColors.FileTypes.fileAudio
     )
 
     static let code = FileTypeRepresentation(
-        icon: KDriveResources.FileTypes.fileCode.swiftUIImage,
-        color: KDriveColors.FileTypes.fileCode.swiftUIColor
+        icon: KDriveResources.FileTypes.fileCode,
+        color: KDriveColors.FileTypes.fileCode
     )
 
     static let doc = FileTypeRepresentation(
-        icon: KDriveResources.FileTypes.fileDoc.swiftUIImage,
-        color: KDriveColors.FileTypes.fileDoc.swiftUIColor
+        icon: KDriveResources.FileTypes.fileDoc,
+        color: KDriveColors.FileTypes.fileDoc
     )
 
     static let font = FileTypeRepresentation(
-        icon: KDriveResources.FileTypes.fileFont.swiftUIImage,
-        color: KDriveColors.FileTypes.fileFont.swiftUIColor
+        icon: KDriveResources.FileTypes.fileFont,
+        color: KDriveColors.FileTypes.fileFont
     )
 
     static let grid = FileTypeRepresentation(
-        icon: KDriveResources.FileTypes.fileGrid.swiftUIImage,
-        color: KDriveColors.FileTypes.fileGrid.swiftUIColor
+        icon: KDriveResources.FileTypes.fileGrid,
+        color: KDriveColors.FileTypes.fileGrid
     )
 
     static let ics = FileTypeRepresentation(
-        icon: KDriveResources.FileTypes.fileIcs.swiftUIImage,
-        color: KDriveColors.FileTypes.fileIcs.swiftUIColor
+        icon: KDriveResources.FileTypes.fileIcs,
+        color: KDriveColors.FileTypes.fileIcs
     )
 
     static let image = FileTypeRepresentation(
-        icon: KDriveResources.FileTypes.fileImage.swiftUIImage,
-        color: KDriveColors.FileTypes.fileImage.swiftUIColor
+        icon: KDriveResources.FileTypes.fileImage,
+        color: KDriveColors.FileTypes.fileImage
     )
 
     static let pdf = FileTypeRepresentation(
-        icon: KDriveResources.FileTypes.filePdf.swiftUIImage,
-        color: KDriveColors.FileTypes.filePdf.swiftUIColor
+        icon: KDriveResources.FileTypes.filePdf,
+        color: KDriveColors.FileTypes.filePdf
     )
 
     static let point = FileTypeRepresentation(
-        icon: KDriveResources.FileTypes.filePoint.swiftUIImage,
-        color: KDriveColors.FileTypes.filePoint.swiftUIColor
+        icon: KDriveResources.FileTypes.filePoint,
+        color: KDriveColors.FileTypes.filePoint
     )
 
     static let vcard = FileTypeRepresentation(
-        icon: KDriveResources.FileTypes.fileVcard.swiftUIImage,
-        color: KDriveColors.FileTypes.fileVcard.swiftUIColor
+        icon: KDriveResources.FileTypes.fileVcard,
+        color: KDriveColors.FileTypes.fileVcard
     )
 
     static let video = FileTypeRepresentation(
-        icon: KDriveResources.FileTypes.fileVideo.swiftUIImage,
-        color: KDriveColors.FileTypes.fileVideo.swiftUIColor
+        icon: KDriveResources.FileTypes.fileVideo,
+        color: KDriveColors.FileTypes.fileVideo
     )
 
     static let unknown = FileTypeRepresentation(
-        icon: KDriveResources.FileTypes.fileUnknown.swiftUIImage,
-        color: KDriveColors.FileTypes.fileUnknown.swiftUIColor
+        icon: KDriveResources.FileTypes.fileUnknown,
+        color: KDriveColors.FileTypes.fileUnknown
     )
 }
