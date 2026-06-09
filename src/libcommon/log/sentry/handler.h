@@ -105,7 +105,7 @@ class Handler {
 
         void setDistributionChannel(DistributionChannel channel);
         void setAppUUID(std::string appUUID);
-        void setIsSentryActivated(bool isSentryActivated) { _isSentryActivated = isSentryActivated; }
+        void setIsSentryActivated(bool isSentryActivated);
 
         // Returns the file path where non-crash events of type `appType` are written locally.
         static SyncPath getEventFilePath(const AppType appType) { return getEventFilePath(appType, false); }
