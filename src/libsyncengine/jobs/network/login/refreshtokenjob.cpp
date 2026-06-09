@@ -21,9 +21,12 @@
 #include "jobs/network/networkjobsparams.h"
 #include "libcommonserver/utility/utility.h"
 
+#include <Poco/Net/HTTPRequest.h>
+
 namespace KDC {
 
 RefreshTokenJob::RefreshTokenJob(const ApiToken &apiToken) {
+    _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
     _apiToken = apiToken;
 
 #if defined(KD_MACOS)

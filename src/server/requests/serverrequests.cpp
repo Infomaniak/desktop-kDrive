@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "jobs/network/login/deletetokenjob.h"
 #if defined(KD_WINDOWS)
 #define _WINSOCKAPI_
 #endif
@@ -121,8 +122,12 @@ ExitInfo ServerRequests::deleteUser(const UserDbId userDbId) {
         LOG_WARN(Log::instance()->getLogger(), "User with id=" << userDbId << " not found");
         return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
-    KeyChainManager::instance()->deleteToken(user.keychainKey());
-    // TODO : send revoke token request
+
+    ApiToken apiToken;
+    if (KeyChainManager::instance()->readApiToken(user.keychainKey(), apiToken, found) && found) {
+        (void) DeleteTokenJob(apiToken).runSynchronously();
+        (void) KeyChainManager::instance()->deleteToken(user.keychainKey());
+    }
 
     // Delete user (and linked accounts/drives/syncs by cascade)
     if (!ParmsDb::instance()->deleteUser(userDbId, found)) {
