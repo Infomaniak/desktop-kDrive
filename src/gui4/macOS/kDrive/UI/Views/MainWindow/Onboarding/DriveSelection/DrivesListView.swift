@@ -92,8 +92,10 @@ class DrivesListView: NSView {
 
             scrollView.heightAnchor.constraint(equalToConstant: preferredScrollViewHeight),
 
-            drivesStackView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
-            drivesStackView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor)
+            drivesStackView.leadingAnchor.constraint(equalTo: scrollView.contentView.leadingAnchor),
+            drivesStackView.trailingAnchor.constraint(equalTo: scrollView.contentView.trailingAnchor),
+            drivesStackView.topAnchor.constraint(equalTo: scrollView.contentView.topAnchor),
+            drivesStackView.widthAnchor.constraint(equalTo: scrollView.contentView.widthAnchor)
         ])
     }
 
