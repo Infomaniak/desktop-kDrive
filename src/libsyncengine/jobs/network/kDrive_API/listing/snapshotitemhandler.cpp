@@ -24,7 +24,8 @@ namespace KDC {
 
 static const std::string endOfFileDelimiter("#EOF");
 
-SnapshotItemHandler::SnapshotItemHandler(const log4cplus::Logger &logger) :
+SnapshotItemHandler::SnapshotItemHandler(const DriveDbId driveDbId, const log4cplus::Logger &logger) :
+    _driveDbId(driveDbId),
     _logger(logger) {}
 
 void SnapshotItemHandler::logError(const std::wstring &methodName, const std::wstring &stdErrorType, const std::string &str,
@@ -41,11 +42,11 @@ void SnapshotItemHandler::logError(const std::wstring &methodName, const std::ws
 bool SnapshotItemHandler::updateSnapshotItem(const std::string &str, const CsvIndex index, SnapshotItem &item) {
     switch (index) {
         case CsvIndexId: {
-            item.setId(str);
+            item.setId(_driveDbId, str);
             break;
         }
         case CsvIndexParentId: {
-            item.setParentId(str);
+            item.setParentId(_driveDbId, str);
             break;
         }
         case CsvIndexName: {

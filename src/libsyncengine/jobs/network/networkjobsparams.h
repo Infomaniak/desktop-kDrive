@@ -69,11 +69,13 @@ static const std::string dataKey = "data";
 static const std::string cursorKey = "cursor";
 static const std::string hasMoreKey = "has_more";
 static const std::string tokenKey = "token";
+static const std::string uploadUrlKey = "upload_url";
 static const std::string preferenceKey = "preference";
 static const std::string preferencesKey = "preferences";
 
 static const std::string changesKey = "changes";
 static const std::string actionsKey = "actions";
+static const std::string actionsFilesKey = "actions_files";
 static const std::string actionKey = "action";
 static const std::string fileIdKey = "file_id";
 static const std::string fileTypeKey = "file_type";
