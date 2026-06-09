@@ -175,4 +175,5 @@ struct SynchroFolderSelectionSection: View {
 
 #Preview {
     SynchroFolderSelectionSection(configuration: SynchroConfiguration(drive: PreviewHelper.drive1, blackList: []))
+        .environmentObject(SynchroConfigurationFlowViewModel(onConfirm: { _ in }, onCancel: nil))
 }
