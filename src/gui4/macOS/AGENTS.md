@@ -135,6 +135,7 @@ NSLocalizedString("key", bundle: .kDriveResources, comment: "")
 ## Key Files
 - XPC query entry point: `kDriveCore/ServerBridge/XPC/XPCQueryFetcher.swift`
 - XPC connection: `kDriveCore/ServerBridge/XPC/XPCConnectionManager.swift`
+- Logging facade/service: `kDriveCore/Utils/IKLogger.swift`, `kDriveCore/Logging/LogService.swift`
 - Cache protocol: `kDriveCore/ServerBridge/Cache/CoherentCache.swift`
 - Cache (server impl): `kDriveCore/ServerBridge/Cache/ServerCoherentCache.swift`
 - Color tokens: `kDriveCoreUI/Tokens/ColorToken.swift`
