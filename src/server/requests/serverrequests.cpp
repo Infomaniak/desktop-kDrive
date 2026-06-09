@@ -111,8 +111,20 @@ ExitCode ServerRequests::getUserInfoList(std::vector<UserInfo> &list) {
 }
 
 ExitInfo ServerRequests::deleteUser(const UserDbId userDbId) {
-    // Delete user (and linked accounts/drives/syncs by cascade)
+    User user;
     bool found = false;
+    if (!ParmsDb::instance()->selectUser(userDbId, user, found)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectUser");
+        return ExitCode::DbError;
+    }
+    if (!found) {
+        LOG_WARN(Log::instance()->getLogger(), "User with id=" << userDbId << " not found");
+        return {ExitCode::DataError, ExitCause::DbEntryNotFound};
+    }
+    KeyChainManager::instance()->deleteToken(user.keychainKey());
+    // TODO : send revoke token request
+
+    // Delete user (and linked accounts/drives/syncs by cascade)
     if (!ParmsDb::instance()->deleteUser(userDbId, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteUser");
         return ExitCode::DbError;
@@ -325,7 +337,8 @@ ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, SyncConfigu
     // Check if the path is the root of a drive, which is not allowed for sync*
     if (CommonUtility::isDiskRootFolder(path)) {
         LOGW_INFO(Log::instance()->getLogger(),
-                  L"The provided path indicates the root of a drive, which is not allowed for sync: " << Utility::formatSyncPath(path));
+                  L"The provided path indicates the root of a drive, which is not allowed for sync: "
+                          << Utility::formatSyncPath(path));
         return ExitCode::Ok;
     }
 
