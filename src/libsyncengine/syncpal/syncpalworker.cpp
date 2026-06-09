@@ -185,16 +185,12 @@ ExitInfo SyncPalWorker::ensureBlackListIsPropagated() {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId");
                 return ExitInfo(ExitCode::DbError, ExitCause::DbAccessError);
             }
-            if (found) {
-                // The blacklisted node still exists, this is not expected
-                LOG_WARN(_logger, "Blacklisted node " << nodeId << " still exists in SyncDb");
-                return ExitInfo(ExitCode::Ok);
-            }
+
+            if (found) return ExitInfo(ExitCode::Ok);
         }
         return ExitInfo(ExitCode::Ok);
     };
 
-    int32_t retry = 0;
     bool found = false;
     if (ExitInfo exitInfo = areBlacklistedNodesStillInDb(blacklistedNodes, found); !exitInfo) {
         LOG_SYNCPAL_WARN(_logger, "Error while checking if blacklisted nodes still exist in SyncDb");
