@@ -69,11 +69,58 @@ class Drive {
         void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
 
         /// TODO : to be removed once we moved to the new GUI ///
-        friend void operator>>(QDataStream &in, Drive &drive);
-        friend QDataStream &operator<<(QDataStream &out, const Drive &drive);
+        friend void operator>>(QDataStream &in, Drive &drive) {
+            qint64 dbId{0};
+            qint64 id{0};
+            qint64 accountDbId{0};
+            QString name;
+            QColor color;
+            bool notifications{false};
+            bool admin{false};
+            bool maintenance{false};
+            bool locked{false};
+            bool accessDenied{false};
 
-        friend void operator>>(QDataStream &in, QList<Drive> &list);
-        friend QDataStream &operator<<(QDataStream &out, const QList<Drive> &list);
+            in >> dbId >> id >> accountDbId >> name >> color >> notifications >> admin >> maintenance >> locked >> accessDenied;
+
+            drive.setDbId(static_cast<DriveDbId>(dbId));
+            drive.setDriveId(static_cast<DriveId>(id));
+            drive.setAccountDbId(static_cast<AccountDbId>(accountDbId));
+            drive.setName(name.toStdString());
+            drive.setColor(color.name().toStdString());
+            drive.setNotifications(notifications);
+            drive.setAdmin(admin);
+            MaintenanceInfo maintenanceInfo;
+            maintenanceInfo.setInMaintenance(maintenance);
+            drive.setMaintenanceInfo(maintenanceInfo);
+            drive.setLocked(locked);
+            drive.setAccessDenied(accessDenied);
+        }
+        friend QDataStream &operator<<(QDataStream &out, const Drive &drive) {
+            out << static_cast<qint64>(drive.dbId()) << static_cast<qint64>(drive.driveId())
+                << static_cast<qint64>(drive.accountDbId()) << QString::fromStdString(drive.name())
+                << QColor(QString::fromStdString(drive.color())) << drive.notifications() << drive.admin()
+                << drive.maintenanceInfo().inMaintenance() << drive.locked() << drive.accessDenied();
+            return out;
+        }
+
+        friend void operator>>(QDataStream &in, QList<Drive> &list) {
+            qint64 count = 0;
+            in >> count;
+            for (qint64 i = 0; i < count; i++) {
+                Drive info;
+                in >> info;
+                list.push_back(info);
+            }
+        }
+        friend QDataStream &operator<<(QDataStream &out, const QList<Drive> &list) {
+            const auto count = static_cast<qint64>(list.size());
+            out << count;
+            for (qint64 i = 0; i < count; i++) {
+                out << list[static_cast<qsizetype>(i)];
+            }
+            return out;
+        }
         /////////////////////////////////////////////////////////
 
         bool operator==(const Drive &other) const = default;
