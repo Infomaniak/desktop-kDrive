@@ -238,17 +238,6 @@ ExitInfo ServerRequests::getDrive(const DriveDbId driveDbId, Drive &drive) {
 
 ExitInfo ServerRequests::updateDrive(const Drive &drive) {
     bool found = false;
-
-    // TODO : useful?
-    // if (!ParmsDb::instance()->selectDrive(drive.dbId(), drive, found)) {
-    //     LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectDrive");
-    //     return ExitCode::DbError;
-    // }
-    // if (!found) {
-    //     LOG_WARN(Log::instance()->getLogger(), "Drive not found in table drive for dbId=" << drive.dbId());
-    //     return ExitCode::DataError;
-    // }
-
     if (!ParmsDb::instance()->updateDrive(drive, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateDrive");
         return ExitCode::DbError;
@@ -697,7 +686,6 @@ ExitInfo ServerRequests::addSync(const UserDbId userDbId, const AccountId accoun
             return ExitCode::DbError;
         }
 
-        // Drive drive;
         drive.setDbId(driveDbId);
         drive.setDriveId(driveId);
         drive.setAccountDbId(account.dbId());
@@ -1891,11 +1879,9 @@ ExitInfo ServerRequests::loadDriveInfo(Drive &drive, const AccountId previousAcc
         newAccountId = job->accountId();
     }
 
-    if (!job->colorHex().empty()) {
-        if (drive.color() != job->colorHex()) {
-            drive.setColor(job->colorHex());
-            updated = true;
-        }
+    if (!job->colorHex().empty() && drive.color() != job->colorHex()) {
+        drive.setColor(job->colorHex());
+        updated = true;
     }
 
     // Non DB attributes

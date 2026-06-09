@@ -243,7 +243,7 @@ ExitInfo mockLoadAccountInfo(Account &account, bool &updated) {
     return ExitCode::Ok;
 }
 
-ExitInfo mockLoadDriveInfo(Drive &drive, const AccountId previousAccountId, AccountId &newAccountId, bool &updated,
+ExitInfo mockLoadDriveInfo(const Drive &drive, const AccountId previousAccountId, AccountId &newAccountId, bool &updated,
                            bool &quotaUpdated) {
     if (drive.dbId() == 11 && previousAccountId == accountIdA) {
         newAccountId = accountIdB;
