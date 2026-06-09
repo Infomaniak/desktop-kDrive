@@ -17,7 +17,7 @@
  */
 
 #include "utilities.h"
-#include "libcommon/utility/utility_base.h"
+#include "../../../../src/libcommon/utility/utility_base.h"
 
 #include <winrt\base.h>
 
