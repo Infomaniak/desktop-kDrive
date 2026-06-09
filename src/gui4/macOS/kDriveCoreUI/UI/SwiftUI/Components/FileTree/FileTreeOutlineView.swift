@@ -195,6 +195,8 @@ public final class FileTreeOutlineView: NSView {
     }
 
     private func effectiveState(of node: FileTreeNode, ancestorExcluded: Bool) -> NSControl.StateValue {
+        guard node.item.isEnabled else { return .off }
+
         let selfExcluded = ancestorExcluded || blacklist.contains(node.item.id)
 
         guard let children = node.children, !children.isEmpty else {
@@ -282,8 +284,7 @@ public final class FileTreeOutlineView: NSView {
         if headerState() == .on {
             blacklist = Set(rootNodes.map(\.item.id))
         } else {
-            let loaded = allLoadedIDs()
-            blacklist = blacklist.filter { !loaded.contains($0) }
+            blacklist.removeAll()
         }
 
         notifyBlacklistChange()
