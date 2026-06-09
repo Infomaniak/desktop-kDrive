@@ -556,8 +556,10 @@ ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
 
             if (exitInfo.code() == ExitCode::Ok) return exitInfo;
 
-            if (exitInfo.cause() == ExitCause::Unknown && Utility::isError500(httpResponse().getStatus())) {
-                disableRetry();
+            bool shouldRetryOnError500 = true;
+            if (exitInfo.cause() == ExitCause::Unknown &&
+                Utility::isError500(httpResponse().getStatus(), shouldRetryOnError500)) {
+                if (!shouldRetryOnError500) disableRetry();
                 exitInfo.setCause(ExitCause::Http5xx);
             } else if (exitInfo.code() != ExitCode::DataError && exitInfo.code() != ExitCode::InvalidToken &&
                        (exitInfo.code() != ExitCode::BackError || exitInfo.cause() != ExitCause::NotFound)) {
