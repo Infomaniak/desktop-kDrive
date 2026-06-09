@@ -20,11 +20,8 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 
-// Output parameters keys
-static const auto outParamsSyncDbId = "syncDbId";
-static const auto outParamsSyncstatus = "syncStatus";
-static const auto outParamsSyncStep = "syncStep";
-static const auto outParamsSyncProgress = "SyncProgress";
+
+// Signal: SignalNum::SYNC_PROGRESSINFO
 
 namespace KDC {
 
@@ -38,10 +35,10 @@ SignalSyncProgressInfoJob::SignalSyncProgressInfoJob(int syncDbId, SyncStatus sy
 }
 
 ExitInfo SignalSyncProgressInfoJob::serializeOutputParms() {
-    writeParamValue(outParamsSyncDbId, _syncDbId);
-    writeParamValue(outParamsSyncstatus, _syncStatus);
-    writeParamValue(outParamsSyncStep, _syncStep);
-    writeParamValue(outParamsSyncProgress, _syncProgress, info2DynamicVar<SyncProgress>);
+    writeParamValue(msgParamSyncDbId, _syncDbId);
+    writeParamValue(msgParamSyncStatus, _syncStatus);
+    writeParamValue(msgParamSyncStep, _syncStep);
+    writeParamValue(msgParamSyncProgress, _syncProgress, info2DynamicVar<SyncProgress>);
     return ExitCode::Ok;
 }
 

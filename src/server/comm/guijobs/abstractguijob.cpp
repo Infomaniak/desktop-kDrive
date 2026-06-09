@@ -17,24 +17,23 @@
  */
 
 #include "abstractguijob.h"
-#include "utility/jsonparserutility.h"
 #include "appserver.h"
+#include "libcommon/commjson.h"
 
-#include <Poco/JSON/Parser.h>
 #include <Poco/Exception.h>
 
 // Input parameters keys
-static const auto inRequestId = "id";
-static const auto inRequestNum = "num";
-static const auto inRequestParams = "params";
+static constexpr auto inRequestId = msgRequestId;
+static constexpr auto inRequestNum = msgRequestNum;
+static constexpr auto inRequestParams = msgRequestParams;
 
 // Output parameters keys
-static const auto outRequestType = "type";
-static const auto outRequestId = "id";
-static const auto outRequestNum = "num";
-static const auto outRequestCode = "code";
-static const auto outRequestCause = "cause";
-static const auto outRequestParams = "params";
+static constexpr auto outRequestType = msgType;
+static constexpr auto outRequestId = msgRequestId;
+static constexpr auto outRequestNum = msgRequestNum;
+static constexpr auto outRequestCode = msgResponseCode;
+static constexpr auto outRequestCause = msgResponseCause;
+static constexpr auto outRequestParams = msgRequestParams;
 
 namespace KDC {
 
@@ -97,10 +96,7 @@ ExitInfo AbstractGuiJob::runJob() {
 bool AbstractGuiJob::deserializeGenericInputParms(const CommString &inputParamsStr, int &requestId, RequestNum &requestNum,
                                                   Poco::DynamicStruct &inParams) {
     try {
-        Poco::JSON::Parser parser;
-        Poco::Dynamic::Var inputParamsVar = parser.parse(CommonUtility::commString2Str(inputParamsStr));
-
-        Poco::DynamicStruct paramsStruct = *inputParamsVar.extract<Poco::JSON::Object::Ptr>();
+        const Poco::DynamicStruct paramsStruct = CommJson::parseCommObject(inputParamsStr);
 
         CommonUtility::readValueFromStruct(paramsStruct, inRequestId, requestId);
         CommonUtility::readValueFromStruct(paramsStruct, inRequestNum, requestNum);

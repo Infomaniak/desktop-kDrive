@@ -17,26 +17,114 @@
  */
 
 #pragma once
+#include <cstdint>
 #include <string>
 
-#define COMM_SHORT_TIMEOUT 1000
-#define COMM_AVERAGE_TIMEOUT 10000
-#define COMM_LONG_TIMEOUT 60000
+inline constexpr uint16_t commShortTimeout = 1000;
+inline constexpr uint16_t commAverageTimeout = 10000;
+inline constexpr uint16_t commLongTimeout = 60000;
 
-#define MSG_TYPE "type"
+inline constexpr char msgType[] = "type";
 
-#define MSG_REQUEST_ID "id"
-#define MSG_REQUEST_NUM "num"
-#define MSG_REQUEST_PARAMS "params"
+inline constexpr char msgRequestId[] = "id";
+inline constexpr char msgRequestNum[] = "num";
+inline constexpr char msgRequestParams[] = "params";
+inline constexpr char msgResponseCode[] = "code";
+inline constexpr char msgResponseCause[] = "cause";
 
-#define MSG_REPLY_ID "id"
-#define MSG_REPLY_RESULT "result"
+inline constexpr char msgReplyId[] = "id";
+inline constexpr char msgReplyResult[] = "result";
 
-#define MSG_SIGNAL_ID "id"
-#define MSG_SIGNAL_NUM "num"
-#define MSG_SIGNAL_PARAMS "params"
+inline constexpr char msgSignalId[] = "id";
+inline constexpr char msgSignalNum[] = "num";
+inline constexpr char msgSignalParams[] = "params";
 
-#define EXECUTE_ERROR_MSG "C/S function call timeout or error!"
+// Signal / request–response payload parameter keys.
+// Shared between server-side jobs (src/server/comm/guijobs/) and GUI clients.
+inline constexpr char msgParamUserInfo[] = "userInfo";
+inline constexpr char msgParamUserDbId[] = "userDbId";
+inline constexpr char msgParamUserInfoList[] = "userInfoList";
+inline constexpr char msgParamUserDbIdList[] = "userDbIdList";
+inline constexpr char msgParamAccountInfo[] = "accountInfo";
+inline constexpr char msgParamAccountDbId[] = "accountDbId";
+inline constexpr char msgParamAccountInfoList[] = "accountInfoList";
+inline constexpr char msgParamDriveInfo[] = "driveInfo";
+inline constexpr char msgParamDriveDbId[] = "driveDbId";
+inline constexpr char msgParamDriveInfoList[] = "driveInfoList";
+inline constexpr char msgParamSyncInfo[] = "syncInfo";
+inline constexpr char msgParamSyncDbId[] = "syncDbId";
+inline constexpr char msgParamSyncInfoList[] = "syncInfoList";
+inline constexpr char msgParamSyncStatus[] = "syncStatus";
+inline constexpr char msgParamSyncStep[] = "syncStep";
+inline constexpr char msgParamSyncProgress[] = "SyncProgress";
+inline constexpr char msgParamCurrentFile[] = "currentFile";
+inline constexpr char msgParamTotalFiles[] = "totalFiles";
+inline constexpr char msgParamCompletedSize[] = "completedSize";
+inline constexpr char msgParamTotalSize[] = "totalSize";
+inline constexpr char msgParamEstimatedRemainingTime[] = "estimatedRemainingTime";
+inline constexpr char msgParamItemInfo[] = "itemInfo";
+inline constexpr char msgParamErrorInfo[] = "errorInfo";
+inline constexpr char msgParamErrorDbId[] = "errorDbId";
+inline constexpr char msgParamErrorInfoList[] = "errorInfoList";
+inline constexpr char msgParamUpdateState[] = "updateState";
+inline constexpr char msgParamVersionInfo[] = "versionInfo";
+inline constexpr char msgParamTitle[] = "title";
+inline constexpr char msgParamMessage[] = "message";
+inline constexpr char msgParamLogUploadState[] = "state";
+inline constexpr char msgParamPercentage[] = "percentage";
+inline constexpr char msgParamLimit[] = "limit";
+
+// Request parameter keys
+inline constexpr char msgParamAuthCode[] = "code";
+inline constexpr char msgParamCodeVerifier[] = "codeVerifier";
+inline constexpr char msgParamError[] = "error";
+inline constexpr char msgParamErrorDescr[] = "errorDescr";
+inline constexpr char msgParamDriveAvailableInfoList[] = "driveAvailableInfoList";
+inline constexpr char msgParamAccountId[] = "accountId";
+inline constexpr char msgParamDriveId[] = "driveId";
+inline constexpr char msgParamLocalFolderPath[] = "localFolderPath";
+inline constexpr char msgParamServerFolderPath[] = "serverFolderPath";
+inline constexpr char msgParamServerFolderNodeId[] = "serverFolderNodeId";
+inline constexpr char msgParamLiteSync[] = "liteSync";
+inline constexpr char msgParamBlackList[] = "blackList";
+inline constexpr char msgParamBasePath[] = "basePath";
+inline constexpr char msgParamGoodPath[] = "goodPath";
+inline constexpr char msgParamErrorMessage[] = "errorMessage";
+inline constexpr char msgParamPath[] = "path";
+inline constexpr char msgParamSyncConfiguration[] = "syncConfiguration";
+inline constexpr char msgParamIsValid[] = "isValid";
+inline constexpr char msgParamKey[] = "key";
+inline constexpr char msgParamValue[] = "value";
+inline constexpr char msgParamEnabled[] = "enabled";
+inline constexpr char msgParamLogSize[] = "logSize";
+inline constexpr char msgParamIncludeArchivedLogs[] = "includeArchivedLogs";
+inline constexpr char msgParamNodeId[] = "nodeId";
+inline constexpr char msgParamNodeIdList[] = "nodeIdList";
+inline constexpr char msgParamNodeInfo[] = "nodeInfo";
+inline constexpr char msgParamNodeSubFolderInfoList[] = "nodeSubFolderInfoList";
+inline constexpr char msgParamFolderSize[] = "folderSize";
+inline constexpr char msgParamLinkUrl[] = "linkUrl";
+inline constexpr char msgParamParametersInfo[] = "parametersInfo";
+inline constexpr char msgParamExclusionTemplateList[] = "exclusionTemplateList";
+inline constexpr char msgParamIsExcluded[] = "isExcluded";
+inline constexpr char msgParamDefault[] = "default";
+inline constexpr char msgParamName[] = "name";
+inline constexpr char msgParamChannel[] = "channel";
+inline constexpr char msgParamSkippedVersion[] = "skippedVersion";
+inline constexpr char msgParamReplicaSide[] = "replicaSide";
+inline constexpr char msgParamParentNodeId[] = "parentNodeId";
+inline constexpr char msgParamWithPath[] = "withPath";
+inline constexpr char msgParamRelativePath[] = "relativePath";
+inline constexpr char msgParamSearchString[] = "searchString";
+inline constexpr char msgParamSearchInfoList[] = "searchInfoList";
+inline constexpr char msgParamHasMore[] = "hasMore";
+inline constexpr char msgParamNodeConflictInfo[] = "nodeConflictInfo";
+inline constexpr char msgParamKeepLocalErrorDbIdList[] = "keepLocalErrorDbIdList";
+inline constexpr char msgParamKeepRemoteErrorDbIdList[] = "keepRemoteErrorDbIdList";
+inline constexpr char msgParamErrorDbIdList[] = "errorDbIdList";
+inline constexpr char msgParamStrategy[] = "strategy";
+
+inline constexpr char executeErrorMsg[] = "C/S function call timeout or error!";
 
 /**
  * This enum is used in the old communication layer.
@@ -384,7 +472,7 @@ inline std::string toString(SignalNum e) {
         case SignalNum::UTILITY_ERROR_ADDED:
             return "UTILITY_ERROR_ADDED";
         case SignalNum::UTILITY_ERROR_REMOVED:
-            return "UTILITY_ERROR_ADDED";
+            return "UTILITY_ERROR_REMOVED";
         case SignalNum::UTILITY_ERRORS_CLEARED:
             return "UTILITY_ERRORS_CLEARED";
         case SignalNum::UTILITY_SHOW_SETTINGS:

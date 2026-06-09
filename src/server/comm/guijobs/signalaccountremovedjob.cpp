@@ -20,8 +20,8 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 
-// Output parameters keys
-static const auto outParamsAccountDbId = "accountDbId";
+
+// Signal: SignalNum::ACCOUNT_REMOVED
 
 namespace KDC {
 
@@ -31,7 +31,7 @@ SignalAccountRemovedJob::SignalAccountRemovedJob(int accountDbId) :
 }
 
 ExitInfo SignalAccountRemovedJob::serializeOutputParms() {
-    writeParamValue(outParamsAccountDbId, _accountDbId);
+    writeParamValue(msgParamAccountDbId, _accountDbId);
     return ExitCode::Ok;
 }
 

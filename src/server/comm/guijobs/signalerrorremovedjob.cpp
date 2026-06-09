@@ -19,8 +19,8 @@
 #include "signalerrorremovedjob.h"
 #include "libcommon/comm.h"
 
-// Output parameters keys
-static const auto outParamsErrorDbId = "errorDbId";
+
+// Signal: SignalNum::UTILITY_ERROR_REMOVED
 
 namespace KDC {
 
@@ -30,7 +30,7 @@ SignalErrorRemovedJob::SignalErrorRemovedJob(const int &errorDbId) :
 }
 
 ExitInfo SignalErrorRemovedJob::serializeOutputParms() {
-    writeParamValue(outParamsErrorDbId, _errorDbId);
+    writeParamValue(msgParamErrorDbId, _errorDbId);
     return ExitCode::Ok;
 }
 
