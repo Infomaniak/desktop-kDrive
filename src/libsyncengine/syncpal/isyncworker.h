@@ -63,6 +63,8 @@ class ISyncWorker {
         } // Minimum pause duration is 1 min
         void resetPauseDuration() { _pauseDuration = defaultPauseDuration; }
 
+        virtual void resume() { start(); }
+
         void setTesting(bool testing) { _testing = testing; }
         [[nodiscard]] std::shared_ptr<CacheDirectory> cacheDirectory() const { return _syncPal->cacheDirectory(); }
 
@@ -70,8 +72,10 @@ class ISyncWorker {
         log4cplus::Logger _logger;
         std::shared_ptr<SyncPal> _syncPal;
 
-        bool _testing{false};
         virtual void init();
+        void startExecutionThread();
+
+        bool _testing{false};
 
     protected:
         //! Wait for a delay. Allows to postpone the start of the worker to smooth the load.
