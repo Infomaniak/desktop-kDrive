@@ -23,6 +23,7 @@
 
 #include "utility/types.h"
 
+#include <QColor>
 #include <string>
 
 #include <log4cplus/logger.h>
