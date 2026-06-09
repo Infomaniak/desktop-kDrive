@@ -112,10 +112,7 @@ struct SelectSynchroFoldersView: View {
 
         do {
             let nodes = try await NodeJobs().getNodeSubfolders(userDbId: userDbId, driveId: driveId, nodeId: rootNodeId)
-            return nodes.map {
-                let uiNode = UINodeInfo($0)
-                return NodesTree(node: uiNode, children: [])
-            }
+            return nodes.map { NodesTree(node: UINodeInfo($0), children: []) }
         } catch {
             return []
         }
