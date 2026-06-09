@@ -20,37 +20,41 @@ import SwiftUI
 
 public struct FileTreeView: NSViewRepresentable {
     public let rootItems: [FileTreeItem]
-    
+
+    public let initialBlacklist: Set<String>
+
     public let loadChildren: (FileTreeItem) async -> [FileTreeItem]
-    public let onSelectionChange: (Set<String>) -> Void
+    public let onBlacklistChange: (Set<String>) -> Void
 
     public init(
         rootItems: [FileTreeItem],
+        initialBlacklist: Set<String> = [],
         loadChildren: @escaping (FileTreeItem) async -> [FileTreeItem],
-        onSelectionChange: @escaping (Set<String>) -> Void
+        onBlacklistChange: @escaping (Set<String>) -> Void
     ) {
         self.rootItems = rootItems
+        self.initialBlacklist = initialBlacklist
         self.loadChildren = loadChildren
-        self.onSelectionChange = onSelectionChange
+        self.onBlacklistChange = onBlacklistChange
     }
 
     public func makeNSView(context: Context) -> FileTreeOutlineView {
         let view = FileTreeOutlineView()
         view.loadChildren = loadChildren
-        view.onSelectionChange = onSelectionChange
-        view.setRootItems(rootItems)
+        view.onBlacklistChange = onBlacklistChange
+        view.setRootItems(rootItems, initialBlacklist: initialBlacklist)
         context.coordinator.appliedRootIDs = rootItems.map(\.id)
         return view
     }
 
     public func updateNSView(_ nsView: FileTreeOutlineView, context: Context) {
         nsView.loadChildren = loadChildren
-        nsView.onSelectionChange = onSelectionChange
+        nsView.onBlacklistChange = onBlacklistChange
 
         let ids = rootItems.map(\.id)
         if context.coordinator.appliedRootIDs != ids {
             context.coordinator.appliedRootIDs = ids
-            nsView.setRootItems(rootItems)
+            nsView.setRootItems(rootItems, initialBlacklist: initialBlacklist)
         }
     }
 

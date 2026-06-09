@@ -20,6 +20,39 @@ import AppKit
 import kDriveCoreUI
 import kDriveResources
 
+final class FileTreeHeaderView: NSTableHeaderView {
+    let checkbox = NSButton()
+
+    var checkboxColumnIndex = 0
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        checkbox.setButtonType(.switch)
+        checkbox.allowsMixedState = true
+        checkbox.title = ""
+        addSubview(checkbox)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func layout() {
+        super.layout()
+        guard tableView != nil, checkboxColumnIndex >= 0 else { return }
+
+        let columnRect = headerRect(ofColumn: checkboxColumnIndex)
+        let size = checkbox.intrinsicContentSize
+        checkbox.frame = NSRect(
+            x: columnRect.midX - size.width / 2,
+            y: columnRect.midY - size.height / 2,
+            width: size.width,
+            height: size.height
+        )
+    }
+}
+
 final class FileTreeCheckboxCell: NSTableCellView {
     private let checkbox = NSButton()
 

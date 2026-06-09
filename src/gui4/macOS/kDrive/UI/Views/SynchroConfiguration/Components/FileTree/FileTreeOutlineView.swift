@@ -27,7 +27,6 @@ final class FileTreeNode {
 
     var children: [FileTreeNode]?
     var isLoading = false
-    var selectionState: NSControl.StateValue = .off
 
     let isPlaceholder: Bool
 
@@ -53,12 +52,19 @@ final class FileTreeNode {
 @MainActor
 public final class FileTreeOutlineView: NSView {
     public var loadChildren: ((FileTreeItem) async -> [FileTreeItem])?
-    public var onSelectionChange: ((Set<String>) -> Void)?
+
+    /// Reports the set of item IDs the user has *excluded*.
+    ///
+    /// An empty set means everything is selected. Indeterminate folders are never part of it:
+    /// only the explicit exclusions chosen by the user (a folder, or individual files) appear.
+    public var onBlacklistChange: ((Set<String>) -> Void)?
 
     private let scrollView = NSScrollView()
     private let outlineView = NSOutlineView()
+    private let tableHeaderView = FileTreeHeaderView()
 
     private var rootNodes: [FileTreeNode] = []
+    private var blacklist: Set<String> = []
 
     private enum Column {
         static let checkbox = NSUserInterfaceItemIdentifier("FileTree.checkbox")
@@ -77,10 +83,11 @@ public final class FileTreeOutlineView: NSView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    public func setRootItems(_ items: [FileTreeItem]) {
+    public func setRootItems(_ items: [FileTreeItem], initialBlacklist: Set<String>) {
+        blacklist = initialBlacklist
         rootNodes = items.map { FileTreeNode(item: $0, parent: nil) }
         outlineView.reloadData()
-        notifySelectionChange()
+        updateHeaderCheckbox()
     }
 
     private func setupOutlineView() {
@@ -117,7 +124,12 @@ public final class FileTreeOutlineView: NSView {
         outlineView.rowSizeStyle = .default
         outlineView.allowsColumnReordering = false
         outlineView.autoresizesOutlineColumn = false
-        outlineView.headerView = NSTableHeaderView()
+
+        tableHeaderView.checkboxColumnIndex = outlineView.column(withIdentifier: Column.checkbox)
+        tableHeaderView.checkbox.target = self
+        tableHeaderView.checkbox.action = #selector(headerCheckboxToggled(_:))
+        outlineView.headerView = tableHeaderView
+
         if #available(macOS 11.0, *) {
             outlineView.style = .inset
         }
@@ -135,6 +147,8 @@ public final class FileTreeOutlineView: NSView {
             scrollView.trailingAnchor.constraint(equalTo: trailingAnchor)
         ])
     }
+
+    // MARK: - Lazy loading
 
     private func loadChildren(of node: FileTreeNode) {
         guard let loadChildren else {
@@ -156,14 +170,8 @@ public final class FileTreeOutlineView: NSView {
             guard !loadedNodes.isEmpty else {
                 outlineView.collapseItem(node)
                 outlineView.reloadItem(node, reloadChildren: true)
-                notifySelectionChange()
+                refreshSelectionDisplay()
                 return
-            }
-
-            if node.selectionState == .on {
-                for child in loadedNodes {
-                    setSelectionState(.on, for: child)
-                }
             }
 
             let wasExpanded = outlineView.isItemExpanded(node)
@@ -171,57 +179,38 @@ public final class FileTreeOutlineView: NSView {
             if wasExpanded {
                 outlineView.expandItem(node)
             }
-            notifySelectionChange()
+            refreshSelectionDisplay()
         }
     }
 
-    @objc private func checkboxToggled(_ sender: NSButton) {
-        let row = outlineView.row(for: sender)
-        guard row >= 0, let node = outlineView.item(atRow: row) as? FileTreeNode else { return }
-        toggleSelection(of: node)
+    // MARK: - Derived checkbox state
+
+    private func displayState(of node: FileTreeNode) -> NSControl.StateValue {
+        effectiveState(of: node, ancestorExcluded: isAncestorExcluded(node))
     }
 
-    private func toggleSelection(of node: FileTreeNode) {
-        guard node.item.isEnabled else {
-            return
-        }
-
-        let newState: NSControl.StateValue = node.selectionState == .on ? .off : .on
-        setSelectionState(newState, for: node)
-        updateAncestorStates(of: node)
-        refreshCheckboxColumn()
-        notifySelectionChange()
-    }
-
-    private func setSelectionState(_ state: NSControl.StateValue, for node: FileTreeNode) {
-        if node.item.isEnabled {
-            node.selectionState = state
-        }
-
-        if let children = node.children {
-            for child in children {
-                setSelectionState(state, for: child)
+    private func isAncestorExcluded(_ node: FileTreeNode) -> Bool {
+        var parent = node.parent
+        while let current = parent {
+            if blacklist.contains(current.item.id) {
+                return true
             }
+            parent = current.parent
         }
+        return false
     }
 
-    private func updateAncestorStates(of node: FileTreeNode) {
-        var current = node.parent
-        while let folder = current {
-            folder.selectionState = aggregatedState(of: folder)
-            current = folder.parent
-        }
-    }
+    private func effectiveState(of node: FileTreeNode, ancestorExcluded: Bool) -> NSControl.StateValue {
+        let selfExcluded = ancestorExcluded || blacklist.contains(node.item.id)
 
-    private func aggregatedState(of folder: FileTreeNode) -> NSControl.StateValue {
-        guard let children = folder.children, !children.isEmpty else {
-            return folder.selectionState
+        guard let children = node.children, !children.isEmpty else {
+            return selfExcluded ? .off : .on
         }
 
         var sawOn = false
         var sawOff = false
         for child in children {
-            switch child.selectionState {
+            switch effectiveState(of: child, ancestorExcluded: selfExcluded) {
             case .on:
                 sawOn = true
             case .off:
@@ -234,47 +223,145 @@ public final class FileTreeOutlineView: NSView {
                 return .mixed
             }
         }
-
         return sawOn ? .on : .off
     }
 
-    private func refreshCheckboxColumn() {
+    // MARK: - Selection mutation
+
+    @objc private func checkboxToggled(_ sender: NSButton) {
+        let row = outlineView.row(for: sender)
+        guard row >= 0, let node = outlineView.item(atRow: row) as? FileTreeNode else { return }
+        toggleSelection(of: node)
+    }
+
+    private func toggleSelection(of node: FileTreeNode) {
+        guard node.item.isEnabled else { return }
+
+        let select = displayState(of: node) != .on
+        setSelected(select, for: node)
+
+        notifyBlacklistChange()
+        refreshSelectionDisplay()
+    }
+
+    private func setSelected(_ select: Bool, for node: FileTreeNode) {
+        pushDownAncestorExclusions(towards: node)
+
+        if select {
+            removeFromBlacklist(node)
+        } else {
+            removeDescendantsFromBlacklist(node)
+            blacklist.insert(node.item.id)
+        }
+    }
+
+    private func pushDownAncestorExclusions(towards node: FileTreeNode) {
+        var path: [FileTreeNode] = []
+        var parent = node.parent
+        while let current = parent {
+            path.append(current)
+            parent = current.parent
+        }
+
+        for ancestor in path.reversed() where blacklist.contains(ancestor.item.id) {
+            blacklist.remove(ancestor.item.id)
+            for child in ancestor.children ?? [] {
+                blacklist.insert(child.item.id)
+            }
+        }
+    }
+
+    private func removeFromBlacklist(_ node: FileTreeNode) {
+        blacklist.remove(node.item.id)
+        removeDescendantsFromBlacklist(node)
+    }
+
+    private func removeDescendantsFromBlacklist(_ node: FileTreeNode) {
+        for child in node.children ?? [] {
+            removeFromBlacklist(child)
+        }
+    }
+
+    // MARK: - Header "select / deselect all"
+
+    @objc private func headerCheckboxToggled(_ sender: NSButton) {
+        if headerState() == .on {
+            blacklist = Set(rootNodes.map(\.item.id))
+        } else {
+            let loaded = allLoadedIDs()
+            blacklist = blacklist.filter { !loaded.contains($0) }
+        }
+
+        notifyBlacklistChange()
+        refreshSelectionDisplay()
+    }
+
+    private func headerState() -> NSControl.StateValue {
+        guard !rootNodes.isEmpty else { return .off }
+
+        var sawOn = false
+        var sawOff = false
+        for node in rootNodes {
+            switch displayState(of: node) {
+            case .on:
+                sawOn = true
+            case .off:
+                sawOff = true
+            default:
+                sawOn = true
+                sawOff = true
+            }
+            if sawOn, sawOff {
+                return .mixed
+            }
+        }
+        return sawOn ? .on : .off
+    }
+
+    private func allLoadedIDs() -> Set<String> {
+        var ids = Set<String>()
+        func walk(_ nodes: [FileTreeNode]) {
+            for node in nodes {
+                ids.insert(node.item.id)
+                if let children = node.children {
+                    walk(children)
+                }
+            }
+        }
+        walk(rootNodes)
+        return ids
+    }
+
+    // MARK: - Refresh & notification
+
+    private func refreshSelectionDisplay() {
         let checkboxColumnIndex = outlineView.column(withIdentifier: Column.checkbox)
-        guard checkboxColumnIndex >= 0, outlineView.numberOfRows > 0 else {
-            return
+        if checkboxColumnIndex >= 0, outlineView.numberOfRows > 0 {
+            outlineView.reloadData(
+                forRowIndexes: IndexSet(integersIn: 0 ..< outlineView.numberOfRows),
+                columnIndexes: IndexSet(integer: checkboxColumnIndex)
+            )
         }
-
-        outlineView.reloadData(
-            forRowIndexes: IndexSet(integersIn: 0 ..< outlineView.numberOfRows),
-            columnIndexes: IndexSet(integer: checkboxColumnIndex)
-        )
+        updateHeaderCheckbox()
     }
 
-    private func notifySelectionChange() {
-        var selected = Set<String>()
-        walk(rootNodes) {
-            selected.insert($0.item.id)
-        }
-        onSelectionChange?(selected)
+    private func updateHeaderCheckbox() {
+        tableHeaderView.checkbox.allowsMixedState = true
+        tableHeaderView.checkbox.state = headerState()
     }
 
-    private func walk(_ nodes: [FileTreeNode], perform: (FileTreeNode) -> Void) {
-        for node in nodes {
-            if node.selectionState == .on {
-                perform(node)
-            }
-            if let children = node.children {
-                walk(children, perform: perform)
-            }
-        }
+    private func notifyBlacklistChange() {
+        onBlacklistChange?(blacklist)
     }
+
+    // MARK: - Cell factories
 
     private func makeCheckboxCell(for node: FileTreeNode) -> NSView {
         let cell = outlineView
             .makeView(withIdentifier: Column.checkbox, owner: self) as? FileTreeCheckboxCell ?? FileTreeCheckboxCell()
         cell.identifier = Column.checkbox
         cell.configure(
-            state: node.selectionState,
+            state: displayState(of: node),
             isEnabled: node.item.isEnabled,
             target: self,
             action: #selector(checkboxToggled(_:))

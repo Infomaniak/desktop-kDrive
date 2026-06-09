@@ -42,7 +42,7 @@ struct SelectSynchroFoldersView: View {
                     .foregroundStyle(ColorToken.Text.tertiary.asColor)
             }
 
-            FileTreeView(rootItems: root) { await fetchSubFolders(for: $0) } onSelectionChange: { updateSelection($0) }
+            FileTreeView(rootItems: root) { await fetchSubFolders(for: $0) } onBlacklistChange: { _ in }
         }
         .padding()
         .toolbar {
