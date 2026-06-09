@@ -125,7 +125,11 @@ ExitInfo ServerRequests::deleteUser(const UserDbId userDbId) {
 
     ApiToken apiToken;
     if (KeyChainManager::instance()->readApiToken(user.keychainKey(), apiToken, found) && found) {
-        (void) DeleteTokenJob(apiToken).runSynchronously();
+        // Skip the network revocation call when running inside the test suite so that
+        // the CI test token is not invalidated.
+        if (!KeyChainManager::instance()->isTesting()) {
+            (void) DeleteTokenJob(apiToken).runSynchronously();
+        }
         (void) KeyChainManager::instance()->deleteToken(user.keychainKey());
     }
 

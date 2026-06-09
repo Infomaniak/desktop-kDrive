@@ -36,6 +36,8 @@ class COMMON_EXPORT KeyChainManager : public QObject {
         KeyChainManager(KeyChainManager const &) = delete;
         void operator=(KeyChainManager const &) = delete;
 
+        bool isTesting() const { return _testing; }
+
         bool writeDummyTest();
         void clearDummyTest();
 

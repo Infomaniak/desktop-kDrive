@@ -24,7 +24,7 @@ namespace KDC {
 
 class DeleteTokenJob : public AbstractLoginJob {
     public:
-        DeleteTokenJob(const ApiToken &apiToken);
+        explicit DeleteTokenJob(const ApiToken &apiToken);
 
     private:
         ExitInfo handleResponse(std::istream &) override { return ExitCode::Ok; }
