@@ -41,6 +41,8 @@ std::string toString(const ReplicaSide e) {
             return "Local";
         case ReplicaSide::Remote:
             return "Remote";
+        case ReplicaSide::Both:
+            return "Both";
         case ReplicaSide::Unknown:
             return "Unknown";
         default:

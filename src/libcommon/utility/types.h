@@ -543,6 +543,7 @@ std::string toString(TooManyDeletesNotificationType e);
 std::string toString(TooManyDeletesUserChoice e);
 
 inline ReplicaSide otherSide(const ReplicaSide side) {
+    if (side == ReplicaSide::Both) return ReplicaSide::Both;
     if (side == ReplicaSide::Unknown) return ReplicaSide::Unknown;
     return side == ReplicaSide::Local ? ReplicaSide::Remote : ReplicaSide::Local;
 }
