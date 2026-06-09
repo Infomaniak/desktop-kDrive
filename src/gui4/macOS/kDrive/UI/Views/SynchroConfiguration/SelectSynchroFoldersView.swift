@@ -66,12 +66,18 @@ struct SelectSynchroFoldersView: View {
     let configuration: SynchroConfiguration
 
     var body: some View {
-        VStack(alignment: .leading) {
-            Text(KDriveLocalizable.onBoardingAdvancedSettingsDriveTitle)
-                .font(.Tokens.headline)
-                .foregroundStyle(ColorToken.Text.primary.asColor)
+        VStack(alignment: .leading, spacing: AppPadding.padding24) {
+            VStack(alignment: .leading, spacing: AppPadding.padding8) {
+                Text(KDriveLocalizable.onboardingAdvancedSettingsDriveExclusionDescription)
+                    .font(.Tokens.headline)
+                    .foregroundStyle(ColorToken.Text.primary.asColor)
 
-            Text("Not Yet Implemented.")
+                Text(KDriveLocalizable.selectFoldersToSyncDescription)
+                    .font(.Tokens.subheadline)
+                    .foregroundStyle(ColorToken.Text.tertiary.asColor)
+            }
+
+            Text("Table goes here")
         }
         .padding()
         .toolbar {
