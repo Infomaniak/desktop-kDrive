@@ -31,7 +31,7 @@ class AbstractListingJob : public AbstractTokenNetworkJob {
         ExitInfo handleError(const std::string &replyBody, const Poco::URI &uri) override;
 
     private:
-        NodeSet _blacklist;
+        RemoteNodeIdSet _blacklist;
 };
 
 } // namespace KDC
