@@ -24,12 +24,14 @@ namespace KDC {
 
 class ContinueFileListWithCursorJob final : public AbstractListingJob {
     public:
-        ContinueFileListWithCursorJob(int driveDbId, const std::string &cursor, NodeSet blacklist = {});
+        ContinueFileListWithCursorJob(int driveDbId, NodeId remoteDirId, std::string cursor,
+                                      const RemoteNodeIdSet &blacklist = {});
 
     private:
         std::string getSpecificUrl() override;
         void setQueryParameters(Poco::URI &uri) override;
 
+        RemoteNodeId _remoteDirId;
         std::string _cursor;
 };
 
