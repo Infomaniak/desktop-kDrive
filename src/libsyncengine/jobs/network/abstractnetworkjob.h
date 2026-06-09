@@ -81,7 +81,8 @@ class AbstractNetworkJob : public SyncJob {
         uint8_t _apiVersion{2};
         std::string _data;
         int _customTimeout = 0;
-        int32_t _trials = 2; // By default, try again once if exception is thrown
+        static const int32_t _defaultTrials = 2;
+        int32_t _trials = _defaultTrials; // By default, try again once if exception is thrown
         BackError _backError;
 
     private:

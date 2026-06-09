@@ -18,6 +18,7 @@
 
 #include "syncpalworker.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
+#include "update_detection/file_system_observer/remotefilesystemobserverworker.h"
 #include "update_detection/file_system_observer/computefsoperationworker.h"
 #include "update_detection/update_detector/updatetreeworker.h"
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerworker.h"
@@ -84,11 +85,10 @@ bool SyncPalWorker::shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const 
             (w1 && w1->exitCode() == ExitCode::NetworkError) || (w2 && w2->exitCode() == ExitCode::NetworkError);
     const auto httpBlockingError =
             (w1 && w1->exitCode() == ExitCode::BackError &&
-             (w1->exitCause() == ExitCause::Http5xx || w1->exitCause() == ExitCause::HttpErr ||
-              w1->exitCause() == ExitCause::FullListParsingError || w1->exitCause() == ExitCause::MissingReplyData)) ||
+             (w1->exitCause() == ExitCause::Http5xx || w1->exitCause() == ExitCause::HttpErr || w1->exitCause() == ExitCause::MissingReplyData)) ||
             (w2 && w2->exitCode() == ExitCode::BackError &&
-             (w2->exitCause() == ExitCause::Http5xx || w2->exitCause() == ExitCause::HttpErr ||
-              w2->exitCause() == ExitCause::FullListParsingError || w2->exitCause() == ExitCause::MissingReplyData));
+             (w2->exitCause() == ExitCause::Http5xx || w2->exitCause() == ExitCause::HttpErr || w2->exitCause() == ExitCause::MissingReplyData));
+
     const auto syncDirNotAccessible =
             (w1 && w1->exitCode() == ExitCode::SystemError &&
              (w1->exitCause() == ExitCause::SyncDirAccessError || w1->exitCause() == ExitCause::SyncDirDiskMissing)) ||
@@ -97,8 +97,13 @@ bool SyncPalWorker::shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const 
     const auto invalidOperation =
             (w1 && w1->exitCode() == ExitCode::InvalidOperation) || (w2 && w2->exitCode() == ExitCode::InvalidOperation);
 
+    std::shared_ptr<RemoteFileSystemObserverWorker> r1 = std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(w1);
+    std::shared_ptr<RemoteFileSystemObserverWorker> r2 = std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(w2);
+    const auto rfsoError = (r1 != nullptr && r1->exitCode() != ExitCode::Ok) || (r2 != nullptr && r2->exitCode() != ExitCode::Ok);
+
     if (handleRateLimited(w1, w2)) return true;
-    if (httpBlockingError) {
+
+    if (httpBlockingError || rfsoError) {
         handleBackError();
         return true;
     }

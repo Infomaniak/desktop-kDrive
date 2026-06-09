@@ -156,10 +156,13 @@ void TestAppServer::testStartAndStopSync() {
     CPPUNIT_ASSERT(_appPtr->vfsMap.empty());
 
     // Start syncs for all users
-    exitInfo = _appPtr->startSyncs();
+    std::unordered_set<SyncDbId> toIgnoreSyncDbIds;
+    std::unordered_set<SyncDbId> startedSyncDbIds;
+    exitInfo = _appPtr->startSyncs(toIgnoreSyncDbIds, startedSyncDbIds);
     CPPUNIT_ASSERT(exitInfo);
     CPPUNIT_ASSERT(_appPtr->syncPalMap[syncDbId]->isRunning());
     CPPUNIT_ASSERT(syncIsActive(syncDbId));
+    CPPUNIT_ASSERT(startedSyncDbIds.contains(syncDbId));
 
     // Stop syncs & clear maps for all users
     _appPtr->stopAllSyncsTask({syncDbId});
@@ -169,6 +172,14 @@ void TestAppServer::testStartAndStopSync() {
     auto ioError = IoError::Unknown;
     CPPUNIT_ASSERT(IoHelper::checkIfPathExists(syncDbPath, exists, ioError, IoHelper::PathCheckOption::Insensitive));
     CPPUNIT_ASSERT(exists);
+
+    // Start syncs for all users with an ignored syncDbId
+    toIgnoreSyncDbIds = {syncDbId};
+    startedSyncDbIds.clear();
+    exitInfo = _appPtr->startSyncs(toIgnoreSyncDbIds, startedSyncDbIds);
+    CPPUNIT_ASSERT(exitInfo);
+    CPPUNIT_ASSERT(!_appPtr->syncPalMap.contains(syncDbId));
+    CPPUNIT_ASSERT(!startedSyncDbIds.contains(syncDbId));
 
     // Update sync local folder with a dummy value
     Sync sync;

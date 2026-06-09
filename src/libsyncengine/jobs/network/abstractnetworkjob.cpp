@@ -184,6 +184,7 @@ ExitInfo AbstractNetworkJob::runJob() noexcept {
 
     Poco::URI uri;
     ExitInfo outputExitInfo = ExitCode::Ok;
+    _trials = _defaultTrials;
     for (int trials = 1; trials <= std::min(_trials, MAX_TRIALS); trials++) {
         outputExitInfo = ExitCode::Ok;
 
@@ -488,14 +489,6 @@ ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
                                   << httpResponse().getReason());
     logReplyInfo();
 
-    if (Utility::isError500(httpResponse().getStatus())) {
-        std::string replyBody;
-        getStringFromStream(stream[0].get(), replyBody);
-        LOG_WARN(_logger, "Reply " << jobId() << ": " << replyBody);
-        disableRetry();
-        return {ExitCode::BackError, ExitCause::Http5xx};
-    }
-
     switch (httpResponse().getStatus()) {
         case Poco::Net::HTTPResponse::HTTP_OK: {
             try {
@@ -551,24 +544,26 @@ ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
             [[fallthrough]];
         }
         default: {
-            if (!isAborted()) {
-                ExitInfo exitInfo;
-                try {
-                    exitInfo = handleError(stream[0].get(), uri);
-                } catch (const std::exception &e) {
-                    LOG_WARN(_logger, "handleError failed: " << errorText(e));
-                    return {};
-                }
+            if (isAborted()) return ExitCode::Ok;
 
-                if (!exitInfo) {
-                    if (exitInfo.code() != ExitCode::DataError && exitInfo.code() != ExitCode::InvalidToken &&
-                        (exitInfo.code() != ExitCode::BackError || exitInfo.cause() != ExitCause::NotFound)) {
-                        LOG_WARN(_logger, "Error handling failed");
-                    }
-                    return exitInfo;
-                }
+            ExitInfo exitInfo;
+            try {
+                exitInfo = handleError(stream[0].get(), uri);
+            } catch (const std::exception &e) {
+                LOG_WARN(_logger, "handleError failed: " << errorText(e));
+                return ExitCode::NetworkError;
             }
-            break;
+
+            if (exitInfo.code() == ExitCode::Ok) return exitInfo;
+
+            if (exitInfo.cause() == ExitCause::Unknown && Utility::isError500(httpResponse().getStatus())) {
+                disableRetry();
+                exitInfo.setCause(ExitCause::Http5xx);
+            } else if (exitInfo.code() != ExitCode::DataError && exitInfo.code() != ExitCode::InvalidToken &&
+                       (exitInfo.code() != ExitCode::BackError || exitInfo.cause() != ExitCause::NotFound)) {
+                LOG_WARN(_logger, "Error handling failed");
+            }
+            return exitInfo;
         }
     }
 

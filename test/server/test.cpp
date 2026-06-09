@@ -38,7 +38,8 @@
 #include "comm/testguijobpriority.h"
 
 namespace KDC {
-#if defined(KD_MACOS)
+
+#if defined (KD_MACOS)
 CPPUNIT_TEST_SUITE_REGISTRATION(TestVfsMac);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLiteSyncCommClient);
 #endif
