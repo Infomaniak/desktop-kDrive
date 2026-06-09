@@ -50,7 +50,7 @@ bool ISyncWorker::isRunning() const {
     return _isRunning.load();
 }
 
-void ISyncWorker::setIsRunning(const bool isRunning) {
+void ISyncWorker::setRunningFlagValue(const bool isRunning) {
     _isRunning.store(isRunning);
 }
 
@@ -63,9 +63,9 @@ void ISyncWorker::start() {
     LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name << " start");
 
     init();
-    setIsRunning(true);
-    auto executeFunc = std::function<void()>([this]() { execute(); });
-    _thread = (std::make_unique<StdLoggingThread>(executeFunc));
+    setRunningFlagValue(true);
+
+    startExecutionThread();
 }
 
 
@@ -132,10 +132,15 @@ void ISyncWorker::setDone(const ExitCode exitCode) {
         _syncPal->addError(Error(_syncPal->syncDbId(), _shortName, exitCode, _exitCause));
     }
 
-    setIsRunning(false);
+    setRunningFlagValue(false);
     setStopAsked(false);
 
     _exitCode = exitCode;
+}
+
+void ISyncWorker::startExecutionThread() {
+    auto executeFunc = std::function<void()>([this]() { execute(); });
+    _thread = (std::make_unique<StdLoggingThread>(executeFunc));
 }
 
 } // namespace KDC
