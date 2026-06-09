@@ -240,8 +240,6 @@ std::string toString(const ExitCause e) {
             return "MissingReplyData";
         case ExitCause::BlackListPropagationError:
             return "BlackListPropagationError";
-        case ExitCause::TooManyDeleteOperations:
-            return "TooManyDeleteOperations";
         default:
             return noConversionStr;
     }
