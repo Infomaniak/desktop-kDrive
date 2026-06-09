@@ -45,8 +45,7 @@ std::shared_ptr<KeyChainManager> KeyChainManager::instance(bool testing) {
 }
 
 KeyChainManager::KeyChainManager(bool testing) :
-    _testing(testing),
-    _testingMap(std::unordered_map<std::string, std::string>()) {}
+    _testing(testing) {}
 
 bool KeyChainManager::writeDummyTest() {
     // First, we check that we can write into the keychain
@@ -122,7 +121,15 @@ bool KeyChainManager::readApiToken(const std::string &keychainKey, ApiToken &api
     return returnValue;
 }
 
-bool KeyChainManager::deleteToken(const std::string &keychainKey) const {
+bool KeyChainManager::deleteToken(const std::string &keychainKey) {
+    if (_testing) {
+        if (_testingMap.find(keychainKey) != _testingMap.end()) {
+            _testingMap.erase(keychainKey);
+            return true;
+        }
+        return false;
+    }
+
     keychain::Error error{};
     keychain::deletePassword(PACKAGE, SERVICE, keychainKey, error);
     if (error) {
