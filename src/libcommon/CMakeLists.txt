@@ -30,9 +30,9 @@ set(libcommon_SRCS
     utility/logiffail.h utility/qlogiffail.h
     utility/urlhelper.h utility/urlhelper.cpp
     utility/timerutility.h
+    data/drive.h data/drive.cpp
     info/userinfo.h info/userinfo.cpp
     info/accountinfo.h info/accountinfo.cpp
-    info/driveinfo.h info/driveinfo.cpp
     info/driveavailableinfo.h info/driveavailableinfo.cpp
     info/syncinfo.h info/syncinfo.cpp
     info/nodeinfo.h info/nodeinfo.cpp
@@ -54,6 +54,8 @@ set(libcommon_SRCS
     log/sentry/ptrace.h log/sentry/utility.h
     log/customlogstreams.h
     theme/theme.h theme/theme.cpp
+        info/maintenanceinfo.cpp
+        info/maintenanceinfo.h
 )
 
 if(APPLE)

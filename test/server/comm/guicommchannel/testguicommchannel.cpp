@@ -516,38 +516,43 @@ void TestGuiCommChannel::testAccountInfoListJob() {
 }
 
 namespace {
-std::vector<DriveInfo> createDriveInfoList() {
-    DriveInfo di1;
-    di1.setDbId(1);
-    di1.setId(1111);
-    di1.setAccountDbId(1);
-    di1.setName("drive1111");
-    di1.setColor("#aabbcc");
-    di1.setNotifications(true);
-    di1.setAdmin(true);
-    di1.setMaintenance(false);
-    di1.setLocked(false);
-    di1.setAccessDenied(false);
-    di1.setSize(1000000000);
-    di1.setUsedSize(50000000);
-    di1.setPackInfo(PackInfo(1, "pack_free", "PackFree", true));
+std::vector<Drive> createDriveInfoList() {
+    Drive d1;
+    d1.setDbId(1);
+    d1.setDriveId(1111);
+    d1.setAccountDbId(1);
+    d1.setName("drive1111");
+    d1.setColor("#aabbcc");
+    d1.setNotifications(true);
+    d1.setAdmin(true);
+    MaintenanceInfo maintenanceInfo;
+    maintenanceInfo.setInMaintenance(false);
+    d1.setMaintenanceInfo(maintenanceInfo);
+    d1.setLocked(false);
+    d1.setAccessDenied(false);
+    d1.setSize(1000000000);
+    d1.setUsedSize(50000000);
+    d1.setPackInfo(PackInfo(1, "pack_free", "PackFree", true));
 
-    DriveInfo di2;
-    di2.setDbId(2);
-    di2.setId(2222);
-    di2.setAccountDbId(1);
-    di2.setName("drive2222");
-    di2.setColor("#ddeeff");
-    di2.setNotifications(false);
-    di2.setAdmin(false);
-    di2.setMaintenance(true);
-    di2.setLocked(true);
-    di2.setAccessDenied(true);
-    di2.setSize(2000000000);
-    di2.setUsedSize(60000000);
-    di2.setPackInfo(PackInfo(2, "pack_pro", "PackPro", false));
+    Drive d2;
+    d2.setDbId(2);
+    d2.setDriveId(2222);
+    d2.setAccountDbId(1);
+    d2.setName("drive2222");
+    d2.setColor("#ddeeff");
+    d2.setNotifications(false);
+    d2.setAdmin(false);
+    MaintenanceInfo maintenanceInfo2;
+    maintenanceInfo2.setInMaintenance(true);
+    d2.setMaintenanceInfo(maintenanceInfo2);
+    d2.setMaintenanceInfo(maintenanceInfo2);
+    d2.setLocked(true);
+    d2.setAccessDenied(true);
+    d2.setSize(2000000000);
+    d2.setUsedSize(60000000);
+    d2.setPackInfo(PackInfo(2, "pack_pro", "PackPro", false));
 
-    return {di1, di2};
+    return {d1, d2};
 }
 
 Poco::JSON::Array createDriveInfoObjList() {
@@ -636,7 +641,7 @@ void TestGuiCommChannel::testDriveInfoListJob() {
         auto driveInfoListJob = std::dynamic_pointer_cast<DriveInfoListJob>(job);
         CPPUNIT_ASSERT(driveInfoListJob);
 
-        driveInfoListJob->_driveInfoList = createDriveInfoList();
+        driveInfoListJob->_driveList = createDriveInfoList();
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
@@ -682,7 +687,7 @@ void TestGuiCommChannel::testDriveUpdateJob() {
         const auto driveInfoListJob = std::dynamic_pointer_cast<DriveUpdateJob>(job);
         CPPUNIT_ASSERT(driveInfoListJob);
 
-        CPPUNIT_ASSERT(createDriveInfoList().at(0) == driveInfoListJob->_driveInfo);
+        CPPUNIT_ASSERT(createDriveInfoList().at(0) == driveInfoListJob->_drive);
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)

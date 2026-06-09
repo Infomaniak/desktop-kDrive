@@ -19,7 +19,6 @@
 #pragma once
 
 #include "server/comm/guijobs/abstractguijob.h"
-#include "libcommon/info/driveinfo.h"
 
 namespace KDC {
 
@@ -30,7 +29,7 @@ class DriveInfoListJob : public AbstractGuiJob {
 
     private:
         // Output parameters
-        std::vector<DriveInfo> _driveInfoList;
+        std::vector<Drive> _driveList;
 
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override;

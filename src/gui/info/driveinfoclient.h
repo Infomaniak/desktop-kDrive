@@ -19,8 +19,8 @@
 #pragma once
 
 #include "syncinfoclient.h"
-#include "../synchronizeditem.h"
-#include "libcommon/info/driveinfo.h"
+#include "gui/synchronizeditem.h"
+#include "data/drive.h"
 
 #include <map>
 
@@ -29,7 +29,7 @@
 
 namespace KDC {
 
-class DriveInfoClient : public DriveInfo {
+class DriveInfoClient : public Drive {
     public:
         enum class SynthesisStackedWidget {
             Synchronized = 0,
@@ -43,15 +43,15 @@ class DriveInfoClient : public DriveInfo {
             FirstAdded
         };
 
-        DriveInfoClient();
-        DriveInfoClient(const DriveInfo &driveInfo);
+        DriveInfoClient() = default;
+        DriveInfoClient(const Drive &drive);
 
         inline SyncStatus status() const { return _status; }
         inline bool unresolvedConflicts() const { return _unresolvedConflicts; }
         inline Count unresolvedErrorsCount() const { return _unresolvedErrorsCount; }
         inline void setUnresolvedErrorsCount(const Count count) { _unresolvedErrorsCount = count; }
-        inline Count autoresolvedErrorsCount() const { return _autoresolvedErrorsCount; }
-        inline void setAutoresolvedErrorsCount(const Count count) { _autoresolvedErrorsCount = count; }
+        inline Count autoResolvedErrorsCount() const { return _autoResolvedErrorsCount; }
+        inline void setAutoResolvedErrorsCount(const Count count) { _autoResolvedErrorsCount = count; }
 
         inline qint64 totalSize() const { return _totalSize; }
         inline void setTotalSize(qint64 totalSize) { _totalSize = totalSize; }
@@ -101,7 +101,7 @@ class DriveInfoClient : public DriveInfo {
         qint64 _totalSize{0};
         qint64 _used{0};
         Count _unresolvedErrorsCount{0};
-        Count _autoresolvedErrorsCount{0};
+        Count _autoResolvedErrorsCount{0};
         bool _isBeingDeleted{false};
 
         // Synthesispopover attributes

@@ -47,7 +47,7 @@ class MockAppServer : public AppServer {
         void sendUserUpdated(const UserInfo &) const override { /* Do not try to notify the client */ };
         void sendAccountAdded(const AccountInfo &) const override { /* Do not try to notify the client */ };
         void sendAccountUpdated(const AccountInfo &) const override { /* Do not try to notify the client */ };
-        void sendDriveUpdated(const DriveInfo &) const override { /* Do not try to notify the client */ };
+        void sendDriveUpdated(const Drive &) const override { /* Do not try to notify the client */ };
 
         std::filesystem::path _parmsDbPath;
 };
