@@ -19,7 +19,6 @@
 import AppKit
 import kDriveCoreUI
 import kDriveResources
-import UniformTypeIdentifiers
 
 final class FileTreeNode {
     let item: FileTreeItem
@@ -52,11 +51,6 @@ final class FileTreeNode {
 @MainActor
 public final class FileTreeOutlineView: NSView {
     public var loadChildren: ((FileTreeItem) async -> [FileTreeItem])?
-
-    /// Reports the set of item IDs the user has *excluded*.
-    ///
-    /// An empty set means everything is selected. Indeterminate folders are never part of it:
-    /// only the explicit exclusions chosen by the user (a folder, or individual files) appear.
     public var onBlacklistChange: ((Set<String>) -> Void)?
 
     private let scrollView = NSScrollView()

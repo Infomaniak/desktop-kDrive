@@ -18,7 +18,6 @@
 
 import Foundation
 import kDriveResources
-import SwiftUI
 import UniformTypeIdentifiers
 
 public struct FileTypeRepresentation {

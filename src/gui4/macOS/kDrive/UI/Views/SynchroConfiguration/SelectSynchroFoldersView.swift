@@ -45,7 +45,7 @@ struct SelectSynchroFoldersView: View {
             FileTreeView(rootItems: root, initialBlacklist: Set(configuration.blackList)) {
                 await fetchSubFolders(for: $0)
             } onBlacklistChange: {
-                updateBacklist($0)
+                updateBlacklist($0)
             }
         }
         .padding()
@@ -93,7 +93,7 @@ struct SelectSynchroFoldersView: View {
         }
     }
 
-    private func updateBacklist(_ blackList: Set<String>) {
+    private func updateBlacklist(_ blackList: Set<String>) {
         self.blackList = blackList
     }
 }
