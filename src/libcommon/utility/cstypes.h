@@ -83,6 +83,7 @@ enum class ReplicaSide {
     Unknown,
     Local,
     Remote,
+    Both,
     EnumEnd
 };
 

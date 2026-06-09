@@ -449,10 +449,10 @@ void TestSyncPalWorker::testHandleBackError() {
     }
 
     // Verify the counter resets when the Idle step is initialised (via initStep → resetConsecutiveBackErrors).
-    std::shared_ptr<ISyncWorker> stepWorkers[2] = {nullptr, nullptr};
-    std::shared_ptr<SharedObject> inputSharedObject[2] = {nullptr, nullptr};
+    SyncPalWorker::ReplicaWorkers stepWorkers;
+    SyncPalWorker::ReplicaInputSharedObjects inputSharedObjects = {{ReplicaSide::Local, nullptr}, {ReplicaSide::Remote, nullptr}};
 
-    syncPalWorker->initStep(SyncStep::Idle, stepWorkers, inputSharedObject);
+    syncPalWorker->initStep(SyncStep::Idle, stepWorkers, inputSharedObjects);
 
     CPPUNIT_ASSERT_EQUAL(int64_t{0}, _syncPal->consecutiveBackErrors());
 

@@ -39,15 +39,25 @@ class SyncPalWorker : public ISyncWorker {
         void execute() override;
         void stop() override;
         void pause(); // The ongoing sync will be completed before pausing
-        inline bool isPaused() const { return _isPaused; }
-        inline bool pauseAsked() const { return _pauseAsked; }
-        inline bool unpauseAsked() const { return _unpauseAsked; }
+        bool isPaused() const { return _isPaused; }
+        bool pauseAsked() const { return _pauseAsked; }
+        bool unpauseAsked() const { return _unpauseAsked; }
         void unpause();
-        inline SyncStep step() const { return _step; }
-        inline std::chrono::time_point<std::chrono::steady_clock> pauseTime() const { return _pauseTime; }
+        SyncStep step() const { return _step; }
+        std::chrono::time_point<std::chrono::steady_clock> pauseTime() const { return _pauseTime; }
         static std::string stepName(SyncStep step);
 
+        struct Worker {
+                std::shared_ptr<ISyncWorker> worker{nullptr};
+                bool isInProgress{false};
+                ReplicaSide side{ReplicaSide::Both};
+        };
+
+        using ReplicaWorkers = std::unordered_map<ReplicaSide, Worker>;
+
     private:
+        using ReplicaInputSharedObjects = std::unordered_map<ReplicaSide, std::shared_ptr<SharedObject>>;
+
         SyncStep _step{SyncStep::Idle};
         std::chrono::time_point<std::chrono::steady_clock> _pauseTime{std::chrono::time_point<std::chrono::steady_clock>()};
         bool _pauseAsked{false};
@@ -57,17 +67,14 @@ class SyncPalWorker : public ISyncWorker {
         std::unique_ptr<StdLoggingThread> _resetVfsFilesStatusThread{nullptr};
 #endif
 
-        void initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&workers)[2],
-                      std::shared_ptr<SharedObject> (&inputSharedObject)[2]);
-        void initStepFirst(std::shared_ptr<ISyncWorker> (&workers)[2], std::shared_ptr<SharedObject> (&inputSharedObject)[2],
-                           bool reset);
+        void initStep(SyncStep step, ReplicaWorkers &replicaWorkers, ReplicaInputSharedObjects &inputSharedObjects);
+        void initStepFirst(ReplicaWorkers &workers, ReplicaInputSharedObjects &inputSharedObjects, bool reset);
         SyncStep nextStep() const;
-        void stopAndWaitForExitOfWorker(std::shared_ptr<ISyncWorker> worker);
-        void stopWorkers(std::shared_ptr<ISyncWorker> workers[2]);
-        void waitForExitOfWorkers(std::shared_ptr<ISyncWorker> workers[2]);
-        void stopAndWaitForExitOfWorkers(std::shared_ptr<ISyncWorker> workers[2]);
-        void stopAndWaitForExitOfAllWorkers(std::shared_ptr<ISyncWorker> fsoWorkers[2],
-                                            std::shared_ptr<ISyncWorker> stepWorkers[2]);
+        void stopAndWaitForExitOfWorker(std::shared_ptr<ISyncWorker> replicaWorker);
+        void stopWorkers(ReplicaWorkers &workers);
+        void waitForExitOfWorkers(ReplicaWorkers &workers);
+        void stopAndWaitForExitOfWorkers(ReplicaWorkers &workers);
+        void stopAndWaitForExitOfAllWorkers(ReplicaWorkers &fsoWorkers, ReplicaWorkers &stepWorkers);
 
         /* Returns true if the local item is in sync with its state in the SyncDb.
          * Returns false if the item is not in sync, or if an error occurred while trying to determine it
@@ -81,33 +88,32 @@ class SyncPalWorker : public ISyncWorker {
         /**
          * @brief Attempts to repair local node IDs in the SyncDb after the sync directory has changed its node ID.
          *
-         * This method is used when the sync directory has been moved between two filesystems or recreated (Apple migration
-         * assistant), causing its inode to change.
+         * This method is used when the sync directory has been moved between two filesystems or recreated (Apple
+         * migration assistant), causing its inode to change.
          *
          * - It first loads the SyncDb cache if needed and retrieves all known nodes (in db).
          * - For each nodes, it verifies whether the file still exists, retrieves and save its new node ID.
-         * - If all the nodes in db are present under the syncroot with the same path, the node IDs are updated in the SyncDb.
-         *   Else the process is aborted and false is returned.
+         * - If all the nodes in db are present under the syncroot with the same path, the node IDs are updated in the
+         * SyncDb. Else the process is aborted and false is returned.
          * - After all updates, the new local root node ID is saved.
          *
-         * @note This is a best-effort operation and will return false at the first unrecoverable error (e.g., file deleted/moved,
-         *       missing entry in the SyncDb cache, unexpected ioError, etc.).
+         * @note This is a best-effort operation and will return false at the first unrecoverable error (e.g., file
+         * deleted/moved, missing entry in the SyncDb cache, unexpected ioError, etc.).
          *
          * @return true if the SyncDb was successfully updated to reflect the new node IDs,
          *         false otherwise.
          */
         bool tryToFixDbNodeIdsAfterSyncDirChange();
-        void removeSyncDirChangedErrorIfAny();
 
-        bool shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr);
-        bool handleRateLimited(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr);
+        bool shouldBePaused(const ReplicaWorkers &workers);
+        bool handleRateLimited(const ReplicaWorkers &workers);
         void handleBackError();
 
         virtual double jitter() const;
 
         void checkForMassDeletions() const;
 
-        void startFsoWorkerIfNeeded(std::shared_ptr<ISyncWorker> fsoWorker, bool &isFsoInProgress, bool &syncDirChanged);
+        void adaptFsoWorkerActivityToCurrentState(Worker &fsoWorker, bool &syncDirChanged);
 
         friend class TestSyncPalWorker;
 };

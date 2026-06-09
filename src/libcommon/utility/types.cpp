@@ -40,6 +40,8 @@ std::string toString(const ReplicaSide e) {
             return "Local";
         case ReplicaSide::Remote:
             return "Remote";
+        case ReplicaSide::Both:
+            return "Both";
         case ReplicaSide::Unknown:
             return "Unknown";
         default:
@@ -949,7 +951,7 @@ std::string toString(const TranslationMode e) {
 std::string toString(const std::source_location &e) {
     return e.file_name() + std::string(":") + std::to_string(e.line()) + std::string("[") + e.function_name() + "]";
 }
-  
+
 std::string toString(const Scope e) {
     switch (e) {
         case Scope::None:
