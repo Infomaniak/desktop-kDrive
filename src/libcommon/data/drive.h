@@ -68,6 +68,14 @@ class Drive {
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
         void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
 
+        /// TODO : to be removed once we moved to the new GUI ///
+        friend void operator>>(QDataStream &in, Drive &drive);
+        friend QDataStream &operator<<(QDataStream &out, const Drive &drive);
+
+        friend void operator>>(QDataStream &in, QList<Drive> &list);
+        friend QDataStream &operator<<(QDataStream &out, const QList<Drive> &list);
+        /////////////////////////////////////////////////////////
+
         bool operator==(const Drive &other) const = default;
 
     private:
@@ -88,14 +96,6 @@ class Drive {
 
         PackInfo _packInfo;
 };
-
-/// TODO : to be removed once we moved to the new GUI ///
-void operator>>(QDataStream &in, Drive &drive);
-QDataStream &operator<<(QDataStream &out, const Drive &drive);
-
-void operator>>(QDataStream &in, QList<Drive> &list);
-QDataStream &operator<<(QDataStream &out, const QList<Drive> &list);
-/////////////////////////////////////////////////////////
 
 using DriveList = std::vector<Drive>;
 
