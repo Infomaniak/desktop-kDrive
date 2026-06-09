@@ -85,11 +85,12 @@ bool SyncPalWorker::shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const 
 
     const auto networkIssue =
             (w1 && w1->exitCode() == ExitCode::NetworkError) || (w2 && w2->exitCode() == ExitCode::NetworkError);
-    const auto httpBlockingError =
-            (w1 && w1->exitCode() == ExitCode::BackError &&
-             (w1->exitCause() == ExitCause::Http5xx || w1->exitCause() == ExitCause::HttpErr || w1->exitCause() == ExitCause::MissingReplyData)) ||
-            (w2 && w2->exitCode() == ExitCode::BackError &&
-             (w2->exitCause() == ExitCause::Http5xx || w2->exitCause() == ExitCause::HttpErr || w2->exitCause() == ExitCause::MissingReplyData));
+    const auto httpBlockingError = (w1 && w1->exitCode() == ExitCode::BackError &&
+                                    (w1->exitCause() == ExitCause::Http5xx || w1->exitCause() == ExitCause::HttpErr ||
+                                     w1->exitCause() == ExitCause::MissingReplyData)) ||
+                                   (w2 && w2->exitCode() == ExitCode::BackError &&
+                                    (w2->exitCause() == ExitCause::Http5xx || w2->exitCause() == ExitCause::HttpErr ||
+                                     w2->exitCause() == ExitCause::MissingReplyData));
 
     const auto syncDirNotAccessible =
             (w1 && w1->exitCode() == ExitCode::SystemError &&
@@ -236,6 +237,30 @@ ExitInfo SyncPalWorker::ensureBlackListIsPropagated() {
     return ExitCode::Ok;
 }
 
+void SyncPalWorker::startFsoWorkerIfNeeded(std::shared_ptr<ISyncWorker> fsoWorker, bool &isFsoInProgress, bool &syncDirChanged) {
+    if (fsoWorker == nullptr || fsoWorker->isRunning()) return;
+
+    if (isFsoInProgress) {
+        LOG_SYNCPAL_DEBUG(_logger, "Stop FSO worker " << fsoWorker->name());
+        isFsoInProgress = false;
+        stopAndWaitForExitOfWorker(fsoWorker);
+        if (shouldBePaused(fsoWorker, nullptr) && !pauseAsked()) {
+            pause();
+            return;
+        }
+
+        syncDirChanged = fsoWorker->exitCode() == ExitCode::DataError && fsoWorker->exitCause() == ExitCause::SyncDirChanged;
+        if (syncDirChanged) return;
+
+        if (shouldBeStopped(fsoWorker, nullptr) && !stopAsked()) stop();
+
+    } else if (!pauseAsked()) {
+        LOG_SYNCPAL_DEBUG(_logger, "Start FSO worker " << fsoWorker->name());
+        isFsoInProgress = true;
+        fsoWorker->start();
+    }
+}
+
 void SyncPalWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
     LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " started");
@@ -276,36 +301,14 @@ void SyncPalWorker::execute() {
     std::shared_ptr<ISyncWorker> stepWorkers[2] = {nullptr, nullptr};
     std::shared_ptr<SharedObject> inputSharedObject[2] = {nullptr, nullptr};
     time_t lastEstimateUpdate = 0;
+
+    bool syncDirChanged = false;
+    startFsoWorkerIfNeeded(fsoWorkers[1], isFSOInProgress[1], syncDirChanged);
+
     for (;;) {
-        bool syncDirChanged = false;
         // Check File System Observer workers status
-        for (int index = 0; index < 2; index++) {
-            if (fsoWorkers[index] && !fsoWorkers[index]->isRunning()) {
-                if (isFSOInProgress[index]) {
-                    LOG_SYNCPAL_DEBUG(_logger, "Stop FSO worker " << index);
-                    isFSOInProgress[index] = false;
-                    stopAndWaitForExitOfWorker(fsoWorkers[index]);
-                    if (shouldBePaused(fsoWorkers[index], nullptr) && !pauseAsked()) {
-                        pause();
-                        continue;
-                    }
-
-                    syncDirChanged = fsoWorkers[index]->exitCode() == ExitCode::DataError &&
-                                     fsoWorkers[index]->exitCause() == ExitCause::SyncDirChanged;
-                    if (syncDirChanged) {
-                        break;
-                    }
-
-                    if (shouldBeStopped(fsoWorkers[index], nullptr) && !stopAsked()) {
-                        stop();
-                    }
-                } else if (!pauseAsked()) {
-                    LOG_SYNCPAL_DEBUG(_logger, "Start FSO worker " << index);
-                    isFSOInProgress[index] = true;
-                    fsoWorkers[index]->start();
-                }
-            }
-        }
+        syncDirChanged = false;
+        startFsoWorkerIfNeeded(fsoWorkers[0], isFSOInProgress[0], syncDirChanged);
 
         // Manage SyncDir change (might happen if the sync folder is deleted and recreated e.g migration from an other device)
         if (syncDirChanged && !tryToFixDbNodeIdsAfterSyncDirChange()) {
@@ -422,11 +425,19 @@ void SyncPalWorker::execute() {
                     stepWorkers[index]->start();
                 }
             }
+
+            if (_step == SyncStep::UpdateDetection1) {
+                LOG_DEBUG(_logger, "Stopping RFSO as long as the synchronization is not in the Done state.");
+                stopAndWaitForExitOfWorker(_syncPal->_remoteFSObserverWorker);
+                isFSOInProgress[1] = false;
+            } else if (_step == SyncStep::Done) {
+                LOG_DEBUG(_logger, "Restarting RFSO until the synchronization leaves the Idle state.");
+                _syncPal->_remoteFSObserverWorker->resume();
+                isFSOInProgress[1] = true;
+            }
         }
 
-        if (exitCode != ExitCode::Unknown) {
-            break;
-        }
+        if (exitCode != ExitCode::Unknown) break;
 
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }

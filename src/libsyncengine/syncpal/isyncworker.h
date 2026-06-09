@@ -50,7 +50,7 @@ class ISyncWorker {
         bool isRunning() const;
         bool stopAsked() const;
 
-        void setIsRunning(bool isRunning);
+        void setRunningFlagValue(bool isRunning);
         void setStopAsked(bool stopAsked);
 
         ExitCode exitCode() const { return _exitCode; }

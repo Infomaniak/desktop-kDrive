@@ -107,6 +107,8 @@ class SyncPalWorker : public ISyncWorker {
 
         void checkForMassDeletions() const;
 
+        void startFsoWorkerIfNeeded(std::shared_ptr<ISyncWorker> fsoWorker, bool &isFsoInProgress, bool &syncDirChanged);
+
         friend class TestSyncPalWorker;
 };
 } // namespace KDC
