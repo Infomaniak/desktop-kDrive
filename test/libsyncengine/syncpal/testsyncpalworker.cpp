@@ -484,7 +484,7 @@ void TestSyncPalWorker::testEnsureBlackListIsPropagatedIgnoresMissingNode() {
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), syncPalWorker->ensureBlackListIsPropagated());
 }
 
-void TestSyncPalWorker::testEnsureBlackListIsPropagatedReturnsBlackListPropagationError() {
+void TestSyncPalWorker::testEnsureBlackListIsPropagated() {
     _syncPal = std::make_shared<MockSyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), _sync.dbId(),
                                              KDRIVE_VERSION_STRING);
     const auto mockSyncPal = std::dynamic_pointer_cast<MockSyncPal>(_syncPal);
@@ -506,8 +506,15 @@ void TestSyncPalWorker::testEnsureBlackListIsPropagatedReturnsBlackListPropagati
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok,
                          SyncNodeCache::instance()->update(mockSyncPal->syncDbId(), SyncNodeType::BlackList, blacklistedNodes));
 
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::DataError, ExitCause::BlackListPropagationError),
-                         syncPalWorker->ensureBlackListIsPropagated());
+    bool found = false;
+    DbNode dbNode;
+    CPPUNIT_ASSERT(mockSyncPal->syncDb()->node(dbNodeId, dbNode, found));
+    CPPUNIT_ASSERT(found);
+
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), syncPalWorker->ensureBlackListIsPropagated());
+
+    CPPUNIT_ASSERT(mockSyncPal->syncDb()->node(dbNodeId, dbNode, found));
+    CPPUNIT_ASSERT(!found);
 }
 
 } // namespace KDC

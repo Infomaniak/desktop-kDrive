@@ -50,7 +50,7 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST(testInternalPause3);
         CPPUNIT_TEST(testHandleBackError);
         CPPUNIT_TEST(testEnsureBlackListIsPropagatedIgnoresMissingNode);
-        CPPUNIT_TEST(testEnsureBlackListIsPropagatedReturnsBlackListPropagationError);
+        CPPUNIT_TEST(testEnsureBlackListIsPropagated);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -89,7 +89,7 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
          */
         void testHandleBackError();
         void testEnsureBlackListIsPropagatedIgnoresMissingNode();
-        void testEnsureBlackListIsPropagatedReturnsBlackListPropagationError();
+        void testEnsureBlackListIsPropagated();
 
         void testStopDuringInternalPause();
         void testDestroyDuringInternalPause();
