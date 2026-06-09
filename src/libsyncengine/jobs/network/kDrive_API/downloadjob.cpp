@@ -142,48 +142,41 @@ ExitInfo DownloadJob::canRun() {
     return ExitCode::Ok;
 }
 
-ExitInfo DownloadJob::checkHashMatch() {
+void DownloadJob::computeHydrationStatus() {
+    VfsStatus vfsStatus;
+    if (_vfs) (void) _vfs->status(_fileDownloadInfo.localpath, vfsStatus);
+    _isHydrated = !_vfs || vfsStatus.isHydrated;
+}
+
+ExitInfo DownloadJob::resolveDownloadNeed() {
     _shouldDownload = true;
+
     CheckHashMatchJob hashJob(_fileDownloadInfo.driveDbId, _fileDownloadInfo.localpath, _fileDownloadInfo.remoteFileId,
                               _fileDownloadInfo.expectedSize);
     const ExitInfo exitInfo = hashJob.runSynchronously();
     if (!exitInfo) {
-        LOGW_DEBUG(_logger, L"CheckHashMatchJob failed: " << exitInfo << L"Proceeding DownloadJob normally.");
-        return ExitCode::Ok; // Non-fatal: fall through to download
+        LOGW_DEBUG(_logger, L"CheckHashMatchJob failed: " << exitInfo << L" Proceeding DownloadJob normally.");
+        return exitInfo; // Non-fatal for the caller: fall through to download
     }
     _shouldDownload = !hashJob.hashMatch();
-    return ExitCode::Ok;
-}
 
-ExitInfo DownloadJob::getHydrationStatus(bool &shouldReturn) {
-    shouldReturn = false;
-
-    // Get hydration status
-    VfsStatus vfsStatus;
-    if (_vfs) (void) _vfs->status(_fileDownloadInfo.localpath, vfsStatus);
-    _isHydrated = !_vfs || vfsStatus.isHydrated;
-
-    if (_isHydrated) {
-        if (const ExitInfo exitInfo = checkHashMatch(); !exitInfo) {
-            LOGW_DEBUG(_logger, L"Error in checkHashMatch: " << exitInfo);
-            shouldReturn = false;
-            return exitInfo;
-        }
-        if (!_shouldDownload) {
-            LOGW_DEBUG(_logger, L"Changing last modified date without downloading")
-            shouldReturn = true;
-            if (const ExitInfo exitInfo = applyFileDatesIfRequired(FileType::Regular); !exitInfo) return exitInfo;
-            return setOutputParameters();
-        }
+    if (!_shouldDownload) {
+        LOGW_DEBUG(_logger, L"Changing last modified date without downloading")
+        if (const ExitInfo exitInfo = applyFileDatesIfRequired(FileType::Regular); !exitInfo) return exitInfo;
+        return setOutputParameters(); // Returns Ok on success: signals runJob to stop here
     }
-    return ExitCode::Ok;
+    return {ExitCode::OperationCanceled, ExitCause::Unknown}; // Download is needed: caller must continue
 }
 
 ExitInfo DownloadJob::runJob() noexcept {
     if (_fileDownloadInfo.isCreate) return AbstractTokenNetworkJob::runJob();
 
-    bool shouldReturn = false;
-    if (const ExitInfo exitInfo = getHydrationStatus(shouldReturn); shouldReturn) return exitInfo;
+    computeHydrationStatus();
+    if (_isHydrated) {
+        const ExitInfo exitInfo = resolveDownloadNeed();
+        if (exitInfo) return exitInfo;
+        LOGW_DEBUG(_logger, L"resolveDownloadNeed: proceeding with download - " << exitInfo);
+    }
 
     if (_vfs) {
         // Update size on file system
