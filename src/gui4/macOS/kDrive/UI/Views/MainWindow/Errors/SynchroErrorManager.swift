@@ -95,7 +95,11 @@ final class SynchroErrorManager: ObservableObject {
     }
 
     func openPreferencesSystemStorage() {
-        NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.settings.Storage")!)
+        NSWorkspace.shared.open(SystemPreferencesURL.storage)
+    }
+
+    func openPreferencesSystemLiteSync() {
+        NSWorkspace.shared.open(SystemPreferencesURL.endpointSecurityExtension)
     }
 
     // MARK: - App navigation

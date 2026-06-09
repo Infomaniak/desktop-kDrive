@@ -261,6 +261,13 @@ struct ErrorCellFactory {
                     manager.showActivateOfflineSynchroSheet(error)
                 }
             )
+        case .systemLiteSyncNotAllowed:
+            return makeCell(
+                error: error,
+                title: KDriveLocalizable.errSystemLiteSyncNotAllowedTitle,
+                description: KDriveLocalizable.errSystemLiteSyncNotAllowedDescription,
+                action: .init(title: KDriveLocalizable.buttonSettings, action: manager.openPreferencesSystemLiteSync)
+            )
         case .excludedByTemplate:
             return makeCell(
                 error: error,
