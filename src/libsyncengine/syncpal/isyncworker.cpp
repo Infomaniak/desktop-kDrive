@@ -64,8 +64,8 @@ void ISyncWorker::start() {
 
     init();
     setIsRunning(true);
-    auto executeFunc = std::function<void()>([this]() { execute(); });
-    _thread = (std::make_unique<StdLoggingThread>(executeFunc));
+
+    startExecutionThread();
 }
 
 
@@ -136,6 +136,11 @@ void ISyncWorker::setDone(const ExitCode exitCode) {
     setStopAsked(false);
 
     _exitCode = exitCode;
+}
+
+void ISyncWorker::startExecutionThread() {
+    auto executeFunc = std::function<void()>([this]() { execute(); });
+    _thread = (std::make_unique<StdLoggingThread>(executeFunc));
 }
 
 } // namespace KDC
