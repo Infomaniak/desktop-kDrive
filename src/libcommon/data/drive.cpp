@@ -148,9 +148,9 @@ QDataStream &operator<<(QDataStream &out, const Drive &drive) {
 }
 
 void operator>>(QDataStream &in, QList<Drive> &list) {
-    uint64_t count = 0;
+    qint64 count = 0;
     in >> count;
-    for (uint64_t i = 0; i < count; i++) {
+    for (qint64 i = 0; i < count; i++) {
         Drive info;
         in >> info;
         list.push_back(info);
@@ -158,9 +158,9 @@ void operator>>(QDataStream &in, QList<Drive> &list) {
 }
 
 QDataStream &operator<<(QDataStream &out, const QList<Drive> &list) {
-    auto count = static_cast<uint64_t>(list.size());
+    const auto count = static_cast<qint64>(list.size());
     out << count;
-    for (uint64_t i = 0; i < count; i++) {
+    for (qint64 i = 0; i < count; i++) {
         out << list[static_cast<qsizetype>(i)];
     }
     return out;
