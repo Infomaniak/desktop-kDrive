@@ -127,7 +127,7 @@ public final class FileTreeOutlineView: NSView {
 
         tableHeaderView.checkboxColumnIndex = outlineView.column(withIdentifier: Column.checkbox)
         tableHeaderView.checkbox.target = self
-        tableHeaderView.checkbox.action = #selector(headerCheckboxToggled(_:))
+        tableHeaderView.checkbox.action = #selector(headerCheckboxToggled)
         outlineView.headerView = tableHeaderView
 
         if #available(macOS 11.0, *) {
@@ -284,7 +284,7 @@ public final class FileTreeOutlineView: NSView {
 
     // MARK: - Header "select / deselect all"
 
-    @objc private func headerCheckboxToggled(_ sender: NSButton) {
+    @objc private func headerCheckboxToggled() {
         if headerState() == .on {
             blacklist = Set(rootNodes.map(\.item.id))
         } else {
