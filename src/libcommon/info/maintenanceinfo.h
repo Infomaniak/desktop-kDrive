@@ -18,8 +18,10 @@
 
 #pragma once
 
-namespace KDC {
+#include <cstdint>
+#include <Poco/Dynamic/Struct.h>
 
+namespace KDC {
 class MaintenanceInfo {
     public:
         MaintenanceInfo() = default;
