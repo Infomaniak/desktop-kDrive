@@ -153,8 +153,7 @@ ExitInfo DownloadJob::resolveDownloadNeed() {
 
     CheckHashMatchJob hashJob(_fileDownloadInfo.driveDbId, _fileDownloadInfo.localpath, _fileDownloadInfo.remoteFileId,
                               _fileDownloadInfo.expectedSize);
-    const ExitInfo exitInfo = hashJob.runSynchronously();
-    if (!exitInfo) {
+    if (const ExitInfo exitInfo = hashJob.runSynchronously(); !exitInfo) {
         LOGW_DEBUG(_logger, L"CheckHashMatchJob failed: " << exitInfo << L" Proceeding DownloadJob normally.");
         return exitInfo; // Non-fatal for the caller: fall through to download
     }
