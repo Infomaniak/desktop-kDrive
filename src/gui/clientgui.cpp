@@ -1256,7 +1256,7 @@ void ClientGui::onRemoveDrive(const DriveDbId driveDbId) {
     CustomMessageBox msgBox(QMessageBox::Question,
                             tr("Do you really want to remove the synchronizations of the account <i>%1</i> ?<br>"
                                "<b>Note:</b> This will <b>not</b> delete any files.")
-                                    .arg(driveInfoMapIt->second.name()),
+                                    .arg(QString::fromStdString(driveInfoMapIt->second.name())),
                             QMessageBox::NoButton);
     msgBox.addButton(tr("REMOVE ALL SYNCHRONIZATIONS"), QMessageBox::Yes);
     msgBox.addButton(tr("CANCEL"), QMessageBox::No);
