@@ -362,7 +362,7 @@ extension FileTreeOutlineView: NSOutlineViewDelegate {
     }
 
     public func outlineView(_ outlineView: NSOutlineView, shouldExpandItem item: Any) -> Bool {
-        guard let node = item as? FileTreeNode, node.isFolder, !node.isPlaceholder else { return false }
+        guard let node = item as? FileTreeNode, node.isFolder, !node.isPlaceholder, node.item.isEnabled else { return false }
 
         if node.children == nil, !node.isLoading {
             loadChildren(of: node)
