@@ -22,20 +22,22 @@
 
 namespace KDC {
 
-InitFileListWithCursorJob::InitFileListWithCursorJob(const DriveDbId driveDbId, const NodeId &dirId) :
+InitFileListWithCursorJob::InitFileListWithCursorJob(const DriveDbId driveDbId, RemoteNodeId dirId) :
     AbstractListingJob(ApiType::Drive, driveDbId),
-    _dirId(dirId) {
+    _remoteDirId(std::move(dirId)) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
+    _apiVersion = 2;
 }
 
 std::string InitFileListWithCursorJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
     str += "/files/listing";
+
     return str;
 }
 
 void InitFileListWithCursorJob::setQueryParameters(Poco::URI &uri) {
-    uri.addQueryParameter("directory_id", _dirId);
+    uri.addQueryParameter("directory_id", _remoteDirId);
     uri.addQueryParameter("recursive", "true");
     uri.addQueryParameter("with", "files.capabilities");
     uri.addQueryParameter("limit", nbItemPerPage);
