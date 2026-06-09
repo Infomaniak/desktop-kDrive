@@ -58,7 +58,7 @@ class Drive {
         [[nodiscard]] bool locked() const { return _locked; }
         void setLocked(const bool newLocked) { _locked = newLocked; }
         [[nodiscard]] int64_t usedSize() const { return _usedSize; }
-        void setUsedSize(int64_t newUsedSize) { _usedSize = newUsedSize; }
+        void setUsedSize(const int64_t newUsedSize) { _usedSize = newUsedSize; }
         [[nodiscard]] bool accessDenied() const { return _accessDenied; }
         void setAccessDenied(const bool accessDenied) { _accessDenied = accessDenied; }
 

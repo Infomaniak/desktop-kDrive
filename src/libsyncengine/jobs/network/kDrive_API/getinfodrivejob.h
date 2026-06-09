@@ -20,7 +20,7 @@
 
 #include "jobs/network/abstracttokennetworkjob.h"
 
-#include "../../../../libcommon/data/drive.h"
+#include "libcommon/data/drive.h"
 
 namespace KDC {
 

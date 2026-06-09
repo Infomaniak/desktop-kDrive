@@ -545,7 +545,6 @@ std::vector<Drive> createDriveInfoList() {
     MaintenanceInfo maintenanceInfo2;
     maintenanceInfo2.setInMaintenance(true);
     d2.setMaintenanceInfo(maintenanceInfo2);
-    d2.setMaintenanceInfo(maintenanceInfo2);
     d2.setLocked(true);
     d2.setAccessDenied(true);
     d2.setSize(2000000000);

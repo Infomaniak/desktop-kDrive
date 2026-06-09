@@ -1318,13 +1318,13 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QDataStream paramsStream(params);
             paramsStream >> drive;
 
-            ExitCode exitCode = ServerRequests::updateDrive(drive);
-            if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::updateDrive: code=" << exitCode);
-                addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
+            const auto exitInfo = ServerRequests::updateDrive(drive);
+            if (!exitInfo) {
+                LOG_WARN(_logger, "Error in Requests::updateDrive: " << exitInfo);
+                addError(Error(ERR_ID, exitInfo));
             }
 
-            resultStream << toInt(exitCode);
+            resultStream << toInt(exitInfo.code());
             break;
         }
         case RequestNum::DRIVE_DELETE: {
