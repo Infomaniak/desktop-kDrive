@@ -59,7 +59,12 @@ final class LogFileWriter: LogFileWriting {
     }
 
     static func defaultLogDirectory() -> URL {
-        FileManager.default.temporaryDirectory.appendingPathComponent("\(appName)-logdir", isDirectory: true)
+        let libraryDirectory = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first
+            ?? FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library", isDirectory: true)
+
+        return libraryDirectory
+            .appendingPathComponent("Logs", isDirectory: true)
+            .appendingPathComponent(appName, isDirectory: true)
     }
 
     private static func nextLogFileURL(in logDirectory: URL, date: Date, timeZone: TimeZone, fileManager: FileManager) -> URL {
