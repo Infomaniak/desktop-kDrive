@@ -17,6 +17,7 @@
  */
 
 import AppKit
+import kDriveCoreUI
 import UniformTypeIdentifiers
 
 enum FileTreeIcons {
@@ -77,11 +78,11 @@ final class FileTreeNameCell: NSTableCellView {
         NSLayoutConstraint.activate([
             icon.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 2),
             icon.centerYAnchor.constraint(equalTo: centerYAnchor),
-            icon.widthAnchor.constraint(equalToConstant: 16),
-            icon.heightAnchor.constraint(equalToConstant: 16),
+            icon.widthAnchor.constraint(equalToConstant: AppIconSize.iconSize16.width),
+            icon.heightAnchor.constraint(equalToConstant: AppIconSize.iconSize16.height),
 
-            label.leadingAnchor.constraint(equalTo: icon.trailingAnchor, constant: 6),
-            label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -4),
+            label.leadingAnchor.constraint(equalTo: icon.trailingAnchor, constant: AppPadding.padding8),
+            label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -AppPadding.padding4),
             label.centerYAnchor.constraint(equalTo: centerYAnchor)
         ])
     }
