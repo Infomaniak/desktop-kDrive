@@ -530,7 +530,7 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
 
             if (ioError == IoError::NoSuchFileOrDirectory) {
                 LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(absoluteLocalFilePath));
-                return {ExitCode::DataError, ExitCause::InvalidSnapshot};
+                return {ExitCode::SystemError, ExitCause::NotFound};
             } else if (ioError == IoError::AccessDenied) {
                 LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(absoluteLocalFilePath));
                 return {ExitCode::SystemError, ExitCause::FileAccessError};
@@ -2177,7 +2177,7 @@ ExitInfo ExecutorWorker::getFileSize(const SyncPath &path, uint64_t &size) {
     if (ioError == IoError::NoSuchFileOrDirectory) { // The synchronization will
                                                      // be re-started.
         LOGW_WARN(_logger, L"File doesn't exist: " << Utility::formatSyncPath(path));
-        return ExitCode::DataError;
+        return {ExitCode::SystemError, ExitCause::NotFound};
     }
 
     if (ioError == IoError::AccessDenied) { // An action from the user is requested.
