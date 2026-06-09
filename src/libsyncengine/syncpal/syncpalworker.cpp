@@ -177,49 +177,61 @@ ExitInfo SyncPalWorker::ensureBlackListIsPropagated() {
         return exitInfo;
     }
 
-    int32_t retry = 0;
-    bool found = false;
-    while (retry < 2) {
+    std::function<ExitInfo(const NodeSet &, bool &)> areBlacklistedNodesStillInDb = [this](const NodeSet &nodes, bool &found) {
         found = false;
-        ++retry;
-
-        for (const auto &nodeId: blacklistedNodes) {
+        for (const auto &nodeId: nodes) {
             DbNodeId dbNodeId = 0;
             if (!_syncPal->syncDb()->dbId(ReplicaSide::Remote, nodeId, dbNodeId, found)) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId");
-                return {ExitCode::DbError, ExitCause::DbAccessError};
+                return ExitInfo(ExitCode::DbError, ExitCause::DbAccessError);
             }
-            if (!found) {
-                // The blacklisted node doesn't exist anymore, this is expected
-                continue;
-            }
-
-            LOG_WARN(_logger, "Blacklisted node " << nodeId << " still exists in SyncDb, restarting blacklist propagator");
-            break;
-        }
-        if (!found) break;
-
-        if (retry < 2) {
-            UserActionScopedLock lock;
-            const std::chrono::milliseconds timeout(5000);
-            if (!lock.tryLock(_syncPal, timeout)) {
-                LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
-                                 "Could not acquire user action lock for propagateSyncIdSetChange. Another user action is "
-                                 "running, aborting.");
-                return ExitCode::OperationCanceled;
-            }
-
-            if (ExitInfo exitInfo = _syncPal->propagateSyncIdSetChange(false); !exitInfo) {
-                LOG_SYNCPAL_WARN(_logger, "Error propagating blacklist changes");
-                return exitInfo;
+            if (found) {
+                // The blacklisted node still exists, this is not expected
+                LOG_WARN(_logger, "Blacklisted node " << nodeId << " still exists in SyncDb");
+                return ExitInfo(ExitCode::Ok);
             }
         }
+        return ExitInfo(ExitCode::Ok);
+    };
+
+    int32_t retry = 0;
+    bool found = false;
+    if (ExitInfo exitInfo = areBlacklistedNodesStillInDb(blacklistedNodes, found); !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error while checking if blacklisted nodes still exist in SyncDb");
+        return exitInfo;
+    }
+
+    if (!found) return ExitCode::Ok;
+
+    LOG_WARN(_logger, "Blacklisted nodes still exist in SyncDb, restarting blacklist propagator");
+
+    {
+        UserActionScopedLock lock;
+        const std::chrono::milliseconds timeout(5000);
+        if (!lock.tryLock(_syncPal, timeout)) {
+            LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
+                             "Could not acquire user action lock for propagateSyncIdSetChange. Another user action is "
+                             "running, aborting.");
+            return {ExitCode::DataError, ExitCause::BlackListPropagationError};
+        }
+
+
+        if (ExitInfo exitInfo = _syncPal->propagateSyncIdSetChange(false); !exitInfo) {
+            LOG_SYNCPAL_WARN(_logger, "Error propagating blacklist changes");
+            return exitInfo;
+        }
+    }
+
+    if (ExitInfo exitInfo = areBlacklistedNodesStillInDb(blacklistedNodes, found); !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error while checking if blacklisted nodes still exist in SyncDb");
+        return exitInfo;
     }
 
     if (found) {
         LOG_SYNCPAL_WARN(_logger, "Blacklisted nodes still exist after retry, giving up");
         return {ExitCode::DataError, ExitCause::BlackListPropagationError};
     }
+
     return ExitCode::Ok;
 }
 
