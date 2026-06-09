@@ -107,7 +107,7 @@ final class SynchroErrorManager: ObservableObject {
 
     func navigateToLoginPage() {
         @InjectService var router: MainWindowRouter
-        router.navigate(to: .onboarding())
+        router.navigate(to: .onboarding(nil, nil, .login))
     }
 
     func navigateToSynchroCreation() {

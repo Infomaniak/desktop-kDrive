@@ -151,7 +151,6 @@ extension DriveSelectionViewController {
 
         drivesListView.drives = drives
 
-        // Disable cells for synchronized drives
         for syncedDrive in viewModel.synchronizedDrives {
             if let cell = drivesListView.cells[syncedDrive.driveId] {
                 cell.isEnabled = false
@@ -193,12 +192,10 @@ extension DriveSelectionViewController {
 
     private func handleSelectedDrivesChanged(_ selectedDrives: Set<UIAvailableDrive>) {
         updateButtonsEnabledState()
-
         drivesListView.selectedDrives = selectedDrives
     }
 
     private func handleSynchronizedDrivesChanged(_ synchronizedDrives: [UIDrive]) {
-        // Disable cells for drives that are already synchronized
         for syncedDrive in synchronizedDrives {
             if let cell = drivesListView.cells[syncedDrive.driveId] {
                 cell.isEnabled = false

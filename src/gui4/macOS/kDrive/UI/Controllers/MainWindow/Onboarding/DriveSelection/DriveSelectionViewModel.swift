@@ -40,6 +40,7 @@ final class DriveSelectionViewModel: ObservableObject {
 
     @Published private(set) var availableDrives = [UIAvailableDrive]()
     @Published private(set) var synchronizedDrives = [UIDrive]()
+
     var synchroConfigurations = [UIAvailableDrive.ID: SynchroConfiguration]()
 
     var selectedSynchroConfigurations: [SynchroConfiguration] {
@@ -71,19 +72,11 @@ final class DriveSelectionViewModel: ObservableObject {
     }
 
     private func observeSynchronizedDrives() {
-        coherentCacheObservable.usersPublisher.allSynchrosPublisher()
-            .map { synchroContexts in
-                // Group by driveId to get unique drives
-                var uniqueDrives = [Int32: Drive]()
-                for context in synchroContexts {
-                    uniqueDrives[context.drive.driveId] = context.drive
-                }
-                return uniqueDrives.values.map { UIDrive(drive: $0) }
-            }
+        coherentCacheObservable.usersPublisher.allDrivesPublisher()
+            .map { $0.map { UIDrive(drive: $0.drive) } }
+            .removeDuplicates()
             .receiveOnMain(store: &bindStore) { [weak self] synchronizedDrives in
-                self?.synchronizedDrives = synchronizedDrives.sorted {
-                    return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
-                }
+                self?.synchronizedDrives = synchronizedDrives
             }
     }
 

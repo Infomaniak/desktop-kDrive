@@ -41,7 +41,7 @@ final class DriveCellView: NSView {
 
     var isEnabled = true {
         didSet {
-            checkbox.isEnabled = isEnabled
+            updateEnabledState(isEnabled)
         }
     }
 
@@ -112,6 +112,15 @@ final class DriveCellView: NSView {
 
             widthAnchor.constraint(equalToConstant: 264)
         ])
+    }
+
+    private func updateEnabledState(_ isEnabled: Bool) {
+        checkbox.isEnabled = isEnabled
+
+        let alphaValue = isEnabled ? 1.0 : 0.5
+        checkbox.alphaValue = alphaValue
+        driveIcon.alphaValue = alphaValue
+        titleLabel.alphaValue = alphaValue
     }
 
     override func mouseDown(with event: NSEvent) {
