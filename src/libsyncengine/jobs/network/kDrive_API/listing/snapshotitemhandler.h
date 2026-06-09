@@ -24,7 +24,7 @@ namespace KDC {
 
 class SnapshotItemHandler {
     public:
-        explicit SnapshotItemHandler(const log4cplus::Logger &logger);
+        explicit SnapshotItemHandler(DriveDbId driveDbId, const log4cplus::Logger &logger);
         enum CsvIndex {
             CsvIndexId = 0,
             CsvIndexParentId,
@@ -64,6 +64,7 @@ class SnapshotItemHandler {
 
     private:
         bool _ignoreFirstLine = true;
+        DriveDbId _driveDbId;
         log4cplus::Logger _logger;
         void logError(const std::wstring &methodName, const std::wstring &stdErrorType, const std::string &str,
                       const std::exception &exc);
