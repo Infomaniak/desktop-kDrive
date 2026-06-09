@@ -469,29 +469,32 @@ void TestSyncPalWorker::testHandleBackError() {
 }
 
 void TestSyncPalWorker::testEnsureBlackListIsPropagatedIgnoresMissingNode() {
+    using enum ExitCode;
+
     _syncPal = std::make_shared<MockSyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), _sync.dbId(),
                                              KDRIVE_VERSION_STRING);
     const auto mockSyncPal = std::dynamic_pointer_cast<MockSyncPal>(_syncPal);
     CPPUNIT_ASSERT(mockSyncPal);
 
     auto syncPalWorker = std::make_shared<MockSyncPalWorker>(mockSyncPal, "Mock Main", "M_MAIN", std::chrono::seconds(0));
-    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, SyncNodeCache::instance()->initCache(mockSyncPal->syncDbId(), mockSyncPal->syncDb()));
+    CPPUNIT_ASSERT_EQUAL(Ok, SyncNodeCache::instance()->initCache(mockSyncPal->syncDbId(), mockSyncPal->syncDb()));
 
     NodeSet blacklistedNodes = {"missing-remote-node-id"};
-    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok,
+    CPPUNIT_ASSERT_EQUAL(Ok,
                          SyncNodeCache::instance()->update(mockSyncPal->syncDbId(), SyncNodeType::BlackList, blacklistedNodes));
 
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), syncPalWorker->ensureBlackListIsPropagated());
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(Ok), syncPalWorker->ensureBlackListIsPropagated());
 }
 
 void TestSyncPalWorker::testEnsureBlackListIsPropagated() {
+    using enum ExitCode;
     _syncPal = std::make_shared<MockSyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), _sync.dbId(),
                                              KDRIVE_VERSION_STRING);
     const auto mockSyncPal = std::dynamic_pointer_cast<MockSyncPal>(_syncPal);
     CPPUNIT_ASSERT(mockSyncPal);
 
     auto syncPalWorker = std::make_shared<MockSyncPalWorker>(mockSyncPal, "Mock Main", "M_MAIN", std::chrono::seconds(0));
-    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, SyncNodeCache::instance()->initCache(mockSyncPal->syncDbId(), mockSyncPal->syncDb()));
+    CPPUNIT_ASSERT_EQUAL(Ok, SyncNodeCache::instance()->initCache(mockSyncPal->syncDbId(), mockSyncPal->syncDb()));
 
     const NodeId blacklistedNodeId = "existing-remote-node-id";
     const DbNode node(0, mockSyncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "existing-local-node-id",
@@ -503,7 +506,7 @@ void TestSyncPalWorker::testEnsureBlackListIsPropagated() {
     CPPUNIT_ASSERT(!constraintError);
 
     NodeSet blacklistedNodes = {blacklistedNodeId};
-    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok,
+    CPPUNIT_ASSERT_EQUAL(Ok,
                          SyncNodeCache::instance()->update(mockSyncPal->syncDbId(), SyncNodeType::BlackList, blacklistedNodes));
 
     bool found = false;
@@ -511,7 +514,7 @@ void TestSyncPalWorker::testEnsureBlackListIsPropagated() {
     CPPUNIT_ASSERT(mockSyncPal->syncDb()->node(dbNodeId, dbNode, found));
     CPPUNIT_ASSERT(found);
 
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), syncPalWorker->ensureBlackListIsPropagated());
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(Ok), syncPalWorker->ensureBlackListIsPropagated());
 
     CPPUNIT_ASSERT(mockSyncPal->syncDb()->node(dbNodeId, dbNode, found));
     CPPUNIT_ASSERT(!found);
