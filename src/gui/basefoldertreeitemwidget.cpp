@@ -82,10 +82,11 @@ void BaseFolderTreeItemWidget::loadSubFolders() {
             }
 
             // Set drive name
-            root->setText(TreeWidgetColumn::Folder, _driveDbId == 0 ? QString() : driveInfoMapIt->second.name());
+            root->setText(TreeWidgetColumn::Folder,
+                          _driveDbId == 0 ? QString() : QString::fromStdString(driveInfoMapIt->second.name()));
             root->setIcon(TreeWidgetColumn::Folder,
                           KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/drive.svg",
-                                                            driveInfoMapIt->second.color()));
+                                                            QColor(QString::fromStdString(driveInfoMapIt->second.color()))));
             root->setData(TreeWidgetColumn::Folder, dirRole, QString());
             root->setData(TreeWidgetColumn::Folder, baseDirRole, QString());
             root->setData(TreeWidgetColumn::Folder, nodeIdRole, QString());

@@ -22,7 +22,7 @@
 #include "parameters.h"
 #include "user.h"
 #include "account.h"
-#include "drive.h"
+#include "../../libcommon/data/drive.h"
 #include "sync.h"
 #include "exclusiontemplate.h"
 #if defined(KD_MACOS)

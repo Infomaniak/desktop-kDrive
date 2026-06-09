@@ -707,7 +707,7 @@ void DrivePreferencesWidget::onAddLocalFolder(bool checked) {
                     return;
                 }
 
-                serverFolderName = driveInfoIt->second.name();
+                serverFolderName = QString::fromStdString(driveInfoIt->second.name());
             }
             qCDebug(lcDrivePreferencesWidget) << "Server folder selected: " << serverFolderName;
             MatomoClient::sendVisit(MatomoNameField::PG_Parameters_NewSync_RemoteFolder);
@@ -757,7 +757,7 @@ void DrivePreferencesWidget::onAddLocalFolder(bool checked) {
                 return;
             }
 
-            DriveId driveId{driveInfoMapIt->second.id()};
+            DriveId driveId{driveInfoMapIt->second.driveId()};
 
             ConfirmSynchronizationDialog confirmSynchronizationDialog(_gui, _userDbId, driveId, serverFolderNodeId,
                                                                       localFolderName, localFolderSize, serverFolderName,
@@ -934,7 +934,7 @@ void DrivePreferencesWidget::onSearchItemDoubleClicked(const QModelIndex &index)
         return;
     }
 
-    DriveId driveId{driveInfoMapIt->second.id()};
+    DriveId driveId{driveInfoMapIt->second.driveId()};
 
     NodeInfo nodeInfo;
     if (const auto exitCode = GuiRequests::getNodeInfo(_userDbId, driveId, QString::fromStdString(id), nodeInfo, true);

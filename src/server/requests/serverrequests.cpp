@@ -203,36 +203,26 @@ ExitCode ServerRequests::getAccountInfoList(std::vector<AccountInfo> &list) {
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getDriveInfoList(QList<DriveInfo> &list) {
-    std::vector<DriveInfo> driveInfoList;
-    if (ExitCode exitCode = getDriveInfoList(driveInfoList); exitCode != ExitCode::Ok) {
+ExitInfo ServerRequests::getDriveList(QList<Drive> &list) {
+    std::vector<Drive> driveList;
+    if (const auto exitCode = getDriveList(driveList); !exitCode) {
         return exitCode;
     }
 
-    (void) std::copy(driveInfoList.begin(), driveInfoList.end(), std::back_inserter(list));
+    (void) std::copy(driveList.begin(), driveList.end(), std::back_inserter(list));
 
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getDriveInfoList(std::vector<DriveInfo> &list) {
-    std::vector<Drive> driveList;
-    if (!ParmsDb::instance()->selectAllDrives(driveList)) {
+ExitInfo ServerRequests::getDriveList(std::vector<Drive> &list) {
+    if (!ParmsDb::instance()->selectAllDrives(list)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllDrives");
         return ExitCode::DbError;
     }
-
-    list.clear();
-    for (const Drive &drive: driveList) {
-        DriveInfo driveInfo;
-        driveToDriveInfo(drive, driveInfo);
-        list.push_back(driveInfo);
-    }
-
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getDriveInfo(const DriveDbId driveDbId, DriveInfo &driveInfo) {
-    Drive drive;
+ExitInfo ServerRequests::getDrive(const DriveDbId driveDbId, Drive &drive) {
     bool found = false;
     if (!ParmsDb::instance()->selectDrive(driveDbId, drive, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectDrive");
@@ -243,31 +233,28 @@ ExitCode ServerRequests::getDriveInfo(const DriveDbId driveDbId, DriveInfo &driv
         return ExitCode::DataError;
     }
 
-    driveToDriveInfo(drive, driveInfo);
-
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::updateDrive(const DriveInfo &driveInfo) {
-    Drive drive;
+ExitInfo ServerRequests::updateDrive(const Drive &drive) {
     bool found = false;
-    if (!ParmsDb::instance()->selectDrive(driveInfo.dbId(), drive, found)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectDrive");
-        return ExitCode::DbError;
-    }
-    if (!found) {
-        LOG_WARN(Log::instance()->getLogger(), "Drive not found in table drive for dbId=" << driveInfo.dbId());
-        return ExitCode::DataError;
-    }
 
-    drive.setNotifications(driveInfo.notifications());
+    // TODO : useful?
+    // if (!ParmsDb::instance()->selectDrive(drive.dbId(), drive, found)) {
+    //     LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectDrive");
+    //     return ExitCode::DbError;
+    // }
+    // if (!found) {
+    //     LOG_WARN(Log::instance()->getLogger(), "Drive not found in table drive for dbId=" << drive.dbId());
+    //     return ExitCode::DataError;
+    // }
 
     if (!ParmsDb::instance()->updateDrive(drive, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateDrive");
         return ExitCode::DbError;
     }
     if (!found) {
-        LOG_WARN(Log::instance()->getLogger(), "Drive not found in table drive for dbId=" << driveInfo.dbId());
+        LOG_WARN(Log::instance()->getLogger(), "Drive not found in table drive for dbId=" << drive.dbId());
         return ExitCode::DataError;
     }
 
@@ -325,7 +312,8 @@ ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, SyncConfigu
     // Check if the path is the root of a drive, which is not allowed for sync*
     if (CommonUtility::isDiskRootFolder(path)) {
         LOGW_INFO(Log::instance()->getLogger(),
-                  L"The provided path indicates the root of a drive, which is not allowed for sync: " << Utility::formatSyncPath(path));
+                  L"The provided path indicates the root of a drive, which is not allowed for sync: "
+                          << Utility::formatSyncPath(path));
         return ExitCode::Ok;
     }
 
@@ -660,7 +648,7 @@ ExitInfo ServerRequests::getUserAvailableDrives(const UserDbId userDbId, std::ve
 
 ExitInfo ServerRequests::addSync(const UserDbId userDbId, const AccountId accountId, const DriveId driveId,
                                  const SyncPath &localFolderPath, const SyncPath &serverFolderPath,
-                                 const NodeId &serverFolderNodeId, bool liteSync, AccountInfo &accountInfo, DriveInfo &driveInfo,
+                                 const NodeId &serverFolderNodeId, bool liteSync, AccountInfo &accountInfo, Drive &drive,
                                  SyncInfo &syncInfo) {
     LOGW_INFO(Log::instance()->getLogger(), L"Adding new sync - userDbId="
                                                     << userDbId << L" accountId=" << accountId << L" driveId=" << driveId
@@ -709,11 +697,11 @@ ExitInfo ServerRequests::addSync(const UserDbId userDbId, const AccountId accoun
             return ExitCode::DbError;
         }
 
-        Drive drive;
+        // Drive drive;
         drive.setDbId(driveDbId);
         drive.setDriveId(driveId);
         drive.setAccountDbId(account.dbId());
-        if (const auto exitCode = createDrive(drive, driveInfo); exitCode != ExitCode::Ok) {
+        if (const auto exitCode = createDrive(drive); exitCode != ExitCode::Ok) {
             LOG_WARN(Log::instance()->getLogger(), "Error in createDrive");
             return exitCode;
         }
@@ -727,10 +715,10 @@ ExitInfo ServerRequests::addSync(const UserDbId userDbId, const AccountId accoun
 
 ExitInfo ServerRequests::addSync(const UserDbId userDbId, const AccountId accountId, const DriveId driveId,
                                  const QString &localFolderPath, const QString &serverFolderPath,
-                                 const QString &serverFolderNodeId, bool liteSync, AccountInfo &accountInfo, DriveInfo &driveInfo,
+                                 const QString &serverFolderNodeId, bool liteSync, AccountInfo &accountInfo, Drive &drive,
                                  SyncInfo &syncInfo) {
     return addSync(userDbId, accountId, driveId, QStr2Path(localFolderPath), QStr2Path(serverFolderPath),
-                   serverFolderNodeId.toStdString(), liteSync, accountInfo, driveInfo, syncInfo);
+                   serverFolderNodeId.toStdString(), liteSync, accountInfo, drive, syncInfo);
 }
 
 ExitInfo ServerRequests::addSync(const DriveDbId driveDbId, const SyncPath &localFolderPath, const SyncPath &serverFolderPath,
@@ -1125,7 +1113,7 @@ ExitCode ServerRequests::createAccount(const Account &account, AccountInfo &acco
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::createDrive(const Drive &drive, DriveInfo &driveInfo) {
+ExitCode ServerRequests::createDrive(const Drive &drive) {
     if (!ParmsDb::instance()->insertDrive(drive)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::insertDrive");
         return ExitCode::DbError;
@@ -1153,8 +1141,6 @@ ExitCode ServerRequests::createDrive(const Drive &drive, DriveInfo &driveInfo) {
             return ExitCode::DataError;
         }
     }
-
-    driveToDriveInfo(driveUpdated, driveInfo);
 
     return ExitCode::Ok;
 }
@@ -1915,11 +1901,9 @@ ExitInfo ServerRequests::loadDriveInfo(Drive &drive, const AccountId previousAcc
     // Non DB attributes
     drive.setLocked(job->isLocked());
     drive.setAccessDenied(false);
-    drive.setMaintenanceInfo({._maintenance = job->isInMaintenance(),
-                              ._notRenew = job->exitInfo().cause() == ExitCause::DriveNotRenew,
-                              ._asleep = job->exitInfo().cause() == ExitCause::DriveAsleep,
-                              ._wakingUp = job->exitInfo().cause() == ExitCause::DriveWakingUp,
-                              ._maintenanceFrom = job->maintenanceFrom()});
+    drive.setMaintenanceInfo(MaintenanceInfo(job->isInMaintenance(), job->exitInfo().cause() == ExitCause::DriveNotRenew,
+                                             job->exitInfo().cause() == ExitCause::DriveAsleep,
+                                             job->exitInfo().cause() == ExitCause::DriveWakingUp, job->maintenanceFrom()));
 
     if (drive.usedSize() != job->usedSize()) {
         drive.setUsedSize(job->usedSize());
@@ -2222,22 +2206,6 @@ void ServerRequests::accountToAccountInfo(const Account &account, AccountInfo &a
     accountInfo.setUserDbId(account.userDbId());
     accountInfo.setId(account.accountId());
     accountInfo.setName(account.name());
-}
-
-void ServerRequests::driveToDriveInfo(const Drive &drive, DriveInfo &driveInfo) {
-    driveInfo.setDbId(drive.dbId());
-    driveInfo.setId(drive.driveId());
-    driveInfo.setAccountDbId(drive.accountDbId());
-    driveInfo.setName(QString::fromStdString(drive.name()));
-    driveInfo.setSize(drive.size());
-    driveInfo.setColor(QColor(QString::fromStdString(drive.color())));
-    driveInfo.setNotifications(drive.notifications());
-    driveInfo.setAdmin(drive.admin());
-    driveInfo.setMaintenance(drive.maintenanceInfo()._maintenance);
-    driveInfo.setLocked(drive.locked());
-    driveInfo.setUsedSize(drive.usedSize());
-    driveInfo.setAccessDenied(drive.accessDenied());
-    driveInfo.setPackInfo(drive.packInfo());
 }
 
 void ServerRequests::syncToSyncInfo(const Sync &sync, SyncInfo &syncInfo) {

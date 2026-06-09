@@ -38,13 +38,13 @@ ExitInfo DriveInfoListJob::deserializeInputParms() {
 }
 
 ExitInfo DriveInfoListJob::serializeOutputParms() {
-    writeParamValues(outParamsDriveInfoList, _driveInfoList, info2DynamicVar<DriveInfo>);
+    writeParamValues(outParamsDriveInfoList, _driveList, info2DynamicVar<Drive>);
 
     return ExitCode::Ok;
 }
 
 ExitInfo DriveInfoListJob::process() {
-    ExitCode exitCode = ServerRequests::getDriveInfoList(_driveInfoList);
+    ExitCode exitCode = ServerRequests::getDriveList(_driveList);
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in ServerRequests::getDriveInfoList: code=" << exitCode);
     }

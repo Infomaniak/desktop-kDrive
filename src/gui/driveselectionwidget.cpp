@@ -95,7 +95,7 @@ void DriveSelectionWidget::selectDrive(const DriveDbId driveDbId) {
         return;
     }
 
-    QString driveName = driveInfoIt->second.name();
+    QString driveName = QString::fromStdString(driveInfoIt->second.name());
     GuiUtility::makePrintablePath(driveName, driveNameMaxSize);
 
     _currentDriveDbId = driveDbId;
@@ -119,8 +119,9 @@ void DriveSelectionWidget::onClick(bool checked) {
         for (auto const &[driveDbId, driveInfo]: _gui->driveInfoMap()) {
             QWidgetAction *selectDriveAction = new QWidgetAction(this);
             selectDriveAction->setProperty(driveIdProperty, static_cast<qint64>(driveDbId));
-            MenuItemWidget *driveMenuItemWidget = new MenuItemWidget(driveInfo.name());
-            driveMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/drive.svg", driveInfo.color());
+            MenuItemWidget *driveMenuItemWidget = new MenuItemWidget(QString::fromStdString(driveInfo.name()));
+            driveMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/drive.svg",
+                                             QColor(QString::fromStdString(driveInfo.color())));
 
             const auto &accountInfoMapIt = _gui->accountInfoMap().find(driveInfo.accountDbId());
             if (accountInfoMapIt == _gui->accountInfoMap().end()) {
@@ -187,7 +188,8 @@ void DriveSelectionWidget::setDriveIcon() {
                 return;
             }
             _driveIconLabel->setPixmap(
-                    KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/drive.svg", driveInfoIt->second.color())
+                    KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/drive.svg",
+                                                      QColor(QString::fromStdString(driveInfoIt->second.color())))
                             .pixmap(_driveIconSize));
         } else {
             _driveIconLabel->setPixmap(

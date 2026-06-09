@@ -337,7 +337,7 @@ Count ClientGui::driveErrorsCount(const DriveDbId driveDbId, bool unresolved) co
         return 0;
     }
 
-    return unresolved ? driveInfoMapIt->second.unresolvedErrorsCount() : driveInfoMapIt->second.autoresolvedErrorsCount();
+    return unresolved ? driveInfoMapIt->second.unresolvedErrorsCount() : driveInfoMapIt->second.autoResolvedErrorsCount();
 }
 
 const QString ClientGui::folderPath(const SyncDbId syncDbId, const QString &filePath) const {
@@ -989,7 +989,7 @@ void ClientGui::onRefreshErrorList() {
             }
         }
         driveInfoMapIt->second.setUnresolvedErrorsCount(unresolvedErrorsCount);
-        driveInfoMapIt->second.setAutoresolvedErrorsCount(autoresolvedErrorsCount);
+        driveInfoMapIt->second.setAutoResolvedErrorsCount(autoresolvedErrorsCount);
         emit errorAdded(driveDbId);
 
         it = _driveWithNewErrorSet.erase(it);
@@ -1215,23 +1215,23 @@ void ClientGui::onAccountRemoved(const AccountDbId accountDbId) {
     }
 }
 
-void ClientGui::onDriveAdded(const DriveInfo &driveInfo) {
-    _driveInfoMap.insert({driveInfo.dbId(), DriveInfoClient(driveInfo)});
+void ClientGui::onDriveAdded(const Drive &drive) {
+    _driveInfoMap.insert({drive.dbId(), DriveInfoClient(drive)});
 
     if (!_currentDriveDbId) {
-        _currentDriveDbId = driveInfo.dbId();
+        _currentDriveDbId = drive.dbId();
     }
 
     emit driveListRefreshed();
     emit refreshStatusNeeded();
 }
 
-void ClientGui::onDriveUpdated(const DriveInfo &driveInfo) {
-    const auto &driveInfoMapIt = _driveInfoMap.find(driveInfo.dbId());
+void ClientGui::onDriveUpdated(const Drive &drive) {
+    const auto &driveInfoMapIt = _driveInfoMap.find(drive.dbId());
     if (driveInfoMapIt != _driveInfoMap.end()) {
-        driveInfoMapIt->second.setAccountDbId(driveInfo.accountDbId());
-        driveInfoMapIt->second.setName(driveInfo.name());
-        driveInfoMapIt->second.setColor(driveInfo.color());
+        driveInfoMapIt->second.setAccountDbId(drive.accountDbId());
+        driveInfoMapIt->second.setName(drive.name());
+        driveInfoMapIt->second.setColor(drive.color());
 
         emit driveListRefreshed();
     }
@@ -1527,17 +1527,17 @@ bool ClientGui::loadInfoMaps() {
     }
 
     // Load drive list
-    QList<DriveInfo> driveInfoList;
-    exitCode = GuiRequests::getDriveInfoList(driveInfoList);
+    QList<Drive> driveList;
+    exitCode = GuiRequests::getDriveInfoList(driveList);
     if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::getDriveInfoList";
         return false;
     }
 
-    for (const DriveInfo &driveInfo: driveInfoList) {
-        _driveInfoMap.insert({driveInfo.dbId(), DriveInfoClient(driveInfo)});
+    for (const Drive &drive: driveList) {
+        _driveInfoMap.insert({drive.dbId(), DriveInfoClient(drive)});
         if (!_currentDriveDbId) {
-            setCurrentDriveDbId(driveInfo.dbId());
+            setCurrentDriveDbId(drive.dbId());
         }
     }
 

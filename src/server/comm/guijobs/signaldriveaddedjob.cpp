@@ -25,13 +25,13 @@ static const auto outParamsDriveInfo = "driveInfo";
 
 namespace KDC {
 
-SignalDriveAddedJob::SignalDriveAddedJob(const DriveInfo &driveInfo) :
-    _driveInfo(driveInfo) {
+SignalDriveAddedJob::SignalDriveAddedJob(const Drive &driveInfo) :
+    _drive(driveInfo) {
     _signalNum = SignalNum::DRIVE_ADDED;
 }
 
 ExitInfo SignalDriveAddedJob::serializeOutputParms() {
-    writeParamValue(outParamsDriveInfo, _driveInfo, info2DynamicVar<DriveInfo>);
+    writeParamValue(outParamsDriveInfo, _drive, info2DynamicVar<Drive>);
     return ExitCode::Ok;
 }
 

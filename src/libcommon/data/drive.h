@@ -18,8 +18,9 @@
 
 #pragma once
 
+#include "info/maintenanceinfo.h"
 #include "libcommon/info/packinfo.h"
-#include "libparms/parmslib.h"
+
 #include "utility/types.h"
 
 #include <string>
@@ -28,20 +29,11 @@
 
 namespace KDC {
 
-
-class PARMS_EXPORT Drive {
+class Drive {
     public:
-        struct MaintenanceInfo {
-                bool _maintenance{false};
-                bool _notRenew{false};
-                bool _asleep{false};
-                bool _wakingUp{false};
-                int64_t _maintenanceFrom{0};
-        };
-
-        Drive();
-        Drive(DriveDbId dbId, DriveId driveId, AccountDbId accountDbId, const std::string &name = std::string(),
-              int64_t size = {}, const std::string &color = std::string(), bool notifications = true, bool admin = true);
+        Drive() = default;
+        Drive(DriveDbId dbId, DriveId driveId, AccountDbId accountDbId, const std::string &name = std::string(), int64_t size = 0,
+              const std::string &color = std::string(), bool notifications = true, bool admin = true);
 
         void setDbId(const DriveDbId dbId) { _dbId = dbId; }
         [[nodiscard]] DriveDbId dbId() const { return _dbId; }
@@ -62,6 +54,7 @@ class PARMS_EXPORT Drive {
 
         [[nodiscard]] const MaintenanceInfo &maintenanceInfo() const { return _maintenanceInfo; }
         void setMaintenanceInfo(const MaintenanceInfo &info) { _maintenanceInfo = info; }
+
         [[nodiscard]] bool locked() const { return _locked; }
         void setLocked(const bool newLocked) { _locked = newLocked; }
         [[nodiscard]] int64_t usedSize() const { return _usedSize; }
@@ -72,8 +65,12 @@ class PARMS_EXPORT Drive {
         [[nodiscard]] const PackInfo &packInfo() const { return _packInfo; }
         void setPackInfo(const PackInfo &packInfo) { _packInfo = packInfo; }
 
+        void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
+        void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
+
+        bool operator==(const Drive &other) const = default;
+
     private:
-        log4cplus::Logger _logger;
         DriveDbId _dbId{0};
         DriveId _driveId{0};
         AccountDbId _accountDbId{0};
@@ -91,6 +88,12 @@ class PARMS_EXPORT Drive {
 
         PackInfo _packInfo;
 };
+
+void operator>>(QDataStream &in, Drive &drive);
+QDataStream &operator<<(QDataStream &out, const Drive &drive);
+
+void operator>>(QDataStream &in, QList<Drive> &list);
+QDataStream &operator<<(QDataStream &out, const QList<Drive> &list);
 
 using DriveList = std::vector<Drive>;
 
