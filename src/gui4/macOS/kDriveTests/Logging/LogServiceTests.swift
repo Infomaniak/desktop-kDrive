@@ -112,6 +112,15 @@ struct LogServiceTests {
         #expect(contents == "2026-06-09 12:00:46:529 [D] (227895) commclient.cpp:122 - Snd rqst 12 ERROR_INFOLIST_LEGACY(35)\n")
     }
 
+    @Test("Default log directory matches the macOS CommonUtility log path")
+    func defaultLogDirectoryMatchesCommonUtilityPath() throws {
+        let expectedDirectory = try #require(FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first)
+            .appendingPathComponent("Logs", isDirectory: true)
+            .appendingPathComponent("kDrive", isDirectory: true)
+
+        #expect(LogFileWriter.defaultLogDirectory() == expectedDirectory)
+    }
+
     private static let utcTimeZone = TimeZone(secondsFromGMT: 0)!
 
     private static func date(
