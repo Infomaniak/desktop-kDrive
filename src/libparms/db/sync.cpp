@@ -27,14 +27,12 @@ Sync::Sync() :
     _supportVfs(false),
     _virtualFileMode(VirtualFileMode::Off),
     _notificationsDisabled(false),
-    _hasFullyCompleted(false),
-    _listingCursorTimestamp(0) {}
+    _hasFullyCompleted(false) {}
 
 Sync::Sync(SyncDbId dbId, DriveDbId driveDbId, const std::filesystem::path &localPath, const NodeId &localNodeId,
            const std::filesystem::path &targetPath, const NodeId &targetNodeId, bool paused, bool supportVfs,
            VirtualFileMode virtualFileMode, bool notificationsDisabled, const std::filesystem::path &dbPath,
-           bool hasFullyCompleted, const std::string &navigationPaneClsid, const std::string &listingCursor,
-           int64_t listingCursorTimestamp) :
+           bool hasFullyCompleted, const std::string &navigationPaneClsid, CursorStore cursorStore) :
     _dbId(dbId),
     _driveDbId(driveDbId),
     _localPath(localPath),
@@ -48,7 +46,25 @@ Sync::Sync(SyncDbId dbId, DriveDbId driveDbId, const std::filesystem::path &loca
     _dbPath(dbPath),
     _hasFullyCompleted(hasFullyCompleted),
     _navigationPaneClsid(navigationPaneClsid),
-    _listingCursor(listingCursor),
-    _listingCursorTimestamp(listingCursorTimestamp) {}
+    _cursorStore(std::move(cursorStore)) {}
+
+CursorStore Sync::getCursorStore() const {
+    CursorData userPrivateFolderCursorData;
+    userPrivateFolderCursor(userPrivateFolderCursorData.cursor, userPrivateFolderCursorData.timestamp);
+
+    CursorData commonDocumentsFolderCursorData;
+    commonDocumentsFolderCursor(commonDocumentsFolderCursorData.cursor, commonDocumentsFolderCursorData.timestamp);
+
+    CursorData sharedFolderCursorData;
+    sharedFolderCursor(sharedFolderCursorData.cursor, sharedFolderCursorData.timestamp);
+
+    return {userPrivateFolderCursorData, commonDocumentsFolderCursorData, sharedFolderCursorData};
+}
+
+void Sync::setCursorStore(const KDC::CursorStore &cursors) {
+    setUserPrivateFolderCursor(cursors.userPrivateFolderCursor.cursor, cursors.userPrivateFolderCursor.timestamp);
+    setCommonDocumentsFolderCursor(cursors.commonDocumentsFolderCursor.cursor, cursors.commonDocumentsFolderCursor.timestamp);
+    setSharedFolderCursor(cursors.sharedFolderCursor.cursor, cursors.sharedFolderCursor.timestamp);
+}
 
 } // namespace KDC

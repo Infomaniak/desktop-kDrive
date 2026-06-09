@@ -20,14 +20,18 @@
 
 namespace KDC {
 
-ContinueFileListWithCursorJob::ContinueFileListWithCursorJob(const int driveDbId, const std::string &cursor,
-                                                             NodeSet blacklist /*= {}*/) :
+ContinueFileListWithCursorJob::ContinueFileListWithCursorJob(const int driveDbId, NodeId remoteDirId, std::string cursor,
+                                                             const NodeSet &blacklist /*= {}*/) :
     AbstractListingJob(driveDbId, blacklist),
-    _cursor(cursor) {}
+    _remoteDirId(std::move(remoteDirId)),
+    _cursor(std::move(cursor)) {}
 
 std::string ContinueFileListWithCursorJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
-    str += "/files/listing/continue";
+    str += "/files/";
+    str += _remoteDirId;
+    str += "/listing/continue";
+
     return str;
 }
 

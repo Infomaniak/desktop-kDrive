@@ -33,8 +33,7 @@ class PARMS_EXPORT Sync {
              const NodeId &targetNodeId = NodeId(), bool paused = false, bool supportVfs = false,
              VirtualFileMode virtualFileMode = VirtualFileMode::Off, bool notificationsDisabled = false,
              const SyncPath &dbPath = SyncPath(), bool hasFullyCompleted = false,
-             const std::string &navigationPaneClsid = std::string(), const std::string &listingCursor = std::string(),
-             int64_t listingCursorTimestamp = 0);
+             const std::string &navigationPaneClsid = std::string(), CursorStore cursorStore = {});
 
         inline void setDbId(SyncDbId dbId) { _dbId = dbId; }
         inline SyncDbId dbId() const { return _dbId; }
@@ -62,13 +61,31 @@ class PARMS_EXPORT Sync {
         inline bool hasFullyCompleted() const { return _hasFullyCompleted; }
         inline void setNavigationPaneClsid(const std::string &navigationPaneClsid) { _navigationPaneClsid = navigationPaneClsid; }
         inline const std::string &navigationPaneClsid() const { return _navigationPaneClsid; }
-        inline void setListingCursor(const std::string &listingCursor, int64_t timestamp) {
-            _listingCursor = listingCursor;
-            _listingCursorTimestamp = timestamp;
+
+        CursorStore getCursorStore() const;
+        void setCursorStore(const CursorStore &cursors);
+
+        inline void setUserPrivateFolderCursor(const Cursor &listingCursor, Timestamp timestamp) {
+            _cursorStore.userPrivateFolderCursor = {listingCursor, timestamp};
         }
-        inline void listingCursor(std::string &listingCursor, int64_t &timestamp) const {
-            listingCursor = _listingCursor;
-            timestamp = _listingCursorTimestamp;
+        inline void setCommonDocumentsFolderCursor(const Cursor &listingCursor, Timestamp timestamp) {
+            _cursorStore.commonDocumentsFolderCursor = {listingCursor, timestamp};
+        }
+        inline void setSharedFolderCursor(const Cursor &listingCursor, Timestamp timestamp) {
+            _cursorStore.sharedFolderCursor = {listingCursor, timestamp};
+        }
+
+        inline void userPrivateFolderCursor(Cursor &listingCursor, Timestamp &timestamp) const {
+            listingCursor = _cursorStore.userPrivateFolderCursor.cursor;
+            timestamp = _cursorStore.userPrivateFolderCursor.timestamp;
+        }
+        inline void commonDocumentsFolderCursor(Cursor &listingCursor, Timestamp &timestamp) const {
+            listingCursor = _cursorStore.commonDocumentsFolderCursor.cursor;
+            timestamp = _cursorStore.commonDocumentsFolderCursor.timestamp;
+        }
+        inline void sharedFolderCursor(Cursor &listingCursor, Timestamp &timestamp) const {
+            listingCursor = _cursorStore.sharedFolderCursor.cursor;
+            timestamp = _cursorStore.sharedFolderCursor.timestamp;
         }
 
     private:
@@ -85,8 +102,8 @@ class PARMS_EXPORT Sync {
         SyncPath _dbPath;
         bool _hasFullyCompleted{false};
         std::string _navigationPaneClsid;
-        std::string _listingCursor;
-        int64_t _listingCursorTimestamp{0};
+
+        CursorStore _cursorStore;
 };
 
 } // namespace KDC
