@@ -36,6 +36,8 @@ std::shared_ptr<Handler> Handler::_instance = nullptr;
 AppType Handler::_appType = AppType::None;
 bool Handler::_debugCrashCallback = false;
 bool Handler::_debugBeforeSendCallback = false;
+bool Handler::_sentryInitialized = false;
+bool Handler::_sentryShutDown = false;
 /*
  *  sentry_value_t reader implementation - begin
  *  Used for debbuging
@@ -156,11 +158,6 @@ static sentry_value_t crashCallback(const sentry_ucontext_t *uctx, sentry_value_
     const int signum{0};
     KDC::CommonUtility::writeSignalFile(Handler::appType(), KDC::fromInt<KDC::SignalType>(signum));
 
-    if (!Handler::isActivated()) {
-        sentry_value_decref(event);
-        return sentry_value_new_null();
-    }
-
     if (Handler::debugCrashCallback()) {
         std::stringstream ss;
         readObject(event, ss);
@@ -173,11 +170,6 @@ static sentry_value_t crashCallback(const sentry_ucontext_t *uctx, sentry_value_
 sentry_value_t beforeSendCallback(sentry_value_t event, void *hint, void *closure) {
     (void) hint;
     (void) closure;
-
-    if (!Handler::isActivated()) {
-        sentry_value_decref(event);
-        return sentry_value_new_null();
-    }
 
     std::cout << "Sentry will send an event for the app " << Handler::appType() << std::endl;
 
@@ -315,7 +307,25 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
         std::cerr << "sentry_init returned " << res << std::endl;
     }
     assert(res == 0);
+    _sentryInitialized = true;
     _instance->setDistributionChannel(DistributionChannel::Unknown);
+}
+
+void Handler::setIsSentryActivated(bool activate) {
+    if (_sentryShutDown) {
+        // Sentry has been permanently shut down for this process; re-activation is not allowed.
+        return;
+    }
+
+    if (!activate && _sentryInitialized) {
+        // Disable Sentry: flush all pending events and shut down the SDK cleanly.
+        // Once closed, Sentry remains disabled for the lifetime of this process.
+        _isSentryActivated = false;
+        _sentryShutDown = true;
+        sentry_close();
+    } else {
+        _isSentryActivated = activate;
+    }
 }
 
 void Handler::setAuthenticatedUser(const SentryUser &user) {
@@ -525,13 +535,16 @@ void Handler::setAppUUID(std::string appUUID) {
 Handler::~Handler() {
     if (this == _instance.get()) {
         _instance.reset();
+        if (_sentryInitialized && !_sentryShutDown) {
 #if !defined(Q_OS_LINUX)
-        try {
-            sentry_close();
-        } catch (...) {
-            // Do nothing
-        }
+            try {
+                sentry_close();
+            } catch (...) {
+                // Do nothing
+            }
 #endif
+            _sentryShutDown = true;
+        }
     }
 }
 

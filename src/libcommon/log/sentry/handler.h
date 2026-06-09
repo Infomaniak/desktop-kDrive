@@ -105,7 +105,14 @@ class Handler {
 
         void setDistributionChannel(DistributionChannel channel);
         void setAppUUID(std::string appUUID);
-        void setIsSentryActivated(bool isSentryActivated) { _isSentryActivated = isSentryActivated; }
+
+        // Enable or disable Sentry for this process.
+        //
+        // Calling setIsSentryActivated(false) shuts down the Sentry SDK via sentry_close() and permanently marks
+        // Sentry as disabled for the lifetime of the current process. Subsequent calls with true are silently
+        // ignored: Sentry may only be re-enabled on the next application start.
+        void setIsSentryActivated(bool activate);
+
         // Returns whether the Sentry handler is active. Safe to call before init() and after shutdown,
         // matching the same access pattern used by the other static accessors (appType, debugCrashCallback…).
         static bool isActivated() { return _instance && _instance->_isSentryActivated; }
@@ -227,6 +234,12 @@ class Handler {
         static AppType _appType;
         static bool _debugCrashCallback;
         static bool _debugBeforeSendCallback;
+
+        // True once sentry_init() has been called successfully, so we know sentry_close() is safe.
+        static bool _sentryInitialized;
+        // True once sentry_close() has been called (either by setIsSentryActivated(false) or the destructor).
+        // When true, re-activation via setIsSentryActivated(true) is silently ignored.
+        static bool _sentryShutDown;
 };
 } // namespace sentry
 } // namespace KDC
