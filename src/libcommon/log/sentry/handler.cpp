@@ -265,6 +265,7 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
     sentry_options_set_release(options, KDRIVE_VERSION_STRING);
     sentry_options_set_debug(options, false);
     sentry_options_set_max_breadcrumbs(options, static_cast<size_t>(breadCrumbsSize));
+    sentry_options_set_require_user_consent(options, true);
 
     // !!! Not Supported in Crashpad on macOS & Limitations in Crashpad on Windows for Fast-fail Crashes !!!
     // See https://docs.sentry.io/platforms/native/configuration/filtering/
@@ -375,7 +376,7 @@ void Handler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
     }
 
     auto &storedEvent = it->second;
-    storedEvent.captureCount = (std::min)(storedEvent.captureCount + 1, UINT_MAX - 1);
+    storedEvent.captureCount = (std::min) (storedEvent.captureCount + 1, UINT_MAX - 1);
     event.captureCount = storedEvent.captureCount;
 
     if (lastEventCaptureIsOutdated(storedEvent)) { // Reset the capture count if the last capture was more than 10 minutes ago
@@ -509,6 +510,14 @@ void Handler::setDistributionChannel(const DistributionChannel channel) {
 
 void Handler::setAppUUID(std::string appUUID) {
     setTag("appUUID", appUUID);
+}
+
+void Handler::setIsSentryActivated(bool isSentryActivated) {
+    _isSentryActivated = isSentryActivated;
+    if (isSentryActivated)
+        sentry_user_consent_give();
+    else
+        sentry_user_consent_revoke();
 }
 
 Handler::~Handler() {
