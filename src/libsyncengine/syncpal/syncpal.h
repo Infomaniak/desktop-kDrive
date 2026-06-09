@@ -368,7 +368,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         SyncPalInfo _syncInfo;
 
-        std::timed_mutex _userActionsMutex; // Mutex protecting the start/stop/pause/unpause/changeVFS/ operations to ensure that
+        std::timed_mutex _userActionsMutex; // Mutex protecting the start/stop/pause/unpause/changeVFS/ operations to
+                                            // ensure that
                                             // only one of these operations can be performed at a time.
 
         std::shared_ptr<ExcludeListPropagator> _excludeListPropagator = nullptr;
@@ -450,6 +451,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         // Direct download callback
         void directDownloadCallback(UniqueId jobId);
+
     private:
         void setUpBlacklistPropagator(bool restartSync);
         void setUpExcludelistPropagator();

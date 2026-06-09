@@ -53,6 +53,7 @@
 
 #include "tmpblacklistmanager.h"
 #include "jobs/network/kDrive_API/upload/upload_session/uploadsessioncanceljob.h"
+#include "useractionscopedlock.h"
 
 #define SYNCPAL_NEW_ERROR_MSG "Failed to create SyncPal instance!"
 

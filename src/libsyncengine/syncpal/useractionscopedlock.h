@@ -34,7 +34,8 @@ class UserActionScopedLock {
 
             if (!syncPal) return false;
 
-            if (std::unique_lock lock(syncPal->userActionsMutex(), std::defer_lock); lock.try_lock_for(timeout)) {
+            if (std::unique_lock lock(syncPal->userActionsMutex(), std::defer_lock);
+                lock.try_lock_for(timeout)) {
                 _lock = std::move(lock);
                 return true;
             }

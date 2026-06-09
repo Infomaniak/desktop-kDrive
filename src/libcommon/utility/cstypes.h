@@ -164,6 +164,7 @@ enum class ExitCause {
     TmpDirAccessError,
     UpdateTreeIntegrityCheckFailed,
     MissingReplyData,
+    BlackListPropagationError,
     EnumEnd
 };
 

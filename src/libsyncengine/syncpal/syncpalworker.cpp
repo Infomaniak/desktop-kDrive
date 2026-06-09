@@ -27,6 +27,7 @@
 #include "reconciliation/operation_generator/operationgeneratorworker.h"
 #include "propagation/operation_sorter/operationsorterworker.h"
 #include "propagation/executor/executorworker.h"
+#include "requests/syncnodecache.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/io/filestat.h"
@@ -37,6 +38,7 @@
 #include <log4cplus/loggingmacros.h>
 
 #include <cmath>
+#include "useractionscopedlock.h"
 
 #define UPDATE_PROGRESS_DELAY 1
 
@@ -170,9 +172,75 @@ void SyncPalWorker::checkForMassDeletions() const {
     }
 }
 
+ExitInfo SyncPalWorker::ensureBlackListIsPropagated() {
+    // Check if any of the Blacklisted directory still in the db, if yes, restart the blacklist propagator.
+    // It might happen if it as previously been stopped or encountered a locked directory / file.
+    NodeSet blacklistedNodes;
+    if (ExitInfo exitInfo = SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, blacklistedNodes);
+        !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncNodeCache::syncNodes");
+        return exitInfo;
+    }
+
+    std::function<ExitInfo(const NodeSet &, bool &)> areBlacklistedNodesStillInDb = [this](const NodeSet &nodes, bool &found) {
+        found = false;
+        for (const auto &nodeId: nodes) {
+            DbNodeId dbNodeId = 0;
+            if (!_syncPal->syncDb()->dbId(ReplicaSide::Remote, nodeId, dbNodeId, found)) {
+                LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId");
+                return ExitInfo(ExitCode::DbError, ExitCause::DbAccessError);
+            }
+
+            if (found) return ExitInfo(ExitCode::Ok);
+        }
+        return ExitInfo(ExitCode::Ok);
+    };
+
+    bool found = false;
+    if (ExitInfo exitInfo = areBlacklistedNodesStillInDb(blacklistedNodes, found); !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error while checking if blacklisted nodes still exist in SyncDb");
+        return exitInfo;
+    }
+
+    if (!found) return ExitCode::Ok;
+
+    LOG_WARN(_logger, "Blacklisted nodes still exist in SyncDb, restarting blacklist propagator");
+
+    {
+        UserActionScopedLock lock;
+        const std::chrono::milliseconds timeout(5000);
+        if (!lock.tryLock(_syncPal, timeout)) {
+            LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
+                             "Could not acquire user action lock for propagateSyncIdSetChange. Another user action is "
+                             "running, aborting.");
+            return {ExitCode::DataError, ExitCause::BlackListPropagationError};
+        }
+
+
+        if (ExitInfo exitInfo = _syncPal->propagateSyncIdSetChange(false); !exitInfo) {
+            LOG_SYNCPAL_WARN(_logger, "Error propagating blacklist changes");
+            return exitInfo;
+        }
+    }
+
+    if (ExitInfo exitInfo = areBlacklistedNodesStillInDb(blacklistedNodes, found); !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error while checking if blacklisted nodes still exist in SyncDb");
+        return exitInfo;
+    }
+
+    if (found) {
+        LOG_SYNCPAL_WARN(_logger, "Blacklisted nodes still exist after retry, giving up");
+        return {ExitCode::DataError, ExitCause::BlackListPropagationError};
+    }
+
+    return ExitCode::Ok;
+}
+
 void SyncPalWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
     LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " started");
+
+    // Ensure the pin states are coherent with hydration states.
     if (_syncPal->vfsMode() != VirtualFileMode::Off) {
 #if defined(KD_WINDOWS)
         auto resetFunc = std::function<void()>([this]() { resetVfsFilesStatus(); });
@@ -180,6 +248,14 @@ void SyncPalWorker::execute() {
 #else
         resetVfsFilesStatus();
 #endif
+    }
+
+    // Ensure blacklist is propagated
+    if (ExitInfo exitInfo = ensureBlackListIsPropagated(); !exitInfo) {
+        LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " stopped");
+        setExitCause(exitInfo.cause());
+        setDone(exitInfo.code());
+        return;
     }
 
     // Wait before really starting

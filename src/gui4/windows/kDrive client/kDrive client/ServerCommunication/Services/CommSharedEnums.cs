@@ -296,7 +296,8 @@ namespace Infomaniak.kDrive.Types
         FileOrDirectoryCorrupted,
         TmpDirAccessError,
         UpdateTreeIntegrityCheckFailed,
-        MissingReplyData
+        MissingReplyData,
+        BlackListPropagationError
     };
 
 

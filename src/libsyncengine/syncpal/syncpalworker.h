@@ -75,6 +75,9 @@ class SyncPalWorker : public ISyncWorker {
          */
         bool isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath, std::optional<NodeId> &outLocalNodeId);
         void resetVfsFilesStatus();
+
+        ExitInfo ensureBlackListIsPropagated();
+
         /**
          * @brief Attempts to repair local node IDs in the SyncDb after the sync directory has changed its node ID.
          *
