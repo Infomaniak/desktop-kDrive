@@ -297,7 +297,7 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         <translation>Ο πελάτης kDrive εκτελείται ήδη!</translation>
     </message>
     <message>
-        <location filename="../src/gui/appclient.cpp" line="719"/>
+        <location filename="../src/gui/appclient.cpp" line="713"/>
         <source>The user %1 is not connected. Please log in again.</source>
         <translation>Ο χρήστης %1 δεν είναι συνδεδεμένος. Παρακαλώ συνδεθείτε ξανά.</translation>
     </message>
@@ -305,12 +305,12 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
 <context>
     <name>KDC::AppServer</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="1689"/>
+        <location filename="../src/server/appserver.cpp" line="1690"/>
         <source>Share link copied to clipboard</source>
         <translation>Ο σύνδεσμος κοινοποίησης αντιγράφηκε στο πρόχειρο</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3810"/>
+        <location filename="../src/server/appserver.cpp" line="3835"/>
         <source>%1 and %n other file(s) have been removed.</source>
         <translation>
             <numerusform>%1 και %n άλλο αρχείο αφαιρέθηκαν.</numerusform>
@@ -318,13 +318,13 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3812"/>
+        <location filename="../src/server/appserver.cpp" line="3837"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
         <translation>Το %1 αφαιρέθηκε.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3817"/>
+        <location filename="../src/server/appserver.cpp" line="3842"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
             <numerusform>%1 και %n άλλο αρχείο προστέθηκαν.</numerusform>
@@ -332,13 +332,13 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3819"/>
+        <location filename="../src/server/appserver.cpp" line="3844"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
         <translation>Το %1 προστέθηκε.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3824"/>
+        <location filename="../src/server/appserver.cpp" line="3849"/>
         <source>%1 and %n other file(s) have been updated.</source>
         <translation>
             <numerusform>%1 και %n άλλο αρχείο ενημερώθηκαν.</numerusform>
@@ -346,13 +346,13 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3826"/>
+        <location filename="../src/server/appserver.cpp" line="3851"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
         <translation>Το %1 ενημερώθηκε.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3831"/>
+        <location filename="../src/server/appserver.cpp" line="3856"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
         <translation>
             <numerusform>Το %1 μετακινήθηκε στο %2 και %n άλλο αρχείο μετακινήθηκε.</numerusform>
@@ -360,12 +360,12 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3834"/>
+        <location filename="../src/server/appserver.cpp" line="3859"/>
         <source>%1 has been moved to %2.</source>
         <translation>Το %1 μετακινήθηκε στο %2.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3842"/>
+        <location filename="../src/server/appserver.cpp" line="3867"/>
         <source>Sync Activity</source>
         <translation>Δραστηριότητα συγχρονισμού</translation>
     </message>
@@ -590,105 +590,105 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
 <context>
     <name>KDC::CustomExtensionSetupWidget</name>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="96"/>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="120"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="97"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="121"/>
         <source>Before finishing</source>
         <translation>Πριν την ολοκλήρωση</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="107"/>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="131"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="108"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="132"/>
         <source>Perform the following steps to ensure that Lite Sync works correctly on your computer and to complete the configuration of the kDrive.</source>
         <translation>Ακολουθήστε τα παρακάτω βήματα για να διασφαλίσετε τη σωστή λειτουργία του Lite Sync στον υπολογιστή σας και να ολοκληρώσετε τη διαμόρφωση του kDrive.</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="208"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="209"/>
         <source>Open your Mac&apos;s &lt;b&gt;General settings&lt;/b&gt; or  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
         <translation>Ανοίξτε τις &lt;b&gt;Γενικές ρυθμίσεις&lt;/b&gt; του Mac ή  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;κάντε κλικ εδώ&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="212"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="213"/>
         <source>Open your Mac&apos;s &lt;b&gt;Privacy &amp; Security settings&lt;/b&gt; or  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
         <translation>Ανοίξτε τις ρυθμίσεις &lt;b&gt;Απόρρητο &amp;amp; Ασφάλεια&lt;/b&gt; του Mac ή  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;κάντε κλικ εδώ&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="216"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="217"/>
         <source>Open your Mac&apos;s &lt;b&gt;Security &amp; Privacy settings&lt;/b&gt; or  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
         <translation>Ανοίξτε τις ρυθμίσεις &lt;b&gt;Ασφάλεια &amp;amp; Απόρρητο&lt;/b&gt; του Mac ή  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;κάντε κλικ εδώ&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="246"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="247"/>
         <source>Go to &lt;b&gt;&quot;Login Items &amp; Extensions&quot;&lt;/b&gt; section and then to &lt;b&gt;&quot;Endpoint Security Extensions&quot;&lt;/b&gt;</source>
         <translation>Μεταβείτε στην ενότητα &lt;b&gt;&quot;Στοιχεία σύνδεσης &amp;amp; Επεκτάσεις&quot;&lt;/b&gt; και στη συνέχεια στο &lt;b&gt;&quot;Επεκτάσεις ασφαλείας τερματικού&quot;&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="263"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="264"/>
         <source>Authorize the kDrive application</source>
         <translation>Εξουσιοδοτήστε την εφαρμογή kDrive</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="272"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="273"/>
         <source>Go to &lt;b&gt;&quot;Security&quot;&lt;/b&gt; section</source>
         <translation>Μεταβείτε στην ενότητα &lt;b&gt;&quot;Ασφάλεια&quot;&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="289"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="290"/>
         <source>Authorize the kDrive application in the box indicating that kDrive has been blocked</source>
         <translation>Εξουσιοδοτήστε την εφαρμογή kDrive στο πλαίσιο που υποδεικνύει ότι το kDrive έχει αποκλειστεί</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="299"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="300"/>
         <source>Unlock the padlock &lt;img src=&quot;:/client/resources/icons/actions/lock.png&quot;&gt; and authorize the kDrive application</source>
         <translation>Ξεκλειδώστε το λουκέτο &lt;img src=&quot;:/client/resources/icons/actions/lock.png&quot;&gt; και εξουσιοδοτήστε την εφαρμογή kDrive</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="344"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="345"/>
         <source>Go to &lt;b&gt;&quot;Privacy &amp; Security&quot;&lt;/b&gt; section and click on &lt;b&gt;&quot;Full Disk Access&quot;&lt;/b&gt; or &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
         <translation>Μεταβείτε στην ενότητα &lt;b&gt;&quot;Απόρρητο &amp;amp; Ασφάλεια&quot;&lt;/b&gt; και κάντε κλικ στο &lt;b&gt;&quot;Πλήρης πρόσβαση δίσκου&quot;&lt;/b&gt; ή &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;κάντε κλικ εδώ&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="348"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="349"/>
         <source>Still in the Security &amp; Privacy settings, open the &lt;b&gt;&quot;Privacy&quot;&lt;/b&gt; tab or &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
         <translation>Στις ρυθμίσεις Ασφάλεια &amp;amp; Απόρρητο, ανοίξτε την καρτέλα &lt;b&gt;&quot;Απόρρητο&quot;&lt;/b&gt; ή &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;κάντε κλικ εδώ&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="376"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="377"/>
         <source>Check the &quot;kDrive LiteSync Extension&quot; box then the &quot;kDrive.app&quot; box (if not already checked)</source>
         <translation>Επιλέξτε το πλαίσιο &quot;kDrive LiteSync Extension&quot; και στη συνέχεια το πλαίσιο &quot;kDrive.app&quot; (αν δεν είναι ήδη επιλεγμένο)</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="393"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="394"/>
         <source>A restart of the app might be proposed, in this case accept it</source>
         <translation>Ενδέχεται να προταθεί επανεκκίνηση της εφαρμογής, σε αυτή την περίπτωση αποδεχτείτε την</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="399"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="400"/>
         <source>Check the &quot;kDrive LiteSync Extension&quot; box (and &quot;kDrive.app&quot; if it exists) in &lt;b&gt;&quot;Full Disk Access&quot;&lt;/b&gt;</source>
         <translation>Επιλέξτε το πλαίσιο &quot;kDrive LiteSync Extension&quot; (και &quot;kDrive.app&quot; αν υπάρχει) στην &lt;b&gt;&quot;Πλήρη πρόσβαση δίσκου&quot;&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="495"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="491"/>
         <source>STEP 1</source>
         <translation>ΒΗΜΑ 1</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="495"/>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="496"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="491"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="492"/>
         <source>(Done)</source>
         <translation>(Ολοκληρώθηκε)</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="496"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="492"/>
         <source>STEP 2</source>
         <translation>ΒΗΜΑ 2</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="499"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="495"/>
         <source>STEPS PERFORMED</source>
         <translation>ΒΗΜΑΤΑ ΕΚΤΕΛΕΣΤΗΚΑΝ</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="501"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="497"/>
         <source>END</source>
         <translation>ΤΕΛΟΣ</translation>
     </message>
@@ -1536,12 +1536,12 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
 <context>
     <name>KDC::Logger</name>
     <message>
-        <location filename="../src/libcommongui/logger.cpp" line="211"/>
+        <location filename="../src/libcommongui/logger.cpp" line="201"/>
         <source>Error</source>
         <translation>Σφάλμα</translation>
     </message>
     <message>
-        <location filename="../src/libcommongui/logger.cpp" line="211"/>
+        <location filename="../src/libcommongui/logger.cpp" line="201"/>
         <source>&lt;nobr&gt;File &apos;%1&apos;&lt;br/&gt;cannot be opened for writing.&lt;br/&gt;&lt;br/&gt;The log output can &lt;b&gt;not&lt;/b&gt; be saved!&lt;/nobr&gt;</source>
         <translation>&lt;nobr&gt;Το αρχείο &apos;%1&apos;&lt;br/&gt;δεν μπορεί να ανοίξει για εγγραφή.&lt;br/&gt;&lt;br/&gt;Η καταγραφή &lt;b&gt;δεν&lt;/b&gt; μπορεί να αποθηκευτεί!&lt;/nobr&gt;</translation>
     </message>
@@ -2813,47 +2813,47 @@ Please, use the following link to send the logs to the support: &lt;a style=&quo
         <translation>Άνοιγμα στον περιηγητή</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="467"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="468"/>
         <source>The parent folder is a sync folder or contained in one</source>
         <translation>Ο γονικός φάκελος είναι φάκελος συγχρονισμού ή περιέχεται σε έναν</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="501"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="502"/>
         <source>Can&apos;t find a valid path</source>
         <translation>Δεν βρέθηκε έγκυρη διαδρομή</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2112"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2109"/>
         <source>No valid folder selected!</source>
         <translation>Δεν επιλέχθηκε έγκυρος φάκελος!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2123"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2120"/>
         <source>The selected path does not exist!</source>
         <translation>Η επιλεγμένη διαδρομή δεν υπάρχει!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2128"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2125"/>
         <source>The selected path is not a folder!</source>
         <translation>Η επιλεγμένη διαδρομή δεν είναι φάκελος!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2133"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2130"/>
         <source>You have no permission to write to the selected folder!</source>
         <translation>Δεν έχετε δικαίωμα εγγραφής στον επιλεγμένο φάκελο!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2163"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2160"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
         <translation>Ο τοπικός φάκελος %1 περιέχει φάκελο που συγχρονίζεται ήδη. Επιλέξτε άλλον!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2171"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2168"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
         <translation>Ο τοπικός φάκελος %1 περιέχεται σε φάκελο που συγχρονίζεται ήδη. Επιλέξτε άλλον!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2179"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2176"/>
         <source>The local folder %1 is already synced. Please pick another one!</source>
         <translation>Ο τοπικός φάκελος %1 συγχρονίζεται ήδη. Επιλέξτε άλλον!</translation>
     </message>

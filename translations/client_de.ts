@@ -297,7 +297,7 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
         <translation>Der kDrive Client läuft bereits!</translation>
     </message>
     <message>
-        <location filename="../src/gui/appclient.cpp" line="719"/>
+        <location filename="../src/gui/appclient.cpp" line="713"/>
         <source>The user %1 is not connected. Please log in again.</source>
         <translation>Der Benutzer %1 ist nicht angemeldet. Bitte melden Sie sich erneut an.</translation>
     </message>
@@ -305,12 +305,12 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
 <context>
     <name>KDC::AppServer</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="1689"/>
+        <location filename="../src/server/appserver.cpp" line="1690"/>
         <source>Share link copied to clipboard</source>
         <translation>Freigabelink in die Zwischenablage kopiert</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3810"/>
+        <location filename="../src/server/appserver.cpp" line="3835"/>
         <source>%1 and %n other file(s) have been removed.</source>
         <translation>
             <numerusform>%1 und %n andere Datei(en) wurde(n) gelöscht.</numerusform>
@@ -318,13 +318,13 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3812"/>
+        <location filename="../src/server/appserver.cpp" line="3837"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 wurde gelöscht.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3817"/>
+        <location filename="../src/server/appserver.cpp" line="3842"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
             <numerusform>%1 und %n andere Datei(en) wurde(n) hinzugefügt.</numerusform>
@@ -332,13 +332,13 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3819"/>
+        <location filename="../src/server/appserver.cpp" line="3844"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 wurde hinzugefügt.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3824"/>
+        <location filename="../src/server/appserver.cpp" line="3849"/>
         <source>%1 and %n other file(s) have been updated.</source>
         <translation>
             <numerusform>%1 und %n andere Datei(en) wurde(n) aktualisiert.</numerusform>
@@ -346,13 +346,13 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3826"/>
+        <location filename="../src/server/appserver.cpp" line="3851"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 wurde aktualisiert.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3831"/>
+        <location filename="../src/server/appserver.cpp" line="3856"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
         <translation>
             <numerusform>%1 wurde zu %2 verschoben und %n andere Datei(en) wurde(n) verschoben.</numerusform>
@@ -360,12 +360,12 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3834"/>
+        <location filename="../src/server/appserver.cpp" line="3859"/>
         <source>%1 has been moved to %2.</source>
         <translation>%1 wurde zu %2 verschoben.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3842"/>
+        <location filename="../src/server/appserver.cpp" line="3867"/>
         <source>Sync Activity</source>
         <translation>Synchronisierungsaktivität</translation>
     </message>
@@ -590,105 +590,105 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
 <context>
     <name>KDC::CustomExtensionSetupWidget</name>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="96"/>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="120"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="97"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="121"/>
         <source>Before finishing</source>
         <translation>Vor der Fertigstellung</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="107"/>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="131"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="108"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="132"/>
         <source>Perform the following steps to ensure that Lite Sync works correctly on your computer and to complete the configuration of the kDrive.</source>
         <translation>Stellen Sie mit den nächsten Schritten sicher, dass Lite Sync auf Ihrem Rechner ordnungsgemäss funktioniert, und schliessen Sie die Einrichtung des kDrive ab.</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="208"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="209"/>
         <source>Open your Mac&apos;s &lt;b&gt;General settings&lt;/b&gt; or  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
         <translation>Öffnen Sie die &lt;b&gt;Allgemeinen Einstellungen&lt;/b&gt; Ihres Macs oder &lt;a style=%1 href=%2&gt;klicken Sie hier&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="212"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="213"/>
         <source>Open your Mac&apos;s &lt;b&gt;Privacy &amp; Security settings&lt;/b&gt; or  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
         <translation>Öffnen Sie die &lt;b&gt;Datenschutz- und Sicherheitseinstellungen&lt;/b&gt; Ihres Mac oder &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;klicken Sie hier&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="216"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="217"/>
         <source>Open your Mac&apos;s &lt;b&gt;Security &amp; Privacy settings&lt;/b&gt; or  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
         <translation>Open your Mac&apos;s &lt;b&gt;Security &amp; Privacy settings&lt;/b&gt; or  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="246"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="247"/>
         <source>Go to &lt;b&gt;&quot;Login Items &amp; Extensions&quot;&lt;/b&gt; section and then to &lt;b&gt;&quot;Endpoint Security Extensions&quot;&lt;/b&gt;</source>
         <translation>Gehen Sie zum Abschnitt &lt;b&gt;&quot;Login Items &amp; Extensions&quot;&lt;/b&gt; und dann zu &lt;b&gt;&quot;Endpoint Security Extensions&quot;&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="263"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="264"/>
         <source>Authorize the kDrive application</source>
         <translation>Autorisieren Sie die kDrive-Anwendung</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="272"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="273"/>
         <source>Go to &lt;b&gt;&quot;Security&quot;&lt;/b&gt; section</source>
         <translation>Gehen Sie zum Bereich &lt;b&gt;&quot;Sicherheit&quot;&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="289"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="290"/>
         <source>Authorize the kDrive application in the box indicating that kDrive has been blocked</source>
         <translation>Autorisieren Sie die kDrive-Anwendung in dem Feld, in dem angezeigt wird, dass kDrive blockiert wurde</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="299"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="300"/>
         <source>Unlock the padlock &lt;img src=&quot;:/client/resources/icons/actions/lock.png&quot;&gt; and authorize the kDrive application</source>
         <translation>Öffnen Sie das Vorhängeschloss &lt;img src=&quot;:/client/resources/icons/actions/lock.png&quot;&gt; und autorisieren Sie die kDrive-Anwendung</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="344"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="345"/>
         <source>Go to &lt;b&gt;&quot;Privacy &amp; Security&quot;&lt;/b&gt; section and click on &lt;b&gt;&quot;Full Disk Access&quot;&lt;/b&gt; or &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
         <translation>Gehen Sie zum Abschnitt &lt;b&gt;Datenschutz und Sicherheit&quot;&lt;/b&gt; und klicken Sie auf &lt;b&gt;Voller Festplattenzugriff&quot;&lt;/b&gt; oder &lt;a style=%1 href=%2&gt;hier klicken&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="348"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="349"/>
         <source>Still in the Security &amp; Privacy settings, open the &lt;b&gt;&quot;Privacy&quot;&lt;/b&gt; tab or &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
         <translation>Öffnen Sie in den Einstellungen Sicherheit und Datenschutz den Reiter &lt;b&gt;&quot;Datenschutz&quot;&lt;/b&gt; oder &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;klicken Sie hier&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="376"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="377"/>
         <source>Check the &quot;kDrive LiteSync Extension&quot; box then the &quot;kDrive.app&quot; box (if not already checked)</source>
         <translation>Setzen Sie ein Häkchen bei &quot;kDrive LiteSync Extension&quot; und dann bei &quot;kDrive.app&quot; (sofern noch nicht erfolgt)</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="393"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="394"/>
         <source>A restart of the app might be proposed, in this case accept it</source>
         <translation>Gegebenenfalls kann ein Neustart der App vorgeschlagen werden, bitte führen Sie diesen durch</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="399"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="400"/>
         <source>Check the &quot;kDrive LiteSync Extension&quot; box (and &quot;kDrive.app&quot; if it exists) in &lt;b&gt;&quot;Full Disk Access&quot;&lt;/b&gt;</source>
         <translation>Setzen Sie das Häkchen bei &quot;kDrive LiteSync Extension&quot;(und bei &quot;kDrive.app&quot; sofern vorhanden) unter &lt;b&gt;&quot;Vollständiger Festplattenzgang&quot;&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="495"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="491"/>
         <source>STEP 1</source>
         <translation>SCHRITT 1</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="495"/>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="496"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="491"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="492"/>
         <source>(Done)</source>
         <translation>(Erledigt)</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="496"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="492"/>
         <source>STEP 2</source>
         <translation>SCHRITT 2</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="499"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="495"/>
         <source>STEPS PERFORMED</source>
         <translation>DURCHGEFÜHRTE SCHRITTE</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="501"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="497"/>
         <source>END</source>
         <translation>ENDE</translation>
     </message>
@@ -1538,12 +1538,12 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
 <context>
     <name>KDC::Logger</name>
     <message>
-        <location filename="../src/libcommongui/logger.cpp" line="211"/>
+        <location filename="../src/libcommongui/logger.cpp" line="201"/>
         <source>Error</source>
         <translation>Fehler</translation>
     </message>
     <message>
-        <location filename="../src/libcommongui/logger.cpp" line="211"/>
+        <location filename="../src/libcommongui/logger.cpp" line="201"/>
         <source>&lt;nobr&gt;File &apos;%1&apos;&lt;br/&gt;cannot be opened for writing.&lt;br/&gt;&lt;br/&gt;The log output can &lt;b&gt;not&lt;/b&gt; be saved!&lt;/nobr&gt;</source>
         <translation>&lt;nobr&gt;File &apos;%1&apos;&lt;br/&gt;kann nicht zum Schreiben geöffnet werden.&lt;br/&gt;&lt;br/&gt;Die Log-Datei kann &lt;b&gt;nicht&lt;/b&gt; gespeichert werden!&lt;/nobr&gt;</translation>
     </message>
@@ -2750,47 +2750,47 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         <translation>Einstellungen können nicht gespeichert werden!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="467"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="468"/>
         <source>The parent folder is a sync folder or contained in one</source>
         <translation>Der übergeordnete Ordner ist ein Sync-Ordner oder befindet sich in einem / einer</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="501"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="502"/>
         <source>Can&apos;t find a valid path</source>
         <translation>Kann keinen gültigen Pfad finden</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2112"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2109"/>
         <source>No valid folder selected!</source>
         <translation>Kein gültiger Ordner ausgewählt!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2123"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2120"/>
         <source>The selected path does not exist!</source>
         <translation>Der ausgewählte Pfad existiert nicht!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2128"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2125"/>
         <source>The selected path is not a folder!</source>
         <translation>Der ausgewählte Pfad ist kein Ordner!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2133"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2130"/>
         <source>You have no permission to write to the selected folder!</source>
         <translation>Sie haben keine Schreibberechtigung für den ausgewählten Ordner!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2163"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2160"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
         <translation>Der lokale Ordner %1 enthält einen bereits synchronisierten Ordner. Bitte wählen Sie einen anderen!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2171"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2168"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
         <translation>Der lokale Ordner %1 befindet sich in einem bereits synchronisierten Ordner. Bitte wählen Sie einen anderen!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2179"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2176"/>
         <source>The local folder %1 is already synced. Please pick another one!</source>
         <translation>Der lokale Ordner %1 ist bereits synchronisiert. Bitte wählen Sie einen anderen!</translation>
     </message>

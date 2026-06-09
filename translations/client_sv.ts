@@ -297,7 +297,7 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
         <translation>kDrive-klienten är redan igång!</translation>
     </message>
     <message>
-        <location filename="../src/gui/appclient.cpp" line="719"/>
+        <location filename="../src/gui/appclient.cpp" line="713"/>
         <source>The user %1 is not connected. Please log in again.</source>
         <translation>Användaren %1 är inte inloggad. Logga in igen.</translation>
     </message>
@@ -305,12 +305,12 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
 <context>
     <name>KDC::AppServer</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="1689"/>
+        <location filename="../src/server/appserver.cpp" line="1690"/>
         <source>Share link copied to clipboard</source>
         <translation>Delningslänken har kopierats till urklipp</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3810"/>
+        <location filename="../src/server/appserver.cpp" line="3835"/>
         <source>%1 and %n other file(s) have been removed.</source>
         <translation>
             <numerusform>%1 och %n annan fil har tagits bort.</numerusform>
@@ -318,13 +318,13 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3812"/>
+        <location filename="../src/server/appserver.cpp" line="3837"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 har tagits bort.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3817"/>
+        <location filename="../src/server/appserver.cpp" line="3842"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
             <numerusform>%1 och %n annan fil har lagts till.</numerusform>
@@ -332,13 +332,13 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3819"/>
+        <location filename="../src/server/appserver.cpp" line="3844"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 har lagts till.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3824"/>
+        <location filename="../src/server/appserver.cpp" line="3849"/>
         <source>%1 and %n other file(s) have been updated.</source>
         <translation>
             <numerusform>%1 och %n annan fil har uppdaterats.</numerusform>
@@ -346,13 +346,13 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3826"/>
+        <location filename="../src/server/appserver.cpp" line="3851"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 har uppdaterats.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3831"/>
+        <location filename="../src/server/appserver.cpp" line="3856"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
         <translation>
             <numerusform>%1 har flyttats till %2 och %n annan fil har flyttats.</numerusform>
@@ -360,12 +360,12 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3834"/>
+        <location filename="../src/server/appserver.cpp" line="3859"/>
         <source>%1 has been moved to %2.</source>
         <translation>%1 har flyttats till %2.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3842"/>
+        <location filename="../src/server/appserver.cpp" line="3867"/>
         <source>Sync Activity</source>
         <translation>Synkroniseringsaktivitet</translation>
     </message>
@@ -591,105 +591,105 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
 <context>
     <name>KDC::CustomExtensionSetupWidget</name>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="96"/>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="120"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="97"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="121"/>
         <source>Before finishing</source>
         <translation>Innan du avslutar</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="107"/>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="131"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="108"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="132"/>
         <source>Perform the following steps to ensure that Lite Sync works correctly on your computer and to complete the configuration of the kDrive.</source>
         <translation>Följ dessa steg för att säkerställa att Lite Sync fungerar korrekt på din dator och för att slutföra konfigurationen av kDrive.</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="208"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="209"/>
         <source>Open your Mac&apos;s &lt;b&gt;General settings&lt;/b&gt; or  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
         <translation>Öppna &lt;b&gt;inställningarna under ”Allmänt”&lt;/b&gt; på din Mac eller  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;klicka här&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="212"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="213"/>
         <source>Open your Mac&apos;s &lt;b&gt;Privacy &amp; Security settings&lt;/b&gt; or  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
         <translation>Öppna &lt;b&gt;inställningarna för sekretess och säkerhet&lt;/b&gt; på din Mac eller  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;klicka här&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="216"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="217"/>
         <source>Open your Mac&apos;s &lt;b&gt;Security &amp; Privacy settings&lt;/b&gt; or  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
         <translation>Öppna &lt;b&gt;inställningarna&lt;/b&gt; för &lt;b&gt;Säkerhet och integritet&lt;/b&gt; på din Mac eller  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;klicka här&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="246"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="247"/>
         <source>Go to &lt;b&gt;&quot;Login Items &amp; Extensions&quot;&lt;/b&gt; section and then to &lt;b&gt;&quot;Endpoint Security Extensions&quot;&lt;/b&gt;</source>
         <translation>Gå till avsnittet &lt;b&gt;”Inloggningsobjekt och tillägg”&lt;/b&gt; och sedan till &lt;b&gt;”Endpoint Security-tillägg”&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="263"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="264"/>
         <source>Authorize the kDrive application</source>
         <translation>Godkänn appen kDrive</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="272"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="273"/>
         <source>Go to &lt;b&gt;&quot;Security&quot;&lt;/b&gt; section</source>
         <translation>Gå till avsnittet &lt;b&gt;”Säkerhet”&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="289"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="290"/>
         <source>Authorize the kDrive application in the box indicating that kDrive has been blocked</source>
         <translation>Godkänn kDrive-appen i rutan där det står att kDrive har blockerats</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="299"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="300"/>
         <source>Unlock the padlock &lt;img src=&quot;:/client/resources/icons/actions/lock.png&quot;&gt; and authorize the kDrive application</source>
         <translation>Lås upp hänglåset &lt;img src=&quot;:/client/resources/icons/actions/lock.png&quot;&gt; och godkänn kDrive-appen</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="344"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="345"/>
         <source>Go to &lt;b&gt;&quot;Privacy &amp; Security&quot;&lt;/b&gt; section and click on &lt;b&gt;&quot;Full Disk Access&quot;&lt;/b&gt; or &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
         <translation>Gå till avsnittet &lt;b&gt;”Sekretess och säkerhet”&lt;/b&gt; och klicka på &lt;b&gt;”Fullständig disktillgång”&lt;/b&gt; eller &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;klicka här&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="348"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="349"/>
         <source>Still in the Security &amp; Privacy settings, open the &lt;b&gt;&quot;Privacy&quot;&lt;/b&gt; tab or &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
         <translation>Öppna fliken &lt;b&gt;”Sekretess”&lt;/b&gt; i inställningarna för säkerhet och sekretess, eller &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;klicka här&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="376"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="377"/>
         <source>Check the &quot;kDrive LiteSync Extension&quot; box then the &quot;kDrive.app&quot; box (if not already checked)</source>
         <translation>Markera rutan ”kDrive LiteSync Extension” och sedan rutan ”kDrive.app” (om den inte redan är markerad)</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="393"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="394"/>
         <source>A restart of the app might be proposed, in this case accept it</source>
         <translation>Det kan hända att appen föreslår en omstart; i så fall godkänner du den</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="399"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="400"/>
         <source>Check the &quot;kDrive LiteSync Extension&quot; box (and &quot;kDrive.app&quot; if it exists) in &lt;b&gt;&quot;Full Disk Access&quot;&lt;/b&gt;</source>
         <translation>Markera rutan ”kDrive LiteSync Extension” (och ”kDrive.app” om den finns) under &lt;b&gt;”Fullständig diskåtkomst”&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="495"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="491"/>
         <source>STEP 1</source>
         <translation>STEG 1</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="495"/>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="496"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="491"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="492"/>
         <source>(Done)</source>
         <translation>(Klart)</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="496"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="492"/>
         <source>STEP 2</source>
         <translation>STEG 2</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="499"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="495"/>
         <source>STEPS PERFORMED</source>
         <translation>UTFÖRDA STEG</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="501"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="497"/>
         <source>END</source>
         <translation>SLUTFÖR</translation>
     </message>
@@ -1538,12 +1538,12 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
 <context>
     <name>KDC::Logger</name>
     <message>
-        <location filename="../src/libcommongui/logger.cpp" line="211"/>
+        <location filename="../src/libcommongui/logger.cpp" line="201"/>
         <source>Error</source>
         <translation>Fel</translation>
     </message>
     <message>
-        <location filename="../src/libcommongui/logger.cpp" line="211"/>
+        <location filename="../src/libcommongui/logger.cpp" line="201"/>
         <source>&lt;nobr&gt;File &apos;%1&apos;&lt;br/&gt;cannot be opened for writing.&lt;br/&gt;&lt;br/&gt;The log output can &lt;b&gt;not&lt;/b&gt; be saved!&lt;/nobr&gt;</source>
         <translation>&lt;nobr&gt;Filen &amp;#x27;%1&amp;#x27;&lt;br/&gt;kan inte öppnas för skrivning.&lt;br/&gt;&lt;br/&gt;Logginformationen kan &lt;b&gt;inte&lt;/b&gt; sparas!&lt;/nobr&gt;</translation>
     </message>
@@ -2750,47 +2750,47 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
         <translation>Det går inte att spara parametrarna!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="467"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="468"/>
         <source>The parent folder is a sync folder or contained in one</source>
         <translation>Överordnad mapp är en synkroniseringsmapp eller ingår i en sådan</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="501"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="502"/>
         <source>Can&apos;t find a valid path</source>
         <translation>Det går inte att hitta en giltig sökväg</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2112"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2109"/>
         <source>No valid folder selected!</source>
         <translation>Ingen giltig mapp har valts!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2123"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2120"/>
         <source>The selected path does not exist!</source>
         <translation>Den valda sökvägen finns inte!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2128"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2125"/>
         <source>The selected path is not a folder!</source>
         <translation>Den valda sökvägen är ingen mapp!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2133"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2130"/>
         <source>You have no permission to write to the selected folder!</source>
         <translation>Du har inte behörighet att skriva till den valda mappen!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2163"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2160"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
         <translation>Den lokala mappen %1 innehåller en mapp som redan är synkroniserad. Välj en annan!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2171"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2168"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
         <translation>Den lokala mappen %1 finns i en mapp som redan är synkroniserad. Välj en annan mapp!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2179"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2176"/>
         <source>The local folder %1 is already synced. Please pick another one!</source>
         <translation>Den lokala mappen %1 är redan synkroniserad. Välj en annan!</translation>
     </message>
