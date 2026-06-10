@@ -59,7 +59,8 @@ class DriveUploadSession : public AbstractUploadSession {
 
     private:
         ExitInfo runJob() noexcept override;
-        ExitInfo checkHashMatch();
+        void computeHydrationStatus();
+        ExitInfo resolveUploadNeed();
         ExitInfo applyFileDates();
         DriveDbId _driveDbId = 0;
         std::shared_ptr<SyncDb> _syncDb;
