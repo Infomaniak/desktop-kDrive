@@ -24,6 +24,7 @@
 
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/keychainmanager/keychainmanager.h"
+#include "mocks/mockkeychainstorage.h"
 
 #include "libsyncengine/jobs/syncjobmanager.h"
 #include "libsyncengine/jobs/network/kDrive_API/deletejob.h"

@@ -25,6 +25,7 @@
 #include "libcommonserver/utility/utility.h"
 
 #include "libcommonserver/keychainmanager/keychainmanager.h"
+#include "mocks/mockkeychainstorage.h"
 #include "keychainmanager/apitoken.h"
 #include "libparms/db/parmsdb.h"
 #include "mocks/libcommonserver/db/mockdb.h"
