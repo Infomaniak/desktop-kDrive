@@ -123,8 +123,8 @@ bool KeyChainManager::readApiToken(const std::string &keychainKey, ApiToken &api
 
 bool KeyChainManager::deleteToken(const std::string &keychainKey) {
     if (_testing) {
-        if (_testingMap.find(keychainKey) != _testingMap.end()) {
-            _testingMap.erase(keychainKey);
+        if (_testingMap.contains(keychainKey)) {
+            (void) _testingMap.erase(keychainKey);
             return true;
         }
         return false;
