@@ -2915,17 +2915,7 @@ ExitInfo AppServer::updateUserInfo(User &user) {
 
 ExitInfo AppServer::updateUser(User &user) {
     bool updated = false;
-    if (const auto exitInfo = _loadUserInfo(user, updated); !exitInfo) {
-        LOG_WARN(_logger, "Error in Requests::loadUserInfo: " << exitInfo);
-        if (exitInfo.code() == ExitCode::InvalidToken) {
-            // Notify client app that the user is disconnected
-            UserInfo userInfo;
-            ServerRequests::userToUserInfo(user, userInfo);
-            sendUserUpdated(userInfo);
-        }
-
-        return exitInfo;
-    }
+    const auto exitInfo = _loadUserInfo(user, updated);
 
     if (updated) {
         bool found = false;
@@ -2942,6 +2932,12 @@ ExitInfo AppServer::updateUser(User &user) {
         ServerRequests::userToUserInfo(user, userInfo);
         sendUserUpdated(userInfo);
     }
+
+    if (!exitInfo) {
+        LOG_WARN(_logger, "Error in Requests::loadUserInfo: " << exitInfo);
+        return exitInfo;
+    }
+
     return ExitCode::Ok;
 }
 
@@ -3963,6 +3959,7 @@ ExitInfo AppServer::updateAllUsersInfo(const UpdateFollowUpAction action) {
 
         if (const auto exitInfo = updateUserInfo(user); !exitInfo) {
             LOG_WARN(_logger, "Error in updateUserInfo: " << exitInfo);
+            if (exitInfo.code() == ExitCode::InvalidToken) continue;
             return exitInfo;
         }
     }
