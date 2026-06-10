@@ -23,6 +23,7 @@
 #include "requests/parameterscache.h"
 
 #include "libcommonserver/keychainmanager/keychainmanager.h"
+#include "mocks/mockkeychainstorage.h"
 #include "libcommonserver/io/iohelper.h"
 
 #include "libcommon/utility/utility.h"
@@ -57,7 +58,7 @@ void TestComputeFSOperationWorker::setUp() {
     apiToken.setAccessToken(testVariables.apiToken);
 
     std::string keychainKey("123");
-    (void) KeyChainManager::instance(true);
+    (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
     (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     /// Create parmsDb

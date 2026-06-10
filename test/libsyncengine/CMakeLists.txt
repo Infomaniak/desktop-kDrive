@@ -23,6 +23,7 @@ set(testsyncengine_SRCS
         # Mocks
         ../mocks/libsyncengine/vfs/mockvfs.h
         ../mocks/libsyncengine/jobs/network/API_v2/mockloguploadjob.h
+        ../mocks/mockkeychainstorage.h ../mocks/mockkeychainstorage.cpp
         ../test_classes/syncpaltest.h
         ../test_classes/testsituationgenerator.h ../test_classes/testsituationgenerator.cpp
         # Database

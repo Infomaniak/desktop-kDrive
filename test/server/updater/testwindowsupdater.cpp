@@ -24,6 +24,7 @@
 #include "io/iohelper.h"
 #include "jobs/network/kDrive_API/downloadjob.h"
 #include "keychainmanager/keychainmanager.h"
+#include "mocks/mockkeychainstorage.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/testhelpers.h"
@@ -45,7 +46,7 @@ void TestWindowsUpdater::setUp() {
     apiToken.setAccessToken(testVariables.apiToken);
 
     const std::string keychainKey("123");
-    (void) KeyChainManager::instance(true);
+    (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
     (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
     // Create parmsDb
     bool alreadyExists = false;

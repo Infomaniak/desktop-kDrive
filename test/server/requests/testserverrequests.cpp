@@ -29,6 +29,7 @@
 #include "libparms/db/parmsdb.h"
 
 #include "mocks/libcommonserver/db/mockdb.h"
+#include "mocks/mockkeychainstorage.h"
 
 #include "test_utility/remotetemporarydirectory.h"
 #include "test_utility/testhelpers.h"
@@ -43,7 +44,7 @@ void TestServerRequests::setUp() {
     ApiToken apiToken;
     apiToken.setAccessToken(testVariables.apiToken);
 
-    (void) KeyChainManager::instance(true);
+    (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
     (void) KeyChainManager::instance()->writeToken(_keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
@@ -210,6 +211,7 @@ void TestServerRequests::testDeleteUserNotFound() {
     CPPUNIT_ASSERT(keychainFound);
 
     // Check that the existing user/account/drive are still present in db.
+
     User user;
     bool found = false;
     CPPUNIT_ASSERT(ParmsDb::instance()->selectUser(1, user, found));

@@ -26,6 +26,7 @@
 #include "jobs/network/kDrive_API/upload/uploadjob.h"
 #include "jobs/network/kDrive_API/upload/upload_session/driveuploadsession.h"
 #include "keychainmanager/keychainmanager.h"
+#include "mocks/mockkeychainstorage.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "network/proxy.h"
 
@@ -50,7 +51,7 @@ void BenchmarkParallelJobs::setUp() {
     apiToken.setAccessToken(_testVariables.apiToken);
 
     std::string keychainKey("123");
-    (void) KeyChainManager::instance(true);
+    (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
     (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb

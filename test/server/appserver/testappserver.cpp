@@ -22,6 +22,7 @@
 #include "utility/types.h"
 #include "requests/parameterscache.h"
 #include "libcommonserver/keychainmanager/keychainmanager.h"
+#include "mocks/mockkeychainstorage.h"
 #include "libcommon/utility/utility.h"
 #include "libsyncengine/jobs/syncjobmanager.h"
 #include "mocks/libcommonserver/db/mockdb.h"
@@ -50,7 +51,7 @@ void TestAppServer::setUp() {
     apiToken.setAccessToken(testVariables.apiToken);
 
     const std::string keychainKey("123");
-    (void) KeyChainManager::instance(true);
+    (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
     (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Insert user, account, drive & sync
