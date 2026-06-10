@@ -20,6 +20,8 @@
 
 #include "libcommonserver/keychainmanager/keychainstorage.h"
 
+#include "utility/types.h"
+
 #include <unordered_map>
 
 namespace KDC {
@@ -31,7 +33,7 @@ class MockKeyChainStorage : public IKeyChainStorage {
         bool deletePassword(const std::string &keychainKey) override;
 
     private:
-        std::unordered_map<std::string, std::string> _storage;
+        std::unordered_map<std::string, std::string, StringHashFunction, std::equal_to<>> _storage;
 };
 
 } // namespace KDC

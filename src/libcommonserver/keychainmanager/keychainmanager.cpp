@@ -28,7 +28,7 @@ static const std::string dummyData("dummy");
 
 std::shared_ptr<KeyChainManager> KeyChainManager::_instance = nullptr;
 
-std::shared_ptr<KeyChainManager> KeyChainManager::instance(std::shared_ptr<IKeyChainStorage> storage /*= nullptr*/) {
+std::shared_ptr<KeyChainManager> KeyChainManager::instance(const std::shared_ptr<IKeyChainStorage> storage /*= nullptr*/) {
     if (_instance == nullptr) {
         try {
             if (storage) {
@@ -45,7 +45,7 @@ std::shared_ptr<KeyChainManager> KeyChainManager::instance(std::shared_ptr<IKeyC
     return _instance;
 }
 
-KeyChainManager::KeyChainManager(std::shared_ptr<IKeyChainStorage> storage) :
+KeyChainManager::KeyChainManager(const std::shared_ptr<IKeyChainStorage> storage) :
     _storage(storage) {}
 
 bool KeyChainManager::writeDummyTest() {
