@@ -325,7 +325,8 @@ ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, SyncConfigu
     // Check if the path is the root of a drive, which is not allowed for sync*
     if (CommonUtility::isDiskRootFolder(path)) {
         LOGW_INFO(Log::instance()->getLogger(),
-                  L"The provided path indicates the root of a drive, which is not allowed for sync: " << Utility::formatSyncPath(path));
+                  L"The provided path indicates the root of a drive, which is not allowed for sync: "
+                          << Utility::formatSyncPath(path));
         return ExitCode::Ok;
     }
 
@@ -1978,6 +1979,7 @@ ExitInfo ServerRequests::loadUserInfo(User &user, bool &updated) {
     if (!exitInfo) {
         if (exitInfo.code() == ExitCode::InvalidToken) {
             user.setKeychainKey(""); // Invalid keychain key
+            updated = true;
         }
         return exitInfo;
     }
