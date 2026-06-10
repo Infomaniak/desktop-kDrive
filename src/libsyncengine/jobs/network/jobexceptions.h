@@ -36,10 +36,6 @@ struct DataError : JobException {
         using JobException::JobException;
 };
 
-struct TokenError : JobException {
-        using JobException::JobException;
-};
-
 struct InvalidArgumentError : JobException {
         using JobException::JobException;
 };
