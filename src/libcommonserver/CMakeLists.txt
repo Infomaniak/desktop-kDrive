@@ -49,6 +49,7 @@ set(libcommonserver_SRCS
     log/customrollingfileappender.h log/customrollingfileappender.cpp
     # Keychain manager
     keychainmanager/apitoken.h keychainmanager/apitoken.cpp
+    keychainmanager/keychainstorage.h keychainmanager/keychainstorage.cpp
     keychainmanager/keychainmanager.h keychainmanager/keychainmanager.cpp
 )
 

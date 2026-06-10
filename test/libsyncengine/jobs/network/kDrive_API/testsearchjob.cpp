@@ -52,7 +52,7 @@ void TestSearchJob::setUp() {
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ Set Up TestSearchJob");
 
     // Init in-memory keychain (testing mode, no real OS keychain used)
-    (void) KeyChainManager::instance(true);
+    (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
 
     ApiToken apiToken;
     apiToken.setAccessToken("dummy_access_token");
