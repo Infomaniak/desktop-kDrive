@@ -65,7 +65,7 @@ DriveUploadSession::~DriveUploadSession() {
     }
 }
 
-ExitInfo DriveUploadSession::checkHashMatch() {
+ExitInfo DriveUploadSession::resolveUploadNeed() {
     _shouldUpload = true;
     FileStat fileStat;
     IoError ioError = IoError::Success;
@@ -75,32 +75,35 @@ ExitInfo DriveUploadSession::checkHashMatch() {
         return ExitCode::Ok; // Non-fatal: fall through to upload
     }
     CheckHashMatchJob hashJob(_driveDbId, getFilePath(), _fileId, fileStat.size);
-    const ExitInfo exitInfo = hashJob.runSynchronously();
-    if (!exitInfo) {
+    if (const ExitInfo exitInfo = hashJob.runSynchronously(); !exitInfo) {
         LOGW_DEBUG(getLogger(), L"CheckHashMatchJob failed: " << exitInfo << L" Proceeding UploadJob normally.");
-        return ExitCode::Ok; // Non-fatal: fall through to upload
+        return exitInfo; // Non-fatal for the caller: fall through to upload
     }
     _shouldUpload = !hashJob.hashMatch();
+
+    if (!_shouldUpload) {
+        LOGW_DEBUG(getLogger(), L"Changing last modified date without uploading: hash match");
+        if (const ExitInfo exitInfo = applyFileDates(); !exitInfo) {
+            LOGW_DEBUG(getLogger(), L"applyFileDates failed: " << exitInfo << L" Proceeding UploadJob normally.");
+            return exitInfo;
+        }
+    }
     return ExitCode::Ok;
 }
 
+void DriveUploadSession::computeHydrationStatus() {
+    VfsStatus vfsStatus;
+    if (_vfs) (void) _vfs->status(getFilePath(), vfsStatus);
+    _isHydrated = !_vfs || vfsStatus.isHydrated;
+}
+
 ExitInfo DriveUploadSession::runJob() noexcept {
-    bool isCreate = _fileId.empty();
-    if (!isCreate && _vfs) {
-        // Get hydration status
-        VfsStatus vfsStatus;
-        (void) _vfs->status(getFilePath(), vfsStatus);
-        _isHydrated = vfsStatus.isHydrated;
+    if (!_fileId.empty() && _vfs) {
+        computeHydrationStatus();
         if (_isHydrated) {
-            if (const ExitInfo exitInfo = checkHashMatch(); !exitInfo) {
-                LOGW_DEBUG(getLogger(), L"Error in checkHashMatch: " << exitInfo);
-                return exitInfo;
-            }
-            if (!_shouldUpload) {
-                LOGW_DEBUG(getLogger(), L"hanging last modified date without uploading");
-                if (const ExitInfo exitInfo = applyFileDates(); !exitInfo) return exitInfo;
-                return ExitCode::Ok;
-            }
+            const ExitInfo exitInfo = resolveUploadNeed();
+            if (!_shouldUpload && exitInfo) return ExitCode::Ok;
+            LOGW_DEBUG(getLogger(), L"resolveUploadNeed: proceeding with upload - " << exitInfo);
         }
     }
     return AbstractUploadSession::runJob();
