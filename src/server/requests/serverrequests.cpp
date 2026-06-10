@@ -1980,6 +1980,7 @@ ExitInfo ServerRequests::loadUserInfo(User &user, bool &updated) {
     if (!exitInfo) {
         if (exitInfo.code() == ExitCode::InvalidToken) {
             user.setKeychainKey(""); // Invalid keychain key
+            updated = true;
         }
         return exitInfo;
     }
