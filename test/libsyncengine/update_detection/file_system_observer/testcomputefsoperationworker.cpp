@@ -23,6 +23,7 @@
 #include "requests/parameterscache.h"
 
 #include "libcommonserver/keychainmanager/keychainmanager.h"
+#include "mocks/mockkeychainstorage.h"
 #include "libcommonserver/io/iohelper.h"
 
 #include "libcommon/utility/utility.h"

@@ -19,6 +19,7 @@
 #include "testfilerescuer.h"
 #include "db/parmsdb.h"
 #include "keychainmanager/keychainmanager.h"
+#include "mocks/mockkeychainstorage.h"
 #include "network/proxy.h"
 #include "propagation/executor/filerescuer.h"
 

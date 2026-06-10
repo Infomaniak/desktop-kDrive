@@ -25,6 +25,7 @@
 #include "libparms/db/parmsdb.h"
 
 #include "libcommonserver/keychainmanager/keychainmanager.h"
+#include "mocks/mockkeychainstorage.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <iostream>
