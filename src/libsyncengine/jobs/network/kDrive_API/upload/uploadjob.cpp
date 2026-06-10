@@ -97,7 +97,7 @@ ExitInfo UploadJob::canRun() {
     return ExitCode::Ok;
 }
 
-ExitInfo UploadJob::checkHashMatch() {
+ExitInfo UploadJob::resolveUploadNeed() {
     _shouldUpload = true;
     FileStat fileStat;
     IoError ioError = IoError::Success;
@@ -107,33 +107,35 @@ ExitInfo UploadJob::checkHashMatch() {
         return ExitCode::Ok; // Non-fatal: fall through to upload
     }
     CheckHashMatchJob hashJob(driveDbId(), _absoluteFilePath, _fileId, fileStat.size);
-    const ExitInfo exitInfo = hashJob.runSynchronously();
-    if (!exitInfo) {
+    if (const ExitInfo exitInfo = hashJob.runSynchronously(); !exitInfo) {
         LOGW_DEBUG(_logger, L"CheckHashMatchJob failed: " << exitInfo << L" Proceeding UploadJob normally.");
-        return ExitCode::Ok; // Non-fatal: fall through to upload
+        return exitInfo; // Non-fatal for the caller: fall through to upload
     }
     _shouldUpload = !hashJob.hashMatch();
+
+    if (!_shouldUpload) {
+        LOGW_DEBUG(_logger, L"Changing last modified date without uploading: hash match");
+        if (const ExitInfo exitInfo = applyFileDates(); !exitInfo) {
+            LOGW_DEBUG(_logger, L"applyFileDates failed: " << exitInfo << L" Proceeding UploadJob normally.");
+            return exitInfo;
+        }
+    }
     return ExitCode::Ok;
 }
 
-ExitInfo UploadJob::runJob() noexcept {
-    bool isCreate = _fileId.empty();
-    if (!isCreate && _vfs) {
-        // Get hydration status
-        VfsStatus vfsStatus;
-        (void) _vfs->status(_absoluteFilePath, vfsStatus);
-        _isHydrated = vfsStatus.isHydrated;
-        if (_isHydrated) {
-            if (const ExitInfo exitInfo = checkHashMatch(); !exitInfo) {
-                LOGW_DEBUG(_logger, L"Error in checkHashMatch: " << exitInfo);
-                return exitInfo;
-            }
-            if (!_shouldUpload) {
-                LOGW_DEBUG(_logger, L"hanging last modified date without uploading");
+void UploadJob::computeHydrationStatus() {
+    VfsStatus vfsStatus;
+    if (_vfs) (void) _vfs->status(_absoluteFilePath, vfsStatus);
+    _isHydrated = !_vfs || vfsStatus.isHydrated;
+}
 
-                if (const ExitInfo exitInfo = applyFileDates(); !exitInfo) return exitInfo;
-                return ExitCode::Ok;
-            }
+ExitInfo UploadJob::runJob() noexcept {
+    if (!_fileId.empty() && _vfs) {
+        computeHydrationStatus();
+        if (_isHydrated) {
+            const ExitInfo exitInfo = resolveUploadNeed();
+            if (!_shouldUpload && exitInfo) return ExitCode::Ok;
+            LOGW_DEBUG(_logger, L"resolveUploadNeed: proceeding with upload - " << exitInfo);
         }
     }
     return AbstractTokenNetworkJob::runJob();

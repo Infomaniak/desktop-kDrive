@@ -51,7 +51,8 @@ class UploadJob : public AbstractTokenNetworkJob {
 
     private:
         ExitInfo runJob() noexcept override;
-        ExitInfo checkHashMatch();
+        void computeHydrationStatus();
+        ExitInfo resolveUploadNeed();
         std::string getSpecificUrl() override;
         void setQueryParameters(Poco::URI &) override;
         ExitInfo setData() override;
