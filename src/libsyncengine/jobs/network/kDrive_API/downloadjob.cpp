@@ -160,11 +160,17 @@ ExitInfo DownloadJob::resolveDownloadNeed() {
     _shouldDownload = !hashJob.hashMatch();
 
     if (!_shouldDownload) {
-        LOGW_DEBUG(_logger, L"Changing last modified date without downloading")
-        if (const ExitInfo exitInfo = applyFileDatesIfRequired(FileType::Regular); !exitInfo) return exitInfo;
-        return setOutputParameters(); // Returns Ok on success: signals runJob to stop here
+        LOGW_DEBUG(_logger, L"Changing last modified date without downloading : hash match");
+        if (const ExitInfo exitInfo = applyFileDatesIfRequired(FileType::Regular); !exitInfo) {
+            LOGW_DEBUG(_logger, L"applyFileDatesIfRequired failed: " << exitInfo << L" Proceeding DownloadJob normally.");
+            return exitInfo;
+        }
+        if (const ExitInfo exitInfo = setOutputParameters(); !exitInfo) {
+            LOGW_DEBUG(_logger, L"setOutputParameters failed: " << exitInfo << L" Proceeding DownloadJob normally.");
+            return exitInfo;
+        }
     }
-    return {ExitCode::OperationCanceled, ExitCause::Unknown}; // Download is needed: caller must continue
+    return ExitCode::Ok; // Download is needed: caller must continue
 }
 
 ExitInfo DownloadJob::runJob() noexcept {
@@ -173,7 +179,7 @@ ExitInfo DownloadJob::runJob() noexcept {
     computeHydrationStatus();
     if (_isHydrated) {
         const ExitInfo exitInfo = resolveDownloadNeed();
-        if (exitInfo) return exitInfo;
+        if (!_shouldDownload && exitInfo) return ExitCode::Ok;
         LOGW_DEBUG(_logger, L"resolveDownloadNeed: proceeding with download - " << exitInfo);
     }
 
