@@ -80,20 +80,26 @@
                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                 </Expander.Header>
                 <Expander.Content>
-                    <ItemsControl x:Name="ReleaseNotesItemsControl">
+                    <ItemsControl x:Name="ReleaseNotesItemsControl"
+                                  Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.XS}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="x:String">
-                                <StackPanel Orientation="Horizontal"
-                                                    Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
-                                                    Padding="0,2">
-                                    <TextBlock Text="•"
-                                                       Style="{ThemeResource CaptionTextBlockStyle}"
-                                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                    <TextBlock Text="{x:Bind}"
-                                                       TextWrapping="Wrap"
-                                                       Style="{ThemeResource CaptionTextBlockStyle}"
-                                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                </StackPanel>
+                                <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+                                      Padding="0,2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0"
+                                               Text="•"
+                                               Style="{ThemeResource CaptionTextBlockStyle}"
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Grid.Column="1"
+                                               Text="{x:Bind}"
+                                               TextWrapping="WrapWholeWords"
+                                               Style="{ThemeResource CaptionTextBlockStyle}"
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
