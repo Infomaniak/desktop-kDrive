@@ -22,6 +22,7 @@
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 
 #include "libcommonserver/keychainmanager/keychainmanager.h"
+#include "mocks/mockkeychainstorage.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/network/proxy.h"
 

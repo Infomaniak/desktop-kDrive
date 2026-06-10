@@ -24,6 +24,7 @@
 #include "io/iohelper.h"
 #include "jobs/network/kDrive_API/downloadjob.h"
 #include "keychainmanager/keychainmanager.h"
+#include "mocks/mockkeychainstorage.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/testhelpers.h"

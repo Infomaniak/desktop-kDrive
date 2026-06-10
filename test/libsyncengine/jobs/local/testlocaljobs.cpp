@@ -26,6 +26,7 @@
 #include "jobs/local/localcopyjob.h"
 #include "keychainmanager/apitoken.h"
 #include "keychainmanager/keychainmanager.h"
+#include "mocks/mockkeychainstorage.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "network/proxy.h"
 #include "requests/parameterscache.h"

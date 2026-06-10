@@ -22,6 +22,7 @@
 #include "io/filestat.h"
 #include "io/iohelper.h"
 #include "keychainmanager/keychainmanager.h"
+#include "mocks/mockkeychainstorage.h"
 #include "mocks/libsyncengine/vfs/mockvfs.h"
 #include "network/proxy.h"
 #include "propagation/executor/filerescuer.h"

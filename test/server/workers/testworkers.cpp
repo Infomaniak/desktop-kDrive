@@ -20,6 +20,7 @@
 #include "propagation/executor/executorworker.h"
 
 #include "libcommonserver/keychainmanager/keychainmanager.h"
+#include "mocks/mockkeychainstorage.h"
 
 #include "libcommonserver/network/proxy.h"
 #include "libcommonserver/io/iohelper.h"
