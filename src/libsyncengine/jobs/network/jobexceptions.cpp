@@ -28,9 +28,6 @@ ExitCode exception2ExitCode(const std::exception &exc) {
     if (dynamic_cast<const DataError *>(&exc)) {
         return ExitCode::DataError;
     }
-    if (dynamic_cast<const TokenError *>(&exc)) {
-        return ExitCode::InvalidToken;
-    }
     if (dynamic_cast<const InvalidArgumentError *>(&exc)) {
         return ExitCode::LogicError;
     }
