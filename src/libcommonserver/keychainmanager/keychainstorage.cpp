@@ -22,14 +22,14 @@
 
 #include <log4cplus/loggingmacros.h>
 
-#define PACKAGE "com.infomaniak.drive"
-#define SERVICE "desktopclient"
-
 namespace KDC {
+
+static const std::string package("com.infomaniak.drive");
+static const std::string service("desktopclient");
 
 bool KeyChainStorage::writePassword(const std::string &keychainKey, const std::string &rawData) {
     keychain::Error error{};
-    keychain::setPassword(PACKAGE, SERVICE, keychainKey, rawData, error);
+    keychain::setPassword(package, service, keychainKey, rawData, error);
     if (error) {
         LOG_DEBUG(KDC::Log::instance()->getLogger(),
                   "Failed to save authentication info to keychain: " << error.code << " - " << error.message);
@@ -43,7 +43,7 @@ bool KeyChainStorage::writePassword(const std::string &keychainKey, const std::s
 
 bool KeyChainStorage::readPassword(const std::string &keychainKey, std::string &data, bool &found) {
     keychain::Error error{};
-    data = keychain::getPassword(PACKAGE, SERVICE, keychainKey, error);
+    data = keychain::getPassword(package, service, keychainKey, error);
     if (error.type == keychain::ErrorType::NotFound) {
         LOG_DEBUG(KDC::Log::instance()->getLogger(),
                   "Could not find data in keychain for key " << keychainKey << ": " << error.code << " - " << error.message);
@@ -61,10 +61,10 @@ bool KeyChainStorage::readPassword(const std::string &keychainKey, std::string &
 
 bool KeyChainStorage::deletePassword(const std::string &keychainKey) {
     keychain::Error error{};
-    keychain::deletePassword(PACKAGE, SERVICE, keychainKey, error);
+    keychain::deletePassword(package, service, keychainKey, error);
     if (error) {
         LOG_DEBUG(KDC::Log::instance()->getLogger(),
-                  "Failed to delete authentication info to keychain: " << error.code << " - " << error.message);
+                  "Failed to delete authentication info from keychain: " << error.code << " - " << error.message);
 
         sentry::Handler::captureMessage(sentry::Level::Warning, "KeyChain::deleteToken", error.message);
 
