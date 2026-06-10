@@ -313,20 +313,6 @@ public final class FileTreeOutlineView: NSView {
         return sawOn ? .on : .off
     }
 
-    private func allLoadedIDs() -> Set<String> {
-        var ids = Set<String>()
-        func walk(_ nodes: [FileTreeNode]) {
-            for node in nodes {
-                ids.insert(node.item.id)
-                if let children = node.children {
-                    walk(children)
-                }
-            }
-        }
-        walk(rootNodes)
-        return ids
-    }
-
     // MARK: - Refresh & notification
 
     private func refreshSelectionDisplay() {
