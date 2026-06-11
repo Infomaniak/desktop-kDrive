@@ -147,7 +147,7 @@ ExitInfo DownloadJob::canRun() {
 
 void DownloadJob::computeHydrationStatus() {
     VfsStatus vfsStatus;
-    ExitInfo exitInfo;
+    ExitInfo exitInfo = ExitCode::Ok;
     if (_vfs) exitInfo = _vfs->status(_fileDownloadInfo.localpath, vfsStatus);
     _isHydrated = !_vfs || (exitInfo && vfsStatus.isHydrated);
 }
@@ -159,7 +159,7 @@ ExitInfo DownloadJob::resolveDownloadNeed() {
                               _fileDownloadInfo.expectedSize);
     if (const ExitInfo exitInfo = hashJob.runSynchronously(); !exitInfo) {
         LOGW_DEBUG(_logger, L"CheckHashMatchJob failed: " << exitInfo << L" Proceeding DownloadJob normally.");
-        return exitInfo; // Non-fatal for the caller: fall through to download
+        return exitInfo;
     }
     _shouldDownload = !hashJob.hashMatch();
 
@@ -174,7 +174,7 @@ ExitInfo DownloadJob::resolveDownloadNeed() {
             return exitInfo;
         }
     }
-    return ExitCode::Ok; // Download is needed: caller must continue
+    return ExitCode::Ok;
 }
 
 ExitInfo DownloadJob::runJob() noexcept {
