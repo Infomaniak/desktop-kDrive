@@ -140,8 +140,9 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
                                                           LongPollJobMap &longPollJobs);
         [[nodiscard]] ExitInfo processEvents(const std::vector<RemoteNodeId> &specialFoldersRemoteIds,
                                              LongPollJobMap &longPollJobs);
-        using FullListingJobMap = std::unordered_map<RemoteNodeId, std::shared_ptr<CsvFullFileListWithCursorJob>,
-                                                     StringHashFunction, std::equal_to<>>;
+
+        void abortAndClearLongPollJobs(LongPollJobMap &longPollJobs);
+
         friend class TestRemoteFileSystemObserverWorker;
 };
 
