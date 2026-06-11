@@ -17,7 +17,6 @@
  */
 
 import AppKit
-import kDriveCoreUI
 import kDriveResources
 
 final class FileTreeHeaderView: NSTableHeaderView {

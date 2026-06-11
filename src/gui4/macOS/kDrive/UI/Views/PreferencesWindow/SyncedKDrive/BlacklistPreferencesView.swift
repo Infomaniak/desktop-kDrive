@@ -67,6 +67,7 @@ struct BlacklistPreferencesView: View {
             try await BlacklistJobs().setBlacklistedNodeList(syncDbId: Int32(synchroDbId), nodeIdList: Array(blackList))
             goBack()
         } catch {
+            isShowingGenericErrorAlert = true
             SentrySDK.capture(error: error)
         }
     }
@@ -79,7 +80,9 @@ struct BlacklistPreferencesView: View {
     private func fetchBlacklistedNodes() async {
         do {
             let blacklistedNodes = try await BlacklistJobs().getBlacklistedNodeList(syncDbId: Int32(synchroDbId))
+
             initialBlacklist = Set(blacklistedNodes)
+            blackList = initialBlacklist
         } catch {
             SentrySDK.capture(error: error)
         }
