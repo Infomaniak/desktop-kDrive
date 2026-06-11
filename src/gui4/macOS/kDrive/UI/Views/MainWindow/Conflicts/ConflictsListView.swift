@@ -1,0 +1,110 @@
+/*
+ Infomaniak kDrive - Desktop
+ Copyright (C) 2023-2026 Infomaniak Network SA
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+import kDriveCore
+import kDriveCoreUI
+import kDriveResources
+import SwiftUI
+
+struct ConflictsToResolve: Sendable, Identifiable {
+    var id: String {
+        return errors.map(\.metadata.path).joined(separator: ",")
+    }
+
+    let errors: [SynchroError]
+}
+
+struct ConflictsListView: View {
+    @State private var search = ""
+    @State private var isShowingVersionSelectorSheet: ConflictsToResolve?
+
+    @State private var errors: [SynchroError] = []
+
+    @ObservedSynchroErrors private var synchroErrors
+
+    private var filteredErrors: [SynchroError] {
+        guard !search.isEmpty else {
+            return errors
+        }
+
+        return errors.filter { $0.metadata.path.localizedCaseInsensitiveContains(search) }
+    }
+
+    var body: some View {
+        Form {
+            Section {} header: {
+                VStack(alignment: .leading) {
+                    Text(KDriveLocalizable.labelManyConflictTitle(errors.count))
+                        .font(.Tokens.body)
+                        .foregroundStyle(ColorToken.Text.primary.asColor)
+                    Text(KDriveLocalizable.labelChooseConflictVersionIndividual)
+                        .font(.Tokens.callout)
+                        .foregroundStyle(ColorToken.Text.tertiary.asColor)
+                }
+                .padding(.bottom, AppPadding.padding16)
+            }
+
+            Section {
+                ForEach(filteredErrors) { error in
+                    ConflictCellView(path: error.metadata.path) {
+                        resolveConflict(error)
+                    }
+                }
+            } header: {
+                HStack {
+                    TextField(
+                        KDriveLocalizable.conflictsSearchBoxPlaceholder,
+                        text: $search,
+                        prompt: Text(KDriveLocalizable.conflictsSearchBoxPlaceholder)
+                    )
+                    .labelsHidden()
+                    .textFieldStyle(.roundedBorder)
+                    .frame(maxWidth: 300)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                    Button(KDriveLocalizable.buttonStartConflictsResolution, action: startConflictsResolution)
+                        .buttonStyle(.borderedProminent)
+                }
+            }
+        }
+        .groupedFormatStyle()
+        .sheet(item: $isShowingVersionSelectorSheet) { conflictsToResolve in
+            ConflictVersionSelectorView(errors: conflictsToResolve.errors)
+        }
+        .onAppear(perform: refreshConflicts)
+        .onChange(of: synchroErrors[.filesToCheck]) { _ in
+            refreshConflicts()
+        }
+    }
+
+    private func refreshConflicts() {
+        errors = (synchroErrors[.filesToCheck] ?? []).filter { $0.kind == .conflict }
+    }
+
+    private func startConflictsResolution() {
+        isShowingVersionSelectorSheet = ConflictsToResolve(errors: errors)
+    }
+
+    private func resolveConflict(_ error: SynchroError) {
+        isShowingVersionSelectorSheet = ConflictsToResolve(errors: [error])
+    }
+}
+
+#Preview {
+    ConflictsListView()
+}

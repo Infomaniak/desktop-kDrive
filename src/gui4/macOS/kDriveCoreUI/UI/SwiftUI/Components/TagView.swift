@@ -16,19 +16,26 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Cocoa
-import InfomaniakDI
-import kDriveCoreUI
-import kDriveResources
 import SwiftUI
 
-final class ErrorsViewController: TitledViewController<ErrorsView> {
-    init(mainViewModel: MainViewModel) {
-        @InjectService var router: MainViewRouter
-        super.init(
-            toolbarTitle: KDriveLocalizable.errorPageTitle,
-            navigableRouter: router,
-            contentView: ErrorsView(mainViewModel: mainViewModel)
-        )
+public struct TagView: View {
+    let text: String
+
+    public init(text: String) {
+        self.text = text
     }
+
+    public var body: some View {
+        Text(text)
+            .font(.Tokens.callout)
+            .padding(.horizontal, AppPadding.padding4)
+            .padding(.vertical, AppPadding.padding2)
+            .foregroundStyle(ColorToken.Status.Strong.success.asColor)
+            .background(ColorToken.Status.Light.success.asColor, in: .rect(cornerRadius: 4))
+    }
+}
+
+#Preview {
+    TagView(text: "Example Tag")
+        .padding()
 }

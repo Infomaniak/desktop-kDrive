@@ -23,6 +23,7 @@ import SwiftUI
 
 struct PathInfoChipView: View {
     let pathInfo: ErrorCellView.PathInfo
+    let backgroundColor: Color
 
     var body: some View {
         HStack(spacing: AppPadding.padding4) {
@@ -47,7 +48,7 @@ struct PathInfoChipView: View {
         .foregroundStyle(ColorToken.Text.primary.asColor)
         .padding(.horizontal, AppPadding.padding8)
         .padding(.vertical, AppPadding.padding4)
-        .background(Color(NSColor.windowBackgroundColor), in: .rect(cornerRadius: AppRadius.radius4))
+        .background(backgroundColor, in: .rect(cornerRadius: AppRadius.radius4))
     }
 }
 
@@ -74,7 +75,7 @@ struct ErrorCellView: View {
                     .foregroundStyle(.primary)
 
                 if let pathInfo {
-                    PathInfoChipView(pathInfo: pathInfo)
+                    PathInfoChipView(pathInfo: pathInfo, backgroundColor: Color(NSColor.windowBackgroundColor))
                 }
 
                 Text(description.capitalizedFirstLetter)

@@ -16,19 +16,28 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Cocoa
-import InfomaniakDI
-import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
-final class ErrorsViewController: TitledViewController<ErrorsView> {
-    init(mainViewModel: MainViewModel) {
-        @InjectService var router: MainViewRouter
-        super.init(
-            toolbarTitle: KDriveLocalizable.errorPageTitle,
-            navigableRouter: router,
-            contentView: ErrorsView(mainViewModel: mainViewModel)
-        )
+enum ConflictType: String, CaseIterable {
+    case remote
+    case local
+
+    var icon: Image {
+        switch self {
+        case .local:
+            return KDriveResources.computer.swiftUIImage
+        case .remote:
+            return KDriveResources.cloud.swiftUIImage
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .local:
+            return KDriveLocalizable.labelLocal
+        case .remote:
+            return KDriveLocalizable.labelOnline
+        }
     }
 }

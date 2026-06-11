@@ -18,17 +18,18 @@
 
 import Cocoa
 import InfomaniakDI
+import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
-final class ErrorsViewController: TitledViewController<ErrorsView> {
-    init(mainViewModel: MainViewModel) {
+final class QuickConflictsResolutionViewController: TitledViewController<QuickConflictsResolutionView> {
+    init(errors: [SynchroError]) {
         @InjectService var router: MainViewRouter
         super.init(
-            toolbarTitle: KDriveLocalizable.errorPageTitle,
+            toolbarTitle: KDriveLocalizable.conflictErrorTitle,
             navigableRouter: router,
-            contentView: ErrorsView(mainViewModel: mainViewModel)
+            contentView: QuickConflictsResolutionView(errors: errors)
         )
     }
 }

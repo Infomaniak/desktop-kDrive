@@ -20,8 +20,10 @@
 /* loco:69a6d9dd08a75d40410b53f6 */
 "accessibilityBetaProgramPicker" = "Scelta del canale di distribuzione";
 
-/* loco:69fa0b22dbdab357240dcb12
- * VoiceOver reads this when the user focuses the X button that clears the search field */
+/* loco:69e1dcc78d162264ae0f2f52 */
+"accessibilityMoreInformation" = "Vedi altre informazioni";
+
+/* loco:69fa0b22dbdab357240dcb12 */
 "accessibilitySearchClear" = "Cancella ricerca";
 
 /* loco:69fa0b2668d2d58f030a2422
@@ -102,6 +104,9 @@
 
 /* loco:691deb2291b20ac7fd045012 */
 "buttonAdvancedParameters" = "Impostazioni avanzate";
+
+/* loco:69aad577c1fb41f6e204de02 */
+"buttonApplyToXFiles" = "Applica a %@ file";
 
 /* loco:69bd7281cd515cd190042de2 */
 "buttonAskForAccess" = "Richiedi accesso";
@@ -243,9 +248,13 @@
 
 /* loco:6964e1dfed4b6acb0107409a */
 "buttonSeeActivities" = "Vedere le attività";
+/* loco:69a6a31c97f5f5084b09e612 */
+"buttonSelect" = "Seleziona";
 
 /* loco:698c5cb5f86b52c6fc001fc4 */
 "buttonSelectFolders" = "Selezionare le cartelle";
+/* loco:69a6a32d8e33a191f90115f2 */
+"buttonSelected" = "Selezionato";
 
 /* loco:6989f2b84f80e68db204aa55 */
 "buttonSend" = "Invia";
@@ -796,6 +805,9 @@
 
 /* loco:6a155a770336fcc4820ebf57 */
 "labelApplicationName" = "Nome dell'applicazione";
+/* loco:69a6a42b7dda553eac028754 */
+"labelAuthor" = "Autore";
+
 
 /* loco:69aac15193f089df1a016352 */
 "labelChooseConflictVersion" = "Scegli quale versione dei tuoi file desideri conservare.";
@@ -830,6 +842,9 @@
 /* loco:69a012ce9c6aefa11d0c0a22 */
 "labelCreateNewSync" = "Crea un %@.";
 
+/* loco:69a6a43c586562e1ae0e9142 */
+"labelDate" = "Data";
+
 /* loco:69a00df5cee58fe1c90de9e2 */
 "labelFAQ" = "FAQ";
 
@@ -862,6 +877,8 @@
 
 /* loco:698c656e3e4e4bbf4f02bde2 */
 "labelJustNow" = "Solo ora";
+/* loco:69a81e43ec7b4ff05a0b50d2 */
+"labelLocal" = "Locale";
 
 /* loco:69aac3530302ea9cb209d153 */
 "labelManyConflictTitle" = "%@ file sono stati modificati sia sul tuo computer che su kDrive.";
@@ -941,6 +958,9 @@
 
 /* loco:698aeefb604e522161001392 */
 "labelTime" = "Tempo";
+
+/* loco:69a6994cc60d93f50404f812 */
+"labelXoverY" = "%@ di %@";
 
 /* loco:698c6a57a5f62ca5f1091942 */
 "labelkDriveManagement" = "Gestione kDrive";

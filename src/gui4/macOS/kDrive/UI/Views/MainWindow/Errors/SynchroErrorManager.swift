@@ -26,6 +26,7 @@ final class SynchroErrorManager: ObservableObject {
     @Published var isShowingActivateOfflineSynchroSheet: SynchroError?
     @Published var isShowingLocalAccessSheet: SynchroError?
     @Published var isShowingResolutionTipsSheet: ExplanationsSheetType?
+    @Published var isShowingVersionSelectorSheet: ConflictsToResolve?
 
     enum ExplanationsSheetType: Identifiable, Sendable {
         var id: String {
@@ -151,8 +152,14 @@ final class SynchroErrorManager: ObservableObject {
 
     // MARK: - Misc
 
-    func handleConflict() {
-        // TODO: Will be done in a next PR
+    func handleConflicts(_ errors: [SynchroError]) {
+        if errors.count <= 1, let error = errors.first {
+            isShowingVersionSelectorSheet = ConflictsToResolve(errors: [error])
+        } else {
+            @InjectService var router: MainViewRouter
+            router.setCurrentTabIfNecessary(.activities)
+            router.append(.quickConflictsResolution(errors))
+        }
     }
 
     func renameItem(_ error: SynchroError) async {

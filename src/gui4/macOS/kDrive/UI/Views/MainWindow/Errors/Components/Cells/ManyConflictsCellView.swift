@@ -16,19 +16,28 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Cocoa
-import InfomaniakDI
+import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
-final class ErrorsViewController: TitledViewController<ErrorsView> {
-    init(mainViewModel: MainViewModel) {
-        @InjectService var router: MainViewRouter
-        super.init(
-            toolbarTitle: KDriveLocalizable.errorPageTitle,
-            navigableRouter: router,
-            contentView: ErrorsView(mainViewModel: mainViewModel)
-        )
+struct ManyConflictsCellView: View {
+    let errors: [SynchroError]
+    let manager: SynchroErrorManager
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppPadding.padding8) {
+            ErrorCellView(
+                title: KDriveLocalizable.manyConflictErrorTitle(errors.count),
+                description: KDriveLocalizable.manyConflictErrorDescription,
+                action: .init(title: KDriveLocalizable.buttonManage) {
+                    manager.handleConflicts(errors)
+                }
+            )
+        }
     }
+}
+
+#Preview {
+    ManyConflictsCellView(errors: [], manager: SynchroErrorManager())
 }

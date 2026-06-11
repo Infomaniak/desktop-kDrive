@@ -26,16 +26,21 @@ struct ErrorsListView: View {
     let errors: [UISynchroErrorCategory: [SynchroError]]
     let isAdmin: Bool
 
-    private var categories: [UISynchroErrorCategory] {
-        return errors.keys.sorted()
-    }
+    static let maximumConflictsToDisplay = 5
+
+    @State private var computedErrors: [UISynchroErrorCategory: [SynchroError]] = [:]
+    @State private var categories: [UISynchroErrorCategory] = []
 
     var body: some View {
         Form {
             ForEach(categories) { category in
                 Section {
-                    ForEach(errors[category, default: []]) { error in
-                        ErrorCellFactory().make(error: error, isAdmin: isAdmin, manager: synchroErrorManager)
+                    if category == .conflicts {
+                        ManyConflictsCellView(errors: computedErrors[category, default: []], manager: synchroErrorManager)
+                    } else {
+                        ForEach(computedErrors[category, default: []]) { error in
+                            ErrorCellFactory().make(error: error, isAdmin: isAdmin, manager: synchroErrorManager)
+                        }
                     }
                 } header: {
                     Text(category.title)
@@ -49,6 +54,9 @@ struct ErrorsListView: View {
         .sheet(item: $synchroErrorManager.isShowingActivateOfflineSynchroSheet) { error in
             SystemUnableToStartVFSReasonSheet(error: error)
         }
+        .sheet(item: $synchroErrorManager.isShowingVersionSelectorSheet) { conflictsToResolve in
+            ConflictVersionSelectorView(errors: conflictsToResolve.errors)
+        }
         .sheet(item: $synchroErrorManager.isShowingResolutionTipsSheet) { type in
             switch type {
             case .invalidSyncDirAccess(let error):
@@ -61,6 +69,45 @@ struct ErrorsListView: View {
                 DataSyncDirChangedReasonsSheet(synchroErrorManager: synchroErrorManager)
             }
         }
+        .onAppear(perform: recomputeErrors)
+        .onChange(of: errors) { _ in
+            recomputeErrors()
+        }
+    }
+
+    private func recomputeErrors() {
+        let filesErrors = errors[.filesToCheck, default: []]
+        guard !filesErrors.isEmpty else {
+            computedErrors = errors
+            categories = errors.keys.sorted()
+            return
+        }
+
+        var conflicts: [SynchroError] = []
+        var nonConflicts: [SynchroError] = []
+        conflicts.reserveCapacity(filesErrors.count)
+        nonConflicts.reserveCapacity(filesErrors.count)
+
+        for error in filesErrors {
+            if error.kind == .conflict {
+                conflicts.append(error)
+            } else {
+                nonConflicts.append(error)
+            }
+        }
+
+        var result = errors
+        if conflicts.count >= Self.maximumConflictsToDisplay {
+            result[.conflicts] = conflicts
+            if nonConflicts.isEmpty {
+                result.removeValue(forKey: .filesToCheck)
+            } else {
+                result[.filesToCheck] = nonConflicts
+            }
+        }
+
+        computedErrors = result
+        categories = result.keys.sorted()
     }
 }
 
