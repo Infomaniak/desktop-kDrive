@@ -67,5 +67,5 @@ enum PreferencesViewDetail: RouterDetail {
     case synchroRulesDetail(SynchroRulesItem)
     case debug
 
-    case blacklist(UIUser.ID, UIDrive.ID)
+    case blacklist(UIUser.ID, UIDrive.ID, UISynchro.ID)
 }
