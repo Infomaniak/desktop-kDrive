@@ -110,7 +110,8 @@ bool shouldExitWithoutError(const SyncPalWorker::ReplicaWorkers &workers) {
 } // namespace
 
 bool SyncPalWorker::shouldBePaused(const SyncPalWorker::ReplicaWorkers &workers) {
-    const std::unordered_set<ExitCause> blockingExitCause = {ExitCause::Http5xx, ExitCause::HttpErr, ExitCause::MissingReplyData};
+    const std::unordered_set<ExitCause> blockingExitCauses = {ExitCause::Http5xx, ExitCause::HttpErr,
+                                                              ExitCause::MissingReplyData};
     const std::unordered_set<ExitCause> syncDirNotAccessibleExitCauses = {ExitCause::SyncDirAccessError,
                                                                           ExitCause::SyncDirDiskMissing};
     resetPauseDuration();
@@ -130,7 +131,7 @@ bool SyncPalWorker::shouldBePaused(const SyncPalWorker::ReplicaWorkers &workers)
         auto worker = workers.at(side).worker;
 
         if (worker->exitCode() == ExitCode::NetworkError) networkIssue = true;
-        if (worker->exitCode() == ExitCode::BackError && blockingExitCause.contains(worker->exitCause())) {
+        if (worker->exitCode() == ExitCode::BackError && blockingExitCauses.contains(worker->exitCause())) {
             httpBlockingError = true;
         }
 
@@ -185,7 +186,6 @@ bool shouldRequireUpdate(const SyncPalWorker::ReplicaWorkers &workers) {
 
     return false;
 }
-
 
 void SyncPalWorker::handleBackError() {
     auto computedDelay = static_cast<int64_t>(
@@ -297,7 +297,45 @@ ExitInfo SyncPalWorker::ensureBlackListIsPropagated() {
     return ExitCode::Ok;
 }
 
-void SyncPalWorker::adaptFsoWorkerActivityToCurrentState(Worker &fsoWorker, bool &syncDirChanged) {
+void SyncPalWorker::startFSOWorker(Worker &fsoWorker) {
+    LOG_SYNCPAL_DEBUG(_logger, "Start FSO worker " << fsoWorker.worker->name());
+    fsoWorker.isInProgress = true;
+    fsoWorker.worker->start();
+}
+
+void SyncPalWorker::adaptRFSOWorkerToSyncState(Worker &rfsoWorker) {
+    LOG_IF_FAIL(rfsoWorker.worker && rfsoWorker.side == ReplicaSide::Remote)
+
+    static const std::string resumeMessage = "Resuming RFSO until the synchronization leaves the Idle state.";
+
+    switch (_step) {
+        case SyncStep::Idle: {
+            if (!rfsoWorker.isResumable) {
+                startFSOWorker(rfsoWorker);
+                rfsoWorker.isResumable = true;
+            } else {
+                LOG_DEBUG(_logger, resumeMessage);
+                rfsoWorker.worker->resume();
+            }
+            break;
+        }
+        case SyncStep::UpdateDetection1: {
+            LOG_DEBUG(_logger, "Stopping RFSO as long as the synchronization does not reach the Done or Idle state.");
+            stopAndWaitForExitOfWorker(rfsoWorker.worker);
+            rfsoWorker.isInProgress = false;
+            break;
+        }
+        case SyncStep::Done: {
+            LOG_DEBUG(_logger, resumeMessage);
+            rfsoWorker.worker->resume();
+            break;
+        }
+        default:
+            return;
+    }
+}
+
+void SyncPalWorker::adaptFSOWorkerActivityToSyncState(Worker &fsoWorker, bool &syncDirChanged) {
     auto worker = fsoWorker.worker;
 
     if (worker == nullptr || worker->isRunning()) return;
@@ -316,10 +354,11 @@ void SyncPalWorker::adaptFsoWorkerActivityToCurrentState(Worker &fsoWorker, bool
 
         if (shouldBeStopped({{fsoWorker.side, fsoWorker}}) && !stopAsked()) stop();
 
+    } else if (!pauseAsked() && fsoWorker.side == ReplicaSide::Remote) {
+        adaptRFSOWorkerToSyncState(fsoWorker);
     } else if (!pauseAsked()) {
-        LOG_SYNCPAL_DEBUG(_logger, "Start FSO worker " << worker->name());
-        fsoWorker.isInProgress = true;
-        worker->start();
+        LOG_IF_FAIL(fsoWorker.side == ReplicaSide::Local);
+        startFSOWorker(fsoWorker);
     }
 }
 
@@ -369,18 +408,17 @@ void SyncPalWorker::execute() {
     ReplicaInputSharedObjects inputSharedObject = {{ReplicaSide::Local, nullptr}, {ReplicaSide::Remote, nullptr}};
     time_t lastEstimateUpdate = 0;
 
-    bool syncDirChanged = false;
-    adaptFsoWorkerActivityToCurrentState(fsoWorkers[ReplicaSide::Remote], syncDirChanged);
-
     for (;;) {
         // Check File System Observer workers status
-        syncDirChanged = false;
-        adaptFsoWorkerActivityToCurrentState(fsoWorkers[ReplicaSide::Local], syncDirChanged);
+        bool syncDirChanged = false;
 
-        // Manage SyncDir change (might happen if the sync folder is deleted and recreated e.g migration from an other device)
+        adaptFSOWorkerActivityToSyncState(fsoWorkers[ReplicaSide::Local], syncDirChanged);
+        if (!syncDirChanged) adaptFSOWorkerActivityToSyncState(fsoWorkers[ReplicaSide::Remote]);
+
+        // Manage SyncDir change (might happen if the sync folder is deleted and recreated e.g., migration from another device).
         if (syncDirChanged && !tryToFixDbNodeIdsAfterSyncDirChange()) {
             LOG_SYNCPAL_INFO(_logger,
-                             "Sync dir changed and we are unable to automatically fix syncDb, stopping all workers and exiting");
+                             "Sync dir changed and we are unable to automatically fix syncDb, stopping all workers and exiting.");
             stopAndWaitForExitOfAllWorkers(fsoWorkers, stepWorkers);
             exitCode = ExitCode::DataError;
             setExitCause(ExitCause::SyncDirChanged);
@@ -397,7 +435,7 @@ void SyncPalWorker::execute() {
         // Manage pause
         while ((_pauseAsked || _isPaused) &&
                (_step == SyncStep::Idle ||
-                _step == SyncStep::Propagation2)) { // Pause only if we are idle or in Propagation2 (because it needs network)
+                _step == SyncStep::Propagation2)) { // Pause only if we are Idle or in Propagation2 (because it needs network)
             if (!_isPaused) {
                 // Pause workers
                 _pauseAsked = false;
@@ -471,16 +509,6 @@ void SyncPalWorker::execute() {
             for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote, ReplicaSide::Both}) {
                 if (inputSharedObject.contains(side) && inputSharedObject[side]) inputSharedObject[side]->startRead();
                 if (stepWorkers.contains(side) && stepWorkers[side].worker) stepWorkers[side].worker->start();
-            }
-
-            if (_step == SyncStep::UpdateDetection1) {
-                LOG_DEBUG(_logger, "Stopping RFSO as long as the synchronization does not reach the Done state.");
-                stopAndWaitForExitOfWorker(_syncPal->_remoteFSObserverWorker);
-                fsoWorkers[ReplicaSide::Remote].isInProgress = false;
-            } else if (_step == SyncStep::Done) {
-                LOG_DEBUG(_logger, "Restarting RFSO until the synchronization leaves the Idle state.");
-                _syncPal->_remoteFSObserverWorker->resume();
-                fsoWorkers[ReplicaSide::Remote].isInProgress = true;
             }
         }
 
