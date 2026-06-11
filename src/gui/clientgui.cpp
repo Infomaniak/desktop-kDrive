@@ -1379,14 +1379,17 @@ void ClientGui::onTooManyDeletesNotificationHardLimit(const SyncDbId syncDbId) {
     }
     const auto localPath = syncInfoMapIt->second.localPath();
 
-    auto msgBox = new CustomMessageBox(
-            QMessageBox::Warning,
-            tr(R"(Many items have been deleted from your from your local sync folder <a style="%1" href="file:///%2">%2</a>. To avoid unintended deletions the "
+    int res = 0;
+    while (res == 0) { // Force the user to give an explicit answer, not just close the windows and restart the sync
+        auto msgBox = new CustomMessageBox(
+                QMessageBox::Warning,
+                tr(R"(Many items have been deleted from your from your local sync folder <a style="%1" href="file:///%2">%2</a>. To avoid unintended deletions the "
                "synchronization have been paused.<br>Do you want to propagate those deletion to your kDrive?)")
-                    .arg(CommonUtility::linkStyle, localPath),
-            QMessageBox::Yes | QMessageBox::No);
-    _tooManyDeletesNotificationPopupMap[syncDbId] = msgBox;
-    const auto res = msgBox->exec();
+                        .arg(CommonUtility::linkStyle, localPath),
+                QMessageBox::Yes | QMessageBox::No);
+        _tooManyDeletesNotificationPopupMap[syncDbId] = msgBox;
+        res = msgBox->exec();
+    }
 
     if (const auto exitInfo = GuiRequests::acknowledgeManyDelete(
                 syncDbId, res == QMessageBox::Yes ? TooManyDeletesUserChoice::Continue : TooManyDeletesUserChoice::Revert);
