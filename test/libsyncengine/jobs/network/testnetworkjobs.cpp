@@ -1733,7 +1733,12 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
             [[nodiscard]] Poco::Net::HTTPResponse httpResponse() const override {
                 return Poco::Net::HTTPResponse(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
             }
-            ApiToken loadApiToken() override { return _apiToken; }
+
+            // /!\ The base class constructor will not call this override.
+            // This method can only be called after the derived class constructor has completed.
+            ApiToken loadApiToken() override {
+                return _apiToken;
+            } 
 
         private:
             ApiToken _apiToken;
@@ -1759,24 +1764,34 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
 void TestNetworkJobs::testGetInfoDriveOn401Error() {
     class GetInfoDriveJobMock final : public GetInfoDriveJob {
         public:
-            explicit GetInfoDriveJobMock(const DriveDbId driveDbId, const ApiToken &apiToken) :
-                GetInfoDriveJob(driveDbId),
-                _apiToken(apiToken) {}
+            explicit GetInfoDriveJobMock(const DriveDbId driveDbId) :
+                GetInfoDriveJob(driveDbId) {}
 
             [[nodiscard]] Poco::Net::HTTPResponse httpResponse() const override {
                 return Poco::Net::HTTPResponse(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
             }
-            ApiToken loadApiToken() override { return _apiToken; }
-
-        private:
-            ApiToken _apiToken;
     };
 
-    GetInfoDriveJobMock job(_driveDbId, _apiToken);
-    const auto exitInfo = job.runSynchronously();
+    GetInfoDriveJobMock jobWithToken(_driveDbId);
+    const auto exitInfo = jobWithToken.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitCode::BackError, exitInfo.code());
-    CPPUNIT_ASSERT_EQUAL(ExitCause::DriveAccessError, exitInfo.cause());
-    CPPUNIT_ASSERT_EQUAL(0, job.trials());
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(exitInfo), ExitInfo(ExitCode::BackError, ExitCause::DriveAccessError), exitInfo);
+    AbstractTokenNetworkJob::clearCache();
+
+    // Clear the keychain key to test when there is no token in db/cache.
+    User user;
+    bool found = false;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectUser(_userDbId, user, found));
+    CPPUNIT_ASSERT(found);
+    user.setKeychainKey({});
+    CPPUNIT_ASSERT(ParmsDb::instance()->updateUser(user, found));
+    CPPUNIT_ASSERT(found);
+    CPPUNIT_ASSERT_EQUAL(0, jobWithToken.trials());
+
+    GetInfoDriveJobMock jobWithoutToken(_driveDbId);
+    const auto exitInfoWithoutToken = jobWithoutToken.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(exitInfoWithoutToken), ExitCode::InvalidToken, exitInfoWithoutToken.code());
+    CPPUNIT_ASSERT_EQUAL(0, jobWithoutToken.trials());
 }
 
 void TestNetworkJobs::testExists() {

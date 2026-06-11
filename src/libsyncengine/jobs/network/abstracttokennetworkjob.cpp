@@ -395,7 +395,7 @@ void AbstractTokenNetworkJob::loadUserInfoFromUserDbId() {
 
     const std::scoped_lock lock(_cacheMutex);
 
-    if (_userToApiKeyMap.contains(_userDbId)) return;
+    if (_userToApiKeyMap.contains(_userDbId) && _userToApiKeyMap[_userDbId].login->hasToken()) return;
 
     // Get user
     User user;
@@ -521,7 +521,7 @@ ApiToken AbstractTokenNetworkJob::retrieveApiTokenFromUserCache() {
 
     const std::scoped_lock lock(_cacheMutex);
     auto it = _userToApiKeyMap.find(_userDbId);
-    if (it == _userToApiKeyMap.cend()) {
+    if (it == _userToApiKeyMap.cend() || !it->second.login || !it->second.login->hasToken()) {
         LOG_DEBUG(_logger, "User cache not set for userDbId=" << _userDbId << ", loading user info");
         loadUserInfoFromUserDbId();
         it = _userToApiKeyMap.find(_userDbId);
