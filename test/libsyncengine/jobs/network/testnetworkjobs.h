@@ -33,7 +33,7 @@ namespace KDC {
 class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
     public:
         CPPUNIT_TEST_SUITE(TestNetworkJobs);
-        /* CPPUNIT_TEST(testCreateDir);
+        CPPUNIT_TEST(testCreateDir);
         CPPUNIT_TEST(testCopyToDir);
         CPPUNIT_TEST(testDelete);
         CPPUNIT_TEST(testDownload);
@@ -67,12 +67,12 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testGetAppVersionInfoParsingEdgeCases);
         CPPUNIT_TEST(testDirectDownload);
         CPPUNIT_TEST(testDownloadHasEnoughSpace);
-        CPPUNIT_TEST(testSearch);*/
+        CPPUNIT_TEST(testSearch);
         CPPUNIT_TEST(testGetInfoUserTrialsOn401Error);
         CPPUNIT_TEST(testGetInfoDriveOn401Error);
-        /* CPPUNIT_TEST(testExists);
+        CPPUNIT_TEST(testExists);
         CPPUNIT_TEST(testGetAllFilesInDirectory);
-        CPPUNIT_TEST(testPostFileModificationDate);*/
+        CPPUNIT_TEST(testPostFileModificationDate);
         CPPUNIT_TEST_SUITE_END();
 
     public:

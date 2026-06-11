@@ -1738,7 +1738,7 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
             // This method can only be called after the derived class constructor has completed.
             ApiToken loadApiToken() override {
                 return _apiToken;
-            } 
+            }
 
         private:
             ApiToken _apiToken;
