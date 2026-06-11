@@ -180,7 +180,17 @@ struct SyncedKDriveView: View {
         }
     }
 
-    private func navigateToManageSynchro() {}
+    private func navigateToManageSynchro() {
+        Task {
+            @InjectService var cache: CoherentCache
+            guard let drive = await cache.getDrive(driveDbId: Int32(drive.dbId)) else {
+                return
+            }
+
+            @InjectService var router: PreferencesViewRouter
+            router.append(.blacklist(Int(drive.userDbId), Int(drive.driveId)))
+        }
+    }
 
     private func switchSynchroMode(_ synchro: UISynchro, mode: UISynchroMode) {
         Task {

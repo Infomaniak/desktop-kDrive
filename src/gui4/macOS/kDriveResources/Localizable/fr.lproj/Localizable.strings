@@ -1354,6 +1354,9 @@
 /* loco:68a70c659c53feed83039c42 */
 "tabTitleStorage" = "Stockage";
 
+/* loco:6a2a67aa51ff4812670b0532 */
+"titleManageSynchronization" = "Gérer la synchronisation";
+
 /* loco:69eb7b41376492d2de0d0242
  * Empty search state subtitle when no result matches the user query in SearchSheetView. */
 "tryDifferentSearchTerm" = "Essayez un terme de recherche différent";
