@@ -392,7 +392,7 @@ void AppServer::init() {
         connect(OldCommServer::instance().get(), &OldCommServer::clientDisconnected, this,
                 &AppServer::onClientDisconnectedReceived);
     }
-    QTimer::singleShot(0, [=, this]() {
+    QTimer::singleShot(0, this, [this]() {
         // Update users,accounts and drives info.
         if (const auto exitInfo = updateAllUsersInfo(UpdateFollowUpAction::CleanUserDbEntry);
             exitInfo.code() == ExitCode::InvalidToken) {
@@ -481,7 +481,7 @@ void AppServer::init() {
 
     // Start syncs
     LOG_DEBUG(_logger, "Start syncs");
-    QTimer::singleShot(0, [=, this]() { startSyncsAndRetryOnError(); });
+    QTimer::singleShot(0, this, [this]() { startSyncsAndRetryOnError(); });
 
     // Init JobManager(s)
     if (!GuiJobManagerSingleton::instance()) {
