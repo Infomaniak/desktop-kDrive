@@ -20,20 +20,24 @@
 
 // Output parameters keys
 static const auto outParamsSyncDbId = "syncDbId";
-static const auto outParamsSyncNotificationType = "notificationType";
+static const auto outParamsNotificationType = "notificationType";
+static const auto outParamsNbFiles = "nbFiles";
 
 namespace KDC {
 
 SignalSyncNotifyManyDeletesJob::SignalSyncNotifyManyDeletesJob(const SyncDbId syncDbId,
-                                                               const TooManyDeletesNotificationType notificationType) :
+                                                               const TooManyDeletesNotificationType notificationType,
+                                                               uint64_t nbFiles) :
     _syncDbId(syncDbId),
-    _notificationType(notificationType) {
+    _notificationType(notificationType),
+    _nbFiles(nbFiles) {
     _signalNum = SignalNum::SYNC_NOTIFY_MANY_DELETES;
 }
 
 ExitInfo SignalSyncNotifyManyDeletesJob::serializeOutputParms() {
     writeParamValue(outParamsSyncDbId, _syncDbId);
-    writeParamValue(outParamsSyncNotificationType, _notificationType);
+    writeParamValue(outParamsNotificationType, _notificationType);
+    writeParamValue(outParamsNbFiles, _notificationType);
     return ExitCode::Ok;
 }
 

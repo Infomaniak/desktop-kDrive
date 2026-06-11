@@ -1361,7 +1361,7 @@ void ClientGui::onSyncDeletionFailed(const SyncDbId syncDbId) {
     emit refreshStatusNeeded();
 }
 
-void ClientGui::onTooManyDeletesNotificationHardLimit(const SyncDbId syncDbId) {
+void ClientGui::onTooManyDeletesNotificationHardLimit(const SyncDbId syncDbId, const uint64_t nbFiles) {
     if (_tooManyDeletesNotificationPopupMap.contains(syncDbId)) {
         auto msgBox = _tooManyDeletesNotificationPopupMap[syncDbId];
         if (msgBox) {
@@ -1383,8 +1383,8 @@ void ClientGui::onTooManyDeletesNotificationHardLimit(const SyncDbId syncDbId) {
     while (res == 0) { // Force the user to give an explicit answer, not just close the windows and restart the sync
         auto msgBox = new CustomMessageBox(
                 QMessageBox::Warning,
-                tr(R"(Many items have been deleted from your from your local sync folder <a style="%1" href="file:///%2">%2</a>. To avoid unintended deletions the "
-               "synchronization have been paused.<br>Do you want to propagate those deletion to your kDrive?)")
+                tr(R"(%1 items have been deleted from your from your local sync folder <a style="%2" href="file:///%3">%3</a>. To avoid unintended deletions the synchronization have been paused.<br>Do you want to propagate those deletion to your kDrive?)")
+                        .arg(nbFiles)
                         .arg(CommonUtility::linkStyle, localPath),
                 QMessageBox::Yes | QMessageBox::No);
         _tooManyDeletesNotificationPopupMap[syncDbId] = msgBox;
@@ -1438,13 +1438,14 @@ void ClientGui::onTooManyDeletesNotificationSoftLimit(const SyncDbId syncDbId) {
     (void) ParametersCache::instance()->saveParametersInfo();
 }
 
-void ClientGui::onTooManyDeletesNotification(const SyncDbId syncDbId, const TooManyDeletesNotificationType notificationType) {
+void ClientGui::onTooManyDeletesNotification(const SyncDbId syncDbId, const TooManyDeletesNotificationType notificationType,
+                                             uint64_t nbFiles) {
     switch (notificationType) {
         case TooManyDeletesNotificationType::SoftLimit:
             onTooManyDeletesNotificationSoftLimit(syncDbId);
             break;
         case TooManyDeletesNotificationType::HardLimit:
-            onTooManyDeletesNotificationHardLimit(syncDbId);
+            onTooManyDeletesNotificationHardLimit(syncDbId, nbFiles);
             break;
         default:
             break;
