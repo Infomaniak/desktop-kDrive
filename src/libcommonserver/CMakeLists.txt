@@ -14,7 +14,6 @@ if(UNIX AND CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
     # Use fallback library types for imported dependencies
     set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO RelWithDebInfo NoConfig)
 endif()
-find_package(libzip 1.10.1 REQUIRED)
 
 set(CMAKE_AUTOMOC TRUE)
 
@@ -137,8 +136,7 @@ target_link_libraries(${libcommonserver_NAME}
     SQLite::SQLite3
     Poco::Foundation Poco::Net Poco::JSON Poco::Util
     OpenSSL::SSL OpenSSL::Crypto
-    xxHash::xxhash
-    libzip::zip)
+    xxHash::xxhash)
 
 if(WIN32)
     target_link_libraries(${libcommonserver_NAME}

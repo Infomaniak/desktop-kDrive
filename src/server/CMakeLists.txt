@@ -382,6 +382,36 @@ if(BUILD_KDRIVE_OSX_BUNDLE AND NOT BUILD_LIBRARIES_ONLY)
         set(ENV_QTDIR $ENV{QTDIR})
         set(ENV_DESTDIR $ENV{DESTDIR})
 
+        string(CONFIGURE [[
+            message(STATUS "Deploying Conan dependencies for kDrive...")
+            set(LIB_DIRS "@CONAN_RUNTIME_LIB_DIRS@")
+            set(FRAMEWORKS_DIR "@ENV_DESTDIR@@CMAKE_INSTALL_PREFIX@/@KDRIVE_OSX_BUNDLE@/Contents/Frameworks/")
+            foreach(libdir IN LISTS LIB_DIRS)
+                if(EXISTS "${libdir}")
+                    file(GLOB dylibs
+                        "${libdir}/*.dylib"
+                    )
+                    foreach(dylib IN LISTS dylibs)
+                        get_filename_component(name "${dylib}" NAME)
+                        message(STATUS "Copying ${name}")
+                        file(COPY
+                            "${dylib}"
+                            DESTINATION "${FRAMEWORKS_DIR}"
+                        )
+                    endforeach()
+                endif()
+            endforeach()
+
+            message(STATUS "Copying libzip.5.dylib")
+            file(COPY
+                "/usr/local/lib/libzip.5.dylib"
+                "/usr/local/lib/libzip.5.5.dylib"
+                DESTINATION "${FRAMEWORKS_DIR}"
+            )
+        ]] INSTALL_CODE @ONLY)
+
+        install(CODE "${INSTALL_CODE}")
+
         install(CODE "
             message(STATUS \"Deploying (Qt) dependencies for kDrive...\")
             execute_process(COMMAND ${ENV_QTDIR}/bin/macdeployqt ${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE} -no-strip -executable=${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_EXECUTABLE})
