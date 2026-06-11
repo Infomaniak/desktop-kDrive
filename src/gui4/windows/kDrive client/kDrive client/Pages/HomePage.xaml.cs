@@ -65,6 +65,12 @@ namespace Infomaniak.kDrive.Pages
             if (ViewModel.SelectedSync is null)
                 return false;
 
+            if (!ViewModel.SelectedSync.Drive.Account.User.IsConnected)
+            {
+                AppModel.UIThreadDispatcher.TryEnqueue(() => Frame?.Navigate(typeof(LogginErrorPage)));
+                return true;
+            }
+
             switch (ViewModel.SelectedSync.SyncErrorState)
             {
                 case SyncErrorStates.Undefined:
@@ -185,7 +191,7 @@ namespace Infomaniak.kDrive.Pages
 
         private async void SyncUpToDateMainTemplateAnimatedVisualPlayer_Loaded(object sender, RoutedEventArgs e)
         {
-            if(sender is AnimatedVisualPlayer player)
+            if (sender is AnimatedVisualPlayer player)
                 await player.PlayAsync(0.0, 1.0, false);
         }
     }
