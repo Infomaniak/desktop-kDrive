@@ -144,8 +144,9 @@ ExitInfo DownloadJob::canRun() {
 
 void DownloadJob::computeHydrationStatus() {
     VfsStatus vfsStatus;
-    if (_vfs) (void) _vfs->status(_fileDownloadInfo.localpath, vfsStatus);
-    _isHydrated = !_vfs || vfsStatus.isHydrated;
+    ExitInfo exitInfo;
+    if (_vfs ) exitInfo = _vfs->status(_fileDownloadInfo.localpath, vfsStatus);
+    _isHydrated = !_vfs || (exitInfo && vfsStatus.isHydrated);
 }
 
 ExitInfo DownloadJob::resolveDownloadNeed() {
