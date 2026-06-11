@@ -24,7 +24,6 @@ import SwiftUI
 struct SelectSynchroFoldersView: View {
     @EnvironmentObject private var viewModel: SynchroConfigurationFlowViewModel
 
-    @State private var root = [FileTreeItem]()
     @State private var blackList = Set<String>()
 
     let userDbId: Int
