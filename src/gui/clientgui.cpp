@@ -1381,12 +1381,11 @@ void ClientGui::onTooManyDeletesNotificationHardLimit(const SyncDbId syncDbId) {
 
     auto msgBox = new CustomMessageBox(
             QMessageBox::Warning,
-            tr(R"(Many items have been deleted from your from your local sync folder <a style="%1" href="%2">%2</a>. To avoid unintended deletions the "
+            tr(R"(Many items have been deleted from your from your local sync folder <a style="%1" href="file:///%2">%2</a>. To avoid unintended deletions the "
                "synchronization have been paused.<br>Do you want to propagate those deletion to your kDrive?)")
                     .arg(CommonUtility::linkStyle, localPath),
             QMessageBox::Yes | QMessageBox::No);
     _tooManyDeletesNotificationPopupMap[syncDbId] = msgBox;
-    msgBox->raise();
     const auto res = msgBox->exec();
 
     if (const auto exitInfo = GuiRequests::acknowledgeManyDelete(
@@ -1424,13 +1423,12 @@ void ClientGui::onTooManyDeletesNotificationSoftLimit(const SyncDbId syncDbId) {
     QString trashUrl = QString(APPLICATION_TRASH_URL_QSTRING).arg(driveInfoMapIt->second.id());
     auto msgBox = new CustomMessageBox(
             QMessageBox::Information,
-            tr(R"(Several files have been deleted from your local sync folder <a style="%1" href="%2">%2</a>. Deleted files can be found in kDrive's <a style="%1" href="%3">trash</a>.)")
+            tr(R"(Several files have been deleted from your local sync folder <a style="%1" href="file:///%2">%2</a>. Deleted files can be found in kDrive's <a style="%1" href="%3">trash</a>.)")
                     .arg(CommonUtility::linkStyle, localPath, trashUrl),
             QMessageBox::Ok);
     _tooManyDeletesNotificationPopupMap[syncDbId] = msgBox;
     msgBox->setCheckboxVisible(true);
     msgBox->setCheckBoxText(tr("Don't ask again"));
-    msgBox->raise();
     (void) msgBox->show();
 
     ParametersCache::instance()->parametersInfo().setNotifyBeforeDelete(!msgBox->isChecked());
