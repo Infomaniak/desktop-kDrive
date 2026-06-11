@@ -44,7 +44,6 @@
 #include <Poco/Net/HTTPRequest.h>
 #include "kDrive_API/upload/upload_session/uploadsessionchunkjob.h"
 #include "kDrive_API/upload/uploadjob.h"
-#include "kDrive_API/downloadjob.h"
 
 #define BUF_SIZE 1024
 
@@ -579,9 +578,9 @@ bool AbstractNetworkJob::isError500(const Poco::Net::HTTPResponse::HTTPStatus ht
     shouldRetry = false;
     switch (httpErrorCode) {
         case Poco::Net::HTTPResponse::HTTP_BAD_GATEWAY:
-            // Retry if the job is an uploadSession chunck job an upload job or a downalod job
-            // GATEWAY error can be due to poor network connexion. Some upload chunk can fail intermidently, we want to retry
-            // befor cancelling the complete upload session
+            // Retry only if the job is an uploadSessionChunckJob, as 502 error can be due to a GATEWAY error which can be caused
+            // by poor network connexion dropping during the upload of a big file. In this case, retrying can help to complete the
+            // upload.
             shouldRetry = dynamic_cast<UploadSessionChunkJob *>(this) != nullptr;
             return true;
         case Poco::Net::HTTPResponse::HTTP_GATEWAY_TIMEOUT:
