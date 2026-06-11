@@ -1362,24 +1362,32 @@ void ClientGui::onSyncDeletionFailed(const SyncDbId syncDbId) {
 }
 
 void ClientGui::onTooManyDeletesNotificationHardLimit(const SyncDbId syncDbId) {
-    // TODO : how to handle popup on different syncs
-    if (_msgBox) {
-        _msgBox->accept();
-        _msgBox->deleteLater();
-        _msgBox = nullptr;
+    if (_tooManyDeletesNotificationPopupMap.contains(syncDbId)) {
+        auto msgBox = _tooManyDeletesNotificationPopupMap[syncDbId];
+        if (msgBox) {
+            msgBox->accept();
+            msgBox->deleteLater();
+        }
+        msgBox = nullptr;
+        _tooManyDeletesNotificationPopupMap.remove(syncDbId);
     }
-    _msgBox = new CustomMessageBox(
-            QMessageBox::Warning,
-            tr("Many items have been deleted from your local sync folder. To avoid unintended deletions the "
-               "synchronization have been paused.<br>Do you want to propagate those deletion to your kDrive?"),
-            QMessageBox::Yes | QMessageBox::No);
-    const auto res = _msgBox->exec();
 
     const auto syncInfoMapIt = _syncInfoMap.find(syncDbId);
     if (syncInfoMapIt == _syncInfoMap.end()) {
         qCWarning(lcClientGui()) << "Sync not found in sync map for syncDbId=" << syncDbId;
         return;
     }
+    const auto localPath = syncInfoMapIt->second.localPath();
+
+    auto msgBox = new CustomMessageBox(
+            QMessageBox::Warning,
+            tr(R"(Many items have been deleted from your from your local sync folder <a style="%1" href="%2">%2</a>. To avoid unintended deletions the "
+               "synchronization have been paused.<br>Do you want to propagate those deletion to your kDrive?)")
+                    .arg(CommonUtility::linkStyle, localPath),
+            QMessageBox::Yes | QMessageBox::No);
+    _tooManyDeletesNotificationPopupMap[syncDbId] = msgBox;
+    msgBox->raise();
+    const auto res = msgBox->exec();
 
     if (const auto exitInfo = GuiRequests::acknowledgeManyDelete(
                 syncDbId, res == QMessageBox::Yes ? TooManyDeletesUserChoice::Continue : TooManyDeletesUserChoice::Revert);
@@ -1391,11 +1399,14 @@ void ClientGui::onTooManyDeletesNotificationHardLimit(const SyncDbId syncDbId) {
 }
 
 void ClientGui::onTooManyDeletesNotificationSoftLimit(const SyncDbId syncDbId) {
-    // TODO : how to handle popup on different syncs
-    if (_msgBox) {
-        _msgBox->accept();
-        _msgBox->deleteLater();
-        _msgBox = nullptr;
+    if (_tooManyDeletesNotificationPopupMap.contains(syncDbId)) {
+        auto msgBox = _tooManyDeletesNotificationPopupMap[syncDbId];
+        if (msgBox) {
+            msgBox->accept();
+            msgBox->deleteLater();
+        }
+        msgBox = nullptr;
+        _tooManyDeletesNotificationPopupMap.remove(syncDbId);
     }
 
     const auto syncInfoMapIt = _syncInfoMap.find(syncDbId);
@@ -1408,17 +1419,21 @@ void ClientGui::onTooManyDeletesNotificationSoftLimit(const SyncDbId syncDbId) {
         qCWarning(lcClientGui()) << "Drive not found in drive map for driveDbId=" << syncInfoMapIt->second.driveDbId();
         return;
     }
-    QString trashUrl = QString(APPLICATION_TRASH_URL_QSTRING).arg(driveInfoMapIt->second.id());
-    _msgBox = new CustomMessageBox(
-            QMessageBox::Information,
-            tr(R"(Several files have been deleted from your sync folder. Deleted files can be found in kDrive's <a style="%1" href="%2">trash</a>.)")
-                    .arg(CommonUtility::linkStyle, trashUrl),
-            QMessageBox::Ok);
-    _msgBox->setCheckboxVisible(true);
-    _msgBox->setCheckBoxText(tr("Don't ask again"));
-    (void) _msgBox->exec();
 
-    ParametersCache::instance()->parametersInfo().setNotifyBeforeDelete(!_msgBox->isChecked());
+    const auto localPath = syncInfoMapIt->second.localPath();
+    QString trashUrl = QString(APPLICATION_TRASH_URL_QSTRING).arg(driveInfoMapIt->second.id());
+    auto msgBox = new CustomMessageBox(
+            QMessageBox::Information,
+            tr(R"(Several files have been deleted from your local sync folder <a style="%1" href="%2">%2</a>. Deleted files can be found in kDrive's <a style="%1" href="%3">trash</a>.)")
+                    .arg(CommonUtility::linkStyle, localPath, trashUrl),
+            QMessageBox::Ok);
+    _tooManyDeletesNotificationPopupMap[syncDbId] = msgBox;
+    msgBox->setCheckboxVisible(true);
+    msgBox->setCheckBoxText(tr("Don't ask again"));
+    msgBox->raise();
+    (void) msgBox->show();
+
+    ParametersCache::instance()->parametersInfo().setNotifyBeforeDelete(!msgBox->isChecked());
     (void) ParametersCache::instance()->saveParametersInfo();
 }
 
