@@ -51,6 +51,7 @@ class SyncPalWorker : public ISyncWorker {
         struct Worker {
                 std::shared_ptr<ISyncWorker> worker{nullptr};
                 bool isInProgress{false};
+                bool isResumable{false};
                 ReplicaSide side{ReplicaSide::Both};
         };
 
@@ -124,7 +125,13 @@ class SyncPalWorker : public ISyncWorker {
         void checkForMassDeletions() const;
         void trySetFullAccess(const SyncPath &path);
 
-        void adaptFsoWorkerActivityToCurrentState(Worker &fsoWorker, bool &syncDirChanged);
+        void startFSOWorker(Worker &fsoWorker);
+        void adaptFSOWorkerActivityToSyncState(Worker &fsoWorker, bool &syncDirChanged);
+        void adaptFSOWorkerActivityToSyncState(Worker &fsoWorker) {
+            bool syncDirChanged = false;
+            adaptFSOWorkerActivityToSyncState(fsoWorker, syncDirChanged);
+        };
+        void adaptRFSOWorkerToSyncState(Worker &rfsoWorker);
 
         friend class TestSyncPalWorker;
 };
