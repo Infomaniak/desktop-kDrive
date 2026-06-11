@@ -62,13 +62,18 @@ RemoteFileSystemObserverWorker::~RemoteFileSystemObserverWorker() {
     LOG_SYNCPAL_DEBUG(_logger, "~RemoteFileSystemObserverWorker");
 }
 
+
+void RemoteFileSystemObserverWorker::abortAndClearLongPollJobs(LongPollJobMap &longPollJobs) {
+    for (const auto &[_, longPollJob]: longPollJobs) {
+        if (longPollJob) longPollJob->abort();
+    }
+    longPollJobs.clear();
+}
+
 ExitInfo RemoteFileSystemObserverWorker::updateLongPollJobs(const std::vector<RemoteNodeId> &remoteDirIds,
                                                             LongPollJobMap &longPollJobs) {
     if (stopAsked() || initializing() || updating()) {
-        for (const auto &[remoteDirId, longPollJob]: longPollJobs) {
-            if (longPollJob) longPollJob->abort();
-        }
-        longPollJobs.clear();
+        abortAndClearLongPollJobs(longPollJobs);
 
         return ExitCode::Ok;
     }
@@ -227,6 +232,7 @@ void RemoteFileSystemObserverWorker::execute() {
     }
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
+    abortAndClearLongPollJobs(longPollJobs);
     setExitCause(exitInfo.cause());
     setDone(exitInfo.code());
 }
