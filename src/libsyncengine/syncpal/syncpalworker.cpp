@@ -389,10 +389,7 @@ void SyncPalWorker::execute() {
 
         // Manage stop
         if (stopAsked()) {
-            // Stop all workers
             stopAndWaitForExitOfAllWorkers(fsoWorkers, stepWorkers);
-
-            // Exit
             exitCode = ExitCode::Ok;
             break;
         }
@@ -471,9 +468,9 @@ void SyncPalWorker::execute() {
             // Start workers
             LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step) << " start");
             isStepInProgress = true;
-            for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote}) {
-                if (inputSharedObject[side]) inputSharedObject[side]->startRead();
-                if (stepWorkers[side].worker) stepWorkers[side].worker->start();
+            for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote, ReplicaSide::Both}) {
+                if (inputSharedObject.contains(side) && inputSharedObject[side]) inputSharedObject[side]->startRead();
+                if (stepWorkers.contains(side) && stepWorkers[side].worker) stepWorkers[side].worker->start();
             }
 
             if (_step == SyncStep::UpdateDetection1) {
