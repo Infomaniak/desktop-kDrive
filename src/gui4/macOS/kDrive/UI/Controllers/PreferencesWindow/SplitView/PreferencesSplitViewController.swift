@@ -114,6 +114,8 @@ final class PreferencesSplitViewController: IKSplitViewController {
                 synchroRulesItem: synchroRulesItem,
                 exclusionRepository: exclusionRepository
             )
+        case .blacklist(let userId, let driveId):
+            contentViewController = BlacklistPreferencesViewController(userId: userId, driveId: driveId)
         default:
             contentViewController = GeneralPreferencesViewController(repository: repository, viewModel: viewModel)
         }

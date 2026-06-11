@@ -216,10 +216,6 @@
 		A7854C9E2F600BCF00302011 /* Exceptions for "kDriveCoreUI" folder in "kDrive" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				UI/SwiftUI/Components/FileTree/FileTreeCells.swift,
-				UI/SwiftUI/Components/FileTree/FileTreeItem.swift,
-				UI/SwiftUI/Components/FileTree/FileTreeOutlineView.swift,
-				UI/SwiftUI/Components/FileTree/FileTreeView.swift,
 				UI/SwiftUI/Components/OptionPicker.swift,
 			);
 			target = 37A1C4252E546A5200596DBB /* kDrive */;
@@ -227,10 +223,6 @@
 		A7854C9F2F600BCF00302011 /* Exceptions for "kDriveCoreUI" folder in "kDriveCoreUI" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				UI/SwiftUI/Components/FileTree/FileTreeCells.swift,
-				UI/SwiftUI/Components/FileTree/FileTreeItem.swift,
-				UI/SwiftUI/Components/FileTree/FileTreeOutlineView.swift,
-				UI/SwiftUI/Components/FileTree/FileTreeView.swift,
 				UI/SwiftUI/Components/OptionPicker.swift,
 			);
 			target = 37A1C43E2E546A9600596DBB /* kDriveCoreUI */;
