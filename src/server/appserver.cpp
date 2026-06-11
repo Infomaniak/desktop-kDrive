@@ -4859,16 +4859,17 @@ void AppServer::sendSyncDeletionFailed(const SyncDbId syncDbId) const {
     }
 }
 
-void AppServer::sendManyDeletesNotification(const SyncDbId syncDbId,
-                                            const TooManyDeletesNotificationType notificationType) const {
+void AppServer::sendManyDeletesNotification(const SyncDbId syncDbId, const TooManyDeletesNotificationType notificationType,
+                                            uint64_t nbFiles) const {
     if (useOldCommServer()) {
         int id = 0;
-        const auto params = QByteArray(ArgsReader(static_cast<qint64>(syncDbId), notificationType));
+        const auto params =
+                QByteArray(ArgsReader(static_cast<qint64>(syncDbId), notificationType, static_cast<quint64>(nbFiles)));
 
         (void) OldCommServer::instance()->sendSignal(SignalNum::SYNC_NOTIFY_MANY_DELETES, params, id);
     }
     if (useCommManager()) {
-        _commManager->sendGuiSignal(std::make_shared<SignalSyncNotifyManyDeletesJob>(syncDbId, notificationType));
+        _commManager->sendGuiSignal(std::make_shared<SignalSyncNotifyManyDeletesJob>(syncDbId, notificationType, nbFiles));
     }
 }
 

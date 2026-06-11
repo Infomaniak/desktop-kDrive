@@ -24,7 +24,8 @@ namespace KDC {
 
 class SignalSyncNotifyManyDeletesJob : public AbstractGuiJob {
     public:
-        explicit SignalSyncNotifyManyDeletesJob(SyncDbId syncDbId, TooManyDeletesNotificationType notificationType);
+        explicit SignalSyncNotifyManyDeletesJob(SyncDbId syncDbId, TooManyDeletesNotificationType notificationType,
+                                                uint64_t nbFiles);
 
     private:
         ExitInfo deserializeInputParms() override { return ExitCode::Ok; }
@@ -34,6 +35,7 @@ class SignalSyncNotifyManyDeletesJob : public AbstractGuiJob {
         // Output parameters
         SyncDbId _syncDbId{0};
         TooManyDeletesNotificationType _notificationType{TooManyDeletesNotificationType::Unknown};
+        uint64_t _nbFiles{0};
 };
 
 } // namespace KDC
