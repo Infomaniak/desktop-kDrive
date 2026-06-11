@@ -22,12 +22,12 @@ import kDriveCoreUI
 import kDriveResources
 
 final class BlacklistPreferencesViewController: TitledViewController<BlacklistPreferencesView> {
-    convenience init(userId: UIUser.ID, driveId: UIDrive.ID) {
+    convenience init(userId: UIUser.ID, driveId: UIDrive.ID, synchroDbId: UISynchro.ID) {
         @InjectService var router: PreferencesViewRouter
         self.init(
             toolbarTitle: KDriveLocalizable.titleManageSynchronization,
             navigableRouter: router,
-            contentView: BlacklistPreferencesView(userId: userId, driveId: driveId)
+            contentView: BlacklistPreferencesView(userDbId: userId, driveId: driveId, synchroDbId: synchroDbId)
         )
     }
 }
