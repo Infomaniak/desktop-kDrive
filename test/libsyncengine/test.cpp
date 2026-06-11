@@ -59,7 +59,7 @@
 #include "update_detection/file_system_observer/testfolderwatcherlinux.h"
 #endif
 
-namespace KDC {
+namespace KDC { 
 CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationProcessor);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestExclusionTemplateCache);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestNetworkJobs);
