@@ -65,6 +65,68 @@ DriveUploadSession::~DriveUploadSession() {
     }
 }
 
+ExitInfo DriveUploadSession::resolveUploadNeed() {
+    _shouldUpload = true;
+    FileStat fileStat;
+    IoError ioError = IoError::Success;
+    if (!IoHelper::getFileStat(getFilePath(), &fileStat, ioError, IoHelper::PathCheckOption::Insensitive) ||
+        ioError != IoError::Success) {
+        LOGW_WARN(getLogger(), L"CheckHashMatchJob: failed to get file size for " << Utility::formatSyncPath(getFilePath()));
+        return ExitCode::Ok; // Non-fatal: fall through to upload
+    }
+    CheckHashMatchJob hashJob(_driveDbId, getFilePath(), _fileId, fileStat.size);
+    if (const ExitInfo exitInfo = hashJob.runSynchronously(); !exitInfo) {
+        LOGW_DEBUG(getLogger(), L"CheckHashMatchJob failed: " << exitInfo << L" Proceeding UploadJob normally.");
+        return exitInfo; // Non-fatal for the caller: fall through to upload
+    }
+    _shouldUpload = !hashJob.hashMatch();
+
+    if (!_shouldUpload) {
+        LOGW_DEBUG(getLogger(), L"Changing last modified date without uploading: hash match");
+        if (const ExitInfo exitInfo = applyFileDates(); !exitInfo) {
+            LOGW_DEBUG(getLogger(), L"applyFileDates failed: " << exitInfo << L" Proceeding UploadJob normally.");
+            return exitInfo;
+        }
+    }
+    return ExitCode::Ok;
+}
+
+void DriveUploadSession::computeHydrationStatus() {
+    VfsStatus vfsStatus;
+    if (_vfs) (void) _vfs->status(getFilePath(), vfsStatus);
+    _isHydrated = !_vfs || vfsStatus.isHydrated;
+}
+
+ExitInfo DriveUploadSession::runJob() noexcept {
+    if (!_fileId.empty() && _vfs) {
+        computeHydrationStatus();
+        if (_isHydrated) {
+            const ExitInfo exitInfo = resolveUploadNeed();
+            if (!_shouldUpload && exitInfo) return ExitCode::Ok;
+            LOGW_DEBUG(getLogger(), L"resolveUploadNeed: proceeding with upload - " << exitInfo);
+        }
+    }
+    return AbstractUploadSession::runJob();
+}
+
+ExitInfo DriveUploadSession::applyFileDates() {
+    PostFileModificationDateJob postJob(_driveDbId, _fileId, _modificationTimeIn);
+    const ExitInfo exitInfo = postJob.runSynchronously();
+    if (!exitInfo) {
+        LOGW_DEBUG(getLogger(), L"PostFileModificationDateJob failed: " << exitInfo);
+        return exitInfo;
+    }
+    IoError ioError = IoError::Success;
+    uint64_t fileSize = 0;
+    IoHelper::getFileSize(getFilePath(), fileSize, ioError);
+
+    _nodeId = _fileId;
+    _modificationTimeOut = postJob.lastModifiedAt();
+    _creationTimeOut = _creationTimeIn;
+    _sizeOut = static_cast<int64_t>(fileSize);
+    return ExitCode::Ok;
+}
+
 ExitInfo DriveUploadSession::runJobInit() {
     return ExitCode::Ok;
 }
