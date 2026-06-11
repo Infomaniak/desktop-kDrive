@@ -13,7 +13,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #include "uploadjob.h"
 
 #include "uploadjobreplyhandler.h"
@@ -98,13 +97,75 @@ ExitInfo UploadJob::canRun() {
     return ExitCode::Ok;
 }
 
+ExitInfo UploadJob::resolveUploadNeed() {
+    _shouldUpload = true;
+    FileStat fileStat;
+    IoError ioError = IoError::Success;
+    if (!IoHelper::getFileStat(_absoluteFilePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive) ||
+        ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"CheckHashMatchJob: failed to get file size for " << Utility::formatSyncPath(_absoluteFilePath));
+        return ExitCode::Ok; // Non-fatal: fall through to upload
+    }
+    CheckHashMatchJob hashJob(driveDbId(), _absoluteFilePath, _fileId, fileStat.size);
+    if (const ExitInfo exitInfo = hashJob.runSynchronously(); !exitInfo) {
+        LOGW_DEBUG(_logger, L"CheckHashMatchJob failed: " << exitInfo << L" Proceeding UploadJob normally.");
+        return exitInfo; // Non-fatal for the caller: fall through to upload
+    }
+    _shouldUpload = !hashJob.hashMatch();
+
+    if (!_shouldUpload) {
+        LOGW_DEBUG(_logger, L"Changing last modified date without uploading: hash match");
+        if (const ExitInfo exitInfo = applyFileDates(); !exitInfo) {
+            LOGW_DEBUG(_logger, L"applyFileDates failed: " << exitInfo << L" Proceeding UploadJob normally.");
+            return exitInfo;
+        }
+    }
+    return ExitCode::Ok;
+}
+
+void UploadJob::computeHydrationStatus() {
+    VfsStatus vfsStatus;
+    if (_vfs) (void) _vfs->status(_absoluteFilePath, vfsStatus);
+    _isHydrated = !_vfs || vfsStatus.isHydrated;
+}
+
+ExitInfo UploadJob::runJob() noexcept {
+    if (!_fileId.empty() && _vfs) {
+        computeHydrationStatus();
+        if (_isHydrated) {
+            const ExitInfo exitInfo = resolveUploadNeed();
+            if (!_shouldUpload && exitInfo) return ExitCode::Ok;
+            LOGW_DEBUG(_logger, L"resolveUploadNeed: proceeding with upload - " << exitInfo);
+        }
+    }
+    return AbstractTokenNetworkJob::runJob();
+}
+
+ExitInfo UploadJob::applyFileDates() {
+    PostFileModificationDateJob postJob(driveDbId(), _fileId, _modificationTimeIn);
+    const ExitInfo exitInfo = postJob.runSynchronously();
+    if (!exitInfo) {
+        LOGW_DEBUG(_logger, L"PostFileModificationDateJob failed: " << exitInfo);
+        return exitInfo;
+    }
+    IoError ioError = IoError::Success;
+    uint64_t fileSize = 0;
+    IoHelper::getFileSize(_absoluteFilePath, fileSize, ioError);
+
+    _nodeIdOut = _fileId;
+    _modificationTimeOut = postJob.lastModifiedAt();
+    _creationTimeOut = _creationTimeIn;
+    _sizeOut = static_cast<int64_t>(fileSize);
+    return ExitCode::Ok;
+}
+
 ExitInfo UploadJob::handleResponse(std::istream &is) {
     if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) {
         return exitInfo;
     }
 
     UploadJobReplyHandler replyHandler(_absoluteFilePath, IoHelper::isLink(_linkType), _creationTimeIn, _modificationTimeIn);
-    if (!replyHandler.extractData(jsonRes())) return {};
+    if (!replyHandler.extractData(jsonRes())) return {ExitCode::BackError, ExitCause::MissingReplyData};
     _nodeIdOut = replyHandler.nodeId();
     _creationTimeOut = replyHandler.creationTime();
     _modificationTimeOut = replyHandler.modificationTime();

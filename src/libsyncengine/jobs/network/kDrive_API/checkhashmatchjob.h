@@ -28,7 +28,7 @@ class CheckHashMatchJob : public AbstractTokenNetworkJob {
                           const int64_t remoteSize);
 
         [[nodiscard]] const NodeId &nodeId() const { return _nodeId; }
-        [[nodiscard]] bool shouldDownload() const { return _shouldDownload; }
+        [[nodiscard]] bool hashMatch() const { return _hashMatch; }
 
     protected:
         ExitInfo handleResponse(std::istream &is) override;
@@ -47,7 +47,7 @@ class CheckHashMatchJob : public AbstractTokenNetworkJob {
         int64_t _localSize = 0;
         int64_t _remoteSize = 0;
 
-        bool _shouldDownload = true;
+        bool _hashMatch = false;
 };
 
 } // namespace KDC
