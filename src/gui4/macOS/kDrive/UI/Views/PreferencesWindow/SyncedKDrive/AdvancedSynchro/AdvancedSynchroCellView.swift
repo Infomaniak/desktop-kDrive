@@ -74,17 +74,13 @@ struct AdvancedSynchroCellView: View {
 
             IKLabeledContent("Dossiers synchronisés") {
                 HStack {
-                    if let blacklistNodes {
-                        Text(
-                            blacklistNodes.isEmpty
-                                ? "Tous les dossiers"
-                                : KDriveLocalizable.onboardingExclusionSummarySome
-                        )
-                        .font(.Tokens.body)
-                        .foregroundStyle(.secondary)
+                    if let blacklistNodes, !blacklistNodes.isEmpty {
+                        Text(KDriveLocalizable.onboardingExclusionSummarySome)
+                            .font(.Tokens.body)
+                            .foregroundStyle(.secondary)
                     }
 
-                    Button("Sélectionner", action: navigateToManageSynchro)
+                    Button(KDriveLocalizable.buttonManage, action: navigateToManageSynchro)
                         .disabled(blacklistNodes == nil)
                 }
             }
