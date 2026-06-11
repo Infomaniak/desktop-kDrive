@@ -44,6 +44,9 @@ std::string UrlHelper::notifyApiUrl(const uint8_t version /*= 2*/) {
 }
 
 std::string UrlHelper::loginApiUrl() {
+    const auto customURL = CommonUtility::envVarValue("KDRIVE_LOGIN_URL");
+    if (!customURL.empty()) return customURL;
+
     return usePreProdUrl() ? preprodLoginApiUrl : prodLoginApiUrl;
 }
 
