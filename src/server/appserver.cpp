@@ -392,18 +392,19 @@ void AppServer::init() {
         connect(OldCommServer::instance().get(), &OldCommServer::clientDisconnected, this,
                 &AppServer::onClientDisconnectedReceived);
     }
+    QTimer::singleShot(0, [=, this]() {
+        // Update users,accounts and drives info.
+        if (const auto exitInfo = updateAllUsersInfo(UpdateFollowUpAction::CleanUserDbEntry);
+            exitInfo.code() == ExitCode::InvalidToken) {
+            // The user will be asked to enter its credentials later.
+        } else if (!exitInfo) {
+            LOG_WARN(_logger, "Error in updateAllUsersInfo: " << exitInfo);
+            addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
+        }
 
-    // Update users,accounts and drives info.
-    if (const auto exitInfo = updateAllUsersInfo(UpdateFollowUpAction::CleanUserDbEntry);
-        exitInfo.code() == ExitCode::InvalidToken) {
-        // The user will be asked to enter its credentials later.
-    } else if (!exitInfo) {
-        LOG_WARN(_logger, "Error in updateAllUsersInfo: " << exitInfo);
-        addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
-    }
-
-    // Set sentry user
-    updateSentryUser();
+        // Set sentry user
+        updateSentryUser();
+    });
 
     // Read Updater activation flag
     AppStateValue noUpdateAppStateValue = 0;
