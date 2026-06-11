@@ -128,6 +128,9 @@
 /* loco:69c11aacce7b3b9139008044 */
 "buttonActivateOfflineSync" = "Activer la synchronisation hors ligne";
 
+/* loco:698b08da7aafd767de0d78b2 */
+"buttonAddAdvancedSync" = "Synchroniser un dossier";
+
 /* loco:698b580c716d616edb0efde2 */
 "buttonAddFileExclusionRule" = "Ajouter une règle";
 

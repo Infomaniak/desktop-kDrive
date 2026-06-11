@@ -58,6 +58,12 @@
 /* loco:6981b68a1e51fbe933040213 */
 "activitiesTypeMyActivity" = "My activity only";
 
+/* loco:69b422369e32a806170ba3c2 */
+"addAdvancedSyncDialogTitle" = "Sync a folder with kDrive";
+
+/* loco:698b087a5fc40f623b0789c2 */
+"advancedSyncDescription" = "Select a folder on your computer to sync with kDrive.\nYou can access your advanced syncs from the drive picker on the home page.";
+
 /* loco:698b07cec1d08f40b50bc702 */
 "advancedSyncTitle" = "Advanced synchronizations";
 /* loco:6a01c8e3ba328c320801c492 */
@@ -95,6 +101,9 @@
 
 /* loco:69c11aacce7b3b9139008044 */
 "buttonActivateOfflineSync" = "Enable offline sync";
+
+/* loco:698b08da7aafd767de0d78b2 */
+"buttonAddAdvancedSync" = "Sync a folder";
 
 /* loco:698b580c716d616edb0efde2 */
 "buttonAddFileExclusionRule" = "Add a rule";
