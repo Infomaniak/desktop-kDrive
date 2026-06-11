@@ -127,10 +127,7 @@ void TestSyncPalWorker::setUpTestInternalPause() {
     };
     _runningThreads.emplace_back(std::make_shared<std::thread>(restarter, _syncPal));
 
-    // Retrieve SyncPal components
-    auto mockLfso = mockSyncPal->getMockLFSOWorker();
     auto mockRfso = mockSyncPal->getMockRFSOWorker();
-
     mockRfso->stop(); // Will be restarted by SyncPal
 
     // Let the first sync finish
@@ -151,6 +148,13 @@ void TestSyncPalWorker::testInternalPause1() {
     const auto mockLfso = mockSyncPal->getMockLFSOWorker();
     const auto mockRfso = mockSyncPal->getMockRFSOWorker();
     const auto syncpalWorker = mockSyncPal->getSyncPalWorker();
+    const auto mockExecutorWorker = mockSyncPal->getMockExecutorWorker();
+
+    // Simulate a network error in Executor
+    // mockExecutorWorker->setMockExecuteCallback([]() -> ExitInfo { return ExitInfo(ExitCode::BackError, ExitCause::HttpErr); });
+
+    // Simulate a local file system event to trigger a sync cycle and the network error in the executor.
+    // mockLfso->simulateFSEvent();
 
     // Simulate a network error in RFSO
     CPPUNIT_ASSERT_EQUAL(SyncStep::Idle, syncpalWorker->step());
@@ -180,8 +184,10 @@ void TestSyncPalWorker::testInternalPause1() {
 
     CPPUNIT_ASSERT(TimeoutHelper::waitFor(
             [&syncpalWorker]() { return syncpalWorker->unpauseAsked() || !syncpalWorker->isPaused(); }, testTimeout, loopWait));
+
     // Wait for a new sync to start
     CPPUNIT_ASSERT(TimeoutHelper::waitFor([this]() { return _syncPal->step() != SyncStep::Idle; }, testTimeout, loopWait));
+
     // Wait for the sync to finish
     CPPUNIT_ASSERT(TimeoutHelper::waitFor([this]() { return _syncPal->step() == SyncStep::Idle; }, testTimeout, loopWait));
 
