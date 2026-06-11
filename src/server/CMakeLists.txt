@@ -401,6 +401,13 @@ if(BUILD_KDRIVE_OSX_BUNDLE AND NOT BUILD_LIBRARIES_ONLY)
                     endforeach()
                 endif()
             endforeach()
+
+            message(STATUS "Copying libzip.5.dylib")
+            file(COPY
+                "/usr/local/lib/libzip.5.dylib"
+                "/usr/local/lib/libzip.5.5.dylib"
+                DESTINATION "${FRAMEWORKS_DIR}"
+            )
         ]] INSTALL_CODE @ONLY)
 
         install(CODE "${INSTALL_CODE}")
