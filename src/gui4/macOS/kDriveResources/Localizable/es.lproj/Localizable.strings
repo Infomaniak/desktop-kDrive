@@ -58,6 +58,12 @@
 /* loco:6981b68a1e51fbe933040213 */
 "activitiesTypeMyActivity" = "Solo mi actividad";
 
+/* loco:69b422369e32a806170ba3c2 */
+"addAdvancedSyncDialogTitle" = "Sincronizar una carpeta con kDrive";
+
+/* loco:698b087a5fc40f623b0789c2 */
+"advancedSyncDescription" = "Seleccione una carpeta en su ordenador para sincronizar con kDrive.\nPuede acceder a sus sincronizaciones avanzadas desde el selector de unidades en la página de inicio.";
+
 /* loco:698b07cec1d08f40b50bc702 */
 "advancedSyncTitle" = "Sincronizaciones avanzadas";
 
@@ -97,6 +103,9 @@
 "betaSettings" = "Programa beta";
 /* loco:69c11aacce7b3b9139008044 */
 "buttonActivateOfflineSync" = "Activar sincronización sin conexión";
+
+/* loco:698b08da7aafd767de0d78b2 */
+"buttonAddAdvancedSync" = "Sincronizar una carpeta";
 
 /* loco:696a483470f3b70399021c12 */
 "buttonAddStorage" = "Añadir almacenamiento";

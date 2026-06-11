@@ -57,6 +57,12 @@
 
 /* loco:6981b68a1e51fbe933040213 */
 "activitiesTypeMyActivity" = "Nur meine Aktivität";
+/* loco:69b422369e32a806170ba3c2 */
+"addAdvancedSyncDialogTitle" = "Einen Ordner mit kDrive synchronisieren";
+
+/* loco:698b087a5fc40f623b0789c2 */
+"advancedSyncDescription" = "Wählen Sie einen Ordner auf Ihrem Computer aus, der mit kDrive synchronisiert werden soll.\nSie können auf Ihre erweiterten Synchronisierungen über die Laufwerksauswahl auf der Startseite zugreifen.";
+
 
 /* loco:698b07cec1d08f40b50bc702 */
 "advancedSyncTitle" = "Erweiterte Synchronisationen";
@@ -95,6 +101,9 @@
 
 /* loco:69c11aacce7b3b9139008044 */
 "buttonActivateOfflineSync" = "Offline-Synchronisierung aktivieren";
+
+/* loco:698b08da7aafd767de0d78b2 */
+"buttonAddAdvancedSync" = "Einen Ordner synchronisieren";
 
 /* loco:698b580c716d616edb0efde2 */
 "buttonAddFileExclusionRule" = "Eine Regel hinzufügen";
