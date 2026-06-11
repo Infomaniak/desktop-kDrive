@@ -579,12 +579,12 @@ bool AbstractNetworkJob::isError500(const Poco::Net::HTTPResponse::HTTPStatus ht
     shouldRetry = false;
     switch (httpErrorCode) {
         case Poco::Net::HTTPResponse::HTTP_BAD_GATEWAY:
-        case Poco::Net::HTTPResponse::HTTP_GATEWAY_TIMEOUT:
             // Retry if the job is an uploadSession chunck job an upload job or a downalod job
             // GATEWAY error can be due to poor network connexion. Some upload chunk can fail intermidently, we want to retry
             // befor cancelling the complete upload session
             shouldRetry = dynamic_cast<UploadSessionChunkJob *>(this) != nullptr;
             return true;
+        case Poco::Net::HTTPResponse::HTTP_GATEWAY_TIMEOUT:
         case Poco::Net::HTTPResponse::HTTP_INSUFFICIENT_STORAGE:
         case Poco::Net::HTTPResponse::HTTP_LOOP_DETECTED:
         case Poco::Net::HTTPResponse::HTTP_NOT_EXTENDED:
