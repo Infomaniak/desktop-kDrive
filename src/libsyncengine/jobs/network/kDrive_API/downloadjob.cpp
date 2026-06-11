@@ -145,7 +145,7 @@ ExitInfo DownloadJob::canRun() {
 void DownloadJob::computeHydrationStatus() {
     VfsStatus vfsStatus;
     ExitInfo exitInfo;
-    if (_vfs ) exitInfo = _vfs->status(_fileDownloadInfo.localpath, vfsStatus);
+    if (_vfs) exitInfo = _vfs->status(_fileDownloadInfo.localpath, vfsStatus);
     _isHydrated = !_vfs || (exitInfo && vfsStatus.isHydrated);
 }
 
@@ -321,10 +321,12 @@ ExitInfo DownloadJob::applyFileDatesIfRequired(const FileType fileType) {
         LOGW_WARN(_logger, L"Error in IoHelper::setFileDates: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
         // Do nothing (remote file will be updated during the next sync)
         sentry::Handler::captureMessage(sentry::Level::Warning, "DownloadJob::handleResponse", "Unable to set file dates");
-    } else if (ioError == IoError::NoSuchFileOrDirectory || ioError == IoError::AccessDenied) {
-        LOGW_INFO(_logger, L"Item does not exist anymore or access is denied. Restarting sync: "
-                                   << Utility::formatSyncPath(_fileDownloadInfo.localpath));
-        return {ExitCode::DataError, ExitCause::InvalidSnapshot};
+    } else if (ioError == IoError::NoSuchFileOrDirectory) {
+        LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
+        return {ExitCode::SystemError, ExitCause::NotFound};
+    } else if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
     return ExitCode::Ok;
 }
