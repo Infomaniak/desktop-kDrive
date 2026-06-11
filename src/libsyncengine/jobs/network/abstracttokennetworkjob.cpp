@@ -110,7 +110,7 @@ void AbstractTokenNetworkJob::updateLoginByUserDbId(const Login &login, const Us
     }
 }
 
-void AbstractTokenNetworkJob::clearCacheForUserDbId(UserDbId userDbId) {
+void AbstractTokenNetworkJob::clearCacheForUserDbId(const UserDbId userDbId) {
     const std::scoped_lock lock(_cacheMutex);
     if (const auto it = _userToApiKeyMap.find(userDbId); it != _userToApiKeyMap.end()) {
         const auto login = it->second.login;
@@ -525,8 +525,7 @@ ApiToken AbstractTokenNetworkJob::retrieveApiTokenFromUserCache() {
         LOG_DEBUG(_logger, "User cache not set for userDbId=" << _userDbId << ", loading user info");
         loadUserInfoFromUserDbId();
         it = _userToApiKeyMap.find(_userDbId);
-
-        if (it = _userToApiKeyMap.find(_userDbId); it == _userToApiKeyMap.cend()) {
+        if (it == _userToApiKeyMap.cend()) {
             const std::string err{"User cache not set for userDbId=" + std::to_string(_userDbId)};
             LOG_WARN(_logger, err);
             throw std::runtime_error(err);
