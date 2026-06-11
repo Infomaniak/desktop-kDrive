@@ -25,6 +25,7 @@ using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.Pages
@@ -56,7 +57,10 @@ namespace Infomaniak.kDrive.Pages
         {
             ViewModel.SelectedSyncChanged += OnSelectedSyncChanged;
             if (ViewModel.SelectedSync is not null)
+            {
                 ViewModel.SelectedSync.PropertyChanged += OnSelectedSyncPropertyChanged;
+                ViewModel.SelectedSync.Drive.Account.User.PropertyChanged += OnSelectedSyncUserPropertyChanged;
+            }
             RedirectToHomePageIfNeeded();
         }
 
@@ -70,29 +74,70 @@ namespace Infomaniak.kDrive.Pages
             ViewModel.SelectedSyncChanged -= OnSelectedSyncChanged;
 
             if (ViewModel.SelectedSync is not null)
+            {
                 ViewModel.SelectedSync.PropertyChanged -= OnSelectedSyncPropertyChanged;
+                ViewModel.SelectedSync.Drive.Account.User.PropertyChanged -= OnSelectedSyncUserPropertyChanged;
+            }
         }
 
         private void OnSelectedSyncChanged(object? sender, AppModel.SelectedSyncChangedEventArgs e)
         {
+            if (e.OldValue is not null)
+            {
+                e.OldValue.PropertyChanged -= OnSelectedSyncPropertyChanged;
+                e.OldValue.Drive.Account.User.PropertyChanged -= OnSelectedSyncUserPropertyChanged;
+            }
+
             AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(HomePage)));
         }
 
         private void OnSelectedSyncPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(Sync.SyncErrorState))
-            {
                 RedirectToHomePageIfNeeded();
-            }
+        }
+
+        private void OnSelectedSyncUserPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(User.IsConnected))
+                RedirectToHomePageIfNeeded();
+        }
+
+        private void RedirectToHomePage()
+        {
+            DetachHandlers();
+            AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(HomePage)));
         }
 
         private void RedirectToHomePageIfNeeded()
         {
-            if (ViewModel?.SelectedSync is null || !_handledErrorStates.Contains(ViewModel.SelectedSync.SyncErrorState))
+            if (ViewModel.SelectedSync is null)
             {
-                DetachHandlers();
-                AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(HomePage)));
+                RedirectToHomePage();
+                return;
             }
+
+            // If we are not on the login error page and the user is disconnected,
+            // immediately navigate to the home page (which will handle the redirect
+            // to the login page if needed). This special handling is necessary because
+            // SyncErrorStates is derived exclusively from Errors, whereas an
+            // authentication issue may be indicated by User.IsConnected (and/or by errors)
+            if (ViewModel.SelectedSync.Drive.Account.User.IsConnected == false)
+            {
+                if (!_handledErrorStates.Contains(SyncErrorStates.LoggingError))
+                    RedirectToHomePage();
+                return;
+            }
+            else if (ViewModel.SelectedSync.SyncErrorState == SyncErrorStates.Undefined)
+            {
+                RedirectToHomePage();
+                return;
+            }
+
+            // If the current SyncErrorState doesn't match the current page, navigate to the home page (which will handle the redirect
+            // to the right page if needed).
+            if (!_handledErrorStates.Contains(ViewModel.SelectedSync.SyncErrorState))
+                RedirectToHomePage();
         }
 
         protected async Task RestartSync()
