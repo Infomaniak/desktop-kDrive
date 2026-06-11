@@ -584,7 +584,7 @@ namespace Infomaniak.kDrive.CustomControls
         // Recompute tri-state based on exclusion map
         public void RecomputeSelectionFromExclusionMap()
         {
-            if (Node.AccessDenied)
+            if (Node is null || Node.AccessDenied)
                 return;
 
             if (ParentItem is not null && ParentItem.IsSelected is not null)
