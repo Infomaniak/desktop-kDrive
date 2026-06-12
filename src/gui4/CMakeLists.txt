@@ -42,4 +42,6 @@ if(WIN32)
     install(DIRECTORY ${CLIENT_DEST}/ DESTINATION ${CMAKE_INSTALL_BINDIR}/client
         PATTERN "${CLIENT_STAMP_NAME}" EXCLUDE
     )
+elseif(APPLE)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/macOS/CMakeLists.txt)
 endif()

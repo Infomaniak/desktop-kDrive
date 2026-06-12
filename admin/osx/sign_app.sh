@@ -25,6 +25,8 @@ identity="$2"
 team_identifier="$3"
 app_domain="$4"
 
+echo "Signing src_app:$src_app identity:$identity team_identifier:$team_identifier app_domain:$app_domain"
+
 codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/Frameworks/Sparkle.framework/Versions/B/XPCServices/Installer.xpc"
 codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/Frameworks/Sparkle.framework/Versions/B/XPCServices/Downloader.xpc"
 codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/Frameworks/Sparkle.framework/Versions/B/Autoupdate"
@@ -35,9 +37,39 @@ codesign -s "$identity" --force --verbose=4 --deep --options=runtime --entitleme
 codesign -s "$identity" --force --verbose=4 --deep --options=runtime --entitlements $(dirname $0)/FinderSyncExtension.entitlements "$src_app/Contents/PlugIns/Extension.appex"
 codesign -s "$identity" --force --verbose=4 --deep --options=runtime --entitlements $(dirname $0)/LiteSyncExtension.entitlements "$src_app/Contents/Library/SystemExtensions/$app_domain.LiteSyncExt.systemextension"
 
+echo "Signing InfomaniakDI"
+codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/InfomaniakDI.framework/Versions/A/InfomaniakDI"
+codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/InfomaniakDI.framework"
+
+echo "Signing kDriveCore"
+codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCore.framework/Versions/A/kDriveCore"
+codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCore.framework"
+
+echo "Signing kDriveCoreUI"
+codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCoreUI.framework/Versions/A/kDriveCoreUI"
+codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveCoreUI.framework"
+
+echo "Signing kDriveResources"
+codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveResources.framework/Versions/A/kDriveResources"
+codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/kDriveResources.framework"
+
+echo "Signing Lottie.framework"
+codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/Lottie.framework/Versions/A/Lottie"
+codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/Frameworks/Lottie.framework"
+
+echo "Signing kDrive.gui"
+codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app/Contents/MacOS/kDrive.gui"
+
+echo "Signing kDrive_client4.app"
+codesign -s "$identity" --force --verbose=4 --deep --options=runtime --preserve-metadata=entitlements "$src_app/Contents/MacOS/kDrive_client4.app"
+codesign -s "$identity" --force --verbose=4 --options=runtime --entitlements $(dirname $0)/kDrive4.entitlements "$src_app/Contents/MacOS/kDrive_client4.app"
+
 codesign -s "$identity" --force --verbose=4 --deep --options=runtime --preserve-metadata=entitlements "$src_app"
 codesign -s "$identity" --force --verbose=4 --options=runtime --entitlements $(dirname $0)/kDrive.entitlements "$src_app"
 codesign -s "$identity" --force --verbose=4 --options=runtime --entitlements $(dirname $0)/kDriveUninstaller.entitlements "$src_app/Contents/Frameworks/kDrive Uninstaller.app"
+
+echo "Re-Signing kDrive_client4.app without entitlements"
+codesign -s "$identity" --force --verbose=4 --deep --options=runtime "$src_app/Contents/MacOS/kDrive_client4.app"
 
 # Verify the signature
 codesign -dv $src_app
