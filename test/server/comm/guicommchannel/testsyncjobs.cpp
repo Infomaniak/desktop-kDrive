@@ -639,7 +639,8 @@ void TestGuiCommChannel::testSyncOfflineFilesSizeJob() {
 void TestGuiCommChannel::testSignalSyncNotifyManyDeletes() {
     const SyncDbId syncDbId = 1;
     const TooManyDeletesNotificationType notificationType = TooManyDeletesNotificationType::HardLimit;
-    SignalSyncNotifyManyDeletesJob job(syncDbId, notificationType);
+    const uint64_t nbFiles = 12345;
+    SignalSyncNotifyManyDeletesJob job(syncDbId, notificationType, nbFiles);
 
     checkSignalCommonMethods(job, SignalNum::SYNC_NOTIFY_MANY_DELETES);
 
@@ -656,6 +657,9 @@ void TestGuiCommChannel::testSignalSyncNotifyManyDeletes() {
     (void) JsonParserUtility::extractValue(paramsObj, "notificationType", notificationTypeOut);
     CPPUNIT_ASSERT_EQUAL(TooManyDeletesNotificationType::HardLimit,
                          static_cast<TooManyDeletesNotificationType>(notificationTypeOut));
+    uint64_t nbFilesOut = 0;
+    (void) JsonParserUtility::extractValue(paramsObj, "nbFiles", nbFilesOut);
+    CPPUNIT_ASSERT_EQUAL(nbFiles, nbFilesOut);
 }
 
 void TestGuiCommChannel::testAcknowledgeManyDeletes() {
