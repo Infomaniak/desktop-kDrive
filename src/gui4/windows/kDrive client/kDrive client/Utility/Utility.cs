@@ -375,16 +375,14 @@ namespace Infomaniak.kDrive
 
         public static Frame? GetFrame(Control control)
         {
-            DependencyObject? parent = control;
-            while (parent is not null)
-            {
-                if (parent is Frame frame)
-                    return frame;
+            Frame? frame = control.FindAscendant<Frame>();
+            if (frame is not null) return frame;
 
-                parent = VisualTreeHelper.GetParent(parent);
-            }
-            return null;
+            ContentDialog? dialog = control.FindAscendant<ContentDialog>();
+            if (dialog is null) return null;
+            return dialog.XamlRoot.Content.FindDescendant<Frame>();
         }
+
 
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
