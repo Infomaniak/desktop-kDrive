@@ -22,7 +22,7 @@
 #include "gui/parameterscache.h"
 #include "jobs/syncjobmanager.h"
 #include "jobs/network/kDrive_API/downloadjob.h"
-#include "jobs/network/kDrive_API/getfilelistjob.h"
+#include "jobs/network/kDrive_API/getallfilesindirectoryjob.h"
 #include "jobs/network/kDrive_API/upload/uploadjob.h"
 #include "jobs/network/kDrive_API/upload/upload_session/driveuploadsession.h"
 #include "keychainmanager/keychainmanager.h"
@@ -220,14 +220,14 @@ std::list<std::shared_ptr<SyncJob>> BenchmarkParallelJobs::generateUploadSession
     return jobs;
 }
 
-std::list<std::shared_ptr<SyncJob>> BenchmarkParallelJobs::generateDownloadJobs(const NodeId &remoteDirId,
+std::list<std::shared_ptr<SyncJob>> BenchmarkParallelJobs::generateDownloadJobs(const RemoteNodeId &remoteDirId,
                                                                                 const SyncPath &localTestFolderPath,
                                                                                 const int64_t expectedSize,
                                                                                 const uint16_t nbMaxJob /*= 0*/) const {
     std::list<NodeId> remoteFileIds;
     (void) retrieveRemoteFileIds(remoteDirId, remoteFileIds);
 
-    uint64_t counter = 0;
+    Count counter = 0;
     std::list<std::shared_ptr<SyncJob>> jobs;
     for (const auto &remoteFileId: remoteFileIds) {
         const auto job = std::make_shared<DownloadJob>(
@@ -270,30 +270,15 @@ void BenchmarkParallelJobs::runJobs(const uint16_t nbThread, DataExtractor &data
     dataExtractor.push(std::to_string(elapsed_seconds.count()));
 }
 
-bool BenchmarkParallelJobs::retrieveRemoteFileIds(const NodeId &folderId, std::list<NodeId> &remoteFileIds) const {
-    GetFileListJob fileListJob(driveDbId, folderId);
-    (void) fileListJob.runSynchronously();
+bool BenchmarkParallelJobs::retrieveRemoteFileIds(const RemoteNodeId &folderId, std::list<RemoteNodeId> &remoteFileIds) const {
+    GetAllFilesInDirectoryJob job(driveDbId, folderId, TranslationMode::V2ToV3);
+    (void) job.runSynchronously();
 
-    const auto resObj = fileListJob.jsonRes();
-    if (!resObj) {
-        return false;
-    }
+    RemoteNodeInfoList nodeInfoList;
+    if (!job.remoteNodeInfoList(nodeInfoList)) return false;
 
-    const auto dataArray = resObj->getArray(dataKey);
-    if (!dataArray) {
-        return false;
-    }
+    for (const auto &nodeInfo: nodeInfoList) remoteFileIds.push_back(nodeInfo.nodeId().toStdString());
 
-    remoteFileIds.clear();
-    for (auto it = dataArray->begin(); it != dataArray->end(); ++it) {
-        const auto dirObj = it->extract<Poco::JSON::Object::Ptr>();
-
-        NodeId nodeId;
-        if (!JsonParserUtility::extractValue(dirObj, idKey, nodeId)) {
-            return false;
-        }
-        (void) remoteFileIds.emplace_back(nodeId);
-    }
     return true;
 }
 

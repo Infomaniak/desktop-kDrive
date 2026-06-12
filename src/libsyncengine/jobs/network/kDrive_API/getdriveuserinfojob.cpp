@@ -25,43 +25,33 @@
 namespace KDC {
 
 GetDriveUserInfoJob::GetDriveUserInfoJob(const UserDbId userDbId, const DriveId driveId, const UserId userId) :
-    AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, 0, driveId),
+    AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, driveId),
     _targetUserId(userId) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
-    _apiVersion = 3;
 }
 
 GetDriveUserInfoJob::GetDriveUserInfoJob(const DriveDbId driveDbId, const UserId userId) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
+    AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
     _targetUserId(userId) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
-    _apiVersion = 3;
 }
 
 ExitInfo GetDriveUserInfoJob::handleJsonResponse(const std::string &replyBody) {
     if (const auto exitInfo = AbstractTokenNetworkJob::handleJsonResponse(replyBody); !exitInfo) return exitInfo;
 
     const auto dataArray = jsonRes()->getArray(dataKey);
-    if (!dataArray || dataArray->empty()) {
-        return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
+    if (!dataArray || dataArray->empty()) return {ExitCode::BackError, ExitCause::MissingReplyData};
 
     const auto dataObj = dataArray->getObject(0);
-    if (!dataObj) {
-        return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
+    if (!dataObj) return {ExitCode::BackError, ExitCause::MissingReplyData};
 
-    if (!JsonParserUtility::extractValue(dataObj, displayNameKey, _name)) {
+    if (!JsonParserUtility::extractValue(dataObj, displayNameKey, _name))
         return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
 
-    if (!JsonParserUtility::extractValue(dataObj, emailKey, _email)) {
-        return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
+    if (!JsonParserUtility::extractValue(dataObj, emailKey, _email)) return {ExitCode::BackError, ExitCause::MissingReplyData};
 
-    if (!JsonParserUtility::extractValue(dataObj, avatarKey, _avatarUrl)) {
+    if (!JsonParserUtility::extractValue(dataObj, avatarKey, _avatarUrl))
         return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
 
     return ExitCode::Ok;
 }
@@ -69,6 +59,7 @@ ExitInfo GetDriveUserInfoJob::handleJsonResponse(const std::string &replyBody) {
 std::string GetDriveUserInfoJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
     str += "/users";
+
     return str;
 }
 

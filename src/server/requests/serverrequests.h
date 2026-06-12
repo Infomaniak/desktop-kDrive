@@ -120,18 +120,17 @@ struct SYNCENGINE_EXPORT ServerRequests {
                                     bool withPath = false);
 
         static ExitInfo getSubFolders(const UserDbId userDbId, const DriveId driveId, const NodeId &nodeId,
-                                      std::vector<NodeInfo> &list, const bool withPath = false);
+                                      RemoteNodeInfoList &list, const bool withPath = false);
 
         static ExitInfo getSubFolders(UserDbId userDbId, DriveId driveId, const QString &nodeId, QList<NodeInfo> &list,
                                       bool withPath = false); // TODO: Delete after switching to the new comm layer
-        static ExitInfo getSubFolders(DriveDbId driveDbId, const NodeId &nodeId, std::vector<NodeInfo> &list,
-                                      bool withPath = false);
+        static ExitInfo getSubFolders(DriveDbId driveDbId, const NodeId &nodeId, RemoteNodeInfoList &list, bool withPath = false);
         static ExitInfo getSubFolders(DriveDbId driveDbId, const QString &nodeId, QList<NodeInfo> &list, bool withPath = false);
         static ExitCode createDir(DriveDbId driveDbId, const NodeId &parentNodeId, const CommString &dirName, NodeId &newNodeId);
         static ExitCode createDir(UserDbId userDbId, DriveId driveId, const NodeId &parentNodeId, const SyncName &dirName,
                                   NodeId &newNodeId);
         static ExitCode createDir(DriveDbId driveDbId, const QString &parentNodeId, const QString &dirName, QString &newNodeId);
-        static ExitCode getPublicLinkUrl(DriveDbId driveDbId, const NodeId &nodeId, std::string &linkUrl);
+        static ExitInfo getPublicLinkUrl(DriveDbId driveDbId, const NodeId &nodeId, std::string &linkUrl);
         static ExitInfo getFolderSizeWithCallback(UserDbId userDbId, DriveId driveId, const NodeId &nodeId,
                                                   std::function<void(const QString &, qint64)> callback);
         static ExitInfo getFolderSize(UserDbId userDbId, DriveId driveId, const NodeId &nodeId, int64_t &result);

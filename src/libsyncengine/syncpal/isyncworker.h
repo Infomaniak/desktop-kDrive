@@ -22,6 +22,7 @@
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
 
+#include <atomic>
 #include <thread>
 
 #define LOOP_PAUSE_SLEEP_PERIOD 200 // 0.2 sec
@@ -46,8 +47,12 @@ class ISyncWorker {
         std::string name() const { return _name; }
         std::string shortName() const { return _shortName; }
 
-        bool isRunning() const { return _isRunning; }
-        bool stopAsked() const { return _stopAsked; }
+        bool isRunning() const;
+        bool stopAsked() const;
+
+        void setIsRunning(bool isRunning);
+        void setStopAsked(bool stopAsked);
+
         ExitCode exitCode() const { return _exitCode; }
         ExitCause exitCause() const { return _exitCause; }
 
@@ -81,13 +86,14 @@ class ISyncWorker {
 
         virtual SyncDbId syncDbId() const { return _syncPal ? _syncPal->syncDbId() : -1; }
 
+
     private:
         const std::string _name;
         const std::string _shortName;
         const std::chrono::seconds _startDelay{0};
         std::unique_ptr<StdLoggingThread> _thread{nullptr};
-        bool _stopAsked{false};
-        bool _isRunning{false};
+        std::atomic<bool> _stopAsked{false};
+        std::atomic<bool> _isRunning{false};
         ExitCode _exitCode{ExitCode::Unknown};
         ExitCause _exitCause{ExitCause::Unknown};
         int64_t _pauseDuration{defaultPauseDuration};

@@ -27,14 +27,12 @@ Sync::Sync() :
     _supportVfs(false),
     _virtualFileMode(VirtualFileMode::Off),
     _notificationsDisabled(false),
-    _hasFullyCompleted(false),
-    _listingCursorTimestamp(0) {}
+    _hasFullyCompleted(false) {}
 
-Sync::Sync(SyncDbId dbId, DriveDbId driveDbId, const std::filesystem::path &localPath, const NodeId &localNodeId,
-           const std::filesystem::path &targetPath, const NodeId &targetNodeId, bool paused, bool supportVfs,
-           VirtualFileMode virtualFileMode, bool notificationsDisabled, const std::filesystem::path &dbPath,
-           bool hasFullyCompleted, const std::string &navigationPaneClsid, const std::string &listingCursor,
-           int64_t listingCursorTimestamp) :
+Sync::Sync(const SyncDbId dbId, const DriveDbId driveDbId, const std::filesystem::path &localPath, const NodeId &localNodeId,
+           const std::filesystem::path &targetPath, const RemoteNodeId &targetNodeId, const bool paused, const bool supportVfs,
+           const VirtualFileMode virtualFileMode, const bool notificationsDisabled, const std::filesystem::path &dbPath,
+           bool hasFullyCompleted, const std::string &navigationPaneClsid, CursorStore cursorStore) :
     _dbId(dbId),
     _driveDbId(driveDbId),
     _localPath(localPath),
@@ -48,7 +46,6 @@ Sync::Sync(SyncDbId dbId, DriveDbId driveDbId, const std::filesystem::path &loca
     _dbPath(dbPath),
     _hasFullyCompleted(hasFullyCompleted),
     _navigationPaneClsid(navigationPaneClsid),
-    _listingCursor(listingCursor),
-    _listingCursorTimestamp(listingCursorTimestamp) {}
+    _cursorStore(std::move(cursorStore)) {}
 
 } // namespace KDC

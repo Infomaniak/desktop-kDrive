@@ -33,42 +33,53 @@ class PARMS_EXPORT Sync {
              const NodeId &targetNodeId = NodeId(), bool paused = false, bool supportVfs = false,
              VirtualFileMode virtualFileMode = VirtualFileMode::Off, bool notificationsDisabled = false,
              const SyncPath &dbPath = SyncPath(), bool hasFullyCompleted = false,
-             const std::string &navigationPaneClsid = std::string(), const std::string &listingCursor = std::string(),
-             int64_t listingCursorTimestamp = 0);
+             const std::string &navigationPaneClsid = std::string(), CursorStore cursorStore = defaultCursorStore);
 
-        inline void setDbId(SyncDbId dbId) { _dbId = dbId; }
-        inline SyncDbId dbId() const { return _dbId; }
-        inline void setDriveDbId(const DriveDbId driveDbId) { _driveDbId = driveDbId; }
-        inline DriveDbId driveDbId() const { return _driveDbId; }
-        inline void setLocalPath(const SyncPath &localPath) { _localPath = localPath; }
-        inline const SyncPath &localPath() const { return _localPath; }
-        inline void setLocalNodeId(const NodeId &localNodeId) { _localNodeId = localNodeId; }
-        inline const NodeId &localNodeId() const { return _localNodeId; }
-        inline void setTargetPath(const SyncPath &targetPath) { _targetPath = targetPath; }
-        inline const SyncPath &targetPath() const { return _targetPath; }
-        inline void setTargetNodeId(const NodeId &targetNodeId) { _targetNodeId = targetNodeId; }
-        inline const NodeId &targetNodeId() const { return _targetNodeId; }
-        inline void setDbPath(const SyncPath &dbPath) { _dbPath = dbPath; }
-        inline const SyncPath &dbPath() const { return _dbPath; }
-        inline void setPaused(bool paused) { _paused = paused; }
-        inline bool paused() const { return _paused; }
-        inline void setSupportVfs(const bool supportVfs) { _supportVfs = supportVfs; }
-        inline bool supportVfs() const { return _supportVfs; }
-        inline void setVirtualFileMode(const VirtualFileMode virtualFileMode) { _virtualFileMode = virtualFileMode; }
-        inline VirtualFileMode virtualFileMode() const { return _virtualFileMode; }
-        inline void setNotificationsDisabled(const bool notificationsDisabled) { _notificationsDisabled = notificationsDisabled; }
-        inline bool notificationsDisabled() const { return _notificationsDisabled; }
-        inline void setHasFullyCompleted(bool hasFullyCompleted) { _hasFullyCompleted = hasFullyCompleted; }
-        inline bool hasFullyCompleted() const { return _hasFullyCompleted; }
-        inline void setNavigationPaneClsid(const std::string &navigationPaneClsid) { _navigationPaneClsid = navigationPaneClsid; }
-        inline const std::string &navigationPaneClsid() const { return _navigationPaneClsid; }
-        inline void setListingCursor(const std::string &listingCursor, int64_t timestamp) {
-            _listingCursor = listingCursor;
-            _listingCursorTimestamp = timestamp;
+        void setDbId(const SyncDbId dbId) { _dbId = dbId; }
+        SyncDbId dbId() const { return _dbId; }
+        void setDriveDbId(const DriveDbId driveDbId) { _driveDbId = driveDbId; }
+        DriveDbId driveDbId() const { return _driveDbId; }
+        void setLocalPath(const SyncPath &localPath) { _localPath = localPath; }
+        const SyncPath &localPath() const { return _localPath; }
+        void setLocalNodeId(const NodeId &localNodeId) { _localNodeId = localNodeId; }
+        const NodeId &localNodeId() const { return _localNodeId; }
+        void setTargetPath(const SyncPath &targetPath) { _targetPath = targetPath; }
+        const SyncPath &targetPath() const { return _targetPath; }
+        void setTargetNodeId(const NodeId &targetNodeId) { _targetNodeId = targetNodeId; }
+        const RemoteNodeId &targetNodeId() const { return _targetNodeId; }
+        void setDbPath(const SyncPath &dbPath) { _dbPath = dbPath; }
+        const SyncPath &dbPath() const { return _dbPath; }
+        void setPaused(const bool paused) { _paused = paused; }
+        bool paused() const { return _paused; }
+        void setSupportVfs(const bool supportVfs) { _supportVfs = supportVfs; }
+        bool supportVfs() const { return _supportVfs; }
+        void setVirtualFileMode(const VirtualFileMode virtualFileMode) { _virtualFileMode = virtualFileMode; }
+        VirtualFileMode virtualFileMode() const { return _virtualFileMode; }
+        void setNotificationsDisabled(const bool notificationsDisabled) { _notificationsDisabled = notificationsDisabled; }
+        bool notificationsDisabled() const { return _notificationsDisabled; }
+        void setHasFullyCompleted(const bool hasFullyCompleted) { _hasFullyCompleted = hasFullyCompleted; }
+        bool hasFullyCompleted() const { return _hasFullyCompleted; }
+        void setNavigationPaneClsid(const std::string &navigationPaneClsid) { _navigationPaneClsid = navigationPaneClsid; }
+        const std::string &navigationPaneClsid() const { return _navigationPaneClsid; }
+
+        [[nodiscard]] const CursorStore &getCursorStore() const { return _cursorStore; };
+        void setCursorStore(const CursorStore &cursors) {
+            _cursorStore = cursors;
+            for (const auto specialFolder: {SpecialRemoteFolder::Private, SpecialRemoteFolder::CommonDocuments,
+                                            SpecialRemoteFolder::Shared, SpecialRemoteFolder::CustomTarget}) {
+                if (!_cursorStore.contains(specialFolder)) _cursorStore[specialFolder] = {};
+            }
         }
-        inline void listingCursor(std::string &listingCursor, int64_t &timestamp) const {
-            listingCursor = _listingCursor;
-            timestamp = _listingCursorTimestamp;
+
+        void setFolderCursor(const SpecialRemoteFolder specialFolder, const CursorData &cursorData) {
+            _cursorStore[specialFolder] = cursorData;
+        }
+
+        void getFolderCursor(const SpecialRemoteFolder specialFolder, CursorData &cursorData) const {
+            if (!_cursorStore.contains(specialFolder)) {
+                cursorData = {};
+            } else
+                cursorData = _cursorStore.at(specialFolder);
         }
 
     private:
@@ -85,8 +96,8 @@ class PARMS_EXPORT Sync {
         SyncPath _dbPath;
         bool _hasFullyCompleted{false};
         std::string _navigationPaneClsid;
-        std::string _listingCursor;
-        int64_t _listingCursorTimestamp{0};
+
+        CursorStore _cursorStore = defaultCursorStore;
 };
 
 } // namespace KDC

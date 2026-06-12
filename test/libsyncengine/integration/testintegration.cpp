@@ -26,6 +26,7 @@
 #include "jobs/local/localmovejob.h"
 #include "jobs/syncjobmanager.h"
 #include "jobs/local/localcreatedirjob.h"
+#include "jobs/network/kDrive_API/getallfilesindirectoryjob.h"
 #include "jobs/network/kDrive_API/upload/uploadjob.h"
 #include "requests/syncnodecache.h"
 #include "requests/exclusiontemplatecache.h"
@@ -52,7 +53,6 @@
 #include "libsyncengine/jobs/network/kDrive_API/deletejob.h"
 #include "libsyncengine/jobs/network/kDrive_API/duplicatejob.h"
 #include "libsyncengine/jobs/network/kDrive_API/getfileinfojob.h"
-#include "libsyncengine/jobs/network/kDrive_API/getfilelistjob.h"
 #include "libsyncengine/jobs/network/kDrive_API/movejob.h"
 #include "libsyncengine/jobs/network/kDrive_API/renamejob.h"
 #include "libsyncengine/update_detection/file_system_observer/filesystemobserverworker.h"
@@ -89,13 +89,13 @@ void TestIntegration::setUp() {
     (void) ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     // Insert user, account, drive & sync
-    const User user(1, 12321, keychainKey);
+    const User user(UserDbId{1}, UserId{12321}, keychainKey);
     (void) ParmsDb::instance()->insertUser(user);
 
-    const Account account(1, atoi(testVariables.accountId.c_str()), user.dbId(), "account1");
+    const Account account(AccountDbId{1}, atoi(testVariables.accountId.c_str()), user.dbId(), "account1");
     (void) ParmsDb::instance()->insertAccount(account);
 
-    _driveDbId = 1;
+    _driveDbId = 2;
     const Drive drive(_driveDbId, atoi(testVariables.driveId.c_str()), account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
 
@@ -153,8 +153,8 @@ void TestIntegration::tearDown() {
 void TestIntegration::testAll() {
     if (!testhelpers::isExtendedTest()) return;
 
-    // Start sync
     _syncPal->start();
+
     // Wait for the end of 1st sync
     waitForSyncToBeIdle(std::source_location::current());
     logStep("initialization");
@@ -228,8 +228,8 @@ void TestIntegration::inconsistencyTests() {
     waitForSyncToBeIdle(std::source_location::current());
 
     auto remoteFileInfo = getRemoteFileInfoByName(_driveDbId, _remoteSyncDir.id(), Str("testnameclash"));
-    CPPUNIT_ASSERT(remoteFileInfo.isValid());
-    CPPUNIT_ASSERT_LESS(filestat.size, remoteFileInfo.size); // The local edit is not propagated.
+    CPPUNIT_ASSERT(!remoteFileInfo.nodeId().isEmpty());
+    CPPUNIT_ASSERT_LESS(filestat.size, remoteFileInfo.size()); // The local edit is not propagated.
 
     // Rename again the remote file to avoid the name clash.
     (void) RenameJob(nullptr, _driveDbId, testNameClashRemoteId2, "testnameclash2").runSynchronously();
@@ -244,8 +244,8 @@ void TestIntegration::inconsistencyTests() {
                                  IoHelper::PathCheckOption::Insensitive);
     remoteFileInfo = getRemoteFileInfoByName(_driveDbId, _remoteSyncDir.id(), Str("testnameclash2"));
 
-    CPPUNIT_ASSERT(remoteFileInfo.isValid());
-    CPPUNIT_ASSERT_EQUAL(filestat.size, remoteFileInfo.size); // The local edit has been propagated.
+    CPPUNIT_ASSERT(!remoteFileInfo.nodeId().isEmpty());
+    CPPUNIT_ASSERT_EQUAL(filestat.size, remoteFileInfo.size()); // The local edit has been propagated.
     CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / "testnameclash2"));
     logStep("testInconsistency");
 #endif
@@ -530,8 +530,8 @@ void TestIntegration::testEncoding() {
     waitForSyncToBeIdle(std::source_location::current());
 
     const auto remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), nfcPath.filename().native());
-    CPPUNIT_ASSERT(remoteTestFileInfo.isValid());
-    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(1), countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
+    CPPUNIT_ASSERT(!remoteTestFileInfo.nodeId().isEmpty());
+    CPPUNIT_ASSERT_EQUAL(Count{1}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
     logStep("testEncoding");
 }
 
@@ -939,7 +939,8 @@ void TestIntegration::waitForSyncToBeIdle(
     const auto timeOutDuration = minutes(2);
     const TimerUtility timeoutTimer;
 
-    // Wait for end of sync (A sync is considered ended when it stay in Idle for more than 3s)
+    // Wait for the completion of a sync.
+    // A sync is considered complete if it remains `Idle` for more than 3s.
     bool ended = false;
     while (!ended) {
         CPPUNIT_ASSERT_MESSAGE(toString(srcLoc), timeoutTimer.elapsed<minutes>() < timeOutDuration);
@@ -967,48 +968,29 @@ void TestIntegration::logStep(const std::string &str) {
     LOG_DEBUG(_logger, ss.str());
 }
 
-TestIntegration::RemoteFileInfo TestIntegration::getRemoteFileInfoByName(const int driveDbId, const NodeId &parentId,
-                                                                         const SyncName &name) const {
-    RemoteFileInfo fileInfo;
-
-    GetFileListJob job(driveDbId, parentId);
+NodeInfo TestIntegration::getRemoteFileInfoByName(const DriveDbId driveDbId, const RemoteNodeId &parentId,
+                                                  const SyncName &name) const {
+    GetAllFilesInDirectoryJob job(driveDbId, parentId, TranslationMode::V2ToV3);
     (void) job.runSynchronously();
 
-    const auto resObj = job.jsonRes();
-    if (!resObj) return fileInfo;
+    RemoteNodeInfoList nodeInfoList;
+    (void) job.remoteNodeInfoList(nodeInfoList);
 
-    const auto dataArray = resObj->getArray(dataKey);
-    if (!dataArray) return fileInfo;
+    const auto nameQStr = SyncName2QStr(name);
+    const auto it = std::find_if(nodeInfoList.cbegin(), nodeInfoList.cend(),
+                                 [&nameQStr](const NodeInfo &info) { return info.name() == nameQStr; });
 
-    for (auto it = dataArray->begin(); it != dataArray->end(); ++it) {
-        const auto obj = it->extract<Poco::JSON::Object::Ptr>();
-        if (SyncName2Str(name) == obj->get(nameKey).toString()) {
-            fileInfo.id = obj->get(idKey).toString();
-            fileInfo.parentId = obj->get(parentIdKey).toString();
-            fileInfo.modificationTime = toInt(obj->get(lastModifiedAtKey));
-            fileInfo.creationTime = toInt(obj->get(addedAtKey));
-            fileInfo.type = obj->get(typeKey).toString() == "file" ? NodeType::File : NodeType::Directory;
-            if (fileInfo.type == NodeType::File) {
-                fileInfo.size = toInt(obj->get(sizeKey));
-            }
-            break;
-        }
-    }
-
-    return fileInfo;
+    return (it != nodeInfoList.cend()) ? *it : NodeInfo{};
 }
 
-int64_t TestIntegration::countItemsInRemoteDir(int driveDbId, const NodeId &parentId) const {
-    GetFileListJob job(driveDbId, parentId);
+Count TestIntegration::countItemsInRemoteDir(const DriveDbId driveDbId, const RemoteNodeId &parentId) {
+    GetAllFilesInDirectoryJob job(driveDbId, parentId, TranslationMode::V2ToV3);
     (void) job.runSynchronously();
 
-    const auto resObj = job.jsonRes();
-    if (!resObj) return -1;
+    RemoteNodeInfoList nodeInfoList;
+    (void) job.remoteNodeInfoList(nodeInfoList);
 
-    const auto dataArray = resObj->getArray(dataKey);
-    if (!dataArray) return -1;
-
-    return static_cast<int64_t>(dataArray->size());
+    return static_cast<Count>(nodeInfoList.size());
 }
 
 void TestIntegration::testSynchronizationOfSymLinks() {
@@ -1035,18 +1017,18 @@ void TestIntegration::testSynchronizationOfSymLinks() {
     const auto remoteTestFileInfo3 = getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("dangling_symlink"));
     const auto remoteTestFileInfo4 = getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("dangling_directory_symlink"));
 
-    CPPUNIT_ASSERT(remoteTestFileInfo1.isValid());
-    CPPUNIT_ASSERT(remoteTestFileInfo2.isValid());
-    CPPUNIT_ASSERT(remoteTestFileInfo3.isValid());
-    CPPUNIT_ASSERT(remoteTestFileInfo4.isValid());
+    CPPUNIT_ASSERT(!remoteTestFileInfo1.nodeId().isEmpty());
+    CPPUNIT_ASSERT(!remoteTestFileInfo2.nodeId().isEmpty());
+    CPPUNIT_ASSERT(!remoteTestFileInfo3.nodeId().isEmpty());
+    CPPUNIT_ASSERT(!remoteTestFileInfo4.nodeId().isEmpty());
 
-    CPPUNIT_ASSERT_EQUAL(int64_t{6}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
+    CPPUNIT_ASSERT_EQUAL(Count{6}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
 
     logStep("testSynchronizationOfSymLinks");
 }
 
 void TestIntegration::testSymLinkWithTooManySymbolicLevels() {
-    RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
+    RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id(), "test_sym_link_loop_sync");
 
     waitForSyncToBeIdle(std::source_location::current());
 
@@ -1058,15 +1040,15 @@ void TestIntegration::testSymLinkWithTooManySymbolicLevels() {
     const auto remoteTestFileInfo1 = getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("file_symlink_1.txt"));
     const auto remoteTestFileInfo2 = getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("file_symlink_2.txt"));
 
-    CPPUNIT_ASSERT(remoteTestFileInfo1.isValid());
-    CPPUNIT_ASSERT(remoteTestFileInfo2.isValid());
-    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(2), countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
+    CPPUNIT_ASSERT(!remoteTestFileInfo1.nodeId().isEmpty());
+    CPPUNIT_ASSERT(!remoteTestFileInfo2.nodeId().isEmpty());
+    CPPUNIT_ASSERT_EQUAL(Count{2}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
 
     logStep("testSymLinkWithTooManySymbolicLevels");
 }
 
 void TestIntegration::testDirSymLinkWithTooManySymbolicLevels() {
-    RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
+    RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id(), "test_dir_sym_link_loop_sync");
 
     waitForSyncToBeIdle(std::source_location::current());
 
@@ -1079,9 +1061,9 @@ void TestIntegration::testDirSymLinkWithTooManySymbolicLevels() {
     const auto remoteTestFileInfo1 = getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("folder_symlink_1"));
     const auto remoteTestFileInfo2 = getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("folder_symlink_2"));
 
-    CPPUNIT_ASSERT(remoteTestFileInfo1.isValid());
-    CPPUNIT_ASSERT(remoteTestFileInfo2.isValid());
-    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(2), countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
+    CPPUNIT_ASSERT(!remoteTestFileInfo1.nodeId().isEmpty());
+    CPPUNIT_ASSERT(!remoteTestFileInfo2.nodeId().isEmpty());
+    CPPUNIT_ASSERT_EQUAL(Count{2}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
 
     logStep("testDirSymLinkWithTooManySymbolicLevels");
 }

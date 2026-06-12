@@ -17,6 +17,9 @@
  */
 
 #include "csvfullfilelistwithcursorjob.h"
+#include "jobs/network/kDrive_API/apitranslator.h"
+
+#include "jobs/network/jobexceptions.h"
 
 #if defined(KD_WINDOWS)
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
@@ -26,20 +29,25 @@ namespace KDC {
 
 static const uint32_t apiTimout = 900;
 
-CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob(const DriveDbId driveDbId, const NodeId &dirId,
-                                                           const NodeSet &blacklist /*= {}*/, const bool zip /*= true*/) :
+
+CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob(const DriveDbId driveDbId, RemoteNodeId remoteDirId,
+                                                           const RemoteNodeIdSet &blacklist /*= {}*/,
+                                                           const Zip zip /*= Zip:On*/) :
     AbstractListingJob(driveDbId, blacklist),
-    _dirId(dirId),
+    _remoteDirId(std::move(remoteDirId)),
     _zip(zip),
-    _snapshotItemHandler(_logger) {
+    _snapshotItemHandler(userDbId(), driveId(), _logger) {
     _customTimeout = apiTimout + 15;
 
-    if (_zip) {
-        addRawHeader("Accept-Encoding", "gzip");
+    if (const auto exitInfo = ApiTranslator::translateV2ToV3(userDbId(), driveId(), _remoteDirId); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ApiTranslator::translateV2ToV3: " << exitInfo);
+        throw JobException("Translation error in CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob.");
     }
+
+    if (_zip == Zip::On) addRawHeader("Accept-Encoding", "gzip");
 }
 
-bool CsvFullFileListWithCursorJob::getItem(SnapshotItem &item, bool &error, bool &ignore, bool &eof) {
+bool CsvFullFileListWithCursorJob::getItem(RemoteSnapshotItem &item, bool &error, bool &ignore, bool &eof) {
     error = false;
     ignore = false;
 
@@ -52,7 +60,10 @@ std::string CsvFullFileListWithCursorJob::getCursor() {
 
 std::string CsvFullFileListWithCursorJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
-    str += "/files/listing/full";
+    str += "/files/";
+    str += _remoteDirId;
+    str += "/listing/full";
+
     return str;
 }
 
@@ -65,14 +76,13 @@ std::string CsvFullFileListWithCursorJob::acceptHeader() {
 }
 
 void CsvFullFileListWithCursorJob::setQueryParameters(Poco::URI &uri) {
-    uri.addQueryParameter("directory_id", _dirId);
     uri.addQueryParameter("recursive", "true");
     uri.addQueryParameter("format", "safe_csv");
     uri.addQueryParameter("with", "files.is_link");
 }
 
 ExitInfo CsvFullFileListWithCursorJob::handleResponse(std::istream &is) {
-    if (_zip) {
+    if (_zip == Zip::On) {
         Utility::unzipStream(is, _ss);
     } else {
         _ss << is.rdbuf();
@@ -91,6 +101,7 @@ ExitInfo CsvFullFileListWithCursorJob::handleResponse(std::istream &is) {
         LOGW_DEBUG(_logger,
                    L"Reply " << jobId() << L" received - length=" << length << L" value=" << CommonUtility::s2ws(_ss.str()));
     }
+
     return ExitCode::Ok;
 }
 

@@ -1094,7 +1094,7 @@ void DrivePreferencesWidget::onValidateUpdate(const SyncDbId syncDbId) {
 
     QSet<QString> oldBlackSet;
     if (const auto exitCode = GuiRequests::getBlacklistedNodeIdSet(syncDbId, oldBlackSet); exitCode != ExitCode::Ok) {
-        qCWarning(lcDrivePreferencesWidget()) << "Error in Requests::getSyncIdSet";
+        qCWarning(lcDrivePreferencesWidget()) << "Error in GuiRequests::getBlacklistedNodeIdSet";
         return;
     }
     // Update the blacklist
@@ -1102,7 +1102,7 @@ void DrivePreferencesWidget::onValidateUpdate(const SyncDbId syncDbId) {
     if (!GuiUtility::checkBlacklistSize(blackSet.size(), this)) return;
 
     if (const auto exitCode = GuiRequests::setBlacklistedNodeIdSet(syncDbId, blackSet); exitCode != ExitCode::Ok) {
-        qCWarning(lcDrivePreferencesWidget()) << "Error in Requests::setSyncIdSet";
+        qCWarning(lcDrivePreferencesWidget()) << "Error in GuiRequests::setBlacklistedNodeIdSet";
         return;
     }
 

@@ -23,13 +23,13 @@
 
 namespace KDC {
 
-GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob(const UserDbId userDbId, const DriveId driveId, NodeId fileId,
-                                                     const TranslationMode translationMode /* = TranslationMode::V2ToV3 */) :
-    FileListJob(userDbId, driveId, std::move(fileId), translationMode) {}
+GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob(const UserDbId userDbId, const DriveId driveId, RemoteNodeId remoteDirId,
+                                                     const TranslationMode translationMode /* = TranslationMode::None */) :
+    FileListJob(userDbId, driveId, std::move(remoteDirId), translationMode) {}
 
-GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob(const DriveDbId driveDbId, NodeId fileId,
-                                                     const TranslationMode translationMode /* = TranslationMode::V2ToV3 */) :
-    FileListJob(driveDbId, std::move(fileId), translationMode) {}
+GetAllFilesInDirectoryJob::GetAllFilesInDirectoryJob(const DriveDbId driveDbId, RemoteNodeId remoteDirId,
+                                                     const TranslationMode translationMode /* = TranslationMode::None */) :
+    FileListJob(driveDbId, std::move(remoteDirId), translationMode) {}
 
 
 void GetAllFilesInDirectoryJob::abort() {
@@ -40,7 +40,7 @@ void GetAllFilesInDirectoryJob::abort() {
 ExitInfo GetAllFilesInDirectoryJob::runJob() {
     _remoteNodeInfoList.clear();
     bool hasMore = false;
-    std::string cursor;
+    Cursor cursor;
     constexpr Count maxListingPages = 100000; // To detect and avoid potential infinite loop.
     Count pageCount = 0;
     do {
@@ -51,9 +51,10 @@ ExitInfo GetAllFilesInDirectoryJob::runJob() {
         }
         std::shared_ptr<GetFilesInDirectoryJob> fileListJob = nullptr;
         try {
-            fileListJob =
-                    _driveDbId ? std::make_shared<GetFilesInDirectoryJob>(_driveDbId, _fileId, cursor, _translationMode)
-                               : std::make_shared<GetFilesInDirectoryJob>(_userDbId, _driveId, _fileId, cursor, _translationMode);
+            fileListJob = _driveDbId
+                                  ? std::make_shared<GetFilesInDirectoryJob>(_driveDbId, _remoteDirId, cursor, _translationMode)
+                                  : std::make_shared<GetFilesInDirectoryJob>(_userDbId, _driveId, _remoteDirId, cursor,
+                                                                             _translationMode);
         } catch (const std::bad_alloc &badAllocationException) {
             return exception2ExitCode(badAllocationException);
         } catch (const JobException &jobException) {
@@ -61,6 +62,8 @@ ExitInfo GetAllFilesInDirectoryJob::runJob() {
             return exception2ExitCode(jobException);
         }
 
+        _driveId = fileListJob->driveId();
+        _userDbId = fileListJob->userDbId();
         fileListJob->setListingConf(_listingConf);
 
         if (const auto exitInfo = fileListJob->runSynchronously(); !exitInfo) {

@@ -19,53 +19,69 @@
 #include "getfileinfojob.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/utility/jsonparserutility.h"
+#include "libsyncengine/jobs/network/kDrive_API/apitranslator.h"
+#include "jobs/network/jobexceptions.h"
 
 #include <Poco/Net/HTTPRequest.h>
 
 namespace KDC {
 
-GetFileInfoJob::GetFileInfoJob(const UserDbId userDbId, const DriveId driveId, const NodeId &nodeId) :
-    AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, 0, driveId),
-    _nodeId(nodeId) {
+GetFileInfoJob::GetFileInfoJob(const UserDbId userDbId, const DriveId driveId, RemoteNodeId nodeId) :
+    AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, driveId),
+
+    _nodeId(std::move(nodeId)) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
+
     _trials = 1;
+
+    if (const auto exitInfo = ApiTranslator::translateV2ToV3(userDbId, driveId, _nodeId); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ApiTranslator::translateV2ToV3: " << exitInfo);
+        throw JobException("Translation error in GetFileInfoJob::GetFileInfoJob.");
+    }
 }
 
-GetFileInfoJob::GetFileInfoJob(const DriveDbId driveDbId, const NodeId &nodeId) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
-    _nodeId(nodeId) {
+
+GetFileInfoJob::GetFileInfoJob(const DriveDbId driveDbId, RemoteNodeId nodeId) :
+    AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
+    _nodeId(std::move(nodeId)) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
+
     _trials = 1;
+
+    if (const auto exitInfo = ApiTranslator::translateV2ToV3(userDbId(), driveId(), _nodeId); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ApiTranslator::translateV2ToV3: " << exitInfo);
+        throw JobException("Translation error in GetFileInfoJob::GetFileInfoJob.");
+    }
 }
 
 ExitInfo GetFileInfoJob::handleResponse(std::istream &is) {
-    if (const auto exitCode = AbstractTokenNetworkJob::handleResponse(is); !exitCode) return exitCode;
+    if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) return exitInfo;
 
     if (!jsonRes()) return ExitCode::Ok;
 
     const auto dataObj = jsonRes()->getObject(dataKey);
     if (!dataObj) return ExitCode::Ok;
 
-    if (!JsonParserUtility::extractValue(dataObj, parentIdKey, _parentNodeId)) {
-        return {};
-    }
-    if (!JsonParserUtility::extractValue(dataObj, createdAtKey, _creationTime)) {
-        return {};
-    }
-    if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modificationTime)) {
-        return {};
-    }
-    std::string tmp;
-    if (!JsonParserUtility::extractValue(dataObj, typeKey, tmp)) {
-        return {};
-    }
-    if (tmp != dirKey) {
-        if (!JsonParserUtility::extractValue(dataObj, sizeKey, _size)) {
-            return {};
-        }
-    }
+    if (!JsonParserUtility::extractValue(dataObj, parentIdKey, _parentNodeId))
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
 
-    if (std::string symbolicLink; JsonParserUtility::extractValue(dataObj, symbolicLinkKey, symbolicLink, false)) {
+    if (!JsonParserUtility::extractValue(dataObj, createdAtKey, _creationTime))
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+
+    if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modificationTime))
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+
+    std::string tmp;
+    if (!JsonParserUtility::extractValue(dataObj, typeKey, tmp)) return {ExitCode::BackError, ExitCause::MissingReplyData};
+
+    if (tmp != dirKey && !JsonParserUtility::extractValue(dataObj, sizeKey, _size))
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+
+    if (!JsonParserUtility::extractValue(dataObj, lastModifiedByKey, _lastModifiedByUserId))
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+
+    constexpr bool mandatory = false;
+    if (std::string symbolicLink; JsonParserUtility::extractValue(dataObj, symbolicLinkKey, symbolicLink, mandatory)) {
         _isLink = !symbolicLink.empty();
     }
 
@@ -98,6 +114,7 @@ std::string GetFileInfoJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
     str += "/files/";
     str += _nodeId;
+
     return str;
 }
 

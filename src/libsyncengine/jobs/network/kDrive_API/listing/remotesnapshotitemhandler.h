@@ -22,9 +22,9 @@
 
 namespace KDC {
 
-class SnapshotItemHandler {
+class RemoteSnapshotItemHandler {
     public:
-        explicit SnapshotItemHandler(const log4cplus::Logger &logger);
+        explicit RemoteSnapshotItemHandler(UserDbId userDbId, DriveId driveId, const log4cplus::Logger &logger);
         enum CsvIndex {
             CsvIndexId = 0,
             CsvIndexParentId,
@@ -47,10 +47,10 @@ class SnapshotItemHandler {
                 bool prevCharDoubleQuotes{false};
                 bool readNextLine{true}; // If true, read the next line, stop item parsing otherwise.
                 std::string tmp;
-                int doubleQuoteCount{0};
+                Count doubleQuoteCount{0};
         };
 
-        bool updateSnapshotItem(const std::string &str, CsvIndex index, SnapshotItem &item);
+        bool updateRemoteSnapshotItem(const std::string &str, CsvIndex index, RemoteSnapshotItem &item);
         /**
          * @brief Extract one snapshot item from the full listing CSV file. An item can spread on several lines.
          * @param item output value
@@ -60,14 +60,16 @@ class SnapshotItemHandler {
          * @param eof `true` if the end of file (i.e. a line contains the end of file delimiter) has been reached
          * @return `true` if there are more lines to be read
          */
-        bool getItem(SnapshotItem &item, std::stringstream &ss, bool &error, bool &ignore, bool &eof);
+        bool getItem(RemoteSnapshotItem &item, std::stringstream &ss, bool &error, bool &ignore, bool &eof);
 
     private:
         bool _ignoreFirstLine = true;
+        UserDbId _userDbId;
+        DriveId _driveId;
         log4cplus::Logger _logger;
         void logError(const std::wstring &methodName, const std::wstring &stdErrorType, const std::string &str,
                       const std::exception &exc);
-        void readSnapshotItemFields(SnapshotItem &item, const std::string &line, bool &error, ParsingState &state);
+        void readRemoteSnapshotItemFields(RemoteSnapshotItem &item, const std::string &line, bool &error, ParsingState &state);
 };
 
 } // namespace KDC

@@ -891,9 +891,10 @@ ExitInfo SyncPal::setLocalNodeId(const NodeId &localNodeId) {
     return ExitCode::Ok;
 }
 
-ExitInfo SyncPal::setListingCursor(const std::string &value, int64_t timestamp) {
-    Sync sync;
-    bool found;
+ExitInfo SyncPal::selectSync(Sync &sync) {
+    sync = {};
+    bool found = false;
+
     if (!ParmsDb::instance()->selectSync(syncDbId(), sync, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::selectSync");
         return {ExitCode::DbError, ExitCause::DbAccessError};
@@ -903,7 +904,12 @@ ExitInfo SyncPal::setListingCursor(const std::string &value, int64_t timestamp) 
         return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
 
-    sync.setListingCursor(value, timestamp);
+    return ExitCode::Ok;
+}
+
+ExitInfo SyncPal::updateSync(const Sync &sync) {
+    bool found = false;
+
     if (!ParmsDb::instance()->updateSync(sync, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::updateSync");
         return {ExitCode::DbError, ExitCause::DbAccessError};
@@ -916,19 +922,21 @@ ExitInfo SyncPal::setListingCursor(const std::string &value, int64_t timestamp) 
     return ExitCode::Ok;
 }
 
-ExitInfo SyncPal::listingCursor(std::string &value, int64_t &timestamp) {
+ExitInfo SyncPal::setFolderCursor(const SpecialRemoteFolder specialFolder, const CursorData &cursorData) {
     Sync sync;
-    bool found;
-    if (!ParmsDb::instance()->selectSync(syncDbId(), sync, found)) {
-        LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::selectSync");
-        return {ExitCode::DbError, ExitCause::DbAccessError};
-    }
-    if (!found) {
-        LOG_SYNCPAL_WARN(_logger, "Sync not found");
-        return {ExitCode::DataError, ExitCause::DbEntryNotFound};
-    }
+    if (const auto exitInfo = selectSync(sync); !exitInfo) return exitInfo;
 
-    sync.listingCursor(value, timestamp);
+    sync.setFolderCursor(specialFolder, cursorData);
+
+    return updateSync(sync);
+}
+
+ExitInfo SyncPal::getFolderCursor(const SpecialRemoteFolder specialFolder, CursorData &cursorData) {
+    Sync sync;
+    if (const auto exitInfo = selectSync(sync); !exitInfo) return exitInfo;
+
+    sync.getFolderCursor(specialFolder, cursorData);
+
     return ExitCode::Ok;
 }
 

@@ -81,12 +81,32 @@ using Timestamp = int64_t;
 struct CursorData {
         Cursor cursor;
         Timestamp timestamp{0};
+
+        friend bool operator==(const CursorData &lhs, const CursorData &rhs) = default;
 };
-struct CursorStore {
-        CursorData userPrivateFolderCursor;
-        CursorData commonDocumentsFolderCursor;
-        CursorData sharedFolderCursor;
+
+enum class SpecialRemoteFolder {
+    CommonDocuments = 0,
+    Private = 1,
+    Shared = 2,
+    CustomTarget = 3 // For an advanced synchronization.
 };
+
+using CursorStore = std::unordered_map<SpecialRemoteFolder, CursorData>;
+[[maybe_unused]] static const CursorStore defaultCursorStore = CursorStore{{SpecialRemoteFolder::Private, {}},
+                                                                           {SpecialRemoteFolder::CommonDocuments, {}},
+                                                                           {SpecialRemoteFolder::Shared, {}},
+                                                                           {SpecialRemoteFolder::CustomTarget, {}}};
+
+using SpecialFolderNames = std::unordered_map<SpecialRemoteFolder, SyncName>;
+
+using Url = std::string;
+struct SessionInfo {
+        Url url;
+        std::string token;
+};
+
+
 #if defined(KD_WINDOWS)
 using StringStream = std::wstringstream;
 using OStringStream = std::wostringstream;

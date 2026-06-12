@@ -27,6 +27,11 @@
 namespace KDC {
 
 class CsvFullFileListWithCursorJob;
+class LongPollJob;
+
+namespace sentry::pTraces::counterScoped {
+struct RFSOExploreItem;
+}
 
 class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
     public:
@@ -35,42 +40,105 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
 
     protected:
         void execute() override;
-        virtual ExitInfo sendLongPoll(bool &changes);
         ExitInfo generateInitialSnapshot() override;
+        using LongPollJobMap =
+                std::unordered_map<RemoteNodeId, std::shared_ptr<LongPollJob>, StringHashFunction, std::equal_to<>>;
+        enum class ForcedUpdate {
+            Asked,
+            None
+        };
+        [[nodiscard]] virtual ExitInfo checkIfRemoteDirHasChanges(const RemoteNodeId &remoteDirId, ForcedUpdate updateFlag,
+                                                                  const LongPollJobMap &longPollJobs, bool &changes);
 
     private:
-        ExitInfo processEvents() override;
+        ExitInfo processEvents(const NodeId &remoteDirId) override;
         [[nodiscard]] ReplicaSide getSnapshotType() const override { return ReplicaSide::Remote; }
 
         ExitInfo initWithCursor();
         ExitInfo exploreDirectory(const NodeId &nodeId);
-        ExitInfo getItemsInDir(const NodeId &dirId, bool saveCursor);
+
+        struct ParsingIterationState {
+                bool error{false};
+                bool ignore{false};
+                bool eof{false};
+                uint64_t itemCount{0};
+        };
+        [[nodiscard]] ExitInfo handleRemoteSnapshotItem(const RemoteSnapshotItem &item, SyncNameSet &existingFiles,
+                                                        ParsingIterationState &iterationState,
+                                                        sentry::pTraces::counterScoped::RFSOExploreItem &perfMonitor);
+        enum class CursorPersistence {
+            Save,
+            None
+        };
+        [[nodiscard]] ExitInfo getItemsInRemoteDir(const NodeId &dirId, CursorPersistence persistence = CursorPersistence::None);
 
         struct ActionInfo {
                 ActionCode actionCode{ActionCode::ActionCodeUnknown};
-                SnapshotItem snapshotItem;
-                SyncName path;
+                RemoteSnapshotItem snapshotItem;
+                const SyncName &path() const { return _path; };
+                void setPath(const SyncName &remotePath);
+
+            private:
+                SyncName _path;
         };
-        ExitInfo processActions(Poco::JSON::Array::Ptr filesArray);
-        ExitInfo extractActionInfo(Poco::JSON::Object::Ptr actionObj, ActionInfo &actionInfo);
+
+        using RemoteFileId = int64_t;
+        static RemoteFileId toRemoteFileId(const NodeId &nodeId) { return std::stoi(nodeId); };
+        using ActionInfoList = std::list<ActionInfo>;
+        ExitInfo createActionInfoList(const Poco::JSON::Array::Ptr actionArray, ActionInfoList &actionInfoList);
+        ExitInfo fillActionsFilesInfo(const Poco::JSON::Array::Ptr actionsFilesArray, ActionInfoList &actionInfoList);
+        ExitInfo extractActionInfo(const Poco::JSON::Object::Ptr actionObj, ActionInfo &actionInfo);
+        ExitInfo extractActionFileInfo(const Poco::JSON::Object::Ptr actionFileObj, ActionInfoList &actionInfoList);
+
         using MoveItemMap = std::unordered_map<NodeId, ActionCode, StringHashFunction, std::equal_to<>>;
         ExitInfo processAction(ActionInfo &actionInfo, MoveItemMap &movedItems);
+        ExitInfo processActions(const Poco::JSON::Array::Ptr actionsArray, const Poco::JSON::Array::Ptr actionFilesArray);
+
         void keepTrackOfMovedItem(const ActionInfo &actionInfo, MoveItemMap &movedItems) const;
         bool isDirectoryExplorationRequired(const ActionInfo &actionInfo, const MoveItemMap &movedItems) const;
+
         ExitInfo removeItemFromSnapshot(const NodeId &id);
 
         ExitInfo checkRightsAndUpdateItem(const NodeId &nodeId, bool &hasRights, SnapshotItem &snapshotItem);
-
         ExitInfo checkForUnsupportedCharacters(const SyncName &name, const NodeId &nodeId, NodeType type);
 
         void countListingRequests();
+        void deleteOrphans();
+
+        ExitInfo getSpecialFoldersRemoteIds(std::vector<RemoteNodeId> &specialFoldersRemoteIds) const;
 
         DriveDbId _driveDbId = -1;
-        std::string _cursor;
-        NodeSet _blackList; // A list of user-selected folders not to be synchronized.
+
+        using CursorMap = std::unordered_map<RemoteNodeId, CursorData, StringHashFunction, std::equal_to<>>;
+        // Map tracking the cursors of the listing requests made for folders specified by their remote IDs.
+        CursorMap _listingCursorMap;
+        ExitInfo getListingCursor(const RemoteNodeId &remoteDirId, CursorData &cursorData);
+        ExitInfo saveListingCursor(const RemoteNodeId &remoteDirId, const CursorData &cursorData);
+
+        RemoteNodeIdSet _blackList; // A list of user-selected folders not to be synchronized.
         int _listingFullCounter = 0;
         std::chrono::steady_clock::time_point _listingFullTimer = std::chrono::steady_clock::now();
 
+        [[nodiscard]] bool syncIsAdvancedWithNonRootFolder() const;
+        [[nodiscard]] RemoteNodeId rootFolderRemoteId() const;
+        [[nodiscard]] ExitInfo updateSpecialFolderItem(const RemoteNodeId &remoteNodeId);
+        [[nodiscard]] ExitInfo getSpecialRemoteFolderName(const RemoteNodeId &remoteDirId, SyncName &folderName);
+
+        [[nodiscard]] ExitInfo parseCsvReply(CursorPersistence cursorPersistence,
+                                             std::shared_ptr<CsvFullFileListWithCursorJob> csvFullListingJob);
+        [[nodiscard]] ExitInfo handleCsvReplyCursor(const RemoteNodeId &remoteDirId, CursorPersistence cursorPersistence,
+                                                    std::shared_ptr<CsvFullFileListWithCursorJob> csvFullFileListWithCursorJob);
+        [[nodiscard]] ExitInfo createGetItemsInRemoteDirJob(
+                const RemoteNodeId &remoteDirId, std::shared_ptr<CsvFullFileListWithCursorJob> &csvFullFileListWithCursorJob);
+
+        [[nodiscard]] ExitInfo createLongPollJob(const RemoteNodeId &remoteDirId, std::shared_ptr<LongPollJob> &longPollJob);
+
+        [[nodiscard]] virtual ExitInfo updateLongPollJobs(const std::vector<RemoteNodeId> &remoteDirIds,
+                                                          LongPollJobMap &longPollJobs);
+        [[nodiscard]] ExitInfo processEvents(const std::vector<RemoteNodeId> &specialFoldersRemoteIds,
+                                             LongPollJobMap &longPollJobs);
+        using FullListingJobMap = std::unordered_map<RemoteNodeId, std::shared_ptr<CsvFullFileListWithCursorJob>,
+                                                     StringHashFunction, std::equal_to<>>;
         friend class TestRemoteFileSystemObserverWorker;
 };
 

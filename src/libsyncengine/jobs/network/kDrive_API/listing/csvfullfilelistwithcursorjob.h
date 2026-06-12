@@ -19,13 +19,18 @@
 #pragma once
 
 #include "abstractlistingjob.h"
-#include "snapshotitemhandler.h"
+#include "remotesnapshotitemhandler.h"
 
 namespace KDC {
 
 class CsvFullFileListWithCursorJob final : public AbstractListingJob {
     public:
-        CsvFullFileListWithCursorJob(DriveDbId driveDbId, const NodeId &dirId, const NodeSet &blacklist = {}, bool zip = true);
+        enum class Zip {
+            On,
+            Off
+        };
+        CsvFullFileListWithCursorJob(DriveDbId driveDbId, RemoteNodeId remoteDirId, const RemoteNodeIdSet &blacklist = {},
+                                     Zip zip = Zip::On);
 
         /**
          * @brief getItem
@@ -35,8 +40,9 @@ class CsvFullFileListWithCursorJob final : public AbstractListingJob {
          * @param eof : whether the end of file has been reached or not
          * @return if return == true, continue parsing
          */
-        bool getItem(SnapshotItem &item, bool &error, bool &ignore, bool &eof);
+        bool getItem(RemoteSnapshotItem &item, bool &error, bool &ignore, bool &eof);
         std::string getCursor();
+        RemoteNodeId remoteDirId() const { return _remoteDirId; }
 
     private:
         std::string getSpecificUrl() override;
@@ -46,11 +52,11 @@ class CsvFullFileListWithCursorJob final : public AbstractListingJob {
 
         ExitInfo handleResponse(std::istream &is) override;
 
-        NodeId _dirId;
-        bool _zip = true;
+        RemoteNodeId _remoteDirId;
+        Zip _zip = Zip::On;
 
         std::stringstream _ss;
-        SnapshotItemHandler _snapshotItemHandler;
+        RemoteSnapshotItemHandler _snapshotItemHandler;
 };
 
 } // namespace KDC

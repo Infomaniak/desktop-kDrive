@@ -21,11 +21,12 @@
 namespace KDC {
 
 AbstractUploadSessionJob::AbstractUploadSessionJob(UploadSessionType uploadType, DriveDbId driveDbId) :
-    AbstractTokenNetworkJob(uploadType == UploadSessionType::Drive ? ApiType::Drive : ApiType::Desktop, 0, 0, driveDbId, 0) {}
+    AbstractTokenNetworkJob(uploadType == UploadSessionType::Drive ? ApiType::Drive : ApiType::Desktop, 0, driveDbId, 0) {}
 
 AbstractUploadSessionJob::AbstractUploadSessionJob(UploadSessionType uploadType, DriveDbId driveDbId,
-                                                   const SyncPath &absoluteFilePath, const std::string &sessionToken) :
-    AbstractTokenNetworkJob(uploadType == UploadSessionType::Drive ? ApiType::Drive : ApiType::Desktop, 0, 0, driveDbId, 0),
-    _sessionToken(sessionToken),
+                                                   const SyncPath &absoluteFilePath, const SessionInfo &sessionInfo) :
+    AbstractTokenNetworkJob(uploadType == UploadSessionType::Drive ? ApiType::Drive : ApiType::Desktop, 0, driveDbId, 0),
+
+    _sessionInfo(sessionInfo),
     _absoluteFilePath(absoluteFilePath) {}
 } // namespace KDC
