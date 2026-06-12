@@ -392,6 +392,9 @@ void AppServer::init() {
         connect(OldCommServer::instance().get(), &OldCommServer::clientDisconnected, this,
                 &AppServer::onClientDisconnectedReceived);
     }
+
+    // Set sentry user
+    updateSentryUser();
     QTimer::singleShot(0, this, [this]() {
         // Update users,accounts and drives info.
         if (const auto exitInfo = updateAllUsersInfo(UpdateFollowUpAction::CleanUserDbEntry);
@@ -402,7 +405,7 @@ void AppServer::init() {
             addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
         }
 
-        // Set sentry user
+        // refresh sentry user
         updateSentryUser();
     });
 
