@@ -3917,16 +3917,22 @@ bool AppServer::startClient() {
         }
 #else
         pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1").arg(APPLICATION_CLIENT_EXECUTABLE);
+        useClientV4 = KDRIVE_VERSION_MAJOR >= 4;
 #endif
 
         QStringList arguments;
         if (useClientV4 && useCommManager(true)) {
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
             const auto port = _commManager->tryGetGUICommPort();
             if (port <= 0) {
                 LOG_FATAL(_logger, "Failed to start kDrive client (comm manager port isn't available)");
                 return false;
             }
             arguments << QString::number(port);
+
+#else
+            // On macOS the client communicates with the server through XPC and doesn't need the port number as argument.
+#endif
         } else if (!useClientV4 && useOldCommServer()) {
             arguments << QString::number(OldCommServer::instance()->commPort());
         } else {
