@@ -80,7 +80,6 @@ struct SyncedKDriveView: View {
                         .onChange(of: mainSynchroMode) { newValue in
                             switchSynchroMode(mainSynchro, mode: newValue)
                         }
-                    }
                 }
 
                 Section {

@@ -52,7 +52,16 @@ struct AdvancedSynchroCellView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                 Menu {
-                    Button(KDriveLocalizable.buttonRemoveSync, role: .destructive, action: onDelete)
+                    Button(action: openInFinder) {
+                        Label(KDriveLocalizable.buttonOpenInFinder, resource: KDriveResources.finder)
+                    }
+                    Button(action: openInBrowser) {
+                        Label(KDriveLocalizable.buttonOpenInBrowser, resource: KDriveResources.squareArrowDiagonalUp)
+                    }
+                    Divider()
+                    Button(role: .destructive, action: onDelete) {
+                        Label(KDriveLocalizable.buttonRemoveSync, resource: KDriveResources.trash)
+                    }
                 } label: {
                     Image(systemName: "ellipsis")
                 }
@@ -99,6 +108,25 @@ struct AdvancedSynchroCellView: View {
             blacklistNodes = Set(blacklistedNodes)
         } catch {
             SentrySDK.capture(error: error)
+        }
+    }
+
+    private func openInFinder() {
+        NSWorkspace.shared.open(synchro.localPath)
+    }
+
+    private func openInBrowser() {
+        Task {
+            @InjectService var cache: CoherentCache
+            guard let cache = await cache.getDrive(driveDbId: Int32(synchro.driveDbId)),
+                  let targetNodeId = synchro.targetNodeId else {
+                return
+            }
+
+            @InjectService var nodeURLGenerator: NodeURLGenerator
+            let url = nodeURLGenerator.remoteURL(for: targetNodeId, driveId: Int(cache.driveId))
+
+            NSWorkspace.shared.open(url)
         }
     }
 
