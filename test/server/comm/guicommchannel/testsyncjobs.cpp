@@ -648,7 +648,8 @@ void TestGuiCommChannel::testSignalSyncNotifyManyDeletes() {
         CPPUNIT_ASSERT(false);
     }
 
-    const auto jsonObj = Poco::JSON::Parser{}.parse(job._outputParamsStr).extract<Poco::JSON::Object::Ptr>();
+    const auto jsonObj =
+            Poco::JSON::Parser{}.parse(CommonUtility::commString2Str(job._outputParamsStr)).extract<Poco::JSON::Object::Ptr>();
     const auto paramsObj = JsonParserUtility::extractJsonObject(jsonObj, "params");
     SyncDbId syncDbIdOut = 0;
     (void) JsonParserUtility::extractValue(paramsObj, "syncDbId", syncDbIdOut);
