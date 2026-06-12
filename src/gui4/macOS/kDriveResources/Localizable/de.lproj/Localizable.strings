@@ -1056,6 +1056,8 @@
 
 /* loco:698c62a71f3f2e07fe07ca17 */
 "onboardingAdvancedSettingsDriveSelectionTitle" = "Konfigurieren Sie Ihre kDrive";
+/* loco:698c4e054842cd371c0d94f2 */
+"onboardingAlreadySyncedDriveTooltip" = "Dieses kDrive ist bereits konfiguriert.\nGehen Sie zu Ihren Einstellungen, um es zu ändern.";
 
 /* loco:693050ed6a0836d25507da22 */
 "onboardingAuthorizationExtensionDescription" = "Lassen Sie kDrive in den macOS-Einstellungen zu:";

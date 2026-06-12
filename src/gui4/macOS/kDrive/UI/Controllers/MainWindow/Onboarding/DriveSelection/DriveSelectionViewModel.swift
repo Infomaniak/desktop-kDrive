@@ -39,6 +39,8 @@ final class DriveSelectionViewModel: ObservableObject {
     @Published private(set) var selectedDrives = Set<UIAvailableDrive>()
 
     @Published private(set) var availableDrives = [UIAvailableDrive]()
+    @Published private(set) var synchronizedDrives = [UIDrive]()
+
     var synchroConfigurations = [UIAvailableDrive.ID: SynchroConfiguration]()
 
     var selectedSynchroConfigurations: [SynchroConfiguration] {
@@ -55,6 +57,7 @@ final class DriveSelectionViewModel: ObservableObject {
     init(flowCoordinator: OnboardingFlowCoordinator) {
         self.flowCoordinator = flowCoordinator
         observeAvailableDrives()
+        observeSynchronizedDrives()
     }
 
     private func observeAvailableDrives() {
@@ -68,6 +71,15 @@ final class DriveSelectionViewModel: ObservableObject {
             }
     }
 
+    private func observeSynchronizedDrives() {
+        coherentCacheObservable.usersPublisher.allDrivesPublisher()
+            .map { $0.map { UIDrive(drive: $0.drive) } }
+            .removeDuplicates()
+            .receiveOnMain(store: &bindStore) { [weak self] synchronizedDrives in
+                self?.synchronizedDrives = synchronizedDrives
+            }
+    }
+
     func loadAvailableDrives() async throws {
         guard let user = flowCoordinator.currentUser else {
             flowCoordinator.navigate(to: .login)
@@ -75,6 +87,7 @@ final class DriveSelectionViewModel: ObservableObject {
         }
 
         _ = try await DriveJobs().availableDrives(userDbId: Int32(user.dbId))
+        _ = try await SyncJobs().availableSync()
     }
 
     func toggleDriveSelection(_ drive: UIAvailableDrive) {
