@@ -29,7 +29,6 @@ struct SyncedKDriveView: View {
 
     @State private var mainSynchro: UISynchro?
     @State private var mainSynchroMode = UISynchroMode.storeOnline
-    @State private var advancedSynchros = [UISynchro]()
 
     @State private var synchroToDelete: UISynchro?
     @State private var isShowingGenericError = false
@@ -76,27 +75,15 @@ struct SyncedKDriveView: View {
                 }
 
                 Section {
-                    VStack(alignment: .leading, spacing: AppPadding.padding16) {
-                        VStack(alignment: .leading, spacing: AppPadding.padding2) {
-                            Text(KDriveLocalizable.fileSyncMode)
-                            Text(KDriveLocalizable.fileSyncModeDescription)
-                                .foregroundStyle(.secondary)
-                                .font(.callout)
-                        }
-
-                        Picker(KDriveLocalizable.accessibilitySelectSynchroMode, selection: $mainSynchroMode) {
-                            ForEach(UISynchroMode.allCases) { mode in
-                                UISynchroModeCell(mode: mode)
-                                    .tag(mode)
-                            }
-                        }
-                        .pickerStyle(.radioGroup)
-                        .labelsHidden()
+                    SynchroModePicker(synchroMode: $mainSynchroMode)
                         .disabled(!mainSynchro.supportsVirtualFileSystem)
                         .onChange(of: mainSynchroMode) { newValue in
                             switchSynchroMode(mainSynchro, mode: newValue)
                         }
-                    }
+                }
+
+                Section {
+                    FormNavigationCell(title: KDriveLocalizable.advancedSyncTitle, navigate: navigateToAdvancedSynchro)
                 }
 
                 Section {
@@ -107,23 +94,6 @@ struct SyncedKDriveView: View {
                             .foregroundStyle(.red)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .contentShape(.rect)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-
-            if !advancedSynchros.isEmpty {
-                Section {
-                    Button(action: navigateToAdvancedSynchro) {
-                        HStack {
-                            Text(KDriveLocalizable.advancedSyncTitle)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .foregroundStyle(.primary)
-
-                            Image(systemName: "chevron.right")
-                                .foregroundStyle(.secondary)
-                        }
-                        .contentShape(.rect)
                     }
                     .buttonStyle(.plain)
                 }
@@ -146,24 +116,13 @@ struct SyncedKDriveView: View {
             return
         }
 
-        var freshMainSynchro: UISynchro?
-        var freshAdvancedSynchros = [UISynchro]()
-
-        for synchro in driveSynchros {
-            let uiSynchro = UISynchro(synchro: synchro)
-
-            if uiSynchro.targetNodeId == nil, freshMainSynchro == nil {
-                freshMainSynchro = uiSynchro
-            } else {
-                freshAdvancedSynchros.append(uiSynchro)
-            }
-        }
+        let freshMainSynchro = driveSynchros
+            .map { UISynchro(synchro: $0) }
+            .first { $0.targetNodeId == nil }
 
         withAnimation {
             mainSynchro = freshMainSynchro
             mainSynchroMode = freshMainSynchro?.useVirtualFileSystem == true ? .storeOnline : .availableOffline
-
-            advancedSynchros = freshAdvancedSynchros
         }
     }
 
@@ -203,7 +162,8 @@ struct SyncedKDriveView: View {
     }
 
     private func navigateToAdvancedSynchro() {
-        // TODO: Navigate to advanced synchros
+        @InjectService var router: PreferencesViewRouter
+        router.append(.advancedSynchros(drive))
     }
 
     private func handleSynchroIsDeleted(_ error: Error?) {

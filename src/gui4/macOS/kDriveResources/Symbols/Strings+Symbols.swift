@@ -44,6 +44,10 @@ public enum KDriveLocalizable {
   public static let activitiesTypeAllActivities = KDriveLocalizable.tr("Localizable", "activitiesTypeAllActivities", fallback: "All activities")
   /// loco:6981b68a1e51fbe933040213
   public static let activitiesTypeMyActivity = KDriveLocalizable.tr("Localizable", "activitiesTypeMyActivity", fallback: "My activity only")
+  /// loco:69b422369e32a806170ba3c2
+  public static let addAdvancedSyncDialogTitle = KDriveLocalizable.tr("Localizable", "addAdvancedSyncDialogTitle", fallback: "Sync a folder with kDrive")
+  /// loco:698b087a5fc40f623b0789c2
+  public static let advancedSyncDescription = KDriveLocalizable.tr("Localizable", "advancedSyncDescription", fallback: "Select a folder on your computer to sync with kDrive.\nYou can access your advanced syncs from the drive picker on the home page.")
   /// loco:698b07cec1d08f40b50bc702
   public static let advancedSyncTitle = KDriveLocalizable.tr("Localizable", "advancedSyncTitle", fallback: "Advanced synchronizations")
   /// loco:6a01c8e3ba328c320801c492
@@ -70,6 +74,8 @@ public enum KDriveLocalizable {
   public static let betaSettings = KDriveLocalizable.tr("Localizable", "betaSettings", fallback: "Beta program")
   /// loco:69c11aacce7b3b9139008044
   public static let buttonActivateOfflineSync = KDriveLocalizable.tr("Localizable", "buttonActivateOfflineSync", fallback: "Enable offline sync")
+  /// loco:698b08da7aafd767de0d78b2
+  public static let buttonAddAdvancedSync = KDriveLocalizable.tr("Localizable", "buttonAddAdvancedSync", fallback: "Sync a folder")
   /// loco:698b580c716d616edb0efde2
   public static let buttonAddFileExclusionRule = KDriveLocalizable.tr("Localizable", "buttonAddFileExclusionRule", fallback: "Add a rule")
   /// loco:696a483470f3b70399021c12

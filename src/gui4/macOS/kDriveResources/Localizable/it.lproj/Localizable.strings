@@ -58,6 +58,12 @@
 /* loco:6981b68a1e51fbe933040213 */
 "activitiesTypeMyActivity" = "Solo la mia attività";
 
+/* loco:69b422369e32a806170ba3c2 */
+"addAdvancedSyncDialogTitle" = "Sincronizza una cartella con kDrive";
+
+/* loco:698b087a5fc40f623b0789c2 */
+"advancedSyncDescription" = "Seleziona una cartella sul tuo computer da sincronizzare con kDrive.\nPuoi accedere alle sincronizzazioni avanzate dal selettore di unità nella pagina principale.";
+
 /* loco:698b07cec1d08f40b50bc702 */
 "advancedSyncTitle" = "Sincronizzazioni avanzate";
 /* loco:6a01c8e3ba328c320801c492 */
@@ -95,6 +101,9 @@
 
 /* loco:69c11aacce7b3b9139008044 */
 "buttonActivateOfflineSync" = "Abilita sincronizzazione offline";
+
+/* loco:698b08da7aafd767de0d78b2 */
+"buttonAddAdvancedSync" = "Sincronizza una cartella";
 
 /* loco:698b580c716d616edb0efde2 */
 "buttonAddFileExclusionRule" = "Aggiungi una regola";
@@ -952,6 +961,9 @@
 
 /* loco:698c49120217e0fe6308b0c2 */
 "labelSyncLocation" = "Posizione";
+
+/* loco:69bbf39c8b5d154c9b0e76b2 */
+"labelSyncedFolders" = "Cartelle sincronizzate";
 
 /* loco:698c4ae9a90fef6269010692 */
 "labelSynchronisation" = "Sincronizzazione";
