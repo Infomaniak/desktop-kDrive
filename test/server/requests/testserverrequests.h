@@ -27,6 +27,7 @@ class TestServerRequests : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testGetPublicLink);
         CPPUNIT_TEST(testFindGoodPathForNewSync);
         CPPUNIT_TEST(testDeleteUser);
+        CPPUNIT_TEST(testDeleteUserNotFound);
         CPPUNIT_TEST(testDeleteAccount);
         CPPUNIT_TEST(testDeleteDrive);
         CPPUNIT_TEST(testFolderContainsNonExcludedItemInvalidPath);
@@ -44,6 +45,7 @@ class TestServerRequests : public CppUnit::TestFixture, public TestBase {
         void testGetPublicLink();
         void testFindGoodPathForNewSync();
         void testDeleteUser();
+        void testDeleteUserNotFound();
         void testDeleteAccount();
         void testDeleteDrive();
         void testFolderContainsNonExcludedItemInvalidPath();
@@ -54,6 +56,7 @@ class TestServerRequests : public CppUnit::TestFixture, public TestBase {
 
     private:
         int _driveDbId{0};
+        std::string _keychainKey{"123"};
         LocalTemporaryDirectory _localTempDir{"testServerRequests"};
 };
 

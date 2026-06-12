@@ -36,18 +36,20 @@ class COMMON_EXPORT KeyChainManager : public QObject {
         KeyChainManager(KeyChainManager const &) = delete;
         void operator=(KeyChainManager const &) = delete;
 
+        bool isTesting() const { return _testing; }
+
         bool writeDummyTest();
         void clearDummyTest();
 
         bool writeToken(const std::string &keychainKey, const std::string &rawData);
         bool readApiToken(const std::string &keychainKey, ApiToken &apiToken, bool &found);
-        bool deleteToken(const std::string &keychainKey) const;
+        bool deleteToken(const std::string &keychainKey);
 
         bool readDataFromKeystore(const std::string &keychainKey, std::string &data, bool &found);
 
     private:
         static std::shared_ptr<KeyChainManager> _instance;
-        bool _testing;
+        bool _testing{false};
         std::unordered_map<std::string, std::string> _testingMap;
 
         KeyChainManager(bool testing);

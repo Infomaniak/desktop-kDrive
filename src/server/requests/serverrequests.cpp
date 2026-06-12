@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "jobs/network/login/deletetokenjob.h"
 #if defined(KD_WINDOWS)
 #define _WINSOCKAPI_
 #endif
@@ -111,8 +112,28 @@ ExitCode ServerRequests::getUserInfoList(std::vector<UserInfo> &list) {
 }
 
 ExitInfo ServerRequests::deleteUser(const UserDbId userDbId) {
-    // Delete user (and linked accounts/drives/syncs by cascade)
+    User user;
     bool found = false;
+    if (!ParmsDb::instance()->selectUser(userDbId, user, found)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectUser");
+        return ExitCode::DbError;
+    }
+    if (!found) {
+        LOG_WARN(Log::instance()->getLogger(), "User with id=" << userDbId << " not found");
+        return {ExitCode::DataError, ExitCause::DbEntryNotFound};
+    }
+
+    ApiToken apiToken;
+    if (KeyChainManager::instance()->readApiToken(user.keychainKey(), apiToken, found) && found) {
+        // Skip the network revocation call when running inside the test suite so that
+        // the CI test token is not invalidated.
+        if (!KeyChainManager::instance()->isTesting()) {
+            (void) DeleteTokenJob(apiToken).runSynchronously();
+        }
+        (void) KeyChainManager::instance()->deleteToken(user.keychainKey());
+    }
+
+    // Delete user (and linked accounts/drives/syncs by cascade)
     if (!ParmsDb::instance()->deleteUser(userDbId, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteUser");
         return ExitCode::DbError;
@@ -325,7 +346,8 @@ ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, SyncConfigu
     // Check if the path is the root of a drive, which is not allowed for sync*
     if (CommonUtility::isDiskRootFolder(path)) {
         LOGW_INFO(Log::instance()->getLogger(),
-                  L"The provided path indicates the root of a drive, which is not allowed for sync: " << Utility::formatSyncPath(path));
+                  L"The provided path indicates the root of a drive, which is not allowed for sync: "
+                          << Utility::formatSyncPath(path));
         return ExitCode::Ok;
     }
 

@@ -27,10 +27,6 @@
 
 namespace KDC {
 
-AbstractLoginJob::AbstractLoginJob() {
-    _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
-}
-
 std::string AbstractLoginJob::getSpecificUrl() {
     return "/token";
 }

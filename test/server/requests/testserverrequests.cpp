@@ -43,9 +43,8 @@ void TestServerRequests::setUp() {
     ApiToken apiToken;
     apiToken.setAccessToken(testVariables.apiToken);
 
-    const std::string keychainKey("123");
     (void) KeyChainManager::instance(true);
-    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    (void) KeyChainManager::instance()->writeToken(_keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
     (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
@@ -53,7 +52,7 @@ void TestServerRequests::setUp() {
 
     // Insert user, account & drive
     const int userId(atoi(testVariables.userId.c_str()));
-    const User user(1, userId, keychainKey);
+    const User user(1, userId, _keychainKey);
     (void) ParmsDb::instance()->insertUser(user);
 
     const int accountId(atoi(testVariables.accountId.c_str()));
@@ -175,6 +174,11 @@ void TestServerRequests::testDeleteUser() {
 
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ServerRequests::deleteUser(1));
 
+    ApiToken apiToken;
+    bool keychainFound = false;
+    CPPUNIT_ASSERT(KeyChainManager::instance()->readApiToken(_keychainKey, apiToken, keychainFound));
+    CPPUNIT_ASSERT(!keychainFound);
+
     // Check that user/account/drive have been removed from db
     User user;
     bool found = false;
@@ -192,6 +196,36 @@ void TestServerRequests::testDeleteUser() {
     // Check that user and drive have been removed from cache
     CPPUNIT_ASSERT(!AbstractTokenNetworkJob::_userToApiKeyMap.contains(1));
     CPPUNIT_ASSERT(!AbstractTokenNetworkJob::_driveToApiKeyMap.contains(1));
+}
+
+void TestServerRequests::testDeleteUserNotFound() {
+    AbstractTokenNetworkJob::_userToApiKeyMap[1] = {nullptr, 0};
+    AbstractTokenNetworkJob::_driveToApiKeyMap[1] = {0, 0};
+
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::DataError, ExitCause::DbEntryNotFound), ServerRequests::deleteUser(42));
+
+    ApiToken apiToken;
+    bool keychainFound = false;
+    CPPUNIT_ASSERT(KeyChainManager::instance()->readApiToken(_keychainKey, apiToken, keychainFound));
+    CPPUNIT_ASSERT(keychainFound);
+
+    // Check that the existing user/account/drive are still present in db.
+    User user;
+    bool found = false;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectUser(1, user, found));
+    CPPUNIT_ASSERT(found);
+
+    Account account;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectAccount(1, account, found));
+    CPPUNIT_ASSERT(found);
+
+    Drive drive;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectDrive(1, drive, found));
+    CPPUNIT_ASSERT(found);
+
+    // Check that the caches were not cleared by the failed deletion.
+    CPPUNIT_ASSERT(AbstractTokenNetworkJob::_userToApiKeyMap.contains(1));
+    CPPUNIT_ASSERT(AbstractTokenNetworkJob::_driveToApiKeyMap.contains(1));
 }
 
 void TestServerRequests::testDeleteAccount() {
