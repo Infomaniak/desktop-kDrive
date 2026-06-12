@@ -85,27 +85,11 @@ struct AdvancedSynchroCellView: View {
                 }
             }
 
-            VStack(alignment: .leading, spacing: AppPadding.padding16) {
-                VStack(alignment: .leading, spacing: AppPadding.padding2) {
-                    Text(KDriveLocalizable.fileSyncMode)
-                    Text(KDriveLocalizable.fileSyncModeDescription)
-                        .foregroundStyle(.secondary)
-                        .font(.callout)
-                }
-
-                Picker(KDriveLocalizable.accessibilitySelectSynchroMode, selection: $synchroMode) {
-                    ForEach(UISynchroMode.allCases) { mode in
-                        UISynchroModeCell(mode: mode)
-                            .tag(mode)
-                    }
-                }
-                .pickerStyle(.radioGroup)
-                .labelsHidden()
+            SynchroModePicker(synchroMode: $synchroMode)
                 .disabled(!synchro.supportsVirtualFileSystem)
                 .onChange(of: synchroMode) { newValue in
                     switchSynchroMode(newValue)
                 }
-            }
         }
     }
 
