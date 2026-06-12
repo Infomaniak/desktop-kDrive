@@ -16,18 +16,28 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Combine
+import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
 struct SendDebugFolderView: View {
+    @LazyInjectService private var logUploadStatusObservable: LogUploadStatusCacheObservable
+
     @Environment(\.dismiss) private var dismiss
 
     @Binding var isShowingError: Bool
 
     @State private var shouldOnlySendLastSession = false
     @State private var isSendingDebugFolder = false
+    @State private var logUploadStatus: LogUploadStatus?
+
+    private var progressValue: Double {
+        let percentage = logUploadStatus?.percentage ?? 0
+        return Double(min(max(percentage, 0), 100))
+    }
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -42,21 +52,30 @@ struct SendDebugFolderView: View {
 
             Toggle(KDriveLocalizable.sendLastSessionOnly, isOn: $shouldOnlySendLastSession)
                 .toggleStyle(.checkbox)
+
+            if isSendingDebugFolder {
+                ProgressView(value: progressValue, total: 100)
+                    .progressViewStyle(.linear)
+                    .padding(.top, AppPadding.padding8)
+            }
         }
         .padding()
+        .onReceive(logUploadStatusObservable.logUploadStatusPublisher.receive(on: RunLoop.main)) { status in
+            handleLogUploadStatus(status)
+        }
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 LoadingButton(isLoading: $isSendingDebugFolder) {
                     await sendFolder()
-                    dismiss()
                 } label: {
                     Text(KDriveLocalizable.buttonSend)
                 }
+                .disabled(isSendingDebugFolder)
             }
 
             ToolbarItem(placement: .cancellationAction) {
                 Button(KDriveLocalizable.buttonCancel, role: .cancel) {
-                    dismiss()
+                    cancelLogUploadIfNeeded()
                 }
             }
         }
@@ -65,9 +84,47 @@ struct SendDebugFolderView: View {
     func sendFolder() async {
         let utilityJobs = UtilityJobs()
         do {
+            logUploadStatus = nil
+            isSendingDebugFolder = true
             try await utilityJobs.sendLogToSupport(includeArchivedLogs: !shouldOnlySendLastSession)
         } catch {
+            isSendingDebugFolder = false
             isShowingError = true
+        }
+    }
+
+    private func handleLogUploadStatus(_ status: LogUploadStatus) {
+        logUploadStatus = status
+
+        switch status.state {
+        case .Archiving, .Uploading, .CancelRequested:
+            isSendingDebugFolder = true
+        case .Success:
+            isSendingDebugFolder = false
+            dismiss()
+        case .Failed:
+            isSendingDebugFolder = false
+            isShowingError = true
+        case .Canceled:
+            isSendingDebugFolder = false
+            dismiss()
+        case .None, .EnumEnd:
+            isSendingDebugFolder = false
+        @unknown default:
+            isSendingDebugFolder = false
+            isShowingError = true
+        }
+    }
+
+    private func cancelLogUploadIfNeeded() {
+        guard isSendingDebugFolder else {
+            dismiss()
+            return
+        }
+
+        Task {
+            try? await UtilityJobs().cancelLogToSupport()
+            dismiss()
         }
     }
 }
