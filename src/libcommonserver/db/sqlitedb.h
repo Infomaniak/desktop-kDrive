@@ -53,8 +53,8 @@ class SqliteDb {
         bool queryIntValue(const std::string &id, int index, int &value, int defaultValue = 0) const;
         bool queryInt64Value(const std::string &id, int index, int64_t &value, int64_t defaultValue = 0) const;
         bool queryDoubleValue(const std::string &id, int index, double &value, double defaultValue = 0) const;
-        bool queryStringValue(const std::string &id, int index, std::string &value, std::string defaultValue = {}) const;
-        bool querySyncNameValue(const std::string &id, int index, SyncName &value, SyncName defaultValue = {}) const;
+        bool queryStringValue(const std::string &id, int index, std::string &value, const std::string &defaultValue = {}) const;
+        bool querySyncNameValue(const std::string &id, int index, SyncName &value, const SyncName &defaultValue = {}) const;
         bool queryBlobValue(const std::string &id, int index, std::shared_ptr<std::vector<char>> &value) const;
         bool queryIsNullValue(const std::string &id, int index, bool &ok) const;
         void queryFree(const std::string &id);
