@@ -22,6 +22,9 @@
 #include "extjobmanager.h"
 #include "extensionjob.h"
 #endif
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+#include "socketcommserver.h"
+#endif
 #include "guijobmanager.h"
 #include "guijobs/abstractguijob.h"
 #include "guijobs/guijobfactory.h"
