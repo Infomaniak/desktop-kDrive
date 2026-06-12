@@ -125,7 +125,7 @@ class UpdateTreeWorker : public ISyncWorker {
         /**
          * Search for the nearest ancestor of the node with path `nodePath` in the update tree through its database ID.
          \param nodePath: the path of the node whose ancestor is queried
-         \param parentNode: will be set with a pointer to the ancestor node.
+         \param ancestorNode: will be set with a pointer to the ancestor node.
          \return : ExitCode::Ok if no unexpected error occurred.
          */
         ExitCode searchForAncestorNode(const SyncPath &nodePath, std::shared_ptr<Node> &ancestorNode);
@@ -154,7 +154,7 @@ class UpdateTreeWorker : public ISyncWorker {
          * Create missing nodes in the update tree for a given 'path'.
          \param path: the given path for which missing nodes should be created in the update tree.
          \param ancestorNode: the nearest ancestor of the node with path `path` in the update tree.
-         \param parentNode: will be set with a pointer to the parent of the node with path `path`.
+         \param parentNode: will be set with a pointer to the node corresponding to `path`.
          \return : ExitCode::Ok if no unexpected error occurred.
          */
         [[nodiscard]] ExitCode createMissingNodesFromPath(const SyncPath &path, const std::shared_ptr<Node> ancestorNode,

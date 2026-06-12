@@ -220,10 +220,10 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
 
             // Get or create the ancestor nodes in the update tree according to the new path
             std::shared_ptr<Node> parentNode;
-            if (const auto exitCode = createMissingNodesFromPath(newPath.parent_path(), ancestorNode, parentNode);
-                exitCode != ExitCode::Ok) {
+            if (const auto createExitCode = createMissingNodesFromPath(newPath.parent_path(), ancestorNode, parentNode);
+                createExitCode != ExitCode::Ok) {
                 LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::getOrCreateNodeFromDeletedPath");
-                return exitCode;
+                return createExitCode;
             }
 
             // Find dbNodeId
@@ -492,10 +492,10 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
 
             // Get or create the ancestor nodes in the update tree according to the new path
             std::shared_ptr<Node> parentNode;
-            if (const auto exitCode = createMissingNodesFromPath(newPath.parent_path(), ancestorNode, parentNode);
-                exitCode != ExitCode::Ok) {
+            if (const auto createExitCode = createMissingNodesFromPath(newPath.parent_path(), ancestorNode, parentNode);
+                createExitCode != ExitCode::Ok) {
                 LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::getOrCreateNodeFromDeletedPath");
-                return exitCode;
+                return createExitCode;
             }
 
             // find child node

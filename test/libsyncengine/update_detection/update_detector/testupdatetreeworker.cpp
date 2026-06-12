@@ -438,7 +438,7 @@ void TestUpdateTreeWorker::testSearchForAncestorNode() {
     CPPUNIT_ASSERT(ancestorNode);
     CPPUNIT_ASSERT_EQUAL(NodeId("id41"), *ancestorNode->id());
 
-    // An ancestor doesn't exists.
+    // An ancestor doesn't exist.
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->searchForAncestorNode("Dir 4/Dir 5.1/Dir 4.1.1", ancestorNode));
     CPPUNIT_ASSERT(ancestorNode);
     CPPUNIT_ASSERT_EQUAL(NodeId("id4"), *ancestorNode->id());
