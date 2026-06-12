@@ -272,6 +272,10 @@ else()
     install(CODE "file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/Resources/en.lproj)")
 endif()
 
+if(WIN32 AND TARGET "${APPLICATION_EXECUTABLE}_vfs_win")
+    add_dependencies(${APPLICATION_EXECUTABLE} "${APPLICATION_EXECUTABLE}_vfs_win")
+endif()
+
 # Precompiled headers
 if(UNIX AND NOT APPLE)
     set(PC_HEADER_FILES
