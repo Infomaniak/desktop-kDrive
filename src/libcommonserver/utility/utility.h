@@ -197,7 +197,6 @@ struct COMMONSERVER_EXPORT Utility {
         // Possibly refactor to share code with UnixTimevalToFileTime in c_time.c
         static void unixTimeToFiletime(time_t t, FILETIME *filetime);
 #endif
-        static bool isError500(const Poco::Net::HTTPResponse::HTTPStatus httpErrorCode);
 
         /**
          * @brief Check if a directory can be created in the temp directory.

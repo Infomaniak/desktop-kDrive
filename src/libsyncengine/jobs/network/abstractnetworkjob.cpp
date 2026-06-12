@@ -42,6 +42,8 @@
 #include <thread>
 #include <Poco/JSON/Parser.h>
 #include <Poco/Net/HTTPRequest.h>
+#include "kDrive_API/upload/upload_session/uploadsessionchunkjob.h"
+#include "kDrive_API/upload/uploadjob.h"
 
 #define BUF_SIZE 1024
 
@@ -556,8 +558,10 @@ ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
 
             if (exitInfo.code() == ExitCode::Ok) return exitInfo;
 
-            if (exitInfo.cause() == ExitCause::Unknown && Utility::isError500(httpResponse().getStatus())) {
-                disableRetry();
+
+            if (bool shouldRetryOnError500 = false;
+                exitInfo.cause() == ExitCause::Unknown && isError500(httpResponse().getStatus(), shouldRetryOnError500)) {
+                if (!shouldRetryOnError500) disableRetry();
                 exitInfo.setCause(ExitCause::Http5xx);
             } else if (exitInfo.code() != ExitCode::DataError && exitInfo.code() != ExitCode::InvalidToken &&
                        (exitInfo.code() != ExitCode::BackError || exitInfo.cause() != ExitCause::NotFound)) {
@@ -568,6 +572,31 @@ ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
     }
 
     return ExitCode::Ok;
+}
+
+bool AbstractNetworkJob::isError500(const Poco::Net::HTTPResponse::HTTPStatus httpErrorCode, bool &shouldRetry) {
+    shouldRetry = false;
+    switch (httpErrorCode) {
+        case Poco::Net::HTTPResponse::HTTP_BAD_GATEWAY:
+            // Retry only if the job is an uploadSessionChunckJob, as 502 error can be due to a GATEWAY error which can be caused
+            // by poor network connexion dropping during the upload of a big file. In this case, retrying can help to complete the
+            // upload.
+            shouldRetry = dynamic_cast<UploadSessionChunkJob *>(this) != nullptr;
+            return true;
+        case Poco::Net::HTTPResponse::HTTP_GATEWAY_TIMEOUT:
+        case Poco::Net::HTTPResponse::HTTP_INSUFFICIENT_STORAGE:
+        case Poco::Net::HTTPResponse::HTTP_LOOP_DETECTED:
+        case Poco::Net::HTTPResponse::HTTP_NOT_EXTENDED:
+        case Poco::Net::HTTPResponse::HTTP_VARIANT_ALSO_NEGOTIATES:
+        case Poco::Net::HTTPResponse::HTTP_NOT_IMPLEMENTED:
+        case Poco::Net::HTTPResponse::HTTP_SERVICE_UNAVAILABLE:
+        case Poco::Net::HTTPResponse::HTTP_VERSION_NOT_SUPPORTED:
+        case Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR:
+        case Poco::Net::HTTPResponse::HTTP_NETWORK_AUTHENTICATION_REQUIRED:
+            return true;
+        default:
+            return false;
+    }
 }
 
 ExitInfo AbstractNetworkJob::handleError(std::istream &inputStream, const Poco::URI &uri) {
