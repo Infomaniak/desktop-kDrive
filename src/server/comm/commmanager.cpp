@@ -298,7 +298,7 @@ bool CommManager::hasActiveGuiConnection() {
     return _guiCommServer && _guiCommServer->hasActiveConnexion();
 }
 
-int32_t CommManager::tryGetCommPort() const {
+int32_t CommManager::tryGetGUICommPort() const {
     const std::scoped_lock lock(_mutex);
     if (!_guiCommServer) {
         LOG_WARN(Log::instance()->getLogger(), "GUI Comm Server not initialized");

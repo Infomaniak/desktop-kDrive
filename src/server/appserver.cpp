@@ -3921,7 +3921,7 @@ bool AppServer::startClient() {
 
         QStringList arguments;
         if (useClientV4 && useCommManager(true)) {
-            const auto port = _commManager->tryGetCommPort();
+            const auto port = _commManager->tryGetGUICommPort();
             if (port <= 0) {
                 LOG_FATAL(_logger, "Failed to start kDrive client (comm manager port isn't available)");
                 return false;
