@@ -298,6 +298,7 @@ bool CommManager::hasActiveGuiConnection() {
     return _guiCommServer && _guiCommServer->hasActiveConnexion();
 }
 
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
 int32_t CommManager::tryGetGUICommPort() const {
     const std::scoped_lock lock(_mutex);
     if (!_guiCommServer) {
@@ -311,6 +312,7 @@ int32_t CommManager::tryGetGUICommPort() const {
     }
     return socketServer->getPort();
 }
+#endif
 
 void CommManager::onNewGuiConnection() {
     const std::scoped_lock lock(_mutex);
