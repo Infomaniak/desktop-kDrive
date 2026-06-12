@@ -22,6 +22,9 @@
 #include "extjobmanager.h"
 #include "extensionjob.h"
 #endif
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+#include "socketcommserver.h"
+#endif
 #include "guijobmanager.h"
 #include "guijobs/abstractguijob.h"
 #include "guijobs/guijobfactory.h"
@@ -297,6 +300,22 @@ bool CommManager::hasActiveGuiConnection() {
     const std::scoped_lock lock(_mutex);
     return _guiCommServer && _guiCommServer->hasActiveConnexion();
 }
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+int32_t CommManager::tryGetGUICommPort() const {
+    const std::scoped_lock lock(_mutex);
+    if (!_guiCommServer) {
+        LOG_WARN(Log::instance()->getLogger(), "GUI Comm Server not initialized");
+        return -1;
+    }
+    const std::shared_ptr<SocketCommServer> socketServer = std::dynamic_pointer_cast<SocketCommServer>(_guiCommServer);
+    if (!socketServer) {
+        LOG_WARN(Log::instance()->getLogger(), "GUI Comm Server is not a SocketCommServer");
+        return -1;
+    }
+    return socketServer->getPort();
+}
+#endif
 
 void CommManager::onNewGuiConnection() {
     const std::scoped_lock lock(_mutex);

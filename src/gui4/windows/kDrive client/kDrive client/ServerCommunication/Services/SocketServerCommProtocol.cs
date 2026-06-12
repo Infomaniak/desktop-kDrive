@@ -83,6 +83,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         private int? GetServerPort()
         {
+#if DEBUG
             try
             {
                 int port = int.Parse(File.ReadAllText(_commPortFilePath).Trim());
@@ -97,6 +98,25 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Logger.Log(Logger.Level.Error, $"Failed to read server port from .comm file: {ex.Message}");
                 return null;
             }
+
+#else
+            string[] arguments = Environment.GetCommandLineArgs();
+            if (arguments.Length < 2)
+            {
+                Logger.Log(Logger.Level.Fatal, "No commPort provided");
+                ConnectionLost?.Invoke(this, new EventArgs());
+                return null;
+            }
+
+            if (!int.TryParse(arguments[1], out int port))
+            {
+                Logger.Log(Logger.Level.Fatal, $"Invalid commPort provided: {arguments[1]}");
+                ConnectionLost?.Invoke(this, new EventArgs());
+                return null;
+            }
+
+            return port;
+#endif
         }
         public async Task<bool> InitConnection(CancellationToken cancellationToken)
         {
@@ -116,8 +136,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 {
                     if (port is null)
                     {
+#if DEBUG
+                        // In debug mode, the client can start before the server, so we wait and retry until the .comm file is available
                         await Task.Delay(500, cancellationToken).ConfigureAwait(false);
                         continue;
+#else
+                        Logger.Log(Logger.Level.Fatal, "Failed to get server port.");
+                        return false;
+#endif
                     }
 
                     Logger.Log(Logger.Level.Info, $"Attempting to connect to {_host}:{port}");
@@ -326,7 +352,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 }
 
                 UpdateJsonBalance(_inBuffer, ref _inBufferJsonBalanceSeen, ref _inBufferJsonBalance, ref jsonEndIndex);
-               
+
                 if (jsonEndIndex == -1)
                 {
                     Logger.Log(Logger.Level.Extended, "Incomplete JSON message, waiting for more data.");

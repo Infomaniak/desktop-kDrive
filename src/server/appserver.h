@@ -225,7 +225,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         static bool useOldCommServer() {
 #if defined(KD_WINDOWS) || defined(KD_MACOS)
-            return true; // (KDRIVE_VERSION_MAJOR < 4);
+            return KDRIVE_VERSION_MAJOR < 4;
 #else
             return true;
 #endif

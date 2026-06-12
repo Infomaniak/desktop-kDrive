@@ -3897,34 +3897,51 @@ bool AppServer::startClient() {
     startClient = true;
 #endif
     startClient |= QProcessEnvironment::systemEnvironment().value("KDRIVE_DEBUG_RUN_CLIENT") == "1";
-
+    bool useClientV4 = false;
     if (startClient) {
         // Start the client
         QString pathToExecutable;
 
 #if defined(KD_WINDOWS)
         pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENTV4_EXECUTABLE);
-
+        useClientV4 = true;
         IoError ioError = IoError::Success;
         bool exists = false;
         if (!IoHelper::checkIfPathExists(QStr2Path(pathToExecutable), exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
             !exists || ioError != IoError::Success) {
             pathToExecutable.clear();
+            useClientV4 = false;
         }
         if (pathToExecutable.isEmpty()) {
             pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENT_EXECUTABLE);
         }
 #else
         pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1").arg(APPLICATION_CLIENT_EXECUTABLE);
+        useClientV4 = KDRIVE_VERSION_MAJOR >= 4;
 #endif
 
         QStringList arguments;
-        if (useOldCommServer()) {
-            arguments << QString::number(OldCommServer::instance()->commPort());
+        if (useClientV4 && useCommManager(true)) {
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+            const auto port = _commManager->tryGetGUICommPort();
+            if (port <= 0) {
+                LOG_FATAL(_logger, "Failed to start kDrive client (comm manager port isn't available)");
+                return false;
+            }
+            arguments << QString::number(port);
 
-            LOGW_INFO(_logger, L"Starting kDrive client - path=" << Path2WStr(QStr2Path(pathToExecutable)) << L" args="
-                                                                 << arguments[0].toStdWString());
+#else
+            // On macOS the client communicates with the server through XPC and doesn't need the port number as argument.
+#endif
+        } else if (!useClientV4 && useOldCommServer()) {
+            arguments << QString::number(OldCommServer::instance()->commPort());
+        } else {
+            LOG_FATAL(_logger, "Failed to start kDrive client (no communication method available)");
+            return false;
         }
+
+        LOGW_INFO(_logger, L"Starting kDrive client - path=" << Path2WStr(QStr2Path(pathToExecutable)) << L" args="
+                                                             << arguments[0].toStdWString());
 
         _clientProcess = new QProcess(this);
         _clientProcess->setProgram(pathToExecutable);
