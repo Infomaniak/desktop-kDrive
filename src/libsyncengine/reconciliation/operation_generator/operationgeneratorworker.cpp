@@ -24,6 +24,9 @@
 
 namespace KDC {
 
+constexpr uint64_t maxNbOfDeleteOperationSoftLimit = 2;
+constexpr uint64_t maxNbOfDeleteOperationHardLimit = 100;
+
 OperationGeneratorWorker::OperationGeneratorWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                    const std::string &shortName) :
     OperationProcessor(syncPal, name, shortName) {}
@@ -36,6 +39,7 @@ void OperationGeneratorWorker::execute() {
     _syncPal->_syncOps->startUpdate();
     _syncPal->_syncOps->clear();
     _bytesToDownload = 0;
+    _nbLocalDeleteOperations = 0;
 
     // Mark all nodes "Unprocessed"
     _syncPal->updateTree(ReplicaSide::Local)->markAllNodesUnprocessed();
@@ -134,6 +138,18 @@ void OperationGeneratorWorker::execute() {
         } else {
             LOGW_SYNCPAL_WARN(_logger,
                               L"Could not determine free space available at " << Utility::formatSyncPath(_syncPal->localPath()));
+        }
+    }
+
+    if (_syncPal->manyDeleteOpsUserChoice() == TooManyDeletesUserChoice::None) {
+        if (_nbLocalDeleteOperations >= maxNbOfDeleteOperationHardLimit) {
+            LOGW_SYNCPAL_WARN(_logger, L"Local delete operations detected: hard limit triggered!");
+            exitCode = ExitCode::TooManyDeleteOperations;
+            _syncPal->sendManyDeletesNotification(TooManyDeletesNotificationType::HardLimit, _nbLocalDeleteOperations);
+        } else if (_nbLocalDeleteOperations >= maxNbOfDeleteOperationSoftLimit &&
+                   ParametersCache::instance()->parameters().notifyBeforeDelete()) {
+            LOGW_SYNCPAL_INFO(_logger, L"Local delete operations detected: soft limit triggered!");
+            _syncPal->sendManyDeletesNotification(TooManyDeletesNotificationType::SoftLimit, _nbLocalDeleteOperations);
         }
     }
 
@@ -316,8 +332,9 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
         return;
     }
 
-    // Check if corresponding node has been also deleted
-    if (correspondingNode->hasChangeEvent(OperationType::Delete)) {
+    if (correspondingNode->hasChangeEvent(OperationType::Delete) || // Corresponding node has been also deleted
+        _syncPal->manyDeleteOpsUserChoice() == TooManyDeletesUserChoice::Revert // Delete operations must be cancelled
+    ) {
         op->setOmit(true);
     }
 
@@ -352,6 +369,7 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
                                        << Utility::formatSyncPath(currentNode->getPath()) << L" ("
                                        << CommonUtility::s2ws(currentNode->id() ? currentNode->id().value() : "-1") << L")");
         }
+        if (op->targetSide() == ReplicaSide::Remote) _nbLocalDeleteOperations++;
     }
 
     _deletedNodes.insert(*currentNode->id());

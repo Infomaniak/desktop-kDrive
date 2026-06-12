@@ -384,6 +384,12 @@ void SyncPal::resolveSyncErrorsByExitCause(const ExitCause cause) {
     }
 }
 
+void SyncPal::sendManyDeletesNotification(const TooManyDeletesNotificationType notificationType, const uint64_t nbFiles) {
+    if (_sendManyDeletesNotification) {
+        _sendManyDeletesNotification(syncDbId(), notificationType, nbFiles);
+    }
+}
+
 bool SyncPal::wipeVirtualFiles() {
     LOG_SYNCPAL_INFO(_logger, "Wiping virtual files");
     if (!vfs()) {

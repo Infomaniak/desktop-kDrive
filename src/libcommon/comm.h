@@ -73,6 +73,7 @@ enum class RequestNum {
     SYNC_GETPRIVATELINKURL,
     SYNC_TRIGGER_PROGRESS_UPDATE,
     SYNC_SETSUPPORTSVIRTUALFILES,
+    SYNC_ACKNOWLEDGE_MANY_DELETES,
     BLACKLISTED_NODE_LIST,
     BLACKLISTED_NODE_SETLIST,
     NODE_PATH,
@@ -174,6 +175,8 @@ inline std::string toString(RequestNum e) {
             return "SYNC_TRIGGER_PROGRESS_UPDATE";
         case RequestNum::SYNC_SETSUPPORTSVIRTUALFILES:
             return "SYNC_SETSUPPORTSVIRTUALFILES";
+        case RequestNum::SYNC_ACKNOWLEDGE_MANY_DELETES:
+            return "SYNC_ACKNOWLEDGE_MANY_DELETES";
         case RequestNum::BLACKLISTED_NODE_LIST:
             return "BLACKLISTED_NODE_LIST";
         case RequestNum::BLACKLISTED_NODE_SETLIST:
@@ -306,6 +309,7 @@ enum class SignalNum {
     SYNC_COMPLETEDITEM,
     SYNC_VFS_CONVERSION_COMPLETED,
     SYNC_DELETE_FAILED,
+    SYNC_NOTIFY_MANY_DELETES,
     // Node
     NODE_FOLDER_SIZE_COMPLETED,
     NODE_FIX_CONFLICTED_FILES_COMPLETED,
@@ -367,6 +371,8 @@ inline std::string toString(SignalNum e) {
             return "SYNC_VFS_CONVERSION_COMPLETED";
         case SignalNum::SYNC_DELETE_FAILED:
             return "SYNC_DELETE_FAILED";
+        case SignalNum::SYNC_NOTIFY_MANY_DELETES:
+            return "SYNC_NOTIFY_MANY_DELETES";
         case SignalNum::NODE_FOLDER_SIZE_COMPLETED:
             return "NODE_FOLDER_SIZE_COMPLETED";
         case SignalNum::NODE_FIX_CONFLICTED_FILES_COMPLETED:

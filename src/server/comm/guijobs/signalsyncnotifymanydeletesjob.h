@@ -16,23 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "signalsyncremovedjob.h"
-#include "libcommon/utility/utility.h"
-#include "libcommon/comm.h"
+#pragma once
 
-// Output parameters keys
-static const auto outParamsSyncDbId = "syncDbId";
+#include "abstractguijob.h"
 
 namespace KDC {
 
-SignalSyncRemovedJob::SignalSyncRemovedJob(const SyncDbId syncDbId) :
-    _syncDbId(syncDbId) {
-    _signalNum = SignalNum::SYNC_REMOVED;
-}
+class SignalSyncNotifyManyDeletesJob : public AbstractGuiJob {
+    public:
+        explicit SignalSyncNotifyManyDeletesJob(SyncDbId syncDbId, TooManyDeletesNotificationType notificationType,
+                                                uint64_t nbFiles);
 
-ExitInfo SignalSyncRemovedJob::serializeOutputParms() {
-    writeParamValue(outParamsSyncDbId, _syncDbId);
-    return ExitCode::Ok;
-}
+    private:
+        ExitInfo deserializeInputParms() override { return ExitCode::Ok; }
+        ExitInfo serializeOutputParms() override;
+        ExitInfo process() override { return ExitCode::Ok; }
+
+        // Output parameters
+        SyncDbId _syncDbId{0};
+        TooManyDeletesNotificationType _notificationType{TooManyDeletesNotificationType::Unknown};
+        uint64_t _nbFiles{0};
+};
 
 } // namespace KDC

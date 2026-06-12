@@ -106,6 +106,7 @@ enum class ExitCode {
     UpdateRequired,
     LogUploadFailed,
     UpdateFailed,
+    TooManyDeleteOperations,
     EnumEnd
 };
 
@@ -339,6 +340,20 @@ enum class ConflictResolutionStrategy {
 enum class SyncConfiguration {
     Classic,
     Advanced,
+    EnumEnd
+};
+
+enum class TooManyDeletesNotificationType {
+    Unknown = 0,
+    SoftLimit,
+    HardLimit,
+    EnumEnd
+};
+
+enum class TooManyDeletesUserChoice {
+    None = 0,
+    Continue,
+    Revert,
     EnumEnd
 };
 

@@ -22,6 +22,7 @@
 #include "synthesispopover.h"
 #include "parametersdialog.h"
 #include "adddrivewizard.h"
+#include "custommessagebox.h"
 #include "logindialog.h"
 #include "info/userinfoclient.h"
 #include "info/accountinfo.h"
@@ -106,7 +107,6 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void authorizationCodeReceived(const QString &code, const QString &state);
 
     public slots:
-        // void onManageRightAndSharingItem(int syncDbId, const QString &filePath);
         void onCopyLinkItem(SyncDbId syncDbId, const QString &nodeId);
         void onOpenWebviewItem(UserDbId userDbId, const QString &nodeId);
         void onShutdown();
@@ -142,6 +142,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         QSet<DriveDbId> _driveWithNewErrorSet;
         QTimer _refreshErrorListTimer;
         std::map<ErrorDbId, QList<ErrorInfo>> _errorInfoMap;
+        QMap<SyncDbId, CustomMessageBox *> _tooManyDeletesNotificationPopupMap;
 
 #ifdef Q_OS_LINUX
         QAction *_actionSynthesis = nullptr;
@@ -164,6 +165,9 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void refreshErrorList(DriveDbId driveDbId);
         ExitCode loadError(DriveDbId driveDbId, SyncDbId syncDbId, ErrorLevel level);
         ExitCode handleErrors(DriveDbId driveDbId, SyncDbId syncDbId, ErrorLevel level);
+
+        void onTooManyDeletesNotificationHardLimit(SyncDbId syncDbId, uint64_t nbFiles);
+        void onTooManyDeletesNotificationSoftLimit(SyncDbId syncDbId);
 
     private slots:
         void onShowTrayMessage(const QString &title, const QString &msg);
@@ -205,6 +209,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void onRemoveSync(SyncDbId syncDbId);
         void onSyncRemoved(SyncDbId syncDbId);
         void onSyncDeletionFailed(SyncDbId syncDbId);
+        void onTooManyDeletesNotification(SyncDbId syncDbId, TooManyDeletesNotificationType notificationType, uint64_t nbFiles);
         void onProgressInfo(SyncDbId syncDbId, SyncStatus status, SyncStep step, int64_t currentFile, int64_t totalFiles,
                             int64_t completedSize, int64_t totalSize, int64_t estimatedRemainingTime);
         void onExecuteSyncAction(ActionType type, ActionTarget target, GenericId dbId);

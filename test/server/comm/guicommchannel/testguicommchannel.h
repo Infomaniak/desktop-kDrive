@@ -62,6 +62,8 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testDriveSearchJob);
         CPPUNIT_TEST(testSyncInfoListJob);
         CPPUNIT_TEST(testSyncOfflineFilesSizeJob);
+        CPPUNIT_TEST(testSignalSyncNotifyManyDeletes);
+        CPPUNIT_TEST(testAcknowledgeManyDeletes);
         CPPUNIT_TEST(testStartSyncJob);
         CPPUNIT_TEST(testStopSyncJob);
         CPPUNIT_TEST(testSyncStatusJob);
@@ -146,6 +148,8 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testDriveSearchJob();
         void testSyncInfoListJob();
         void testSyncOfflineFilesSizeJob();
+        void testSignalSyncNotifyManyDeletes();
+        void testAcknowledgeManyDeletes();
         void testStartSyncJob();
         void testStopSyncJob();
         void testSyncStatusJob();

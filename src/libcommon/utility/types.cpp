@@ -121,6 +121,8 @@ std::string toString(const ExitCode e) {
             return "LogUploadFailed";
         case ExitCode::UpdateFailed:
             return "UpdateFailed";
+        case ExitCode::TooManyDeleteOperations:
+            return "TooManyDeleteOperations";
         default:
             return noConversionStr;
     }
@@ -949,7 +951,7 @@ std::string toString(const TranslationMode e) {
 std::string toString(const std::source_location &e) {
     return e.file_name() + std::string(":") + std::to_string(e.line()) + std::string("[") + e.function_name() + "]";
 }
-  
+
 std::string toString(const Scope e) {
     switch (e) {
         case Scope::None:
@@ -960,6 +962,34 @@ std::string toString(const Scope e) {
             return "LiteSync";
         case Scope::UserInitiated:
             return "UserInitiated";
+        default:
+            return noConversionStr;
+    }
+}
+
+std::string toString(const TooManyDeletesNotificationType e) {
+    using enum TooManyDeletesNotificationType;
+    switch (e) {
+        case Unknown:
+            return "Unknown";
+        case SoftLimit:
+            return "SoftLimit";
+        case HardLimit:
+            return "HardLimit";
+        default:
+            return noConversionStr;
+    }
+}
+
+std::string toString(const TooManyDeletesUserChoice e) {
+    using enum TooManyDeletesUserChoice;
+    switch (e) {
+        case None:
+            return "None";
+        case Continue:
+            return "Continue";
+        case Revert:
+            return "Revert";
         default:
             return noConversionStr;
     }

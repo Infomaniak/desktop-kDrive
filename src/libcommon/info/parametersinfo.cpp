@@ -38,22 +38,7 @@ static const auto parametersInfoMaxAllowedCpu = "maxAllowedCpu";
 static const auto parametersInfoVersionChannel = "distributionChannel";
 static const auto parametersInfoSentryEnabled = "sentryEnabled";
 static const auto parametersInfoMatomoEnabled = "matomoEnabled";
-
-ParametersInfo::ParametersInfo(Language language, bool monoIcons, bool autoStart, bool moveToTrash,
-                               NotificationsDisabled notificationsDisabled, bool useLog, LogLevel logLevel, bool extendedLog,
-                               bool purgeOldLogs, bool darkTheme, DialogGeometry dialogGeometry, int maxAllowedCpu) :
-    _language(language),
-    _monoIcons(monoIcons),
-    _autoStart(autoStart),
-    _moveToTrash(moveToTrash),
-    _notificationsDisabled(notificationsDisabled),
-    _useLog(useLog),
-    _logLevel(logLevel),
-    _extendedLog(extendedLog),
-    _purgeOldLogs(purgeOldLogs),
-    _darkTheme(darkTheme),
-    _dialogGeometry(std::move(dialogGeometry)),
-    _maxAllowedCpu(maxAllowedCpu) {}
+static const auto parametersInfoAskBeforeDelete = "askBeforeDelete";
 
 void ParametersInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, parametersInfoLanguage, _language);
@@ -87,6 +72,7 @@ void ParametersInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, parametersInfoVersionChannel, _distributionChannel);
     CommonUtility::writeValueToStruct(dstruct, parametersInfoSentryEnabled, _sentryEnabled);
     CommonUtility::writeValueToStruct(dstruct, parametersInfoMatomoEnabled, _matomoEnabled);
+    CommonUtility::writeValueToStruct(dstruct, parametersInfoAskBeforeDelete, _notifyBeforeDelete);
 };
 
 void ParametersInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
@@ -134,6 +120,7 @@ void ParametersInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, parametersInfoVersionChannel, _distributionChannel);
     CommonUtility::readValueFromStruct(dstruct, parametersInfoSentryEnabled, _sentryEnabled);
     CommonUtility::readValueFromStruct(dstruct, parametersInfoMatomoEnabled, _matomoEnabled);
+    CommonUtility::readValueFromStruct(dstruct, parametersInfoAskBeforeDelete, _notifyBeforeDelete);
 };
 
 QDataStream &operator>>(QDataStream &in, ParametersInfo &parametersInfo) {
@@ -141,7 +128,8 @@ QDataStream &operator>>(QDataStream &in, ParametersInfo &parametersInfo) {
             parametersInfo._notificationsDisabled >> parametersInfo._useLog >> parametersInfo._logLevel >>
             parametersInfo._extendedLog >> parametersInfo._purgeOldLogs >> parametersInfo._darkTheme >>
             parametersInfo._dialogGeometry >> parametersInfo._maxAllowedCpu >> parametersInfo._proxyConfigInfo >>
-            parametersInfo._distributionChannel >> parametersInfo._sentryEnabled >> parametersInfo._matomoEnabled;
+            parametersInfo._distributionChannel >> parametersInfo._sentryEnabled >> parametersInfo._matomoEnabled >>
+            parametersInfo._notifyBeforeDelete;
     return in;
 }
 
@@ -150,7 +138,8 @@ QDataStream &operator<<(QDataStream &out, const ParametersInfo &parametersInfo) 
         << parametersInfo._notificationsDisabled << parametersInfo._useLog << parametersInfo._logLevel
         << parametersInfo._extendedLog << parametersInfo._purgeOldLogs << parametersInfo._darkTheme
         << parametersInfo._dialogGeometry << parametersInfo._maxAllowedCpu << parametersInfo._proxyConfigInfo
-        << parametersInfo._distributionChannel << parametersInfo._sentryEnabled << parametersInfo._matomoEnabled;
+        << parametersInfo._distributionChannel << parametersInfo._sentryEnabled << parametersInfo._matomoEnabled
+        << parametersInfo._notifyBeforeDelete;
     return out;
 }
 

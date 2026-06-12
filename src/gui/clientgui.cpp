@@ -73,6 +73,7 @@ ClientGui::ClientGui(AppClient *parent) :
     connect(_app, &AppClient::syncUpdated, this, &ClientGui::onSyncUpdated);
     connect(_app, &AppClient::syncRemoved, this, &ClientGui::onSyncRemoved);
     connect(_app, &AppClient::syncDeletionFailed, this, &ClientGui::onSyncDeletionFailed);
+    (void) connect(_app, &AppClient::tooManyDeletesNotification, this, &ClientGui::onTooManyDeletesNotification);
     connect(_app, &AppClient::syncProgressInfo, this, &ClientGui::onProgressInfo);
     connect(_app, &AppClient::itemCompleted, this, &ClientGui::itemCompleted);
     connect(_app, &AppClient::vfsConversionCompleted, this, &ClientGui::vfsConversionCompleted);
@@ -142,7 +143,7 @@ bool ClientGui::isConnected() {
     return GuiRequests::isConnnected();
 }
 
-void ClientGui::onErrorAdded(bool serverLevel, ExitCode exitCode, const SyncDbId syncDbId) {
+void ClientGui::onErrorAdded(const bool serverLevel, const ExitCode exitCode, const SyncDbId syncDbId) {
     if (exitCode == ExitCode::InvalidToken) {
         auto userIt = _userInfoMap.find(_currentUserDbId);
         if (userIt != _userInfoMap.end() && !userIt->second.credentialsAsked()) {
@@ -978,18 +979,18 @@ void ClientGui::onRefreshErrorList() {
         }
 
         Count unresolvedErrorsCount = 0;
-        Count autoresolvedErrorsCount = 0;
+        Count autoResolvedErrorsCount = 0;
         for (const auto &errorInfo: _errorInfoMap[driveDbId]) {
             versionLocked = versionLocked || errorInfo.exitCode() == ExitCode::UpdateRequired;
 
             if (errorInfo.autoResolved()) {
-                ++autoresolvedErrorsCount;
+                ++autoResolvedErrorsCount;
             } else {
                 ++unresolvedErrorsCount;
             }
         }
         driveInfoMapIt->second.setUnresolvedErrorsCount(unresolvedErrorsCount);
-        driveInfoMapIt->second.setAutoresolvedErrorsCount(autoresolvedErrorsCount);
+        driveInfoMapIt->second.setAutoresolvedErrorsCount(autoResolvedErrorsCount);
         emit errorAdded(driveDbId);
 
         it = _driveWithNewErrorSet.erase(it);
@@ -1358,6 +1359,97 @@ void ClientGui::onSyncDeletionFailed(const SyncDbId syncDbId) {
 
     emit syncListRefreshed();
     emit refreshStatusNeeded();
+}
+
+void cleanUpMsgBox(const SyncDbId syncDbId, QMap<SyncDbId, CustomMessageBox *> &map) {
+    if (map.contains(syncDbId)) {
+        auto msgBox = map[syncDbId];
+        if (msgBox) {
+            msgBox->accept();
+            msgBox->deleteLater();
+        }
+        msgBox = nullptr;
+        (void) map.remove(syncDbId);
+    }
+}
+
+void ClientGui::onTooManyDeletesNotificationHardLimit(const SyncDbId syncDbId, const uint64_t nbFiles) {
+    cleanUpMsgBox(syncDbId, _tooManyDeletesNotificationPopupMap);
+
+    const auto syncInfoMapIt = _syncInfoMap.find(syncDbId);
+    if (syncInfoMapIt == _syncInfoMap.end()) {
+        qCWarning(lcClientGui()) << "Sync not found in sync map for syncDbId=" << syncDbId;
+        return;
+    }
+    const auto localPath = syncInfoMapIt->second.localPath();
+
+    int res = 0;
+    while (res == 0) { // Force the user to give an explicit answer, not just close the windows and restart the sync
+        const auto msgBox = new CustomMessageBox(
+                QMessageBox::Warning,
+                tr(R"(%1 items have been deleted from your from your local sync folder <a style="%2" href="file:///%3">%3</a>. To avoid unintended deletions the synchronization have been paused.<br>Do you want to propagate those deletion to your kDrive?)")
+                        .arg(nbFiles)
+                        .arg(CommonUtility::linkStyle, localPath),
+                QMessageBox::Yes | QMessageBox::No);
+        _tooManyDeletesNotificationPopupMap[syncDbId] = msgBox;
+        res = msgBox->exec();
+    }
+
+    if (const auto exitInfo = GuiRequests::acknowledgeManyDelete(
+                syncDbId, res == QMessageBox::Yes ? TooManyDeletesUserChoice::Continue : TooManyDeletesUserChoice::Revert);
+        !exitInfo) {
+        qCWarning(lcClientGui()) << "Error in Requests::acknowledgeManyDelete for syncDbId=" << syncDbId << ", " << exitInfo;
+        syncInfoMapIt->second.setStatus(SyncStatus::Paused);
+        emit updateProgress(syncDbId);
+    }
+
+    cleanUpMsgBox(syncDbId, _tooManyDeletesNotificationPopupMap);
+}
+
+void ClientGui::onTooManyDeletesNotificationSoftLimit(const SyncDbId syncDbId) {
+    cleanUpMsgBox(syncDbId, _tooManyDeletesNotificationPopupMap);
+
+    const auto syncInfoMapIt = _syncInfoMap.find(syncDbId);
+    if (syncInfoMapIt == _syncInfoMap.end()) {
+        qCWarning(lcClientGui()) << "Sync not found in sync map for syncDbId=" << syncDbId;
+        return;
+    }
+    const auto &driveInfoMapIt = _driveInfoMap.find(syncInfoMapIt->second.driveDbId());
+    if (driveInfoMapIt == _driveInfoMap.end()) {
+        qCWarning(lcClientGui()) << "Drive not found in drive map for driveDbId=" << syncInfoMapIt->second.driveDbId();
+        return;
+    }
+
+    const auto localPath = syncInfoMapIt->second.localPath();
+    QString trashUrl = QString(APPLICATION_TRASH_URL_QSTRING).arg(driveInfoMapIt->second.id());
+    const auto msgBox = new CustomMessageBox(
+            QMessageBox::Information,
+            tr(R"(Several files have been deleted from your local sync folder <a style="%1" href="file:///%2">%2</a>. Deleted files can be found in kDrive's <a style="%1" href="%3">trash</a>.)")
+                    .arg(CommonUtility::linkStyle, localPath, trashUrl),
+            QMessageBox::Ok);
+    _tooManyDeletesNotificationPopupMap[syncDbId] = msgBox;
+    msgBox->setCheckboxVisible(true);
+    msgBox->setCheckBoxText(tr("Don't ask again"));
+    (void) msgBox->exec();
+
+    ParametersCache::instance()->parametersInfo().setNotifyBeforeDelete(!msgBox->isChecked());
+    (void) ParametersCache::instance()->saveParametersInfo();
+
+    cleanUpMsgBox(syncDbId, _tooManyDeletesNotificationPopupMap);
+}
+
+void ClientGui::onTooManyDeletesNotification(const SyncDbId syncDbId, const TooManyDeletesNotificationType notificationType,
+                                             const uint64_t nbFiles) {
+    switch (notificationType) {
+        case TooManyDeletesNotificationType::SoftLimit:
+            onTooManyDeletesNotificationSoftLimit(syncDbId);
+            break;
+        case TooManyDeletesNotificationType::HardLimit:
+            onTooManyDeletesNotificationHardLimit(syncDbId, nbFiles);
+            break;
+        default:
+            break;
+    }
 }
 
 void ClientGui::onSyncRemoved(const SyncDbId syncDbId) {

@@ -519,6 +519,8 @@ std::string toString(VirtualFileMode e);
 std::string toString(SyncConfiguration e);
 std::string toString(const std::source_location &e);
 std::string toString(Scope e);
+std::string toString(TooManyDeletesNotificationType e);
+std::string toString(TooManyDeletesUserChoice e);
 
 inline ReplicaSide otherSide(const ReplicaSide side) {
     if (side == ReplicaSide::Unknown) return ReplicaSide::Unknown;
