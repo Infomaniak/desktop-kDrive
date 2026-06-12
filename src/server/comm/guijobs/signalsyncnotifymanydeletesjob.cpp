@@ -37,7 +37,7 @@ SignalSyncNotifyManyDeletesJob::SignalSyncNotifyManyDeletesJob(const SyncDbId sy
 ExitInfo SignalSyncNotifyManyDeletesJob::serializeOutputParms() {
     writeParamValue(outParamsSyncDbId, _syncDbId);
     writeParamValue(outParamsNotificationType, _notificationType);
-    writeParamValue(outParamsNbFiles, _notificationType);
+    writeParamValue(outParamsNbFiles, _nbFiles);
     return ExitCode::Ok;
 }
 
