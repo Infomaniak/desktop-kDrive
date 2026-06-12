@@ -38,7 +38,9 @@ public struct IKLogger: Sendable {
         Logger(subsystem: subsystem, category: category)
     }
 
-    public func log(_ message: String) {
+    public func log(_ message: String, file: StaticString = #fileID, line: UInt = #line) {
+        logService.log(level: .debug, category: category, message: message, file: file, line: line)
+
         if #available(macOS 11.0, *) {
             logger.log("\(message)")
         } else {
@@ -46,19 +48,51 @@ public struct IKLogger: Sendable {
         }
     }
 
-    public func info(_ message: String) {
+    public func debug(_ message: String, file: StaticString = #fileID, line: UInt = #line) {
+        log(message, file: file, line: line)
+    }
+
+    public func info(_ message: String, file: StaticString = #fileID, line: UInt = #line) {
+        logService.log(level: .info, category: category, message: message, file: file, line: line)
+
         if #available(macOS 11.0, *) {
-            logger.log("\(message)")
+            logger.info("\(message)")
         } else {
             os_log(.info, "%@", message)
         }
     }
 
-    public func error(_ message: String) {
+    public func warning(_ message: String, file: StaticString = #fileID, line: UInt = #line) {
+        logService.log(level: .warning, category: category, message: message, file: file, line: line)
+
+        if #available(macOS 11.0, *) {
+            logger.warning("\(message)")
+        } else {
+            os_log(.default, "%@", message)
+        }
+    }
+
+    public func error(_ message: String, file: StaticString = #fileID, line: UInt = #line) {
+        logService.log(level: .error, category: category, message: message, file: file, line: line)
+
         if #available(macOS 11.0, *) {
             logger.error("\(message)")
         } else {
             os_log(.error, "%@", message)
         }
+    }
+
+    public func fatal(_ message: String, file: StaticString = #fileID, line: UInt = #line) {
+        logService.log(level: .fatal, category: category, message: message, file: file, line: line)
+
+        if #available(macOS 11.0, *) {
+            logger.fault("\(message)")
+        } else {
+            os_log(.fault, "%@", message)
+        }
+    }
+
+    private var logService: LogService {
+        LogService.shared
     }
 }

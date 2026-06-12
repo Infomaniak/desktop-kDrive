@@ -18,7 +18,6 @@
 
 import Foundation
 import InfomaniakDI
-import OSLog
 
 public extension [Factory] {
     func registerFactoriesInDI() {
@@ -79,6 +78,9 @@ open class TargetAssembly {
             },
             Factory(type: StorageDataProviding.self) { _, _ in
                 StorageDataService()
+            },
+            Factory(type: LogService.self) { _, _ in
+                LogService.shared
             }
         ]
     }

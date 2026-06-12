@@ -14,7 +14,7 @@ open src/gui4/macOS/kDrive.xcodeproj
 cd src/gui4/macOS && xcodebuild -scheme kDrive -destination "platform=macOS,arch=arm64" build-for-testing
 
 # Run tests (all)
-xcodebuild test -project src/gui4/macOS/kDrive.xcodeproj -scheme kDriveTests
+xcodebuild test -project src/gui4/macOS/kDrive.xcodeproj -scheme kDrive -destination "platform=macOS"
 
 # Run SwiftLint
 cd src/gui4/macOS && swiftlint lint
@@ -135,6 +135,7 @@ NSLocalizedString("key", bundle: .kDriveResources, comment: "")
 ## Key Files
 - XPC query entry point: `kDriveCore/ServerBridge/XPC/XPCQueryFetcher.swift`
 - XPC connection: `kDriveCore/ServerBridge/XPC/XPCConnectionManager.swift`
+- Logging facade/service: `kDriveCore/Utils/IKLogger.swift`, `kDriveCore/Logging/LogService.swift`
 - Cache protocol: `kDriveCore/ServerBridge/Cache/CoherentCache.swift`
 - Cache (server impl): `kDriveCore/ServerBridge/Cache/ServerCoherentCache.swift`
 - Color tokens: `kDriveCoreUI/Tokens/ColorToken.swift`
@@ -174,6 +175,7 @@ rg -n "NSLocalizedString" src/gui4/macOS/kDrive/
 - XPC data is base64-encoded for binary payloads — use `@Base64Coded*` property wrappers (in `XPC/DTOs/PropertyWrappers/`) for `URL`, `String`, `Data`, `NSColor`.
 - AppKit views (`NSView`) needing SwiftUI content: wrap with `NSHostingView<ContentView>`.
 - SwiftLint's `unused_import` analyzer rule is active — remove unused imports before committing.
+- The project has a `kDrive` scheme that runs `kDriveTests`; there is no separate `kDriveTests` scheme.
 
 ## Pre-PR Checks
 ```bash
@@ -181,5 +183,5 @@ rg -n "NSLocalizedString" src/gui4/macOS/kDrive/
 cd src/gui4/macOS && swiftlint lint
 
 # Build + test
-xcodebuild test -project src/gui4/macOS/kDrive.xcodeproj -scheme kDriveTests -destination 'platform=macOS'
+xcodebuild test -project src/gui4/macOS/kDrive.xcodeproj -scheme kDrive -destination 'platform=macOS'
 ```
