@@ -58,8 +58,10 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
         void sendGuiSignal(const std::shared_ptr<AbstractGuiJob> signal);
         bool hasActiveGuiConnection();
 
-        // Get the communication port used by the GUI for plateform relying on a socket based communication (e.g. Windows & Linux)
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+        // Get the communication port used by the GUI when it relies on socket-based communication (e.g. Windows & Linux)
         int32_t tryGetGUICommPort() const;
+#endif
 
     private:
         // AppServer maps
