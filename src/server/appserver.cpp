@@ -2433,7 +2433,7 @@ void AppServer::startSyncsAndRetryOnError(const std::unordered_set<SyncDbId> &to
             LOG_DEBUG(_logger, "Retry to start syncs in " << START_SYNCPALS_RETRY_INTERVAL << " ms");
             startedSyncDbIds.insert(toIgnoreSyncDbIds.begin(), toIgnoreSyncDbIds.end());
             QTimer::singleShot(START_SYNCPALS_RETRY_INTERVAL, this,
-                               [&startedSyncDbIds, this]() { startSyncsAndRetryOnError(startedSyncDbIds); });
+                               [startedSyncDbIds, this]() { startSyncsAndRetryOnError(startedSyncDbIds); });
         }
     }
 }
