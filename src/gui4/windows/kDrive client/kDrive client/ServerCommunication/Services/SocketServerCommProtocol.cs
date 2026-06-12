@@ -136,8 +136,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 {
                     if (port is null)
                     {
+#if DEBUG
+                        // In debug mode, the client can start before the server, so we wait and retry until the .comm file is available
                         await Task.Delay(500, cancellationToken).ConfigureAwait(false);
                         continue;
+#else
+                        Logger.Log(Logger.Level.Fatal, "Failed to get server port.");
+                        return false;
+#endif
                     }
 
                     Logger.Log(Logger.Level.Info, $"Attempting to connect to {_host}:{port}");
