@@ -1429,7 +1429,7 @@ bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
     LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, index++, intResult));
     parameters.setMatomoEnabled(intResult);
 
-    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, index++, intResult));
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, index++, intResult, 1));
     parameters.setNotifyBeforeDelete(intResult);
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_PARAMETERS_REQUEST_ID));

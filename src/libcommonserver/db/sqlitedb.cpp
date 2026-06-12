@@ -238,10 +238,14 @@ bool SqliteDb::queryNext(const std::string &id, bool &hasData) {
     return false;
 }
 
-bool SqliteDb::queryIntValue(const std::string &id, int index, int &value) const {
+bool SqliteDb::queryIntValue(const std::string &id, int index, int &value, const int defaultValue /*= 0*/) const {
     if (_queries.find(id) != _queries.end()) {
         const QueryInfo &queryInfo = _queries.at(id);
         if (queryInfo._result._hasData) {
+            if (queryInfo._query->nullValue(index)) {
+                value = defaultValue;
+                return true;
+            }
             value = queryInfo._query->intValue(index);
             return true;
         }
@@ -249,10 +253,14 @@ bool SqliteDb::queryIntValue(const std::string &id, int index, int &value) const
     return false;
 }
 
-bool SqliteDb::queryInt64Value(const std::string &id, int index, int64_t &value) const {
+bool SqliteDb::queryInt64Value(const std::string &id, int index, int64_t &value, const int64_t defaultValue /*= 0*/) const {
     if (_queries.find(id) != _queries.end()) {
         const QueryInfo &queryInfo = _queries.at(id);
         if (queryInfo._result._hasData) {
+            if (queryInfo._query->nullValue(index)) {
+                value = defaultValue;
+                return true;
+            }
             value = queryInfo._query->int64Value(index);
             return true;
         }
@@ -260,10 +268,14 @@ bool SqliteDb::queryInt64Value(const std::string &id, int index, int64_t &value)
     return false;
 }
 
-bool SqliteDb::queryDoubleValue(const std::string &id, int index, double &value) const {
+bool SqliteDb::queryDoubleValue(const std::string &id, int index, double &value, const double defaultValue /*= 0*/) const {
     if (_queries.find(id) != _queries.end()) {
         const QueryInfo &queryInfo = _queries.at(id);
         if (queryInfo._result._hasData) {
+            if (queryInfo._query->nullValue(index)) {
+                value = defaultValue;
+                return true;
+            }
             value = queryInfo._query->doubleValue(index);
             return true;
         }
@@ -271,10 +283,15 @@ bool SqliteDb::queryDoubleValue(const std::string &id, int index, double &value)
     return false;
 }
 
-bool SqliteDb::queryStringValue(const std::string &id, int index, std::string &value) const {
+bool SqliteDb::queryStringValue(const std::string &id, int index, std::string &value,
+                                const std::string defaultValue /*= {}*/) const {
     if (_queries.find(id) != _queries.end()) {
         const QueryInfo &queryInfo = _queries.at(id);
         if (queryInfo._result._hasData) {
+            if (queryInfo._query->nullValue(index)) {
+                value = defaultValue;
+                return true;
+            }
             value = queryInfo._query->stringValue(index);
             return true;
         }
@@ -282,10 +299,14 @@ bool SqliteDb::queryStringValue(const std::string &id, int index, std::string &v
     return false;
 }
 
-bool SqliteDb::querySyncNameValue(const std::string &id, int index, SyncName &value) const {
+bool SqliteDb::querySyncNameValue(const std::string &id, int index, SyncName &value, const SyncName defaultValue /*= {}*/) const {
     if (_queries.find(id) != _queries.end()) {
         const QueryInfo &queryInfo = _queries.at(id);
         if (queryInfo._result._hasData) {
+            if (queryInfo._query->nullValue(index)) {
+                value = defaultValue;
+                return true;
+            }
             value = queryInfo._query->syncNameValue(index);
             return true;
         }
