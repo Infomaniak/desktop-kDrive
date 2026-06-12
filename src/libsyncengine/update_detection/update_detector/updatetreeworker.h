@@ -123,12 +123,12 @@ class UpdateTreeWorker : public ISyncWorker {
         [[nodiscard]] bool updateTmpFileNode(const std::shared_ptr<Node> node, FSOpPtr op, FSOpPtr deleteOp,
                                              OperationType opType);
         /**
-         * Search for the parent of the node with path `nodePath` in the update tree through its database ID.
-         \param nodePath: the path of the node whose parent is queried
-         \param parentNode: it is set with a pointer to the parent node if it exists, with `nullptr` otherwise.
+         * Search for the nearest ancestor of the node with path `nodePath` in the update tree through its database ID.
+         \param nodePath: the path of the node whose ancestor is queried
+         \param parentNode: will be set with a pointer to the ancestor node.
          \return : ExitCode::Ok if no unexpected error occurred.
          */
-        ExitCode searchForParentNode(const SyncPath &nodePath, std::shared_ptr<Node> &parentNode);
+        ExitCode searchForAncestorNode(const SyncPath &nodePath, std::shared_ptr<Node> &ancestorNode);
 
         /**
          * Detect and handle create operations on files or directories
@@ -149,6 +149,17 @@ class UpdateTreeWorker : public ISyncWorker {
         [[nodiscard]] ExitCode getOrCreateNodeFromExistingPath(const SyncPath &path, std::shared_ptr<Node> &node) {
             return getOrCreateNodeFromPath(path, node, true);
         }
+
+        /**
+         * Create missing nodes in the update tree for a given 'path'.
+         \param path: the given path for which missing nodes should be created in the update tree.
+         \param ancestorNode: the nearest ancestor of the node with path `path` in the update tree.
+         \param parentNode: will be set with a pointer to the parent of the node with path `path`.
+         \return : ExitCode::Ok if no unexpected error occurred.
+         */
+        [[nodiscard]] ExitCode createMissingNodesFromPath(const SyncPath &path, const std::shared_ptr<Node> ancestorNode,
+                                                          std::shared_ptr<Node> &parentNode);
+
         /**
          * @brief This method gets a node from a deleted path recursively. Recursion here ensures that, even if 2 branches have
          * nodes with the same names, the deleted branch is retrieved (see integration tests on branches deleted and re-created).

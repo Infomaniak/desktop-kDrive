@@ -144,6 +144,7 @@ std::shared_ptr<Node> Node::findChildren(const SyncName &name, const NodeId &nod
     }
 
     for (auto &node: _childrenById) {
+        if (!nodeId.empty() && !node.second->isTmp()) continue;
         if (node.second->name() == name) {
             return node.second;
         }
