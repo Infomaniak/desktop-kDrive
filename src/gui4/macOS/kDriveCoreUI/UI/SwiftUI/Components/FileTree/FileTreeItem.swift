@@ -16,20 +16,26 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import kDriveResources
-import SwiftUI
+import Foundation
 
-public struct FileTypeView: View {
-    public let fileTypeRepresentation: FileTypeRepresentation
+public struct FileTreeItem: Identifiable, Hashable, Sendable {
+    public let id: String
+    public let name: String
+    public let size: Int64?
+    public let isFolder: Bool
+    public let isEnabled: Bool
 
-    public init(fileTypeRepresentation: FileTypeRepresentation) {
-        self.fileTypeRepresentation = fileTypeRepresentation
-    }
-
-    public var body: some View {
-        fileTypeRepresentation.icon.swiftUIImage
-            .resizable()
-            .scaledToFit()
-            .foregroundStyle(fileTypeRepresentation.color.swiftUIColor)
+    public init(
+        id: String,
+        name: String,
+        size: Int64? = nil,
+        isFolder: Bool,
+        isEnabled: Bool = true
+    ) {
+        self.id = id
+        self.name = name
+        self.size = size
+        self.isFolder = isFolder
+        self.isEnabled = isEnabled
     }
 }
