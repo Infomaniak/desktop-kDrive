@@ -284,7 +284,7 @@ bool SqliteDb::queryDoubleValue(const std::string &id, const int index, double &
 }
 
 bool SqliteDb::queryStringValue(const std::string &id, const int index, std::string &value,
-                                const std::string defaultValue /*= {}*/) const {
+                                const std::string &defaultValue /*= {}*/) const {
     if (_queries.find(id) != _queries.end()) {
         const QueryInfo &queryInfo = _queries.at(id);
         if (queryInfo._result._hasData) {
@@ -300,7 +300,7 @@ bool SqliteDb::queryStringValue(const std::string &id, const int index, std::str
 }
 
 bool SqliteDb::querySyncNameValue(const std::string &id, const int index, SyncName &value,
-                                  const SyncName defaultValue /*= {}*/) const {
+                                  const SyncName &defaultValue /*= {}*/) const {
     if (_queries.find(id) != _queries.end()) {
         const QueryInfo &queryInfo = _queries.at(id);
         if (queryInfo._result._hasData) {
