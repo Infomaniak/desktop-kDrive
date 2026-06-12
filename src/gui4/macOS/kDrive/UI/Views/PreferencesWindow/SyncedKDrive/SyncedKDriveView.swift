@@ -75,22 +75,7 @@ struct SyncedKDriveView: View {
                 }
 
                 Section {
-                    VStack(alignment: .leading, spacing: AppPadding.padding16) {
-                        VStack(alignment: .leading, spacing: AppPadding.padding2) {
-                            Text(KDriveLocalizable.fileSyncMode)
-                            Text(KDriveLocalizable.fileSyncModeDescription)
-                                .foregroundStyle(.secondary)
-                                .font(.callout)
-                        }
-
-                        Picker(KDriveLocalizable.accessibilitySelectSynchroMode, selection: $mainSynchroMode) {
-                            ForEach(UISynchroMode.allCases) { mode in
-                                UISynchroModeCell(mode: mode)
-                                    .tag(mode)
-                            }
-                        }
-                        .pickerStyle(.radioGroup)
-                        .labelsHidden()
+                    SynchroModePicker(synchroMode: $mainSynchroMode)
                         .disabled(!mainSynchro.supportsVirtualFileSystem)
                         .onChange(of: mainSynchroMode) { newValue in
                             switchSynchroMode(mainSynchro, mode: newValue)
