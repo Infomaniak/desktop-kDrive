@@ -17,7 +17,6 @@
  */
 
 import AppKit
-import kDriveCoreUI
 import kDriveResources
 
 final class FileTreeNode {
@@ -206,6 +205,10 @@ public final class FileTreeOutlineView: NSView {
         var sawOn = false
         var sawOff = false
         for child in children {
+            guard child.item.isEnabled else {
+                continue
+            }
+
             switch effectiveState(of: child, ancestorExcluded: selfExcluded) {
             case .on:
                 sawOn = true

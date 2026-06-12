@@ -21,6 +21,7 @@ import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import OrderedCollections
+import Sentry
 import SwiftUI
 
 struct SyncedKDriveView: View {
@@ -32,6 +33,8 @@ struct SyncedKDriveView: View {
 
     @State private var synchroToDelete: UISynchro?
     @State private var isShowingGenericError = false
+
+    @State private var blacklistNodes: Set<String>?
 
     var body: some View {
         Form {
@@ -59,10 +62,16 @@ struct SyncedKDriveView: View {
                     }
 
                     IKLabeledContent(KDriveLocalizable.labelSynchronisation) {
-                        Button(KDriveLocalizable.buttonManage) {
-                            // TODO: Navigate to synchro management
+                        HStack {
+                            if let blacklistNodes, !blacklistNodes.isEmpty {
+                                Text(KDriveLocalizable.onboardingExclusionSummarySome)
+                                    .font(.Tokens.body)
+                                    .foregroundStyle(.secondary)
+                            }
+
+                            Button(KDriveLocalizable.buttonManage, action: navigateToManageSynchro)
+                                .disabled(blacklistNodes == nil)
                         }
-                        .disabled(true)
                     }
                 }
 
@@ -123,6 +132,7 @@ struct SyncedKDriveView: View {
         .groupedFormatStyle()
         .task {
             await fetchSynchros()
+            await fetchBlacklistedNodes()
         }
         .sheet(item: $synchroToDelete) { synchro in
             RemoveSynchroConfirmationView(synchroDbId: synchro.dbId, completion: handleSynchroIsDeleted)
@@ -154,6 +164,31 @@ struct SyncedKDriveView: View {
             mainSynchroMode = freshMainSynchro?.useVirtualFileSystem == true ? .storeOnline : .availableOffline
 
             advancedSynchros = freshAdvancedSynchros
+        }
+    }
+
+    private func fetchBlacklistedNodes() async {
+        guard let mainSynchroId = mainSynchro?.dbId else {
+            return
+        }
+
+        do {
+            let blacklistedNodes = try await BlacklistJobs().getBlacklistedNodeList(syncDbId: Int32(mainSynchroId))
+            blacklistNodes = Set(blacklistedNodes)
+        } catch {
+            SentrySDK.capture(error: error)
+        }
+    }
+
+    private func navigateToManageSynchro() {
+        Task {
+            @InjectService var cache: CoherentCache
+            guard let mainSynchro, let drive = await cache.getDrive(driveDbId: Int32(drive.dbId)) else {
+                return
+            }
+
+            @InjectService var router: PreferencesViewRouter
+            router.append(.blacklist(Int(drive.userDbId), Int(drive.driveId), Int(mainSynchro.dbId)))
         }
     }
 
