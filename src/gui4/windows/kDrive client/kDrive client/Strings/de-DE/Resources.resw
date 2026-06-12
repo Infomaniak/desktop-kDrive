@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 29 May 2026 15:56:50 +0200 
+  Exported at: Fri, 12 Jun 2026 16:31:14 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -1560,8 +1560,8 @@ Für den Zugriff ist eine Internetverbindung erforderlich.</value>
     <value>Synchronisierung läuft</value> 
   </data> 
   <data name="synchroStatusOfflineDescription" xml:space="preserve"> 
-    <value>Deine lokalen Dateien bleiben zugänglich.
-Die Synchronisierung wird automatisch fortgesetzt, sobald du wieder verbunden bist.</value> 
+    <value>Ihre heruntergeladenen Dateien bleiben weiterhin verfügbar.
+Die Synchronisierung wird automatisch fortgesetzt, sobald Sie wieder verbunden sind.</value> 
   </data> 
   <data name="synchroStatusOfflineTitle" xml:space="preserve"> 
     <value>Offline</value> 
