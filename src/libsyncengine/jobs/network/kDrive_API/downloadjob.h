@@ -19,6 +19,7 @@
 #pragma once
 
 #include "jobs/network/abstracttokennetworkjob.h"
+#include "jobs/network/kDrive_API/checkhashmatchjob.h"
 
 #include "libcommonserver/vfs/vfs.h"
 #include "libcommonserver/io/cachedirectory.h"
@@ -40,28 +41,35 @@ class DownloadJob : public AbstractTokenNetworkJob {
             IgnoreDateTime,
             ApplyDateTime
         };
+        enum class FileType {
+            Regular,
+            IsLink
+        };
 
         DownloadJob(const std::shared_ptr<Vfs> vfs, std::shared_ptr<CacheDirectory> cacheDirectory,
                     const FileDownloadInfo &fileDownloadInfo, DateTimePolicy dateTimePolicy);
         ~DownloadJob() override;
 
-        inline const NodeId &remoteNodeId() const { return _fileDownloadInfo.remoteFileId; }
-        inline const SyncPath &localPath() const { return _fileDownloadInfo.localpath; }
+        const NodeId &remoteNodeId() const { return _fileDownloadInfo.remoteFileId; }
+        const SyncPath &localPath() const { return _fileDownloadInfo.localpath; }
 
-        inline const NodeId &localNodeId() const { return _localNodeId; }
-        inline SyncTime creationTime() const { return _creationTimeOut; }
-        inline SyncTime modificationTime() const { return _modificationTimeOut; }
-        [[nodiscard]] inline int64_t size() const { return _sizeOut; }
+        const NodeId &localNodeId() const { return _localNodeId; }
+        SyncTime creationTime() const { return _creationTimeOut; }
+        SyncTime modificationTime() const { return _modificationTimeOut; }
+        [[nodiscard]] int64_t size() const { return _sizeOut; }
 
         [[nodiscard]] int64_t expectedSize() const { return _fileDownloadInfo.expectedSize; }
+        [[nodiscard]] bool shouldDownload() const { return _shouldDownload; }
 
     private:
         std::string getSpecificUrl() override;
-        inline ExitInfo setData() override { return ExitCode::Ok; }
+        ExitInfo setData() override { return ExitCode::Ok; }
 
         ExitInfo canRun() override;
         ExitInfo runJob() noexcept override;
         ExitInfo handleResponse(std::istream &is) override;
+        void computeHydrationStatus();
+        ExitInfo resolveDownloadNeed();
 
         ExitInfo createLink(const std::string &mimeType, const std::string &data);
         bool removeTmpFile();
@@ -86,10 +94,13 @@ class DownloadJob : public AbstractTokenNetworkJob {
         ExitInfo createTmpFile(const std::string &data, bool &writeError);
         static bool hasEnoughPlace(const SyncPath &tmpDirPath, const SyncPath &destDirPath, int64_t neededPlace,
                                    log4cplus::Logger logger);
+        ExitInfo applyFileDatesIfRequired(FileType fileType);
+        ExitInfo setOutputParameters();
 
         const std::shared_ptr<Vfs> _vfs;
         std::shared_ptr<CacheDirectory> _cacheDirectory;
         FileDownloadInfo _fileDownloadInfo;
+        bool _shouldDownload = true;
 
         SyncPath _tmpPath;
         DateTimePolicy _dateTimePolicy;

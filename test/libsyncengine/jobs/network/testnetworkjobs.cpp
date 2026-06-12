@@ -1024,7 +1024,7 @@ void TestNetworkJobs::testCheckHashMatch() {
         CheckHashMatchJob job(_driveDbId, tc.localFile, tc.remoteNodeId, tc.remoteSize);
         job.runSynchronously();
         CPPUNIT_ASSERT_EQUAL_MESSAGE(tc.name + ": unexpected exit code", tc.expectedExitCode, job.exitInfo().code());
-        CPPUNIT_ASSERT_EQUAL_MESSAGE(tc.name + ": unexpected shouldDownload", tc.expectedShouldDownload, job.shouldDownload());
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(tc.name + ": unexpected shouldDownload", tc.expectedShouldDownload, !job.hashMatch());
     }
 }
 
@@ -1949,6 +1949,109 @@ void TestNetworkJobs::testPostFileModificationDate() {
         CPPUNIT_ASSERT(verifyJob.runSynchronously());
         CPPUNIT_ASSERT_LESS(invalidFutureModificationDate, verifyJob.modificationTime());
         CPPUNIT_ASSERT_EQUAL(testJob.lastModifiedAt(), verifyJob.modificationTime());
+    }
+}
+
+void TestNetworkJobs::testDownloadChecksumHandling() {
+    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDownloadChecksumHandling");
+
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDownloadChecksumHandling");
+    const LocalTemporaryDirectory localTmpDir("testDownloadChecksumHandling");
+
+    // Both content versions have the same size so the size check passes and hash comparison is reached.
+    constexpr size_t fileSize = 64;
+    const std::string contentV1(fileSize, 'A');
+    const std::string contentV2(fileSize, 'B');
+    const SyncTime initialModTime = testhelpers::defaultTime;
+    const SyncTime updatedModTime = initialModTime + 3600; // 1 hour later
+
+    // Upload v1.
+    const SyncPath localFileV1 = localTmpDir.path() / "file_v1.txt";
+    {
+        std::ofstream ofs(localFileV1, std::ios::binary);
+        ofs << contentV1;
+    }
+    UploadJob uploadV1(nullptr, _driveDbId, localFileV1, localFileV1.filename().native(), remoteTmpDir.id(),
+                       initialModTime, initialModTime);
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, uploadV1.runSynchronously().code());
+    const NodeId remoteFileId = uploadV1.nodeId();
+    CPPUNIT_ASSERT(!remoteFileId.empty());
+
+    // Download v1 (CREATE) to establish the local copy.
+    const SyncPath localDestFile = localTmpDir.path() / "file_local.txt";
+    {
+        DownloadJob downloadCreate(nullptr, _cacheDirectory,
+                                   DownloadJob::FileDownloadInfo{_driveDbId, remoteFileId, localDestFile,
+                                                                 static_cast<int64_t>(fileSize), initialModTime, initialModTime,
+                                                                 true},
+                                   DownloadJob::DateTimePolicy::ApplyDateTime);
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, downloadCreate.runSynchronously().code());
+    }
+    CPPUNIT_ASSERT(std::filesystem::exists(localDestFile));
+
+    // Verify the initial modification time was applied.
+    {
+        FileStat fileStat;
+        IoError ioError = IoError::Success;
+        CPPUNIT_ASSERT(IoHelper::getFileStat(localDestFile, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+        CPPUNIT_ASSERT_EQUAL(initialModTime, fileStat.modificationTime);
+    }
+
+    // --- Case 1: same content, date mismatch ---
+    // CheckHashMatchJob detects a hash match → no re-download, but the date must be corrected.
+    {
+        DownloadJob downloadSameContent(nullptr, _cacheDirectory,
+                                        DownloadJob::FileDownloadInfo{_driveDbId, remoteFileId, localDestFile,
+                                                                      static_cast<int64_t>(fileSize), initialModTime,
+                                                                      updatedModTime, false},
+                                        DownloadJob::DateTimePolicy::ApplyDateTime);
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, downloadSameContent.runSynchronously().code());
+        CPPUNIT_ASSERT_MESSAGE("Hash and size match — file should NOT be re-downloaded",
+                               !downloadSameContent.shouldDownload());
+    }
+
+    // Modification time must have been updated without touching the content.
+    {
+        FileStat fileStat;
+        IoError ioError = IoError::Success;
+        CPPUNIT_ASSERT(IoHelper::getFileStat(localDestFile, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE("Modification time should have been updated without re-downloading", updatedModTime,
+                                     fileStat.modificationTime);
+    }
+    {
+        std::ifstream ifs(localDestFile, std::ios::binary);
+        const std::string actualContent((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+        CPPUNIT_ASSERT_EQUAL_MESSAGE("File content must be unchanged after date-only correction", contentV1, actualContent);
+    }
+
+    // --- Case 2: content mismatch (v2 uploaded), same size ---
+    // CheckHashMatchJob detects a hash mismatch → file must be re-downloaded.
+    const SyncPath localFileV2 = localTmpDir.path() / "file_v2.txt";
+    {
+        std::ofstream ofs(localFileV2, std::ios::binary);
+        ofs << contentV2;
+    }
+    UploadJob uploadV2(nullptr, _driveDbId, localFileV2, remoteFileId, updatedModTime);
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, uploadV2.runSynchronously().code());
+
+    // Local file still holds v1, remote now holds v2: mismatch must trigger a download.
+    {
+        DownloadJob downloadMismatch(nullptr, _cacheDirectory,
+                                     DownloadJob::FileDownloadInfo{_driveDbId, remoteFileId, localDestFile,
+                                                                   static_cast<int64_t>(fileSize), initialModTime,
+                                                                   updatedModTime, false},
+                                     DownloadJob::DateTimePolicy::IgnoreDateTime);
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, downloadMismatch.runSynchronously().code());
+        CPPUNIT_ASSERT_MESSAGE("Checksum mismatch should trigger a download", downloadMismatch.shouldDownload());
+    }
+
+    // File content must have been updated to v2.
+    {
+        std::ifstream ifs(localDestFile, std::ios::binary);
+        const std::string actualContent((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+        CPPUNIT_ASSERT_EQUAL_MESSAGE("File content should have been updated to v2", contentV2, actualContent);
     }
 }
 
