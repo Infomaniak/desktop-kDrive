@@ -6,7 +6,7 @@
   Locale: it, Italian
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 29 May 2026 15:56:50 +0200 
+  Exported at: Fri, 12 Jun 2026 16:31:14 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -1561,8 +1561,8 @@ Questi dati consentono al nostro team di correggere e ottimizzare rapidamente l�
     <value>Sincronizzazione in corso</value> 
   </data> 
   <data name="synchroStatusOfflineDescription" xml:space="preserve"> 
-    <value>I tuoi file locali restano accessibili.
-La sincronizzazione riprenderà automaticamente non appena sarai nuovamente connesso.</value> 
+    <value>I file scaricati rimangono accessibili.
+La sincronizzazione riprenderà automaticamente non appena ti ricollegherai.</value> 
   </data> 
   <data name="synchroStatusOfflineTitle" xml:space="preserve"> 
     <value>Offline</value> 
