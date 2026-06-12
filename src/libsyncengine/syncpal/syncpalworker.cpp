@@ -216,11 +216,13 @@ ExitInfo SyncPalWorker::ensureBlackListIsPropagated() {
             return {ExitCode::DataError, ExitCause::BlackListPropagationError};
         }
 
-
+        _isPaused = true;
         if (ExitInfo exitInfo = _syncPal->propagateSyncIdSetChange(false); !exitInfo) {
             LOG_SYNCPAL_WARN(_logger, "Error propagating blacklist changes");
+            _isPaused = false;
             return exitInfo;
         }
+        _isPaused = false;
     }
 
     if (ExitInfo exitInfo = areBlacklistedNodesStillInDb(blacklistedNodes, found); !exitInfo) {

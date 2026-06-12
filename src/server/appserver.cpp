@@ -393,17 +393,21 @@ void AppServer::init() {
                 &AppServer::onClientDisconnectedReceived);
     }
 
-    // Update users,accounts and drives info.
-    if (const auto exitInfo = updateAllUsersInfo(UpdateFollowUpAction::CleanUserDbEntry);
-        exitInfo.code() == ExitCode::InvalidToken) {
-        // The user will be asked to enter its credentials later.
-    } else if (!exitInfo) {
-        LOG_WARN(_logger, "Error in updateAllUsersInfo: " << exitInfo);
-        addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
-    }
-
     // Set sentry user
     updateSentryUser();
+    QTimer::singleShot(0, this, [this]() {
+        // Update users,accounts and drives info.
+        if (const auto exitInfo = updateAllUsersInfo(UpdateFollowUpAction::CleanUserDbEntry);
+            exitInfo.code() == ExitCode::InvalidToken) {
+            // The user will be asked to enter its credentials later.
+        } else if (!exitInfo) {
+            LOG_WARN(_logger, "Error in updateAllUsersInfo: " << exitInfo);
+            addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
+        }
+
+        // refresh sentry user
+        updateSentryUser();
+    });
 
     // Read Updater activation flag
     AppStateValue noUpdateAppStateValue = 0;
@@ -480,7 +484,7 @@ void AppServer::init() {
 
     // Start syncs
     LOG_DEBUG(_logger, "Start syncs");
-    QTimer::singleShot(0, [=, this]() { startSyncsAndRetryOnError(); });
+    QTimer::singleShot(0, this, [this]() { startSyncsAndRetryOnError(); });
 
     // Init JobManager(s)
     if (!GuiJobManagerSingleton::instance()) {
@@ -2433,7 +2437,7 @@ void AppServer::startSyncsAndRetryOnError(const std::unordered_set<SyncDbId> &to
             LOG_DEBUG(_logger, "Retry to start syncs in " << START_SYNCPALS_RETRY_INTERVAL << " ms");
             startedSyncDbIds.insert(toIgnoreSyncDbIds.begin(), toIgnoreSyncDbIds.end());
             QTimer::singleShot(START_SYNCPALS_RETRY_INTERVAL, this,
-                               [&startedSyncDbIds, this]() { startSyncsAndRetryOnError(startedSyncDbIds); });
+                               [startedSyncDbIds, this]() { startSyncsAndRetryOnError(startedSyncDbIds); });
         }
     }
 }
