@@ -81,7 +81,7 @@ struct AdvancedSynchroCellView: View {
                 .foregroundStyle(ColorToken.Action.primary.asColor)
             }
 
-            IKLabeledContent("Dossiers synchronisés") {
+            IKLabeledContent(KDriveLocalizable.labelSyncedFolders) {
                 HStack {
                     if let blacklistNodes, !blacklistNodes.isEmpty {
                         Text(KDriveLocalizable.onboardingExclusionSummarySome)
@@ -144,6 +144,7 @@ struct AdvancedSynchroCellView: View {
             do {
                 try await SyncJobs().setSupportsVirtualFiles(syncDbId: Int32(synchro.dbId), value: mode == .storeOnline)
             } catch {
+                SentrySDK.capture(error: error)
                 isShowingGenericError = true
             }
         }

@@ -964,6 +964,9 @@
 /* loco:698c49120217e0fe6308b0c2 */
 "labelSyncLocation" = "Location";
 
+/* loco:69bbf39c8b5d154c9b0e76b2 */
+"labelSyncedFolders" = "Synced folders";
+
 /* loco:698c4ae9a90fef6269010692 */
 "labelSynchronisation" = "Synchronization";
 
