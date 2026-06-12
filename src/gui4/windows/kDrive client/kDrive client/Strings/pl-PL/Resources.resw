@@ -6,7 +6,7 @@
   Locale: pl, Polish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 29 May 2026 15:56:50 +0200 
+  Exported at: Fri, 12 Jun 2026 16:31:14 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -1561,8 +1561,8 @@ Do ich dostępu wymagane jest połączenie z Internetem.</value>
     <value>Synchronizacja w toku</value> 
   </data> 
   <data name="synchroStatusOfflineDescription" xml:space="preserve"> 
-    <value>Twoje pliki lokalne pozostają dostępne.
-Synchronizacja zostanie automatycznie wznowiona po ponownym połączeniu.</value> 
+    <value>Pobrane pliki pozostają dostępne.
+Synchronizacja wznowi się automatycznie, gdy tylko ponownie nawiążesz połączenie.</value> 
   </data> 
   <data name="synchroStatusOfflineTitle" xml:space="preserve"> 
     <value>Offline</value> 
