@@ -1361,16 +1361,20 @@ void ClientGui::onSyncDeletionFailed(const SyncDbId syncDbId) {
     emit refreshStatusNeeded();
 }
 
-void ClientGui::onTooManyDeletesNotificationHardLimit(const SyncDbId syncDbId, const uint64_t nbFiles) {
-    if (_tooManyDeletesNotificationPopupMap.contains(syncDbId)) {
-        auto msgBox = _tooManyDeletesNotificationPopupMap[syncDbId];
+void cleanUpMsgBox(const SyncDbId syncDbId, QMap<SyncDbId, CustomMessageBox *> &map) {
+    if (map.contains(syncDbId)) {
+        auto msgBox = map[syncDbId];
         if (msgBox) {
             msgBox->accept();
             msgBox->deleteLater();
         }
         msgBox = nullptr;
-        _tooManyDeletesNotificationPopupMap.remove(syncDbId);
+        (void) map.remove(syncDbId);
     }
+}
+
+void ClientGui::onTooManyDeletesNotificationHardLimit(const SyncDbId syncDbId, const uint64_t nbFiles) {
+    cleanUpMsgBox(syncDbId, _tooManyDeletesNotificationPopupMap);
 
     const auto syncInfoMapIt = _syncInfoMap.find(syncDbId);
     if (syncInfoMapIt == _syncInfoMap.end()) {
@@ -1398,18 +1402,12 @@ void ClientGui::onTooManyDeletesNotificationHardLimit(const SyncDbId syncDbId, c
         syncInfoMapIt->second.setStatus(SyncStatus::Paused);
         emit updateProgress(syncDbId);
     }
+
+    cleanUpMsgBox(syncDbId, _tooManyDeletesNotificationPopupMap);
 }
 
 void ClientGui::onTooManyDeletesNotificationSoftLimit(const SyncDbId syncDbId) {
-    if (_tooManyDeletesNotificationPopupMap.contains(syncDbId)) {
-        auto msgBox = _tooManyDeletesNotificationPopupMap[syncDbId];
-        if (msgBox) {
-            msgBox->accept();
-            msgBox->deleteLater();
-        }
-        msgBox = nullptr;
-        _tooManyDeletesNotificationPopupMap.remove(syncDbId);
-    }
+    cleanUpMsgBox(syncDbId, _tooManyDeletesNotificationPopupMap);
 
     const auto syncInfoMapIt = _syncInfoMap.find(syncDbId);
     if (syncInfoMapIt == _syncInfoMap.end()) {
@@ -1436,10 +1434,12 @@ void ClientGui::onTooManyDeletesNotificationSoftLimit(const SyncDbId syncDbId) {
 
     ParametersCache::instance()->parametersInfo().setNotifyBeforeDelete(!msgBox->isChecked());
     (void) ParametersCache::instance()->saveParametersInfo();
+
+    cleanUpMsgBox(syncDbId, _tooManyDeletesNotificationPopupMap);
 }
 
 void ClientGui::onTooManyDeletesNotification(const SyncDbId syncDbId, const TooManyDeletesNotificationType notificationType,
-                                             uint64_t nbFiles) {
+                                             const uint64_t nbFiles) {
     switch (notificationType) {
         case TooManyDeletesNotificationType::SoftLimit:
             onTooManyDeletesNotificationSoftLimit(syncDbId);
