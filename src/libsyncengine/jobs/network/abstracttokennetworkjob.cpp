@@ -110,6 +110,17 @@ void AbstractTokenNetworkJob::updateLoginByUserDbId(const Login &login, const Us
     }
 }
 
+void AbstractTokenNetworkJob::clearCacheForUserDbId(const UserDbId userDbId) {
+    const std::scoped_lock lock(_cacheMutex);
+    if (const auto it = _userToApiKeyMap.find(userDbId); it != _userToApiKeyMap.end()) {
+        const auto login = it->second.login;
+        if (login) {
+            login->setApiToken(ApiToken());
+            login->setKeychainKey("");
+        }
+    }
+}
+
 void AbstractTokenNetworkJob::clearCache() {
     const std::scoped_lock lock(_cacheMutex);
     _driveToApiKeyMap.clear();
@@ -149,8 +160,7 @@ ExitInfo AbstractTokenNetworkJob::handleUnauthorizedResponse() {
         case ApiType::NotifyDrive:
         case ApiType::Internal:
         case ApiType::InternalUnauthenticated:
-            disableRetry();
-            return {ExitCode::BackError, ExitCause::DriveAccessError};
+            return handleDriveUnauthorizedResponse();
         case ApiType::DriveByUser:
         case ApiType::Desktop:
         case ApiType::Profile:
@@ -160,6 +170,15 @@ ExitInfo AbstractTokenNetworkJob::handleUnauthorizedResponse() {
             return ExitInfo{ExitCode::BackError, ExitCause::Unknown};
         }
     }
+}
+
+ExitInfo AbstractTokenNetworkJob::handleDriveUnauthorizedResponse() {
+    disableRetry();
+    if (_apiToken.accessToken().empty()) {
+        clearCacheForUserDbId(_userDbId);
+        return ExitCode::InvalidToken;
+    }
+    return {ExitCode::BackError, ExitCause::DriveAccessError};
 }
 
 ExitInfo AbstractTokenNetworkJob::handleUserUnauthorizedResponse() {
@@ -178,6 +197,7 @@ ExitInfo AbstractTokenNetworkJob::handleUserUnauthorizedResponse() {
         if (const auto exitInfo = refreshToken(); !exitInfo) {
             LOG_WARN(_logger, "Refresh token failed");
             disableRetry();
+            clearCacheForUserDbId(_userDbId);
             return ExitCode::InvalidToken;
         }
 
@@ -186,7 +206,7 @@ ExitInfo AbstractTokenNetworkJob::handleUserUnauthorizedResponse() {
     }
 
     if (_trials > 2) disableRetry();
-
+    clearCacheForUserDbId(_userDbId);
     return ExitCode::InvalidToken;
 }
 
@@ -375,7 +395,7 @@ void AbstractTokenNetworkJob::loadUserInfoFromUserDbId() {
 
     const std::scoped_lock lock(_cacheMutex);
 
-    if (_userToApiKeyMap.contains(_userDbId)) return;
+    if (_userToApiKeyMap.contains(_userDbId) && _userToApiKeyMap[_userDbId].login->hasToken()) return;
 
     // Get user
     User user;
@@ -398,19 +418,19 @@ void AbstractTokenNetworkJob::loadUserInfoFromUserDbId() {
     const auto debugAccessToken = getAccessTokenFromEnv(user.userId());
     if (debugAccessToken.empty()) {
 #endif
+        std::shared_ptr<Login> login;
         if (user.keychainKey().empty()) {
-            const std::string err{"Access token is empty"};
-            LOG_DEBUG(_logger, err);
-            throw TokenError(err);
+            LOG_DEBUG(_logger, "keychainKey is empty");
+            login = std::make_shared<Login>();
+        } else {
+            login = std::make_shared<Login>(user.keychainKey());
+            if (!login->hasToken()) {
+                const std::string err{"Failed to retrieve access token"};
+                LOG_WARN(_logger, err);
+            }
         }
 
         // Read token from keystore
-        auto login = std::make_shared<Login>(user.keychainKey());
-        if (!login->hasToken()) {
-            const std::string err{"Failed to retrieve access token"};
-            LOG_WARN(_logger, err);
-            throw TokenError(err);
-        }
         _userToApiKeyMap[_userDbId] = {login, user.userId()};
 #ifndef NDEBUG
     } else {
@@ -500,15 +520,20 @@ ApiToken AbstractTokenNetworkJob::retrieveApiTokenFromUserCache() {
     assert(_userDbId > 0 && "Invalid user DB ID.");
 
     const std::scoped_lock lock(_cacheMutex);
-
-    if (const auto it = _userToApiKeyMap.find(_userDbId); it == _userToApiKeyMap.cend()) {
-        const std::string err{"User cache not set for userDbId=" + std::to_string(_userDbId)};
-        LOG_WARN(_logger, err);
-        throw std::runtime_error(err);
-    } else {
-        _userId = it->second.userId;
-        return it->second.login->apiToken();
+    auto it = _userToApiKeyMap.find(_userDbId);
+    if (it == _userToApiKeyMap.cend() || !it->second.login || !it->second.login->hasToken()) {
+        LOG_DEBUG(_logger, "User cache not set for userDbId=" << _userDbId << ", loading user info");
+        loadUserInfoFromUserDbId();
+        it = _userToApiKeyMap.find(_userDbId);
+        if (it == _userToApiKeyMap.cend()) {
+            const std::string err{"User cache not set for userDbId=" + std::to_string(_userDbId)};
+            LOG_WARN(_logger, err);
+            throw std::runtime_error(err);
+        }
     }
+
+    _userId = it->second.userId;
+    return it->second.login->apiToken();
 }
 
 void AbstractTokenNetworkJob::fetchDriveDbIdFromSync() {
