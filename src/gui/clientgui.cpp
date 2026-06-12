@@ -1385,7 +1385,7 @@ void ClientGui::onTooManyDeletesNotificationHardLimit(const SyncDbId syncDbId, c
 
     int res = 0;
     while (res == 0) { // Force the user to give an explicit answer, not just close the windows and restart the sync
-        auto msgBox = new CustomMessageBox(
+        const auto msgBox = new CustomMessageBox(
                 QMessageBox::Warning,
                 tr(R"(%1 items have been deleted from your from your local sync folder <a style="%2" href="file:///%3">%3</a>. To avoid unintended deletions the synchronization have been paused.<br>Do you want to propagate those deletion to your kDrive?)")
                         .arg(nbFiles)
@@ -1422,7 +1422,7 @@ void ClientGui::onTooManyDeletesNotificationSoftLimit(const SyncDbId syncDbId) {
 
     const auto localPath = syncInfoMapIt->second.localPath();
     QString trashUrl = QString(APPLICATION_TRASH_URL_QSTRING).arg(driveInfoMapIt->second.id());
-    auto msgBox = new CustomMessageBox(
+    const auto msgBox = new CustomMessageBox(
             QMessageBox::Information,
             tr(R"(Several files have been deleted from your local sync folder <a style="%1" href="file:///%2">%2</a>. Deleted files can be found in kDrive's <a style="%1" href="%3">trash</a>.)")
                     .arg(CommonUtility::linkStyle, localPath, trashUrl),
@@ -1430,7 +1430,7 @@ void ClientGui::onTooManyDeletesNotificationSoftLimit(const SyncDbId syncDbId) {
     _tooManyDeletesNotificationPopupMap[syncDbId] = msgBox;
     msgBox->setCheckboxVisible(true);
     msgBox->setCheckBoxText(tr("Don't ask again"));
-    (void) msgBox->show();
+    (void) msgBox->exec();
 
     ParametersCache::instance()->parametersInfo().setNotifyBeforeDelete(!msgBox->isChecked());
     (void) ParametersCache::instance()->saveParametersInfo();
