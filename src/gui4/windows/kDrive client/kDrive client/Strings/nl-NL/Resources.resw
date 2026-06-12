@@ -6,7 +6,7 @@
   Locale: nl, Dutch; Flemish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 29 May 2026 15:56:50 +0200 
+  Exported at: Fri, 12 Jun 2026 16:31:14 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -1561,8 +1561,8 @@ Een internetverbinding is vereist om ze te openen.</value>
     <value>Synchronisatie bezig</value> 
   </data> 
   <data name="synchroStatusOfflineDescription" xml:space="preserve"> 
-    <value>Uw lokale bestanden blijven toegankelijk.
-De synchronisatie wordt automatisch hervat zodra u opnieuw verbinding heeft.</value> 
+    <value>Uw gedownloade bestanden blijven beschikbaar.
+De synchronisatie wordt automatisch hervat zodra u weer verbinding hebt.</value> 
   </data> 
   <data name="synchroStatusOfflineTitle" xml:space="preserve"> 
     <value>Offline</value> 
