@@ -58,9 +58,9 @@ ExitInfo SyncAddJob::process() {
     // Add sync in DB
     SyncInfo syncInfo;
     AccountInfo accountInfo;
-    DriveInfo driveInfo;
+    Drive drive;
     if (const auto exitInfo = ServerRequests::addSync(_userDbId, _accountId, _driveId, localFolderPath(), serverFolderPath(),
-                                                      serverFolderNodeId(), liteSync(), accountInfo, driveInfo, syncInfo);
+                                                      serverFolderNodeId(), liteSync(), accountInfo, drive, syncInfo);
         !exitInfo) {
         LOGW_WARN(_logger, L"Error in Requests::addSync - userDbId="
                                    << _userDbId << L" accountId=" << _accountId << L" driveId=" << _driveId << L" local "
@@ -76,8 +76,8 @@ ExitInfo SyncAddJob::process() {
         _commManager->sendGuiSignal(signalAccountAddedJob);
     }
 
-    if (driveInfo.dbId() != 0) {
-        auto signalDriveAddedJob = std::make_shared<SignalDriveAddedJob>(driveInfo);
+    if (drive.dbId() != 0) {
+        auto signalDriveAddedJob = std::make_shared<SignalDriveAddedJob>(drive);
         _commManager->sendGuiSignal(signalDriveAddedJob);
     }
 

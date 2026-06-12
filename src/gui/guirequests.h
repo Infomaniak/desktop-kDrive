@@ -18,12 +18,12 @@
 
 #pragma once
 
+#include "data/drive.h"
 #include "info/searchinfo.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/info/userinfo.h"
 #include "libcommon/info/accountinfo.h"
 #include "libcommon/info/nodeinfo.h"
-#include "libcommon/info/driveinfo.h"
 #include "libcommon/info/driveavailableinfo.h"
 #include "libcommon/info/syncinfo.h"
 #include "libcommon/info/errorinfo.h"
@@ -47,8 +47,8 @@ struct GuiRequests {
         static ExitCode getUserDbIdList(QList<UserDbId> &list);
         static ExitCode getUserInfoList(QList<UserInfo> &list);
         static ExitCode getAccountInfoList(QList<AccountInfo> &list);
-        static ExitCode getDriveInfoList(QList<DriveInfo> &list);
-        static ExitCode updateDrive(const DriveInfo &driveInfo);
+        static ExitCode getDriveInfoList(QList<Drive> &list);
+        static ExitCode updateDrive(const Drive &drive);
         static ExitCode getSyncInfoList(QList<SyncInfo> &list);
         static ExitCode getSyncStatus(SyncDbId syncDbId, SyncStatus &status);
         static ExitCode getBlacklistedNodeIdSet(SyncDbId syncDbId, QSet<QString> &syncIdSet);

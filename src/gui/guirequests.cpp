@@ -228,7 +228,7 @@ ExitCode GuiRequests::getAccountInfoList(QList<AccountInfo> &list) {
     return exitCode;
 }
 
-ExitCode GuiRequests::getDriveInfoList(QList<DriveInfo> &list) {
+ExitCode GuiRequests::getDriveInfoList(QList<Drive> &list) {
     QByteArray results;
     if (!CommClient::instance()->execute(RequestNum::DRIVE_INFOLIST, {}, results)) {
         return ExitCode::SystemError;
@@ -242,10 +242,10 @@ ExitCode GuiRequests::getDriveInfoList(QList<DriveInfo> &list) {
     return exitCode;
 }
 
-ExitCode GuiRequests::updateDrive(const DriveInfo &driveInfo) {
+ExitCode GuiRequests::updateDrive(const Drive &drive) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << driveInfo;
+    paramsStream << drive;
 
     QByteArray results;
     if (!CommClient::instance()->execute(RequestNum::DRIVE_UPDATE, params, results)) {

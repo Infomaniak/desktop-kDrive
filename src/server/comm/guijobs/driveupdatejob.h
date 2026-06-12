@@ -19,7 +19,6 @@
 #pragma once
 
 #include "server/comm/guijobs/abstractguijob.h"
-#include "libcommon/info/driveinfo.h"
 
 namespace KDC {
 
@@ -30,7 +29,7 @@ class DriveUpdateJob : public AbstractGuiJob {
 
     private:
         // Output parameters
-        DriveInfo _driveInfo;
+        Drive _drive;
 
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override;

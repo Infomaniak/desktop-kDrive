@@ -22,7 +22,6 @@
 #include "libcommon/utility/types.h"
 #include "libcommon/info/userinfo.h"
 #include "libcommon/info/accountinfo.h"
-#include "libcommon/info/driveinfo.h"
 #include "libcommon/info/driveavailableinfo.h"
 #include "libcommon/info/syncinfo.h"
 #include "libcommon/info/nodeinfo.h"
@@ -32,7 +31,7 @@
 #include "libcommon/info/proxyconfiginfo.h"
 #include "libcommon/info/exclusiontemplateinfo.h"
 #include "libcommon/info/exclusionappinfo.h"
-#include "libparms/db/drive.h"
+#include "libcommon/data/drive.h"
 #include "libparms/db/account.h"
 #include "libparms/db/user.h"
 #include "libparms/db/sync.h"
@@ -59,10 +58,10 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode getUserInfoList(std::vector<UserInfo> &list);
         static ExitCode getAccountInfoList(QList<AccountInfo> &list);
         static ExitCode getAccountInfoList(std::vector<AccountInfo> &list);
-        static ExitCode getDriveInfoList(QList<DriveInfo> &list);
-        static ExitCode getDriveInfoList(std::vector<DriveInfo> &list);
-        static ExitCode getDriveInfo(DriveDbId driveDbId, DriveInfo &driveInfo);
-        static ExitCode updateDrive(const DriveInfo &driveInfo);
+        static ExitInfo getDriveList(QList<Drive> &list);
+        static ExitInfo getDriveList(std::vector<Drive> &list);
+        static ExitInfo getDrive(DriveDbId driveDbId, Drive &drive);
+        static ExitInfo updateDrive(const Drive &drive);
         static ExitCode getSyncInfoList(QList<SyncInfo> &list);
         static ExitCode getSyncInfoList(std::vector<SyncInfo> &list);
         static ExitCode getParameters(ParametersInfo &parametersInfo);
@@ -106,10 +105,10 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitInfo getUserAvailableDrives(UserDbId userDbId, std::vector<DriveAvailableInfo> &list);
         static ExitInfo addSync(UserDbId userDbId, AccountId accountId, DriveId driveId, const SyncPath &localFolderPath,
                                 const SyncPath &serverFolderPath, const NodeId &serverFolderNodeId, bool liteSync,
-                                AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo);
+                                AccountInfo &accountInfo, Drive &drive, SyncInfo &syncInfo);
         static ExitInfo addSync(UserDbId userDbId, AccountId accountId, DriveId driveId, const QString &localFolderPath,
                                 const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync,
-                                AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo);
+                                AccountInfo &accountInfo, Drive &drive, SyncInfo &syncInfo);
         static ExitInfo addSync(DriveDbId driveDbId, const SyncPath &localFolderPath, const SyncPath &serverFolderPath,
                                 const NodeId &serverFolderNodeId, bool liteSync, SyncInfo &syncInfo);
         static ExitInfo addSync(DriveDbId driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
@@ -156,7 +155,6 @@ struct SYNCENGINE_EXPORT ServerRequests {
         // Utility
         static void userToUserInfo(const User &user, UserInfo &userInfo);
         static void accountToAccountInfo(const Account &account, AccountInfo &accountInfo);
-        static void driveToDriveInfo(const Drive &drive, DriveInfo &driveInfo);
         static void syncToSyncInfo(const Sync &sync, SyncInfo &syncInfo);
         static void syncInfoToSync(const SyncInfo &syncInfo, Sync &sync);
         static void errorToErrorInfo(const Error &error, ErrorInfo &errorInfo);
@@ -186,7 +184,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode createUser(const User &user, UserInfo &userInfo);
         static ExitCode updateUser(const User &user, UserInfo &userInfo);
         static ExitCode createAccount(const Account &account, AccountInfo &accountInfo);
-        static ExitCode createDrive(const Drive &drive, DriveInfo &driveInfo);
+        static ExitCode createDrive(const Drive &drive);
         static ExitCode createSync(const Sync &sync, SyncInfo &syncInfo);
 };
 

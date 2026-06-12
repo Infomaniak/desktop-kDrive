@@ -35,7 +35,6 @@
 #include "libparms/db/user.h"
 #include "libcommon/info/userinfo.h"
 #include "libcommon/info/accountinfo.h"
-#include "libcommon/info/driveinfo.h"
 #include "libcommon/info/syncinfo.h"
 #include "libcommon/info/syncfileiteminfo.h"
 #include "libcommonserver/vfs/vfs.h"
@@ -339,8 +338,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         virtual void sendAccountAdded(const AccountInfo &accountInfo) const;
         virtual void sendAccountUpdated(const AccountInfo &accountInfo) const;
         virtual void sendAccountRemoved(AccountDbId accountDbId) const;
-        virtual void sendDriveAdded(const DriveInfo &driveInfo) const;
-        virtual void sendDriveUpdated(const DriveInfo &driveInfo) const;
+        virtual void sendDriveAdded(const Drive &drive) const;
+        virtual void sendDriveUpdated(const Drive &drive) const;
         virtual void sendDriveQuotaUpdated(DriveDbId driveDbId, qint64 total, qint64 used) const;
         virtual void sendDriveRemoved(DriveDbId driveDbId) const;
         virtual void sendDriveDeletionFailed(DriveDbId driveDbId) const;

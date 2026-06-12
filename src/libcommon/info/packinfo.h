@@ -41,10 +41,7 @@ class PackInfo {
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
         void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
 
-        friend bool operator==(const PackInfo &lhs, const PackInfo &rhs) {
-            return lhs.id() == rhs.id() && lhs.name() == rhs.name() && lhs.displayName() == rhs.displayName() &&
-                   lhs.isFree() == rhs.isFree();
-        }
+        bool operator==(const PackInfo &other) const = default;
 
     private:
         uint64_t _id{0};

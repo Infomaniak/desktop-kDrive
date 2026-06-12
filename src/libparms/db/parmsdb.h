@@ -18,11 +18,10 @@
 
 #pragma once
 
-#include "libparms/parmslib.h"
+#include "parmslib.h"
 #include "parameters.h"
 #include "user.h"
 #include "account.h"
-#include "drive.h"
 #include "sync.h"
 #include "exclusiontemplate.h"
 #if defined(KD_MACOS)
@@ -30,7 +29,10 @@
 #endif
 #include "error.h"
 #include "migrationselectivesync.h"
+
 #include "libcommonserver/db/db.h"
+
+#include "libcommon/data/drive.h"
 
 namespace KDC {
 

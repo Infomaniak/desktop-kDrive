@@ -198,8 +198,8 @@ void StatusBarWidget::createStatusActionMenu(MenuWidget *&menu, bool &resetButto
     }
 
     QWidgetAction *widgetAction = new QWidgetAction(this);
-    MenuItemWidget *actionMenuItemWidget =
-            new MenuItemWidget(menukDriveSyncStr.arg(_driveDbId ? driveInfoIt->second.name() : QString()));
+    MenuItemWidget *actionMenuItemWidget = new MenuItemWidget(
+            menukDriveSyncStr.arg(_driveDbId ? QString::fromStdString(driveInfoIt->second.name()) : QString()));
     actionMenuItemWidget->setLeftIcon(menuActionIcon);
     widgetAction->setDefaultWidget(actionMenuItemWidget);
 

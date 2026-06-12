@@ -193,8 +193,8 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void onAccountUpdated(const AccountInfo &accountInfo);
         void onAccountRemoved(UserDbId userDbId);
         // Drive slots
-        void onDriveAdded(const DriveInfo &driveInfo);
-        void onDriveUpdated(const DriveInfo &driveInfo);
+        void onDriveAdded(const Drive &drive);
+        void onDriveUpdated(const Drive &drive);
         void onDriveQuotaUpdated(DriveDbId driveDbId, qint64 total, qint64 used);
         void onRemoveDrive(DriveDbId driveDbId);
         void onDriveRemoved(DriveDbId driveDbId);

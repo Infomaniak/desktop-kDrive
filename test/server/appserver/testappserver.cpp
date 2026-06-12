@@ -63,7 +63,7 @@ void TestAppServer::setUp() {
     (void) ParmsDb::instance()->insertAccount(account);
 
     const int driveId = atoi(testVariables.driveId.c_str());
-    const Drive drive(1, driveId, account.dbId(), std::string(), 0, std::string());
+    const Drive drive(1, driveId, account.dbId());
     (void) ParmsDb::instance()->insertDrive(drive);
 
     const auto localPath = _localTempDir.path() / "local_sync_directory";
@@ -243,7 +243,7 @@ ExitInfo mockLoadAccountInfo(Account &account, bool &updated) {
     return ExitCode::Ok;
 }
 
-ExitInfo mockLoadDriveInfo(Drive &drive, const AccountId previousAccountId, AccountId &newAccountId, bool &updated,
+ExitInfo mockLoadDriveInfo(const Drive &drive, const AccountId previousAccountId, AccountId &newAccountId, bool &updated,
                            bool &quotaUpdated) {
     if (drive.dbId() == 11 && previousAccountId == accountIdA) {
         newAccountId = accountIdB;

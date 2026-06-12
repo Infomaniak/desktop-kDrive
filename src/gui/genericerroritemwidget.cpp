@@ -57,8 +57,8 @@ void GenericErrorItemWidget::init() {
 
         // Path
         if (_errorInfo.level() == ErrorLevel::SyncPal) {
-            setDriveName(driveInfoMapIt->second.name(), syncInfoMapIt->second.localPath());
-            setPathIconColor(driveInfoMapIt->second.color());
+            setDriveName(QString::fromStdString(driveInfoMapIt->second.name()), syncInfoMapIt->second.localPath());
+            setPathIconColor(QColor(QString::fromStdString(driveInfoMapIt->second.color())));
         } else if (_errorInfo.level() == ErrorLevel::Node) {
             const bool useDestPath = _errorInfo.cancelType() == CancelType::MoveToBinFailed ||
                                      _errorInfo.cancelType() == CancelType::FileRescued ||

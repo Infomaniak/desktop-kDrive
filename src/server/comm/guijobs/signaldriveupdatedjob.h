@@ -19,17 +19,16 @@
 #pragma once
 
 #include "server/comm/guijobs/abstractguijob.h"
-#include "libcommon/info/driveinfo.h"
 
 namespace KDC {
 
 class SignalDriveUpdatedJob : public AbstractGuiJob {
     public:
-        explicit SignalDriveUpdatedJob(DriveInfo driveInfo);
+        explicit SignalDriveUpdatedJob(Drive drive);
 
     private:
         // Output parameters
-        DriveInfo _driveInfo;
+        Drive _drive;
 
         ExitInfo deserializeInputParms() override { return ExitCode::Ok; }
         ExitInfo serializeOutputParms() override;

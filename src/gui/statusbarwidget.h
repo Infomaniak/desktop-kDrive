@@ -22,7 +22,6 @@
 #include "customtoolbutton.h"
 #include "guiutility.h"
 #include "libcommon/theme/theme.h"
-#include "libcommon/info/driveinfo.h"
 #include "menuwidget.h"
 
 #include <QLabel>

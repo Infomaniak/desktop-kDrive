@@ -97,7 +97,7 @@ void SynthesisBar::refreshErrorsButton() {
         _gui->loadSyncInfoMap(driveId, syncInfoMap);
         if (syncInfoMap.empty()) {
             driveInfo.setUnresolvedErrorsCount(0);
-            driveInfo.setAutoresolvedErrorsCount(0);
+            driveInfo.setAutoResolvedErrorsCount(0);
         }
 
         drivesWithErrors = drivesWithErrors || _gui->driveErrorsCount(driveId, true) > 0;
@@ -130,7 +130,7 @@ void SynthesisBar::getDriveErrorList(QList<ErrorsPopup::DriveError> &list) {
         if (driveUnresolvedErrorsCount > 0 || driveAutoresolvedErrorsCount > 0) {
             ErrorsPopup::DriveError driveError;
             driveError.driveDbId = driveInfoElt.first;
-            driveError.driveName = driveInfoElt.second.name();
+            driveError.driveName = QString::fromStdString(driveInfoElt.second.name());
             driveError.unresolvedErrorsCount = driveUnresolvedErrorsCount;
             driveError.autoresolvedErrorsCount = driveAutoresolvedErrorsCount;
             list << driveError;

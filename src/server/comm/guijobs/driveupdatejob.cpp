@@ -36,15 +36,15 @@ DriveUpdateJob::DriveUpdateJob(std::shared_ptr<CommManager> commManager, int req
 
 ExitInfo DriveUpdateJob::deserializeInputParms() {
     // Intput parameters deserialization
-    std::function<DriveInfo(const Poco::Dynamic::Var &)> dynamicVar2driveInfo = [](const Poco::Dynamic::Var &value) {
+    std::function<Drive(const Poco::Dynamic::Var &)> dynamicVar2drive = [](const Poco::Dynamic::Var &value) {
         assert(value.isStruct());
         const auto &structValue = value.extract<Poco::DynamicStruct>();
-        DriveInfo driveInfo;
-        driveInfo.fromDynamicStruct(structValue);
-        return driveInfo;
+        Drive drive;
+        drive.fromDynamicStruct(structValue);
+        return drive;
     };
     try {
-        readParamValue(inParamsDriveInfo, _driveInfo, dynamicVar2driveInfo);
+        readParamValue(inParamsDriveInfo, _drive, dynamicVar2drive);
     } catch (const std::exception &e) {
         LOG_WARN(_logger, "Exception in DriveUpdateJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
@@ -58,13 +58,13 @@ ExitInfo DriveUpdateJob::serializeOutputParms() {
 }
 
 ExitInfo DriveUpdateJob::process() {
-    ExitCode exitCode = ServerRequests::updateDrive(_driveInfo);
-    if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in Requests::updateDrive: code=" << exitCode);
-        addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
+    const auto exitInfo = ServerRequests::updateDrive(_drive);
+    if (!exitInfo) {
+        LOG_WARN(_logger, "Error in Requests::updateDrive: " << exitInfo);
+        addError(Error(ERR_ID, exitInfo));
     }
 
-    return exitCode;
+    return exitInfo;
 }
 
 } // namespace KDC
