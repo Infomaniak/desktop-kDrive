@@ -33,6 +33,7 @@ struct BlacklistPreferencesView: View {
     let userDbId: UIUser.ID
     let driveId: UIDrive.ID
     let synchroDbId: UISynchro.ID
+    let rootNodeId: String?
 
     var body: some View {
         VStack {
@@ -40,7 +41,8 @@ struct BlacklistPreferencesView: View {
                 blackList: $blackList,
                 initialBlackList: initialBlacklist,
                 userDbId: userDbId,
-                driveDbId: driveId
+                driveDbId: driveId,
+                rootNodeId: rootNodeId
             )
 
             GroupBox {
@@ -90,5 +92,5 @@ struct BlacklistPreferencesView: View {
 }
 
 #Preview {
-    BlacklistPreferencesView(userDbId: 0, driveId: 0, synchroDbId: 0)
+    BlacklistPreferencesView(userDbId: 0, driveId: 0, synchroDbId: 0, rootNodeId: nil)
 }

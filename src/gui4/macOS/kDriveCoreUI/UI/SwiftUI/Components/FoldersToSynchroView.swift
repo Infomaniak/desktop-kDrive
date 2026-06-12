@@ -28,17 +28,20 @@ public struct FoldersToSynchroView: View {
     let initialBlackList: Set<String>
     let userDbId: Int
     let driveDbId: Int
+    let rootNodeId: String?
 
     public init(
         blackList: Binding<Set<String>>,
         initialBlackList: Set<String>,
         userDbId: Int,
-        driveDbId: Int
+        driveDbId: Int,
+        rootNodeId: String? = nil
     ) {
         _blackList = blackList
         self.initialBlackList = initialBlackList
         self.userDbId = userDbId
         self.driveDbId = driveDbId
+        self.rootNodeId = rootNodeId
     }
 
     public var body: some View {
@@ -70,7 +73,7 @@ public struct FoldersToSynchroView: View {
         userDbId: Int32,
         driveDbId: Int32
     ) async -> [FileTreeItem] {
-        let rootNodeId = node?.id ?? ""
+        let rootNodeId = node?.id ?? rootNodeId ?? ""
 
         do {
             let nodes = try await NodeJobs().getNodeSubfolders(userDbId: userDbId, driveId: driveDbId, nodeId: rootNodeId)

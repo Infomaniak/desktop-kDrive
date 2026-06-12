@@ -147,7 +147,7 @@ struct SyncedKDriveView: View {
             }
 
             @InjectService var router: PreferencesViewRouter
-            router.append(.blacklist(Int(drive.userDbId), Int(drive.driveId), Int(mainSynchro.dbId)))
+            router.append(.blacklist(Int(drive.userDbId), Int(drive.driveId), Int(mainSynchro.dbId), rootNodeId: nil))
         }
     }
 
