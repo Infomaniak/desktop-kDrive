@@ -32,7 +32,7 @@ struct UpdaterSignalHandler {
 
         IKLogger.xpc.log("[KD] Update available: \(versionInfo.tag) (build: \(versionInfo.buildVersion))")
 
-        // TODO: Show updater UI via AppRouter state change
+        await updaterCache.requestShowUpdateDialog(versionInfo: versionInfo)
     }
 
     func handleStateChanged(_ signal: Data) async throws {
