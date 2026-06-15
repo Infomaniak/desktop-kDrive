@@ -79,7 +79,7 @@ class UploadJob : public AbstractTokenNetworkJob {
         NodeType _targetType = NodeType::File;
 
         bool _shouldUpload = true;
-        bool _isHydrated;
+        bool _isHydrated = true;
         int64_t _remoteSize = -1;
 
         const std::shared_ptr<Vfs> _vfs;
