@@ -122,15 +122,11 @@ ExitInfo UploadJob::resolveUploadNeed() {
     return ExitCode::Ok;
 }
 
-void UploadJob::computeHydrationStatus() {
-    VfsStatus vfsStatus;
-    if (_vfs) (void) _vfs->status(_absoluteFilePath, vfsStatus);
-    _isHydrated = !_vfs || vfsStatus.isHydrated;
-}
-
 ExitInfo UploadJob::runJob() noexcept {
     if (!_fileId.empty() && _vfs) {
-        computeHydrationStatus();
+        VfsStatus vfsStatus;
+        if (_vfs) (void) _vfs->status(_absoluteFilePath, vfsStatus);
+        _isHydrated = !_vfs || vfsStatus.isHydrated;
         if (_isHydrated) {
             const ExitInfo exitInfo = resolveUploadNeed();
             if (!_shouldUpload && exitInfo) return ExitCode::Ok;
