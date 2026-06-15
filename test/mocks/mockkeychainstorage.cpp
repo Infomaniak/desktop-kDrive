@@ -16,30 +16,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "gettokenfromapppasswordjob.h"
-#include "config.h"
-#include "jobs/network/networkjobsparams.h"
-
-#include <Poco/Net/HTTPRequest.h>
+#include "mockkeychainstorage.h"
 
 namespace KDC {
 
-GetTokenFromAppPasswordJob::GetTokenFromAppPasswordJob(const std::string &username, const std::string &password) :
-    AbstractLoginJob(),
-    _username(username),
-    _password(password) {
-    _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
+bool MockKeyChainStorage::writePassword(const std::string &keychainKey, const std::string &rawData) {
+    _storage[keychainKey] = rawData;
+    return true;
 }
 
-ExitInfo GetTokenFromAppPasswordJob::setData() {
-    Poco::URI uri;
-    uri.addQueryParameter(usernameKey, _username);
-    uri.addQueryParameter(passwordKey, _password);
-    uri.addQueryParameter(grantTypeKey, grantTypePassword);
-    uri.addQueryParameter(clientIdKey, CLIENT_ID);
+bool MockKeyChainStorage::readPassword(const std::string &keychainKey, std::string &data, bool &found) {
+    if (_storage.contains(keychainKey)) {
+        data = _storage[keychainKey];
+        found = true;
+    } else {
+        found = false;
+    }
+    return true;
+}
 
-    _data = uri.getRawQuery();
-    return ExitCode::Ok;
+bool MockKeyChainStorage::deletePassword(const std::string &keychainKey) {
+    if (_storage.contains(keychainKey)) {
+        (void) _storage.erase(keychainKey);
+        return true;
+    }
+    return false;
 }
 
 } // namespace KDC

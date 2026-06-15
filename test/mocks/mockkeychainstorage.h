@@ -16,30 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "gettokenfromapppasswordjob.h"
-#include "config.h"
-#include "jobs/network/networkjobsparams.h"
+#pragma once
 
-#include <Poco/Net/HTTPRequest.h>
+#include "libcommonserver/keychainmanager/keychainstorage.h"
+
+#include "utility/types.h"
+
+#include <unordered_map>
 
 namespace KDC {
 
-GetTokenFromAppPasswordJob::GetTokenFromAppPasswordJob(const std::string &username, const std::string &password) :
-    AbstractLoginJob(),
-    _username(username),
-    _password(password) {
-    _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
-}
+class MockKeyChainStorage : public IKeyChainStorage {
+    public:
+        bool writePassword(const std::string &keychainKey, const std::string &rawData) override;
+        bool readPassword(const std::string &keychainKey, std::string &data, bool &found) override;
+        bool deletePassword(const std::string &keychainKey) override;
 
-ExitInfo GetTokenFromAppPasswordJob::setData() {
-    Poco::URI uri;
-    uri.addQueryParameter(usernameKey, _username);
-    uri.addQueryParameter(passwordKey, _password);
-    uri.addQueryParameter(grantTypeKey, grantTypePassword);
-    uri.addQueryParameter(clientIdKey, CLIENT_ID);
+        bool isTesting() override { return true; }
 
-    _data = uri.getRawQuery();
-    return ExitCode::Ok;
-}
+    private:
+        std::unordered_map<std::string, std::string, StringHashFunction, std::equal_to<>> _storage;
+};
 
 } // namespace KDC

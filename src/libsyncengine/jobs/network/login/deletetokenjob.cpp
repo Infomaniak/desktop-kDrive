@@ -16,30 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "gettokenfromapppasswordjob.h"
-#include "config.h"
-#include "jobs/network/networkjobsparams.h"
+#include "deletetokenjob.h"
 
 #include <Poco/Net/HTTPRequest.h>
 
 namespace KDC {
 
-GetTokenFromAppPasswordJob::GetTokenFromAppPasswordJob(const std::string &username, const std::string &password) :
-    AbstractLoginJob(),
-    _username(username),
-    _password(password) {
-    _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
-}
-
-ExitInfo GetTokenFromAppPasswordJob::setData() {
-    Poco::URI uri;
-    uri.addQueryParameter(usernameKey, _username);
-    uri.addQueryParameter(passwordKey, _password);
-    uri.addQueryParameter(grantTypeKey, grantTypePassword);
-    uri.addQueryParameter(clientIdKey, CLIENT_ID);
-
-    _data = uri.getRawQuery();
-    return ExitCode::Ok;
+DeleteTokenJob::DeleteTokenJob(const ApiToken &apiToken) {
+    _httpMethod = Poco::Net::HTTPRequest::HTTP_DELETE;
+    addRawHeader("Authorization", "Bearer " + apiToken.accessToken());
 }
 
 } // namespace KDC

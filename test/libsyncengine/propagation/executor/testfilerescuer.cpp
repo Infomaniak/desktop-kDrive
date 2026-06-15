@@ -19,6 +19,7 @@
 #include "testfilerescuer.h"
 #include "db/parmsdb.h"
 #include "keychainmanager/keychainmanager.h"
+#include "mocks/mockkeychainstorage.h"
 #include "network/proxy.h"
 #include "propagation/executor/filerescuer.h"
 
@@ -36,7 +37,7 @@ void TestFileRescuer::setUp() {
 
     // Insert api token into keystore
     std::string keychainKey("123");
-    (void) KeyChainManager::instance(true);
+    (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
     KeyChainManager::instance()->writeToken(keychainKey, testVariables.apiToken);
 
     // Create parmsDb

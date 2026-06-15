@@ -1048,14 +1048,6 @@ void ClientGui::onUserAdded(const UserInfo &userInfo) {
     emit refreshStatusNeeded();
 }
 
-void ClientGui::onRemoveUser(const UserDbId userDbId) {
-    ExitCode exitCode = GuiRequests::deleteUser(userDbId);
-    if (exitCode != ExitCode::Ok) {
-        qCWarning(lcClientGui()) << "Error in Requests::deleteUser for userDbId=" << userDbId;
-        return;
-    }
-}
-
 void ClientGui::onUserUpdated(const UserInfo &userInfo) {
     const auto userInfoMapIt = _userInfoMap.find(userInfo.dbId());
     if (userInfoMapIt != _userInfoMap.end()) {

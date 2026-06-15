@@ -22,6 +22,7 @@
 #include "io/filestat.h"
 #include "io/iohelper.h"
 #include "keychainmanager/keychainmanager.h"
+#include "mocks/mockkeychainstorage.h"
 #include "mocks/libsyncengine/vfs/mockvfs.h"
 #include "network/proxy.h"
 #include "propagation/executor/filerescuer.h"
@@ -48,7 +49,7 @@ void TestExecutorWorker::setUp() {
     apiToken.setAccessToken(testVariables.apiToken);
 
     const std::string keychainKey("123");
-    (void) KeyChainManager::instance(true);
+    (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
     (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
