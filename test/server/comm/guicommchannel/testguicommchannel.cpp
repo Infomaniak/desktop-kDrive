@@ -797,8 +797,8 @@ void TestGuiCommChannel::testDriveSearchJob() {
         CPPUNIT_ASSERT(driveSearchJob);
 
 
-        const SearchInfo si1("1000", Str("toto"), NodeType::File, Str("toto"), 10, 10, true);
-        const SearchInfo si2("2000", Str("titi"), NodeType::Directory, Str("titi"), 100, 100, false);
+        const SearchInfo si1("1000", Str("toto"), NodeType::File, Str("toto"), 10, 10, true, true);
+        const SearchInfo si2("2000", Str("titi"), NodeType::Directory, Str("titi"), 100, 100, false, false);
 
         driveSearchJob->_searchInfoList = {si1, si2};
         driveSearchJob->_hasMore = false;

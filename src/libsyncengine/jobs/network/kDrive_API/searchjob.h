@@ -42,6 +42,14 @@ class SearchJob : public AbstractTokenNetworkJob {
         void setQueryParameters(Poco::URI &uri) override;
         ExitInfo handleResponse(std::istream &is) override;
 
+        struct LocalProperties {
+                SyncPath path;
+                bool isAvailableLocally{false};
+                bool isHydrated{false};
+        };
+
+        LocalProperties getLocalProperties(const SyncPath &itemPath) const;
+
         std::string _searchString;
         std::string _cursorInput;
         SyncPath _syncRootPath;
