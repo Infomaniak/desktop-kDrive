@@ -52,6 +52,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         private bool _stopRequested = false;
         private Task? _pollingTask;
         private const string _host = "127.0.0.1";
+        private readonly Func<string[]> _getCommandLineArgs;
         private int NextId
         {
             get
@@ -74,6 +75,11 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public event EventHandler<SignalEventArgs> SignalReceived = delegate { };
         public event EventHandler ConnectionLost = delegate { };
+
+        public SocketServerCommProtocol(Func<string[]>? getCommandLineArgs = null)
+        {
+            _getCommandLineArgs = getCommandLineArgs ?? Environment.GetCommandLineArgs;
+        }
 
         ~SocketServerCommProtocol()
         {
@@ -100,23 +106,35 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
 
 #else
-            string[] arguments = Environment.GetCommandLineArgs();
-            if (arguments.Length < 2)
+            if (!TryParseServerPortFromArguments(_getCommandLineArgs(), out int port, out string errorMessage))
             {
-                Logger.Log(Logger.Level.Fatal, "No commPort provided");
-                ConnectionLost?.Invoke(this, new EventArgs());
-                return null;
-            }
-
-            if (!int.TryParse(arguments[1], out int port))
-            {
-                Logger.Log(Logger.Level.Fatal, $"Invalid commPort provided: {arguments[1]}");
+                Logger.Log(Logger.Level.Fatal, errorMessage);
                 ConnectionLost?.Invoke(this, new EventArgs());
                 return null;
             }
 
             return port;
 #endif
+        }
+
+        private static bool TryParseServerPortFromArguments(string[] arguments, out int port, out string errorMessage)
+        {
+            port = 0;
+
+            if (arguments.Length < 2)
+            {
+                errorMessage = "No commPort provided";
+                return false;
+            }
+
+            if (!int.TryParse(arguments[1], out port))
+            {
+                errorMessage = $"Invalid commPort provided: {arguments[1]}";
+                return false;
+            }
+
+            errorMessage = string.Empty;
+            return true;
         }
         public async Task<bool> InitConnection(CancellationToken cancellationToken)
         {
