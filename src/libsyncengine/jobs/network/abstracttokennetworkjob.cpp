@@ -107,17 +107,15 @@ void AbstractTokenNetworkJob::updateLoginByUserDbId(const Login &login, const Us
         // set new credentials to Login class
         currentLogin->setApiToken(newApiToken);
         currentLogin->setKeychainKey(newKeychainKey);
+    } else {
+        // If the userDbId is not in the cache we just continue since the cache will be updated at the next token load
     }
 }
 
 void AbstractTokenNetworkJob::clearCacheForUserDbId(const UserDbId userDbId) {
     const std::scoped_lock lock(_cacheMutex);
     if (const auto it = _userToApiKeyMap.find(userDbId); it != _userToApiKeyMap.end()) {
-        const auto login = it->second.login;
-        if (login) {
-            login->setApiToken(ApiToken());
-            login->setKeychainKey("");
-        }
+        _userToApiKeyMap.erase(it);
     }
 }
 
@@ -395,7 +393,7 @@ void AbstractTokenNetworkJob::loadUserInfoFromUserDbId() {
 
     const std::scoped_lock lock(_cacheMutex);
 
-    if (_userToApiKeyMap.contains(_userDbId) && _userToApiKeyMap[_userDbId].login->hasToken()) return;
+    if (_userToApiKeyMap.contains(_userDbId) && _userToApiKeyMap[_userDbId].login != nullptr && _userToApiKeyMap[_userDbId].login->hasToken()) return;
 
     // Get user
     User user;
@@ -667,6 +665,10 @@ long AbstractTokenNetworkJob::tokenUpdateDurationFromNow() {
     }
     // userDbId found in User cache
     const std::shared_ptr<Login> login = it->second.login;
+    if (!login) {
+        LOG_WARN(_logger, "Login not set for userDbId=" << _userDbId);
+        return 0;
+    }
     return login->tokenUpdateDurationFromNow();
 }
 
