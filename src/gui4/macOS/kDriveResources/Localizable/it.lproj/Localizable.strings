@@ -61,6 +61,21 @@
 /* loco:69b422369e32a806170ba3c2 */
 "addAdvancedSyncDialogTitle" = "Sincronizza una cartella con kDrive";
 
+/* loco:69b422a8be3506a1a305ba12 */
+"addAdvancedSyncLocalFolderDescription" = "Scegli la cartella del tuo computer da sincronizzare con kDrive:";
+
+/* loco:69b42298791d2c19c40f4e92 */
+"addAdvancedSyncLocalFolderTitle" = "Cartella sincronizzata";
+
+/* loco:69b429241110b141d0085ab2 */
+"addAdvancedSyncRemoteFolderDescription" = "Personalizza la posizione della cartella del tuo computer su kDrive:";
+
+/* loco:69bac02ad8355281490134c2 */
+"addAdvancedSyncRemoteFolderPageTitle" = "Scegli la posizione della cartella su kDrive";
+
+/* loco:69b429180e3d6a548e0afac2 */
+"addAdvancedSyncRemoteFolderTitle" = "Posizione su kDrive";
+
 /* loco:698b087a5fc40f623b0789c2 */
 "advancedSyncDescription" = "Seleziona una cartella sul tuo computer da sincronizzare con kDrive.\nPuoi accedere alle sincronizzazioni avanzate dal selettore di unità nella pagina principale.";
 
@@ -260,8 +275,15 @@
 /* loco:69a6a31c97f5f5084b09e612 */
 "buttonSelect" = "Seleziona";
 
+/* loco:69b422d7b7de08855d023d32 */
+"buttonSelectFolder" = "Seleziona una cartella";
+
 /* loco:698c5cb5f86b52c6fc001fc4 */
-"buttonSelectFolders" = "Selezionare le cartelle";
+"buttonSelectFolders" = "Seleziona cartelle";
+
+/* loco:69bac5f6f74824a64304bcd9 */
+"buttonSelectLocation" = "Seleziona una posizione";
+
 /* loco:69a6a32d8e33a191f90115f2 */
 "buttonSelected" = "Selezionato";
 

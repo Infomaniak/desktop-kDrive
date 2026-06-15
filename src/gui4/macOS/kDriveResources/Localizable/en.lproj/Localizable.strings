@@ -61,6 +61,21 @@
 /* loco:69b422369e32a806170ba3c2 */
 "addAdvancedSyncDialogTitle" = "Sync a folder with kDrive";
 
+/* loco:69b422a8be3506a1a305ba12 */
+"addAdvancedSyncLocalFolderDescription" = "Choose the folder on your computer to sync with kDrive:";
+
+/* loco:69b42298791d2c19c40f4e92 */
+"addAdvancedSyncLocalFolderTitle" = "Synced folder";
+
+/* loco:69b429241110b141d0085ab2 */
+"addAdvancedSyncRemoteFolderDescription" = "Customize the location of your computer folder on kDrive:";
+
+/* loco:69bac02ad8355281490134c2 */
+"addAdvancedSyncRemoteFolderPageTitle" = "Choose the folder location on kDrive";
+
+/* loco:69b429180e3d6a548e0afac2 */
+"addAdvancedSyncRemoteFolderTitle" = "kDrive location";
+
 /* loco:698b087a5fc40f623b0789c2 */
 "advancedSyncDescription" = "Select a folder on your computer to sync with kDrive.\nYou can access your advanced syncs from the drive picker on the home page.";
 
@@ -260,8 +275,14 @@
 /* loco:69a6a31c97f5f5084b09e612 */
 "buttonSelect" = "Select";
 
+/* loco:69b422d7b7de08855d023d32 */
+"buttonSelectFolder" = "Select a folder";
+
 /* loco:698c5cb5f86b52c6fc001fc4 */
 "buttonSelectFolders" = "Select folders";
+
+/* loco:69bac5f6f74824a64304bcd9 */
+"buttonSelectLocation" = "Select a location";
 
 /* loco:69a6a32d8e33a191f90115f2 */
 "buttonSelected" = "Selected";

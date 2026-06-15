@@ -68,7 +68,10 @@
 "addAdvancedSyncLocalFolderTitle" = "Dossier synchronisé";
 
 /* loco:69b429241110b141d0085ab2 */
-"addAdvancedSyncRemoteFolderDescription" = "Personnalisez l'emplacement du dossier de votre ordinateur sur kDrive :";
+"addAdvancedSyncRemoteFolderDescription" = "Personnalisez l’emplacement du dossier de votre ordinateur sur kDrive :";
+
+/* loco:69bac02ad8355281490134c2 */
+"addAdvancedSyncRemoteFolderPageTitle" = "Choisissez l’emplacement du dossier sur kDrive";
 
 /* loco:69b429180e3d6a548e0afac2 */
 "addAdvancedSyncRemoteFolderTitle" = "Emplacement kDrive";
@@ -287,8 +290,14 @@
 /* loco:69a6a31c97f5f5084b09e612 */
 "buttonSelect" = "Sélectionner";
 
+/* loco:69b422d7b7de08855d023d32 */
+"buttonSelectFolder" = "Sélectionner un dossier";
+
 /* loco:698c5cb5f86b52c6fc001fc4 */
 "buttonSelectFolders" = "Sélectionner les dossiers";
+
+/* loco:69bac5f6f74824a64304bcd9 */
+"buttonSelectLocation" = "Sélectionner un emplacement";
 
 /* loco:69a6a32d8e33a191f90115f2 */
 "buttonSelected" = "Sélectionné";

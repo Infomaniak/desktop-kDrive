@@ -25,19 +25,15 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct AddAdvancedSynchroView: View {
-    private enum RemoteLocation: Hashable {
-        case defaultLocation
-        case folder(nodeId: String, path: String)
-    }
-
     @Environment(\.dismiss) private var dismiss
+
+    @ObservedObject private var viewModel: AddAdvancedSynchroFlowViewModel
 
     @State private var localFolder: URL?
     @State private var isShowingFileImporter = false
     @State private var isShowingInvalidFolderError = false
 
-    @State private var remoteFolders = [NodeInfo]()
-    @State private var remoteLocation = RemoteLocation.defaultLocation
+    @State private var remoteFolder: String?
 
     @State private var isLoading = false
     @State private var isShowingGenericError = false
@@ -47,24 +43,24 @@ struct AddAdvancedSynchroView: View {
 
     var body: some View {
         Form {
-            Section { /* Empty on purpose */ } header: {
-                Text("Synchroniser un dossier avec kDrive")
-                    .font(.Tokens.headline)
+            Section {} header: {
+                Text(KDriveLocalizable.addAdvancedSyncDialogTitle)
+                    .font(.Tokens.bodyEmphasized)
                     .foregroundStyle(ColorToken.Text.primary.asColor)
             }
 
             Section {
                 VStack(alignment: .leading, spacing: AppPadding.padding16) {
                     VStack(alignment: .leading, spacing: AppPadding.padding8) {
-                        Text("Dossier synchronisé")
+                        Text(KDriveLocalizable.addAdvancedSyncLocalFolderTitle)
                             .font(.Tokens.headline)
-                        Text("Choisissez le dossier de votre ordinateur à synchroniser sur kDrive :")
+                        Text(KDriveLocalizable.addAdvancedSyncLocalFolderDescription)
                             .font(.Tokens.body)
                     }
                     .foregroundStyle(ColorToken.Text.primary.asColor)
 
                     HStack {
-                        Button("Sélectionner un dossier") {
+                        Button(KDriveLocalizable.buttonSelectFolder) {
                             isShowingFileImporter = true
                         }
                         .fileImporter(
@@ -76,9 +72,7 @@ struct AddAdvancedSynchroView: View {
                         if let localFolder {
                             HStack(spacing: AppPadding.padding4) {
                                 KDriveResources.folderFilled.swiftUIImage
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 16, height: 16)
+                                    .resizable(at: AppIconSize.iconSize16)
                                     .foregroundStyle(ColorToken.Action.primary.asColor)
 
                                 Text(localFolder.lastPathComponent)
@@ -98,24 +92,34 @@ struct AddAdvancedSynchroView: View {
             Section {
                 VStack(alignment: .leading, spacing: AppPadding.padding16) {
                     VStack(alignment: .leading, spacing: AppPadding.padding8) {
-                        Text("Emplacement kDrive")
+                        Text(KDriveLocalizable.addAdvancedSyncRemoteFolderTitle)
                             .font(.Tokens.headline)
-                        Text("Personnalisez l'emplacement du dossier de votre ordinateur sur kDrive :")
+                        Text(KDriveLocalizable.addAdvancedSyncRemoteFolderDescription)
                             .font(.Tokens.body)
                     }
                     .foregroundStyle(ColorToken.Text.primary.asColor)
 
-                    Picker("Emplacement kDrive", selection: $remoteLocation) {
-                        Text(KDriveLocalizable.syncFolderDefaultLocation)
-                            .tag(RemoteLocation.defaultLocation)
+                    HStack {
+                        Button(KDriveLocalizable.buttonSelectLocation) {
+                            viewModel.navigate(to: .selectRemoteFolder)
+                        }
+                        .fileImporter(
+                            isPresented: $isShowingFileImporter,
+                            allowedContentTypes: [.directory],
+                            onCompletion: handleSelectedDirectory
+                        )
 
-                        ForEach(remoteFolders, id: \.nodeId) { folder in
-                            Text(folder.path)
-                                .tag(RemoteLocation.folder(nodeId: folder.nodeId, path: folder.path))
+                        if let remoteFolder {
+                            HStack(spacing: AppPadding.padding4) {
+                                KDriveResources.folderFilled.swiftUIImage
+                                    .resizable(at: AppIconSize.iconSize16)
+                                    .foregroundStyle(ColorToken.Action.primary.asColor)
+
+                                Text("Folder name")
+                                    .font(.Tokens.body)
+                            }
                         }
                     }
-                    .labelsHidden()
-                    .fixedSize()
                 }
             }
         }
@@ -137,19 +141,7 @@ struct AddAdvancedSynchroView: View {
                 .disabled(isLoading)
             }
         }
-        .task {
-            await fetchRemoteFolders()
-        }
         .genericErrorAlert(isPresented: $isShowingGenericError)
-    }
-
-    private func fetchRemoteFolders() async {
-        do {
-            remoteFolders = try await NodeJobs().getNodeSubfolders(driveDbId: Int32(drive.dbId), nodeId: "")
-                .filter { !$0.accessDenied }
-        } catch {
-            SentrySDK.capture(error: error)
-        }
     }
 
     private func handleSelectedDirectory(_ result: Result<URL, Error>) {
@@ -163,6 +155,7 @@ struct AddAdvancedSynchroView: View {
                 path: selectedURL.path,
                 syncConfiguration: KDC.SyncConfiguration.Advanced
             )
+
             guard isPathValid == true else {
                 isShowingInvalidFolderError = true
                 return
@@ -174,9 +167,7 @@ struct AddAdvancedSynchroView: View {
     }
 
     private func addSynchro() async {
-        guard let localFolder else {
-            return
-        }
+        guard let localFolder else { return }
 
         do {
             @InjectService var coherentCache: CoherentCache
@@ -185,7 +176,8 @@ struct AddAdvancedSynchroView: View {
                 return
             }
 
-            let remoteFolder = try await createRemoteFolder(named: localFolder.lastPathComponent, drive: cachedDrive)
+//            let remoteFolder = try await createRemoteFolder(named: localFolder.lastPathComponent, drive: cachedDrive)
+            let remoteFolder = SyncRemoteFolder(path: "", nodeId: "")
 
             let syncCandidate = NewSyncCandidate(
                 origin: .storedDrive(cachedDrive),
@@ -203,28 +195,28 @@ struct AddAdvancedSynchroView: View {
         }
     }
 
-    private func createRemoteFolder(named folderName: String, drive: Drive) async throws -> SyncRemoteFolder {
-        let parentNodeId: String
-        let parentPath: String
-        switch remoteLocation {
-        case .defaultLocation:
-            parentNodeId = ""
-            parentPath = ""
-        case .folder(let nodeId, let path):
-            parentNodeId = nodeId
-            parentPath = path
-        }
-
-        let targetNodeId = try await NodeJobs().createMissingFolders(
-            userDbId: drive.userDbId,
-            driveId: drive.driveId,
-            parentNodeId: parentNodeId,
-            relativePath: folderName
-        )
-
-        let separator = parentPath.hasSuffix("/") ? "" : "/"
-        return SyncRemoteFolder(path: parentPath + separator + folderName, nodeId: targetNodeId)
-    }
+//    private func createRemoteFolder(named folderName: String, drive: Drive) async throws -> SyncRemoteFolder {
+//        let parentNodeId: String
+//        let parentPath: String
+//        switch remoteLocation {
+//        case .defaultLocation:
+//            parentNodeId = ""
+//            parentPath = ""
+//        case .folder(let nodeId, let path):
+//            parentNodeId = nodeId
+//            parentPath = path
+//        }
+//
+//        let targetNodeId = try await NodeJobs().createMissingFolders(
+//            userDbId: drive.userDbId,
+//            driveId: drive.driveId,
+//            parentNodeId: parentNodeId,
+//            relativePath: folderName
+//        )
+//
+//        let separator = parentPath.hasSuffix("/") ? "" : "/"
+//        return SyncRemoteFolder(path: parentPath + separator + folderName, nodeId: targetNodeId)
+//    }
 }
 
 #Preview {
