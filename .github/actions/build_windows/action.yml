@@ -346,6 +346,7 @@ runs:
           $outDir = "${{ github.workspace }}/build-windows/sentry-client-artifacts"
           New-Item -ItemType Directory -Force -Path $outDir | Out-Null
 
+          Write-Host "PDB path: '$pdbFile'"
           .\sentry-cli debug-files bundle-sources $pdbFile
 
           Move-Item -Path $srcZip `
