@@ -12,6 +12,43 @@ namespace Infomaniak.kDrive.Tests;
 public class SocketServerCommProtocolTests
 {
     private static readonly BindingFlags _instancePrivate = BindingFlags.Instance | BindingFlags.NonPublic;
+    private static readonly BindingFlags _staticPrivate = BindingFlags.Static | BindingFlags.NonPublic;
+
+    [Fact]
+    public void TryParseServerPortFromArguments_ReturnsFalse_WhenArgumentIsMissing()
+    {
+        var arguments = new[] { "kDrive client.exe" };
+
+        bool success = TryParseServerPortFromArguments(arguments, out int port, out string errorMessage);
+
+        Assert.False(success);
+        Assert.Equal(0, port);
+        Assert.Equal("No commPort provided", errorMessage);
+    }
+
+    [Fact]
+    public void TryParseServerPortFromArguments_ReturnsFalse_WhenArgumentIsInvalid()
+    {
+        var arguments = new[] { "kDrive client.exe", "invalid-port" };
+
+        bool success = TryParseServerPortFromArguments(arguments, out int port, out string errorMessage);
+
+        Assert.False(success);
+        Assert.Equal(0, port);
+        Assert.Equal("Invalid commPort provided: invalid-port", errorMessage);
+    }
+
+    [Fact]
+    public void TryParseServerPortFromArguments_ReturnsTrue_WhenArgumentIsValid()
+    {
+        var arguments = new[] { "kDrive client.exe", "4242" };
+
+        bool success = TryParseServerPortFromArguments(arguments, out int port, out string errorMessage);
+
+        Assert.True(success);
+        Assert.Equal(4242, port);
+        Assert.Equal(string.Empty, errorMessage);
+    }
 
     [Fact]
     public async Task InitConnection_ReturnsFalse_WhenServerUnavailableAndCancelled()
@@ -436,5 +473,21 @@ public class SocketServerCommProtocolTests
         var completed = await Task.WhenAny(task, Task.Delay(timeout));
         Assert.True(completed == task, "Operation timed out.");
         return await task;
+    }
+
+    private static bool TryParseServerPortFromArguments(string[] arguments, out int port, out string errorMessage)
+    {
+        var method = typeof(SocketServerCommProtocol).GetMethod("TryParseServerPortFromArguments", _staticPrivate)
+                     ?? throw new InvalidOperationException("Failed to find TryParseServerPortFromArguments method.");
+
+        object?[] parameters = [arguments, 0, string.Empty];
+        object? invokeResult = method.Invoke(null, parameters);
+        bool success = invokeResult as bool? ??
+                       throw new InvalidOperationException("TryParseServerPortFromArguments returned null.");
+        port = parameters[1] as int? ??
+               throw new InvalidOperationException("Parsed port output is null.");
+        errorMessage = parameters[2] as string ??
+                       throw new InvalidOperationException("Parsed error message output is null.");
+        return success;
     }
 }
