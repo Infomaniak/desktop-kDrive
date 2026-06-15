@@ -101,7 +101,8 @@ ExitInfo UploadJob::canRun() {
 ExitInfo UploadJob::resolveUploadNeed() {
     _shouldUpload = true;
     if (_remoteSize < 0) {
-        LOGW_WARN(_logger, L"CheckHashMatchJob: remote size unavailable for " << Utility::formatSyncPath(_absoluteFilePath));
+        LOGW_WARN(_logger,
+                  L"UploadJob::resolveUploadNeed: failed to get FileStat for " << Utility::formatSyncPath(_absoluteFilePath));
         return ExitCode::Ok; // Non-fatal: fall through to upload
     }
     CheckHashMatchJob hashJob(driveDbId(), _absoluteFilePath, _fileId, _remoteSize);
