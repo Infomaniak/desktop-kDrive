@@ -178,6 +178,14 @@ void TestTypes::testExitInfo() {
     // Because of the implementation of method ExitInfo::int(), we need to make sure that ExitCause enum never has more than 100
     // values.
     CPPUNIT_ASSERT(static_cast<int>(ExitCause::EnumEnd) < 100);
+
+    // Test the string conversion of ExitInfo, which includes the source location information.
+    ExitInfo exitInfo(ExitCode::DataError, ExitCause::NotFound);
+    const int lineNumberPlusOne = __LINE__;
+
+    CPPUNIT_ASSERT_EQUAL(std::string("ExitInfo{DataError-NotFound from (testtypes.cpp:" + std::to_string(lineNumberPlusOne - 1) +
+                                     "[KDC::TestTypes::testExitInfo])}"),
+                         std::string(exitInfo));
 }
 
 template<IntegralEnum T>

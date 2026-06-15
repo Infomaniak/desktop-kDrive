@@ -946,10 +946,51 @@ std::string toString(const TranslationMode e) {
     }
 }
 
-std::string toString(const std::source_location &e) {
-    return e.file_name() + std::string(":") + std::to_string(e.line()) + std::string("[") + e.function_name() + "]";
+std::string toString(const std::source_location &loc) {
+    std::string_view file = loc.file_name();
+
+#ifdef KD_WINDOWS
+    constexpr char separator = '\\';
+#else
+    constexpr char separator = '/';
+#endif
+
+    if (const auto pos = file.find_last_of(separator); pos != std::string_view::npos) {
+        file.remove_prefix(pos + 1);
+    }
+
+    std::string_view func = loc.function_name();
+
+    if (const auto pos = func.find('('); pos != std::string_view::npos) {
+        func = func.substr(0, pos);
+    }
+
+    if (const auto pos = func.find_last_of(' '); pos != std::string_view::npos) {
+        func.remove_prefix(pos + 1);
+    }
+
+    char lineBuffer[16];
+    auto [ptr, ec] = std::to_chars(lineBuffer, lineBuffer + sizeof(lineBuffer), loc.line());
+
+    // ptr points to the first character after the last written character
+    const size_t lineLength = static_cast<size_t>(ptr - lineBuffer);
+
+    std::string result;
+    result.reserve(file.size() + 1 + // :
+                   lineLength + 2 + // []
+                   func.size());
+
+    // Format: file:line[func]
+    result.append(file);
+    result.push_back(':');
+    result.append(lineBuffer, lineLength);
+    result.push_back('[');
+    result.append(func);
+    result.push_back(']');
+
+    return result;
 }
-  
+
 std::string toString(const Scope e) {
     switch (e) {
         case Scope::None:
