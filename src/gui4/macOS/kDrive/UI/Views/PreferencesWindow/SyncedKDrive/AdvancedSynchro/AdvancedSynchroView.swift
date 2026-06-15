@@ -26,6 +26,8 @@ import SwiftUI
 struct AdvancedSynchroView: View {
     let drive: UIDrive
 
+    @State private var isLoading = true
+
     @State private var advancedSynchros = [UISynchro]()
     @State private var userDbId: Int?
     @State private var driveId: Int?
@@ -47,9 +49,14 @@ struct AdvancedSynchroView: View {
                 }
             }
 
-            ForEach(advancedSynchros) { synchro in
-                AdvancedSynchroCellView(synchro: synchro, userDbId: userDbId, driveId: driveId) {
-                    synchroToDelete = synchro
+            if isLoading {
+                AdvancedSynchroCellView(synchro: PreviewHelper.synchro, userDbId: nil, driveId: nil) {}
+                    .redacted(reason: .placeholder)
+            } else {
+                ForEach(advancedSynchros) { synchro in
+                    AdvancedSynchroCellView(synchro: synchro, userDbId: userDbId, driveId: driveId) {
+                        synchroToDelete = synchro
+                    }
                 }
             }
 
@@ -62,7 +69,9 @@ struct AdvancedSynchroView: View {
         }
         .groupedFormatStyle()
         .task {
+            withAnimation { isLoading = true }
             await fetchSynchros()
+            withAnimation { isLoading = false }
         }
         .sheet(isPresented: $isShowingAddSynchroSheet) {
             AddAdvancedSynchroFlowView(drive: drive, completion: handleSynchroIsAdded)

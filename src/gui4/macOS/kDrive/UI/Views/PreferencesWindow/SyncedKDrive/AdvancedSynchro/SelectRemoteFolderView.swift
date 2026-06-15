@@ -116,7 +116,7 @@ struct SelectRemoteFolderView: View {
                 parentNodeId: parent.id,
                 relativePath: name
             )
-            let nodeInfo = NodeJobs().getNodeInfo(
+            let nodeInfo = try await NodeJobs().getNodeInfo(
                 userDbId: cachedDrive.userDbId,
                 driveId: cachedDrive.driveId,
                 nodeId: nodeId
