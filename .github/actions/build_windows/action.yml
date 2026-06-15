@@ -329,14 +329,30 @@ runs:
         shell: powershell
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 
-      - name : Create sentry client artifacts
-        run: |
-          .\sentry-cli debug-files bundle-sources ${{ github.workspace }}/build-windows/build/bin/kDrive_client.pdb
-          mkdir ${{ github.workspace }}/build-windows/sentry-client-artifacts
-          Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/kDrive_client.src.zip -Destination ${{ github.workspace }}/build-windows/sentry-client-artifacts/kDrive_client.src.zip
-          Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/kDrive_client.pdb -Destination ${{ github.workspace }}/build-windows/sentry-client-artifacts/kDrive_client.pdb
+      - name: Create sentry client artifacts
         shell: powershell
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
+        run: |
+          if ("${{ inputs.build_new_client }}" -eq "true") {
+            $binDir = "${{ github.workspace }}/build-windows/build/bin/client"
+            $pdbFile = "$binDir/kDrive.pdb"
+            $srcZip  = "$binDir/kDrive.src.zip"
+          } else {
+            $binDir = "${{ github.workspace }}/build-windows/build/bin"
+            $pdbFile = "$binDir/kDrive_client.pdb"
+            $srcZip  = "$binDir/kDrive_client.src.zip"
+          }
+
+          $outDir = "${{ github.workspace }}/build-windows/sentry-client-artifacts"
+          New-Item -ItemType Directory -Force -Path $outDir | Out-Null
+
+          .\sentry-cli debug-files bundle-sources $pdbFile
+
+          Move-Item -Path $srcZip `
+                    -Destination "$outDir/kDrive_client.src.zip"
+
+          Move-Item -Path $pdbFile `
+                    -Destination "$outDir/kDrive_client.pdb"
 
       - name: Upload sentry server artifacts
         uses: actions/upload-artifact@v7.0.1
