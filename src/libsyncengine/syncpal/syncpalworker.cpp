@@ -87,11 +87,12 @@ bool SyncPalWorker::shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const 
 
     const auto networkIssue =
             (w1 && w1->exitCode() == ExitCode::NetworkError) || (w2 && w2->exitCode() == ExitCode::NetworkError);
-    const auto httpBlockingError =
-            (w1 && w1->exitCode() == ExitCode::BackError &&
-             (w1->exitCause() == ExitCause::Http5xx || w1->exitCause() == ExitCause::HttpErr || w1->exitCause() == ExitCause::MissingReplyData)) ||
+    const auto httpBlockingError = (w1 && w1->exitCode() == ExitCode::BackError &&
+                                    (w1->exitCause() == ExitCause::Http5xx || w1->exitCause() == ExitCause::HttpErr ||
+                                     w1->exitCause() == ExitCause::MissingReplyData)) ||
                                    (w2 && w2->exitCode() == ExitCode::BackError &&
-             (w2->exitCause() == ExitCause::Http5xx || w2->exitCause() == ExitCause::HttpErr || w2->exitCause() == ExitCause::MissingReplyData));
+                                    (w2->exitCause() == ExitCause::Http5xx || w2->exitCause() == ExitCause::HttpErr ||
+                                     w2->exitCause() == ExitCause::MissingReplyData));
 
     const auto syncDirNotAccessible =
             (w1 && w1->exitCode() == ExitCode::SystemError &&
@@ -446,6 +447,7 @@ void SyncPalWorker::stop() {
     _unpauseAsked = true;
     ISyncWorker::stop();
 }
+
 
 void SyncPalWorker::stopResetVfsFilesStatusThread() {
 #if defined(KD_WINDOWS)
@@ -849,7 +851,12 @@ void SyncPalWorker::resetVfsFilesStatus() {
         }
 
         while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
-            if (_stopResetVfsFilesStatusAsked.load()) {
+            bool stopAsked_ = stopAsked();
+#ifdef KD_WINDOWS
+            stopAsked_ |= _stopResetVfsFilesStatusAsked.load();
+#endif
+
+            if (stopAsked_) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Stop asked in resetVfsFilesStatus");
                 return;
             }

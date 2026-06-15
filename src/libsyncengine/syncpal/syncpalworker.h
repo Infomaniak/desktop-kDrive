@@ -55,8 +55,12 @@ class SyncPalWorker : public ISyncWorker {
         bool _isPaused{false};
 
         void stopResetVfsFilesStatusThread();
-#if defined(KD_WINDOWS)
+        void resetVfsFilesStatus();
+
         std::atomic_bool _stopResetVfsFilesStatusAsked{false};
+#if defined(KD_WINDOWS)
+        // On Windows, we have a dedicated thread to reset the VFS files status. On other platforms, this is done synchronously in
+        // the syncpalworker thread.
         std::unique_ptr<StdLoggingThread> _resetVfsFilesStatusThread{nullptr};
 #endif
 
@@ -77,7 +81,6 @@ class SyncPalWorker : public ISyncWorker {
          * (e.g., file not found, I/O error, etc.).
          */
         bool isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath, std::optional<NodeId> &outLocalNodeId);
-        void resetVfsFilesStatus();
 
         ExitInfo ensureBlackListIsPropagated();
 
