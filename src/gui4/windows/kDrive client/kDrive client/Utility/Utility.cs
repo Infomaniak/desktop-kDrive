@@ -380,7 +380,7 @@ namespace Infomaniak.kDrive
 
             // If the control is in a ContentDialog, the Frame is not an ascendant of the control but is a descendant of the ContentDialog's XamlRoot content
             ContentDialog? dialog = control.FindAscendant<ContentDialog>();
-            if (dialog is null) return null;
+            if (dialog?.XamlRoot?.Content is null) return null;
             return dialog.XamlRoot.Content.FindDescendant<Frame>();
         }
 
