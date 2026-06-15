@@ -154,11 +154,19 @@ class UpdateTreeWorker : public ISyncWorker {
          * Create missing nodes in the update tree for a given 'path'.
          \param path: the given path for which missing nodes should be created in the update tree.
          \param ancestorNode: the nearest ancestor of the node with path `path` in the update tree.
-         \param parentNode: will be set with a pointer to the node corresponding to `path`.
+         \param parentNode: will be set with a pointer to the node corresponding to the parent of the `path`.
          \return : ExitCode::Ok if no unexpected error occurred.
          */
         [[nodiscard]] ExitCode createMissingNodesFromPath(const SyncPath &path, const std::shared_ptr<Node> ancestorNode,
                                                           std::shared_ptr<Node> &parentNode);
+
+        /**
+         * Create missing nodes in the update tree for a deleted item.
+         \param path: the given path for which missing nodes should be created in the update tree.
+         \param parentNode: will be set with a pointer to the node corresponding to the parent of the `path`.
+         \return : ExitCode::Ok if no unexpected error occurred.
+         */
+        [[nodiscard]] ExitCode createMissingNodesForDeletedItem(const SyncPath &path, std::shared_ptr<Node> &parentNode);
 
         /**
          * @brief This method gets a node from a deleted path recursively. Recursion here ensures that, even if 2 branches have

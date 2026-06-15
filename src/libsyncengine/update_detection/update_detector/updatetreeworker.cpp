@@ -204,25 +204,10 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
                                                   << L"') updated. Operation Delete inserted in change events.");
             }
         } else {
-            // Search for the nearest ancestor in the update tree
-            std::shared_ptr<Node> ancestorNode;
-            if (const auto searchExitCode = searchForAncestorNode(deleteOp->path(), ancestorNode);
-                searchExitCode != ExitCode::Ok) {
-                return searchExitCode;
-            };
-
-            // Determines the new path taking into account the Move operations
-            SyncPath newPath;
-            if (const auto newPathExitCode = getNewPathAfterMove(deleteOp->path(), newPath); newPathExitCode != ExitCode::Ok) {
-                LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::getNewPathAfterMove");
-                return newPathExitCode;
-            }
-
-            // Get or create the ancestor nodes in the update tree according to the new path
             std::shared_ptr<Node> parentNode;
-            if (const auto createExitCode = createMissingNodesFromPath(newPath.parent_path(), ancestorNode, parentNode);
+            if (const auto createExitCode = createMissingNodesForDeletedItem(deleteOp->path(), parentNode);
                 createExitCode != ExitCode::Ok) {
-                LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::getOrCreateNodeFromDeletedPath");
+                LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::createMissingNodesForDeletedItem");
                 return createExitCode;
             }
 
@@ -477,24 +462,10 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
 
             logUpdate(currentNode, opType);
         } else {
-            // Search for the nearest ancestor in the update tree
-            std::shared_ptr<Node> ancestorNode;
-            if (const auto exitCode = searchForAncestorNode(op->path(), ancestorNode); exitCode != ExitCode::Ok) {
-                return exitCode;
-            }
-
-            // Determines the new path taking into account the Move operations
-            SyncPath newPath;
-            if (const auto newPathExitCode = getNewPathAfterMove(deleteOp->path(), newPath); newPathExitCode != ExitCode::Ok) {
-                LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::getNewPathAfterMove");
-                return newPathExitCode;
-            }
-
-            // Get or create the ancestor nodes in the update tree according to the new path
             std::shared_ptr<Node> parentNode;
-            if (const auto createExitCode = createMissingNodesFromPath(newPath.parent_path(), ancestorNode, parentNode);
+            if (const auto createExitCode = createMissingNodesForDeletedItem(op->path(), parentNode);
                 createExitCode != ExitCode::Ok) {
-                LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::getOrCreateNodeFromDeletedPath");
+                LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::createMissingNodesForDeletedItem");
                 return createExitCode;
             }
 
@@ -1147,6 +1118,30 @@ ExitCode UpdateTreeWorker::createMissingNodesFromPath(const SyncPath &path, cons
     }
 
     parentNode = tmpNode;
+    return ExitCode::Ok;
+}
+
+ExitCode UpdateTreeWorker::createMissingNodesForDeletedItem(const SyncPath &path, std::shared_ptr<Node> &parentNode) {
+    // Search for the nearest ancestor in the update tree
+    std::shared_ptr<Node> ancestorNode;
+    if (const auto searchExitCode = searchForAncestorNode(path, ancestorNode); searchExitCode != ExitCode::Ok) {
+        return searchExitCode;
+    };
+
+    // Determines the new path taking into account the Move operations
+    SyncPath newPath;
+    if (const auto newPathExitCode = getNewPathAfterMove(path, newPath); newPathExitCode != ExitCode::Ok) {
+        LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::getNewPathAfterMove");
+        return newPathExitCode;
+    }
+
+    // Get or create the ancestor nodes in the update tree according to the new path
+    if (const auto createExitCode = createMissingNodesFromPath(newPath.parent_path(), ancestorNode, parentNode);
+        createExitCode != ExitCode::Ok) {
+        LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::getOrCreateNodeFromDeletedPath");
+        return createExitCode;
+    }
+
     return ExitCode::Ok;
 }
 
