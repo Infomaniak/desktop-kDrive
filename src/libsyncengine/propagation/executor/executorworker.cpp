@@ -878,7 +878,8 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<SyncJ
             try {
                 job = std::make_shared<UploadJob>(_syncPal->vfs(), _syncPal->driveDbId(), absoluteLocalFilePath,
                                                   syncOp->correspondingNode()->id().value_or(""),
-                                                  syncOp->affectedNode()->modificationTime().value_or(0));
+                                                  syncOp->affectedNode()->modificationTime().value_or(0),
+                                                  syncOp->correspondingNode()->size());
             } catch (std::exception const &e) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in UploadJob::UploadJob for driveDbId=" << _syncPal->driveDbId() << L" : "
                                                                                            << CommonUtility::s2ws(e.what()));

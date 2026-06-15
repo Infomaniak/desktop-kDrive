@@ -45,9 +45,10 @@ UploadJob::UploadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, 
 }
 
 UploadJob::UploadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, const SyncPath &absoluteFilePath,
-                     const NodeId &fileId, const SyncTime modificationTime) :
+                     const NodeId &fileId, const SyncTime modificationTime, const int64_t remoteSize) :
     UploadJob(vfs, driveDbId, absoluteFilePath, SyncName(), "", 0, modificationTime) {
     _fileId = fileId;
+    _remoteSize = remoteSize;
 
     // Retrieve creation date from the local file
     FileStat fileStat;
@@ -99,14 +100,11 @@ ExitInfo UploadJob::canRun() {
 
 ExitInfo UploadJob::resolveUploadNeed() {
     _shouldUpload = true;
-    FileStat fileStat;
-    IoError ioError = IoError::Success;
-    if (!IoHelper::getFileStat(_absoluteFilePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive) ||
-        ioError != IoError::Success) {
-        LOGW_WARN(_logger, L"CheckHashMatchJob: failed to get file size for " << Utility::formatSyncPath(_absoluteFilePath));
+    if (_remoteSize < 0) {
+        LOGW_WARN(_logger, L"CheckHashMatchJob: remote size unavailable for " << Utility::formatSyncPath(_absoluteFilePath));
         return ExitCode::Ok; // Non-fatal: fall through to upload
     }
-    CheckHashMatchJob hashJob(driveDbId(), _absoluteFilePath, _fileId, fileStat.size);
+    CheckHashMatchJob hashJob(driveDbId(), _absoluteFilePath, _fileId, _remoteSize);
     if (const ExitInfo exitInfo = hashJob.runSynchronously(); !exitInfo) {
         LOGW_DEBUG(_logger, L"CheckHashMatchJob failed: " << exitInfo << L" Proceeding UploadJob normally.");
         return exitInfo; // Non-fatal for the caller: fall through to upload
