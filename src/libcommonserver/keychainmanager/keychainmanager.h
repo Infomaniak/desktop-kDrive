@@ -46,16 +46,13 @@ class COMMON_EXPORT KeyChainManager : public QObject {
 
         bool readDataFromKeystore(const std::string &keychainKey, std::string &data, bool &found);
 
-        [[nodiscard]] bool isTesting() const { return _isTesting; }
+        [[nodiscard]] bool isTesting() const { return _storage ? _storage->isTesting() : false; }
 
 
     private:
         static std::shared_ptr<KeyChainManager> _instance;
 
         std::shared_ptr<IKeyChainStorage> _storage;
-
-        bool _isTesting{false};
-        void setIsTesting(const bool isTesting) { _isTesting = isTesting; }
 
         explicit KeyChainManager(std::shared_ptr<IKeyChainStorage> storage);
 };

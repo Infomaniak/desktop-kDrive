@@ -31,6 +31,8 @@ class COMMON_EXPORT IKeyChainStorage {
         virtual bool writePassword(const std::string &keychainKey, const std::string &rawData) = 0;
         virtual bool readPassword(const std::string &keychainKey, std::string &data, bool &found) = 0;
         virtual bool deletePassword(const std::string &keychainKey) = 0;
+
+        virtual bool isTesting() = 0;
 };
 
 class COMMON_EXPORT KeyChainStorage : public IKeyChainStorage {
@@ -38,6 +40,8 @@ class COMMON_EXPORT KeyChainStorage : public IKeyChainStorage {
         bool writePassword(const std::string &keychainKey, const std::string &rawData) override;
         bool readPassword(const std::string &keychainKey, std::string &data, bool &found) override;
         bool deletePassword(const std::string &keychainKey) override;
+
+        bool isTesting() override { return false; }
 };
 
 } // namespace KDC

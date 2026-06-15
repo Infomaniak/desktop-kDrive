@@ -32,6 +32,8 @@ class MockKeyChainStorage : public IKeyChainStorage {
         bool readPassword(const std::string &keychainKey, std::string &data, bool &found) override;
         bool deletePassword(const std::string &keychainKey) override;
 
+        bool isTesting() override { return true; }
+
     private:
         std::unordered_map<std::string, std::string, StringHashFunction, std::equal_to<>> _storage;
 };

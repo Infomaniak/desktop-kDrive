@@ -33,7 +33,6 @@ std::shared_ptr<KeyChainManager> KeyChainManager::instance(const std::shared_ptr
         try {
             if (storage) {
                 _instance = std::shared_ptr<KeyChainManager>(new KeyChainManager(storage));
-                _instance->setIsTesting(true);
             } else {
                 _instance = std::shared_ptr<KeyChainManager>(new KeyChainManager(std::make_shared<KeyChainStorage>()));
             }
