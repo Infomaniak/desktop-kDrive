@@ -25,6 +25,7 @@
 #include "requests/parameterscache.h"
 
 #include "libcommonserver/keychainmanager/keychainmanager.h"
+#include "mocks/mockkeychainstorage.h"
 
 #include "libparms/db/parmsdb.h"
 #include "mocks/libcommonserver/db/mockdb.h"
@@ -46,7 +47,7 @@ void TestApiTranslator::setUp() {
     _apiToken.setAccessToken(testVariables.apiToken);
 
     const std::string keychainKey("123");
-    (void) KeyChainManager::instance(true);
+    (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
     (void) KeyChainManager::instance()->writeToken(keychainKey, _apiToken.reconstructJsonString());
 
     // Create parmsDb

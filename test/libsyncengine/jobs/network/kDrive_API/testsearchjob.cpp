@@ -25,6 +25,7 @@
 #include "libcommonserver/utility/utility.h"
 
 #include "libcommonserver/keychainmanager/keychainmanager.h"
+#include "mocks/mockkeychainstorage.h"
 #include "keychainmanager/apitoken.h"
 #include "libparms/db/parmsdb.h"
 #include "mocks/libcommonserver/db/mockdb.h"
@@ -52,7 +53,7 @@ void TestSearchJob::setUp() {
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ Set Up TestSearchJob");
 
     // Init in-memory keychain (testing mode, no real OS keychain used)
-    (void) KeyChainManager::instance(true);
+    (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
 
     ApiToken apiToken;
     apiToken.setAccessToken("dummy_access_token");

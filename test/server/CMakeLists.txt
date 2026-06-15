@@ -185,6 +185,7 @@ set(testserver_SRCS
     ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
     ../test_utility/remotetemporarydirectory.h ../test_utility/remotetemporarydirectory.cpp
     ../test.cpp
+    ../mocks/mockkeychainstorage.h ../mocks/mockkeychainstorage.cpp
 
     test.cpp
     updater/testabstractupdater.h updater/testabstractupdater.cpp
