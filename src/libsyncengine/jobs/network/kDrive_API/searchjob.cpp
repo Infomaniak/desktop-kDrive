@@ -143,6 +143,7 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
         }
 
         bool isAvailableLocally = false;
+        bool isDehydrated = true;
 
         if (!_syncRootPath.empty()) {
             if (path.native().starts_with(privateFolder)) {
@@ -158,16 +159,17 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
 
             SyncPath absolutePath = _syncRootPath / path;
             IoError ioError = IoError::Success;
-            if (bool res = IoHelper::checkIfPathExists(absolutePath, isAvailableLocally, ioError,
-                                                       IoHelper::PathCheckOption::Insensitive);
-                !res) {
-                LOGW_WARN(_logger,
-                          L"IoHelper::checkIfPathExists failed for " << Utility::formatSyncPath(path) << L", error: " << ioError);
+            if (!IoHelper::checkIfPathExists(absolutePath, isAvailableLocally, ioError, IoHelper::PathCheckOption::Insensitive)) {
+                LOGW_WARN(_logger, L"IoHelper::checkIfPathExists failed for " << Utility::formatIoError(path, ioError));
+            }
+
+            if (isAvailableLocally && !IoHelper::checkIfFileIsDehydrated(absolutePath, isDehydrated, ioError)) {
+                LOGW_WARN(_logger, L"IoHelper::checkIfFileIsDehydrated failed for " << Utility::formatIoError(path, ioError));
             }
         }
 
         (void) _searchResults.emplace_back(nodeId, name, type == "dir" ? NodeType::Directory : NodeType::File, path, modifiedTime,
-                                           size, isAvailableLocally);
+                                           size, isAvailableLocally, !isDehydrated);
     }
     return ExitCode::Ok;
 }
