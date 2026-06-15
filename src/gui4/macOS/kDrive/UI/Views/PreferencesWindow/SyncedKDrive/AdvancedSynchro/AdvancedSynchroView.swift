@@ -65,7 +65,7 @@ struct AdvancedSynchroView: View {
             await fetchSynchros()
         }
         .sheet(isPresented: $isShowingAddSynchroSheet) {
-            AddAdvancedSynchroView(drive: drive, completion: handleSynchroIsAdded)
+            AddAdvancedSynchroFlowView(drive: drive, completion: handleSynchroIsAdded)
         }
         .sheet(item: $synchroToDelete) { synchro in
             RemoveSynchroConfirmationView(synchroDbId: synchro.dbId, completion: handleSynchroIsDeleted)

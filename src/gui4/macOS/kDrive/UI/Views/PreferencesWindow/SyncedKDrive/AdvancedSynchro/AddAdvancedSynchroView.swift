@@ -27,13 +27,10 @@ import UniformTypeIdentifiers
 struct AddAdvancedSynchroView: View {
     @Environment(\.dismiss) private var dismiss
 
-    @ObservedObject private var viewModel: AddAdvancedSynchroFlowViewModel
+    @EnvironmentObject private var viewModel: AddAdvancedSynchroFlowViewModel
 
-    @State private var localFolder: URL?
     @State private var isShowingFileImporter = false
     @State private var isShowingInvalidFolderError = false
-
-    @State private var remoteFolder: String?
 
     @State private var isLoading = false
     @State private var isShowingGenericError = false
@@ -69,7 +66,7 @@ struct AddAdvancedSynchroView: View {
                             onCompletion: handleSelectedDirectory
                         )
 
-                        if let localFolder {
+                        if let localFolder = viewModel.localFolder {
                             HStack(spacing: AppPadding.padding4) {
                                 KDriveResources.folderFilled.swiftUIImage
                                     .resizable(at: AppIconSize.iconSize16)
@@ -78,6 +75,8 @@ struct AddAdvancedSynchroView: View {
                                 Text(localFolder.lastPathComponent)
                                     .font(.Tokens.body)
                             }
+                            .padding(AppPadding.padding8)
+                            .background(Color(NSColor.windowBackgroundColor), in: .rect(cornerRadius: AppRadius.radius8))
                         }
                     }
 
@@ -103,21 +102,18 @@ struct AddAdvancedSynchroView: View {
                         Button(KDriveLocalizable.buttonSelectLocation) {
                             viewModel.navigate(to: .selectRemoteFolder)
                         }
-                        .fileImporter(
-                            isPresented: $isShowingFileImporter,
-                            allowedContentTypes: [.directory],
-                            onCompletion: handleSelectedDirectory
-                        )
 
-                        if let remoteFolder {
+                        if let remoteFolder = viewModel.selectedRemoteFolder {
                             HStack(spacing: AppPadding.padding4) {
                                 KDriveResources.folderFilled.swiftUIImage
                                     .resizable(at: AppIconSize.iconSize16)
                                     .foregroundStyle(ColorToken.Action.primary.asColor)
 
-                                Text("Folder name")
+                                Text(remoteFolder.name)
                                     .font(.Tokens.body)
                             }
+                            .padding(AppPadding.padding8)
+                            .background(Color(NSColor.windowBackgroundColor), in: .rect(cornerRadius: AppRadius.radius8))
                         }
                     }
                 }
@@ -130,7 +126,7 @@ struct AddAdvancedSynchroView: View {
                     Text(KDriveLocalizable.buttonValidate)
                 }
                 .keyboardShortcut(.defaultAction)
-                .disabled(localFolder == nil)
+                .disabled(!viewModel.isAdvancedSynchroValid)
             }
 
             ToolbarItem(placement: .cancellationAction) {
@@ -161,13 +157,14 @@ struct AddAdvancedSynchroView: View {
                 return
             }
 
-            localFolder = selectedURL
+            viewModel.localFolder = selectedURL
             isShowingInvalidFolderError = false
         }
     }
 
     private func addSynchro() async {
-        guard let localFolder else { return }
+        guard let localFolder = viewModel.localFolder,
+              let selectedRemoteFolder = viewModel.selectedRemoteFolder else { return }
 
         do {
             @InjectService var coherentCache: CoherentCache
@@ -176,9 +173,7 @@ struct AddAdvancedSynchroView: View {
                 return
             }
 
-//            let remoteFolder = try await createRemoteFolder(named: localFolder.lastPathComponent, drive: cachedDrive)
-            let remoteFolder = SyncRemoteFolder(path: "", nodeId: "")
-
+            let remoteFolder = SyncRemoteFolder(path: selectedRemoteFolder.path ?? "", nodeId: selectedRemoteFolder.id)
             let syncCandidate = NewSyncCandidate(
                 origin: .storedDrive(cachedDrive),
                 remoteFolder: remoteFolder,
@@ -194,31 +189,9 @@ struct AddAdvancedSynchroView: View {
             SentrySDK.capture(error: error)
         }
     }
-
-//    private func createRemoteFolder(named folderName: String, drive: Drive) async throws -> SyncRemoteFolder {
-//        let parentNodeId: String
-//        let parentPath: String
-//        switch remoteLocation {
-//        case .defaultLocation:
-//            parentNodeId = ""
-//            parentPath = ""
-//        case .folder(let nodeId, let path):
-//            parentNodeId = nodeId
-//            parentPath = path
-//        }
-//
-//        let targetNodeId = try await NodeJobs().createMissingFolders(
-//            userDbId: drive.userDbId,
-//            driveId: drive.driveId,
-//            parentNodeId: parentNodeId,
-//            relativePath: folderName
-//        )
-//
-//        let separator = parentPath.hasSuffix("/") ? "" : "/"
-//        return SyncRemoteFolder(path: parentPath + separator + folderName, nodeId: targetNodeId)
-//    }
 }
 
 #Preview {
     AddAdvancedSynchroView(drive: PreviewHelper.drive1) { /* Empty on purpose */ }
+        .environmentObject(AddAdvancedSynchroFlowViewModel())
 }

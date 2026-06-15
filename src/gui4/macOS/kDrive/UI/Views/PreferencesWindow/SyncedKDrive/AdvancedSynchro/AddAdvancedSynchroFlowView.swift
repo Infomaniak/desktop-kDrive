@@ -16,17 +16,25 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import SwiftUI
+import Combine
 import kDriveCoreUI
+import SwiftUI
 
 @MainActor
-final class AddAdvancedSynchroFlowViewModel {
-    enum State: Equatable {
+final class AddAdvancedSynchroFlowViewModel: ObservableObject {
+    enum State: Equatable, Sendable {
         case main
         case selectRemoteFolder
     }
 
     @Published private(set) var state = State.main
+
+    @Published var localFolder: URL?
+    @Published var selectedRemoteFolder: FileTreeItem?
+
+    var isAdvancedSynchroValid: Bool {
+        return localFolder != nil && selectedRemoteFolder != nil
+    }
 
     func navigate(to state: State) {
         self.state = state
@@ -43,9 +51,9 @@ struct AddAdvancedSynchroFlowView: View {
         ZStack {
             switch viewModel.state {
             case .main:
-                AddAdvancedSynchroFlowView(drive: drive, completion: completion)
+                AddAdvancedSynchroView(drive: drive, completion: completion)
             case .selectRemoteFolder:
-                Text("Hello")
+                SelectRemoteFolderView(drive: drive)
             }
         }
         .environmentObject(viewModel)

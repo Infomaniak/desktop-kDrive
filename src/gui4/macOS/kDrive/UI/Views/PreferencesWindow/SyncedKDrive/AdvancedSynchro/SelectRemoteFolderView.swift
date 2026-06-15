@@ -16,18 +16,115 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import SwiftUI
+import InfomaniakDI
+import kDriveCore
+import kDriveCoreUI
 import kDriveResources
+import Sentry
+import SwiftUI
 
-struct SelectRemoveFolderView: View {
+struct SelectRemoteFolderView: View {
+    @EnvironmentObject private var viewModel: AddAdvancedSynchroFlowViewModel
+
+    @State private var rootItems = [FileTreeItem]()
+    @State private var selectedFolder: FileTreeItem?
+    @State private var isShowingGenericError = false
+
+    let drive: UIDrive
+
     var body: some View {
-        VStack {
+        VStack(alignment: .leading, spacing: AppPadding.padding16) {
             Text(KDriveLocalizable.addAdvancedSyncRemoteFolderTitle)
-            
+                .font(.Tokens.bodyEmphasized)
+                .foregroundStyle(ColorToken.Text.primary.asColor)
+
+            RemoteFolderTreeView(rootItems: rootItems) {
+                await fetchSubFolders(for: $0)
+            } onSelectionChange: {
+                selectedFolder = $0
+            } createFolder: {
+                await createFolder(in: $0, named: $1)
+            }
+            .frame(minHeight: 300)
+        }
+        .padding()
+        .toolbar {
+            ToolbarItem(placement: .confirmationAction) {
+                Button(KDriveLocalizable.buttonSelect, action: confirmSelection)
+                    .keyboardShortcut(.defaultAction)
+                    .disabled(selectedFolder == nil)
+            }
+
+            ToolbarItem(placement: .cancellationAction) {
+                Button(KDriveLocalizable.buttonCancel, role: .cancel) {
+                    viewModel.navigate(to: .main)
+                }
+                .keyboardShortcut(.cancelAction)
+            }
+        }
+        .genericErrorAlert(isPresented: $isShowingGenericError)
+        .onAppear {
+            rootItems = [FileTreeItem(id: "1", name: drive.name, path: "", isFolder: true)]
+        }
+    }
+
+    private func confirmSelection() {
+        viewModel.selectedRemoteFolder = selectedFolder
+        viewModel.navigate(to: .main)
+    }
+
+    private func fetchSubFolders(for node: FileTreeItem) async -> [FileTreeItem] {
+        @InjectService var coherentCache: CoherentCache
+        guard let cachedDrive = await coherentCache.getDrive(driveDbId: Int32(drive.dbId)) else {
+            return []
+        }
+
+        do {
+            let nodes = try await NodeJobs().getNodeSubfolders(
+                userDbId: cachedDrive.userDbId,
+                driveId: cachedDrive.driveId,
+                nodeId: node.id
+            )
+
+            return nodes.map {
+                let size = $0.size == -1 ? nil : $0.size
+                return FileTreeItem(
+                    id: $0.nodeId,
+                    name: $0.name,
+                    path: $0.path,
+                    size: size,
+                    isFolder: true,
+                    isEnabled: !$0.accessDenied
+                )
+            }
+        } catch {
+            SentrySDK.capture(error: error)
+            return []
+        }
+    }
+
+    private func createFolder(in parent: FileTreeItem, named name: String) async -> FileTreeItem? {
+        @InjectService var coherentCache: CoherentCache
+        guard let cachedDrive = await coherentCache.getDrive(driveDbId: Int32(drive.dbId)) else {
+            return nil
+        }
+
+        do {
+            let nodeId = try await NodeJobs().createMissingFolders(
+                userDbId: cachedDrive.userDbId,
+                driveId: cachedDrive.driveId,
+                parentNodeId: parent.id,
+                relativePath: name
+            )
+            return FileTreeItem(id: nodeId, name: name, isFolder: true)
+        } catch {
+            isShowingGenericError = true
+            return nil
         }
     }
 }
 
 #Preview {
-    SelectRemoveFolderView()
+    SelectRemoteFolderView(drive: PreviewHelper.drive1)
+        .environmentObject(AddAdvancedSynchroFlowViewModel())
 }
