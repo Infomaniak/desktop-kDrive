@@ -1576,14 +1576,14 @@ ExitInfo ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &pr
         case ConflictType::MoveMoveDest: // Name clash conflict pattern
         case ConflictType::MoveMoveSource: // Name clash conflict pattern
         {
-            if (syncOp->conflict().type() != ConflictType::MoveMoveSource &&
-                syncOp->conflict().type() != ConflictType::CreateCreate) {
+            if (syncOp->conflict().type() != ConflictType::CreateCreate) {
+                // New nodes are not in DB yet, so only delete old nodes for other conflict types
                 if (const ExitInfo exitInfo = deleteFromDb(syncOp->conflict().localNode()); !exitInfo) {
                     if (exitInfo.code() == ExitCode::DataError && exitInfo.cause() == ExitCause::DbEntryNotFound) {
-                        // The node was not found in DB, this ok since we wanted to remove it anyway
+                        // The node was not found in DB, this is ok since we wanted to remove it anyway
                         LOGW_SYNCPAL_INFO(_logger,
                                           L"Node `" << Utility::formatSyncName(syncOp->conflict().localNode()->name())
-                                                    << L" not found in DB. This is ok since we wanted to remove to anyway.");
+                                                    << L" not found in DB. This is ok since we wanted to remove it anyway.");
                     } else {
                         // Remove local node from DB failed!
                         LOGW_SYNCPAL_WARN(_logger, L"deleteFromDb failed for "
@@ -1593,6 +1593,7 @@ ExitInfo ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &pr
                     }
                 }
             }
+
             // Remove node from update tree
             if (!_syncPal->updateTree(ReplicaSide::Local)->deleteNode(syncOp->conflict().localNode())) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node "
