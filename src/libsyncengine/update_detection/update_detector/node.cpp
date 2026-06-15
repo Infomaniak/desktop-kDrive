@@ -135,15 +135,18 @@ bool Node::hasInvalidEvents() const {
     return res;
 }
 
-std::shared_ptr<Node> Node::findChildren(const SyncName &name, const NodeId &nodeId /*= ""*/) {
+std::shared_ptr<Node> Node::findChild(const SyncName &name, const NodeId &nodeId /*= ""*/) {
+    // First we search by id if it is not empty
     if (!nodeId.empty()) {
-        auto res = findChildrenById(nodeId);
-        if (res) {
+        if (auto res = findChildById(nodeId); res) {
             return res;
         }
     }
 
+    // If this search does not succeed then we search by name
     for (auto &node: _childrenById) {
+        // We want to find a tmp node since the search by id gave nothing
+        if (!nodeId.empty() && !node.second->isTmp()) continue;
         if (node.second->name() == name) {
             return node.second;
         }
@@ -152,7 +155,7 @@ std::shared_ptr<Node> Node::findChildren(const SyncName &name, const NodeId &nod
     return nullptr;
 }
 
-std::shared_ptr<Node> Node::findChildrenById(const NodeId &nodeId) {
+std::shared_ptr<Node> Node::findChildById(const NodeId &nodeId) {
     auto it = _childrenById.find(nodeId);
     if (it != _childrenById.end()) {
         return it->second;
