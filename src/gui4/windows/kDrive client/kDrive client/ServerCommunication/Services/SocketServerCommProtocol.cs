@@ -67,12 +67,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
         }
 
-        private string _commPortFilePath = Path.Combine(
-               Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-               "kDrive",
-               ".comm"
-           );
-
         public event EventHandler<SignalEventArgs> SignalReceived = delegate { };
         public event EventHandler ConnectionLost = delegate { };
 
@@ -92,7 +86,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 #if DEBUG
             try
             {
-                int port = int.Parse(File.ReadAllText(_commPortFilePath).Trim());
+                string commPortFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "kDrive", ".comm");
+                int port = int.Parse(File.ReadAllText(commPortFilePath).Trim());
                 return port;
             }
             catch (FileNotFoundException)
