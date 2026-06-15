@@ -256,6 +256,7 @@ void SyncPalWorker::execute() {
     // Ensure blacklist is propagated
     if (ExitInfo exitInfo = ensureBlackListIsPropagated(); !exitInfo) {
         LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " stopped");
+        stopResetVfsFilesStatusThread();
         setExitCause(exitInfo.cause());
         setDone(exitInfo.code());
         return;
@@ -267,6 +268,7 @@ void SyncPalWorker::execute() {
     if (awakenByStop) {
         // Exit
         exitCode = ExitCode::Ok;
+        stopResetVfsFilesStatusThread();
         setDone(exitCode);
         return;
     }

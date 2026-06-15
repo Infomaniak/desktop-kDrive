@@ -22,6 +22,7 @@
 #include "libcommon/utility/types.h"
 
 #include <ctime>
+#include <atomic>
 
 namespace backoffVariable {
 constexpr double multiplicativeFactor = 2; // binary exponential backoff
