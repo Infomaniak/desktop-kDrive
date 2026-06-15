@@ -24,6 +24,23 @@ import Sentry
 import SwiftUI
 import UniformTypeIdentifiers
 
+struct FolderChipView: View {
+    let folderName: String
+
+    var body: some View {
+        HStack(spacing: AppPadding.padding4) {
+            KDriveResources.folderFilled.swiftUIImage
+                .resizable(at: AppIconSize.iconSize16)
+                .foregroundStyle(ColorToken.Action.primary.asColor)
+
+            Text(folderName)
+                .font(.Tokens.body)
+        }
+        .padding(AppPadding.padding8)
+        .background(Color(NSColor.windowBackgroundColor), in: .rect(cornerRadius: AppRadius.radius8))
+    }
+}
+
 struct AddAdvancedSynchroView: View {
     @Environment(\.dismiss) private var dismiss
 
@@ -67,16 +84,7 @@ struct AddAdvancedSynchroView: View {
                         )
 
                         if let localFolder = viewModel.localFolder {
-                            HStack(spacing: AppPadding.padding4) {
-                                KDriveResources.folderFilled.swiftUIImage
-                                    .resizable(at: AppIconSize.iconSize16)
-                                    .foregroundStyle(ColorToken.Action.primary.asColor)
-
-                                Text(localFolder.lastPathComponent)
-                                    .font(.Tokens.body)
-                            }
-                            .padding(AppPadding.padding8)
-                            .background(Color(NSColor.windowBackgroundColor), in: .rect(cornerRadius: AppRadius.radius8))
+                            FolderChipView(folderName: localFolder.lastPathComponent)
                         }
                     }
 
@@ -104,16 +112,7 @@ struct AddAdvancedSynchroView: View {
                         }
 
                         if let remoteFolder = viewModel.selectedRemoteFolder {
-                            HStack(spacing: AppPadding.padding4) {
-                                KDriveResources.folderFilled.swiftUIImage
-                                    .resizable(at: AppIconSize.iconSize16)
-                                    .foregroundStyle(ColorToken.Action.primary.asColor)
-
-                                Text(remoteFolder.name)
-                                    .font(.Tokens.body)
-                            }
-                            .padding(AppPadding.padding8)
-                            .background(Color(NSColor.windowBackgroundColor), in: .rect(cornerRadius: AppRadius.radius8))
+                            FolderChipView(folderName: remoteFolder.name)
                         }
                     }
                 }
