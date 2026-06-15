@@ -1384,6 +1384,7 @@ void ClientGui::onTooManyDeletesNotificationHardLimit(const SyncDbId syncDbId, c
                         .arg(CommonUtility::linkStyle, localPath),
                 QMessageBox::Yes | QMessageBox::No);
         _tooManyDeletesNotificationPopupMap[syncDbId] = msgBox;
+        msgBox->showExitButton(false);
         res = msgBox->exec();
     }
 
@@ -1421,6 +1422,7 @@ void ClientGui::onTooManyDeletesNotificationSoftLimit(const SyncDbId syncDbId) {
             QMessageBox::Ok);
     _tooManyDeletesNotificationPopupMap[syncDbId] = msgBox;
     msgBox->setCheckboxVisible(true);
+    msgBox->showExitButton(false);
     msgBox->setCheckBoxText(tr("Don't show again"));
     (void) msgBox->exec();
 

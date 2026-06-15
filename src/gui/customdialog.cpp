@@ -48,11 +48,7 @@ static const int resizeStripeWidth = 5;
 Q_LOGGING_CATEGORY(lcCustomDialog, "gui.customdialog", QtInfoMsg)
 
 CustomDialog::CustomDialog(const bool popup, QWidget *parent) :
-    QDialog(parent),
-    _backgroundColor(QColor()),
-    _buttonIconColor(QColor()),
-    _backgroundForcedColor(QColor()),
-    _layout(nullptr) {
+    QDialog(parent) {
     setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint);
     setAttribute(Qt::WA_TranslucentBackground);
     setAttribute(Qt::WA_Hover, true);
@@ -69,9 +65,8 @@ CustomDialog::CustomDialog(const bool popup, QWidget *parent) :
     setLayout(mainVBox);
 
     // System bar
-    CustomSystemBar *systemBar = nullptr;
-    systemBar = new CustomSystemBar(popup, this);
-    mainVBox->addWidget(systemBar);
+    _systemBar = new CustomSystemBar(popup, this);
+    mainVBox->addWidget(_systemBar);
 
     _layout = new QVBoxLayout();
     if (popup) {
@@ -88,7 +83,7 @@ CustomDialog::CustomDialog(const bool popup, QWidget *parent) :
     effect->setOffset(0);
     setGraphicsEffect(effect);
 
-    connect(systemBar, &CustomSystemBar::exit, this, &CustomDialog::onExit);
+    connect(_systemBar, &CustomSystemBar::exit, this, &CustomDialog::onExit);
 }
 
 int CustomDialog::exec() {
