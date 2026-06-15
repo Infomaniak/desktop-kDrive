@@ -425,7 +425,7 @@ void AbstractTokenNetworkJob::loadUserInfoFromUserDbId() {
         } else {
             login = std::make_shared<Login>(user.keychainKey());
             if (!login->hasToken()) {
-                const std::string err{"Failed to retrieve access token"};
+                const std::string err{"Failed to retrieve access token for userDbId=" + std::to_string(_userDbId)};
                 LOG_WARN(_logger, err);
             }
         }
