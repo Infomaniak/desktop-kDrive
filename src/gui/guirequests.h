@@ -103,7 +103,6 @@ struct GuiRequests {
         static ExitCode activateLoadInfo(bool activate);
         static ExitCode askForStatus();
         static ExitCode checkCommStatus(); // !!! Use COMM_LONG_TIMEOUT !!!
-        static ExitCode deleteUser(UserDbId userDbId); // !!! Use COMM_LONG_TIMEOUT !!!
         static ExitCode deleteDrive(DriveDbId driveDbId); // !!! Use COMM_LONG_TIMEOUT !!!
         static ExitCode searchItemInDrive(DriveDbId driveDbId, const QString &searchString, QList<SearchInfo> &list,
                                           bool &hasMore,
