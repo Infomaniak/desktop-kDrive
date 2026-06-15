@@ -53,7 +53,10 @@ class SyncPalWorker : public ISyncWorker {
         bool _pauseAsked{false};
         bool _unpauseAsked{false};
         bool _isPaused{false};
+
+        void stopResetVfsFilesStatusThread();
 #if defined(KD_WINDOWS)
+        std::atomic_bool _stopResetVfsFilesStatusAsked{false};
         std::unique_ptr<StdLoggingThread> _resetVfsFilesStatusThread{nullptr};
 #endif
 

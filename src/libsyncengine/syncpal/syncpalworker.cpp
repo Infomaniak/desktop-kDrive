@@ -90,7 +90,7 @@ bool SyncPalWorker::shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const 
     const auto httpBlockingError =
             (w1 && w1->exitCode() == ExitCode::BackError &&
              (w1->exitCause() == ExitCause::Http5xx || w1->exitCause() == ExitCause::HttpErr || w1->exitCause() == ExitCause::MissingReplyData)) ||
-            (w2 && w2->exitCode() == ExitCode::BackError &&
+                                   (w2 && w2->exitCode() == ExitCode::BackError &&
              (w2->exitCause() == ExitCause::Http5xx || w2->exitCause() == ExitCause::HttpErr || w2->exitCause() == ExitCause::MissingReplyData));
 
     const auto syncDirNotAccessible =
@@ -436,7 +436,7 @@ void SyncPalWorker::execute() {
 
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
-
+    stopResetVfsFilesStatusThread();
     LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " stopped");
     setDone(exitCode);
 }
@@ -445,10 +445,19 @@ void SyncPalWorker::stop() {
     _pauseAsked = false;
     _unpauseAsked = true;
     ISyncWorker::stop();
+}
+
+void SyncPalWorker::stopResetVfsFilesStatusThread() {
 #if defined(KD_WINDOWS)
     if (_resetVfsFilesStatusThread && _resetVfsFilesStatusThread->joinable()) {
+        LOG_SYNCPAL_DEBUG(_logger, "Stopping resetVfsFilesStatusThread");
+        _stopResetVfsFilesStatusAsked.store(true);
         _resetVfsFilesStatusThread->join();
+        _stopResetVfsFilesStatusAsked.store(false);
+        LOG_SYNCPAL_DEBUG(_logger, "resetVfsFilesStatusThread stopped");
     }
+#else
+    // There is no thread _resetVfsFilesStatusThread on non-Windows platforms, so nothing to do here.
 #endif
 }
 
@@ -832,6 +841,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
     IoHelper::DirectoryIterator dirIt;
     bool endOfDir = false;
     DirectoryEntry entry;
+
     try {
         if (!IoHelper::recursiveDirectoryIterator(_syncPal->localPath(), dirIt)) {
             LOGW_WARN(_logger, L"Error in IoHelper::recursiveDirectoryIterator.");
@@ -839,7 +849,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
         }
 
         while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
-            if (stopAsked()) {
+            if (_stopResetVfsFilesStatusAsked.load()) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Stop asked in resetVfsFilesStatus");
                 return;
             }
