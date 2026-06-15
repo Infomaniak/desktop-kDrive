@@ -81,7 +81,7 @@ struct AddAdvancedSynchroView: View {
                     }
 
                     if isShowingInvalidFolderError {
-                        Text("Ce dossier ne peut pas être synchronisé. Veuillez sélectionner un autre dossier.")
+                        Text(KDriveLocalizable.errorSelectedFolderIncorrect)
                             .font(.Tokens.subheadline)
                             .foregroundStyle(ColorToken.Status.Medium.warning.asColor)
                     }

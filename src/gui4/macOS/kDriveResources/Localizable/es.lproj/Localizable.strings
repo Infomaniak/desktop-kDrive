@@ -688,6 +688,9 @@
 /* loco:6995dff99537658db20fabb3 */
 "errorPageTitle" = "Errores por corregir";
 
+/* loco:6a2fb7df4af9c895d0043b52 */
+"errorSelectedFolderIncorrect" = "Esta carpeta no se puede sincronizar. Selecciona otra carpeta.";
+
 /* loco:69afcc9e14a34ba0f30ee2a2 */
 "errorStartingInstaller" = "Error while trying to start the installer";
 

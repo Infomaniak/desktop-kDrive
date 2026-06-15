@@ -688,6 +688,9 @@
 /* loco:6995dff99537658db20fabb3 */
 "errorPageTitle" = "Errori da correggere";
 
+/* loco:6a2fb7df4af9c895d0043b52 */
+"errorSelectedFolderIncorrect" = "Questa cartella non può essere sincronizzata. Seleziona un’altra cartella.";
+
 /* loco:69afcc9e14a34ba0f30ee2a2 */
 "errorStartingInstaller" = "Errore durante il tentativo di avviare il programma di installazione";
 

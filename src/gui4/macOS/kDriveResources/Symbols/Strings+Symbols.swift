@@ -466,6 +466,8 @@ public enum KDriveLocalizable {
   public static let errorListSystemHeader = KDriveLocalizable.tr("Localizable", "errorListSystemHeader", fallback: "System and permissions")
   /// loco:6995dff99537658db20fabb3
   public static let errorPageTitle = KDriveLocalizable.tr("Localizable", "errorPageTitle", fallback: "Errors to fix")
+  /// loco:6a2fb7df4af9c895d0043b52
+  public static let errorSelectedFolderIncorrect = KDriveLocalizable.tr("Localizable", "errorSelectedFolderIncorrect", fallback: "This folder cannot be synced. Please select a different folder.")
   /// loco:69afcc9e14a34ba0f30ee2a2
   public static let errorStartingInstaller = KDriveLocalizable.tr("Localizable", "errorStartingInstaller", fallback: "Error while trying to start the installer")
   /// loco:69b3e9128555b02b5001ee42

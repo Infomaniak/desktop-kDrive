@@ -704,6 +704,9 @@
 /* loco:6995dff99537658db20fabb3 */
 "errorPageTitle" = "Erreurs à corriger";
 
+/* loco:6a2fb7df4af9c895d0043b52 */
+"errorSelectedFolderIncorrect" = "Ce dossier ne peut pas être synchronisé. Veuillez sélectionner un autre dossier.";
+
 /* loco:69afcc9e14a34ba0f30ee2a2 */
 "errorStartingInstaller" = "Erreur lors du démarrage du programme d'installation";
 
