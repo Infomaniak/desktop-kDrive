@@ -6,7 +6,7 @@
   Locale: da, Danish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 29 May 2026 15:56:50 +0200 
+  Exported at: Fri, 12 Jun 2026 16:31:14 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -1561,8 +1561,8 @@ En internetforbindelse er nødvendig for at få adgang til dem.</value>
     <value>Synkronisering i gang</value> 
   </data> 
   <data name="synchroStatusOfflineDescription" xml:space="preserve"> 
-    <value>Dine lokale filer er stadig tilgængelige.
-Synkronisering genoptages automatisk, når du er forbundet igen.</value> 
+    <value>Dine downloadede filer forbliver tilgængelige.
+Synkroniseringen genoptages automatisk, så snart du er online igen.</value> 
   </data> 
   <data name="synchroStatusOfflineTitle" xml:space="preserve"> 
     <value>Offline</value> 
