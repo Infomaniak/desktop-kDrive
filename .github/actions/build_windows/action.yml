@@ -334,7 +334,7 @@ runs:
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
         run: |
           if ("${{ inputs.build_new_client }}" -eq "true") {
-            $binDir = "${{ github.workspace }}/build-windows/build/bin/client"
+            $binDir = "${{ github.workspace }}/build-windows/install/bin/client"
             $pdbFile = "$binDir/kDrive.pdb"
             $srcZip  = "$binDir/kDrive.src.zip"
           } else {
