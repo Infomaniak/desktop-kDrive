@@ -480,7 +480,7 @@ public class SocketServerCommProtocolTests
         var method = typeof(SocketServerCommProtocol).GetMethod("TryParseServerPortFromArguments", _staticPrivate)
                      ?? throw new InvalidOperationException("Failed to find TryParseServerPortFromArguments method.");
 
-        object?[] parameters = [arguments, 0, string.Empty];
+        object?[] parameters = new object?[] { arguments, 0, string.Empty };
         object? invokeResult = method.Invoke(null, parameters);
         bool success = invokeResult as bool? ??
                        throw new InvalidOperationException("TryParseServerPortFromArguments returned null.");
