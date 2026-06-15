@@ -37,7 +37,7 @@ class UploadJob : public AbstractTokenNetworkJob {
                   const NodeId &remoteParentDirId, SyncTime creationTime, SyncTime modificationTime);
         // Using file ID, for file edition only.
         UploadJob(const std::shared_ptr<Vfs> vfs, DriveDbId driveDbId, const SyncPath &absoluteFilePath, const NodeId &fileId,
-                  SyncTime modificationTime);
+                  SyncTime modificationTime, int64_t remoteSize = -1);
         ~UploadJob() override;
 
         const NodeId &nodeId() const { return _nodeIdOut; }
@@ -81,6 +81,7 @@ class UploadJob : public AbstractTokenNetworkJob {
 
         bool _shouldUpload = true;
         bool _isHydrated;
+        int64_t _remoteSize = -1;
 
         const std::shared_ptr<Vfs> _vfs;
 };
