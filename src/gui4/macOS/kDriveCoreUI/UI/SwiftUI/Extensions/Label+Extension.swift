@@ -16,8 +16,8 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import SwiftUI
 import kDriveResources
+import SwiftUI
 
 public extension Label<Text, Image> {
     init(_ titleKey: String, resource: ImageAsset) {
@@ -27,5 +27,4 @@ public extension Label<Text, Image> {
             resource.swiftUIImage
         }
     }
-
 }

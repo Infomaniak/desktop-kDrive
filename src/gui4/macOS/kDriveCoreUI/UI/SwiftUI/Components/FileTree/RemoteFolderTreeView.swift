@@ -245,10 +245,10 @@ public final class RemoteFolderOutlineView: NSView {
 
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
-            let row = self.outlineView.row(forItem: editNode)
+            let row = outlineView.row(forItem: editNode)
             guard row >= 0 else { return }
-            self.outlineView.scrollRowToVisible(row)
-            let cell = self.outlineView.view(atColumn: 0, row: row, makeIfNecessary: true) as? RemoteFolderEditCell
+            outlineView.scrollRowToVisible(row)
+            let cell = outlineView.view(atColumn: 0, row: row, makeIfNecessary: true) as? RemoteFolderEditCell
             cell?.beginEditing()
         }
     }
@@ -303,7 +303,7 @@ public final class RemoteFolderOutlineView: NSView {
         cell.identifier = Column.name
         cell.configure(with: node.item) { [weak self, weak node] in
             guard let self, let node else { return }
-            self.beginFolderCreation(in: node)
+            beginFolderCreation(in: node)
         }
 
         return cell

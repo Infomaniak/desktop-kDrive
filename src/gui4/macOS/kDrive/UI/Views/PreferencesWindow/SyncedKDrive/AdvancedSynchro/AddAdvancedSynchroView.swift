@@ -172,7 +172,13 @@ struct AddAdvancedSynchroView: View {
                 return
             }
 
-            let remoteFolder = SyncRemoteFolder(path: selectedRemoteFolder.path ?? "", nodeId: selectedRemoteFolder.id)
+            guard let remotePath = selectedRemoteFolder.path else {
+                isShowingGenericError = true
+                SentrySDK.capture(message: "Advanced Synchro - Missing remote folder path")
+                return
+            }
+
+            let remoteFolder = SyncRemoteFolder(path: remotePath, nodeId: selectedRemoteFolder.id)
             let syncCandidate = NewSyncCandidate(
                 origin: .storedDrive(cachedDrive),
                 remoteFolder: remoteFolder,

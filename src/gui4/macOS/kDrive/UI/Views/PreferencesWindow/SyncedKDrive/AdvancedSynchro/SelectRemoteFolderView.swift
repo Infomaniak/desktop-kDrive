@@ -64,7 +64,7 @@ struct SelectRemoteFolderView: View {
         }
         .genericErrorAlert(isPresented: $isShowingGenericError)
         .onAppear {
-            rootItems = [FileTreeItem(id: "1", name: drive.name, path: "", isFolder: true)]
+            rootItems = [FileTreeItem(id: Constants.kDriveRootNodeId, name: drive.name, path: "", isFolder: true)]
         }
     }
 
@@ -116,7 +116,13 @@ struct SelectRemoteFolderView: View {
                 parentNodeId: parent.id,
                 relativePath: name
             )
-            return FileTreeItem(id: nodeId, name: name, isFolder: true)
+            let nodeInfo = NodeJobs().getNodeInfo(
+                userDbId: cachedDrive.userDbId,
+                driveId: cachedDrive.driveId,
+                nodeId: nodeId
+            )
+
+            return FileTreeItem(id: nodeId, name: name, path: nodeInfo.path, isFolder: true)
         } catch {
             isShowingGenericError = true
             return nil

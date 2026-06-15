@@ -22,6 +22,7 @@ public enum Constants {
     public static let appName = Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String ?? "kDrive"
     public static let bundleID = Bundle.main.bundleIdentifier ?? "com.infomaniak.drive"
     public static let lightSyncBundleID = "com.infomaniak.drive.desktopclient.LiteSyncExt"
+    public static let kDriveRootNodeId = "1"
 }
 
 public enum URLConstants {
