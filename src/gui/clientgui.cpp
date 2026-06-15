@@ -1429,7 +1429,7 @@ void ClientGui::onTooManyDeletesNotificationSoftLimit(const SyncDbId syncDbId) {
             QMessageBox::Ok);
     _tooManyDeletesNotificationPopupMap[syncDbId] = msgBox;
     msgBox->setCheckboxVisible(true);
-    msgBox->setCheckBoxText(tr("Don't ask again"));
+    msgBox->setCheckBoxText(tr("Don't show again"));
     (void) msgBox->exec();
 
     ParametersCache::instance()->parametersInfo().setNotifyBeforeDelete(!msgBox->isChecked());
