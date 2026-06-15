@@ -766,6 +766,7 @@ void TestGuiCommChannel::testDriveSearchJob() {
     Poco::JSON::Object searchInfoObj1;
     (void) searchInfoObj1.set("id", "MTAwMA==");
     (void) searchInfoObj1.set("isAvailableLocally", true);
+    (void) searchInfoObj1.set("isHydrated", true);
     (void) searchInfoObj1.set("modifiedTime", 10);
     (void) searchInfoObj1.set("name", "dG90bw==");
     (void) searchInfoObj1.set("path", "dG90bw==");
@@ -774,6 +775,7 @@ void TestGuiCommChannel::testDriveSearchJob() {
     Poco::JSON::Object searchInfoObj2;
     (void) searchInfoObj2.set("id", "MjAwMA==");
     (void) searchInfoObj2.set("isAvailableLocally", false);
+    (void) searchInfoObj2.set("isHydrated", false);
     (void) searchInfoObj2.set("modifiedTime", 100);
     (void) searchInfoObj2.set("name", "dGl0aQ==");
     (void) searchInfoObj2.set("path", "dGl0aQ==");
