@@ -224,7 +224,7 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
             }
 
             // Check if parentNode has got a child with the same name
-            std::shared_ptr<Node> existingNode = parentNode->findChildren(deleteOp->path().filename(), deleteOp->nodeId());
+            std::shared_ptr<Node> existingNode = parentNode->findChild(deleteOp->path().filename(), deleteOp->nodeId());
             if (existingNode && existingNode->isTmp()) {
                 // Node already exists, update it
                 existingNode->setIdb(idb);
@@ -470,7 +470,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
             }
 
             // find child node
-            std::shared_ptr<Node> newNode = parentNode->findChildrenById(deleteOp->nodeId());
+            std::shared_ptr<Node> newNode = parentNode->findChildById(deleteOp->nodeId());
             if (newNode != nullptr && newNode->isTmp()) {
                 // Tmp node already exists, update it
                 if (!updateTmpFileNode(newNode, op, deleteOp, opType)) {
@@ -614,7 +614,7 @@ ExitCode UpdateTreeWorker::step6CreateFile() {
             return exitCode;
         }
 
-        std::shared_ptr<Node> newNode = parentNode->findChildrenById(operation->nodeId());
+        std::shared_ptr<Node> newNode = parentNode->findChildById(operation->nodeId());
         if (newNode != nullptr) {
             // Node already exists, update it
             if (newNode->name() == operation->path().filename().native()) {
@@ -694,7 +694,7 @@ ExitCode UpdateTreeWorker::step7EditFile() {
             return exitCode;
         }
 
-        std::shared_ptr<Node> newNode = parentNode->findChildrenById(editOp->nodeId());
+        std::shared_ptr<Node> newNode = parentNode->findChildById(editOp->nodeId());
         if (newNode != nullptr) {
             // Node already exists, update it
             newNode->setCreatedAt(editOp->createdAt());
