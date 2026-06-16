@@ -20,6 +20,8 @@
 
 #include "test_utility/testhelpers.h"
 
+#include <fstream>
+
 #include "version.h"
 #include "jobs/network/kDrive_API/searchjob.h"
 #include "jobs/network/abstracttokennetworkjob.h"
