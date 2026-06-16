@@ -30,7 +30,7 @@ static const auto searchInfoIsHydrated = "isHydrated";
 
 namespace KDC {
 
-SearchInfo::SearchInfo(NodeId id, SyncName name, const NodeType type, SyncPath path, const SyncTime modifiedTime,
+SearchInfo::SearchInfo(RemoteNodeId id, SyncName name, const NodeType type, SyncPath path, const SyncTime modifiedTime,
                        const size_t size, const bool isAvailableLocally, const bool isHydrated) :
     _id(std::move(id)),
     _name(std::move(name)),

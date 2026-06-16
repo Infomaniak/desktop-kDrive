@@ -26,7 +26,7 @@ namespace KDC {
 class SearchInfo {
     public:
         SearchInfo() = default;
-        SearchInfo(NodeId id, SyncName name, NodeType type, SyncPath path, SyncTime modifiedTime, size_t size,
+        SearchInfo(RemoteNodeId id, SyncName name, NodeType type, SyncPath path, SyncTime modifiedTime, size_t size,
                    bool isAvailableLocally, bool isHydrated);
 
         [[nodiscard]] const NodeId &id() const { return _id; }
@@ -47,7 +47,7 @@ class SearchInfo {
         friend QDataStream &operator<<(QDataStream &out, const QList<SearchInfo> &list);
 
     private:
-        NodeId _id;
+        RemoteNodeId _id;
         SyncName _name;
         SyncPath _path;
         SyncTime _modifiedTime{0};
