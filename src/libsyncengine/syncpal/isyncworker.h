@@ -35,7 +35,7 @@ const int64_t defaultPauseDuration = 60000; // 1 min
 class ISyncWorker {
     public:
         ISyncWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
-                    const std::chrono::seconds &startDelay = std::chrono::seconds(0), bool testing = false);
+                    const std::chrono::seconds &startDelay = std::chrono::seconds(0));
         virtual ~ISyncWorker();
 
         virtual void start();
@@ -64,7 +64,6 @@ class ISyncWorker {
 
         virtual void resume() { start(); }
 
-        void setTesting(bool testing) { _testing = testing; }
         [[nodiscard]] std::shared_ptr<CacheDirectory> cacheDirectory() const { return _syncPal->cacheDirectory(); }
 
     protected:
@@ -73,8 +72,6 @@ class ISyncWorker {
 
         virtual void init();
         void startExecutionThread();
-
-        bool _testing{false};
 
     protected:
         //! Wait for a delay. Allows to postpone the start of the worker to smooth the load.
