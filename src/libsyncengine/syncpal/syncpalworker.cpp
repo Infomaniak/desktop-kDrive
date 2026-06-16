@@ -53,43 +53,32 @@ SyncPalWorker::SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string
 namespace {
 
 bool hasSuccessfullyFinished(const SyncPalWorker::ReplicaWorkers &workers) {
-    for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote, ReplicaSide::Both}) {
-        if (workers.contains(side) && workers.at(side).worker && workers.at(side).worker->exitCode() != ExitCode::Ok)
-            return false;
-    }
-
-    return true;
+    return std::ranges::none_of(
+            workers, [](const auto &pair) { return pair.second.worker && pair.second.worker->exitCode() != ExitCode::Ok; });
 }
 
 bool shouldBeStoppedAndRestarted(const SyncPalWorker::ReplicaWorkers &workers) {
     const std::unordered_set<ExitCode> interruptingExitCodes = {ExitCode::DataError, ExitCode::BackError, ExitCode::LogicError};
 
-    for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote, ReplicaSide::Both}) {
-        if (workers.contains(side) && workers.at(side).worker &&
-            interruptingExitCodes.contains(workers.at(side).worker->exitCode())) {
-            return true;
-        }
-    }
-
-    return false;
+    return std::ranges::any_of(workers, [&interruptingExitCodes](const auto &pair) {
+        return pair.second.worker && interruptingExitCodes.contains(pair.second.worker->exitCode());
+    });
 }
 
 bool shouldBeStopped(const SyncPalWorker::ReplicaWorkers &workers) {
     const std::unordered_set<ExitCode> stoppingExitCodes = {ExitCode::DbError, ExitCode::SystemError, ExitCode::UpdateRequired,
                                                             ExitCode::InvalidSync, ExitCode::InvalidToken};
 
-    for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote, ReplicaSide::Both}) {
-        const bool hasWorker = workers.contains(side) && workers.at(side).worker;
+    const bool hasStoppingExitCode = std::ranges::any_of(workers, [&stoppingExitCodes](const auto &pair) {
+        return pair.second.worker && stoppingExitCodes.contains(pair.second.worker->exitCode());
+    });
 
-        if (hasWorker && stoppingExitCodes.contains(workers.at(side).worker->exitCode())) return true;
+    const bool hasDriveAccessError = std::ranges::any_of(workers, [](const auto &pair) {
+        return pair.second.worker && pair.second.worker->exitCode() == ExitCode::BackError &&
+               pair.second.worker->exitCause() == ExitCause::DriveAccessError;
+    });
 
-        if (hasWorker && workers.at(side).worker->exitCode() == ExitCode::BackError &&
-            workers.at(side).worker->exitCause() == ExitCause::DriveAccessError) {
-            return true;
-        }
-    }
-
-    return false;
+    return hasStoppingExitCode || hasDriveAccessError;
 }
 
 bool shouldExitWithoutError(const SyncPalWorker::ReplicaWorkers &workers) {
@@ -97,14 +86,10 @@ bool shouldExitWithoutError(const SyncPalWorker::ReplicaWorkers &workers) {
             ExitCause::NotEnoughDiskSpace, ExitCause::FileAccessError, ExitCause::TmpDirAccessError,
             ExitCause::SyncDirAccessError, ExitCause::SyncDirDiskMissing};
 
-    for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote, ReplicaSide::Both}) {
-        if (workers.contains(side) && workers.at(side).worker && workers.at(side).worker->exitCode() == ExitCode::SystemError &&
-            exitCausesWithoutConsequences.contains(workers.at(side).worker->exitCause())) {
-            return true;
-        }
-    }
-
-    return false;
+    return std::ranges::any_of(workers, [&exitCausesWithoutConsequences](const auto &pair) {
+        return pair.second.worker && pair.second.worker->exitCode() == ExitCode::SystemError &&
+               exitCausesWithoutConsequences.contains(pair.second.worker->exitCause());
+    });
 }
 
 } // namespace
@@ -125,8 +110,7 @@ bool SyncPalWorker::shouldBePaused(const SyncPalWorker::ReplicaWorkers &workers)
     bool rfsoError = false;
 
     for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote, ReplicaSide::Both}) {
-        const bool hasWorker = workers.contains(side) && workers.at(side).worker;
-        if (!hasWorker) continue;
+        if (const bool hasWorker = workers.contains(side) && workers.at(side).worker; !hasWorker) continue;
 
         auto worker = workers.at(side).worker;
 
@@ -178,14 +162,9 @@ bool SyncPalWorker::handleRateLimited(const SyncPalWorker::ReplicaWorkers &worke
 }
 
 bool shouldRequireUpdate(const SyncPalWorker::ReplicaWorkers &workers) {
-    for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote, ReplicaSide::Both}) {
-        if (workers.contains(side) && workers.at(side).worker &&
-            workers.at(side).worker->exitCode() == ExitCode::UpdateRequired) {
-            return true;
-        }
-    }
-
-    return false;
+    return std::ranges::any_of(workers, [](const auto &pair) {
+        return pair.second.worker && pair.second.worker->exitCode() == ExitCode::UpdateRequired;
+    });
 }
 
 void SyncPalWorker::handleBackError() {
