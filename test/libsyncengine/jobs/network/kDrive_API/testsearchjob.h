@@ -34,6 +34,7 @@ class TestSearchJob : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testHandleResponseSharedPath);
         CPPUNIT_TEST(testHandleResponseLeadingSlash);
         CPPUNIT_TEST(testHandleResponseIsAvailableLocally);
+        CPPUNIT_TEST(testHandleResponseIsHydrated);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -45,6 +46,7 @@ class TestSearchJob : public CppUnit::TestFixture, public TestBase {
         void testHandleResponseSharedPath();
         void testHandleResponseLeadingSlash();
         void testHandleResponseIsAvailableLocally();
+        void testHandleResponseIsHydrated();
 
     private:
         DriveDbId _driveDbId = 1;

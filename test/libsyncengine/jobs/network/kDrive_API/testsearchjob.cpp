@@ -18,6 +18,8 @@
 
 #include "testsearchjob.h"
 
+#include "test_utility/testhelpers.h"
+
 #include "version.h"
 #include "jobs/network/kDrive_API/searchjob.h"
 #include "jobs/network/abstracttokennetworkjob.h"
@@ -160,8 +162,49 @@ void TestSearchJob::testHandleResponseIsAvailableLocally() {
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.handleResponse(is));
         const auto results = job.searchResults();
         CPPUNIT_ASSERT_EQUAL(size_t{1}, results.size());
-        CPPUNIT_ASSERT_EQUAL(false, results.front().isAvailableLocally());
+        CPPUNIT_ASSERT(!results.front().isAvailableLocally());
+        CPPUNIT_ASSERT(!results.front().isHydrated());
     }
 }
+
+
+void TestSearchJob::testHandleResponseIsHydrated() {
+    // Create an actual file with hydrated status.
+    // SearchInfo::isHydrated() should true for it.
+    {
+        const SyncPath hydratedFile = _localTempDir.path() / "hydrated_file.txt";
+        { std::ofstream ofs(hydratedFile); }
+        auto ioError = IoError::Success;
+        testhelpers::setHydratedPlaceholderStatus(hydratedFile, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+        SearchJob job(_driveDbId, "doc");
+        job._syncRootPath = _localTempDir.path();
+        const std::string json = makeSearchResponseJson("/Private/hydrated_file.txt");
+        std::istringstream is(json);
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.handleResponse(is));
+        const auto results = job.searchResults();
+        CPPUNIT_ASSERT_EQUAL(size_t{1}, results.size());
+        CPPUNIT_ASSERT_EQUAL(true, results.front().isHydrated());
+    }
+
+    // Create an actual file with a dehydrated status.
+    // SearchInfo::isHydrated() should false for it.
+    {
+        const SyncPath dehydratedFile = _localTempDir.path() / "dehydrated_file.txt";
+        { std::ofstream ofs(dehydratedFile); }
+        auto ioError = IoError::Success;
+        testhelpers::setDehydratedPlaceholderStatus(dehydratedFile, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+        SearchJob job(_driveDbId, "doc");
+        job._syncRootPath = _localTempDir.path();
+        const std::string json = makeSearchResponseJson("/Private/dehydrated_file.txt");
+        std::istringstream is(json);
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.handleResponse(is));
+        const auto results = job.searchResults();
+        CPPUNIT_ASSERT_EQUAL(size_t{1}, results.size());
+        CPPUNIT_ASSERT(!results.front().isHydrated());
+    }
+}
+
 
 } // namespace KDC
