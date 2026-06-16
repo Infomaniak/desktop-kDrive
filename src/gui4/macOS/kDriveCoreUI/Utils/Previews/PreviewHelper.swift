@@ -138,7 +138,7 @@ public enum PreviewHelper {
     )
 
     public static func blockingErrorFor(syncError: BlockingSynchroError, isDriveAdmin: Bool) -> UIBlockingError {
-        return UIBlockingError(uiDrive: drive1, isDriveAdmin: isDriveAdmin, error: syncError)
+        return UIBlockingError(uiDrive: drive1, uiSynchro: synchro, error: syncError)
     }
 
     public static let synchroError = SynchroError(

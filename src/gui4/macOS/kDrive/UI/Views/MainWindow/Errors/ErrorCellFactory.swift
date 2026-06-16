@@ -180,7 +180,7 @@ struct ErrorCellFactory {
                 error: error,
                 title: KDriveLocalizable.driveAsleepErrorTitle,
                 description: KDriveLocalizable.backErrorDriveAsleepDescription,
-                action: .init(title: KDriveLocalizable.buttonWakeUp) { await manager.tryToRestartSynchro(error) }
+                action: .init(title: KDriveLocalizable.buttonWakeUp) { await manager.openWebPageDrive(error) }
             )
         case .backErrorDriveMaintenance:
             return makeCell(
