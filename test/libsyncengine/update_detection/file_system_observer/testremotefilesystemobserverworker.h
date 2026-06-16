@@ -29,7 +29,7 @@ namespace KDC {
 
 class TestRemoteFileSystemObserverWorker : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestRemoteFileSystemObserverWorker);
-        // CPPUNIT_TEST(testGenerateRemoteInitialSnapshot);
+        CPPUNIT_TEST(testGenerateRemoteInitialSnapshot);
         CPPUNIT_TEST(testUpdateSnapshot);
         CPPUNIT_TEST_SUITE_END();
 

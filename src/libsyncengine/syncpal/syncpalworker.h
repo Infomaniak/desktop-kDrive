@@ -49,7 +49,7 @@ class SyncPalWorker : public ISyncWorker {
         static std::string stepName(SyncStep step);
 
         struct Worker {
-                Worker(const ReplicaSide side, std::shared_ptr<ISyncWorker> worker = nullptr) :
+                explicit Worker(const ReplicaSide side, const std::shared_ptr<ISyncWorker> worker = nullptr) :
                     worker(worker),
                     side(side){};
                 std::shared_ptr<ISyncWorker> worker{nullptr};
