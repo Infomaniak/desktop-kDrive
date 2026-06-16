@@ -41,7 +41,7 @@ final class UpdateDialogWindowController: NSWindowController, NSWindowDelegate {
 
         window.delegate = self
 
-        let rootView = UpdateDialogView(versionInfo: versionInfo) { [weak window] in
+        let rootView = UpdateModalView(versionInfo: versionInfo) { [weak window] in
             window?.close()
         }
 
