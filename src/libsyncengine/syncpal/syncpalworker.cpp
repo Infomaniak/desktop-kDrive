@@ -371,6 +371,17 @@ void SyncPalWorker::adaptFSOWorkerActivityToSyncState(Worker &fsoWorker, bool &s
     }
 }
 
+void SyncPalWorker::startWorkers(bool &isStepInProgress, ReplicaWorkers &stepWorkers,
+                                 ReplicaInputSharedObjects &inputSharedObject) {
+    LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step) << " start");
+    isStepInProgress = true;
+
+    for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote, ReplicaSide::Both}) {
+        if (inputSharedObject.contains(side) && inputSharedObject.at(side)) inputSharedObject.at(side)->startRead();
+        if (stepWorkers.contains(side) && stepWorkers.at(side).worker) stepWorkers.at(side).worker->start();
+    }
+}
+
 void SyncPalWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
     LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " started");
@@ -511,16 +522,9 @@ void SyncPalWorker::execute() {
                 }
                 break;
             }
-        } else {
-            // Start workers
-            LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step) << " start");
-            isStepInProgress = true;
+        } else
+            startWorkers(isStepInProgress, stepWorkers, inputSharedObject);
 
-            for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote, ReplicaSide::Both}) {
-                if (inputSharedObject.contains(side) && inputSharedObject.at(side)) inputSharedObject.at(side)->startRead();
-                if (stepWorkers.contains(side) && stepWorkers.at(side).worker) stepWorkers.at(side).worker->start();
-            }
-        }
 
         if (exitCode != ExitCode::Unknown) break;
 
