@@ -310,24 +310,32 @@ void SyncPalWorker::adaptRFSOWorkerToSyncState(Worker &rfsoWorker) {
 
     switch (_step) {
         case SyncStep::Idle: {
+            if (rfsoWorker.isInProgress) return;
+
             if (!rfsoWorker.isResumable) {
                 startFSOWorker(rfsoWorker);
                 rfsoWorker.isResumable = true;
             } else {
                 LOG_DEBUG(_logger, resumeMessage);
                 rfsoWorker.worker->resume();
+                rfsoWorker.isInProgress = true;
             }
             break;
         }
         case SyncStep::UpdateDetection1: {
+            if (!rfsoWorker.isInProgress) return;
+
             LOG_DEBUG(_logger, "Stopping RFSO as long as the synchronization does not reach the Done or Idle state.");
             stopAndWaitForExitOfWorker(rfsoWorker.worker);
             rfsoWorker.isInProgress = false;
             break;
         }
         case SyncStep::Done: {
+            if (rfsoWorker.isInProgress) return;
+
             LOG_DEBUG(_logger, resumeMessage);
             rfsoWorker.worker->resume();
+            rfsoWorker.isInProgress = true;
             break;
         }
         default:
@@ -469,6 +477,7 @@ void SyncPalWorker::execute() {
                     LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step) << " has finished");
                     waitForExitOfWorkers(stepWorkers);
                     initStep(step, stepWorkers, inputSharedObject);
+                    adaptRFSOWorkerToSyncState(fsoWorkers[ReplicaSide::Remote]);
                     isStepInProgress = false;
                 }
             } else if (shouldBePaused(stepWorkers)) {
@@ -506,6 +515,7 @@ void SyncPalWorker::execute() {
             // Start workers
             LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step) << " start");
             isStepInProgress = true;
+
             for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote, ReplicaSide::Both}) {
                 if (inputSharedObject.contains(side) && inputSharedObject[side]) inputSharedObject[side]->startRead();
                 if (stepWorkers.contains(side) && stepWorkers[side].worker) stepWorkers[side].worker->start();
