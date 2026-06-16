@@ -34,7 +34,9 @@ class TestSearchJob : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testHandleResponseSharedPath);
         CPPUNIT_TEST(testHandleResponseLeadingSlash);
         CPPUNIT_TEST(testHandleResponseIsAvailableLocally);
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         CPPUNIT_TEST(testHandleResponseIsHydrated);
+#endif
         CPPUNIT_TEST_SUITE_END();
 
     public:
