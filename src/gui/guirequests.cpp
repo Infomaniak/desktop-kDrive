@@ -215,23 +215,6 @@ ExitInfo GuiRequests::acknowledgeManyDelete(const SyncDbId syncDbId, const TooMa
     return exitCode;
 }
 
-ExitCode GuiRequests::deleteUser(const UserDbId userDbId) {
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << static_cast<qint64>(userDbId);
-
-    QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::USER_DELETE, params, results, COMM_LONG_TIMEOUT)) {
-        return ExitCode::SystemError;
-    }
-
-    auto exitCode = ExitCode::Unknown;
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
-
-    return exitCode;
-}
-
 ExitCode GuiRequests::getAccountInfoList(QList<AccountInfo> &list) {
     QByteArray results;
     if (!CommClient::instance()->execute(RequestNum::ACCOUNT_INFOLIST, {}, results)) {
