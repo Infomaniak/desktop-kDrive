@@ -311,12 +311,12 @@ void SyncPalWorker::startFSOWorker(Worker &fsoWorker) {
     fsoWorker.worker->start();
 }
 
-void SyncPalWorker::adaptRFSOWorkerToSyncState(Worker &rfsoWorker) {
+void SyncPalWorker::adaptRFSOWorkerToSyncState(Worker &rfsoWorker, const SyncStep step) {
     LOG_IF_FAIL(rfsoWorker.worker && rfsoWorker.side == ReplicaSide::Remote)
 
     static const std::string resumeMessage = "Resuming RFSO until the synchronization leaves the Idle state.";
 
-    switch (_step) {
+    switch (step) {
         case SyncStep::Idle: {
             if (rfsoWorker.isInProgress) return;
 
@@ -371,7 +371,7 @@ void SyncPalWorker::adaptFSOWorkerActivityToSyncState(Worker &fsoWorker, bool &s
         if (shouldBeStopped({{fsoWorker.side, fsoWorker}}) && !stopAsked()) stop();
 
     } else if (!pauseAsked() && fsoWorker.side == ReplicaSide::Remote) {
-        adaptRFSOWorkerToSyncState(fsoWorker);
+        adaptRFSOWorkerToSyncState(fsoWorker, _step);
     } else if (!pauseAsked()) {
         LOG_IF_FAIL(fsoWorker.side == ReplicaSide::Local);
         startFSOWorker(fsoWorker);
@@ -496,8 +496,8 @@ void SyncPalWorker::execute() {
                 if (step != _step) {
                     LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step) << " has finished");
                     waitForExitOfWorkers(stepWorkers);
+                    adaptRFSOWorkerToSyncState(fsoWorkers.at(ReplicaSide::Remote), step);
                     initStep(step, stepWorkers, inputSharedObject);
-                    adaptRFSOWorkerToSyncState(fsoWorkers.at(ReplicaSide::Remote));
                     isStepInProgress = false;
                 }
             } else if (shouldBePaused(stepWorkers)) {
