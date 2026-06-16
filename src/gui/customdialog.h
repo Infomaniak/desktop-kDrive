@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "customsystembar.h"
 #include "disabledoverlay.h"
 
 #include <QColor>
@@ -30,6 +31,7 @@
 #include <QVBoxLayout>
 
 namespace KDC {
+class CustomSystemBar;
 
 class CustomDialog : public QDialog {
         Q_OBJECT
@@ -49,6 +51,10 @@ class CustomDialog : public QDialog {
 
         bool isResizable() const;
         void setResizable(bool newIsResizable);
+
+        void showExitButton(bool show) {
+            if (_systemBar) _systemBar->showExitButton(show);
+        }
 
     signals:
         void exit();
@@ -73,7 +79,8 @@ class CustomDialog : public QDialog {
         QColor _backgroundColor;
         QColor _buttonIconColor;
         QColor _backgroundForcedColor;
-        QVBoxLayout *_layout;
+        QVBoxLayout *_layout = nullptr;
+        CustomSystemBar *_systemBar = nullptr;
 
         bool _isResizable = false;
         bool _resizeMode = false;

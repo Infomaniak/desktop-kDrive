@@ -26,6 +26,7 @@
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
 #include "comm/extjobmanager.h"
 #endif
+#include "comm/guijobs/signalsyncnotifymanydeletesjob.h"
 #include "updater/updatemanager.h"
 
 #include "jobs/network/kDrive_API/searchjob.h"
@@ -389,8 +390,8 @@ void AppServer::init() {
         }
 
         connect(OldCommServer::instance().get(), &OldCommServer::requestReceived, this, &AppServer::onRequestReceived);
-        connect(OldCommServer::instance().get(), &OldCommServer::clientDisconnected, this,
-                &AppServer::onClientDisconnectedReceived);
+        (void) connect(OldCommServer::instance().get(), &OldCommServer::clientDisconnected, this,
+                       &AppServer::onClientDisconnectedReceived);
     }
 
     // Update users,accounts and drives info.
@@ -2356,8 +2357,20 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             const auto exitInfo = setSupportsVirtualFilesAsync(syncDbId, value);
             if (!exitInfo) {
                 LOG_WARN(_logger, "Error in setSupportsVirtualFiles for syncDbId=" << syncDbId << " : " << exitInfo);
-                resultStream << toInt(exitInfo.code());
-                break;
+            }
+
+            resultStream << toInt(exitInfo.code());
+            break;
+        }
+        case RequestNum::SYNC_ACKNOWLEDGE_MANY_DELETES: {
+            qint64 tmpSyncDbId = 0;
+            TooManyDeletesUserChoice userChoice = TooManyDeletesUserChoice::None;
+            ArgsWriter(params).write(tmpSyncDbId, userChoice);
+
+            const auto syncDbId = static_cast<SyncDbId>(tmpSyncDbId);
+            const auto exitInfo = acknowledgeManyDeletes(syncDbId, userChoice);
+            if (!exitInfo) {
+                LOG_WARN(_logger, "Error in acknowledgeManyDeletes for syncDbId=" << syncDbId << " : " << exitInfo);
             }
 
             resultStream << toInt(exitInfo.code());
@@ -3998,6 +4011,7 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, bool
         syncPalMapIt->second->setAddCompletedItemCallback(std::bind_front(&AppServer::addCompletedItem, this));
         syncPalMapIt->second->setFixConflictedFilesCompletedCallback(
                 std::bind_front(&AppServer::sendNodeFixConflictedFilesCompleted, this));
+        syncPalMapIt->second->setSendManyDeletesNotification(std::bind_front(&AppServer::sendManyDeletesNotification, this));
 
         if (!blackList.empty()) {
             // Set blackList (create or overwrite the possible existing list in DB)
@@ -4378,6 +4392,25 @@ ExitInfo AppServer::setSupportsVirtualFiles(const SyncDbId syncDbId, const bool 
         }
         return mainExitInfo;
     }
+
+    return ExitCode::Ok;
+}
+
+ExitInfo AppServer::acknowledgeManyDeletes(const SyncDbId syncDbId, const TooManyDeletesUserChoice userChoice) {
+    const std::scoped_lock lock(syncPalMapMutex);
+    auto syncPalMapIt = syncPalMap.find(syncDbId);
+    if (syncPalMapIt == syncPalMap.end()) {
+        std::stringstream msg;
+        msg << "SyncPal not found in syncPalMap for syncDbId=" << syncDbId;
+        LOG_WARN(_logger, msg.str());
+        sentry::Handler::captureMessage(sentry::Level::Error, "Error in acknowledgeManyDeletes", msg.str());
+        return ExitCode::LogicError;
+    }
+
+    syncPalMapIt->second->setManyDeleteOpsUserChoice(userChoice);
+    LOG_INFO(_logger, "Set acknowledge many deletes to " << userChoice << " for syncDbId=" << syncDbId);
+
+    syncPalMapIt->second->start();
 
     return ExitCode::Ok;
 }
@@ -4826,6 +4859,19 @@ void AppServer::sendSyncDeletionFailed(const SyncDbId syncDbId) const {
     }
 }
 
+void AppServer::sendManyDeletesNotification(const SyncDbId syncDbId, const TooManyDeletesNotificationType notificationType,
+                                            uint64_t nbFiles) const {
+    if (useOldCommServer()) {
+        int id = 0;
+        const auto params =
+                QByteArray(ArgsReader(static_cast<qint64>(syncDbId), notificationType, static_cast<quint64>(nbFiles)));
+
+        (void) OldCommServer::instance()->sendSignal(SignalNum::SYNC_NOTIFY_MANY_DELETES, params, id);
+    }
+    if (useCommManager()) {
+        _commManager->sendGuiSignal(std::make_shared<SignalSyncNotifyManyDeletesJob>(syncDbId, notificationType, nbFiles));
+    }
+}
 
 void AppServer::sendDriveDeletionFailed(const DriveDbId driveDbId) const {
     if (useOldCommServer()) {
@@ -4838,7 +4884,6 @@ void AppServer::sendDriveDeletionFailed(const DriveDbId driveDbId) const {
         // TODO
     }
 }
-
 
 void AppServer::sendGetFolderSizeCompleted(const QString &nodeId, const qint64 size) const {
     if (useOldCommServer()) {

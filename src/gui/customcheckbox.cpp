@@ -26,9 +26,7 @@ static int defaultToolTipDuration = 3000; // ms
 
 CustomCheckBox::CustomCheckBox(QWidget *parent) :
     QCheckBox(parent),
-    _toolTipText(QString()),
-    _toolTipDuration(defaultToolTipDuration),
-    _customToolTip(nullptr) {
+    _toolTipDuration(defaultToolTipDuration) {
     connect(this, &QCheckBox::clicked, this, &CustomCheckBox::onClicked);
 }
 

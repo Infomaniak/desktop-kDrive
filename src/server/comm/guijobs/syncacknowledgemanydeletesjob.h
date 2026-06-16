@@ -16,23 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "signalsyncremovedjob.h"
-#include "libcommon/utility/utility.h"
-#include "libcommon/comm.h"
+#pragma once
 
-// Output parameters keys
-static const auto outParamsSyncDbId = "syncDbId";
+#include "abstractguijob.h"
 
 namespace KDC {
 
-SignalSyncRemovedJob::SignalSyncRemovedJob(const SyncDbId syncDbId) :
-    _syncDbId(syncDbId) {
-    _signalNum = SignalNum::SYNC_REMOVED;
-}
+class SyncAcknowledgeManyDeletesJob : public AbstractGuiJob {
+    public:
+        explicit SyncAcknowledgeManyDeletesJob(std::shared_ptr<CommManager> commManager, int requestId,
+                                               const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel);
 
-ExitInfo SignalSyncRemovedJob::serializeOutputParms() {
-    writeParamValue(outParamsSyncDbId, _syncDbId);
-    return ExitCode::Ok;
-}
+    private:
+        ExitInfo deserializeInputParms() override;
+        ExitInfo serializeOutputParms() override;
+        ExitInfo process() override;
+
+        // Input parameters
+        SyncDbId _syncDbId{0};
+        TooManyDeletesUserChoice _userChoice{TooManyDeletesUserChoice::None};
+
+        friend class TestGuiCommChannel;
+};
 
 } // namespace KDC
