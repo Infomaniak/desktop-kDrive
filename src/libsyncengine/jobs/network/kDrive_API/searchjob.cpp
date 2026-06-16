@@ -109,7 +109,7 @@ SearchJob::LocalProperties SearchJob::getLocalProperties(const SyncPath &itemPat
         localProperties.path = localProperties.path.relative_path();
     }
 
-    const SyncPath absolutePath = _syncRootPath / itemPath;
+    const SyncPath absolutePath = _syncRootPath / localProperties.path;
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(absolutePath, localProperties.isAvailableLocally, ioError,
                                      IoHelper::PathCheckOption::Insensitive)) {

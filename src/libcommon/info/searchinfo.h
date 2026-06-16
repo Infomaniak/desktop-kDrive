@@ -36,7 +36,7 @@ class SearchInfo {
         [[nodiscard]] SyncTime lastModifiedTime() const { return _modifiedTime; }
         [[nodiscard]] int64_t size() const { return _size; }
         [[nodiscard]] bool isAvailableLocally() const { return _isAvailableLocally; }
-        [[nodiscard]] bool isHydrated() const { return _isAvailableLocally; }
+        [[nodiscard]] bool isHydrated() const { return _isHydrated; }
 
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
         void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
