@@ -48,8 +48,9 @@ class TestSearchJob : public CppUnit::TestFixture, public TestBase {
         void testHandleResponseSharedPath();
         void testHandleResponseLeadingSlash();
         void testHandleResponseIsAvailableLocally();
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         void testHandleResponseIsHydrated();
-
+#endif
     private:
         DriveDbId _driveDbId = 1;
         LocalTemporaryDirectory _localTempDir{"testSearchJob"};
