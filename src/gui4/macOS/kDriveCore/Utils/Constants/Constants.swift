@@ -28,7 +28,13 @@ public enum Constants {
 public enum URLConstants {
     public static let help = URL(string: "https://www.infomaniak.com/gtl/help")!
 
+    private static let desktopClientStorage = URL(string: "https://download.storage.infomaniak.com/drive/desktopclient")!
+
     public static func kDrive(for driveID: Int) -> URL {
         return URL(string: "https://kdrive.infomaniak.com/app/drive/\(driveID)")!
+    }
+
+    public static func releaseNote(versionTag: String, languageCode: String) -> URL {
+        return desktopClientStorage.appendingPathComponent("kDrive-\(versionTag)-macos-\(languageCode).html")
     }
 }
