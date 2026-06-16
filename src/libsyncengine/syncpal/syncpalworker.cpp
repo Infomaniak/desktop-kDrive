@@ -75,8 +75,8 @@ bool shouldBeStoppedAndRestarted(const SyncPalWorker::ReplicaWorkers &workers) {
 }
 
 bool shouldBeStopped(const SyncPalWorker::ReplicaWorkers &workers) {
-    const std::unordered_set<ExitCode> stoppingExitCodes = {ExitCode::DbError, ExitCode::UpdateRequired, ExitCode::InvalidSync,
-                                                            ExitCode::InvalidToken};
+    const std::unordered_set<ExitCode> stoppingExitCodes = {ExitCode::DbError, ExitCode::SystemError, ExitCode::UpdateRequired,
+                                                            ExitCode::InvalidSync, ExitCode::InvalidToken};
 
     for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote, ReplicaSide::Both}) {
         const bool hasWorker = workers.contains(side) && workers.at(side).worker;
