@@ -19,6 +19,7 @@
 import Foundation
 import kDriveCore
 import kDriveCoreUI
+import kDriveResources
 import SwiftUI
 
 struct PathInfoChipView: View {
@@ -30,10 +31,10 @@ struct PathInfoChipView: View {
             switch pathInfo.nodeType {
             case .directory:
                 let folderRepresentation = FileTypeRepresentation.folder
-                folderRepresentation.icon
+                folderRepresentation.icon.swiftUIImage
                     .resizable()
                     .scaledToFit()
-                    .foregroundStyle(folderRepresentation.color)
+                    .foregroundStyle(folderRepresentation.color.swiftUIColor)
                     .frame(size: AppIconSize.iconSize12)
             case .file:
                 FileTypeView(fileTypeRepresentation: pathInfo.fileTypeRepresentation)
