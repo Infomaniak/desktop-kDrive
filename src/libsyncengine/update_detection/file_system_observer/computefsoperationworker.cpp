@@ -35,7 +35,7 @@ ComputeFSOperationWorker::ComputeFSOperationWorker(std::shared_ptr<SyncPal> sync
 
 ComputeFSOperationWorker::ComputeFSOperationWorker(SyncDbReadOnlyCache &testSyncDbReadOnlyCache, const std::string &name,
                                                    const std::string &shortName) :
-    ISyncWorker(nullptr, name, shortName, std::chrono::seconds(0), true),
+    ISyncWorker(nullptr, name, shortName, std::chrono::seconds(0)),
     _syncDbReadOnlyCache(testSyncDbReadOnlyCache) {}
 
 void ComputeFSOperationWorker::postponeOperationsOnReusedIds() {
