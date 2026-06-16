@@ -152,7 +152,7 @@ void TestSearchJob::testHandleResponseIsAvailableLocally() {
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.handleResponse(is));
         const auto results = job.searchResults();
         CPPUNIT_ASSERT_EQUAL(size_t{1}, results.size());
-        CPPUNIT_ASSERT_EQUAL(true, results.front().isAvailableLocally());
+        CPPUNIT_ASSERT(results.front().isAvailableLocally());
     }
 
     {
@@ -186,7 +186,7 @@ void TestSearchJob::testHandleResponseIsHydrated() {
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.handleResponse(is));
         const auto results = job.searchResults();
         CPPUNIT_ASSERT_EQUAL(size_t{1}, results.size());
-        CPPUNIT_ASSERT_EQUAL(true, results.front().isHydrated());
+        CPPUNIT_ASSERT(results.front().isHydrated());
     }
 
     // Create an actual file with a dehydrated status.
