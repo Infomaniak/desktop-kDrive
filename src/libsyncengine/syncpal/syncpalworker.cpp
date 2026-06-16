@@ -406,12 +406,11 @@ void SyncPalWorker::execute() {
 
     // Sync loop
     LOG_SYNCPAL_DEBUG(_logger, "Start sync loop");
-    ReplicaWorkers fsoWorkers = {
-            {ReplicaSide::Local, {.worker = _syncPal->_localFSObserverWorker, .side = ReplicaSide::Local}},
-            {ReplicaSide::Remote, {.worker = _syncPal->_remoteFSObserverWorker, .side = ReplicaSide::Remote}}};
+    ReplicaWorkers fsoWorkers = {{ReplicaSide::Local, Worker(ReplicaSide::Local, _syncPal->_localFSObserverWorker)},
+                                 {ReplicaSide::Remote, Worker(ReplicaSide::Remote, _syncPal->_remoteFSObserverWorker)}};
     bool isStepInProgress = false;
-    ReplicaWorkers stepWorkers = {{ReplicaSide::Local, {.side = ReplicaSide::Local}},
-                                  {ReplicaSide::Remote, {.side = ReplicaSide::Remote}}};
+    ReplicaWorkers stepWorkers = {{ReplicaSide::Local, Worker(ReplicaSide::Local)},
+                                  {ReplicaSide::Remote, Worker(ReplicaSide::Remote)}};
 
     ReplicaInputSharedObjects inputSharedObject = {{ReplicaSide::Local, nullptr}, {ReplicaSide::Remote, nullptr}};
     time_t lastEstimateUpdate = 0;
@@ -420,8 +419,8 @@ void SyncPalWorker::execute() {
         // Check File System Observer workers status
         bool syncDirChanged = false;
 
-        adaptFSOWorkerActivityToSyncState(fsoWorkers[ReplicaSide::Local], syncDirChanged);
-        if (!syncDirChanged) adaptFSOWorkerActivityToSyncState(fsoWorkers[ReplicaSide::Remote]);
+        adaptFSOWorkerActivityToSyncState(fsoWorkers.at(ReplicaSide::Local), syncDirChanged);
+        if (!syncDirChanged) adaptFSOWorkerActivityToSyncState(fsoWorkers.at(ReplicaSide::Remote));
 
         // Manage SyncDir change (might happen if the sync folder is deleted and recreated e.g., migration from another device).
         if (syncDirChanged && !tryToFixDbNodeIdsAfterSyncDirChange()) {
@@ -477,7 +476,7 @@ void SyncPalWorker::execute() {
                     LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step) << " has finished");
                     waitForExitOfWorkers(stepWorkers);
                     initStep(step, stepWorkers, inputSharedObject);
-                    adaptRFSOWorkerToSyncState(fsoWorkers[ReplicaSide::Remote]);
+                    adaptRFSOWorkerToSyncState(fsoWorkers.at(ReplicaSide::Remote));
                     isStepInProgress = false;
                 }
             } else if (shouldBePaused(stepWorkers)) {
@@ -517,8 +516,8 @@ void SyncPalWorker::execute() {
             isStepInProgress = true;
 
             for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote, ReplicaSide::Both}) {
-                if (inputSharedObject.contains(side) && inputSharedObject[side]) inputSharedObject[side]->startRead();
-                if (stepWorkers.contains(side) && stepWorkers[side].worker) stepWorkers[side].worker->start();
+                if (inputSharedObject.contains(side) && inputSharedObject.at(side)) inputSharedObject.at(side)->startRead();
+                if (stepWorkers.contains(side) && stepWorkers.at(side).worker) stepWorkers.at(side).worker->start();
             }
         }
 
@@ -600,9 +599,9 @@ void SyncPalWorker::initStep(SyncStep step, ReplicaWorkers &workers, ReplicaInpu
 
     _step = step;
 
-    workers = {{ReplicaSide::Local, {.side = ReplicaSide::Local}},
-               {ReplicaSide::Remote, {.side = ReplicaSide::Remote}},
-               {ReplicaSide::Both, {.side = ReplicaSide::Both}}};
+    workers = {{ReplicaSide::Local, Worker(ReplicaSide::Local)},
+               {ReplicaSide::Remote, Worker(ReplicaSide::Remote)},
+               {ReplicaSide::Both, Worker(ReplicaSide::Both)}};
     inputSharedObjects = {{ReplicaSide::Local, nullptr}, {ReplicaSide::Remote, nullptr}};
 
     switch (step) {
@@ -614,36 +613,36 @@ void SyncPalWorker::initStep(SyncStep step, ReplicaWorkers &workers, ReplicaInpu
             _syncPal->resetConsecutiveBackErrors();
             break;
         case SyncStep::UpdateDetection1:
-            workers[ReplicaSide::Local].worker = _syncPal->computeFSOperationsWorker();
+            workers.at(ReplicaSide::Local).worker = _syncPal->computeFSOperationsWorker();
             _syncPal->copySnapshots();
             LOG_IF_FAIL(_syncPal->syncDb()->cache().reloadIfNeeded());
             _syncPal->setRestart(false);
             break;
         case SyncStep::UpdateDetection2:
-            workers[ReplicaSide::Local].worker = _syncPal->_localUpdateTreeWorker;
-            workers[ReplicaSide::Remote].worker = _syncPal->_remoteUpdateTreeWorker;
+            workers.at(ReplicaSide::Local).worker = _syncPal->_localUpdateTreeWorker;
+            workers.at(ReplicaSide::Remote).worker = _syncPal->_remoteUpdateTreeWorker;
             inputSharedObjects[ReplicaSide::Local] = _syncPal->operationSet(ReplicaSide::Local);
             inputSharedObjects[ReplicaSide::Remote] = _syncPal->operationSet(ReplicaSide::Remote);
             break;
         case SyncStep::Reconciliation1:
-            workers[ReplicaSide::Both].worker = _syncPal->_platformInconsistencyCheckerWorker;
+            workers.at(ReplicaSide::Both).worker = _syncPal->_platformInconsistencyCheckerWorker;
             inputSharedObjects[ReplicaSide::Remote] = _syncPal->updateTree(ReplicaSide::Remote);
             break;
         case SyncStep::Reconciliation2:
-            workers[ReplicaSide::Both].worker = _syncPal->_conflictFinderWorker;
+            workers.at(ReplicaSide::Both).worker = _syncPal->_conflictFinderWorker;
             break;
         case SyncStep::Reconciliation3:
-            workers[ReplicaSide::Both].worker = _syncPal->_conflictResolverWorker;
+            workers.at(ReplicaSide::Both).worker = _syncPal->_conflictResolverWorker;
             break;
         case SyncStep::Reconciliation4:
-            workers[ReplicaSide::Both].worker = _syncPal->_operationsGeneratorWorker;
+            workers.at(ReplicaSide::Both).worker = _syncPal->_operationsGeneratorWorker;
             break;
         case SyncStep::Propagation1:
-            workers[ReplicaSide::Both].worker = _syncPal->_operationsSorterWorker;
+            workers.at(ReplicaSide::Both).worker = _syncPal->_operationsSorterWorker;
             _syncPal->startEstimateUpdates();
             break;
         case SyncStep::Propagation2:
-            workers[ReplicaSide::Both].worker = _syncPal->_executorWorker;
+            workers.at(ReplicaSide::Both).worker = _syncPal->_executorWorker;
             _syncPal->syncDb()->cache().clear(); // Cache is not needed anymore, free resources
             break;
         case SyncStep::Done:
@@ -756,13 +755,13 @@ void SyncPalWorker::stopAndWaitForExitOfWorker(std::shared_ptr<ISyncWorker> work
 
 void SyncPalWorker::stopWorkers(ReplicaWorkers &workers) {
     for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote, ReplicaSide::Both}) {
-        if (workers.contains(side) && workers[side].worker) workers[side].worker->stop();
+        if (workers.contains(side) && workers.at(side).worker) workers.at(side).worker->stop();
     }
 }
 
 void SyncPalWorker::waitForExitOfWorkers(ReplicaWorkers &workers) {
     for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote, ReplicaSide::Both}) {
-        if (workers.contains(side) && workers[side].worker) workers[side].worker->waitForExit();
+        if (workers.contains(side) && workers.at(side).worker) workers.at(side).worker->waitForExit();
     }
 }
 
