@@ -157,20 +157,21 @@ bool SyncPalWorker::shouldBePaused(const SyncPalWorker::ReplicaWorkers &workers)
 }
 
 bool SyncPalWorker::handleRateLimited(const SyncPalWorker::ReplicaWorkers &workers) {
-    auto newPauseDuration = pauseDuration();
     bool shouldHandleRateLimit = false;
 
     for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote, ReplicaSide::Both}) {
         if (const bool hasWorker = workers.contains(side) && workers.at(side).worker; !hasWorker) continue;
 
-        if (workers.at(side).worker->exitCode() == ExitCode::RateLimited) shouldHandleRateLimit = true;
+        if (workers.at(side).worker->exitCode() == ExitCode::RateLimited) {
+            shouldHandleRateLimit = true;
 
-        newPauseDuration = std::max(newPauseDuration, workers.at(side).worker->pauseDuration());
-    }
+            if (const auto newPauseDuration = workers.at(side).worker->pauseDuration(); newPauseDuration != pauseDuration()) {
+                LOG_SYNCPAL_INFO(_logger, "Changing pause duration to " << newPauseDuration << " ms due to rate limiting");
+                setPauseDuration(newPauseDuration);
+            }
 
-    if (shouldHandleRateLimit && newPauseDuration != pauseDuration()) {
-        LOG_SYNCPAL_INFO(_logger, "Changing pause duration to " << newPauseDuration << " ms due to rate limiting");
-        setPauseDuration(newPauseDuration);
+            break;
+        }
     }
 
     return shouldHandleRateLimit;
