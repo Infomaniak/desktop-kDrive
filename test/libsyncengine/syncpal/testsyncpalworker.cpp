@@ -217,7 +217,7 @@ void TestSyncPalWorker::testInternalPause2() {
                 return ExitCode::Ok;
             });
 
-    // Simulate a FileSysem event to start a sync cycle
+    // Simulate a FileSystem event to start a sync cycle
     mockLfso->simulateFSEvent();
     CPPUNIT_ASSERT(mockLfso->liveSnapshot().updated());
 
@@ -226,50 +226,18 @@ void TestSyncPalWorker::testInternalPause2() {
             [&mockPlatformInconsistencyCheckerWaiting]() { return mockPlatformInconsistencyCheckerWaiting.load(); }, testTimeout,
             loopWait));
 
-    // Simulate a network error in RFSO
-    mockRfso->setNetworkAvailability(false);
-
-    // Ensure SyncPal asks for a pause
-    CPPUNIT_ASSERT(TimeoutHelper::waitFor([&syncpalWorker]() { return syncpalWorker->pauseAsked(); }, testTimeout, loopWait));
-
-    // Ensure automatic restart & re-(ask)pausing while the current worker is still running
-    CPPUNIT_ASSERT(TimeoutHelper::waitFor( // Wait for the automatic restart
-            [&syncpalWorker]() { return syncpalWorker->unpauseAsked() || !syncpalWorker->isPaused(); },
-            [&syncpalWorker, this]() {
-                CPPUNIT_ASSERT_EQUAL(SyncStep::Reconciliation1, syncpalWorker->step());
-                CPPUNIT_ASSERT_EQUAL(SyncStatus::Running, _syncPal->status());
-                CPPUNIT_ASSERT(!syncpalWorker->isPaused());
-            },
-            testTimeout, loopWait));
-
-
-    CPPUNIT_ASSERT(TimeoutHelper::waitFor( // Wait for the re-pause because the network is still down
-            [&syncpalWorker]() { return syncpalWorker->pauseAsked() || syncpalWorker->isPaused(); },
-            [&syncpalWorker, this]() {
-                CPPUNIT_ASSERT_EQUAL(SyncStep::Reconciliation1, syncpalWorker->step());
-                CPPUNIT_ASSERT_EQUAL(SyncStatus::Running, _syncPal->status());
-                CPPUNIT_ASSERT(!syncpalWorker->isPaused());
-            },
-            testTimeout, loopWait));
+    // RFSO should be stopped during any sync step different from Idle and Done.
+    CPPUNIT_ASSERT(!mockRfso->stopAsked());
+    CPPUNIT_ASSERT(!mockRfso->isRunning());
 
     // Unlocked the PlatformInconsistencyCheckerWorker
     mockPlatformInconsistencyCheckerWaiting.store(false);
 
-    // Wait for the sync to reach the propagation2 step where it can pause.
-    CPPUNIT_ASSERT(TimeoutHelper::waitFor( // Wait for the sync to finish
-            [&syncpalWorker]() { return syncpalWorker->step() == SyncStep::Propagation2; },
-            [this]() { CPPUNIT_ASSERT_EQUAL(SyncStatus::Running, _syncPal->status()); }, testTimeout, loopWait));
-
-    // Ensure the sync is paused when the propagation2 step is reached
-    CPPUNIT_ASSERT(TimeoutHelper::waitFor( // Wait for the sync to finish
-            [&syncpalWorker]() { return syncpalWorker->pauseAsked() || syncpalWorker->isPaused(); },
-            [&syncpalWorker]() { CPPUNIT_ASSERT_EQUAL(SyncStep::Propagation2, syncpalWorker->step()); }, testTimeout, loopWait));
-
-    mockRfso->setNetworkAvailability(true);
-
     // Wait for the sync to finish.
     CPPUNIT_ASSERT(TimeoutHelper::waitFor( // Wait for the sync to finish
             [&syncpalWorker]() { return syncpalWorker->step() == SyncStep::Idle; }, testTimeout, loopWait));
+
+    CPPUNIT_ASSERT(mockRfso->isRunning());
 }
 
 void TestSyncPalWorker::testInternalPause3() {
@@ -299,7 +267,7 @@ void TestSyncPalWorker::testInternalPause3() {
                 return mockExecutorWorkerExitInfo;
             });
 
-    // Simulate a FileSysem event to start a sync cycle
+    // Simulate a FileSystem event to start a sync cycle
     mockLfso->simulateFSEvent();
     CPPUNIT_ASSERT(mockLfso->liveSnapshot().updated());
 
