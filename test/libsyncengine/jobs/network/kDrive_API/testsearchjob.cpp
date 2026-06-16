@@ -207,6 +207,5 @@ void TestSearchJob::testHandleResponseIsHydrated() {
         CPPUNIT_ASSERT(!results.front().isHydrated());
     }
 }
-
-
+#endif
 } // namespace KDC
