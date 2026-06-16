@@ -125,6 +125,8 @@ class SyncPalWorker : public ISyncWorker {
         };
         void adaptRFSOWorkerToSyncState(Worker &rfsoWorker);
 
+        void startWorkers(bool &isStepInProgress, ReplicaWorkers &stepWorkers, ReplicaInputSharedObjects &inputSharedObject);
+
         friend class TestSyncPalWorker;
 };
 } // namespace KDC
