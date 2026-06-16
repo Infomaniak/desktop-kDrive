@@ -150,12 +150,6 @@ void TestSyncPalWorker::testInternalPause1() {
     const auto syncpalWorker = mockSyncPal->getSyncPalWorker();
     const auto mockExecutorWorker = mockSyncPal->getMockExecutorWorker();
 
-    // Simulate a network error in Executor
-    // mockExecutorWorker->setMockExecuteCallback([]() -> ExitInfo { return ExitInfo(ExitCode::BackError, ExitCause::HttpErr); });
-
-    // Simulate a local file system event to trigger a sync cycle and the network error in the executor.
-    // mockLfso->simulateFSEvent();
-
     // Simulate a network error in RFSO
     CPPUNIT_ASSERT_EQUAL(SyncStep::Idle, syncpalWorker->step());
     mockRfso->setNetworkAvailability(false);
