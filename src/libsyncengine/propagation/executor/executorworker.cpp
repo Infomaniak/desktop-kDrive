@@ -1576,8 +1576,17 @@ ExitInfo ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &pr
         case ConflictType::MoveMoveDest: // Name clash conflict pattern
         case ConflictType::MoveMoveSource: // Name clash conflict pattern
         {
-            if (syncOp->conflict().type() != ConflictType::CreateCreate) {
-                // New nodes are not in DB yet, so only delete old nodes for other conflict types
+            bool removeFromDB = true;
+            if (syncOp->conflict().type() == ConflictType::CreateCreate) {
+                // A new nodes is not in DB yet, so we don't need to remove it
+                removeFromDB = false;
+            } else if (syncOp->conflict().type() == ConflictType::MoveMoveSource) {
+                // If the item is a dehydrated file, the local placeholder has been deleted, so we should remove the node from DB
+                // In other cases, the local Move has been canceled, so we should not remove the node from DB
+                removeFromDB = syncOp->isDehydratedPlaceholder();
+            }
+
+            if (removeFromDB) {
                 if (const ExitInfo exitInfo = deleteFromDb(syncOp->conflict().localNode()); !exitInfo) {
                     if (exitInfo.code() == ExitCode::DataError && exitInfo.cause() == ExitCause::DbEntryNotFound) {
                         // The node was not found in DB, this is ok since we wanted to remove it anyway
