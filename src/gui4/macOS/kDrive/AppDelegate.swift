@@ -30,7 +30,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     // periphery:ignore - We keep a strong reference on the SentryService
     private(set) var sentryService: SentryService?
 
-    // periphery:ignore - We keep a strong reference on the updateAlertPresenter
+    // periphery:ignore - We keep a strong reference on the updateModalPresenter
     private(set) var updateModalPresenter: UpdateModalPresenter?
 
     private static var isRunningTests: Bool {
