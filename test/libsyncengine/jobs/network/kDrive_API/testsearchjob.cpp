@@ -169,7 +169,7 @@ void TestSearchJob::testHandleResponseIsAvailableLocally() {
     }
 }
 
-
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
 void TestSearchJob::testHandleResponseIsHydrated() {
     // Create an actual file with hydrated status.
     // SearchInfo::isHydrated() should true for it.
