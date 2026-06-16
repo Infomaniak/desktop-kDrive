@@ -130,7 +130,7 @@ class SyncPalWorker : public ISyncWorker {
             bool syncDirChanged = false;
             adaptFSOWorkerActivityToSyncState(fsoWorker, syncDirChanged);
         };
-        void adaptRFSOWorkerToSyncState(Worker &rfsoWorker);
+        void adaptRFSOWorkerToSyncState(Worker &rfsoWorker, SyncStep step);
 
         void startWorkers(bool &isStepInProgress, ReplicaWorkers &stepWorkers, ReplicaInputSharedObjects &inputSharedObject);
 
