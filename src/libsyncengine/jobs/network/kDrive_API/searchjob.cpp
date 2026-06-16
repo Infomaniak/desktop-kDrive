@@ -93,10 +93,10 @@ void SearchJob::setQueryParameters(Poco::URI &uri) {
 
 SearchJob::LocalProperties SearchJob::getLocalProperties(const SyncPath &itemPath) const {
     LocalProperties localProperties;
+    localProperties.path = itemPath;
 
     if (_syncRootPath.empty()) return localProperties;
 
-    localProperties.path = itemPath;
     if (localProperties.path.native().starts_with(privateFolder)) {
         localProperties.path = localProperties.path.native().substr(
                 std::char_traits<std::remove_cvref_t<decltype(*privateFolder)>>::length(privateFolder));
