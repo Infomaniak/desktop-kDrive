@@ -39,13 +39,13 @@ final class UpdateModalPresenter {
             }
     }
 
-     func showUpdateDialog(versionInfo: VersionInfo) {
+    func showUpdateDialog(versionInfo: VersionInfo) {
         guard updateDialogWindowController == nil else { return }
 
         let windowController = UpdateDialogWindowController(versionInfo: versionInfo) { [weak self] in
             self?.updateDialogWindowController = nil
         }
         updateDialogWindowController = windowController
-         updateDialogWindowController?.present()
+        updateDialogWindowController?.present()
     }
 }
