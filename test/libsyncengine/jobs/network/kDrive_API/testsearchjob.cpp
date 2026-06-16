@@ -175,7 +175,7 @@ void TestSearchJob::testHandleResponseIsHydrated() {
         const SyncPath hydratedFile = _localTempDir.path() / "hydrated_file.txt";
         { std::ofstream ofs(hydratedFile); }
         auto ioError = IoError::Success;
-        testhelpers::setHydratedPlaceholderStatus(hydratedFile, ioError);
+        CPPUNIT_ASSERT(testhelpers::setHydratedPlaceholderStatus(hydratedFile, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         SearchJob job(_driveDbId, "doc");
         job._syncRootPath = _localTempDir.path();
@@ -193,7 +193,7 @@ void TestSearchJob::testHandleResponseIsHydrated() {
         const SyncPath dehydratedFile = _localTempDir.path() / "dehydrated_file.txt";
         { std::ofstream ofs(dehydratedFile); }
         auto ioError = IoError::Success;
-        testhelpers::setDehydratedPlaceholderStatus(dehydratedFile, ioError);
+        CPPUNIT_ASSERT(testhelpers::setDehydratedPlaceholderStatus(dehydratedFile, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         SearchJob job(_driveDbId, "doc");
         job._syncRootPath = _localTempDir.path();
