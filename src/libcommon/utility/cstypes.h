@@ -166,6 +166,7 @@ enum class ExitCause {
     UpdateTreeIntegrityCheckFailed,
     MissingReplyData,
     BlackListPropagationError,
+    FileSystemNotSupported,
     EnumEnd
 };
 
