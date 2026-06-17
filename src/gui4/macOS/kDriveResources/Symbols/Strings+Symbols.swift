@@ -106,6 +106,8 @@ public enum KDriveLocalizable {
   public static let buttonCreateNewSync = KDriveLocalizable.tr("Localizable", "buttonCreateNewSync", fallback: "Create a new sync")
   /// loco:698b14e52445668d9d0495a2
   public static let buttonDisconnectAccount = KDriveLocalizable.tr("Localizable", "buttonDisconnectAccount", fallback: "Disconnect this account")
+  /// loco:69d906534d8c60bd1f0c9344
+  public static let buttonDownloadManually = KDriveLocalizable.tr("Localizable", "buttonDownloadManually", fallback: "Download manually")
   /// loco:698b0aefb16a3916fc004f32
   public static let buttonEnable = KDriveLocalizable.tr("Localizable", "buttonEnable", fallback: "Enable")
   /// loco:699ef0304ba9f8b4d4046cb4
@@ -206,6 +208,8 @@ public enum KDriveLocalizable {
   public static let buttonSynchronizeOffline = KDriveLocalizable.tr("Localizable", "buttonSynchronizeOffline", fallback: "Sync offline")
   /// loco:698aec47dbcc2bef330cf7a9
   public static let buttonUpdate = KDriveLocalizable.tr("Localizable", "buttonUpdate", fallback: "Update")
+  /// loco:69d905ce410048ea400b7952
+  public static let buttonUpdateNow = KDriveLocalizable.tr("Localizable", "buttonUpdateNow", fallback: "Update now")
   /// loco:697b6767849b0ee24c089f46
   public static let buttonUpdateSubscription = KDriveLocalizable.tr("Localizable", "buttonUpdateSubscription", fallback: "Update subscription")
   /// loco:69a69d71b2261fc281078712
@@ -990,6 +994,10 @@ public enum KDriveLocalizable {
   public static func updateAvailable(_ p1: Any) -> String {
     return KDriveLocalizable.tr("Localizable", "updateAvailable", String(describing: p1), fallback: "kDrive %@ available")
   }
+  /// loco:69d904f84d8c60bd1f0c9342
+  public static let updateRequiredDescription = KDriveLocalizable.tr("Localizable", "updateRequiredDescription", fallback: "A new version of kDrive is required to continue.\nPlease update the application to access your files and resume synchronization.")
+  /// loco:69d903e2d570d224db097582
+  public static let updateRequiredTitle = KDriveLocalizable.tr("Localizable", "updateRequiredTitle", fallback: "Update required")
   /// loco:698aec0b7bde6b6260001c02
   public static let updateSettings = KDriveLocalizable.tr("Localizable", "updateSettings", fallback: "Update")
   /// loco:6a031b29945d3f97240ff954

@@ -146,6 +146,8 @@
 
 /* loco:698b14e52445668d9d0495a2 */
 "buttonDisconnectAccount" = "Trennen Sie dieses Konto";
+/* loco:69d906534d8c60bd1f0c9344 */
+"buttonDownloadManually" = "Manuell herunterladen";
 
 /* loco:698b0aefb16a3916fc004f32 */
 "buttonEnable" = "Aktivieren Sie";
@@ -286,6 +288,8 @@
 
 /* loco:698aec47dbcc2bef330cf7a9 */
 "buttonUpdate" = "Update";
+/* loco:69d905ce410048ea400b7952 */
+"buttonUpdateNow" = "Jetzt aktualisieren";
 
 /* loco:697b6767849b0ee24c089f46 */
 "buttonUpdateSubscription" = "Abonnement aktualisieren";
@@ -1351,6 +1355,12 @@
 
 /* loco:698af3afefd229ca780c59e2 */
 "updateAvailable" = "kDrive %@ verfügbar";
+
+/* loco:69d904f84d8c60bd1f0c9342 */
+"updateRequiredDescription" = "Eine neue Version von kDrive ist erforderlich, um fortzufahren.\nBitte aktualisieren Sie die Anwendung, um auf Ihre Dateien zuzugreifen und die Synchronisierung fortzusetzen.";
+
+/* loco:69d903e2d570d224db097582 */
+"updateRequiredTitle" = "Aktualisierung erforderlich";
 
 /* loco:698aec0b7bde6b6260001c02 */
 "updateSettings" = "Update";
