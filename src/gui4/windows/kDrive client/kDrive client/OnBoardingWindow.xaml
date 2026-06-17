@@ -75,9 +75,13 @@
                               Grid.Column="2"
                               Opacity="0"
                               HorizontalAlignment="Center"
-                              VerticalAlignment="Center">     
-            <animatedvisuals:KDrive_SyncroFile Color_1A46FF="{kDrive:ThemeColor Key=AccentFillColorDefaultBrush}"
-                                               Color_FFFFFF="{kDrive:ThemeColor Key=SolidBackgroundFillColorBaseBrush}"/>
+                              VerticalAlignment="Center">
+            <animatedvisuals:KDrive_SyncroFile Color_446FDD="{kDrive:ThemeColor Key=AccentFillColorDefaultBrush}"
+                                               Color_FFFFFF="{kDrive:ThemeColor Key=SolidBackgroundFillColorBaseBrush}"
+                                               Color_F5F7FB="{kDrive:ThemeColor Key=SolidBackgroundFillColorSecondaryBrush}"
+                                               Color_DBE3F0="{kDrive:ThemeColor Key=SolidBackgroundFillColorBaseAltBrush}"
+                                               Color_ECF1F7="{kDrive:ThemeColor Key=SolidBackgroundFillColorTertiaryBrush}"
+                                               Color_C4CCDA="{kDrive:ThemeColor Key=SurfaceStrokeColorDefaultBrush}" />
         </AnimatedVisualPlayer>
         <AnimatedVisualPlayer x:Name="KDrive_LoaderStrokePlayer"
                               AutoPlay="True"
@@ -87,7 +91,7 @@
                               Opacity="0"
                               HorizontalAlignment="Center"
                               VerticalAlignment="Center">
-            <animatedvisuals:KDrive_LoaderStroke Color_446FDD="{kDrive:ThemeColor Key=SystemFillColorAttentionBrush}"/>
+            <animatedvisuals:KDrive_LoaderStroke Color_446FDD="{kDrive:ThemeColor Key=SystemFillColorAttentionBrush}" />
         </AnimatedVisualPlayer>
         <Border Grid.Row="1"
                 Grid.Column="0">
