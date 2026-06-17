@@ -30,6 +30,7 @@ ActionCode getActionCode(const std::string &action) noexcept {
             {"file_update", ActionCode::ActionCodeEdit},
             {"file_access", ActionCode::ActionCodeAccess},
             {"file_trash", ActionCode::ActionCodeTrash},
+            {"file_trash_inherited", ActionCode::ActionCodeTrashInherited},
             {"file_delete", ActionCode::ActionCodeDelete},
             {"file_move", ActionCode::ActionCodeMoveIn},
             {"file_move_out", ActionCode::ActionCodeMoveOut},

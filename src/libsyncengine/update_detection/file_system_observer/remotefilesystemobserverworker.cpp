@@ -761,6 +761,7 @@ bool shouldBeIgnored(const ActionCode actionCode) {
         case ActionCode::ActionCodeRestoreFileShareDelete:
         case ActionCode::ActionCodeRestoreShareLinkCreate:
         case ActionCode::ActionCodeRestoreShareLinkDelete:
+        case ActionCode::ActionCodeTrashInherited:
             return true;
         default:
             return false;
