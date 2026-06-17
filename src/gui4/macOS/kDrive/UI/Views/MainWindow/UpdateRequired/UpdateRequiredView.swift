@@ -42,6 +42,7 @@ struct UpdateRequiredView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(maxWidth: 160)
+                .accessibilityHidden(true)
 
             VStack(spacing: AppPadding.padding16) {
                 Text(KDriveLocalizable.updateRequiredTitle)
@@ -76,7 +77,7 @@ struct UpdateRequiredView: View {
             guard let currentUpdateState: KDC.UpdateState = try? await UpdaterJobs().updaterState() else {
                 return
             }
-            self.updateState = UIUpdateState(updateState: currentUpdateState)
+            updateState = UIUpdateState(updateState: currentUpdateState)
         }
         .onReceive(updateStatePublisher
             .map(UIUpdateState.init(updateState:))

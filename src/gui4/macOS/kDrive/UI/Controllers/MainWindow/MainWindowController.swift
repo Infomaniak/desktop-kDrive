@@ -84,7 +84,7 @@ final class MainWindowController: NSWindowController {
         cacheObservable.serverErrorsPublisher
             .receiveOnMain(store: &bindStore) { [weak self] errors in
                 self?.handleServerError(errors)
-        }
+            }
     }
 
     private func observeUsersCache() {
