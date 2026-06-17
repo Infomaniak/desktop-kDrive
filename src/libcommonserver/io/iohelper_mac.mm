@@ -336,11 +336,11 @@ bool IoHelper::_checkIfPathExistsSensitiveFn(const SyncPath &path, const std::fi
                 // generated with the NFD-normalized name but the file retains its original encoding.
                 SyncName normalizedFileName1;
                 SyncName normalizedFileName2;
-                if (!CommonUtility::normalizedSyncName(canonicalPath.filename(), normalizedFileName1,
+                if (!CommonUtility::normalizedSyncName(canonicalPath.filename().native(), normalizedFileName1,
                                                        UnicodeNormalization::NFD) ||
-                    !CommonUtility::normalizedSyncName(filename, normalizedFileName2, UnicodeNormalization::NFD)) {
-                    LOGW_WARN(logger(), L"Failed to NFD-normalize " << Utility::formatSyncName(canonicalPath.filename())
-                                                                    << L" and " << Utility::formatSyncName(filename));
+                    !CommonUtility::normalizedSyncName(filename.native(), normalizedFileName2, UnicodeNormalization::NFD)) {
+                    LOGW_WARN(logger(), L"Failed to NFD-normalize " << Utility::formatSyncPath(canonicalPath.filename())
+                                                                    << L" and " << Utility::formatSyncPath(filename));
                     exists = canonicalPath.filename() == filename;
                 } else {
                     // Fallback to direct comparison if normalization fails
