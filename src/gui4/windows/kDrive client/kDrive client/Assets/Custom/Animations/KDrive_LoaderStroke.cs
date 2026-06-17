@@ -9,7 +9,7 @@
 //           LottieGen -GenerateColorBindings -GenerateDependencyObject -Language CSharp -Public -WinUIVersion 3.0 -InputFile kDrive-LoaderStroke.json
 //       
 //       Input file:
-//           kDrive-LoaderStroke.json (31650 bytes created 9:11+02:00 Jun 4 2026)
+//           kDrive-LoaderStroke.json (31962 bytes created 15:59+02:00 Jun 12 2026)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -66,30 +66,30 @@ namespace AnimatedVisuals
         // Animation duration: 2.917 seconds.
         internal const long c_durationTicks = 29166666;
 
-        // Theme property: Color_446EDD.
-        internal static readonly Color c_themeColor_446EDD = Color.FromArgb(0xFF, 0x44, 0x6E, 0xDD);
+        // Theme property: Color_446FDD.
+        internal static readonly Color c_themeColor_446FDD = Color.FromArgb(0xFF, 0x44, 0x6F, 0xDD);
 
         CompositionPropertySet _themeProperties;
 
         /// <summary>
-        /// Dependency property for Color_446EDD.
+        /// Dependency property for Color_446FDD.
         /// </summary>
-        public static readonly DependencyProperty Color_446EDDProperty =
-            DependencyProperty.Register("Color_446EDD", typeof(Color), typeof(KDrive_LoaderStroke),
-                new PropertyMetadata(Color.FromArgb(0xFF, 0x44, 0x6E, 0xDD), OnColor_446EDDChanged));
+        public static readonly DependencyProperty Color_446FDDProperty =
+            DependencyProperty.Register("Color_446FDD", typeof(Color), typeof(KDrive_LoaderStroke),
+                new PropertyMetadata(Color.FromArgb(0xFF, 0x44, 0x6F, 0xDD), OnColor_446FDDChanged));
 
         // Theme properties.
-        public Color Color_446EDD
+        public Color Color_446FDD
         {
-            get => (Color)GetValue(Color_446EDDProperty);
-            set => SetValue(Color_446EDDProperty, value);
+            get => (Color)GetValue(Color_446FDDProperty);
+            set => SetValue(Color_446FDDProperty, value);
         }
 
         static Vector4 ColorAsVector4(Color color) => new Vector4(color.R, color.G, color.B, color.A);
 
-        static void OnColor_446EDDChanged(DependencyObject d, DependencyPropertyChangedEventArgs args)
+        static void OnColor_446FDDChanged(DependencyObject d, DependencyPropertyChangedEventArgs args)
         {
-            ((KDrive_LoaderStroke)d)._themeProperties?.InsertVector4("Color_446EDD", ColorAsVector4((Color)(Color)args.NewValue));
+            ((KDrive_LoaderStroke)d)._themeProperties?.InsertVector4("Color_446FDD", ColorAsVector4((Color)(Color)args.NewValue));
         }
 
         CompositionPropertySet EnsureThemeProperties(Compositor compositor)
@@ -97,7 +97,7 @@ namespace AnimatedVisuals
             if (_themeProperties == null)
             {
                 _themeProperties = compositor.CreatePropertySet();
-                _themeProperties.InsertVector4("Color_446EDD", ColorAsVector4((Color)Color_446EDD));
+                _themeProperties.InsertVector4("Color_446FDD", ColorAsVector4((Color)Color_446FDD));
             }
             return _themeProperties;
         }
@@ -160,9 +160,9 @@ namespace AnimatedVisuals
         /// </summary>
         public void SetColorProperty(string propertyName, Color value)
         {
-            if (propertyName == "Color_446EDD")
+            if (propertyName == "Color_446FDD")
             {
-                Color_446EDD = value;
+                Color_446FDD = value;
             }
             else
             {
@@ -192,7 +192,7 @@ namespace AnimatedVisuals
             readonly ExpressionAnimation _reusableExpressionAnimation;
             readonly CompositionPropertySet _themeProperties;
             AnimationController _animationController_0;
-            CompositionColorBrush _themeColor_Color_446EDD;
+            CompositionColorBrush _themeColor_Color_446FDD;
             CompositionContainerShape _containerShape_0;
             CompositionContainerShape _containerShape_1;
             CompositionContainerShape _containerShape_2;
@@ -587,12 +587,12 @@ namespace AnimatedVisuals
                 return result;
             }
 
-            // Color bound to theme property value: Color_446EDD
-            CompositionColorBrush ThemeColor_Color_446EDD()
+            // Color bound to theme property value: Color_446FDD
+            CompositionColorBrush ThemeColor_Color_446FDD()
             {
-                if (_themeColor_Color_446EDD != null) { return _themeColor_Color_446EDD; }
-                var result = _themeColor_Color_446EDD = _c.CreateColorBrush();
-                BindProperty(_themeColor_Color_446EDD, "Color", "ColorRGB(_theme.Color_446EDD.W,_theme.Color_446EDD.X,_theme.Color_446EDD.Y,_theme.Color_446EDD.Z)", "_theme", _themeProperties);
+                if (_themeColor_Color_446FDD != null) { return _themeColor_Color_446FDD; }
+                var result = _themeColor_Color_446FDD = _c.CreateColorBrush();
+                BindProperty(_themeColor_Color_446FDD, "Color", "ColorRGB(_theme.Color_446FDD.W,_theme.Color_446FDD.X,_theme.Color_446FDD.Y,_theme.Color_446FDD.Z)", "_theme", _themeProperties);
                 return result;
             }
 
@@ -803,7 +803,7 @@ namespace AnimatedVisuals
             CompositionSpriteShape SpriteShape_0()
             {
                 var result = _c.CreateSpriteShape(PathGeometry_0());
-                result.FillBrush = ThemeColor_Color_446EDD();
+                result.FillBrush = ThemeColor_Color_446FDD();
                 return result;
             }
 
@@ -811,7 +811,7 @@ namespace AnimatedVisuals
             CompositionSpriteShape SpriteShape_1()
             {
                 var result = _c.CreateSpriteShape(PathGeometry_1());
-                result.FillBrush = ThemeColor_Color_446EDD();
+                result.FillBrush = ThemeColor_Color_446FDD();
                 return result;
             }
 
@@ -819,7 +819,7 @@ namespace AnimatedVisuals
             CompositionSpriteShape SpriteShape_2()
             {
                 var result = _c.CreateSpriteShape(PathGeometry_2());
-                result.FillBrush = ThemeColor_Color_446EDD();
+                result.FillBrush = ThemeColor_Color_446FDD();
                 return result;
             }
 
@@ -828,7 +828,7 @@ namespace AnimatedVisuals
             CompositionSpriteShape SpriteShape_3()
             {
                 var result = _c.CreateSpriteShape(PathGeometry_3());
-                result.FillBrush = ThemeColor_Color_446EDD();
+                result.FillBrush = ThemeColor_Color_446FDD();
                 return result;
             }
 
