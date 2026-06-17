@@ -1578,7 +1578,7 @@ ExitInfo ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &pr
         {
             bool removeFromDB = true;
             if (syncOp->conflict().type() == ConflictType::CreateCreate) {
-                // A new nodes is not in DB yet, so we don't need to remove it
+                // A new node is not in DB yet, so we don't need to remove it
                 removeFromDB = false;
             } else if (syncOp->conflict().type() == ConflictType::MoveMoveSource) {
                 // If the item is a dehydrated file, the local placeholder has been deleted, so we should remove the node from DB
