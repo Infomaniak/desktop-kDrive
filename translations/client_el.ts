@@ -4,1205 +4,970 @@
 <context>
     <name>KDC::AboutDialog</name>
     <message>
-        <location filename="../src/gui/aboutdialog.cpp" line="73"/>
         <source>About</source>
-        <translation>Σχετικά</translation>
+        <translation type="vanished">Σχετικά</translation>
     </message>
     <message>
-        <location filename="../src/gui/aboutdialog.cpp" line="112"/>
         <source>CLOSE</source>
-        <translation>ΚΛΕΙΣΙΜΟ</translation>
+        <translation type="vanished">ΚΛΕΙΣΙΜΟ</translation>
     </message>
     <message>
-        <location filename="../src/gui/aboutdialog.cpp" line="123"/>
         <source>Version %1. For more information visit &lt;a style=&quot;%2&quot; href=&quot;%3&quot;&gt;%4&lt;/a&gt;&lt;br&gt;&lt;br&gt;</source>
-        <translation>Έκδοση %1. Για περισσότερες πληροφορίες επισκεφθείτε &lt;a style=&quot;%2&quot; href=&quot;%3&quot;&gt;%4&lt;/a&gt;&lt;br&gt;&lt;br&gt;</translation>
+        <translation type="vanished">Έκδοση %1. Για περισσότερες πληροφορίες επισκεφθείτε &lt;a style=&quot;%2&quot; href=&quot;%3&quot;&gt;%4&lt;/a&gt;&lt;br&gt;&lt;br&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/aboutdialog.cpp" line="126"/>
         <source>Copyright 2019-%1 Infomaniak Network SA&lt;br&gt;&lt;br&gt;</source>
-        <translation>Πνευματικά δικαιώματα 2019-%1 Infomaniak Network SA&lt;br&gt;&lt;br&gt;</translation>
+        <translation type="vanished">Πνευματικά δικαιώματα 2019-%1 Infomaniak Network SA&lt;br&gt;&lt;br&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/aboutdialog.cpp" line="127"/>
         <source>Distributed by %1 and licensed under the &lt;a style=&quot;%3&quot; href=&quot;%4&quot;&gt;%5&lt;/a&gt;.&lt;br&gt;&lt;br&gt;%2 and the %2 logo are registered trademarks of %1.&lt;br&gt;&lt;br&gt;</source>
-        <translation>Διανέμεται από τον %1 και αδειοδοτείται υπό &lt;a style=&quot;%3&quot; href=&quot;%4&quot;&gt;%5&lt;/a&gt;.&lt;br&gt;&lt;br&gt;Το %2 και το λογότυπο %2 είναι κατοχυρωμένα εμπορικά σήματα του %1.&lt;br&gt;&lt;br&gt;</translation>
+        <translation type="vanished">Διανέμεται από τον %1 και αδειοδοτείται υπό &lt;a style=&quot;%3&quot; href=&quot;%4&quot;&gt;%5&lt;/a&gt;.&lt;br&gt;&lt;br&gt;Το %2 και το λογότυπο %2 είναι κατοχυρωμένα εμπορικά σήματα του %1.&lt;br&gt;&lt;br&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/aboutdialog.cpp" line="132"/>
         <source>&lt;p&gt;&lt;small&gt;Built from &lt;a style=&quot;color: #489EF3&quot; href=&quot;%1&quot;&gt;Git sources&lt;/a&gt; on %2, %3 using Qt %4, %5&lt;/small&gt;&lt;/p&gt;</source>
-        <translation>&lt;p&gt;&lt;small&gt;Κατασκευάστηκε από &lt;a style=&quot;color: #489EF3&quot; href=&quot;%1&quot;&gt;πηγές Git&lt;/a&gt; στις %2, %3 χρησιμοποιώντας Qt %4, %5&lt;/small&gt;&lt;/p&gt;</translation>
+        <translation type="vanished">&lt;p&gt;&lt;small&gt;Κατασκευάστηκε από &lt;a style=&quot;color: #489EF3&quot; href=&quot;%1&quot;&gt;πηγές Git&lt;/a&gt; στις %2, %3 χρησιμοποιώντας Qt %4, %5&lt;/small&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/aboutdialog.cpp" line="151"/>
-        <location filename="../src/gui/aboutdialog.cpp" line="162"/>
-        <location filename="../src/gui/aboutdialog.cpp" line="171"/>
         <source>Unable to open folder %1.</source>
-        <translation>Δεν είναι δυνατό το άνοιγμα του φακέλου %1.</translation>
+        <translation type="vanished">Δεν είναι δυνατό το άνοιγμα του φακέλου %1.</translation>
     </message>
 </context>
 <context>
     <name>KDC::AbstractFileItemWidget</name>
     <message>
-        <location filename="../src/gui/abstractfileitemwidget.cpp" line="177"/>
         <source>Unable to open folder path %1.</source>
-        <translation>Δεν είναι δυνατό το άνοιγμα της διαδρομής φακέλου %1.</translation>
+        <translation type="vanished">Δεν είναι δυνατό το άνοιγμα της διαδρομής φακέλου %1.</translation>
     </message>
 </context>
 <context>
     <name>KDC::AddDriveConfirmationWidget</name>
     <message>
-        <location filename="../src/gui/adddriveconfirmationwidget.cpp" line="55"/>
         <source>Synchronization will start and you will be able to add files to your %1 folder.</source>
-        <translation>Ο συγχρονισμός θα ξεκινήσει και θα μπορείτε να προσθέσετε αρχεία στον φάκελο %1.</translation>
+        <translation type="vanished">Ο συγχρονισμός θα ξεκινήσει και θα μπορείτε να προσθέσετε αρχεία στον φάκελο %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveconfirmationwidget.cpp" line="99"/>
         <source>Your kDrive is ready!</source>
-        <translation>Το kDrive σας είναι έτοιμο!</translation>
+        <translation type="vanished">Το kDrive σας είναι έτοιμο!</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveconfirmationwidget.cpp" line="123"/>
         <source>OPEN FOLDER</source>
-        <translation>ΑΝΟΙΓΜΑ ΦΑΚΕΛΟΥ</translation>
+        <translation type="vanished">ΑΝΟΙΓΜΑ ΦΑΚΕΛΟΥ</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveconfirmationwidget.cpp" line="130"/>
         <source>PARAMETERS</source>
-        <translation>ΠΑΡΑΜΕΤΡΟΙ</translation>
+        <translation type="vanished">ΠΑΡΑΜΕΤΡΟΙ</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveconfirmationwidget.cpp" line="138"/>
         <source>Synchronize another drive</source>
-        <translation>Συγχρονισμός άλλης μονάδας</translation>
+        <translation type="vanished">Συγχρονισμός άλλης μονάδας</translation>
     </message>
 </context>
 <context>
     <name>KDC::AddDriveListWidget</name>
     <message>
-        <location filename="../src/gui/adddrivelistwidget.cpp" line="170"/>
         <source>Cancel</source>
-        <translation>Ακύρωση</translation>
+        <translation type="vanished">Ακύρωση</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivelistwidget.cpp" line="177"/>
         <source>NEXT</source>
-        <translation>ΕΠΟΜΕΝΟ</translation>
+        <translation type="vanished">ΕΠΟΜΕΝΟ</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivelistwidget.cpp" line="196"/>
         <source>Select the kDrive you want to synchronize</source>
-        <translation>Επιλέξτε το kDrive που θέλετε να συγχρονίσετε</translation>
+        <translation type="vanished">Επιλέξτε το kDrive που θέλετε να συγχρονίσετε</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivelistwidget.cpp" line="234"/>
         <source>Get kDrive for free</source>
-        <translation>Αποκτήστε kDrive δωρεάν</translation>
+        <translation type="vanished">Αποκτήστε kDrive δωρεάν</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivelistwidget.cpp" line="244"/>
         <source>Store your pictures, documents and e-mails in Switzerland from an independent company that respects privacy. Learn more</source>
-        <translation>Αποθηκεύστε φωτογραφίες, έγγραφα και email στην Ελβετία από ανεξάρτητη εταιρεία που σέβεται την ιδιωτικότητα. Μάθετε περισσότερα</translation>
+        <translation type="vanished">Αποθηκεύστε φωτογραφίες, έγγραφα και email στην Ελβετία από ανεξάρτητη εταιρεία που σέβεται την ιδιωτικότητα. Μάθετε περισσότερα</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivelistwidget.cpp" line="263"/>
         <source>Test for free</source>
-        <translation>Δοκιμάστε δωρεάν</translation>
+        <translation type="vanished">Δοκιμάστε δωρεάν</translation>
     </message>
 </context>
 <context>
     <name>KDC::AddDriveLiteSyncWidget</name>
     <message>
-        <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="112"/>
         <source>Would you like to activate Lite Sync (Beta) ?</source>
-        <translation>Θέλετε να ενεργοποιήσετε το Lite Sync (Beta);</translation>
+        <translation type="vanished">Θέλετε να ενεργοποιήσετε το Lite Sync (Beta);</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="114"/>
         <source>Would you like to activate Lite Sync ?</source>
-        <translation>Θέλετε να ενεργοποιήσετε το Lite Sync;</translation>
+        <translation type="vanished">Θέλετε να ενεργοποιήσετε το Lite Sync;</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="125"/>
         <source>Lite Sync syncs all your files without using your computer space. You can browse the files in your kDrive and download them locally whenever you want. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
-        <translation>Το Lite Sync συγχρονίζει όλα τα αρχεία χωρίς να καταναλώνει χώρο στον υπολογιστή. Μπορείτε να περιηγηθείτε στα αρχεία του kDrive και να τα κατεβάσετε τοπικά όποτε θέλετε. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Μάθετε περισσότερα&lt;/a&gt;</translation>
+        <translation type="vanished">Το Lite Sync συγχρονίζει όλα τα αρχεία χωρίς να καταναλώνει χώρο στον υπολογιστή. Μπορείτε να περιηγηθείτε στα αρχεία του kDrive και να τα κατεβάσετε τοπικά όποτε θέλετε. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Μάθετε περισσότερα&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="147"/>
         <source>Conserve your computer space</source>
-        <translation>Εξοικονομήστε χώρο στον υπολογιστή</translation>
+        <translation type="vanished">Εξοικονομήστε χώρο στον υπολογιστή</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="167"/>
         <source>Decide which files should be available online or locally</source>
-        <translation>Αποφασίστε ποια αρχεία θα είναι διαθέσιμα ηλεκτρονικά ή τοπικά</translation>
+        <translation type="vanished">Αποφασίστε ποια αρχεία θα είναι διαθέσιμα ηλεκτρονικά ή τοπικά</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="187"/>
         <source>LATER</source>
-        <translation>ΑΡΓΟΤΕΡΑ</translation>
+        <translation type="vanished">ΑΡΓΟΤΕΡΑ</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="193"/>
         <source>YES</source>
-        <translation>ΝΑΙ</translation>
+        <translation type="vanished">ΝΑΙ</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="207"/>
         <source>Unable to open link %1.</source>
-        <translation>Δεν είναι δυνατό το άνοιγμα του συνδέσμου %1.</translation>
+        <translation type="vanished">Δεν είναι δυνατό το άνοιγμα του συνδέσμου %1.</translation>
     </message>
 </context>
 <context>
     <name>KDC::AddDriveLocalFolderWidget</name>
     <message>
-        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="65"/>
         <source>Location of your %1 kDrive</source>
-        <translation>Τοποθεσία του kDrive %1 σας</translation>
+        <translation type="vanished">Τοποθεσία του kDrive %1 σας</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="155"/>
         <source>Edit folder</source>
-        <translation>Επεξεργασία φακέλου</translation>
+        <translation type="vanished">Επεξεργασία φακέλου</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="212"/>
         <source>You will find all your files in this folder when the configuration is complete. You can drop new files there to sync them to your kDrive.</source>
-        <translation>Θα βρείτε όλα τα αρχεία σας σε αυτόν τον φάκελο μόλις ολοκληρωθεί η διαμόρφωση. Μπορείτε να προσθέσετε νέα αρχεία για συγχρονισμό με το kDrive.</translation>
+        <translation type="vanished">Θα βρείτε όλα τα αρχεία σας σε αυτόν τον φάκελο μόλις ολοκληρωθεί η διαμόρφωση. Μπορείτε να προσθέσετε νέα αρχεία για συγχρονισμό με το kDrive.</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="246"/>
         <source>END</source>
-        <translation>ΤΕΛΟΣ</translation>
+        <translation type="vanished">ΤΕΛΟΣ</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="246"/>
         <source>CONTINUE</source>
-        <translation>ΣΥΝΕΧΕΙΑ</translation>
+        <translation type="vanished">ΣΥΝΕΧΕΙΑ</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="264"/>
         <source>The contents of the &lt;b&gt;%1&lt;/b&gt; folder will be synchronized in your kDrive</source>
-        <translation>Τα περιεχόμενα του φακέλου &lt;b&gt;%1&lt;/b&gt; θα συγχρονιστούν στο kDrive</translation>
+        <translation type="vanished">Τα περιεχόμενα του φακέλου &lt;b&gt;%1&lt;/b&gt; θα συγχρονιστούν στο kDrive</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="284"/>
         <source>This folder is not compatible with Lite Sync.&lt;br&gt; 
 Please select another folder. If you continue Lite Sync will be disabled.&lt;br&gt; 
 &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
-        <translation>Αυτός ο φάκελος δεν είναι συμβατός με το Lite Sync.&lt;br&gt; 
+        <translation type="vanished">Αυτός ο φάκελος δεν είναι συμβατός με το Lite Sync.&lt;br&gt; 
 Επιλέξτε άλλον φάκελο. Αν συνεχίσετε, το Lite Sync θα απενεργοποιηθεί.&lt;br&gt; 
 &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Μάθετε περισσότερα&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="297"/>
         <source>Select folder</source>
-        <translation>Επιλογή φακέλου</translation>
+        <translation type="vanished">Επιλογή φακέλου</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="377"/>
         <source>Unable to open link %1.</source>
-        <translation>Δεν είναι δυνατό το άνοιγμα του συνδέσμου %1.</translation>
+        <translation type="vanished">Δεν είναι δυνατό το άνοιγμα του συνδέσμου %1.</translation>
     </message>
 </context>
 <context>
     <name>KDC::AddDriveLoginWidget</name>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="69"/>
         <source>Log in from your browser</source>
-        <translation>Σύνδεση μέσω του περιηγητή</translation>
+        <translation type="vanished">Σύνδεση μέσω του περιηγητή</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="75"/>
         <source>Your browser should open automatically to complete the connection. Once connected, you will automatically return to kDrive.</source>
-        <translation>Ο περιηγητής σας θα ανοίξει αυτόματα για να ολοκληρωθεί η σύνδεση. Μόλις συνδεθείτε, θα επιστρέψετε αυτόματα στο kDrive.</translation>
+        <translation type="vanished">Ο περιηγητής σας θα ανοίξει αυτόματα για να ολοκληρωθεί η σύνδεση. Μόλις συνδεθείτε, θα επιστρέψετε αυτόματα στο kDrive.</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="85"/>
         <source>Open the login page</source>
-        <translation>Άνοιγμα σελίδας σύνδεσης</translation>
+        <translation type="vanished">Άνοιγμα σελίδας σύνδεσης</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="121"/>
         <source>An error occurred during authentication. Please close the login window and try again.&lt;br&gt;If the error persists, contact our support team.</source>
-        <translation>Παρουσιάστηκε σφάλμα κατά τον έλεγχο ταυτότητας. Κλείστε το παράθυρο σύνδεσης και δοκιμάστε ξανά.&lt;br&gt;Εάν το σφάλμα επιμένει, επικοινωνήστε με την ομάδα υποστήριξής μας.</translation>
+        <translation type="vanished">Παρουσιάστηκε σφάλμα κατά τον έλεγχο ταυτότητας. Κλείστε το παράθυρο σύνδεσης και δοκιμάστε ξανά.&lt;br&gt;Εάν το σφάλμα επιμένει, επικοινωνήστε με την ομάδα υποστήριξής μας.</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="137"/>
         <source>Login failed: %1 - %2</source>
-        <translation>Αποτυχία σύνδεσης: %1 - %2</translation>
+        <translation type="vanished">Αποτυχία σύνδεσης: %1 - %2</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="145"/>
         <source>Failed to open the login page in your web browser</source>
-        <translation>Αποτυχία ανοίγματος σελίδας σύνδεσης στον περιηγητή</translation>
+        <translation type="vanished">Αποτυχία ανοίγματος σελίδας σύνδεσης στον περιηγητή</translation>
     </message>
 </context>
 <context>
     <name>KDC::AddDriveServerFoldersWidget</name>
     <message>
-        <location filename="../src/gui/adddriveserverfolderswidget.cpp" line="129"/>
         <source>Select kDrive folders to synchronize on your desktop</source>
-        <translation>Επιλέξτε φακέλους kDrive για συγχρονισμό στον υπολογιστή</translation>
+        <translation type="vanished">Επιλέξτε φακέλους kDrive για συγχρονισμό στον υπολογιστή</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveserverfolderswidget.cpp" line="174"/>
         <source>CONTINUE</source>
-        <translation>ΣΥΝΕΧΕΙΑ</translation>
+        <translation type="vanished">ΣΥΝΕΧΕΙΑ</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveserverfolderswidget.cpp" line="187"/>
         <source>Space available on your computer : %1</source>
-        <translation>Διαθέσιμος χώρος στον υπολογιστή: %1</translation>
+        <translation type="vanished">Διαθέσιμος χώρος στον υπολογιστή: %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveserverfolderswidget.cpp" line="206"/>
         <source>An error occurred while loading the list of subfolders.</source>
-        <translation>Παρουσιάστηκε σφάλμα κατά τη φόρτωση της λίστας υποφακέλων.</translation>
+        <translation type="vanished">Παρουσιάστηκε σφάλμα κατά τη φόρτωση της λίστας υποφακέλων.</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveserverfolderswidget.cpp" line="210"/>
         <source>Impossible to load the list of subfolders. Your kDrive might be in maintenance.&lt;br&gt;Please, login to the &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;web version&lt;/a&gt; to check your kDrive&apos;s status, or contact your administrator.</source>
-        <translation>Αδύνατη η φόρτωση της λίστας υποφακέλων. Το kDrive μπορεί να βρίσκεται σε συντήρηση.&lt;br&gt;Συνδεθείτε στην &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;ιστοσελίδα&lt;/a&gt; για να ελέγξετε την κατάσταση ή επικοινωνήστε με τον διαχειριστή.</translation>
+        <translation type="vanished">Αδύνατη η φόρτωση της λίστας υποφακέλων. Το kDrive μπορεί να βρίσκεται σε συντήρηση.&lt;br&gt;Συνδεθείτε στην &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;ιστοσελίδα&lt;/a&gt; για να ελέγξετε την κατάσταση ή επικοινωνήστε με τον διαχειριστή.</translation>
     </message>
 </context>
 <context>
     <name>KDC::AddDriveWizard</name>
     <message>
-        <location filename="../src/gui/adddrivewizard.cpp" line="226"/>
         <source>Failed to create local folder %1</source>
-        <translation>Αποτυχία δημιουργίας τοπικού φακέλου %1</translation>
+        <translation type="vanished">Αποτυχία δημιουργίας τοπικού φακέλου %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivewizard.cpp" line="237"/>
         <source>Failed to create new synchronization</source>
-        <translation>Αποτυχία δημιουργίας νέου συγχρονισμού</translation>
+        <translation type="vanished">Αποτυχία δημιουργίας νέου συγχρονισμού</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivewizard.cpp" line="270"/>
         <source>The kDrive %1 is already synchronized on this computer. Continue anyway?</source>
-        <translation>Το kDrive %1 είναι ήδη συγχρονισμένο σε αυτόν τον υπολογιστή. Θέλετε να συνεχίσετε;</translation>
+        <translation type="vanished">Το kDrive %1 είναι ήδη συγχρονισμένο σε αυτόν τον υπολογιστή. Θέλετε να συνεχίσετε;</translation>
     </message>
 </context>
 <context>
     <name>KDC::AppClient</name>
     <message>
-        <location filename="../src/gui/appclient.cpp" line="100"/>
         <source>kDrive client is run with bad parameters!</source>
-        <translation>Ο πελάτης kDrive εκτελείται με εσφαλμένες παραμέτρους!</translation>
+        <translation type="vanished">Ο πελάτης kDrive εκτελείται με εσφαλμένες παραμέτρους!</translation>
     </message>
     <message>
-        <location filename="../src/gui/appclient.cpp" line="109"/>
         <source>kDrive client is already running!</source>
-        <translation>Ο πελάτης kDrive εκτελείται ήδη!</translation>
+        <translation type="vanished">Ο πελάτης kDrive εκτελείται ήδη!</translation>
     </message>
     <message>
-        <location filename="../src/gui/appclient.cpp" line="724"/>
         <source>The user %1 is not connected. Please log in again.</source>
-        <translation>Ο χρήστης %1 δεν είναι συνδεδεμένος. Παρακαλώ συνδεθείτε ξανά.</translation>
+        <translation type="vanished">Ο χρήστης %1 δεν είναι συνδεδεμένος. Παρακαλώ συνδεθείτε ξανά.</translation>
     </message>
 </context>
 <context>
     <name>KDC::AppServer</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="1691"/>
         <source>Share link copied to clipboard</source>
-        <translation>Ο σύνδεσμος κοινοποίησης αντιγράφηκε στο πρόχειρο</translation>
+        <translation type="vanished">Ο σύνδεσμος κοινοποίησης αντιγράφηκε στο πρόχειρο</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3848"/>
         <source>%1 and %n other file(s) have been removed.</source>
-        <translation>
+        <translation type="vanished">
             <numerusform>%1 και %n άλλο αρχείο αφαιρέθηκαν.</numerusform>
             <numerusform>%1 και %n άλλα αρχεία αφαιρέθηκαν.</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3850"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
-        <translation>Το %1 αφαιρέθηκε.</translation>
+        <translation type="vanished">Το %1 αφαιρέθηκε.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3855"/>
         <source>%1 and %n other file(s) have been added.</source>
-        <translation>
+        <translation type="vanished">
             <numerusform>%1 και %n άλλο αρχείο προστέθηκαν.</numerusform>
             <numerusform>%1 και %n άλλα αρχεία προστέθηκαν.</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3857"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
-        <translation>Το %1 προστέθηκε.</translation>
+        <translation type="vanished">Το %1 προστέθηκε.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3862"/>
         <source>%1 and %n other file(s) have been updated.</source>
-        <translation>
+        <translation type="vanished">
             <numerusform>%1 και %n άλλο αρχείο ενημερώθηκαν.</numerusform>
             <numerusform>%1 και %n άλλα αρχεία ενημερώθηκαν.</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3864"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
-        <translation>Το %1 ενημερώθηκε.</translation>
+        <translation type="vanished">Το %1 ενημερώθηκε.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3869"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
-        <translation>
+        <translation type="vanished">
             <numerusform>Το %1 μετακινήθηκε στο %2 και %n άλλο αρχείο μετακινήθηκε.</numerusform>
             <numerusform>Το %1 μετακινήθηκε στο %2 και %n άλλα αρχεία μετακινήθηκαν.</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3872"/>
         <source>%1 has been moved to %2.</source>
-        <translation>Το %1 μετακινήθηκε στο %2.</translation>
+        <translation type="vanished">Το %1 μετακινήθηκε στο %2.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3880"/>
         <source>Sync Activity</source>
-        <translation>Δραστηριότητα συγχρονισμού</translation>
+        <translation type="vanished">Δραστηριότητα συγχρονισμού</translation>
     </message>
 </context>
 <context>
     <name>KDC::BaseFolderTreeItemWidget</name>
     <message>
-        <location filename="../src/gui/basefoldertreeitemwidget.cpp" line="102"/>
         <source>No subfolders currently on the server.</source>
-        <translation>Δεν υπάρχουν υποφάκελοι αυτή τη στιγμή στον διακομιστή.</translation>
+        <translation type="vanished">Δεν υπάρχουν υποφάκελοι αυτή τη στιγμή στον διακομιστή.</translation>
     </message>
 </context>
 <context>
     <name>KDC::BetaProgramDialog</name>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="70"/>
         <source>Quit the beta program</source>
-        <translation>Αποχώρηση από το πρόγραμμα beta</translation>
+        <translation type="vanished">Αποχώρηση από το πρόγραμμα beta</translation>
     </message>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="70"/>
         <source>Join the beta program</source>
-        <translation>Συμμετοχή στο πρόγραμμα beta</translation>
+        <translation type="vanished">Συμμετοχή στο πρόγραμμα beta</translation>
     </message>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="78"/>
         <source>Get early access to new versions of the application before they are released to the general public, and take part in improving the application by sending us your comments.</source>
-        <translation>Αποκτήστε πρώιμη πρόσβαση σε νέες εκδόσεις της εφαρμογής πριν κυκλοφορήσουν στο ευρύ κοινό και συμμετάσχετε στη βελτίωσή της αποστέλλοντας τα σχόλιά σας.</translation>
+        <translation type="vanished">Αποκτήστε πρώιμη πρόσβαση σε νέες εκδόσεις της εφαρμογής πριν κυκλοφορήσουν στο ευρύ κοινό και συμμετάσχετε στη βελτίωσή της αποστέλλοντας τα σχόλιά σας.</translation>
     </message>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="88"/>
         <source>Benefit from application beta updates</source>
-        <translation>Επωφεληθείτε από τις ενημερώσεις beta της εφαρμογής</translation>
+        <translation type="vanished">Επωφεληθείτε από τις ενημερώσεις beta της εφαρμογής</translation>
     </message>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="92"/>
         <source>No</source>
-        <translation>Όχι</translation>
+        <translation type="vanished">Όχι</translation>
     </message>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="93"/>
         <source>Public beta version</source>
-        <translation>Δημόσια έκδοση beta</translation>
+        <translation type="vanished">Δημόσια έκδοση beta</translation>
     </message>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="94"/>
         <source>Internal beta version</source>
-        <translation>Εσωτερική έκδοση beta</translation>
+        <translation type="vanished">Εσωτερική έκδοση beta</translation>
     </message>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="95"/>
         <source>Test version</source>
-        <translation>Δοκιμαστική έκδοση</translation>
+        <translation type="vanished">Δοκιμαστική έκδοση</translation>
     </message>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="146"/>
         <source>I understand</source>
-        <translation>Κατανοώ</translation>
+        <translation type="vanished">Κατανοώ</translation>
     </message>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="152"/>
         <source>Are you sure you want to leave the beta program?</source>
-        <translation>Είστε βέβαιοι ότι θέλετε να αποχωρήσετε από το πρόγραμμα beta;</translation>
+        <translation type="vanished">Είστε βέβαιοι ότι θέλετε να αποχωρήσετε από το πρόγραμμα beta;</translation>
     </message>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="166"/>
         <source>Save</source>
-        <translation>Αποθήκευση</translation>
+        <translation type="vanished">Αποθήκευση</translation>
     </message>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="172"/>
         <source>Cancel</source>
-        <translation>Ακύρωση</translation>
+        <translation type="vanished">Ακύρωση</translation>
     </message>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="235"/>
         <source>Your current version of the application may be too recent, your choice will be effective when the next update is available.</source>
-        <translation>Η τρέχουσα έκδοση της εφαρμογής μπορεί να είναι πολύ πρόσφατη. Η επιλογή σας θα ισχύσει με την επόμενη διαθέσιμη ενημέρωση.</translation>
+        <translation type="vanished">Η τρέχουσα έκδοση της εφαρμογής μπορεί να είναι πολύ πρόσφατη. Η επιλογή σας θα ισχύσει με την επόμενη διαθέσιμη ενημέρωση.</translation>
     </message>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="240"/>
         <source>Beta versions may leave unexpectedly or cause instabilities.</source>
-        <translation>Οι εκδόσεις beta ενδέχεται να διακοπούν απροσδόκητα ή να προκαλέσουν αστάθειες.</translation>
+        <translation type="vanished">Οι εκδόσεις beta ενδέχεται να διακοπούν απροσδόκητα ή να προκαλέσουν αστάθειες.</translation>
     </message>
 </context>
 <context>
     <name>KDC::ClientGui</name>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="117"/>
         <source>Unable to initialize kDrive client</source>
-        <translation>Δεν είναι δυνατή η αρχικοποίηση του πελάτη kDrive</translation>
+        <translation type="vanished">Δεν είναι δυνατή η αρχικοποίηση του πελάτη kDrive</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="190"/>
         <source>Failed to fix conflict(s) on %1 item(s) in sync folder: %2</source>
-        <translation>Αποτυχία επίλυσης %1 σύγκρουση(ων) σε φάκελο συγχρονισμού: %2</translation>
+        <translation type="vanished">Αποτυχία επίλυσης %1 σύγκρουση(ων) σε φάκελο συγχρονισμού: %2</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="243"/>
         <source>Please sign in</source>
-        <translation>Παρακαλώ συνδεθείτε</translation>
+        <translation type="vanished">Παρακαλώ συνδεθείτε</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="256"/>
         <source>Synchronization is paused</source>
-        <translation>Ο συγχρονισμός έχει τεθεί σε παύση</translation>
+        <translation type="vanished">Ο συγχρονισμός έχει τεθεί σε παύση</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="293"/>
         <source>Folder %1: %2</source>
-        <translation>Φάκελος %1: %2</translation>
+        <translation type="vanished">Φάκελος %1: %2</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="299"/>
         <source>There are no sync folders configured.</source>
-        <translation>Δεν έχουν διαμορφωθεί φάκελοι συγχρονισμού.</translation>
+        <translation type="vanished">Δεν έχουν διαμορφωθεί φάκελοι συγχρονισμού.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="674"/>
         <source>Undefined State.</source>
-        <translation>Απροσδιόριστη κατάσταση.</translation>
+        <translation type="vanished">Απροσδιόριστη κατάσταση.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="677"/>
         <source>Waiting to start syncing.</source>
-        <translation>Αναμονή έναρξης συγχρονισμού.</translation>
+        <translation type="vanished">Αναμονή έναρξης συγχρονισμού.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="680"/>
         <source>Sync is running.</source>
-        <translation>Ο συγχρονισμός εκτελείται.</translation>
+        <translation type="vanished">Ο συγχρονισμός εκτελείται.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="684"/>
         <source>Sync was successful, unresolved conflicts.</source>
-        <translation>Ο συγχρονισμός ήταν επιτυχής, με μη επιλυμένες συγκρούσεις.</translation>
+        <translation type="vanished">Ο συγχρονισμός ήταν επιτυχής, με μη επιλυμένες συγκρούσεις.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="686"/>
         <source>Last Sync was successful.</source>
-        <translation>Ο τελευταίος συγχρονισμός ήταν επιτυχής.</translation>
+        <translation type="vanished">Ο τελευταίος συγχρονισμός ήταν επιτυχής.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="693"/>
         <source>User Abort.</source>
-        <translation>Ακύρωση από τον χρήστη.</translation>
+        <translation type="vanished">Ακύρωση από τον χρήστη.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="697"/>
         <source>Sync is paused.</source>
-        <translation>Ο συγχρονισμός είναι σε παύση.</translation>
+        <translation type="vanished">Ο συγχρονισμός είναι σε παύση.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="706"/>
         <source>%1 (Sync is paused)</source>
-        <translation>%1 (Ο συγχρονισμός είναι σε παύση)</translation>
+        <translation type="vanished">%1 (Ο συγχρονισμός είναι σε παύση)</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="850"/>
         <source>Unable to open folder path %1.</source>
-        <translation>Δεν είναι δυνατό το άνοιγμα της διαδρομής φακέλου %1.</translation>
+        <translation type="vanished">Δεν είναι δυνατό το άνοιγμα της διαδρομής φακέλου %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1250"/>
         <source>Do you really want to remove the synchronizations of the account &lt;i&gt;%1&lt;/i&gt; ?&lt;br&gt;&lt;b&gt;Note:&lt;/b&gt; This will &lt;b&gt;not&lt;/b&gt; delete any files.</source>
-        <translation>Θέλετε πραγματικά να καταργήσετε τους συγχρονισμούς του λογαριασμού &lt;i&gt;%1&lt;/i&gt;;&lt;br&gt;&lt;b&gt;Σημείωση:&lt;/b&gt; Αυτό &lt;b&gt;δεν&lt;/b&gt; θα διαγράψει κανένα αρχείο.</translation>
+        <translation type="vanished">Θέλετε πραγματικά να καταργήσετε τους συγχρονισμούς του λογαριασμού &lt;i&gt;%1&lt;/i&gt;;&lt;br&gt;&lt;b&gt;Σημείωση:&lt;/b&gt; Αυτό &lt;b&gt;δεν&lt;/b&gt; θα διαγράψει κανένα αρχείο.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1254"/>
         <source>REMOVE ALL SYNCHRONIZATIONS</source>
-        <translation>ΚΑΤΑΡΓΗΣΗ ΟΛΩΝ ΤΩΝ ΣΥΓΧΡΟΝΙΣΜΩΝ</translation>
+        <translation type="vanished">ΚΑΤΑΡΓΗΣΗ ΟΛΩΝ ΤΩΝ ΣΥΓΧΡΟΝΙΣΜΩΝ</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1255"/>
         <source>CANCEL</source>
-        <translation>ΑΚΥΡΩΣΗ</translation>
+        <translation type="vanished">ΑΚΥΡΩΣΗ</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1382"/>
         <source>%1 items have been deleted from your from your local sync folder &lt;a style=&quot;%2&quot; href=&quot;file:///%3&quot;&gt;%3&lt;/a&gt;. To avoid unintended deletions the synchronization have been paused.&lt;br&gt;Do you want to propagate those deletion to your kDrive?</source>
-        <translation>%1 στοιχεία διαγράφηκαν από τον τοπικό φάκελο συγχρονισμού σας &lt;a style=&quot;%2&quot; href=&quot;file:///%3&quot;&gt;%3&lt;/a&gt;. Για να αποφευχθούν ακούσιες διαγραφές, ο συγχρονισμός έχει τεθεί σε παύση.&lt;br&gt;Θέλετε να μεταφέρετε αυτές τις διαγραφές στο kDrive σας;</translation>
+        <translation type="vanished">%1 στοιχεία διαγράφηκαν από τον τοπικό φάκελο συγχρονισμού σας &lt;a style=&quot;%2&quot; href=&quot;file:///%3&quot;&gt;%3&lt;/a&gt;. Για να αποφευχθούν ακούσιες διαγραφές, ο συγχρονισμός έχει τεθεί σε παύση.&lt;br&gt;Θέλετε να μεταφέρετε αυτές τις διαγραφές στο kDrive σας;</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1420"/>
         <source>Several files have been deleted from your local sync folder &lt;a style=&quot;%1&quot; href=&quot;file:///%2&quot;&gt;%2&lt;/a&gt;. Deleted files can be found in kDrive&apos;s &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;trash&lt;/a&gt;.</source>
-        <translation>Αρκετά αρχεία διαγράφηκαν από τον τοπικό φάκελο συγχρονισμού σας &lt;a style=&quot;%1&quot; href=&quot;file:///%2&quot;&gt;%2&lt;/a&gt;. Τα διαγραμμένα αρχεία βρίσκονται στον &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;κάδο ανακύκλωσης&lt;/a&gt; του kDrive.</translation>
+        <translation type="vanished">Αρκετά αρχεία διαγράφηκαν από τον τοπικό φάκελο συγχρονισμού σας &lt;a style=&quot;%1&quot; href=&quot;file:///%2&quot;&gt;%2&lt;/a&gt;. Τα διαγραμμένα αρχεία βρίσκονται στον &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;κάδο ανακύκλωσης&lt;/a&gt; του kDrive.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1426"/>
         <source>Don&apos;t show again</source>
-        <translation>Να μην εμφανίζεται ξανά</translation>
+        <translation type="vanished">Να μην εμφανίζεται ξανά</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1508"/>
         <source>Synthesis</source>
-        <translation>Σύνοψη</translation>
+        <translation type="vanished">Σύνοψη</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1509"/>
         <source>Preferences</source>
-        <translation>Προτιμήσεις</translation>
+        <translation type="vanished">Προτιμήσεις</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1510"/>
         <source>Quit</source>
-        <translation>Έξοδος</translation>
+        <translation type="vanished">Έξοδος</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1676"/>
         <source>Failed to start synchronizations!</source>
-        <translation>Αποτυχία εκκίνησης συγχρονισμών!</translation>
+        <translation type="vanished">Αποτυχία εκκίνησης συγχρονισμών!</translation>
     </message>
 </context>
 <context>
     <name>KDC::ConfirmSynchronizationDialog</name>
     <message>
-        <location filename="../src/gui/confirmsynchronizationdialog.cpp" line="86"/>
         <source>Summary of your local folder synchronization</source>
-        <translation>Σύνοψη συγχρονισμού τοπικού φακέλου</translation>
+        <translation type="vanished">Σύνοψη συγχρονισμού τοπικού φακέλου</translation>
     </message>
     <message>
-        <location filename="../src/gui/confirmsynchronizationdialog.cpp" line="95"/>
         <source>The contents of the folder on your computer will be synchronized to the folder of the selected kDrive and vice versa.</source>
-        <translation>Τα περιεχόμενα του φακέλου στον υπολογιστή θα συγχρονιστούν με τον φάκελο του επιλεγμένου kDrive και αντίστροφα.</translation>
+        <translation type="vanished">Τα περιεχόμενα του φακέλου στον υπολογιστή θα συγχρονιστούν με τον φάκελο του επιλεγμένου kDrive και αντίστροφα.</translation>
     </message>
     <message>
-        <location filename="../src/gui/confirmsynchronizationdialog.cpp" line="184"/>
         <source>CANCEL</source>
-        <translation>ΑΚΥΡΩΣΗ</translation>
+        <translation type="vanished">ΑΚΥΡΩΣΗ</translation>
     </message>
     <message>
-        <location filename="../src/gui/confirmsynchronizationdialog.cpp" line="191"/>
         <source>SYNCHRONIZE</source>
-        <translation>ΣΥΓΧΡΟΝΙΣΜΟΣ</translation>
+        <translation type="vanished">ΣΥΓΧΡΟΝΙΣΜΟΣ</translation>
     </message>
 </context>
 <context>
     <name>KDC::CustomExtensionSetupWidget</name>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="97"/>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="121"/>
         <source>Before finishing</source>
-        <translation>Πριν την ολοκλήρωση</translation>
+        <translation type="vanished">Πριν την ολοκλήρωση</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="108"/>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="132"/>
         <source>Perform the following steps to ensure that Lite Sync works correctly on your computer and to complete the configuration of the kDrive.</source>
-        <translation>Ακολουθήστε τα παρακάτω βήματα για να διασφαλίσετε τη σωστή λειτουργία του Lite Sync στον υπολογιστή σας και να ολοκληρώσετε τη διαμόρφωση του kDrive.</translation>
+        <translation type="vanished">Ακολουθήστε τα παρακάτω βήματα για να διασφαλίσετε τη σωστή λειτουργία του Lite Sync στον υπολογιστή σας και να ολοκληρώσετε τη διαμόρφωση του kDrive.</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="209"/>
         <source>Open your Mac&apos;s &lt;b&gt;General settings&lt;/b&gt; or  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
-        <translation>Ανοίξτε τις &lt;b&gt;Γενικές ρυθμίσεις&lt;/b&gt; του Mac ή  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;κάντε κλικ εδώ&lt;/a&gt;</translation>
+        <translation type="vanished">Ανοίξτε τις &lt;b&gt;Γενικές ρυθμίσεις&lt;/b&gt; του Mac ή  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;κάντε κλικ εδώ&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="213"/>
         <source>Open your Mac&apos;s &lt;b&gt;Privacy &amp; Security settings&lt;/b&gt; or  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
-        <translation>Ανοίξτε τις ρυθμίσεις &lt;b&gt;Απόρρητο &amp;amp; Ασφάλεια&lt;/b&gt; του Mac ή  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;κάντε κλικ εδώ&lt;/a&gt;</translation>
+        <translation type="vanished">Ανοίξτε τις ρυθμίσεις &lt;b&gt;Απόρρητο &amp;amp; Ασφάλεια&lt;/b&gt; του Mac ή  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;κάντε κλικ εδώ&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="217"/>
         <source>Open your Mac&apos;s &lt;b&gt;Security &amp; Privacy settings&lt;/b&gt; or  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
-        <translation>Ανοίξτε τις ρυθμίσεις &lt;b&gt;Ασφάλεια &amp;amp; Απόρρητο&lt;/b&gt; του Mac ή  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;κάντε κλικ εδώ&lt;/a&gt;</translation>
+        <translation type="vanished">Ανοίξτε τις ρυθμίσεις &lt;b&gt;Ασφάλεια &amp;amp; Απόρρητο&lt;/b&gt; του Mac ή  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;κάντε κλικ εδώ&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="247"/>
         <source>Go to &lt;b&gt;&quot;Login Items &amp; Extensions&quot;&lt;/b&gt; section and then to &lt;b&gt;&quot;Endpoint Security Extensions&quot;&lt;/b&gt;</source>
-        <translation>Μεταβείτε στην ενότητα &lt;b&gt;&quot;Στοιχεία σύνδεσης &amp;amp; Επεκτάσεις&quot;&lt;/b&gt; και στη συνέχεια στο &lt;b&gt;&quot;Επεκτάσεις ασφαλείας τερματικού&quot;&lt;/b&gt;</translation>
+        <translation type="vanished">Μεταβείτε στην ενότητα &lt;b&gt;&quot;Στοιχεία σύνδεσης &amp;amp; Επεκτάσεις&quot;&lt;/b&gt; και στη συνέχεια στο &lt;b&gt;&quot;Επεκτάσεις ασφαλείας τερματικού&quot;&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="264"/>
         <source>Authorize the kDrive application</source>
-        <translation>Εξουσιοδοτήστε την εφαρμογή kDrive</translation>
+        <translation type="vanished">Εξουσιοδοτήστε την εφαρμογή kDrive</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="273"/>
         <source>Go to &lt;b&gt;&quot;Security&quot;&lt;/b&gt; section</source>
-        <translation>Μεταβείτε στην ενότητα &lt;b&gt;&quot;Ασφάλεια&quot;&lt;/b&gt;</translation>
+        <translation type="vanished">Μεταβείτε στην ενότητα &lt;b&gt;&quot;Ασφάλεια&quot;&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="290"/>
         <source>Authorize the kDrive application in the box indicating that kDrive has been blocked</source>
-        <translation>Εξουσιοδοτήστε την εφαρμογή kDrive στο πλαίσιο που υποδεικνύει ότι το kDrive έχει αποκλειστεί</translation>
+        <translation type="vanished">Εξουσιοδοτήστε την εφαρμογή kDrive στο πλαίσιο που υποδεικνύει ότι το kDrive έχει αποκλειστεί</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="300"/>
         <source>Unlock the padlock &lt;img src=&quot;:/client/resources/icons/actions/lock.png&quot;&gt; and authorize the kDrive application</source>
-        <translation>Ξεκλειδώστε το λουκέτο &lt;img src=&quot;:/client/resources/icons/actions/lock.png&quot;&gt; και εξουσιοδοτήστε την εφαρμογή kDrive</translation>
+        <translation type="vanished">Ξεκλειδώστε το λουκέτο &lt;img src=&quot;:/client/resources/icons/actions/lock.png&quot;&gt; και εξουσιοδοτήστε την εφαρμογή kDrive</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="345"/>
         <source>Go to &lt;b&gt;&quot;Privacy &amp; Security&quot;&lt;/b&gt; section and click on &lt;b&gt;&quot;Full Disk Access&quot;&lt;/b&gt; or &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
-        <translation>Μεταβείτε στην ενότητα &lt;b&gt;&quot;Απόρρητο &amp;amp; Ασφάλεια&quot;&lt;/b&gt; και κάντε κλικ στο &lt;b&gt;&quot;Πλήρης πρόσβαση δίσκου&quot;&lt;/b&gt; ή &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;κάντε κλικ εδώ&lt;/a&gt;</translation>
+        <translation type="vanished">Μεταβείτε στην ενότητα &lt;b&gt;&quot;Απόρρητο &amp;amp; Ασφάλεια&quot;&lt;/b&gt; και κάντε κλικ στο &lt;b&gt;&quot;Πλήρης πρόσβαση δίσκου&quot;&lt;/b&gt; ή &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;κάντε κλικ εδώ&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="349"/>
         <source>Still in the Security &amp; Privacy settings, open the &lt;b&gt;&quot;Privacy&quot;&lt;/b&gt; tab or &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
-        <translation>Στις ρυθμίσεις Ασφάλεια &amp;amp; Απόρρητο, ανοίξτε την καρτέλα &lt;b&gt;&quot;Απόρρητο&quot;&lt;/b&gt; ή &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;κάντε κλικ εδώ&lt;/a&gt;</translation>
+        <translation type="vanished">Στις ρυθμίσεις Ασφάλεια &amp;amp; Απόρρητο, ανοίξτε την καρτέλα &lt;b&gt;&quot;Απόρρητο&quot;&lt;/b&gt; ή &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;κάντε κλικ εδώ&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="377"/>
         <source>Check the &quot;kDrive LiteSync Extension&quot; box then the &quot;kDrive.app&quot; box (if not already checked)</source>
-        <translation>Επιλέξτε το πλαίσιο &quot;kDrive LiteSync Extension&quot; και στη συνέχεια το πλαίσιο &quot;kDrive.app&quot; (αν δεν είναι ήδη επιλεγμένο)</translation>
+        <translation type="vanished">Επιλέξτε το πλαίσιο &quot;kDrive LiteSync Extension&quot; και στη συνέχεια το πλαίσιο &quot;kDrive.app&quot; (αν δεν είναι ήδη επιλεγμένο)</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="394"/>
         <source>A restart of the app might be proposed, in this case accept it</source>
-        <translation>Ενδέχεται να προταθεί επανεκκίνηση της εφαρμογής, σε αυτή την περίπτωση αποδεχτείτε την</translation>
+        <translation type="vanished">Ενδέχεται να προταθεί επανεκκίνηση της εφαρμογής, σε αυτή την περίπτωση αποδεχτείτε την</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="400"/>
         <source>Check the &quot;kDrive LiteSync Extension&quot; box (and &quot;kDrive.app&quot; if it exists) in &lt;b&gt;&quot;Full Disk Access&quot;&lt;/b&gt;</source>
-        <translation>Επιλέξτε το πλαίσιο &quot;kDrive LiteSync Extension&quot; (και &quot;kDrive.app&quot; αν υπάρχει) στην &lt;b&gt;&quot;Πλήρη πρόσβαση δίσκου&quot;&lt;/b&gt;</translation>
+        <translation type="vanished">Επιλέξτε το πλαίσιο &quot;kDrive LiteSync Extension&quot; (και &quot;kDrive.app&quot; αν υπάρχει) στην &lt;b&gt;&quot;Πλήρη πρόσβαση δίσκου&quot;&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="491"/>
         <source>STEP 1</source>
-        <translation>ΒΗΜΑ 1</translation>
+        <translation type="vanished">ΒΗΜΑ 1</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="491"/>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="492"/>
         <source>(Done)</source>
-        <translation>(Ολοκληρώθηκε)</translation>
+        <translation type="vanished">(Ολοκληρώθηκε)</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="492"/>
         <source>STEP 2</source>
-        <translation>ΒΗΜΑ 2</translation>
+        <translation type="vanished">ΒΗΜΑ 2</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="495"/>
         <source>STEPS PERFORMED</source>
-        <translation>ΒΗΜΑΤΑ ΕΚΤΕΛΕΣΤΗΚΑΝ</translation>
+        <translation type="vanished">ΒΗΜΑΤΑ ΕΚΤΕΛΕΣΤΗΚΑΝ</translation>
     </message>
     <message>
-        <location filename="../src/gui/customextensionsetupwidget.cpp" line="497"/>
         <source>END</source>
-        <translation>ΤΕΛΟΣ</translation>
+        <translation type="vanished">ΤΕΛΟΣ</translation>
     </message>
 </context>
 <context>
     <name>KDC::CustomMessageBox</name>
     <message>
-        <location filename="../src/gui/custommessagebox.cpp" line="105"/>
         <source>OK</source>
-        <translation>ΟΚ</translation>
+        <translation type="vanished">ΟΚ</translation>
     </message>
     <message>
-        <location filename="../src/gui/custommessagebox.cpp" line="115"/>
         <source>CANCEL</source>
-        <translation>ΑΚΥΡΩΣΗ</translation>
+        <translation type="vanished">ΑΚΥΡΩΣΗ</translation>
     </message>
     <message>
-        <location filename="../src/gui/custommessagebox.cpp" line="125"/>
         <source>YES</source>
-        <translation>ΝΑΙ</translation>
+        <translation type="vanished">ΝΑΙ</translation>
     </message>
     <message>
-        <location filename="../src/gui/custommessagebox.cpp" line="135"/>
         <source>NO</source>
-        <translation>ΟΧΙ</translation>
+        <translation type="vanished">ΟΧΙ</translation>
     </message>
 </context>
 <context>
     <name>KDC::DebugReporter</name>
     <message>
-        <location filename="../src/gui/debugreporter.cpp" line="37"/>
         <source>Sending of debugging information</source>
-        <translation>Αποστολή πληροφοριών εντοπισμού σφαλμάτων</translation>
+        <translation type="vanished">Αποστολή πληροφοριών εντοπισμού σφαλμάτων</translation>
     </message>
     <message>
-        <location filename="../src/gui/debugreporter.cpp" line="37"/>
         <source>Cancel</source>
-        <translation>Ακύρωση</translation>
+        <translation type="vanished">Ακύρωση</translation>
     </message>
 </context>
 <context>
     <name>KDC::DebuggingDialog</name>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="45"/>
         <source>Debug</source>
-        <translation>Εντοπισμός σφαλμάτων</translation>
+        <translation type="vanished">Εντοπισμός σφαλμάτων</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="46"/>
         <source>Info</source>
-        <translation>Πληροφορίες</translation>
+        <translation type="vanished">Πληροφορίες</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="47"/>
         <source>Warning</source>
-        <translation>Προειδοποίηση</translation>
+        <translation type="vanished">Προειδοποίηση</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="48"/>
         <source>Error</source>
-        <translation>Σφάλμα</translation>
+        <translation type="vanished">Σφάλμα</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="49"/>
         <source>Fatal</source>
-        <translation>Κρίσιμο</translation>
+        <translation type="vanished">Κρίσιμο</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="74"/>
         <source>Debugging settings</source>
-        <translation>Ρυθμίσεις εντοπισμού σφαλμάτων</translation>
+        <translation type="vanished">Ρυθμίσεις εντοπισμού σφαλμάτων</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="90"/>
         <source>Save debugging information in a folder on my computer (Recommended)</source>
-        <translation>Αποθήκευση πληροφοριών εντοπισμού σε φάκελο στον υπολογιστή (Συνιστάται)</translation>
+        <translation type="vanished">Αποθήκευση πληροφοριών εντοπισμού σε φάκελο στον υπολογιστή (Συνιστάται)</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="104"/>
         <source>This information enables IT support to determine the origin of an incident.</source>
-        <translation>Αυτές οι πληροφορίες επιτρέπουν στην τεχνική υποστήριξη να προσδιορίσει την αιτία ενός συμβάντος.</translation>
+        <translation type="vanished">Αυτές οι πληροφορίες επιτρέπουν στην τεχνική υποστήριξη να προσδιορίσει την αιτία ενός συμβάντος.</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="114"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Open debugging folder&lt;/a&gt;</source>
-        <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Άνοιγμα φακέλου εντοπισμού&lt;/a&gt;</translation>
+        <translation type="vanished">&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Άνοιγμα φακέλου εντοπισμού&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="143"/>
         <source>Debug level</source>
-        <translation>Επίπεδο εντοπισμού</translation>
+        <translation type="vanished">Επίπεδο εντοπισμού</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="152"/>
         <source>The trace level lets you choose the extent of the debugging information recorded</source>
-        <translation>Το επίπεδο ιχνηλάτησης σάς επιτρέπει να επιλέξετε την έκταση των καταγεγραμμένων πληροφοριών εντοπισμού</translation>
+        <translation type="vanished">Το επίπεδο ιχνηλάτησης σάς επιτρέπει να επιλέξετε την έκταση των καταγεγραμμένων πληροφοριών εντοπισμού</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="179"/>
         <source>The extended full log collects a detailed history that can be used for debugging. Enabling it can slow down the kDrive application.</source>
-        <translation>Το εκτεταμένο πλήρες αρχείο καταγραφής συλλέγει λεπτομερές ιστορικό για εντοπισμό σφαλμάτων. Η ενεργοποίησή του μπορεί να επιβραδύνει την εφαρμογή kDrive.</translation>
+        <translation type="vanished">Το εκτεταμένο πλήρες αρχείο καταγραφής συλλέγει λεπτομερές ιστορικό για εντοπισμό σφαλμάτων. Η ενεργοποίησή του μπορεί να επιβραδύνει την εφαρμογή kDrive.</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="183"/>
         <source>Extended Full Log</source>
-        <translation>Εκτεταμένο πλήρες αρχείο καταγραφής</translation>
+        <translation type="vanished">Εκτεταμένο πλήρες αρχείο καταγραφής</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="207"/>
         <source>Delete logs older than %1 days</source>
-        <translation>Διαγραφή αρχείων καταγραφής παλαιότερων από %1 ημέρες</translation>
+        <translation type="vanished">Διαγραφή αρχείων καταγραφής παλαιότερων από %1 ημέρες</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="226"/>
         <source>Share the debug folder with Infomaniak support.</source>
-        <translation>Κοινοποίηση του φακέλου εντοπισμού με την υποστήριξη Infomaniak.</translation>
+        <translation type="vanished">Κοινοποίηση του φακέλου εντοπισμού με την υποστήριξη Infomaniak.</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="250"/>
         <source>The last session is the periode since the last kDrive start.</source>
-        <translation>Η τελευταία συνεδρία είναι η περίοδος από την τελευταία εκκίνηση του kDrive.</translation>
+        <translation type="vanished">Η τελευταία συνεδρία είναι η περίοδος από την τελευταία εκκίνηση του kDrive.</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="254"/>
         <source>Share only the last kDrive session</source>
-        <translation>Κοινοποίηση μόνο της τελευταίας συνεδρίας kDrive</translation>
+        <translation type="vanished">Κοινοποίηση μόνο της τελευταίας συνεδρίας kDrive</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="285"/>
         <source>  Loading</source>
-        <translation>  Φόρτωση</translation>
+        <translation type="vanished">  Φόρτωση</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="294"/>
         <source>Cancel</source>
-        <translation>Ακύρωση</translation>
+        <translation type="vanished">Ακύρωση</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="320"/>
         <source>SAVE</source>
-        <translation>ΑΠΟΘΗΚΕΥΣΗ</translation>
+        <translation type="vanished">ΑΠΟΘΗΚΕΥΣΗ</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="327"/>
         <source>CANCEL</source>
-        <translation>ΑΚΥΡΩΣΗ</translation>
+        <translation type="vanished">ΑΚΥΡΩΣΗ</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="471"/>
         <source>Failed to share</source>
-        <translation>Αποτυχία κοινοποίησης</translation>
+        <translation type="vanished">Αποτυχία κοινοποίησης</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="481"/>
         <source>1. Check that you are logged in &lt;br&gt;2. Check that you have configured at least one kDrive</source>
-        <translation>1. Βεβαιωθείτε ότι είστε συνδεδεμένοι &lt;br&gt;2. Βεβαιωθείτε ότι έχετε διαμορφώσει τουλάχιστον ένα kDrive</translation>
+        <translation type="vanished">1. Βεβαιωθείτε ότι είστε συνδεδεμένοι &lt;br&gt;2. Βεβαιωθείτε ότι έχετε διαμορφώσει τουλάχιστον ένα kDrive</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="486"/>
         <source> (Connexion interrupted)</source>
-        <translation> (Η σύνδεση διακόπηκε)</translation>
+        <translation type="vanished"> (Η σύνδεση διακόπηκε)</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="493"/>
         <source>Share the folder with SwissTransfer &lt;br&gt;</source>
-        <translation>Κοινοποίηση του φακέλου μέσω SwissTransfer &lt;br&gt;</translation>
+        <translation type="vanished">Κοινοποίηση του φακέλου μέσω SwissTransfer &lt;br&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="494"/>
         <source> 1. We automatically compressed your log &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;here&lt;/a&gt;.&lt;br&gt;</source>
-        <translation> 1. Συμπιέσαμε αυτόματα το αρχείο καταγραφής σας &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;εδώ&lt;/a&gt;.&lt;br&gt;</translation>
+        <translation type="vanished"> 1. Συμπιέσαμε αυτόματα το αρχείο καταγραφής σας &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;εδώ&lt;/a&gt;.&lt;br&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="496"/>
         <source> 2. Transfer the archive with &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;swisstransfer.com&lt;/a&gt;&lt;br&gt;</source>
-        <translation> 2. Μεταφέρετε το αρχείο με &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;swisstransfer.com&lt;/a&gt;&lt;br&gt;</translation>
+        <translation type="vanished"> 2. Μεταφέρετε το αρχείο με &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;swisstransfer.com&lt;/a&gt;&lt;br&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="498"/>
         <source> 3. Share the link with &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt; support@infomaniak.com &lt;/a&gt;&lt;br&gt;</source>
-        <translation> 3. Κοινοποιήστε τον σύνδεσμο στο &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt; support@infomaniak.com &lt;/a&gt;&lt;br&gt;</translation>
+        <translation type="vanished"> 3. Κοινοποιήστε τον σύνδεσμο στο &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt; support@infomaniak.com &lt;/a&gt;&lt;br&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="528"/>
         <source>Last upload the %1</source>
-        <translation>Τελευταία μεταφόρτωση στις %1</translation>
+        <translation type="vanished">Τελευταία μεταφόρτωση στις %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="556"/>
         <source>Sharing has been cancelled</source>
-        <translation>Η κοινοποίηση ακυρώθηκε</translation>
+        <translation type="vanished">Η κοινοποίηση ακυρώθηκε</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="598"/>
         <source>The extended full log is activated through the KDRIVE_FORCE_EXTENDED_LOG environment variable. Set it to 0 to disable it.</source>
-        <translation>Το εκτεταμένο πλήρες αρχείο ενεργοποιείται μέσω της μεταβλητής περιβάλλοντος KDRIVE_FORCE_EXTENDED_LOG. Ορίστε το σε 0 για απενεργοποίηση.</translation>
+        <translation type="vanished">Το εκτεταμένο πλήρες αρχείο ενεργοποιείται μέσω της μεταβλητής περιβάλλοντος KDRIVE_FORCE_EXTENDED_LOG. Ορίστε το σε 0 για απενεργοποίηση.</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="612"/>
         <source>%1/%2/%3 at %4h%5m and %6s</source>
         <extracomment>Date format for the last successful log upload. %1: month, %2: day, %3: year, %4: hour, %5: minute, %6: second</extracomment>
-        <translation>%1/%2/%3 στις %4:%5 και %6 δευτερόλεπτα</translation>
+        <translation type="vanished">%1/%2/%3 στις %4:%5 και %6 δευτερόλεπτα</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="655"/>
         <source>Do you want to save your modifications?</source>
-        <translation>Θέλετε να αποθηκεύσετε τις αλλαγές;</translation>
+        <translation type="vanished">Θέλετε να αποθηκεύσετε τις αλλαγές;</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="710"/>
-        <location filename="../src/gui/debuggingdialog.cpp" line="716"/>
         <source>Unable to open folder %1.</source>
-        <translation>Δεν είναι δυνατό το άνοιγμα του φακέλου %1.</translation>
+        <translation type="vanished">Δεν είναι δυνατό το άνοιγμα του φακέλου %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="723"/>
         <source>  Share</source>
-        <translation>  Κοινοποίηση</translation>
+        <translation type="vanished">  Κοινοποίηση</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="733"/>
         <source>  Sharing | step 1/2 %1%</source>
-        <translation>  Κοινοποίηση | βήμα 1/2 %1%</translation>
+        <translation type="vanished">  Κοινοποίηση | βήμα 1/2 %1%</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="742"/>
         <source>  Sharing | step 2/2 %1%</source>
-        <translation>  Κοινοποίηση | βήμα 2/2 %1%</translation>
+        <translation type="vanished">  Κοινοποίηση | βήμα 2/2 %1%</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="752"/>
         <source>  Canceling...</source>
-        <translation>  Ακύρωση...</translation>
+        <translation type="vanished">  Ακύρωση...</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.h" line="70"/>
         <source>The entire folder is large (&gt; 100 MB) and may take some time to share. To reduce the sharing time, we recommend, that you share only the last kDrive session.</source>
-        <translation>Ο φάκελος είναι μεγάλος (&gt; 100 MB) και η κοινοποίησή του ενδέχεται να διαρκέσει. Για μικρότερο χρόνο, συνιστάται η κοινοποίηση μόνο της τελευταίας συνεδρίας kDrive.</translation>
+        <translation type="vanished">Ο φάκελος είναι μεγάλος (&gt; 100 MB) και η κοινοποίησή του ενδέχεται να διαρκέσει. Για μικρότερο χρόνο, συνιστάται η κοινοποίηση μόνο της τελευταίας συνεδρίας kDrive.</translation>
     </message>
 </context>
 <context>
     <name>KDC::DrivePreferencesWidget</name>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="120"/>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1117"/>
         <source>Synchronization errors and information.</source>
-        <translation>Σφάλματα και πληροφορίες συγχρονισμού.</translation>
+        <translation type="vanished">Σφάλματα και πληροφορίες συγχρονισμού.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="144"/>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1119"/>
         <source>Synchronize a local folder</source>
-        <translation>Συγχρονισμός τοπικού φακέλου</translation>
+        <translation type="vanished">Συγχρονισμός τοπικού φακέλου</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="355"/>
         <source>Do you really want to turn on Lite Sync?</source>
-        <translation>Θέλετε πραγματικά να ενεργοποιήσετε το Lite Sync;</translation>
+        <translation type="vanished">Θέλετε πραγματικά να ενεργοποιήσετε το Lite Sync;</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="356"/>
         <source>This operation may take from a few seconds to a few minutes depending on the size of the folder.</source>
-        <translation>Αυτή η λειτουργία μπορεί να διαρκέσει από λίγα δευτερόλεπτα έως λίγα λεπτά ανάλογα με το μέγεθος του φακέλου.</translation>
+        <translation type="vanished">Αυτή η λειτουργία μπορεί να διαρκέσει από λίγα δευτερόλεπτα έως λίγα λεπτά ανάλογα με το μέγεθος του φακέλου.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="359"/>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="390"/>
         <source>CONFIRM</source>
-        <translation>ΕΠΙΒΕΒΑΙΩΣΗ</translation>
+        <translation type="vanished">ΕΠΙΒΕΒΑΙΩΣΗ</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="360"/>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="391"/>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="986"/>
         <source>CANCEL</source>
-        <translation>ΑΚΥΡΩΣΗ</translation>
+        <translation type="vanished">ΑΚΥΡΩΣΗ</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="382"/>
         <source>Do you really want to turn off Lite Sync?</source>
-        <translation>Θέλετε πραγματικά να απενεργοποιήσετε το Lite Sync;</translation>
+        <translation type="vanished">Θέλετε πραγματικά να απενεργοποιήσετε το Lite Sync;</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="384"/>
         <source>You don&apos;t have enough space to sync all the files on your kDrive (%1 missing). If you turn off Lite Sync, you need to select which folders to sync on your computer. In the meantime, the synchronization of your kDrive will be paused.</source>
-        <translation>Δεν έχετε αρκετό χώρο για να συγχρονίσετε όλα τα αρχεία του kDrive (%1 απαιτούνται). Αν απενεργοποιήσετε το Lite Sync, πρέπει να επιλέξετε ποιους φακέλους θα συγχρονίσετε. Εν τω μεταξύ, ο συγχρονισμός θα τεθεί σε παύση.</translation>
+        <translation type="vanished">Δεν έχετε αρκετό χώρο για να συγχρονίσετε όλα τα αρχεία του kDrive (%1 απαιτούνται). Αν απενεργοποιήσετε το Lite Sync, πρέπει να επιλέξετε ποιους φακέλους θα συγχρονίσετε. Εν τω μεταξύ, ο συγχρονισμός θα τεθεί σε παύση.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="388"/>
         <source>If you turn off Lite Sync, all files will be downloaded to your computer.</source>
-        <translation>Αν απενεργοποιήσετε το Lite Sync, όλα τα αρχεία θα ληφθούν στον υπολογιστή σας.</translation>
+        <translation type="vanished">Αν απενεργοποιήσετε το Lite Sync, όλα τα αρχεία θα ληφθούν στον υπολογιστή σας.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="627"/>
         <source>Failed to create new synchronization</source>
-        <translation>Αποτυχία δημιουργίας νέου συγχρονισμού</translation>
+        <translation type="vanished">Αποτυχία δημιουργίας νέου συγχρονισμού</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="645"/>
         <source>New local folder synchronization failed!</source>
-        <translation>Αποτυχία συγχρονισμού νέου τοπικού φακέλου!</translation>
+        <translation type="vanished">Αποτυχία συγχρονισμού νέου τοπικού φακέλου!</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="819"/>
         <source>Lite Sync activated.</source>
-        <translation>Το Lite Sync ενεργοποιήθηκε.</translation>
+        <translation type="vanished">Το Lite Sync ενεργοποιήθηκε.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="823"/>
         <source>Lite Sync activation failed.</source>
-        <translation>Αποτυχία ενεργοποίησης Lite Sync.</translation>
+        <translation type="vanished">Αποτυχία ενεργοποίησης Lite Sync.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="837"/>
         <source>Lite Sync deactivated.</source>
-        <translation>Το Lite Sync απενεργοποιήθηκε.</translation>
+        <translation type="vanished">Το Lite Sync απενεργοποιήθηκε.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="841"/>
         <source>Lite Sync deactivation failed.</source>
-        <translation>Αποτυχία απενεργοποίησης Lite Sync.</translation>
+        <translation type="vanished">Αποτυχία απενεργοποίησης Lite Sync.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="899"/>
         <source>This drive is being deleted.</source>
-        <translation>Αυτή η μονάδα διαγράφεται.</translation>
+        <translation type="vanished">Αυτή η μονάδα διαγράφεται.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="962"/>
         <source>Impossible to open item %1</source>
-        <translation>Δεν είναι δυνατό το άνοιγμα του στοιχείου %1</translation>
+        <translation type="vanished">Δεν είναι δυνατό το άνοιγμα του στοιχείου %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="981"/>
         <source>Do you really want to stop syncing the folder &lt;i&gt;%1&lt;/i&gt; ?&lt;br&gt;&lt;b&gt;Note:&lt;/b&gt; This will &lt;b&gt;not&lt;/b&gt; delete any files.</source>
-        <translation>Θέλετε πραγματικά να σταματήσετε τον συγχρονισμό του φακέλου &lt;i&gt;%1&lt;/i&gt;;&lt;br&gt;&lt;b&gt;Σημείωση:&lt;/b&gt; Αυτό &lt;b&gt;δεν&lt;/b&gt; θα διαγράψει κανένα αρχείο.</translation>
+        <translation type="vanished">Θέλετε πραγματικά να σταματήσετε τον συγχρονισμό του φακέλου &lt;i&gt;%1&lt;/i&gt;;&lt;br&gt;&lt;b&gt;Σημείωση:&lt;/b&gt; Αυτό &lt;b&gt;δεν&lt;/b&gt; θα διαγράψει κανένα αρχείο.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="985"/>
         <source>REMOVE FOLDER SYNC CONNECTION</source>
-        <translation>ΚΑΤΑΡΓΗΣΗ ΣΥΝΔΕΣΗΣ ΣΥΓΧΡΟΝΙΣΜΟΥ ΦΑΚΕΛΟΥ</translation>
+        <translation type="vanished">ΚΑΤΑΡΓΗΣΗ ΣΥΝΔΕΣΗΣ ΣΥΓΧΡΟΝΙΣΜΟΥ ΦΑΚΕΛΟΥ</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1007"/>
         <source>Failed to stop syncing the folder &lt;i&gt;%1&lt;/i&gt;.</source>
-        <translation>Αποτυχία διακοπής συγχρονισμού φακέλου &lt;i&gt;%1&lt;/i&gt;.</translation>
+        <translation type="vanished">Αποτυχία διακοπής συγχρονισμού φακέλου &lt;i&gt;%1&lt;/i&gt;.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1048"/>
         <source>An error occurred while loading the list of subfolders.</source>
-        <translation>Παρουσιάστηκε σφάλμα κατά τη φόρτωση της λίστας υποφακέλων.</translation>
+        <translation type="vanished">Παρουσιάστηκε σφάλμα κατά τη φόρτωση της λίστας υποφακέλων.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1118"/>
         <source>Folders</source>
-        <translation>Φάκελοι</translation>
+        <translation type="vanished">Φάκελοι</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1120"/>
         <source>Notifications</source>
-        <translation>Ειδοποιήσεις</translation>
+        <translation type="vanished">Ειδοποιήσεις</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1121"/>
         <source>Enable the notifications for this kDrive</source>
-        <translation>Ενεργοποίηση ειδοποιήσεων για αυτό το kDrive</translation>
+        <translation type="vanished">Ενεργοποίηση ειδοποιήσεων για αυτό το kDrive</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1123"/>
         <source>A notification will be displayed as soon as a new folder has been synchronized or modified</source>
-        <translation>Θα εμφανίζεται ειδοποίηση μόλις συγχρονιστεί ή τροποποιηθεί νέος φάκελος</translation>
+        <translation type="vanished">Θα εμφανίζεται ειδοποίηση μόλις συγχρονιστεί ή τροποποιηθεί νέος φάκελος</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1124"/>
         <source>Connected with</source>
-        <translation>Συνδεδεμένος με</translation>
+        <translation type="vanished">Συνδεδεμένος με</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1125"/>
         <source>Remove all synchronizations</source>
-        <translation>Κατάργηση όλων των συγχρονισμών</translation>
+        <translation type="vanished">Κατάργηση όλων των συγχρονισμών</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1126"/>
         <source>Search in your kDrive</source>
-        <translation>Αναζήτηση στο kDrive</translation>
+        <translation type="vanished">Αναζήτηση στο kDrive</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1127"/>
         <source>Search</source>
-        <translation>Αναζήτηση</translation>
+        <translation type="vanished">Αναζήτηση</translation>
     </message>
 </context>
 <context>
     <name>KDC::DriveSelectionWidget</name>
     <message>
-        <location filename="../src/gui/driveselectionwidget.cpp" line="150"/>
         <source>Add a kDrive</source>
-        <translation>Προσθήκη kDrive</translation>
+        <translation type="vanished">Προσθήκη kDrive</translation>
     </message>
     <message>
-        <location filename="../src/gui/driveselectionwidget.cpp" line="216"/>
         <source>Synchronize a kDrive</source>
-        <translation>Συγχρονισμός kDrive</translation>
+        <translation type="vanished">Συγχρονισμός kDrive</translation>
     </message>
 </context>
 <context>
     <name>KDC::ErrorTabWidget</name>
     <message>
-        <location filename="../src/gui/errortabwidget.cpp" line="92"/>
-        <location filename="../src/gui/errortabwidget.cpp" line="135"/>
-        <location filename="../src/gui/errortabwidget.cpp" line="178"/>
-        <location filename="../src/gui/errortabwidget.cpp" line="186"/>
         <source>Clear history</source>
-        <translation>Εκκαθάριση ιστορικού</translation>
+        <translation type="vanished">Εκκαθάριση ιστορικού</translation>
     </message>
     <message>
-        <location filename="../src/gui/errortabwidget.cpp" line="176"/>
         <source>To Resolve</source>
-        <translation>Προς επίλυση</translation>
+        <translation type="vanished">Προς επίλυση</translation>
     </message>
     <message>
-        <location filename="../src/gui/errortabwidget.cpp" line="177"/>
         <source>problem(s) detected</source>
-        <translation>πρόβλημα(τα) εντοπίστηκαν</translation>
+        <translation type="vanished">πρόβλημα(τα) εντοπίστηκαν</translation>
     </message>
     <message>
-        <location filename="../src/gui/errortabwidget.cpp" line="179"/>
         <source>Resolve</source>
-        <translation>Επίλυση</translation>
+        <translation type="vanished">Επίλυση</translation>
     </message>
     <message>
-        <location filename="../src/gui/errortabwidget.cpp" line="180"/>
         <source>Conflicted item(s)</source>
-        <translation>Στοιχείο(α) με σύγκρουση</translation>
+        <translation type="vanished">Στοιχείο(α) με σύγκρουση</translation>
     </message>
     <message>
-        <location filename="../src/gui/errortabwidget.cpp" line="181"/>
         <source>Item(s) with unsupported characters</source>
-        <translation>Στοιχείο(α) με μη υποστηριζόμενους χαρακτήρες</translation>
+        <translation type="vanished">Στοιχείο(α) με μη υποστηριζόμενους χαρακτήρες</translation>
     </message>
     <message>
-        <location filename="../src/gui/errortabwidget.cpp" line="184"/>
         <source>Automatically resolved</source>
-        <translation>Αυτόματη επίλυση</translation>
+        <translation type="vanished">Αυτόματη επίλυση</translation>
     </message>
     <message>
-        <location filename="../src/gui/errortabwidget.cpp" line="185"/>
         <source>problem(s) solved</source>
-        <translation>πρόβλημα(τα) επιλύθηκαν</translation>
+        <translation type="vanished">πρόβλημα(τα) επιλύθηκαν</translation>
     </message>
 </context>
 <context>
     <name>KDC::ErrorsMenuBarWidget</name>
     <message>
-        <location filename="../src/gui/errorsmenubarwidget.cpp" line="84"/>
-        <location filename="../src/gui/errorsmenubarwidget.cpp" line="103"/>
         <source>Synchronization conflicts or errors</source>
-        <translation>Συγκρούσεις ή σφάλματα συγχρονισμού</translation>
+        <translation type="vanished">Συγκρούσεις ή σφάλματα συγχρονισμού</translation>
     </message>
     <message>
-        <location filename="../src/gui/errorsmenubarwidget.cpp" line="86"/>
-        <location filename="../src/gui/errorsmenubarwidget.cpp" line="105"/>
         <source>Errors</source>
-        <translation>Σφάλματα</translation>
+        <translation type="vanished">Σφάλματα</translation>
     </message>
     <message>
-        <location filename="../src/gui/errorsmenubarwidget.cpp" line="101"/>
         <source>Back to preferences</source>
-        <translation>Επιστροφή στις προτιμήσεις</translation>
+        <translation type="vanished">Επιστροφή στις προτιμήσεις</translation>
     </message>
 </context>
 <context>
     <name>KDC::ErrorsPopup</name>
     <message>
-        <location filename="../src/gui/errorspopup.cpp" line="73"/>
         <source>Some files couldn&apos;t be synchronized on the following kDrive(s) :</source>
-        <translation>Ορισμένα αρχεία δεν ήταν δυνατό να συγχρονιστούν στα ακόλουθα kDrive:</translation>
+        <translation type="vanished">Ορισμένα αρχεία δεν ήταν δυνατό να συγχρονιστούν στα ακόλουθα kDrive:</translation>
     </message>
     <message>
-        <location filename="../src/gui/errorspopup.cpp" line="95"/>
         <source> (%1 error(s))</source>
-        <translation> (%1 σφάλμα(τα))</translation>
+        <translation type="vanished"> (%1 σφάλμα(τα))</translation>
     </message>
     <message>
-        <location filename="../src/gui/errorspopup.cpp" line="101"/>
         <source> (%1 information(s))</source>
-        <translation> (%1 πληροφορία(ες))</translation>
+        <translation type="vanished"> (%1 πληροφορία(ες))</translation>
     </message>
     <message>
-        <location filename="../src/gui/errorspopup.cpp" line="107"/>
         <source> (%1 error(s) and %2 information(s))</source>
-        <translation> (%1 σφάλμα(τα) και %2 πληροφορία(ες))</translation>
+        <translation type="vanished"> (%1 σφάλμα(τα) και %2 πληροφορία(ες))</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/gui/errorspopup.cpp" line="147"/>
         <source>Generic errors (%n warning(s) or error(s))</source>
         <comment>Number of warnings or errors</comment>
-        <translation>
+        <translation type="vanished">
             <numerusform>Γενικά σφάλματα (%n προειδοποίηση ή σφάλμα)</numerusform>
             <numerusform>Γενικά σφάλματα (%n προειδοποιήσεις ή σφάλματα)</numerusform>
         </translation>
@@ -1211,341 +976,277 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
 <context>
     <name>KDC::FileExclusionDialog</name>
     <message>
-        <location filename="../src/gui/fileexclusiondialog.cpp" line="78"/>
         <source>Excluded files</source>
-        <translation>Εξαιρεθέντα αρχεία</translation>
+        <translation type="vanished">Εξαιρεθέντα αρχεία</translation>
     </message>
     <message>
-        <location filename="../src/gui/fileexclusiondialog.cpp" line="86"/>
         <source>Add files or folders that will not be synchronized on your computer.</source>
-        <translation>Προσθέστε αρχεία ή φακέλους που δεν θα συγχρονιστούν στον υπολογιστή.</translation>
+        <translation type="vanished">Προσθέστε αρχεία ή φακέλους που δεν θα συγχρονιστούν στον υπολογιστή.</translation>
     </message>
     <message>
-        <location filename="../src/gui/fileexclusiondialog.cpp" line="97"/>
         <source>Add</source>
-        <translation>Προσθήκη</translation>
+        <translation type="vanished">Προσθήκη</translation>
     </message>
     <message>
-        <location filename="../src/gui/fileexclusiondialog.cpp" line="109"/>
         <source>NAME</source>
-        <translation>ΟΝΟΜΑ</translation>
+        <translation type="vanished">ΟΝΟΜΑ</translation>
     </message>
     <message>
-        <location filename="../src/gui/fileexclusiondialog.cpp" line="114"/>
         <source>WARNING</source>
-        <translation>ΠΡΟΕΙΔΟΠΟΙΗΣΗ</translation>
+        <translation type="vanished">ΠΡΟΕΙΔΟΠΟΙΗΣΗ</translation>
     </message>
     <message>
-        <location filename="../src/gui/fileexclusiondialog.cpp" line="149"/>
         <source>SAVE</source>
-        <translation>ΑΠΟΘΗΚΕΥΣΗ</translation>
+        <translation type="vanished">ΑΠΟΘΗΚΕΥΣΗ</translation>
     </message>
     <message>
-        <location filename="../src/gui/fileexclusiondialog.cpp" line="156"/>
         <source>CANCEL</source>
-        <translation>ΑΚΥΡΩΣΗ</translation>
+        <translation type="vanished">ΑΚΥΡΩΣΗ</translation>
     </message>
     <message>
-        <location filename="../src/gui/fileexclusiondialog.cpp" line="304"/>
         <source>Do you want to save your modifications?</source>
-        <translation>Θέλετε να αποθηκεύσετε τις αλλαγές;</translation>
+        <translation type="vanished">Θέλετε να αποθηκεύσετε τις αλλαγές;</translation>
     </message>
     <message>
-        <location filename="../src/gui/fileexclusiondialog.cpp" line="353"/>
         <source>Exclusion template already exists!</source>
-        <translation>Το πρότυπο εξαίρεσης υπάρχει ήδη!</translation>
+        <translation type="vanished">Το πρότυπο εξαίρεσης υπάρχει ήδη!</translation>
     </message>
     <message>
-        <location filename="../src/gui/fileexclusiondialog.cpp" line="374"/>
         <source>Do you really want to delete?</source>
-        <translation>Θέλετε πραγματικά να διαγράψετε;</translation>
+        <translation type="vanished">Θέλετε πραγματικά να διαγράψετε;</translation>
     </message>
     <message>
-        <location filename="../src/gui/fileexclusiondialog.cpp" line="434"/>
         <source>Cannot save changes!</source>
-        <translation>Αδύνατη η αποθήκευση αλλαγών!</translation>
+        <translation type="vanished">Αδύνατη η αποθήκευση αλλαγών!</translation>
     </message>
 </context>
 <context>
     <name>KDC::FileExclusionNameDialog</name>
     <message>
-        <location filename="../src/gui/fileexclusionnamedialog.cpp" line="58"/>
         <source>VALIDATE</source>
-        <translation>ΕΠΙΚΥΡΩΣΗ</translation>
+        <translation type="vanished">ΕΠΙΚΥΡΩΣΗ</translation>
     </message>
     <message>
-        <location filename="../src/gui/fileexclusionnamedialog.cpp" line="65"/>
         <source>CANCEL</source>
-        <translation>ΑΚΥΡΩΣΗ</translation>
+        <translation type="vanished">ΑΚΥΡΩΣΗ</translation>
     </message>
 </context>
 <context>
     <name>KDC::FixConflictingFilesDialog</name>
     <message>
-        <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="67"/>
-        <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="73"/>
         <source>Unable to open link %1.</source>
-        <translation>Δεν είναι δυνατό το άνοιγμα του συνδέσμου %1.</translation>
+        <translation type="vanished">Δεν είναι δυνατό το άνοιγμα του συνδέσμου %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="122"/>
         <source>Solve conflict(s)</source>
-        <translation>Επίλυση σύγκρουσης(εων)</translation>
+        <translation type="vanished">Επίλυση σύγκρουσης(εων)</translation>
     </message>
     <message>
-        <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="140"/>
         <source>&lt;b&gt;What do you want to do with the %1 conflicted item(s)?&lt;/b&gt;</source>
-        <translation>&lt;b&gt;Τι θέλετε να κάνετε με τα %1 στοιχεία με σύγκρουση;&lt;/b&gt;</translation>
+        <translation type="vanished">&lt;b&gt;Τι θέλετε να κάνετε με τα %1 στοιχεία με σύγκρουση;&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="143"/>
         <source>Save my changes and replace other users&apos; versions.</source>
-        <translation>Αποθήκευση των αλλαγών μου και αντικατάσταση των εκδόσεων άλλων χρηστών.</translation>
+        <translation type="vanished">Αποθήκευση των αλλαγών μου και αντικατάσταση των εκδόσεων άλλων χρηστών.</translation>
     </message>
     <message>
-        <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="147"/>
         <source>Undo my changes and keep other users&apos; versions.</source>
-        <translation>Αναίρεση των αλλαγών μου και διατήρηση των εκδόσεων άλλων χρηστών.</translation>
+        <translation type="vanished">Αναίρεση των αλλαγών μου και διατήρηση των εκδόσεων άλλων χρηστών.</translation>
     </message>
     <message>
-        <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="169"/>
         <source>Your changes may be permanently deleted. They cannot be restored from the kDrive web application.</source>
-        <translation>Οι αλλαγές σας ενδέχεται να διαγραφούν οριστικά. Δεν μπορούν να αποκατασταθούν από την εφαρμογή ιστού kDrive.</translation>
+        <translation type="vanished">Οι αλλαγές σας ενδέχεται να διαγραφούν οριστικά. Δεν μπορούν να αποκατασταθούν από την εφαρμογή ιστού kDrive.</translation>
     </message>
     <message>
-        <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="171"/>
         <source>&lt;a style=%1 href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
-        <translation>&lt;a style=%1 href=&quot;%2&quot;&gt;Μάθετε περισσότερα&lt;/a&gt;</translation>
+        <translation type="vanished">&lt;a style=%1 href=&quot;%2&quot;&gt;Μάθετε περισσότερα&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="175"/>
         <source>Your changes will be permanently deleted. They cannot be restored from the kDrive web application.</source>
-        <translation>Οι αλλαγές σας θα διαγραφούν οριστικά. Δεν μπορούν να αποκατασταθούν από την εφαρμογή ιστού kDrive.</translation>
+        <translation type="vanished">Οι αλλαγές σας θα διαγραφούν οριστικά. Δεν μπορούν να αποκατασταθούν από την εφαρμογή ιστού kDrive.</translation>
     </message>
     <message>
-        <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="191"/>
         <source>Show item(s)</source>
-        <translation>Εμφάνιση στοιχείων</translation>
+        <translation type="vanished">Εμφάνιση στοιχείων</translation>
     </message>
     <message>
-        <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="228"/>
         <source>VALIDATE</source>
-        <translation>ΕΠΙΚΥΡΩΣΗ</translation>
+        <translation type="vanished">ΕΠΙΚΥΡΩΣΗ</translation>
     </message>
     <message>
-        <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="234"/>
         <source>CANCEL</source>
-        <translation>ΑΚΥΡΩΣΗ</translation>
+        <translation type="vanished">ΑΚΥΡΩΣΗ</translation>
     </message>
     <message>
-        <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="251"/>
         <source>Modifications have been made to these files by several users in several places (online on kDrive, a computer or a mobile). Folders containing these files may also have been deleted.&lt;br&gt;</source>
-        <translation>Αυτά τα αρχεία έχουν τροποποιηθεί από πολλούς χρήστες σε πολλά μέρη (ηλεκτρονικά στο kDrive, σε υπολογιστή ή κινητό). Φάκελοι που περιέχουν αυτά τα αρχεία ενδέχεται επίσης να έχουν διαγραφεί.&lt;br&gt;</translation>
+        <translation type="vanished">Αυτά τα αρχεία έχουν τροποποιηθεί από πολλούς χρήστες σε πολλά μέρη (ηλεκτρονικά στο kDrive, σε υπολογιστή ή κινητό). Φάκελοι που περιέχουν αυτά τα αρχεία ενδέχεται επίσης να έχουν διαγραφεί.&lt;br&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="253"/>
         <source>The local version of your item &lt;b&gt;is not synced&lt;/b&gt; with kDrive. &lt;a style=&quot;color: #489EF3&quot; href=&quot;%1&quot;&gt;Learn more&lt;/a&gt;</source>
-        <translation>Η τοπική έκδοση του στοιχείου σας &lt;b&gt;δεν είναι συγχρονισμένη&lt;/b&gt; με το kDrive. &lt;a style=&quot;color: #489EF3&quot; href=&quot;%1&quot;&gt;Μάθετε περισσότερα&lt;/a&gt;</translation>
+        <translation type="vanished">Η τοπική έκδοση του στοιχείου σας &lt;b&gt;δεν είναι συγχρονισμένη&lt;/b&gt; με το kDrive. &lt;a style=&quot;color: #489EF3&quot; href=&quot;%1&quot;&gt;Μάθετε περισσότερα&lt;/a&gt;</translation>
     </message>
 </context>
 <context>
     <name>KDC::FolderItemWidget</name>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="188"/>
-        <location filename="../src/gui/folderitemwidget.cpp" line="476"/>
         <source>Synchronized into &lt;a style=&quot;%1&quot; href=&quot;ref&quot;&gt;%2&lt;/a&gt;</source>
-        <translation>Συγχρονίστηκε στο &lt;a style=&quot;%1&quot; href=&quot;ref&quot;&gt;%2&lt;/a&gt;</translation>
+        <translation type="vanished">Συγχρονίστηκε στο &lt;a style=&quot;%1&quot; href=&quot;ref&quot;&gt;%2&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="343"/>
         <source>Activate Lite Sync</source>
-        <translation>Ενεργοποίηση Lite Sync</translation>
+        <translation type="vanished">Ενεργοποίηση Lite Sync</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="345"/>
         <source>Activate Lite Sync (Beta)</source>
-        <translation>Ενεργοποίηση Lite Sync (Beta)</translation>
+        <translation type="vanished">Ενεργοποίηση Lite Sync (Beta)</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="354"/>
         <source>Deactivate Lite Sync</source>
-        <translation>Απενεργοποίηση Lite Sync</translation>
+        <translation type="vanished">Απενεργοποίηση Lite Sync</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="365"/>
         <source>Pause synchronization</source>
-        <translation>Παύση συγχρονισμού</translation>
+        <translation type="vanished">Παύση συγχρονισμού</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="375"/>
         <source>Resume synchronization</source>
-        <translation>Συνέχιση συγχρονισμού</translation>
+        <translation type="vanished">Συνέχιση συγχρονισμού</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="386"/>
         <source>Remove synchronization</source>
-        <translation>Κατάργηση συγχρονισμού</translation>
+        <translation type="vanished">Κατάργηση συγχρονισμού</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="458"/>
         <source>More actions</source>
-        <translation>Περισσότερες ενέργειες</translation>
+        <translation type="vanished">Περισσότερες ενέργειες</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="481"/>
         <source>Unselected folders will be moved to trash provided they contain offline items. Folders synced to kDrive will remain available online.</source>
-        <translation>Οι μη επιλεγμένοι φάκελοι θα μεταφερθούν στον κάδο αν περιέχουν εκτός σύνδεσης στοιχεία. Οι συγχρονισμένοι φάκελοι θα παραμείνουν διαθέσιμοι ηλεκτρονικά.</translation>
+        <translation type="vanished">Οι μη επιλεγμένοι φάκελοι θα μεταφερθούν στον κάδο αν περιέχουν εκτός σύνδεσης στοιχεία. Οι συγχρονισμένοι φάκελοι θα παραμείνουν διαθέσιμοι ηλεκτρονικά.</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="485"/>
         <source>Unselected folders will be moved to trash. Folders synced to kDrive will remain available online.</source>
-        <translation>Οι μη επιλεγμένοι φάκελοι θα μεταφερθούν στον κάδο. Οι συγχρονισμένοι φάκελοι θα παραμείνουν διαθέσιμοι ηλεκτρονικά.</translation>
+        <translation type="vanished">Οι μη επιλεγμένοι φάκελοι θα μεταφερθούν στον κάδο. Οι συγχρονισμένοι φάκελοι θα παραμείνουν διαθέσιμοι ηλεκτρονικά.</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="488"/>
         <source>Unselected folders will be &lt;b&gt;permanently&lt;/b&gt; deleted from the computer. Folders synced to kDrive will remain available online.</source>
-        <translation>Οι μη επιλεγμένοι φάκελοι θα διαγραφούν &lt;b&gt;οριστικά&lt;/b&gt; από τον υπολογιστή. Οι συγχρονισμένοι φάκελοι θα παραμείνουν διαθέσιμοι ηλεκτρονικά.</translation>
+        <translation type="vanished">Οι μη επιλεγμένοι φάκελοι θα διαγραφούν &lt;b&gt;οριστικά&lt;/b&gt; από τον υπολογιστή. Οι συγχρονισμένοι φάκελοι θα παραμείνουν διαθέσιμοι ηλεκτρονικά.</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="493"/>
         <source>Cancel</source>
-        <translation>Ακύρωση</translation>
+        <translation type="vanished">Ακύρωση</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="494"/>
         <source>VALIDATE</source>
-        <translation>ΕΠΙΚΥΡΩΣΗ</translation>
+        <translation type="vanished">ΕΠΙΚΥΡΩΣΗ</translation>
     </message>
 </context>
 <context>
     <name>KDC::GenericErrorItemWidget</name>
     <message>
-        <location filename="../src/gui/genericerroritemwidget.cpp" line="85"/>
         <source>Unable to open folder path %1.</source>
-        <translation>Δεν είναι δυνατό το άνοιγμα της διαδρομής φακέλου %1.</translation>
+        <translation type="vanished">Δεν είναι δυνατό το άνοιγμα της διαδρομής φακέλου %1.</translation>
     </message>
 </context>
 <context>
     <name>KDC::LiteSyncAppDialog</name>
     <message>
-        <location filename="../src/gui/litesyncappdialog.cpp" line="48"/>
         <source>Application Id</source>
-        <translation>Αναγνωριστικό εφαρμογής</translation>
+        <translation type="vanished">Αναγνωριστικό εφαρμογής</translation>
     </message>
     <message>
-        <location filename="../src/gui/litesyncappdialog.cpp" line="98"/>
         <source>Application Name</source>
-        <translation>Όνομα εφαρμογής</translation>
+        <translation type="vanished">Όνομα εφαρμογής</translation>
     </message>
     <message>
-        <location filename="../src/gui/litesyncappdialog.cpp" line="121"/>
         <source>VALIDATE</source>
-        <translation>ΕΠΙΚΥΡΩΣΗ</translation>
+        <translation type="vanished">ΕΠΙΚΥΡΩΣΗ</translation>
     </message>
     <message>
-        <location filename="../src/gui/litesyncappdialog.cpp" line="128"/>
         <source>CANCEL</source>
-        <translation>ΑΚΥΡΩΣΗ</translation>
+        <translation type="vanished">ΑΚΥΡΩΣΗ</translation>
     </message>
 </context>
 <context>
     <name>KDC::LiteSyncDialog</name>
     <message>
-        <location filename="../src/gui/litesyncdialog.cpp" line="91"/>
         <source>Some apps (backup, anti-virus...) access your files, which leads to their download when they are &quot;online&quot;. Add them in the list below to avoid this behaviour.</source>
-        <translation>Ορισμένες εφαρμογές (αντίγραφα ασφαλείας, antivirus...) έχουν πρόσβαση στα αρχεία σας, προκαλώντας τη λήψη τους όταν είναι &quot;ηλεκτρονικά&quot;. Προσθέστε τες παρακάτω για να αποφύγετε αυτή τη συμπεριφορά.</translation>
+        <translation type="vanished">Ορισμένες εφαρμογές (αντίγραφα ασφαλείας, antivirus...) έχουν πρόσβαση στα αρχεία σας, προκαλώντας τη λήψη τους όταν είναι &quot;ηλεκτρονικά&quot;. Προσθέστε τες παρακάτω για να αποφύγετε αυτή τη συμπεριφορά.</translation>
     </message>
     <message>
-        <location filename="../src/gui/litesyncdialog.cpp" line="103"/>
         <source>Add</source>
-        <translation>Προσθήκη</translation>
+        <translation type="vanished">Προσθήκη</translation>
     </message>
     <message>
-        <location filename="../src/gui/litesyncdialog.cpp" line="115"/>
         <source>APPLICATION ID</source>
-        <translation>ΑΝΑΓΝΩΡΙΣΤΙΚΟ ΕΦΑΡΜΟΓΗΣ</translation>
+        <translation type="vanished">ΑΝΑΓΝΩΡΙΣΤΙΚΟ ΕΦΑΡΜΟΓΗΣ</translation>
     </message>
     <message>
-        <location filename="../src/gui/litesyncdialog.cpp" line="120"/>
         <source>NAME</source>
-        <translation>ΟΝΟΜΑ</translation>
+        <translation type="vanished">ΟΝΟΜΑ</translation>
     </message>
     <message>
-        <location filename="../src/gui/litesyncdialog.cpp" line="154"/>
         <source>SAVE</source>
-        <translation>ΑΠΟΘΗΚΕΥΣΗ</translation>
+        <translation type="vanished">ΑΠΟΘΗΚΕΥΣΗ</translation>
     </message>
     <message>
-        <location filename="../src/gui/litesyncdialog.cpp" line="161"/>
         <source>CANCEL</source>
-        <translation>ΑΚΥΡΩΣΗ</translation>
+        <translation type="vanished">ΑΚΥΡΩΣΗ</translation>
     </message>
     <message>
-        <location filename="../src/gui/litesyncdialog.cpp" line="295"/>
         <source>Do you want to save your modifications?</source>
-        <translation>Θέλετε να αποθηκεύσετε τις αλλαγές;</translation>
+        <translation type="vanished">Θέλετε να αποθηκεύσετε τις αλλαγές;</translation>
     </message>
     <message>
-        <location filename="../src/gui/litesyncdialog.cpp" line="337"/>
         <source>Do you really want to delete?</source>
-        <translation>Θέλετε πραγματικά να διαγράψετε;</translation>
+        <translation type="vanished">Θέλετε πραγματικά να διαγράψετε;</translation>
     </message>
     <message>
-        <location filename="../src/gui/litesyncdialog.cpp" line="374"/>
         <source>Cannot save changes!</source>
-        <translation>Αδύνατη η αποθήκευση αλλαγών!</translation>
+        <translation type="vanished">Αδύνατη η αποθήκευση αλλαγών!</translation>
     </message>
 </context>
 <context>
     <name>KDC::LocalFolderDialog</name>
     <message>
-        <location filename="../src/gui/localfolderdialog.cpp" line="63"/>
         <source>Which folder on your computer would you like to&lt;br&gt;synchronize ?</source>
-        <translation>Ποιον φάκελο στον υπολογιστή θέλετε να&lt;br&gt;συγχρονίσετε;</translation>
+        <translation type="vanished">Ποιον φάκελο στον υπολογιστή θέλετε να&lt;br&gt;συγχρονίσετε;</translation>
     </message>
     <message>
-        <location filename="../src/gui/localfolderdialog.cpp" line="72"/>
         <source>The content of this folder will be synchronized on the kDrive</source>
-        <translation>Τα περιεχόμενα αυτού του φακέλου θα συγχρονιστούν στο kDrive</translation>
+        <translation type="vanished">Τα περιεχόμενα αυτού του φακέλου θα συγχρονιστούν στο kDrive</translation>
     </message>
     <message>
-        <location filename="../src/gui/localfolderdialog.cpp" line="91"/>
         <source>Select a folder</source>
-        <translation>Επιλογή φακέλου</translation>
+        <translation type="vanished">Επιλογή φακέλου</translation>
     </message>
     <message>
-        <location filename="../src/gui/localfolderdialog.cpp" line="131"/>
         <source>Edit folder</source>
-        <translation>Επεξεργασία φακέλου</translation>
+        <translation type="vanished">Επεξεργασία φακέλου</translation>
     </message>
     <message>
-        <location filename="../src/gui/localfolderdialog.cpp" line="166"/>
         <source>CANCEL</source>
-        <translation>ΑΚΥΡΩΣΗ</translation>
+        <translation type="vanished">ΑΚΥΡΩΣΗ</translation>
     </message>
     <message>
-        <location filename="../src/gui/localfolderdialog.cpp" line="173"/>
         <source>CONTINUE</source>
-        <translation>ΣΥΝΕΧΕΙΑ</translation>
+        <translation type="vanished">ΣΥΝΕΧΕΙΑ</translation>
     </message>
     <message>
-        <location filename="../src/gui/localfolderdialog.cpp" line="210"/>
         <source>This folder is not compatible with Lite Sync.&lt;br&gt;
 Please select another folder. If you continue Lite Sync will be disabled.&lt;br&gt;
 &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
-        <translation>Αυτός ο φάκελος δεν είναι συμβατός με το Lite Sync.&lt;br&gt;
+        <translation type="vanished">Αυτός ο φάκελος δεν είναι συμβατός με το Lite Sync.&lt;br&gt;
 Επιλέξτε άλλον φάκελο. Αν συνεχίσετε, το Lite Sync θα απενεργοποιηθεί.&lt;br&gt;
 &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Μάθετε περισσότερα&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/localfolderdialog.cpp" line="233"/>
         <source>Select folder</source>
-        <translation>Επιλογή φακέλου</translation>
+        <translation type="vanished">Επιλογή φακέλου</translation>
     </message>
     <message>
-        <location filename="../src/gui/localfolderdialog.cpp" line="292"/>
         <source>Unable to open link %1.</source>
-        <translation>Δεν είναι δυνατό το άνοιγμα του συνδέσμου %1.</translation>
+        <translation type="vanished">Δεν είναι δυνατό το άνοιγμα του συνδέσμου %1.</translation>
     </message>
 </context>
 <context>
@@ -1562,14 +1263,12 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
 <context>
     <name>KDC::MainMenuBarWidget</name>
     <message>
-        <location filename="../src/gui/mainmenubarwidget.cpp" line="115"/>
         <source>Preferences</source>
-        <translation>Προτιμήσεις</translation>
+        <translation type="vanished">Προτιμήσεις</translation>
     </message>
     <message>
-        <location filename="../src/gui/mainmenubarwidget.cpp" line="116"/>
         <source>Help</source>
-        <translation>Βοήθεια</translation>
+        <translation type="vanished">Βοήθεια</translation>
     </message>
 </context>
 <context>
@@ -1912,7 +1611,7 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="790"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="834"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="837"/>
         <source>Synchronization error.</source>
         <translation>Σφάλμα συγχρονισμού.</translation>
     </message>
@@ -1928,38 +1627,43 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="818"/>
+        <source>Impossible to create file %1 because it is not supported on your filesystem.&lt;br&gt;&quot;It has been excluded from synchronization.</source>
+        <translation>Αδύνατη η δημιουργία του αρχείου %1 γιατί δεν υποστηρίζεται από το σύστημα αρχείων σας.&lt;br&gt;Έχει εξαιρεθεί από τον συγχρονισμό.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="821"/>
         <source>System error.</source>
         <translation>Σφάλμα συστήματος.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="825"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="828"/>
         <source>Item already exists on other side.&lt;br&gt;It has been temporarily blacklisted.</source>
         <translation>Το στοιχείο υπάρχει ήδη στην άλλη πλευρά.&lt;br&gt;Προσωρινά τέθηκε σε μαύρη λίστα.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="840"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="843"/>
         <source>A technical error has occurred.&lt;br&gt;Please empty the history and if the error persists, contact our support team.</source>
         <translation>Παρουσιάστηκε τεχνικό σφάλμα.&lt;br&gt;Εκκαθαρίστε το ιστορικό και αν το σφάλμα επιμείνει, επικοινωνήστε με την υποστήριξη.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1082"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1085"/>
         <source>Unable to open folder path %1.</source>
         <translation>Δεν είναι δυνατό το άνοιγμα της διαδρομής φακέλου %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1096"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1099"/>
         <source>Transmission done!&lt;br&gt;Please refer to identifier &lt;b&gt;%1&lt;/b&gt; in bug reports.</source>
         <translation>Μεταφορά ολοκληρώθηκε!&lt;br&gt;Χρησιμοποιήστε τον αναγνωριστικό &lt;b&gt;%1&lt;/b&gt; σε αναφορές σφαλμάτων.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1097"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1100"/>
         <source>Transmission failed!
 Please, use the following link to send the logs to the support: &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%2&lt;/a&gt;</source>
         <translation>Αποτυχία μεταφοράς!
 Χρησιμοποιήστε τον ακόλουθο σύνδεσμο για να στείλετε τα αρχεία καταγραφής: &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%2&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1118"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1121"/>
         <source>No kDrive configured!</source>
         <translation>Δεν έχει διαμορφωθεί kDrive!</translation>
     </message>
@@ -1967,916 +1671,739 @@ Please, use the following link to send the logs to the support: &lt;a style=&quo
 <context>
     <name>KDC::PreferencesBlocWidget</name>
     <message>
-        <location filename="../src/gui/preferencesblocwidget.cpp" line="187"/>
         <source>This synchronization is being deleted.</source>
-        <translation>Αυτός ο συγχρονισμός διαγράφεται.</translation>
+        <translation type="vanished">Αυτός ο συγχρονισμός διαγράφεται.</translation>
     </message>
 </context>
 <context>
     <name>KDC::PreferencesMenuBarWidget</name>
     <message>
-        <location filename="../src/gui/preferencesmenubarwidget.cpp" line="63"/>
         <source>Back to drive list</source>
-        <translation>Επιστροφή στη λίστα μονάδων</translation>
+        <translation type="vanished">Επιστροφή στη λίστα μονάδων</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferencesmenubarwidget.cpp" line="64"/>
         <source>Preferences</source>
-        <translation>Προτιμήσεις</translation>
+        <translation type="vanished">Προτιμήσεις</translation>
     </message>
 </context>
 <context>
     <name>KDC::PreferencesWidget</name>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="460"/>
         <source>Unable to open folder %1.</source>
-        <translation>Δεν είναι δυνατό το άνοιγμα του φακέλου %1.</translation>
+        <translation type="vanished">Δεν είναι δυνατό το άνοιγμα του φακέλου %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="472"/>
         <source>Unable to open link %1.</source>
-        <translation>Δεν είναι δυνατό το άνοιγμα του συνδέσμου %1.</translation>
+        <translation type="vanished">Δεν είναι δυνατό το άνοιγμα του συνδέσμου %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="477"/>
         <source>Invalid link %1.</source>
-        <translation>Μη έγκυρος σύνδεσμος %1.</translation>
+        <translation type="vanished">Μη έγκυρος σύνδεσμος %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="484"/>
         <source>Some process failed to run.</source>
-        <translation>Κάποια διεργασία απέτυχε να εκτελεστεί.</translation>
+        <translation type="vanished">Κάποια διεργασία απέτυχε να εκτελεστεί.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="485"/>
         <source>General</source>
-        <translation>Γενικά</translation>
+        <translation type="vanished">Γενικά</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="487"/>
         <source>Activate dark theme</source>
-        <translation>Ενεργοποίηση σκούρου θέματος</translation>
+        <translation type="vanished">Ενεργοποίηση σκούρου θέματος</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="489"/>
         <source>Activate monochrome icons</source>
-        <translation>Ενεργοποίηση μονόχρωμων εικονιδίων</translation>
+        <translation type="vanished">Ενεργοποίηση μονόχρωμων εικονιδίων</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="490"/>
         <source>Launch kDrive at startup</source>
-        <translation>Εκκίνηση kDrive κατά την έναρξη</translation>
+        <translation type="vanished">Εκκίνηση kDrive κατά την έναρξη</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="491"/>
         <source>Language</source>
-        <translation>Γλώσσα</translation>
+        <translation type="vanished">Γλώσσα</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="492"/>
         <source>Move deleted files to my computer&apos;s trash</source>
-        <translation>Μεταφορά διαγραμμένων αρχείων στον κάδο</translation>
+        <translation type="vanished">Μεταφορά διαγραμμένων αρχείων στον κάδο</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="493"/>
         <source>Some files or folders may not be moved to the computer&apos;s trash.</source>
-        <translation>Ορισμένα αρχεία ή φάκελοι ενδέχεται να μην μεταφερθούν στον κάδο.</translation>
+        <translation type="vanished">Ορισμένα αρχεία ή φάκελοι ενδέχεται να μην μεταφερθούν στον κάδο.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="494"/>
         <source>You can always retrieve already synced files from the kDrive web application trash.</source>
-        <translation>Μπορείτε πάντα να ανακτήσετε συγχρονισμένα αρχεία από τον κάδο της εφαρμογής ιστού kDrive.</translation>
+        <translation type="vanished">Μπορείτε πάντα να ανακτήσετε συγχρονισμένα αρχεία από τον κάδο της εφαρμογής ιστού kDrive.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="496"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
-        <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Μάθετε περισσότερα&lt;/a&gt;</translation>
+        <translation type="vanished">&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Μάθετε περισσότερα&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="499"/>
         <source>Default</source>
-        <translation>Προεπιλογή</translation>
+        <translation type="vanished">Προεπιλογή</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="500"/>
         <source>English</source>
-        <translation>Αγγλικά</translation>
+        <translation type="vanished">Αγγλικά</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="501"/>
         <source>French</source>
-        <translation>Γαλλικά</translation>
+        <translation type="vanished">Γαλλικά</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="502"/>
         <source>German</source>
-        <translation>Γερμανικά</translation>
+        <translation type="vanished">Γερμανικά</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="503"/>
         <source>Spanish</source>
-        <translation>Ισπανικά</translation>
+        <translation type="vanished">Ισπανικά</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="504"/>
         <source>Italian</source>
-        <translation>Ιταλικά</translation>
+        <translation type="vanished">Ιταλικά</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="505"/>
         <source>Swedish</source>
-        <translation>Σουηδικά</translation>
+        <translation type="vanished">Σουηδικά</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="506"/>
         <source>Portuguese</source>
-        <translation>Πορτογαλικά</translation>
+        <translation type="vanished">Πορτογαλικά</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="507"/>
         <source>Polish</source>
-        <translation>Πολωνικά</translation>
+        <translation type="vanished">Πολωνικά</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="508"/>
         <source>Norwegian</source>
-        <translation>Νορβηγικά</translation>
+        <translation type="vanished">Νορβηγικά</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="509"/>
         <source>Finnish</source>
-        <translation>Φινλανδικά</translation>
+        <translation type="vanished">Φινλανδικά</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="510"/>
         <source>Danish</source>
-        <translation>Δανικά</translation>
+        <translation type="vanished">Δανικά</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="511"/>
         <source>Greek</source>
-        <translation>Ελληνικά</translation>
+        <translation type="vanished">Ελληνικά</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="512"/>
         <source>Dutch</source>
-        <translation>Ολλανδικά</translation>
+        <translation type="vanished">Ολλανδικά</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="518"/>
         <source>Advanced</source>
-        <translation>Σύνθετα</translation>
+        <translation type="vanished">Σύνθετα</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="519"/>
         <source>Debugging information</source>
-        <translation>Πληροφορίες εντοπισμού</translation>
+        <translation type="vanished">Πληροφορίες εντοπισμού</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="521"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Open debugging folder&lt;/a&gt;</source>
-        <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Άνοιγμα φακέλου εντοπισμού&lt;/a&gt;</translation>
+        <translation type="vanished">&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Άνοιγμα φακέλου εντοπισμού&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="522"/>
         <source>Files to exclude</source>
-        <translation>Αρχεία προς εξαίρεση</translation>
+        <translation type="vanished">Αρχεία προς εξαίρεση</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="523"/>
         <source>Proxy server</source>
-        <translation>Διακομιστής μεσολάβησης</translation>
+        <translation type="vanished">Διακομιστής μεσολάβησης</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="525"/>
         <source>Lite Sync</source>
-        <translation>Lite Sync</translation>
+        <translation type="vanished">Lite Sync</translation>
     </message>
 </context>
 <context>
     <name>KDC::ProgressBarWidget</name>
     <message>
-        <location filename="../src/gui/progressbarwidget.cpp" line="70"/>
         <source>%1 in use</source>
-        <translation>%1 σε χρήση</translation>
+        <translation type="vanished">%1 σε χρήση</translation>
     </message>
 </context>
 <context>
     <name>KDC::ProxyServerDialog</name>
     <message>
-        <location filename="../src/gui/proxyserverdialog.cpp" line="50"/>
         <source>HTTP(S) Proxy</source>
-        <translation>HTTP(S) Διακομιστής μεσολάβησης</translation>
+        <translation type="vanished">HTTP(S) Διακομιστής μεσολάβησης</translation>
     </message>
     <message>
-        <location filename="../src/gui/proxyserverdialog.cpp" line="73"/>
         <source>Proxy server</source>
-        <translation>Διακομιστής μεσολάβησης</translation>
+        <translation type="vanished">Διακομιστής μεσολάβησης</translation>
     </message>
     <message>
-        <location filename="../src/gui/proxyserverdialog.cpp" line="85"/>
         <source>No proxy server</source>
-        <translation>Χωρίς διακομιστή μεσολάβησης</translation>
+        <translation type="vanished">Χωρίς διακομιστή μεσολάβησης</translation>
     </message>
     <message>
-        <location filename="../src/gui/proxyserverdialog.cpp" line="90"/>
         <source>Use system parameters</source>
-        <translation>Χρήση παραμέτρων συστήματος</translation>
+        <translation type="vanished">Χρήση παραμέτρων συστήματος</translation>
     </message>
     <message>
-        <location filename="../src/gui/proxyserverdialog.cpp" line="95"/>
         <source>Indicate a proxy manually</source>
-        <translation>Ρύθμιση διακομιστή μεσολάβησης χειροκίνητα</translation>
+        <translation type="vanished">Ρύθμιση διακομιστή μεσολάβησης χειροκίνητα</translation>
     </message>
     <message>
-        <location filename="../src/gui/proxyserverdialog.cpp" line="131"/>
         <source>Port</source>
-        <translation>Θύρα</translation>
+        <translation type="vanished">Θύρα</translation>
     </message>
     <message>
-        <location filename="../src/gui/proxyserverdialog.cpp" line="144"/>
         <source>Address of the proxy server</source>
-        <translation>Διεύθυνση διακομιστή μεσολάβησης</translation>
+        <translation type="vanished">Διεύθυνση διακομιστή μεσολάβησης</translation>
     </message>
     <message>
-        <location filename="../src/gui/proxyserverdialog.cpp" line="150"/>
         <source>Authentication needed</source>
-        <translation>Απαιτείται ταυτοποίηση</translation>
+        <translation type="vanished">Απαιτείται ταυτοποίηση</translation>
     </message>
     <message>
-        <location filename="../src/gui/proxyserverdialog.cpp" line="165"/>
         <source>User</source>
-        <translation>Χρήστης</translation>
+        <translation type="vanished">Χρήστης</translation>
     </message>
     <message>
-        <location filename="../src/gui/proxyserverdialog.cpp" line="171"/>
         <source>Password</source>
-        <translation>Κωδικός</translation>
+        <translation type="vanished">Κωδικός</translation>
     </message>
     <message>
-        <location filename="../src/gui/proxyserverdialog.cpp" line="185"/>
         <source>SAVE</source>
-        <translation>ΑΠΟΘΗΚΕΥΣΗ</translation>
+        <translation type="vanished">ΑΠΟΘΗΚΕΥΣΗ</translation>
     </message>
     <message>
-        <location filename="../src/gui/proxyserverdialog.cpp" line="192"/>
         <source>CANCEL</source>
-        <translation>ΑΚΥΡΩΣΗ</translation>
+        <translation type="vanished">ΑΚΥΡΩΣΗ</translation>
     </message>
     <message>
-        <location filename="../src/gui/proxyserverdialog.cpp" line="286"/>
         <source>Do you want to save your modifications?</source>
-        <translation>Θέλετε να αποθηκεύσετε τις αλλαγές;</translation>
+        <translation type="vanished">Θέλετε να αποθηκεύσετε τις αλλαγές;</translation>
     </message>
     <message>
-        <location filename="../src/gui/proxyserverdialog.cpp" line="295"/>
         <source>Unable to save, all mandatory fields are not completed!</source>
-        <translation>Αδύνατη η αποθήκευση, δεν έχουν συμπληρωθεί όλα τα υποχρεωτικά πεδία!</translation>
+        <translation type="vanished">Αδύνατη η αποθήκευση, δεν έχουν συμπληρωθεί όλα τα υποχρεωτικά πεδία!</translation>
     </message>
     <message>
-        <location filename="../src/gui/proxyserverdialog.cpp" line="316"/>
         <source>Proxy not found, save anyway?</source>
-        <translation>Ο διακομιστής μεσολάβησης δεν βρέθηκε. Αποθήκευση ούτως ή άλλως;</translation>
+        <translation type="vanished">Ο διακομιστής μεσολάβησης δεν βρέθηκε. Αποθήκευση ούτως ή άλλως;</translation>
     </message>
 </context>
 <context>
     <name>KDC::ResourcesManagerDialog</name>
     <message>
-        <location filename="../src/gui/resourcesmanagerdialog.cpp" line="55"/>
         <source>Resources Manager</source>
-        <translation>Διαχείριση πόρων</translation>
+        <translation type="vanished">Διαχείριση πόρων</translation>
     </message>
     <message>
-        <location filename="../src/gui/resourcesmanagerdialog.cpp" line="65"/>
         <source>Maximum CPU usage allowed</source>
-        <translation>Μέγιστη επιτρεπόμενη χρήση CPU</translation>
+        <translation type="vanished">Μέγιστη επιτρεπόμενη χρήση CPU</translation>
     </message>
     <message>
-        <location filename="../src/gui/resourcesmanagerdialog.cpp" line="96"/>
         <source>SAVE</source>
-        <translation>ΑΠΟΘΗΚΕΥΣΗ</translation>
+        <translation type="vanished">ΑΠΟΘΗΚΕΥΣΗ</translation>
     </message>
     <message>
-        <location filename="../src/gui/resourcesmanagerdialog.cpp" line="103"/>
         <source>CANCEL</source>
-        <translation>ΑΚΥΡΩΣΗ</translation>
+        <translation type="vanished">ΑΚΥΡΩΣΗ</translation>
     </message>
     <message>
-        <location filename="../src/gui/resourcesmanagerdialog.cpp" line="122"/>
         <source>Do you want to save your modifications?</source>
-        <translation>Θέλετε να αποθηκεύσετε τις αλλαγές;</translation>
+        <translation type="vanished">Θέλετε να αποθηκεύσετε τις αλλαγές;</translation>
     </message>
 </context>
 <context>
     <name>KDC::ServerBaseFolderDialog</name>
     <message>
-        <location filename="../src/gui/serverbasefolderdialog.cpp" line="81"/>
         <source>Select a folder on your kDrive</source>
-        <translation>Επιλέξτε φάκελο στο kDrive</translation>
+        <translation type="vanished">Επιλέξτε φάκελο στο kDrive</translation>
     </message>
     <message>
-        <location filename="../src/gui/serverbasefolderdialog.cpp" line="90"/>
         <source>The content of the selected folder will be synchronized into the &lt;b&gt;%1&lt;/b&gt; folder.</source>
-        <translation>Τα περιεχόμενα του επιλεγμένου φακέλου θα συγχρονιστούν στον φάκελο &lt;b&gt;%1&lt;/b&gt;.</translation>
+        <translation type="vanished">Τα περιεχόμενα του επιλεγμένου φακέλου θα συγχρονιστούν στον φάκελο &lt;b&gt;%1&lt;/b&gt;.</translation>
     </message>
     <message>
-        <location filename="../src/gui/serverbasefolderdialog.cpp" line="134"/>
         <source>CONTINUE</source>
-        <translation>ΣΥΝΕΧΕΙΑ</translation>
+        <translation type="vanished">ΣΥΝΕΧΕΙΑ</translation>
     </message>
     <message>
-        <location filename="../src/gui/serverbasefolderdialog.cpp" line="150"/>
         <source>Space available on your computer for the current folder : %1</source>
-        <translation>Διαθέσιμος χώρος στον υπολογιστή για τον τρέχοντα φάκελο: %1</translation>
+        <translation type="vanished">Διαθέσιμος χώρος στον υπολογιστή για τον τρέχοντα φάκελο: %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/serverbasefolderdialog.cpp" line="190"/>
         <source>This folder is already being synced.</source>
-        <translation>Αυτός ο φάκελος συγχρονίζεται ήδη.</translation>
+        <translation type="vanished">Αυτός ο φάκελος συγχρονίζεται ήδη.</translation>
     </message>
     <message>
-        <location filename="../src/gui/serverbasefolderdialog.cpp" line="204"/>
         <source>CONFIRM</source>
-        <translation>ΕΠΙΒΕΒΑΙΩΣΗ</translation>
+        <translation type="vanished">ΕΠΙΒΕΒΑΙΩΣΗ</translation>
     </message>
     <message>
-        <location filename="../src/gui/serverbasefolderdialog.cpp" line="205"/>
         <source>CANCEL</source>
-        <translation>ΑΚΥΡΩΣΗ</translation>
+        <translation type="vanished">ΑΚΥΡΩΣΗ</translation>
     </message>
 </context>
 <context>
     <name>KDC::ServerFoldersDialog</name>
     <message>
-        <location filename="../src/gui/serverfoldersdialog.cpp" line="80"/>
         <source>The &lt;b&gt;%1&lt;/b&gt; folder contains subfolders,&lt;br&gt; select the ones you want to synchronize</source>
-        <translation>Ο φάκελος &lt;b&gt;%1&lt;/b&gt; περιέχει υποφακέλους,&lt;br&gt; επιλέξτε αυτούς που θέλετε να συγχρονίσετε</translation>
+        <translation type="vanished">Ο φάκελος &lt;b&gt;%1&lt;/b&gt; περιέχει υποφακέλους,&lt;br&gt; επιλέξτε αυτούς που θέλετε να συγχρονίσετε</translation>
     </message>
     <message>
-        <location filename="../src/gui/serverfoldersdialog.cpp" line="110"/>
         <source>CONTINUE</source>
-        <translation>ΣΥΝΕΧΕΙΑ</translation>
+        <translation type="vanished">ΣΥΝΕΧΕΙΑ</translation>
     </message>
     <message>
-        <location filename="../src/gui/serverfoldersdialog.cpp" line="146"/>
         <source>No subfolders currently on the server.</source>
-        <translation>Δεν υπάρχουν υποφάκελοι αυτή τη στιγμή στον διακομιστή.</translation>
+        <translation type="vanished">Δεν υπάρχουν υποφάκελοι αυτή τη στιγμή στον διακομιστή.</translation>
     </message>
 </context>
 <context>
     <name>KDC::StatusBarWidget</name>
     <message>
-        <location filename="../src/gui/statusbarwidget.cpp" line="178"/>
         <source>Resume kDrive &quot;%1&quot; synchronization</source>
-        <translation>Συνέχιση συγχρονισμού kDrive &quot;%1&quot;</translation>
+        <translation type="vanished">Συνέχιση συγχρονισμού kDrive &quot;%1&quot;</translation>
     </message>
     <message>
-        <location filename="../src/gui/statusbarwidget.cpp" line="179"/>
-        <location filename="../src/gui/statusbarwidget.cpp" line="322"/>
         <source>Resume synchronization</source>
-        <translation>Συνέχιση συγχρονισμού</translation>
+        <translation type="vanished">Συνέχιση συγχρονισμού</translation>
     </message>
     <message>
-        <location filename="../src/gui/statusbarwidget.cpp" line="180"/>
         <source>Resume all kDrives synchronization</source>
-        <translation>Συνέχιση συγχρονισμού όλων των kDrive</translation>
+        <translation type="vanished">Συνέχιση συγχρονισμού όλων των kDrive</translation>
     </message>
     <message>
-        <location filename="../src/gui/statusbarwidget.cpp" line="183"/>
         <source>Pause kDrive &quot;%1&quot; synchronization</source>
-        <translation>Παύση συγχρονισμού kDrive &quot;%1&quot;</translation>
+        <translation type="vanished">Παύση συγχρονισμού kDrive &quot;%1&quot;</translation>
     </message>
     <message>
-        <location filename="../src/gui/statusbarwidget.cpp" line="184"/>
-        <location filename="../src/gui/statusbarwidget.cpp" line="321"/>
         <source>Pause synchronization</source>
-        <translation>Παύση συγχρονισμού</translation>
+        <translation type="vanished">Παύση συγχρονισμού</translation>
     </message>
     <message>
-        <location filename="../src/gui/statusbarwidget.cpp" line="185"/>
         <source>Pause all kDrives synchronization</source>
-        <translation>Παύση συγχρονισμού όλων των kDrive</translation>
+        <translation type="vanished">Παύση συγχρονισμού όλων των kDrive</translation>
     </message>
 </context>
 <context>
     <name>KDC::SynchronizedItemWidget</name>
     <message>
-        <location filename="../src/gui/synchronizeditemwidget.cpp" line="317"/>
         <source>Open</source>
-        <translation>Άνοιγμα</translation>
+        <translation type="vanished">Άνοιγμα</translation>
     </message>
     <message>
-        <location filename="../src/gui/synchronizeditemwidget.cpp" line="325"/>
         <source>Add to favorites</source>
-        <translation>Προσθήκη στα αγαπημένα</translation>
+        <translation type="vanished">Προσθήκη στα αγαπημένα</translation>
     </message>
     <message>
-        <location filename="../src/gui/synchronizeditemwidget.cpp" line="333"/>
         <source>Copy share link</source>
-        <translation>Αντιγραφή συνδέσμου κοινοποίησης</translation>
+        <translation type="vanished">Αντιγραφή συνδέσμου κοινοποίησης</translation>
     </message>
     <message>
-        <location filename="../src/gui/synchronizeditemwidget.cpp" line="342"/>
         <source>Display on kdrive.infomaniak.com</source>
-        <translation>Εμφάνιση στο kdrive.infomaniak.com</translation>
+        <translation type="vanished">Εμφάνιση στο kdrive.infomaniak.com</translation>
     </message>
     <message>
-        <location filename="../src/gui/synchronizeditemwidget.cpp" line="387"/>
         <source>Show in folder</source>
-        <translation>Εμφάνιση στον φάκελο</translation>
+        <translation type="vanished">Εμφάνιση στον φάκελο</translation>
     </message>
     <message>
-        <location filename="../src/gui/synchronizeditemwidget.cpp" line="388"/>
         <source>More actions</source>
-        <translation>Περισσότερες ενέργειες</translation>
+        <translation type="vanished">Περισσότερες ενέργειες</translation>
     </message>
 </context>
 <context>
     <name>KDC::SynthesisBar</name>
     <message>
-        <location filename="../src/gui/synthesisbar.cpp" line="149"/>
         <source>Unable to open folder url %1.</source>
-        <translation>Δεν είναι δυνατό το άνοιγμα του URL φακέλου %1.</translation>
+        <translation type="vanished">Δεν είναι δυνατό το άνοιγμα του URL φακέλου %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesisbar.cpp" line="219"/>
         <source>Open in folder</source>
-        <translation>Άνοιγμα στον φάκελο</translation>
+        <translation type="vanished">Άνοιγμα στον φάκελο</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesisbar.cpp" line="257"/>
         <source>Open %1 web version</source>
-        <translation>Άνοιγμα ιστοσελίδας %1</translation>
+        <translation type="vanished">Άνοιγμα ιστοσελίδας %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesisbar.cpp" line="267"/>
         <source>Drive parameters</source>
-        <translation>Παράμετροι μονάδας</translation>
+        <translation type="vanished">Παράμετροι μονάδας</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesisbar.cpp" line="280"/>
         <source>Notifications disabled until %1</source>
-        <translation>Οι ειδοποιήσεις είναι απενεργοποιημένες έως %1</translation>
+        <translation type="vanished">Οι ειδοποιήσεις είναι απενεργοποιημένες έως %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesisbar.cpp" line="281"/>
         <source>Disable Notifications</source>
-        <translation>Απενεργοποίηση ειδοποιήσεων</translation>
+        <translation type="vanished">Απενεργοποίηση ειδοποιήσεων</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesisbar.cpp" line="314"/>
         <source>Application preferences</source>
-        <translation>Προτιμήσεις εφαρμογής</translation>
+        <translation type="vanished">Προτιμήσεις εφαρμογής</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesisbar.cpp" line="322"/>
         <source>Need help</source>
-        <translation>Χρειάζεστε βοήθεια</translation>
+        <translation type="vanished">Χρειάζεστε βοήθεια</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesisbar.cpp" line="330"/>
         <source>Send feedbacks</source>
-        <translation>Αποστολή σχολίων</translation>
+        <translation type="vanished">Αποστολή σχολίων</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesisbar.cpp" line="338"/>
         <source>Quit kDrive</source>
-        <translation>Έξοδος από το kDrive</translation>
+        <translation type="vanished">Έξοδος από το kDrive</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesisbar.cpp" line="401"/>
         <source>Unable to access web site %1.</source>
-        <translation>Δεν είναι δυνατή η πρόσβαση στον ιστότοπο %1.</translation>
+        <translation type="vanished">Δεν είναι δυνατή η πρόσβαση στον ιστότοπο %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesisbar.cpp" line="492"/>
         <source>Show errors and informations</source>
-        <translation>Εμφάνιση σφαλμάτων και πληροφοριών</translation>
+        <translation type="vanished">Εμφάνιση σφαλμάτων και πληροφοριών</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesisbar.cpp" line="493"/>
         <source>Show informations</source>
-        <translation>Εμφάνιση πληροφοριών</translation>
+        <translation type="vanished">Εμφάνιση πληροφοριών</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesisbar.cpp" line="494"/>
         <source>More actions</source>
-        <translation>Περισσότερες ενέργειες</translation>
+        <translation type="vanished">Περισσότερες ενέργειες</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesisbar.cpp" line="495"/>
-        <location filename="../src/gui/synthesisbar.cpp" line="502"/>
         <source>Never</source>
-        <translation>Ποτέ</translation>
+        <translation type="vanished">Ποτέ</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesisbar.cpp" line="496"/>
         <source>During 1 hour</source>
-        <translation>Για 1 ώρα</translation>
+        <translation type="vanished">Για 1 ώρα</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesisbar.cpp" line="497"/>
-        <location filename="../src/gui/synthesisbar.cpp" line="504"/>
         <source>Until tomorrow 8:00AM</source>
-        <translation>Έως αύριο στις 8:00</translation>
+        <translation type="vanished">Έως αύριο στις 8:00</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesisbar.cpp" line="498"/>
         <source>During 3 days</source>
-        <translation>Για 3 ημέρες</translation>
+        <translation type="vanished">Για 3 ημέρες</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesisbar.cpp" line="499"/>
         <source>During 1 week</source>
-        <translation>Για 1 εβδομάδα</translation>
+        <translation type="vanished">Για 1 εβδομάδα</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesisbar.cpp" line="500"/>
-        <location filename="../src/gui/synthesisbar.cpp" line="507"/>
         <source>Always</source>
-        <translation>Πάντα</translation>
+        <translation type="vanished">Πάντα</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesisbar.cpp" line="503"/>
         <source>For 1 more hour</source>
-        <translation>Για 1 ακόμη ώρα</translation>
+        <translation type="vanished">Για 1 ακόμη ώρα</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesisbar.cpp" line="505"/>
         <source>For 3 more days</source>
-        <translation>Για 3 ακόμη ημέρες</translation>
+        <translation type="vanished">Για 3 ακόμη ημέρες</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesisbar.cpp" line="506"/>
         <source>For 1 more week</source>
-        <translation>Για 1 ακόμη εβδομάδα</translation>
+        <translation type="vanished">Για 1 ακόμη εβδομάδα</translation>
     </message>
 </context>
 <context>
     <name>KDC::SynthesisPopover</name>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="448"/>
         <source>Synchronized</source>
-        <translation>Συγχρονισμένα</translation>
+        <translation type="vanished">Συγχρονισμένα</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="452"/>
         <source>Favorites</source>
-        <translation>Αγαπημένα</translation>
+        <translation type="vanished">Αγαπημένα</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="456"/>
         <source>Activity</source>
-        <translation>Δραστηριότητα</translation>
+        <translation type="vanished">Δραστηριότητα</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="588"/>
         <source>Unable to open folder url %1.</source>
-        <translation>Δεν είναι δυνατό το άνοιγμα του URL φακέλου %1.</translation>
+        <translation type="vanished">Δεν είναι δυνατό το άνοιγμα του URL φακέλου %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="980"/>
         <source>Update</source>
-        <translation>Ενημέρωση</translation>
+        <translation type="vanished">Ενημέρωση</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="983"/>
         <source>Update download in progress</source>
-        <translation>Λήψη ενημέρωσης σε εξέλιξη</translation>
+        <translation type="vanished">Λήψη ενημέρωσης σε εξέλιξη</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="986"/>
         <source>Looking for update...</source>
-        <translation>Αναζήτηση ενημέρωσης...</translation>
+        <translation type="vanished">Αναζήτηση ενημέρωσης...</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="989"/>
         <source>Manual update</source>
-        <translation>Χειροκίνητη ενημέρωση</translation>
+        <translation type="vanished">Χειροκίνητη ενημέρωση</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="992"/>
         <source>Unavailable</source>
-        <translation>Μη διαθέσιμο</translation>
+        <translation type="vanished">Μη διαθέσιμο</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1135"/>
-        <location filename="../src/gui/synthesispopover.cpp" line="1182"/>
         <source>Not implemented!</source>
-        <translation>Δεν έχει υλοποιηθεί!</translation>
+        <translation type="vanished">Δεν έχει υλοποιηθεί!</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1163"/>
         <source>Unable to open link %1.</source>
-        <translation>Δεν είναι δυνατό το άνοιγμα του συνδέσμου %1.</translation>
+        <translation type="vanished">Δεν είναι δυνατό το άνοιγμα του συνδέσμου %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1175"/>
         <source>Invalid link %1.</source>
-        <translation>Μη έγκυρος σύνδεσμος %1.</translation>
+        <translation type="vanished">Μη έγκυρος σύνδεσμος %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1183"/>
         <source>Update kDrive App</source>
-        <translation>Ενημέρωση εφαρμογής kDrive</translation>
+        <translation type="vanished">Ενημέρωση εφαρμογής kDrive</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1184"/>
         <source>This kDrive app version is not supported anymore. To access the latest features and enhancements, please update.</source>
-        <translation>Αυτή η έκδοση της εφαρμογής kDrive δεν υποστηρίζεται πλέον. Ενημερώστε για πρόσβαση στις τελευταίες λειτουργίες.</translation>
+        <translation type="vanished">Αυτή η έκδοση της εφαρμογής kDrive δεν υποστηρίζεται πλέον. Ενημερώστε για πρόσβαση στις τελευταίες λειτουργίες.</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1187"/>
         <source>&lt;a style= text-decoration:none; href=&quot;https://www.infomaniak.com/en/apps/download-kdrive&quot;&gt;Click here to download manually&lt;/a&gt;</source>
-        <translation>&lt;a style= text-decoration:none; href=&quot;https://www.infomaniak.com/en/apps/download-kdrive&quot;&gt;Κάντε κλικ εδώ για χειροκίνητη λήψη&lt;/a&gt;</translation>
+        <translation type="vanished">&lt;a style= text-decoration:none; href=&quot;https://www.infomaniak.com/en/apps/download-kdrive&quot;&gt;Κάντε κλικ εδώ για χειροκίνητη λήψη&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1190"/>
         <source>Please download the latest version on the website.</source>
-        <translation>Κατεβάστε την τελευταία έκδοση από τον ιστότοπο.</translation>
+        <translation type="vanished">Κατεβάστε την τελευταία έκδοση από τον ιστότοπο.</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1196"/>
         <source>No synchronized folder for this Drive!</source>
-        <translation>Δεν υπάρχει συγχρονισμένος φάκελος για αυτή τη μονάδα!</translation>
+        <translation type="vanished">Δεν υπάρχει συγχρονισμένος φάκελος για αυτή τη μονάδα!</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1199"/>
         <source>No kDrive configured!</source>
-        <translation>Δεν έχει διαμορφωθεί kDrive!</translation>
+        <translation type="vanished">Δεν έχει διαμορφωθεί kDrive!</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1203"/>
         <source>You can synchronize files &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;from your computer&lt;/a&gt; or on &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;kdrive.infomaniak.com&lt;/a&gt;.</source>
-        <translation>Μπορείτε να συγχρονίσετε αρχεία &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;από τον υπολογιστή σας&lt;/a&gt; ή στο &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;kdrive.infomaniak.com&lt;/a&gt;.</translation>
+        <translation type="vanished">Μπορείτε να συγχρονίσετε αρχεία &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;από τον υπολογιστή σας&lt;/a&gt; ή στο &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;kdrive.infomaniak.com&lt;/a&gt;.</translation>
     </message>
 </context>
 <context>
     <name>KDC::UpdateDialog</name>
     <message>
-        <location filename="../src/gui/updater/updatedialog.cpp" line="61"/>
         <source>&lt;p&gt;The new version &lt;b&gt;%1&lt;/b&gt; of the %2 Client is available and has been downloaded.&lt;/p&gt;&lt;p&gt;The installed version is %3.&lt;/p&gt;</source>
-        <translation>&lt;p&gt;Η νέα έκδοση &lt;b&gt;%1&lt;/b&gt; του πελάτη %2 είναι διαθέσιμη και έχει ληφθεί.&lt;/p&gt;&lt;p&gt;Η εγκατεστημένη έκδοση είναι %3.&lt;/p&gt;</translation>
+        <translation type="vanished">&lt;p&gt;Η νέα έκδοση &lt;b&gt;%1&lt;/b&gt; του πελάτη %2 είναι διαθέσιμη και έχει ληφθεί.&lt;/p&gt;&lt;p&gt;Η εγκατεστημένη έκδοση είναι %3.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/updater/updatedialog.cpp" line="95"/>
         <source>Skip this version</source>
-        <translation>Παράλειψη αυτής της έκδοσης</translation>
+        <translation type="vanished">Παράλειψη αυτής της έκδοσης</translation>
     </message>
     <message>
-        <location filename="../src/gui/updater/updatedialog.cpp" line="103"/>
         <source>Remind me later</source>
-        <translation>Υπενθύμιση αργότερα</translation>
+        <translation type="vanished">Υπενθύμιση αργότερα</translation>
     </message>
     <message>
-        <location filename="../src/gui/updater/updatedialog.cpp" line="109"/>
         <source>Install update</source>
-        <translation>Εγκατάσταση ενημέρωσης</translation>
+        <translation type="vanished">Εγκατάσταση ενημέρωσης</translation>
     </message>
 </context>
 <context>
     <name>KDC::UpdateManager</name>
     <message>
-        <location filename="../src/server/updater/updatemanager.cpp" line="88"/>
         <source>New update available.</source>
-        <translation>Νέα ενημέρωση διαθέσιμη.</translation>
+        <translation type="vanished">Νέα ενημέρωση διαθέσιμη.</translation>
     </message>
     <message>
-        <location filename="../src/server/updater/updatemanager.cpp" line="89"/>
         <source>Version %1 is available for download.</source>
-        <translation>Η έκδοση %1 είναι διαθέσιμη για λήψη.</translation>
+        <translation type="vanished">Η έκδοση %1 είναι διαθέσιμη για λήψη.</translation>
     </message>
 </context>
 <context>
     <name>KDC::UserSelectionWidget</name>
     <message>
-        <location filename="../src/gui/userselectionwidget.cpp" line="131"/>
         <source>Add an account</source>
-        <translation>Προσθήκη λογαριασμού</translation>
+        <translation type="vanished">Προσθήκη λογαριασμού</translation>
     </message>
 </context>
 <context>
     <name>KDC::VersionWidget</name>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="170"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Show release note&lt;/a&gt;</source>
-        <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Εμφάνιση σημειώσεων έκδοσης&lt;/a&gt;</translation>
+        <translation type="vanished">&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Εμφάνιση σημειώσεων έκδοσης&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="173"/>
         <source>Version</source>
-        <translation>Έκδοση</translation>
+        <translation type="vanished">Έκδοση</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="174"/>
         <source>UPDATE</source>
-        <translation>ΕΝΗΜΕΡΩΣΗ</translation>
+        <translation type="vanished">ΕΝΗΜΕΡΩΣΗ</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="198"/>
         <source>%1 is up to date!</source>
-        <translation>Το %1 είναι ενημερωμένο!</translation>
+        <translation type="vanished">Το %1 είναι ενημερωμένο!</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="202"/>
         <source>Checking update on server...</source>
-        <translation>Έλεγχος ενημέρωσης στον διακομιστή...</translation>
+        <translation type="vanished">Έλεγχος ενημέρωσης στον διακομιστή...</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="206"/>
         <source>An update is available: %1.&lt;br&gt;Please download it from &lt;a style=&quot;%2&quot; href=&quot;%3&quot;&gt;here&lt;/a&gt;.</source>
-        <translation>Διαθέσιμη ενημέρωση: %1.&lt;br&gt;Κατεβάστε τη από &lt;a style=&quot;%2&quot; href=&quot;%3&quot;&gt;εδώ&lt;/a&gt;.</translation>
+        <translation type="vanished">Διαθέσιμη ενημέρωση: %1.&lt;br&gt;Κατεβάστε τη από &lt;a style=&quot;%2&quot; href=&quot;%3&quot;&gt;εδώ&lt;/a&gt;.</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="213"/>
         <source>An update is available: %1</source>
-        <translation>Διαθέσιμη ενημέρωση: %1</translation>
+        <translation type="vanished">Διαθέσιμη ενημέρωση: %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="219"/>
         <source>Downloading %1. Please wait...</source>
-        <translation>Λήψη %1. Παρακαλώ περιμένετε...</translation>
+        <translation type="vanished">Λήψη %1. Παρακαλώ περιμένετε...</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="224"/>
         <source>Could not check for new updates.</source>
-        <translation>Δεν ήταν δυνατός ο έλεγχος για νέες ενημερώσεις.</translation>
+        <translation type="vanished">Δεν ήταν δυνατός ο έλεγχος για νέες ενημερώσεις.</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="228"/>
         <source>An error occurred during update.</source>
-        <translation>Παρουσιάστηκε σφάλμα κατά την ενημέρωση.</translation>
+        <translation type="vanished">Παρουσιάστηκε σφάλμα κατά την ενημέρωση.</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="232"/>
         <source>Could not download update.</source>
-        <translation>Δεν ήταν δυνατή η λήψη ενημέρωσης.</translation>
+        <translation type="vanished">Δεν ήταν δυνατή η λήψη ενημέρωσης.</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="236"/>
         <source>Update disabled.</source>
-        <translation>Η ενημέρωση απενεργοποιήθηκε.</translation>
+        <translation type="vanished">Η ενημέρωση απενεργοποιήθηκε.</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="252"/>
         <source>Beta program</source>
-        <translation>Πρόγραμμα beta</translation>
+        <translation type="vanished">Πρόγραμμα beta</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="253"/>
         <source>Get early access to new versions of the application</source>
-        <translation>Αποκτήστε πρώιμη πρόσβαση σε νέες εκδόσεις της εφαρμογής</translation>
+        <translation type="vanished">Αποκτήστε πρώιμη πρόσβαση σε νέες εκδόσεις της εφαρμογής</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="257"/>
         <source>Join</source>
-        <translation>Συμμετοχή</translation>
+        <translation type="vanished">Συμμετοχή</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="260"/>
         <source>Modify</source>
-        <translation>Τροποποίηση</translation>
+        <translation type="vanished">Τροποποίηση</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="260"/>
         <source>Quit</source>
-        <translation>Έξοδος</translation>
+        <translation type="vanished">Έξοδος</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="314"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%3&lt;/a&gt;</source>
-        <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%3&lt;/a&gt;</translation>
+        <translation type="vanished">&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%3&lt;/a&gt;</translation>
     </message>
 </context>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="42"/>
         <source>Lite sync (Beta) is enabled. Files from kDrive remain in the Cloud and do not use your computer&apos;s storage space.</source>
-        <translation>Το Lite sync (Beta) είναι ενεργό. Τα αρχεία από το kDrive παραμένουν στο Cloud και δεν χρησιμοποιούν χώρο αποθήκευσης.</translation>
+        <translation type="vanished">Το Lite sync (Beta) είναι ενεργό. Τα αρχεία από το kDrive παραμένουν στο Cloud και δεν χρησιμοποιούν χώρο αποθήκευσης.</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="45"/>
         <source>Lite sync (Beta) is disabled. The kDrive files use the storage space of your computer.</source>
-        <translation>Το Lite sync (Beta) είναι ανενεργό. Τα αρχεία kDrive χρησιμοποιούν χώρο αποθήκευσης στον υπολογιστή.</translation>
+        <translation type="vanished">Το Lite sync (Beta) είναι ανενεργό. Τα αρχεία kDrive χρησιμοποιούν χώρο αποθήκευσης στον υπολογιστή.</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="48"/>
         <source>Lite sync is enabled. Files from kDrive remain in the Cloud and do not use your computer&apos;s storage space.</source>
-        <translation>Το Lite sync είναι ενεργό. Τα αρχεία από το kDrive παραμένουν στο Cloud και δεν χρησιμοποιούν χώρο αποθήκευσης.</translation>
+        <translation type="vanished">Το Lite sync είναι ενεργό. Τα αρχεία από το kDrive παραμένουν στο Cloud και δεν χρησιμοποιούν χώρο αποθήκευσης.</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="50"/>
         <source>Lite sync is disabled. The kDrive files use the storage space of your computer.</source>
-        <translation>Το Lite sync είναι ανενεργό. Τα αρχεία kDrive χρησιμοποιούν χώρο αποθήκευσης στον υπολογιστή.</translation>
+        <translation type="vanished">Το Lite sync είναι ανενεργό. Τα αρχεία kDrive χρησιμοποιούν χώρο αποθήκευσης στον υπολογιστή.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parameterscache.cpp" line="59"/>
         <source>Unable to save parameters, please retry later.</source>
-        <translation>Αδύνατη η αποθήκευση παραμέτρων, δοκιμάστε ξανά αργότερα.</translation>
+        <translation type="vanished">Αδύνατη η αποθήκευση παραμέτρων, δοκιμάστε ξανά αργότερα.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parameterscache.cpp" line="60"/>
         <source>Unable to save parameters!</source>
-        <translation>Αδύνατη η αποθήκευση παραμέτρων!</translation>
+        <translation type="vanished">Αδύνατη η αποθήκευση παραμέτρων!</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1242"/>
         <source>Make available locally</source>
-        <translation>Διαθεσιμότητα τοπικά</translation>
+        <translation type="vanished">Διαθεσιμότητα τοπικά</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1246"/>
         <source>Free up local space</source>
-        <translation>Ελευθέρωση τοπικού χώρου</translation>
+        <translation type="vanished">Ελευθέρωση τοπικού χώρου</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1250"/>
         <source>Cancel free up local space</source>
-        <translation>Ακύρωση ελευθέρωσης τοπικού χώρου</translation>
+        <translation type="vanished">Ακύρωση ελευθέρωσης τοπικού χώρου</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1254"/>
         <source>Cancel make available locally</source>
-        <translation>Ακύρωση τοπικής διαθεσιμότητας</translation>
+        <translation type="vanished">Ακύρωση τοπικής διαθεσιμότητας</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1258"/>
         <source>Resharing this file is not allowed</source>
-        <translation>Η κοινοποίηση αυτού του αρχείου δεν επιτρέπεται</translation>
+        <translation type="vanished">Η κοινοποίηση αυτού του αρχείου δεν επιτρέπεται</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1259"/>
         <source>Resharing this folder is not allowed</source>
-        <translation>Η κοινοποίηση αυτού του φακέλου δεν επιτρέπεται</translation>
+        <translation type="vanished">Η κοινοποίηση αυτού του φακέλου δεν επιτρέπεται</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1263"/>
         <source>Copy public share link</source>
-        <translation>Αντιγραφή δημόσιου συνδέσμου κοινοποίησης</translation>
+        <translation type="vanished">Αντιγραφή δημόσιου συνδέσμου κοινοποίησης</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1267"/>
         <source>Copy private share link</source>
-        <translation>Αντιγραφή ιδιωτικού συνδέσμου κοινοποίησης</translation>
+        <translation type="vanished">Αντιγραφή ιδιωτικού συνδέσμου κοινοποίησης</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1271"/>
         <source>Open in browser</source>
-        <translation>Άνοιγμα στον περιηγητή</translation>
+        <translation type="vanished">Άνοιγμα στον περιηγητή</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="490"/>
         <source>The parent folder is a sync folder or contained in one</source>
-        <translation>Ο γονικός φάκελος είναι φάκελος συγχρονισμού ή περιέχεται σε έναν</translation>
+        <translation type="vanished">Ο γονικός φάκελος είναι φάκελος συγχρονισμού ή περιέχεται σε έναν</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="524"/>
         <source>Can&apos;t find a valid path</source>
-        <translation>Δεν βρέθηκε έγκυρη διαδρομή</translation>
+        <translation type="vanished">Δεν βρέθηκε έγκυρη διαδρομή</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2133"/>
         <source>No valid folder selected!</source>
-        <translation>Δεν επιλέχθηκε έγκυρος φάκελος!</translation>
+        <translation type="vanished">Δεν επιλέχθηκε έγκυρος φάκελος!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2144"/>
         <source>The selected path does not exist!</source>
-        <translation>Η επιλεγμένη διαδρομή δεν υπάρχει!</translation>
+        <translation type="vanished">Η επιλεγμένη διαδρομή δεν υπάρχει!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2149"/>
         <source>The selected path is not a folder!</source>
-        <translation>Η επιλεγμένη διαδρομή δεν είναι φάκελος!</translation>
+        <translation type="vanished">Η επιλεγμένη διαδρομή δεν είναι φάκελος!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2154"/>
         <source>You have no permission to write to the selected folder!</source>
-        <translation>Δεν έχετε δικαίωμα εγγραφής στον επιλεγμένο φάκελο!</translation>
+        <translation type="vanished">Δεν έχετε δικαίωμα εγγραφής στον επιλεγμένο φάκελο!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2184"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
-        <translation>Ο τοπικός φάκελος %1 περιέχει φάκελο που συγχρονίζεται ήδη. Επιλέξτε άλλον!</translation>
+        <translation type="vanished">Ο τοπικός φάκελος %1 περιέχει φάκελο που συγχρονίζεται ήδη. Επιλέξτε άλλον!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2192"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
-        <translation>Ο τοπικός φάκελος %1 περιέχεται σε φάκελο που συγχρονίζεται ήδη. Επιλέξτε άλλον!</translation>
+        <translation type="vanished">Ο τοπικός φάκελος %1 περιέχεται σε φάκελο που συγχρονίζεται ήδη. Επιλέξτε άλλον!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2200"/>
         <source>The local folder %1 is already synced. Please pick another one!</source>
-        <translation>Ο τοπικός φάκελος %1 συγχρονίζεται ήδη. Επιλέξτε άλλον!</translation>
+        <translation type="vanished">Ο τοπικός φάκελος %1 συγχρονίζεται ήδη. Επιλέξτε άλλον!</translation>
     </message>
 </context>
 <context>
     <name>SharedTools::QtSingleApplication</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="134"/>
         <source>kDrive application will close due to a fatal error.</source>
-        <translation>Η εφαρμογή kDrive θα κλείσει λόγω κρίσιμου σφάλματος.</translation>
+        <translation type="vanished">Η εφαρμογή kDrive θα κλείσει λόγω κρίσιμου σφάλματος.</translation>
     </message>
 </context>
 <context>
@@ -2943,136 +2470,111 @@ Please, use the following link to send the logs to the support: &lt;a style=&quo
 <context>
     <name>main.cpp</name>
     <message>
-        <location filename="../src/gui/mainclient.cpp" line="49"/>
         <source>System Tray not available</source>
-        <translation>Η γραμμή συστήματος δεν είναι διαθέσιμη</translation>
+        <translation type="vanished">Η γραμμή συστήματος δεν είναι διαθέσιμη</translation>
     </message>
     <message>
-        <location filename="../src/gui/mainclient.cpp" line="50"/>
         <source>%1 requires a working system tray. If you are running XFCE, please follow &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;these instructions&lt;/a&gt;. Otherwise, please install a system tray application such as &apos;trayer&apos; and try again.</source>
-        <translation>%1 απαιτεί μια λειτουργική γραμμή συστήματος. Εάν χρησιμοποιείτε XFCE, ακολουθήστε &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;αυτές τις οδηγίες&lt;/a&gt;. Διαφορετικά, εγκαταστήστε μια εφαρμογή γραμμής συστήματος όπως &apos;trayer&apos; και δοκιμάστε ξανά.</translation>
+        <translation type="vanished">%1 απαιτεί μια λειτουργική γραμμή συστήματος. Εάν χρησιμοποιείτε XFCE, ακολουθήστε &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;αυτές τις οδηγίες&lt;/a&gt;. Διαφορετικά, εγκαταστήστε μια εφαρμογή γραμμής συστήματος όπως &apos;trayer&apos; και δοκιμάστε ξανά.</translation>
     </message>
 </context>
 <context>
     <name>utility</name>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="84"/>
         <source>Could not open browser</source>
-        <translation>Δεν ήταν δυνατό το άνοιγμα του περιηγητή</translation>
+        <translation type="vanished">Δεν ήταν δυνατό το άνοιγμα του περιηγητή</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="85"/>
         <source>There was an error when launching the browser to go to URL %1. Maybe no default browser is configured?</source>
-        <translation>Παρουσιάστηκε σφάλμα κατά την εκκίνηση του περιηγητή για το URL %1. Ίσως δεν έχει ρυθμιστεί προεπιλεγμένος περιηγητής;</translation>
+        <translation type="vanished">Παρουσιάστηκε σφάλμα κατά την εκκίνηση του περιηγητή για το URL %1. Ίσως δεν έχει ρυθμιστεί προεπιλεγμένος περιηγητής;</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="104"/>
         <source>Could not open email client</source>
-        <translation>Δεν ήταν δυνατό το άνοιγμα του πελάτη email</translation>
+        <translation type="vanished">Δεν ήταν δυνατό το άνοιγμα του πελάτη email</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="105"/>
         <source>There was an error when launching the email client to create a new message. Maybe no default email client is configured?</source>
-        <translation>Παρουσιάστηκε σφάλμα κατά την εκκίνηση του πελάτη email. Ίσως δεν έχει ρυθμιστεί προεπιλεγμένος πελάτης email;</translation>
+        <translation type="vanished">Παρουσιάστηκε σφάλμα κατά την εκκίνηση του πελάτη email. Ίσως δεν έχει ρυθμιστεί προεπιλεγμένος πελάτης email;</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="324"/>
         <source>You are not connected anymore. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Log in&lt;/a&gt;</source>
-        <translation>Δεν είστε πλέον συνδεδεμένοι. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Σύνδεση&lt;/a&gt;</translation>
+        <translation type="vanished">Δεν είστε πλέον συνδεδεμένοι. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Σύνδεση&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="329"/>
         <source>No folder to synchronize
 You can add one from the kDrive settings.</source>
-        <translation>Δεν υπάρχει φάκελος για συγχρονισμό
+        <translation type="vanished">Δεν υπάρχει φάκελος για συγχρονισμό
 Μπορείτε να προσθέσετε έναν από τις ρυθμίσεις kDrive.</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="336"/>
         <source>Sync in progress (%1 of %2)</source>
-        <translation>Συγχρονισμός σε εξέλιξη (%1 από %2)</translation>
+        <translation type="vanished">Συγχρονισμός σε εξέλιξη (%1 από %2)</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="340"/>
         <source>Sync in progress (%1 of %2)
 %3 left...</source>
-        <translation>Συγχρονισμός σε εξέλιξη (%1 από %2)
+        <translation type="vanished">Συγχρονισμός σε εξέλιξη (%1 από %2)
 %3 απομένουν...</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="347"/>
         <source>Sync in progress (Step %1/%2).</source>
-        <translation>Συγχρονισμός σε εξέλιξη (Βήμα %1/%2).</translation>
+        <translation type="vanished">Συγχρονισμός σε εξέλιξη (Βήμα %1/%2).</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="351"/>
         <source>Synchronization starting</source>
-        <translation>Εκκίνηση συγχρονισμού</translation>
+        <translation type="vanished">Εκκίνηση συγχρονισμού</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="353"/>
         <source>Sync in progress.</source>
-        <translation>Συγχρονισμός σε εξέλιξη.</translation>
+        <translation type="vanished">Συγχρονισμός σε εξέλιξη.</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="358"/>
         <source>You are up to date, unresolved conflicts.</source>
-        <translation>Είστε ενημερωμένοι, με μη επιλυμένες συγκρούσεις.</translation>
+        <translation type="vanished">Είστε ενημερωμένοι, με μη επιλυμένες συγκρούσεις.</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="360"/>
         <source>You are up to date!</source>
-        <translation>Είστε ενημερωμένοι!</translation>
+        <translation type="vanished">Είστε ενημερωμένοι!</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="364"/>
         <source>Some files couldn&apos;t be synchronized. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
-        <translation>Ορισμένα αρχεία δεν ήταν δυνατό να συγχρονιστούν. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Μάθετε περισσότερα&lt;/a&gt;</translation>
+        <translation type="vanished">Ορισμένα αρχεία δεν ήταν δυνατό να συγχρονιστούν. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Μάθετε περισσότερα&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="370"/>
         <source>Synchronization pausing ...</source>
-        <translation>Παύση συγχρονισμού...</translation>
+        <translation type="vanished">Παύση συγχρονισμού...</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="374"/>
         <source>Synchronization paused.</source>
-        <translation>Ο συγχρονισμός ανεστάλη.</translation>
+        <translation type="vanished">Ο συγχρονισμός ανεστάλη.</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="570"/>
         <source>Folder &lt;b&gt;%1&lt;/b&gt; cannot be selected because another sync is using the same folder.</source>
-        <translation>Ο φάκελος &lt;b&gt;%1&lt;/b&gt; δεν μπορεί να επιλεγεί επειδή χρησιμοποιείται ήδη από άλλον συγχρονισμό.</translation>
+        <translation type="vanished">Ο φάκελος &lt;b&gt;%1&lt;/b&gt; δεν μπορεί να επιλεγεί επειδή χρησιμοποιείται ήδη από άλλον συγχρονισμό.</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="576"/>
         <source>Folder &lt;b&gt;%1&lt;/b&gt; cannot be selected because it contains the synchronized folder &lt;b&gt;%2&lt;/b&gt;.</source>
-        <translation>Ο φάκελος &lt;b&gt;%1&lt;/b&gt; δεν μπορεί να επιλεγεί επειδή περιέχει τον συγχρονισμένο φάκελο &lt;b&gt;%2&lt;/b&gt;.</translation>
+        <translation type="vanished">Ο φάκελος &lt;b&gt;%1&lt;/b&gt; δεν μπορεί να επιλεγεί επειδή περιέχει τον συγχρονισμένο φάκελο &lt;b&gt;%2&lt;/b&gt;.</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="584"/>
         <source>Folder &lt;b&gt;%1&lt;/b&gt; cannot be selected because it is contained in the synchronized folder &lt;b&gt;%2&lt;/b&gt;.</source>
-        <translation>Ο φάκελος &lt;b&gt;%1&lt;/b&gt; δεν μπορεί να επιλεγεί επειδή περιέχεται στον συγχρονισμένο φάκελο &lt;b&gt;%2&lt;/b&gt;.</translation>
+        <translation type="vanished">Ο φάκελος &lt;b&gt;%1&lt;/b&gt; δεν μπορεί να επιλεγεί επειδή περιέχεται στον συγχρονισμένο φάκελο &lt;b&gt;%2&lt;/b&gt;.</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="595"/>
         <source>Folder &lt;b&gt;%1&lt;/b&gt; cannot be selected as sync folder. Please, select another folder.</source>
-        <translation>Ο φάκελος &lt;b&gt;%1&lt;/b&gt; δεν μπορεί να επιλεγεί ως φάκελος συγχρονισμού. Επιλέξτε άλλον φάκελο.</translation>
+        <translation type="vanished">Ο φάκελος &lt;b&gt;%1&lt;/b&gt; δεν μπορεί να επιλεγεί ως φάκελος συγχρονισμού. Επιλέξτε άλλον φάκελο.</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="599"/>
         <source>Folder &lt;b&gt;%1&lt;/b&gt; cannot be selected as sync folder. Please, select another folder. Suggested folder: &lt;b&gt;%2&lt;/b&gt;</source>
-        <translation>Ο φάκελος &lt;b&gt;%1&lt;/b&gt; δεν μπορεί να επιλεγεί ως φάκελος συγχρονισμού. Επιλέξτε άλλον. Προτεινόμενος: &lt;b&gt;%2&lt;/b&gt;</translation>
+        <translation type="vanished">Ο φάκελος &lt;b&gt;%1&lt;/b&gt; δεν μπορεί να επιλεγεί ως φάκελος συγχρονισμού. Επιλέξτε άλλον. Προτεινόμενος: &lt;b&gt;%2&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="657"/>
         <source>You have excluded more than %1 folders, please note that this will affect synchronization performance.</source>
-        <translation>Έχετε εξαιρέσει περισσότερους από %1 φακέλους. Αυτό θα επηρεάσει τις επιδόσεις συγχρονισμού.</translation>
+        <translation type="vanished">Έχετε εξαιρέσει περισσότερους από %1 φακέλους. Αυτό θα επηρεάσει τις επιδόσεις συγχρονισμού.</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="666"/>
         <source>You cannot exclude more than %1 folders. Please uncheck higher-level folders.</source>
-        <translation>Δεν μπορείτε να εξαιρέσετε περισσότερους από %1 φακέλους. Αποεπιλέξτε φακέλους υψηλότερου επιπέδου.</translation>
+        <translation type="vanished">Δεν μπορείτε να εξαιρέσετε περισσότερους από %1 φακέλους. Αποεπιλέξτε φακέλους υψηλότερου επιπέδου.</translation>
     </message>
 </context>
 </TS>
