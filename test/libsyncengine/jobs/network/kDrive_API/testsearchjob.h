@@ -35,8 +35,9 @@ class TestSearchJob : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testHandleResponseLeadingSlash);
         CPPUNIT_TEST(testHandleResponseIsAvailableLocally);
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
-        CPPUNIT_TEST(testHandleResponseIsHydrated);
+        CPPUNIT_TEST(testHandleResponseIsHydratedWithVfsOn);
 #endif
+        CPPUNIT_TEST(testHandleResponseIsHydratedWithVfsOff);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -49,10 +50,14 @@ class TestSearchJob : public CppUnit::TestFixture, public TestBase {
         void testHandleResponseLeadingSlash();
         void testHandleResponseIsAvailableLocally();
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
-        void testHandleResponseIsHydrated();
+        void testHandleResponseIsHydratedWithVfsOn();
 #endif
+        void testHandleResponseIsHydratedWithVfsOff();
+
     private:
-        DriveDbId _driveDbId = 1;
+        const DriveDbId _driveDbId = 1;
+        const SyncDbId _syncWithVfsOnDbId = 1;
+        const SyncDbId _syncWithVfsOffDbId = 2;
         LocalTemporaryDirectory _localTempDir{"testSearchJob"};
 };
 

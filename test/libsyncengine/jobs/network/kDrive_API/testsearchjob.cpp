@@ -73,8 +73,22 @@ void TestSearchJob::setUp() {
     Account account(1, 67890, user.dbId(), "test_account");
     (void) ParmsDb::instance()->insertAccount(account);
 
-    Drive drive(static_cast<int>(_driveDbId), 99999, account.dbId(), "test_drive", 0, std::string());
+    Drive drive(_driveDbId, 99999, account.dbId(), "test_drive", 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
+
+    auto syncWithVfsOn = Sync(_syncWithVfsOnDbId, drive.dbId(), _localTempDir.path(), NodeId{}, SyncPath{});
+    auto syncWithVfsOff = Sync(_syncWithVfsOffDbId, drive.dbId(), _localTempDir.path(), NodeId{}, SyncPath{});
+#if defined(KD_MACOS)
+    syncWithVfsOn.setVirtualFileMode(VirtualFileMode::Mac);
+#elif defined(KD_MACOS)
+    syncWithVfsOn.setVirtualFileMode(VirtualFileMode::Windows);
+#endif
+    syncWithVfsOff.setVirtualFileMode(VirtualFileMode::Off);
+
+    syncWithVfsOn.setDbPath(_localTempDir.path() / MockDb::makeDbMockFileName());
+    syncWithVfsOff.setDbPath(_localTempDir.path() / MockDb::makeDbMockFileName());
+    (void) ParmsDb::instance()->insertSync(syncWithVfsOn);
+    (void) ParmsDb::instance()->insertSync(syncWithVfsOff);
 }
 
 void TestSearchJob::tearDown() {
@@ -169,8 +183,23 @@ void TestSearchJob::testHandleResponseIsAvailableLocally() {
     }
 }
 
+void TestSearchJob::testHandleResponseIsHydratedWithVfsOff() {
+    // Create an actual file.
+    // SearchInfo::isAvailableLocally() and SearchInfo::isHydrated() should be true for it.
+    const SyncPath hydratedFile = _localTempDir.path() / "hydrated_file.txt";
+    { std::ofstream ofs(hydratedFile); }
+    SearchJob job(_driveDbId, _syncWithVfsOffDbId, "doc");
+    const std::string json = makeSearchResponseJson("/Private/hydrated_file.txt");
+    std::istringstream is(json);
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.handleResponse(is));
+    const auto results = job.searchResults();
+    CPPUNIT_ASSERT_EQUAL(size_t{1}, results.size());
+    CPPUNIT_ASSERT(results.front().isAvailableLocally());
+    CPPUNIT_ASSERT(results.front().isHydrated());
+}
+
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
-void TestSearchJob::testHandleResponseIsHydrated() {
+void TestSearchJob::testHandleResponseIsHydratedWithVfsOn() {
     // Create an actual file with hydrated status.
     // SearchInfo::isHydrated() should true for it.
     {
@@ -179,8 +208,7 @@ void TestSearchJob::testHandleResponseIsHydrated() {
         auto ioError = IoError::Success;
         CPPUNIT_ASSERT(testhelpers::setHydratedPlaceholderStatus(hydratedFile, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-        SearchJob job(_driveDbId, "doc");
-        job._syncRootPath = _localTempDir.path();
+        SearchJob job(_driveDbId, SyncDbId{1}, "doc");
         const std::string json = makeSearchResponseJson("/Private/hydrated_file.txt");
         std::istringstream is(json);
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.handleResponse(is));
@@ -197,7 +225,7 @@ void TestSearchJob::testHandleResponseIsHydrated() {
         auto ioError = IoError::Success;
         CPPUNIT_ASSERT(testhelpers::setDehydratedPlaceholderStatus(dehydratedFile, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-        SearchJob job(_driveDbId, "doc");
+        SearchJob job(_driveDbId, SyncDbId{1}, "doc");
         job._syncRootPath = _localTempDir.path();
         const std::string json = makeSearchResponseJson("/Private/dehydrated_file.txt");
         std::istringstream is(json);
