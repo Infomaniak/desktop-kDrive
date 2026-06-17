@@ -201,14 +201,14 @@ void TestSearchJob::testHandleResponseIsHydratedWithVfsOff() {
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
 void TestSearchJob::testHandleResponseIsHydratedWithVfsOn() {
     // Create an actual file with hydrated status.
-    // SearchInfo::isHydrated() should true for it.
+    // SearchInfo::isHydrated() should be true.
     {
         const SyncPath hydratedFile = _localTempDir.path() / "hydrated_file.txt";
         { std::ofstream ofs(hydratedFile); }
         auto ioError = IoError::Success;
         CPPUNIT_ASSERT(testhelpers::setHydratedPlaceholderStatus(hydratedFile, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-        SearchJob job(_driveDbId, SyncDbId{1}, "doc");
+        SearchJob job(_driveDbId, _syncWithVfsOnDbId, "doc");
         const std::string json = makeSearchResponseJson("/Private/hydrated_file.txt");
         std::istringstream is(json);
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.handleResponse(is));
@@ -218,15 +218,14 @@ void TestSearchJob::testHandleResponseIsHydratedWithVfsOn() {
     }
 
     // Create an actual file with a dehydrated status.
-    // SearchInfo::isHydrated() should false for it.
+    // SearchInfo::isHydrated() be should false.
     {
         const SyncPath dehydratedFile = _localTempDir.path() / "dehydrated_file.txt";
         { std::ofstream ofs(dehydratedFile); }
         auto ioError = IoError::Success;
         CPPUNIT_ASSERT(testhelpers::setDehydratedPlaceholderStatus(dehydratedFile, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-        SearchJob job(_driveDbId, SyncDbId{1}, "doc");
-        job._syncRootPath = _localTempDir.path();
+        SearchJob job(_driveDbId, _syncWithVfsOnDbId, "doc");
         const std::string json = makeSearchResponseJson("/Private/dehydrated_file.txt");
         std::istringstream is(json);
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.handleResponse(is));
