@@ -80,6 +80,8 @@ public struct SyncJobs: Sendable {
 
     public func startSync(syncDbId: Int32) async throws {
         IKLogger.data.log("Query to startSync")
+        await setSyncStatusOptimistically(syncDbId: syncDbId, status: .Starting)
+
         let query = SyncQuery(syncDbId: syncDbId)
         let request = await RequestMessage<SyncQuery>(num: RequestNum.SYNC_START, body: query)
 
@@ -88,6 +90,8 @@ public struct SyncJobs: Sendable {
 
     public func stopSync(syncDbId: Int32) async throws {
         IKLogger.data.log("Query to stopSync")
+        await setSyncStatusOptimistically(syncDbId: syncDbId, status: .StopAsked)
+
         let query = SyncQuery(syncDbId: syncDbId)
         let request = await RequestMessage<SyncQuery>(num: RequestNum.SYNC_STOP, body: query)
 
@@ -199,5 +203,19 @@ public struct SyncJobs: Sendable {
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<OfflineFilesSizeResponse>.self)
 
         return decodedMessage.body.size
+    }
+
+    // MARK: - Optimistic Status Update
+
+    private func setSyncStatusOptimistically(syncDbId: Int32, status: KDC.SyncStatus) async {
+        guard var synchro = await coherentCache.getSynchro(synchroDbId: syncDbId) else { return }
+
+        if let existingProgress = synchro.progress {
+            synchro.progress = existingProgress.withSyncStatus(status)
+        } else {
+            synchro.progress = .placeholder(status: status)
+        }
+
+        try? await coherentCache.updateSynchro(synchro)
     }
 }
