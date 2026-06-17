@@ -121,7 +121,7 @@ void AbstractNetworkJob::logRequestInfo(const Poco::Net::HTTPRequest &req) {
 
     for (const auto &[headerKey, headerValue]: req) {
         if (headerKey == "Authorization") {
-            LOG_DEBUG(_logger, "Authorization: Bearer *****");
+            LOG_DEBUG(_logger, "Authorization: Bearer ???");
             continue;
         }
         if (headerKey == "User-Agent") {
