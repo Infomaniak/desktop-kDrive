@@ -26,8 +26,8 @@ namespace KDC {
 class SearchInfo {
     public:
         SearchInfo() = default;
-        SearchInfo(const NodeId &id, const SyncName &name, const NodeType type, const SyncPath &path, const SyncTime modifiedTime,
-                   const size_t size, const bool isAvailableLocally);
+        SearchInfo(RemoteNodeId id, SyncName name, NodeType type, SyncPath path, SyncTime modifiedTime, size_t size,
+                   bool isAvailableLocally, bool isHydrated);
 
         [[nodiscard]] const NodeId &id() const { return _id; }
         [[nodiscard]] const SyncName &name() const { return _name; }
@@ -36,6 +36,7 @@ class SearchInfo {
         [[nodiscard]] SyncTime lastModifiedTime() const { return _modifiedTime; }
         [[nodiscard]] int64_t size() const { return _size; }
         [[nodiscard]] bool isAvailableLocally() const { return _isAvailableLocally; }
+        [[nodiscard]] bool isHydrated() const { return _isHydrated; }
 
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
         void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
@@ -46,12 +47,13 @@ class SearchInfo {
         friend QDataStream &operator<<(QDataStream &out, const QList<SearchInfo> &list);
 
     private:
-        NodeId _id;
+        RemoteNodeId _id;
         SyncName _name;
         SyncPath _path;
         SyncTime _modifiedTime{0};
         int64_t _size{0};
         bool _isAvailableLocally{false};
+        bool _isHydrated{false};
         NodeType _type{NodeType::Unknown};
 };
 
