@@ -16,16 +16,13 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 import SwiftUI
 
 struct BlockingErrorView: View {
     let blockingError: UIBlockingError
-
-    init(blockingError: UIBlockingError) {
-        self.blockingError = blockingError
-    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -68,33 +65,38 @@ struct BlockingErrorView: View {
     }
 
     private func handleAction() {
-        /* TODO: Implement action handling
-         switch blockingError.error {
-         case .asleep:
+        switch blockingError.error {
+        case .asleep:
+            NSWorkspace.shared.open(URLConstants.kDrive(for: blockingError.drive.driveId))
+        case .notRenew:
+            if blockingError.drive.isAdmin {
+                @InjectService var nodeURLGenerator: NodeURLGenerator
+                let shopURL = nodeURLGenerator.shopURL(forDriveId: Int(blockingError.drive.driveId))
+                NSWorkspace.shared.open(shopURL)
+            } else {
+                restartSynchro()
+            }
+        case .wakingUp, .maintenance, .accessDenied:
+            restartSynchro()
+        case .loggingError:
+            @InjectService var router: MainWindowRouter
+            router.navigate(to: .onboarding(nil, nil, .login))
+        }
+    }
 
-         case .wakingUp:
-
-         case .notRenew:
-
-         case .maintenance:
-
-         case .accessDenied:
-
-         case .loggingError:
-
-         }
-          */
+    private func restartSynchro() {
+        Task {
+            try? await SyncJobs().startSync(syncDbId: Int32(blockingError.synchro.dbId))
+        }
     }
 }
 
 #Preview {
     VStack {
         ForEach(BlockingSynchroError.allCases, id: \.self) { error in
-            BlockingErrorView(
-                blockingError: PreviewHelper.blockingErrorFor(syncError: error, isDriveAdmin: true)
-            )
-            .frame(minWidth: 512)
-            .fixedSize(horizontal: false, vertical: true)
+            BlockingErrorView(blockingError: PreviewHelper.blockingErrorFor(syncError: error))
+                .frame(minWidth: 512)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 }

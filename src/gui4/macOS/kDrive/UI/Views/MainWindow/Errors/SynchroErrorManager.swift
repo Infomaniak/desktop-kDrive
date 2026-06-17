@@ -60,6 +60,14 @@ final class SynchroErrorManager: ObservableObject {
 
     // MARK: - Open URLs
 
+    func openWebPageDrive(_ error: SynchroError) async {
+        guard let drive = await getDrive(error) else {
+            return
+        }
+
+        NSWorkspace.shared.open(URLConstants.kDrive(for: Int(drive.driveId)))
+    }
+
     func openFolder(_ error: SynchroError) {
         let url = URL(fileURLWithPath: error.metadata.path)
         NSWorkspace.shared.open(url)
