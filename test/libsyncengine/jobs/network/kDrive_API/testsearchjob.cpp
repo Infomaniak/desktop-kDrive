@@ -80,8 +80,8 @@ void TestSearchJob::setUp() {
     auto syncWithVfsOff = Sync(_syncWithVfsOffDbId, drive.dbId(), _localTempDir.path(), NodeId{}, SyncPath{});
 #if defined(KD_MACOS)
     syncWithVfsOn.setVirtualFileMode(VirtualFileMode::Mac);
-#elif defined(KD_MACOS)
-    syncWithVfsOn.setVirtualFileMode(VirtualFileMode::Windows);
+#elif defined(KD_WINDOWS)
+    syncWithVfsOn.setVirtualFileMode(VirtualFileMode::Win);
 #endif
     syncWithVfsOff.setVirtualFileMode(VirtualFileMode::Off);
 
