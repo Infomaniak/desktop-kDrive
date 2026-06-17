@@ -2240,8 +2240,9 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, const ExitInfo &o
 
     // Handle specific errors
     switch (static_cast<int>(opsExitInfo)) {
-        case static_cast<int>(ExitInfo(ExitCode::BackError, ExitCause::FileLocked)): {
-            return handleOpsRemoteFileLocked(syncOp, opsExitInfo);
+        case static_cast<int>(ExitInfo(ExitCode::BackError, ExitCause::FileLocked)):
+        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileSystemNotSupported)): {
+            return handleOpsBlacklistRemoteFile(syncOp, opsExitInfo);
         }
         case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError)): {
             return handleOpsLocalFileAccessError(syncOp, opsExitInfo);
@@ -2294,7 +2295,7 @@ ExitInfo ExecutorWorker::handleOpsFileNotFound(const SyncOpPtr syncOp, [[maybe_u
     return removeDependentOps(syncOp);
 }
 
-ExitInfo ExecutorWorker::handleOpsRemoteFileLocked(SyncOpPtr syncOp, const ExitInfo &opsExitInfo) {
+ExitInfo ExecutorWorker::handleOpsBlacklistRemoteFile(SyncOpPtr syncOp, const ExitInfo &opsExitInfo) {
     // Add error
     NodeId localNodeId;
     NodeId remoteNodeId;

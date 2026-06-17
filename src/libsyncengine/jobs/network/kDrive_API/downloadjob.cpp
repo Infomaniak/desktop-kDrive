@@ -382,6 +382,13 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
 #if defined(KD_WINDOWS)
         LOGW_DEBUG(_logger, L"Create junction: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
 
+        if (!CommonUtility::isNTFS(_fileDownloadInfo.localpath)) {
+            // Junctions are supported only on NTFS systems
+            LOGW_WARN(_logger,
+                      L"Filesystem is not NTFS, junctions are ignored: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
+            return {ExitCode::SystemError, ExitCause::FileSystemNotSupported};
+        }
+
         IoError ioError = IoError::Success;
         if (!IoHelper::createJunction(data, _fileDownloadInfo.localpath, ioError)) {
             LOGW_WARN(_logger, L"Failed to create junction: " << Utility::formatIoError(_fileDownloadInfo.localpath, ioError));
