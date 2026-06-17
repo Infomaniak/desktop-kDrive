@@ -42,6 +42,9 @@ public struct FoldersToSynchroView: View {
     }
 
     public var body: some View {
+        let userDbId = Int32(self.userDbId)
+        let driveDbId = Int32(self.driveDbId)
+
         VStack(alignment: .leading, spacing: AppPadding.padding24) {
             VStack(alignment: .leading, spacing: AppPadding.padding8) {
                 Text(KDriveLocalizable.onboardingAdvancedSettingsDriveExclusionDescription)
@@ -53,29 +56,27 @@ public struct FoldersToSynchroView: View {
                     .foregroundStyle(ColorToken.Text.tertiary.asColor)
             }
 
-            FileTreeView(rootItems: root, initialBlacklist: initialBlackList) {
-                await fetchSubFolders(for: $0)
+            FileTreeView(rootItems: root, initialBlacklist: initialBlackList) { item in
+                await Self.fetchSubFolders(for: item, userDbId: userDbId, driveDbId: driveDbId)
             } onBlacklistChange: {
                 updateBlacklist($0)
             }
             .frame(minHeight: 200)
         }
         .task {
-            await fetchRoot()
+            root = await Self.fetchSubFolders(for: nil, userDbId: userDbId, driveDbId: driveDbId)
         }
     }
 
-    private func fetchRoot() async {
-        root = await fetchSubFolders(for: nil)
-    }
-
-    private func fetchSubFolders(for node: FileTreeItem?) async -> [FileTreeItem] {
-        let userDbId = Int32(userDbId)
-        let driveId = Int32(driveDbId)
+    private static func fetchSubFolders(
+        for node: FileTreeItem?,
+        userDbId: Int32,
+        driveDbId: Int32
+    ) async -> [FileTreeItem] {
         let rootNodeId = node?.id ?? ""
 
         do {
-            let nodes = try await NodeJobs().getNodeSubfolders(userDbId: userDbId, driveId: driveId, nodeId: rootNodeId)
+            let nodes = try await NodeJobs().getNodeSubfolders(userDbId: userDbId, driveId: driveDbId, nodeId: rootNodeId)
             return nodes.map {
                 let size = $0.size == -1 ? nil : $0.size
                 return FileTreeItem(id: $0.nodeId, name: $0.name, size: size, isFolder: true, isEnabled: !$0.accessDenied)
