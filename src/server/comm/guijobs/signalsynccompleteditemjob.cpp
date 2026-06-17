@@ -30,6 +30,8 @@ SignalSyncCompletedItemJob::SignalSyncCompletedItemJob(int syncDbId, const SyncF
     _syncDbId(syncDbId),
     _itemInfo(itemInfo) {
     _signalNum = SignalNum::SYNC_COMPLETEDITEM;
+    setJobPriority(Poco::Thread::PRIO_LOWEST);
+    
 }
 
 ExitInfo SignalSyncCompletedItemJob::serializeOutputParms() {
