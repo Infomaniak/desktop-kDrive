@@ -95,7 +95,7 @@ void SearchJob::setQueryParameters(Poco::URI &uri) {
 ExitInfo SearchJob::getLocalProperties(const SyncPath &itemPath, LocalProperties &localProperties) const {
     localProperties.path = itemPath;
 
-    if (_syncRootPath.empty()) return ExitCode::DbError;
+    if (_syncRootPath.empty()) return ExitCode::Ok; // If sync root path is not set, skip local properties check.
 
     if (localProperties.path.native().starts_with(privateFolder)) {
         localProperties.path = localProperties.path.native().substr(
