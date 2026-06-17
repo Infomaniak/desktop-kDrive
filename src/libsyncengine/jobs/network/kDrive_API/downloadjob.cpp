@@ -385,7 +385,7 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
         if (!CommonUtility::isNTFS(_fileDownloadInfo.localpath)) {
             // Junctions are supported only on NTFS systems
             LOGW_WARN(_logger,
-                      L"Filesystem is not NTFS, junctions are ignored: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
+                      L"Filesystem is not NTFS, junctions are not supported: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
             return {ExitCode::SystemError, ExitCause::FileSystemNotSupported};
         }
 
