@@ -135,7 +135,7 @@
                     </Canvas>
 
                     <TextBlock Text="{x:Bind ViewModel.SelectedSync.Drive.Name, Mode=OneWay}"
-                               Style="{ThemeResource BodyStrongTextBlockStyle}"
+                               Style="{StaticResource BodyStrongTextBlockStyle}"
                                HorizontalAlignment="Center"
                                HorizontalTextAlignment="Center"
                                TextWrapping="WrapWholeWords"
