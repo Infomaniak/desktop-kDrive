@@ -53,7 +53,9 @@
                                       AutoPlay="False"
                                       MaxWidth="180"
                                       Loaded="SyncUpToDateMainTemplateAnimatedVisualPlayer_Loaded">
-                    <animatedvisuals:KDrive_Check Color_446EDD="{kDrive:ThemeColor Key=SystemFillColorAttentionBrush}"/>
+                    <animatedvisuals:KDrive_Check Color_446FDD="{kDrive:ThemeColor Key=SystemFillColorAttentionBrush}"
+                                                  Color_298F36="{kDrive:ThemeColor Key=SystemFillColorSuccessBrush}"
+                                                  Color_DFF7E2="{kDrive:ThemeColor Key=SystemFillColorSuccessBackgroundBrush}" />
                 </AnimatedVisualPlayer>
 
                 <StackPanel Grid.Row="1"
@@ -84,7 +86,8 @@
                 <AnimatedVisualPlayer Grid.Row="0"
                                       AutoPlay="True"
                                       MaxWidth="180">
-                    <animatedvisuals:KDrive_Sync Color_446EDD="{kDrive:ThemeColor Key=SystemFillColorAttentionBrush}"/>
+                    <animatedvisuals:KDrive_Sync Color_446FDD="{kDrive:ThemeColor Key=SystemFillColorAttentionBrush}"
+                                                 Color_DEE7FD="{kDrive:ThemeColor Key=SystemFillColorAttentionBackgroundBrush}" />
                 </AnimatedVisualPlayer>
 
                 <StackPanel Grid.Row="1"
@@ -120,7 +123,8 @@
                 <AnimatedVisualPlayer Grid.Row="0"
                                       AutoPlay="True"
                                       MaxWidth="180">
-                    <animatedvisuals:KDrive_Pause Color_446EDD="{kDrive:ThemeColor Key=SystemFillColorAttentionBrush}"/>
+                    <animatedvisuals:KDrive_Pause Color_FF8500="{kDrive:ThemeColor Key=SystemFillColorCautionBrush}"
+                                                  Color_FFE7D8="{kDrive:ThemeColor Key=SystemFillColorCautionBackgroundBrush}" />
                 </AnimatedVisualPlayer>
 
                 <StackPanel Grid.Row="1"
@@ -157,7 +161,8 @@
                 <AnimatedVisualPlayer Grid.Row="0"
                                       AutoPlay="True"
                                       MaxWidth="227">
-                    <animatedvisuals:KDrive_Offline Color_446EDD="{kDrive:ThemeColor Key=SystemFillColorAttentionBrush}"/>
+                    <animatedvisuals:KDrive_Offline Color_446FDD="{kDrive:ThemeColor Key=SystemFillColorAttentionBrush}"
+                                                    Color_DEE7FD="{kDrive:ThemeColor Key=SystemFillColorAttentionBackgroundBrush}" />
                 </AnimatedVisualPlayer>
 
                 <StackPanel Grid.Row="1"
@@ -311,14 +316,18 @@
                     CornerRadius="{StaticResource OverlayCornerRadius}"
                     Padding="24">
                 <Border.Background>
-                    <LinearGradientBrush StartPoint="0,0"
-                                         EndPoint="0,1"
+                    <RadialGradientBrush Center="0.5,0"
+                                         GradientOrigin="0.5,-0.01"
+                                         RadiusX="2"
+                                         RadiusY="0.6"
                                          Opacity="0.4">
+
                         <GradientStop Color="{ThemeResource SystemAccentColor}"
-                                      Offset="0.0" />
+                                      Offset="0" />
+
                         <GradientStop Color="{ThemeResource LayerFillColorDefault}"
-                                      Offset="0.6" />
-                    </LinearGradientBrush>
+                                      Offset="0.8" />
+                    </RadialGradientBrush>
                 </Border.Background>
                 <Grid>
                     <!-- Main content layout -->

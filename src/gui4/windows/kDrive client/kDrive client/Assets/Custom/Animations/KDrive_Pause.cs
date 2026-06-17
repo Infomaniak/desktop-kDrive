@@ -9,7 +9,7 @@
 //           LottieGen -GenerateColorBindings -GenerateDependencyObject -Language CSharp -Public -WinUIVersion 3.0 -InputFile kDrive-Pause.json
 //       
 //       Input file:
-//           kDrive-Pause.json (35758 bytes created 9:11+02:00 Jun 4 2026)
+//           kDrive-Pause.json (34674 bytes created 15:59+02:00 Jun 12 2026)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -21,23 +21,23 @@
 // ____________________________________
 // |       Object stats       | Count |
 // |__________________________|_______|
-// | All CompositionObjects   |   109 |
+// | All CompositionObjects   |   119 |
 // |--------------------------+-------|
-// | Expression animators     |    16 |
-// | KeyFrame animators       |    19 |
-// | Reference parameters     |    18 |
+// | Expression animators     |    20 |
+// | KeyFrame animators       |    22 |
+// | Reference parameters     |    21 |
 // | Expression operations    |    12 |
 // |--------------------------+-------|
 // | Animated brushes         |     3 |
 // | Animated gradient stops  |     - |
-// | ExpressionAnimations     |    16 |
-// | PathKeyFrameAnimations   |     3 |
+// | ExpressionAnimations     |    20 |
+// | PathKeyFrameAnimations   |     4 |
 // |--------------------------+-------|
 // | ContainerVisuals         |     1 |
 // | ShapeVisuals             |     1 |
 // |--------------------------+-------|
-// | ContainerShapes          |     6 |
-// | CompositionSpriteShapes  |     4 |
+// | ContainerShapes          |     8 |
+// | CompositionSpriteShapes  |     5 |
 // |--------------------------+-------|
 // | Brushes                  |     3 |
 // | Gradient stops           |     - |
@@ -56,40 +56,61 @@ namespace AnimatedVisuals
 {
     // Name:        kDrive-Pause-LIGHT
     // Frame rate:  60 fps
-    // Frame count: 144.12
-    // Duration:    2402.0 mS
+    // Frame count: 108.06
+    // Duration:    1801.0 mS
     sealed class KDrive_Pause
         : DependencyObject
         , Microsoft.UI.Xaml.Controls.IAnimatedVisualSource
         , Microsoft.UI.Xaml.Controls.IAnimatedVisualSource2
     {
-        // Animation duration: 2.402 seconds.
-        internal const long c_durationTicks = 24020000;
+        // Animation duration: 1.801 seconds.
+        internal const long c_durationTicks = 18010000;
 
-        // Theme property: Color_446EDD.
-        internal static readonly Color c_themeColor_446EDD = Color.FromArgb(0xFF, 0x44, 0x6E, 0xDD);
+        // Theme property: Color_FF8500.
+        internal static readonly Color c_themeColor_FF8500 = Color.FromArgb(0xFF, 0xFF, 0x85, 0x00);
+
+        // Theme property: Color_FFE7D8.
+        internal static readonly Color c_themeColor_FFE7D8 = Color.FromArgb(0xFF, 0xFF, 0xE7, 0xD8);
 
         CompositionPropertySet _themeProperties;
 
         /// <summary>
-        /// Dependency property for Color_446EDD.
+        /// Dependency property for Color_FF8500.
         /// </summary>
-        public static readonly DependencyProperty Color_446EDDProperty =
-            DependencyProperty.Register("Color_446EDD", typeof(Color), typeof(KDrive_Pause),
-                new PropertyMetadata(Color.FromArgb(0xFF, 0x44, 0x6E, 0xDD), OnColor_446EDDChanged));
+        public static readonly DependencyProperty Color_FF8500Property =
+            DependencyProperty.Register("Color_FF8500", typeof(Color), typeof(KDrive_Pause),
+                new PropertyMetadata(Color.FromArgb(0xFF, 0xFF, 0x85, 0x00), OnColor_FF8500Changed));
+
+        /// <summary>
+        /// Dependency property for Color_FFE7D8.
+        /// </summary>
+        public static readonly DependencyProperty Color_FFE7D8Property =
+            DependencyProperty.Register("Color_FFE7D8", typeof(Color), typeof(KDrive_Pause),
+                new PropertyMetadata(Color.FromArgb(0xFF, 0xFF, 0xE7, 0xD8), OnColor_FFE7D8Changed));
 
         // Theme properties.
-        public Color Color_446EDD
+        public Color Color_FF8500
         {
-            get => (Color)GetValue(Color_446EDDProperty);
-            set => SetValue(Color_446EDDProperty, value);
+            get => (Color)GetValue(Color_FF8500Property);
+            set => SetValue(Color_FF8500Property, value);
+        }
+
+        public Color Color_FFE7D8
+        {
+            get => (Color)GetValue(Color_FFE7D8Property);
+            set => SetValue(Color_FFE7D8Property, value);
         }
 
         static Vector4 ColorAsVector4(Color color) => new Vector4(color.R, color.G, color.B, color.A);
 
-        static void OnColor_446EDDChanged(DependencyObject d, DependencyPropertyChangedEventArgs args)
+        static void OnColor_FF8500Changed(DependencyObject d, DependencyPropertyChangedEventArgs args)
         {
-            ((KDrive_Pause)d)._themeProperties?.InsertVector4("Color_446EDD", ColorAsVector4((Color)(Color)args.NewValue));
+            ((KDrive_Pause)d)._themeProperties?.InsertVector4("Color_FF8500", ColorAsVector4((Color)(Color)args.NewValue));
+        }
+
+        static void OnColor_FFE7D8Changed(DependencyObject d, DependencyPropertyChangedEventArgs args)
+        {
+            ((KDrive_Pause)d)._themeProperties?.InsertVector4("Color_FFE7D8", ColorAsVector4((Color)(Color)args.NewValue));
         }
 
         CompositionPropertySet EnsureThemeProperties(Compositor compositor)
@@ -97,7 +118,8 @@ namespace AnimatedVisuals
             if (_themeProperties == null)
             {
                 _themeProperties = compositor.CreatePropertySet();
-                _themeProperties.InsertVector4("Color_446EDD", ColorAsVector4((Color)Color_446EDD));
+                _themeProperties.InsertVector4("Color_FF8500", ColorAsVector4((Color)Color_FF8500));
+                _themeProperties.InsertVector4("Color_FFE7D8", ColorAsVector4((Color)Color_FFE7D8));
             }
             return _themeProperties;
         }
@@ -125,7 +147,7 @@ namespace AnimatedVisuals
         /// <summary>
         /// Gets the number of frames in the animation.
         /// </summary>
-        public double FrameCount => 144.12;
+        public double FrameCount => 108.06;
 
         /// <summary>
         /// Gets the frame rate of the animation.
@@ -135,7 +157,7 @@ namespace AnimatedVisuals
         /// <summary>
         /// Gets the duration of the animation.
         /// </summary>
-        public TimeSpan Duration => TimeSpan.FromTicks(24020000);
+        public TimeSpan Duration => TimeSpan.FromTicks(18010000);
 
         /// <summary>
         /// Converts a zero-based frame number to the corresponding progress value denoting the
@@ -143,7 +165,7 @@ namespace AnimatedVisuals
         /// </summary>
         public double FrameToProgress(double frameNumber)
         {
-            return frameNumber / 144.12;
+            return frameNumber / 108.06;
         }
 
         /// <summary>
@@ -160,9 +182,13 @@ namespace AnimatedVisuals
         /// </summary>
         public void SetColorProperty(string propertyName, Color value)
         {
-            if (propertyName == "Color_446EDD")
+            if (propertyName == "Color_FF8500")
             {
-                Color_446EDD = value;
+                Color_FF8500 = value;
+            }
+            else if (propertyName == "Color_FFE7D8")
+            {
+                Color_FFE7D8 = value;
             }
             else
             {
@@ -187,35 +213,36 @@ namespace AnimatedVisuals
             : Microsoft.UI.Xaml.Controls.IAnimatedVisual
             , Microsoft.UI.Xaml.Controls.IAnimatedVisual2
         {
-            const long c_durationTicks = 24020000;
+            const long c_durationTicks = 18010000;
             readonly Compositor _c;
             readonly ExpressionAnimation _reusableExpressionAnimation;
             readonly CompositionPropertySet _themeProperties;
             AnimationController _animationController_0;
-            CompositionColorBrush _themeColor_Color_446EDD_0;
-            CompositionColorBrush _themeColor_Color_446EDD_1;
-            CompositionColorBrush _themeColor_Color_446EDD_2;
+            CompositionColorBrush _themeColor_Color_FF8500_0;
+            CompositionColorBrush _themeColor_Color_FF8500_1;
+            CompositionColorBrush _themeColor_Color_FFE7D8;
             CompositionContainerShape _containerShape_0;
             CompositionContainerShape _containerShape_1;
             CompositionContainerShape _containerShape_2;
             CompositionContainerShape _containerShape_3;
             CompositionContainerShape _containerShape_4;
             CompositionContainerShape _containerShape_5;
+            CompositionContainerShape _containerShape_6;
+            CompositionContainerShape _containerShape_7;
             CompositionPath _path_0;
             CompositionPath _path_1;
             CompositionPath _path_2;
             CompositionPath _path_3;
-            CompositionPath _path_4;
             CompositionPathGeometry _pathGeometry_1;
             CompositionPathGeometry _pathGeometry_2;
             CompositionPathGeometry _pathGeometry_3;
+            CompositionPathGeometry _pathGeometry_4;
             CompositionSpriteShape _spriteShape_0;
-            CompositionSpriteShape _spriteShape_2;
             ContainerVisual _root;
             CubicBezierEasingFunction _cubicBezierEasingFunction_0;
             StepEasingFunction _holdThenStepEasingFunction;
-            Vector2KeyFrameAnimation _anchorVector2Animation_1;
-            Vector2KeyFrameAnimation _positionVector2Animation_2;
+            Vector2KeyFrameAnimation _positionVector2Animation_0;
+            Vector2KeyFrameAnimation _vector2Animation;
 
             void BindProperty(
                 CompositionObject target,
@@ -280,35 +307,35 @@ namespace AnimatedVisuals
             }
 
             // - - - Layer aggregator
-            // - - ++++++++++++++++++++++++++++++++++
-            // - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - Transforms: front (Stroke)
+            // - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_00()
             {
                 var result = CanvasGeometry.CreateGroup(
                     null,
-                    new CanvasGeometry[] { Geometry_01(), Geometry_02(), Geometry_03(), Geometry_04(), Geometry_05(), Geometry_06(), Geometry_07(), Geometry_08(), Geometry_09(), Geometry_10(), Geometry_11(), Geometry_12(), Geometry_13(), Geometry_14(), Geometry_15(), Geometry_16(), Geometry_17(), Geometry_18(), Geometry_19(), Geometry_20(), Geometry_21(), Geometry_22(), Geometry_23(), Geometry_24(), Geometry_25(), Geometry_26(), Geometry_27(), Geometry_28(), Geometry_29(), Geometry_30(), Geometry_31(), Geometry_32(), Geometry_33(), Geometry_34(), Geometry_35() },
+                    new CanvasGeometry[] { Geometry_01(), Geometry_02(), Geometry_03(), Geometry_04(), Geometry_05(), Geometry_06(), Geometry_07(), Geometry_08(), Geometry_09(), Geometry_10(), Geometry_11(), Geometry_12(), Geometry_13(), Geometry_14(), Geometry_15(), Geometry_16(), Geometry_17(), Geometry_18(), Geometry_19(), Geometry_20(), Geometry_21(), Geometry_22(), Geometry_23(), Geometry_24(), Geometry_25(), Geometry_26(), Geometry_27(), Geometry_28(), Geometry_29(), Geometry_30(), Geometry_31(), Geometry_32(), Geometry_33(), Geometry_34(), Geometry_35(), Geometry_36(), Geometry_37(), Geometry_38(), Geometry_39(), Geometry_40() },
                     CanvasFilledRegionDetermination.Winding);
                 return result;
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_01()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(106.470001F, 0F));
-                    builder.AddCubicBezier(new Vector2(107.43F, 0F), new Vector2(108.389999F, 0.0299999993F), new Vector2(109.330002F, 0.100000001F));
-                    builder.AddCubicBezier(new Vector2(109.669998F, 0.129999995F), new Vector2(109.93F, 0.430000007F), new Vector2(109.910004F, 0.769999981F));
-                    builder.AddCubicBezier(new Vector2(109.879997F, 1.11000001F), new Vector2(109.580002F, 1.37F), new Vector2(109.239998F, 1.35000002F));
-                    builder.AddCubicBezier(new Vector2(108.330002F, 1.27999997F), new Vector2(107.400002F, 1.25F), new Vector2(106.470001F, 1.25F));
-                    builder.AddCubicBezier(new Vector2(105.510002F, 1.25F), new Vector2(104.550003F, 1.28999996F), new Vector2(103.610001F, 1.36000001F));
-                    builder.AddCubicBezier(new Vector2(103.269997F, 1.38999999F), new Vector2(102.970001F, 1.12F), new Vector2(102.940002F, 0.779999971F));
-                    builder.AddCubicBezier(new Vector2(102.919998F, 0.439999998F), new Vector2(103.18F, 0.140000001F), new Vector2(103.519997F, 0.109999999F));
-                    builder.AddCubicBezier(new Vector2(104.489998F, 0.0399999991F), new Vector2(105.480003F, 0F), new Vector2(106.470001F, 0F));
+                    builder.BeginFigure(new Vector2(106.349998F, 0F));
+                    builder.AddCubicBezier(new Vector2(107.309998F, 0F), new Vector2(108.260002F, 0.0299999993F), new Vector2(109.199997F, 0.100000001F));
+                    builder.AddCubicBezier(new Vector2(109.480003F, 0.119999997F), new Vector2(109.68F, 0.360000014F), new Vector2(109.660004F, 0.639999986F));
+                    builder.AddCubicBezier(new Vector2(109.639999F, 0.920000017F), new Vector2(109.400002F, 1.12F), new Vector2(109.120003F, 1.10000002F));
+                    builder.AddCubicBezier(new Vector2(108.199997F, 1.02999997F), new Vector2(107.279999F, 1F), new Vector2(106.349998F, 1F));
+                    builder.AddCubicBezier(new Vector2(105.379997F, 1F), new Vector2(104.43F, 1.03999996F), new Vector2(103.480003F, 1.11000001F));
+                    builder.AddCubicBezier(new Vector2(103.199997F, 1.13F), new Vector2(102.959999F, 0.930000007F), new Vector2(102.940002F, 0.649999976F));
+                    builder.AddCubicBezier(new Vector2(102.919998F, 0.370000005F), new Vector2(103.120003F, 0.129999995F), new Vector2(103.400002F, 0.109999999F));
+                    builder.AddCubicBezier(new Vector2(104.370003F, 0.0399999991F), new Vector2(105.360001F, 0F), new Vector2(106.349998F, 0F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
@@ -316,21 +343,21 @@ namespace AnimatedVisuals
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_02()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(114.989998F, 0.939999998F));
-                    builder.AddCubicBezier(new Vector2(116.870003F, 1.36000001F), new Vector2(118.699997F, 1.92999995F), new Vector2(120.470001F, 2.6099999F));
-                    builder.AddCubicBezier(new Vector2(120.790001F, 2.73000002F), new Vector2(120.949997F, 3.08999991F), new Vector2(120.82F, 3.41000009F));
-                    builder.AddCubicBezier(new Vector2(120.699997F, 3.73000002F), new Vector2(120.330002F, 3.8900001F), new Vector2(120.010002F, 3.76999998F));
-                    builder.AddCubicBezier(new Vector2(118.300003F, 3.1099999F), new Vector2(116.540001F, 2.56999993F), new Vector2(114.720001F, 2.16000009F));
-                    builder.AddCubicBezier(new Vector2(114.379997F, 2.07999992F), new Vector2(114.160004F, 1.75F), new Vector2(114.239998F, 1.40999997F));
-                    builder.AddCubicBezier(new Vector2(114.32F, 1.07000005F), new Vector2(114.650002F, 0.860000014F), new Vector2(114.989998F, 0.939999998F));
+                    builder.BeginFigure(new Vector2(114.839996F, 0.939999998F));
+                    builder.AddCubicBezier(new Vector2(116.709999F, 1.36000001F), new Vector2(118.540001F, 1.91999996F), new Vector2(120.300003F, 2.5999999F));
+                    builder.AddCubicBezier(new Vector2(120.559998F, 2.70000005F), new Vector2(120.68F, 2.98000002F), new Vector2(120.580002F, 3.24000001F));
+                    builder.AddCubicBezier(new Vector2(120.480003F, 3.5F), new Vector2(120.190002F, 3.63000011F), new Vector2(119.93F, 3.52999997F));
+                    builder.AddCubicBezier(new Vector2(118.220001F, 2.86999989F), new Vector2(116.449997F, 2.31999993F), new Vector2(114.620003F, 1.90999997F));
+                    builder.AddCubicBezier(new Vector2(114.349998F, 1.85000002F), new Vector2(114.18F, 1.59000003F), new Vector2(114.239998F, 1.32000005F));
+                    builder.AddCubicBezier(new Vector2(114.300003F, 1.04999995F), new Vector2(114.57F, 0.879999995F), new Vector2(114.839996F, 0.939999998F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
@@ -338,22 +365,21 @@ namespace AnimatedVisuals
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_03()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(97.6800003F, 1F));
-                    builder.AddCubicBezier(new Vector2(98.0199966F, 0.920000017F), new Vector2(98.3499985F, 1.13F), new Vector2(98.4300003F, 1.47000003F));
-                    builder.AddLine(new Vector2(98.4499969F, 1.59000003F));
-                    builder.AddCubicBezier(new Vector2(98.4599991F, 1.88F), new Vector2(98.25F, 2.1500001F), new Vector2(97.9599991F, 2.22000003F));
-                    builder.AddCubicBezier(new Vector2(96.0899963F, 2.6500001F), new Vector2(94.2699966F, 3.23000002F), new Vector2(92.5199966F, 3.93000007F));
-                    builder.AddCubicBezier(new Vector2(92.1999969F, 4.05999994F), new Vector2(91.8300018F, 3.91000009F), new Vector2(91.6999969F, 3.58999991F));
-                    builder.AddCubicBezier(new Vector2(91.5699997F, 3.26999998F), new Vector2(91.7300034F, 2.9000001F), new Vector2(92.0500031F, 2.76999998F));
-                    builder.AddCubicBezier(new Vector2(93.8600006F, 2.03999996F), new Vector2(95.7399979F, 1.45000005F), new Vector2(97.6800003F, 1F));
+                    builder.BeginFigure(new Vector2(97.5899963F, 1F));
+                    builder.AddCubicBezier(new Vector2(97.8600006F, 0.939999998F), new Vector2(98.1299973F, 1.10000002F), new Vector2(98.1900024F, 1.37F));
+                    builder.AddCubicBezier(new Vector2(98.25F, 1.63999999F), new Vector2(98.0800018F, 1.90999997F), new Vector2(97.8099976F, 1.97000003F));
+                    builder.AddCubicBezier(new Vector2(95.9300003F, 2.41000009F), new Vector2(94.0999985F, 2.98000002F), new Vector2(92.3399963F, 3.69000006F));
+                    builder.AddCubicBezier(new Vector2(92.0800018F, 3.78999996F), new Vector2(91.7900009F, 3.68000007F), new Vector2(91.6900024F, 3.42000008F));
+                    builder.AddCubicBezier(new Vector2(91.5899963F, 3.16000009F), new Vector2(91.7099991F, 2.8599999F), new Vector2(91.9700012F, 2.75999999F));
+                    builder.AddCubicBezier(new Vector2(93.7799988F, 2.02999997F), new Vector2(95.6600037F, 1.45000005F), new Vector2(97.5899963F, 1F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
@@ -361,21 +387,21 @@ namespace AnimatedVisuals
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_04()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(124.779999F, 5.30000019F));
-                    builder.AddCubicBezier(new Vector2(124.949997F, 5F), new Vector2(125.330002F, 4.88999987F), new Vector2(125.629997F, 5.05999994F));
-                    builder.AddCubicBezier(new Vector2(127.290001F, 6.01000023F), new Vector2(128.880005F, 7.07999992F), new Vector2(130.380005F, 8.26000023F));
-                    builder.AddCubicBezier(new Vector2(130.649994F, 8.47000027F), new Vector2(130.690002F, 8.85999966F), new Vector2(130.479996F, 9.13000011F));
-                    builder.AddCubicBezier(new Vector2(130.270004F, 9.39999962F), new Vector2(129.869995F, 9.44999981F), new Vector2(129.600006F, 9.23999977F));
-                    builder.AddCubicBezier(new Vector2(128.149994F, 8.10000038F), new Vector2(126.620003F, 7.07000017F), new Vector2(125.010002F, 6.1500001F));
-                    builder.AddCubicBezier(new Vector2(124.709999F, 5.98000002F), new Vector2(124.610001F, 5.5999999F), new Vector2(124.779999F, 5.30000019F));
+                    builder.BeginFigure(new Vector2(124.760002F, 5.23000002F));
+                    builder.AddCubicBezier(new Vector2(124.900002F, 4.98999977F), new Vector2(125.199997F, 4.90999985F), new Vector2(125.440002F, 5.05000019F));
+                    builder.AddCubicBezier(new Vector2(127.099998F, 6F), new Vector2(128.690002F, 7.05999994F), new Vector2(130.179993F, 8.22999954F));
+                    builder.AddCubicBezier(new Vector2(130.399994F, 8.39999962F), new Vector2(130.429993F, 8.71000004F), new Vector2(130.259995F, 8.93000031F));
+                    builder.AddCubicBezier(new Vector2(130.089996F, 9.14999962F), new Vector2(129.779999F, 9.18999958F), new Vector2(129.559998F, 9.02000046F));
+                    builder.AddCubicBezier(new Vector2(128.110001F, 7.88000011F), new Vector2(126.57F, 6.84000015F), new Vector2(124.949997F, 5.92000008F));
+                    builder.AddCubicBezier(new Vector2(124.709999F, 5.78000021F), new Vector2(124.620003F, 5.46999979F), new Vector2(124.760002F, 5.23000002F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
@@ -383,22 +409,21 @@ namespace AnimatedVisuals
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_05()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(86.75F, 5.38999987F));
-                    builder.AddCubicBezier(new Vector2(87.0500031F, 5.21000004F), new Vector2(87.4300003F, 5.30999994F), new Vector2(87.6100006F, 5.61000013F));
-                    builder.AddCubicBezier(new Vector2(87.7900009F, 5.90999985F), new Vector2(87.6900024F, 6.28000021F), new Vector2(87.3899994F, 6.46000004F));
-                    builder.AddCubicBezier(new Vector2(85.75F, 7.42999983F), new Vector2(84.1800003F, 8.52999973F), new Vector2(82.7099991F, 9.73999977F));
-                    builder.AddCubicBezier(new Vector2(82.4800034F, 9.93000031F), new Vector2(82.1500015F, 9.92000008F), new Vector2(81.9199982F, 9.73999977F));
-                    builder.AddLine(new Vector2(81.8300018F, 9.64999962F));
-                    builder.AddCubicBezier(new Vector2(81.6100006F, 9.38000011F), new Vector2(81.6500015F, 8.98999977F), new Vector2(81.9199982F, 8.77000046F));
-                    builder.AddCubicBezier(new Vector2(83.4400024F, 7.51999998F), new Vector2(85.0500031F, 6.4000001F), new Vector2(86.75F, 5.38999987F));
+                    builder.BeginFigure(new Vector2(86.6900024F, 5.36999989F));
+                    builder.AddCubicBezier(new Vector2(86.9300003F, 5.23000002F), new Vector2(87.2399979F, 5.30000019F), new Vector2(87.3799973F, 5.53999996F));
+                    builder.AddCubicBezier(new Vector2(87.5199966F, 5.78000021F), new Vector2(87.4400024F, 6.09000015F), new Vector2(87.1999969F, 6.23000002F));
+                    builder.AddCubicBezier(new Vector2(85.5500031F, 7.21000004F), new Vector2(83.9899979F, 8.31000042F), new Vector2(82.5100021F, 9.52000046F));
+                    builder.AddCubicBezier(new Vector2(82.3000031F, 9.69999981F), new Vector2(81.9800034F, 9.65999985F), new Vector2(81.8000031F, 9.44999981F));
+                    builder.AddCubicBezier(new Vector2(81.6299973F, 9.23999977F), new Vector2(81.6600037F, 8.92000008F), new Vector2(81.8700027F, 8.73999977F));
+                    builder.AddCubicBezier(new Vector2(83.3799973F, 7.5F), new Vector2(85F, 6.36999989F), new Vector2(86.6900024F, 5.36999989F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
@@ -406,21 +431,21 @@ namespace AnimatedVisuals
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_06()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(133.720001F, 12.0900002F));
-                    builder.AddCubicBezier(new Vector2(133.970001F, 11.8500004F), new Vector2(134.360001F, 11.8599997F), new Vector2(134.600006F, 12.1099997F));
-                    builder.AddCubicBezier(new Vector2(135.910004F, 13.4899998F), new Vector2(137.130005F, 14.9700003F), new Vector2(138.229996F, 16.5400009F));
-                    builder.AddCubicBezier(new Vector2(138.429993F, 16.8199997F), new Vector2(138.350006F, 17.2099991F), new Vector2(138.070007F, 17.4099998F));
-                    builder.AddCubicBezier(new Vector2(137.789993F, 17.6100006F), new Vector2(137.399994F, 17.5400009F), new Vector2(137.199997F, 17.2600002F));
-                    builder.AddCubicBezier(new Vector2(136.139999F, 15.75F), new Vector2(134.970001F, 14.3100004F), new Vector2(133.699997F, 12.9700003F));
-                    builder.AddCubicBezier(new Vector2(133.460007F, 12.7200003F), new Vector2(133.470001F, 12.3299999F), new Vector2(133.720001F, 12.0900002F));
+                    builder.BeginFigure(new Vector2(133.679993F, 12.0500002F));
+                    builder.AddCubicBezier(new Vector2(133.880005F, 11.8599997F), new Vector2(134.199997F, 11.8699999F), new Vector2(134.389999F, 12.0699997F));
+                    builder.AddCubicBezier(new Vector2(135.699997F, 13.4499998F), new Vector2(136.910004F, 14.9300003F), new Vector2(138F, 16.4899998F));
+                    builder.AddCubicBezier(new Vector2(138.160004F, 16.7199993F), new Vector2(138.110001F, 17.0200005F), new Vector2(137.880005F, 17.1800003F));
+                    builder.AddCubicBezier(new Vector2(137.649994F, 17.3400002F), new Vector2(137.339996F, 17.2900009F), new Vector2(137.179993F, 17.0599995F));
+                    builder.AddCubicBezier(new Vector2(136.110001F, 15.54F), new Vector2(134.929993F, 14.1000004F), new Vector2(133.660004F, 12.7600002F));
+                    builder.AddCubicBezier(new Vector2(133.470001F, 12.5600004F), new Vector2(133.479996F, 12.2399998F), new Vector2(133.679993F, 12.0500002F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
@@ -428,23 +453,21 @@ namespace AnimatedVisuals
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_07()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(77.6500015F, 12.8500004F));
-                    builder.AddCubicBezier(new Vector2(77.8799973F, 12.5900002F), new Vector2(78.2699966F, 12.5699997F), new Vector2(78.5299988F, 12.8000002F));
-                    builder.AddCubicBezier(new Vector2(78.7900009F, 13.0299997F), new Vector2(78.8099976F, 13.4300003F), new Vector2(78.5800018F, 13.6899996F));
-                    builder.AddCubicBezier(new Vector2(77.3099976F, 15.1099997F), new Vector2(76.1399994F, 16.6100006F), new Vector2(75.0899963F, 18.2099991F));
-                    builder.AddCubicBezier(new Vector2(74.9199982F, 18.4599991F), new Vector2(74.6100006F, 18.5599995F), new Vector2(74.3399963F, 18.4500008F));
-                    builder.AddLine(new Vector2(74.2300034F, 18.3899994F));
-                    builder.AddCubicBezier(new Vector2(73.9400024F, 18.2000008F), new Vector2(73.8600006F, 17.8199997F), new Vector2(74.0500031F, 17.5300007F));
-                    builder.AddLine(new Vector2(74.4599991F, 16.9099998F));
-                    builder.AddCubicBezier(new Vector2(75.4300003F, 15.4899998F), new Vector2(76.5F, 14.1300001F), new Vector2(77.6500015F, 12.8500004F));
+                    builder.BeginFigure(new Vector2(77.6200027F, 12.8100004F));
+                    builder.AddCubicBezier(new Vector2(77.8000031F, 12.6000004F), new Vector2(78.1100006F, 12.5900002F), new Vector2(78.3199997F, 12.7700005F));
+                    builder.AddCubicBezier(new Vector2(78.5299988F, 12.9499998F), new Vector2(78.5400009F, 13.2700005F), new Vector2(78.3600006F, 13.4799995F));
+                    builder.AddCubicBezier(new Vector2(77.0800018F, 14.8999996F), new Vector2(75.9100037F, 16.4200001F), new Vector2(74.8600006F, 18.0200005F));
+                    builder.AddCubicBezier(new Vector2(74.7099991F, 18.25F), new Vector2(74.4000015F, 18.3099995F), new Vector2(74.1699982F, 18.1599998F));
+                    builder.AddCubicBezier(new Vector2(73.9400024F, 18.0100002F), new Vector2(73.8799973F, 17.7000008F), new Vector2(74.0299988F, 17.4699993F));
+                    builder.AddCubicBezier(new Vector2(75.1100006F, 15.8199997F), new Vector2(76.3099976F, 14.2700005F), new Vector2(77.6200027F, 12.8100004F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
@@ -452,27 +475,25 @@ namespace AnimatedVisuals
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_08()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(140.320007F, 21.1700001F));
-                    builder.AddCubicBezier(new Vector2(140.630005F, 21.0200005F), new Vector2(141.009995F, 21.1399994F), new Vector2(141.160004F, 21.4500008F));
-                    builder.AddCubicBezier(new Vector2(141.529999F, 22.1900005F), new Vector2(141.880005F, 22.9500008F), new Vector2(142.199997F, 23.7199993F));
-                    builder.AddCubicBezier(new Vector2(143.050003F, 23.8299999F), new Vector2(143.889999F, 23.9500008F), new Vector2(144.720001F, 24.1100006F));
-                    builder.AddCubicBezier(new Vector2(145.059998F, 24.1700001F), new Vector2(145.279999F, 24.5F), new Vector2(145.220001F, 24.8400002F));
-                    builder.AddCubicBezier(new Vector2(145.160004F, 25.1800003F), new Vector2(144.820007F, 25.3999996F), new Vector2(144.479996F, 25.3400002F));
-                    builder.AddCubicBezier(new Vector2(143.559998F, 25.1700001F), new Vector2(142.630005F, 25.0300007F), new Vector2(141.690002F, 24.9200001F));
-                    builder.AddLine(new Vector2(141.399994F, 24.8799992F));
-                    builder.AddLine(new Vector2(141.320007F, 24.8700008F));
-                    builder.AddLine(new Vector2(141.300003F, 24.8099995F));
-                    builder.AddLine(new Vector2(141.190002F, 24.5300007F));
-                    builder.AddCubicBezier(new Vector2(140.839996F, 23.6700001F), new Vector2(140.449997F, 22.8299999F), new Vector2(140.039993F, 22.0100002F));
-                    builder.AddCubicBezier(new Vector2(139.889999F, 21.7000008F), new Vector2(140.009995F, 21.3199997F), new Vector2(140.320007F, 21.1700001F));
+                    builder.BeginFigure(new Vector2(140.25F, 21.1599998F));
+                    builder.AddCubicBezier(new Vector2(140.5F, 21.0400009F), new Vector2(140.800003F, 21.1299992F), new Vector2(140.919998F, 21.3799992F));
+                    builder.AddCubicBezier(new Vector2(141.300003F, 22.1399994F), new Vector2(141.660004F, 22.9200001F), new Vector2(141.990005F, 23.7099991F));
+                    builder.AddCubicBezier(new Vector2(142.860001F, 23.8199997F), new Vector2(143.720001F, 23.9500008F), new Vector2(144.570007F, 24.1100006F));
+                    builder.AddCubicBezier(new Vector2(144.839996F, 24.1599998F), new Vector2(145.020004F, 24.4200001F), new Vector2(144.970001F, 24.6900005F));
+                    builder.AddCubicBezier(new Vector2(144.919998F, 24.9599991F), new Vector2(144.649994F, 25.1399994F), new Vector2(144.380005F, 25.0900002F));
+                    builder.AddCubicBezier(new Vector2(143.460007F, 24.9200001F), new Vector2(142.520004F, 24.7800007F), new Vector2(141.580002F, 24.6700001F));
+                    builder.AddLine(new Vector2(141.289993F, 24.6299992F));
+                    builder.AddLine(new Vector2(141.179993F, 24.3600006F));
+                    builder.AddCubicBezier(new Vector2(140.830002F, 23.5F), new Vector2(140.440002F, 22.6599998F), new Vector2(140.029999F, 21.8299999F));
+                    builder.AddCubicBezier(new Vector2(139.910004F, 21.5799999F), new Vector2(140F, 21.2800007F), new Vector2(140.25F, 21.1599998F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
@@ -480,24 +501,24 @@ namespace AnimatedVisuals
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_09()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(65.8600006F, 24.6599998F));
-                    builder.AddCubicBezier(new Vector2(66.2699966F, 24.6599998F), new Vector2(66.6699982F, 24.6599998F), new Vector2(67.0800018F, 24.6800003F));
-                    builder.AddCubicBezier(new Vector2(67.4199982F, 24.6900005F), new Vector2(67.6900024F, 24.9899998F), new Vector2(67.6800003F, 25.3299999F));
-                    builder.AddCubicBezier(new Vector2(67.6699982F, 25.6700001F), new Vector2(67.3799973F, 25.9400005F), new Vector2(67.0400009F, 25.9300003F));
-                    builder.AddCubicBezier(new Vector2(66.8399963F, 25.9200001F), new Vector2(66.6500015F, 25.9099998F), new Vector2(66.4499969F, 25.9099998F));
-                    builder.AddLine(new Vector2(65.8499985F, 25.9099998F));
-                    builder.AddCubicBezier(new Vector2(64.75F, 25.9099998F), new Vector2(63.6800003F, 25.9599991F), new Vector2(62.6100006F, 26.0699997F));
-                    builder.AddCubicBezier(new Vector2(62.2700005F, 26.1100006F), new Vector2(61.9599991F, 25.8500004F), new Vector2(61.9199982F, 25.5100002F));
-                    builder.AddCubicBezier(new Vector2(61.8800011F, 25.1700001F), new Vector2(62.1399994F, 24.8700008F), new Vector2(62.4799995F, 24.8299999F));
-                    builder.AddCubicBezier(new Vector2(63.5900002F, 24.7199993F), new Vector2(64.7200012F, 24.6599998F), new Vector2(65.8600006F, 24.6599998F));
+                    builder.BeginFigure(new Vector2(65.7300034F, 24.6599998F));
+                    builder.AddCubicBezier(new Vector2(66.1399994F, 24.6599998F), new Vector2(66.5400009F, 24.6599998F), new Vector2(66.9499969F, 24.6800003F));
+                    builder.AddCubicBezier(new Vector2(67.2300034F, 24.6900005F), new Vector2(67.4400024F, 24.9200001F), new Vector2(67.4300003F, 25.2000008F));
+                    builder.AddCubicBezier(new Vector2(67.4199982F, 25.4799995F), new Vector2(67.1999969F, 25.6900005F), new Vector2(66.9199982F, 25.6800003F));
+                    builder.AddCubicBezier(new Vector2(66.7200012F, 25.6700001F), new Vector2(66.5199966F, 25.6599998F), new Vector2(66.3199997F, 25.6599998F));
+                    builder.AddLine(new Vector2(65.7300034F, 25.6599998F));
+                    builder.AddCubicBezier(new Vector2(64.6299973F, 25.6599998F), new Vector2(63.5400009F, 25.7099991F), new Vector2(62.4700012F, 25.8199997F));
+                    builder.AddCubicBezier(new Vector2(62.2000008F, 25.8500004F), new Vector2(61.9500008F, 25.6499996F), new Vector2(61.9199982F, 25.3799992F));
+                    builder.AddCubicBezier(new Vector2(61.8899994F, 25.1100006F), new Vector2(62.0999985F, 24.8600006F), new Vector2(62.3699989F, 24.8299999F));
+                    builder.AddCubicBezier(new Vector2(63.4799995F, 24.7199993F), new Vector2(64.5899963F, 24.6599998F), new Vector2(65.7300034F, 24.6599998F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
@@ -505,26 +526,25 @@ namespace AnimatedVisuals
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_10()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(71.1900024F, 22.6900005F));
-                    builder.AddCubicBezier(new Vector2(71.3300018F, 22.3799992F), new Vector2(71.7099991F, 22.2399998F), new Vector2(72.0199966F, 22.3799992F));
-                    builder.AddCubicBezier(new Vector2(72.3300018F, 22.5200005F), new Vector2(72.4700012F, 22.8999996F), new Vector2(72.3300018F, 23.2099991F));
-                    builder.AddCubicBezier(new Vector2(71.9400024F, 24.0699997F), new Vector2(71.5699997F, 24.9599991F), new Vector2(71.2399979F, 25.8600006F));
-                    builder.AddLine(new Vector2(71.0599976F, 26.3299999F));
-                    builder.AddLine(new Vector2(70.9599991F, 26.3199997F));
-                    builder.AddLine(new Vector2(70.5599976F, 26.2600002F));
-                    builder.AddCubicBezier(new Vector2(70.1699982F, 26.2000008F), new Vector2(69.7799988F, 26.1399994F), new Vector2(69.3899994F, 26.1000004F));
-                    builder.AddCubicBezier(new Vector2(69.0500031F, 26.0599995F), new Vector2(68.8000031F, 25.75F), new Vector2(68.8399963F, 25.4099998F));
-                    builder.AddCubicBezier(new Vector2(68.8799973F, 25.0699997F), new Vector2(69.1900024F, 24.8199997F), new Vector2(69.5299988F, 24.8600006F));
-                    builder.AddCubicBezier(new Vector2(69.7699966F, 24.8899994F), new Vector2(70F, 24.9200001F), new Vector2(70.2399979F, 24.9500008F));
-                    builder.AddCubicBezier(new Vector2(70.5299988F, 24.1900005F), new Vector2(70.8499985F, 23.4300003F), new Vector2(71.1900024F, 22.6900005F));
+                    builder.BeginFigure(new Vector2(71.1800003F, 22.6200008F));
+                    builder.AddCubicBezier(new Vector2(71.2900009F, 22.3700008F), new Vector2(71.5899963F, 22.2600002F), new Vector2(71.8399963F, 22.3700008F));
+                    builder.AddCubicBezier(new Vector2(72.0899963F, 22.4799995F), new Vector2(72.1999969F, 22.7800007F), new Vector2(72.0899963F, 23.0300007F));
+                    builder.AddCubicBezier(new Vector2(71.6900024F, 23.8999996F), new Vector2(71.3300018F, 24.7900009F), new Vector2(71F, 25.6900005F));
+                    builder.AddLine(new Vector2(70.8600006F, 26.0699997F));
+                    builder.AddLine(new Vector2(70.4499969F, 26.0100002F));
+                    builder.AddCubicBezier(new Vector2(70.0599976F, 25.9500008F), new Vector2(69.6699982F, 25.8899994F), new Vector2(69.2799988F, 25.8500004F));
+                    builder.AddCubicBezier(new Vector2(69.0100021F, 25.8199997F), new Vector2(68.8099976F, 25.5699997F), new Vector2(68.8399963F, 25.2999992F));
+                    builder.AddCubicBezier(new Vector2(68.8700027F, 25.0300007F), new Vector2(69.1200027F, 24.8299999F), new Vector2(69.3899994F, 24.8600006F));
+                    builder.AddCubicBezier(new Vector2(69.6600037F, 24.8899994F), new Vector2(69.9300003F, 24.9200001F), new Vector2(70.1999969F, 24.9599991F));
+                    builder.AddCubicBezier(new Vector2(70.5F, 24.1700001F), new Vector2(70.8300018F, 23.3899994F), new Vector2(71.1800003F, 22.6200008F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
@@ -532,23 +552,21 @@ namespace AnimatedVisuals
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_11()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(149.600006F, 25.8799992F));
-                    builder.AddCubicBezier(new Vector2(149.75F, 25.6299992F), new Vector2(150.070007F, 25.5100002F), new Vector2(150.350006F, 25.6100006F));
-                    builder.AddCubicBezier(new Vector2(152.199997F, 26.25F), new Vector2(153.979996F, 27.0300007F), new Vector2(155.690002F, 27.9200001F));
-                    builder.AddCubicBezier(new Vector2(156F, 28.0799999F), new Vector2(156.119995F, 28.4500008F), new Vector2(155.960007F, 28.7600002F));
-                    builder.AddCubicBezier(new Vector2(155.800003F, 29.0699997F), new Vector2(155.419998F, 29.1900005F), new Vector2(155.110001F, 29.0300007F));
-                    builder.AddCubicBezier(new Vector2(153.660004F, 28.2700005F), new Vector2(152.149994F, 27.6000004F), new Vector2(150.600006F, 27.0300007F));
-                    builder.AddLine(new Vector2(149.940002F, 26.7900009F));
-                    builder.AddCubicBezier(new Vector2(149.610001F, 26.6800003F), new Vector2(149.440002F, 26.3299999F), new Vector2(149.550003F, 26F));
-                    builder.AddLine(new Vector2(149.600006F, 25.8799992F));
+                    builder.BeginFigure(new Vector2(149.539993F, 25.9099998F));
+                    builder.AddCubicBezier(new Vector2(149.630005F, 25.6499996F), new Vector2(149.919998F, 25.5200005F), new Vector2(150.179993F, 25.6100006F));
+                    builder.AddCubicBezier(new Vector2(152.020004F, 26.25F), new Vector2(153.800003F, 27.0100002F), new Vector2(155.509995F, 27.8999996F));
+                    builder.AddCubicBezier(new Vector2(155.759995F, 28.0300007F), new Vector2(155.850006F, 28.3400002F), new Vector2(155.720001F, 28.5799999F));
+                    builder.AddCubicBezier(new Vector2(155.589996F, 28.8199997F), new Vector2(155.300003F, 28.9200001F), new Vector2(155.050003F, 28.7900009F));
+                    builder.AddCubicBezier(new Vector2(153.389999F, 27.9200001F), new Vector2(151.639999F, 27.1700001F), new Vector2(149.850006F, 26.5499992F));
+                    builder.AddCubicBezier(new Vector2(149.589996F, 26.4599991F), new Vector2(149.449997F, 26.1700001F), new Vector2(149.539993F, 25.9099998F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
@@ -556,21 +574,21 @@ namespace AnimatedVisuals
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_12()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(55.8699989F, 26.2099991F));
-                    builder.AddCubicBezier(new Vector2(56.2000008F, 26.1000004F), new Vector2(56.5499992F, 26.2900009F), new Vector2(56.6599998F, 26.6200008F));
-                    builder.AddCubicBezier(new Vector2(56.7700005F, 26.9500008F), new Vector2(56.5800018F, 27.2900009F), new Vector2(56.25F, 27.3999996F));
-                    builder.AddCubicBezier(new Vector2(54.1699982F, 28.0699997F), new Vector2(52.1899986F, 28.9500008F), new Vector2(50.3199997F, 30.0200005F));
-                    builder.AddCubicBezier(new Vector2(50.0200005F, 30.1900005F), new Vector2(49.6300011F, 30.0900002F), new Vector2(49.4599991F, 29.7900009F));
-                    builder.AddCubicBezier(new Vector2(49.2900009F, 29.4899998F), new Vector2(49.4000015F, 29.1100006F), new Vector2(49.7000008F, 28.9400005F));
-                    builder.AddCubicBezier(new Vector2(51.6399994F, 27.8299999F), new Vector2(53.7000008F, 26.9099998F), new Vector2(55.8699989F, 26.2099991F));
+                    builder.BeginFigure(new Vector2(55.7900009F, 26.2099991F));
+                    builder.AddCubicBezier(new Vector2(56.0499992F, 26.1299992F), new Vector2(56.3300018F, 26.2700005F), new Vector2(56.4099998F, 26.5300007F));
+                    builder.AddCubicBezier(new Vector2(56.4900017F, 26.7900009F), new Vector2(56.3499985F, 27.0799999F), new Vector2(56.0900002F, 27.1599998F));
+                    builder.AddCubicBezier(new Vector2(54F, 27.8299999F), new Vector2(52.0099983F, 28.7199993F), new Vector2(50.1300011F, 29.7900009F));
+                    builder.AddCubicBezier(new Vector2(49.8899994F, 29.9300003F), new Vector2(49.5900002F, 29.8400002F), new Vector2(49.4500008F, 29.6000004F));
+                    builder.AddCubicBezier(new Vector2(49.3100014F, 29.3600006F), new Vector2(49.3899994F, 29.0599995F), new Vector2(49.6300011F, 28.9200001F));
+                    builder.AddCubicBezier(new Vector2(51.5600014F, 27.8099995F), new Vector2(53.6300011F, 26.8999996F), new Vector2(55.7900009F, 26.2099991F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
@@ -578,22 +596,21 @@ namespace AnimatedVisuals
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_13()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(159.770004F, 31.1200008F));
-                    builder.AddCubicBezier(new Vector2(159.970001F, 30.8400002F), new Vector2(160.369995F, 30.7800007F), new Vector2(160.649994F, 30.9799995F));
-                    builder.AddLine(new Vector2(161.229996F, 31.4099998F));
-                    builder.AddCubicBezier(new Vector2(162.589996F, 32.4300003F), new Vector2(163.880005F, 33.5499992F), new Vector2(165.100006F, 34.7299995F));
-                    builder.AddCubicBezier(new Vector2(165.350006F, 34.9700012F), new Vector2(165.360001F, 35.3600006F), new Vector2(165.119995F, 35.6100006F));
-                    builder.AddCubicBezier(new Vector2(164.880005F, 35.8600006F), new Vector2(164.479996F, 35.8600006F), new Vector2(164.229996F, 35.6199989F));
-                    builder.AddCubicBezier(new Vector2(162.880005F, 34.3100014F), new Vector2(161.440002F, 33.0900002F), new Vector2(159.910004F, 31.9899998F));
-                    builder.AddCubicBezier(new Vector2(159.630005F, 31.7900009F), new Vector2(159.570007F, 31.3999996F), new Vector2(159.770004F, 31.1200008F));
+                    builder.BeginFigure(new Vector2(159.75F, 31.0699997F));
+                    builder.AddCubicBezier(new Vector2(159.910004F, 30.8500004F), new Vector2(160.229996F, 30.7999992F), new Vector2(160.449997F, 30.9599991F));
+                    builder.AddCubicBezier(new Vector2(162.020004F, 32.0999985F), new Vector2(163.5F, 33.3400002F), new Vector2(164.889999F, 34.6899986F));
+                    builder.AddCubicBezier(new Vector2(165.089996F, 34.8800011F), new Vector2(165.089996F, 35.2000008F), new Vector2(164.899994F, 35.4000015F));
+                    builder.AddCubicBezier(new Vector2(164.710007F, 35.5999985F), new Vector2(164.399994F, 35.5999985F), new Vector2(164.199997F, 35.4099998F));
+                    builder.AddCubicBezier(new Vector2(162.850006F, 34.0900002F), new Vector2(161.389999F, 32.8800011F), new Vector2(159.860001F, 31.7700005F));
+                    builder.AddCubicBezier(new Vector2(159.639999F, 31.6100006F), new Vector2(159.589996F, 31.2900009F), new Vector2(159.75F, 31.0699997F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
@@ -601,22 +618,21 @@ namespace AnimatedVisuals
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_14()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(44.3199997F, 32.7999992F));
-                    builder.AddCubicBezier(new Vector2(44.5699997F, 32.6500015F), new Vector2(44.9000015F, 32.7000008F), new Vector2(45.0999985F, 32.9300003F));
-                    builder.AddCubicBezier(new Vector2(45.3300018F, 33.1899986F), new Vector2(45.2999992F, 33.5800018F), new Vector2(45.0400009F, 33.8100014F));
-                    builder.AddCubicBezier(new Vector2(43.4199982F, 35.25F), new Vector2(41.9500008F, 36.8600006F), new Vector2(40.6599998F, 38.5999985F));
-                    builder.AddCubicBezier(new Vector2(40.4500008F, 38.8800011F), new Vector2(40.0600014F, 38.9399986F), new Vector2(39.7799988F, 38.7299995F));
-                    builder.AddCubicBezier(new Vector2(39.5F, 38.5200005F), new Vector2(39.4399986F, 38.1399994F), new Vector2(39.6500015F, 37.8600006F));
-                    builder.AddCubicBezier(new Vector2(41F, 36.0499992F), new Vector2(42.5299988F, 34.3800011F), new Vector2(44.2099991F, 32.8800011F));
-                    builder.AddLine(new Vector2(44.3199997F, 32.7999992F));
+                    builder.BeginFigure(new Vector2(44.1699982F, 32.8499985F));
+                    builder.AddCubicBezier(new Vector2(44.3800011F, 32.6699982F), new Vector2(44.7000008F, 32.6800003F), new Vector2(44.8800011F, 32.8899994F));
+                    builder.AddCubicBezier(new Vector2(45.0600014F, 33.0999985F), new Vector2(45.0499992F, 33.4099998F), new Vector2(44.8400002F, 33.5900002F));
+                    builder.AddCubicBezier(new Vector2(43.2099991F, 35.0400009F), new Vector2(41.7299995F, 36.6500015F), new Vector2(40.4300003F, 38.4000015F));
+                    builder.AddCubicBezier(new Vector2(40.2700005F, 38.6199989F), new Vector2(39.9500008F, 38.6599998F), new Vector2(39.7299995F, 38.5F));
+                    builder.AddCubicBezier(new Vector2(39.5099983F, 38.3400002F), new Vector2(39.4700012F, 38.0299988F), new Vector2(39.6300011F, 37.8100014F));
+                    builder.AddCubicBezier(new Vector2(40.9700012F, 36F), new Vector2(42.4900017F, 34.3400002F), new Vector2(44.1699982F, 32.8499985F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
@@ -624,23 +640,21 @@ namespace AnimatedVisuals
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_15()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(168.100006F, 38.9599991F));
-                    builder.AddCubicBezier(new Vector2(168.339996F, 38.7799988F), new Vector2(168.669998F, 38.7900009F), new Vector2(168.889999F, 38.9799995F));
-                    builder.AddLine(new Vector2(168.979996F, 39.0800018F));
-                    builder.AddLine(new Vector2(169.410004F, 39.6599998F));
-                    builder.AddCubicBezier(new Vector2(170.419998F, 41.0200005F), new Vector2(171.350006F, 42.4500008F), new Vector2(172.179993F, 43.9399986F));
-                    builder.AddCubicBezier(new Vector2(172.350006F, 44.2400017F), new Vector2(172.240005F, 44.6199989F), new Vector2(171.940002F, 44.7900009F));
-                    builder.AddCubicBezier(new Vector2(171.639999F, 44.9599991F), new Vector2(171.259995F, 44.8499985F), new Vector2(171.089996F, 44.5499992F));
-                    builder.AddCubicBezier(new Vector2(170.169998F, 42.9000015F), new Vector2(169.130005F, 41.3300018F), new Vector2(167.990005F, 39.8400002F));
-                    builder.AddCubicBezier(new Vector2(167.779999F, 39.5699997F), new Vector2(167.830002F, 39.1699982F), new Vector2(168.100006F, 38.9599991F));
+                    builder.BeginFigure(new Vector2(168.050003F, 38.9300003F));
+                    builder.AddCubicBezier(new Vector2(168.270004F, 38.7599983F), new Vector2(168.580002F, 38.8100014F), new Vector2(168.75F, 39.0299988F));
+                    builder.AddCubicBezier(new Vector2(169.929993F, 40.5600014F), new Vector2(171F, 42.1800003F), new Vector2(171.949997F, 43.8800011F));
+                    builder.AddCubicBezier(new Vector2(172.089996F, 44.1199989F), new Vector2(171.990005F, 44.4300003F), new Vector2(171.75F, 44.5600014F));
+                    builder.AddCubicBezier(new Vector2(171.509995F, 44.6899986F), new Vector2(171.199997F, 44.5999985F), new Vector2(171.070007F, 44.3600006F));
+                    builder.AddCubicBezier(new Vector2(170.149994F, 42.7099991F), new Vector2(169.110001F, 41.1300011F), new Vector2(167.960007F, 39.6399994F));
+                    builder.AddCubicBezier(new Vector2(167.789993F, 39.4199982F), new Vector2(167.830002F, 39.0999985F), new Vector2(168.050003F, 38.9300003F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
@@ -648,23 +662,23 @@ namespace AnimatedVisuals
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_16()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(28.9300003F, 45.5999985F));
-                    builder.AddCubicBezier(new Vector2(29.5F, 45.5999985F), new Vector2(30.0799999F, 45.6199989F), new Vector2(30.6399994F, 45.6500015F));
-                    builder.AddCubicBezier(new Vector2(30.9799995F, 45.6699982F), new Vector2(31.25F, 45.9700012F), new Vector2(31.2299995F, 46.3100014F));
-                    builder.AddCubicBezier(new Vector2(31.2099991F, 46.6500015F), new Vector2(30.9099998F, 46.9199982F), new Vector2(30.5699997F, 46.9000015F));
-                    builder.AddCubicBezier(new Vector2(30.0300007F, 46.8699989F), new Vector2(29.4799995F, 46.8499985F), new Vector2(28.9300003F, 46.8499985F));
-                    builder.AddCubicBezier(new Vector2(28.0100002F, 46.8499985F), new Vector2(27.1000004F, 46.8899994F), new Vector2(26.2099991F, 46.9799995F));
-                    builder.AddCubicBezier(new Vector2(25.8700008F, 47.0099983F), new Vector2(25.5599995F, 46.7599983F), new Vector2(25.5300007F, 46.4199982F));
-                    builder.AddCubicBezier(new Vector2(25.5F, 46.0800018F), new Vector2(25.75F, 45.7700005F), new Vector2(26.0900002F, 45.7400017F));
-                    builder.AddCubicBezier(new Vector2(27.0200005F, 45.6500015F), new Vector2(27.9699993F, 45.5999985F), new Vector2(28.9300003F, 45.5999985F));
+                    builder.BeginFigure(new Vector2(28.8099995F, 45.5999985F));
+                    builder.AddCubicBezier(new Vector2(29.3799992F, 45.5999985F), new Vector2(29.9500008F, 45.6199989F), new Vector2(30.5100002F, 45.6500015F));
+                    builder.AddCubicBezier(new Vector2(30.7900009F, 45.6699982F), new Vector2(31F, 45.9000015F), new Vector2(30.9799995F, 46.1800003F));
+                    builder.AddCubicBezier(new Vector2(30.9599991F, 46.4599991F), new Vector2(30.7299995F, 46.6699982F), new Vector2(30.4500008F, 46.6500015F));
+                    builder.AddCubicBezier(new Vector2(29.9099998F, 46.6199989F), new Vector2(29.3600006F, 46.5999985F), new Vector2(28.8099995F, 46.5999985F));
+                    builder.AddCubicBezier(new Vector2(27.8899994F, 46.5999985F), new Vector2(26.9799995F, 46.6399994F), new Vector2(26.0799999F, 46.7299995F));
+                    builder.AddCubicBezier(new Vector2(25.8099995F, 46.7599983F), new Vector2(25.5599995F, 46.5499992F), new Vector2(25.5300007F, 46.2799988F));
+                    builder.AddCubicBezier(new Vector2(25.5F, 46.0099983F), new Vector2(25.7099991F, 45.7599983F), new Vector2(25.9799995F, 45.7299995F));
+                    builder.AddCubicBezier(new Vector2(26.9099998F, 45.6399994F), new Vector2(27.8600006F, 45.5999985F), new Vector2(28.8099995F, 45.5999985F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
@@ -672,27 +686,25 @@ namespace AnimatedVisuals
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_17()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(36.2099991F, 43.6599998F));
-                    builder.AddCubicBezier(new Vector2(36.3499985F, 43.3499985F), new Vector2(36.7299995F, 43.2200012F), new Vector2(37.0400009F, 43.3600006F));
-                    builder.AddCubicBezier(new Vector2(37.3499985F, 43.5F), new Vector2(37.4900017F, 43.8699989F), new Vector2(37.3499985F, 44.1800003F));
-                    builder.AddCubicBezier(new Vector2(36.9000015F, 45.1599998F), new Vector2(36.4900017F, 46.1800003F), new Vector2(36.1399994F, 47.2099991F));
-                    builder.AddLine(new Vector2(36F, 47.6399994F));
-                    builder.AddLine(new Vector2(35.9599991F, 47.75F));
-                    builder.AddLine(new Vector2(35.8499985F, 47.7200012F));
-                    builder.AddLine(new Vector2(35.4099998F, 47.6100006F));
-                    builder.AddCubicBezier(new Vector2(34.8800011F, 47.4799995F), new Vector2(34.3499985F, 47.3800011F), new Vector2(33.8100014F, 47.2799988F));
-                    builder.AddCubicBezier(new Vector2(33.4700012F, 47.2200012F), new Vector2(33.2400017F, 46.8899994F), new Vector2(33.2999992F, 46.5499992F));
-                    builder.AddCubicBezier(new Vector2(33.3600006F, 46.2099991F), new Vector2(33.6899986F, 45.9900017F), new Vector2(34.0299988F, 46.0499992F));
-                    builder.AddCubicBezier(new Vector2(34.4099998F, 46.1199989F), new Vector2(34.7799988F, 46.1899986F), new Vector2(35.1500015F, 46.2700005F));
-                    builder.AddCubicBezier(new Vector2(35.4700012F, 45.3800011F), new Vector2(35.8199997F, 44.5099983F), new Vector2(36.2099991F, 43.6599998F));
+                    builder.BeginFigure(new Vector2(36.2000008F, 43.5900002F));
+                    builder.AddCubicBezier(new Vector2(36.3199997F, 43.3400002F), new Vector2(36.6100006F, 43.2200012F), new Vector2(36.8600006F, 43.3400002F));
+                    builder.AddCubicBezier(new Vector2(37.1100006F, 43.4599991F), new Vector2(37.2299995F, 43.7599983F), new Vector2(37.1100006F, 44.0099983F));
+                    builder.AddCubicBezier(new Vector2(36.6599998F, 44.9900017F), new Vector2(36.25F, 46F), new Vector2(35.9000015F, 47.0400009F));
+                    builder.AddLine(new Vector2(35.75F, 47.4700012F));
+                    builder.AddLine(new Vector2(35.3100014F, 47.3699989F));
+                    builder.AddCubicBezier(new Vector2(34.7799988F, 47.2400017F), new Vector2(34.2400017F, 47.1300011F), new Vector2(33.7000008F, 47.0299988F));
+                    builder.AddCubicBezier(new Vector2(33.4300003F, 46.9799995F), new Vector2(33.25F, 46.7200012F), new Vector2(33.2999992F, 46.4500008F));
+                    builder.AddCubicBezier(new Vector2(33.3499985F, 46.1800003F), new Vector2(33.6100006F, 45.9900017F), new Vector2(33.8800011F, 46.0400009F));
+                    builder.AddCubicBezier(new Vector2(34.2900009F, 46.1100006F), new Vector2(34.7000008F, 46.2000008F), new Vector2(35.0999985F, 46.2900009F));
+                    builder.AddCubicBezier(new Vector2(35.4300003F, 45.3699989F), new Vector2(35.7900009F, 44.4700012F), new Vector2(36.2000008F, 43.5900002F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
@@ -700,21 +712,21 @@ namespace AnimatedVisuals
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_18()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(20.5300007F, 46.8400002F));
-                    builder.AddCubicBezier(new Vector2(20.8600006F, 46.7400017F), new Vector2(21.2000008F, 46.9300003F), new Vector2(21.2999992F, 47.2599983F));
-                    builder.AddCubicBezier(new Vector2(21.3999996F, 47.5900002F), new Vector2(21.2199993F, 47.9399986F), new Vector2(20.8899994F, 48.0400009F));
-                    builder.AddCubicBezier(new Vector2(19.1399994F, 48.5699997F), new Vector2(17.4699993F, 49.2700005F), new Vector2(15.8800001F, 50.1199989F));
-                    builder.AddCubicBezier(new Vector2(15.5799999F, 50.2799988F), new Vector2(15.1899996F, 50.1599998F), new Vector2(15.0299997F, 49.8600006F));
-                    builder.AddCubicBezier(new Vector2(14.8699999F, 49.5600014F), new Vector2(14.9799995F, 49.1800003F), new Vector2(15.2799997F, 49.0200005F));
-                    builder.AddCubicBezier(new Vector2(16.9400005F, 48.1300011F), new Vector2(18.7000008F, 47.4000015F), new Vector2(20.5300007F, 46.8400002F));
+                    builder.BeginFigure(new Vector2(20.4400005F, 46.8300018F));
+                    builder.AddCubicBezier(new Vector2(20.7000008F, 46.75F), new Vector2(20.9799995F, 46.9099998F), new Vector2(21.0599995F, 47.1699982F));
+                    builder.AddCubicBezier(new Vector2(21.1399994F, 47.4300003F), new Vector2(20.9899998F, 47.7099991F), new Vector2(20.7299995F, 47.7900009F));
+                    builder.AddCubicBezier(new Vector2(18.9699993F, 48.3199997F), new Vector2(17.2800007F, 49.0299988F), new Vector2(15.6899996F, 49.8800011F));
+                    builder.AddCubicBezier(new Vector2(15.4499998F, 50.0099983F), new Vector2(15.1400003F, 49.9199982F), new Vector2(15.0100002F, 49.6800003F));
+                    builder.AddCubicBezier(new Vector2(14.8800001F, 49.4399986F), new Vector2(14.9799995F, 49.1300011F), new Vector2(15.2200003F, 49F));
+                    builder.AddCubicBezier(new Vector2(16.8700008F, 48.1100006F), new Vector2(18.6200008F, 47.3800011F), new Vector2(20.4400005F, 46.8300018F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
@@ -722,21 +734,21 @@ namespace AnimatedVisuals
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_19()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(173.839996F, 48.8499985F));
-                    builder.AddCubicBezier(new Vector2(174.160004F, 48.7299995F), new Vector2(174.520004F, 48.9000015F), new Vector2(174.639999F, 49.2200012F));
-                    builder.AddCubicBezier(new Vector2(175.330002F, 51.0200005F), new Vector2(175.889999F, 52.8899994F), new Vector2(176.309998F, 54.7999992F));
-                    builder.AddCubicBezier(new Vector2(176.380005F, 55.1399994F), new Vector2(176.169998F, 55.4700012F), new Vector2(175.830002F, 55.5400009F));
-                    builder.AddCubicBezier(new Vector2(175.490005F, 55.6100006F), new Vector2(175.160004F, 55.4099998F), new Vector2(175.089996F, 55.0699997F));
-                    builder.AddCubicBezier(new Vector2(174.679993F, 53.2200012F), new Vector2(174.130005F, 51.4000015F), new Vector2(173.470001F, 49.6599998F));
-                    builder.AddCubicBezier(new Vector2(173.350006F, 49.3400002F), new Vector2(173.520004F, 48.9700012F), new Vector2(173.839996F, 48.8499985F));
+                    builder.BeginFigure(new Vector2(173.759995F, 48.8499985F));
+                    builder.AddCubicBezier(new Vector2(174.020004F, 48.75F), new Vector2(174.300003F, 48.8800011F), new Vector2(174.399994F, 49.1399994F));
+                    builder.AddCubicBezier(new Vector2(175.080002F, 50.9399986F), new Vector2(175.639999F, 52.7900009F), new Vector2(176.059998F, 54.7000008F));
+                    builder.AddCubicBezier(new Vector2(176.119995F, 54.9700012F), new Vector2(175.949997F, 55.2299995F), new Vector2(175.679993F, 55.2900009F));
+                    builder.AddCubicBezier(new Vector2(175.410004F, 55.3499985F), new Vector2(175.149994F, 55.1800003F), new Vector2(175.089996F, 54.9099998F));
+                    builder.AddCubicBezier(new Vector2(174.679993F, 53.0499992F), new Vector2(174.139999F, 51.2400017F), new Vector2(173.470001F, 49.4900017F));
+                    builder.AddCubicBezier(new Vector2(173.369995F, 49.2299995F), new Vector2(173.5F, 48.9500008F), new Vector2(173.759995F, 48.8499985F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
@@ -744,22 +756,21 @@ namespace AnimatedVisuals
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_20()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(10.5699997F, 52.1800003F));
-                    builder.AddCubicBezier(new Vector2(10.8400002F, 51.9599991F), new Vector2(11.2299995F, 51.9900017F), new Vector2(11.4499998F, 52.2599983F));
-                    builder.AddCubicBezier(new Vector2(11.6700001F, 52.5299988F), new Vector2(11.6300001F, 52.9199982F), new Vector2(11.3599997F, 53.1399994F));
-                    builder.AddCubicBezier(new Vector2(9.96000004F, 54.2900009F), new Vector2(8.68000031F, 55.5900002F), new Vector2(7.53000021F, 56.9900017F));
-                    builder.AddCubicBezier(new Vector2(7.30999994F, 57.2599983F), new Vector2(6.92000008F, 57.2999992F), new Vector2(6.6500001F, 57.0800018F));
-                    builder.AddCubicBezier(new Vector2(6.38000011F, 56.8600006F), new Vector2(6.34000015F, 56.4700012F), new Vector2(6.55999994F, 56.2000008F));
-                    builder.AddLine(new Vector2(7.01999998F, 55.6500015F));
-                    builder.AddCubicBezier(new Vector2(8.10000038F, 54.3899994F), new Vector2(9.28999996F, 53.2299995F), new Vector2(10.5699997F, 52.1800003F));
+                    builder.BeginFigure(new Vector2(10.5200005F, 52.1500015F));
+                    builder.AddCubicBezier(new Vector2(10.7299995F, 51.9700012F), new Vector2(11.0500002F, 52.0099983F), new Vector2(11.2299995F, 52.2200012F));
+                    builder.AddCubicBezier(new Vector2(11.4099998F, 52.4300003F), new Vector2(11.3699999F, 52.7400017F), new Vector2(11.1599998F, 52.9199982F));
+                    builder.AddCubicBezier(new Vector2(9.75F, 54.0800018F), new Vector2(8.47000027F, 55.3800011F), new Vector2(7.30999994F, 56.7900009F));
+                    builder.AddCubicBezier(new Vector2(7.13000011F, 57F), new Vector2(6.80999994F, 57.0299988F), new Vector2(6.5999999F, 56.8499985F));
+                    builder.AddCubicBezier(new Vector2(6.38999987F, 56.6699982F), new Vector2(6.36000013F, 56.3600006F), new Vector2(6.53000021F, 56.1500015F));
+                    builder.AddCubicBezier(new Vector2(7.73000002F, 54.6899986F), new Vector2(9.06000042F, 53.3499985F), new Vector2(10.5200005F, 52.1500015F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
@@ -767,21 +778,21 @@ namespace AnimatedVisuals
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_21()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(3.41000009F, 60.9199982F));
-                    builder.AddCubicBezier(new Vector2(3.56999993F, 60.6199989F), new Vector2(3.95000005F, 60.5F), new Vector2(4.25F, 60.6599998F));
-                    builder.AddCubicBezier(new Vector2(4.55000019F, 60.8199997F), new Vector2(4.67000008F, 61.2000008F), new Vector2(4.51000023F, 61.5F));
-                    builder.AddCubicBezier(new Vector2(3.66000009F, 63.0900002F), new Vector2(2.96000004F, 64.7699966F), new Vector2(2.43000007F, 66.5199966F));
-                    builder.AddCubicBezier(new Vector2(2.32999992F, 66.8499985F), new Vector2(1.98000002F, 67.0400009F), new Vector2(1.64999998F, 66.9400024F));
-                    builder.AddCubicBezier(new Vector2(1.32000005F, 66.8399963F), new Vector2(1.13999999F, 66.4899979F), new Vector2(1.24000001F, 66.1600037F));
-                    builder.AddCubicBezier(new Vector2(1.78999996F, 64.3300018F), new Vector2(2.51999998F, 62.5800018F), new Vector2(3.41000009F, 60.9199982F));
+                    builder.BeginFigure(new Vector2(3.3900001F, 60.8499985F));
+                    builder.AddCubicBezier(new Vector2(3.51999998F, 60.6100006F), new Vector2(3.82999992F, 60.5099983F), new Vector2(4.07000017F, 60.6399994F));
+                    builder.AddCubicBezier(new Vector2(4.30999994F, 60.7700005F), new Vector2(4.4000001F, 61.0800018F), new Vector2(4.26999998F, 61.3199997F));
+                    builder.AddCubicBezier(new Vector2(3.42000008F, 62.9099998F), new Vector2(2.72000003F, 64.5999985F), new Vector2(2.19000006F, 66.3600006F));
+                    builder.AddCubicBezier(new Vector2(2.1099999F, 66.6200027F), new Vector2(1.83000004F, 66.7799988F), new Vector2(1.57000005F, 66.6999969F));
+                    builder.AddCubicBezier(new Vector2(1.30999994F, 66.6200027F), new Vector2(1.14999998F, 66.3300018F), new Vector2(1.23000002F, 66.0699997F));
+                    builder.AddCubicBezier(new Vector2(1.77999997F, 64.25F), new Vector2(2.50999999F, 62.5F), new Vector2(3.3900001F, 60.8499985F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
@@ -789,23 +800,23 @@ namespace AnimatedVisuals
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_22()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(176.479996F, 59.9799995F));
-                    builder.AddCubicBezier(new Vector2(176.820007F, 59.9599991F), new Vector2(177.130005F, 60.2200012F), new Vector2(177.149994F, 60.5600014F));
-                    builder.AddCubicBezier(new Vector2(177.220001F, 61.5200005F), new Vector2(177.25F, 62.4900017F), new Vector2(177.25F, 63.4700012F));
-                    builder.AddCubicBezier(new Vector2(177.25F, 64.5299988F), new Vector2(177.210007F, 65.5800018F), new Vector2(177.130005F, 66.6200027F));
-                    builder.AddCubicBezier(new Vector2(177.100006F, 66.9599991F), new Vector2(176.800003F, 67.2200012F), new Vector2(176.460007F, 67.1900024F));
-                    builder.AddCubicBezier(new Vector2(176.119995F, 67.1600037F), new Vector2(175.850006F, 66.8600006F), new Vector2(175.880005F, 66.5199966F));
-                    builder.AddCubicBezier(new Vector2(175.960007F, 65.5100021F), new Vector2(176F, 64.5F), new Vector2(176F, 63.4700012F));
-                    builder.AddCubicBezier(new Vector2(176F, 62.5200005F), new Vector2(175.970001F, 61.5800018F), new Vector2(175.899994F, 60.6500015F));
-                    builder.AddCubicBezier(new Vector2(175.880005F, 60.3100014F), new Vector2(176.139999F, 60F), new Vector2(176.479996F, 59.9799995F));
+                    builder.BeginFigure(new Vector2(176F, 63.3499985F));
+                    builder.AddCubicBezier(new Vector2(176F, 62.4000015F), new Vector2(175.970001F, 61.4500008F), new Vector2(175.899994F, 60.5099983F));
+                    builder.AddCubicBezier(new Vector2(175.880005F, 60.2299995F), new Vector2(176.089996F, 60F), new Vector2(176.360001F, 59.9799995F));
+                    builder.AddCubicBezier(new Vector2(176.639999F, 59.9599991F), new Vector2(176.880005F, 60.1599998F), new Vector2(176.899994F, 60.4399986F));
+                    builder.AddCubicBezier(new Vector2(176.970001F, 61.4000015F), new Vector2(177F, 62.3699989F), new Vector2(177F, 63.3499985F));
+                    builder.AddCubicBezier(new Vector2(177F, 64.4000015F), new Vector2(176.960007F, 65.4499969F), new Vector2(176.880005F, 66.4800034F));
+                    builder.AddCubicBezier(new Vector2(176.860001F, 66.7600021F), new Vector2(176.610001F, 66.9599991F), new Vector2(176.339996F, 66.9400024F));
+                    builder.AddCubicBezier(new Vector2(176.059998F, 66.9199982F), new Vector2(175.860001F, 66.6800003F), new Vector2(175.880005F, 66.4000015F));
+                    builder.AddCubicBezier(new Vector2(175.960007F, 65.3899994F), new Vector2(176F, 64.3799973F), new Vector2(176F, 63.3499985F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
@@ -813,23 +824,23 @@ namespace AnimatedVisuals
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_23()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(0.819999993F, 71.1699982F));
-                    builder.AddCubicBezier(new Vector2(1.15999997F, 71.1999969F), new Vector2(1.40999997F, 71.5100021F), new Vector2(1.38F, 71.8499985F));
-                    builder.AddCubicBezier(new Vector2(1.28999996F, 72.7399979F), new Vector2(1.25F, 73.6500015F), new Vector2(1.25F, 74.5699997F));
-                    builder.AddCubicBezier(new Vector2(1.25F, 75.4899979F), new Vector2(1.28999996F, 76.4000015F), new Vector2(1.38F, 77.2900009F));
-                    builder.AddCubicBezier(new Vector2(1.40999997F, 77.6299973F), new Vector2(1.15999997F, 77.9400024F), new Vector2(0.819999993F, 77.9700012F));
-                    builder.AddCubicBezier(new Vector2(0.479999989F, 78F), new Vector2(0.170000002F, 77.75F), new Vector2(0.140000001F, 77.4100037F));
-                    builder.AddCubicBezier(new Vector2(0.0500000007F, 76.4800034F), new Vector2(0F, 75.5299988F), new Vector2(0F, 74.5699997F));
-                    builder.AddCubicBezier(new Vector2(0F, 73.6100006F), new Vector2(0.0500000007F, 72.6600037F), new Vector2(0.140000001F, 71.7300034F));
-                    builder.AddCubicBezier(new Vector2(0.170000002F, 71.3899994F), new Vector2(0.479999989F, 71.1399994F), new Vector2(0.819999993F, 71.1699982F));
+                    builder.BeginFigure(new Vector2(0F, 74.4400024F));
+                    builder.AddCubicBezier(new Vector2(0F, 73.4899979F), new Vector2(0.0500000007F, 72.5500031F), new Vector2(0.140000001F, 71.6200027F));
+                    builder.AddCubicBezier(new Vector2(0.170000002F, 71.3499985F), new Vector2(0.409999996F, 71.1399994F), new Vector2(0.680000007F, 71.1699982F));
+                    builder.AddCubicBezier(new Vector2(0.949999988F, 71.1999969F), new Vector2(1.15999997F, 71.4400024F), new Vector2(1.13F, 71.7099991F));
+                    builder.AddCubicBezier(new Vector2(1.03999996F, 72.6100006F), new Vector2(1F, 73.5199966F), new Vector2(1F, 74.4400024F));
+                    builder.AddCubicBezier(new Vector2(1F, 75.3600006F), new Vector2(1.03999996F, 76.2699966F), new Vector2(1.13F, 77.1699982F));
+                    builder.AddCubicBezier(new Vector2(1.15999997F, 77.4400024F), new Vector2(0.949999988F, 77.6900024F), new Vector2(0.680000007F, 77.7200012F));
+                    builder.AddCubicBezier(new Vector2(0.409999996F, 77.75F), new Vector2(0.170000002F, 77.5400009F), new Vector2(0.140000001F, 77.2699966F));
+                    builder.AddCubicBezier(new Vector2(0.0500000007F, 76.3399963F), new Vector2(0F, 75.3899994F), new Vector2(0F, 74.4400024F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
@@ -837,21 +848,21 @@ namespace AnimatedVisuals
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_24()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(175.690002F, 72.0699997F));
-                    builder.AddCubicBezier(new Vector2(176.020004F, 72.1500015F), new Vector2(176.240005F, 72.4800034F), new Vector2(176.160004F, 72.8199997F));
-                    builder.AddCubicBezier(new Vector2(175.669998F, 74.8799973F), new Vector2(175.009995F, 76.8799973F), new Vector2(174.220001F, 78.8000031F));
-                    builder.AddCubicBezier(new Vector2(174.089996F, 79.1200027F), new Vector2(173.720001F, 79.2699966F), new Vector2(173.399994F, 79.1399994F));
-                    builder.AddCubicBezier(new Vector2(173.080002F, 79.0100021F), new Vector2(172.929993F, 78.6399994F), new Vector2(173.059998F, 78.3199997F));
-                    builder.AddCubicBezier(new Vector2(173.830002F, 76.4599991F), new Vector2(174.460007F, 74.5199966F), new Vector2(174.940002F, 72.5299988F));
-                    builder.AddCubicBezier(new Vector2(175.020004F, 72.1900024F), new Vector2(175.350006F, 71.9899979F), new Vector2(175.690002F, 72.0699997F));
+                    builder.BeginFigure(new Vector2(175.539993F, 72.0699997F));
+                    builder.AddCubicBezier(new Vector2(175.809998F, 72.1299973F), new Vector2(175.970001F, 72.4000015F), new Vector2(175.910004F, 72.6699982F));
+                    builder.AddCubicBezier(new Vector2(175.419998F, 74.7200012F), new Vector2(174.770004F, 76.7099991F), new Vector2(173.979996F, 78.6299973F));
+                    builder.AddCubicBezier(new Vector2(173.869995F, 78.8799973F), new Vector2(173.570007F, 79.0100021F), new Vector2(173.320007F, 78.9000015F));
+                    builder.AddCubicBezier(new Vector2(173.059998F, 78.7900009F), new Vector2(172.940002F, 78.5F), new Vector2(173.050003F, 78.2399979F));
+                    builder.AddCubicBezier(new Vector2(173.820007F, 76.3700027F), new Vector2(174.460007F, 74.4400024F), new Vector2(174.940002F, 72.4400024F));
+                    builder.AddCubicBezier(new Vector2(175F, 72.1699982F), new Vector2(175.270004F, 72.0100021F), new Vector2(175.539993F, 72.0699997F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
@@ -859,21 +870,21 @@ namespace AnimatedVisuals
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_25()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(1.64999998F, 82.1999969F));
-                    builder.AddCubicBezier(new Vector2(1.98000002F, 82.0999985F), new Vector2(2.32999992F, 82.2799988F), new Vector2(2.43000007F, 82.6100006F));
-                    builder.AddCubicBezier(new Vector2(2.96000004F, 84.3600006F), new Vector2(3.66000009F, 86.0400009F), new Vector2(4.51000023F, 87.6299973F));
-                    builder.AddCubicBezier(new Vector2(4.67000008F, 87.9300003F), new Vector2(4.55000019F, 88.3199997F), new Vector2(4.25F, 88.4800034F));
-                    builder.AddCubicBezier(new Vector2(3.95000005F, 88.6399994F), new Vector2(3.56999993F, 88.5199966F), new Vector2(3.41000009F, 88.2200012F));
-                    builder.AddCubicBezier(new Vector2(2.51999998F, 86.5599976F), new Vector2(1.78999996F, 84.8099976F), new Vector2(1.24000001F, 82.9800034F));
-                    builder.AddCubicBezier(new Vector2(1.13999999F, 82.6500015F), new Vector2(1.32000005F, 82.3000031F), new Vector2(1.64999998F, 82.1999969F));
+                    builder.BeginFigure(new Vector2(1.57000005F, 82.1900024F));
+                    builder.AddCubicBezier(new Vector2(1.83000004F, 82.1100006F), new Vector2(2.1099999F, 82.2600021F), new Vector2(2.19000006F, 82.5199966F));
+                    builder.AddCubicBezier(new Vector2(2.72000003F, 84.2799988F), new Vector2(3.42000008F, 85.9800034F), new Vector2(4.26999998F, 87.5699997F));
+                    builder.AddCubicBezier(new Vector2(4.4000001F, 87.8099976F), new Vector2(4.30999994F, 88.1100006F), new Vector2(4.07000017F, 88.2399979F));
+                    builder.AddCubicBezier(new Vector2(3.82999992F, 88.3700027F), new Vector2(3.51999998F, 88.2799988F), new Vector2(3.3900001F, 88.0400009F));
+                    builder.AddCubicBezier(new Vector2(2.50999999F, 86.3899994F), new Vector2(1.77999997F, 84.6299973F), new Vector2(1.23000002F, 82.8099976F));
+                    builder.AddCubicBezier(new Vector2(1.14999998F, 82.5500031F), new Vector2(1.30999994F, 82.2699966F), new Vector2(1.57000005F, 82.1900024F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
@@ -881,21 +892,21 @@ namespace AnimatedVisuals
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_26()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(170.300003F, 83.7399979F));
-                    builder.AddCubicBezier(new Vector2(170.479996F, 83.4499969F), new Vector2(170.869995F, 83.3600006F), new Vector2(171.160004F, 83.5400009F));
-                    builder.AddCubicBezier(new Vector2(171.449997F, 83.7200012F), new Vector2(171.550003F, 84.1100006F), new Vector2(171.369995F, 84.4000015F));
-                    builder.AddCubicBezier(new Vector2(170.270004F, 86.1900024F), new Vector2(169.029999F, 87.8899994F), new Vector2(167.669998F, 89.4800034F));
-                    builder.AddCubicBezier(new Vector2(167.449997F, 89.7399979F), new Vector2(167.050003F, 89.7699966F), new Vector2(166.789993F, 89.5500031F));
-                    builder.AddCubicBezier(new Vector2(166.529999F, 89.3300018F), new Vector2(166.5F, 88.9300003F), new Vector2(166.720001F, 88.6699982F));
-                    builder.AddCubicBezier(new Vector2(168.029999F, 87.1299973F), new Vector2(169.240005F, 85.4800034F), new Vector2(170.300003F, 83.7399979F));
+                    builder.BeginFigure(new Vector2(170.279999F, 83.6800003F));
+                    builder.AddCubicBezier(new Vector2(170.419998F, 83.4400024F), new Vector2(170.729996F, 83.3799973F), new Vector2(170.970001F, 83.5199966F));
+                    builder.AddCubicBezier(new Vector2(171.210007F, 83.6600037F), new Vector2(171.270004F, 83.9700012F), new Vector2(171.130005F, 84.2099991F));
+                    builder.AddCubicBezier(new Vector2(170.039993F, 86F), new Vector2(168.800003F, 87.6900024F), new Vector2(167.449997F, 89.2799988F));
+                    builder.AddCubicBezier(new Vector2(167.270004F, 89.4899979F), new Vector2(166.960007F, 89.5100021F), new Vector2(166.75F, 89.3300018F));
+                    builder.AddCubicBezier(new Vector2(166.539993F, 89.1500015F), new Vector2(166.509995F, 88.8399963F), new Vector2(166.690002F, 88.6299973F));
+                    builder.AddCubicBezier(new Vector2(168.009995F, 87.0800018F), new Vector2(169.210007F, 85.4199982F), new Vector2(170.279999F, 83.6800003F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
@@ -903,22 +914,21 @@ namespace AnimatedVisuals
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_27()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(6.6500001F, 92.0599976F));
-                    builder.AddCubicBezier(new Vector2(6.92000008F, 91.8399963F), new Vector2(7.30999994F, 91.8799973F), new Vector2(7.53000021F, 92.1500015F));
-                    builder.AddCubicBezier(new Vector2(8.68000031F, 93.5500031F), new Vector2(9.96000004F, 94.8399963F), new Vector2(11.3599997F, 95.9899979F));
-                    builder.AddCubicBezier(new Vector2(11.6300001F, 96.2099991F), new Vector2(11.6700001F, 96.5999985F), new Vector2(11.4499998F, 96.8700027F));
-                    builder.AddCubicBezier(new Vector2(11.2299995F, 97.1399994F), new Vector2(10.8400002F, 97.1800003F), new Vector2(10.5699997F, 96.9599991F));
-                    builder.AddCubicBezier(new Vector2(9.28999996F, 95.9100037F), new Vector2(8.10000038F, 94.7399979F), new Vector2(7.01999998F, 93.4800034F));
-                    builder.AddLine(new Vector2(6.55999994F, 92.9400024F));
-                    builder.AddCubicBezier(new Vector2(6.34000015F, 92.6699982F), new Vector2(6.38000011F, 92.2799988F), new Vector2(6.6500001F, 92.0599976F));
+                    builder.BeginFigure(new Vector2(6.5999999F, 92.0299988F));
+                    builder.AddCubicBezier(new Vector2(6.80999994F, 91.8499985F), new Vector2(7.13000011F, 91.8899994F), new Vector2(7.30999994F, 92.0999985F));
+                    builder.AddCubicBezier(new Vector2(8.47000027F, 93.5100021F), new Vector2(9.75F, 94.8000031F), new Vector2(11.1599998F, 95.9599991F));
+                    builder.AddCubicBezier(new Vector2(11.3699999F, 96.1399994F), new Vector2(11.4099998F, 96.4599991F), new Vector2(11.2299995F, 96.6699982F));
+                    builder.AddCubicBezier(new Vector2(11.0500002F, 96.8799973F), new Vector2(10.7299995F, 96.9199982F), new Vector2(10.5200005F, 96.7399979F));
+                    builder.AddCubicBezier(new Vector2(9.06000042F, 95.5400009F), new Vector2(7.73000002F, 94.1999969F), new Vector2(6.53000021F, 92.7399979F));
+                    builder.AddCubicBezier(new Vector2(6.36000013F, 92.5299988F), new Vector2(6.38999987F, 92.2099991F), new Vector2(6.5999999F, 92.0299988F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
@@ -926,21 +936,21 @@ namespace AnimatedVisuals
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_28()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(162.419998F, 92.9800034F));
-                    builder.AddCubicBezier(new Vector2(162.679993F, 92.7600021F), new Vector2(163.080002F, 92.7900009F), new Vector2(163.300003F, 93.0500031F));
-                    builder.AddCubicBezier(new Vector2(163.520004F, 93.3099976F), new Vector2(163.5F, 93.7099991F), new Vector2(163.240005F, 93.9300003F));
-                    builder.AddCubicBezier(new Vector2(161.649994F, 95.2900009F), new Vector2(159.949997F, 96.5299988F), new Vector2(158.160004F, 97.6299973F));
-                    builder.AddCubicBezier(new Vector2(157.869995F, 97.8099976F), new Vector2(157.479996F, 97.7099991F), new Vector2(157.300003F, 97.4199982F));
-                    builder.AddCubicBezier(new Vector2(157.119995F, 97.1299973F), new Vector2(157.210007F, 96.75F), new Vector2(157.5F, 96.5699997F));
-                    builder.AddCubicBezier(new Vector2(159.229996F, 95.5F), new Vector2(160.880005F, 94.3000031F), new Vector2(162.419998F, 92.9800034F));
+                    builder.BeginFigure(new Vector2(162.380005F, 92.9499969F));
+                    builder.AddCubicBezier(new Vector2(162.589996F, 92.7699966F), new Vector2(162.899994F, 92.7900009F), new Vector2(163.080002F, 93F));
+                    builder.AddCubicBezier(new Vector2(163.259995F, 93.2099991F), new Vector2(163.240005F, 93.5299988F), new Vector2(163.029999F, 93.7099991F));
+                    builder.AddCubicBezier(new Vector2(161.449997F, 95.0699997F), new Vector2(159.75F, 96.3000031F), new Vector2(157.970001F, 97.4000015F));
+                    builder.AddCubicBezier(new Vector2(157.740005F, 97.5400009F), new Vector2(157.429993F, 97.4700012F), new Vector2(157.279999F, 97.2300034F));
+                    builder.AddCubicBezier(new Vector2(157.139999F, 96.9899979F), new Vector2(157.210007F, 96.6900024F), new Vector2(157.440002F, 96.5500031F));
+                    builder.AddCubicBezier(new Vector2(159.179993F, 95.4800034F), new Vector2(160.839996F, 94.2699966F), new Vector2(162.380005F, 92.9499969F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
@@ -948,21 +958,21 @@ namespace AnimatedVisuals
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_29()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(15.0299997F, 99.2699966F));
-                    builder.AddCubicBezier(new Vector2(15.1899996F, 98.9700012F), new Vector2(15.5799999F, 98.8600006F), new Vector2(15.8800001F, 99.0199966F));
-                    builder.AddCubicBezier(new Vector2(17.4699993F, 99.8700027F), new Vector2(19.1399994F, 100.57F), new Vector2(20.8899994F, 101.099998F));
-                    builder.AddCubicBezier(new Vector2(21.2199993F, 101.199997F), new Vector2(21.4099998F, 101.550003F), new Vector2(21.3099995F, 101.879997F));
-                    builder.AddCubicBezier(new Vector2(21.2099991F, 102.209999F), new Vector2(20.8600006F, 102.400002F), new Vector2(20.5300007F, 102.300003F));
-                    builder.AddCubicBezier(new Vector2(18.7000008F, 101.739998F), new Vector2(16.9400005F, 101.010002F), new Vector2(15.2799997F, 100.120003F));
-                    builder.AddCubicBezier(new Vector2(14.9799995F, 99.9599991F), new Vector2(14.8699999F, 99.5699997F), new Vector2(15.0299997F, 99.2699966F));
+                    builder.BeginFigure(new Vector2(15.0100002F, 99.2099991F));
+                    builder.AddCubicBezier(new Vector2(15.1400003F, 98.9700012F), new Vector2(15.4499998F, 98.8700027F), new Vector2(15.6899996F, 99F));
+                    builder.AddCubicBezier(new Vector2(17.2800007F, 99.8499985F), new Vector2(18.9699993F, 100.57F), new Vector2(20.7299995F, 101.099998F));
+                    builder.AddCubicBezier(new Vector2(20.9899998F, 101.18F), new Vector2(21.1399994F, 101.459999F), new Vector2(21.0599995F, 101.720001F));
+                    builder.AddCubicBezier(new Vector2(20.9799995F, 101.980003F), new Vector2(20.7000008F, 102.129997F), new Vector2(20.4400005F, 102.050003F));
+                    builder.AddCubicBezier(new Vector2(18.6200008F, 101.5F), new Vector2(16.8700008F, 100.769997F), new Vector2(15.2200003F, 99.8799973F));
+                    builder.AddCubicBezier(new Vector2(14.9799995F, 99.75F), new Vector2(14.8800001F, 99.4499969F), new Vector2(15.0100002F, 99.2099991F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
@@ -970,21 +980,21 @@ namespace AnimatedVisuals
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_30()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(152.089996F, 99.3399963F));
-                    builder.AddCubicBezier(new Vector2(152.410004F, 99.2099991F), new Vector2(152.770004F, 99.3499985F), new Vector2(152.899994F, 99.6699982F));
-                    builder.AddCubicBezier(new Vector2(153.029999F, 99.9899979F), new Vector2(152.880005F, 100.360001F), new Vector2(152.559998F, 100.489998F));
-                    builder.AddCubicBezier(new Vector2(150.639999F, 101.290001F), new Vector2(148.649994F, 101.949997F), new Vector2(146.589996F, 102.440002F));
-                    builder.AddCubicBezier(new Vector2(146.25F, 102.519997F), new Vector2(145.919998F, 102.300003F), new Vector2(145.839996F, 101.970001F));
-                    builder.AddCubicBezier(new Vector2(145.759995F, 101.629997F), new Vector2(145.960007F, 101.300003F), new Vector2(146.300003F, 101.220001F));
-                    builder.AddCubicBezier(new Vector2(148.289993F, 100.739998F), new Vector2(150.229996F, 100.110001F), new Vector2(152.089996F, 99.3399963F));
+                    builder.BeginFigure(new Vector2(152.009995F, 99.3300018F));
+                    builder.AddCubicBezier(new Vector2(152.259995F, 99.2200012F), new Vector2(152.550003F, 99.3499985F), new Vector2(152.660004F, 99.5999985F));
+                    builder.AddCubicBezier(new Vector2(152.770004F, 99.8499985F), new Vector2(152.639999F, 100.139999F), new Vector2(152.389999F, 100.25F));
+                    builder.AddCubicBezier(new Vector2(150.479996F, 101.050003F), new Vector2(148.490005F, 101.699997F), new Vector2(146.440002F, 102.190002F));
+                    builder.AddCubicBezier(new Vector2(146.169998F, 102.25F), new Vector2(145.889999F, 102.089996F), new Vector2(145.830002F, 101.82F));
+                    builder.AddCubicBezier(new Vector2(145.770004F, 101.550003F), new Vector2(145.929993F, 101.279999F), new Vector2(146.199997F, 101.220001F));
+                    builder.AddCubicBezier(new Vector2(148.199997F, 100.739998F), new Vector2(150.139999F, 100.110001F), new Vector2(152.009995F, 99.3300018F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
@@ -992,26 +1002,25 @@ namespace AnimatedVisuals
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_31()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(140.289993F, 102.169998F));
-                    builder.AddCubicBezier(new Vector2(140.630005F, 102.139999F), new Vector2(140.929993F, 102.400002F), new Vector2(140.960007F, 102.739998F));
-                    builder.AddLine(new Vector2(140.960007F, 102.870003F));
-                    builder.AddCubicBezier(new Vector2(140.919998F, 103.160004F), new Vector2(140.679993F, 103.389999F), new Vector2(140.380005F, 103.410004F));
-                    builder.AddCubicBezier(new Vector2(139.550003F, 103.470001F), new Vector2(138.720001F, 103.519997F), new Vector2(137.869995F, 103.529999F));
-                    builder.AddLine(new Vector2(137.869995F, 103.540001F));
-                    builder.AddLine(new Vector2(134.229996F, 103.540001F));
-                    builder.AddCubicBezier(new Vector2(133.889999F, 103.540001F), new Vector2(133.610001F, 103.260002F), new Vector2(133.610001F, 102.919998F));
-                    builder.AddCubicBezier(new Vector2(133.610001F, 102.580002F), new Vector2(133.889999F, 102.290001F), new Vector2(134.229996F, 102.290001F));
+                    builder.BeginFigure(new Vector2(140.169998F, 102.169998F));
+                    builder.AddCubicBezier(new Vector2(140.449997F, 102.150002F), new Vector2(140.690002F, 102.349998F), new Vector2(140.710007F, 102.629997F));
+                    builder.AddCubicBezier(new Vector2(140.729996F, 102.900002F), new Vector2(140.529999F, 103.139999F), new Vector2(140.25F, 103.160004F));
+                    builder.AddCubicBezier(new Vector2(139.380005F, 103.230003F), new Vector2(138.5F, 103.269997F), new Vector2(137.619995F, 103.279999F));
+                    builder.AddLine(new Vector2(137.619995F, 103.290001F));
+                    builder.AddLine(new Vector2(134.110001F, 103.290001F));
+                    builder.AddCubicBezier(new Vector2(133.830002F, 103.290001F), new Vector2(133.610001F, 103.07F), new Vector2(133.610001F, 102.790001F));
+                    builder.AddCubicBezier(new Vector2(133.610001F, 102.510002F), new Vector2(133.830002F, 102.290001F), new Vector2(134.110001F, 102.290001F));
                     builder.AddLine(new Vector2(136.619995F, 102.290001F));
-                    builder.AddLine(new Vector2(137.240005F, 102.290001F));
-                    builder.AddCubicBezier(new Vector2(138.270004F, 102.290001F), new Vector2(139.289993F, 102.25F), new Vector2(140.289993F, 102.169998F));
+                    builder.AddLine(new Vector2(137.119995F, 102.290001F));
+                    builder.AddCubicBezier(new Vector2(138.149994F, 102.290001F), new Vector2(139.160004F, 102.25F), new Vector2(140.169998F, 102.169998F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
@@ -1019,21 +1028,21 @@ namespace AnimatedVisuals
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_32()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(128.220001F, 102.290001F));
-                    builder.AddCubicBezier(new Vector2(128.559998F, 102.290001F), new Vector2(128.839996F, 102.580002F), new Vector2(128.839996F, 102.919998F));
-                    builder.AddCubicBezier(new Vector2(128.839996F, 103.260002F), new Vector2(128.559998F, 103.540001F), new Vector2(128.220001F, 103.540001F));
-                    builder.AddLine(new Vector2(120.949997F, 103.540001F));
-                    builder.AddCubicBezier(new Vector2(120.610001F, 103.540001F), new Vector2(120.330002F, 103.260002F), new Vector2(120.330002F, 102.919998F));
-                    builder.AddCubicBezier(new Vector2(120.330002F, 102.580002F), new Vector2(120.610001F, 102.290001F), new Vector2(120.949997F, 102.290001F));
-                    builder.AddLine(new Vector2(128.220001F, 102.290001F));
+                    builder.BeginFigure(new Vector2(128.089996F, 102.290001F));
+                    builder.AddCubicBezier(new Vector2(128.369995F, 102.290001F), new Vector2(128.589996F, 102.510002F), new Vector2(128.589996F, 102.790001F));
+                    builder.AddCubicBezier(new Vector2(128.589996F, 103.07F), new Vector2(128.369995F, 103.290001F), new Vector2(128.089996F, 103.290001F));
+                    builder.AddLine(new Vector2(122.07F, 103.290001F));
+                    builder.AddCubicBezier(new Vector2(121.790001F, 103.290001F), new Vector2(121.57F, 103.07F), new Vector2(121.57F, 102.790001F));
+                    builder.AddCubicBezier(new Vector2(121.57F, 102.510002F), new Vector2(121.790001F, 102.290001F), new Vector2(122.07F, 102.290001F));
+                    builder.AddLine(new Vector2(128.089996F, 102.290001F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
@@ -1041,21 +1050,21 @@ namespace AnimatedVisuals
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_33()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(56.0099983F, 102.290001F));
-                    builder.AddCubicBezier(new Vector2(56.3499985F, 102.290001F), new Vector2(56.6300011F, 102.580002F), new Vector2(56.6300011F, 102.919998F));
-                    builder.AddCubicBezier(new Vector2(56.6300011F, 103.260002F), new Vector2(56.3499985F, 103.540001F), new Vector2(56.0099983F, 103.540001F));
-                    builder.AddLine(new Vector2(49.9900017F, 103.540001F));
-                    builder.AddCubicBezier(new Vector2(49.6500015F, 103.540001F), new Vector2(49.3699989F, 103.260002F), new Vector2(49.3699989F, 102.919998F));
-                    builder.AddCubicBezier(new Vector2(49.3699989F, 102.580002F), new Vector2(49.6500015F, 102.290001F), new Vector2(49.9900017F, 102.290001F));
-                    builder.AddLine(new Vector2(56.0099983F, 102.290001F));
+                    builder.BeginFigure(new Vector2(116.059998F, 102.290001F));
+                    builder.AddCubicBezier(new Vector2(116.339996F, 102.290001F), new Vector2(116.559998F, 102.510002F), new Vector2(116.559998F, 102.790001F));
+                    builder.AddCubicBezier(new Vector2(116.559998F, 103.07F), new Vector2(116.339996F, 103.290001F), new Vector2(116.059998F, 103.290001F));
+                    builder.AddLine(new Vector2(110.040001F, 103.290001F));
+                    builder.AddCubicBezier(new Vector2(109.760002F, 103.290001F), new Vector2(109.540001F, 103.07F), new Vector2(109.540001F, 102.790001F));
+                    builder.AddCubicBezier(new Vector2(109.540001F, 102.510002F), new Vector2(109.760002F, 102.290001F), new Vector2(110.040001F, 102.290001F));
+                    builder.AddLine(new Vector2(116.059998F, 102.290001F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
@@ -1063,21 +1072,21 @@ namespace AnimatedVisuals
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_34()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(43.9799995F, 102.290001F));
-                    builder.AddCubicBezier(new Vector2(44.3199997F, 102.290001F), new Vector2(44.5999985F, 102.580002F), new Vector2(44.5999985F, 102.919998F));
-                    builder.AddCubicBezier(new Vector2(44.5999985F, 103.260002F), new Vector2(44.3199997F, 103.540001F), new Vector2(43.9799995F, 103.540001F));
-                    builder.AddLine(new Vector2(37.9599991F, 103.540001F));
-                    builder.AddCubicBezier(new Vector2(37.6199989F, 103.540001F), new Vector2(37.3300018F, 103.260002F), new Vector2(37.3300018F, 102.919998F));
-                    builder.AddCubicBezier(new Vector2(37.3300018F, 102.580002F), new Vector2(37.6199989F, 102.290001F), new Vector2(37.9599991F, 102.290001F));
-                    builder.AddLine(new Vector2(43.9799995F, 102.290001F));
+                    builder.BeginFigure(new Vector2(104.019997F, 102.290001F));
+                    builder.AddCubicBezier(new Vector2(104.300003F, 102.290001F), new Vector2(104.519997F, 102.510002F), new Vector2(104.519997F, 102.790001F));
+                    builder.AddCubicBezier(new Vector2(104.519997F, 103.07F), new Vector2(104.300003F, 103.290001F), new Vector2(104.019997F, 103.290001F));
+                    builder.AddLine(new Vector2(98F, 103.290001F));
+                    builder.AddCubicBezier(new Vector2(97.7200012F, 103.290001F), new Vector2(97.5F, 103.07F), new Vector2(97.5F, 102.790001F));
+                    builder.AddCubicBezier(new Vector2(97.5F, 102.510002F), new Vector2(97.7200012F, 102.290001F), new Vector2(98F, 102.290001F));
+                    builder.AddLine(new Vector2(104.019997F, 102.290001F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
@@ -1085,283 +1094,276 @@ namespace AnimatedVisuals
             }
 
             // - - - - Layer aggregator
-            // - - - ++++++++++++++++++++++++++++++++++
-            // - - ++++++++++++++++++++++++++++++++++.PathGeometry
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_35()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(26.2099991F, 102.160004F));
-                    builder.AddCubicBezier(new Vector2(27.1000004F, 102.25F), new Vector2(28.0100002F, 102.290001F), new Vector2(28.9300003F, 102.290001F));
-                    builder.AddLine(new Vector2(29.5599995F, 102.290001F));
-                    builder.AddLine(new Vector2(31.9400005F, 102.290001F));
-                    builder.AddCubicBezier(new Vector2(32.2799988F, 102.290001F), new Vector2(32.5699997F, 102.580002F), new Vector2(32.5699997F, 102.919998F));
-                    builder.AddCubicBezier(new Vector2(32.5699997F, 103.260002F), new Vector2(32.2799988F, 103.540001F), new Vector2(31.9400005F, 103.540001F));
-                    builder.AddLine(new Vector2(28.3099995F, 103.540001F));
-                    builder.AddLine(new Vector2(28.3099995F, 103.529999F));
-                    builder.AddCubicBezier(new Vector2(27.5699997F, 103.510002F), new Vector2(26.8199997F, 103.470001F), new Vector2(26.0900002F, 103.400002F));
-                    builder.AddCubicBezier(new Vector2(25.75F, 103.370003F), new Vector2(25.5F, 103.059998F), new Vector2(25.5300007F, 102.720001F));
-                    builder.AddLine(new Vector2(25.5599995F, 102.599998F));
-                    builder.AddCubicBezier(new Vector2(25.6499996F, 102.32F), new Vector2(25.9099998F, 102.129997F), new Vector2(26.2099991F, 102.160004F));
+                    builder.BeginFigure(new Vector2(91.9899979F, 102.290001F));
+                    builder.AddCubicBezier(new Vector2(92.2699966F, 102.290001F), new Vector2(92.4899979F, 102.510002F), new Vector2(92.4899979F, 102.790001F));
+                    builder.AddCubicBezier(new Vector2(92.4899979F, 103.07F), new Vector2(92.2699966F, 103.290001F), new Vector2(91.9899979F, 103.290001F));
+                    builder.AddLine(new Vector2(85.9700012F, 103.290001F));
+                    builder.AddCubicBezier(new Vector2(85.6900024F, 103.290001F), new Vector2(85.4700012F, 103.07F), new Vector2(85.4700012F, 102.790001F));
+                    builder.AddCubicBezier(new Vector2(85.4700012F, 102.510002F), new Vector2(85.6900024F, 102.290001F), new Vector2(85.9700012F, 102.290001F));
+                    builder.AddLine(new Vector2(91.9899979F, 102.290001F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
                 return result;
             }
 
+            // - - - - Layer aggregator
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_36()
             {
-                var result = CanvasGeometry.CreateGroup(
-                    null,
-                    new CanvasGeometry[] { Geometry_37(), Geometry_38() },
-                    CanvasFilledRegionDetermination.Winding);
+                CanvasGeometry result;
+                using (var builder = new CanvasPathBuilder(null))
+                {
+                    builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
+                    builder.BeginFigure(new Vector2(79.9499969F, 102.290001F));
+                    builder.AddCubicBezier(new Vector2(80.2300034F, 102.290001F), new Vector2(80.4499969F, 102.510002F), new Vector2(80.4499969F, 102.790001F));
+                    builder.AddCubicBezier(new Vector2(80.4499969F, 103.07F), new Vector2(80.2300034F, 103.290001F), new Vector2(79.9499969F, 103.290001F));
+                    builder.AddLine(new Vector2(73.9400024F, 103.290001F));
+                    builder.AddCubicBezier(new Vector2(73.6600037F, 103.290001F), new Vector2(73.4400024F, 103.07F), new Vector2(73.4400024F, 102.790001F));
+                    builder.AddCubicBezier(new Vector2(73.4400024F, 102.510002F), new Vector2(73.6600037F, 102.290001F), new Vector2(73.9400024F, 102.290001F));
+                    builder.AddLine(new Vector2(79.9499969F, 102.290001F));
+                    builder.EndFigure(CanvasFigureLoop.Closed);
+                    result = CanvasGeometry.CreatePath(builder);
+                }
                 return result;
             }
 
+            // - - - - Layer aggregator
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_37()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(24F, 5.32999992F));
-                    builder.AddCubicBezier(new Vector2(13.6899996F, 5.32999992F), new Vector2(5.32999992F, 13.6899996F), new Vector2(5.32999992F, 24F));
-                    builder.AddCubicBezier(new Vector2(5.32999992F, 34.3100014F), new Vector2(13.6899996F, 42.6699982F), new Vector2(24F, 42.6699982F));
-                    builder.AddCubicBezier(new Vector2(34.3100014F, 42.6699982F), new Vector2(42.6699982F, 34.3100014F), new Vector2(42.6699982F, 24F));
-                    builder.AddCubicBezier(new Vector2(42.6699982F, 13.6899996F), new Vector2(34.3100014F, 5.32999992F), new Vector2(24F, 5.32999992F));
-                    builder.AddCubicBezier(new Vector2(24F, 5.32999992F), new Vector2(24F, 5.32999992F), new Vector2(24F, 5.32999992F));
+                    builder.BeginFigure(new Vector2(67.9199982F, 102.290001F));
+                    builder.AddCubicBezier(new Vector2(68.1999969F, 102.290001F), new Vector2(68.4199982F, 102.510002F), new Vector2(68.4199982F, 102.790001F));
+                    builder.AddCubicBezier(new Vector2(68.4199982F, 103.07F), new Vector2(68.1999969F, 103.290001F), new Vector2(67.9199982F, 103.290001F));
+                    builder.AddLine(new Vector2(61.9000015F, 103.290001F));
+                    builder.AddCubicBezier(new Vector2(61.6199989F, 103.290001F), new Vector2(61.4000015F, 103.07F), new Vector2(61.4000015F, 102.790001F));
+                    builder.AddCubicBezier(new Vector2(61.4000015F, 102.510002F), new Vector2(61.6199989F, 102.290001F), new Vector2(61.9000015F, 102.290001F));
+                    builder.AddLine(new Vector2(67.9199982F, 102.290001F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
                 return result;
             }
 
+            // - - - - Layer aggregator
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_38()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(24F, 0F));
-                    builder.AddCubicBezier(new Vector2(37.25F, 0F), new Vector2(48F, 10.75F), new Vector2(48F, 24F));
-                    builder.AddCubicBezier(new Vector2(48F, 37.25F), new Vector2(37.25F, 48F), new Vector2(24F, 48F));
-                    builder.AddCubicBezier(new Vector2(10.75F, 48F), new Vector2(0F, 37.25F), new Vector2(0F, 24F));
-                    builder.AddCubicBezier(new Vector2(0F, 10.75F), new Vector2(10.75F, 0F), new Vector2(24F, 0F));
-                    builder.AddCubicBezier(new Vector2(24F, 0F), new Vector2(24F, 0F), new Vector2(24F, 0F));
+                    builder.BeginFigure(new Vector2(55.8800011F, 102.290001F));
+                    builder.AddCubicBezier(new Vector2(56.1599998F, 102.290001F), new Vector2(56.3800011F, 102.510002F), new Vector2(56.3800011F, 102.790001F));
+                    builder.AddCubicBezier(new Vector2(56.3800011F, 103.07F), new Vector2(56.1599998F, 103.290001F), new Vector2(55.8800011F, 103.290001F));
+                    builder.AddLine(new Vector2(49.8699989F, 103.290001F));
+                    builder.AddCubicBezier(new Vector2(49.5900002F, 103.290001F), new Vector2(49.3699989F, 103.07F), new Vector2(49.3699989F, 102.790001F));
+                    builder.AddCubicBezier(new Vector2(49.3699989F, 102.510002F), new Vector2(49.5900002F, 102.290001F), new Vector2(49.8699989F, 102.290001F));
+                    builder.AddLine(new Vector2(55.8800011F, 102.290001F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
                 return result;
             }
 
-            // - - - +
-            // - - +.PathGeometry
-            // - Path
+            // - - - - Layer aggregator
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_39()
             {
-                var result = CanvasGeometry.CreateGroup(
-                    null,
-                    new CanvasGeometry[] { Geometry_40(), Geometry_41() },
-                    CanvasFilledRegionDetermination.Winding);
+                CanvasGeometry result;
+                using (var builder = new CanvasPathBuilder(null))
+                {
+                    builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
+                    builder.BeginFigure(new Vector2(43.8499985F, 102.290001F));
+                    builder.AddCubicBezier(new Vector2(44.1300011F, 102.290001F), new Vector2(44.3499985F, 102.510002F), new Vector2(44.3499985F, 102.790001F));
+                    builder.AddCubicBezier(new Vector2(44.3499985F, 103.07F), new Vector2(44.1300011F, 103.290001F), new Vector2(43.8499985F, 103.290001F));
+                    builder.AddLine(new Vector2(37.8300018F, 103.290001F));
+                    builder.AddCubicBezier(new Vector2(37.5499992F, 103.290001F), new Vector2(37.3300018F, 103.07F), new Vector2(37.3300018F, 102.790001F));
+                    builder.AddCubicBezier(new Vector2(37.3300018F, 102.510002F), new Vector2(37.5499992F, 102.290001F), new Vector2(37.8300018F, 102.290001F));
+                    builder.AddLine(new Vector2(43.8499985F, 102.290001F));
+                    builder.EndFigure(CanvasFigureLoop.Closed);
+                    result = CanvasGeometry.CreatePath(builder);
+                }
                 return result;
             }
 
-            // - - - - +
-            // - - - +.PathGeometry
-            // - - Path
+            // - - - - Layer aggregator
+            // - - - Transforms: front (Stroke)
+            // - - +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CanvasGeometry Geometry_40()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(32F, 7.11000013F));
-                    builder.AddCubicBezier(new Vector2(18.25F, 7.11000013F), new Vector2(7.11000013F, 18.25F), new Vector2(7.11000013F, 32F));
-                    builder.AddCubicBezier(new Vector2(7.11000013F, 45.75F), new Vector2(18.25F, 56.8899994F), new Vector2(32F, 56.8899994F));
-                    builder.AddCubicBezier(new Vector2(45.75F, 56.8899994F), new Vector2(56.8899994F, 45.75F), new Vector2(56.8899994F, 32F));
-                    builder.AddCubicBezier(new Vector2(56.8899994F, 18.25F), new Vector2(45.75F, 7.11000013F), new Vector2(32F, 7.11000013F));
-                    builder.AddCubicBezier(new Vector2(32F, 7.11000013F), new Vector2(32F, 7.11000013F), new Vector2(32F, 7.11000013F));
+                    builder.BeginFigure(new Vector2(26.0799999F, 102.160004F));
+                    builder.AddCubicBezier(new Vector2(26.9799995F, 102.25F), new Vector2(27.8899994F, 102.290001F), new Vector2(28.8099995F, 102.290001F));
+                    builder.AddLine(new Vector2(29.3099995F, 102.290001F));
+                    builder.AddLine(new Vector2(31.8199997F, 102.290001F));
+                    builder.AddCubicBezier(new Vector2(32.0999985F, 102.290001F), new Vector2(32.3199997F, 102.510002F), new Vector2(32.3199997F, 102.790001F));
+                    builder.AddCubicBezier(new Vector2(32.3199997F, 103.07F), new Vector2(32.0999985F, 103.290001F), new Vector2(31.8199997F, 103.290001F));
+                    builder.AddLine(new Vector2(28.3099995F, 103.290001F));
+                    builder.AddLine(new Vector2(28.3099995F, 103.279999F));
+                    builder.AddCubicBezier(new Vector2(27.5300007F, 103.269997F), new Vector2(26.75F, 103.230003F), new Vector2(25.9799995F, 103.150002F));
+                    builder.AddCubicBezier(new Vector2(25.7099991F, 103.120003F), new Vector2(25.5F, 102.879997F), new Vector2(25.5300007F, 102.610001F));
+                    builder.AddCubicBezier(new Vector2(25.5599995F, 102.339996F), new Vector2(25.8099995F, 102.129997F), new Vector2(26.0799999F, 102.160004F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
                 return result;
             }
 
-            // - - - - +
-            // - - - +.PathGeometry
-            // - - Path
             CanvasGeometry Geometry_41()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(32F, 0F));
-                    builder.AddCubicBezier(new Vector2(49.6699982F, 0F), new Vector2(64F, 14.3299999F), new Vector2(64F, 32F));
-                    builder.AddCubicBezier(new Vector2(64F, 49.6699982F), new Vector2(49.6699982F, 64F), new Vector2(32F, 64F));
-                    builder.AddCubicBezier(new Vector2(14.3299999F, 64F), new Vector2(0F, 49.6699982F), new Vector2(0F, 32F));
-                    builder.AddCubicBezier(new Vector2(0F, 14.3299999F), new Vector2(14.3299999F, 0F), new Vector2(32F, 0F));
-                    builder.AddCubicBezier(new Vector2(32F, 0F), new Vector2(32F, 0F), new Vector2(32F, 0F));
+                    builder.BeginFigure(new Vector2(48F, 24F));
+                    builder.AddCubicBezier(new Vector2(48F, 37.25F), new Vector2(37.25F, 48F), new Vector2(24F, 48F));
+                    builder.AddCubicBezier(new Vector2(10.75F, 48F), new Vector2(0F, 37.25F), new Vector2(0F, 24F));
+                    builder.AddCubicBezier(new Vector2(0F, 10.75F), new Vector2(10.75F, 0F), new Vector2(24F, 0F));
+                    builder.AddCubicBezier(new Vector2(37.25F, 0F), new Vector2(48F, 10.75F), new Vector2(48F, 24F));
+                    builder.AddCubicBezier(new Vector2(48F, 24F), new Vector2(48F, 24F), new Vector2(48F, 24F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
                 return result;
             }
 
-            // - - - +
-            // - - +.PathGeometry
-            // - Path
             CanvasGeometry Geometry_42()
             {
-                var result = CanvasGeometry.CreateGroup(
-                    null,
-                    new CanvasGeometry[] { Geometry_43(), Geometry_44() },
-                    CanvasFilledRegionDetermination.Winding);
+                CanvasGeometry result;
+                using (var builder = new CanvasPathBuilder(null))
+                {
+                    builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
+                    builder.BeginFigure(new Vector2(72F, 36F));
+                    builder.AddCubicBezier(new Vector2(72F, 55.8800011F), new Vector2(55.8800011F, 72F), new Vector2(36F, 72F));
+                    builder.AddCubicBezier(new Vector2(16.1200008F, 72F), new Vector2(0F, 55.8800011F), new Vector2(0F, 36F));
+                    builder.AddCubicBezier(new Vector2(0F, 16.1200008F), new Vector2(16.1200008F, 0F), new Vector2(36F, 0F));
+                    builder.AddCubicBezier(new Vector2(55.8800011F, 0F), new Vector2(72F, 16.1200008F), new Vector2(72F, 36F));
+                    builder.AddCubicBezier(new Vector2(72F, 36F), new Vector2(72F, 36F), new Vector2(72F, 36F));
+                    builder.EndFigure(CanvasFigureLoop.Closed);
+                    result = CanvasGeometry.CreatePath(builder);
+                }
                 return result;
             }
 
-            // - - - - +
-            // - - - +.PathGeometry
-            // - - Path
+            // - Path
             CanvasGeometry Geometry_43()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(36F, 8F));
-                    builder.AddCubicBezier(new Vector2(20.5400009F, 8F), new Vector2(8F, 20.5400009F), new Vector2(8F, 36F));
-                    builder.AddCubicBezier(new Vector2(8F, 51.4599991F), new Vector2(20.5400009F, 64F), new Vector2(36F, 64F));
-                    builder.AddCubicBezier(new Vector2(51.4599991F, 64F), new Vector2(64F, 51.4599991F), new Vector2(64F, 36F));
-                    builder.AddCubicBezier(new Vector2(64F, 20.5400009F), new Vector2(51.4599991F, 8F), new Vector2(36F, 8F));
-                    builder.AddCubicBezier(new Vector2(36F, 8F), new Vector2(36F, 8F), new Vector2(36F, 8F));
+                    builder.BeginFigure(new Vector2(88F, 44F));
+                    builder.AddCubicBezier(new Vector2(88F, 68.3000031F), new Vector2(68.3000031F, 88F), new Vector2(44F, 88F));
+                    builder.AddCubicBezier(new Vector2(19.7000008F, 88F), new Vector2(0F, 68.3000031F), new Vector2(0F, 44F));
+                    builder.AddCubicBezier(new Vector2(0F, 19.7000008F), new Vector2(19.7000008F, 0F), new Vector2(44F, 0F));
+                    builder.AddCubicBezier(new Vector2(68.3000031F, 0F), new Vector2(88F, 19.7000008F), new Vector2(88F, 44F));
+                    builder.AddCubicBezier(new Vector2(88F, 44F), new Vector2(88F, 44F), new Vector2(88F, 44F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
                 return result;
             }
 
-            // - - - - +
-            // - - - +.PathGeometry
-            // - - Path
+            // - - - - Transforms: fond
+            // - Path
             CanvasGeometry Geometry_44()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(36F, 0F));
-                    builder.AddCubicBezier(new Vector2(55.8800011F, 0F), new Vector2(72F, 16.1200008F), new Vector2(72F, 36F));
-                    builder.AddCubicBezier(new Vector2(72F, 55.8800011F), new Vector2(55.8800011F, 72F), new Vector2(36F, 72F));
-                    builder.AddCubicBezier(new Vector2(16.1200008F, 72F), new Vector2(0F, 55.8800011F), new Vector2(0F, 36F));
-                    builder.AddCubicBezier(new Vector2(0F, 16.1200008F), new Vector2(16.1200008F, 0F), new Vector2(36F, 0F));
-                    builder.AddCubicBezier(new Vector2(36F, 0F), new Vector2(36F, 0F), new Vector2(36F, 0F));
+                    builder.BeginFigure(new Vector2(56F, 28F));
+                    builder.AddCubicBezier(new Vector2(56F, 43.4599991F), new Vector2(43.4599991F, 56F), new Vector2(28F, 56F));
+                    builder.AddCubicBezier(new Vector2(12.54F, 56F), new Vector2(0F, 43.4599991F), new Vector2(0F, 28F));
+                    builder.AddCubicBezier(new Vector2(0F, 12.54F), new Vector2(12.54F, 0F), new Vector2(28F, 0F));
+                    builder.AddCubicBezier(new Vector2(43.4599991F, 0F), new Vector2(56F, 12.54F), new Vector2(56F, 28F));
+                    builder.AddCubicBezier(new Vector2(56F, 28F), new Vector2(56F, 28F), new Vector2(56F, 28F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
                 return result;
             }
 
-            // - - - +
-            // - - +.PathGeometry
-            // - Path
             CanvasGeometry Geometry_45()
             {
-                var result = CanvasGeometry.CreateGroup(
-                    null,
-                    new CanvasGeometry[] { Geometry_46(), Geometry_47() },
-                    CanvasFilledRegionDetermination.Winding);
+                CanvasGeometry result;
+                using (var builder = new CanvasPathBuilder(null))
+                {
+                    builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
+                    builder.BeginFigure(new Vector2(70.75F, 36F));
+                    builder.AddCubicBezier(new Vector2(70.75F, 16.8099995F), new Vector2(55.1899986F, 1.25F), new Vector2(36F, 1.25F));
+                    builder.AddCubicBezier(new Vector2(16.8099995F, 1.25F), new Vector2(1.25F, 16.8099995F), new Vector2(1.25F, 36F));
+                    builder.AddCubicBezier(new Vector2(1.25F, 55.1899986F), new Vector2(16.8099995F, 70.75F), new Vector2(36F, 70.75F));
+                    builder.AddCubicBezier(new Vector2(36F, 70.75F), new Vector2(36F, 72F), new Vector2(36F, 72F));
+                    builder.AddCubicBezier(new Vector2(16.1200008F, 72F), new Vector2(0F, 55.8800011F), new Vector2(0F, 36F));
+                    builder.AddCubicBezier(new Vector2(0F, 16.1200008F), new Vector2(16.1200008F, 0F), new Vector2(36F, 0F));
+                    builder.AddCubicBezier(new Vector2(55.8800011F, 0F), new Vector2(72F, 16.1200008F), new Vector2(72F, 36F));
+                    builder.AddCubicBezier(new Vector2(72F, 55.8800011F), new Vector2(55.8800011F, 72F), new Vector2(36F, 72F));
+                    builder.AddCubicBezier(new Vector2(36F, 72F), new Vector2(36F, 70.75F), new Vector2(36F, 70.75F));
+                    builder.AddCubicBezier(new Vector2(55.1899986F, 70.75F), new Vector2(70.75F, 55.1899986F), new Vector2(70.75F, 36F));
+                    builder.AddCubicBezier(new Vector2(70.75F, 36F), new Vector2(70.75F, 36F), new Vector2(70.75F, 36F));
+                    builder.EndFigure(CanvasFigureLoop.Closed);
+                    result = CanvasGeometry.CreatePath(builder);
+                }
                 return result;
             }
 
-            // - - - - +
-            // - - - +.PathGeometry
-            // - - Path
+            // - - - - Transforms: fond (Stroke)
+            // - Path
             CanvasGeometry Geometry_46()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
                     builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(44F, 9.77999973F));
-                    builder.AddCubicBezier(new Vector2(25.1000004F, 9.77999973F), new Vector2(9.77999973F, 25.1000004F), new Vector2(9.77999973F, 44F));
-                    builder.AddCubicBezier(new Vector2(9.77999973F, 62.9000015F), new Vector2(25.1000004F, 78.2200012F), new Vector2(44F, 78.2200012F));
-                    builder.AddCubicBezier(new Vector2(62.9000015F, 78.2200012F), new Vector2(78.2200012F, 62.9000015F), new Vector2(78.2200012F, 44F));
-                    builder.AddCubicBezier(new Vector2(78.2200012F, 25.1000004F), new Vector2(62.9000015F, 9.77999973F), new Vector2(44F, 9.77999973F));
-                    builder.AddCubicBezier(new Vector2(44F, 9.77999973F), new Vector2(44F, 9.77999973F), new Vector2(44F, 9.77999973F));
+                    builder.BeginFigure(new Vector2(55.0299988F, 28F));
+                    builder.AddCubicBezier(new Vector2(55.0299988F, 13.0699997F), new Vector2(42.9300003F, 0.970000029F), new Vector2(28F, 0.970000029F));
+                    builder.AddCubicBezier(new Vector2(13.0699997F, 0.970000029F), new Vector2(0.970000029F, 13.0699997F), new Vector2(0.970000029F, 28F));
+                    builder.AddCubicBezier(new Vector2(0.970000029F, 42.9300003F), new Vector2(13.0699997F, 55.0299988F), new Vector2(28F, 55.0299988F));
+                    builder.AddCubicBezier(new Vector2(28F, 55.0299988F), new Vector2(28F, 56F), new Vector2(28F, 56F));
+                    builder.AddCubicBezier(new Vector2(12.54F, 56F), new Vector2(0F, 43.4599991F), new Vector2(0F, 28F));
+                    builder.AddCubicBezier(new Vector2(0F, 12.54F), new Vector2(12.54F, 0F), new Vector2(28F, 0F));
+                    builder.AddCubicBezier(new Vector2(43.4599991F, 0F), new Vector2(56F, 12.54F), new Vector2(56F, 28F));
+                    builder.AddCubicBezier(new Vector2(56F, 43.4599991F), new Vector2(43.4599991F, 56F), new Vector2(28F, 56F));
+                    builder.AddCubicBezier(new Vector2(28F, 56F), new Vector2(28F, 55.0299988F), new Vector2(28F, 55.0299988F));
+                    builder.AddCubicBezier(new Vector2(42.9300003F, 55.0299988F), new Vector2(55.0299988F, 42.9300003F), new Vector2(55.0299988F, 28F));
+                    builder.AddCubicBezier(new Vector2(55.0299988F, 28F), new Vector2(55.0299988F, 28F), new Vector2(55.0299988F, 28F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
                 return result;
             }
 
-            // - - - - +
-            // - - - +.PathGeometry
-            // - - Path
             CanvasGeometry Geometry_47()
-            {
-                CanvasGeometry result;
-                using (var builder = new CanvasPathBuilder(null))
-                {
-                    builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
-                    builder.BeginFigure(new Vector2(44F, 0F));
-                    builder.AddCubicBezier(new Vector2(68.3000031F, 0F), new Vector2(88F, 19.7000008F), new Vector2(88F, 44F));
-                    builder.AddCubicBezier(new Vector2(88F, 68.3000031F), new Vector2(68.3000031F, 88F), new Vector2(44F, 88F));
-                    builder.AddCubicBezier(new Vector2(19.7000008F, 88F), new Vector2(0F, 68.3000031F), new Vector2(0F, 44F));
-                    builder.AddCubicBezier(new Vector2(0F, 19.7000008F), new Vector2(19.7000008F, 0F), new Vector2(44F, 0F));
-                    builder.AddCubicBezier(new Vector2(44F, 0F), new Vector2(44F, 0F), new Vector2(44F, 0F));
-                    builder.EndFigure(CanvasFigureLoop.Closed);
-                    result = CanvasGeometry.CreatePath(builder);
-                }
-                return result;
-            }
-
-            CanvasGeometry Geometry_48()
-            {
-                CanvasGeometry result;
-                using (var builder = new CanvasPathBuilder(null))
-                {
-                    builder.BeginFigure(new Vector2(70.75F, 35.375F));
-                    builder.AddCubicBezier(new Vector2(70.75F, 54.9099998F), new Vector2(54.9099998F, 70.75F), new Vector2(35.375F, 70.75F));
-                    builder.AddCubicBezier(new Vector2(15.8400002F, 70.75F), new Vector2(0F, 54.9099998F), new Vector2(0F, 35.375F));
-                    builder.AddCubicBezier(new Vector2(0F, 15.8400002F), new Vector2(15.8400002F, 0F), new Vector2(35.375F, 0F));
-                    builder.AddCubicBezier(new Vector2(54.9099998F, 0F), new Vector2(70.75F, 15.8400002F), new Vector2(70.75F, 35.375F));
-                    builder.AddCubicBezier(new Vector2(70.75F, 35.375F), new Vector2(70.75F, 35.375F), new Vector2(70.75F, 35.375F));
-                    builder.EndFigure(CanvasFigureLoop.Closed);
-                    result = CanvasGeometry.CreatePath(builder);
-                }
-                return result;
-            }
-
-            CanvasGeometry Geometry_49()
-            {
-                CanvasGeometry result;
-                using (var builder = new CanvasPathBuilder(null))
-                {
-                    builder.BeginFigure(new Vector2(55.2220001F, 27.6110001F));
-                    builder.AddCubicBezier(new Vector2(55.2220001F, 42.855999F), new Vector2(42.855999F, 55.2220001F), new Vector2(27.6110001F, 55.2220001F));
-                    builder.AddCubicBezier(new Vector2(12.3660002F, 55.2220001F), new Vector2(0F, 42.855999F), new Vector2(0F, 27.6110001F));
-                    builder.AddCubicBezier(new Vector2(0F, 12.3660002F), new Vector2(12.3660002F, 0F), new Vector2(27.6110001F, 0F));
-                    builder.AddCubicBezier(new Vector2(42.855999F, 0F), new Vector2(55.2220001F, 12.3660002F), new Vector2(55.2220001F, 27.6110001F));
-                    builder.AddCubicBezier(new Vector2(55.2220001F, 27.6110001F), new Vector2(55.2220001F, 27.6110001F), new Vector2(55.2220001F, 27.6110001F));
-                    builder.EndFigure(CanvasFigureLoop.Closed);
-                    result = CanvasGeometry.CreatePath(builder);
-                }
-                return result;
-            }
-
-            CanvasGeometry Geometry_50()
             {
                 var result = CanvasGeometry.CreateGroup(
                     null,
-                    new CanvasGeometry[] { Geometry_51(), Geometry_52(), Geometry_53(), Geometry_54() },
+                    new CanvasGeometry[] { Geometry_48(), Geometry_49(), Geometry_50(), Geometry_51() },
                     CanvasFilledRegionDetermination.Alternate);
                 return result;
             }
 
-            CanvasGeometry Geometry_51()
+            CanvasGeometry Geometry_48()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
@@ -1386,7 +1388,7 @@ namespace AnimatedVisuals
                 return result;
             }
 
-            CanvasGeometry Geometry_52()
+            CanvasGeometry Geometry_49()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
@@ -1411,7 +1413,7 @@ namespace AnimatedVisuals
                 return result;
             }
 
-            CanvasGeometry Geometry_53()
+            CanvasGeometry Geometry_50()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
@@ -1441,7 +1443,7 @@ namespace AnimatedVisuals
                 return result;
             }
 
-            CanvasGeometry Geometry_54()
+            CanvasGeometry Geometry_51()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
@@ -1469,16 +1471,24 @@ namespace AnimatedVisuals
                 return result;
             }
 
-            CanvasGeometry Geometry_55()
+            // - - - - Transforms: icon
+            // - - - +++
+            // - - +++.PathGeometry
+            // - Path
+            CanvasGeometry Geometry_52()
             {
                 var result = CanvasGeometry.CreateGroup(
                     null,
-                    new CanvasGeometry[] { Geometry_56(), Geometry_57(), Geometry_58(), Geometry_59() },
+                    new CanvasGeometry[] { Geometry_53(), Geometry_54(), Geometry_55(), Geometry_56() },
                     CanvasFilledRegionDetermination.Alternate);
                 return result;
             }
 
-            CanvasGeometry Geometry_56()
+            // - - - - - Transforms: icon
+            // - - - - +++
+            // - - - +++.PathGeometry
+            // - - Path
+            CanvasGeometry Geometry_53()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
@@ -1503,7 +1513,11 @@ namespace AnimatedVisuals
                 return result;
             }
 
-            CanvasGeometry Geometry_57()
+            // - - - - - Transforms: icon
+            // - - - - +++
+            // - - - +++.PathGeometry
+            // - - Path
+            CanvasGeometry Geometry_54()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
@@ -1528,7 +1542,11 @@ namespace AnimatedVisuals
                 return result;
             }
 
-            CanvasGeometry Geometry_58()
+            // - - - - - Transforms: icon
+            // - - - - +++
+            // - - - +++.PathGeometry
+            // - - Path
+            CanvasGeometry Geometry_55()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
@@ -1558,7 +1576,11 @@ namespace AnimatedVisuals
                 return result;
             }
 
-            CanvasGeometry Geometry_59()
+            // - - - - - Transforms: icon
+            // - - - - +++
+            // - - - +++.PathGeometry
+            // - - Path
+            CanvasGeometry Geometry_56()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
@@ -1586,36 +1608,33 @@ namespace AnimatedVisuals
                 return result;
             }
 
-            // Color bound to theme property value: Color_446EDD
-            CompositionColorBrush ThemeColor_Color_446EDD_0()
+            // Color bound to theme property value: Color_FF8500
+            CompositionColorBrush ThemeColor_Color_FF8500_0()
             {
-                if (_themeColor_Color_446EDD_0 != null) { return _themeColor_Color_446EDD_0; }
-                var result = _themeColor_Color_446EDD_0 = _c.CreateColorBrush();
-                BindProperty(_themeColor_Color_446EDD_0, "Color", "ColorRGB(_theme.Color_446EDD.W,_theme.Color_446EDD.X,_theme.Color_446EDD.Y,_theme.Color_446EDD.Z)", "_theme", _themeProperties);
+                if (_themeColor_Color_FF8500_0 != null) { return _themeColor_Color_FF8500_0; }
+                var result = _themeColor_Color_FF8500_0 = _c.CreateColorBrush();
+                BindProperty(_themeColor_Color_FF8500_0, "Color", "ColorRGB(_theme.Color_FF8500.W,_theme.Color_FF8500.X,_theme.Color_FF8500.Y,_theme.Color_FF8500.Z)", "_theme", _themeProperties);
                 return result;
             }
 
-            // +
-            // Color bound to theme property value: Color_446EDD
-            CompositionColorBrush ThemeColor_Color_446EDD_1()
+            // Color bound to theme property value: Color_FF8500
+            CompositionColorBrush ThemeColor_Color_FF8500_1()
             {
-                if (_themeColor_Color_446EDD_1 != null) { return _themeColor_Color_446EDD_1; }
-                var result = _themeColor_Color_446EDD_1 = _c.CreateColorBrush();
+                if (_themeColor_Color_FF8500_1 != null) { return _themeColor_Color_FF8500_1; }
+                var result = _themeColor_Color_FF8500_1 = _c.CreateColorBrush();
                 var propertySet = result.Properties;
-                propertySet.InsertScalar("Opacity0", 0F);
-                BindProperty2(_themeColor_Color_446EDD_1, "Color", "ColorRGB(_theme.Color_446EDD.W*my.Opacity0,_theme.Color_446EDD.X,_theme.Color_446EDD.Y,_theme.Color_446EDD.Z)", "_theme", _themeProperties, "my", propertySet);
+                propertySet.InsertScalar("Opacity0", 1F);
+                BindProperty2(_themeColor_Color_FF8500_1, "Color", "ColorRGB(_theme.Color_FF8500.W*my.Opacity0,_theme.Color_FF8500.X,_theme.Color_FF8500.Y,_theme.Color_FF8500.Z)", "_theme", _themeProperties, "my", propertySet);
                 return result;
             }
 
             // - Transforms: fond
-            // Color bound to theme property value: Color_446EDD
-            CompositionColorBrush ThemeColor_Color_446EDD_2()
+            // Color bound to theme property value: Color_FFE7D8
+            CompositionColorBrush ThemeColor_Color_FFE7D8()
             {
-                if (_themeColor_Color_446EDD_2 != null) { return _themeColor_Color_446EDD_2; }
-                var result = _themeColor_Color_446EDD_2 = _c.CreateColorBrush();
-                var propertySet = result.Properties;
-                propertySet.InsertScalar("Opacity0", 1F);
-                BindProperty2(_themeColor_Color_446EDD_2, "Color", "ColorRGB(_theme.Color_446EDD.W*my.Opacity0,_theme.Color_446EDD.X,_theme.Color_446EDD.Y,_theme.Color_446EDD.Z)", "_theme", _themeProperties, "my", propertySet);
+                if (_themeColor_Color_FFE7D8 != null) { return _themeColor_Color_FFE7D8; }
+                var result = _themeColor_Color_FFE7D8 = _c.CreateColorBrush();
+                BindProperty(_themeColor_Color_FFE7D8, "Color", "ColorRGB(_theme.Color_FFE7D8.W,_theme.Color_FFE7D8.X,_theme.Color_FFE7D8.Y,_theme.Color_FFE7D8.Z)", "_theme", _themeProperties);
                 return result;
             }
 
@@ -1626,7 +1645,6 @@ namespace AnimatedVisuals
                 var propertySet = result.Properties;
                 propertySet.InsertVector2("Anchor", new Vector2(24F, 24F));
                 propertySet.InsertVector2("Position", new Vector2(89F, 87F));
-                // +
                 result.Shapes.Add(SpriteShape_1());
                 BindProperty(_containerShape_0, "CenterPoint", "my.Anchor", "my", _containerShape_0);
                 BindProperty(_containerShape_0, "Offset", "my.Position-my.Anchor", "my", _containerShape_0);
@@ -1654,7 +1672,7 @@ namespace AnimatedVisuals
                 var result = _containerShape_2 = _c.CreateContainerShape();
                 var propertySet = result.Properties;
                 propertySet.InsertVector2("Anchor", new Vector2(36F, 36F));
-                propertySet.InsertVector2("Position", new Vector2(36.6300011F, 36.6300011F));
+                propertySet.InsertVector2("Position", new Vector2(36F, 36F));
                 result.Shapes.Add(SpriteShape_2());
                 BindProperty(_containerShape_2, "CenterPoint", "my.Anchor", "my", _containerShape_2);
                 BindProperty(_containerShape_2, "Offset", "my.Position-my.Anchor", "my", _containerShape_2);
@@ -1668,88 +1686,107 @@ namespace AnimatedVisuals
                 var propertySet = result.Properties;
                 propertySet.InsertVector2("Anchor", new Vector2(36F, 36F));
                 propertySet.InsertVector2("Position", new Vector2(89F, 87F));
-                // Transforms: Icons/Media/pause
+                // Transforms: fond (Stroke)
                 result.Shapes.Add(ContainerShape_4());
                 BindProperty(_containerShape_3, "CenterPoint", "my.Anchor", "my", _containerShape_3);
                 BindProperty(_containerShape_3, "Offset", "my.Position-my.Anchor", "my", _containerShape_3);
                 return result;
             }
 
-            // Transforms for Icons/Media/pause
+            // Transforms for fond (Stroke)
             CompositionContainerShape ContainerShape_4()
             {
                 if (_containerShape_4 != null) { return _containerShape_4; }
                 var result = _containerShape_4 = _c.CreateContainerShape();
                 var propertySet = result.Properties;
-                propertySet.InsertVector2("Anchor", new Vector2(18.9200001F, 18.9200001F));
-                propertySet.InsertVector2("Position", new Vector2(35.9199982F, 35.9199982F));
-                // Transforms: icon
-                result.Shapes.Add(ContainerShape_5());
+                propertySet.InsertVector2("Anchor", new Vector2(36F, 36F));
+                propertySet.InsertVector2("Position", new Vector2(36F, 36F));
+                result.Shapes.Add(SpriteShape_3());
                 BindProperty(_containerShape_4, "CenterPoint", "my.Anchor", "my", _containerShape_4);
                 BindProperty(_containerShape_4, "Offset", "my.Position-my.Anchor", "my", _containerShape_4);
                 return result;
             }
 
-            // Transforms for icon
             CompositionContainerShape ContainerShape_5()
             {
                 if (_containerShape_5 != null) { return _containerShape_5; }
                 var result = _containerShape_5 = _c.CreateContainerShape();
                 var propertySet = result.Properties;
+                propertySet.InsertVector2("Anchor", new Vector2(36F, 36F));
+                propertySet.InsertVector2("Position", new Vector2(89F, 87F));
+                // Transforms: Icons/Media/pause
+                result.Shapes.Add(ContainerShape_6());
+                BindProperty(_containerShape_5, "CenterPoint", "my.Anchor", "my", _containerShape_5);
+                BindProperty(_containerShape_5, "Offset", "my.Position-my.Anchor", "my", _containerShape_5);
+                return result;
+            }
+
+            // Transforms for Icons/Media/pause
+            CompositionContainerShape ContainerShape_6()
+            {
+                if (_containerShape_6 != null) { return _containerShape_6; }
+                var result = _containerShape_6 = _c.CreateContainerShape();
+                var propertySet = result.Properties;
+                propertySet.InsertVector2("Anchor", new Vector2(18.9200001F, 18.9200001F));
+                propertySet.InsertVector2("Position", new Vector2(35.9199982F, 35.9199982F));
+                // Transforms: icon
+                result.Shapes.Add(ContainerShape_7());
+                BindProperty(_containerShape_6, "CenterPoint", "my.Anchor", "my", _containerShape_6);
+                BindProperty(_containerShape_6, "Offset", "my.Position-my.Anchor", "my", _containerShape_6);
+                return result;
+            }
+
+            // Transforms for icon
+            CompositionContainerShape ContainerShape_7()
+            {
+                if (_containerShape_7 != null) { return _containerShape_7; }
+                var result = _containerShape_7 = _c.CreateContainerShape();
+                var propertySet = result.Properties;
                 propertySet.InsertVector2("Anchor", new Vector2(14.2299995F, 17.1000004F));
                 propertySet.InsertVector2("Position", new Vector2(18.9200001F, 18.9200001F));
                 // +++
-                result.Shapes.Add(SpriteShape_3());
-                BindProperty(_containerShape_5, "CenterPoint", "my.Anchor", "my", _containerShape_5);
-                BindProperty(_containerShape_5, "Offset", "my.Position-my.Anchor", "my", _containerShape_5);
+                result.Shapes.Add(SpriteShape_4());
+                BindProperty(_containerShape_7, "CenterPoint", "my.Anchor", "my", _containerShape_7);
+                BindProperty(_containerShape_7, "Offset", "my.Position-my.Anchor", "my", _containerShape_7);
                 return result;
             }
 
             CompositionPath Path_0()
             {
                 if (_path_0 != null) { return _path_0; }
-                var result = _path_0 = new CompositionPath(Geometry_36());
+                var result = _path_0 = new CompositionPath(Geometry_41());
                 return result;
             }
 
             CompositionPath Path_1()
             {
                 if (_path_1 != null) { return _path_1; }
-                var result = _path_1 = new CompositionPath(Geometry_48());
+                var result = _path_1 = new CompositionPath(Geometry_42());
                 return result;
             }
 
             CompositionPath Path_2()
             {
                 if (_path_2 != null) { return _path_2; }
-                var result = _path_2 = new CompositionPath(Geometry_49());
+                var result = _path_2 = new CompositionPath(Geometry_45());
                 return result;
             }
 
             CompositionPath Path_3()
             {
                 if (_path_3 != null) { return _path_3; }
-                var result = _path_3 = new CompositionPath(Geometry_50());
-                return result;
-            }
-
-            CompositionPath Path_4()
-            {
-                if (_path_4 != null) { return _path_4; }
-                var result = _path_4 = new CompositionPath(Geometry_55());
+                var result = _path_3 = new CompositionPath(Geometry_47());
                 return result;
             }
 
             // - Layer aggregator
-            // ++++++++++++++++++++++++++++++++++
-            // ++++++++++++++++++++++++++++++++++.PathGeometry
+            // Transforms: front (Stroke)
+            // +++++++++++++++++++++++++++++++++++++++.PathGeometry
             CompositionPathGeometry PathGeometry_0()
             {
                 return _c.CreatePathGeometry(new CompositionPath(Geometry_00()));
             }
 
-            // +
-            // +.PathGeometry
             CompositionPathGeometry PathGeometry_1()
             {
                 if (_pathGeometry_1 != null) { return _pathGeometry_1; }
@@ -1765,9 +1802,7 @@ namespace AnimatedVisuals
                 return result;
             }
 
-            // - Transforms: icon
-            // +++
-            // +++.PathGeometry
+            // - Transforms: fond (Stroke)
             CompositionPathGeometry PathGeometry_3()
             {
                 if (_pathGeometry_3 != null) { return _pathGeometry_3; }
@@ -1775,40 +1810,55 @@ namespace AnimatedVisuals
                 return result;
             }
 
+            // - Transforms: icon
+            // +++
+            // +++.PathGeometry
+            CompositionPathGeometry PathGeometry_4()
+            {
+                if (_pathGeometry_4 != null) { return _pathGeometry_4; }
+                var result = _pathGeometry_4 = _c.CreatePathGeometry();
+                return result;
+            }
+
             // Layer aggregator
-            // ++++++++++++++++++++++++++++++++++
+            // +++++++++++++++++++++++++++++++++++++++
             CompositionSpriteShape SpriteShape_0()
             {
                 if (_spriteShape_0 != null) { return _spriteShape_0; }
                 var result = _spriteShape_0 = _c.CreateSpriteShape(PathGeometry_0());
-                result.FillBrush = ThemeColor_Color_446EDD_0();
+                result.FillBrush = ThemeColor_Color_FF8500_0();
                 return result;
             }
 
-            // +
             CompositionSpriteShape SpriteShape_1()
             {
                 var result = _c.CreateSpriteShape(PathGeometry_1());
-                result.FillBrush = ThemeColor_Color_446EDD_1();
+                result.FillBrush = ThemeColor_Color_FF8500_1();
                 return result;
             }
 
             // Transforms: fond
             CompositionSpriteShape SpriteShape_2()
             {
-                if (_spriteShape_2 != null) { return _spriteShape_2; }
-                var result = _spriteShape_2 = _c.CreateSpriteShape(PathGeometry_2());
-                result.StrokeBrush = ThemeColor_Color_446EDD_2();
-                result.StrokeMiterLimit = 2F;
+                var result = _c.CreateSpriteShape(PathGeometry_2());
+                result.FillBrush = ThemeColor_Color_FFE7D8();
+                return result;
+            }
+
+            // Transforms: fond (Stroke)
+            CompositionSpriteShape SpriteShape_3()
+            {
+                var result = _c.CreateSpriteShape(PathGeometry_3());
+                result.FillBrush = ThemeColor_Color_FF8500_0();
                 return result;
             }
 
             // Transforms: icon
             // +++
-            CompositionSpriteShape SpriteShape_3()
+            CompositionSpriteShape SpriteShape_4()
             {
-                var result = _c.CreateSpriteShape(PathGeometry_3());
-                result.FillBrush = ThemeColor_Color_446EDD_0();
+                var result = _c.CreateSpriteShape(PathGeometry_4());
+                result.FillBrush = ThemeColor_Color_FF8500_0();
                 return result;
             }
 
@@ -1831,21 +1881,17 @@ namespace AnimatedVisuals
                     : _cubicBezierEasingFunction_0;
             }
 
-            // - +
-            // +.PathGeometry
             // Path
             PathKeyFrameAnimation PathKeyFrameAnimation_0()
             {
                 // Frame 0.
                 var result = CreatePathKeyFrameAnimation(0F, Path_0(), HoldThenStepEasingFunction());
-                // Frame 90.
-                result.InsertKeyFrame(0.624479592F, Path_0(), CubicBezierEasingFunction_0());
+                // Frame 48.
+                result.InsertKeyFrame(0.444197655F, Path_0(), CubicBezierEasingFunction_0());
+                // Frame 78.
+                result.InsertKeyFrame(0.721821189F, Path_1(), CubicBezierEasingFunction_0());
                 // Frame 108.
-                result.InsertKeyFrame(0.749375522F, new CompositionPath(Geometry_39()), CubicBezierEasingFunction_0());
-                // Frame 114.
-                result.InsertKeyFrame(0.791007519F, new CompositionPath(Geometry_42()), CubicBezierEasingFunction_0());
-                // Frame 144.
-                result.InsertKeyFrame(0.999167383F, new CompositionPath(Geometry_45()), CubicBezierEasingFunction_0());
+                result.InsertKeyFrame(0.999444723F, new CompositionPath(Geometry_43()), CubicBezierEasingFunction_0());
                 return result;
             }
 
@@ -1855,14 +1901,27 @@ namespace AnimatedVisuals
             {
                 // Frame 0.
                 var result = CreatePathKeyFrameAnimation(0F, Path_1(), HoldThenStepEasingFunction());
-                // Frame 90.
-                result.InsertKeyFrame(0.624479592F, Path_1(), CubicBezierEasingFunction_0());
+                // Frame 48.
+                result.InsertKeyFrame(0.444197655F, Path_1(), CubicBezierEasingFunction_0());
+                // Frame 78.
+                result.InsertKeyFrame(0.721821189F, new CompositionPath(Geometry_44()), CubicBezierEasingFunction_0());
                 // Frame 108.
-                result.InsertKeyFrame(0.749375522F, Path_2(), CubicBezierEasingFunction_0());
-                // Frame 114.
-                result.InsertKeyFrame(0.791007519F, Path_2(), CubicBezierEasingFunction_0());
-                // Frame 144.
-                result.InsertKeyFrame(0.999167383F, Path_1(), CubicBezierEasingFunction_0());
+                result.InsertKeyFrame(0.999444723F, Path_1(), CubicBezierEasingFunction_0());
+                return result;
+            }
+
+            // - - Transforms: fond (Stroke)
+            // Path
+            PathKeyFrameAnimation PathKeyFrameAnimation_2()
+            {
+                // Frame 0.
+                var result = CreatePathKeyFrameAnimation(0F, Path_2(), HoldThenStepEasingFunction());
+                // Frame 48.
+                result.InsertKeyFrame(0.444197655F, Path_2(), CubicBezierEasingFunction_0());
+                // Frame 78.
+                result.InsertKeyFrame(0.721821189F, new CompositionPath(Geometry_46()), CubicBezierEasingFunction_0());
+                // Frame 108.
+                result.InsertKeyFrame(0.999444723F, Path_2(), CubicBezierEasingFunction_0());
                 return result;
             }
 
@@ -1870,65 +1929,28 @@ namespace AnimatedVisuals
             // - +++
             // +++.PathGeometry
             // Path
-            PathKeyFrameAnimation PathKeyFrameAnimation_2()
+            PathKeyFrameAnimation PathKeyFrameAnimation_3()
             {
                 // Frame 0.
                 var result = CreatePathKeyFrameAnimation(0F, Path_3(), HoldThenStepEasingFunction());
-                // Frame 90.
-                result.InsertKeyFrame(0.624479592F, Path_3(), CubicBezierEasingFunction_0());
+                // Frame 48.
+                result.InsertKeyFrame(0.444197655F, Path_3(), CubicBezierEasingFunction_0());
+                // Frame 78.
+                result.InsertKeyFrame(0.721821189F, new CompositionPath(Geometry_52()), CubicBezierEasingFunction_0());
                 // Frame 108.
-                result.InsertKeyFrame(0.749375522F, Path_4(), CubicBezierEasingFunction_0());
-                // Frame 114.
-                result.InsertKeyFrame(0.791007519F, Path_4(), CubicBezierEasingFunction_0());
-                // Frame 144.
-                result.InsertKeyFrame(0.999167383F, Path_3(), CubicBezierEasingFunction_0());
+                result.InsertKeyFrame(0.999444723F, Path_3(), CubicBezierEasingFunction_0());
                 return result;
             }
 
             // Opacity0
-            ScalarKeyFrameAnimation Opacity0ScalarAnimation_0_to_0()
-            {
-                // Frame 0.
-                var result = CreateScalarKeyFrameAnimation(0F, 0F, HoldThenStepEasingFunction());
-                // Frame 90.
-                result.InsertKeyFrame(0.624479592F, 0F, CubicBezierEasingFunction_0());
-                // Frame 108.
-                result.InsertKeyFrame(0.749375522F, 0.5F, CubicBezierEasingFunction_0());
-                // Frame 114.
-                result.InsertKeyFrame(0.791007519F, 1F, CubicBezierEasingFunction_0());
-                // Frame 144.
-                result.InsertKeyFrame(0.999167383F, 0F, CubicBezierEasingFunction_0());
-                return result;
-            }
-
-            // Opacity0
-            ScalarKeyFrameAnimation Opacity0ScalarAnimation_1_to_1()
+            ScalarKeyFrameAnimation Opacity0ScalarAnimation_1_to_0()
             {
                 // Frame 0.
                 var result = CreateScalarKeyFrameAnimation(0F, 1F, HoldThenStepEasingFunction());
-                // Frame 90.
-                result.InsertKeyFrame(0.624479592F, 1F, CubicBezierEasingFunction_0());
+                // Frame 78.
+                result.InsertKeyFrame(0.721821189F, 1F, HoldThenStepEasingFunction());
                 // Frame 108.
-                result.InsertKeyFrame(0.749375522F, 0F, CubicBezierEasingFunction_0());
-                // Frame 114.
-                result.InsertKeyFrame(0.791007519F, 1F, CubicBezierEasingFunction_0());
-                return result;
-            }
-
-            // - Transforms: fond
-            // StrokeThickness
-            ScalarKeyFrameAnimation StrokeThicknessScalarAnimation_1p25_to_1p25()
-            {
-                // Frame 0.
-                var result = CreateScalarKeyFrameAnimation(0F, 1.25F, HoldThenStepEasingFunction());
-                // Frame 90.
-                result.InsertKeyFrame(0.624479592F, 1.25F, CubicBezierEasingFunction_0());
-                // Frame 108.
-                result.InsertKeyFrame(0.749375522F, 1F, CubicBezierEasingFunction_0());
-                // Frame 114.
-                result.InsertKeyFrame(0.791007519F, 1F, CubicBezierEasingFunction_0());
-                // Frame 144.
-                result.InsertKeyFrame(0.999167383F, 1.25F, CubicBezierEasingFunction_0());
+                result.InsertKeyFrame(0.999444723F, 0F, CubicBezierEasingFunction_0());
                 return result;
             }
 
@@ -1938,11 +1960,12 @@ namespace AnimatedVisuals
                 var result = _c.CreateShapeVisual();
                 result.Size = new Vector2(178F, 131F);
                 var shapes = result.Shapes;
-                // ++++++++++++++++++++++++++++++++++
+                // Transforms: front (Stroke)
                 shapes.Add(SpriteShape_0());
                 shapes.Add(ContainerShape_0());
                 shapes.Add(ContainerShape_1());
                 shapes.Add(ContainerShape_3());
+                shapes.Add(ContainerShape_5());
                 return result;
             }
 
@@ -1959,81 +1982,58 @@ namespace AnimatedVisuals
             {
                 // Frame 0.
                 var result = CreateVector2KeyFrameAnimation(0F, new Vector2(24F, 24F), HoldThenStepEasingFunction());
-                // Frame 90.
-                result.InsertKeyFrame(0.624479592F, new Vector2(24F, 24F), CubicBezierEasingFunction_0());
+                // Frame 48.
+                result.InsertKeyFrame(0.444197655F, new Vector2(24F, 24F), CubicBezierEasingFunction_0());
+                // Frame 78.
+                result.InsertKeyFrame(0.721821189F, new Vector2(36F, 36F), CubicBezierEasingFunction_0());
                 // Frame 108.
-                result.InsertKeyFrame(0.749375522F, new Vector2(32F, 32F), CubicBezierEasingFunction_0());
-                // Frame 114.
-                result.InsertKeyFrame(0.791007519F, new Vector2(36F, 36F), CubicBezierEasingFunction_0());
-                // Frame 144.
-                result.InsertKeyFrame(0.999167383F, new Vector2(44F, 44F), CubicBezierEasingFunction_0());
-                return result;
-            }
-
-            // Anchor
-            Vector2KeyFrameAnimation AnchorVector2Animation_1()
-            {
-                // Frame 0.
-                if (_anchorVector2Animation_1 != null) { return _anchorVector2Animation_1; }
-                var result = _anchorVector2Animation_1 = CreateVector2KeyFrameAnimation(0F, new Vector2(36F, 36F), HoldThenStepEasingFunction());
-                // Frame 90.
-                result.InsertKeyFrame(0.624479592F, new Vector2(36F, 36F), CubicBezierEasingFunction_0());
-                // Frame 108.
-                result.InsertKeyFrame(0.749375522F, new Vector2(28F, 28F), CubicBezierEasingFunction_0());
-                // Frame 114.
-                result.InsertKeyFrame(0.791007519F, new Vector2(28F, 28F), CubicBezierEasingFunction_0());
-                // Frame 144.
-                result.InsertKeyFrame(0.999167383F, new Vector2(36F, 36F), CubicBezierEasingFunction_0());
+                result.InsertKeyFrame(0.999444723F, new Vector2(44F, 44F), CubicBezierEasingFunction_0());
                 return result;
             }
 
             // - Transforms: icon
             // Anchor
-            Vector2KeyFrameAnimation AnchorVector2Animation_2()
+            Vector2KeyFrameAnimation AnchorVector2Animation_1()
             {
                 // Frame 0.
                 var result = CreateVector2KeyFrameAnimation(0F, new Vector2(14.2299995F, 17.1000004F), HoldThenStepEasingFunction());
-                // Frame 90.
-                result.InsertKeyFrame(0.624479592F, new Vector2(14.2299995F, 17.1000004F), CubicBezierEasingFunction_0());
+                // Frame 48.
+                result.InsertKeyFrame(0.444197655F, new Vector2(14.2299995F, 17.1000004F), CubicBezierEasingFunction_0());
+                // Frame 78.
+                result.InsertKeyFrame(0.721821189F, new Vector2(11.0600004F, 13.3000002F), CubicBezierEasingFunction_0());
                 // Frame 108.
-                result.InsertKeyFrame(0.749375522F, new Vector2(11.0600004F, 13.3000002F), CubicBezierEasingFunction_0());
-                // Frame 114.
-                result.InsertKeyFrame(0.791007519F, new Vector2(11.0600004F, 13.3000002F), CubicBezierEasingFunction_0());
-                // Frame 144.
-                result.InsertKeyFrame(0.999167383F, new Vector2(14.2299995F, 17.1000004F), CubicBezierEasingFunction_0());
+                result.InsertKeyFrame(0.999444723F, new Vector2(14.2299995F, 17.1000004F), CubicBezierEasingFunction_0());
                 return result;
             }
 
             // - Transforms: Icons/Media/pause 
             // Anchor
-            Vector2KeyFrameAnimation AnchorVector2Animation_3()
+            Vector2KeyFrameAnimation AnchorVector2Animation_2()
             {
                 // Frame 0.
                 var result = CreateVector2KeyFrameAnimation(0F, new Vector2(18.9200001F, 18.9200001F), HoldThenStepEasingFunction());
-                // Frame 90.
-                result.InsertKeyFrame(0.624479592F, new Vector2(18.9200001F, 18.9200001F), CubicBezierEasingFunction_0());
+                // Frame 48.
+                result.InsertKeyFrame(0.444197655F, new Vector2(18.9200001F, 18.9200001F), CubicBezierEasingFunction_0());
+                // Frame 78.
+                result.InsertKeyFrame(0.721821189F, new Vector2(14.71F, 14.71F), CubicBezierEasingFunction_0());
                 // Frame 108.
-                result.InsertKeyFrame(0.749375522F, new Vector2(14.71F, 14.71F), CubicBezierEasingFunction_0());
-                // Frame 114.
-                result.InsertKeyFrame(0.791007519F, new Vector2(14.71F, 14.71F), CubicBezierEasingFunction_0());
-                // Frame 144.
-                result.InsertKeyFrame(0.999167383F, new Vector2(18.9200001F, 18.9200001F), CubicBezierEasingFunction_0());
+                result.InsertKeyFrame(0.999444723F, new Vector2(18.9200001F, 18.9200001F), CubicBezierEasingFunction_0());
                 return result;
             }
 
             // - Layer aggregator
-            // ++++++++++++++++++++++++++++++++++
+            // Transforms: front (Stroke)
             // Offset
             Vector2KeyFrameAnimation OffsetVector2Animation()
             {
                 // Frame 0.
-                var result = CreateVector2KeyFrameAnimation(0F, new Vector2(0.709999979F, 0.25999999F), HoldThenStepEasingFunction());
-                // Frame 90.
-                result.InsertKeyFrame(0.624479592F, new Vector2(0.709999979F, 0.25999999F), CubicBezierEasingFunction_0());
+                var result = CreateVector2KeyFrameAnimation(0F, new Vector2(0F, 0.379999995F), HoldThenStepEasingFunction());
+                // Frame 48.
+                result.InsertKeyFrame(0.444197655F, new Vector2(0F, 0.379999995F), CubicBezierEasingFunction_0());
+                // Frame 78.
+                result.InsertKeyFrame(0.721821189F, new Vector2(0.129999995F, 0.379999995F), CubicBezierEasingFunction_0());
                 // Frame 108.
-                result.InsertKeyFrame(0.749375522F, new Vector2(0.920000017F, 0.389999986F), CubicBezierEasingFunction_0());
-                // Frame 114.
-                result.InsertKeyFrame(0.791007519F, new Vector2(0.790000021F, 0.389999986F), CubicBezierEasingFunction_0());
+                result.InsertKeyFrame(0.999444723F, new Vector2(0F, 0.379999995F), CubicBezierEasingFunction_0());
                 return result;
             }
 
@@ -2041,83 +2041,59 @@ namespace AnimatedVisuals
             Vector2KeyFrameAnimation PositionVector2Animation_0()
             {
                 // Frame 0.
-                var result = CreateVector2KeyFrameAnimation(0F, new Vector2(89F, 87F), HoldThenStepEasingFunction());
-                // Frame 90.
-                result.InsertKeyFrame(0.624479592F, new Vector2(89F, 87F), CubicBezierEasingFunction_0());
+                if (_positionVector2Animation_0 != null) { return _positionVector2Animation_0; }
+                var result = _positionVector2Animation_0 = CreateVector2KeyFrameAnimation(0F, new Vector2(89F, 87F), HoldThenStepEasingFunction());
+                // Frame 48.
+                result.InsertKeyFrame(0.444197655F, new Vector2(89F, 87F), CubicBezierEasingFunction_0());
+                // Frame 78.
+                result.InsertKeyFrame(0.721821189F, new Vector2(89.0899963F, 87F), CubicBezierEasingFunction_0());
                 // Frame 108.
-                result.InsertKeyFrame(0.749375522F, new Vector2(89.0899963F, 87F), CubicBezierEasingFunction_0());
-                // Frame 114.
-                result.InsertKeyFrame(0.791007519F, new Vector2(89.0899963F, 87F), CubicBezierEasingFunction_0());
-                // Frame 144.
-                result.InsertKeyFrame(0.999167383F, new Vector2(89.0400009F, 87F), CubicBezierEasingFunction_0());
-                return result;
-            }
-
-            // - Transforms: fond
-            // Position
-            Vector2KeyFrameAnimation PositionVector2Animation_1()
-            {
-                // Frame 0.
-                var result = CreateVector2KeyFrameAnimation(0F, new Vector2(36.6300011F, 36.6300011F), HoldThenStepEasingFunction());
-                // Frame 90.
-                result.InsertKeyFrame(0.624479592F, new Vector2(36.6300011F, 36.6300011F), CubicBezierEasingFunction_0());
-                // Frame 108.
-                result.InsertKeyFrame(0.749375522F, new Vector2(28.3899994F, 28.3899994F), CubicBezierEasingFunction_0());
-                // Frame 114.
-                result.InsertKeyFrame(0.791007519F, new Vector2(28.3899994F, 28.3899994F), CubicBezierEasingFunction_0());
-                // Frame 144.
-                result.InsertKeyFrame(0.999167383F, new Vector2(36.6300011F, 36.6300011F), CubicBezierEasingFunction_0());
-                return result;
-            }
-
-            // Position
-            Vector2KeyFrameAnimation PositionVector2Animation_2()
-            {
-                // Frame 0.
-                if (_positionVector2Animation_2 != null) { return _positionVector2Animation_2; }
-                var result = _positionVector2Animation_2 = CreateVector2KeyFrameAnimation(0F, new Vector2(89F, 87F), HoldThenStepEasingFunction());
-                // Frame 90.
-                result.InsertKeyFrame(0.624479592F, new Vector2(89F, 87F), CubicBezierEasingFunction_0());
-                // Frame 108.
-                result.InsertKeyFrame(0.749375522F, new Vector2(89.1299973F, 87F), CubicBezierEasingFunction_0());
-                // Frame 114.
-                result.InsertKeyFrame(0.791007519F, new Vector2(89.1299973F, 87F), CubicBezierEasingFunction_0());
-                // Frame 144.
-                result.InsertKeyFrame(0.999167383F, new Vector2(89F, 87F), CubicBezierEasingFunction_0());
+                result.InsertKeyFrame(0.999444723F, new Vector2(89F, 87F), CubicBezierEasingFunction_0());
                 return result;
             }
 
             // - Transforms: icon
             // Position
-            Vector2KeyFrameAnimation PositionVector2Animation_3()
+            Vector2KeyFrameAnimation PositionVector2Animation_1()
             {
                 // Frame 0.
                 var result = CreateVector2KeyFrameAnimation(0F, new Vector2(18.9200001F, 18.9200001F), HoldThenStepEasingFunction());
-                // Frame 90.
-                result.InsertKeyFrame(0.624479592F, new Vector2(18.9200001F, 18.9200001F), CubicBezierEasingFunction_0());
+                // Frame 48.
+                result.InsertKeyFrame(0.444197655F, new Vector2(18.9200001F, 18.9200001F), CubicBezierEasingFunction_0());
+                // Frame 78.
+                result.InsertKeyFrame(0.721821189F, new Vector2(14.71F, 14.7200003F), CubicBezierEasingFunction_0());
                 // Frame 108.
-                result.InsertKeyFrame(0.749375522F, new Vector2(14.71F, 14.7200003F), CubicBezierEasingFunction_0());
-                // Frame 114.
-                result.InsertKeyFrame(0.791007519F, new Vector2(14.71F, 14.7200003F), CubicBezierEasingFunction_0());
-                // Frame 144.
-                result.InsertKeyFrame(0.999167383F, new Vector2(18.9200001F, 18.9200001F), CubicBezierEasingFunction_0());
+                result.InsertKeyFrame(0.999444723F, new Vector2(18.9200001F, 18.9200001F), CubicBezierEasingFunction_0());
                 return result;
             }
 
             // - Transforms: Icons/Media/pause 
             // Position
-            Vector2KeyFrameAnimation PositionVector2Animation_4()
+            Vector2KeyFrameAnimation PositionVector2Animation_2()
             {
                 // Frame 0.
                 var result = CreateVector2KeyFrameAnimation(0F, new Vector2(35.9199982F, 35.9199982F), HoldThenStepEasingFunction());
-                // Frame 90.
-                result.InsertKeyFrame(0.624479592F, new Vector2(35.9199982F, 35.9199982F), CubicBezierEasingFunction_0());
+                // Frame 48.
+                result.InsertKeyFrame(0.444197655F, new Vector2(35.9199982F, 35.9199982F), CubicBezierEasingFunction_0());
+                // Frame 78.
+                result.InsertKeyFrame(0.721821189F, new Vector2(27.9400005F, 27.9400005F), CubicBezierEasingFunction_0());
                 // Frame 108.
-                result.InsertKeyFrame(0.749375522F, new Vector2(27.8899994F, 27.9400005F), CubicBezierEasingFunction_0());
-                // Frame 114.
-                result.InsertKeyFrame(0.791007519F, new Vector2(27.8899994F, 27.9400005F), CubicBezierEasingFunction_0());
-                // Frame 144.
-                result.InsertKeyFrame(0.999167383F, new Vector2(35.9199982F, 35.9199982F), CubicBezierEasingFunction_0());
+                result.InsertKeyFrame(0.999444723F, new Vector2(35.9199982F, 35.9199982F), CubicBezierEasingFunction_0());
+                return result;
+            }
+
+            // Anchor
+            Vector2KeyFrameAnimation Vector2Animation()
+            {
+                // Frame 0.
+                if (_vector2Animation != null) { return _vector2Animation; }
+                var result = _vector2Animation = CreateVector2KeyFrameAnimation(0F, new Vector2(36F, 36F), HoldThenStepEasingFunction());
+                // Frame 48.
+                result.InsertKeyFrame(0.444197655F, new Vector2(36F, 36F), CubicBezierEasingFunction_0());
+                // Frame 78.
+                result.InsertKeyFrame(0.721821189F, new Vector2(28F, 28F), CubicBezierEasingFunction_0());
+                // Frame 108.
+                result.InsertKeyFrame(0.999444723F, new Vector2(36F, 36F), CubicBezierEasingFunction_0());
                 return result;
             }
 
@@ -2139,31 +2115,33 @@ namespace AnimatedVisuals
 
             public void CreateAnimations()
             {
-                _themeColor_Color_446EDD_1.Properties.StartAnimation("Opacity0", Opacity0ScalarAnimation_0_to_0(), AnimationController_0());
-                _themeColor_Color_446EDD_2.Properties.StartAnimation("Opacity0", Opacity0ScalarAnimation_1_to_1(), AnimationController_0());
+                _themeColor_Color_FF8500_1.Properties.StartAnimation("Opacity0", Opacity0ScalarAnimation_1_to_0(), AnimationController_0());
                 _containerShape_0.Properties.StartAnimation("Anchor", AnchorVector2Animation_0(), AnimationController_0());
                 _containerShape_0.Properties.StartAnimation("Position", PositionVector2Animation_0(), AnimationController_0());
-                _containerShape_1.Properties.StartAnimation("Anchor", AnchorVector2Animation_1(), AnimationController_0());
-                _containerShape_1.Properties.StartAnimation("Position", PositionVector2Animation_2(), AnimationController_0());
-                _containerShape_2.Properties.StartAnimation("Anchor", AnchorVector2Animation_1(), AnimationController_0());
-                _containerShape_2.Properties.StartAnimation("Position", PositionVector2Animation_1(), AnimationController_0());
-                _containerShape_3.Properties.StartAnimation("Anchor", AnchorVector2Animation_1(), AnimationController_0());
-                _containerShape_3.Properties.StartAnimation("Position", PositionVector2Animation_2(), AnimationController_0());
-                _containerShape_4.Properties.StartAnimation("Anchor", AnchorVector2Animation_3(), AnimationController_0());
-                _containerShape_4.Properties.StartAnimation("Position", PositionVector2Animation_4(), AnimationController_0());
-                _containerShape_5.Properties.StartAnimation("Anchor", AnchorVector2Animation_2(), AnimationController_0());
-                _containerShape_5.Properties.StartAnimation("Position", PositionVector2Animation_3(), AnimationController_0());
+                _containerShape_1.Properties.StartAnimation("Anchor", Vector2Animation(), AnimationController_0());
+                _containerShape_1.Properties.StartAnimation("Position", PositionVector2Animation_0(), AnimationController_0());
+                _containerShape_2.Properties.StartAnimation("Anchor", Vector2Animation(), AnimationController_0());
+                _containerShape_2.Properties.StartAnimation("Position", Vector2Animation(), AnimationController_0());
+                _containerShape_3.Properties.StartAnimation("Anchor", Vector2Animation(), AnimationController_0());
+                _containerShape_3.Properties.StartAnimation("Position", PositionVector2Animation_0(), AnimationController_0());
+                _containerShape_4.Properties.StartAnimation("Anchor", Vector2Animation(), AnimationController_0());
+                _containerShape_4.Properties.StartAnimation("Position", Vector2Animation(), AnimationController_0());
+                _containerShape_5.Properties.StartAnimation("Anchor", Vector2Animation(), AnimationController_0());
+                _containerShape_5.Properties.StartAnimation("Position", PositionVector2Animation_0(), AnimationController_0());
+                _containerShape_6.Properties.StartAnimation("Anchor", AnchorVector2Animation_2(), AnimationController_0());
+                _containerShape_6.Properties.StartAnimation("Position", PositionVector2Animation_2(), AnimationController_0());
+                _containerShape_7.Properties.StartAnimation("Anchor", AnchorVector2Animation_1(), AnimationController_0());
+                _containerShape_7.Properties.StartAnimation("Position", PositionVector2Animation_1(), AnimationController_0());
                 _pathGeometry_1.StartAnimation("Path", PathKeyFrameAnimation_0(), AnimationController_0());
                 _pathGeometry_2.StartAnimation("Path", PathKeyFrameAnimation_1(), AnimationController_0());
                 _pathGeometry_3.StartAnimation("Path", PathKeyFrameAnimation_2(), AnimationController_0());
+                _pathGeometry_4.StartAnimation("Path", PathKeyFrameAnimation_3(), AnimationController_0());
                 _spriteShape_0.StartAnimation("Offset", OffsetVector2Animation(), AnimationController_0());
-                _spriteShape_2.StartAnimation("StrokeThickness", StrokeThicknessScalarAnimation_1p25_to_1p25(), AnimationController_0());
             }
 
             public void DestroyAnimations()
             {
-                _themeColor_Color_446EDD_1.Properties.StopAnimation("Opacity0");
-                _themeColor_Color_446EDD_2.Properties.StopAnimation("Opacity0");
+                _themeColor_Color_FF8500_1.Properties.StopAnimation("Opacity0");
                 _containerShape_0.Properties.StopAnimation("Anchor");
                 _containerShape_0.Properties.StopAnimation("Position");
                 _containerShape_1.Properties.StopAnimation("Anchor");
@@ -2176,11 +2154,15 @@ namespace AnimatedVisuals
                 _containerShape_4.Properties.StopAnimation("Position");
                 _containerShape_5.Properties.StopAnimation("Anchor");
                 _containerShape_5.Properties.StopAnimation("Position");
+                _containerShape_6.Properties.StopAnimation("Anchor");
+                _containerShape_6.Properties.StopAnimation("Position");
+                _containerShape_7.Properties.StopAnimation("Anchor");
+                _containerShape_7.Properties.StopAnimation("Position");
                 _pathGeometry_1.StopAnimation("Path");
                 _pathGeometry_2.StopAnimation("Path");
                 _pathGeometry_3.StopAnimation("Path");
+                _pathGeometry_4.StopAnimation("Path");
                 _spriteShape_0.StopAnimation("Offset");
-                _spriteShape_2.StopAnimation("StrokeThickness");
             }
 
         }
