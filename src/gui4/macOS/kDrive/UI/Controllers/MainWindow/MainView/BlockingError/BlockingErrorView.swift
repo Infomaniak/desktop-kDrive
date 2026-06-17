@@ -95,8 +95,8 @@ struct BlockingErrorView: View {
     VStack {
         ForEach(BlockingSynchroError.allCases, id: \.self) { error in
             BlockingErrorView(blockingError: PreviewHelper.blockingErrorFor(syncError: error))
-            .frame(minWidth: 512)
-            .fixedSize(horizontal: false, vertical: true)
+                .frame(minWidth: 512)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 }
