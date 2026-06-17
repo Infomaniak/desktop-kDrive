@@ -232,6 +232,11 @@ bool CommonUtility::isAPFS(const SyncPath &targetPath) {
     return getRootFsType(targetPath) == apfs;
 }
 
+bool CommonUtility::isHFSP(const SyncPath &targetPath) {
+    static const std::string hfsp("HFS");
+    return getRootFsType(targetPath) == hfsp;
+}
+
 bool CommonUtility::isFAT(const SyncPath &targetPath) {
     static const std::string fat("FAT");
     return contains(getRootFsType(targetPath), fat);
