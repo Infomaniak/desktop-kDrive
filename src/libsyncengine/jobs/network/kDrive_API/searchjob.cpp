@@ -56,6 +56,7 @@ SearchJob::SearchJob(const DriveDbId driveDbId, const SyncDbId syncDbId, const s
         return;
     }
 
+    _syncVfsMode = sync.virtualFileMode();
     _syncRootPath = sync.localPath();
 }
 
@@ -91,11 +92,10 @@ void SearchJob::setQueryParameters(Poco::URI &uri) {
 }
 
 
-SearchJob::LocalProperties SearchJob::getLocalProperties(const SyncPath &itemPath) const {
-    LocalProperties localProperties;
+ExitInfo SearchJob::getLocalProperties(const SyncPath &itemPath, LocalProperties &localProperties) const {
     localProperties.path = itemPath;
 
-    if (_syncRootPath.empty()) return localProperties;
+    if (_syncRootPath.empty()) return ExitCode::DbError;
 
     if (localProperties.path.native().starts_with(privateFolder)) {
         localProperties.path = localProperties.path.native().substr(
@@ -110,22 +110,28 @@ SearchJob::LocalProperties SearchJob::getLocalProperties(const SyncPath &itemPat
     }
 
     const SyncPath absolutePath = _syncRootPath / localProperties.path;
-    IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(absolutePath, localProperties.isAvailableLocally, ioError,
-                                     IoHelper::PathCheckOption::Insensitive)) {
-        LOGW_WARN(_logger, L"IoHelper::checkIfPathExists failed for " << Utility::formatIoError(itemPath, ioError));
-        return localProperties;
-    }
 
-    bool isDehydrated = false;
-    if (localProperties.isAvailableLocally) {
-        if (!IoHelper::checkIfFileIsDehydrated(absolutePath, isDehydrated, ioError)) {
+    if (_syncVfsMode == VirtualFileMode::Off) {
+        if (IoError ioError = IoError::Success; !IoHelper::checkIfPathExists(absolutePath, localProperties.isAvailableLocally,
+                                                                             ioError, IoHelper::PathCheckOption::Insensitive)) {
+            LOGW_WARN(_logger, L"IoHelper::checkIfPathExists failed for " << Utility::formatIoError(itemPath, ioError));
+            return {ExitCode::SystemError, ExitCause::FileAccessError};
+        }
+        localProperties.isHydrated = localProperties.isAvailableLocally;
+    } else {
+        IoError ioError = IoError::Success;
+        bool isDehydrated = false;
+        if (!IoHelper::checkIfFileIsDehydrated(absolutePath, isDehydrated, ioError) ||
+            (ioError != IoError::Success && ioError != IoError::NoSuchFileOrDirectory)) {
             LOGW_WARN(_logger, L"IoHelper::checkIfFileIsDehydrated failed for " << Utility::formatIoError(itemPath, ioError));
-        } else
+            return {ExitCode::SystemError, ExitCause::FileAccessError};
+        } else {
+            localProperties.isAvailableLocally = true;
             localProperties.isHydrated = !isDehydrated;
+        }
     }
 
-    return localProperties;
+    return ExitCode::Ok;
 }
 
 ExitInfo SearchJob::handleResponse(std::istream &is) {
@@ -148,6 +154,8 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
         LOG_WARN(_logger, "Missing data array for search string:" << _searchString);
         return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
+
+    ExitInfo exitInfo = ExitCode::Ok;
 
     for (auto it = dataArray->begin(); it != dataArray->end(); ++it) {
         const auto obj = it->extract<Poco::JSON::Object::Ptr>();
@@ -180,11 +188,15 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
             return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
 
-        const auto localProperties = getLocalProperties(path);
+        LocalProperties localProperties;
+        const auto itemExitInfo = getLocalProperties(path, localProperties);
         (void) _searchResults.emplace_back(nodeId, name, type == "dir" ? NodeType::Directory : NodeType::File,
                                            localProperties.path, modifiedTime, size, localProperties.isAvailableLocally,
                                            localProperties.isHydrated);
+
+        if (!itemExitInfo) exitInfo = itemExitInfo; // Stores only the last error for the final return value.
     }
-    return ExitCode::Ok;
+
+    return exitInfo;
 }
 } // namespace KDC
