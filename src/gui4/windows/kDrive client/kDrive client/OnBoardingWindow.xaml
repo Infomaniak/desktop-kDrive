@@ -67,7 +67,6 @@
                 Grid.Column="1"
                 Background="{ThemeResource LayerFillColorDefaultBrush}">
         </Border>
-
         <AnimatedVisualPlayer x:Name="kDrive_SyncroFilePlayer"
                               AutoPlay="True"
                               MaxWidth="219"
@@ -77,11 +76,11 @@
                               HorizontalAlignment="Center"
                               VerticalAlignment="Center">
             <animatedvisuals:KDrive_SyncroFile Color_446FDD="{kDrive:ThemeColor Key=AccentFillColorDefaultBrush}"
-                                               Color_FFFFFF="{kDrive:ThemeColor Key=SolidBackgroundFillColorBaseBrush}"
-                                               Color_F5F7FB="{kDrive:ThemeColor Key=SolidBackgroundFillColorSecondaryBrush}"
-                                               Color_DBE3F0="{kDrive:ThemeColor Key=SolidBackgroundFillColorBaseAltBrush}"
-                                               Color_ECF1F7="{kDrive:ThemeColor Key=SolidBackgroundFillColorTertiaryBrush}"
-                                               Color_C4CCDA="{kDrive:ThemeColor Key=SurfaceStrokeColorDefaultBrush}" />
+                                               Color_FFFFFF="{ThemeResource Infomaniak.Custom.Colors.Animations.KDrive_SyncroFile.Overrides.Color_FFFFFF}"
+                                               Color_F5F7FB="{ThemeResource Infomaniak.Custom.Colors.Animations.KDrive_SyncroFile.Overrides.Color_F5F7FB}"
+                                               Color_DBE3F0="{ThemeResource Infomaniak.Custom.Colors.Animations.KDrive_SyncroFile.Overrides.Color_DBE3F0}"
+                                               Color_ECF1F7="{ThemeResource Infomaniak.Custom.Colors.Animations.KDrive_SyncroFile.Overrides.Color_ECF1F7}"
+                                               Color_C4CCDA="{ThemeResource Infomaniak.Custom.Colors.Animations.KDrive_SyncroFile.Overrides.Color_C4CCDA}" />
         </AnimatedVisualPlayer>
         <AnimatedVisualPlayer x:Name="KDrive_LoaderStrokePlayer"
                               AutoPlay="True"
