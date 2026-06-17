@@ -32,4 +32,9 @@
     <Color x:Key="Infomaniak.Custom.colors.storage.other">#BA68C8</Color>
     <SolidColorBrush x:Key="Infomaniak.Custom.colors.storage.otherBrush" Color="{StaticResource Infomaniak.Custom.colors.storage.other}" />
 
+    <Color x:Key="Infomaniak.Custom.Colors.Animations.KDrive_SyncroFile.Overrides.Color_FFFFFF">#FFFFFF</Color>
+    <Color x:Key="Infomaniak.Custom.Colors.Animations.KDrive_SyncroFile.Overrides.Color_F5F7FB">#F5F7FB</Color>
+    <Color x:Key="Infomaniak.Custom.Colors.Animations.KDrive_SyncroFile.Overrides.Color_DBE3F0">#DBE3F0</Color>
+    <Color x:Key="Infomaniak.Custom.Colors.Animations.KDrive_SyncroFile.Overrides.Color_ECF1F7">#ECF1F7</Color>
+    <Color x:Key="Infomaniak.Custom.Colors.Animations.KDrive_SyncroFile.Overrides.Color_C4CCDA">#C4CCDA</Color>
 </ResourceDictionary>
