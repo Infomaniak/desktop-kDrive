@@ -1308,7 +1308,9 @@ void RemoteFileSystemObserverWorker::resume() {
     ISyncWorker::init();
 
     setRunningFlagValue(true);
-    setUpdateFlagValue(false);
+
+    // We force a `listing/continue` every time the worker is resumed, to ensure that we do not miss any change.
+    setUpdateFlagValue(true);
 
     startExecutionThread();
 }
