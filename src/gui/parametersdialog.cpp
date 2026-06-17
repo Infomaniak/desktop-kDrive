@@ -815,7 +815,7 @@ QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) cons
                         "There is not enough space left on your computer.<br>"
                         "The download has been canceled.");
             } else if (errorInfo.exitCause() == ExitCause::FileSystemNotSupported) {
-                return tr(R"(Impossible to create file %1 because it is not supported on your filesystem.<br>"It has been excluded from synchronization.)")
+                return tr(R"(Impossible to create file "%1" because it is not supported on your filesystem.<br>It has been excluded from synchronization.)")
                         .arg(errorInfo.path());
             }
             return tr("System error.");
