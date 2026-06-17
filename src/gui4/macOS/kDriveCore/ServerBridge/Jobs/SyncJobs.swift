@@ -217,7 +217,6 @@ public struct SyncJobs: Sendable {
 
     // MARK: - Optimistic Status Update
 
-    @discardableResult
     private func setSyncStatusOptimistically(syncDbId: Int32, status: KDC.SyncStatus) async -> SynchroProgressInfo? {
         guard var synchro = await coherentCache.getSynchro(synchroDbId: syncDbId) else { return nil }
 
