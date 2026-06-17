@@ -137,7 +137,7 @@ public enum PreviewHelper {
         syncDate: .now.addingTimeInterval(-3600)
     )
 
-    public static func blockingErrorFor(syncError: BlockingSynchroError, isDriveAdmin: Bool) -> UIBlockingError {
+    public static func blockingErrorFor(syncError: BlockingSynchroError) -> UIBlockingError {
         return UIBlockingError(uiDrive: drive1, uiSynchro: synchro, error: syncError)
     }
 

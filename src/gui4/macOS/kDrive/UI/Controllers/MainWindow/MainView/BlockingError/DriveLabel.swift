@@ -78,7 +78,7 @@ struct DriveLabel: View {
 
 #Preview {
     VStack {
-        let blockingError = PreviewHelper.blockingErrorFor(syncError: .asleep, isDriveAdmin: false)
+        let blockingError = PreviewHelper.blockingErrorFor(syncError: .asleep)
         DriveLabel(
             drive: blockingError.drive,
             badgeIcon: blockingError.badgeIcon,
