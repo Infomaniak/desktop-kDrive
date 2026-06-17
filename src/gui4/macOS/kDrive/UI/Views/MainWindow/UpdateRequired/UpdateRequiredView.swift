@@ -16,11 +16,26 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Combine
+import InfomaniakDI
+import kDriveCore
 import kDriveCoreUI
 import kDriveResources
+import Sentry
 import SwiftUI
 
 struct UpdateRequiredView: View {
+    @InjectService private var updaterCacheObservable: UpdaterCacheObservable
+
+    @State private var updateState: UIUpdateState = .checking
+
+    @State private var buttonInstallIsDisabled = false
+    @State private var failedToStartInstaller = false
+
+    private var updateStatePublisher: UpdateStatePublisher {
+        updaterCacheObservable.updateStatePublisher
+    }
+
     var body: some View {
         VStack(spacing: AppPadding.padding32) {
             KDriveResources.foldersStackArrowsCounterclockwise.swiftUIImage
@@ -37,16 +52,57 @@ struct UpdateRequiredView: View {
             .multilineTextAlignment(.center)
             .foregroundStyle(ColorToken.Text.primary.asColor)
 
-            Button(KDriveLocalizable.buttonUpdateNow, action: updateApp)
-                .buttonStyle(.borderedProminent)
+            if updateState == .downloading {
+                HStack {
+                    ProgressView()
+                        .progressViewStyle(.circular)
+
+                    Text(KDriveLocalizable.buttonDownloadInProgress)
+                        .font(.Tokens.body)
+                }
+            } else if failedToStartInstaller || updateState == .downloadError || updateState == .updateError {
+                Button(KDriveLocalizable.buttonDownloadManually, action: downloadManually)
+                    .buttonStyle(.bordered)
+            } else {
+                Button(KDriveLocalizable.buttonUpdateNow, action: updateApp)
+                    .buttonStyle(.borderedProminent)
+                    .disabled(buttonInstallIsDisabled)
+            }
         }
         .padding(AppPadding.padding16)
         .background(ColorToken.Surface.primary.asColor, in: .rect(cornerRadius: AppRadius.radius16))
         .padding(AppPadding.padding24)
+        .task {
+            guard let currentUpdateState: KDC.UpdateState = try? await UpdaterJobs().updaterState() else {
+                return
+            }
+            self.updateState = UIUpdateState(updateState: currentUpdateState)
+        }
+        .onReceive(updateStatePublisher
+            .map(UIUpdateState.init(updateState:))
+            .receive(on: RunLoop.main)) { @MainActor updateState in
+                self.updateState = updateState
+        }
     }
 
     private func updateApp() {
+        Task {
+            do {
+                buttonInstallIsDisabled = true
+                try await UpdaterJobs().startInstaller()
+            } catch {
+                failedToStartInstaller = true
+                IKLogger.data.log("Failed to install required update")
+                SentrySDK.capture(error: error)
+            }
 
+            buttonInstallIsDisabled = false
+        }
+    }
+
+    private func downloadManually() {
+        let url = URL(string: KDriveLocalizable.downloadAppUrl)!
+        NSWorkspace.shared.open(url)
     }
 }
 

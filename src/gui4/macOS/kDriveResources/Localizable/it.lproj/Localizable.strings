@@ -394,6 +394,8 @@
 
 /* loco:698af1c80126fd2db302b783 */
 "doNotJoin" = "Non aderire";
+/* loco:69d90c3e87d4f2c6d30331c2 */
+"downloadAppUrl" = "https://www.infomaniak.com/it/applicazioni/scarica-kdrive";
 
 /* loco:696a260311ac2de6c6029683 */
 "driveAccessDeniedErrorDescription" = "Non si ha l'autorizzazione ad accedere a questo kDrive.\nControllare le autorizzazioni o contattare l'amministratore.";

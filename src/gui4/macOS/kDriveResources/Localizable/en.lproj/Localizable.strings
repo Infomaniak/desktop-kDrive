@@ -147,6 +147,9 @@
 /* loco:698b14e52445668d9d0495a2 */
 "buttonDisconnectAccount" = "Disconnect this account";
 
+/* loco:69d905534d8c60bd1f0c9343 */
+"buttonDownloadInProgress" = "Downloading…";
+
 /* loco:69d906534d8c60bd1f0c9344 */
 "buttonDownloadManually" = "Download manually";
 
@@ -394,6 +397,8 @@
 
 /* loco:698af1c80126fd2db302b783 */
 "doNotJoin" = "Do not join";
+/* loco:69d90c3e87d4f2c6d30331c2 */
+"downloadAppUrl" = "https://www.infomaniak.com/en/apps/download-kdrive";
 
 /* loco:696a260311ac2de6c6029683 */
 "driveAccessDeniedErrorDescription" = "You do not have permission to access this kDrive.\nPlease check your permissions or contact your administrator.";

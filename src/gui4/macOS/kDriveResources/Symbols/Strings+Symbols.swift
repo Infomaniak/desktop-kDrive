@@ -106,6 +106,8 @@ public enum KDriveLocalizable {
   public static let buttonCreateNewSync = KDriveLocalizable.tr("Localizable", "buttonCreateNewSync", fallback: "Create a new sync")
   /// loco:698b14e52445668d9d0495a2
   public static let buttonDisconnectAccount = KDriveLocalizable.tr("Localizable", "buttonDisconnectAccount", fallback: "Disconnect this account")
+  /// loco:69d905534d8c60bd1f0c9343
+  public static let buttonDownloadInProgress = KDriveLocalizable.tr("Localizable", "buttonDownloadInProgress", fallback: "Downloading…")
   /// loco:69d906534d8c60bd1f0c9344
   public static let buttonDownloadManually = KDriveLocalizable.tr("Localizable", "buttonDownloadManually", fallback: "Download manually")
   /// loco:698b0aefb16a3916fc004f32
@@ -280,6 +282,8 @@ public enum KDriveLocalizable {
   public static let dialogSystemErrorSyncDirDiskMissingErrorTip = KDriveLocalizable.tr("Localizable", "dialogSystemErrorSyncDirDiskMissingErrorTip", fallback: "Reconnect it to resume sync.")
   /// loco:698af1c80126fd2db302b783
   public static let doNotJoin = KDriveLocalizable.tr("Localizable", "doNotJoin", fallback: "Do not join")
+  /// loco:69d90c3e87d4f2c6d30331c2
+  public static let downloadAppUrl = KDriveLocalizable.tr("Localizable", "downloadAppUrl", fallback: "https://www.infomaniak.com/en/apps/download-kdrive")
   /// loco:696a260311ac2de6c6029683
   public static let driveAccessDeniedErrorDescription = KDriveLocalizable.tr("Localizable", "driveAccessDeniedErrorDescription", fallback: "You do not have permission to access this kDrive.\nPlease check your permissions or contact your administrator.")
   /// loco:696a25f0bcde38f2b9018124
