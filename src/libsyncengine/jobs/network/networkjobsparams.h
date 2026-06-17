@@ -141,6 +141,8 @@ enum class ActionCode {
     ActionCodeEdit,
     ActionCodeAccess,
     ActionCodeTrash, // The file has been put into the trash
+    ActionCodeTrashInherited, // The parent of an item has been put into the trash: this action should be filtered out thanks to
+                              // the backend API. Meanwhile, it is ignored.
     ActionCodeDelete, // The file has been completely deleted from the trash
     ActionCodeMoveIn,
     ActionCodeMoveOut,
