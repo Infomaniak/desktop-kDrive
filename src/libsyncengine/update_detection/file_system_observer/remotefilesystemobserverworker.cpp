@@ -873,6 +873,19 @@ ExitInfo RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
     }
 
     SyncTime tmpTime = 0;
+
+    // Special handling for AccessRightUserRemove action, as it does not contain `created_at` and `last_modified_at` fields.
+    // We set them with the `executed_at`.
+    if (actionInfo.actionCode == ActionCode::ActionCodeAccessRightUserRemove) {
+        if (!JsonParserUtility::extractValue(actionObj, executedAtKey, tmpTime, false))
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
+
+        actionInfo.snapshotItem.setCreatedAt(tmpTime);
+        actionInfo.snapshotItem.setLastModified(tmpTime);
+
+        return ExitCode::Ok;
+    }
+
     if (!JsonParserUtility::extractValue(actionObj, createdAtKey, tmpTime, false))
         return {ExitCode::BackError, ExitCause::MissingReplyData};
 
@@ -880,6 +893,7 @@ ExitInfo RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
 
     if (!JsonParserUtility::extractValue(actionObj, lastModifiedAtKey, tmpTime, false))
         return {ExitCode::BackError, ExitCause::MissingReplyData};
+
     actionInfo.snapshotItem.setLastModified(tmpTime);
 
     return ExitCode::Ok;
@@ -889,12 +903,10 @@ ExitInfo RemoteFileSystemObserverWorker::extractActionFileInfo(const Poco::JSON:
                                                                ActionInfoList &actionInfoList) {
     RemoteFileId fileId = 0;
     if (!JsonParserUtility::extractValue(actionFileObj, idKey, fileId)) return {ExitCode::BackError, ExitCause::MissingReplyData};
-    ;
 
     std::string fileTypeString;
     if (!JsonParserUtility::extractValue(actionFileObj, typeKey, fileTypeString))
         return {ExitCode::BackError, ExitCause::MissingReplyData};
-    ;
 
     uint64_t fileSize = 0;
     if (fileTypeString == fileKey && !JsonParserUtility::extractValue(actionFileObj, sizeKey, fileSize, false))
