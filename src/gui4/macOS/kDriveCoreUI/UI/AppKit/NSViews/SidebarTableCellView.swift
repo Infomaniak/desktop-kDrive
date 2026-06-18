@@ -87,15 +87,16 @@ public final class SidebarTableCellView: NSTableCellView {
     private func layoutBadge() {
         guard showsBadge else { return }
 
-        let x = bounds.width - Self.badgeSize
+        let trailingPadding = AppPadding.padding4
+        let x = bounds.width - Self.badgeSize - trailingPadding
         let y = (bounds.height - Self.badgeSize) / 2
 
         badgeView.frame = NSRect(x: x, y: y, width: Self.badgeSize, height: Self.badgeSize)
 
         if let textField, textField.frame.maxX > badgeView.frame.minX {
-            let margin: CGFloat = AppPadding.padding8
+            let spacing = AppPadding.padding8
 
-            let maxWidth = textField.frame.width - Self.badgeSize - margin
+            let maxWidth = textField.frame.width - Self.badgeSize - spacing - trailingPadding
             let currentFrame = textField.frame
             textField.frame = NSRect(
                 x: currentFrame.minX,
