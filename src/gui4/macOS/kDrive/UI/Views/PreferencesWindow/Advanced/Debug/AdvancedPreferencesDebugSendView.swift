@@ -122,7 +122,7 @@ struct SendDebugFolderView: View {
             return
         }
 
-        Task {
+        Task { @MainActor in
             try? await UtilityJobs().cancelLogToSupport()
             dismiss()
         }
