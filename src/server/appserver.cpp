@@ -2282,8 +2282,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC: {
-            QString path;
-            QString error;
+            SyncPath path;
+            std::string error;
             const auto exitInfo = ServerRequests::findGoodPathForNewSync(path, error);
             if (!exitInfo) {
                 LOG_WARN(_logger, "Error in Requests::findGoodPathForNewSyncFolder");
@@ -2291,8 +2291,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
 
             resultStream << toInt(exitInfo.code());
-            resultStream << path;
-            resultStream << error;
+            resultStream << Path2QStr(path);
+            resultStream << QString::fromStdString(error);
             break;
         }
         case RequestNum::UTILITY_BESTVFSAVAILABLEMODE_LEGACY: {

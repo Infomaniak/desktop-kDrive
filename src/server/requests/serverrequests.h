@@ -65,7 +65,6 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitInfo isPathValidForNewSync(const SyncPath &path, SyncConfiguration syncConfig, bool &valid);
         static ExitInfo folderContainsNonExcludedItem(const SyncPath &path, bool &containsNonExcludedFile);
         static ExitInfo findGoodPathForNewSync(SyncPath &path, std::string &error);
-        static ExitInfo findGoodPathForNewSync(QString &path, QString &error);
         static ExitCode getPrivateLinkUrl(DriveDbId driveDbId, const std::string &fileId, std::string &linkUrl);
         static ExitCode getPrivateLinkUrl(DriveDbId driveDbId, const QString &fileId, QString &linkUrl);
         static ExitCode getExclusionTemplateList(bool def, std::vector<ExclusionTemplateInfo> &list);
