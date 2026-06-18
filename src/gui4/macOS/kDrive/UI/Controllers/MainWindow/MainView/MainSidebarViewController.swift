@@ -83,6 +83,10 @@ final class MainSidebarViewController: NSViewController {
 
     private var hasBlockingError = false
 
+    private var synchroInfos = UIIndexedSynchroInfo()
+    private var currentSynchroId: UISynchro.ID?
+    private var activitiesHasError = false
+
     private lazy var sidebarNotificationView: SidebarNotificationView = {
         let view = SidebarNotificationView()
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -185,6 +189,8 @@ final class MainSidebarViewController: NSViewController {
         mainViewModel.currentSynchroContextPublisher
             .receiveOnMain(store: &bindStore) { [weak self] synchroContext in
                 self?.synchroSelectorViewModel.selectedSynchroId = synchroContext?.synchro.id
+                self?.currentSynchroId = synchroContext?.synchro.id
+                self?.updateActivitiesBadge()
             }
     }
 
@@ -270,7 +276,32 @@ final class MainSidebarViewController: NSViewController {
     }
 
     private func updateSynchrosList(_ synchroInfo: UIIndexedSynchroInfo) {
+        synchroInfos = synchroInfo
         synchroSelectorViewModel.update(with: Array(synchroInfo.values))
+        updateActivitiesBadge()
+    }
+
+    private func updateActivitiesBadge() {
+        let hasError: Bool
+        if let currentSynchroId, let info = synchroInfos[currentSynchroId] {
+            hasError = info.state.errorCount > 0
+        } else {
+            hasError = false
+        }
+
+        guard activitiesHasError != hasError else { return }
+        activitiesHasError = hasError
+
+        guard let activitiesIndex = items.firstIndex(of: .activities),
+              let cell = outlineView.view(
+                  atColumn: 0,
+                  row: activitiesIndex,
+                  makeIfNecessary: false
+              ) as? SidebarTableCellView else {
+            return
+        }
+
+        cell.showsBadge = hasError
     }
 
     private func updateSidebarIfNecessary() {
@@ -337,6 +368,7 @@ extension MainSidebarViewController: ClickableOutlineViewDelegate {
 
         let enabled = !item.canBeSelected || mainViewModel.currentBlockingError == nil
         cell?.setupForItem(item, enabled: enabled)
+        cell?.showsBadge = item == .activities && activitiesHasError
         return cell
     }
 
