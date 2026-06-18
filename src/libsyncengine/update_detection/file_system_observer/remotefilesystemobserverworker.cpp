@@ -838,7 +838,10 @@ ExitInfo RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
     actionInfo.actionCode = getActionCode(tmpStr);
 
     RemoteFileId tmpInt = 0;
-    if (!JsonParserUtility::extractValue(actionObj, fileIdKey, tmpInt)) return {ExitCode::BackError, ExitCause::MissingReplyData};
+    if (!JsonParserUtility::extractValue(actionObj, fileIdKey, tmpInt) &&
+        actionInfo.actionCode != ActionCode::ActionCodeAccessRightUserRemove &&
+        actionInfo.actionCode != ActionCode::ActionCodeAccessRightMainUsersRemove)
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
 
     if (const auto exitInfo = actionInfo.snapshotItem.setV2Id(_syncPal->userDbId(), _syncPal->driveId(), std::to_string(tmpInt));
         !exitInfo)
@@ -876,12 +879,35 @@ ExitInfo RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
 
     // Special handling for AccessRightUserRemove action, as it does not contain `created_at` and `last_modified_at` fields.
     // We set them with the `executed_at`.
-    if (actionInfo.actionCode == ActionCode::ActionCodeAccessRightUserRemove) {
+    if (actionInfo.actionCode == ActionCode::ActionCodeAccessRightUserRemove ||
+        actionInfo.actionCode == ActionCode::ActionCodeAccessRightMainUsersRemove) {
         if (!JsonParserUtility::extractValue(actionObj, executedAtKey, tmpTime, false))
             return {ExitCode::BackError, ExitCause::MissingReplyData};
 
         actionInfo.snapshotItem.setCreatedAt(tmpTime);
         actionInfo.snapshotItem.setLastModified(tmpTime);
+
+        bool found = false;
+
+        const SyncPath relativeRemotePath = actionInfo.path().substr(1); // +1 to ignore the first "/"
+        if (std::optional<RemoteNodeId> remoteNodeId = std::nullopt;
+            _syncPal->syncDb()->id(ReplicaSide::Remote, relativeRemotePath, remoteNodeId, found) && found && remoteNodeId) {
+            (void) actionInfo.snapshotItem.setV2Id(_syncPal->userDbId(), _syncPal->driveId(), *remoteNodeId);
+
+            NodeType nodeType = NodeType::Unknown;
+            if (_syncPal->syncDb()->type(ReplicaSide::Remote, *remoteNodeId, nodeType, found) && found) {
+                actionInfo.snapshotItem.setType(nodeType);
+            } else {
+                LOGW_SYNCPAL_DEBUG(_logger, L"Failed to find remote node type in SyncDb for nodeId="
+                                                    << CommonUtility::s2ws(*remoteNodeId) << L" and "
+                                                    << Utility::formatSyncPath(relativeRemotePath));
+                return {ExitCode::BackError, ExitCause::MissingReplyData};
+            }
+        } else {
+            LOGW_SYNCPAL_DEBUG(_logger, L"Failed to find remote node ID in SyncDb for path: "
+                                                << Utility::formatSyncName(relativeRemotePath));
+            // We can still process the action without the remote node ID, so we do not return an error here.
+        }
 
         return ExitCode::Ok;
     }
@@ -1022,6 +1048,12 @@ ExitInfo RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, M
         case ActionCode::ActionCodeAccessRightUserRemove:
         case ActionCode::ActionCodeAccessRightTeamRemove:
         case ActionCode::ActionCodeAccessRightMainUsersRemove: {
+            if ((actionInfo.actionCode == ActionCode::ActionCodeAccessRightUserRemove ||
+                 actionInfo.actionCode == ActionCode::ActionCodeAccessRightMainUsersRemove) &&
+                actionInfo.snapshotItem.id().empty())
+                break; // Cannot check rights without an item ID, ignore action. This can happen if the remote item is a directory
+                       // located at the root of `Common documents` and was not synchronized at the time the ACL changed.
+
             bool rightsOk = false;
             if (const ExitInfo exitInfo =
                         checkRightsAndUpdateItem(actionInfo.snapshotItem.id(), rightsOk, actionInfo.snapshotItem);
