@@ -50,12 +50,12 @@
     </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-	  <WapProjPath Condition="'$(WapProjPath)'==''">$(MSBuildExtensionsPath)\Microsoft\DesktopBridge\</WapProjPath>
+    <WapProjPath Condition="'$(WapProjPath)'==''">$(MSBuildExtensionsPath)\Microsoft\DesktopBridge\</WapProjPath>
   </PropertyGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.props" />
   <PropertyGroup>
     <ProjectGuid>128641b5-57a8-4367-87e2-1eb8e44bd25e</ProjectGuid>
-    <TargetPlatformVersion>10.0.19041.0</TargetPlatformVersion>
+    <TargetPlatformVersion>10.0.28000.0</TargetPlatformVersion>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <DefaultLanguage>fr-FR</DefaultLanguage>
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
@@ -68,7 +68,8 @@
     <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
     <EntryPointProjectUniqueName>..\FileExplorerExtension\FileExplorerExtension.vcxproj</EntryPointProjectUniqueName>
     <AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
-    <PackageCertificateThumbprint>95C8D8A52FA3834BAC5625A36F73F3FD82E75135</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>4837A4865175E31A04067F268DBE37333D2E6825</PackageCertificateThumbprint>
+    <PackageCertificateKeyFile>FileExplorerExtensionPackage_TemporaryKey.pfx</PackageCertificateKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <DefaultLanguage>en-US</DefaultLanguage>
@@ -170,9 +171,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FileExplorerExtension\FileExplorerExtension.vcxproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.CppWinRT" Version="1.0.181129.3" />
   </ItemGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
 </Project>
