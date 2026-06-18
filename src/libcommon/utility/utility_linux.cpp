@@ -188,7 +188,7 @@ ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
         directoryPath = xdgStateHomePath;
     } else {
         if (const auto exitInfo = homeDirectoryPath(directoryPath); !exitInfo) return exitInfo;
-        directoryPath /= ".local" / "state";
+        directoryPath /= ".local/state";
     }
 
     directoryPath /= Str2SyncName(APPLICATION_NAME);
