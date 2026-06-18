@@ -19,13 +19,15 @@
 import Cocoa
 
 public final class SidebarTableCellView: NSTableCellView {
-    public var badge: Int? {
+    static let badgeSize: CGFloat = 8
+
+    public var showsBadge = false {
         didSet {
             updateBadge()
         }
     }
 
-    private var badgeView: NSButton!
+    private var badgeView: NSView!
 
     public convenience init() {
         self.init(frame: .zero)
@@ -65,35 +67,29 @@ public final class SidebarTableCellView: NSTableCellView {
         textField = cellTextField
         addSubview(cellTextField)
 
-        badgeView = BadgeButton()
+        badgeView = CircleBadgeView()
         badgeView.isHidden = true
         badgeView.autoresizingMask = [.minXMargin, .minYMargin, .maxYMargin]
         addSubview(badgeView)
     }
 
     private func updateBadge() {
-        if let badge {
-            badgeView.isHidden = false
-            badgeView.title = "\(badge)"
-        } else {
-            badgeView.isHidden = true
-        }
+        badgeView.isHidden = !showsBadge
+        needsLayout = true
     }
 
     private func layoutBadge() {
-        guard badge != nil else { return }
+        guard showsBadge else { return }
 
-        let badgeSize = badgeView.intrinsicContentSize
+        let x = bounds.width - Self.badgeSize
+        let y = (bounds.height - Self.badgeSize) / 2
 
-        let x = bounds.width - badgeSize.width
-        let y = (bounds.height - badgeSize.height) / 2
-
-        badgeView.frame = NSRect(x: x, y: y, width: badgeSize.width, height: badgeSize.height)
+        badgeView.frame = NSRect(x: x, y: y, width: Self.badgeSize, height: Self.badgeSize)
 
         if let textField, textField.frame.maxX > badgeView.frame.minX {
-            let margin: CGFloat = 8.0
+            let margin: CGFloat = AppPadding.padding8
 
-            let maxWidth = textField.frame.width - badgeSize.width - margin
+            let maxWidth = textField.frame.width - Self.badgeSize - margin
             let currentFrame = textField.frame
             textField.frame = NSRect(
                 x: currentFrame.minX,
@@ -102,5 +98,13 @@ public final class SidebarTableCellView: NSTableCellView {
                 height: currentFrame.height
             )
         }
+    }
+}
+
+private final class CircleBadgeView: NSView {
+    override func draw(_ dirtyRect: NSRect) {
+        super.draw(dirtyRect)
+        ColorToken.Accent.primary.asNSColor.setFill()
+        NSBezierPath(ovalIn: bounds).fill()
     }
 }
