@@ -57,19 +57,30 @@ public struct FoldersToSynchroView: View {
             }
 
             FileTreeView(rootItems: root, initialBlacklist: initialBlackList) { item in
-                await Self.fetchSubFolders(for: item, userDbId: Int32(userDbId), driveDbId: Int32(driveDbId))
+                await Self.fetchSubFolders(
+                    for: item,
+                    rootNodeId: rootNodeId,
+                    userDbId: Int32(userDbId),
+                    driveDbId: Int32(driveDbId)
+                )
             } onBlacklistChange: {
                 updateBlacklist($0)
             }
             .frame(minHeight: 200)
         }
         .task {
-            root = await Self.fetchSubFolders(for: nil, userDbId: Int32(userDbId), driveDbId: Int32(driveDbId))
+            root = await Self.fetchSubFolders(
+                for: nil,
+                rootNodeId: rootNodeId,
+                userDbId: Int32(userDbId),
+                driveDbId: Int32(driveDbId)
+            )
         }
     }
 
     private static func fetchSubFolders(
         for node: FileTreeItem?,
+        rootNodeId: String?,
         userDbId: Int32,
         driveDbId: Int32
     ) async -> [FileTreeItem] {
