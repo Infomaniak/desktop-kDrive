@@ -38,6 +38,11 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         RemoteFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName);
         ~RemoteFileSystemObserverWorker() override;
 
+        // Unlike the `start` method, the `resume` method:
+        // - does not set the initializing flag to `true` (which would otherwise have the effect of skipping `longpoll` and
+        // `listing/continue` requests),
+        // - does invalidate the remote snapshot (which would otherwise trigger the reconstruction of the remote snapshot),
+        // - does set the updating flag to `true` in order to trigger the `longpoll` and `listing/continue` requests.
         void resume() override;
 
     protected:
