@@ -123,63 +123,57 @@ void TestServerRequests::testFindGoodPathForNewSync() {
 }
 
 void TestServerRequests::testIsPathValidForNewSync() {
-    // SyncPath localTempDirPath;
-    // {
-    //     LocalTemporaryDirectory localTempDir("testIsPathValidForNewSync");
-    //     localTempDirPath = localTempDir.path();
-    //     const SyncPath defaultPath = localTempDirPath / APPLICATION_NAME;
-    //
-    //     IoError ioError = IoError::Success;
-    //     CPPUNIT_ASSERT(IoHelper::createDirectory(defaultPath, false, ioError));
-    //     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-    //
-    //     // Check with default path for normal sync
-    //     bool isValid = false;
-    //     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
-    //                          ServerRequests::isPathValidForNewSync(defaultPath, SyncConfiguration::Classic, isValid));
-    //     CPPUNIT_ASSERT(isValid);
-    //
-    //     // check an already synced & existing path
-    //     const Sync sync(1, _driveDbId, defaultPath, NodeId(), SyncPath(), NodeId());
-    //     (void) ParmsDb::instance()->insertSync(sync);
-    //
-    //     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
-    //                          ServerRequests::findGoodPathForNewSync(returnedPath, error));
-    //     CPPUNIT_ASSERT(!returnedPath.empty());
-    //     CPPUNIT_ASSERT(returnedPath.filename().string().find('2') != std::string::npos);
-    //     CPPUNIT_ASSERT(error.empty());
-    //
-    //     // Check an already synced but non-existing path
-    //     CPPUNIT_ASSERT(IoHelper::deleteItem(defaultPath, ioError));
-    //     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-    //
-    //     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
-    //                          ServerRequests::findGoodPathForNewSync(returnedPath, error));
-    //     CPPUNIT_ASSERT(!returnedPath.empty());
-    //     CPPUNIT_ASSERT(returnedPath.filename().string().find('2') != std::string::npos);
-    //     CPPUNIT_ASSERT(error.empty());
-    //
-    //     // check with an already synced parent path
-    //     const SyncPath childPath = defaultPath / "childFolder";
-    //     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::InvalidSync, ExitCause::SyncDirNestingError),
-    //                          ServerRequests::findGoodPathForNewSync(returnedPath, error));
-    //     CPPUNIT_ASSERT(returnedPath.empty());
-    //     CPPUNIT_ASSERT(!error.empty());
-    //
-    //     // Check with an existing path containing an already synced child
-    //     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
-    //                          ServerRequests::findGoodPathForNewSync(returnedPath, error));
-    //     CPPUNIT_ASSERT(!returnedPath.empty());
-    //     CPPUNIT_ASSERT(returnedPath.filename().string().find('2') != std::string::npos);
-    //     CPPUNIT_ASSERT(error.empty());
-    // }
-    //
-    // // Check with a non-existing path containing an already synced child
-    // SyncPath returnedPath;
-    // std::string error;
-    // CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown), ServerRequests::findGoodPathForNewSync(returnedPath,
-    // error)); CPPUNIT_ASSERT(!returnedPath.empty()); CPPUNIT_ASSERT(returnedPath.filename().string().find('2') !=
-    // std::string::npos); CPPUNIT_ASSERT(error.empty());
+    LocalTemporaryDirectory localTempDir("testIsPathValidForNewSync");
+    const SyncPath basePath = localTempDir.path();
+    const SyncPath defaultPath = basePath / APPLICATION_NAME;
+
+    auto ioError = IoError::Unknown;
+    CPPUNIT_ASSERT(IoHelper::createDirectory(defaultPath, false, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+    // Existing and empty folder is valid in classic mode.
+    bool isValid = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
+                         ServerRequests::isPathValidForNewSync(defaultPath, SyncConfiguration::Classic, isValid));
+    CPPUNIT_ASSERT(isValid);
+
+    // Existing and non-empty folder with a regular file is invalid in classic mode.
+    testhelpers::generateTestFile(defaultPath / "regular_file.txt");
+    isValid = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
+                         ServerRequests::isPathValidForNewSync(defaultPath, SyncConfiguration::Classic, isValid));
+    CPPUNIT_ASSERT(!isValid);
+
+    // Folder containing only excluded files remains valid.
+    CPPUNIT_ASSERT(IoHelper::deleteItem(defaultPath / "regular_file.txt", ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    testhelpers::generateTestFile(defaultPath / "excluded_file~");
+    isValid = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
+                         ServerRequests::isPathValidForNewSync(defaultPath, SyncConfiguration::Classic, isValid));
+    CPPUNIT_ASSERT(isValid);
+
+    // In advanced mode, non-empty folders are accepted.
+    testhelpers::generateTestFile(defaultPath / "advanced_regular_file.txt");
+    isValid = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
+                         ServerRequests::isPathValidForNewSync(defaultPath, SyncConfiguration::Advanced, isValid));
+    CPPUNIT_ASSERT(isValid);
+
+    // A path already used by an existing sync is rejected.
+    const Sync sync(1, _driveDbId, defaultPath, NodeId(), SyncPath(), NodeId());
+    (void) ParmsDb::instance()->insertSync(sync);
+    isValid = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
+                         ServerRequests::isPathValidForNewSync(defaultPath, SyncConfiguration::Classic, isValid));
+    CPPUNIT_ASSERT(!isValid);
+
+    // A child folder of an existing sync is also rejected.
+    const SyncPath childPath = defaultPath / "childFolder";
+    isValid = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
+                         ServerRequests::isPathValidForNewSync(childPath, SyncConfiguration::Classic, isValid));
+    CPPUNIT_ASSERT(!isValid);
 }
 
 void TestServerRequests::testDeleteUser() {
