@@ -42,9 +42,6 @@ public struct FoldersToSynchroView: View {
     }
 
     public var body: some View {
-        let userDbId = Int32(self.userDbId)
-        let driveDbId = Int32(self.driveDbId)
-
         VStack(alignment: .leading, spacing: AppPadding.padding24) {
             VStack(alignment: .leading, spacing: AppPadding.padding8) {
                 Text(KDriveLocalizable.onboardingAdvancedSettingsDriveExclusionDescription)
@@ -57,14 +54,14 @@ public struct FoldersToSynchroView: View {
             }
 
             FileTreeView(rootItems: root, initialBlacklist: initialBlackList) { item in
-                await Self.fetchSubFolders(for: item, userDbId: userDbId, driveDbId: driveDbId)
+                await Self.fetchSubFolders(for: item, userDbId: Int32(userDbId), driveDbId: Int32(driveDbId))
             } onBlacklistChange: {
                 updateBlacklist($0)
             }
             .frame(minHeight: 200)
         }
         .task {
-            root = await Self.fetchSubFolders(for: nil, userDbId: userDbId, driveDbId: driveDbId)
+            root = await Self.fetchSubFolders(for: nil, userDbId: Int32(userDbId), driveDbId: Int32(driveDbId))
         }
     }
 
