@@ -384,8 +384,8 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
 
         if (!CommonUtility::isNTFS(_fileDownloadInfo.localpath)) {
             // Junctions are supported only on NTFS systems
-            LOGW_WARN(_logger,
-                      L"Filesystem is not NTFS, junctions are not supported: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
+            LOGW_WARN(_logger, L"Filesystem is not NTFS, junctions are not supported: "
+                                       << Utility::formatSyncPath(_fileDownloadInfo.localpath));
             return {ExitCode::SystemError, ExitCause::FileSystemNotSupported};
         }
 
@@ -495,9 +495,34 @@ bool DownloadJob::removeTmpFile() {
     return true;
 }
 
+class HiddenStatusHolder {
+    public:
+        HiddenStatusHolder(const SyncPath &path) :
+            _path(path) {
+            bool isHidden = false;
+            auto ioError = IoError::Unknown;
+            if (!IoHelper::checkIfIsHiddenFile(_path, false, isHidden, ioError) || ioError != IoError::Success)
+                return; // This is best effort
+            if (isHidden) {
+                IoHelper::setFileHidden(_path, false);
+                _isActive = true;
+            }
+        }
+        ~HiddenStatusHolder() {
+            if (_isActive) {
+                IoHelper::setFileHidden(_path, true);
+            }
+        }
+
+    private:
+        SyncPath _path;
+        bool _isActive{false};
+};
+
 ExitInfo DownloadJob::moveTmpFile() {
     // Move downloaded file from tmp directory to sync directory
 #if defined(KD_WINDOWS)
+    HiddenStatusHolder hiddenStatusHolder(_fileDownloadInfo.localpath);
     bool retry = true;
     int counter = 50;
     while (retry) {
