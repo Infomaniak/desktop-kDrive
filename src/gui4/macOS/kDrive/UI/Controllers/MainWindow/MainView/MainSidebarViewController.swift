@@ -27,7 +27,7 @@ import SwiftUI
 
 typealias UIIndexedSynchroInfo = OrderedDictionary<UISynchro.ID, UISynchroInfo>
 
-public extension UIIndexedSynchroInfo {
+extension UIIndexedSynchroInfo {
     init(indexedSynchro: [SynchroContext]) {
         self.init(
             uniqueKeysWithValues: indexedSynchro.map {
@@ -157,9 +157,8 @@ final class MainSidebarViewController: NSViewController {
                 let sortedSynchroContext = synchroContext.sorted { lhs, rhs in
                     if lhs.drive.name.localizedCaseInsensitiveCompare(rhs.drive.name) == .orderedAscending {
                         return true
-                    } else {
-                        return lhs.synchro.targetNodeId.isEmpty
                     }
+                    return lhs.synchro.targetNodeId.isEmpty && !rhs.synchro.targetNodeId.isEmpty
                 }
                 return UIIndexedSynchroInfo(indexedSynchro: sortedSynchroContext)
             }
