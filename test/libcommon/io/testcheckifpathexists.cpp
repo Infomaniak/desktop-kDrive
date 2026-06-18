@@ -600,7 +600,7 @@ void TestIo::testCheckIfPathExistWithDistinctEncodings() {
 
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfdPath, exists, ioError, IoHelper::PathCheckOption::Insensitive) && exists);
 #if defined(KD_MACOS)
-        if (CommonUtility::isAPFS(nfdPath) || CommonUtility::isHFSP(nfdPath)) {
+        if (CommonUtility::isAPFS(nfdPath) || CommonUtility::isHFS(nfdPath)) {
             CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfdPath, exists, ioError, IoHelper::PathCheckOption::Sensitive) && exists);
 
         } else {
@@ -643,7 +643,7 @@ void TestIo::testCheckIfPathExistWithDistinctEncodings() {
 
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfcPath, exists, ioError, IoHelper::PathCheckOption::Insensitive) && exists);
 #if defined(KD_MACOS)
-        if (CommonUtility::isAPFS(nfcPath) || CommonUtility::isHFSP(nfcPath)) {
+        if (CommonUtility::isAPFS(nfcPath) || CommonUtility::isHFS(nfcPath)) {
             CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfcPath, exists, ioError, IoHelper::PathCheckOption::Sensitive) && exists);
 
         } else {

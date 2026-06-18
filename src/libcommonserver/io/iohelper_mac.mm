@@ -330,7 +330,7 @@ bool IoHelper::_checkIfPathExistsSensitiveFn(const SyncPath &path, const std::fi
     if (status.type() != std::filesystem::file_type::symlink) {
         const auto canonicalPath = std::filesystem::canonical(path, ec); // canonical does follow symlinks.
         if (!ec) {
-            if (CommonUtility::isAPFS(path) || CommonUtility::isHFSP(path)) {
+            if (CommonUtility::isAPFS(path) || CommonUtility::isHFS(path)) {
                 // On an APFS or HFS+ partition, it is not possible to have duplicates except for encoding, so we compare the
                 // normalized names. This is necessary with MS Office files because when they are saved, a Move or Edit event is
                 // generated with the NFD-normalized name but the file retains its original encoding.
@@ -341,9 +341,9 @@ bool IoHelper::_checkIfPathExistsSensitiveFn(const SyncPath &path, const std::fi
                     !CommonUtility::normalizedSyncName(filename.native(), normalizedFileName2, UnicodeNormalization::NFD)) {
                     LOGW_WARN(logger(), L"Failed to NFD-normalize " << Utility::formatSyncPath(canonicalPath.filename())
                                                                     << L" and " << Utility::formatSyncPath(filename));
+                    // Fallback to direct comparison if normalization fails
                     exists = canonicalPath.filename() == filename;
                 } else {
-                    // Fallback to direct comparison if normalization fails
                     exists = normalizedFileName1 == normalizedFileName2;
                 }
             } else {
