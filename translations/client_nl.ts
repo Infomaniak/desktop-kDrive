@@ -4,971 +4,1206 @@
 <context>
     <name>KDC::AboutDialog</name>
     <message>
+        <location filename="../src/gui/aboutdialog.cpp" line="73"/>
         <source>About</source>
-        <translation type="vanished">Over</translation>
+        <translation>Over</translation>
     </message>
     <message>
+        <location filename="../src/gui/aboutdialog.cpp" line="112"/>
         <source>CLOSE</source>
-        <translation type="vanished">SLUITEN</translation>
+        <translation>SLUITEN</translation>
     </message>
     <message>
+        <location filename="../src/gui/aboutdialog.cpp" line="123"/>
         <source>Version %1. For more information visit &lt;a style=&quot;%2&quot; href=&quot;%3&quot;&gt;%4&lt;/a&gt;&lt;br&gt;&lt;br&gt;</source>
-        <translation type="vanished">Versie %1. Voor meer informatie, bezoek &lt;a style=&quot;%2&quot; href=&quot;%3&quot;&gt;%4&lt;/a&gt;&lt;br&gt;&lt;br&gt;</translation>
+        <translation>Versie %1. Voor meer informatie, bezoek &lt;a style=&quot;%2&quot; href=&quot;%3&quot;&gt;%4&lt;/a&gt;&lt;br&gt;&lt;br&gt;</translation>
     </message>
     <message>
+        <location filename="../src/gui/aboutdialog.cpp" line="126"/>
         <source>Copyright 2019-%1 Infomaniak Network SA&lt;br&gt;&lt;br&gt;</source>
-        <translation type="vanished">Copyright 2019-%1 Infomaniak Network SA&lt;br&gt;&lt;br&gt;</translation>
+        <translation>Copyright 2019-%1 Infomaniak Network SA&lt;br&gt;&lt;br&gt;</translation>
     </message>
     <message>
+        <location filename="../src/gui/aboutdialog.cpp" line="127"/>
         <source>Distributed by %1 and licensed under the &lt;a style=&quot;%3&quot; href=&quot;%4&quot;&gt;%5&lt;/a&gt;.&lt;br&gt;&lt;br&gt;%2 and the %2 logo are registered trademarks of %1.&lt;br&gt;&lt;br&gt;</source>
-        <translation type="vanished">Gedistribueerd door %1 en gelicentieerd onder de &lt;a style=&quot;%3&quot; href=&quot;%4&quot;&gt;%5&lt;/a&gt;.&lt;br&gt;&lt;br&gt;%2 en het %2-logo zijn gedeponeerde handelsmerken van %1.&lt;br&gt;&lt;br&gt;</translation>
+        <translation>Gedistribueerd door %1 en gelicentieerd onder de &lt;a style=&quot;%3&quot; href=&quot;%4&quot;&gt;%5&lt;/a&gt;.&lt;br&gt;&lt;br&gt;%2 en het %2-logo zijn gedeponeerde handelsmerken van %1.&lt;br&gt;&lt;br&gt;</translation>
     </message>
     <message>
+        <location filename="../src/gui/aboutdialog.cpp" line="151"/>
+        <location filename="../src/gui/aboutdialog.cpp" line="162"/>
+        <location filename="../src/gui/aboutdialog.cpp" line="171"/>
         <source>Unable to open folder %1.</source>
-        <translation type="vanished">Kan map %1 niet openen.</translation>
+        <translation>Kan map %1 niet openen.</translation>
     </message>
     <message>
+        <location filename="../src/gui/aboutdialog.cpp" line="132"/>
         <source>&lt;p&gt;&lt;small&gt;Built from &lt;a style=&quot;color: #489EF3&quot; href=&quot;%1&quot;&gt;Git sources&lt;/a&gt; on %2, %3 using Qt %4, %5&lt;/small&gt;&lt;/p&gt;</source>
-        <translation type="vanished">&lt;p&gt;&lt;small&gt;Gecompileerd vanuit &lt;a style=&quot;color: #489EF3&quot; href=&quot;%1&quot;&gt;Git-bronnen&lt;/a&gt; op %2, %3 met Qt %4, %5&lt;/small&gt;&lt;/p&gt;</translation>
+        <translation>&lt;p&gt;&lt;small&gt;Gecompileerd vanuit &lt;a style=&quot;color: #489EF3&quot; href=&quot;%1&quot;&gt;Git-bronnen&lt;/a&gt; op %2, %3 met Qt %4, %5&lt;/small&gt;&lt;/p&gt;</translation>
     </message>
 </context>
 <context>
     <name>KDC::AbstractFileItemWidget</name>
     <message>
+        <location filename="../src/gui/abstractfileitemwidget.cpp" line="177"/>
         <source>Unable to open folder path %1.</source>
-        <translation type="vanished">Kan debugmap %1 niet openen.</translation>
+        <translation>Kan debugmap %1 niet openen.</translation>
     </message>
 </context>
 <context>
     <name>KDC::AddDriveConfirmationWidget</name>
     <message>
+        <location filename="../src/gui/adddriveconfirmationwidget.cpp" line="55"/>
         <source>Synchronization will start and you will be able to add files to your %1 folder.</source>
-        <translation type="vanished">De synchronisatie begint en u kunt bestanden aan uw %1-map toevoegen.</translation>
+        <translation>De synchronisatie begint en u kunt bestanden aan uw %1-map toevoegen.</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddriveconfirmationwidget.cpp" line="99"/>
         <source>Your kDrive is ready!</source>
-        <translation type="vanished">Uw kDrive is klaar!</translation>
+        <translation>Uw kDrive is klaar!</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddriveconfirmationwidget.cpp" line="123"/>
         <source>OPEN FOLDER</source>
-        <translation type="vanished">LOKALE MAP OPENEN</translation>
+        <translation>LOKALE MAP OPENEN</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddriveconfirmationwidget.cpp" line="130"/>
         <source>PARAMETERS</source>
-        <translation type="vanished">INSTELLINGEN</translation>
+        <translation>INSTELLINGEN</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddriveconfirmationwidget.cpp" line="138"/>
         <source>Synchronize another drive</source>
-        <translation type="vanished">Een andere kDrive synchroniseren</translation>
+        <translation>Een andere kDrive synchroniseren</translation>
     </message>
 </context>
 <context>
     <name>KDC::AddDriveListWidget</name>
     <message>
+        <location filename="../src/gui/adddrivelistwidget.cpp" line="170"/>
         <source>Cancel</source>
-        <translation type="vanished">Annuleren</translation>
+        <translation>Annuleren</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddrivelistwidget.cpp" line="177"/>
         <source>NEXT</source>
-        <translation type="vanished">VOLGENDE</translation>
+        <translation>VOLGENDE</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddrivelistwidget.cpp" line="196"/>
         <source>Select the kDrive you want to synchronize</source>
-        <translation type="vanished">Selecteer de kDrive die u wilt synchroniseren</translation>
+        <translation>Selecteer de kDrive die u wilt synchroniseren</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddrivelistwidget.cpp" line="234"/>
         <source>Get kDrive for free</source>
-        <translation type="vanished">Ontvang kDrive gratis</translation>
+        <translation>Ontvang kDrive gratis</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddrivelistwidget.cpp" line="244"/>
         <source>Store your pictures, documents and e-mails in Switzerland from an independent company that respects privacy. Learn more</source>
-        <translation type="vanished">Sla uw foto&apos;s, documenten en e-mails op in Zwitserland bij een onafhankelijk bedrijf dat de privacy respecteert. Meer informatie</translation>
+        <translation>Sla uw foto&apos;s, documenten en e-mails op in Zwitserland bij een onafhankelijk bedrijf dat de privacy respecteert. Meer informatie</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddrivelistwidget.cpp" line="263"/>
         <source>Test for free</source>
-        <translation type="vanished">Gratis testen</translation>
+        <translation>Gratis testen</translation>
     </message>
 </context>
 <context>
     <name>KDC::AddDriveLiteSyncWidget</name>
     <message>
+        <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="147"/>
         <source>Conserve your computer space</source>
-        <translation type="vanished">Bespaar ruimte op uw computer</translation>
+        <translation>Bespaar ruimte op uw computer</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="167"/>
         <source>Decide which files should be available online or locally</source>
-        <translation type="vanished">Bepaal welke bestanden online of lokaal beschikbaar moeten zijn</translation>
+        <translation>Bepaal welke bestanden online of lokaal beschikbaar moeten zijn</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="187"/>
         <source>LATER</source>
-        <translation type="vanished">LATER</translation>
+        <translation>LATER</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="193"/>
         <source>YES</source>
-        <translation type="vanished">JA</translation>
+        <translation>JA</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="125"/>
         <source>Lite Sync syncs all your files without using your computer space. You can browse the files in your kDrive and download them locally whenever you want. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
-        <translation type="vanished">Lite Sync synchroniseert al uw bestanden zonder de ruimte op uw computer te gebruiken. U kunt door de bestanden in uw kDrive bladeren en ze downloaden wanneer u wilt. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Meer informatie&lt;/a&gt;</translation>
+        <translation>Lite Sync synchroniseert al uw bestanden zonder de ruimte op uw computer te gebruiken. U kunt door de bestanden in uw kDrive bladeren en ze downloaden wanneer u wilt. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Meer informatie&lt;/a&gt;</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="207"/>
         <source>Unable to open link %1.</source>
-        <translation type="vanished">Kan link %1 niet openen.</translation>
+        <translation>Kan link %1 niet openen.</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="112"/>
         <source>Would you like to activate Lite Sync (Beta) ?</source>
-        <translation type="vanished">Wilt u Lite Sync (Beta) activeren?</translation>
+        <translation>Wilt u Lite Sync (Beta) activeren?</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="114"/>
         <source>Would you like to activate Lite Sync ?</source>
-        <translation type="vanished">Wilt u Lite Sync activeren?</translation>
+        <translation>Wilt u Lite Sync activeren?</translation>
     </message>
 </context>
 <context>
     <name>KDC::AddDriveLocalFolderWidget</name>
     <message>
+        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="65"/>
         <source>Location of your %1 kDrive</source>
-        <translation type="vanished">Locatie van uw %1 kDrive</translation>
+        <translation>Locatie van uw %1 kDrive</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="155"/>
         <source>Edit folder</source>
-        <translation type="vanished">Map bewerken</translation>
+        <translation>Map bewerken</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="246"/>
         <source>END</source>
-        <translation type="vanished">VOLTOOIEN</translation>
+        <translation>VOLTOOIEN</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="284"/>
         <source>This folder is not compatible with Lite Sync.&lt;br&gt; 
 Please select another folder. If you continue Lite Sync will be disabled.&lt;br&gt; 
 &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
-        <translation type="vanished">Deze map is niet compatibel met Lite Sync.&lt;br&gt; 
+        <translation>Deze map is niet compatibel met Lite Sync.&lt;br&gt; 
 Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&gt; 
 &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Meer informatie&lt;/a&gt;</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="297"/>
         <source>Select folder</source>
-        <translation type="vanished">Map selecteren</translation>
+        <translation>Map selecteren</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="264"/>
         <source>The contents of the &lt;b&gt;%1&lt;/b&gt; folder will be synchronized in your kDrive</source>
-        <translation type="vanished">De inhoud van de map &lt;b&gt;%1&lt;/b&gt; wordt gesynchroniseerd met uw kDrive</translation>
+        <translation>De inhoud van de map &lt;b&gt;%1&lt;/b&gt; wordt gesynchroniseerd met uw kDrive</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="212"/>
         <source>You will find all your files in this folder when the configuration is complete. You can drop new files there to sync them to your kDrive.</source>
-        <translation type="vanished">U vindt al uw bestanden in deze map wanneer de configuratie voltooid is. U kunt nieuwe bestanden hier naartoe slepen om ze te synchroniseren met uw kDrive.</translation>
+        <translation>U vindt al uw bestanden in deze map wanneer de configuratie voltooid is. U kunt nieuwe bestanden hier naartoe slepen om ze te synchroniseren met uw kDrive.</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="377"/>
         <source>Unable to open link %1.</source>
-        <translation type="vanished">Kan link %1 niet openen.</translation>
+        <translation>Kan link %1 niet openen.</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="246"/>
         <source>CONTINUE</source>
-        <translation type="vanished">DOORGAAN</translation>
+        <translation>DOORGAAN</translation>
     </message>
 </context>
 <context>
     <name>KDC::AddDriveLoginWidget</name>
     <message>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="69"/>
         <source>Log in from your browser</source>
-        <translation type="vanished">Log in via uw browser</translation>
+        <translation>Log in via uw browser</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="75"/>
         <source>Your browser should open automatically to complete the connection. Once connected, you will automatically return to kDrive.</source>
-        <translation type="vanished">Uw browser zou automatisch moeten openen om de verbinding te voltooien. Eenmaal verbonden, keert u automatisch terug naar kDrive.</translation>
+        <translation>Uw browser zou automatisch moeten openen om de verbinding te voltooien. Eenmaal verbonden, keert u automatisch terug naar kDrive.</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="85"/>
         <source>Open the login page</source>
-        <translation type="vanished">Open de inlogpagina</translation>
+        <translation>Open de inlogpagina</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="121"/>
         <source>An error occurred during authentication. Please close the login window and try again.&lt;br&gt;If the error persists, contact our support team.</source>
-        <translation type="vanished">Er is een fout opgetreden tijdens de verificatie. Sluit het aanmeldvenster en probeer het opnieuw.&lt;br&gt;Neem contact op met ons ondersteuningsteam als de fout aanhoudt.</translation>
+        <translation>Er is een fout opgetreden tijdens de verificatie. Sluit het aanmeldvenster en probeer het opnieuw.&lt;br&gt;Neem contact op met ons ondersteuningsteam als de fout aanhoudt.</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="137"/>
         <source>Login failed: %1 - %2</source>
-        <translation type="vanished">Inloggen mislukt: %1 - %2</translation>
+        <translation>Inloggen mislukt: %1 - %2</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="145"/>
         <source>Failed to open the login page in your web browser</source>
-        <translation type="vanished">Kan de inlogpagina niet openen in uw webbrowser</translation>
+        <translation>Kan de inlogpagina niet openen in uw webbrowser</translation>
     </message>
 </context>
 <context>
     <name>KDC::AddDriveServerFoldersWidget</name>
     <message>
+        <location filename="../src/gui/adddriveserverfolderswidget.cpp" line="129"/>
         <source>Select kDrive folders to synchronize on your desktop</source>
-        <translation type="vanished">Selecteer kDrive-mappen om te synchroniseren op uw computer</translation>
+        <translation>Selecteer kDrive-mappen om te synchroniseren op uw computer</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddriveserverfolderswidget.cpp" line="174"/>
         <source>CONTINUE</source>
-        <translation type="vanished">DOORGAAN</translation>
+        <translation>DOORGAAN</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddriveserverfolderswidget.cpp" line="187"/>
         <source>Space available on your computer : %1</source>
-        <translation type="vanished">Beschikbare ruimte op uw computer: %1</translation>
+        <translation>Beschikbare ruimte op uw computer: %1</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddriveserverfolderswidget.cpp" line="206"/>
         <source>An error occurred while loading the list of subfolders.</source>
-        <translation type="vanished">Er is een fout opgetreden bij het laden van de lijst met submappen.</translation>
+        <translation>Er is een fout opgetreden bij het laden van de lijst met submappen.</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddriveserverfolderswidget.cpp" line="210"/>
         <source>Impossible to load the list of subfolders. Your kDrive might be in maintenance.&lt;br&gt;Please, login to the &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;web version&lt;/a&gt; to check your kDrive&apos;s status, or contact your administrator.</source>
-        <translation type="vanished">Kan de lijst met submappen niet laden. Uw kDrive is mogelijk in onderhoud.&lt;br&gt;Log in op de &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;webversie&lt;/a&gt; om de status van uw kDrive te controleren, of neem contact op met uw beheerder.</translation>
+        <translation>Kan de lijst met submappen niet laden. Uw kDrive is mogelijk in onderhoud.&lt;br&gt;Log in op de &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;webversie&lt;/a&gt; om de status van uw kDrive te controleren, of neem contact op met uw beheerder.</translation>
     </message>
 </context>
 <context>
     <name>KDC::AddDriveWizard</name>
     <message>
+        <location filename="../src/gui/adddrivewizard.cpp" line="226"/>
         <source>Failed to create local folder %1</source>
-        <translation type="vanished">Kan lokale map %1 niet aanmaken</translation>
+        <translation>Kan lokale map %1 niet aanmaken</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddrivewizard.cpp" line="237"/>
         <source>Failed to create new synchronization</source>
-        <translation type="vanished">Kan geen nieuwe synchronisatie aanmaken</translation>
+        <translation>Kan geen nieuwe synchronisatie aanmaken</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddrivewizard.cpp" line="270"/>
         <source>The kDrive %1 is already synchronized on this computer. Continue anyway?</source>
-        <translation type="vanished">De kDrive %1 is al gesynchroniseerd op deze computer. Toch doorgaan?</translation>
+        <translation>De kDrive %1 is al gesynchroniseerd op deze computer. Toch doorgaan?</translation>
     </message>
 </context>
 <context>
     <name>KDC::AppClient</name>
     <message>
+        <location filename="../src/gui/appclient.cpp" line="100"/>
         <source>kDrive client is run with bad parameters!</source>
-        <translation type="vanished">kDrive-client wordt uitgevoerd met ongeldige parameters!</translation>
+        <translation>kDrive-client wordt uitgevoerd met ongeldige parameters!</translation>
     </message>
     <message>
+        <location filename="../src/gui/appclient.cpp" line="109"/>
         <source>kDrive client is already running!</source>
-        <translation type="vanished">kDrive-client draait al!</translation>
+        <translation>kDrive-client draait al!</translation>
     </message>
     <message>
+        <location filename="../src/gui/appclient.cpp" line="724"/>
         <source>The user %1 is not connected. Please log in again.</source>
-        <translation type="vanished">Gebruiker %1 is niet verbonden. Log opnieuw in.</translation>
+        <translation>Gebruiker %1 is niet verbonden. Log opnieuw in.</translation>
     </message>
 </context>
 <context>
     <name>KDC::AppServer</name>
     <message>
+        <location filename="../src/server/appserver.cpp" line="1691"/>
         <source>Share link copied to clipboard</source>
-        <translation type="vanished">Deellink gekopieerd naar klembord</translation>
+        <translation>Deellink gekopieerd naar klembord</translation>
     </message>
     <message numerus="yes">
+        <location filename="../src/server/appserver.cpp" line="3848"/>
         <source>%1 and %n other file(s) have been removed.</source>
-        <translation type="vanished">
+        <translation>
             <numerusform>%1 is verwijderd.</numerusform>
             <numerusform>%1 en %n andere bestanden zijn verwijderd.</numerusform>
         </translation>
     </message>
     <message>
+        <location filename="../src/server/appserver.cpp" line="3850"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
-        <translation type="vanished">%1 is verwijderd.</translation>
+        <translation>%1 is verwijderd.</translation>
     </message>
     <message numerus="yes">
+        <location filename="../src/server/appserver.cpp" line="3855"/>
         <source>%1 and %n other file(s) have been added.</source>
-        <translation type="vanished">
+        <translation>
             <numerusform>%1 en %n ander(e) bestand(en) zijn toegevoegd.</numerusform>
             <numerusform>%1 en %n andere bestanden zijn toegevoegd.</numerusform>
         </translation>
     </message>
     <message>
+        <location filename="../src/server/appserver.cpp" line="3857"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
-        <translation type="vanished">%1 is toegevoegd.</translation>
+        <translation>%1 is toegevoegd.</translation>
     </message>
     <message numerus="yes">
+        <location filename="../src/server/appserver.cpp" line="3862"/>
         <source>%1 and %n other file(s) have been updated.</source>
-        <translation type="vanished">
+        <translation>
             <numerusform>%1 is bijgewerkt.</numerusform>
             <numerusform>%1 en %n andere bestanden zijn bijgewerkt.</numerusform>
         </translation>
     </message>
     <message>
+        <location filename="../src/server/appserver.cpp" line="3864"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
-        <translation type="vanished">%1 is bijgewerkt.</translation>
+        <translation>%1 is bijgewerkt.</translation>
     </message>
     <message numerus="yes">
+        <location filename="../src/server/appserver.cpp" line="3869"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
-        <translation type="vanished">
+        <translation>
             <numerusform>%1 is verplaatst naar %2.</numerusform>
             <numerusform>%1 is verplaatst naar %2 en %n andere bestanden zijn verplaatst.</numerusform>
         </translation>
     </message>
     <message>
+        <location filename="../src/server/appserver.cpp" line="3872"/>
         <source>%1 has been moved to %2.</source>
-        <translation type="vanished">%1 is verplaatst naar %2.</translation>
+        <translation>%1 is verplaatst naar %2.</translation>
     </message>
     <message>
+        <location filename="../src/server/appserver.cpp" line="3880"/>
         <source>Sync Activity</source>
-        <translation type="vanished">Synchronisatieactiviteit</translation>
+        <translation>Synchronisatieactiviteit</translation>
     </message>
 </context>
 <context>
     <name>KDC::BaseFolderTreeItemWidget</name>
     <message>
+        <location filename="../src/gui/basefoldertreeitemwidget.cpp" line="102"/>
         <source>No subfolders currently on the server.</source>
-        <translation type="vanished">Geen submappen op de server.</translation>
+        <translation>Geen submappen op de server.</translation>
     </message>
 </context>
 <context>
     <name>KDC::BetaProgramDialog</name>
     <message>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="70"/>
         <source>Quit the beta program</source>
-        <translation type="vanished">Bètaprogramma verlaten</translation>
+        <translation>Bètaprogramma verlaten</translation>
     </message>
     <message>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="70"/>
         <source>Join the beta program</source>
-        <translation type="vanished">Deelnemen aan het bètaprogramma</translation>
+        <translation>Deelnemen aan het bètaprogramma</translation>
     </message>
     <message>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="78"/>
         <source>Get early access to new versions of the application before they are released to the general public, and take part in improving the application by sending us your comments.</source>
-        <translation type="vanished">Krijg vroeg toegang tot nieuwe versies van de applicatie voordat ze voor het grote publiek worden vrijgegeven, en help mee de applicatie te verbeteren door ons uw opmerkingen te sturen.</translation>
+        <translation>Krijg vroeg toegang tot nieuwe versies van de applicatie voordat ze voor het grote publiek worden vrijgegeven, en help mee de applicatie te verbeteren door ons uw opmerkingen te sturen.</translation>
     </message>
     <message>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="88"/>
         <source>Benefit from application beta updates</source>
-        <translation type="vanished">Profiteer van bèta-updates van de applicatie</translation>
+        <translation>Profiteer van bèta-updates van de applicatie</translation>
     </message>
     <message>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="92"/>
         <source>No</source>
-        <translation type="vanished">Nee</translation>
+        <translation>Nee</translation>
     </message>
     <message>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="93"/>
         <source>Public beta version</source>
-        <translation type="vanished">Openbare bètaversie</translation>
+        <translation>Openbare bètaversie</translation>
     </message>
     <message>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="94"/>
         <source>Internal beta version</source>
-        <translation type="vanished">Interne bètaversie</translation>
+        <translation>Interne bètaversie</translation>
     </message>
     <message>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="95"/>
         <source>Test version</source>
-        <translation type="vanished">Testversie</translation>
+        <translation>Testversie</translation>
     </message>
     <message>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="146"/>
         <source>I understand</source>
-        <translation type="vanished">Ik begrijp het</translation>
+        <translation>Ik begrijp het</translation>
     </message>
     <message>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="152"/>
         <source>Are you sure you want to leave the beta program?</source>
-        <translation type="vanished">Weet u zeker dat u het bètaprogramma wilt verlaten?</translation>
+        <translation>Weet u zeker dat u het bètaprogramma wilt verlaten?</translation>
     </message>
     <message>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="166"/>
         <source>Save</source>
-        <translation type="vanished">Opslaan</translation>
+        <translation>Opslaan</translation>
     </message>
     <message>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="172"/>
         <source>Cancel</source>
-        <translation type="vanished">Annuleren</translation>
+        <translation>Annuleren</translation>
     </message>
     <message>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="235"/>
         <source>Your current version of the application may be too recent, your choice will be effective when the next update is available.</source>
-        <translation type="vanished">Uw huidige versie van de applicatie is mogelijk te recent, uw keuze wordt effectief wanneer de volgende update beschikbaar is.</translation>
+        <translation>Uw huidige versie van de applicatie is mogelijk te recent, uw keuze wordt effectief wanneer de volgende update beschikbaar is.</translation>
     </message>
     <message>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="240"/>
         <source>Beta versions may leave unexpectedly or cause instabilities.</source>
-        <translation type="vanished">Bètaversies kunnen onverwacht stoppen of instabiliteit veroorzaken.</translation>
+        <translation>Bètaversies kunnen onverwacht stoppen of instabiliteit veroorzaken.</translation>
     </message>
 </context>
 <context>
     <name>KDC::ClientGui</name>
     <message>
+        <location filename="../src/gui/clientgui.cpp" line="190"/>
         <source>Failed to fix conflict(s) on %1 item(s) in sync folder: %2</source>
-        <translation type="vanished">Kan conflict(en) niet oplossen voor %1 item(s) in synchronisatiemap: %2</translation>
+        <translation>Kan conflict(en) niet oplossen voor %1 item(s) in synchronisatiemap: %2</translation>
     </message>
     <message>
+        <location filename="../src/gui/clientgui.cpp" line="243"/>
         <source>Please sign in</source>
-        <translation type="vanished">Log alstublieft in</translation>
+        <translation>Log alstublieft in</translation>
     </message>
     <message>
+        <location filename="../src/gui/clientgui.cpp" line="293"/>
         <source>Folder %1: %2</source>
-        <translation type="vanished">Map %1: %2</translation>
+        <translation>Map %1: %2</translation>
     </message>
     <message>
+        <location filename="../src/gui/clientgui.cpp" line="299"/>
         <source>There are no sync folders configured.</source>
-        <translation type="vanished">Er zijn geen synchronisatiemappen geconfigureerd.</translation>
+        <translation>Er zijn geen synchronisatiemappen geconfigureerd.</translation>
     </message>
     <message>
+        <location filename="../src/gui/clientgui.cpp" line="1508"/>
         <source>Synthesis</source>
-        <translation type="vanished">Overzicht</translation>
+        <translation>Overzicht</translation>
     </message>
     <message>
+        <location filename="../src/gui/clientgui.cpp" line="1509"/>
         <source>Preferences</source>
         <translatorcomment>Voorkeuren</translatorcomment>
-        <translation type="vanished">Voorkeuren</translation>
+        <translation>Voorkeuren</translation>
     </message>
     <message>
+        <location filename="../src/gui/clientgui.cpp" line="1510"/>
         <source>Quit</source>
-        <translation type="vanished">Afsluiten</translation>
+        <translation>Afsluiten</translation>
     </message>
     <message>
+        <location filename="../src/gui/clientgui.cpp" line="674"/>
         <source>Undefined State.</source>
-        <translation type="vanished">Ongedefinieerde status.</translation>
+        <translation>Ongedefinieerde status.</translation>
     </message>
     <message>
+        <location filename="../src/gui/clientgui.cpp" line="677"/>
         <source>Waiting to start syncing.</source>
-        <translation type="vanished">Wachten om synchronisatie te starten.</translation>
+        <translation>Wachten om synchronisatie te starten.</translation>
     </message>
     <message>
+        <location filename="../src/gui/clientgui.cpp" line="680"/>
         <source>Sync is running.</source>
-        <translation type="vanished">Synchronisatie wordt uitgevoerd.</translation>
+        <translation>Synchronisatie wordt uitgevoerd.</translation>
     </message>
     <message>
+        <location filename="../src/gui/clientgui.cpp" line="684"/>
         <source>Sync was successful, unresolved conflicts.</source>
-        <translation type="vanished">Synchronisatie gelukt, niet-opgeloste conflicten.</translation>
+        <translation>Synchronisatie gelukt, niet-opgeloste conflicten.</translation>
     </message>
     <message>
+        <location filename="../src/gui/clientgui.cpp" line="686"/>
         <source>Last Sync was successful.</source>
-        <translation type="vanished">Laatste synchronisatie was succesvol.</translation>
+        <translation>Laatste synchronisatie was succesvol.</translation>
     </message>
     <message>
+        <location filename="../src/gui/clientgui.cpp" line="693"/>
         <source>User Abort.</source>
-        <translation type="vanished">Afgebroken door gebruiker.</translation>
+        <translation>Afgebroken door gebruiker.</translation>
     </message>
     <message>
+        <location filename="../src/gui/clientgui.cpp" line="697"/>
         <source>Sync is paused.</source>
-        <translation type="vanished">Synchronisatie is gepauzeerd.</translation>
+        <translation>Synchronisatie is gepauzeerd.</translation>
     </message>
     <message>
+        <location filename="../src/gui/clientgui.cpp" line="706"/>
         <source>%1 (Sync is paused)</source>
-        <translation type="vanished">%1 (Synchronisatie gepauzeerd)</translation>
+        <translation>%1 (Synchronisatie gepauzeerd)</translation>
     </message>
     <message>
+        <location filename="../src/gui/clientgui.cpp" line="1250"/>
         <source>Do you really want to remove the synchronizations of the account &lt;i&gt;%1&lt;/i&gt; ?&lt;br&gt;&lt;b&gt;Note:&lt;/b&gt; This will &lt;b&gt;not&lt;/b&gt; delete any files.</source>
-        <translation type="vanished">Weet u zeker dat u de synchronisaties van het account &lt;i&gt;%1&lt;/i&gt; wilt verwijderen?&lt;br&gt;&lt;b&gt;Opmerking:&lt;/b&gt; Dit zal &lt;b&gt;geen&lt;/b&gt; bestanden verwijderen.</translation>
+        <translation>Weet u zeker dat u de synchronisaties van het account &lt;i&gt;%1&lt;/i&gt; wilt verwijderen?&lt;br&gt;&lt;b&gt;Opmerking:&lt;/b&gt; Dit zal &lt;b&gt;geen&lt;/b&gt; bestanden verwijderen.</translation>
     </message>
     <message>
+        <location filename="../src/gui/clientgui.cpp" line="1254"/>
         <source>REMOVE ALL SYNCHRONIZATIONS</source>
-        <translation type="vanished">ALLE SYNCHRONISATIES VERWIJDEREN</translation>
+        <translation>ALLE SYNCHRONISATIES VERWIJDEREN</translation>
     </message>
     <message>
+        <location filename="../src/gui/clientgui.cpp" line="1255"/>
         <source>CANCEL</source>
-        <translation type="vanished">ANNULEREN</translation>
+        <translation>ANNULEREN</translation>
     </message>
     <message>
+        <location filename="../src/gui/clientgui.cpp" line="1382"/>
         <source>%1 items have been deleted from your from your local sync folder &lt;a style=&quot;%2&quot; href=&quot;file:///%3&quot;&gt;%3&lt;/a&gt;. To avoid unintended deletions the synchronization have been paused.&lt;br&gt;Do you want to propagate those deletion to your kDrive?</source>
-        <translation type="vanished">%1 items zijn verwijderd uit uw lokale synchronisatiemap &lt;a style=&quot;%2&quot; href=&quot;file:///%3&quot;&gt;%3&lt;/a&gt;. Om onbedoelde verwijderingen te voorkomen, is de synchronisatie onderbroken.&lt;br&gt;Wilt u deze verwijderingen doorzetten naar uw kDrive?</translation>
+        <translation>%1 items zijn verwijderd uit uw lokale synchronisatiemap &lt;a style=&quot;%2&quot; href=&quot;file:///%3&quot;&gt;%3&lt;/a&gt;. Om onbedoelde verwijderingen te voorkomen, is de synchronisatie onderbroken.&lt;br&gt;Wilt u deze verwijderingen doorzetten naar uw kDrive?</translation>
     </message>
     <message>
+        <location filename="../src/gui/clientgui.cpp" line="1420"/>
         <source>Several files have been deleted from your local sync folder &lt;a style=&quot;%1&quot; href=&quot;file:///%2&quot;&gt;%2&lt;/a&gt;. Deleted files can be found in kDrive&apos;s &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;trash&lt;/a&gt;.</source>
-        <translation type="vanished">Meerdere bestanden zijn verwijderd uit uw lokale synchronisatiemap &lt;a style=&quot;%1&quot; href=&quot;file:///%2&quot;&gt;%2&lt;/a&gt;. Verwijderde bestanden zijn te vinden in de &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;prullenbak&lt;/a&gt; van kDrive.</translation>
+        <translation>Meerdere bestanden zijn verwijderd uit uw lokale synchronisatiemap &lt;a style=&quot;%1&quot; href=&quot;file:///%2&quot;&gt;%2&lt;/a&gt;. Verwijderde bestanden zijn te vinden in de &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;prullenbak&lt;/a&gt; van kDrive.</translation>
     </message>
     <message>
+        <location filename="../src/gui/clientgui.cpp" line="1426"/>
         <source>Don&apos;t show again</source>
-        <translation type="vanished">Niet meer weergeven</translation>
+        <translation>Niet meer weergeven</translation>
     </message>
     <message>
+        <location filename="../src/gui/clientgui.cpp" line="1676"/>
         <source>Failed to start synchronizations!</source>
-        <translation type="vanished">Kan synchronisaties niet starten!</translation>
+        <translation>Kan synchronisaties niet starten!</translation>
     </message>
     <message>
+        <location filename="../src/gui/clientgui.cpp" line="850"/>
         <source>Unable to open folder path %1.</source>
-        <translation type="vanished">Kan debugmap %1 niet openen.</translation>
+        <translation>Kan debugmap %1 niet openen.</translation>
     </message>
     <message>
+        <location filename="../src/gui/clientgui.cpp" line="117"/>
         <source>Unable to initialize kDrive client</source>
-        <translation type="vanished">Kan kDrive-client niet initialiseren</translation>
+        <translation>Kan kDrive-client niet initialiseren</translation>
     </message>
     <message>
+        <location filename="../src/gui/clientgui.cpp" line="256"/>
         <source>Synchronization is paused</source>
-        <translation type="vanished">Synchronisatie is gepauzeerd</translation>
+        <translation>Synchronisatie is gepauzeerd</translation>
     </message>
 </context>
 <context>
     <name>KDC::ConfirmSynchronizationDialog</name>
     <message>
+        <location filename="../src/gui/confirmsynchronizationdialog.cpp" line="86"/>
         <source>Summary of your local folder synchronization</source>
-        <translation type="vanished">Samenvatting van uw lokale mapsynchronisatie</translation>
+        <translation>Samenvatting van uw lokale mapsynchronisatie</translation>
     </message>
     <message>
+        <location filename="../src/gui/confirmsynchronizationdialog.cpp" line="95"/>
         <source>The contents of the folder on your computer will be synchronized to the folder of the selected kDrive and vice versa.</source>
-        <translation type="vanished">De inhoud van de map op uw computer wordt gesynchroniseerd met de map van de geselecteerde kDrive en omgekeerd.</translation>
+        <translation>De inhoud van de map op uw computer wordt gesynchroniseerd met de map van de geselecteerde kDrive en omgekeerd.</translation>
     </message>
     <message>
+        <location filename="../src/gui/confirmsynchronizationdialog.cpp" line="184"/>
         <source>CANCEL</source>
-        <translation type="vanished">ANNULEREN</translation>
+        <translation>ANNULEREN</translation>
     </message>
     <message>
+        <location filename="../src/gui/confirmsynchronizationdialog.cpp" line="191"/>
         <source>SYNCHRONIZE</source>
-        <translation type="vanished">SYNCHRONISEREN</translation>
+        <translation>SYNCHRONISEREN</translation>
     </message>
 </context>
 <context>
     <name>KDC::CustomExtensionSetupWidget</name>
     <message>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="97"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="121"/>
         <source>Before finishing</source>
-        <translation type="vanished">Voordat u voltooit</translation>
+        <translation>Voordat u voltooit</translation>
     </message>
     <message>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="108"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="132"/>
         <source>Perform the following steps to ensure that Lite Sync works correctly on your computer and to complete the configuration of the kDrive.</source>
-        <translation type="vanished">Voer de volgende stappen uit om ervoor te zorgen dat Lite Sync correct werkt op uw computer en om de configuratie van de kDrive te voltooien.</translation>
+        <translation>Voer de volgende stappen uit om ervoor te zorgen dat Lite Sync correct werkt op uw computer en om de configuratie van de kDrive te voltooien.</translation>
     </message>
     <message>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="209"/>
         <source>Open your Mac&apos;s &lt;b&gt;General settings&lt;/b&gt; or  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
-        <translation type="vanished">Open de &lt;b&gt;Algemene instellingen&lt;/b&gt; van uw Mac of &lt;a style=%1 href=%2&gt;klik hier&lt;/a&gt;</translation>
+        <translation>Open de &lt;b&gt;Algemene instellingen&lt;/b&gt; van uw Mac of &lt;a style=%1 href=%2&gt;klik hier&lt;/a&gt;</translation>
     </message>
     <message>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="213"/>
         <source>Open your Mac&apos;s &lt;b&gt;Privacy &amp; Security settings&lt;/b&gt; or  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
-        <translation type="vanished">Open de &lt;b&gt;Privacy- en beveiligingsinstellingen&lt;/b&gt; van uw Mac of &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;klik hier&lt;/a&gt;</translation>
+        <translation>Open de &lt;b&gt;Privacy- en beveiligingsinstellingen&lt;/b&gt; van uw Mac of &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;klik hier&lt;/a&gt;</translation>
     </message>
     <message>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="217"/>
         <source>Open your Mac&apos;s &lt;b&gt;Security &amp; Privacy settings&lt;/b&gt; or  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
-        <translation type="vanished">Open de &lt;b&gt;Beveiligings- en privacy-instellingen&lt;/b&gt; van uw Mac of &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;klik hier&lt;/a&gt;</translation>
+        <translation>Open de &lt;b&gt;Beveiligings- en privacy-instellingen&lt;/b&gt; van uw Mac of &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;klik hier&lt;/a&gt;</translation>
     </message>
     <message>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="247"/>
         <source>Go to &lt;b&gt;&quot;Login Items &amp; Extensions&quot;&lt;/b&gt; section and then to &lt;b&gt;&quot;Endpoint Security Extensions&quot;&lt;/b&gt;</source>
-        <translation type="vanished">Ga naar de sectie &lt;b&gt;&quot;Inlogitems en extensies&quot;&lt;/b&gt; en vervolgens naar &lt;b&gt;&quot;Endpoint Security Extensions&quot;&lt;/b&gt;</translation>
+        <translation>Ga naar de sectie &lt;b&gt;&quot;Inlogitems en extensies&quot;&lt;/b&gt; en vervolgens naar &lt;b&gt;&quot;Endpoint Security Extensions&quot;&lt;/b&gt;</translation>
     </message>
     <message>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="264"/>
         <source>Authorize the kDrive application</source>
-        <translation type="vanished">Authoriseer de kDrive-applicatie</translation>
+        <translation>Authoriseer de kDrive-applicatie</translation>
     </message>
     <message>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="273"/>
         <source>Go to &lt;b&gt;&quot;Security&quot;&lt;/b&gt; section</source>
-        <translation type="vanished">Ga naar de sectie &lt;b&gt;&quot;Beveiliging&quot;&lt;/b&gt;</translation>
+        <translation>Ga naar de sectie &lt;b&gt;&quot;Beveiliging&quot;&lt;/b&gt;</translation>
     </message>
     <message>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="290"/>
         <source>Authorize the kDrive application in the box indicating that kDrive has been blocked</source>
-        <translation type="vanished">Authoriseer de kDrive-applicatie in het vak dat aangeeft dat kDrive is geblokkeerd</translation>
+        <translation>Authoriseer de kDrive-applicatie in het vak dat aangeeft dat kDrive is geblokkeerd</translation>
     </message>
     <message>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="300"/>
         <source>Unlock the padlock &lt;img src=&quot;:/client/resources/icons/actions/lock.png&quot;&gt; and authorize the kDrive application</source>
-        <translation type="vanished">Ontgrendel het hangslot &lt;img src=&quot;:/client/resources/icons/actions/lock.png&quot;&gt; en authoriseer de kDrive-applicatie</translation>
+        <translation>Ontgrendel het hangslot &lt;img src=&quot;:/client/resources/icons/actions/lock.png&quot;&gt; en authoriseer de kDrive-applicatie</translation>
     </message>
     <message>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="345"/>
         <source>Go to &lt;b&gt;&quot;Privacy &amp; Security&quot;&lt;/b&gt; section and click on &lt;b&gt;&quot;Full Disk Access&quot;&lt;/b&gt; or &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
-        <translation type="vanished">Ga naar de sectie &lt;b&gt;&quot;Privacy en beveiliging&quot;&lt;/b&gt; en klik op &lt;b&gt;&quot;Volledige schijftoegang&quot;&lt;/b&gt; of &lt;a style=%1 href=%2&gt;klik hier&lt;/a&gt;</translation>
+        <translation>Ga naar de sectie &lt;b&gt;&quot;Privacy en beveiliging&quot;&lt;/b&gt; en klik op &lt;b&gt;&quot;Volledige schijftoegang&quot;&lt;/b&gt; of &lt;a style=%1 href=%2&gt;klik hier&lt;/a&gt;</translation>
     </message>
     <message>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="349"/>
         <source>Still in the Security &amp; Privacy settings, open the &lt;b&gt;&quot;Privacy&quot;&lt;/b&gt; tab or &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
-        <translation type="vanished">Nog steeds in de Beveiliging- en Privacy-instellingen, open het tabblad &lt;b&gt;&quot;Privacy&quot;&lt;/b&gt; of &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;klik hier&lt;/a&gt;</translation>
+        <translation>Nog steeds in de Beveiliging- en Privacy-instellingen, open het tabblad &lt;b&gt;&quot;Privacy&quot;&lt;/b&gt; of &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;klik hier&lt;/a&gt;</translation>
     </message>
     <message>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="377"/>
         <source>Check the &quot;kDrive LiteSync Extension&quot; box then the &quot;kDrive.app&quot; box (if not already checked)</source>
-        <translation type="vanished">Vink het vakje &quot;kDrive LiteSync Extension&quot; aan en vervolgens het vakje &quot;kDrive.app&quot; (indien nog niet aangevinkt)</translation>
+        <translation>Vink het vakje &quot;kDrive LiteSync Extension&quot; aan en vervolgens het vakje &quot;kDrive.app&quot; (indien nog niet aangevinkt)</translation>
     </message>
     <message>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="394"/>
         <source>A restart of the app might be proposed, in this case accept it</source>
-        <translation type="vanished">Een herstart van de app kan worden voorgesteld, accepteer dit in dat geval</translation>
+        <translation>Een herstart van de app kan worden voorgesteld, accepteer dit in dat geval</translation>
     </message>
     <message>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="400"/>
         <source>Check the &quot;kDrive LiteSync Extension&quot; box (and &quot;kDrive.app&quot; if it exists) in &lt;b&gt;&quot;Full Disk Access&quot;&lt;/b&gt;</source>
-        <translation type="vanished">Vink het vakje &quot;kDrive LiteSync Extension&quot; aan (en &quot;kDrive.app&quot; als het bestaat) bij &lt;b&gt;&quot;Volledige schijftoegang&quot;&lt;/b&gt;</translation>
+        <translation>Vink het vakje &quot;kDrive LiteSync Extension&quot; aan (en &quot;kDrive.app&quot; als het bestaat) bij &lt;b&gt;&quot;Volledige schijftoegang&quot;&lt;/b&gt;</translation>
     </message>
     <message>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="491"/>
         <source>STEP 1</source>
-        <translation type="vanished">STAP 1</translation>
+        <translation>STAP 1</translation>
     </message>
     <message>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="491"/>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="492"/>
         <source>(Done)</source>
-        <translation type="vanished">(Uitgevoerd)</translation>
+        <translation>(Uitgevoerd)</translation>
     </message>
     <message>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="492"/>
         <source>STEP 2</source>
-        <translation type="vanished">STAP 2</translation>
+        <translation>STAP 2</translation>
     </message>
     <message>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="495"/>
         <source>STEPS PERFORMED</source>
-        <translation type="vanished">UITGEVOERDE STAPPEN</translation>
+        <translation>UITGEVOERDE STAPPEN</translation>
     </message>
     <message>
+        <location filename="../src/gui/customextensionsetupwidget.cpp" line="497"/>
         <source>END</source>
-        <translation type="vanished">VOLTOOIEN</translation>
+        <translation>VOLTOOIEN</translation>
     </message>
 </context>
 <context>
     <name>KDC::CustomMessageBox</name>
     <message>
+        <location filename="../src/gui/custommessagebox.cpp" line="105"/>
         <source>OK</source>
-        <translation type="vanished">OK</translation>
+        <translation>OK</translation>
     </message>
     <message>
+        <location filename="../src/gui/custommessagebox.cpp" line="115"/>
         <source>CANCEL</source>
-        <translation type="vanished">ANNULEREN</translation>
+        <translation>ANNULEREN</translation>
     </message>
     <message>
+        <location filename="../src/gui/custommessagebox.cpp" line="125"/>
         <source>YES</source>
-        <translation type="vanished">JA</translation>
+        <translation>JA</translation>
     </message>
     <message>
+        <location filename="../src/gui/custommessagebox.cpp" line="135"/>
         <source>NO</source>
-        <translation type="vanished">NEE</translation>
+        <translation>NEE</translation>
     </message>
 </context>
 <context>
     <name>KDC::DebugReporter</name>
     <message>
+        <location filename="../src/gui/debugreporter.cpp" line="37"/>
         <source>Sending of debugging information</source>
-        <translation type="vanished">Verzenden van debuginformatie</translation>
+        <translation>Verzenden van debuginformatie</translation>
     </message>
     <message>
+        <location filename="../src/gui/debugreporter.cpp" line="37"/>
         <source>Cancel</source>
-        <translation type="vanished">Annuleren</translation>
+        <translation>Annuleren</translation>
     </message>
 </context>
 <context>
     <name>KDC::DebuggingDialog</name>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="46"/>
         <source>Info</source>
-        <translation type="vanished">Informatie</translation>
+        <translation>Informatie</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="45"/>
         <source>Debug</source>
-        <translation type="vanished">Debuggen</translation>
+        <translation>Debuggen</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="47"/>
         <source>Warning</source>
-        <translation type="vanished">Waarschuwing</translation>
+        <translation>Waarschuwing</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="48"/>
         <source>Error</source>
-        <translation type="vanished">Fout</translation>
+        <translation>Fout</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="49"/>
         <source>Fatal</source>
-        <translation type="vanished">Fataal</translation>
+        <translation>Fataal</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="74"/>
         <source>Debugging settings</source>
-        <translation type="vanished">Debug-instellingen</translation>
+        <translation>Debug-instellingen</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="90"/>
         <source>Save debugging information in a folder on my computer (Recommended)</source>
-        <translation type="vanished">Debuginformatie opslaan in een map op mijn computer (aanbevolen)</translation>
+        <translation>Debuginformatie opslaan in een map op mijn computer (aanbevolen)</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="104"/>
         <source>This information enables IT support to determine the origin of an incident.</source>
-        <translation type="vanished">Deze informatie stelt IT-ondersteuning in staat de oorzaak van een incident te bepalen.</translation>
+        <translation>Deze informatie stelt IT-ondersteuning in staat de oorzaak van een incident te bepalen.</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="114"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Open debugging folder&lt;/a&gt;</source>
-        <translation type="vanished">&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Debugmap openen&lt;/a&gt;</translation>
+        <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Debugmap openen&lt;/a&gt;</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="143"/>
         <source>Debug level</source>
-        <translation type="vanished">Debug-niveau</translation>
+        <translation>Debug-niveau</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="152"/>
         <source>The trace level lets you choose the extent of the debugging information recorded</source>
-        <translation type="vanished">Het trace-niveau laat u de omvang van de vastgelegde debuginformatie kiezen</translation>
+        <translation>Het trace-niveau laat u de omvang van de vastgelegde debuginformatie kiezen</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="179"/>
         <source>The extended full log collects a detailed history that can be used for debugging. Enabling it can slow down the kDrive application.</source>
-        <translation type="vanished">Het uitgebreide volledige logboek verzamelt een gedetailleerde geschiedenis die kan worden gebruikt voor debugging. Het activeren ervan kan de kDrive-applicatie vertragen.</translation>
+        <translation>Het uitgebreide volledige logboek verzamelt een gedetailleerde geschiedenis die kan worden gebruikt voor debugging. Het activeren ervan kan de kDrive-applicatie vertragen.</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="183"/>
         <source>Extended Full Log</source>
-        <translation type="vanished">Uitgebreid volledig logboek</translation>
+        <translation>Uitgebreid volledig logboek</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="207"/>
         <source>Delete logs older than %1 days</source>
-        <translation type="vanished">Logboeken ouder dan %1 dagen verwijderen</translation>
+        <translation>Logboeken ouder dan %1 dagen verwijderen</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="226"/>
         <source>Share the debug folder with Infomaniak support.</source>
-        <translation type="vanished">Deel de debugmap met Infomaniak-ondersteuning.</translation>
+        <translation>Deel de debugmap met Infomaniak-ondersteuning.</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="250"/>
         <source>The last session is the periode since the last kDrive start.</source>
-        <translation type="vanished">De laatste sessie is de periode sinds de laatste kDrive-start.</translation>
+        <translation>De laatste sessie is de periode sinds de laatste kDrive-start.</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="254"/>
         <source>Share only the last kDrive session</source>
-        <translation type="vanished">Deel alleen de laatste kDrive-sessie</translation>
+        <translation>Deel alleen de laatste kDrive-sessie</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="285"/>
         <source>  Loading</source>
-        <translation type="vanished">  Laden</translation>
+        <translation>  Laden</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="294"/>
         <source>Cancel</source>
-        <translation type="vanished">Annuleren</translation>
+        <translation>Annuleren</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="320"/>
         <source>SAVE</source>
-        <translation type="vanished">OPSLAAN</translation>
+        <translation>OPSLAAN</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="327"/>
         <source>CANCEL</source>
-        <translation type="vanished">ANNULEREN</translation>
+        <translation>ANNULEREN</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="471"/>
         <source>Failed to share</source>
-        <translation type="vanished">Delen mislukt</translation>
+        <translation>Delen mislukt</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="481"/>
         <source>1. Check that you are logged in &lt;br&gt;2. Check that you have configured at least one kDrive</source>
-        <translation type="vanished">1. Controleer of u bent ingelogd &lt;br&gt;2. Controleer of u ten minste één kDrive heeft geconfigureerd</translation>
+        <translation>1. Controleer of u bent ingelogd &lt;br&gt;2. Controleer of u ten minste één kDrive heeft geconfigureerd</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="486"/>
         <source> (Connexion interrupted)</source>
-        <translation type="vanished"> (Verbinding onderbroken)</translation>
+        <translation> (Verbinding onderbroken)</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="493"/>
         <source>Share the folder with SwissTransfer &lt;br&gt;</source>
-        <translation type="vanished">Deel de map met SwissTransfer &lt;br&gt;</translation>
+        <translation>Deel de map met SwissTransfer &lt;br&gt;</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="494"/>
         <source> 1. We automatically compressed your log &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;here&lt;/a&gt;.&lt;br&gt;</source>
-        <translation type="vanished"> 1. We hebben uw logboek automatisch gecomprimeerd &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;hier&lt;/a&gt;.&lt;br&gt;</translation>
+        <translation> 1. We hebben uw logboek automatisch gecomprimeerd &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;hier&lt;/a&gt;.&lt;br&gt;</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="496"/>
         <source> 2. Transfer the archive with &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;swisstransfer.com&lt;/a&gt;&lt;br&gt;</source>
-        <translation type="vanished"> 2. Verstuur het archief met &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;swisstransfer.com&lt;/a&gt;&lt;br&gt;</translation>
+        <translation> 2. Verstuur het archief met &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;swisstransfer.com&lt;/a&gt;&lt;br&gt;</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="498"/>
         <source> 3. Share the link with &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt; support@infomaniak.com &lt;/a&gt;&lt;br&gt;</source>
-        <translation type="vanished"> 3. Deel de link met &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt; support@infomaniak.com &lt;/a&gt;&lt;br&gt;</translation>
+        <translation> 3. Deel de link met &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt; support@infomaniak.com &lt;/a&gt;&lt;br&gt;</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="528"/>
         <source>Last upload the %1</source>
-        <translation type="vanished">Laatste upload op %1</translation>
+        <translation>Laatste upload op %1</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="556"/>
         <source>Sharing has been cancelled</source>
-        <translation type="vanished">Het delen is geannuleerd</translation>
+        <translation>Het delen is geannuleerd</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="598"/>
         <source>The extended full log is activated through the KDRIVE_FORCE_EXTENDED_LOG environment variable. Set it to 0 to disable it.</source>
-        <translation type="vanished">Het uitgebreide volledige logboek wordt geactiveerd via de omgevingsvariabele KDRIVE_FORCE_EXTENDED_LOG. Stel deze in op 0 om het uit te schakelen.</translation>
+        <translation>Het uitgebreide volledige logboek wordt geactiveerd via de omgevingsvariabele KDRIVE_FORCE_EXTENDED_LOG. Stel deze in op 0 om het uit te schakelen.</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.h" line="70"/>
         <source>The entire folder is large (&gt; 100 MB) and may take some time to share. To reduce the sharing time, we recommend, that you share only the last kDrive session.</source>
-        <translation type="vanished">De hele map is groot (&gt; 100 MB) en het delen kan enige tijd duren. Om de deeltijd te verkorten, raden we aan alleen de laatste kDrive-sessie te delen.</translation>
+        <translation>De hele map is groot (&gt; 100 MB) en het delen kan enige tijd duren. Om de deeltijd te verkorten, raden we aan alleen de laatste kDrive-sessie te delen.</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="612"/>
         <source>%1/%2/%3 at %4h%5m and %6s</source>
         <extracomment>Date format for the last successful log upload. %1: month, %2: day, %3: year, %4: hour, %5: minute, %6: second</extracomment>
-        <translation type="vanished">%2/%1/%3 om %4u%5 en %6s</translation>
+        <translation>%2/%1/%3 om %4u%5 en %6s</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="655"/>
         <source>Do you want to save your modifications?</source>
-        <translation type="vanished">Wilt u uw wijzigingen opslaan?</translation>
+        <translation>Wilt u uw wijzigingen opslaan?</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="710"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="716"/>
         <source>Unable to open folder %1.</source>
-        <translation type="vanished">Kan map %1 niet openen.</translation>
+        <translation>Kan map %1 niet openen.</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="723"/>
         <source>  Share</source>
-        <translation type="vanished">  Delen</translation>
+        <translation>  Delen</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="733"/>
         <source>  Sharing | step 1/2 %1%</source>
-        <translation type="vanished">  Delen | stap 1/2 %1%</translation>
+        <translation>  Delen | stap 1/2 %1%</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="742"/>
         <source>  Sharing | step 2/2 %1%</source>
-        <translation type="vanished">  Delen | stap 2/2 %1%</translation>
+        <translation>  Delen | stap 2/2 %1%</translation>
     </message>
     <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="752"/>
         <source>  Canceling...</source>
-        <translation type="vanished">  Annuleren...</translation>
+        <translation>  Annuleren...</translation>
     </message>
 </context>
 <context>
     <name>KDC::DrivePreferencesWidget</name>
     <message>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1118"/>
         <source>Folders</source>
-        <translation type="vanished">Mappen</translation>
+        <translation>Mappen</translation>
     </message>
     <message>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1120"/>
         <source>Notifications</source>
-        <translation type="vanished">Meldingen</translation>
+        <translation>Meldingen</translation>
     </message>
     <message>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1123"/>
         <source>A notification will be displayed as soon as a new folder has been synchronized or modified</source>
-        <translation type="vanished">Een melding wordt weergegeven zodra een nieuwe map is gesynchroniseerd of gewijzigd</translation>
+        <translation>Een melding wordt weergegeven zodra een nieuwe map is gesynchroniseerd of gewijzigd</translation>
     </message>
     <message>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1124"/>
         <source>Connected with</source>
-        <translation type="vanished">Verbonden met</translation>
+        <translation>Verbonden met</translation>
     </message>
     <message>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="981"/>
         <source>Do you really want to stop syncing the folder &lt;i&gt;%1&lt;/i&gt; ?&lt;br&gt;&lt;b&gt;Note:&lt;/b&gt; This will &lt;b&gt;not&lt;/b&gt; delete any files.</source>
-        <translation type="vanished">Weet u zeker dat u wilt stoppen met het synchroniseren van de map &lt;i&gt;%1&lt;/i&gt; ?&lt;br&gt;&lt;b&gt;Opmerking:&lt;/b&gt; Hierdoor worden &lt;b&gt;geen&lt;/b&gt; bestanden verwijderd.</translation>
+        <translation>Weet u zeker dat u wilt stoppen met het synchroniseren van de map &lt;i&gt;%1&lt;/i&gt; ?&lt;br&gt;&lt;b&gt;Opmerking:&lt;/b&gt; Hierdoor worden &lt;b&gt;geen&lt;/b&gt; bestanden verwijderd.</translation>
     </message>
     <message>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="356"/>
         <source>This operation may take from a few seconds to a few minutes depending on the size of the folder.</source>
-        <translation type="vanished">Deze bewerking kan enkele seconden tot enkele minuten duren, afhankelijk van de grootte van de map.</translation>
+        <translation>Deze bewerking kan enkele seconden tot enkele minuten duren, afhankelijk van de grootte van de map.</translation>
     </message>
     <message>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="360"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="391"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="986"/>
         <source>CANCEL</source>
-        <translation type="vanished">ANNULEREN</translation>
+        <translation>ANNULEREN</translation>
     </message>
     <message>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="645"/>
         <source>New local folder synchronization failed!</source>
-        <translation type="vanished">Synchronisatie van nieuwe lokale map mislukt!</translation>
+        <translation>Synchronisatie van nieuwe lokale map mislukt!</translation>
     </message>
     <message>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="823"/>
         <source>Lite Sync activation failed.</source>
-        <translation type="vanished">Activering van Lite Sync mislukt.</translation>
+        <translation>Activering van Lite Sync mislukt.</translation>
     </message>
     <message>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="841"/>
         <source>Lite Sync deactivation failed.</source>
-        <translation type="vanished">Deactivering van Lite Sync mislukt.</translation>
+        <translation>Deactivering van Lite Sync mislukt.</translation>
     </message>
     <message>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="985"/>
         <source>REMOVE FOLDER SYNC CONNECTION</source>
-        <translation type="vanished">MAP-SYNCHRONISATIE VERWIJDEREN</translation>
+        <translation>MAP-SYNCHRONISATIE VERWIJDEREN</translation>
     </message>
     <message>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1048"/>
         <source>An error occurred while loading the list of subfolders.</source>
-        <translation type="vanished">Er is een fout opgetreden bij het laden van de lijst met submappen.</translation>
+        <translation>Er is een fout opgetreden bij het laden van de lijst met submappen.</translation>
     </message>
     <message>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1121"/>
         <source>Enable the notifications for this kDrive</source>
-        <translation type="vanished">Meldingen voor deze kDrive inschakelen</translation>
+        <translation>Meldingen voor deze kDrive inschakelen</translation>
     </message>
     <message>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="359"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="390"/>
         <source>CONFIRM</source>
-        <translation type="vanished">BEVESTIGEN</translation>
+        <translation>BEVESTIGEN</translation>
     </message>
     <message>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="120"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1117"/>
         <source>Synchronization errors and information.</source>
-        <translation type="vanished">Synchronisatiefouten en informatie.</translation>
+        <translation>Synchronisatiefouten en informatie.</translation>
     </message>
     <message>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="144"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1119"/>
         <source>Synchronize a local folder</source>
-        <translation type="vanished">Een lokale map synchroniseren</translation>
+        <translation>Een lokale map synchroniseren</translation>
     </message>
     <message>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="355"/>
         <source>Do you really want to turn on Lite Sync?</source>
-        <translation type="vanished">Weet u zeker dat u Lite Sync wilt inschakelen?</translation>
+        <translation>Weet u zeker dat u Lite Sync wilt inschakelen?</translation>
     </message>
     <message>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="382"/>
         <source>Do you really want to turn off Lite Sync?</source>
-        <translation type="vanished">Weet u zeker dat u Lite Sync wilt uitschakelen?</translation>
+        <translation>Weet u zeker dat u Lite Sync wilt uitschakelen?</translation>
     </message>
     <message>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="384"/>
         <source>You don&apos;t have enough space to sync all the files on your kDrive (%1 missing). If you turn off Lite Sync, you need to select which folders to sync on your computer. In the meantime, the synchronization of your kDrive will be paused.</source>
-        <translation type="vanished">U heeft niet genoeg ruimte om alle bestanden op uw kDrive te synchroniseren (%1 ontbreekt). Als u Lite Sync uitschakelt, moet u selecteren welke mappen op uw computer moeten worden gesynchroniseerd. In de tussentijd wordt de synchronisatie van uw kDrive gepauzeerd.</translation>
+        <translation>U heeft niet genoeg ruimte om alle bestanden op uw kDrive te synchroniseren (%1 ontbreekt). Als u Lite Sync uitschakelt, moet u selecteren welke mappen op uw computer moeten worden gesynchroniseerd. In de tussentijd wordt de synchronisatie van uw kDrive gepauzeerd.</translation>
     </message>
     <message>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="388"/>
         <source>If you turn off Lite Sync, all files will be downloaded to your computer.</source>
-        <translation type="vanished">Als u Lite Sync uitschakelt, worden alle bestanden naar uw computer gedownload.</translation>
+        <translation>Als u Lite Sync uitschakelt, worden alle bestanden naar uw computer gedownload.</translation>
     </message>
     <message>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="627"/>
         <source>Failed to create new synchronization</source>
-        <translation type="vanished">Kan geen nieuwe synchronisatie aanmaken</translation>
+        <translation>Kan geen nieuwe synchronisatie aanmaken</translation>
     </message>
     <message>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="819"/>
         <source>Lite Sync activated.</source>
-        <translation type="vanished">Lite Sync geactiveerd.</translation>
+        <translation>Lite Sync geactiveerd.</translation>
     </message>
     <message>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="837"/>
         <source>Lite Sync deactivated.</source>
-        <translation type="vanished">Lite Sync gedeactiveerd.</translation>
+        <translation>Lite Sync gedeactiveerd.</translation>
     </message>
     <message>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="899"/>
         <source>This drive is being deleted.</source>
-        <translation type="vanished">Dit station wordt verwijderd.</translation>
+        <translation>Dit station wordt verwijderd.</translation>
     </message>
     <message>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="962"/>
         <source>Impossible to open item %1</source>
-        <translation type="vanished">Kan item %1 niet openen</translation>
+        <translation>Kan item %1 niet openen</translation>
     </message>
     <message>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1007"/>
         <source>Failed to stop syncing the folder &lt;i&gt;%1&lt;/i&gt;.</source>
-        <translation type="vanished">Kan stoppen met synchroniseren van map &lt;i&gt;%1&lt;/i&gt; niet uitvoeren.</translation>
+        <translation>Kan stoppen met synchroniseren van map &lt;i&gt;%1&lt;/i&gt; niet uitvoeren.</translation>
     </message>
     <message>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1125"/>
         <source>Remove all synchronizations</source>
-        <translation type="vanished">Alle synchronisaties verwijderen</translation>
+        <translation>Alle synchronisaties verwijderen</translation>
     </message>
     <message>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1126"/>
         <source>Search in your kDrive</source>
-        <translation type="vanished">Zoeken in uw kDrive</translation>
+        <translation>Zoeken in uw kDrive</translation>
     </message>
     <message>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1127"/>
         <source>Search</source>
-        <translation type="vanished">Zoeken</translation>
+        <translation>Zoeken</translation>
     </message>
 </context>
 <context>
     <name>KDC::DriveSelectionWidget</name>
     <message>
+        <location filename="../src/gui/driveselectionwidget.cpp" line="216"/>
         <source>Synchronize a kDrive</source>
-        <translation type="vanished">Een kDrive synchroniseren</translation>
+        <translation>Een kDrive synchroniseren</translation>
     </message>
     <message>
+        <location filename="../src/gui/driveselectionwidget.cpp" line="150"/>
         <source>Add a kDrive</source>
-        <translation type="vanished">Een kDrive toevoegen</translation>
+        <translation>Een kDrive toevoegen</translation>
     </message>
 </context>
 <context>
     <name>KDC::ErrorTabWidget</name>
     <message>
+        <location filename="../src/gui/errortabwidget.cpp" line="179"/>
         <source>Resolve</source>
-        <translation type="vanished">Oplossen</translation>
+        <translation>Oplossen</translation>
     </message>
     <message>
+        <location filename="../src/gui/errortabwidget.cpp" line="180"/>
         <source>Conflicted item(s)</source>
-        <translation type="vanished">Item(s) met conflict</translation>
+        <translation>Item(s) met conflict</translation>
     </message>
     <message>
+        <location filename="../src/gui/errortabwidget.cpp" line="181"/>
         <source>Item(s) with unsupported characters</source>
-        <translation type="vanished">Item(s) met niet-ondersteunde tekens</translation>
+        <translation>Item(s) met niet-ondersteunde tekens</translation>
     </message>
     <message>
+        <location filename="../src/gui/errortabwidget.cpp" line="92"/>
+        <location filename="../src/gui/errortabwidget.cpp" line="135"/>
+        <location filename="../src/gui/errortabwidget.cpp" line="178"/>
+        <location filename="../src/gui/errortabwidget.cpp" line="186"/>
         <source>Clear history</source>
-        <translation type="vanished">Geschiedenis wissen</translation>
+        <translation>Geschiedenis wissen</translation>
     </message>
     <message>
+        <location filename="../src/gui/errortabwidget.cpp" line="176"/>
         <source>To Resolve</source>
-        <translation type="vanished">Op te lossen</translation>
+        <translation>Op te lossen</translation>
     </message>
     <message>
+        <location filename="../src/gui/errortabwidget.cpp" line="184"/>
         <source>Automatically resolved</source>
-        <translation type="vanished">Automatisch opgelost</translation>
+        <translation>Automatisch opgelost</translation>
     </message>
     <message>
+        <location filename="../src/gui/errortabwidget.cpp" line="185"/>
         <source>problem(s) solved</source>
-        <translation type="vanished">probleem(en) opgelost</translation>
+        <translation>probleem(en) opgelost</translation>
     </message>
     <message>
+        <location filename="../src/gui/errortabwidget.cpp" line="177"/>
         <source>problem(s) detected</source>
-        <translation type="vanished">probleem(en) gedetecteerd</translation>
+        <translation>probleem(en) gedetecteerd</translation>
     </message>
 </context>
 <context>
     <name>KDC::ErrorsMenuBarWidget</name>
     <message>
+        <location filename="../src/gui/errorsmenubarwidget.cpp" line="84"/>
+        <location filename="../src/gui/errorsmenubarwidget.cpp" line="103"/>
         <source>Synchronization conflicts or errors</source>
-        <translation type="vanished">Synchronisatieconflicten of fouten</translation>
+        <translation>Synchronisatieconflicten of fouten</translation>
     </message>
     <message>
+        <location filename="../src/gui/errorsmenubarwidget.cpp" line="86"/>
+        <location filename="../src/gui/errorsmenubarwidget.cpp" line="105"/>
         <source>Errors</source>
-        <translation type="vanished">Fouten</translation>
+        <translation>Fouten</translation>
     </message>
     <message>
+        <location filename="../src/gui/errorsmenubarwidget.cpp" line="101"/>
         <source>Back to preferences</source>
-        <translation type="vanished">Terug naar voorkeuren</translation>
+        <translation>Terug naar voorkeuren</translation>
     </message>
 </context>
 <context>
     <name>KDC::ErrorsPopup</name>
     <message>
+        <location filename="../src/gui/errorspopup.cpp" line="73"/>
         <source>Some files couldn&apos;t be synchronized on the following kDrive(s) :</source>
-        <translation type="vanished">Sommige bestanden konden niet worden gesynchroniseerd op de volgende kDrive(s):</translation>
+        <translation>Sommige bestanden konden niet worden gesynchroniseerd op de volgende kDrive(s):</translation>
     </message>
     <message>
+        <location filename="../src/gui/errorspopup.cpp" line="95"/>
         <source> (%1 error(s))</source>
-        <translation type="vanished"> (%1 fout(en))</translation>
+        <translation> (%1 fout(en))</translation>
     </message>
     <message>
+        <location filename="../src/gui/errorspopup.cpp" line="101"/>
         <source> (%1 information(s))</source>
-        <translation type="vanished"> (%1 informatie(s))</translation>
+        <translation> (%1 informatie(s))</translation>
     </message>
     <message>
+        <location filename="../src/gui/errorspopup.cpp" line="107"/>
         <source> (%1 error(s) and %2 information(s))</source>
-        <translation type="vanished"> (%1 fout(en) en %2 informatie(s))</translation>
+        <translation> (%1 fout(en) en %2 informatie(s))</translation>
     </message>
     <message numerus="yes">
+        <location filename="../src/gui/errorspopup.cpp" line="147"/>
         <source>Generic errors (%n warning(s) or error(s))</source>
         <comment>Number of warnings or errors</comment>
-        <translation type="vanished">
+        <translation>
             <numerusform>Algemene fouten (%n waarschuwing of fout)</numerusform>
             <numerusform>Algemene fouten (%n waarschuwingen of fouten)</numerusform>
         </translation>
@@ -977,299 +1212,367 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
 <context>
     <name>KDC::FileExclusionDialog</name>
     <message>
+        <location filename="../src/gui/fileexclusiondialog.cpp" line="78"/>
         <source>Excluded files</source>
-        <translation type="vanished">Uitgesloten bestanden</translation>
+        <translation>Uitgesloten bestanden</translation>
     </message>
     <message>
+        <location filename="../src/gui/fileexclusiondialog.cpp" line="86"/>
         <source>Add files or folders that will not be synchronized on your computer.</source>
-        <translation type="vanished">Voeg bestanden of mappen toe die niet op uw computer worden gesynchroniseerd.</translation>
+        <translation>Voeg bestanden of mappen toe die niet op uw computer worden gesynchroniseerd.</translation>
     </message>
     <message>
+        <location filename="../src/gui/fileexclusiondialog.cpp" line="97"/>
         <source>Add</source>
-        <translation type="vanished">Toevoegen</translation>
+        <translation>Toevoegen</translation>
     </message>
     <message>
+        <location filename="../src/gui/fileexclusiondialog.cpp" line="109"/>
         <source>NAME</source>
-        <translation type="vanished">NAAM</translation>
+        <translation>NAAM</translation>
     </message>
     <message>
+        <location filename="../src/gui/fileexclusiondialog.cpp" line="114"/>
         <source>WARNING</source>
-        <translation type="vanished">WAARSCHUWING</translation>
+        <translation>WAARSCHUWING</translation>
     </message>
     <message>
+        <location filename="../src/gui/fileexclusiondialog.cpp" line="149"/>
         <source>SAVE</source>
-        <translation type="vanished">OPSLAAN</translation>
+        <translation>OPSLAAN</translation>
     </message>
     <message>
+        <location filename="../src/gui/fileexclusiondialog.cpp" line="156"/>
         <source>CANCEL</source>
-        <translation type="vanished">ANNULEREN</translation>
+        <translation>ANNULEREN</translation>
     </message>
     <message>
+        <location filename="../src/gui/fileexclusiondialog.cpp" line="304"/>
         <source>Do you want to save your modifications?</source>
-        <translation type="vanished">Wilt u uw wijzigingen opslaan?</translation>
+        <translation>Wilt u uw wijzigingen opslaan?</translation>
     </message>
     <message>
+        <location filename="../src/gui/fileexclusiondialog.cpp" line="353"/>
         <source>Exclusion template already exists!</source>
-        <translation type="vanished">Uitsluitingssjabloon bestaat al!</translation>
+        <translation>Uitsluitingssjabloon bestaat al!</translation>
     </message>
     <message>
+        <location filename="../src/gui/fileexclusiondialog.cpp" line="374"/>
         <source>Do you really want to delete?</source>
-        <translation type="vanished">Weet u zeker dat u wilt verwijderen?</translation>
+        <translation>Weet u zeker dat u wilt verwijderen?</translation>
     </message>
     <message>
+        <location filename="../src/gui/fileexclusiondialog.cpp" line="434"/>
         <source>Cannot save changes!</source>
-        <translation type="vanished">Kan wijzigingen niet opslaan!</translation>
+        <translation>Kan wijzigingen niet opslaan!</translation>
     </message>
 </context>
 <context>
     <name>KDC::FileExclusionNameDialog</name>
     <message>
+        <location filename="../src/gui/fileexclusionnamedialog.cpp" line="58"/>
         <source>VALIDATE</source>
-        <translation type="vanished">VALIDEREN</translation>
+        <translation>VALIDEREN</translation>
     </message>
     <message>
+        <location filename="../src/gui/fileexclusionnamedialog.cpp" line="65"/>
         <source>CANCEL</source>
-        <translation type="vanished">ANNULEREN</translation>
+        <translation>ANNULEREN</translation>
     </message>
 </context>
 <context>
     <name>KDC::FixConflictingFilesDialog</name>
     <message>
+        <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="67"/>
+        <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="73"/>
         <source>Unable to open link %1.</source>
-        <translation type="vanished">Kan link %1 niet openen.</translation>
+        <translation>Kan link %1 niet openen.</translation>
     </message>
     <message>
+        <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="122"/>
         <source>Solve conflict(s)</source>
-        <translation type="vanished">Conflict(en) oplossen</translation>
+        <translation>Conflict(en) oplossen</translation>
     </message>
     <message>
+        <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="140"/>
         <source>&lt;b&gt;What do you want to do with the %1 conflicted item(s)?&lt;/b&gt;</source>
-        <translation type="vanished">&lt;b&gt;Wat wilt u doen met de %1 item(s) met een conflict?&lt;/b&gt;</translation>
+        <translation>&lt;b&gt;Wat wilt u doen met de %1 item(s) met een conflict?&lt;/b&gt;</translation>
     </message>
     <message>
+        <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="143"/>
         <source>Save my changes and replace other users&apos; versions.</source>
-        <translation type="vanished">Mijn wijzigingen opslaan en de versies van andere gebruikers vervangen.</translation>
+        <translation>Mijn wijzigingen opslaan en de versies van andere gebruikers vervangen.</translation>
     </message>
     <message>
+        <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="147"/>
         <source>Undo my changes and keep other users&apos; versions.</source>
-        <translation type="vanished">Mijn wijzigingen ongedaan maken en de versies van andere gebruikers behouden.</translation>
+        <translation>Mijn wijzigingen ongedaan maken en de versies van andere gebruikers behouden.</translation>
     </message>
     <message>
+        <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="169"/>
         <source>Your changes may be permanently deleted. They cannot be restored from the kDrive web application.</source>
-        <translation type="vanished">Uw wijzigingen kunnen permanent worden verwijderd. Ze kunnen niet worden hersteld vanuit de kDrive webapplicatie.</translation>
+        <translation>Uw wijzigingen kunnen permanent worden verwijderd. Ze kunnen niet worden hersteld vanuit de kDrive webapplicatie.</translation>
     </message>
     <message>
+        <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="171"/>
         <source>&lt;a style=%1 href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
-        <translation type="vanished">&lt;a style=%1 href=&quot;%2&quot;&gt;Meer informatie&lt;/a&gt;</translation>
+        <translation>&lt;a style=%1 href=&quot;%2&quot;&gt;Meer informatie&lt;/a&gt;</translation>
     </message>
     <message>
+        <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="175"/>
         <source>Your changes will be permanently deleted. They cannot be restored from the kDrive web application.</source>
-        <translation type="vanished">Uw wijzigingen worden permanent verwijderd. Ze kunnen niet worden hersteld vanuit de kDrive webapplicatie.</translation>
+        <translation>Uw wijzigingen worden permanent verwijderd. Ze kunnen niet worden hersteld vanuit de kDrive webapplicatie.</translation>
     </message>
     <message>
+        <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="191"/>
         <source>Show item(s)</source>
-        <translation type="vanished">Item(s) tonen</translation>
+        <translation>Item(s) tonen</translation>
     </message>
     <message>
+        <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="228"/>
         <source>VALIDATE</source>
-        <translation type="vanished">VALIDEREN</translation>
+        <translation>VALIDEREN</translation>
     </message>
     <message>
+        <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="234"/>
         <source>CANCEL</source>
-        <translation type="vanished">ANNULEREN</translation>
+        <translation>ANNULEREN</translation>
     </message>
     <message>
+        <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="251"/>
         <source>Modifications have been made to these files by several users in several places (online on kDrive, a computer or a mobile). Folders containing these files may also have been deleted.&lt;br&gt;</source>
-        <translation type="vanished">Er zijn wijzigingen aangebracht in deze bestanden door meerdere gebruikers op verschillende plaatsen (online op kDrive, een computer of een mobiel apparaat). Mappen die deze bestanden bevatten, kunnen ook zijn verwijderd.&lt;br&gt;</translation>
+        <translation>Er zijn wijzigingen aangebracht in deze bestanden door meerdere gebruikers op verschillende plaatsen (online op kDrive, een computer of een mobiel apparaat). Mappen die deze bestanden bevatten, kunnen ook zijn verwijderd.&lt;br&gt;</translation>
     </message>
     <message>
+        <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="253"/>
         <source>The local version of your item &lt;b&gt;is not synced&lt;/b&gt; with kDrive. &lt;a style=&quot;color: #489EF3&quot; href=&quot;%1&quot;&gt;Learn more&lt;/a&gt;</source>
-        <translation type="vanished">De lokale versie van uw item &lt;b&gt;is niet gesynchroniseerd&lt;/b&gt; met kDrive. &lt;a style=&quot;color: #489EF3&quot; href=&quot;%1&quot;&gt;Meer informatie&lt;/a&gt;</translation>
+        <translation>De lokale versie van uw item &lt;b&gt;is niet gesynchroniseerd&lt;/b&gt; met kDrive. &lt;a style=&quot;color: #489EF3&quot; href=&quot;%1&quot;&gt;Meer informatie&lt;/a&gt;</translation>
     </message>
 </context>
 <context>
     <name>KDC::FolderItemWidget</name>
     <message>
+        <location filename="../src/gui/folderitemwidget.cpp" line="458"/>
         <source>More actions</source>
-        <translation type="vanished">Meer acties</translation>
+        <translation>Meer acties</translation>
     </message>
     <message>
+        <location filename="../src/gui/folderitemwidget.cpp" line="188"/>
+        <location filename="../src/gui/folderitemwidget.cpp" line="476"/>
         <source>Synchronized into &lt;a style=&quot;%1&quot; href=&quot;ref&quot;&gt;%2&lt;/a&gt;</source>
-        <translation type="vanished">Gesynchroniseerd in &lt;a style=&quot;%1&quot; href=&quot;ref&quot;&gt;%2&lt;/a&gt;</translation>
+        <translation>Gesynchroniseerd in &lt;a style=&quot;%1&quot; href=&quot;ref&quot;&gt;%2&lt;/a&gt;</translation>
     </message>
     <message>
+        <location filename="../src/gui/folderitemwidget.cpp" line="343"/>
         <source>Activate Lite Sync</source>
-        <translation type="vanished">Lite Sync activeren</translation>
+        <translation>Lite Sync activeren</translation>
     </message>
     <message>
+        <location filename="../src/gui/folderitemwidget.cpp" line="345"/>
         <source>Activate Lite Sync (Beta)</source>
-        <translation type="vanished">Lite Sync (Beta) activeren</translation>
+        <translation>Lite Sync (Beta) activeren</translation>
     </message>
     <message>
+        <location filename="../src/gui/folderitemwidget.cpp" line="481"/>
         <source>Unselected folders will be moved to trash provided they contain offline items. Folders synced to kDrive will remain available online.</source>
-        <translation type="vanished">Niet-geselecteerde mappen worden naar de prullenbak verplaatst als ze offline items bevatten. Mappen die met kDrive zijn gesynchroniseerd, blijven online beschikbaar.</translation>
+        <translation>Niet-geselecteerde mappen worden naar de prullenbak verplaatst als ze offline items bevatten. Mappen die met kDrive zijn gesynchroniseerd, blijven online beschikbaar.</translation>
     </message>
     <message>
+        <location filename="../src/gui/folderitemwidget.cpp" line="485"/>
         <source>Unselected folders will be moved to trash. Folders synced to kDrive will remain available online.</source>
-        <translation type="vanished">Niet-geselecteerde mappen worden naar de prullenbak verplaatst. Mappen die met kDrive zijn gesynchroniseerd, blijven online beschikbaar.</translation>
+        <translation>Niet-geselecteerde mappen worden naar de prullenbak verplaatst. Mappen die met kDrive zijn gesynchroniseerd, blijven online beschikbaar.</translation>
     </message>
     <message>
+        <location filename="../src/gui/folderitemwidget.cpp" line="488"/>
         <source>Unselected folders will be &lt;b&gt;permanently&lt;/b&gt; deleted from the computer. Folders synced to kDrive will remain available online.</source>
-        <translation type="vanished">Niet-geselecteerde mappen worden &lt;b&gt;permanent&lt;/b&gt; van de computer verwijderd. Mappen die met kDrive zijn gesynchroniseerd, blijven online beschikbaar.</translation>
+        <translation>Niet-geselecteerde mappen worden &lt;b&gt;permanent&lt;/b&gt; van de computer verwijderd. Mappen die met kDrive zijn gesynchroniseerd, blijven online beschikbaar.</translation>
     </message>
     <message>
+        <location filename="../src/gui/folderitemwidget.cpp" line="493"/>
         <source>Cancel</source>
-        <translation type="vanished">Annuleren</translation>
+        <translation>Annuleren</translation>
     </message>
     <message>
+        <location filename="../src/gui/folderitemwidget.cpp" line="494"/>
         <source>VALIDATE</source>
-        <translation type="vanished">VALIDEREN</translation>
+        <translation>VALIDEREN</translation>
     </message>
     <message>
+        <location filename="../src/gui/folderitemwidget.cpp" line="365"/>
         <source>Pause synchronization</source>
-        <translation type="vanished">Synchronisatie pauzeren</translation>
+        <translation>Synchronisatie pauzeren</translation>
     </message>
     <message>
+        <location filename="../src/gui/folderitemwidget.cpp" line="354"/>
         <source>Deactivate Lite Sync</source>
-        <translation type="vanished">Lite Sync deactiveren</translation>
+        <translation>Lite Sync deactiveren</translation>
     </message>
     <message>
+        <location filename="../src/gui/folderitemwidget.cpp" line="375"/>
         <source>Resume synchronization</source>
-        <translation type="vanished">Synchronisatie hervatten</translation>
+        <translation>Synchronisatie hervatten</translation>
     </message>
     <message>
+        <location filename="../src/gui/folderitemwidget.cpp" line="386"/>
         <source>Remove synchronization</source>
-        <translation type="vanished">Synchronisatie verwijderen</translation>
+        <translation>Synchronisatie verwijderen</translation>
     </message>
 </context>
 <context>
     <name>KDC::GenericErrorItemWidget</name>
     <message>
+        <location filename="../src/gui/genericerroritemwidget.cpp" line="85"/>
         <source>Unable to open folder path %1.</source>
-        <translation type="vanished">Kan mappad %1 niet openen.</translation>
+        <translation>Kan mappad %1 niet openen.</translation>
     </message>
 </context>
 <context>
     <name>KDC::LiteSyncAppDialog</name>
     <message>
+        <location filename="../src/gui/litesyncappdialog.cpp" line="48"/>
         <source>Application Id</source>
-        <translation type="vanished">Applicatie-ID</translation>
+        <translation>Applicatie-ID</translation>
     </message>
     <message>
+        <location filename="../src/gui/litesyncappdialog.cpp" line="98"/>
         <source>Application Name</source>
-        <translation type="vanished">Applicatienaam</translation>
+        <translation>Applicatienaam</translation>
     </message>
     <message>
+        <location filename="../src/gui/litesyncappdialog.cpp" line="121"/>
         <source>VALIDATE</source>
-        <translation type="vanished">VALIDEREN</translation>
+        <translation>VALIDEREN</translation>
     </message>
     <message>
+        <location filename="../src/gui/litesyncappdialog.cpp" line="128"/>
         <source>CANCEL</source>
-        <translation type="vanished">ANNULEREN</translation>
+        <translation>ANNULEREN</translation>
     </message>
 </context>
 <context>
     <name>KDC::LiteSyncDialog</name>
     <message>
+        <location filename="../src/gui/litesyncdialog.cpp" line="91"/>
         <source>Some apps (backup, anti-virus...) access your files, which leads to their download when they are &quot;online&quot;. Add them in the list below to avoid this behaviour.</source>
-        <translation type="vanished">Sommige apps (back-up, antivirus...) krijgen toegang tot uw bestanden, wat leidt tot hun download wanneer ze &quot;online&quot; zijn. Voeg ze toe aan de onderstaande lijst om dit gedrag te voorkomen.</translation>
+        <translation>Sommige apps (back-up, antivirus...) krijgen toegang tot uw bestanden, wat leidt tot hun download wanneer ze &quot;online&quot; zijn. Voeg ze toe aan de onderstaande lijst om dit gedrag te voorkomen.</translation>
     </message>
     <message>
+        <location filename="../src/gui/litesyncdialog.cpp" line="103"/>
         <source>Add</source>
-        <translation type="vanished">Toevoegen</translation>
+        <translation>Toevoegen</translation>
     </message>
     <message>
+        <location filename="../src/gui/litesyncdialog.cpp" line="115"/>
         <source>APPLICATION ID</source>
-        <translation type="vanished">APPLICATIE-ID</translation>
+        <translation>APPLICATIE-ID</translation>
     </message>
     <message>
+        <location filename="../src/gui/litesyncdialog.cpp" line="120"/>
         <source>NAME</source>
-        <translation type="vanished">NAAM</translation>
+        <translation>NAAM</translation>
     </message>
     <message>
+        <location filename="../src/gui/litesyncdialog.cpp" line="154"/>
         <source>SAVE</source>
-        <translation type="vanished">OPSLAAN</translation>
+        <translation>OPSLAAN</translation>
     </message>
     <message>
+        <location filename="../src/gui/litesyncdialog.cpp" line="161"/>
         <source>CANCEL</source>
-        <translation type="vanished">ANNULEREN</translation>
+        <translation>ANNULEREN</translation>
     </message>
     <message>
+        <location filename="../src/gui/litesyncdialog.cpp" line="295"/>
         <source>Do you want to save your modifications?</source>
-        <translation type="vanished">Wilt u uw wijzigingen opslaan?</translation>
+        <translation>Wilt u uw wijzigingen opslaan?</translation>
     </message>
     <message>
+        <location filename="../src/gui/litesyncdialog.cpp" line="337"/>
         <source>Do you really want to delete?</source>
-        <translation type="vanished">Weet u zeker dat u wilt verwijderen?</translation>
+        <translation>Weet u zeker dat u wilt verwijderen?</translation>
     </message>
     <message>
+        <location filename="../src/gui/litesyncdialog.cpp" line="374"/>
         <source>Cannot save changes!</source>
-        <translation type="vanished">Kan wijzigingen niet opslaan!</translation>
+        <translation>Kan wijzigingen niet opslaan!</translation>
     </message>
 </context>
 <context>
     <name>KDC::LocalFolderDialog</name>
     <message>
+        <location filename="../src/gui/localfolderdialog.cpp" line="63"/>
         <source>Which folder on your computer would you like to&lt;br&gt;synchronize ?</source>
-        <translation type="vanished">Welke map op uw computer wilt u&lt;br&gt;synchroniseren?</translation>
+        <translation>Welke map op uw computer wilt u&lt;br&gt;synchroniseren?</translation>
     </message>
     <message>
+        <location filename="../src/gui/localfolderdialog.cpp" line="72"/>
         <source>The content of this folder will be synchronized on the kDrive</source>
-        <translation type="vanished">De inhoud van deze map wordt gesynchroniseerd met de kDrive</translation>
+        <translation>De inhoud van deze map wordt gesynchroniseerd met de kDrive</translation>
     </message>
     <message>
+        <location filename="../src/gui/localfolderdialog.cpp" line="91"/>
         <source>Select a folder</source>
-        <translation type="vanished">Selecteer een map</translation>
+        <translation>Selecteer een map</translation>
     </message>
     <message>
+        <location filename="../src/gui/localfolderdialog.cpp" line="131"/>
         <source>Edit folder</source>
-        <translation type="vanished">Map bewerken</translation>
+        <translation>Map bewerken</translation>
     </message>
     <message>
+        <location filename="../src/gui/localfolderdialog.cpp" line="166"/>
         <source>CANCEL</source>
-        <translation type="vanished">ANNULEREN</translation>
+        <translation>ANNULEREN</translation>
     </message>
     <message>
+        <location filename="../src/gui/localfolderdialog.cpp" line="173"/>
         <source>CONTINUE</source>
-        <translation type="vanished">DOORGAAN</translation>
+        <translation>DOORGAAN</translation>
     </message>
     <message>
+        <location filename="../src/gui/localfolderdialog.cpp" line="210"/>
         <source>This folder is not compatible with Lite Sync.&lt;br&gt;
 Please select another folder. If you continue Lite Sync will be disabled.&lt;br&gt;
 &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
-        <translation type="vanished">Deze map is niet compatibel met Lite Sync.&lt;br&gt;
+        <translation>Deze map is niet compatibel met Lite Sync.&lt;br&gt;
 Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&gt;
 &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Meer informatie&lt;/a&gt;</translation>
     </message>
     <message>
+        <location filename="../src/gui/localfolderdialog.cpp" line="233"/>
         <source>Select folder</source>
-        <translation type="vanished">Map selecteren</translation>
+        <translation>Map selecteren</translation>
     </message>
     <message>
+        <location filename="../src/gui/localfolderdialog.cpp" line="292"/>
         <source>Unable to open link %1.</source>
-        <translation type="vanished">Kan link %1 niet openen.</translation>
+        <translation>Kan link %1 niet openen.</translation>
     </message>
 </context>
 <context>
     <name>KDC::Logger</name>
     <message>
+        <location filename="../src/libcommongui/logger.cpp" line="201"/>
         <source>Error</source>
-        <translation type="vanished">Fout</translation>
+        <translation>Fout</translation>
     </message>
     <message>
+        <location filename="../src/libcommongui/logger.cpp" line="201"/>
         <source>&lt;nobr&gt;File &apos;%1&apos;&lt;br/&gt;cannot be opened for writing.&lt;br/&gt;&lt;br/&gt;The log output can &lt;b&gt;not&lt;/b&gt; be saved!&lt;/nobr&gt;</source>
-        <translation type="vanished">&lt;nobr&gt;Bestand &apos;%1&apos;&lt;br/&gt;kan niet worden geopend om te schrijven.&lt;br/&gt;&lt;br/&gt;De loguitvoer kan &lt;b&gt;niet&lt;/b&gt; worden opgeslagen!&lt;/nobr&gt;</translation>
+        <translation>&lt;nobr&gt;Bestand &apos;%1&apos;&lt;br/&gt;kan niet worden geopend om te schrijven.&lt;br/&gt;&lt;br/&gt;De loguitvoer kan &lt;b&gt;niet&lt;/b&gt; worden opgeslagen!&lt;/nobr&gt;</translation>
     </message>
 </context>
 <context>
     <name>KDC::MainMenuBarWidget</name>
     <message>
+        <location filename="../src/gui/mainmenubarwidget.cpp" line="115"/>
         <source>Preferences</source>
-        <translation type="vanished">Voorkeuren</translation>
+        <translation>Voorkeuren</translation>
     </message>
     <message>
+        <location filename="../src/gui/mainmenubarwidget.cpp" line="116"/>
         <source>Help</source>
-        <translation type="vanished">Help</translation>
+        <translation>Help</translation>
     </message>
 </context>
 <context>
@@ -1488,6 +1791,11 @@ Gebruik de volgende link om de logs naar de ondersteuning te sturen: &lt;a style
         <translation>Er is niet genoeg ruimte over op uw computer.&lt;br&gt;De download is geannuleerd.</translation>
     </message>
     <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="818"/>
+        <source>Impossible to create file &quot;%1&quot; because it is not supported on your filesystem.&lt;br&gt;It has been excluded from synchronization.</source>
+        <translation>Het is onmogelijk om het bestand „%1“ aan te maken, omdat dit niet wordt ondersteund op uw bestandssysteem.&lt;br&gt;Het is uitgesloten van synchronisatie.</translation>
+    </message>
+    <message>
         <location filename="../src/gui/parametersdialog.cpp" line="609"/>
         <source>This element has been moved somewhere else.&lt;br&gt;The local operation has been canceled.</source>
         <translation>Dit element is ergens anders naartoe verplaatst.&lt;br&gt;De lokale bewerking is geannuleerd.</translation>
@@ -1649,11 +1957,6 @@ Gebruik de volgende link om de logs naar de ondersteuning te sturen: &lt;a style
         <translation>Kan geen toegang krijgen tot item.&lt;br&gt;Corrigeer de lees- en schrijfrechten.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="818"/>
-        <source>Impossible to create file %1 because it is not supported on your filesystem.&lt;br&gt;&quot;It has been excluded from synchronization.</source>
-        <translation>Kan bestand %1 niet aanmaken omdat het niet wordt ondersteund door uw bestandssysteem.&lt;br&gt;Het is uitgesloten van synchronisatie.</translation>
-    </message>
-    <message>
         <location filename="../src/gui/parametersdialog.cpp" line="821"/>
         <source>System error.</source>
         <translation>Systeemfout.</translation>
@@ -1672,797 +1975,984 @@ Gebruik de volgende link om de logs naar de ondersteuning te sturen: &lt;a style
 <context>
     <name>KDC::PreferencesBlocWidget</name>
     <message>
+        <location filename="../src/gui/preferencesblocwidget.cpp" line="187"/>
         <source>This synchronization is being deleted.</source>
-        <translation type="vanished">Deze synchronisatie wordt verwijderd.</translation>
+        <translation>Deze synchronisatie wordt verwijderd.</translation>
     </message>
 </context>
 <context>
     <name>KDC::PreferencesMenuBarWidget</name>
     <message>
+        <location filename="../src/gui/preferencesmenubarwidget.cpp" line="63"/>
         <source>Back to drive list</source>
-        <translation type="vanished">Terug naar de drivelijst</translation>
+        <translation>Terug naar de drivelijst</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferencesmenubarwidget.cpp" line="64"/>
         <source>Preferences</source>
-        <translation type="vanished">Voorkeuren</translation>
+        <translation>Voorkeuren</translation>
     </message>
 </context>
 <context>
     <name>KDC::PreferencesWidget</name>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="485"/>
         <source>General</source>
-        <translation type="vanished">Algemeen</translation>
+        <translation>Algemeen</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="487"/>
         <source>Activate dark theme</source>
-        <translation type="vanished">Donker thema activeren</translation>
+        <translation>Donker thema activeren</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="489"/>
         <source>Activate monochrome icons</source>
-        <translation type="vanished">Monochrome pictogrammen activeren</translation>
+        <translation>Monochrome pictogrammen activeren</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="490"/>
         <source>Launch kDrive at startup</source>
-        <translation type="vanished">kDrive starten bij het opstarten</translation>
+        <translation>kDrive starten bij het opstarten</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="505"/>
         <source>Swedish</source>
-        <translation type="vanished">Zweeds</translation>
+        <translation>Zweeds</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="506"/>
         <source>Portuguese</source>
-        <translation type="vanished">Portugees</translation>
+        <translation>Portugees</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="507"/>
         <source>Polish</source>
-        <translation type="vanished">Pools</translation>
+        <translation>Pools</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="508"/>
         <source>Norwegian</source>
-        <translation type="vanished">Noors</translation>
+        <translation>Noors</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="509"/>
         <source>Finnish</source>
-        <translation type="vanished">Fins</translation>
+        <translation>Fins</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="510"/>
         <source>Danish</source>
-        <translation type="vanished">Deens</translation>
+        <translation>Deens</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="511"/>
         <source>Greek</source>
-        <translation type="vanished">Grieks</translation>
+        <translation>Grieks</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="512"/>
         <source>Dutch</source>
-        <translation type="vanished">Nederlands</translation>
+        <translation>Nederlands</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="518"/>
         <source>Advanced</source>
-        <translation type="vanished">Geavanceerd</translation>
+        <translation>Geavanceerd</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="519"/>
         <source>Debugging information</source>
-        <translation type="vanished">Debuginformatie</translation>
+        <translation>Debuginformatie</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="521"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Open debugging folder&lt;/a&gt;</source>
-        <translation type="vanished">&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Debugmap openen&lt;/a&gt;</translation>
+        <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Debugmap openen&lt;/a&gt;</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="522"/>
         <source>Files to exclude</source>
-        <translation type="vanished">Bestanden om uit te sluiten</translation>
+        <translation>Bestanden om uit te sluiten</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="523"/>
         <source>Proxy server</source>
-        <translation type="vanished">Proxyserver</translation>
+        <translation>Proxyserver</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="460"/>
         <source>Unable to open folder %1.</source>
-        <translation type="vanished">Kan map %1 niet openen.</translation>
+        <translation>Kan map %1 niet openen.</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="472"/>
         <source>Unable to open link %1.</source>
-        <translation type="vanished">Kan link %1 niet openen.</translation>
+        <translation>Kan link %1 niet openen.</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="477"/>
         <source>Invalid link %1.</source>
-        <translation type="vanished">Ongeldige link %1.</translation>
+        <translation>Ongeldige link %1.</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="525"/>
         <source>Lite Sync</source>
-        <translation type="vanished">Lite Sync</translation>
+        <translation>Lite Sync</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="491"/>
         <source>Language</source>
-        <translation type="vanished">Taal</translation>
+        <translation>Taal</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="484"/>
         <source>Some process failed to run.</source>
-        <translation type="vanished">Sommige processen konden niet worden uitgevoerd.</translation>
+        <translation>Sommige processen konden niet worden uitgevoerd.</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="492"/>
         <source>Move deleted files to my computer&apos;s trash</source>
-        <translation type="vanished">Verwijderde bestanden naar de prullenbak van mijn computer verplaatsen</translation>
+        <translation>Verwijderde bestanden naar de prullenbak van mijn computer verplaatsen</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="493"/>
         <source>Some files or folders may not be moved to the computer&apos;s trash.</source>
-        <translation type="vanished">Sommige bestanden of mappen kunnen mogelijk niet naar de prullenbak van de computer worden verplaatst.</translation>
+        <translation>Sommige bestanden of mappen kunnen mogelijk niet naar de prullenbak van de computer worden verplaatst.</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="494"/>
         <source>You can always retrieve already synced files from the kDrive web application trash.</source>
-        <translation type="vanished">U kunt altijd reeds gesynchroniseerde bestanden ophalen uit de prullenbak van de kDrive webapplicatie.</translation>
+        <translation>U kunt altijd reeds gesynchroniseerde bestanden ophalen uit de prullenbak van de kDrive webapplicatie.</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="496"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
-        <translation type="vanished">&lt;a style=%1 href=&quot;%2&quot;&gt;Meer informatie&lt;/a&gt;</translation>
+        <translation>&lt;a style=%1 href=&quot;%2&quot;&gt;Meer informatie&lt;/a&gt;</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="500"/>
         <source>English</source>
-        <translation type="vanished">Engels</translation>
+        <translation>Engels</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="501"/>
         <source>French</source>
-        <translation type="vanished">Frans</translation>
+        <translation>Frans</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="502"/>
         <source>German</source>
-        <translation type="vanished">Duits</translation>
+        <translation>Duits</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="503"/>
         <source>Spanish</source>
-        <translation type="vanished">Spaans</translation>
+        <translation>Spaans</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="504"/>
         <source>Italian</source>
-        <translation type="vanished">Italiaans</translation>
+        <translation>Italiaans</translation>
     </message>
     <message>
+        <location filename="../src/gui/preferenceswidget.cpp" line="499"/>
         <source>Default</source>
-        <translation type="vanished">Standaard</translation>
+        <translation>Standaard</translation>
     </message>
 </context>
 <context>
     <name>KDC::ProgressBarWidget</name>
     <message>
+        <location filename="../src/gui/progressbarwidget.cpp" line="70"/>
         <source>%1 in use</source>
-        <translation type="vanished">%1 in gebruik</translation>
+        <translation>%1 in gebruik</translation>
     </message>
 </context>
 <context>
     <name>KDC::ProxyServerDialog</name>
     <message>
+        <location filename="../src/gui/proxyserverdialog.cpp" line="50"/>
         <source>HTTP(S) Proxy</source>
-        <translation type="vanished">HTTP(S) Proxy</translation>
+        <translation>HTTP(S) Proxy</translation>
     </message>
     <message>
+        <location filename="../src/gui/proxyserverdialog.cpp" line="73"/>
         <source>Proxy server</source>
-        <translation type="vanished">Proxyserver</translation>
+        <translation>Proxyserver</translation>
     </message>
     <message>
+        <location filename="../src/gui/proxyserverdialog.cpp" line="85"/>
         <source>No proxy server</source>
-        <translation type="vanished">Geen proxyserver</translation>
+        <translation>Geen proxyserver</translation>
     </message>
     <message>
+        <location filename="../src/gui/proxyserverdialog.cpp" line="90"/>
         <source>Use system parameters</source>
-        <translation type="vanished">Systeeminstellingen gebruiken</translation>
+        <translation>Systeeminstellingen gebruiken</translation>
     </message>
     <message>
+        <location filename="../src/gui/proxyserverdialog.cpp" line="95"/>
         <source>Indicate a proxy manually</source>
-        <translation type="vanished">Proxy handmatig opgeven</translation>
+        <translation>Proxy handmatig opgeven</translation>
     </message>
     <message>
+        <location filename="../src/gui/proxyserverdialog.cpp" line="131"/>
         <source>Port</source>
-        <translation type="vanished">Poort</translation>
+        <translation>Poort</translation>
     </message>
     <message>
+        <location filename="../src/gui/proxyserverdialog.cpp" line="144"/>
         <source>Address of the proxy server</source>
-        <translation type="vanished">Adres van de proxyserver</translation>
+        <translation>Adres van de proxyserver</translation>
     </message>
     <message>
+        <location filename="../src/gui/proxyserverdialog.cpp" line="150"/>
         <source>Authentication needed</source>
-        <translation type="vanished">Authenticatie vereist</translation>
+        <translation>Authenticatie vereist</translation>
     </message>
     <message>
+        <location filename="../src/gui/proxyserverdialog.cpp" line="165"/>
         <source>User</source>
-        <translation type="vanished">Gebruiker</translation>
+        <translation>Gebruiker</translation>
     </message>
     <message>
+        <location filename="../src/gui/proxyserverdialog.cpp" line="171"/>
         <source>Password</source>
-        <translation type="vanished">Wachtwoord</translation>
+        <translation>Wachtwoord</translation>
     </message>
     <message>
+        <location filename="../src/gui/proxyserverdialog.cpp" line="185"/>
         <source>SAVE</source>
-        <translation type="vanished">OPSLAAN</translation>
+        <translation>OPSLAAN</translation>
     </message>
     <message>
+        <location filename="../src/gui/proxyserverdialog.cpp" line="192"/>
         <source>CANCEL</source>
-        <translation type="vanished">ANNULEREN</translation>
+        <translation>ANNULEREN</translation>
     </message>
     <message>
+        <location filename="../src/gui/proxyserverdialog.cpp" line="286"/>
         <source>Do you want to save your modifications?</source>
-        <translation type="vanished">Wilt u uw wijzigingen opslaan?</translation>
+        <translation>Wilt u uw wijzigingen opslaan?</translation>
     </message>
     <message>
+        <location filename="../src/gui/proxyserverdialog.cpp" line="295"/>
         <source>Unable to save, all mandatory fields are not completed!</source>
-        <translation type="vanished">Opslaan niet mogelijk, niet alle verplichte velden zijn ingevuld!</translation>
+        <translation>Opslaan niet mogelijk, niet alle verplichte velden zijn ingevuld!</translation>
     </message>
     <message>
+        <location filename="../src/gui/proxyserverdialog.cpp" line="316"/>
         <source>Proxy not found, save anyway?</source>
-        <translation type="vanished">Proxy niet gevonden, toch opslaan?</translation>
+        <translation>Proxy niet gevonden, toch opslaan?</translation>
     </message>
 </context>
 <context>
     <name>KDC::ResourcesManagerDialog</name>
     <message>
+        <location filename="../src/gui/resourcesmanagerdialog.cpp" line="55"/>
         <source>Resources Manager</source>
-        <translation type="vanished">Resources Beheer</translation>
+        <translation>Resources Beheer</translation>
     </message>
     <message>
+        <location filename="../src/gui/resourcesmanagerdialog.cpp" line="65"/>
         <source>Maximum CPU usage allowed</source>
-        <translation type="vanished">Maximaal toegestaan CPU-gebruik</translation>
+        <translation>Maximaal toegestaan CPU-gebruik</translation>
     </message>
     <message>
+        <location filename="../src/gui/resourcesmanagerdialog.cpp" line="96"/>
         <source>SAVE</source>
-        <translation type="vanished">OPSLAAN</translation>
+        <translation>OPSLAAN</translation>
     </message>
     <message>
+        <location filename="../src/gui/resourcesmanagerdialog.cpp" line="103"/>
         <source>CANCEL</source>
-        <translation type="vanished">ANNULEREN</translation>
+        <translation>ANNULEREN</translation>
     </message>
     <message>
+        <location filename="../src/gui/resourcesmanagerdialog.cpp" line="122"/>
         <source>Do you want to save your modifications?</source>
-        <translation type="vanished">Wilt u uw wijzigingen opslaan?</translation>
+        <translation>Wilt u uw wijzigingen opslaan?</translation>
     </message>
 </context>
 <context>
     <name>KDC::ServerBaseFolderDialog</name>
     <message>
+        <location filename="../src/gui/serverbasefolderdialog.cpp" line="81"/>
         <source>Select a folder on your kDrive</source>
-        <translation type="vanished">Selecteer een map op uw kDrive</translation>
+        <translation>Selecteer een map op uw kDrive</translation>
     </message>
     <message>
+        <location filename="../src/gui/serverbasefolderdialog.cpp" line="90"/>
         <source>The content of the selected folder will be synchronized into the &lt;b&gt;%1&lt;/b&gt; folder.</source>
-        <translation type="vanished">De inhoud van de geselecteerde map wordt gesynchroniseerd naar de map &lt;b&gt;%1&lt;/b&gt;.</translation>
+        <translation>De inhoud van de geselecteerde map wordt gesynchroniseerd naar de map &lt;b&gt;%1&lt;/b&gt;.</translation>
     </message>
     <message>
+        <location filename="../src/gui/serverbasefolderdialog.cpp" line="134"/>
         <source>CONTINUE</source>
-        <translation type="vanished">DOORGAAN</translation>
+        <translation>DOORGAAN</translation>
     </message>
     <message>
+        <location filename="../src/gui/serverbasefolderdialog.cpp" line="150"/>
         <source>Space available on your computer for the current folder : %1</source>
-        <translation type="vanished">Beschikbare ruimte op uw computer voor de huidige map: %1</translation>
+        <translation>Beschikbare ruimte op uw computer voor de huidige map: %1</translation>
     </message>
     <message>
+        <location filename="../src/gui/serverbasefolderdialog.cpp" line="190"/>
         <source>This folder is already being synced.</source>
-        <translation type="vanished">Deze map wordt al gesynchroniseerd.</translation>
+        <translation>Deze map wordt al gesynchroniseerd.</translation>
     </message>
     <message>
+        <location filename="../src/gui/serverbasefolderdialog.cpp" line="204"/>
         <source>CONFIRM</source>
-        <translation type="vanished">BEVESTIGEN</translation>
+        <translation>BEVESTIGEN</translation>
     </message>
     <message>
+        <location filename="../src/gui/serverbasefolderdialog.cpp" line="205"/>
         <source>CANCEL</source>
-        <translation type="vanished">ANNULEREN</translation>
+        <translation>ANNULEREN</translation>
     </message>
 </context>
 <context>
     <name>KDC::ServerFoldersDialog</name>
     <message>
+        <location filename="../src/gui/serverfoldersdialog.cpp" line="80"/>
         <source>The &lt;b&gt;%1&lt;/b&gt; folder contains subfolders,&lt;br&gt; select the ones you want to synchronize</source>
-        <translation type="vanished">De map &lt;b&gt;%1&lt;/b&gt; bevat submappen,&lt;br&gt; selecteer degene die u wilt synchroniseren</translation>
+        <translation>De map &lt;b&gt;%1&lt;/b&gt; bevat submappen,&lt;br&gt; selecteer degene die u wilt synchroniseren</translation>
     </message>
     <message>
+        <location filename="../src/gui/serverfoldersdialog.cpp" line="110"/>
         <source>CONTINUE</source>
-        <translation type="vanished">DOORGAAN</translation>
+        <translation>DOORGAAN</translation>
     </message>
     <message>
+        <location filename="../src/gui/serverfoldersdialog.cpp" line="146"/>
         <source>No subfolders currently on the server.</source>
-        <translation type="vanished">Geen submappen op de server.</translation>
+        <translation>Geen submappen op de server.</translation>
     </message>
 </context>
 <context>
     <name>KDC::StatusBarWidget</name>
     <message>
+        <location filename="../src/gui/statusbarwidget.cpp" line="178"/>
         <source>Resume kDrive &quot;%1&quot; synchronization</source>
-        <translation type="vanished">Hervat kDrive &quot;%1&quot; synchronisatie</translation>
+        <translation>Hervat kDrive &quot;%1&quot; synchronisatie</translation>
     </message>
     <message>
+        <location filename="../src/gui/statusbarwidget.cpp" line="180"/>
         <source>Resume all kDrives synchronization</source>
-        <translation type="vanished">Hervat alle kDrives synchronisatie</translation>
+        <translation>Hervat alle kDrives synchronisatie</translation>
     </message>
     <message>
+        <location filename="../src/gui/statusbarwidget.cpp" line="183"/>
         <source>Pause kDrive &quot;%1&quot; synchronization</source>
-        <translation type="vanished">Pauzeer kDrive &quot;%1&quot; synchronisatie</translation>
+        <translation>Pauzeer kDrive &quot;%1&quot; synchronisatie</translation>
     </message>
     <message>
+        <location filename="../src/gui/statusbarwidget.cpp" line="184"/>
+        <location filename="../src/gui/statusbarwidget.cpp" line="321"/>
         <source>Pause synchronization</source>
-        <translation type="vanished">Synchronisatie pauzeren</translation>
+        <translation>Synchronisatie pauzeren</translation>
     </message>
     <message>
+        <location filename="../src/gui/statusbarwidget.cpp" line="185"/>
         <source>Pause all kDrives synchronization</source>
-        <translation type="vanished">Pauzeer alle kDrives synchronisatie</translation>
+        <translation>Pauzeer alle kDrives synchronisatie</translation>
     </message>
     <message>
+        <location filename="../src/gui/statusbarwidget.cpp" line="179"/>
+        <location filename="../src/gui/statusbarwidget.cpp" line="322"/>
         <source>Resume synchronization</source>
-        <translation type="vanished">Synchronisatie hervatten</translation>
+        <translation>Synchronisatie hervatten</translation>
     </message>
 </context>
 <context>
     <name>KDC::SynchronizedItemWidget</name>
     <message>
+        <location filename="../src/gui/synchronizeditemwidget.cpp" line="333"/>
         <source>Copy share link</source>
-        <translation type="vanished">Deellink kopiëren</translation>
+        <translation>Deellink kopiëren</translation>
     </message>
     <message>
+        <location filename="../src/gui/synchronizeditemwidget.cpp" line="342"/>
         <source>Display on kdrive.infomaniak.com</source>
-        <translation type="vanished">Weergeven op kdrive.infomaniak.com</translation>
+        <translation>Weergeven op kdrive.infomaniak.com</translation>
     </message>
     <message>
+        <location filename="../src/gui/synchronizeditemwidget.cpp" line="387"/>
         <source>Show in folder</source>
-        <translation type="vanished">Tonen in map</translation>
+        <translation>Tonen in map</translation>
     </message>
     <message>
+        <location filename="../src/gui/synchronizeditemwidget.cpp" line="388"/>
         <source>More actions</source>
-        <translation type="vanished">Meer acties</translation>
+        <translation>Meer acties</translation>
     </message>
     <message>
+        <location filename="../src/gui/synchronizeditemwidget.cpp" line="317"/>
         <source>Open</source>
-        <translation type="vanished">Openen</translation>
+        <translation>Openen</translation>
     </message>
     <message>
+        <location filename="../src/gui/synchronizeditemwidget.cpp" line="325"/>
         <source>Add to favorites</source>
-        <translation type="vanished">Toevoegen aan favorieten</translation>
+        <translation>Toevoegen aan favorieten</translation>
     </message>
 </context>
 <context>
     <name>KDC::SynthesisBar</name>
     <message>
+        <location filename="../src/gui/synthesisbar.cpp" line="495"/>
+        <location filename="../src/gui/synthesisbar.cpp" line="502"/>
         <source>Never</source>
-        <translation type="vanished">Nooit</translation>
+        <translation>Nooit</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesisbar.cpp" line="496"/>
         <source>During 1 hour</source>
-        <translation type="vanished">Gedurende 1 uur</translation>
+        <translation>Gedurende 1 uur</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesisbar.cpp" line="497"/>
+        <location filename="../src/gui/synthesisbar.cpp" line="504"/>
         <source>Until tomorrow 8:00AM</source>
-        <translation type="vanished">Tot morgen 08:00</translation>
+        <translation>Tot morgen 08:00</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesisbar.cpp" line="498"/>
         <source>During 3 days</source>
-        <translation type="vanished">Gedurende 3 dagen</translation>
+        <translation>Gedurende 3 dagen</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesisbar.cpp" line="499"/>
         <source>During 1 week</source>
-        <translation type="vanished">Gedurende 1 week</translation>
+        <translation>Gedurende 1 week</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesisbar.cpp" line="500"/>
+        <location filename="../src/gui/synthesisbar.cpp" line="507"/>
         <source>Always</source>
-        <translation type="vanished">Altijd</translation>
+        <translation>Altijd</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesisbar.cpp" line="503"/>
         <source>For 1 more hour</source>
-        <translation type="vanished">Voor 1 uur extra</translation>
+        <translation>Voor 1 uur extra</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesisbar.cpp" line="505"/>
         <source>For 3 more days</source>
-        <translation type="vanished">Voor 3 dagen extra</translation>
+        <translation>Voor 3 dagen extra</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesisbar.cpp" line="506"/>
         <source>For 1 more week</source>
-        <translation type="vanished">Voor 1 week extra</translation>
+        <translation>Voor 1 week extra</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesisbar.cpp" line="149"/>
         <source>Unable to open folder url %1.</source>
-        <translation type="vanished">Kan map-URL %1 niet openen.</translation>
+        <translation>Kan map-URL %1 niet openen.</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesisbar.cpp" line="219"/>
         <source>Open in folder</source>
-        <translation type="vanished">Openen in map</translation>
+        <translation>Openen in map</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesisbar.cpp" line="257"/>
         <source>Open %1 web version</source>
-        <translation type="vanished">Open %1 webversie</translation>
+        <translation>Open %1 webversie</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesisbar.cpp" line="267"/>
         <source>Drive parameters</source>
-        <translation type="vanished">Drive-instellingen</translation>
+        <translation>Drive-instellingen</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesisbar.cpp" line="280"/>
         <source>Notifications disabled until %1</source>
-        <translation type="vanished">Meldingen uitgeschakeld tot %1</translation>
+        <translation>Meldingen uitgeschakeld tot %1</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesisbar.cpp" line="281"/>
         <source>Disable Notifications</source>
-        <translation type="vanished">Meldingen uitschakelen</translation>
+        <translation>Meldingen uitschakelen</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesisbar.cpp" line="314"/>
         <source>Application preferences</source>
-        <translation type="vanished">Applicatievoorkeuren</translation>
+        <translation>Applicatievoorkeuren</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesisbar.cpp" line="322"/>
         <source>Need help</source>
-        <translation type="vanished">Hulp nodig</translation>
+        <translation>Hulp nodig</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesisbar.cpp" line="330"/>
         <source>Send feedbacks</source>
-        <translation type="vanished">Feedback sturen</translation>
+        <translation>Feedback sturen</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesisbar.cpp" line="338"/>
         <source>Quit kDrive</source>
-        <translation type="vanished">kDrive afsluiten</translation>
+        <translation>kDrive afsluiten</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesisbar.cpp" line="401"/>
         <source>Unable to access web site %1.</source>
-        <translation type="vanished">Kan geen toegang krijgen tot website %1.</translation>
+        <translation>Kan geen toegang krijgen tot website %1.</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesisbar.cpp" line="492"/>
         <source>Show errors and informations</source>
-        <translation type="vanished">Fouten en informatie tonen</translation>
+        <translation>Fouten en informatie tonen</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesisbar.cpp" line="493"/>
         <source>Show informations</source>
-        <translation type="vanished">Informatie tonen</translation>
+        <translation>Informatie tonen</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesisbar.cpp" line="494"/>
         <source>More actions</source>
-        <translation type="vanished">Meer acties</translation>
+        <translation>Meer acties</translation>
     </message>
 </context>
 <context>
     <name>KDC::SynthesisPopover</name>
     <message>
+        <location filename="../src/gui/synthesispopover.cpp" line="1183"/>
         <source>Update kDrive App</source>
-        <translation type="vanished">kDrive App bijwerken</translation>
+        <translation>kDrive App bijwerken</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesispopover.cpp" line="1184"/>
         <source>This kDrive app version is not supported anymore. To access the latest features and enhancements, please update.</source>
-        <translation type="vanished">Deze versie van de kDrive-app wordt niet meer ondersteund. Update om toegang te krijgen tot de nieuwste functies en verbeteringen.</translation>
+        <translation>Deze versie van de kDrive-app wordt niet meer ondersteund. Update om toegang te krijgen tot de nieuwste functies en verbeteringen.</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesispopover.cpp" line="980"/>
         <source>Update</source>
-        <translation type="vanished">Bijwerken</translation>
+        <translation>Bijwerken</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesispopover.cpp" line="1190"/>
         <source>Please download the latest version on the website.</source>
-        <translation type="vanished">Download de nieuwste versie op de website.</translation>
+        <translation>Download de nieuwste versie op de website.</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesispopover.cpp" line="983"/>
         <source>Update download in progress</source>
-        <translation type="vanished">Update-download bezig</translation>
+        <translation>Update-download bezig</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesispopover.cpp" line="986"/>
         <source>Looking for update...</source>
-        <translation type="vanished">Zoeken naar update...</translation>
+        <translation>Zoeken naar update...</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesispopover.cpp" line="989"/>
         <source>Manual update</source>
-        <translation type="vanished">Handmatige update</translation>
+        <translation>Handmatige update</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesispopover.cpp" line="992"/>
         <source>Unavailable</source>
-        <translation type="vanished">Niet beschikbaar</translation>
+        <translation>Niet beschikbaar</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesispopover.cpp" line="1203"/>
         <source>You can synchronize files &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;from your computer&lt;/a&gt; or on &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;kdrive.infomaniak.com&lt;/a&gt;.</source>
-        <translation type="vanished">U kunt bestanden synchroniseren &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;vanaf uw computer&lt;/a&gt; of op &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;kdrive.infomaniak.com&lt;/a&gt;.</translation>
+        <translation>U kunt bestanden synchroniseren &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;vanaf uw computer&lt;/a&gt; of op &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;kdrive.infomaniak.com&lt;/a&gt;.</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesispopover.cpp" line="448"/>
         <source>Synchronized</source>
-        <translation type="vanished">Gesynchroniseerd</translation>
+        <translation>Gesynchroniseerd</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesispopover.cpp" line="452"/>
         <source>Favorites</source>
-        <translation type="vanished">Favorieten</translation>
+        <translation>Favorieten</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesispopover.cpp" line="456"/>
         <source>Activity</source>
-        <translation type="vanished">Activiteit</translation>
+        <translation>Activiteit</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesispopover.cpp" line="1135"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1182"/>
         <source>Not implemented!</source>
-        <translation type="vanished">Niet geïmplementeerd!</translation>
+        <translation>Niet geïmplementeerd!</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesispopover.cpp" line="1187"/>
         <source>&lt;a style= text-decoration:none; href=&quot;https://www.infomaniak.com/en/apps/download-kdrive&quot;&gt;Click here to download manually&lt;/a&gt;</source>
-        <translation type="vanished">&lt;a style= text-decoration:none; href=&quot;https://www.infomaniak.com/en/apps/download-kdrive&quot;&gt;Klik hier om handmatig te downloaden&lt;/a&gt;</translation>
+        <translation>&lt;a style= text-decoration:none; href=&quot;https://www.infomaniak.com/en/apps/download-kdrive&quot;&gt;Klik hier om handmatig te downloaden&lt;/a&gt;</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesispopover.cpp" line="1196"/>
         <source>No synchronized folder for this Drive!</source>
-        <translation type="vanished">Geen gesynchroniseerde map voor deze Drive!</translation>
+        <translation>Geen gesynchroniseerde map voor deze Drive!</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesispopover.cpp" line="1199"/>
         <source>No kDrive configured!</source>
-        <translation type="vanished">Geen kDrive geconfigureerd!</translation>
+        <translation>Geen kDrive geconfigureerd!</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesispopover.cpp" line="1163"/>
         <source>Unable to open link %1.</source>
-        <translation type="vanished">Kan link %1 niet openen.</translation>
+        <translation>Kan link %1 niet openen.</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesispopover.cpp" line="1175"/>
         <source>Invalid link %1.</source>
-        <translation type="vanished">Ongeldige link %1.</translation>
+        <translation>Ongeldige link %1.</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesispopover.cpp" line="588"/>
         <source>Unable to open folder url %1.</source>
-        <translation type="vanished">Kan map-URL %1 niet openen.</translation>
+        <translation>Kan map-URL %1 niet openen.</translation>
     </message>
 </context>
 <context>
     <name>KDC::UpdateDialog</name>
     <message>
+        <location filename="../src/gui/updater/updatedialog.cpp" line="61"/>
         <source>&lt;p&gt;The new version &lt;b&gt;%1&lt;/b&gt; of the %2 Client is available and has been downloaded.&lt;/p&gt;&lt;p&gt;The installed version is %3.&lt;/p&gt;</source>
-        <translation type="vanished">&lt;p&gt;De nieuwe versie &lt;b&gt;%1&lt;/b&gt; van de %2 Client is beschikbaar en is gedownload.&lt;/p&gt;&lt;p&gt;De geïnstalleerde versie is %3.&lt;/p&gt;</translation>
+        <translation>&lt;p&gt;De nieuwe versie &lt;b&gt;%1&lt;/b&gt; van de %2 Client is beschikbaar en is gedownload.&lt;/p&gt;&lt;p&gt;De geïnstalleerde versie is %3.&lt;/p&gt;</translation>
     </message>
     <message>
+        <location filename="../src/gui/updater/updatedialog.cpp" line="95"/>
         <source>Skip this version</source>
-        <translation type="vanished">Deze versie overslaan</translation>
+        <translation>Deze versie overslaan</translation>
     </message>
     <message>
+        <location filename="../src/gui/updater/updatedialog.cpp" line="103"/>
         <source>Remind me later</source>
-        <translation type="vanished">Herinner me later</translation>
+        <translation>Herinner me later</translation>
     </message>
     <message>
+        <location filename="../src/gui/updater/updatedialog.cpp" line="109"/>
         <source>Install update</source>
-        <translation type="vanished">Update installeren</translation>
+        <translation>Update installeren</translation>
     </message>
 </context>
 <context>
     <name>KDC::UpdateManager</name>
     <message>
+        <location filename="../src/server/updater/updatemanager.cpp" line="88"/>
         <source>New update available.</source>
-        <translation type="vanished">Nieuwe update beschikbaar.</translation>
+        <translation>Nieuwe update beschikbaar.</translation>
     </message>
     <message>
+        <location filename="../src/server/updater/updatemanager.cpp" line="89"/>
         <source>Version %1 is available for download.</source>
-        <translation type="vanished">Versie %1 is beschikbaar om te downloaden.</translation>
+        <translation>Versie %1 is beschikbaar om te downloaden.</translation>
     </message>
 </context>
 <context>
     <name>KDC::UserSelectionWidget</name>
     <message>
+        <location filename="../src/gui/userselectionwidget.cpp" line="131"/>
         <source>Add an account</source>
-        <translation type="vanished">Een account toevoegen</translation>
+        <translation>Een account toevoegen</translation>
     </message>
 </context>
 <context>
     <name>KDC::VersionWidget</name>
     <message>
+        <location filename="../src/gui/versionwidget.cpp" line="314"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%3&lt;/a&gt;</source>
-        <translation type="vanished">&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%3&lt;/a&gt;</translation>
+        <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%3&lt;/a&gt;</translation>
     </message>
     <message>
+        <location filename="../src/gui/versionwidget.cpp" line="170"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Show release note&lt;/a&gt;</source>
-        <translation type="vanished">&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Release-opmerking tonen&lt;/a&gt;</translation>
+        <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Release-opmerking tonen&lt;/a&gt;</translation>
     </message>
     <message>
+        <location filename="../src/gui/versionwidget.cpp" line="173"/>
         <source>Version</source>
-        <translation type="vanished">Versie</translation>
+        <translation>Versie</translation>
     </message>
     <message>
+        <location filename="../src/gui/versionwidget.cpp" line="174"/>
         <source>UPDATE</source>
-        <translation type="vanished">BIJWERKEN</translation>
+        <translation>BIJWERKEN</translation>
     </message>
     <message>
+        <location filename="../src/gui/versionwidget.cpp" line="198"/>
         <source>%1 is up to date!</source>
-        <translation type="vanished">%1 is up-to-date!</translation>
+        <translation>%1 is up-to-date!</translation>
     </message>
     <message>
+        <location filename="../src/gui/versionwidget.cpp" line="202"/>
         <source>Checking update on server...</source>
-        <translation type="vanished">Controleren op update op server...</translation>
+        <translation>Controleren op update op server...</translation>
     </message>
     <message>
+        <location filename="../src/gui/versionwidget.cpp" line="206"/>
         <source>An update is available: %1.&lt;br&gt;Please download it from &lt;a style=&quot;%2&quot; href=&quot;%3&quot;&gt;here&lt;/a&gt;.</source>
-        <translation type="vanished">Een update is beschikbaar: %1.&lt;br&gt;Download het van &lt;a style=&quot;%2&quot; href=&quot;%3&quot;&gt;hier&lt;/a&gt;.</translation>
+        <translation>Een update is beschikbaar: %1.&lt;br&gt;Download het van &lt;a style=&quot;%2&quot; href=&quot;%3&quot;&gt;hier&lt;/a&gt;.</translation>
     </message>
     <message>
+        <location filename="../src/gui/versionwidget.cpp" line="213"/>
         <source>An update is available: %1</source>
-        <translation type="vanished">Een update is beschikbaar: %1</translation>
+        <translation>Een update is beschikbaar: %1</translation>
     </message>
     <message>
+        <location filename="../src/gui/versionwidget.cpp" line="219"/>
         <source>Downloading %1. Please wait...</source>
-        <translation type="vanished">%1 downloaden. Even geduld...</translation>
+        <translation>%1 downloaden. Even geduld...</translation>
     </message>
     <message>
+        <location filename="../src/gui/versionwidget.cpp" line="224"/>
         <source>Could not check for new updates.</source>
-        <translation type="vanished">Kon niet controleren op nieuwe updates.</translation>
+        <translation>Kon niet controleren op nieuwe updates.</translation>
     </message>
     <message>
+        <location filename="../src/gui/versionwidget.cpp" line="228"/>
         <source>An error occurred during update.</source>
-        <translation type="vanished">Er is een fout opgetreden tijdens de update.</translation>
+        <translation>Er is een fout opgetreden tijdens de update.</translation>
     </message>
     <message>
+        <location filename="../src/gui/versionwidget.cpp" line="232"/>
         <source>Could not download update.</source>
-        <translation type="vanished">Kon update niet downloaden.</translation>
+        <translation>Kon update niet downloaden.</translation>
     </message>
     <message>
+        <location filename="../src/gui/versionwidget.cpp" line="236"/>
         <source>Update disabled.</source>
-        <translation type="vanished">Update uitgeschakeld.</translation>
+        <translation>Update uitgeschakeld.</translation>
     </message>
     <message>
+        <location filename="../src/gui/versionwidget.cpp" line="252"/>
         <source>Beta program</source>
-        <translation type="vanished">Bètaprogramma</translation>
+        <translation>Bètaprogramma</translation>
     </message>
     <message>
+        <location filename="../src/gui/versionwidget.cpp" line="253"/>
         <source>Get early access to new versions of the application</source>
-        <translation type="vanished">Krijg vroeg toegang tot nieuwe versies van de applicatie</translation>
+        <translation>Krijg vroeg toegang tot nieuwe versies van de applicatie</translation>
     </message>
     <message>
+        <location filename="../src/gui/versionwidget.cpp" line="257"/>
         <source>Join</source>
-        <translation type="vanished">Deelnemen</translation>
+        <translation>Deelnemen</translation>
     </message>
     <message>
+        <location filename="../src/gui/versionwidget.cpp" line="260"/>
         <source>Modify</source>
-        <translation type="vanished">Wijzigen</translation>
+        <translation>Wijzigen</translation>
     </message>
     <message>
+        <location filename="../src/gui/versionwidget.cpp" line="260"/>
         <source>Quit</source>
-        <translation type="vanished">Verlaten</translation>
+        <translation>Verlaten</translation>
     </message>
 </context>
 <context>
     <name>QObject</name>
     <message>
+        <location filename="../src/gui/parameterscache.cpp" line="59"/>
         <source>Unable to save parameters, please retry later.</source>
-        <translation type="vanished">Kan parameters niet opslaan, probeer het later opnieuw.</translation>
+        <translation>Kan parameters niet opslaan, probeer het later opnieuw.</translation>
     </message>
     <message>
+        <location filename="../src/gui/parameterscache.cpp" line="60"/>
         <source>Unable to save parameters!</source>
-        <translation type="vanished">Kan parameters niet opslaan!</translation>
+        <translation>Kan parameters niet opslaan!</translation>
     </message>
     <message>
+        <location filename="../src/server/requests/serverrequests.cpp" line="490"/>
         <source>The parent folder is a sync folder or contained in one</source>
-        <translation type="vanished">De bovenliggende map is een synchronisatiemap of zit erin</translation>
+        <translation>De bovenliggende map is een synchronisatiemap of zit erin</translation>
     </message>
     <message>
+        <location filename="../src/server/requests/serverrequests.cpp" line="524"/>
         <source>Can&apos;t find a valid path</source>
-        <translation type="vanished">Kan geen geldig pad vinden</translation>
+        <translation>Kan geen geldig pad vinden</translation>
     </message>
     <message>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2133"/>
         <source>No valid folder selected!</source>
-        <translation type="vanished">Geen geldige map geselecteerd!</translation>
+        <translation>Geen geldige map geselecteerd!</translation>
     </message>
     <message>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2144"/>
         <source>The selected path does not exist!</source>
-        <translation type="vanished">Het geselecteerde pad bestaat niet!</translation>
+        <translation>Het geselecteerde pad bestaat niet!</translation>
     </message>
     <message>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2149"/>
         <source>The selected path is not a folder!</source>
-        <translation type="vanished">Het geselecteerde pad is geen map!</translation>
+        <translation>Het geselecteerde pad is geen map!</translation>
     </message>
     <message>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2154"/>
         <source>You have no permission to write to the selected folder!</source>
-        <translation type="vanished">U heeft geen schrijfrechten voor de geselecteerde map!</translation>
+        <translation>U heeft geen schrijfrechten voor de geselecteerde map!</translation>
     </message>
     <message>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2184"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
-        <translation type="vanished">De lokale map %1 bevat een map die al gesynchroniseerd is. Kies een andere!</translation>
+        <translation>De lokale map %1 bevat een map die al gesynchroniseerd is. Kies een andere!</translation>
     </message>
     <message>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2192"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
-        <translation type="vanished">De lokale map %1 zit in een map die al gesynchroniseerd is. Kies een andere!</translation>
+        <translation>De lokale map %1 zit in een map die al gesynchroniseerd is. Kies een andere!</translation>
     </message>
     <message>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2200"/>
         <source>The local folder %1 is already synced. Please pick another one!</source>
-        <translation type="vanished">De lokale map %1 is al gesynchroniseerd. Kies een andere!</translation>
+        <translation>De lokale map %1 is al gesynchroniseerd. Kies een andere!</translation>
     </message>
     <message>
+        <location filename="../src/gui/folderitemwidget.cpp" line="42"/>
         <source>Lite sync (Beta) is enabled. Files from kDrive remain in the Cloud and do not use your computer&apos;s storage space.</source>
-        <translation type="vanished">Lite sync (Beta) is ingeschakeld. Bestanden van kDrive blijven in de Cloud en gebruiken geen opslagruimte op uw computer.</translation>
+        <translation>Lite sync (Beta) is ingeschakeld. Bestanden van kDrive blijven in de Cloud en gebruiken geen opslagruimte op uw computer.</translation>
     </message>
     <message>
+        <location filename="../src/gui/folderitemwidget.cpp" line="45"/>
         <source>Lite sync (Beta) is disabled. The kDrive files use the storage space of your computer.</source>
-        <translation type="vanished">Lite sync (Beta) is uitgeschakeld. De kDrive-bestanden gebruiken de opslagruimte van uw computer.</translation>
+        <translation>Lite sync (Beta) is uitgeschakeld. De kDrive-bestanden gebruiken de opslagruimte van uw computer.</translation>
     </message>
     <message>
+        <location filename="../src/gui/folderitemwidget.cpp" line="48"/>
         <source>Lite sync is enabled. Files from kDrive remain in the Cloud and do not use your computer&apos;s storage space.</source>
-        <translation type="vanished">Lite sync is ingeschakeld. Bestanden van kDrive blijven in de Cloud en gebruiken geen opslagruimte op uw computer.</translation>
+        <translation>Lite sync is ingeschakeld. Bestanden van kDrive blijven in de Cloud en gebruiken geen opslagruimte op uw computer.</translation>
     </message>
     <message>
+        <location filename="../src/gui/folderitemwidget.cpp" line="50"/>
         <source>Lite sync is disabled. The kDrive files use the storage space of your computer.</source>
-        <translation type="vanished">Lite sync is uitgeschakeld. De kDrive-bestanden gebruiken de opslagruimte van uw computer.</translation>
+        <translation>Lite sync is uitgeschakeld. De kDrive-bestanden gebruiken de opslagruimte van uw computer.</translation>
     </message>
     <message>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1242"/>
         <source>Make available locally</source>
-        <translation type="vanished">Lokaal beschikbaar maken</translation>
+        <translation>Lokaal beschikbaar maken</translation>
     </message>
     <message>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1246"/>
         <source>Free up local space</source>
-        <translation type="vanished">Lokale ruimte vrijmaken</translation>
+        <translation>Lokale ruimte vrijmaken</translation>
     </message>
     <message>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1250"/>
         <source>Cancel free up local space</source>
-        <translation type="vanished">Annuleer lokale ruimte vrijmaken</translation>
+        <translation>Annuleer lokale ruimte vrijmaken</translation>
     </message>
     <message>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1254"/>
         <source>Cancel make available locally</source>
-        <translation type="vanished">Annuleer lokaal beschikbaar maken</translation>
+        <translation>Annuleer lokaal beschikbaar maken</translation>
     </message>
     <message>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1258"/>
         <source>Resharing this file is not allowed</source>
-        <translation type="vanished">Opnieuw delen van dit bestand is niet toegestaan</translation>
+        <translation>Opnieuw delen van dit bestand is niet toegestaan</translation>
     </message>
     <message>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1259"/>
         <source>Resharing this folder is not allowed</source>
-        <translation type="vanished">Opnieuw delen van deze map is niet toegestaan</translation>
+        <translation>Opnieuw delen van deze map is niet toegestaan</translation>
     </message>
     <message>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1263"/>
         <source>Copy public share link</source>
-        <translation type="vanished">Openbare deellink kopiëren</translation>
+        <translation>Openbare deellink kopiëren</translation>
     </message>
     <message>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1267"/>
         <source>Copy private share link</source>
-        <translation type="vanished">Privé deellink kopiëren</translation>
+        <translation>Privé deellink kopiëren</translation>
     </message>
     <message>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1271"/>
         <source>Open in browser</source>
-        <translation type="vanished">Openen in browser</translation>
+        <translation>Openen in browser</translation>
     </message>
 </context>
 <context>
     <name>SharedTools::QtSingleApplication</name>
     <message>
+        <location filename="../src/server/appserver.cpp" line="134"/>
         <source>kDrive application will close due to a fatal error.</source>
-        <translation type="vanished">kDrive-applicatie wordt afgesloten vanwege een fatale fout.</translation>
+        <translation>kDrive-applicatie wordt afgesloten vanwege een fatale fout.</translation>
     </message>
 </context>
 <context>
     <name>Utility</name>
     <message>
+        <location filename="../src/libcommongui/utility/utility.cpp" line="97"/>
         <source>%L1 GB</source>
-        <translation type="vanished">%L1 GB</translation>
+        <translation>%L1 GB</translation>
     </message>
     <message>
+        <location filename="../src/libcommongui/utility/utility.cpp" line="101"/>
         <source>%L1 MB</source>
-        <translation type="vanished">%L1 MB</translation>
+        <translation>%L1 MB</translation>
     </message>
     <message>
+        <location filename="../src/libcommongui/utility/utility.cpp" line="105"/>
         <source>%L1 KB</source>
-        <translation type="vanished">%L1 KB</translation>
+        <translation>%L1 KB</translation>
     </message>
     <message>
+        <location filename="../src/libcommongui/utility/utility.cpp" line="108"/>
         <source>%L1 B</source>
-        <translation type="vanished">%L1 B</translation>
+        <translation>%L1 B</translation>
     </message>
     <message numerus="yes">
+        <location filename="../src/libcommongui/utility/utility.cpp" line="41"/>
         <source>%n year(s)</source>
-        <translation type="vanished">
+        <translation>
             <numerusform>%n jaar</numerusform>
             <numerusform>%n jaar</numerusform>
         </translation>
     </message>
     <message numerus="yes">
+        <location filename="../src/libcommongui/utility/utility.cpp" line="42"/>
         <source>%n month(s)</source>
-        <translation type="vanished">
+        <translation>
             <numerusform>%n maand</numerusform>
             <numerusform>%n maanden</numerusform>
         </translation>
     </message>
     <message numerus="yes">
+        <location filename="../src/libcommongui/utility/utility.cpp" line="43"/>
         <source>%n day(s)</source>
-        <translation type="vanished">
+        <translation>
             <numerusform>%n dag</numerusform>
             <numerusform>%n dagen</numerusform>
         </translation>
     </message>
     <message numerus="yes">
+        <location filename="../src/libcommongui/utility/utility.cpp" line="44"/>
         <source>%n hour(s)</source>
-        <translation type="vanished">
+        <translation>
             <numerusform>%n uur</numerusform>
             <numerusform>%n uur</numerusform>
         </translation>
     </message>
     <message numerus="yes">
+        <location filename="../src/libcommongui/utility/utility.cpp" line="45"/>
         <source>%n minute(s)</source>
-        <translation type="vanished">
+        <translation>
             <numerusform>%n minuut</numerusform>
             <numerusform>%n minuten</numerusform>
         </translation>
     </message>
     <message numerus="yes">
+        <location filename="../src/libcommongui/utility/utility.cpp" line="46"/>
         <source>%n second(s)</source>
-        <translation type="vanished">
+        <translation>
             <numerusform>%n seconde</numerusform>
             <numerusform>%n seconden</numerusform>
         </translation>
@@ -2471,110 +2961,135 @@ Gebruik de volgende link om de logs naar de ondersteuning te sturen: &lt;a style
 <context>
     <name>main.cpp</name>
     <message>
+        <location filename="../src/gui/mainclient.cpp" line="49"/>
         <source>System Tray not available</source>
-        <translation type="vanished">Systeemvak niet beschikbaar</translation>
+        <translation>Systeemvak niet beschikbaar</translation>
     </message>
     <message>
+        <location filename="../src/gui/mainclient.cpp" line="50"/>
         <source>%1 requires a working system tray. If you are running XFCE, please follow &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;these instructions&lt;/a&gt;. Otherwise, please install a system tray application such as &apos;trayer&apos; and try again.</source>
-        <translation type="vanished">%1 vereist een werkend systeemvak. Als u XFCE gebruikt, volg dan &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;deze instructies&lt;/a&gt;. Installeer anders een systeemvak-toepassing zoals &apos;trayer&apos; en probeer het opnieuw.</translation>
+        <translation>%1 vereist een werkend systeemvak. Als u XFCE gebruikt, volg dan &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;deze instructies&lt;/a&gt;. Installeer anders een systeemvak-toepassing zoals &apos;trayer&apos; en probeer het opnieuw.</translation>
     </message>
 </context>
 <context>
     <name>utility</name>
     <message>
+        <location filename="../src/gui/guiutility.cpp" line="84"/>
         <source>Could not open browser</source>
-        <translation type="vanished">Kon browser niet openen</translation>
+        <translation>Kon browser niet openen</translation>
     </message>
     <message>
+        <location filename="../src/gui/guiutility.cpp" line="85"/>
         <source>There was an error when launching the browser to go to URL %1. Maybe no default browser is configured?</source>
-        <translation type="vanished">Er trad een fout op bij het starten van de browser om naar URL %1 te gaan. Misschien is er geen standaardbrowser geconfigureerd?</translation>
+        <translation>Er trad een fout op bij het starten van de browser om naar URL %1 te gaan. Misschien is er geen standaardbrowser geconfigureerd?</translation>
     </message>
     <message>
+        <location filename="../src/gui/guiutility.cpp" line="104"/>
         <source>Could not open email client</source>
-        <translation type="vanished">Kon e-mailclient niet openen</translation>
+        <translation>Kon e-mailclient niet openen</translation>
     </message>
     <message>
+        <location filename="../src/gui/guiutility.cpp" line="105"/>
         <source>There was an error when launching the email client to create a new message. Maybe no default email client is configured?</source>
-        <translation type="vanished">Er trad een fout op bij het starten van de e-mailclient om een nieuw bericht te maken. Misschien is er geen standaard e-mailclient geconfigureerd?</translation>
+        <translation>Er trad een fout op bij het starten van de e-mailclient om een nieuw bericht te maken. Misschien is er geen standaard e-mailclient geconfigureerd?</translation>
     </message>
     <message>
+        <location filename="../src/gui/guiutility.cpp" line="324"/>
         <source>You are not connected anymore. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Log in&lt;/a&gt;</source>
-        <translation type="vanished">U bent niet meer verbonden. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Inloggen&lt;/a&gt;</translation>
+        <translation>U bent niet meer verbonden. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Inloggen&lt;/a&gt;</translation>
     </message>
     <message>
+        <location filename="../src/gui/guiutility.cpp" line="347"/>
         <source>Sync in progress (Step %1/%2).</source>
-        <translation type="vanished">Synchronisatie bezig (Stap %1/%2).</translation>
+        <translation>Synchronisatie bezig (Stap %1/%2).</translation>
     </message>
     <message>
+        <location filename="../src/gui/guiutility.cpp" line="353"/>
         <source>Sync in progress.</source>
-        <translation type="vanished">Synchronisatie bezig.</translation>
+        <translation>Synchronisatie bezig.</translation>
     </message>
     <message>
+        <location filename="../src/gui/guiutility.cpp" line="364"/>
         <source>Some files couldn&apos;t be synchronized. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
-        <translation type="vanished">Sommige bestanden konden niet worden gesynchroniseerd. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Meer informatie&lt;/a&gt;</translation>
+        <translation>Sommige bestanden konden niet worden gesynchroniseerd. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Meer informatie&lt;/a&gt;</translation>
     </message>
     <message>
+        <location filename="../src/gui/guiutility.cpp" line="370"/>
         <source>Synchronization pausing ...</source>
-        <translation type="vanished">Synchronisatie wordt gepauzeerd...</translation>
+        <translation>Synchronisatie wordt gepauzeerd...</translation>
     </message>
     <message>
+        <location filename="../src/gui/guiutility.cpp" line="570"/>
         <source>Folder &lt;b&gt;%1&lt;/b&gt; cannot be selected because another sync is using the same folder.</source>
-        <translation type="vanished">Map &lt;b&gt;%1&lt;/b&gt; kan niet worden geselecteerd omdat een andere synchronisatie dezelfde map gebruikt.</translation>
+        <translation>Map &lt;b&gt;%1&lt;/b&gt; kan niet worden geselecteerd omdat een andere synchronisatie dezelfde map gebruikt.</translation>
     </message>
     <message>
+        <location filename="../src/gui/guiutility.cpp" line="576"/>
         <source>Folder &lt;b&gt;%1&lt;/b&gt; cannot be selected because it contains the synchronized folder &lt;b&gt;%2&lt;/b&gt;.</source>
-        <translation type="vanished">Map &lt;b&gt;%1&lt;/b&gt; kan niet worden geselecteerd omdat deze de gesynchroniseerde map &lt;b&gt;%2&lt;/b&gt; bevat.</translation>
+        <translation>Map &lt;b&gt;%1&lt;/b&gt; kan niet worden geselecteerd omdat deze de gesynchroniseerde map &lt;b&gt;%2&lt;/b&gt; bevat.</translation>
     </message>
     <message>
+        <location filename="../src/gui/guiutility.cpp" line="584"/>
         <source>Folder &lt;b&gt;%1&lt;/b&gt; cannot be selected because it is contained in the synchronized folder &lt;b&gt;%2&lt;/b&gt;.</source>
-        <translation type="vanished">Map &lt;b&gt;%1&lt;/b&gt; kan niet worden geselecteerd omdat deze bevat is in de gesynchroniseerde map &lt;b&gt;%2&lt;/b&gt;.</translation>
+        <translation>Map &lt;b&gt;%1&lt;/b&gt; kan niet worden geselecteerd omdat deze bevat is in de gesynchroniseerde map &lt;b&gt;%2&lt;/b&gt;.</translation>
     </message>
     <message>
+        <location filename="../src/gui/guiutility.cpp" line="595"/>
         <source>Folder &lt;b&gt;%1&lt;/b&gt; cannot be selected as sync folder. Please, select another folder.</source>
-        <translation type="vanished">Map &lt;b&gt;%1&lt;/b&gt; kan niet worden geselecteerd als synchronisatiemap. Selecteer een andere map.</translation>
+        <translation>Map &lt;b&gt;%1&lt;/b&gt; kan niet worden geselecteerd als synchronisatiemap. Selecteer een andere map.</translation>
     </message>
     <message>
+        <location filename="../src/gui/guiutility.cpp" line="599"/>
         <source>Folder &lt;b&gt;%1&lt;/b&gt; cannot be selected as sync folder. Please, select another folder. Suggested folder: &lt;b&gt;%2&lt;/b&gt;</source>
-        <translation type="vanished">Map &lt;b&gt;%1&lt;/b&gt; kan niet worden geselecteerd als synchronisatiemap. Selecteer een andere map. Voorgestelde map: &lt;b&gt;%2&lt;/b&gt;</translation>
+        <translation>Map &lt;b&gt;%1&lt;/b&gt; kan niet worden geselecteerd als synchronisatiemap. Selecteer een andere map. Voorgestelde map: &lt;b&gt;%2&lt;/b&gt;</translation>
     </message>
     <message>
+        <location filename="../src/gui/guiutility.cpp" line="657"/>
         <source>You have excluded more than %1 folders, please note that this will affect synchronization performance.</source>
-        <translation type="vanished">U heeft meer dan %1 mappen uitgesloten, houd er rekening mee dat dit de synchronisatieprestaties beïnvloedt.</translation>
+        <translation>U heeft meer dan %1 mappen uitgesloten, houd er rekening mee dat dit de synchronisatieprestaties beïnvloedt.</translation>
     </message>
     <message>
+        <location filename="../src/gui/guiutility.cpp" line="666"/>
         <source>You cannot exclude more than %1 folders. Please uncheck higher-level folders.</source>
-        <translation type="vanished">U kunt niet meer dan %1 mappen uitsluiten. Vink mappen op een hoger niveau uit.</translation>
+        <translation>U kunt niet meer dan %1 mappen uitsluiten. Vink mappen op een hoger niveau uit.</translation>
     </message>
     <message>
+        <location filename="../src/gui/guiutility.cpp" line="351"/>
         <source>Synchronization starting</source>
-        <translation type="vanished">Synchronisatie start</translation>
+        <translation>Synchronisatie start</translation>
     </message>
     <message>
+        <location filename="../src/gui/guiutility.cpp" line="374"/>
         <source>Synchronization paused.</source>
-        <translation type="vanished">Synchronisatie gepauzeerd.</translation>
+        <translation>Synchronisatie gepauzeerd.</translation>
     </message>
     <message>
+        <location filename="../src/gui/guiutility.cpp" line="336"/>
         <source>Sync in progress (%1 of %2)</source>
-        <translation type="vanished">Synchronisatie bezig (%1 van %2)</translation>
+        <translation>Synchronisatie bezig (%1 van %2)</translation>
     </message>
     <message>
+        <location filename="../src/gui/guiutility.cpp" line="340"/>
         <source>Sync in progress (%1 of %2)
 %3 left...</source>
-        <translation type="vanished">Synchronisatie bezig (%1 van %2)
+        <translation>Synchronisatie bezig (%1 van %2)
 %3 resterend...</translation>
     </message>
     <message>
+        <location filename="../src/gui/guiutility.cpp" line="358"/>
         <source>You are up to date, unresolved conflicts.</source>
-        <translation type="vanished">U bent up-to-date, niet-opgeloste conflicten.</translation>
+        <translation>U bent up-to-date, niet-opgeloste conflicten.</translation>
     </message>
     <message>
+        <location filename="../src/gui/guiutility.cpp" line="360"/>
         <source>You are up to date!</source>
-        <translation type="vanished">U bent up-to-date!</translation>
+        <translation>U bent up-to-date!</translation>
     </message>
     <message>
+        <location filename="../src/gui/guiutility.cpp" line="329"/>
         <source>No folder to synchronize
 You can add one from the kDrive settings.</source>
-        <translation type="vanished">Geen map om te synchroniseren
+        <translation>Geen map om te synchroniseren
 U kunt er een toevoegen via de kDrive-instellingen.</translation>
     </message>
 </context>
