@@ -203,6 +203,8 @@ public struct SyncJobs: Sendable {
         )
 
         try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+
+        try? await coherentCache.vfsConversionStarted(synchroDbId: syncDbId)
     }
 
     public func getOfflineFilesSize(syncDbId: Int32) async throws -> UInt64 {
