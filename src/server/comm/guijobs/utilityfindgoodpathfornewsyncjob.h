@@ -28,14 +28,11 @@ class UtilityFindGoodPathForNewSyncJob : public AbstractGuiJob {
                                          const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel);
 
     private:
-        // Input parameters
-        SyncPath _basePath;
-
         // Output parameters
         SyncPath _goodPath;
         std::string _errorMessage;
 
-        ExitInfo deserializeInputParms() override;
+        ExitInfo deserializeInputParms() override { return ExitCode::Ok; }
         ExitInfo serializeOutputParms() override;
         ExitInfo process() override;
 

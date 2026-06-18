@@ -2282,13 +2282,9 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC: {
-            QString basePath;
-            QDataStream paramsStream(params);
-            paramsStream >> basePath;
-
             QString path;
             QString error;
-            const auto exitInfo = ServerRequests::findGoodPathForNewSync(basePath, path, error);
+            const auto exitInfo = ServerRequests::findGoodPathForNewSync(path, error);
             if (!exitInfo) {
                 LOG_WARN(_logger, "Error in Requests::findGoodPathForNewSyncFolder");
                 addError(Error(ERR_ID, exitInfo));

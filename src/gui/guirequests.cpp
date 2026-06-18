@@ -451,13 +451,9 @@ ExitCode GuiRequests::getNodePath(const SyncDbId syncDbId, const QString &nodeId
     return exitCode;
 }
 
-ExitCode GuiRequests::findGoodPathForNewSync(const QString &basePath, QString &path, QString &error) {
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << basePath;
-
+ExitCode GuiRequests::findGoodPathForNewSync(QString &path, QString &error) {
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC, {}, results)) {
         return ExitCode::SystemError;
     }
 

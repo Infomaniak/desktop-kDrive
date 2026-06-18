@@ -185,16 +185,10 @@ void AddDriveWizard::startNextStep(bool backward) {
     } else if (_currentStep == LocalFolder) {
         _addDriveLocalFolderWidget->setDrive(QString::fromStdString(_driveInfo.name()));
         _addDriveLocalFolderWidget->setLiteSync(_liteSync);
-        QString localFolderPath = QString::fromStdString(Theme::instance()->appName());
-        if (!QDir(localFolderPath).isAbsolute()) {
-            localFolderPath = QDir::homePath() + dirSeparator + localFolderPath;
-        }
         QString goodLocalFolderPath;
         QString error;
-        ExitCode exitCode = GuiRequests::findGoodPathForNewSync(localFolderPath, goodLocalFolderPath, error);
-        if (exitCode != ExitCode::Ok) {
+        if (const auto exitCode = GuiRequests::findGoodPathForNewSync(goodLocalFolderPath, error); exitCode != ExitCode::Ok) {
             qCWarning(lcAddDriveWizard()) << "Error in Requests::findGoodPathForNewSyncFolder : " << error;
-            goodLocalFolderPath = localFolderPath;
         }
 
         _addDriveLocalFolderWidget->setLocalFolderPath(goodLocalFolderPath);

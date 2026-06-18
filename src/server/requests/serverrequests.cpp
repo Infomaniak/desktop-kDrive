@@ -409,24 +409,23 @@ ExitInfo ServerRequests::folderContainsNonExcludedItem(const SyncPath &path, boo
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::findGoodPathForNewSync(const SyncPath &basePath, SyncPath &path, std::string &error) {
-    const QString qBasePath = Path2QStr(basePath);
+ExitInfo ServerRequests::findGoodPathForNewSync(SyncPath &path, std::string &error) {
     QString qPath;
     QString qError;
-    const ExitInfo exitInfo = findGoodPathForNewSync(qBasePath, qPath, qError);
+    const ExitInfo exitInfo = findGoodPathForNewSync(qPath, qError);
     path = QStr2Path(qPath);
     error = QStr2Str(qError);
     return exitInfo;
 }
 
-ExitInfo ServerRequests::findGoodPathForNewSync(const QString &basePath, QString &path, QString &error) {
+ExitInfo ServerRequests::findGoodPathForNewSync(QString &path, QString &error) {
     std::vector<Sync> syncList;
     if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs");
         return ExitCode::DbError;
     }
 
-    QString folder = basePath;
+    QString defaultFolder = CommonUtility::deviceTempDirectoryPath();
 
     // If the parent folder is a sync folder or contained in one, we can't possibly find a valid sync folder inside it.
     QString parentFolder = QFileInfo(folder).dir().canonicalPath();

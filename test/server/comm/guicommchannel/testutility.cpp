@@ -112,7 +112,6 @@ void TestGuiCommChannel::testUtilityFindGoodPathForNewSyncJob() {
     (void) queryObj.set("num", toInt(RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC));
 
     Poco::JSON::Object queryParamsObj;
-    (void) queryParamsObj.set("basePath", "");
     (void) queryParamsObj.set("driveDbId", 0);
 
     (void) queryObj.set("params", queryParamsObj);
