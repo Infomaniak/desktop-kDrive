@@ -29,7 +29,7 @@ struct SynchroSelectorView: View {
     var body: some View {
         if viewModel.items.count <= 1 {
             if let selectedItem = viewModel.selectedItem {
-                SynchroLabelView(item: selectedItem, isSelected: false)
+                SynchroLabelView(item: selectedItem)
                     .padding(.vertical, AppPadding.padding4)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -39,7 +39,7 @@ struct SynchroSelectorView: View {
             } label: {
                 HStack {
                     if let selectedItem = viewModel.selectedItem {
-                        SynchroLabelView(item: selectedItem, isSelected: false)
+                        SynchroLabelView(item: selectedItem)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
 

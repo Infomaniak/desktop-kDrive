@@ -31,19 +31,23 @@ struct SynchroPickerListView: View {
                     viewModel.onSelect?(item.synchro)
                     dismiss()
                 } label: {
-                    SynchroLabelView(item: item, isSelected: item.id == viewModel.selectedSynchroId)
-                        .padding(.horizontal, AppPadding.padding12)
-                        .padding(.vertical, AppPadding.padding8)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(
-                            RoundedRectangle(cornerRadius: AppRadius.radius8)
-                                .fill(
-                                    item.id == viewModel.selectedSynchroId
-                                        ? ColorToken.Accent.primary.asColor
-                                        : Color.clear
-                                )
-                        )
-                        .contentShape(RoundedRectangle(cornerRadius: AppRadius.radius8))
+                    SynchroLabelView(
+                        item: item,
+                        shouldShowNotification: true,
+                        isSelected: item.id == viewModel.selectedSynchroId
+                    )
+                    .padding(.horizontal, AppPadding.padding12)
+                    .padding(.vertical, AppPadding.padding8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(
+                        RoundedRectangle(cornerRadius: AppRadius.radius8)
+                            .fill(
+                                item.id == viewModel.selectedSynchroId
+                                    ? ColorToken.Accent.primary.asColor
+                                    : Color.clear
+                            )
+                    )
+                    .contentShape(RoundedRectangle(cornerRadius: AppRadius.radius8))
                 }
                 .buttonStyle(.plain)
             }

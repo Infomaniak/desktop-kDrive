@@ -35,48 +35,52 @@ struct SynchroSelectorItem: Identifiable, Equatable {
     let title: String
     let subtitle: String?
 
-    static func itemForSynchro(_ context: UISynchroContext, highPrecision: Bool) -> SynchroSelectorItem {
-        if context.synchro.targetNodeId == nil {
-            return mainSynchro(context, highPrecision: highPrecision)
+    let notification: Bool
+
+    static func itemForSynchro(_ info: UISynchroInfo, highPrecision: Bool) -> SynchroSelectorItem {
+        if info.context.synchro.targetNodeId == nil {
+            return mainSynchro(info, highPrecision: highPrecision)
         } else {
-            return advancedSynchro(context)
+            return advancedSynchro(info)
         }
     }
 
-    static func mainSynchro(_ context: UISynchroContext, highPrecision: Bool = false) -> SynchroSelectorItem {
-        let title = highPrecision ? context.synchro.localPath.lastPathComponent : context.drive.name
-        let subtitle = highPrecision ? context.drive.name : nil
+    static func mainSynchro(_ info: UISynchroInfo, highPrecision: Bool = false) -> SynchroSelectorItem {
+        let title = highPrecision ? info.context.synchro.localPath.lastPathComponent : info.context.drive.name
+        let subtitle = highPrecision ? info.context.drive.name : nil
 
         return SynchroSelectorItem(
-            synchro: context.synchro,
+            synchro: info.context.synchro,
             icon: KDriveResources.kdriveFoldersStacked.swiftUIImage,
-            iconColor: context.drive.color ?? ColorToken.Drive.defaultColor.asColor,
+            iconColor: info.context.drive.color ?? ColorToken.Drive.defaultColor.asColor,
             title: title,
-            subtitle: subtitle
+            subtitle: subtitle,
+            notification: info.state.errorCount > 0
         )
     }
 
-    static func advancedSynchro(_ context: UISynchroContext) -> SynchroSelectorItem {
+    static func advancedSynchro(_ info: UISynchroInfo) -> SynchroSelectorItem {
         return SynchroSelectorItem(
-            synchro: context.synchro,
+            synchro: info.context.synchro,
             icon: KDriveResources.folder.swiftUIImage,
             iconColor: ColorToken.Accent.primary.asColor,
-            title: context.synchro.localPath.lastPathComponent,
-            subtitle: context.drive.name
+            title: info.context.synchro.localPath.lastPathComponent,
+            subtitle: info.context.drive.name,
+            notification: info.state.errorCount > 0
         )
     }
 }
 
-extension [UISynchroContext] {
+extension [UISynchroInfo] {
     func selectorItems() -> [SynchroSelectorItem] {
         var mainSynchrosCountPerDrive: [Int: Int] = [:]
-        for synchroContext in self where synchroContext.synchro.targetNodeId == nil {
-            mainSynchrosCountPerDrive[synchroContext.drive.dbId, default: 0] += 1
+        for synchroInfo in self where synchroInfo.context.synchro.targetNodeId == nil {
+            mainSynchrosCountPerDrive[synchroInfo.context.drive.dbId, default: 0] += 1
         }
 
-        return map { synchroContext in
-            let hasSeveralMainSynchrosForDrive = (mainSynchrosCountPerDrive[synchroContext.drive.dbId] ?? 0) > 1
-            return SynchroSelectorItem.itemForSynchro(synchroContext, highPrecision: hasSeveralMainSynchrosForDrive)
+        return map { synchroInfo in
+            let hasSeveralMainSynchrosForDrive = (mainSynchrosCountPerDrive[synchroInfo.context.drive.dbId] ?? 0) > 1
+            return SynchroSelectorItem.itemForSynchro(synchroInfo, highPrecision: hasSeveralMainSynchrosForDrive)
         }
     }
 }
@@ -92,7 +96,7 @@ final class SynchroSelectorViewModel: ObservableObject {
         items.first { $0.id == selectedSynchroId } ?? items.first
     }
 
-    func update(with contexts: [UISynchroContext]) {
+    func update(with contexts: [UISynchroInfo]) {
         items = contexts.selectorItems()
     }
 }

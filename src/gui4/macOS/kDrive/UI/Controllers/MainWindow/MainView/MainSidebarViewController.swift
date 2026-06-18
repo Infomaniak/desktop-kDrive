@@ -25,6 +25,27 @@ import kDriveResources
 import OrderedCollections
 import SwiftUI
 
+typealias UIIndexedSynchroInfo = OrderedDictionary<UISynchro.ID, UISynchroInfo>
+
+public extension UIIndexedSynchroInfo {
+    init(indexedSynchro: [SynchroContext]) {
+        self.init(
+            uniqueKeysWithValues: indexedSynchro.map {
+                let info = UISynchroInfo(
+                    context: UISynchroContext(synchroContext: $0),
+                    state: UISynchroState(fromSynchro: $0.synchro)
+                )
+                return (UISynchro.ID($0.synchro.dbId), info)
+            }
+        )
+    }
+}
+
+struct UISynchroInfo: Equatable {
+    let context: UISynchroContext
+    let state: UISynchroState
+}
+
 extension SidebarItem {
     static let home = SidebarItem(
         icon: KDriveResources.house.image,
@@ -132,7 +153,16 @@ final class MainSidebarViewController: NSViewController {
 
     private func bindViewModel() {
         observableCache.usersPublisher.allSynchrosPublisher()
-            .map { UIIndexedSynchroContext(indexedSynchro: $0) }
+            .map { synchroContext in
+                let sortedSynchroContext = synchroContext.sorted { lhs, rhs in
+                    if lhs.drive.name.localizedCaseInsensitiveCompare(rhs.drive.name) == .orderedAscending {
+                        return true
+                    } else {
+                        return lhs.synchro.targetNodeId.isEmpty
+                    }
+                }
+                return UIIndexedSynchroInfo(indexedSynchro: sortedSynchroContext)
+            }
             .removeDuplicates()
             .eraseToAnyPublisher()
             .receiveOnMain(store: &bindStore) { [weak self] synchroContexts in
@@ -162,9 +192,9 @@ final class MainSidebarViewController: NSViewController {
     private func fetchInitialSynchros() {
         Task {
             let synchroContexts = await coherentCache.getSynchroContexts()
-            let uiSynchroContexts = UIIndexedSynchroContext(indexedSynchro: synchroContexts)
+            let uiSynchroInfo = UIIndexedSynchroInfo(indexedSynchro: synchroContexts)
 
-            updateSynchrosList(uiSynchroContexts)
+            updateSynchrosList(uiSynchroInfo)
         }
     }
 
@@ -240,8 +270,8 @@ final class MainSidebarViewController: NSViewController {
         NSWorkspace.shared.open(currentSynchro.localPath)
     }
 
-    private func updateSynchrosList(_ synchroContexts: UIIndexedSynchroContext) {
-        synchroSelectorViewModel.update(with: Array(synchroContexts.values))
+    private func updateSynchrosList(_ synchroInfo: UIIndexedSynchroInfo) {
+        synchroSelectorViewModel.update(with: Array(synchroInfo.values))
     }
 
     private func updateSidebarIfNecessary() {

@@ -31,7 +31,8 @@ private extension VerticalAlignment {
 
 struct SynchroLabelView: View {
     let item: SynchroSelectorItem
-    let isSelected: Bool
+    var shouldShowNotification = false
+    var isSelected = false
 
     private var iconColor: Color {
         isSelected ? .white : item.iconColor
@@ -43,6 +44,10 @@ struct SynchroLabelView: View {
 
     private var subtitleColor: Color {
         isSelected ? .white.opacity(0.8) : ColorToken.Text.secondary.asColor
+    }
+
+    private var notificationColor: Color {
+        isSelected ? .white : ColorToken.Accent.primary.asColor
     }
 
     var body: some View {
@@ -70,14 +75,25 @@ struct SynchroLabelView: View {
                         .lineLimit(1)
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            if shouldShowNotification && item.notification {
+                Circle()
+                    .fill(notificationColor)
+                    .frame(width: 8, height: 8)
+                    .alignmentGuide(.iconTitleCenter) {
+                        $0[VerticalAlignment.center]
+                    }
+            }
         }
     }
 }
 
 #Preview {
     VStack {
-        SynchroLabelView(item: .mainSynchro(PreviewHelper.synchroContext), isSelected: false)
+        let info = UISynchroInfo(context: PreviewHelper.synchroContext, state: UISynchroState(errorCount: 1, status: .paused))
 
-        SynchroLabelView(item: .advancedSynchro(PreviewHelper.synchroContext), isSelected: false)
+        SynchroLabelView(item: .mainSynchro(info), shouldShowNotification: true, isSelected: false)
+        SynchroLabelView(item: .advancedSynchro(info), shouldShowNotification: false, isSelected: false)
     }
 }
