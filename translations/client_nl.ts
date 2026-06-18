@@ -1793,7 +1793,7 @@ Gebruik de volgende link om de logs naar de ondersteuning te sturen: &lt;a style
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="818"/>
         <source>Impossible to create file &quot;%1&quot; because it is not supported on your filesystem.&lt;br&gt;It has been excluded from synchronization.</source>
-        <translation>Het is onmogelijk om het bestand „%1“ aan te maken, omdat dit niet wordt ondersteund op uw bestandssysteem.&lt;br&gt;Het is uitgesloten van synchronisatie.</translation>
+        <translation>Het is onmogelijk om het bestand &quot;%1&quot; aan te maken, omdat dit niet wordt ondersteund op uw bestandssysteem.&lt;br&gt;Het is uitgesloten van synchronisatie.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="609"/>
