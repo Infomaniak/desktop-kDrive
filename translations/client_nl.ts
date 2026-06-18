@@ -620,7 +620,7 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
     <message>
         <location filename="../src/gui/customextensionsetupwidget.cpp" line="209"/>
         <source>Open your Mac&apos;s &lt;b&gt;General settings&lt;/b&gt; or  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
-        <translation>Open de &lt;b&gt;Algemene instellingen&lt;/b&gt; van uw Mac of &lt;a style=%1 href=%2&gt;klik hier&lt;/a&gt;</translation>
+        <translation>Open de &lt;b&gt;Algemene instellingen&lt;/b&gt; van uw Mac of &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;klik hier&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/customextensionsetupwidget.cpp" line="213"/>
