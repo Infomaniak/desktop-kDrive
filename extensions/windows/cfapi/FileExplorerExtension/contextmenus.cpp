@@ -216,7 +216,7 @@ void ExplorerCommandHandler::loadCommandItems(IShellItemArray *psiItemArray) {
 
 HRESULT ExplorerCommandHandlerEnumerator::createCommandFromCommandItem(const MenuItem *menuItem,
                                                                        IExplorerCommand **ppExplorerCommand) {
-    ExplorerCommandHandler *pCommand = new (std::nothrow) ExplorerCommandHandler(menuItem);
+    auto pCommand = winrt::make_self<ExplorerCommandHandler>(menuItem);
     HRESULT hr = pCommand ? S_OK : E_OUTOFMEMORY;
     if (SUCCEEDED(hr)) {
         hr = pCommand->QueryInterface(IID_PPV_ARGS(ppExplorerCommand));
