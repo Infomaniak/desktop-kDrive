@@ -325,6 +325,11 @@ bool CommonUtility::isHFS(const SyncPath &targetPath) {
     return fileSystemType(targetPath, fsType) == fsType::HFS;
 }
 
+bool CommonUtility::isHFS(const SyncPath &targetPath) {
+    static const std::string hfs("HFS");
+    return getRootFsType(targetPath) == hfs;
+}
+
 bool CommonUtility::isFAT(const SyncPath &targetPath) {
     std::string fsType;
     return fileSystemType(targetPath, fsType) == fsType::FAT;
