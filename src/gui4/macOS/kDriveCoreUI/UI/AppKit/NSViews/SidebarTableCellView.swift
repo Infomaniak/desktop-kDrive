@@ -27,7 +27,13 @@ public final class SidebarTableCellView: NSTableCellView {
         }
     }
 
-    private var badgeView: NSView!
+    private var badgeView: CircleBadgeView!
+
+    override public var backgroundStyle: NSView.BackgroundStyle {
+        didSet {
+            badgeView.isEmphasized = backgroundStyle == .emphasized
+        }
+    }
 
     public convenience init() {
         self.init(frame: .zero)
@@ -102,9 +108,17 @@ public final class SidebarTableCellView: NSTableCellView {
 }
 
 private final class CircleBadgeView: NSView {
+    var isEmphasized = false {
+        didSet {
+            guard isEmphasized != oldValue else { return }
+            needsDisplay = true
+        }
+    }
+
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
-        ColorToken.Accent.primary.asNSColor.setFill()
+        let color = isEmphasized ? NSColor.white : ColorToken.Accent.primary.asNSColor
+        color.setFill()
         NSBezierPath(ovalIn: bounds).fill()
     }
 }
