@@ -29,6 +29,7 @@ struct SynchroSelectorView: View {
         if viewModel.items.count <= 1 {
             if let selectedItem = viewModel.selectedItem {
                 SynchroLabelView(item: selectedItem)
+                    .padding(.horizontal, AppPadding.padding8)
                     .padding(.vertical, AppPadding.padding4)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
