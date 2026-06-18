@@ -71,6 +71,7 @@ struct COMMON_EXPORT CommonUtility {
         // File system type
         static bool isNTFS(const SyncPath &targetPath);
         static bool isAPFS(const SyncPath &targetPath);
+        static bool isHFS(const SyncPath &targetPath); // HFS+
         static bool isFAT(const SyncPath &targetPath);
         static bool isSyncCompatible(const SyncPath &targetPath);
         static bool isLiteSyncCompatible(const SyncPath &targetPath);
