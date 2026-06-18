@@ -22,7 +22,7 @@ import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
-struct SynchroSelectorItem: Identifiable, Equatable {
+struct SynchroSelectorItem: Identifiable {
     var id: UISynchro.ID {
         synchro.id
     }
