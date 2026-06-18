@@ -46,7 +46,7 @@
     <message>
         <location filename="../src/gui/abstractfileitemwidget.cpp" line="177"/>
         <source>Unable to open folder path %1.</source>
-        <translation>Kan debugmap %1 niet openen.</translation>
+        <translation>Kan mappad %1 niet openen.</translation>
     </message>
 </context>
 <context>
