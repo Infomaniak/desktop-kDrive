@@ -563,6 +563,13 @@ struct COMMON_EXPORT CommonUtility {
          */
         static ExitInfo logDirectoryPath(SyncPath &directoryPath) noexcept;
 
+        //! Returns the user's home directory path.
+        /*!
+         \param directoryPath is set with the path to the user's home directory. Empty if there is an error.
+         \return An ExitInfo representing the return value of the underlying OS API call.
+         */
+        static ExitInfo homeDirectoryPath(SyncPath &directoryPath) noexcept;
+
         static ExitInfo stdErrorToExitInfo(int64_t error) noexcept;
         static ExitInfo stdErrorToExitInfo(const std::error_code &ec) noexcept;
 

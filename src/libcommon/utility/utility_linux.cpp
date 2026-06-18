@@ -33,29 +33,11 @@
 
 namespace KDC {
 
-static std::string homeDirectoryStr() {
-    if (auto homeDir = CommonUtility::envVarValue("HOME"); !homeDir.empty()) return homeDir;
-
-    // The "HOME" environment variable might not be set. In this case, fallback on a more robust method by using getpwuid_r. The
-    // "passwd" struct retrieved contains information such as username, user id, encrypted password or  home directory.
-    struct passwd pwd;
-    struct passwd *result = nullptr;
-    auto bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
-    if (bufsize == -1) bufsize = 16384;
-    if (std::vector<char> buf(static_cast<size_t>(bufsize));
-        getpwuid_r(getuid(), &pwd, buf.data(), buf.size(), &result) == 0 && result != nullptr) {
-        return std::string(result->pw_dir);
-    }
-    return {};
-}
-
 SyncPath CommonUtility::getGenericAppSupportDir() {
-    const auto homeDir = homeDirectoryStr();
-    if (homeDir.empty()) return {};
+    SyncPath homeDir;
+    if (const auto exitInfo = homeDirectoryPath(homeDir); !exitInfo) return {};
 
-    SyncPath homePath(homeDir);
-    std::string appSupportName(".config");
-    SyncPath appSupportPath(homePath / appSupportName);
+    SyncPath appSupportPath(homeDir / ".config");
 
     std::error_code ec;
     if (!std::filesystem::exists(appSupportPath, ec)) {
@@ -205,9 +187,8 @@ ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
     if (!xdgStateHome.empty() && xdgStateHomePath.is_absolute()) {
         directoryPath = xdgStateHomePath;
     } else {
-        const auto homeDir = homeDirectoryStr();
-        if (homeDir.empty()) return {ExitCode::SystemError, ExitCause::NotFound};
-        directoryPath = SyncPath(homeDir) / ".local" / "state";
+        if (const auto exitInfo = homeDirectoryPath(directoryPath); !exitInfo) return exitInfo;
+        directoryPath /= ".local" / "state";
     }
 
     directoryPath /= Str2SyncName(APPLICATION_NAME);
@@ -231,6 +212,27 @@ ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
     }
 
     return ExitCode::Ok;
+}
+
+ExitInfo CommonUtility::homeDirectoryPath(SyncPath &directoryPath) noexcept {
+    if (auto homeDir = CommonUtility::envVarValue("HOME"); !homeDir.empty()) {
+        directoryPath = SyncPath(homeDir);
+        return ExitCode::Ok;
+    }
+
+    // The "HOME" environment variable might not be set. In this case, fallback on a more robust method by using getpwuid_r. The
+    // "passwd" struct retrieved contains information such as username, user id, encrypted password or  home directory.
+    struct passwd pwd;
+    struct passwd *result = nullptr;
+    auto bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
+    if (bufsize == -1) bufsize = 16384;
+    if (std::vector<char> buf(static_cast<size_t>(bufsize));
+        getpwuid_r(getuid(), &pwd, buf.data(), buf.size(), &result) == 0 && result != nullptr) {
+        directoryPath = SyncPath(std::string(result->pw_dir));
+        return ExitCode::Ok;
+    }
+
+    return {ExitCode::SystemError, ExitCause::NotFound};
 }
 
 } // namespace KDC

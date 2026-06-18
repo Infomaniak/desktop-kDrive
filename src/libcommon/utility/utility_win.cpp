@@ -203,4 +203,14 @@ ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
     return ExitCode::Ok;
 }
 
+ExitInfo CommonUtility::homeDirectoryPath(SyncPath &directoryPath) noexcept {
+    if (PWSTR path = nullptr; SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Profile, KF_FLAG_NO_ALIAS, nullptr, &path))) {
+        directoryPath = path;
+        CoTaskMemFree(path);
+        return ExitCode::Ok;
+    }
+
+    return stdErrorToExitInfo(static_cast<int64_t>(GetLastError()));
+}
+
 } // namespace KDC
