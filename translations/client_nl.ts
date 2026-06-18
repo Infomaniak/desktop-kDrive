@@ -46,7 +46,7 @@
     <message>
         <location filename="../src/gui/abstractfileitemwidget.cpp" line="177"/>
         <source>Unable to open folder path %1.</source>
-        <translation>Kan debugmap %1 niet openen.</translation>
+        <translation>Kan mappad %1 niet openen.</translation>
     </message>
 </context>
 <context>
@@ -567,7 +567,7 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
     <message>
         <location filename="../src/gui/clientgui.cpp" line="850"/>
         <source>Unable to open folder path %1.</source>
-        <translation>Kan debugmap %1 niet openen.</translation>
+        <translation>Kan mappad %1 niet openen.</translation>
     </message>
     <message>
         <location filename="../src/gui/clientgui.cpp" line="117"/>
@@ -620,7 +620,7 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
     <message>
         <location filename="../src/gui/customextensionsetupwidget.cpp" line="209"/>
         <source>Open your Mac&apos;s &lt;b&gt;General settings&lt;/b&gt; or  &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
-        <translation>Open de &lt;b&gt;Algemene instellingen&lt;/b&gt; van uw Mac of &lt;a style=%1 href=%2&gt;klik hier&lt;/a&gt;</translation>
+        <translation>Open de &lt;b&gt;Algemene instellingen&lt;/b&gt; van uw Mac of &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;klik hier&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/customextensionsetupwidget.cpp" line="213"/>
@@ -660,7 +660,7 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
     <message>
         <location filename="../src/gui/customextensionsetupwidget.cpp" line="345"/>
         <source>Go to &lt;b&gt;&quot;Privacy &amp; Security&quot;&lt;/b&gt; section and click on &lt;b&gt;&quot;Full Disk Access&quot;&lt;/b&gt; or &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
-        <translation>Ga naar de sectie &lt;b&gt;&quot;Privacy en beveiliging&quot;&lt;/b&gt; en klik op &lt;b&gt;&quot;Volledige schijftoegang&quot;&lt;/b&gt; of &lt;a style=%1 href=%2&gt;klik hier&lt;/a&gt;</translation>
+        <translation>Ga naar de sectie &lt;b&gt;&quot;Privacy en beveiliging&quot;&lt;/b&gt; en klik op &lt;b&gt;&quot;Volledige schijftoegang&quot;&lt;/b&gt; of &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;klik hier&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/customextensionsetupwidget.cpp" line="349"/>
@@ -1316,7 +1316,7 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
     <message>
         <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="171"/>
         <source>&lt;a style=%1 href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
-        <translation>&lt;a style=%1 href=&quot;%2&quot;&gt;Meer informatie&lt;/a&gt;</translation>
+        <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Meer informatie&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="175"/>
@@ -1793,7 +1793,7 @@ Gebruik de volgende link om de logs naar de ondersteuning te sturen: &lt;a style
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="818"/>
         <source>Impossible to create file &quot;%1&quot; because it is not supported on your filesystem.&lt;br&gt;It has been excluded from synchronization.</source>
-        <translation>Het is onmogelijk om het bestand „%1“ aan te maken, omdat dit niet wordt ondersteund op uw bestandssysteem.&lt;br&gt;Het is uitgesloten van synchronisatie.</translation>
+        <translation>Het is onmogelijk om het bestand &quot;%1&quot; aan te maken, omdat dit niet wordt ondersteund op uw bestandssysteem.&lt;br&gt;Het is uitgesloten van synchronisatie.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="609"/>
@@ -2128,7 +2128,7 @@ Gebruik de volgende link om de logs naar de ondersteuning te sturen: &lt;a style
     <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="496"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
-        <translation>&lt;a style=%1 href=&quot;%2&quot;&gt;Meer informatie&lt;/a&gt;</translation>
+        <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Meer informatie&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/preferenceswidget.cpp" line="500"/>
