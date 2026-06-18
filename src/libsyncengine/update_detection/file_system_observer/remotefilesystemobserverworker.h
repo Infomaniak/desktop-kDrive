@@ -41,7 +41,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         // Unlike the `start` method, the `resume` method:
         // - does not set the initializing flag to `true` (which would otherwise have the effect of skipping `longpoll` and
         // `listing/continue` requests),
-        // - does invalidate the remote snapshot (which would otherwise trigger the reconstruction of the remote snapshot),
+        // - does not invalidate the remote snapshot (which would otherwise trigger the reconstruction of the remote snapshot),
         // - does set the updating flag to `true` in order to trigger the `longpoll` and `listing/continue` requests.
         void resume() override;
 
