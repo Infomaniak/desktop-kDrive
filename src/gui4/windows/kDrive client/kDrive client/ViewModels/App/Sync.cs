@@ -300,6 +300,8 @@ namespace Infomaniak.kDrive.ViewModels
                         Types.ExitCause.DriveAsleep => SyncErrorStates.Asleep,
                         Types.ExitCause.DriveWakingUp => SyncErrorStates.WakingUp,
                         Types.ExitCause.DriveMaintenance => SyncErrorStates.Maintenance,
+                        Types.ExitCause.Http5xx => SyncErrorStates.Maintenance,
+                        Types.ExitCause.ApiErr => SyncErrorStates.Maintenance,
                         Types.ExitCause.DriveNotRenew => SyncErrorStates.NotRenew,
                         Types.ExitCause.LoginError => SyncErrorStates.LoggingError,
                         _ => SyncErrorStates.Undefined

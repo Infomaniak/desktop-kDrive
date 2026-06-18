@@ -26,7 +26,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
     [ErrorMetadata(
         Levels = new[] { ErrorLevel.SyncPal },
         ExitCodes = new[] { ExitCode.BackError },
-        ExitCauses = new[] { ExitCause.DriveMaintenance },
+        ExitCauses = new[] { ExitCause.DriveMaintenance, ExitCause.Http5xx, ExitCause.ApiErr },
         ShowInSystemTray = true
     )]
     public sealed partial class BackErrorDriveMaintenance : UserControl
