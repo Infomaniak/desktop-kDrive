@@ -23,6 +23,7 @@ import UserNotifications
 struct UtilitySignalHandler {
     private let decoder = JSONDecoder()
     @LazyInjectService private var coherentCache: CoherentCache
+    @LazyInjectService private var logUploadStatusCache: LogUploadStatusCaching
 
     func handleShowNotification(_ signal: Data) async throws {
         guard let notificationSignal = try? decoder.decode(SignalMessage<NotificationSignal>.self, from: signal) else {
@@ -58,5 +59,16 @@ struct UtilitySignalHandler {
 
     func handleErrorCleared() async throws {
         await coherentCache.clearErrors()
+    }
+
+    func handleLogUploadStatusUpdated(_ signal: Data) async throws {
+        guard let statusSignal = try? decoder.decode(SignalMessage<LogUploadStatusSignal>.self, from: signal) else {
+            throw SignalError.unableToGetLogUploadStatusFromSignal
+        }
+
+        let status = LogUploadStatus(signal: statusSignal.body)
+        IKLogger.xpc.log("[KD] Log upload status changed: \(status.state.rawValue) (\(status.percentage)%)")
+
+        await logUploadStatusCache.setLogUploadStatus(status)
     }
 }
