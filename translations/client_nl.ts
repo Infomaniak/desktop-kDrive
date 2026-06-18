@@ -660,7 +660,7 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
     <message>
         <location filename="../src/gui/customextensionsetupwidget.cpp" line="345"/>
         <source>Go to &lt;b&gt;&quot;Privacy &amp; Security&quot;&lt;/b&gt; section and click on &lt;b&gt;&quot;Full Disk Access&quot;&lt;/b&gt; or &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
-        <translation>Ga naar de sectie &lt;b&gt;&quot;Privacy en beveiliging&quot;&lt;/b&gt; en klik op &lt;b&gt;&quot;Volledige schijftoegang&quot;&lt;/b&gt; of &lt;a style=%1 href=%2&gt;klik hier&lt;/a&gt;</translation>
+        <translation>Ga naar de sectie &lt;b&gt;&quot;Privacy en beveiliging&quot;&lt;/b&gt; en klik op &lt;b&gt;&quot;Volledige schijftoegang&quot;&lt;/b&gt; of &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;klik hier&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/customextensionsetupwidget.cpp" line="349"/>
