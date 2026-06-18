@@ -146,6 +146,12 @@
 /* loco:698b14e52445668d9d0495a2 */
 "buttonDisconnectAccount" = "Desconectar esta cuenta";
 
+/* loco:69d905534d8c60bd1f0c9343 */
+"buttonDownloadInProgress" = "Descargando…";
+
+/* loco:69d906534d8c60bd1f0c9344 */
+"buttonDownloadManually" = "Descargar manualmente";
+
 /* loco:698b0aefb16a3916fc004f32 */
 "buttonEnable" = "Activar";
 
@@ -286,6 +292,8 @@
 
 /* loco:698aec47dbcc2bef330cf7a9 */
 "buttonUpdate" = "Actualización";
+/* loco:69d905ce410048ea400b7952 */
+"buttonUpdateNow" = "Actualizar ahora";
 
 /* loco:697b6767849b0ee24c089f46 */
 "buttonUpdateSubscription" = "Actualizar suscripción";
@@ -388,6 +396,8 @@
 
 /* loco:698af1c80126fd2db302b783 */
 "doNotJoin" = "No se afilie";
+/* loco:69d90c3e87d4f2c6d30331c2 */
+"downloadAppUrl" = "https://www.infomaniak.com/es/aplicaciones/descargar-kdrive";
 
 /* loco:696a260311ac2de6c6029683 */
 "driveAccessDeniedErrorDescription" = "No tienes permiso para acceder a este kDrive.\nCompruebe sus permisos o póngase en contacto con su administrador.";
@@ -1358,6 +1368,12 @@
 
 /* loco:698af3afefd229ca780c59e2 */
 "updateAvailable" = "kDrive %@ disponible";
+
+/* loco:69d904f84d8c60bd1f0c9342 */
+"updateRequiredDescription" = "Se requiere una nueva versión de kDrive para continuar.\nActualice la aplicación para acceder a sus archivos y reanudar la sincronización.";
+
+/* loco:69d903e2d570d224db097582 */
+"updateRequiredTitle" = "Actualización requerida";
 
 /* loco:698aec0b7bde6b6260001c02 */
 "updateSettings" = "Actualización";

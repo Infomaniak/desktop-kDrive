@@ -17,21 +17,17 @@
  */
 
 import Cocoa
-import Combine
+import InfomaniakDI
 import kDriveCoreUI
+import kDriveResources
 
-enum WindowRoute: Sendable, Equatable {
-    case preloading(isShowingError: Bool = false)
-    case onboarding(UIUser? = nil, [OnboardingStep]? = nil, OnboardingStep? = nil)
-    case mainWindow(MainViewTab? = nil)
-    case updateRequired
-}
-
-final class MainWindowRouter {
-    @Published private(set) var currentRoute: WindowRoute = .preloading()
-
-    @MainActor
-    func navigate(to route: WindowRoute) {
-        currentRoute = route
+final class UpdateRequiredViewController: TitledViewController<UpdateRequiredView> {
+    init() {
+        @InjectService var router: MainViewRouter
+        super.init(
+            toolbarTitle: KDriveLocalizable.updateRequiredTitle,
+            navigableRouter: router,
+            contentView: UpdateRequiredView()
+        )
     }
 }

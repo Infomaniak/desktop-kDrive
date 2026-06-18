@@ -57,6 +57,7 @@ final class MainWindowController: NSWindowController {
 
         observeRouter()
         observeXPConnectionState()
+        observerServerError()
         observeUsersCache()
     }
 
@@ -79,6 +80,13 @@ final class MainWindowController: NSWindowController {
             }
     }
 
+    private func observerServerError() {
+        cacheObservable.serverErrorsPublisher
+            .receiveOnMain(store: &bindStore) { [weak self] errors in
+                self?.handleServerError(errors)
+            }
+    }
+
     private func observeUsersCache() {
         cacheObservable.usersPublisher.map { $0.isEmpty }.removeDuplicates()
             .receiveOnMain(store: &bindStore) { [weak self] noAccount in
@@ -92,6 +100,14 @@ final class MainWindowController: NSWindowController {
 
                 router.navigate(to: .onboarding())
             }
+    }
+
+    private func handleServerError(_ errors: IndexedErrors) {
+        if errors.contains(where: { $0.1.exitCode == KDC.ExitCode.UpdateRequired }) {
+            router.navigate(to: .updateRequired)
+        } else if router.currentRoute == .updateRequired {
+            navigateAfterPreloading(state: xpcConnectionProvider.guiConnectionState)
+        }
     }
 
     private func navigateAfterPreloading(state: XPCConnectionState) {
@@ -132,6 +148,8 @@ final class MainWindowController: NSWindowController {
                 @InjectService var mainViewRouter: MainViewRouter
                 mainViewRouter.setCurrentTab(tab)
             }
+        case .updateRequired:
+            setViewController(UpdateRequiredViewController())
         }
     }
 

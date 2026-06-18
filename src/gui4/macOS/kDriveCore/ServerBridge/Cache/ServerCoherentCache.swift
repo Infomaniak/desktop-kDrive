@@ -23,6 +23,7 @@ import OrderedCollections
 
 public protocol CoherentCacheObservable: Sendable {
     var usersPublisher: AnyPublisher<IndexedUsers, Never> { get }
+    var serverErrorsPublisher: AnyPublisher<IndexedErrors, Never> { get }
 }
 
 /// This cache must track 1:1 the server, can only be purged on server restart

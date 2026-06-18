@@ -78,6 +78,7 @@ public enum KDriveResources {
   public static let trash = ImageAsset(name: "trash")
   public static let warning = ImageAsset(name: "warning")
   public static let wrench = ImageAsset(name: "wrench")
+  public static let foldersStackArrowsCounterclockwise = ImageAsset(name: "folders-stack-arrows-counterclockwise")
   public static let mountainsTreesSun = ImageAsset(name: "mountains-trees-sun")
   public static let volumeStrokeDots = ImageAsset(name: "volume-stroke-dots")
   public static let kdriveAppIcon = ImageAsset(name: "kdrive-app-icon")
