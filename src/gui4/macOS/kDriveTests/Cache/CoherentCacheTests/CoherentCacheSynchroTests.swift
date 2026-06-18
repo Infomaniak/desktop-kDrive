@@ -109,4 +109,65 @@ struct CoherentCacheSynchroTests {
             Issue.record("unexpected error: \(error)")
         }
     }
+
+    @Test(.timeLimit(.minutes(1)))
+    func vfsConversionStartedSetsUpdatingFlag() async throws {
+        // GIVEN
+        let cache = ServerCoherentCache()
+        await cache.addUser(CacheData.expectedUser)
+        try await cache.addOrUpdateAccount(CacheData.expectedAccount)
+        try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
+        try await cache.addSynchro(CacheData.expectedSynchro)
+        #expect(await cache.getSynchro(synchroDbId: CacheData.expectedSynchroDbId)?.isUpdatingVfsMode == false)
+
+        // WHEN
+        try await cache.vfsConversionStarted(synchroDbId: CacheData.expectedSynchroDbId)
+
+        // THEN
+        #expect(await cache.getSynchro(synchroDbId: CacheData.expectedSynchroDbId)?.isUpdatingVfsMode == true)
+    }
+
+    @Test(.timeLimit(.minutes(1)))
+    func vfsConversionStartedThrowsWhenSynchroMissing() async throws {
+        // GIVEN
+        let cache = ServerCoherentCache()
+        let unknownSyncDbId = Int32.random(in: 0 ... 10000)
+
+        // WHEN / THEN
+        await #expect(throws: ServerCoherentCache.CacheError.self) {
+            try await cache.vfsConversionStarted(synchroDbId: unknownSyncDbId)
+        }
+    }
+
+    @Test(.timeLimit(.minutes(1)))
+    func vfsConversionCompletedClearsUpdatingFlag() async throws {
+        // GIVEN
+        let cache = ServerCoherentCache()
+        await cache.addUser(CacheData.expectedUser)
+        try await cache.addOrUpdateAccount(CacheData.expectedAccount)
+        try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
+
+        var convertingSynchro = CacheData.expectedSynchro
+        convertingSynchro.isUpdatingVfsMode = true
+        try await cache.addSynchro(convertingSynchro)
+        #expect(await cache.getSynchro(synchroDbId: CacheData.expectedSynchroDbId)?.isUpdatingVfsMode == true)
+
+        // WHEN
+        try await cache.vfsConversionCompleted(synchroDbId: CacheData.expectedSynchroDbId)
+
+        // THEN
+        #expect(await cache.getSynchro(synchroDbId: CacheData.expectedSynchroDbId)?.isUpdatingVfsMode == false)
+    }
+
+    @Test(.timeLimit(.minutes(1)))
+    func vfsConversionCompletedThrowsWhenSynchroMissing() async throws {
+        // GIVEN
+        let cache = ServerCoherentCache()
+        let unknownSyncDbId = Int32.random(in: 0 ... 10000)
+
+        // WHEN / THEN
+        await #expect(throws: ServerCoherentCache.CacheError.self) {
+            try await cache.vfsConversionCompleted(synchroDbId: unknownSyncDbId)
+        }
+    }
 }
