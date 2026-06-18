@@ -58,6 +58,14 @@ struct SynchroSignalHandler {
         let syncFileItem = syncFileItemInfo.body
         try await coherentCache.updateSyncFileItemInfoSignal(syncFileItem)
     }
+
+    func handleVfsConversionCompleted(_ signal: Data) async throws {
+        guard let vfsConversionSignal = try? decoder.decode(SignalMessage<SyncVfsConversionCompletedSignal>.self, from: signal)
+        else { throw SignalError.unableToGetVfsConversionCompletedFromSignal }
+
+        let syncDbId = vfsConversionSignal.body.syncDbId
+        try await coherentCache.vfsConversionCompleted(synchroDbId: syncDbId)
+    }
 }
 
 extension CoherentCache {
