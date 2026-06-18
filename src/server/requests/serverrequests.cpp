@@ -440,30 +440,18 @@ ExitInfo ServerRequests::findGoodPathForNewSync(SyncPath &path, std::string &err
     int attempt = 1;
     SyncPath finalPath = initialPath;
     forever {
-        QString dummyErrorStr;
-        const ExitInfo exitInfo = checkSyncNesting(syncList, Path2QStr(finalPath), dummyErrorStr);
-        if (!exitInfo && (exitInfo.code() != ExitCode::InvalidSync ||
-                          attempt >= 100)) { // If the error is a sync nesting error, we can try another
-                                             // as the folder can just be already used by another sync
-            LOG_WARN(Log::instance()->getLogger(), "Error in checkSyncNesting:" << exitInfo);
-            return exitInfo;
+        // Check if the local directory already exists
+        auto ioError = IoError::Success;
+        bool alreadyExists = false;
+        const bool success =
+                IoHelper::checkIfPathExists(finalPath, alreadyExists, ioError, IoHelper::PathCheckOption::Insensitive);
+        if (!success) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(finalPath, ioError));
+            return ExitCode::SystemError;
         }
-
-        if (exitInfo) {
-            // Check if the local directory already exists
-            auto ioError = IoError::Success;
-            bool alreadyExists = false;
-            const bool success =
-                    IoHelper::checkIfPathExists(finalPath, alreadyExists, ioError, IoHelper::PathCheckOption::Insensitive);
-            if (!success) {
-                LOGW_WARN(Log::instance()->getLogger(),
-                          L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(finalPath, ioError));
-                return ExitCode::SystemError;
-            }
-
-            if (!alreadyExists) {
-                break;
-            }
+        if (!alreadyExists) {
+            break;
         }
 
         // Count attempts and give up eventually
