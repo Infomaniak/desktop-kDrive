@@ -1316,7 +1316,7 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
     <message>
         <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="171"/>
         <source>&lt;a style=%1 href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
-        <translation>&lt;a style=%1 href=&quot;%2&quot;&gt;Meer informatie&lt;/a&gt;</translation>
+        <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Meer informatie&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/fixconflictingfilesdialog.cpp" line="175"/>
