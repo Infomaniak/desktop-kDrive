@@ -567,7 +567,7 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
     <message>
         <location filename="../src/gui/clientgui.cpp" line="850"/>
         <source>Unable to open folder path %1.</source>
-        <translation>Kan debugmap %1 niet openen.</translation>
+        <translation>Kan mappad %1 niet openen.</translation>
     </message>
     <message>
         <location filename="../src/gui/clientgui.cpp" line="117"/>
