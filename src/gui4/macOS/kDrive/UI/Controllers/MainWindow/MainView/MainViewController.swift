@@ -104,8 +104,8 @@ final class MainViewController: IKSplitViewController {
 
         let sidebarViewController = MainSidebarViewController(mainViewModel: viewModel)
         let sidebarItem = NSSplitViewItem(sidebarWithViewController: sidebarViewController)
-        sidebarItem.minimumThickness = 150
-        sidebarItem.maximumThickness = 250
+        sidebarItem.minimumThickness = 220
+        sidebarItem.maximumThickness = 320
         addSplitViewItem(sidebarItem)
 
         let homeViewController = HomeViewController(mainViewModel: viewModel)
