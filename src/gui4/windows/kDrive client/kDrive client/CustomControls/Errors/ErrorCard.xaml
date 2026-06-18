@@ -36,8 +36,7 @@
           Background="{ThemeResource CardBackgroundFillColorDefault}"
           BorderThickness="1"
           BorderBrush="{ThemeResource CardStrokeColorDefault}"
-          CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
-          RowSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+          CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -48,8 +47,7 @@
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <StackPanel Grid.Row="0"
-                    Grid.Column="0"
-                    Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                    Grid.Column="0">
             <!-- Title -->
             <TextBlock Text="{x:Bind Title, Mode=OneWay}"
                        Style="{StaticResource BodyTextBlockStyle}" />
@@ -57,7 +55,8 @@
             <!-- Item infos -->
             <controls:ItemNamePresenter ItemPath="{x:Bind Error.Path , Mode=OneWay}"
                                         NodeType="{x:Bind Error.NodeType}"
-                                        Visibility="{x:Bind HasItemPath, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                        Visibility="{x:Bind HasItemPath, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                        Margin="{StaticResource Infomaniak.Style.Thickness.Top.XS}" />
         </StackPanel>
         <!-- Description & CustomContent-->
         <TextBlock Grid.Row="1"
@@ -66,7 +65,8 @@
                    TextWrapping="Wrap"
                    Style="{StaticResource BodyTextBlockStyle}"
                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                   Visibility="{x:Bind HasDescription}"/>
+                   Visibility="{x:Bind HasDescription}"
+                   Margin="{StaticResource Infomaniak.Style.Thickness.Top.XS}" />
 
         <!-- Action button -->
         <Button Grid.Row="0"
@@ -82,7 +82,9 @@
 
         <ContentPresenter Grid.Row="2"
                           Grid.ColumnSpan="2"
-                          Content="{x:Bind CustomContent, Mode=OneWay}" />
+                          Content="{x:Bind CustomContent, Mode=OneWay}"
+                          Margin="{StaticResource Infomaniak.Style.Thickness.Top.XS}"
+                          Visibility="{x:Bind CustomContent, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True'}" />
 
     </Grid>
 </UserControl>
