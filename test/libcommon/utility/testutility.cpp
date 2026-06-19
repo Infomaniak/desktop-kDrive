@@ -1475,7 +1475,7 @@ void TestUtility::testHomeDirectoryPath() {
     const std::string homeStr = homePath.string();
     // Must contain a drive letter root such as "C:\"
     CPPUNIT_ASSERT_MESSAGE(failureMessage.c_str(), homeStr.size() >= 3);
-    CPPUNIT_ASSERT_MESSAGE(failureMessage.c_str(), std::isalpha(static_cast<unsigned char>(homeStr[0])));
+    CPPUNIT_ASSERT_MESSAGE(failureMessage.c_str(), std::isalpha(homeStr[0], std::locale{}));
     CPPUNIT_ASSERT_MESSAGE(failureMessage.c_str(), homeStr[1] == ':');
     CPPUNIT_ASSERT_MESSAGE(failureMessage.c_str(), homeStr[2] == '\\');
     // Must contain the "Users" segment
