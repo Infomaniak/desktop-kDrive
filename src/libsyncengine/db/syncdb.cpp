@@ -3017,15 +3017,22 @@ bool SyncDb::migrateLocalItemsToPrivateFolder(const std::string &dbFromVersionNu
     }
 
     const SyncPath &localSyncDirPath = sync.localPath();
-    if (!sync.targetPath().empty()) {
+
+    if (!rootNode().nodeIdRemote()) {
+        LOGW_INFO(_logger, L"Sync with " << Utility::formatSyncPath(sync.localPath()) << L" has no target node id. Aborting.");
+        return false;
+    }
+
+    if (!sync.targetPath().empty() && *rootNode().nodeIdRemote() != ApiTranslator::v2RootFolderRemoteId()) {
         LOGW_INFO(_logger, L"Sync with " << Utility::formatSyncPath(sync.localPath())
-                                         << L" is non-root an advanced sync. No Sync DB upgrade to do.");
+                                         << L" is a non-root advanced sync. No Sync DB upgrade to do.");
         return true;
     }
 
     bool exists = false;
-    auto existenceCheckError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(localSyncDirPath, exists, existenceCheckError, IoHelper::PathCheckOption::Insensitive)) {
+
+    if (auto existenceCheckError = IoError::Success;
+        !IoHelper::checkIfPathExists(localSyncDirPath, exists, existenceCheckError, IoHelper::PathCheckOption::Insensitive)) {
         LOGW_WARN(_logger,
                   L"Error in IoHelper::checkIfPathExists" << Utility::formatIoError(localSyncDirPath, existenceCheckError));
         return false;
@@ -3044,8 +3051,8 @@ bool SyncDb::migrateLocalItemsToPrivateFolder(const std::string &dbFromVersionNu
 
 
     // Create the local "Private" folder with a random suffix to avoid conflict with an existing directory.
-    auto privateCreationError = IoError::Success;
-    if (!IoHelper::createDirectory(privateTmpLocalPath, false, privateCreationError) ||
+    if (auto privateCreationError = IoError::Success;
+        !IoHelper::createDirectory(privateTmpLocalPath, false, privateCreationError) ||
         privateCreationError != IoError::Success) {
         LOGW_WARN(_logger,
                   L"Error in IoHelper::createDirectory: " << Utility::formatIoError(privateTmpLocalPath, privateCreationError));
@@ -3057,10 +3064,10 @@ bool SyncDb::migrateLocalItemsToPrivateFolder(const std::string &dbFromVersionNu
         return false;
     }
 
-    auto renamingError = IoError::Success;
     const auto privateLocalPath =
             localSyncDirPath / ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::Private);
-    if (!IoHelper::renameItem(privateTmpLocalPath, privateLocalPath, renamingError) || renamingError != IoError::Success) {
+    if (auto renamingError = IoError::Success;
+        !IoHelper::renameItem(privateTmpLocalPath, privateLocalPath, renamingError) || renamingError != IoError::Success) {
         LOGW_WARN(_logger, L"Error in IoHelper::getRecursiveDirectoryIterator: "
                                    << Utility::formatIoError(localSyncDirPath, renamingError));
 
