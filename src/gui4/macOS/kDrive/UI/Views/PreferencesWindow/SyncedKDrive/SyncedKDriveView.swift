@@ -75,7 +75,7 @@ struct SyncedKDriveView: View {
                 }
 
                 Section {
-                    SynchroModePicker(synchroMode: $mainSynchroMode)
+                    SynchroModePicker(synchroDbId: mainSynchro.dbId, synchroMode: $mainSynchroMode)
                         .disabled(!mainSynchro.supportsVirtualFileSystem)
                         .onChange(of: mainSynchroMode) { newValue in
                             switchSynchroMode(mainSynchro, mode: newValue)

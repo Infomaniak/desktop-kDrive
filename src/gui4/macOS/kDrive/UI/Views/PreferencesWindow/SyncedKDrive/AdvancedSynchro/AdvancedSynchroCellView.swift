@@ -94,7 +94,7 @@ struct AdvancedSynchroCellView: View {
                 }
             }
 
-            SynchroModePicker(synchroMode: $synchroMode)
+            SynchroModePicker(synchroDbId: synchro.dbId, synchroMode: $synchroMode)
                 .disabled(!synchro.supportsVirtualFileSystem)
                 .onChange(of: synchroMode) { newValue in
                     switchSynchroMode(newValue)

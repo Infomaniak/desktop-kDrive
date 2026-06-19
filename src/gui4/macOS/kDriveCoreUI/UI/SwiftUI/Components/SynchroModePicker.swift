@@ -16,13 +16,19 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import kDriveCore
 import kDriveResources
 import SwiftUI
 
 public struct SynchroModePicker: View {
+    @State private var isConvertingSynchro = false
+
     @Binding var synchroMode: UISynchroMode
 
-    public init(synchroMode: Binding<UISynchroMode>) {
+    let synchroDbId: Int
+
+    public init(synchroDbId: Int, synchroMode: Binding<UISynchroMode>) {
+        self.synchroDbId = synchroDbId
         _synchroMode = synchroMode
     }
 
@@ -44,9 +50,11 @@ public struct SynchroModePicker: View {
             .pickerStyle(.radioGroup)
             .labelsHidden()
         }
+        .disabled(isConvertingSynchro)
+        .observingSynchroConversion(synchroDbId: synchroDbId, isConverting: $isConvertingSynchro)
     }
 }
 
 #Preview {
-    SynchroModePicker(synchroMode: .constant(.storeOnline))
+    SynchroModePicker(synchroDbId: 0, synchroMode: .constant(.storeOnline))
 }
