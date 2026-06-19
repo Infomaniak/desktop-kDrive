@@ -60,7 +60,7 @@ AbstractLocalTemporaryDirectory::~AbstractLocalTemporaryDirectory() {
 LocalTemporaryDirectory::LocalTemporaryDirectory(const std::string &testType, const SyncPath &destinationPath /*= {}*/) :
     AbstractLocalTemporaryDirectory(destinationPath),
     _testType(testType) {
-    createDirectory();
+    LocalTemporaryDirectory::createDirectory();
 }
 
 void LocalTemporaryDirectory::createDirectory() {
@@ -85,13 +85,13 @@ void LocalTemporaryDirectory::createDirectory() {
     _path = std::filesystem::canonical(_path); // Follows symlinks to work around the symlink /var -> private/var on MacOSX.
     FileStat fileStat;
     IoError ioError = IoError::Success;
-    IoHelper::getFileStat(_path, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
+    (void) IoHelper::getFileStat(_path, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
     _id = std::to_string(fileStat.inode);
 }
 
 LocalTemporaryDirectoryFromAbsolutePath::LocalTemporaryDirectoryFromAbsolutePath(const SyncPath &absolutePath) :
     AbstractLocalTemporaryDirectory(absolutePath) {
-    createDirectory();
+    LocalTemporaryDirectoryFromAbsolutePath::createDirectory();
 }
 
 void LocalTemporaryDirectoryFromAbsolutePath::createDirectory() {
@@ -102,7 +102,7 @@ void LocalTemporaryDirectoryFromAbsolutePath::createDirectory() {
     _path = std::filesystem::canonical(_inputPath); // Follows symlinks to work around the symlink /var -> private/var on MacOSX.
     FileStat fileStat;
     IoError ioError = IoError::Success;
-    IoHelper::getFileStat(_path, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
+    (void) IoHelper::getFileStat(_path, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
     _id = std::to_string(fileStat.inode);
 }
 

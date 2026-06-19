@@ -46,7 +46,7 @@ class LocalTemporaryDirectory : public AbstractLocalTemporaryDirectory {
         explicit LocalTemporaryDirectory(const std::string &testType = "undef", const SyncPath &destinationPath = {});
 
     private:
-        virtual void createDirectory();
+        void createDirectory() override;
 
         std::string _testType;
 };
