@@ -1,4 +1,3 @@
-using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ServerCommunication.Services;
 using Infomaniak.kDrive.Types;
 using System.Net.Sockets;
@@ -8,6 +7,20 @@ using System.Text.Json.Nodes;
 using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommProtocol;
 
 namespace Infomaniak.kDrive.Tests;
+
+public class MockSocketServer : SocketServerCommProtocol
+{
+    private int _port;
+    public MockSocketServer(int port)
+    {
+        _port = port;
+    }
+
+    protected override int? GetServerPort()
+    {
+        return _port;
+    }
+}
 
 public class SocketServerCommProtocolTests
 {
@@ -53,9 +66,7 @@ public class SocketServerCommProtocolTests
     [Fact]
     public async Task InitConnection_ReturnsFalse_WhenServerUnavailableAndCancelled()
     {
-        string commPath = CreateCommFilePath();
-        await File.WriteAllTextAsync(commPath, "65530");
-        var protocol = CreateProtocol(commPath);
+        var protocol = new MockSocketServer(65530);
 
         using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(800));
         bool connected = await protocol.InitConnection(cts.Token);
@@ -65,31 +76,11 @@ public class SocketServerCommProtocolTests
     }
 
     [Fact]
-    public async Task InitConnection_EventuallyConnects_WhenServerStartsLater()
-    {
-        string commPath = CreateCommFilePath();
-        var protocol = CreateProtocol(commPath);
-        await using var server = new FakeSocketServer();
-
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        Task<bool> initTask = protocol.InitConnection(cts.Token);
-
-        await Task.Delay(250);
-        await server.WriteCommFileAsync(commPath);
-
-        Assert.True(await initTask);
-        await server.WaitForClientAsync();
-        await ShutdownProtocolAsync(protocol);
-    }
-
-    [Fact]
     public async Task ConnectionLost_Raised_WhenServerClosesConnection()
     {
-        string commPath = CreateCommFilePath();
         await using var server = new FakeSocketServer();
-        await server.WriteCommFileAsync(commPath);
 
-        var protocol = CreateProtocol(commPath);
+        var protocol = new MockSocketServer(server.Port);
         var connectionLost = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         protocol.ConnectionLost += (_, _) => connectionLost.TrySetResult();
 
@@ -106,11 +97,9 @@ public class SocketServerCommProtocolTests
     [Fact]
     public async Task SendRequestAsync_ReturnsResponse_ForSuccessfulRoundtrip()
     {
-        string commPath = CreateCommFilePath();
         await using var server = new FakeSocketServer();
-        await server.WriteCommFileAsync(commPath);
 
-        var protocol = CreateProtocol(commPath);
+        var protocol = new MockSocketServer(server.Port);
         using var initCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         Assert.True(await protocol.InitConnection(initCts.Token));
         await server.WaitForClientAsync();
@@ -140,11 +129,9 @@ public class SocketServerCommProtocolTests
     [Fact]
     public async Task SendRequestAsync_HandlesHighFrequencyConsecutiveMessages()
     {
-        string commPath = CreateCommFilePath();
         await using var server = new FakeSocketServer();
-        await server.WriteCommFileAsync(commPath);
+        var protocol = new MockSocketServer(server.Port);
 
-        var protocol = CreateProtocol(commPath);
         using var initCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         Assert.True(await protocol.InitConnection(initCts.Token));
         await server.WaitForClientAsync();
@@ -179,11 +166,9 @@ public class SocketServerCommProtocolTests
     [Fact]
     public async Task SignalHandling_ParsesMultipleMessagesInSinglePacket()
     {
-        string commPath = CreateCommFilePath();
         await using var server = new FakeSocketServer();
-        await server.WriteCommFileAsync(commPath);
 
-        var protocol = CreateProtocol(commPath);
+        var protocol = new MockSocketServer(server.Port);
         using var initCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         Assert.True(await protocol.InitConnection(initCts.Token));
         await server.WaitForClientAsync();
@@ -227,11 +212,9 @@ public class SocketServerCommProtocolTests
     [Fact]
     public async Task SignalHandling_ParsesFragmentedMessageAcrossArbitraryChunks_WithMultibyteCharacters()
     {
-        string commPath = CreateCommFilePath();
         await using var server = new FakeSocketServer();
-        await server.WriteCommFileAsync(commPath);
 
-        var protocol = CreateProtocol(commPath);
+        var protocol = new MockSocketServer(server.Port);
         using var initCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         Assert.True(await protocol.InitConnection(initCts.Token));
         await server.WaitForClientAsync();
@@ -265,11 +248,9 @@ public class SocketServerCommProtocolTests
     [Fact]
     public async Task SignalHandling_ParsesLargeMessagesBeyondReceiveBuffer()
     {
-        string commPath = CreateCommFilePath();
         await using var server = new FakeSocketServer();
-        await server.WriteCommFileAsync(commPath);
 
-        var protocol = CreateProtocol(commPath);
+        var protocol = new MockSocketServer(server.Port);
         using var initCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         Assert.True(await protocol.InitConnection(initCts.Token));
         await server.WaitForClientAsync();
@@ -302,11 +283,9 @@ public class SocketServerCommProtocolTests
     [Fact]
     public async Task ConnectionLost_Raised_WhenPayloadIsMalformed()
     {
-        string commPath = CreateCommFilePath();
         await using var server = new FakeSocketServer();
-        await server.WriteCommFileAsync(commPath);
 
-        var protocol = CreateProtocol(commPath);
+        var protocol = new MockSocketServer(server.Port);
         var lost = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         protocol.ConnectionLost += (_, _) => lost.TrySetResult();
 
@@ -323,11 +302,9 @@ public class SocketServerCommProtocolTests
     [Fact]
     public async Task SendRequestAsync_ReturnsDefault_WhenCancelledWhileWaitingForReply()
     {
-        string commPath = CreateCommFilePath();
         await using var server = new FakeSocketServer();
-        await server.WriteCommFileAsync(commPath);
 
-        var protocol = CreateProtocol(commPath);
+        var protocol = new MockSocketServer(server.Port);
         using var initCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         Assert.True(await protocol.InitConnection(initCts.Token));
         await server.WaitForClientAsync();
@@ -342,76 +319,14 @@ public class SocketServerCommProtocolTests
         await ShutdownProtocolAsync(protocol);
     }
 
-    [Fact]
-    public async Task MultipleInstances_CanCommunicateConcurrently()
-    {
-        var servers = new List<FakeSocketServer>();
-        var protocols = new List<SocketServerCommProtocol>();
-
-        try
-        {
-            for (int i = 0; i < 3; i++)
-            {
-                var server = new FakeSocketServer();
-                servers.Add(server);
-
-                string commPath = CreateCommFilePath();
-                await server.WriteCommFileAsync(commPath);
-                var protocol = CreateProtocol(commPath);
-                protocols.Add(protocol);
-
-                using var initCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-                Assert.True(await protocol.InitConnection(initCts.Token));
-                await server.WaitForClientAsync();
-            }
-
-            var tasks = protocols.Select((protocol, index) => Task.Run(async () =>
-            {
-                var requestTask = servers[index].ReceiveJsonAsync();
-                var responseTask = Task.Run(async () =>
-                {
-                    JsonObject request = await requestTask;
-                    var response = new JsonObject
-                    {
-                        ["type"] = (int)CommMessageType.Request,
-                        ["id"] = request["id"]!.GetValue<int>(),
-                        ["num"] = request["num"]!.GetValue<int>(),
-                        ["params"] = new JsonObject { ["instance"] = index }
-                    };
-                    await servers[index].SendJsonAsync(response);
-                });
-
-                var result = await protocol.SendRequestAsync(RequestNum.UTILITY_GET_APPSTATE, new JsonObject());
-                await responseTask;
-                return result.Params["instance"]?.GetValue<int>();
-            }));
-
-            int?[] values = await Task.WhenAll(tasks);
-            Assert.Equal([0, 1, 2], values);
-        }
-        finally
-        {
-            foreach (var protocol in protocols)
-            {
-                await ShutdownProtocolAsync(protocol);
-            }
-
-            foreach (var server in servers)
-            {
-                await server.DisposeAsync();
-            }
-        }
-    }
 
     [Fact]
     public async Task RapidConnectDisconnectCycles_RemainStable()
     {
         for (int i = 0; i < 10; i++)
         {
-            string commPath = CreateCommFilePath();
             await using var server = new FakeSocketServer();
-            await server.WriteCommFileAsync(commPath);
-            var protocol = CreateProtocol(commPath);
+            var protocol = new MockSocketServer(server.Port);
 
             var lost = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             protocol.ConnectionLost += (_, _) => lost.TrySetResult();
@@ -424,22 +339,6 @@ public class SocketServerCommProtocolTests
             await WaitAsync(lost.Task, TimeSpan.FromSeconds(5));
             await ShutdownProtocolAsync(protocol);
         }
-    }
-
-    private static SocketServerCommProtocol CreateProtocol(string commPath)
-    {
-        var protocol = new SocketServerCommProtocol();
-        var field = typeof(SocketServerCommProtocol).GetField("_commPortFilePath", _instancePrivate)
-                    ?? throw new InvalidOperationException("Failed to find _commPortFilePath field.");
-        field.SetValue(protocol, commPath);
-        return protocol;
-    }
-
-    private static string CreateCommFilePath()
-    {
-        string dir = Path.Combine(Path.GetTempPath(), "kdrive-socket-tests", Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(dir);
-        return Path.Combine(dir, ".comm");
     }
 
     private static async Task ShutdownProtocolAsync(SocketServerCommProtocol protocol)

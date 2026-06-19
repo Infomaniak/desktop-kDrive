@@ -52,7 +52,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         private bool _stopRequested = false;
         private Task? _pollingTask;
         private const string _host = "127.0.0.1";
-        private readonly Func<string[]> _getCommandLineArgs;
         private int NextId
         {
             get
@@ -70,10 +69,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         public event EventHandler<SignalEventArgs> SignalReceived = delegate { };
         public event EventHandler ConnectionLost = delegate { };
 
-        public SocketServerCommProtocol(Func<string[]>? getCommandLineArgs = null)
-        {
-            _getCommandLineArgs = getCommandLineArgs ?? Environment.GetCommandLineArgs;
-        }
+        public SocketServerCommProtocol() {}
 
         ~SocketServerCommProtocol()
         {
@@ -81,7 +77,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             _stopRequested = true;
         }
 
-        private int? GetServerPort()
+        protected virtual int? GetServerPort()
         {
 #if DEBUG
             try
@@ -99,9 +95,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Logger.Log(Logger.Level.Error, $"Failed to read server port from .comm file: {ex.Message}");
                 return null;
             }
-
 #else
-            if (!TryParseServerPortFromArguments(_getCommandLineArgs(), out int port, out string errorMessage))
+            if (!TryParseServerPortFromArguments(Environment.GetCommandLineArgs(), out int port, out string errorMessage))
             {
                 Logger.Log(Logger.Level.Fatal, errorMessage);
                 ConnectionLost?.Invoke(this, new EventArgs());
