@@ -26,11 +26,11 @@ import SwiftUI
 extension HomeState {
     var animation: ThemedAnimation {
         switch self {
-        case .loading, .synchroIsUpToDate:
+        case .synchroIsUpToDate:
             return .kDriveCheckmark
         case .synchroIsPaused:
             return .cloudPause
-        case .synchroIsRunning:
+        case .synchroIsRunning, .loading:
             return .cloudSync
         case .offline:
             return .offline
@@ -92,6 +92,7 @@ struct SynchroStatusView: View {
         VStack(spacing: AppPadding.padding32) {
             ThemedLottieView(animation: state.animation, loopMode: state.animationLoopMode)
                 .opacity(state.isRedacted ? 0 : 1)
+                .accessibilityHidden(state.isRedacted)
                 .overlay {
                     if state.isRedacted {
                         redactedAnimation
@@ -105,19 +106,21 @@ struct SynchroStatusView: View {
                 Text(state.description)
                     .font(.Tokens.body)
 
-                if let buttonTitle = state.buttonTitle {
-                    Button(buttonTitle) {
-                        didTapStateButton(for: state)
-                    }
-                    .buttonStyle(.borderless)
-                    .foregroundStyle(.tint)
+                Button(state.buttonTitle ?? "") {
+                    didTapStateButton(for: state)
                 }
+                .buttonStyle(.borderless)
+                .foregroundStyle(.tint)
+                .opacity(state.buttonTitle == nil ? 0 : 1)
+                .accessibilityHidden(state.buttonTitle == nil)
+                .allowsHitTesting(state.buttonTitle != nil)
             }
             .foregroundStyle(ColorToken.Text.primary.asColor)
             .multilineTextAlignment(.center)
             .frame(maxWidth: 300)
         }
         .redacted(reason: state.isRedacted ? .placeholder : [])
+        .id(state)
         .padding(AppPadding.padding16)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background {
@@ -140,6 +143,7 @@ struct SynchroStatusView: View {
     private var redactedAnimation: some View {
         KDriveResources.checkmark.swiftUIImage
             .resizable()
+            .redacted(reason: .placeholder)
     }
 
     private func didTapStateButton(for state: HomeState) {
