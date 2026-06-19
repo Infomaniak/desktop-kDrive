@@ -174,6 +174,13 @@ void TestServerRequests::testIsPathValidForNewSync() {
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
                          ServerRequests::isPathValidForNewSync(childPath, SyncConfiguration::Classic, isValid));
     CPPUNIT_ASSERT(!isValid);
+
+    // A parent folder of an existing sync is also rejected.
+    const SyncPath parentPath = defaultPath.parent_path();
+    isValid = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
+                         ServerRequests::isPathValidForNewSync(parentPath, SyncConfiguration::Classic, isValid));
+    CPPUNIT_ASSERT(!isValid);
 }
 
 void TestServerRequests::testDeleteUser() {
