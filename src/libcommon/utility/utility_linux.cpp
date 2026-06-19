@@ -215,7 +215,7 @@ ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
 }
 
 ExitInfo CommonUtility::homeDirectoryPath(SyncPath &directoryPath) noexcept {
-    if (auto homeDir = CommonUtility::envVarValue("HOME"); !homeDir.empty()) {
+    if (const auto homeDir = CommonUtility::envVarValue("HOME"); !homeDir.empty()) {
         directoryPath = SyncPath(homeDir);
         return ExitCode::Ok;
     }
