@@ -80,9 +80,7 @@ public struct SynchroModePicker: View {
             }
             Button(pendingMode == .storeOnline
                 ? KDriveLocalizable.buttonChangeToOnline
-                : KDriveLocalizable.buttonChangeToOffline) {
-                    synchroMode = pendingMode
-                }
+                : KDriveLocalizable.buttonChangeToOffline) { synchroMode = pendingMode }
         } message: { _ in
             Text(KDriveLocalizable.dialogSyncModeChangeWarningContent)
         }
