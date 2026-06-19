@@ -204,13 +204,18 @@ ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
 }
 
 ExitInfo CommonUtility::homeDirectoryPath(SyncPath &directoryPath) noexcept {
-    if (PWSTR path = nullptr; SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Profile, KF_FLAG_NO_ALIAS, nullptr, &path))) {
+    PWSTR path = nullptr;
+    const HRESULT hr = SHGetKnownFolderPath(FOLDERID_Profile, KF_FLAG_NO_ALIAS, nullptr, &path);
+    if (SUCCEEDED(hr) && path) {
         directoryPath = path;
         CoTaskMemFree(path);
         return ExitCode::Ok;
     }
+    if (path) {
+        CoTaskMemFree(path);
+    }
 
-    return stdErrorToExitInfo(static_cast<int64_t>(GetLastError()));
+    return {ExitCode::SystemError, ExitCause::Unknown};
 }
 
 } // namespace KDC
