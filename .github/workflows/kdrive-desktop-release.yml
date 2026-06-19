@@ -121,8 +121,20 @@ jobs:
           MACOS_VERSION_NUMBER="${{ steps.get-version.outputs.kDrive_version_macos }}"
           MACOS_VERSION_NUMBER="${MACOS_VERSION_NUMBER%.*}"
 
-          OS=( "win" "linux" "macos" )
-          OS_VERSIONS=( "$WIN_VERSION_NUMBER" "$LINUX_VERSION_NUMBER" "$MACOS_VERSION_NUMBER" )
+          OS=()
+          OS_VERSIONS=()
+          if [ "${{ inputs.build_windows }}" != "Do not build" ]; then
+            OS+=( "win" )
+            OS_VERSIONS+=( "$WIN_VERSION_NUMBER" )
+          fi
+          if [ "${{ inputs.build_linux }}" != "Do not build" ]; then
+            OS+=( "linux" )
+            OS_VERSIONS+=( "$LINUX_VERSION_NUMBER" )
+          fi
+          if [ "${{ inputs.build_macos }}" != "Do not build" ]; then
+            OS+=( "macos" )
+            OS_VERSIONS+=( "$MACOS_VERSION_NUMBER" )
+          fi
           LANGUAGES=( "fr" "de" "es" "it" )
           for i in "${!OS[@]}"; do
             os="${OS[$i]}"
@@ -145,15 +157,27 @@ jobs:
             echo "<tr>"
             echo "  <td valign='top' width='33%'>"
             echo "    <h3>Windows (${WIN_VERSION_NUMBER})</h3>"
-            cat "./release_notes/kDrive-${WIN_VERSION_NUMBER}/kDrive-${WIN_VERSION_NUMBER}-win-en.html"
+            if [ "${{ inputs.build_windows }}" != "Do not build" ]; then
+              cat "./release_notes/kDrive-${WIN_VERSION_NUMBER}/kDrive-${WIN_VERSION_NUMBER}-win-en.html"
+            else
+              echo "    <em>Not built</em>"
+            fi
             echo "  </td>"
             echo "  <td valign='top' width='33%'>"
             echo "    <h3>Linux (${LINUX_VERSION_NUMBER})</h3>"
-            cat "./release_notes/kDrive-${LINUX_VERSION_NUMBER}/kDrive-${LINUX_VERSION_NUMBER}-linux-en.html"
+            if [ "${{ inputs.build_linux }}" != "Do not build" ]; then
+              cat "./release_notes/kDrive-${LINUX_VERSION_NUMBER}/kDrive-${LINUX_VERSION_NUMBER}-linux-en.html"
+            else
+              echo "    <em>Not built</em>"
+            fi
             echo "  </td>"
             echo "  <td valign='top' width='33%'>"
             echo "    <h3>macOS (${MACOS_VERSION_NUMBER})</h3>"
-            cat "./release_notes/kDrive-${MACOS_VERSION_NUMBER}/kDrive-${MACOS_VERSION_NUMBER}-macos-en.html"
+            if [ "${{ inputs.build_macos }}" != "Do not build" ]; then
+              cat "./release_notes/kDrive-${MACOS_VERSION_NUMBER}/kDrive-${MACOS_VERSION_NUMBER}-macos-en.html"
+            else
+              echo "    <em>Not built</em>"
+            fi
             echo "  </td>"
             echo "</tr>"
             echo "</table>"
