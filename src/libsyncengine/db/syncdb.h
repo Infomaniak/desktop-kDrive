@@ -153,6 +153,18 @@ class SyncDb : public Db {
         // Use the actual encoding of local file names in DB.
         bool reinstateEncodingOfLocalNames(const std::string &dbFromVersionNumber);
 
+        // Remove the temporary Private folder introduced with the backend API v3.
+        void removeTempPrivateDir(const SyncPath &privateTmpLocalPath) const;
+
+        bool removeHighLevelItemsFromLocalSyncDir(const SyncPath &localSyncDirPath) const;
+
+        // Copy local items to the Private folder introduced with the backend API v3.
+        bool copyLocalItemsToTmpPrivateDir(const SyncPath &localSyncDirPath, const SyncPath &privateLocalPath) const;
+
+        // Move local items to the Private folder introduced with the backend API v3.
+        // Update accordingly the parent node IDs the of moved items in the DB.
+        bool migrateLocalItemsToPrivateFolder(const std::string &dbFromVersionNumber);
+
         friend class TestSyncDb;
 };
 

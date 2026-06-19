@@ -28,6 +28,8 @@
 #include "libparms/db/sync.h"
 #include "libparms/db/parmsdb.h"
 
+#include "libsyncengine/jobs/network/kDrive_API/apitranslator.h"
+
 #include <queue>
 
 #include <sqlite3.h>
@@ -2920,6 +2922,148 @@ bool SyncDb::tryToFixDbNodeIdsAfterSyncDirChange(const SyncPath &syncDirPath) {
         LOG_INFO(_logger, "Updated DbNode ID " << dbNodeId << " with new local node ID " << newLocalNodeId);
     }
     dbCache.clear();
+    return true;
+}
+
+void SyncDb::removeTempPrivateDir(const SyncPath &privateTmpLocalPath) const {
+    auto deletionError = IoError::Success;
+    if (!IoHelper::deleteItem(privateTmpLocalPath, deletionError) || deletionError != IoError::Success) {
+        LOGW_WARN(_logger, L"Error in IoHelper::deleteItem: " << Utility::formatIoError(privateTmpLocalPath, deletionError));
+    }
+}
+
+bool SyncDb::removeHighLevelItemsFromLocalSyncDir(const SyncPath &localSyncDirPath) const {
+    auto iteratorError = IoError::Success;
+    IoHelper::DirectoryIterator dir;
+    if (!IoHelper::getDirectoryIterator(localSyncDirPath, false, iteratorError, dir) || iteratorError != IoError::Success) {
+        LOGW_WARN(_logger, L"Error in IoHelper::getRecursiveDirectoryIterator: "
+                                   << Utility::formatIoError(localSyncDirPath, iteratorError));
+
+        return iteratorError == IoError::NoSuchFileOrDirectory;
+    }
+
+    DirectoryEntry entry;
+    bool endOfDirectory = false;
+    while (dir.next(entry, endOfDirectory, iteratorError) && !endOfDirectory) {
+        if (entry.path().filename() == ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::CommonDocuments) ||
+            entry.path().filename() == ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::Shared))
+            continue;
+
+        auto deleteItemError = IoError::Success;
+        if (!IoHelper::deleteItem(entry.path(), deleteItemError) || deleteItemError != IoError::Success) {
+            LOGW_WARN(_logger,
+                      L"Error in IoHelper::copyFileOrDirectory: " << Utility::formatIoError(entry.path(), deleteItemError));
+
+            return false;
+        }
+    }
+
+    LOGW_INFO(_logger, L"Successful removal of high level items from " << Utility::formatSyncPath(localSyncDirPath) << L".");
+
+    return true;
+}
+
+bool SyncDb::copyLocalItemsToTmpPrivateDir(const SyncPath &localSyncDirPath, const SyncPath &privateTmpLocalPath) const {
+    IoHelper::DirectoryIterator dir;
+    auto iteratorError = IoError::Success;
+    if (!IoHelper::getDirectoryIterator(localSyncDirPath, false, iteratorError, dir) || iteratorError != IoError::Success) {
+        LOGW_WARN(_logger, L"Error in IoHelper::getRecursiveDirectoryIterator: "
+                                   << Utility::formatIoError(localSyncDirPath, iteratorError));
+
+        removeTempPrivateDir(privateTmpLocalPath);
+
+        return iteratorError == IoError::NoSuchFileOrDirectory;
+    }
+
+    DirectoryEntry entry;
+    bool endOfDirectory = false;
+    while (dir.next(entry, endOfDirectory, iteratorError) && !endOfDirectory) {
+        if (entry.path().filename() == ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::CommonDocuments) ||
+            entry.path().filename() == ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::Shared))
+            continue;
+
+        auto copyItem = IoError::Success;
+        if (!IoHelper::copyFileOrDirectory(entry.path(), privateTmpLocalPath, copyItem) || copyItem != IoError::Success) {
+            LOGW_WARN(_logger, L"Error in IoHelper::copyFileOrDirectory: " << Utility::formatIoError(entry.path(), copyItem));
+
+            removeTempPrivateDir(privateTmpLocalPath);
+
+            return false;
+        }
+    }
+
+    LOGW_INFO(_logger,
+              L"All high level items have been copied to " << Utility::formatSyncPath(privateTmpLocalPath) << L" successfully.");
+
+    return true;
+}
+
+bool SyncDb::migrateLocalItemsToPrivateFolder(const std::string &dbFromVersionNumber) {
+    if (!CommonUtility::isVersionLower(dbFromVersionNumber, "4.0.1.0")) return true;
+
+    LOG_DEBUG(_logger, "Upgrade < 4.0.1.0 Sync DB");
+
+    Sync sync;
+    bool found = false;
+    ParmsDb::instance()->selectSync(_dbPath, sync, found);
+    if (!found) {
+        LOGW_WARN(_logger, L"Sync DB with " << Utility::formatSyncPath(_dbPath) << L" not found.");
+        return false;
+    }
+
+    const SyncPath &localSyncDirPath = sync.localPath();
+
+    bool exists = false;
+    auto existenceCheckError = IoError::Success;
+    if (!IoHelper::checkIfPathExists(localSyncDirPath, exists, existenceCheckError, IoHelper::PathCheckOption::Insensitive)) {
+        LOGW_WARN(_logger,
+                  L"Error in IoHelper::checkIfPathExists" << Utility::formatIoError(localSyncDirPath, existenceCheckError));
+        return false;
+    }
+    if (!exists) {
+        LOGW_INFO(_logger, L"The synchronisation folder " << Utility::formatSyncPath(localSyncDirPath)
+                                                          << L" does not exist anymore. No Sync DB upgrade to do.");
+        return true;
+    }
+
+
+    const std::string randomSuffix = CommonUtility::generateRandomStringAlphaNum();
+    const auto privateTmpLocalPath =
+            localSyncDirPath / (ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::Private) +
+                                "_kDrive_v3_upgrade_" + randomSuffix);
+
+
+    // Create the local "Private" folder with a random suffix to avoid conflict with an existing directory.
+    auto privateCreationError = IoError::Success;
+    if (!IoHelper::createDirectory(privateTmpLocalPath, false, privateCreationError) ||
+        privateCreationError != IoError::Success) {
+        LOGW_WARN(_logger,
+                  L"Error in IoHelper::createDirectory: " << Utility::formatIoError(privateTmpLocalPath, privateCreationError));
+        return false;
+    }
+
+    if (!copyLocalItemsToTmpPrivateDir(localSyncDirPath, privateTmpLocalPath)) {
+        LOGW_WARN(_logger, L"Error in copyLocalItemsToTmpPrivateFolder.");
+        return false;
+    }
+
+    auto renamingError = IoError::Success;
+    const auto privateLocalPath =
+            localSyncDirPath / ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::Private);
+    if (!IoHelper::renameItem(privateTmpLocalPath, privateLocalPath, renamingError) || renamingError != IoError::Success) {
+        LOGW_WARN(_logger, L"Error in IoHelper::getRecursiveDirectoryIterator: "
+                                   << Utility::formatIoError(localSyncDirPath, renamingError));
+
+        removeTempPrivateDir(privateTmpLocalPath);
+
+        return false;
+    }
+
+    if (!removeHighLevelItemsFromLocalSyncDir(localSyncDirPath)) return false;
+
+    LOGW_INFO(_logger, L"Migration of high level items to local Private folder successful for sync with "
+                               << Utility::formatSyncPath(localSyncDirPath));
+
     return true;
 }
 
