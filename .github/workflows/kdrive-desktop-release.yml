@@ -113,18 +113,25 @@ jobs:
       - name: Check release notes
         if: ${{ inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
         run: |
-          VERSION_NUMBER="${{ steps.get-version.outputs.kDrive_version }}"  # Example: 3.9.20.23
-          VERSION_NUMBER="${VERSION_NUMBER%.*}"  # Remove build number for release notes check
-         
-          BASE_NAME="kDrive-${VERSION_NUMBER}"
-          BASE_PATH="./release_notes/${BASE_NAME}"
+          # Each OS has its own version (example: 3.9.20.23), the build number is dropped for release notes.
+          WIN_VERSION_NUMBER="${{ steps.get-version.outputs.kDrive_version_windows }}"
+          WIN_VERSION_NUMBER="${WIN_VERSION_NUMBER%.*}"
+          LINUX_VERSION_NUMBER="${{ steps.get-version.outputs.kDrive_version_linux }}"
+          LINUX_VERSION_NUMBER="${LINUX_VERSION_NUMBER%.*}"
+          MACOS_VERSION_NUMBER="${{ steps.get-version.outputs.kDrive_version_macos }}"
+          MACOS_VERSION_NUMBER="${MACOS_VERSION_NUMBER%.*}"
+
           OS=( "win" "linux" "macos" )
+          OS_VERSIONS=( "$WIN_VERSION_NUMBER" "$LINUX_VERSION_NUMBER" "$MACOS_VERSION_NUMBER" )
           LANGUAGES=( "fr" "de" "es" "it" )
-          for os in "${OS[@]}"; do
+          for i in "${!OS[@]}"; do
+            os="${OS[$i]}"
+            version_number="${OS_VERSIONS[$i]}"
+            base_path="./release_notes/kDrive-${version_number}"
             for lang in "${LANGUAGES[@]}"; do
-              FILE="${BASE_PATH}/kDrive-${VERSION_NUMBER}-${os}-${lang}.html"
+              FILE="${base_path}/kDrive-${version_number}-${os}-${lang}.html"
               if [ ! -f "$FILE" ]; then
-                echo "<h1>:stop_sign: Release Notes for kDrive-${VERSION_NUMBER} not found </h1>" >> $GITHUB_STEP_SUMMARY
+                echo "<h1>:stop_sign: Release Notes for kDrive-${version_number} (${os}) not found </h1>" >> $GITHUB_STEP_SUMMARY
                 echo "$FILE is missing." >> $GITHUB_STEP_SUMMARY
                 exit 1
               fi
@@ -133,20 +140,20 @@ jobs:
           echo "All release notes files are present."
 
           {
-            echo "<h1>:white_check_mark: Release Notes for kDrive-${VERSION_NUMBER} found </h1>"
+            echo "<h1>:white_check_mark: Release Notes found </h1>"
             echo "<table>"
             echo "<tr>"
             echo "  <td valign='top' width='33%'>"
-            echo "    <h3>Windows</h3>"
-            cat "${BASE_PATH}/kDrive-${VERSION_NUMBER}-win-en.html"
+            echo "    <h3>Windows (${WIN_VERSION_NUMBER})</h3>"
+            cat "./release_notes/kDrive-${WIN_VERSION_NUMBER}/kDrive-${WIN_VERSION_NUMBER}-win-en.html"
             echo "  </td>"
             echo "  <td valign='top' width='33%'>"
-            echo "    <h3>Linux</h3>"
-            cat "${BASE_PATH}/kDrive-${VERSION_NUMBER}-linux-en.html"
+            echo "    <h3>Linux (${LINUX_VERSION_NUMBER})</h3>"
+            cat "./release_notes/kDrive-${LINUX_VERSION_NUMBER}/kDrive-${LINUX_VERSION_NUMBER}-linux-en.html"
             echo "  </td>"
             echo "  <td valign='top' width='33%'>"
-            echo "    <h3>macOS</h3>"
-            cat "${BASE_PATH}/kDrive-${VERSION_NUMBER}-macos-en.html"
+            echo "    <h3>macOS (${MACOS_VERSION_NUMBER})</h3>"
+            cat "./release_notes/kDrive-${MACOS_VERSION_NUMBER}/kDrive-${MACOS_VERSION_NUMBER}-macos-en.html"
             echo "  </td>"
             echo "</tr>"
             echo "</table>"
@@ -262,7 +269,7 @@ jobs:
       - name: Upload debug files and installers/appimage to kDrive
         run: |
           $testFlag = if ("${{ inputs.use_ksp_cert }}" -eq "false") { "-test" } else { "" }
-          powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version }}" -os "win" $testFlag
+          powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version_windows }}" -os "win" $testFlag
 
 
       - name: Download sentry-cli and login
@@ -311,7 +318,7 @@ jobs:
           merge-multiple: true
 
       - name: Upload debug files and installers/appimage to kDrive
-        run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version }}" -os "linux-amd"
+        run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version_linux }}" -os "linux-amd"
 
       - name: Download sentry-cli and login
         run: |
@@ -353,7 +360,7 @@ jobs:
           merge-multiple: true
 
       - name: Upload debug files and installers/appimage to kDrive
-        run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version }}" -os "linux-arm"
+        run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version_linux }}" -os "linux-arm"
 
       - name: Download sentry-cli and login
         run: |
@@ -395,7 +402,7 @@ jobs:
           merge-multiple: true
 
       - name: Upload debug files and installers/appimage to kDrive
-        run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version }}" -os "macos"
+        run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version_macos }}" -os "macos"
 
       - name: Download sentry-cli and login
         run: |
@@ -426,6 +433,16 @@ jobs:
 
       - name: Display version in workflow summary
         run: |
-          VERSION="${{ steps.get-version.outputs.kDrive_version }}"
-          echo "<h1>:package: kDrive Version: ${VERSION}</h1>" >> $GITHUB_STEP_SUMMARY
+          WIN_VERSION="${{ steps.get-version.outputs.kDrive_version_windows }}"
+          LINUX_VERSION="${{ steps.get-version.outputs.kDrive_version_linux }}"
+          MACOS_VERSION="${{ steps.get-version.outputs.kDrive_version_macos }}"
+          {
+            echo "<h1>:package: kDrive Versions</h1>"
+            echo "<table>"
+            echo "<tr><th>OS</th><th>Version</th></tr>"
+            echo "<tr><td>Windows</td><td>${WIN_VERSION}</td></tr>"
+            echo "<tr><td>Linux</td><td>${LINUX_VERSION}</td></tr>"
+            echo "<tr><td>macOS</td><td>${MACOS_VERSION}</td></tr>"
+            echo "</table>"
+          } >> $GITHUB_STEP_SUMMARY
         shell: bash
