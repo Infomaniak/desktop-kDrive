@@ -120,6 +120,9 @@ struct StorageView: View {
 
         @InjectService var router: PreferencesViewRouter
         router.setCurrentTab(.accounts)
+        if let currentDrive = mainViewModel.currentDrive {
+            router.append(.syncedKDrive(currentDrive))
+        }
     }
 
     private func fetchStorageData() async {
