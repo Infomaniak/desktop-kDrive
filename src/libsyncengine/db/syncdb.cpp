@@ -3006,12 +3006,22 @@ bool SyncDb::migrateLocalItemsToPrivateFolder(const std::string &dbFromVersionNu
     Sync sync;
     bool found = false;
     ParmsDb::instance()->selectSync(_dbPath, sync, found);
+
+    if (!ParmsDb::instance()->selectSync(_dbPath, sync, found)) {
+        LOG_WARN(_logger, "Error in ParmsDb::selectSync");
+        return false;
+    }
     if (!found) {
         LOGW_WARN(_logger, L"Sync DB with " << Utility::formatSyncPath(_dbPath) << L" not found.");
         return false;
     }
 
     const SyncPath &localSyncDirPath = sync.localPath();
+    if (!sync.targetPath().empty()) {
+        LOGW_INFO(_logger, L"Sync with " << Utility::formatSyncPath(sync.localPath())
+                                         << L" is non-root an advanced sync. No Sync DB upgrade to do.");
+        return true;
+    }
 
     bool exists = false;
     auto existenceCheckError = IoError::Success;
