@@ -113,7 +113,8 @@ void TestServerRequests::testFindGoodPathForNewSync() {
 
     // Check again but returnedPath already exists
     const auto previousPath = returnedPath;
-    LocalTemporaryDirectoryFromAbsolutePath localTempDir(defaultPath);
+    LocalTemporaryDirectoryFromAbsolutePath localTempDir(defaultPath,
+                                                         LocalTemporaryDirectoryFromAbsolutePath::RecursiveMode::Recursive);
 
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
                          ServerRequests::findGoodPathForNewSync(driveName, returnedPath, error));

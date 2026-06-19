@@ -53,10 +53,17 @@ class LocalTemporaryDirectory : public AbstractLocalTemporaryDirectory {
 
 class LocalTemporaryDirectoryFromAbsolutePath : public AbstractLocalTemporaryDirectory {
     public:
-        explicit LocalTemporaryDirectoryFromAbsolutePath(const SyncPath &absolutePath);
+        enum class RecursiveMode {
+            NonRecursive,
+            Recursive
+        };
+        explicit LocalTemporaryDirectoryFromAbsolutePath(const SyncPath &absolutePath,
+                                                         RecursiveMode recursiveMode = RecursiveMode::NonRecursive);
 
     private:
         void createDirectory() override;
+
+        RecursiveMode _recursiveMode{RecursiveMode::NonRecursive};
 };
 
 } // namespace KDC
