@@ -20,7 +20,7 @@
 #include "..\Common\utilities.h"
 
 #include <filesystem>
-#include <winrt\windows.storage.provider.h>
+#include <winrt\Windows.Storage.Provider.h>
 
 namespace winrt {
 using namespace Windows::Storage;
