@@ -155,6 +155,12 @@
 /* loco:69c0f0398ae1831b640e5a62 */
 "buttonChangeFolder" = "Modifier le dossier";
 
+/* loco:69c55ddcee6e0bc4d1046935 */
+"buttonChangeToOffline" = "Stocker hors ligne";
+
+/* loco:69c55dcf9ae76d95660b7b66 */
+"buttonChangeToOnline" = "Stocker en ligne";
+
 /* loco:696a343b72b6dc32e00557a4 */
 "buttonClose" = "Fermer";
 
@@ -429,6 +435,12 @@
 
 /* loco:698c7b5c30ae98f0e6043132 */
 "dialogSyncDeletionWarningTitle" = "Supprimer la synchronisation ?";
+
+/* loco:698c8c7d965fc74e3209cbc2 */
+"dialogSyncModeChangeWarningContent" = "Cette opération peut prendre un certain temps, selon la taille de vos données. En cas d’échec, une nouvelle synchronisation complète du drive pourra être nécessaire.\n\nAvant de continuer, assurez-vous que tous vos fichiers sont bien à jour et synchronisés.\n\nNe fermez pas l’application pendant le processus.";
+
+/* loco:698c8c9a965fc74e3209cbc4 */
+"dialogSyncModeChangeWarningTitle" = "Changer le mode de synchronisation ?";
 
 /* loco:699ffc60759bb427a3087a02 */
 "dialogSystemErrorSyncDirAccessErrorDescription" = "Voici comment rétablir la synchronisation :";

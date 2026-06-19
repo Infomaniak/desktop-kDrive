@@ -140,6 +140,12 @@
 
 /* loco:69c0f0398ae1831b640e5a62 */
 "buttonChangeFolder" = "Ändern Sie den Ordner";
+/* loco:69c55ddcee6e0bc4d1046935 */
+"buttonChangeToOffline" = "Offline speichern";
+
+/* loco:69c55dcf9ae76d95660b7b66 */
+"buttonChangeToOnline" = "Online speichern";
+
 
 /* loco:696a343b72b6dc32e00557a4 */
 "buttonClose" = "Schliessen Sie";
@@ -413,6 +419,12 @@
 
 /* loco:698c7b5c30ae98f0e6043132 */
 "dialogSyncDeletionWarningTitle" = "Synchronisierung entfernen?";
+
+/* loco:698c8c7d965fc74e3209cbc2 */
+"dialogSyncModeChangeWarningContent" = "Dieser Vorgang kann je nach Grösse Ihrer Daten einige Zeit in Anspruch nehmen. Wenn er fehlschlägt, kann eine vollständige Neusynchronisierung des Laufwerks erforderlich sein.\n\nStellen Sie vor dem Fortfahren sicher, dass alle Ihre Dateien auf dem neuesten Stand und synchronisiert sind.\n\nSchliessen Sie die Anwendung während des Vorgangs nicht.";
+
+/* loco:698c8c9a965fc74e3209cbc4 */
+"dialogSyncModeChangeWarningTitle" = "Synchronisierungsmodus ändern?";
 
 /* loco:699ffc60759bb427a3087a02 */
 "dialogSystemErrorSyncDirAccessErrorDescription" = "So stellen Sie die Synchronisierung wieder her:";
