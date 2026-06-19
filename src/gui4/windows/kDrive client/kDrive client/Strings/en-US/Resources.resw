@@ -6,7 +6,7 @@
   Locale: en, English
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 12 Jun 2026 16:31:14 +0200 
+  Exported at: Fri, 19 Jun 2026 13:56:55 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -701,7 +701,6 @@ Contact your administrator to increase the file size limit.</value>
   </data> 
   <data name="errForbiddenActionTitle" xml:space="preserve"> 
     <value>Access forbidden</value> 
-    <comment>Title shown when a forbidden or unauthorized action is attempted.</comment> 
   </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
     <value>The name of this %@ contains one or more characters not supported by the kDrive Windows application. Rename the %@ from kDrive online.</value> 
@@ -1552,7 +1551,7 @@ An internet connection is required to access them.</value>
     <value>your files are syncing</value> 
   </data> 
   <data name="synchroPaused" xml:space="preserve"> 
-    <value>sync is paused</value> 
+    <value>Synchronization has been temporarily paused.</value> 
   </data> 
   <data name="synchroStatusInProgressDescription" xml:space="preserve"> 
     <value>Your recent files are being updated.</value> 
@@ -1571,7 +1570,7 @@ Syncing will resume automatically as soon as you reconnect.</value>
     <value>Sync has been temporarily stopped.</value> 
   </data> 
   <data name="synchroStatusPausedTitle" xml:space="preserve"> 
-    <value>Paused</value> 
+    <value>Synchronization on Pause</value> 
   </data> 
   <data name="synchroStatusUpToDateDescription" xml:space="preserve"> 
     <value>Your files are accessible and synced.</value> 
