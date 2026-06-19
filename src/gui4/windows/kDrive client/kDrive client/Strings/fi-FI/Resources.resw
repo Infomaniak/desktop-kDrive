@@ -6,7 +6,7 @@
   Locale: fi, Finnish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 12 Jun 2026 16:31:14 +0200 
+  Exported at: Fri, 19 Jun 2026 13:56:55 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -701,7 +701,6 @@ Ota yhteyttä järjestelmänvalvojaasi tiedostokokorajan kasvattamiseksi.</value
   </data> 
   <data name="errForbiddenActionTitle" xml:space="preserve"> 
     <value>Pääsy kielletty</value> 
-    <comment>Title shown when a forbidden or unauthorized action is attempted.</comment> 
   </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
     <value>Tämän %@ nimi sisältää yhden tai useamman merkin, joita kDriven Windows-sovellus ei tue. Nimeä %@ uudelleen kDrive-verkkopalvelusta.</value> 
@@ -1552,7 +1551,7 @@ Internet-yhteys vaaditaan niiden käyttämiseen.</value>
     <value>tiedostosi synkronoidaan</value> 
   </data> 
   <data name="synchroPaused" xml:space="preserve"> 
-    <value>synkronointi on keskeytetty</value> 
+    <value>Synkronointi on tilapäisesti keskeytetty.</value> 
   </data> 
   <data name="synchroStatusInProgressDescription" xml:space="preserve"> 
     <value>Viimeisimmät tiedostosi päivitetään.</value> 
@@ -1571,7 +1570,7 @@ Synkronointi jatkuu automaattisesti, kun olet jälleen yhteydessä verkkoon.</va
     <value>Synkronointi on tilapäisesti pysäytetty.</value> 
   </data> 
   <data name="synchroStatusPausedTitle" xml:space="preserve"> 
-    <value>Tauko aktivoitu</value> 
+    <value>Synkronointi tauon aikana</value> 
   </data> 
   <data name="synchroStatusUpToDateDescription" xml:space="preserve"> 
     <value>Tiedostosi ovat käytettävissä ja synkronoitu.</value> 
