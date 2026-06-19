@@ -98,6 +98,8 @@ final class PreferencesSplitViewController: IKSplitViewController {
             contentViewController = AdvancedPreferencesNetworkViewController(repository: repository)
         case .syncedKDrive(let drive):
             contentViewController = SyncedKDrivePreferencesViewController(drive: drive)
+        case .advancedSynchros(let drive):
+            contentViewController = AdvancedSynchroPreferencesViewController(drive: drive)
         case .debug:
             contentViewController = AdvancedPreferencesDebugViewController(repository: repository)
         case .dataManagement:
@@ -114,8 +116,13 @@ final class PreferencesSplitViewController: IKSplitViewController {
                 synchroRulesItem: synchroRulesItem,
                 exclusionRepository: exclusionRepository
             )
-        case .blacklist(let userId, let driveId, let synchroDbId):
-            contentViewController = BlacklistPreferencesViewController(userId: userId, driveId: driveId, synchroDbId: synchroDbId)
+        case .blacklist(let userId, let driveId, let synchroDbId, let rootNodeId):
+            contentViewController = BlacklistPreferencesViewController(
+                userId: userId,
+                driveId: driveId,
+                synchroDbId: synchroDbId,
+                rootNodeId: rootNodeId
+            )
         default:
             contentViewController = GeneralPreferencesViewController(repository: repository, viewModel: viewModel)
         }

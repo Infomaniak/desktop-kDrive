@@ -20,27 +20,25 @@ import SwiftUI
 
 public struct FileTreeView: NSViewRepresentable {
     public let rootItems: [FileTreeItem]
-
     public let initialBlacklist: Set<String>
-
-    public let loadChildren: (FileTreeItem) async -> [FileTreeItem]
+    public let childrenFetcher: FileTreeChildrenFetcher
     public let onBlacklistChange: (Set<String>) -> Void
 
     public init(
         rootItems: [FileTreeItem],
         initialBlacklist: Set<String> = [],
-        loadChildren: @escaping (FileTreeItem) async -> [FileTreeItem],
+        childrenFetcher: FileTreeChildrenFetcher,
         onBlacklistChange: @escaping (Set<String>) -> Void
     ) {
         self.rootItems = rootItems
         self.initialBlacklist = initialBlacklist
-        self.loadChildren = loadChildren
+        self.childrenFetcher = childrenFetcher
         self.onBlacklistChange = onBlacklistChange
     }
 
     public func makeNSView(context: Context) -> FileTreeOutlineView {
         let view = FileTreeOutlineView()
-        view.loadChildren = loadChildren
+        view.childrenFetcher = childrenFetcher
         view.onBlacklistChange = onBlacklistChange
         view.setRootItems(rootItems, initialBlacklist: initialBlacklist)
         context.coordinator.appliedRootIDs = rootItems.map(\.id)
@@ -48,7 +46,7 @@ public struct FileTreeView: NSViewRepresentable {
     }
 
     public func updateNSView(_ nsView: FileTreeOutlineView, context: Context) {
-        nsView.loadChildren = loadChildren
+        nsView.childrenFetcher = childrenFetcher
         nsView.onBlacklistChange = onBlacklistChange
 
         let ids = rootItems.map(\.id)

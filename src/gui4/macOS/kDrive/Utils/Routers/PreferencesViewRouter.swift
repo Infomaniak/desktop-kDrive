@@ -58,6 +58,7 @@ enum PreferencesViewDetail: RouterDetail {
     case advanced
 
     case syncedKDrive(UIDrive)
+    case advancedSynchros(UIDrive)
     case network
 
     case dataManagement
@@ -67,5 +68,5 @@ enum PreferencesViewDetail: RouterDetail {
     case synchroRulesDetail(SynchroRulesItem)
     case debug
 
-    case blacklist(UIUser.ID, UIDrive.ID, UISynchro.ID)
+    case blacklist(UIUser.ID, UIDrive.ID, UISynchro.ID, rootNodeId: String?)
 }

@@ -16,7 +16,6 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import kDriveCore
 import kDriveResources
 import SwiftUI
 
@@ -26,19 +25,18 @@ public struct FoldersToSynchroView: View {
     @Binding var blackList: Set<String>
 
     let initialBlackList: Set<String>
-    let userDbId: Int
-    let driveDbId: Int
+    let childrenFetcher: FileTreeChildrenFetcher
 
     public init(
         blackList: Binding<Set<String>>,
         initialBlackList: Set<String>,
         userDbId: Int,
-        driveDbId: Int
+        driveDbId: Int,
+        rootNodeId: String? = nil
     ) {
         _blackList = blackList
         self.initialBlackList = initialBlackList
-        self.userDbId = userDbId
-        self.driveDbId = driveDbId
+        childrenFetcher = FileTreeChildrenFetcher(userDbId: userDbId, driveDbId: driveDbId, rootNodeId: rootNodeId)
     }
 
     public var body: some View {
@@ -53,38 +51,18 @@ public struct FoldersToSynchroView: View {
                     .foregroundStyle(ColorToken.Text.tertiary.asColor)
             }
 
-            FileTreeView(rootItems: root, initialBlacklist: initialBlackList) { item in
-                await Self.fetchSubFolders(for: item, userDbId: Int32(userDbId), driveDbId: Int32(driveDbId))
-            } onBlacklistChange: {
-                updateBlacklist($0)
+            FileTreeView(
+                rootItems: root,
+                initialBlacklist: initialBlackList,
+                childrenFetcher: childrenFetcher
+            ) {
+                blackList = $0
             }
             .frame(minHeight: 200)
         }
         .task {
-            root = await Self.fetchSubFolders(for: nil, userDbId: Int32(userDbId), driveDbId: Int32(driveDbId))
+            root = await childrenFetcher.fetchChildren(for: nil)
         }
-    }
-
-    private static func fetchSubFolders(
-        for node: FileTreeItem?,
-        userDbId: Int32,
-        driveDbId: Int32
-    ) async -> [FileTreeItem] {
-        let rootNodeId = node?.id ?? ""
-
-        do {
-            let nodes = try await NodeJobs().getNodeSubfolders(userDbId: userDbId, driveId: driveDbId, nodeId: rootNodeId)
-            return nodes.map {
-                let size = $0.size == -1 ? nil : $0.size
-                return FileTreeItem(id: $0.nodeId, name: $0.name, size: size, isFolder: true, isEnabled: !$0.accessDenied)
-            }
-        } catch {
-            return []
-        }
-    }
-
-    private func updateBlacklist(_ blackList: Set<String>) {
-        self.blackList = blackList
     }
 }
 

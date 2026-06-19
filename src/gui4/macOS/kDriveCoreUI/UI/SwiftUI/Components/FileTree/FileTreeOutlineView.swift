@@ -49,7 +49,7 @@ final class FileTreeNode {
 
 @MainActor
 public final class FileTreeOutlineView: NSView {
-    public var loadChildren: ((FileTreeItem) async -> [FileTreeItem])?
+    public var childrenFetcher: FileTreeChildrenFetcher?
     public var onBlacklistChange: ((Set<String>) -> Void)?
 
     private let scrollView = NSScrollView()
@@ -144,19 +144,18 @@ public final class FileTreeOutlineView: NSView {
     // MARK: - Lazy loading
 
     private func loadChildren(of node: FileTreeNode) {
-        guard let localLoadChildren = loadChildren else {
+        guard let fetcher = childrenFetcher else {
             node.children = []
             outlineView.reloadItem(node, reloadChildren: true)
             return
         }
 
         node.isLoading = true
-        let itemToLoad = node.item
 
-        Task { [localLoadChildren] in
-            let loadedItems = await localLoadChildren(itemToLoad)
+        Task {
+            let loadedItems = await fetcher.fetchChildren(for: node.item)
+
             node.isLoading = false
-
             let loadedNodes = loadedItems.map { FileTreeNode(item: $0, parent: node) }
             node.children = loadedNodes
 

@@ -16,29 +16,19 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Foundation
+import Cocoa
+import InfomaniakDI
+import kDriveCoreUI
+import kDriveResources
+import SwiftUI
 
-public struct FileTreeItem: Identifiable, Hashable, Sendable {
-    public let id: String
-    public let name: String
-    public let path: String?
-    public let size: Int64?
-    public let isFolder: Bool
-    public let isEnabled: Bool
-
-    public init(
-        id: String,
-        name: String,
-        path: String? = nil,
-        size: Int64? = nil,
-        isFolder: Bool,
-        isEnabled: Bool = true
-    ) {
-        self.id = id
-        self.name = name
-        self.path = path
-        self.size = size
-        self.isFolder = isFolder
-        self.isEnabled = isEnabled
+final class AdvancedSynchroPreferencesViewController: TitledViewController<AdvancedSynchroView> {
+    convenience init(drive: UIDrive) {
+        @InjectService var router: PreferencesViewRouter
+        self.init(
+            toolbarTitle: KDriveLocalizable.advancedSyncTitle,
+            navigableRouter: router,
+            contentView: AdvancedSynchroView(drive: drive)
+        )
     }
 }

@@ -57,6 +57,7 @@ public enum KDriveResources {
   public static let folderCircleArrowRight = ImageAsset(name: "folder-circle-arrow-right")
   public static let folderFilled = ImageAsset(name: "folder-filled")
   public static let folderShare = ImageAsset(name: "folder-share")
+  public static let folder = ImageAsset(name: "folder")
   public static let hammerWrench = ImageAsset(name: "hammer-wrench")
   public static let hardDiskDrive = ImageAsset(name: "hard-disk-drive")
   public static let headphones = ImageAsset(name: "headphones")
