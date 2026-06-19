@@ -1,9 +1,25 @@
 {
-  "Version": {
-    "major": 3,
-    "minor": 8,
-    "patch": 6,
-    "build": 4,
-    "year": 2026
+  "Versions": {
+    "Linux": {
+      "major": 97,
+      "minor": 0,
+      "patch": 0,
+      "build": 1,
+      "year": 2026
+    },
+    "macOS": {
+      "major": 98,
+      "minor": 0,
+      "patch": 0,
+      "build": 1,
+      "year": 2026
+    },
+    "Windows": {
+      "major": 99,
+      "minor": 0,
+      "patch": 0,
+      "build": 1,
+      "year": 2026
+    }
   }
 }
