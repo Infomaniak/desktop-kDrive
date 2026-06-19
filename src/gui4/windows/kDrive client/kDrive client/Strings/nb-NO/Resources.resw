@@ -6,7 +6,7 @@
   Locale: nb, Norwegian Bokmål
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 12 Jun 2026 16:31:14 +0200 
+  Exported at: Fri, 19 Jun 2026 13:56:55 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -701,7 +701,6 @@ Kontakt administratoren din for å øke filstørrelsesgrensen.</value>
   </data> 
   <data name="errForbiddenActionTitle" xml:space="preserve"> 
     <value>Tilgang forbudt</value> 
-    <comment>Title shown when a forbidden or unauthorized action is attempted.</comment> 
   </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
     <value>Navnet på dette %@ inneholder ett eller flere tegn som ikke støttes av kDrive Windows-programmet. Gi nytt navn til %@ fra kDrive på nett.</value> 
@@ -1552,7 +1551,7 @@ Internettforbindelse kreves for å åpne dem.</value>
     <value>filene dine synkroniseres</value> 
   </data> 
   <data name="synchroPaused" xml:space="preserve"> 
-    <value>synkronisering er pauset</value> 
+    <value>Synkroniseringen er midlertidig stoppet.</value> 
   </data> 
   <data name="synchroStatusInProgressDescription" xml:space="preserve"> 
     <value>De siste filene dine oppdateres.</value> 
@@ -1571,7 +1570,7 @@ Synkroniseringen starter automatisk igjen så snart du er tilkoblet igjen.</valu
     <value>Synkronisering er midlertidig stoppet.</value> 
   </data> 
   <data name="synchroStatusPausedTitle" xml:space="preserve"> 
-    <value>Pauset</value> 
+    <value>Synkronisering i pause</value> 
   </data> 
   <data name="synchroStatusUpToDateDescription" xml:space="preserve"> 
     <value>Filene dine er tilgjengelige og synkronisert.</value> 
