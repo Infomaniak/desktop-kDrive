@@ -93,7 +93,7 @@ final class MainViewController: IKSplitViewController {
         vfsConversionStoreObservable.convertingSynchrosPublisher
             .receiveOnMain(store: &bindStore) { [weak self] _ in
                 guard let self else { return }
-                refreshPauseResumeToolbarItem(synchroStateObserver.synchroState)
+                self.refreshPauseResumeToolbarItem(self.synchroStateObserver.synchroState)
             }
     }
 
