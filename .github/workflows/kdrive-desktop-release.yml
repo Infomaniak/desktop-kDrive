@@ -273,10 +273,16 @@ jobs:
 
       - name : Upload sentry artifacts - Windows
         run: |
-          .\sentry-cli.exe debug-files upload --project kdrive-server .\build-windows\kDrive.pdb
-          .\sentry-cli.exe debug-files upload --project kdrive-client .\build-windows\kDrive_client.pdb
+          .\sentry-cli.exe debug-files upload --project kdrive-server .\build-windows\kDrive.pdb 
           .\sentry-cli.exe debug-files upload --project kdrive-server --type sourcebundle .\build-windows\kDrive.src.zip
-          .\sentry-cli.exe debug-files upload --project kdrive-client --type sourcebundle .\build-windows\kDrive_client.src.zip
+          
+          if ("${{ inputs.build_windows }}" -eq "New client") {
+            .\sentry-cli.exe debug-files upload --project kdrive-win-client .\build-windows\kDrive_client.pdb
+          } else {
+            .\sentry-cli.exe debug-files upload --project kdrive-client .\build-windows\kDrive_client.pdb
+            .\sentry-cli.exe debug-files upload --project kdrive-client --type sourcebundle .\build-windows\kDrive_client.src.zip          
+          }
+
         shell: powershell
 
   upload-to-kDrive-and-sentry-Linux-amd:
