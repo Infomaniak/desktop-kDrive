@@ -131,7 +131,6 @@
 				Cache/LogUploadStatusCacheTests.swift,
 				Cache/DTOs/SynchroTests.swift,
 				Cache/DTOs/UserUpdateTests.swift,
-				Cache/LogUploadStatusCacheTests.swift,
 				Cache/Observation/helpers/ObservableData.swift,
 				Cache/Observation/helpers/ObservedAccount.swift,
 				Cache/Observation/helpers/ObservedAvailableDrives.swift,

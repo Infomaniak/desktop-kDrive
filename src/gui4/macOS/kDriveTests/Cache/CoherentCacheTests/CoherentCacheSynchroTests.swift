@@ -109,5 +109,4 @@ struct CoherentCacheSynchroTests {
             Issue.record("unexpected error: \(error)")
         }
     }
-
 }
