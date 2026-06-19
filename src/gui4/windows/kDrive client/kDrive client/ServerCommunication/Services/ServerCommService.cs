@@ -33,7 +33,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommProtocol;
+using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommClient;
 using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommService;
 
 namespace Infomaniak.kDrive.ServerCommunication.Services
@@ -43,9 +43,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
     // It uses a semaphore to limit the number of concurrent requests and queues additional requests until one of the ongoing requests is completed.
     internal class RequestQueue
     {
-        private readonly IServerCommProtocol _commClient;
+        private readonly IServerCommClient _commClient;
         private readonly SemaphoreSlim _semaphore;
-        public RequestQueue(IServerCommProtocol commClient, int maxConcurrentRequests)
+        public RequestQueue(IServerCommClient commClient, int maxConcurrentRequests)
         {
             _commClient = commClient;
             _semaphore = new SemaphoreSlim(maxConcurrentRequests, maxConcurrentRequests);
@@ -94,14 +94,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
     public class ServerCommService : IServerCommService
     {
-        private readonly IServerCommProtocol _commClient;
+        private readonly IServerCommClient _commClient;
         private readonly AppModel _viewModel;
         private const int _maxErrorLimit = 1000;
         private object _errorLock = new object();
         private Int64 _errorCount = 0;
         private bool _hasMoreError;
 
-        public ServerCommService(IServerCommProtocol commClient, AppModel viewModel)
+        public ServerCommService(IServerCommClient commClient, AppModel viewModel)
         {
             _commClient = commClient;
             _viewModel = viewModel;

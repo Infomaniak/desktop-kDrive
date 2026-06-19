@@ -4,14 +4,14 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
 using System.Text.Json.Nodes;
-using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommProtocol;
+using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommClient;
 
 namespace Infomaniak.kDrive.Tests;
 
-public class MockSocketServer : SocketServerCommProtocol
+public class MockTcpServerCommClient : TcpServerCommClient
 {
     private int _port;
-    public MockSocketServer(int port)
+    public MockTcpServerCommClient(int port)
     {
         _port = port;
     }
@@ -22,7 +22,7 @@ public class MockSocketServer : SocketServerCommProtocol
     }
 }
 
-public class SocketServerCommProtocolTests
+public class TcpServerCommClientTests
 {
     private static readonly BindingFlags _instancePrivate = BindingFlags.Instance | BindingFlags.NonPublic;
     private static readonly BindingFlags _staticPrivate = BindingFlags.Static | BindingFlags.NonPublic;
@@ -66,7 +66,7 @@ public class SocketServerCommProtocolTests
     [Fact]
     public async Task InitConnection_ReturnsFalse_WhenServerUnavailableAndCancelled()
     {
-        var protocol = new MockSocketServer(65530);
+        var protocol = new MockTcpServerCommClient(65530);
 
         using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(800));
         bool connected = await protocol.InitConnection(cts.Token);
@@ -80,7 +80,7 @@ public class SocketServerCommProtocolTests
     {
         await using var server = new FakeSocketServer();
 
-        var protocol = new MockSocketServer(server.Port);
+        var protocol = new MockTcpServerCommClient(server.Port);
         var connectionLost = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         protocol.ConnectionLost += (_, _) => connectionLost.TrySetResult();
 
@@ -99,7 +99,7 @@ public class SocketServerCommProtocolTests
     {
         await using var server = new FakeSocketServer();
 
-        var protocol = new MockSocketServer(server.Port);
+        var protocol = new MockTcpServerCommClient(server.Port);
         using var initCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         Assert.True(await protocol.InitConnection(initCts.Token));
         await server.WaitForClientAsync();
@@ -130,7 +130,7 @@ public class SocketServerCommProtocolTests
     public async Task SendRequestAsync_HandlesHighFrequencyConsecutiveMessages()
     {
         await using var server = new FakeSocketServer();
-        var protocol = new MockSocketServer(server.Port);
+        var protocol = new MockTcpServerCommClient(server.Port);
 
         using var initCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         Assert.True(await protocol.InitConnection(initCts.Token));
@@ -168,7 +168,7 @@ public class SocketServerCommProtocolTests
     {
         await using var server = new FakeSocketServer();
 
-        var protocol = new MockSocketServer(server.Port);
+        var protocol = new MockTcpServerCommClient(server.Port);
         using var initCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         Assert.True(await protocol.InitConnection(initCts.Token));
         await server.WaitForClientAsync();
@@ -214,7 +214,7 @@ public class SocketServerCommProtocolTests
     {
         await using var server = new FakeSocketServer();
 
-        var protocol = new MockSocketServer(server.Port);
+        var protocol = new MockTcpServerCommClient(server.Port);
         using var initCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         Assert.True(await protocol.InitConnection(initCts.Token));
         await server.WaitForClientAsync();
@@ -250,7 +250,7 @@ public class SocketServerCommProtocolTests
     {
         await using var server = new FakeSocketServer();
 
-        var protocol = new MockSocketServer(server.Port);
+        var protocol = new MockTcpServerCommClient(server.Port);
         using var initCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         Assert.True(await protocol.InitConnection(initCts.Token));
         await server.WaitForClientAsync();
@@ -285,7 +285,7 @@ public class SocketServerCommProtocolTests
     {
         await using var server = new FakeSocketServer();
 
-        var protocol = new MockSocketServer(server.Port);
+        var protocol = new MockTcpServerCommClient(server.Port);
         var lost = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         protocol.ConnectionLost += (_, _) => lost.TrySetResult();
 
@@ -304,7 +304,7 @@ public class SocketServerCommProtocolTests
     {
         await using var server = new FakeSocketServer();
 
-        var protocol = new MockSocketServer(server.Port);
+        var protocol = new MockTcpServerCommClient(server.Port);
         using var initCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         Assert.True(await protocol.InitConnection(initCts.Token));
         await server.WaitForClientAsync();
@@ -326,7 +326,7 @@ public class SocketServerCommProtocolTests
         for (int i = 0; i < 10; i++)
         {
             await using var server = new FakeSocketServer();
-            var protocol = new MockSocketServer(server.Port);
+            var protocol = new MockTcpServerCommClient(server.Port);
 
             var lost = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             protocol.ConnectionLost += (_, _) => lost.TrySetResult();
@@ -341,17 +341,17 @@ public class SocketServerCommProtocolTests
         }
     }
 
-    private static async Task ShutdownProtocolAsync(SocketServerCommProtocol protocol)
+    private static async Task ShutdownProtocolAsync(TcpServerCommClient protocol)
     {
-        var stopField = typeof(SocketServerCommProtocol).GetField("_stopRequested", _instancePrivate)
+        var stopField = typeof(TcpServerCommClient).GetField("_stopRequested", _instancePrivate)
                         ?? throw new InvalidOperationException("Failed to find _stopRequested field.");
         stopField.SetValue(protocol, true);
 
-        var socketField = typeof(SocketServerCommProtocol).GetField("_socket", _instancePrivate)
+        var socketField = typeof(TcpServerCommClient).GetField("_socket", _instancePrivate)
                           ?? throw new InvalidOperationException("Failed to find _socket field.");
         (socketField.GetValue(protocol) as Socket)?.Dispose();
 
-        var pollingTaskField = typeof(SocketServerCommProtocol).GetField("_pollingTask", _instancePrivate)
+        var pollingTaskField = typeof(TcpServerCommClient).GetField("_pollingTask", _instancePrivate)
                                ?? throw new InvalidOperationException("Failed to find _pollingTask field.");
 
         if (pollingTaskField.GetValue(protocol) is Task pollingTask)
@@ -376,7 +376,7 @@ public class SocketServerCommProtocolTests
 
     private static bool TryParseServerPortFromArguments(string[] arguments, out int port, out string errorMessage)
     {
-        var method = typeof(SocketServerCommProtocol).GetMethod("TryParseServerPortFromArguments", _staticPrivate)
+        var method = typeof(TcpServerCommClient).GetMethod("TryParseServerPortFromArguments", _staticPrivate)
                      ?? throw new InvalidOperationException("Failed to find TryParseServerPortFromArguments method.");
 
         object?[] parameters = new object?[] { arguments, 0, string.Empty };
