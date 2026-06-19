@@ -21,8 +21,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\kDrive client\ServerCommunication\Interfaces\IServerCommProtocol.cs" Link="ServerCommunication\Interfaces\IServerCommProtocol.cs" />
-    <Compile Include="..\kDrive client\ServerCommunication\Services\SocketServerCommProtocol.cs" Link="ServerCommunication\Services\SocketServerCommProtocol.cs" />
+    <Compile Include="..\kDrive client\ServerCommunication\Interfaces\IServerCommClient.cs" Link="ServerCommunication\Interfaces\IServerCommClient.cs" />
+    <Compile Include="..\kDrive client\ServerCommunication\Services\TcpServerCommClient.cs" Link="ServerCommunication\Services\TcpServerCommClient.cs" />
     <Compile Include="..\kDrive client\ServerCommunication\Services\CommSharedEnums.cs" Link="ServerCommunication\Services\CommSharedEnums.cs" />
     <Compile Include="..\kDrive client\ServerCommunication\JsonConverters\Base64StringJsonConverter.cs" Link="ServerCommunication\JsonConverters\Base64StringJsonConverter.cs" />
   </ItemGroup>

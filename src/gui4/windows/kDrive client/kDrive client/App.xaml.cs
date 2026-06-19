@@ -74,7 +74,7 @@ namespace Infomaniak.kDrive
         {
             var services = new ServiceCollection();
             services.AddSingleton<AppModel>();
-            services.AddSingleton<IServerCommProtocol, SocketServerCommProtocol>();
+            services.AddSingleton<IServerCommClient, TcpServerCommClient>();
             services.AddSingleton<IServerCommService, ServerCommService>();
             services.AddSingleton<UserDefaults>();
             services.AddSingleton<TrayIconManager>();
