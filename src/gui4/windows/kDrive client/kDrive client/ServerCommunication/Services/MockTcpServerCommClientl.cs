@@ -28,11 +28,11 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommProtocol;
+using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommClient;
 
 namespace Infomaniak.kDrive.ServerCommunication.Services
 {
-    public class MockServerCommProtocol : Interfaces.IServerCommProtocol
+    public class MockTcpServerCommClient : Interfaces.IServerCommClient
     {
         protected MockServerData _mockData = new();
 
@@ -45,14 +45,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         public Task<bool> InitConnection(CancellationToken cancellationToken) { return Task.FromResult(true); }
         public event EventHandler<SignalEventArgs>? SignalReceived;
 
-#pragma warning disable CS0067 // ConnectionLost is not used in the mock implementation, but we need to declare it to satisfy the IServerCommProtocol interface. We can safely ignore the fact that it's never raised.
+#pragma warning disable CS0067 // ConnectionLost is not used in the mock implementation, but we need to declare it to satisfy the IServerCommClient interface. We can safely ignore the fact that it's never raised.
         public event EventHandler? ConnectionLost;
 #pragma warning restore CS0067 
 
         protected Queue<KeyValuePair<SignalNum, JsonObject>> PendingSignals { get; } = new Queue<KeyValuePair<SignalNum, JsonObject>>();
         private Task? _signalHandler;
         private Task? _customSignalsHandler;
-        public MockServerCommProtocol()
+        public MockTcpServerCommClient()
         {
             Initialize();
         }
@@ -74,7 +74,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 RequestNum.PARAMETERS_INFO => await ParametersInfo(parameters),
                 RequestNum.PARAMETERS_UPDATE => await ParametersUpdate(parameters),
                 RequestNum.ERROR_DELETE => await ErrorDelete(parameters),
-                _ => throw new NotImplementedException($"RequestNum {requestNum} not implemented in MockServerCommProtocol.")
+                _ => throw new NotImplementedException($"RequestNum {requestNum} not implemented in MockTcpServerCommClient.")
             };
         }
 
