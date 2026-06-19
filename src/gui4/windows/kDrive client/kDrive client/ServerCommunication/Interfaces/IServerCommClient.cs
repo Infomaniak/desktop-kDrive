@@ -23,7 +23,7 @@ using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.ServerCommunication.Interfaces
 {
-    public interface IServerCommProtocol
+    public interface IServerCommClient
     {
         public class CommData
         {

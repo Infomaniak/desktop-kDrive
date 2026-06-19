@@ -31,14 +31,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 {
     /// <summary>
     /// Mock server protocol for testing error displays.
-    /// Extends MockServerCommProtocol with automatic generation of test errors
+    /// Extends MockTcpServerCommClient with automatic generation of test errors
     /// for all error templates. Errors are created with DbIds starting at 200.
     /// </summary>
-    public class MockServerCommProtocolTestError : SocketServerCommProtocol
+    public class MockTcpServerCommClientTestError : TcpServerCommClient
     {
         private DbId _nextErrorDbId = 200;
 
-        public MockServerCommProtocolTestError() : base()
+        public MockTcpServerCommClientTestError() : base()
         {
             Task.Run(async () =>
             {
