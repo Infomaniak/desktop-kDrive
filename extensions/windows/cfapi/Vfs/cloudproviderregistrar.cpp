@@ -23,7 +23,8 @@
 #include <winrt\Windows.Foundation.Collections.h>
 #include <winrt\Windows.Storage.h>
 #include <winrt\Windows.Storage.Provider.h>
-#include <winrt\windows.security.cryptography.h>
+#include <winrt\Windows.Security.Cryptography.h>
+
 namespace winrt {
 using namespace Windows::Foundation;
 using namespace Windows::Storage;
