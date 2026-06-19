@@ -2998,6 +2998,26 @@ bool SyncDb::copyLocalItemsToTmpPrivateDir(const SyncPath &localSyncDirPath, con
     return true;
 }
 
+bool SyncDb::renameTempPrivateDir(const SyncPath &localSyncDirPath, const SyncPath &privateTmpLocalPath) const {
+    const auto privateLocalPath =
+            localSyncDirPath / ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::Private);
+
+    if (auto renamingError = IoError::Success;
+        !IoHelper::renameItem(privateTmpLocalPath, privateLocalPath, renamingError) || renamingError != IoError::Success) {
+        LOGW_WARN(_logger, L"Error in IoHelper::getRecursiveDirectoryIterator: "
+                                   << Utility::formatIoError(localSyncDirPath, renamingError));
+
+        removeTempPrivateDir(privateTmpLocalPath);
+
+        return false;
+    }
+
+    LOGW_INFO(_logger, L"Temporary Private folder " << Utility::formatSyncPath(privateTmpLocalPath) << L" has been renamed to "
+                                                    << Utility::formatSyncPath(privateLocalPath) << L" successfully.");
+
+    return true;
+}
+
 bool SyncDb::migrateLocalItemsToPrivateFolder(const std::string &dbFromVersionNumber) {
     if (!CommonUtility::isVersionLower(dbFromVersionNumber, "4.0.1.0")) return true;
 
@@ -3064,19 +3084,15 @@ bool SyncDb::migrateLocalItemsToPrivateFolder(const std::string &dbFromVersionNu
         return false;
     }
 
-    const auto privateLocalPath =
-            localSyncDirPath / ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::Private);
-    if (auto renamingError = IoError::Success;
-        !IoHelper::renameItem(privateTmpLocalPath, privateLocalPath, renamingError) || renamingError != IoError::Success) {
-        LOGW_WARN(_logger, L"Error in IoHelper::getRecursiveDirectoryIterator: "
-                                   << Utility::formatIoError(localSyncDirPath, renamingError));
-
-        removeTempPrivateDir(privateTmpLocalPath);
-
+    if (!renameTempPrivateDir(localSyncDirPath, privateTmpLocalPath)) {
+        LOGW_WARN(_logger, L"Error in renameTempPrivateDir.");
         return false;
     }
 
-    if (!removeHighLevelItemsFromLocalSyncDir(localSyncDirPath)) return false;
+    if (!removeHighLevelItemsFromLocalSyncDir(localSyncDirPath)) {
+        LOGW_WARN(_logger, L"Error in removeHighLevelItemsFromLocalSyncDir.");
+        return false;
+    }
 
     LOGW_INFO(_logger, L"Migration of high level items to local Private folder successful for sync with "
                                << Utility::formatSyncPath(localSyncDirPath));
