@@ -23,17 +23,40 @@
 
 namespace KDC {
 
-class LocalTemporaryDirectory {
+class AbstractLocalTemporaryDirectory {
     public:
-        explicit LocalTemporaryDirectory(const std::string &testType = "undef", const SyncPath &destinationPath = {});
-        ~LocalTemporaryDirectory();
+        explicit AbstractLocalTemporaryDirectory(const SyncPath &inputPath = {});
+        ~AbstractLocalTemporaryDirectory();
 
         [[nodiscard]] const std::filesystem::path &path() const { return _path; }
         [[nodiscard]] const NodeId &id() const { return _id; }
 
-    private:
+    protected:
+        SyncPath _inputPath;
+
         std::filesystem::path _path;
         NodeId _id;
+
+    private:
+        virtual void createDirectory() = 0;
+};
+
+class LocalTemporaryDirectory : public AbstractLocalTemporaryDirectory {
+    public:
+        explicit LocalTemporaryDirectory(const std::string &testType = "undef", const SyncPath &destinationPath = {});
+
+    private:
+        virtual void createDirectory();
+
+        std::string _testType;
+};
+
+class LocalTemporaryDirectoryFromAbsolutePath : public AbstractLocalTemporaryDirectory {
+    public:
+        explicit LocalTemporaryDirectoryFromAbsolutePath(const SyncPath &absolutePath);
+
+    private:
+        void createDirectory() override;
 };
 
 } // namespace KDC

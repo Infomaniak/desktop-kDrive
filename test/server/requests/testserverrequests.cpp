@@ -111,15 +111,12 @@ void TestServerRequests::testFindGoodPathForNewSync() {
 
     // Check again but returnedPath no already exists
     const auto previousPath = returnedPath;
-    auto dummyIoError = IoError::Unknown;
-    (void) IoHelper::createDirectory(previousPath, false, dummyIoError);
+    LocalTemporaryDirectoryFromAbsolutePath localTempDir(previousPath);
 
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown), ServerRequests::findGoodPathForNewSync(returnedPath, error));
     CPPUNIT_ASSERT(CommonUtility::startsWith(returnedPath, defaultPath));
     CPPUNIT_ASSERT(error.empty());
     CPPUNIT_ASSERT(previousPath != returnedPath);
-
-    (void) IoHelper::deleteItem(previousPath);
 }
 
 void TestServerRequests::testIsPathValidForNewSync() {
