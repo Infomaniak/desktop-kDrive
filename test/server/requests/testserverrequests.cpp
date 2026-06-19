@@ -102,18 +102,21 @@ void TestServerRequests::testFindGoodPathForNewSync() {
     SyncPath homePath;
     (void) CommonUtility::homeDirectoryPath(homePath);
     const SyncPath defaultPath = homePath / APPLICATION_NAME;
+    const SyncName driveName("dummyDriveName");
 
     SyncPath returnedPath;
     std::string error;
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown), ServerRequests::findGoodPathForNewSync(returnedPath, error));
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
+                         ServerRequests::findGoodPathForNewSync(driveName, returnedPath, error));
     CPPUNIT_ASSERT(CommonUtility::startsWith(returnedPath, defaultPath));
     CPPUNIT_ASSERT(error.empty());
 
-    // Check again but returnedPath no already exists
+    // Check again but returnedPath already exists
     const auto previousPath = returnedPath;
     LocalTemporaryDirectoryFromAbsolutePath localTempDir(previousPath);
 
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown), ServerRequests::findGoodPathForNewSync(returnedPath, error));
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
+                         ServerRequests::findGoodPathForNewSync(driveName, returnedPath, error));
     CPPUNIT_ASSERT(CommonUtility::startsWith(returnedPath, defaultPath));
     CPPUNIT_ASSERT(error.empty());
     CPPUNIT_ASSERT(previousPath != returnedPath);
