@@ -164,7 +164,17 @@ class SyncDb : public Db {
 
         // Move local items to the Private folder introduced with the backend API v3.
         // Update accordingly the parent node IDs the of moved items in the DB.
-        bool migrateLocalItemsToPrivateFolder(const std::string &dbFromVersionNumber);
+        bool migrateLocalItemsToPrivateDir(const std::string &dbFromVersionNumber);
+
+        // Get the DB IDs of the children of the root node, excluding 'Common documents' and 'Shared'..
+        bool getRootChildrenDbIds(std::vector<DbNodeId> &rootChildrenDbIds);
+
+        // Update the parent node DB ID of the children of the root node with the DB ID of the Private folder.
+        bool updateParentNodeDbIdOfRootChildren();
+
+        bool getNodeTableRowCount(int64_t &count);
+        bool updateParentNodeIds(const std::vector<DbNodeId> &dbNodeIds, DbNodeId parentNodeId);
+        bool insertPrivateDirNode(DbNodeId &privateDirDbNodeId);
 
         friend class TestSyncDb;
 };

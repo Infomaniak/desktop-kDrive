@@ -245,6 +245,7 @@
     "SELECT nodeId, parentNodeId, nameLocal, nameDrive, nodeIdLocal, nodeIdDrive, created, lastModifiedLocal, " \
     "lastModifiedDrive, type, size, checksum, status, syncing FROM node;"
 
+
 //
 // sync_node
 //
@@ -3018,7 +3019,7 @@ bool SyncDb::renameTempPrivateDir(const SyncPath &localSyncDirPath, const SyncPa
     return true;
 }
 
-bool SyncDb::migrateLocalItemsToPrivateFolder(const std::string &dbFromVersionNumber) {
+bool SyncDb::migrateLocalItemsToPrivateDir(const std::string &dbFromVersionNumber) {
     if (!CommonUtility::isVersionLower(dbFromVersionNumber, "4.0.1.0")) return true;
 
     LOG_DEBUG(_logger, "Upgrade < 4.0.1.0 Sync DB");
@@ -3080,7 +3081,7 @@ bool SyncDb::migrateLocalItemsToPrivateFolder(const std::string &dbFromVersionNu
     }
 
     if (!copyLocalItemsToTmpPrivateDir(localSyncDirPath, privateTmpLocalPath)) {
-        LOGW_WARN(_logger, L"Error in copyLocalItemsToTmpPrivateFolder.");
+        LOGW_WARN(_logger, L"Error in copyLocalItemsToTmpPrivateDir.");
         return false;
     }
 
@@ -3096,6 +3097,120 @@ bool SyncDb::migrateLocalItemsToPrivateFolder(const std::string &dbFromVersionNu
 
     LOGW_INFO(_logger, L"Migration of high level items to local Private folder successful for sync with "
                                << Utility::formatSyncPath(localSyncDirPath));
+
+    return true;
+}
+
+bool SyncDb::updateParentNodeIds(const std::vector<DbNodeId> &dbNodeIds, const DbNodeId parentNodeId) {
+    const char *requestId = "update_parent_node_id";
+
+    if (const char *query = "UPDATE node SET parentNodeId=?1 WHERE nodeId=?2;"; !createAndPrepareRequest(requestId, query))
+        return false;
+
+    const std::scoped_lock lock(_mutex);
+
+    int errId = -1;
+    std::string error;
+    for (const auto nodeId: dbNodeIds) {
+        LOG_IF_FAIL(queryResetAndClearBindings(requestId));
+        LOG_IF_FAIL(queryBindValue(requestId, 1, parentNodeId));
+        LOG_IF_FAIL(queryBindValue(requestId, 2, nodeId));
+        if (!queryExec(requestId, errId, error)) {
+            LOG_WARN(_logger, "Error running query: " << requestId);
+            queryFree(requestId);
+
+            return false;
+        }
+
+        if (numRowsAffected() != 1) {
+            LOG_WARN(_logger, "Error running query: " << requestId << " - num rows affected != 1");
+            queryFree(requestId);
+
+            return false;
+        }
+    }
+
+    queryFree(requestId);
+
+    return true;
+}
+
+bool SyncDb::getNodeTableRowCount(int64_t &count) {
+    const char *query = "SELECT COUNT(*) FROM node";
+    const char *requestId = "SELECT_NODE_TABLE_ROW_COUNT";
+
+    if (!createAndPrepareRequest(requestId, query)) return false;
+
+    count = 0;
+    bool found = false;
+    LOG_IF_FAIL(queryResetAndClearBindings(requestId));
+    if (!queryNext(requestId, found)) {
+        LOG_WARN(_logger, "Error running query: " << requestId);
+        queryFree(requestId);
+
+        return false;
+    }
+
+    if (!found) {
+        LOG_WARN(_logger, "No result found for query: " << requestId);
+        queryFree(requestId);
+
+        return false;
+    }
+
+    queryInt64Value(requestId, 0, count);
+
+    queryFree(requestId);
+
+    return true;
+}
+
+bool SyncDb::updateParentNodeDbIdOfRootChildren() {
+    std::vector<DbNodeId> rootChildrenDbIds;
+
+    if (!getRootChildrenDbIds(rootChildrenDbIds)) {
+        LOGW_WARN(_logger, L"Error in getRootChildrenDbIds.");
+        return false;
+    }
+
+    DbNodeId privateNodeDbId = 0;
+    getNodeTableRowCount(privateNodeDbId);
+    ++privateNodeDbId;
+
+    if (!updateParentNodeIds(rootChildrenDbIds, privateNodeDbId)) {
+        LOGW_WARN(_logger, L"Error in updateParentNodeIds.");
+        return false;
+    }
+
+    LOG_INFO(_logger, "Successful update of parent node ids for all " << rootChildrenDbIds.size() << " root children.")
+
+    return true;
+}
+
+bool SyncDb::getRootChildrenDbIds(std::vector<DbNodeId> &rootChildrenDbIds) {
+    rootChildrenDbIds.clear();
+
+    const char *requestId = "SELECT_ROOT_CHILDREN_REQUEST_ID";
+
+    if (const char *query = "SELECT nodeId from node WHERE parentNodeId = 1 AND NOT IN ('Common documents', 'Shared');";
+        !createAndPrepareRequest(requestId, query))
+        return false;
+
+    bool found = false;
+    for (;;) {
+        if (!queryNext(requestId, found)) {
+            LOG_WARN(_logger, "Error getting query result: " << requestId);
+            return false;
+        }
+        if (!found) break;
+
+        DbNodeId nodeId;
+        LOG_IF_FAIL(queryInt64Value(requestId, 0, nodeId));
+        rootChildrenDbIds.push_back(nodeId);
+    }
+    LOG_IF_FAIL(queryResetAndClearBindings(requestId));
+
+    queryFree(requestId);
 
     return true;
 }
