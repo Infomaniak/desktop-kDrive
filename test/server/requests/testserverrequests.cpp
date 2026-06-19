@@ -102,7 +102,7 @@ void TestServerRequests::testFindGoodPathForNewSync() {
     SyncPath homePath;
     (void) CommonUtility::homeDirectoryPath(homePath);
     const SyncPath defaultPath = homePath / APPLICATION_NAME;
-    const SyncName driveName("dummyDriveName");
+    const SyncName driveName(Str("dummyDriveName"));
 
     SyncPath returnedPath;
     std::string error;

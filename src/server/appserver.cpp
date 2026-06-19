@@ -2288,7 +2288,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             SyncPath path;
             std::string error;
-            const auto exitInfo = ServerRequests::findGoodPathForNewSync(driveName.toStdString(), path, error);
+            const auto exitInfo = ServerRequests::findGoodPathForNewSync(QStr2SyncName(driveName), path, error);
             if (!exitInfo) {
                 LOG_WARN(_logger, "Error in Requests::findGoodPathForNewSyncFolder");
                 addError(Error(ERR_ID, exitInfo));
