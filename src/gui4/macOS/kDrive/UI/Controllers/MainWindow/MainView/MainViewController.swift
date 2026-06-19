@@ -39,11 +39,12 @@ private extension UInt16 {
 final class MainViewController: IKSplitViewController {
     @LazyInjectService private var router: MainViewRouter
     @LazyInjectService private var synchroStateObserver: UISynchroStateObserving
+    @LazyInjectService private var vfsConversionStore: VfsConversionStoring
+    @LazyInjectService private var vfsConversionStoreObservable: VFSConversionStoreObservable
 
     private let viewModel = MainViewModel()
 
     private var bindStore = Set<AnyCancellable>()
-
     private var sheetClickMonitor: Any?
 
     override func viewDidLoad() {
@@ -87,6 +88,11 @@ final class MainViewController: IKSplitViewController {
         synchroStateObserver.synchroStatePublisher
             .receiveOnMain(store: &bindStore) { [weak self] synchroState in
                 self?.refreshPauseResumeToolbarItem(synchroState)
+            }
+
+        vfsConversionStoreObservable.convertingSynchrosPublisher
+            .receiveOnMain(store: &bindStore) { [weak self] convertingSynchros in
+                self?.refreshPauseResumeToolbarItem(synchroStateObserver.synchroState)
             }
     }
 
@@ -218,6 +224,7 @@ extension MainViewController {
         let pauseResumeButton = NSToolbarItem(itemIdentifier: .pauseResumeButton)
         pauseResumeButton.target = self
         pauseResumeButton.action = #selector(togglePauseResume)
+        pauseResumeButton.autovalidates = false
         updatePauseResumeButton(pauseResumeButton, state: synchroStateObserver.synchroState)
 
         let settingsButton = NSToolbarItem(itemIdentifier: .init("SettingsButton"))
@@ -338,15 +345,17 @@ extension MainViewController {
             return
         }
 
+        let isConverting = viewModel.currentSynchro.map { vfsConversionStore.isConverting(synchroDbId: Int32($0.dbId)) }
+
         switch state.status {
         case .starting:
             setPauseResumeAppearance(item, showPause: true, enabled: false)
         case .running, .idle:
-            setPauseResumeAppearance(item, showPause: true, enabled: true)
+            setPauseResumeAppearance(item, showPause: true, enabled: !isConverting)
         case .stopAsked:
             setPauseResumeAppearance(item, showPause: false, enabled: false)
         case .pauseAsked, .paused, .stopped:
-            setPauseResumeAppearance(item, showPause: false, enabled: true)
+            setPauseResumeAppearance(item, showPause: false, enabled: !isConverting)
         case .error:
             setPauseResumeAppearance(item, showPause: true, enabled: false)
         }
