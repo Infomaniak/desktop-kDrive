@@ -410,7 +410,7 @@ ExitInfo ServerRequests::folderContainsNonExcludedItem(const SyncPath &path, boo
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::findGoodPathForNewSync(SyncPath &path, std::string &error) {
+ExitInfo ServerRequests::findGoodPathForNewSync(const SyncName &driveName, SyncPath &path, std::string &error) {
     std::vector<Sync> syncList;
     if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs");
@@ -421,7 +421,7 @@ ExitInfo ServerRequests::findGoodPathForNewSync(SyncPath &path, std::string &err
     if (const auto exitCode = CommonUtility::homeDirectoryPath(homeFolder); !exitCode) {
         return exitCode;
     }
-    SyncPath initialPath = homeFolder / Theme::instance()->appName();
+    SyncPath initialPath = homeFolder / Theme::instance()->appName() / driveName;
 
     // If the parent folder is a sync folder or contained in one, we can't possibly find a valid sync folder inside it.
     SyncDbId syncDbId = 0;
@@ -462,7 +462,7 @@ ExitInfo ServerRequests::findGoodPathForNewSync(SyncPath &path, std::string &err
         }
         attempt++;
 
-        finalPath = homeFolder / (Theme::instance()->appName() + " " + std::to_string(attempt));
+        finalPath = homeFolder / Theme::instance()->appName() / (SyncName2Str(driveName) + " " + std::to_string(attempt));
     }
 
     path = finalPath;

@@ -2282,9 +2282,13 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC: {
+            QString driveName;
+            QDataStream paramsStream(params);
+            paramsStream >> driveName;
+
             SyncPath path;
             std::string error;
-            const auto exitInfo = ServerRequests::findGoodPathForNewSync(path, error);
+            const auto exitInfo = ServerRequests::findGoodPathForNewSync(driveName.toStdString(), path, error);
             if (!exitInfo) {
                 LOG_WARN(_logger, "Error in Requests::findGoodPathForNewSyncFolder");
                 addError(Error(ERR_ID, exitInfo));

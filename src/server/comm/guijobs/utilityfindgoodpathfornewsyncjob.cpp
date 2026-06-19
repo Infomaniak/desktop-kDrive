@@ -21,6 +21,9 @@
 #include "libcommonserver/log/log.h"
 #include "requests/serverrequests.h"
 
+// Imput parameters key
+static const auto inputParamsDriveName = "driveName";
+
 // Output parameters keys
 static const auto outParamsGoodPath = "goodPath";
 static const auto outParamsErrorMessage = "errorMessage";
@@ -34,6 +37,11 @@ UtilityFindGoodPathForNewSyncJob::UtilityFindGoodPathForNewSyncJob(std::shared_p
     _requestNum = RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC;
 }
 
+ExitInfo UtilityFindGoodPathForNewSyncJob::deserializeInputParms() {
+    readParamValue(inputParamsDriveName, _driveName);
+    return ExitCode::Ok;
+}
+
 ExitInfo UtilityFindGoodPathForNewSyncJob::serializeOutputParms() {
     writeParamValue(outParamsGoodPath, CommonUtility::syncPath2CommString(_goodPath));
     writeParamValue(outParamsErrorMessage, CommonUtility::str2CommString(_errorMessage));
@@ -41,7 +49,7 @@ ExitInfo UtilityFindGoodPathForNewSyncJob::serializeOutputParms() {
 }
 
 ExitInfo UtilityFindGoodPathForNewSyncJob::process() {
-    if (const auto exitInfo = ServerRequests::findGoodPathForNewSync(_goodPath, _errorMessage); !exitInfo) {
+    if (const auto exitInfo = ServerRequests::findGoodPathForNewSync(_driveName, _goodPath, _errorMessage); !exitInfo) {
         LOGW_WARN(_logger, L"findGoodPathForNewSync failed: " << L", errorMessage=" << CommonUtility::s2ws(_errorMessage));
         return exitInfo;
     }
