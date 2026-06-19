@@ -61,7 +61,7 @@ UploadJob::UploadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, 
 }
 
 UploadJob::~UploadJob() {
-    if (!_vfs || isAborted()) return;
+    if (!_vfs || isAborted() || !_shouldUpload) return;
     constexpr VfsStatus vfsStatus({.isHydrated = true, .isSyncing = false, .progress = 100});
     if (const auto exitInfo = _vfs->forceStatus(_absoluteFilePath, vfsStatus); !exitInfo) {
         LOGW_WARN(_logger, L"Error in vfsForceStatus - " << Utility::formatSyncPath(_absoluteFilePath) << L": " << exitInfo);
