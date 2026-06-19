@@ -16,15 +16,12 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Combine
 import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 import SwiftUI
 
 struct BlockingErrorView: View {
-    @LazyInjectService private var vfsConversionStoreObservable: VFSConversionStoreObservable
-
     @State private var isConvertingSynchro = false
     @State private var isShowingGenericError = false
 
