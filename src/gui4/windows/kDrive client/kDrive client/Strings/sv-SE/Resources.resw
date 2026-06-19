@@ -6,7 +6,7 @@
   Locale: sv, Swedish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 12 Jun 2026 16:31:14 +0200 
+  Exported at: Fri, 19 Jun 2026 13:56:55 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -701,7 +701,6 @@ Kontakta din administratör för att öka filstorleksgränsen.</value>
   </data> 
   <data name="errForbiddenActionTitle" xml:space="preserve"> 
     <value>Åtkomst förbjuden</value> 
-    <comment>Title shown when a forbidden or unauthorized action is attempted.</comment> 
   </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
     <value>Namnet på denna %@ innehåller ett eller flera tecken som inte stöds av kDrive Windows-programmet. Byt namn på %@ från kDrive online.</value> 
@@ -1552,7 +1551,7 @@ Internetanslutning krävs för att komma åt dem.</value>
     <value>dina filer synkroniseras</value> 
   </data> 
   <data name="synchroPaused" xml:space="preserve"> 
-    <value>synkroniseringen är pausad</value> 
+    <value>Synkroniseringen är tillfälligt avstängd.</value> 
   </data> 
   <data name="synchroStatusInProgressDescription" xml:space="preserve"> 
     <value>Dina senaste filer uppdateras.</value> 
@@ -1571,7 +1570,7 @@ Synkroniseringen återupptas automatiskt så snart du är uppkopplad igen.</valu
     <value>Synkroniseringen har tillfälligt stoppats.</value> 
   </data> 
   <data name="synchroStatusPausedTitle" xml:space="preserve"> 
-    <value>Pausad</value> 
+    <value>Synkronisering vid paus</value> 
   </data> 
   <data name="synchroStatusUpToDateDescription" xml:space="preserve"> 
     <value>Dina filer är tillgängliga och synkroniserade.</value> 

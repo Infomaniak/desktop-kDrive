@@ -6,7 +6,7 @@
   Locale: da, Danish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 12 Jun 2026 16:31:14 +0200 
+  Exported at: Fri, 19 Jun 2026 13:56:55 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -701,7 +701,6 @@ Kontakt din administrator for at øge filstørrelsesgrænsen.</value>
   </data> 
   <data name="errForbiddenActionTitle" xml:space="preserve"> 
     <value>Adgang forbudt</value> 
-    <comment>Title shown when a forbidden or unauthorized action is attempted.</comment> 
   </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
     <value>Navnet på dette %@ indeholder et eller flere tegn, der ikke understøttes af kDrive Windows-programmet. Omdøb %@ fra kDrive online.</value> 
@@ -1552,7 +1551,7 @@ En internetforbindelse er nødvendig for at få adgang til dem.</value>
     <value>dine filer synkroniseres</value> 
   </data> 
   <data name="synchroPaused" xml:space="preserve"> 
-    <value>synkronisering er sat på pause</value> 
+    <value>Synkroniseringen er midlertidigt stoppet.</value> 
   </data> 
   <data name="synchroStatusInProgressDescription" xml:space="preserve"> 
     <value>Dine seneste filer opdateres.</value> 
@@ -1571,7 +1570,7 @@ Synkroniseringen genoptages automatisk, så snart du er online igen.</value>
     <value>Synkronisering er midlertidigt stoppet.</value> 
   </data> 
   <data name="synchroStatusPausedTitle" xml:space="preserve"> 
-    <value>Sat på pause</value> 
+    <value>Synkronisering under pause</value> 
   </data> 
   <data name="synchroStatusUpToDateDescription" xml:space="preserve"> 
     <value>Dine filer er tilgængelige og synkroniserede.</value> 
