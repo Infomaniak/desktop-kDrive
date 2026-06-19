@@ -190,6 +190,10 @@ void AddDriveWizard::startNextStep(bool backward) {
         if (const auto exitCode = GuiRequests::findGoodPathForNewSync(_driveInfo.name(), goodLocalFolderPath, error);
             exitCode != ExitCode::Ok) {
             qCWarning(lcAddDriveWizard()) << "Error in Requests::findGoodPathForNewSyncFolder : " << error;
+            CustomMessageBox msgBox(
+                    QMessageBox::Warning,
+                    tr("Failed to find a a valid local folder to create your synchronisation. Please, select a folder manually."),
+                    QMessageBox::Ok, this);
         }
 
         _addDriveLocalFolderWidget->setLocalFolderPath(goodLocalFolderPath);
