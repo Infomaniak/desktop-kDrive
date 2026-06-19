@@ -16,15 +16,34 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Combine
 import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 import SwiftUI
 
 struct BlockingErrorView: View {
+    @LazyInjectService private var vfsConversionStoreObservable: VFSConversionStoreObservable
+
+    @State private var isConvertingSynchro = false
     @State private var isShowingGenericError = false
 
     let blockingError: UIBlockingError
+
+    private var buttonIsEnabled: Bool {
+        switch blockingError.error {
+        case .notRenew:
+            if !blockingError.drive.isAdmin {
+                return !isConvertingSynchro
+            } else {
+                return true
+            }
+        case .wakingUp, .maintenance, .accessDenied:
+            return !isConvertingSynchro
+        default:
+            return true
+        }
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -57,13 +76,22 @@ struct BlockingErrorView: View {
             if let actionTitle = blockingError.actionTitle {
                 Button(actionTitle, action: handleAction)
                     .buttonStyle(.borderedProminent)
+                    .disabled(!buttonIsEnabled)
             }
         }
         .padding(AppPadding.padding32)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(ColorToken.Surface.primary.asColor,
-                    in: .rect(cornerRadius: AppRadius.radius16))
+        .background(ColorToken.Surface.primary.asColor, in: .rect(cornerRadius: AppRadius.radius16))
         .padding(AppPadding.padding24)
+        .task {
+            @InjectService var vfsConversionStore: VFSConversionStoring
+            isConvertingSynchro = await vfsConversionStore.isConverting(synchroDbId: Int32(blockingError.synchro.dbId))
+        }
+        .onReceive(vfsConversionStoreObservable.convertingSynchrosPublisher
+            .eraseToAnyPublisher()
+            .receive(on: RunLoop.main)) { convertingSynchro in
+                isConvertingSynchro = convertingSynchro.contains(Int32(blockingError.synchro.dbId))
+        }
         .genericErrorAlert(isPresented: $isShowingGenericError)
     }
 

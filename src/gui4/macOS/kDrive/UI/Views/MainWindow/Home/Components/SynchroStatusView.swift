@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Combine
 import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
@@ -85,10 +86,22 @@ extension HomeState {
 }
 
 struct SynchroStatusView: View {
+    @LazyInjectService private var vfsConversionStoreObservable: VFSConversionStoreObservable
+
+    @State private var isConvertingSynchro = false
     @State private var isShowingGenericError = false
 
     let state: HomeState
     let synchroDbId: UISynchro.ID?
+
+    private var buttonIsEnabled: Bool {
+        switch state {
+        case .synchroIsPaused:
+            return !isConvertingSynchro
+        default:
+            return true
+        }
+    }
 
     var body: some View {
         VStack(spacing: AppPadding.padding32) {
@@ -116,6 +129,7 @@ struct SynchroStatusView: View {
                 .opacity(state.buttonTitle == nil ? 0 : 1)
                 .accessibilityHidden(state.buttonTitle == nil)
                 .allowsHitTesting(state.buttonTitle != nil)
+                .disabled(!buttonIsEnabled)
             }
             .foregroundStyle(ColorToken.Text.primary.asColor)
             .multilineTextAlignment(.center)
@@ -139,6 +153,17 @@ struct SynchroStatusView: View {
             }
         }
         .clipShape(.rect(cornerRadius: AppRadius.radius16))
+        .task {
+            guard let synchroDbId else { return }
+            @InjectService var vfsConversionStore: VFSConversionStoring
+            isConvertingSynchro = await vfsConversionStore.isConverting(synchroDbId: Int32(synchroDbId))
+        }
+        .onReceive(vfsConversionStoreObservable.convertingSynchrosPublisher
+            .eraseToAnyPublisher()
+            .receive(on: RunLoop.main)) { convertingSynchro in
+                guard let synchroDbId else { return }
+                isConvertingSynchro = convertingSynchro.contains(Int32(synchroDbId))
+        }
         .genericErrorAlert(isPresented: $isShowingGenericError)
     }
 
