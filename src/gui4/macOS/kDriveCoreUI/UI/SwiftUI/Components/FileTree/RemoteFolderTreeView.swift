@@ -23,15 +23,15 @@ import SwiftUI
 public struct RemoteFolderTreeView: NSViewRepresentable {
     public let rootItems: [FileTreeItem]
 
-    public let loadChildren: (FileTreeItem) async -> [FileTreeItem]
+    public let loadChildren: @MainActor (FileTreeItem) async -> [FileTreeItem]
     public let onSelectionChange: (FileTreeItem?) -> Void
-    public let createFolder: (_ parent: FileTreeItem, _ name: String) async -> FileTreeItem?
+    public let createFolder: @MainActor (_ parent: FileTreeItem, _ name: String) async -> FileTreeItem?
 
     public init(
         rootItems: [FileTreeItem],
-        loadChildren: @escaping (FileTreeItem) async -> [FileTreeItem],
+        loadChildren: @escaping @MainActor (FileTreeItem) async -> [FileTreeItem],
         onSelectionChange: @escaping (FileTreeItem?) -> Void,
-        createFolder: @escaping (_ parent: FileTreeItem, _ name: String) async -> FileTreeItem?
+        createFolder: @escaping @MainActor (_ parent: FileTreeItem, _ name: String) async -> FileTreeItem?
     ) {
         self.rootItems = rootItems
         self.loadChildren = loadChildren
@@ -114,9 +114,9 @@ final class RemoteFolderNode {
 
 @MainActor
 public final class RemoteFolderOutlineView: NSView {
-    var loadChildren: ((FileTreeItem) async -> [FileTreeItem])?
+    var loadChildren: (@MainActor (FileTreeItem) async -> [FileTreeItem])?
     var onSelectionChange: ((FileTreeItem?) -> Void)?
-    var createFolder: ((_ parent: FileTreeItem, _ name: String) async -> FileTreeItem?)?
+    var createFolder: (@MainActor (_ parent: FileTreeItem, _ name: String) async -> FileTreeItem?)?
 
     private let scrollView = NSScrollView()
     private let outlineView = NSOutlineView()
