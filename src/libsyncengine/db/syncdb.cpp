@@ -2999,14 +2999,12 @@ bool SyncDb::copyLocalItemsToTmpPrivateDir(const SyncPath &localSyncDirPath, con
     return true;
 }
 
-bool SyncDb::renameTempPrivateDir(const SyncPath &localSyncDirPath, const SyncPath &privateTmpLocalPath) const {
-    const auto privateLocalPath =
-            localSyncDirPath / ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::Private);
-
+bool SyncDb::renameTempPrivateDir(const SyncPath &privateTmpLocalPath, const SyncPath &privateLocalPath) const {
     if (auto renamingError = IoError::Success;
         !IoHelper::renameItem(privateTmpLocalPath, privateLocalPath, renamingError) || renamingError != IoError::Success) {
-        LOGW_WARN(_logger, L"Error in IoHelper::getRecursiveDirectoryIterator: "
-                                   << Utility::formatIoError(localSyncDirPath, renamingError));
+        LOGW_WARN(_logger, L"Error in IoHelper::renameItem for target "
+                                   << Utility::formatSyncPath(privateTmpLocalPath)
+                                   << Utility::formatIoError(privateTmpLocalPath, renamingError));
 
         removeTempPrivateDir(privateTmpLocalPath);
 
@@ -3085,7 +3083,10 @@ bool SyncDb::migrateLocalItemsToPrivateDir(const std::string &dbFromVersionNumbe
         return false;
     }
 
-    if (!renameTempPrivateDir(localSyncDirPath, privateTmpLocalPath)) {
+    const auto privateLocalPath =
+            localSyncDirPath / ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::Private);
+
+    if (!renameTempPrivateDir(privateTmpLocalPath, privateLocalPath)) {
         LOGW_WARN(_logger, L"Error in renameTempPrivateDir.");
         return false;
     }
@@ -3095,8 +3096,16 @@ bool SyncDb::migrateLocalItemsToPrivateDir(const std::string &dbFromVersionNumbe
         return false;
     }
 
-    LOGW_INFO(_logger, L"Migration of high level items to local Private folder successful for sync with "
+    LOGW_INFO(_logger, L"Successful migration of high level items to local Private folder for sync with "
                                << Utility::formatSyncPath(localSyncDirPath));
+
+    if (!updateParentNodeIdsOfRootChildren(sync.driveDbId(), privateLocalPath)) {
+        LOGW_WARN(_logger, L"Error in updateParentNodeIdsOfRootChildren.");
+        return false;
+    }
+
+    LOGW_INFO(_logger,
+              L"Successful overall migration to Private folder for sync with " << Utility::formatSyncPath(localSyncDirPath));
 
     return true;
 }
@@ -3165,7 +3174,57 @@ bool SyncDb::getNodeTableRowCount(int64_t &count) {
     return true;
 }
 
-bool SyncDb::updateParentNodeDbIdOfRootChildren() {
+bool SyncDb::insertPrivateDirNode(const DbNodeId privateDirDbNodeId, const DriveDbId driveDbId,
+                                  const SyncPath &localPrivateDirPath) {
+    DbNode privateDbNode;
+    privateDbNode.setNodeId(privateDirDbNodeId);
+
+    privateDbNode.setParentNodeId(rootNode().nodeId());
+    const SyncName &privateDirName = ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::Private);
+    privateDbNode.setNameLocal(privateDirName);
+    privateDbNode.setNameRemote(privateDirName);
+    privateDbNode.setType(NodeType::Directory);
+
+    NodeId privateDirLocalNodeId;
+    if (!IoHelper::getNodeId(localPrivateDirPath, privateDirLocalNodeId) || privateDirLocalNodeId.empty()) {
+        LOGW_WARN(_logger, L"Error in IoHelper::getNodeId for Private folder.");
+        return false;
+    }
+
+    privateDbNode.setNodeIdLocal(privateDirLocalNodeId);
+
+    RemoteNodeId privateDirRemoteNodeId;
+    if (auto exitInfo =
+                ApiTranslator::getSpecialFolderRemoteId(driveDbId, ApiTranslator::SpecialFolder::Private, privateDirRemoteNodeId);
+        !exitInfo) {
+        LOGW_WARN(_logger, L"Error in ApiTranslator::getSpecialFolderRemoteId for Private folder.");
+        return false;
+    }
+    privateDbNode.setNodeIdRemote(privateDirRemoteNodeId);
+
+    // Retrieve creation and last modification dates from the local directory.
+    FileStat fileStat;
+    if (auto ioError = IoError::Unknown;
+        !IoHelper::getFileStat(localPrivateDirPath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive) ||
+        ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Failed to get FileStat for " << Utility::formatSyncPath(localPrivateDirPath) << L": " << ioError);
+    }
+    privateDbNode.setCreated(fileStat.creationTime);
+    privateDbNode.setLastModifiedLocal(fileStat.modificationTime);
+
+    if (!insertNode(privateDbNode)) {
+        LOGW_WARN(_logger, L"Error inserting Private directory node into SyncDb.");
+        return false;
+    }
+
+    LOGW_INFO(_logger, L"Successful insertion of Private directory node with DB ID "
+                               << privateDirDbNodeId << L" and local node ID " << CommonUtility::s2ws(privateDirLocalNodeId)
+                               << L" for Private folder at " << Utility::formatSyncPath(localPrivateDirPath) << L".");
+
+    return true;
+}
+
+bool SyncDb::updateParentNodeIdsOfRootChildren(const DriveDbId driveDbId, const SyncPath &localPrivateDirPath) {
     std::vector<DbNodeId> rootChildrenDbIds;
 
     if (!getRootChildrenDbIds(rootChildrenDbIds)) {
@@ -3183,6 +3242,8 @@ bool SyncDb::updateParentNodeDbIdOfRootChildren() {
     }
 
     LOG_INFO(_logger, "Successful update of parent node ids for all " << rootChildrenDbIds.size() << " root children.")
+
+    insertPrivateDirNode(privateNodeDbId, driveDbId, localPrivateDirPath);
 
     return true;
 }
