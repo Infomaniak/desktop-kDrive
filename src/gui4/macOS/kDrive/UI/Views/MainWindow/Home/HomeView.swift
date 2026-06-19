@@ -26,6 +26,8 @@ import SwiftUI
 struct HomeView: View {
     static let spacing = AppPadding.padding24
 
+    @State private var avatar: Image?
+
     @StateObject private var networkObserver = NetworkObserver()
 
     @ObservedObject var mainViewModel: MainViewModel
@@ -66,7 +68,7 @@ struct HomeView: View {
                     SynchroStatusView(state: state, synchroDbId: mainViewModel.currentSynchro?.id)
                         .frame(maxWidth: (proxy.size.width - HomeView.spacing / 2) * 2 / 3)
 
-                    DriveWebShortcutsView(avatar: mainViewModel.currentUser?.avatar, drive: mainViewModel.currentDrive)
+                    DriveWebShortcutsView(avatar: avatar, drive: mainViewModel.currentDrive)
                         .frame(maxWidth: (proxy.size.width - HomeView.spacing / 2) * 1 / 3)
                 }
             }
@@ -74,6 +76,12 @@ struct HomeView: View {
         .padding(AppPadding.page)
         .task {
             try? await UtilityJobs().activateLoadInfo()
+        }
+        .onAppear {
+            avatar = mainViewModel.currentUser?.avatar
+        }
+        .onChange(of: mainViewModel.currentUser?.avatarData) { _ in
+            avatar = mainViewModel.currentUser?.avatar
         }
     }
 }

@@ -339,9 +339,13 @@ extension MainViewController {
         }
 
         switch state.status {
-        case .starting, .running, .idle:
+        case .starting:
+            setPauseResumeAppearance(item, showPause: true, enabled: false)
+        case .running, .idle:
             setPauseResumeAppearance(item, showPause: true, enabled: true)
-        case .pauseAsked, .paused, .stopAsked, .stopped:
+        case .stopAsked:
+            setPauseResumeAppearance(item, showPause: false, enabled: false)
+        case .pauseAsked, .paused, .stopped:
             setPauseResumeAppearance(item, showPause: false, enabled: true)
         case .error:
             setPauseResumeAppearance(item, showPause: true, enabled: false)

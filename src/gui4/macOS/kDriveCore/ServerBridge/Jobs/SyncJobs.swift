@@ -80,18 +80,32 @@ public struct SyncJobs: Sendable {
 
     public func startSync(syncDbId: Int32) async throws {
         IKLogger.data.log("Query to startSync")
+        let previousProgress = await setSyncStatusOptimistically(syncDbId: syncDbId, status: .Starting)
+
         let query = SyncQuery(syncDbId: syncDbId)
         let request = await RequestMessage<SyncQuery>(num: RequestNum.SYNC_START, body: query)
 
-        try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+        do {
+            try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+        } catch {
+            await revertSyncStatus(syncDbId: syncDbId, to: previousProgress)
+            throw error
+        }
     }
 
     public func stopSync(syncDbId: Int32) async throws {
         IKLogger.data.log("Query to stopSync")
+        let previousProgress = await setSyncStatusOptimistically(syncDbId: syncDbId, status: .StopAsked)
+
         let query = SyncQuery(syncDbId: syncDbId)
         let request = await RequestMessage<SyncQuery>(num: RequestNum.SYNC_STOP, body: query)
 
-        try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+        do {
+            try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+        } catch {
+            await revertSyncStatus(syncDbId: syncDbId, to: previousProgress)
+            throw error
+        }
     }
 
     public func syncStatus(syncDbId: Int32) async throws -> KDC.SyncFileStatus {
@@ -199,5 +213,36 @@ public struct SyncJobs: Sendable {
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<OfflineFilesSizeResponse>.self)
 
         return decodedMessage.body.size
+    }
+
+    private func setSyncStatusOptimistically(syncDbId: Int32, status: KDC.SyncStatus) async -> SynchroProgressInfo? {
+        guard var synchro = await coherentCache.getSynchro(synchroDbId: syncDbId) else { return nil }
+
+        let previousProgress = synchro.progress
+
+        if let existingProgress = synchro.progress {
+            synchro.progress = existingProgress.withSyncStatus(status)
+        } else {
+            synchro.progress = .placeholder(status: status)
+        }
+
+        do {
+            try await coherentCache.updateSynchro(synchro)
+        } catch {
+            IKLogger.data.error("Failed to apply optimistic sync status update: \(error)")
+        }
+
+        return previousProgress
+    }
+
+    private func revertSyncStatus(syncDbId: Int32, to previousProgress: SynchroProgressInfo?) async {
+        guard var synchro = await coherentCache.getSynchro(synchroDbId: syncDbId) else { return }
+        synchro.progress = previousProgress
+
+        do {
+            try await coherentCache.updateSynchro(synchro)
+        } catch {
+            IKLogger.data.error("Failed to revert optimistic sync status: \(error)")
+        }
     }
 }
