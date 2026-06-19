@@ -16,29 +16,23 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Foundation
+import AppKit
+import InfomaniakDI
+import kDriveCoreUI
+import kDriveResources
 
-public struct FileTreeItem: Identifiable, Hashable, Sendable {
-    public let id: String
-    public let name: String
-    public let path: String?
-    public let size: Int64?
-    public let isFolder: Bool
-    public let isEnabled: Bool
-
-    public init(
-        id: String,
-        name: String,
-        path: String? = nil,
-        size: Int64? = nil,
-        isFolder: Bool,
-        isEnabled: Bool = true
-    ) {
-        self.id = id
-        self.name = name
-        self.path = path
-        self.size = size
-        self.isFolder = isFolder
-        self.isEnabled = isEnabled
+final class BlacklistPreferencesViewController: TitledViewController<BlacklistPreferencesView> {
+    convenience init(userId: UIUser.ID, driveId: UIDrive.ID, synchroDbId: UISynchro.ID, rootNodeId: String?) {
+        @InjectService var router: PreferencesViewRouter
+        self.init(
+            toolbarTitle: KDriveLocalizable.titleManageSynchronization,
+            navigableRouter: router,
+            contentView: BlacklistPreferencesView(
+                userDbId: userId,
+                driveId: driveId,
+                synchroDbId: synchroDbId,
+                rootNodeId: rootNodeId
+            )
+        )
     }
 }

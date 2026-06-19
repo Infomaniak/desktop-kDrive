@@ -24,30 +24,18 @@ import SwiftUI
 struct SelectSynchroFoldersView: View {
     @EnvironmentObject private var viewModel: SynchroConfigurationFlowViewModel
 
-    @State private var root = [FileTreeItem]()
     @State private var blackList = Set<String>()
 
     let userDbId: Int
     let configuration: SynchroConfiguration
 
     var body: some View {
-        VStack(alignment: .leading, spacing: AppPadding.padding24) {
-            VStack(alignment: .leading, spacing: AppPadding.padding8) {
-                Text(KDriveLocalizable.onboardingAdvancedSettingsDriveExclusionDescription)
-                    .font(.Tokens.headline)
-                    .foregroundStyle(ColorToken.Text.primary.asColor)
-
-                Text(KDriveLocalizable.selectFoldersToSyncDescription)
-                    .font(.Tokens.subheadline)
-                    .foregroundStyle(ColorToken.Text.tertiary.asColor)
-            }
-
-            FileTreeView(rootItems: root, initialBlacklist: Set(configuration.blackList)) {
-                await fetchSubFolders(for: $0)
-            } onBlacklistChange: {
-                updateBlacklist($0)
-            }
-        }
+        FoldersToSynchroView(
+            blackList: $blackList,
+            initialBlackList: Set(configuration.blackList),
+            userDbId: userDbId,
+            driveDbId: configuration.drive.id
+        )
         .padding()
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
@@ -68,33 +56,6 @@ struct SelectSynchroFoldersView: View {
         .onAppear {
             blackList = Set(configuration.blackList)
         }
-        .task {
-            await fetchRoot()
-        }
-    }
-
-    private func fetchRoot() async {
-        root = await fetchSubFolders(for: nil)
-    }
-
-    private func fetchSubFolders(for node: FileTreeItem?) async -> [FileTreeItem] {
-        let userDbId = Int32(userDbId)
-        let driveId = Int32(configuration.drive.id)
-        let rootNodeId = node?.id ?? ""
-
-        do {
-            let nodes = try await NodeJobs().getNodeSubfolders(userDbId: userDbId, driveId: driveId, nodeId: rootNodeId)
-            return nodes.map {
-                let size = $0.size == -1 ? nil : $0.size
-                return FileTreeItem(id: $0.nodeId, name: $0.name, size: size, isFolder: true, isEnabled: !$0.accessDenied)
-            }
-        } catch {
-            return []
-        }
-    }
-
-    private func updateBlacklist(_ blackList: Set<String>) {
-        self.blackList = blackList
     }
 }
 

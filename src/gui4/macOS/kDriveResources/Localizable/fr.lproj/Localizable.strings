@@ -68,7 +68,10 @@
 "addAdvancedSyncLocalFolderTitle" = "Dossier synchronisé";
 
 /* loco:69b429241110b141d0085ab2 */
-"addAdvancedSyncRemoteFolderDescription" = "Personnalisez l'emplacement du dossier de votre ordinateur sur kDrive :";
+"addAdvancedSyncRemoteFolderDescription" = "Personnalisez l’emplacement du dossier de votre ordinateur sur kDrive :";
+
+/* loco:69bac02ad8355281490134c2 */
+"addAdvancedSyncRemoteFolderPageTitle" = "Choisissez l’emplacement du dossier sur kDrive";
 
 /* loco:69b429180e3d6a548e0afac2 */
 "addAdvancedSyncRemoteFolderTitle" = "Emplacement kDrive";
@@ -127,6 +130,9 @@
 
 /* loco:69c11aacce7b3b9139008044 */
 "buttonActivateOfflineSync" = "Activer la synchronisation hors ligne";
+
+/* loco:698b08da7aafd767de0d78b2 */
+"buttonAddAdvancedSync" = "Synchroniser un dossier";
 
 /* loco:698b580c716d616edb0efde2 */
 "buttonAddFileExclusionRule" = "Ajouter une règle";
@@ -290,8 +296,14 @@
 /* loco:69a6a31c97f5f5084b09e612 */
 "buttonSelect" = "Sélectionner";
 
+/* loco:69b422d7b7de08855d023d32 */
+"buttonSelectFolder" = "Sélectionner un dossier";
+
 /* loco:698c5cb5f86b52c6fc001fc4 */
 "buttonSelectFolders" = "Sélectionner les dossiers";
+
+/* loco:69bac5f6f74824a64304bcd9 */
+"buttonSelectLocation" = "Sélectionner un emplacement";
 
 /* loco:69a6a32d8e33a191f90115f2 */
 "buttonSelected" = "Sélectionné";
@@ -703,6 +715,9 @@
 /* loco:6995dff99537658db20fabb3 */
 "errorPageTitle" = "Erreurs à corriger";
 
+/* loco:6a2fb7df4af9c895d0043b52 */
+"errorSelectedFolderIncorrect" = "Ce dossier ne peut pas être synchronisé. Veuillez sélectionner un autre dossier.";
+
 /* loco:69afcc9e14a34ba0f30ee2a2 */
 "errorStartingInstaller" = "Erreur lors du démarrage du programme d'installation";
 
@@ -998,6 +1013,9 @@
 
 /* loco:698c49120217e0fe6308b0c2 */
 "labelSyncLocation" = "Emplacement";
+
+/* loco:69bbf39c8b5d154c9b0e76b2 */
+"labelSyncedFolders" = "Dossiers synchronisés";
 
 /* loco:698c4ae9a90fef6269010692 */
 "labelSynchronisation" = "Synchronisation";
@@ -1364,6 +1382,9 @@
 
 /* loco:68a70c659c53feed83039c42 */
 "tabTitleStorage" = "Stockage";
+
+/* loco:6a2a67aa51ff4812670b0532 */
+"titleManageSynchronization" = "Gérer la synchronisation";
 
 /* loco:69eb7b41376492d2de0d0242
  * Empty search state subtitle when no result matches the user query in SearchSheetView. */
