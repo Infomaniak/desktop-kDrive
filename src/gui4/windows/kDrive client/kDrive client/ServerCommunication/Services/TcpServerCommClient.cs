@@ -28,12 +28,12 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommProtocol;
+using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommClient;
 
 
 namespace Infomaniak.kDrive.ServerCommunication.Services
 {
-    public class SocketServerCommProtocol : Interfaces.IServerCommProtocol
+    public class TcpServerCommClient : Interfaces.IServerCommClient
     {
         private Socket? _socket;
         private readonly SemaphoreSlim _sendLock = new(1, 1);
@@ -69,9 +69,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         public event EventHandler<SignalEventArgs> SignalReceived = delegate { };
         public event EventHandler ConnectionLost = delegate { };
 
-        public SocketServerCommProtocol() {}
+        public TcpServerCommClient() {}
 
-        ~SocketServerCommProtocol()
+        ~TcpServerCommClient()
         {
             _socket?.Dispose();
             _stopRequested = true;
