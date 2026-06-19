@@ -69,6 +69,7 @@ struct ErrorsListView: View {
                 DataSyncDirChangedReasonsSheet(synchroErrorManager: synchroErrorManager)
             }
         }
+        .genericErrorAlert(isPresented: $synchroErrorManager.isShowingGenericError)
         .onAppear(perform: recomputeErrors)
         .onChange(of: errors) { _ in
             recomputeErrors()

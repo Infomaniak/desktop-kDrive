@@ -27,6 +27,7 @@ final class SynchroErrorManager: ObservableObject {
     @Published var isShowingLocalAccessSheet: SynchroError?
     @Published var isShowingResolutionTipsSheet: ExplanationsSheetType?
     @Published var isShowingVersionSelectorSheet: ConflictsToResolve?
+    @Published var isShowingGenericError = false
 
     enum ExplanationsSheetType: Identifiable, Sendable {
         var id: String {
@@ -51,11 +52,19 @@ final class SynchroErrorManager: ObservableObject {
     // MARK: - Manage sync
 
     func refreshErrors(_ error: SynchroError) async {
-        _ = try? await ErrorJobs().refreshSyncErrors(syncDbId: Int32(error.metadata.synchroDbId))
+        do {
+            _ = try await ErrorJobs().refreshSyncErrors(syncDbId: Int32(error.metadata.synchroDbId))
+        } catch {
+            isShowingGenericError = true
+        }
     }
 
     func tryToRestartSynchro(_ error: SynchroError) async {
-        try? await SyncJobs().startSync(syncDbId: Int32(error.metadata.synchroDbId))
+        do {
+            try await SyncJobs().startSync(syncDbId: Int32(error.metadata.synchroDbId))
+        } catch {
+            isShowingGenericError = true
+        }
     }
 
     // MARK: - Open URLs

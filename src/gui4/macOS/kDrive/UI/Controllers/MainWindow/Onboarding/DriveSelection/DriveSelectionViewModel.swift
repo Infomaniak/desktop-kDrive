@@ -36,6 +36,7 @@ final class DriveSelectionViewModel: ObservableObject {
     private var bindStore = Set<AnyCancellable>()
 
     @Published private(set) var isLoading = false
+    @Published var isShowingError = false
     @Published private(set) var selectedDrives = Set<UIAvailableDrive>()
 
     @Published private(set) var availableDrives = [UIAvailableDrive]()
@@ -131,8 +132,8 @@ final class DriveSelectionViewModel: ObservableObject {
                 flowCoordinator.synchronizations = syncCandidates
                 await flowCoordinator.navigateToNextStepOrFinish()
             } catch {
-                // TODO: Handle error
                 isLoading = false
+                isShowingError = true
             }
         }
     }

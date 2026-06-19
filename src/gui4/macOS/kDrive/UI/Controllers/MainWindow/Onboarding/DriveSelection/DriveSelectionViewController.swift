@@ -77,7 +77,7 @@ final class DriveSelectionViewController: OnboardingStepViewController {
             do {
                 try await viewModel.loadAvailableDrives()
             } catch {
-                print("Error loading available drives: \(error)")
+                viewModel.isShowingError = true
             }
         }
     }
@@ -129,6 +129,22 @@ final class DriveSelectionViewController: OnboardingStepViewController {
             .receiveOnMain(store: &bindStore) { [weak self] isLoading in
                 self?.handleLoadingState(isLoading)
             }
+
+        viewModel.$isShowingError
+            .receiveOnMain(store: &bindStore) { [weak self] isShowingError in
+                guard isShowingError else { return }
+                self?.showGenericErrorAlert()
+            }
+    }
+
+    private func showGenericErrorAlert() {
+        let alert = NSAlert()
+        alert.alertStyle = .critical
+        alert.messageText = KDriveLocalizable.unexpectedErrorTeachingTipTitle
+        alert.informativeText = KDriveLocalizable.unexpectedErrorTeachingTipContent
+        alert.runModal()
+
+        viewModel.isShowingError = false
     }
 
     private func handleUpdatedDrivesList(_ drives: [UIAvailableDrive]) {

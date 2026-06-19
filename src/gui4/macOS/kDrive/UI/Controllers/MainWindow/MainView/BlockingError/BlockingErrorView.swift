@@ -22,6 +22,8 @@ import kDriveCoreUI
 import SwiftUI
 
 struct BlockingErrorView: View {
+    @State private var isShowingGenericError = false
+
     let blockingError: UIBlockingError
 
     var body: some View {
@@ -62,6 +64,7 @@ struct BlockingErrorView: View {
         .background(ColorToken.Surface.primary.asColor,
                     in: .rect(cornerRadius: AppRadius.radius16))
         .padding(AppPadding.padding24)
+        .genericErrorAlert(isPresented: $isShowingGenericError)
     }
 
     private func handleAction() {
@@ -86,7 +89,11 @@ struct BlockingErrorView: View {
 
     private func restartSynchro() {
         Task {
-            try? await SyncJobs().startSync(syncDbId: Int32(blockingError.synchro.dbId))
+            do {
+                try await SyncJobs().startSync(syncDbId: Int32(blockingError.synchro.dbId))
+            } catch {
+                isShowingGenericError = true
+            }
         }
     }
 }
