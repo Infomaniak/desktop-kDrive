@@ -35,7 +35,7 @@ function Get-VersionFromJson {
     }
 
     $versionData = Get-Content $VersionJsonPath -Raw | ConvertFrom-Json
-    $version = $versionData.Version
+    $version = $versionData.Version.Windows
 
     if (-not $version) {
         throw "Version object not found in JSON"
