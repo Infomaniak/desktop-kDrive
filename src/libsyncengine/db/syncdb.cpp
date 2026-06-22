@@ -3139,6 +3139,18 @@ bool SyncDb::getNodeTableRowCount(int64_t &count) {
     return true;
 }
 
+bool SyncDb::getPrivateDirRemoteNodedId(const DriveDbId driveDbId, RemoteNodeId &privateDirRemoteNodeId) {
+    privateDirRemoteNodeId = {};
+    if (auto exitInfo =
+                ApiTranslator::getSpecialFolderRemoteId(driveDbId, ApiTranslator::SpecialFolder::Private, privateDirRemoteNodeId);
+        !exitInfo) {
+        LOGW_WARN(_logger, L"Error in ApiTranslator::getSpecialFolderRemoteId for Private folder.");
+        return false;
+    }
+
+    return true;
+}
+
 bool SyncDb::insertPrivateDirNode(const DbNodeId privateDirDbNodeId, const DriveDbId driveDbId,
                                   const SyncPath &localPrivateDirPath) {
     DbNode privateDbNode;
@@ -3159,12 +3171,8 @@ bool SyncDb::insertPrivateDirNode(const DbNodeId privateDirDbNodeId, const Drive
     privateDbNode.setNodeIdLocal(privateDirLocalNodeId);
 
     RemoteNodeId privateDirRemoteNodeId;
-    if (auto exitInfo =
-                ApiTranslator::getSpecialFolderRemoteId(driveDbId, ApiTranslator::SpecialFolder::Private, privateDirRemoteNodeId);
-        !exitInfo) {
-        LOGW_WARN(_logger, L"Error in ApiTranslator::getSpecialFolderRemoteId for Private folder.");
-        return false;
-    }
+    if (!getPrivateDirRemoteNodedId(driveDbId, privateDirRemoteNodeId)) return false;
+
     privateDbNode.setNodeIdRemote(privateDirRemoteNodeId);
 
     // Retrieve creation and last modification dates from the local directory.
