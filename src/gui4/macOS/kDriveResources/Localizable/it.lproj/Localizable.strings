@@ -1262,10 +1262,10 @@
 "storageMacFreeSpace" = "Spazio libero";
 
 /* loco:697a0768c39a2189f5022564 */
-"storageMacUsedByComputer" = "Altri file Mac";
+"storageMacUsedByComputer" = "Altri file";
 
 /* loco:697a07436d99d0c2c00449e2 */
-"storageMacUsedByKDrive" = "File kDrive archiviati sul Mac";
+"storageMacUsedByKDrive" = "File kDrive memorizzati sul tuo dispositivo";
 
 /* loco:69c67d8e7c0702965a003512 */
 "storageMissingDiskMacOSDescription" = "kDrive non può accedere al volume\nAssicurarsi che sia collegato,\nsbloccato e accessibile dal computer.";
