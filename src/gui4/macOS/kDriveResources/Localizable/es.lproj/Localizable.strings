@@ -1414,6 +1414,27 @@
 /* loco:69d903e2d570d224db097582 */
 "updateRequiredTitle" = "Actualización requerida";
 
+/* loco:6a017a9746a40dd2910b7424 */
+"updateDialogDescription" = "La instalación tarda menos de un minuto.\nSu sincronización se reanudará automáticamente al finalizar.";
+
+/* loco:6a017a9746a40dd2910b7428 */
+"updateDialogIgnoreVersion" = "Ignorar esta versión";
+
+/* loco:6a017a9746a40dd2910b7427 */
+"updateDialogInstallNow" = "Instalar ahora";
+
+/* loco:6a017a9746a40dd2910b7426 */
+"updateDialogRemindLater" = "Recordar más tarde";
+
+/* loco:6a017a9746a40dd2910b7425 */
+"updateDialogSeeWhatsNew" = "Ver novedades";
+
+/* loco:6a017a9746a40dd2910b7423 */
+"updateDialogSubtitle" = "Versión %@ · Está usando la %@";
+
+/* loco:6a017a9746a40dd2910b7422 */
+"updateDialogTitle" = "Actualización disponible";
+
 /* loco:698aec0b7bde6b6260001c02 */
 "updateSettings" = "Actualización";
 

@@ -1028,6 +1028,23 @@ public enum KDriveLocalizable {
   public static let updateRequiredDescription = KDriveLocalizable.tr("Localizable", "updateRequiredDescription", fallback: "A new version of kDrive is required to continue.\nPlease update the application to access your files and resume synchronization.")
   /// loco:69d903e2d570d224db097582
   public static let updateRequiredTitle = KDriveLocalizable.tr("Localizable", "updateRequiredTitle", fallback: "Update required")
+
+  /// loco:6a017a9746a40dd2910b7424
+  public static let updateDialogDescription = KDriveLocalizable.tr("Localizable", "updateDialogDescription", fallback: "Installation takes less than a minute.\nYour synchronization will resume automatically at the end.")
+  /// loco:6a017a9746a40dd2910b7428
+  public static let updateDialogIgnoreVersion = KDriveLocalizable.tr("Localizable", "updateDialogIgnoreVersion", fallback: "Ignore this version")
+  /// loco:6a017a9746a40dd2910b7427
+  public static let updateDialogInstallNow = KDriveLocalizable.tr("Localizable", "updateDialogInstallNow", fallback: "Install now")
+  /// loco:6a017a9746a40dd2910b7426
+  public static let updateDialogRemindLater = KDriveLocalizable.tr("Localizable", "updateDialogRemindLater", fallback: "Remind me later")
+  /// loco:6a017a9746a40dd2910b7425
+  public static let updateDialogSeeWhatsNew = KDriveLocalizable.tr("Localizable", "updateDialogSeeWhatsNew", fallback: "See what’s new")
+  /// loco:6a017a9746a40dd2910b7423
+  public static func updateDialogSubtitle(_ p1: Any, _ p2: Any) -> String {
+    return KDriveLocalizable.tr("Localizable", "updateDialogSubtitle", String(describing: p1), String(describing: p2), fallback: "Version %@ · You are using %@")
+  }
+  /// loco:6a017a9746a40dd2910b7422
+  public static let updateDialogTitle = KDriveLocalizable.tr("Localizable", "updateDialogTitle", fallback: "Update available")
   /// loco:698aec0b7bde6b6260001c02
   public static let updateSettings = KDriveLocalizable.tr("Localizable", "updateSettings", fallback: "Update")
   /// loco:6a031b29945d3f97240ff954

@@ -157,4 +157,13 @@ public enum PreviewHelper {
             exitCause: .Unknown
         )
     )
+
+    public static let versionInfo = VersionInfo(
+        channel: KDC.DistributionChannel.Beta,
+        tag: "3.8.4",
+        buildVersion: 2,
+        buildMinOsVersion: "26",
+        downloadUrl: "",
+        checksum: ""
+    )
 }
