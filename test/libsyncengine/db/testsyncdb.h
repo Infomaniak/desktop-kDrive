@@ -52,6 +52,7 @@ class TestSyncDb : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testDbNode);
         CPPUNIT_TEST(testTryToFixDbNodeIdsAfterSyncDirChange);
         CPPUNIT_TEST(testGetNodeTableRowCount);
+        CPPUNIT_TEST(testMigrateLocalItemsToPrivateDir);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -83,10 +84,13 @@ class TestSyncDb : public CppUnit::TestFixture, public TestBase {
         void testDbNode();
         void testTryToFixDbNodeIdsAfterSyncDirChange();
         void testGetNodeTableRowCount();
+        void testMigrateLocalItemsToPrivateDir();
 
     private:
         SyncDbMock *_testObj;
         // Note: the node ID value "1" is reserved for the root node of any synchronisation for both local and remote sides.
         std::vector<DbNode> setupSyncDb3_6_5(const std::vector<NodeId> &localNodeIds = {"2", "3", "4", "5", "6"});
+        // Initial setup to test the migration to local Private folder in keeping with the backend API v3.
+        void setupSyncMigrationToLocalPrivateDir(const SyncPath &localPath);
 };
 } // namespace KDC

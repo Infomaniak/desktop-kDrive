@@ -19,10 +19,14 @@
 #include "testsyncdb.h"
 #include "test_utility/testhelpers.h"
 #include "test_utility/localtemporarydirectory.h"
+
 #include "libcommon/utility/logiffail.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libparms/db/parmsdb.h"
+#include "libsyncengine/propagation/executor/filerescuer.h"
+
 #include "mocks/libcommonserver/db/mockdb.h"
+#include "jobs/network/kDrive_API/apitranslator.h"
 
 #include <algorithm>
 #include <time.h>
@@ -1048,4 +1052,91 @@ void TestSyncDb::testGetNodeTableRowCount() {
     CPPUNIT_ASSERT(_testObj->getNodeTableRowCount(nodeCount));
     CPPUNIT_ASSERT_EQUAL(int64_t{3}, nodeCount);
 }
+
+void TestSyncDb::setupSyncMigrationToLocalPrivateDir(const SyncPath &localPath) {
+    /**
+     * FS tree:
+     *      *      Root
+     *      |-- Common documents
+     *      |-- Shared
+     *      |-- .kdrive-cache
+     *      |-- kDrive Rescue Folder
+     *      |-- Private
+     *      |
+     *      |-- a
+     *      |   `-- b
+     *      |-- c.txt
+     */
+
+    // File system setup.
+    const SyncPath commonDocumentsPath =
+            localPath / ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::CommonDocuments);
+    const SyncPath sharedPath = localPath / ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::Shared);
+    const SyncPath privatePath = localPath / ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::Private);
+    const SyncPath cachePath = localPath / CacheDirectory::name();
+    const SyncPath rescueFolderPath = localPath / FileRescuer::rescueFolderName().filename();
+    const SyncPath pathA = localPath / Str("a");
+    const SyncPath pathB = pathA / Str("b");
+    const SyncPath pathC = localPath / Str("c.txt");
+
+    for (const auto &path: {commonDocumentsPath, sharedPath, privatePath, cachePath, rescueFolderPath, pathA})
+        std::filesystem::create_directories(path);
+
+    for (const auto &path: {pathB, pathC}) std::ofstream file{path};
+
+    // SyncDb setup.
+    const time_t tLoc = std::time(nullptr);
+    const time_t tDrive = std::time(nullptr);
+    const auto rootId = _testObj->rootNode().nodeId();
+
+    std::vector<DbNode> folderNodes;
+    Count folderCount = 0;
+    for (const auto &path: {commonDocumentsPath, sharedPath, privatePath, cachePath, rescueFolderPath}) {
+        const auto nodeId = std::to_string(folderCount);
+        DbNode node(rootId, path.filename(), path.filename(), nodeId, nodeId, tLoc, tLoc, tDrive, NodeType::Directory, 0);
+        _testObj->insertNode(node);
+        ++folderCount;
+    }
+
+    auto nodeId = std::to_string(folderCount);
+    DbNode nodeA(rootId, pathA.filename(), pathA.filename(), nodeId, nodeId, tLoc, tLoc, tDrive, NodeType::Directory, 0);
+    DbNodeId dbNodeId;
+    bool constraintsError = false;
+    _testObj->insertNode(nodeA, dbNodeId, constraintsError);
+    ++folderCount;
+
+    nodeId = std::to_string(folderCount);
+    DbNode nodeB(dbNodeId, pathB.filename(), pathB.filename(), nodeId, nodeId, tLoc, tLoc, tDrive, NodeType::Directory, 0);
+    _testObj->insertNode(nodeB);
+    ++folderCount;
+
+    nodeId = std::to_string(folderCount);
+    DbNode nodeC(rootId, Str("c.txt"), Str("c.txt"), nodeId, nodeId, tLoc, tLoc, tDrive, NodeType::File, 0);
+    _testObj->insertNode(nodeC);
+}
+
+void TestSyncDb::testMigrateLocalItemsToPrivateDir() {
+    _testObj->enablePrepare(true);
+    _testObj->prepare();
+
+    LocalTemporaryDirectory localTmpDir("testMigrateLocalItemsToPrivateDir");
+    createParmsDb(_testObj->dbPath(), localTmpDir.path());
+
+    CPPUNIT_ASSERT(_testObj->migrateLocalItemsToPrivateDir("3.8.5.1"));
+
+    /**
+     * Expected FS tree:
+     *      *      Root
+     *      |-- Common documents
+     *      |-- Shared
+     *      |-- .kdrive-cache
+     *      |-- kDrive Rescue Folder
+     *      |-- Private
+     *             |-- Private
+     *             |-- a
+     *             |   `-- b
+     *             | -- c.txt
+     */
+}
+
 } // namespace KDC
