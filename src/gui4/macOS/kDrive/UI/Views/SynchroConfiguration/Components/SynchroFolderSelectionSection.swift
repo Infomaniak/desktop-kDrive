@@ -135,6 +135,7 @@ struct SynchroFolderSelectionSection: View {
 
     private func setDefaultFolder() async {
         guard let localPath = try? await SyncCreationService().preferredLocalPath(for: configuration.drive.name) else {
+            isShowingGenericError = true
             return
         }
 

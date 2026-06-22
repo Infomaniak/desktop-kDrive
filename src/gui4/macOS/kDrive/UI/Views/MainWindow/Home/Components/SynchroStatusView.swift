@@ -85,6 +85,8 @@ extension HomeState {
 }
 
 struct SynchroStatusView: View {
+    @State private var isShowingGenericError = false
+
     let state: HomeState
     let synchroDbId: UISynchro.ID?
 
@@ -137,6 +139,7 @@ struct SynchroStatusView: View {
             }
         }
         .clipShape(.rect(cornerRadius: AppRadius.radius16))
+        .genericErrorAlert(isPresented: $isShowingGenericError)
     }
 
     /// We use a random image to serve as a redacted view
@@ -166,6 +169,7 @@ struct SynchroStatusView: View {
                 try await SyncJobs().startSync(syncDbId: Int32(synchroDbId))
             } catch {
                 IKLogger.general.error("Failed to resume synchro: \(error)")
+                isShowingGenericError = true
             }
         }
     }
