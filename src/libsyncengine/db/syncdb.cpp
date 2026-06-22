@@ -2966,7 +2966,7 @@ bool SyncDb::removeHighLevelItemsFromLocalSyncDir(const SyncPath &localSyncDirPa
     return true;
 }
 
-bool SyncDb::copyLocalItemsToTmpPrivateDir(const SyncPath &localSyncDirPath, const SyncPath &privateTmpLocalPath) const {
+bool SyncDb::moveLocalItemsToTmpPrivateDir(const SyncPath &localSyncDirPath, const SyncPath &privateTmpLocalPath) const {
     IoHelper::DirectoryIterator dir;
     auto iteratorError = IoError::Success;
     if (!IoHelper::getDirectoryIterator(localSyncDirPath, false, iteratorError, dir) || iteratorError != IoError::Success) {
@@ -2978,7 +2978,7 @@ bool SyncDb::copyLocalItemsToTmpPrivateDir(const SyncPath &localSyncDirPath, con
         return iteratorError == IoError::NoSuchFileOrDirectory;
     }
 
-    const std::unordered_set<SyncName> excludedItemNames{
+    const SyncNameSet excludedItemNames{
             Str2SyncName(ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::CommonDocuments)),
             Str2SyncName(ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::Shared)),
             Str2SyncName(CacheDirectory::name()), FileRescuer::rescueFolderName().filename()};
@@ -2988,18 +2988,16 @@ bool SyncDb::copyLocalItemsToTmpPrivateDir(const SyncPath &localSyncDirPath, con
     while (dir.next(entry, endOfDirectory, iteratorError) && !endOfDirectory) {
         if (excludedItemNames.contains(entry.path().filename())) continue;
 
-        auto copyItem = IoError::Success;
-        if (!IoHelper::copyFileOrDirectory(entry.path(), privateTmpLocalPath, copyItem) || copyItem != IoError::Success) {
-            LOGW_WARN(_logger, L"Error in IoHelper::copyFileOrDirectory: " << Utility::formatIoError(entry.path(), copyItem));
-
-            removeTempPrivateDir(privateTmpLocalPath);
+        auto moveItemError = IoError::Success;
+        if (!IoHelper::moveItem(entry.path(), privateTmpLocalPath, moveItemError) || moveItemError != IoError::Success) {
+            LOGW_WARN(_logger, L"Error in IoHelper::moveItem: " << Utility::formatIoError(entry.path(), moveItemError));
 
             return false;
         }
     }
 
     LOGW_INFO(_logger,
-              L"All high level items have been copied to " << Utility::formatSyncPath(privateTmpLocalPath) << L" successfully.");
+              L"All high level items have moved to " << Utility::formatSyncPath(privateTmpLocalPath) << L" successfully.");
 
     return true;
 }
@@ -3010,8 +3008,6 @@ bool SyncDb::renameTempPrivateDir(const SyncPath &privateTmpLocalPath, const Syn
         LOGW_WARN(_logger, L"Error in IoHelper::renameItem for target "
                                    << Utility::formatSyncPath(privateTmpLocalPath)
                                    << Utility::formatIoError(privateTmpLocalPath, renamingError));
-
-        removeTempPrivateDir(privateTmpLocalPath);
 
         return false;
     }
@@ -3083,8 +3079,8 @@ bool SyncDb::migrateLocalItemsToPrivateDir(const std::string &dbFromVersionNumbe
         return false;
     }
 
-    if (!copyLocalItemsToTmpPrivateDir(localSyncDirPath, privateTmpLocalPath)) {
-        LOGW_WARN(_logger, L"Error in copyLocalItemsToTmpPrivateDir.");
+    if (!moveLocalItemsToTmpPrivateDir(localSyncDirPath, privateTmpLocalPath)) {
+        LOGW_WARN(_logger, L"Error in moveLocalItemsToTmpPrivateDir.");
         return false;
     }
 
@@ -3093,11 +3089,6 @@ bool SyncDb::migrateLocalItemsToPrivateDir(const std::string &dbFromVersionNumbe
 
     if (!renameTempPrivateDir(privateTmpLocalPath, privateLocalPath)) {
         LOGW_WARN(_logger, L"Error in renameTempPrivateDir.");
-        return false;
-    }
-
-    if (!removeHighLevelItemsFromLocalSyncDir(localSyncDirPath)) {
-        LOGW_WARN(_logger, L"Error in removeHighLevelItemsFromLocalSyncDir.");
         return false;
     }
 
