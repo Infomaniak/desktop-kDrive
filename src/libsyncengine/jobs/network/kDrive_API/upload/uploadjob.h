@@ -80,7 +80,7 @@ class UploadJob : public AbstractTokenNetworkJob {
 
         bool _shouldUpload = true;
         bool _isHydrated = true;
-        int64_t _remoteSize = -1;
+        int64_t _remoteSize;
 
         const std::shared_ptr<Vfs> _vfs;
 };
