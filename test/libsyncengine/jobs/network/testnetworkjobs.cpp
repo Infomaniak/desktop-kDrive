@@ -483,6 +483,26 @@ void TestNetworkJobs::testDownload() {
                             DownloadJob::DateTimePolicy::ApplyDateTime);
             CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.runSynchronously().code());
         }
+
+#if defined(KD_WINDOWS)
+        // Download again but local file is now hidden
+        IoHelper::setFileHidden(localDestFilePath, true);
+        {
+            modificationTimeIn += std::chrono::minutes(1);
+            DownloadJob job(nullptr, _cacheDirectory,
+                            DownloadJob::FileDownloadInfo{_driveDbId, testFileRemoteId, localDestFilePath, 0,
+                                                          creationTimeIn.count(), modificationTimeIn.count(), false},
+                            DownloadJob::DateTimePolicy::ApplyDateTime);
+            CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.runSynchronously().code());
+
+            // Check that the file is still hidden
+            bool isHidden = false;
+            IoError ioError = IoError::Unknown;
+            CPPUNIT_ASSERT(IoHelper::checkIfIsHiddenFile(localDestFilePath, isHidden, ioError));
+            CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+            CPPUNIT_ASSERT(isHidden);
+        }
+#endif
     }
 
     // Cross Device Link
@@ -791,7 +811,7 @@ void TestNetworkJobs::testDownload() {
 void TestNetworkJobs::testDownloadHasEnoughSpace() {
     if (!testhelpers::isRunningOnCI() || !testhelpers::isExtendedTest(false)) return;
 
-    // Only run on CI because it requires a small partition to be set up)
+    // Only run on CI because it requires a small partition to be set up
     const SyncPath smallPartitionPath = testhelpers::TestVariables().local8MoPartitionPath;
     if (smallPartitionPath.empty()) return;
 
