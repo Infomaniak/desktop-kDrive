@@ -36,8 +36,7 @@
     <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
     <EntryPointProjectUniqueName>..\FileExplorerExtension\FileExplorerExtension.vcxproj</EntryPointProjectUniqueName>
     <AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
-    <PackageCertificateThumbprint>4837A4865175E31A04067F268DBE37333D2E6825</PackageCertificateThumbprint>
-    <PackageCertificateKeyFile>FileExplorerExtensionPackage_TemporaryKey.pfx</PackageCertificateKeyFile>
+    <PackageCertificateThumbprint>95C8D8A52FA3834BAC5625A36F73F3FD82E75135</PackageCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <DefaultLanguage>en-US</DefaultLanguage>
