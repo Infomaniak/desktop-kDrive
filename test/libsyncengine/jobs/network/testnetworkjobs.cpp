@@ -484,6 +484,7 @@ void TestNetworkJobs::testDownload() {
             CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.runSynchronously().code());
         }
 
+#if defined(KD_WINDOWS)
         // Download again but local file is now hidden
         IoHelper::setFileHidden(localDestFilePath, true);
         {
@@ -501,6 +502,7 @@ void TestNetworkJobs::testDownload() {
             CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
             CPPUNIT_ASSERT(isHidden);
         }
+#endif
     }
 
     // Cross Device Link

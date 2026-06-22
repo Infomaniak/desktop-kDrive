@@ -495,6 +495,8 @@ bool DownloadJob::removeTmpFile() {
     return true;
 }
 
+#if defined(KD_WINDOWS)
+namespace {
 class HiddenStatusHolder {
     public:
         HiddenStatusHolder(const SyncPath &path) :
@@ -518,6 +520,8 @@ class HiddenStatusHolder {
         SyncPath _path;
         bool _isActive{false};
 };
+} // namespace
+#endif
 
 ExitInfo DownloadJob::moveTmpFile() {
     // Move downloaded file from tmp directory to sync directory
