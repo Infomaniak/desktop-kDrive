@@ -499,12 +499,14 @@ bool DownloadJob::removeTmpFile() {
 namespace {
 class HiddenStatusHolder {
     public:
-        HiddenStatusHolder(const SyncPath &path) :
+        HiddenStatusHolder(const HiddenStatusHolder &) = delete;
+        explicit HiddenStatusHolder(const SyncPath &path) :
             _path(path) {
             bool isHidden = false;
-            auto ioError = IoError::Unknown;
-            if (!IoHelper::checkIfIsHiddenFile(_path, false, isHidden, ioError) || ioError != IoError::Success)
+            if (auto ioError = IoError::Unknown;
+                !IoHelper::checkIfIsHiddenFile(_path, false, isHidden, ioError) || ioError != IoError::Success) {
                 return; // This is best effort
+            }
             if (isHidden) {
                 IoHelper::setFileHidden(_path, false);
                 _isActive = true;
@@ -515,6 +517,8 @@ class HiddenStatusHolder {
                 IoHelper::setFileHidden(_path, true);
             }
         }
+
+        bool operator==(const HiddenStatusHolder &other) const = delete;
 
     private:
         SyncPath _path;
