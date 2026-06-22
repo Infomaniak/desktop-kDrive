@@ -180,12 +180,14 @@ void TestTypes::testExitInfo() {
     CPPUNIT_ASSERT(static_cast<int>(ExitCause::EnumEnd) < 100);
 
     // Test the string conversion of ExitInfo, which includes the source location information.
-    const int lineNumber = __LINE__ + 1;
+    const int32_t lineNumber = __LINE__ + 1;
     ExitInfo exitInfo(ExitCode::DataError, ExitCause::NotFound);
 
-    CPPUNIT_ASSERT_EQUAL(std::string("ExitInfo{DataError-NotFound from (testtypes.cpp:" + std::to_string(lineNumber) +
-                                     "[KDC::TestTypes::testExitInfo])}"),
-                         std::string(exitInfo));
+    std::string expectedString = "ExitInfo{DataError-NotFound from (testtypes.cpp:" + std::to_string(lineNumber) + "[KDC::TestTypes::testExitInfo])}";
+    std::string expectedString2 = "ExitInfo{DataError-NotFound from (testtypes.cpp:" + std::to_string(lineNumber) +
+                                  "[testExitInfo])}"; // Some compilers may not include the namespace in the function name, so we
+                                                      // allow for that possibility as well.
+    CPPUNIT_ASSERT_MESSAGE(expectedString, toString(exitInfo) == expectedString || toString(exitInfo) == expectedString2);
 }
 
 template<IntegralEnum T>
