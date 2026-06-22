@@ -970,12 +970,11 @@ std::string toString(const std::source_location &loc) {
         func.remove_prefix(pos + 1);
     }
 
-    std::string lineBuffer;
-    lineBuffer.reserve(16); // Enough to hold any line number
-    const auto [ptr, ec] = std::to_chars(lineBuffer.data(), lineBuffer.data() + lineBuffer.size(), loc.line());
+    char lineBuffer[16] = {};
+    const auto [ptr, ec] = std::to_chars(lineBuffer, lineBuffer + sizeof(lineBuffer), loc.line());
 
     // ptr points to the first character after the last written character
-    const auto lineLength = static_cast<size_t>(ptr - lineBuffer.data());
+    const auto lineLength = static_cast<size_t>(ptr - lineBuffer);
 
     std::string result;
     result.reserve(file.size() + 1 + // :
