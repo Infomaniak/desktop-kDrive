@@ -61,6 +61,7 @@ public struct SynchroModePicker: View {
             modePendingConfirmation = newValue
         }
         .onChange(of: synchroMode) { newValue in
+            guard newValue != selectedMode else { return }
             selectedMode = newValue
         }
         .alert(
