@@ -1022,4 +1022,30 @@ void TestSyncDb::testCorrespondingNodeIdTemplate(SyncDb &db, T &testObj) {
     CPPUNIT_ASSERT(!testObj.correspondingNodeId(ReplicaSide::Unknown, "id dir loc 1", correspondingNodeId, found));
     CPPUNIT_ASSERT(!found);
 }
+
+void TestSyncDb::testGetNodeTableRowCount() {
+    _testObj->enablePrepare(true);
+    _testObj->prepare();
+
+    int64_t nodeCount = 0;
+
+    // Test on the table initialized with the root node.
+    CPPUNIT_ASSERT(_testObj->getNodeTableRowCount(nodeCount));
+    CPPUNIT_ASSERT_EQUAL(int64_t{1}, nodeCount);
+
+    // Insert two nodes
+    const time_t tLoc = std::time(nullptr);
+    const time_t tDrive = std::time(nullptr);
+
+    const DbNode nodeDir1(_testObj->rootNode().nodeId(), "Dir1", Str("Dir drive 1"), "id loc 1", "id drive 1", tLoc, tLoc, tDrive,
+                          NodeType::Directory, 0, std::nullopt);
+    const DbNode nodeDir2(_testObj->rootNode().nodeId(), "Dir2", Str("Dir drive 1"), "id loc 2", "id drive 2", tLoc, tLoc, tDrive,
+                          NodeType::Directory, 0, std::nullopt);
+
+    _testObj->insertNode(nodeDir1);
+    _testObj->insertNode(nodeDir2);
+
+    CPPUNIT_ASSERT(_testObj->getNodeTableRowCount(nodeCount));
+    CPPUNIT_ASSERT_EQUAL(int64_t{3}, nodeCount);
+}
 } // namespace KDC
