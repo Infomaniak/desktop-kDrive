@@ -22,6 +22,7 @@
 #include "utility/utility.h"
 #include "utility.h"
 
+#include <charconv>
 #include <Poco/UnicodeConverter.h>
 
 namespace KDC {
@@ -949,13 +950,7 @@ std::string toString(const TranslationMode e) {
 std::string toString(const std::source_location &loc) {
     std::string_view file = loc.file_name();
 
-#ifdef KD_WINDOWS
-    constexpr char separator = '\\';
-#else
-    constexpr char separator = '/';
-#endif
-
-    if (const auto pos = file.find_last_of(separator); pos != std::string_view::npos) {
+    if (const auto pos = file.find_last_of("/\\"); pos != std::string_view::npos) {
         file.remove_prefix(pos + 1);
     }
 
@@ -965,7 +960,13 @@ std::string toString(const std::source_location &loc) {
         func = func.substr(0, pos);
     }
 
-    if (const auto pos = func.find_last_of(' '); pos != std::string_view::npos) {
+    // Remove the return type / calling convention prefix (if any) without breaking
+    // names that contain spaces (e.g. "operator bool").
+    if (const auto nsPos = func.find("::"); nsPos != std::string_view::npos) {
+        if (const auto pos = func.rfind(' ', nsPos); pos != std::string_view::npos) {
+            func.remove_prefix(pos + 1);
+        }
+    } else if (const auto pos = func.find_last_of(' '); pos != std::string_view::npos) {
         func.remove_prefix(pos + 1);
     }
 

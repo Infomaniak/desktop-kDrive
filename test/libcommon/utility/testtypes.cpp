@@ -180,10 +180,10 @@ void TestTypes::testExitInfo() {
     CPPUNIT_ASSERT(static_cast<int>(ExitCause::EnumEnd) < 100);
 
     // Test the string conversion of ExitInfo, which includes the source location information.
+    const int lineNumber = __LINE__ + 1;
     ExitInfo exitInfo(ExitCode::DataError, ExitCause::NotFound);
-    const int lineNumberPlusOne = __LINE__;
 
-    CPPUNIT_ASSERT_EQUAL(std::string("ExitInfo{DataError-NotFound from (testtypes.cpp:" + std::to_string(lineNumberPlusOne - 1) +
+    CPPUNIT_ASSERT_EQUAL(std::string("ExitInfo{DataError-NotFound from (testtypes.cpp:" + std::to_string(lineNumber) +
                                      "[KDC::TestTypes::testExitInfo])}"),
                          std::string(exitInfo));
 }
