@@ -132,10 +132,10 @@ runs:
           if ("${{ inputs.release_build }}" -eq "true") {
 
             if ("${{ inputs.build_new_client }}" -eq "true") {
-              & $script -thumbprint $thumbprint -ci -ext -clean remake -upload -newGui $true # The new gui does not yet support msi generation, so we skip it for now
+              & $script -thumbprint $thumbprint -ci -ext -clean remake -newGui $true # The new gui does not yet support msi generation, so we skip it for now
             }
             else {
-              & $script -thumbprint $thumbprint -ci -ext -msi -clean remake -upload
+              & $script -thumbprint $thumbprint -ci -ext -msi -clean remake
             }
           }
           else {
