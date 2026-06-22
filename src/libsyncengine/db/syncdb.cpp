@@ -22,6 +22,7 @@
 
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/io/iohelper.h"
+#include "libcommonserver/io/cachedirectory.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/utility/utility.h"
 
@@ -29,6 +30,7 @@
 #include "libparms/db/parmsdb.h"
 
 #include "libsyncengine/jobs/network/kDrive_API/apitranslator.h"
+#include "libsyncengine/propagation/executor/filerescuer.h"
 
 #include <queue>
 
@@ -2976,12 +2978,15 @@ bool SyncDb::copyLocalItemsToTmpPrivateDir(const SyncPath &localSyncDirPath, con
         return iteratorError == IoError::NoSuchFileOrDirectory;
     }
 
+    const std::unordered_set<SyncName> excludedItemNames{
+            Str2SyncName(ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::CommonDocuments)),
+            Str2SyncName(ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::Shared)),
+            Str2SyncName(CacheDirectory::name()), FileRescuer::rescueFolderName().filename()};
+
     DirectoryEntry entry;
     bool endOfDirectory = false;
     while (dir.next(entry, endOfDirectory, iteratorError) && !endOfDirectory) {
-        if (entry.path().filename() == ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::CommonDocuments) ||
-            entry.path().filename() == ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::Shared))
-            continue;
+        if (excludedItemNames.contains(entry.path().filename())) continue;
 
         auto copyItem = IoError::Success;
         if (!IoHelper::copyFileOrDirectory(entry.path(), privateTmpLocalPath, copyItem) || copyItem != IoError::Success) {
