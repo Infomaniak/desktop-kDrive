@@ -146,7 +146,11 @@ ExitInfo UploadJob::applyFileDates() {
     }
     IoError ioError = IoError::Success;
     uint64_t fileSize = 0;
-    IoHelper::getFileSize(_absoluteFilePath, fileSize, ioError);
+    if (!IoHelper::getFileSize(_absoluteFilePath, fileSize, ioError)) {
+        LOGW_WARN(_logger, L"Error in IoHelper::getFileSize for " << Utility::formatIoError(_absoluteFilePath, ioError));
+    } else if (ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Unable to read file size for " << Utility::formatIoError(_absoluteFilePath, ioError));
+    }
 
     _nodeIdOut = _fileId;
     _modificationTimeOut = postJob.lastModifiedAt();
