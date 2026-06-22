@@ -124,14 +124,9 @@ ExitInfo UploadJob::resolveUploadNeed() {
 
 ExitInfo UploadJob::runJob() noexcept {
     if (!_fileId.empty() && _vfs) {
-        VfsStatus vfsStatus;
-        if (_vfs) (void) _vfs->status(_absoluteFilePath, vfsStatus);
-        _isHydrated = !_vfs || vfsStatus.isHydrated;
-        if (_isHydrated) {
-            const ExitInfo exitInfo = resolveUploadNeed();
-            if (!_shouldUpload && exitInfo) return ExitCode::Ok;
-            LOGW_DEBUG(_logger, L"resolveUploadNeed: proceeding with upload - " << exitInfo);
-        }
+        const ExitInfo exitInfo = resolveUploadNeed();
+        if (!_shouldUpload && exitInfo) return ExitCode::Ok;
+        LOGW_DEBUG(_logger, L"resolveUploadNeed: proceeding with upload - " << exitInfo);
     }
     return AbstractTokenNetworkJob::runJob();
 }
