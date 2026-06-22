@@ -313,7 +313,8 @@ SyncDb::SyncDb(const std::string &dbPath, const std::string &targetNodeId) :
         throw std::runtime_error("Cannot open DB!");
     }
 
-    LOG_INFO(_logger, "SyncDb initialization done: dbPath=" << dbPath << " targetNodeId=" << targetNodeId);
+    LOGW_INFO(_logger, L"SyncDb initialization done DB " << Utility::formatSyncPath(dbPath) << L" targetNodeId="
+                                                         << CommonUtility::s2ws(targetNodeId));
 }
 
 bool SyncDb::create(bool &retry) {
