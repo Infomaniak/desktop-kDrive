@@ -877,8 +877,8 @@ ExitInfo RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
 
     SyncTime tmpTime = 0;
 
-    // Special handling for AccessRightUserRemove action, as it does not contain `created_at` and `last_modified_at` fields.
-    // We set them with the `executed_at`.
+    // Special handling for AccessRightUserRemove and AccessRightMainUsersRemove actions, as it does not contain `created_at` and
+    // `last_modified_at` fields. We set them with the `executed_at`.
     if (actionInfo.actionCode == ActionCode::ActionCodeAccessRightUserRemove ||
         actionInfo.actionCode == ActionCode::ActionCodeAccessRightMainUsersRemove) {
         if (!JsonParserUtility::extractValue(actionObj, executedAtKey, tmpTime, false))
