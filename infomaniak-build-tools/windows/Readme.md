@@ -250,7 +250,7 @@ The project requires additional CMake variables for a correct build. To inject t
 
 ### 5. Configure the Release Profile
 
-To **build a release version** using the script `./infomaniak-build-tools/windows/build-release.ps1`, you must create a profile named `infomaniak_release`.
+To **build a release version** using the script `./infomaniak-build-tools/windows/build-drive.ps1`, you must create a profile named `infomaniak_release`.
 You can create a copy of the previously defined profile, but this profile **must not** contain a `tools.cmake.cmaketoolchain:user_toolchain` entry and **must** have the `build_type` set to `Release` or `RelWithDebInfo`.
 
 ---

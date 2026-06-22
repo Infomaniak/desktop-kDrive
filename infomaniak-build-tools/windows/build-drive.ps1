@@ -37,9 +37,6 @@ Param(
     # Ci: Build configured for CI
     [switch] $ci,
 
-    # Upload: Flag to trigger the use of the KSP client certificate
-    [switch] $upload,
-
     # Msi: Build MSI installer
     [switch] $msi,
 
@@ -120,7 +117,8 @@ function Set-Bullseye-Coverage {
 
      Write-Host "BullseyeCoverage is $outputString."
      return 0
-} 
+}
+
 function Clean {
     param (
         [string] $cleanPath
@@ -287,7 +285,7 @@ function Build-Extension {
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     $bundlePath = "$extPath/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_${version}_Test/FileExplorerExtensionPackage_${version}_x64_arm64.msixbundle"
-    Sign-File -FilePath $bundlePath -Upload $upload -Thumbprint $thumbprint -Description "FileExplorerExtensionPackage"
+    Sign-File -FilePath $bundlePath -Thumbprint $thumbprint -Description "FileExplorerExtensionPackage"
 
     $srcVfsPath = "$repositoryRootPath/src/libcommonserver/vfs/win/."
     Copy-Item -Path "$extPath/Vfs/../Common/debug.h" -Destination $srcVfsPath
@@ -437,7 +435,6 @@ function Set-Up-NSIS {
         [string] $archiveName,
         [string] $archivePath,
         [string] $archiveDataPath,
-        [bool] $upload,
         [string] $thumbprint,
         [bool] $ci,
         [bool] $newGui
@@ -506,7 +503,6 @@ function Prepare-Archive {
         [bool] $newGui,
         [string] $newGuiDir,
         [string] $archivePath,
-        [bool] $upload,
         [bool] $ci,
         [string] $thumbprint
     )
@@ -581,7 +577,7 @@ function Prepare-Archive {
 
         $filename = Split-Path -Leaf $file
 
-        Sign-File -FilePath $archivePath/$filename -Upload $upload -Thumbprint $thumbprint -Description $filename
+        Sign-File -FilePath $archivePath/$filename -Thumbprint $thumbprint -Description $filename
 
     }
 
@@ -599,7 +595,7 @@ function Prepare-Archive {
             $signature.Status -eq 'NotSigned'
         }
         foreach ($file in $filesToSign) {
-            Sign-File -FilePath $file.FullName -Upload $upload -Thumbprint $thumbprint -Description $file.Name
+            Sign-File -FilePath $file.FullName -Thumbprint $thumbprint -Description $file.Name
             Write-Host "Signed file: $($file.FullName)"
         }
     }
@@ -615,7 +611,6 @@ function Create-Archive {
         [string] $installPath,
         [string] $archiveName,
         [string] $archivePath,
-        [bool] $upload,
         [bool] $ci,
         [string] $thumbprint
     )
@@ -643,7 +638,7 @@ function Create-Archive {
     $installerPath = Get-Installer-Path -ContentPath $contentPath
 
     if (Test-Path -Path $installerPath) {
-        Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -Description $appName
+        Sign-File -FilePath $installerPath -Thumbprint $thumbprint -Description $appName
         Write-Host ("$installerPath signed successfully.") -f Green
     }
     else {
@@ -678,7 +673,7 @@ function Create-MSI-Package {
 	$installerPath = Get-Installer-Path -ContentPath $contentPath -msi
 
 	if (Test-Path -Path $installerPath) {
-		Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -Description $appName
+		Sign-File -FilePath $installerPath -Thumbprint $thumbprint -Description $appName
 		Write-Host ("$installerPath signed successfully.") -f Green
 	}
 	else {
@@ -742,7 +737,6 @@ Parameters :
     `t`tremake`t`t: Remove all the files, then rebuild the project
     `t-ext`t`t`t: Rebuild and redeploy the windows extension
     `t-ci`t`t`t: Use the CI build configuration
-    `t-upload`t`t: Upload flag to switch between the debug and release certificates. Also rebuilds the project
     `t-coverage`t`t: Enable coverage computation
     `t-unitTests`t`t: Enable unit tests build
     ") -f Cyan
@@ -795,18 +789,6 @@ Write-Host
 Write-Host "Build of type $buildType."
 Write-Host
 
-if ($upload) {
-    Write-Host "You are about to build kDrive for an upload"
-    Write-Host "Once the build is complete, you will need to call the upload script"
-    #$confirm = Read-Host "Please make sure you set the correct certificate for the Windows extension. Continue ? (Y/n)"
-    #if (!($confirm -match "^y(es)?$")) {
-    #    exit 1
-    #}
-
-    Write-Host "Preparing for full upload build." -f Green
-    Clean $contentPath
-    Clean $vfsDir
-}
 
 #################################################################################################
 #                                                                                               #
@@ -869,7 +851,7 @@ if ($LASTEXITCODE -ne 0) {
 #                                                                                               #
 #################################################################################################
 
-Set-Up-NSIS -BuildPath $buildPath -ContentPath $contentPath -ExtPath $extPath -VfsDir $vfsDir -ArchiveName $archiveName -ArchivePath $archivePath -ArchiveDataPath $archiveDataPath -Upload $upload -Thumbprint $thumbprint -Ci $ci -NewGui $newGui
+Set-Up-NSIS -BuildPath $buildPath -ContentPath $contentPath -ExtPath $extPath -VfsDir $vfsDir -ArchiveName $archiveName -ArchivePath $archivePath -ArchiveDataPath $archiveDataPath -Thumbprint $thumbprint -Ci $ci -NewGui $newGui
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "NSIS setup failed. Aborting." -f Red
@@ -882,7 +864,7 @@ if ($LASTEXITCODE -ne 0) {
 #                                                                                               #
 #################################################################################################
 
-Prepare-Archive -BuildType $buildType -BuildPath $buildPath -VfsDir $vfsDir -ArchivePath $archivePath -Upload $upload -Ci $ci -NewGuiDir "$buildPath/bin/client" -NewGui $newGui -Thumbprint $thumbprint
+Prepare-Archive -BuildType $buildType -BuildPath $buildPath -VfsDir $vfsDir -ArchivePath $archivePath -Ci $ci -NewGuiDir "$buildPath/bin/client" -NewGui $newGui -Thumbprint $thumbprint
 if ($LASTEXITCODE -ne 0)
 {
     Write-Host "Archive preparation failed. Aborting." -f Red
@@ -895,7 +877,7 @@ if ($LASTEXITCODE -ne 0)
 #                                                                                               #
 #################################################################################################
 
-Create-Archive -RepositoryRootPath $repositoryRootPath -BuildPath $buildPath -ContentPath $contentPath -InstallPath $installPath -Archivename $archiveName -ArchivePath $archivePath -Upload $upload -Ci $ci -Thumbprint $thumbprint
+Create-Archive -RepositoryRootPath $repositoryRootPath -BuildPath $buildPath -ContentPath $contentPath -InstallPath $installPath -Archivename $archiveName -ArchivePath $archivePath -Ci $ci -Thumbprint $thumbprint
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Archive creation failed ($LASTEXITCODE) . Aborting." -f Red
     exit $LASTEXITCODE
@@ -932,7 +914,7 @@ Remove-Item $archiveDataPath
 #                                                                                               #
 #################################################################################################
 
-if (!$ci -or $upload) {
+if (!$ci) {
     Write-Host "Packaging done."
     Write-Host "Run the upload script to generate the update file and upload the new version."
 }
