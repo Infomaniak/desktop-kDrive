@@ -39,6 +39,7 @@ UploadJob::UploadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, 
     _creationTimeIn(creationTime),
     _modificationTimeIn(modificationTime),
     _vfs(vfs) {
+    _remoteSize = -1;
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
     _customTimeout = 60;
     _trials = TRIALS;
