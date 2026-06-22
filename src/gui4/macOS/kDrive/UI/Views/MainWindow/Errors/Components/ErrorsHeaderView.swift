@@ -57,10 +57,12 @@ struct ErrorsHeaderView: View {
     private func refreshList() async {
         guard let synchroDbId else { return }
         do {
+            isLoading = true
             _ = try await ErrorJobs().refreshSyncErrors(syncDbId: Int32(synchroDbId))
         } catch {
             isShowingGenericError = true
         }
+        isLoading = false
     }
 }
 

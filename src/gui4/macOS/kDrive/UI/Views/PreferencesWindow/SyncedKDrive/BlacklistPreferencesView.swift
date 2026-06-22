@@ -66,12 +66,14 @@ struct BlacklistPreferencesView: View {
 
     private func saveChanges() async {
         do {
+            isLoadingButton = true
             try await BlacklistJobs().setBlacklistedNodeList(syncDbId: Int32(synchroDbId), nodeIdList: Array(blackList))
             goBack()
         } catch {
             isShowingGenericErrorAlert = true
             SentrySDK.capture(error: error)
         }
+        isLoadingButton = false
     }
 
     private func goBack() {
