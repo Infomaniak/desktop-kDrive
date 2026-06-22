@@ -346,23 +346,24 @@ extension MainViewController {
             return
         }
 
-        Task {
+        Task { @MainActor in
             var isConverting = false
             if let currentSynchroDbId = viewModel.currentSynchro?.dbId {
                 isConverting = await vfsConversionStore.isConverting(synchroDbId: Int32(currentSynchroDbId))
             }
 
-        switch state.status {
-        case .starting:
-            setPauseResumeAppearance(item, showPause: true, enabled: false)
-        case .running, .idle:
-            setPauseResumeAppearance(item, showPause: true, enabled: !isConverting)
-        case .stopAsked:
-            setPauseResumeAppearance(item, showPause: false, enabled: false)
-        case .pauseAsked, .paused, .stopped:
-            setPauseResumeAppearance(item, showPause: false, enabled: !isConverting)
-        case .error:
-            setPauseResumeAppearance(item, showPause: true, enabled: false)
+            switch state.status {
+            case .starting:
+                setPauseResumeAppearance(item, showPause: true, enabled: false)
+            case .running, .idle:
+                setPauseResumeAppearance(item, showPause: true, enabled: !isConverting)
+            case .stopAsked:
+                setPauseResumeAppearance(item, showPause: false, enabled: false)
+            case .pauseAsked, .paused, .stopped:
+                setPauseResumeAppearance(item, showPause: false, enabled: !isConverting)
+            case .error:
+                setPauseResumeAppearance(item, showPause: true, enabled: false)
+            }
         }
     }
 
