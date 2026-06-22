@@ -2935,37 +2935,6 @@ void SyncDb::removeTempPrivateDir(const SyncPath &privateTmpLocalPath) const {
     }
 }
 
-bool SyncDb::removeHighLevelItemsFromLocalSyncDir(const SyncPath &localSyncDirPath) const {
-    auto iteratorError = IoError::Success;
-    IoHelper::DirectoryIterator dir;
-    if (!IoHelper::getDirectoryIterator(localSyncDirPath, false, iteratorError, dir) || iteratorError != IoError::Success) {
-        LOGW_WARN(_logger, L"Error in IoHelper::getRecursiveDirectoryIterator: "
-                                   << Utility::formatIoError(localSyncDirPath, iteratorError));
-
-        return iteratorError == IoError::NoSuchFileOrDirectory;
-    }
-
-    DirectoryEntry entry;
-    bool endOfDirectory = false;
-    while (dir.next(entry, endOfDirectory, iteratorError) && !endOfDirectory) {
-        if (entry.path().filename() == ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::CommonDocuments) ||
-            entry.path().filename() == ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::Shared))
-            continue;
-
-        auto deleteItemError = IoError::Success;
-        if (!IoHelper::deleteItem(entry.path(), deleteItemError) || deleteItemError != IoError::Success) {
-            LOGW_WARN(_logger,
-                      L"Error in IoHelper::copyFileOrDirectory: " << Utility::formatIoError(entry.path(), deleteItemError));
-
-            return false;
-        }
-    }
-
-    LOGW_INFO(_logger, L"Successful removal of high level items from " << Utility::formatSyncPath(localSyncDirPath) << L".");
-
-    return true;
-}
-
 bool SyncDb::moveLocalItemsToTmpPrivateDir(const SyncPath &localSyncDirPath, const SyncPath &privateTmpLocalPath) const {
     IoHelper::DirectoryIterator dir;
     auto iteratorError = IoError::Success;
