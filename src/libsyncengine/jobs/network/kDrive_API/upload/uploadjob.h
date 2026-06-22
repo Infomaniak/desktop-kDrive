@@ -44,6 +44,7 @@ class UploadJob : public AbstractTokenNetworkJob {
         SyncTime creationTime() const { return _creationTimeOut; }
         SyncTime modificationTime() const { return _modificationTimeOut; }
         int64_t size() const { return _sizeOut; }
+        bool shouldUpload() const { return _shouldUpload; }
 
     protected:
         ExitInfo canRun() override;
@@ -79,7 +80,6 @@ class UploadJob : public AbstractTokenNetworkJob {
         NodeType _targetType = NodeType::File;
 
         bool _shouldUpload = true;
-        bool _isHydrated = true;
         int64_t _remoteSize = -1;
 
         const std::shared_ptr<Vfs> _vfs;
