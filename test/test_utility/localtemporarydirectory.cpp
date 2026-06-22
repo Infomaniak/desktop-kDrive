@@ -90,16 +90,16 @@ void LocalTemporaryDirectory::createDirectory() {
 }
 
 LocalTemporaryDirectoryFromAbsolutePath::LocalTemporaryDirectoryFromAbsolutePath(
-        const SyncPath &absolutePath, RecursiveMode recursiveMode /*= RecursiveMode::NonRecursive*/) :
+        const SyncPath &absolutePath, const RecursiveMode recursiveMode /*= RecursiveMode::NonRecursive*/) :
     AbstractLocalTemporaryDirectory(absolutePath),
     _recursiveMode(recursiveMode) {
     LocalTemporaryDirectoryFromAbsolutePath::createDirectory();
 }
 
 void LocalTemporaryDirectoryFromAbsolutePath::createDirectory() {
-    bool ok = _recursiveMode == RecursiveMode::Recursive ? std::filesystem::create_directories(_inputPath)
-                                                         : std::filesystem::create_directory(_inputPath);
-    if (!ok) {
+    if (const auto ok = _recursiveMode == RecursiveMode::Recursive ? std::filesystem::create_directories(_inputPath)
+                                                                   : std::filesystem::create_directory(_inputPath);
+        !ok) {
         throw std::runtime_error("Failed to create local temporary directory");
     }
 
