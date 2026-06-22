@@ -518,7 +518,7 @@ class HiddenStatusHolder {
             }
         }
 
-        bool operator==(const HiddenStatusHolder &other) const = delete;
+        HiddenStatusHolder &operator=(const HiddenStatusHolder &other) = delete;
 
     private:
         SyncPath _path;
