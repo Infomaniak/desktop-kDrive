@@ -990,7 +990,7 @@ void ClientGui::onRefreshErrorList() {
             }
         }
         driveInfoMapIt->second.setUnresolvedErrorsCount(unresolvedErrorsCount);
-        driveInfoMapIt->second.setAutoresolvedErrorsCount(autoResolvedErrorsCount);
+        driveInfoMapIt->second.setAutoResolvedErrorsCount(autoResolvedErrorsCount);
         emit errorAdded(driveDbId);
 
         it = _driveWithNewErrorSet.erase(it);
@@ -1414,7 +1414,7 @@ void ClientGui::onTooManyDeletesNotificationSoftLimit(const SyncDbId syncDbId) {
     }
 
     const auto localPath = syncInfoMapIt->second.localPath();
-    QString trashUrl = QString(APPLICATION_TRASH_URL_QSTRING).arg(driveInfoMapIt->second.id());
+    QString trashUrl = QString(APPLICATION_TRASH_URL_QSTRING).arg(driveInfoMapIt->second.driveId());
     const auto msgBox = new CustomMessageBox(
             QMessageBox::Information,
             tr(R"(Several files have been deleted from your local sync folder <a style="%1" href="file:///%2">%2</a>. Deleted files can be found in kDrive's <a style="%1" href="%3">trash</a>.)")
