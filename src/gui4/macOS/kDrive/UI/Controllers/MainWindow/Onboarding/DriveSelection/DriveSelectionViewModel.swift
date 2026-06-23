@@ -100,7 +100,7 @@ final class DriveSelectionViewModel: ObservableObject {
     }
 
     func startSynchronization() {
-        guard !selectedDrives.isEmpty else { return }
+        guard !selectedDrives.isEmpty || !synchronizedDrives.isEmpty else { return }
 
         Task {
             isLoading = true
