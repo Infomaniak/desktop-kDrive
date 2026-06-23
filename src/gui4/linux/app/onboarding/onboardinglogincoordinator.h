@@ -55,8 +55,8 @@ class OnboardingLoginCoordinator : public QObject {
         void clearPendingLogin();
         void handleLoginStateChanged();
         void loadAvailableDrivesWhenUserIsCached(UserDbId userDbId);
-        void completeLoginWhenAvailableDrivesAreCached(UserDbId userDbId);
-        void handleAvailableDrivesLoadFailed(qint64 userDbId);
+        void completeLoginWhenAvailableDrivesAreLoaded(UserDbId userDbId);
+        void handleAvailableDrivesLoadFailed(UserDbId userDbId);
 
         OnboardingFlowController &_flowController;
         CommService &_commService;
