@@ -2950,7 +2950,8 @@ bool SyncDb::moveLocalItemsToTmpPrivateDir(const SyncPath &localSyncDirPath, con
     const SyncNameSet excludedItemNames{
             Str2SyncName(ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::CommonDocuments)),
             Str2SyncName(ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::Shared)),
-            Str2SyncName(CacheDirectory::name()), FileRescuer::rescueFolderName().filename(), privateTmpLocalPath.filename()};
+            Str2SyncName(std::string(CacheDirectory::name())), FileRescuer::rescueFolderName().filename(),
+            privateTmpLocalPath.filename()};
 
     DirectoryEntry entry;
     bool endOfDirectory = false;
@@ -3139,7 +3140,7 @@ bool SyncDb::getNodeTableRowCount(int64_t &count) {
     return true;
 }
 
-bool SyncDb::getPrivateDirRemoteNodedId(const DriveDbId driveDbId, RemoteNodeId &privateDirRemoteNodeId) {
+bool SyncDb::getPrivateDirRemoteNodeId(const DriveDbId driveDbId, RemoteNodeId &privateDirRemoteNodeId) {
     privateDirRemoteNodeId = {};
     if (auto exitInfo =
                 ApiTranslator::getSpecialFolderRemoteId(driveDbId, ApiTranslator::SpecialFolder::Private, privateDirRemoteNodeId);
@@ -3157,7 +3158,7 @@ bool SyncDb::insertPrivateDirNode(const DbNodeId privateDirDbNodeId, const Drive
     privateDbNode.setNodeId(privateDirDbNodeId);
 
     privateDbNode.setParentNodeId(rootNode().nodeId());
-    const SyncName &privateDirName = ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::Private);
+    const SyncName privateDirName = Str2SyncName(ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::Private));
     privateDbNode.setNameLocal(privateDirName);
     privateDbNode.setNameRemote(privateDirName);
     privateDbNode.setType(NodeType::Directory);
@@ -3171,7 +3172,7 @@ bool SyncDb::insertPrivateDirNode(const DbNodeId privateDirDbNodeId, const Drive
     privateDbNode.setNodeIdLocal(privateDirLocalNodeId);
 
     RemoteNodeId privateDirRemoteNodeId;
-    if (!getPrivateDirRemoteNodedId(driveDbId, privateDirRemoteNodeId)) return false;
+    if (!getPrivateDirRemoteNodeId(driveDbId, privateDirRemoteNodeId)) return false;
 
     privateDbNode.setNodeIdRemote(privateDirRemoteNodeId);
 

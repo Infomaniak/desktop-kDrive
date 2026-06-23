@@ -31,7 +31,7 @@ class SyncDbMock : public SyncDb {
         void enablePrepare(bool enabled);
 
     protected:
-        bool getPrivateDirRemoteNodedId(const DriveDbId, RemoteNodeId &remoteNodeId) override {
+        bool getPrivateDirRemoteNodeId(const DriveDbId, RemoteNodeId &remoteNodeId) override {
             remoteNodeId = RemoteNodeId{"666"};
             return true;
         }

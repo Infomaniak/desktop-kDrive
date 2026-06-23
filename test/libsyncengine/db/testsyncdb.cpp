@@ -1193,7 +1193,7 @@ void TestSyncDb::testMigrateLocalItemsToPrivateDir() {
     CPPUNIT_ASSERT(IoHelper::getNodeId(privatePath, privateLocalNodeId));
     CPPUNIT_ASSERT_EQUAL(privateLocalNodeId, privateDbNode.nodeIdLocal().value());
     RemoteNodeId privateRemoteNodeId;
-    _testObj->getPrivateDirRemoteNodedId(_driveDbId, privateRemoteNodeId);
+    _testObj->getPrivateDirRemoteNodeId(_driveDbId, privateRemoteNodeId);
     CPPUNIT_ASSERT_EQUAL(privateRemoteNodeId, privateDbNode.nodeIdRemote().value());
 
     // Check that the parent node ID of the moved items is the private node ID.

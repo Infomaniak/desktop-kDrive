@@ -118,7 +118,7 @@ class SyncDb : public Db {
 
     protected:
         virtual bool updateNames(const char *requestId, const SyncName &localName, const SyncName &remoteName);
-        virtual bool getPrivateDirRemoteNodedId(const DriveDbId driveDbId, RemoteNodeId &remoteNodeId);
+        virtual bool getPrivateDirRemoteNodeId(const DriveDbId driveDbId, RemoteNodeId &remoteNodeId);
 
     private:
         static DbNode _driveRootNode;
