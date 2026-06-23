@@ -1053,7 +1053,7 @@ void TestSyncDb::testGetNodeTableRowCount() {
     CPPUNIT_ASSERT_EQUAL(int64_t{3}, nodeCount);
 }
 
-void TestSyncDb::setupSyncMigrationToLocalPrivateDir(const SyncPath &localPath) {
+TestSyncDb::MigrationFileSetup TestSyncDb::setupSyncMigrationToLocalPrivateDir(const SyncPath &localPath) {
     /**
      * FS tree:
      *      *      Root
@@ -1062,7 +1062,6 @@ void TestSyncDb::setupSyncMigrationToLocalPrivateDir(const SyncPath &localPath) 
      *      |-- .kdrive-cache
      *      |-- kDrive Rescue Folder
      *      |-- Private
-     *      |
      *      |-- a
      *      |   `-- b
      *      |-- c.txt
@@ -1090,7 +1089,7 @@ void TestSyncDb::setupSyncMigrationToLocalPrivateDir(const SyncPath &localPath) 
     const auto rootId = _testObj->rootNode().nodeId();
 
     std::vector<DbNode> folderNodes;
-    Count folderCount = 0;
+    Count folderCount = 2; // Starts with to avoid ID conflict with the root node IDs.
     for (const auto &path: {commonDocumentsPath, sharedPath, privatePath, cachePath, rescueFolderPath}) {
         const auto nodeId = std::to_string(folderCount);
         DbNode node(rootId, path.filename(), path.filename(), nodeId, nodeId, tLoc, tLoc, tDrive, NodeType::Directory, 0);
@@ -1113,6 +1112,12 @@ void TestSyncDb::setupSyncMigrationToLocalPrivateDir(const SyncPath &localPath) 
     nodeId = std::to_string(folderCount);
     DbNode nodeC(rootId, Str("c.txt"), Str("c.txt"), nodeId, nodeId, tLoc, tLoc, tDrive, NodeType::File, 0);
     _testObj->insertNode(nodeC);
+
+    MigrationFileSetup fileSetup;
+    fileSetup.movedItems = {pathA, pathB, pathC};
+    fileSetup.remainingItems = {commonDocumentsPath, sharedPath, privatePath, cachePath, rescueFolderPath};
+
+    return fileSetup;
 }
 
 void TestSyncDb::testMigrateLocalItemsToPrivateDir() {
@@ -1121,6 +1126,8 @@ void TestSyncDb::testMigrateLocalItemsToPrivateDir() {
 
     LocalTemporaryDirectory localTmpDir("testMigrateLocalItemsToPrivateDir");
     createParmsDb(_testObj->dbPath(), localTmpDir.path());
+
+    const TestSyncDb::MigrationFileSetup fileSetup = setupSyncMigrationToLocalPrivateDir(localTmpDir.path());
 
     CPPUNIT_ASSERT(_testObj->migrateLocalItemsToPrivateDir("3.8.5.1"));
 
@@ -1137,6 +1144,65 @@ void TestSyncDb::testMigrateLocalItemsToPrivateDir() {
      *             |   `-- b
      *             | -- c.txt
      */
+
+    for (const auto &path: fileSetup.movedItems) CPPUNIT_ASSERT(!std::filesystem::exists(path));
+    for (const auto &path: fileSetup.remainingItems) CPPUNIT_ASSERT(std::filesystem::exists(path));
+
+    const SyncPath privatePath =
+            localTmpDir.path() / ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::Private);
+    const SyncPath privatePrivatePath = privatePath / privatePath.filename();
+    const SyncPath pathA = privatePath / Str("a");
+    const SyncPath pathB = pathA / Str("b");
+    const SyncPath pathC = privatePath / Str("c.txt");
+
+    CPPUNIT_ASSERT(std::filesystem::exists(privatePath));
+    CPPUNIT_ASSERT(std::filesystem::exists(privatePrivatePath));
+    CPPUNIT_ASSERT(std::filesystem::exists(pathA));
+    CPPUNIT_ASSERT(std::filesystem::exists(pathB));
+    CPPUNIT_ASSERT(std::filesystem::exists(pathC));
+
+    // Check that the Private folder has been inserted in Sync DB properly.
+    std::optional<NodeId> nodeIdLocalPrivate;
+    bool found = false;
+    CPPUNIT_ASSERT(_testObj->id(ReplicaSide::Local, privatePath.filename(), nodeIdLocalPrivate, found));
+    CPPUNIT_ASSERT(found);
+    DbNode privateDbNode;
+    CPPUNIT_ASSERT(_testObj->node(ReplicaSide::Local, *nodeIdLocalPrivate, privateDbNode, found));
+    CPPUNIT_ASSERT(found);
+    CPPUNIT_ASSERT(privatePath.filename() == privateDbNode.nameLocal());
+    CPPUNIT_ASSERT(privatePath.filename() == privateDbNode.nameRemote());
+    CPPUNIT_ASSERT_EQUAL(_testObj->rootNode().nodeId(), privateDbNode.parentNodeId().value());
+    NodeId privateLocalNodeId;
+    CPPUNIT_ASSERT(IoHelper::getNodeId(privatePath, privateLocalNodeId));
+    CPPUNIT_ASSERT_EQUAL(privateLocalNodeId, privateDbNode.nodeIdLocal().value());
+
+    // Check that the parent node ID of the moved items is the private node ID.
+    const DbNodeId privateDbNodeId = privateDbNode.nodeId();
+    for (const auto &path: {privatePrivatePath, pathA, pathC}) {
+        bool nodeFound = false;
+        std::optional<NodeId> nodeIdLocal;
+        CPPUNIT_ASSERT(
+                _testObj->id(ReplicaSide::Local, std::filesystem::relative(path, localTmpDir.path()), nodeIdLocal, nodeFound));
+        CPPUNIT_ASSERT(nodeFound);
+        DbNode dbNode;
+        CPPUNIT_ASSERT(_testObj->node(ReplicaSide::Local, *nodeIdLocal, dbNode, nodeFound));
+        CPPUNIT_ASSERT(nodeFound);
+        CPPUNIT_ASSERT_EQUAL(privateDbNodeId, dbNode.parentNodeId().value());
+    }
+
+    // Check that the parent node ID of the items that were not moved is still the root node ID.
+    for (const auto &path: fileSetup.remainingItems) {
+        bool nodeFound = false;
+        std::optional<NodeId> nodeIdLocal;
+        CPPUNIT_ASSERT(
+                _testObj->id(ReplicaSide::Local, std::filesystem::relative(path, localTmpDir.path()), nodeIdLocal, nodeFound));
+        DbNode dbNode;
+        if (!nodeFound) continue;
+
+        CPPUNIT_ASSERT(_testObj->node(ReplicaSide::Local, *nodeIdLocal, dbNode, nodeFound));
+        CPPUNIT_ASSERT(nodeFound);
+        CPPUNIT_ASSERT_EQUAL(_testObj->rootNode().nodeId(), dbNode.parentNodeId().value());
+    }
 }
 
 } // namespace KDC

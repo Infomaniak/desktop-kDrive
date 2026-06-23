@@ -2950,7 +2950,7 @@ bool SyncDb::moveLocalItemsToTmpPrivateDir(const SyncPath &localSyncDirPath, con
     const SyncNameSet excludedItemNames{
             Str2SyncName(ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::CommonDocuments)),
             Str2SyncName(ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::Shared)),
-            Str2SyncName(CacheDirectory::name()), FileRescuer::rescueFolderName().filename()};
+            Str2SyncName(CacheDirectory::name()), FileRescuer::rescueFolderName().filename(), privateTmpLocalPath.filename()};
 
     DirectoryEntry entry;
     bool endOfDirectory = false;
@@ -2958,7 +2958,8 @@ bool SyncDb::moveLocalItemsToTmpPrivateDir(const SyncPath &localSyncDirPath, con
         if (excludedItemNames.contains(entry.path().filename())) continue;
 
         auto moveItemError = IoError::Success;
-        if (!IoHelper::moveItem(entry.path(), privateTmpLocalPath, moveItemError) || moveItemError != IoError::Success) {
+        if (!IoHelper::moveItem(entry.path(), privateTmpLocalPath / entry.path().filename(), moveItemError) ||
+            moveItemError != IoError::Success) {
             LOGW_WARN(_logger, L"Error in IoHelper::moveItem: " << Utility::formatIoError(entry.path(), moveItemError));
 
             return false;
@@ -2994,7 +2995,6 @@ bool SyncDb::migrateLocalItemsToPrivateDir(const std::string &dbFromVersionNumbe
 
     Sync sync;
     bool found = false;
-    ParmsDb::instance()->selectSync(_dbPath, sync, found);
 
     if (!ParmsDb::instance()->selectSync(_dbPath, sync, found)) {
         LOG_WARN(_logger, "Error in ParmsDb::selectSync");
@@ -3209,6 +3209,11 @@ bool SyncDb::updateParentNodeIdsOfRootChildren(const DriveDbId driveDbId, const 
     getNodeTableRowCount(privateNodeDbId);
     ++privateNodeDbId;
 
+    if (!insertPrivateDirNode(privateNodeDbId, driveDbId, localPrivateDirPath)) {
+        LOGW_WARN(_logger, L"Error in insertPrivateDirNode.");
+        return false;
+    }
+
     if (!updateParentNodeIds(rootChildrenDbIds, privateNodeDbId)) {
         LOGW_WARN(_logger, L"Error in updateParentNodeIds.");
         return false;
@@ -3216,7 +3221,6 @@ bool SyncDb::updateParentNodeIdsOfRootChildren(const DriveDbId driveDbId, const 
 
     LOG_INFO(_logger, "Successful update of parent node ids for all " << rootChildrenDbIds.size() << " root children.")
 
-    insertPrivateDirNode(privateNodeDbId, driveDbId, localPrivateDirPath);
 
     return true;
 }
@@ -3226,7 +3230,7 @@ bool SyncDb::getRootChildrenDbIds(std::vector<DbNodeId> &rootChildrenDbIds) {
 
     const char *requestId = "SELECT_ROOT_CHILDREN_REQUEST_ID";
 
-    if (const char *query = "SELECT nodeId from node WHERE parentNodeId = 1 AND NOT IN ('Common documents', 'Shared');";
+    if (const char *query = "SELECT nodeId from node WHERE parentNodeId = 1 AND nameLocal NOT IN ('Common documents', 'Shared');";
         !createAndPrepareRequest(requestId, query))
         return false;
 

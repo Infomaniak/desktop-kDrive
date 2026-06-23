@@ -96,7 +96,13 @@ class TestSyncDb : public CppUnit::TestFixture, public TestBase {
         SyncDbMock *_testObj;
         // Note: the node ID value "1" is reserved for the root node of any synchronisation for both local and remote sides.
         std::vector<DbNode> setupSyncDb3_6_5(const std::vector<NodeId> &localNodeIds = {"2", "3", "4", "5", "6"});
+
+        struct MigrationFileSetup {
+                std::vector<SyncPath> movedItems;
+                std::vector<SyncPath> remainingItems;
+        };
+
         // Initial setup to test the migration to local Private folder in keeping with the backend API v3.
-        void setupSyncMigrationToLocalPrivateDir(const SyncPath &localPath);
+        MigrationFileSetup setupSyncMigrationToLocalPrivateDir(const SyncPath &localPath);
 };
 } // namespace KDC
