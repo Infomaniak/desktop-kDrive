@@ -20,7 +20,7 @@
 #include "..\Common\pipeclient.h"
 
 #include <guiddef.h>
-#include <winrt\Windows.Storage.Provider.h>
+#include <winrt/Windows.Storage.Provider.h>
 
 namespace winrt {
 using namespace winrt::Windows::Storage;

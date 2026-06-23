@@ -24,7 +24,7 @@
 
 #include <shobjidl_core.h>
 #include <shlwapi.h>
-#include <winrt\base.h>
+#include <winrt/base.h>
 
 struct MenuItem {
         bool _root = false;

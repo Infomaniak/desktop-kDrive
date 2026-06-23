@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <winrt\Windows.Foundation.Collections.h>
+#include <winrt/Windows.Foundation.Collections.h>
 
 #include "..\Common\utilities.h"
 #include "customstateprovider.h"
