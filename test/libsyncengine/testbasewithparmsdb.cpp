@@ -19,6 +19,7 @@
 #include "testbasewithparmsdb.h"
 #include "test_utility/testhelpers.h"
 #include "mocks/libcommonserver/db/mockdb.h"
+#include "mocks/mockkeychainstorage.h"
 
 #include "network/proxy.h"
 #include "requests/parameterscache.h"
@@ -35,7 +36,7 @@ void TestBaseWithParmsDb::initParmsDb() {
     // Insert API token into keystore.
     _apiToken.setAccessToken(testVariables.apiToken);
 
-    (void) KeyChainManager::instance(true);
+    (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
     const std::string keychainKey("123");
     (void) KeyChainManager::instance()->writeToken(keychainKey, _apiToken.reconstructJsonString());
 
