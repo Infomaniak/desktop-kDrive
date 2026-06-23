@@ -58,30 +58,7 @@ void UserService::loadAvailableDrives(const qint64 userDbId) {
     _commService.requestUserAvailableDrives(
             scopedUserDbId,
             [this, scopedUserDbId, generation](const ExitInfo &exitInfo, const std::vector<DriveAvailableInfo> &list) {
-                endAction(actionLoadAvailableDrives, scopedUserDbId);
-                if (const auto generationIt = _availableDriveLoadGenerations.find(scopedUserDbId);
-                    generationIt == _availableDriveLoadGenerations.end() || generationIt->second != generation) {
-                    return;
-                }
-
-                if (!_appCache.user(scopedUserDbId).has_value()) {
-                    qCWarning(lcUserService)
-                            << "Available drives load ignored because user disappeared | userDbId:" << scopedUserDbId;
-                    (void) _availableDriveLoadGenerations.erase(scopedUserDbId);
-                    emit availableDrivesLoadFailed(scopedUserDbId);
-                    return;
-                }
-
-                if (!exitInfo) {
-                    notifyRequestFailure(exitInfo, RequestNum::USER_AVAILABLEDRIVES);
-                    (void) _availableDriveLoadGenerations.erase(scopedUserDbId);
-                    emit availableDrivesLoadFailed(scopedUserDbId);
-                    return;
-                }
-
-                _appCache.replaceAvailableDrivesForUser(scopedUserDbId, list);
-                (void) _availableDriveLoadGenerations.erase(scopedUserDbId);
-                emit availableDrivesLoaded(scopedUserDbId);
+                handleAvailableDrivesLoaded(scopedUserDbId, generation, exitInfo, list);
             });
 }
 
@@ -143,6 +120,33 @@ void UserService::pruneStaleAvailableDriveGenerations() {
 
         it = _availableDriveLoadGenerations.erase(it);
     }
+}
+
+void UserService::handleAvailableDrivesLoaded(const UserDbId userDbId, const uint64_t generation, const ExitInfo &exitInfo,
+                                              const std::vector<DriveAvailableInfo> &list) {
+    endAction(actionLoadAvailableDrives, userDbId);
+    if (const auto generationIt = _availableDriveLoadGenerations.find(userDbId);
+        generationIt == _availableDriveLoadGenerations.end() || generationIt->second != generation) {
+        return;
+    }
+
+    if (!_appCache.user(userDbId).has_value()) {
+        qCWarning(lcUserService) << "Available drives load ignored because user disappeared | userDbId:" << userDbId;
+        (void) _availableDriveLoadGenerations.erase(userDbId);
+        emit availableDrivesLoadFailed(userDbId);
+        return;
+    }
+
+    if (!exitInfo) {
+        notifyRequestFailure(exitInfo, RequestNum::USER_AVAILABLEDRIVES);
+        (void) _availableDriveLoadGenerations.erase(userDbId);
+        emit availableDrivesLoadFailed(userDbId);
+        return;
+    }
+
+    _appCache.replaceAvailableDrivesForUser(userDbId, list);
+    (void) _availableDriveLoadGenerations.erase(userDbId);
+    emit availableDrivesLoaded(userDbId);
 }
 
 void UserService::beginAction(const ServiceActionTracker::ActionKey &actionKey, const ServiceActionTracker::ScopeId scopeId) {
