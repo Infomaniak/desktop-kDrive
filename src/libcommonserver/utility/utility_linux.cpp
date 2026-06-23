@@ -317,7 +317,8 @@ bool Utility::registerLoginRedirection() {
     }
 
     // Register scheme
-    if (!Utility::runCommand("xdg-mime", std::vector<std::string>{"default", APPLICATION_EXECUTABLE + ".desktop", mimeType})) {
+    if (!Utility::runCommand("xdg-mime",
+                             std::vector<std::string>{"default", (std::string(APPLICATION_EXECUTABLE) + ".desktop"), mimeType})) {
         LOGW_WARN(logger(), L"Failed to register URL scheme with xdg-mime");
         res = false;
     }
