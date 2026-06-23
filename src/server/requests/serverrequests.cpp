@@ -1122,31 +1122,30 @@ ExitCode ServerRequests::createAccount(const Account &account, AccountInfo &acco
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::createDrive(const Drive &drive) {
+ExitCode ServerRequests::createDrive(Drive &drive) {
     if (!ParmsDb::instance()->insertDrive(drive)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::insertDrive");
         return ExitCode::DbError;
     }
 
     // Load Drive info
-    Drive driveUpdated(drive);
     Account account;
     bool updated = false;
     bool quotaUpdated = false;
     AccountId newAccountId = 0;
-    if (const auto exitInfo = loadDriveInfo(driveUpdated, account.accountId(), newAccountId, updated, quotaUpdated); !exitInfo) {
+    if (const auto exitInfo = loadDriveInfo(drive, account.accountId(), newAccountId, updated, quotaUpdated); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in User::loadDriveInfo");
         return exitInfo;
     }
 
     if (updated) {
         bool found = false;
-        if (!ParmsDb::instance()->updateDrive(driveUpdated, found)) {
+        if (!ParmsDb::instance()->updateDrive(drive, found)) {
             LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateDrive");
             return ExitCode::DbError;
         }
         if (!found) {
-            LOG_WARN(Log::instance()->getLogger(), "Drive not found for driveDbId=" << driveUpdated.dbId());
+            LOG_WARN(Log::instance()->getLogger(), "Drive not found for driveDbId=" << drive.dbId());
             return ExitCode::DataError;
         }
     }

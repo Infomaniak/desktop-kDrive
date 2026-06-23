@@ -184,7 +184,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode createUser(const User &user, UserInfo &userInfo);
         static ExitCode updateUser(const User &user, UserInfo &userInfo);
         static ExitCode createAccount(const Account &account, AccountInfo &accountInfo);
-        static ExitCode createDrive(const Drive &drive);
+        static ExitCode createDrive(Drive &drive);
         static ExitCode createSync(const Sync &sync, SyncInfo &syncInfo);
 };
 
