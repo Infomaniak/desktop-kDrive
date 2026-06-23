@@ -24,7 +24,7 @@
 #include <log4cplus/loggingmacros.h>
 
 static const auto accountDbIdKey = "dbId";
-static const auto accountIdKey = "accountId";
+static const auto accountIdKey = "id";
 static const auto accountUserDbIdKey = "userDbId";
 static const auto accountNameKey = "name";
 
