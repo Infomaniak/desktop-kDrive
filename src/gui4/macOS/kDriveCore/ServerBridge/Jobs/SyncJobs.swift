@@ -204,8 +204,13 @@ public struct SyncJobs: Sendable {
             body: query
         )
 
-        try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
-        await vfsConversionStore.conversionStarted(synchroDbId: syncDbId)
+        do {
+            await vfsConversionStore.conversionStarted(synchroDbId: syncDbId)
+            try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+        } catch {
+            await vfsConversionStore.conversionCompleted(synchroDbId: syncDbId)
+            throw error
+        }
     }
 
     public func getOfflineFilesSize(syncDbId: Int32) async throws -> UInt64 {
