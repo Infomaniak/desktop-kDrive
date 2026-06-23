@@ -74,11 +74,14 @@ void UserService::loadAvailableDrives(const qint64 userDbId) {
 
                 if (!exitInfo) {
                     notifyRequestFailure(exitInfo, RequestNum::USER_AVAILABLEDRIVES);
+                    (void) _availableDriveLoadGenerations.erase(scopedUserDbId);
                     emit availableDrivesLoadFailed(scopedUserDbId);
                     return;
                 }
 
                 _appCache.replaceAvailableDrivesForUser(scopedUserDbId, list);
+                (void) _availableDriveLoadGenerations.erase(scopedUserDbId);
+                emit availableDrivesLoaded(scopedUserDbId);
             });
 }
 

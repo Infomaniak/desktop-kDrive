@@ -61,7 +61,8 @@ class UserService : public QObject {
         void loadingChanged();
         void loginTokenSucceeded(qint64 userDbId);
         void loginTokenFailed(const QString &error, const QString &errorDescription);
-        void availableDrivesLoadFailed(qint64 userDbId);
+        void availableDrivesLoaded(UserDbId userDbId);
+        void availableDrivesLoadFailed(UserDbId userDbId);
 
     private:
         void beginAction(const ServiceActionTracker::ActionKey &actionKey, ServiceActionTracker::ScopeId scopeId = 0);
