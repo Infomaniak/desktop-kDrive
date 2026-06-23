@@ -175,7 +175,6 @@ extension DriveSelectionViewController {
         }
 
         if drives.count == 1, let singleDrive = drives.first {
-            // Only auto-select if the drive is not already synchronized
             let isSynchronized = viewModel.synchronizedDrives.contains { $0.driveId == singleDrive.id }
             if !isSynchronized {
                 drivesListView.cells[singleDrive.id]?.state = .on
@@ -225,10 +224,8 @@ extension DriveSelectionViewController {
         let hasSynchronizedDrives = !viewModel.synchronizedDrives.isEmpty
         let hasSelectedDrives = !viewModel.selectedDrives.isEmpty
 
-        let shouldEnableButtons = hasSynchronizedDrives || hasSelectedDrives
-
-        primaryButton.isEnabled = shouldEnableButtons
-        secondaryButton.isEnabled = shouldEnableButtons
+        primaryButton.isEnabled = hasSynchronizedDrives || hasSelectedDrives
+        secondaryButton.isEnabled = hasSelectedDrives
     }
 
     private func handleLoadingState(_ isLoading: Bool) {
