@@ -44,6 +44,8 @@ class CsvFullFileListWithCursorJob final : public AbstractListingJob {
         std::string getCursor();
         RemoteNodeId remoteDirId() const { return _remoteDirId; }
 
+        void setFileSharedWatcher() { _fileSharedWatcherIsSet = true; };
+
     private:
         std::string getSpecificUrl() override;
         std::string contentType() override;
@@ -57,6 +59,7 @@ class CsvFullFileListWithCursorJob final : public AbstractListingJob {
 
         std::stringstream _ss;
         RemoteSnapshotItemHandler _snapshotItemHandler;
+        bool _fileSharedWatcherIsSet{false};
 };
 
 } // namespace KDC
