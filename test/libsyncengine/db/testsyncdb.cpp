@@ -104,7 +104,7 @@ void TestSyncDb::tearDown() {
 }
 
 
-void createParmsDb(const SyncPath &syncDbPath, const SyncPath &localPath) {
+void TestSyncDb::createParmsDb(const SyncPath &syncDbPath, const SyncPath &localPath) {
     bool alreadyExists = false;
     const std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, "3.6.1", true, true);
@@ -114,7 +114,7 @@ void createParmsDb(const SyncPath &syncDbPath, const SyncPath &localPath) {
     (void) ParmsDb::instance()->insertUser(user);
     const Account acc(1, 12345678, user.dbId(), "account1");
     (void) ParmsDb::instance()->insertAccount(acc);
-    Drive drive(1, 99999991, acc.dbId(), "Drive 1", 2000000000, "#000000");
+    Drive drive(_driveDbId, 99999991, acc.dbId(), "Drive 1", 2000000000, "#000000");
     (void) ParmsDb::instance()->insertDrive(drive);
 
     Sync sync;
@@ -1120,6 +1120,19 @@ TestSyncDb::MigrationFileSetup TestSyncDb::setupSyncMigrationToLocalPrivateDir(c
     return fileSetup;
 }
 
+namespace {
+std::unordered_set<SyncPath> getDirContent(const SyncPath &dirPath) {
+    using namespace std::filesystem;
+    std::error_code ec;
+    const auto dirIt = recursive_directory_iterator(dirPath, directory_options::skip_permission_denied, ec);
+
+    std::unordered_set<SyncPath> paths;
+    for (const auto &dirEntry: dirIt) paths.insert(dirEntry);
+
+    return paths;
+}
+} // namespace
+
 void TestSyncDb::testMigrateLocalItemsToPrivateDir() {
     _testObj->enablePrepare(true);
     _testObj->prepare();
@@ -1161,6 +1174,9 @@ void TestSyncDb::testMigrateLocalItemsToPrivateDir() {
     CPPUNIT_ASSERT(std::filesystem::exists(pathB));
     CPPUNIT_ASSERT(std::filesystem::exists(pathC));
 
+    const std::unordered_set<SyncPath> expectedPrivateDirContent = {privatePrivatePath, pathA, pathB, pathC};
+    CPPUNIT_ASSERT(getDirContent(privatePath) == expectedPrivateDirContent);
+
     // Check that the Private folder has been inserted in Sync DB properly.
     std::optional<NodeId> nodeIdLocalPrivate;
     bool found = false;
@@ -1175,6 +1191,9 @@ void TestSyncDb::testMigrateLocalItemsToPrivateDir() {
     NodeId privateLocalNodeId;
     CPPUNIT_ASSERT(IoHelper::getNodeId(privatePath, privateLocalNodeId));
     CPPUNIT_ASSERT_EQUAL(privateLocalNodeId, privateDbNode.nodeIdLocal().value());
+    RemoteNodeId privateRemoteNodeId;
+    _testObj->getPrivateDirRemoteNodedId(_driveDbId, privateRemoteNodeId);
+    CPPUNIT_ASSERT_EQUAL(privateRemoteNodeId, privateDbNode.nodeIdRemote().value());
 
     // Check that the parent node ID of the moved items is the private node ID.
     const DbNodeId privateDbNodeId = privateDbNode.nodeId();
