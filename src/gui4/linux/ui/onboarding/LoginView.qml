@@ -28,6 +28,26 @@ Item {
     readonly property bool loginSucceeded: onboardingFlowController.loginSucceeded
     readonly property bool waitingForWebAuthentication: onboardingFlowController.waitingForWebAuthentication
 
+    function loginTitleText() {
+        if (root.loginFailed) {
+            return qsTr("Erreur de connexion")
+        }
+        if (root.loginSucceeded) {
+            return qsTr("Connexion réussie !")
+        }
+        return qsTr("Bienvenue dans kDrive !")
+    }
+
+    function loginSubtitleText() {
+        if (root.loginFailed) {
+            return qsTr("Une erreur est survenue, veuillez réessayer.")
+        }
+        if (root.loginSucceeded) {
+            return qsTr("Vous allez passer à l’étape suivante automatiquement.")
+        }
+        return qsTr("Le cloud privé, rapide et sécurisé, hébergé en Suisse.")
+    }
+
     Column {
         width: Math.min(IKOnboarding.loginContentMaxWidth, root.width - IKSpacing.s64)
         anchors.verticalCenter: parent.verticalCenter
@@ -42,8 +62,7 @@ Item {
 
             Text {
                 width: parent.width
-                text: root.loginFailed ? qsTr("Erreur de connexion")
-                                       : root.loginSucceeded ? qsTr("Connexion réussie !") : qsTr("Bienvenue dans kDrive !")
+                text: root.loginTitleText()
                 color: IKColors.textPrimary
                 font.pixelSize: IKFonts.largeTitleSize
                 font.weight: Font.Bold
@@ -54,9 +73,7 @@ Item {
 
             Text {
                 width: parent.width
-                text: root.loginFailed ? qsTr("Une erreur est survenue, veuillez réessayer.")
-                                       : root.loginSucceeded ? qsTr("Vous allez passer à l’étape suivante automatiquement.")
-                                       : qsTr("Le cloud privé, rapide et sécurisé, hébergé en Suisse.")
+                text: root.loginSubtitleText()
                 color: IKColors.textSecondary
                 font.pixelSize: IKFonts.bodySize
                 lineHeightMode: Text.FixedHeight
