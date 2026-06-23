@@ -123,7 +123,7 @@ ExitInfo UploadJob::resolveUploadNeed() {
 }
 
 ExitInfo UploadJob::runJob() noexcept {
-    if (!_fileId.empty() && _vfs) {
+    if (!_fileId.empty()) {
         const ExitInfo exitInfo = resolveUploadNeed();
         if (!_shouldUpload && exitInfo) return ExitCode::Ok;
         LOGW_DEBUG(_logger, L"resolveUploadNeed: proceeding with upload - " << exitInfo);
