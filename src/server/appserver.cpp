@@ -4039,11 +4039,7 @@ bool AppServer::startClient() {
     startClient |= QProcessEnvironment::systemEnvironment().value("KDRIVE_DEBUG_RUN_CLIENT") == "1";
     if (startClient) {
         // Start the client
-#if defined(KD_WINDOWS) || defined(KD_MACOS)
         bool useClientV4 = KDRIVE_VERSION_MAJOR >= 4;
-#else
-        bool useClientV4 = false;
-#endif
 
         auto getPathToExecutable = [](const SyncPath &executableName) {
             auto pathToExecutable = QStr2Path(QCoreApplication::applicationDirPath()) / executableName;
