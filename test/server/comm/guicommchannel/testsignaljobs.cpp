@@ -64,6 +64,7 @@ void TestGuiCommChannel::testSignalDriveUpdatedJob() {
     SignalDriveUpdatedJob job(drive);
 
     checkSignalCommonMethods(job, SignalNum::DRIVE_UPDATED);
+    CPPUNIT_ASSERT(drive == job._drive);
 }
 
 void TestGuiCommChannel::testSignalUpdaterShowDialogJob() {

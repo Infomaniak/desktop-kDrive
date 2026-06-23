@@ -20,6 +20,8 @@
 
 #include "server/comm/guijobs/abstractguijob.h"
 
+#include "libcommon/data/drive.h"
+
 namespace KDC {
 
 class SignalDriveUpdatedJob : public AbstractGuiJob {

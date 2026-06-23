@@ -19,6 +19,7 @@
 #include "data/driveavailable.h"
 
 #include "utility/utility.h"
+
 static const auto driveAvailableDriveId = "driveId";
 static const auto driveAvailableUserId = "userId";
 static const auto driveAvailableAccountId = "accountId";

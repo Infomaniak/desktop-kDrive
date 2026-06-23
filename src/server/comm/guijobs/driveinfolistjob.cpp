@@ -46,7 +46,7 @@ ExitInfo DriveInfoListJob::serializeOutputParms() {
 ExitInfo DriveInfoListJob::process() {
     const auto exitInfo = ServerRequests::getDriveList(_driveList);
     if (!exitInfo) {
-        LOG_WARN(_logger, "Error in ServerRequests::getDriveInfoList: " << exitInfo);
+        LOG_WARN(_logger, "Error in ServerRequests::getDriveList: " << exitInfo);
     }
     return exitInfo;
 }
