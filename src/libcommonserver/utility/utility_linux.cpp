@@ -345,14 +345,14 @@ bool Utility::registerLoginRedirection() {
     } else {
         execPath = KDC::CommonUtility::applicationFilePath();
     }
-    urlSchemeFile << "[Desktop Entry]" << std::endl;
-    urlSchemeFile << "Name=" << APPLICATION_EXECUTABLE << std::endl;
-    urlSchemeFile << "Icon=" << applicationIconPath(SyncPath(homePathEnv)).string() << std::endl;
-    urlSchemeFile << "Exec=" << "\"" << execPath.string() << "\"" << " %u" << std::endl;
-    urlSchemeFile << "Type=Application" << std::endl;
-    urlSchemeFile << "Terminal=false" << std::endl;
-    urlSchemeFile << "StartupWMClass=" << APPLICATION_CLIENTV4_EXECUTABLE << std::endl;
-    urlSchemeFile << "MimeType=" << mimeType << ";" << std::endl;
+    urlSchemeFile << "[Desktop Entry]" << '\n';
+    urlSchemeFile << "Name=" << APPLICATION_EXECUTABLE << '\n';
+    urlSchemeFile << "Icon=" << applicationIconPath(SyncPath(homePathEnv)).string() << '\n';
+    urlSchemeFile << "Exec=" << "\"" << execPath.string() << "\"" << " %u" << '\n';
+    urlSchemeFile << "Type=Application" << '\n';
+    urlSchemeFile << "Terminal=false" << '\n';
+    urlSchemeFile << "StartupWMClass=" << APPLICATION_CLIENTV4_EXECUTABLE << '\n';
+    urlSchemeFile << "MimeType=" << mimeType << ";" << '\n';
     urlSchemeFile.close();
 
     bool res = installApplicationIcon(SyncPath(homePathEnv));
