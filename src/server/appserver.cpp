@@ -17,6 +17,9 @@
  */
 
 #include "appserver.h"
+#if defined(KD_LINUX)
+#include "qtlocalpeer.h"
+#endif
 #include "version.h"
 #include "migration/migrationparams.h"
 #include "keychainmanager/keychainmanager.h"
@@ -83,8 +86,13 @@
 #include <iostream>
 #include <fstream>
 #include <filesystem>
+#include <algorithm>
+#include <cctype>
+#include <cstdint>
+#include <optional>
 #ifdef Q_OS_UNIX
 #include <sys/resource.h>
+#include <unistd.h>
 #endif
 
 #if defined(KD_WINDOWS)
@@ -123,13 +131,43 @@ static const char optionsC[] =
         "  -v --version         : show the application version.\n"
         "  --settings           : show the Settings window (if the application is running).\n"
         "  --synthesis          : show the Synthesis window (if the application is running).\n";
+
+#if defined(KD_LINUX)
+std::optional<qint64> runningProcessPid(const std::string &processName) {
+    const auto currentPid = static_cast<qint64>(getpid());
+    try {
+        for (const auto &entry: std::filesystem::directory_iterator("/proc")) {
+            if (!entry.is_directory()) continue;
+
+            const std::string pidStr = entry.path().filename().string();
+            if (!std::all_of(pidStr.begin(), pidStr.end(),
+                             [](const unsigned char character) { return std::isdigit(character) != 0; })) {
+                continue;
+            }
+
+            const auto pid = static_cast<qint64>(std::stoll(pidStr));
+            if (pid == currentPid) continue;
+
+            std::ifstream commFile(entry.path() / "comm");
+            std::string currentProcessName;
+            if (commFile >> currentProcessName && currentProcessName == processName) {
+                return pid;
+            }
+        }
+    } catch (const std::exception &e) {
+        LOG_WARN(Log::instance()->getLogger(), "Error while looking for running kDrive process: " << e.what());
+    }
+    return std::nullopt;
 }
+#endif
+} // namespace
 
 static const QString showSynthesisMsg("showSynthesis");
 static const QString showSettingsMsg("showSettings");
 static const QString restartClientMsg("restartClient");
 static const QString authorizationCodeMsg("redirectLogin");
 static const QString separatorMsg("$$$");
+static constexpr std::int32_t singleApplicationMessageTimeoutMs = 5000;
 
 static const QString crashMsg = SharedTools::QtSingleApplication::tr("kDrive application will close due to a fatal error.");
 
@@ -201,12 +239,37 @@ void AppServer::init() {
         LOG_INFO(_logger, "AppServer already running");
         return;
     }
+#if defined(KD_LINUX)
+    if (const auto processPid = runningProcessPid(APPLICATION_EXECUTABLE); processPid.has_value()) {
+        _runningServerPid = *processPid;
+        LOG_INFO(_logger, "AppServer already running with PID " << _runningServerPid);
+        return;
+    }
+#endif
 
     // Cleanup at quit
     connect(this, &QCoreApplication::aboutToQuit, this, &AppServer::onCleanup);
 
     // Setup single application: show the Settings or Synthesis window if the application is running.
     connect(this, &QtSingleApplication::messageReceived, this, &AppServer::onMessageReceivedFromAnotherProcess);
+
+#if defined(KD_LINUX)
+    _fallbackLocalPeer = std::make_unique<SharedTools::QtLocalPeer>(
+            this, applicationId() + QLatin1Char('-') + QString::number(QCoreApplication::applicationPid()));
+    (void) connect(_fallbackLocalPeer.get(), &SharedTools::QtLocalPeer::messageReceived, this,
+                   &AppServer::onMessageReceivedFromAnotherProcess);
+    if (_fallbackLocalPeer->isClient()) {
+        _fallbackLocalPeer.reset();
+    } else {
+        LOG_INFO(_logger, "Started Linux fallback single-application peer");
+    }
+#endif
+
+    if (!Utility::registerLoginRedirection()) {
+        std::string errorMsg = "Failed to register login redirection";
+        LOG_ERROR(_logger, errorMsg);
+        KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "Login redirection registration error", errorMsg);
+    }
 
     // Remove the files that keep a record of former crash or kill events
     SignalType signalType = SignalType::None;
@@ -507,12 +570,6 @@ void AppServer::init() {
 
     // Process possible interrupted logs upload
     processInterruptedLogsUpload();
-
-    if (!Utility::registerLoginRedirection()) {
-        std::string errorMsg = "Failed to register login redirection";
-        LOG_ERROR(_logger, errorMsg);
-        KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "Login redirection registration error", errorMsg);
-    }
 
     // Start client
     if (!startClient()) {
@@ -3772,20 +3829,29 @@ void AppServer::clearSyncNodes() {
     }
 }
 
-void AppServer::sendShowSettingsMsg() {
-    sendMessage(showSettingsMsg);
+void AppServer::sendShowSettingsMsg(qint64 pid) {
+    if (!sendMessage(showSettingsMsg, singleApplicationMessageTimeoutMs, pid)) {
+        LOG_WARN(_logger, "Failed to forward show-settings request to the running server");
+    }
 }
 
-void AppServer::sendShowSynthesisMsg() {
-    sendMessage(showSynthesisMsg);
+void AppServer::sendShowSynthesisMsg(qint64 pid) {
+    if (!sendMessage(showSynthesisMsg, singleApplicationMessageTimeoutMs, pid)) {
+        LOG_WARN(_logger, "Failed to forward show-synthesis request to the running server");
+    }
 }
 
-void AppServer::sendRestartClientMsg() {
-    sendMessage(restartClientMsg);
+void AppServer::sendRestartClientMsg(qint64 pid) {
+    if (!sendMessage(restartClientMsg, singleApplicationMessageTimeoutMs, pid)) {
+        LOG_WARN(_logger, "Failed to forward restart-client request to the running server");
+    }
 }
 
-void AppServer::sendAuthorizationCode() {
-    sendMessage(authorizationCodeMsg + separatorMsg + _authorizationCodeStr);
+void AppServer::sendAuthorizationCode(qint64 pid) {
+    LOG_INFO(_logger, "Forwarding login authorization callback to the running server");
+    if (!sendMessage(authorizationCodeMsg + separatorMsg + _authorizationCodeStr, singleApplicationMessageTimeoutMs, pid)) {
+        LOG_WARN(_logger, "Failed to forward login authorization callback to the running server");
+    }
 }
 
 void AppServer::showSettings() {
