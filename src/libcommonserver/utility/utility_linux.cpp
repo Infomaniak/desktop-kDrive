@@ -358,15 +358,14 @@ bool Utility::registerLoginRedirection() {
     bool res = installApplicationIcon(SyncPath(homePathEnv));
 
     // Update database
-    bool res = true;
     const std::string applicationsDir = std::string(homePathEnv) + "/.local/share/applications/";
-    if (!Utility::runCommand("update-desktop-database", {applicationsDir})) {
+    if (!runCommand("update-desktop-database", {applicationsDir})) {
         LOGW_WARN(logger(), L"Failed to update desktop database for: " << CommonUtility::s2ws(applicationsDir));
         res = false; // Do not return yet, try to register scheme anyway.
     }
 
     // Register scheme
-    if (!Utility::runCommand("xdg-mime",
+    if (!runCommand("xdg-mime",
                              std::vector<std::string>{"default", (std::string(APPLICATION_EXECUTABLE) + ".desktop"), mimeType})) {
         LOGW_WARN(logger(), L"Failed to register URL scheme with xdg-mime");
         res = false;
