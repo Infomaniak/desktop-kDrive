@@ -345,6 +345,9 @@ bool Utility::registerLoginRedirection() {
     } else {
         execPath = CommonUtility::applicationFilePath();
     }
+
+    LOGW_INFO(logger(), L"Registering login URL scheme in " << Utility::formatSyncPath(urlSchemeFilePath) << L" with executable "
+                                                            << Utility::formatSyncPath(execPath));
     urlSchemeFile << "[Desktop Entry]" << '\n';
     urlSchemeFile << "Name=" << APPLICATION_EXECUTABLE << '\n';
     urlSchemeFile << "Icon=" << applicationIconName << '\n';
@@ -370,6 +373,8 @@ bool Utility::registerLoginRedirection() {
                     std::vector<std::string>{"default", (std::string(APPLICATION_EXECUTABLE) + ".desktop"), mimeType})) {
         LOGW_WARN(logger(), L"Failed to register URL scheme with xdg-mime");
         res = false;
+    } else {
+        LOG_INFO(logger(), "Registered URL scheme " << mimeType << " with xdg-mime");
     }
 
     return res;
