@@ -4043,6 +4043,12 @@ bool AppServer::startClient() {
         if (pathToExecutable.isEmpty()) {
             pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENT_EXECUTABLE);
         }
+#elif defined(KD_LINUX)
+        if constexpr (KDRIVE_VERSION_MAJOR >= 4) {
+            pathToExecutable = applicationDirPath() + QString("/%1").arg(APPLICATION_CLIENTV4_EXECUTABLE);
+        } else {
+            pathToExecutable = applicationDirPath() + QString("/%1").arg(APPLICATION_CLIENT_EXECUTABLE);
+        }
 #else
         pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1").arg(APPLICATION_CLIENT_EXECUTABLE);
         useClientV4 = KDRIVE_VERSION_MAJOR >= 4;
