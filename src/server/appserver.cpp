@@ -3951,16 +3951,43 @@ bool AppServer::startClient() {
         if (pathToExecutable.isEmpty()) {
             pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENT_EXECUTABLE);
         }
+#elif defined(KD_LINUX)
+        if constexpr (KDRIVE_VERSION_MAJOR >= 4) {
+            pathToExecutable = applicationDirPath() + QString("/%1").arg(APPLICATION_CLIENTV4_EXECUTABLE);
+        } else {
+            pathToExecutable = applicationDirPath() + QString("/%1").arg(APPLICATION_CLIENT_EXECUTABLE);
+        }
 #else
         pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1").arg(APPLICATION_CLIENT_EXECUTABLE);
 #endif
 
         QStringList arguments;
-        if (useOldCommServer()) {
-            arguments << QString::number(OldCommServer::instance()->commPort());
+#ifdef KD_LINUX
+        if constexpr (KDRIVE_VERSION_MAJOR >= 4) {
+            if (!useCommManager() || !_commManager) {
+                LOG_FATAL(_logger, "Failed to start kDrive client (no communication method available)");
+                return false;
+            }
 
+            const auto port = _commManager->tryGetGUICommPort();
+            if (port <= int32_t{0}) {
+                LOG_FATAL(_logger, "Failed to start kDrive client (comm manager port isn't available)");
+                return false;
+            }
+
+            arguments << QString::number(port);
+        } else if (useOldCommServer()) {
+#else
+        if (useOldCommServer()) {
+#endif
+            arguments << QString::number(OldCommServer::instance()->commPort());
+        }
+
+        if (!arguments.isEmpty()) {
             LOGW_INFO(_logger, L"Starting kDrive client - path=" << Path2WStr(QStr2Path(pathToExecutable)) << L" args="
                                                                  << arguments[0].toStdWString());
+        } else {
+            LOGW_INFO(_logger, L"Starting kDrive client - path=" << Path2WStr(QStr2Path(pathToExecutable)));
         }
 
         _clientProcess = new QProcess(this);
