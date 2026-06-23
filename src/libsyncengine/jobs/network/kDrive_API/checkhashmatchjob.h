@@ -37,7 +37,6 @@ class CheckHashMatchJob : public AbstractTokenNetworkJob {
         std::string getSpecificUrl() override;
         ExitInfo getFileSize(const SyncPath &path, int64_t &size);
         ExitInfo runJob() noexcept override;
-        ExitInfo remoteHashMatch() noexcept;
 
         SyncPath _filePath;
 
