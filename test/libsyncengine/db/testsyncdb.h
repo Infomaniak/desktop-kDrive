@@ -61,6 +61,7 @@ class TestSyncDb : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testTryToFixDbNodeIdsAfterSyncDirChange);
         CPPUNIT_TEST(testGetNodeTableRowCount);
         CPPUNIT_TEST(testMigrateLocalItemsToPrivateDir);
+        CPPUNIT_TEST(testMigrationOfNonRootAdvancedSync);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -93,12 +94,17 @@ class TestSyncDb : public CppUnit::TestFixture, public TestBase {
         void testTryToFixDbNodeIdsAfterSyncDirChange();
         void testGetNodeTableRowCount();
         void testMigrateLocalItemsToPrivateDir();
+        void testMigrationOfNonRootAdvancedSync();
 
     private:
         SyncDbMock *_testObj{nullptr};
 
         DriveDbId _driveDbId{1};
-        void createParmsDb(const SyncPath &syncDbPath, const SyncPath &localPath);
+        enum class SyncType {
+            Advanced,
+            NonAdvanced
+        };
+        void createParmsDb(const SyncPath &syncDbPath, const SyncPath &localPath, SyncType syncType = SyncType::NonAdvanced);
 
         // Note: the node ID value "1" is reserved for the root node of any synchronisation for both local and remote
         // sides.

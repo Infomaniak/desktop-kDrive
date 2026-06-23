@@ -104,7 +104,7 @@ void TestSyncDb::tearDown() {
 }
 
 
-void TestSyncDb::createParmsDb(const SyncPath &syncDbPath, const SyncPath &localPath) {
+void TestSyncDb::createParmsDb(const SyncPath &syncDbPath, const SyncPath &localPath, SyncType syncType) {
     bool alreadyExists = false;
     const std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, "3.6.1", true, true);
@@ -122,6 +122,7 @@ void TestSyncDb::createParmsDb(const SyncPath &syncDbPath, const SyncPath &local
     sync.setDriveDbId(drive.dbId());
     sync.setLocalPath(localPath);
     sync.setDbPath(syncDbPath);
+    if (syncType == SyncType::Advanced) sync.setTargetPath(Str("/target"));
     (void) ParmsDb::instance()->insertSync(sync);
 }
 
@@ -1089,27 +1090,27 @@ TestSyncDb::MigrationFileSetup TestSyncDb::setupSyncMigrationToLocalPrivateDir(c
     const auto rootId = _testObj->rootNode().nodeId();
 
     std::vector<DbNode> folderNodes;
-    Count folderCount = 2; // Starts with to avoid ID conflict with the root node IDs.
+    Count itemCount = 2; // Starts with 2 to avoid ID conflict with the root node IDs.
     for (const auto &path: {commonDocumentsPath, sharedPath, privatePath, cachePath, rescueFolderPath}) {
-        const auto nodeId = std::to_string(folderCount);
+        const auto nodeId = std::to_string(itemCount);
         DbNode node(rootId, path.filename(), path.filename(), nodeId, nodeId, tLoc, tLoc, tDrive, NodeType::Directory, 0);
         _testObj->insertNode(node);
-        ++folderCount;
+        ++itemCount;
     }
 
-    auto nodeId = std::to_string(folderCount);
+    auto nodeId = std::to_string(itemCount);
     DbNode nodeA(rootId, pathA.filename(), pathA.filename(), nodeId, nodeId, tLoc, tLoc, tDrive, NodeType::Directory, 0);
     DbNodeId dbNodeId;
     bool constraintsError = false;
     _testObj->insertNode(nodeA, dbNodeId, constraintsError);
-    ++folderCount;
+    ++itemCount;
 
-    nodeId = std::to_string(folderCount);
+    nodeId = std::to_string(itemCount);
     DbNode nodeB(dbNodeId, pathB.filename(), pathB.filename(), nodeId, nodeId, tLoc, tLoc, tDrive, NodeType::Directory, 0);
     _testObj->insertNode(nodeB);
-    ++folderCount;
+    ++itemCount;
 
-    nodeId = std::to_string(folderCount);
+    nodeId = std::to_string(itemCount);
     DbNode nodeC(rootId, Str("c.txt"), Str("c.txt"), nodeId, nodeId, tLoc, tLoc, tDrive, NodeType::File, 0);
     _testObj->insertNode(nodeC);
 
@@ -1222,6 +1223,30 @@ void TestSyncDb::testMigrateLocalItemsToPrivateDir() {
         CPPUNIT_ASSERT(nodeFound);
         CPPUNIT_ASSERT_EQUAL(_testObj->rootNode().nodeId(), dbNode.parentNodeId().value());
     }
+
+    ParmsDb::instance()->close();
+    ParmsDb::reset();
+}
+
+void TestSyncDb::testMigrationOfNonRootAdvancedSync() {
+    _testObj->enablePrepare(true);
+    _testObj->prepare();
+
+    LocalTemporaryDirectory localTmpDir("testMigrateLocalItemsToPrivateDir");
+    createParmsDb(_testObj->dbPath(), localTmpDir.path(), SyncType::Advanced);
+
+    const time_t tLoc = std::time(nullptr);
+    const time_t tDrive = std::time(nullptr);
+    const DbNode rootDbNode(_testObj->rootNode().nodeId(), std::nullopt, Str("Root"), Str("Root"), "local root id",
+                            "remote target node id", tLoc, tLoc, tDrive, NodeType::Directory, 0, std::nullopt);
+
+    bool found = false;
+    _testObj->updateNode(rootDbNode, found);
+
+    CPPUNIT_ASSERT(_testObj->migrateLocalItemsToPrivateDir("3.8.5.1"));
+
+    ParmsDb::instance()->close();
+    ParmsDb::reset();
 }
 
 } // namespace KDC
