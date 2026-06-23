@@ -100,8 +100,7 @@ ExitInfo GetDrivesListJob::handleJsonResponse(const std::string &replyBody) {
                 return {ExitCode::BackError, ExitCause::MissingReplyData};
             }
         }
-        DriveAvailableInfo driveInfo(driveId, userId, accountId, QString::fromStdString(accountName),
-                                     QString::fromStdString(driveName), QString::fromStdString(colorHex));
+        DriveAvailable driveInfo(driveId, userId, accountId, accountName, driveName, colorHex);
         _availableDrives.push_back(driveInfo);
     }
 

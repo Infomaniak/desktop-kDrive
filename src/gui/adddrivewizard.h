@@ -76,7 +76,7 @@ class AddDriveWizard : public CustomDialog {
         QSet<QString> _whiteList;
         QString _localFolderPath;
         UserDbId _userDbId{0};
-        DriveAvailableInfo _driveInfo;
+        DriveAvailable _driveInfo;
         SyncDbId _syncDbId{0};
         KDC::GuiUtility::WizardAction _action;
 

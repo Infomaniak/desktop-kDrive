@@ -105,11 +105,11 @@ void FolderTreeItemWidget::setDriveDbId(const DriveDbId driveDbId) {
     _userDbId = accountInfoMapIt->second.userDbId();
 }
 
-void FolderTreeItemWidget::setUserDbIdAndDriveInfo(const UserDbId userDbId, const DriveAvailableInfo &driveInfo) {
+void FolderTreeItemWidget::setUserDbIdAndDriveInfo(const UserDbId userDbId, const DriveAvailable &driveInfo) {
     _userDbId = userDbId;
     _driveId = driveInfo.driveId();
-    _driveName = driveInfo.name();
-    _driveColor = driveInfo.color();
+    _driveName = QString::fromStdString(driveInfo.name());
+    _driveColor = QColor(QString::fromStdString(driveInfo.color()));
 }
 
 void FolderTreeItemWidget::setDriveDbIdAndFolderNodeId(const DriveDbId driveDbId, const QString &serverFolderNodeId) {

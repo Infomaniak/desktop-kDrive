@@ -183,7 +183,7 @@ void AddDriveWizard::startNextStep(bool backward) {
     } else if (_currentStep == RemoteFolders) {
         _addDriveServerFoldersWidget->init(_userDbId, _driveInfo);
     } else if (_currentStep == LocalFolder) {
-        _addDriveLocalFolderWidget->setDrive(_driveInfo.name());
+        _addDriveLocalFolderWidget->setDrive(QString::fromStdString(_driveInfo.name()));
         _addDriveLocalFolderWidget->setLiteSync(_liteSync);
         QString localFolderPath = QString::fromStdString(Theme::instance()->appName());
         if (!QDir(localFolderPath).isAbsolute()) {

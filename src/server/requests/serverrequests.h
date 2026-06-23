@@ -22,7 +22,7 @@
 #include "libcommon/utility/types.h"
 #include "libcommon/info/userinfo.h"
 #include "libcommon/info/accountinfo.h"
-#include "libcommon/info/driveavailableinfo.h"
+#include "libcommon/data/driveavailable.h"
 #include "libcommon/info/syncinfo.h"
 #include "libcommon/info/nodeinfo.h"
 #include "libcommon/info/syncfileiteminfo.h"
@@ -100,9 +100,9 @@ struct SYNCENGINE_EXPORT ServerRequests {
                                      bool &userCreated, std::string &error, std::string &errorDescr);
         static ExitCode requestToken(const QString &code, const QString &codeVerifier, UserInfo &userInfo, bool &userCreated,
                                      std::string &error, std::string &errorDescr);
-        static ExitInfo getUserAvailableDrives(
-                UserDbId userDbId, QList<DriveAvailableInfo> &list); // TODO: Delete after switching to the new comm layer
-        static ExitInfo getUserAvailableDrives(UserDbId userDbId, std::vector<DriveAvailableInfo> &list);
+        static ExitInfo getUserAvailableDrives(UserDbId userDbId,
+                                               QList<DriveAvailable> &list); // TODO: Delete after switching to the new comm layer
+        static ExitInfo getUserAvailableDrives(UserDbId userDbId, std::vector<DriveAvailable> &list);
         static ExitInfo addSync(UserDbId userDbId, AccountId accountId, DriveId driveId, const SyncPath &localFolderPath,
                                 const SyncPath &serverFolderPath, const NodeId &serverFolderNodeId, bool liteSync,
                                 AccountInfo &accountInfo, Drive &drive, SyncInfo &syncInfo);

@@ -519,7 +519,7 @@ ExitCode GuiRequests::getNodeInfo(const UserDbId userDbId, const DriveId driveId
     return exitCode;
 }
 
-ExitCode GuiRequests::getUserAvailableDrives(const UserDbId userDbId, QList<DriveAvailableInfo> &list) {
+ExitCode GuiRequests::getUserAvailableDrives(const UserDbId userDbId, QList<DriveAvailable> &list) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << static_cast<qint64>(userDbId);

@@ -435,12 +435,12 @@ void TestGuiCommChannel::testUserAvailableDrivesJob() {
     auto processFct = [](const std::shared_ptr<AbstractGuiJob> job) {
         const auto userAvailableDrivesJob = std::dynamic_pointer_cast<UserAvailableDrivesJob>(job);
 
-        DriveAvailableInfo dai1(1111, 111, 11, "account1", "drive1111", "#aabbcc");
+        DriveAvailable dai1(1111, 111, 11, "account1", "drive1111", "#aabbcc");
         dai1.setUserDbId(1);
-        DriveAvailableInfo dai2(2222, 222, 22, "account2", "drive2222", "#ddeeff");
+        DriveAvailable dai2(2222, 222, 22, "account2", "drive2222", "#ddeeff");
         dai2.setUserDbId(2);
 
-        userAvailableDrivesJob->_driveAvailableInfoList = {dai1, dai2};
+        userAvailableDrivesJob->_driveAvailableList = {dai1, dai2};
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
