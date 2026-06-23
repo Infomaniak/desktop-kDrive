@@ -18,11 +18,7 @@
 
 #include "data/driveavailable.h"
 
-#include "libcommonserver/log/log.h"
 #include "utility/utility.h"
-
-#include <log4cplus/loggingmacros.h>
-
 static const auto driveAvailableDriveId = "driveId";
 static const auto driveAvailableUserId = "userId";
 static const auto driveAvailableAccountId = "accountId";
