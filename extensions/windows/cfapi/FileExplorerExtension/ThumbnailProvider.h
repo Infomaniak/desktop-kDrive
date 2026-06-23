@@ -19,7 +19,7 @@
 #pragma once
 
 #include <thumbcache.h>
-#include <winrt\base.h>
+#include <winrt/base.h>
 
 class __declspec(uuid("6C7A1B02-8DB8-495F-B9B0-C4AB26B6284D")) ThumbnailProvider
     : public winrt::implements<ThumbnailProvider, IInitializeWithItem, IThumbnailProvider> {

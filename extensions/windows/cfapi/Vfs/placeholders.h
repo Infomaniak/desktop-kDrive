@@ -21,7 +21,7 @@
 #include "..\Common\framework.h"
 
 #include <cfapi.h>
-#include <winrt\Windows.Storage.Provider.h>
+#include <winrt/Windows.Storage.Provider.h>
 
 namespace winrt {
 using namespace Windows::Storage::Provider;
