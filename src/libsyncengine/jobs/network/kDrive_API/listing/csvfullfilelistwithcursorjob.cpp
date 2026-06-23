@@ -79,6 +79,9 @@ void CsvFullFileListWithCursorJob::setQueryParameters(Poco::URI &uri) {
     uri.addQueryParameter("recursive", "true");
     uri.addQueryParameter("format", "safe_csv");
     uri.addQueryParameter("with", "files.is_link");
+    uri.addQueryParameter("watchers[]", "file");
+    uri.addQueryParameter("watchers[]", "file_access");
+    if (_fileSharedWatcherIsSet) uri.addQueryParameter("watchers[]", "file_shared");
 }
 
 ExitInfo CsvFullFileListWithCursorJob::handleResponse(std::istream &is) {
