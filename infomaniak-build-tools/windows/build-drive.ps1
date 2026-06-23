@@ -124,7 +124,7 @@ function Clean {
         [string] $cleanPath
     )
 
-    if (Test-Path -RepositoryRootPath $cleanPath) {
+    if (Test-Path -Path $cleanPath) {
         Remove-Item -Path $cleanPath -Recurse
     }
 }
@@ -905,7 +905,7 @@ if ($msi) {
 #                                                                                               #
 #################################################################################################
 
-Copy-Item -RepositoryRootPath "$buildPath\kDrive*.pdb" -Destination $contentPath
+Copy-Item -Path "$buildPath\kDrive*.pdb" -Destination $contentPath
 Remove-Item $archiveDataPath
 
 #################################################################################################
