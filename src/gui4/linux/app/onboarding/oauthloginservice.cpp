@@ -65,6 +65,7 @@ void OAuthLoginService::startAuthorization() {
 
     if (!QDesktopServices::openUrl(_authorizationUrl)) {
         qCWarning(lcOAuthLoginService) << "Failed to open OAuth authorization URL in browser";
+        resetAuthorization();
         emit authorizationFailed(QString::fromLatin1(browserOpenFailed), QString());
         return;
     }
@@ -80,15 +81,13 @@ void OAuthLoginService::handleAuthorizationCode(const QString &code, const QStri
 
     if (code.isEmpty() || state.isEmpty() || state != _state) {
         qCWarning(lcOAuthLoginService) << "Invalid OAuth authorization callback ignored";
+        resetAuthorization();
         emit authorizationFailed(QString::fromLatin1(authorizationCallbackInvalid), QString());
         return;
     }
 
     const auto codeVerifier = _codeVerifier;
-    _authorizationActive = false;
-    _authorizationUrl = QUrl{};
-    _state.clear();
-    _codeVerifier.clear();
+    resetAuthorization();
 
     qCInfo(lcOAuthLoginService) << "OAuth authorization callback accepted";
     emit authorizationCodeReady(code, codeVerifier);
@@ -99,6 +98,13 @@ void OAuthLoginService::beginAuthorization() {
     _codeVerifier = generateCodeVerifier();
     _authorizationUrl = generateAuthorizeUrl();
     _authorizationActive = true;
+}
+
+void OAuthLoginService::resetAuthorization() {
+    _authorizationActive = false;
+    _authorizationUrl = QUrl{};
+    _state.clear();
+    _codeVerifier.clear();
 }
 
 QUrl OAuthLoginService::generateAuthorizeUrl() const {
