@@ -25,7 +25,7 @@ static const auto outParamsDriveInfo = "driveInfo";
 
 namespace KDC {
 
-SignalDriveUpdatedJob::SignalDriveUpdatedJob(Drive drive) :
+SignalDriveUpdatedJob::SignalDriveUpdatedJob(const Drive drive) :
     _drive(std::move(drive)) {
     _signalNum = SignalNum::DRIVE_UPDATED;
 }

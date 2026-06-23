@@ -659,7 +659,6 @@ ExitInfo ServerRequests::addSync(const UserDbId userDbId, const AccountId accoun
                                                     << L" liteSync=" << liteSync);
 
     // Create Account in DB if needed
-    Account account;
     bool found = false;
     if (!ParmsDb::instance()->accountFromUserDbIdAndAccountId(userDbId, accountId, account, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::accountDbId");

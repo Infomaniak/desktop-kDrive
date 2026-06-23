@@ -23,10 +23,10 @@
 
 #include <log4cplus/loggingmacros.h>
 
-static const auto accountDbId = "dbId";
-static const auto accountId = "accountId";
-static const auto accountUserDbId = "userDbId";
-static const auto accountName = "name";
+static const auto accountDbIdKey = "dbId";
+static const auto accountIdKey = "accountId";
+static const auto accountUserDbIdKey = "userDbId";
+static const auto accountNameKey = "name";
 
 namespace KDC {
 
@@ -41,19 +41,19 @@ Account::Account(const AccountDbId dbId, const AccountId accountId, const UserDb
     _name(name) {}
 
 void Account::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
-    CommonUtility::writeValueToStruct(dstruct, accountDbId, _dbId);
-    CommonUtility::writeValueToStruct(dstruct, accountId, _accountId);
-    CommonUtility::writeValueToStruct(dstruct, accountUserDbId, _userDbId);
-    CommonUtility::writeValueToStruct(dstruct, accountName, CommonUtility::str2CommString(_name));
+    CommonUtility::writeValueToStruct(dstruct, accountDbIdKey, _dbId);
+    CommonUtility::writeValueToStruct(dstruct, accountIdKey, _accountId);
+    CommonUtility::writeValueToStruct(dstruct, accountUserDbIdKey, _userDbId);
+    CommonUtility::writeValueToStruct(dstruct, accountNameKey, CommonUtility::str2CommString(_name));
 }
 
 void Account::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
-    CommonUtility::readValueFromStruct(dstruct, accountDbId, _dbId);
-    CommonUtility::readValueFromStruct(dstruct, accountId, _accountId);
-    CommonUtility::readValueFromStruct(dstruct, accountUserDbId, _userDbId);
+    CommonUtility::readValueFromStruct(dstruct, accountDbIdKey, _dbId);
+    CommonUtility::readValueFromStruct(dstruct, accountIdKey, _accountId);
+    CommonUtility::readValueFromStruct(dstruct, accountUserDbIdKey, _userDbId);
 
     CommString name;
-    CommonUtility::readValueFromStruct(dstruct, accountName, name);
+    CommonUtility::readValueFromStruct(dstruct, accountNameKey, name);
     _name = CommonUtility::commString2Str(name);
 }
 

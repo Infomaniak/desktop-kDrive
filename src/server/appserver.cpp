@@ -1557,11 +1557,11 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             ExitCode exitCode = ExitCode::Ok;
             SyncInfo syncInfo;
             if (num == RequestNum::SYNC_ADD) {
-                Account accountInfo;
+                Account account;
                 Drive drive;
 
                 exitCode = ServerRequests::addSync(userDbId, accountId, driveId, localFolderPath, serverFolderPath,
-                                                   serverFolderNodeId, liteSync, accountInfo, drive, syncInfo);
+                                                   serverFolderNodeId, liteSync, account, drive, syncInfo);
 
                 if (exitCode != ExitCode::Ok) {
                     LOGW_WARN(_logger, L"Error in Requests::addSync - userDbId="
@@ -1574,8 +1574,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     break;
                 }
 
-                if (accountInfo.dbId() != 0) {
-                    sendAccountAdded(accountInfo);
+                if (account.dbId() != 0) {
+                    sendAccountAdded(account);
                 }
 
                 if (drive.dbId() != 0) {

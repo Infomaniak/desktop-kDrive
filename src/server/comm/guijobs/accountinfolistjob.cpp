@@ -44,9 +44,9 @@ ExitInfo AccountInfoListJob::serializeOutputParms() {
 }
 
 ExitInfo AccountInfoListJob::process() {
-    ExitCode exitCode = ServerRequests::getAccountInfoList(_accountList);
+    const auto exitCode = ServerRequests::getAccountList(_accountList);
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in ServerRequests::getAccountInfoList: code=" << exitCode);
+        LOG_WARN(_logger, "Error in ServerRequests::getAccountList: code=" << exitCode);
     }
 
     return exitCode;
