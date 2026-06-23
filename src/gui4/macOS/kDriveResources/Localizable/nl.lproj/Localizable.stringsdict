@@ -3,7 +3,7 @@
 <!--
  Loco ios export: Xcode Stringsdict (legacy)
  Project: kDrive Desktop
- Locale: it, Italian
+ Locale: nl, Dutch; Flemish
  Tagged: macOS-stringsdict
  Exported by: Valentin Perignon
  Exported at: Tue, 23 Jun 2026 16:13:20 +0200
@@ -21,9 +21,9 @@
         <key>NSStringFormatValueTypeKey</key>
         <string>d</string>
         <key>one</key>
-        <string>Rimuovi (%lld elemento)</string>
+        <string>Verwijder (%lld element)</string>
         <key>other</key>
-        <string>Rimuovi (%lld elementi)</string>
+        <string>Verwijderen (%lld elementen)</string>
       </dict>
     </dict>
     <key>informationBlockSynchroErrorTitle</key>
@@ -37,9 +37,9 @@
         <key>NSStringFormatValueTypeKey</key>
         <string>d</string>
         <key>one</key>
-        <string>Si è verificato **un errore** di sincronizzazione</string>
+        <string>U heeft **één synchronisatiefout**</string>
         <key>other</key>
-        <string>Si sono verificati **%lld errori di sincronizzazione**</string>
+        <string>U heeft **%d synchronisatiefouten**</string>
       </dict>
     </dict>
   </dict>

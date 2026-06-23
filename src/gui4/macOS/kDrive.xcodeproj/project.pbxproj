@@ -581,6 +581,14 @@
 				de,
 				it,
 				Base,
+				pt,
+				sv,
+				nb,
+				da,
+				nl,
+				pl,
+				fi,
+				el,
 			);
 			mainGroup = 37A1C41D2E546A5200596DBB;
 			minimizedProjectReferenceProxies = 1;

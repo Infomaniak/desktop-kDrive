@@ -1,0 +1,1514 @@
+/*
+ * Loco ios export: Xcode Strings (legacy)
+ * Project: kDrive Desktop
+ * Locale: da, Danish
+ * Tagged: macOS
+ * Exported by: Valentin Perignon
+ * Exported at: Tue, 23 Jun 2026 16:13:20 +0200
+ */
+
+/* loco:6989dd880a55253f3901f745 */
+"aboutAppVersionCopyright" = "Version %@.%@\n© 2019-%@ Infomaniak Network SA -";
+
+/* loco:69a57d074f11212a7007d403 */
+"aboutButton" = "Om";
+
+/* loco:698b3c0d8004546e240eb2d2 */
+"aboutKDrive" = "Om kDrive";
+
+/* loco:698b3cd1ffb6143bce07ad82 */
+"aboutKDriveDescription" = "Udviklet og hostet udelukkende i Schweiz sikrer kDrive total beskyttelse af dine data, uden videresalg eller overvågning, i ISO-certificerede datacentre, med kryptering og sikkerhedskopi på flere medier.";
+
+/* loco:6981b68c6d1056609e079525 */
+"accessibilityActivityTypePicker" = "Synlige aktiviteter";
+
+/* loco:69a6d9dd08a75d40410b53f6 */
+"accessibilityBetaProgramPicker" = "Vælg en distributionskanal";
+
+/* loco:69e1dcc78d162264ae0f2f52 */
+"accessibilityMoreInformation" = "Vis flere oplysninger";
+
+/* loco:69fa0b22dbdab357240dcb12 */
+"accessibilitySearchClear" = "Clear search";
+
+/* loco:69fa0b2668d2d58f030a2422 */
+"accessibilitySearchSheetLabel" = "Search your files";
+
+/* loco:69fa0b2455ed5e00570ecf12 */
+"accessibilitySearching" = "Searching…";
+
+/* loco:69b275fb3440db13f0011c03 */
+"accessibilitySelectSynchroMode" = "Vælg en synkroniseringstilstand";
+
+/* loco:6981cb92c70239c9ed0d45a3 */
+"activitiesTitleIdle" = "Synkronisering fuldført";
+
+/* loco:6981b68b50a70d64050197e2 */
+"activitiesTitleInProgress" = "Synkronisering i gang";
+
+/* loco:6981cb9319de989ec9033882 */
+"activitiesTitleNoActivity" = "Ingen nylig aktivitet";
+
+/* loco:698c2d6ab41c289de2072ab2 */
+"activitiesTitleOffline" = "Du er offline";
+
+/* loco:698c1fa979440e4f370444a2 */
+"activitiesTitlePause" = "Synkronisering sat på pause";
+
+/* loco:6981b68a251c4a36c1078274 */
+"activitiesTypeAllActivities" = "Alle aktiviteter";
+
+/* loco:6981b68a1e51fbe933040213 */
+"activitiesTypeMyActivity" = "Kun min aktivitet";
+
+/* loco:69b422369e32a806170ba3c2 */
+"addAdvancedSyncDialogTitle" = "Synkroniser en mappe med kDrive";
+
+/* loco:69b422a8be3506a1a305ba12 */
+"addAdvancedSyncLocalFolderDescription" = "Vælg mappen på din computer, der skal synkroniseres med kDrive:";
+
+/* loco:69b42298791d2c19c40f4e92 */
+"addAdvancedSyncLocalFolderTitle" = "Synkroniseret mappe";
+
+/* loco:69b429241110b141d0085ab2 */
+"addAdvancedSyncRemoteFolderDescription" = "Tilpas placeringen af din computermappe på kDrive:";
+
+/* loco:69b429180e3d6a548e0afac2 */
+"addAdvancedSyncRemoteFolderTitle" = "kDrive-placering";
+
+/* loco:698b087a5fc40f623b0789c2 */
+"advancedSyncDescription" = "Vælg en mappe på din computer, der skal synkroniseres med kDrive.\nDu kan få adgang til dine avancerede synkroniseringer fra drevvælgeren på startsiden.";
+
+/* loco:698b07cec1d08f40b50bc702 */
+"advancedSyncTitle" = "Avanceret synkronisering";
+
+/* loco:6a01c8e3ba328c320801c492 */
+"appToExclude" = "App, der skal udelukkes";
+
+/* loco:698af4376b386d18b9037522 */
+"appUpToDate" = "Programmet er opdateret";
+
+/* loco:698b36f2eb276c03d00e7c07 */
+"autoCleanupLogsDescription" = "Sletter logfiler ældre end 7 dage for at spare diskplads.";
+
+/* loco:698b36d9eb276c03d00e7c03 */
+"autoCleanupLogsSetting" = "Automatisk oprydning";
+
+/* loco:698af0b429d5e005bc08dfb2 */
+"automaticUpdatesSetting" = "Automatiske opdateringer";
+
+/* loco:698b06836cb93b812800d292 */
+"availableOffline" = "Tilgængelig offline";
+
+/* loco:69943068b17a2d5a500e16b2 */
+"availableOfflineDescription" = "Dine filer kopieres til din computer.\nDu kan åbne dem til enhver tid, selv uden en internetforbindelse.";
+
+/* loco:699db8a1a58425c60d06a902 */
+"backErrorDriveAsleepDescription" = "Du kan vække den fra webgrænsefladen.";
+
+/* loco:698af17b4dd554948901a8b2 */
+"betaProgramDescription" = "Få tidlig adgang til nye versioner af programmet, før de udgives til offentligheden, og hjælp med at forbedre appen ved at dele dine forbedringsidéer med os.";
+
+/* loco:69a6d9b44d26dc09aa0d0643 */
+"betaProgramTitle" = "Deltag i betaprogrammet";
+
+/* loco:69c11aacce7b3b9139008044 */
+"buttonActivateOfflineSync" = "Aktivér offline-synkronisering";
+
+/* loco:698b08da7aafd767de0d78b2 */
+"buttonAddAdvancedSync" = "Synkroniser en mappe";
+
+/* loco:698b580c716d616edb0efde2 */
+"buttonAddFileExclusionRule" = "Tilføj en regel";
+
+/* loco:696a483470f3b70399021c12 */
+"buttonAddStorage" = "Tilføj lagerplads";
+
+/* loco:691deb2291b20ac7fd045012 */
+"buttonAdvancedParameters" = "Avancerede indstillinger";
+
+/* loco:69aad577c1fb41f6e204de02 */
+"buttonApplyToXFiles" = "Anvend på %@ filer";
+
+/* loco:69bd7281cd515cd190042de2 */
+"buttonAskForAccess" = "Anmod om adgang";
+
+/* loco:6989c98657a76723c20d0e92 */
+"buttonCancel" = "Annuller";
+
+/* loco:69c0f0398ae1831b640e5a62 */
+"buttonChangeFolder" = "Skift mappe";
+
+/* loco:69c55ddcee6e0bc4d1046935 */
+"buttonChangeToOffline" = "Gem offline";
+
+/* loco:69c55dcf9ae76d95660b7b66 */
+"buttonChangeToOnline" = "Gem online";
+
+/* loco:696a343b72b6dc32e00557a4 */
+"buttonClose" = "Luk";
+
+/* loco:698c5e4ec95ac47af70ec115 */
+"buttonConfigure" = "Konfigurer";
+
+/* loco:698af6e7b8da51abf504d482 */
+"buttonConfirm" = "Bekræft";
+
+/* loco:698b1376f55227e2c30a2fe4 */
+"buttonConnectAccount" = "Tilslut en konto";
+
+/* loco:6a1e7c41bd3ff43c8d05a542 */
+"buttonContactSupport" = "Kontakt support";
+
+/* loco:691deb0be15255c13908ba42 */
+"buttonContinue" = "Fortsæt";
+
+/* loco:698a09c2c9fb920b0c03e782 */
+"buttonCopyShareLink" = "Kopiér delingslink";
+
+/* loco:68e673c48af12c42e80027c8 */
+"buttonCreateAccount" = "Opret en konto";
+
+/* loco:69a05e947011da04b4061f23 */
+"buttonCreateNewSync" = "Opret en ny synkronisering";
+
+/* loco:698b14e52445668d9d0495a2 */
+"buttonDisconnectAccount" = "Frakobl denne konto";
+
+/* loco:69d905534d8c60bd1f0c9343 */
+"buttonDownloadInProgress" = "Downloader…";
+
+/* loco:69d906534d8c60bd1f0c9344 */
+"buttonDownloadManually" = "Download manuelt";
+
+/* loco:698b0aefb16a3916fc004f32 */
+"buttonEnable" = "Aktivér";
+
+/* loco:699ef0304ba9f8b4d4046cb4 */
+"buttonErrorResolutionTip" = "Forstå problemet";
+
+/* loco:6992eca9a8cb168fe70c0922 */
+"buttonFeedback" = "Del en idé";
+
+/* loco:6930506962426d4ff30af473 */
+"buttonFinishInstallation" = "Afslut installation";
+
+/* loco:698052d464e4b53cef0e9272 */
+"buttonFixErrors" = "Ret fejl";
+
+/* loco:6992eabc63e4de22f10535b2 */
+"buttonHelpdesk" = "Support";
+
+/* loco:69304d546385bb9cfc03e524 */
+"buttonKDriveIsActivated" = "Jeg har aktiveret kDrive";
+
+/* loco:695e58701870be5cd709d2a2 */
+"buttonKDriveOnline" = "kDrive online";
+
+/* loco:698c6b43a4de4c85ae0ef552 */
+"buttonKeepAccount" = "Behold konto";
+
+/* loco:6992d8c3845cd53c31059f53 */
+"buttonLogOut" = "Log ud";
+
+/* loco:68e673b2042a15d8470f9452 */
+"buttonLogin" = "Log ind";
+
+/* loco:697a2658a44fbad34f011962 */
+"buttonManage" = "Administrer";
+
+/* loco:699c5de6289e5ec7bf009722 */
+"buttonManageDiskSpace" = "Administrer diskplads";
+
+/* loco:69aad5b46c5c742d75057663 */
+"buttonManageIndividually" = "Håndter filer individuelt";
+
+/* loco:69c120cf7ef61aa7d5019a33 */
+"buttonManageStorage" = "Administrer lager";
+
+/* loco:698b3ab789def0ffdd073952 */
+"buttonOpenDebugFolder" = "Åbn fejlfindingsmappe";
+
+/* loco:69c0f107d389e919d90b8280 */
+"buttonOpenFolder" = "Åbn mappe";
+
+/* loco:68b04d823f2b735c170caea2 */
+"buttonOpenInBrowser" = "Åbn i browser";
+
+/* loco:68b04d5a63085b7ab90cea63 */
+"buttonOpenInFinder" = "Åbn i Finder";
+
+/* loco:6931a5687031691272002314 */
+"buttonOpenKDrive" = "Åbn kDrive";
+
+/* loco:6995ec42567e96a27b08a0f2 */
+"buttonOpenParentFolder" = "Åbn overordnet mappe";
+
+/* loco:699c79a3de97a50065067d72 */
+"buttonOpenSyncExclusionRules" = "Administrer undtagelser";
+
+/* loco:69a7ed0ecbb2fb59660bfa12 */
+"buttonPause" = "Pause";
+
+/* loco:697b65a56840f9d35605a134 */
+"buttonRefresh" = "Opdater";
+
+/* loco:69b275c6f0de2ef07706b5b3 */
+"buttonRemove" = "Fjern";
+
+/* loco:698b07467beec481020cef52 */
+"buttonRemoveSync" = "Fjern synkronisering";
+
+/* loco:69bd1fa570d32107fa0f0163 */
+"buttonRenameItem" = "Omdøb %@";
+
+/* loco:69a04f0d2417523ff30850b2 */
+"buttonRestartSync" = "Genoptag synkronisering";
+
+/* loco:6964e1fd78f375ec03073c88 */
+"buttonRestartSynchro" = "Genstart synkronisering";
+
+/* loco:697b6560c18f7ca128034f16 */
+"buttonRetry" = "Prøv igen";
+
+/* loco:69c106a55fd64fd95c00ef42 */
+"buttonReturnToDefaultFolder" = "Vend tilbage til standardmappe";
+
+/* loco:6989c90fad75adcb2e05c302 */
+"buttonSave" = "Gem";
+
+/* loco:69a7f03b5fa9c90f560c1192 */
+"buttonSearch" = "Søg";
+
+/* loco:6964e1dfed4b6acb0107409a */
+"buttonSeeActivities" = "Vis aktiviteter";
+
+/* loco:69a6a31c97f5f5084b09e612 */
+"buttonSelect" = "Vælg";
+
+/* loco:69b422d7b7de08855d023d32 */
+"buttonSelectFolder" = "Vælg en mappe";
+
+/* loco:698c5cb5f86b52c6fc001fc4 */
+"buttonSelectFolders" = "Vælg mapper";
+
+/* loco:69bac5f6f74824a64304bcd9 */
+"buttonSelectLocation" = "Vælg en placering";
+
+/* loco:69a6a32d8e33a191f90115f2 */
+"buttonSelected" = "Valgt";
+
+/* loco:6989f2b84f80e68db204aa55 */
+"buttonSend" = "Send";
+
+/* loco:6989e1e13690f28b9e0c8b92 */
+"buttonSendLog" = "Send fejlfindingsmappe";
+
+/* loco:69a7ed31e3754291a4029e52 */
+"buttonSettings" = "Åbn indstillinger";
+
+/* loco:69240f7b15d05a975c07dc13 */
+"buttonShowOffers" = "Vis tilbud";
+
+/* loco:698af1b4d7cad5e8710909b2 */
+"buttonShowOption" = "Vis muligheder";
+
+/* loco:69a7ecff1619fbbe5a0c75b3 */
+"buttonStart" = "Start";
+
+/* loco:69aae9bfc9000e66e10bb5c2 */
+"buttonStartConflictsResolution" = "Start versionsvalgning";
+
+/* loco:69240f6d4433e24658054fd4 */
+"buttonStartForFree" = "Kom gratis i gang";
+
+/* loco:69c11c88f553aeb0d204aa82 */
+"buttonSynchronizeOffline" = "Synkroniser offline";
+
+/* loco:698aec47dbcc2bef330cf7a9 */
+"buttonUpdate" = "Opdater";
+
+/* loco:69d905ce410048ea400b7952 */
+"buttonUpdateNow" = "Opdater nu";
+
+/* loco:697b6767849b0ee24c089f46 */
+"buttonUpdateSubscription" = "Opdater abonnement";
+
+/* loco:6989da5609f5a74cc30826c2 */
+"buttonUpgradeOffer" = "Opgradering";
+
+/* loco:69a69d71b2261fc281078712 */
+"buttonValidate" = "Bekræft";
+
+/* loco:69a69d809805f64236014d34 */
+"buttonValidateAndGoNext" = "Bekræft og gå til næste";
+
+/* loco:697b65886840f9d35605a132 */
+"buttonWakeUp" = "Vågn op";
+
+/* loco:69a6aaafc13f93081e04db42 */
+"conflictErrorAction" = "Vælg en version";
+
+/* loco:69a6a9cae09fee6611099002 */
+"conflictErrorDescription" = "To forskellige versioner af disse filer blev registreret.";
+
+/* loco:69a6a9a346b023df2c088bf2 */
+"conflictErrorTitle" = "Versionskonflikter";
+
+/* loco:69aae8ecbd2a6e29890401b2 */
+"conflictsSearchBoxPlaceholder" = "Søg efter en fil";
+
+/* loco:698b244d7e73966ce3096b02 */
+"copyingLink" = "Kopierer link…";
+
+/* loco:698b169cf72c91b1760a7002 */
+"dataManagementDescription" = "Du kan tilpasse brugs- og driftsdata, der indsamles af Infomaniak for at rette fejl og forbedre programmet. Begge anvendte værktøjer er hostet og administreret udelukkende af os.\n\nKildekoden til dette program kan verificeres, de indsamlede oplysninger er anonyme, og dine personlige oplysninger forbliver strengt fortrolige og deles aldrig med tredjeparter.";
+
+/* loco:698b15ec9e0aad20280f8c02 */
+"dataManagementSettings" = "Datastyring";
+
+/* loco:698b164a5f781b3d5203de12 */
+"dataManagementSubtitle" = "Infomaniak respekterer dit privatliv";
+
+/* loco:698b3a87553e334c1009a7e4 */
+"debugLevelDescription" = "Vælg mængden af oplysninger, der skal logges.";
+
+/* loco:698b3a4d553e334c1009a7e2 */
+"debugLevelSetting" = "Fejlfindingsniveau";
+
+/* loco:698b35cccaddc9598c08a6c2 */
+"debugLogsDescription" = "Giver Infomaniak support mulighed for at identificere årsagen til en hændelse.";
+
+/* loco:698b35a408fd1ee25f08ab35 */
+"debugLogsSettings" = "Fejlfindingslogfiler";
+
+/* loco:699c52b6ec7d62ceec060242 */
+"defaultErrorDescription" = "Synkronisering genstarter automatisk.\nHvis problemet fortsætter, kontakt vores support og vedhæft de tekniske detaljer nedenfor.";
+
+/* loco:699c52baf0c09a8cdb0b6f92 */
+"defaultErrorDetailsLabel" = "Tekniske detaljer";
+
+/* loco:699c52a6b2445603690d7062 */
+"defaultErrorTitle" = "Der opstod en uventet fejl";
+
+/* loco:6a03193b7868f10c96083485 */
+"defaultExclusionAppListDescription" = "Disse apps ignoreres som standard og kan ikke ændres.";
+
+/* loco:698b571c5bf251efd60b88f2 */
+"defaultExclusionFileListDescription" = "Disse filer er som standard udelukket og kan ikke ændres.";
+
+/* loco:698b56b72776ca5e2e084172 */
+"defaultExclusionFileListHeader" = "Automatisk udelukkelse";
+
+/* loco:699c5deee592726401053956 */
+"deleteCancelErrorTitle" = "Sletning annulleret";
+
+/* loco:69a066863a852bbb830bd326 */
+"dialogDataErrorSyncDirChangeDescription" = "I disse situationer er en ny synkronisering nødvendig for at fortsætte med at bruge kDrive korrekt.";
+
+/* loco:698c6c6e4f7e07503f0ba762 */
+"dialogNewExclusionRuleTitle" = "Tilføj en udelukkelsesregel";
+
+/* loco:698c6bbd94b70c0d3d09cde4 */
+"dialogRemoveAccountContent" = "Du er ved at frakoble %@ fra programmet.\nSynkroniseringsmappen forbliver på din computer, men vil ikke længere blive synkroniseret med kDrive.\n\nAlle dine data forbliver tilgængelige online på kDrive.";
+
+/* loco:698c6b10661f3226080d11a2 */
+"dialogRemoveAccountTitle" = "Log ud af denne konto?";
+
+/* loco:698c7bc013e8b5bced08e614 */
+"dialogSyncDeletionWarningContent" = "Den lokale mappe forbliver på din computer, men den vil ikke længere blive synkroniseret med kDrive.\nDenne handling er permanent.\nFor at synkronisere dit drev igen skal du tilslutte det igen senere.\n\nInden du fortsætter, skal du sørge for, at alle dine filer er opdaterede og fuldt synkroniserede.";
+
+/* loco:698c7b5c30ae98f0e6043132 */
+"dialogSyncDeletionWarningTitle" = "Fjern synkronisering?";
+
+/* loco:698c8c7d965fc74e3209cbc2 */
+"dialogSyncModeChangeWarningContent" = "Denne handling kan tage noget tid afhængigt af størrelsen på dine data. Hvis den mislykkes, kan en fuld gensynkronisering af drevet være nødvendig.\n\nInden du fortsætter, skal du sørge for, at alle dine filer er opdaterede og synkroniserede.\n\nLuk ikke programmet under processen.";
+
+/* loco:698c8c9a965fc74e3209cbc4 */
+"dialogSyncModeChangeWarningTitle" = "Skift synkroniseringstilstand?";
+
+/* loco:699ffc60759bb427a3087a02 */
+"dialogSystemErrorSyncDirAccessErrorDescription" = "Sådan gendanner du synkroniseringen:";
+
+/* loco:69a04c38b125963a990be812 */
+"dialogSystemErrorSyncDirDiskMissingErrorDescription" = "Disken, der indeholder din synkroniseringsmappe, er ikke længere tilsluttet";
+
+/* loco:69a04d3d9f59db90d2034a02 */
+"dialogSystemErrorSyncDirDiskMissingErrorTip" = "Tilslut den igen for at genoptage synkroniseringen.";
+
+/* loco:698af1c80126fd2db302b783 */
+"doNotJoin" = "Deltag ikke";
+
+/* loco:69d90c3e87d4f2c6d30331c2 */
+"downloadAppUrl" = "https://www.infomaniak.com/en/apps/download-kdrive";
+
+/* loco:696a260311ac2de6c6029683 */
+"driveAccessDeniedErrorDescription" = "Du har ikke tilladelse til at få adgang til dette kDrive.\nKontrollér dine tilladelser eller kontakt din administrator.";
+
+/* loco:696a25f0bcde38f2b9018124 */
+"driveAccessDeniedErrorTitle" = "Adgang nægtet til kDrive";
+
+/* loco:6979e320c8fc8496d00b3a62 */
+"driveAsleepErrorTitle" = "Dit kDrive er i dvaletilstand";
+
+/* loco:696ddb204d9cd9e240095142 */
+"driveLockedAdminErrorDescription" = "Dette kDrive er ikke blevet fornyet. Du kan ikke længere få adgang til det.\nForny dit abonnement for at genaktivere tjenesten.";
+
+/* loco:696dda82726515a10a0772c2 */
+"driveLockedErrorDescription" = "Dette kDrive er ikke blevet fornyet. Du kan ikke længere få adgang til det.\nKontakt din administrator for at genaktivere tjenesten.";
+
+/* loco:696df7c300e7a6e07201ee53 */
+"driveLockedErrorTitle" = "Dit kDrive er udløbet";
+
+/* loco:6979e45003f623afa50f5592 */
+"driveLoggingErrorDescription" = "Log ind igen for at fortsætte med at bruge kDrive.";
+
+/* loco:6979e43e93193f40e100ebc2 */
+"driveLoggingErrorTitle" = "Du er blevet logget ud";
+
+/* loco:698c6e0a8606b6052c073992 */
+"driveLoggingErrorUserMismatchDescription" = "Kontoen, der bruges til denne forbindelse, svarer ikke til den for dette kDrive.\nLog venligst ind igen med den korrekte e-mailadresse %@";
+
+/* loco:698c6dcd9ec7f03e0007a382 */
+"driveLoggingErrorUserMismatchTitle" = "Denne konto stemmer ikke overens";
+
+/* loco:6979e3dfba525501090fbfa8 */
+"driveWakingUpErrorDescription" = "kDrive vågner op… dette kan tage et par øjeblikke.";
+
+/* loco:6979e389195e90fdc909d252 */
+"driveWakingUpErrorTitle" = "kDrive vågner op";
+
+/* loco:699c5de5e592726401053953 */
+"duplicateNamesErrorTitle" = "Dobbelte navne";
+
+/* loco:698b3654af04fbae590cbf82 */
+"enableDebugLogDescription" = "Optag diagnostiske oplysninger på min computer.";
+
+/* loco:698b361c54ac23ef050755a2 */
+"enableDebugLogsSetting" = "Aktivér fejlfindingslogning";
+
+/* loco:699c5e30252e8a13e30ccaa6 */
+"errCreateCancelDescription" = "Du har ikke de nødvendige tilladelser til at tilføje en %@ til denne placering.\nAnmod om adgang fra ejeren eller administratoren.";
+
+/* loco:699c5de63e952e3a3908b794 */
+"errDeleteCancelDescription" = "Du har ikke tilladelse til at slette dette %@. Det er blevet gendannet til sin oprindelige placering. Anmod om adgang fra ejeren eller administratoren.";
+
+/* loco:69a051ea38b756bc510d07b2 */
+"errDialogConfigChangedTitle" = "En ændring blev registreret i din konfiguration";
+
+/* loco:69c11647693dd774a40a7922 */
+"errDialogInvalidSyncSyncDirAccessDescription" = "I disse situationer kan en ny synkronisering være nødvendig for at fortsætte med at bruge kDrive korrekt.";
+
+/* loco:6995ec41f214efe144009444 */
+"errDialogLocalFileAccessDescription" = "Adgangstilladelserne for %@ blev ændret, hvilket forhindrer den i at blive synkroniseret.";
+
+/* loco:6995ec4239c94dab2908c002 */
+"errDialogLocalFileAccessFaqLink" = "Tjek %@ for at gendanne adgang";
+
+/* loco:6995ec41baed71172b0a6182 */
+"errDialogLocalFileAccessLocationLabel" = "Seneste placering af %@:";
+
+/* loco:69a04b8fbd2b846c4c0dfa42 */
+"errDialogSystemSyncDirDiskMissingTitle" = "Ekstern disk frakoblet";
+
+/* loco:69c11bf158364c02530e18a3 */
+"errDialogSystemUnableToStartVfsDescription" = "Denne operation kan tage noget tid afhængigt af mængden af data, der skal behandles.\n\nLuk ikke programmet under processen.\n\nHvis det mislykkes, kan du nemt starte en fuld gensynkronisering af drevet eller kontakte vores support.";
+
+/* loco:69c11b11df0a817d8a01a312 */
+"errDialogSystemUnableToStartVfsTitle" = "Aktivér offline-synkronisering";
+
+/* loco:696a29351c25c87abb045892 */
+"errDriveMaintenanceDescription" = "Dette kDrive er midlertidigt utilgængeligt på grund af vedligeholdelse.\nPrøv venligst igen om et par minutter.";
+
+/* loco:696a2779d558c16f7d0a7ff9 */
+"errDriveMaintenanceTitle" = "Vedligeholdelse i gang";
+
+/* loco:699c5de55ac1efa46908d312 */
+"errDuplicateNamesDescription" = "Der findes allerede en fil eller mappe med dette navn.";
+
+/* loco:699c5de689c9f608fc070e32 */
+"errEditCancelDescription" = "Du har ikke rettighederne til at redigere denne fil.\nOriginalversionen er bevaret, og din redigering er gemt i en separat fil med \"konflikt\" i dens navn. Anmod om adgang fra ejeren eller administratoren.";
+
+/* loco:699c5dfc89c9f608fc070e36 */
+"errEndWithSpaceDescription" = "Navnet på dette %@ slutter med et mellemrum, hvilket forhindrer det i at blive synkroniseret. Omdøb %@ fra kDrive online.";
+
+/* loco:699c5614411d7368440846f6 */
+"errEndWithSpaceTitle" = "Efterfølgende mellemrum i %@-navn";
+
+/* loco:699c5de592db098f7b0fd183 */
+"errExcludedByTemplateDescription" = "En udelukkelsesregel forhindrer denne %@ i at blive synkroniseret.";
+
+/* loco:699c561e7c51c239760379d2 */
+"errExcludedByTemplateTitle" = "Udelukket fra synkronisering";
+
+/* loco:699c5df3d6fc7731d507e5e3 */
+"errFileExistsDescription" = "Der findes allerede en fil med dette navn.";
+
+/* loco:699c5df6d6fc7731d507e5e5 */
+"errFileLockedDescription" = "Denne fil bruges i øjeblikket af en anden bruger.\nDine ændringer synkroniseres senere.";
+
+/* loco:699c5613411d7368440846f4 */
+"errFileLockedTitle" = "Fil låst";
+
+/* loco:699c5de6b7e26cbaa70f2f62 */
+"errFileRescuedDescription" = "Denne fil blev slettet på kDrive online, mens du redigerede den. En kopi er bevaret på din computer i gendannelsesmappen.";
+
+/* loco:699c5615411d7368440846f8 */
+"errFileRescuedTitle" = "Fil gendannet";
+
+/* loco:699c74f5a495a84f970d7b72 */
+"errFileTooBigAdminDescription" = "Denne fil overskrider den maksimalt tilladte størrelse (50 GB).\nKontakt support for at ophæve grænsen.";
+
+/* loco:699c5df989c9f608fc070e34 */
+"errFileTooBigDescription" = "Denne fil overskrider den maksimalt tilladte størrelse (50 GB).\nKontakt din administrator for at øge filstørrelsesgrænsen.";
+
+/* loco:699dbc6b6214e7b523066c22 */
+"errFileTooBigTitle" = "Fil for stor";
+
+/* loco:699c5deb5ae8fa2cd40b6d92 */
+"errForbiddenActionTitle" = "Adgang forbudt";
+
+/* loco:698c50d3ad9b9055a00cca42 */
+"errForbiddenCharDescription" = "Navnet på dette %@ indeholder et eller flere tegn, der ikke understøttes af kDrive Windows-programmet. Omdøb %@ fra kDrive online.";
+
+/* loco:699c5dff17e678a1990c53c4 */
+"errForbiddenCharOnlySpacesDescription" = "Dette navn indeholder kun mellemrum og kan ikke bruges. Omdøb %@ fra kDrive online.";
+
+/* loco:699c562252bdaf14430f36e4 */
+"errForbiddenCharOnlySpacesTitle" = "Ugyldigt navn";
+
+/* loco:698c50bd552fc86c5c043624 */
+"errForbiddenCharTitle" = "Ikke-understøttet tegn";
+
+/* loco:69c12bf8540dd631890205a4 */
+"errGenericForbiddenDescription" = "Du har ikke de nødvendige tilladelser til at udføre denne handling.\nAnmod om adgang fra ejeren eller administratoren.";
+
+/* loco:69c12be5d526565a35067654 */
+"errGenericForbiddenTitle" = "Adgang forbudt";
+
+/* loco:699c5de53e952e3a3908b792 */
+"errHardlinkDescription" = "Denne fil er et hardlink, der ikke kan synkroniseres.";
+
+/* loco:699c56147f87ce6dc70c3e02 */
+"errHardlinkTitle" = "Ikke-understøttet filtype";
+
+/* loco:699dad0f767bc678ce0a7e62 */
+"errInvalidSyncSyncDirAccessDescription" = "Denne mappe er ikke længere tilgængelig på sin oprindelige placering.";
+
+/* loco:699dacde9cc743edb40cc832 */
+"errInvalidSyncSyncDirAccessTitle" = "Synkroniseringsmappe ikke fundet";
+
+/* loco:699dadab7e62db51ff089bc4 */
+"errInvalidSyncSyncDirNestingDescription" = "Et af dine kDrive er synkroniseret inde i synkroniseringsmappen for et andet kDrive.\nFlyt en af mapperne, så de ikke længere er indlejrede, eller slet din synkronisering for at genskabe den.";
+
+/* loco:699dad8cada34c581005db42 */
+"errInvalidSyncSyncDirNestingTitle" = "Indlejrede kDrive";
+
+/* loco:698c507a552fc86c5c043622 */
+"errLocalFileAccessDescription" = "Kan ikke få adgang til dette %@ på din computer. Kontrollér, at det stadig eksisterer, og at du har rettighederne til at få adgang til det.";
+
+/* loco:698c5065d2a68e9e0e01f7e5 */
+"errLocalFileAccessTitle" = "%@ utilgængelig";
+
+/* loco:699c5e029d64978ac00c7d12 */
+"errMoveCancelDescription" = "Du har ikke rettighederne til at flytte dette %@ hertil; det vil blive gendannet til sin oprindelige placering. Anmod om adgang fra ejeren eller administratoren.";
+
+/* loco:699c5de73e952e3a3908b796 */
+"errNameLengthDescription" = "Dette navn overskrider den tilladte længde (250 tegn). Omdøb %@.";
+
+/* loco:699c5629411d7368440846fa */
+"errNameLengthTitle" = "%@-navn for langt";
+
+/* loco:699daf73372e300aeb066ac3 */
+"errNetworkErrorOtherDescription" = "Kan ikke oprette forbindelse til kDrive.\nSynkronisering genoptages automatisk, når forbindelsen er genoprettet.";
+
+/* loco:699daf5b0ff22f32d50a7033 */
+"errNetworkErrorOtherTitle" = "Forbindelsen midlertidigt utilgængelig";
+
+/* loco:699c5e04289e5ec7bf009725 */
+"errNotEnoughDiskSpaceDescription" = "Der er ikke nok plads på din computer til at synkronisere denne fil.";
+
+/* loco:699c562b1a58312b250e8e92 */
+"errNotEnoughDiskSpaceTitle" = "Utilstrækkelig diskplads";
+
+/* loco:699c5e073e952e3a3908b798 */
+"errNotYetSupportedCharDescription" = "Navnet på denne fil indeholder et eller flere tegn, der endnu ikke understøttes af kDrive-programmet. Omdøb filen fra kDrive online.";
+
+/* loco:699c562e1a58312b250e8e94 */
+"errNotYetSupportedCharTitle" = "Ikke-understøttet tegn";
+
+/* loco:699c5615d46e9facca0bfdb2 */
+"errPathLengthDescription" = "Stien til dette %@ er for lang til at blive synkroniseret. Omdøb en eller flere mapper, det er placeret i, for at forkorte stien.";
+
+/* loco:699c5613f3c45c54e50247f3 */
+"errPathLengthTitle" = "Sti til %@ for lang";
+
+/* loco:699c56ad13d88a808b01e104 */
+"errQuotaExceededDescription" = "Dit kDrive er fuldt. Frigør plads eller opgrader dit abonnement for at synkronisere dette %@.";
+
+/* loco:699c56a42dfefb66850e69d2 */
+"errQuotaExceededTitle" = "Lagergrænse nået";
+
+/* loco:699c56b32dfefb66850e69d4 */
+"errReservedNameDescription" = "Dette navn er reserveret af din computers system. Omdøb %@ fra kDrive online.";
+
+/* loco:699c561418805cf2a2010952 */
+"errReservedNameTitle" = "%@-navn reserveret";
+
+/* loco:699ef321392a1b1fe30afd33 */
+"errSystemErrorSyncDirAccessErrorDescription" = "Kontrollér placeringen eller adgangsrettighederne for mappen.";
+
+/* loco:699ef2b8af5e8f5e2a00eeb5 */
+"errSystemErrorSyncDirAccessTitle" = "Synkroniseringsmappe utilgængelig";
+
+/* loco:6a2197c042aa240e310a72b2 */
+"errSystemLiteSyncNotAllowedDescription" = "LiteSync har ikke de nødvendige tilladelser til at fungere.\nåbn macOS-indstillingerne for at aktivere dem.";
+
+/* loco:6a2197a5620b19f3600003a2 */
+"errSystemLiteSyncNotAllowedTitle" = "Autorisation påkrævet";
+
+/* loco:699db2cb55ec6730790b6d02 */
+"errSystemNotEnoughDiskSpaceDescription" = "Din enheds diskplads er fuld. Synkronisering er sat på pause. Frigør plads for at genoptage synkronisering.";
+
+/* loco:699db2adcb59caa0180bfb43 */
+"errSystemNotEnoughDiskSpaceTitle" = "Utilstrækkelig diskplads";
+
+/* loco:69c113aefce2723e4e02a8b2 */
+"errSystemSyncDirChanged" = "Denne mappe er ikke længere tilgængelig på sin oprindelige placering.";
+
+/* loco:69a04af840d83256d50795e2 */
+"errSystemSyncDirDiskMissingDescription" = "Denne mappe er ikke længere tilgængelig. Der kræves handling for at genoptage synkronisering.";
+
+/* loco:69a04aad8185890f2a0fa5d2 */
+"errSystemSyncDirMissingTitle" = "Synkroniseringsmappe ikke fundet";
+
+/* loco:699db4392a821651780b5842 */
+"errSystemUnableToStartVfsDescription" = "Lite Sync kan ikke starte. Du kan fortsætte med at synkronisere dine filer ved at aktivere offline-synkronisering i indstillingerne. Kontakt support, hvis problemet fortsætter.";
+
+/* loco:699db42197d59a4659020b42 */
+"errSystemUnableToStartVfsTitle" = "Kan ikke starte Lite Sync";
+
+/* loco:699c561552bdaf14430f36e2 */
+"errTmpBlacklistedDescription" = "Synkronisering af dette element mislykkedes. Det prøves automatisk igen senere.";
+
+/* loco:699c561523c0dac10d09b052 */
+"errTmpBlacklistedTitle" = "Synkronisering midlertidigt mislykket";
+
+/* loco:699c56b82dfefb66850e69d6 */
+"errUploadNotTerminatedDescription" = "Overførslen kunne ikke fuldføres. Prøv venligst igen senere.";
+
+/* loco:6998110a3f9ff4c3230a4eb2 */
+"errorConnectingToXPCServer" = "Det ser ud til, at vi ikke kan indlæse appen…";
+
+/* loco:69aa7fb3753c400c81087842 */
+"errorDeletingAccount" = "Der opstod en fejl under sletning af din konto.";
+
+/* loco:6995e49c8f25367fa9049f42 */
+"errorListFilesToVerifyHeader" = "Filer der skal verificeres";
+
+/* loco:6a1e7c960b63328e7a01f812 */
+"errorListSystemHeader" = "System og tilladelser";
+
+/* loco:6995dff99537658db20fabb3 */
+"errorPageTitle" = "Fejl der skal rettes";
+
+/* loco:6a2fb7df4af9c895d0043b52 */
+"errorSelectedFolderIncorrect" = "Denne mappe kan ikke synkroniseres. Vælg en anden mappe.";
+
+/* loco:69afcc9e14a34ba0f30ee2a2 */
+"errorStartingInstaller" = "Fejl ved forsøg på at starte installationsprogrammet";
+
+/* loco:69b3e9128555b02b5001ee42 */
+"errorWhileChangingSynchroMode" = "Fejl ved ændring af synkroniseringstilstand";
+
+/* loco:6a01cb10947c595e7c030a83 */
+"excludeRuleAppDescription" = "Blokér apps, der kan downloade eller ændre dine filer.";
+
+/* loco:698b0107941b49c4f500aa12 */
+"excludeRuleDescription" = "Filer, der matcher denne regel, synkroniseres ikke.";
+
+/* loco:6a01ca75fd0cd802c903fca3 */
+"excludeRuleFileDescription" = "Undgå, at visse midlertidige filer eller systemfiler kopieres til kDrive.";
+
+/* loco:698b37a3ff1c8782250e1a74 */
+"extendedLogDescription" = "Muliggør indsamling af yderligere oplysninger nyttige for support.";
+
+/* loco:698b3778571c7248480ed4c2 */
+"extendedLogSetting" = "Udvidet detaljeret log";
+
+/* loco:698b37efff1c8782250e1a76 */
+"extendedLogWarning" = "Når denne mulighed er aktiveret, kører kDrive langsommere.";
+
+/* loco:69cb941c26bf3e633e097a82 */
+"faqUrl" = "https://www.infomaniak.com/en/support/faq/admin2/kdrive";
+
+/* loco:6992ec7abaf88a24990d3e13 */
+"feedbackSetting" = "Hjælp os med at forbedre kDrive";
+
+/* loco:69a560c0ef88a6b6b00e49a4 */
+"feedbackURL" = "https://feedback.userreport.com/652ad8f0-84c8-4a21-9e31-7a8bd7134f46";
+
+/* loco:6a072dcb891ba895c309fbc2 */
+"fileExclusionNotificationWarning" = "En notifikation underretter dig, når en fil udelukkes af denne regel.";
+
+/* loco:699c56142c8d937001054c82 */
+"fileExistsErrorTitle" = "Filen eksisterer allerede";
+
+/* loco:698b05aa9eefd9ba070ce4a2 */
+"fileSyncMode" = "Filsynkroniseringstilstand";
+
+/* loco:698b05ecfd0cddb0b90c8b72 */
+"fileSyncModeDescription" = "Definer, hvordan dine filer gemmes og tilgås.";
+
+/* loco:698b00c7f04008f614070e52 */
+"filesToExclude" = "Filer der skal udelukkes";
+
+/* loco:695e57f549f806b5ef0a3ac2 */
+"folderFavorites" = "Favoritter";
+
+/* loco:695e584bbc7544361b08b832 */
+"folderShares" = "Delinger";
+
+/* loco:695e5889bc7544361b08b834 */
+"folderTrash" = "Papirkurv";
+
+/* loco:698b111bc1341f8509093622 */
+"forOneHour" = "I 1 time";
+
+/* loco:698b115dd0d747974308d3b2 */
+"forOneWeek" = "I en uge";
+
+/* loco:698b1185c1341f8509093624 */
+"forThreeDays" = "I tre dage";
+
+/* loco:6960b7720cbd5c07340af144 */
+"greetingLabel" = "Hej %@, %@";
+
+/* loco:6964f0b575a31a8d9601a6d7 */
+"helpKDriveName" = "kDrive %@";
+
+/* loco:69b278d512cd069835039fe2 */
+"helpUrl" = "https://www.infomaniak.com/en/support";
+
+/* loco:6989e175cdee4aba850e89b2 */
+"infomaniakSupport" = "Infomaniak Support";
+
+/* loco:696a481cf54b5acbc60209c2 */
+"informationBlockKDriveFullSubtitle" = "Frigør plads eller opgrader din plan for at fortsætte med at synkronisere dine filer.";
+
+/* loco:696a47fd5b6db1a9b1063182 */
+"informationBlockKDriveFullTitle" = "Dit kDrive er fuldt";
+
+/* loco:698053a65bddc8df790d0212 */
+"informationBlockSynchroErrorSubtitle" = "Nogle filer kunne ikke synkroniseres.";
+
+/* loco:69c4e8bed4e0fde818045ab2 */
+"informationBlockTmpDirAccessErrorSubtitle" = "Vi kan ikke få adgang til dine filer. Genstart programmet for at genoptage synkronisering. Hvis problemet fortsætter, kontakt support.";
+
+/* loco:69c4e8b82884a264150d2583 */
+"informationBlockTmpDirAccessErrorTitle" = "Forbindelsen til kDrive afbrudt";
+
+/* loco:6930595e7664999c6a08c8a4 */
+"instructionEnableKDrive" = "Aktivér kDrive.app";
+
+/* loco:693059768c31ab63990a0c82 */
+"instructionEnableKDriveArgument" = "kDrive.app";
+
+/* loco:69314c10606d30eb26081742 */
+"instructionEnableKDriveHint" = "Du skal aktivere kDrive.app, inden du fortsætter";
+
+/* loco:69314cfb358e5c25a50b1fb3 */
+"instructionFullDisk" = "Aktivér kDrive og kDrive LiteSync Extension";
+
+/* loco:69314c248389940c6c08d902 */
+"instructionFullDiskHint" = "Du skal aktivere tilladelserne, inden du fortsætter";
+
+/* loco:69314c4aba85c2962d068dc2 */
+"instructionOpenPrivacySecurity" = "Gå til Privatliv og sikkerhed > Fuld diskadgang";
+
+/* loco:69314c54606d30eb26081743 */
+"instructionOpenPrivacySecurityArgument" = "Fuld diskadgang";
+
+/* loco:69314c62739c205c410aa082 */
+"instructionOpenPrivacySecurityLink" = "Privatliv og sikkerhed";
+
+/* loco:69305911b203efcf750e7bb4 */
+"instructionOpenSecurityExtensions" = "Vælg Åbning og udvidelser > Sikkerhedsudvidelser";
+
+/* loco:6930592bfd6c86f6690db6d5 */
+"instructionOpenSecurityExtensionsArgument" = "Sikkerhedsudvidelser";
+
+/* loco:693059483fc5023f6a0f86b3 */
+"instructionOpenSecurityExtensionsLink" = "Åbning og udvidelser";
+
+/* loco:69305849f1fb5be2c7093fa2 */
+"instructionOpenSystemSettings" = "Åbn Systemindstillinger > Generelt";
+
+/* loco:6930588953221ff00608e983 */
+"instructionOpenSystemSettingsLink" = "Systemindstillinger";
+
+/* loco:69314d1a739c205c410aa087 */
+"instructionRestartIfNecessary" = "Genstart programmet, hvis det kræves";
+
+/* loco:6a16da43bc4d91f15c0416e2 */
+"kSuiteOfferUrl" = "https://www.infomaniak.com/en/ksuite";
+
+/* loco:69a0079a3f0464f2af0a25d3 */
+"labelAccessRightsModified" = "Adgangsrettigheder ændret";
+
+/* loco:6989c851ba57b190ff0ebbf2 */
+"labelAllowTracking" = "Tillad sporing";
+
+/* loco:6a0b062a269f9f6d54046565 */
+"labelAppID" = "Programidentifikator";
+
+/* loco:6a155a770336fcc4820ebf57 */
+"labelApplicationName" = "Programnavn";
+
+/* loco:69a6a42b7dda553eac028754 */
+"labelAuthor" = "Forfatter";
+
+/* loco:69aac15193f089df1a016352 */
+"labelChooseConflictVersion" = "Vælg hvilken version af dine filer du vil beholde.";
+
+/* loco:69aae4641dd9b6d9260b1dd2 */
+"labelChooseConflictVersionIndividual" = "For hver fil skal du vælge den version, der skal beholdes.";
+
+/* loco:69a6a189b148a1a71e0ed432 */
+"labelConflictDialogQuestion" = "Hvilken version vil du beholde?";
+
+/* loco:69a6a149ab7804a872011ae3 */
+"labelConflictDialogTitle" = "Vælg versionen der skal beholdes";
+
+/* loco:69aad32560082fe51d04e453 */
+"labelConflictStrategyKeepLocalDescription" = "De online versioner af disse %@ filer erstattes af dine lokale versioner.\nVær opmærksom på, at dette kan overskrive dine samarbejdspartneres arbejde.";
+
+/* loco:69aad31a1e6f4653e90deca2 */
+"labelConflictStrategyKeepLocalTitle" = "Behold kun lokale versioner";
+
+/* loco:69aacea7c2c6d1b9ad00e592 */
+"labelConflictStrategyKeepMostRecentDescription" = "For hver konflikt bevarer vi automatisk den version (lokal eller online), der er ændret senest. Dette er det sikreste valg i de fleste tilfælde.";
+
+/* loco:69aacd5d37efef69510a4112 */
+"labelConflictStrategyKeepMostRecentTitle" = "Behold de nyeste versioner";
+
+/* loco:69aad30606787d9e31090c12 */
+"labelConflictStrategyKeepRemoteDescription" = "Alle lokale ændringer for disse %@ filer kasseres.\nNyttigt, hvis du ved, at det vigtige arbejde er online på kDrive.";
+
+/* loco:69aad2fb60082fe51d04e452 */
+"labelConflictStrategyKeepRemoteTitle" = "Behold kun online versioner";
+
+/* loco:69a012ce9c6aefa11d0c0a22 */
+"labelCreateNewSync" = "Opret en %@.";
+
+/* loco:69a6a43c586562e1ae0e9142 */
+"labelDate" = "Dato";
+
+/* loco:69a00df5cee58fe1c90de9e2 */
+"labelFAQ" = "FAQ";
+
+/* loco:69bd5439d1397465ce0d8572 */
+"labelFileLowerCase" = "fil";
+
+/* loco:6989ff5b78003eb4e20e2652 */
+"labelFolder" = "Mappe";
+
+/* loco:69a007e73eee9bc51f08bae3 */
+"labelFolderDeleted" = "Mappe slettet";
+
+/* loco:69a067f92558059af802c6f2 */
+"labelFolderDisplacedOrModified" = "Mappe flyttet eller ændret";
+
+/* loco:69a06836f878b875f20414c2 */
+"labelFolderDisplacedOrModifiedTip" = "Mappen er muligvis blevet flyttet til en anden disk og derefter returneret til sin oprindelige placering.";
+
+/* loco:69bd54253484750cc508b092 */
+"labelFolderLowerCase" = "mappe";
+
+/* loco:69a004c4b20bdca67000eba2 */
+"labelFolderMovedOrRenamed" = "Mappe flyttet eller omdøbt";
+
+/* loco:69a06865762f35915703bd32 */
+"labelFolderRecreatedOrReplaced" = "Mappe genskabt eller erstattet";
+
+/* loco:69a06888a8f938beef0635f2 */
+"labelFolderRecreatedOrReplacedTip" = "Mappen blev slettet og genskabt, eller erstattet af en anden mappe med samme navn.";
+
+/* loco:698c656e3e4e4bbf4f02bde2 */
+"labelJustNow" = "Lige nu";
+
+/* loco:698aecc409658598f60cc334 */
+"labelKDriveVersion" = "kDrive %@";
+
+/* loco:69a81e43ec7b4ff05a0b50d2 */
+"labelLocal" = "Lokal";
+
+/* loco:69aac3530302ea9cb209d153 */
+"labelManyConflictTitle" = "%@ filer er blevet ændret både på din computer og på kDrive.";
+
+/* loco:69a6a3ed7dda553eac028752 */
+"labelMostRecent" = "Nyeste";
+
+/* loco:6989fec57ca0d7305008b1e2 */
+"labelName" = "Navn";
+
+/* loco:69a0675de82f7e271b0c54d2 */
+"labelNewDeviceDetected" = "Ny enhed registreret";
+
+/* loco:69a067979b511e9c830b1642 */
+"labelNewDeviceDetectedTip" = "Du bruger kDrive på en ny computer, efter en gendannelse fra en sikkerhedskopi.";
+
+/* loco:69a0130cbdb1efd10d0939a3 */
+"labelNewSync" = "ny synkronisering";
+
+/* loco:69aafa69b473f615ee031a64 */
+"labelNoConflictsFound" = "Ingen konflikter matcher din søgning";
+
+/* loco:69c2644abc5e9a04d80150f4 */
+"labelNoErrorsToFix" = "Ingen fejl at rette";
+
+/* loco:698b5869ab41083f11042b52 */
+"labelNotifications" = "Notifikation";
+
+/* loco:6a1561e8fb5669a82f04fe44 */
+"labelNotifyIfFileExcluded" = "Giv besked, hvis fil er ekskluderet";
+
+/* loco:69a6e4aceff2d992ad059324 */
+"labelOff" = "Fra";
+
+/* loco:69a81e31f454e9ee2b012722 */
+"labelOnline" = "Online";
+
+/* loco:69c116cc1eebd82cd2031674 */
+"labelOnlineFolderDeletedOrRenamed" = "Online mappe slettet";
+
+/* loco:69c116b9a39e29283f05d3e4 */
+"labelOnlineFolderDeletedOrRenamedTip" = "Den synkroniserede mappe blev slettet på kDrive online eller er ikke længere tilgængelig.";
+
+/* loco:69a0040b768059140500484a */
+"labelOriginalLocation" = "Oprindelig placering:";
+
+/* loco:69aace12c2ddcf448e017c32 */
+"labelRecommended" = "Anbefalet";
+
+/* loco:69c117446ac92c1902088ab4 */
+"labelRemoteAccessRightsModifiedTip" = "Mappen er muligvis blevet flyttet til en anden disk og derefter returneret til sin oprindelige placering.";
+
+/* loco:69a0058cb6529d830904d094 */
+"labelRestoreToOriginalLocation" = "Gendan den til sin oprindelige placering.";
+
+/* loco:698b58377672899b9301a142 */
+"labelRules" = "Regler";
+
+/* loco:698b2f6aae1ca9d0290ad174 */
+"labelSameAsSystem" = "Samme som system";
+
+/* loco:6989ff974ef31503cb002e23 */
+"labelSize" = "Størrelse";
+
+/* loco:698a070557f1356c46048003 */
+"labelStatus" = "Status";
+
+/* loco:69a07364c232b528bf01b672 */
+"labelSyncFolder" = "Synkroniseringsmapper";
+
+/* loco:698c49120217e0fe6308b0c2 */
+"labelSyncLocation" = "Placering";
+
+/* loco:69bbf39c8b5d154c9b0e76b2 */
+"labelSyncedFolders" = "Synkroniserede mapper";
+
+/* loco:698c4ae9a90fef6269010692 */
+"labelSynchronisation" = "Synkronisering";
+
+/* loco:698aeefb604e522161001392 */
+"labelTime" = "Tid";
+
+/* loco:69a6994cc60d93f50404f812 */
+"labelXoverY" = "%@ af %@";
+
+/* loco:698c6a57a5f62ca5f1091942 */
+"labelkDriveManagement" = "kDrive-administration";
+
+/* loco:698b0dd551a7a263e6030a72 */
+"languageSetting" = "Sprog";
+
+/* loco:698b02fbc4b83479960bbf92 */
+"largeFolderRecommendation" = "Den fulde mappe er stor.\nFor at fremskynde overførslen anbefaler vi at sende kun den seneste kDrive-session.";
+
+/* loco:698b12a03edc9705b80c71c2 */
+"learnMore" = "Lær mere";
+
+/* loco:6989dc0e68071269990c2942 */
+"licensesHyperLink" = "LGPL v3-licens - Git-kilder";
+
+/* loco:698a1276e1c66ed33b03bf32 */
+"linkCopiedToClipboardTitle" = "Link kopieret til udklipsholder";
+
+/* loco:6a17d566053e72a9fd087b52 */
+"liteSyncUnavailableDescriptionMac" = "Inkompatibelt drev eller mappe direkte i roden af drevet (f.eks. vælg en mappe som /Mit drev i stedet for /)";
+
+/* loco:698b392cacfe189ede0cf082 */
+"logLevelDebug" = "Debug";
+
+/* loco:698b3972f0be39d922008ec3 */
+"logLevelError" = "Fejl";
+
+/* loco:698b3982f6e48fd003019f52 */
+"logLevelFatal" = "Kritisk";
+
+/* loco:698b393d2a881def5c0fe142 */
+"logLevelInfo" = "Info";
+
+/* loco:698b394a2a881def5c0fe144 */
+"logLevelWarning" = "Advarsel";
+
+/* loco:6989f263fe556601b70fe7a2 */
+"logUploadPopupTitle" = "Send fejlfindingsmappe til Infomaniak support";
+
+/* loco:699daea7c2085834e309e844 */
+"logicErrorFullListParsingErrorDescription" = "Nogle filnavne kan indeholde specialtegn, der ikke understøttes (såsom dobbelte anførselstegn, backslashes eller linjeskift).\n\nKontrollér venligst og omdøb filer med usædvanlige tegn, og prøv derefter igen.";
+
+/* loco:699dae59b2e799063c0eee05 */
+"logicErrorFullListParsingErrorTitle" = "Ugyldigt filnavn";
+
+/* loco:69aaacf3df901b5cea00cd92 */
+"manyConflictErrorDescription" = "Forskellige versioner af disse filer blev registreret.";
+
+/* loco:69aaac472fbbf3de57090942 */
+"manyConflictErrorTitle" = "%@ versionskonflikter registreret";
+
+/* loco:698b2e50ea6bcf51bf026fc2 */
+"matomoDescription" = "Matomo er et analyseværktøj hostet og administreret udelukkende af Infomaniak for at forstå, hvordan programmet bruges.\n\nAnalyse af disse data giver vores team mulighed for løbende at forbedre programmets grænseflade.";
+
+/* loco:699c562623c0dac10d09b054 */
+"moveCancelErrorTitle" = "Flytning annulleret";
+
+/* loco:698b11f969e305d1ce01e062 */
+"moveDeletedFilesToRecycleBinSetting" = "Flyt slettede filer til computerens papirkurv";
+
+/* loco:698b1273e77c157c0d065892 */
+"moveDeletedFilesToRecycleBinWarning" = "Nogle elementer kan muligvis ikke flyttes.";
+
+/* loco:6989d5a219b60c091f06e662 */
+"myksuitePlusBannerDescription" = "Mere lagerplads, flere funktioner med my kSuite+";
+
+/* loco:6992e9f20953b626df05ffc2 */
+"needHelpSetting" = "Brug for hjælp?";
+
+/* loco:69ce15f8ac7c0ee6d7099c02 */
+"networkSettings" = "Netværk";
+
+/* loco:6992de465798e1839302bbc2 */
+"noAccountConnected" = "Tilføj en konto for at komme i gang";
+
+/* loco:6989f957dd64bb04d70f39a2 */
+"noResultsFound" = "Ingen resultater fundet";
+
+/* loco:698b0aaddee0bf9fb206a694 */
+"notSyncedDrive" = "Ikke synkroniseret";
+
+/* loco:698b10ad0c20e31c9c00a5c2 */
+"notificationsDisabledAlways" = "Altid";
+
+/* loco:698b1086dc2a328c000cfd92 */
+"notificationsDisabledNever" = "Aldrig";
+
+/* loco:698b0181941b49c4f500aa15 */
+"notifyOnFileExcluded" = "Modtag en notifikation, når en fil udelukkes";
+
+/* loco:698c5ab9945b7c6d260d4c22 */
+"onBoardingAdvancedSettingsDriveTitle" = "Konfigurer synkronisering for dette kDrive";
+
+/* loco:698c5b3fa3cb0fe14205ddb5 */
+"onboardingAdvancedSettingsDriveCustomizeLocation" = "Tilpas placeringen af din kDrive-mappe på din computer:";
+
+/* loco:698c5bda2351f47094030442 */
+"onboardingAdvancedSettingsDriveCustomizeLocationTip" = "Den valgte mappe skal være tom for at synkronisering fungerer korrekt.";
+
+/* loco:698c5c378bdea123d60afff7 */
+"onboardingAdvancedSettingsDriveExclusionDescription" = "Vælg de mapper, der skal synkroniseres på denne computer:";
+
+/* loco:698c5bf9735560170309a842 */
+"onboardingAdvancedSettingsDriveExclusionTitle" = "Synkroniserede mapper";
+
+/* loco:698c62f8bde3b880ce05ea53 */
+"onboardingAdvancedSettingsDriveSelectionDescription" = "For hvert kDrive kan du vælge, hvor det synkroniseres på din computer, og hvilke mapper du vil synkronisere.";
+
+/* loco:698c5f7af0e0abf8b4088952 */
+"onboardingAdvancedSettingsDriveSelectionExclusion" = "Synkroniseret indhold:";
+
+/* loco:6a3a944b2fa9d008060aa502 */
+"onboardingAdvancedSettingsDriveSelectionExclusionMac" = "Synkroniseret indhold: %@";
+
+/* loco:6a3a93d7f05303008e0ad1a2 */
+"onboardingAdvancedSettingsDriveSelectionLocationMac" = "Placering: %@";
+
+/* loco:698c62a71f3f2e07fe07ca17 */
+"onboardingAdvancedSettingsDriveSelectionTitle" = "Konfigurer dine kDrive";
+
+/* loco:698c4e054842cd371c0d94f2 */
+"onboardingAlreadySyncedDriveTooltip" = "Dette kDrive er allerede konfigureret.\nGå til dine indstillinger for at ændre det.";
+
+/* loco:693050ed6a0836d25507da22 */
+"onboardingAuthorizationExtensionDescription" = "Autorisér kDrive i macOS-indstillinger:";
+
+/* loco:6930509e14b396d6fc04b0f2 */
+"onboardingAuthorizationExtensionTitle" = "Aktivér kDrive på din Mac";
+
+/* loco:6930510648920a67910d1094 */
+"onboardingAuthorizationFullDiskDescription" = "For at fuldføre installationen skal du autorisere kDrive til at få adgang til dine:";
+
+/* loco:693050bab2a2c1990a0d2f04 */
+"onboardingAuthorizationFullDiskTitle" = "Autorisér adgang til filer";
+
+/* loco:692406b0258f5599bf01d113 */
+"onboardingDriveSelectionNoDriveDescription" = "Kom gratis i gang med my kSuite,\neller vælg en plan, der passer til dine behov.";
+
+/* loco:692405adc5c224ad2a07ff62 */
+"onboardingDriveSelectionNoDriveTitle" = "Du har ikke et kDrive endnu.";
+
+/* loco:69242dd4299cf487060f2143 */
+"onboardingDriveSelectionSelectTitle" = "Vælg de kDrive, der skal synkroniseres på denne computer:";
+
+/* loco:69271e987f61390c0e053442 */
+"onboardingDriveSelectionSyncInProgress" = "Synkronisering i gang";
+
+/* loco:691deaf47145f10ab4052cd2 */
+"onboardingDriveSelectionTitle" = "Godt at se dig!";
+
+/* loco:698c5a5887eff04a98064d42 */
+"onboardingExclusionSummaryNone" = "Alle kDrive-mapper";
+
+/* loco:698c5cfa7fb9b01ec80098c2 */
+"onboardingExclusionSummarySome" = "Brugerdefineret valg";
+
+/* loco:68e6739c8af12c42e80027c5 */
+"onboardingLoginDescription" = "Det private, hurtige og sikre cloud, hostet i Schweiz.\n\nLog ind, og hold dine dokumenter synkroniserede på alle dine enheder.";
+
+/* loco:68e8fa543a683192560af9e2 */
+"onboardingLoginErrorDescription" = "Der opstod en fejl. Prøv venligst igen.";
+
+/* loco:68e8fa06c1b003290f0ccf42 */
+"onboardingLoginErrorTitle" = "Loginfejl";
+
+/* loco:691deb66e28b84c78e034353 */
+"onboardingLoginHintLoading" = "Bare et øjeblik, vi indlæser din konto…";
+
+/* loco:691deb477145f10ab4052cd4 */
+"onboardingLoginHintWebAuth" = "Logger ind fra din browser…";
+
+/* loco:68e8fa27d09187683c0679b2 */
+"onboardingLoginTitle" = "Velkommen til kDrive";
+
+/* loco:6931a1769dc60cb1820f5fe3 */
+"onboardingSynchronizationAppReadyDescription" = "Dine filer er klar til at blive synkroniseret\nsikkert på din computer.";
+
+/* loco:6931a16c3498d5205b0380d3 */
+"onboardingSynchronizationAppReadyTitle" = "Klar!";
+
+/* loco:6931a1582ee1a869eb0303f4 */
+"onboardingSynchronizationInProgressDescription" = "Vi afslutter konfigurationen af dine kDrive.\n\nVent venligst et øjeblik.";
+
+/* loco:6931a14fa4031f6161097f42 */
+"onboardingSynchronizationInProgressTitle" = "Synkronisering i gang…";
+
+/* loco:698b0ee1587496f4f5035cd2 */
+"openKDriveAtStartupSetting" = "Åbn kDrive, når computeren starter";
+
+/* loco:6996f06bd9578b02ee0eb1b4 */
+"pathCopiedToClipboard" = "Sti kopieret til udklipsholder";
+
+/* loco:698b2ef3d4aa9d35260e3484 */
+"proxyConnectionDescription" = "Definer, hvordan kDrive opretter forbindelse til internettet.";
+
+/* loco:698b3452210436b0e501a3a2 */
+"proxyHost" = "Server";
+
+/* loco:698b347b1d024ca9f20d69a2 */
+"proxyNeedAuth" = "Godkendelse krævet";
+
+/* loco:698b349f7ad01ee67e0d5f92 */
+"proxyPassword" = "Adgangskode";
+
+/* loco:698b345c116156e70a073a42 */
+"proxyPort" = "Port";
+
+/* loco:698b2e7edcb5f5b87b0d29e2
+ * Title of the proxy settings section in advanced settings. */
+"proxySettings" = "Proxy-indstillinger";
+
+/* loco:698b2ff2aa06201dc403c422 */
+"proxyType" = "Proxy-type";
+
+/* loco:698b2f2e89df53c9e4039b02 */
+"proxyTypeHTTP" = "Manuel konfiguration";
+
+/* loco:698b2f80dac62f80330a2412 */
+"proxyTypeNone" = "Ingen";
+
+/* loco:698b34ab7ad01ee67e0d5f94 */
+"proxyUser" = "Brugernavn";
+
+/* loco:698af22fb4f7b3f2640d1493 */
+"releaseChannelBeta" = "Beta";
+
+/* loco:698af24c3d21055870072b12 */
+"releaseChannelInternal" = "Intern";
+
+/* loco:69e9e6c1a3c665593e087513 */
+"releaseChannelTest" = "Test";
+
+/* loco:69eb8137c1ea8e116a0ba282
+ * Search field placeholder in SearchSheetView. */
+"searchPlaceholder" = "Search…";
+
+/* loco:69eb8290d3fa21c4fb096d82
+ * Tooltip shown on search results when file is not available locally and will open in browser. */
+"searchResultOpenInBrowserTooltip" = "This file is not available locally and will be opened in your browser";
+
+/* loco:69eb8061e9130678990a5972
+ * Empty search state title in SearchSheetView before any query is entered. */
+"searchYourFiles" = "Search your files";
+
+/* loco:698b06dd2a4fff6e66027c92 */
+"selectFoldersToSync" = "Vælg de mapper, der skal synkroniseres på denne computer.";
+
+/* loco:698b07172a4fff6e66027c94 */
+"selectFoldersToSyncDescription" = "Ikke-valgte mapper downloades ikke til din enhed. De forbliver tilgængelige online og slettes ikke.";
+
+/* loco:69c580998e2c17f1840de762 */
+"selectFoldersToSyncDescriptionShort" = "Ikke-valgte mapper downloades ikke til din enhed. De forbliver tilgængelige online.";
+
+/* loco:698b02a302385f4ff103bd62 */
+"sendLastSessionOnly" = "Send kun seneste session";
+
+/* loco:698b2df25c57be025b0ecfd2 */
+"sentryDescription" = "Sentry er et værktøj hostet og administreret udelukkende af Infomaniak for at overvåge stabiliteten af programmet i realtid og automatisk rapportere tekniske fejl til vores udviklere.\n\nDisse data giver vores team mulighed for hurtigt at rette og optimere programmet, hvilket resulterer i en bedre brugeroplevelse for dig.";
+
+/* loco:68cd386502633dee14000352 */
+"sidebarItemAccounts" = "Konti & synkroniseringer";
+
+/* loco:68cd389fcc36238762040074 */
+"sidebarItemAdvanced" = "Avanceret";
+
+/* loco:68cd3843fbf0b4c60d0c9c82 */
+"sidebarItemGeneral" = "Generelt";
+
+/* loco:68a70c92c32749426b06db02 */
+"sidebarItemKDriveTitle" = "kDrive-mappe";
+
+/* loco:69ccceaed2b63271de0326d3 */
+"statusBarOpenApp" = "Åbn kDrive";
+
+/* loco:69ccce749ecf25eb9005e002 */
+"statusBarQuitApp" = "Afslut";
+
+/* loco:69ccce9808d1b71a410eab92 */
+"statusBarSettings" = "Indstillinger";
+
+/* loco:697b37c632d0fb5b5d0b4db6 */
+"storageDeviceNameMac" = "Macintosh";
+
+/* loco:69981716cfa89b9c940ef652 */
+"storageLoadingHint" = "Indlæser pladsforbrug…";
+
+/* loco:697a077ee16575000806de62 */
+"storageMacFreeSpace" = "Ledig plads";
+
+/* loco:697a0768c39a2189f5022564 */
+"storageMacUsedByComputer" = "Andre filer";
+
+/* loco:697a07436d99d0c2c00449e2 */
+"storageMacUsedByKDrive" = "kDrive-filer, der er gemt på din enhed";
+
+/* loco:69c67d8e7c0702965a003512 */
+"storageMissingDiskMacOSDescription" = "kDrive kan ikke få adgang til drevet\nSørg for, at det er tilsluttet,\noplåst og tilgængeligt fra din computer.";
+
+/* loco:69c67d717e089c303405cee2 */
+"storageMissingDiskMacOSTitle" = "Drevet er ikke tilgængeligt";
+
+/* loco:697a2640c1c052cea305d2d6 */
+"storageSyncBlockMacDescription" = "Administrer synkroniserede mapper for at frigøre plads på din Mac.";
+
+/* loco:697a26183f570e1362040242 */
+"storageSyncBlockTitle" = "Synkronisering";
+
+/* loco:6979e265a8419bb7510c8122 */
+"storageUsageLabel" = "%1$s af %2$s brugt";
+
+/* loco:698b0623154e735e8b0a2542 */
+"storedOnline" = "Gemt online";
+
+/* loco:69943031092bf608bc0c4304 */
+"storedOnlineDescription" = "Dine filer forbliver i skyen og bruger ikke plads på din computer.\nEn internetforbindelse er nødvendig for at få adgang til dem.";
+
+/* loco:698a07efc9e9b6dcce04dc86 */
+"syncErrorTooltip" = "Synkroniseringsfejl";
+
+/* loco:69c10660ef5c38ffd40aab52 */
+"syncFolderCustomLocation" = "Brugerdefineret mappe";
+
+/* loco:698c5b6872ce37700303dac2 */
+"syncFolderDefaultLocation" = "Standardmappe";
+
+/* loco:698a085329fb169f6605ac62 */
+"syncInProgressTooltip" = "Synkronisering";
+
+/* loco:698b0555781f2782a70727c2 */
+"syncModeApplying" = "Din nye synkroniseringstilstand anvendes…";
+
+/* loco:698b1593acd7caac53091c62 */
+"syncRules" = "Synkroniseringsregler";
+
+/* loco:69cb7b4436165087ff055e92 */
+"syncShortStatusError" = "Der opstod en fejl";
+
+/* loco:69ca840f10c2c8213703f4f2 */
+"syncShortStatusIdle" = "Seneste synkronisering lykkedes";
+
+/* loco:69ca84317f5583d81f03c7f2 */
+"syncShortStatusPaused" = "Synkronisering er sat på pause";
+
+/* loco:69ca84494136086fe60cebf2 */
+"syncShortStatusRunning" = "Synkronisering kører";
+
+/* loco:698a08137065b2ad54014e72 */
+"syncSuccessTooltip" = "Synkroniseret";
+
+/* loco:698b0d2d968b4ae2ca022542 */
+"syncedDrive" = "Synkroniseret";
+
+/* loco:698b2ff6c504d956e009aad2 */
+"syncedFromComputer" = "Synkroniseret fra din computer";
+
+/* loco:698a08bdb6b870234906e103 */
+"syncedFromKDriveWeb" = "Synkroniseret fra kDrive web";
+
+/* loco:6960b7decf8ffcd3950d2706 */
+"synchroInProgress" = "dine filer synkroniseres";
+
+/* loco:6960b7fd4e868a099e022dc5 */
+"synchroPaused" = "Synkroniseringen er midlertidigt stoppet.";
+
+/* loco:6960f0917cb01bc78104ed32 */
+"synchroStatusInProgressDescription" = "Dine seneste filer opdateres.";
+
+/* loco:6960f01471cc26128d040b12 */
+"synchroStatusInProgressTitle" = "Synkronisering i gang";
+
+/* loco:6960f77abfc1ab365409ead2 */
+"synchroStatusOfflineDescription" = "Dine downloadede filer forbliver tilgængelige.\nSynkroniseringen genoptages automatisk, så snart du er online igen.";
+
+/* loco:6960f75e46598388a60c3022 */
+"synchroStatusOfflineTitle" = "Offline";
+
+/* loco:6960f0d67c633959570799d2 */
+"synchroStatusPausedDescription" = "Synkronisering er midlertidigt stoppet.";
+
+/* loco:6960f0b8ef5d3700b0018933 */
+"synchroStatusPausedTitle" = "Synkronisering under pause";
+
+/* loco:6960efeed6dfdcb3af05e2d2 */
+"synchroStatusUpToDateDescription" = "Dine filer er tilgængelige og synkroniserede.";
+
+/* loco:6960ef1d538ef75e5a0ad3e2 */
+"synchroStatusUpToDateTitle" = "Ingen aktivitet i gang";
+
+/* loco:6960b7a6cf8ffcd3950d2704 */
+"synchroUpToDate" = "dine filer er opdaterede";
+
+/* loco:698b0a88dee0bf9fb206a692 */
+"synchronizationSettings" = "Synkronisering";
+
+/* loco:699db0830c3ab713a500b433 */
+"systemErrorFileOrDirectoryCorruptedDescription" = "En fil eller mappe i din synkroniseringsmappe ser ud til at være beskadiget.\nSynkronisering er sat på pause. Kontrollér venligst dine filer og prøv igen.";
+
+/* loco:699db071d52f7cbccc0b3b53 */
+"systemErrorFileOrDirectoryCorruptedTitle" = "Beskadiget fil registreret";
+
+/* loco:68a70be4b749277aa1081dc2 */
+"tabTitleActivities" = "Aktivitet";
+
+/* loco:68a705225b0066f86e001d52 */
+"tabTitleHome" = "Hjem";
+
+/* loco:68a70c659c53feed83039c42 */
+"tabTitleStorage" = "Lager";
+
+/* loco:69aae4283f8ce335cf0e1842 */
+"titleConflictIndividualResolution" = "Individuel håndtering";
+
+/* loco:6a2a67aa51ff4812670b0532 */
+"titleManageSynchronization" = "Administrer synkronisering";
+
+/* loco:69eb7b41376492d2de0d0242
+ * Empty search state subtitle when no result matches the user query in SearchSheetView. */
+"tryDifferentSearchTerm" = "Try a different search term";
+
+/* loco:69eb809ce1364c763a050862
+ * Empty search state subtitle in SearchSheetView before the user enters a query. */
+"typeToStartSearching" = "Type to start searching";
+
+/* loco:6981e8f0b024a7b4e00f7262 */
+"unavailableContentNoActivityDescription" = "Dine filer er tilgængelige og synkroniserede.";
+
+/* loco:6981e8f0f994e5f7bc040692 */
+"unavailableContentNoActivityTitle" = "Ingen nylig aktivitet";
+
+/* loco:698c7819acb0e0a2a0061c62 */
+"unexpectedErrorTeachingTipContent" = "Prøv venligst igen om et øjeblik.\nHvis problemet fortsætter, kontakt venligst support.";
+
+/* loco:698c7802bc26955c81077d42 */
+"unexpectedErrorTeachingTipTitle" = "Der opstod en uventet fejl";
+
+/* loco:698b112a6dcfa5bb030c2f32 */
+"untilTomorrow" = "Indtil i morgen";
+
+/* loco:698af3afefd229ca780c59e2 */
+"updateAvailable" = "kDrive %@ tilgængelig";
+
+/* loco:6a017a9746a40dd2910b7424 */
+"updateDialogDescription" = "Installationen tager mindre end et minut.\nDin synkronisering genoptages automatisk til sidst.";
+
+/* loco:6a017a9746a40dd2910b7428 */
+"updateDialogIgnoreVersion" = "Ignorér denne version";
+
+/* loco:6a017a9746a40dd2910b7427 */
+"updateDialogInstallNow" = "Installér nu";
+
+/* loco:6a017a9746a40dd2910b7426 */
+"updateDialogRemindLater" = "Påmind mig senere";
+
+/* loco:6a017a9746a40dd2910b7425 */
+"updateDialogSeeWhatsNew" = "Se nyheder";
+
+/* loco:6a017a9746a40dd2910b7423 */
+"updateDialogSubtitle" = "Version %@ · Du bruger %@";
+
+/* loco:6a017a9746a40dd2910b7422 */
+"updateDialogTitle" = "Opdatering tilgængelig";
+
+/* loco:69d904f84d8c60bd1f0c9342 */
+"updateRequiredDescription" = "En ny version af kDrive er påkrævet for at fortsætte.\nOpdater programmet for at få adgang til dine filer og genoptage synkronisering.";
+
+/* loco:69d903e2d570d224db097582 */
+"updateRequiredTitle" = "Opdatering påkrævet";
+
+/* loco:698aec0b7bde6b6260001c02 */
+"updateSettings" = "Opdater";
+
+/* loco:6a031b29945d3f97240ff954 */
+"userExclusionAppListHeaderDescription" = "Udeluk bestemte apps fra synkronisering.";
+
+/* loco:698b579544510089bf0fecf2 */
+"userExclusionFileListDescription" = "Tilføj filer til at udelukke fra synkronisering.";
+
+/* loco:698b57bdb14da22c560da082 */
+"userExclusionFileListHeader" = "Brugerdefinerede udelukkelsesregler";
+
+/* loco:6a031a88cfe46dc82b0c8162 */
+"userExclusionFileListHeaderDescription" = "Udeluk bestemte filtyper fra synkronisering.";
+
+/* loco:698b1713c1e8210103081e12 */
+"viewSourceCode" = "Se kildekode";
