@@ -57,7 +57,7 @@ ExitInfo SyncAddJob::deserializeInputParms() {
 ExitInfo SyncAddJob::process() {
     // Add sync in DB
     SyncInfo syncInfo;
-    AccountInfo accountInfo;
+    Account accountInfo;
     Drive drive;
     if (const auto exitInfo = ServerRequests::addSync(_userDbId, _accountId, _driveId, localFolderPath(), serverFolderPath(),
                                                       serverFolderNodeId(), liteSync(), accountInfo, drive, syncInfo);

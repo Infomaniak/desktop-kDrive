@@ -21,7 +21,7 @@
 #include "syncenginelib.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/info/userinfo.h"
-#include "libcommon/info/accountinfo.h"
+#include "libcommon/data/account.h"
 #include "libcommon/data/driveavailable.h"
 #include "libcommon/info/syncinfo.h"
 #include "libcommon/info/nodeinfo.h"
@@ -32,7 +32,6 @@
 #include "libcommon/info/exclusiontemplateinfo.h"
 #include "libcommon/info/exclusionappinfo.h"
 #include "libcommon/data/drive.h"
-#include "libparms/db/account.h"
 #include "libparms/db/user.h"
 #include "libparms/db/sync.h"
 #include "libparms/db/error.h"
@@ -56,8 +55,8 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode getUserDbIdList(std::vector<UserDbId> &list);
         static ExitCode getUserInfoList(QList<UserInfo> &list);
         static ExitCode getUserInfoList(std::vector<UserInfo> &list);
-        static ExitCode getAccountInfoList(QList<AccountInfo> &list);
-        static ExitCode getAccountInfoList(std::vector<AccountInfo> &list);
+        static ExitCode getAccountList(QList<Account> &list);
+        static ExitCode getAccountList(std::vector<Account> &list);
         static ExitInfo getDriveList(QList<Drive> &list);
         static ExitInfo getDriveList(std::vector<Drive> &list);
         static ExitInfo getDrive(DriveDbId driveDbId, Drive &drive);
@@ -105,10 +104,10 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitInfo getUserAvailableDrives(UserDbId userDbId, std::vector<DriveAvailable> &list);
         static ExitInfo addSync(UserDbId userDbId, AccountId accountId, DriveId driveId, const SyncPath &localFolderPath,
                                 const SyncPath &serverFolderPath, const NodeId &serverFolderNodeId, bool liteSync,
-                                AccountInfo &accountInfo, Drive &drive, SyncInfo &syncInfo);
+                                Account &account, Drive &drive, SyncInfo &syncInfo);
         static ExitInfo addSync(UserDbId userDbId, AccountId accountId, DriveId driveId, const QString &localFolderPath,
                                 const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync,
-                                AccountInfo &accountInfo, Drive &drive, SyncInfo &syncInfo);
+                                Account &account, Drive &drive, SyncInfo &syncInfo);
         static ExitInfo addSync(DriveDbId driveDbId, const SyncPath &localFolderPath, const SyncPath &serverFolderPath,
                                 const NodeId &serverFolderNodeId, bool liteSync, SyncInfo &syncInfo);
         static ExitInfo addSync(DriveDbId driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
@@ -154,7 +153,6 @@ struct SYNCENGINE_EXPORT ServerRequests {
 
         // Utility
         static void userToUserInfo(const User &user, UserInfo &userInfo);
-        static void accountToAccountInfo(const Account &account, AccountInfo &accountInfo);
         static void syncToSyncInfo(const Sync &sync, SyncInfo &syncInfo);
         static void syncInfoToSync(const SyncInfo &syncInfo, Sync &sync);
         static void errorToErrorInfo(const Error &error, ErrorInfo &errorInfo);
@@ -183,8 +181,8 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static QString excludeFile(bool liteSync);
         static ExitCode createUser(const User &user, UserInfo &userInfo);
         static ExitCode updateUser(const User &user, UserInfo &userInfo);
-        static ExitCode createAccount(const Account &account, AccountInfo &accountInfo);
-        static ExitCode createDrive(Drive &drive);
+        static ExitCode createAccount(const Account &account);
+        static ExitCode createDrive(Drive drive);
         static ExitCode createSync(const Sync &sync, SyncInfo &syncInfo);
 };
 

@@ -25,11 +25,11 @@
 #include "custommessagebox.h"
 #include "logindialog.h"
 #include "info/userinfoclient.h"
-#include "info/accountinfo.h"
+#include "libcommon/data/account.h"
 #include "info/driveinfoclient.h"
 #include "info/syncinfoclient.h"
 #include "info/syncfileiteminfo.h"
-#include "libcommon/info/accountinfo.h"
+#include "libcommon/data/account.h"
 
 #include <QAction>
 #include <QMenu>
@@ -60,7 +60,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         inline int hasGeneralErrors() const { return _generalErrorsCounter > 0; }
         const QString folderPath(SyncDbId syncDbId, const QString &filePath) const;
         inline const std::map<UserDbId, UserInfoClient> &userInfoMap() const noexcept { return _userInfoMap; }
-        inline const std::map<AccountDbId, AccountInfo> &accountInfoMap() const noexcept { return _accountInfoMap; }
+        inline const std::map<AccountDbId, Account> &accountInfoMap() const noexcept { return _accountInfoMap; }
         inline const std::map<DriveDbId, DriveInfoClient> &driveInfoMap() const noexcept { return _driveInfoMap; }
         inline std::map<DriveDbId, DriveInfoClient> &driveInfoMap() noexcept { return _driveInfoMap; }
         inline const std::map<SyncDbId, SyncInfoClient> &syncInfoMap() const noexcept { return _syncInfoMap; }
@@ -132,7 +132,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         QDateTime _notificationEnableDate;
         AppClient *_app{nullptr};
         std::map<UserDbId, UserInfoClient> _userInfoMap;
-        std::map<AccountDbId, AccountInfo> _accountInfoMap;
+        std::map<AccountDbId, Account> _accountInfoMap;
         std::map<DriveDbId, DriveInfoClient> _driveInfoMap;
         std::map<SyncDbId, SyncInfoClient> _syncInfoMap;
         Count _generalErrorsCounter{0};
@@ -192,8 +192,8 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void onUserStatusChanged(UserDbId userDbId, bool connected, QString connexionError);
         void onUserRemoved(UserDbId userDbId);
         // Account slots
-        void onAccountAdded(const AccountInfo &accountInfo);
-        void onAccountUpdated(const AccountInfo &accountInfo);
+        void onAccountAdded(const Account &accountInfo);
+        void onAccountUpdated(const Account &accountInfo);
         void onAccountRemoved(UserDbId userDbId);
         // Drive slots
         void onDriveAdded(const Drive &drive);

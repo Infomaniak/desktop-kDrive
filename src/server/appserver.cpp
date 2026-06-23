@@ -1314,10 +1314,10 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::ACCOUNT_INFOLIST: {
-            QList<AccountInfo> list;
-            ExitCode exitCode = ServerRequests::getAccountInfoList(list);
+            QList<Account> list;
+            ExitCode exitCode = ServerRequests::getAccountList(list);
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::getAccountInfoList: code=" << exitCode);
+                LOG_WARN(_logger, "Error in Requests::getAccountList: code=" << exitCode);
                 addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
             }
 
@@ -1557,7 +1557,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             ExitCode exitCode = ExitCode::Ok;
             SyncInfo syncInfo;
             if (num == RequestNum::SYNC_ADD) {
-                AccountInfo accountInfo;
+                Account accountInfo;
                 Drive drive;
 
                 exitCode = ServerRequests::addSync(userDbId, accountId, driveId, localFolderPath, serverFolderPath,
@@ -2989,9 +2989,7 @@ ExitInfo AppServer::createAccount(Account &newAccount) {
     }
 
     // Notify the UI
-    AccountInfo accountInfo;
-    ServerRequests::accountToAccountInfo(newAccount, accountInfo);
-    sendAccountAdded(accountInfo);
+    sendAccountAdded(newAccount);
 
     // Insert account in DB
     if (!ParmsDb::instance()->insertAccount(newAccount)) {
@@ -3010,9 +3008,7 @@ ExitInfo AppServer::updateAccount(Account &account) {
     }
 
     if (accountUpdated) {
-        AccountInfo accountInfo;
-        ServerRequests::accountToAccountInfo(account, accountInfo);
-        sendAccountUpdated(accountInfo);
+        sendAccountUpdated(account);
 
         bool found = false;
         if (!ParmsDb::instance()->updateAccount(account, found)) {
@@ -4728,7 +4724,7 @@ void AppServer::sendUserRemoved(const UserDbId userDbId) const {
     }
 }
 
-void AppServer::sendAccountAdded(const AccountInfo &accountInfo) const {
+void AppServer::sendAccountAdded(const Account &accountInfo) const {
     if (useOldCommServer()) {
         int id = 0;
 
@@ -4743,7 +4739,7 @@ void AppServer::sendAccountAdded(const AccountInfo &accountInfo) const {
     }
 }
 
-void AppServer::sendAccountUpdated(const AccountInfo &accountInfo) const {
+void AppServer::sendAccountUpdated(const Account &accountInfo) const {
     if (useOldCommServer()) {
         int id = 0;
 

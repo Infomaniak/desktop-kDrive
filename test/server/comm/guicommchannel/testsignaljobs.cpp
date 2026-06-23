@@ -42,11 +42,11 @@ void TestGuiCommChannel::checkSignalCommonMethods(AbstractGuiJob &guiJob, const 
 }
 
 void TestGuiCommChannel::testSignalAccountUpdatedJob() {
-    AccountInfo accountInfo(1, 666);
-    accountInfo.setId(1001);
+    Account accountInfo(1, 666);
+    accountInfo.setAccountId(1001);
     SignalAccountUpdatedJob job(accountInfo);
     checkSignalCommonMethods(job, SignalNum::ACCOUNT_UPDATED);
-    CPPUNIT_ASSERT(accountInfo == job._accountInfo);
+    CPPUNIT_ASSERT(accountInfo == job._account);
 }
 
 void TestGuiCommChannel::testSignalDriveUpdatedJob() {

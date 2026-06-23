@@ -497,14 +497,14 @@ void TestGuiCommChannel::testAccountInfoListJob() {
     auto processFct = [](const std::shared_ptr<AbstractGuiJob> job) {
         const auto accountInfoListJob = std::dynamic_pointer_cast<AccountInfoListJob>(job);
 
-        AccountInfo ai1(1, 1);
-        ai1.setId(1111);
+        Account ai1(1, 1);
+        ai1.setAccountId(1111);
         ai1.setName("account1");
-        AccountInfo ai2(2, 1);
-        ai2.setId(2222);
+        Account ai2(2, 1);
+        ai2.setAccountId(2222);
         ai2.setName("account2");
 
-        accountInfoListJob->_accountInfoList = {ai1, ai2};
+        accountInfoListJob->_accountList = {ai1, ai2};
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)

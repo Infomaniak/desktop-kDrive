@@ -249,14 +249,14 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::ACCOUNT_ADDED: {
-            AccountInfo accountInfo;
+            Account accountInfo;
             paramsStream >> accountInfo;
 
             emit accountAdded(accountInfo);
             break;
         }
         case SignalNum::ACCOUNT_UPDATED: {
-            AccountInfo accountInfo;
+            Account accountInfo;
             paramsStream >> accountInfo;
 
             emit accountUpdated(accountInfo);

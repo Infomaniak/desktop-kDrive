@@ -22,7 +22,7 @@
 #include "info/searchinfo.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/info/userinfo.h"
-#include "libcommon/info/accountinfo.h"
+#include "libcommon/data/account.h"
 #include "libcommon/info/nodeinfo.h"
 #include "libcommon/data/driveavailable.h"
 #include "libcommon/info/syncinfo.h"
@@ -46,7 +46,7 @@ struct GuiRequests {
         // Use COMM_SHORT_TIMEOUT
         static ExitCode getUserDbIdList(QList<UserDbId> &list);
         static ExitCode getUserInfoList(QList<UserInfo> &list);
-        static ExitCode getAccountInfoList(QList<AccountInfo> &list);
+        static ExitCode getAccountList(QList<Account> &list);
         static ExitCode getDriveInfoList(QList<Drive> &list);
         static ExitCode updateDrive(const Drive &drive);
         static ExitCode getSyncInfoList(QList<SyncInfo> &list);

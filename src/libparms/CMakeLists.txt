@@ -14,7 +14,6 @@ set(parms_SRCS
     db/parmsdb.h db/parmsdb.cpp
     db/parameters.h db/parameters.cpp
     db/user.h db/user.cpp
-    db/account.h db/account.cpp
     db/sync.h db/sync.cpp
     db/exclusiontemplate.h db/exclusiontemplate.cpp
     db/error.h db/error.cpp

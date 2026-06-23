@@ -21,7 +21,7 @@
 #include "parmslib.h"
 #include "parameters.h"
 #include "user.h"
-#include "account.h"
+#include "libcommon/data/account.h"
 #include "sync.h"
 #include "exclusiontemplate.h"
 #if defined(KD_MACOS)

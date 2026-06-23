@@ -1142,7 +1142,7 @@ void ClientGui::onUserRemoved(const UserDbId userDbId) {
     }
 }
 
-void ClientGui::onAccountAdded(const AccountInfo &accountInfo) {
+void ClientGui::onAccountAdded(const Account &accountInfo) {
     _accountInfoMap.insert({accountInfo.dbId(), accountInfo});
 
     if (!_currentAccountDbId) {
@@ -1153,7 +1153,7 @@ void ClientGui::onAccountAdded(const AccountInfo &accountInfo) {
     emit refreshStatusNeeded();
 }
 
-void ClientGui::onAccountUpdated(const AccountInfo &accountInfo) {
+void ClientGui::onAccountUpdated(const Account &accountInfo) {
     const auto &accountInfoMapIt = _accountInfoMap.find(accountInfo.dbId());
     if (accountInfoMapIt != _accountInfoMap.end()) {
         accountInfoMapIt->second.setUserDbId(accountInfo.userDbId());
@@ -1601,14 +1601,14 @@ bool ClientGui::loadInfoMaps() {
     }
 
     // Load account list
-    QList<AccountInfo> accountInfoList;
-    exitCode = GuiRequests::getAccountInfoList(accountInfoList);
+    QList<Account> accountInfoList;
+    exitCode = GuiRequests::getAccountList(accountInfoList);
     if (exitCode != ExitCode::Ok) {
-        qCWarning(lcClientGui()) << "Error in Requests::getAccountInfoList";
+        qCWarning(lcClientGui()) << "Error in Requests::getAccountList";
         return false;
     }
 
-    for (const AccountInfo &accountInfo: accountInfoList) {
+    for (const Account &accountInfo: accountInfoList) {
         _accountInfoMap.insert({accountInfo.dbId(), accountInfo});
     }
 

@@ -34,7 +34,7 @@
 #include "syncpal/syncpal.h"
 #include "libparms/db/user.h"
 #include "libcommon/info/userinfo.h"
-#include "libcommon/info/accountinfo.h"
+#include "libcommon/data/account.h"
 #include "libcommon/info/syncinfo.h"
 #include "libcommon/info/syncfileiteminfo.h"
 #include "libcommonserver/vfs/vfs.h"
@@ -338,8 +338,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         virtual void sendUserUpdated(const UserInfo &userInfo) const;
         virtual void sendUserStatusChanged(UserDbId userDbId, bool connected, const QString &connexionError) const;
         virtual void sendUserRemoved(UserDbId userDbId) const;
-        virtual void sendAccountAdded(const AccountInfo &accountInfo) const;
-        virtual void sendAccountUpdated(const AccountInfo &accountInfo) const;
+        virtual void sendAccountAdded(const Account &accountInfo) const;
+        virtual void sendAccountUpdated(const Account &accountInfo) const;
         virtual void sendAccountRemoved(AccountDbId accountDbId) const;
         virtual void sendDriveAdded(const Drive &drive) const;
         virtual void sendDriveUpdated(const Drive &drive) const;
