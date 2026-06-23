@@ -139,6 +139,12 @@
 
 /* loco:69c0f0398ae1831b640e5a62 */
 "buttonChangeFolder" = "Cambiar la carpeta";
+/* loco:69c55ddcee6e0bc4d1046935 */
+"buttonChangeToOffline" = "Guardar sin conexión";
+
+/* loco:69c55dcf9ae76d95660b7b66 */
+"buttonChangeToOnline" = "Guardar en línea";
+
 
 /* loco:696a343b72b6dc32e00557a4 */
 "buttonClose" = "Cerrar";
@@ -414,6 +420,11 @@
 
 /* loco:698c7b5c30ae98f0e6043132 */
 "dialogSyncDeletionWarningTitle" = "¿Quitar la sincronización?";
+/* loco:698c8c7d965fc74e3209cbc2 */
+"dialogSyncModeChangeWarningContent" = "Esta operación puede tardar algún tiempo dependiendo del tamaño de sus datos. Si falla, puede ser necesaria una resincronización completa de la unidad.\n\nAntes de continuar, asegúrese de que todos sus archivos estén actualizados y sincronizados.\n\nNo cierre la aplicación durante el proceso.";
+
+/* loco:698c8c9a965fc74e3209cbc4 */
+"dialogSyncModeChangeWarningTitle" = "¿Cambiar el modo de sincronización?";
 
 /* loco:699ffc60759bb427a3087a02 */
 "dialogSystemErrorSyncDirAccessErrorDescription" = "Aquí se explica cómo restaurar la sincronización:";

@@ -29,6 +29,7 @@ struct SyncedKDriveView: View {
 
     @State private var mainSynchro: UISynchro?
     @State private var mainSynchroMode = UISynchroMode.storeOnline
+    @State private var committedMainSynchroMode = UISynchroMode.storeOnline
 
     @State private var synchroToDelete: UISynchro?
     @State private var isShowingGenericError = false
@@ -75,9 +76,10 @@ struct SyncedKDriveView: View {
                 }
 
                 Section {
-                    SynchroModePicker(synchroMode: $mainSynchroMode)
+                    SynchroModePicker(synchroDbId: mainSynchro.dbId, synchroMode: $mainSynchroMode)
                         .disabled(!mainSynchro.supportsVirtualFileSystem)
                         .onChange(of: mainSynchroMode) { newValue in
+                            guard newValue != committedMainSynchroMode else { return }
                             switchSynchroMode(mainSynchro, mode: newValue)
                         }
                 }
@@ -120,10 +122,12 @@ struct SyncedKDriveView: View {
             .map { UISynchro(synchro: $0) }
             .first { $0.targetNodeId == nil }
 
+        let fetchedMode: UISynchroMode = freshMainSynchro?.useVirtualFileSystem == true ? .storeOnline : .availableOffline
         withAnimation {
             mainSynchro = freshMainSynchro
-            mainSynchroMode = freshMainSynchro?.useVirtualFileSystem == true ? .storeOnline : .availableOffline
+            mainSynchroMode = fetchedMode
         }
+        committedMainSynchroMode = fetchedMode
     }
 
     private func fetchBlacklistedNodes() async {
@@ -155,7 +159,9 @@ struct SyncedKDriveView: View {
         Task {
             do {
                 try await SyncJobs().setSupportsVirtualFiles(syncDbId: Int32(synchro.dbId), value: mode == .storeOnline)
+                committedMainSynchroMode = mode
             } catch {
+                mainSynchroMode = committedMainSynchroMode
                 isShowingGenericError = true
             }
         }

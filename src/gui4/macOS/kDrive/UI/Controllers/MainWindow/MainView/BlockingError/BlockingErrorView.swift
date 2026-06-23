@@ -22,9 +22,25 @@ import kDriveCoreUI
 import SwiftUI
 
 struct BlockingErrorView: View {
+    @State private var isConvertingSynchro = false
     @State private var isShowingGenericError = false
 
     let blockingError: UIBlockingError
+
+    private var buttonIsEnabled: Bool {
+        switch blockingError.error {
+        case .notRenew:
+            if !blockingError.drive.isAdmin {
+                return !isConvertingSynchro
+            } else {
+                return true
+            }
+        case .wakingUp, .maintenance, .accessDenied:
+            return !isConvertingSynchro
+        default:
+            return true
+        }
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -57,13 +73,14 @@ struct BlockingErrorView: View {
             if let actionTitle = blockingError.actionTitle {
                 Button(actionTitle, action: handleAction)
                     .buttonStyle(.borderedProminent)
+                    .disabled(!buttonIsEnabled)
             }
         }
         .padding(AppPadding.padding32)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(ColorToken.Surface.primary.asColor,
-                    in: .rect(cornerRadius: AppRadius.radius16))
+        .background(ColorToken.Surface.primary.asColor, in: .rect(cornerRadius: AppRadius.radius16))
         .padding(AppPadding.padding24)
+        .observingSynchroConversion(synchroDbId: blockingError.synchro.dbId, isConverting: $isConvertingSynchro)
         .genericErrorAlert(isPresented: $isShowingGenericError)
     }
 

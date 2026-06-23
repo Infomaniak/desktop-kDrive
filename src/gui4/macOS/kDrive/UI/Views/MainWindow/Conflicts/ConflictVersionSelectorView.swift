@@ -208,7 +208,9 @@ struct ConflictVersionSelectorView: View {
 
     private func didClickConfirmButton() async {
         if currentErrorIndex == errors.indices.last {
+            isLoadingConfirmButton = true
             await confirmResolution()
+            isLoadingConfirmButton = false
             dismiss()
         } else {
             currentErrorIndex += 1

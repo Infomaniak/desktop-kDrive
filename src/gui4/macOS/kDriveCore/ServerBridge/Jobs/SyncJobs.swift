@@ -60,6 +60,7 @@ public struct NewSyncMetadata: Sendable {
 
 public struct SyncJobs: Sendable {
     @LazyInjectService private var coherentCache: CoherentCache
+    @LazyInjectService private var vfsConversionStore: VFSConversionStoring
     @LazyInjectService private var queryFetcher: XPCQueryFetcherProtocol
 
     public init() {}
@@ -166,6 +167,7 @@ public struct SyncJobs: Sendable {
         try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
 
         try? await coherentCache.removeSynchro(synchroDbId: syncDbId)
+        await vfsConversionStore.conversionCompleted(synchroDbId: syncDbId)
     }
 
     public func getPublicLinkUrl(driveDbId: Int32, nodeId: String) async throws -> URL {
@@ -202,7 +204,13 @@ public struct SyncJobs: Sendable {
             body: query
         )
 
-        try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+        do {
+            await vfsConversionStore.conversionStarted(synchroDbId: syncDbId)
+            try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+        } catch {
+            await vfsConversionStore.conversionCompleted(synchroDbId: syncDbId)
+            throw error
+        }
     }
 
     public func getOfflineFilesSize(syncDbId: Int32) async throws -> UInt64 {

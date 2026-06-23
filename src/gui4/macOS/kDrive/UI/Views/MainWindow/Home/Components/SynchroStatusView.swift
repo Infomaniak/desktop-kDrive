@@ -85,10 +85,20 @@ extension HomeState {
 }
 
 struct SynchroStatusView: View {
+    @State private var isConvertingSynchro = false
     @State private var isShowingGenericError = false
 
     let state: HomeState
     let synchroDbId: UISynchro.ID?
+
+    private var buttonIsEnabled: Bool {
+        switch state {
+        case .synchroIsPaused:
+            return !isConvertingSynchro
+        default:
+            return true
+        }
+    }
 
     var body: some View {
         VStack(spacing: AppPadding.padding32) {
@@ -116,6 +126,7 @@ struct SynchroStatusView: View {
                 .opacity(state.buttonTitle == nil ? 0 : 1)
                 .accessibilityHidden(state.buttonTitle == nil)
                 .allowsHitTesting(state.buttonTitle != nil)
+                .disabled(!buttonIsEnabled)
             }
             .foregroundStyle(ColorToken.Text.primary.asColor)
             .multilineTextAlignment(.center)
@@ -139,6 +150,7 @@ struct SynchroStatusView: View {
             }
         }
         .clipShape(.rect(cornerRadius: AppRadius.radius16))
+        .observingSynchroConversion(synchroDbId: synchroDbId, isConverting: $isConvertingSynchro)
         .genericErrorAlert(isPresented: $isShowingGenericError)
     }
 
