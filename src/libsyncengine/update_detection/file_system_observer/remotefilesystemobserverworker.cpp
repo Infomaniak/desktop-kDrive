@@ -619,6 +619,15 @@ ExitInfo RemoteFileSystemObserverWorker::createGetItemsInRemoteDirJob(
         return exception2ExitCode(e);
     }
 
+    RemoteNodeId sharedFolderRemoteId;
+    if (const auto exitInfo = ApiTranslator::getSpecialFolderRemoteId(_syncPal->userDbId(), _syncPal->driveId(),
+                                                                      SpecialRemoteFolder::Shared, sharedFolderRemoteId);
+        !exitInfo)
+        return exitInfo;
+
+    // Special configuration for the remote "Shared" folder.
+    if (remoteDirId == sharedFolderRemoteId) csvFullFileListWithCursorJob->setFileSharedWatcher();
+
     return ExitCode::Ok;
 }
 
