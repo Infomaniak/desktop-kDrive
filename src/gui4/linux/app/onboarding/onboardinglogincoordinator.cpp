@@ -61,6 +61,8 @@ OnboardingLoginCoordinator::OnboardingLoginCoordinator(OnboardingFlowController 
     (void) connect(&_userService, &UserService::loginTokenSucceeded, this,
                    [this](const qint64 userDbId) { loadAvailableDrivesWhenUserIsCached(userDbId); });
     (void) connect(&_userService, &UserService::loginTokenFailed, &_flowController, &OnboardingFlowController::handleLoginFailed);
+    (void) connect(&_userService, &UserService::availableDrivesLoaded, this,
+                   &OnboardingLoginCoordinator::completeLoginWhenAvailableDrivesAreLoaded);
     (void) connect(&_userService, &UserService::availableDrivesLoadFailed, this,
                    &OnboardingLoginCoordinator::handleAvailableDrivesLoadFailed);
 
@@ -71,8 +73,6 @@ OnboardingLoginCoordinator::OnboardingLoginCoordinator(OnboardingFlowController 
 
         loadAvailableDrivesWhenUserIsCached(*_pendingUserDbId);
     });
-    (void) connect(&_appCache, &AppCache::availableDrivesChanged, this,
-                   &OnboardingLoginCoordinator::completeLoginWhenAvailableDrivesAreCached);
 }
 
 void OnboardingLoginCoordinator::clearPendingLogin() {
@@ -107,7 +107,7 @@ void OnboardingLoginCoordinator::loadAvailableDrivesWhenUserIsCached(const UserD
     _userService.loadAvailableDrives(userDbId);
 }
 
-void OnboardingLoginCoordinator::completeLoginWhenAvailableDrivesAreCached(const UserDbId userDbId) {
+void OnboardingLoginCoordinator::completeLoginWhenAvailableDrivesAreLoaded(const UserDbId userDbId) {
     if (_pendingAvailableDrivesUserDbId != userDbId) {
         return;
     }
@@ -116,8 +116,8 @@ void OnboardingLoginCoordinator::completeLoginWhenAvailableDrivesAreCached(const
     _flowController.completeLogin(userDbId);
 }
 
-void OnboardingLoginCoordinator::handleAvailableDrivesLoadFailed(const qint64 userDbId) {
-    if (_pendingAvailableDrivesUserDbId != static_cast<UserDbId>(userDbId)) {
+void OnboardingLoginCoordinator::handleAvailableDrivesLoadFailed(const UserDbId userDbId) {
+    if (_pendingAvailableDrivesUserDbId != userDbId) {
         return;
     }
 
