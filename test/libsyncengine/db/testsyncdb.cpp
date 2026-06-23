@@ -85,6 +85,14 @@ class DbNodeTest : public DbNode {
         }
 };
 
+namespace {
+
+std::time_t now() {
+    return std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+}
+
+} // namespace
+
 void TestSyncDb::setUp() {
     TestBase::start();
 
@@ -193,8 +201,8 @@ std::vector<DbNode> TestSyncDb::setupSyncDb3_6_5(const std::vector<NodeId> &loca
     _testObj->enablePrepare(true);
     _testObj->prepare();
 
-    const time_t tLoc = std::time(nullptr);
-    const time_t tDrive = std::time(nullptr);
+    const time_t tLoc = now();
+    const time_t tDrive = now();
     const auto rootId = _testObj->rootNode().nodeId();
 
     const auto nfc = testhelpers::makeNfcSyncName();
@@ -247,7 +255,7 @@ void TestSyncDb::testUpgradeTo3_6_5CheckNodeMap() {
     SyncDb::NamedNodeMap namedNodeMap;
     _testObj->selectNamesWithDistinctEncodings(namedNodeMap);
 
-    CPPUNIT_ASSERT_EQUAL(size_t(2), namedNodeMap.size());
+    CPPUNIT_ASSERT_EQUAL(size_t{2}, namedNodeMap.size());
     CPPUNIT_ASSERT_EQUAL(DbNodeId(4), namedNodeMap.at(4).dbNodeId);
     CPPUNIT_ASSERT_EQUAL(DbNodeId(6), namedNodeMap.at(6).dbNodeId);
 }
@@ -322,8 +330,8 @@ void TestSyncDb::testUpdateLocalName() {
     const auto nfd = testhelpers::makeNfdSyncName();
 
     // Insert node
-    const time_t tLoc = std::time(nullptr);
-    const time_t tDrive = std::time(nullptr);
+    const time_t tLoc = now();
+    const time_t tDrive = now();
 
     DbNodeTest nodeDir1(_testObj->rootNode().nodeId(), nfc, Str("Dir drive 1"), "id loc 1", "id drive 1", tLoc, tLoc, tDrive,
                         NodeType::Directory, 0, std::nullopt);
@@ -514,8 +522,8 @@ void TestSyncDb::testDbNode() {
 
 void TestSyncDb::testReloadIfNeeded() {
     // Insert node
-    time_t tLoc = std::time(nullptr);
-    time_t tDrive = std::time(nullptr);
+    time_t tLoc = now();
+    time_t tDrive = now();
 
     DbNode nodeDir1(0, _testObj->rootNode().nodeId(), Str("Dir loc 1"), Str("Dir drive 1"), "id loc 1", "id drive 1", tLoc, tLoc,
                     tDrive, NodeType::Directory, 0, std::nullopt);
@@ -575,8 +583,8 @@ void TestSyncDb::testNodeWithCacheFailure() {
 template<typename T>
 void TestSyncDb::testNodesTemplate(SyncDb &db, T &testObj) {
     // Insert node
-    time_t tLoc = std::time(nullptr);
-    time_t tDrive = std::time(nullptr);
+    time_t tLoc = now();
+    time_t tDrive = now();
 
     DbNode nodeDir1(0, db.rootNode().nodeId(), Str("Dir loc 1"), Str("Dir drive 1"), "id loc 1", "id drive 1", tLoc, tLoc, tDrive,
                     NodeType::Directory, 0, std::nullopt);
@@ -978,8 +986,8 @@ template<typename T>
 void TestSyncDb::testCorrespondingNodeIdTemplate(SyncDb &db, T &testObj) {
     db.prepare();
 
-    time_t tLoc = std::time(nullptr);
-    time_t tDrive = std::time(nullptr);
+    time_t tLoc = now();
+    time_t tDrive = now();
     bool constraintError = false;
 
 
@@ -1030,7 +1038,7 @@ void TestSyncDb::testCorrespondingNodeIdTemplate(SyncDb &db, T &testObj) {
 
 void TestSyncDb::testGetNodeTableRowCount() {
     _testObj->enablePrepare(true);
-    _testObj->prepare();
+    (void) _testObj->prepare();
 
     int64_t nodeCount = 0;
 
@@ -1039,8 +1047,8 @@ void TestSyncDb::testGetNodeTableRowCount() {
     CPPUNIT_ASSERT_EQUAL(int64_t{1}, nodeCount);
 
     // Insert two nodes
-    const time_t tLoc = std::time(nullptr);
-    const time_t tDrive = std::time(nullptr);
+    const time_t tLoc = now();
+    const time_t tDrive = now();
 
     const DbNode nodeDir1(_testObj->rootNode().nodeId(), "Dir1", Str("Dir drive 1"), "id loc 1", "id drive 1", tLoc, tLoc, tDrive,
                           NodeType::Directory, 0, std::nullopt);
@@ -1080,13 +1088,13 @@ TestSyncDb::MigrationFileSetup TestSyncDb::setupSyncMigrationToLocalPrivateDir(c
     const SyncPath pathC = localPath / Str("c.txt");
 
     for (const auto &path: {commonDocumentsPath, sharedPath, privatePath, cachePath, rescueFolderPath, pathA})
-        std::filesystem::create_directories(path);
+        (void) std::filesystem::create_directories(path);
 
     for (const auto &path: {pathB, pathC}) std::ofstream file{path};
 
     // SyncDb setup.
-    const time_t tLoc = std::time(nullptr);
-    const time_t tDrive = std::time(nullptr);
+    const time_t tLoc = now();
+    const time_t tDrive = now();
     const auto rootId = _testObj->rootNode().nodeId();
 
     std::vector<DbNode> folderNodes;
@@ -1094,25 +1102,25 @@ TestSyncDb::MigrationFileSetup TestSyncDb::setupSyncMigrationToLocalPrivateDir(c
     for (const auto &path: {commonDocumentsPath, sharedPath, privatePath, cachePath, rescueFolderPath}) {
         const auto nodeId = std::to_string(itemCount);
         DbNode node(rootId, path.filename(), path.filename(), nodeId, nodeId, tLoc, tLoc, tDrive, NodeType::Directory, 0);
-        _testObj->insertNode(node);
+        (void) _testObj->insertNode(node);
         ++itemCount;
     }
 
     auto nodeId = std::to_string(itemCount);
     DbNode nodeA(rootId, pathA.filename(), pathA.filename(), nodeId, nodeId, tLoc, tLoc, tDrive, NodeType::Directory, 0);
-    DbNodeId dbNodeId;
+    DbNodeId dbNodeId{0};
     bool constraintsError = false;
-    _testObj->insertNode(nodeA, dbNodeId, constraintsError);
+    (void) _testObj->insertNode(nodeA, dbNodeId, constraintsError);
     ++itemCount;
 
     nodeId = std::to_string(itemCount);
     DbNode nodeB(dbNodeId, pathB.filename(), pathB.filename(), nodeId, nodeId, tLoc, tLoc, tDrive, NodeType::Directory, 0);
-    _testObj->insertNode(nodeB);
+    (void) _testObj->insertNode(nodeB);
     ++itemCount;
 
     nodeId = std::to_string(itemCount);
     DbNode nodeC(rootId, Str("c.txt"), Str("c.txt"), nodeId, nodeId, tLoc, tLoc, tDrive, NodeType::File, 0);
-    _testObj->insertNode(nodeC);
+    (void) _testObj->insertNode(nodeC);
 
     MigrationFileSetup fileSetup;
     fileSetup.movedItems = {pathA, pathB, pathC};
@@ -1136,7 +1144,7 @@ std::unordered_set<SyncPath> getDirContent(const SyncPath &dirPath) {
 
 void TestSyncDb::testMigrateLocalItemsToPrivateDir() {
     _testObj->enablePrepare(true);
-    _testObj->prepare();
+    (void) _testObj->prepare();
 
     LocalTemporaryDirectory localTmpDir("testMigrateLocalItemsToPrivateDir");
     createParmsDb(_testObj->dbPath(), localTmpDir.path());
@@ -1193,7 +1201,7 @@ void TestSyncDb::testMigrateLocalItemsToPrivateDir() {
     CPPUNIT_ASSERT(IoHelper::getNodeId(privatePath, privateLocalNodeId));
     CPPUNIT_ASSERT_EQUAL(privateLocalNodeId, privateDbNode.nodeIdLocal().value());
     RemoteNodeId privateRemoteNodeId;
-    _testObj->getPrivateDirRemoteNodeId(_driveDbId, privateRemoteNodeId);
+    (void) _testObj->getPrivateDirRemoteNodeId(_driveDbId, privateRemoteNodeId);
     CPPUNIT_ASSERT_EQUAL(privateRemoteNodeId, privateDbNode.nodeIdRemote().value());
 
     // Check that the parent node ID of the moved items is the private node ID.
@@ -1235,8 +1243,8 @@ void TestSyncDb::testMigrationOfNonRootAdvancedSync() {
     LocalTemporaryDirectory localTmpDir("testMigrateLocalItemsToPrivateDir");
     createParmsDb(_testObj->dbPath(), localTmpDir.path(), SyncType::Advanced);
 
-    const time_t tLoc = std::time(nullptr);
-    const time_t tDrive = std::time(nullptr);
+    const time_t tLoc = now();
+    const time_t tDrive = now();
     const DbNode rootDbNode(_testObj->rootNode().nodeId(), std::nullopt, Str("Root"), Str("Root"), "local root id",
                             "remote target node id", tLoc, tLoc, tDrive, NodeType::Directory, 0, std::nullopt);
 

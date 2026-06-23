@@ -3207,7 +3207,11 @@ bool SyncDb::updateParentNodeIdsOfRootChildren(const DriveDbId driveDbId, const 
     }
 
     DbNodeId privateNodeDbId = 0;
-    getNodeTableRowCount(privateNodeDbId);
+
+    if (!getNodeTableRowCount(privateNodeDbId)) {
+        LOGW_WARN(_logger, L"Error in getNodeTableRowCount.");
+        return false;
+    }
     ++privateNodeDbId;
 
     if (!insertPrivateDirNode(privateNodeDbId, driveDbId, localPrivateDirPath)) {
@@ -3243,7 +3247,7 @@ bool SyncDb::getRootChildrenDbIds(std::vector<DbNodeId> &rootChildrenDbIds) {
         }
         if (!found) break;
 
-        DbNodeId nodeId;
+        DbNodeId nodeId{0};
         LOG_IF_FAIL(queryInt64Value(requestId, 0, nodeId));
         rootChildrenDbIds.push_back(nodeId);
     }
