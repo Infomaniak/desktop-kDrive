@@ -23,6 +23,9 @@ import SwiftUI
 public struct SynchroModePicker: View {
     @State private var isConvertingSynchro = false
 
+    @State private var selectedMode: UISynchroMode
+    @State private var modePendingConfirmation: UISynchroMode?
+
     @Binding var synchroMode: UISynchroMode
 
     let synchroDbId: Int
@@ -30,6 +33,7 @@ public struct SynchroModePicker: View {
     public init(synchroDbId: Int, synchroMode: Binding<UISynchroMode>) {
         self.synchroDbId = synchroDbId
         _synchroMode = synchroMode
+        _selectedMode = State(initialValue: synchroMode.wrappedValue)
     }
 
     public var body: some View {
@@ -41,7 +45,7 @@ public struct SynchroModePicker: View {
                     .font(.callout)
             }
 
-            Picker(KDriveLocalizable.accessibilitySelectSynchroMode, selection: $synchroMode) {
+            Picker(KDriveLocalizable.accessibilitySelectSynchroMode, selection: $selectedMode) {
                 ForEach(UISynchroMode.allCases) { mode in
                     UISynchroModeCell(mode: mode)
                         .tag(mode)
@@ -52,6 +56,35 @@ public struct SynchroModePicker: View {
         }
         .disabled(isConvertingSynchro)
         .observingSynchroConversion(synchroDbId: synchroDbId, isConverting: $isConvertingSynchro)
+        .onChange(of: selectedMode) { newValue in
+            guard newValue != synchroMode else { return }
+            modePendingConfirmation = newValue
+        }
+        .onChange(of: synchroMode) { newValue in
+            guard newValue != selectedMode else { return }
+            selectedMode = newValue
+        }
+        .alert(
+            KDriveLocalizable.dialogSyncModeChangeWarningTitle,
+            isPresented: Binding(
+                get: { modePendingConfirmation != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        modePendingConfirmation = nil
+                    }
+                }
+            ),
+            presenting: modePendingConfirmation
+        ) { pendingMode in
+            Button(KDriveLocalizable.buttonCancel, role: .cancel) {
+                selectedMode = synchroMode
+            }
+            Button(pendingMode == .storeOnline
+                ? KDriveLocalizable.buttonChangeToOnline
+                : KDriveLocalizable.buttonChangeToOffline) { synchroMode = pendingMode }
+        } message: { _ in
+            Text(KDriveLocalizable.dialogSyncModeChangeWarningContent)
+        }
     }
 }
 

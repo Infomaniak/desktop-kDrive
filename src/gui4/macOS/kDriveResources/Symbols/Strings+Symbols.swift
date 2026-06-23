@@ -102,6 +102,10 @@ public enum KDriveLocalizable {
   public static let buttonCancel = KDriveLocalizable.tr("Localizable", "buttonCancel", fallback: "Cancel")
   /// loco:69c0f0398ae1831b640e5a62
   public static let buttonChangeFolder = KDriveLocalizable.tr("Localizable", "buttonChangeFolder", fallback: "Change the folder")
+  /// loco:69c55ddcee6e0bc4d1046935
+  public static let buttonChangeToOffline = KDriveLocalizable.tr("Localizable", "buttonChangeToOffline", fallback: "Store offline")
+  /// loco:69c55dcf9ae76d95660b7b66
+  public static let buttonChangeToOnline = KDriveLocalizable.tr("Localizable", "buttonChangeToOnline", fallback: "Store online")
   /// loco:696a343b72b6dc32e00557a4
   public static let buttonClose = KDriveLocalizable.tr("Localizable", "buttonClose", fallback: "Close")
   /// loco:698c5e4ec95ac47af70ec115
@@ -294,6 +298,10 @@ public enum KDriveLocalizable {
   public static let dialogSyncDeletionWarningContent = KDriveLocalizable.tr("Localizable", "dialogSyncDeletionWarningContent", fallback: "The local folder will remain on your computer, but it will no longer be synchronized with kDrive.\nThis action is permanent.\nTo sync your drive again, you will need to reconnect it later.\n\nBefore continuing, make sure all your files are up to date and fully synchronized.")
   /// loco:698c7b5c30ae98f0e6043132
   public static let dialogSyncDeletionWarningTitle = KDriveLocalizable.tr("Localizable", "dialogSyncDeletionWarningTitle", fallback: "Remove synchronization?")
+  /// loco:698c8c7d965fc74e3209cbc2
+  public static let dialogSyncModeChangeWarningContent = KDriveLocalizable.tr("Localizable", "dialogSyncModeChangeWarningContent", fallback: "This operation may take some time depending on the size of your data. If it fails, a full re-sync of the drive may be required.\n\nBefore continuing, make sure all your files are up to date and synced.\n\nDo not close the application during the process.")
+  /// loco:698c8c9a965fc74e3209cbc4
+  public static let dialogSyncModeChangeWarningTitle = KDriveLocalizable.tr("Localizable", "dialogSyncModeChangeWarningTitle", fallback: "Change sync mode?")
   /// loco:699ffc60759bb427a3087a02
   public static let dialogSystemErrorSyncDirAccessErrorDescription = KDriveLocalizable.tr("Localizable", "dialogSystemErrorSyncDirAccessErrorDescription", fallback: "Here is how to restore sync:")
   /// loco:69a04c38b125963a990be812

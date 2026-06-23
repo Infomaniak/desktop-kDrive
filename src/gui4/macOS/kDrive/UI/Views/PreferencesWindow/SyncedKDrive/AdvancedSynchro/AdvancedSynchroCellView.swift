@@ -25,6 +25,7 @@ import SwiftUI
 
 struct AdvancedSynchroCellView: View {
     @State private var synchroMode: UISynchroMode
+    @State private var committedSynchroMode: UISynchroMode
     @State private var blacklistNodes: Set<String>?
     @State private var isShowingGenericError = false
 
@@ -39,7 +40,9 @@ struct AdvancedSynchroCellView: View {
         self.driveId = driveId
         self.onDelete = onDelete
 
-        _synchroMode = State(initialValue: synchro.useVirtualFileSystem ? .storeOnline : .availableOffline)
+        let initialMode: UISynchroMode = synchro.useVirtualFileSystem ? .storeOnline : .availableOffline
+        _synchroMode = State(initialValue: initialMode)
+        _committedSynchroMode = State(initialValue: initialMode)
     }
 
     var body: some View {
@@ -97,6 +100,7 @@ struct AdvancedSynchroCellView: View {
             SynchroModePicker(synchroDbId: synchro.dbId, synchroMode: $synchroMode)
                 .disabled(!synchro.supportsVirtualFileSystem)
                 .onChange(of: synchroMode) { newValue in
+                    guard newValue != committedSynchroMode else { return }
                     switchSynchroMode(newValue)
                 }
         }
@@ -143,8 +147,10 @@ struct AdvancedSynchroCellView: View {
         Task {
             do {
                 try await SyncJobs().setSupportsVirtualFiles(syncDbId: Int32(synchro.dbId), value: mode == .storeOnline)
+                committedSynchroMode = mode
             } catch {
                 SentrySDK.capture(error: error)
+                synchroMode = committedSynchroMode
                 isShowingGenericError = true
             }
         }

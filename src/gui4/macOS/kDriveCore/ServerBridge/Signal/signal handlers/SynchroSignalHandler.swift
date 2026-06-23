@@ -66,7 +66,7 @@ struct SynchroSignalHandler {
         else { throw SignalError.unableToGetVfsConversionCompletedFromSignal }
 
         let syncDbId = vfsConversionSignal.body.syncDbId
-        await vfsConversionStore.conversionCompleted(synchroDbId: syncDbId)
+        try await coherentCache.vfsConversionCompleted(synchroDbId: syncDbId)
     }
 }
 
