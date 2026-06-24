@@ -1,4 +1,5 @@
 find_package(Qt6 REQUIRED Core Concurrent Core5Compat)
+find_package(Qt6LinguistTools)
 
 get_target_property(QT_QMAKE_EXECUTABLE Qt6::qmake IMPORTED_LOCATION)
 message(STATUS "Using Qt ${Qt6Core_VERSION} (${QT_QMAKE_EXECUTABLE})")
@@ -44,6 +45,15 @@ if(NOT BUILD_LIBRARIES_ONLY)
     if(WIN32)
         if(BUILD_GUI)
             add_subdirectory(gui4)
+            # Generate Qt translations (still needed for server components)
+            if(Qt6LinguistTools_FOUND)
+                qt6_add_translation(client_I18N ${TRANSLATIONS})
+                # Create a custom target to ensure translations are built
+                add_custom_target(translations ALL DEPENDS ${client_I18N})
+                install(FILES ${client_I18N} DESTINATION i18n)
+            else()
+                message(FATAL_ERROR "Qt6LinguistTools not found. Translations will not be generated.")
+            endif()
         else()
             # delete the client build directory if GUI is disabled to avoid confusion
             file(REMOVE_RECURSE "${CLIENT_DEST}")
@@ -58,4 +68,3 @@ if(NOT BUILD_LIBRARIES_ONLY)
         endif()
     endif()
 endif(NOT BUILD_LIBRARIES_ONLY)
-
