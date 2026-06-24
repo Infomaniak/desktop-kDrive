@@ -767,7 +767,6 @@ bool shouldBeIgnored(const ActionCode actionCode) {
         case ActionCode::ActionCodeAccess:
         case ActionCode::ActionCodeDelete:
         case ActionCode::ActionCodeRestoreFileShareCreate:
-        case ActionCode::ActionCodeRestoreFileShareDelete:
         case ActionCode::ActionCodeRestoreShareLinkCreate:
         case ActionCode::ActionCodeRestoreShareLinkDelete:
         case ActionCode::ActionCodeTrashInherited:
@@ -775,6 +774,21 @@ bool shouldBeIgnored(const ActionCode actionCode) {
         default:
             return false;
     }
+}
+
+bool shouldContainCreationTime(const ActionCode actionCode) {
+    switch (actionCode) {
+        case ActionCode::ActionCodeAccessRightUserRemove:
+        case ActionCode::ActionCodeAccessRightMainUsersRemove:
+        case ActionCode::ActionCodeRestoreFileShareDelete:
+            return false;
+        default:
+            return true;
+    }
+}
+
+bool shouldContainLastModifiedTime(const ActionCode actionCode) {
+    return shouldContainCreationTime(actionCode);
 }
 } // namespace
 
@@ -867,7 +881,7 @@ ExitInfo RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
 
     if (!tmpDestPathStr.empty()) {
         // This a move operation. Get the name from the `destination`
-        // field
+        // field.
         actionInfo.snapshotItem.setName(tmpDestPathStr.substr(tmpDestPathStr.find_last_of('/') + 1)); // +1 to ignore the last "/"
         actionInfo.setPath(tmpDestPathStr);
     } else {
@@ -881,33 +895,27 @@ ExitInfo RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
                 actionInfo.path().substr(actionInfo.path().find_last_of('/') + 1)); // +1 to ignore the last "/"
     }
 
-    SyncTime tmpTime = 0;
+    if (std::string fileTypeString;
+        JsonParserUtility::extractValue(actionObj, fileTypeKey, fileTypeString, false) && !fileTypeString.empty())
+        actionInfo.snapshotItem.setType(fileTypeString == fileKey ? NodeType::File : NodeType::Directory);
 
-    // Special handling for AccessRightUserRemove and AccessRightMainUsersRemove actions, as
-    // - it does not contain the `created_at` and `last_modified_at` fields; we set them with the `executed_at`,
-    // - it does contain `file_type` for a folders located at the root of `Common documents` that is removed.
-    if (actionInfo.actionCode == ActionCode::ActionCodeAccessRightUserRemove ||
-        actionInfo.actionCode == ActionCode::ActionCodeAccessRightMainUsersRemove) {
-        if (!JsonParserUtility::extractValue(actionObj, executedAtKey, tmpTime, false))
+    SyncTime tmpTime{0};
+
+    // Special handling for ACL related actions, as some might not contain the `created_at` and `last_modified_at` fields; we set
+    // them both with the `executed_at`.
+    if (!JsonParserUtility::extractValue(actionObj, createdAtKey, tmpTime, false)) {
+        if (shouldContainCreationTime(actionInfo.actionCode) ||
+            !JsonParserUtility::extractValue(actionObj, executedAtKey, tmpTime, false))
             return {ExitCode::BackError, ExitCause::MissingReplyData};
-
-        actionInfo.snapshotItem.setCreatedAt(tmpTime);
-        actionInfo.snapshotItem.setLastModified(tmpTime);
-
-        if (std::string fileTypeString;
-            JsonParserUtility::extractValue(actionObj, fileTypeKey, fileTypeString, false) && !fileTypeString.empty())
-            actionInfo.snapshotItem.setType(fileTypeString == fileKey ? NodeType::File : NodeType::Directory);
-
-        return ExitCode::Ok;
     }
-
-    if (!JsonParserUtility::extractValue(actionObj, createdAtKey, tmpTime, false))
-        return {ExitCode::BackError, ExitCause::MissingReplyData};
 
     actionInfo.snapshotItem.setCreatedAt(tmpTime);
 
-    if (!JsonParserUtility::extractValue(actionObj, lastModifiedAtKey, tmpTime, false))
-        return {ExitCode::BackError, ExitCause::MissingReplyData};
+    if (!JsonParserUtility::extractValue(actionObj, lastModifiedAtKey, tmpTime, false)) {
+        if (shouldContainLastModifiedTime(actionInfo.actionCode) ||
+            !JsonParserUtility::extractValue(actionObj, executedAtKey, tmpTime, false))
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
+    }
 
     actionInfo.snapshotItem.setLastModified(tmpTime);
 
@@ -1036,7 +1044,8 @@ ExitInfo RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, M
         case ActionCode::ActionCodeAccessRightRemove:
         case ActionCode::ActionCodeAccessRightUserRemove:
         case ActionCode::ActionCodeAccessRightTeamRemove:
-        case ActionCode::ActionCodeAccessRightMainUsersRemove: {
+        case ActionCode::ActionCodeAccessRightMainUsersRemove:
+        case ActionCode::ActionCodeRestoreFileShareDelete: {
             bool rightsOk = false;
             if (const ExitInfo exitInfo =
                         checkRightsAndUpdateItem(actionInfo.snapshotItem.id(), rightsOk, actionInfo.snapshotItem);
