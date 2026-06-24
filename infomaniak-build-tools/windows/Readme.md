@@ -15,7 +15,7 @@
     - [Using Qt Creator](#using-qt-creator)
         - [Additionnal Requirements](#additionnal-requirements)
         - [CMake Parameters](#cmake-parameters)
-    - [VS2019/2022](#using-Visual-Studio-2019)
+    - [VS2026](#using-Visual-Studio-2026)
         - [Windows extension](#windows-Extension)
         - [Project setup](#project-Setup)
         - [CMake configuration](#cmake-Configuration)
@@ -40,28 +40,20 @@ cd desktop-kDrive && git submodule update --init --recursive
 
 # Installation Requirements
 
-Once `Visual Studio 2019` is installed, **all** commands should to be run using the `x64 Native Tools Command Prompt` with administrator permissions.
+Once `Visual Studio 2026` is installed, **all** commands should to be run using the `x64 Native Tools Command Prompt` with administrator permissions.
 
-## Visual Studio 2019/2022/2025
-You must install both `Visual Studio 2019` and either `Visual Studio 2022` or `Visual Studio 2025` to build the project.
+## Visual Studio 2026
+You must install `Visual Studio 2026` to build the project.
 
-When installing `Visual Studio 2019`, select the following components:
+When installing `Visual Studio 2026`, select the following components:
 
-- Desktop development with C++
-- Universal Windows Platform Development
-- .NET SDK
-- .NET Core 3.1 Runtime
-- .NET 5.0 Runtime
-- .NET framework 4.7 SDK
-- Windows 11 SDK (10.0.22000.0)
-- Windows 10 SDK (10.0.17763.0)
-- Windows 10 SDK (10.0.20348.0)
+- Workloads:
+  - Desktop development with C++
+  - WinUI application development
+- Individual components:
+  - Git for Windows
+  - Windows 11 SDK (10.0.28000.x)
 
-When installing `Visual Studio 2022 or 2025`, select the following components:
-- Desktop development with C++
-- Desktop development with .NET
-- WinUI development with .NET
-- .NET 9.0 Runtime
 
 ## CPPUnit
 
@@ -216,7 +208,7 @@ Conan version 2.x.x
     compiler=msvc
     compiler.cppstd=20
     compiler.runtime=dynamic
-    compiler.version=192
+    compiler.version=195
     os=Windows
    ```
 
@@ -321,7 +313,7 @@ Then copy the following list of `CMake` variables in "Initial CMake Parameters" 
 
 Then click "Re-configure with Initial Parameters".
 
-## Using Visual Studio 2019
+## Using Visual Studio 2026
 ### Windows Extension
 
 To build in Debug mode, you'll need to build and deploy the Windows extension first.
@@ -341,7 +333,7 @@ Close the `kDriveExt` solution.
 
 ### Project Setup
 
-Open `Visual Studio 2019` and select `Open local folder`. Then choose `F:\Projects\desktop-kDrive`.
+Open `Visual Studio 2026` and select `Open local folder`. Then choose `F:\Projects\desktop-kDrive`.
 
 
 ### CMake Configuration
@@ -373,19 +365,11 @@ Make sure no errors occur.
 
 In the `Solution Explorer`, go to the available view:
 
-![VS2019 switch view button](./doc-images/VS_2019_switch_sln_to_targets.png)
+![VS2026 switch view button](./doc-images/VS_2019_switch_sln_to_targets.png)
 
 Select `CMake` targets.
 Right-click on the `kDrive` executable and then on `Install`.
 Once done, right-click on the `kDrive_client` executable and then on `Install`.
-
-
-### DLL Copy
-
-During the next step, you may encounter missing DLL errors. If so, copy the required DLLs into the `bin` folder of your output directory. The DLLs are located in:
-- `C:\Program Files (x86)\NSIS\Bin`
-- `C:\Program Files (x86)\zlib-1.2.11`
-- `C:\Program Files\OpenSSL\bin`
 
 ### Debugging
 
