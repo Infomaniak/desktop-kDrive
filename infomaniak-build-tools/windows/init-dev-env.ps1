@@ -246,7 +246,18 @@ function Invoke-Native {
     try {
         # Stream both stdout and stderr straight to the console (the host) so the
         # external tool output is always visible and never silently captured by a caller.
-        & $FilePath @Arguments 2>&1 | Out-Host
+        # Many tools (git, cmake, ...) write informational/progress text to stderr; merging
+        # with 2>&1 wraps those lines as PowerShell ErrorRecords, which would otherwise be
+        # rendered as noisy "NativeCommandError" blocks. Convert every item to plain text so
+        # the output looks exactly like it would in a normal console, and so a stray stderr
+        # line never aborts the step when $ErrorActionPreference is 'Stop'.
+        & $FilePath @Arguments 2>&1 | ForEach-Object {
+            if ($_ -is [System.Management.Automation.ErrorRecord]) {
+                Write-Host $_.ToString()
+            } else {
+                Write-Host $_
+            }
+        }
         if ($LASTEXITCODE -ne 0) {
             throw "Command '$FilePath $($Arguments -join ' ')' failed with exit code $LASTEXITCODE."
         }
