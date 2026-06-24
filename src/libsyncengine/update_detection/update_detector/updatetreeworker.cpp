@@ -1425,17 +1425,17 @@ ExitCode UpdateTreeWorker::mergeNodeToParentChildren(std::shared_ptr<Node> paren
     return ExitCode::Ok;
 }
 
-void UpdateTreeWorker::tryToMergeTmpNode(std::shared_ptr<Node> tmpNode, bool &merged) {
+void UpdateTreeWorker::tryToMergeTmpNode(const std::shared_ptr<Node> tmpNode, bool &merged) {
     assert(tmpNode);
     assert(tmpNode->parentNode());
 
     merged = false;
 
-    for (auto [_, brotherNode]: tmpNode->parentNode()->children()) {
+    for (const auto &[_, brotherNode]: tmpNode->parentNode()->children()) {
         if (brotherNode == tmpNode || brotherNode->isTmp() || brotherNode->hasChangeEvent(OperationType::Delete)) continue;
         if (brotherNode->name() == tmpNode->name()) {
             // Move tmpNode children to its brother
-            for (auto [_2, childNode]: tmpNode->children()) {
+            for (const auto &[__, childNode]: tmpNode->children()) {
                 (void) brotherNode->insertChild(childNode);
                 (void) childNode->setParentNode(brotherNode);
             }
