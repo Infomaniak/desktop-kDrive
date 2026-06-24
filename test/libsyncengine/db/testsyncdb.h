@@ -59,7 +59,6 @@ class TestSyncDb : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testDummyUpgrade);
         CPPUNIT_TEST(testDbNode);
         CPPUNIT_TEST(testTryToFixDbNodeIdsAfterSyncDirChange);
-        CPPUNIT_TEST(testGetNodeTableRowCount);
         CPPUNIT_TEST(testMigrateLocalItemsToPrivateDir);
         CPPUNIT_TEST(testMigrationOfNonRootAdvancedSync);
         CPPUNIT_TEST_SUITE_END();
@@ -92,7 +91,6 @@ class TestSyncDb : public CppUnit::TestFixture, public TestBase {
         void testDummyUpgrade();
         void testDbNode();
         void testTryToFixDbNodeIdsAfterSyncDirChange();
-        void testGetNodeTableRowCount();
         void testMigrateLocalItemsToPrivateDir();
         void testMigrationOfNonRootAdvancedSync();
 

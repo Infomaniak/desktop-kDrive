@@ -3110,36 +3110,6 @@ bool SyncDb::updateParentNodeIds(const std::vector<DbNodeId> &dbNodeIds, const D
     return true;
 }
 
-bool SyncDb::getNodeTableRowCount(int64_t &count) {
-    const char *query = "SELECT COUNT(*) FROM node";
-    const char *requestId = "SELECT_NODE_TABLE_ROW_COUNT";
-
-    if (!createAndPrepareRequest(requestId, query)) return false;
-
-    count = 0;
-    bool found = false;
-    LOG_IF_FAIL(queryResetAndClearBindings(requestId));
-    if (!queryNext(requestId, found)) {
-        LOG_WARN(_logger, "Error running query: " << requestId);
-        queryFree(requestId);
-
-        return false;
-    }
-
-    if (!found) {
-        LOG_WARN(_logger, "No result found for query: " << requestId);
-        queryFree(requestId);
-
-        return false;
-    }
-
-    queryInt64Value(requestId, 0, count);
-
-    queryFree(requestId);
-
-    return true;
-}
-
 bool SyncDb::getPrivateDirRemoteNodeId(const DriveDbId driveDbId, RemoteNodeId &privateDirRemoteNodeId) {
     privateDirRemoteNodeId = {};
     if (auto exitInfo =
@@ -3152,13 +3122,12 @@ bool SyncDb::getPrivateDirRemoteNodeId(const DriveDbId driveDbId, RemoteNodeId &
     return true;
 }
 
-bool SyncDb::insertPrivateDirNode(const DbNodeId privateDirDbNodeId, const DriveDbId driveDbId,
-                                  const SyncPath &localPrivateDirPath) {
+bool SyncDb::insertPrivateDirNode(const DriveDbId driveDbId, const SyncPath &localPrivateDirPath, DbNodeId &privateDirDbNodeId) {
+    privateDirDbNodeId = 0;
     DbNode privateDbNode;
-    privateDbNode.setNodeId(privateDirDbNodeId);
 
     privateDbNode.setParentNodeId(rootNode().nodeId());
-    const SyncName privateDirName = Str2SyncName(ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::Private));
+    const auto privateDirName = Str2SyncName(ApiTranslator::v3SpecialFolderNames.at(ApiTranslator::SpecialFolder::Private));
     privateDbNode.setNameLocal(privateDirName);
     privateDbNode.setNameRemote(privateDirName);
     privateDbNode.setType(NodeType::Directory);
@@ -3186,7 +3155,7 @@ bool SyncDb::insertPrivateDirNode(const DbNodeId privateDirDbNodeId, const Drive
     privateDbNode.setCreated(fileStat.creationTime);
     privateDbNode.setLastModifiedLocal(fileStat.modificationTime);
 
-    if (!insertNode(privateDbNode)) {
+    if (bool constraintError = false; !insertNode(privateDbNode, privateDirDbNodeId, constraintError)) {
         LOGW_WARN(_logger, L"Error inserting Private directory node into SyncDb.");
         return false;
     }
@@ -3207,14 +3176,7 @@ bool SyncDb::updateParentNodeIdsOfRootChildren(const DriveDbId driveDbId, const 
     }
 
     DbNodeId privateNodeDbId = 0;
-
-    if (!getNodeTableRowCount(privateNodeDbId)) {
-        LOGW_WARN(_logger, L"Error in getNodeTableRowCount.");
-        return false;
-    }
-    ++privateNodeDbId;
-
-    if (!insertPrivateDirNode(privateNodeDbId, driveDbId, localPrivateDirPath)) {
+    if (!insertPrivateDirNode(driveDbId, localPrivateDirPath, privateNodeDbId)) {
         LOGW_WARN(_logger, L"Error in insertPrivateDirNode.");
         return false;
     }
@@ -3225,7 +3187,6 @@ bool SyncDb::updateParentNodeIdsOfRootChildren(const DriveDbId driveDbId, const 
     }
 
     LOG_INFO(_logger, "Successful update of parent node ids for all " << rootChildrenDbIds.size() << " root children.");
-
 
     return true;
 }

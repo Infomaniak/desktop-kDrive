@@ -173,9 +173,8 @@ class SyncDb : public Db {
         // Update the parent node DB ID of the children of the root node with the DB ID of the Private folder.
         bool updateParentNodeIdsOfRootChildren(DriveDbId driveDbId, const SyncPath &localPrivateDirPath);
 
-        bool getNodeTableRowCount(int64_t &count);
         bool updateParentNodeIds(const std::vector<DbNodeId> &dbNodeIds, DbNodeId parentNodeId);
-        bool insertPrivateDirNode(DriveDbId driveDbId, DbNodeId privateDirDbNodeId, const SyncPath &localPrivateDirPath);
+        bool insertPrivateDirNode(DriveDbId driveDbId, const SyncPath &localPrivateDirPath, DbNodeId &privateDirDbNodeId);
 
         friend class TestSyncDb;
 };
