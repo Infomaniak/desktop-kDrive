@@ -21,10 +21,10 @@
 #include "app/cache/cachetypes.h"
 #include "communicationlayer/ipcclient.h"
 #include "communicationlayer/signaldispatcher.h"
+#include "libcommon/data/drive.h"
 #include "libcommon/utility/cstypes.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/info/accountinfo.h"
-#include "libcommon/info/driveinfo.h"
 #include "libcommon/info/driveavailableinfo.h"
 #include "libcommon/info/errorinfo.h"
 #include "libcommon/info/exclusiontemplateinfo.h"
@@ -108,7 +108,7 @@ class CommService : public QObject {
         using UserDisplayInfoListCallback = std::function<void(const ExitInfo &, const std::vector<UserDisplayInfo> &)>;
         using DriveAvailableInfoListCallback = std::function<void(const ExitInfo &, const std::vector<DriveAvailableInfo> &)>;
         using AccountInfoListCallback = std::function<void(const ExitInfo &, const std::vector<AccountInfo> &)>;
-        using DriveInfoListCallback = std::function<void(const ExitInfo &, const std::vector<DriveInfo> &)>;
+        using DriveListCallback = std::function<void(const ExitInfo &, const std::vector<Drive> &)>;
         using SyncInfoListCallback = std::function<void(const ExitInfo &, const std::vector<SyncInfo> &)>;
         using SyncInfoCallback = std::function<void(const ExitInfo &, const SyncInfo &)>;
         using SyncStatusCallback = std::function<void(const ExitInfo &, SyncStatus)>;
@@ -152,8 +152,8 @@ class CommService : public QObject {
         void requestAccountInfoList(const AccountInfoListCallback &callback) const;
 
         // --- Drive ---
-        void requestDriveInfoList(const DriveInfoListCallback &callback) const;
-        void requestDriveUpdate(const DriveInfo &driveInfo, const VoidCallback &callback) const;
+        void requestDriveList(const DriveListCallback &callback) const;
+        void requestDriveUpdate(const Drive &drive, const VoidCallback &callback) const;
         void requestDriveDelete(DriveDbId driveDbId, const VoidCallback &callback) const;
         void requestDriveSearch(SyncDbId syncDbId, const QString &searchString, const DriveSearchCallback &callback) const;
 
@@ -238,8 +238,8 @@ class CommService : public QObject {
         void accountRemoved(AccountDbId accountDbId);
 
         // --- Drive ---
-        void driveAdded(const DriveInfo &info);
-        void driveUpdated(const DriveInfo &info);
+        void driveAdded(const Drive &drive);
+        void driveUpdated(const Drive &drive);
         void driveRemoved(DriveDbId driveDbId);
 
         // --- Sync ---
