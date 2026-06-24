@@ -242,13 +242,64 @@ function Invoke-Native {
         Set-Location $WorkingDirectory
     }
     try {
-        & $FilePath @Arguments
+        # Stream both stdout and stderr straight to the console (the host) so the
+        # external tool output is always visible and never silently captured by a caller.
+        & $FilePath @Arguments 2>&1 | Out-Host
         if ($LASTEXITCODE -ne 0) {
             throw "Command '$FilePath $($Arguments -join ' ')' failed with exit code $LASTEXITCODE."
         }
     } finally {
         if ($previous) { Set-Location $previous }
     }
+}
+
+# Tracks whether the MSVC x64 developer environment has already been imported this run.
+$script:VsDevEnvLoaded = $false
+
+function Enter-VsDeveloperEnvironment {
+    # Imports the MSVC x64 toolchain (msbuild, nmake, cl, cmake, ...) into the current
+    # PowerShell session, exactly like launching a 'x64 Native Tools Command Prompt' but
+    # done programmatically so the script can run from an ordinary elevated PowerShell.
+    # Idempotent: the environment is imported only once per run.
+    if ($script:VsDevEnvLoaded) { return }
+
+    $vswhere = Get-VsWherePath
+    if (-not $vswhere) {
+        throw "vswhere.exe not found. Visual Studio must be installed first (run the 'VisualStudio' step)."
+    }
+
+    # Prefer an instance that ships the C++ x64 toolchain, fall back to the latest instance.
+    $installPath = & $vswhere -products * -latest -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath 2>$null | Select-Object -First 1
+    if (-not $installPath) {
+        $installPath = & $vswhere -products * -latest -property installationPath 2>$null | Select-Object -First 1
+    }
+    if (-not $installPath) {
+        throw "No Visual Studio installation with the C++ toolchain was found. Run the 'VisualStudio' step first."
+    }
+
+    # Preferred path: the DevShell module shipped with Visual Studio.
+    $devShellDll = Join-Path $installPath "Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
+    if (Test-Path $devShellDll) {
+        Import-Module $devShellDll
+        Enter-VsDevShell -VsInstallPath $installPath -SkipAutomaticLocation -DevCmdArguments '-arch=x64 -host_arch=x64' | Out-Null
+        $script:VsDevEnvLoaded = $true
+        Write-Info "Loaded the Visual Studio x64 developer environment from $installPath"
+        return
+    }
+
+    # Fallback: capture the environment produced by vcvars64.bat and import it.
+    $vcvars = Join-Path $installPath "VC\Auxiliary\Build\vcvars64.bat"
+    if (-not (Test-Path $vcvars)) {
+        throw "Could not find Enter-VsDevShell or vcvars64.bat under $installPath. Reinstall the C++ workload (run the 'VisualStudio' step)."
+    }
+    $output = cmd /c "`"$vcvars`" >nul 2>&1 && set"
+    foreach ($line in $output) {
+        if ($line -match '^([^=]+)=(.*)$') {
+            [Environment]::SetEnvironmentVariable($matches[1], $matches[2], 'Process')
+        }
+    }
+    $script:VsDevEnvLoaded = $true
+    Write-Info "Loaded the Visual Studio x64 developer environment (vcvars64) from $installPath"
 }
 
 #################################################################################################
@@ -385,11 +436,16 @@ function Get-Steps {
             }
             $sln = Get-ChildItem -Path (Join-Path $script:CppUnitSrcDir "src") -Filter "CppUnitLibraries*.sln" -ErrorAction SilentlyContinue | Select-Object -First 1
             if (-not $sln) { throw "CPPUnit solution not found under $($script:CppUnitSrcDir)\src." }
+
+            # Make msbuild available automatically (no need for a 'x64 Native Tools Command Prompt').
+            Enter-VsDeveloperEnvironment
             if (-not (Test-CommandExists 'msbuild')) {
-                throw "msbuild is required to build CPPUnit. Run this script from a 'x64 Native Tools Command Prompt' or after installing Visual Studio."
+                throw "msbuild is still not available after loading the Visual Studio environment. Ensure the C++ workload is installed (run the 'VisualStudio' step)."
             }
-            Invoke-Native -FilePath "msbuild" -Arguments @($sln.FullName, "/p:Configuration=Debug",   "/p:Platform=x64")
-            Invoke-Native -FilePath "msbuild" -Arguments @($sln.FullName, "/p:Configuration=Release", "/p:Platform=x64")
+            # The CPPUnit solution ships with the legacy v100 toolset; retarget it to v145 so it
+            # builds with the modern Visual Studio C++ build tools installed by this script.
+            Invoke-Native -FilePath "msbuild" -Arguments @($sln.FullName, "/p:Configuration=Debug",   "/p:Platform=x64", "/p:PlatformToolset=v145")
+            Invoke-Native -FilePath "msbuild" -Arguments @($sln.FullName, "/p:Configuration=Release", "/p:Platform=x64", "/p:PlatformToolset=v145")
 
             New-Item -ItemType Directory -Force -Path $script:CppUnitDir | Out-Null
             Copy-Item -Recurse -Force (Join-Path $script:CppUnitSrcDir "lib")     $script:CppUnitDir
@@ -406,8 +462,10 @@ function Get-Steps {
             (Test-Path (Join-Path $script:ZlibDir "lib\zlib.lib"))
         } `
         -Install {
+            # Make nmake available automatically (no need for a 'x64 Native Tools Command Prompt').
+            Enter-VsDeveloperEnvironment
             if (-not (Test-CommandExists 'nmake')) {
-                throw "nmake is required to build zlib. Run this script from a 'x64 Native Tools Command Prompt'."
+                throw "nmake is still not available after loading the Visual Studio environment. Ensure the C++ workload is installed (run the 'VisualStudio' step)."
             }
             $archive = Join-Path $script:DownloadDir "zlib-$($script:ZlibVersion).tar.gz"
             if (-not (Test-Path $archive)) { Get-File -Url $script:ZlibUrl -Destination $archive }
@@ -443,6 +501,8 @@ function Get-Steps {
             if (-not (Test-Path (Join-Path $script:ZlibDir "lib\zlib.lib"))) {
                 throw "libzip requires zlib. Run the 'Zlib' step first."
             }
+            # Make the MSVC compiler available to CMake automatically.
+            Enter-VsDeveloperEnvironment
             if (-not (Test-Path (Join-Path $script:LibzipSrcDir ".git"))) {
                 Invoke-Native -FilePath "git" -Arguments @("clone", $script:LibzipUrl, $script:LibzipSrcDir)
             }
@@ -544,6 +604,8 @@ function Get-Steps {
             if (-not (Test-Path (Join-Path $script:RepoDir ".git"))) {
                 throw "The repository must be cloned first. Run the 'CloneRepo' step."
             }
+            # Conan builds native dependencies, so the MSVC toolchain must be on PATH.
+            Enter-VsDeveloperEnvironment
             $venvDir    = Join-Path $script:RepoDir ".venv"
             $venvPython = Join-Path $venvDir "Scripts\python.exe"
             $venvConan  = Join-Path $venvDir "Scripts\conan.exe"
