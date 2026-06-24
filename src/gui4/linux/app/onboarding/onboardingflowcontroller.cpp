@@ -28,8 +28,6 @@ Q_LOGGING_CATEGORY(lcOnboardingFlowController, "gui.v4.onboardingflow", QtInfoMs
 namespace KDC {
 
 namespace {
-constexpr std::chrono::milliseconds loginSuccessDisplayDuration{1200};
-
 [[nodiscard]] qint32 stepToIndex(const OnboardingFlowController::Step step) {
     return static_cast<uint8_t>(step);
 }
@@ -40,7 +38,7 @@ OnboardingFlowController::OnboardingFlowController(QObject *const parent) :
     QObject(parent) {}
 
 bool OnboardingFlowController::loginInProgress() const {
-    return _loginState == WaitingForWebAuthentication || _loginState == LoadingUser || _loginState == LoginSucceeded;
+    return _loginState == WaitingForWebAuthentication || _loginState == LoadingUser;
 }
 
 bool OnboardingFlowController::waitingForWebAuthentication() const {
@@ -51,10 +49,6 @@ bool OnboardingFlowController::loginFailed() const {
     return _loginState == LoginError;
 }
 
-bool OnboardingFlowController::loginSucceeded() const {
-    return _loginState == LoginSucceeded;
-}
-
 QString OnboardingFlowController::loginStatusText() const {
     switch (_loginState) {
         case LoginIdle:
@@ -63,8 +57,6 @@ QString OnboardingFlowController::loginStatusText() const {
             return tr("Waiting for browser authentication...");
         case LoadingUser:
             return tr("Loading your kDrive account...");
-        case LoginSucceeded:
-            return {};
         case LoginError:
             return tr("Unable to connect. Please try again.");
     }
@@ -86,7 +78,7 @@ QString OnboardingFlowController::title() const {
 }
 
 void OnboardingFlowController::requestLogin() {
-    if (_currentStep != Login || _loginState == LoadingUser || _loginState == LoginSucceeded) {
+    if (_currentStep != Login || _loginState == LoadingUser) {
         return;
     }
 
@@ -161,15 +153,8 @@ void OnboardingFlowController::completeLogin(const qint64 userDbId) {
     }
 
     qCInfo(lcOnboardingFlowController) << "Onboarding user cache ready | userDbId:" << userDbId;
-    setLoginState(LoginSucceeded);
-    QTimer::singleShot(loginSuccessDisplayDuration, this, [this] {
-        if (_currentStep != Login || _loginState != LoginSucceeded) {
-            return;
-        }
-
-        setLoginState(LoginIdle);
-        setCurrentStep(DriveSelection);
-    });
+    setLoginState(LoginIdle);
+    setCurrentStep(DriveSelection);
 }
 
 void OnboardingFlowController::setLoginState(const LoginState loginState) {
