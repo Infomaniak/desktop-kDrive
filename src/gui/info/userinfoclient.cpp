@@ -21,11 +21,11 @@
 namespace KDC {
 
 UserInfoClient::UserInfoClient() :
-    UserInfo(),
+    User(),
     _connectionError(QString()) {}
 
-UserInfoClient::UserInfoClient(const UserInfo &userInfo) :
-    UserInfo(userInfo),
+UserInfoClient::UserInfoClient(const User &userInfo) :
+    User(userInfo),
     _connectionError(QString()) {}
 
 } // namespace KDC

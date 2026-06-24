@@ -319,6 +319,10 @@ struct COMMON_EXPORT CommonUtility {
         static std::wstring commString2WStr(const CommString &s) { return KDC::CommonUtility::s2ws(s); }
         static CommString qStr2CommString(const QString &s) { return s.toStdString(); }
         static QString commString2QStr(const CommString &s) { return QString::fromStdString(s); }
+
+        static std::shared_ptr<CommBLOB> toCommBlob(const QImage &image);
+        static QImage toQImage(const std::shared_ptr<CommBLOB> blob);
+
         //! Returns the length of a string
         /*!
           \param s is a null-terminated string.

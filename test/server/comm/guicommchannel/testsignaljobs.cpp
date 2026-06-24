@@ -91,10 +91,9 @@ void TestGuiCommChannel::testSignalUpdaterStateChangedJob() {
 }
 
 void TestGuiCommChannel::testSignalUserUpdatedJob() {
-    UserInfo userInfo;
+    User userInfo;
     userInfo.setDbId(1);
     userInfo.setUserId(2);
-    userInfo.setAvatar(QImage{});
     userInfo.setConnected(true);
     userInfo.setCredentialsAsked(true);
     userInfo.setIsStaff(true);

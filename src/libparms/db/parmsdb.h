@@ -20,7 +20,7 @@
 
 #include "parmslib.h"
 #include "parameters.h"
-#include "user.h"
+#include "libcommon/data/user.h"
 #include "libcommon/data/account.h"
 #include "sync.h"
 #include "exclusiontemplate.h"

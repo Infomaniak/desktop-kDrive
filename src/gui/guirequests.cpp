@@ -47,7 +47,7 @@ ExitCode GuiRequests::getUserDbIdList(QList<UserDbId> &list) {
     return exitCode;
 }
 
-ExitCode GuiRequests::getUserInfoList(QList<UserInfo> &list) {
+ExitCode GuiRequests::getUserList(QList<User> &list) {
     QByteArray results;
     if (!CommClient::instance()->execute(RequestNum::USER_INFOLIST, {}, results)) {
         return ExitCode::SystemError;

@@ -63,7 +63,7 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/utility/logiffail.h"
 #include "libcommon/comm.h"
-#include "libcommon/info/userinfo.h"
+#include "libcommon/data/user.h"
 #include "libcommon/info/exclusiontemplateinfo.h"
 #include "libcommon/log/sentry/handler.h"
 #include "libcommon/log/sentry/ptraces.h"
@@ -1044,7 +1044,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> code;
             paramsStream >> codeVerifier;
 
-            UserInfo userInfo;
+            User userInfo;
             bool userCreated = false;
             std::string error;
             std::string errorDescr;
@@ -1087,10 +1087,10 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::USER_INFOLIST: {
-            QList<UserInfo> list;
-            ExitCode exitCode = ServerRequests::getUserInfoList(list);
+            QList<User> list;
+            ExitCode exitCode = ServerRequests::getUserList(list);
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::getUserInfoList: code=" << exitCode);
+                LOG_WARN(_logger, "Error in Requests::getUserList: code=" << exitCode);
                 addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
             }
 
@@ -2954,9 +2954,7 @@ ExitInfo AppServer::updateUser(User &user) {
         LOG_WARN(_logger, "Error in Requests::loadUserInfo: " << exitInfo);
         if (exitInfo.code() == ExitCode::InvalidToken) {
             // Notify client app that the user is disconnected
-            UserInfo userInfo;
-            ServerRequests::userToUserInfo(user, userInfo);
-            sendUserUpdated(userInfo);
+            sendUserUpdated(user);
         }
 
         return exitInfo;
@@ -2973,9 +2971,7 @@ ExitInfo AppServer::updateUser(User &user) {
             return ExitCode::DataError;
         }
 
-        UserInfo userInfo;
-        ServerRequests::userToUserInfo(user, userInfo);
-        sendUserUpdated(userInfo);
+        sendUserUpdated(user);
     }
     return ExitCode::Ok;
 }
@@ -4588,9 +4584,7 @@ void AppServer::manageInvalidTokenError(User &user) const {
         return;
     }
 
-    UserInfo userInfo;
-    ServerRequests::userToUserInfo(user, userInfo);
-    sendUserUpdated(userInfo);
+    sendUserUpdated(user);
 }
 
 void AppServer::manageSocketsDefunctedError() const {
@@ -4662,7 +4656,7 @@ void AppServer::resolveSyncErrorsByExitCause(SyncDbId syncDbId, ExitCause cause)
     resolveErrors(errorList);
 }
 
-void AppServer::sendUserAdded(const UserInfo &userInfo) const {
+void AppServer::sendUserAdded(const User &userInfo) const {
     if (useOldCommServer()) {
         int id = 0;
 
@@ -4677,7 +4671,7 @@ void AppServer::sendUserAdded(const UserInfo &userInfo) const {
     }
 }
 
-void AppServer::sendUserUpdated(const UserInfo &userInfo) const {
+void AppServer::sendUserUpdated(const User &userInfo) const {
     if (useOldCommServer()) {
         int id = 0;
 

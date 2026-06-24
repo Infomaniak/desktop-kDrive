@@ -187,8 +187,8 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void onRefreshErrorList();
 
         // User slots
-        void onUserAdded(const UserInfo &userInfo);
-        void onUserUpdated(const UserInfo &userInfo);
+        void onUserAdded(const User &userInfo);
+        void onUserUpdated(const User &userInfo);
         void onUserStatusChanged(UserDbId userDbId, bool connected, QString connexionError);
         void onUserRemoved(UserDbId userDbId);
         // Account slots

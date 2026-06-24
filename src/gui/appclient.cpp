@@ -192,7 +192,7 @@ AppClient::AppClient(int &argc, char **argv) :
         // Ask user to log in if needed
         for (auto const &[userDbId, userInfoClient]: _gui->userInfoMap()) {
             if (!userInfoClient.connected() && _gui->isUserUsed(userDbId)) {
-                askUserToLoginAgain(userInfoClient.dbId(), userInfoClient.email(), false);
+                askUserToLoginAgain(userInfoClient.dbId(), QString::fromStdString(userInfoClient.email()), false);
             }
         }
     }
@@ -217,14 +217,14 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
 
     switch (num) {
         case SignalNum::USER_ADDED: {
-            UserInfo userInfo;
+            User userInfo;
             paramsStream >> userInfo;
 
             emit userAdded(userInfo);
             break;
         }
         case SignalNum::USER_UPDATED: {
-            UserInfo userInfo;
+            User userInfo;
             paramsStream >> userInfo;
 
             emit userUpdated(userInfo);
@@ -681,7 +681,7 @@ void AppClient::updateSentryUser() const {
         return;
     }
 
-    SentryUser user(userInfo->second.email().toStdString(), userInfo->second.name().toStdString(),
+    SentryUser user(userInfo->second.email(), userInfo->second.name(),
                     std::to_string(userInfo->second.userId()));
     sentry::Handler::instance()->setAuthenticatedUser(user);
 }

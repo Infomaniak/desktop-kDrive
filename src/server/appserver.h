@@ -32,8 +32,7 @@
 #include "comm/oldcommserver.h"
 #include "comm/commmanager.h"
 #include "syncpal/syncpal.h"
-#include "libparms/db/user.h"
-#include "libcommon/info/userinfo.h"
+#include "libcommon/data/user.h"
 #include "libcommon/data/account.h"
 #include "libcommon/info/syncinfo.h"
 #include "libcommon/info/syncfileiteminfo.h"
@@ -334,8 +333,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         [[nodiscard]] ExitInfo processMigratedSyncOnceConnected(UserDbId userDbId, DriveId driveId, Sync &sync,
                                                                 QSet<QString> &blackList, bool &syncUpdated);
 
-        virtual void sendUserAdded(const UserInfo &userInfo) const;
-        virtual void sendUserUpdated(const UserInfo &userInfo) const;
+        virtual void sendUserAdded(const User &userInfo) const;
+        virtual void sendUserUpdated(const User &userInfo) const;
         virtual void sendUserStatusChanged(UserDbId userDbId, bool connected, const QString &connexionError) const;
         virtual void sendUserRemoved(UserDbId userDbId) const;
         virtual void sendAccountAdded(const Account &accountInfo) const;

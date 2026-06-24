@@ -56,8 +56,8 @@ class AppClient : public SharedTools::QtSingleApplication {
 
     signals:
         // User signals
-        void userAdded(const UserInfo &userInfo);
-        void userUpdated(const UserInfo &userInfo);
+        void userAdded(const User &user);
+        void userUpdated(const User &user);
         void userStatusChanged(UserDbId userDbId, bool connected, QString connexionError);
         void userRemoved(UserDbId userDbId);
         // Account signals

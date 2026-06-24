@@ -41,7 +41,7 @@
 #include "jobs/network/kDrive_API/getsizejob.h"
 #include "libcommonserver/utility/jsonparserutility.h"
 #include "libparms/db/parmsdb.h"
-#include "libparms/db/user.h"
+#include "libcommon/data/user.h"
 #include "libcommon/utility/utility.h" // fileSystemName(const QString&)
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
@@ -83,29 +83,22 @@ ExitCode ServerRequests::getUserDbIdList(std::vector<UserDbId> &list) {
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getUserInfoList(QList<UserInfo> &list) {
-    std::vector<UserInfo> userInfoList;
-    if (const auto exitCode = getUserInfoList(userInfoList); exitCode != ExitCode::Ok) {
+ExitCode ServerRequests::getUserList(QList<User> &list) {
+    std::vector<User> userList;
+    if (const auto exitCode = getUserList(userList); exitCode != ExitCode::Ok) {
         return exitCode;
     }
 
-    (void) std::copy(userInfoList.begin(), userInfoList.end(), std::back_inserter(list));
+    (void) std::copy(userList.begin(), userList.end(), std::back_inserter(list));
 
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getUserInfoList(std::vector<UserInfo> &list) {
+ExitCode ServerRequests::getUserList(std::vector<User> &list) {
     list.clear();
-    std::vector<User> userList;
-    if (!ParmsDb::instance()->selectAllUsers(userList)) {
+    if (!ParmsDb::instance()->selectAllUsers(list)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllUsers");
         return ExitCode::DbError;
-    }
-
-    for (const User &user: userList) {
-        UserInfo userInfo;
-        userToUserInfo(user, userInfo);
-        list.push_back(userInfo);
     }
 
     return ExitCode::Ok;
@@ -502,7 +495,7 @@ ExitInfo ServerRequests::findGoodPathForNewSync(const QString &basePath, QString
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::requestToken(const std::string &code, const std::string &codeVerifier, UserInfo &userInfo,
+ExitCode ServerRequests::requestToken(const std::string &code, const std::string &codeVerifier, User &userInfo,
                                       bool &userCreated, std::string &error, std::string &errorDescr) {
     // Generate keychainKey
     std::string keychainKey(Utility::computeMd5Hash(std::to_string(std::time(nullptr))));
@@ -525,7 +518,7 @@ ExitCode ServerRequests::requestToken(const std::string &code, const std::string
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::requestToken(const QString &code, const QString &codeVerifier, UserInfo &userInfo, bool &userCreated,
+ExitCode ServerRequests::requestToken(const QString &code, const QString &codeVerifier, User &userInfo, bool &userCreated,
                                       std::string &error, std::string &errorDescr) {
     return requestToken(QStr2Str(code), QStr2Str(codeVerifier), userInfo, userCreated, error, errorDescr);
 }
@@ -1039,7 +1032,7 @@ ExitInfo ServerRequests::getPathByNodeId(const UserDbId userDbId, const DriveId 
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::createUser(const User &user, UserInfo &userInfo) {
+ExitCode ServerRequests::createUser(const User &user, User &userInfo) {
     if (!ParmsDb::instance()->insertUser(user)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::insertUser");
         return ExitCode::DbError;
@@ -1065,12 +1058,12 @@ ExitCode ServerRequests::createUser(const User &user, UserInfo &userInfo) {
         }
     }
 
-    userToUserInfo(updatedUser, userInfo);
+    userInfo = updatedUser;
 
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::updateUser(const User &user, UserInfo &userInfo) {
+ExitCode ServerRequests::updateUser(const User &user, User &userInfo) {
     bool found = false;
     if (!ParmsDb::instance()->updateUser(user, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateUser");
@@ -1088,7 +1081,7 @@ ExitCode ServerRequests::updateUser(const User &user, UserInfo &userInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in loadUserInfo");
         return exitCode;
     }
-    userToUserInfo(userUpdated, userInfo);
+    userInfo = userUpdated;
 
     return ExitCode::Ok;
 }
@@ -2024,7 +2017,7 @@ ExitInfo ServerRequests::loadUserAvatar(User &user) {
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::processRequestTokenFinished(const Login &login, UserInfo &userInfo, bool &userCreated) {
+ExitCode ServerRequests::processRequestTokenFinished(const Login &login, User &userInfo, bool &userCreated) {
     // Get user
     User user;
     bool found = false;
@@ -2178,25 +2171,6 @@ ExitCode ServerRequests::syncForPath(const std::vector<Sync> &syncList, const QS
 
     return ExitCode::Ok;
 }
-
-void ServerRequests::userToUserInfo(const User &user, UserInfo &userInfo) {
-    userInfo.setDbId(user.dbId());
-    userInfo.setUserId(user.userId());
-    userInfo.setName(QString::fromStdString(user.name()));
-    userInfo.setFirstName(QString::fromStdString(user.firstName()));
-    userInfo.setEmail(QString::fromStdString(user.email()));
-    if (user.avatar()) {
-        QByteArray avatarArr;
-        std::copy(user.avatar()->begin(), user.avatar()->end(), std::back_inserter(avatarArr));
-        QImage avatarImg;
-        avatarImg.loadFromData(avatarArr);
-        userInfo.setAvatar(avatarImg);
-    }
-    userInfo.setConnected(!user.keychainKey().empty());
-    userInfo.setCredentialsAsked(false);
-    userInfo.setIsStaff(user.isStaff());
-}
-
 
 void ServerRequests::syncToSyncInfo(const Sync &sync, SyncInfo &syncInfo) {
     syncInfo.setDbId(sync.dbId());
