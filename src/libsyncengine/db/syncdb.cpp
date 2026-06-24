@@ -3083,7 +3083,7 @@ bool SyncDb::updateParentNodeIds(const std::vector<DbNodeId> &dbNodeIds, const D
         return false;
 
     const std::scoped_lock lock(_mutex);
-
+    invalidateCache();
     auto errId = -1;
     std::string error;
     for (const auto nodeId: dbNodeIds) {
