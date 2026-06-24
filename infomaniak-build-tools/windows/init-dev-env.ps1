@@ -74,13 +74,13 @@ $script:LibzipSrcDir  = Join-Path $ProjectsDir "libzip"
 $script:LibzipDir     = "C:\Program Files (x86)\libzip"
 $script:LibzipUrl     = "https://github.com/nih-at/libzip.git"
 $script:NsisDir       = "C:\Program Files (x86)\NSIS"
-$script:NsisUrl       = "https://sourceforge.net/projects/nsis/files/NSIS%203/3.03/nsis-3.03-setup.exe/download"
+$script:NsisUrl       = "https://downloads.sourceforge.net/project/nsis/NSIS%203/3.03/nsis-3.03-setup.exe"
 $script:NsisPlugins   = @('LogicLib', 'nsProcess', 'UAC', 'x64')
 $script:SevenZipDir   = "C:\Program Files\7-Zip"
-$script:SevenZipUrl   = "https://sourceforge.net/projects/sevenzip/files/7-Zip/23.01/7z2301-extra.7z/download"
+$script:SevenZipUrl   = "https://downloads.sourceforge.net/project/sevenzip/7-Zip/23.01/7z2301-extra.7z"
 $script:IcoutilsName  = "icoutils-0.32.3-x86_64"
 $script:IcoutilsDir   = Join-Path $ProjectsDir $script:IcoutilsName
-$script:IcoutilsUrl   = "https://sourceforge.net/projects/unix-utils/files/icoutils/icoutils-0.32.3-x86_64.zip/download"
+$script:IcoutilsUrl   = "https://downloads.sourceforge.net/project/unix-utils/icoutils/icoutils-0.32.3-x86_64.zip"
 
 # Visual Studio 2026 winget package identifiers and workload / component identifiers.
 # The list of product ids is available at https://learn.microsoft.com/en-us/visualstudio/install/workload-and-component-ids?view=visualstudio
@@ -177,6 +177,28 @@ function Get-File {
 
     if (-not (Test-Path $Destination)) {
         throw "Download did not produce the expected file '$Destination'."
+    }
+
+    # SourceForge and other mirrors occasionally answer with an HTML interstitial/error
+    # page (HTTP 200) instead of the requested binary. The bogus file is then saved with
+    # the expected name and only fails much later when executed (e.g. Windows reports
+    # "The file or directory is corrupted and unreadable"). Detect that here so the step
+    # fails immediately with an actionable message.
+    if ((Get-Item $Destination).Length -eq 0) {
+        throw "Download produced an empty file for '$Url'."
+    }
+    $stream = [System.IO.File]::OpenRead($Destination)
+    try {
+        $count = [System.Math]::Min(512, $stream.Length)
+        $buffer = New-Object byte[] $count
+        [void]$stream.Read($buffer, 0, $count)
+    } finally {
+        $stream.Dispose()
+    }
+    $prefix = [System.Text.Encoding]::ASCII.GetString($buffer)
+    if ($prefix -match '(?i)^\s*(<!doctype html|<html|<\?xml)') {
+        Remove-Item $Destination -Force -ErrorAction SilentlyContinue
+        throw "Download for '$Url' returned an HTML page instead of the expected file (likely a broken or redirecting mirror)."
     }
 }
 
