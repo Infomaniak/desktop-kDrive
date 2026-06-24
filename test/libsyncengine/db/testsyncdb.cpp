@@ -1130,12 +1130,12 @@ TestSyncDb::MigrationFileSetup TestSyncDb::setupSyncMigrationToLocalPrivateDir(c
 }
 
 namespace {
-std::unordered_set<SyncName> getDirContent(const SyncPath &dirPath) {
+SyncNameSet getDirContent(const SyncPath &dirPath) {
     using namespace std::filesystem;
     std::error_code ec;
     const auto dirIt = recursive_directory_iterator(dirPath, directory_options::skip_permission_denied, ec);
 
-    std::unordered_set<SyncName> paths;
+    SyncNameSet paths;
     for (const auto &dirEntry: dirIt) (void) paths.emplace(dirEntry.path().native().c_str());
 
     return paths;
@@ -1183,10 +1183,10 @@ void TestSyncDb::testMigrateLocalItemsToPrivateDir() {
     CPPUNIT_ASSERT(std::filesystem::exists(pathB));
     CPPUNIT_ASSERT(std::filesystem::exists(pathC));
 
-    const std::unordered_set<SyncName> expectedPrivateDirContent = {privatePrivatePath, pathA, pathB, pathC};
+    const SyncNameSet expectedPrivateDirContent = {privatePrivatePath, pathA, pathB, pathC};
     CPPUNIT_ASSERT(getDirContent(privatePath) == expectedPrivateDirContent);
 
-    std::unordered_set<SyncName> expectedSyncDirContent = {fileSetup.remainingItems.begin(), fileSetup.remainingItems.end()};
+    SyncNameSet expectedSyncDirContent = {fileSetup.remainingItems.begin(), fileSetup.remainingItems.end()};
     (void) expectedSyncDirContent.insert(expectedPrivateDirContent.cbegin(), expectedPrivateDirContent.cend());
     CPPUNIT_ASSERT(getDirContent(localTmpDir.path()) == expectedSyncDirContent);
 
