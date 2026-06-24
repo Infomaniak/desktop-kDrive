@@ -116,6 +116,7 @@ ExitInfo UploadJob::resolveUploadNeed() {
         LOGW_DEBUG(_logger, L"Changing last modified date without uploading: hash match");
         if (const ExitInfo exitInfo = applyFileDates(); !exitInfo) {
             LOGW_DEBUG(_logger, L"applyFileDates failed: " << exitInfo << L" Proceeding UploadJob normally.");
+            _shouldUpload = true;
             return exitInfo;
         }
     }
