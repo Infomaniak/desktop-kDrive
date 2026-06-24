@@ -98,7 +98,7 @@ struct GeneralPreferencesVersionSection: View {
 
             IKLabeledContent(KDriveLocalizable.aboutKDrive) {
                 InformationButton {
-                    NSApplication.shared.orderFrontStandardAboutPanel(nil)
+                    (NSApp.delegate as? AppDelegate)?.showAboutPanel()
                 }
             }
         }

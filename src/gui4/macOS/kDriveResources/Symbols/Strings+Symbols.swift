@@ -10,9 +10,9 @@ import Foundation
 // swiftlint:disable explicit_type_interface function_parameter_count identifier_name line_length
 // swiftlint:disable nesting type_body_length type_name vertical_whitespace_opening_braces
 public enum KDriveLocalizable {
-  /// loco:6989dd880a55253f3901f745
-  public static func aboutAppVersionCopyright(_ p1: Any, _ p2: Any, _ p3: Any) -> String {
-    return KDriveLocalizable.tr("Localizable", "aboutAppVersionCopyright", String(describing: p1), String(describing: p2), String(describing: p3), fallback: "Version %@.%@\n© 2019-%@ Infomaniak Network SA -")
+  /// loco:6a3b7a3cab4f843c0405ebd2
+  public static func aboutAppVersionCopyrightMac(_ p1: Any, _ p2: Any, _ p3: Any) -> String {
+    return KDriveLocalizable.tr("Localizable", "aboutAppVersionCopyrightMac", String(describing: p1), String(describing: p2), String(describing: p3), fallback: "Version %@ (build %@)\n© 2019-%@ Infomaniak Network SA")
   }
   /// loco:69a57d074f11212a7007d403
   public static let aboutButton = KDriveLocalizable.tr("Localizable", "aboutButton", fallback: "About")
