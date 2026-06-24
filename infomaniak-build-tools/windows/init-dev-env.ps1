@@ -272,7 +272,7 @@ function Get-RealPythonPath {
     # so a plain "Get-Command python" reports a command that is not actually usable.
     # Skip anything living under a WindowsApps folder and keep the first candidate
     # that reports a version.
-    foreach ($cmd in @(Get-Command python, python3 -All -ErrorAction SilentlyContinue)) {
+    foreach ($cmd in @('python', 'python3' | ForEach-Object { Get-Command $_ -All -ErrorAction SilentlyContinue })) {
         $path = $cmd.Source
         if ([string]::IsNullOrWhiteSpace($path)) { continue }
         if ($path -match '\\WindowsApps\\') { continue }
