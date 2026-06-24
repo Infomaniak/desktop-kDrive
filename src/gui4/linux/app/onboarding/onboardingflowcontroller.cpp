@@ -21,9 +21,7 @@
 #include "app/appconstants.h"
 
 #include <QDesktopServices>
-#include <QTimer>
-
-#include <chrono>
+#include <qmetaobject.h>
 
 Q_LOGGING_CATEGORY(lcOnboardingFlowController, "gui.v4.onboardingflow", QtInfoMsg)
 
@@ -128,8 +126,7 @@ void OnboardingFlowController::restart() {
 }
 
 void OnboardingFlowController::setCurrentStep(const Step step) {
-    const auto index = stepToIndex(step);
-    if (index < 0 || index >= stepCountValue) {
+    if (const auto index = stepToIndex(step); index < 0 || index >= stepCountValue) {
         qCWarning(lcOnboardingFlowController) << "Invalid onboarding step ignored:" << index;
         return;
     }
@@ -138,7 +135,10 @@ void OnboardingFlowController::setCurrentStep(const Step step) {
         return;
     }
 
-    qCInfo(lcOnboardingFlowController) << "Onboarding step changed | from:" << currentStepIndex() << "/ to:" << index;
+    const auto stepMetaEnum = QMetaEnum::fromType<Step>();
+    qCInfo(lcOnboardingFlowController) << "Onboarding step changed |" << stepMetaEnum.valueToKey(_currentStep) << "=>"
+                                       << stepMetaEnum.valueToKey(step);
+
     _currentStep = step;
     emit currentStepChanged();
 }
