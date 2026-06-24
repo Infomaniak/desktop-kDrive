@@ -47,7 +47,7 @@ To add more languages in the future, edit the script to append the new language 
     Language list : https://developers.deepl.com/docs/api-reference/languages
 
 To add more systems, edit the script to append the new system to the list.
-    System specific Release Notes entries must use the data-os HTML attribute matching the system name.
+    System specific Release Notes entries must use the data-os HTML attribute matching the system name (win, linux, macos).
     eg: <li data-os="win">Windows specific fix.</li>
     """,
     formatter_class=argparse.RawTextHelpFormatter)
