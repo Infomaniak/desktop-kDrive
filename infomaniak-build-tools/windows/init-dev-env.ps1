@@ -83,13 +83,15 @@ $script:IcoutilsDir   = Join-Path $ProjectsDir $script:IcoutilsName
 $script:IcoutilsUrl   = "https://sourceforge.net/projects/unix-utils/files/icoutils/icoutils-0.32.3-x86_64.zip/download"
 
 # Visual Studio 2026 winget package identifiers and workload / component identifiers.
-$script:VsPackageFull       = "Microsoft.VisualStudio.2026.Community"
-$script:VsPackageBuildTools = "Microsoft.VisualStudio.2026.BuildTools"
+# The list of product ids is available at https://learn.microsoft.com/en-us/visualstudio/install/workload-and-component-ids?view=visualstudio
+# The list of workloads and components is available at https://learn.microsoft.com/en-us/visualstudio/install/workload-component-id-vs-community?view=visualstudio&viewFallbackFrom=vs-2026&preserve-view=true
+$script:VsPackageFull       = "Microsoft.VisualStudio.Product.Community"
+$script:VsPackageBuildTools = "Microsoft.VisualStudio.Product.BuildTools"
 # "Desktop development with C++" workload (IDE vs Build Tools flavour).
 $script:VsWorkloadNativeIde   = "Microsoft.VisualStudio.Workload.NativeDesktop"
 $script:VsWorkloadNativeTools = "Microsoft.VisualStudio.Workload.VCTools"
 # "WinUI application development" workload.
-$script:VsWorkloadWinUI = "Microsoft.VisualStudio.Workload.WinUI"
+$script:VsWorkloadWinUI = "Microsoft.VisualStudio.Workload.Universal"
 # Individual components: Git for Windows and Windows 11 SDK (10.0.28000.x).
 $script:VsComponentGit    = "Microsoft.VisualStudio.Component.Git"
 $script:VsComponentWinSdk = "Microsoft.VisualStudio.Component.Windows11SDK.28000"
