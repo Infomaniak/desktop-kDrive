@@ -69,7 +69,7 @@ void CachePopulator::loadAccounts() {
 }
 
 void CachePopulator::loadDrives() {
-    _commService.requestDriveInfoList([this](const ExitInfo &exitInfo, const std::vector<DriveInfo> &list) {
+    _commService.requestDriveList([this](const ExitInfo &exitInfo, const std::vector<Drive> &list) {
         if (!exitInfo) {
             exitOnPopulationFailure("drives", exitInfo);
         }
