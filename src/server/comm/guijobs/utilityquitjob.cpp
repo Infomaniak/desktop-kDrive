@@ -21,14 +21,11 @@
 #include "appserver.h"
 #include "libcommon/comm.h"
 
-#include <QCoreApplication>
-#include <QTimer>
-
 namespace KDC {
 
 namespace {
 constexpr int32_t quitDelayMs = 1000;
-} // namespace
+}
 
 UtilityQuitJob::UtilityQuitJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
                                std::shared_ptr<AbstractCommChannel> channel) :
@@ -37,8 +34,8 @@ UtilityQuitJob::UtilityQuitJob(std::shared_ptr<CommManager> commManager, int req
 }
 
 ExitInfo UtilityQuitJob::process() {
-    // Let this worker finish serializing and sending its response before cleanup clears the GUI job manager.
-    QTimer::singleShot(quitDelayMs, QCoreApplication::instance(), [] { AppServer::quit(); });
+    // Let this worker serialize and send its response before AppServer cleanup clears the GUI job manager.
+    AppServer::quitLater(quitDelayMs);
 
     return ExitCode::Ok;
 }

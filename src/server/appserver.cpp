@@ -91,6 +91,7 @@
 #include <windows.h>
 #endif
 
+#include <QCoreApplication>
 #include <QDir>
 #include <QFileInfo>
 #include <QFileOpenEvent>
@@ -103,7 +104,6 @@
 #include <comm/guijobs/excltemplsetlistjob.h>
 #include <comm/guijobs/excltemplgetlistjob.h>
 
-#define QUIT_DELAY 1000 // ms
 #define LOAD_PROGRESS_INTERVAL 1000 // ms
 #define SEND_NOTIFICATIONS_INTERVAL 15000 // ms
 #define RESTART_SYNCS_INTERVAL 15000 // ms
@@ -133,6 +133,7 @@ static const QString separatorMsg("$$$");
 
 static const QString crashMsg = SharedTools::QtSingleApplication::tr("kDrive application will close due to a fatal error.");
 
+constexpr int32_t delayedActionMs = 1000;
 
 // Helpers for displaying messages. Note that there is no console on Windows.
 #if defined(KD_WINDOWS)
@@ -471,7 +472,7 @@ void AppServer::init() {
     handleCrashRecovery(shouldQuit);
     if (shouldQuit) {
         LOG_WARN(_logger, "Crash loop detected");
-        QTimer::singleShot(0, this, &AppServer::quit);
+        quitLater();
         return;
     }
 
@@ -585,6 +586,12 @@ void AppServer::cleanup() {
 
 void AppServer::reset() {
     _updateManager.reset();
+}
+
+// Schedule the quit on the Qt application thread. Most callers only need the default zero-delay queued execution, while
+// asynchronous operations can request enough time to finish before aboutToQuit starts cleanup.
+void AppServer::quitLater(const int32_t delayMs) {
+    QTimer::singleShot(delayMs, QCoreApplication::instance(), [] { AppServer::quit(); });
 }
 
 // This task can be long and block the GUI
@@ -2334,14 +2341,14 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
         }
         case RequestNum::UTILITY_CRASH: {
             resultStream << ExitCode::Ok;
-            QTimer::singleShot(QUIT_DELAY, []() { CommonUtility::crash(); });
+            QTimer::singleShot(delayedActionMs, [] { CommonUtility::crash(); });
             break;
         }
         case RequestNum::UTILITY_QUIT: {
             if (useOldCommServer()) {
                 OldCommServer::instance()->setHasQuittedProperly(true);
             }
-            QTimer::singleShot(QUIT_DELAY, []() { quit(); });
+            quitLater(delayedActionMs);
             break;
         }
         case RequestNum::UTILITY_SEND_APP_START_TRACE: {
@@ -2645,7 +2652,7 @@ void AppServer::onClientDisconnectedReceived() {
 #endif
 
     if (quit) {
-        QTimer::singleShot(0, this, &AppServer::quit);
+        quitLater();
     }
 }
 
