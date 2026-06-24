@@ -3224,7 +3224,7 @@ bool SyncDb::updateParentNodeIdsOfRootChildren(const DriveDbId driveDbId, const 
         return false;
     }
 
-    LOG_INFO(_logger, "Successful update of parent node ids for all " << rootChildrenDbIds.size() << " root children.")
+    LOG_INFO(_logger, "Successful update of parent node ids for all " << rootChildrenDbIds.size() << " root children.");
 
 
     return true;
