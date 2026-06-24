@@ -53,6 +53,7 @@ class OnboardingLoginCoordinator : public QObject {
 
     private:
         void clearPendingLogin();
+        void handleAuthorizationCodeReady(const QString &code, const QString &codeVerifier);
         void handleLoginStateChanged();
         void loadAvailableDrivesWhenUserIsCached(UserDbId userDbId);
         void completeLoginWhenAvailableDrivesAreLoaded(UserDbId userDbId);
