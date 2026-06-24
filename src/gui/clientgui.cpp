@@ -338,7 +338,7 @@ Count ClientGui::driveErrorsCount(const DriveDbId driveDbId, bool unresolved) co
         return 0;
     }
 
-    return unresolved ? driveInfoMapIt->second.unresolvedErrorsCount() : driveInfoMapIt->second.autoresolvedErrorsCount();
+    return unresolved ? driveInfoMapIt->second.unresolvedErrorsCount() : driveInfoMapIt->second.autoResolvedErrorsCount();
 }
 
 const QString ClientGui::folderPath(const SyncDbId syncDbId, const QString &filePath) const {
@@ -990,7 +990,7 @@ void ClientGui::onRefreshErrorList() {
             }
         }
         driveInfoMapIt->second.setUnresolvedErrorsCount(unresolvedErrorsCount);
-        driveInfoMapIt->second.setAutoresolvedErrorsCount(autoResolvedErrorsCount);
+        driveInfoMapIt->second.setAutoResolvedErrorsCount(autoResolvedErrorsCount);
         emit errorAdded(driveDbId);
 
         it = _driveWithNewErrorSet.erase(it);
@@ -1208,23 +1208,23 @@ void ClientGui::onAccountRemoved(const AccountDbId accountDbId) {
     }
 }
 
-void ClientGui::onDriveAdded(const DriveInfo &driveInfo) {
-    _driveInfoMap.insert({driveInfo.dbId(), DriveInfoClient(driveInfo)});
+void ClientGui::onDriveAdded(const Drive &drive) {
+    _driveInfoMap.insert({drive.dbId(), DriveInfoClient(drive)});
 
     if (!_currentDriveDbId) {
-        _currentDriveDbId = driveInfo.dbId();
+        _currentDriveDbId = drive.dbId();
     }
 
     emit driveListRefreshed();
     emit refreshStatusNeeded();
 }
 
-void ClientGui::onDriveUpdated(const DriveInfo &driveInfo) {
-    const auto &driveInfoMapIt = _driveInfoMap.find(driveInfo.dbId());
+void ClientGui::onDriveUpdated(const Drive &drive) {
+    const auto &driveInfoMapIt = _driveInfoMap.find(drive.dbId());
     if (driveInfoMapIt != _driveInfoMap.end()) {
-        driveInfoMapIt->second.setAccountDbId(driveInfo.accountDbId());
-        driveInfoMapIt->second.setName(driveInfo.name());
-        driveInfoMapIt->second.setColor(driveInfo.color());
+        driveInfoMapIt->second.setAccountDbId(drive.accountDbId());
+        driveInfoMapIt->second.setName(drive.name());
+        driveInfoMapIt->second.setColor(drive.color());
 
         emit driveListRefreshed();
     }
@@ -1249,7 +1249,7 @@ void ClientGui::onRemoveDrive(const DriveDbId driveDbId) {
     CustomMessageBox msgBox(QMessageBox::Question,
                             tr("Do you really want to remove the synchronizations of the account <i>%1</i> ?<br>"
                                "<b>Note:</b> This will <b>not</b> delete any files.")
-                                    .arg(driveInfoMapIt->second.name()),
+                                    .arg(QString::fromStdString(driveInfoMapIt->second.name())),
                             QMessageBox::NoButton);
     msgBox.addButton(tr("REMOVE ALL SYNCHRONIZATIONS"), QMessageBox::Yes);
     msgBox.addButton(tr("CANCEL"), QMessageBox::No);
@@ -1414,7 +1414,7 @@ void ClientGui::onTooManyDeletesNotificationSoftLimit(const SyncDbId syncDbId) {
     }
 
     const auto localPath = syncInfoMapIt->second.localPath();
-    QString trashUrl = QString(APPLICATION_TRASH_URL_QSTRING).arg(driveInfoMapIt->second.id());
+    QString trashUrl = QString(APPLICATION_TRASH_URL_QSTRING).arg(driveInfoMapIt->second.driveId());
     const auto msgBox = new CustomMessageBox(
             QMessageBox::Information,
             tr(R"(Several files have been deleted from your local sync folder <a style="%1" href="file:///%2">%2</a>. Deleted files can be found in kDrive's <a style="%1" href="%3">trash</a>.)")
@@ -1613,17 +1613,17 @@ bool ClientGui::loadInfoMaps() {
     }
 
     // Load drive list
-    QList<DriveInfo> driveInfoList;
-    exitCode = GuiRequests::getDriveInfoList(driveInfoList);
+    QList<Drive> driveList;
+    exitCode = GuiRequests::getDriveInfoList(driveList);
     if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::getDriveInfoList";
         return false;
     }
 
-    for (const DriveInfo &driveInfo: driveInfoList) {
-        _driveInfoMap.insert({driveInfo.dbId(), DriveInfoClient(driveInfo)});
+    for (const Drive &drive: driveList) {
+        _driveInfoMap.insert({drive.dbId(), DriveInfoClient(drive)});
         if (!_currentDriveDbId) {
-            setCurrentDriveDbId(driveInfo.dbId());
+            setCurrentDriveDbId(drive.dbId());
         }
     }
 

@@ -80,7 +80,7 @@ void FolderTreeItemWidget::setSyncDbId(const SyncDbId syncDbId) {
         return;
     }
 
-    _driveId = driveInfoMapIt->second.id();
+    _driveId = driveInfoMapIt->second.driveId();
     _nodeId = syncInfoMapIt->second.targetNodeId();
 
     setDriveDbId(syncInfoMapIt->second.driveDbId());
@@ -100,8 +100,8 @@ void FolderTreeItemWidget::setDriveDbId(const DriveDbId driveDbId) {
         return;
     }
 
-    _driveName = driveInfoMapIt->second.name();
-    _driveColor = driveInfoMapIt->second.color();
+    _driveName = QString::fromStdString(driveInfoMapIt->second.name());
+    _driveColor = QColor(QString::fromStdString(driveInfoMapIt->second.color()));
     _userDbId = accountInfoMapIt->second.userDbId();
 }
 
@@ -119,7 +119,7 @@ void FolderTreeItemWidget::setDriveDbIdAndFolderNodeId(const DriveDbId driveDbId
         return;
     }
 
-    _driveId = driveInfoMapIt->second.id();
+    _driveId = driveInfoMapIt->second.driveId();
     _nodeId = serverFolderNodeId;
 
     setDriveDbId(driveDbId);

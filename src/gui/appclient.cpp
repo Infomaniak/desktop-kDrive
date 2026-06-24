@@ -270,17 +270,17 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::DRIVE_ADDED: {
-            DriveInfo driveInfo;
-            paramsStream >> driveInfo;
+            Drive drive;
+            paramsStream >> drive;
 
-            emit driveAdded(driveInfo);
+            emit driveAdded(drive);
             break;
         }
         case SignalNum::DRIVE_UPDATED: {
-            DriveInfo driveInfo;
-            paramsStream >> driveInfo;
+            Drive drive;
+            paramsStream >> drive;
 
-            emit driveUpdated(driveInfo);
+            emit driveUpdated(drive);
             break;
         }
         case SignalNum::DRIVE_QUOTAUPDATED_LEGACY: {

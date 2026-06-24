@@ -62,7 +62,6 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/utility/logiffail.h"
 #include "libcommon/comm.h"
-#include "libcommon/info/driveinfo.h"
 #include "libcommon/info/driveavailableinfo.h"
 #include "libcommon/info/userinfo.h"
 #include "libcommon/info/exclusiontemplateinfo.h"
@@ -1304,8 +1303,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::DRIVE_INFOLIST: {
-            QList<DriveInfo> list;
-            ExitCode exitCode = ServerRequests::getDriveInfoList(list);
+            QList<Drive> list;
+            ExitCode exitCode = ServerRequests::getDriveList(list);
             if (exitCode != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in Requests::getDriveInfoList: code=" << exitCode);
                 addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
@@ -1316,17 +1315,17 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::DRIVE_UPDATE: {
-            DriveInfo driveInfo;
+            Drive drive;
             QDataStream paramsStream(params);
-            paramsStream >> driveInfo;
+            paramsStream >> drive;
 
-            ExitCode exitCode = ServerRequests::updateDrive(driveInfo);
-            if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::updateDrive: code=" << exitCode);
-                addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
+            const auto exitInfo = ServerRequests::updateDrive(drive);
+            if (!exitInfo) {
+                LOG_WARN(_logger, "Error in Requests::updateDrive: " << exitInfo);
+                addError(Error(ERR_ID, exitInfo));
             }
 
-            resultStream << toInt(exitCode);
+            resultStream << toInt(exitInfo.code());
             break;
         }
         case RequestNum::DRIVE_DELETE: {
@@ -1536,10 +1535,10 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             SyncInfo syncInfo;
             if (num == RequestNum::SYNC_ADD) {
                 AccountInfo accountInfo;
-                DriveInfo driveInfo;
+                Drive drive;
 
                 exitCode = ServerRequests::addSync(userDbId, accountId, driveId, localFolderPath, serverFolderPath,
-                                                   serverFolderNodeId, liteSync, accountInfo, driveInfo, syncInfo);
+                                                   serverFolderNodeId, liteSync, accountInfo, drive, syncInfo);
 
                 if (exitCode != ExitCode::Ok) {
                     LOGW_WARN(_logger, L"Error in Requests::addSync - userDbId="
@@ -1556,8 +1555,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     sendAccountAdded(accountInfo);
                 }
 
-                if (driveInfo.dbId() != 0) {
-                    sendDriveAdded(driveInfo);
+                if (drive.dbId() != 0) {
+                    sendDriveAdded(drive);
                 }
             } else {
                 exitCode = ServerRequests::addSync(driveDbId, localFolderPath, serverFolderPath, serverFolderNodeId, liteSync,
@@ -3014,7 +3013,7 @@ ExitInfo AppServer::updateDrive(const User &user, const Account &account, Drive 
         return exitInfo;
     }
 
-    if (drive.accessDenied() || drive.maintenanceInfo()._maintenance) {
+    if (drive.accessDenied() || drive.maintenanceInfo().inMaintenance()) {
         if (const auto exitInfo = handleDriveAccessDenied(drive); !exitInfo) return exitInfo;
     }
 
@@ -3038,9 +3037,7 @@ ExitInfo AppServer::updateDrive(const User &user, const Account &account, Drive 
         return exitInfo;
 
     if (driveUpdated || quotaUpdated) {
-        DriveInfo driveInfo;
-        ServerRequests::driveToDriveInfo(drive, driveInfo);
-        sendDriveUpdated(driveInfo);
+        sendDriveUpdated(drive);
     }
     return ExitCode::Ok;
 }
@@ -3058,12 +3055,12 @@ ExitInfo AppServer::handleDriveAccessDenied(const Drive &drive) {
         // Pause sync
         sync.setPaused(true);
         ExitCause exitCause = ExitCause::DriveAccessError;
-        if (drive.maintenanceInfo()._maintenance) {
-            if (drive.maintenanceInfo()._notRenew)
+        if (drive.maintenanceInfo().inMaintenance()) {
+            if (drive.maintenanceInfo().notRenew())
                 exitCause = ExitCause::DriveNotRenew;
-            else if (drive.maintenanceInfo()._asleep)
+            else if (drive.maintenanceInfo().asleep())
                 exitCause = ExitCause::DriveAsleep;
-            else if (drive.maintenanceInfo()._wakingUp)
+            else if (drive.maintenanceInfo().wakingUp())
                 exitCause = ExitCause::DriveWakingUp;
             else
                 exitCause = ExitCause::DriveMaintenance;
@@ -4548,9 +4545,7 @@ void AppServer::manageDriveAccessError(Drive &drive) const {
         return;
     }
 
-    DriveInfo driveInfo;
-    ServerRequests::driveToDriveInfo(drive, driveInfo);
-    sendDriveUpdated(driveInfo);
+    sendDriveUpdated(drive);
 }
 
 void AppServer::manageInvalidTokenError(User &user) const {
@@ -4755,33 +4750,33 @@ void AppServer::sendAccountRemoved(const AccountDbId accountDbId) const {
     }
 }
 
-void AppServer::sendDriveAdded(const DriveInfo &driveInfo) const {
+void AppServer::sendDriveAdded(const Drive &drive) const {
     if (useOldCommServer()) {
         int id = 0;
 
         QByteArray params;
         QDataStream paramsStream(&params, QIODevice::WriteOnly);
-        paramsStream << driveInfo;
+        paramsStream << drive;
 
         (void) OldCommServer::instance()->sendSignal(SignalNum::DRIVE_ADDED, params, id);
     }
     if (useCommManager()) {
-        _commManager->sendGuiSignal(std::make_shared<SignalDriveAddedJob>(driveInfo));
+        _commManager->sendGuiSignal(std::make_shared<SignalDriveAddedJob>(drive));
     }
 }
 
-void AppServer::sendDriveUpdated(const DriveInfo &driveInfo) const {
+void AppServer::sendDriveUpdated(const Drive &drive) const {
     if (useOldCommServer()) {
         int id = 0;
 
         QByteArray params;
         QDataStream paramsStream(&params, QIODevice::WriteOnly);
-        paramsStream << driveInfo;
+        paramsStream << drive;
 
         (void) OldCommServer::instance()->sendSignal(SignalNum::DRIVE_UPDATED, params, id);
     }
     if (useCommManager()) {
-        _commManager->sendGuiSignal(std::make_shared<SignalDriveUpdatedJob>(driveInfo));
+        _commManager->sendGuiSignal(std::make_shared<SignalDriveUpdatedJob>(drive));
     }
 }
 

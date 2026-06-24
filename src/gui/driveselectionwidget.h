@@ -19,7 +19,6 @@
 #pragma once
 
 #include "libcommon/theme/theme.h"
-#include "libcommon/info/driveinfo.h"
 
 #include <QFont>
 #include <QColor>

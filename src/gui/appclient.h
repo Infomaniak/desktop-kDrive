@@ -65,8 +65,8 @@ class AppClient : public SharedTools::QtSingleApplication {
         void accountUpdated(const AccountInfo &accountInfo);
         void accountRemoved(AccountDbId accountDbId);
         // Drive signals
-        void driveAdded(const DriveInfo &driveInfo);
-        void driveUpdated(const DriveInfo &driveInfo);
+        void driveAdded(const Drive &drive);
+        void driveUpdated(const Drive &drive);
         void driveQuotaUpdated(DriveDbId driveDbId, qint64 total, qint64 used);
         void driveRemoved(DriveDbId driveDbId);
         void driveDeletionFailed(DriveDbId driveDbId);

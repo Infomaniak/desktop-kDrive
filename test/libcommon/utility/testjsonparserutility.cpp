@@ -18,7 +18,7 @@
 
 #include "testjsonparserutility.h"
 
-#include "../../../src/libcommonserver/utility/jsonparserutility.h"
+#include "libcommonserver/utility/jsonparserutility.h"
 #include "libsyncengine/jobs/network/networkjobsparams.h"
 
 #include <Poco/JSON/Parser.h>

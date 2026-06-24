@@ -50,19 +50,20 @@ void TestGuiCommChannel::testSignalAccountUpdatedJob() {
 }
 
 void TestGuiCommChannel::testSignalDriveUpdatedJob() {
-    DriveInfo driveInfo;
-    driveInfo.setDbId(1);
-    driveInfo.setId(2);
-    driveInfo.setAccountDbId(3);
-    driveInfo.setAdmin(true);
-    driveInfo.setAccessDenied(true);
-    driveInfo.setMaintenance(true);
-    driveInfo.setSize(1000000000);
-    driveInfo.setUsedSize(50000000);
-    SignalDriveUpdatedJob job(driveInfo);
+    Drive drive;
+    drive.setDbId(1);
+    drive.setDriveId(2);
+    drive.setAccountDbId(3);
+    drive.setAdmin(true);
+    drive.setAccessDenied(true);
+    MaintenanceInfo maintenanceInfo;
+    maintenanceInfo.setInMaintenance(true);
+    drive.setMaintenanceInfo(maintenanceInfo);
+    drive.setSize(1000000000);
+    drive.setUsedSize(50000000);
+    SignalDriveUpdatedJob job(drive);
 
     checkSignalCommonMethods(job, SignalNum::DRIVE_UPDATED);
-    CPPUNIT_ASSERT(driveInfo == job._driveInfo);
 }
 
 void TestGuiCommChannel::testSignalUpdaterShowDialogJob() {

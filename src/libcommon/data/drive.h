@@ -18,30 +18,23 @@
 
 #pragma once
 
+#include "info/maintenanceinfo.h"
 #include "libcommon/info/packinfo.h"
-#include "libparms/parmslib.h"
+
 #include "utility/types.h"
 
+#include <QColor>
 #include <string>
 
 #include <log4cplus/logger.h>
 
 namespace KDC {
 
-
-class PARMS_EXPORT Drive {
+class Drive {
     public:
-        struct MaintenanceInfo {
-                bool _maintenance{false};
-                bool _notRenew{false};
-                bool _asleep{false};
-                bool _wakingUp{false};
-                int64_t _maintenanceFrom{0};
-        };
-
-        Drive();
-        Drive(DriveDbId dbId, DriveId driveId, AccountDbId accountDbId, const std::string &name = std::string(),
-              int64_t size = {}, const std::string &color = std::string(), bool notifications = true, bool admin = true);
+        Drive() = default;
+        Drive(DriveDbId dbId, DriveId driveId, AccountDbId accountDbId, const std::string &name = std::string(), int64_t size = 0,
+              const std::string &color = std::string(), bool notifications = true, bool admin = true);
 
         void setDbId(const DriveDbId dbId) { _dbId = dbId; }
         [[nodiscard]] DriveDbId dbId() const { return _dbId; }
@@ -62,18 +55,78 @@ class PARMS_EXPORT Drive {
 
         [[nodiscard]] const MaintenanceInfo &maintenanceInfo() const { return _maintenanceInfo; }
         void setMaintenanceInfo(const MaintenanceInfo &info) { _maintenanceInfo = info; }
+
         [[nodiscard]] bool locked() const { return _locked; }
         void setLocked(const bool newLocked) { _locked = newLocked; }
         [[nodiscard]] int64_t usedSize() const { return _usedSize; }
-        void setUsedSize(int64_t newUsedSize) { _usedSize = newUsedSize; }
+        void setUsedSize(const int64_t newUsedSize) { _usedSize = newUsedSize; }
         [[nodiscard]] bool accessDenied() const { return _accessDenied; }
         void setAccessDenied(const bool accessDenied) { _accessDenied = accessDenied; }
 
         [[nodiscard]] const PackInfo &packInfo() const { return _packInfo; }
         void setPackInfo(const PackInfo &packInfo) { _packInfo = packInfo; }
 
+        void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
+        void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
+
+        /// TODO : to be removed once we moved to the new GUI ///
+        friend void operator>>(QDataStream &in, Drive &drive) {
+            qint64 dbId{0};
+            qint64 id{0};
+            qint64 accountDbId{0};
+            QString name;
+            QColor color;
+            bool notifications{false};
+            bool admin{false};
+            bool maintenance{false};
+            bool locked{false};
+            bool accessDenied{false};
+
+            in >> dbId >> id >> accountDbId >> name >> color >> notifications >> admin >> maintenance >> locked >> accessDenied;
+
+            drive.setDbId(static_cast<DriveDbId>(dbId));
+            drive.setDriveId(static_cast<DriveId>(id));
+            drive.setAccountDbId(static_cast<AccountDbId>(accountDbId));
+            drive.setName(name.toStdString());
+            drive.setColor(color.name().toStdString());
+            drive.setNotifications(notifications);
+            drive.setAdmin(admin);
+            MaintenanceInfo maintenanceInfo;
+            maintenanceInfo.setInMaintenance(maintenance);
+            drive.setMaintenanceInfo(maintenanceInfo);
+            drive.setLocked(locked);
+            drive.setAccessDenied(accessDenied);
+        }
+        friend QDataStream &operator<<(QDataStream &out, const Drive &drive) {
+            out << static_cast<qint64>(drive.dbId()) << static_cast<qint64>(drive.driveId())
+                << static_cast<qint64>(drive.accountDbId()) << QString::fromStdString(drive.name())
+                << QColor(QString::fromStdString(drive.color())) << drive.notifications() << drive.admin()
+                << drive.maintenanceInfo().inMaintenance() << drive.locked() << drive.accessDenied();
+            return out;
+        }
+
+        friend void operator>>(QDataStream &in, QList<Drive> &list) {
+            qint64 count = 0;
+            in >> count;
+            for (qint64 i = 0; i < count; i++) {
+                Drive info;
+                in >> info;
+                list.push_back(info);
+            }
+        }
+        friend QDataStream &operator<<(QDataStream &out, const QList<Drive> &list) {
+            const auto count = static_cast<qint64>(list.size());
+            out << count;
+            for (qint64 i = 0; i < count; i++) {
+                out << list[static_cast<qsizetype>(i)];
+            }
+            return out;
+        }
+        /////////////////////////////////////////////////////////
+
+        bool operator==(const Drive &other) const = default;
+
     private:
-        log4cplus::Logger _logger;
         DriveDbId _dbId{0};
         DriveId _driveId{0};
         AccountDbId _accountDbId{0};
