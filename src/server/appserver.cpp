@@ -57,12 +57,12 @@
 #include "server/comm/guijobs/signalutilityloguploadstatejob.h"
 #include "server/comm/guijobs/signalutilityquitjob.h"
 
+#include "libcommon/data/driveavailable.h"
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/utility/logiffail.h"
 #include "libcommon/comm.h"
-#include "libcommon/info/driveavailableinfo.h"
 #include "libcommon/info/userinfo.h"
 #include "libcommon/info/exclusiontemplateinfo.h"
 #include "libcommon/log/sentry/handler.h"
@@ -1286,7 +1286,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             const auto userDbId = static_cast<UserDbId>(tmpUserDbId);
 
-            QList<DriveAvailableInfo> list;
+            QList<DriveAvailable> list;
             const auto exitInfo = ServerRequests::getUserAvailableDrives(userDbId, list);
             if (!exitInfo) {
                 LOG_WARN(_logger, "Error in Requests::getUserAvailableDrives");

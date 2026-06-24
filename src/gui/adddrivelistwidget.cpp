@@ -51,7 +51,7 @@ AddDriveListWidget::AddDriveListWidget(std::shared_ptr<ClientGui> gui, QWidget *
     _gui(gui),
     _userDbId(0),
     _withoutDrives(false),
-    _driveInfo(DriveAvailableInfo()),
+    _driveInfo(DriveAvailable()),
     _addUserClicked(false),
     _logoTextIconLabel(nullptr),
     _backButton(nullptr),
@@ -71,7 +71,7 @@ void AddDriveListWidget::setDrivesData() {
     _listWidget->clear();
 
     ExitCode exitCode;
-    QList<DriveAvailableInfo> driveInfoList;
+    QList<DriveAvailable> driveInfoList;
     exitCode = GuiRequests::getUserAvailableDrives(_userDbId, driveInfoList);
     if (exitCode != ExitCode::Ok) {
         qCWarning(lcAddDriveListWidget()) << "Error in Requests::getUserAvailableDrives";

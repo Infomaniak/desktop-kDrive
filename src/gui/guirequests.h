@@ -24,7 +24,7 @@
 #include "libcommon/info/userinfo.h"
 #include "libcommon/info/accountinfo.h"
 #include "libcommon/info/nodeinfo.h"
-#include "libcommon/info/driveavailableinfo.h"
+#include "libcommon/data/driveavailable.h"
 #include "libcommon/info/syncinfo.h"
 #include "libcommon/info/errorinfo.h"
 #include "libcommon/info/parametersinfo.h"
@@ -80,7 +80,7 @@ struct GuiRequests {
         // !!! Use COMM_AVERAGE_TIMEOUT !!!
         static ExitCode requestToken(const QString &code, const QString &codeVerifier, UserDbId &userDbId, QString &error,
                                      QString &errorDescr);
-        static ExitCode getUserAvailableDrives(UserDbId userDbId, QList<DriveAvailableInfo> &list);
+        static ExitCode getUserAvailableDrives(UserDbId userDbId, QList<DriveAvailable> &list);
         static ExitCode addSync(UserDbId userDbId, AccountId accountId, DriveId driveId, const QString &localFolderPath,
                                 const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync,
                                 const QSet<QString> &blackList, const QSet<QString> &whiteList, SyncDbId &syncDbId);

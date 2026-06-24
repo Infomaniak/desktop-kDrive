@@ -611,16 +611,16 @@ ExitInfo ServerRequests::getNodeInfo(const UserDbId userDbId, const DriveId driv
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::getUserAvailableDrives(const UserDbId userDbId, QList<DriveAvailableInfo> &list) {
-    std::vector<DriveAvailableInfo> availableDriveInfoList;
-    if (const auto exitInfo = getUserAvailableDrives(userDbId, availableDriveInfoList); !exitInfo) return exitInfo;
-    for (const auto &driveInfo: availableDriveInfoList) {
+ExitInfo ServerRequests::getUserAvailableDrives(const UserDbId userDbId, QList<DriveAvailable> &list) {
+    std::vector<DriveAvailable> availableDriveList;
+    if (const auto exitInfo = getUserAvailableDrives(userDbId, availableDriveList); !exitInfo) return exitInfo;
+    for (const auto &driveInfo: availableDriveList) {
         list.push_back(driveInfo);
     }
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::getUserAvailableDrives(const UserDbId userDbId, std::vector<DriveAvailableInfo> &list) {
+ExitInfo ServerRequests::getUserAvailableDrives(const UserDbId userDbId, std::vector<DriveAvailable> &list) {
     std::shared_ptr<GetDrivesListJob> job = nullptr;
     try {
         job = std::make_shared<GetDrivesListJob>(userDbId);

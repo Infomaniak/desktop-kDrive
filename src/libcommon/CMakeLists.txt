@@ -31,9 +31,9 @@ set(libcommon_SRCS
     utility/urlhelper.h utility/urlhelper.cpp
     utility/timerutility.h
     data/drive.h data/drive.cpp
+    data/driveavailable.h data/driveavailable.cpp
     info/userinfo.h info/userinfo.cpp
     info/accountinfo.h info/accountinfo.cpp
-    info/driveavailableinfo.h info/driveavailableinfo.cpp
     info/syncinfo.h info/syncinfo.cpp
     info/nodeinfo.h info/nodeinfo.cpp
     info/nodeconflictinfo.h info/nodeconflictinfo.cpp
