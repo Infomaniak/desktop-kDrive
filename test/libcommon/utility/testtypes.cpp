@@ -72,6 +72,7 @@ void TestTypes::testStreamConversion() {
     }
     CPPUNIT_ASSERT(previousLine.find("Test log of enumClass: Unknown(0)") != std::string::npos);
 }
+
 void TestTypes::testExitInfo() {
     ExitInfo ei;
     ExitCode ec = ei;
@@ -183,7 +184,8 @@ void TestTypes::testExitInfo() {
     const int32_t lineNumber = __LINE__ + 1;
     ExitInfo exitInfo(ExitCode::DataError, ExitCause::NotFound);
 
-    std::string expectedString = "ExitInfo{DataError-NotFound from (testtypes.cpp:" + std::to_string(lineNumber) + "[KDC::TestTypes::testExitInfo])}";
+    std::string expectedString =
+            "ExitInfo{DataError-NotFound from (testtypes.cpp:" + std::to_string(lineNumber) + "[KDC::TestTypes::testExitInfo])}";
     std::string expectedString2 = "ExitInfo{DataError-NotFound from (testtypes.cpp:" + std::to_string(lineNumber) +
                                   "[testExitInfo])}"; // Some compilers may not include the namespace in the function name, so we
                                                       // allow for that possibility as well.

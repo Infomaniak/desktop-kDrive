@@ -962,10 +962,8 @@ std::string toString(const std::source_location &loc) {
 
     // Remove the return type / calling convention prefix (if any) without breaking
     // names that contain spaces (e.g. "operator bool").
-    if (const auto nsPos = func.find("::"); nsPos != std::string_view::npos) {
-        if (const auto pos = func.rfind(' ', nsPos); pos != std::string_view::npos) {
-            func.remove_prefix(pos + 1);
-        }
+    if (const auto nsPos = func.rfind("::"); nsPos != std::string_view::npos) {
+        func = func.substr(nsPos + 2);
     } else if (const auto pos = func.find_last_of(' '); pos != std::string_view::npos) {
         func.remove_prefix(pos + 1);
     }
