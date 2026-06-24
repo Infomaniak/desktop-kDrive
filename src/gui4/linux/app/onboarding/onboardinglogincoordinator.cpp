@@ -89,7 +89,6 @@ void OnboardingLoginCoordinator::handleLoginStateChanged() {
         case WaitingForWebAuthentication:
             return;
         case LoadingUser:
-        case LoginSucceeded:
         case LoginError:
             emit windowActivationRequested();
             return;
