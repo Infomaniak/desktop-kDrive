@@ -1213,7 +1213,7 @@ bool UpdateTreeWorker::mergingTempNodeToRealNode(std::shared_ptr<Node> tmpNode, 
 
     // temp node removed from children list
     std::shared_ptr<Node> parentTmpNode = tmpNode->parentNode();
-    parentTmpNode->deleteChild(tmpNode);
+    (void) parentTmpNode->deleteChild(tmpNode);
 
     // Real node added as child of parent node
     if (!realNode->parentNode()->insertChild(realNode)) {
@@ -1444,12 +1444,12 @@ void UpdateTreeWorker::tryToMergeTmpNode(std::shared_ptr<Node> tmpNode, bool &me
         if (brotherNode == tmpNode || brotherNode->isTmp() || brotherNode->hasChangeEvent(OperationType::Delete)) continue;
         if (brotherNode->name() == tmpNode->name()) {
             // Move tmpNode children to its brother
-            for (auto [_, childNode]: tmpNode->children()) {
+            for (auto [_2, childNode]: tmpNode->children()) {
                 (void) brotherNode->insertChild(childNode);
-                childNode->setParentNode(brotherNode);
+                (void) childNode->setParentNode(brotherNode);
             }
             tmpNode->children().clear();
-            tmpNode->parentNode()->deleteChild(tmpNode);
+            (void) tmpNode->parentNode()->deleteChild(tmpNode);
             merged = true;
             break;
         }
