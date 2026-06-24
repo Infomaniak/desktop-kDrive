@@ -18,10 +18,10 @@
 
 #pragma once
 
+#include "libcommon/data/drive.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/info/accountinfo.h"
 #include "libcommon/info/driveavailableinfo.h"
-#include "libcommon/info/driveinfo.h"
 #include "libcommon/info/errorinfo.h"
 #include "libcommon/info/syncinfo.h"
 #include "libcommon/info/userinfo.h"
@@ -64,7 +64,7 @@ class UserDisplayInfo : public UserInfo {
 struct SyncContext {
         UserDisplayInfo userDisplayInfo;
         AccountInfo accountInfo;
-        DriveInfo driveInfo;
+        Drive drive;
         SyncInfo syncInfo;
         std::vector<ErrorInfo> errorInfoList;
         std::optional<ErrorInfo> latestErrorInfo;
@@ -75,7 +75,7 @@ struct SyncContext {
 struct DriveContext {
         UserDisplayInfo userDisplayInfo;
         AccountInfo accountInfo;
-        DriveInfo driveInfo;
+        Drive drive;
         std::vector<SyncInfo> syncInfos;
 
         friend bool operator==(const DriveContext &lhs, const DriveContext &rhs) = default;
@@ -86,7 +86,7 @@ struct AvailableDriveContext {
         std::optional<AccountInfo> accountInfo;
         DriveAvailableInfo availableDriveInfo;
         bool alreadyConfigured{false};
-        std::optional<DriveInfo> configuredDriveInfo;
+        std::optional<Drive> configuredDrive;
 
         friend bool operator==(const AvailableDriveContext &lhs, const AvailableDriveContext &rhs) = default;
 };
