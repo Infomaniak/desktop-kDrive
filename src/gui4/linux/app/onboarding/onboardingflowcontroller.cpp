@@ -21,7 +21,7 @@
 #include "app/appconstants.h"
 
 #include <QDesktopServices>
-#include <qmetaobject.h>
+#include <QMetaEnum>
 
 Q_LOGGING_CATEGORY(lcOnboardingFlowController, "gui.v4.onboardingflow", QtInfoMsg)
 
@@ -38,14 +38,6 @@ constexpr std::chrono::milliseconds loginSuccessDisplayDuration{1200};
 
 OnboardingFlowController::OnboardingFlowController(QObject *const parent) :
     QObject(parent) {}
-
-qint32 OnboardingFlowController::currentStepIndex() const {
-    return stepToIndex(_currentStep);
-}
-
-qint32 OnboardingFlowController::stepCount() const {
-    return stepCountValue;
-}
 
 bool OnboardingFlowController::loginInProgress() const {
     return _loginState == WaitingForWebAuthentication || _loginState == LoadingUser || _loginState == LoginSucceeded;
