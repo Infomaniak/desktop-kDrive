@@ -88,18 +88,18 @@ void AppCache::replaceAccounts(const std::vector<AccountInfo> &accounts) {
     emit syncErrorsChanged();
 }
 
-void AppCache::replaceDrives(const std::vector<DriveInfo> &drives) {
+void AppCache::replaceDrives(const std::vector<Drive> &drives) {
     for (auto &accountNode: _accountsByDbId | std::views::values) {
         accountNode.driveDbIds.clear();
     }
     _drivesByDbId.clear();
-    for (const auto &info: drives) {
-        if (!_accountsByDbId.contains(info.accountDbId())) {
-            qCWarning(lcAppCache) << "Drive dropped during replace | driveDbId:" << info.dbId()
-                                  << "/ unknown accountDbId:" << info.accountDbId();
+    for (const auto &drive: drives) {
+        if (!_accountsByDbId.contains(drive.accountDbId())) {
+            qCWarning(lcAppCache) << "Drive dropped during replace | driveDbId:" << drive.dbId()
+                                  << "/ unknown accountDbId:" << drive.accountDbId();
             continue;
         }
-        _drivesByDbId[info.dbId()] = DriveNode{info, info.accountDbId(), {}};
+        _drivesByDbId[drive.dbId()] = DriveNode{drive, drive.accountDbId(), {}};
     }
     pruneConfiguredGraph();
     emit drivesChanged();
@@ -236,23 +236,23 @@ void AppCache::removeAccount(const AccountDbId accountDbId) {
     emit syncErrorsChanged();
 }
 
-void AppCache::upsertDrive(const DriveInfo &info) {
-    if (!_accountsByDbId.contains(info.accountDbId())) {
-        qCWarning(lcAppCache) << "Drive upsert dropped | driveDbId:" << info.dbId()
-                              << "/ unknown accountDbId:" << info.accountDbId();
+void AppCache::upsertDrive(const Drive &drive) {
+    if (!_accountsByDbId.contains(drive.accountDbId())) {
+        qCWarning(lcAppCache) << "Drive upsert dropped | driveDbId:" << drive.dbId()
+                              << "/ unknown accountDbId:" << drive.accountDbId();
         return;
     }
 
-    if (const auto existingIt = _drivesByDbId.find(info.dbId());
-        existingIt != _drivesByDbId.end() && existingIt->second.parentAccountDbId != info.accountDbId()) {
-        unlinkDriveFromAccount(info.dbId(), existingIt->second.parentAccountDbId);
+    if (const auto existingIt = _drivesByDbId.find(drive.dbId());
+        existingIt != _drivesByDbId.end() && existingIt->second.parentAccountDbId != drive.accountDbId()) {
+        unlinkDriveFromAccount(drive.dbId(), existingIt->second.parentAccountDbId);
     }
 
-    auto &node = _drivesByDbId[info.dbId()];
-    node.info = info;
-    node.parentAccountDbId = info.accountDbId();
-    linkDriveToAccount(info.dbId(), info.accountDbId());
-    qCDebug(lcAppCache) << "Drive upserted | dbId:" << info.dbId() << "/ accountDbId:" << info.accountDbId();
+    auto &node = _drivesByDbId[drive.dbId()];
+    node.drive = drive;
+    node.parentAccountDbId = drive.accountDbId();
+    linkDriveToAccount(drive.dbId(), drive.accountDbId());
+    qCDebug(lcAppCache) << "Drive upserted | dbId:" << drive.dbId() << "/ accountDbId:" << drive.accountDbId();
     emit drivesChanged();
 }
 
