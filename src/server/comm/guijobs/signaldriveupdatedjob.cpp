@@ -31,7 +31,7 @@ SignalDriveUpdatedJob::SignalDriveUpdatedJob(const Drive &drive) :
 }
 
 ExitInfo SignalDriveUpdatedJob::serializeOutputParms() {
-    writeParamValue(outParamsDriveInfo, _drive, info2DynamicVar<Drive>);
+    writeParamValue(msgParamDriveInfo, _drive, info2DynamicVar<Drive>);
 
     return ExitCode::Ok;
 }
