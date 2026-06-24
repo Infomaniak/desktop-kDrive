@@ -97,6 +97,10 @@ $script:VsWorkloadWinUI = "Microsoft.VisualStudio.Workload.Universal"
 $script:VsComponentGit    = "Microsoft.VisualStudio.Component.Git"
 $script:VsComponentWinSdk = "Microsoft.VisualStudio.Component.Windows11SDK.28000"
 
+# Conan runs on Python: winget package id of the latest Python 3 release line.
+# Bump the minor version here when a newer Python 3 line becomes the latest.
+$script:PythonWingetId = "Python.Python.3.14"
+
 # Temporary download folder (kept under $ProjectsDir so nothing leaks outside the dev root).
 $script:DownloadDir = Join-Path $ProjectsDir "_init-downloads"
 
@@ -654,6 +658,20 @@ function Get-Steps {
             }
             # Conan builds native dependencies, so the MSVC toolchain must be on PATH.
             Enter-VsDeveloperEnvironment
+
+            # Conan runs on Python, so make sure the latest Python 3 is installed before
+            # creating the virtual environment below.
+            if (-not (Test-CommandExists 'python')) {
+                if (-not (Test-CommandExists 'winget')) {
+                    throw "winget is required to install Python. Install 'App Installer' from the Microsoft Store, then re-run."
+                }
+                Write-Info "Installing the latest Python 3 ($($script:PythonWingetId)) via winget."
+                Invoke-Native -FilePath "winget" -Arguments @(
+                    "install", "--id", $script:PythonWingetId, "-e",
+                    "--accept-package-agreements", "--accept-source-agreements"
+                )
+            }
+
             $venvDir    = Join-Path $script:RepoDir ".venv"
             $venvPython = Join-Path $venvDir "Scripts\python.exe"
             $venvConan  = Join-Path $venvDir "Scripts\conan.exe"
