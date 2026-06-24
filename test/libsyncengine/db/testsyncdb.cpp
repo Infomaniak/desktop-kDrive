@@ -1136,7 +1136,7 @@ std::unordered_set<SyncName> getDirContent(const SyncPath &dirPath) {
     const auto dirIt = recursive_directory_iterator(dirPath, directory_options::skip_permission_denied, ec);
 
     std::unordered_set<SyncName> paths;
-    for (const auto &dirEntry: dirIt) paths.insert(dirEntry.path().native().c_str());
+    for (const auto &dirEntry: dirIt) (void) paths.emplace(dirEntry.path().native().c_str());
 
     return paths;
 }
@@ -1185,6 +1185,10 @@ void TestSyncDb::testMigrateLocalItemsToPrivateDir() {
 
     const std::unordered_set<SyncName> expectedPrivateDirContent = {privatePrivatePath, pathA, pathB, pathC};
     CPPUNIT_ASSERT(getDirContent(privatePath) == expectedPrivateDirContent);
+
+    std::unordered_set<SyncName> expectedSyncDirContent = {fileSetup.remainingItems.begin(), fileSetup.remainingItems.end()};
+    (void) expectedSyncDirContent.insert(expectedPrivateDirContent.cbegin(), expectedPrivateDirContent.cend());
+    CPPUNIT_ASSERT(getDirContent(localTmpDir.path()) == expectedSyncDirContent);
 
     // Check that the Private folder has been inserted in Sync DB properly.
     std::optional<NodeId> nodeIdLocalPrivate;
