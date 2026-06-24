@@ -158,10 +158,10 @@ class SyncDb : public Db {
         void removeTempPrivateDir(const SyncPath &privateTmpLocalPath) const;
 
         bool removeHighLevelItemsFromLocalSyncDir(const SyncPath &localSyncDirPath) const;
-        bool renameTempPrivateDir(const SyncPath &localSyncDirPath, const SyncPath &privateTmpLocalPath) const;
+        bool renameTempPrivateDir(const SyncPath &privateTmpLocalPath, const SyncPath &privateLocalPath) const;
 
         // Move local items to the Private folder introduced with the backend API v3.
-        bool moveLocalItemsToTmpPrivateDir(const SyncPath &localSyncDirPath, const SyncPath &privateLocalPath) const;
+        bool moveLocalItemsToTmpPrivateDir(const SyncPath &localSyncDirPath, const SyncPath &privateTmpLocalPath) const;
 
         // Move local items to the Private folder introduced with the backend API v3.
         // Update accordingly the parent node IDs the of moved items in the DB.
