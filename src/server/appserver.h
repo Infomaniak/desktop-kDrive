@@ -119,6 +119,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void init();
         virtual void cleanup();
         static void reset();
+        static void quitLater(int32_t delayMs = 0);
 
         inline bool helpAsked() { return _helpAsked; }
         inline bool versionAsked() { return _versionAsked; }
