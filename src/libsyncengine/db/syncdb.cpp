@@ -3204,15 +3204,17 @@ bool SyncDb::getRootChildrenDbIds(std::vector<DbNodeId> &rootChildrenDbIds) {
     for (;;) {
         if (!queryNext(requestId, found)) {
             LOG_WARN(_logger, "Error getting query result: " << requestId);
+            queryFree(requestId);
+
             return false;
         }
+
         if (!found) break;
 
         DbNodeId nodeId{0};
         LOG_IF_FAIL(queryInt64Value(requestId, 0, nodeId));
         rootChildrenDbIds.push_back(nodeId);
     }
-    LOG_IF_FAIL(queryResetAndClearBindings(requestId));
 
     queryFree(requestId);
 
