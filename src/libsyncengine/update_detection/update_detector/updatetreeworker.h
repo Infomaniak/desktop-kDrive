@@ -114,6 +114,7 @@ class UpdateTreeWorker : public ISyncWorker {
         ExitCode getNewPathAfterMove(const SyncPath &path, SyncPath &newPath);
         ExitCode updateNodeWithDb(const std::shared_ptr<Node> parentNode);
         [[nodiscard]] ExitCode mergeNodeToParentChildren(std::shared_ptr<Node> parentNode, const std::shared_ptr<Node> node);
+        void tryToMergeTmpNode(std::shared_ptr<Node> tmpNode, bool &merged);
         ExitCode updateTmpNode(const std::shared_ptr<Node> tmpNode);
         ExitCode getOriginPath(const std::shared_ptr<Node> node, SyncPath &path);
 
@@ -142,13 +143,9 @@ class UpdateTreeWorker : public ISyncWorker {
          */
         ExitCode handleCreateOperationsWithSamePath();
 
-        [[nodiscard]] ExitCode getOrCreateNodeFromPath(const SyncPath &path, std::shared_ptr<Node> &node,
-                                                       bool existingBranchOnly = true);
+        [[nodiscard]] ExitCode getOrCreateNodeFromPath(const SyncPath &path, std::shared_ptr<Node> &node);
         [[nodiscard]] ExitCode createTmpNode(std::shared_ptr<Node> &tmpNode, const SyncName &name,
                                              const std::shared_ptr<Node> parentNode);
-        [[nodiscard]] ExitCode getOrCreateNodeFromExistingPath(const SyncPath &path, std::shared_ptr<Node> &node) {
-            return getOrCreateNodeFromPath(path, node, true);
-        }
 
         /**
          * Create missing nodes in the update tree for a given 'path'.

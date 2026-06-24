@@ -163,7 +163,7 @@ std::shared_ptr<Node> Node::findChildById(const NodeId &nodeId) {
     return nullptr;
 }
 
-bool Node::insertChildren(std::shared_ptr<Node> child) {
+bool Node::insertChild(std::shared_ptr<Node> child) {
     if (!child->id().has_value()) {
         return false;
     }
@@ -196,14 +196,14 @@ bool Node::insertChildren(std::shared_ptr<Node> child) {
     return true;
 }
 
-size_t Node::deleteChildren(std::shared_ptr<Node> child) {
+size_t Node::deleteChild(std::shared_ptr<Node> child) {
     if (!child->id().has_value()) {
         return 0;
     }
-    return deleteChildren(*child->id());
+    return deleteChild(*child->id());
 }
 
-size_t Node::deleteChildren(const NodeId &childId) {
+size_t Node::deleteChild(const NodeId &childId) {
     return _childrenById.erase(childId);
 }
 

@@ -175,7 +175,7 @@ ExitCode UpdateTreeWorker::searchForAncestorNode(const SyncPath &nodePath, std::
 ExitCode UpdateTreeWorker::step3DeleteDirectory() {
     auto perfMonitor = sentry::pTraces::scoped::Step3DeleteDirectory(syncDbId());
 
-    const std::unordered_set<UniqueId> deleteOpsIds = _operationSet->getOpsByType(OperationType::Delete);
+    const OpSet deleteOpsIds = _operationSet->getOpsByType(OperationType::Delete);
     for (const auto &deleteOpId: deleteOpsIds) {
         // worker stop or pause
         if (stopAsked()) {
@@ -263,7 +263,7 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
                     return ExitCode::SystemError;
                 }
 
-                if (!parentNode->insertChildren(existingNode)) {
+                if (!parentNode->insertChild(existingNode)) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node "
                                                        << Utility::formatSyncName(existingNode->name()) << L" parent node "
                                                        << Utility::formatSyncName(parentNode->name()));
@@ -290,7 +290,7 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
 ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
     _createFileOperationSet.clear();
     FSOpPtrMap createDirectoryOperationSet;
-    std::unordered_set<UniqueId> createOpsIds = _operationSet->getOpsByType(OperationType::Create);
+    const OpSet createOpsIds = _operationSet->getOpsByType(OperationType::Create);
 
     bool isSnapshotRebuildRequired = false;
 
@@ -400,7 +400,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
     const ExitCode exitCode = handleCreateOperationsWithSamePath();
     if (exitCode != ExitCode::Ok) return exitCode; // Rebuild the snapshot.
 
-    std::unordered_set<UniqueId> deleteOpsIds = _operationSet->getOpsByType(OperationType::Delete);
+    const OpSet deleteOpsIds = _operationSet->getOpsByType(OperationType::Delete);
     for (const auto &deleteOpId: deleteOpsIds) {
         // worker stop or pause
         if (stopAsked()) {
@@ -504,7 +504,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
                     _updateTree->previousIdSet()[deleteOp->nodeId()] = op->nodeId();
                 }
 
-                if (!parentNode->insertChildren(newNode)) {
+                if (!parentNode->insertChild(newNode)) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node "
                                                        << Utility::formatSyncName(newNode->name()) << L" parent node "
                                                        << Utility::formatSyncName(parentNode->name()));
@@ -523,7 +523,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
 ExitCode UpdateTreeWorker::step5CreateDirectory() {
     const auto perfMonitor = sentry::pTraces::scoped::Step5CreateDirectory(syncDbId());
 
-    const std::unordered_set<UniqueId> createOpsIds = _operationSet->getOpsByType(OperationType::Create);
+    const OpSet createOpsIds = _operationSet->getOpsByType(OperationType::Create);
     for (const auto &createOpId: createOpsIds) {
         // worker stop or pause
         if (stopAsked()) {
@@ -546,8 +546,8 @@ ExitCode UpdateTreeWorker::step5CreateDirectory() {
 
         // find node by path because it may have been created before
         std::shared_ptr<Node> currentNode;
-        if (const auto exitCode = getOrCreateNodeFromExistingPath(createOp->path(), currentNode); exitCode != ExitCode::Ok) {
-            LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::getOrCreateNodeFromExistingPath");
+        if (const auto exitCode = getOrCreateNodeFromPath(createOp->path(), currentNode); exitCode != ExitCode::Ok) {
+            LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::getOrCreateNodeFromPath");
             return exitCode;
         }
 
@@ -608,9 +608,9 @@ ExitCode UpdateTreeWorker::step6CreateFile() {
 
         // find parentNode by path
         std::shared_ptr<Node> parentNode;
-        if (const auto exitCode = getOrCreateNodeFromExistingPath(operation->path().parent_path(), parentNode);
+        if (const auto exitCode = getOrCreateNodeFromPath(operation->path().parent_path(), parentNode);
             exitCode != ExitCode::Ok) {
-            LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::getOrCreateNodeFromExistingPath");
+            LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::getOrCreateNodeFromPath");
             return exitCode;
         }
 
@@ -652,7 +652,7 @@ ExitCode UpdateTreeWorker::step6CreateFile() {
             return ExitCode::SystemError;
         }
 
-        if (!parentNode->insertChildren(newNode)) {
+        if (!parentNode->insertChild(newNode)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node " << Utility::formatSyncName(newNode->name())
                                                                                << L" parent node "
                                                                                << Utility::formatSyncName(parentNode->name()));
@@ -674,7 +674,7 @@ ExitCode UpdateTreeWorker::step6CreateFile() {
 
 ExitCode UpdateTreeWorker::step7EditFile() {
     auto perfMonitor = sentry::pTraces::scoped::Step7EditFile(syncDbId());
-    std::unordered_set<UniqueId> editOpsIds = _operationSet->getOpsByType(OperationType::Edit);
+    const OpSet editOpsIds = _operationSet->getOpsByType(OperationType::Edit);
     for (const auto &editOpId: editOpsIds) {
         // worker stop or pause
         if (stopAsked()) {
@@ -688,9 +688,8 @@ ExitCode UpdateTreeWorker::step7EditFile() {
         }
         // find parentNode by path because should have been created
         std::shared_ptr<Node> parentNode;
-        if (const auto exitCode = getOrCreateNodeFromExistingPath(editOp->path().parent_path(), parentNode);
-            exitCode != ExitCode::Ok) {
-            LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::getOrCreateNodeFromExistingPath");
+        if (const auto exitCode = getOrCreateNodeFromPath(editOp->path().parent_path(), parentNode); exitCode != ExitCode::Ok) {
+            LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::getOrCreateNodeFromPath");
             return exitCode;
         }
 
@@ -739,7 +738,7 @@ ExitCode UpdateTreeWorker::step7EditFile() {
             return ExitCode::SystemError;
         }
 
-        if (!parentNode->insertChildren(newNode)) {
+        if (!parentNode->insertChild(newNode)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node " << Utility::formatSyncName(newNode->name()).c_str()
                                                                                << L" parent node "
                                                                                << Utility::formatSyncName(parentNode->name()));
@@ -864,7 +863,7 @@ ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
                 return ExitCode::SystemError;
             }
 
-            if (!parentNode->insertChildren(newNode)) {
+            if (!parentNode->insertChild(newNode)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node "
                                                    << Utility::formatSyncName(newNode->name()) << L" parent node "
                                                    << Utility::formatSyncName(parentNode->name()));
@@ -889,7 +888,7 @@ ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
 }
 
 ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
-    std::unordered_set<UniqueId> moveOpsIds = _operationSet->getOpsByType(OperationType::Move);
+    const OpSet moveOpsIds = _operationSet->getOpsByType(OperationType::Move);
     for (const auto &moveOpId: moveOpsIds) {
         if (stopAsked()) {
             return ExitCode::Ok;
@@ -940,14 +939,14 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
 
             // Create the parent node if it does not exist
             std::shared_ptr<Node> parentNode;
-            if (const auto exitCode = getOrCreateNodeFromExistingPath(moveOp->destinationPath().parent_path(), parentNode);
+            if (const auto exitCode = getOrCreateNodeFromPath(moveOp->destinationPath().parent_path(), parentNode);
                 exitCode != ExitCode::Ok) {
-                LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::getOrCreateNodeFromExistingPath");
+                LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::getOrCreateNodeFromPath");
                 return exitCode;
             }
 
             // delete the current Node from children list of old parent
-            if (!currentNode->parentNode()->deleteChildren(currentNode)) {
+            if (!currentNode->parentNode()->deleteChild(currentNode)) {
                 LOG_SYNCPAL_WARN(_logger, "children " << currentNodeIt->first << " was not affected to parent "
                                                       << (currentNodeIt->second->parentNode()->id().has_value()
                                                                   ? *currentNodeIt->second->parentNode()->id()
@@ -956,7 +955,7 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
             }
 
             // insert currentNode into children list of new parent
-            if (!parentNode->insertChildren(currentNode)) {
+            if (!parentNode->insertChild(currentNode)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node "
                                                    << Utility::formatSyncName(currentNode->name()) << L" parent node "
                                                    << Utility::formatSyncName(parentNode->name()));
@@ -976,9 +975,9 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
         } else {
             // get parentNode
             std::shared_ptr<Node> parentNode;
-            if (const auto exitCode = getOrCreateNodeFromExistingPath(moveOp->destinationPath().parent_path(), parentNode);
+            if (const auto exitCode = getOrCreateNodeFromPath(moveOp->destinationPath().parent_path(), parentNode);
                 exitCode != ExitCode::Ok) {
-                LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::getOrCreateNodeFromExistingPath");
+                LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::getOrCreateNodeFromPath");
                 return exitCode;
             }
 
@@ -1026,8 +1025,7 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
     return ExitCode::Ok;
 }
 
-ExitCode UpdateTreeWorker::getOrCreateNodeFromPath(const SyncPath &path, std::shared_ptr<Node> &node,
-                                                   const bool existingBranchOnly /*= true*/) {
+ExitCode UpdateTreeWorker::getOrCreateNodeFromPath(const SyncPath &path, std::shared_ptr<Node> &node) {
     node = nullptr;
 
     if (path.empty()) {
@@ -1043,7 +1041,7 @@ ExitCode UpdateTreeWorker::getOrCreateNodeFromPath(const SyncPath &path, std::sh
         std::shared_ptr<Node> tmpChildNode = nullptr;
         for (const auto &[_, childNode]: tmpNode->children()) {
             if (childNode->type() == NodeType::Directory && name == childNode->name()) {
-                if (existingBranchOnly && childNode->hasChangeEvent(OperationType::Delete)) {
+                if (childNode->hasChangeEvent(OperationType::Delete)) {
                     continue;
                 }
                 tmpChildNode = childNode;
@@ -1074,7 +1072,7 @@ ExitCode UpdateTreeWorker::createTmpNode(std::shared_ptr<Node> &tmpNode, const S
         return ExitCode::SystemError;
     }
 
-    if (!parentNode->insertChildren(tmpNode)) {
+    if (!parentNode->insertChild(tmpNode)) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node " << Utility::formatSyncName(tmpNode->name())
                                                                            << L" parent node "
                                                                            << Utility::formatSyncName(parentNode->name()));
@@ -1196,7 +1194,7 @@ bool UpdateTreeWorker::mergingTempNodeToRealNode(std::shared_ptr<Node> tmpNode, 
 
     // merging tmpNode's children to realNode
     for (auto &child: tmpNode->children()) {
-        if (!realNode->insertChildren(child.second)) {
+        if (!realNode->insertChild(child.second)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node " << Utility::formatSyncName(child.second->name())
                                                                                << L" parent node "
                                                                                << Utility::formatSyncName(realNode->name()));
@@ -1206,10 +1204,10 @@ bool UpdateTreeWorker::mergingTempNodeToRealNode(std::shared_ptr<Node> tmpNode, 
 
     // temp node removed from children list
     std::shared_ptr<Node> parentTmpNode = tmpNode->parentNode();
-    parentTmpNode->deleteChildren(tmpNode);
+    parentTmpNode->deleteChild(tmpNode);
 
     // Real node added as child of parent node
-    if (!realNode->parentNode()->insertChildren(realNode)) {
+    if (!realNode->parentNode()->insertChild(realNode)) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node "
                                            << Utility::formatSyncName(realNode->name()) << L" parent node "
                                            << Utility::formatSyncName(realNode->parentNode()->name()));
@@ -1235,6 +1233,7 @@ bool UpdateTreeWorker::checkTreeIntegrity() {
         if (!checkNodeIntegrity(node)) return false;
         // In some cases, the pointer to the parent node might not have been updated correctly and still pointing to a temporary
         // node.
+
         if (node->parentNode() && !checkNodeIntegrity(node->parentNode())) return false;
         if (!checkOperationTypes(node)) return false;
     }
@@ -1330,7 +1329,19 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
             return ExitCode::Ok;
         }
 
-        bool found = false;
+        for (auto &nodeChild: node->children()) {
+            nodeQueue.push(nodeChild.second);
+        }
+
+        if (node->isTmp()) {
+            // Merge the node with a permanent one if possible
+            bool merged = false;
+            tryToMergeTmpNode(node, merged);
+            if (merged) {
+                assert(node.use_count() == 1);
+                continue;
+            }
+        }
 
         // update myself
         // if it's a Create we don't have node's database data
@@ -1358,6 +1369,7 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
             }
 
             DbNode dbNode;
+            bool found = false;
             if (!_syncDbReadOnlyCache.node(_side, usableNodeId, dbNode, found)) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
                 return ExitCode::DbError;
@@ -1383,10 +1395,6 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
                 node->setSize(dbNode.size());
             }
         }
-
-        for (auto &nodeChild: node->children()) {
-            nodeQueue.push(nodeChild.second);
-        }
     }
 
     return ExitCode::Ok;
@@ -1407,7 +1415,7 @@ ExitCode UpdateTreeWorker::mergeNodeToParentChildren(std::shared_ptr<Node> paren
         }
     }
 
-    if (!parentNode->insertChildren(node)) {
+    if (!parentNode->insertChild(node)) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node " << Utility::formatSyncName(node->name())
                                                                            << L" parent node "
                                                                            << Utility::formatSyncName(parentNode->name()));
@@ -1415,6 +1423,28 @@ ExitCode UpdateTreeWorker::mergeNodeToParentChildren(std::shared_ptr<Node> paren
     }
 
     return ExitCode::Ok;
+}
+
+void UpdateTreeWorker::tryToMergeTmpNode(std::shared_ptr<Node> tmpNode, bool &merged) {
+    assert(tmpNode);
+    assert(tmpNode->parentNode());
+
+    merged = false;
+
+    for (auto [_, brotherNode]: tmpNode->parentNode()->children()) {
+        if (brotherNode == tmpNode || brotherNode->isTmp() || brotherNode->hasChangeEvent(OperationType::Delete)) continue;
+        if (brotherNode->name() == tmpNode->name()) {
+            // Move tmpNode children to its brother
+            for (auto [_, childNode]: tmpNode->children()) {
+                (void) brotherNode->insertChild(childNode);
+                childNode->setParentNode(brotherNode);
+            }
+            tmpNode->children().clear();
+            tmpNode->parentNode()->deleteChild(tmpNode);
+            merged = true;
+            break;
+        }
+    }
 }
 
 ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode) {
@@ -1463,7 +1493,7 @@ ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode) {
     if (prevNode) {
         // Update children list
         for (const auto &[_, childNode]: prevNode->children()) {
-            if (!tmpNode->insertChildren(childNode)) {
+            if (!tmpNode->insertChild(childNode)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node " << SyncName2WStr(childNode->name())
                                                                                    << L" parent node "
                                                                                    << SyncName2WStr(tmpNode->name()));
