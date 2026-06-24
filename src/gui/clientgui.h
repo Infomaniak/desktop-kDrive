@@ -192,8 +192,8 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void onUserStatusChanged(UserDbId userDbId, bool connected, QString connexionError);
         void onUserRemoved(UserDbId userDbId);
         // Account slots
-        void onAccountAdded(const Account &accountInfo);
-        void onAccountUpdated(const Account &accountInfo);
+        void onAccountAdded(const Account &account);
+        void onAccountUpdated(const Account &account);
         void onAccountRemoved(UserDbId userDbId);
         // Drive slots
         void onDriveAdded(const Drive &drive);

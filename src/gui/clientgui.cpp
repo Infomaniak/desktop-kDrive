@@ -1142,21 +1142,21 @@ void ClientGui::onUserRemoved(const UserDbId userDbId) {
     }
 }
 
-void ClientGui::onAccountAdded(const Account &accountInfo) {
-    _accountInfoMap.insert({accountInfo.dbId(), accountInfo});
+void ClientGui::onAccountAdded(const Account &account) {
+    _accountInfoMap.insert({account.dbId(), account});
 
     if (!_currentAccountDbId) {
-        _currentAccountDbId = accountInfo.dbId();
+        _currentAccountDbId = account.dbId();
     }
 
     emit accountListRefreshed();
     emit refreshStatusNeeded();
 }
 
-void ClientGui::onAccountUpdated(const Account &accountInfo) {
-    const auto &accountInfoMapIt = _accountInfoMap.find(accountInfo.dbId());
+void ClientGui::onAccountUpdated(const Account &account) {
+    const auto &accountInfoMapIt = _accountInfoMap.find(account.dbId());
     if (accountInfoMapIt != _accountInfoMap.end()) {
-        accountInfoMapIt->second.setUserDbId(accountInfo.userDbId());
+        accountInfoMapIt->second.setUserDbId(account.userDbId());
 
         emit accountListRefreshed();
     }

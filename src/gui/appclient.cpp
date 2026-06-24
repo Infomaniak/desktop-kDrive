@@ -249,17 +249,17 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::ACCOUNT_ADDED: {
-            Account accountInfo;
-            paramsStream >> accountInfo;
+            Account account;
+            paramsStream >> account;
 
-            emit accountAdded(accountInfo);
+            emit accountAdded(account);
             break;
         }
         case SignalNum::ACCOUNT_UPDATED: {
-            Account accountInfo;
-            paramsStream >> accountInfo;
+            Account account;
+            paramsStream >> account;
 
-            emit accountUpdated(accountInfo);
+            emit accountUpdated(account);
             break;
         }
         case SignalNum::ACCOUNT_REMOVED: {

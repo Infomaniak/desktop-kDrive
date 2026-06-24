@@ -61,8 +61,8 @@ class AppClient : public SharedTools::QtSingleApplication {
         void userStatusChanged(UserDbId userDbId, bool connected, QString connexionError);
         void userRemoved(UserDbId userDbId);
         // Account signals
-        void accountAdded(const Account &accountInfo);
-        void accountUpdated(const Account &accountInfo);
+        void accountAdded(const Account &account);
+        void accountUpdated(const Account &account);
         void accountRemoved(AccountDbId accountDbId);
         // Drive signals
         void driveAdded(const Drive &drive);
