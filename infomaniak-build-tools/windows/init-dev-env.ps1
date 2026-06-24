@@ -262,6 +262,30 @@ function Test-CommandExists {
     return [bool](Get-Command $Name -ErrorAction SilentlyContinue)
 }
 
+function Get-RealPythonPath {
+    # Returns the path to a real Python interpreter, or $null when only the
+    # Microsoft Store App Execution Alias is present.
+    #
+    # On Windows, typing "python" when Python is not installed resolves to a stub
+    # under %LOCALAPPDATA%\Microsoft\WindowsApps that merely opens the Microsoft Store
+    # instead of running an interpreter. These aliases are zero-length reparse points,
+    # so a plain "Get-Command python" reports a command that is not actually usable.
+    # Skip anything living under a WindowsApps folder and keep the first candidate
+    # that reports a version.
+    foreach ($cmd in @(Get-Command python, python3 -All -ErrorAction SilentlyContinue)) {
+        $path = $cmd.Source
+        if ([string]::IsNullOrWhiteSpace($path)) { continue }
+        if ($path -match '\\WindowsApps\\') { continue }
+        try {
+            $version = & $path "--version" 2>&1
+            if ($LASTEXITCODE -eq 0 -and "$version" -match 'Python\s+3') { return $path }
+        } catch {
+            continue
+        }
+    }
+    return $null
+}
+
 function Invoke-Native {
     # Runs an external command and throws when it returns a non-zero exit code.
     param(
@@ -660,8 +684,10 @@ function Get-Steps {
             Enter-VsDeveloperEnvironment
 
             # Conan runs on Python, so make sure the latest Python 3 is installed before
-            # creating the virtual environment below.
-            if (-not (Test-CommandExists 'python')) {
+            # creating the virtual environment below. Detect a real interpreter, ignoring the
+            # Microsoft Store App Execution Alias stub which only opens the Store.
+            $pythonExe = Get-RealPythonPath
+            if (-not $pythonExe) {
                 if (-not (Test-CommandExists 'winget')) {
                     throw "winget is required to install Python. Install 'App Installer' from the Microsoft Store, then re-run."
                 }
@@ -670,6 +696,10 @@ function Get-Steps {
                     "install", "--id", $script:PythonWingetId, "-e",
                     "--accept-package-agreements", "--accept-source-agreements"
                 )
+                $pythonExe = Get-RealPythonPath
+                if (-not $pythonExe) {
+                    throw "Python installation did not produce a usable interpreter. Open a new shell so the updated PATH is picked up, then re-run."
+                }
             }
 
             $venvDir    = Join-Path $script:RepoDir ".venv"
@@ -678,7 +708,7 @@ function Get-Steps {
             $activate   = Join-Path $venvDir "Scripts\Activate.ps1"
 
             if (-not (Test-Path $venvPython)) {
-                Invoke-Native -FilePath "python" -Arguments @("-m", "venv", $venvDir)
+                Invoke-Native -FilePath $pythonExe -Arguments @("-m", "venv", $venvDir)
             }
             Invoke-Native -FilePath $venvPython -Arguments @("-m", "pip", "install", "--upgrade", "pip")
             Invoke-Native -FilePath $venvPython -Arguments @("-m", "pip", "install", "conan")
