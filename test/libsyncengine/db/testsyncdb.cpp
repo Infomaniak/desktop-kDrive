@@ -1050,10 +1050,10 @@ void TestSyncDb::testGetNodeTableRowCount() {
     const time_t tLoc = now();
     const time_t tDrive = now();
 
-    const DbNode nodeDir1(_testObj->rootNode().nodeId(), "Dir1", Str("Dir drive 1"), "id loc 1", "id drive 1", tLoc, tLoc, tDrive,
-                          NodeType::Directory, 0, std::nullopt);
-    const DbNode nodeDir2(_testObj->rootNode().nodeId(), "Dir2", Str("Dir drive 1"), "id loc 2", "id drive 2", tLoc, tLoc, tDrive,
-                          NodeType::Directory, 0, std::nullopt);
+    const DbNode nodeDir1(_testObj->rootNode().nodeId(), Str("Dir1"), Str("Dir drive 1"), "id loc 1", "id drive 1", tLoc, tLoc,
+                          tDrive, NodeType::Directory, 0, std::nullopt);
+    const DbNode nodeDir2(_testObj->rootNode().nodeId(), Str("Dir2"), Str("Dir drive 1"), "id loc 2", "id drive 2", tLoc, tLoc,
+                          tDrive, NodeType::Directory, 0, std::nullopt);
 
     _testObj->insertNode(nodeDir1);
     _testObj->insertNode(nodeDir2);
