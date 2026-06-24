@@ -170,7 +170,11 @@ function Get-File {
 
     Write-Info "Downloading $Url"
     try {
-        Invoke-WebRequest -Uri $Url -OutFile $Destination -UseBasicParsing -ErrorAction Stop
+        # Some mirrors (notably SourceForge) serve an HTML interstitial/landing page instead
+        # of the binary when the request looks like it comes from a browser. Invoke-WebRequest's
+        # default user agent is browser-like and triggers this behaviour, so present a Wget-style
+        # user agent which SourceForge treats as a direct download client.
+        Invoke-WebRequest -Uri $Url -OutFile $Destination -UseBasicParsing -UserAgent "Wget" -ErrorAction Stop
     } catch {
         throw "Download failed for '$Url': $($_.Exception.Message)"
     }
