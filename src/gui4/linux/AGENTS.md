@@ -15,6 +15,7 @@
 
 - In versioned documentation, use repo-relative paths, not hardcoded absolute paths.
 - Do not add links to `.md` files that are not versioned in git.
+- Never launch a build unless explicitly asked by the user.
 - On a Linux host, validate natively: run `./infomaniak-build-tools/conan/build_dependencies.sh Debug`, configure with
   the generated Conan/CMake Debug preset, then build `kDrive`, `kDrive_client`, and `kdrive_qml`. Do not use the Podman
   release script for this local Linux validation path.
