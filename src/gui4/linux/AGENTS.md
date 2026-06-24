@@ -70,6 +70,8 @@
     - Drops push mutations before `CachePopulator::bootstrapCompleted()` and logs the invariant violation.
 - `app/cache/cachetypes.h`: cache read models and onboarding keys (`SyncContext`, `DriveContext`,
   `AvailableDriveContext`, `AvailableDriveKey`, `PendingSyncConfig`).
+    - Configured-drive state uses the unified `libcommon/data/drive.h` `Drive` model; do not reintroduce the removed
+      `DriveInfo` type in Linux v4.
 - `app/cache/mainselectionstore.*`: sync-first main-shell selection owner (`currentSyncDbId`) and selection healing.
     - Emits `currentSyncContextChanged()` as a coarse invalidation signal when the current sync context stays selected
       but the underlying cache graph changes.
