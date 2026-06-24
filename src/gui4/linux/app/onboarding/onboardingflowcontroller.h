@@ -38,8 +38,6 @@ class OnboardingFlowController final : public QObject {
         Q_OBJECT
         Q_PROPERTY(Step currentStep READ currentStep NOTIFY currentStepChanged)
         Q_PROPERTY(LoginState loginState READ loginState NOTIFY loginStateChanged)
-        Q_PROPERTY(qint32 currentStepIndex READ currentStepIndex NOTIFY currentStepChanged)
-        Q_PROPERTY(qint32 stepCount READ stepCount CONSTANT)
         Q_PROPERTY(bool loginInProgress READ loginInProgress NOTIFY loginStateChanged)
         Q_PROPERTY(bool waitingForWebAuthentication READ waitingForWebAuthentication NOTIFY loginStateChanged)
         Q_PROPERTY(bool loginFailed READ loginFailed NOTIFY loginStateChanged)
@@ -69,8 +67,6 @@ class OnboardingFlowController final : public QObject {
 
         [[nodiscard]] Step currentStep() const { return _currentStep; }
         [[nodiscard]] LoginState loginState() const { return _loginState; }
-        [[nodiscard]] qint32 currentStepIndex() const;
-        [[nodiscard]] qint32 stepCount() const;
         [[nodiscard]] bool loginInProgress() const;
         [[nodiscard]] bool waitingForWebAuthentication() const;
         [[nodiscard]] bool loginFailed() const;
