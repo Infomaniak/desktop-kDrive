@@ -3084,7 +3084,7 @@ bool SyncDb::updateParentNodeIds(const std::vector<DbNodeId> &dbNodeIds, const D
 
     const std::scoped_lock lock(_mutex);
 
-    int errId = -1;
+    auto errId = -1;
     std::string error;
     for (const auto nodeId: dbNodeIds) {
         LOG_IF_FAIL(queryResetAndClearBindings(requestId));

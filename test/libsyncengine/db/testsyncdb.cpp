@@ -1242,7 +1242,7 @@ void TestSyncDb::testMigrateLocalItemsToPrivateDir() {
 
 void TestSyncDb::testMigrationOfNonRootAdvancedSync() {
     _testObj->enablePrepare(true);
-    _testObj->prepare();
+    (void) _testObj->prepare();
 
     LocalTemporaryDirectory localTmpDir("testMigrateLocalItemsToPrivateDir");
     createParmsDb(_testObj->dbPath(), localTmpDir.path(), SyncType::Advanced);
