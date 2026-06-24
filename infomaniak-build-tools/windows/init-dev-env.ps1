@@ -308,11 +308,13 @@ function Get-Steps {
         }
 
     # 2. Visual Studio 2026 (IDE for Full, Build Tools for CI).
-    $vsPackage   = if ($Setup -eq 'BuildTools') { $script:VsPackageBuildTools } else { $script:VsPackageFull }
-    $vsWorkloads = @()
-    $vsWorkloads += if ($Setup -eq 'BuildTools') { $script:VsWorkloadNativeTools } else { $script:VsWorkloadNativeIde }
-    $vsWorkloads += $script:VsWorkloadWinUI
-    $vsComponents = @($script:VsComponentGit, $script:VsComponentWinSdk)
+    # These are script-scoped so the step scriptblocks (which execute in the engine scope,
+    # not in Get-Steps) can still resolve them.
+    $script:VsPackage   = if ($Setup -eq 'BuildTools') { $script:VsPackageBuildTools } else { $script:VsPackageFull }
+    $script:VsWorkloads = @()
+    $script:VsWorkloads += if ($Setup -eq 'BuildTools') { $script:VsWorkloadNativeTools } else { $script:VsWorkloadNativeIde }
+    $script:VsWorkloads += $script:VsWorkloadWinUI
+    $script:VsComponents = @($script:VsComponentGit, $script:VsComponentWinSdk)
 
     $steps += New-Step -Name "VisualStudio" -Description "Visual Studio 2026 ($Setup) with C++/WinUI workloads" `
         -CheckIfSatisfied {
@@ -323,23 +325,26 @@ function Get-Steps {
             if (-not (Test-CommandExists 'winget')) {
                 throw "winget is required to install Visual Studio. Install 'App Installer' from the Microsoft Store, then re-run."
             }
+            if ([string]::IsNullOrWhiteSpace($script:VsPackage)) {
+                throw "Visual Studio package id is empty. This is an internal error in the script configuration."
+            }
             $overrideParts = @("--quiet", "--norestart")
-            foreach ($w in $vsWorkloads)  { $overrideParts += "--add"; $overrideParts += $w }
-            foreach ($c in $vsComponents) { $overrideParts += "--add"; $overrideParts += $c }
+            foreach ($w in $script:VsWorkloads)  { $overrideParts += "--add"; $overrideParts += $w }
+            foreach ($c in $script:VsComponents) { $overrideParts += "--add"; $overrideParts += $c }
             $overrideParts += "--includeRecommended"
             $override = $overrideParts -join ' '
 
-            Write-Info "Installing $vsPackage with workloads/components: $($vsWorkloads + $vsComponents -join ', ')"
+            Write-Info "Installing $($script:VsPackage) with workloads/components: $(($script:VsWorkloads + $script:VsComponents) -join ', ')"
             Invoke-Native -FilePath "winget" -Arguments @(
-                "install", "--id", $vsPackage, "-e",
+                "install", "--id", $script:VsPackage, "-e",
                 "--accept-package-agreements", "--accept-source-agreements",
                 "--override", $override
             )
         } `
         -CleanAction {
             if (Test-CommandExists 'winget') {
-                Write-Info "Uninstalling $vsPackage"
-                winget uninstall --id $vsPackage -e --accept-source-agreements | Out-Null
+                Write-Info "Uninstalling $($script:VsPackage)"
+                winget uninstall --id $script:VsPackage -e --accept-source-agreements | Out-Null
             } else {
                 Write-Warn "winget not available, cannot uninstall Visual Studio automatically."
             }
@@ -757,13 +762,19 @@ if (-not $steps -or $steps.Count -eq 0) {
 $hadFailure = $false
 foreach ($step in $steps) {
     $ok = Invoke-Step -Step $step
-    if (-not $ok) { $hadFailure = $true }
+    if (-not $ok) {
+        $hadFailure = $true
+        # Stop on the first failure: later steps usually depend on earlier ones, so
+        # continuing would only produce noise. Re-run after fixing to resume.
+        Write-Err "Stopping: step '$($step.Name)' failed. Remaining steps were not executed."
+        break
+    }
 }
 
 Show-Summary
 
 if ($hadFailure) {
-    Write-Err "One or more steps failed. Fix the issues above and re-run (the script will resume)."
+    Write-Err "A step failed. Fix the issue above and re-run (the script will resume from where it stopped)."
     exit 1
 }
 
