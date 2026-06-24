@@ -77,6 +77,7 @@ $script:NsisDir       = "C:\Program Files (x86)\NSIS"
 $script:NsisUrl       = "https://downloads.sourceforge.net/project/nsis/NSIS%203/3.03/nsis-3.03-setup.exe"
 $script:NsisPlugins   = @('LogicLib', 'nsProcess', 'UAC', 'x64')
 $script:SevenZipDir   = "C:\Program Files\7-Zip"
+$script:SevenZipInstallerUrl = "https://github.com/ip7z/7zip/releases/download/26.01/7z2601-x64.exe"
 $script:SevenZipUrl   = "https://downloads.sourceforge.net/project/sevenzip/7-Zip/23.01/7z2301-extra.7z"
 $script:IcoutilsName  = "icoutils-0.32.3-x86_64"
 $script:IcoutilsDir   = Join-Path $ProjectsDir $script:IcoutilsName
@@ -592,7 +593,15 @@ function Get-Steps {
             Get-File -Url $script:SevenZipUrl -Destination $archive
             $sevenZipExe = Join-Path $script:SevenZipDir "7z.exe"
             if (-not (Test-Path $sevenZipExe)) {
-                throw "7-Zip must be installed first (7z.exe not found under $($script:SevenZipDir)). See Readme.md."
+                # The 7za extra package is distributed as a .7z archive, so a working 7-Zip is
+                # required to extract it. Install the official 7-Zip build first when it is missing.
+                Write-Info "7-Zip not found, installing it from $($script:SevenZipInstallerUrl)."
+                $installer = Join-Path $script:DownloadDir "7z-setup.exe"
+                Get-File -Url $script:SevenZipInstallerUrl -Destination $installer
+                Invoke-Native -FilePath $installer -Arguments @("/S")
+            }
+            if (-not (Test-Path $sevenZipExe)) {
+                throw "7-Zip installation did not produce '$sevenZipExe'."
             }
             New-Item -ItemType Directory -Force -Path $script:SevenZipDir | Out-Null
             Invoke-Native -FilePath $sevenZipExe -Arguments @("x", $archive, "-o$($script:SevenZipDir)", "-y")
