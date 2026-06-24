@@ -113,15 +113,15 @@ void CommService::registerAccountHandlers(SignalDispatcher &dispatcher) {
 
 void CommService::registerDriveHandlers(SignalDispatcher &dispatcher) {
     dispatcher.registerHandler(SignalNum::DRIVE_ADDED, [this](const Poco::DynamicStruct &params) {
-        DriveInfo info;
-        info.fromDynamicStruct(params[msgParamDriveInfo].extract<Poco::DynamicStruct>());
-        emit driveAdded(info);
+        Drive drive;
+        drive.fromDynamicStruct(params[msgParamDriveInfo].extract<Poco::DynamicStruct>());
+        emit driveAdded(drive);
     });
 
     dispatcher.registerHandler(SignalNum::DRIVE_UPDATED, [this](const Poco::DynamicStruct &params) {
-        DriveInfo info;
-        info.fromDynamicStruct(params[msgParamDriveInfo].extract<Poco::DynamicStruct>());
-        emit driveUpdated(info);
+        Drive drive;
+        drive.fromDynamicStruct(params[msgParamDriveInfo].extract<Poco::DynamicStruct>());
+        emit driveUpdated(drive);
     });
 
     dispatcher.registerHandler(SignalNum::DRIVE_REMOVED, [this](const Poco::DynamicStruct &params) {
@@ -344,21 +344,21 @@ void CommService::requestAccountInfoList(const AccountInfoListCallback &callback
 
 // -- Drive ---------------------------------------------------------------
 
-void CommService::requestDriveInfoList(const DriveInfoListCallback &callback) const {
+void CommService::requestDriveList(const DriveListCallback &callback) const {
     _ipcClient.sendRequest(
             RequestNum::DRIVE_INFOLIST, {}, [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
-                std::vector<DriveInfo> list;
+                std::vector<Drive> list;
                 if (exitInfo) {
-                    CommonUtility::readValuesFromStruct(result, msgParamDriveInfoList, list, dynamicVar2Struct<DriveInfo>);
+                    CommonUtility::readValuesFromStruct(result, msgParamDriveInfoList, list, dynamicVar2Struct<Drive>);
                 }
                 callback(exitInfo, list);
             });
 }
 
-void CommService::requestDriveUpdate(const DriveInfo &driveInfo, const VoidCallback &callback) const {
+void CommService::requestDriveUpdate(const Drive &drive, const VoidCallback &callback) const {
     Poco::DynamicStruct params;
     Poco::DynamicStruct driveStruct;
-    driveInfo.toDynamicStruct(driveStruct);
+    drive.toDynamicStruct(driveStruct);
     params[msgParamDriveInfo] = driveStruct;
     _ipcClient.sendRequest(RequestNum::DRIVE_UPDATE, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
