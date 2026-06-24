@@ -25,15 +25,12 @@ Item {
 
     readonly property bool compact: width < IKOnboarding.loginCompactBreakpointWidth
     readonly property bool loginFailed: onboardingFlowController.loginFailed
-    readonly property bool loginSucceeded: onboardingFlowController.loginSucceeded
+    readonly property bool loginInProgress: onboardingFlowController.loginInProgress
     readonly property bool waitingForWebAuthentication: onboardingFlowController.waitingForWebAuthentication
 
     function loginTitleText() {
         if (root.loginFailed) {
             return qsTr("Erreur de connexion")
-        }
-        if (root.loginSucceeded) {
-            return qsTr("Connexion réussie !")
         }
         return qsTr("Bienvenue dans kDrive !")
     }
@@ -41,9 +38,6 @@ Item {
     function loginSubtitleText() {
         if (root.loginFailed) {
             return qsTr("Une erreur est survenue, veuillez réessayer.")
-        }
-        if (root.loginSucceeded) {
-            return qsTr("Vous allez passer à l’étape suivante automatiquement.")
         }
         return qsTr("Le cloud privé, rapide et sécurisé, hébergé en Suisse.")
     }
@@ -54,7 +48,7 @@ Item {
         anchors.left: parent.left
         anchors.leftMargin: root.compact ? IKSpacing.s32 : IKOnboarding.loginContentExpandedLeftMargin
         spacing: root.loginFailed ? IKSpacing.s32 : IKSpacing.s24
-        visible: !root.waitingForWebAuthentication
+        visible: !root.loginInProgress
 
         Column {
             width: parent.width
@@ -83,7 +77,7 @@ Item {
 
             Text {
                 width: parent.width
-                visible: !root.loginFailed && !root.loginSucceeded
+                visible: !root.loginFailed
                 text: qsTr("Connectez-vous et gardez vos documents synchronisés\nsur tous vos appareils.")
                 color: IKColors.textSecondary
                 font.pixelSize: IKFonts.bodySize
@@ -95,7 +89,6 @@ Item {
 
         Row {
             spacing: IKOnboarding.loginButtonSpacing
-            visible: !root.loginSucceeded
 
             Button {
                 id: createAccountButton
@@ -178,7 +171,7 @@ Item {
         anchors.left: parent.left
         anchors.leftMargin: root.compact ? IKSpacing.s32 : IKOnboarding.loginContentExpandedLeftMargin
         spacing: IKOnboarding.loginBrowserContentSpacing
-        visible: root.waitingForWebAuthentication
+        visible: root.loginInProgress
 
         Column {
             width: parent.width
@@ -186,7 +179,9 @@ Item {
 
             Text {
                 width: parent.width
-                text: qsTr("Connectez-vous\ndans votre navigateur")
+                text: root.waitingForWebAuthentication
+                      ? qsTr("Connectez-vous\ndans votre navigateur")
+                      : qsTr("Chargement de votre compte kDrive")
                 color: IKColors.textPrimary
                 font.pixelSize: IKOnboarding.loginBrowserTitleSize
                 font.weight: IKFonts.emphasized
@@ -197,7 +192,9 @@ Item {
 
             Text {
                 width: parent.width
-                text: qsTr("Votre navigateur devrait s’ouvrir automatiquement\npour finaliser la connexion. Une fois connecté,\nvous reviendrez automatiquement dans kDrive.")
+                text: root.waitingForWebAuthentication
+                      ? qsTr("Votre navigateur devrait s’ouvrir automatiquement\npour finaliser la connexion. Une fois connecté,\nvous reviendrez automatiquement dans kDrive.")
+                      : qsTr("Nous préparons vos kDrive disponibles.")
                 color: IKColors.textSecondary
                 font.pixelSize: IKOnboarding.loginBrowserBodySize
                 lineHeightMode: Text.FixedHeight
@@ -209,6 +206,7 @@ Item {
         Button {
             id: openLoginPageButton
 
+            visible: root.waitingForWebAuthentication
             height: IKOnboarding.loginBrowserButtonHeight
             text: qsTr("Ouvrir la page de connexion")
             onClicked: onboardingFlowController.requestLogin()
