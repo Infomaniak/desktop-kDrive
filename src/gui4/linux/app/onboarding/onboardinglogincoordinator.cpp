@@ -47,12 +47,8 @@ OnboardingLoginCoordinator::OnboardingLoginCoordinator(OnboardingFlowController 
                    &OnboardingLoginCoordinator::handleLoginStateChanged);
     (void) connect(&_commService, &CommService::authorizationCodeReceived, &_oauthLoginService,
                    &OAuthLoginService::handleAuthorizationCode);
-    (void) connect(&_oauthLoginService, &OAuthLoginService::authorizationCodeReady, &_flowController,
-                   &OnboardingFlowController::handleAuthorizationCodeReady);
     (void) connect(&_oauthLoginService, &OAuthLoginService::authorizationCodeReady, this,
-                   [this](const QString &, const QString &) { clearPendingLogin(); });
-    (void) connect(&_oauthLoginService, &OAuthLoginService::authorizationCodeReady, &_userService,
-                   &UserService::requestLoginToken);
+                   &OnboardingLoginCoordinator::handleAuthorizationCodeReady);
     (void) connect(&_oauthLoginService, &OAuthLoginService::authorizationFailed, &_flowController,
                    &OnboardingFlowController::handleLoginFailed);
 
@@ -78,6 +74,12 @@ OnboardingLoginCoordinator::OnboardingLoginCoordinator(OnboardingFlowController 
 void OnboardingLoginCoordinator::clearPendingLogin() {
     _pendingUserDbId.reset();
     _pendingAvailableDrivesUserDbId.reset();
+}
+
+void OnboardingLoginCoordinator::handleAuthorizationCodeReady(const QString &code, const QString &codeVerifier) {
+    clearPendingLogin();
+    _flowController.handleAuthorizationCodeReady();
+    _userService.requestLoginToken(code, codeVerifier);
 }
 
 void OnboardingLoginCoordinator::handleLoginStateChanged() {
