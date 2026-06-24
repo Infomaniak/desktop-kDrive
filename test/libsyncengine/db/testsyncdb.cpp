@@ -1130,12 +1130,12 @@ TestSyncDb::MigrationFileSetup TestSyncDb::setupSyncMigrationToLocalPrivateDir(c
 }
 
 namespace {
-std::unordered_set<SyncPath> getDirContent(const SyncPath &dirPath) {
+std::set<SyncPath> getDirContent(const SyncPath &dirPath) {
     using namespace std::filesystem;
     std::error_code ec;
     const auto dirIt = recursive_directory_iterator(dirPath, directory_options::skip_permission_denied, ec);
 
-    std::unordered_set<SyncPath> paths;
+    std::set<SyncPath> paths;
     for (const auto &dirEntry: dirIt) paths.insert(dirEntry);
 
     return paths;
@@ -1183,7 +1183,7 @@ void TestSyncDb::testMigrateLocalItemsToPrivateDir() {
     CPPUNIT_ASSERT(std::filesystem::exists(pathB));
     CPPUNIT_ASSERT(std::filesystem::exists(pathC));
 
-    const std::unordered_set<SyncPath> expectedPrivateDirContent = {privatePrivatePath, pathA, pathB, pathC};
+    const std::set<SyncPath> expectedPrivateDirContent = {privatePrivatePath, pathA, pathB, pathC};
     CPPUNIT_ASSERT(getDirContent(privatePath) == expectedPrivateDirContent);
 
     // Check that the Private folder has been inserted in Sync DB properly.
