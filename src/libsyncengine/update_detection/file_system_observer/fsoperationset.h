@@ -35,10 +35,10 @@ using OpMap = std::unordered_map<UniqueId, FSOpPtr>;
 // Functor for ordering operations by path depth
 class CmpOp {
     public:
-        explicit CmpOp(OpMap &ops) :
+        explicit CmpOp(const OpMap &ops) :
             _ops(ops) {}
 
-        bool operator()(UniqueId id1, UniqueId id2) const {
+        bool operator()(const UniqueId id1, const UniqueId id2) const {
             const auto opIt1 = _ops.get().find(id1);
             SyncPath path1;
             if (opIt1 != _ops.get().end()) {
@@ -58,7 +58,7 @@ class CmpOp {
         }
 
     private:
-        std::reference_wrapper<OpMap> _ops;
+        std::reference_wrapper<const OpMap> _ops;
 };
 
 // Set of operations ordered by path depth

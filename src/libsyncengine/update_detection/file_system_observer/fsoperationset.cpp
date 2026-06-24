@@ -41,7 +41,7 @@ OpMap FSOperationSet::getAllOps() const {
 
 OpSet FSOperationSet::getOpsByType(const OperationType type) const {
     const std::scoped_lock lock(_mutex);
-    OpSet ret(CmpOp(const_cast<OpMap &>(_ops)));
+    OpSet ret((CmpOp(_ops)));
     if (auto it = _opsByType.find(type); it != _opsByType.end()) {
         ret.insert(it->second.begin(), it->second.end());
     }

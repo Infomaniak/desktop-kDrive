@@ -2010,7 +2010,7 @@ ExitInfo ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
     // information in this structure.
     if (!syncOp->omit()) {
         auto prevParent = correspondingNode->parentNode();
-        prevParent->deleteChild(correspondingNode);
+        (void) prevParent->deleteChild(correspondingNode);
 
         correspondingNode->setName(syncOp->newName());
 
