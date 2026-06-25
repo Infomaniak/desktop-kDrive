@@ -45,7 +45,8 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     QApplication(argc, argv) {
     setupLogging();
     setQuitOnLastWindowClosed(false);
-    const QIcon appIcon = ApplicationIdentity::configureApplication();
+    QIcon appIcon;
+    ApplicationIdentity::configureApplication(appIcon);
 
     qCInfo(lcAppClientLinux) << "Linux v4 GUI bootstrap started";
     _systemTrayController.initialize();
