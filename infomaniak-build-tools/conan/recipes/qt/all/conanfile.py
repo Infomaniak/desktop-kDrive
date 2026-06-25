@@ -163,7 +163,7 @@ class QtConan(ConanFile):
             return "win64_mingw" if compiler == "gcc" else "win64_msvc2019_64"
 
         # Qt 6.8.3+ and 6.10.1+ supports both MinGW and MSVC 2022 (2019 is no longer compatible)
-        elif self.version in ("6.8.3", "6.10.1"):
+        elif self.version in ("6.8.3", "6.10.1", "6.11.1"):
             return "win64_mingw" if compiler == "gcc" else "win64_msvc2022_64"
         else:
             return "win64_msvc2019_64"  # May fail, if an error occurs, verify with a manual run of the Qt Online Installer.
@@ -184,7 +184,7 @@ class QtConan(ConanFile):
             f"qt.qt{major}.{compact}.addons.qtpositioning"
         ]
 
-        if version in ("6.8.3", "6.10.1"):
+        if version in ("6.8.3", "6.10.1", "6.11.1"):
             modules.append(f"qt.qt{major}.{compact}.addons.qt5compat")
         else:
             modules.append(f"qt.qt{major}.{compact}.qt5compat")
@@ -458,7 +458,7 @@ class QtConan(ConanFile):
             # Determine Windows subfolder based on compiler and version
             if self.version == "6.2.3":
                 return "msvc2019_64"
-            elif self.version in ["6.8.3", "6.10.1"]:
+            elif self.version in ["6.8.3", "6.10.1", "6.11.1"]:
                 if str(self.settings.compiler) == "gcc":  # MinGW
                     return "mingw_64"
                 else:  # MSVC 2022
@@ -498,7 +498,8 @@ class QtConan(ConanFile):
             )
 
 
-        for folder in ("doc", "modules"):
+        # Save space by removing not needed folder (/!\ modules folder is needed by <os>deployqt from at least Qt 6.11.1)
+        for folder in ("doc"):
             rmdir(self, pjoin(self.package_folder, folder))
 
 
