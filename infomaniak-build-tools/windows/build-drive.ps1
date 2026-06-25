@@ -25,7 +25,7 @@ Param(
     # Thumbprint: The thumbprint of the debug or KSP certificate
     [string] $thumbprint,
 
-    # Path: The path to the root of the RepositoryRootPath
+    # RepositoryRootPath: The path to the root of the repository
     [string] $repositoryRootPath = $PWD.Path,
 
     # Clean: The files to clean on execution
@@ -729,11 +729,11 @@ Inside, you will find the build folder, install folder, and kDrive installer.
 
 Parameters :
     `t-buildType`t: The configuration requested for the app, either Debug or Release (will default to Release)
-    `t-path`t`t: The path to the root of the kdrive project folder (will default to the current directory)
+    `t-repositoryRootPath`t`t: The path to the root of the kdrive project folder (will default to the current directory)
     `t-clean`t`t: Optional parameter for files cleaning. The following are available :
-    `t`tbuild`t`t: Remove all the built files, located in '$repositoryRootPath/build-$buildType/build', then exit the script
+    `t`tbuild`t`t: Remove all the built files, located in '$repositoryRootPath/build-windows/build', then exit the script
     `t`text`t`t`t: Remove the extension files, located in '$vfsDir', then exit the script
-    `t`tall`t`t`t: Remove all the files, located in '$repositoryRootPath/build-$buildType', then exit the script
+    `t`tall`t`t`t: Remove all the files, located in '$repositoryRootPath/build-windows', then exit the script
     `t`tremake`t`t: Remove all the files, then rebuild the project
     `t-ext`t`t`t: Rebuild and redeploy the windows extension
     `t-ci`t`t`t: Use the CI build configuration
