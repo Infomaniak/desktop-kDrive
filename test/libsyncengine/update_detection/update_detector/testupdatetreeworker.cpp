@@ -715,6 +715,8 @@ void TestUpdateTreeWorker::testStep8() {
 }
 
 void TestUpdateTreeWorker::testStep8b() {
+    setUpUpdateTree(ReplicaSide::Local);
+
     // Moving a directory to a Dir1 will create tmpNode for Dir1
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Move, "id41", NodeType::Directory,
                                                           testhelpers::defaultTime, testhelpers::defaultTime,
