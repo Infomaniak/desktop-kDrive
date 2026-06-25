@@ -461,9 +461,11 @@ function Get-Steps {
             $override = $overrideParts -join ' '
 
             Write-Info "Installing $($script:VsPackage) with workloads/components: $(($script:VsWorkloads + $script:VsComponents) -join ', ')"
+            Write-Warn "This can take a very long time (often 20-40 minutes). Please be patient and leave this window open."
             Invoke-Native -FilePath "winget" -Arguments @(
                 "install", "--id", $script:VsPackage, "-e", "--source", "winget",
                 "--accept-package-agreements", "--accept-source-agreements",
+                "--disable-interactivity",
                 "--override", $override
             )
         } `
@@ -701,7 +703,8 @@ function Get-Steps {
                 Write-Info "Installing the latest Python 3 ($($script:PythonWingetId)) via winget."
                 Invoke-Native -FilePath "winget" -Arguments @(
                     "install", "--id", $script:PythonWingetId, "-e", "--source", "winget",
-                    "--accept-package-agreements", "--accept-source-agreements"
+                    "--accept-package-agreements", "--accept-source-agreements",
+                    "--disable-interactivity"
                 )
                 $pythonExe = Get-RealPythonPath
                 if (-not $pythonExe) {
