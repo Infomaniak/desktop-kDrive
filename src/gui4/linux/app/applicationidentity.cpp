@@ -24,11 +24,13 @@
 
 namespace KDC::ApplicationIdentity {
 
-static constexpr auto applicationIconPath = ":/assets/taskbar/logo_kdrive.svg";
+namespace {
+constexpr auto applicationIconPath = ":/assets/taskbar/logo_kdrive.svg";
 
-static QIcon applicationIcon() {
+QIcon applicationIcon() {
     return QIcon(QString::fromLatin1(applicationIconPath));
 }
+} // namespace
 
 QIcon applyTo() {
     QGuiApplication::setApplicationName(QString::fromLatin1(APPLICATION_CLIENTV4_EXECUTABLE));
