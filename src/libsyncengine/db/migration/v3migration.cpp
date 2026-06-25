@@ -328,6 +328,18 @@ bool V3Migration::getRootChildrenDbIds(std::vector<DbNodeId> &rootChildrenDbIds)
 }
 
 bool V3Migration::migrate(const std::string &dbFromVersionNumber) {
+    if (!CommonUtility::isVersionLower(dbFromVersionNumber, "4.0.1")) return true;
+
+    LOG_DEBUG(logger(), "Migration to Private folder for version < 4.0.1 of Sync DB");
+
+    if (!migrateLocalItemsToPrivateDir(dbFromVersionNumber)) {
+        LOG_WARN(logger(), "Error in V3Migration::migrateLocalItemsToPrivateDir. Migration failed.");
+
+        return false;
+    }
+
+    LOG_INFO(logger(), "Migration of synchronized items to Private folder successfully completed.");
+
     return true;
 }
 } // namespace KDC
