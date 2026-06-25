@@ -49,36 +49,22 @@ bool OnboardingFlowController::loginFailed() const {
     return _loginState == LoginError;
 }
 
-QString OnboardingFlowController::loginStatusText() const {
-    switch (_loginState) {
-        case LoginIdle:
-            return {};
-        case WaitingForWebAuthentication:
-            return tr("Waiting for browser authentication...");
-        case LoadingUser:
-            return tr("Loading your kDrive account...");
-        case LoginError:
-            return tr("Unable to connect. Please try again.");
-    }
-    return {};
-}
-
 QString OnboardingFlowController::title() const {
     switch (_currentStep) {
         case Login:
-            return tr("Bienvenue dans kDrive");
+            return tr("Welcome to kDrive");
         case DriveSelection:
-            return tr("Choisir un kDrive");
+            return tr("Welcome back!");
         case Synchronization:
-            return tr("Configurer la synchronisation");
+            return tr("Synchronization in progress..");
         case Ready:
-            return tr("kDrive est prêt");
+            return tr("All set!");
     }
     return {};
 }
 
 void OnboardingFlowController::requestLogin() {
-    if (_currentStep != Login || _loginState == LoadingUser) {
+    if (_currentStep != Login || loginInProgress()) {
         return;
     }
 
