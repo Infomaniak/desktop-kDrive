@@ -22,6 +22,6 @@
 
 namespace KDC::ApplicationIdentity {
 
-QIcon applyTo();
+QIcon configureApplication();
 
 } // namespace KDC::ApplicationIdentity
