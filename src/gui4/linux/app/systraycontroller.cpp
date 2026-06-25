@@ -39,13 +39,11 @@ namespace {
 constexpr uint8_t trayAvailabilityRetryLimit = 60;
 constexpr int32_t trayAvailabilityRetryIntervalMs = 1000;
 
-bool forceNoTrayRequested() {
 #ifdef QT_DEBUG
+bool forceNoTrayRequested() {
     return qEnvironmentVariableIsSet("KDRIVE_FORCE_NO_TRAY");
-#else
-    return false;
-#endif
 }
+#endif
 
 QString toQString(const SyncStatus status) {
     return QString::fromStdString(toString(status));
