@@ -170,7 +170,8 @@ jobs:
         if: always()
 
       - name: Clean the log directory
-        run : rm -rf ${{ env.HOME }}/Library/Logs/kDrive/*
+        run : rm -rf $HOME/Library/Logs/kDrive/*
+        shell: bash
         continue-on-error: true
 
       - name: Clean-up generated code
@@ -189,7 +190,8 @@ jobs:
           submodules: recursive
 
       - name: Clean the log directory
-        run : rm -rf ${{ env.HOME }}/.local/state/kDrive/logs/*
+        run : rm -rf $HOME/.local/state/kDrive/logs/*
+        shell: bash
 
       - name: Grant building script execute permission
         run : chmod +x ./infomaniak-build-tools/linux/build-ci-amd64.sh

@@ -13,7 +13,7 @@ runs:
     using: "composite"
     steps:
       - name: Clean up log directory
-        run : rm -rf ${{ env.HOME }}/.local/state/kDrive/logs/* || true
+        run : rm -rf $HOME/.local/state/kDrive/logs/* || true
         shell: bash
 
       - name: Load cached dependencies

@@ -22,7 +22,7 @@ runs:
           clean-key: true
 
       - name: Clean the log directory
-        run : rm -rf ${{ env.HOME }}/Library/Logs/kDrive/*
+        run : rm -rf $HOME/Library/Logs/kDrive/*
         shell: bash
         continue-on-error: true
 
@@ -67,7 +67,7 @@ runs:
         uses: actions/upload-artifact@v7.0.1
         with:
           name: macos-logs-${{ inputs.test_name }}
-          path: $HOME/Library/Logs/kDrive/*
+          path: ${{ env.HOME }}/Library/Logs/kDrive/*
           retention-days: 1
         if: always()
 
