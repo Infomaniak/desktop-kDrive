@@ -41,10 +41,9 @@ class IpcClient : public QObject {
         using ResponseCallback = std::function<void(ExitInfo, const Poco::DynamicStruct &)>;
 
         explicit IpcClient(QObject *parent = nullptr);
+        void connectToServer(quint16 port);
 #ifdef QT_DEBUG
         void connectToServer();
-#else
-        void connectToServer(quint16 port);
 #endif
         [[nodiscard]] bool isConnected() const { return _socket->state() == QAbstractSocket::ConnectedState; }
         void sendRequest(RequestNum num, const Poco::DynamicStruct &params = {}, ResponseCallback callback = nullptr);
