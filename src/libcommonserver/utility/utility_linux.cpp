@@ -49,6 +49,7 @@ static const auto mimeType = "x-scheme-handler/kdrive";
 
 namespace {
 static constexpr auto applicationIconResourcePath = ":/assets/taskbar/logo_kdrive.svg";
+static constexpr auto applicationIconName = "logo_kdrive";
 static constexpr auto applicationIconFileName = "logo_kdrive.svg";
 
 int parseLineForRamStatus(char *line) {
@@ -107,7 +108,7 @@ bool installApplicationIcon(const SyncPath &homePath) {
 
     const QString sourceIconPath = QString::fromLatin1(applicationIconResourcePath);
     const SyncPath destinationIconPath = applicationIconPath(homePath);
-    const QString destinationIconQPath = QString::fromStdString(destinationIconPath.string());
+    const QString destinationIconQPath = QFile::decodeName(destinationIconPath.c_str());
 
     if (!QFile::exists(sourceIconPath)) {
         LOG_WARN(utilityLogger, "Could not find bundled application icon resource");
@@ -273,7 +274,7 @@ bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &
         autoStartFile << "GenericName=File Synchronizer" << std::endl;
         autoStartFile << "Exec=" << "'" << appimageDir.native() << "'" << std::endl;
         autoStartFile << "Terminal=false" << std::endl;
-        autoStartFile << "Icon=" << APPLICATION_ICON_NAME << std::endl;
+        autoStartFile << "Icon=" << CommonUtility::toLower(appName) << std::endl;
         autoStartFile << "Categories=Network" << std::endl;
         autoStartFile << "Type=Application" << std::endl;
         autoStartFile << "StartupNotify=false" << std::endl;
@@ -339,15 +340,14 @@ bool Utility::registerLoginRedirection() {
     }
 
     SyncPath execPath;
-    const std::string appImageEnv = KDC::CommonUtility::envVarValue("APPIMAGE");
-    if (!appImageEnv.empty()) {
+    if (const std::string appImageEnv = KDC::CommonUtility::envVarValue("APPIMAGE"); !appImageEnv.empty()) {
         execPath = SyncPath(appImageEnv);
     } else {
-        execPath = KDC::CommonUtility::applicationFilePath();
+        execPath = CommonUtility::applicationFilePath();
     }
     urlSchemeFile << "[Desktop Entry]" << '\n';
     urlSchemeFile << "Name=" << APPLICATION_EXECUTABLE << '\n';
-    urlSchemeFile << "Icon=" << applicationIconPath(SyncPath(homePathEnv)).string() << '\n';
+    urlSchemeFile << "Icon=" << applicationIconName << '\n';
     urlSchemeFile << "Exec=" << "\"" << execPath.string() << "\"" << " %u" << '\n';
     urlSchemeFile << "Type=Application" << '\n';
     urlSchemeFile << "Terminal=false" << '\n';
@@ -355,9 +355,10 @@ bool Utility::registerLoginRedirection() {
     urlSchemeFile << "MimeType=" << mimeType << ";" << '\n';
     urlSchemeFile.close();
 
-    bool res = installApplicationIcon(SyncPath(homePathEnv));
+    (void) installApplicationIcon(SyncPath(homePathEnv));
 
     // Update database
+    bool res = true;
     const std::string applicationsDir = std::string(homePathEnv) + "/.local/share/applications/";
     if (!runCommand("update-desktop-database", {applicationsDir})) {
         LOGW_WARN(logger(), L"Failed to update desktop database for: " << CommonUtility::s2ws(applicationsDir));
@@ -366,7 +367,7 @@ bool Utility::registerLoginRedirection() {
 
     // Register scheme
     if (!runCommand("xdg-mime",
-                             std::vector<std::string>{"default", (std::string(APPLICATION_EXECUTABLE) + ".desktop"), mimeType})) {
+                    std::vector<std::string>{"default", (std::string(APPLICATION_EXECUTABLE) + ".desktop"), mimeType})) {
         LOGW_WARN(logger(), L"Failed to register URL scheme with xdg-mime");
         res = false;
     }
