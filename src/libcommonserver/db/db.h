@@ -107,6 +107,8 @@ class COMMONSERVER_EXPORT Db {
         std::string _fromVersion;
         bool _versionUpdated{false};
 
+        friend class V3Migration;
+
     private:
         bool insertVersion(const std::string &version);
         bool updateVersion(const std::string &version, bool &found);

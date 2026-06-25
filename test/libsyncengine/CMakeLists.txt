@@ -28,6 +28,7 @@ set(testsyncengine_SRCS
         ../test_classes/testsituationgenerator.h ../test_classes/testsituationgenerator.cpp
         # Database
         db/testsyncdb.h db/testsyncdb.cpp
+        db/migration/testv3migration.h db/migration/testv3migration.cpp
         # Jobs
         jobs/testabstractjob.h jobs/testabstractjob.cpp
         jobs/testsyncjobmanagersingleton.h jobs/testsyncjobmanagersingleton.cpp

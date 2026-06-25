@@ -30,14 +30,6 @@ class SyncDbMock : public SyncDb {
         void freeRequest(const char *requestId);
         void enablePrepare(bool enabled);
 
-    protected:
-        bool getPrivateDirRemoteNodeId(const DriveDbId, RemoteNodeId &remoteNodeId) override {
-            remoteNodeId = RemoteNodeId{"666"};
-            return true;
-        }
-
-        friend class TestSyncDb;
-
     private:
         bool _isPrepareEnabled{false};
 };
@@ -59,8 +51,6 @@ class TestSyncDb : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testDummyUpgrade);
         CPPUNIT_TEST(testDbNode);
         CPPUNIT_TEST(testTryToFixDbNodeIdsAfterSyncDirChange);
-        CPPUNIT_TEST(testMigrateLocalItemsToPrivateDir);
-        CPPUNIT_TEST(testMigrationOfNonRootAdvancedSync);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -91,29 +81,14 @@ class TestSyncDb : public CppUnit::TestFixture, public TestBase {
         void testDummyUpgrade();
         void testDbNode();
         void testTryToFixDbNodeIdsAfterSyncDirChange();
-        void testMigrateLocalItemsToPrivateDir();
-        void testMigrationOfNonRootAdvancedSync();
 
     private:
         SyncDbMock *_testObj{nullptr};
 
-        DriveDbId _driveDbId{1};
-        enum class SyncType {
-            Advanced,
-            NonAdvanced
-        };
-        void createParmsDb(const SyncPath &syncDbPath, const SyncPath &localPath, SyncType syncType = SyncType::NonAdvanced);
+        void createParmsDb(const SyncPath &syncDbPath, const SyncPath &localPath);
 
         // Note: the node ID value "1" is reserved for the root node of any synchronisation for both local and remote
         // sides.
         std::vector<DbNode> setupSyncDb3_6_5(const std::vector<NodeId> &localNodeIds = {"2", "3", "4", "5", "6"});
-
-        struct MigrationFileSetup {
-                std::vector<SyncPath> movedItems;
-                std::vector<SyncPath> remainingItems;
-        };
-
-        // Initial setup to test the migration to local Private folder in keeping with the backend API v3.
-        MigrationFileSetup setupSyncMigrationToLocalPrivateDir(const SyncPath &localPath);
 };
 } // namespace KDC

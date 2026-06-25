@@ -27,13 +27,4 @@ Migration::Migration(std::shared_ptr<SyncDb> syncDbPtr) :
     _logger = syncDbPtr->logger();
 }
 
-void Migration::queryFree(const std::string &requestId) {
-    if (!_syncDbPtr) {
-        LOG_ERROR(_logger, "SyncDb pointer is null.");
-
-        return;
-    }
-
-    _syncDbPtr->queryFree(requestId);
-}
 } // namespace KDC

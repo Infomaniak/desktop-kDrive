@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <log4cplus/logger.h>
+
 #include <memory>
 
 namespace KDC {
@@ -27,11 +29,11 @@ class SyncDb;
 class Migration {
     public:
         Migration(std::shared_ptr<SyncDb> synDbPtr);
+        virtual ~Migration() = default;
 
-        virtual bool migrate() = 0;
-
-    protected:
-        void queryFree(const std::string &requestId);
+        virtual bool migrate(const std::string &dbFromVersionNumber) = 0;
+        log4cplus::Logger logger() const { return _logger; }
+        std::shared_ptr<SyncDb> syncDb() { return _syncDbPtr; };
 
     private:
         std::shared_ptr<SyncDb> _syncDbPtr;
