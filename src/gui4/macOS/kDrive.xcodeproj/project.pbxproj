@@ -139,6 +139,7 @@
 				Cache/Observation/helpers/ObservedUpdater.swift,
 				Cache/Observation/helpers/ObservedUser.swift,
 				Jobs/LoginJobTests.swift,
+				Logging/GzipCompressorTests.swift,
 				Logging/LogServiceTests.swift,
 				Parsing/Base64CodedTests.swift,
 				Parsing/CallbackMessageTests.swift,
