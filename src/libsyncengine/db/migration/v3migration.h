@@ -44,7 +44,7 @@ class V3Migration : public Migration {
 
         // Move local items to the Private folder introduced with the backend API v3.
         // Update accordingly the parent node IDs the of moved items in the DB.
-        bool migrateLocalItemsToPrivateDir(const std::string &dbFromVersionNumber);
+        bool migrateLocalItemsToPrivateDir();
 
         // Get the DB IDs of the children of the root node, excluding 'Common documents' and 'Shared'..
         bool getRootChildrenDbIds(std::vector<DbNodeId> &rootChildrenDbIds);

@@ -44,6 +44,7 @@ class TestV3Migration : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestV3Migration);
         CPPUNIT_TEST(testMigrateLocalItemsToPrivateDir);
         CPPUNIT_TEST(testMigrationOfNonRootAdvancedSync);
+        CPPUNIT_TEST(testNoOpMigration);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -53,6 +54,7 @@ class TestV3Migration : public CppUnit::TestFixture, public TestBase {
     protected:
         void testMigrateLocalItemsToPrivateDir();
         void testMigrationOfNonRootAdvancedSync();
+        void testNoOpMigration();
 
     private:
         std::unique_ptr<V3MigrationMock> _testObj{nullptr};
@@ -60,10 +62,9 @@ class TestV3Migration : public CppUnit::TestFixture, public TestBase {
         DriveDbId _driveDbId{1};
         enum class SyncType {
             Advanced,
-            NonAdvanced
+            Standard
         };
-        void createParmsDb(const SyncPath &syncDbPath, const SyncPath &localPath,
-                           SyncType syncType = SyncType::NonAdvanced) const;
+        void createParmsDb(const SyncPath &syncDbPath, const SyncPath &localPath, SyncType syncType = SyncType::Standard) const;
 
 
         struct MigrationFileSetup {

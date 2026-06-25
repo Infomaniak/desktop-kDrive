@@ -93,11 +93,7 @@ bool V3Migration::renameTempPrivateDir(const SyncPath &privateTmpLocalPath, cons
     return true;
 }
 
-bool V3Migration::migrateLocalItemsToPrivateDir(const std::string &dbFromVersionNumber) {
-    if (!CommonUtility::isVersionLower(dbFromVersionNumber, "4.0.1.0")) return true;
-
-    LOG_DEBUG(logger(), "Upgrade < 4.0.1.0 Sync DB");
-
+bool V3Migration::migrateLocalItemsToPrivateDir() {
     Sync sync;
     bool found = false;
 
@@ -332,7 +328,7 @@ bool V3Migration::migrate(const std::string &dbFromVersionNumber) {
 
     LOG_DEBUG(logger(), "Migration to Private folder for version < 4.0.1 of Sync DB");
 
-    if (!migrateLocalItemsToPrivateDir(dbFromVersionNumber)) {
+    if (!migrateLocalItemsToPrivateDir()) {
         LOG_WARN(logger(), "Error in V3Migration::migrateLocalItemsToPrivateDir. Migration failed.");
 
         return false;

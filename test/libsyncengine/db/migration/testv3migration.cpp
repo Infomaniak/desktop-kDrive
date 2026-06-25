@@ -170,7 +170,7 @@ void TestV3Migration::testMigrateLocalItemsToPrivateDir() {
 
     const TestV3Migration::MigrationFileSetup fileSetup = setupSyncMigrationToLocalPrivateDir(localTmpDir.path());
 
-    CPPUNIT_ASSERT(_testObj->migrateLocalItemsToPrivateDir("3.8.5.1"));
+    CPPUNIT_ASSERT(_testObj->migrateLocalItemsToPrivateDir());
 
     /**
      * Expected FS tree:
@@ -271,10 +271,13 @@ void TestV3Migration::testMigrationOfNonRootAdvancedSync() {
     bool found = false;
     _testObj->syncDb()->updateNode(rootDbNode, found);
 
-    CPPUNIT_ASSERT(_testObj->migrateLocalItemsToPrivateDir("3.8.5.1"));
+    CPPUNIT_ASSERT(_testObj->migrateLocalItemsToPrivateDir());
 
     ParmsDb::instance()->close();
     ParmsDb::reset();
 }
 
+void TestV3Migration::testNoOpMigration() {
+    CPPUNIT_ASSERT(_testObj->migrate("5.0.0"));
+}
 } // namespace KDC
