@@ -87,8 +87,8 @@ struct LogServiceTests {
         #expect(sentryReporter.capturedEvents.map(\.level) == [.error, .fatal])
     }
 
-    @Test("File writer uses legacy client session log names")
-    func fileWriterUsesLegacyClientSessionNames() throws {
+    @Test("File writer appends to a date-stamped rolling client log file")
+    func fileWriterAppendsToDateStampedRollingClientLog() throws {
         let fileManager = FileManager.default
         let logDirectory = fileManager.temporaryDirectory
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
@@ -108,8 +108,109 @@ struct LogServiceTests {
         service.flush()
 
         let contents = try String(contentsOf: writer.fileURL, encoding: .utf8)
-        #expect(writer.fileURL.lastPathComponent == "20260609_1200_kDrive_client.log.0")
+        #expect(writer.fileURL.lastPathComponent == "20260609_1200_kDrive_client.log")
         #expect(contents == "2026-06-09 12:00:46:529 [D] (227895) commclient.cpp:122 - Snd rqst 12 ERROR_INFOLIST_LEGACY(35)\n")
+    }
+
+    @Test("File writer rotates oversized logs into compressed backups and trims old ones")
+    func fileWriterRotatesIntoCompressedBackups() throws {
+        let fileManager = FileManager.default
+        let logDirectory = fileManager.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? fileManager.removeItem(at: logDirectory) }
+
+        // Tiny size + a small backup count so a handful of lines trigger several rotations.
+        // Every single line is larger than `maxFileSize`, so each append after the first rotates.
+        let date = try Self.date(year: 2026, month: 6, day: 9, hour: 12, minute: 0, second: 46, millisecond: 529)
+        let maxBackupIndex = 2
+        let writer = try LogFileWriter(
+            logDirectory: logDirectory,
+            date: date,
+            timeZone: Self.utcTimeZone,
+            fileManager: fileManager,
+            maxFileSize: 10,
+            maxBackupIndex: maxBackupIndex
+        )
+
+        let lineCount = 12
+        for index in 0 ..< lineCount {
+            try writer.append("line \(index) - padding padding padding padding padding")
+        }
+
+        // Backup names share the active file's date-stamped base name.
+        let baseName = writer.fileURL.lastPathComponent
+        #expect(baseName == "20260609_1200_kDrive_client.log")
+        func backupURL(_ index: Int) -> URL {
+            logDirectory.appendingPathComponent("\(baseName).\(index).gz", isDirectory: false)
+        }
+
+        // The active file exists and only holds the most recent line.
+        let activeContents = try String(contentsOf: writer.fileURL, encoding: .utf8)
+        #expect(activeContents == "line \(lineCount - 1) - padding padding padding padding padding\n")
+
+        // Backups `.0.gz` … `.maxBackupIndex.gz` exist and are real gzip files (magic 0x1f 0x8b).
+        for index in 0 ... maxBackupIndex {
+            let url = backupURL(index)
+            #expect(fileManager.fileExists(atPath: url.path))
+
+            let header = try Data(contentsOf: url).prefix(2)
+            #expect(Array(header) == [0x1F, 0x8B])
+        }
+
+        // Nothing is kept beyond the maximum backup index (oldest removed).
+        #expect(!fileManager.fileExists(atPath: backupURL(maxBackupIndex + 1).path))
+        #expect(!fileManager.fileExists(atPath: logDirectory.appendingPathComponent("\(baseName).\(maxBackupIndex + 1)").path))
+    }
+
+    @Test("Restarting the app starts a new dated log file and leaves the previous session untouched")
+    func restartStartsNewDatedFileAndPreservesPrevious() throws {
+        let fileManager = FileManager.default
+        let logDirectory = fileManager.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? fileManager.removeItem(at: logDirectory) }
+
+        let firstDate = try Self.date(year: 2026, month: 6, day: 9, hour: 12, minute: 0, second: 0, millisecond: 0)
+        let secondDate = try Self.date(year: 2026, month: 6, day: 9, hour: 12, minute: 5, second: 0, millisecond: 0)
+
+        // First session, then "kill" it by releasing the writer (closes the file handle).
+        try autoreleasepool {
+            let writer = try LogFileWriter(logDirectory: logDirectory, date: firstDate, timeZone: Self.utcTimeZone, fileManager: fileManager)
+            try writer.append("first session line")
+        }
+
+        // Restart: a new writer with a later launch time.
+        let secondWriter = try LogFileWriter(logDirectory: logDirectory, date: secondDate, timeZone: Self.utcTimeZone, fileManager: fileManager)
+        try secondWriter.append("second session line")
+
+        let firstURL = logDirectory.appendingPathComponent("20260609_1200_kDrive_client.log", isDirectory: false)
+        let secondURL = logDirectory.appendingPathComponent("20260609_1205_kDrive_client.log", isDirectory: false)
+
+        #expect(secondWriter.fileURL == secondURL)
+        // The previous session's file still exists and is untouched (server compresses/trims it folder-wide).
+        #expect(try String(contentsOf: firstURL, encoding: .utf8) == "first session line\n")
+        #expect(try String(contentsOf: secondURL, encoding: .utf8) == "second session line\n")
+    }
+
+    @Test("Restarting within the same minute appends to the existing log file without truncating")
+    func restartWithinSameMinuteAppends() throws {
+        let fileManager = FileManager.default
+        let logDirectory = fileManager.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? fileManager.removeItem(at: logDirectory) }
+
+        let date = try Self.date(year: 2026, month: 6, day: 9, hour: 12, minute: 0, second: 0, millisecond: 0)
+
+        try autoreleasepool {
+            let writer = try LogFileWriter(logDirectory: logDirectory, date: date, timeZone: Self.utcTimeZone, fileManager: fileManager)
+            try writer.append("before restart")
+        }
+
+        let secondWriter = try LogFileWriter(logDirectory: logDirectory, date: date, timeZone: Self.utcTimeZone, fileManager: fileManager)
+        try secondWriter.append("after restart")
+
+        let url = logDirectory.appendingPathComponent("20260609_1200_kDrive_client.log", isDirectory: false)
+        #expect(secondWriter.fileURL == url)
+        #expect(try String(contentsOf: url, encoding: .utf8) == "before restart\nafter restart\n")
     }
 
     @Test("Default log directory matches the macOS CommonUtility log path")
