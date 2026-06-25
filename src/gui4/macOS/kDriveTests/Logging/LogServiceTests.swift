@@ -113,8 +113,9 @@ struct LogServiceTests {
     }
 
     @Test("Default log directory matches the macOS CommonUtility log path")
-    func defaultLogDirectoryMatchesCommonUtilityPath() throws {
-        let expectedDirectory = try #require(FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first)
+    func defaultLogDirectoryMatchesCommonUtilityPath() {
+        let expectedDirectory = FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent("Library", isDirectory: true)
             .appendingPathComponent("Logs", isDirectory: true)
             .appendingPathComponent("kDrive", isDirectory: true)
 
