@@ -41,7 +41,6 @@ class OnboardingFlowController final : public QObject {
         Q_PROPERTY(bool loginInProgress READ loginInProgress NOTIFY loginStateChanged)
         Q_PROPERTY(bool waitingForWebAuthentication READ waitingForWebAuthentication NOTIFY loginStateChanged)
         Q_PROPERTY(bool loginFailed READ loginFailed NOTIFY loginStateChanged)
-        Q_PROPERTY(QString loginStatusText READ loginStatusText NOTIFY loginStateChanged)
         Q_PROPERTY(QString title READ title NOTIFY currentStepChanged)
 
     public:
@@ -68,7 +67,6 @@ class OnboardingFlowController final : public QObject {
         [[nodiscard]] bool loginInProgress() const;
         [[nodiscard]] bool waitingForWebAuthentication() const;
         [[nodiscard]] bool loginFailed() const;
-        [[nodiscard]] QString loginStatusText() const;
         [[nodiscard]] QString title() const;
 
         Q_INVOKABLE void requestLogin();
