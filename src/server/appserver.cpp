@@ -549,7 +549,7 @@ void AppServer::init() {
 
     // Start client
     if (!startClient()) {
-        LOG_ERROR(_logger, "Error in startClient");
+        LOG_FATAL(_logger, "Failed to start kDrive client during application startup");
         throw std::runtime_error("Failed to start kDrive client.");
     }
 
@@ -4001,9 +4001,9 @@ bool AppServer::startClient() {
         }
 #elif defined(KD_LINUX)
         if constexpr (KDRIVE_VERSION_MAJOR >= 4) {
-            pathToExecutable = applicationDirPath() + QString("/%1").arg(APPLICATION_CLIENTV4_EXECUTABLE);
+            pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1").arg(APPLICATION_CLIENTV4_EXECUTABLE);
         } else {
-            pathToExecutable = applicationDirPath() + QString("/%1").arg(APPLICATION_CLIENT_EXECUTABLE);
+            pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1").arg(APPLICATION_CLIENT_EXECUTABLE);
         }
 #else
         pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1").arg(APPLICATION_CLIENT_EXECUTABLE);
@@ -4015,7 +4015,7 @@ bool AppServer::startClient() {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
             const auto port = _commManager->tryGetGUICommPort();
             if (port <= 0) {
-                LOG_FATAL(_logger, "Failed to start kDrive client (comm manager port isn't available)");
+                LOG_ERROR(_logger, "Failed to start kDrive client (comm manager port isn't available)");
                 return false;
             }
             arguments << QString::number(port);
@@ -4026,7 +4026,7 @@ bool AppServer::startClient() {
         } else if (!useClientV4 && useOldCommServer()) {
             arguments << QString::number(OldCommServer::instance()->commPort());
         } else {
-            LOG_FATAL(_logger, "Failed to start kDrive client (no communication method available)");
+            LOG_ERROR(_logger, "Failed to start kDrive client (no communication method available)");
             return false;
         }
 
