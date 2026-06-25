@@ -4089,7 +4089,8 @@ bool AppServer::startClient() {
             arguments << "--settings";
         }
 
-        LOGW_INFO(_logger, L"Starting kDrive client - path=" << Utility::formatSyncPath(pathToExecutable));
+        LOGW_INFO(_logger, L"Starting kDrive client - path=" << Utility::formatSyncPath(pathToExecutable) << L" args="
+                                                             << (arguments.size() >= 1 ? arguments[0].toStdWString() : L""));
 
         _clientProcess = new QProcess(this);
         _clientProcess->setProgram(Path2QStr(pathToExecutable));
