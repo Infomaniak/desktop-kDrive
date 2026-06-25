@@ -84,25 +84,24 @@ quint16 IpcClient::readPortFromCommFile() {
     }
     return port;
 }
+#endif
 
-#else
 /**
- * In release mode, the port is passed as a command-line argument by the server when launching the client.
+ * The port is passed as a command-line argument by the server when launching the client.
  * The first connection is retried until it succeeds once.
  * @param port TCP port on which the server is listening.
  */
-void IpcClient::connectToServer(quint16 port) {
+void IpcClient::connectToServer(const quint16 port) {
     _configuredPort = port;
     _initialConnectionAttemptCount = 0;
     attemptInitialConnection();
 }
-#endif
 
 /**
  * Attempts to connect to the server. Called on the first attempt and on each retry timer tick.
  * No-op if a connection has already been established (@c _hasConnectedOnce).
- * In debug mode, the port is resolved from the .comm file on every attempt (the server may not have written it yet).
- * In release mode, the port was set once at startup via connectToServer(quint16).
+ * In debug mode without a configured port, the port is resolved from the .comm file on every attempt because the server
+ * may not have written it yet. Otherwise, the port was set once at startup via connectToServer(quint16).
  * Schedules a retry if the port is not yet available.
  */
 void IpcClient::attemptInitialConnection() {
@@ -113,7 +112,7 @@ void IpcClient::attemptInitialConnection() {
     ++_initialConnectionAttemptCount;
 
 #ifdef QT_DEBUG
-    const quint16 port = readPortFromCommFile();
+    const quint16 port = _configuredPort > 0 ? _configuredPort : readPortFromCommFile();
 #else
     const quint16 port = _configuredPort;
 #endif
