@@ -1926,6 +1926,7 @@ ExitInfo ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId
         }
         syncOp->correspondingNode()->setCreatedAt(newCreationTime);
         syncOp->correspondingNode()->setModificationTime(newLastModificationTime);
+        syncOp->correspondingNode()->setSize(size);
     }
     node = syncOp->correspondingNode();
 
