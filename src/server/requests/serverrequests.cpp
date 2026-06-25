@@ -1087,17 +1087,15 @@ ExitInfo ServerRequests::updateUser(User &user) {
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::createAccount(const Account &account) {
+ExitCode ServerRequests::createAccount(Account &account) {
     // Load account info
     bool updated = false;
-    Account updatedAccount(account);
-    ExitCode exitCode = loadAccountInfo(updatedAccount, updated);
-    if (exitCode != ExitCode::Ok) {
+    if (const auto exitInfo = loadAccountInfo(account, updated); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ServerRequests::loadAccountInfo");
-        return exitCode;
+        return exitInfo;
     }
 
-    if (!ParmsDb::instance()->insertAccount(updatedAccount)) {
+    if (!ParmsDb::instance()->insertAccount(account)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::insertAccount");
         return ExitCode::DbError;
     }
