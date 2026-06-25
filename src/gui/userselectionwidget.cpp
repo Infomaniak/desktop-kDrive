@@ -82,14 +82,7 @@ void UserSelectionWidget::addOrUpdateUser(const UserDbId userDbId, const User &u
 void UserSelectionWidget::selectUser(const UserDbId userDbId) {
     if (_userMap.find(userDbId) != _userMap.end()) {
         _downIconLabel->setVisible(true);
-        QImage avatarImg;
-        if (_userMap[userDbId].avatar()) {
-            QByteArray avatarQBA;
-            (void) std::copy(_userMap[userDbId].avatar()->begin(), _userMap[userDbId].avatar()->end(),
-                             std::back_inserter(avatarQBA));
-            (void) avatarImg.loadFromData(avatarQBA);
-        }
-        setUserAvatar(avatarImg);
+        setUserAvatar(CommonUtility::toQImage(_userMap[userDbId].avatar()));
         _currentUserDbId = userDbId;
         emit userSelected(userDbId);
     }
@@ -150,13 +143,7 @@ void UserSelectionWidget::addMenuItem(MenuWidget *menu, User &userInfo, bool cur
     selectUserAction->setProperty(userDbIdProperty, toInt(userInfo.dbId()));
     MenuItemUserWidget *userMenuItemWidget =
             new MenuItemUserWidget(QString::fromStdString(userInfo.name()), QString::fromStdString(userInfo.email()), current);
-    QImage avatarImg;
-    if (userInfo.avatar()) {
-        QByteArray avatarQBA;
-        (void) std::copy(userInfo.avatar()->begin(), userInfo.avatar()->end(), std::back_inserter(avatarQBA));
-        (void) avatarImg.loadFromData(avatarQBA);
-    }
-    userMenuItemWidget->setLeftImage(avatarImg);
+    userMenuItemWidget->setLeftImage(CommonUtility::toQImage(userInfo.avatar()));
 
     selectUserAction->setDefaultWidget(userMenuItemWidget);
     menu->addAction(selectUserAction);

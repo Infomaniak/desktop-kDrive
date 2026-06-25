@@ -38,6 +38,7 @@
 #include <QDataStream>
 #include <QIODevice>
 #include <QThread>
+#include <QImage>
 
 #include <Poco/Dynamic/Struct.h>
 
