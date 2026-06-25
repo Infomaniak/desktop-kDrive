@@ -160,10 +160,6 @@ jobs:
       - name: Execute tests
         run : ./infomaniak-build-tools/run-tests.sh
 
-      - name: Get the path to kDrive-logdir
-        run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
-        if  : success() || failure()
-
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v7.0.1
         with:
@@ -174,7 +170,7 @@ jobs:
         if: always()
 
       - name: Clean the log directory
-        if  : contains(env.logdir_path, 'kDrive-logdir')
+        if  : always()
         run : rm -rf $HOME/Library/Logs/kDrive/*
         continue-on-error: true
 
