@@ -6,7 +6,7 @@
   Locale: da, Danish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 25 Jun 2026 10:24:20 +0200 
+  Exported at: Thu, 25 Jun 2026 15:41:36 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -1550,7 +1550,7 @@ En internetforbindelse er nødvendig for at få adgang til dem.</value>
     <value>dine filer synkroniseres</value> 
   </data> 
   <data name="synchroPaused" xml:space="preserve"> 
-    <value>Synkroniseringen er sat på pause</value> 
+    <value>synkroniseringen er sat på pause</value> 
   </data> 
   <data name="synchroStatusInProgressDescription" xml:space="preserve"> 
     <value>Dine seneste filer opdateres.</value> 
