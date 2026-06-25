@@ -461,7 +461,7 @@ function Get-Steps {
             $override = $overrideParts -join ' '
 
             Write-Info "Installing $($script:VsPackage) with workloads/components: $(($script:VsWorkloads + $script:VsComponents) -join ', ')"
-            Write-Warn "This can take a very long time (often 20-40 minutes). Please be patient and leave this window open."
+            Write-Warn "This can take a very long time (often 20-40 minutes) and may show no progress while it runs. This is normal: please be patient and leave this window open."
             Invoke-Native -FilePath "winget" -Arguments @(
                 "install", "--id", $script:VsPackage, "-e", "--source", "winget",
                 "--accept-package-agreements", "--accept-source-agreements",
