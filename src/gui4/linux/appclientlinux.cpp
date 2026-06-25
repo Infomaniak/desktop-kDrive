@@ -34,7 +34,6 @@
 #include <QWindow>
 
 #include <chrono>
-#include <cstdlib>
 #include <thread>
 #include <unistd.h>
 
@@ -122,8 +121,8 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
         bool isValidPort = false;
         const quint16 port = arguments[1].toUShort(&isValidPort);
         if (!isValidPort || port == 0) {
-            qCCritical(lcAppClientLinux) << "Invalid server communication port argument:" << arguments[1];
-            std::exit(EXIT_FAILURE);
+            SentryService::reportFatalAndExit(QStringLiteral("Invalid server communication port argument"),
+                                              QStringLiteral("Received command-line value: %1").arg(arguments[1]));
         }
 
         qCInfo(lcAppClientLinux) << "Starting initial IPC connection on configured port" << port;
@@ -133,8 +132,8 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
         qCInfo(lcAppClientLinux) << "Starting initial IPC connection using the debug .comm file";
         _ipcClient.connectToServer();
 #else
-        qCCritical(lcAppClientLinux) << "Missing server communication port argument";
-        std::exit(EXIT_FAILURE);
+        SentryService::reportFatalAndExit("Missing server communication port argument",
+                                          "Release and RelWithDebInfo clients must be launched by the server with its TCP port.");
 #endif
     }
 }
