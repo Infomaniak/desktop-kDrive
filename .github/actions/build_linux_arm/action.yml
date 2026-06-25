@@ -11,7 +11,7 @@ runs:
     using: "composite"
     steps:
       - name: Clean the log directory
-        run : rm -rf $HOME/.local/state/kDrive/logs/*
+        run : rm -rf ${{ env.HOME }}/.local/state/kDrive/logs/*
         shell: bash
 
       - name: Run the build script

@@ -22,7 +22,7 @@ runs:
           clean-key: true
 
       - name: Clean the log directory
-        run : rm -rf $HOME/Library/Logs/kDrive/*
+        run : rm -rf ${{ env.HOME }}/Library/Logs/kDrive/*
         shell: bash
         continue-on-error: true
 
