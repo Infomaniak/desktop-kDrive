@@ -60,6 +60,9 @@ struct UnknownErrorCellView: View {
                 MetadataItemView(label: "Level", value: "\(error.metadata.level)")
                 MetadataItemView(label: "Exit Code", value: "\(error.metadata.exitCode)")
                 MetadataItemView(label: "Exit Cause", value: "\(error.metadata.exitCause)")
+                if error.metadata.level == KDC.ErrorLevel.Node {
+                    MetadataItemView(label: "Path", value: "\(error.metadata.path)")
+                }
                 MetadataItemView(label: "Auto-resolved", value: "\(error.metadata.isAutoResolved)")
             }
         }
