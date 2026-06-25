@@ -1081,9 +1081,9 @@ ExitInfo ServerRequests::updateUser(User &user) {
 
     // Load User info
     bool updated = false;
-    if (const ExitCode exitCode = loadUserInfo(user, updated); exitCode != ExitCode::Ok) {
+    if (const auto exitInfo = loadUserInfo(user, updated); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in loadUserInfo");
-        return exitCode;
+        return exitInfo;
     }
 
     user.setConnected(!user.keychainKey().empty());

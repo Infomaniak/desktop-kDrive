@@ -62,7 +62,7 @@ class UserSelectionWidget : public QPushButton {
         QLabel *_userIconLabel{nullptr};
         QLabel *_downIconLabel{nullptr};
 
-        void addMenuItem(MenuWidget *menu, User &userInfo, bool current);
+        void addMenuItem(MenuWidget *menu, const User &userInfo, bool current);
 
         inline QSize downIconSize() const { return _downIconSize; }
         inline void setDownIconSize(QSize size) {

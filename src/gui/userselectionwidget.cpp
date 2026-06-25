@@ -120,9 +120,8 @@ void UserSelectionWidget::onClick(bool checked) {
         }
 
         for (auto &userMapElt: _userMap) {
-            User user = userMapElt.second;
-            if (user.dbId() != _currentUserDbId) {
-                addMenuItem(menu, user, false);
+            if (userMapElt.second.dbId() != _currentUserDbId) {
+                addMenuItem(menu, userMapElt.second, false);
             }
         }
 
@@ -138,7 +137,7 @@ void UserSelectionWidget::onClick(bool checked) {
     }
 }
 
-void UserSelectionWidget::addMenuItem(MenuWidget *menu, User &userInfo, bool current) {
+void UserSelectionWidget::addMenuItem(MenuWidget *menu, const User &userInfo, bool current) {
     QWidgetAction *selectUserAction = new QWidgetAction(this);
     selectUserAction->setProperty(userDbIdProperty, toInt(userInfo.dbId()));
     MenuItemUserWidget *userMenuItemWidget =
