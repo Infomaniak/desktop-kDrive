@@ -457,7 +457,7 @@ function Get-Steps {
 
             Write-Info "Installing $($script:VsPackage) with workloads/components: $(($script:VsWorkloads + $script:VsComponents) -join ', ')"
             Invoke-Native -FilePath "winget" -Arguments @(
-                "install", "--id", $script:VsPackage, "-e",
+                "install", "--id", $script:VsPackage, "-e", "--source", "winget",
                 "--accept-package-agreements", "--accept-source-agreements",
                 "--override", $override
             )
@@ -695,7 +695,7 @@ function Get-Steps {
                 }
                 Write-Info "Installing the latest Python 3 ($($script:PythonWingetId)) via winget."
                 Invoke-Native -FilePath "winget" -Arguments @(
-                    "install", "--id", $script:PythonWingetId, "-e",
+                    "install", "--id", $script:PythonWingetId, "-e", "--source", "winget",
                     "--accept-package-agreements", "--accept-source-agreements"
                 )
                 $pythonExe = Get-RealPythonPath
