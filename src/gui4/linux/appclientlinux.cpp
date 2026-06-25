@@ -24,10 +24,12 @@
 
 #include <Poco/Dynamic/Struct.h>
 
+#include <QCoreApplication>
 #include <QDir>
 #include <QLocale>
 #include <QQmlContext>
 #include <QScreen>
+#include <QStringList>
 #include <QSysInfo>
 #include <QWindow>
 
@@ -116,14 +118,25 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
 
     qCDebug(lcAppClientLinux) << "IPC/cache/QML wiring initialized";
 
+    if (const QStringList arguments = QCoreApplication::arguments(); arguments.size() > 1) {
+        bool isValidPort = false;
+        const quint16 port = arguments[1].toUShort(&isValidPort);
+        if (!isValidPort || port == 0) {
+            qCCritical(lcAppClientLinux) << "Invalid server communication port argument:" << arguments[1];
+            std::exit(EXIT_FAILURE);
+        }
 
+        qCInfo(lcAppClientLinux) << "Starting initial IPC connection on configured port" << port;
+        _ipcClient.connectToServer(port);
+    } else {
 #ifdef QT_DEBUG
-    qCInfo(lcAppClientLinux) << "Starting initial IPC connection";
-    _ipcClient.connectToServer();
+        qCInfo(lcAppClientLinux) << "Starting initial IPC connection using the debug .comm file";
+        _ipcClient.connectToServer();
 #else
-    qCCritical(lcAppClientLinux) << "Release mode not already supported.";
-    std::exit(EXIT_FAILURE);
+        qCCritical(lcAppClientLinux) << "Missing server communication port argument";
+        std::exit(EXIT_FAILURE);
 #endif
+    }
 }
 
 void AppClientLinux::setupLogging() {
