@@ -449,7 +449,12 @@ function Get-Steps {
             if ([string]::IsNullOrWhiteSpace($script:VsPackage)) {
                 throw "Visual Studio package id is empty. This is an internal error in the script configuration."
             }
-            $overrideParts = @("--quiet", "--norestart")
+            # The Visual Studio bootstrapper normally spawns the actual installer in the
+            # background and returns straight away, so winget reports success while the
+            # workloads are still being installed. The step's CheckIfSatisfied then runs
+            # too early and fails. "--wait" forces the installer to block until the whole
+            # installation is finished before returning its exit code.
+            $overrideParts = @("--quiet", "--norestart", "--wait")
             foreach ($w in $script:VsWorkloads)  { $overrideParts += "--add"; $overrideParts += $w }
             foreach ($c in $script:VsComponents) { $overrideParts += "--add"; $overrideParts += $c }
             $overrideParts += "--includeRecommended"
