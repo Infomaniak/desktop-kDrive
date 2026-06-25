@@ -34,7 +34,6 @@ struct Path<Tab: RouterTab>: Equatable {
 
 enum ModalPath: Equatable {}
 
-// periphery:ignore - Some functions will be used later.
 final class ViewRouter<Tab: RouterTab>: ObservableObject, NavigableRouter {
     typealias RouterPath = Path<Tab>
 
@@ -68,11 +67,6 @@ final class ViewRouter<Tab: RouterTab>: ObservableObject, NavigableRouter {
         }
 
         setCurrentTab(tab)
-    }
-
-    @MainActor
-    func setCurrentModal(_ modal: ModalPath?) {
-        currentModal = modal
     }
 
     @MainActor

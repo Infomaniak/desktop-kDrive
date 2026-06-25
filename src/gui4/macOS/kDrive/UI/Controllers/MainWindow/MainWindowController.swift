@@ -36,7 +36,6 @@ final class MainWindowController: NSWindowController {
     @LazyInjectService private var coherentCache: CoherentCache
     @LazyInjectService private var cacheObservable: CoherentCacheObservable
 
-    // periphery:ignore - We keep a strong reference on the viewController being presented
     private var viewController: NSViewController?
     private var bindStore = Set<AnyCancellable>()
 

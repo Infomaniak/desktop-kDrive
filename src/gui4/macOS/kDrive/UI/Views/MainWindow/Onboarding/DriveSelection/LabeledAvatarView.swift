@@ -47,13 +47,6 @@ class LabeledAvatarView: NSView {
         setupView()
     }
 
-    convenience init(user: UIUser? = nil) {
-        self.init(frame: .zero)
-
-        self.user = user
-        setupView()
-    }
-
     required init?(coder: NSCoder) {
         super.init(coder: coder)
         setupView()
@@ -93,5 +86,7 @@ class LabeledAvatarView: NSView {
 
 @available(macOS 14.0, *)
 #Preview {
-    LabeledAvatarView(user: PreviewHelper.user)
+    let label = LabeledAvatarView()
+    label.user = PreviewHelper.user
+    return label
 }

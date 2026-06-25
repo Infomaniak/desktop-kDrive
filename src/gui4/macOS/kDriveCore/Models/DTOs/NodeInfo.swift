@@ -18,7 +18,6 @@
 
 import Foundation
 
-// periphery:ignore - This is a DTO
 public struct NodeInfo: Sendable {
     public let modtime: TimeInterval
     public let name: String
@@ -38,6 +37,7 @@ public struct NodeInfo: Sendable {
         accessDenied = nodeInfoResponseMetadata.accessDenied
     }
 
+    // periphery:ignore - This is a DTO
     init(
         modtime: TimeInterval,
         name: String,

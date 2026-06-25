@@ -27,7 +27,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     // periphery:ignore - We keep a strong reference on the statusBarManager
     private(set) var statusBarManager: StatusBarManager?
 
-    // periphery:ignore - We keep a strong reference on the SentryService
     private(set) var sentryService: SentryService?
 
     // periphery:ignore - We keep a strong reference on the updateModalPresenter

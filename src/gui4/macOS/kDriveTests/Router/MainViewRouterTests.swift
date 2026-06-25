@@ -199,18 +199,6 @@ struct MainViewRouterTests {
     }
 
     @Test()
-    func setCurrentModalToValue() async {
-        // GIVEN
-        let router = MainViewRouter(defaultTab: .home)
-
-        // WHEN - ModalPath has no cases yet; verify setter is safe with nil
-        await router.setCurrentModal(nil)
-
-        // THEN
-        #expect(router.currentModal == nil)
-    }
-
-    @Test()
     func switchingTabsDoesNotAffectModal() async {
         // GIVEN
         let router = MainViewRouter(defaultTab: .home)
