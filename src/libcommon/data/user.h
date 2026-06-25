@@ -62,7 +62,7 @@ class User {
         [[nodiscard]] inline std::shared_ptr<CommBLOB> avatar() const { return _avatar; }
         inline void setAvatar(std::shared_ptr<CommBLOB> avatar) { _avatar = avatar; }
         inline void setToMigrate(bool toMigrate) { _toMigrate = toMigrate; }
-        [[nodiscard]] inline int toMigrate() const { return _toMigrate; }
+        [[nodiscard]] inline bool toMigrate() const { return _toMigrate; }
         [[nodiscard]] inline bool isStaff() const { return _isStaff; }
         inline void setIsStaff(const bool isStaff) { _isStaff = isStaff; }
 
