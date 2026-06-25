@@ -32,14 +32,13 @@ QIcon applicationIcon() {
 }
 } // namespace
 
-QIcon configureApplication() {
+void configureApplication(QIcon &appIcon) {
     QGuiApplication::setApplicationName(QString::fromLatin1(APPLICATION_CLIENTV4_EXECUTABLE));
     QGuiApplication::setApplicationDisplayName(QString::fromLatin1(APPLICATION_NAME));
     QGuiApplication::setDesktopFileName(QString::fromLatin1(APPLICATION_EXECUTABLE));
 
-    QIcon icon = applicationIcon();
-    QGuiApplication::setWindowIcon(icon);
-    return icon;
+    appIcon = applicationIcon();
+    QGuiApplication::setWindowIcon(appIcon);
 }
 
 } // namespace KDC::ApplicationIdentity
