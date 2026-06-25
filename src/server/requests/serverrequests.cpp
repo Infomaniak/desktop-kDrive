@@ -644,7 +644,10 @@ ExitInfo ServerRequests::getUserAvailableDrives(const UserDbId userDbId, std::ve
 ExitInfo ServerRequests::addSync(const UserDbId userDbId, const AccountId accountId, const DriveId driveId,
                                  const SyncPath &localFolderPath, const SyncPath &serverFolderPath,
                                  const NodeId &serverFolderNodeId, bool liteSync, Account &account, Drive &drive,
-                                 SyncInfo &syncInfo) {
+                                 SyncInfo &syncInfo, bool &accountCreated, bool &driveCreated) {
+    accountCreated = false;
+    driveCreated = false;
+
     LOGW_INFO(Log::instance()->getLogger(), L"Adding new sync - userDbId="
                                                     << userDbId << L" accountId=" << accountId << L" driveId=" << driveId
                                                     << L" localFolderPath=" << Path2WStr(localFolderPath).c_str()
@@ -673,6 +676,7 @@ ExitInfo ServerRequests::addSync(const UserDbId userDbId, const AccountId accoun
             return exitCode;
         }
 
+        accountCreated = true;
         LOG_INFO(Log::instance()->getLogger(),
                  "New account created in DB - accountDbId=" << accountDbId << " accountId= " << accountId
                                                             << " accountName= " << account.name() << " userDbId= " << userDbId);
@@ -699,6 +703,7 @@ ExitInfo ServerRequests::addSync(const UserDbId userDbId, const AccountId accoun
             return exitCode;
         }
 
+        driveCreated = true;
         LOGW_INFO(Log::instance()->getLogger(), L"New drive created in DB - driveDbId=" << driveDbId << L" driveId=" << driveId
                                                                                         << L" accountDbId=" << account.dbId());
     }
@@ -709,9 +714,9 @@ ExitInfo ServerRequests::addSync(const UserDbId userDbId, const AccountId accoun
 ExitInfo ServerRequests::addSync(const UserDbId userDbId, const AccountId accountId, const DriveId driveId,
                                  const QString &localFolderPath, const QString &serverFolderPath,
                                  const QString &serverFolderNodeId, bool liteSync, Account &account, Drive &drive,
-                                 SyncInfo &syncInfo) {
+                                 SyncInfo &syncInfo, bool &accountCreated, bool &driveCreated) {
     return addSync(userDbId, accountId, driveId, QStr2Path(localFolderPath), QStr2Path(serverFolderPath),
-                   serverFolderNodeId.toStdString(), liteSync, account, drive, syncInfo);
+                   serverFolderNodeId.toStdString(), liteSync, account, drive, syncInfo, accountCreated, driveCreated);
 }
 
 ExitInfo ServerRequests::addSync(const DriveDbId driveDbId, const SyncPath &localFolderPath, const SyncPath &serverFolderPath,

@@ -29,7 +29,6 @@
 #include "info/driveinfoclient.h"
 #include "info/syncinfoclient.h"
 #include "info/syncfileiteminfo.h"
-#include "libcommon/data/account.h"
 
 #include <QAction>
 #include <QMenu>

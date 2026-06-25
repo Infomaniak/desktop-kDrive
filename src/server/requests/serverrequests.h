@@ -103,10 +103,10 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitInfo getUserAvailableDrives(UserDbId userDbId, std::vector<DriveAvailable> &list);
         static ExitInfo addSync(UserDbId userDbId, AccountId accountId, DriveId driveId, const SyncPath &localFolderPath,
                                 const SyncPath &serverFolderPath, const NodeId &serverFolderNodeId, bool liteSync,
-                                Account &account, Drive &drive, SyncInfo &syncInfo);
+                                Account &account, Drive &drive, SyncInfo &syncInfo, bool &accountCreated, bool &driveCreated);
         static ExitInfo addSync(UserDbId userDbId, AccountId accountId, DriveId driveId, const QString &localFolderPath,
                                 const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync,
-                                Account &account, Drive &drive, SyncInfo &syncInfo);
+                                Account &account, Drive &drive, SyncInfo &syncInfo, bool &accountCreated, bool &driveCreated);
         static ExitInfo addSync(DriveDbId driveDbId, const SyncPath &localFolderPath, const SyncPath &serverFolderPath,
                                 const NodeId &serverFolderNodeId, bool liteSync, SyncInfo &syncInfo);
         static ExitInfo addSync(DriveDbId driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
