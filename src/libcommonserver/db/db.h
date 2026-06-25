@@ -81,6 +81,8 @@ class COMMONSERVER_EXPORT Db {
 
         [[nodiscard]] bool versionUpdated() const { return _versionUpdated; }
 
+        log4cplus::Logger logger() const { return _logger; }
+
     protected:
         void startTransaction();
         void commitTransaction();

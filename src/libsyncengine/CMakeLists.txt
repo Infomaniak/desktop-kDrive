@@ -17,6 +17,7 @@ set(syncengine_SRCS
     db/syncdb.h db/syncdb.cpp
     db/syncdbreadonlycache.h db/syncdbreadonlycache.cpp
     db/syncnode.h db/syncnode.cpp
+    db/migration/migration.h db/migration/migration.cpp
     # Login
     login/login.h login/login.cpp
     # Jobs
