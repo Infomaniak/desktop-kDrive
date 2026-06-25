@@ -92,13 +92,48 @@ namespace Infomaniak.kDrive.Pages.Settings
         private static List<string> ParseListItems(string html)
         {
             var results = new List<string>();
+
             foreach (Match match in Regex.Matches(html, @"<li[^>]*>(.*?)</li>", RegexOptions.Singleline | RegexOptions.IgnoreCase))
             {
-                // Strip any remaining HTML tags and trim whitespace
-                var text = Regex.Replace(match.Groups[1].Value, @"<[^>]+>", string.Empty).Trim();
-                if (!string.IsNullOrEmpty(text))
-                    results.Add(WebUtility.HtmlDecode(text));
+                var content = match.Groups[1].Value;
+
+                // 1. Replace <br> tags with a specific newline marker first
+                // We use \n explicitly here as the intended line break
+                content = Regex.Replace(content, @"<br\s*/?>", "\n", RegexOptions.IgnoreCase);
+
+                // 2. Strip all remaining HTML tags
+                content = Regex.Replace(content, @"<[^>]+>", string.Empty);
+
+                // 3. Decode HTML entities (e.g., &rsquo;, &eacute;)
+                content = WebUtility.HtmlDecode(content);
+
+                // 4. Normalize whitespace:
+                // Split by the intentional newlines we created in step 1
+                var lines = content.Split(new[] { '\n' }, System.StringSplitOptions.None);
+
+                var cleanedLines = new List<string>();
+                foreach (var line in lines)
+                {
+                    // Replace any remaining whitespace sequences (spaces, tabs, \r) with a single space
+                    var cleanLine = Regex.Replace(line, @"\s+", " ");
+
+                    // Trim leading/trailing spaces
+                    cleanLine = cleanLine.Trim();
+
+                    // Only add if not empty
+                    if (!string.IsNullOrEmpty(cleanLine))
+                    {
+                        cleanedLines.Add(cleanLine);
+                    }
+                }
+
+                // Join the cleaned lines back together with a single \n
+                if (cleanedLines.Count > 0)
+                {
+                    results.Add(string.Join("\n", cleanedLines));
+                }
             }
+
             return results;
         }
 
