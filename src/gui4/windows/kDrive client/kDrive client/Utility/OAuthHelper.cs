@@ -59,7 +59,7 @@ namespace Infomaniak.kDrive
             }
             catch (OperationCanceledException)
             {
-                Logger.Log(Logger.Level.Warning, "OAuth authorization canceled by user.");
+                Logger.Log(Logger.Level.Info, "OAuth authorization canceled by user.");
                 throw;
             }
             catch (Exception ex)
