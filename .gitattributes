@@ -3,3 +3,9 @@
 .gitattributes          export-ignore
 .commit-template        export-ignore
 binary/                 export-ignore
+
+# Normalize line endings
+*.cpp                   text eol=lf
+*.h                     text eol=lf
+*.hpp                   text eol=lf
+*.c                     text eol=lf
