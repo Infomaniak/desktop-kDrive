@@ -32,7 +32,7 @@ QIcon applicationIcon() {
 }
 } // namespace
 
-QIcon applyTo() {
+QIcon configureApplication() {
     QGuiApplication::setApplicationName(QString::fromLatin1(APPLICATION_CLIENTV4_EXECUTABLE));
     QGuiApplication::setApplicationDisplayName(QString::fromLatin1(APPLICATION_NAME));
     QGuiApplication::setDesktopFileName(QString::fromLatin1(APPLICATION_EXECUTABLE));
