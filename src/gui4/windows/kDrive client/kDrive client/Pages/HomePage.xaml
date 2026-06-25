@@ -135,7 +135,7 @@
                                HorizontalAlignment="Center" />
 
                     <!-- Description -->
-                    <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('synchroPaused')}"
+                    <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('synchroStatusPausedDescription')}"
                                HorizontalAlignment="Center"
                                TextWrapping="WrapWholeWords" />
 
