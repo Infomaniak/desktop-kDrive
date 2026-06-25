@@ -1470,6 +1470,8 @@ ExitCode UpdateTreeWorker::tryToMergeTmpNode(const std::shared_ptr<Node> tmpNode
             break;
         }
     }
+
+    return ExitCode::Ok;
 }
 
 ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode) {
