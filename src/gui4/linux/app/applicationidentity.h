@@ -22,6 +22,11 @@
 
 namespace KDC::ApplicationIdentity {
 
-QIcon configureApplication();
+/**
+ * Configures the global application identity on QGuiApplication: application name, display name, desktop file name and
+ * window icon.
+ * @param appIcon Output parameter, set to the application icon that was applied as the window icon.
+ */
+void configureApplication(QIcon &appIcon);
 
 } // namespace KDC::ApplicationIdentity
