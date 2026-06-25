@@ -125,7 +125,7 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
                                               QStringLiteral("Received command-line value: %1").arg(arguments[1]));
         }
 
-        qCInfo(lcAppClientLinux) << "Starting initial IPC connection on configured port" << port;
+        qCInfo(lcAppClientLinux) << "Starting initial IPC connection on configured port=" << port;
         _ipcClient.connectToServer(port);
     } else {
 #ifdef QT_DEBUG
