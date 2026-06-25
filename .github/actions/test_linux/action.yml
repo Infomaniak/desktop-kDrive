@@ -64,7 +64,7 @@ runs:
         uses: actions/upload-artifact@v7.0.1
         with:
           name: linux-logs-${{ inputs.test_name }}
-          path: ${{ env.HOME }}/.local/state/kDrive/logs/*
+          path: ~/.local/state/kDrive/logs/*
           retention-days: 1
         if: always()
 

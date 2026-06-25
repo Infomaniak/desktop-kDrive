@@ -67,7 +67,7 @@ runs:
         uses: actions/upload-artifact@v7.0.1
         with:
           name: macos-logs-${{ inputs.test_name }}
-          path: ${{ env.HOME }}/Library/Logs/kDrive/*
+          path: ~/Library/Logs/kDrive/*
           retention-days: 1
         if: always()
 
