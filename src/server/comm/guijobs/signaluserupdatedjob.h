@@ -25,11 +25,11 @@ namespace KDC {
 
 class SignalUserUpdatedJob : public AbstractGuiJob {
     public:
-        explicit SignalUserUpdatedJob(const User &userInfo);
+        explicit SignalUserUpdatedJob(const User &user);
 
     private:
         // Output parameters
-        User _userInfo;
+        User _user;
 
         ExitInfo deserializeInputParms() override { return ExitCode::Ok; }
         ExitInfo serializeOutputParms() override;

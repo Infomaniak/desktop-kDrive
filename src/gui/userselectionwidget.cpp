@@ -75,8 +75,8 @@ void UserSelectionWidget::clear() {
     _downIconLabel->setVisible(false);
 }
 
-void UserSelectionWidget::addOrUpdateUser(const UserDbId userDbId, const User &userInfo) {
-    _userMap[userDbId] = userInfo;
+void UserSelectionWidget::addOrUpdateUser(const UserDbId userDbId, const User &user) {
+    _userMap[userDbId] = user;
 }
 
 void UserSelectionWidget::selectUser(const UserDbId userDbId) {
@@ -85,7 +85,8 @@ void UserSelectionWidget::selectUser(const UserDbId userDbId) {
         QImage avatarImg;
         if (_userMap[userDbId].avatar()) {
             QByteArray avatarQBA;
-            (void) std::copy(_userMap[userDbId].avatar()->begin(), _userMap[userDbId].avatar()->end(), std::back_inserter(avatarQBA));
+            (void) std::copy(_userMap[userDbId].avatar()->begin(), _userMap[userDbId].avatar()->end(),
+                             std::back_inserter(avatarQBA));
             (void) avatarImg.loadFromData(avatarQBA);
         }
         setUserAvatar(avatarImg);
@@ -126,9 +127,9 @@ void UserSelectionWidget::onClick(bool checked) {
         }
 
         for (auto &userMapElt: _userMap) {
-            User userInfo = userMapElt.second;
-            if (userInfo.dbId() != _currentUserDbId) {
-                addMenuItem(menu, userInfo, false);
+            User user = userMapElt.second;
+            if (user.dbId() != _currentUserDbId) {
+                addMenuItem(menu, user, false);
             }
         }
 

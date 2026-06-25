@@ -94,9 +94,9 @@ struct SYNCENGINE_EXPORT ServerRequests {
 
         // C/S requests (access to network)
         // !!! Use COMM_AVERAGE_TIMEOUT !!!
-        static ExitCode requestToken(const std::string &code, const std::string &codeVerifier, User &userInfo,
-                                     bool &userCreated, std::string &error, std::string &errorDescr);
-        static ExitCode requestToken(const QString &code, const QString &codeVerifier, User &userInfo, bool &userCreated,
+        static ExitCode requestToken(const std::string &code, const std::string &codeVerifier, User &user, bool &userCreated,
+                                     std::string &error, std::string &errorDescr);
+        static ExitCode requestToken(const QString &code, const QString &codeVerifier, User &user, bool &userCreated,
                                      std::string &error, std::string &errorDescr);
         static ExitInfo getUserAvailableDrives(UserDbId userDbId,
                                                QList<DriveAvailable> &list); // TODO: Delete after switching to the new comm layer
@@ -171,14 +171,14 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode fixProxyConfig();
 
     private:
-        static ExitCode processRequestTokenFinished(const Login &login, User &userInfo, bool &userCreated);
+        static ExitCode processRequestTokenFinished(const Login &login, User &user, bool &userCreated);
         static QString canonicalPath(const QString &path);
         static ExitCode checkPathValidityRecursive(const QString &path, QString &error);
         static ExitInfo checkSyncNesting(const std::vector<Sync> &syncList, const QString &path, QString &error);
         static ExitCode syncForPath(const std::vector<Sync> &syncList, const QString &path, SyncDbId &syncDbId);
         static QString excludeFile(bool liteSync);
-        static ExitCode createUser(const User &user, User &userInfo);
-        static ExitCode updateUser(const User &user, User &userInfo);
+        static ExitInfo createUser(User &user);
+        static ExitInfo updateUser(User &user);
         static ExitCode createAccount(const Account &account);
         static ExitCode createDrive(Drive &drive);
         static ExitCode createSync(const Sync &sync, SyncInfo &syncInfo);

@@ -217,22 +217,22 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
 
     switch (num) {
         case SignalNum::USER_ADDED: {
-            User userInfo;
-            paramsStream >> userInfo;
+            User user;
+            paramsStream >> user;
 
-            emit userAdded(userInfo);
+            emit userAdded(user);
             break;
         }
         case SignalNum::USER_UPDATED: {
-            User userInfo;
-            paramsStream >> userInfo;
+            User user;
+            paramsStream >> user;
 
-            emit userUpdated(userInfo);
+            emit userUpdated(user);
             break;
         }
         case SignalNum::USER_STATUSCHANGED: {
             qint64 userDbId = 0;
-            bool connected;
+            bool connected = false;
             QString connexionError;
             paramsStream >> userDbId;
             paramsStream >> connected;
@@ -681,8 +681,7 @@ void AppClient::updateSentryUser() const {
         return;
     }
 
-    SentryUser user(userInfo->second.email(), userInfo->second.name(),
-                    std::to_string(userInfo->second.userId()));
+    SentryUser user(userInfo->second.email(), userInfo->second.name(), std::to_string(userInfo->second.userId()));
     sentry::Handler::instance()->setAuthenticatedUser(user);
 }
 

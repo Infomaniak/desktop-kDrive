@@ -1044,25 +1044,25 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> code;
             paramsStream >> codeVerifier;
 
-            User userInfo;
+            User user;
             bool userCreated = false;
             std::string error;
             std::string errorDescr;
-            ExitCode exitCode = ServerRequests::requestToken(code, codeVerifier, userInfo, userCreated, error, errorDescr);
+            ExitCode exitCode = ServerRequests::requestToken(code, codeVerifier, user, userCreated, error, errorDescr);
             if (exitCode != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in Requests::requestToken: code=" << exitCode);
                 addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
             }
             updateSentryUser();
             if (userCreated) {
-                sendUserAdded(userInfo);
+                sendUserAdded(user);
             } else {
-                sendUserUpdated(userInfo);
+                sendUserUpdated(user);
             }
 
             resultStream << toInt(exitCode);
             if (exitCode == ExitCode::Ok) {
-                resultStream << static_cast<qint64>(userInfo.dbId());
+                resultStream << static_cast<qint64>(user.dbId());
             } else {
                 resultStream << QString::fromStdString(error);
                 resultStream << QString::fromStdString(errorDescr);
@@ -2954,6 +2954,7 @@ ExitInfo AppServer::updateUser(User &user) {
         LOG_WARN(_logger, "Error in Requests::loadUserInfo: " << exitInfo);
         if (exitInfo.code() == ExitCode::InvalidToken) {
             // Notify client app that the user is disconnected
+            user.setKeychainKey(""); // Invalid keychain key
             sendUserUpdated(user);
         }
 
@@ -4656,33 +4657,33 @@ void AppServer::resolveSyncErrorsByExitCause(SyncDbId syncDbId, ExitCause cause)
     resolveErrors(errorList);
 }
 
-void AppServer::sendUserAdded(const User &userInfo) const {
+void AppServer::sendUserAdded(const User &user) const {
     if (useOldCommServer()) {
         int id = 0;
 
         QByteArray params;
         QDataStream paramsStream(&params, QIODevice::WriteOnly);
-        paramsStream << userInfo;
+        paramsStream << user;
 
         (void) OldCommServer::instance()->sendSignal(SignalNum::USER_ADDED, params, id);
     }
     if (useCommManager()) {
-        _commManager->sendGuiSignal(std::make_shared<SignalUserAddedJob>(userInfo));
+        _commManager->sendGuiSignal(std::make_shared<SignalUserAddedJob>(user));
     }
 }
 
-void AppServer::sendUserUpdated(const User &userInfo) const {
+void AppServer::sendUserUpdated(const User &user) const {
     if (useOldCommServer()) {
         int id = 0;
 
         QByteArray params;
         QDataStream paramsStream(&params, QIODevice::WriteOnly);
-        paramsStream << userInfo;
+        paramsStream << user;
 
         (void) OldCommServer::instance()->sendSignal(SignalNum::USER_UPDATED, params, id);
     }
     if (useCommManager()) {
-        _commManager->sendGuiSignal(std::make_shared<SignalUserUpdatedJob>(userInfo));
+        _commManager->sendGuiSignal(std::make_shared<SignalUserUpdatedJob>(user));
     }
 }
 
@@ -4718,33 +4719,33 @@ void AppServer::sendUserRemoved(const UserDbId userDbId) const {
     }
 }
 
-void AppServer::sendAccountAdded(const Account &accountInfo) const {
+void AppServer::sendAccountAdded(const Account &account) const {
     if (useOldCommServer()) {
         int id = 0;
 
         QByteArray params;
         QDataStream paramsStream(&params, QIODevice::WriteOnly);
-        paramsStream << accountInfo;
+        paramsStream << account;
 
         (void) OldCommServer::instance()->sendSignal(SignalNum::ACCOUNT_ADDED, params, id);
     }
     if (useCommManager()) {
-        _commManager->sendGuiSignal(std::make_shared<SignalAccountAddedJob>(accountInfo));
+        _commManager->sendGuiSignal(std::make_shared<SignalAccountAddedJob>(account));
     }
 }
 
-void AppServer::sendAccountUpdated(const Account &accountInfo) const {
+void AppServer::sendAccountUpdated(const Account &account) const {
     if (useOldCommServer()) {
         int id = 0;
 
         QByteArray params;
         QDataStream paramsStream(&params, QIODevice::WriteOnly);
-        paramsStream << accountInfo;
+        paramsStream << account;
 
         (void) OldCommServer::instance()->sendSignal(SignalNum::ACCOUNT_UPDATED, params, id);
     }
     if (useCommManager()) {
-        _commManager->sendGuiSignal(std::make_shared<SignalAccountUpdatedJob>(accountInfo));
+        _commManager->sendGuiSignal(std::make_shared<SignalAccountUpdatedJob>(account));
     }
 }
 

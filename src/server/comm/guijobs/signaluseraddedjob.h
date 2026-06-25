@@ -25,7 +25,7 @@ namespace KDC {
 
 class SignalUserAddedJob : public AbstractGuiJob {
     public:
-        explicit SignalUserAddedJob(const User &userInfo);
+        explicit SignalUserAddedJob(const User &user);
 
     private:
         // Output parameters

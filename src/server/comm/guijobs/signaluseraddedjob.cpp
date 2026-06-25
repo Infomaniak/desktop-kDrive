@@ -25,8 +25,8 @@ static const auto outParamsUserInfo = "userInfo";
 
 namespace KDC {
 
-SignalUserAddedJob::SignalUserAddedJob(const User &userInfo) :
-    _userInfo(userInfo) {
+SignalUserAddedJob::SignalUserAddedJob(const User &user) :
+    _userInfo(user) {
     _signalNum = SignalNum::USER_ADDED;
 }
 

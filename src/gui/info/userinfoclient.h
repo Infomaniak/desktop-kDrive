@@ -24,7 +24,7 @@ namespace KDC {
 
 class UserInfoClient : public User {
     public:
-        UserInfoClient();
+        UserInfoClient() = default;
         UserInfoClient(const User &userInfo);
 
         inline const QString &connectionError() const { return _connectionError; }

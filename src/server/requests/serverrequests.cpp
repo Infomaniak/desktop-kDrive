@@ -495,8 +495,8 @@ ExitInfo ServerRequests::findGoodPathForNewSync(const QString &basePath, QString
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::requestToken(const std::string &code, const std::string &codeVerifier, User &userInfo,
-                                      bool &userCreated, std::string &error, std::string &errorDescr) {
+ExitCode ServerRequests::requestToken(const std::string &code, const std::string &codeVerifier, User &user, bool &userCreated,
+                                      std::string &error, std::string &errorDescr) {
     // Generate keychainKey
     std::string keychainKey(Utility::computeMd5Hash(std::to_string(std::time(nullptr))));
 
@@ -510,7 +510,7 @@ ExitCode ServerRequests::requestToken(const std::string &code, const std::string
     }
 
     // Create or update user
-    if (ExitCode exitCode = processRequestTokenFinished(login, userInfo, userCreated); exitCode != ExitCode::Ok) {
+    if (ExitCode exitCode = processRequestTokenFinished(login, user, userCreated); exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in processRequestTokenFinished: code=" << exitCode);
         return exitCode;
     }
@@ -518,9 +518,9 @@ ExitCode ServerRequests::requestToken(const std::string &code, const std::string
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::requestToken(const QString &code, const QString &codeVerifier, User &userInfo, bool &userCreated,
+ExitCode ServerRequests::requestToken(const QString &code, const QString &codeVerifier, User &user, bool &userCreated,
                                       std::string &error, std::string &errorDescr) {
-    return requestToken(QStr2Str(code), QStr2Str(codeVerifier), userInfo, userCreated, error, errorDescr);
+    return requestToken(QStr2Str(code), QStr2Str(codeVerifier), user, userCreated, error, errorDescr);
 }
 
 ExitInfo ServerRequests::getNodeInfo(const UserDbId userDbId, const DriveId driveId, const std::string &nodeId,
@@ -1032,38 +1032,38 @@ ExitInfo ServerRequests::getPathByNodeId(const UserDbId userDbId, const DriveId 
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::createUser(const User &user, User &userInfo) {
+ExitInfo ServerRequests::createUser(User &user) {
     if (!ParmsDb::instance()->insertUser(user)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::insertUser");
         return ExitCode::DbError;
     }
 
     // Load User info
-    User updatedUser(user);
     bool updated = false;
-    if (ExitCode exitCode = loadUserInfo(updatedUser, updated); exitCode != ExitCode::Ok) {
+    if (const auto exitInfo = loadUserInfo(user, updated); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in loadUserInfo");
-        return exitCode;
+        return exitInfo;
     }
 
     if (updated) {
         bool found = false;
-        if (!ParmsDb::instance()->updateUser(updatedUser, found)) {
+        if (!ParmsDb::instance()->updateUser(user, found)) {
             LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateUser");
             return ExitCode::DbError;
         }
         if (!found) {
-            LOG_WARN(Log::instance()->getLogger(), "User not found for userDbId=" << updatedUser.dbId());
+            LOG_WARN(Log::instance()->getLogger(), "User not found for userDbId=" << user.dbId());
             return ExitCode::DataError;
         }
     }
 
-    userInfo = updatedUser;
+    user.setConnected(!user.keychainKey().empty());
+    user.setCredentialsAsked(false);
 
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::updateUser(const User &user, User &userInfo) {
+ExitInfo ServerRequests::updateUser(User &user) {
     bool found = false;
     if (!ParmsDb::instance()->updateUser(user, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateUser");
@@ -1075,13 +1075,14 @@ ExitCode ServerRequests::updateUser(const User &user, User &userInfo) {
     }
 
     // Load User info
-    User userUpdated(user);
     bool updated = false;
-    if (const ExitCode exitCode = loadUserInfo(userUpdated, updated); exitCode != ExitCode::Ok) {
+    if (const ExitCode exitCode = loadUserInfo(user, updated); exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in loadUserInfo");
         return exitCode;
     }
-    userInfo = userUpdated;
+
+    user.setConnected(!user.keychainKey().empty());
+    user.setCredentialsAsked(false);
 
     return ExitCode::Ok;
 }
@@ -2017,9 +2018,8 @@ ExitInfo ServerRequests::loadUserAvatar(User &user) {
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::processRequestTokenFinished(const Login &login, User &userInfo, bool &userCreated) {
+ExitCode ServerRequests::processRequestTokenFinished(const Login &login, User &user, bool &userCreated) {
     // Get user
-    User user;
     bool found = false;
     if (!ParmsDb::instance()->selectUserByUserId(login.apiToken().userId(), user, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectUserByUserId");
@@ -2031,7 +2031,7 @@ ExitCode ServerRequests::processRequestTokenFinished(const Login &login, User &u
 
         AbstractTokenNetworkJob::updateLoginByUserDbId(login, user.dbId());
 
-        ExitCode exitCode = updateUser(user, userInfo);
+        ExitCode exitCode = updateUser(user);
         if (exitCode != ExitCode::Ok) {
             LOG_WARN(Log::instance()->getLogger(), "Error in updateUser");
             return exitCode;
@@ -2049,7 +2049,7 @@ ExitCode ServerRequests::processRequestTokenFinished(const Login &login, User &u
         user.setDbId(dbId);
         user.setUserId(login.apiToken().userId());
         user.setKeychainKey(login.keychainKey());
-        ExitCode exitCode = createUser(user, userInfo);
+        ExitCode exitCode = createUser(user);
         if (exitCode != ExitCode::Ok) {
             LOG_WARN(Log::instance()->getLogger(), "Error in createUser");
             return exitCode;

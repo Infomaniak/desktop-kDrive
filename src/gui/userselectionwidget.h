@@ -46,7 +46,7 @@ class UserSelectionWidget : public QPushButton {
         QSize sizeHint() const override;
 
         void clear();
-        void addOrUpdateUser(UserDbId userDbId, const User &userInfo);
+        void addOrUpdateUser(UserDbId userDbId, const User &user);
         void selectUser(UserDbId userDbId);
 
     signals:
