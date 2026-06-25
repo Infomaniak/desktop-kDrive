@@ -46,13 +46,10 @@ class V3Migration : public Migration {
         // Update accordingly the parent node IDs the of moved items in the DB.
         bool migrateLocalItemsToPrivateDir();
 
-        // Get the DB IDs of the children of the root node, excluding 'Common documents' and 'Shared'..
-        bool getRootChildrenDbIds(std::vector<DbNodeId> &rootChildrenDbIds);
-
         // Update the parent node DB ID of the children of the root node with the DB ID of the Private folder.
         bool updateParentNodeIdsOfRootChildren(DriveDbId driveDbId, const SyncPath &localPrivateDirPath);
 
-        bool updateParentNodeIds(const std::vector<DbNodeId> &dbNodeIds, DbNodeId parentNodeId);
+        bool updateParentNodeIds(DbNodeId parentNodeId);
         virtual bool getPrivateDirRemoteNodeId(const DriveDbId driveDbId, RemoteNodeId &privateDirRemoteNodeId);
         bool insertPrivateDirNode(DriveDbId driveDbId, const SyncPath &localPrivateDirPath, DbNodeId &privateDirDbNodeId);
 

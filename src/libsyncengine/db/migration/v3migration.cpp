@@ -176,34 +176,28 @@ bool V3Migration::migrateLocalItemsToPrivateDir() {
     return true;
 }
 
-bool V3Migration::updateParentNodeIds(const std::vector<DbNodeId> &dbNodeIds, const DbNodeId parentNodeId) {
-    const char *requestId = "update_parent_node_id";
+bool V3Migration::updateParentNodeIds(const DbNodeId parentNodeId) {
+    const char *requestId = "update_parent_node_ids";
 
-    if (const char *query = "UPDATE node SET parentNodeId=?1 WHERE nodeId=?2;";
+    if (const char *query =
+                "UPDATE node SET parentNodeId=?1 WHERE parentNodeId = 1 AND nameLocal NOT IN ('Common documents', "
+                "'Shared') AND nodeId <> ?2;";
         !syncDb()->createAndPrepareRequest(requestId, query))
         return false;
 
     const auto lock = syncDb()->lock();
     syncDb()->invalidateCache();
+
     auto errId = -1;
     std::string error;
-    for (const auto nodeId: dbNodeIds) {
-        LOG_IF_FAIL(logger(), syncDb()->queryResetAndClearBindings(requestId));
-        LOG_IF_FAIL(logger(), syncDb()->queryBindValue(requestId, 1, parentNodeId));
-        LOG_IF_FAIL(logger(), syncDb()->queryBindValue(requestId, 2, nodeId));
-        if (!syncDb()->queryExec(requestId, errId, error)) {
-            LOG_WARN(logger(), "Error running query: " << requestId);
-            syncDb()->queryFree(requestId);
 
-            return false;
-        }
+    LOG_IF_FAIL(logger(), syncDb()->queryBindValue(requestId, 1, parentNodeId));
+    LOG_IF_FAIL(logger(), syncDb()->queryBindValue(requestId, 2, parentNodeId));
+    if (!syncDb()->queryExec(requestId, errId, error)) {
+        LOG_WARN(logger(), "Error running query: " << requestId);
+        syncDb()->queryFree(requestId);
 
-        if (syncDb()->numRowsAffected() != 1) {
-            LOG_WARN(logger(), "Error running query: " << requestId << " - num rows affected != 1");
-            syncDb()->queryFree(requestId);
-
-            return false;
-        }
+        return false;
     }
 
     syncDb()->queryFree(requestId);
@@ -272,53 +266,18 @@ bool V3Migration::insertPrivateDirNode(const DriveDbId driveDbId, const SyncPath
 bool V3Migration::updateParentNodeIdsOfRootChildren(const DriveDbId driveDbId, const SyncPath &localPrivateDirPath) {
     std::vector<DbNodeId> rootChildrenDbIds;
 
-    if (!getRootChildrenDbIds(rootChildrenDbIds)) {
-        LOGW_WARN(logger(), L"Error in getRootChildrenDbIds.");
-        return false;
-    }
-
     DbNodeId privateNodeDbId = 0;
     if (!insertPrivateDirNode(driveDbId, localPrivateDirPath, privateNodeDbId)) {
         LOGW_WARN(logger(), L"Error in insertPrivateDirNode.");
         return false;
     }
 
-    if (!updateParentNodeIds(rootChildrenDbIds, privateNodeDbId)) {
+    if (!updateParentNodeIds(privateNodeDbId)) {
         LOGW_WARN(logger(), L"Error in updateParentNodeIds.");
         return false;
     }
 
     LOG_INFO(logger(), "Successful update of parent node ids for all " << rootChildrenDbIds.size() << " root children.");
-
-    return true;
-}
-
-bool V3Migration::getRootChildrenDbIds(std::vector<DbNodeId> &rootChildrenDbIds) {
-    rootChildrenDbIds.clear();
-
-    const char *requestId = "SELECT_ROOT_CHILDREN_REQUEST_ID";
-
-    if (const char *query = "SELECT nodeId from node WHERE parentNodeId = 1 AND nameLocal NOT IN ('Common documents', 'Shared');";
-        !syncDb()->createAndPrepareRequest(requestId, query))
-        return false;
-
-    bool found = false;
-    for (;;) {
-        if (!syncDb()->queryNext(requestId, found)) {
-            LOG_WARN(logger(), "Error getting query result: " << requestId);
-            syncDb()->queryFree(requestId);
-
-            return false;
-        }
-
-        if (!found) break;
-
-        DbNodeId nodeId{0};
-        LOG_IF_FAIL(logger(), syncDb()->queryInt64Value(requestId, 0, nodeId));
-        rootChildrenDbIds.push_back(nodeId);
-    }
-
-    syncDb()->queryFree(requestId);
 
     return true;
 }
