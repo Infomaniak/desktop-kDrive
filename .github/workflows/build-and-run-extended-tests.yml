@@ -168,14 +168,14 @@ jobs:
         uses: actions/upload-artifact@v7.0.1
         with:
           name: macos-tests-logs
-          path: ${{ env.logdir_path }}/*
+          path: $HOME/Library/Logs/kDrive/*
           retention-days: 3
           overwrite: true
-        if: contains(env.logdir_path, 'kDrive-logdir') && (success() || failure())
+        if: always()
 
       - name: Clean the log directory
         if  : contains(env.logdir_path, 'kDrive-logdir')
-        run : rm -rf ${{ env.logdir_path }}/*
+        run : rm -rf $HOME/Library/Logs/kDrive/*
         continue-on-error: true
 
       - name: Clean-up generated code
@@ -194,7 +194,7 @@ jobs:
           submodules: recursive
 
       - name: Clean the log directory
-        run : rm -rf /tmp/kDrive-logdir/*
+        run : rm -rf $HOME/.local/state/kDrive/logs/*
 
       - name: Grant building script execute permission
         run : chmod +x ./infomaniak-build-tools/linux/build-ci-amd64.sh
@@ -210,7 +210,7 @@ jobs:
         uses: actions/upload-artifact@v7.0.1
         with:
           name: linux-tests-logs
-          path: /tmp/kDrive-logdir/*
+          path: $HOME/.local/state/kDrive/logs/*
           retention-days: 3
           overwrite: true
         if: always()
