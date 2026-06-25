@@ -3984,10 +3984,10 @@ bool AppServer::startClient() {
         }
 
         if (!arguments.isEmpty()) {
-            LOGW_INFO(_logger, L"Starting kDrive client - path=" << Path2WStr(QStr2Path(pathToExecutable)) << L" args="
-                                                                 << arguments[0].toStdWString());
+            LOGW_INFO(_logger, L"Starting kDrive client - path=" << Utility::formatSyncPath(QStr2Path(pathToExecutable))
+                                                                 << L" args=" << arguments[0].toStdWString());
         } else {
-            LOGW_INFO(_logger, L"Starting kDrive client - path=" << Path2WStr(QStr2Path(pathToExecutable)));
+            LOGW_INFO(_logger, L"Starting kDrive client - path=" << Utility::formatSyncPath(QStr2Path(pathToExecutable)));
         }
 
         _clientProcess = new QProcess(this);
