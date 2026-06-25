@@ -254,6 +254,9 @@ void AppServer::init() {
     connect(this, &QtSingleApplication::messageReceived, this, &AppServer::onMessageReceivedFromAnotherProcess);
 
 #if defined(KD_LINUX)
+    // This adds a bit of Qt to the server, which is deliberate: it temporarily makes the OAuth callback reliable, and the
+    // planned removal of QtSingleApplication will de facto remove this small Qt addition along with it.
+    // The removal of QtSingleApplication will be done before Qt is fully removed from the server.
     _fallbackLocalPeer = std::make_unique<SharedTools::QtLocalPeer>(
             this, applicationId() + QLatin1Char('-') + QString::number(QCoreApplication::applicationPid()));
     (void) connect(_fallbackLocalPeer.get(), &SharedTools::QtLocalPeer::messageReceived, this,
