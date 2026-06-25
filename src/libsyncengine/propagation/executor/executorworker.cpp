@@ -1832,7 +1832,7 @@ ExitInfo ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const Node
         updateTree->insertNode(node);
 
         if (!newCorrespondingParentNode->insertChild(node)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node "
+            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChild: node "
                                                << Utility::formatSyncName(node->name()) << L" parent node "
                                                << Utility::formatSyncName(newCorrespondingParentNode->name()));
             return ExitCode::DataError;
@@ -2015,9 +2015,9 @@ ExitInfo ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
         correspondingNode->setName(syncOp->newName());
 
         if (!parentNode->insertChild(correspondingNode)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node "
-                                               << Utility::formatSyncName(correspondingNode->name()) << L" parent node "
-                                               << Utility::formatSyncName(parentNode->name()));
+            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChild: node " << Utility::formatSyncName(correspondingNode->name())
+                                                                            << L" parent node "
+                                                                            << Utility::formatSyncName(parentNode->name()));
             return ExitCode::DataError;
         }
     }

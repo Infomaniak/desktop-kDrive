@@ -200,7 +200,7 @@ bool UpdateTree::updateNodeId(std::shared_ptr<Node> node, const NodeId &newId) {
     node->setId(newId);
 
     if (!node->parentNode()->insertChild(node)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in Node::insertChildren: node "
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Node::insertChild: node "
                                                         << Utility::formatSyncName(node->name()) << L" parent node "
                                                         << Utility::formatSyncName(node->parentNode()->name()));
         return false;
