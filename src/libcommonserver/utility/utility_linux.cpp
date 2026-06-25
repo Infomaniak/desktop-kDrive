@@ -48,9 +48,9 @@ namespace KDC {
 static const auto mimeType = "x-scheme-handler/kdrive";
 
 namespace {
-static constexpr auto applicationIconResourcePath = ":/assets/taskbar/logo_kdrive.svg";
-static constexpr auto applicationIconName = "logo_kdrive";
-static constexpr auto applicationIconFileName = "logo_kdrive.svg";
+constexpr auto applicationIconResourcePath = ":/assets/taskbar/logo_kdrive.svg";
+constexpr auto applicationIconName = "logo_kdrive";
+constexpr auto applicationIconFileName = "logo_kdrive.svg";
 
 int parseLineForRamStatus(char *line) {
     int i = static_cast<int>(strlen(line));
