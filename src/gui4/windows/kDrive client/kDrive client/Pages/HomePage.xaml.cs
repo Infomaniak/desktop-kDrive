@@ -175,7 +175,7 @@ namespace Infomaniak.kDrive.Pages
                 SyncStatus.Paused => Localizer.Instance.GetString("synchroPaused"),
                 SyncStatus.StopAsked => transitionStr,
                 SyncStatus.Stopped => Localizer.Instance.GetString("synchroPaused"),
-                SyncStatus.Error => transitionStr,
+                SyncStatus.Error => Localizer.Instance.GetString("synchroPaused"),
                 SyncStatus.Offline => Localizer.Instance.GetString("synchroPaused"),
                 _ => Localizer.Instance.GetString("labelWelcomeToKDrive")
             };
