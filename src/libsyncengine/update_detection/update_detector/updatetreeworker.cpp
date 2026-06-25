@@ -1456,7 +1456,7 @@ ExitCode UpdateTreeWorker::tryToMergeTmpNode(const std::shared_ptr<Node> tmpNode
                     LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChild: node "
                                                        << Utility::formatSyncName(childNode->name()) << L" parent node "
                                                        << Utility::formatSyncName(brotherNode->name()));
-                    // return ExitCode::DataError;
+                    return ExitCode::DataError;
                 }
             }
             tmpNode->children().clear();
