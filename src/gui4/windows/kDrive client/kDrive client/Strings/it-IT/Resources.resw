@@ -6,7 +6,7 @@
   Locale: it, Italian
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Wed, 24 Jun 2026 14:57:11 +0200 
+  Exported at: Thu, 25 Jun 2026 10:24:20 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -1550,7 +1550,7 @@ Questi dati consentono al nostro team di correggere e ottimizzare rapidamente l�
     <value>i tuoi file sono in sincronizzazione</value> 
   </data> 
   <data name="synchroPaused" xml:space="preserve"> 
-    <value>La sincronizzazione è temporaneamente sospesa.</value> 
+    <value>la sincronizzazione è in pausa</value> 
   </data> 
   <data name="synchroStatusInProgressDescription" xml:space="preserve"> 
     <value>I tuoi file recenti sono in fase di aggiornamento.</value> 
