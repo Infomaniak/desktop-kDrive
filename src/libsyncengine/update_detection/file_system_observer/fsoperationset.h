@@ -33,6 +33,7 @@ using FSOpPtr = std::shared_ptr<FSOperation>;
 using OpMap = std::unordered_map<UniqueId, FSOpPtr>;
 
 // Functor for ordering operations by path depth
+// NB: The ops map passed as a parameter must not be modified
 class CmpOp {
     public:
         explicit CmpOp(const OpMap &ops) :

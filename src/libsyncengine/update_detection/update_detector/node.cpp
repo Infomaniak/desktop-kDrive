@@ -173,7 +173,7 @@ bool Node::insertChild(std::shared_ptr<Node> child) {
         while (tmpNode->parentNode() != nullptr) {
             if (child == tmpNode) {
                 assert(false);
-                sentry::Handler::captureMessage(sentry::Level::Warning, "Node::insertChildren", "Child is an ancestor");
+                sentry::Handler::captureMessage(sentry::Level::Warning, "Node::insertChild", "Child is an ancestor");
                 return false;
             }
 
