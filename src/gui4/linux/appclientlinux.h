@@ -22,6 +22,8 @@
 #include "app/cache/cachepipeline.h"
 #include "app/cache/mainselectionstore.h"
 #include "app/cache/onboardingstate.h"
+#include "app/onboarding/availabledrivesmodel.h"
+#include "app/onboarding/onboardingbootstrapcoordinator.h"
 #include "app/onboarding/onboardingflowcontroller.h"
 #include "app/onboarding/onboardinglogincoordinator.h"
 #include "app/services/cachepopulator.h"
@@ -101,6 +103,9 @@ class AppClientLinux : public QApplication {
         UserService _userService{_serverCommService, _appCache, _serviceActionTracker, _serviceEventBus, this};
         OnboardingLoginCoordinator _onboardingLoginCoordinator{
                 _onboardingFlowController, _serverCommService, _userService, _appCache, _onboardingState, this};
+        OnboardingBootstrapCoordinator _onboardingBootstrapCoordinator{
+                _cachePopulator, _appCache, _onboardingState, _userService, _onboardingFlowController, this};
+        AvailableDrivesModel _availableDrivesModel{_appCache, _onboardingState, _userService, _onboardingFlowController, this};
         DriveService _driveService{_serverCommService, _serviceActionTracker, _serviceEventBus, this};
         SyncService _syncService{_serverCommService, _serviceActionTracker, _serviceEventBus, this};
         SystemTrayController _systemTrayController{this};
