@@ -79,10 +79,16 @@
     - Emits `currentSyncContextChanged()` as a coarse invalidation signal when the current sync context stays selected
       but the underlying cache graph changes.
 - `app/cache/onboardingstate.*`: onboarding-only selected user, selected available-drive keys, and pending sync configs.
+- `app/onboarding/availabledrivesmodel.*`: QML adapter for onboarding drive selection. It derives rows from
+  `AppCache::availableDriveContexts(selectedUserDbId)`, stores user choices through `OnboardingState`, and keeps
+  URL/navigation actions delegated to `OnboardingFlowController`.
+- `app/onboarding/onboardingbootstrapcoordinator.*`: post-cache-bootstrap onboarding entry coordinator. If a cached user
+  exists but no configured drive exists, it selects that user, loads available drives, enters drive selection, and asks
+  the main window to show.
 - `app/onboarding/onboardingflowcontroller.*`: QML-facing onboarding flow controller aligned with the macOS flow
   (`login -> drive selection -> synchronization -> ready`, with macOS permission steps omitted on Linux). It owns simple
-  onboarding UI actions such as opening the account signup URL; OAuth launch, `LOGIN_REQUESTTOKEN`, available-drive
-  loading, and sync creation stay outside QML-facing flow state.
+  onboarding UI actions such as opening account signup and drive-offer URLs; OAuth launch, `LOGIN_REQUESTTOKEN`,
+  available-drive loading, and sync creation stay outside QML-facing flow state.
 - `app/onboarding/onboardinglogincoordinator.*`: login workflow coordinator for onboarding. It wires the flow controller,
   OAuth service, comm service, user service, app cache, and onboarding state so `AppClientLinux` does not accumulate
   login-specific workflow logic.
@@ -197,7 +203,7 @@ cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive
 - Onboarding navigation belongs in `OnboardingFlowController`; keep long-running backend work in service facades and
   durable selections in `OnboardingState`. The login screen must not advance optimistically: it advances only after the
   server login-token request succeeds, the logged-in user appears in `AppCache`, and available-drive loading has been
-  requested.
+  requested. The drive-selection screen then owns the loading/empty/loaded presentation while the request completes.
 
 ## IPC And Error Handling
 
