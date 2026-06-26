@@ -17,6 +17,7 @@
  */
 
 import QtQuick
+import QtQuick.Window
 import kDrive.UI
 
 Row {
@@ -25,21 +26,57 @@ Row {
     property string label: ""
     property string subtitle: ""
     property string avatarSource: ""
+    property color avatarMaskColor: IKColors.onboardingUserBadgeSurface
 
-    spacing: IKSpacing.s8
+    spacing: IKOnboarding.driveSelectionUserBadgeContentSpacing
 
-    Rectangle {
+    onAvatarMaskColorChanged: avatarClipOverlay.requestPaint()
+
+    Item {
+        id: avatarContainer
+
         width: IKOnboarding.driveSelectionUserAvatarSize
         height: IKOnboarding.driveSelectionUserAvatarSize
-        radius: width / 2
-        color: IKColors.onboardingUserBadgeSurface
-        clip: true
+
+        Rectangle {
+            anchors.fill: parent
+            radius: width / 2
+            color: IKColors.surfacePrimary
+        }
 
         Image {
+            id: avatarImage
+
             anchors.fill: parent
             visible: root.avatarSource.length > 0
             source: root.avatarSource
             fillMode: Image.PreserveAspectCrop
+            smooth: true
+            mipmap: true
+            asynchronous: true
+            sourceSize.width: Math.round(width * Screen.devicePixelRatio)
+            sourceSize.height: Math.round(height * Screen.devicePixelRatio)
+        }
+
+        Canvas {
+            id: avatarClipOverlay
+
+            anchors.fill: parent
+            visible: root.avatarSource.length > 0
+            antialiasing: true
+            onPaint: {
+                const context = getContext("2d")
+                context.clearRect(0, 0, width, height)
+                context.fillStyle = root.avatarMaskColor
+                context.fillRect(0, 0, width, height)
+                context.globalCompositeOperation = "destination-out"
+                context.beginPath()
+                context.arc(width / 2, height / 2, width / 2, 0, 2 * Math.PI)
+                context.fill()
+                context.globalCompositeOperation = "source-over"
+            }
+            onWidthChanged: requestPaint()
+            onHeightChanged: requestPaint()
         }
 
         Text {
@@ -60,10 +97,10 @@ Row {
         Text {
             width: parent.width
             text: root.label
-            color: IKColors.textPrimary
-            font.pixelSize: IKFonts.bodySize
+            color: IKColors.textSecondary
+            font.pixelSize: IKFonts.headlineSize
             lineHeightMode: Text.FixedHeight
-            lineHeight: IKOnboarding.driveSelectionDriveNameLineHeight
+            lineHeight: IKOnboarding.driveSelectionUserNameLineHeight
             elide: Text.ElideRight
         }
 
