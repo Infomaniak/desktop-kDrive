@@ -261,8 +261,8 @@ void AppServer::init() {
             this, applicationId() + QLatin1Char('-') + QString::number(QCoreApplication::applicationPid()));
     (void) connect(_fallbackLocalPeer.get(), &SharedTools::QtLocalPeer::messageReceived, this,
                    &AppServer::onMessageReceivedFromAnotherProcess);
-    if (_fallbackLocalPeer->isClient()) { // Despite its name, isClient() tries to become the local server; true means another
-                                          // peer already owns it.
+    // isClient() starts the fallback server when possible; true means this process is only a client.
+    if (_fallbackLocalPeer->isClient()) {
         _fallbackLocalPeer.reset();
     } else {
         LOG_INFO(_logger, "Started Linux fallback single-application peer");
