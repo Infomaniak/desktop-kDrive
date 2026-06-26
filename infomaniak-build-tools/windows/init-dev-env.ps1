@@ -232,6 +232,19 @@ function Get-MachinePath {
     return [Environment]::GetEnvironmentVariable('Path', 'Machine')
 }
 
+function Update-SessionPathFromRegistry {
+    # Rebuilds the current process PATH from the persisted Machine and User PATH
+    # values in the registry. winget and MSI installers update those registry
+    # values, but already-running shells keep their old PATH until they are
+    # restarted. Calling this after an install makes newly added entries (e.g. a
+    # freshly installed Python) visible to the current session without reopening
+    # the shell.
+    $machine = [Environment]::GetEnvironmentVariable('Path', 'Machine')
+    $user    = [Environment]::GetEnvironmentVariable('Path', 'User')
+    $combined = @($machine, $user) | Where-Object { $_ } | ForEach-Object { $_.TrimEnd(';') }
+    $env:Path = ($combined -join ';')
+}
+
 function Test-InMachinePath {
     param([Parameter(Mandatory = $true)] [string] $Entry)
     $current = (Get-MachinePath) -split ';' | ForEach-Object { $_.TrimEnd('\') }
@@ -706,6 +719,10 @@ function Get-Steps {
                     "--accept-package-agreements", "--accept-source-agreements",
                     "--disable-interactivity"
                 )
+                # winget updated the persisted PATH in the registry, but this running
+                # shell still has the old PATH. Refresh it so the freshly installed
+                # interpreter is detected now instead of only after reopening the shell.
+                Update-SessionPathFromRegistry
                 $pythonExe = Get-RealPythonPath
                 if (-not $pythonExe) {
                     throw "Python installation did not produce a usable interpreter. Open a new shell so the updated PATH is picked up, then re-run."
