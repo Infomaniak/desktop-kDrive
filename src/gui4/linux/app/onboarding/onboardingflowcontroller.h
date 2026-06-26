@@ -41,6 +41,7 @@ class OnboardingFlowController final : public QObject {
         Q_PROPERTY(bool loginInProgress READ loginInProgress NOTIFY loginStateChanged)
         Q_PROPERTY(bool waitingForWebAuthentication READ waitingForWebAuthentication NOTIFY loginStateChanged)
         Q_PROPERTY(bool loginFailed READ loginFailed NOTIFY loginStateChanged)
+        Q_PROPERTY(bool driveSelectionActive READ driveSelectionActive NOTIFY currentStepChanged)
         Q_PROPERTY(QString title READ title NOTIFY currentStepChanged)
 
     public:
@@ -67,10 +68,15 @@ class OnboardingFlowController final : public QObject {
         [[nodiscard]] bool loginInProgress() const;
         [[nodiscard]] bool waitingForWebAuthentication() const;
         [[nodiscard]] bool loginFailed() const;
+        [[nodiscard]] bool driveSelectionActive() const;
         [[nodiscard]] QString title() const;
 
         Q_INVOKABLE void requestLogin();
         Q_INVOKABLE void requestAccountCreation() const;
+        Q_INVOKABLE void requestDriveOffers() const;
+        Q_INVOKABLE void requestFreeDriveOrder() const;
+        Q_INVOKABLE void requestAdvancedSettings();
+        Q_INVOKABLE void requestDriveSelectionContinue();
         Q_INVOKABLE void cancel();
         Q_INVOKABLE void restart();
         Q_INVOKABLE void setCurrentStep(Step step);
@@ -86,6 +92,8 @@ class OnboardingFlowController final : public QObject {
         void loginStateChanged();
         void loginRequested();
         void cancelRequested();
+        void advancedSettingsRequested();
+        void driveSelectionContinueRequested();
         void completed();
 
     private:
