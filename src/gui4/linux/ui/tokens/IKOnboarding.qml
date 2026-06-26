@@ -71,10 +71,15 @@ QtObject {
     readonly property real driveSelectionContentExpandedLeftMargin: expandedContentLeftMargin
     readonly property real driveSelectionTitleLineHeight: titleLineHeight
     readonly property real driveSelectionSectionSpacing: IKSpacing.s24
-    readonly property real driveSelectionUserBadgeHeight: 24
+    readonly property real driveSelectionUserBadgeHeight: 32
     readonly property real driveSelectionUserBadgeMaxWidth: 216
     readonly property real driveSelectionUserAvatarSize: 24
     readonly property real driveSelectionUserBadgeRadius: IKRadius.r4
+    readonly property real driveSelectionUserBadgeLeftPadding: 5
+    readonly property real driveSelectionUserBadgeRightPadding: 7
+    readonly property real driveSelectionUserBadgeVerticalPadding: IKSpacing.s4
+    readonly property real driveSelectionUserBadgeContentSpacing: 10
+    readonly property real driveSelectionUserNameLineHeight: 20
     readonly property real driveSelectionChangeUserButtonMinWidth: 100
     readonly property real driveSelectionListTitleLineHeight: 14
     readonly property real driveSelectionListWidth: 264
