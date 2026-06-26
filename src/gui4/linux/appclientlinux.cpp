@@ -79,6 +79,8 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
                    &SystemTrayController::showMainWindow);
     (void) connect(&_onboardingLoginCoordinator, &OnboardingLoginCoordinator::windowActivationRequested, &_systemTrayController,
                    &SystemTrayController::showMainWindow);
+    (void) connect(&_onboardingBootstrapCoordinator, &OnboardingBootstrapCoordinator::windowActivationRequested,
+                   &_systemTrayController, &SystemTrayController::showMainWindow);
     (void) connect(&_appCache, &AppCache::usersChanged, &_sentryService, &SentryService::updateAuthenticatedUser);
     (void) connect(&_systemTrayController, &SystemTrayController::quitRequested, this, [this] {
         qCInfo(lcAppClientLinux) << "Quit requested from system tray";
@@ -101,6 +103,7 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("syncService"), &_syncService);
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("serviceEventBus"), &_serviceEventBus);
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("onboardingState"), &_onboardingState);
+    _qmlEngine.rootContext()->setContextProperty(QStringLiteral("availableDrivesModel"), &_availableDrivesModel);
     _qmlEngine.setInitialProperties({
             {QStringLiteral("onboardingFlowController"), QVariant::fromValue<QObject *>(&_onboardingFlowController)},
             {QStringLiteral("systemTrayController"), QVariant::fromValue<QObject *>(&_systemTrayController)},
