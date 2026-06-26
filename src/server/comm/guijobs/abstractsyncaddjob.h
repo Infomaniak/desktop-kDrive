@@ -19,7 +19,7 @@
 #pragma once
 
 #include "server/comm/guijobs/abstractguijob.h"
-#include "libcommon/info/syncinfo.h"
+#include "libcommon/data/sync.h"
 
 namespace KDC {
 
@@ -33,7 +33,7 @@ class AbstractSyncAddJob : public AbstractGuiJob {
         ExitInfo serializeOutputParms() override;
         ExitInfo process() override { return ExitCode::Ok; }
 
-        ExitInfo process(const SyncInfo &syncInfo);
+        ExitInfo process(const Sync &syncInfo);
 
         auto localFolderPath() const { return _localFolderPath; }
         auto serverFolderPath() const { return _serverFolderPath; }
@@ -52,7 +52,7 @@ class AbstractSyncAddJob : public AbstractGuiJob {
         std::vector<NodeId> _blackList;
 
         // Output parameters
-        SyncInfo _syncInfo;
+        Sync _syncInfo;
 };
 
 } // namespace KDC

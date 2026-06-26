@@ -34,7 +34,7 @@
 #include "syncpal/syncpal.h"
 #include "libcommon/data/user.h"
 #include "libcommon/data/account.h"
-#include "libcommon/info/syncinfo.h"
+#include "libcommon/data/sync.h"
 #include "libcommon/info/syncfileiteminfo.h"
 #include "libcommonserver/vfs/vfs.h"
 
@@ -347,8 +347,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         virtual void sendDriveDeletionFailed(DriveDbId driveDbId) const;
         virtual void sendSyncProgressInfo(SyncDbId syncDbId, SyncStatus status, SyncStep step,
                                           const SyncProgress &progress) const;
-        virtual void sendSyncAdded(const SyncInfo &syncInfo) const;
-        virtual void sendSyncUpdated(const SyncInfo &syncInfo) const;
+        virtual void sendSyncAdded(const Sync &sync) const;
+        virtual void sendSyncUpdated(const Sync &sync) const;
         virtual void sendSyncRemoved(SyncDbId syncDbId) const;
         virtual void sendSyncDeletionFailed(SyncDbId syncDbId) const;
         virtual void sendManyDeletesNotification(SyncDbId syncDbId, TooManyDeletesNotificationType notificationType,

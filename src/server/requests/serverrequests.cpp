@@ -256,9 +256,9 @@ ExitInfo ServerRequests::updateDrive(const Drive &drive) {
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getSyncInfoList(QList<SyncInfo> &list) {
-    std::vector<SyncInfo> syncInfoList;
-    if (ExitCode exitCode = getSyncInfoList(syncInfoList); exitCode != ExitCode::Ok) {
+ExitCode ServerRequests::getSyncList(QList<Sync> &list) {
+    std::vector<Sync> syncInfoList;
+    if (ExitCode exitCode = getSyncList(syncInfoList); exitCode != ExitCode::Ok) {
         return exitCode;
     }
 
@@ -267,17 +267,10 @@ ExitCode ServerRequests::getSyncInfoList(QList<SyncInfo> &list) {
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getSyncInfoList(std::vector<SyncInfo> &list) {
-    std::vector<Sync> syncList;
-    if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
+ExitCode ServerRequests::getSyncList(std::vector<Sync> &list) {
+    if (!ParmsDb::instance()->selectAllSyncs(list)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs");
         return ExitCode::DbError;
-    }
-    list.clear();
-    SyncInfo syncInfo;
-    for (const Sync &sync: syncList) {
-        syncToSyncInfo(sync, syncInfo);
-        list.push_back(syncInfo);
     }
 
     return ExitCode::Ok;
@@ -643,8 +636,8 @@ ExitInfo ServerRequests::getUserAvailableDrives(const UserDbId userDbId, std::ve
 
 ExitInfo ServerRequests::addSync(const UserDbId userDbId, const AccountId accountId, const DriveId driveId,
                                  const SyncPath &localFolderPath, const SyncPath &serverFolderPath,
-                                 const NodeId &serverFolderNodeId, bool liteSync, Account &account, Drive &drive,
-                                 SyncInfo &syncInfo, bool &accountCreated, bool &driveCreated) {
+                                 const NodeId &serverFolderNodeId, bool liteSync, Account &account, Drive &drive, Sync &syncInfo,
+                                 bool &accountCreated, bool &driveCreated) {
     accountCreated = false;
     driveCreated = false;
 
@@ -713,14 +706,14 @@ ExitInfo ServerRequests::addSync(const UserDbId userDbId, const AccountId accoun
 
 ExitInfo ServerRequests::addSync(const UserDbId userDbId, const AccountId accountId, const DriveId driveId,
                                  const QString &localFolderPath, const QString &serverFolderPath,
-                                 const QString &serverFolderNodeId, bool liteSync, Account &account, Drive &drive,
-                                 SyncInfo &syncInfo, bool &accountCreated, bool &driveCreated) {
+                                 const QString &serverFolderNodeId, bool liteSync, Account &account, Drive &drive, Sync &syncInfo,
+                                 bool &accountCreated, bool &driveCreated) {
     return addSync(userDbId, accountId, driveId, QStr2Path(localFolderPath), QStr2Path(serverFolderPath),
                    serverFolderNodeId.toStdString(), liteSync, account, drive, syncInfo, accountCreated, driveCreated);
 }
 
 ExitInfo ServerRequests::addSync(const DriveDbId driveDbId, const SyncPath &localFolderPath, const SyncPath &serverFolderPath,
-                                 const NodeId &serverFolderNodeId, bool liteSync, SyncInfo &syncInfo) {
+                                 const NodeId &serverFolderNodeId, bool liteSync, Sync &syncInfo) {
     LOGW_INFO(Log::instance()->getLogger(), L"Adding new sync - driveDbId=" << driveDbId << L" localFolderPath="
                                                                             << Path2WStr(localFolderPath) << L" serverFolderPath="
                                                                             << Path2WStr(serverFolderPath) << L" liteSync="
@@ -782,7 +775,7 @@ ExitInfo ServerRequests::addSync(const DriveDbId driveDbId, const SyncPath &loca
     sync.setDbPath(std::filesystem::path());
     sync.setHasFullyCompleted(false);
     sync.setNavigationPaneClsid(navigationPaneClsid.toString().toStdString());
-    if (const auto exitCode = createSync(sync, syncInfo); exitCode != ExitCode::Ok) {
+    if (const auto exitCode = createSync(sync); exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in createSync");
         return exitCode;
     }
@@ -792,11 +785,12 @@ ExitInfo ServerRequests::addSync(const DriveDbId driveDbId, const SyncPath &loca
                                                     << Path2WStr(sync.localPath()) << L" serverFolderPath="
                                                     << Path2WStr(sync.targetPath()) << L" dbPath=" << Path2WStr(sync.dbPath()));
 
+    syncInfo = sync;
     return ExitCode::Ok;
 }
 
 ExitInfo ServerRequests::addSync(const DriveDbId driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
-                                 const QString &serverFolderNodeId, const bool liteSync, SyncInfo &syncInfo) {
+                                 const QString &serverFolderNodeId, const bool liteSync, Sync &syncInfo) {
     return addSync(driveDbId, QStr2Path(localFolderPath), QStr2Path(serverFolderPath), serverFolderNodeId.toStdString(), liteSync,
                    syncInfo);
 }
@@ -1139,13 +1133,11 @@ ExitCode ServerRequests::createDrive(Drive &drive) {
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::createSync(const Sync &sync, SyncInfo &syncInfo) {
+ExitCode ServerRequests::createSync(const Sync &sync) {
     if (!ParmsDb::instance()->insertSync(sync)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::insertSync");
         return ExitCode::DbError;
     }
-
-    syncToSyncInfo(sync, syncInfo);
 
     return ExitCode::Ok;
 }
@@ -2174,28 +2166,6 @@ ExitCode ServerRequests::syncForPath(const std::vector<Sync> &syncList, const QS
     }
 
     return ExitCode::Ok;
-}
-
-void ServerRequests::syncToSyncInfo(const Sync &sync, SyncInfo &syncInfo) {
-    syncInfo.setDbId(sync.dbId());
-    syncInfo.setDriveDbId(sync.driveDbId());
-    syncInfo.setLocalPath(SyncName2QStr(sync.localPath().native()));
-    syncInfo.setTargetPath(SyncName2QStr(sync.targetPath().native()));
-    syncInfo.setTargetNodeId(QString::fromStdString(sync.targetNodeId()));
-    syncInfo.setSupportVfs(sync.supportVfs());
-    syncInfo.setVirtualFileMode(sync.virtualFileMode());
-    syncInfo.setNavigationPaneClsid(QString::fromStdString(sync.navigationPaneClsid()));
-}
-
-void ServerRequests::syncInfoToSync(const SyncInfo &syncInfo, Sync &sync) {
-    sync.setDbId(syncInfo.dbId());
-    sync.setDriveDbId(syncInfo.driveDbId());
-    sync.setLocalPath(QStr2Path(syncInfo.localPath()));
-    sync.setTargetPath(QStr2Path(syncInfo.targetPath()));
-    sync.setTargetNodeId(syncInfo.targetNodeId().toStdString());
-    sync.setSupportVfs(syncInfo.supportVfs());
-    sync.setVirtualFileMode(syncInfo.virtualFileMode());
-    sync.setNavigationPaneClsid(syncInfo.navigationPaneClsid().toStdString());
 }
 
 void ServerRequests::errorToErrorInfo(const Error &error, ErrorInfo &errorInfo) {

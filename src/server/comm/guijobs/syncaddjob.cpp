@@ -56,7 +56,7 @@ ExitInfo SyncAddJob::deserializeInputParms() {
 
 ExitInfo SyncAddJob::process() {
     // Add sync in DB
-    SyncInfo syncInfo;
+    Sync syncInfo;
     Account account;
     Drive drive;
     bool accountAdded = false;

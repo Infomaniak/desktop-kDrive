@@ -18,17 +18,15 @@
 
 #pragma once
 
-#include "libcommon/info/syncinfo.h"
+#include "libcommon/data/sync.h"
 
 namespace KDC {
 
-class SyncInfoClient : public SyncInfo {
+class SyncInfoClient : public Sync {
     public:
         SyncInfoClient();
-        SyncInfoClient(const SyncInfo &syncInfo);
+        SyncInfoClient(const Sync &sync);
 
-        inline void setPaused(bool paused) noexcept { _paused = paused; }
-        inline bool paused() const noexcept { return _paused; }
         inline void setStatus(SyncStatus status) noexcept { _status = status; }
         inline SyncStatus status() const noexcept { return _status; }
         inline void setStep(SyncStep step) noexcept { _step = step; }
@@ -53,7 +51,6 @@ class SyncInfoClient : public SyncInfo {
         QString name() const;
 
     private:
-        bool _paused{false};
         SyncStatus _status{SyncStatus::Undefined};
         SyncStep _step;
         bool _unresolvedConflicts{false};

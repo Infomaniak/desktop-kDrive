@@ -20,17 +20,17 @@
 
 #include "server/comm/guijobs/abstractguijob.h"
 
-#include "libcommon/info/syncinfo.h"
+#include "libcommon/data/sync.h"
 
 namespace KDC {
 
 class SignalSyncUpdatedJob : public AbstractGuiJob {
     public:
-        explicit SignalSyncUpdatedJob(const SyncInfo &);
+        explicit SignalSyncUpdatedJob(const Sync &);
 
     private:
         // Output parameters
-        SyncInfo _syncInfo;
+        Sync _syncInfo;
 
         ExitInfo deserializeInputParms() override { return ExitCode::Ok; };
         ExitInfo serializeOutputParms() override;
