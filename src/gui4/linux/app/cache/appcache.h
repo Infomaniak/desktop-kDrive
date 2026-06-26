@@ -55,6 +55,7 @@ class AppCache : public QObject {
 
         // Direct id-based lookups. Missing or orphaned entities are returned as std::nullopt.
         [[nodiscard]] std::optional<UserInfo> user(UserDbId userDbId) const;
+        [[nodiscard]] std::optional<UserDisplayInfo> userDisplayInfo(UserDbId userDbId) const;
         [[nodiscard]] std::optional<AccountInfo> account(AccountDbId accountDbId) const;
         [[nodiscard]] std::optional<Drive> drive(DriveDbId driveDbId) const;
         [[nodiscard]] std::optional<SyncInfo> sync(SyncDbId syncDbId) const;
