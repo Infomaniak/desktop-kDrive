@@ -14,7 +14,7 @@ runs:
     steps:
       - name: Load cached dependencies
         id: cache
-        uses: herve-er/local-cache@v2
+        uses: herve-er/local-cache@v3
         with:
           path: build-macos/client/cache
           base: ${{ github.workspace }}/../local-cache
