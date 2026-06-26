@@ -336,6 +336,104 @@ function Invoke-Native {
     }
 }
 
+function Get-ConanProfilesDir {
+    return (Join-Path $env:USERPROFILE ".conan2\profiles")
+}
+
+function ConvertTo-CMakePath {
+    # CMake expects forward slashes, even on Windows.
+    param([Parameter(Mandatory = $true)] [string] $Path)
+    return ($Path -replace '\\', '/')
+}
+
+function Initialize-ConanProfiles {
+    # Sets up the Conan profiles required before installing the project dependencies,
+    # following infomaniak-build-tools/windows/Readme.md:
+    #   - "default": C++20, dynamic runtime and a [conf] toolchain injection pointing at
+    #     debug_vars.cmake (the extra CMake cache entries the project needs to configure).
+    #   - "infomaniak_release": a release-flavoured copy used by build-release.ps1. It must
+    #     target Release/RelWithDebInfo and must NOT inject a user_toolchain.
+    # Every action is idempotent so re-running the step is safe.
+    param([Parameter(Mandatory = $true)] [string] $ConanExe)
+
+    $profilesDir = Get-ConanProfilesDir
+    if (-not (Test-Path $profilesDir)) {
+        New-Item -ItemType Directory -Path $profilesDir -Force | Out-Null
+    }
+
+    $defaultProfile = Join-Path $profilesDir "default"
+    $releaseProfile = Join-Path $profilesDir "infomaniak_release"
+    $debugVarsPath  = Join-Path $profilesDir "debug_vars.cmake"
+
+    # 1. Auto-generate the default profile from the detected toolchain when missing.
+    if (-not (Test-Path $defaultProfile)) {
+        Write-Info "Detecting the default Conan profile."
+        Invoke-Native -FilePath $ConanExe -Arguments @("profile", "detect")
+    }
+
+    # 2. Generate debug_vars.cmake with cache entries derived from the dev tree. Paths use
+    #    forward slashes and are derived from $ProjectsDir so nothing is hardcoded to F:\.
+    $repoFwd    = ConvertTo-CMakePath $script:RepoDir
+    $zlibFwd    = ConvertTo-CMakePath $script:ZlibDir
+    $installFwd = ConvertTo-CMakePath (Join-Path $script:RepoDir "build-windows")
+    $vfsDirFwd  = "$repoFwd/extensions/windows/cfapi/x64/Debug"
+
+    $debugVars = @"
+set(APPLICATION_CLIENT_EXECUTABLE "kdrive_client")
+set(KDRIVE_THEME_DIR "$repoFwd/infomaniak")
+set(BUILD_UNIT_TESTS "ON")
+set(BUILD_GUI "ON")
+set(BUILD_GUI_LEGACY "OFF")
+set(CMAKE_BUILD_TYPE "Debug")
+set(CMAKE_INSTALL_PREFIX "$installFwd")
+set(ZLIB_INCLUDE_DIR "$zlibFwd/include")
+set(ZLIB_LIBRARY_RELEASE "$zlibFwd/lib/zlib.lib")
+set(VFS_STATIC_LIBRARY "$vfsDirFwd/Vfs.lib")
+set(VFS_DIRECTORY "$vfsDirFwd")
+"@
+    Set-Content -Path $debugVarsPath -Value $debugVars -Encoding utf8
+    Write-Info "Wrote Conan CMake toolchain injection: $debugVarsPath"
+
+    # 3. Make sure the default profile targets C++20 with a dynamic runtime and injects
+    #    debug_vars.cmake through a [conf] section.
+    $content = Get-Content $defaultProfile -Raw
+
+    if ($content -match '(?m)^compiler\.cppstd=.*$') {
+        $content = $content -replace '(?m)^compiler\.cppstd=.*$', 'compiler.cppstd=20'
+    } else {
+        $content = $content -replace '(?m)^\[settings\]\s*$', "[settings]`ncompiler.cppstd=20"
+    }
+
+    if ($content -notmatch '(?m)^compiler\.runtime=') {
+        $content = $content -replace '(?m)^\[settings\]\s*$', "[settings]`ncompiler.runtime=dynamic"
+    }
+
+    $confLine = 'tools.cmake.cmaketoolchain:user_toolchain+={{profile_dir}}/debug_vars.cmake'
+    if ($content -notmatch [regex]::Escape('user_toolchain+={{profile_dir}}/debug_vars.cmake')) {
+        if ($content -match '(?m)^\[conf\]\s*$') {
+            $content = $content -replace '(?m)^\[conf\]\s*$', "[conf]`n$confLine"
+        } else {
+            $content = $content.TrimEnd() + "`n`n[conf]`n$confLine`n"
+        }
+    }
+    Set-Content -Path $defaultProfile -Value $content -Encoding utf8
+    Write-Info "Configured the 'default' Conan profile (C++20 + debug_vars.cmake)."
+
+    # 4. Derive the 'infomaniak_release' profile from the default one: build a Release
+    #    configuration and strip the user_toolchain injection (both required by build-release.ps1).
+    $releaseLines = @()
+    foreach ($line in (Get-Content $defaultProfile)) {
+        if ($line -match 'user_toolchain') { continue }       # release must not inject a toolchain
+        if ($line -match '(?m)^build_type=') {
+            $releaseLines += 'build_type=Release'
+            continue
+        }
+        $releaseLines += $line
+    }
+    Set-Content -Path $releaseProfile -Value ($releaseLines -join "`n") -Encoding utf8
+    Write-Info "Configured the 'infomaniak_release' Conan profile (Release, no user_toolchain)."
+}
+
 # Tracks whether the MSVC x64 developer environment has already been imported this run.
 $script:VsDevEnvLoaded = $false
 
@@ -692,11 +790,15 @@ function Get-Steps {
         }
 
     # 11. Conan : Python venv (.venv) + Conan 2 + profile detect + project dependencies.
-    $steps += New-Step -Name "Conan" -Description "Python venv, Conan 2 and project dependencies (Debug)" `
+    $steps += New-Step -Name "Conan" -Description "Python venv, Conan 2, profiles and project dependencies (Debug)" `
         -CheckIfSatisfied {
-            $venvConan = Join-Path $script:RepoDir ".venv\Scripts\conan.exe"
-            $profile   = Join-Path $env:USERPROFILE ".conan2\profiles\default"
-            (Test-Path $venvConan) -and (Test-Path $profile)
+            $venvConan      = Join-Path $script:RepoDir ".venv\Scripts\conan.exe"
+            $profilesDir    = Join-Path $env:USERPROFILE ".conan2\profiles"
+            $defaultProfile = Join-Path $profilesDir "default"
+            $releaseProfile = Join-Path $profilesDir "infomaniak_release"
+            $debugVars      = Join-Path $profilesDir "debug_vars.cmake"
+            (Test-Path $venvConan) -and (Test-Path $defaultProfile) -and `
+            (Test-Path $releaseProfile) -and (Test-Path $debugVars)
         } `
         -Install {
             if (-not (Test-Path (Join-Path $script:RepoDir ".git"))) {
@@ -740,9 +842,9 @@ function Get-Steps {
             Invoke-Native -FilePath $venvPython -Arguments @("-m", "pip", "install", "--upgrade", "pip")
             Invoke-Native -FilePath $venvPython -Arguments @("-m", "pip", "install", "conan")
 
-            if (-not (Test-Path (Join-Path $env:USERPROFILE ".conan2\profiles\default"))) {
-                Invoke-Native -FilePath $venvConan -Arguments @("profile", "detect")
-            }
+            # Set up the Conan profiles (default + infomaniak_release) and the CMake
+            # toolchain injection before installing the project dependencies.
+            Initialize-ConanProfiles -ConanExe $venvConan
 
             # Activate the venv so build_dependencies.ps1 finds conan on PATH, then install Debug deps.
             . $activate
