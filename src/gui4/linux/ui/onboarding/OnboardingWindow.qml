@@ -36,12 +36,12 @@ Item {
         anchors.bottom: parent.bottom
         spacing: 0
 
-        LoginView {
+        Loader {
             id: contentPanel
 
             width: parent.width * IKOnboarding.contentPanelWidthRatio
             height: parent.height
-            onboardingFlowController: root.onboardingFlowController
+            sourceComponent: root.onboardingFlowController.driveSelectionActive ? driveSelectionComponent : loginComponent
         }
 
         Rectangle {
@@ -61,5 +61,19 @@ Item {
                 height: width * IKOnboarding.loaderStrokeAnimationHeightRatio
             }
         }
+    }
+
+    Component {
+        id: loginComponent
+
+        LoginView {
+            onboardingFlowController: root.onboardingFlowController
+        }
+    }
+
+    Component {
+        id: driveSelectionComponent
+
+        DriveSelectionView {}
     }
 }
