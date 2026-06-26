@@ -105,6 +105,7 @@ void OnboardingLoginCoordinator::loadAvailableDrivesWhenUserIsCached(const UserD
     _pendingUserDbId.reset();
     _pendingAvailableDrivesUserDbId = userDbId;
     _onboardingState.selectUser(userDbId);
+    _flowController.completeLogin(userDbId);
     _userService.loadAvailableDrives(userDbId);
 }
 
@@ -114,7 +115,6 @@ void OnboardingLoginCoordinator::completeLoginWhenAvailableDrivesAreLoaded(const
     }
 
     _pendingAvailableDrivesUserDbId.reset();
-    _flowController.completeLogin(userDbId);
 }
 
 void OnboardingLoginCoordinator::handleAvailableDrivesLoadFailed(const UserDbId userDbId) {
@@ -123,7 +123,6 @@ void OnboardingLoginCoordinator::handleAvailableDrivesLoadFailed(const UserDbId 
     }
 
     _pendingAvailableDrivesUserDbId.reset();
-    _flowController.handleLoginFailed(QString(), QString());
 }
 
 } // namespace KDC
