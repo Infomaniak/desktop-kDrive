@@ -210,3 +210,4 @@ enc_temp_folder
 # ImportLoco
 .import_loco_api
 /list_unresolved_pr_comments.py
+/src/libcommonserver/vfs/win

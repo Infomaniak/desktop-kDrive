@@ -499,7 +499,7 @@ class QtConan(ConanFile):
 
 
         # Save space by removing not needed folder (/!\ modules folder is needed by <os>deployqt from at least Qt 6.11.1)
-        for folder in ("doc"):
+        for folder in ("doc",):
             rmdir(self, pjoin(self.package_folder, folder))
 
 
