@@ -31,7 +31,7 @@ Row {
     Rectangle {
         width: IKOnboarding.driveSelectionUserAvatarSize
         height: IKOnboarding.driveSelectionUserAvatarSize
-        radius: IKOnboarding.driveSelectionUserBadgeRadius
+        radius: width / 2
         color: IKColors.onboardingUserBadgeSurface
         clip: true
 
