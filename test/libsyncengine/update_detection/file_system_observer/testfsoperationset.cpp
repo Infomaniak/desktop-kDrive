@@ -164,6 +164,39 @@ void TestFsOperationSet::testInsertOp() {
             CPPUNIT_ASSERT(ops2.contains(op->id()));
         }
     }
+
+    // Test that operations are sorted by path depth and then by uniqueId
+    fsOperationSet.clear();
+    auto op11b = std::make_shared<FSOperation>(OperationType::Create, "op11b", NodeType::Directory, 0, 0, 0, "/dir1/dir11");
+    fsOperationSet.insertOp(op11b);
+    auto op112 =
+            std::make_shared<FSOperation>(OperationType::Create, "op112", NodeType::Directory, 0, 0, 0, "/dir1/dir11/dir112");
+    fsOperationSet.insertOp(op112);
+    auto op1111 = std::make_shared<FSOperation>(OperationType::Create, "op1111", NodeType::Directory, 0, 0, 0,
+                                                "/dir1/dir11/dir111/dir1111");
+    fsOperationSet.insertOp(op1111);
+    auto op111 =
+            std::make_shared<FSOperation>(OperationType::Create, "op111", NodeType::Directory, 0, 0, 0, "/dir1/dir11/dir111");
+    fsOperationSet.insertOp(op111);
+    auto op1 = std::make_shared<FSOperation>(OperationType::Create, "op1", NodeType::Directory, 0, 0, 0, "/dir1");
+    fsOperationSet.insertOp(op1);
+    auto op11a = std::make_shared<FSOperation>(OperationType::Create, "op11a", NodeType::Directory, 0, 0, 0, "/dir1/dir11");
+    fsOperationSet.insertOp(op11a);
+
+    const auto ops = fsOperationSet.getOpsByType(OperationType::Create);
+    CPPUNIT_ASSERT_EQUAL(size_t(6), ops.size());
+    auto fsoperationIt = ops.begin();
+    CPPUNIT_ASSERT(*fsoperationIt == op1->id());
+    fsoperationIt++;
+    CPPUNIT_ASSERT(*fsoperationIt == op11b->id());
+    fsoperationIt++;
+    CPPUNIT_ASSERT(*fsoperationIt == op11a->id());
+    fsoperationIt++;
+    CPPUNIT_ASSERT(*fsoperationIt == op112->id());
+    fsoperationIt++;
+    CPPUNIT_ASSERT(*fsoperationIt == op111->id());
+    fsoperationIt++;
+    CPPUNIT_ASSERT(*fsoperationIt == op1111->id());
 }
 
 void TestFsOperationSet::testRemoveOp() {
