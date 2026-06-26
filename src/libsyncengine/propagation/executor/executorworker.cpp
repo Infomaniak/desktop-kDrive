@@ -1831,8 +1831,8 @@ ExitInfo ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const Node
         std::shared_ptr<UpdateTree> updateTree = targetUpdateTree(syncOp);
         updateTree->insertNode(node);
 
-        if (!newCorrespondingParentNode->insertChildren(node)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node "
+        if (!newCorrespondingParentNode->insertChild(node)) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChild: node "
                                                << Utility::formatSyncName(node->name()) << L" parent node "
                                                << Utility::formatSyncName(newCorrespondingParentNode->name()));
             return ExitCode::DataError;
@@ -2010,14 +2010,14 @@ ExitInfo ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
     // information in this structure.
     if (!syncOp->omit()) {
         auto prevParent = correspondingNode->parentNode();
-        prevParent->deleteChildren(correspondingNode);
+        (void) prevParent->deleteChild(correspondingNode);
 
         correspondingNode->setName(syncOp->newName());
 
-        if (!parentNode->insertChildren(correspondingNode)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node "
-                                               << Utility::formatSyncName(correspondingNode->name()) << L" parent node "
-                                               << Utility::formatSyncName(parentNode->name()));
+        if (!parentNode->insertChild(correspondingNode)) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChild: node " << Utility::formatSyncName(correspondingNode->name())
+                                                                            << L" parent node "
+                                                                            << Utility::formatSyncName(parentNode->name()));
             return ExitCode::DataError;
         }
     }
