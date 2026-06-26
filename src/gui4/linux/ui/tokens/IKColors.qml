@@ -50,8 +50,10 @@ QtObject {
 
         // Gray
         readonly property color gray50: "#F7F7F7"
+        readonly property color gray100: "#F5F5F5"
         readonly property color gray400: "#6A768B"
         readonly property color gray500: "#484E5B"
+        readonly property color gray600: "#9F9F9F"
         readonly property color gray950: "#0A0C0F"
 
         // Green
@@ -100,6 +102,15 @@ QtObject {
     readonly property color surfaceTertiary: darkMode ? _p.neutralBlue600 : _p.neutralBlue200
     readonly property color onboardingSurfacePrimary: darkMode ? _p.neutralBlue900 : _p.white
     readonly property color onboardingSurfaceSecondary: darkMode ? _p.neutralBlue700 : _p.gray50
+    readonly property color onboardingUserBadgeSurface: darkMode ? _p.neutralBlue700 : _p.gray100
+    readonly property color onboardingDriveCellSurface: darkMode ? _p.neutralBlue700 : _p.neutralBlue50
+    readonly property color onboardingDriveDisabledText: _p.gray600
+    readonly property color onboardingTooltipSurface: darkMode ? _p.neutralBlue50 : _p.neutralBlue800
+    readonly property color onboardingTooltipText: darkMode ? _p.neutralBlue800 : _p.white
+    readonly property color onboardingDriveIconBorder: Qt.rgba(0.10, 0.10, 0.10, 0.35)
+    readonly property color onboardingDriveIconHighlightStart: Qt.rgba(1, 1, 1, 0.20)
+    readonly property color onboardingDriveIconHighlightEnd: Qt.rgba(1, 1, 1, 0)
+    readonly property color onboardingDriveIconInnerBorder: Qt.rgba(1, 1, 1, 0.25)
 
     // Status — Strong
     readonly property color statusStrongWarning: darkMode ? _p.orange300 : _p.orange800
