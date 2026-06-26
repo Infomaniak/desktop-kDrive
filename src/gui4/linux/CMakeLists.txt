@@ -86,7 +86,13 @@ set_source_files_properties(${GUI_GENERATED_QML_FILES} PROPERTIES QT_QML_SKIP_QM
 set(GUI_QML_FILES # .qml files for the app
         ui/Main.qml
         ${GUI_GENERATED_QML_FILES}
+        ui/onboarding/DriveCellView.qml
+        ui/onboarding/DriveIconView.qml
+        ui/onboarding/DriveSelectionView.qml
+        ui/onboarding/DrivesListView.qml
+        ui/onboarding/LabeledAvatarView.qml
         ui/onboarding/LoginView.qml
+        ui/onboarding/NoDriveAvailableView.qml
         ui/onboarding/OnboardingAnimationsView.qml
         ui/onboarding/OnboardingWindow.qml
         ${GUI_QML_SINGLETON_FILES}
@@ -97,6 +103,7 @@ set(GUI_QML_RESOURCE_FILES # Resources for the QML files (e.g. qmldir, js files,
 )
 
 set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
+        ui/assets/onboarding/drive-icon-glyph.svg
         ui/assets/taskbar/logo_kdrive.svg
         ui/assets/tray/error.svg
         ui/assets/tray/neutral.svg
