@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Effects
 import kDrive.UI
@@ -34,6 +36,7 @@ Window {
     property color surfaceColor: IKColors.surfacePrimary
     property bool customShadowEnabled: false
     property bool headerVisible: customShadowEnabled
+    property bool headerOverlaysContent: false
     property bool windowTitleVisible: true
     property real surfaceRadius: customFrameVisible ? IKRadius.r16 : 0
     property bool inputRegionReady: false
@@ -44,7 +47,7 @@ Window {
                                                 && visibility !== Window.FullScreen
     readonly property real reservedShadowMargin: customShadowEnabled ? shadowMargin : 0
     readonly property real effectiveShadowMargin: customFrameVisible ? shadowMargin : 0
-    readonly property real reservedHeaderHeight: headerVisible ? IKWindow.headerHeight : 0
+    readonly property real reservedHeaderHeight: headerVisible && !headerOverlaysContent ? IKWindow.headerHeight : 0
     readonly property real effectiveHeaderHeight: headerVisible && visibility !== Window.FullScreen
                                                   ? IKWindow.headerHeight
                                                   : 0
@@ -115,7 +118,11 @@ Window {
             height: root.surfaceHeight
             color: root.surfaceColor
             radius: root.surfaceRadius
-            clip: root.customFrameVisible && root.surfaceRadius > 0
+            layer.enabled: root.customFrameVisible
+            layer.effect: MultiEffect {
+                maskEnabled: true
+                maskSource: surfaceMask
+            }
 
             IKWindowHeader {
                 id: windowHeader
@@ -128,6 +135,7 @@ Window {
                 targetWindow: root
                 backgroundColor: root.surfaceColor
                 titleVisible: root.windowTitleVisible
+                z: 1
             }
 
             Item {
@@ -135,9 +143,20 @@ Window {
 
                 anchors.left: parent.left
                 anchors.right: parent.right
-                anchors.top: windowHeader.visible ? windowHeader.bottom : parent.top
+                anchors.top: root.headerOverlaysContent || !windowHeader.visible ? parent.top : windowHeader.bottom
                 anchors.bottom: parent.bottom
             }
+        }
+
+        Rectangle {
+            id: surfaceMask
+
+            width: surface.width
+            height: surface.height
+            radius: root.surfaceRadius
+            color: "white"
+            visible: false
+            layer.enabled: true
         }
 
         MouseArea {
