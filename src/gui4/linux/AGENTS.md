@@ -118,6 +118,11 @@
   durable cache mutations stay signal-driven through `CachePipeline`.
 - `ui/`: QML shell, onboarding screens, design tokens, and bundled UI assets such as tray icons and onboarding Lottie
   animations.
+    - `ui/window/`: shared QML frameless-window shell, header bar, controls, resize handles, and shadow wrapper.
+      Top-level app-owned QML windows should use `IKShadowedWindow`; its `headerBackgroundData` and `headerData` slots
+      accept page-specific header visuals and content while preserving the standard move, resize, minimize, maximize,
+      and close behavior. The window decoration controller limits input to the surface and resize handles without
+      clipping the diffuse shadow on X11.
     - `ui/onboarding/animations/`: versioned generated QML animation components produced from Lottie JSON payloads.
       Do not edit these files manually. They are excluded from `qmllint`; validation belongs to the generator and the
       QML compilation step.
