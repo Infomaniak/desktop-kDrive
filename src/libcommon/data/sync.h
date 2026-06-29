@@ -35,6 +35,10 @@ class BaseSync {
         BaseSync(SyncDbId dbId, DriveDbId driveDbId, const std::filesystem::path &localPath,
                  const std::filesystem::path &targetPath, const NodeId &targetNodeId = NodeId(), bool supportVfs = false,
                  VirtualFileMode virtualFileMode = VirtualFileMode::Off, const std::string &navigationPaneClsid = std::string());
+        BaseSync(const BaseSync &sync) noexcept = default;
+        BaseSync(BaseSync &&other) noexcept = default;
+        BaseSync &operator=(const BaseSync &other) noexcept = default;
+        BaseSync &operator=(BaseSync &&other) noexcept = default;
         virtual ~BaseSync() = default;
 
         void setDbId(const SyncDbId dbId) { _dbId = dbId; }
