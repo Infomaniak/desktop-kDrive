@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<component type="desktop">
+  <id>com.infomaniak.kdrive</id>
+  <launchable type="desktop-id">com.infomaniak.kdrive.desktop</launchable>
+
+  <metadata_license>GFDL-1.3</metadata_license>
+  <project_license>GPL-3.0</project_license>
+
+  <name>kDrive</name>
+  <summary>kDrive desktop sync client</summary>
+  <developer_name>Infomaniak</developer_name>
+
+  <releases>
+    <release date="2026-06-02" version="3.8.5" />
+  </releases>
+
+  <categories>
+    <category>Utility</category>
+  </categories>
+
+  <description>
+    <p>Store, share and synchronise your data in the kDrive cloud by Infomaniak.</p>
+    <ul>
+      <li
+            >All the space you need: Always have access to all your photos, videos and documents. kDrive can store up to 106 TB of data.</li>
+      <li
+            >A collaborative ecosystem. Everything included. Collaborate online on Office documents, organise meetings, share your work. Anything is possible!</li>
+      <li
+            >kDrive respects your privacy.Protect your data in a sovereign cloud exclusively developed and hosted in Switzerland. Infomaniak doesn’t analyze or resell your data.</li>
+      <li>Free of charge. Create an account with 15 GB of storage space and a free email address for life.</li>
+    </ul>
+  </description>
+
+  <screenshots>
+    <screenshot type="default">
+      <image>https://www.infomaniak.com/g/static/8b089f354e93589bdd68bdb603a57d8b/a8e2c/illus-devices-linux.webp</image>
+    </screenshot>
+    <screenshot>
+      <image>https://faq.storage.infomaniak.com/65534d70b53945.10269239png</image>
+    </screenshot>
+    <screenshot>
+      <image>https://faq.storage.infomaniak.com/655354a44af522.55510535png</image>
+    </screenshot>
+    <screenshot>
+      <image>https://faq.storage.infomaniak.com/61d557f54f5660.67530145png</image>
+    </screenshot>
+  </screenshots>
+
+
+  <url type="homepage">https://www.infomaniak.com/en/kdrive</url>
+  <content_rating type="oars-1.1" />
+</component>
