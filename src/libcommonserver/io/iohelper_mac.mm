@@ -56,6 +56,26 @@ IoError nsError2ioError(NSError *nsError) noexcept {
     }
 }
 
+std::wstring formatCFError(const SyncPath &path, CFErrorRef error) {
+    std::wstringstream ss;
+    ss << L"path='" << Path2WStr(path) << L"', CF err='";
+
+    if (CFStringRef errorDescription = CFErrorCopyDescription(error); errorDescription) {
+        const char *utf8Description = [(__bridge NSString *) errorDescription UTF8String];
+        if (utf8Description) {
+            ss << CommonUtility::s2ws(std::string(utf8Description));
+        } else {
+            ss << L"<unavailable (non-UTF8)>";
+        }
+        CFRelease(errorDescription);
+    } else {
+        ss << L"<unavailable>";
+    }
+
+    ss << L"'";
+    return ss.str();
+}
+
 bool IoHelper::_checkIfAlias(const SyncPath &path, bool &isAlias, IoError &ioError) noexcept {
     isAlias = false;
     ioError = IoError::Success;
@@ -110,23 +130,12 @@ bool IoHelper::createAlias(const std::string &data, const SyncPath &aliasPath, I
         if (error) {
             ioError = nsError2ioError((__bridge NSError *) error);
             if (ioError != IoError::Unknown) {
+                LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkDataFromFile: " << Utility::formatIoError(aliasPath, ioError));
                 CFRelease(error);
-
                 return true;
             } else {
-                LOGW_WARN(logger(), L"Error in CFURLWriteBookmarkDataToFile: " << Utility::formatIoError(aliasPath, ioError));
-                if (CFStringRef errorDescription = CFErrorCopyDescription(error); errorDescription) {
-                    const char *utf8Description = [(__bridge NSString *) errorDescription UTF8String];
-                    if (utf8Description) {
-                        LOGW_WARN(logger(),
-                                  L"Native CF Error description: " << CommonUtility::s2ws(std::string(utf8Description)));
-                    } else {
-                        LOGW_WARN(logger(), L"Native CF Error description: <unavailable (non-UTF8)>");
-                    }
-                    CFRelease(errorDescription);
-                }
+                LOGW_WARN(logger(), L"Error in CFURLWriteBookmarkDataToFile: " << formatCFError(aliasPath, error));
                 CFRelease(error);
-
                 return false;
             }
         }
@@ -154,23 +163,12 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
         if (error) {
             ioError = nsError2ioError((__bridge NSError *) error);
             if (ioError != IoError::Unknown) {
+                LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkDataFromFile: " << Utility::formatIoError(aliasPath, ioError));
                 CFRelease(error);
-
                 return true;
             } else {
-                LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkDataFromFile: " << Utility::formatIoError(aliasPath, ioError));
-                if (CFStringRef errorDescription = CFErrorCopyDescription(error); errorDescription) {
-                    const char *utf8Description = [(__bridge NSString *) errorDescription UTF8String];
-                    if (utf8Description) {
-                        LOGW_WARN(logger(),
-                                  L"Native CF Error description: " << CommonUtility::s2ws(std::string(utf8Description)));
-                    } else {
-                        LOGW_WARN(logger(), L"Native CF Error description: <unavailable (non-UTF8)>");
-                    }
-                    CFRelease(errorDescription);
-                }
+                LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkDataFromFile: " << formatCFError(aliasPath, error));
                 CFRelease(error);
-
                 return false;
             }
         }
