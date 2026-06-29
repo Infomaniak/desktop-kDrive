@@ -33,8 +33,8 @@ class WindowDecorationController final : public QObject {
     public:
         explicit WindowDecorationController(QObject *parent = nullptr);
 
-        Q_INVOKABLE void updateInputRegion(QWindow *window, bool customFrameEnabled, qreal frameMargin,
-                                           qreal resizeHandleThickness) const;
+        Q_INVOKABLE static void updateInputRegion(QWindow *window, bool customFrameEnabled, qreal frameMargin,
+                                                  qreal resizeHandleThickness);
 };
 
 } // namespace KDC
