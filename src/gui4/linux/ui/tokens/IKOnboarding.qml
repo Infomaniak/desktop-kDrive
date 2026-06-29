@@ -105,10 +105,11 @@ QtObject {
     readonly property real driveSelectionTooltipRadius: IKRadius.r8
     readonly property int driveSelectionTooltipDelay: 250
 
-    // Source dimensions of the loader-stroke animation.
+    // Source dimensions of the loader-stroke animation (login step).
     readonly property real loaderStrokeVectorSourceWidth: 163
     readonly property real loaderStrokeVectorSourceHeight: 134
-    readonly property real loaderStrokeAnimationWidth: loaderStrokeVectorSourceWidth * loaderStrokeRenderScale
-    readonly property real loaderStrokeAnimationHeight: loaderStrokeVectorSourceHeight * loaderStrokeRenderScale
-    readonly property real loaderStrokeAnimationHeightRatio: loaderStrokeAnimationHeight / loaderStrokeAnimationWidth
+
+    // Source dimensions of the sync-file animation (drive selection step).
+    readonly property real syncFileVectorSourceWidth: 197
+    readonly property real syncFileVectorSourceHeight: 219
 }
