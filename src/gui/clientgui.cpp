@@ -1549,6 +1549,10 @@ void ClientGui::onShutdown() {
 
 bool ClientGui::osRequireMenuTray() const {
 #ifdef Q_OS_LINUX
+    // This works for now
+    if (!KDC::CommonUtility::envVarValue("FLATPAK_ID").empty()) {
+        return true;
+    }
     QString type;
     if (QString version; KDC::GuiUtility::getLinuxDesktopType(type, version)) {
         if (type.contains("GNOME") && version.toDouble() >= 40) {
