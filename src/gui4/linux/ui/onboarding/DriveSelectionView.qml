@@ -43,63 +43,20 @@ Item {
             wrapMode: Text.WordWrap
         }
 
-        Row {
-            width: parent.width
+        Rectangle {
+            width: Math.min(IKOnboarding.driveSelectionUserBadgeMaxWidth, parent.width)
             height: IKOnboarding.driveSelectionUserBadgeHeight
-            spacing: IKSpacing.s12
+            radius: IKOnboarding.driveSelectionUserBadgeRadius
+            color: IKColors.onboardingUserBadgeSurface
 
-            Rectangle {
-                width: Math.min(IKOnboarding.driveSelectionUserBadgeMaxWidth,
-                                parent.width - IKOnboarding.driveSelectionChangeUserButtonMinWidth - parent.spacing)
-                height: IKOnboarding.driveSelectionUserBadgeHeight
-                radius: IKOnboarding.driveSelectionUserBadgeRadius
-                color: IKColors.onboardingUserBadgeSurface
-
-                LabeledAvatarView {
-                    anchors.fill: parent
-                    anchors.leftMargin: IKOnboarding.driveSelectionUserBadgeLeftPadding
-                    anchors.rightMargin: IKOnboarding.driveSelectionUserBadgeRightPadding
-                    anchors.topMargin: IKOnboarding.driveSelectionUserBadgeVerticalPadding
-                    anchors.bottomMargin: IKOnboarding.driveSelectionUserBadgeVerticalPadding
-                    label: availableDrivesModel.userName
-                    avatarSource: availableDrivesModel.userAvatarSource
-                }
-            }
-
-            Item {
-                width: IKOnboarding.driveSelectionChangeUserButtonMinWidth
-                height: parent.height
-
-                Button {
-                    id: changeUserButton
-
-                    anchors.verticalCenter: parent.verticalCenter
-                    height: IKOnboarding.driveSelectionButtonHeight
-                    text: qsTr("Change user")
-                    onClicked: availableDrivesModel.changeUser()
-
-                    contentItem: Text {
-                        text: changeUserButton.text
-                        color: IKColors.actionPrimary
-                        font.pixelSize: IKFonts.bodySize
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        elide: Text.ElideRight
-                    }
-
-                    background: Rectangle {
-                        implicitWidth: IKOnboarding.driveSelectionChangeUserButtonMinWidth
-                        implicitHeight: IKOnboarding.driveSelectionButtonHeight
-                        radius: IKOnboarding.buttonCornerRadius
-                        color: "transparent"
-                    }
-
-                    padding: 0
-                    leftPadding: IKSpacing.s8
-                    rightPadding: IKSpacing.s8
-                    topPadding: 0
-                    bottomPadding: 0
-                }
+            LabeledAvatarView {
+                anchors.fill: parent
+                anchors.leftMargin: IKOnboarding.driveSelectionUserBadgeLeftPadding
+                anchors.rightMargin: IKOnboarding.driveSelectionUserBadgeRightPadding
+                anchors.topMargin: IKOnboarding.driveSelectionUserBadgeVerticalPadding
+                anchors.bottomMargin: IKOnboarding.driveSelectionUserBadgeVerticalPadding
+                label: availableDrivesModel.userName
+                avatarSource: availableDrivesModel.userAvatarSource
             }
         }
 
