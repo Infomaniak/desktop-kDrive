@@ -98,7 +98,7 @@ open class TargetAssembly {
                 StorageDataService()
             },
             Factory(type: LogService.self) { _, _ in
-                LogService.shared
+                LogService()
             }
         ]
     }

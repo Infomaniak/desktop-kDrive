@@ -17,6 +17,7 @@
  */
 
 import Foundation
+import InfomaniakDI
 import OSLog
 
 public extension IKLogger {
@@ -32,6 +33,7 @@ public extension IKLogger {
 public struct IKLogger: Sendable {
     let subsystem: String
     let category: String
+    @InjectService var logService: LogService
 
     @available(macOS 11.0, *)
     private var logger: Logger {
@@ -90,9 +92,5 @@ public struct IKLogger: Sendable {
         } else {
             os_log(.fault, "%@", message)
         }
-    }
-
-    private var logService: LogService {
-        LogService.shared
     }
 }

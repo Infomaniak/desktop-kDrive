@@ -21,8 +21,6 @@ import Foundation
 import OSLog
 
 public final class LogService: @unchecked Sendable {
-    public static let shared = LogService()
-
     private let queue = DispatchQueue(label: "com.infomaniak.kdrive.log-service")
     private let queueKey = DispatchSpecificKey<Void>()
     private let formatter: LogLineFormatter
