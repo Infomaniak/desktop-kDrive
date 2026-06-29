@@ -257,12 +257,12 @@ ExitInfo ServerRequests::updateDrive(const Drive &drive) {
 }
 
 ExitCode ServerRequests::getSyncList(QList<Sync> &list) {
-    std::vector<Sync> syncInfoList;
-    if (ExitCode exitCode = getSyncList(syncInfoList); exitCode != ExitCode::Ok) {
+    std::vector<Sync> syncList;
+    if (const auto exitCode = getSyncList(syncList); exitCode != ExitCode::Ok) {
         return exitCode;
     }
 
-    (void) std::copy(syncInfoList.begin(), syncInfoList.end(), std::back_inserter(list));
+    (void) std::copy(syncList.begin(), syncList.end(), std::back_inserter(list));
 
     return ExitCode::Ok;
 }
