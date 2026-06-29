@@ -6,6 +6,10 @@ inputs:
     description: 'If true, run the release build script'
     required: false
     default: 'false'
+  run_qmllint:
+    description: 'If true, run qmllint for the Linux v4 QML module'
+    required: false
+    default: 'false'
 
 runs:
     using: "composite"
@@ -25,6 +29,19 @@ runs:
           fi
           
           /usr/bin/env bash "$SCRIPT" $ARGS
+        shell: bash
+
+      - name: Run Linux v4 QML lint
+        if: ${{ steps.build.outcome == 'success' && inputs.run_qmllint == 'true' }}
+        run: |
+          conan_run_script=$(find "${{ github.workspace }}/build-linux" -name conanrun.sh -print -quit)
+          if [[ -z "$conan_run_script" ]]; then
+            echo "Conan runtime environment script not found." >&2
+            exit 1
+          fi
+
+          source "$conan_run_script"
+          cmake --build "${{ github.workspace }}/build-linux/build" --target kdrive_qml_qmllint
         shell: bash
 
       - name: Display AppImage info in summary
