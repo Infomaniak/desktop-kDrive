@@ -181,14 +181,19 @@ void AppServer::init() {
     setApplicationVersion(QString::fromStdString(_theme->version()));
 
     parseOptions(_arguments);
-    if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked || !_authorizationCodeStr.isEmpty()) {
-        std::cout << "Command line options processed";
+    if (!_authorizationCodeStr.isEmpty()) {
+        std::cout << "Authorization code received";
         return;
     }
 
     // Setup logging with default parameters
     if (!initLogging()) {
         throw std::runtime_error("Unable to init logging.");
+    }
+
+    if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked) {
+        LOG_INFO(_logger, "Command line options processed");
+        return;
     }
 
     if (isRunning()) {
