@@ -3212,7 +3212,7 @@ std::string liteSyncActivationLogMessage(const bool enabled, const SyncDbId sync
 }
 
 // This function will pause the synchronization in case of errors.
-ExitInfo AppServer::tryCreateAndStartVfs(const BaseSync &sync, bool &startPostponed) noexcept {
+ExitInfo AppServer::tryCreateAndStartVfs(const Sync &sync, bool &startPostponed) noexcept {
     startPostponed = false;
     const std::string liteSyncMsg = liteSyncActivationLogMessage(sync.virtualFileMode() != VirtualFileMode::Off, sync.dbId());
     LOG_INFO(_logger, liteSyncMsg);
@@ -4107,7 +4107,7 @@ ExitInfo AppServer::stopSyncPal(const SyncDbId syncDbId, const SyncPal::PauseCal
     return ExitCode::Ok;
 }
 
-ExitInfo AppServer::createAndStartVfs(const BaseSync &sync) noexcept {
+ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
     // Check that the sync folder exists.
     bool exists = false;
     IoError ioError = IoError::Success;

@@ -171,7 +171,7 @@ class AppServer : public SharedTools::QtSingleApplication {
           \param postponed is true is the VFS plugin has not been initialized.
           \return ExitCode::Ok if no unexpected error occurred.
         */
-        [[nodiscard]] ExitInfo tryCreateAndStartVfs(const BaseSync &sync, bool &startPostponed) noexcept;
+        [[nodiscard]] ExitInfo tryCreateAndStartVfs(const Sync &sync, bool &startPostponed) noexcept;
         [[nodiscard]] ExitInfo getVfs(SyncDbId syncDbId, std::shared_ptr<Vfs> &vfs);
         [[nodiscard]] ExitInfo initSyncPal(const Sync &sync, const NodeSet &blackList = {}, bool start = true,
                                            const std::chrono::seconds &startDelay = std::chrono::seconds(0),
@@ -323,7 +323,7 @@ class AppServer : public SharedTools::QtSingleApplication {
                                            const std::chrono::seconds &startDelay = std::chrono::seconds(0),
                                            bool resumedByUser = false, bool firstInit = false);
 
-        [[nodiscard]] ExitInfo createAndStartVfs(const BaseSync &sync) noexcept;
+        [[nodiscard]] ExitInfo createAndStartVfs(const Sync &sync) noexcept;
         [[nodiscard]] ExitInfo setSupportsVirtualFiles(SyncDbId syncDbId, bool value, bool asyncResponse);
 
         void startSyncsAndRetryOnError(const std::unordered_set<SyncDbId> &toIgnoreSyncDbIds = {});
