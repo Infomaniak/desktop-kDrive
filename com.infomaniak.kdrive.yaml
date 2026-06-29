@@ -1,0 +1,117 @@
+app-id: com.infomaniak.kdrive
+
+runtime: org.kde.Platform
+runtime-version: "6.10"
+sdk: org.kde.Sdk
+
+base: io.qt.qtwebengine.BaseApp
+base-version: "6.10"
+
+command: start-kdrive-flatpak.sh
+
+finish-args:
+  - --share=network
+  - --share=ipc # Needed for communication between client and server
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --filesystem=home/kDrive # This is needed for inotify to work properly. Other directories must be explicitely granted with another --filesystem directive.
+  - --talk-name=org.freedesktop.Notifications
+  - --talk-name=org.kde.StatusNotifierWatcher
+  - --talk-name=com.canonical.AppMenu.Registrar
+  - --talk-name=org.freedesktop.secrets
+  - --talk-name=org.kde.kwalletd5
+
+modules:
+  - name: poco
+    buildsystem: cmake
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+    sources:
+      - type: git
+        url: https://github.com/pocoproject/poco.git
+        tag: poco-1.14.2-release
+
+  - name: log4cplus
+    buildsystem: cmake
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DLOG4CPLUS_ENABLE_THREAD_POOL=ON
+      - -DUNICODE=ON
+      - -DLOG4CPLUS_ENABLE_DECORATED_LIBRARY_NAME=OFF # force cmake to not rename the library to log4cplusU
+    sources:
+      - type: git
+        url: https://github.com/log4cplus/log4cplus.git
+        tag: REL_2_1_2
+
+  - name: sqlite
+    buildsystem: autotools
+    sources:
+      - type: git
+        url: https://github.com/sqlite/sqlite.git
+        tag: version-3.53.0
+
+  - name: sentry
+    buildsystem: cmake
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DSENTRY_INTEGRATION_QT=YES
+    sources:
+      - type: git
+        url: https://github.com/getsentry/sentry-native.git
+        tag: 0.7.10
+
+  - name: libzip
+    buildsystem: cmake
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+    sources:
+      - type: git
+        url: https://github.com/nih-at/libzip.git
+        tag: v1.11.4
+
+  - name: xxhash
+    buildsystem: cmake
+    subdir: cmake_unofficial
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DCMAKE_POLICY_VERSION_MINIMUM=3.5 # the version of cmake provided by the sdk seems to be too old
+    sources:
+      - type: git
+        url: https://github.com/Cyan4973/xxHash.git
+        tag: v0.8.2
+
+  - name: kdrive
+    buildsystem: cmake
+    builddir: true
+    config-opts:
+      - -DKDRIVE_THEME_DIR=/run/build/kdrive/infomaniak
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DFLATPAK_BUILD=YES
+    sources:
+      - type: dir
+        path: .
+
+  - name: kdrive-meta
+    buildsystem: simple
+    build-commands:
+      - install -Dm544 start-kdrive-flatpak.sh /app/bin/start-kdrive-flatpak.sh
+      - install -Dm644 ${FLATPAK_ID}.metainfo.xml /app/share/metainfo/${FLATPAK_ID}.metainfo.xml
+      - install -Dm644 sync-exclude-linux.lst /app/bin/sync-exclude.lst
+      # Patch .desktop file with the new icon, url handler and exec arguments
+      - sed -i -e "s/Icon=.*/Icon=${FLATPAK_ID}/" -e "s/Icon\[\(.*\)\]=.*/Icon[\1]=${FLATPAK_ID}/" -e 's/MimeType=\(.*\);/MimeType=\1;x-scheme-handler\/kdrive;/' -e 's/\(Exec=.*\)/\1 %u/' ${FLATPAK_DEST}/share/applications/kDrive_client.desktop
+      # Rename .desktop file
+      - mv ${FLATPAK_DEST}/share/applications/kDrive_client.desktop ${FLATPAK_DEST}/share/applications/${FLATPAK_ID}.desktop
+      - |
+        for s in 16 24 32 48 64 128 256 512; do
+          mv ${FLATPAK_DEST}/share/icons/hicolor/${s}x${s}/apps/kdrive-win.png ${FLATPAK_DEST}/share/icons/hicolor/${s}x${s}/apps/${FLATPAK_ID}.png
+        done
+      - ${FLATPAK_DEST}/cleanup-BaseApp.sh
+    sources:
+      - type: script
+        dest-filename: start-kdrive-flatpak.sh
+        commands:
+          - /app/bin/kDrive "$@"
+      - type: file
+        path: com.infomaniak.kdrive.metainfo.xml
+      - type: file
+        path: sync-exclude-linux.lst
