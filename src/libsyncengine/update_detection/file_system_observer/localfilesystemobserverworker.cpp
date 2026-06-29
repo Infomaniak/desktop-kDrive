@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2026 Infomaniak Network SA
  *
@@ -33,10 +33,19 @@
 #include <log4cplus/loggingmacros.h>
 
 #include <filesystem>
+#include <unordered_set>
 
 namespace KDC {
 
 static const int waitForUpdateDelay = 1000; // 1sec
+static const int waitForUpdateDelayExtended = waitForUpdateDelay * 5.000; // 5sec, for slow-writing extensions
+
+static const std::unordered_set<SyncPath::string_type> slowWritingExtensions = {
+        SyncPath(L".psd").native(),  SyncPath(L".psb").native(),    SyncPath(L".ai").native(),
+        SyncPath(L".indd").native(), SyncPath(L".blend").native(),  SyncPath(L".dwg").native(),
+        SyncPath(L".dxf").native(),  SyncPath(L".pln").native(),    SyncPath(L".pla").native(),
+        SyncPath(L".prproj").native(), SyncPath(L".aep").native(),
+};
 
 LocalFileSystemObserverWorker::LocalFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                              const std::string &shortName) :
@@ -103,6 +112,9 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(const std::list<std::pai
         // Raise flag _updating in order to wait 1sec without local changes before starting the sync
         _updating = true;
         _needUpdateTimerStart = std::chrono::steady_clock::now();
+        if (slowWritingExtensions.contains(absolutePath.extension().native())) {
+            _useExtendedDelay = true;
+        }
 
         _syncPal->removeItemFromTmpBlacklist(relativePath);
 
@@ -475,11 +487,12 @@ void LocalFileSystemObserverWorker::execute() {
             }
         }
 
-        // Wait 1 sec after the last update
+        // Wait 1 sec after the last update or 5 if the file has a slow-writing extension, before starting the sync
         if (_updating) {
             const auto diff_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() -
                                                                                        _needUpdateTimerStart);
-            if (diff_ms.count() > waitForUpdateDelay) {
+            const int activeDelay = _useExtendedDelay ? waitForUpdateDelayExtended : waitForUpdateDelay;
+            if (diff_ms.count() > activeDelay) {
                 // Check if root folder is still valid
                 exitInfo = _syncPal->isRootFolderValid();
                 if (!exitInfo) {
@@ -490,6 +503,7 @@ void LocalFileSystemObserverWorker::execute() {
 
                 const std::scoped_lock lock(_recursiveMutex);
                 _updating = false;
+                _useExtendedDelay = false;
             }
         }
 

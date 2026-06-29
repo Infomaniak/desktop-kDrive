@@ -59,6 +59,7 @@ class LocalFileSystemObserverWorker : public FileSystemObserverWorker {
         ExitInfo handleIoError(const SyncPath &relativePath, IoError ioError);
 
         std::chrono::steady_clock::time_point _needUpdateTimerStart = std::chrono::steady_clock::now();
+        bool _useExtendedDelay = false;
 
         std::recursive_mutex _recursiveMutex;
 
