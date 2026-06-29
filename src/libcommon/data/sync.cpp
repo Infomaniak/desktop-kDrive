@@ -62,15 +62,15 @@ Sync::Sync(const SyncDbId dbId, const DriveDbId driveDbId, const std::filesystem
 void Sync::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, syncInfoDbId, dbId());
     CommonUtility::writeValueToStruct(dstruct, syncInfoDriveDbId, driveDbId());
-    CommonUtility::writeValueToStruct(dstruct, syncInfoLocalPath, CommonUtility::str2CommString(localPath().string()));
+    CommonUtility::writeValueToStruct(dstruct, syncInfoLocalPath, CommonUtility::syncPath2CommString(localPath()));
     CommonUtility::writeValueToStruct(dstruct, syncInfoLocalNodeId, CommonUtility::str2CommString(localNodeId()));
-    CommonUtility::writeValueToStruct(dstruct, syncInfoTargetPath, CommonUtility::str2CommString(targetPath().string()));
+    CommonUtility::writeValueToStruct(dstruct, syncInfoTargetPath, CommonUtility::syncPath2CommString(targetPath()));
     CommonUtility::writeValueToStruct(dstruct, syncInfoTargetNodeId, CommonUtility::str2CommString(targetNodeId()));
     CommonUtility::writeValueToStruct(dstruct, syncInfoPaused, paused());
     CommonUtility::writeValueToStruct(dstruct, syncInfoSupportVfs, supportVfs());
     CommonUtility::writeValueToStruct(dstruct, syncInfoVirtualFileMode, virtualFileMode());
     CommonUtility::writeValueToStruct(dstruct, syncInfoNotificationsDisabled, notificationsDisabled());
-    CommonUtility::writeValueToStruct(dstruct, syncInfoDbPath, CommonUtility::str2CommString(dbPath().string()));
+    CommonUtility::writeValueToStruct(dstruct, syncInfoDbPath, CommonUtility::syncPath2CommString(dbPath()));
     CommonUtility::writeValueToStruct(dstruct, syncInfoHasFullyCompleted, hasFullyCompleted());
     CommonUtility::writeValueToStruct(dstruct, syncInfoNavigationPaneClsid, CommonUtility::str2CommString(navigationPaneClsid()));
     CommonUtility::writeValueToStruct(dstruct, syncInfoListingCursor, CommonUtility::str2CommString(listingCursor()));
@@ -88,7 +88,7 @@ void Sync::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
 
     CommString localPath;
     CommonUtility::readValueFromStruct(dstruct, syncInfoLocalPath, localPath);
-    setLocalPath(CommonUtility::commString2Str(localPath));
+    setLocalPath(CommonUtility::commString2SyncPath(localPath));
 
     CommString localNodeId;
     CommonUtility::readValueFromStruct(dstruct, syncInfoLocalNodeId, localNodeId);
@@ -96,7 +96,7 @@ void Sync::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
 
     CommString targetPath;
     CommonUtility::readValueFromStruct(dstruct, syncInfoTargetPath, targetPath);
-    setTargetPath(CommonUtility::commString2Str(targetPath));
+    setTargetPath(CommonUtility::commString2SyncPath(targetPath));
 
     CommString targetNodeId;
     CommonUtility::readValueFromStruct(dstruct, syncInfoTargetNodeId, targetNodeId);
@@ -115,7 +115,7 @@ void Sync::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
 
     CommString dbPath;
     CommonUtility::readValueFromStruct(dstruct, syncInfoDbPath, dbPath);
-    setDbPath(CommonUtility::commString2Str(dbPath));
+    setDbPath(CommonUtility::commString2SyncPath(dbPath));
 
     CommonUtility::readValueFromStruct(dstruct, syncInfoHasFullyCompleted, _hasFullyCompleted);
 
