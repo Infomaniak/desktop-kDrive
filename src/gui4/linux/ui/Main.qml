@@ -36,6 +36,8 @@ IKShadowedWindow {
     title: onboardingLoader.session ? onboardingLoader.session.flowController.title : qsTr("kDrive")
     surfaceColor: IKColors.onboardingSurfacePrimary
     customShadowEnabled: true
+    headerOverlaysContent: true
+    windowTitleVisible: false
 
     headerBackgroundData: Rectangle {
         anchors.top: parent.top
