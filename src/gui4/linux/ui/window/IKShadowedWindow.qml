@@ -1,0 +1,223 @@
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+import QtQuick
+import QtQuick.Effects
+import kDrive.UI
+
+Window {
+    id: root
+
+    default property alias contentData: contentHost.data
+    property alias headerBackgroundData: windowHeader.backgroundData
+    property alias headerData: windowHeader.contentData
+
+    property real contentWidth: 900
+    property real contentHeight: 600
+    property real minimumContentWidth: 0
+    property real minimumContentHeight: 0
+    property color surfaceColor: IKColors.surfacePrimary
+    property bool customShadowEnabled: false
+    property bool headerVisible: customShadowEnabled
+    property bool windowTitleVisible: true
+    property real surfaceRadius: customFrameVisible ? IKRadius.r16 : 0
+    property bool inputRegionReady: false
+
+    readonly property real shadowMargin: IKShadows.windowMargin
+    readonly property bool customFrameVisible: customShadowEnabled
+                                                && visibility !== Window.Maximized
+                                                && visibility !== Window.FullScreen
+    readonly property real reservedShadowMargin: customShadowEnabled ? shadowMargin : 0
+    readonly property real effectiveShadowMargin: customFrameVisible ? shadowMargin : 0
+    readonly property real reservedHeaderHeight: headerVisible ? IKWindow.headerHeight : 0
+    readonly property real effectiveHeaderHeight: headerVisible && visibility !== Window.FullScreen
+                                                  ? IKWindow.headerHeight
+                                                  : 0
+    readonly property real surfaceWidth: Math.max(0, width - 2 * effectiveShadowMargin)
+    readonly property real surfaceHeight: Math.max(0, height - 2 * effectiveShadowMargin)
+
+    function updateInputRegion() {
+        if (!inputRegionReady) {
+            return
+        }
+        windowDecorationController.updateInputRegion(root, customShadowEnabled, effectiveShadowMargin,
+                                                     IKWindow.resizeHandleThickness)
+    }
+
+    flags: customShadowEnabled ? Qt.Window | Qt.FramelessWindowHint : Qt.Window
+    color: customShadowEnabled ? "transparent" : surfaceColor
+    width: contentWidth + 2 * reservedShadowMargin
+    height: contentHeight + reservedHeaderHeight + 2 * reservedShadowMargin
+    minimumWidth: minimumContentWidth + 2 * reservedShadowMargin
+    minimumHeight: minimumContentHeight + reservedHeaderHeight + 2 * reservedShadowMargin
+
+    onWidthChanged: updateInputRegion()
+    onHeightChanged: updateInputRegion()
+    onCustomShadowEnabledChanged: updateInputRegion()
+    onEffectiveShadowMarginChanged: updateInputRegion()
+
+    Component.onCompleted: {
+        inputRegionReady = true
+        updateInputRegion()
+    }
+
+    Item {
+        anchors.fill: parent
+
+        MultiEffect {
+            id: windowShadow
+
+            anchors.fill: parent
+            visible: root.customFrameVisible
+            source: Item {
+                width: windowShadow.width
+                height: windowShadow.height
+
+                Rectangle {
+                    x: root.effectiveShadowMargin
+                    y: root.effectiveShadowMargin
+                    width: root.surfaceWidth
+                    height: root.surfaceHeight
+                    radius: root.surfaceRadius
+                    color: root.surfaceColor
+                }
+            }
+            shadowEnabled: true
+            shadowColor: IKShadows.windowColor
+            shadowOpacity: IKShadows.windowOpacity
+            shadowBlur: 1
+            shadowHorizontalOffset: IKShadows.windowOffsetX
+            shadowVerticalOffset: IKShadows.windowOffsetY
+            blurMax: IKShadows.windowBlur
+        }
+
+        Rectangle {
+            id: surface
+
+            x: root.effectiveShadowMargin
+            y: root.effectiveShadowMargin
+            width: root.surfaceWidth
+            height: root.surfaceHeight
+            color: root.surfaceColor
+            radius: root.surfaceRadius
+            clip: root.customFrameVisible && root.surfaceRadius > 0
+
+            IKWindowHeader {
+                id: windowHeader
+
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                height: root.effectiveHeaderHeight
+                visible: root.effectiveHeaderHeight > 0
+                targetWindow: root
+                backgroundColor: root.surfaceColor
+                titleVisible: root.windowTitleVisible
+            }
+
+            Item {
+                id: contentHost
+
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: windowHeader.visible ? windowHeader.bottom : parent.top
+                anchors.bottom: parent.bottom
+            }
+        }
+
+        MouseArea {
+            x: surface.x - width
+            y: surface.y
+            width: IKWindow.resizeHandleThickness
+            height: surface.height
+            visible: root.customFrameVisible
+            cursorShape: Qt.SizeHorCursor
+            onPressed: root.startSystemResize(Qt.LeftEdge)
+        }
+
+        MouseArea {
+            x: surface.x + surface.width
+            y: surface.y
+            width: IKWindow.resizeHandleThickness
+            height: surface.height
+            visible: root.customFrameVisible
+            cursorShape: Qt.SizeHorCursor
+            onPressed: root.startSystemResize(Qt.RightEdge)
+        }
+
+        MouseArea {
+            x: surface.x
+            y: surface.y - height
+            width: surface.width
+            height: IKWindow.resizeHandleThickness
+            visible: root.customFrameVisible
+            cursorShape: Qt.SizeVerCursor
+            onPressed: root.startSystemResize(Qt.TopEdge)
+        }
+
+        MouseArea {
+            x: surface.x
+            y: surface.y + surface.height
+            width: surface.width
+            height: IKWindow.resizeHandleThickness
+            visible: root.customFrameVisible
+            cursorShape: Qt.SizeVerCursor
+            onPressed: root.startSystemResize(Qt.BottomEdge)
+        }
+
+        MouseArea {
+            x: surface.x - width
+            y: surface.y - height
+            width: IKWindow.resizeHandleThickness
+            height: IKWindow.resizeHandleThickness
+            visible: root.customFrameVisible
+            cursorShape: Qt.SizeFDiagCursor
+            onPressed: root.startSystemResize(Qt.TopEdge | Qt.LeftEdge)
+        }
+
+        MouseArea {
+            x: surface.x + surface.width
+            y: surface.y - height
+            width: IKWindow.resizeHandleThickness
+            height: IKWindow.resizeHandleThickness
+            visible: root.customFrameVisible
+            cursorShape: Qt.SizeBDiagCursor
+            onPressed: root.startSystemResize(Qt.TopEdge | Qt.RightEdge)
+        }
+
+        MouseArea {
+            x: surface.x - width
+            y: surface.y + surface.height
+            width: IKWindow.resizeHandleThickness
+            height: IKWindow.resizeHandleThickness
+            visible: root.customFrameVisible
+            cursorShape: Qt.SizeBDiagCursor
+            onPressed: root.startSystemResize(Qt.BottomEdge | Qt.LeftEdge)
+        }
+
+        MouseArea {
+            x: surface.x + surface.width
+            y: surface.y + surface.height
+            width: IKWindow.resizeHandleThickness
+            height: IKWindow.resizeHandleThickness
+            visible: root.customFrameVisible
+            cursorShape: Qt.SizeFDiagCursor
+            onPressed: root.startSystemResize(Qt.BottomEdge | Qt.RightEdge)
+        }
+    }
+}
