@@ -58,8 +58,10 @@ Item {
 
             OnboardingAnimationsView {
                 anchors.centerIn: parent
-                width: Math.min(IKOnboarding.illustrationAnimationMaxSize, parent.width * IKOnboarding.illustrationAnimationFillRatio)
-                height: width * IKOnboarding.loaderStrokeAnimationHeightRatio
+                width: Math.min(IKOnboarding.illustrationAnimationMaxSize,
+                                parent.width * IKOnboarding.illustrationAnimationFillRatio)
+                height: width * contentHeightRatio
+                onboardingFlowController: root.onboardingFlowController
             }
         }
     }
