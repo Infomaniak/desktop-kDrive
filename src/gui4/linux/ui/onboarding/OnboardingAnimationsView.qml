@@ -23,21 +23,61 @@ import "animations"
 Item {
     id: root
 
+    required property var onboardingFlowController
+
+    // Mirrors the macOS onboarding: the login step shows the loader-stroke animation
+    // while the drive-selection step shows the themed sync-file animation.
+    readonly property bool showSyncFile: root.onboardingFlowController.driveSelectionActive
+
+    // Native source dimensions of the currently displayed animation. Exposed so the
+    // illustration panel can preserve the animation aspect ratio across steps.
+    readonly property real sourceWidth: showSyncFile ? IKOnboarding.syncFileVectorSourceWidth
+                                                     : IKOnboarding.loaderStrokeVectorSourceWidth
+    readonly property real sourceHeight: showSyncFile ? IKOnboarding.syncFileVectorSourceHeight
+                                                      : IKOnboarding.loaderStrokeVectorSourceHeight
+    readonly property real contentHeightRatio: sourceHeight / sourceWidth
+
     Item {
         id: animationFrame
 
         anchors.centerIn: parent
-        width: IKOnboarding.loaderStrokeAnimationWidth
-        height: IKOnboarding.loaderStrokeAnimationHeight
+        // Render the vector animation oversized for crispness, then scale it to fit the view.
+        width: root.sourceWidth * IKOnboarding.loaderStrokeRenderScale
+        height: root.sourceHeight * IKOnboarding.loaderStrokeRenderScale
         scale: Math.min(root.width / width, root.height / height)
         transformOrigin: Item.Center
 
+        Loader {
+            anchors.fill: parent
+            sourceComponent: root.showSyncFile
+                             ? (ThemeMode.isDark ? syncFileDarkComponent : syncFileLightComponent)
+                             : loaderStrokeComponent
+        }
+    }
+
+    Component {
+        id: loaderStrokeComponent
+
         LoaderStrokeLightAnimation {
-            anchors.centerIn: parent
-            width: IKOnboarding.loaderStrokeVectorSourceWidth
-            height: IKOnboarding.loaderStrokeVectorSourceHeight
-            scale: Math.min(animationFrame.width / width, animationFrame.height / height)
-            transformOrigin: Item.Center
+            anchors.fill: parent
+            animations.loops: Animation.Infinite
+        }
+    }
+
+    Component {
+        id: syncFileLightComponent
+
+        SyncFileLightAnimation {
+            anchors.fill: parent
+            animations.loops: Animation.Infinite
+        }
+    }
+
+    Component {
+        id: syncFileDarkComponent
+
+        SyncFileDarkAnimation {
+            anchors.fill: parent
             animations.loops: Animation.Infinite
         }
     }
