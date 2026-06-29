@@ -78,7 +78,6 @@ class OnboardingFlowController final : public QObject {
         Q_INVOKABLE void requestAdvancedSettings();
         Q_INVOKABLE void requestDriveSelectionContinue();
         Q_INVOKABLE void cancel();
-        Q_INVOKABLE void restart();
         Q_INVOKABLE void setCurrentStep(Step step);
         void handleAuthorizationCodeReady();
 
