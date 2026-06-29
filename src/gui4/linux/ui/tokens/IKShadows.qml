@@ -24,7 +24,7 @@ QtObject {
     readonly property real windowMargin: 64
     readonly property real windowBlur: 32
     readonly property real windowOffsetX: 0
-    readonly property real windowOffsetY: 8
+    readonly property real windowOffsetY: 4
     readonly property real windowOpacityLight: 0.14
     readonly property real windowOpacityDark: 0.20
     readonly property real windowOpacity: ThemeMode.isDark ? windowOpacityDark : windowOpacityLight
