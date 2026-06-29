@@ -87,7 +87,6 @@
 #include <fstream>
 #include <filesystem>
 #include <algorithm>
-#include <cctype>
 #include <cstdint>
 #include <optional>
 #ifdef Q_OS_UNIX
@@ -141,7 +140,7 @@ std::optional<qint64> runningProcessPid(const std::string &processName) {
 
             const std::string pidStr = entry.path().filename().string();
             if (!std::all_of(pidStr.begin(), pidStr.end(),
-                             [](const unsigned char character) { return std::isdigit(character) != 0; })) {
+                             [](const char character) { return character >= '0' && character <= '9'; })) {
                 continue;
             }
 
