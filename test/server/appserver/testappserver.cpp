@@ -31,26 +31,16 @@
 
 namespace KDC {
 
-MockAppServer *TestAppServer::_sharedAppPtr = nullptr;
-LocalTemporaryDirectory *TestAppServer::_sharedTempDir = nullptr;
-
 void TestAppServer::setUp() {
     TestBase::start();
 
-    // Re-create parmsDb so each test starts with a clean database state
-    if (!_sharedTempDir) {
-        _sharedTempDir = new LocalTemporaryDirectory("TestAppServer");
-    }
-    const SyncPath parmsDbPath = _sharedTempDir->path() / MockDb::makeDbMockFileName();
+    // Create parmsDb
+    const SyncPath parmsDbPath = _localTempDir.path() / MockDb::makeDbMockFileName();
     (void) ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
 
-    if (_sharedAppPtr) {
-        // Reuse the existing AppServer — QCoreApplication must never be destroyed and
-        // recreated within a process lifetime: doing so unloads Windows.Globalization.dll
-        // and friends, causing QLocale::system() to crash on the next call.
-        _sharedAppPtr->setParmsDbPath(parmsDbPath);
-        _appPtr = _sharedAppPtr;
+    if (QCoreApplication::instance()) {
+        _appPtr = dynamic_cast<MockAppServer *>(QCoreApplication::instance());
         return;
     }
 
@@ -77,36 +67,33 @@ void TestAppServer::setUp() {
     const Drive drive(1, driveId, account.dbId());
     (void) ParmsDb::instance()->insertDrive(drive);
 
-    const auto localPath = _sharedTempDir->path() / "local_sync_directory";
+    const auto localPath = _localTempDir.path() / "local_sync_directory";
     std::filesystem::create_directories(localPath);
 
     Sync sync(1, drive.dbId(), localPath, "", testVariables.remotePath);
     (void) ParmsDb::instance()->insertSync(sync);
 
-    // Create AppServer (once per process — QCoreApplication lifetime must span all tests)
+    // Create AppServer
     SyncPath exePath = KDC::CommonUtility::applicationFilePath();
     try {
         const std::vector<std::string> args = {Path2Str(exePath)};
         std::vector<char *> argv;
         for (size_t i = 0; i < args.size(); ++i) argv.push_back(const_cast<char *>(args[i].c_str()));
         auto argc = static_cast<int>(args.size());
-        _sharedAppPtr = new MockAppServer(argc, &argv[0]);
-        _sharedAppPtr->setParmsDbPath(parmsDbPath);
-        _sharedAppPtr->init();
+        _appPtr = new MockAppServer(argc, &argv[0]);
+        _appPtr->setParmsDbPath(parmsDbPath);
+        _appPtr->init();
     } catch (const std::exception &e) {
         std::cerr << "kDrive server initialization error: " << e.what() << std::endl;
         return;
     }
 
-    _appPtr = _sharedAppPtr;
-
     // /!\ No event handling (no call to _appPtr->exec())
 }
 
 void TestAppServer::tearDown() {
-    if (_appPtr) {
-        _appPtr->lightweightCleanup();
-    }
+    _appPtr->cleanup();
+    delete _appPtr;
     TestBase::stop();
 }
 
@@ -364,21 +351,6 @@ std::filesystem::path MockAppServer::makeDbName() {
 
 std::shared_ptr<ParmsDb> MockAppServer::initParmsDB(const std::filesystem::path &dbPath, const std::string &version) {
     return ParmsDb::instance(dbPath, version, false, true);
-}
-
-void MockAppServer::lightweightCleanup() {
-    // Stop any running syncs/vfs without tearing down the QCoreApplication.
-    // Full cleanup (which deletes the object) is deferred to process exit.
-    stopAllSyncPals();
-    stopAllVfs();
-    {
-        const std::scoped_lock lock(syncPalMapMutex);
-        syncPalMap.clear();
-    }
-    {
-        const std::scoped_lock lock(vfsMapMutex);
-        vfsMap.clear();
-    }
 }
 
 void MockAppServer::cleanup() {

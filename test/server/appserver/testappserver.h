@@ -30,7 +30,6 @@ class MockAppServer : public AppServer {
         std::shared_ptr<ParmsDb> initParmsDB(const std::filesystem::path &dbPath, const std::string &version) override;
         bool startClient() override { return true; }
         void cleanup() override;
-        void lightweightCleanup();
 
         void setParmsDbPath(const std::filesystem::path &path) { _parmsDbPath = path; }
 
@@ -71,13 +70,8 @@ class TestAppServer : public CppUnit::TestFixture, public TestBase {
         void testResolveErrorsForNode();
 
     private:
-        // The AppServer (QCoreApplication) must not be destroyed and recreated within a
-        // process lifetime: destroying it unloads Windows.Globalization.dll and friends,
-        // causing QLocale::system() to access violation on the next construction.
-        static MockAppServer *_sharedAppPtr;
-        static LocalTemporaryDirectory *_sharedTempDir;
-
-        MockAppServer *_appPtr = nullptr;
+        MockAppServer *_appPtr;
+        LocalTemporaryDirectory _localTempDir = LocalTemporaryDirectory("TestAppServer");
 
         bool waitForSyncStatus(int syncDbId, SyncStatus targetStatus) const;
         bool syncIsActive(int syncDbId) const;
