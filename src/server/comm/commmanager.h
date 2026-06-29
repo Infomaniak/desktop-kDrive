@@ -59,7 +59,7 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
         bool hasActiveGuiConnection();
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-        int32_t tryGetGUICommPort() const;
+        int32_t tryGetGUICommPort();
 #endif
 
     private:
@@ -73,7 +73,7 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
         std::shared_ptr<AbstractCommServer> _guiCommServer;
 
         std::unique_ptr<GuiJobFactory> _guiJobFactory;
-        mutable std::recursive_mutex _mutex;
+        std::recursive_mutex _mutex;
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         // Execute a command received from an extension, which does not require an answer
