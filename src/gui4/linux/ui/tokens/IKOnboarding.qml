@@ -36,13 +36,15 @@ QtObject {
     readonly property real primaryButtonMinWidth: 105
     readonly property real secondaryButtonMinWidth: 128
     readonly property real browserButtonMinWidth: 190
+    readonly property real loaderStrokeDisplayMaxSize: 260
+    readonly property real loaderStrokeRenderScale: 2
 
     // Splits the onboarding window between the form area and the illustration area.
     readonly property real contentPanelWidthRatio: 0.63
     readonly property real illustrationPanelWidthRatio: 1 - contentPanelWidthRatio
 
     // Leaves breathing room around the Lottie animation inside the illustration panel.
-    readonly property real illustrationAnimationMaxSize: loaderStrokeAnimationHeight
+    readonly property real illustrationAnimationMaxSize: loaderStrokeDisplayMaxSize
     readonly property real illustrationAnimationFillRatio: 0.8
 
     // Login screen layout.
@@ -104,9 +106,9 @@ QtObject {
     readonly property int driveSelectionTooltipDelay: 250
 
     // Source dimensions of the loader-stroke animation.
-    readonly property int loaderStrokeAnimationWidth: 302
-    readonly property int loaderStrokeAnimationHeight: 260
-    readonly property real loaderStrokeVectorSourceWidth: 150.83
-    readonly property real loaderStrokeVectorSourceHeight: 129.8
+    readonly property real loaderStrokeVectorSourceWidth: 163
+    readonly property real loaderStrokeVectorSourceHeight: 134
+    readonly property real loaderStrokeAnimationWidth: loaderStrokeVectorSourceWidth * loaderStrokeRenderScale
+    readonly property real loaderStrokeAnimationHeight: loaderStrokeVectorSourceHeight * loaderStrokeRenderScale
     readonly property real loaderStrokeAnimationHeightRatio: loaderStrokeAnimationHeight / loaderStrokeAnimationWidth
 }
