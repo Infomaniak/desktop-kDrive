@@ -32,30 +32,12 @@ Item {
         scale: Math.min(root.width / width, root.height / height)
         transformOrigin: Item.Center
 
-        Loader {
-            id: loader
-
+        LoaderStrokeLightAnimation {
             anchors.centerIn: parent
             width: IKOnboarding.loaderStrokeVectorSourceWidth
             height: IKOnboarding.loaderStrokeVectorSourceHeight
             scale: Math.min(animationFrame.width / width, animationFrame.height / height)
             transformOrigin: Item.Center
-            sourceComponent: ThemeMode.isDark ? loaderStrokeDarkComponent : loaderStrokeLightComponent
-        }
-    }
-
-    Component {
-        id: loaderStrokeDarkComponent
-
-        LoaderStrokeDarkAnimation {
-            animations.loops: Animation.Infinite
-        }
-    }
-
-    Component {
-        id: loaderStrokeLightComponent
-
-        LoaderStrokeLightAnimation {
             animations.loops: Animation.Infinite
         }
     }
