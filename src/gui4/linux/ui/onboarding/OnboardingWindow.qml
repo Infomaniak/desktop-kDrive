@@ -56,6 +56,7 @@ Item {
             height: parent.height
             color: IKColors.onboardingSurfaceSecondary
             radius: IKRadius.r16
+            topLeftRadius: 0
             topRightRadius: 0
             bottomRightRadius: 0
 
