@@ -87,7 +87,6 @@ class AvailableDrivesModel final : public QAbstractListModel {
 
         Q_INVOKABLE void reload();
         Q_INVOKABLE void toggleDrive(qint32 row);
-        Q_INVOKABLE void changeUser();
         Q_INVOKABLE void requestAdvancedSettings();
         Q_INVOKABLE void continueOnboarding();
         Q_INVOKABLE void openDriveOffers();
