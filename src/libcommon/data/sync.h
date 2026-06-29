@@ -39,9 +39,9 @@ class Sync {
              const std::string &navigationPaneClsid = std::string(), const std::string &listingCursor = std::string(),
              int64_t listingCursorTimestamp = 0);
 
-        void setDbId(SyncDbId dbId) { _dbId = dbId; }
+        void setDbId(const SyncDbId dbId) { _dbId = dbId; }
         [[nodiscard]] SyncDbId dbId() const { return _dbId; }
-        void setDriveDbId(DriveDbId driveDbId) { _driveDbId = driveDbId; }
+        void setDriveDbId(const DriveDbId driveDbId) { _driveDbId = driveDbId; }
         [[nodiscard]] DriveDbId driveDbId() const { return _driveDbId; }
         void setLocalPath(const std::filesystem::path &localPath) { _localPath = localPath; }
         [[nodiscard]] const std::filesystem::path &localPath() const { return _localPath; }
@@ -53,21 +53,21 @@ class Sync {
         [[nodiscard]] const NodeId &targetNodeId() const { return _targetNodeId; }
         void setDbPath(const std::filesystem::path &dbPath) { _dbPath = dbPath; }
         [[nodiscard]] const std::filesystem::path &dbPath() const { return _dbPath; }
-        void setPaused(bool paused) { _paused = paused; }
+        void setPaused(const bool paused) { _paused = paused; }
         [[nodiscard]] bool paused() const { return _paused; }
-        void setSupportVfs(bool supportVfs) { _supportVfs = supportVfs; }
+        void setSupportVfs(const bool supportVfs) { _supportVfs = supportVfs; }
         [[nodiscard]] bool supportVfs() const { return _supportVfs; }
-        void setVirtualFileMode(VirtualFileMode virtualFileMode) { _virtualFileMode = virtualFileMode; }
+        void setVirtualFileMode(const VirtualFileMode virtualFileMode) { _virtualFileMode = virtualFileMode; }
         [[nodiscard]] VirtualFileMode virtualFileMode() const { return _virtualFileMode; }
-        void setNotificationsDisabled(bool notificationsDisabled) { _notificationsDisabled = notificationsDisabled; }
+        void setNotificationsDisabled(const bool notificationsDisabled) { _notificationsDisabled = notificationsDisabled; }
         [[nodiscard]] bool notificationsDisabled() const { return _notificationsDisabled; }
-        void setHasFullyCompleted(bool hasFullyCompleted) { _hasFullyCompleted = hasFullyCompleted; }
+        void setHasFullyCompleted(const bool hasFullyCompleted) { _hasFullyCompleted = hasFullyCompleted; }
         [[nodiscard]] bool hasFullyCompleted() const { return _hasFullyCompleted; }
         void setNavigationPaneClsid(const std::string &navigationPaneClsid) { _navigationPaneClsid = navigationPaneClsid; }
         [[nodiscard]] const std::string &navigationPaneClsid() const { return _navigationPaneClsid; }
         [[nodiscard]] const std::string &listingCursor() const { return _listingCursor; }
         [[nodiscard]] int64_t listingCursorTimestamp() const { return _listingCursorTimestamp; }
-        void setListingCursor(const std::string &listingCursor, int64_t timestamp) {
+        void setListingCursor(const std::string &listingCursor, const int64_t timestamp) {
             _listingCursor = listingCursor;
             _listingCursorTimestamp = timestamp;
         }
