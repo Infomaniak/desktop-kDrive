@@ -49,12 +49,19 @@ static std::string homeDirectoryStr() {
 }
 
 SyncPath CommonUtility::getGenericAppSupportDir() {
-    const auto homeDir = homeDirectoryStr();
-    if (homeDir.empty()) return {};
+    SyncPath appSupportPath;
 
-    SyncPath homePath(homeDir);
-    std::string appSupportName(".config");
-    SyncPath appSupportPath(homePath / appSupportName);
+    // XDG_CONFIG_HOME is a variable defined by the flatpak runtime
+    if (auto xdgConfigHomeDir = CommonUtility::envVarValue("XDG_CONFIG_HOME"); !xdgConfigHomeDir.empty()){
+        appSupportPath = SyncPath(xdgConfigHomeDir);
+    } else {
+        const auto homeDir = homeDirectoryStr();
+        if (homeDir.empty()) return {};
+
+        SyncPath homePath(homeDir);
+        std::string appSupportName(".config");
+        appSupportPath = SyncPath(homePath / appSupportName);
+    }
 
     std::error_code ec;
     if (!std::filesystem::exists(appSupportPath, ec)) {
