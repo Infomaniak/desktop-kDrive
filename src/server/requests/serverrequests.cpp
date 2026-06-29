@@ -784,7 +784,6 @@ ExitInfo ServerRequests::addSync(const DriveDbId driveDbId, const SyncPath &loca
                                                     << Path2WStr(sync.localPath()) << L" serverFolderPath="
                                                     << Path2WStr(sync.targetPath()) << L" dbPath=" << Path2WStr(sync.dbPath()));
 
-    sync = sync;
     return ExitCode::Ok;
 }
 

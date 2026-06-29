@@ -27,7 +27,6 @@ class SyncInfoClient : public BaseSync {
         SyncInfoClient();
         SyncInfoClient(const BaseSync &sync);
 
-        // inline void setPaused(bool paused) noexcept { _paused = paused; }
         inline bool paused() const noexcept { return _status == SyncStatus::Paused || _status == SyncStatus::PauseAsked; }
         inline void setStatus(const SyncStatus status) noexcept { _status = status; }
         inline SyncStatus status() const noexcept { return _status; }
@@ -55,7 +54,6 @@ class SyncInfoClient : public BaseSync {
         QString name() const;
 
     private:
-        // bool _paused{false};
         SyncStatus _status{SyncStatus::Undefined};
         SyncStep _step;
         bool _unresolvedConflicts{false};

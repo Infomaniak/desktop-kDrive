@@ -1426,8 +1426,14 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
             }
 
+            QList<BaseSync> baseList;
+            baseList.reserve(list.size());
+            for (const auto &sync: list) {
+                baseList.push_back(static_cast<const BaseSync &>(sync));
+            }
+
             resultStream << toInt(exitCode);
-            resultStream << list;
+            resultStream << baseList;
             break;
         }
         case RequestNum::SYNC_START: {
