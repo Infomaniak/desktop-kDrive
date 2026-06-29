@@ -92,8 +92,6 @@ void TestAppServer::setUp() {
 }
 
 void TestAppServer::tearDown() {
-    _appPtr->cleanup();
-    delete _appPtr;
     TestBase::stop();
 }
 
@@ -217,6 +215,12 @@ void TestAppServer::testStartAndStopSync() {
     CPPUNIT_ASSERT(_appPtr->vfsMap.empty());
     CPPUNIT_ASSERT(IoHelper::checkIfPathExists(syncDbPath, exists, ioError, IoHelper::PathCheckOption::Insensitive));
     CPPUNIT_ASSERT(!exists);
+}
+
+void TestAppServer::testCleanup() {
+    _appPtr->cleanup();
+    delete _appPtr;
+    CPPUNIT_ASSERT(true);
 }
 
 /**
