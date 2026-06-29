@@ -89,7 +89,7 @@ WindowDecorationController::WindowDecorationController(QObject *const parent) :
     QObject(parent) {}
 
 void WindowDecorationController::updateInputRegion(QWindow *const window, const bool customFrameEnabled, const qreal frameMargin,
-                                                   const qreal resizeHandleThickness) const {
+                                                   const qreal resizeHandleThickness) {
     if (window == nullptr) {
         return;
     }
