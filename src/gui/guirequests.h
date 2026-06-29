@@ -49,7 +49,7 @@ struct GuiRequests {
         static ExitCode getAccountList(QList<Account> &list);
         static ExitCode getDriveInfoList(QList<Drive> &list);
         static ExitCode updateDrive(const Drive &drive);
-        static ExitCode getSyncList(QList<Sync> &list);
+        static ExitCode getSyncList(QList<BaseSync> &list);
         static ExitCode getSyncStatus(SyncDbId syncDbId, SyncStatus &status);
         static ExitCode getBlacklistedNodeIdSet(SyncDbId syncDbId, QSet<QString> &syncIdSet);
         static ExitCode setBlacklistedNodeIdSet(SyncDbId syncDbId, const QSet<QString> &syncIdSet);

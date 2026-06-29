@@ -636,7 +636,7 @@ ExitInfo ServerRequests::getUserAvailableDrives(const UserDbId userDbId, std::ve
 
 ExitInfo ServerRequests::addSync(const UserDbId userDbId, const AccountId accountId, const DriveId driveId,
                                  const SyncPath &localFolderPath, const SyncPath &serverFolderPath,
-                                 const NodeId &serverFolderNodeId, bool liteSync, Account &account, Drive &drive, Sync &syncInfo,
+                                 const NodeId &serverFolderNodeId, bool liteSync, Account &account, Drive &drive, Sync &sync,
                                  bool &accountCreated, bool &driveCreated) {
     accountCreated = false;
     driveCreated = false;
@@ -701,19 +701,19 @@ ExitInfo ServerRequests::addSync(const UserDbId userDbId, const AccountId accoun
                                                                                         << L" accountDbId=" << account.dbId());
     }
 
-    return addSync(driveDbId, localFolderPath, serverFolderPath, serverFolderNodeId, liteSync, syncInfo);
+    return addSync(driveDbId, localFolderPath, serverFolderPath, serverFolderNodeId, liteSync, sync);
 }
 
 ExitInfo ServerRequests::addSync(const UserDbId userDbId, const AccountId accountId, const DriveId driveId,
                                  const QString &localFolderPath, const QString &serverFolderPath,
-                                 const QString &serverFolderNodeId, bool liteSync, Account &account, Drive &drive, Sync &syncInfo,
+                                 const QString &serverFolderNodeId, bool liteSync, Account &account, Drive &drive, Sync &sync,
                                  bool &accountCreated, bool &driveCreated) {
     return addSync(userDbId, accountId, driveId, QStr2Path(localFolderPath), QStr2Path(serverFolderPath),
-                   serverFolderNodeId.toStdString(), liteSync, account, drive, syncInfo, accountCreated, driveCreated);
+                   serverFolderNodeId.toStdString(), liteSync, account, drive, sync, accountCreated, driveCreated);
 }
 
 ExitInfo ServerRequests::addSync(const DriveDbId driveDbId, const SyncPath &localFolderPath, const SyncPath &serverFolderPath,
-                                 const NodeId &serverFolderNodeId, bool liteSync, Sync &syncInfo) {
+                                 const NodeId &serverFolderNodeId, bool liteSync, Sync &sync) {
     LOGW_INFO(Log::instance()->getLogger(), L"Adding new sync - driveDbId=" << driveDbId << L" localFolderPath="
                                                                             << Path2WStr(localFolderPath) << L" serverFolderPath="
                                                                             << Path2WStr(serverFolderPath) << L" liteSync="
@@ -745,7 +745,6 @@ ExitInfo ServerRequests::addSync(const DriveDbId driveDbId, const SyncPath &loca
     navigationPaneClsid = QUuid::createUuid();
 #endif
 
-    Sync sync;
     sync.setDbId(syncDbId);
     sync.setDriveDbId(driveDbId);
     auto localPath(localFolderPath);
@@ -785,14 +784,14 @@ ExitInfo ServerRequests::addSync(const DriveDbId driveDbId, const SyncPath &loca
                                                     << Path2WStr(sync.localPath()) << L" serverFolderPath="
                                                     << Path2WStr(sync.targetPath()) << L" dbPath=" << Path2WStr(sync.dbPath()));
 
-    syncInfo = sync;
+    sync = sync;
     return ExitCode::Ok;
 }
 
 ExitInfo ServerRequests::addSync(const DriveDbId driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
-                                 const QString &serverFolderNodeId, const bool liteSync, Sync &syncInfo) {
+                                 const QString &serverFolderNodeId, const bool liteSync, Sync &sync) {
     return addSync(driveDbId, QStr2Path(localFolderPath), QStr2Path(serverFolderPath), serverFolderNodeId.toStdString(), liteSync,
-                   syncInfo);
+                   sync);
 }
 
 ExitInfo ServerRequests::getSubFolders(const UserDbId userDbId, const DriveId driveId, const QString &nodeId,
@@ -2118,7 +2117,7 @@ ExitInfo ServerRequests::checkSyncNesting(const std::vector<Sync> &syncList, con
 
     // check if the local directory isn't used yet in another sync
     QList<std::filesystem::path> existingSyncFolderList;
-    for (const Sync &sync: syncList) {
+    for (const BaseSync &sync: syncList) {
         existingSyncFolderList << sync.localPath();
     }
 
@@ -2155,7 +2154,7 @@ ExitInfo ServerRequests::checkSyncNesting(const std::vector<Sync> &syncList, con
 ExitCode ServerRequests::syncForPath(const std::vector<Sync> &syncList, const QString &path, SyncDbId &syncDbId) {
     QString absolutePath = QDir::cleanPath(path) + QLatin1Char('/');
 
-    for (const Sync &sync: syncList) {
+    for (const BaseSync &sync: syncList) {
         const QString localPath = SyncName2QStr(sync.localPath().native()) + QLatin1Char('/');
 
         if (absolutePath.startsWith(localPath, (CommonUtility::isWindows() || CommonUtility::isMac()) ? Qt::CaseInsensitive

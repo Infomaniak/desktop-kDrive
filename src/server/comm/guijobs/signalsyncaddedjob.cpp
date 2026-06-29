@@ -25,13 +25,13 @@ static const auto outParamsSyncInfo = "syncInfo";
 
 namespace KDC {
 
-SignalSyncAddedJob::SignalSyncAddedJob(const Sync &syncInfo) :
+SignalSyncAddedJob::SignalSyncAddedJob(const BaseSync &syncInfo) :
     _syncInfo(syncInfo) {
     _signalNum = SignalNum::SYNC_ADDED;
 }
 
 ExitInfo SignalSyncAddedJob::serializeOutputParms() {
-    writeParamValue(outParamsSyncInfo, _syncInfo, info2DynamicVar<Sync>);
+    writeParamValue(outParamsSyncInfo, _syncInfo, info2DynamicVar<BaseSync>);
     return ExitCode::Ok;
 }
 

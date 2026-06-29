@@ -2582,7 +2582,7 @@ void AppServer::uploadLog(const bool includeArchivedLogs) {
     SyncJobManagerSingleton::instance()->queueAsyncJob(logUploadJob, Poco::Thread::PRIO_HIGH);
 }
 
-ExitInfo AppServer::checkIfSyncIsValid(const Sync &sync) {
+ExitInfo AppServer::checkIfSyncIsValid(const BaseSync &sync) {
     std::vector<Sync> syncList;
     if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
         LOG_WARN(_logger, "Error in ParmsDb::selectAllSyncs");
@@ -3206,7 +3206,7 @@ std::string liteSyncActivationLogMessage(const bool enabled, const SyncDbId sync
 }
 
 // This function will pause the synchronization in case of errors.
-ExitInfo AppServer::tryCreateAndStartVfs(const Sync &sync, bool &startPostponed) noexcept {
+ExitInfo AppServer::tryCreateAndStartVfs(const BaseSync &sync, bool &startPostponed) noexcept {
     startPostponed = false;
     const std::string liteSyncMsg = liteSyncActivationLogMessage(sync.virtualFileMode() != VirtualFileMode::Off, sync.dbId());
     LOG_INFO(_logger, liteSyncMsg);
@@ -3221,10 +3221,12 @@ ExitInfo AppServer::tryCreateAndStartVfs(const Sync &sync, bool &startPostponed)
 
     return ExitCode::Ok;
 }
+
 ExitInfo AppServer::startSyncs(User &user) {
     std::unordered_set<SyncDbId> emptyList;
     return startSyncs(user, emptyList, emptyList);
 }
+
 ExitInfo AppServer::startSyncs(User &user, const std::unordered_set<SyncDbId> toIgnoreSyncDbIds,
                                std::unordered_set<SyncDbId> &startedSyncDbIds) {
     logExtendedLogActivationMessage(ParametersCache::isExtendedLogEnabled());
@@ -4099,7 +4101,7 @@ ExitInfo AppServer::stopSyncPal(const SyncDbId syncDbId, const SyncPal::PauseCal
     return ExitCode::Ok;
 }
 
-ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
+ExitInfo AppServer::createAndStartVfs(const BaseSync &sync) noexcept {
     // Check that the sync folder exists.
     bool exists = false;
     IoError ioError = IoError::Success;
@@ -4824,18 +4826,18 @@ void AppServer::sendDriveRemoved(const DriveDbId driveDbId) const {
     }
 }
 
-void AppServer::sendSyncUpdated(const Sync &syncInfo) const {
+void AppServer::sendSyncUpdated(const Sync &sync) const {
     if (useOldCommServer()) {
         int id = 0;
 
         QByteArray params;
         QDataStream paramsStream(&params, QIODevice::WriteOnly);
-        paramsStream << syncInfo;
+        paramsStream << sync;
 
         (void) OldCommServer::instance()->sendSignal(SignalNum::SYNC_UPDATED, params, id);
     }
     if (useCommManager()) {
-        _commManager->sendGuiSignal(std::make_shared<SignalSyncUpdatedJob>(syncInfo));
+        _commManager->sendGuiSignal(std::make_shared<SignalSyncUpdatedJob>(sync));
     }
 }
 
@@ -4970,18 +4972,18 @@ void AppServer::sendVfsConversionCompleted(const SyncDbId syncDbId) const {
     }
 }
 
-void AppServer::sendSyncAdded(const Sync &syncInfo) const {
+void AppServer::sendSyncAdded(const Sync &sync) const {
     if (useOldCommServer()) {
         int id = 0;
 
         QByteArray params;
         QDataStream paramsStream(&params, QIODevice::WriteOnly);
-        paramsStream << syncInfo;
+        paramsStream << sync;
 
         (void) OldCommServer::instance()->sendSignal(SignalNum::SYNC_ADDED, params, id);
     }
     if (useCommManager()) {
-        _commManager->sendGuiSignal(std::make_shared<SignalSyncAddedJob>(syncInfo));
+        _commManager->sendGuiSignal(std::make_shared<SignalSyncAddedJob>(sync));
     }
 }
 

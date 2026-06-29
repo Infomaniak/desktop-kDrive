@@ -25,11 +25,11 @@ namespace KDC {
 
 class SignalSyncAddedJob : public AbstractGuiJob {
     public:
-        explicit SignalSyncAddedJob(const Sync &syncInfo);
+        explicit SignalSyncAddedJob(const BaseSync &syncInfo);
 
     private:
         // Output parameters
-        Sync _syncInfo;
+        BaseSync _syncInfo;
 
         ExitInfo deserializeInputParms() override { return ExitCode::Ok; }
         ExitInfo serializeOutputParms() override;

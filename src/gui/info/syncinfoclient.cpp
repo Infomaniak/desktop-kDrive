@@ -24,8 +24,8 @@ namespace KDC {
 
 SyncInfoClient::SyncInfoClient() = default;
 
-SyncInfoClient::SyncInfoClient(const Sync &sync) :
-    Sync(sync) {}
+SyncInfoClient::SyncInfoClient(const BaseSync &sync) :
+    BaseSync(sync) {}
 
 QString SyncInfoClient::name() const {
     return CommonUtility::getRelativePathFromHome(Path2QStr(localPath()));

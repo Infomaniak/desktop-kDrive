@@ -66,23 +66,23 @@ ExitInfo AbstractSyncAddJob::deserializeInputParms() {
 }
 
 ExitInfo AbstractSyncAddJob::serializeOutputParms() {
-    writeParamValue(outParamsSyncInfo, _syncInfo, info2DynamicVar<Sync>);
+    writeParamValue(outParamsSyncInfo, _sync, info2DynamicVar<Sync>);
 
     return ExitCode::Ok;
 }
 
-ExitInfo AbstractSyncAddJob::process(const Sync &syncInfo) {
+ExitInfo AbstractSyncAddJob::process(const Sync &sync) {
     // Check if sync is valid
-    if (const auto exitInfo = _commManager->appServer().checkIfSyncIsValid(syncInfo); !exitInfo) {
-        LOG_WARN(_logger, "Error in checkIfSyncIsValid for syncDbId=" << syncInfo.dbId() << " : " << exitInfo);
-        addError(Error(syncInfo.dbId(), ERR_ID, exitInfo));
+    if (const auto exitInfo = _commManager->appServer().checkIfSyncIsValid(sync); !exitInfo) {
+        LOG_WARN(_logger, "Error in checkIfSyncIsValid for syncDbId=" << sync.dbId() << " : " << exitInfo);
+        addError(Error(sync.dbId(), ERR_ID, exitInfo));
         return exitInfo;
     }
 
     // Create and start Vfs
     bool startPostponed = false;
-    if (const auto exitInfo = _commManager->appServer().tryCreateAndStartVfs(syncInfo, startPostponed); !exitInfo) {
-        LOG_WARN(_logger, "Error in tryCreateAndStartVfs for syncDbId=" << syncInfo.dbId() << " : " << exitInfo);
+    if (const auto exitInfo = _commManager->appServer().tryCreateAndStartVfs(sync, startPostponed); !exitInfo) {
+        LOG_WARN(_logger, "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " : " << exitInfo);
         if (!Utility::isLiteSyncExtError(exitInfo)) {
             return exitInfo;
         }
@@ -91,13 +91,13 @@ ExitInfo AbstractSyncAddJob::process(const Sync &syncInfo) {
     // Create and start SyncPal
     NodeSet blackList(std::make_move_iterator(_blackList.begin()), std::make_move_iterator(_blackList.end()));
     if (const auto exitInfo =
-                _commManager->appServer().initSyncPal(syncInfo, blackList, !startPostponed, std::chrono::seconds(0), false, true);
+                _commManager->appServer().initSyncPal(sync, blackList, !startPostponed, std::chrono::seconds(0), false, true);
         !exitInfo) {
-        _commManager->appServer().stopSyncTask(syncInfo.dbId());
+        _commManager->appServer().stopSyncTask(sync.dbId());
 
         // Delete sync from DB
-        if (const ExitInfo exitInfo2 = ServerRequests::deleteSync(syncInfo.dbId()); !exitInfo2) {
-            LOG_WARN(_logger, "Error in Requests::deleteSync for syncDbId=" << syncInfo.dbId() << " : " << exitInfo2);
+        if (const ExitInfo exitInfo2 = ServerRequests::deleteSync(sync.dbId()); !exitInfo2) {
+            LOG_WARN(_logger, "Error in Requests::deleteSync for syncDbId=" << sync.dbId() << " : " << exitInfo2);
             addError(Error(ERR_ID, exitInfo));
         }
 
@@ -108,7 +108,7 @@ ExitInfo AbstractSyncAddJob::process(const Sync &syncInfo) {
     Utility::restartFinderExtension();
 #endif
 
-    _syncInfo = syncInfo;
+    _sync = sync;
     return ExitCode::Ok;
 }
 

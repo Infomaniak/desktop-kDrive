@@ -1311,14 +1311,14 @@ void ClientGui::onDriveRemoved(const DriveDbId driveDbId) {
     }
 }
 
-void ClientGui::onSyncAdded(const Sync &syncInfo) {
+void ClientGui::onSyncAdded(const BaseSync &syncInfo) {
     _syncInfoMap.insert({syncInfo.dbId(), SyncInfoClient(syncInfo)});
 
     emit syncListRefreshed();
     emit refreshStatusNeeded();
 }
 
-void ClientGui::onSyncUpdated(const Sync &syncInfo) {
+void ClientGui::onSyncUpdated(const BaseSync &syncInfo) {
     const auto &syncInfoMapIt = _syncInfoMap.find(syncInfo.dbId());
     if (syncInfoMapIt != _syncInfoMap.end()) {
         syncInfoMapIt->second.setDriveDbId(syncInfo.driveDbId());
@@ -1628,14 +1628,14 @@ bool ClientGui::loadInfoMaps() {
     }
 
     // Load sync list
-    QList<Sync> syncInfoList;
+    QList<BaseSync> syncInfoList;
     exitCode = GuiRequests::getSyncList(syncInfoList);
     if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::getSyncList";
         return false;
     }
 
-    for (const Sync &syncInfo: syncInfoList) {
+    for (const BaseSync &syncInfo: syncInfoList) {
         _syncInfoMap.insert({syncInfo.dbId(), SyncInfoClient(syncInfo)});
     }
 

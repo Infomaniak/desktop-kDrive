@@ -38,46 +38,30 @@ static const auto syncInfoListingCursorTimestamp = "listingCursorTimestamp";
 
 namespace KDC {
 
-Sync::Sync(const SyncDbId dbId, const DriveDbId driveDbId, const std::filesystem::path &localPath, const NodeId &localNodeId,
-           const std::filesystem::path &targetPath, const NodeId &targetNodeId, const bool paused, const bool supportVfs,
-           const VirtualFileMode virtualFileMode, const bool notificationsDisabled, const std::filesystem::path &dbPath,
-           const bool hasFullyCompleted, const std::string &navigationPaneClsid, const std::string &listingCursor,
-           const int64_t listingCursorTimestamp) :
+BaseSync::BaseSync(const SyncDbId dbId, const DriveDbId driveDbId, const std::filesystem::path &localPath,
+                   const std::filesystem::path &targetPath, const NodeId &targetNodeId, const bool supportVfs,
+                   const VirtualFileMode virtualFileMode, const std::string &navigationPaneClsid) :
     _dbId(dbId),
     _driveDbId(driveDbId),
     _localPath(localPath),
-    _localNodeId(localNodeId),
     _targetPath(targetPath),
     _targetNodeId(targetNodeId),
-    _paused(paused),
     _supportVfs(supportVfs),
     _virtualFileMode(virtualFileMode),
-    _notificationsDisabled(notificationsDisabled),
-    _dbPath(dbPath),
-    _hasFullyCompleted(hasFullyCompleted),
-    _navigationPaneClsid(navigationPaneClsid),
-    _listingCursor(listingCursor),
-    _listingCursorTimestamp(listingCursorTimestamp) {}
+    _navigationPaneClsid(navigationPaneClsid) {}
 
-void Sync::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
+void BaseSync::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, syncInfoDbId, dbId());
     CommonUtility::writeValueToStruct(dstruct, syncInfoDriveDbId, driveDbId());
     CommonUtility::writeValueToStruct(dstruct, syncInfoLocalPath, CommonUtility::syncPath2CommString(localPath()));
-    // CommonUtility::writeValueToStruct(dstruct, syncInfoLocalNodeId, CommonUtility::str2CommString(localNodeId()));
     CommonUtility::writeValueToStruct(dstruct, syncInfoTargetPath, CommonUtility::syncPath2CommString(targetPath()));
     CommonUtility::writeValueToStruct(dstruct, syncInfoTargetNodeId, CommonUtility::str2CommString(targetNodeId()));
-    // CommonUtility::writeValueToStruct(dstruct, syncInfoPaused, paused());
     CommonUtility::writeValueToStruct(dstruct, syncInfoSupportVfs, supportVfs());
     CommonUtility::writeValueToStruct(dstruct, syncInfoVirtualFileMode, virtualFileMode());
-    // CommonUtility::writeValueToStruct(dstruct, syncInfoNotificationsDisabled, notificationsDisabled());
-    // CommonUtility::writeValueToStruct(dstruct, syncInfoDbPath, CommonUtility::syncPath2CommString(dbPath()));
-    // CommonUtility::writeValueToStruct(dstruct, syncInfoHasFullyCompleted, hasFullyCompleted());
     CommonUtility::writeValueToStruct(dstruct, syncInfoNavigationPaneClsid, CommonUtility::str2CommString(navigationPaneClsid()));
-    // CommonUtility::writeValueToStruct(dstruct, syncInfoListingCursor, CommonUtility::str2CommString(listingCursor()));
-    // CommonUtility::writeValueToStruct(dstruct, syncInfoListingCursorTimestamp, listingCursorTimestamp());
 }
 
-void Sync::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
+void BaseSync::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     SyncDbId syncDbId = 0;
     CommonUtility::readValueFromStruct(dstruct, syncInfoDbId, syncDbId);
     setDbId(syncDbId);
@@ -90,10 +74,6 @@ void Sync::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, syncInfoLocalPath, localPath);
     setLocalPath(CommonUtility::commString2SyncPath(localPath));
 
-    // CommString localNodeId;
-    // CommonUtility::readValueFromStruct(dstruct, syncInfoLocalNodeId, localNodeId);
-    // setLocalNodeId(CommonUtility::commString2Str(localNodeId));
-
     CommString targetPath;
     CommonUtility::readValueFromStruct(dstruct, syncInfoTargetPath, targetPath);
     setTargetPath(CommonUtility::commString2SyncPath(targetPath));
@@ -102,32 +82,26 @@ void Sync::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, syncInfoTargetNodeId, targetNodeId);
     setTargetNodeId(CommonUtility::commString2Str(targetNodeId));
 
-    // bool paused = false;
-    // CommonUtility::readValueFromStruct(dstruct, syncInfoPaused, paused);
-    // setPaused(paused);
-
     CommonUtility::readValueFromStruct(dstruct, syncInfoSupportVfs, _supportVfs);
     CommonUtility::readValueFromStruct(dstruct, syncInfoVirtualFileMode, _virtualFileMode);
-
-    // bool notificationsDisabled = false;
-    // CommonUtility::readValueFromStruct(dstruct, syncInfoNotificationsDisabled, notificationsDisabled);
-    // setNotificationsDisabled(notificationsDisabled);
-
-    // CommString dbPath;
-    // CommonUtility::readValueFromStruct(dstruct, syncInfoDbPath, dbPath);
-    // setDbPath(CommonUtility::commString2SyncPath(dbPath));
-
-    // CommonUtility::readValueFromStruct(dstruct, syncInfoHasFullyCompleted, _hasFullyCompleted);
 
     CommString navigationPaneClsid;
     CommonUtility::readValueFromStruct(dstruct, syncInfoNavigationPaneClsid, navigationPaneClsid);
     setNavigationPaneClsid(CommonUtility::commString2Str(navigationPaneClsid));
-
-    // CommString listingCursor;
-    // CommonUtility::readValueFromStruct(dstruct, syncInfoListingCursor, listingCursor);
-    // int64_t listingCursorTimestamp = 0;
-    // CommonUtility::readValueFromStruct(dstruct, syncInfoListingCursorTimestamp, listingCursorTimestamp);
-    // setListingCursor(CommonUtility::commString2Str(listingCursor), listingCursorTimestamp);
 }
+
+Sync::Sync(SyncDbId dbId, DriveDbId driveDbId, const std::filesystem::path &localPath, const NodeId &localNodeId,
+           const std::filesystem::path &targetPath, const NodeId &targetNodeId, bool paused, bool supportVfs,
+           VirtualFileMode virtualFileMode, bool notificationsDisabled, const std::filesystem::path &dbPath,
+           bool hasFullyCompleted, const std::string &navigationPaneClsid, const std::string &listingCursor,
+           int64_t listingCursorTimestamp) :
+    BaseSync(dbId, driveDbId, localPath, targetPath, targetNodeId, supportVfs, virtualFileMode, navigationPaneClsid),
+    _localNodeId(localNodeId),
+    _paused(paused),
+    _notificationsDisabled(notificationsDisabled),
+    _dbPath(dbPath),
+    _hasFullyCompleted(hasFullyCompleted),
+    _listingCursor(listingCursor),
+    _listingCursorTimestamp(listingCursorTimestamp) {}
 
 } // namespace KDC
