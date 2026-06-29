@@ -302,7 +302,7 @@ bool CommManager::hasActiveGuiConnection() {
 }
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-int32_t CommManager::tryGetGUICommPort() const {
+int32_t CommManager::tryGetGUICommPort() {
     const std::scoped_lock lock(_mutex);
     if (!_guiCommServer) {
         LOG_WARN(Log::instance()->getLogger(), "GUI Comm Server not initialized");
