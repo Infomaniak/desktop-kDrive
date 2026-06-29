@@ -89,6 +89,8 @@ set_source_files_properties(${GUI_QML_SINGLETON_FILES} PROPERTIES QT_QML_SINGLET
 
 set(GUI_GENERATED_QML_FILES
         ui/onboarding/animations/LoaderStrokeLightAnimation.qml
+        ui/onboarding/animations/SyncFileDarkAnimation.qml
+        ui/onboarding/animations/SyncFileLightAnimation.qml
 )
 
 set_source_files_properties(${GUI_GENERATED_QML_FILES} PROPERTIES QT_QML_SKIP_QMLLINT TRUE)
