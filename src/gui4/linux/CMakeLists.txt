@@ -82,16 +82,15 @@ set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
 
 set_source_files_properties(${GUI_QML_SINGLETON_FILES} PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
 
-set(GUI_GENERATED_QML_FILES
-        ui/onboarding/animations/LoaderStrokeDarkAnimation.qml
-        ui/onboarding/animations/LoaderStrokeLightAnimation.qml
+file(GLOB GUI_QML_GENERATED_FILES CONFIGURE_DEPENDS
+        RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
+        "ui/onboarding/animations/*.qml"
 )
 
-set_source_files_properties(${GUI_GENERATED_QML_FILES} PROPERTIES QT_QML_SKIP_QMLLINT TRUE)
+set_source_files_properties(${GUI_QML_GENERATED_FILES} PROPERTIES QT_QML_SKIP_QMLLINT TRUE)
 
 set(GUI_QML_FILES # .qml files for the app
         ui/Main.qml
-        ${GUI_GENERATED_QML_FILES}
         ui/onboarding/DriveCellView.qml
         ui/onboarding/DriveIconView.qml
         ui/onboarding/DriveSelectionView.qml
@@ -101,6 +100,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/onboarding/NoDriveAvailableView.qml
         ui/onboarding/OnboardingAnimationsView.qml
         ui/onboarding/OnboardingWindow.qml
+        ${GUI_QML_GENERATED_FILES}
         ${GUI_QML_SINGLETON_FILES}
 )
 
