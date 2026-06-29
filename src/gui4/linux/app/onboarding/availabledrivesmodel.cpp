@@ -149,7 +149,8 @@ QVariant AvailableDrivesModel::data(const QModelIndex &index, const int role) co
         case TooltipRole:
             return context.alreadyConfigured ? tr("This kDrive is already configured.\nGo to your settings to modify it.")
                                              : QString();
-        default: return {};
+        default:
+            return {};
     }
 }
 
@@ -239,18 +240,6 @@ void AvailableDrivesModel::toggleDrive(const qint32 row) {
     }
 
     _onboardingState.toggleAvailableDrive(keyAt(row));
-}
-
-void AvailableDrivesModel::changeUser() {
-    const auto userDbId = selectedUserDbId();
-    if (userDbId == 0 || _userService.isDeleteUserPending(userDbId)) {
-        return;
-    }
-
-    qCInfo(lcAvailableDrivesModel) << "Onboarding change user requested | userDbId:" << userDbId;
-    _userService.deleteUser(userDbId);
-    _onboardingState.reset();
-    _flowController.restart();
 }
 
 void AvailableDrivesModel::requestAdvancedSettings() {
