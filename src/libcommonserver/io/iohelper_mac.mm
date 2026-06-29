@@ -116,8 +116,13 @@ bool IoHelper::createAlias(const std::string &data, const SyncPath &aliasPath, I
             } else {
                 LOGW_WARN(logger(), L"Error in CFURLWriteBookmarkDataToFile: " << Utility::formatIoError(aliasPath, ioError));
                 if (CFStringRef errorDescription = CFErrorCopyDescription(error); errorDescription) {
-                    const auto errorDescriptionStdString = std::string([(__bridge NSString *) errorDescription UTF8String]);
-                    LOGW_WARN(logger(), L"Native CF Error description: " << CommonUtility::s2ws(errorDescriptionStdString));
+                    const char *utf8Description = [(__bridge NSString *) errorDescription UTF8String];
+                    if (utf8Description) {
+                        LOGW_WARN(logger(),
+                                  L"Native CF Error description: " << CommonUtility::s2ws(std::string(utf8Description)));
+                    } else {
+                        LOGW_WARN(logger(), L"Native CF Error description: <unavailable (non-UTF8)>");
+                    }
                     CFRelease(errorDescription);
                 }
                 CFRelease(error);
@@ -155,8 +160,13 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
             } else {
                 LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkDataFromFile: " << Utility::formatIoError(aliasPath, ioError));
                 if (CFStringRef errorDescription = CFErrorCopyDescription(error); errorDescription) {
-                    const auto errorDescriptionStdString = std::string([(__bridge NSString *) errorDescription UTF8String]);
-                    LOGW_WARN(logger(), L"Native CF Error description: " << CommonUtility::s2ws(errorDescriptionStdString));
+                    const char *utf8Description = [(__bridge NSString *) errorDescription UTF8String];
+                    if (utf8Description) {
+                        LOGW_WARN(logger(),
+                                  L"Native CF Error description: " << CommonUtility::s2ws(std::string(utf8Description)));
+                    } else {
+                        LOGW_WARN(logger(), L"Native CF Error description: <unavailable (non-UTF8)>");
+                    }
                     CFRelease(errorDescription);
                 }
                 CFRelease(error);
