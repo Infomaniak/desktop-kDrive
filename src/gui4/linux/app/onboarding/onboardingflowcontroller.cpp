@@ -136,11 +136,6 @@ void OnboardingFlowController::cancel() {
     emit cancelRequested();
 }
 
-void OnboardingFlowController::restart() {
-    setCurrentStep(Login);
-    setLoginState(LoginIdle);
-}
-
 void OnboardingFlowController::setCurrentStep(const Step step) {
     if (const auto index = stepToIndex(step); index < 0 || index >= stepCountValue) {
         qCWarning(lcOnboardingFlowController) << "Invalid onboarding step ignored:" << index;
