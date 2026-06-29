@@ -109,11 +109,19 @@ bool IoHelper::createAlias(const std::string &data, const SyncPath &aliasPath, I
     if (!ret) {
         if (error) {
             ioError = nsError2ioError((__bridge NSError *) error);
-            CFRelease(error);
             if (ioError != IoError::Unknown) {
+                CFRelease(error);
+
                 return true;
             } else {
                 LOGW_WARN(logger(), L"Error in CFURLWriteBookmarkDataToFile: " << Utility::formatIoError(aliasPath, ioError));
+                if (CFStringRef errorDescription = CFErrorCopyDescription(error); errorDescription) {
+                    const auto errorDescriptionStdString = std::string([(__bridge NSString *) errorDescription UTF8String]);
+                    LOGW_WARN(logger(), L"Native CF Error description: " << CommonUtility::s2ws(errorDescriptionStdString));
+                    CFRelease(errorDescription);
+                }
+                CFRelease(error);
+
                 return false;
             }
         }
