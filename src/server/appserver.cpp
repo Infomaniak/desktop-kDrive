@@ -180,15 +180,15 @@ void AppServer::init() {
     setWindowIcon(_theme->applicationIcon());
     setApplicationVersion(QString::fromStdString(_theme->version()));
 
+    parseOptions(_arguments);
+    if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked || !_authorizationCodeStr.isEmpty()) {
+        std::cout << "Command line options processed";
+        return;
+    }
+
     // Setup logging with default parameters
     if (!initLogging()) {
         throw std::runtime_error("Unable to init logging.");
-    }
-
-    parseOptions(_arguments);
-    if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked) {
-        LOG_INFO(_logger, "Command line options processed");
-        return;
     }
 
     if (isRunning()) {
