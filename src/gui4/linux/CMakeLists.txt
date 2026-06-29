@@ -5,7 +5,8 @@ endif ()
 project(${APPLICATION_CLIENTV4_EXECUTABLE} LANGUAGES C CXX)
 
 
-find_package(Qt6 6.11 REQUIRED COMPONENTS Core Gui Network Qml Quick Sql Widgets QuickControls2)
+find_package(Qt6 6.11 REQUIRED COMPONENTS Core Gui Network Qml Quick Sql Widgets QuickControls2 QuickEffects)
+find_package(X11 REQUIRED COMPONENTS Xext)
 
 qt_standard_project_setup(REQUIRES 6.11)
 
@@ -68,6 +69,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/services/userservice.h
         app/systraycontroller.cpp
         app/systraycontroller.h
+        ui/window/windowdecorationcontroller.cpp
+        ui/window/windowdecorationcontroller.h
 )
 
 set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
@@ -75,6 +78,8 @@ set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
         ui/tokens/IKColors.qml
         ui/tokens/IKSpacing.qml
         ui/tokens/IKRadius.qml
+        ui/tokens/IKShadows.qml
+        ui/tokens/IKWindow.qml
         ui/tokens/IKFonts.qml
         ui/tokens/IKIconSizes.qml
         ui/tokens/IKOnboarding.qml
@@ -91,6 +96,9 @@ set_source_files_properties(${GUI_GENERATED_QML_FILES} PROPERTIES QT_QML_SKIP_QM
 
 set(GUI_QML_FILES # .qml files for the app
         ui/Main.qml
+        ui/window/IKShadowedWindow.qml
+        ui/window/IKWindowControlButton.qml
+        ui/window/IKWindowHeader.qml
         ${GUI_GENERATED_QML_FILES}
         ui/onboarding/DriveCellView.qml
         ui/onboarding/DriveIconView.qml
@@ -152,8 +160,10 @@ target_link_libraries(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
         Qt6::Qml
         Qt6::Quick
         Qt6::QuickControls2
+        Qt6::QuickEffects
         Qt6::Sql     # Added because libcommon depends on it; Qt will warn if it's not linked.
         Qt6::Widgets # Added because libcommon depends on it; Qt will warn if it's not linked.
+        X11::Xext
         ${libcommon_NAME}
         ${libcommongui_NAME}
 )
