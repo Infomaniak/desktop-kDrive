@@ -683,6 +683,8 @@ void TestLocalFileSystemObserverWorker::testInvalidateCounter() {
 }
 
 void TestLocalFileSystemObserverWorker::testSlowWritingExtensionDelay() {
+    if (!testhelpers::isExtendedTest()) return;
+
     auto localFSO = std::dynamic_pointer_cast<LocalFileSystemObserverWorker>(_syncPal->_localFSObserverWorker);
     CPPUNIT_ASSERT(localFSO);
 
