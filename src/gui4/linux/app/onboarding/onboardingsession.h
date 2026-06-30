@@ -22,6 +22,7 @@
 #include "app/onboarding/driveselectioncontroller.h"
 #include "app/onboarding/onboardingflowcontroller.h"
 #include "app/onboarding/onboardinglogincoordinator.h"
+#include "app/onboarding/onboardingsynccreationcoordinator.h"
 
 #include <QObject>
 
@@ -33,6 +34,7 @@ namespace KDC {
 class AppCache;
 class AvailableDrivesModel;
 class CommService;
+class ServiceEventBus;
 class UserService;
 
 /**
@@ -53,7 +55,8 @@ class OnboardingSession final : public QObject {
             DriveSelection,
         };
 
-        explicit OnboardingSession(AppCache &appCache, CommService &commService, UserService &userService, EntryPoint entryPoint,
+        explicit OnboardingSession(AppCache &appCache, CommService &commService, UserService &userService,
+                                   ServiceEventBus &serviceEventBus, EntryPoint entryPoint,
                                    std::optional<UserDbId> selectedUserDbId, uint64_t generation, QObject *parent = nullptr);
 
         [[nodiscard]] OnboardingFlowController *flowController() { return &_flowController; }
@@ -71,6 +74,7 @@ class OnboardingSession final : public QObject {
         OnboardingFlowController _flowController;
         OnboardingLoginCoordinator _loginCoordinator;
         DriveSelectionController _driveSelectionController;
+        OnboardingSyncCreationCoordinator _syncCreationCoordinator;
         const uint64_t _generation;
 };
 
