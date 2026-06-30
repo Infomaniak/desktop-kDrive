@@ -155,35 +155,69 @@ Item {
             Row {
                 spacing: IKSpacing.s8
 
-                Button {
-                    id: advancedButton
+                Item {
+                    implicitWidth: advancedButton.implicitWidth
+                    implicitHeight: IKOnboarding.driveSelectionButtonHeight
 
-                    enabled: root.drivesModel.canOpenAdvancedSettings
-                    height: IKOnboarding.driveSelectionButtonHeight
-                    text: qsTr("Advanced settings")
-                    onClicked: root.drivesModel.requestAdvancedSettings()
+                    Button {
+                        id: advancedButton
 
-                    contentItem: Text {
-                        text: advancedButton.text
-                        color: advancedButton.enabled ? IKColors.actionPrimary : IKColors.actionDisabled
-                        font.pixelSize: IKFonts.bodySize
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        elide: Text.ElideRight
+                        anchors.fill: parent
+                        enabled: false
+                        text: qsTr("Advanced settings")
+                        onClicked: root.drivesModel.requestAdvancedSettings()
+
+                        contentItem: Text {
+                            text: advancedButton.text
+                            color: IKColors.actionDisabled
+                            font.pixelSize: IKFonts.bodySize
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                            elide: Text.ElideRight
+                        }
+
+                        background: Rectangle {
+                            implicitWidth: IKOnboarding.driveSelectionSecondaryButtonMinWidth
+                            implicitHeight: IKOnboarding.driveSelectionButtonHeight
+                            radius: IKOnboarding.buttonCornerRadius
+                            color: "transparent"
+                        }
+
+                        padding: 0
+                        leftPadding: IKSpacing.s16
+                        rightPadding: IKSpacing.s16
+                        topPadding: 0
+                        bottomPadding: 0
                     }
 
-                    background: Rectangle {
-                        implicitWidth: IKOnboarding.driveSelectionSecondaryButtonMinWidth
-                        implicitHeight: IKOnboarding.driveSelectionButtonHeight
-                        radius: IKOnboarding.buttonCornerRadius
-                        color: "transparent"
+                    HoverHandler {
+                        id: advancedButtonHoverHandler
                     }
 
-                    padding: 0
-                    leftPadding: IKSpacing.s16
-                    rightPadding: IKSpacing.s16
-                    topPadding: 0
-                    bottomPadding: 0
+                    ToolTip {
+                        id: advancedButtonTooltip
+
+                        visible: advancedButtonHoverHandler.hovered
+                        delay: IKOnboarding.driveSelectionTooltipDelay
+                        timeout: -1
+                        text: qsTr("Not available yet.")
+                        padding: IKOnboarding.driveSelectionTooltipPadding
+
+                        contentItem: Text {
+                            width: Math.min(implicitWidth, IKOnboarding.driveSelectionTooltipMaxWidth)
+                            text: advancedButtonTooltip.text
+                            color: IKColors.onboardingTooltipText
+                            font.pixelSize: IKFonts.bodySize
+                            lineHeightMode: Text.FixedHeight
+                            lineHeight: IKOnboarding.driveSelectionDriveNameLineHeight
+                            wrapMode: Text.WordWrap
+                        }
+
+                        background: Rectangle {
+                            radius: IKOnboarding.driveSelectionTooltipRadius
+                            color: IKColors.onboardingTooltipSurface
+                        }
+                    }
                 }
 
                 Button {
