@@ -40,7 +40,7 @@ namespace KDC {
 static const int64_t waitForUpdateDelay = 1000; // 1sec
 static const int64_t waitForUpdateDelayExtended = waitForUpdateDelay * 5; // 5sec, for slow-writing extensions
 
-static const std::unordered_set<SyncPath::string_type> slowWritingExtensions = {
+static constexpr std::unordered_set<SyncPath::string_type> slowWritingExtensions = {
         SyncPath(L".psd").native(),  SyncPath(L".psb").native(),    SyncPath(L".ai").native(),
         SyncPath(L".indd").native(), SyncPath(L".blend").native(),  SyncPath(L".dwg").native(),
         SyncPath(L".dxf").native(),  SyncPath(L".pln").native(),    SyncPath(L".pla").native(),
