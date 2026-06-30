@@ -40,12 +40,8 @@ namespace KDC {
 static const int64_t waitForUpdateDelay = 1000; // 1sec
 static const int64_t waitForUpdateDelayExtended = waitForUpdateDelay * 5; // 5sec, for slow-writing extensions
 
-static constexpr std::unordered_set<SyncPath::string_type> slowWritingExtensions = {
-        SyncPath(L".psd").native(),  SyncPath(L".psb").native(),    SyncPath(L".ai").native(),
-        SyncPath(L".indd").native(), SyncPath(L".blend").native(),  SyncPath(L".dwg").native(),
-        SyncPath(L".dxf").native(),  SyncPath(L".pln").native(),    SyncPath(L".pla").native(),
-        SyncPath(L".prproj").native(), SyncPath(L".aep").native(),
-};
+static constexpr std::array<std::wstring_view, 11> slowWritingExtensions = {
+        L".psd", L".psb", L".ai", L".indd", L".blend", L".dwg", L".dxf", L".pln", L".pla", L".prproj", L".aep"};
 
 LocalFileSystemObserverWorker::LocalFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                              const std::string &shortName) :
@@ -112,7 +108,10 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(const std::list<std::pai
         // Raise flag _updating in order to wait 1sec without local changes before starting the sync
         _updating = true;
         _needUpdateTimerStart = std::chrono::steady_clock::now();
-        if (slowWritingExtensions.contains(absolutePath.extension().native())) {
+
+        auto ext = absolutePath.extension().native();
+
+        if (std::find(slowWritingExtensions.begin(), slowWritingExtensions.end(), ext) != slowWritingExtensions.end()) {
             _useExtendedDelay = true;
         }
 
@@ -508,8 +507,8 @@ bool LocalFileSystemObserverWorker::checkAndClearUpdateDelay(ExitInfo &exitInfo)
     if (!_updating) return false;
 
     // Wait 1 sec after the last update or 5 if the file has a slow-writing extension, before starting the sync
-    const auto diff_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() -
-                                                                               _needUpdateTimerStart);
+    const auto diff_ms =
+            std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - _needUpdateTimerStart);
     const auto activeDelay = _useExtendedDelay ? waitForUpdateDelayExtended : waitForUpdateDelay;
     if (diff_ms.count() <= activeDelay) return false;
 
