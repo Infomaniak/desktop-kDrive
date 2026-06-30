@@ -90,7 +90,7 @@ set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
 set_source_files_properties(${GUI_QML_SINGLETON_FILES} PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
 
 set(GUI_GENERATED_QML_FILES
-        ui/onboarding/animations/LoaderStrokeLightAnimation.qml
+        ui/onboarding/animations/LoaderStrokeAnimation.qml
         ui/onboarding/animations/SyncFileDarkAnimation.qml
         ui/onboarding/animations/SyncFileLightAnimation.qml
 )
