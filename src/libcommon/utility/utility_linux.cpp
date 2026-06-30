@@ -60,7 +60,7 @@ SyncPath CommonUtility::getGenericAppSupportDir() {
 
         SyncPath homePath(homeDir);
         std::string appSupportName(".config");
-        appSupportPath = SyncPath(homePath / appSupportName);
+        appSupportPath = homePath / appSupportName;
     }
 
     std::error_code ec;
