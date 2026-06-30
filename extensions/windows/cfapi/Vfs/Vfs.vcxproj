@@ -166,8 +166,8 @@
     <PostBuildEvent>
       <Command>copy /Y "$(ProjectDir)..\Common\debug.h" "$(SolutionDir)..\..\..\src\server\vfs\win\."
 copy /Y "$(ProjectDir)$(TargetName).h" "$(SolutionDir)..\..\..\src\server\vfs\win\."
-copy /Y "$(TargetDir)$(TargetName).dll" "$(KDC_BUILD_PROJECT_DIR)\bin\."
-copy /Y "$(TargetDir)$(TargetName).pdb" "$(KDC_BUILD_PROJECT_DIR)\."</Command>
+copy /Y "$(TargetDir)$(TargetName).dll" "$(KDC_BUILD_PROJECT_DIR)\build\Debug\bin\."
+copy /Y "$(TargetDir)$(TargetName).pdb" "$(KDC_BUILD_PROJECT_DIR)\build\Debug\bin\."</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
