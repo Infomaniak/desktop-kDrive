@@ -6,7 +6,9 @@ project(${APPLICATION_CLIENTV4_EXECUTABLE} LANGUAGES C CXX)
 
 
 find_package(Qt6 6.11 REQUIRED COMPONENTS Core Gui Network Qml Quick Sql Widgets QuickControls2 QuickEffects)
-find_package(X11 REQUIRED COMPONENTS Xext)
+if (QT_FEATURE_xcb)
+    find_package(X11 REQUIRED COMPONENTS Xext)
+endif ()
 
 qt_standard_project_setup(REQUIRES 6.11)
 
@@ -164,10 +166,16 @@ target_link_libraries(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
         Qt6::QuickEffects
         Qt6::Sql     # Added because libcommon depends on it; Qt will warn if it's not linked.
         Qt6::Widgets # Added because libcommon depends on it; Qt will warn if it's not linked.
-        X11::Xext
         ${libcommon_NAME}
         ${libcommongui_NAME}
 )
+
+if (QT_FEATURE_xcb)
+    target_link_libraries(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
+            X11::X11
+            X11::Xext
+    )
+endif ()
 
 target_include_directories(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
