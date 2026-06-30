@@ -2958,6 +2958,7 @@ ExitInfo AppServer::updateUser(User &user) {
         if (exitInfo.code() == ExitCode::InvalidToken) {
             // Notify client app that the user is disconnected
             user.setKeychainKey(""); // Invalid keychain key
+            user.setConnected(false);
             sendUserUpdated(user);
         }
 
