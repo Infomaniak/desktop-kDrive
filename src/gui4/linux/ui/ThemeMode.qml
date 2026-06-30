@@ -38,6 +38,6 @@ QtObject {
             return false;
         if (_mode === ThemeMode.Dark)
             return true;
-        return Qt.styleHints.colorScheme === Qt.Dark;
+        return Application.styleHints.colorScheme === Qt.Dark;
     }
 }
