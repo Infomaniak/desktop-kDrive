@@ -16,6 +16,10 @@
 - In versioned documentation, use repo-relative paths, not hardcoded absolute paths.
 - Do not add links to `.md` files that are not versioned in git.
 - Never launch a build unless explicitly asked by the user.
+- Treat native Wayland as the default Linux runtime on current Ubuntu/GNOME systems. XCB/XWayland is a compatibility
+  path, not the primary platform; window-shell changes must cover both paths explicitly.
+- Keep the Linux frameless header and custom shadow on native Wayland without depending on `Qt6::GuiPrivate`. Accept
+  that Wayland snapping includes the transparent shadow margin, so the visible surface may not touch the screen edge.
 - On a Linux host, validate natively: run `./infomaniak-build-tools/conan/build_dependencies.sh Debug`, configure with
   the generated Conan/CMake Debug preset, then build `kDrive`, `kDrive_client`, and `kdrive_qml`. Do not use the Podman
   release script for this local Linux validation path.
@@ -127,7 +131,9 @@
       accept page-specific header visuals and content while preserving the standard move, resize, minimize, maximize,
       and close behavior. Onboarding uses `headerOverlaysContent` so window controls do not shift its fixed visual
       composition. The window decoration controller limits input to the surface and resize handles without clipping the
-      diffuse shadow on X11.
+      diffuse shadow. It publishes `_GTK_FRAME_EXTENTS` on X11/XWayland so those window managers align the visible
+      surface rather than the transparent shadow during snapping and maximization. Native Wayland intentionally uses
+      public Qt APIs only and therefore snaps the complete native window, including its transparent shadow margin.
     - `ui/onboarding/animations/`: versioned generated QML animation components produced from Lottie JSON payloads.
       Do not edit these files manually. They are excluded from `qmllint`; validation belongs to the generator and the
       QML compilation step.
