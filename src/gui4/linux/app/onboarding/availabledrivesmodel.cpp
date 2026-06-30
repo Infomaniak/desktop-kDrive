@@ -23,8 +23,6 @@
 #include <algorithm>
 #include <cstddef>
 
-Q_LOGGING_CATEGORY(lcAvailableDrivesModel, "gui.v4.availabledrivesmodel", QtInfoMsg)
-
 namespace KDC {
 
 namespace {
