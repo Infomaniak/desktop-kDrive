@@ -43,19 +43,30 @@ Item {
         anchors.fill: parent
     }
 
-    MouseArea {
+    Item {
         anchors.left: parent.left
         anchors.right: windowControls.left
         anchors.top: parent.top
         anchors.bottom: parent.bottom
-        acceptedButtons: Qt.LeftButton
 
-        onPressed: root.targetWindow.startSystemMove()
-        onDoubleClicked: {
-            if (root.maximized) {
-                root.targetWindow.showNormal()
-            } else {
-                root.targetWindow.showMaximized()
+        DragHandler {
+            target: null
+            acceptedButtons: Qt.LeftButton
+            onActiveChanged: {
+                if (active) {
+                    root.targetWindow.startSystemMove()
+                }
+            }
+        }
+
+        TapHandler {
+            acceptedButtons: Qt.LeftButton
+            onDoubleTapped: {
+                if (root.maximized) {
+                    root.targetWindow.showNormal()
+                } else {
+                    root.targetWindow.showMaximized()
+                }
             }
         }
     }
