@@ -52,7 +52,7 @@ SyncPath CommonUtility::getGenericAppSupportDir() {
     SyncPath appSupportPath;
 
     // XDG_CONFIG_HOME is a variable defined by the flatpak runtime
-    if (auto xdgConfigHomeDir = CommonUtility::envVarValue("XDG_CONFIG_HOME"); !xdgConfigHomeDir.empty()){
+    if (const auto xdgConfigHomeDir = CommonUtility::envVarValue("XDG_CONFIG_HOME"); !xdgConfigHomeDir.empty()){
         appSupportPath = SyncPath(xdgConfigHomeDir);
     } else {
         const auto homeDir = homeDirectoryStr();
