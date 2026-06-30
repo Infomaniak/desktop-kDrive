@@ -687,7 +687,7 @@ void TestLocalFileSystemObserverWorker::testSlowWritingExtensionDelay() {
     CPPUNIT_ASSERT(localFSO);
 
     // Wait for folder watcher to be ready
-    int count = 0;
+    int64_t count = 0;
     while (!_syncPal->liveSnapshot(ReplicaSide::Local).isValid() || !localFSO->_folderWatcher->isReady()) {
         Utility::msleep(100);
         CPPUNIT_ASSERT(count++ < 20);
