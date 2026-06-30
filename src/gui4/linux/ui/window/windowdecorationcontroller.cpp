@@ -70,11 +70,23 @@ Display *x11Display() {
 }
 
 /**
+ * Returns whether the connected X server advertises the requested extension.
+ */
+bool x11ExtensionAvailable(Display *const display, const QByteArray &extensionName) {
+    // XQueryExtension requires int pointers for its three output parameters.
+    int opcode = 0;
+    int eventBase = 0;
+    int errorBase = 0;
+    return XQueryExtension(display, extensionName.constData(), &opcode, &eventBase, &errorBase) != False;
+}
+
+/**
  * Detects whether an X11 compositing manager owns the standard per-screen compositor selection.
  *
  * A transparent top-level X11 window needs a compositor to blend its alpha channel with the desktop. Without one, the
  * reserved shadow margin can appear black or opaque. Compositors advertise themselves by owning _NET_WM_CM_S<n>, where
- * <n> is the X11 screen number.
+ * <n> is the X11 screen number. XWayland does not need to expose this selection because its Wayland compositor already
+ * provides composition; that case is detected separately through the XWAYLAND extension.
  */
 bool x11CompositingManagerRunning(Display *const display) {
     auto selectionName = QByteArrayLiteral("_NET_WM_CM_S");
@@ -145,15 +157,16 @@ bool updateX11InputRegion(const QWindow *const window, const QRect &inputRect, c
 /**
  * Determines whether the custom transparent shadow is safe on the current platform.
  *
- * Wayland always runs through a compositor, so non-XCB platforms are accepted. On X11, the custom shell is enabled
- * only when both the native display and an active compositing manager are available. The result is cached by
+ * Native Wayland and XWayland both run through a Wayland compositor. On a native X11 server, the custom shell is
+ * enabled only when an X11 compositing manager owns the standard compositor selection. The result is cached by
  * WindowDecorationController and exposed to QML as a CONSTANT property.
  */
 bool detectCustomShadowSupport() {
 #if QT_CONFIG(xcb)
     if (QGuiApplication::platformName() == QStringLiteral("xcb")) {
         auto *const display = x11Display();
-        return display != nullptr && x11CompositingManagerRunning(display);
+        return display != nullptr &&
+               (x11ExtensionAvailable(display, QByteArrayLiteral("XWAYLAND")) || x11CompositingManagerRunning(display));
     }
 #endif
     return true;
