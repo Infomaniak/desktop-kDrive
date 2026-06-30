@@ -72,7 +72,7 @@ Column {
             }
 
             background: Rectangle {
-                implicitWidth: IKOnboarding.driveSelectionButtonMinWidth
+                implicitWidth: IKOnboarding.driveSelectionSecondaryButtonMinWidth
                 implicitHeight: IKOnboarding.driveSelectionButtonHeight
                 radius: IKOnboarding.buttonCornerRadius
                 color: "transparent"
@@ -102,7 +102,7 @@ Column {
             }
 
             background: Rectangle {
-                implicitWidth: IKOnboarding.driveSelectionSecondaryButtonMinWidth
+                implicitWidth: IKOnboarding.driveSelectionButtonMinWidth
                 implicitHeight: IKOnboarding.driveSelectionButtonHeight
                 radius: IKOnboarding.buttonCornerRadius
                 color: IKColors.actionPrimary
