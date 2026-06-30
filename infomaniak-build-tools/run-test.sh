@@ -46,6 +46,15 @@ if [ ! -f "$tester" ]; then
     exit 1
 fi
 
+# Create trash folders compliant with freedesktop specifications
+# (see https://www.freedesktop.org/wiki/Specifications/trash-spec)
+# to enable trash-related tests.
+export XDG_DATA_HOME="$HOME/.local/share"
+mkdir -p "$HOME/.local/share/Trash/files"
+mkdir -p "$HOME/.local/share/Trash/info"
+chmod 700 "$HOME/.local/share/Trash"
+
+# Launch the tests
 chmod +x "$tester"
 export DYLD_LIBRARY_PATH="$PWD:/usr/local/lib:/usr/lib:$DYLD_LIBRARY_PATH"
 ls -lah /usr/local/lib /usr/lib $PWD 2>/dev/null || true
