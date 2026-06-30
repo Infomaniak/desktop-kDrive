@@ -715,7 +715,7 @@ void TestLocalFileSystemObserverWorker::testSlowWritingExtensionDelay() {
         CPPUNIT_ASSERT(result);
 
         auto ioError = IoError::Unknown;
-        IoHelper::deleteItem(filePath, ioError);
+        CPPUNIT_ASSERT(IoHelper::deleteItem(filePath, ioError));
         Utility::msleep(1500);
     }
 
@@ -741,7 +741,7 @@ void TestLocalFileSystemObserverWorker::testSlowWritingExtensionDelay() {
         CPPUNIT_ASSERT(result);
 
         auto ioError = IoError::Unknown;
-        IoHelper::deleteItem(filePath, ioError);
+        CPPUNIT_ASSERT(IoHelper::deleteItem(filePath, ioError));
         Utility::msleep(6000);
     }
 }
