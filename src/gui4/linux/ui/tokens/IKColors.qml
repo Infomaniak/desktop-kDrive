@@ -27,7 +27,7 @@ QtObject {
     // T1 — Primitives
     // -------------------------------------------------------------------------
 
-    readonly property QtObject _p: QtObject {
+    component Primitives: QtObject {
         readonly property color white: "#FFFFFF"
 
         // Blue
@@ -73,6 +73,8 @@ QtObject {
         readonly property color kDrive500: "#FFB632"
         readonly property color kDrive600: "#FF9D0A"
     }
+
+    readonly property Primitives _p: Primitives {}
 
     // -------------------------------------------------------------------------
     // T2 — Semantic tokens
