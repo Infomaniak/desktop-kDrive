@@ -1,8 +1,6 @@
 # kDrive Desktop on Windows
 
 
-Clear setup and build instructions for Windows development.
-
 ## Table of Contents
 
 - [1) Scope](#1-scope)
@@ -130,11 +128,12 @@ For release signing, set `KDC_RELEASE_AUMID` similarly. (`build-drive.ps1` will 
 
 ---
 
-## 5) Conan (required)
+## 5) Dependencies
 
+### 5.1 Conan (required)
 ℹ️ Python 3.11+ is required, [Microsoft Store | Python 3.13](https://apps.microsoft.com/detail/9PNRBTZXMB4Z?hl=en-us&gl=US&ocid=pdpshare)
 
-#### 5.1 Create and activate a virtual environment
+#### 5.1.1 Create and activate a virtual environment
 
 ```powershell
 python -m venv .venv
@@ -142,7 +141,7 @@ python -m venv .venv
 python -m pip install --upgrade pip
 ```
 
-#### 5.2 Install Conan
+#### 5.1.2 Install Conan
 
 ```powershell
 pip install conan
@@ -155,7 +154,7 @@ Expected output example:
 Conan version 2.x.x
 ```
 
-#### 5.3 Create/update profile
+#### 5.1.3 Create/update profile
 
 ```powershell
 conan profile detect
@@ -174,7 +173,7 @@ compiler.version=195
 os=Windows
 ```
 
-#### 5.4 Inject project CMake variables
+#### 5.1.4 Inject project CMake variables
 
 Create `%USERPROFILE%/.conan2/profiles/debug_vars.cmake`:
 
@@ -199,13 +198,13 @@ Then add this to `%USERPROFILE%/.conan2/profiles/default`:
 tools.cmake.cmaketoolchain:user_toolchain+={{profile_dir}}/debug_vars.cmake
 ```
 
-#### 5.5 Create release profile for `build-drive.ps1`
+#### 5.1.5 Create release profile for `build-drive.ps1`
 
 Create an `infomaniak_release` profile:
 - `build_type` must be `Release` or `RelWithDebInfo`.
 - Do **not** include `tools.cmake.cmaketoolchain:user_toolchain`.
 
-#### 5.6 Install project dependencies
+#### 5.1.6 Install project dependencies
 
 From repository root:
 
@@ -442,7 +441,6 @@ Example:
 
 - kDrive repository: https://github.com/Infomaniak/desktop-kDrive
 - Visual Studio downloads: https://visualstudio.microsoft.com/downloads/
-- Conan downloads: https://conan.io/downloads
 - Conan + CMake presets docs: https://docs.conan.io/2/examples/tools/cmake/cmake_toolchain/build_project_cmake_presets.html
 - kDrive download page: https://www.infomaniak.com/en/apps/download-kdrive
 - Microsoft code-signing requirements: https://learn.microsoft.com/windows-hardware/drivers/dashboard/code-signing-reqs#where-to-get-ev-code-signing-certificates
