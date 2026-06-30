@@ -44,6 +44,13 @@ Display *x11Display() {
     return x11Application == nullptr ? nullptr : x11Application->display();
 }
 
+bool x11CompositingManagerRunning(Display *const display) {
+    auto selectionName = QByteArrayLiteral("_NET_WM_CM_S");
+    selectionName.append(QByteArray::number(DefaultScreen(display)));
+    const auto selectionAtom = XInternAtom(display, selectionName.constData(), True);
+    return selectionAtom != None && XGetSelectionOwner(display, selectionAtom) != None;
+}
+
     auto *const display = x11Application->display();
     if (display == nullptr) {
         return false;
