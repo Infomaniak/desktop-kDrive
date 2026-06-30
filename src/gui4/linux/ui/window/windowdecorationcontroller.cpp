@@ -58,34 +58,66 @@ QRect toNativePixels(const QRect &rect, const qreal devicePixelRatio) {
     return {left, top, qMax(0, right - left), qMax(0, bottom - top)};
 }
 
-    auto *const display = x11Application->display();
+bool updateX11InputRegion(const QWindow *const window, const QRect &inputRect, const bool customFrameEnabled) {
+    auto *const display = x11Display();
     if (display == nullptr) {
         return false;
     }
 
     int32_t eventBase = 0;
     if (int32_t errorBase = 0; !XShapeQueryExtension(display, &eventBase, &errorBase)) {
-        return true;
+        return false;
+    }
+
+    // winId() creates the native platform window when necessary. An unmapped X11 window may still have a valid XID.
+    const auto windowId = window->winId();
+    if (windowId == 0) {
+        return false;
     }
 
     if (!customFrameEnabled) {
-        XShapeCombineMask(display, window->winId(), ShapeInput, 0, 0, None, ShapeSet);
+        // A null ShapeInput mask restores the default full-window input region.
+        XShapeCombineMask(display, windowId, ShapeInput, 0, 0, None, ShapeSet);
         XFlush(display);
         return true;
     }
 
+    const auto nativeInputRect = toNativePixels(inputRect, window->devicePixelRatio());
     XRectangle rectangle{
-            static_cast<short>(inputRect.x()),
-            static_cast<short>(inputRect.y()),
-            static_cast<unsigned short>(inputRect.width()),
-            static_cast<unsigned short>(inputRect.height()),
+            .x = static_cast<short>(nativeInputRect.x()),
+            .y = static_cast<short>(nativeInputRect.y()),
+            .width = static_cast<unsigned short>(nativeInputRect.width()),
+            .height = static_cast<unsigned short>(nativeInputRect.height()),
     };
-    XShapeCombineRectangles(display, window->winId(), ShapeInput, 0, 0, &rectangle, 1, ShapeSet, Unsorted);
+    XShapeCombineRectangles(display, windowId, ShapeInput, 0, 0, &rectangle, 1, ShapeSet, Unsorted);
     XFlush(display);
     return true;
 }
 #endif
 
+/**
+ * Determines whether the custom transparent shadow is safe on the current platform.
+ *
+ * Wayland always runs through a compositor, so non-XCB platforms are accepted. On X11, the custom shell is enabled
+ * only when both the native display and an active compositing manager are available. The result is cached by
+ * WindowDecorationController and exposed to QML as a CONSTANT property.
+ */
+bool detectCustomShadowSupport() {
+#if QT_CONFIG(xcb)
+    if (QGuiApplication::platformName() == QStringLiteral("xcb")) {
+        auto *const display = x11Display();
+        return display != nullptr && x11CompositingManagerRunning(display);
+    }
+#endif
+    return true;
+}
+
+/**
+ * Applies the input region using the most appropriate available integration.
+ *
+ * The direct XShape path avoids clipping the rendered shadow while changing only ShapeInput. When that path cannot be
+ * used, QWindow::setMask() provides the portable fallback and accepts the original logical-pixel rectangle.
+ */
 void applyInputRegion(QWindow *const window, const QRect &inputRect, const bool customFrameEnabled) {
 #if QT_CONFIG(xcb)
     if (updateX11InputRegion(window, inputRect, customFrameEnabled)) {
@@ -99,7 +131,12 @@ void applyInputRegion(QWindow *const window, const QRect &inputRect, const bool 
 } // namespace
 
 WindowDecorationController::WindowDecorationController(QObject *const parent) :
-    QObject(parent) {}
+    QObject(parent),
+    _customShadowsSupported(detectCustomShadowSupport()) {}
+
+bool WindowDecorationController::customShadowsSupported() const {
+    return _customShadowsSupported;
+}
 
 void WindowDecorationController::updateInputRegion(QWindow *const window, const bool customFrameEnabled, const qreal frameMargin,
                                                    const qreal resizeHandleThickness) {
