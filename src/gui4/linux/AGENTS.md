@@ -98,7 +98,8 @@
 - `ui/`: QML shell, onboarding screens, design tokens, and bundled UI assets such as tray icons and onboarding Lottie
   animations.
     - `ui/onboarding/animations/`: versioned generated QML animation components produced from Lottie JSON payloads.
-      Do not edit these files manually.
+      Do not edit these files manually. They are excluded from `qmllint`; validation belongs to the generator and the
+      QML compilation step.
 
 ### Regenerate Onboarding Lottie QML
 
