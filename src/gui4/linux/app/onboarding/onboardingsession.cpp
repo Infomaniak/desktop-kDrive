@@ -20,6 +20,7 @@
 
 #include "app/cache/appcache.h"
 #include "app/services/commservice.h"
+#include "app/services/serviceeventbus.h"
 #include "app/services/userservice.h"
 
 #include <QLoggingCategory>
@@ -31,13 +32,15 @@ Q_LOGGING_CATEGORY(lcOnboardingSession, "gui.v4.onboardingsession", QtInfoMsg)
 } // namespace
 
 OnboardingSession::OnboardingSession(AppCache &appCache, CommService &commService, UserService &userService,
-                                     const EntryPoint entryPoint, const std::optional<UserDbId> selectedUserDbId,
-                                     const uint64_t generation, QObject *const parent) :
+                                     ServiceEventBus &serviceEventBus, const EntryPoint entryPoint,
+                                     const std::optional<UserDbId> selectedUserDbId, const uint64_t generation,
+                                     QObject *const parent) :
     QObject(parent),
     _userService(userService),
     _onboardingState(appCache),
     _loginCoordinator(_flowController, commService, userService, appCache, _onboardingState),
     _driveSelectionController(appCache, _onboardingState, userService, _flowController),
+    _syncCreationCoordinator(_flowController, _onboardingState, appCache, commService, serviceEventBus),
     _generation(generation) {
     (void) connect(&_loginCoordinator, &OnboardingLoginCoordinator::openWindowRequested, this,
                    &OnboardingSession::openWindowRequested);
