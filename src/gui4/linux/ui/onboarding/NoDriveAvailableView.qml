@@ -23,6 +23,8 @@ import kDrive.UI
 Column {
     id: root
 
+    required property var drivesModel
+
     width: parent ? parent.width : IKOnboarding.driveSelectionContentMaxWidth
     spacing: IKSpacing.s24
 
@@ -60,7 +62,7 @@ Column {
 
             height: IKOnboarding.driveSelectionButtonHeight
             text: qsTr("Show offers")
-            onClicked: availableDrivesModel.openDriveOffers()
+            onClicked: root.drivesModel.openDriveOffers()
 
             contentItem: Text {
                 text: showOffersButton.text
@@ -90,7 +92,7 @@ Column {
 
             height: IKOnboarding.driveSelectionButtonHeight
             text: qsTr("Get started for free")
-            onClicked: availableDrivesModel.startForFree()
+            onClicked: root.drivesModel.startForFree()
 
             contentItem: Text {
                 text: startForFreeButton.text
