@@ -50,6 +50,13 @@ bool x11CompositingManagerRunning(Display *const display) {
     const auto selectionAtom = XInternAtom(display, selectionName.constData(), True);
     return selectionAtom != None && XGetSelectionOwner(display, selectionAtom) != None;
 }
+QRect toNativePixels(const QRect &rect, const qreal devicePixelRatio) {
+    const auto left = qRound(rect.x() * devicePixelRatio);
+    const auto top = qRound(rect.y() * devicePixelRatio);
+    const auto right = qRound((rect.x() + rect.width()) * devicePixelRatio);
+    const auto bottom = qRound((rect.y() + rect.height()) * devicePixelRatio);
+    return {left, top, qMax(0, right - left), qMax(0, bottom - top)};
+}
 
     auto *const display = x11Application->display();
     if (display == nullptr) {
