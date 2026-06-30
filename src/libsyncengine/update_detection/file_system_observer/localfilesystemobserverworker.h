@@ -58,6 +58,11 @@ class LocalFileSystemObserverWorker : public FileSystemObserverWorker {
 
         ExitInfo handleIoError(const SyncPath &relativePath, IoError ioError);
 
+        // Returns true if the execute() loop should break.
+        bool checkWorkerConditions(ExitInfo &exitInfo);
+        // Returns true if the execute() loop should break.
+        bool checkAndClearUpdateDelay(ExitInfo &exitInfo);
+
         std::chrono::steady_clock::time_point _needUpdateTimerStart = std::chrono::steady_clock::now();
         bool _useExtendedDelay = false;
 

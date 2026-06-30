@@ -459,25 +459,8 @@ void LocalFileSystemObserverWorker::execute() {
 
     // Sync loop
     for (;;) {
-        if (stopAsked()) {
-            exitInfo = ExitCode::Ok;
-            invalidateSnapshot();
-            break;
-        }
+        if (checkWorkerConditions(exitInfo)) break;
 
-        exitInfo = _syncPal->isRootFolderValid();
-        if (!exitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error in isRootFolderValid: " << exitInfo);
-            invalidateSnapshot();
-            break;
-        }
-
-        exitInfo = _folderWatcher->exitInfo();
-        if (!exitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error in FolderWatcher: " << _folderWatcher->exitInfo());
-            invalidateSnapshot();
-            break;
-        }
         // We never pause this thread
         if (!_liveSnapshot.isValid()) {
             exitInfo = generateInitialSnapshot();
@@ -487,25 +470,7 @@ void LocalFileSystemObserverWorker::execute() {
             }
         }
 
-        // Wait 1 sec after the last update or 5 if the file has a slow-writing extension, before starting the sync
-        if (_updating) {
-            const auto diff_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() -
-                                                                                       _needUpdateTimerStart);
-            const auto activeDelay = _useExtendedDelay ? waitForUpdateDelayExtended : waitForUpdateDelay;
-            if (diff_ms.count() > activeDelay) {
-                // Check if root folder is still valid
-                exitInfo = _syncPal->isRootFolderValid();
-                if (!exitInfo) {
-                    LOG_SYNCPAL_WARN(_logger, "Error in isRootFolderValid: " << exitInfo);
-                    invalidateSnapshot();
-                    break;
-                }
-
-                const std::scoped_lock lock(_recursiveMutex);
-                _updating = false;
-                _useExtendedDelay = false;
-            }
-        }
+        if (checkAndClearUpdateDelay(exitInfo)) break;
 
         if (_initializing) _initializing = false;
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
@@ -513,6 +478,52 @@ void LocalFileSystemObserverWorker::execute() {
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
     setExitCause(exitInfo.cause());
     setDone(exitInfo.code());
+}
+
+bool LocalFileSystemObserverWorker::checkWorkerConditions(ExitInfo &exitInfo) {
+    if (stopAsked()) {
+        exitInfo = ExitCode::Ok;
+        invalidateSnapshot();
+        return true;
+    }
+
+    exitInfo = _syncPal->isRootFolderValid();
+    if (!exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in isRootFolderValid: " << exitInfo);
+        invalidateSnapshot();
+        return true;
+    }
+
+    exitInfo = _folderWatcher->exitInfo();
+    if (!exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in FolderWatcher: " << _folderWatcher->exitInfo());
+        invalidateSnapshot();
+        return true;
+    }
+
+    return false;
+}
+
+bool LocalFileSystemObserverWorker::checkAndClearUpdateDelay(ExitInfo &exitInfo) {
+    if (!_updating) return false;
+
+    // Wait 1 sec after the last update or 5 if the file has a slow-writing extension, before starting the sync
+    const auto diff_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() -
+                                                                               _needUpdateTimerStart);
+    const auto activeDelay = _useExtendedDelay ? waitForUpdateDelayExtended : waitForUpdateDelay;
+    if (diff_ms.count() <= activeDelay) return false;
+
+    exitInfo = _syncPal->isRootFolderValid();
+    if (!exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in isRootFolderValid: " << exitInfo);
+        invalidateSnapshot();
+        return true;
+    }
+
+    const std::scoped_lock lock(_recursiveMutex);
+    _updating = false;
+    _useExtendedDelay = false;
+    return false;
 }
 
 ExitInfo LocalFileSystemObserverWorker::generateInitialSnapshot() {
