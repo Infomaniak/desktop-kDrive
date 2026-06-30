@@ -110,11 +110,16 @@
   no displayable session exists.
 - `app/onboarding/onboardingflowcontroller.*`: QML-facing onboarding flow controller aligned with the macOS flow
   (`login -> drive selection -> synchronization -> ready`, with macOS permission steps omitted on Linux). It owns simple
-  onboarding UI actions such as opening account signup and drive-offer URLs; OAuth launch, `LOGIN_REQUESTTOKEN`,
-  available-drive loading, and sync creation stay outside QML-facing flow state.
+  onboarding UI actions such as opening account signup and drive-offer URLs, plus synchronization/ready presentation
+  state; OAuth launch, `LOGIN_REQUESTTOKEN`, available-drive loading, and sync creation stay outside QML-facing flow
+  state.
 - `app/onboarding/onboardinglogincoordinator.*`: login workflow coordinator for onboarding. It wires the flow controller,
   OAuth service, comm service, user service, app cache, and onboarding state so `AppClientLinux` does not accumulate
   login-specific workflow logic.
+- `app/onboarding/onboardingsynccreationcoordinator.*`: automatic end-of-onboarding sync creation coordinator. It derives
+  collision-free local folders, creates selected-drive syncs sequentially at the remote root, preserves only failed and
+  not-yet-attempted work for retry, and temporarily opens every configured sync root in the system file manager from the
+  ready screen.
 - `app/onboarding/oauthloginservice.*`: Linux v4 OAuth browser-launch service. It owns PKCE/state generation, idempotent
   browser relaunch during an active authorization, callback validation, and emits the authorization code to app wiring.
   Do not expose OAuth details to QML.
