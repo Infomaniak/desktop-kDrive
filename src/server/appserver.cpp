@@ -4579,6 +4579,7 @@ void AppServer::manageInvalidTokenError(User &user) const {
 
     // Update user
     user.setKeychainKey(std::string());
+    user.setConnected(false);
     bool found = false;
     if (!ParmsDb::instance()->updateUser(user, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateUser");
