@@ -114,6 +114,8 @@ set(GUI_QML_FILES # .qml files for the app
         ui/onboarding/NoDriveAvailableView.qml
         ui/onboarding/OnboardingAnimationsView.qml
         ui/onboarding/OnboardingWindow.qml
+        ui/onboarding/ReadyView.qml
+        ui/onboarding/SynchronizationView.qml
         ${GUI_QML_SINGLETON_FILES}
 )
 

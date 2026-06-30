@@ -22,6 +22,7 @@
 #include "app/onboarding/onboardingflowcontroller.h"
 #include "app/services/cachepopulator.h"
 #include "app/services/commservice.h"
+#include "app/services/serviceeventbus.h"
 #include "app/services/userservice.h"
 
 #include <QLoggingCategory>
@@ -33,11 +34,13 @@ Q_LOGGING_CATEGORY(lcOnboardingSessionManager, "gui.v4.onboardingsessionmanager"
 } // namespace
 
 OnboardingSessionManager::OnboardingSessionManager(const CachePopulator &cachePopulator, AppCache &appCache,
-                                                   CommService &commService, UserService &userService, QObject *const parent) :
+                                                   CommService &commService, UserService &userService,
+                                                   ServiceEventBus &serviceEventBus, QObject *const parent) :
     QObject(parent),
     _appCache(appCache),
     _commService(commService),
-    _userService(userService) {
+    _userService(userService),
+    _serviceEventBus(serviceEventBus) {
     (void) connect(&cachePopulator, &CachePopulator::bootstrapCompleted, this,
                    &OnboardingSessionManager::handleBootstrapCompleted);
 }
@@ -115,8 +118,8 @@ void OnboardingSessionManager::startSession(const OnboardingSession::EntryPoint 
     }
 
     const auto generation = _nextGeneration++;
-    auto *const session =
-            new OnboardingSession(_appCache, _commService, _userService, entryPoint, selectedUserDbId, generation, this);
+    auto *const session = new OnboardingSession(_appCache, _commService, _userService, _serviceEventBus, entryPoint,
+                                                selectedUserDbId, generation, this);
     _activeSession = session;
     _state = LifecycleState::Active;
 
