@@ -47,13 +47,13 @@ class WindowDecorationController final : public QObject {
         [[nodiscard]] bool customShadowsSupported() const;
 
         /**
-         * Aligns the native input region with the visible window surface and its resize handles.
+         * Aligns the native window decoration metadata and input region with the visible surface and resize handles.
          *
          * QML passes logical-pixel measurements. The platform implementation performs any required conversion before
          * updating the native window.
          */
-        Q_INVOKABLE static void updateInputRegion(QWindow *window, bool customFrameEnabled, qreal frameMargin,
-                                                  qreal resizeHandleThickness);
+        Q_INVOKABLE static void updateWindowDecoration(QWindow *window, bool customFrameEnabled, qreal frameMargin,
+                                                       qreal resizeHandleThickness);
 
     private:
         bool _customShadowsSupported = false;
