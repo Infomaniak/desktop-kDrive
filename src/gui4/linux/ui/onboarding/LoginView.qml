@@ -23,10 +23,12 @@ import kDrive.UI
 Item {
     id: root
 
+    required property var onboardingFlowController
+
     readonly property bool compact: width < IKOnboarding.loginCompactBreakpointWidth
-    readonly property bool loginFailed: onboardingFlowController.loginFailed
-    readonly property bool loginInProgress: onboardingFlowController.loginInProgress
-    readonly property bool waitingForWebAuthentication: onboardingFlowController.waitingForWebAuthentication
+    readonly property bool loginFailed: root.onboardingFlowController.loginFailed
+    readonly property bool loginInProgress: root.onboardingFlowController.loginInProgress
+    readonly property bool waitingForWebAuthentication: root.onboardingFlowController.waitingForWebAuthentication
 
     function loginTitleText() {
         if (root.loginFailed) {
@@ -93,10 +95,10 @@ Item {
             Button {
                 id: createAccountButton
 
-                enabled: !onboardingFlowController.loginInProgress
+                enabled: !root.onboardingFlowController.loginInProgress
                 height: IKOnboarding.loginButtonHeight
                 text: qsTr("Create an account")
-                onClicked: onboardingFlowController.requestAccountCreation()
+                onClicked: root.onboardingFlowController.requestAccountCreation()
 
                 contentItem: Text {
                     text: createAccountButton.text
@@ -124,10 +126,10 @@ Item {
             Button {
                 id: loginButton
 
-                enabled: !onboardingFlowController.loginInProgress
+                enabled: !root.onboardingFlowController.loginInProgress
                 height: IKOnboarding.loginButtonHeight
                 text: qsTr("Login")
-                onClicked: onboardingFlowController.requestLogin()
+                onClicked: root.onboardingFlowController.requestLogin()
 
                 contentItem: Text {
                     text: loginButton.text
