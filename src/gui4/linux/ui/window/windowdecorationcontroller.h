@@ -25,16 +25,38 @@ class QWindow;
 namespace KDC {
 
 /**
- * Keeps frameless-window input regions aligned with their visible surface and resize handles.
+ * Provides the platform integration required by the QML frameless-window shell.
+ *
+ * The QML window reserves transparent space around its visible surface for a custom drop shadow. This controller
+ * prevents most of that transparent margin from receiving pointer events while preserving the resize handles placed
+ * next to the surface. It also reports whether the current windowing environment can display transparent custom
+ * shadows safely.
  */
 class WindowDecorationController final : public QObject {
         Q_OBJECT
+        Q_PROPERTY(bool customShadowsSupported READ customShadowsSupported CONSTANT)
 
     public:
         explicit WindowDecorationController(QObject *parent = nullptr);
 
+        /**
+         * Returns whether the current platform can display the transparent custom-shadow shell.
+         *
+         * The value is detected once when the controller is constructed and remains constant for its lifetime.
+         */
+        [[nodiscard]] bool customShadowsSupported() const;
+
+        /**
+         * Aligns the native input region with the visible window surface and its resize handles.
+         *
+         * QML passes logical-pixel measurements. The platform implementation performs any required conversion before
+         * updating the native window.
+         */
         Q_INVOKABLE static void updateInputRegion(QWindow *window, bool customFrameEnabled, qreal frameMargin,
                                                   qreal resizeHandleThickness);
+
+    private:
+        bool _customShadowsSupported = false;
 };
 
 } // namespace KDC
