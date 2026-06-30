@@ -35,17 +35,19 @@ Window {
     property real minimumContentHeight: 0
     property color surfaceColor: IKColors.surfacePrimary
     property bool customShadowEnabled: false
-    property bool headerVisible: customShadowEnabled
+    readonly property bool customShadowActive: customShadowEnabled
+                                                && windowDecorationController.customShadowsSupported
+    property bool headerVisible: customShadowActive
     property bool headerOverlaysContent: false
     property bool windowTitleVisible: true
     property real surfaceRadius: customFrameVisible ? IKRadius.r16 : 0
     property bool inputRegionReady: false
 
     readonly property real shadowMargin: IKShadows.windowMargin
-    readonly property bool customFrameVisible: customShadowEnabled
+    readonly property bool customFrameVisible: customShadowActive
                                                 && visibility !== Window.Maximized
                                                 && visibility !== Window.FullScreen
-    readonly property real reservedShadowMargin: customShadowEnabled ? shadowMargin : 0
+    readonly property real reservedShadowMargin: customShadowActive ? shadowMargin : 0
     readonly property real effectiveShadowMargin: customFrameVisible ? shadowMargin : 0
     readonly property real reservedHeaderHeight: headerVisible && !headerOverlaysContent ? IKWindow.headerHeight : 0
     readonly property real effectiveHeaderHeight: headerVisible && visibility !== Window.FullScreen
@@ -58,12 +60,12 @@ Window {
         if (!inputRegionReady) {
             return
         }
-        windowDecorationController.updateInputRegion(root, customShadowEnabled, effectiveShadowMargin,
+        windowDecorationController.updateInputRegion(root, customShadowActive, effectiveShadowMargin,
                                                      IKWindow.resizeHandleThickness)
     }
 
-    flags: customShadowEnabled ? Qt.Window | Qt.FramelessWindowHint : Qt.Window
-    color: customShadowEnabled ? "transparent" : surfaceColor
+    flags: customShadowActive ? Qt.Window | Qt.FramelessWindowHint : Qt.Window
+    color: customShadowActive ? "transparent" : surfaceColor
     width: contentWidth + 2 * reservedShadowMargin
     height: contentHeight + reservedHeaderHeight + 2 * reservedShadowMargin
     minimumWidth: minimumContentWidth + 2 * reservedShadowMargin
@@ -71,7 +73,8 @@ Window {
 
     onWidthChanged: updateInputRegion()
     onHeightChanged: updateInputRegion()
-    onCustomShadowEnabledChanged: updateInputRegion()
+    onDevicePixelRatioChanged: updateInputRegion()
+    onCustomShadowActiveChanged: updateInputRegion()
     onEffectiveShadowMarginChanged: updateInputRegion()
 
     Component.onCompleted: {
