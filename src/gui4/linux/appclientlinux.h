@@ -96,7 +96,8 @@ class AppClientLinux : public QApplication {
         SentryService _sentryService{_serverCommService, _appCache, this};
         CachePopulator _cachePopulator{_serverCommService, _appCache, this};
         UserService _userService{_serverCommService, _appCache, _serviceActionTracker, _serviceEventBus, this};
-        OnboardingSessionManager _onboardingSessionManager{_cachePopulator, _appCache, _serverCommService, _userService, this};
+        OnboardingSessionManager _onboardingSessionManager{_cachePopulator, _appCache,        _serverCommService,
+                                                           _userService,    _serviceEventBus, this};
         DriveService _driveService{_serverCommService, _serviceActionTracker, _serviceEventBus, this};
         SyncService _syncService{_serverCommService, _serviceActionTracker, _serviceEventBus, this};
         WindowDecorationController _windowDecorationController{this};
