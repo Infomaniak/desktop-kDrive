@@ -72,10 +72,16 @@ set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
 
 set_source_files_properties(${GUI_QML_SINGLETON_FILES} PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
 
-set(GUI_QML_FILES # .qml files for the app
-        ui/Main.qml
+set(GUI_GENERATED_QML_FILES
         ui/onboarding/animations/LoaderStrokeDarkAnimation.qml
         ui/onboarding/animations/LoaderStrokeLightAnimation.qml
+)
+
+set_source_files_properties(${GUI_GENERATED_QML_FILES} PROPERTIES QT_QML_SKIP_QMLLINT TRUE)
+
+set(GUI_QML_FILES # .qml files for the app
+        ui/Main.qml
+        ${GUI_GENERATED_QML_FILES}
         ui/onboarding/LoginView.qml
         ui/onboarding/OnboardingAnimationsView.qml
         ui/onboarding/OnboardingWindow.qml
