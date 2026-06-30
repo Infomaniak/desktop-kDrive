@@ -111,7 +111,7 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(const std::list<std::pai
 
         auto ext = absolutePath.extension().native();
 
-        if (std::ranges::find(slowWritingExtensions, ext) != slowWritingExtensions.end()) {
+        if (std::find(slowWritingExtensions.begin(), slowWritingExtensions.end(), ext) != slowWritingExtensions.end()) {
             _useExtendedDelay = true;
         }
 
