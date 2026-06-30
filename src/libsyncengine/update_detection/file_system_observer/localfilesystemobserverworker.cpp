@@ -40,8 +40,8 @@ namespace KDC {
 static const int64_t waitForUpdateDelay = 1000; // 1sec
 static const int64_t waitForUpdateDelayExtended = waitForUpdateDelay * 5; // 5sec, for slow-writing extensions
 
-static constexpr std::array<std::wstring_view, 11> slowWritingExtensions = {
-        L".psd", L".psb", L".ai", L".indd", L".blend", L".dwg", L".dxf", L".pln", L".pla", L".prproj", L".aep"};
+static constexpr std::array<std::string_view, 11> slowWritingExtensions = {
+        ".psd", ".psb", ".ai", ".indd", ".blend", ".dwg", ".dxf", ".pln", ".pla", ".prproj", ".aep"};
 
 LocalFileSystemObserverWorker::LocalFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                              const std::string &shortName) :
@@ -109,7 +109,7 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(const std::list<std::pai
         _updating = true;
         _needUpdateTimerStart = std::chrono::steady_clock::now();
 
-        auto ext = absolutePath.extension().native();
+        auto ext = absolutePath.extension().string();
 
         if (std::find(slowWritingExtensions.begin(), slowWritingExtensions.end(), ext) != slowWritingExtensions.end()) {
             _useExtendedDelay = true;
