@@ -77,12 +77,8 @@ std::optional<UserDbId> OnboardingBootstrapCoordinator::onboardingUserDbId() con
         return std::nullopt;
     }
 
-    if (const auto connectedUserIt = std::ranges::find_if(users, [](const UserInfo &user) { return user.connected(); });
-        connectedUserIt != users.end()) {
-        return connectedUserIt->dbId();
-    }
-
-    return users.front().dbId();
+    const auto connectedUserIt = std::ranges::find_if(users, [](const UserInfo &user) { return user.connected(); });
+    return connectedUserIt != users.end() ? std::optional<UserDbId>{connectedUserIt->dbId()} : std::nullopt;
 }
 
 } // namespace KDC
