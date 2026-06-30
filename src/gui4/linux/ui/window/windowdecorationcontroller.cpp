@@ -18,6 +18,7 @@
 
 #include "windowdecorationcontroller.h"
 
+#include <QByteArray>
 #include <QGuiApplication>
 #include <QRegion>
 #include <QWindow>
@@ -34,7 +35,31 @@ namespace KDC {
 
 namespace {
 
+/*
+ * The frameless QML window is larger than its visible surface because it reserves transparent space for a diffuse
+ * shadow. If the native input region covered that complete window, the invisible shadow would intercept clicks meant
+ * for applications behind kDrive.
+ *
+ * The controller therefore keeps only the following area interactive:
+ *
+ *     transparent shadow | resize handle | visible surface | resize handle | transparent shadow
+ *
+ * QML describes this geometry in device-independent pixels. QWindow::setMask() accepts that coordinate system and lets
+ * Qt perform the platform conversion. XShape is a lower-level native X11 API, so its rectangle must first be converted
+ * with the target window's device-pixel ratio.
+ *
+ * The X11 helpers return true only when the requested native operation was actually applied. A false result always
+ * means that applyInputRegion() must use the Qt fallback.
+ */
+
 #if QT_CONFIG(xcb)
+/**
+ * Returns the Xlib display only when the application is currently running through Qt's XCB platform plugin.
+ *
+ * QT_CONFIG(xcb) indicates that this Qt build supports XCB; it does not guarantee that the current process uses it.
+ * A Qt build containing both XCB and Wayland support can still run with the Wayland platform plugin, in which case
+ * calling Xlib would be invalid.
+ */
 Display *x11Display() {
     if (QGuiApplication::platformName() != QStringLiteral("xcb")) {
         return nullptr;
@@ -44,12 +69,27 @@ Display *x11Display() {
     return x11Application == nullptr ? nullptr : x11Application->display();
 }
 
+/**
+ * Detects whether an X11 compositing manager owns the standard per-screen compositor selection.
+ *
+ * A transparent top-level X11 window needs a compositor to blend its alpha channel with the desktop. Without one, the
+ * reserved shadow margin can appear black or opaque. Compositors advertise themselves by owning _NET_WM_CM_S<n>, where
+ * <n> is the X11 screen number.
+ */
 bool x11CompositingManagerRunning(Display *const display) {
     auto selectionName = QByteArrayLiteral("_NET_WM_CM_S");
     selectionName.append(QByteArray::number(DefaultScreen(display)));
     const auto selectionAtom = XInternAtom(display, selectionName.constData(), True);
     return selectionAtom != None && XGetSelectionOwner(display, selectionAtom) != None;
 }
+
+/**
+ * Converts a logical Qt rectangle to the native pixel coordinates expected by XShape.
+ *
+ * The right and bottom boundaries are scaled before rebuilding the size. This keeps the converted edges consistent
+ * when the device-pixel ratio is fractional; scaling x and width independently could otherwise introduce a one-pixel
+ * gap or overlap through different rounding results.
+ */
 QRect toNativePixels(const QRect &rect, const qreal devicePixelRatio) {
     const auto left = qRound(rect.x() * devicePixelRatio);
     const auto top = qRound(rect.y() * devicePixelRatio);
@@ -58,6 +98,13 @@ QRect toNativePixels(const QRect &rect, const qreal devicePixelRatio) {
     return {left, top, qMax(0, right - left), qMax(0, bottom - top)};
 }
 
+/**
+ * Applies the input region directly through the X11 Shape extension.
+ *
+ * Returns true only after an XShape request has been issued. Returns false when X11 is not the active platform, the
+ * display or native window is unavailable, or the Shape extension is unsupported, allowing applyInputRegion() to use
+ * QWindow::setMask() instead.
+ */
 bool updateX11InputRegion(const QWindow *const window, const QRect &inputRect, const bool customFrameEnabled) {
     auto *const display = x11Display();
     if (display == nullptr) {
@@ -144,6 +191,8 @@ void WindowDecorationController::updateInputRegion(QWindow *const window, const 
         return;
     }
 
+    // Keep the resize handles interactive by excluding only the outer part of the shadow margin. A maximized window
+    // passes a zero frameMargin, so clamping the subtraction restores the full-window input region.
     const auto interactiveMargin = qMax<int32_t>(0, qRound(frameMargin - resizeHandleThickness));
     const auto interactiveWidth = qMax<int32_t>(0, window->width() - 2 * interactiveMargin);
     const auto interactiveHeight = qMax<int32_t>(0, window->height() - 2 * interactiveMargin);
