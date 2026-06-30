@@ -27,6 +27,7 @@
 #include <cstdint>
 
 #if QT_CONFIG(xcb)
+#include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/extensions/shape.h>
 #endif
@@ -48,8 +49,11 @@ namespace {
  * Qt perform the platform conversion. XShape is a lower-level native X11 API, so its rectangle must first be converted
  * with the target window's device-pixel ratio.
  *
- * The X11 helpers return true only when the requested native operation was actually applied. A false result always
- * means that applyInputRegion() must use the Qt fallback.
+ * The controller also publishes the transparent margin through _GTK_FRAME_EXTENTS. Window managers use that metadata
+ * to align the visible surface, rather than the outer edge of the shadow, when snapping or maximizing the window.
+ *
+ * The X11 input-region helper returns true only when the requested native operation was actually applied. A false
+ * result always means that applyInputRegion() must use the Qt fallback.
  */
 
 #if QT_CONFIG(xcb)
@@ -152,6 +156,32 @@ bool updateX11InputRegion(const QWindow *const window, const QRect &inputRect, c
     XFlush(display);
     return true;
 }
+
+/**
+ * Publishes the invisible decoration margins used by X11 window managers for placement, snapping, and maximization.
+ *
+ * _GTK_FRAME_EXTENTS contains the left, right, top, and bottom margins between the native window bounds and the visible
+ * application frame. Xlib expects CARDINAL values in native pixels. A zero margin tells the window manager that the
+ * complete native window is visible, which is the correct state when the custom frame is disabled or maximized.
+ */
+void updateX11FrameExtents(const QWindow *const window, const qreal frameMargin) {
+    auto *const display = x11Display();
+    if (display == nullptr) {
+        return;
+    }
+
+    const auto windowId = window->winId();
+    if (windowId == 0) {
+        return;
+    }
+
+    const auto nativeMargin = static_cast<unsigned long>(qMax(0, qRound(frameMargin * window->devicePixelRatio())));
+    const unsigned long frameExtents[] = {nativeMargin, nativeMargin, nativeMargin, nativeMargin};
+    const auto frameExtentsAtom = XInternAtom(display, "_GTK_FRAME_EXTENTS", False);
+    XChangeProperty(display, windowId, frameExtentsAtom, XA_CARDINAL, 32, PropModeReplace,
+                    reinterpret_cast<const unsigned char *>(frameExtents), 4);
+    XFlush(display);
+}
 #endif
 
 /**
@@ -188,6 +218,24 @@ void applyInputRegion(QWindow *const window, const QRect &inputRect, const bool 
     window->setMask(customFrameEnabled ? QRegion(inputRect) : QRegion());
 }
 
+/**
+ * Updates the platform metadata associated with the custom window frame.
+ *
+ * X11 window managers consume _GTK_FRAME_EXTENTS. Qt has no public API for publishing equivalent custom margins to a
+ * native Wayland compositor. On native Wayland this function is therefore intentionally a no-op: the frameless window
+ * and its shadow remain enabled, but snapping aligns the complete native window, including its transparent margin.
+ * Consequently, the visible surface can remain separated from the screen edge by the shadow margin.
+ */
+void applyFrameExtents(QWindow *const window, const bool customFrameEnabled, const qreal frameMargin) {
+#if QT_CONFIG(xcb)
+    updateX11FrameExtents(window, customFrameEnabled ? frameMargin : 0);
+#else
+    Q_UNUSED(window)
+    Q_UNUSED(customFrameEnabled)
+    Q_UNUSED(frameMargin)
+#endif
+}
+
 } // namespace
 
 WindowDecorationController::WindowDecorationController(QObject *const parent) :
@@ -198,8 +246,8 @@ bool WindowDecorationController::customShadowsSupported() const {
     return _customShadowsSupported;
 }
 
-void WindowDecorationController::updateInputRegion(QWindow *const window, const bool customFrameEnabled, const qreal frameMargin,
-                                                   const qreal resizeHandleThickness) {
+void WindowDecorationController::updateWindowDecoration(QWindow *const window, const bool customFrameEnabled,
+                                                        const qreal frameMargin, const qreal resizeHandleThickness) {
     if (window == nullptr) {
         return;
     }
@@ -211,6 +259,7 @@ void WindowDecorationController::updateInputRegion(QWindow *const window, const 
     const auto interactiveHeight = qMax<int32_t>(0, window->height() - 2 * interactiveMargin);
     const QRect inputRect{interactiveMargin, interactiveMargin, interactiveWidth, interactiveHeight};
     applyInputRegion(window, inputRect, customFrameEnabled);
+    applyFrameExtents(window, customFrameEnabled, frameMargin);
 }
 
 } // namespace KDC
