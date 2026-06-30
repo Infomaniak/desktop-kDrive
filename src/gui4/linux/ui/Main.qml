@@ -17,24 +17,27 @@
  */
 
 import QtQuick
-import QtQuick.Controls
 import kDrive.UI
 import "onboarding"
 
 Window {
     id: mainWindow
+
+    required property var onboardingFlowController
+    required property var systemTrayController
+
     visible: false
     width: 900
     height: 600
     minimumWidth: 720
     minimumHeight: 520
-    title: onboardingFlowController.title
+    title: mainWindow.onboardingFlowController.title
     color: IKColors.onboardingSurfacePrimary
 
     onClosing: (close) => {
-        if (systemTrayController.trayModeActive) {
+        if (mainWindow.systemTrayController.trayModeActive) {
             close.accepted = false;
-            systemTrayController.hideMainWindow();
+            mainWindow.systemTrayController.hideMainWindow();
         } else {
             close.accepted = true;
             Qt.quit();
@@ -43,5 +46,6 @@ Window {
 
     OnboardingWindow {
         anchors.fill: parent
+        onboardingFlowController: mainWindow.onboardingFlowController
     }
 }
