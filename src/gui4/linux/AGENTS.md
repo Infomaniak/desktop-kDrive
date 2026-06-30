@@ -20,6 +20,8 @@
   the generated Conan/CMake Debug preset, then build `kDrive`, `kDrive_client`, and `kdrive_qml`. Do not use the Podman
   release script for this local Linux validation path.
 - Prefer documenting private implementation helpers in `.cpp` rather than headers.
+- Do not duplicate method documentation between headers and implementation files. Document public API contracts in
+  headers, private helpers in `.cpp` files, and keep implementation-specific comments next to the relevant code.
 - Do not introduce raw `int` in new code when a fixed-width type fits (`uint8_t`, `int32_t`, ...).
 - Do not run `clang-format` on `CMakeLists.txt` in this repository.
 - For shared infrastructure classes, document the class role explicitly in the header comment when relevant.
@@ -46,6 +48,8 @@
   generated output builds and visually matches the source animation.
 - `lottietoqml` expects the JSON animation payload; extract `animations/<id>.json` from `.lottie` containers before
   generating QML components.
+- `LoaderStrokeLightAnimation` is intentionally used for the login loader in both light and dark themes. Do not restore
+  or generate a `LoaderStrokeDarkAnimation` variant unless the user explicitly requests it.
 - Version generated onboarding animation QML files in `ui/onboarding/animations/`, but do not edit them manually.
   Regenerate them from the source `.lottie` asset and keep the "Do not edit" header.
 
