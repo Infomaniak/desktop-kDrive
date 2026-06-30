@@ -31,6 +31,7 @@ namespace KDC {
 class AppCache;
 class CachePopulator;
 class CommService;
+class ServiceEventBus;
 class UserService;
 
 /**
@@ -45,7 +46,7 @@ class OnboardingSessionManager final : public QObject {
 
     public:
         explicit OnboardingSessionManager(const CachePopulator &cachePopulator, AppCache &appCache, CommService &commService,
-                                          UserService &userService, QObject *parent = nullptr);
+                                          UserService &userService, ServiceEventBus &serviceEventBus, QObject *parent = nullptr);
 
         [[nodiscard]] OnboardingSession *activeSession() const { return _activeSession; }
 
@@ -76,6 +77,7 @@ class OnboardingSessionManager final : public QObject {
         AppCache &_appCache;
         CommService &_commService;
         UserService &_userService;
+        ServiceEventBus &_serviceEventBus;
         OnboardingSession *_activeSession = nullptr;
         LifecycleState _state{LifecycleState::Determining};
         uint64_t _nextGeneration{1};
