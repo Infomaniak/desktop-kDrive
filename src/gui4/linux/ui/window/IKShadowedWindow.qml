@@ -41,7 +41,7 @@ Window {
     property bool headerOverlaysContent: false
     property bool windowTitleVisible: true
     property real surfaceRadius: customFrameVisible ? IKRadius.r16 : 0
-    property bool inputRegionReady: false
+    property bool windowDecorationReady: false
 
     readonly property real shadowMargin: IKShadows.windowMargin
     readonly property bool customFrameVisible: customShadowActive
@@ -56,12 +56,12 @@ Window {
     readonly property real surfaceWidth: Math.max(0, width - 2 * effectiveShadowMargin)
     readonly property real surfaceHeight: Math.max(0, height - 2 * effectiveShadowMargin)
 
-    function updateInputRegion() {
-        if (!inputRegionReady) {
+    function updateWindowDecoration() {
+        if (!windowDecorationReady) {
             return
         }
-        windowDecorationController.updateInputRegion(root, customShadowActive, effectiveShadowMargin,
-                                                     IKWindow.resizeHandleThickness)
+        windowDecorationController.updateWindowDecoration(root, customShadowActive, effectiveShadowMargin,
+                                                          IKWindow.resizeHandleThickness)
     }
 
     flags: customShadowActive ? Qt.Window | Qt.FramelessWindowHint : Qt.Window
@@ -71,15 +71,15 @@ Window {
     minimumWidth: minimumContentWidth + 2 * reservedShadowMargin
     minimumHeight: minimumContentHeight + reservedHeaderHeight + 2 * reservedShadowMargin
 
-    onWidthChanged: updateInputRegion()
-    onHeightChanged: updateInputRegion()
-    onDevicePixelRatioChanged: updateInputRegion()
-    onCustomShadowActiveChanged: updateInputRegion()
-    onEffectiveShadowMarginChanged: updateInputRegion()
+    onWidthChanged: updateWindowDecoration()
+    onHeightChanged: updateWindowDecoration()
+    onDevicePixelRatioChanged: updateWindowDecoration()
+    onCustomShadowActiveChanged: updateWindowDecoration()
+    onEffectiveShadowMarginChanged: updateWindowDecoration()
 
     Component.onCompleted: {
-        inputRegionReady = true
-        updateInputRegion()
+        windowDecorationReady = true
+        updateWindowDecoration()
     }
 
     Item {
