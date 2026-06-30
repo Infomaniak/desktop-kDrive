@@ -24,12 +24,9 @@
 #include "app/services/userservice.h"
 
 #include <QAbstractListModel>
-#include <QLoggingCategory>
 #include <QString>
 
 #include <vector>
-
-Q_DECLARE_LOGGING_CATEGORY(lcAvailableDrivesModel)
 
 namespace KDC {
 
