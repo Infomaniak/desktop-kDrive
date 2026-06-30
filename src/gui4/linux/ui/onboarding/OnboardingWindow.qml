@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import kDrive.UI
 
@@ -23,6 +25,11 @@ Item {
     id: root
 
     required property var onboardingFlowController
+
+    // Context properties are dynamic by design; keep their untyped access at this composition boundary.
+    // qmllint disable unqualified
+    readonly property var drivesModel: availableDrivesModel
+    // qmllint enable unqualified
 
     Rectangle {
         anchors.fill: parent
@@ -74,6 +81,8 @@ Item {
     Component {
         id: driveSelectionComponent
 
-        DriveSelectionView {}
+        DriveSelectionView {
+            drivesModel: root.drivesModel
+        }
     }
 }
