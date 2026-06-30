@@ -31,6 +31,7 @@
 #include <QScreen>
 #include <QStringList>
 #include <QSysInfo>
+#include <QVariant>
 #include <QWindow>
 
 #include <chrono>
@@ -100,8 +101,10 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("syncService"), &_syncService);
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("serviceEventBus"), &_serviceEventBus);
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("onboardingState"), &_onboardingState);
-    _qmlEngine.rootContext()->setContextProperty(QStringLiteral("onboardingFlowController"), &_onboardingFlowController);
-    _qmlEngine.rootContext()->setContextProperty(QStringLiteral("systemTrayController"), &_systemTrayController);
+    _qmlEngine.setInitialProperties({
+            {QStringLiteral("onboardingFlowController"), QVariant::fromValue<QObject *>(&_onboardingFlowController)},
+            {QStringLiteral("systemTrayController"), QVariant::fromValue<QObject *>(&_systemTrayController)},
+    });
     _qmlEngine.loadFromModule(QStringLiteral("kDrive.UI"), QStringLiteral("Main"));
     if (_qmlEngine.rootObjects().isEmpty()) {
         qCCritical(lcAppClientLinux) << "QML root object creation failed";
