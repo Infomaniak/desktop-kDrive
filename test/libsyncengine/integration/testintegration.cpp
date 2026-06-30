@@ -314,7 +314,7 @@ void TestIntegration::testBlacklist() {
 
     CPPUNIT_ASSERT(!std::filesystem::exists(dirpath));
 #if defined(KD_LINUX)
-    CPPUNIT_ASSERT(!testhelpers::hasTrashInfo())
+    CPPUNIT_ASSERT(!testhelpers::hasTrashInfo());
     CPPUNIT_ASSERT(!testhelpers::hasTrashInfo() || testhelpers::isInTrash(dirpath));
 #else
     CPPUNIT_ASSERT(testhelpers::isInTrash(dirpath.filename()));

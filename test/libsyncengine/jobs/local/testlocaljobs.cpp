@@ -186,7 +186,7 @@ void KDC::TestLocalJobs::testLocalJobs() {
     CPPUNIT_ASSERT(testhelpers::isInTrash(copyDirPath.filename() / testDirName / "tmp_picture.jpg"));
     CPPUNIT_ASSERT(!testhelpers::isInTrash(copyDirPath.filename() / testDirName / "dehydrated_placeholder.jpg"));
 #else
-    CPPUNIT_ASSERT(testhelpers::hasTrashInfo())
+    CPPUNIT_ASSERT(testhelpers::hasTrashInfo());
 
     if (!testhelpers::isInTrash(copyDirPath)) {
         std::cout << "\n The item " << copyDirPath << " was not found in trash." << std::endl;
