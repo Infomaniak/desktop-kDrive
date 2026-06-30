@@ -46,7 +46,13 @@ Item {
 
             width: parent.width * IKOnboarding.contentPanelWidthRatio
             height: parent.height
-            sourceComponent: root.onboardingFlowController.driveSelectionActive ? driveSelectionComponent : loginComponent
+            sourceComponent: root.onboardingFlowController.readyActive
+                             ? readyComponent
+                             : (root.onboardingFlowController.synchronizationActive
+                                ? synchronizationComponent
+                                : (root.onboardingFlowController.driveSelectionActive
+                                   ? driveSelectionComponent
+                                   : loginComponent))
         }
 
         Rectangle {
@@ -80,6 +86,22 @@ Item {
         DriveSelectionView {
             selectionController: root.driveSelectionController
             drivesModel: root.drivesModel
+        }
+    }
+
+    Component {
+        id: synchronizationComponent
+
+        SynchronizationView {
+            onboardingFlowController: root.onboardingFlowController
+        }
+    }
+
+    Component {
+        id: readyComponent
+
+        ReadyView {
+            onboardingFlowController: root.onboardingFlowController
         }
     }
 }
