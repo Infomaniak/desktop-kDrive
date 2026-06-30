@@ -16,11 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import kDrive.UI
 
 ListView {
     id: root
+
+    required property var drivesModel
 
     implicitWidth: IKOnboarding.driveSelectionListWidth
     implicitHeight: Math.min(contentHeight, IKOnboarding.driveSelectionListMaxHeight)
@@ -29,9 +33,12 @@ ListView {
     clip: true
     boundsBehavior: Flickable.StopAtBounds
 
-    model: availableDrivesModel
+    model: root.drivesModel
 
     delegate: DriveCellView {
+        required property int index
+        required property var model
+
         width: root.width
         row: index
         driveName: model.name
@@ -40,6 +47,6 @@ ListView {
         checked: model.selected
         cellEnabled: model.enabled
         disabledTooltip: model.tooltip
-        onToggled: (row) => availableDrivesModel.toggleDrive(row)
+        onToggled: (row) => root.drivesModel.toggleDrive(row)
     }
 }
