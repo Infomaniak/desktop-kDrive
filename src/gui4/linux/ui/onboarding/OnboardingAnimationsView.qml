@@ -58,7 +58,7 @@ Item {
     Component {
         id: loaderStrokeComponent
 
-        LoaderStrokeLightAnimation {
+        LoaderStrokeAnimation {
             anchors.fill: parent
             animations.loops: Animation.Infinite
         }
