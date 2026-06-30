@@ -57,6 +57,7 @@ Item {
                 anchors.bottomMargin: IKOnboarding.driveSelectionUserBadgeVerticalPadding
                 label: availableDrivesModel.userName
                 avatarSource: availableDrivesModel.userAvatarSource
+                avatarMaskColor: parent.color
             }
         }
 
