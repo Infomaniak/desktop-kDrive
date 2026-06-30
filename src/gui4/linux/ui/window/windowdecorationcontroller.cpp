@@ -35,15 +35,14 @@ namespace KDC {
 namespace {
 
 #if QT_CONFIG(xcb)
-bool updateX11InputRegion(const QWindow *const window, const QRect &inputRect, const bool customFrameEnabled) {
+Display *x11Display() {
     if (QGuiApplication::platformName() != QStringLiteral("xcb")) {
-        return false;
+        return nullptr;
     }
 
     const auto *const x11Application = qGuiApp->nativeInterface<QNativeInterface::QX11Application>();
-    if (x11Application == nullptr) {
-        return false;
-    }
+    return x11Application == nullptr ? nullptr : x11Application->display();
+}
 
     auto *const display = x11Application->display();
     if (display == nullptr) {
