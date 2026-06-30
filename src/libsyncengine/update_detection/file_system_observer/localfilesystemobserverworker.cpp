@@ -37,8 +37,8 @@
 
 namespace KDC {
 
-static const int waitForUpdateDelay = 1000; // 1sec
-static const int waitForUpdateDelayExtended = waitForUpdateDelay * 5.000; // 5sec, for slow-writing extensions
+static const int64_t waitForUpdateDelay = 1000; // 1sec
+static const int64_t waitForUpdateDelayExtended = waitForUpdateDelay * 5.000; // 5sec, for slow-writing extensions
 
 static const std::unordered_set<SyncPath::string_type> slowWritingExtensions = {
         SyncPath(L".psd").native(),  SyncPath(L".psb").native(),    SyncPath(L".ai").native(),
@@ -491,7 +491,7 @@ void LocalFileSystemObserverWorker::execute() {
         if (_updating) {
             const auto diff_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() -
                                                                                        _needUpdateTimerStart);
-            const int activeDelay = _useExtendedDelay ? waitForUpdateDelayExtended : waitForUpdateDelay;
+            const auto activeDelay = _useExtendedDelay ? waitForUpdateDelayExtended : waitForUpdateDelay;
             if (diff_ms.count() > activeDelay) {
                 // Check if root folder is still valid
                 exitInfo = _syncPal->isRootFolderValid();
