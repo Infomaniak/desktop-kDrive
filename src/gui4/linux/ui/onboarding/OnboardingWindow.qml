@@ -22,6 +22,8 @@ import kDrive.UI
 Item {
     id: root
 
+    required property var onboardingFlowController
+
     Rectangle {
         anchors.fill: parent
         color: IKColors.onboardingSurfacePrimary
@@ -39,6 +41,7 @@ Item {
 
             width: parent.width * IKOnboarding.contentPanelWidthRatio
             height: parent.height
+            onboardingFlowController: root.onboardingFlowController
         }
 
         Rectangle {
