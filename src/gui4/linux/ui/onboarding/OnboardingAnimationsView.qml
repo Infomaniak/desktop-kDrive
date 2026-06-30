@@ -25,9 +25,8 @@ Item {
 
     required property var onboardingFlowController
 
-    // Mirrors the macOS onboarding: the login step shows the loader-stroke animation
-    // while the drive-selection step shows the themed sync-file animation.
     readonly property bool showSyncFile: root.onboardingFlowController.driveSelectionActive
+                                         || root.onboardingFlowController.synchronizationActive
 
     // Native source dimensions of the currently displayed animation. Exposed so the
     // illustration panel can preserve the animation aspect ratio across steps.
