@@ -18,6 +18,7 @@
 
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Shapes
 import kDrive.UI
 
 Item {
@@ -70,13 +71,23 @@ Item {
             border.width: root.checked ? 0 : 1
             border.color: root.cellEnabled ? IKColors.textTertiary : IKColors.onboardingDriveDisabledText
 
-            Text {
-                anchors.centerIn: parent
+            Shape {
+                anchors.fill: parent
                 visible: root.checked
-                text: "✓"
-                color: IKColors.actionOnPrimary
-                font.pixelSize: IKFonts.subheadlineSize
-                font.weight: IKFonts.emphasized
+                preferredRendererType: Shape.CurveRenderer
+
+                ShapePath {
+                    strokeColor: IKColors.actionOnPrimary
+                    strokeWidth: 1.5
+                    fillColor: "transparent"
+                    capStyle: ShapePath.RoundCap
+                    joinStyle: ShapePath.RoundJoin
+                    startX: 3.5
+                    startY: 8
+
+                    PathLine { x: 6.5; y: 11 }
+                    PathLine { x: 12.5; y: 4.5 }
+                }
             }
         }
 
