@@ -29,6 +29,7 @@
 namespace KDC {
 
 class AppCache;
+class CachePopulator;
 class CommService;
 class OnboardingFlowController;
 class OnboardingState;
@@ -45,15 +46,17 @@ class OnboardingSyncCreationCoordinator final : public QObject {
 
     public:
         explicit OnboardingSyncCreationCoordinator(OnboardingFlowController &flowController, OnboardingState &onboardingState,
-                                                   AppCache &appCache, CommService &commService, ServiceEventBus &serviceEventBus,
-                                                   QObject *parent = nullptr);
+                                                   AppCache &appCache, CommService &commService, CachePopulator &cachePopulator,
+                                                   ServiceEventBus &serviceEventBus, QObject *parent = nullptr);
 
     private:
         void startSynchronization();
         void createNextSynchronization();
         void prepareSynchronization(const AvailableDriveKey &key);
         void createSynchronization(const AvailableDriveKey &key, const PendingSyncConfig &config);
-        void handleCreationFailure();
+        void discardPendingSynchronization(const AvailableDriveKey &key);
+        void handleCreationFailure(bool cacheReconciliationRequired = false);
+        void handleCacheReconciliationCompleted();
         void openSynchronizedFolders();
         [[nodiscard]] QString defaultLocalPath(const QString &driveName) const;
 
@@ -61,9 +64,11 @@ class OnboardingSyncCreationCoordinator final : public QObject {
         OnboardingState &_onboardingState;
         AppCache &_appCache;
         CommService &_commService;
+        CachePopulator &_cachePopulator;
         ServiceEventBus &_serviceEventBus;
         std::deque<AvailableDriveKey> _pendingDriveKeys;
         std::vector<QString> _createdLocalPaths;
+        bool _cacheReconciliationPending{false};
 };
 
 } // namespace KDC
