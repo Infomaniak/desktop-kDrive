@@ -45,7 +45,7 @@ class OnboardingSessionManager final : public QObject {
         Q_PROPERTY(OnboardingSession *activeSession READ activeSession NOTIFY activeSessionChanged)
 
     public:
-        explicit OnboardingSessionManager(const CachePopulator &cachePopulator, AppCache &appCache, CommService &commService,
+        explicit OnboardingSessionManager(CachePopulator &cachePopulator, AppCache &appCache, CommService &commService,
                                           UserService &userService, ServiceEventBus &serviceEventBus, QObject *parent = nullptr);
 
         [[nodiscard]] OnboardingSession *activeSession() const { return _activeSession; }
@@ -74,6 +74,7 @@ class OnboardingSessionManager final : public QObject {
         void startSession(OnboardingSession::EntryPoint entryPoint, std::optional<UserDbId> selectedUserDbId);
         void stopSession(bool closeWindow);
         void handleRetiringSessionDestroyed();
+        CachePopulator &_cachePopulator;
         AppCache &_appCache;
         CommService &_commService;
         UserService &_userService;
