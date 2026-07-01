@@ -32,7 +32,7 @@
     <tb:TaskbarIcon x:Key="TrayIcon"
                     Visibility="Visible"
                     ToolTipText="kDrive"
-                    ContextMenuMode="SecondWindow"
+                    ContextMenuMode="PopupMenu"
                     LeftClickCommand="{StaticResource ShowWindowCommand}"
                     NoLeftClickDelay="True">
         <tb:TaskbarIcon.ContextFlyout>
