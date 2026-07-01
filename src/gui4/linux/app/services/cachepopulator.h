@@ -26,12 +26,12 @@
 namespace KDC {
 
 /**
- * Sequential initial snapshot loader for Linux v4 cache population.
+ * Sequential parent-first snapshot loader for Linux v4 cache population and explicit reconciliation.
  *
- * Loads users, then accounts, then drives, then syncs, then errors so the
- * graph-backed AppCache is populated in parent-first order. Once the initial
- * cache snapshot is complete, asks the server to refresh live user/account/drive
- * metadata so quota-only drive updates are pushed through CachePipeline.
+ * Loads users, then accounts, then drives, then syncs, then errors so the graph-backed AppCache is populated in
+ * parent-first order. Used at initial connection and when a non-transactional backend mutation may have persisted parent
+ * entities without emitting their normal push signals. Once the snapshot is complete, asks the server to refresh live
+ * user/account/drive metadata so quota-only drive updates are pushed through CachePipeline.
  */
 class CachePopulator : public QObject {
         Q_OBJECT
