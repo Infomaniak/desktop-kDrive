@@ -331,7 +331,7 @@ void TestIntegration::testBlacklist() {
 
     CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / filename));
 #if defined(KD_LINUX)
-    CPPUNIT_ASSERT(testhelpers::hasTrashInfo())
+    CPPUNIT_ASSERT(testhelpers::hasTrashInfo());
     CPPUNIT_ASSERT(testhelpers::isInTrash(_syncPal->localPath() / filename));
 #else
     CPPUNIT_ASSERT(testhelpers::isInTrash(filename));

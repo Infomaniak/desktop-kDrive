@@ -101,7 +101,7 @@ void TestIntegration::testLocalChanges() {
     CPPUNIT_ASSERT(!remoteTestFileInfo.isValid());
 
 #if defined(KD_LINUX)
-    CPPUNIT_ASSERT(!testhelpers::hasTrashInfo())
+    CPPUNIT_ASSERT(testhelpers::hasTrashInfo());
     CPPUNIT_ASSERT(testhelpers::isInTrash(subDirPath));
 #else
     CPPUNIT_ASSERT(testhelpers::isInTrash(subDirPath.filename()));

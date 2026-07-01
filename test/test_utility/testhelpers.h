@@ -136,6 +136,7 @@ bool isInTrash(const SyncPath &path);
 
 #if defined(KD_LINUX)
 bool hasTrashInfo();
+void createTrashInfo();
 void showTrashInfo();
 #endif
 

@@ -57,7 +57,7 @@ int runTestSuite(const std::string &logFileName) {
     }
 
 #if defined(KD_LINUX)
-    if (!testhelpers::hasTrashInfo()) testhelpers::createTrashInfo();
+    if (!KDC::testhelpers::hasTrashInfo()) KDC::testhelpers::createTrashInfo();
 #endif
 
     // Informs test-listener about testresults
