@@ -710,10 +710,11 @@ ExitInfo RemoteFileSystemObserverWorker::createActionInfoList(const Poco::JSON::
         ActionInfo actionInfo;
         if (const auto exitInfo = extractActionInfo(actionObj, actionInfo); !exitInfo) return exitInfo;
 
-        // The relative path "Private" from API v3 is translated into
-        // the empty relative path "" via ActionInfo::setPath. We do
-        // not record the ActionInfo in this case.
-        if (actionInfo.path().empty()) continue;
+        // The relative path "Private" from API v3 is translated into the empty relative path "" via `ActionInfo::setPath`. We do
+        // not record the `ActionInfo` in this case.
+        // However, we still want to process the `ActionInfo` if it is a trash action, as the path is superfluous in this case and
+        // is actually dropped for the deleted remote folders located at the root of `Common documents`.
+        if (actionInfo.path().empty() && actionInfo.actionCode != ActionCode::ActionCodeTrash) continue;
 
         bool isWarning = false;
         if (ExclusionTemplateCache::instance()->isExcluded(actionInfo.snapshotItem.name(), isWarning)) {
