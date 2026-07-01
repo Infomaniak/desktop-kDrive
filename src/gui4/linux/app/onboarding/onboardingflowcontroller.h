@@ -45,6 +45,7 @@ class OnboardingFlowController final : public QObject {
         Q_PROPERTY(bool synchronizationActive READ synchronizationActive NOTIFY currentStepChanged)
         Q_PROPERTY(bool synchronizationFailed READ synchronizationFailed NOTIFY synchronizationFailedChanged)
         Q_PROPERTY(bool readyActive READ readyActive NOTIFY currentStepChanged)
+        Q_PROPERTY(bool readyActionEnabled READ readyActionEnabled NOTIFY readyActionEnabledChanged)
         Q_PROPERTY(QString title READ title NOTIFY currentStepChanged)
 
     public:
@@ -75,6 +76,7 @@ class OnboardingFlowController final : public QObject {
         [[nodiscard]] bool synchronizationActive() const;
         [[nodiscard]] bool synchronizationFailed() const { return _synchronizationFailed; }
         [[nodiscard]] bool readyActive() const;
+        [[nodiscard]] bool readyActionEnabled() const { return _readyActionEnabled; }
         [[nodiscard]] QString title() const;
 
         Q_INVOKABLE void requestLogin();
@@ -108,6 +110,7 @@ class OnboardingFlowController final : public QObject {
         void synchronizationRetryRequested();
         void synchronizedFoldersOpenRequested();
         void synchronizationFailedChanged();
+        void readyActionEnabledChanged();
         void completed();
 
     private:
@@ -118,6 +121,8 @@ class OnboardingFlowController final : public QObject {
         Step _currentStep{Login};
         LoginState _loginState{LoginIdle};
         bool _synchronizationFailed{false};
+        bool _readyActionEnabled{true};
+        bool _onboardingCompleted{false};
 };
 
 } // namespace KDC
