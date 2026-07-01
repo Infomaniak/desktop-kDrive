@@ -44,7 +44,7 @@ Item {
                 width: parent.width
                 text: root.onboardingFlowController.synchronizationFailed
                       ? qsTr("An unexpected error occurred")
-                      : qsTr("Synchronization in progress..")
+                      : root.onboardingFlowController.title
                 color: IKColors.textPrimary
                 font.pixelSize: IKFonts.largeTitleSize
                 font.weight: Font.Bold
