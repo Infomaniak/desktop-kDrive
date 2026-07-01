@@ -40,7 +40,7 @@ Item {
 
             Text {
                 width: parent.width
-                text: qsTr("All set!")
+                text: root.onboardingFlowController.title
                 color: IKColors.textPrimary
                 font.pixelSize: IKFonts.largeTitleSize
                 font.weight: Font.Bold
@@ -63,6 +63,7 @@ Item {
         Button {
             id: openButton
 
+            enabled: root.onboardingFlowController.readyActionEnabled
             height: IKOnboarding.completionButtonHeight
             text: qsTr("Open kDrive")
             onClicked: root.onboardingFlowController.openSynchronizedFolders()
@@ -80,7 +81,7 @@ Item {
                 implicitWidth: IKOnboarding.completionButtonMinWidth
                 implicitHeight: IKOnboarding.completionButtonHeight
                 radius: IKOnboarding.buttonCornerRadius
-                color: IKColors.actionPrimary
+                color: openButton.enabled ? IKColors.actionPrimary : IKColors.actionDisabled
             }
 
             padding: 0
