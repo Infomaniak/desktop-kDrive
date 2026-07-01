@@ -30,7 +30,6 @@ protocol LogFileWriting: AnyObject {
 /// previous backups are shifted up (`.0` → `.1`, `.1` → `.2`, …). Backups beyond `maxBackupIndex`
 /// are removed. This mirrors the C++ `CustomRollingFileAppender` (500 MiB, gzip-compressed backups).
 final class LogFileWriter: LogFileWriting {
-    private static let appName = "kDrive"
     private static let clientLogName = "kDrive_client"
     /// Creation-time prefix format, matching the server's `LOGFILE_TIME_FORMAT` (`%Y%m%d_%H%M`).
     private static let dateFormat = "yyyyMMdd_HHmm"
@@ -95,7 +94,7 @@ final class LogFileWriter: LogFileWriting {
         return FileManager.default.homeDirectoryForCurrentUser
             .appendingPathComponent("Library", isDirectory: true)
             .appendingPathComponent("Logs", isDirectory: true)
-            .appendingPathComponent(appName, isDirectory: true)
+            .appendingPathComponent(Constants.appName, isDirectory: true)
     }
 
     private static func makeBaseFileName(date: Date, timeZone: TimeZone) -> String {
