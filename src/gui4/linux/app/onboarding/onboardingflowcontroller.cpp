@@ -151,11 +151,13 @@ void OnboardingFlowController::retrySynchronization() {
 }
 
 void OnboardingFlowController::openSynchronizedFolders() {
-    if (_currentStep != Ready) {
+    if (_currentStep != Ready || !_readyActionEnabled) {
         return;
     }
 
     qCInfo(lcOnboardingFlowController) << "Opening synchronized folders from onboarding";
+    _readyActionEnabled = false;
+    emit readyActionEnabledChanged();
     emit synchronizedFoldersOpenRequested();
 }
 
@@ -219,15 +221,21 @@ void OnboardingFlowController::completeSynchronization() {
         _synchronizationFailed = false;
         emit synchronizationFailedChanged();
     }
+    if (!_readyActionEnabled) {
+        _readyActionEnabled = true;
+        emit readyActionEnabledChanged();
+    }
+    _onboardingCompleted = false;
     setCurrentStep(Ready);
 }
 
 void OnboardingFlowController::completeOnboarding() {
-    if (_currentStep != Ready) {
+    if (_currentStep != Ready || _onboardingCompleted) {
         return;
     }
 
     qCInfo(lcOnboardingFlowController) << "Onboarding completed";
+    _onboardingCompleted = true;
     emit completed();
 }
 
