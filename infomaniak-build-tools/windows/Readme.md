@@ -1,96 +1,246 @@
-# kDrive Desktop Configuration - Windows
+# kDrive Desktop on Windows
 
-- [kDrive files](#kdrive-files)
-- [Installation Requirements](#installation-requirements)
-    - [CPPUnit](#cppunit)
-    - [Zlib](#zlib)
-    - [libzip](#libzip)
-    - [NSIS](#nsis)
-    - [7za](#7za)
-    - [Conan](#conan)
-- [Certificate Configuration](#certificate-configuration)
-- [Build in Debug](#build-in-debug)
-    - [Using CLion](#using-clion)
-        - [CMake Parameters](#cmake-parameters)
-    - [Using Qt Creator](#using-qt-creator)
-        - [Additionnal Requirements](#additionnal-requirements)
-        - [CMake Parameters](#cmake-parameters)
-    - [VS2019/2022](#using-Visual-Studio-2019)
-        - [Windows extension](#windows-Extension)
-        - [Project setup](#project-Setup)
-        - [CMake configuration](#cmake-Configuration)
-        - [DLL Copy](#dll-Copy)
-        - [Debugging](#debugging)
-    - [Testing the extension](#testing-the-extension)
-- [Build in Release](#build-in-release)
-    - [Build and Packaging](#build-and-packaging)
-- [Possible build errors](#possible-build-errors)
 
-# kDrive files
+## Table of Contents
 
-The folder `F:\Projects` will be used for the installation of sources and dependencies.
-Feel free to use any directory that suits you.
+- [1) Scope](#1-scope)
+- [2) Quick Start (recommended path)](#2-quick-start-recommended-path)
+- [3) Prerequisites](#3-prerequisites)
+  - [Visual Studio 2026](#visual-studio-2026)
+  - [Repository checkout](#repository-checkout)
+- [4) Certificates](#4-certificates)
+  - [Release certificate](#release-certificate)
+  - [Debug self-signed certificate](#debug-self-signed-certificate)
+- [5) Dependencies](#5-dependencies)
+  - [Conan (required)](#conan-required)
+  - [CPPUnit](#cppunit)
+  - [zlib (manual for libzip)](#zlib-manual-for-libzip)
+  - [libzip](#libzip)
+  - [NSIS (installer only)](#nsis-installer-only)
+  - [7za (installer only)](#7za-installer-only)
+  - [Icoutils](#icoutils)
+- [6) Debug Build](#6-debug-build)
+  - [Add runtime dependencies to PATH](#add-runtime-dependencies-to-path)
+  - [Visual Studio 2026 (recommended)](#visual-studio-2026-recommended)
+  - [CLion](#clion)
+  - [Qt Creator](#qt-creator)
+- [7) Test the Windows extension](#7-test-the-windows-extension)
+- [8) Release Build and Packaging](#8-release-build-and-packaging)
+- [9) Troubleshooting](#9-troubleshooting)
+- [Useful links](#useful-links)
+
+---
+
+## 1) Scope
+
+This document explains how to:
+- prepare a Windows development machine,
+- configure certificates,
+- install required dependencies,
+- build kDrive in Debug and Release,
+- test the Windows shell extension.
+
+---
+
+## 2) Quick Start (recommended path)
+
+If you want the shortest path to a working Debug build:
+
+1. Install [Visual Studio 2026](#visual-studio-2026).
+2. Clone the [repository](#repository-checkout).
+3. Configure [Conan](#conan-required).
+4. Build/deploy the extension (`extensions/windows/cfapi/kDriveExt.sln`).
+5. Open the repository folder in Visual Studio and select the `conan-debug` CMake configuration.
+6. Run `Install` on `kDrive` and `kDrive_client` targets.
+
+---
+
+## 3) Prerequisites
+
+> Run commands from an **Administrator PowerShell** (or equivalent admin terminal), unless noted otherwise.
+
+### Visual Studio 2026
+
+Download: https://visualstudio.microsoft.com/downloads/
+
+Install:
+- **Workloads**
+  - Desktop development with C++
+  - WinUI application development
+- **Individual components**
+  - Git for Windows (if not already installed)
+  - Windows 11 SDK (10.0.28000.x)
+
+### Repository checkout
+
+Examples in this guide use `C:\Projects`. You can use another directory if you update paths accordingly.
 
 ```powershell
-mkdir F:\Projects
-cd F:\Projects
+mkdir C:\Projects
+cd C:\Projects
 git clone https://github.com/Infomaniak/desktop-kDrive.git
-cd desktop-kDrive && git submodule update --init --recursive
+cd desktop-kDrive
+git submodule update --init --recursive
 ```
 
-# Installation Requirements
+---
 
-Once `Visual Studio 2019` is installed, **all** commands should to be run using the `x64 Native Tools Command Prompt` with administrator permissions.
+## 4) Certificates
 
-## Visual Studio 2019/2022/2025
-You must install both `Visual Studio 2019` and either `Visual Studio 2022` or `Visual Studio 2025` to build the project.
+### Release certificate
 
-When installing `Visual Studio 2019`, select the following components:
+For deployment on non-developer machines, use a trusted code-signing certificate installed in the Windows certificate store.
 
-- Desktop development with C++
-- Universal Windows Platform Development
-- .NET SDK
-- .NET Core 3.1 Runtime
-- .NET 5.0 Runtime
-- .NET framework 4.7 SDK
-- Windows 11 SDK (10.0.22000.0)
-- Windows 10 SDK (10.0.17763.0)
-- Windows 10 SDK (10.0.20348.0)
+Reference: [Microsoft code-signing requirements](https://learn.microsoft.com/windows-hardware/drivers/dashboard/code-signing-reqs#where-to-get-ev-code-signing-certificates)
 
-When installing `Visual Studio 2022 or 2025`, select the following components:
-- Desktop development with C++
-- Desktop development with .NET
-- WinUI development with .NET
-- .NET 9.0 Runtime
+### Debug self-signed certificate
 
-## CPPUnit
+For local development only, you can use a self-signed certificate.
 
-Clone `CPPUnit`:
+#### Step 1 — Create and trust the certificate
 
 ```powershell
-cd F:\Projects
-git clone git://anongit.freedesktop.org/git/libreoffice/cppunit
+$cert = New-SelfSignedCertificate `
+    -Type Custom `
+    -Subject "CN=kDriveDev" `
+    -KeyUsage DigitalSignature `
+    -FriendlyName "kDriveDev" `
+    -CertStoreLocation "Cert:\CurrentUser\My" `
+    -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
+Export-Certificate -Cert $cert -FilePath "$env:USERPROFILE\Desktop\kDriveDevCert.cer"
+Import-Certificate -FilePath "$env:USERPROFILE\Desktop\kDriveDevCert.cer" -CertStoreLocation "Cert:\CurrentUser\Root"
+Import-Certificate -FilePath "$env:USERPROFILE\Desktop\kDriveDevCert.cer" -CertStoreLocation "Cert:\CurrentUser\My"
+Get-ChildItem Cert:\CurrentUser\Root | Where-Object { $_.Subject -like "*kDriveDev*" }
+Get-ChildItem Cert:\CurrentUser\My   | Where-Object { $_.Subject -like "*kDriveDev*" }
+Remove-Item "$env:USERPROFILE\Desktop\kDriveDevCert.cer"
 ```
 
-If the server does not reply to the `git clone` command, you can download the source from https://www.freedesktop.org/wiki/Software/cppunit/.
+#### Step 2 — Bind certificate in extension project and set AUMID env var
 
-Then open `src/CppUnitLibrariesXXXX.sln` workspace in Visual Studio to configure as follows:
-- Select all projects then right click to access `Properties`.
-- Select `All configurations` and `All plateforms`,  then add `_ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH` in `C/C++ > Preprocessor > Preprocessor Definitions`.
-- In the `Build` menu, select `Batch Build...`.
-- Select all projects in `x64` version and click on `build`.
+1. Open `extensions\windows\cfapi\kDriveExt.sln`.
+2. Open `FileExplorerExtensionPackage\Package.appxmanifest`.
+3. Go to **Packaging**.
+4. Click **Choose Certificate...** > **Select from store** and pick your cert.
+5. Copy the AUMID (suffix in the **Family Name** field, after `_`).
+6. Create `KDC_DEBUG_AUMID` with that AUMID value.
 
-Copy `lib` and `include` folders from F:\Projects\cppunit\` to `C:\Program Files (x86)\cppunit`.
+For release signing, set `KDC_RELEASE_AUMID` similarly. (`build-drive.ps1` will automatically manage the certificate/aumid therefore it is rarely needed to set it manually in a release build.)
 
-## Zlib
+---
 
-> :warning: `zlib` is currently managed by [Conan](#conan) for OpenSSL, but it is also needed for libzip. Since libzip is not managed by Conan, you must install zlib manually using the instructions below.
+## 5) Dependencies
 
-Download [Zlib](https://zlib.net/fossils/zlib-1.2.11.tar.gz) then run the following:
+### 5.1 Conan (required)
+ℹ️ Python 3.11+ is required, [Microsoft Store | Python 3.13](https://apps.microsoft.com/detail/9PNRBTZXMB4Z?hl=en-us&gl=US&ocid=pdpshare)
+
+#### 5.1.1 Create and activate a virtual environment
+
+```powershell
+python -m venv .venv
+& .\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+```
+
+#### 5.1.2 Install Conan
+
+```powershell
+pip install conan
+conan --version
+```
+
+Expected output example:
+
+```text
+Conan version 2.x.x
+```
+
+#### 5.1.3 Create/update profile
+
+```powershell
+conan profile detect
+```
+
+Edit `%USERPROFILE%/.conan2/profiles/default`:
+
+```ini
+[settings]
+arch=x86_64
+build_type=Debug
+compiler=msvc
+compiler.cppstd=20
+compiler.runtime=dynamic
+compiler.version=195
+os=Windows
+```
+
+#### 5.1.4 Inject project CMake variables
+
+Create `%USERPROFILE%/.conan2/profiles/debug_vars.cmake`:
+
+```cmake
+set(APPLICATION_CLIENT_EXECUTABLE "kdrive_client")
+set(KDRIVE_THEME_DIR "C:/Projects/desktop-kDrive/infomaniak")
+set(BUILD_UNIT_TESTS "ON")
+set(BUILD_GUI "ON")
+set(BUILD_GUI_LEGACY "OFF")
+set(CMAKE_BUILD_TYPE "Debug")
+set(CMAKE_INSTALL_PREFIX "C:/Projects/desktop-kDrive/build-dev-debug")
+set(ZLIB_INCLUDE_DIR "C:/Program Files (x86)/zlib-1.2.11/include")
+set(ZLIB_LIBRARY_RELEASE "C:/Program Files (x86)/zlib-1.2.11/lib/zlib.lib")
+set(VFS_STATIC_LIBRARY "C:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Debug/Vfs.lib")
+set(VFS_DIRECTORY "C:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Debug")
+```
+
+Then add this to `%USERPROFILE%/.conan2/profiles/default`:
+
+```ini
+[conf]
+tools.cmake.cmaketoolchain:user_toolchain+={{profile_dir}}/debug_vars.cmake
+```
+
+#### 5.1.5 Create release profile for `build-drive.ps1`
+
+Create an `infomaniak_release` profile:
+- `build_type` must be `Release` or `RelWithDebInfo`.
+- Do **not** include `tools.cmake.cmaketoolchain:user_toolchain`.
+
+#### 5.1.6 Install project dependencies
+
+From repository root:
+
+```powershell
+powershell .\infomaniak-build-tools\conan\build_dependencies.ps1 [Debug|Release] [-OutputDir <output_dir>] -UpdateEnvironment
+```
+
+> ⚠️ Do **not** run this command from a terminal where `vcvarsall.bat`/`vcvars64.bat` is already active if Conan must compile packages in cache.
+
+Currently managed via Conan: **xxHash**, **log4cplus**, **Qt**, **OpenSSL**, **zlib**, **SQLite**, **Sentry**, **Poco**.
+
+### CPPUnit
+
+```powershell
+cd C:\Projects
+git clone https://anongit.freedesktop.org/git/libreoffice/cppunit
+```
+
+Then:
+1. Open `src/CppUnitLibrariesXXXX.sln`.
+2. Select all projects > **Properties**.
+3. Set `All Configurations` and `All Platforms`.
+4. Add `_ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH` to `C/C++ > Preprocessor > Preprocessor Definitions`.
+5. Use **Build > Batch Build...**, select all `x64` targets, build all.
+6. Copy `lib` and `include` from `C:\Projects\cppunit` to `C:\Program Files (x86)\cppunit`.
+
+### zlib (manual for libzip)
+
+Even if zlib is used in Conan dependency chains, libzip setup here still expects a local manual install.
+
+Download: [zlib-1.2.11.tar.gz](https://zlib.net/fossils/zlib-1.2.11.tar.gz)
+
 ```cmd
-F:
-tar -xvzf %USERPROFILE%\Downloads\zlib-1.2.11.tar.gz -C F:\Projects
-cd F:\Projects\zlib-1.2.11
+C:
+tar -xvzf %USERPROFILE%\Downloads\zlib-1.2.11.tar.gz -C C:\Projects
+cd C:\Projects\zlib-1.2.11
 nmake /f win32/Makefile.msc
 mkdir include
 copy zconf.h include\
@@ -108,338 +258,189 @@ mkdir "C:\Program Files (x86)\zlib-1.2.11\lib"
 copy lib\* "C:\Program Files (x86)\zlib-1.2.11\lib\"
 ```
 
-## libzip
+### libzip
 
-> :warning: **`libzip` requires [zlib](#zlib) to be installed.**
-
-Clone and install libzip
+Requires [zlib](#zlib-manual-for-libzip).
 
 ```powershell
-cd F:\Projects
+cd C:\Projects
 git clone https://github.com/nih-at/libzip.git
 cd libzip
 git checkout tags/v1.10.1
-mkdir build && cd build
+mkdir build
+cd build
 cmake .. -DZLIB_LIBRARY="C:\Program Files (x86)\zlib-1.2.11\lib\zlib.lib" -DZLIB_INCLUDE_DIR:PATH="C:/Program Files (x86)/zlib-1.2.11/include"
 cmake --build . --target install --config Debug
 cmake --build . --target install --config Release
 ```
 
-## NSIS
+### NSIS (installer only)
 
-Download and install [NSIS v3.03](https://sourceforge.net/projects/nsis/files/NSIS%203/3.03/nsis-3.03-setup.exe/download).
-Add the `NSIS` path to the `PATH` environment variable.
-You will need the following `NSIS` plugins:
+Install [NSIS v3.03](https://sourceforge.net/projects/nsis/files/NSIS%203/3.03/nsis-3.03-setup.exe/download).
+
+Add NSIS path to `PATH`. Required plugins:
 - `LogicLib`
 - `nsProcess`
 - `UAC`
 - `x64`
 
-## 7za
+### 7za (installer only)
 
-Download [7za](https://sourceforge.net/projects/sevenzip/files/7-Zip/23.01/7z2301-extra.7z/download) and extract it in `C:\Program Files\7-Zip`. This
-requires the prior installation of `7-Zip`.
+Download [7za extra package](https://sourceforge.net/projects/sevenzip/files/7-Zip/23.01/7z2301-extra.7z/download) and extract to `C:\Program Files\7-Zip`.
 
-## Icoutils
+### Icoutils
 
-Download [Icoutils](https://sourceforge.net/projects/unix-utils/files/icoutils/icoutils-0.32.3-x86_64.zip/download) and extract it.
-Add the path to the `Icoutils` folder to your `PATH` environment variable, e.g. `C:\Program Files\icoutils-0.32.3-x86_64\bin`.
+Download [Icoutils 0.32.3 x86_64](https://sourceforge.net/projects/unix-utils/files/icoutils/icoutils-0.32.3-x86_64.zip/download), extract it, and add its `bin` path to `PATH`, for example:
 
-# Certificate Configuration
-
-To be able to sign executables, you need to have one of two the Infomaniak certificates installed.
-We use the debug certificate for Debug builds and the KSP client certificate for Release builds.
-
-Once the certificates are installed on your machine, open `F:\Projects\desktop-kDrive\extensions\windows\cfapi\kDriveExt.sln` and follow the next steps
-to create an environment variable for each certificate:
-- Select `FileExplorerExtensionPackage\Package.appxmanifest`.
-- Go to the `Packaging` tab.
-- Click on `Choose Certificate...` then `Select from store`.
-- Copy the `AUMID` (located at the end of the `Family Name` field, after the underscore).
-- Create an environment variable named `KDC_DEBUG_AUMID` with the copied `AUMID` as value.
-- Repeat the same steps using the KSP certificate, in an environment variable named `KDC_RELEASE_AUMID`.
----
-
-## Conan
-The recommended way to install Conan is via **pip** within a Python virtual environment (Python 3.6 or newer). This approach ensures isolation and compatibility with your project’s dependencies.
-
-> **Tip:** Other installation methods (system packages, pipx, installer scripts, etc.) are also supported. See [Conan Downloads](https://conan.io/downloads) for the full list of options.
-### Prerequisites
-- **Python 3.6+**
-- **pip**:
-
-### 1. Create and Activate a Virtual Environment
-1. Create a virtual environment in `./.venv`:
-   ```powershell
-   python -m venv .venv
-   ```
-2. Activate the virtual environment:
-   ```powershell
-   & ./.venv\Scripts\Activate.ps1
-   ```
-2.1 Update the `pip` version:
-   ```powershell
-   python -m pip install --upgrade pip
-   ```
-
-### 2. Install Conan
-
-With the virtual environment active, install Conan:
-```powershell
-pip install conan
-```
-
-Verify the installation:
-```powershell
-conan --version
-```
-You should see an output similar to:
-```
-Conan version 2.x.x
-```
+`C:\Program Files\icoutils-0.32.3-x86_64\bin`
 
 ---
 
-### 3. Configure a Conan Profile
-1. Auto-generate the default profile:
-   ```cmd
-   conan profile detect
-   ```
-   This creates `%USERPROFILE%/.conan2/profiles/default`.
+## 6) Debug Build
 
-2. Open `%USERPROFILE%/.conan2/profiles/default` and customize the settings under the `[settings]` section. For example, to target Windows with C++20 with a debug build type:
+### Add runtime dependencies to PATH
 
-   ```ini
-    [settings]
-    arch=x86_64
-    build_type=Debug
-    compiler=msvc
-    compiler.cppstd=20
-    compiler.runtime=dynamic
-    compiler.version=192
-    os=Windows
-   ```
+Ensure these directories are in `PATH`:
 
----
-
-### 4. Configure CMake Toolchain Injection
-The project requires additional CMake variables for a correct build. To inject these, create a file named `debug_vars.cmake` in your profiles directory (`~/.conan2/profiles`), and then reference it in the profile under `[conf]`:
-
-1. Create or open `%USERPROFILE%/.conan2/profiles/debug_vars.cmake` and add the cache entries adapted to your installation, for example:
-   ```cmake
-   set(APPLICATION_CLIENT_EXECUTABLE "kdrive_client")
-   set(KDRIVE_THEME_DIR "F:/Projects/desktop-kDrive/infomaniak")
-   set(BUILD_UNIT_TESTS "ON")      # Set to "OFF" to skip tests
-   set(BUILD_GUI "ON")      	   # Set to "OFF" to not build the GUI v4
-   set(BUILD_GUI_LEGACY "OFF")     # Set to "OFF" to not build the legacy GUI
-   set(CMAKE_BUILD_TYPE "Debug")
-   set(CMAKE_INSTALL_PREFIX "F:/Projects/cmake-build-release_CLion")
-   set(ZLIB_INCLUDE_DIR "C:/Program Files (x86)/zlib-1.2.11/include")
-   set(ZLIB_LIBRARY_RELEASE "C:/Program Files (x86)/zlib-1.2.11/lib/zlib.lib")
-   set(VFS_STATIC_LIBRARY "F:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Debug/Vfs.lib")
-   set(VFS_DIRECTORY "F:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Debug")
-   ```
-
-2. In your profile (`%USERPROFILE%/.conan2/profiles/default`), add under a new `[conf]` section:
-   ```ini
-   [conf]
-   tools.cmake.cmaketoolchain:user_toolchain+={{profile_dir}}/debug_vars.cmake
-   ```
-
----
-
-### 5. Configure the Release Profile
-
-To **build a release version** using the script `./infomaniak-build-tools/windows/build-drive.ps1`, you must create a profile named `infomaniak_release`.
-You can create a copy of the previously defined profile, but this profile **must not** contain a `tools.cmake.cmaketoolchain:user_toolchain` entry and **must** have the `build_type` set to `Release` or `RelWithDebInfo`.
-
----
-
-### 6. Install Project Dependencies
-
-**From the repository root**, run the provided build script, specifying the desired configuration (`Debug` or `Release`) and the folder where the app will be builded.
-```powershell
-powershell ./infomaniak-build-tools/conan/build_dependencies.ps1 [Debug|Release] [-OutputDir <output_dir>]
-```
-
-> **:warning: Do NOT run this script from an environment where `vcvars` (e.g. `vcvarsall.bat` or `vcvars64.bat`) has already been activated when Conan needs to build dependencies into its cache. Some dependencies will fail to build if the MSVC environment variables are already set. This restriction only applies when packages are being compiled; subsequent runs against an already-populated cache are unaffected.**
-
-> **Note:** Currently only **xxHash**, **log4cplus**, **Qt**, **OpenSSL**, **zlib**, **SQLite**, **Sentry** and **Poco** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
-
----
-# Build in Debug
-
-To build in `Debug` mode, you will need to build and deploy the Windows extension first.
-
-## Linking dependencies
-
-In order for CMake to be able to find all dependencies, add all libraries installation folder in the `PATH` environment variable:
-```
+```text
 C:\Program Files (x86)\libzip\bin
 C:\Program Files (x86)\cppunit\bin
 ```
 
-> **:warning: Since some dependencies are now managed by Conan, you may also need to run the generated `conanrun.ps1` script to append the paths of the Conan-installed dependencies to the `PATH` environment variable.**
+### Visual Studio 2026 (recommended)
 
-## Using CLion
+#### Step A — Build and deploy Windows extension
 
-### CMake Parameters
+1. Confirm [certificate setup](#4-certificates).
+2. Set `KDC_BUILD_PROJECT_DIR` (example: `C:\Projects\desktop-kDrive\build-dev-debug\`).
+3. Open `C:\Projects\desktop-kDrive\extensions\windows\cfapi\kDriveExt.sln`.
+4. Select `Debug x64` and deploy.
 
-After executing the `build_dependencies.ps1` script, Conan generates a `CMakeUserPresets.json` file in the root of the project and in the build directory. See [Conan documentation](https://docs.conan.io/2/examples/tools/cmake/cmake_toolchain/build_project_cmake_presets.html) for more information.
-This file contains the path to the `conan_toolchain.cmake` file generated, which contains the variables required to build the project if you followed the [step 4](#4-configure-cmake-toolchain-injection) of the Conan part.
-In CLion, in the CMake profile menu, you should see something like `conan-default` or `conan-$BuildType` with `$BuildType` equal to a C++ build type like debug or release.
-Enable this profile to let CLion load the CMake project.
+For release extension artifacts, repeat with `Release x64`.
 
-## Using Qt Creator
+#### Step B — Open and configure kDrive
 
-You can disable QML debugger from the settings to avoid some error pop-ups.
+1. Open Visual Studio 2026.
+2. Choose **Open local folder**.
+3. Select `C:\Projects\desktop-kDrive`.
+4. In configuration selector, choose `conan-debug` (or `conan-release`).
+5. Save (`Ctrl+S`) and wait for CMake configure to finish without errors.
 
-### CMake Parameters
+#### Step C — Install targets
 
-Open the file `F:\Projects\desktop-kDrive\CMakeList.txt` in Qt Creator.
-Then copy the following list of `CMake` variables in "Initial CMake Parameters" using batch editing:
+1. In **Solution Explorer**, switch to **CMake targets view**.
+2. Run `Install` on `kDrive`.
+3. Run `Install` on `kDrive_client`.
 
+Reference image:
+
+![VS CMake targets view switch](./doc-images/VS_2019_switch_sln_to_targets.png)
+
+#### Step D — Debug targets
+
+1. In CMake targets view, run `Debug > kDrive.exe`.
+2. Once running, run `Debug > kDrive_client.exe`.
+
+If you only need server-side debugging, set:
+
+```text
+KDRIVE_DEBUG_RUN_CLIENT=1
 ```
+
+Then start server debug; client launch is handled automatically.
+
+### CLion
+
+After running `build_dependencies.ps1`, Conan generates `CMakeUserPresets.json` (root + build directory).
+
+In CLion CMake profiles, enable the Conan profile (`conan-default` or `conan-$BuildType`) to load the project.
+
+Conan docs: [Build project with CMake presets](https://docs.conan.io/2/examples/tools/cmake/cmake_toolchain/build_project_cmake_presets.html)
+
+### Qt Creator
+
+You can disable QML debugger to avoid some popups.
+
+Open `C:\Projects\desktop-kDrive\CMakeLists.txt` in Qt Creator and paste the following into **Initial CMake Parameters**:
+
+```text
 -GNinja
 -DCMAKE_BUILD_TYPE:String=Debug
 -DCMAKE_C_COMPILER:STRING=%{Compiler:Executable:C}
 -DCMAKE_CXX_COMPILER:STRING=%{Compiler:Executable:Cxx}
 -DAPPLICATION_UPDATE_URL:STRING=https://www.infomaniak.com/drive/update/desktopclient
 -DAPPLICATION_VIRTUALFILE_SUFFIX:STRING=kdrive
--DBIN_INSTALL_DIR:PATH=F:/projects/desktop-kDrive
--DVFS_DIRECTORY:PATH=F:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Debug
+-DBIN_INSTALL_DIR:PATH=C:/projects/desktop-kDrive
+-DVFS_DIRECTORY:PATH=C:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Debug
 -DCMAKE_EXE_LINKER_FLAGS_DEBUG:STRING=/debug /INCREMENTAL
 -DCMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO:STRING=/debug /INCREMENTAL
 -DCMAKE_INSTALL_PREFIX:PATH=%{ActiveProject:RunConfig:Executable:Path}/..
--DKDRIVE_THEME_DIR:STRING=F:/projects/desktop-kDrive/infomaniak
+-DKDRIVE_THEME_DIR:STRING=C:/projects/desktop-kDrive/infomaniak
 -DPLUGINDIR:STRING=C:/Program Files (x86)/kDrive/lib/kDrive/plugins
 -DZLIB_INCLUDE_DIR:PATH=C:/Program Files (x86)/zlib-1.2.11/include
 -DZLIB_LIBRARY_RELEASE:FILEPATH=C:/Program Files (x86)/zlib-1.2.11/lib/zlib.lib
 -DBUILD_TESTING=OFF
--DCMAKE_TOOLCHAIN_FILE=F:\Projects\desktop-kDrive\build-windows\build\conan_toolchain.cmake
+-DCMAKE_TOOLCHAIN_FILE=C:\Projects\desktop-kDrive\build-windows\build\conan_toolchain.cmake
 ```
 
-Then click "Re-configure with Initial Parameters".
+Then click **Re-configure with Initial Parameters**.
 
-## Using Visual Studio 2019
-### Windows Extension
+---
 
-To build in Debug mode, you'll need to build and deploy the Windows extension first.
-Check first your [certificates configuration](# Certificate Configuration) before following the next steps:
+## 7) Test the Windows extension
 
-1. Open the `kDriveExt` solution located at `F:\Projects\desktop-kDrive\extensions\windows\cfapi`.
-2. Navigate to the post-build events of the `Vfs` project: right click on the `Vfs` project and follow `Properties > Configuration properties > Build Events > Post-Build Event`.
-3. Select `x64` in the `Platform` drop-down menu.
-4. Modify `F:\Projects\` to match your actual path. The last two paths are outputs of the global projects; keep them for later steps.
-5. Save and close the properties window.
-
-Select `Debug x64` and deploy.
-
-To build in Release mode, repeat the same steps for `Release x64`.
-
-Close the `kDriveExt` solution.
-
-### Project Setup
-
-Open `Visual Studio 2019` and select `Open local folder`. Then choose `F:\Projects\desktop-kDrive`.
-
-
-### CMake Configuration
-
-1. On the configuration selector, click on "Manage configurations".
-2. Create a new configuration `x64 Debug`.
-3. Configure it as follows:
-   - Configuration type: Debug
-   - Toolset: msvc_x64_x64
-   - Build root: The folder set in the post-build events of the `kDriveExt` solution.
-   - CMake command args:
-    ```
-    -DAPPLICATION_CLIENT_EXECUTABLE=kdrive_client
-    -DKDRIVE_THEME_DIR=F:/Projects/desktop-kDrive/infomaniak
-    -DBUILD_UNIT_TESTS:BOOL=ON
-    -DZLIB_INCLUDE_DIR:PATH="C:/Program Files (x86)/zlib-1.2.11/include"
-    -DZLIB_LIBRARY_RELEASE:FILEPATH="C:/Program Files (x86)/zlib-1.2.11/lib/zlib.lib"
-    -DVFS_STATIC_LIBRARY:FILEPATH=F:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Debug/Vfs.lib
-    -DVFS_DIRECTORY:PATH=F:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Debug
-    ```
-   You may need to adjust paths based on your installation.
-
-   - Check that `Advanced settings > install path` is the the build root path.
-
-Save (CTRL + S). `CMake` will automatically run in the output window.
-Make sure no errors occur.
-
-### Install
-
-In the `Solution Explorer`, go to the available view:
-
-![VS2019 switch view button](./doc-images/VS_2019_switch_sln_to_targets.png)
-
-Select `CMake` targets.
-Right-click on the `kDrive` executable and then on `Install`.
-Once done, right-click on the `kDrive_client` executable and then on `Install`.
-
-
-### DLL Copy
-
-During the next step, you may encounter missing DLL errors. If so, copy the required DLLs into the `bin` folder of your output directory. The DLLs are located in:
-- `C:\Program Files (x86)\NSIS\Bin`
-- `C:\Program Files (x86)\zlib-1.2.11`
-- `C:\Program Files\OpenSSL\bin`
-
-### Debugging
-
-In the `Solution Explorer`, go to the available view:
-Select CMake targets.
-
-Right-click on the `kDrive executable`: `Debug > kDrive.exe`.
-
-Once `kDrive.exe` is running, right-click on the client executable: `Debug > kDrive_client.exe`.
-
-Once `kDrive.exe` is running, right-click on the `kDrive_client` executable: `Debug > kDrive_client.exe`.
-
-
-## Testing the extension
-
-To test the extension in Debug mode, you will first need to install a [release version](https://www.infomaniak.com/en/apps/download-kdrive) of `kDrive`.
-Once installed and running, stop the `File Explorer` with the command:
+1. Install a [release kDrive](https://www.infomaniak.com/en/apps/download-kdrive).
+2. Ensure it is running.
+3. Restart Explorer with your debug extension DLLs:
 
 ```powershell
 taskkill /f /im explorer.exe
-```
-
-Then, copy the DLLs :
-
-```powershell
-copy "F:\Projects\build-kdrive-Desktop_Qt_6_2_3_MSVC2019_64bit-Debug\bin\KDContextMenu.dll" "C:\Program Files (x86)\kDrive\shellext"
-copy "F:\Projects\build-kdrive-Desktop_Qt_6_2_3_MSVC2019_64bit-Debug\bin\KDOverlays.dll" "C:\Program Files (x86)\kDrive\shellext"
-```
-
-Then restart the `File Explorer`:
-
-```powershell
+copy "C:\Projects\desktop-kDrive\build-dev-debug\bin\KDContextMenu.dll" "C:\Program Files (x86)\kDrive\shellext"
+copy "C:\Projects\desktop-kDrive\build-dev-debug\bin\KDOverlays.dll" "C:\Program Files (x86)\kDrive\shellext"
 start explorer.exe
 ```
 
-# Build in Release
+---
 
-## Build and Packaging
+## 8) Release Build and Packaging
 
-The script `build-drive.ps1` will build, sign, then package the project. You can either start it from the root of the `desktop-kDrive` repository, or provide a path when executing it.
-To get more information, call the script with the option `-h` or `-help`
+Use `infomaniak-build-tools\windows\build-drive.ps1` to build, sign, and package.
 
-**Note.** For `CMake` to be able to build the project, you need to initialise the environment for `x64` with `vcvarsall.bat`, or `vcvars64.bat` (see the help output of `build-drive.ps1` for details).
+From repository root:
 
 ```powershell
-cd F:\Projects\desktop-kDrive
-powershell infomaniak-build-tools\windows\build-drive.ps1
+cd C:\Projects\desktop-kDrive
+powershell .\infomaniak-build-tools\windows\build-drive.ps1 -ext -thumbprint <cert_thumbprint> -newGui $true
 ```
 
-# Possible build errors
+Help:
 
-When building in Debug mode, the following error may occur when `CMAKE_INSTALL_PREFIX` is incorrect.
+```powershell
+powershell .\infomaniak-build-tools\windows\build-drive.ps1 -h
+```
 
-![sentry_init Debug Error](./doc-images/Qt_Debug_Error.png)
+> Note: For this script, CMake may require an initialized x64 MSVC environment (`vcvarsall.bat` or `vcvars64.bat`). See script help output.
 
-The `INSTALL_PREFIX` must not end with `bin`, and if so you will need to adjust its value.
-For example, `F:/Projects/build-desktop-kDrive-Desktop_Qt_6_2_3_MSVC2019_64bit-Debug/bin` must be changed to `F:/Projects/build-desktop-kDrive-Desktop_Qt_6_2_3_MSVC2019_64bit-Debug`.
+---
+
+## 9) Troubleshooting
+
+### `CMAKE_INSTALL_PREFIX` points to a `bin` folder
+
+If install fails in Debug, verify `CMAKE_INSTALL_PREFIX`.
+
+It must be the install root directory, not a `bin` subfolder.
+
+Example:
+- ❌ `C:/Projects/build-desktop-kDrive-Desktop_Qt_6_2_3_MSVC2019_64bit-Debug/bin`
+- ✅ `C:/Projects/build-desktop-kDrive-Desktop_Qt_6_2_3_MSVC2019_64bit-Debug`
+
+---
+
+## Useful links
+
+- kDrive repository: https://github.com/Infomaniak/desktop-kDrive
+- Visual Studio downloads: https://visualstudio.microsoft.com/downloads/
+- Conan + CMake presets docs: https://docs.conan.io/2/examples/tools/cmake/cmake_toolchain/build_project_cmake_presets.html
+- kDrive download page: https://www.infomaniak.com/en/apps/download-kdrive
+- Microsoft code-signing requirements: https://learn.microsoft.com/windows-hardware/drivers/dashboard/code-signing-reqs#where-to-get-ev-code-signing-certificates
