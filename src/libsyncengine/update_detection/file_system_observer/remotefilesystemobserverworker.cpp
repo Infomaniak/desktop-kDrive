@@ -700,6 +700,27 @@ ExitInfo RemoteFileSystemObserverWorker::createLongPollJob(const RemoteNodeId &r
     return ExitCode::Ok;
 }
 
+namespace {
+bool shouldContainPath(const ActionCode actionCode) {
+    // The relative path "Private" from API v3 is translated into the empty relative path "" via `ActionInfo::setPath`. We do
+    // not record the `ActionInfo` in this case.
+    // However, we still want to process the `ActionInfo` if it is
+    // - a trash action,
+    // - a user access right removal action,
+    // as the path is superfluous in this case and is actually dropped for the deleted  or unauthorized remote folders located at
+    // the root of `Common documents`.
+
+    switch (actionCode) {
+        case ActionCode::ActionCodeAccessRightUserRemove:
+        case ActionCode::ActionCodeTrash:
+            return false;
+        default:
+            return true;
+    }
+}
+} // namespace
+
+
 ExitInfo RemoteFileSystemObserverWorker::createActionInfoList(const Poco::JSON::Array::Ptr actionArray,
                                                               ActionInfoList &actionInfoList) {
     actionInfoList.clear();
@@ -710,11 +731,8 @@ ExitInfo RemoteFileSystemObserverWorker::createActionInfoList(const Poco::JSON::
         ActionInfo actionInfo;
         if (const auto exitInfo = extractActionInfo(actionObj, actionInfo); !exitInfo) return exitInfo;
 
-        // The relative path "Private" from API v3 is translated into the empty relative path "" via `ActionInfo::setPath`. We do
-        // not record the `ActionInfo` in this case.
-        // However, we still want to process the `ActionInfo` if it is a trash action, as the path is superfluous in this case and
-        // is actually dropped for the deleted remote folders located at the root of `Common documents`.
-        if (actionInfo.path().empty() && actionInfo.actionCode != ActionCode::ActionCodeTrash) continue;
+        // Skip actions with an empty relative path that corresponds to the "Private" folder in API v3.
+        if (actionInfo.path().empty() && shouldContainPath(actionInfo.actionCode)) continue;
 
         bool isWarning = false;
         if (ExclusionTemplateCache::instance()->isExcluded(actionInfo.snapshotItem.name(), isWarning)) {
@@ -791,6 +809,7 @@ bool shouldContainCreationTime(const ActionCode actionCode) {
 bool shouldContainLastModifiedTime(const ActionCode actionCode) {
     return shouldContainCreationTime(actionCode);
 }
+
 } // namespace
 
 ExitInfo RemoteFileSystemObserverWorker::processActions(const Poco::JSON::Array::Ptr actionArray,
