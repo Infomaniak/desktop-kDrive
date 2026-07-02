@@ -232,7 +232,7 @@ std::string CommonUtility::fileSystemType(const SyncPath &targetPath, std::strin
 
     fsType = toUpper(fsType);
 
-    if (fsType == "APPLEVIRTIOFS" || fsType == "SMBFS" || fsType == "NFS") {
+    if (fsType == "APPLEVIRTIOFS" || fsType == "FUSE" || fsType == "SMBFS" || fsType == "NFS") {
         // For virtiofs/SMB/NFS, fsType is the transport filesystem, not the underlying storage format on the host
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
         // Try to determine the actual underlying storage format
@@ -322,6 +322,15 @@ bool CommonUtility::isEXFAT(const SyncPath &targetPath) {
     (void) fileSystemType(targetPath, fallbackFSType);
     return fallbackFSType == exfat;
 }
+
+#if defined(KD_LINUX)
+bool CommonUtility::isEXT234(const SyncPath &targetPath) {
+    static const std::string ext234("EXT234");
+    std::string fallbackFSType;
+    (void) fileSystemType(targetPath, fallbackFSType);
+    return fallbackFSType == ext234;
+}
+#endif
 
 bool CommonUtility::isSyncCompatible([[maybe_unused]] const SyncPath &targetPath) {
 #if defined(KD_MACOS)

@@ -26,7 +26,6 @@
 #include <sys/vfs.h>
 #include <pwd.h>
 #include <libmount/libmount.h>
-#include <iostream>
 
 #include "utility/types.h"
 
@@ -131,8 +130,8 @@ std::string CommonUtility::distributionName() {
 }
 
 bool CommonUtility::fileSystemInfo(const SyncPath &targetPath, std::string &fsType, SyncPath &mountPoint) {
-    fsType = "";
-    mountPoint = "";
+    fsType.clear();
+    mountPoint.clear();
 
     // FS type
     struct statfs stat;
@@ -140,49 +139,63 @@ bool CommonUtility::fileSystemInfo(const SyncPath &targetPath, std::string &fsTy
 
     switch (stat.f_type) {
         case 0x4d44u: // MSDOS_SUPER_MAGIC
-            fsType = "FAT";
+            fsType = "MSDOS";
+            break;
         case 0x2011bab0u: // EXFAT_SUPER_MAGIC
-            fsType = "exFAT";
+            fsType = "EXFAT";
+            break;
         case 0x137du: // EXT_SUPER_MAGIC
             fsType = "EXT";
+            break;
         case 0xef51u: // EXT2_OLD_SUPER_MAGIC
             fsType = "EXT2";
+            break;
         case 0xef53u: // EXT2_SUPER_MAGIC, EXT3_SUPER_MAGIC, EXT4_SUPER_MAGIC
             fsType = "EXT234";
+            break;
         case 0xa501fcf5u: // VXFS_SUPER_MAGIC
             fsType = "VXFS";
+            break;
         case 0x58465342u: // XFS_SUPER_MAGIC
             fsType = "XFS";
+            break;
         case 0x9123683eu: // BTRFS_SUPER_MAGIC
             fsType = "BTRFS";
+            break;
         case 0x73727279u: // BTRFS_TEST_MAGIC
             fsType = "BTRFS_TEST";
+            break;
         case 0xf15fu: // ECRYPTFS_SUPER_MAGIC
             fsType = "ECRYPTFS";
+            break;
         case 0x4244u: // HFS_SUPER_MAGIC
             fsType = "HFS";
+            break;
         case 0x5346544eu: // NTFS_SB_MAGIC
             fsType = "NTFS";
+            break;
         case 0x858458f6u: // RAMFS_MAGIC
             fsType = "RAMFS";
+            break;
+        case 0x0x65735546: // FUSE_SUPER_MAGIC
+            fsType = "FUSE";
+            break;
         default:
             // See corresponding entry at https://man7.org/linux/man-pages/man2/statfs.2.html
             fsType = std::to_string(stat.f_type);
     }
 
     // Mount point
+    // NB: If no matching mount point found, fallback to the root directory
     libmnt_cache *cache = mnt_new_cache();
-    mnt_table *table = mnt_new_table();
-    mnt_table_parse_file(table, "/proc/self/mountinfo", cache);
-    libmnt_fs *fs = mnt_table_find_target(table, path.c_str(), MNT_ITER_FORWARD);
-
-    if (!fs) {
-        // No matching mount point found, fallback to the root directory
-    } else {
-        std::string mp = mnt_fs_get_target(fs);
-        mountPoint = SyncPath(mp);
+    libmnt_table *table = mnt_new_table();
+    mnt_table_set_cache(table, cache);
+    if (mnt_table_parse_file(table, "/proc/self/mountinfo") == 0) {
+        if (libmnt_fs *fs = mnt_table_find_target(table, targetPath.native().c_str(), MNT_ITER_FORWARD); fs) {
+            std::string mp = mnt_fs_get_target(fs);
+            mountPoint = SyncPath(mp);
+        }
     }
-
     mnt_free_table(table);
     mnt_free_cache(cache);
 

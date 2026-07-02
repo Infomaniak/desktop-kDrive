@@ -1,0 +1,1 @@
+/home/parallels/Projects/build-desktop-kDrive-Qt_6_8_3-Debug/build/Debug/generators;/home/parallels/.conan2/p/b/opens7f6378c0db083/p

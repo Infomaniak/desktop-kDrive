@@ -180,7 +180,7 @@ void TestPlatformInconsistencyCheckerWorker::testCheckNameForbiddenChars() {
                                                          forbiddenName, _syncPal->cacheDirectory(), endsWithForbiddenSpace));
     CPPUNIT_ASSERT(endsWithForbiddenSpace);
 #elif defined(KD_LINUX)
-    CPPUNIT_ASSERT_EQUAL("EXT234", fallbackFSType);
+    CPPUNIT_ASSERT_EQUAL(std::string("EXT234"), fallbackFSType);
 
     forbiddenName = std::string("test");
     forbiddenName.append(1, '\0');

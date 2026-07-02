@@ -127,8 +127,8 @@ std::string CommonUtility::osVersion() {
 }
 
 bool CommonUtility::fileSystemInfo(const SyncPath &targetPath, std::string &fsType, SyncPath &mountPoint) {
-    fsType = "";
-    mountPoint = "";
+    fsType.clear();
+    mountPoint.clear();
 
     // FS type & mount point
     struct statfs stat;

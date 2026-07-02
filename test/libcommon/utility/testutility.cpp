@@ -955,6 +955,14 @@ void TestUtility::testFileSystemInfo() {
     CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/", fsType, mountPoint) && fsType == "apfs");
     CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(std::filesystem::weakly_canonical("."), fsType, mountPoint) && fsType == "apfs");
     // TODO: implement these tests on the CI
+    // Local partitions
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/Volumes/APFS PART", fsType, mountPoint) &&
+                   fsType == "apfs" && mountPoint == "/Volumes/APFS PART");
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/Volumes/EXFAT PART", fsType, mountPoint) &&
+                   fsType == "exfat" && mountPoint == "/Volumes/EXFAT PART");
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/Volumes/FAT PART", fsType, mountPoint) &&
+                   fsType == "msdos" && mountPoint == "/Volumes/FAT PART");
+    // Virtiofs
     CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/Volumes/My Shared Files/Volumes/APFS PART", fsType, mountPoint) &&
                    fsType == "AppleVirtIOFS" && mountPoint == "/Volumes/My Shared Files");
     CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/Volumes/My Shared Files/Volumes/EXFAT PART", fsType, mountPoint) &&
@@ -969,6 +977,19 @@ void TestUtility::testFileSystemInfo() {
     CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/", fsType, mountPoint) && fsType == "EXT234");
     CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(std::filesystem::weakly_canonical("."), fsType, mountPoint) &&
                    fsType == "EXT234");
+    // TODO: implement these tests on the CI
+    // Local partitions
+    /*CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/media/parallels/EXFAT PART", fsType, mountPoint) &&
+                   fsType == "EXFAT" && mountPoint == "/media/parallels/EXFAT PART");
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/media/parallels/FAT PART", fsType, mountPoint) &&
+                   fsType == "MSDOS" && mountPoint == "/media/parallels/FAT PART");*/
+    // Virtiofs
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/media/psf/APFS PART", fsType, mountPoint) &&
+                   fsType == "virtiofs" && mountPoint == "/Volumes/My Shared Files");
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/media/psf/EXFAT PART", fsType, mountPoint) &&
+                   fsType == "virtiofs" && mountPoint == "/Volumes/My Shared Files");
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/media/psf/FAT PART", fsType, mountPoint) &&
+                   fsType == "virtiofs" && mountPoint == "/Volumes/My Shared Files");
 #endif
 }
 
@@ -993,13 +1014,17 @@ void TestUtility::testFileSystemType() {
                          CommonUtility::fileSystemType("/Volumes/My Shared Files/Volumes/FAT PART", fallbackFSType));
     CPPUNIT_ASSERT_EQUAL(std::string("APFS"), fallbackFSType);
 #elif defined(KD_WINDOWS)
-    CPPUNIT_ASSERT_EQUAL("NTFS", CommonUtility::fileSystemType("C:\\", fallbackFSType));
+    CPPUNIT_ASSERT_EQUAL(std::string("NTFS"), CommonUtility::fileSystemType("C:\\", fallbackFSType));
     CPPUNIT_ASSERT_EQUAL(std::string("NTFS"), fallbackFSType);
 #else
-    CPPUNIT_ASSERT_EQUAL("EXT234", CommonUtility::fileSystemType("/", fallbackFSType));
+    CPPUNIT_ASSERT_EQUAL(std::string("EXT234"), CommonUtility::fileSystemType("/", fallbackFSType));
     CPPUNIT_ASSERT_EQUAL(std::string("EXT234"), fallbackFSType);
-    CPPUNIT_ASSERT_EQUAL("EXT234", CommonUtility::fileSystemType(std::filesystem::weakly_canonical("."), fallbackFSType));
+    CPPUNIT_ASSERT_EQUAL(std::string("EXT234"),
+                         CommonUtility::fileSystemType(std::filesystem::weakly_canonical("."), fallbackFSType));
     CPPUNIT_ASSERT_EQUAL(std::string("EXT234"), fallbackFSType);
+    // TODO: implement these tests on the CI
+    CPPUNIT_ASSERT_EQUAL(std::string("EXFAT"), CommonUtility::fileSystemType("/media/parallels/EXFAT PART", fallbackFSType));
+    CPPUNIT_ASSERT_EQUAL(std::string("MSDOS"), CommonUtility::fileSystemType("/media/parallels/FAT PART", fallbackFSType));
 #endif
 }
 
