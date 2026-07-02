@@ -709,6 +709,9 @@
 /* loco:6a1e7c960b63328e7a01f812 */
 "errorListSystemHeader" = "System und Berechtigungen";
 
+/* loco:6a460c4f5fd1e1a4fb0a8302 */
+"errorOpeningLocalURL" = "Die URL %@ konnte nicht geöffnet werden.";
+
 /* loco:6995dff99537658db20fabb3 */
 "errorPageTitle" = "Zu behebende Fehler";
 
