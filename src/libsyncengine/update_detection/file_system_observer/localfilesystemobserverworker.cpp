@@ -109,8 +109,7 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(const std::list<std::pai
         _updating = true;
         _needUpdateTimerStart = std::chrono::steady_clock::now();
 
-        auto ext = absolutePath.extension().string();
-
+        const std::string ext = CommonUtility::toLower(absolutePath.extension().string());
         if (std::find(slowWritingExtensions.begin(), slowWritingExtensions.end(), ext) != slowWritingExtensions.end()) {
             _useExtendedDelay = true;
         }
