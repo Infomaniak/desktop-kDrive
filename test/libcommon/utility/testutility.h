@@ -58,7 +58,8 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testToUpper);
         CPPUNIT_TEST(testToLower);
         CPPUNIT_TEST(testIsSameOrParentPath);
-        CPPUNIT_TEST(testFileSystemName);
+        CPPUNIT_TEST(testFileSystemInfo);
+        CPPUNIT_TEST(testFileSystemType);
         CPPUNIT_TEST(testS2ws);
         CPPUNIT_TEST(testWs2s);
         CPPUNIT_TEST(testLtrim);
@@ -110,7 +111,8 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testToUpper();
         void testToLower();
         void testIsSameOrParentPath();
-        void testFileSystemName();
+        void testFileSystemInfo();
+        void testFileSystemType();
         void testS2ws();
         void testWs2s();
         void testLtrim();

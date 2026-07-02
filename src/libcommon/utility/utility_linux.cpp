@@ -25,6 +25,8 @@
 #include <sys/types.h>
 #include <sys/vfs.h>
 #include <pwd.h>
+#include <libmount/libmount.h>
+#include <iostream>
 
 #include "utility/types.h"
 
@@ -128,64 +130,63 @@ std::string CommonUtility::distributionName() {
     return distributionName;
 }
 
-namespace {
-#ifndef EXFAT_SUPER_MAGIC
-#define EXFAT_SUPER_MAGIC 0x2011BAB0
-#endif
+bool CommonUtility::fileSystemInfo(const SyncPath &targetPath, std::string &fsType, SyncPath &mountPoint) {
+    fsType = "";
+    mountPoint = "";
 
-constexpr auto exFat = "exFAT";
-constexpr auto ext234 = "EXT2/3/4";
-
-std::string formatFsName(const std::string &prettyName, const __fsword_t fType) {
-    std::stringstream stream;
-    stream << std::hex << fType;
-    return prettyName + " | 0x" + stream.str();
-}
-} // namespace
-
-bool CommonUtility::isEXT234(const SyncPath &targetPath) {
-    return contains(getRootFsType(targetPath), ext234);
-}
-
-std::string CommonUtility::exFAT() {
-    return formatFsName(exFat, EXFAT_SUPER_MAGIC);
-}
-
-std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {
+    // FS type
     struct statfs stat;
+    if (statfs(targetPath.native().c_str(), &stat) != 0) return false;
 
-    if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
-        switch (stat.f_type) {
-            case EXFAT_SUPER_MAGIC:
-                return exFAT();
-            case 0x137du:
-                return formatFsName("EXT(1)", stat.f_type);
-            case 0xef51u:
-                return formatFsName("EXT2", stat.f_type);
-            case 0xef53u: // EXT_SUPER_MAGIC
-                return formatFsName(ext234, stat.f_type);
-            case 0xbad1deau:
-            case 0xa501fcf5u:
-            case 0x58465342u:
-                return formatFsName("XFS", stat.f_type);
-            case 0x9123683eu:
-            case 0x73727279u:
-                return formatFsName("BTRFS", stat.f_type);
-            case 0xf15fu:
-                return formatFsName("ECRYPTFS", stat.f_type);
-            case 0x4244u:
-                return formatFsName("HFS", stat.f_type);
-            case 0x5346544eu:
-                return formatFsName("NTFS", stat.f_type);
-            case 0x858458f6u:
-                return formatFsName("RAMFS", stat.f_type);
-            default:
-                return formatFsName("Unknown-see corresponding entry at https://man7.org/linux/man-pages/man2/statfs.2.html",
-                                    stat.f_type);
-        }
+    switch (stat.f_type) {
+        case 0x4d44u: // MSDOS_SUPER_MAGIC
+            fsType = "FAT";
+        case 0x2011bab0u: // EXFAT_SUPER_MAGIC
+            fsType = "exFAT";
+        case 0x137du: // EXT_SUPER_MAGIC
+            fsType = "EXT";
+        case 0xef51u: // EXT2_OLD_SUPER_MAGIC
+            fsType = "EXT2";
+        case 0xef53u: // EXT2_SUPER_MAGIC, EXT3_SUPER_MAGIC, EXT4_SUPER_MAGIC
+            fsType = "EXT234";
+        case 0xa501fcf5u: // VXFS_SUPER_MAGIC
+            fsType = "VXFS";
+        case 0x58465342u: // XFS_SUPER_MAGIC
+            fsType = "XFS";
+        case 0x9123683eu: // BTRFS_SUPER_MAGIC
+            fsType = "BTRFS";
+        case 0x73727279u: // BTRFS_TEST_MAGIC
+            fsType = "BTRFS_TEST";
+        case 0xf15fu: // ECRYPTFS_SUPER_MAGIC
+            fsType = "ECRYPTFS";
+        case 0x4244u: // HFS_SUPER_MAGIC
+            fsType = "HFS";
+        case 0x5346544eu: // NTFS_SB_MAGIC
+            fsType = "NTFS";
+        case 0x858458f6u: // RAMFS_MAGIC
+            fsType = "RAMFS";
+        default:
+            // See corresponding entry at https://man7.org/linux/man-pages/man2/statfs.2.html
+            fsType = std::to_string(stat.f_type);
     }
 
-    return "UNIDENTIFIED";
+    // Mount point
+    libmnt_cache *cache = mnt_new_cache();
+    mnt_table *table = mnt_new_table();
+    mnt_table_parse_file(table, "/proc/self/mountinfo", cache);
+    libmnt_fs *fs = mnt_table_find_target(table, path.c_str(), MNT_ITER_FORWARD);
+
+    if (!fs) {
+        // No matching mount point found, fallback to the root directory
+    } else {
+        std::string mp = mnt_fs_get_target(fs);
+        mountPoint = SyncPath(mp);
+    }
+
+    mnt_free_table(table);
+    mnt_free_cache(cache);
+
+    return true;
 }
 
 ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {

@@ -69,13 +69,24 @@ struct COMMON_EXPORT CommonUtility {
         static std::string generateUUID();
 
         // File system type
+        //! Returns the type of the file system (FS) containing the given path.
+        //! Use a cache to optimize performances.
+        //! For virtiofs/SMB/NFS, try to determine the actual underlying storage format
+        /*!
+          \param targetPath is the path the FS type of which is queried.
+          \param fallbackFSType is the type of the underlying FS.
+          \return the type of the FS.
+        */
+        static std::string fileSystemType(const SyncPath &targetPath, std::string &fallbackFSType);
+
         static bool isNTFS(const SyncPath &targetPath);
         static bool isAPFS(const SyncPath &targetPath);
         static bool isHFS(const SyncPath &targetPath); // HFS+
         static bool isFAT(const SyncPath &targetPath);
+        static bool isEXFAT(const SyncPath &targetPath);
+
         static bool isSyncCompatible(const SyncPath &targetPath);
         static bool isLiteSyncCompatible(const SyncPath &targetPath);
-        static std::string fileSystemName(const SyncPath &targetPath);
 
         static qint64 freeDiskSpace(const QString &path);
         static void crash();
@@ -551,7 +562,7 @@ struct COMMON_EXPORT CommonUtility {
 
         static SyncPath getGenericAppSupportDir();
 
-        static std::string getRootFsType(const SyncPath &targetPath);
+        static bool fileSystemInfo(const SyncPath &targetPath, std::string &fsType, SyncPath &mountPoint);
 
         friend class TestUtility;
 };
@@ -638,6 +649,41 @@ static const std::function<C(const Poco::Dynamic::Var &)> dynamicVar2Struct = []
     C c;
     c.fromDynamicStruct(structValue);
     return c;
+};
+
+class PathTree {
+    public:
+        PathTree(const SyncName &name) :
+            _name(name) {}
+
+        bool contains(const SyncPath &path) {
+            auto &children = _children;
+            for (const auto &pathElement: path.lexically_normal()) {
+                auto childIt = children.find(pathElement);
+                if (childIt == children.end()) {
+                    return false;
+                }
+                children = childIt->second._children;
+            }
+            return true;
+        }
+
+        void insert(const SyncPath &path) {
+            auto &fsType = _fsType;
+            auto &children = _children;
+            for (const auto &pathElement: path.lexically_normal()) {
+                auto childIt = children.find(pathElement);
+                if (childIt == children.end()) {
+                    childIt = children.try_emplace(pathElement, PathTree(pathElement)).first;
+                }
+                children = childIt->second._children;
+            }
+        }
+
+    private:
+        SyncName _name;
+        std::string _fsType;
+        std::unordered_map<SyncName, PathTree> _children;
 };
 
 } // namespace KDC

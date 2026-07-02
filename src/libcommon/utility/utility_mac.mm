@@ -126,14 +126,18 @@ std::string CommonUtility::osVersion() {
     return osVersion;
 }
 
-std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {
+bool CommonUtility::fileSystemInfo(const SyncPath &targetPath, std::string &fsType, SyncPath &mountPoint) {
+    fsType = "";
+    mountPoint = "";
+
+    // FS type & mount point
     struct statfs stat;
+    if (statfs(targetPath.native().c_str(), &stat) != 0) return false;
 
-    if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
-        return stat.f_fstypename;
-    }
+    fsType = std::string(stat.f_fstypename);
+    mountPoint = SyncPath(stat.f_mntonname);
 
-    return "UNIDENTIFIED";
+    return true;
 }
 
 ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {

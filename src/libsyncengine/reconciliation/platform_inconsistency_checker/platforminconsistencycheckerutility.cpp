@@ -31,17 +31,32 @@
 #endif
 
 namespace ForbiddenFilenameCharacters {
-static const std::vector<char> fat32Chars = {'\\', '/', ':', '*', '?', '"', '<', '>', '|', '\n', '\r', '\t', '\0'};
 
+// Characters rejected by Windows APIs
+static const std::vector<char> winChars = {'\\', '/', ':', '*', '?', '"', '<', '>', '|', '\n', '\r', '\t', '\0'};
+static const std::vector<char> winFatChars = {'\\', '/', ':', '*', '?',  '"',  '<',  '>', '|',
+                                              '+',  ',', ';', '=', '\n', '\r', '\t', '\0'};
+
+// Characters rejected by macOS APIs
+// NB: macOS has the same restrictions for filenames regardless of the file system
+static const std::vector<char> macChars = {'/', '\0'};
+
+// Characters rejected by Linux APIs
+static const std::vector<char> linuxChars = macChars;
+
+static const std::vector<char> forbiddenChars([[maybe_unused]] const std::string &fsType) {
 #if defined(KD_WINDOWS)
-static const std::vector<char> chars = {'\\', '/', ':', '*', '?', '"', '<', '>', '|', '\n'};
+    if (fsType == "MSDOS")
+        return winFatChars;
+    else
+        return winChars;
+#elif defined(KD_MACOS)
+    return macChars;
 #else
-#if defined(KD_MACOS)
-static const std::vector<char> chars = {'/'};
-#else
-static const std::vector<char> chars = {'/', '\0'};
+    return linuxChars;
 #endif
-#endif
+}
+
 } // namespace ForbiddenFilenameCharacters
 
 static const int maxNameLengh = 255; // Max filename length is uniformized to 255 characters for all platforms and backends
@@ -99,14 +114,11 @@ ExitInfo PlatformInconsistencyCheckerUtility::renameLocalFile(const SyncPath &ab
     return moveJob.exitInfo();
 }
 
-ExitInfo PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
-        const SyncName &name, [[maybe_unused]] std::shared_ptr<CacheDirectory> cacheDirectory, bool &hasForbiddenChars) {
+ExitInfo PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(const std::string &fsType, const SyncName &name,
+                                                                           bool &hasForbiddenChars) {
     hasForbiddenChars = false;
-    std::vector<char> forbiddenChars;
 
-    const auto exitInfo = getForbiddenFilenameChars(cacheDirectory, forbiddenChars);
-    if (!exitInfo) return exitInfo;
-
+    auto forbiddenChars = ForbiddenFilenameCharacters::forbiddenChars(fsType);
     for (auto c: forbiddenChars) {
         if (name.find(c) != std::string::npos) {
             LOGW_INFO(Log::instance()->getLogger(),
@@ -260,18 +272,6 @@ SyncName PlatformInconsistencyCheckerUtility::generateSuffix(SuffixType suffixTy
     }
 
     return suffix + ss.str() + Str("_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10));
-}
-
-ExitInfo PlatformInconsistencyCheckerUtility::getForbiddenFilenameChars(
-        [[maybe_unused]] const std::shared_ptr<CacheDirectory> cacheDirectory, std::vector<char> &forbiddenChars) {
-    forbiddenChars = ForbiddenFilenameCharacters::chars;
-#if defined(KD_LINUX)
-    std::string fileSystemName;
-    const auto exitInfo = Utility::getFileSystemName(cacheDirectory, fileSystemName);
-    if (!exitInfo) return exitInfo;
-    if (fileSystemName == CommonUtility::exFAT()) forbiddenChars = ForbiddenFilenameCharacters::fat32Chars;
-#endif
-    return ExitCode::Ok;
 }
 
 } // namespace KDC

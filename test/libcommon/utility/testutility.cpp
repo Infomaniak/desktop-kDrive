@@ -948,14 +948,58 @@ void TestUtility::testIsSameOrParentPath() {
     CPPUNIT_ASSERT(CommonUtility::isDescendantOrEqual("a/b/c", "a"));
 }
 
-void TestUtility::testFileSystemName() {
+void TestUtility::testFileSystemInfo() {
+    std::string fsType;
+    SyncPath mountPoint;
 #if defined(KD_MACOS)
-    CPPUNIT_ASSERT(CommonUtility::fileSystemName("/") == "apfs");
-    CPPUNIT_ASSERT(CommonUtility::fileSystemName("/bin") == "apfs");
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/", fsType, mountPoint) && fsType == "apfs");
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(std::filesystem::weakly_canonical("."), fsType, mountPoint) && fsType == "apfs");
+    // TODO: implement these tests on the CI
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/Volumes/My Shared Files/Volumes/APFS PART", fsType, mountPoint) &&
+                   fsType == "AppleVirtIOFS" && mountPoint == "/Volumes/My Shared Files");
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/Volumes/My Shared Files/Volumes/EXFAT PART", fsType, mountPoint) &&
+                   fsType == "AppleVirtIOFS" && mountPoint == "/Volumes/My Shared Files");
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/Volumes/My Shared Files/Volumes/FAT PART", fsType, mountPoint) &&
+                   fsType == "AppleVirtIOFS" && mountPoint == "/Volumes/My Shared Files");
 #elif defined(KD_WINDOWS)
-    CPPUNIT_ASSERT(CommonUtility::fileSystemName(std::filesystem::temp_directory_path()) == "NTFS");
-    // CPPUNIT_ASSERT(CommonUtility::fileSystemName(R"(C:\)") == "NTFS");
-    // CPPUNIT_ASSERT(CommonUtility::fileSystemName(R"(C:\windows)") == "NTFS");
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(std::filesystem::temp_directory_path(), fsType, mountPoint) && fsType == "NTFS" && mountPoint == "C:\");
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(R"(C:\)", fsType, mountPoint) && fsType == "NTFS" && mountPoint == "C:\");
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(R"(C:\windows)", fsType, mountPoint) && fsType == "NTFS" && mountPoint == "C:\");
+#else
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/", fsType, mountPoint) && fsType == "EXT234");
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(std::filesystem::weakly_canonical("."), fsType, mountPoint) &&
+                   fsType == "EXT234");
+#endif
+}
+
+void TestUtility::testFileSystemType() {
+    std::string fallbackFSType;
+#if defined(KD_MACOS)
+    CPPUNIT_ASSERT_EQUAL(std::string("APFS"), CommonUtility::fileSystemType("/", fallbackFSType));
+    CPPUNIT_ASSERT_EQUAL(std::string("APFS"), fallbackFSType);
+    CPPUNIT_ASSERT_EQUAL(std::string("APFS"),
+                         CommonUtility::fileSystemType(std::filesystem::weakly_canonical("."), fallbackFSType));
+    CPPUNIT_ASSERT_EQUAL(std::string("APFS"), fallbackFSType);
+    // TODO: implement these tests on the CI
+    CPPUNIT_ASSERT_EQUAL(std::string("EXFAT"), CommonUtility::fileSystemType("/Volumes/EXFAT PART", fallbackFSType));
+    CPPUNIT_ASSERT_EQUAL(std::string("MSDOS"), CommonUtility::fileSystemType("/Volumes/FAT PART", fallbackFSType));
+    CPPUNIT_ASSERT_EQUAL(std::string("APPLEVIRTIOFS"),
+                         CommonUtility::fileSystemType("/Volumes/My Shared Files/Volumes/APFS PART", fallbackFSType));
+    CPPUNIT_ASSERT_EQUAL(std::string("APFS"), fallbackFSType);
+    CPPUNIT_ASSERT_EQUAL(std::string("APPLEVIRTIOFS"),
+                         CommonUtility::fileSystemType("/Volumes/My Shared Files/Volumes/EXFAT PART", fallbackFSType));
+    CPPUNIT_ASSERT_EQUAL(std::string("APFS"), fallbackFSType);
+    CPPUNIT_ASSERT_EQUAL(std::string("APPLEVIRTIOFS"),
+                         CommonUtility::fileSystemType("/Volumes/My Shared Files/Volumes/FAT PART", fallbackFSType));
+    CPPUNIT_ASSERT_EQUAL(std::string("APFS"), fallbackFSType);
+#elif defined(KD_WINDOWS)
+    CPPUNIT_ASSERT_EQUAL("NTFS", CommonUtility::fileSystemType("C:\\", fallbackFSType));
+    CPPUNIT_ASSERT_EQUAL(std::string("NTFS"), fallbackFSType);
+#else
+    CPPUNIT_ASSERT_EQUAL("EXT234", CommonUtility::fileSystemType("/", fallbackFSType));
+    CPPUNIT_ASSERT_EQUAL(std::string("EXT234"), fallbackFSType);
+    CPPUNIT_ASSERT_EQUAL("EXT234", CommonUtility::fileSystemType(std::filesystem::weakly_canonical("."), fallbackFSType));
+    CPPUNIT_ASSERT_EQUAL(std::string("EXT234"), fallbackFSType);
 #endif
 }
 
