@@ -32,17 +32,17 @@
 
 namespace ForbiddenFilenameCharacters {
 
-// Characters rejected by Windows APIs
-static const std::vector<char> winChars = {'\\', '/', ':', '*', '?', '"', '<', '>', '|', '\n', '\r', '\t', '\0'};
+// Windows
+static const std::vector<char> winChars = {'\\', '/', ':', '*', '?', '"', '<', '>', '|', '\n', '\r', '\t', '\0'}; // Windows APIs limitation
 static const std::vector<char> winFatChars = {'\\', '/', ':', '*', '?',  '"',  '<',  '>', '|',
-                                              '+',  ',', ';', '=', '\n', '\r', '\t', '\0'};
+                                              '+',  ',', ';', '=', '\n', '\r', '\t', '\0'}; // FAT32
 
-// Characters rejected by macOS APIs
-// NB: macOS has the same restrictions for filenames regardless of the file system
+// macOS
 static const std::vector<char> macChars = {'/', '\0'};
 
-// Characters rejected by Linux APIs
+// Linux
 static const std::vector<char> linuxChars = macChars;
+static const std::vector<char> linuxFatChars = winChars; // FAT32 & ExFAT
 
 static const std::vector<char> forbiddenChars([[maybe_unused]] const std::string &fsType) {
 #if defined(KD_WINDOWS)
@@ -53,7 +53,10 @@ static const std::vector<char> forbiddenChars([[maybe_unused]] const std::string
 #elif defined(KD_MACOS)
     return macChars;
 #else
-    return linuxChars;
+    if (fsType == "MSDOS" || fsType == "EXFAT")
+        return winFatChars;
+    else
+        return linuxChars;
 #endif
 }
 

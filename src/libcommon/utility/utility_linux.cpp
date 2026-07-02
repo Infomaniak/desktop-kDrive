@@ -135,7 +135,10 @@ bool CommonUtility::fileSystemInfo(const SyncPath &targetPath, std::string &fsTy
 
     // FS type
     struct statfs stat;
-    if (statfs(targetPath.native().c_str(), &stat) != 0) return false;
+    if (statfs(targetPath.native().c_str(), &stat) != 0) {
+        int err = errno;
+        return false;
+    }
 
     switch (stat.f_type) {
         case 0x4d44u: // MSDOS_SUPER_MAGIC
@@ -177,7 +180,7 @@ bool CommonUtility::fileSystemInfo(const SyncPath &targetPath, std::string &fsTy
         case 0x858458f6u: // RAMFS_MAGIC
             fsType = "RAMFS";
             break;
-        case 0x0x65735546: // FUSE_SUPER_MAGIC
+        case 0x65735546: // FUSE_SUPER_MAGIC
             fsType = "FUSE";
             break;
         default:
