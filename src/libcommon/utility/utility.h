@@ -562,6 +562,7 @@ struct COMMON_EXPORT CommonUtility {
 
         static SyncPath getGenericAppSupportDir();
 
+        static std::string fallbackFileSystemType();
         static bool fileSystemInfo(const SyncPath &targetPath, std::string &fsType, SyncPath &mountPoint);
 
         friend class TestUtility;
