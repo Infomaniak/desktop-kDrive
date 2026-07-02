@@ -59,7 +59,7 @@ class LocalFileSystemObserverWorker : public FileSystemObserverWorker {
         ExitInfo handleIoError(const SyncPath &relativePath, IoError ioError);
 
         // Returns true if the execute() loop should break.
-        bool checkWorkerConditions(ExitInfo &exitInfo);
+        bool checkFatalConditions(ExitInfo &exitInfo);
         // Returns true if the execute() loop should break.
         bool checkAndClearUpdateDelay(ExitInfo &exitInfo);
 
