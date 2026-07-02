@@ -38,6 +38,8 @@ enum ModalPath: Equatable {}
 final class ViewRouter<Tab: RouterTab>: ObservableObject, NavigableRouter {
     typealias RouterPath = Path<Tab>
 
+    private let defaultTab: Tab
+
     @Published private(set) var currentPath: RouterPath
     @Published private(set) var currentModal: ModalPath?
 
@@ -49,6 +51,16 @@ final class ViewRouter<Tab: RouterTab>: ObservableObject, NavigableRouter {
     }
 
     init(defaultTab: Tab) {
+        self.defaultTab = defaultTab
+
+        let initialPath = RouterPath(mainTab: defaultTab, details: [defaultTab.rootPath])
+
+        currentPath = initialPath
+        pathCache = [defaultTab: initialPath]
+    }
+
+    @MainActor
+    func resetToDefaultState() {
         let initialPath = RouterPath(mainTab: defaultTab, details: [defaultTab.rootPath])
 
         currentPath = initialPath

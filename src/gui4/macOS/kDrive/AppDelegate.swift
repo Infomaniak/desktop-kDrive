@@ -17,6 +17,7 @@
  */
 
 import Cocoa
+import InfomaniakDI
 import kDriveCore
 import kDriveResources
 
@@ -102,6 +103,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc func openPreferencesWindow() {
         if preferencesWindow == nil {
             preferencesWindow = PreferencesWindowController()
+        }
+
+        if preferencesWindow?.window == nil {
+            @InjectService var preferencesRouter: PreferencesViewRouter
+            preferencesRouter.resetToDefaultState()
         }
 
         preferencesWindow?.window?.makeKeyAndOrderFront(nil)
