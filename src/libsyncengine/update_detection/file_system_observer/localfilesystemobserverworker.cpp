@@ -40,8 +40,8 @@ namespace KDC {
 static const int64_t waitForUpdateDelay = 1000; // 1sec
 static const int64_t waitForUpdateDelayExtended = waitForUpdateDelay * 5; // 5sec, for slow-writing extensions
 
-static constexpr std::array<std::string_view, 11> slowWritingExtensions = {
-        ".psd", ".psb", ".ai", ".indd", ".blend", ".dwg", ".dxf", ".pln", ".pla", ".prproj", ".aep"};
+static constexpr std::array<std::string_view, 11> slowWritingExtensions = {".psd", ".psb", ".ai",  ".indd",   ".blend", ".dwg",
+                                                                           ".dxf", ".pln", ".pla", ".prproj", ".aep"};
 
 LocalFileSystemObserverWorker::LocalFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                              const std::string &shortName) :
@@ -503,12 +503,23 @@ bool LocalFileSystemObserverWorker::checkFatalConditions(ExitInfo &exitInfo) {
 }
 
 bool LocalFileSystemObserverWorker::checkAndClearUpdateDelay(ExitInfo &exitInfo) {
-    if (!_updating) return false;
+    std::chrono::steady_clock::time_point needUpdateTimerStart;
+    bool updating = false;
+    bool useExtendedDelay = false;
+
+    {
+        const std::scoped_lock lock(_recursiveMutex);
+        updating = _updating;
+        useExtendedDelay = _useExtendedDelay;
+        needUpdateTimerStart = _needUpdateTimerStart;
+    }
+
+    if (!updating) return false;
 
     // Wait 1 sec after the last update or 5 if the file has a slow-writing extension, before starting the sync
     const auto diff_ms =
-            std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - _needUpdateTimerStart);
-    const auto activeDelay = _useExtendedDelay ? waitForUpdateDelayExtended : waitForUpdateDelay;
+            std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - needUpdateTimerStart);
+    const auto activeDelay = useExtendedDelay ? waitForUpdateDelayExtended : waitForUpdateDelay;
     if (diff_ms.count() <= activeDelay) return false;
 
     exitInfo = _syncPal->isRootFolderValid();
@@ -518,9 +529,11 @@ bool LocalFileSystemObserverWorker::checkAndClearUpdateDelay(ExitInfo &exitInfo)
         return true;
     }
 
-    const std::scoped_lock lock(_recursiveMutex);
-    _updating = false;
-    _useExtendedDelay = false;
+    {
+        const std::scoped_lock lock(_recursiveMutex);
+        _updating = false;
+        _useExtendedDelay = false;
+    }
     return false;
 }
 
