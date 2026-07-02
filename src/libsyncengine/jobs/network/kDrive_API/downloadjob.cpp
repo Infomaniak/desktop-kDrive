@@ -457,10 +457,10 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
 #if defined(KD_WINDOWS)
         LOGW_DEBUG(_logger, L"Create junction: " << Utility::formatSyncPath(_fileDownloadInfo.localPath));
 
-        if (!CommonUtility::isNTFS(_fileDownloadInfo.localpath)) {
+        if (!CommonUtility::isNTFS(_fileDownloadInfo.localPath)) {
             // Junctions are supported only on NTFS systems
             LOGW_WARN(_logger, L"Filesystem is not NTFS, junctions are not supported: "
-                                       << Utility::formatSyncPath(_fileDownloadInfo.localpath));
+                                       << Utility::formatSyncPath(_fileDownloadInfo.localPath));
             return {ExitCode::SystemError, ExitCause::FileSystemNotSupported};
         }
 
@@ -606,7 +606,7 @@ class HiddenStatusHolder {
 ExitInfo DownloadJob::moveTmpFile() {
     // Move downloaded file from tmp directory to sync directory
 #if defined(KD_WINDOWS)
-    HiddenStatusHolder hiddenStatusHolder(_fileDownloadInfo.localpath);
+    HiddenStatusHolder hiddenStatusHolder(_fileDownloadInfo.localPath);
     bool retry = true;
     int counter = 50;
     while (retry) {
