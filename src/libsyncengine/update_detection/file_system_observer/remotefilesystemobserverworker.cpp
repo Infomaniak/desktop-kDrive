@@ -703,7 +703,7 @@ ExitInfo RemoteFileSystemObserverWorker::createLongPollJob(const RemoteNodeId &r
 namespace {
 bool shouldContainPath(const ActionCode actionCode) {
     // The relative path "Private" from API v3 is translated into the empty relative path "" via `ActionInfo::setPath`. We do
-    // not record the `ActionInfo` in this case.
+    // not record the `ActionInfo` of action acting on the "Private" root only.
     // However, we still want to process the `ActionInfo` if it is
     // - a trash action,
     // - a user access right removal action,
@@ -731,7 +731,8 @@ ExitInfo RemoteFileSystemObserverWorker::createActionInfoList(const Poco::JSON::
         ActionInfo actionInfo;
         if (const auto exitInfo = extractActionInfo(actionObj, actionInfo); !exitInfo) return exitInfo;
 
-        // Skip actions with an empty relative path that corresponds to the "Private" folder in API v3.
+        // Skip actions with an empty relative path that corresponds to the "Private" folder in API v3,
+        // except for specific action codes where the path is optional (e.g. trash / access-right removal).
         if (actionInfo.path().empty() && shouldContainPath(actionInfo.actionCode)) continue;
 
         bool isWarning = false;
@@ -900,8 +901,7 @@ ExitInfo RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
         return {ExitCode::BackError, ExitCause::MissingReplyData};
 
     if (!tmpDestPathStr.empty()) {
-        // This a move operation. Get the name from the `destination`
-        // field.
+        // This is a move operation. Get the name from the `destination` field.
         actionInfo.snapshotItem.setName(tmpDestPathStr.substr(tmpDestPathStr.find_last_of('/') + 1)); // +1 to ignore the last "/"
         actionInfo.setPath(tmpDestPathStr);
     } else {
