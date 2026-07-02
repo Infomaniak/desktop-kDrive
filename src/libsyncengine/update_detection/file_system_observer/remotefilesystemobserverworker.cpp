@@ -795,22 +795,6 @@ bool shouldBeIgnored(const ActionCode actionCode) {
             return false;
     }
 }
-
-bool shouldContainCreationTime(const ActionCode actionCode) {
-    switch (actionCode) {
-        case ActionCode::ActionCodeAccessRightUserRemove:
-        case ActionCode::ActionCodeAccessRightMainUsersRemove:
-        case ActionCode::ActionCodeRestoreFileShareDelete:
-            return false;
-        default:
-            return true;
-    }
-}
-
-bool shouldContainLastModifiedTime(const ActionCode actionCode) {
-    return shouldContainCreationTime(actionCode);
-}
-
 } // namespace
 
 ExitInfo RemoteFileSystemObserverWorker::processActions(const Poco::JSON::Array::Ptr actionArray,
@@ -905,7 +889,7 @@ ExitInfo RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
         actionInfo.snapshotItem.setName(tmpDestPathStr.substr(tmpDestPathStr.find_last_of('/') + 1)); // +1 to ignore the last "/"
         actionInfo.setPath(tmpDestPathStr);
     } else {
-        // Otherwise, get the name from the `path` field
+        // Otherwise, get the name from the `path` field.
         SyncName actionPath;
         if (!JsonParserUtility::extractValue(actionObj, pathKey, actionPath))
             return {ExitCode::BackError, ExitCause::MissingReplyData};
@@ -915,27 +899,20 @@ ExitInfo RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
                 actionInfo.path().substr(actionInfo.path().find_last_of('/') + 1)); // +1 to ignore the last "/"
     }
 
+    // Determine the type of the item (file or directory) based on the `file_type` field.
+    // If it is not found in this `actionObj`, it will be determined later in `extractActionFileInfo`.
     if (std::string fileTypeString;
         JsonParserUtility::extractValue(actionObj, fileTypeKey, fileTypeString, false) && !fileTypeString.empty())
         actionInfo.snapshotItem.setType(fileTypeString == fileKey ? NodeType::File : NodeType::Directory);
 
     SyncTime tmpTime{0};
-
-    // Special handling for ACL related actions, as some might not contain the `created_at` and `last_modified_at` fields; we set
-    // them both with the `executed_at`.
-    if (!JsonParserUtility::extractValue(actionObj, createdAtKey, tmpTime, false)) {
-        if (shouldContainCreationTime(actionInfo.actionCode) ||
-            !JsonParserUtility::extractValue(actionObj, executedAtKey, tmpTime, false))
-            return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
+    if (!JsonParserUtility::extractValue(actionObj, createdAtKey, tmpTime, false))
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
 
     actionInfo.snapshotItem.setCreatedAt(tmpTime);
 
-    if (!JsonParserUtility::extractValue(actionObj, lastModifiedAtKey, tmpTime, false)) {
-        if (shouldContainLastModifiedTime(actionInfo.actionCode) ||
-            !JsonParserUtility::extractValue(actionObj, executedAtKey, tmpTime, false))
-            return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
+    if (!JsonParserUtility::extractValue(actionObj, lastModifiedAtKey, tmpTime, false))
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
 
     actionInfo.snapshotItem.setLastModified(tmpTime);
 

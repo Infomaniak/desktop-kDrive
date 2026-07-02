@@ -31,6 +31,7 @@ class TestRemoteFileSystemObserverWorker : public CppUnit::TestFixture, public T
         CPPUNIT_TEST_SUITE(TestRemoteFileSystemObserverWorker);
         CPPUNIT_TEST(testGenerateRemoteInitialSnapshot);
         CPPUNIT_TEST(testUpdateSnapshot);
+        CPPUNIT_TEST(testExtractActionInfo);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -40,6 +41,7 @@ class TestRemoteFileSystemObserverWorker : public CppUnit::TestFixture, public T
     protected:
         void testGenerateRemoteInitialSnapshot();
         void testUpdateSnapshot();
+        void testExtractActionInfo();
 
     private:
         log4cplus::Logger _logger;
