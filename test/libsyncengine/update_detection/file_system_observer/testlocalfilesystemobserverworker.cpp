@@ -711,14 +711,16 @@ void TestLocalFileSystemObserverWorker::testSlowWritingExtensionDelay() {
         CPPUNIT_ASSERT(TimeoutHelper::checkExecutionTime<bool>(
                 [&]() {
                     return TimeoutHelper::waitFor([&]() { return !localFSO->updating(); }, std::chrono::seconds(2),
-                                                 std::chrono::milliseconds(10));
+                                                  std::chrono::milliseconds(10));
                 },
                 result, std::chrono::milliseconds(500), std::chrono::milliseconds(2000)));
         CPPUNIT_ASSERT(result);
 
         auto ioError = IoError::Unknown;
         CPPUNIT_ASSERT(IoHelper::deleteItem(filePath, ioError));
-        Utility::msleep(1500);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+        CPPUNIT_ASSERT(TimeoutHelper::waitFor([&]() { return !localFSO->updating(); }, std::chrono::seconds(2),
+                                              std::chrono::milliseconds(10)));
     }
 
     // --- Slow-writing extension (.blend): delay must be >= 5s ---
@@ -744,7 +746,9 @@ void TestLocalFileSystemObserverWorker::testSlowWritingExtensionDelay() {
 
         auto ioError = IoError::Unknown;
         CPPUNIT_ASSERT(IoHelper::deleteItem(filePath, ioError));
-        Utility::msleep(6000);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+        CPPUNIT_ASSERT(TimeoutHelper::waitFor([&]() { return !localFSO->updating(); }, std::chrono::seconds(6),
+                                              std::chrono::milliseconds(10)));
     }
 }
 
