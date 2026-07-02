@@ -70,16 +70,6 @@ SyncPath CommonUtility::getGenericAppSupportDir() {
     return [[appSupportDirUrl path] UTF8String];
 }
 
-std::string CommonUtility::fallbackFileSystemType() {
-#if defined(KD_WINDOWS)
-    return "NTFS";
-#elif defined(KD_MACOS)
-    return "APFS";
-#else
-    return "EXT234";
-#endif
-}
-
 SyncPath CommonUtility::getExtensionPath() {
     CFURLRef url = (CFURLRef) CFBundleCopyBundleURL(CFBundleGetMainBundle());
     CFStringRef urlStr = CFURLCopyFileSystemPath(url, kCFURLPOSIXPathStyle);

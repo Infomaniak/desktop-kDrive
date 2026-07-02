@@ -207,6 +207,16 @@ uint64_t CommonUtility::versionBuild() {
     return KDRIVE_VERSION_BUILD;
 }
 
+std::string CommonUtility::fallbackFileSystemType() {
+#if defined(KD_WINDOWS)
+    return "NTFS";
+#elif defined(KD_MACOS)
+    return "APFS";
+#else
+    return "EXT234";
+#endif
+}
+
 std::string CommonUtility::fileSystemType(const SyncPath &targetPath, std::string &fallbackFSType) {
     fallbackFSType = fallbackFileSystemType();
 
