@@ -685,14 +685,26 @@ void TestLocalFileSystemObserverWorker::testInvalidateCounter() {
 void TestLocalFileSystemObserverWorker::testSlowWritingExtensionDelay() {
     if (!testhelpers::isExtendedTest()) return;
 
+    constexpr int64_t watcherReadyPollMs = 100;
+    constexpr int64_t maxWatcherReadyPolls = 20;
+    constexpr auto loopPollInterval = std::chrono::milliseconds(10);
+    constexpr auto changeDetectionTimeout = std::chrono::seconds(5);
+    constexpr auto normalUpdateDelayMin = std::chrono::milliseconds(500);
+    constexpr auto normalUpdateDelayMax = std::chrono::milliseconds(2000);
+    constexpr auto normalUpdateClearTimeout = std::chrono::seconds(2);
+    constexpr auto extendedUpdateWaitTimeout = std::chrono::seconds(15);
+    constexpr auto extendedUpdateDelayMin = std::chrono::milliseconds(4500);
+    constexpr auto extendedUpdateDelayMax = std::chrono::milliseconds(7000);
+    constexpr auto extendedUpdateClearTimeout = std::chrono::seconds(6);
+
     auto localFSO = std::dynamic_pointer_cast<LocalFileSystemObserverWorker>(_syncPal->_localFSObserverWorker);
     CPPUNIT_ASSERT(localFSO);
 
     // Wait for folder watcher to be ready
     int64_t count = 0;
     while (!_syncPal->liveSnapshot(ReplicaSide::Local).isValid() || !localFSO->_folderWatcher->isReady()) {
-        Utility::msleep(100);
-        CPPUNIT_ASSERT(count++ < 20);
+        Utility::msleep(watcherReadyPollMs);
+        CPPUNIT_ASSERT(count++ < maxWatcherReadyPolls);
     }
 
     // --- Normal extension (.txt): delay must be < 2s ---
@@ -702,25 +714,25 @@ void TestLocalFileSystemObserverWorker::testSlowWritingExtensionDelay() {
         testhelpers::generateOrEditTestFile(filePath);
 
         // Wait until _updating becomes true (change detected)
-        CPPUNIT_ASSERT(TimeoutHelper::waitFor([&]() { return localFSO->updating(); }, std::chrono::seconds(5),
-                                              std::chrono::milliseconds(10)));
+        CPPUNIT_ASSERT(TimeoutHelper::waitFor([&]() { return localFSO->updating(); }, changeDetectionTimeout,
+                                              loopPollInterval));
         CPPUNIT_ASSERT(!localFSO->_useExtendedDelay);
 
         // Measure how long until _updating goes back to false (sync allowed)
         bool result = false;
         CPPUNIT_ASSERT(TimeoutHelper::checkExecutionTime<bool>(
                 [&]() {
-                    return TimeoutHelper::waitFor([&]() { return !localFSO->updating(); }, std::chrono::seconds(2),
-                                                  std::chrono::milliseconds(10));
+                    return TimeoutHelper::waitFor([&]() { return !localFSO->updating(); }, normalUpdateClearTimeout,
+                                                  loopPollInterval);
                 },
-                result, std::chrono::milliseconds(500), std::chrono::milliseconds(2000)));
+                result, normalUpdateDelayMin, normalUpdateDelayMax));
         CPPUNIT_ASSERT(result);
 
         auto ioError = IoError::Unknown;
         CPPUNIT_ASSERT(IoHelper::deleteItem(filePath, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-        CPPUNIT_ASSERT(TimeoutHelper::waitFor([&]() { return !localFSO->updating(); }, std::chrono::seconds(2),
-                                              std::chrono::milliseconds(10)));
+        CPPUNIT_ASSERT(TimeoutHelper::waitFor([&]() { return !localFSO->updating(); }, normalUpdateClearTimeout,
+                                              loopPollInterval));
     }
 
     // --- Slow-writing extension (.blend): delay must be >= 5s ---
@@ -730,25 +742,25 @@ void TestLocalFileSystemObserverWorker::testSlowWritingExtensionDelay() {
         testhelpers::generateOrEditTestFile(filePath);
 
         // Wait until _updating becomes true (change detected)
-        CPPUNIT_ASSERT(TimeoutHelper::waitFor([&]() { return localFSO->updating(); }, std::chrono::seconds(5),
-                                              std::chrono::milliseconds(10)));
+        CPPUNIT_ASSERT(TimeoutHelper::waitFor([&]() { return localFSO->updating(); }, changeDetectionTimeout,
+                                              loopPollInterval));
         CPPUNIT_ASSERT(localFSO->_useExtendedDelay);
 
         // Measure how long until _updating goes back to false (sync allowed)
         bool result = false;
         CPPUNIT_ASSERT(TimeoutHelper::checkExecutionTime<bool>(
                 [&]() {
-                    return TimeoutHelper::waitFor([&]() { return !localFSO->updating(); }, std::chrono::seconds(15),
-                                                  std::chrono::milliseconds(10));
+                    return TimeoutHelper::waitFor([&]() { return !localFSO->updating(); }, extendedUpdateWaitTimeout,
+                                                  loopPollInterval);
                 },
-                result, std::chrono::milliseconds(4500), std::chrono::milliseconds(7000)));
+                result, extendedUpdateDelayMin, extendedUpdateDelayMax));
         CPPUNIT_ASSERT(result);
 
         auto ioError = IoError::Unknown;
         CPPUNIT_ASSERT(IoHelper::deleteItem(filePath, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-        CPPUNIT_ASSERT(TimeoutHelper::waitFor([&]() { return !localFSO->updating(); }, std::chrono::seconds(6),
-                                              std::chrono::milliseconds(10)));
+        CPPUNIT_ASSERT(TimeoutHelper::waitFor([&]() { return !localFSO->updating(); }, extendedUpdateClearTimeout,
+                                              loopPollInterval));
     }
 }
 
