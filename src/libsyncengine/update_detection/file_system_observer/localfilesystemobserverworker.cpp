@@ -32,8 +32,8 @@
 
 #include <log4cplus/loggingmacros.h>
 
+#include <array>
 #include <filesystem>
-#include <unordered_set>
 
 namespace KDC {
 
