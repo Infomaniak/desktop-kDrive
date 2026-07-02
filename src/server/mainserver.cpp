@@ -235,6 +235,11 @@ std::int32_t exec(std::unique_ptr<KDC::AppServer> &appPtr) {
             return 0;
         }
 
+        if (appPtr->openFileUrlAsked()) {
+            appPtr->sendOpenFileUrlMsg();
+            return 0;
+        }
+
         std::cout << "Asking the running server to start a newClient." << std::endl;
         appPtr->sendRestartClientMsg();
         return 0;

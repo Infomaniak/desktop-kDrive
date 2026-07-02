@@ -28,6 +28,7 @@
 #endif
 #include "config.h"
 #include "version.h"
+#include "openfileurlhandler.h"
 #include "requests/serverrequests.h"
 #include "comm/oldcommserver.h"
 #include "comm/commmanager.h"
@@ -55,12 +56,14 @@ class Theme;
  * @ingroup gui
  */
 
-class AuthorizationCodeEventFilter : public QObject {
-        // On macOS, the authorization code is retrieved by catching the `QEvent::FileOpen` and extracting its URL.
+class UrlSchemeEventFilter : public QObject {
+        // On macOS, kdrive:// URLs (OAuth authorization code, file opening request) are retrieved by catching the
+        // `QEvent::FileOpen` and extracting its URL.
         Q_OBJECT
 
     signals:
         void authorizationCodeReceived(const QString &code, const QString &state);
+        void openFileUrlReceived(const QString &url);
 
     private:
         bool eventFilter(QObject *obj, QEvent *event) override {
@@ -78,6 +81,11 @@ class AuthorizationCodeEventFilter : public QObject {
                         // non-empty.
                         emit authorizationCodeReceived(code, state);
                     }
+                    return true;
+                }
+
+                if (OpenFileUrlHandler::isOpenFileUrl(url)) {
+                    emit openFileUrlReceived(url.toString());
                     return true;
                 }
             }
@@ -127,6 +135,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         inline bool settingsAsked() { return _settingsAsked; }
         inline bool synthesisAsked() { return _synthesisAsked; }
         inline bool authorizationCodeReceived() { return !_authorizationCodeStr.isEmpty(); }
+        inline bool openFileUrlAsked() { return !_openFileUrlStr.isEmpty(); }
         inline bool clearKeychainKeysAsked() { return _clearKeychainKeysAsked; }
 
         void showHelp();
@@ -136,6 +145,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void sendShowSynthesisMsg();
         void sendRestartClientMsg();
         void sendAuthorizationCode();
+        void sendOpenFileUrlMsg();
         void handleClientDisconnection() { onClientDisconnectedReceived(); }
 
         void clearKeychainKeys();
@@ -257,7 +267,7 @@ class AppServer : public SharedTools::QtSingleApplication {
                                                  bool &updated, bool &quotaUpdated)>(&ServerRequests::loadDriveInfo);
 
     private:
-        AuthorizationCodeEventFilter _eventFilter;
+        UrlSchemeEventFilter _eventFilter;
 
         QStringList _arguments;
         log4cplus::Logger _logger;
@@ -271,6 +281,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         bool _settingsAsked{false};
         bool _synthesisAsked{false};
         QString _authorizationCodeStr;
+        QString _openFileUrlStr;
         bool _clearKeychainKeysAsked{false};
         bool _vfsInstallationDone{false};
         bool _vfsActivationDone{false};
@@ -395,6 +406,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void crash() const;
 
 
+        friend class OpenFileUrlHandler;
         friend class TestAppServer;
 
     private slots:
@@ -412,5 +424,6 @@ class AppServer : public SharedTools::QtSingleApplication {
         void onMessageReceivedFromAnotherProcess(const QString &message, QObject *);
         void onSendNotifAsked(const QString &title, const QString &message);
         void onAuthorizationCodeReceived(const QString &code, const QString &state);
+        void onOpenFileUrlReceived(const QString &urlStr);
 };
 } // namespace KDC

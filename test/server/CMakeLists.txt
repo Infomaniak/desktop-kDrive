@@ -22,6 +22,7 @@ set(server_srcs_path ${CMAKE_SOURCE_DIR}/src/server)
 
 set(server_SRCS
     ${server_srcs_path}/appserver.h ${server_srcs_path}/appserver.cpp
+    ${server_srcs_path}/openfileurlhandler.h ${server_srcs_path}/openfileurlhandler.cpp
     ${server_srcs_path}/comm/oldcommserver.h ${server_srcs_path}/comm/oldcommserver.cpp
     ${server_srcs_path}/comm/abstractcommchannel.h ${server_srcs_path}/comm/abstractcommchannel.cpp
     ${server_srcs_path}/comm/socketcommserver.h ${server_srcs_path}/comm/socketcommserver.cpp
@@ -198,6 +199,7 @@ set(testserver_SRCS
     workers/testworkers.h workers/testworkers.cpp
     requests/testserverrequests.h requests/testserverrequests.cpp
     appserver/testappserver.h appserver/testappserver.cpp
+    openfileurlhandler/testopenfileurlhandler.h openfileurlhandler/testopenfileurlhandler.cpp
 
     comm/testsocketcomm.h comm/testsocketcomm.cpp
     comm/testcommhelpers.h comm/testcommhelpers.cpp
