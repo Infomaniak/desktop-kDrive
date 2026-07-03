@@ -980,8 +980,8 @@ TestIntegration::RemoteFileInfo TestIntegration::getRemoteFileInfoByName(const D
     (void) job.remoteNodeInfoList(nodeInfoList);
 
     const auto nameQStr = SyncName2QStr(name);
-    const auto it = std::find_if(nodeInfoList.cbegin(), nodeInfoList.cend(),
-                                 [&nameQStr](const NodeInfo &info) { return info.name() == nameQStr; });
+    const auto it = std::ranges::find_if(nodeInfoList.cbegin(), nodeInfoList.cend(),
+                                         [&nameQStr](const NodeInfo &info) { return info.name() == nameQStr; });
 
     return (it != nodeInfoList.cend()) ? *it : NodeInfo{};
 }
