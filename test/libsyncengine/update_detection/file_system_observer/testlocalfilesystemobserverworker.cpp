@@ -688,12 +688,10 @@ void TestLocalFileSystemObserverWorker::testSlowWritingExtensionDelay() {
     constexpr int64_t maxWatcherReadyPolls = 20;
     constexpr auto loopPollInterval = std::chrono::milliseconds(10);
     constexpr auto changeDetectionTimeout = std::chrono::seconds(5);
-    constexpr auto normalUpdateWaitTimeout = std::chrono::seconds(4);
     constexpr auto normalUpdateDelayMin = std::chrono::milliseconds(500);
     constexpr auto normalUpdateDelayMax = std::chrono::milliseconds(2000);
-    constexpr auto extendedUpdateWaitTimeout = std::chrono::seconds(15);
     constexpr auto extendedUpdateDelayMin = std::chrono::milliseconds(4500);
-    constexpr auto extendedUpdateDelayMax = std::chrono::milliseconds(7000);
+    constexpr auto extendedUpdateDelayMax = std::chrono::seconds(6);
 
     auto localFSO = std::dynamic_pointer_cast<LocalFileSystemObserverWorker>(_syncPal->_localFSObserverWorker);
     CPPUNIT_ASSERT(localFSO);
@@ -720,7 +718,7 @@ void TestLocalFileSystemObserverWorker::testSlowWritingExtensionDelay() {
         bool result = false;
         CPPUNIT_ASSERT(TimeoutHelper::checkExecutionTime<bool>(
                 [&]() {
-                    return TimeoutHelper::waitFor([&]() { return !localFSO->updating(); }, normalUpdateWaitTimeout,
+                    return TimeoutHelper::waitFor([&]() { return !localFSO->updating(); }, normalUpdateDelayMax,
                                                   loopPollInterval);
                 },
                 result, normalUpdateDelayMin, normalUpdateDelayMax));
@@ -742,7 +740,7 @@ void TestLocalFileSystemObserverWorker::testSlowWritingExtensionDelay() {
         bool result = false;
         CPPUNIT_ASSERT(TimeoutHelper::checkExecutionTime<bool>(
                 [&]() {
-                    return TimeoutHelper::waitFor([&]() { return !localFSO->updating(); }, extendedUpdateWaitTimeout,
+                    return TimeoutHelper::waitFor([&]() { return !localFSO->updating(); }, extendedUpdateDelayMax,
                                                   loopPollInterval);
                 },
                 result, extendedUpdateDelayMin, extendedUpdateDelayMax));
