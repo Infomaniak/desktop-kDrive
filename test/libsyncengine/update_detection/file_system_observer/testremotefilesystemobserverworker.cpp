@@ -288,14 +288,14 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
 void TestRemoteFileSystemObserverWorker::testExtractActionInfo() {
     Poco::JSON::Object::Ptr actionObject = new Poco::JSON::Object();
 
-    actionObject->set(actionKey, "file_move");
-    actionObject->set(fileIdKey, 1234);
-    actionObject->set(parentIdKey, 3);
-    actionObject->set(destinationKey, "/Common documents/another_test_file.txt");
-    actionObject->set(pathKey, "/Common documents/test_file.txt");
-    actionObject->set(fileTypeKey, fileKey);
-    actionObject->set(createdAtKey, SyncTime{1000});
-    actionObject->set(lastModifiedAtKey, SyncTime{2000});
+    (void) actionObject->set(actionKey, "file_move");
+    (void) actionObject->set(fileIdKey, 1234);
+    (void) actionObject->set(parentIdKey, 3);
+    (void) actionObject->set(destinationKey, "/Common documents/folder/another_test_file.txt");
+    (void) actionObject->set(pathKey, "/Common documents/folder/test_file.txt");
+    (void) actionObject->set(fileTypeKey, fileKey);
+    (void) actionObject->set(createdAtKey, SyncTime{1000});
+    (void) actionObject->set(lastModifiedAtKey, SyncTime{2000});
 
     RemoteFileSystemObserverWorker::ActionInfo actionInfo;
     std::shared_ptr<RemoteFileSystemObserverWorker> rfso =
@@ -311,25 +311,25 @@ void TestRemoteFileSystemObserverWorker::testExtractActionInfo() {
     // Since it is a move action, the name should be extracted from the destination field.
     CPPUNIT_ASSERT_EQUAL(std::string("another_test_file.txt"), SyncName2Str(actionInfo.snapshotItem.name()));
 
-    actionObject->set(actionKey, "file_create");
-    actionObject->set(destinationKey, "");
+    (void) actionObject->set(actionKey, "file_create");
+    (void) actionObject->set(destinationKey, "");
     CPPUNIT_ASSERT(rfso->extractActionInfo(actionObject, actionInfo));
 
     // Since it is not a move action, the name should be extracted from the path field.
     CPPUNIT_ASSERT_EQUAL(std::string("test_file.txt"), SyncName2Str(actionInfo.snapshotItem.name()));
 
 
-    // Check that the function returns an appropriate error if a mandatory key is missing
+    // Check that the function returns an appropriate error if a mandatory key is missing.
     actionObject->remove(actionKey);
     CPPUNIT_ASSERT(ExitInfo(ExitCode::BackError, ExitCause::MissingReplyData) ==
                    rfso->extractActionInfo(actionObject, actionInfo));
 
-    actionObject->set(actionKey, "acl_insert");
+    (void) actionObject->set(actionKey, "acl_insert");
     actionObject->remove(fileIdKey);
     CPPUNIT_ASSERT(ExitInfo(ExitCode::BackError, ExitCause::MissingReplyData) ==
                    rfso->extractActionInfo(actionObject, actionInfo));
 
-    actionObject->set(fileIdKey, 1234);
+    (void) actionObject->set(fileIdKey, 1234);
     actionObject->remove(parentIdKey);
     CPPUNIT_ASSERT(ExitInfo(ExitCode::BackError, ExitCause::MissingReplyData) ==
                    rfso->extractActionInfo(actionObject, actionInfo));
@@ -338,8 +338,9 @@ void TestRemoteFileSystemObserverWorker::testExtractActionInfo() {
     CPPUNIT_ASSERT(ExitInfo(ExitCode::BackError, ExitCause::MissingReplyData) ==
                    rfso->extractActionInfo(actionObject, actionInfo));
 
-    actionObject->set(parentIdKey, 1234);
+    (void) actionObject->set(parentIdKey, 1234);
 
+    // Check that the function returns no error if an optional key is missing.
     actionObject->remove(fileTypeKey);
     actionObject->remove(destinationKey);
     actionObject->remove(createdAtKey);
