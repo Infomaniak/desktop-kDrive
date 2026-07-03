@@ -56,76 +56,79 @@ void CloudProviderRegistrar::updateRegistrationWithShell(std::wstring &syncRootI
     HKEY hKey;
     std::wstring subKey = REGPATH_SYNCROOTMANAGER + syncRootID;
     TRACE_DEBUG(L"Provider already registered, opening key %s", subKey.c_str());
-    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subKey.c_str(), 0, KEY_ALL_ACCESS, &hKey) == ERROR_SUCCESS) {
-        TRACE_DEBUG(L"Opened key %s", subKey.c_str());
-        if (namespaceCLSID) {
-            // Get CLSID
-            TRACE_DEBUG(L"Getting NamespaceCLSID value");
-            if (RegGetValue(hKey, 0, REGKEY_NAMESPACECLSID, RRF_RT_ANY, nullptr, namespaceCLSID, namespaceCLSIDSize) !=
-                ERROR_SUCCESS) {
-                TRACE_ERROR(L"Could not get registry value NamespaceCLSID");
-            }
-        }
-        TRACE_DEBUG(L"Setting registry values");
-        // Set default key
-        if (RegSetValueEx(hKey, nullptr, 0, REG_SZ, (BYTE *) Utilities::s_appName.c_str(),
-                          (DWORD) (Utilities::s_appName.size() + 1) * sizeof(wchar_t)) != ERROR_SUCCESS) {
-            TRACE_ERROR(L"Could not set default registry value");
-        }
-
-        // Update AMUID key
-        std::wstring name(REGKEY_AUMID);
-        const std::wstring aumidValue = KDC_AUMID;
-        std::wstring value = L"Infomaniak.kDrive.Extension_" + aumidValue + L"!App";
-        updateRegistryEntry(hKey, name, value);
-
-        // Update IconResource
-        name = REGKEY_ICONRESOURCE;
-        WCHAR exePath[MAX_FULL_PATH];
-        if (!GetModuleFileNameW(nullptr, exePath, MAX_FULL_PATH)) {
-            TRACE_ERROR(L"Error in GetModuleFileNameW");
-        }
-        value = exePath;
-        if (!value.empty()) {
-            updateRegistryEntry(hKey, name, value);
-        }
-
-        TRACE_DEBUG(L"Closing key %s", subKey.c_str());
-        if (RegCloseKey(hKey) != ERROR_SUCCESS) {
-            TRACE_ERROR(L"Could not close key %s", subKey.c_str());
-        }
-
-        if (namespaceCLSID) {
-            // Update DefaultIcon keys
-            struct RegKeyInfo {
-                    HKEY rootKey;
-                    std::wstring subKey;
-            };
-            std::vector<RegKeyInfo> regKeys = {
-                    {HKEY_CLASSES_ROOT,
-                     REGPATH_HKEY_CLASSES_ROOT_CLSID + std::wstring(namespaceCLSID) + L"\\" + std::wstring(REGKEY_DEFAULTICON)},
-                    {HKEY_CLASSES_ROOT, REGPATH_HKEY_CLASSES_ROOT_WOW6432_CLSID + std::wstring(namespaceCLSID) + L"\\" +
-                                                std::wstring(REGKEY_DEFAULTICON)},
-                    {HKEY_CURRENT_USER,
-                     REGPATH_HKEY_CURRENT_USER_CLSID + std::wstring(namespaceCLSID) + L"\\" + std::wstring(REGKEY_DEFAULTICON)},
-                    {HKEY_CURRENT_USER, REGPATH_HKEY_CURRENT_USER_WOW6432_CLSID + std::wstring(namespaceCLSID) + L"\\" +
-                                                std::wstring(REGKEY_DEFAULTICON)}};
-
-            for (const auto &regKeyInfo: regKeys) {
-                if (RegOpenKeyEx(regKeyInfo.rootKey, regKeyInfo.subKey.c_str(), 0, KEY_ALL_ACCESS, &hKey) == ERROR_SUCCESS) {
-                    // Update DefaultIcon value
-                    updateRegistryEntry(hKey, L"", value);
-                    if (RegCloseKey(hKey) != ERROR_SUCCESS) {
-                        TRACE_ERROR(L"Could not close key %s", regKeyInfo.subKey.c_str());
-                    }
-                } else {
-                    TRACE_ERROR(L"Could not open key %s", regKeyInfo.subKey.c_str());
-                }
-            }
-        }
-
-    } else {
+    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subKey.c_str(), 0, KEY_ALL_ACCESS, &hKey) != ERROR_SUCCESS) {
         TRACE_ERROR(L"Could not open key %s", subKey.c_str());
+        return;
+    }
+
+    TRACE_DEBUG(L"Opened key %s", subKey.c_str());
+
+    if (namespaceCLSID) {
+        // Get CLSID
+        TRACE_DEBUG(L"Getting NamespaceCLSID value");
+        if (RegGetValue(hKey, 0, REGKEY_NAMESPACECLSID, RRF_RT_ANY, nullptr, namespaceCLSID, namespaceCLSIDSize) !=
+            ERROR_SUCCESS) {
+            TRACE_ERROR(L"Could not get registry value NamespaceCLSID");
+        }
+    }
+
+    TRACE_DEBUG(L"Setting registry values");
+    // Set default key
+    if (RegSetValueEx(hKey, nullptr, 0, REG_SZ, (BYTE *) Utilities::s_appName.c_str(),
+                      (DWORD) (Utilities::s_appName.size() + 1) * sizeof(wchar_t)) != ERROR_SUCCESS) {
+        TRACE_ERROR(L"Could not set default registry value");
+    }
+
+    // Update AMUID key
+    std::wstring name(REGKEY_AUMID);
+    const std::wstring aumidValue = KDC_AUMID;
+    std::wstring value = L"Infomaniak.kDrive.Extension_" + aumidValue + L"!App";
+    updateRegistryEntry(hKey, name, value);
+
+    // Update IconResource
+    name = REGKEY_ICONRESOURCE;
+    WCHAR exePath[MAX_FULL_PATH];
+    if (!GetModuleFileNameW(nullptr, exePath, MAX_FULL_PATH)) {
+        TRACE_ERROR(L"Error in GetModuleFileNameW");
+    }
+    value = exePath;
+    if (!value.empty()) {
+        updateRegistryEntry(hKey, name, value);
+    }
+
+    TRACE_DEBUG(L"Closing key %s", subKey.c_str());
+    if (RegCloseKey(hKey) != ERROR_SUCCESS) {
+        TRACE_ERROR(L"Could not close key %s", subKey.c_str());
+    }
+
+    if (!namespaceCLSID) return;
+
+    // Update DefaultIcon keys
+    struct RegKeyInfo {
+            HKEY rootKey;
+            std::wstring subKey;
+    };
+    std::vector<RegKeyInfo> regKeys = {
+            {HKEY_CLASSES_ROOT,
+             REGPATH_HKEY_CLASSES_ROOT_CLSID + std::wstring(namespaceCLSID) + L"\\" + std::wstring(REGKEY_DEFAULTICON)},
+            {HKEY_CLASSES_ROOT,
+             REGPATH_HKEY_CLASSES_ROOT_WOW6432_CLSID + std::wstring(namespaceCLSID) + L"\\" + std::wstring(REGKEY_DEFAULTICON)},
+            {HKEY_CURRENT_USER,
+             REGPATH_HKEY_CURRENT_USER_CLSID + std::wstring(namespaceCLSID) + L"\\" + std::wstring(REGKEY_DEFAULTICON)},
+            {HKEY_CURRENT_USER,
+             REGPATH_HKEY_CURRENT_USER_WOW6432_CLSID + std::wstring(namespaceCLSID) + L"\\" + std::wstring(REGKEY_DEFAULTICON)}};
+
+    for (const auto &regKeyInfo: regKeys) {
+        if (RegOpenKeyEx(regKeyInfo.rootKey, regKeyInfo.subKey.c_str(), 0, KEY_ALL_ACCESS, &hKey) != ERROR_SUCCESS) {
+            TRACE_ERROR(L"Could not open key %s", regKeyInfo.subKey.c_str());
+            continue;
+        }
+
+        // Update DefaultIcon value
+        updateRegistryEntry(hKey, L"", value);
+        if (RegCloseKey(hKey) != ERROR_SUCCESS) {
+            TRACE_ERROR(L"Could not close key %s", regKeyInfo.subKey.c_str());
+        }
     }
 }
 
@@ -232,8 +235,8 @@ bool CloudProviderRegistrar::createRegistrationWithShell(ProviderInfo *providerI
 
         TRACE_INFO(L"AUMID value: %s", aumidValue.c_str());
 
-        if (RegSetValueEx(hKey, name.c_str(), 0, REG_SZ, (BYTE *) value.c_str(), (DWORD) (value.size() + 1) * sizeof(wchar_t)) !=
-            ERROR_SUCCESS) {
+        if (RegSetValueEx(hKey, name.c_str(), 0, REG_SZ, (const BYTE *) value.c_str(),
+                          (DWORD) (value.size() + 1) * sizeof(wchar_t)) != ERROR_SUCCESS) {
             TRACE_ERROR(L"Could not set registry value %s=%s", name.c_str(), value.c_str());
         }
 
@@ -278,34 +281,36 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
             }
 
             /* ORPHANED REGISTRY ENTRIES CLEANUP
-            *
-            * Problem:
-            * Orphaned sync root entries can remain in the Windows registry when:
-            *   1. During uninstallation, only the current user's sync roots are removed. Other users' LiteSync
-            *      roots remain in the registry.
-            *   2. If a user manually deletes the application database (%localappdata%/kDrive/parms.db), sync
-            *      roots are never cleaned up from the registry.
-            *
-            * Impact:
-            * A sync root is identified by its syncDbID, driveId, and Windows user SID. These orphaned entries
-            * cause problems when the user later tries to sync the same drive to a different location. The
-            * Windows API returns an error indicating the new folder is not a cloud sync root, because a registry
-            * entry already exists with the same ID but a different path.
-            *
-            * Reproduction steps:
-            *   1. Create a LiteSync synchronization.
-            *   2. Close the app and delete parms.db.
-            *   3. Try to create a new LiteSync synchronization.
-            *   4. The sync fails to start.
-            *
-            * Solution:
-            * On sync registration, verify that the registered path matches the current path. If they differ,
-            * unregister the old sync root before registering the new one.
-            */
+             *
+             * Problem:
+             * Orphaned sync root entries can remain in the Windows registry when:
+             *   1. During uninstallation, only the current user's sync roots are removed. Other users' LiteSync
+             *      roots remain in the registry.
+             *   2. If a user manually deletes the application database (%localappdata%/kDrive/parms.db), sync
+             *      roots are never cleaned up from the registry.
+             *
+             * Impact:
+             * A sync root is identified by its syncDbID, driveId, and Windows user SID. These orphaned entries
+             * cause problems when the user later tries to sync the same drive to a different location. The
+             * Windows API returns an error indicating the new folder is not a cloud sync root, because a registry
+             * entry already exists with the same ID but a different path.
+             *
+             * Reproduction steps:
+             *   1. Create a LiteSync synchronization.
+             *   2. Close the app and delete parms.db.
+             *   3. Try to create a new LiteSync synchronization.
+             *   4. The sync fails to start.
+             *
+             * Solution:
+             * On sync registration, verify that the registered path matches the current path. If they differ,
+             * unregister the old sync root before registering the new one.
+             */
 
             TRACE_INFO(L"Sync root path has changed from %s to %s, unregistering previous sync root before registering new one",
                        previousPath.c_str(), currentPath.c_str());
-            unregister(syncRootID);
+            if (!unregister(syncRootID)) {
+                TRACE_ERROR(L"Could not unregister previous sync root with ID: %s", syncRootID.c_str());
+            }
         }
 
         if (!createRegistrationWithShell(providerInfo, syncRootID, namespaceCLSID, namespaceCLSIDSize)) {
@@ -370,8 +375,8 @@ std::wstring CloudProviderRegistrar::getSyncRootId(const ProviderInfo *providerI
 
 
 std::filesystem::path CloudProviderRegistrar::getSyncRootPath(const std::wstring &syncRootID) {
-    HKEY hKey;
-    std::wstring subKey = REGPATH_SYNCROOTMANAGER + syncRootID + L"\\" + REGKEY_USERSYNCROOTS;
+    HKEY hKey = nullptr;
+    const std::wstring subKey = REGPATH_SYNCROOTMANAGER + syncRootID + L"\\" + REGKEY_USERSYNCROOTS;
 
     if (RegOpenKeyExW(HKEY_LOCAL_MACHINE, subKey.c_str(), 0, KEY_READ, &hKey) != ERROR_SUCCESS) {
         TRACE_ERROR(L"Could not open key %s", subKey.c_str());
@@ -381,15 +386,15 @@ std::filesystem::path CloudProviderRegistrar::getSyncRootPath(const std::wstring
     std::filesystem::path syncRootPath;
 
     DWORD index = 0;
-    wchar_t valueName[128];
-    BYTE data[65534]; // Maximum path length in Windows is 32,767 characters (wchar are 2 bytes long)
+    wchar_t valueName[128] = {0};
+    BYTE data[65534] = {0}; // Maximum path length in Windows is 32,767 characters (wchar are 2 bytes long)
 
     while (true) {
         DWORD valueNameSize = std::size(valueName);
         DWORD dataSize = sizeof(data);
         DWORD type = 0; // REG_SZ
 
-        LONG result = RegEnumValueW(hKey, index++, valueName, &valueNameSize, nullptr, &type, data, &dataSize);
+        const LONG result = RegEnumValueW(hKey, index++, valueName, &valueNameSize, nullptr, &type, data, &dataSize);
 
         if (result == ERROR_NO_MORE_ITEMS) {
             TRACE_ERROR(L"The provided sync root ID %s does not have any path set", syncRootID.c_str());
@@ -407,7 +412,7 @@ std::filesystem::path CloudProviderRegistrar::getSyncRootPath(const std::wstring
         if (type != REG_SZ) continue;
 
 
-        syncRootPath.assign(reinterpret_cast<wchar_t *>(data));
+        (void) syncRootPath.assign(reinterpret_cast<wchar_t *>(data));
 
         if (!syncRootPath.has_root_path()) {
             TRACE_WARNING(L"Found a non path value in %s, this is not expected, continuing enumeration", subKey);
@@ -415,7 +420,6 @@ std::filesystem::path CloudProviderRegistrar::getSyncRootPath(const std::wstring
         }
 
         TRACE_DEBUG(L"Found sync root path %s", syncRootPath.c_str());
-        break;
     }
 
     TRACE_DEBUG(L"Closing key %s", subKey.c_str());
