@@ -173,8 +173,8 @@ bool TestNetworkJobs::existsInRemoteDirectory(const SyncName &fileName, const Re
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.remoteNodeInfoList(remoteNodeInfoList));
 
     const auto fileNameQString = SyncName2QStr(fileName);
-    const auto it = std::find_if(remoteNodeInfoList.begin(), remoteNodeInfoList.end(),
-                                 [&fileNameQString](const NodeInfo &info) { return info.name() == fileNameQString; });
+    const auto it = std::ranges::find_if(remoteNodeInfoList.begin(), remoteNodeInfoList.end(),
+                                         [&fileNameQString](const NodeInfo &info) { return info.name() == fileNameQString; });
 
     return it != remoteNodeInfoList.end();
 }
@@ -1794,7 +1794,6 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
             explicit GetInfoUserJobMock(const UserDbId userDbId, const ApiToken &apiToken) :
                 GetInfoUserJob(userDbId),
                 _apiToken(apiToken) {}
-
             [[nodiscard]] Poco::Net::HTTPResponse httpResponse() const override {
                 return Poco::Net::HTTPResponse(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
             }
