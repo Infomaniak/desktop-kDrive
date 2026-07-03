@@ -3440,7 +3440,7 @@ bool ParmsDb::deleteError(const ErrorDbId dbId, bool &found) {
 bool ParmsDb::insertMigrationSelectiveSync(const MigrationSelectiveSync &migrationSelectiveSync) {
     const std::scoped_lock lock(_mutex);
 
-    int errId = -1;
+    auto errId = -1;
     std::string error;
 
     LOG_IF_FAIL(queryResetAndClearBindings(INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID));

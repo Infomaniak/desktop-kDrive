@@ -563,7 +563,7 @@ void RemoteFileSystemObserverWorker::deleteOrphans() {
         LOGW_SYNCPAL_DEBUG(_logger, L"Node with " << Utility::formatSyncName(_liveSnapshot.name(*nodeIdIt)) << L" ("
                                                   << CommonUtility::s2ws(*nodeIdIt) << L") is an orphan. Removing it from "
                                                   << _liveSnapshot.side() << L" snapshot.");
-        _liveSnapshot.removeItem(*nodeIdIt);
+        (void) _liveSnapshot.removeItem(*nodeIdIt);
     }
 }
 
