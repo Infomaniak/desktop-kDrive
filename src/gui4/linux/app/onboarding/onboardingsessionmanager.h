@@ -48,12 +48,16 @@ class OnboardingSessionManager final : public QObject {
                                           UserService &userService, QObject *parent = nullptr);
 
         [[nodiscard]] OnboardingSession *activeSession() const { return _activeSession; }
-        Q_INVOKABLE void requestSession();
+
+        /**
+         * Opens the application window only when an onboarding session provides displayable content.
+         */
+        Q_INVOKABLE void requestWindowActivation();
 
     signals:
         void activeSessionChanged();
-        void windowActivationRequested();
-        void windowDeactivationRequested();
+        void onboardingWindowActivationRequested();
+        void onboardingWindowDeactivationRequested();
 
     private:
         enum class LifecycleState : uint8_t {
@@ -63,6 +67,8 @@ class OnboardingSessionManager final : public QObject {
             Stopping,
         };
 
+        void ensureSession();
+        void activateWindowIfDisplayable();
         void handleBootstrapCompleted();
         void startSession(OnboardingSession::EntryPoint entryPoint, std::optional<UserDbId> selectedUserDbId);
         void stopSession(bool requestWindowDeactivation);
@@ -75,6 +81,7 @@ class OnboardingSessionManager final : public QObject {
         uint64_t _nextGeneration{1};
         bool _bootstrapCompleted{false};
         bool _restartRequested{false};
+        bool _windowActivationPending{false};
 };
 
 } // namespace KDC
