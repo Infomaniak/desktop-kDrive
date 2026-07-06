@@ -42,13 +42,31 @@ OnboardingSessionManager::OnboardingSessionManager(CachePopulator &cachePopulato
                    &OnboardingSessionManager::handleBootstrapCompleted);
 }
 
-void OnboardingSessionManager::requestSession() {
+void OnboardingSessionManager::requestWindowActivation() {
+    if (!_bootstrapCompleted) {
+        qCInfo(lcOnboardingSessionManager)
+                << "Main window activation skipped: cache bootstrap is not complete and no content is displayable";
+        return;
+    }
+
+    if (_state == LifecycleState::Stopping) {
+        _restartRequested = true;
+        _windowActivationPending = true;
+        qCInfo(lcOnboardingSessionManager)
+                << "Main window activation deferred: the current onboarding session is being destroyed";
+        return;
+    }
+
+    ensureSession();
+    activateWindowIfDisplayable();
+}
+
+void OnboardingSessionManager::ensureSession() {
     if (!_bootstrapCompleted) {
         return;
     }
 
     if (_state == LifecycleState::Active) {
-        emit windowActivationRequested();
         return;
     }
 
@@ -72,9 +90,23 @@ void OnboardingSessionManager::requestSession() {
     }
 }
 
+void OnboardingSessionManager::activateWindowIfDisplayable() {
+    if (_state == LifecycleState::Active && _activeSession != nullptr) {
+        emit onboardingWindowActivationRequested();
+        return;
+    }
+
+    qCInfo(lcOnboardingSessionManager)
+            << "Main window activation skipped: onboarding is not required and the main content is not implemented"
+            << "| configuredDrives:" << _appCache.driveContexts().size();
+}
+
 void OnboardingSessionManager::handleBootstrapCompleted() {
     _bootstrapCompleted = true;
-    requestSession();
+    ensureSession();
+    if (_activeSession != nullptr) {
+        emit onboardingWindowActivationRequested();
+    }
 }
 
 void OnboardingSessionManager::startSession(const OnboardingSession::EntryPoint entryPoint,
@@ -90,7 +122,7 @@ void OnboardingSessionManager::startSession(const OnboardingSession::EntryPoint 
     _state = LifecycleState::Active;
 
     (void) connect(session, &OnboardingSession::windowActivationRequested, this,
-                   &OnboardingSessionManager::windowActivationRequested);
+                   &OnboardingSessionManager::onboardingWindowActivationRequested);
     (void) connect(session->flowController(), &OnboardingFlowController::cancelRequested, this, [this, session] {
         if (_activeSession == session) {
             stopSession(true);
@@ -105,7 +137,6 @@ void OnboardingSessionManager::startSession(const OnboardingSession::EntryPoint 
     qCInfo(lcOnboardingSessionManager) << "Onboarding session started | generation:" << generation
                                        << "| entryPoint:" << static_cast<uint16_t>(entryPoint);
     emit activeSessionChanged();
-    emit windowActivationRequested();
 }
 
 void OnboardingSessionManager::stopSession(const bool requestWindowDeactivation) {
@@ -124,7 +155,7 @@ void OnboardingSessionManager::stopSession(const bool requestWindowDeactivation)
     qCInfo(lcOnboardingSessionManager) << "Onboarding session unpublished | generation:" << retiringSession->generation();
     emit activeSessionChanged();
     if (requestWindowDeactivation) {
-        emit windowDeactivationRequested();
+        emit onboardingWindowDeactivationRequested();
     }
     retiringSession->deleteLater();
 }
@@ -135,12 +166,17 @@ void OnboardingSessionManager::handleRetiringSessionDestroyed() {
     }
 
     _state = LifecycleState::Inactive;
+    const bool activateAfterRestart = _windowActivationPending;
+    _windowActivationPending = false;
     if (!_restartRequested) {
         return;
     }
 
     _restartRequested = false;
-    requestSession();
+    ensureSession();
+    if (activateAfterRestart) {
+        activateWindowIfDisplayable();
+    }
 }
 
 } // namespace KDC
