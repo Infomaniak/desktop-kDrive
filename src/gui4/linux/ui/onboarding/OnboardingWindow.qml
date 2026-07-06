@@ -24,12 +24,10 @@ import kDrive.UI
 Item {
     id: root
 
-    required property var onboardingFlowController
-
-    // Context properties are dynamic by design; keep their untyped access at this composition boundary.
-    // qmllint disable unqualified
-    readonly property var drivesModel: availableDrivesModel
-    // qmllint enable unqualified
+    required property var session
+    readonly property var onboardingFlowController: session.flowController
+    readonly property var driveSelectionController: session.driveSelectionController
+    readonly property var drivesModel: session.availableDrivesModel
 
     Rectangle {
         anchors.fill: parent
@@ -63,8 +61,7 @@ Item {
 
             OnboardingAnimationsView {
                 anchors.centerIn: parent
-                width: Math.min(IKOnboarding.illustrationAnimationMaxSize,
-                                parent.width * IKOnboarding.illustrationAnimationFillRatio)
+                width: Math.min(IKOnboarding.illustrationAnimationMaxSize, parent.width * IKOnboarding.illustrationAnimationFillRatio)
                 height: width * IKOnboarding.loaderStrokeAnimationHeightRatio
             }
         }
@@ -82,6 +79,7 @@ Item {
         id: driveSelectionComponent
 
         DriveSelectionView {
+            selectionController: root.driveSelectionController
             drivesModel: root.drivesModel
         }
     }

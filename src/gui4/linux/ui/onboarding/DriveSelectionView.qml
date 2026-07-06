@@ -23,6 +23,7 @@ import kDrive.UI
 Item {
     id: root
 
+    required property var selectionController
     required property var drivesModel
 
     readonly property bool compact: width < IKOnboarding.driveSelectionCompactBreakpointWidth
@@ -57,8 +58,8 @@ Item {
                 anchors.rightMargin: IKOnboarding.driveSelectionUserBadgeRightPadding
                 anchors.topMargin: IKOnboarding.driveSelectionUserBadgeVerticalPadding
                 anchors.bottomMargin: IKOnboarding.driveSelectionUserBadgeVerticalPadding
-                label: root.drivesModel.userName
-                avatarSource: root.drivesModel.userAvatarSource
+                label: root.selectionController.userName
+                avatarSource: root.selectionController.userAvatarSource
                 avatarMaskColor: parent.color
             }
         }
@@ -66,7 +67,7 @@ Item {
         Column {
             width: parent.width
             spacing: IKSpacing.s8
-            visible: root.drivesModel.loading
+            visible: root.selectionController.loading
 
             Text {
                 width: parent.width
@@ -80,15 +81,15 @@ Item {
         }
 
         NoDriveAvailableView {
-            drivesModel: root.drivesModel
-            visible: root.drivesModel.empty && !root.drivesModel.loading
+            selectionController: root.selectionController
+            visible: root.selectionController.empty && !root.selectionController.loading
             width: parent.width
         }
 
         Column {
             width: parent.width
             spacing: IKSpacing.s8
-            visible: root.drivesModel.loadFailed && !root.drivesModel.loading
+            visible: root.selectionController.loadFailed && !root.selectionController.loading
 
             Text {
                 width: parent.width
@@ -105,7 +106,7 @@ Item {
 
                 height: IKOnboarding.driveSelectionButtonHeight
                 text: qsTr("Retry")
-                onClicked: root.drivesModel.reload()
+                onClicked: root.selectionController.reload()
 
                 contentItem: Text {
                     text: retryButton.text
@@ -134,7 +135,7 @@ Item {
         Column {
             width: parent.width
             spacing: IKSpacing.s8
-            visible: !root.drivesModel.empty && !root.drivesModel.loadFailed && !root.drivesModel.loading
+            visible: !root.selectionController.empty && !root.selectionController.loadFailed && !root.selectionController.loading
 
             Text {
                 width: IKOnboarding.driveSelectionListWidth
@@ -165,7 +166,7 @@ Item {
                         anchors.fill: parent
                         enabled: false
                         text: qsTr("Advanced settings")
-                        onClicked: root.drivesModel.requestAdvancedSettings()
+                        onClicked: root.selectionController.requestAdvancedSettings()
 
                         contentItem: Text {
                             text: advancedButton.text
@@ -223,10 +224,10 @@ Item {
                 Button {
                     id: continueButton
 
-                    enabled: root.drivesModel.canContinue
+                    enabled: root.selectionController.canContinue
                     height: IKOnboarding.driveSelectionButtonHeight
                     text: qsTr("Continue")
-                    onClicked: root.drivesModel.continueOnboarding()
+                    onClicked: root.selectionController.continueOnboarding()
 
                     contentItem: Text {
                         text: continueButton.text
