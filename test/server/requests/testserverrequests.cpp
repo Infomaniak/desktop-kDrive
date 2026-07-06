@@ -33,6 +33,7 @@
 
 #include "test_utility/remotetemporarydirectory.h"
 #include "test_utility/testhelpers.h"
+#include "theme/theme.h"
 
 namespace KDC {
 
@@ -102,7 +103,7 @@ void TestServerRequests::testFindGoodPathForNewSync() {
     SyncPath homePath;
     (void) CommonUtility::homeDirectoryPath(homePath);
     const SyncName driveName(Str("dummyDriveName"));
-    const SyncPath defaultPath = homePath / (SyncName(APPLICATION_NAME) + Str(" ") + driveName);
+    const SyncPath defaultPath = homePath / (Str2SyncName(Theme::instance()->appName()) + Str(" ") + driveName);
 
     SyncPath returnedPath;
     std::string error;
