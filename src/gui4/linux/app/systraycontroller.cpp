@@ -129,7 +129,7 @@ void SystemTrayController::initialize() {
     _quitAction = _trayMenu.addAction(tr("Quit"));
     _trayIcon.setContextMenu(&_trayMenu);
 
-    (void) connect(_openAction, &QAction::triggered, this, &SystemTrayController::showMainWindow);
+    (void) connect(_openAction, &QAction::triggered, this, &SystemTrayController::requestMainWindowActivation);
     (void) connect(_settingsAction, &QAction::triggered, this, &SystemTrayController::showSettingsWindow);
     (void) connect(_quitAction, &QAction::triggered, this, &SystemTrayController::quitRequested);
     (void) connect(&_trayIcon, &QSystemTrayIcon::activated, this, &SystemTrayController::onTrayActivated);
@@ -224,6 +224,11 @@ void SystemTrayController::showMainWindow() const {
     _mainWindow->raise();
     _mainWindow->requestActivate();
 }
+
+void SystemTrayController::requestMainWindowActivation() {
+    emit mainWindowActivationRequested();
+}
+
 void SystemTrayController::showSettingsWindow() {
     qCWarning(lcSystemTrayController) << "Settings window action triggered from system tray, but not implemented yet";
 }
@@ -371,7 +376,7 @@ void SystemTrayController::onSyncProgressInfo(const SyncDbId syncDbId, const Syn
     refreshIconState();
 }
 
-void SystemTrayController::onTrayActivated(const QSystemTrayIcon::ActivationReason reason) const {
+void SystemTrayController::onTrayActivated(const QSystemTrayIcon::ActivationReason reason) {
     qCInfo(lcSystemTrayController) << "System tray activated | reason:" << reason;
 
     if (!_isTrayModeActive) {
@@ -380,7 +385,7 @@ void SystemTrayController::onTrayActivated(const QSystemTrayIcon::ActivationReas
     }
 
     if (reason == QSystemTrayIcon::Trigger || reason == QSystemTrayIcon::DoubleClick || reason == QSystemTrayIcon::MiddleClick) {
-        showMainWindow();
+        requestMainWindowActivation();
     }
 }
 
