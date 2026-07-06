@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import kDrive.UI
 import "onboarding"
@@ -23,7 +25,7 @@ import "onboarding"
 Window {
     id: mainWindow
 
-    required property var onboardingFlowController
+    required property var onboardingSessionManager
     required property var systemTrayController
 
     visible: false
@@ -31,10 +33,10 @@ Window {
     height: 600
     minimumWidth: 720
     minimumHeight: 520
-    title: mainWindow.onboardingFlowController.title
+    title: onboardingLoader.session ? onboardingLoader.session.flowController.title : qsTr("kDrive")
     color: IKColors.onboardingSurfacePrimary
 
-    onClosing: (close) => {
+    onClosing: close => {
         if (mainWindow.systemTrayController.trayModeActive) {
             close.accepted = false;
             mainWindow.systemTrayController.hideMainWindow();
@@ -44,8 +46,41 @@ Window {
         }
     }
 
-    OnboardingWindow {
+    Connections {
+        target: mainWindow.onboardingSessionManager
+
+        function onActiveSessionChanged() {
+            if (mainWindow.onboardingSessionManager.activeSession) {
+                onboardingLoader.session = mainWindow.onboardingSessionManager.activeSession;
+                onboardingLoader.active = true;
+            } else {
+                onboardingLoader.active = false;
+                onboardingLoader.session = null;
+            }
+        }
+    }
+
+    Loader {
+        id: onboardingLoader
+
         anchors.fill: parent
-        onboardingFlowController: mainWindow.onboardingFlowController
+        active: false
+        sourceComponent: onboardingComponent
+        property var session: null
+
+        Component.onCompleted: {
+            if (mainWindow.onboardingSessionManager.activeSession) {
+                session = mainWindow.onboardingSessionManager.activeSession;
+                active = true;
+            }
+        }
+    }
+
+    Component {
+        id: onboardingComponent
+
+        OnboardingWindow {
+            session: onboardingLoader.session
+        }
     }
 }
