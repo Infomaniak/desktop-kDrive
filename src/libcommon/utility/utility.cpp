@@ -217,71 +217,90 @@ std::string CommonUtility::fallbackFileSystemType() {
 #endif
 }
 
-std::string CommonUtility::fileSystemType(const SyncPath &targetPath, std::string &fallbackFSType) {
-    fallbackFSType = fallbackFileSystemType();
-
-    std::string fsType;
-#if defined(KD_WINDOWS)
-    static std::unordered_map<SyncPath, std::string> fsTypeMap; // FS type cache by root name
-    SyncPath rootPath = targetPath.root_name().native();
-    auto it = fsTypeMap.find(rootPath);
-    if (it == fsTypeMap.end()) {
-        std::string fsType;
-        SyncPath mountPoint;
-        if (!CommonUtility::fileSystemInfo(rootPath, fsType, mountPoint)) return fallbackFSType;
-        const auto [it2, inserted] = fsTypeMap.try_emplace(rootPath, CommonUtility::toUpper(fsType));
-        if (!inserted) return fallbackFSType;
-        it = it2;
+std::string CommonUtility::underlyingFileSystemType(const SyncPath &targetPath) {
+    SyncPath targetDirPath;
+    std::error_code ec;
+    if (std::filesystem::is_directory(targetPath, ec)) {
+        targetDirPath = targetPath;
+    } else {
+        if (ec.value() != 0) {
+            return fallbackFileSystemType();
+        }
+        targetDirPath = targetPath.parent_path();
     }
-    fsType = it->second;
+
+    // FAT32 is the more restrictive FS, so we try first a temporary directory creation with an invalid FAT32 name
+    const SyncPath invalidFatFileName{"a+b" + generateRandomStringAlphaNum()};
+    if (!std::filesystem::create_directory(targetDirPath / invalidFatFileName, ec)) {
+        if (ec.value() == static_cast<int>(std::errc::illegal_byte_sequence)) {
+            // Invalid name for FAT32, so we assume that the underlying FS is FAT32
+            return "MSDOS";
+        }
+        return fallbackFileSystemType();
+    } else {
+        std::filesystem::remove(targetDirPath / invalidFatFileName, ec);
+    }
+
+    // Secondly, we try a temporary directory creation with an invalid exFAT name
+    const SyncPath invalidExFatFileName{"a:b" + generateRandomStringAlphaNum()};
+    if (!std::filesystem::create_directory(targetDirPath / invalidExFatFileName, ec)) {
+        if (ec.value() == static_cast<int>(std::errc::illegal_byte_sequence)) {
+            // Invalid name for exFAT, so we assume that the underlying FS is exFAT
+            return "EXFAT";
+        }
+        return fallbackFileSystemType();
+    } else {
+        std::filesystem::remove(targetDirPath / invalidExFatFileName, ec);
+    }
+
+    return fallbackFileSystemType();
+}
+
+std::string CommonUtility::fileSystemType(const SyncPath &targetPath, std::string &fallbackFSType, bool useCache /*= true*/) {
+    fallbackFSType.clear();
+
+    // Cache of FS type & fallback type by mount point ordered by decreasing path depth.
+    static std::map<SyncPath, std::pair<std::string, std::string>, CmpPath> fsTypeMap((CmpPath(false)));
+
+    if (useCache) {
+        // Search in cache first.
+#if defined(KD_WINDOWS)
+        SyncPath rootPath = targetPath.root_name().native();
+        if (const auto it = fsTypeMap.find(rootPath); it != fsTypeMap.end()) {
+            fallbackFSType = it->second.second;
+            return it->second.first;
+        }
 #else
+        for (const auto &it: fsTypeMap) {
+            if (CommonUtility::isDescendantOrEqual(targetPath, it.first)) {
+                fallbackFSType = it.second.second;
+                return it.second.first;
+            }
+        }
+#endif
+    }
+
+    // If not found in cache, get the FS type and mount point from the OS.
+    std::string fsType;
     SyncPath mountPoint;
-    if (!CommonUtility::fileSystemInfo(targetPath, fsType, mountPoint)) return fallbackFSType;
-    fsType = toUpper(fsType);
-#endif
+    if (!CommonUtility::fileSystemInfo(targetPath, fsType, mountPoint)) {
+        fallbackFSType = fallbackFileSystemType();
+        return fallbackFileSystemType();
+    }
+    fsType = CommonUtility::toUpper(fsType);
 
-    if (fsType == "APPLEVIRTIOFS" || fsType == "FUSE" || fsType == "SMBFS" || fsType == "NFS") {
-        // For virtiofs/SMB/NFS, fsType is the transport filesystem, not the underlying storage format on the host
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-        // Try to determine the actual underlying storage format
-        SyncPath targetDirPath;
-        std::error_code ec;
-        if (std::filesystem::is_directory(targetPath, ec)) {
-            targetDirPath = targetPath;
-        } else {
-            if (ec.value() != 0) {
-                return fsType;
-            }
-            targetDirPath = targetPath.parent_path();
-        }
-
-        // First, try a temporary directory creation with an invalid FAT file name
-        const SyncPath invalidFatFileName{"a+b" + generateRandomStringAlphaNum()};
-        if (!std::filesystem::create_directory(targetDirPath / invalidFatFileName, ec)) {
-            if (ec.value() == static_cast<int>(std::errc::illegal_byte_sequence)) {
-                // Invalid name for FAT, so we assume that the underlying FS is FAT
-                fallbackFSType = "MSDOS";
-            }
-            return fsType;
-        } else {
-            std::filesystem::remove(targetDirPath / invalidFatFileName, ec);
-        }
-
-        // Secondly, try a temporary directory creation with an invalid exFAT file name
-        const SyncPath invalidExFatFileName{"a:b" + generateRandomStringAlphaNum()};
-        if (!std::filesystem::create_directory(targetDirPath / invalidExFatFileName, ec)) {
-            if (ec.value() == static_cast<int>(std::errc::illegal_byte_sequence)) {
-                // Invalid name for exFAT, so we assume that the underlying FS is exFAT
-                fallbackFSType = "EXFAT";
-            }
-            return fsType;
-        } else {
-            std::filesystem::remove(targetDirPath / invalidExFatFileName, ec);
-        }
-#endif
+    // When fsType is a transport filesystem (i.e. virtiofs/smb/nfs) we try to determine the underlying storage format.
+    if (fsType == "VIRTIOFS" || fsType == "APPLEVIRTIOFS" || fsType == "FUSE" || fsType == "SMBFS" || fsType == "NFS") {
+        fallbackFSType = underlyingFileSystemType(targetPath);
     } else {
         fallbackFSType = fsType;
     }
+
+#if defined(KD_WINDOWS)
+    assert(rootPath == mountPoint);
+#endif
+
+    (void) fsTypeMap.try_emplace(mountPoint, std::make_pair(fsType, fallbackFSType));
 
     return fsType;
 }
@@ -332,11 +351,11 @@ bool CommonUtility::isEXT234(const SyncPath &targetPath) {
 
 bool CommonUtility::isSyncCompatible([[maybe_unused]] const SyncPath &targetPath) {
 #if defined(KD_MACOS)
-    // Tested OK: APFS, HFS+, exFAT
+    // Tested OK: APFS, HFS+, ExFAT
     // Tested KO: FAT32
     return !CommonUtility::isFAT(targetPath);
 #elif defined(KD_WINDOWS)
-    // Tested OK: NTFS, exFAT, FAT32
+    // Tested OK: NTFS, ExFAT, FAT32
     return true;
 #else
     // Tested OK: EXT4

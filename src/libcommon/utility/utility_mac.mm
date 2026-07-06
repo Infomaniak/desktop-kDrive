@@ -130,12 +130,15 @@ bool CommonUtility::fileSystemInfo(const SyncPath &targetPath, std::string &fsTy
     fsType.clear();
     mountPoint.clear();
 
-    // FS type & mount point
+    // FS type & mount point.
     struct statfs stat;
     if (statfs(targetPath.native().c_str(), &stat) != 0) return false;
 
     fsType = std::string(stat.f_fstypename);
     mountPoint = SyncPath(stat.f_mntonname);
+
+    // if mountPoint is a firmlink, convert it to the display path.
+    if (mountPoint == "/System/Volumes/Data") mountPoint = "/";
 
     return true;
 }

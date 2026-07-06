@@ -141,47 +141,30 @@ bool CommonUtility::fileSystemInfo(const SyncPath &targetPath, std::string &fsTy
     }
 
     switch (stat.f_type) {
-        case 0x4d44u: // MSDOS_SUPER_MAGIC
-            fsType = "MSDOS";
-            break;
-        case 0x2011bab0u: // EXFAT_SUPER_MAGIC
-            fsType = "EXFAT";
-            break;
-        case 0x137du: // EXT_SUPER_MAGIC
-            fsType = "EXT";
-            break;
-        case 0xef51u: // EXT2_OLD_SUPER_MAGIC
-            fsType = "EXT2";
-            break;
         case 0xef53u: // EXT2_SUPER_MAGIC, EXT3_SUPER_MAGIC, EXT4_SUPER_MAGIC
             fsType = "EXT234";
-            break;
-        case 0xa501fcf5u: // VXFS_SUPER_MAGIC
-            fsType = "VXFS";
-            break;
-        case 0x58465342u: // XFS_SUPER_MAGIC
-            fsType = "XFS";
-            break;
-        case 0x9123683eu: // BTRFS_SUPER_MAGIC
-            fsType = "BTRFS";
-            break;
-        case 0x73727279u: // BTRFS_TEST_MAGIC
-            fsType = "BTRFS_TEST";
-            break;
-        case 0xf15fu: // ECRYPTFS_SUPER_MAGIC
-            fsType = "ECRYPTFS";
-            break;
-        case 0x4244u: // HFS_SUPER_MAGIC
-            fsType = "HFS";
             break;
         case 0x5346544eu: // NTFS_SB_MAGIC
             fsType = "NTFS";
             break;
-        case 0x858458f6u: // RAMFS_MAGIC
-            fsType = "RAMFS";
+        case 0x2011bab0u: // EXFAT_SUPER_MAGIC
+            fsType = "EXFAT";
             break;
-        case 0x65735546: // FUSE_SUPER_MAGIC
+        case 0x4d44u: // MSDOS_SUPER_MAGIC
+            fsType = "MSDOS";
+            break;
+        case 0x4244u: // HFS_SUPER_MAGIC
+            fsType = "HFS";
+            break;
+        case 0x65735546u: // FUSE_SUPER_MAGIC
             fsType = "FUSE";
+            break;
+        case 0x517bu: // SMB_SUPER_MAGIC
+        case 0xfe534d42u: // SMB2_MAGIC_NUMBER
+            fsType = "SMBFS";
+            break;
+        case 0x6969u: // NFS_SUPER_MAGIC
+            fsType = "NFS";
             break;
         default:
             // See corresponding entry at https://man7.org/linux/man-pages/man2/statfs.2.html
