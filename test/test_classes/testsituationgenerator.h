@@ -25,7 +25,10 @@
 #include "update_detection/file_system_observer/snapshot/livesnapshot.h"
 #include "utility/types.h"
 
+#include <Poco/JSON/Array.h>
 #include <Poco/JSON/Object.h>
+
+#include <iostream>
 
 namespace KDC {
 class SyncDb;
@@ -36,20 +39,31 @@ class SyncPal;
 
 /**
  * @brief This class aims to provide a simple and efficient way to generate a data structure (Db and update trees) for testing.
- * The structure is provided as a JSON file. Only the ID in lowercase must be provided in the JSON file. The name will be, by
- * default, the same as the ID but in uppercase. For example, the following JSON :
+ * Two JSON formats are supported:
+ *
+ * Legacy format: the key is the node ID (lowercase), object values are directories, non-object values are files,
+ * and names are automatically set to the uppercase version of the ID:
  * {
- *    "a":
- *    {
- *        "aa":
- *        {
- *            "aaa": 1
- *        }
- *    },
+ *    "a": { "aa": { "aaa": 1 } },
  *    "b": {},
- *    "c": {}
+ *    "c": 1
  * }
- * will generate this tree:
+ *
+ * Extended format: an array under the "content" key allows explicit control over name, type, size and timestamps.
+ * The node ID is derived from toLower(name):
+ * {
+ *    "content": [
+ *        { "type": "Directory", "name": "A", "createdAt": 20260601000000, "lastModifiedAt": 20260601000000, "content": [
+ *            { "type": "Directory", "name": "AA", "content": [
+ *                { "type": "File", "name": "AAA" }
+ *            ]}
+ *        ]},
+ *        { "type": "Directory", "name": "B" },
+ *        { "type": "File",      "name": "C", "size": 1234 }
+ *    ]
+ * }
+ *
+ * Both examples generate:
  * .
  * ├── A
  * │   └── AA
@@ -57,7 +71,7 @@ class SyncPal;
  * ├── B
  * └── C
  *
- * where "AAA" is a file, and the other nodes are directories.
+ * where leaf values / "File" types are files, and the other nodes are directories.
  */
 class TestSituationGenerator {
     public:
@@ -74,6 +88,8 @@ class TestSituationGenerator {
         void generateInitialSituation(const std::string &jsonInputStr);
         void addItem(NodeType itemType, const std::string &id, const std::string &parentId) const;
         [[nodiscard]] size_t size() const;
+
+        void printTree(ReplicaSide side, std::ostream &out = std::cout) const;
 
         [[nodiscard]] std::shared_ptr<Node> getNode(ReplicaSide side, const NodeId &id) const;
         bool getDbNode(const NodeId &id, DbNode &dbNode) const;
@@ -92,12 +108,23 @@ class TestSituationGenerator {
         std::shared_ptr<Node> deleteNode(ReplicaSide side, const NodeId &id) const;
 
     private:
+        struct ItemDesc {
+            NodeType type = NodeType::File;
+            NodeId id;           // lowercase, used for ID generation
+            SyncName name;       // display name stored in all data structures
+            SyncTime createdAt = 0;
+            SyncTime lastModifiedAt = 0;
+            int64_t size = 0;
+        };
+
         [[nodiscard]] NodeId generateId(ReplicaSide side, const NodeId &id) const;
 
         void addItem(Poco::JSON::Object::Ptr obj, const std::string &parentId = {});
+        void addItem(Poco::JSON::Array::Ptr arr, const std::string &parentId);
+        void addItem(const ItemDesc &desc, const std::string &parentId) const;
 
-        void insertInAllSnapshot(NodeType itemType, const NodeId &id, const NodeId &parentId) const;
-        [[nodiscard]] DbNodeId insertInDb(NodeType itemType, const NodeId &id, const NodeId &parentId) const;
+        void insertInAllSnapshot(const ItemDesc &desc, const NodeId &parentId) const;
+        [[nodiscard]] DbNodeId insertInDb(const ItemDesc &desc, const NodeId &parentId) const;
         /**
          * @brief Insert a new node in the update tree.
          * @param side Replica side for the update tree (Local or Remote).
@@ -109,7 +136,9 @@ class TestSituationGenerator {
          */
         [[nodiscard]] std::shared_ptr<Node> insertInUpdateTree(ReplicaSide side, NodeType itemType, const NodeId &id,
                                                                const NodeId &parentId, std::optional<DbNodeId> dbNodeId) const;
-        void insertInAllUpdateTrees(NodeType itemType, const NodeId &id, const NodeId &parentId, DbNodeId dbNodeId) const;
+        [[nodiscard]] std::shared_ptr<Node> insertInUpdateTree(ReplicaSide side, const ItemDesc &desc,
+                                                               const NodeId &parentId, std::optional<DbNodeId> dbNodeId) const;
+        void insertInAllUpdateTrees(const ItemDesc &desc, const NodeId &parentId, DbNodeId dbNodeId) const;
 
         LiveSnapshot &liveSnapshot(const ReplicaSide side) const {
             return side == ReplicaSide::Local ? _localLiveSnapshot->get() : _remoteLiveSnapshot->get();
@@ -119,14 +148,14 @@ class TestSituationGenerator {
             return side == ReplicaSide::Local ? _localUpdateTree : _remoteUpdateTree;
         }
 
+        const LocalTemporaryDirectory _temporaryDirectory = LocalTemporaryDirectory("TestSituationGenerator");
+
         std::shared_ptr<SyncDb> _syncDb;
         std::optional<std::reference_wrapper<LiveSnapshot>> _localLiveSnapshot;
         std::optional<std::reference_wrapper<LiveSnapshot>> _remoteLiveSnapshot;
 
         std::shared_ptr<UpdateTree> _localUpdateTree;
         std::shared_ptr<UpdateTree> _remoteUpdateTree;
-
-        const LocalTemporaryDirectory _temporaryDirectory = LocalTemporaryDirectory("TestSituationGenerator");
 };
 
 } // namespace KDC

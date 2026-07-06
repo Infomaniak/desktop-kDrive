@@ -26,6 +26,7 @@ set(testsyncengine_SRCS
         ../mocks/mockkeychainstorage.h ../mocks/mockkeychainstorage.cpp
         ../test_classes/syncpaltest.h
         ../test_classes/testsituationgenerator.h ../test_classes/testsituationgenerator.cpp
+        ../test_classes/testsituationgeneratortest.h ../test_classes/testsituationgeneratortest.cpp
         # Database
         db/testsyncdb.h db/testsyncdb.cpp
         # Jobs

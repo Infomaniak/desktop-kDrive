@@ -23,6 +23,7 @@
 
 #include "test_utility/testhelpers.h"
 
+#include <Poco/JSON/Array.h>
 #include <Poco/JSON/Parser.h>
 
 namespace KDC {
@@ -73,7 +74,11 @@ void TestSituationGenerator::generateInitialSituation(const std::string &jsonInp
         throw TestSituationGeneratorException("Invalid JSON input");
     }
 
-    addItem(obj);
+    if (obj->isArray("content")) {
+        addItem(obj->getArray("content"), {});
+    } else {
+        addItem(obj);
+    }
 
     _localUpdateTree->drawUpdateTree();
     (void) _syncDb->cache().reloadIfNeeded();
@@ -163,7 +168,15 @@ void TestSituationGenerator::addItem(Poco::JSON::Object::Ptr obj, const NodeId &
     obj->getNames(keys);
 
     for (const auto &key: keys) {
-        addItem(!obj->isObject(key) ? NodeType::File : NodeType::Directory, key, parentId);
+        const NodeType type = !obj->isObject(key) ? NodeType::File : NodeType::Directory;
+        ItemDesc desc;
+        desc.type = type;
+        desc.id = key;
+        desc.name = Str2SyncName(CommonUtility::toUpper(key));
+        desc.createdAt = testhelpers::defaultTime;
+        desc.lastModifiedAt = testhelpers::defaultTime;
+        desc.size = type == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize;
+        addItem(desc, parentId);
 
         if (obj->isObject(key)) {
             const auto &childObj = obj->getObject(key);
@@ -172,29 +185,92 @@ void TestSituationGenerator::addItem(Poco::JSON::Object::Ptr obj, const NodeId &
     }
 }
 
+void TestSituationGenerator::addItem(Poco::JSON::Array::Ptr arr, const NodeId &parentId) {
+    for (size_t i = 0; i < arr->size(); ++i) {
+        const auto &itemObj = arr->getObject(static_cast<unsigned int>(i));
+        if (!itemObj) throw TestSituationGeneratorException("Extended format: each 'content' element must be an object");
+
+        const std::string typeStr = itemObj->optValue<std::string>("type", "File");
+        const NodeType type = (typeStr == "Directory") ? NodeType::Directory : NodeType::File;
+        const std::string nameStr = itemObj->optValue<std::string>("name", "");
+        if (nameStr.empty()) throw TestSituationGeneratorException("Extended format: missing 'name' field");
+
+        ItemDesc desc;
+        desc.type = type;
+        desc.id = CommonUtility::toLower(nameStr);
+        desc.name = Str2SyncName(nameStr);
+        desc.createdAt = itemObj->optValue<SyncTime>("createdAt", testhelpers::defaultTime);
+        desc.lastModifiedAt = itemObj->optValue<SyncTime>("lastModifiedAt", testhelpers::defaultTime);
+        desc.size = itemObj->optValue<int64_t>("size", type == NodeType::File ? testhelpers::defaultFileSize
+                                                                               : testhelpers::defaultDirSize);
+        addItem(desc, parentId);
+
+        if (type == NodeType::Directory && itemObj->isArray("content")) {
+            addItem(itemObj->getArray("content"), desc.id);
+        }
+    }
+}
+
+void TestSituationGenerator::addItem(const ItemDesc &desc, const NodeId &parentId) const {
+    insertInAllSnapshot(desc, parentId);
+    const DbNodeId dbNodeId = insertInDb(desc, parentId);
+    insertInAllUpdateTrees(desc, parentId, dbNodeId);
+}
+
 void TestSituationGenerator::addItem(const NodeType itemType, const NodeId &id, const NodeId &parentId) const {
-    insertInAllSnapshot(itemType, id, parentId);
-    const DbNodeId dbNodeId = insertInDb(itemType, id, parentId);
-    insertInAllUpdateTrees(itemType, id, parentId, dbNodeId);
+    ItemDesc desc;
+    desc.type = itemType;
+    desc.id = id;
+    desc.name = Str2SyncName(CommonUtility::toUpper(id));
+    desc.createdAt = testhelpers::defaultTime;
+    desc.lastModifiedAt = testhelpers::defaultTime;
+    desc.size = itemType == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize;
+    addItem(desc, parentId);
 }
 
 size_t TestSituationGenerator::size() const {
     return _localUpdateTree->nodes().size();
 }
 
-void TestSituationGenerator::insertInAllSnapshot(const NodeType itemType, const NodeId &id, const NodeId &parentId) const {
-    if (id.empty()) return;
+static void printTreeRow(const std::shared_ptr<Node> &node, std::ostream &out, const std::string &prefix, bool isLast) {
+    out << prefix << (isLast ? "└── " : "├── ");
+    out << SyncName2Str(node->name());
+    out << "  [id=" << node->id().value_or("?");
+    out << "  type=" << (node->type() == NodeType::Directory ? "Dir" : "File");
+    out << "  size=" << node->size();
+    if (node->createdAt()) out << "  createdAt=" << *node->createdAt();
+    if (node->modificationTime()) out << "  mtime=" << *node->modificationTime();
+    out << "]\n";
+
+    const auto &children = node->children();
+    size_t i = 0;
+    for (const auto &[_, child]: children) {
+        printTreeRow(child, out, prefix + (isLast ? "    " : "│   "), ++i == children.size());
+    }
+}
+
+void TestSituationGenerator::printTree(const ReplicaSide side, std::ostream &out) const {
+    out << (side == ReplicaSide::Local ? "Local" : "Remote") << " update tree:\n.\n";
+    const auto &root = updateTree(side)->rootNode();
+    const auto &children = root->children();
+    size_t i = 0;
+    for (const auto &[_, child]: children) {
+        printTreeRow(child, out, "", ++i == children.size());
+    }
+}
+
+void TestSituationGenerator::insertInAllSnapshot(const ItemDesc &desc, const NodeId &parentId) const {
+    if (desc.id.empty()) return;
     for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote}) {
         if (!(side == ReplicaSide::Local ? _localLiveSnapshot : _remoteLiveSnapshot).has_value()) continue;
-        const auto size = itemType == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize;
         const auto parentFinalId = parentId.empty() ? "1" : generateId(side, parentId);
-        const SnapshotItem item(generateId(side, id), parentFinalId, Str2SyncName(CommonUtility::toUpper(id)),
-                                testhelpers::defaultTime, testhelpers::defaultTime, itemType, size, false, true, true);
+        const SnapshotItem item(generateId(side, desc.id), parentFinalId, desc.name, desc.createdAt, desc.lastModifiedAt,
+                                desc.type, desc.size, false, true, true);
         (void) liveSnapshot(side).updateItem(item);
     }
 }
 
-DbNodeId TestSituationGenerator::insertInDb(const NodeType itemType, const NodeId &id, const NodeId &parentId) const {
+DbNodeId TestSituationGenerator::insertInDb(const ItemDesc &desc, const NodeId &parentId) const {
     DbNode parentNode;
     if (parentId.empty()) {
         parentNode = _syncDb->rootNode();
@@ -208,10 +284,9 @@ DbNodeId TestSituationGenerator::insertInDb(const NodeType itemType, const NodeI
         }
     }
 
-    const auto size = itemType == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize;
-    const DbNode dbNode(parentNode.nodeId(), Str2SyncName(CommonUtility::toUpper(id)), Str2SyncName(CommonUtility::toUpper(id)),
-                        generateId(ReplicaSide::Local, id), generateId(ReplicaSide::Remote, id), testhelpers::defaultTime,
-                        testhelpers::defaultTime, testhelpers::defaultTime, itemType, size);
+    const DbNode dbNode(parentNode.nodeId(), desc.name, desc.name, generateId(ReplicaSide::Local, desc.id),
+                        generateId(ReplicaSide::Remote, desc.id), desc.createdAt, desc.lastModifiedAt, desc.lastModifiedAt,
+                        desc.type, desc.size);
     DbNodeId dbNodeId = 0;
     bool constraintError = false;
     (void) _syncDb->insertNode(dbNode, dbNodeId, constraintError);
@@ -232,10 +307,23 @@ std::shared_ptr<Node> TestSituationGenerator::insertInUpdateTree(
     return node;
 }
 
-void TestSituationGenerator::insertInAllUpdateTrees(const NodeType itemType, const NodeId &id, const NodeId &parentId,
+std::shared_ptr<Node> TestSituationGenerator::insertInUpdateTree(const ReplicaSide side, const ItemDesc &desc,
+                                                                  const NodeId &parentId,
+                                                                  const std::optional<DbNodeId> dbNodeId) const {
+    const auto parentNode =
+            parentId.empty() ? updateTree(side)->rootNode() : updateTree(side)->getNodeById(generateId(side, parentId));
+    const auto node =
+            std::make_shared<Node>(dbNodeId, side, desc.name, desc.type, OperationType::None, generateId(side, desc.id),
+                                   desc.createdAt, desc.lastModifiedAt, desc.size, parentNode);
+    updateTree(side)->insertNode(node);
+    (void) parentNode->insertChild(node);
+    return node;
+}
+
+void TestSituationGenerator::insertInAllUpdateTrees(const ItemDesc &desc, const NodeId &parentId,
                                                     const DbNodeId dbNodeId) const {
     for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote}) {
-        (void) insertInUpdateTree(side, itemType, id, parentId, dbNodeId);
+        (void) insertInUpdateTree(side, desc, parentId, dbNodeId);
     }
 }
 
