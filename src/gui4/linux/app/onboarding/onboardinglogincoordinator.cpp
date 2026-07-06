@@ -71,6 +71,10 @@ OnboardingLoginCoordinator::OnboardingLoginCoordinator(OnboardingFlowController 
     });
 }
 
+OnboardingLoginCoordinator::~OnboardingLoginCoordinator() {
+    _userService.invalidateLoginTokenRequest();
+}
+
 void OnboardingLoginCoordinator::clearPendingLogin() {
     _pendingUserDbId.reset();
     _pendingAvailableDrivesUserDbId.reset();

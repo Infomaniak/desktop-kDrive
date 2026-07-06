@@ -47,6 +47,7 @@ class OnboardingLoginCoordinator : public QObject {
         explicit OnboardingLoginCoordinator(OnboardingFlowController &flowController, CommService &commService,
                                             UserService &userService, AppCache &appCache, OnboardingState &onboardingState,
                                             QObject *parent = nullptr);
+        ~OnboardingLoginCoordinator() override;
 
     signals:
         void windowActivationRequested();
