@@ -187,7 +187,8 @@ void AddDriveWizard::startNextStep(bool backward) {
         _addDriveLocalFolderWidget->setLiteSync(_liteSync);
         QString goodLocalFolderPath;
         QString error;
-        if (const auto exitCode = GuiRequests::findGoodPathForNewSync(_driveInfo.name(), goodLocalFolderPath, error);
+        if (const auto exitCode =
+                    GuiRequests::findGoodPathForNewSync(QString::fromStdString(_driveInfo.name()), goodLocalFolderPath, error);
             exitCode != ExitCode::Ok) {
             qCWarning(lcAddDriveWizard()) << "Error in Requests::findGoodPathForNewSyncFolder : " << error;
             CustomMessageBox msgBox(
