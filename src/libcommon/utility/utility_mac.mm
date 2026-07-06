@@ -130,9 +130,14 @@ bool CommonUtility::fileSystemInfo(const SyncPath &targetPath, std::string &fsTy
     fsType.clear();
     mountPoint.clear();
 
+    std::error_code ec;
+    auto canonicalPath = std::filesystem::weakly_canonical(targetPath, ec);
+    if (ec)
+        canonicalPath = std::filesystem::absolute(targetPath);
+
     // FS type & mount point.
     struct statfs stat;
-    if (statfs(targetPath.native().c_str(), &stat) != 0) return false;
+    if (statfs(canonicalPath.native().c_str(), &stat) != 0) return false;
 
     fsType = std::string(stat.f_fstypename);
     mountPoint = SyncPath(stat.f_mntonname);

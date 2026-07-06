@@ -133,10 +133,14 @@ bool CommonUtility::fileSystemInfo(const SyncPath &targetPath, std::string &fsTy
     fsType.clear();
     mountPoint.clear();
 
+    std::error_code ec;
+    auto canonicalPath = std::filesystem::weakly_canonical(targetPath, ec);
+    if (ec)
+        canonicalPath = std::filesystem::absolute(targetPath);
+
     // FS type
     struct statfs stat;
-    if (statfs(targetPath.native().c_str(), &stat) != 0) {
-        int err = errno;
+    if (statfs(canonicalPath.native().c_str(), &stat) != 0) {
         return false;
     }
 
@@ -177,13 +181,16 @@ bool CommonUtility::fileSystemInfo(const SyncPath &targetPath, std::string &fsTy
     libmnt_table *table = mnt_new_table();
     mnt_table_set_cache(table, cache);
     if (mnt_table_parse_file(table, "/proc/self/mountinfo") == 0) {
-        if (libmnt_fs *fs = mnt_table_find_target(table, targetPath.native().c_str(), MNT_ITER_FORWARD); fs) {
+        if (libmnt_fs *fs = mnt_table_find_mountpoint(table, canonicalPath.native().c_str(), MNT_ITER_BACKWARD); fs) {
             std::string mp = mnt_fs_get_target(fs);
             mountPoint = SyncPath(mp);
         }
     }
     mnt_free_table(table);
     mnt_free_cache(cache);
+
+    // If no matching mount point found, fallback to the root directory
+    if (mountPoint.empty()) mountPoint = "/";
 
     return true;
 }

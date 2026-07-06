@@ -62,8 +62,8 @@ set(CMAKE_MAKEFILE_DEPENDS
   "/home/parallels/.conan2/p/b/qt7e5b89da977a6/p/lib/cmake/Qt6CoreTools/Qt6CoreToolsVersionlessTargets.cmake"
   "/home/parallels/.conan2/profiles/debug_vars.cmake"
   "/home/parallels/Projects/build-desktop-kDrive-Qt_6_8_3-Debug/build/Debug/generators/conan_toolchain.cmake"
-  "/home/parallels/Projects/desktop-kDrive/.qtcreator/qtc-cmake-presets-vjrTgNri/conan-debug/qtc-cmake-qmake-probe/CMakeFindDependencyMacro.cmake"
-  "/home/parallels/Projects/desktop-kDrive/.qtcreator/qtc-cmake-presets-vjrTgNri/conan-debug/qtc-cmake-qmake-probe/CMakeLists.txt"
+  "/home/parallels/Projects/desktop-kDrive/.qtcreator/qtc-cmake-presets-kJyFukDX/conan-debug/qtc-cmake-qmake-probe/CMakeFindDependencyMacro.cmake"
+  "/home/parallels/Projects/desktop-kDrive/.qtcreator/qtc-cmake-presets-kJyFukDX/conan-debug/qtc-cmake-qmake-probe/CMakeLists.txt"
   "CMakeFiles/3.28.3/CMakeSystem.cmake"
   "/usr/share/cmake-3.28/Modules/CMakeCheckCompilerFlagCommonPatterns.cmake"
   "/usr/share/cmake-3.28/Modules/CMakeDetermineSystem.cmake"
@@ -93,7 +93,7 @@ set(CMAKE_MAKEFILE_OUTPUTS
 set(CMAKE_MAKEFILE_PRODUCTS
   "CMakeFiles/3.28.3/CMakeSystem.cmake"
   ".qt/QtDeploySupport.cmake"
-  "/home/parallels/Projects/desktop-kDrive/.qtcreator/qtc-cmake-presets-vjrTgNri/conan-debug/qtc-cmake-qmake-probe/qmake-location.txt"
+  "/home/parallels/Projects/desktop-kDrive/.qtcreator/qtc-cmake-presets-kJyFukDX/conan-debug/qtc-cmake-qmake-probe/qmake-location.txt"
   ".qt/QtDeployTargets.cmake"
   "CMakeFiles/CMakeDirectoryInformation.cmake"
   )

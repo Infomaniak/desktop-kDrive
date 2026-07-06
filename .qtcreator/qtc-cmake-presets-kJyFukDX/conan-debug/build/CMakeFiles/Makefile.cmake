@@ -9,7 +9,7 @@ set(CMAKE_MAKEFILE_DEPENDS
   "CMakeCache.txt"
   "/home/parallels/.conan2/profiles/debug_vars.cmake"
   "/home/parallels/Projects/build-desktop-kDrive-Qt_6_8_3-Debug/build/Debug/generators/conan_toolchain.cmake"
-  "/home/parallels/Projects/desktop-kDrive/.qtcreator/qtc-cmake-presets-vjrTgNri/conan-debug/CMakeLists.txt"
+  "/home/parallels/Projects/desktop-kDrive/.qtcreator/qtc-cmake-presets-kJyFukDX/conan-debug/CMakeLists.txt"
   "CMakeFiles/3.28.3/CMakeCCompiler.cmake"
   "CMakeFiles/3.28.3/CMakeCXXCompiler.cmake"
   "CMakeFiles/3.28.3/CMakeSystem.cmake"

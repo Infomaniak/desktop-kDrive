@@ -297,7 +297,7 @@ std::string CommonUtility::fileSystemType(const SyncPath &targetPath, std::strin
     }
 
 #if defined(KD_WINDOWS)
-    assert(rootPath == mountPoint);
+    assert(targetPath.root_name().native() == mountPoint);
 #endif
 
     (void) fsTypeMap.try_emplace(mountPoint, std::make_pair(fsType, fallbackFSType));
