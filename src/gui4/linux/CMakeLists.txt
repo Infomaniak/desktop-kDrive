@@ -32,8 +32,6 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/cache/onboardingstate.h
         app/onboarding/availabledrivesmodel.cpp
         app/onboarding/availabledrivesmodel.h
-        app/onboarding/onboardingbootstrapcoordinator.cpp
-        app/onboarding/onboardingbootstrapcoordinator.h
         app/onboarding/onboardingflowcontroller.cpp
         app/onboarding/onboardingflowcontroller.h
         app/onboarding/onboardinglogincoordinator.cpp
