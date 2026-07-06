@@ -457,7 +457,7 @@ void LocalFileSystemObserverWorker::execute() {
 
     // Sync loop
     for (;;) {
-        if (checkFatalConditions(exitInfo)) break;
+        if (checkStopCondition(exitInfo)) break;
 
         // We never pause this thread
         if (!_liveSnapshot.isValid()) {
@@ -478,7 +478,7 @@ void LocalFileSystemObserverWorker::execute() {
     setDone(exitInfo.code());
 }
 
-bool LocalFileSystemObserverWorker::checkFatalConditions(ExitInfo &exitInfo) {
+bool LocalFileSystemObserverWorker::checkStopCondition(ExitInfo &exitInfo) {
     if (stopAsked()) {
         exitInfo = ExitCode::Ok;
         invalidateSnapshot();
