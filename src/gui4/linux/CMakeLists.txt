@@ -40,6 +40,10 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/onboarding/onboardingflowcontroller.h
         app/onboarding/onboardinglogincoordinator.cpp
         app/onboarding/onboardinglogincoordinator.h
+        app/onboarding/onboardingsession.cpp
+        app/onboarding/onboardingsession.h
+        app/onboarding/onboardingsessionmanager.cpp
+        app/onboarding/onboardingsessionmanager.h
         app/onboarding/oauthloginservice.cpp
         app/onboarding/oauthloginservice.h
         communicationlayer/ipcclient.cpp
