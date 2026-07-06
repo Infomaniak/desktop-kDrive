@@ -47,6 +47,6 @@ ListView {
         checked: model.selected
         cellEnabled: model.enabled
         disabledTooltip: model.tooltip
-        onToggled: (row) => root.drivesModel.toggleDrive(row)
+        onToggled: row => root.drivesModel.toggleDrive(row)
     }
 }
