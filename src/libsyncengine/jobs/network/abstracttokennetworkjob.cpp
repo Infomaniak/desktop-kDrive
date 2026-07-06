@@ -390,7 +390,7 @@ void AbstractTokenNetworkJob::loadUserInfoFromUserDbId() {
         assert(false);
         const std::string err{"User not found for userDbId=" + std::to_string(_userDbId)};
         LOG_WARN(_logger, err);
-        throw DataError(err);
+        return;
     }
 
 
@@ -401,7 +401,7 @@ void AbstractTokenNetworkJob::loadUserInfoFromUserDbId() {
         if (user.keychainKey().empty()) {
             const std::string err{"Access token is empty"};
             LOG_DEBUG(_logger, err);
-            throw TokenError(err);
+            return;
         }
 
         // Read token from keystore
@@ -409,7 +409,7 @@ void AbstractTokenNetworkJob::loadUserInfoFromUserDbId() {
         if (!login->hasToken()) {
             const std::string err{"Failed to retrieve access token"};
             LOG_WARN(_logger, err);
-            throw TokenError(err);
+            return;
         }
         _userToApiKeyMap[_userDbId] = {login, user.userId()};
 #ifndef NDEBUG
@@ -504,7 +504,7 @@ ApiToken AbstractTokenNetworkJob::retrieveApiTokenFromUserCache() {
     if (const auto it = _userToApiKeyMap.find(_userDbId); it == _userToApiKeyMap.cend()) {
         const std::string err{"User cache not set for userDbId=" + std::to_string(_userDbId)};
         LOG_WARN(_logger, err);
-        throw std::runtime_error(err);
+        return ApiToken();
     } else {
         _userId = it->second.userId;
         return it->second.login->apiToken();
