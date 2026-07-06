@@ -69,18 +69,16 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     (void) connect(this, &AppClientLinux::ipcConnected, &_sentryService, &SentryService::reconcileConsentWithServer);
     (void) connect(this, &QCoreApplication::aboutToQuit, this, [] { qCInfo(lcAppClientLinux) << "Qt aboutToQuit emitted"; });
     (void) connect(&_serverCommService, &CommService::showSettings, &_systemTrayController,
-                   &SystemTrayController::showMainWindow);
+                   &SystemTrayController::requestMainWindowActivation);
     (void) connect(&_serverCommService, &CommService::showSynthesis, &_systemTrayController,
-                   &SystemTrayController::showMainWindow);
+                   &SystemTrayController::requestMainWindowActivation);
     (void) connect(&_serverCommService, &CommService::quit, this, [] { QCoreApplication::quit(); });
-    (void) connect(&_onboardingFlowController, &OnboardingFlowController::cancelRequested, &_systemTrayController,
-                   &SystemTrayController::hideMainWindow);
-    (void) connect(&_onboardingFlowController, &OnboardingFlowController::completed, &_systemTrayController,
-                   &SystemTrayController::showMainWindow);
-    (void) connect(&_onboardingLoginCoordinator, &OnboardingLoginCoordinator::windowActivationRequested, &_systemTrayController,
-                   &SystemTrayController::showMainWindow);
-    (void) connect(&_onboardingBootstrapCoordinator, &OnboardingBootstrapCoordinator::windowActivationRequested,
+    (void) connect(&_onboardingSessionManager, &OnboardingSessionManager::onboardingWindowActivationRequested,
                    &_systemTrayController, &SystemTrayController::showMainWindow);
+    (void) connect(&_onboardingSessionManager, &OnboardingSessionManager::onboardingWindowDeactivationRequested,
+                   &_systemTrayController, &SystemTrayController::hideMainWindow);
+    (void) connect(&_systemTrayController, &SystemTrayController::mainWindowActivationRequested, &_onboardingSessionManager,
+                   &OnboardingSessionManager::requestWindowActivation);
     (void) connect(&_appCache, &AppCache::usersChanged, &_sentryService, &SentryService::updateAuthenticatedUser);
     (void) connect(&_systemTrayController, &SystemTrayController::quitRequested, this, [this] {
         qCInfo(lcAppClientLinux) << "Quit requested from system tray";
@@ -102,10 +100,8 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("driveService"), &_driveService);
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("syncService"), &_syncService);
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("serviceEventBus"), &_serviceEventBus);
-    _qmlEngine.rootContext()->setContextProperty(QStringLiteral("onboardingState"), &_onboardingState);
-    _qmlEngine.rootContext()->setContextProperty(QStringLiteral("availableDrivesModel"), &_availableDrivesModel);
     _qmlEngine.setInitialProperties({
-            {QStringLiteral("onboardingFlowController"), QVariant::fromValue<QObject *>(&_onboardingFlowController)},
+            {QStringLiteral("onboardingSessionManager"), QVariant::fromValue<QObject *>(&_onboardingSessionManager)},
             {QStringLiteral("systemTrayController"), QVariant::fromValue<QObject *>(&_systemTrayController)},
     });
     _qmlEngine.loadFromModule(QStringLiteral("kDrive.UI"), QStringLiteral("Main"));
