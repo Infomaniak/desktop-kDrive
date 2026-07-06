@@ -421,7 +421,8 @@ ExitInfo ServerRequests::findGoodPathForNewSync(const SyncName &driveName, SyncP
     if (const auto exitCode = CommonUtility::homeDirectoryPath(homeFolder); !exitCode) {
         return exitCode;
     }
-    SyncPath initialPath = homeFolder / (Str2SyncName(Theme::instance()->appName()) + Str(" ") + driveName);
+    const SyncName initialFolderName = Str2SyncName(Theme::instance()->appName()) + Str(" ") + driveName;
+    SyncPath initialPath = homeFolder / initialFolderName;
 
     // If the parent folder is a sync folder or contained in one, we can't possibly find a valid sync folder inside it.
     SyncDbId syncDbId = 0;
@@ -462,7 +463,7 @@ ExitInfo ServerRequests::findGoodPathForNewSync(const SyncName &driveName, SyncP
         }
         attempt++;
 
-        finalPath = homeFolder / Theme::instance()->appName() / (SyncName2Str(driveName) + " " + std::to_string(attempt));
+        finalPath = homeFolder / (initialFolderName + Str2SyncName(std::to_string(attempt)));
     }
 
     path = finalPath;

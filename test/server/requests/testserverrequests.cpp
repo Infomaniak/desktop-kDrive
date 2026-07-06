@@ -102,7 +102,7 @@ void TestServerRequests::testFindGoodPathForNewSync() {
     SyncPath homePath;
     (void) CommonUtility::homeDirectoryPath(homePath);
     const SyncName driveName(Str("dummyDriveName"));
-    const SyncPath defaultPath = homePath / APPLICATION_NAME / driveName;
+    const SyncPath defaultPath = homePath / (SyncName(APPLICATION_NAME) + Str(" ") + driveName);
 
     SyncPath returnedPath;
     std::string error;
@@ -113,7 +113,7 @@ void TestServerRequests::testFindGoodPathForNewSync() {
 
     // Check again but returnedPath already exists
     const auto previousPath = returnedPath;
-    LocalTemporaryDirectoryFromAbsolutePath localTempDir(defaultPath,
+    LocalTemporaryDirectoryFromAbsolutePath localTempDir(previousPath,
                                                          LocalTemporaryDirectoryFromAbsolutePath::RecursiveMode::Recursive);
 
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
