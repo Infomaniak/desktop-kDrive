@@ -1,0 +1,80 @@
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#pragma once
+
+#include "app/onboarding/onboardingentrydecision.h"
+#include "app/onboarding/onboardingsession.h"
+
+#include <QObject>
+
+#include <cstdint>
+#include <optional>
+
+namespace KDC {
+
+class AppCache;
+class CachePopulator;
+class CommService;
+class UserService;
+
+/**
+ * Process-long owner of the nullable Linux v4 onboarding session.
+ *
+ * The manager decides the initial route from the bootstrapped cache and publishes one stable QML boundary. Session shutdown is
+ * deliberately two-phase: first unpublish the session so QML can unload, then defer its destruction to the event loop.
+ */
+class OnboardingSessionManager final : public QObject {
+        Q_OBJECT
+        Q_PROPERTY(OnboardingSession *activeSession READ activeSession NOTIFY activeSessionChanged)
+
+    public:
+        explicit OnboardingSessionManager(CachePopulator &cachePopulator, AppCache &appCache, CommService &commService,
+                                          UserService &userService, QObject *parent = nullptr);
+
+        [[nodiscard]] OnboardingSession *activeSession() const { return _activeSession; }
+        Q_INVOKABLE void requestSession();
+
+    signals:
+        void activeSessionChanged();
+        void windowActivationRequested();
+        void windowDeactivationRequested();
+
+    private:
+        enum class LifecycleState : uint8_t {
+            Determining,
+            Inactive,
+            Active,
+            Stopping,
+        };
+
+        void handleBootstrapCompleted();
+        void startSession(OnboardingSession::EntryPoint entryPoint, std::optional<UserDbId> selectedUserDbId);
+        void stopSession(bool requestWindowDeactivation);
+        void handleRetiringSessionDestroyed();
+        AppCache &_appCache;
+        CommService &_commService;
+        UserService &_userService;
+        OnboardingSession *_activeSession = nullptr;
+        LifecycleState _state{LifecycleState::Determining};
+        uint64_t _nextGeneration{1};
+        bool _bootstrapCompleted{false};
+        bool _restartRequested{false};
+};
+
+} // namespace KDC
