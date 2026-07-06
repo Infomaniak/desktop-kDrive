@@ -62,13 +62,10 @@ const QColor defaultDriveColor{QStringLiteral("#0098FF")};
 
 } // namespace
 
-AvailableDrivesModel::AvailableDrivesModel(AppCache &cache, OnboardingState &onboardingState, UserService &userService,
-                                           OnboardingFlowController &flowController, QObject *const parent) :
+AvailableDrivesModel::AvailableDrivesModel(AppCache &cache, OnboardingState &onboardingState, QObject *const parent) :
     QAbstractListModel(parent),
     _cache(cache),
-    _onboardingState(onboardingState),
-    _userService(userService),
-    _flowController(flowController) {
+    _onboardingState(onboardingState) {
     (void) connect(&_cache, &AppCache::usersChanged, this, &AvailableDrivesModel::rebuild);
     (void) connect(&_cache, &AppCache::availableDrivesChanged, this, [this](const UserDbId userDbId) {
         if (userDbId == selectedUserDbId()) {
@@ -76,32 +73,12 @@ AvailableDrivesModel::AvailableDrivesModel(AppCache &cache, OnboardingState &onb
         }
     });
     (void) connect(&_cache, &AppCache::allAvailableDrivesChanged, this, &AvailableDrivesModel::rebuild);
-    (void) connect(&_onboardingState, &OnboardingState::selectedUserDbIdChanged, this, [this] {
-        setLoadFailed(false);
-        rebuild();
-        emit loadingChanged();
-        emit emptyChanged();
-    });
+    (void) connect(&_onboardingState, &OnboardingState::selectedUserDbIdChanged, this, &AvailableDrivesModel::rebuild);
     (void) connect(&_onboardingState, &OnboardingState::selectedAvailableDrivesChanged, this, [this] {
         if (!_contexts.empty()) {
             emit dataChanged(index(0, 0), index(static_cast<qint32>(_contexts.size()) - 1, 0), {SelectedRole});
         }
-        emitSelectionDependentChanges();
-    });
-    (void) connect(&_userService, &UserService::loadingChanged, this, [this] {
-        emit loadingChanged();
-        emit emptyChanged();
-    });
-    (void) connect(&_userService, &UserService::availableDrivesLoaded, this, [this](const UserDbId userDbId) {
-        if (userDbId == selectedUserDbId()) {
-            setLoadFailed(false);
-        }
-    });
-    (void) connect(&_userService, &UserService::availableDrivesLoadFailed, this, [this](const UserDbId userDbId) {
-        if (userDbId == selectedUserDbId()) {
-            setLoadFailed(true);
-            emit emptyChanged();
-        }
+        emit selectedCountChanged();
     });
 
     rebuild();
@@ -122,15 +99,8 @@ QVariant AvailableDrivesModel::data(const QModelIndex &index, const int role) co
 
     const auto row = static_cast<qint32>(index.row());
     const auto &context = _contexts[static_cast<std::size_t>(row)];
-    const auto key = keyAt(row);
 
     switch (role) {
-        case UserDbIdRole:
-            return QVariant::fromValue(static_cast<qint64>(key.userDbId));
-        case AccountIdRole:
-            return QVariant::fromValue(static_cast<qint64>(key.accountId));
-        case DriveIdRole:
-            return QVariant::fromValue(static_cast<qint64>(key.driveId));
         case NameRole:
         case Qt::DisplayRole:
             return QString::fromStdString(context.availableDrive.name());
@@ -142,7 +112,7 @@ QVariant AvailableDrivesModel::data(const QModelIndex &index, const int role) co
             }
             return defaultDriveColor;
         case SelectedRole:
-            return context.alreadyConfigured || _onboardingState.isAvailableDriveSelected(key);
+            return context.alreadyConfigured || isRowSelected(row);
         case AlreadyConfiguredRole:
             return context.alreadyConfigured;
         case EnabledRole:
@@ -157,21 +127,14 @@ QVariant AvailableDrivesModel::data(const QModelIndex &index, const int role) co
 
 QHash<int, QByteArray> AvailableDrivesModel::roleNames() const {
     return {
-            {UserDbIdRole, "userDbId"},       {AccountIdRole, "accountId"},
-            {DriveIdRole, "driveId"},         {NameRole, "name"},
-            {AccountNameRole, "accountName"}, {ColorRole, "color"},
-            {SelectedRole, "selected"},       {AlreadyConfiguredRole, "alreadyConfigured"},
-            {EnabledRole, "enabled"},         {TooltipRole, "tooltip"},
+            {NameRole, "name"},
+            {AccountNameRole, "accountName"},
+            {ColorRole, "color"},
+            {SelectedRole, "selected"},
+            {AlreadyConfiguredRole, "alreadyConfigured"},
+            {EnabledRole, "enabled"},
+            {TooltipRole, "tooltip"},
     };
-}
-
-bool AvailableDrivesModel::loading() const {
-    const auto userDbId = selectedUserDbId();
-    return userDbId != 0 && _userService.isLoadAvailableDrivesPending(static_cast<qint64>(userDbId));
-}
-
-bool AvailableDrivesModel::empty() const {
-    return !loading() && !_loadFailed && _contexts.empty();
 }
 
 qint32 AvailableDrivesModel::selectedCount() const {
@@ -189,48 +152,6 @@ qint32 AvailableDrivesModel::configuredCount() const {
             std::ranges::count_if(_contexts, [](const AvailableDriveContext &context) { return context.alreadyConfigured; }));
 }
 
-bool AvailableDrivesModel::canContinue() const {
-    return selectedCount() > 0 || configuredCount() > 0;
-}
-
-bool AvailableDrivesModel::canOpenAdvancedSettings() const {
-    return hasSelectedDrives();
-}
-
-QString AvailableDrivesModel::userName() const {
-    if (const auto user = _cache.userDisplayInfo(selectedUserDbId())) {
-        return user->name();
-    }
-    return {};
-}
-
-QString AvailableDrivesModel::userEmail() const {
-    if (const auto user = _cache.userDisplayInfo(selectedUserDbId())) {
-        return user->email();
-    }
-    return {};
-}
-
-QString AvailableDrivesModel::userAvatarSource() const {
-    if (const auto user = _cache.userDisplayInfo(selectedUserDbId())) {
-        if (!user->avatarSource().isEmpty()) {
-            return user->avatarSource();
-        }
-        return user->avatarUrl();
-    }
-    return {};
-}
-
-void AvailableDrivesModel::reload() {
-    const auto userDbId = selectedUserDbId();
-    if (userDbId == 0 || loading()) {
-        return;
-    }
-
-    setLoadFailed(false);
-    _userService.loadAvailableDrives(static_cast<qint64>(userDbId));
-}
-
 void AvailableDrivesModel::toggleDrive(const qint32 row) {
     if (row < 0 || row >= static_cast<qint32>(_contexts.size())) {
         return;
@@ -241,26 +162,6 @@ void AvailableDrivesModel::toggleDrive(const qint32 row) {
     }
 
     _onboardingState.toggleAvailableDrive(keyAt(row));
-}
-
-void AvailableDrivesModel::requestAdvancedSettings() {
-    _flowController.requestAdvancedSettings();
-}
-
-void AvailableDrivesModel::continueOnboarding() {
-    if (!canContinue()) {
-        return;
-    }
-
-    _flowController.requestDriveSelectionContinue();
-}
-
-void AvailableDrivesModel::openDriveOffers() {
-    _flowController.requestDriveOffers();
-}
-
-void AvailableDrivesModel::startForFree() {
-    _flowController.requestFreeDriveOrder();
 }
 
 AvailableDriveKey AvailableDrivesModel::keyAt(const qint32 row) const {
@@ -280,10 +181,6 @@ bool AvailableDrivesModel::isRowSelected(const qint32 row) const {
     return _onboardingState.isAvailableDriveSelected(keyAt(row));
 }
 
-bool AvailableDrivesModel::hasSelectedDrives() const {
-    return selectedCount() > 0;
-}
-
 UserDbId AvailableDrivesModel::selectedUserDbId() const {
     return _onboardingState.typedSelectedUserDbId();
 }
@@ -297,30 +194,8 @@ void AvailableDrivesModel::rebuild() {
     _contexts = std::move(contexts);
     endResetModel();
 
-    emit userChanged();
-    emitListDependentChanges();
-}
-
-void AvailableDrivesModel::emitSelectionDependentChanges() {
     emit selectedCountChanged();
-    emit canContinueChanged();
-    emit canOpenAdvancedSettingsChanged();
-}
-
-void AvailableDrivesModel::emitListDependentChanges() {
-    emit emptyChanged();
     emit configuredCountChanged();
-    emitSelectionDependentChanges();
-}
-
-void AvailableDrivesModel::setLoadFailed(const bool loadFailed) {
-    if (_loadFailed == loadFailed) {
-        return;
-    }
-
-    _loadFailed = loadFailed;
-    emit loadFailedChanged();
-    emit emptyChanged();
 }
 
 } // namespace KDC
