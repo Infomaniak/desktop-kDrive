@@ -32,8 +32,8 @@ namespace {
 Q_LOGGING_CATEGORY(lcOnboardingSessionManager, "gui.v4.onboardingsessionmanager", QtInfoMsg)
 } // namespace
 
-OnboardingSessionManager::OnboardingSessionManager(CachePopulator &cachePopulator, AppCache &appCache, CommService &commService,
-                                                   UserService &userService, QObject *const parent) :
+OnboardingSessionManager::OnboardingSessionManager(const CachePopulator &cachePopulator, AppCache &appCache,
+                                                   CommService &commService, UserService &userService, QObject *const parent) :
     QObject(parent),
     _appCache(appCache),
     _commService(commService),
@@ -147,8 +147,8 @@ void OnboardingSessionManager::stopSession(const bool closeWindow) {
     auto *const sessionPendingDestruction = _activeSession;
     sessionPendingDestruction->invalidatePendingOperations();
     _activeSession = nullptr;
-    QObject::disconnect(sessionPendingDestruction->flowController(), nullptr, this, nullptr);
-    QObject::disconnect(sessionPendingDestruction, nullptr, this, nullptr);
+    (void) disconnect(sessionPendingDestruction->flowController(), nullptr, this, nullptr);
+    (void) disconnect(sessionPendingDestruction, nullptr, this, nullptr);
     (void) connect(sessionPendingDestruction, &QObject::destroyed, this,
                    &OnboardingSessionManager::handleRetiringSessionDestroyed);
 
