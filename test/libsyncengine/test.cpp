@@ -36,7 +36,7 @@
 #include "reconciliation/conflict_finder/testconflictfinderworker.h"
 #include "reconciliation/operation_generator/testoperationgeneratorworker.h"
 #include "reconciliation/conflict_resolver/testconflictresolverworker.h"
-#include "test_classes/testsituationgeneratortest.h"
+#include "test_classes/testsituationgenerator.h"
 #include "propagation/operation_sorter/testoperationsorterworker.h"
 #include "integration/testintegration.h"
 #include "propagation/executor/testexecutorworker.h"
@@ -94,7 +94,7 @@ namespace KDC {
 //CPPUNIT_TEST_SUITE_REGISTRATION(TestPlatformInconsistencyCheckerWorker);
 //CPPUNIT_TEST_SUITE_REGISTRATION(TestConflictFinderWorker);
 //CPPUNIT_TEST_SUITE_REGISTRATION(TestConflictResolverWorker);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestSituationGeneratorTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestSituationGenerator);
 //CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationSorterWorker);
 //CPPUNIT_TEST_SUITE_REGISTRATION(TestExecutorWorker);
 //CPPUNIT_TEST_SUITE_REGISTRATION(TestFileRescuer);

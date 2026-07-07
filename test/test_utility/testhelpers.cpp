@@ -76,6 +76,9 @@ void setTestFileSize(const SyncPath &path, uint64_t size) {
     for (uint64_t i = 0; i < static_cast<uint64_t>(round(static_cast<double>(size) / static_cast<double>(str.length()))); i++) {
         ofs << str;
     }
+    for (uint64_t i = 0; i < size % str.length(); i++) {
+        ofs << str[i];
+    }
 }
 
 void generateBigFiles(const SyncPath &dirPath, const uint16_t size, const uint16_t count) {

@@ -29,7 +29,6 @@
 #include "jobs/network/kDrive_API/upload/uploadjob.h"
 
 #include "mocks/libcommonserver/db/mockdb.h"
-#include "test_classes/testsituationgenerator.h"
 #include "test_utility/testhelpers.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/remotetemporarydirectory.h"

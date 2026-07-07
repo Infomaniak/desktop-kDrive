@@ -24,7 +24,6 @@
 #include "propagation/executor/filerescuer.h"
 
 #include "mocks/libcommonserver/db/mockdb.h"
-#include "test_classes/testsituationgenerator.h"
 #include "test_utility/testhelpers.h"
 
 namespace KDC {
@@ -86,7 +85,7 @@ void TestFileRescuer::tearDown() {
 
 void TestFileRescuer::testFileRescuer() {
     // Setup
-    TestSituationGenerator situationGenerator(_syncPal);
+    SituationGenerator situationGenerator(_syncPal);
     situationGenerator.generateInitialSituation(R"({"a":1})");
 
     const auto lnodeA = situationGenerator.getNode(ReplicaSide::Local, "a");
