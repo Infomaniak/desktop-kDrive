@@ -201,7 +201,7 @@ class PocoConan(ConanFile):
 \t\tsrc/pcre2_tables.c
 \t)
 """,
-            """\t# HACK: Unicode.cpp requires functions from these files.
+            """\t# Unicode.cpp requires functions from these files.
 \t# They can be used directly from PCRE2 only when linking the static library.
 \tif("${_PCRE2TYPE}" STREQUAL "SHARED_LIBRARY")
 \t\tPOCO_SOURCES(SRCS RegExp
