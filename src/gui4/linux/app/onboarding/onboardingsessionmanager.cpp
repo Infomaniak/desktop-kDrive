@@ -145,19 +145,21 @@ void OnboardingSessionManager::stopSession(const bool requestWindowDeactivation)
     }
 
     _state = LifecycleState::Stopping;
-    auto *const retiringSession = _activeSession;
-    retiringSession->invalidatePendingOperations();
+    auto *const sessionPendingDestruction = _activeSession;
+    sessionPendingDestruction->invalidatePendingOperations();
     _activeSession = nullptr;
-    QObject::disconnect(retiringSession->flowController(), nullptr, this, nullptr);
-    QObject::disconnect(retiringSession, nullptr, this, nullptr);
-    (void) connect(retiringSession, &QObject::destroyed, this, &OnboardingSessionManager::handleRetiringSessionDestroyed);
+    QObject::disconnect(sessionPendingDestruction->flowController(), nullptr, this, nullptr);
+    QObject::disconnect(sessionPendingDestruction, nullptr, this, nullptr);
+    (void) connect(sessionPendingDestruction, &QObject::destroyed, this,
+                   &OnboardingSessionManager::handleRetiringSessionDestroyed);
 
-    qCInfo(lcOnboardingSessionManager) << "Onboarding session unpublished | generation:" << retiringSession->generation();
+    qCInfo(lcOnboardingSessionManager) << "Onboarding session unpublished | generation:"
+                                       << sessionPendingDestruction->generation();
     emit activeSessionChanged();
     if (requestWindowDeactivation) {
         emit onboardingWindowDeactivationRequested();
     }
-    retiringSession->deleteLater();
+    sessionPendingDestruction->deleteLater();
 }
 
 void OnboardingSessionManager::handleRetiringSessionDestroyed() {
