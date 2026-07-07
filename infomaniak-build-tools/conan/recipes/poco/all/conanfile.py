@@ -44,42 +44,39 @@ class PocoConan(ConanFile):
         "sharedlibrary_debug_suffix": False,
     }
 
-    _PocoComponent = namedtuple("_PocoComponent",
-                                ("option", "default_option", "dependencies", "external_dependencies", "is_lib"))
+    _PocoComponent = namedtuple("_PocoComponent", ("option",                    "default_option",   "dependencies", "external_dependencies", "is_lib"))
     _poco_component_tree = {
-        "Foundation": _PocoComponent(None, "Foundation", [], ["pcre::pcre", "zlib::zlib"], True),
-        "Crypto": _PocoComponent("enable_crypto", True, ["Foundation"], ["openssl::openssl"], True),
-        "JSON": _PocoComponent("enable_json", True, ["Foundation"], [], True),
-        "Net": _PocoComponent("enable_net", True, ["Foundation"], [], True),
-        "NetSSL": _PocoComponent("enable_netssl", True, ["Crypto", "Util", "Net"], [], True),
-        "Util": _PocoComponent("enable_util", True, ["Foundation", "XML", "JSON"], [], True),
-        "XML": _PocoComponent("enable_xml", True, ["Foundation"], ["expat::expat"], True),
+        "Foundation":           _PocoComponent(None, "Foundation",              [],                 ["pcre::pcre", "zlib::zlib"], True),
+        "Crypto":               _PocoComponent("enable_crypto",                 True,               ["Foundation"], ["openssl::openssl"], True),
+        "JSON":                 _PocoComponent("enable_json",                   True,               ["Foundation"], [], True),
+        "Net":                  _PocoComponent("enable_net",                    True,               ["Foundation"], [], True),
+        "NetSSL":               _PocoComponent("enable_netssl",                 True,               ["Crypto", "Util", "Net"], [], True),
+        "Util":                 _PocoComponent("enable_util",                   True,               ["Foundation", "XML", "JSON"], [], True),
+        "XML":                  _PocoComponent("enable_xml",                    True,               ["Foundation"], ["expat::expat"], True),
 
-        "mod_poco": _PocoComponent("enable_apacheconnector", False, ["Util", "Net"], ["apr::apr", "apr-util::apr-util"],
-                                   False),
-        "CppParser": _PocoComponent("enable_cppparser", False, ["Foundation"], [], False),
+        "mod_poco":             _PocoComponent("enable_apacheconnector",        False,              ["Util", "Net"], ["apr::apr", "apr-util::apr-util"], False),
+        "CppParser":            _PocoComponent("enable_cppparser",              False,              ["Foundation"], [], False),
         # "CppUnit":            _PocoComponent("enable_cppunit",                False,              ["Foundation"], [], False)),
-        "Data": _PocoComponent("enable_data", False, ["Foundation"], [], True),
-        "DataMySQL": _PocoComponent("enable_data_mysql", False, ["Data"], ["libmysqlclient::libmysqlclient"], True),
-        "DataODBC": _PocoComponent("enable_data_odbc", False, ["Data"], [], True),
-        # requires odbc but conditional, see package_info()
-        "DataPostgreSQL": _PocoComponent("enable_data_postgresql", False, ["Data"], ["libpq::libpq"], True),
-        "DataSQLite": _PocoComponent("enable_data_sqlite", False, ["Data"], ["sqlite3::sqlite3"], True),
-        "Encodings": _PocoComponent("enable_encodings", False, ["Foundation"], [], True),
+        "Data":                 _PocoComponent("enable_data",                   False,              ["Foundation"], [], True),
+        "DataMySQL":            _PocoComponent("enable_data_mysql",             False,              ["Data"], ["libmysqlclient::libmysqlclient"], True),
+        "DataODBC":             _PocoComponent("enable_data_odbc",              False,              ["Data"], [], True), # requires odbc but conditional, see package_info()
+        "DataPostgreSQL":       _PocoComponent("enable_data_postgresql",        False,              ["Data"], ["libpq::libpq"], True),
+        "DataSQLite":           _PocoComponent("enable_data_sqlite",            False,              ["Data"], ["sqlite3::sqlite3"], True),
+        "Encodings":            _PocoComponent("enable_encodings",              False,              ["Foundation"], [], True),
         # "EncodingsCompiler":  _PocoComponent("enable_encodingscompiler",      False,              ["Net", "Util"], [], False),
-        "JWT": _PocoComponent("enable_jwt", False, ["JSON", "Crypto"], [], True),
-        "MongoDB": _PocoComponent("enable_mongodb", False, ["Net"], [], True),
-        "NetSSLWin": _PocoComponent("enable_netssl_win", False, ["Net", "Util"], [], True),
-        "PDF": _PocoComponent("enable_pdf", False, ["XML", "Util"], [], True),
-        "PageCompiler": _PocoComponent("enable_pagecompiler", False, ["Net", "Util"], [], False),
-        "File2Page": _PocoComponent("enable_pagecompiler_file2page", False, ["Net", "Util", "XML", "JSON"], [], False),
-        "PocoDoc": _PocoComponent("enable_pocodoc", False, ["Util", "XML", "CppParser"], [], False),
-        "Redis": _PocoComponent("enable_redis", False, ["Net"], [], True),
-        "SevenZip": _PocoComponent("enable_sevenzip", False, ["Util", "XML"], [], True),
-        "Zip": _PocoComponent("enable_zip", False, ["Util", "XML"], [], True),
-        "ActiveRecord": _PocoComponent("enable_activerecord", False, ["Foundation", "Data"], [], True),
-        "ActiveRecordCompiler": _PocoComponent("enable_activerecord_compiler", False, ["Util", "XML"], [], False),
-        "Prometheus": _PocoComponent("enable_prometheus", False, ["Foundation", "Net"], [], True),
+        "JWT":                  _PocoComponent("enable_jwt",                    False,              ["JSON", "Crypto"], [], True),
+        "MongoDB":              _PocoComponent("enable_mongodb",                False,              ["Net"], [], True),
+        "NetSSLWin":            _PocoComponent("enable_netssl_win",             False,              ["Net", "Util"], [], True),
+        "PDF":                  _PocoComponent("enable_pdf",                    False,              ["XML", "Util"], [], True),
+        "PageCompiler":         _PocoComponent("enable_pagecompiler",           False,              ["Net", "Util"], [], False),
+        "File2Page":            _PocoComponent("enable_pagecompiler_file2page", False,              ["Net", "Util", "XML", "JSON"], [], False),
+        "PocoDoc":              _PocoComponent("enable_pocodoc",                False,              ["Util", "XML", "CppParser"], [], False),
+        "Redis":                _PocoComponent("enable_redis",                  False,              ["Net"], [], True),
+        "SevenZip":             _PocoComponent("enable_sevenzip",               False,              ["Util", "XML"], [], True),
+        "Zip":                  _PocoComponent("enable_zip",                    False,              ["Util", "XML"], [], True),
+        "ActiveRecord":         _PocoComponent("enable_activerecord",           False,              ["Foundation", "Data"], [], True),
+        "ActiveRecordCompiler": _PocoComponent("enable_activerecord_compiler",  False,              ["Util", "XML"], [], False),
+        "Prometheus":           _PocoComponent("enable_prometheus",             False,              ["Foundation", "Net"], [], True),
     }
 
     for comp in _poco_component_tree.values():
@@ -112,17 +109,14 @@ class PocoConan(ConanFile):
             self.options.rm_safe("fPIC")
         if not self.options.enable_xml:
             util_dependencies = self._poco_component_tree["Util"].dependencies
-            self._poco_component_tree["Util"] = self._poco_component_tree["Util"]._replace(
-                dependencies=[x for x in util_dependencies if x != "XML"])
+            self._poco_component_tree["Util"] = self._poco_component_tree["Util"]._replace(dependencies = [x for x in util_dependencies if x != "XML"])
         if not self.options.enable_json:
             util_dependencies = self._poco_component_tree["Util"].dependencies
-            self._poco_component_tree["Util"] = self._poco_component_tree["Util"]._replace(
-                dependencies=[x for x in util_dependencies if x != "JSON"])
+            self._poco_component_tree["Util"] = self._poco_component_tree["Util"]._replace(dependencies = [x for x in util_dependencies if x != "JSON"])
 
         foundation_external_dependencies = self._poco_component_tree["Foundation"].external_dependencies
-        self._poco_component_tree["Foundation"] = self._poco_component_tree["Foundation"]._replace(
-            external_dependencies=list(
-                map(lambda x: 'pcre2::pcre2' if x == 'pcre::pcre' else x, foundation_external_dependencies)))
+        self._poco_component_tree["Foundation"] = self._poco_component_tree["Foundation"]._replace(external_dependencies = list(map(lambda x: 'pcre2::pcre2' if x == 'pcre::pcre' else x, foundation_external_dependencies)))
+
 
     def layout(self):
         cmake_layout(self, src_folder="src")
@@ -135,9 +129,9 @@ class PocoConan(ConanFile):
             self.requires("expat/[>=2.6.2 <2.7.4]", transitive_headers=True)
         if self.options.enable_netssl or self.options.enable_crypto:
             if self.settings.os == "Macos":
-                self.requires("openssl-macos/3.2.4", options={"shared": True})
+                self.requires("openssl-macos/3.2.4", options={ "shared": True })
             else:
-                self.requires("openssl/3.2.4", options={"shared": True})
+                self.requires("openssl/3.2.4", options={ "shared": True })
 
     def package_id(self):
         del self.info.options.enable_active_record
@@ -160,15 +154,13 @@ class PocoConan(ConanFile):
                     if not self._poco_component_tree[compdep].option:
                         continue
                     if not self.options.get_safe(self._poco_component_tree[compdep].option, False):
-                        raise ConanInvalidConfiguration(
-                            f"option {compopt.option} requires also option {self._poco_component_tree[compdep].option}")
+                        raise ConanInvalidConfiguration(f"option {compopt.option} requires also option {self._poco_component_tree[compdep].option}")
         if self.options.enable_netssl and self.options.get_safe("enable_netssl_win", False):
             raise ConanInvalidConfiguration("Conflicting enable_netssl[_win] settings")
 
     def source(self):
         git = Git(self)
-        git.clone(url="https://github.com/pocoproject/poco.git", target=".", hide_url=False,
-                  args=["-b", f"poco-{self.version}-release"])
+        git.clone(url="https://github.com/pocoproject/poco.git", target=".", hide_url=False, args=["-b", f"poco-{self.version}-release"])
 
     def generate(self):
         tc = CMakeToolchain(self)
@@ -190,8 +182,7 @@ class PocoConan(ConanFile):
         if not self.options.get_safe("sharedlibrary_debug_suffix", True):
             tc.preprocessor_definitions["POCO_NO_SHARED_LIBRARY_DEBUG_SUFFIX"] = "1"
         # Backport Conan Center's pcre2 library type marker for Poco's unbundled build.
-        tc.cache_variables["_PCRE2TYPE"] = "SHARED_LIBRARY" if self.dependencies[
-            "pcre2"].options.shared else "STATIC_LIBRARY"
+        tc.cache_variables["_PCRE2TYPE"] = "SHARED_LIBRARY" if self.dependencies["pcre2"].options.shared else "STATIC_LIBRARY"
         tc.generate()
 
         deps = CMakeDeps(self)
@@ -204,33 +195,33 @@ class PocoConan(ConanFile):
     def build(self):
         foundation_cmake = os.path.join(self.source_folder, "Foundation", "CMakeLists.txt")
         replace_in_file(self, foundation_cmake,
-                        """\t# Unicode.cpp requires functions from these files. The can't be taken from the library
-            \tPOCO_SOURCES(SRCS RegExp
-            \t\tsrc/pcre2_ucd.c
-            \t\tsrc/pcre2_tables.c
-            \t)
-            """,
-                        """\t# Unicode.cpp requires functions from these files.
-            \t# They can be used directly from PCRE2 only when linking the static library.
-            \tif("${_PCRE2TYPE}" STREQUAL "SHARED_LIBRARY")
-            \t\tPOCO_SOURCES(SRCS RegExp
-            \t\t\tsrc/pcre2_ucd.c
-            \t\t\tsrc/pcre2_tables.c
-            \t\t)
-            \tendif()
-            """)
+            """\t# Unicode.cpp requires functions from these files. The can't be taken from the library
+\tPOCO_SOURCES(SRCS RegExp
+\t\tsrc/pcre2_ucd.c
+\t\tsrc/pcre2_tables.c
+\t)
+""",
+            """\t# Unicode.cpp requires functions from these files.
+\t# They can be used directly from PCRE2 only when linking the static library.
+\tif("${_PCRE2TYPE}" STREQUAL "SHARED_LIBRARY")
+\t\tPOCO_SOURCES(SRCS RegExp
+\t\t\tsrc/pcre2_ucd.c
+\t\t\tsrc/pcre2_tables.c
+\t\t)
+\tendif()
+""")
 
         # Remove debug suffix from library names when sharedlibrary_debug_suffix is False
         if not self.options.get_safe("sharedlibrary_debug_suffix", True):
             platform_specific_cmake = os.path.join(self.source_folder, "cmake", "DefinePlatformSpecifc.cmake")
             # Replace "d" suffix with empty string for shared libs
             replace_in_file(self, platform_specific_cmake,
-                            'set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "Set Debug library postfix" FORCE)',
-                            'set(CMAKE_DEBUG_POSTFIX "" CACHE STRING "Set Debug library postfix" FORCE)')
+                'set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "Set Debug library postfix" FORCE)',
+                'set(CMAKE_DEBUG_POSTFIX "" CACHE STRING "Set Debug library postfix" FORCE)')
             # Replace "${STATIC_POSTFIX}d" suffix with just "${STATIC_POSTFIX}" for static libs
             replace_in_file(self, platform_specific_cmake,
-                            'set(CMAKE_DEBUG_POSTFIX "${STATIC_POSTFIX}d" CACHE STRING "Set Debug library postfix" FORCE)',
-                            'set(CMAKE_DEBUG_POSTFIX "${STATIC_POSTFIX}" CACHE STRING "Set Debug library postfix" FORCE)')
+                'set(CMAKE_DEBUG_POSTFIX "${STATIC_POSTFIX}d" CACHE STRING "Set Debug library postfix" FORCE)',
+                'set(CMAKE_DEBUG_POSTFIX "${STATIC_POSTFIX}" CACHE STRING "Set Debug library postfix" FORCE)')
 
         cmake = CMake(self)
         cmake.configure()
@@ -261,8 +252,7 @@ class PocoConan(ConanFile):
                 # Replace openssl::openssl with openssl-macos::openssl on macOS
                 external_deps = comp.external_dependencies
                 if self.settings.os == "Macos":
-                    external_deps = [dep.replace("openssl::", "openssl-macos::") if dep.startswith("openssl::") else dep
-                                     for dep in external_deps]
+                    external_deps = [dep.replace("openssl::", "openssl-macos::") if dep.startswith("openssl::") else dep for dep in external_deps]
                 requires = [f"poco_{dependency.lower()}" for dependency in comp.dependencies] + external_deps
                 self.cpp_info.components[conan_component].set_property("cmake_target_name", f"Poco::{compname}")
                 self.cpp_info.components[conan_component].set_property("cmake_file_name", compname)
