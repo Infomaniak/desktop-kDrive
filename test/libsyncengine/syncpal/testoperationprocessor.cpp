@@ -29,6 +29,7 @@
 #include "mocks/libcommonserver/db/mockdb.h"
 
 #include "test_utility/testhelpers.h"
+#include "test_classes/testsituationgenerator.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 
 #include <cstdlib>
@@ -112,7 +113,7 @@ void TestOperationProcessor::testIsPseudoConflict() {
     // .
     // └── A
     //     └── AA
-    SituationGenerator situationGenerator(_syncPal);
+    TestSituationGenerator situationGenerator(_syncPal);
     situationGenerator.generateInitialSituation(R"({"a":{"aa":1}})");
 
     const auto lNodeA = situationGenerator.getNode(ReplicaSide::Local, "a");

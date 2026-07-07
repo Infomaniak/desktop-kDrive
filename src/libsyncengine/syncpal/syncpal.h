@@ -517,7 +517,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         friend class TestWorkers;
         friend class TestAppServer;
         friend class MockSyncPal;
-        friend class SituationGenerator;
         friend class TestSituationGenerator;
         friend class TestFileRescuer;
 };
