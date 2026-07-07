@@ -44,7 +44,7 @@ class OnboardingSessionManager final : public QObject {
         Q_PROPERTY(OnboardingSession *activeSession READ activeSession NOTIFY activeSessionChanged)
 
     public:
-        explicit OnboardingSessionManager(CachePopulator &cachePopulator, AppCache &appCache, CommService &commService,
+        explicit OnboardingSessionManager(const CachePopulator &cachePopulator, AppCache &appCache, CommService &commService,
                                           UserService &userService, QObject *parent = nullptr);
 
         [[nodiscard]] OnboardingSession *activeSession() const { return _activeSession; }
