@@ -50,14 +50,14 @@ class OnboardingSessionManager final : public QObject {
         [[nodiscard]] OnboardingSession *activeSession() const { return _activeSession; }
 
         /**
-         * Opens the application window only when an onboarding session provides displayable content.
+         * Opens the onboarding window only when an onboarding session provides displayable content.
          */
-        Q_INVOKABLE void requestWindowActivation();
+        Q_INVOKABLE void openOnboardingWindow();
 
     signals:
         void activeSessionChanged();
-        void onboardingWindowActivationRequested();
-        void onboardingWindowDeactivationRequested();
+        void openOnboardingWindowRequested();
+        void closeOnboardingWindowRequested();
 
     private:
         enum class LifecycleState : uint8_t {
@@ -68,10 +68,10 @@ class OnboardingSessionManager final : public QObject {
         };
 
         void ensureSession();
-        void activateWindowIfDisplayable();
+        void openWindowIfDisplayable();
         void handleBootstrapCompleted();
         void startSession(OnboardingSession::EntryPoint entryPoint, std::optional<UserDbId> selectedUserDbId);
-        void stopSession(bool requestWindowDeactivation);
+        void stopSession(bool closeWindow);
         void handleRetiringSessionDestroyed();
         AppCache &_appCache;
         CommService &_commService;

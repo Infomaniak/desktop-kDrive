@@ -50,7 +50,7 @@ class OnboardingLoginCoordinator : public QObject {
         ~OnboardingLoginCoordinator() override;
 
     signals:
-        void windowActivationRequested();
+        void openWindowRequested();
 
     private:
         void clearPendingLogin();
