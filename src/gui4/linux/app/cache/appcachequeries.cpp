@@ -91,13 +91,13 @@ std::vector<ErrorInfo> AppCache::serverErrors() const {
     return values;
 }
 
-std::vector<DriveAvailableInfo> AppCache::availableDrives(const UserDbId userDbId) const {
+std::vector<DriveAvailable> AppCache::availableDrives(const UserDbId userDbId) const {
     const auto it = _availableDrivesByUserDbId.find(userDbId);
     if (it == _availableDrivesByUserDbId.end()) {
         return {};
     }
     auto values = it->second;
-    (void) std::ranges::sort(values, [](const DriveAvailableInfo &lhs, const DriveAvailableInfo &rhs) {
+    (void) std::ranges::sort(values, [](const DriveAvailable &lhs, const DriveAvailable &rhs) {
         if (lhs.accountId() != rhs.accountId()) {
             return lhs.accountId() < rhs.accountId();
         }
@@ -157,13 +157,13 @@ std::optional<ErrorInfo> AppCache::serverError(const ErrorDbId errorDbId) const 
     return it->second;
 }
 
-std::optional<DriveAvailableInfo> AppCache::availableDrive(const AvailableDriveKey &key) const {
+std::optional<DriveAvailable> AppCache::availableDrive(const AvailableDriveKey &key) const {
     const auto it = _availableDrivesByUserDbId.find(key.userDbId);
     if (it == _availableDrivesByUserDbId.end()) {
         return std::nullopt;
     }
 
-    const auto availableDriveIt = std::ranges::find_if(it->second, [&key](const DriveAvailableInfo &info) {
+    const auto availableDriveIt = std::ranges::find_if(it->second, [&key](const DriveAvailable &info) {
         return info.accountId() == key.accountId && info.driveId() == key.driveId;
     });
     if (availableDriveIt == it->second.end()) {
@@ -342,7 +342,7 @@ std::vector<AvailableDriveContext> AppCache::availableDriveContexts(const UserDb
     for (const auto &availableDrive: availableDrives(userDbId)) {
         AvailableDriveContext context;
         context.userDisplayInfo = _usersByDbId.at(userDbId).info;
-        context.availableDriveInfo = availableDrive;
+        context.availableDrive = availableDrive;
         context.accountInfo = accountForAvailableDrive(userDbId, availableDrive.accountId());
         if (context.accountInfo) {
             context.configuredDrive = configuredDriveForAvailableDrive(context.accountInfo->dbId(), availableDrive.driveId());
@@ -362,10 +362,10 @@ std::vector<AvailableDriveContext> AppCache::availableDriveContexts() const {
     (void) std::ranges::sort(contexts, [](const AvailableDriveContext &lhs, const AvailableDriveContext &rhs) {
         if (lhs.userDisplayInfo.dbId() != rhs.userDisplayInfo.dbId())
             return lhs.userDisplayInfo.dbId() < rhs.userDisplayInfo.dbId();
-        if (lhs.availableDriveInfo.accountId() != rhs.availableDriveInfo.accountId()) {
-            return lhs.availableDriveInfo.accountId() < rhs.availableDriveInfo.accountId();
+        if (lhs.availableDrive.accountId() != rhs.availableDrive.accountId()) {
+            return lhs.availableDrive.accountId() < rhs.availableDrive.accountId();
         }
-        return lhs.availableDriveInfo.driveId() < rhs.availableDriveInfo.driveId();
+        return lhs.availableDrive.driveId() < rhs.availableDrive.driveId();
     });
     return contexts;
 }
