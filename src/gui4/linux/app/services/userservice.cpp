@@ -61,8 +61,8 @@ void UserService::loadAvailableDrives(const qint64 userDbId) {
     const auto scopedUserDbId = static_cast<UserDbId>(userDbId);
     beginAction(actionLoadAvailableDrives, scopedUserDbId);
 
-    // CommService requests are not cancellable once sent. The generation marks the latest result that is allowed to mutate
-    // the cache, while the pending set lets invalidation keep ServiceActionTracker balanced before callbacks arrive.
+    // This IPC request cannot be cancelled once sent. Keep a token for the latest valid response, so older callbacks can
+    // return without updating the cache. Track pending tokens separately to close the loading state exactly once.
     const uint64_t generation = _nextAvailableDriveLoadGeneration++;
     _availableDriveLoadGenerations[scopedUserDbId] = generation;
     (void) _pendingAvailableDriveLoadGenerations[scopedUserDbId].insert(generation);
@@ -104,8 +104,8 @@ void UserService::deleteUser(const qint64 userDbId) {
 void UserService::requestLoginToken(const QString &code, const QString &codeVerifier) {
     beginAction(actionRequestLoginToken);
 
-    // A new onboarding login run supersedes earlier token requests. Stale callbacks are ignored, but still need their
-    // pending action closed unless the session invalidated them first.
+    // This IPC request cannot be cancelled once sent. Only the latest token response may continue the login flow. Pending
+    // tokens are tracked separately so invalidated requests still close their loading state exactly once.
     const uint64_t generation = ++_loginTokenGeneration;
     (void) _pendingLoginTokenGenerations.insert(generation);
 
