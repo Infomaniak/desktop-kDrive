@@ -60,6 +60,9 @@ UserService::UserService(CommService &commService, AppCache &appCache, ServiceAc
 void UserService::loadAvailableDrives(const qint64 userDbId) {
     const auto scopedUserDbId = static_cast<UserDbId>(userDbId);
     beginAction(actionLoadAvailableDrives, scopedUserDbId);
+
+    // CommService requests are not cancellable once sent. The generation marks the latest result that is allowed to mutate
+    // the cache, while the pending set lets invalidation keep ServiceActionTracker balanced before callbacks arrive.
     const uint64_t generation = _nextAvailableDriveLoadGeneration++;
     _availableDriveLoadGenerations[scopedUserDbId] = generation;
     (void) _pendingAvailableDriveLoadGenerations[scopedUserDbId].insert(generation);
@@ -100,6 +103,9 @@ void UserService::deleteUser(const qint64 userDbId) {
 
 void UserService::requestLoginToken(const QString &code, const QString &codeVerifier) {
     beginAction(actionRequestLoginToken);
+
+    // A new onboarding login run supersedes earlier token requests. Stale callbacks are ignored, but still need their
+    // pending action closed unless the session invalidated them first.
     const uint64_t generation = ++_loginTokenGeneration;
     (void) _pendingLoginTokenGenerations.insert(generation);
 
