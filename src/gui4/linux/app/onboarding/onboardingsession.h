@@ -63,7 +63,7 @@ class OnboardingSession final : public QObject {
         void invalidatePendingOperations();
 
     signals:
-        void windowActivationRequested();
+        void openWindowRequested();
 
     private:
         UserService &_userService;
