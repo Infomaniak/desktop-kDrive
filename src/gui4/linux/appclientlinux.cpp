@@ -68,17 +68,14 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     (void) connect(this, &AppClientLinux::ipcConnected, this, [this] { _cachePopulator.bootstrap(); });
     (void) connect(this, &AppClientLinux::ipcConnected, &_sentryService, &SentryService::reconcileConsentWithServer);
     (void) connect(this, &QCoreApplication::aboutToQuit, this, [] { qCInfo(lcAppClientLinux) << "Qt aboutToQuit emitted"; });
-    (void) connect(&_serverCommService, &CommService::showSettings, &_systemTrayController,
-                   &SystemTrayController::mainWindowActivationRequested);
-    (void) connect(&_serverCommService, &CommService::showSynthesis, &_systemTrayController,
-                   &SystemTrayController::mainWindowActivationRequested);
+    (void) connect(&_serverCommService, &CommService::showSettings, this, &AppClientLinux::openMainWindow);
+    (void) connect(&_serverCommService, &CommService::showSynthesis, this, &AppClientLinux::openMainWindow);
     (void) connect(&_serverCommService, &CommService::quit, this, [] { QCoreApplication::quit(); });
-    (void) connect(&_onboardingSessionManager, &OnboardingSessionManager::onboardingWindowActivationRequested,
-                   &_systemTrayController, &SystemTrayController::showMainWindow);
-    (void) connect(&_onboardingSessionManager, &OnboardingSessionManager::onboardingWindowDeactivationRequested,
-                   &_systemTrayController, &SystemTrayController::hideMainWindow);
-    (void) connect(&_systemTrayController, &SystemTrayController::mainWindowActivationRequested, &_onboardingSessionManager,
-                   &OnboardingSessionManager::requestWindowActivation);
+    (void) connect(&_onboardingSessionManager, &OnboardingSessionManager::openOnboardingWindowRequested, &_systemTrayController,
+                   &SystemTrayController::showMainWindow);
+    (void) connect(&_onboardingSessionManager, &OnboardingSessionManager::closeOnboardingWindowRequested, &_systemTrayController,
+                   &SystemTrayController::hideMainWindow);
+    (void) connect(&_systemTrayController, &SystemTrayController::openMainWindowRequested, this, &AppClientLinux::openMainWindow);
     (void) connect(&_appCache, &AppCache::usersChanged, &_sentryService, &SentryService::updateAuthenticatedUser);
     (void) connect(&_systemTrayController, &SystemTrayController::quitRequested, this, [this] {
         qCInfo(lcAppClientLinux) << "Quit requested from system tray";
@@ -139,6 +136,16 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
                                           "Release and RelWithDebInfo clients must be launched by the server with its TCP port.");
 #endif
     }
+}
+
+void AppClientLinux::openMainWindow() {
+    if (_appCache.driveContexts().empty()) {
+        _onboardingSessionManager.openOnboardingWindow();
+        return;
+    }
+
+    qCInfo(lcAppClientLinux) << "Main window open skipped: main content is not implemented"
+                             << "| configuredDrives:" << _appCache.driveContexts().size();
 }
 
 void AppClientLinux::setupLogging() {
