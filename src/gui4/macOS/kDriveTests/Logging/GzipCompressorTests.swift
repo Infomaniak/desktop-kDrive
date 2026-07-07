@@ -65,7 +65,7 @@ struct GzipCompressorTests {
         #expect(fileManager.createFile(atPath: originalURL.path, contents: nil))
 
         #expect(GzipCompressor.compress(source: originalURL, destination: compressedURL))
-        #expect(Array(try Data(contentsOf: compressedURL).prefix(2)) == [0x1F, 0x8B])
+        #expect(try Array(Data(contentsOf: compressedURL).prefix(2)) == [0x1F, 0x8B])
 
         #expect(GzipCompressor.decompress(source: compressedURL, destination: decompressedURL))
         #expect(try Data(contentsOf: decompressedURL).isEmpty)

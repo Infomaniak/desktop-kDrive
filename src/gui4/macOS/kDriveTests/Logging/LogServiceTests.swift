@@ -24,8 +24,8 @@ import Testing
 struct LogServiceTests {
     @Test("Formatter matches the legacy kDrive log line format")
     func formatterMatchesLegacyFormat() throws {
-        let event = LogEvent(
-            date: try Self.date(year: 2026, month: 3, day: 24, hour: 14, minute: 8, second: 14, millisecond: 920),
+        let event = try LogEvent(
+            date: Self.date(year: 2026, month: 3, day: 24, hour: 14, minute: 8, second: 14, millisecond: 920),
             level: .debug,
             category: "general",
             threadID: "2971261",
@@ -42,12 +42,12 @@ struct LogServiceTests {
     }
 
     @Test("Error level uses the Qt critical log marker")
-    func errorLevelUsesCriticalMarker() throws {
+    func errorLevelUsesCriticalMarker() {
         #expect(LogLevel.error.logLetter == "C")
     }
 
     @Test("Service appends formatted lines and reports breadcrumbs for all levels")
-    func serviceAppendsLineAndReportsBreadcrumbs() throws {
+    func serviceAppendsLineAndReportsBreadcrumbs() {
         let writer = InMemoryLogFileWriter()
         let sentryReporter = SpySentryLogReporter()
         let service = LogService(
@@ -67,7 +67,7 @@ struct LogServiceTests {
     }
 
     @Test("Service captures only error and fatal events")
-    func serviceCapturesOnlyErrorAndFatalEvents() throws {
+    func serviceCapturesOnlyErrorAndFatalEvents() {
         let sentryReporter = SpySentryLogReporter()
         let service = LogService(
             formatter: LogLineFormatter(timeZone: Self.utcTimeZone),
@@ -95,7 +95,12 @@ struct LogServiceTests {
         defer { try? fileManager.removeItem(at: logDirectory) }
 
         let date = try Self.date(year: 2026, month: 6, day: 9, hour: 12, minute: 0, second: 46, millisecond: 529)
-        let writer = try LogFileWriter(logDirectory: logDirectory, date: date, timeZone: Self.utcTimeZone, fileManager: fileManager)
+        let writer = try LogFileWriter(
+            logDirectory: logDirectory,
+            date: date,
+            timeZone: Self.utcTimeZone,
+            fileManager: fileManager
+        )
         let service = LogService(
             formatter: LogLineFormatter(timeZone: Self.utcTimeZone),
             fileWriter: writer,
@@ -104,7 +109,13 @@ struct LogServiceTests {
             threadIDProvider: { "227895" }
         )
 
-        service.log(level: .debug, category: "xpc", message: "Snd rqst 12 ERROR_INFOLIST_LEGACY(35)", file: "commclient.cpp", line: 122)
+        service.log(
+            level: .debug,
+            category: "xpc",
+            message: "Snd rqst 12 ERROR_INFOLIST_LEGACY(35)",
+            file: "commclient.cpp",
+            line: 122
+        )
         service.flush()
 
         let contents = try String(contentsOf: writer.fileURL, encoding: .utf8)
@@ -174,12 +185,22 @@ struct LogServiceTests {
 
         // First session, then "kill" it by releasing the writer (closes the file handle).
         try autoreleasepool {
-            let writer = try LogFileWriter(logDirectory: logDirectory, date: firstDate, timeZone: Self.utcTimeZone, fileManager: fileManager)
+            let writer = try LogFileWriter(
+                logDirectory: logDirectory,
+                date: firstDate,
+                timeZone: Self.utcTimeZone,
+                fileManager: fileManager
+            )
             try writer.append("first session line")
         }
 
         // Restart: a new writer with a later launch time.
-        let secondWriter = try LogFileWriter(logDirectory: logDirectory, date: secondDate, timeZone: Self.utcTimeZone, fileManager: fileManager)
+        let secondWriter = try LogFileWriter(
+            logDirectory: logDirectory,
+            date: secondDate,
+            timeZone: Self.utcTimeZone,
+            fileManager: fileManager
+        )
         try secondWriter.append("second session line")
 
         let firstURL = logDirectory.appendingPathComponent("20260609_1200_kDrive_client.log", isDirectory: false)
@@ -201,11 +222,21 @@ struct LogServiceTests {
         let date = try Self.date(year: 2026, month: 6, day: 9, hour: 12, minute: 0, second: 0, millisecond: 0)
 
         try autoreleasepool {
-            let writer = try LogFileWriter(logDirectory: logDirectory, date: date, timeZone: Self.utcTimeZone, fileManager: fileManager)
+            let writer = try LogFileWriter(
+                logDirectory: logDirectory,
+                date: date,
+                timeZone: Self.utcTimeZone,
+                fileManager: fileManager
+            )
             try writer.append("before restart")
         }
 
-        let secondWriter = try LogFileWriter(logDirectory: logDirectory, date: date, timeZone: Self.utcTimeZone, fileManager: fileManager)
+        let secondWriter = try LogFileWriter(
+            logDirectory: logDirectory,
+            date: date,
+            timeZone: Self.utcTimeZone,
+            fileManager: fileManager
+        )
         try secondWriter.append("after restart")
 
         let url = logDirectory.appendingPathComponent("20260609_1200_kDrive_client.log", isDirectory: false)
