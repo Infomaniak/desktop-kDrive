@@ -98,7 +98,7 @@ void OnboardingSyncCreationCoordinator::prepareSynchronization(const AvailableDr
         return;
     }
 
-    const auto basePath = defaultLocalPath(availableDrive->name());
+    const auto basePath = defaultLocalPath(QString::fromStdString(availableDrive->name()));
     qCInfo(lcOnboardingSyncCreationCoordinator)
             << "Requesting onboarding sync path | driveId:" << key.driveId << "/ basePath:" << basePath;
     _commService.requestFindGoodPathForNewSync(
