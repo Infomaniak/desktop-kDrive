@@ -69,9 +69,9 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     (void) connect(this, &AppClientLinux::ipcConnected, &_sentryService, &SentryService::reconcileConsentWithServer);
     (void) connect(this, &QCoreApplication::aboutToQuit, this, [] { qCInfo(lcAppClientLinux) << "Qt aboutToQuit emitted"; });
     (void) connect(&_serverCommService, &CommService::showSettings, &_systemTrayController,
-                   &SystemTrayController::requestMainWindowActivation);
+                   &SystemTrayController::mainWindowActivationRequested);
     (void) connect(&_serverCommService, &CommService::showSynthesis, &_systemTrayController,
-                   &SystemTrayController::requestMainWindowActivation);
+                   &SystemTrayController::mainWindowActivationRequested);
     (void) connect(&_serverCommService, &CommService::quit, this, [] { QCoreApplication::quit(); });
     (void) connect(&_onboardingSessionManager, &OnboardingSessionManager::onboardingWindowActivationRequested,
                    &_systemTrayController, &SystemTrayController::showMainWindow);
