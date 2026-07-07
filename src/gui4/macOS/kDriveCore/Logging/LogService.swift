@@ -76,6 +76,7 @@ public final class LogService: @unchecked Sendable {
         }
     }
 
+    // periphery:ignore - Public API to flush pending log writes, e.g. before exit.
     func flush() {
         guard DispatchQueue.getSpecific(key: queueKey) == nil else { return }
         queue.sync {}

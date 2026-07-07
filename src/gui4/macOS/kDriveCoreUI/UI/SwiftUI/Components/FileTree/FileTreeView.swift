@@ -24,6 +24,7 @@ public struct FileTreeView: NSViewRepresentable {
     public let childrenFetcher: FileTreeChildrenFetcher
     public let onBlacklistChange: (Set<String>) -> Void
 
+    // periphery:ignore - Public API used by the main app target to build the file tree.
     public init(
         rootItems: [FileTreeItem],
         initialBlacklist: Set<String> = [],

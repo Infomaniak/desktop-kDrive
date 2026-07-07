@@ -72,6 +72,7 @@ enum GzipCompressor {
     ///
     /// - Returns: `true` on success. On failure the caller is responsible for cleaning up any
     ///   partially written `destination`.
+    // periphery:ignore - Counterpart to compress, used to read gzip-archived log backups.
     static func decompress(source: URL, destination: URL) -> Bool {
         let handle = source.path.withCString { pathPtr in
             "rb".withCString { modePtr in
