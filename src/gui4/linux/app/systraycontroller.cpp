@@ -129,7 +129,7 @@ void SystemTrayController::initialize() {
     _quitAction = _trayMenu.addAction(tr("Quit"));
     _trayIcon.setContextMenu(&_trayMenu);
 
-    (void) connect(_openAction, &QAction::triggered, this, &SystemTrayController::requestMainWindowActivation);
+    (void) connect(_openAction, &QAction::triggered, this, &SystemTrayController::mainWindowActivationRequested);
     (void) connect(_settingsAction, &QAction::triggered, this, &SystemTrayController::showSettingsWindow);
     (void) connect(_quitAction, &QAction::triggered, this, &SystemTrayController::quitRequested);
     (void) connect(&_trayIcon, &QSystemTrayIcon::activated, this, &SystemTrayController::onTrayActivated);
@@ -223,10 +223,6 @@ void SystemTrayController::showMainWindow() const {
     _mainWindow->show();
     _mainWindow->raise();
     _mainWindow->requestActivate();
-}
-
-void SystemTrayController::requestMainWindowActivation() {
-    emit mainWindowActivationRequested();
 }
 
 void SystemTrayController::showSettingsWindow() {
@@ -385,7 +381,7 @@ void SystemTrayController::onTrayActivated(const QSystemTrayIcon::ActivationReas
     }
 
     if (reason == QSystemTrayIcon::Trigger || reason == QSystemTrayIcon::DoubleClick || reason == QSystemTrayIcon::MiddleClick) {
-        requestMainWindowActivation();
+        emit mainWindowActivationRequested();
     }
 }
 
