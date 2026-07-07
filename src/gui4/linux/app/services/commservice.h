@@ -25,7 +25,7 @@
 #include "libcommon/utility/cstypes.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/info/accountinfo.h"
-#include "libcommon/info/driveavailableinfo.h"
+#include "libcommon/data/driveavailable.h"
 #include "libcommon/info/errorinfo.h"
 #include "libcommon/info/exclusiontemplateinfo.h"
 #include "libcommon/info/nodeconflictinfo.h"
@@ -106,7 +106,7 @@ class CommService : public QObject {
         using LoginTokenCallback = std::function<void(const ExitInfo &, const LoginTokenResult &)>;
         using UserDbIdListCallback = std::function<void(const ExitInfo &, const std::vector<UserDbId> &)>;
         using UserDisplayInfoListCallback = std::function<void(const ExitInfo &, const std::vector<UserDisplayInfo> &)>;
-        using DriveAvailableInfoListCallback = std::function<void(const ExitInfo &, const std::vector<DriveAvailableInfo> &)>;
+        using DriveAvailableListCallback = std::function<void(const ExitInfo &, const std::vector<DriveAvailable> &)>;
         using AccountInfoListCallback = std::function<void(const ExitInfo &, const std::vector<AccountInfo> &)>;
         using DriveListCallback = std::function<void(const ExitInfo &, const std::vector<Drive> &)>;
         using SyncInfoListCallback = std::function<void(const ExitInfo &, const std::vector<SyncInfo> &)>;
@@ -145,7 +145,7 @@ class CommService : public QObject {
         // --- User ---
         void requestUserDbIdList(const UserDbIdListCallback &callback) const;
         void requestUserDisplayInfoList(const UserDisplayInfoListCallback &callback) const;
-        void requestUserAvailableDrives(UserDbId userDbId, const DriveAvailableInfoListCallback &callback) const;
+        void requestUserAvailableDrives(UserDbId userDbId, const DriveAvailableListCallback &callback) const;
         void requestDeleteUser(UserDbId userDbId, const VoidCallback &callback) const;
 
         // --- Account ---
