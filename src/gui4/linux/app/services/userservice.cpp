@@ -57,7 +57,7 @@ void UserService::loadAvailableDrives(const qint64 userDbId) {
 
     _commService.requestUserAvailableDrives(
             scopedUserDbId,
-            [this, scopedUserDbId, generation](const ExitInfo &exitInfo, const std::vector<DriveAvailableInfo> &list) {
+            [this, scopedUserDbId, generation](const ExitInfo &exitInfo, const std::vector<DriveAvailable> &list) {
                 handleAvailableDrivesLoaded(scopedUserDbId, generation, exitInfo, list);
             });
 }
@@ -123,7 +123,7 @@ void UserService::pruneStaleAvailableDriveGenerations() {
 }
 
 void UserService::handleAvailableDrivesLoaded(const UserDbId userDbId, const uint64_t generation, const ExitInfo &exitInfo,
-                                              const std::vector<DriveAvailableInfo> &list) {
+                                              const std::vector<DriveAvailable> &list) {
     endAction(actionLoadAvailableDrives, userDbId);
     if (const auto generationIt = _availableDriveLoadGenerations.find(userDbId);
         generationIt == _availableDriveLoadGenerations.end() || generationIt->second != generation) {
