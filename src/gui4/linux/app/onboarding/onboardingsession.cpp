@@ -40,8 +40,8 @@ OnboardingSession::OnboardingSession(AppCache &appCache, CommService &commServic
     _loginCoordinator(_flowController, commService, userService, appCache, _onboardingState),
     _driveSelectionController(appCache, _onboardingState, userService, _flowController),
     _generation(generation) {
-    (void) connect(&_loginCoordinator, &OnboardingLoginCoordinator::windowActivationRequested, this,
-                   &OnboardingSession::windowActivationRequested);
+    (void) connect(&_loginCoordinator, &OnboardingLoginCoordinator::openWindowRequested, this,
+                   &OnboardingSession::openWindowRequested);
 
     if (entryPoint != EntryPoint::DriveSelection) {
         return;
