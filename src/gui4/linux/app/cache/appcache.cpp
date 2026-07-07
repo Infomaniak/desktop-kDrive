@@ -150,8 +150,8 @@ void AppCache::replaceServerErrors(const std::vector<ErrorInfo> &errors) {
     emit serverErrorsChanged();
 }
 
-void AppCache::replaceAvailableDrivesForUser(const UserDbId userDbId, const std::vector<DriveAvailableInfo> &availableDrives) {
-    std::vector<DriveAvailableInfo> scopedAvailableDrives;
+void AppCache::replaceAvailableDrivesForUser(const UserDbId userDbId, const std::vector<DriveAvailable> &availableDrives) {
+    std::vector<DriveAvailable> scopedAvailableDrives;
     scopedAvailableDrives.reserve(availableDrives.size());
     for (auto info: availableDrives) {
         info.setUserDbId(userDbId);
