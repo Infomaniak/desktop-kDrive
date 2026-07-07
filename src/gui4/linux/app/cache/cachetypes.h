@@ -21,7 +21,7 @@
 #include "libcommon/data/drive.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/info/accountinfo.h"
-#include "libcommon/info/driveavailableinfo.h"
+#include "libcommon/data/driveavailable.h"
 #include "libcommon/info/errorinfo.h"
 #include "libcommon/info/syncinfo.h"
 #include "libcommon/info/userinfo.h"
@@ -84,7 +84,7 @@ struct DriveContext {
 struct AvailableDriveContext {
         UserDisplayInfo userDisplayInfo;
         std::optional<AccountInfo> accountInfo;
-        DriveAvailableInfo availableDriveInfo;
+        DriveAvailable availableDrive;
         bool alreadyConfigured{false};
         std::optional<Drive> configuredDrive;
 
