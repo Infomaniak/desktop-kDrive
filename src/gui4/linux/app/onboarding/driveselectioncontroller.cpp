@@ -20,8 +20,9 @@
 
 namespace KDC {
 
-DriveSelectionController::DriveSelectionController(AppCache &cache, OnboardingState &onboardingState, UserService &userService,
-                                                   OnboardingFlowController &flowController, QObject *const parent) :
+DriveSelectionController::DriveSelectionController(const AppCache &cache, OnboardingState &onboardingState,
+                                                   UserService &userService, OnboardingFlowController &flowController,
+                                                   QObject *const parent) :
     QObject(parent),
     _cache(cache),
     _onboardingState(onboardingState),
