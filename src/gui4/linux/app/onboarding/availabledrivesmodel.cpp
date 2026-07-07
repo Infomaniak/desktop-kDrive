@@ -30,8 +30,8 @@ namespace {
 const QColor defaultDriveColor{QStringLiteral("#0098FF")};
 
 [[nodiscard]] QString normalizedAccountName(const AvailableDriveContext &context) {
-    if (!context.availableDriveInfo.accountName().isEmpty()) {
-        return context.availableDriveInfo.accountName();
+    if (!context.availableDrive.accountName().empty()) {
+        return QString::fromStdString(context.availableDrive.accountName());
     }
 
     if (context.accountInfo.has_value()) {
@@ -42,8 +42,8 @@ const QColor defaultDriveColor{QStringLiteral("#0098FF")};
 }
 
 [[nodiscard]] bool driveContextLessThan(const AvailableDriveContext &lhs, const AvailableDriveContext &rhs) {
-    if (const auto nameCompare =
-                QString::compare(lhs.availableDriveInfo.name(), rhs.availableDriveInfo.name(), Qt::CaseInsensitive);
+    if (const auto nameCompare = QString::compare(QString::fromStdString(lhs.availableDrive.name()),
+                                                  QString::fromStdString(rhs.availableDrive.name()), Qt::CaseInsensitive);
         nameCompare != 0) {
         return nameCompare < 0;
     }
@@ -53,11 +53,11 @@ const QColor defaultDriveColor{QStringLiteral("#0098FF")};
         return accountCompare < 0;
     }
 
-    if (lhs.availableDriveInfo.accountId() != rhs.availableDriveInfo.accountId()) {
-        return lhs.availableDriveInfo.accountId() < rhs.availableDriveInfo.accountId();
+    if (lhs.availableDrive.accountId() != rhs.availableDrive.accountId()) {
+        return lhs.availableDrive.accountId() < rhs.availableDrive.accountId();
     }
 
-    return lhs.availableDriveInfo.driveId() < rhs.availableDriveInfo.driveId();
+    return lhs.availableDrive.driveId() < rhs.availableDrive.driveId();
 }
 
 } // namespace
@@ -133,11 +133,14 @@ QVariant AvailableDrivesModel::data(const QModelIndex &index, const int role) co
             return QVariant::fromValue(static_cast<qint64>(key.driveId));
         case NameRole:
         case Qt::DisplayRole:
-            return context.availableDriveInfo.name();
+            return QString::fromStdString(context.availableDrive.name());
         case AccountNameRole:
             return accountNameForContext(context);
         case ColorRole:
-            return context.availableDriveInfo.color().isValid() ? context.availableDriveInfo.color() : defaultDriveColor;
+            if (const QColor color{QString::fromStdString(context.availableDrive.color())}; color.isValid()) {
+                return color;
+            }
+            return defaultDriveColor;
         case SelectedRole:
             return context.alreadyConfigured || _onboardingState.isAvailableDriveSelected(key);
         case AlreadyConfiguredRole:
@@ -261,7 +264,7 @@ void AvailableDrivesModel::startForFree() {
 }
 
 AvailableDriveKey AvailableDrivesModel::keyAt(const qint32 row) const {
-    const auto &driveInfo = _contexts[static_cast<std::size_t>(row)].availableDriveInfo;
+    const auto &driveInfo = _contexts[static_cast<std::size_t>(row)].availableDrive;
     return AvailableDriveKey{
             .userDbId = driveInfo.userDbId(),
             .accountId = driveInfo.accountId(),
