@@ -62,7 +62,7 @@ const QColor defaultDriveColor{QStringLiteral("#0098FF")};
 
 } // namespace
 
-AvailableDrivesModel::AvailableDrivesModel(AppCache &cache, OnboardingState &onboardingState, QObject *const parent) :
+AvailableDrivesModel::AvailableDrivesModel(const AppCache &cache, OnboardingState &onboardingState, QObject *const parent) :
     QAbstractListModel(parent),
     _cache(cache),
     _onboardingState(onboardingState) {
