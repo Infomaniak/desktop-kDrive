@@ -81,6 +81,7 @@ class AppClientLinux : public QApplication {
 
     private:
         static void setupLogging();
+        void openMainWindow();
 
         IpcClient _ipcClient{this};
         SignalDispatcher _signalDispatcher{this};
