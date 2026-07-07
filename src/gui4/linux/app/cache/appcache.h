@@ -51,7 +51,7 @@ class AppCache : public QObject {
         [[nodiscard]] std::vector<ErrorInfo> syncErrors() const;
         [[nodiscard]] std::vector<ErrorInfo> serverErrors() const;
         // Returns the addable-drive snapshot scoped to one user. This is not tied to main selection.
-        [[nodiscard]] std::vector<DriveAvailableInfo> availableDrives(UserDbId userDbId) const;
+        [[nodiscard]] std::vector<DriveAvailable> availableDrives(UserDbId userDbId) const;
 
         // Direct id-based lookups. Missing or orphaned entities are returned as std::nullopt.
         [[nodiscard]] std::optional<UserInfo> user(UserDbId userDbId) const;
@@ -60,7 +60,7 @@ class AppCache : public QObject {
         [[nodiscard]] std::optional<SyncInfo> sync(SyncDbId syncDbId) const;
         [[nodiscard]] std::optional<ErrorInfo> syncError(ErrorDbId errorDbId) const;
         [[nodiscard]] std::optional<ErrorInfo> serverError(ErrorDbId errorDbId) const;
-        [[nodiscard]] std::optional<DriveAvailableInfo> availableDrive(const AvailableDriveKey &key) const;
+        [[nodiscard]] std::optional<DriveAvailable> availableDrive(const AvailableDriveKey &key) const;
 
         // Parent-to-children graph traversal helpers. Results are stable-sorted by database id.
         [[nodiscard]] std::vector<AccountInfo> accountsForUser(UserDbId userDbId) const;
@@ -90,7 +90,7 @@ class AppCache : public QObject {
         void replaceSyncErrors(const std::vector<ErrorInfo> &errors);
         void replaceServerErrors(const std::vector<ErrorInfo> &errors);
         // Replaces only one user's addable-drive snapshot; other users' snapshots are preserved.
-        void replaceAvailableDrivesForUser(UserDbId userDbId, const std::vector<DriveAvailableInfo> &availableDrives);
+        void replaceAvailableDrivesForUser(UserDbId userDbId, const std::vector<DriveAvailable> &availableDrives);
         void clearAvailableDrivesForUser(UserDbId userDbId);
         void clearAllAvailableDrives();
 
@@ -179,7 +179,7 @@ class AppCache : public QObject {
         std::unordered_map<SyncDbId, SyncNode> _syncsByDbId;
         std::unordered_map<ErrorDbId, ErrorInfo> _syncErrorsByDbId;
         std::unordered_map<ErrorDbId, ErrorInfo> _serverErrorsByDbId;
-        std::unordered_map<UserDbId, std::vector<DriveAvailableInfo>> _availableDrivesByUserDbId;
+        std::unordered_map<UserDbId, std::vector<DriveAvailable>> _availableDrivesByUserDbId;
 };
 
 } // namespace KDC
