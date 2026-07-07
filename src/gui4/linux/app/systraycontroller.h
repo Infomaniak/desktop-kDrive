@@ -71,7 +71,7 @@ class SystemTrayController final : public QObject {
 
     signals:
         void quitRequested();
-        void mainWindowActivationRequested();
+        void openMainWindowRequested();
         void trayModeActiveChanged(bool active);
 
     private:
