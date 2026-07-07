@@ -70,7 +70,7 @@ class UserService : public QObject {
         void setLoading(bool loading);
         void pruneStaleAvailableDriveGenerations();
         void handleAvailableDrivesLoaded(UserDbId userDbId, uint64_t generation, const ExitInfo &exitInfo,
-                                         const std::vector<DriveAvailableInfo> &list);
+                                         const std::vector<DriveAvailable> &list);
         [[nodiscard]] bool isActionPending(const ServiceActionTracker::ActionKey &actionKey,
                                            ServiceActionTracker::ScopeId scopeId = 0) const;
         void notifyRequestFailure(const ExitInfo &exitInfo, RequestNum requestNum);
