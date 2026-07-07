@@ -326,15 +326,15 @@ void CommService::requestUserDisplayInfoList(const UserDisplayInfoListCallback &
                            });
 }
 
-void CommService::requestUserAvailableDrives(const UserDbId userDbId, const DriveAvailableInfoListCallback &callback) const {
+void CommService::requestUserAvailableDrives(const UserDbId userDbId, const DriveAvailableListCallback &callback) const {
     Poco::DynamicStruct params;
     CommonUtility::writeValueToStruct(params, msgParamUserDbId, userDbId);
     _ipcClient.sendRequest(RequestNum::USER_AVAILABLEDRIVES, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
-                               std::vector<DriveAvailableInfo> list;
+                               std::vector<DriveAvailable> list;
                                if (exitInfo) {
                                    CommonUtility::readValuesFromStruct(result, msgParamDriveAvailableInfoList, list,
-                                                                       dynamicVar2Struct<DriveAvailableInfo>);
+                                                                       dynamicVar2Struct<DriveAvailable>);
                                }
                                callback(exitInfo, list);
                            });
