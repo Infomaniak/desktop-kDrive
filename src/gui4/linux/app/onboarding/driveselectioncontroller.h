@@ -51,7 +51,7 @@ class DriveSelectionController final : public QObject {
         Q_PROPERTY(QString userAvatarSource READ userAvatarSource NOTIFY userChanged)
 
     public:
-        explicit DriveSelectionController(AppCache &cache, OnboardingState &onboardingState, UserService &userService,
+        explicit DriveSelectionController(const AppCache &cache, OnboardingState &onboardingState, UserService &userService,
                                           OnboardingFlowController &flowController, QObject *parent = nullptr);
 
         [[nodiscard]] QAbstractItemModel *drivesModel() { return &_drivesModel; }
@@ -87,7 +87,7 @@ class DriveSelectionController final : public QObject {
         [[nodiscard]] UserDbId selectedUserDbId() const;
         void setLoadFailed(bool loadFailed);
 
-        AppCache &_cache;
+        const AppCache &_cache;
         OnboardingState &_onboardingState;
         UserService &_userService;
         OnboardingFlowController &_flowController;

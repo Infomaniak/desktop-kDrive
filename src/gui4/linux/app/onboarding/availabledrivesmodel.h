@@ -49,7 +49,7 @@ class AvailableDrivesModel final : public QAbstractListModel {
         };
         Q_ENUM(Role)
 
-        explicit AvailableDrivesModel(AppCache &cache, OnboardingState &onboardingState, QObject *parent = nullptr);
+        explicit AvailableDrivesModel(const AppCache &cache, OnboardingState &onboardingState, QObject *parent = nullptr);
 
         [[nodiscard]] int rowCount(const QModelIndex &parent = QModelIndex()) const override;
         [[nodiscard]] QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
@@ -71,7 +71,7 @@ class AvailableDrivesModel final : public QAbstractListModel {
         [[nodiscard]] UserDbId selectedUserDbId() const;
         void rebuild();
 
-        AppCache &_cache;
+        const AppCache &_cache;
         OnboardingState &_onboardingState;
         std::vector<AvailableDriveContext> _contexts;
 };
