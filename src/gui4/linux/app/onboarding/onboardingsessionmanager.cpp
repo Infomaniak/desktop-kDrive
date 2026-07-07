@@ -42,10 +42,10 @@ OnboardingSessionManager::OnboardingSessionManager(CachePopulator &cachePopulato
                    &OnboardingSessionManager::handleBootstrapCompleted);
 }
 
-void OnboardingSessionManager::requestWindowActivation() {
+void OnboardingSessionManager::openOnboardingWindow() {
     if (!_bootstrapCompleted) {
         qCInfo(lcOnboardingSessionManager)
-                << "Main window activation skipped: cache bootstrap is not complete and no content is displayable";
+                << "Onboarding window open skipped: cache bootstrap is not complete and no onboarding route is displayable";
         return;
     }
 
@@ -53,12 +53,12 @@ void OnboardingSessionManager::requestWindowActivation() {
         _restartRequested = true;
         _windowActivationPending = true;
         qCInfo(lcOnboardingSessionManager)
-                << "Main window activation deferred: the current onboarding session is being destroyed";
+                << "Onboarding window open deferred: the current onboarding session is being destroyed";
         return;
     }
 
     ensureSession();
-    activateWindowIfDisplayable();
+    openWindowIfDisplayable();
 }
 
 void OnboardingSessionManager::ensureSession() {
@@ -90,22 +90,21 @@ void OnboardingSessionManager::ensureSession() {
     }
 }
 
-void OnboardingSessionManager::activateWindowIfDisplayable() {
+void OnboardingSessionManager::openWindowIfDisplayable() {
     if (_state == LifecycleState::Active && _activeSession != nullptr) {
-        emit onboardingWindowActivationRequested();
+        emit openOnboardingWindowRequested();
         return;
     }
 
-    qCInfo(lcOnboardingSessionManager)
-            << "Main window activation skipped: onboarding is not required and the main content is not implemented"
-            << "| configuredDrives:" << _appCache.driveContexts().size();
+    qCInfo(lcOnboardingSessionManager) << "Onboarding window open skipped: onboarding is not required"
+                                       << "| configuredDrives:" << _appCache.driveContexts().size();
 }
 
 void OnboardingSessionManager::handleBootstrapCompleted() {
     _bootstrapCompleted = true;
     ensureSession();
     if (_activeSession != nullptr) {
-        emit onboardingWindowActivationRequested();
+        emit openOnboardingWindowRequested();
     }
 }
 
@@ -121,8 +120,8 @@ void OnboardingSessionManager::startSession(const OnboardingSession::EntryPoint 
     _activeSession = session;
     _state = LifecycleState::Active;
 
-    (void) connect(session, &OnboardingSession::windowActivationRequested, this,
-                   &OnboardingSessionManager::onboardingWindowActivationRequested);
+    (void) connect(session, &OnboardingSession::openWindowRequested, this,
+                   &OnboardingSessionManager::openOnboardingWindowRequested);
     (void) connect(session->flowController(), &OnboardingFlowController::cancelRequested, this, [this, session] {
         if (_activeSession == session) {
             stopSession(true);
@@ -139,7 +138,7 @@ void OnboardingSessionManager::startSession(const OnboardingSession::EntryPoint 
     emit activeSessionChanged();
 }
 
-void OnboardingSessionManager::stopSession(const bool requestWindowDeactivation) {
+void OnboardingSessionManager::stopSession(const bool closeWindow) {
     if (_state != LifecycleState::Active || _activeSession == nullptr) {
         return;
     }
@@ -156,8 +155,8 @@ void OnboardingSessionManager::stopSession(const bool requestWindowDeactivation)
     qCInfo(lcOnboardingSessionManager) << "Onboarding session unpublished | generation:"
                                        << sessionPendingDestruction->generation();
     emit activeSessionChanged();
-    if (requestWindowDeactivation) {
-        emit onboardingWindowDeactivationRequested();
+    if (closeWindow) {
+        emit closeOnboardingWindowRequested();
     }
     sessionPendingDestruction->deleteLater();
 }
@@ -177,7 +176,7 @@ void OnboardingSessionManager::handleRetiringSessionDestroyed() {
     _restartRequested = false;
     ensureSession();
     if (activateAfterRestart) {
-        activateWindowIfDisplayable();
+        openWindowIfDisplayable();
     }
 }
 

@@ -94,7 +94,7 @@ void OnboardingLoginCoordinator::handleLoginStateChanged() {
             return;
         case LoadingUser:
         case LoginError:
-            emit windowActivationRequested();
+            emit openWindowRequested();
             return;
     }
 }
