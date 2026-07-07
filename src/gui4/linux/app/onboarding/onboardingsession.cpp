@@ -36,7 +36,6 @@ OnboardingSession::OnboardingSession(AppCache &appCache, CommService &commServic
     QObject(parent),
     _userService(userService),
     _onboardingState(appCache),
-    _flowController(),
     _loginCoordinator(_flowController, commService, userService, appCache, _onboardingState),
     _driveSelectionController(appCache, _onboardingState, userService, _flowController),
     _generation(generation) {
