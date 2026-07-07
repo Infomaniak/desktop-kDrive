@@ -123,11 +123,11 @@ void DriveSelectionController::reload() {
     _userService.loadAvailableDrives(static_cast<qint64>(userDbId));
 }
 
-void DriveSelectionController::requestAdvancedSettings() {
+void DriveSelectionController::requestAdvancedSettings() const {
     _flowController.requestAdvancedSettings();
 }
 
-void DriveSelectionController::continueOnboarding() {
+void DriveSelectionController::continueOnboarding() const {
     if (!canContinue()) {
         return;
     }
@@ -135,11 +135,11 @@ void DriveSelectionController::continueOnboarding() {
     _flowController.requestDriveSelectionContinue();
 }
 
-void DriveSelectionController::openDriveOffers() {
+void DriveSelectionController::openDriveOffers() const {
     _flowController.requestDriveOffers();
 }
 
-void DriveSelectionController::startForFree() {
+void DriveSelectionController::startForFree() const {
     _flowController.requestFreeDriveOrder();
 }
 
