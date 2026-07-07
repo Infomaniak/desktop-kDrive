@@ -68,10 +68,10 @@ class DriveSelectionController final : public QObject {
         [[nodiscard]] QString userAvatarSource() const;
 
         Q_INVOKABLE void reload();
-        Q_INVOKABLE void requestAdvancedSettings();
-        Q_INVOKABLE void continueOnboarding();
-        Q_INVOKABLE void openDriveOffers();
-        Q_INVOKABLE void startForFree();
+        Q_INVOKABLE void requestAdvancedSettings() const;
+        Q_INVOKABLE void continueOnboarding() const;
+        Q_INVOKABLE void openDriveOffers() const;
+        Q_INVOKABLE void startForFree() const;
 
     signals:
         void loadingChanged();
