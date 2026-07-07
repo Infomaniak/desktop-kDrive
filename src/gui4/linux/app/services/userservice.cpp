@@ -169,8 +169,8 @@ void UserService::pruneStaleAvailableDriveGenerations() {
             continue;
         }
 
-        const auto pendingIt = _pendingAvailableDriveLoadGenerations.find(it->first);
-        if (pendingIt != _pendingAvailableDriveLoadGenerations.end()) {
+        if (const auto pendingIt = _pendingAvailableDriveLoadGenerations.find(it->first);
+            pendingIt != _pendingAvailableDriveLoadGenerations.end()) {
             for (const auto generation: pendingIt->second) {
                 static_cast<void>(generation);
                 endAction(actionLoadAvailableDrives, it->first);
