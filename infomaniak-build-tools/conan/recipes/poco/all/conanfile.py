@@ -181,6 +181,8 @@ class PocoConan(ConanFile):
         # Disable SharedLibrary::suffix() including "d" as part of the platform-specific filename suffix
         if not self.options.get_safe("sharedlibrary_debug_suffix", True):
             tc.preprocessor_definitions["POCO_NO_SHARED_LIBRARY_DEBUG_SUFFIX"] = "1"
+        # Backport Conan Center's pcre2 library type marker for Poco's unbundled build.
+        tc.cache_variables["_PCRE2TYPE"] = "SHARED_LIBRARY" if self.dependencies["pcre2"].options.shared else "STATIC_LIBRARY"
         tc.generate()
 
         deps = CMakeDeps(self)
@@ -191,6 +193,24 @@ class PocoConan(ConanFile):
         deps.generate()
 
     def build(self):
+        foundation_cmake = os.path.join(self.source_folder, "Foundation", "CMakeLists.txt")
+        replace_in_file(self, foundation_cmake,
+            """\t#HACK: Unicode.cpp requires functions from these files. The can't be taken from the library
+\tPOCO_SOURCES(SRCS RegExp
+\t\tsrc/pcre2_ucd.c
+\t\tsrc/pcre2_tables.c
+\t)
+""",
+            """\t# HACK: Unicode.cpp requires functions from these files.
+\t# They can be used directly from PCRE2 only when linking the static library.
+\tif("${_PCRE2TYPE}" STREQUAL "SHARED_LIBRARY")
+\t\tPOCO_SOURCES(SRCS RegExp
+\t\t\tsrc/pcre2_ucd.c
+\t\t\tsrc/pcre2_tables.c
+\t\t)
+\tendif()
+""")
+
         # Remove debug suffix from library names when sharedlibrary_debug_suffix is False
         if not self.options.get_safe("sharedlibrary_debug_suffix", True):
             platform_specific_cmake = os.path.join(self.source_folder, "cmake", "DefinePlatformSpecifc.cmake")
