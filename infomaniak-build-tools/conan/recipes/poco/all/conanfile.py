@@ -204,7 +204,7 @@ class PocoConan(ConanFile):
     def build(self):
         foundation_cmake = os.path.join(self.source_folder, "Foundation", "CMakeLists.txt")
         replace_in_file(self, foundation_cmake,
-                        """\t#Unicode.cpp requires functions from these files. The can't be taken from the library
+                        """\t# Unicode.cpp requires functions from these files. The can't be taken from the library
             \tPOCO_SOURCES(SRCS RegExp
             \t\tsrc/pcre2_ucd.c
             \t\tsrc/pcre2_tables.c
