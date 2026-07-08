@@ -26,7 +26,6 @@ public struct BlacklistJobs: Sendable {
     public init() {}
 
     public func getBlacklistedNodeList(syncDbId: Int32) async throws -> [String] {
-        IKLogger.data.log("Query for blacklistedNodeList")
         let query = BlacklistedNodeListQuery(syncDbId: syncDbId)
         let request = await RequestMessage<BlacklistedNodeListQuery>(num: RequestNum.BLACKLISTED_NODE_LIST, body: query)
 
@@ -39,7 +38,6 @@ public struct BlacklistJobs: Sendable {
     }
 
     public func setBlacklistedNodeList(syncDbId: Int32, nodeIdList: [String]) async throws {
-        IKLogger.data.log("Query to set blacklistedNodeList")
         let query = BlacklistedNodeSetListQuery(syncDbId: syncDbId, nodeIdList: nodeIdList)
         let request = await RequestMessage<BlacklistedNodeSetListQuery>(num: RequestNum.BLACKLISTED_NODE_SETLIST, body: query)
 

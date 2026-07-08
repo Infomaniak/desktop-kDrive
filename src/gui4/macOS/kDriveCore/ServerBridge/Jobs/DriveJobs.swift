@@ -45,7 +45,6 @@ public struct DriveJobs: Sendable {
 
     @discardableResult
     public func driveInfoList() async throws -> [DriveResponse] {
-        IKLogger.data.log("Query for driveInfoList")
         let query = EmptyQuery()
         let request = await RequestMessage<EmptyQuery>(num: RequestNum.DRIVE_INFOLIST, body: query)
 
@@ -59,7 +58,6 @@ public struct DriveJobs: Sendable {
     }
 
     public func availableDrives(userDbId: Int32) async throws -> [AvailableDriveResponse] {
-        IKLogger.data.log("Query for availableDrives list")
         let query = DriveListQuery(userDbId: userDbId)
         let request = await RequestMessage<DriveListQuery>(num: RequestNum.USER_AVAILABLEDRIVES, body: query)
 
@@ -73,7 +71,6 @@ public struct DriveJobs: Sendable {
     }
 
     public func driveUpdate(driveInfo: AvailableDriveResponse) async throws {
-        IKLogger.data.log("Query to update drive: \(driveInfo.driveId)")
         let query = DriveUpdateQuery(driveInfo: driveInfo)
         let request = await RequestMessage<DriveUpdateQuery>(num: RequestNum.DRIVE_UPDATE, body: query)
 
@@ -85,7 +82,6 @@ public struct DriveJobs: Sendable {
 
     // TODO: Simplify parameters requirements once I checked with team how to get a `driveDbId` all the time
     public func driveDelete(driveDbId: Int32, accountId: Int32, userDbId: Int32) async throws {
-        IKLogger.data.log("Query for driveDelete")
         let query = DriveDeleteQuery(driveDbId: driveDbId)
         let request = await RequestMessage<DriveDeleteQuery>(num: RequestNum.DRIVE_DELETE, body: query)
 
@@ -97,7 +93,6 @@ public struct DriveJobs: Sendable {
     }
 
     public func driveSearch(syncDbId: Int32, searchString: String) async throws -> [SearchResponse] {
-        IKLogger.data.log("Query for driveSearch")
         let query = DriveSearchQuery(syncDbId: syncDbId, searchString: searchString)
         let request = await RequestMessage<DriveSearchQuery>(num: RequestNum.DRIVE_SEARCH, body: query)
 

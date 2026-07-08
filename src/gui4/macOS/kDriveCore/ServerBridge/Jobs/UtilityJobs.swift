@@ -30,7 +30,6 @@ public struct UtilityJobs: Sendable {
     public init() {}
 
     public func getBestVirtualFileSystemMode(path: String) async throws -> KDC.VirtualFileMode {
-        IKLogger.data.log("Query for best VFS mode")
         let query = UtilityBestVFSQuery(path: path)
         let request = await RequestMessage<UtilityBestVFSQuery>(num: RequestNum.UTILITY_BESTVFSAVAILABLEMODE, body: query)
 
@@ -40,7 +39,6 @@ public struct UtilityJobs: Sendable {
     }
 
     public func getGoodPathForNewSynchro(basePath: String) async throws -> String {
-        IKLogger.data.log("Query for good Path for new Synchro")
         let query = UtilityGoodPathNewSyncQuery(basePath: basePath)
         let request = await RequestMessage<UtilityGoodPathNewSyncQuery>(
             num: RequestNum.UTILITY_FINDGOODPATHFORNEWSYNC,
@@ -60,7 +58,6 @@ public struct UtilityJobs: Sendable {
     }
 
     public func isPathValidFor(path: String, syncConfiguration: KDC.SyncConfiguration) async throws -> Bool {
-        IKLogger.data.log("Query for path validation for new sync")
         let query = UtilityIsPathValidForNewSyncQuery(path: path, syncConfiguration: syncConfiguration)
         let request = await RequestMessage<UtilityIsPathValidForNewSyncQuery>(
             num: RequestNum.UTILITY_ISPATHVALIDFORNEWSYNC,
@@ -76,21 +73,18 @@ public struct UtilityJobs: Sendable {
     }
 
     public func activateLoadInfo() async throws {
-        IKLogger.data.log("Query for activating load info display")
         let request = await RequestMessage<EmptyQuery>(num: RequestNum.UTILITY_ACTIVATELOADINFO, body: EmptyQuery())
 
         try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
     }
 
     public func checkCommStatus() async throws {
-        IKLogger.data.log("Query for checking communication status")
         let request = await RequestMessage<EmptyQuery>(num: RequestNum.UTILITY_CHECKCOMMSTATUS, body: EmptyQuery())
 
         try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
     }
 
     public func hasSystemLaunchOnStartup() async throws -> Bool {
-        IKLogger.data.log("Query for system launch on startup status")
         let request = await RequestMessage<EmptyQuery>(
             num: RequestNum.UTILITY_HASSYSTEMLAUNCHONSTARTUP,
             body: EmptyQuery()
@@ -105,7 +99,6 @@ public struct UtilityJobs: Sendable {
     }
 
     public func hasLaunchOnStartup() async throws -> Bool {
-        IKLogger.data.log("Query for launch on startup status")
         let request = await RequestMessage<EmptyQuery>(
             num: RequestNum.UTILITY_HASLAUNCHONSTARTUP,
             body: EmptyQuery()
@@ -120,7 +113,6 @@ public struct UtilityJobs: Sendable {
     }
 
     public func setLaunchOnStartup(enabled: Bool) async throws {
-        IKLogger.data.log("Query for setting launch on startup status")
         let query = UtilitySetLaunchOnStartupQuery(enabled: enabled)
         let request = await RequestMessage<UtilitySetLaunchOnStartupQuery>(
             num: RequestNum.UTILITY_SETLAUNCHONSTARTUP,
@@ -134,7 +126,6 @@ public struct UtilityJobs: Sendable {
     }
 
     public func setAppState(key: Int32, value: Int32) async throws {
-        IKLogger.data.log("Query for setting app state")
         let query = UtilitySetAppStateQuery(key: key, value: value)
         let request = await RequestMessage<UtilitySetAppStateQuery>(
             num: RequestNum.UTILITY_SET_APPSTATE,
@@ -148,7 +139,6 @@ public struct UtilityJobs: Sendable {
     }
 
     public func getAppState(key: Int32) async throws -> Int32 {
-        IKLogger.data.log("Query for getting app state")
         let query = UtilityGetAppStateQuery(key: key)
         let request = await RequestMessage<UtilityGetAppStateQuery>(
             num: RequestNum.UTILITY_GET_APPSTATE,
@@ -164,7 +154,6 @@ public struct UtilityJobs: Sendable {
     }
 
     public func sendLogToSupport(includeArchivedLogs: Bool) async throws {
-        IKLogger.data.log("Query for sending log to support")
         let query = UtilitySendLogToSupportQuery(includeArchivedLogs: includeArchivedLogs)
         let request = await RequestMessage<UtilitySendLogToSupportQuery>(
             num: RequestNum.UTILITY_SEND_LOG_TO_SUPPORT,
@@ -178,7 +167,6 @@ public struct UtilityJobs: Sendable {
     }
 
     public func cancelLogToSupport() async throws {
-        IKLogger.data.log("Query for canceling log to support")
         let request = await RequestMessage<EmptyQuery>(
             num: RequestNum.UTILITY_CANCEL_LOG_TO_SUPPORT,
             body: EmptyQuery()
@@ -191,21 +179,18 @@ public struct UtilityJobs: Sendable {
     }
 
     public func crash() async throws {
-        IKLogger.data.log("Query for crashing the application")
         let request = await RequestMessage<EmptyQuery>(num: RequestNum.UTILITY_CRASH, body: EmptyQuery())
 
         try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
     }
 
     public func quit() async throws {
-        IKLogger.data.log("Query for quitting")
         let request = await RequestMessage<EmptyQuery>(num: RequestNum.UTILITY_QUIT, body: EmptyQuery())
 
         try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
     }
 
     public func sendAppStartTrace() async throws {
-        IKLogger.data.log("Query for sending app start trace")
         let request = await RequestMessage<EmptyQuery>(
             num: RequestNum.UTILITY_SEND_APP_START_TRACE,
             body: EmptyQuery()
