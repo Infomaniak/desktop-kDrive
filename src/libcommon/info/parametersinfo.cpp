@@ -120,7 +120,10 @@ void ParametersInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, parametersInfoVersionChannel, _distributionChannel);
     CommonUtility::readValueFromStruct(dstruct, parametersInfoSentryEnabled, _sentryEnabled);
     CommonUtility::readValueFromStruct(dstruct, parametersInfoMatomoEnabled, _matomoEnabled);
-    CommonUtility::readValueFromStruct(dstruct, parametersInfoAskBeforeDelete, _notifyBeforeDelete);
+
+    if (dstruct.contains(parametersInfoAskBeforeDelete)) { // Not implemented in new clients yet
+        CommonUtility::readValueFromStruct(dstruct, parametersInfoAskBeforeDelete, _notifyBeforeDelete);
+    }
 };
 
 QDataStream &operator>>(QDataStream &in, ParametersInfo &parametersInfo) {

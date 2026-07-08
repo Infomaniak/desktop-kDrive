@@ -57,6 +57,7 @@ class TestAppServer : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testInitAndStopSyncPal);
         CPPUNIT_TEST(testStartAndStopSync);
         CPPUNIT_TEST(testUpdateUserInfo);
+        CPPUNIT_TEST(testResolveErrorsForNode);
         CPPUNIT_TEST(testCleanup); // Must be the last test
         CPPUNIT_TEST_SUITE_END();
 
@@ -66,8 +67,9 @@ class TestAppServer : public CppUnit::TestFixture, public TestBase {
 
         void testInitAndStopSyncPal();
         void testStartAndStopSync();
-        void testCleanup();
         void testUpdateUserInfo();
+        void testResolveErrorsForNode();
+        void testCleanup();
 
     private:
         MockAppServer *_appPtr;

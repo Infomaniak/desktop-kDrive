@@ -294,6 +294,47 @@ void TestAppServer::testUpdateUserInfo() {
     CPPUNIT_ASSERT_EQUAL(accountDbIdB, static_cast<uint64_t>(drive.accountDbId()));
 }
 
+void TestAppServer::testResolveErrorsForNode() {
+    const SyncDbId syncDbId = 1;
+    const NodeId localId = "resolve_local_1";
+    const NodeId remoteId = "resolve_remote_1";
+    const SyncPath path = "dir/file.txt";
+
+    // Resolvable: FileAccessError
+    Error errAccess(syncDbId, localId, remoteId, NodeType::File, path, ConflictType::None, InconsistencyType::None,
+                    CancelType::None, "", ExitCode::SystemError, ExitCause::FileAccessError);
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertError(errAccess));
+
+    // Resolvable: TmpBlacklisted
+    Error errTmp(syncDbId, localId, remoteId, NodeType::File, path, ConflictType::None, InconsistencyType::None,
+                 CancelType::TmpBlacklisted);
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertError(errTmp));
+
+    // Resolvable: ForbiddenChar
+    Error errChar(syncDbId, localId, remoteId, NodeType::File, path, ConflictType::None, InconsistencyType::ForbiddenChar);
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertError(errChar));
+
+    // Non-resolvable: EditEdit conflict — must survive
+    Error errConflict(syncDbId, localId, remoteId, NodeType::File, path, ConflictType::EditEdit, InconsistencyType::None);
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertError(errConflict));
+
+    // Call the actual function under test
+    SyncFileItem item;
+    item.setLocalNodeId(localId);
+    item.setRemoteNodeId(remoteId);
+    item.setPath(path);
+    _appPtr->resolveItemErrors(syncDbId, item);
+
+    // Only the conflict error must remain
+    std::vector<Error> errorList;
+    bool found = false;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectErrorByNodeInfo(syncDbId, localId, remoteId, std::nullopt, std::nullopt, errorList,
+                                                              found));
+    CPPUNIT_ASSERT(found);
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), errorList.size());
+    CPPUNIT_ASSERT_EQUAL(ConflictType::EditEdit, errorList[0].conflictType());
+}
+
 bool TestAppServer::waitForSyncStatus(int syncDbId, SyncStatus targetStatus) const {
     int count = 0;
     while (count++ < 100) {
