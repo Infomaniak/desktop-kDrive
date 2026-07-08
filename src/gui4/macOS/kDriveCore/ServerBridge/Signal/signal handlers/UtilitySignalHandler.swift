@@ -44,7 +44,13 @@ struct UtilitySignalHandler {
             throw SignalError.unableToGetErrorInfoFromSignal
         }
 
-        let errorInfo = ErrorInfo(errorInfoMetadata: errorInfoSignal.body.errorInfo)
+        let errorMetadata = errorInfoSignal.body.errorInfo
+        IKLogger.xpc.info(
+            "[KD] [Signal] #\(errorInfoSignal.id) error added: syncDbId=\(errorMetadata.syncDbId) " +
+                "level=\(errorMetadata.level) code=\(errorMetadata.exitCode) cause=\(errorMetadata.exitCause)"
+        )
+
+        let errorInfo = ErrorInfo(errorInfoMetadata: errorMetadata)
         try await coherentCache.addOrUpdateError(errorInfo)
     }
 
