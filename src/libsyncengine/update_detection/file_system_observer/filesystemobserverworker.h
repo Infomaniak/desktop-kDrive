@@ -23,6 +23,7 @@
 #include "snapshot/livesnapshot.h"
 #include "db/syncdb.h"
 #include "libcommon/utility/types.h"
+#include "../../test/syncpal_test_helper/setinitialsituation.hpp"
 
 #include <list>
 
@@ -74,6 +75,7 @@ class FileSystemObserverWorker : public ISyncWorker {
         friend class TestOperationProcessor;
         friend class TestSituationGenerator;
         friend class TestSyncPal;
+        friend class SetInitialSituation;
 };
 
 } // namespace KDC

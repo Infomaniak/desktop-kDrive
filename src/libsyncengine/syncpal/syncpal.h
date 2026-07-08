@@ -29,6 +29,7 @@
 #include "update_detection/update_detector/updatetree.h"
 #include "reconciliation/conflict_finder/conflict.h"
 #include "reconciliation/syncoperation.h"
+#include "../../test/syncpal_test_helper/setinitialsituation.hpp"
 
 #include "libcommon/utility/types.h"
 
@@ -519,6 +520,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         friend class MockSyncPal;
         friend class TestSituationGenerator;
         friend class TestFileRescuer;
+        friend class SetInitialSituation;
 };
 
 } // namespace KDC

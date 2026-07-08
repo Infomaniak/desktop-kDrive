@@ -1,0 +1,96 @@
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#pragma once
+
+#include "utility/types.h"
+
+#include <Poco/JSON/Object.h>
+
+#include <filesystem>
+#include <memory>
+#include <string>
+
+namespace KDC {
+class SyncPal;
+
+/**
+ * @brief Wraps a JSON description of a list of local/remote operations to apply on top of an existing
+ * situation (see Situation / SetInitialSituation in setinitialsituation.hpp).
+ * Supported operation types: Create, Edit, Delete and Move, e.g.:
+ * {
+ *    "operations": [
+ *        { "type": "Edit", "path": "C/D/e", "newSize": 1234, "newCreatedAt": 20260601000000, "newLastModifiedAt": 20260601000000 },
+ *        { "type": "Create", "itemType": "File", "name": "f", "size": 5678, "createdAt": 20260601000000, "lastModifiedAt": 20260601000000 },
+ *        { "type": "Delete", "path": "F/G/H" },
+ *        { "type": "Move", "fromPath": "I/J/k", "toPath": "L/m" }
+ *    ]
+ * }
+ */
+class Operations {
+    public:
+        using StringType = std::filesystem::path::string_type;
+
+        explicit Operations(const StringType &jsonDescription); // throws if jsonDescription is not valid
+
+        const StringType &json() const noexcept;
+
+        void log() const;
+
+    private:
+        StringType _jsonDescription;
+};
+
+/**
+ * @brief Applies an Operations JSON description (Create/Edit/Delete/Move) on the local or remote replica
+ * of the SyncPal passed to the constructor (or set via setSyncpal).
+ */
+class ExecuteOperations {
+    public:
+        ExecuteOperations() = default;
+        explicit ExecuteOperations(std::shared_ptr<SyncPal> syncPal);
+
+        void setSyncpal(std::shared_ptr<SyncPal> syncPal) { _syncPal = syncPal; }
+
+        // JSON = same format documented on Operations.
+        // Constructs an Operations from jsonDescription (which validates it) and applies it, on the given
+        // side, against the SyncPal passed to the constructor (or set via setSyncpal).
+        // returns false if invalid
+        bool run(ReplicaSide side, const std::string &jsonDescription);
+
+        void executeOperations(ReplicaSide side, const Operations &operations) const;
+
+    private:
+        struct OperationDesc {
+                OperationType type = OperationType::None;
+                SyncPath path; // Create ("name"), Edit / Delete ("path"): item affected, relative to the sync root.
+                SyncPath fromPath; // Move ("fromPath"): source item, relative to the sync root.
+                SyncPath toPath; // Move ("toPath"): destination item, relative to the sync root.
+                NodeType itemType = NodeType::File; // Create ("itemType"): File or Directory.
+                int64_t size = 0; // Create ("size") / Edit ("newSize").
+                SyncTime createdAt = 0; // Create ("createdAt") / Edit ("newCreatedAt").
+                SyncTime lastModifiedAt = 0; // Create ("lastModifiedAt") / Edit ("newLastModifiedAt").
+        };
+
+        [[nodiscard]] static OperationDesc parseOperation(const Poco::JSON::Object::Ptr &obj);
+        void applyOperation(ReplicaSide side, const OperationDesc &desc) const;
+
+        std::shared_ptr<SyncPal> _syncPal;
+};
+
+} // namespace KDC

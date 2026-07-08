@@ -1,0 +1,72 @@
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#pragma once
+
+#include "setinitialsituation.hpp"
+#include "executeoperations.hpp"
+
+#include <memory>
+
+namespace KDC {
+class SyncPal;
+
+/**
+ * @brief Single entry point for setting up and driving Syncpal-based tests: building an initial
+ * Db/update-tree/filesystem situation from a JSON description (via SetInitialSituation), applying
+ * operations on top of it (via ExecuteOperations), and (eventually) driving a sync run.
+ *
+ * See Situation (setinitialsituation.hpp) for the supported situation JSON formats, and Operations
+ * (executeoperations.hpp) for the supported operations JSON format.
+ */
+class SyncpalTestHelper {
+    public:
+        SyncpalTestHelper() = default;
+        explicit SyncpalTestHelper(std::shared_ptr<SyncPal> syncPal);
+
+        // ---- High-level test driver API ----
+        void setUp();
+        void tearDown();
+
+        void setSyncpal(std::shared_ptr<SyncPal> syncPal);
+
+        // Builds localSituation and remoteSituation (see SetInitialSituation::generateInitialSituation)
+        // against the SyncPal passed to the constructor (or set via setSyncpal).
+        // returns false if invalid
+        bool setInitialSituation(const Situation &localSituation, const Situation &remoteSituation);
+        bool getSituation(const Situation &localSituation, const Situation &remoteSituation);
+
+        bool executeSyncUntilEnd(int timeout);
+        bool executeSyncUpToStep(int targetStep, int timeout);
+
+        bool pauseSync();
+        bool stopSync();
+
+        // Applies operations (see ExecuteOperations::executeOperations) on the given side, against the
+        // SyncPal passed to the constructor (or set via setSyncpal).
+        // returns false if invalid
+        bool executeOperations(ReplicaSide side, const Operations &operations);
+
+    private:
+        std::shared_ptr<SyncPal> _syncPal;
+
+        SetInitialSituation _setInitialSituation;
+        ExecuteOperations _executeOperations;
+};
+
+} // namespace KDC
