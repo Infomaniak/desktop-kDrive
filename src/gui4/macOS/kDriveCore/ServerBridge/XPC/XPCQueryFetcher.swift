@@ -60,7 +60,9 @@ struct XPCQueryFetcher: XPCQueryFetcherProtocol {
 
         do {
             let decodedMessage = try decoder.decode(Response.self, from: replyData)
-            IKLogger.data.log("[KD] recv callback: \(String(describing: decodedMessage))")
+            IKLogger.data.log(
+                "[KD] recv callback id: \(headerMessage.id) code: \(headerMessage.code) cause: \(headerMessage.cause)"
+            )
             return decodedMessage
         } catch {
             IKLogger.data.error("[KD] recv decoding woops \(error)")

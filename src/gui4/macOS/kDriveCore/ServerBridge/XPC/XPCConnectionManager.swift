@@ -142,7 +142,7 @@ import InfomaniakDI
 
         return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<NSXPCListenerEndpoint, Error>) in
             loginItemProxy.serverGuiEndpoint { endpoint in
-                IKLogger.xpc.log("[KD] Server gui endpoint received \(String(describing: endpoint))")
+                IKLogger.xpc.log("[KD] Server gui endpoint received: \(endpoint != nil)")
                 if let endpoint {
                     continuation.resume(returning: endpoint)
                 } else {
