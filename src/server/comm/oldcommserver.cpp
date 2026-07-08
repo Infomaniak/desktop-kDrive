@@ -88,6 +88,17 @@ OldCommServer::~OldCommServer() {
     _instance = nullptr;
 }
 
+void OldCommServer::stop() {
+    // Break out of Worker::onStart, then quit and join the worker thread. Without this the thread outlives shutdown.
+    if (_requestWorker) {
+        _requestWorker->stop();
+    }
+    if (_requestWorkerThread) {
+        _requestWorkerThread->quit();
+        _requestWorkerThread->wait();
+    }
+}
+
 void OldCommServer::sendReply(int id, const QByteArray &result) {
     if (_tcpSocket && _tcpSocket->isOpen()) {
         _requestWorker->addReply(id, result);

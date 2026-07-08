@@ -541,6 +541,12 @@ void AppServer::cleanup() {
         LOG_DEBUG(_logger, "CommManager stopped");
     }
 
+    // Stop OldCommServer worker thread
+    if (useOldCommServer()) {
+        OldCommServer::instance()->stop();
+        LOG_DEBUG(_logger, "OldCommServer stopped");
+    }
+
     // Stop JobManager(s)
     GuiJobManagerSingleton::instance()->stop();
     LOG_DEBUG(_logger, "GuiJobManager stopped");
@@ -572,6 +578,11 @@ void AppServer::cleanup() {
     ExtJobManagerSingleton::clear();
     LOG_DEBUG(_logger, "ExtJobManager::clear() done");
 #endif
+
+    // Destroy the update manager while the Qt event loop is still alive and after the SyncJobManager running its network
+    // jobs is cleared. Otherwise it is destroyed during static destruction after ~AppServer, crashing at shutdown.
+    reset();
+    LOG_DEBUG(_logger, "UpdateManager destroyed");
 
     // Clear maps
     {
