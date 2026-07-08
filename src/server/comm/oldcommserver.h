@@ -74,6 +74,7 @@ class OldCommServer : public QObject {
         QByteArray _buffer;
 
         bool _hasQuittedProperly;
+        bool _stopping;
 
         explicit OldCommServer(QObject *parent = nullptr);
 
