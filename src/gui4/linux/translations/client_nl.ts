@@ -9,7 +9,7 @@
 --> 
 <TS version="2.1" sourcelanguage="en" language="nl"> 
     <context>
-        <name>main</name> 
+        <name></name> 
         <message id="aboutAppVersionCopyright"> 
             <source>Version %1.%2
 © 2019-%3 Infomaniak Network SA -</source> 
@@ -2467,42 +2467,42 @@ ontgrendeld en toegankelijk is vanaf uw computer.</translation>
         </message> 
     </context> 
     <context>
-        <name>sync convertion</name> 
+        <name></name> 
         <message id="applyingChange"> 
             <source>Applying change…</source> 
             <translation>Wijziging toepassen…</translation> 
         </message> 
     </context> 
     <context>
-        <name>Button to manage disk space when not enough space is available</name> 
+        <name></name> 
         <message id="buttonManageDiskSpace"> 
             <source>Manage disk space</source> 
             <translation>Schijfruimte beheren</translation> 
         </message> 
     </context> 
     <context>
-        <name>Button to open the parent directory of the inaccessible file</name> 
+        <name></name> 
         <message id="buttonOpenParentFolder"> 
             <source>Open parent folder</source> 
             <translation>Bovenliggende map openen</translation> 
         </message> 
     </context> 
     <context>
-        <name>Action de mettre à jour</name> 
+        <name></name> 
         <message id="buttonUpdate"> 
             <source>Update</source> 
             <translation>Bijwerken</translation> 
         </message> 
     </context> 
     <context>
-        <name>Settings</name> 
+        <name></name> 
         <message id="debugLevelSetting"> 
             <source>Debug level</source> 
             <translation>Debugniveau</translation> 
         </message> 
     </context> 
     <context>
-        <name>Description for the default error card explaining an unexpected error occurred</name> 
+        <name></name> 
         <message id="defaultErrorDescription"> 
             <source>Synchronization will restart automatically.
 If the problem persists, contact our support and attach the technical details below.</source> 
@@ -2511,35 +2511,35 @@ Als het probleem aanhoudt, neem dan contact op met onze ondersteuning en voeg de
         </message> 
     </context> 
     <context>
-        <name>Label for the technical details expander in the default error card</name> 
+        <name></name> 
         <message id="defaultErrorDetailsLabel"> 
             <source>Technical details</source> 
             <translation>Technische details</translation> 
         </message> 
     </context> 
     <context>
-        <name>Title for the default error card when an unhandled error occurs</name> 
+        <name></name> 
         <message id="defaultErrorTitle"> 
             <source>An unexpected error occurred</source> 
             <translation>Er is een onverwachte fout opgetreden</translation> 
         </message> 
     </context> 
     <context>
-        <name>Title for error when file/folder deletion is cancelled</name> 
+        <name></name> 
         <message id="deleteCancelErrorTitle"> 
             <source>Deletion canceled</source> 
             <translation>Verwijdering geannuleerd</translation> 
         </message> 
     </context> 
     <context>
-        <name>Title for error when files/folders have duplicate names</name> 
+        <name></name> 
         <message id="duplicateNamesErrorTitle"> 
             <source>Duplicate names</source> 
             <translation>Dubbele namen</translation> 
         </message> 
     </context> 
     <context>
-        <name>Description for create cancel error</name> 
+        <name></name> 
         <message id="errCreateCancelDescription"> 
             <source>You do not have the required permissions to add a %1 to this location.
 Request access from the owner or administrator.</source> 
@@ -2548,28 +2548,28 @@ Vraag toegang aan bij de eigenaar of beheerder.</translation>
         </message> 
     </context> 
     <context>
-        <name>Description for delete cancel error</name> 
+        <name></name> 
         <message id="errDeleteCancelDescription"> 
             <source>You do not have permission to delete this %1. It has been restored to its original location. Request access from the owner or administrator.</source> 
             <translation>U heeft geen toestemming om deze %1 te verwijderen. Het is hersteld naar de oorspronkelijke locatie. Vraag toegang aan bij de eigenaar of beheerder.</translation> 
         </message> 
     </context> 
     <context>
-        <name>Main description in the dialog explaining the issue</name> 
+        <name></name> 
         <message id="errDialogLocalFileAccessDescription"> 
             <source>The access permissions for %1 were changed, preventing it from being synced.</source> 
             <translation>De toegangsrechten voor %1 zijn gewijzigd, waardoor het niet kan worden gesynchroniseerd.</translation> 
         </message> 
     </context> 
     <context>
-        <name>Description for duplicate names error</name> 
+        <name></name> 
         <message id="errDuplicateNamesDescription"> 
             <source>A file or folder with this name already exists.</source> 
             <translation>Er bestaat al een bestand of map met deze naam.</translation> 
         </message> 
     </context> 
     <context>
-        <name>Description for edit cancel error</name> 
+        <name></name> 
         <message id="errEditCancelDescription"> 
             <source>You do not have the rights to edit this file.
 The original version has been kept and your edit has been saved in a separate file with “conflict” in its name. Request access from the owner or administrator.</source> 
@@ -2578,28 +2578,28 @@ De originele versie is bewaard en uw bewerking is opgeslagen in een apart bestan
         </message> 
     </context> 
     <context>
-        <name>Description for forbidden character end with space error</name> 
+        <name></name> 
         <message id="errEndWithSpaceDescription"> 
             <source>The name of this %1 ends with a space, preventing it from being synced. Rename the %2 from kDrive online.</source> 
             <translation>De naam van dit %1 eindigt met een spatie, waardoor het niet kan worden gesynchroniseerd. Hernoem de %2 vanuit kDrive online.</translation> 
         </message> 
     </context> 
     <context>
-        <name>Description for excluded by template error</name> 
+        <name></name> 
         <message id="errExcludedByTemplateDescription"> 
             <source>An exclusion rule is preventing this %1 from being synced.</source> 
             <translation>Een uitsluitingsregel verhindert de synchronisatie van dit %1.</translation> 
         </message> 
     </context> 
     <context>
-        <name>Description for file exists error</name> 
+        <name></name> 
         <message id="errFileExistsDescription"> 
             <source>A file with this name already exists.</source> 
             <translation>Er bestaat al een bestand met deze naam.</translation> 
         </message> 
     </context> 
     <context>
-        <name>Description for file locked error</name> 
+        <name></name> 
         <message id="errFileLockedDescription"> 
             <source>This file is currently being used by another user.
 Your changes will be synced later.</source> 
@@ -2608,14 +2608,14 @@ Uw wijzigingen worden later gesynchroniseerd.</translation>
         </message> 
     </context> 
     <context>
-        <name>Description for file rescued error</name> 
+        <name></name> 
         <message id="errFileRescuedDescription"> 
             <source>This file was deleted on kDrive online while you were editing it. A copy has been kept on your computer in the recovery folder.</source> 
             <translation>Dit bestand is verwijderd op kDrive online terwijl u het aan het bewerken was. Een kopie is bewaard op uw computer in de herstelmap.</translation> 
         </message> 
     </context> 
     <context>
-        <name>Description for file too big error</name> 
+        <name></name> 
         <message id="errFileTooBigDescription"> 
             <source>This file exceeds the maximum allowed size (50 GB).
 Contact your administrator to increase the file size limit.</source> 
@@ -2624,49 +2624,49 @@ Neem contact op met uw beheerder om de bestandsgroottelimiet te verhogen.</trans
         </message> 
     </context> 
     <context>
-        <name>Description for forbidden character only spaces error</name> 
+        <name></name> 
         <message id="errForbiddenCharOnlySpacesDescription"> 
             <source>This name contains only spaces and cannot be used. Rename the %1 from kDrive online.</source> 
             <translation>Deze naam bevat alleen spaties en kan niet worden gebruikt. Hernoem de %1 vanuit kDrive online.</translation> 
         </message> 
     </context> 
     <context>
-        <name>Description for hardlink error</name> 
+        <name></name> 
         <message id="errHardlinkDescription"> 
             <source>This file is a hard link that cannot be synced.</source> 
             <translation>Dit bestand is een harde koppeling (hard link) die niet kan worden gesynchroniseerd.</translation> 
         </message> 
     </context> 
     <context>
-        <name>Description for move cancel error</name> 
+        <name></name> 
         <message id="errMoveCancelDescription"> 
             <source>You do not have the rights to move this %1 here; it will be restored to its original location. Request access from the owner or administrator.</source> 
             <translation>U heeft niet de rechten om dit %1 hier te verplaatsen; het wordt hersteld naar de oorspronkelijke locatie. Vraag toegang aan bij de eigenaar of beheerder.</translation> 
         </message> 
     </context> 
     <context>
-        <name>Description for name length error</name> 
+        <name></name> 
         <message id="errNameLengthDescription"> 
             <source>This name exceeds the allowed length (250 characters). Rename the %1.</source> 
             <translation>Deze naam overschrijdt de toegestane lengte (250 tekens). Hernoem de %1.</translation> 
         </message> 
     </context> 
     <context>
-        <name>Description for not enough disk space error</name> 
+        <name></name> 
         <message id="errNotEnoughDiskSpaceDescription"> 
             <source>There is not enough space on your computer to sync this file.</source> 
             <translation>Er is onvoldoende ruimte op uw computer om dit bestand te synchroniseren.</translation> 
         </message> 
     </context> 
     <context>
-        <name>kDrive 4.0.0</name> 
+        <name></name> 
         <message id="labelKDriveVersion"> 
             <source>kDrive %1</source> 
             <translation>kDrive %1</translation> 
         </message> 
     </context> 
     <context>
-        <name>log upload</name> 
+        <name></name> 
         <message id="largeFolderRecommendation"> 
             <source>The full folder is large.
 To speed up the upload, we recommend sending only the last kDrive session.</source> 
