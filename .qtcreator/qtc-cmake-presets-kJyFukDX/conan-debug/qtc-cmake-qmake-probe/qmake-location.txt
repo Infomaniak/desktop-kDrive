@@ -1,1 +1,0 @@
-/home/parallels/.conan2/p/b/qt7e5b89da977a6/p/bin/qmake

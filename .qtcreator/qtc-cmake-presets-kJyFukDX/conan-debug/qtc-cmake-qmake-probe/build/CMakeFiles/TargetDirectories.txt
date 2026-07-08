@@ -1,2 +1,0 @@
-/home/parallels/Projects/desktop-kDrive/.qtcreator/qtc-cmake-presets-kJyFukDX/conan-debug/qtc-cmake-qmake-probe/build/CMakeFiles/edit_cache.dir
-/home/parallels/Projects/desktop-kDrive/.qtcreator/qtc-cmake-presets-kJyFukDX/conan-debug/qtc-cmake-qmake-probe/build/CMakeFiles/rebuild_cache.dir
