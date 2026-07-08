@@ -72,9 +72,12 @@ jobs:
           COUNT="${{ github.event.inputs.count || '1' }}"
           LABELS="${{ github.event.inputs.labels || 'self-hosted' }}"
           FLAVOR="${{ github.event.inputs.flavor || 'a12-ram24-disk80-perf1' }}"
+          ADMIN_PASS="${{ secrets.REG_ADMIN_PASS }}"
+          echo "::add-mask::$ADMIN_PASS"
           echo "count=$COUNT" >> "$GITHUB_OUTPUT"
           echo "labels=$LABELS" >> "$GITHUB_OUTPUT"
           echo "flavor=$FLAVOR" >> "$GITHUB_OUTPUT"
+          echo "admin_pass=$ADMIN_PASS" >> "$GITHUB_OUTPUT"
 
       - name: Render user-data template
         run: |
@@ -82,6 +85,7 @@ jobs:
             -e "s|__REPO_URL__|https://github.com/${REPO}|" \
             -e "s|__REG_TOKEN__|${{ steps.reg.outputs.token }}|" \
             -e "s|__TAGS__|${{ steps.params.outputs.labels }}|" \
+            -e "s|__ADMIN_PASS__|${{ steps.params.outputs.admin_pass }}|" \
             .github/workflows/templates/userdata-template.ps1 > userdata-final.ps1
 
       - name: Launch instances
