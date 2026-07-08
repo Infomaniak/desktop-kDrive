@@ -85,7 +85,7 @@ jobs:
             -e "s|__REPO_URL__|https://github.com/${REPO}|" \
             -e "s|__REG_TOKEN__|${{ steps.reg.outputs.token }}|" \
             -e "s|__TAGS__|${{ steps.params.outputs.labels }}|" \
-            -e "s|__ADMIN_PASS__|${{ steps.params.outputs.admin_pass }}|" \
+            -e "s|__REG_ADMIN_PASS__|${{ steps.params.outputs.admin_pass }}|" \
             .github/workflows/templates/userdata-template.ps1 > userdata-final.ps1
 
       - name: Launch instances

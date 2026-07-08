@@ -18,7 +18,6 @@ $ServicePassword = "__REG_ADMIN_PASS__"
 # Local Administrator account (consistent with the AutoLogon set in the unattend file).
 # The ".\" prefix explicitly targets a local account rather than a domain account.
 $ServiceAccount  = ".\Administrator"
-$ServicePassword = "Passw0rd"
 
 Set-Location $RunnerDir
 
