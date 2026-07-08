@@ -68,6 +68,7 @@ final class PreferencesSplitViewController: IKSplitViewController {
         let sidebarViewController = PreferencesSidebarViewController()
         sidebarViewController.delegate = self
         let sidebarItem = NSSplitViewItem(sidebarWithViewController: sidebarViewController)
+        sidebarItem.canCollapse = false
         sidebarItem.minimumThickness = Self.sidebarWidth
         sidebarItem.maximumThickness = Self.sidebarWidth
         addSplitViewItem(sidebarItem)
