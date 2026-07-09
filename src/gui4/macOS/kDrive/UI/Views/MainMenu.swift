@@ -70,7 +70,7 @@ final class MainMenu: NSMenu {
 
         menu.addItem(
             withTitle: "About \(applicationName)",
-            action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)),
+            action: #selector(AppDelegate.showAboutPanel),
             keyEquivalent: ""
         )
 

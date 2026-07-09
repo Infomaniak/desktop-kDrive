@@ -33,7 +33,7 @@ struct SynchroFolderTypeLabel: View {
                 .foregroundStyle(ColorToken.Text.primary.asColor)
         }
         .padding(AppPadding.padding8)
-        .background(Color.white, in: .rect(cornerRadius: AppRadius.radius8))
+        .background(Color(NSColor.windowBackgroundColor), in: .rect(cornerRadius: AppRadius.radius8))
     }
 }
 

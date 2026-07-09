@@ -28,7 +28,6 @@ public protocol XPCSignalHandlerProtocol {
 enum SignalError: Error {
     case nilData
     case unableToParseMetadata(_ signal: String)
-    case serverError(_ code: KDC.ExitCode?, _ cause: KDC.ExitCause?)
     case unableToGetUserFromSignal
     case unableToGetUserDbIdFromSignal
     case unableToGetAccountFromSignal
@@ -82,10 +81,6 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         guard let signalMetadata = try? decoder.decode(SignalMetadata.self, from: signal) else {
             let output = String(data: signal, encoding: .utf8) ?? ""
             throw SignalError.unableToParseMetadata(output)
-        }
-
-        guard signalMetadata.code == nil, signalMetadata.cause == nil else {
-            throw SignalError.serverError(signalMetadata.code, signalMetadata.cause)
         }
 
         let signalNum = signalMetadata.num

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+ Loco ios export: Xcode Stringsdict (legacy)
+ Project: kDrive Desktop
+ Locale: pl, Polish
+ Tagged: macOS-stringsdict
+ Exported by: Valentin Perignon
+ Exported at: Tue, 23 Jun 2026 16:13:20 +0200
+-->
+<plist version="1.0">
+  <dict>
+    <key>buttonRemoveFileExclusionRule</key>
+    <dict>
+      <key>NSStringLocalizedFormatKey</key>
+      <string>%#@value@</string>
+      <key>value</key>
+      <dict>
+        <key>NSStringFormatSpecTypeKey</key>
+        <string>NSStringPluralRuleType</string>
+        <key>NSStringFormatValueTypeKey</key>
+        <string>d</string>
+        <key>one</key>
+        <string>Usuń (%lld element)</string>
+        <key>few</key>
+        <string>Usuń (%lld elementy)</string>
+        <key>many</key>
+        <string>Usuń (%lld elementów)</string>
+        <key>other</key>
+        <string>Usuń (%lld elementów)</string>
+      </dict>
+    </dict>
+    <key>informationBlockSynchroErrorTitle</key>
+    <dict>
+      <key>NSStringLocalizedFormatKey</key>
+      <string>%#@value@</string>
+      <key>value</key>
+      <dict>
+        <key>NSStringFormatSpecTypeKey</key>
+        <string>NSStringPluralRuleType</string>
+        <key>NSStringFormatValueTypeKey</key>
+        <string>d</string>
+        <key>one</key>
+        <string>Masz **jeden błąd synchronizacji**</string>
+        <key>few</key>
+        <string>Masz **%d błędy synchronizacji**</string>
+        <key>many</key>
+        <string>Masz **%d błędów synchronizacji**</string>
+        <key>other</key>
+        <string>Masz **%d błędu synchronizacji**</string>
+      </dict>
+    </dict>
+  </dict>
+</plist>

@@ -1,0 +1,1514 @@
+/*
+ * Loco ios export: Xcode Strings (legacy)
+ * Project: kDrive Desktop
+ * Locale: el, Greek
+ * Tagged: macOS
+ * Exported by: Valentin Perignon
+ * Exported at: Wed, 24 Jun 2026 08:42:57 +0200
+ */
+
+/* loco:6a3b7a3cab4f843c0405ebd2 */
+"aboutAppVersionCopyrightMac" = "Έκδοση %@ (build %@)\n© 2019-%@ Infomaniak Network SA";
+
+/* loco:69a57d074f11212a7007d403 */
+"aboutButton" = "Σχετικά";
+
+/* loco:698b3c0d8004546e240eb2d2 */
+"aboutKDrive" = "Σχετικά με το kDrive";
+
+/* loco:698b3cd1ffb6143bce07ad82 */
+"aboutKDriveDescription" = "Αναπτύχθηκε και φιλοξενείται αποκλειστικά στην Ελβετία, το kDrive διασφαλίζει την πλήρη προστασία των δεδομένων σας, χωρίς μεταπώληση ή παρακολούθηση, σε κέντρα δεδομένων πιστοποιημένα ISO, με κρυπτογράφηση και δημιουργία αντιγράφων ασφαλείας σε πολλαπλά μέσα.";
+
+/* loco:6981b68c6d1056609e079525 */
+"accessibilityActivityTypePicker" = "Ορατές δραστηριότητες";
+
+/* loco:69a6d9dd08a75d40410b53f6 */
+"accessibilityBetaProgramPicker" = "Επιλογή καναλιού διανομής";
+
+/* loco:69e1dcc78d162264ae0f2f52 */
+"accessibilityMoreInformation" = "Εμφάνιση περισσότερων πληροφοριών";
+
+/* loco:69fa0b22dbdab357240dcb12 */
+"accessibilitySearchClear" = "Clear search";
+
+/* loco:69fa0b2668d2d58f030a2422 */
+"accessibilitySearchSheetLabel" = "Search your files";
+
+/* loco:69fa0b2455ed5e00570ecf12 */
+"accessibilitySearching" = "Searching…";
+
+/* loco:69b275fb3440db13f0011c03 */
+"accessibilitySelectSynchroMode" = "Επιλογή λειτουργίας συγχρονισμού";
+
+/* loco:6981cb92c70239c9ed0d45a3 */
+"activitiesTitleIdle" = "Ο συγχρονισμός ολοκληρώθηκε";
+
+/* loco:6981b68b50a70d64050197e2 */
+"activitiesTitleInProgress" = "Ο συγχρονισμός βρίσκεται σε εξέλιξη";
+
+/* loco:6981cb9319de989ec9033882 */
+"activitiesTitleNoActivity" = "Καμία πρόσφατη δραστηριότητα";
+
+/* loco:698c2d6ab41c289de2072ab2 */
+"activitiesTitleOffline" = "Είστε εκτός σύνδεσης";
+
+/* loco:698c1fa979440e4f370444a2 */
+"activitiesTitlePause" = "Ο συγχρονισμός διακόπηκε";
+
+/* loco:6981b68a251c4a36c1078274 */
+"activitiesTypeAllActivities" = "Όλες οι δραστηριότητες";
+
+/* loco:6981b68a1e51fbe933040213 */
+"activitiesTypeMyActivity" = "Μόνο η δική μου δραστηριότητα";
+
+/* loco:69b422369e32a806170ba3c2 */
+"addAdvancedSyncDialogTitle" = "Συγχρονισμός φακέλου με το kDrive";
+
+/* loco:69b422a8be3506a1a305ba12 */
+"addAdvancedSyncLocalFolderDescription" = "Επιλέξτε τον φάκελο του υπολογιστή σας για συγχρονισμό με το kDrive:";
+
+/* loco:69b42298791d2c19c40f4e92 */
+"addAdvancedSyncLocalFolderTitle" = "Συγχρονισμένος φάκελος";
+
+/* loco:69b429241110b141d0085ab2 */
+"addAdvancedSyncRemoteFolderDescription" = "Προσαρμόστε τη θέση του φακέλου του υπολογιστή σας στο kDrive:";
+
+/* loco:69b429180e3d6a548e0afac2 */
+"addAdvancedSyncRemoteFolderTitle" = "Τοποθεσία kDrive";
+
+/* loco:698b087a5fc40f623b0789c2 */
+"advancedSyncDescription" = "Επιλέξτε έναν φάκελο στον υπολογιστή σας για συγχρονισμό με το kDrive.\nΜπορείτε να αποκτήσετε πρόσβαση στους προηγμένους συγχρονισμούς σας από τον επιλογέα μονάδας στην αρχική σελίδα.";
+
+/* loco:698b07cec1d08f40b50bc702 */
+"advancedSyncTitle" = "Προηγμένος συγχρονισμός";
+
+/* loco:6a01c8e3ba328c320801c492 */
+"appToExclude" = "Εφαρμογή προς εξαίρεση";
+
+/* loco:698af4376b386d18b9037522 */
+"appUpToDate" = "Η εφαρμογή είναι ενημερωμένη";
+
+/* loco:698b36f2eb276c03d00e7c07 */
+"autoCleanupLogsDescription" = "Διαγράφει αρχεία καταγραφής παλαιότερα από 7 ημέρες για εξοικονόμηση χώρου στο δίσκο.";
+
+/* loco:698b36d9eb276c03d00e7c03 */
+"autoCleanupLogsSetting" = "Αυτόματη εκκαθάριση";
+
+/* loco:698af0b429d5e005bc08dfb2 */
+"automaticUpdatesSetting" = "Αυτόματες ενημερώσεις";
+
+/* loco:698b06836cb93b812800d292 */
+"availableOffline" = "Διαθέσιμο εκτός σύνδεσης";
+
+/* loco:69943068b17a2d5a500e16b2 */
+"availableOfflineDescription" = "Τα αρχεία σας αντιγράφονται στον υπολογιστή σας.\nΜπορείτε να τα ανοίξετε ανά πάσα στιγμή, ακόμα και χωρίς σύνδεση στο διαδίκτυο.";
+
+/* loco:699db8a1a58425c60d06a902 */
+"backErrorDriveAsleepDescription" = "Μπορείτε να το αφυπνίσετε από τη διαδικτυακή διεπαφή.";
+
+/* loco:698af17b4dd554948901a8b2 */
+"betaProgramDescription" = "Αποκτήστε πρόσβαση στις νέες εκδόσεις της εφαρμογής πριν κυκλοφορήσουν στο ευρύ κοινό και βοηθήστε στη βελτίωση της εφαρμογής μοιράζοντάς μας τις ιδέες σας.";
+
+/* loco:69a6d9b44d26dc09aa0d0643 */
+"betaProgramTitle" = "Εγγραφή στο πρόγραμμα beta";
+
+/* loco:69c11aacce7b3b9139008044 */
+"buttonActivateOfflineSync" = "Ενεργοποίηση συγχρονισμού εκτός σύνδεσης";
+
+/* loco:698b08da7aafd767de0d78b2 */
+"buttonAddAdvancedSync" = "Συγχρονισμός φακέλου";
+
+/* loco:698b580c716d616edb0efde2 */
+"buttonAddFileExclusionRule" = "Προσθήκη κανόνα";
+
+/* loco:696a483470f3b70399021c12 */
+"buttonAddStorage" = "Προσθήκη αποθηκευτικού χώρου";
+
+/* loco:691deb2291b20ac7fd045012 */
+"buttonAdvancedParameters" = "Προηγμένες ρυθμίσεις";
+
+/* loco:69aad577c1fb41f6e204de02 */
+"buttonApplyToXFiles" = "Εφαρμογή σε %@ αρχεία";
+
+/* loco:69bd7281cd515cd190042de2 */
+"buttonAskForAccess" = "Αίτηση πρόσβασης";
+
+/* loco:6989c98657a76723c20d0e92 */
+"buttonCancel" = "Άκυρο";
+
+/* loco:69c0f0398ae1831b640e5a62 */
+"buttonChangeFolder" = "Αλλαγή φακέλου";
+
+/* loco:69c55ddcee6e0bc4d1046935 */
+"buttonChangeToOffline" = "Αποθήκευση εκτός σύνδεσης";
+
+/* loco:69c55dcf9ae76d95660b7b66 */
+"buttonChangeToOnline" = "Αποθήκευση online";
+
+/* loco:696a343b72b6dc32e00557a4 */
+"buttonClose" = "Κλείσιμο";
+
+/* loco:698c5e4ec95ac47af70ec115 */
+"buttonConfigure" = "Διαμόρφωση";
+
+/* loco:698af6e7b8da51abf504d482 */
+"buttonConfirm" = "Επιβεβαίωση";
+
+/* loco:698b1376f55227e2c30a2fe4 */
+"buttonConnectAccount" = "Σύνδεση λογαριασμού";
+
+/* loco:6a1e7c41bd3ff43c8d05a542 */
+"buttonContactSupport" = "Επικοινωνία υποστήριξης";
+
+/* loco:691deb0be15255c13908ba42 */
+"buttonContinue" = "Συνέχεια";
+
+/* loco:698a09c2c9fb920b0c03e782 */
+"buttonCopyShareLink" = "Αντιγραφή συνδέσμου κοινής χρήσης";
+
+/* loco:68e673c48af12c42e80027c8 */
+"buttonCreateAccount" = "Δημιουργία λογαριασμού";
+
+/* loco:69a05e947011da04b4061f23 */
+"buttonCreateNewSync" = "Δημιουργία νέου συγχρονισμού";
+
+/* loco:698b14e52445668d9d0495a2 */
+"buttonDisconnectAccount" = "Αποσύνδεση αυτού του λογαριασμού";
+
+/* loco:69d905534d8c60bd1f0c9343 */
+"buttonDownloadInProgress" = "Λήψη σε εξέλιξη…";
+
+/* loco:69d906534d8c60bd1f0c9344 */
+"buttonDownloadManually" = "Μη αυτόματη λήψη";
+
+/* loco:698b0aefb16a3916fc004f32 */
+"buttonEnable" = "Ενεργοποίηση";
+
+/* loco:699ef0304ba9f8b4d4046cb4 */
+"buttonErrorResolutionTip" = "Κατανόηση του ζητήματος";
+
+/* loco:6992eca9a8cb168fe70c0922 */
+"buttonFeedback" = "Κοινοποίηση ιδέας";
+
+/* loco:6930506962426d4ff30af473 */
+"buttonFinishInstallation" = "Ολοκλήρωση εγκατάστασης";
+
+/* loco:698052d464e4b53cef0e9272 */
+"buttonFixErrors" = "Διόρθωση σφαλμάτων";
+
+/* loco:6992eabc63e4de22f10535b2 */
+"buttonHelpdesk" = "Υποστήριξη";
+
+/* loco:69304d546385bb9cfc03e524 */
+"buttonKDriveIsActivated" = "Έχω ενεργοποιήσει το kDrive";
+
+/* loco:695e58701870be5cd709d2a2 */
+"buttonKDriveOnline" = "kDrive online";
+
+/* loco:698c6b43a4de4c85ae0ef552 */
+"buttonKeepAccount" = "Διατήρηση λογαριασμού";
+
+/* loco:6992d8c3845cd53c31059f53 */
+"buttonLogOut" = "Αποσύνδεση";
+
+/* loco:68e673b2042a15d8470f9452 */
+"buttonLogin" = "Σύνδεση";
+
+/* loco:697a2658a44fbad34f011962 */
+"buttonManage" = "Διαχείριση";
+
+/* loco:699c5de6289e5ec7bf009722 */
+"buttonManageDiskSpace" = "Διαχείριση χώρου δίσκου";
+
+/* loco:69aad5b46c5c742d75057663 */
+"buttonManageIndividually" = "Χειρισμός αρχείων μεμονωμένα";
+
+/* loco:69c120cf7ef61aa7d5019a33 */
+"buttonManageStorage" = "Διαχείριση αποθηκευτικού χώρου";
+
+/* loco:698b3ab789def0ffdd073952 */
+"buttonOpenDebugFolder" = "Άνοιγμα φακέλου εντοπισμού σφαλμάτων";
+
+/* loco:69c0f107d389e919d90b8280 */
+"buttonOpenFolder" = "Άνοιγμα φακέλου";
+
+/* loco:68b04d823f2b735c170caea2 */
+"buttonOpenInBrowser" = "Άνοιγμα στο πρόγραμμα περιήγησης";
+
+/* loco:68b04d5a63085b7ab90cea63 */
+"buttonOpenInFinder" = "Άνοιγμα στο Finder";
+
+/* loco:6931a5687031691272002314 */
+"buttonOpenKDrive" = "Άνοιγμα kDrive";
+
+/* loco:6995ec42567e96a27b08a0f2 */
+"buttonOpenParentFolder" = "Άνοιγμα γονικού φακέλου";
+
+/* loco:699c79a3de97a50065067d72 */
+"buttonOpenSyncExclusionRules" = "Διαχείριση εξαιρέσεων";
+
+/* loco:69a7ed0ecbb2fb59660bfa12 */
+"buttonPause" = "Παύση";
+
+/* loco:697b65a56840f9d35605a134 */
+"buttonRefresh" = "Ανανέωση";
+
+/* loco:69b275c6f0de2ef07706b5b3 */
+"buttonRemove" = "Κατάργηση";
+
+/* loco:698b07467beec481020cef52 */
+"buttonRemoveSync" = "Κατάργηση συγχρονισμού";
+
+/* loco:69bd1fa570d32107fa0f0163 */
+"buttonRenameItem" = "Μετονομασία %@";
+
+/* loco:69a04f0d2417523ff30850b2 */
+"buttonRestartSync" = "Συνέχιση συγχρονισμού";
+
+/* loco:6964e1fd78f375ec03073c88 */
+"buttonRestartSynchro" = "Επανεκκίνηση συγχρονισμού";
+
+/* loco:697b6560c18f7ca128034f16 */
+"buttonRetry" = "Επανάληψη";
+
+/* loco:69c106a55fd64fd95c00ef42 */
+"buttonReturnToDefaultFolder" = "Επιστροφή στον προεπιλεγμένο φάκελο";
+
+/* loco:6989c90fad75adcb2e05c302 */
+"buttonSave" = "Αποθήκευση";
+
+/* loco:69a7f03b5fa9c90f560c1192 */
+"buttonSearch" = "Αναζήτηση";
+
+/* loco:6964e1dfed4b6acb0107409a */
+"buttonSeeActivities" = "Προβολή δραστηριοτήτων";
+
+/* loco:69a6a31c97f5f5084b09e612 */
+"buttonSelect" = "Επιλογή";
+
+/* loco:69b422d7b7de08855d023d32 */
+"buttonSelectFolder" = "Επιλογή φακέλου";
+
+/* loco:698c5cb5f86b52c6fc001fc4 */
+"buttonSelectFolders" = "Επιλογή φακέλων";
+
+/* loco:69bac5f6f74824a64304bcd9 */
+"buttonSelectLocation" = "Επιλογή τοποθεσίας";
+
+/* loco:69a6a32d8e33a191f90115f2 */
+"buttonSelected" = "Επιλεγμένο";
+
+/* loco:6989f2b84f80e68db204aa55 */
+"buttonSend" = "Αποστολή";
+
+/* loco:6989e1e13690f28b9e0c8b92 */
+"buttonSendLog" = "Αποστολή φακέλου εντοπισμού σφαλμάτων";
+
+/* loco:69a7ed31e3754291a4029e52 */
+"buttonSettings" = "Άνοιγμα ρυθμίσεων";
+
+/* loco:69240f7b15d05a975c07dc13 */
+"buttonShowOffers" = "Προβολή προσφορών";
+
+/* loco:698af1b4d7cad5e8710909b2 */
+"buttonShowOption" = "Εμφάνιση επιλογών";
+
+/* loco:69a7ecff1619fbbe5a0c75b3 */
+"buttonStart" = "Έναρξη";
+
+/* loco:69aae9bfc9000e66e10bb5c2 */
+"buttonStartConflictsResolution" = "Έναρξη επιλογής εκδόσεων";
+
+/* loco:69240f6d4433e24658054fd4 */
+"buttonStartForFree" = "Ξεκινήστε δωρεάν";
+
+/* loco:69c11c88f553aeb0d204aa82 */
+"buttonSynchronizeOffline" = "Συγχρονισμός εκτός σύνδεσης";
+
+/* loco:698aec47dbcc2bef330cf7a9 */
+"buttonUpdate" = "Ενημέρωση";
+
+/* loco:69d905ce410048ea400b7952 */
+"buttonUpdateNow" = "Ενημέρωση τώρα";
+
+/* loco:697b6767849b0ee24c089f46 */
+"buttonUpdateSubscription" = "Ενημέρωση συνδρομής";
+
+/* loco:6989da5609f5a74cc30826c2 */
+"buttonUpgradeOffer" = "Αναβάθμιση";
+
+/* loco:69a69d71b2261fc281078712 */
+"buttonValidate" = "Επιβεβαίωση";
+
+/* loco:69a69d809805f64236014d34 */
+"buttonValidateAndGoNext" = "Επιβεβαίωση και μετάβαση στο επόμενο";
+
+/* loco:697b65886840f9d35605a132 */
+"buttonWakeUp" = "Αφύπνιση";
+
+/* loco:69a6aaafc13f93081e04db42 */
+"conflictErrorAction" = "Επιλογή έκδοσης";
+
+/* loco:69a6a9cae09fee6611099002 */
+"conflictErrorDescription" = "Εντοπίστηκαν δύο διαφορετικές εκδόσεις αυτών των αρχείων.";
+
+/* loco:69a6a9a346b023df2c088bf2 */
+"conflictErrorTitle" = "Συγκρούσεις εκδόσεων";
+
+/* loco:69aae8ecbd2a6e29890401b2 */
+"conflictsSearchBoxPlaceholder" = "Αναζήτηση αρχείου";
+
+/* loco:698b244d7e73966ce3096b02 */
+"copyingLink" = "Αντιγραφή συνδέσμου…";
+
+/* loco:698b169cf72c91b1760a7002 */
+"dataManagementDescription" = "Μπορείτε να προσαρμόσετε τα δεδομένα χρήσης και λειτουργίας που συλλέγει η Infomaniak για τη διόρθωση σφαλμάτων και τη βελτίωση της εφαρμογής. Και τα δύο εργαλεία που χρησιμοποιούνται φιλοξενούνται και διαχειρίζονται αποκλειστικά από εμάς.\n\nΟ πηγαίος κώδικας αυτής της εφαρμογής μπορεί να επαληθευτεί, οι πληροφορίες που συλλέγονται είναι ανώνυμες και τα προσωπικά σας στοιχεία παραμένουν αυστηρά εμπιστευτικά και δεν μοιράζονται ποτέ με τρίτους.";
+
+/* loco:698b15ec9e0aad20280f8c02 */
+"dataManagementSettings" = "Διαχείριση δεδομένων";
+
+/* loco:698b164a5f781b3d5203de12 */
+"dataManagementSubtitle" = "Η Infomaniak σέβεται την ιδιωτικότητά σας";
+
+/* loco:698b3a87553e334c1009a7e4 */
+"debugLevelDescription" = "Επιλέξτε την ποσότητα πληροφοριών που θα καταγράφονται.";
+
+/* loco:698b3a4d553e334c1009a7e2 */
+"debugLevelSetting" = "Επίπεδο εντοπισμού σφαλμάτων";
+
+/* loco:698b35cccaddc9598c08a6c2 */
+"debugLogsDescription" = "Επιτρέπουν στην υποστήριξη της Infomaniak να εντοπίσει την αιτία ενός συμβάντος.";
+
+/* loco:698b35a408fd1ee25f08ab35 */
+"debugLogsSettings" = "Αρχεία καταγραφής εντοπισμού σφαλμάτων";
+
+/* loco:699c52b6ec7d62ceec060242 */
+"defaultErrorDescription" = "Ο συγχρονισμός θα επανεκκινήσει αυτόματα.\nΕάν το πρόβλημα παραμένει, επικοινωνήστε με την υποστήριξή μας επισυνάπτοντας τις τεχνικές λεπτομέρειες παρακάτω.";
+
+/* loco:699c52baf0c09a8cdb0b6f92 */
+"defaultErrorDetailsLabel" = "Τεχνικές λεπτομέρειες";
+
+/* loco:699c52a6b2445603690d7062 */
+"defaultErrorTitle" = "Παρουσιάστηκε μη αναμενόμενο σφάλμα";
+
+/* loco:6a03193b7868f10c96083485 */
+"defaultExclusionAppListDescription" = "Αυτές οι εφαρμογές αγνοούνται από προεπιλογή και δεν μπορούν να τροποποιηθούν.";
+
+/* loco:698b571c5bf251efd60b88f2 */
+"defaultExclusionFileListDescription" = "Αυτά τα αρχεία εξαιρούνται από προεπιλογή και δεν μπορούν να τροποποιηθούν.";
+
+/* loco:698b56b72776ca5e2e084172 */
+"defaultExclusionFileListHeader" = "Αυτόματη εξαίρεση";
+
+/* loco:699c5deee592726401053956 */
+"deleteCancelErrorTitle" = "Η διαγραφή ακυρώθηκε";
+
+/* loco:69a066863a852bbb830bd326 */
+"dialogDataErrorSyncDirChangeDescription" = "Σε αυτές τις περιπτώσεις, απαιτείται νέος συγχρονισμός για να συνεχίσετε να χρησιμοποιείτε σωστά το kDrive.";
+
+/* loco:698c6c6e4f7e07503f0ba762 */
+"dialogNewExclusionRuleTitle" = "Προσθήκη κανόνα εξαίρεσης";
+
+/* loco:698c6bbd94b70c0d3d09cde4 */
+"dialogRemoveAccountContent" = "Πρόκειται να αποσυνδέσετε τον λογαριασμό %@ από την εφαρμογή.\nΟ φάκελος συγχρονισμού θα παραμείνει στον υπολογιστή σας, αλλά δεν θα συγχρονίζεται πλέον με το kDrive.\n\nΌλα τα δεδομένα σας θα παραμένουν προσβάσιμα διαδικτυακά στο kDrive.";
+
+/* loco:698c6b10661f3226080d11a2 */
+"dialogRemoveAccountTitle" = "Αποσύνδεση από αυτόν τον λογαριασμό;";
+
+/* loco:698c7bc013e8b5bced08e614 */
+"dialogSyncDeletionWarningContent" = "Ο τοπικός φάκελος θα παραμείνει στον υπολογιστή σας, αλλά δεν θα συγχρονίζεται πλέον με το kDrive.\nΑυτή η ενέργεια είναι μόνιμη.\nΓια να συγχρονίσετε ξανά τη μονάδα σας, θα χρειαστεί να τη συνδέσετε ξανά αργότερα.\n\nΠριν συνεχίσετε, βεβαιωθείτε ότι όλα τα αρχεία σας είναι ενημερωμένα και πλήρως συγχρονισμένα.";
+
+/* loco:698c7b5c30ae98f0e6043132 */
+"dialogSyncDeletionWarningTitle" = "Κατάργηση συγχρονισμού;";
+
+/* loco:698c8c7d965fc74e3209cbc2 */
+"dialogSyncModeChangeWarningContent" = "Αυτή η λειτουργία ενδέχεται να χρειαστεί κάποιο χρόνο ανάλογα με το μέγεθος των δεδομένων σας. Εάν αποτύχει, ίσως απαιτηθεί πλήρης επανασυγχρονισμός της μονάδας.\n\nΠριν συνεχίσετε, βεβαιωθείτε ότι όλα τα αρχεία σας είναι ενημερωμένα και συγχρονισμένα.\n\nΜην κλείσετε την εφαρμογή κατά τη διάρκεια της διαδικασίας.";
+
+/* loco:698c8c9a965fc74e3209cbc4 */
+"dialogSyncModeChangeWarningTitle" = "Αλλαγή λειτουργίας συγχρονισμού;";
+
+/* loco:699ffc60759bb427a3087a02 */
+"dialogSystemErrorSyncDirAccessErrorDescription" = "Δείτε πώς να αποκαταστήσετε τον συγχρονισμό:";
+
+/* loco:69a04c38b125963a990be812 */
+"dialogSystemErrorSyncDirDiskMissingErrorDescription" = "Ο δίσκος που περιέχει τον φάκελο συγχρονισμού σας δεν είναι πλέον συνδεδεμένος";
+
+/* loco:69a04d3d9f59db90d2034a02 */
+"dialogSystemErrorSyncDirDiskMissingErrorTip" = "Συνδέστε τον ξανά για να συνεχίσετε τον συγχρονισμό.";
+
+/* loco:698af1c80126fd2db302b783 */
+"doNotJoin" = "Χωρίς εγγραφή";
+
+/* loco:69d90c3e87d4f2c6d30331c2 */
+"downloadAppUrl" = "https://www.infomaniak.com/en/apps/download-kdrive";
+
+/* loco:696a260311ac2de6c6029683 */
+"driveAccessDeniedErrorDescription" = "Δεν έχετε άδεια πρόσβασης σε αυτό το kDrive.\nΕλέγξτε τα δικαιώματά σας ή επικοινωνήστε με τον διαχειριστή σας.";
+
+/* loco:696a25f0bcde38f2b9018124 */
+"driveAccessDeniedErrorTitle" = "Η πρόσβαση στο kDrive απορρίφθηκε";
+
+/* loco:6979e320c8fc8496d00b3a62 */
+"driveAsleepErrorTitle" = "Το kDrive σας βρίσκεται σε κατάσταση αδρανείας";
+
+/* loco:696ddb204d9cd9e240095142 */
+"driveLockedAdminErrorDescription" = "Αυτό το kDrive δεν ανανεώθηκε. Δεν μπορείτε πλέον να έχετε πρόσβαση σε αυτό.\nΑνανεώστε τη συνδρομή σας για να επανενεργοποιήσετε την υπηρεσία.";
+
+/* loco:696dda82726515a10a0772c2 */
+"driveLockedErrorDescription" = "Αυτό το kDrive δεν ανανεώθηκε. Δεν μπορείτε πλέον να έχετε πρόσβαση σε αυτό.\nΕπικοινωνήστε με τον διαχειριστή σας για να επανενεργοποιήσετε την υπηρεσία.";
+
+/* loco:696df7c300e7a6e07201ee53 */
+"driveLockedErrorTitle" = "Το kDrive σας έχει λήξει";
+
+/* loco:6979e45003f623afa50f5592 */
+"driveLoggingErrorDescription" = "Συνδεθείτε ξανά για να συνεχίσετε να χρησιμοποιείτε το kDrive.";
+
+/* loco:6979e43e93193f40e100ebc2 */
+"driveLoggingErrorTitle" = "Αποσυνδεθήκατε";
+
+/* loco:698c6e0a8606b6052c073992 */
+"driveLoggingErrorUserMismatchDescription" = "Ο λογαριασμός που χρησιμοποιήθηκε για αυτή τη σύνδεση δεν αντιστοιχεί στον λογαριασμό αυτού του kDrive.\nΣυνδεθείτε ξανά με τη σωστή διεύθυνση email %@";
+
+/* loco:698c6dcd9ec7f03e0007a382 */
+"driveLoggingErrorUserMismatchTitle" = "Αυτός ο λογαριασμός δεν αντιστοιχεί";
+
+/* loco:6979e3dfba525501090fbfa8 */
+"driveWakingUpErrorDescription" = "Το kDrive αφυπνίζεται… αυτό μπορεί να χρειαστεί μερικές στιγμές.";
+
+/* loco:6979e389195e90fdc909d252 */
+"driveWakingUpErrorTitle" = "Το kDrive αφυπνίζεται";
+
+/* loco:699c5de5e592726401053953 */
+"duplicateNamesErrorTitle" = "Διπλά ονόματα";
+
+/* loco:698b3654af04fbae590cbf82 */
+"enableDebugLogDescription" = "Καταγραφή διαγνωστικών πληροφοριών στον υπολογιστή μου.";
+
+/* loco:698b361c54ac23ef050755a2 */
+"enableDebugLogsSetting" = "Ενεργοποίηση καταγραφής εντοπισμού σφαλμάτων";
+
+/* loco:699c5e30252e8a13e30ccaa6 */
+"errCreateCancelDescription" = "Δεν έχετε τα απαραίτητα δικαιώματα για να προσθέσετε ένα %@ σε αυτή την τοποθεσία.\nΖητήστε πρόσβαση από τον κάτοχο ή τον διαχειριστή.";
+
+/* loco:699c5de63e952e3a3908b794 */
+"errDeleteCancelDescription" = "Δεν έχετε άδεια να διαγράψετε αυτό το %@. Έχει αποκατασταθεί στην αρχική του τοποθεσία. Ζητήστε πρόσβαση από τον κάτοχο ή τον διαχειριστή.";
+
+/* loco:69a051ea38b756bc510d07b2 */
+"errDialogConfigChangedTitle" = "Εντοπίστηκε αλλαγή στη διαμόρφωσή σας";
+
+/* loco:69c11647693dd774a40a7922 */
+"errDialogInvalidSyncSyncDirAccessDescription" = "Σε αυτές τις περιπτώσεις, ενδέχεται να απαιτείται νέος συγχρονισμός για να συνεχίσετε να χρησιμοποιείτε σωστά το kDrive.";
+
+/* loco:6995ec41f214efe144009444 */
+"errDialogLocalFileAccessDescription" = "Τα δικαιώματα πρόσβασης για το %@ άλλαξαν, εμποδίζοντας τον συγχρονισμό του.";
+
+/* loco:6995ec4239c94dab2908c002 */
+"errDialogLocalFileAccessFaqLink" = "Ελέγξτε το %@ για να αποκαταστήσετε την πρόσβαση";
+
+/* loco:6995ec41baed71172b0a6182 */
+"errDialogLocalFileAccessLocationLabel" = "Τελευταία τοποθεσία του %@:";
+
+/* loco:69a04b8fbd2b846c4c0dfa42 */
+"errDialogSystemSyncDirDiskMissingTitle" = "Εξωτερικός δίσκος αποσυνδέθηκε";
+
+/* loco:69c11bf158364c02530e18a3 */
+"errDialogSystemUnableToStartVfsDescription" = "Αυτή η λειτουργία μπορεί να χρειαστεί κάποιο χρόνο ανάλογα με την ποσότητα των δεδομένων που πρέπει να επεξεργαστούν.\n\nΜην κλείσετε την εφαρμογή κατά τη διάρκεια της διαδικασίας.\n\nΕάν αποτύχει, μπορείτε εύκολα να ξεκινήσετε έναν πλήρη επανασυγχρονισμό της μονάδας ή να επικοινωνήσετε με την υποστήριξή μας.";
+
+/* loco:69c11b11df0a817d8a01a312 */
+"errDialogSystemUnableToStartVfsTitle" = "Ενεργοποίηση συγχρονισμού εκτός σύνδεσης";
+
+/* loco:696a29351c25c87abb045892 */
+"errDriveMaintenanceDescription" = "Αυτό το kDrive δεν είναι προσωρινά διαθέσιμο λόγω συντήρησης.\nΔοκιμάστε ξανά σε λίγα λεπτά.";
+
+/* loco:696a2779d558c16f7d0a7ff9 */
+"errDriveMaintenanceTitle" = "Συντήρηση σε εξέλιξη";
+
+/* loco:699c5de55ac1efa46908d312 */
+"errDuplicateNamesDescription" = "Υπάρχει ήδη ένα αρχείο ή φάκελος με αυτό το όνομα.";
+
+/* loco:699c5de689c9f608fc070e32 */
+"errEditCancelDescription" = "Δεν έχετε δικαιώματα για να επεξεργαστείτε αυτό το αρχείο.\nΔιατηρήθηκε η αρχική έκδοση και η επεξεργασία σας αποθηκεύτηκε σε ξεχωριστό αρχείο με \"conflict\" στο όνομά του. Ζητήστε πρόσβαση από τον κάτοχο ή τον διαχειριστή.";
+
+/* loco:699c5dfc89c9f608fc070e36 */
+"errEndWithSpaceDescription" = "Το όνομα αυτού του %@ τελειώνει με κενό, εμποδίζοντας τον συγχρονισμό του. Μετονομάστε το %@ από το kDrive online.";
+
+/* loco:699c5614411d7368440846f6 */
+"errEndWithSpaceTitle" = "Κενό στο τέλος του ονόματος %@";
+
+/* loco:699c5de592db098f7b0fd183 */
+"errExcludedByTemplateDescription" = "Ένας κανόνας εξαίρεσης εμποδίζει τον συγχρονισμό αυτού του %@.";
+
+/* loco:699c561e7c51c239760379d2 */
+"errExcludedByTemplateTitle" = "Εξαιρείται από τον συγχρονισμό";
+
+/* loco:699c5df3d6fc7731d507e5e3 */
+"errFileExistsDescription" = "Υπάρχει ήδη ένα αρχείο με αυτό το όνομα.";
+
+/* loco:699c5df6d6fc7731d507e5e5 */
+"errFileLockedDescription" = "Αυτό το αρχείο χρησιμοποιείται αυτή τη στιγμή από άλλον χρήστη.\nΟι αλλαγές σας θα συγχρονιστούν αργότερα.";
+
+/* loco:699c5613411d7368440846f4 */
+"errFileLockedTitle" = "Αρχείο κλειδωμένο";
+
+/* loco:699c5de6b7e26cbaa70f2f62 */
+"errFileRescuedDescription" = "Αυτό το αρχείο διαγράφηκε στο kDrive online ενώ το επεξεργαζόσασταν. Ένα αντίγραφο αποθηκεύτηκε στον υπολογιστή σας στον φάκελο ανάκτησης.";
+
+/* loco:699c5615411d7368440846f8 */
+"errFileRescuedTitle" = "Αρχείο ανακτήθηκε";
+
+/* loco:699c74f5a495a84f970d7b72 */
+"errFileTooBigAdminDescription" = "Αυτό το αρχείο υπερβαίνει το μέγιστο επιτρεπτό μέγεθος (50 GB).\nΕπικοινωνήστε με την υποστήριξη για να αρθεί το όριο.";
+
+/* loco:699c5df989c9f608fc070e34 */
+"errFileTooBigDescription" = "Αυτό το αρχείο υπερβαίνει το μέγιστο επιτρεπτό μέγεθος (50 GB).\nΕπικοινωνήστε με τον διαχειριστή σας για να αυξήσετε το όριο μεγέθους αρχείου.";
+
+/* loco:699dbc6b6214e7b523066c22 */
+"errFileTooBigTitle" = "Το αρχείο είναι πολύ μεγάλο";
+
+/* loco:699c5deb5ae8fa2cd40b6d92 */
+"errForbiddenActionTitle" = "Απαγορευμένη πρόσβαση";
+
+/* loco:698c50d3ad9b9055a00cca42 */
+"errForbiddenCharDescription" = "Το όνομα αυτού του %@ περιέχει έναν ή περισσότερους χαρακτήρες που δεν υποστηρίζονται από την εφαρμογή kDrive Windows. Μετονομάστε το %@ από το kDrive online.";
+
+/* loco:699c5dff17e678a1990c53c4 */
+"errForbiddenCharOnlySpacesDescription" = "Αυτό το όνομα περιέχει μόνο κενά και δεν μπορεί να χρησιμοποιηθεί. Μετονομάστε το %@ από το kDrive online.";
+
+/* loco:699c562252bdaf14430f36e4 */
+"errForbiddenCharOnlySpacesTitle" = "Μη έγκυρο όνομα";
+
+/* loco:698c50bd552fc86c5c043624 */
+"errForbiddenCharTitle" = "Μη υποστηριζόμενος χαρακτήρας";
+
+/* loco:69c12bf8540dd631890205a4 */
+"errGenericForbiddenDescription" = "Δεν έχετε τα απαραίτητα δικαιώματα για να εκτελέσετε αυτή την ενέργεια.\nΖητήστε πρόσβαση από τον κάτοχο ή τον διαχειριστή.";
+
+/* loco:69c12be5d526565a35067654 */
+"errGenericForbiddenTitle" = "Απαγορευμένη πρόσβαση";
+
+/* loco:699c5de53e952e3a3908b792 */
+"errHardlinkDescription" = "Αυτό το αρχείο είναι σκληρός σύνδεσμος (hard link) που δεν μπορεί να συγχρονιστεί.";
+
+/* loco:699c56147f87ce6dc70c3e02 */
+"errHardlinkTitle" = "Μη υποστηριζόμενος τύπος αρχείου";
+
+/* loco:699dad0f767bc678ce0a7e62 */
+"errInvalidSyncSyncDirAccessDescription" = "Αυτός ο φάκελος δεν είναι πλέον προσβάσιμος στην αρχική του τοποθεσία.";
+
+/* loco:699dacde9cc743edb40cc832 */
+"errInvalidSyncSyncDirAccessTitle" = "Ο φάκελος συγχρονισμού δεν βρέθηκε";
+
+/* loco:699dadab7e62db51ff089bc4 */
+"errInvalidSyncSyncDirNestingDescription" = "Ένα από τα kDrive σας συγχρονίζεται μέσα στον φάκελο συγχρονισμού ενός άλλου kDrive.\nΜεταφέρετε έναν από τους φακέλους ώστε να μην είναι πλέον ένθετοι, ή διαγράψτε τον συγχρονισμό σας για να τον δημιουργήσετε ξανά.";
+
+/* loco:699dad8cada34c581005db42 */
+"errInvalidSyncSyncDirNestingTitle" = "Ένθετα kDrive";
+
+/* loco:698c507a552fc86c5c043622 */
+"errLocalFileAccessDescription" = "Δεν είναι δυνατή η πρόσβαση σε αυτό το %@ στον υπολογιστή σας. Ελέγξτε ότι υπάρχει ακόμα και ότι έχετε δικαιώματα πρόσβασης σε αυτό.";
+
+/* loco:698c5065d2a68e9e0e01f7e5 */
+"errLocalFileAccessTitle" = "%@ μη προσβάσιμο";
+
+/* loco:699c5e029d64978ac00c7d12 */
+"errMoveCancelDescription" = "Δεν έχετε δικαιώματα για να μεταφέρετε αυτό το %@ εδώ· θα αποκατασταθεί στην αρχική του τοποθεσία. Ζητήστε πρόσβαση από τον κάτοχο ή τον διαχειριστή.";
+
+/* loco:699c5de73e952e3a3908b796 */
+"errNameLengthDescription" = "Αυτό το όνομα υπερβαίνει το επιτρεπτό μήκος (250 χαρακτήρες). Μετονομάστε το %@.";
+
+/* loco:699c5629411d7368440846fa */
+"errNameLengthTitle" = "Το όνομα %@ είναι πολύ μακρύ";
+
+/* loco:699daf73372e300aeb066ac3 */
+"errNetworkErrorOtherDescription" = "Δεν είναι δυνατή η σύνδεση στο kDrive.\nΟ συγχρονισμός θα συνεχιστεί αυτόματα μόλις αποκατασταθεί η σύνδεση.";
+
+/* loco:699daf5b0ff22f32d50a7033 */
+"errNetworkErrorOtherTitle" = "Η σύνδεση δεν είναι προσωρινά διαθέσιμη";
+
+/* loco:699c5e04289e5ec7bf009725 */
+"errNotEnoughDiskSpaceDescription" = "Δεν υπάρχει αρκετός χώρος στον υπολογιστή σας για τον συγχρονισμό αυτού του αρχείου.";
+
+/* loco:699c562b1a58312b250e8e92 */
+"errNotEnoughDiskSpaceTitle" = "Ανεπαρκής χώρος δίσκου";
+
+/* loco:699c5e073e952e3a3908b798 */
+"errNotYetSupportedCharDescription" = "Το όνομα αυτού του αρχείου περιέχει έναν ή περισσότερους χαρακτήρες που δεν υποστηρίζονται ακόμα από την εφαρμογή kDrive. Μετονομάστε το αρχείο από το kDrive online.";
+
+/* loco:699c562e1a58312b250e8e94 */
+"errNotYetSupportedCharTitle" = "Μη υποστηριζόμενος χαρακτήρας";
+
+/* loco:699c5615d46e9facca0bfdb2 */
+"errPathLengthDescription" = "Η διαδρομή προς αυτό το %@ είναι πολύ μακριά για συγχρονισμό. Μετονομάστε έναν ή περισσότερους φακέλους στους οποίους βρίσκεται για να μικρύνετε τη διαδρομή.";
+
+/* loco:699c5613f3c45c54e50247f3 */
+"errPathLengthTitle" = "Η διαδρομή προς %@ είναι πολύ μακριά";
+
+/* loco:699c56ad13d88a808b01e104 */
+"errQuotaExceededDescription" = "Το kDrive σας είναι γεμάτο. Ελευθερώστε χώρο ή αναβαθμίστε τη συνδρομή σας για να συγχρονίσετε αυτό το %@.";
+
+/* loco:699c56a42dfefb66850e69d2 */
+"errQuotaExceededTitle" = "Το όριο αποθηκευτικού χώρου συμπληρώθηκε";
+
+/* loco:699c56b32dfefb66850e69d4 */
+"errReservedNameDescription" = "Αυτό το όνομα είναι δεσμευμένο από το σύστημα του υπολογιστή σας. Μετονομάστε το %@ από το kDrive online.";
+
+/* loco:699c561418805cf2a2010952 */
+"errReservedNameTitle" = "Το όνομα %@ είναι δεσμευμένο";
+
+/* loco:699ef321392a1b1fe30afd33 */
+"errSystemErrorSyncDirAccessErrorDescription" = "Ελέγξτε την τοποθεσία ή τα δικαιώματα πρόσβασης του φακέλου.";
+
+/* loco:699ef2b8af5e8f5e2a00eeb5 */
+"errSystemErrorSyncDirAccessTitle" = "Ο φάκελος συγχρονισμού δεν είναι προσβάσιμος";
+
+/* loco:6a2197c042aa240e310a72b2 */
+"errSystemLiteSyncNotAllowedDescription" = "Το LiteSync δεν έχει τα απαραίτητα δικαιώματα για να λειτουργήσει.\nανοίξτε τις Προτιμήσεις του macOS για να τις ενεργοποιήσετε.";
+
+/* loco:6a2197a5620b19f3600003a2 */
+"errSystemLiteSyncNotAllowedTitle" = "Απαιτούμενη εξουσιοδότηση";
+
+/* loco:699db2cb55ec6730790b6d02 */
+"errSystemNotEnoughDiskSpaceDescription" = "Ο χώρος δίσκου της συσκευής σας είναι γεμάτος. Ο συγχρονισμός διακόπηκε. Ελευθερώστε χώρο για να συνεχίσετε τον συγχρονισμό.";
+
+/* loco:699db2adcb59caa0180bfb43 */
+"errSystemNotEnoughDiskSpaceTitle" = "Ανεπαρκής χώρος δίσκου";
+
+/* loco:69c113aefce2723e4e02a8b2 */
+"errSystemSyncDirChanged" = "Αυτός ο φάκελος δεν είναι πλέον προσβάσιμος στην αρχική του τοποθεσία.";
+
+/* loco:69a04af840d83256d50795e2 */
+"errSystemSyncDirDiskMissingDescription" = "Αυτός ο φάκελος δεν είναι πλέον προσβάσιμος. Απαιτείται ενέργεια για να συνεχιστεί ο συγχρονισμός.";
+
+/* loco:69a04aad8185890f2a0fa5d2 */
+"errSystemSyncDirMissingTitle" = "Ο φάκελος συγχρονισμού δεν βρέθηκε";
+
+/* loco:699db4392a821651780b5842 */
+"errSystemUnableToStartVfsDescription" = "Το Lite Sync δεν μπορεί να εκκινήσει. Μπορείτε να συνεχίσετε να συγχρονίζετε τα αρχεία σας ενεργοποιώντας τον συγχρονισμό εκτός σύνδεσης στις ρυθμίσεις. Επικοινωνήστε με την υποστήριξη εάν το πρόβλημα παραμένει.";
+
+/* loco:699db42197d59a4659020b42 */
+"errSystemUnableToStartVfsTitle" = "Αδύνατη εκκίνηση του Lite Sync";
+
+/* loco:699c561552bdaf14430f36e2 */
+"errTmpBlacklistedDescription" = "Ο συγχρονισμός αυτού του στοιχείου απέτυχε. Θα επαναληφθεί αυτόματα αργότερα.";
+
+/* loco:699c561523c0dac10d09b052 */
+"errTmpBlacklistedTitle" = "Ο συγχρονισμός απέτυχε προσωρινά";
+
+/* loco:699c56b82dfefb66850e69d6 */
+"errUploadNotTerminatedDescription" = "Η μεταφόρτωση δεν μπόρεσε να ολοκληρωθεί. Δοκιμάστε ξανά αργότερα.";
+
+/* loco:6998110a3f9ff4c3230a4eb2 */
+"errorConnectingToXPCServer" = "Φαίνεται ότι δεν μπορούμε να φορτώσουμε την εφαρμογή…";
+
+/* loco:69aa7fb3753c400c81087842 */
+"errorDeletingAccount" = "Παρουσιάστηκε σφάλμα κατά τη διαγραφή του λογαριασμού σας.";
+
+/* loco:6995e49c8f25367fa9049f42 */
+"errorListFilesToVerifyHeader" = "Αρχεία για έλεγχο";
+
+/* loco:6a1e7c960b63328e7a01f812 */
+"errorListSystemHeader" = "Σύστημα και δικαιώματα";
+
+/* loco:6995dff99537658db20fabb3 */
+"errorPageTitle" = "Σφάλματα για διόρθωση";
+
+/* loco:6a2fb7df4af9c895d0043b52 */
+"errorSelectedFolderIncorrect" = "Αυτός ο φάκελος δεν μπορεί να συγχρονιστεί. Παρακαλώ επιλέξτε έναν άλλο φάκελο.";
+
+/* loco:69afcc9e14a34ba0f30ee2a2 */
+"errorStartingInstaller" = "Σφάλμα κατά την εκκίνηση του εγκαταστάτη";
+
+/* loco:69b3e9128555b02b5001ee42 */
+"errorWhileChangingSynchroMode" = "Σφάλμα κατά την αλλαγή λειτουργίας συγχρονισμού";
+
+/* loco:6a01cb10947c595e7c030a83 */
+"excludeRuleAppDescription" = "Αποκλείστε τις εφαρμογές που ενδέχεται να κατεβάσουν ή να τροποποιήσουν τα αρχεία σας.";
+
+/* loco:698b0107941b49c4f500aa12 */
+"excludeRuleDescription" = "Τα αρχεία που ταιριάζουν με αυτόν τον κανόνα δεν θα συγχρονίζονται.";
+
+/* loco:6a01ca75fd0cd802c903fca3 */
+"excludeRuleFileDescription" = "Αποφύγετε την αντιγραφή ορισμένων προσωρινών αρχείων ή αρχείων συστήματος στο kDrive.";
+
+/* loco:698b37a3ff1c8782250e1a74 */
+"extendedLogDescription" = "Ενεργοποιεί τη συλλογή πρόσθετων πληροφοριών χρήσιμων για την υποστήριξη.";
+
+/* loco:698b3778571c7248480ed4c2 */
+"extendedLogSetting" = "Εκτεταμένο λεπτομερές αρχείο καταγραφής";
+
+/* loco:698b37efff1c8782250e1a76 */
+"extendedLogWarning" = "Όταν αυτή η επιλογή είναι ενεργή, το kDrive λειτουργεί πιο αργά.";
+
+/* loco:69cb941c26bf3e633e097a82 */
+"faqUrl" = "https://www.infomaniak.com/en/support/faq/admin2/kdrive";
+
+/* loco:6992ec7abaf88a24990d3e13 */
+"feedbackSetting" = "Βοηθήστε μας να βελτιώσουμε το kDrive";
+
+/* loco:69a560c0ef88a6b6b00e49a4 */
+"feedbackURL" = "https://feedback.userreport.com/652ad8f0-84c8-4a21-9e31-7a8bd7134f46";
+
+/* loco:6a072dcb891ba895c309fbc2 */
+"fileExclusionNotificationWarning" = "Μια ειδοποίηση σας ενημερώνει όταν ένα αρχείο αποκλείεται από αυτόν τον κανόνα.";
+
+/* loco:699c56142c8d937001054c82 */
+"fileExistsErrorTitle" = "Το αρχείο υπάρχει ήδη";
+
+/* loco:698b05aa9eefd9ba070ce4a2 */
+"fileSyncMode" = "Λειτουργία συγχρονισμού αρχείων";
+
+/* loco:698b05ecfd0cddb0b90c8b72 */
+"fileSyncModeDescription" = "Καθορίστε τον τρόπο αποθήκευσης και πρόσβασης στα αρχεία σας.";
+
+/* loco:698b00c7f04008f614070e52 */
+"filesToExclude" = "Αρχεία για εξαίρεση";
+
+/* loco:695e57f549f806b5ef0a3ac2 */
+"folderFavorites" = "Αγαπημένα";
+
+/* loco:695e584bbc7544361b08b832 */
+"folderShares" = "Κοινοποιήσεις";
+
+/* loco:695e5889bc7544361b08b834 */
+"folderTrash" = "Κάδος απορριμμάτων";
+
+/* loco:698b111bc1341f8509093622 */
+"forOneHour" = "Για 1 ώρα";
+
+/* loco:698b115dd0d747974308d3b2 */
+"forOneWeek" = "Για μία εβδομάδα";
+
+/* loco:698b1185c1341f8509093624 */
+"forThreeDays" = "Για τρεις ημέρες";
+
+/* loco:6960b7720cbd5c07340af144 */
+"greetingLabel" = "Γεια σας %@, %@";
+
+/* loco:6964f0b575a31a8d9601a6d7 */
+"helpKDriveName" = "kDrive %@";
+
+/* loco:69b278d512cd069835039fe2 */
+"helpUrl" = "https://www.infomaniak.com/en/support";
+
+/* loco:6989e175cdee4aba850e89b2 */
+"infomaniakSupport" = "Υποστήριξη Infomaniak";
+
+/* loco:696a481cf54b5acbc60209c2 */
+"informationBlockKDriveFullSubtitle" = "Ελευθερώστε χώρο ή αναβαθμίστε το πλάνο σας για να συνεχίσετε να συγχρονίζετε τα αρχεία σας.";
+
+/* loco:696a47fd5b6db1a9b1063182 */
+"informationBlockKDriveFullTitle" = "Το kDrive σας είναι γεμάτο";
+
+/* loco:698053a65bddc8df790d0212 */
+"informationBlockSynchroErrorSubtitle" = "Ορισμένα αρχεία δεν μπόρεσαν να συγχρονιστούν.";
+
+/* loco:69c4e8bed4e0fde818045ab2 */
+"informationBlockTmpDirAccessErrorSubtitle" = "Δεν μπορούμε να αποκτήσουμε πρόσβαση στα αρχεία σας. Επανεκκινήστε την εφαρμογή για να συνεχίσετε τον συγχρονισμό. Εάν το πρόβλημα συνεχίζεται, επικοινωνήστε με την υποστήριξη.";
+
+/* loco:69c4e8b82884a264150d2583 */
+"informationBlockTmpDirAccessErrorTitle" = "Διακόπηκε η σύνδεση με το kDrive";
+
+/* loco:6930595e7664999c6a08c8a4 */
+"instructionEnableKDrive" = "Ενεργοποιήστε το kDrive.app";
+
+/* loco:693059768c31ab63990a0c82 */
+"instructionEnableKDriveArgument" = "kDrive.app";
+
+/* loco:69314c10606d30eb26081742 */
+"instructionEnableKDriveHint" = "Πρέπει να ενεργοποιήσετε το kDrive.app πριν συνεχίσετε";
+
+/* loco:69314cfb358e5c25a50b1fb3 */
+"instructionFullDisk" = "Ενεργοποιήστε το kDrive και το kDrive LiteSync Extension";
+
+/* loco:69314c248389940c6c08d902 */
+"instructionFullDiskHint" = "Πρέπει να ενεργοποιήσετε τις εξουσιοδοτήσεις πριν συνεχίσετε";
+
+/* loco:69314c4aba85c2962d068dc2 */
+"instructionOpenPrivacySecurity" = "Μεταβείτε στο Απόρρητο και ασφάλεια > Πλήρης πρόσβαση στον δίσκο";
+
+/* loco:69314c54606d30eb26081743 */
+"instructionOpenPrivacySecurityArgument" = "Πλήρης πρόσβαση στον δίσκο";
+
+/* loco:69314c62739c205c410aa082 */
+"instructionOpenPrivacySecurityLink" = "Απόρρητο και ασφάλεια";
+
+/* loco:69305911b203efcf750e7bb4 */
+"instructionOpenSecurityExtensions" = "Επιλέξτε Άνοιγμα και επεκτάσεις > Επεκτάσεις ασφαλείας";
+
+/* loco:6930592bfd6c86f6690db6d5 */
+"instructionOpenSecurityExtensionsArgument" = "Επεκτάσεις ασφαλείας";
+
+/* loco:693059483fc5023f6a0f86b3 */
+"instructionOpenSecurityExtensionsLink" = "Άνοιγμα και επεκτάσεις";
+
+/* loco:69305849f1fb5be2c7093fa2 */
+"instructionOpenSystemSettings" = "Ανοίξτε τις Ρυθμίσεις συστήματος > Γενικά";
+
+/* loco:6930588953221ff00608e983 */
+"instructionOpenSystemSettingsLink" = "Ρυθμίσεις συστήματος";
+
+/* loco:69314d1a739c205c410aa087 */
+"instructionRestartIfNecessary" = "Επανεκκινήστε την εφαρμογή εάν απαιτείται";
+
+/* loco:6a16da43bc4d91f15c0416e2 */
+"kSuiteOfferUrl" = "https://www.infomaniak.com/en/ksuite";
+
+/* loco:69a0079a3f0464f2af0a25d3 */
+"labelAccessRightsModified" = "Τα δικαιώματα πρόσβασης τροποποιήθηκαν";
+
+/* loco:6989c851ba57b190ff0ebbf2 */
+"labelAllowTracking" = "Να επιτρέπεται η παρακολούθηση";
+
+/* loco:6a0b062a269f9f6d54046565 */
+"labelAppID" = "Αναγνωριστικό εφαρμογής";
+
+/* loco:6a155a770336fcc4820ebf57 */
+"labelApplicationName" = "Όνομα εφαρμογής";
+
+/* loco:69a6a42b7dda553eac028754 */
+"labelAuthor" = "Συντάκτης";
+
+/* loco:69aac15193f089df1a016352 */
+"labelChooseConflictVersion" = "Επιλέξτε ποια έκδοση των αρχείων σας θέλετε να διατηρήσετε.";
+
+/* loco:69aae4641dd9b6d9260b1dd2 */
+"labelChooseConflictVersionIndividual" = "Για κάθε αρχείο, επιλέξτε την έκδοση που θέλετε να διατηρήσετε.";
+
+/* loco:69a6a189b148a1a71e0ed432 */
+"labelConflictDialogQuestion" = "Ποια έκδοση θέλετε να διατηρήσετε;";
+
+/* loco:69a6a149ab7804a872011ae3 */
+"labelConflictDialogTitle" = "Επιλογή έκδοσης για διατήρηση";
+
+/* loco:69aad32560082fe51d04e453 */
+"labelConflictStrategyKeepLocalDescription" = "Οι διαδικτυακές εκδόσεις αυτών των %@ αρχείων θα αντικατασταθούν από τις τοπικές σας εκδόσεις.\nΠροσοχή, αυτό μπορεί να αντικαταστήσει τη δουλειά των συνεργατών σας.";
+
+/* loco:69aad31a1e6f4653e90deca2 */
+"labelConflictStrategyKeepLocalTitle" = "Διατήρηση μόνο των τοπικών εκδόσεων";
+
+/* loco:69aacea7c2c6d1b9ad00e592 */
+"labelConflictStrategyKeepMostRecentDescription" = "Για κάθε σύγκρουση, θα διατηρούμε αυτόματα την έκδοση (τοπική ή διαδικτυακή) που τροποποιήθηκε πιο πρόσφατα. Αυτή είναι η πιο ασφαλής επιλογή στις περισσότερες περιπτώσεις.";
+
+/* loco:69aacd5d37efef69510a4112 */
+"labelConflictStrategyKeepMostRecentTitle" = "Διατήρηση των πιο πρόσφατων εκδόσεων";
+
+/* loco:69aad30606787d9e31090c12 */
+"labelConflictStrategyKeepRemoteDescription" = "Όλες οι τοπικές αλλαγές για αυτά τα %@ αρχεία θα απορριφθούν.\nΧρήσιμο εάν γνωρίζετε ότι η σημαντική εργασία βρίσκεται διαδικτυακά στο kDrive.";
+
+/* loco:69aad2fb60082fe51d04e452 */
+"labelConflictStrategyKeepRemoteTitle" = "Διατήρηση μόνο των διαδικτυακών εκδόσεων";
+
+/* loco:69a012ce9c6aefa11d0c0a22 */
+"labelCreateNewSync" = "Δημιουργήστε έναν %@.";
+
+/* loco:69a6a43c586562e1ae0e9142 */
+"labelDate" = "Ημερομηνία";
+
+/* loco:69a00df5cee58fe1c90de9e2 */
+"labelFAQ" = "FAQ";
+
+/* loco:69bd5439d1397465ce0d8572 */
+"labelFileLowerCase" = "αρχείο";
+
+/* loco:6989ff5b78003eb4e20e2652 */
+"labelFolder" = "Φάκελος";
+
+/* loco:69a007e73eee9bc51f08bae3 */
+"labelFolderDeleted" = "Ο φάκελος διαγράφηκε";
+
+/* loco:69a067f92558059af802c6f2 */
+"labelFolderDisplacedOrModified" = "Ο φάκελος μεταφέρθηκε ή τροποποιήθηκε";
+
+/* loco:69a06836f878b875f20414c2 */
+"labelFolderDisplacedOrModifiedTip" = "Ο φάκελος μπορεί να έχει μεταφερθεί σε άλλον δίσκο και στη συνέχεια να επιστράφηκε στην αρχική του τοποθεσία.";
+
+/* loco:69bd54253484750cc508b092 */
+"labelFolderLowerCase" = "φάκελος";
+
+/* loco:69a004c4b20bdca67000eba2 */
+"labelFolderMovedOrRenamed" = "Ο φάκελος μεταφέρθηκε ή μετονομάστηκε";
+
+/* loco:69a06865762f35915703bd32 */
+"labelFolderRecreatedOrReplaced" = "Ο φάκελος δημιουργήθηκε εκ νέου ή αντικαταστάθηκε";
+
+/* loco:69a06888a8f938beef0635f2 */
+"labelFolderRecreatedOrReplacedTip" = "Ο φάκελος διαγράφηκε και δημιουργήθηκε εκ νέου ή αντικαταστάθηκε από άλλον φάκελο με το ίδιο όνομα.";
+
+/* loco:698c656e3e4e4bbf4f02bde2 */
+"labelJustNow" = "Μόλις τώρα";
+
+/* loco:698aecc409658598f60cc334 */
+"labelKDriveVersion" = "kDrive %@";
+
+/* loco:69a81e43ec7b4ff05a0b50d2 */
+"labelLocal" = "Τοπικό";
+
+/* loco:69aac3530302ea9cb209d153 */
+"labelManyConflictTitle" = "%@ αρχεία τροποποιήθηκαν τόσο στον υπολογιστή σας όσο και στο kDrive.";
+
+/* loco:69a6a3ed7dda553eac028752 */
+"labelMostRecent" = "Πιο πρόσφατο";
+
+/* loco:6989fec57ca0d7305008b1e2 */
+"labelName" = "Όνομα";
+
+/* loco:69a0675de82f7e271b0c54d2 */
+"labelNewDeviceDetected" = "Εντοπίστηκε νέα συσκευή";
+
+/* loco:69a067979b511e9c830b1642 */
+"labelNewDeviceDetectedTip" = "Χρησιμοποιείτε το kDrive σε νέο υπολογιστή, μετά από επαναφορά από αντίγραφο ασφαλείας.";
+
+/* loco:69a0130cbdb1efd10d0939a3 */
+"labelNewSync" = "νέος συγχρονισμός";
+
+/* loco:69aafa69b473f615ee031a64 */
+"labelNoConflictsFound" = "Καμία σύγκρουση δεν αντιστοιχεί στην αναζήτησή σας";
+
+/* loco:69c2644abc5e9a04d80150f4 */
+"labelNoErrorsToFix" = "Δεν υπάρχουν σφάλματα για διόρθωση";
+
+/* loco:698b5869ab41083f11042b52 */
+"labelNotifications" = "Ειδοποίηση";
+
+/* loco:6a1561e8fb5669a82f04fe44 */
+"labelNotifyIfFileExcluded" = "Ειδοποίηση εάν το αρχείο αποκλείστηκε";
+
+/* loco:69a6e4aceff2d992ad059324 */
+"labelOff" = "Ανενεργό";
+
+/* loco:69a81e31f454e9ee2b012722 */
+"labelOnline" = "Online";
+
+/* loco:69c116cc1eebd82cd2031674 */
+"labelOnlineFolderDeletedOrRenamed" = "Ο φάκελος διαγράφηκε στο διαδίκτυο";
+
+/* loco:69c116b9a39e29283f05d3e4 */
+"labelOnlineFolderDeletedOrRenamedTip" = "Ο συγχρονισμένος φάκελος διαγράφηκε στο kDrive online ή δεν είναι πλέον προσβάσιμος.";
+
+/* loco:69a0040b768059140500484a */
+"labelOriginalLocation" = "Αρχική τοποθεσία:";
+
+/* loco:69aace12c2ddcf448e017c32 */
+"labelRecommended" = "Συνιστάται";
+
+/* loco:69c117446ac92c1902088ab4 */
+"labelRemoteAccessRightsModifiedTip" = "Ο φάκελος μπορεί να έχει μεταφερθεί σε άλλον δίσκο και στη συνέχεια να επιστράφηκε στην αρχική του τοποθεσία.";
+
+/* loco:69a0058cb6529d830904d094 */
+"labelRestoreToOriginalLocation" = "Επαναφέρετε το στην αρχική του τοποθεσία.";
+
+/* loco:698b58377672899b9301a142 */
+"labelRules" = "Κανόνες";
+
+/* loco:698b2f6aae1ca9d0290ad174 */
+"labelSameAsSystem" = "Ίδιο με το σύστημα";
+
+/* loco:6989ff974ef31503cb002e23 */
+"labelSize" = "Μέγεθος";
+
+/* loco:698a070557f1356c46048003 */
+"labelStatus" = "Κατάσταση";
+
+/* loco:69a07364c232b528bf01b672 */
+"labelSyncFolder" = "Φάκελοι συγχρονισμού";
+
+/* loco:698c49120217e0fe6308b0c2 */
+"labelSyncLocation" = "Τοποθεσία";
+
+/* loco:69bbf39c8b5d154c9b0e76b2 */
+"labelSyncedFolders" = "Συγχρονισμένοι φάκελοι";
+
+/* loco:698c4ae9a90fef6269010692 */
+"labelSynchronisation" = "Συγχρονισμός";
+
+/* loco:698aeefb604e522161001392 */
+"labelTime" = "Χρόνος";
+
+/* loco:69a6994cc60d93f50404f812 */
+"labelXoverY" = "%@ από %@";
+
+/* loco:698c6a57a5f62ca5f1091942 */
+"labelkDriveManagement" = "Διαχείριση kDrive";
+
+/* loco:698b0dd551a7a263e6030a72 */
+"languageSetting" = "Γλώσσα";
+
+/* loco:698b02fbc4b83479960bbf92 */
+"largeFolderRecommendation" = "Ο πλήρης φάκελος είναι μεγάλος.\nΓια να επιταχύνετε την αποστολή, σας συνιστούμε να στείλετε μόνο την τελευταία περίοδο σύνδεσης kDrive.";
+
+/* loco:698b12a03edc9705b80c71c2 */
+"learnMore" = "Μάθετε περισσότερα";
+
+/* loco:6989dc0e68071269990c2942 */
+"licensesHyperLink" = "Άδεια LGPL v3 - Πηγές Git";
+
+/* loco:698a1276e1c66ed33b03bf32 */
+"linkCopiedToClipboardTitle" = "Ο σύνδεσμος αντιγράφηκε στο πρόχειρο";
+
+/* loco:6a17d566053e72a9fd087b52 */
+"liteSyncUnavailableDescriptionMac" = "Μη συμβατή μονάδα δίσκου ή φάκελος απευθείας στη ρίζα της μονάδας (π.χ. επιλέξτε έναν φάκελο όπως /Η μονάδα μου αντί για /)";
+
+/* loco:698b392cacfe189ede0cf082 */
+"logLevelDebug" = "Εντοπισμός σφαλμάτων";
+
+/* loco:698b3972f0be39d922008ec3 */
+"logLevelError" = "Σφάλμα";
+
+/* loco:698b3982f6e48fd003019f52 */
+"logLevelFatal" = "Κρίσιμο";
+
+/* loco:698b393d2a881def5c0fe142 */
+"logLevelInfo" = "Πληροφορίες";
+
+/* loco:698b394a2a881def5c0fe144 */
+"logLevelWarning" = "Προειδοποίηση";
+
+/* loco:6989f263fe556601b70fe7a2 */
+"logUploadPopupTitle" = "Αποστολή φακέλου εντοπισμού σφαλμάτων στην υποστήριξη Infomaniak";
+
+/* loco:699daea7c2085834e309e844 */
+"logicErrorFullListParsingErrorDescription" = "Ορισμένα ονόματα αρχείων ενδέχεται να περιέχουν μη υποστηριζόμενους ειδικούς χαρακτήρες (όπως διπλά εισαγωγικά, ανάστροφες κάθετες ή αλλαγές γραμμής).\n\nΕλέγξτε και μετονομάστε τα αρχεία που περιέχουν ασυνήθιστους χαρακτήρες και δοκιμάστε ξανά.";
+
+/* loco:699dae59b2e799063c0eee05 */
+"logicErrorFullListParsingErrorTitle" = "Μη έγκυρο όνομα αρχείου";
+
+/* loco:69aaacf3df901b5cea00cd92 */
+"manyConflictErrorDescription" = "Εντοπίστηκαν διαφορετικές εκδόσεις αυτών των αρχείων.";
+
+/* loco:69aaac472fbbf3de57090942 */
+"manyConflictErrorTitle" = "%@ συγκρούσεις εκδόσεων εντοπίστηκαν";
+
+/* loco:698b2e50ea6bcf51bf026fc2 */
+"matomoDescription" = "Το Matomo είναι ένα εργαλείο ανάλυσης που φιλοξενείται και διαχειρίζεται αποκλειστικά από την Infomaniak για να κατανοεί πώς χρησιμοποιείται η εφαρμογή.\n\nΗ ανάλυση αυτών των δεδομένων επιτρέπει στην ομάδα μας να βελτιώνει συνεχώς τη διεπαφή της εφαρμογής.";
+
+/* loco:699c562623c0dac10d09b054 */
+"moveCancelErrorTitle" = "Η μεταφορά ακυρώθηκε";
+
+/* loco:698b11f969e305d1ce01e062 */
+"moveDeletedFilesToRecycleBinSetting" = "Μεταφορά διαγραμμένων αρχείων στον κάδο ανακύκλωσης του υπολογιστή";
+
+/* loco:698b1273e77c157c0d065892 */
+"moveDeletedFilesToRecycleBinWarning" = "Ορισμένα στοιχεία μπορεί να μην είναι δυνατό να μεταφερθούν.";
+
+/* loco:6989d5a219b60c091f06e662 */
+"myksuitePlusBannerDescription" = "Περισσότερος αποθηκευτικός χώρος, περισσότερες λειτουργίες με τη my kSuite+";
+
+/* loco:6992e9f20953b626df05ffc2 */
+"needHelpSetting" = "Χρειάζεστε βοήθεια;";
+
+/* loco:69ce15f8ac7c0ee6d7099c02 */
+"networkSettings" = "Δίκτυο";
+
+/* loco:6992de465798e1839302bbc2 */
+"noAccountConnected" = "Προσθέστε έναν λογαριασμό για να ξεκινήσετε";
+
+/* loco:6989f957dd64bb04d70f39a2 */
+"noResultsFound" = "Δεν βρέθηκαν αποτελέσματα";
+
+/* loco:698b0aaddee0bf9fb206a694 */
+"notSyncedDrive" = "Μη συγχρονισμένο";
+
+/* loco:698b10ad0c20e31c9c00a5c2 */
+"notificationsDisabledAlways" = "Πάντα";
+
+/* loco:698b1086dc2a328c000cfd92 */
+"notificationsDisabledNever" = "Ποτέ";
+
+/* loco:698b0181941b49c4f500aa15 */
+"notifyOnFileExcluded" = "Λήψη ειδοποίησης όταν ένα αρχείο εξαιρείται";
+
+/* loco:698c5ab9945b7c6d260d4c22 */
+"onBoardingAdvancedSettingsDriveTitle" = "Ρύθμιση παραμέτρων συγχρονισμού για αυτό το kDrive";
+
+/* loco:698c5b3fa3cb0fe14205ddb5 */
+"onboardingAdvancedSettingsDriveCustomizeLocation" = "Προσαρμόστε τη θέση του φακέλου kDrive στον υπολογιστή σας:";
+
+/* loco:698c5bda2351f47094030442 */
+"onboardingAdvancedSettingsDriveCustomizeLocationTip" = "Ο επιλεγμένος φάκελος πρέπει να είναι κενός για να λειτουργεί σωστά ο συγχρονισμός.";
+
+/* loco:698c5c378bdea123d60afff7 */
+"onboardingAdvancedSettingsDriveExclusionDescription" = "Επιλέξτε τους φακέλους για συγχρονισμό σε αυτόν τον υπολογιστή:";
+
+/* loco:698c5bf9735560170309a842 */
+"onboardingAdvancedSettingsDriveExclusionTitle" = "Συγχρονισμένοι φάκελοι";
+
+/* loco:698c62f8bde3b880ce05ea53 */
+"onboardingAdvancedSettingsDriveSelectionDescription" = "Για κάθε kDrive, μπορείτε να επιλέξετε πού συγχρονίζεται στον υπολογιστή σας και ποιους φακέλους να συγχρονίσετε.";
+
+/* loco:698c5f7af0e0abf8b4088952 */
+"onboardingAdvancedSettingsDriveSelectionExclusion" = "Συγχρονισμένο περιεχόμενο:";
+
+/* loco:6a3a944b2fa9d008060aa502 */
+"onboardingAdvancedSettingsDriveSelectionExclusionMac" = "Συγχρονισμένο περιεχόμενο: %@";
+
+/* loco:6a3a93d7f05303008e0ad1a2 */
+"onboardingAdvancedSettingsDriveSelectionLocationMac" = "Τοποθεσία: %@";
+
+/* loco:698c62a71f3f2e07fe07ca17 */
+"onboardingAdvancedSettingsDriveSelectionTitle" = "Ρύθμιση παραμέτρων των kDrive σας";
+
+/* loco:698c4e054842cd371c0d94f2 */
+"onboardingAlreadySyncedDriveTooltip" = "Αυτό το kDrive είναι ήδη διαμορφωμένο.\nΜεταβείτε στις ρυθμίσεις σας για να το τροποποιήσετε.";
+
+/* loco:693050ed6a0836d25507da22 */
+"onboardingAuthorizationExtensionDescription" = "Εξουσιοδοτήστε το kDrive στις ρυθμίσεις του macOS:";
+
+/* loco:6930509e14b396d6fc04b0f2 */
+"onboardingAuthorizationExtensionTitle" = "Ενεργοποιήστε το kDrive στο Mac σας";
+
+/* loco:6930510648920a67910d1094 */
+"onboardingAuthorizationFullDiskDescription" = "Για να ολοκληρώσετε την εγκατάσταση, πρέπει να εξουσιοδοτήσετε το kDrive να έχει πρόσβαση στα εξής:";
+
+/* loco:693050bab2a2c1990a0d2f04 */
+"onboardingAuthorizationFullDiskTitle" = "Εξουσιοδότηση πρόσβασης στα αρχεία";
+
+/* loco:692406b0258f5599bf01d113 */
+"onboardingDriveSelectionNoDriveDescription" = "Ξεκινήστε δωρεάν με τη my kSuite,\nή επιλέξτε ένα πλάνο που ταιριάζει στις ανάγκες σας.";
+
+/* loco:692405adc5c224ad2a07ff62 */
+"onboardingDriveSelectionNoDriveTitle" = "Δεν έχετε ακόμα kDrive.";
+
+/* loco:69242dd4299cf487060f2143 */
+"onboardingDriveSelectionSelectTitle" = "Επιλέξτε τα kDrive για συγχρονισμό σε αυτόν τον υπολογιστή:";
+
+/* loco:69271e987f61390c0e053442 */
+"onboardingDriveSelectionSyncInProgress" = "Συγχρονισμός σε εξέλιξη";
+
+/* loco:691deaf47145f10ab4052cd2 */
+"onboardingDriveSelectionTitle" = "Χαιρόμαστε που σας βλέπουμε!";
+
+/* loco:698c5a5887eff04a98064d42 */
+"onboardingExclusionSummaryNone" = "Όλοι οι φάκελοι kDrive";
+
+/* loco:698c5cfa7fb9b01ec80098c2 */
+"onboardingExclusionSummarySome" = "Προσαρμοσμένη επιλογή";
+
+/* loco:68e6739c8af12c42e80027c5 */
+"onboardingLoginDescription" = "Το ιδιωτικό, γρήγορο και ασφαλές cloud, φιλοξενούμενο στην Ελβετία.\n\nΣυνδεθείτε και διατηρήστε τα έγγραφά σας συγχρονισμένα σε όλες τις συσκευές σας.";
+
+/* loco:68e8fa543a683192560af9e2 */
+"onboardingLoginErrorDescription" = "Παρουσιάστηκε σφάλμα, παρακαλούμε δοκιμάστε ξανά.";
+
+/* loco:68e8fa06c1b003290f0ccf42 */
+"onboardingLoginErrorTitle" = "Σφάλμα σύνδεσης";
+
+/* loco:691deb66e28b84c78e034353 */
+"onboardingLoginHintLoading" = "Ακόμα λίγες στιγμές και θα φορτώσουμε τον λογαριασμό σας…";
+
+/* loco:691deb477145f10ab4052cd4 */
+"onboardingLoginHintWebAuth" = "Σύνδεση από το πρόγραμμα περιήγησής σας…";
+
+/* loco:68e8fa27d09187683c0679b2 */
+"onboardingLoginTitle" = "Καλωσορίσατε στο kDrive";
+
+/* loco:6931a1769dc60cb1820f5fe3 */
+"onboardingSynchronizationAppReadyDescription" = "Τα αρχεία σας είναι έτοιμα να συγχρονιστούν\nμε ασφάλεια στον υπολογιστή σας.";
+
+/* loco:6931a16c3498d5205b0380d3 */
+"onboardingSynchronizationAppReadyTitle" = "Όλα έτοιμα!";
+
+/* loco:6931a1582ee1a869eb0303f4 */
+"onboardingSynchronizationInProgressDescription" = "Οριστικοποιούμε τη διαμόρφωση των kDrive σας.\n\nΠαρακαλούμε περιμένετε μερικές στιγμές.";
+
+/* loco:6931a14fa4031f6161097f42 */
+"onboardingSynchronizationInProgressTitle" = "Συγχρονισμός σε εξέλιξη…";
+
+/* loco:698b0ee1587496f4f5035cd2 */
+"openKDriveAtStartupSetting" = "Άνοιγμα kDrive κατά την εκκίνηση του υπολογιστή";
+
+/* loco:6996f06bd9578b02ee0eb1b4 */
+"pathCopiedToClipboard" = "Η διαδρομή αντιγράφηκε στο πρόχειρο";
+
+/* loco:698b2ef3d4aa9d35260e3484 */
+"proxyConnectionDescription" = "Καθορίστε τον τρόπο σύνδεσης του kDrive στο διαδίκτυο.";
+
+/* loco:698b3452210436b0e501a3a2 */
+"proxyHost" = "Διακομιστής";
+
+/* loco:698b347b1d024ca9f20d69a2 */
+"proxyNeedAuth" = "Απαιτείται έλεγχος ταυτότητας";
+
+/* loco:698b349f7ad01ee67e0d5f92 */
+"proxyPassword" = "Κωδικός πρόσβασης";
+
+/* loco:698b345c116156e70a073a42 */
+"proxyPort" = "Θύρα";
+
+/* loco:698b2e7edcb5f5b87b0d29e2
+ * Title of the proxy settings section in advanced settings. */
+"proxySettings" = "Ρυθμίσεις διακομιστή μεσολάβησης";
+
+/* loco:698b2ff2aa06201dc403c422 */
+"proxyType" = "Τύπος διακομιστή μεσολάβησης";
+
+/* loco:698b2f2e89df53c9e4039b02 */
+"proxyTypeHTTP" = "Μη αυτόματη διαμόρφωση";
+
+/* loco:698b2f80dac62f80330a2412 */
+"proxyTypeNone" = "Κανένας";
+
+/* loco:698b34ab7ad01ee67e0d5f94 */
+"proxyUser" = "Όνομα χρήστη";
+
+/* loco:698af22fb4f7b3f2640d1493 */
+"releaseChannelBeta" = "Beta";
+
+/* loco:698af24c3d21055870072b12 */
+"releaseChannelInternal" = "Εσωτερικό";
+
+/* loco:69e9e6c1a3c665593e087513 */
+"releaseChannelTest" = "Δοκιμή";
+
+/* loco:69eb8137c1ea8e116a0ba282
+ * Search field placeholder in SearchSheetView. */
+"searchPlaceholder" = "Search…";
+
+/* loco:69eb8290d3fa21c4fb096d82
+ * Tooltip shown on search results when file is not available locally and will open in browser. */
+"searchResultOpenInBrowserTooltip" = "This file is not available locally and will be opened in your browser";
+
+/* loco:69eb8061e9130678990a5972
+ * Empty search state title in SearchSheetView before any query is entered. */
+"searchYourFiles" = "Search your files";
+
+/* loco:698b06dd2a4fff6e66027c92 */
+"selectFoldersToSync" = "Επιλέξτε τους φακέλους για συγχρονισμό σε αυτόν τον υπολογιστή.";
+
+/* loco:698b07172a4fff6e66027c94 */
+"selectFoldersToSyncDescription" = "Οι μη επιλεγμένοι φάκελοι δεν θα ληφθούν στη συσκευή σας. Θα παραμείνουν διαθέσιμοι online και δεν θα διαγραφούν.";
+
+/* loco:69c580998e2c17f1840de762 */
+"selectFoldersToSyncDescriptionShort" = "Οι μη επιλεγμένοι φάκελοι δεν θα ληφθούν στη συσκευή σας. Θα παραμείνουν διαθέσιμοι online.";
+
+/* loco:698b02a302385f4ff103bd62 */
+"sendLastSessionOnly" = "Αποστολή μόνο της τελευταίας περιόδου σύνδεσης";
+
+/* loco:698b2df25c57be025b0ecfd2 */
+"sentryDescription" = "Το Sentry είναι ένα εργαλείο που φιλοξενείται και διαχειρίζεται αποκλειστικά από την Infomaniak για την παρακολούθηση σε πραγματικό χρόνο της σταθερότητας της εφαρμογής και την αυτόματη αναφορά τυχόν τεχνικών σφαλμάτων στους προγραμματιστές μας.\n\nΑυτά τα δεδομένα επιτρέπουν στην ομάδα μας να διορθώνει και να βελτιστοποιεί γρήγορα την εφαρμογή, με αποτέλεσμα καλύτερη εμπειρία χρήστη για εσάς.";
+
+/* loco:68cd386502633dee14000352 */
+"sidebarItemAccounts" = "Λογαριασμοί & Συγχρονισμοί";
+
+/* loco:68cd389fcc36238762040074 */
+"sidebarItemAdvanced" = "Προηγμένα";
+
+/* loco:68cd3843fbf0b4c60d0c9c82 */
+"sidebarItemGeneral" = "Γενικά";
+
+/* loco:68a70c92c32749426b06db02 */
+"sidebarItemKDriveTitle" = "Φάκελος kDrive";
+
+/* loco:69ccceaed2b63271de0326d3 */
+"statusBarOpenApp" = "Άνοιγμα kDrive";
+
+/* loco:69ccce749ecf25eb9005e002 */
+"statusBarQuitApp" = "Έξοδος";
+
+/* loco:69ccce9808d1b71a410eab92 */
+"statusBarSettings" = "Ρυθμίσεις";
+
+/* loco:697b37c632d0fb5b5d0b4db6 */
+"storageDeviceNameMac" = "Macintosh";
+
+/* loco:69981716cfa89b9c940ef652 */
+"storageLoadingHint" = "Φόρτωση χρήσης χώρου…";
+
+/* loco:697a077ee16575000806de62 */
+"storageMacFreeSpace" = "Ελεύθερος χώρος";
+
+/* loco:697a0768c39a2189f5022564 */
+"storageMacUsedByComputer" = "Άλλα αρχεία";
+
+/* loco:697a07436d99d0c2c00449e2 */
+"storageMacUsedByKDrive" = "Αρχεία kDrive που είναι αποθηκευμένα στη συσκευή σας";
+
+/* loco:69c67d8e7c0702965a003512 */
+"storageMissingDiskMacOSDescription" = "Το kDrive δεν μπορεί να αποκτήσει πρόσβαση στον τόμο\nΒεβαιωθείτε ότι είναι συνδεδεμένος,\nξεκλειδωμένος και προσβάσιμος από τον υπολογιστή σας.";
+
+/* loco:69c67d717e089c303405cee2 */
+"storageMissingDiskMacOSTitle" = "Ο τόμος δεν είναι προσβάσιμος";
+
+/* loco:697a2640c1c052cea305d2d6 */
+"storageSyncBlockMacDescription" = "Διαχειριστείτε τους συγχρονισμένους φακέλους για να ελευθερώσετε χώρο στο Mac σας.";
+
+/* loco:697a26183f570e1362040242 */
+"storageSyncBlockTitle" = "Συγχρονισμός";
+
+/* loco:6979e265a8419bb7510c8122 */
+"storageUsageLabel" = "%1$s από %2$s χρησιμοποιημένο";
+
+/* loco:698b0623154e735e8b0a2542 */
+"storedOnline" = "Αποθηκευμένο online";
+
+/* loco:69943031092bf608bc0c4304 */
+"storedOnlineDescription" = "Τα αρχεία σας παραμένουν στο cloud και δεν χρησιμοποιούν χώρο στον υπολογιστή σας.\nΑπαιτείται σύνδεση στο διαδίκτυο για πρόσβαση σε αυτά.";
+
+/* loco:698a07efc9e9b6dcce04dc86 */
+"syncErrorTooltip" = "Σφάλμα συγχρονισμού";
+
+/* loco:69c10660ef5c38ffd40aab52 */
+"syncFolderCustomLocation" = "Προσαρμοσμένος φάκελος";
+
+/* loco:698c5b6872ce37700303dac2 */
+"syncFolderDefaultLocation" = "Προεπιλεγμένος φάκελος";
+
+/* loco:698a085329fb169f6605ac62 */
+"syncInProgressTooltip" = "Συγχρονισμός";
+
+/* loco:698b0555781f2782a70727c2 */
+"syncModeApplying" = "Η νέα λειτουργία συγχρονισμού σας εφαρμόζεται…";
+
+/* loco:698b1593acd7caac53091c62 */
+"syncRules" = "Κανόνες συγχρονισμού";
+
+/* loco:69cb7b4436165087ff055e92 */
+"syncShortStatusError" = "Παρουσιάστηκε σφάλμα";
+
+/* loco:69ca840f10c2c8213703f4f2 */
+"syncShortStatusIdle" = "Ο τελευταίος συγχρονισμός ήταν επιτυχής";
+
+/* loco:69ca84317f5583d81f03c7f2 */
+"syncShortStatusPaused" = "Ο συγχρονισμός είναι σε παύση";
+
+/* loco:69ca84494136086fe60cebf2 */
+"syncShortStatusRunning" = "Ο συγχρονισμός βρίσκεται σε εξέλιξη";
+
+/* loco:698a08137065b2ad54014e72 */
+"syncSuccessTooltip" = "Συγχρονίστηκε";
+
+/* loco:698b0d2d968b4ae2ca022542 */
+"syncedDrive" = "Συγχρονισμένο";
+
+/* loco:698b2ff6c504d956e009aad2 */
+"syncedFromComputer" = "Συγχρονισμένο από τον υπολογιστή σας";
+
+/* loco:698a08bdb6b870234906e103 */
+"syncedFromKDriveWeb" = "Συγχρονισμένο από το kDrive web";
+
+/* loco:6960b7decf8ffcd3950d2706 */
+"synchroInProgress" = "τα αρχεία σας συγχρονίζονται";
+
+/* loco:6960b7fd4e868a099e022dc5 */
+"synchroPaused" = "Ο συγχρονισμός έχει διακοπεί προσωρινά.";
+
+/* loco:6960f0917cb01bc78104ed32 */
+"synchroStatusInProgressDescription" = "Τα πρόσφατα αρχεία σας ενημερώνονται.";
+
+/* loco:6960f01471cc26128d040b12 */
+"synchroStatusInProgressTitle" = "Συγχρονισμός σε εξέλιξη";
+
+/* loco:6960f77abfc1ab365409ead2 */
+"synchroStatusOfflineDescription" = "Τα αρχεία που έχετε κατεβάσει παραμένουν προσβάσιμα.\nΟ συγχρονισμός θα ξαναρχίσει αυτόματα μόλις συνδεθείτε ξανά.";
+
+/* loco:6960f75e46598388a60c3022 */
+"synchroStatusOfflineTitle" = "Εκτός σύνδεσης";
+
+/* loco:6960f0d67c633959570799d2 */
+"synchroStatusPausedDescription" = "Ο συγχρονισμός έχει σταματήσει προσωρινά.";
+
+/* loco:6960f0b8ef5d3700b0018933 */
+"synchroStatusPausedTitle" = "Συγχρονισμός κατά τη διακοπή";
+
+/* loco:6960efeed6dfdcb3af05e2d2 */
+"synchroStatusUpToDateDescription" = "Τα αρχεία σας είναι προσβάσιμα και συγχρονισμένα.";
+
+/* loco:6960ef1d538ef75e5a0ad3e2 */
+"synchroStatusUpToDateTitle" = "Καμία ενεργή δραστηριότητα";
+
+/* loco:6960b7a6cf8ffcd3950d2704 */
+"synchroUpToDate" = "τα αρχεία σας είναι ενημερωμένα";
+
+/* loco:698b0a88dee0bf9fb206a692 */
+"synchronizationSettings" = "Συγχρονισμός";
+
+/* loco:699db0830c3ab713a500b433 */
+"systemErrorFileOrDirectoryCorruptedDescription" = "Ένα αρχείο ή φάκελος στον φάκελο συγχρονισμού σας φαίνεται να έχει καταστραφεί.\nΟ συγχρονισμός διακόπηκε. Ελέγξτε τα αρχεία σας και δοκιμάστε ξανά.";
+
+/* loco:699db071d52f7cbccc0b3b53 */
+"systemErrorFileOrDirectoryCorruptedTitle" = "Εντοπίστηκε κατεστραμμένο αρχείο";
+
+/* loco:68a70be4b749277aa1081dc2 */
+"tabTitleActivities" = "Δραστηριότητα";
+
+/* loco:68a705225b0066f86e001d52 */
+"tabTitleHome" = "Αρχική";
+
+/* loco:68a70c659c53feed83039c42 */
+"tabTitleStorage" = "Αποθηκευτικός χώρος";
+
+/* loco:69aae4283f8ce335cf0e1842 */
+"titleConflictIndividualResolution" = "Μεμονωμένος χειρισμός";
+
+/* loco:6a2a67aa51ff4812670b0532 */
+"titleManageSynchronization" = "Διαχείριση συγχρονισμού";
+
+/* loco:69eb7b41376492d2de0d0242
+ * Empty search state subtitle when no result matches the user query in SearchSheetView. */
+"tryDifferentSearchTerm" = "Try a different search term";
+
+/* loco:69eb809ce1364c763a050862
+ * Empty search state subtitle in SearchSheetView before the user enters a query. */
+"typeToStartSearching" = "Type to start searching";
+
+/* loco:6981e8f0b024a7b4e00f7262 */
+"unavailableContentNoActivityDescription" = "Τα αρχεία σας είναι προσβάσιμα και συγχρονισμένα.";
+
+/* loco:6981e8f0f994e5f7bc040692 */
+"unavailableContentNoActivityTitle" = "Καμία πρόσφατη δραστηριότητα";
+
+/* loco:698c7819acb0e0a2a0061c62 */
+"unexpectedErrorTeachingTipContent" = "Παρακαλούμε δοκιμάστε ξανά σε λίγες στιγμές.\nΕάν το πρόβλημα παραμένει, παρακαλούμε επικοινωνήστε με την υποστήριξη.";
+
+/* loco:698c7802bc26955c81077d42 */
+"unexpectedErrorTeachingTipTitle" = "Παρουσιάστηκε μη αναμενόμενο σφάλμα";
+
+/* loco:698b112a6dcfa5bb030c2f32 */
+"untilTomorrow" = "Μέχρι αύριο";
+
+/* loco:698af3afefd229ca780c59e2 */
+"updateAvailable" = "kDrive %@ διαθέσιμο";
+
+/* loco:6a017a9746a40dd2910b7424 */
+"updateDialogDescription" = "Η εγκατάσταση διαρκεί λιγότερο από ένα λεπτό.\nΟ συγχρονισμός σας θα συνεχιστεί αυτόματα στο τέλος.";
+
+/* loco:6a017a9746a40dd2910b7428 */
+"updateDialogIgnoreVersion" = "Αγνόηση αυτής της έκδοσης";
+
+/* loco:6a017a9746a40dd2910b7427 */
+"updateDialogInstallNow" = "Εγκατάσταση τώρα";
+
+/* loco:6a017a9746a40dd2910b7426 */
+"updateDialogRemindLater" = "Υπενθύμιση αργότερα";
+
+/* loco:6a017a9746a40dd2910b7425 */
+"updateDialogSeeWhatsNew" = "Δείτε τι νέο υπάρχει";
+
+/* loco:6a017a9746a40dd2910b7423 */
+"updateDialogSubtitle" = "Έκδοση %@ · Χρησιμοποιείτε την %@";
+
+/* loco:6a017a9746a40dd2910b7422 */
+"updateDialogTitle" = "Διαθέσιμη ενημέρωση";
+
+/* loco:69d904f84d8c60bd1f0c9342 */
+"updateRequiredDescription" = "Απαιτείται νέα έκδοση του kDrive για να συνεχίσετε.\nΕνημερώστε την εφαρμογή για να αποκτήσετε πρόσβαση στα αρχεία σας και να συνεχίσετε τον συγχρονισμό.";
+
+/* loco:69d903e2d570d224db097582 */
+"updateRequiredTitle" = "Απαιτείται ενημέρωση";
+
+/* loco:698aec0b7bde6b6260001c02 */
+"updateSettings" = "Ενημέρωση";
+
+/* loco:6a031b29945d3f97240ff954 */
+"userExclusionAppListHeaderDescription" = "Εξαιρέστε ορισμένες εφαρμογές από τον συγχρονισμό.";
+
+/* loco:698b579544510089bf0fecf2 */
+"userExclusionFileListDescription" = "Προσθήκη αρχείων για εξαίρεση από τον συγχρονισμό.";
+
+/* loco:698b57bdb14da22c560da082 */
+"userExclusionFileListHeader" = "Προσαρμοσμένοι κανόνες εξαίρεσης";
+
+/* loco:6a031a88cfe46dc82b0c8162 */
+"userExclusionFileListHeaderDescription" = "Εξαιρέστε ορισμένους τύπους αρχείων από τον συγχρονισμό.";
+
+/* loco:698b1713c1e8210103081e12 */
+"viewSourceCode" = "Προβολή πηγαίου κώδικα";

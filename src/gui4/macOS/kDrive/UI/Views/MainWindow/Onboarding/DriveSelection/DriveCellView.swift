@@ -74,6 +74,9 @@ final class DriveCellView: NSView {
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.font = NSFont.Tokens.body
         textField.textColor = ColorToken.Text.secondary.asNSColor
+        textField.usesSingleLineMode = true
+        textField.maximumNumberOfLines = 1
+        textField.lineBreakMode = .byTruncatingTail
         return textField
     }()
 
@@ -106,6 +109,8 @@ final class DriveCellView: NSView {
             driveIcon.leadingAnchor.constraint(equalTo: checkbox.trailingAnchor, constant: AppPadding.padding8),
             driveIcon.topAnchor.constraint(equalTo: topAnchor, constant: AppPadding.padding8),
             driveIcon.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -AppPadding.padding8),
+            driveIcon.heightAnchor.constraint(equalToConstant: 20),
+            driveIcon.widthAnchor.constraint(equalTo: driveIcon.heightAnchor),
 
             titleLabel.centerYAnchor.constraint(equalTo: driveIcon.centerYAnchor),
             titleLabel.leadingAnchor.constraint(equalTo: driveIcon.trailingAnchor, constant: AppPadding.padding8),
