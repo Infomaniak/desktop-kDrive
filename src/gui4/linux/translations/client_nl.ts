@@ -5,7 +5,7 @@
  Project: kDrive Desktop
  Locale: nl, Dutch; Flemish
  Exported by: Romain Galland
- Exported at: Thu, 09 Jul 2026 13:21:28 +0200 
+ Exported at: Thu, 09 Jul 2026 14:09:03 +0200 
 --> 
 <TS version="2.1" sourcelanguage="en" language="nl"> 
     <context>
@@ -2077,7 +2077,7 @@ Deze gegevens stellen ons team in staat de applicatie snel te corrigeren en te o
             <translation>kDrive-map</translation> 
         </message> 
         <message id="signInBrowser"> 
-            <source>Sign in using your browse</source> 
+            <source>Sign in using your browser</source> 
             <translation>Inloggen via uw browser</translation> 
         </message> 
         <message id="statusBarOpenApp"> 
