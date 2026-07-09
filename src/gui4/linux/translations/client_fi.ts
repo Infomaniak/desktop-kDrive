@@ -5,7 +5,7 @@
  Project: kDrive Desktop
  Locale: fi, Finnish
  Exported by: Romain Galland
- Exported at: Wed, 08 Jul 2026 16:48:00 +0200 
+ Exported at: Thu, 09 Jul 2026 13:21:28 +0200 
 --> 
 <TS version="2.1" sourcelanguage="en" language="fi"> 
     <context>
@@ -344,6 +344,16 @@ Voit avata ne milloin tahansa, jopa ilman internet-yhteyttä.</translation>
             <source>Manage storage</source> 
             <translation>Hallitse tallennustilaa</translation> 
         </message> 
+        <message id="buttonMaximize"> 
+            <source>Maximize</source> 
+            <extracomment>Accessibility label for the window maximize control (Linux window chrome).</extracomment> 
+            <translation>Suurenna</translation> 
+        </message> 
+        <message id="buttonMinimize"> 
+            <source>Minimize</source> 
+            <extracomment>Accessibility label for the window minimize control (Linux window chrome).</extracomment> 
+            <translation>Pienennä</translation> 
+        </message> 
         <message id="buttonOpenDebugFolder"> 
             <source>Open debug folder</source> 
             <translation>Avaa virheenkorjauskansio</translation> 
@@ -427,6 +437,11 @@ Voit avata ne milloin tahansa, jopa ilman internet-yhteyttä.</translation>
         <message id="buttonRestartSynchro"> 
             <source>Restart sync</source> 
             <translation>Käynnistä synkronointi uudelleen</translation> 
+        </message> 
+        <message id="buttonRestore"> 
+            <source>Restore</source> 
+            <extracomment>Accessibility label for the window restore (un-maximize) control (Linux window chrome).</extracomment> 
+            <translation>Palauta</translation> 
         </message> 
         <message id="buttonRetry"> 
             <source>Retry</source> 
