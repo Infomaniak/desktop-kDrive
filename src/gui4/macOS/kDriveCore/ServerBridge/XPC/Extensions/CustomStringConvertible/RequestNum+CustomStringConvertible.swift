@@ -19,8 +19,6 @@
 import CppInterop
 import Foundation
 
-/// Human-readable names for `RequestNum`, mirroring the C++ `toString(RequestNum)` in
-/// `src/libcommon/comm.h`. Used to log which XPC job is being run without leaking any payload.
 extension RequestNum: CustomStringConvertible {
     public var description: String {
         switch self {
