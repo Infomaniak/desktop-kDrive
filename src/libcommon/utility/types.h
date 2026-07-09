@@ -267,6 +267,13 @@ enum class ExclusionTemplateComplexity {
     EnumEnd
 };
 
+enum class SyncFolderRuleType {
+    BlackList,
+    WhiteList,
+    WhiteListSubFolder
+};
+
+
 enum class IoError {
     Success = 0,
     AccessDenied,
