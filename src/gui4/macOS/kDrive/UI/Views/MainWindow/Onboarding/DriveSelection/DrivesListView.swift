@@ -20,9 +20,13 @@ import Cocoa
 import kDriveCoreUI
 import kDriveResources
 
+private final class FlippedStackView: NSStackView {
+    override var isFlipped: Bool { true }
+}
+
 class DrivesListView: NSView {
     private lazy var drivesStackView: NSStackView = {
-        let stackView = NSStackView()
+        let stackView = FlippedStackView()
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.orientation = .vertical
         stackView.alignment = .leading
@@ -128,12 +132,7 @@ class DrivesListView: NSView {
         layoutSubtreeIfNeeded()
         documentView.layoutSubtreeIfNeeded()
 
-        let yPosition = documentView.isFlipped
-            ? 0
-            : max(0, documentView.bounds.height - scrollView.contentView.bounds.height)
-
-        let topPoint = NSPoint(x: 0, y: yPosition)
-        scrollView.contentView.scroll(to: topPoint)
+        scrollView.contentView.scroll(to: .zero)
         scrollView.reflectScrolledClipView(scrollView.contentView)
     }
 
