@@ -188,7 +188,7 @@ UserDbId AvailableDrivesModel::selectedUserDbId() const {
 void AvailableDrivesModel::rebuild() {
     const auto userDbId = selectedUserDbId();
     auto contexts = userDbId == 0 ? std::vector<AvailableDriveContext>{} : _cache.availableDriveContexts(userDbId);
-    std::ranges::sort(contexts, driveContextLessThan);
+    (void) std::ranges::sort(contexts, driveContextLessThan);
 
     beginResetModel();
     _contexts = std::move(contexts);
