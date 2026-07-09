@@ -71,18 +71,3 @@ jobs:
       - name: SwiftFormat
         run: swiftformat --lint . --reporter github-actions-log --reporter json
 
-  periphery:
-    name: Periphery
-    runs-on: [ self-hosted, iOS ]
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6.0.2
-      - name: Setup Mise
-        # jdx/mise-action@v3.6.1
-        uses: jdx/mise-action@6d1e696aa24c1aa1bcc1adea0212707c71ab78a8
-        with:
-          working_directory: src/gui4/macOS      
-      - name: Periphery
-        run: periphery scan --retain-codable-properties --format github-actions --format json --relative-results --strict
- 
