@@ -29,6 +29,7 @@
 #include <QLocale>
 #include <QQmlContext>
 #include <QScreen>
+#include <QStringList>
 #include <QSysInfo>
 #include <QTranslator>
 #include <QVariant>
