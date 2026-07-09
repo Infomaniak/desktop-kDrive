@@ -29,8 +29,8 @@
 #include <QLocale>
 #include <QQmlContext>
 #include <QScreen>
-#include <QStringList>
 #include <QSysInfo>
+#include <QTranslator>
 #include <QVariant>
 #include <QWindow>
 
@@ -45,6 +45,7 @@ Q_LOGGING_CATEGORY(lcAppClientLinux, "gui.v4.app", QtInfoMsg)
 AppClientLinux::AppClientLinux(int &argc, char **argv) :
     QApplication(argc, argv) {
     setupLogging();
+    setupTranslations();
     setQuitOnLastWindowClosed(false);
     QIcon appIcon;
     ApplicationIdentity::configureApplication(appIcon);
@@ -136,6 +137,29 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
         SentryService::reportFatalAndExit("Missing server communication port argument",
                                           "Release and RelWithDebInfo clients must be launched by the server with its TCP port.");
 #endif
+    }
+}
+
+void AppClientLinux::setupTranslations() {
+    // Catalogs are id-based: qsTrId(id) returns the raw id when no translation is loaded. Install
+    // client_en as a base so every id always resolves (keys not yet translated degrade to English),
+    // then overlay the system locale on top. Qt queries translators last-installed-first, so the
+    // locale wins where it has a translation and falls back to the English base otherwise.
+    if (auto *const base = new QTranslator(this);
+        base->load(QStringLiteral("client_en"), QStringLiteral(":/i18n"))) {
+        static_cast<void>(QCoreApplication::installTranslator(base));
+    } else {
+        qCWarning(lcAppClientLinux) << "base English translation catalog missing; UI may show source ids";
+    }
+
+    const QLocale locale = QLocale::system();
+    auto *const localized = new QTranslator(this);
+    if (localized->load(locale, QStringLiteral("client"), QStringLiteral("_"), QStringLiteral(":/i18n"))) {
+        static_cast<void>(QCoreApplication::installTranslator(localized));
+        qCInfo(lcAppClientLinux) << "translations loaded for locale" << locale.name();
+    } else {
+        delete localized;
+        qCInfo(lcAppClientLinux) << "no catalog for locale" << locale.name() << "- using English base";
     }
 }
 
