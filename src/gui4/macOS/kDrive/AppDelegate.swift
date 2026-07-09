@@ -18,6 +18,7 @@
 
 import Cocoa
 import kDriveCore
+import kDriveResources
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
@@ -57,6 +58,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool {
         return true
+    }
+
+    @objc func showAboutPanel() {
+        let credits = NSAttributedString(
+            string: KDriveLocalizable.aboutKDriveDescription,
+            attributes: [
+                .font: NSFont.systemFont(ofSize: 11),
+                .foregroundColor: NSColor.secondaryLabelColor
+            ]
+        )
+
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "—"
+        let year = Calendar.current.component(.year, from: Date())
+
+        NSApplication.shared.orderFrontStandardAboutPanel(
+            options: [
+                .credits: credits,
+                .applicationName: Constants.appName,
+                .applicationVersion: KDriveLocalizable.aboutAppVersionCopyrightMac(
+                    version, build, year
+                ),
+                .version: "",
+                .applicationIcon: NSImage(named: "AppIcon")!
+            ]
+        )
     }
 
     @objc func openMainWindow() {

@@ -4,11 +4,11 @@
  * Locale: el, Greek
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Tue, 23 Jun 2026 16:13:20 +0200
+ * Exported at: Wed, 24 Jun 2026 08:42:57 +0200
  */
 
-/* loco:6989dd880a55253f3901f745 */
-"aboutAppVersionCopyright" = "Version %@.%@\n© 2019-%@ Infomaniak Network SA -";
+/* loco:6a3b7a3cab4f843c0405ebd2 */
+"aboutAppVersionCopyrightMac" = "Έκδοση %@ (build %@)\n© 2019-%@ Infomaniak Network SA";
 
 /* loco:69a57d074f11212a7007d403 */
 "aboutButton" = "Σχετικά";
