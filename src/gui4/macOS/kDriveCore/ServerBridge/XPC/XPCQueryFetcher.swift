@@ -88,16 +88,16 @@ private extension XPCQueryFetcher {
     }
 
     func logRequestSent(_ context: RequestLogContext) {
-        IKLogger.xpc.info("[KD] [XPC →] #\(context.id) \(context.num)")
+        IKLogger.xpc.info("[KD] [Job →] #\(context.id) \(context.num)")
     }
 
     func logNoReply(_ context: RequestLogContext) {
-        IKLogger.xpc.error("[KD] [XPC ←] #\(context.id) \(context.num) no reply data")
+        IKLogger.xpc.error("[KD] [Job ←] #\(context.id) \(context.num) no reply data")
     }
 
     func logCallbackReceived(_ header: CallbackMessage<EmptyResponse>, context: RequestLogContext, since start: DispatchTime) {
         let elapsed = String(format: "%.1f", Self.elapsedMilliseconds(since: start))
-        let outcome = "[KD] [XPC ←] #\(header.id) \(context.num) \(header.code)/\(header.cause) (\(elapsed)ms)"
+        let outcome = "[KD] [Job ←] #\(header.id) \(context.num) \(header.code)/\(header.cause) (\(elapsed)ms)"
         if header.code != .Ok || header.cause != .Unknown {
             IKLogger.xpc.error(outcome)
         } else {
@@ -106,7 +106,7 @@ private extension XPCQueryFetcher {
     }
 
     func logDecodingFailure(_ error: Error, header: CallbackMessage<EmptyResponse>, context: RequestLogContext) {
-        IKLogger.xpc.error("[KD] [XPC ←] #\(header.id) \(context.num) decode failed: \(error)")
+        IKLogger.xpc.error("[KD] [Job ←] #\(header.id) \(context.num) decode failed: \(error)")
     }
 
     static func elapsedMilliseconds(since start: DispatchTime) -> Double {
