@@ -5,7 +5,7 @@
  Project: kDrive Desktop
  Locale: fi, Finnish
  Exported by: Romain Galland
- Exported at: Thu, 09 Jul 2026 13:21:28 +0200 
+ Exported at: Thu, 09 Jul 2026 14:09:03 +0200 
 --> 
 <TS version="2.1" sourcelanguage="en" language="fi"> 
     <context>
@@ -2077,7 +2077,7 @@ Näiden tietojen avulla tiimimme voi nopeasti korjata ja optimoida sovellusta, m
             <translation>kDrive-kansio</translation> 
         </message> 
         <message id="signInBrowser"> 
-            <source>Sign in using your browse</source> 
+            <source>Sign in using your browser</source> 
             <translation>Kirjaudu sisään selaimessasi</translation> 
         </message> 
         <message id="statusBarOpenApp"> 
