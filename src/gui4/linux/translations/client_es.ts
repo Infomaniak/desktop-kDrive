@@ -254,7 +254,7 @@ Puede abrirlos en cualquier momento, incluso sin conexión a Internet.</translat
         </message> 
         <message id="buttonContinue"> 
             <source>Continue</source> 
-            <translation>Continúe en</translation> 
+            <translation>Continuar</translation> 
         </message> 
         <message id="buttonCopyShareLink"> 
             <source>Copy share link</source> 
@@ -2086,7 +2086,7 @@ Estos datos permiten a nuestro equipo corregir y optimizar rápidamente la aplic
         </message> 
         <message id="statusBarQuitApp"> 
             <source>Quit</source> 
-            <translation>Deja</translation> 
+            <translation>Salir</translation> 
         </message> 
         <message id="statusBarSettings"> 
             <source>Settings</source> 
