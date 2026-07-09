@@ -26,6 +26,7 @@ public extension CoherentCache {
     func addDriveResponse(_ driveResponse: DriveResponse) async throws {
         let accountDbId = driveResponse.accountDbId
         guard var account = await getAccount(accountDbId: accountDbId) else {
+            IKLogger.cache.error("[KD] [Cache] addDriveResponse failed: accountNotFound(\(accountDbId))")
             throw ServerCoherentCache.CacheError.accountNotFound(accountDbId)
         }
 
