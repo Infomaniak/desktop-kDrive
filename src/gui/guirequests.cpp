@@ -22,6 +22,8 @@
 #include "libcommongui/commclient.h"
 #include "libcommon/utility/utility.h"
 
+Q_LOGGING_CATEGORY(lcGuiRequests, "gui.guirequests", QtInfoMsg)
+
 namespace KDC {
 
 bool GuiRequests::isConnnected() {
@@ -466,6 +468,39 @@ ExitCode GuiRequests::findGoodPathForNewSync(const QString &basePath, QString &p
     resultStream >> exitCode;
     resultStream >> path;
     resultStream >> error;
+
+    return exitCode;
+}
+
+ExitCode GuiRequests::isPathValidForNewSync(const QString &path, const SyncConfiguration syncConfig, bool &valid) {
+    QByteArray params;
+    QDataStream paramsStream(&params, QIODevice::WriteOnly);
+    paramsStream << path;
+    paramsStream << syncConfig;
+
+    qCDebug(lcGuiRequests) << "isPathValidForNewSync called: path=" << path << ", syncConfig=" << static_cast<int>(syncConfig)
+                           << ", params size=" << params.size()
+                           << ", RequestNum=" << static_cast<int>(RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC);
+
+    qCDebug(lcGuiRequests) << "Sending UTILITY_ISPATHVALIDFORNEWSYNC request to server..."
+                           << "timeout=" << COMM_SHORT_TIMEOUT << "ms";
+
+    QByteArray results;
+    if (!CommClient::instance()->execute(RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC, params, results)) {
+        qCWarning(lcGuiRequests) << "isPathValidForNewSync: execute FAILED (timeout or comm error) for path=" << path
+                                 << ", RequestNum=" << static_cast<int>(RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC)
+                                 << "timeout=" << COMM_SHORT_TIMEOUT << "ms";
+        return ExitCode::SystemError;
+    }
+
+    auto exitCode = ExitCode::Unknown;
+    QDataStream resultStream(&results, QIODevice::ReadOnly);
+    resultStream >> exitCode;
+    resultStream >> valid;
+
+    qCDebug(lcGuiRequests) << "isPathValidForNewSync RESULT: path=" << path << ", syncConfig=" << static_cast<int>(syncConfig)
+                           << ", valid=" << valid << ", exitCode=" << static_cast<int>(exitCode)
+                           << ", result size=" << results.size();
 
     return exitCode;
 }

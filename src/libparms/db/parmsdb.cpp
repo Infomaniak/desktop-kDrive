@@ -1261,6 +1261,9 @@ bool ParmsDb::prepare() {
 }
 
 bool ParmsDb::upgradeTables() {
+    int errId = 0;
+    std::string error;
+
     // Parameters table
     std::string tableName = "parameters";
     std::string columnName = "maxAllowedCpu";
@@ -1280,9 +1283,6 @@ bool ParmsDb::upgradeTables() {
     }
 
     if (updateParameters) {
-        int errId = 0;
-        std::string error;
-
         if (!createAndPrepareRequest(UPDATE_PARAMETERS_JOB_REQUEST_ID, UPDATE_PARAMETERS_JOB_REQUEST)) return false;
         LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_PARAMETERS_JOB_REQUEST_ID));
         LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_JOB_REQUEST_ID, 1, Parameters::_uploadSessionParallelJobsDefault));
@@ -1314,6 +1314,14 @@ bool ParmsDb::upgradeTables() {
             return false;
         }
     }
+
+    // Sync folder rule table
+    if (!createAndPrepareRequest(CREATE_SYNC_FOLDER_RULE_TABLE_ID, CREATE_SYNC_FOLDER_RULE_TABLE)) return false;
+    if (!queryExec(CREATE_SYNC_FOLDER_RULE_TABLE_ID, errId, error)) {
+        queryFree(CREATE_SYNC_FOLDER_RULE_TABLE_ID);
+        return sqlFail(CREATE_SYNC_FOLDER_RULE_TABLE_ID, error);
+    }
+    queryFree(CREATE_SYNC_FOLDER_RULE_TABLE_ID);
 
     // Sync table
     tableName = "sync";

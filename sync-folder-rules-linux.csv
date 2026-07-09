@@ -1,0 +1,9 @@
+Path,Type
+$HOME, WhiteListSubFolder
+$HOME/.cache, BlackList
+$HOME/.local/share/Trash, BlackList
+$HOME/.gvfs, BlackList
+/dev, BlackList
+/proc, BlackList
+/sys, BlackList
+/run, BlackList

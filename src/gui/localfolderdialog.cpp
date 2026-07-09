@@ -237,6 +237,24 @@ void LocalFolderDialog::selectFolder(const QString &startDirPath) {
             return;
         }
 
+        bool valid = false;
+        if (const auto exitCode = GuiRequests::isPathValidForNewSync(dirPath, SyncConfiguration::Advanced, valid);
+            exitCode != ExitCode::Ok) {
+            qCWarning(lcLocalFolderDialog) << "Error in GuiRequests::isPathValidForNewSync";
+            CustomMessageBox msgBox(QMessageBox::Warning, tr("Failed to validate local folder"), QMessageBox::Ok, this);
+            msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(this));
+            return;
+        }
+        if (!valid) {
+            const QString selectedFolderName = CommonUtility::getRelativePathFromHome(dirPath);
+            CustomMessageBox msgBox(QMessageBox::Warning,
+                                    tr("Folder <b>%1</b> cannot be selected as sync folder. Please, select another folder.")
+                                            .arg(selectedFolderName),
+                                    QMessageBox::Ok, this);
+            msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(this));
+            return;
+        }
+
         QDir dir(dirPath);
         _localFolderPath = dir.canonicalPath();
         updateUI();

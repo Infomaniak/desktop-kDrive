@@ -2233,6 +2233,24 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << error;
             break;
         }
+        case RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC: {
+            QString path;
+            SyncConfiguration syncConfig = SyncConfiguration::Classic;
+            QDataStream paramsStream(params);
+            paramsStream >> path;
+            paramsStream >> syncConfig;
+
+            bool valid = false;
+            const auto exitInfo = ServerRequests::isPathValidForNewSync(SyncPath(path.toStdString()), syncConfig, valid);
+            if (!exitInfo) {
+                LOG_WARN(_logger, "Error in Requests::isPathValidForNewSync");
+                addError(Error(ERR_ID, exitInfo));
+            }
+
+            resultStream << toInt(exitInfo.code());
+            resultStream << valid;
+            break;
+        }
         case RequestNum::UTILITY_BESTVFSAVAILABLEMODE_LEGACY: {
             VirtualFileMode mode = KDC::bestAvailableVfsMode();
 
