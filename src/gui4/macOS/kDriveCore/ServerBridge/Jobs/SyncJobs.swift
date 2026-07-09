@@ -221,11 +221,7 @@ public struct SyncJobs: Sendable {
             synchro.progress = .placeholder(status: status)
         }
 
-        do {
-            try await coherentCache.updateSynchro(synchro)
-        } catch {
-            IKLogger.data.error("Failed to apply optimistic sync status update: \(error)")
-        }
+        try? await coherentCache.updateSynchro(synchro)
 
         return previousProgress
     }
@@ -234,10 +230,6 @@ public struct SyncJobs: Sendable {
         guard var synchro = await coherentCache.getSynchro(synchroDbId: syncDbId) else { return }
         synchro.progress = previousProgress
 
-        do {
-            try await coherentCache.updateSynchro(synchro)
-        } catch {
-            IKLogger.data.error("Failed to revert optimistic sync status: \(error)")
-        }
+        try? await coherentCache.updateSynchro(synchro)
     }
 }
