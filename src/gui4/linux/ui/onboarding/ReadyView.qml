@@ -51,7 +51,7 @@ Item {
 
             Text {
                 width: parent.width
-                text: qsTr("Your files are ready to be securely synchronized on your computer.")
+                text: qsTrId("onboardingSynchronizationAppReadyDescription")
                 color: IKColors.textSecondary
                 font.pixelSize: IKFonts.bodySize
                 lineHeightMode: Text.FixedHeight
@@ -65,7 +65,7 @@ Item {
 
             enabled: root.onboardingFlowController.readyActionEnabled
             height: IKOnboarding.completionButtonHeight
-            text: qsTr("Open kDrive")
+            text: qsTrId("buttonOpenKDrive")
             onClicked: root.onboardingFlowController.openSynchronizedFolders()
 
             contentItem: Text {
