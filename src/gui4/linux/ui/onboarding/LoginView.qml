@@ -37,18 +37,11 @@ Item {
         return qsTrId("onboardingLoginTitle")
     }
 
-    // onboardingLoginDescription is a single composed catalog string; its two paragraphs
-    // (separated by a blank line) map to the subtitle and the body texts below.
-    function loginSubtitleText() {
+    function loginDescriptionText() {
         if (root.loginFailed) {
             return qsTrId("onboardingLoginErrorDescription")
         }
-        return qsTrId("onboardingLoginDescription").split("\n\n")[0]
-    }
-
-    function loginBodyText() {
-        const parts = qsTrId("onboardingLoginDescription").split("\n\n")
-        return parts.length > 1 ? parts[1] : ""
+        return qsTrId("onboardingLoginDescription")
     }
 
     Column {
@@ -76,18 +69,7 @@ Item {
 
             Text {
                 width: parent.width
-                text: root.loginSubtitleText()
-                color: IKColors.textSecondary
-                font.pixelSize: IKFonts.bodySize
-                lineHeightMode: Text.FixedHeight
-                lineHeight: IKOnboarding.loginBodyLineHeight
-                wrapMode: Text.WordWrap
-            }
-
-            Text {
-                width: parent.width
-                visible: !root.loginFailed
-                text: root.loginBodyText()
+                text: root.loginDescriptionText()
                 color: IKColors.textSecondary
                 font.pixelSize: IKFonts.bodySize
                 lineHeightMode: Text.FixedHeight
