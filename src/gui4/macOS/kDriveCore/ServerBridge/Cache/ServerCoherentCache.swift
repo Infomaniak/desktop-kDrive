@@ -55,6 +55,11 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         case notAServerError
     }
 
+    private func logged(_ error: CacheError, caller function: String = #function) -> CacheError {
+        IKLogger.cache.error("[KD] [Cache] \(function) failed: \(error)")
+        return error
+    }
+
     public init() {}
 
     // MARK: - USER
@@ -98,7 +103,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
 
     public func updateAvailableDrives(_ drives: [AvailableDrive], forUserDbId userDbId: Int32) throws {
         guard var user = getUser(dbId: userDbId) else {
-            throw CacheError.userNotFound(userDbId)
+            throw logged(.userNotFound(userDbId))
         }
 
         let indexedDrives = IndexedAvailableDrives(
@@ -127,7 +132,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
 
     public func addOrUpdateAccount(_ account: Account) throws {
         guard var user = users[account.userDbId] else {
-            throw CacheError.accountNotFound(account.dbId)
+            throw logged(.accountNotFound(account.dbId))
         }
         user.accounts[account.dbId] = account
         users[user.dbId] = user
@@ -168,10 +173,10 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
     public func addDrive(_ drive: Drive, accountDbId: Int32) throws {
         let userDbId = drive.userDbId
         guard var user = users[userDbId] else {
-            throw CacheError.userNotFound(userDbId)
+            throw logged(.userNotFound(userDbId))
         }
         guard var account = user.accounts[accountDbId] else {
-            throw CacheError.accountNotFound(accountDbId)
+            throw logged(.accountNotFound(accountDbId))
         }
 
         account.drives[drive.driveDbId] = drive
@@ -205,13 +210,13 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
             }
         }
 
-        throw CacheError.driveNotFound(driveDbId)
+        throw logged(.driveNotFound(driveDbId))
     }
 
     public func updateDrive(drive: Drive) throws {
         let accountDbId = drive.accountDbId
         guard var account = getAccount(accountDbId: accountDbId) else {
-            throw CacheError.accountNotFound(accountDbId)
+            throw logged(.accountNotFound(accountDbId))
         }
 
         var indexedDrives = account.drives
@@ -261,7 +266,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
     public func addSynchro(_ synchro: Synchro) throws {
         let driveDbId = synchro.driveDbId
         guard var drive = getDrive(driveDbId: driveDbId) else {
-            throw CacheError.driveNotFound(driveDbId)
+            throw logged(.driveNotFound(driveDbId))
         }
 
         drive.synchros[synchro.dbId] = synchro
@@ -270,11 +275,11 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
 
     public func removeSynchro(synchroDbId: Int32, driveDbId: Int32) throws {
         guard var drive = getDrive(driveDbId: driveDbId) else {
-            throw CacheError.driveNotFound(driveDbId)
+            throw logged(.driveNotFound(driveDbId))
         }
 
         guard drive.synchros.removeValue(forKey: synchroDbId) != nil else {
-            throw CacheError.synchroNotFound(synchroDbId)
+            throw logged(.synchroNotFound(synchroDbId))
         }
 
         try updateDrive(drive: drive)
@@ -294,12 +299,12 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
             }
         }
 
-        throw CacheError.synchroNotFound(synchroDbId)
+        throw logged(.synchroNotFound(synchroDbId))
     }
 
     public func updateSynchro(_ synchro: Synchro) throws {
         guard var drive = getDrive(driveDbId: synchro.driveDbId) else {
-            throw CacheError.driveNotFound(synchro.driveDbId)
+            throw logged(.driveNotFound(synchro.driveDbId))
         }
 
         drive.synchros[synchro.dbId] = synchro
@@ -308,7 +313,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
 
     public func vfsConversionCompleted(synchroDbId: Int32) throws {
         guard var synchro = getSynchro(synchroDbId: synchroDbId) else {
-            throw CacheError.synchroNotFound(synchroDbId)
+            throw logged(.synchroNotFound(synchroDbId))
         }
 
         synchro.isUpdatingVfsMode = false
@@ -377,7 +382,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         }
 
         guard var synchro = getSynchro(synchroDbId: error.synchroDbId) else {
-            throw ServerCoherentCache.CacheError.synchroNotFound(error.synchroDbId)
+            throw logged(.synchroNotFound(error.synchroDbId))
         }
 
         synchro.errors[error.dbId] = error
@@ -390,7 +395,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
 
     private func addOrUpdateServerError(_ error: ErrorInfo) async throws {
         guard error.level == .Server else {
-            throw CacheError.notAServerError
+            throw logged(.notAServerError)
         }
 
         serverErrors[error.dbId] = error
@@ -442,7 +447,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
             }
         }
 
-        throw CacheError.errorNotFound(errorDbId)
+        throw logged(.errorNotFound(errorDbId))
     }
 
     @discardableResult
