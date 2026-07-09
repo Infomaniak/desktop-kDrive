@@ -46,13 +46,13 @@ ToolButton {
     text: {
         switch (controlType) {
         case IKWindowControlButton.Minimize:
-            return qsTr("Minimize")
+            return qsTrId("buttonMinimize");
         case IKWindowControlButton.Maximize:
-            return qsTr("Maximize")
+            return qsTrId("buttonMaximize");
         case IKWindowControlButton.Restore:
-            return qsTr("Restore")
+            return qsTrId("buttonRestore");
         case IKWindowControlButton.Close:
-            return qsTr("Close")
+            return qsTrId("buttonClose");
         }
         return ""
     }
