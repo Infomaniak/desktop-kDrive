@@ -5,7 +5,7 @@ endif ()
 project(${APPLICATION_CLIENTV4_EXECUTABLE} LANGUAGES C CXX)
 
 
-find_package(Qt6 6.11 REQUIRED COMPONENTS Core Gui Network Qml Quick Sql Widgets QuickControls2 QuickEffects)
+find_package(Qt6 6.11 REQUIRED COMPONENTS Core Gui Network Qml Quick Sql Widgets QuickControls2 QuickEffects LinguistTools)
 if (QT_FEATURE_xcb)
     find_package(X11 REQUIRED COMPONENTS Xext)
 endif ()
@@ -149,6 +149,29 @@ qt_add_qml_module(${APPLICATION_CLIENTV4_EXECUTABLE}
         ${GUI_QML_FILES}
         RESOURCES
         ${GUI_QML_RESOURCE_FILES}
+)
+
+# Compile the Loco-exported Qt catalogs to .qm and embed them under :/i18n.
+# The catalogs are id-based (each <message> has an id, in an empty context) and resolved at
+# runtime via qsTrId(); qtTrId looks up the empty context, which is why the exporter/normalizer
+# must leave the <context> name empty. Do not run the generated `update_translations` (lupdate)
+# target: Loco owns the .ts files.
+qt_add_translations(${APPLICATION_CLIENTV4_EXECUTABLE}
+        TS_FILES
+        translations/client_da.ts
+        translations/client_de.ts
+        translations/client_el.ts
+        translations/client_en.ts
+        translations/client_es.ts
+        translations/client_fi.ts
+        translations/client_fr.ts
+        translations/client_it.ts
+        translations/client_nb.ts
+        translations/client_nl.ts
+        translations/client_pl.ts
+        translations/client_pt.ts
+        translations/client_sv.ts
+        RESOURCE_PREFIX "/i18n"
 )
 
 qt_add_resources(${APPLICATION_CLIENTV4_EXECUTABLE} "linux_gui_assets"
