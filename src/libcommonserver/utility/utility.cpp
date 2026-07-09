@@ -60,6 +60,7 @@
 
 namespace KDC {
 static const SyncName excludedTemplateFileName(Str("sync-exclude.lst"));
+static const SyncName syncFolderRulesFileName(Str("sync-folder-rules.csv"));
 
 #if defined(KD_MACOS)
 static const SyncName excludedAppFileName(Str("litesync-exclude.lst"));
@@ -434,6 +435,13 @@ bool Utility::normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath,
     }
 
     return true;
+}
+SyncPath Utility::getSyncFolderRulesFilePath(bool test) {
+    if (test) return syncFolderRulesFileName;
+
+    auto canonicalPath = std::filesystem::weakly_canonical(CommonUtility::getAppWorkingDir() / SyncPath{resourcesPath} /
+                                                           syncFolderRulesFileName);
+    return canonicalPath.make_preferred();
 }
 
 bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, IoError &ioError,

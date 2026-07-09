@@ -271,6 +271,9 @@ if(BUILD_KDRIVE_OSX_BUNDLE)
     # Default sync exclude list
     install(FILES sync-exclude-osx.lst DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Resources/ RENAME sync-exclude.lst)
 
+    # Default sync folder rules
+    install(FILES sync-folder-rules-osx.csv DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Resources/ RENAME sync-folder-rules.csv)
+
     # Default Lite Sync app exclude list
     install(FILES litesync-exclude.lst DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Resources/)
 
@@ -294,6 +297,12 @@ elseif(BUILD_CLIENT)
         file(COPY sync-exclude-win.lst DESTINATION ${BIN_OUTPUT_DIRECTORY})
         file(RENAME ${BIN_OUTPUT_DIRECTORY}/sync-exclude-win.lst ${BIN_OUTPUT_DIRECTORY}/sync-exclude.lst)
         install(FILES ${BIN_OUTPUT_DIRECTORY}/sync-exclude.lst DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+        # Default sync folder rules
+        message(STATUS "sync-folder-rules-win.csv copied to ${BIN_OUTPUT_DIRECTORY}")
+        file(COPY sync-folder-rules-win.csv DESTINATION ${BIN_OUTPUT_DIRECTORY})
+        file(RENAME ${BIN_OUTPUT_DIRECTORY}/sync-folder-rules-win.csv ${BIN_OUTPUT_DIRECTORY}/sync-folder-rules.csv)
+        install(FILES ${BIN_OUTPUT_DIRECTORY}/sync-folder-rules.csv DESTINATION ${CMAKE_INSTALL_BINDIR})
 
         # Vfs
         set(CMAKE_FIND_LIBRARY_SUFFIXES .dll)
@@ -334,6 +343,14 @@ elseif(BUILD_CLIENT)
             file(RENAME ${BIN_OUTPUT_DIRECTORY}/sync-exclude-linux.lst ${BIN_OUTPUT_DIRECTORY}/sync-exclude.lst)
         else()
             install(FILES sync-exclude-linux.lst DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME sync-exclude.lst)
+        endif()
+
+        # Default sync folder rules
+        if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+            file(COPY sync-folder-rules-linux.csv DESTINATION ${BIN_OUTPUT_DIRECTORY})
+            file(RENAME ${BIN_OUTPUT_DIRECTORY}/sync-folder-rules-linux.csv ${BIN_OUTPUT_DIRECTORY}/sync-folder-rules.csv)
+        else()
+            install(FILES sync-folder-rules-linux.csv DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME sync-folder-rules.csv)
         endif()
 
         # Sentry

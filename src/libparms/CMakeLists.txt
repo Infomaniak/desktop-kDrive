@@ -20,7 +20,7 @@ set(parms_SRCS
     db/error.h db/error.cpp
     db/migrationselectivesync.h db/migrationselectivesync.cpp
     db/uploadsessiontoken.h db/uploadsessiontoken.cpp
-    db/parmsdbappstate.cpp
+    db/parmsdbappstate.cpp db/syncfolderrule.h db/syncfolderrule.cpp
 )
 
 if(APPLE)
