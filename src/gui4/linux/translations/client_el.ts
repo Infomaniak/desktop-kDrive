@@ -5,7 +5,7 @@
  Project: kDrive Desktop
  Locale: el, Greek
  Exported by: Romain Galland
- Exported at: Thu, 09 Jul 2026 13:21:28 +0200 
+ Exported at: Thu, 09 Jul 2026 14:09:03 +0200 
 --> 
 <TS version="2.1" sourcelanguage="en" language="el"> 
     <context>
@@ -2077,7 +2077,7 @@ This data allows our team to quickly fix and optimize the application, resulting
             <translation>Φάκελος kDrive</translation> 
         </message> 
         <message id="signInBrowser"> 
-            <source>Sign in using your browse</source> 
+            <source>Sign in using your browser</source> 
             <translation>Συνδεθείτε από το πρόγραμμα περιήγησής σας</translation> 
         </message> 
         <message id="statusBarOpenApp"> 
