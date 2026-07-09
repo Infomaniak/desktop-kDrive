@@ -27,6 +27,7 @@
 #include "propagation/executor/filerescuer.h"
 #include "test_utility/testhelpers_requests.h"
 #include "test_utility/testhelpers.h"
+#include "syncpal_test_helper/syncpaltesthelper.hpp"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 
 namespace KDC {
@@ -35,6 +36,7 @@ void TestIntegration::basicTests() {
     testRemoteChanges();
     testSimultaneousChanges();
     testUploadBigFile();
+    testSimpleUpload();
 }
 
 void TestIntegration::testLocalChanges() {
@@ -236,6 +238,49 @@ void TestIntegration::testUploadBigFile() {
     CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, fileInfoJob.modificationTime());
     CPPUNIT_ASSERT_EQUAL(fileStat.size, fileInfoJob.size());
     logStep("testUploadBigFile");
+}
+
+/*
+// Very simple example test: create a local file and upload it, then check that it exists on the remote replica.
+void TestIntegration::testSimpleUpload() {
+    // Create a local file.
+    const SyncPath localFilePath = _syncPal->localPath() / "testSimpleUpload.txt";
+    testhelpers::generateOrEditTestFile(localFilePath);
+
+    // Upload it to the remote sync directory.
+    UploadJob job(nullptr, _driveDbId, localFilePath, localFilePath.filename(), _remoteSyncDir.id(), testhelpers::defaultTime,
+                  testhelpers::defaultTime);
+    (void) job.runSynchronously();
+
+    // Verify that the file now exists on the remote replica.
+    const auto remoteFileInfo = getRemoteFileInfoByName(_driveDbId, _remoteSyncDir.id(), localFilePath.filename());
+    CPPUNIT_ASSERT(remoteFileInfo.isValid());
+    logStep("testSimpleUpload");
+}*/
+
+void TestIntegration::testSimpleUpload() {
+    SyncpalTestHelper testHelper(_syncPal);
+    testHelper.setUp();
+
+    // Describe one operation: create a file. Applied to Local it creates the file on disk;
+    // applied to Remote it's meant to upload that same file (still a TODO in
+    // ExecuteOperations::applyOperation - right now the Remote/Create case is a no-op, so this
+    // call succeeds without doing anything until you add the UploadJob there).
+    const Operations operations(Str2SyncName(R"({
+        "operations": [
+            { "type": "Create", "itemType": "File", "name": "testSimpleUpload.txt" }
+        ]
+    })"));
+
+    CPPUNIT_ASSERT(testHelper.executeOperations(ReplicaSide::Local, operations));
+    CPPUNIT_ASSERT(testHelper.executeOperations(ReplicaSide::Remote, operations));
+
+    // Verify that the file now exists on the remote replica.
+    const auto remoteFileInfo = getRemoteFileInfoByName(_driveDbId, _remoteSyncDir.id(), SyncPath("testSimpleUpload.txt"));
+    CPPUNIT_ASSERT(remoteFileInfo.isValid());
+
+    testHelper.tearDown();
+    logStep("testSimpleUpload");
 }
 
 } // namespace KDC
