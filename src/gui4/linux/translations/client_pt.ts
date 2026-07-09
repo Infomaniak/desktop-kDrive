@@ -5,7 +5,7 @@
  Project: kDrive Desktop
  Locale: pt, Portuguese
  Exported by: Romain Galland
- Exported at: Wed, 08 Jul 2026 16:48:00 +0200 
+ Exported at: Thu, 09 Jul 2026 13:21:29 +0200 
 --> 
 <TS version="2.1" sourcelanguage="en" language="pt"> 
     <context>
@@ -344,6 +344,16 @@ Pode abri-los em qualquer momento, mesmo sem ligação à Internet.</translation
             <source>Manage storage</source> 
             <translation>Gerir armazenamento</translation> 
         </message> 
+        <message id="buttonMaximize"> 
+            <source>Maximize</source> 
+            <extracomment>Accessibility label for the window maximize control (Linux window chrome).</extracomment> 
+            <translation>Maximizar</translation> 
+        </message> 
+        <message id="buttonMinimize"> 
+            <source>Minimize</source> 
+            <extracomment>Accessibility label for the window minimize control (Linux window chrome).</extracomment> 
+            <translation>Minimizar</translation> 
+        </message> 
         <message id="buttonOpenDebugFolder"> 
             <source>Open debug folder</source> 
             <translation>Abrir pasta de depuração</translation> 
@@ -427,6 +437,11 @@ Pode abri-los em qualquer momento, mesmo sem ligação à Internet.</translation
         <message id="buttonRestartSynchro"> 
             <source>Restart sync</source> 
             <translation>Reiniciar a sincronização</translation> 
+        </message> 
+        <message id="buttonRestore"> 
+            <source>Restore</source> 
+            <extracomment>Accessibility label for the window restore (un-maximize) control (Linux window chrome).</extracomment> 
+            <translation>Restaurar</translation> 
         </message> 
         <message id="buttonRetry"> 
             <source>Retry</source> 
