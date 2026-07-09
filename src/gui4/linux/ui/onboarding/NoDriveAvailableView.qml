@@ -34,7 +34,7 @@ Column {
 
         Text {
             width: parent.width
-            text: qsTr("You don’t have a kDrive yet.")
+            text: qsTrId("onboardingDriveSelectionNoDriveTitle")
             color: IKColors.textPrimary
             font.pixelSize: IKFonts.title3Size
             font.weight: IKFonts.emphasized
@@ -45,7 +45,7 @@ Column {
 
         Text {
             width: parent.width
-            text: qsTr("Get started for free with my kSuite,\nor choose a package tailored to your needs.")
+            text: qsTrId("onboardingDriveSelectionNoDriveDescription")
             color: IKColors.textSecondary
             font.pixelSize: IKFonts.bodySize
             lineHeightMode: Text.FixedHeight
@@ -61,7 +61,7 @@ Column {
             id: showOffersButton
 
             height: IKOnboarding.driveSelectionButtonHeight
-            text: qsTr("Show offers")
+            text: qsTrId("buttonShowOffers")
             onClicked: root.selectionController.openDriveOffers()
 
             contentItem: Text {
@@ -91,7 +91,7 @@ Column {
             id: startForFreeButton
 
             height: IKOnboarding.driveSelectionButtonHeight
-            text: qsTr("Get started for free")
+            text: qsTrId("buttonStartForFree")
             onClicked: root.selectionController.startForFree()
 
             contentItem: Text {
