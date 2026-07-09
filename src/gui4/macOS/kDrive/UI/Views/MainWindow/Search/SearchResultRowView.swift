@@ -30,9 +30,9 @@ struct SearchResultRowView: View {
     }
 
     var body: some View {
-        HStack(alignment: .firstTextBaseline) {
+        HStack(alignment: .center) {
             FileTypeView(fileTypeRepresentation: file.fileTypeRepresentation)
-                .frame(size: AppIconSize.iconSize12)
+                .frame(size: AppIconSize.iconSize16)
                 .accessibilityHidden(true)
 
             VStack(alignment: .leading) {
