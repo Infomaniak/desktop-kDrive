@@ -84,7 +84,7 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         }
 
         let signalNum = signalMetadata.num
-        IKLogger.xpc.info("[KD] [Signal] #\(signalMetadata.id) \(signalNum)")
+        IKLogger.xpc.info("[KD] [Signal ←] #\(signalMetadata.id) \(signalNum)")
         // IKLogger.xpc.log("[KD] recv signal raw: \(String(data: signal, encoding: .utf8))")
 
         switch signalNum {

@@ -50,7 +50,7 @@ struct UtilitySignalHandler {
 
         let errorMetadata = errorInfoSignal.body.errorInfo
         IKLogger.xpc.info(
-            "[KD] [Signal] #\(errorInfoSignal.id) error added: syncDbId=\(errorMetadata.syncDbId) " +
+            "[KD] [Signal ←] #\(errorInfoSignal.id) error added: syncDbId=\(errorMetadata.syncDbId) " +
                 "level=\(errorMetadata.level) code=\(errorMetadata.exitCode) cause=\(errorMetadata.exitCause)"
         )
 
