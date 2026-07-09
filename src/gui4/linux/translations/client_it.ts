@@ -5,7 +5,7 @@
  Project: kDrive Desktop
  Locale: it, Italian
  Exported by: Romain Galland
- Exported at: Thu, 09 Jul 2026 13:21:28 +0200 
+ Exported at: Thu, 09 Jul 2026 14:09:03 +0200 
 --> 
 <TS version="2.1" sourcelanguage="en" language="it"> 
     <context>
@@ -2077,7 +2077,7 @@ Questi dati consentono al nostro team di correggere e ottimizzare rapidamente lâ
             <translation>Cartella kDrive</translation> 
         </message> 
         <message id="signInBrowser"> 
-            <source>Sign in using your browse</source> 
+            <source>Sign in using your browser</source> 
             <translation>Accedi nel tuo browser</translation> 
         </message> 
         <message id="statusBarOpenApp"> 

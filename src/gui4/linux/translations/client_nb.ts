@@ -5,7 +5,7 @@
  Project: kDrive Desktop
  Locale: nb, Norwegian Bokmål
  Exported by: Romain Galland
- Exported at: Thu, 09 Jul 2026 13:21:28 +0200 
+ Exported at: Thu, 09 Jul 2026 14:09:03 +0200 
 --> 
 <TS version="2.1" sourcelanguage="en" language="nb"> 
     <context>
@@ -2077,7 +2077,7 @@ Disse dataene lar teamet vårt raskt rette og optimalisere programmet, noe som g
             <translation>kDrive-mappe</translation> 
         </message> 
         <message id="signInBrowser"> 
-            <source>Sign in using your browse</source> 
+            <source>Sign in using your browser</source> 
             <translation>Logg inn i nettleseren din</translation> 
         </message> 
         <message id="statusBarOpenApp"> 
