@@ -33,7 +33,7 @@ struct ConfigurableSynchroView: View {
             folderPath = KDriveLocalizable.syncFolderDefaultLocation
         }
 
-        var label = AttributedString(KDriveLocalizable.onboardingAdvancedSettingsDriveSelectionLocation(folderPath))
+        var label = AttributedString(KDriveLocalizable.onboardingAdvancedSettingsDriveSelectionLocationMac(folderPath))
         label.font = .Tokens.subheadline
         label.foregroundColor = ColorToken.Text.tertiary.asColor
 
@@ -52,7 +52,7 @@ struct ConfigurableSynchroView: View {
             synchronizedFolders = KDriveLocalizable.onboardingExclusionSummarySome
         }
 
-        var label = AttributedString(KDriveLocalizable.onboardingAdvancedSettingsDriveSelectionExclusion(synchronizedFolders))
+        var label = AttributedString(KDriveLocalizable.onboardingAdvancedSettingsDriveSelectionExclusionMac(synchronizedFolders))
         label.font = .Tokens.subheadline
         label.foregroundColor = ColorToken.Text.tertiary.asColor
 

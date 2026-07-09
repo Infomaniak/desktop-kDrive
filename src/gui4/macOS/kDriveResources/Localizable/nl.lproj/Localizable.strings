@@ -1,0 +1,1514 @@
+/*
+ * Loco ios export: Xcode Strings (legacy)
+ * Project: kDrive Desktop
+ * Locale: nl, Dutch; Flemish
+ * Tagged: macOS
+ * Exported by: Valentin Perignon
+ * Exported at: Tue, 23 Jun 2026 16:13:20 +0200
+ */
+
+/* loco:6989dd880a55253f3901f745 */
+"aboutAppVersionCopyright" = "Versie %@.%@\n© 2019-%@ Infomaniak Network SA -";
+
+/* loco:69a57d074f11212a7007d403 */
+"aboutButton" = "Over";
+
+/* loco:698b3c0d8004546e240eb2d2 */
+"aboutKDrive" = "Over kDrive";
+
+/* loco:698b3cd1ffb6143bce07ad82 */
+"aboutKDriveDescription" = "Ontwikkeld en uitsluitend gehost in Zwitserland biedt kDrive totale bescherming van uw gegevens, zonder doorverkoop of bespionering, in ISO-gecertificeerde datacenters, met versleuteling en back-up op meerdere media.";
+
+/* loco:6981b68c6d1056609e079525 */
+"accessibilityActivityTypePicker" = "Zichtbare activiteiten";
+
+/* loco:69a6d9dd08a75d40410b53f6 */
+"accessibilityBetaProgramPicker" = "Een distributiekanaal kiezen";
+
+/* loco:69e1dcc78d162264ae0f2f52 */
+"accessibilityMoreInformation" = "Meer informatie weergeven";
+
+/* loco:69fa0b22dbdab357240dcb12 */
+"accessibilitySearchClear" = "Clear search";
+
+/* loco:69fa0b2668d2d58f030a2422 */
+"accessibilitySearchSheetLabel" = "Search your files";
+
+/* loco:69fa0b2455ed5e00570ecf12 */
+"accessibilitySearching" = "Searching…";
+
+/* loco:69b275fb3440db13f0011c03 */
+"accessibilitySelectSynchroMode" = "Een synchronisatiemodus selecteren";
+
+/* loco:6981cb92c70239c9ed0d45a3 */
+"activitiesTitleIdle" = "Synchronisatie voltooid";
+
+/* loco:6981b68b50a70d64050197e2 */
+"activitiesTitleInProgress" = "Synchronisatie bezig";
+
+/* loco:6981cb9319de989ec9033882 */
+"activitiesTitleNoActivity" = "Geen recente activiteit";
+
+/* loco:698c2d6ab41c289de2072ab2 */
+"activitiesTitleOffline" = "U bent offline";
+
+/* loco:698c1fa979440e4f370444a2 */
+"activitiesTitlePause" = "Synchronisatie onderbroken";
+
+/* loco:6981b68a251c4a36c1078274 */
+"activitiesTypeAllActivities" = "Alle activiteiten";
+
+/* loco:6981b68a1e51fbe933040213 */
+"activitiesTypeMyActivity" = "Alleen mijn activiteit";
+
+/* loco:69b422369e32a806170ba3c2 */
+"addAdvancedSyncDialogTitle" = "Een map synchroniseren met kDrive";
+
+/* loco:69b422a8be3506a1a305ba12 */
+"addAdvancedSyncLocalFolderDescription" = "Kies de map op uw computer die u wilt synchroniseren met kDrive:";
+
+/* loco:69b42298791d2c19c40f4e92 */
+"addAdvancedSyncLocalFolderTitle" = "Gesynchroniseerde map";
+
+/* loco:69b429241110b141d0085ab2 */
+"addAdvancedSyncRemoteFolderDescription" = "Pas de locatie van uw computermap op kDrive aan:";
+
+/* loco:69b429180e3d6a548e0afac2 */
+"addAdvancedSyncRemoteFolderTitle" = "kDrive-locatie";
+
+/* loco:698b087a5fc40f623b0789c2 */
+"advancedSyncDescription" = "Selecteer een map op uw computer om te synchroniseren met kDrive.\nU kunt uw geavanceerde synchronisaties openen via de schijfkiezer op de startpagina.";
+
+/* loco:698b07cec1d08f40b50bc702 */
+"advancedSyncTitle" = "Geavanceerde synchronisatie";
+
+/* loco:6a01c8e3ba328c320801c492 */
+"appToExclude" = "Te negeren app";
+
+/* loco:698af4376b386d18b9037522 */
+"appUpToDate" = "De applicatie is up-to-date";
+
+/* loco:698b36f2eb276c03d00e7c07 */
+"autoCleanupLogsDescription" = "Verwijdert logboeken ouder dan 7 dagen om schijfruimte te besparen.";
+
+/* loco:698b36d9eb276c03d00e7c03 */
+"autoCleanupLogsSetting" = "Automatisch opruimen";
+
+/* loco:698af0b429d5e005bc08dfb2 */
+"automaticUpdatesSetting" = "Automatische updates";
+
+/* loco:698b06836cb93b812800d292 */
+"availableOffline" = "Beschikbaar offline";
+
+/* loco:69943068b17a2d5a500e16b2 */
+"availableOfflineDescription" = "Uw bestanden worden gekopieerd naar uw computer.\nU kunt ze op elk moment openen, zelfs zonder internetverbinding.";
+
+/* loco:699db8a1a58425c60d06a902 */
+"backErrorDriveAsleepDescription" = "U kunt het activeren vanuit de webinterface.";
+
+/* loco:698af17b4dd554948901a8b2 */
+"betaProgramDescription" = "Krijg vroeg toegang tot nieuwe versies van de applicatie voordat ze worden vrijgegeven aan het grote publiek en help de app te verbeteren door uw verbeterideeën met ons te delen.";
+
+/* loco:69a6d9b44d26dc09aa0d0643 */
+"betaProgramTitle" = "Deelnemen aan het bètaprogramma";
+
+/* loco:69c11aacce7b3b9139008044 */
+"buttonActivateOfflineSync" = "Offline synchronisatie inschakelen";
+
+/* loco:698b08da7aafd767de0d78b2 */
+"buttonAddAdvancedSync" = "Een map synchroniseren";
+
+/* loco:698b580c716d616edb0efde2 */
+"buttonAddFileExclusionRule" = "Een regel toevoegen";
+
+/* loco:696a483470f3b70399021c12 */
+"buttonAddStorage" = "Opslag toevoegen";
+
+/* loco:691deb2291b20ac7fd045012 */
+"buttonAdvancedParameters" = "Geavanceerde instellingen";
+
+/* loco:69aad577c1fb41f6e204de02 */
+"buttonApplyToXFiles" = "Toepassen op %@ bestanden";
+
+/* loco:69bd7281cd515cd190042de2 */
+"buttonAskForAccess" = "Toegang aanvragen";
+
+/* loco:6989c98657a76723c20d0e92 */
+"buttonCancel" = "Annuleren";
+
+/* loco:69c0f0398ae1831b640e5a62 */
+"buttonChangeFolder" = "Map wijzigen";
+
+/* loco:69c55ddcee6e0bc4d1046935 */
+"buttonChangeToOffline" = "Offline opslaan";
+
+/* loco:69c55dcf9ae76d95660b7b66 */
+"buttonChangeToOnline" = "Online opslaan";
+
+/* loco:696a343b72b6dc32e00557a4 */
+"buttonClose" = "Sluiten";
+
+/* loco:698c5e4ec95ac47af70ec115 */
+"buttonConfigure" = "Configureren";
+
+/* loco:698af6e7b8da51abf504d482 */
+"buttonConfirm" = "Bevestigen";
+
+/* loco:698b1376f55227e2c30a2fe4 */
+"buttonConnectAccount" = "Een account verbinden";
+
+/* loco:6a1e7c41bd3ff43c8d05a542 */
+"buttonContactSupport" = "Contact opnemen met ondersteuning";
+
+/* loco:691deb0be15255c13908ba42 */
+"buttonContinue" = "Doorgaan";
+
+/* loco:698a09c2c9fb920b0c03e782 */
+"buttonCopyShareLink" = "Deellink kopiëren";
+
+/* loco:68e673c48af12c42e80027c8 */
+"buttonCreateAccount" = "Een account aanmaken";
+
+/* loco:69a05e947011da04b4061f23 */
+"buttonCreateNewSync" = "Een nieuwe synchronisatie aanmaken";
+
+/* loco:698b14e52445668d9d0495a2 */
+"buttonDisconnectAccount" = "Dit account loskoppelen";
+
+/* loco:69d905534d8c60bd1f0c9343 */
+"buttonDownloadInProgress" = "Downloaden…";
+
+/* loco:69d906534d8c60bd1f0c9344 */
+"buttonDownloadManually" = "Handmatig downloaden";
+
+/* loco:698b0aefb16a3916fc004f32 */
+"buttonEnable" = "Inschakelen";
+
+/* loco:699ef0304ba9f8b4d4046cb4 */
+"buttonErrorResolutionTip" = "Het probleem begrijpen";
+
+/* loco:6992eca9a8cb168fe70c0922 */
+"buttonFeedback" = "Een idee delen";
+
+/* loco:6930506962426d4ff30af473 */
+"buttonFinishInstallation" = "Installatie voltooien";
+
+/* loco:698052d464e4b53cef0e9272 */
+"buttonFixErrors" = "Fouten corrigeren";
+
+/* loco:6992eabc63e4de22f10535b2 */
+"buttonHelpdesk" = "Ondersteuning";
+
+/* loco:69304d546385bb9cfc03e524 */
+"buttonKDriveIsActivated" = "Ik heb kDrive geactiveerd";
+
+/* loco:695e58701870be5cd709d2a2 */
+"buttonKDriveOnline" = "kDrive online";
+
+/* loco:698c6b43a4de4c85ae0ef552 */
+"buttonKeepAccount" = "Account bewaren";
+
+/* loco:6992d8c3845cd53c31059f53 */
+"buttonLogOut" = "Uitloggen";
+
+/* loco:68e673b2042a15d8470f9452 */
+"buttonLogin" = "Inloggen";
+
+/* loco:697a2658a44fbad34f011962 */
+"buttonManage" = "Beheren";
+
+/* loco:699c5de6289e5ec7bf009722 */
+"buttonManageDiskSpace" = "Schijfruimte beheren";
+
+/* loco:69aad5b46c5c742d75057663 */
+"buttonManageIndividually" = "Bestanden afzonderlijk behandelen";
+
+/* loco:69c120cf7ef61aa7d5019a33 */
+"buttonManageStorage" = "Opslag beheren";
+
+/* loco:698b3ab789def0ffdd073952 */
+"buttonOpenDebugFolder" = "Debugmap openen";
+
+/* loco:69c0f107d389e919d90b8280 */
+"buttonOpenFolder" = "Map openen";
+
+/* loco:68b04d823f2b735c170caea2 */
+"buttonOpenInBrowser" = "Openen in browser";
+
+/* loco:68b04d5a63085b7ab90cea63 */
+"buttonOpenInFinder" = "Openen in Finder";
+
+/* loco:6931a5687031691272002314 */
+"buttonOpenKDrive" = "kDrive openen";
+
+/* loco:6995ec42567e96a27b08a0f2 */
+"buttonOpenParentFolder" = "Bovenliggende map openen";
+
+/* loco:699c79a3de97a50065067d72 */
+"buttonOpenSyncExclusionRules" = "Uitsluitingen beheren";
+
+/* loco:69a7ed0ecbb2fb59660bfa12 */
+"buttonPause" = "Pauzeren";
+
+/* loco:697b65a56840f9d35605a134 */
+"buttonRefresh" = "Vernieuwen";
+
+/* loco:69b275c6f0de2ef07706b5b3 */
+"buttonRemove" = "Verwijderen";
+
+/* loco:698b07467beec481020cef52 */
+"buttonRemoveSync" = "Synchronisatie verwijderen";
+
+/* loco:69bd1fa570d32107fa0f0163 */
+"buttonRenameItem" = "%@ hernoemen";
+
+/* loco:69a04f0d2417523ff30850b2 */
+"buttonRestartSync" = "Synchronisatie hervatten";
+
+/* loco:6964e1fd78f375ec03073c88 */
+"buttonRestartSynchro" = "Synchronisatie opnieuw starten";
+
+/* loco:697b6560c18f7ca128034f16 */
+"buttonRetry" = "Opnieuw proberen";
+
+/* loco:69c106a55fd64fd95c00ef42 */
+"buttonReturnToDefaultFolder" = "Terug naar standaardmap";
+
+/* loco:6989c90fad75adcb2e05c302 */
+"buttonSave" = "Opslaan";
+
+/* loco:69a7f03b5fa9c90f560c1192 */
+"buttonSearch" = "Zoeken";
+
+/* loco:6964e1dfed4b6acb0107409a */
+"buttonSeeActivities" = "Activiteiten bekijken";
+
+/* loco:69a6a31c97f5f5084b09e612 */
+"buttonSelect" = "Selecteren";
+
+/* loco:69b422d7b7de08855d023d32 */
+"buttonSelectFolder" = "Een map selecteren";
+
+/* loco:698c5cb5f86b52c6fc001fc4 */
+"buttonSelectFolders" = "Mappen selecteren";
+
+/* loco:69bac5f6f74824a64304bcd9 */
+"buttonSelectLocation" = "Een locatie selecteren";
+
+/* loco:69a6a32d8e33a191f90115f2 */
+"buttonSelected" = "Geselecteerd";
+
+/* loco:6989f2b84f80e68db204aa55 */
+"buttonSend" = "Verzenden";
+
+/* loco:6989e1e13690f28b9e0c8b92 */
+"buttonSendLog" = "Debugmap verzenden";
+
+/* loco:69a7ed31e3754291a4029e52 */
+"buttonSettings" = "Instellingen openen";
+
+/* loco:69240f7b15d05a975c07dc13 */
+"buttonShowOffers" = "Aanbiedingen bekijken";
+
+/* loco:698af1b4d7cad5e8710909b2 */
+"buttonShowOption" = "Opties weergeven";
+
+/* loco:69a7ecff1619fbbe5a0c75b3 */
+"buttonStart" = "Starten";
+
+/* loco:69aae9bfc9000e66e10bb5c2 */
+"buttonStartConflictsResolution" = "Versieselectie starten";
+
+/* loco:69240f6d4433e24658054fd4 */
+"buttonStartForFree" = "Gratis aan de slag";
+
+/* loco:69c11c88f553aeb0d204aa82 */
+"buttonSynchronizeOffline" = "Offline synchroniseren";
+
+/* loco:698aec47dbcc2bef330cf7a9 */
+"buttonUpdate" = "Bijwerken";
+
+/* loco:69d905ce410048ea400b7952 */
+"buttonUpdateNow" = "Nu bijwerken";
+
+/* loco:697b6767849b0ee24c089f46 */
+"buttonUpdateSubscription" = "Abonnement bijwerken";
+
+/* loco:6989da5609f5a74cc30826c2 */
+"buttonUpgradeOffer" = "Upgraden";
+
+/* loco:69a69d71b2261fc281078712 */
+"buttonValidate" = "Bevestigen";
+
+/* loco:69a69d809805f64236014d34 */
+"buttonValidateAndGoNext" = "Bevestigen en naar volgende gaan";
+
+/* loco:697b65886840f9d35605a132 */
+"buttonWakeUp" = "Activeren";
+
+/* loco:69a6aaafc13f93081e04db42 */
+"conflictErrorAction" = "Een versie kiezen";
+
+/* loco:69a6a9cae09fee6611099002 */
+"conflictErrorDescription" = "Er zijn twee verschillende versies van deze bestanden gedetecteerd.";
+
+/* loco:69a6a9a346b023df2c088bf2 */
+"conflictErrorTitle" = "Versieconflicten";
+
+/* loco:69aae8ecbd2a6e29890401b2 */
+"conflictsSearchBoxPlaceholder" = "Zoek een bestand";
+
+/* loco:698b244d7e73966ce3096b02 */
+"copyingLink" = "Link kopiëren…";
+
+/* loco:698b169cf72c91b1760a7002 */
+"dataManagementDescription" = "U kunt de gebruiks- en operationele gegevens aanpassen die door Infomaniak worden verzameld om bugs op te lossen en de applicatie te verbeteren. Beide gebruikte tools worden uitsluitend door ons gehost en beheerd.\n\nDe broncode van deze applicatie kan worden geverifieerd, de verzamelde informatie is anoniem en uw persoonlijke informatie blijft strikt vertrouwelijk en wordt nooit gedeeld met derden.";
+
+/* loco:698b15ec9e0aad20280f8c02 */
+"dataManagementSettings" = "Gegevensbeheer";
+
+/* loco:698b164a5f781b3d5203de12 */
+"dataManagementSubtitle" = "Infomaniak respecteert uw privacy";
+
+/* loco:698b3a87553e334c1009a7e4 */
+"debugLevelDescription" = "Selecteer de hoeveelheid te registreren informatie.";
+
+/* loco:698b3a4d553e334c1009a7e2 */
+"debugLevelSetting" = "Debugniveau";
+
+/* loco:698b35cccaddc9598c08a6c2 */
+"debugLogsDescription" = "Stellen de Infomaniak-ondersteuning in staat de oorzaak van een incident te identificeren.";
+
+/* loco:698b35a408fd1ee25f08ab35 */
+"debugLogsSettings" = "Debuglogboeken";
+
+/* loco:699c52b6ec7d62ceec060242 */
+"defaultErrorDescription" = "De synchronisatie wordt automatisch opnieuw gestart.\nAls het probleem aanhoudt, neem dan contact op met onze ondersteuning en voeg de onderstaande technische details bij.";
+
+/* loco:699c52baf0c09a8cdb0b6f92 */
+"defaultErrorDetailsLabel" = "Technische details";
+
+/* loco:699c52a6b2445603690d7062 */
+"defaultErrorTitle" = "Er is een onverwachte fout opgetreden";
+
+/* loco:6a03193b7868f10c96083485 */
+"defaultExclusionAppListDescription" = "Deze apps worden standaard genegeerd en kunnen niet worden gewijzigd.";
+
+/* loco:698b571c5bf251efd60b88f2 */
+"defaultExclusionFileListDescription" = "Deze bestanden worden standaard uitgesloten en kunnen niet worden gewijzigd.";
+
+/* loco:698b56b72776ca5e2e084172 */
+"defaultExclusionFileListHeader" = "Automatische uitsluiting";
+
+/* loco:699c5deee592726401053956 */
+"deleteCancelErrorTitle" = "Verwijdering geannuleerd";
+
+/* loco:69a066863a852bbb830bd326 */
+"dialogDataErrorSyncDirChangeDescription" = "In deze situaties is een nieuwe synchronisatie vereist om kDrive correct te blijven gebruiken.";
+
+/* loco:698c6c6e4f7e07503f0ba762 */
+"dialogNewExclusionRuleTitle" = "Een uitsluitingsregel toevoegen";
+
+/* loco:698c6bbd94b70c0d3d09cde4 */
+"dialogRemoveAccountContent" = "U staat op het punt %@ te verwijderen uit de applicatie.\nDe synchronisatiemap blijft op uw computer, maar wordt niet meer gesynchroniseerd met kDrive.\n\nAl uw gegevens blijven online toegankelijk op kDrive.";
+
+/* loco:698c6b10661f3226080d11a2 */
+"dialogRemoveAccountTitle" = "Uitloggen bij dit account?";
+
+/* loco:698c7bc013e8b5bced08e614 */
+"dialogSyncDeletionWarningContent" = "De lokale map blijft op uw computer, maar wordt niet meer gesynchroniseerd met kDrive.\nDeze actie is permanent.\nOm uw schijf opnieuw te synchroniseren, moet u deze later opnieuw verbinden.\n\nZorg er voor het doorgaan voor dat al uw bestanden up-to-date zijn en volledig gesynchroniseerd zijn.";
+
+/* loco:698c7b5c30ae98f0e6043132 */
+"dialogSyncDeletionWarningTitle" = "Synchronisatie verwijderen?";
+
+/* loco:698c8c7d965fc74e3209cbc2 */
+"dialogSyncModeChangeWarningContent" = "Deze bewerking kan enige tijd in beslag nemen, afhankelijk van de grootte van uw gegevens. Als dit mislukt, kan een volledige hersynchronisatie van de schijf nodig zijn.\n\nZorg er voor het doorgaan voor dat al uw bestanden up-to-date en gesynchroniseerd zijn.\n\nSluit de applicatie niet tijdens het proces.";
+
+/* loco:698c8c9a965fc74e3209cbc4 */
+"dialogSyncModeChangeWarningTitle" = "Synchronisatiemodus wijzigen?";
+
+/* loco:699ffc60759bb427a3087a02 */
+"dialogSystemErrorSyncDirAccessErrorDescription" = "Dit is hoe u de synchronisatie kunt herstellen:";
+
+/* loco:69a04c38b125963a990be812 */
+"dialogSystemErrorSyncDirDiskMissingErrorDescription" = "De schijf met uw synchronisatiemap is niet meer verbonden";
+
+/* loco:69a04d3d9f59db90d2034a02 */
+"dialogSystemErrorSyncDirDiskMissingErrorTip" = "Sluit deze opnieuw aan om de synchronisatie te hervatten.";
+
+/* loco:698af1c80126fd2db302b783 */
+"doNotJoin" = "Niet deelnemen";
+
+/* loco:69d90c3e87d4f2c6d30331c2 */
+"downloadAppUrl" = "https://www.infomaniak.com/en/apps/download-kdrive";
+
+/* loco:696a260311ac2de6c6029683 */
+"driveAccessDeniedErrorDescription" = "U heeft geen toestemming om toegang te krijgen tot dit kDrive.\nControleer uw machtigingen of neem contact op met uw beheerder.";
+
+/* loco:696a25f0bcde38f2b9018124 */
+"driveAccessDeniedErrorTitle" = "Toegang geweigerd tot kDrive";
+
+/* loco:6979e320c8fc8496d00b3a62 */
+"driveAsleepErrorTitle" = "Uw kDrive is in de slaapstand";
+
+/* loco:696ddb204d9cd9e240095142 */
+"driveLockedAdminErrorDescription" = "Dit kDrive is niet verlengd. U heeft er geen toegang meer toe.\nVernieuw uw abonnement om de service opnieuw te activeren.";
+
+/* loco:696dda82726515a10a0772c2 */
+"driveLockedErrorDescription" = "Dit kDrive is niet verlengd. U heeft er geen toegang meer toe.\nNeem contact op met uw beheerder om de service opnieuw te activeren.";
+
+/* loco:696df7c300e7a6e07201ee53 */
+"driveLockedErrorTitle" = "Uw kDrive is verlopen";
+
+/* loco:6979e45003f623afa50f5592 */
+"driveLoggingErrorDescription" = "Log opnieuw in om kDrive te blijven gebruiken.";
+
+/* loco:6979e43e93193f40e100ebc2 */
+"driveLoggingErrorTitle" = "U bent uitgelogd";
+
+/* loco:698c6e0a8606b6052c073992 */
+"driveLoggingErrorUserMismatchDescription" = "Het account dat voor deze verbinding is gebruikt, komt niet overeen met dat van dit kDrive.\nLog opnieuw in met het juiste e-mailadres %@";
+
+/* loco:698c6dcd9ec7f03e0007a382 */
+"driveLoggingErrorUserMismatchTitle" = "Dit account komt niet overeen";
+
+/* loco:6979e3dfba525501090fbfa8 */
+"driveWakingUpErrorDescription" = "kDrive wordt geactiveerd… dit kan enkele ogenblikken duren.";
+
+/* loco:6979e389195e90fdc909d252 */
+"driveWakingUpErrorTitle" = "kDrive wordt geactiveerd";
+
+/* loco:699c5de5e592726401053953 */
+"duplicateNamesErrorTitle" = "Dubbele namen";
+
+/* loco:698b3654af04fbae590cbf82 */
+"enableDebugLogDescription" = "Diagnostische informatie opnemen op mijn computer.";
+
+/* loco:698b361c54ac23ef050755a2 */
+"enableDebugLogsSetting" = "Foutopsporingsregistratie inschakelen";
+
+/* loco:699c5e30252e8a13e30ccaa6 */
+"errCreateCancelDescription" = "U heeft niet de vereiste rechten om een %@ toe te voegen aan deze locatie.\nVraag toegang aan bij de eigenaar of beheerder.";
+
+/* loco:699c5de63e952e3a3908b794 */
+"errDeleteCancelDescription" = "U heeft geen toestemming om deze %@ te verwijderen. Het is hersteld naar de oorspronkelijke locatie. Vraag toegang aan bij de eigenaar of beheerder.";
+
+/* loco:69a051ea38b756bc510d07b2 */
+"errDialogConfigChangedTitle" = "Er is een wijziging gedetecteerd in uw configuratie";
+
+/* loco:69c11647693dd774a40a7922 */
+"errDialogInvalidSyncSyncDirAccessDescription" = "In deze situaties kan een nieuwe synchronisatie nodig zijn om kDrive correct te blijven gebruiken.";
+
+/* loco:6995ec41f214efe144009444 */
+"errDialogLocalFileAccessDescription" = "De toegangsrechten voor %@ zijn gewijzigd, waardoor het niet kan worden gesynchroniseerd.";
+
+/* loco:6995ec4239c94dab2908c002 */
+"errDialogLocalFileAccessFaqLink" = "Raadpleeg de %@ om de toegang te herstellen";
+
+/* loco:6995ec41baed71172b0a6182 */
+"errDialogLocalFileAccessLocationLabel" = "Laatste locatie van %@:";
+
+/* loco:69a04b8fbd2b846c4c0dfa42 */
+"errDialogSystemSyncDirDiskMissingTitle" = "Externe schijf losgekoppeld";
+
+/* loco:69c11bf158364c02530e18a3 */
+"errDialogSystemUnableToStartVfsDescription" = "Deze bewerking kan enige tijd in beslag nemen, afhankelijk van de hoeveelheid te verwerken gegevens.\n\nSluit de applicatie niet tijdens het proces.\n\nAls het mislukt, kunt u eenvoudig een volledige hersynchronisatie van de schijf starten of contact opnemen met onze ondersteuning.";
+
+/* loco:69c11b11df0a817d8a01a312 */
+"errDialogSystemUnableToStartVfsTitle" = "Offline synchronisatie inschakelen";
+
+/* loco:696a29351c25c87abb045892 */
+"errDriveMaintenanceDescription" = "Dit kDrive is tijdelijk niet beschikbaar vanwege onderhoud.\nProbeer het over enkele minuten opnieuw.";
+
+/* loco:696a2779d558c16f7d0a7ff9 */
+"errDriveMaintenanceTitle" = "Onderhoud bezig";
+
+/* loco:699c5de55ac1efa46908d312 */
+"errDuplicateNamesDescription" = "Er bestaat al een bestand of map met deze naam.";
+
+/* loco:699c5de689c9f608fc070e32 */
+"errEditCancelDescription" = "U heeft niet de rechten om dit bestand te bewerken.\nDe originele versie is bewaard en uw bewerking is opgeslagen in een apart bestand met \"conflict\" in de naam. Vraag toegang aan bij de eigenaar of beheerder.";
+
+/* loco:699c5dfc89c9f608fc070e36 */
+"errEndWithSpaceDescription" = "De naam van dit %@ eindigt met een spatie, waardoor het niet kan worden gesynchroniseerd. Hernoem de %@ vanuit kDrive online.";
+
+/* loco:699c5614411d7368440846f6 */
+"errEndWithSpaceTitle" = "Spatie aan het einde van de naam van %@";
+
+/* loco:699c5de592db098f7b0fd183 */
+"errExcludedByTemplateDescription" = "Een uitsluitingsregel verhindert de synchronisatie van dit %@.";
+
+/* loco:699c561e7c51c239760379d2 */
+"errExcludedByTemplateTitle" = "Uitgesloten van synchronisatie";
+
+/* loco:699c5df3d6fc7731d507e5e3 */
+"errFileExistsDescription" = "Er bestaat al een bestand met deze naam.";
+
+/* loco:699c5df6d6fc7731d507e5e5 */
+"errFileLockedDescription" = "Dit bestand wordt momenteel gebruikt door een andere gebruiker.\nUw wijzigingen worden later gesynchroniseerd.";
+
+/* loco:699c5613411d7368440846f4 */
+"errFileLockedTitle" = "Bestand vergrendeld";
+
+/* loco:699c5de6b7e26cbaa70f2f62 */
+"errFileRescuedDescription" = "Dit bestand is verwijderd op kDrive online terwijl u het aan het bewerken was. Een kopie is bewaard op uw computer in de herstelmap.";
+
+/* loco:699c5615411d7368440846f8 */
+"errFileRescuedTitle" = "Bestand gered";
+
+/* loco:699c74f5a495a84f970d7b72 */
+"errFileTooBigAdminDescription" = "Dit bestand overschrijdt de maximaal toegestane grootte (50 GB).\nNeem contact op met ondersteuning om de limiet op te heffen.";
+
+/* loco:699c5df989c9f608fc070e34 */
+"errFileTooBigDescription" = "Dit bestand overschrijdt de maximaal toegestane grootte (50 GB).\nNeem contact op met uw beheerder om de bestandsgroottelimiet te verhogen.";
+
+/* loco:699dbc6b6214e7b523066c22 */
+"errFileTooBigTitle" = "Bestand te groot";
+
+/* loco:699c5deb5ae8fa2cd40b6d92 */
+"errForbiddenActionTitle" = "Toegang geweigerd";
+
+/* loco:698c50d3ad9b9055a00cca42 */
+"errForbiddenCharDescription" = "De naam van dit %@ bevat een of meer tekens die niet worden ondersteund door de kDrive Windows-applicatie. Hernoem de %@ vanuit kDrive online.";
+
+/* loco:699c5dff17e678a1990c53c4 */
+"errForbiddenCharOnlySpacesDescription" = "Deze naam bevat alleen spaties en kan niet worden gebruikt. Hernoem de %@ vanuit kDrive online.";
+
+/* loco:699c562252bdaf14430f36e4 */
+"errForbiddenCharOnlySpacesTitle" = "Ongeldige naam";
+
+/* loco:698c50bd552fc86c5c043624 */
+"errForbiddenCharTitle" = "Niet-ondersteund teken";
+
+/* loco:69c12bf8540dd631890205a4 */
+"errGenericForbiddenDescription" = "U heeft niet de vereiste rechten om deze actie uit te voeren.\nVraag toegang aan bij de eigenaar of beheerder.";
+
+/* loco:69c12be5d526565a35067654 */
+"errGenericForbiddenTitle" = "Toegang geweigerd";
+
+/* loco:699c5de53e952e3a3908b792 */
+"errHardlinkDescription" = "Dit bestand is een harde koppeling (hard link) die niet kan worden gesynchroniseerd.";
+
+/* loco:699c56147f87ce6dc70c3e02 */
+"errHardlinkTitle" = "Niet-ondersteund bestandstype";
+
+/* loco:699dad0f767bc678ce0a7e62 */
+"errInvalidSyncSyncDirAccessDescription" = "Deze map is niet meer toegankelijk op de oorspronkelijke locatie.";
+
+/* loco:699dacde9cc743edb40cc832 */
+"errInvalidSyncSyncDirAccessTitle" = "Synchronisatiemap niet gevonden";
+
+/* loco:699dadab7e62db51ff089bc4 */
+"errInvalidSyncSyncDirNestingDescription" = "Een van uw kDrives is gesynchroniseerd in de synchronisatiemap van een ander kDrive.\nVerplaats een van de mappen zodat ze niet meer genest zijn, of verwijder uw synchronisatie om deze opnieuw aan te maken.";
+
+/* loco:699dad8cada34c581005db42 */
+"errInvalidSyncSyncDirNestingTitle" = "Geneste kDrives";
+
+/* loco:698c507a552fc86c5c043622 */
+"errLocalFileAccessDescription" = "Kan geen toegang krijgen tot dit %@ op uw computer. Controleer of het nog bestaat en of u de rechten heeft om er toegang toe te krijgen.";
+
+/* loco:698c5065d2a68e9e0e01f7e5 */
+"errLocalFileAccessTitle" = "%@ ontoegankelijk";
+
+/* loco:699c5e029d64978ac00c7d12 */
+"errMoveCancelDescription" = "U heeft niet de rechten om dit %@ hier te verplaatsen; het wordt hersteld naar de oorspronkelijke locatie. Vraag toegang aan bij de eigenaar of beheerder.";
+
+/* loco:699c5de73e952e3a3908b796 */
+"errNameLengthDescription" = "Deze naam overschrijdt de toegestane lengte (250 tekens). Hernoem de %@.";
+
+/* loco:699c5629411d7368440846fa */
+"errNameLengthTitle" = "Naam van %@ te lang";
+
+/* loco:699daf73372e300aeb066ac3 */
+"errNetworkErrorOtherDescription" = "Kan geen verbinding maken met kDrive.\nDe synchronisatie wordt automatisch hervat zodra de verbinding is hersteld.";
+
+/* loco:699daf5b0ff22f32d50a7033 */
+"errNetworkErrorOtherTitle" = "Verbinding tijdelijk niet beschikbaar";
+
+/* loco:699c5e04289e5ec7bf009725 */
+"errNotEnoughDiskSpaceDescription" = "Er is onvoldoende ruimte op uw computer om dit bestand te synchroniseren.";
+
+/* loco:699c562b1a58312b250e8e92 */
+"errNotEnoughDiskSpaceTitle" = "Onvoldoende schijfruimte";
+
+/* loco:699c5e073e952e3a3908b798 */
+"errNotYetSupportedCharDescription" = "De naam van dit bestand bevat een of meer tekens die nog niet worden ondersteund door de kDrive-applicatie. Hernoem het bestand vanuit kDrive online.";
+
+/* loco:699c562e1a58312b250e8e94 */
+"errNotYetSupportedCharTitle" = "Niet-ondersteund teken";
+
+/* loco:699c5615d46e9facca0bfdb2 */
+"errPathLengthDescription" = "Het pad naar dit %@ is te lang om te worden gesynchroniseerd. Hernoem een of meer mappen waarin het zich bevindt om het pad te verkorten.";
+
+/* loco:699c5613f3c45c54e50247f3 */
+"errPathLengthTitle" = "Pad naar %@ te lang";
+
+/* loco:699c56ad13d88a808b01e104 */
+"errQuotaExceededDescription" = "Uw kDrive is vol. Maak ruimte vrij of upgrade uw abonnement om dit %@ te synchroniseren.";
+
+/* loco:699c56a42dfefb66850e69d2 */
+"errQuotaExceededTitle" = "Opslaglimiet bereikt";
+
+/* loco:699c56b32dfefb66850e69d4 */
+"errReservedNameDescription" = "Deze naam is gereserveerd door het systeem van uw computer. Hernoem de %@ vanuit kDrive online.";
+
+/* loco:699c561418805cf2a2010952 */
+"errReservedNameTitle" = "Naam van %@ gereserveerd";
+
+/* loco:699ef321392a1b1fe30afd33 */
+"errSystemErrorSyncDirAccessErrorDescription" = "Controleer de locatie of de toegangsrechten van de map.";
+
+/* loco:699ef2b8af5e8f5e2a00eeb5 */
+"errSystemErrorSyncDirAccessTitle" = "Synchronisatiemap ontoegankelijk";
+
+/* loco:6a2197c042aa240e310a72b2 */
+"errSystemLiteSyncNotAllowedDescription" = "LiteSync heeft niet de benodigde machtigingen om te functioneren.\nopen macOS Voorkeuren om ze in te schakelen.";
+
+/* loco:6a2197a5620b19f3600003a2 */
+"errSystemLiteSyncNotAllowedTitle" = "Toestemming vereist";
+
+/* loco:699db2cb55ec6730790b6d02 */
+"errSystemNotEnoughDiskSpaceDescription" = "De schijfruimte van uw apparaat is vol. De synchronisatie is onderbroken. Maak ruimte vrij om de synchronisatie te hervatten.";
+
+/* loco:699db2adcb59caa0180bfb43 */
+"errSystemNotEnoughDiskSpaceTitle" = "Onvoldoende schijfruimte";
+
+/* loco:69c113aefce2723e4e02a8b2 */
+"errSystemSyncDirChanged" = "Deze map is niet meer toegankelijk op de oorspronkelijke locatie.";
+
+/* loco:69a04af840d83256d50795e2 */
+"errSystemSyncDirDiskMissingDescription" = "Deze map is niet meer toegankelijk. Er is actie vereist om de synchronisatie te hervatten.";
+
+/* loco:69a04aad8185890f2a0fa5d2 */
+"errSystemSyncDirMissingTitle" = "Synchronisatiemap niet gevonden";
+
+/* loco:699db4392a821651780b5842 */
+"errSystemUnableToStartVfsDescription" = "Lite Sync kan niet starten. U kunt uw bestanden blijven synchroniseren door offline synchronisatie in te schakelen in de instellingen. Neem contact op met ondersteuning als het probleem aanhoudt.";
+
+/* loco:699db42197d59a4659020b42 */
+"errSystemUnableToStartVfsTitle" = "Kan Lite Sync niet starten";
+
+/* loco:699c561552bdaf14430f36e2 */
+"errTmpBlacklistedDescription" = "De synchronisatie van dit item is mislukt. Het wordt later automatisch opnieuw geprobeerd.";
+
+/* loco:699c561523c0dac10d09b052 */
+"errTmpBlacklistedTitle" = "Synchronisatie tijdelijk mislukt";
+
+/* loco:699c56b82dfefb66850e69d6 */
+"errUploadNotTerminatedDescription" = "Het uploaden kon niet worden voltooid. Probeer het later opnieuw.";
+
+/* loco:6998110a3f9ff4c3230a4eb2 */
+"errorConnectingToXPCServer" = "Het lijkt erop dat we de app niet kunnen laden…";
+
+/* loco:69aa7fb3753c400c81087842 */
+"errorDeletingAccount" = "Er is een fout opgetreden bij het verwijderen van uw account.";
+
+/* loco:6995e49c8f25367fa9049f42 */
+"errorListFilesToVerifyHeader" = "Te controleren bestanden";
+
+/* loco:6a1e7c960b63328e7a01f812 */
+"errorListSystemHeader" = "Systeem en machtigingen";
+
+/* loco:6995dff99537658db20fabb3 */
+"errorPageTitle" = "Te corrigeren fouten";
+
+/* loco:6a2fb7df4af9c895d0043b52 */
+"errorSelectedFolderIncorrect" = "Dit dossier kan niet worden gesynchroniseerd. Kies een ander dossier.";
+
+/* loco:69afcc9e14a34ba0f30ee2a2 */
+"errorStartingInstaller" = "Fout bij het starten van het installatieprogramma";
+
+/* loco:69b3e9128555b02b5001ee42 */
+"errorWhileChangingSynchroMode" = "Fout bij het wijzigen van de synchronisatiemodus";
+
+/* loco:6a01cb10947c595e7c030a83 */
+"excludeRuleAppDescription" = "Blokkeer apps die uw bestanden kunnen downloaden of wijzigen.";
+
+/* loco:698b0107941b49c4f500aa12 */
+"excludeRuleDescription" = "Bestanden die overeenkomen met deze regel worden niet gesynchroniseerd.";
+
+/* loco:6a01ca75fd0cd802c903fca3 */
+"excludeRuleFileDescription" = "Voorkom dat bepaalde tijdelijke bestanden of systeembestanden naar kDrive worden gekopieerd.";
+
+/* loco:698b37a3ff1c8782250e1a74 */
+"extendedLogDescription" = "Schakelt het verzamelen van aanvullende informatie in die nuttig is voor ondersteuning.";
+
+/* loco:698b3778571c7248480ed4c2 */
+"extendedLogSetting" = "Uitgebreid gedetailleerd logboek";
+
+/* loco:698b37efff1c8782250e1a76 */
+"extendedLogWarning" = "Wanneer deze optie is ingeschakeld, werkt kDrive langzamer.";
+
+/* loco:69cb941c26bf3e633e097a82 */
+"faqUrl" = "https://www.infomaniak.com/en/support/faq/admin2/kdrive";
+
+/* loco:6992ec7abaf88a24990d3e13 */
+"feedbackSetting" = "Help ons kDrive te verbeteren";
+
+/* loco:69a560c0ef88a6b6b00e49a4 */
+"feedbackURL" = "https://feedback.userreport.com/652ad8f0-84c8-4a21-9e31-7a8bd7134f46";
+
+/* loco:6a072dcb891ba895c309fbc2 */
+"fileExclusionNotificationWarning" = "En notifikation underretter dig, når en fil udelukkes af denne regel.";
+
+/* loco:699c56142c8d937001054c82 */
+"fileExistsErrorTitle" = "Bestand bestaat al";
+
+/* loco:698b05aa9eefd9ba070ce4a2 */
+"fileSyncMode" = "Bestandssynchronisatiemodus";
+
+/* loco:698b05ecfd0cddb0b90c8b72 */
+"fileSyncModeDescription" = "Bepaal hoe uw bestanden worden opgeslagen en geopend.";
+
+/* loco:698b00c7f04008f614070e52 */
+"filesToExclude" = "Te uitsluiten bestanden";
+
+/* loco:695e57f549f806b5ef0a3ac2 */
+"folderFavorites" = "Favorieten";
+
+/* loco:695e584bbc7544361b08b832 */
+"folderShares" = "Gedeeld";
+
+/* loco:695e5889bc7544361b08b834 */
+"folderTrash" = "Prullenbak";
+
+/* loco:698b111bc1341f8509093622 */
+"forOneHour" = "Gedurende 1 uur";
+
+/* loco:698b115dd0d747974308d3b2 */
+"forOneWeek" = "Gedurende een week";
+
+/* loco:698b1185c1341f8509093624 */
+"forThreeDays" = "Gedurende drie dagen";
+
+/* loco:6960b7720cbd5c07340af144 */
+"greetingLabel" = "Hallo %@, %@";
+
+/* loco:6964f0b575a31a8d9601a6d7 */
+"helpKDriveName" = "kDrive %@";
+
+/* loco:69b278d512cd069835039fe2 */
+"helpUrl" = "https://www.infomaniak.com/en/support";
+
+/* loco:6989e175cdee4aba850e89b2 */
+"infomaniakSupport" = "Infomaniak Ondersteuning";
+
+/* loco:696a481cf54b5acbc60209c2 */
+"informationBlockKDriveFullSubtitle" = "Maak ruimte vrij of upgrade uw abonnement om uw bestanden te blijven synchroniseren.";
+
+/* loco:696a47fd5b6db1a9b1063182 */
+"informationBlockKDriveFullTitle" = "Uw kDrive is vol";
+
+/* loco:698053a65bddc8df790d0212 */
+"informationBlockSynchroErrorSubtitle" = "Sommige bestanden konden niet worden gesynchroniseerd.";
+
+/* loco:69c4e8bed4e0fde818045ab2 */
+"informationBlockTmpDirAccessErrorSubtitle" = "We kunnen geen toegang krijgen tot uw bestanden. Start de applicatie opnieuw op om de synchronisatie te hervatten. Als het probleem aanhoudt, neem dan contact op met ondersteuning.";
+
+/* loco:69c4e8b82884a264150d2583 */
+"informationBlockTmpDirAccessErrorTitle" = "Verbinding met kDrive onderbroken";
+
+/* loco:6930595e7664999c6a08c8a4 */
+"instructionEnableKDrive" = "Activeer kDrive.app";
+
+/* loco:693059768c31ab63990a0c82 */
+"instructionEnableKDriveArgument" = "kDrive.app";
+
+/* loco:69314c10606d30eb26081742 */
+"instructionEnableKDriveHint" = "U moet kDrive.app activeren voor u kunt doorgaan";
+
+/* loco:69314cfb358e5c25a50b1fb3 */
+"instructionFullDisk" = "Activeer kDrive en kDrive LiteSync Extension";
+
+/* loco:69314c248389940c6c08d902 */
+"instructionFullDiskHint" = "U moet de machtigingen activeren voor u kunt doorgaan";
+
+/* loco:69314c4aba85c2962d068dc2 */
+"instructionOpenPrivacySecurity" = "Ga naar Privacy & Beveiliging > Volledige schijftoegang";
+
+/* loco:69314c54606d30eb26081743 */
+"instructionOpenPrivacySecurityArgument" = "Volledige schijftoegang";
+
+/* loco:69314c62739c205c410aa082 */
+"instructionOpenPrivacySecurityLink" = "Privacy & Beveiliging";
+
+/* loco:69305911b203efcf750e7bb4 */
+"instructionOpenSecurityExtensions" = "Selecteer Openen & Extensies > Beveiligingsextensies";
+
+/* loco:6930592bfd6c86f6690db6d5 */
+"instructionOpenSecurityExtensionsArgument" = "Beveiligingsextensies";
+
+/* loco:693059483fc5023f6a0f86b3 */
+"instructionOpenSecurityExtensionsLink" = "Openen & Extensies";
+
+/* loco:69305849f1fb5be2c7093fa2 */
+"instructionOpenSystemSettings" = "Open Systeeminstellingen > Algemeen";
+
+/* loco:6930588953221ff00608e983 */
+"instructionOpenSystemSettingsLink" = "Systeeminstellingen";
+
+/* loco:69314d1a739c205c410aa087 */
+"instructionRestartIfNecessary" = "Start de applicatie opnieuw als dit wordt gevraagd";
+
+/* loco:6a16da43bc4d91f15c0416e2 */
+"kSuiteOfferUrl" = "https://www.infomaniak.com/en/ksuite";
+
+/* loco:69a0079a3f0464f2af0a25d3 */
+"labelAccessRightsModified" = "Toegangsrechten gewijzigd";
+
+/* loco:6989c851ba57b190ff0ebbf2 */
+"labelAllowTracking" = "Tracking toestaan";
+
+/* loco:6a0b062a269f9f6d54046565 */
+"labelAppID" = "Toepassingsidentificatie";
+
+/* loco:6a155a770336fcc4820ebf57 */
+"labelApplicationName" = "Naam van de app";
+
+/* loco:69a6a42b7dda553eac028754 */
+"labelAuthor" = "Auteur";
+
+/* loco:69aac15193f089df1a016352 */
+"labelChooseConflictVersion" = "Kies welke versie van uw bestanden u wilt bewaren.";
+
+/* loco:69aae4641dd9b6d9260b1dd2 */
+"labelChooseConflictVersionIndividual" = "Selecteer voor elk bestand de te bewaren versie.";
+
+/* loco:69a6a189b148a1a71e0ed432 */
+"labelConflictDialogQuestion" = "Welke versie wilt u bewaren?";
+
+/* loco:69a6a149ab7804a872011ae3 */
+"labelConflictDialogTitle" = "Kies de te bewaren versie";
+
+/* loco:69aad32560082fe51d04e453 */
+"labelConflictStrategyKeepLocalDescription" = "De online versies van deze %@ bestanden worden vervangen door uw lokale versies.\nLet op: dit kan het werk van uw medewerkers overschrijven.";
+
+/* loco:69aad31a1e6f4653e90deca2 */
+"labelConflictStrategyKeepLocalTitle" = "Alleen lokale versies bewaren";
+
+/* loco:69aacea7c2c6d1b9ad00e592 */
+"labelConflictStrategyKeepMostRecentDescription" = "Voor elk conflict bewaren we automatisch de meest recentelijk gewijzigde versie (lokaal of online). Dit is in de meeste gevallen de veiligste keuze.";
+
+/* loco:69aacd5d37efef69510a4112 */
+"labelConflictStrategyKeepMostRecentTitle" = "De meest recente versies bewaren";
+
+/* loco:69aad30606787d9e31090c12 */
+"labelConflictStrategyKeepRemoteDescription" = "Alle lokale wijzigingen voor deze %@ bestanden worden verwijderd.\nHandig als u weet dat het belangrijke werk online staat op kDrive.";
+
+/* loco:69aad2fb60082fe51d04e452 */
+"labelConflictStrategyKeepRemoteTitle" = "Alleen online versies bewaren";
+
+/* loco:69a012ce9c6aefa11d0c0a22 */
+"labelCreateNewSync" = "Maak een %@ aan.";
+
+/* loco:69a6a43c586562e1ae0e9142 */
+"labelDate" = "Datum";
+
+/* loco:69a00df5cee58fe1c90de9e2 */
+"labelFAQ" = "FAQ";
+
+/* loco:69bd5439d1397465ce0d8572 */
+"labelFileLowerCase" = "bestand";
+
+/* loco:6989ff5b78003eb4e20e2652 */
+"labelFolder" = "Map";
+
+/* loco:69a007e73eee9bc51f08bae3 */
+"labelFolderDeleted" = "Map verwijderd";
+
+/* loco:69a067f92558059af802c6f2 */
+"labelFolderDisplacedOrModified" = "Map verplaatst of gewijzigd";
+
+/* loco:69a06836f878b875f20414c2 */
+"labelFolderDisplacedOrModifiedTip" = "De map is mogelijk verplaatst naar een andere schijf en daarna teruggezet naar de oorspronkelijke locatie.";
+
+/* loco:69bd54253484750cc508b092 */
+"labelFolderLowerCase" = "map";
+
+/* loco:69a004c4b20bdca67000eba2 */
+"labelFolderMovedOrRenamed" = "Map verplaatst of hernoemd";
+
+/* loco:69a06865762f35915703bd32 */
+"labelFolderRecreatedOrReplaced" = "Map opnieuw aangemaakt of vervangen";
+
+/* loco:69a06888a8f938beef0635f2 */
+"labelFolderRecreatedOrReplacedTip" = "De map is verwijderd en opnieuw aangemaakt, of vervangen door een andere map met dezelfde naam.";
+
+/* loco:698c656e3e4e4bbf4f02bde2 */
+"labelJustNow" = "Zojuist";
+
+/* loco:698aecc409658598f60cc334 */
+"labelKDriveVersion" = "kDrive %@";
+
+/* loco:69a81e43ec7b4ff05a0b50d2 */
+"labelLocal" = "Lokaal";
+
+/* loco:69aac3530302ea9cb209d153 */
+"labelManyConflictTitle" = "%@ bestanden zijn zowel op uw computer als op kDrive gewijzigd.";
+
+/* loco:69a6a3ed7dda553eac028752 */
+"labelMostRecent" = "Meest recent";
+
+/* loco:6989fec57ca0d7305008b1e2 */
+"labelName" = "Naam";
+
+/* loco:69a0675de82f7e271b0c54d2 */
+"labelNewDeviceDetected" = "Nieuw apparaat gedetecteerd";
+
+/* loco:69a067979b511e9c830b1642 */
+"labelNewDeviceDetectedTip" = "U gebruikt kDrive op een nieuwe computer, na het herstellen vanuit een back-up.";
+
+/* loco:69a0130cbdb1efd10d0939a3 */
+"labelNewSync" = "nieuwe synchronisatie";
+
+/* loco:69aafa69b473f615ee031a64 */
+"labelNoConflictsFound" = "Geen conflicten gevonden voor uw zoekopdracht";
+
+/* loco:69c2644abc5e9a04d80150f4 */
+"labelNoErrorsToFix" = "Geen fouten te corrigeren";
+
+/* loco:698b5869ab41083f11042b52 */
+"labelNotifications" = "Melding";
+
+/* loco:6a1561e8fb5669a82f04fe44 */
+"labelNotifyIfFileExcluded" = "Melding als bestand is uitgesloten";
+
+/* loco:69a6e4aceff2d992ad059324 */
+"labelOff" = "Uit";
+
+/* loco:69a81e31f454e9ee2b012722 */
+"labelOnline" = "Online";
+
+/* loco:69c116cc1eebd82cd2031674 */
+"labelOnlineFolderDeletedOrRenamed" = "Online map verwijderd";
+
+/* loco:69c116b9a39e29283f05d3e4 */
+"labelOnlineFolderDeletedOrRenamedTip" = "De gesynchroniseerde map is verwijderd op kDrive online of is niet meer toegankelijk.";
+
+/* loco:69a0040b768059140500484a */
+"labelOriginalLocation" = "Oorspronkelijke locatie:";
+
+/* loco:69aace12c2ddcf448e017c32 */
+"labelRecommended" = "Aanbevolen";
+
+/* loco:69c117446ac92c1902088ab4 */
+"labelRemoteAccessRightsModifiedTip" = "De map is mogelijk verplaatst naar een andere schijf en daarna teruggezet naar de oorspronkelijke locatie.";
+
+/* loco:69a0058cb6529d830904d094 */
+"labelRestoreToOriginalLocation" = "Zet het terug naar de oorspronkelijke locatie.";
+
+/* loco:698b58377672899b9301a142 */
+"labelRules" = "Regels";
+
+/* loco:698b2f6aae1ca9d0290ad174 */
+"labelSameAsSystem" = "Hetzelfde als het systeem";
+
+/* loco:6989ff974ef31503cb002e23 */
+"labelSize" = "Grootte";
+
+/* loco:698a070557f1356c46048003 */
+"labelStatus" = "Status";
+
+/* loco:69a07364c232b528bf01b672 */
+"labelSyncFolder" = "Synchronisatiemappen";
+
+/* loco:698c49120217e0fe6308b0c2 */
+"labelSyncLocation" = "Locatie";
+
+/* loco:69bbf39c8b5d154c9b0e76b2 */
+"labelSyncedFolders" = "Gesynchroniseerde mappen";
+
+/* loco:698c4ae9a90fef6269010692 */
+"labelSynchronisation" = "Synchronisatie";
+
+/* loco:698aeefb604e522161001392 */
+"labelTime" = "Tijd";
+
+/* loco:69a6994cc60d93f50404f812 */
+"labelXoverY" = "%@ van %@";
+
+/* loco:698c6a57a5f62ca5f1091942 */
+"labelkDriveManagement" = "kDrive-beheer";
+
+/* loco:698b0dd551a7a263e6030a72 */
+"languageSetting" = "Taal";
+
+/* loco:698b02fbc4b83479960bbf92 */
+"largeFolderRecommendation" = "De volledige map is groot.\nOm het uploaden te versnellen, raden we aan alleen de laatste kDrive-sessie te verzenden.";
+
+/* loco:698b12a03edc9705b80c71c2 */
+"learnMore" = "Meer informatie";
+
+/* loco:6989dc0e68071269990c2942 */
+"licensesHyperLink" = "LGPL v3-licentie - Git-bronnen";
+
+/* loco:698a1276e1c66ed33b03bf32 */
+"linkCopiedToClipboardTitle" = "Link gekopieerd naar klembord";
+
+/* loco:6a17d566053e72a9fd087b52 */
+"liteSyncUnavailableDescriptionMac" = "Incompatibele schijf of map direct in de root van de schijf (bijv.: kies een map zoals /Mijn drive in plaats van /)";
+
+/* loco:698b392cacfe189ede0cf082 */
+"logLevelDebug" = "Foutopsporing";
+
+/* loco:698b3972f0be39d922008ec3 */
+"logLevelError" = "Fout";
+
+/* loco:698b3982f6e48fd003019f52 */
+"logLevelFatal" = "Kritiek";
+
+/* loco:698b393d2a881def5c0fe142 */
+"logLevelInfo" = "Info";
+
+/* loco:698b394a2a881def5c0fe144 */
+"logLevelWarning" = "Waarschuwing";
+
+/* loco:6989f263fe556601b70fe7a2 */
+"logUploadPopupTitle" = "Debugmap naar Infomaniak-ondersteuning sturen";
+
+/* loco:699daea7c2085834e309e844 */
+"logicErrorFullListParsingErrorDescription" = "Sommige bestandsnamen kunnen speciale tekens bevatten die niet worden ondersteund (zoals dubbele aanhalingstekens, backslashes of regeleinden).\n\nControleer en hernoem de bestanden met ongebruikelijke tekens en probeer het opnieuw.";
+
+/* loco:699dae59b2e799063c0eee05 */
+"logicErrorFullListParsingErrorTitle" = "Ongeldige bestandsnaam";
+
+/* loco:69aaacf3df901b5cea00cd92 */
+"manyConflictErrorDescription" = "Er zijn verschillende versies van deze bestanden gedetecteerd.";
+
+/* loco:69aaac472fbbf3de57090942 */
+"manyConflictErrorTitle" = "%@ versieconflicten gedetecteerd";
+
+/* loco:698b2e50ea6bcf51bf026fc2 */
+"matomoDescription" = "Matomo is een analysetool die uitsluitend door Infomaniak wordt gehost en beheerd om te begrijpen hoe de applicatie wordt gebruikt.\n\nHet analyseren van deze gegevens stelt ons team in staat de interface van de applicatie voortdurend te verbeteren.";
+
+/* loco:699c562623c0dac10d09b054 */
+"moveCancelErrorTitle" = "Verplaatsing geannuleerd";
+
+/* loco:698b11f969e305d1ce01e062 */
+"moveDeletedFilesToRecycleBinSetting" = "Verwijderde bestanden naar de prullenbak van de computer verplaatsen";
+
+/* loco:698b1273e77c157c0d065892 */
+"moveDeletedFilesToRecycleBinWarning" = "Sommige items kunnen mogelijk niet worden verplaatst.";
+
+/* loco:6989d5a219b60c091f06e662 */
+"myksuitePlusBannerDescription" = "Meer opslag, meer functies met my kSuite+";
+
+/* loco:6992e9f20953b626df05ffc2 */
+"needHelpSetting" = "Hulp nodig?";
+
+/* loco:69ce15f8ac7c0ee6d7099c02 */
+"networkSettings" = "Netwerk";
+
+/* loco:6992de465798e1839302bbc2 */
+"noAccountConnected" = "Voeg een account toe om te beginnen";
+
+/* loco:6989f957dd64bb04d70f39a2 */
+"noResultsFound" = "Geen resultaten gevonden";
+
+/* loco:698b0aaddee0bf9fb206a694 */
+"notSyncedDrive" = "Niet gesynchroniseerd";
+
+/* loco:698b10ad0c20e31c9c00a5c2 */
+"notificationsDisabledAlways" = "Altijd";
+
+/* loco:698b1086dc2a328c000cfd92 */
+"notificationsDisabledNever" = "Nooit";
+
+/* loco:698b0181941b49c4f500aa15 */
+"notifyOnFileExcluded" = "Een melding ontvangen wanneer een bestand wordt uitgesloten";
+
+/* loco:698c5ab9945b7c6d260d4c22 */
+"onBoardingAdvancedSettingsDriveTitle" = "Synchronisatie voor dit kDrive configureren";
+
+/* loco:698c5b3fa3cb0fe14205ddb5 */
+"onboardingAdvancedSettingsDriveCustomizeLocation" = "Pas de locatie van uw kDrive-map op uw computer aan:";
+
+/* loco:698c5bda2351f47094030442 */
+"onboardingAdvancedSettingsDriveCustomizeLocationTip" = "De gekozen map moet leeg zijn voor de synchronisatie correct te werken.";
+
+/* loco:698c5c378bdea123d60afff7 */
+"onboardingAdvancedSettingsDriveExclusionDescription" = "Kies de mappen om op deze computer te synchroniseren:";
+
+/* loco:698c5bf9735560170309a842 */
+"onboardingAdvancedSettingsDriveExclusionTitle" = "Gesynchroniseerde mappen";
+
+/* loco:698c62f8bde3b880ce05ea53 */
+"onboardingAdvancedSettingsDriveSelectionDescription" = "Voor elk kDrive kunt u kiezen waar het op uw computer wordt gesynchroniseerd en welke mappen worden gesynchroniseerd.";
+
+/* loco:698c5f7af0e0abf8b4088952 */
+"onboardingAdvancedSettingsDriveSelectionExclusion" = "Gesynchroniseerde inhoud:";
+
+/* loco:6a3a944b2fa9d008060aa502 */
+"onboardingAdvancedSettingsDriveSelectionExclusionMac" = "Gesynchroniseerde inhoud: %@";
+
+/* loco:6a3a93d7f05303008e0ad1a2 */
+"onboardingAdvancedSettingsDriveSelectionLocationMac" = "Locatie: %@";
+
+/* loco:698c62a71f3f2e07fe07ca17 */
+"onboardingAdvancedSettingsDriveSelectionTitle" = "Uw kDrives configureren";
+
+/* loco:698c4e054842cd371c0d94f2 */
+"onboardingAlreadySyncedDriveTooltip" = "Dit kDrive is al geconfigureerd.\nGa naar uw instellingen om het te wijzigen.";
+
+/* loco:693050ed6a0836d25507da22 */
+"onboardingAuthorizationExtensionDescription" = "Autoriseer kDrive in de macOS-instellingen:";
+
+/* loco:6930509e14b396d6fc04b0f2 */
+"onboardingAuthorizationExtensionTitle" = "Activeer kDrive op uw Mac";
+
+/* loco:6930510648920a67910d1094 */
+"onboardingAuthorizationFullDiskDescription" = "Om de installatie te voltooien, moet u kDrive toestemming geven om toegang te krijgen tot uw mappen:";
+
+/* loco:693050bab2a2c1990a0d2f04 */
+"onboardingAuthorizationFullDiskTitle" = "Toegang tot mappen autoriseren";
+
+/* loco:692406b0258f5599bf01d113 */
+"onboardingDriveSelectionNoDriveDescription" = "Begin gratis met my kSuite,\nof kies een abonnement dat bij uw behoeften past.";
+
+/* loco:692405adc5c224ad2a07ff62 */
+"onboardingDriveSelectionNoDriveTitle" = "U heeft nog geen kDrive.";
+
+/* loco:69242dd4299cf487060f2143 */
+"onboardingDriveSelectionSelectTitle" = "Kies de kDrives om op deze computer te synchroniseren:";
+
+/* loco:69271e987f61390c0e053442 */
+"onboardingDriveSelectionSyncInProgress" = "Synchronisatie bezig";
+
+/* loco:691deaf47145f10ab4052cd2 */
+"onboardingDriveSelectionTitle" = "Fijn u te zien!";
+
+/* loco:698c5a5887eff04a98064d42 */
+"onboardingExclusionSummaryNone" = "Alle kDrive-mappen";
+
+/* loco:698c5cfa7fb9b01ec80098c2 */
+"onboardingExclusionSummarySome" = "Aangepaste selectie";
+
+/* loco:68e6739c8af12c42e80027c5 */
+"onboardingLoginDescription" = "De privé, snelle en veilige cloud, gehost in Zwitserland.\n\nLog in en houd uw documenten gesynchroniseerd op al uw apparaten.";
+
+/* loco:68e8fa543a683192560af9e2 */
+"onboardingLoginErrorDescription" = "Er is een fout opgetreden, probeer het opnieuw.";
+
+/* loco:68e8fa06c1b003290f0ccf42 */
+"onboardingLoginErrorTitle" = "Inlogfout";
+
+/* loco:691deb66e28b84c78e034353 */
+"onboardingLoginHintLoading" = "Nog even geduld, we laden uw account…";
+
+/* loco:691deb477145f10ab4052cd4 */
+"onboardingLoginHintWebAuth" = "Inloggen via uw browser…";
+
+/* loco:68e8fa27d09187683c0679b2 */
+"onboardingLoginTitle" = "Welkom bij kDrive";
+
+/* loco:6931a1769dc60cb1820f5fe3 */
+"onboardingSynchronizationAppReadyDescription" = "Uw bestanden zijn klaar om veilig\nte worden gesynchroniseerd op uw computer.";
+
+/* loco:6931a16c3498d5205b0380d3 */
+"onboardingSynchronizationAppReadyTitle" = "Alles klaar!";
+
+/* loco:6931a1582ee1a869eb0303f4 */
+"onboardingSynchronizationInProgressDescription" = "We voltooien de configuratie van uw kDrives.\n\nEven geduld alstublieft.";
+
+/* loco:6931a14fa4031f6161097f42 */
+"onboardingSynchronizationInProgressTitle" = "Synchronisatie bezig…";
+
+/* loco:698b0ee1587496f4f5035cd2 */
+"openKDriveAtStartupSetting" = "kDrive openen wanneer de computer start";
+
+/* loco:6996f06bd9578b02ee0eb1b4 */
+"pathCopiedToClipboard" = "Pad gekopieerd naar klembord";
+
+/* loco:698b2ef3d4aa9d35260e3484 */
+"proxyConnectionDescription" = "Bepaal hoe kDrive verbinding maakt met internet.";
+
+/* loco:698b3452210436b0e501a3a2 */
+"proxyHost" = "Server";
+
+/* loco:698b347b1d024ca9f20d69a2 */
+"proxyNeedAuth" = "Authenticatie vereist";
+
+/* loco:698b349f7ad01ee67e0d5f92 */
+"proxyPassword" = "Wachtwoord";
+
+/* loco:698b345c116156e70a073a42 */
+"proxyPort" = "Poort";
+
+/* loco:698b2e7edcb5f5b87b0d29e2
+ * Title of the proxy settings section in advanced settings. */
+"proxySettings" = "Proxy-instellingen";
+
+/* loco:698b2ff2aa06201dc403c422 */
+"proxyType" = "Proxytype";
+
+/* loco:698b2f2e89df53c9e4039b02 */
+"proxyTypeHTTP" = "Handmatige configuratie";
+
+/* loco:698b2f80dac62f80330a2412 */
+"proxyTypeNone" = "Geen";
+
+/* loco:698b34ab7ad01ee67e0d5f94 */
+"proxyUser" = "Gebruikersnaam";
+
+/* loco:698af22fb4f7b3f2640d1493 */
+"releaseChannelBeta" = "Bèta";
+
+/* loco:698af24c3d21055870072b12 */
+"releaseChannelInternal" = "Intern";
+
+/* loco:69e9e6c1a3c665593e087513 */
+"releaseChannelTest" = "Test";
+
+/* loco:69eb8137c1ea8e116a0ba282
+ * Search field placeholder in SearchSheetView. */
+"searchPlaceholder" = "Search…";
+
+/* loco:69eb8290d3fa21c4fb096d82
+ * Tooltip shown on search results when file is not available locally and will open in browser. */
+"searchResultOpenInBrowserTooltip" = "This file is not available locally and will be opened in your browser";
+
+/* loco:69eb8061e9130678990a5972
+ * Empty search state title in SearchSheetView before any query is entered. */
+"searchYourFiles" = "Search your files";
+
+/* loco:698b06dd2a4fff6e66027c92 */
+"selectFoldersToSync" = "Selecteer de mappen om op deze computer te synchroniseren.";
+
+/* loco:698b07172a4fff6e66027c94 */
+"selectFoldersToSyncDescription" = "Niet-geselecteerde mappen worden niet gedownload naar uw apparaat. Ze blijven online beschikbaar en worden niet verwijderd.";
+
+/* loco:69c580998e2c17f1840de762 */
+"selectFoldersToSyncDescriptionShort" = "Niet-geselecteerde mappen worden niet gedownload naar uw apparaat. Ze blijven online beschikbaar.";
+
+/* loco:698b02a302385f4ff103bd62 */
+"sendLastSessionOnly" = "Alleen de laatste sessie verzenden";
+
+/* loco:698b2df25c57be025b0ecfd2 */
+"sentryDescription" = "Sentry is een tool die uitsluitend door Infomaniak wordt gehost en beheerd om de stabiliteit van de applicatie in real time te bewaken en eventuele technische fouten automatisch aan onze ontwikkelaars te melden.\n\nDeze gegevens stellen ons team in staat de applicatie snel te corrigeren en te optimaliseren, wat resulteert in een betere gebruikerservaring voor u.";
+
+/* loco:68cd386502633dee14000352 */
+"sidebarItemAccounts" = "Accounts & synchronisatiess";
+
+/* loco:68cd389fcc36238762040074 */
+"sidebarItemAdvanced" = "Geavanceerd";
+
+/* loco:68cd3843fbf0b4c60d0c9c82 */
+"sidebarItemGeneral" = "Algemeen";
+
+/* loco:68a70c92c32749426b06db02 */
+"sidebarItemKDriveTitle" = "kDrive-map";
+
+/* loco:69ccceaed2b63271de0326d3 */
+"statusBarOpenApp" = "kDrive openen";
+
+/* loco:69ccce749ecf25eb9005e002 */
+"statusBarQuitApp" = "Afsluiten";
+
+/* loco:69ccce9808d1b71a410eab92 */
+"statusBarSettings" = "Instellingen";
+
+/* loco:697b37c632d0fb5b5d0b4db6 */
+"storageDeviceNameMac" = "Macintosh";
+
+/* loco:69981716cfa89b9c940ef652 */
+"storageLoadingHint" = "Ruimtegebruik laden…";
+
+/* loco:697a077ee16575000806de62 */
+"storageMacFreeSpace" = "Vrije ruimte";
+
+/* loco:697a0768c39a2189f5022564 */
+"storageMacUsedByComputer" = "Overige bestanden";
+
+/* loco:697a07436d99d0c2c00449e2 */
+"storageMacUsedByKDrive" = "kDrive-bestanden die op je apparaat zijn opgeslagen";
+
+/* loco:69c67d8e7c0702965a003512 */
+"storageMissingDiskMacOSDescription" = "kDrive heeft geen toegang tot het volume\nZorg ervoor dat het correct is aangesloten,\nontgrendeld en toegankelijk is vanaf uw computer.";
+
+/* loco:69c67d717e089c303405cee2 */
+"storageMissingDiskMacOSTitle" = "Het volume is niet toegankelijk";
+
+/* loco:697a2640c1c052cea305d2d6 */
+"storageSyncBlockMacDescription" = "Beheer gesynchroniseerde mappen om ruimte vrij te maken op uw Mac.";
+
+/* loco:697a26183f570e1362040242 */
+"storageSyncBlockTitle" = "Synchronisatie";
+
+/* loco:6979e265a8419bb7510c8122 */
+"storageUsageLabel" = "%1$s van %2$s gebruikt";
+
+/* loco:698b0623154e735e8b0a2542 */
+"storedOnline" = "Online opgeslagen";
+
+/* loco:69943031092bf608bc0c4304 */
+"storedOnlineDescription" = "Uw bestanden blijven in de cloud en gebruiken geen ruimte op uw computer.\nEen internetverbinding is vereist om ze te openen.";
+
+/* loco:698a07efc9e9b6dcce04dc86 */
+"syncErrorTooltip" = "Synchronisatiefout";
+
+/* loco:69c10660ef5c38ffd40aab52 */
+"syncFolderCustomLocation" = "Aangepaste map";
+
+/* loco:698c5b6872ce37700303dac2 */
+"syncFolderDefaultLocation" = "Standaardmap";
+
+/* loco:698a085329fb169f6605ac62 */
+"syncInProgressTooltip" = "Synchronisatie";
+
+/* loco:698b0555781f2782a70727c2 */
+"syncModeApplying" = "Uw nieuwe synchronisatiemodus wordt toegepast…";
+
+/* loco:698b1593acd7caac53091c62 */
+"syncRules" = "Synchronisatieregels";
+
+/* loco:69cb7b4436165087ff055e92 */
+"syncShortStatusError" = "Er is een fout opgetreden";
+
+/* loco:69ca840f10c2c8213703f4f2 */
+"syncShortStatusIdle" = "Laatste synchronisatie geslaagd";
+
+/* loco:69ca84317f5583d81f03c7f2 */
+"syncShortStatusPaused" = "Synchronisatie is gepauzeerd";
+
+/* loco:69ca84494136086fe60cebf2 */
+"syncShortStatusRunning" = "Synchronisatie is bezig";
+
+/* loco:698a08137065b2ad54014e72 */
+"syncSuccessTooltip" = "Gesynchroniseerd";
+
+/* loco:698b0d2d968b4ae2ca022542 */
+"syncedDrive" = "Gesynchroniseerd";
+
+/* loco:698b2ff6c504d956e009aad2 */
+"syncedFromComputer" = "Gesynchroniseerd vanuit uw computer";
+
+/* loco:698a08bdb6b870234906e103 */
+"syncedFromKDriveWeb" = "Gesynchroniseerd vanuit kDrive web";
+
+/* loco:6960b7decf8ffcd3950d2706 */
+"synchroInProgress" = "uw bestanden worden gesynchroniseerd";
+
+/* loco:6960b7fd4e868a099e022dc5 */
+"synchroPaused" = "De synchronisatie is tijdelijk uitgeschakeld.";
+
+/* loco:6960f0917cb01bc78104ed32 */
+"synchroStatusInProgressDescription" = "Uw recente bestanden worden bijgewerkt.";
+
+/* loco:6960f01471cc26128d040b12 */
+"synchroStatusInProgressTitle" = "Synchronisatie bezig";
+
+/* loco:6960f77abfc1ab365409ead2 */
+"synchroStatusOfflineDescription" = "Uw gedownloade bestanden blijven beschikbaar.\nDe synchronisatie wordt automatisch hervat zodra u weer verbinding hebt.";
+
+/* loco:6960f75e46598388a60c3022 */
+"synchroStatusOfflineTitle" = "Offline";
+
+/* loco:6960f0d67c633959570799d2 */
+"synchroStatusPausedDescription" = "De synchronisatie is tijdelijk gestopt.";
+
+/* loco:6960f0b8ef5d3700b0018933 */
+"synchroStatusPausedTitle" = "Synchronisatie tijdens pauze";
+
+/* loco:6960efeed6dfdcb3af05e2d2 */
+"synchroStatusUpToDateDescription" = "Uw bestanden zijn toegankelijk en gesynchroniseerd.";
+
+/* loco:6960ef1d538ef75e5a0ad3e2 */
+"synchroStatusUpToDateTitle" = "Geen activiteit bezig";
+
+/* loco:6960b7a6cf8ffcd3950d2704 */
+"synchroUpToDate" = "uw bestanden zijn up-to-date";
+
+/* loco:698b0a88dee0bf9fb206a692 */
+"synchronizationSettings" = "Synchronisatie";
+
+/* loco:699db0830c3ab713a500b433 */
+"systemErrorFileOrDirectoryCorruptedDescription" = "Een bestand of map in uw synchronisatiemap lijkt beschadigd te zijn.\nDe synchronisatie is onderbroken. Controleer uw bestanden en probeer het opnieuw.";
+
+/* loco:699db071d52f7cbccc0b3b53 */
+"systemErrorFileOrDirectoryCorruptedTitle" = "Beschadigd bestand gedetecteerd";
+
+/* loco:68a70be4b749277aa1081dc2 */
+"tabTitleActivities" = "Activiteit";
+
+/* loco:68a705225b0066f86e001d52 */
+"tabTitleHome" = "Startpagina";
+
+/* loco:68a70c659c53feed83039c42 */
+"tabTitleStorage" = "Opslag";
+
+/* loco:69aae4283f8ce335cf0e1842 */
+"titleConflictIndividualResolution" = "Afzonderlijke verwerking";
+
+/* loco:6a2a67aa51ff4812670b0532 */
+"titleManageSynchronization" = "Synchronisatie beheren";
+
+/* loco:69eb7b41376492d2de0d0242
+ * Empty search state subtitle when no result matches the user query in SearchSheetView. */
+"tryDifferentSearchTerm" = "Try a different search term";
+
+/* loco:69eb809ce1364c763a050862
+ * Empty search state subtitle in SearchSheetView before the user enters a query. */
+"typeToStartSearching" = "Type to start searching";
+
+/* loco:6981e8f0b024a7b4e00f7262 */
+"unavailableContentNoActivityDescription" = "Uw bestanden zijn toegankelijk en gesynchroniseerd.";
+
+/* loco:6981e8f0f994e5f7bc040692 */
+"unavailableContentNoActivityTitle" = "Geen recente activiteit";
+
+/* loco:698c7819acb0e0a2a0061c62 */
+"unexpectedErrorTeachingTipContent" = "Probeer het over een paar ogenblikken opnieuw.\nAls het probleem aanhoudt, neem dan contact op met ondersteuning.";
+
+/* loco:698c7802bc26955c81077d42 */
+"unexpectedErrorTeachingTipTitle" = "Er is een onverwachte fout opgetreden";
+
+/* loco:698b112a6dcfa5bb030c2f32 */
+"untilTomorrow" = "Tot morgen";
+
+/* loco:698af3afefd229ca780c59e2 */
+"updateAvailable" = "kDrive %@ beschikbaar";
+
+/* loco:6a017a9746a40dd2910b7424 */
+"updateDialogDescription" = "De installatie duurt minder dan een minuut.\nUw synchronisatie wordt automatisch hervat na afloop.";
+
+/* loco:6a017a9746a40dd2910b7428 */
+"updateDialogIgnoreVersion" = "Deze versie negeren";
+
+/* loco:6a017a9746a40dd2910b7427 */
+"updateDialogInstallNow" = "Nu installeren";
+
+/* loco:6a017a9746a40dd2910b7426 */
+"updateDialogRemindLater" = "Herinner me later";
+
+/* loco:6a017a9746a40dd2910b7425 */
+"updateDialogSeeWhatsNew" = "Bekijk de nieuwigheden";
+
+/* loco:6a017a9746a40dd2910b7423 */
+"updateDialogSubtitle" = "Versie %@ · U gebruikt %@";
+
+/* loco:6a017a9746a40dd2910b7422 */
+"updateDialogTitle" = "Update beschikbaar";
+
+/* loco:69d904f84d8c60bd1f0c9342 */
+"updateRequiredDescription" = "Een nieuwe versie van kDrive is vereist om door te gaan.\nWerk de applicatie bij om toegang te krijgen tot uw bestanden en de synchronisatie te hervatten.";
+
+/* loco:69d903e2d570d224db097582 */
+"updateRequiredTitle" = "Update vereist";
+
+/* loco:698aec0b7bde6b6260001c02 */
+"updateSettings" = "Update";
+
+/* loco:6a031b29945d3f97240ff954 */
+"userExclusionAppListHeaderDescription" = "Bepaalde apps uitsluiten van synchronisatie.";
+
+/* loco:698b579544510089bf0fecf2 */
+"userExclusionFileListDescription" = "Bestanden toevoegen om uit de synchronisatie uit te sluiten.";
+
+/* loco:698b57bdb14da22c560da082 */
+"userExclusionFileListHeader" = "Aangepaste uitsluitingsregels";
+
+/* loco:6a031a88cfe46dc82b0c8162 */
+"userExclusionFileListHeaderDescription" = "Sluit bepaalde bestandstypen uit van synchronisatie.";
+
+/* loco:698b1713c1e8210103081e12 */
+"viewSourceCode" = "Broncode bekijken";
