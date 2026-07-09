@@ -19,8 +19,6 @@
 import CppInterop
 import Foundation
 
-/// Exposes non-sensitive request metadata (`num` + `id`) so the centralized XPC logging in
-/// `XPCQueryFetcher` can describe which job is running without ever touching the request body.
 public protocol XPCLoggableRequest {
     var requestNum: RequestNum { get }
     var requestId: Int32 { get }
