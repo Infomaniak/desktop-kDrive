@@ -5,7 +5,7 @@
  Project: kDrive Desktop
  Locale: pt, Portuguese
  Exported by: Romain Galland
- Exported at: Thu, 09 Jul 2026 13:21:29 +0200 
+ Exported at: Thu, 09 Jul 2026 14:09:03 +0200 
 --> 
 <TS version="2.1" sourcelanguage="en" language="pt"> 
     <context>
@@ -2077,7 +2077,7 @@ Estes dados permitem à nossa equipa corrigir e otimizar rapidamente a aplicaç�
             <translation>Pasta kDrive</translation> 
         </message> 
         <message id="signInBrowser"> 
-            <source>Sign in using your browse</source> 
+            <source>Sign in using your browser</source> 
             <translation>Inicie sessão no seu navegador</translation> 
         </message> 
         <message id="statusBarOpenApp"> 
