@@ -53,12 +53,7 @@ std::shared_ptr<OldCommServer> OldCommServer::instance(QObject *parent) {
 
 OldCommServer::OldCommServer(QObject *parent) :
     QObject(parent),
-    _requestWorkerThread(new QtLoggingThread()),
-    _requestWorker(new Worker()),
-    _tcpSocket(nullptr),
-    _buffer(QByteArray()),
-    _hasQuittedProperly(false),
-    _stopping(false) {
+    _requestWorker(new Worker()) {
     // Start worker thread
     _requestWorker->moveToThread(_requestWorkerThread);
     connect(_requestWorkerThread, &QThread::started, _requestWorker, &Worker::onStart);

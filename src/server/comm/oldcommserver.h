@@ -67,14 +67,14 @@ class OldCommServer : public QObject {
 
     private:
         static std::shared_ptr<OldCommServer> _instance;
-        QtLoggingThread *_requestWorkerThread;
+        QtLoggingThread *_requestWorkerThread = new QtLoggingThread();
         Worker *_requestWorker;
         QTcpServer _tcpServer;
-        QTcpSocket *_tcpSocket;
-        QByteArray _buffer;
+        QTcpSocket *_tcpSocket = nullptr;
+        QByteArray _buffer = QByteArray();
 
-        bool _hasQuittedProperly;
-        bool _stopping;
+        bool _hasQuittedProperly = false;
+        bool _stopping = false;
 
         explicit OldCommServer(QObject *parent = nullptr);
 
