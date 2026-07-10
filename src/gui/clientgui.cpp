@@ -151,7 +151,7 @@ void ClientGui::onErrorAdded(const bool serverLevel, const ExitCode exitCode, co
             if (_addDriveWizard) {
                 emit _addDriveWizard->exit();
             }
-            _app->askUserToLoginAgain(_currentUserDbId, userIt->second.email(), true);
+            _app->askUserToLoginAgain(_currentUserDbId, QString::fromStdString(userIt->second.email()), true);
         }
     }
 
@@ -1038,28 +1038,28 @@ void ClientGui::onAppVersionLocked(bool currentVersionLocked) {
 #endif
 }
 
-void ClientGui::onUserAdded(const UserInfo &userInfo) {
-    _userInfoMap.insert({userInfo.dbId(), UserInfoClient(userInfo)});
+void ClientGui::onUserAdded(const User &user) {
+    _userInfoMap.insert({user.dbId(), UserInfoClient(user)});
 
     if (!_currentUserDbId) {
-        _currentUserDbId = userInfo.dbId();
+        _currentUserDbId = user.dbId();
     }
 
     emit userListRefreshed();
     emit refreshStatusNeeded();
 }
 
-void ClientGui::onUserUpdated(const UserInfo &userInfo) {
-    const auto userInfoMapIt = _userInfoMap.find(userInfo.dbId());
+void ClientGui::onUserUpdated(const User &user) {
+    const auto userInfoMapIt = _userInfoMap.find(user.dbId());
     if (userInfoMapIt != _userInfoMap.end()) {
-        userInfoMapIt->second.setName(userInfo.name());
-        userInfoMapIt->second.setEmail(userInfo.email());
-        userInfoMapIt->second.setAvatar(userInfo.avatar());
-        userInfoMapIt->second.setConnected(userInfo.connected());
-        if (userInfo.connected()) {
+        userInfoMapIt->second.setName(user.name());
+        userInfoMapIt->second.setEmail(user.email());
+        userInfoMapIt->second.setAvatar(user.avatar());
+        userInfoMapIt->second.setConnected(user.connected());
+        if (user.connected()) {
             userInfoMapIt->second.setCredentialsAsked(false);
         }
-        userInfoMapIt->second.setIsStaff(userInfo.isStaff());
+        userInfoMapIt->second.setIsStaff(user.isStaff());
         emit userListRefreshed();
     }
 }
@@ -1142,21 +1142,21 @@ void ClientGui::onUserRemoved(const UserDbId userDbId) {
     }
 }
 
-void ClientGui::onAccountAdded(const AccountInfo &accountInfo) {
-    _accountInfoMap.insert({accountInfo.dbId(), accountInfo});
+void ClientGui::onAccountAdded(const Account &account) {
+    _accountInfoMap.insert({account.dbId(), account});
 
     if (!_currentAccountDbId) {
-        _currentAccountDbId = accountInfo.dbId();
+        _currentAccountDbId = account.dbId();
     }
 
     emit accountListRefreshed();
     emit refreshStatusNeeded();
 }
 
-void ClientGui::onAccountUpdated(const AccountInfo &accountInfo) {
-    const auto &accountInfoMapIt = _accountInfoMap.find(accountInfo.dbId());
+void ClientGui::onAccountUpdated(const Account &account) {
+    const auto &accountInfoMapIt = _accountInfoMap.find(account.dbId());
     if (accountInfoMapIt != _accountInfoMap.end()) {
-        accountInfoMapIt->second.setUserDbId(accountInfo.userDbId());
+        accountInfoMapIt->second.setUserDbId(account.userDbId());
 
         emit accountListRefreshed();
     }
@@ -1568,10 +1568,10 @@ void ClientGui::raiseDialog(QWidget *raiseWidget) {
         // Open the widget on the current desktop
         WId windowObject = raiseWidget->winId();
         objc_object *nsviewObject = reinterpret_cast<objc_object *>(windowObject);
-        objc_object *nsWindowObject = ((id(*)(id, SEL)) objc_msgSend)(nsviewObject, sel_registerName("window"));
+        objc_object *nsWindowObject = ((id (*)(id, SEL)) objc_msgSend)(nsviewObject, sel_registerName("window"));
         int NSWindowCollectionBehaviorCanJoinAllSpaces = 1 << 0;
-        ((id(*)(id, SEL, int)) objc_msgSend)(nsWindowObject, sel_registerName("setCollectionBehavior:"),
-                                             NSWindowCollectionBehaviorCanJoinAllSpaces);
+        ((id (*)(id, SEL, int)) objc_msgSend)(nsWindowObject, sel_registerName("setCollectionBehavior:"),
+                                              NSWindowCollectionBehaviorCanJoinAllSpaces);
 #endif
 
         // Qt has a bug which causes parent-less dialogs to pop-under.
@@ -1589,26 +1589,26 @@ bool ClientGui::loadInfoMaps() {
 
     // Load user list
     ExitCode exitCode;
-    QList<UserInfo> userInfoList;
-    exitCode = GuiRequests::getUserInfoList(userInfoList);
+    QList<User> userInfoList;
+    exitCode = GuiRequests::getUserList(userInfoList);
     if (exitCode != ExitCode::Ok) {
-        qCWarning(lcClientGui()) << "Error in Requests::getUserInfoList";
+        qCWarning(lcClientGui()) << "Error in Requests::getUserList";
         return false;
     }
 
-    for (const UserInfo &userInfo: userInfoList) {
+    for (const User &userInfo: userInfoList) {
         _userInfoMap.insert({userInfo.dbId(), UserInfoClient(userInfo)});
     }
 
     // Load account list
-    QList<AccountInfo> accountInfoList;
-    exitCode = GuiRequests::getAccountInfoList(accountInfoList);
+    QList<Account> accountInfoList;
+    exitCode = GuiRequests::getAccountList(accountInfoList);
     if (exitCode != ExitCode::Ok) {
-        qCWarning(lcClientGui()) << "Error in Requests::getAccountInfoList";
+        qCWarning(lcClientGui()) << "Error in Requests::getAccountList";
         return false;
     }
 
-    for (const AccountInfo &accountInfo: accountInfoList) {
+    for (const Account &accountInfo: accountInfoList) {
         _accountInfoMap.insert({accountInfo.dbId(), accountInfo});
     }
 

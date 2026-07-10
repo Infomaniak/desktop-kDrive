@@ -38,6 +38,7 @@
 #include <QDataStream>
 #include <QIODevice>
 #include <QThread>
+#include <QImage>
 
 #include <Poco/Dynamic/Struct.h>
 
@@ -319,6 +320,7 @@ struct COMMON_EXPORT CommonUtility {
         static std::wstring commString2WStr(const CommString &s) { return KDC::CommonUtility::s2ws(s); }
         static CommString qStr2CommString(const QString &s) { return s.toStdString(); }
         static QString commString2QStr(const CommString &s) { return QString::fromStdString(s); }
+
         //! Returns the length of a string
         /*!
           \param s is a null-terminated string.
@@ -326,6 +328,9 @@ struct COMMON_EXPORT CommonUtility {
         */
         static size_t strLen(const CommChar *const s) { return s ? strlen(s) : 0; }
 #endif
+
+        static std::shared_ptr<CommBLOB> toCommBlob(const QImage &image);
+        static QImage toQImage(const std::shared_ptr<CommBLOB> blob);
 
         static bool modificationTimesAreEqual(const SyncPath &path, SyncTime time1, SyncTime time2);
 

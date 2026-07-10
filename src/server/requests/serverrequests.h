@@ -20,8 +20,8 @@
 
 #include "syncenginelib.h"
 #include "libcommon/utility/types.h"
-#include "libcommon/info/userinfo.h"
-#include "libcommon/info/accountinfo.h"
+#include "libcommon/data/user.h"
+#include "libcommon/data/account.h"
 #include "libcommon/data/driveavailable.h"
 #include "libcommon/info/syncinfo.h"
 #include "libcommon/info/nodeinfo.h"
@@ -32,8 +32,6 @@
 #include "libcommon/info/exclusiontemplateinfo.h"
 #include "libcommon/info/exclusionappinfo.h"
 #include "libcommon/data/drive.h"
-#include "libparms/db/account.h"
-#include "libparms/db/user.h"
 #include "libparms/db/sync.h"
 #include "libparms/db/error.h"
 #include "libparms/db/parameters.h"
@@ -54,10 +52,10 @@ struct SYNCENGINE_EXPORT ServerRequests {
         // TODO: Remove functions with QList parameter after switching to the new comm layer
         static ExitCode getUserDbIdList(QList<UserDbId> &list);
         static ExitCode getUserDbIdList(std::vector<UserDbId> &list);
-        static ExitCode getUserInfoList(QList<UserInfo> &list);
-        static ExitCode getUserInfoList(std::vector<UserInfo> &list);
-        static ExitCode getAccountInfoList(QList<AccountInfo> &list);
-        static ExitCode getAccountInfoList(std::vector<AccountInfo> &list);
+        static ExitCode getUserList(QList<User> &list);
+        static ExitCode getUserList(std::vector<User> &list);
+        static ExitCode getAccountList(QList<Account> &list);
+        static ExitCode getAccountList(std::vector<Account> &list);
         static ExitInfo getDriveList(QList<Drive> &list);
         static ExitInfo getDriveList(std::vector<Drive> &list);
         static ExitInfo getDrive(DriveDbId driveDbId, Drive &drive);
@@ -96,19 +94,19 @@ struct SYNCENGINE_EXPORT ServerRequests {
 
         // C/S requests (access to network)
         // !!! Use COMM_AVERAGE_TIMEOUT !!!
-        static ExitCode requestToken(const std::string &code, const std::string &codeVerifier, UserInfo &userInfo,
-                                     bool &userCreated, std::string &error, std::string &errorDescr);
-        static ExitCode requestToken(const QString &code, const QString &codeVerifier, UserInfo &userInfo, bool &userCreated,
+        static ExitCode requestToken(const std::string &code, const std::string &codeVerifier, User &user, bool &userCreated,
+                                     std::string &error, std::string &errorDescr);
+        static ExitCode requestToken(const QString &code, const QString &codeVerifier, User &user, bool &userCreated,
                                      std::string &error, std::string &errorDescr);
         static ExitInfo getUserAvailableDrives(UserDbId userDbId,
                                                QList<DriveAvailable> &list); // TODO: Delete after switching to the new comm layer
         static ExitInfo getUserAvailableDrives(UserDbId userDbId, std::vector<DriveAvailable> &list);
         static ExitInfo addSync(UserDbId userDbId, AccountId accountId, DriveId driveId, const SyncPath &localFolderPath,
                                 const SyncPath &serverFolderPath, const NodeId &serverFolderNodeId, bool liteSync,
-                                AccountInfo &accountInfo, Drive &drive, SyncInfo &syncInfo);
+                                Account &account, Drive &drive, SyncInfo &syncInfo, bool &accountCreated, bool &driveCreated);
         static ExitInfo addSync(UserDbId userDbId, AccountId accountId, DriveId driveId, const QString &localFolderPath,
                                 const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync,
-                                AccountInfo &accountInfo, Drive &drive, SyncInfo &syncInfo);
+                                Account &account, Drive &drive, SyncInfo &syncInfo, bool &accountCreated, bool &driveCreated);
         static ExitInfo addSync(DriveDbId driveDbId, const SyncPath &localFolderPath, const SyncPath &serverFolderPath,
                                 const NodeId &serverFolderNodeId, bool liteSync, SyncInfo &syncInfo);
         static ExitInfo addSync(DriveDbId driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
@@ -153,8 +151,6 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitInfo getThumbnail(DriveDbId driveDbId, const NodeId &nodeId, int width, std::string &thumbnail);
 
         // Utility
-        static void userToUserInfo(const User &user, UserInfo &userInfo);
-        static void accountToAccountInfo(const Account &account, AccountInfo &accountInfo);
         static void syncToSyncInfo(const Sync &sync, SyncInfo &syncInfo);
         static void syncInfoToSync(const SyncInfo &syncInfo, Sync &sync);
         static void errorToErrorInfo(const Error &error, ErrorInfo &errorInfo);
@@ -177,14 +173,15 @@ struct SYNCENGINE_EXPORT ServerRequests {
     private:
         friend class TestServerRequests;
         static ExitCode processRequestTokenFinished(const Login &login, UserInfo &userInfo, bool &userCreated);
+        static ExitCode processRequestTokenFinished(const Login &login, User &user, bool &userCreated);
         static QString canonicalPath(const QString &path);
         static ExitCode checkPathValidityRecursive(const QString &path, QString &error);
         static ExitInfo checkSyncNesting(const std::vector<Sync> &syncList, const QString &path, QString &error);
         static ExitCode syncForPath(const std::vector<Sync> &syncList, const QString &path, SyncDbId &syncDbId);
         static QString excludeFile(bool liteSync);
-        static ExitCode createUser(const User &user, UserInfo &userInfo);
-        static ExitCode updateUser(const User &user, UserInfo &userInfo);
-        static ExitCode createAccount(const Account &account, AccountInfo &accountInfo);
+        static ExitInfo createUser(User &user);
+        static ExitInfo updateUser(User &user);
+        static ExitCode createAccount(Account &account);
         static ExitCode createDrive(Drive &drive);
         static ExitCode createSync(const Sync &sync, SyncInfo &syncInfo);
         static ExitInfo isSyncFolderAllowedByRules(const SyncPath &path, bool &allowed);
