@@ -20,7 +20,6 @@
 
 namespace KDC {
 SyncFolderRule::SyncFolderRule() :
-    _syncPath(SyncPath()),
     _folderRuleType(SyncFolderRuleType::BlackList) {}
 
 SyncFolderRule::SyncFolderRule(const SyncPath &syncPath, const SyncFolderRuleType ruleType) :
