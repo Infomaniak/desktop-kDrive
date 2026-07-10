@@ -478,18 +478,12 @@ ExitCode GuiRequests::isPathValidForNewSync(const QString &path, const SyncConfi
     paramsStream << path;
     paramsStream << syncConfig;
 
-    qCDebug(lcGuiRequests) << "isPathValidForNewSync called: path=" << path << ", syncConfig=" << static_cast<int>(syncConfig)
-                           << ", params size=" << params.size()
-                           << ", RequestNum=" << static_cast<int>(RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC);
-
-    qCDebug(lcGuiRequests) << "Sending UTILITY_ISPATHVALIDFORNEWSYNC request to server..."
-                           << "timeout=" << COMM_SHORT_TIMEOUT << "ms";
 
     QByteArray results;
     if (!CommClient::instance()->execute(RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC, params, results)) {
         qCWarning(lcGuiRequests) << "isPathValidForNewSync: execute FAILED (timeout or comm error) for path=" << path
-                                 << ", RequestNum=" << static_cast<int>(RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC)
-                                 << "timeout=" << COMM_SHORT_TIMEOUT << "ms";
+                                 << ", RequestNum=" << toString(RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC)
+                                 << ", timeout=" << COMM_SHORT_TIMEOUT << "ms";
         return ExitCode::SystemError;
     }
 
@@ -498,9 +492,6 @@ ExitCode GuiRequests::isPathValidForNewSync(const QString &path, const SyncConfi
     resultStream >> exitCode;
     resultStream >> valid;
 
-    qCDebug(lcGuiRequests) << "isPathValidForNewSync RESULT: path=" << path << ", syncConfig=" << static_cast<int>(syncConfig)
-                           << ", valid=" << valid << ", exitCode=" << static_cast<int>(exitCode)
-                           << ", result size=" << results.size();
 
     return exitCode;
 }
