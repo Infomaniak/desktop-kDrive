@@ -238,6 +238,7 @@ runs:
           mkdir uncached_dependencies
           $uncached = @(
               "sync-exclude.lst",
+              "sync-folder-rules.csv",
               "kDrive_vfs_win.dll",
               "KDContextMenu.dll",
               "KDOverlays.dll",

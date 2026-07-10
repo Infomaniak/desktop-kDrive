@@ -159,6 +159,7 @@ build_release() {
   make DESTDIR="$app_dir" install
 
   cp "$src_dir/sync-exclude-linux.lst" "$build_dir/build/bin/sync-exclude.lst"
+  cp "$src_dir/sync-folder-rules-linux.csv" "$build_dir/build/bin/sync-folder-rules.csv"
 } 
 
 package_release() {

@@ -135,6 +135,7 @@ build_release() {
   make DESTDIR="$app_dir" install
 
   cp "$src_dir/sync-exclude-linux.lst" "$build_dir/client/bin/sync-exclude.lst"
+  cp "$src_dir/sync-folder-rules-linux.csv" "$build_dir/client/bin/sync-folder-rules.csv"
 } 
 
 package_release() {
@@ -166,6 +167,7 @@ package_release() {
   rm -rf "$app_dir/usr/include/"
 
   cp "$src_dir/sync-exclude-linux.lst" "$app_dir/usr/bin/sync-exclude.lst"
+  cp "$src_dir/sync-folder-rules-linux.csv" "$app_dir/usr/bin/sync-folder-rules.csv"
   cp "$app_dir/usr/share/icons/hicolor/512x512/apps/kdrive-win.png" "$app_dir"
 
   cp "$HOME/Qt/Tools/QtCreator/lib/Qt/lib/libQt6SerialPort.so.6" "$app_dir/usr/lib/"
