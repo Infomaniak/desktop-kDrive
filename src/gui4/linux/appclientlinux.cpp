@@ -61,6 +61,7 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     (void) connect(this, &AppClientLinux::ipcDisconnected, &_appCache, [this] {
         _systemTrayController.setProductStateInitialized(false);
         _appCache.clearAll();
+        _parametersStore.clear();
     });
     (void) connect(&_cachePopulator, &CachePopulator::bootstrapCompleted, &_cachePipeline, &CachePipeline::markPopulated);
     (void) connect(&_cachePopulator, &CachePopulator::bootstrapCompleted, &_systemTrayController,
@@ -68,7 +69,6 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     (void) connect(&_cachePopulator, &CachePopulator::bootstrapCompleted, &_sentryService,
                    &SentryService::updateAuthenticatedUser);
     (void) connect(this, &AppClientLinux::ipcConnected, this, [this] { _cachePopulator.bootstrap(); });
-    (void) connect(this, &AppClientLinux::ipcConnected, &_sentryService, &SentryService::reconcileConsentWithServer);
     (void) connect(this, &QCoreApplication::aboutToQuit, this, [] { qCInfo(lcAppClientLinux) << "Qt aboutToQuit emitted"; });
     (void) connect(&_serverCommService, &CommService::showSettings, this, &AppClientLinux::openMainWindow);
     (void) connect(&_serverCommService, &CommService::showSynthesis, this, &AppClientLinux::openMainWindow);
@@ -95,6 +95,7 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     });
 
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("appCache"), &_appCache);
+    _qmlEngine.rootContext()->setContextProperty(QStringLiteral("parametersStore"), &_parametersStore);
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("userService"), &_userService);
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("driveService"), &_driveService);
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("syncService"), &_syncService);
