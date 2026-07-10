@@ -65,6 +65,44 @@ QtObject {
     readonly property real loginBrowserButtonHeight: largeButtonHeight
     readonly property real loginBrowserButtonMinWidth: browserButtonMinWidth
 
+    // Drive selection screen layout.
+    readonly property real driveSelectionCompactBreakpointWidth: compactBreakpointWidth
+    readonly property real driveSelectionContentMaxWidth: contentMaxWidth
+    readonly property real driveSelectionContentExpandedLeftMargin: expandedContentLeftMargin
+    readonly property real driveSelectionTitleLineHeight: titleLineHeight
+    readonly property real driveSelectionSectionSpacing: IKSpacing.s24
+    readonly property real driveSelectionUserBadgeHeight: 32
+    readonly property real driveSelectionUserBadgeMaxWidth: 216
+    readonly property real driveSelectionUserAvatarSize: 24
+    readonly property real driveSelectionUserBadgeRadius: IKRadius.r4
+    readonly property real driveSelectionUserBadgeLeftPadding: 5
+    readonly property real driveSelectionUserBadgeRightPadding: 7
+    readonly property real driveSelectionUserBadgeVerticalPadding: IKSpacing.s4
+    readonly property real driveSelectionUserBadgeContentSpacing: 10
+    readonly property real driveSelectionUserNameLineHeight: 20
+    readonly property real driveSelectionListTitleLineHeight: 14
+    readonly property real driveSelectionListWidth: 264
+    readonly property real driveSelectionListMaxHeight: 176
+    readonly property real driveSelectionCellPadding: IKSpacing.s8
+    readonly property real driveSelectionCellRadius: IKRadius.r8
+    readonly property real driveSelectionCellSpacing: IKSpacing.s8
+    readonly property real driveSelectionCellMinHeight: 40
+    readonly property real driveSelectionCheckboxSize: 16
+    readonly property real driveSelectionDriveIconSize: 20
+    readonly property real driveSelectionDriveIconRadius: 5
+    readonly property real driveSelectionDriveIconGlyphInset: 4
+    readonly property real driveSelectionDriveIconBorderWidth: 1
+    readonly property real driveSelectionDriveNameLineHeight: 16
+    readonly property real driveSelectionAccountLineHeight: 14
+    readonly property real driveSelectionEmptyTitleLineHeight: 22
+    readonly property real driveSelectionButtonHeight: compactButtonHeight
+    readonly property real driveSelectionButtonMinWidth: primaryButtonMinWidth
+    readonly property real driveSelectionSecondaryButtonMinWidth: secondaryButtonMinWidth
+    readonly property real driveSelectionTooltipMaxWidth: 180
+    readonly property real driveSelectionTooltipPadding: IKSpacing.s8
+    readonly property real driveSelectionTooltipRadius: IKRadius.r8
+    readonly property int driveSelectionTooltipDelay: 250
+
     // Source dimensions of the loader-stroke animation.
     readonly property int loaderStrokeAnimationWidth: 302
     readonly property int loaderStrokeAnimationHeight: 260
