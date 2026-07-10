@@ -114,7 +114,7 @@ class Error {
                     error._inconsistencyType >> error._cancelType >> error._autoResolved;
 
             error._dbId = static_cast<ErrorDbId>(dbId);
-            error._time = time;
+            error._time = static_cast<int64_t>(time);
             error._functionName = functionName.toStdString();
             error._syncDbId = static_cast<SyncDbId>(syncDbId);
             error._workerName = workerName.toStdString();
@@ -124,11 +124,12 @@ class Error {
             error._destinationPath = QStr2Path(destinationPath);
         }
         friend QDataStream &operator<<(QDataStream &out, const Error &error) {
-            out << static_cast<qint64>(error._dbId) << error._time << error._level << QString::fromStdString(error._functionName)
-                << static_cast<qint64>(error._syncDbId) << QString::fromStdString(error._workerName) << error._exitCode
-                << error._exitCause << QString::fromStdString(error._localNodeId) << QString::fromStdString(error._remoteNodeId)
-                << error._nodeType << Path2QStr(error._path) << Path2QStr(error._destinationPath) << error._conflictType
-                << error._inconsistencyType << error._cancelType << error._autoResolved;
+            out << static_cast<qint64>(error._dbId) << static_cast<qint64>(error._time) << error._level
+                << QString::fromStdString(error._functionName) << static_cast<qint64>(error._syncDbId)
+                << QString::fromStdString(error._workerName) << error._exitCode << error._exitCause
+                << QString::fromStdString(error._localNodeId) << QString::fromStdString(error._remoteNodeId) << error._nodeType
+                << Path2QStr(error._path) << Path2QStr(error._destinationPath) << error._conflictType << error._inconsistencyType
+                << error._cancelType << error._autoResolved;
             return out;
         }
 
