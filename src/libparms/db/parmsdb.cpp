@@ -900,7 +900,7 @@ bool ParmsDb::getSyncFolderRulesFromFile(const SyncPath &syncFolderRulesPath, st
 
                 if (!pathStr.empty() && !typeStr.empty()) {
                     // 3 possible rule type WhiteListSubFolder, BlackList, WhiteList
-                    SyncFolderRuleType ruleType;
+                    SyncFolderRuleType ruleType = SyncFolderRuleType::None;
                     if (typeStr == "BlackList") {
                         ruleType = SyncFolderRuleType::BlackList;
                     } else if (typeStr == "WhiteList") {
@@ -908,7 +908,7 @@ bool ParmsDb::getSyncFolderRulesFromFile(const SyncPath &syncFolderRulesPath, st
                     } else if (typeStr == "WhiteListSubFolder") {
                         ruleType = SyncFolderRuleType::WhiteListSubFolder;
                     } else {
-                        // If the rule is incorrect just skip the line
+                        LOG_WARN(_logger, "Invalid sync folder rule type: %s" << typeStr.c_str());
                         continue;
                     }
 

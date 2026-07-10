@@ -268,6 +268,7 @@ enum class ExclusionTemplateComplexity {
 };
 
 enum class SyncFolderRuleType {
+    None,
     BlackList,
     WhiteList,
     WhiteListSubFolder
@@ -494,6 +495,7 @@ std::string toString(ConflictType e);
 std::string toString(ConflictResolutionStrategy e);
 std::string toString(ErrorLevel e);
 std::string toString(ExclusionTemplateComplexity e);
+std::string toString(SyncFolderRuleType e);
 std::string toString(ExitCode e);
 std::string toString(ExitCause e);
 std::string toString(InconsistencyType e);

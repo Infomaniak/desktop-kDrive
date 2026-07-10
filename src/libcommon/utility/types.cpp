@@ -661,6 +661,21 @@ std::string toString(const ExclusionTemplateComplexity e) {
     }
 }
 
+std::string toString(const SyncFolderRuleType e) {
+    switch (e) {
+        case SyncFolderRuleType::None:
+            return "None";
+        case SyncFolderRuleType::WhiteList:
+            return "WhiteList";
+        case SyncFolderRuleType::BlackList:
+            return "BlackList";
+        case SyncFolderRuleType::WhiteListSubFolder:
+            return "WhiteListSubFolder";
+        default:
+            return noConversionStr;
+    }
+}
+
 std::string toString(const LinkType e) {
     switch (e) {
         case LinkType::None:
