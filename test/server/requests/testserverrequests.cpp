@@ -314,15 +314,17 @@ void TestServerRequests::testFolderContainsNonExcludedItemMixed() {
 }
 static void insertRule(const SyncPath &path, SyncFolderRuleType type) {
     bool constraintError = false;
-    (void) ParmsDb::instance()->insertSyncFolderRule(SyncFolderRule(path, type), constraintError);
+    const bool ok = ParmsDb::instance()->insertSyncFolderRule(SyncFolderRule(path, type), constraintError);
+    CPPUNIT_ASSERT_MESSAGE("insertSyncFolderRule failed", ok && !constraintError);
 }
 
 static void clearRules() {
     std::vector<SyncFolderRule> rules;
-    (void) ParmsDb::instance()->selectAllSyncFolderRules(rules);
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectAllSyncFolderRules(rules));
     for (const auto &rule: rules) {
         bool found = false;
-        (void) ParmsDb::instance()->deleteSyncFolderRule(rule.syncPath(), found);
+        CPPUNIT_ASSERT(ParmsDb::instance()->deleteSyncFolderRule(rule.syncPath(), found));
+        CPPUNIT_ASSERT(found);
     }
 }
 
