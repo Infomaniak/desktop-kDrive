@@ -250,7 +250,7 @@ void TestIntegration::testSimpleUpload() {
     // applied to Remote it's meant to upload that same file (still a TODO in
     // ExecuteOperations::applyOperation - right now the Remote/Create case is a no-op, so this
     // call succeeds without doing anything until you add the UploadJob there).
-    const Situation situation(Str2SyncName(R"({
+    const Situation situation{Str2SyncName(R"({
         "content" : [
             {
                 "type" : "Directory",
@@ -261,15 +261,15 @@ void TestIntegration::testSimpleUpload() {
             },
             {"type" : "Directory", "name" : "B"}, {"type" : "File", "name" : "C", "size" : 1234}
         ]
-    })"));
+    })")};
     testHelper.setInitialSituation(situation, situation);
 
-    const Operations localoperations(Str2SyncName(R"({
+    const Operations localoperations{Str2SyncName(R"({
         "operations": [
             { "type": "Delete", "path":"A/AA/AAA" },
             { "type": "Create", "itemType": "File", "name": "A/AA/BBB" }
         ]
-    })"));
+    })")};
     CPPUNIT_ASSERT(testHelper.executeOperations(ReplicaSide::Local, localoperations));
 
     // The local Create operation above wrote the file directly to disk, bypassing the sync engine, so we

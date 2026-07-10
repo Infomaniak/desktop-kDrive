@@ -132,7 +132,7 @@ bool SetInitialSituation::run(const std::string &jsonDescription) {
             setRemoteDrive(_syncPal->driveDbId(), *_syncPal->syncDb()->rootNode().nodeIdRemote());
         }
 
-        const Situation situation(Str2SyncName(jsonDescription));
+        const Situation situation{Str2SyncName(jsonDescription)};
         generateInitialSituation(situation);
 
         return true;

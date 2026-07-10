@@ -103,7 +103,7 @@ bool ExecuteOperations::run(const ReplicaSide side, const std::string &jsonDescr
     if (!_syncPal) return false;
 
     try {
-        const Operations operations(Str2SyncName(jsonDescription));
+        const Operations operations{Str2SyncName(jsonDescription)};
         executeOperations(side, operations);
 
         return true;
