@@ -101,13 +101,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func openPreferencesWindow() {
-        if preferencesWindow == nil {
-            preferencesWindow = PreferencesWindowController()
-        }
-
-        if preferencesWindow?.window == nil {
+        if preferencesWindow?.window?.isVisible != true {
             @InjectService var preferencesRouter: PreferencesViewRouter
             preferencesRouter.resetToDefaultState()
+        }
+
+        if preferencesWindow == nil {
+            preferencesWindow = PreferencesWindowController()
         }
 
         preferencesWindow?.window?.makeKeyAndOrderFront(nil)
