@@ -209,11 +209,11 @@ uint64_t CommonUtility::versionBuild() {
 
 std::string CommonUtility::fallbackFileSystemType() {
 #if defined(KD_WINDOWS)
-    return "NTFS";
+    return fsTypeNTFS();
 #elif defined(KD_MACOS)
-    return "APFS";
+    return fsTypeAPFS();
 #else
-    return "EXT234";
+    return fsTypeEXT234();
 #endif
 }
 
@@ -234,7 +234,7 @@ std::string CommonUtility::underlyingFileSystemType(const SyncPath &targetPath) 
         !std::filesystem::create_directory(targetDirPath / invalidFatFileName, ec)) {
         if (ec.value() == static_cast<int>(std::errc::illegal_byte_sequence)) {
             // Invalid name for FAT32, so we assume that the underlying FS is FAT32
-            return "MSDOS";
+            return fsTypeFAT();
         }
         return fallbackFileSystemType();
     } else {
@@ -246,7 +246,7 @@ std::string CommonUtility::underlyingFileSystemType(const SyncPath &targetPath) 
         !std::filesystem::create_directory(targetDirPath / invalidExFatFileName, ec)) {
         if (ec.value() == static_cast<int>(std::errc::illegal_byte_sequence)) {
             // Invalid name for exFAT, so we assume that the underlying FS is exFAT
-            return "EXFAT";
+            return fsTypeEXFAT();
         }
         return fallbackFileSystemType();
     } else {
@@ -290,11 +290,10 @@ std::string CommonUtility::fileSystemType(const SyncPath &targetPath, std::strin
     }
     fsType = CommonUtility::toUpper(fsType);
 
-    // When fsType is a transport filesystem (i.e. virtiofs/smb/nfs) we try to determine the underlying storage format.
-    if (fsType == "VIRTIOFS" || fsType == "APPLEVIRTIOFS" || fsType == "FUSE" || fsType == "SMBFS" || fsType == "NFS") {
-        fallbackFSType = underlyingFileSystemType(targetPath);
-    } else {
+    if (isManagedFS(fsType)) {
         fallbackFSType = fsType;
+    } else {
+        fallbackFSType = underlyingFileSystemType(targetPath);
     }
 
 #if defined(KD_WINDOWS)
@@ -306,49 +305,46 @@ std::string CommonUtility::fileSystemType(const SyncPath &targetPath, std::strin
     return fsType;
 }
 
+bool CommonUtility::isManagedFS(const std::string &fsType)
+{
+    return fsType == fsTypeNTFS() || fsType == fsTypeAPFS() || fsType == fsTypeHFS() || fsType == fsTypeFAT() || fsType == fsTypeEXFAT() || fsType == fsTypeEXT234();
+}
+
 bool CommonUtility::isNTFS(const SyncPath &targetPath) {
-    static const std::string ntfs("NTFS");
-    std::string fallbackFSType;
+     std::string fallbackFSType;
     (void) fileSystemType(targetPath, fallbackFSType);
-    return fallbackFSType == ntfs;
+    return fallbackFSType == fsTypeNTFS();
 }
 
 bool CommonUtility::isAPFS(const SyncPath &targetPath) {
-    static const std::string apfs("APFS");
-    std::string fallbackFSType;
+   std::string fallbackFSType;
     (void) fileSystemType(targetPath, fallbackFSType);
-    return fallbackFSType == apfs;
+    return fallbackFSType == fsTypeAPFS();
 }
 
 bool CommonUtility::isHFS(const SyncPath &targetPath) {
-    static const std::string hfs("HFS");
     std::string fallbackFSType;
     (void) fileSystemType(targetPath, fallbackFSType);
-    return fallbackFSType == hfs;
+    return fallbackFSType == fsTypeHFS();
 }
 
 bool CommonUtility::isFAT(const SyncPath &targetPath) {
-    static const std::string msdos("MSDOS");
     std::string fallbackFSType;
     (void) fileSystemType(targetPath, fallbackFSType);
-    return fallbackFSType == msdos;
+    return fallbackFSType == fsTypeFAT();
 }
 
 bool CommonUtility::isEXFAT(const SyncPath &targetPath) {
-    static const std::string exfat("EXFAT");
     std::string fallbackFSType;
     (void) fileSystemType(targetPath, fallbackFSType);
-    return fallbackFSType == exfat;
+    return fallbackFSType == fsTypeEXFAT();
 }
 
-#if defined(KD_LINUX)
 bool CommonUtility::isEXT234(const SyncPath &targetPath) {
-    static const std::string ext234("EXT234");
     std::string fallbackFSType;
     (void) fileSystemType(targetPath, fallbackFSType);
-    return fallbackFSType == ext234;
+    return fallbackFSType == fsTypeEXT234();
 }
-#endif
 
 bool CommonUtility::isSyncCompatible([[maybe_unused]] const SyncPath &targetPath) {
 #if defined(KD_MACOS)

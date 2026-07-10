@@ -45,22 +45,6 @@ static const std::vector<char> macChars = {'/', '\0'};
 static const std::vector<char> linuxChars = macChars;
 static const std::vector<char> linuxFatChars = winChars; // FAT32 & ExFAT
 
-static std::vector<char> forbiddenChars([[maybe_unused]] const std::string &fsType) {
-#if defined(KD_WINDOWS)
-    if (fsType == "MSDOS")
-        return winFatChars;
-    else
-        return winChars;
-#elif defined(KD_MACOS)
-    return macChars;
-#else
-    if (fsType == "MSDOS" || fsType == "EXFAT")
-        return winFatChars;
-    else
-        return linuxChars;
-#endif
-}
-
 } // namespace ForbiddenFilenameCharacters
 
 static const int maxNameLengh = 255; // Max filename length is uniformized to 255 characters for all platforms and backends
@@ -122,8 +106,7 @@ ExitInfo PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(const
                                                                            bool &hasForbiddenChars) {
     hasForbiddenChars = false;
 
-    auto forbiddenChars = ForbiddenFilenameCharacters::forbiddenChars(fsType);
-    for (auto c: forbiddenChars) {
+    for (auto c: forbiddenChars(fsType)) {
         if (name.find(c) != std::string::npos) {
             LOGW_INFO(Log::instance()->getLogger(),
                       L"Name '" << SyncName2WStr(name) << L"' contains forbidden character: '" << std::wstring(1, c) << L"'");
@@ -276,6 +259,23 @@ SyncName PlatformInconsistencyCheckerUtility::generateSuffix(SuffixType suffixTy
     }
 
     return suffix + ss.str() + Str("_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10));
+}
+
+std::vector<char> PlatformInconsistencyCheckerUtility::forbiddenChars(const std::string &fsType)
+{
+#if defined(KD_WINDOWS)
+    if (fsType == CommonUtility::fsTypeFAT())
+        return ForbiddenFilenameCharacters::winFatChars;
+    else
+        return ForbiddenFilenameCharacters::winChars;
+#elif defined(KD_MACOS)
+    return macChars;
+#else
+    if (fsType == CommonUtility::fsTypeFAT() || fsType == CommonUtility::fsTypeEXFAT())
+        return ForbiddenFilenameCharacters::winFatChars;
+    else
+        return ForbiddenFilenameCharacters::linuxChars;
+#endif
 }
 
 } // namespace KDC

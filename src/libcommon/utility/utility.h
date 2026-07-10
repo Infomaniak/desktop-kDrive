@@ -80,11 +80,19 @@ struct COMMON_EXPORT CommonUtility {
         */
         static std::string fileSystemType(const SyncPath &targetPath, std::string &fallbackFSType, const bool useCache = true);
 
+        static std::string fsTypeNTFS() { return "NTFS"; }
+        static std::string fsTypeAPFS() { return "APFS"; }
+        static std::string fsTypeHFS() { return "HFS"; }
+        static std::string fsTypeFAT() { return "MSDOS"; }
+        static std::string fsTypeEXFAT() { return "EXFAT"; }
+        static std::string fsTypeEXT234() { return "EXT234"; }
+        static bool isManagedFS(const std::string &fsType);
         static bool isNTFS(const SyncPath &targetPath);
         static bool isAPFS(const SyncPath &targetPath);
         static bool isHFS(const SyncPath &targetPath); // HFS+
         static bool isFAT(const SyncPath &targetPath);
         static bool isEXFAT(const SyncPath &targetPath);
+        static bool isEXT234(const SyncPath &targetPath);
 
         static bool isSyncCompatible(const SyncPath &targetPath);
         static bool isLiteSyncCompatible(const SyncPath &targetPath);
@@ -95,8 +103,6 @@ struct COMMON_EXPORT CommonUtility {
         static std::string osVersion();
 #if defined(KD_LINUX)
         static std::string distributionName();
-        static bool isEXT234(const SyncPath &targetPath);
-        static std::string exFAT();
 #endif
         static Platform platform();
         static QString platformArch();

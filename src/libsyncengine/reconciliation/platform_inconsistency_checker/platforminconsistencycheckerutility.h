@@ -58,6 +58,8 @@ class PlatformInconsistencyCheckerUtility {
         void setMaxPath();
         SyncName generateSuffix(SuffixType suffixType);
 
+        static std::vector<char> forbiddenChars([[maybe_unused]] const std::string &fsType);
+
         static std::shared_ptr<PlatformInconsistencyCheckerUtility> _instance;
         static size_t _maxPathLength;
 
