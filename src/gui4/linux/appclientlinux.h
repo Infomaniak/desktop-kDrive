@@ -21,9 +21,7 @@
 #include "app/cache/appcache.h"
 #include "app/cache/cachepipeline.h"
 #include "app/cache/mainselectionstore.h"
-#include "app/cache/onboardingstate.h"
-#include "app/onboarding/onboardingflowcontroller.h"
-#include "app/onboarding/onboardinglogincoordinator.h"
+#include "app/onboarding/onboardingsessionmanager.h"
 #include "app/services/cachepopulator.h"
 #include "app/services/commservice.h"
 #include "app/services/driveservice.h"
@@ -72,8 +70,6 @@ class AppClientLinux : public QApplication {
         CommService &serverCommService() { return _serverCommService; }
         AppCache &appCache() { return _appCache; }
         MainSelectionStore &mainSelectionStore() { return _mainSelectionStore; }
-        OnboardingState &onboardingState() { return _onboardingState; }
-        OnboardingFlowController &onboardingFlowController() { return _onboardingFlowController; }
         ServiceActionTracker &serviceActionTracker() { return _serviceActionTracker; }
         ServiceEventBus &serviceEventBus() { return _serviceEventBus; }
 
@@ -85,6 +81,7 @@ class AppClientLinux : public QApplication {
 
     private:
         static void setupLogging();
+        void openMainWindow();
 
         IpcClient _ipcClient{this};
         SignalDispatcher _signalDispatcher{this};
@@ -92,15 +89,12 @@ class AppClientLinux : public QApplication {
         AppCache _appCache{this};
         CachePipeline _cachePipeline{_serverCommService, _appCache, this};
         MainSelectionStore _mainSelectionStore{_appCache, this};
-        OnboardingState _onboardingState{_appCache, this};
-        OnboardingFlowController _onboardingFlowController{this};
         ServiceActionTracker _serviceActionTracker{this};
         ServiceEventBus _serviceEventBus{this};
         SentryService _sentryService{_serverCommService, _appCache, this};
         CachePopulator _cachePopulator{_serverCommService, _appCache, this};
         UserService _userService{_serverCommService, _appCache, _serviceActionTracker, _serviceEventBus, this};
-        OnboardingLoginCoordinator _onboardingLoginCoordinator{
-                _onboardingFlowController, _serverCommService, _userService, _appCache, _onboardingState, this};
+        OnboardingSessionManager _onboardingSessionManager{_cachePopulator, _appCache, _serverCommService, _userService, this};
         DriveService _driveService{_serverCommService, _serviceActionTracker, _serviceEventBus, this};
         SyncService _syncService{_serverCommService, _serviceActionTracker, _serviceEventBus, this};
         SystemTrayController _systemTrayController{this};
