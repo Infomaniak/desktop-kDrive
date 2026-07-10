@@ -151,26 +151,13 @@ qt_add_qml_module(${APPLICATION_CLIENTV4_EXECUTABLE}
         ${GUI_QML_RESOURCE_FILES}
 )
 
-# Compile the Loco-exported Qt catalogs to .qm and embed them under :/i18n.
-# The catalogs are id-based (each <message> has an id, in an empty context) and resolved at
-# runtime via qsTrId(); qtTrId looks up the empty context, which is why the exporter/normalizer
-# must leave the <context> name empty. Do not run the generated `update_translations` (lupdate)
-# target: Loco owns the .ts files.
+# Compile the .ts catalogs to .qm and embed them under :/i18n (loaded in setupTranslations()).
+# The .ts files are owned by Loco: update them by running `import_loco`
+# (https://github.com/Infomaniak/importloco) from src/gui4/linux, not the generated
+# `update_translations` (lupdate) target.
+file(GLOB CLIENT_TS_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/translations/client_*.ts")
 qt_add_translations(${APPLICATION_CLIENTV4_EXECUTABLE}
-        TS_FILES
-        translations/client_da.ts
-        translations/client_de.ts
-        translations/client_el.ts
-        translations/client_en.ts
-        translations/client_es.ts
-        translations/client_fi.ts
-        translations/client_fr.ts
-        translations/client_it.ts
-        translations/client_nb.ts
-        translations/client_nl.ts
-        translations/client_pl.ts
-        translations/client_pt.ts
-        translations/client_sv.ts
+        TS_FILES ${CLIENT_TS_FILES}
         RESOURCE_PREFIX "/i18n"
 )
 
