@@ -103,6 +103,8 @@ class AppClientLinux : public QApplication {
         SyncService _syncService{_serverCommService, _serviceActionTracker, _serviceEventBus, this};
         WindowDecorationController _windowDecorationController{this};
         SystemTrayController _systemTrayController{this};
+        QTranslator _baseTranslator{this};
+        QTranslator _localizedTranslator{this};
         QQmlApplicationEngine _qmlEngine;
 };
 
