@@ -269,7 +269,7 @@ std::vector<char> PlatformInconsistencyCheckerUtility::forbiddenChars(const std:
     else
         return ForbiddenFilenameCharacters::winChars;
 #elif defined(KD_MACOS)
-    return macChars;
+    return ForbiddenFilenameCharacters::macChars;
 #else
     if (fsType == CommonUtility::fsTypeFAT() || fsType == CommonUtility::fsTypeEXFAT())
         return ForbiddenFilenameCharacters::winFatChars;
