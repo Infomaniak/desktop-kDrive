@@ -900,8 +900,8 @@ void ClientGui::getWebviewDriveLink(const DriveDbId driveDbId, QString &driveLin
 }
 
 void ClientGui::errorInfoList(const DriveDbId driveDbId, QList<Error> &errorInfoList) {
-    if (_errorInfoMap.find(driveDbId) != _errorInfoMap.end()) {
-        errorInfoList = _errorInfoMap[driveDbId];
+    if (_errorMap.find(driveDbId) != _errorMap.end()) {
+        errorInfoList = _errorMap[driveDbId];
     }
 }
 
@@ -929,7 +929,7 @@ void ClientGui::onScreenUpdated(QScreen *screen) {
 }
 
 ExitCode ClientGui::loadError(const DriveDbId driveDbId, const SyncDbId syncDbId, ErrorLevel level) {
-    const ExitCode exitCode = GuiRequests::getErrorInfoList(level, syncDbId, MAX_ERRORS_DISPLAYED, _errorInfoMap[driveDbId]);
+    const ExitCode exitCode = GuiRequests::getErrorInfoList(level, syncDbId, MAX_ERRORS_DISPLAYED, _errorMap[driveDbId]);
     if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::getErrorInfoList for level=" << level;
     }
@@ -946,14 +946,14 @@ void ClientGui::onRefreshErrorList() {
     bool versionLocked = false;
     // Server level errors.
     if (_driveWithNewErrorSet.contains(0)) {
-        _errorInfoMap[0].clear();
+        _errorMap[0].clear();
         if (ExitCode::Ok != ClientGui::loadError(0, 0, ErrorLevel::Server)) {
             return;
         }
 
-        _generalErrorsCounter = static_cast<Count>(_errorInfoMap[0].count());
+        _generalErrorsCounter = static_cast<Count>(_errorMap[0].count());
         emit errorAdded(0);
-        for (const auto &errorInfo: _errorInfoMap[0]) {
+        for (const auto &errorInfo: _errorMap[0]) {
             versionLocked = versionLocked || errorInfo.exitCode() == ExitCode::UpdateRequired;
         }
 
@@ -963,7 +963,7 @@ void ClientGui::onRefreshErrorList() {
     // Drive level errors (SyncPal or Node).
     for (auto it = _driveWithNewErrorSet.begin(); it != _driveWithNewErrorSet.end();) {
         const auto driveDbId = *it;
-        _errorInfoMap[driveDbId].clear();
+        _errorMap[driveDbId].clear();
 
         const auto driveInfoMapIt = _driveInfoMap.find(driveDbId);
         if (driveInfoMapIt == _driveInfoMap.end()) {
@@ -980,7 +980,7 @@ void ClientGui::onRefreshErrorList() {
 
         Count unresolvedErrorsCount = 0;
         Count autoResolvedErrorsCount = 0;
-        for (const auto &errorInfo: _errorInfoMap[driveDbId]) {
+        for (const auto &errorInfo: _errorMap[driveDbId]) {
             versionLocked = versionLocked || errorInfo.exitCode() == ExitCode::UpdateRequired;
 
             if (errorInfo.autoResolved()) {

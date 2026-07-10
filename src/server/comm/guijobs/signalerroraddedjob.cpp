@@ -25,8 +25,8 @@ static const auto outParamsError = "errorInfo";
 
 namespace KDC {
 
-SignalErrorAddedJob::SignalErrorAddedJob(const Error &errorInfo) :
-    _errorInfo(errorInfo) {
+SignalErrorAddedJob::SignalErrorAddedJob(const Error &error) :
+    _errorInfo(error) {
     _signalNum = SignalNum::UTILITY_ERROR_ADDED;
 }
 

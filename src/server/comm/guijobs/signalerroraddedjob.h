@@ -25,7 +25,7 @@ namespace KDC {
 
 class SignalErrorAddedJob : public AbstractGuiJob {
     public:
-        explicit SignalErrorAddedJob(const Error &errorInfo);
+        explicit SignalErrorAddedJob(const Error &error);
 
     private:
         // Output parameters

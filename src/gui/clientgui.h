@@ -140,7 +140,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         DriveDbId _currentDriveDbId{0};
         QSet<DriveDbId> _driveWithNewErrorSet;
         QTimer _refreshErrorListTimer;
-        std::map<ErrorDbId, QList<Error>> _errorInfoMap;
+        std::map<ErrorDbId, QList<Error>> _errorMap;
         QMap<SyncDbId, CustomMessageBox *> _tooManyDeletesNotificationPopupMap;
 
 #ifdef Q_OS_LINUX

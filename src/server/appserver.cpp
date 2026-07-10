@@ -2740,19 +2740,19 @@ void AppServer::sendShowNotification(const QString &title, const QString &messag
     }
 }
 
-void AppServer::sendErrorAdded(const Error &errorInfo) const {
+void AppServer::sendErrorAdded(const Error &error) const {
     if (useOldCommServer()) {
         int id = 0;
 
         QByteArray params;
         QDataStream paramsStream(&params, QIODevice::WriteOnly);
-        paramsStream << (errorInfo.level() == ErrorLevel::Server);
-        paramsStream << toInt(errorInfo.exitCode());
-        paramsStream << static_cast<qint64>(errorInfo.syncDbId());
+        paramsStream << (error.level() == ErrorLevel::Server);
+        paramsStream << toInt(error.exitCode());
+        paramsStream << static_cast<qint64>(error.syncDbId());
         (void) OldCommServer::instance()->sendSignal(SignalNum::UTILITY_ERROR_ADDED_LEGACY, params, id);
     }
     if (useCommManager()) {
-        _commManager->sendGuiSignal(std::make_shared<SignalErrorAddedJob>(errorInfo));
+        _commManager->sendGuiSignal(std::make_shared<SignalErrorAddedJob>(error));
     }
 }
 
@@ -4465,7 +4465,7 @@ ExitInfo AppServer::getNodePath(const SyncDbId syncDbId, const NodeId &nodeId, C
     return ExitCode::Ok;
 }
 
-void AppServer::addError(Error &error) const {
+void AppServer::addError(const Error &error) const {
     Error errorCopy = error;
     // Fetch all errors.
     std::vector<Error> errorList;
@@ -4509,9 +4509,7 @@ void AppServer::addError(Error &error) const {
             sendErrorRemoved(errorCopy.dbId());
         }
 
-        Error errorInfo;
-        errorInfo = errorCopy;
-        sendErrorAdded(errorInfo);
+        sendErrorAdded(errorCopy);
     }
 }
 
