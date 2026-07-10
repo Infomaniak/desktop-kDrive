@@ -952,15 +952,15 @@ void TestUtility::testFileSystemInfo() {
     std::string fsType;
     SyncPath mountPoint;
 #if defined(KD_MACOS)
-    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/", fsType, mountPoint) && fsType == CommonUtility::fsTypeAPFS() &&
-                   mountPoint == "/");
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/", fsType, mountPoint) &&
+                   CommonUtility::toUpper(fsType) == CommonUtility::fsTypeAPFS() && mountPoint == "/");
     CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(std::filesystem::weakly_canonical("."), fsType, mountPoint) &&
-                   fsType == CommonUtility::fsTypeAPFS() && mountPoint == "/");
+                   CommonUtility::toUpper(fsType) == CommonUtility::fsTypeAPFS() && mountPoint == "/");
     // TODO: implement these tests on the CI.
     // External disk.
     /*CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/Volumes/EXFAT PART", fsType, mountPoint) && fsType ==
-    CommonUtility::fsTypeEXTFAT() && mountPoint == "/Volumes/EXFAT PART");
-    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/Volumes/FAT PART", fsType, mountPoint) && fsType == CommonUtility::fsTypeFAT()
+    "exfat" && mountPoint == "/Volumes/EXFAT PART");
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/Volumes/FAT PART", fsType, mountPoint) && fsType == "msdos"
     && mountPoint == "/Volumes/FAT PART");*/
     // AppleVirtIOFS (Parallels Desktop shared folder for instance).
     /*CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/Volumes/My Shared Files/Volumes/APFS PART", fsType, mountPoint) &&
@@ -971,10 +971,9 @@ void TestUtility::testFileSystemInfo() {
                    fsType == "AppleVirtIOFS" && mountPoint == "/Volumes/My Shared Files");*/
 #elif defined(KD_WINDOWS)
     CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(std::filesystem::temp_directory_path(), fsType, mountPoint) &&
-                   fsType == CommonUtility::fsTypeNTFS() && mountPoint == R"(C:\)");
-    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(R"(C:\)", fsType, mountPoint) && fsType == CommonUtility::fsTypeNTFS() &&
-                   mountPoint == R"(C:\)");
-    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(R"(C:\windows)", fsType, mountPoint) && fsType == CommonUtility::fsTypeNTFS() &&
+                   fsType == "NTFS" && mountPoint == R"(C:\)");
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(R"(C:\)", fsType, mountPoint) && fsType == "NTFS" && mountPoint == R"(C:\)");
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(R"(C:\windows)", fsType, mountPoint) && fsType == "NTFS" &&
                    mountPoint == R"(C:\)");
 #else
     std::string fsTypeResult;
@@ -982,7 +981,7 @@ void TestUtility::testFileSystemInfo() {
         // Docker containers use overlayfs
         fsTypeResult = "OVERLAYFS";
     } else {
-        fsTypeResult = CommonUtility::fsTypeEXT234();
+        fsTypeResult = "EXT234";
     }
     CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/", fsType, mountPoint) && fsType == fsTypeResult && mountPoint == "/");
     CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(std::filesystem::weakly_canonical("."), fsType, mountPoint) &&
