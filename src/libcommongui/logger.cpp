@@ -46,7 +46,7 @@ constexpr char logMessagePattern[] =
 
 namespace KDC {
 
-static const QMap<QtMsgType, int> qtMsgTypeLevel = {{QtInfoMsg, 0},     {QtDebugMsg, 1},  {QtWarningMsg, 2},
+static const QMap<QtMsgType, int> qtMsgTypeLevel = {{QtDebugMsg, 0},    {QtInfoMsg, 1},   {QtWarningMsg, 2},
                                                     {QtCriticalMsg, 3}, {QtSystemMsg, 3}, {QtFatalMsg, 4}};
 
 static QString formatLogMessageWithShortFile(const QtMsgType type, const QMessageLogContext &ctx, const QString &message) {
