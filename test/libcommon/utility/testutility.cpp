@@ -955,7 +955,7 @@ void TestUtility::testFileSystemInfo() {
     CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/", fsType, mountPoint) && fsType == CommonUtility::fsTypeAPFS() &&
                    mountPoint == "/");
     CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(std::filesystem::weakly_canonical("."), fsType, mountPoint) &&
-                   fsType == CommonUtility::fsTypeAPF() && mountPoint == "/");
+                   fsType == CommonUtility::fsTypeAPFS() && mountPoint == "/");
     // TODO: implement these tests on the CI.
     // External disk.
     /*CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/Volumes/EXFAT PART", fsType, mountPoint) && fsType ==
