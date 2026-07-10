@@ -613,14 +613,14 @@ bool GuiUtility::warnOnInvalidSyncFolder(const QString &dirPath, const std::map<
     return true;
 }
 
-bool GuiUtility::validateLocalFolderForNewSync(const QString &dirPath, QWidget *parent) {
+bool GuiUtility::validateLocalFolderForNewSync(const QString &dirPath, QWidget *const parent) {
     bool valid = false;
     if (const auto exitCode = GuiRequests::isPathValidForNewSync(dirPath, SyncConfiguration::Advanced, valid);
         exitCode != ExitCode::Ok) {
         qCWarning(lcGuiUtility) << "Error in GuiRequests::isPathValidForNewSync";
         CustomMessageBox msgBox(QMessageBox::Warning, QCoreApplication::translate("utility", "Failed to validate local folder"),
                                 QMessageBox::Ok, parent);
-        msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(parent));
+        (void) msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(parent));
         return false;
     }
 
@@ -632,7 +632,7 @@ bool GuiUtility::validateLocalFolderForNewSync(const QString &dirPath, QWidget *
                                             "Folder <b>%1</b> cannot be selected as sync folder. Please, select another folder.")
                         .arg(selectedFolderName),
                 QMessageBox::Ok, parent);
-        msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(parent));
+        (void) msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(parent));
         return false;
     }
 
