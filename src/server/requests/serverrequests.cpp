@@ -1199,8 +1199,8 @@ ExitInfo ServerRequests::isSyncFolderAllowedByRules(const SyncPath &path, bool &
     }
 
     if (rules.empty()) {
-        // Technically we only allowed a DIR that is whitelisted but it's assume that if something was wrong with the rule file
-        // we don't just rejet any DIR
+        // Technically we only allow a directory that is whitelisted, but it's assumed that if something is wrong with the rules file
+        // we don't just reject every directory
         LOG_DEBUG(Log::instance()->getLogger(), "isSyncFolderAllowedByRules: no rules found, allowing path");
         return ExitCode::Ok;
     }
