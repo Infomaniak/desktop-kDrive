@@ -482,6 +482,10 @@ public enum KDriveLocalizable {
   public static let errorListFilesToVerifyHeader = KDriveLocalizable.tr("Localizable", "errorListFilesToVerifyHeader", fallback: "Files to verify")
   /// loco:6a1e7c960b63328e7a01f812
   public static let errorListSystemHeader = KDriveLocalizable.tr("Localizable", "errorListSystemHeader", fallback: "System and permissions")
+  /// loco:6a460c4f5fd1e1a4fb0a8302
+  public static func errorOpeningLocalURL(_ p1: Any) -> String {
+    return KDriveLocalizable.tr("Localizable", "errorOpeningLocalURL", String(describing: p1), fallback: "Failed to open URL %@")
+  }
   /// loco:6995dff99537658db20fabb3
   public static let errorPageTitle = KDriveLocalizable.tr("Localizable", "errorPageTitle", fallback: "Errors to fix")
   /// loco:6a2fb7df4af9c895d0043b52

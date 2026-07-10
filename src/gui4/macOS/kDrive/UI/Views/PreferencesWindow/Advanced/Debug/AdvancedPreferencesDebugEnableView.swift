@@ -24,6 +24,7 @@ import SwiftUI
 
 struct AdvancedPreferencesDebugEnableView: View {
     @State private var enableDebugLogs = false
+    @State private var isShowingOpenURLError = false
 
     let repository: PreferencesRepository
 
@@ -46,15 +47,26 @@ struct AdvancedPreferencesDebugEnableView: View {
         .onChange(of: enableDebugLogs) { newValue in
             updateRepositoryValue(\.$enableDebugLogs, \.shouldUseLog, newValue: newValue, repository: repository)
         }
+        .alert(KDriveLocalizable.unexpectedErrorTeachingTipTitle, isPresented: $isShowingOpenURLError) {} message: {
+            Text(KDriveLocalizable.errorOpeningLocalURL(generateDebugFolderURL()))
+        }
+    }
+
+    private func generateDebugFolderURL() -> URL {
+        return FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(
+            "Library/Logs/kDrive",
+            isDirectory: true
+        )
     }
 
     private func openDebugFolder() {
-        @InjectService var nodeURLGenerator: NodeURLGenerator
-        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(
-            "/kdrive-logdir",
-            isDirectory: true
-        )
-        NSWorkspace.shared.open(directory)
+        let debugURL = generateDebugFolderURL()
+        guard FileManager.default.fileExists(atPath: debugURL.path) else {
+            isShowingOpenURLError = true
+            return
+        }
+
+        NSWorkspace.shared.open(debugURL)
     }
 }
 
