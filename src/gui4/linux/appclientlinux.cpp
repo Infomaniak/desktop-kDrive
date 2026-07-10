@@ -146,20 +146,17 @@ void AppClientLinux::setupTranslations() {
     // client_en as a base so every id always resolves (keys not yet translated degrade to English),
     // then overlay the system locale on top. Qt queries translators last-installed-first, so the
     // locale wins where it has a translation and falls back to the English base otherwise.
-    if (auto *const base = new QTranslator(this);
-        base->load(QStringLiteral("client_en"), QStringLiteral(":/i18n"))) {
-        static_cast<void>(QCoreApplication::installTranslator(base));
+    if (_baseTranslator.load(QStringLiteral("client_en"), QStringLiteral(":/i18n"))) {
+        (void) installTranslator(&_baseTranslator);
     } else {
         qCWarning(lcAppClientLinux) << "base English translation catalog missing; UI may show source ids";
     }
 
-    const QLocale locale = QLocale::system();
-    auto *const localized = new QTranslator(this);
-    if (localized->load(locale, QStringLiteral("client"), QStringLiteral("_"), QStringLiteral(":/i18n"))) {
-        static_cast<void>(QCoreApplication::installTranslator(localized));
+    if (const QLocale locale = QLocale::system();
+        _localizedTranslator.load(locale, QStringLiteral("client"), QStringLiteral("_"), QStringLiteral(":/i18n"))) {
+        (void) installTranslator(&_localizedTranslator);
         qCInfo(lcAppClientLinux) << "translations loaded for locale" << locale.name();
     } else {
-        delete localized;
         qCInfo(lcAppClientLinux) << "no catalog for locale" << locale.name() << "- using English base";
     }
 }
