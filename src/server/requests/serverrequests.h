@@ -172,7 +172,6 @@ struct SYNCENGINE_EXPORT ServerRequests {
 
     private:
         friend class TestServerRequests;
-        static ExitCode processRequestTokenFinished(const Login &login, UserInfo &userInfo, bool &userCreated);
         static ExitCode processRequestTokenFinished(const Login &login, User &user, bool &userCreated);
         static QString canonicalPath(const QString &path);
         static ExitCode checkPathValidityRecursive(const QString &path, QString &error);
