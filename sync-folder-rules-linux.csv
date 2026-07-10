@@ -1,9 +1,12 @@
 Path,Type
-$HOME, WhiteListSubFolder
-$HOME/.cache, BlackList
-$HOME/.local/share/Trash, BlackList
-$HOME/.gvfs, BlackList
-/dev, BlackList
-/proc, BlackList
-/sys, BlackList
-/run, BlackList
+$HOME,WhiteListSubFolder
+$HOME/.cache,BlackList
+$HOME/.local/share/Trash,BlackList
+$HOME/.local/share/gvfs-metadata,BlackList
+$HOME/.gvfs,BlackList
+$HOME/.thumbnails,BlackList
+$HOME/.dbus,BlackList
+$HOME/.dropbox,BlackList
+/media,WhiteListSubFolder
+/run/media,WhiteListSubFolder
+/mnt,WhiteListSubFolder
