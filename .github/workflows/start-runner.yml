@@ -1,0 +1,110 @@
+name: Spin up Windows CI runners
+
+on:
+  workflow_dispatch:
+    inputs:
+      count:
+        description: "Number of instances to start"
+        required: true
+        default: "1"
+      labels:
+        description: "Comma-separated runner labels/tags"
+        required: true
+        default: "self-hosted,windows,vs2026,ci,build,test"
+      flavor:
+        description: "Infomaniak flavor"
+        required: false
+        default: "a12-ram24-disk80-perf1"
+      keep_hours:
+        description: "Auto-teardown after N hours (0 = never, handled by a separate workflow)"
+        required: false
+        default: "6"
+
+  #schedule:
+    # Every weekday at 06:00 UTC — adjust to your needs
+   # - cron: "0 6 * * 1-5"
+
+env:
+  OS_CLOUD: infomaniak
+  IMAGE_NAME: "windows kDrive build runner"
+  NETWORK_NAME: "ext-net1"          # adjust to your project's network
+  REPO: ${{ github.repository }}
+
+jobs:
+  start-instances:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (for user-data template)
+        uses: actions/checkout@v4
+
+      - name: Install OpenStack CLI
+        run: pip install python-openstackclient --quiet
+
+      - name: Write clouds.yaml
+        run: |
+          mkdir -p ~/.config/openstack
+          cat > ~/.config/openstack/clouds.yaml <<EOF
+          clouds:
+            infomaniak:
+              auth:
+                auth_url: ${{ secrets.PUBLIC_CLOUD_OS_AUTH_URL }}
+                username: ${{ secrets.PUBLIC_CLOUD_OS_USERNAME }}
+                password: ${{ secrets.PUBLIC_CLOUD_OS_PASSWORD }}
+                project_id: ${{ secrets.PUBLIC_CLOUD_OS_PROJECT_ID }}
+                user_domain_name: ${{ secrets.PUBLIC_CLOUD_OS_USER_DOMAIN_NAME }}
+              region_name: ${{ secrets.PUBLIC_CLOUD_OS_REGION_NAME }}
+              interface: public
+              identity_api_version: 3
+          EOF
+
+      - name: Mint GitHub runner registration token
+        id: reg
+        run: |
+          TOKEN=$(gh api -X POST "/repos/${REPO}/actions/runners/registration-token" --jq .token)
+          echo "::add-mask::$TOKEN"
+          echo "token=$TOKEN" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ secrets.RUNNER_ADMIN_PAT }}   # PAT (or GH App token) with admin:org / repo runner scope
+
+      - name: Determine run parameters
+        id: params
+        run: |
+          COUNT="${{ github.event.inputs.count || '1' }}"
+          LABELS="${{ github.event.inputs.labels || 'self-hosted' }}"
+          FLAVOR="${{ github.event.inputs.flavor || 'a12-ram24-disk80-perf1' }}"
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          echo "labels=$LABELS" >> "$GITHUB_OUTPUT"
+          echo "flavor=$FLAVOR" >> "$GITHUB_OUTPUT"
+
+      - name: Render user-data template
+        run: |
+          sed \
+            -e "s|__REPO_URL__|https://github.com/${REPO}|" \
+            -e "s|__REG_TOKEN__|${{ steps.reg.outputs.token }}|" \
+            -e "s|__TAGS__|${{ steps.params.outputs.labels }}|" \
+            .github/workflows/templates/userdata-template.ps1 > userdata-final.ps1
+
+      - name: Launch instances
+        run: |
+          RUN_ID="${{ github.run_id }}"
+          COUNT="${{ steps.params.outputs.count }}"
+          FLAVOR="${{ steps.params.outputs.flavor }}"
+
+          for i in $(seq 1 "$COUNT"); do
+            NAME="ci-runner-${RUN_ID}-${i}"
+            echo "Launching $NAME ..."
+            openstack server create \
+              --os-cloud "$OS_CLOUD" \
+              --image "$IMAGE_NAME" \
+              --flavor "$FLAVOR" \
+              --network "$NETWORK_NAME" \
+              --user-data userdata-final.ps1 \
+              --property "purpose=ci-runner" \
+              --property "expires_hours=${{ github.event.inputs.keep_hours || '6' }}" \
+              --wait \
+              "$NAME"
+          done
+
+      - name: Clean up rendered user-data
+        if: always()
+        run: rm -f userdata-final.ps1
