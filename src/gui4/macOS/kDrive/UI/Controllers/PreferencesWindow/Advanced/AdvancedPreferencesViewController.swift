@@ -17,11 +17,17 @@
  */
 
 import Cocoa
+import InfomaniakDI
 import kDriveCoreUI
 import SwiftUI
 
 final class AdvancedPreferencesViewController: TitledViewController<AdvancedPreferencesView> {
     convenience init() {
-        self.init(toolbarTitle: SidebarItem.advanced.title, contentView: AdvancedPreferencesView())
+        @InjectService var router: PreferencesViewRouter
+        self.init(
+            toolbarTitle: SidebarItem.advanced.title,
+            navigableRouter: router,
+            contentView: AdvancedPreferencesView()
+        )
     }
 }
