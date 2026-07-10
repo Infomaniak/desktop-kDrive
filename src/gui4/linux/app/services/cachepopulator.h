@@ -19,6 +19,7 @@
 #pragma once
 
 #include "app/cache/appcache.h"
+#include "app/cache/parametersstore.h"
 #include "app/services/commservice.h"
 
 #include <QObject>
@@ -30,17 +31,19 @@ namespace KDC {
 /**
  * Sequential parent-first snapshot loader for Linux v4 cache population and explicit reconciliation.
  *
- * Loads users, then accounts, then drives, then syncs, then errors so the graph-backed AppCache is populated in
- * parent-first order. Initial bootstrap remains fatal on failure because the app has no coherent cache to run from.
- * Reconciliation reuses the same sequence after recoverable mutations and reports failures to the caller without
- * emitting the bootstrap signal. Once a snapshot is complete, asks the server to refresh live user/account/drive metadata
- * so quota-only drive updates are pushed through CachePipeline.
+ * Loads parameters first, then users, accounts, drives, syncs, and errors so GUI state is populated in parent-first
+ * order. Product entities go to AppCache; application parameters go to ParametersStore. Initial bootstrap remains fatal
+ * on failure because the app has no coherent cache to run from. Reconciliation reuses the same sequence after
+ * recoverable mutations and reports failures to the caller without emitting the bootstrap signal. Once a snapshot is
+ * complete, asks the server to refresh live user/account/drive metadata so quota-only drive updates are pushed through
+ * CachePipeline.
  */
 class CachePopulator : public QObject {
         Q_OBJECT
 
     public:
-        explicit CachePopulator(CommService &commService, AppCache &appCache, QObject *parent = nullptr);
+        explicit CachePopulator(CommService &commService, AppCache &appCache, ParametersStore &parametersStore,
+                                QObject *parent = nullptr);
         /**
          * Populates the initial cache snapshot.
          *
@@ -69,6 +72,7 @@ class CachePopulator : public QObject {
             Reconciliation,
         };
 
+        void loadParameters(PopulationMode mode);
         void loadUsers(PopulationMode mode);
         void loadAccounts(PopulationMode mode);
         void loadDrives(PopulationMode mode);
@@ -79,6 +83,7 @@ class CachePopulator : public QObject {
 
         CommService &_commService;
         AppCache &_appCache;
+        ParametersStore &_parametersStore;
 };
 
 } // namespace KDC
