@@ -320,10 +320,11 @@ static void insertRule(const SyncPath &path, SyncFolderRuleType type) {
 
 static void clearRules() {
     std::vector<SyncFolderRule> rules;
-    (void) ParmsDb::instance()->selectAllSyncFolderRules(rules);
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectAllSyncFolderRules(rules));
     for (const auto &rule: rules) {
         bool found = false;
-        (void) ParmsDb::instance()->deleteSyncFolderRule(rule.syncPath(), found);
+        CPPUNIT_ASSERT(ParmsDb::instance()->deleteSyncFolderRule(rule.syncPath(), found));
+        CPPUNIT_ASSERT(found);
     }
 }
 
