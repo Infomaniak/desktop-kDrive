@@ -169,6 +169,9 @@ bool CommonUtility::fileSystemInfo(const SyncPath &targetPath, std::string &fsTy
         case 0x6969u: // NFS_SUPER_MAGIC
             fsType = "NFS";
             break;
+        case 0x794c7630u: // OVERLAYFS_SUPER_MAGIC
+            fsType = "OVERLAYFS";
+            break;
         default:
             // See corresponding entry at https://man7.org/linux/man-pages/man2/statfs.2.html
             fsType = std::to_string(stat.f_type);
