@@ -33,6 +33,12 @@
   simple.
 - Keep simple onboarding external-link actions in `OnboardingFlowController` when they do not mutate app/backend state;
   put multi-service onboarding backend effects in a dedicated onboarding coordinator.
+- Keep only `OnboardingSessionManager` process-long. Onboarding state, flow, coordinators, and view models belong to an
+  ephemeral `OnboardingSession` and must not be exposed as root QML context properties.
+- Route tray and server main-window activation requests through `OnboardingSessionManager` while onboarding is the only
+  displayable Linux v4 content. If onboarding is not required, keep the window hidden and log why no route can be shown.
+- When ending an onboarding session, unpublish it so QML unloads the onboarding `Loader`, then destroy it with
+  `deleteLater()`. Invalidate session-scoped asynchronous results before allowing a new session to consume them.
 - Keep `AppClientLinux` as an application composition root. Move multi-step feature workflows such as onboarding login into
   dedicated coordinators instead of accumulating workflow lambdas in `AppClientLinux`.
 - `Qt.labs.lottieqt` renders Lottie JSON assets, not `.lottie` zip containers.
@@ -78,11 +84,26 @@
 - `app/cache/mainselectionstore.*`: sync-first main-shell selection owner (`currentSyncDbId`) and selection healing.
     - Emits `currentSyncContextChanged()` as a coarse invalidation signal when the current sync context stays selected
       but the underlying cache graph changes.
-- `app/cache/onboardingstate.*`: onboarding-only selected user, selected available-drive keys, and pending sync configs.
+- `app/cache/onboardingstate.*`: session-owned onboarding selected user, selected available-drive keys, and pending sync
+  configs.
+- `app/onboarding/availabledrivesmodel.*`: QML adapter for onboarding drive selection. It derives rows from
+  `AppCache::availableDriveContexts(selectedUserDbId)` and stores row selection through `OnboardingState`. It must not own
+  screen-level loading, user, or navigation state.
+- `app/onboarding/driveselectioncontroller.*`: QML-facing screen controller for user presentation, loading/error state,
+  counts, retry, and navigation actions. It owns the session's `AvailableDrivesModel`.
+- `app/onboarding/onboardingentrydecision.*`: pure post-bootstrap decision from `AppCache` to Inactive, Login, or
+  DriveSelection. If several users are connected and no drive is configured, it selects the connected user with the
+  lowest database id, preserving the stable ordering returned by `AppCache::users()`.
+- `app/onboarding/onboardingsession.*`: ephemeral owner of onboarding state, flow, login workflow, and drive-selection
+  controller/model.
+- `app/onboarding/onboardingsessionmanager.*`: process-long nullable-session owner and the only onboarding object exposed
+  at the root QML boundary. It creates a session after cache bootstrap and unpublishes it before deferred destruction. It
+  accepts activation requests while onboarding is the only available route and rejects them with an explanatory log when
+  no displayable session exists.
 - `app/onboarding/onboardingflowcontroller.*`: QML-facing onboarding flow controller aligned with the macOS flow
   (`login -> drive selection -> synchronization -> ready`, with macOS permission steps omitted on Linux). It owns simple
-  onboarding UI actions such as opening the account signup URL; OAuth launch, `LOGIN_REQUESTTOKEN`, available-drive
-  loading, and sync creation stay outside QML-facing flow state.
+  onboarding UI actions such as opening account signup and drive-offer URLs; OAuth launch, `LOGIN_REQUESTTOKEN`,
+  available-drive loading, and sync creation stay outside QML-facing flow state.
 - `app/onboarding/onboardinglogincoordinator.*`: login workflow coordinator for onboarding. It wires the flow controller,
   OAuth service, comm service, user service, app cache, and onboarding state so `AppClientLinux` does not accumulate
   login-specific workflow logic.
@@ -197,7 +218,9 @@ cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive
 - Onboarding navigation belongs in `OnboardingFlowController`; keep long-running backend work in service facades and
   durable selections in `OnboardingState`. The login screen must not advance optimistically: it advances only after the
   server login-token request succeeds, the logged-in user appears in `AppCache`, and available-drive loading has been
-  requested.
+  requested. The drive-selection screen then owns the loading/empty/loaded presentation while the request completes.
+- Pass the stable `OnboardingSessionManager` to `Main.qml` as an initial property. Pass session-owned controllers/models
+  through explicit required QML properties; do not add dynamic onboarding context properties.
 
 ## IPC And Error Handling
 

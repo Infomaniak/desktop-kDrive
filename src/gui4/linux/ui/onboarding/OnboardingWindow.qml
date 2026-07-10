@@ -16,13 +16,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import kDrive.UI
 
 Item {
     id: root
 
-    required property var onboardingFlowController
+    required property var session
+    readonly property var onboardingFlowController: session.flowController
+    readonly property var driveSelectionController: session.driveSelectionController
+    readonly property var drivesModel: session.availableDrivesModel
 
     Rectangle {
         anchors.fill: parent
@@ -36,12 +41,12 @@ Item {
         anchors.bottom: parent.bottom
         spacing: 0
 
-        LoginView {
+        Loader {
             id: contentPanel
 
             width: parent.width * IKOnboarding.contentPanelWidthRatio
             height: parent.height
-            onboardingFlowController: root.onboardingFlowController
+            sourceComponent: root.onboardingFlowController.driveSelectionActive ? driveSelectionComponent : loginComponent
         }
 
         Rectangle {
@@ -56,10 +61,26 @@ Item {
 
             OnboardingAnimationsView {
                 anchors.centerIn: parent
-                width: Math.min(IKOnboarding.illustrationAnimationMaxSize,
-                                parent.width * IKOnboarding.illustrationAnimationFillRatio)
+                width: Math.min(IKOnboarding.illustrationAnimationMaxSize, parent.width * IKOnboarding.illustrationAnimationFillRatio)
                 height: width * IKOnboarding.loaderStrokeAnimationHeightRatio
             }
+        }
+    }
+
+    Component {
+        id: loginComponent
+
+        LoginView {
+            onboardingFlowController: root.onboardingFlowController
+        }
+    }
+
+    Component {
+        id: driveSelectionComponent
+
+        DriveSelectionView {
+            selectionController: root.driveSelectionController
+            drivesModel: root.drivesModel
         }
     }
 }
