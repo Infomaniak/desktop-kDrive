@@ -80,10 +80,11 @@ class ParametersInfo {
                    (lhs.autoStart() == rhs.autoStart()) && (lhs.moveToTrash() == rhs.moveToTrash()) &&
                    (lhs.notificationsDisabled() == rhs.notificationsDisabled()) && (lhs.useLog() == rhs.useLog()) &&
                    (lhs.logLevel() == rhs.logLevel()) && (lhs.extendedLog() == rhs.extendedLog()) &&
-                   (lhs.purgeOldLogs() == rhs.purgeOldLogs()) && (lhs.darkTheme() == rhs.darkTheme()) &&
-                   (lhs.dialogGeometry() == rhs.dialogGeometry()) && (lhs.maxAllowedCpu() == rhs.maxAllowedCpu()) &&
-                   (lhs.distributionChannel() == rhs.distributionChannel()) && (lhs.sentryEnabled() == rhs.sentryEnabled()) &&
-                   (lhs.matomoEnabled() == rhs.matomoEnabled()) && (lhs.notifyBeforeDelete() == rhs.notifyBeforeDelete());
+                   (lhs.purgeOldLogs() == rhs.purgeOldLogs()) && lhs.proxyConfigInfo() == rhs.proxyConfigInfo() &&
+                   (lhs.darkTheme() == rhs.darkTheme()) && (lhs.dialogGeometry() == rhs.dialogGeometry()) &&
+                   (lhs.maxAllowedCpu() == rhs.maxAllowedCpu()) && (lhs.distributionChannel() == rhs.distributionChannel()) &&
+                   (lhs.sentryEnabled() == rhs.sentryEnabled()) && (lhs.matomoEnabled() == rhs.matomoEnabled()) &&
+                   (lhs.notifyBeforeDelete() == rhs.notifyBeforeDelete());
         }
 
         void toDynamicStruct(Poco::DynamicStruct &) const;
