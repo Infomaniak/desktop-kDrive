@@ -314,7 +314,8 @@ void TestServerRequests::testFolderContainsNonExcludedItemMixed() {
 }
 static void insertRule(const SyncPath &path, SyncFolderRuleType type) {
     bool constraintError = false;
-    (void) ParmsDb::instance()->insertSyncFolderRule(SyncFolderRule(path, type), constraintError);
+    const bool ok = ParmsDb::instance()->insertSyncFolderRule(SyncFolderRule(path, type), constraintError);
+    CPPUNIT_ASSERT_MESSAGE("insertSyncFolderRule failed", ok && !constraintError);
 }
 
 static void clearRules() {
