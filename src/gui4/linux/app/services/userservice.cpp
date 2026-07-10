@@ -46,6 +46,13 @@ UserService::UserService(CommService &commService, AppCache &appCache, ServiceAc
                            setLoading(pending);
                        }
                    });
+    (void) connect(&_serviceActionTracker, &ServiceActionTracker::actionPendingChanged, this,
+                   [this](const ServiceActionTracker::ServiceKey &serviceKey, const ServiceActionTracker::ActionKey &actionKey,
+                          const ServiceActionTracker::ScopeId scopeId, const bool) {
+                       if (serviceKey == serviceKeyUser && actionKey == actionLoadAvailableDrives) {
+                           emit availableDrivesLoadingChanged(static_cast<UserDbId>(scopeId));
+                       }
+                   });
     (void) connect(&_appCache, &AppCache::usersChanged, this, [this] { pruneStaleAvailableDriveGenerations(); });
     setLoading(_serviceActionTracker.isServicePending(serviceKeyUser));
 }
@@ -53,7 +60,12 @@ UserService::UserService(CommService &commService, AppCache &appCache, ServiceAc
 void UserService::loadAvailableDrives(const qint64 userDbId) {
     const auto scopedUserDbId = static_cast<UserDbId>(userDbId);
     beginAction(actionLoadAvailableDrives, scopedUserDbId);
-    const auto generation = ++_availableDriveLoadGenerations[scopedUserDbId];
+
+    // This IPC request cannot be cancelled once sent. Keep a token for the latest valid response, so older callbacks can
+    // return without updating the cache. Track pending tokens separately to close the loading state exactly once.
+    const uint64_t generation = _nextAvailableDriveLoadGeneration++;
+    _availableDriveLoadGenerations[scopedUserDbId] = generation;
+    (void) _pendingAvailableDriveLoadGenerations[scopedUserDbId].insert(generation);
 
     _commService.requestUserAvailableDrives(
             scopedUserDbId,
@@ -62,9 +74,23 @@ void UserService::loadAvailableDrives(const qint64 userDbId) {
             });
 }
 
+void UserService::invalidateAvailableDrivesRequest(const UserDbId userDbId) {
+    _availableDriveLoadGenerations[userDbId] = _nextAvailableDriveLoadGeneration++;
+    const auto pendingIt = _pendingAvailableDriveLoadGenerations.find(userDbId);
+    if (pendingIt == _pendingAvailableDriveLoadGenerations.end()) {
+        return;
+    }
+
+    for (const auto generation: pendingIt->second) {
+        static_cast<void>(generation);
+        endAction(actionLoadAvailableDrives, userDbId);
+    }
+    (void) _pendingAvailableDriveLoadGenerations.erase(pendingIt);
+}
+
 void UserService::deleteUser(const qint64 userDbId) {
     beginAction(actionDeleteUser, userDbId);
-    ++_availableDriveLoadGenerations[static_cast<UserDbId>(userDbId)];
+    invalidateAvailableDrivesRequest(static_cast<UserDbId>(userDbId));
 
     // Cache consistency is signal-driven: we wait for userRemoved/userUpdated pushes.
     _commService.requestDeleteUser(userDbId, [this, userDbId](const ExitInfo &exitInfo) {
@@ -78,25 +104,50 @@ void UserService::deleteUser(const qint64 userDbId) {
 void UserService::requestLoginToken(const QString &code, const QString &codeVerifier) {
     beginAction(actionRequestLoginToken);
 
-    _commService.requestLoginToken(code, codeVerifier, [this](const ExitInfo &exitInfo, const LoginTokenResult &result) {
+    // This IPC request cannot be cancelled once sent. Only the latest token response may continue the login flow. Pending
+    // tokens are tracked separately so invalidated requests still close their loading state exactly once.
+    const uint64_t generation = ++_loginTokenGeneration;
+    (void) _pendingLoginTokenGenerations.insert(generation);
+
+    _commService.requestLoginToken(
+            code, codeVerifier, [this, generation](const ExitInfo &exitInfo, const LoginTokenResult &result) {
+                if (_pendingLoginTokenGenerations.erase(generation) == 0) {
+                    return;
+                }
+                endAction(actionRequestLoginToken);
+                if (generation != _loginTokenGeneration) {
+                    qCInfo(lcUserService) << "Stale login token response ignored | generation:" << generation
+                                          << "/ activeGeneration:" << _loginTokenGeneration;
+                    return;
+                }
+
+                if (!result.error.isEmpty() || !result.errorDescription.isEmpty()) {
+                    _serviceEventBus.notifyGenericError(exitInfo, RequestNum::LOGIN_REQUESTTOKEN);
+                    SentryService::reportError(
+                            QStringLiteral("Login failed"),
+                            QStringLiteral("error: %1 | description: %2").arg(result.error, result.errorDescription));
+                    emit loginTokenFailed(result.error, result.errorDescription);
+                    return;
+                }
+
+                if (!exitInfo) {
+                    notifyRequestFailure(exitInfo, RequestNum::LOGIN_REQUESTTOKEN);
+                    SentryService::reportError("Login failed", toString(exitInfo));
+                    emit loginTokenFailed(QString(), QString());
+                    return;
+                }
+
+                emit loginTokenSucceeded(result.userDbId);
+            });
+}
+
+void UserService::invalidateLoginTokenRequest() {
+    ++_loginTokenGeneration;
+    for (const auto generation: _pendingLoginTokenGenerations) {
+        static_cast<void>(generation);
         endAction(actionRequestLoginToken);
-        if (!result.error.isEmpty() || !result.errorDescription.isEmpty()) {
-            _serviceEventBus.notifyGenericError(exitInfo, RequestNum::LOGIN_REQUESTTOKEN);
-            SentryService::reportError(QStringLiteral("Login failed"),
-                                       QStringLiteral("error: %1 | description: %2").arg(result.error, result.errorDescription));
-            emit loginTokenFailed(result.error, result.errorDescription);
-            return;
-        }
-
-        if (!exitInfo) {
-            notifyRequestFailure(exitInfo, RequestNum::LOGIN_REQUESTTOKEN);
-            SentryService::reportError("Login failed", toString(exitInfo));
-            emit loginTokenFailed(QString(), QString());
-            return;
-        }
-
-        emit loginTokenSucceeded(result.userDbId);
-    });
+    }
+    _pendingLoginTokenGenerations.clear();
 }
 
 bool UserService::isLoadAvailableDrivesPending(const qint64 userDbId) const {
@@ -118,12 +169,27 @@ void UserService::pruneStaleAvailableDriveGenerations() {
             continue;
         }
 
+        if (const auto pendingIt = _pendingAvailableDriveLoadGenerations.find(it->first);
+            pendingIt != _pendingAvailableDriveLoadGenerations.end()) {
+            for (const auto generation: pendingIt->second) {
+                static_cast<void>(generation);
+                endAction(actionLoadAvailableDrives, it->first);
+            }
+            (void) _pendingAvailableDriveLoadGenerations.erase(pendingIt);
+        }
         it = _availableDriveLoadGenerations.erase(it);
     }
 }
 
 void UserService::handleAvailableDrivesLoaded(const UserDbId userDbId, const uint64_t generation, const ExitInfo &exitInfo,
                                               const std::vector<DriveAvailable> &list) {
+    const auto pendingIt = _pendingAvailableDriveLoadGenerations.find(userDbId);
+    if (pendingIt == _pendingAvailableDriveLoadGenerations.end() || pendingIt->second.erase(generation) == 0) {
+        return;
+    }
+    if (pendingIt->second.empty()) {
+        (void) _pendingAvailableDriveLoadGenerations.erase(pendingIt);
+    }
     endAction(actionLoadAvailableDrives, userDbId);
     if (const auto generationIt = _availableDriveLoadGenerations.find(userDbId);
         generationIt == _availableDriveLoadGenerations.end() || generationIt->second != generation) {
@@ -139,13 +205,11 @@ void UserService::handleAvailableDrivesLoaded(const UserDbId userDbId, const uin
 
     if (!exitInfo) {
         notifyRequestFailure(exitInfo, RequestNum::USER_AVAILABLEDRIVES);
-        (void) _availableDriveLoadGenerations.erase(userDbId);
         emit availableDrivesLoadFailed(userDbId);
         return;
     }
 
     _appCache.replaceAvailableDrivesForUser(userDbId, list);
-    (void) _availableDriveLoadGenerations.erase(userDbId);
     emit availableDrivesLoaded(userDbId);
 }
 
