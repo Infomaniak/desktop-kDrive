@@ -79,6 +79,16 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
                    &SystemTrayController::hideMainWindow);
     (void) connect(&_systemTrayController, &SystemTrayController::openMainWindowRequested, this, &AppClientLinux::openMainWindow);
     (void) connect(&_appCache, &AppCache::usersChanged, &_sentryService, &SentryService::updateAuthenticatedUser);
+    (void) connect(&_parametersStore, &ParametersStore::parametersInfoChanged, this, [this] {
+        const auto parametersInfo = _parametersStore.parametersInfo();
+        if (!parametersInfo.has_value()) {
+            return;
+        }
+
+        Logger::instance()->setMinLogLevel(toInt(parametersInfo->logLevel()));
+        qCInfo(lcAppClientLinux) << "Logger minimum level updated from parameters | level:"
+                                 << QString::fromStdString(toString(parametersInfo->logLevel()));
+    });
     (void) connect(&_systemTrayController, &SystemTrayController::quitRequested, this, [this] {
         qCInfo(lcAppClientLinux) << "Quit requested from system tray";
         if (!_ipcClient.isConnected()) {
@@ -179,7 +189,6 @@ void AppClientLinux::setupLogging() {
     logger->setupLogDir();
     logger->setLogExpire(std::chrono::days(CommonUtility::logsPurgeRate));
     logger->enterNextLogFile();
-    // TODO: Set the minimum log level from parameters once the parameters cache is available (Logger::minLogLevel)
 
     qCInfo(lcAppClientLinux) << "***** Application & System Informations *****";
     qCInfo(lcAppClientLinux) << "app version:" << CommonUtility::currentVersion();
