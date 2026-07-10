@@ -22,6 +22,7 @@
 #include "config.h"
 #include "version.h"
 
+#include <QBuffer>
 #include <system_error>
 #include <sys/types.h>
 
@@ -1438,6 +1439,29 @@ ReplicaSide CommonUtility::syncNodeTypeSide(SyncNodeType type) {
         default:
             return ReplicaSide::Unknown;
     }
+}
+
+std::shared_ptr<CommBLOB> CommonUtility::toCommBlob(const QImage &image) {
+    std::shared_ptr<CommBLOB> blob;
+    if (!image.isNull()) {
+        QByteArray avatarQBA;
+        QBuffer buffer(&avatarQBA);
+        if (buffer.open(QIODevice::WriteOnly) && image.save(&buffer, "PNG")) {
+            buffer.close();
+            blob = std::make_shared<CommBLOB>(avatarQBA.begin(), avatarQBA.end());
+        }
+    }
+    return blob;
+}
+
+QImage CommonUtility::toQImage(const std::shared_ptr<CommBLOB> blob) {
+    QImage image;
+    if (blob) {
+        QByteArray avatarQBA;
+        (void) std::copy(blob->begin(), blob->end(), std::back_inserter(avatarQBA));
+        (void) image.loadFromData(avatarQBA);
+    }
+    return image;
 }
 
 bool CommonUtility::modificationTimesAreEqual(const SyncPath &path, SyncTime time1, SyncTime time2) {

@@ -22,7 +22,7 @@
 #include "signaluseraddedjob.h"
 #include "signaluserupdatedjob.h"
 #include "server/comm/guijobmanager.h"
-#include "libcommon/info/userinfo.h"
+#include "libcommon/data/user.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
@@ -68,23 +68,23 @@ ExitInfo LoginRequestTokenJob::serializeOutputParms() {
 }
 
 ExitInfo LoginRequestTokenJob::process() {
-    UserInfo userInfo;
+    User user;
     bool userCreated = false;
     ExitCode exitCode =
-            ServerRequests::requestToken(CommonUtility::commString2Str(_code), CommonUtility::commString2Str(_codeVerifier),
-                                         userInfo, userCreated, _error, _errorDescr);
+            ServerRequests::requestToken(CommonUtility::commString2Str(_code), CommonUtility::commString2Str(_codeVerifier), user,
+                                         userCreated, _error, _errorDescr);
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in ServerRequests::requestToken: code=" << exitCode);
         return exitCode;
     }
 
-    _userDbId = userInfo.dbId();
+    _userDbId = user.dbId();
     _commManager->appServer().updateSentryUser();
     if (userCreated) {
-        auto signalUserAddedJob = std::make_shared<SignalUserAddedJob>(userInfo);
+        auto signalUserAddedJob = std::make_shared<SignalUserAddedJob>(user);
         _commManager->sendGuiSignal(signalUserAddedJob);
     } else {
-        auto signalUserUpdatedJob = std::make_shared<SignalUserUpdatedJob>(userInfo);
+        auto signalUserUpdatedJob = std::make_shared<SignalUserUpdatedJob>(user);
         _commManager->sendGuiSignal(signalUserUpdatedJob);
     }
 

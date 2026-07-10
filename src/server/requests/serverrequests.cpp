@@ -41,7 +41,7 @@
 #include "jobs/network/kDrive_API/getsizejob.h"
 #include "libcommonserver/utility/jsonparserutility.h"
 #include "libparms/db/parmsdb.h"
-#include "libparms/db/user.h"
+#include "libcommon/data/user.h"
 #include "libcommon/utility/utility.h" // fileSystemName(const QString&)
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
@@ -83,29 +83,22 @@ ExitCode ServerRequests::getUserDbIdList(std::vector<UserDbId> &list) {
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getUserInfoList(QList<UserInfo> &list) {
-    std::vector<UserInfo> userInfoList;
-    if (const auto exitCode = getUserInfoList(userInfoList); exitCode != ExitCode::Ok) {
+ExitCode ServerRequests::getUserList(QList<User> &list) {
+    std::vector<User> userList;
+    if (const auto exitCode = getUserList(userList); exitCode != ExitCode::Ok) {
         return exitCode;
     }
 
-    (void) std::copy(userInfoList.begin(), userInfoList.end(), std::back_inserter(list));
+    (void) std::copy(userList.begin(), userList.end(), std::back_inserter(list));
 
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getUserInfoList(std::vector<UserInfo> &list) {
+ExitCode ServerRequests::getUserList(std::vector<User> &list) {
     list.clear();
-    std::vector<User> userList;
-    if (!ParmsDb::instance()->selectAllUsers(userList)) {
+    if (!ParmsDb::instance()->selectAllUsers(list)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllUsers");
         return ExitCode::DbError;
-    }
-
-    for (const User &user: userList) {
-        UserInfo userInfo;
-        userToUserInfo(user, userInfo);
-        list.push_back(userInfo);
     }
 
     return ExitCode::Ok;
@@ -196,29 +189,21 @@ ExitCode ServerRequests::deleteSync(const SyncDbId syncDbId) {
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getAccountInfoList(QList<AccountInfo> &list) {
-    std::vector<AccountInfo> accountInfoList;
-    if (const auto exitCode = getAccountInfoList(accountInfoList); exitCode != ExitCode::Ok) {
+ExitCode ServerRequests::getAccountList(QList<Account> &list) {
+    std::vector<Account> accountList;
+    if (const auto exitCode = getAccountList(accountList); exitCode != ExitCode::Ok) {
         return exitCode;
     }
 
-    (void) std::copy(accountInfoList.begin(), accountInfoList.end(), std::back_inserter(list));
+    (void) std::copy(accountList.begin(), accountList.end(), std::back_inserter(list));
 
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getAccountInfoList(std::vector<AccountInfo> &list) {
-    std::vector<Account> accountList;
-    if (!ParmsDb::instance()->selectAllAccounts(accountList)) {
+ExitCode ServerRequests::getAccountList(std::vector<Account> &list) {
+    if (!ParmsDb::instance()->selectAllAccounts(list)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllAccounts");
         return ExitCode::DbError;
-    }
-
-    list.clear();
-    for (const Account &account: accountList) {
-        AccountInfo accountInfo;
-        accountToAccountInfo(account, accountInfo);
-        list.push_back(accountInfo);
     }
 
     return ExitCode::Ok;
@@ -510,8 +495,8 @@ ExitInfo ServerRequests::findGoodPathForNewSync(const QString &basePath, QString
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::requestToken(const std::string &code, const std::string &codeVerifier, UserInfo &userInfo,
-                                      bool &userCreated, std::string &error, std::string &errorDescr) {
+ExitCode ServerRequests::requestToken(const std::string &code, const std::string &codeVerifier, User &user, bool &userCreated,
+                                      std::string &error, std::string &errorDescr) {
     // Generate keychainKey
     std::string keychainKey(Utility::computeMd5Hash(std::to_string(std::time(nullptr))));
 
@@ -525,7 +510,7 @@ ExitCode ServerRequests::requestToken(const std::string &code, const std::string
     }
 
     // Create or update user
-    if (ExitCode exitCode = processRequestTokenFinished(login, userInfo, userCreated); exitCode != ExitCode::Ok) {
+    if (ExitCode exitCode = processRequestTokenFinished(login, user, userCreated); exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in processRequestTokenFinished: code=" << exitCode);
         return exitCode;
     }
@@ -533,9 +518,9 @@ ExitCode ServerRequests::requestToken(const std::string &code, const std::string
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::requestToken(const QString &code, const QString &codeVerifier, UserInfo &userInfo, bool &userCreated,
+ExitCode ServerRequests::requestToken(const QString &code, const QString &codeVerifier, User &user, bool &userCreated,
                                       std::string &error, std::string &errorDescr) {
-    return requestToken(QStr2Str(code), QStr2Str(codeVerifier), userInfo, userCreated, error, errorDescr);
+    return requestToken(QStr2Str(code), QStr2Str(codeVerifier), user, userCreated, error, errorDescr);
 }
 
 ExitInfo ServerRequests::getNodeInfo(const UserDbId userDbId, const DriveId driveId, const std::string &nodeId,
@@ -658,8 +643,11 @@ ExitInfo ServerRequests::getUserAvailableDrives(const UserDbId userDbId, std::ve
 
 ExitInfo ServerRequests::addSync(const UserDbId userDbId, const AccountId accountId, const DriveId driveId,
                                  const SyncPath &localFolderPath, const SyncPath &serverFolderPath,
-                                 const NodeId &serverFolderNodeId, bool liteSync, AccountInfo &accountInfo, Drive &drive,
-                                 SyncInfo &syncInfo) {
+                                 const NodeId &serverFolderNodeId, bool liteSync, Account &account, Drive &drive,
+                                 SyncInfo &syncInfo, bool &accountCreated, bool &driveCreated) {
+    accountCreated = false;
+    driveCreated = false;
+
     LOGW_INFO(Log::instance()->getLogger(), L"Adding new sync - userDbId="
                                                     << userDbId << L" accountId=" << accountId << L" driveId=" << driveId
                                                     << L" localFolderPath=" << Path2WStr(localFolderPath).c_str()
@@ -667,7 +655,6 @@ ExitInfo ServerRequests::addSync(const UserDbId userDbId, const AccountId accoun
                                                     << L" liteSync=" << liteSync);
 
     // Create Account in DB if needed
-    Account account;
     bool found = false;
     if (!ParmsDb::instance()->accountFromUserDbIdAndAccountId(userDbId, accountId, account, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::accountDbId");
@@ -684,11 +671,12 @@ ExitInfo ServerRequests::addSync(const UserDbId userDbId, const AccountId accoun
         account.setDbId(accountDbId);
         account.setAccountId(accountId);
         account.setUserDbId(userDbId);
-        if (const auto exitCode = createAccount(account, accountInfo); exitCode != ExitCode::Ok) {
+        if (const auto exitCode = createAccount(account); exitCode != ExitCode::Ok) {
             LOG_WARN(Log::instance()->getLogger(), "Error in createAccount");
             return exitCode;
         }
 
+        accountCreated = true;
         LOG_INFO(Log::instance()->getLogger(),
                  "New account created in DB - accountDbId=" << accountDbId << " accountId= " << accountId
                                                             << " accountName= " << account.name() << " userDbId= " << userDbId);
@@ -715,6 +703,7 @@ ExitInfo ServerRequests::addSync(const UserDbId userDbId, const AccountId accoun
             return exitCode;
         }
 
+        driveCreated = true;
         LOGW_INFO(Log::instance()->getLogger(), L"New drive created in DB - driveDbId=" << driveDbId << L" driveId=" << driveId
                                                                                         << L" accountDbId=" << account.dbId());
     }
@@ -724,10 +713,10 @@ ExitInfo ServerRequests::addSync(const UserDbId userDbId, const AccountId accoun
 
 ExitInfo ServerRequests::addSync(const UserDbId userDbId, const AccountId accountId, const DriveId driveId,
                                  const QString &localFolderPath, const QString &serverFolderPath,
-                                 const QString &serverFolderNodeId, bool liteSync, AccountInfo &accountInfo, Drive &drive,
-                                 SyncInfo &syncInfo) {
+                                 const QString &serverFolderNodeId, bool liteSync, Account &account, Drive &drive,
+                                 SyncInfo &syncInfo, bool &accountCreated, bool &driveCreated) {
     return addSync(userDbId, accountId, driveId, QStr2Path(localFolderPath), QStr2Path(serverFolderPath),
-                   serverFolderNodeId.toStdString(), liteSync, accountInfo, drive, syncInfo);
+                   serverFolderNodeId.toStdString(), liteSync, account, drive, syncInfo, accountCreated, driveCreated);
 }
 
 ExitInfo ServerRequests::addSync(const DriveDbId driveDbId, const SyncPath &localFolderPath, const SyncPath &serverFolderPath,
@@ -1048,38 +1037,38 @@ ExitInfo ServerRequests::getPathByNodeId(const UserDbId userDbId, const DriveId 
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::createUser(const User &user, UserInfo &userInfo) {
+ExitInfo ServerRequests::createUser(User &user) {
     if (!ParmsDb::instance()->insertUser(user)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::insertUser");
         return ExitCode::DbError;
     }
 
     // Load User info
-    User updatedUser(user);
     bool updated = false;
-    if (ExitCode exitCode = loadUserInfo(updatedUser, updated); exitCode != ExitCode::Ok) {
+    if (const auto exitInfo = loadUserInfo(user, updated); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in loadUserInfo");
-        return exitCode;
+        return exitInfo;
     }
 
     if (updated) {
         bool found = false;
-        if (!ParmsDb::instance()->updateUser(updatedUser, found)) {
+        if (!ParmsDb::instance()->updateUser(user, found)) {
             LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateUser");
             return ExitCode::DbError;
         }
         if (!found) {
-            LOG_WARN(Log::instance()->getLogger(), "User not found for userDbId=" << updatedUser.dbId());
+            LOG_WARN(Log::instance()->getLogger(), "User not found for userDbId=" << user.dbId());
             return ExitCode::DataError;
         }
     }
 
-    userToUserInfo(updatedUser, userInfo);
+    user.setConnected(!user.keychainKey().empty());
+    user.setCredentialsAsked(false);
 
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::updateUser(const User &user, UserInfo &userInfo) {
+ExitInfo ServerRequests::updateUser(User &user) {
     bool found = false;
     if (!ParmsDb::instance()->updateUser(user, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateUser");
@@ -1091,33 +1080,30 @@ ExitCode ServerRequests::updateUser(const User &user, UserInfo &userInfo) {
     }
 
     // Load User info
-    User userUpdated(user);
     bool updated = false;
-    if (const ExitCode exitCode = loadUserInfo(userUpdated, updated); exitCode != ExitCode::Ok) {
+    if (const auto exitInfo = loadUserInfo(user, updated); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in loadUserInfo");
-        return exitCode;
+        return exitInfo;
     }
-    userToUserInfo(userUpdated, userInfo);
+
+    user.setConnected(!user.keychainKey().empty());
+    user.setCredentialsAsked(false);
 
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::createAccount(const Account &account, AccountInfo &accountInfo) {
+ExitCode ServerRequests::createAccount(Account &account) {
     // Load account info
     bool updated = false;
-    Account updatedAccount(account);
-    ExitCode exitCode = loadAccountInfo(updatedAccount, updated);
-    if (exitCode != ExitCode::Ok) {
+    if (const auto exitInfo = loadAccountInfo(account, updated); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ServerRequests::loadAccountInfo");
-        return exitCode;
+        return exitInfo;
     }
 
-    if (!ParmsDb::instance()->insertAccount(updatedAccount)) {
+    if (!ParmsDb::instance()->insertAccount(account)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::insertAccount");
         return ExitCode::DbError;
     }
-
-    accountToAccountInfo(updatedAccount, accountInfo);
 
     return ExitCode::Ok;
 }
@@ -1969,6 +1955,7 @@ ExitInfo ServerRequests::loadUserInfo(User &user, bool &updated) {
     if (!exitInfo) {
         if (exitInfo.code() == ExitCode::InvalidToken) {
             user.setKeychainKey(""); // Invalid keychain key
+            user.setConnected(false);
         }
         return exitInfo;
     }
@@ -2035,9 +2022,8 @@ ExitInfo ServerRequests::loadUserAvatar(User &user) {
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::processRequestTokenFinished(const Login &login, UserInfo &userInfo, bool &userCreated) {
+ExitCode ServerRequests::processRequestTokenFinished(const Login &login, User &user, bool &userCreated) {
     // Get user
-    User user;
     bool found = false;
     if (!ParmsDb::instance()->selectUserByUserId(login.apiToken().userId(), user, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectUserByUserId");
@@ -2049,7 +2035,7 @@ ExitCode ServerRequests::processRequestTokenFinished(const Login &login, UserInf
 
         AbstractTokenNetworkJob::updateLoginByUserDbId(login, user.dbId());
 
-        ExitCode exitCode = updateUser(user, userInfo);
+        ExitCode exitCode = updateUser(user);
         if (exitCode != ExitCode::Ok) {
             LOG_WARN(Log::instance()->getLogger(), "Error in updateUser");
             return exitCode;
@@ -2067,7 +2053,7 @@ ExitCode ServerRequests::processRequestTokenFinished(const Login &login, UserInf
         user.setDbId(dbId);
         user.setUserId(login.apiToken().userId());
         user.setKeychainKey(login.keychainKey());
-        ExitCode exitCode = createUser(user, userInfo);
+        ExitCode exitCode = createUser(user);
         if (exitCode != ExitCode::Ok) {
             LOG_WARN(Log::instance()->getLogger(), "Error in createUser");
             return exitCode;
@@ -2188,31 +2174,6 @@ ExitCode ServerRequests::syncForPath(const std::vector<Sync> &syncList, const QS
     }
 
     return ExitCode::Ok;
-}
-
-void ServerRequests::userToUserInfo(const User &user, UserInfo &userInfo) {
-    userInfo.setDbId(user.dbId());
-    userInfo.setUserId(user.userId());
-    userInfo.setName(QString::fromStdString(user.name()));
-    userInfo.setFirstName(QString::fromStdString(user.firstName()));
-    userInfo.setEmail(QString::fromStdString(user.email()));
-    if (user.avatar()) {
-        QByteArray avatarArr;
-        std::copy(user.avatar()->begin(), user.avatar()->end(), std::back_inserter(avatarArr));
-        QImage avatarImg;
-        avatarImg.loadFromData(avatarArr);
-        userInfo.setAvatar(avatarImg);
-    }
-    userInfo.setConnected(!user.keychainKey().empty());
-    userInfo.setCredentialsAsked(false);
-    userInfo.setIsStaff(user.isStaff());
-}
-
-void ServerRequests::accountToAccountInfo(const Account &account, AccountInfo &accountInfo) {
-    accountInfo.setDbId(account.dbId());
-    accountInfo.setUserDbId(account.userDbId());
-    accountInfo.setId(account.accountId());
-    accountInfo.setName(account.name());
 }
 
 void ServerRequests::syncToSyncInfo(const Sync &sync, SyncInfo &syncInfo) {

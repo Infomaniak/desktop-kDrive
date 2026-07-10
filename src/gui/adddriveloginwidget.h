@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include "libcommon/info/userinfo.h"
 
 #include <QRadioButton>
 #include <QString>
