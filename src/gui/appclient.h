@@ -56,13 +56,13 @@ class AppClient : public SharedTools::QtSingleApplication {
 
     signals:
         // User signals
-        void userAdded(const UserInfo &userInfo);
-        void userUpdated(const UserInfo &userInfo);
+        void userAdded(const User &user);
+        void userUpdated(const User &user);
         void userStatusChanged(UserDbId userDbId, bool connected, QString connexionError);
         void userRemoved(UserDbId userDbId);
         // Account signals
-        void accountAdded(const AccountInfo &accountInfo);
-        void accountUpdated(const AccountInfo &accountInfo);
+        void accountAdded(const Account &account);
+        void accountUpdated(const Account &account);
         void accountRemoved(AccountDbId accountDbId);
         // Drive signals
         void driveAdded(const Drive &drive);

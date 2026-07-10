@@ -192,7 +192,7 @@ AppClient::AppClient(int &argc, char **argv) :
         // Ask user to log in if needed
         for (auto const &[userDbId, userInfoClient]: _gui->userInfoMap()) {
             if (!userInfoClient.connected() && _gui->isUserUsed(userDbId)) {
-                askUserToLoginAgain(userInfoClient.dbId(), userInfoClient.email(), false);
+                askUserToLoginAgain(userInfoClient.dbId(), QString::fromStdString(userInfoClient.email()), false);
             }
         }
     }
@@ -217,22 +217,22 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
 
     switch (num) {
         case SignalNum::USER_ADDED: {
-            UserInfo userInfo;
-            paramsStream >> userInfo;
+            User user;
+            paramsStream >> user;
 
-            emit userAdded(userInfo);
+            emit userAdded(user);
             break;
         }
         case SignalNum::USER_UPDATED: {
-            UserInfo userInfo;
-            paramsStream >> userInfo;
+            User user;
+            paramsStream >> user;
 
-            emit userUpdated(userInfo);
+            emit userUpdated(user);
             break;
         }
         case SignalNum::USER_STATUSCHANGED: {
             qint64 userDbId = 0;
-            bool connected;
+            bool connected = false;
             QString connexionError;
             paramsStream >> userDbId;
             paramsStream >> connected;
@@ -249,17 +249,17 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::ACCOUNT_ADDED: {
-            AccountInfo accountInfo;
-            paramsStream >> accountInfo;
+            Account account;
+            paramsStream >> account;
 
-            emit accountAdded(accountInfo);
+            emit accountAdded(account);
             break;
         }
         case SignalNum::ACCOUNT_UPDATED: {
-            AccountInfo accountInfo;
-            paramsStream >> accountInfo;
+            Account account;
+            paramsStream >> account;
 
-            emit accountUpdated(accountInfo);
+            emit accountUpdated(account);
             break;
         }
         case SignalNum::ACCOUNT_REMOVED: {
@@ -681,8 +681,7 @@ void AppClient::updateSentryUser() const {
         return;
     }
 
-    SentryUser user(userInfo->second.email().toStdString(), userInfo->second.name().toStdString(),
-                    std::to_string(userInfo->second.userId()));
+    SentryUser user(userInfo->second.email(), userInfo->second.name(), std::to_string(userInfo->second.userId()));
     sentry::Handler::instance()->setAuthenticatedUser(user);
 }
 
