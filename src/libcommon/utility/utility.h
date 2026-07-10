@@ -78,7 +78,7 @@ struct COMMON_EXPORT CommonUtility {
           \param useCache if true, use a cache to optimize performances.
           \return the type of the FS.
         */
-        static std::string fileSystemType(const SyncPath &targetPath, std::string &fallbackFSType, bool useCache = true);
+        static std::string fileSystemType(const SyncPath &targetPath, std::string &fallbackFSType, const bool useCache = true);
 
         static bool isNTFS(const SyncPath &targetPath);
         static bool isAPFS(const SyncPath &targetPath);
@@ -532,7 +532,7 @@ struct COMMON_EXPORT CommonUtility {
         static ExitInfo stdErrorToExitInfo(int64_t error) noexcept;
         static ExitInfo stdErrorToExitInfo(const std::error_code &ec) noexcept;
 
-        inline static int pathDepth(const SyncPath &path) { return (int) std::distance(path.begin(), path.end()); }
+        inline static int pathDepth(const SyncPath &path) { return static_cast<int>(std::distance(path.begin(), path.end())); }
 
     private:
         static std::mutex _generateRandomStringMutex;
@@ -665,7 +665,7 @@ static const std::function<C(const Poco::Dynamic::Var &)> dynamicVar2Struct = []
 
 class CmpPath {
     public:
-        explicit CmpPath(bool increasingDepth) :
+        explicit CmpPath(const bool increasingDepth) :
             _increasingDepth(increasingDepth) {}
 
         bool operator()(const SyncPath &path1, const SyncPath &path2) const {

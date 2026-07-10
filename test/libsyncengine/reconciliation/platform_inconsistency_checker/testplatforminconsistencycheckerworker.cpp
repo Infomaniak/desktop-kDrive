@@ -113,7 +113,7 @@ void TestPlatformInconsistencyCheckerWorker::testCheckNameForbiddenChars() {
     CPPUNIT_ASSERT(hasForbiddenChars);
 
 #if defined(KD_WINDOWS)
-    CPPUNIT_ASSERT_EQUAL("NTFS", fallbackFSType);
+    CPPUNIT_ASSERT_EQUAL(std::string("NTFS"), fallbackFSType);
 
     forbiddenName = Str("test\\test");
     hasForbiddenChars = false;

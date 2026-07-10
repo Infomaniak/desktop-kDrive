@@ -230,33 +230,34 @@ std::string CommonUtility::underlyingFileSystemType(const SyncPath &targetPath) 
     }
 
     // FAT32 is the more restrictive FS, so we try first a temporary directory creation with an invalid FAT32 name
-    const SyncPath invalidFatFileName{"a+b" + generateRandomStringAlphaNum()};
-    if (!std::filesystem::create_directory(targetDirPath / invalidFatFileName, ec)) {
+    if (const SyncPath invalidFatFileName{"a+b" + generateRandomStringAlphaNum()};
+        !std::filesystem::create_directory(targetDirPath / invalidFatFileName, ec)) {
         if (ec.value() == static_cast<int>(std::errc::illegal_byte_sequence)) {
             // Invalid name for FAT32, so we assume that the underlying FS is FAT32
             return "MSDOS";
         }
         return fallbackFileSystemType();
     } else {
-        std::filesystem::remove(targetDirPath / invalidFatFileName, ec);
+        (void) std::filesystem::remove(targetDirPath / invalidFatFileName, ec);
     }
 
     // Secondly, we try a temporary directory creation with an invalid exFAT name
-    const SyncPath invalidExFatFileName{"a:b" + generateRandomStringAlphaNum()};
-    if (!std::filesystem::create_directory(targetDirPath / invalidExFatFileName, ec)) {
+    if (const SyncPath invalidExFatFileName{"a:b" + generateRandomStringAlphaNum()};
+        !std::filesystem::create_directory(targetDirPath / invalidExFatFileName, ec)) {
         if (ec.value() == static_cast<int>(std::errc::illegal_byte_sequence)) {
             // Invalid name for exFAT, so we assume that the underlying FS is exFAT
             return "EXFAT";
         }
         return fallbackFileSystemType();
     } else {
-        std::filesystem::remove(targetDirPath / invalidExFatFileName, ec);
+        (void) std::filesystem::remove(targetDirPath / invalidExFatFileName, ec);
     }
 
     return fallbackFileSystemType();
 }
 
-std::string CommonUtility::fileSystemType(const SyncPath &targetPath, std::string &fallbackFSType, bool useCache /*= true*/) {
+std::string CommonUtility::fileSystemType(const SyncPath &targetPath, std::string &fallbackFSType,
+                                          const bool useCache /*= true*/) {
     fallbackFSType.clear();
 
     // Cache of FS type & fallback type by mount point ordered by decreasing path depth.
@@ -265,7 +266,7 @@ std::string CommonUtility::fileSystemType(const SyncPath &targetPath, std::strin
     if (useCache) {
         // Search in cache first.
 #if defined(KD_WINDOWS)
-        SyncPath rootPath = targetPath.root_name().native();
+        const SyncPath rootPath = targetPath.root_name().native();
         if (const auto it = fsTypeMap.find(rootPath); it != fsTypeMap.end()) {
             fallbackFSType = it->second.second;
             return it->second.first;
@@ -300,7 +301,7 @@ std::string CommonUtility::fileSystemType(const SyncPath &targetPath, std::strin
     assert(targetPath.root_name().native() == mountPoint);
 #endif
 
-    (void) fsTypeMap.try_emplace(mountPoint, std::make_pair(fsType, fallbackFSType));
+    (void) fsTypeMap.try_emplace(mountPoint, fsType, fallbackFSType);
 
     return fsType;
 }

@@ -180,7 +180,8 @@ bool CommonUtility::fileSystemInfo(const SyncPath &targetPath, std::string &fsTy
     libmnt_table *table = mnt_new_table();
     mnt_table_set_cache(table, cache);
     if (mnt_table_parse_file(table, "/proc/self/mountinfo") == 0) {
-        if (libmnt_fs *fs = mnt_table_find_mountpoint(table, canonicalPath.native().c_str(), MNT_ITER_BACKWARD); fs) {
+        libmnt_fs *fs = mnt_table_find_mountpoint(table, canonicalPath.native().c_str(), MNT_ITER_BACKWARD);
+        if (fs) {
             std::string mp = mnt_fs_get_target(fs);
             mountPoint = SyncPath(mp);
         }

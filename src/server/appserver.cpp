@@ -1542,10 +1542,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             const auto driveId = static_cast<DriveId>(tmpDriveId);
             const auto driveDbId = static_cast<DriveDbId>(tmpDriveDbId);
 
-            bool valid = false;
-            auto exitInfo = ServerRequests::isPathValidForNewSync(QStr2Path(localFolderPath), SyncConfiguration::Classic, valid);
-
-
             // Add sync in DB
             ExitCode exitCode = ExitCode::Ok;
             SyncInfo syncInfo;

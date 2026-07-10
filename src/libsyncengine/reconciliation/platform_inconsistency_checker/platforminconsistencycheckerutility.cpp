@@ -33,18 +33,19 @@
 namespace ForbiddenFilenameCharacters {
 
 // Windows
-static const std::vector<char> winChars = {'\\', '/', ':', '*', '?', '"', '<', '>', '|', '\n', '\r', '\t', '\0'}; // Windows APIs limitation
-static const std::vector<char> winFatChars = {'\\', '/', ':', '*', '?',  '"',  '<',  '>', '|',
-                                              '+',  ',', ';', '=', '\n', '\r', '\t', '\0'}; // FAT32
+static constexpr std::vector<char> winChars = {'\\', '/', ':',  '*',  '?',  '"', '<',
+                                               '>',  '|', '\n', '\r', '\t', '\0'}; // Windows APIs limitation
+static constexpr std::vector<char> winFatChars = {'\\', '/', ':', '*', '?',  '"',  '<',  '>', '|',
+                                                  '+',  ',', ';', '=', '\n', '\r', '\t', '\0'}; // FAT32
 
 // macOS
-static const std::vector<char> macChars = {'/', '\0'};
+static constexpr std::vector<char> macChars = {'/', '\0'};
 
 // Linux
-static const std::vector<char> linuxChars = macChars;
-static const std::vector<char> linuxFatChars = winChars; // FAT32 & ExFAT
+static constexpr std::vector<char> linuxChars = macChars;
+static constexpr std::vector<char> linuxFatChars = winChars; // FAT32 & ExFAT
 
-static const std::vector<char> forbiddenChars([[maybe_unused]] const std::string &fsType) {
+static std::vector<char> forbiddenChars([[maybe_unused]] const std::string &fsType) {
 #if defined(KD_WINDOWS)
     if (fsType == "MSDOS")
         return winFatChars;
