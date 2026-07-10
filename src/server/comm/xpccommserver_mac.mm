@@ -21,10 +21,10 @@
 
 // XPCCommChannel implementation
 XPCCommChannel::XPCCommChannel(AbstractCommChannelPrivate *p) :
-    _privatePtr(p) {
+    _privatePtr(p ? p : new AbstractCommChannelPrivate(nullptr)) {
     if (p == nullptr) {
-        LOG_FATAL(KDC::Log::instance()->getLogger(), "XPCCommChannel created with null private pointer");
-        return;
+        LOG_WARN(KDC::Log::instance()->getLogger(), "XPCCommChannel created with null private pointer");
+        _privatePtr->disconnectRemote();
     }
     _privatePtr->publicPtr = this;
 }
