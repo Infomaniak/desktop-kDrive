@@ -27,7 +27,7 @@
 #if defined(KD_MACOS)
 #include "exclusionapp.h"
 #endif
-#include "error.h"
+#include "libcommon/data/error.h"
 #include "migrationselectivesync.h"
 
 #include "libcommonserver/db/db.h"

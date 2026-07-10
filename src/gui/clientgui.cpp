@@ -899,7 +899,7 @@ void ClientGui::getWebviewDriveLink(const DriveDbId driveDbId, QString &driveLin
     }
 }
 
-void ClientGui::errorInfoList(const DriveDbId driveDbId, QList<ErrorInfo> &errorInfoList) {
+void ClientGui::errorInfoList(const DriveDbId driveDbId, QList<Error> &errorInfoList) {
     if (_errorInfoMap.find(driveDbId) != _errorInfoMap.end()) {
         errorInfoList = _errorInfoMap[driveDbId];
     }

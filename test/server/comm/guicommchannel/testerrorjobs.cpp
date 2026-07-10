@@ -19,7 +19,7 @@
 #include "testguicommchannel.h"
 #include "../testcommhelpers.h"
 #include "comm/guijobs/errordeletejob.h"
-#include "comm/guijobs/errorinfolistjob.h"
+#include "comm/guijobs/errorlistjob.h"
 #include "comm/guijobs/errorresolveconflictsjob.h"
 #include "comm/guijobs/errorresolveconflictsquickjob.h"
 #include "comm/guijobs/errorsyncrefreshjob.h"
@@ -29,7 +29,7 @@ namespace KDC {
 using namespace testcommhelpers;
 
 
-void TestGuiCommChannel::testErrorInfoListJob() {
+void TestGuiCommChannel::testErrorListJob() {
     Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     (void) queryObj.set("id", 1);
@@ -89,9 +89,9 @@ void TestGuiCommChannel::testErrorInfoListJob() {
     const auto answerStr = testcommhelpers::stringifyAnswerObj(answerObjWithNumAndType);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-        auto errorJob = std::dynamic_pointer_cast<ErrorInfolistJob>(job);
+        auto errorJob = std::dynamic_pointer_cast<ErrorListJob>(job);
         CPPUNIT_ASSERT(errorJob);
-        ErrorInfo e1;
+        Error e1;
         e1.setDbId(1);
         e1.setTime(1000);
         e1.setLevel(ErrorLevel::SyncPal);

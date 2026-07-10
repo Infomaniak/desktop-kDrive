@@ -1144,7 +1144,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             const auto syncDbId = static_cast<SyncDbId>(tmpSyncDbId);
 
-            QList<ErrorInfo> list;
+            QList<Error> list;
             const auto exitCode = ServerRequests::getErrorInfoList(level, syncDbId, limit, list);
             if (exitCode != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in Requests::getErrorInfoList: code=" << exitCode);
@@ -1162,7 +1162,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> tmpDriveDbId;
             paramsStream >> filter;
 
-            QList<ErrorInfo> list;
+            QList<Error> list;
 
             const auto driveDbId = static_cast<DriveDbId>(tmpDriveDbId);
 
@@ -2740,7 +2740,7 @@ void AppServer::sendShowNotification(const QString &title, const QString &messag
     }
 }
 
-void AppServer::sendErrorAdded(const ErrorInfo &errorInfo) const {
+void AppServer::sendErrorAdded(const Error &errorInfo) const {
     if (useOldCommServer()) {
         int id = 0;
 
@@ -4465,7 +4465,7 @@ ExitInfo AppServer::getNodePath(const SyncDbId syncDbId, const NodeId &nodeId, C
     return ExitCode::Ok;
 }
 
-void AppServer::addError(const Error &error) const {
+void AppServer::addError(Error &error) const {
     Error errorCopy = error;
     // Fetch all errors.
     std::vector<Error> errorList;
@@ -4509,8 +4509,8 @@ void AppServer::addError(const Error &error) const {
             sendErrorRemoved(errorCopy.dbId());
         }
 
-        ErrorInfo errorInfo;
-        ServerRequests::errorToErrorInfo(errorCopy, errorInfo);
+        Error errorInfo;
+        errorInfo = errorCopy;
         sendErrorAdded(errorInfo);
     }
 }

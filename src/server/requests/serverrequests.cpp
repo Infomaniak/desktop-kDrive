@@ -1607,8 +1607,7 @@ ExitCode ServerRequests::setExclusionAppList(const bool def, const QList<Exclusi
 }
 #endif
 
-ExitCode ServerRequests::getErrorInfoList(const ErrorLevel level, const SyncDbId syncDbId, const int limit,
-                                          QList<ErrorInfo> &list) {
+ExitCode ServerRequests::getErrorInfoList(const ErrorLevel level, const SyncDbId syncDbId, const int limit, QList<Error> &list) {
     std::vector<Error> errorList;
     if (!ParmsDb::instance()->selectAllErrors(level, syncDbId, limit, errorList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllErrors");
@@ -1618,16 +1617,14 @@ ExitCode ServerRequests::getErrorInfoList(const ErrorLevel level, const SyncDbId
     list.clear();
     for (const Error &error: errorList) {
         if (isDisplayableError(error)) {
-            ErrorInfo errorInfo;
-            errorToErrorInfo(error, errorInfo);
-            list << errorInfo;
+            list << error;
         }
     }
 
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::getErrorInfoList(const int limit, std::vector<ErrorInfo> &list) {
+ExitInfo ServerRequests::getErrorInfoList(const int limit, std::vector<Error> &list) {
     std::vector<Error> errorList;
     if (!ParmsDb::instance()->selectAllErrors(limit, errorList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllErrors");
@@ -1637,9 +1634,7 @@ ExitInfo ServerRequests::getErrorInfoList(const int limit, std::vector<ErrorInfo
     list.clear();
     for (const Error &error: errorList) {
         if (isDisplayableError(error)) {
-            ErrorInfo errorInfo;
-            errorToErrorInfo(error, errorInfo);
-            list.push_back(errorInfo);
+            list.push_back(error);
         }
     }
 
@@ -1666,15 +1661,13 @@ ExitCode ServerRequests::getConflictList(const SyncDbId syncDbId, const std::uno
 }
 
 ExitCode ServerRequests::getConflictErrorInfoList(const SyncDbId syncDbId, const std::unordered_set<ConflictType> &filter,
-                                                  QList<ErrorInfo> &errorInfoList) {
+                                                  QList<Error> &errorInfoList) {
     std::vector<Error> errorList;
     ServerRequests::getConflictList(syncDbId, filter, errorList);
 
     for (const Error &error: errorList) {
         if (isDisplayableError(error)) {
-            ErrorInfo errorInfo;
-            errorToErrorInfo(error, errorInfo);
-            errorInfoList << errorInfo;
+            errorInfoList << error;
         }
     }
 
@@ -2164,26 +2157,6 @@ ExitCode ServerRequests::syncForPath(const std::vector<Sync> &syncList, const QS
     }
 
     return ExitCode::Ok;
-}
-
-void ServerRequests::errorToErrorInfo(const Error &error, ErrorInfo &errorInfo) {
-    errorInfo.setDbId(error.dbId());
-    errorInfo.setTime(error.time());
-    errorInfo.setLevel(error.level());
-    errorInfo.setFunctionName(QString::fromStdString(error.functionName()));
-    errorInfo.setSyncDbId(error.syncDbId());
-    errorInfo.setWorkerName(QString::fromStdString(error.workerName()));
-    errorInfo.setExitCode(error.exitCode());
-    errorInfo.setExitCause(error.exitCause());
-    errorInfo.setLocalNodeId(QString::fromStdString(error.localNodeId()));
-    errorInfo.setRemoteNodeId(QString::fromStdString(error.remoteNodeId()));
-    errorInfo.setNodeType(error.nodeType());
-    errorInfo.setPath(SyncName2QStr(error.path().native()));
-    errorInfo.setConflictType(error.conflictType());
-    errorInfo.setInconsistencyType(error.inconsistencyType());
-    errorInfo.setCancelType(error.cancelType());
-    errorInfo.setDestinationPath(SyncName2QStr(error.destinationPath().native()));
-    errorInfo.setAutoResolved(isAutoResolvedError(error));
 }
 
 void ServerRequests::syncFileItemToSyncFileItemInfo(const SyncFileItem &item, SyncFileItemInfo &itemInfo) {

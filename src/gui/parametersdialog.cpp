@@ -761,7 +761,7 @@ QString ParametersDialog::getCancelText(const CancelType cancelType, const QStri
     return {};
 }
 
-QString ParametersDialog::getBackErrorText(const ErrorInfo &errorInfo) const {
+QString ParametersDialog::getBackErrorText(const Error &errorInfo) const {
     switch (errorInfo.exitCause()) {
         case ExitCause::HttpErrForbidden: {
             return tr(
@@ -793,7 +793,7 @@ QString ParametersDialog::getBackErrorText(const ErrorInfo &errorInfo) const {
     }
 }
 
-QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) const {
+QString ParametersDialog::getErrorLevelNodeText(const Error &errorInfo) const {
     if (errorInfo.conflictType() != ConflictType::None) {
         return getConflictText(errorInfo.conflictType());
     }
@@ -803,7 +803,7 @@ QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) cons
     }
 
     if (errorInfo.cancelType() != CancelType::None) {
-        return getCancelText(errorInfo.cancelType(), errorInfo.path(), errorInfo.destinationPath());
+        return getCancelText(errorInfo.cancelType(), Path2QStr(errorInfo.path()), Path2QStr(errorInfo.destinationPath()));
     }
 
     switch (errorInfo.exitCode()) {
@@ -818,7 +818,7 @@ QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) cons
                         "The download has been canceled.");
             } else if (errorInfo.exitCause() == ExitCause::FileSystemNotSupported) {
                 return tr(R"(Impossible to create file "%1" because it is not supported on your filesystem.<br>It has been excluded from synchronization.)")
-                        .arg(errorInfo.path());
+                        .arg(Path2QStr(errorInfo.path()));
             }
             return tr("System error.");
         }
@@ -839,7 +839,7 @@ QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) cons
     return tr("Synchronization error.");
 }
 
-QString ParametersDialog::getErrorMessage(const ErrorInfo &errorInfo) const {
+QString ParametersDialog::getErrorMessage(const Error &errorInfo) const {
     switch (errorInfo.level()) {
         case ErrorLevel::Unknown: {
             return tr(
@@ -847,7 +847,7 @@ QString ParametersDialog::getErrorMessage(const ErrorInfo &errorInfo) const {
                     "Please empty the history and if the error persists, contact our support team.");
         }
         case ErrorLevel::Server: {
-            return getAppErrorText(errorInfo.functionName(), errorInfo.exitCode(), errorInfo.exitCause());
+            return getAppErrorText(QString::fromStdString(errorInfo.functionName()), errorInfo.exitCode(), errorInfo.exitCause());
         }
         case ErrorLevel::SyncPal: {
             if (const auto &syncInfoMapIt = _gui->syncInfoMap().find(errorInfo.syncDbId());
@@ -858,8 +858,8 @@ QString ParametersDialog::getErrorMessage(const ErrorInfo &errorInfo) const {
                             << "Drive not found in drive map for driveDbId=" << syncInfoMapIt->second.driveDbId();
                     return {};
                 }
-                return getSyncPalErrorText(errorInfo.workerName(), errorInfo.exitCode(), errorInfo.exitCause(),
-                                           driveInfoMapIt->second.admin());
+                return getSyncPalErrorText(QString::fromStdString(errorInfo.workerName()), errorInfo.exitCode(),
+                                           errorInfo.exitCause(), driveInfoMapIt->second.admin());
             }
             qCDebug(lcParametersDialog()) << "Sync not found in sync map for syncDbId=" << errorInfo.syncDbId();
             return {};
@@ -1189,7 +1189,7 @@ void ParametersDialog::refreshErrorList(const DriveDbId driveDbId) {
     ErrorTabWidget *errorTabWidget = nullptr;
     QListWidget *autoresolvedErrorsListWidget = nullptr;
     QListWidget *unresolvedErrorsListWidget = nullptr;
-    QList<ErrorInfo> errorInfoList;
+    QList<Error> errorInfoList;
 
     if (driveDbId == 0) {
         // Server level error

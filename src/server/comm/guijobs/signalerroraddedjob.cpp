@@ -21,17 +21,17 @@
 #include "libcommon/comm.h"
 
 // Output parameters keys
-static const auto outParamsErrorInfo = "errorInfo";
+static const auto outParamsError = "errorInfo";
 
 namespace KDC {
 
-SignalErrorAddedJob::SignalErrorAddedJob(const ErrorInfo &errorInfo) :
+SignalErrorAddedJob::SignalErrorAddedJob(const Error &errorInfo) :
     _errorInfo(errorInfo) {
     _signalNum = SignalNum::UTILITY_ERROR_ADDED;
 }
 
 ExitInfo SignalErrorAddedJob::serializeOutputParms() {
-    writeParamValue(outParamsErrorInfo, _errorInfo, info2DynamicVar<ErrorInfo>);
+    writeParamValue(outParamsError, _errorInfo, info2DynamicVar<Error>);
     return ExitCode::Ok;
 }
 

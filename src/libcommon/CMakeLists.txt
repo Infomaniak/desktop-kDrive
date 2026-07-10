@@ -37,7 +37,7 @@ set(libcommon_SRCS
     data/sync.h data/sync.cpp
     info/nodeinfo.h info/nodeinfo.cpp
     info/nodeconflictinfo.h info/nodeconflictinfo.cpp
-    info/errorinfo.h info/errorinfo.cpp
+    data/error.h data/error.cpp
     info/parametersinfo.h info/parametersinfo.cpp
     info/syncfileiteminfo.h info/syncfileiteminfo.cpp
     info/exclusiontemplateinfo.h info/exclusiontemplateinfo.cpp

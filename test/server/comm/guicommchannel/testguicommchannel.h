@@ -84,7 +84,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testNodeFolderSizeJob);
         CPPUNIT_TEST(testNodeCreateMissingFoldersJob);
         CPPUNIT_TEST(testNodeConflictInfoJob);
-        CPPUNIT_TEST(testErrorInfoListJob);
+        CPPUNIT_TEST(testErrorListJob);
         CPPUNIT_TEST(testErrorDeleteJob);
         CPPUNIT_TEST(testErrorResolveConflictsJob);
         CPPUNIT_TEST(testErrorResolveConflictsQuickJob);
@@ -170,7 +170,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testNodeFolderSizeJob();
         void testNodeCreateMissingFoldersJob();
         void testNodeConflictInfoJob();
-        void testErrorInfoListJob();
+        void testErrorListJob();
         void testErrorDeleteJob();
         void testErrorResolveConflictsJob();
         void testErrorResolveConflictsQuickJob();

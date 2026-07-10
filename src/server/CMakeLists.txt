@@ -88,7 +88,7 @@ set(server_SRCS
     comm/guijobs/nodecreatemissingfoldersjob.h comm/guijobs/nodecreatemissingfoldersjob.cpp
     comm/guijobs/nodeconflictinfojob.h comm/guijobs/nodeconflictinfojob.cpp
 
-    comm/guijobs/errorinfolistjob.h comm/guijobs/errorinfolistjob.cpp
+        comm/guijobs/errorlistjob.h comm/guijobs/errorlistjob.cpp
     comm/guijobs/errordeletejob.h comm/guijobs/errordeletejob.cpp
     comm/guijobs/errorsyncrefreshjob.h comm/guijobs/errorsyncrefreshjob.cpp
     comm/guijobs/abstracterrorresolveconflictsjob.h comm/guijobs/abstracterrorresolveconflictsjob.cpp

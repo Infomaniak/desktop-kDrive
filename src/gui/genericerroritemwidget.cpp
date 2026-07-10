@@ -31,8 +31,8 @@ namespace KDC {
 
 static const QString dateFormat = "d MMM yyyy - HH:mm";
 
-GenericErrorItemWidget::GenericErrorItemWidget(std::shared_ptr<ClientGui> gui, const QString &errorMsg,
-                                               const ErrorInfo &errorInfo, QWidget *parent) :
+GenericErrorItemWidget::GenericErrorItemWidget(std::shared_ptr<ClientGui> gui, const QString &errorMsg, const Error &errorInfo,
+                                               QWidget *parent) :
     AbstractFileItemWidget(parent),
     _gui(gui),
     _errorInfo(errorInfo),
@@ -63,7 +63,7 @@ void GenericErrorItemWidget::init() {
             const bool useDestPath = _errorInfo.cancelType() == CancelType::MoveToBinFailed ||
                                      _errorInfo.cancelType() == CancelType::FileRescued ||
                                      _errorInfo.conflictType() == ConflictType::EditDelete;
-            const QString &filePath = useDestPath ? _errorInfo.destinationPath() : _errorInfo.path();
+            const QString &filePath = useDestPath ? Path2QStr(_errorInfo.destinationPath()) : Path2QStr(_errorInfo.path());
             setPathAndName(filePath, _errorInfo.nodeType());
         }
     }
@@ -71,7 +71,7 @@ void GenericErrorItemWidget::init() {
     // Right layout
     auto fileDateLabel = new QLabel(this);
     fileDateLabel->setObjectName("fileDateLabel");
-    const auto errorTime = _errorInfo.getTime();
+    const auto errorTime = _errorInfo.time();
     const QDateTime dateTime = errorTime ? QDateTime::fromSecsSinceEpoch(errorTime)
                                          : QDateTime::currentDateTime(); // If error time is not set, use current time.
     fileDateLabel->setText(GuiUtility::getDateForCurrentLanguage(dateTime, dateFormat));
@@ -91,7 +91,7 @@ void GenericErrorItemWidget::openFolder(const QString &path) {
         // Open in webview instead
         const auto &driveInfoMapIt = _gui->driveInfoMap().find(syncInfoMapIt->second.driveDbId());
         if (driveInfoMapIt != _gui->driveInfoMap().end()) {
-            _gui->onOpenWebviewItem(syncInfoMapIt->second.driveDbId(), _errorInfo.remoteNodeId());
+            _gui->onOpenWebviewItem(syncInfoMapIt->second.driveDbId(), QString::fromStdString(_errorInfo.remoteNodeId()));
             return;
         }
     }
@@ -110,7 +110,7 @@ bool GenericErrorItemWidget::openInWebview() const {
            _errorInfo.inconsistencyType() == InconsistencyType::ReservedName ||
            _errorInfo.inconsistencyType() == InconsistencyType::NameLength ||
            _errorInfo.inconsistencyType() == InconsistencyType::NotYetSupportedChar ||
-           (_errorInfo.conflictType() == ConflictType::EditDelete && !_errorInfo.remoteNodeId().isEmpty()) ||
+           (_errorInfo.conflictType() == ConflictType::EditDelete && !_errorInfo.remoteNodeId().empty()) ||
            (_errorInfo.exitCode() == ExitCode::BackError && _errorInfo.exitCause() == ExitCause::NotFound);
 }
 
