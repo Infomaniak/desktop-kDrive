@@ -30,10 +30,10 @@ set(libcommon_SRCS
     utility/logiffail.h utility/qlogiffail.h
     utility/urlhelper.h utility/urlhelper.cpp
     utility/timerutility.h
+    data/account.h data/account.cpp
     data/drive.h data/drive.cpp
     data/driveavailable.h data/driveavailable.cpp
-    info/userinfo.h info/userinfo.cpp
-    info/accountinfo.h info/accountinfo.cpp
+    data/user.h data/user.cpp
     info/syncinfo.h info/syncinfo.cpp
     info/nodeinfo.h info/nodeinfo.cpp
     info/nodeconflictinfo.h info/nodeconflictinfo.cpp
@@ -45,6 +45,7 @@ set(libcommon_SRCS
     info/proxyconfiginfo.h info/proxyconfiginfo.cpp
     info/searchinfo.h info/searchinfo.cpp
     info/packinfo.h info/packinfo.cpp
+    info/maintenanceinfo.h info/maintenanceinfo.cpp
     log/sentry/handler.h log/sentry/handler.cpp
     log/sentry/abstractptrace.h 
     log/sentry/abstractcounterscopedptrace.h
@@ -54,8 +55,6 @@ set(libcommon_SRCS
     log/sentry/ptrace.h log/sentry/utility.h
     log/customlogstreams.h
     theme/theme.h theme/theme.cpp
-        info/maintenanceinfo.cpp
-        info/maintenanceinfo.h
 )
 
 if(APPLE)

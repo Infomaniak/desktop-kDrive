@@ -47,7 +47,7 @@ ExitCode GuiRequests::getUserDbIdList(QList<UserDbId> &list) {
     return exitCode;
 }
 
-ExitCode GuiRequests::getUserInfoList(QList<UserInfo> &list) {
+ExitCode GuiRequests::getUserList(QList<User> &list) {
     QByteArray results;
     if (!CommClient::instance()->execute(RequestNum::USER_INFOLIST, {}, results)) {
         return ExitCode::SystemError;
@@ -215,7 +215,7 @@ ExitInfo GuiRequests::acknowledgeManyDelete(const SyncDbId syncDbId, const TooMa
     return exitCode;
 }
 
-ExitCode GuiRequests::getAccountInfoList(QList<AccountInfo> &list) {
+ExitCode GuiRequests::getAccountList(QList<Account> &list) {
     QByteArray results;
     if (!CommClient::instance()->execute(RequestNum::ACCOUNT_INFOLIST, {}, results)) {
         return ExitCode::SystemError;

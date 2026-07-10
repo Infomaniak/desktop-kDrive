@@ -1464,7 +1464,7 @@ bool ParmsDb::insertUser(const User &user) {
 bool ParmsDb::updateUser(const User &user, bool &found) {
     const std::scoped_lock lock(_mutex);
 
-    int errId;
+    int errId = 0;
     std::string error;
 
     LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_USER_REQUEST_ID));
@@ -1494,7 +1494,7 @@ bool ParmsDb::updateUser(const User &user, bool &found) {
 bool ParmsDb::deleteUser(const UserDbId dbId, bool &found) {
     const std::scoped_lock lock(_mutex);
 
-    int errId;
+    int errId = 0;
     std::string error;
 
     LOG_IF_FAIL(queryResetAndClearBindings(DELETE_USER_REQUEST_ID));
@@ -1558,6 +1558,8 @@ bool ParmsDb::selectUser(const UserDbId dbId, User &user, bool &found) {
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_USER_REQUEST_ID));
 
+    user.setConnected(!user.keychainKey().empty());
+
     return true;
 }
 
@@ -1605,6 +1607,8 @@ bool ParmsDb::selectUserByUserId(const UserId userId, User &user, bool &found) {
     user.setToMigrate(static_cast<bool>(setToMigrateResult));
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_USER_BY_USERID_REQUEST_ID));
+
+    user.setConnected(!user.keychainKey().empty());
 
     return true;
 }
@@ -1683,6 +1687,8 @@ bool ParmsDb::selectLastConnectedUser(User &user, bool &found) {
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_LAST_CONNECTED_USER_REQUEST_ID));
 
+    user.setConnected(!user.keychainKey().empty());
+
     return true;
 }
 
@@ -1722,8 +1728,9 @@ bool ParmsDb::selectAllUsers(std::vector<User> &userList) {
         int toMigrateResult{0};
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_USERS_REQUEST_ID, 8, toMigrateResult));
 
-        userList.push_back(User(userDbId, userId, keychainKey, name, firstName, email, avatarUrl, avatar,
-                                static_cast<bool>(toMigrateResult)));
+        User user(userDbId, userId, keychainKey, name, firstName, email, avatarUrl, avatar, static_cast<bool>(toMigrateResult));
+        user.setConnected(!keychainKey.empty());
+        userList.push_back(user);
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_USERS_REQUEST_ID));
 

@@ -20,12 +20,7 @@
 
 namespace KDC {
 
-UserInfoClient::UserInfoClient() :
-    UserInfo(),
-    _connectionError(QString()) {}
-
-UserInfoClient::UserInfoClient(const UserInfo &userInfo) :
-    UserInfo(userInfo),
-    _connectionError(QString()) {}
+UserInfoClient::UserInfoClient(const User &user) :
+    User(user) {}
 
 } // namespace KDC

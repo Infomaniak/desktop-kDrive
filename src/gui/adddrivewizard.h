@@ -26,8 +26,6 @@
 #include "adddriveextensionsetupwidget.h"
 #include "adddriveconfirmationwidget.h"
 #include "adddrivelistwidget.h"
-#include "libcommon/info/userinfo.h"
-#include "libcommon/info/accountinfo.h"
 #include "libcommon/info/syncinfo.h"
 
 #include <QStackedWidget>
