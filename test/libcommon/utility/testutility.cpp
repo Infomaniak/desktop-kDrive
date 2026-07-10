@@ -973,11 +973,12 @@ void TestUtility::testFileSystemInfo() {
     CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(R"(C:\)", fsType, mountPoint) && fsType == "NTFS" && mountPoint == R"(C:\)");
     CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(R"(C:\windows)", fsType, mountPoint) && fsType == "NTFS" && mountPoint == R"(C:\)");
 #else
+    std::string fsTypeResult;
     if (testhelpers::isRunningOnCI()) {
         // Docker containers use overlayfs
-        const std::string fsTypeResult{"OVERLAYFS"};
+        fsTypeResult = "OVERLAYFS";
     } else {
-        const std::string fsTypeResult{"EXT234"};
+        fsTypeResult = "EXT234";
     }
     CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/", fsType, mountPoint) && fsType == fsTypeResult && mountPoint == "/");
     CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(std::filesystem::weakly_canonical("."), fsType, mountPoint) &&
@@ -1030,11 +1031,12 @@ void TestUtility::testFileSystemType() {
     CPPUNIT_ASSERT_EQUAL(std::string("NTFS"), CommonUtility::fileSystemType("C:\\", fallbackFSType));
     CPPUNIT_ASSERT_EQUAL(std::string("NTFS"), fallbackFSType);
 #else
+    std::string fsTypeResult;
     if (testhelpers::isRunningOnCI()) {
         // Docker containers use overlayfs
-        const std::string fsTypeResult{"OVERLAYFS"};
+        fsTypeResult = "OVERLAYFS";
     } else {
-        const std::string fsTypeResult{"EXT234"};
+        fsTypeResult = "EXT234";
     }
     CPPUNIT_ASSERT_EQUAL(fsTypeResult, CommonUtility::fileSystemType("/", fallbackFSType));
     CPPUNIT_ASSERT_EQUAL(std::string("EXT234"), fallbackFSType);
