@@ -43,7 +43,7 @@ Item {
             Text {
                 width: parent.width
                 text: root.onboardingFlowController.synchronizationFailed
-                      ? qsTr("An unexpected error occurred")
+                      ? qsTrId("defaultErrorTitle")
                       : root.onboardingFlowController.title
                 color: IKColors.textPrimary
                 font.pixelSize: IKFonts.largeTitleSize
@@ -56,8 +56,8 @@ Item {
             Text {
                 width: parent.width
                 text: root.onboardingFlowController.synchronizationFailed
-                      ? qsTr("Please try again in a few moments.\nIf the problem persists, please contact support.")
-                      : qsTr("Your kDrive files are being synchronized.\nPlease wait a few moments.")
+                      ? qsTrId("unexpectedErrorTeachingTipContent")
+                      : qsTrId("onboardingSynchronizationInProgressDescription")
                 color: IKColors.textSecondary
                 font.pixelSize: IKFonts.bodySize
                 lineHeightMode: Text.FixedHeight
@@ -71,7 +71,7 @@ Item {
 
             visible: root.onboardingFlowController.synchronizationFailed
             height: IKOnboarding.completionButtonHeight
-            text: qsTr("Retry")
+            text: qsTrId("buttonRetry")
             onClicked: root.onboardingFlowController.retrySynchronization()
 
             contentItem: Text {
