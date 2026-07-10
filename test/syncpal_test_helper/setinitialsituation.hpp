@@ -51,6 +51,10 @@ class Situation {
 
         explicit Situation(const StringType &jsonDescription);
 
+        // Reads the JSON from a file instead of an inline string. Throws the same way the
+        // constructor does if the content isn't valid.
+        [[nodiscard]] static Situation fromFile(const std::filesystem::path &filePath);
+
         const StringType &json() const noexcept;
 
         bool operator==(const Situation &other) const noexcept;

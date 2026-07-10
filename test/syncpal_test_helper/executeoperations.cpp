@@ -18,12 +18,28 @@
 
 #include "executeoperations.hpp"
 
+#include "syncpal/syncpal.h"
 #include "test_utility/testhelpers.h"
 
+#include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
+
+#include "jobs/local/localcreatedirjob.h"
+#include "jobs/local/synclocaldeletejob.h"
+#include "jobs/local/localmovejob.h"
+#include "jobs/local/localcopyjob.h"
+
+#include "jobs/network/kDrive_API/createdirjob.h"
+#include "jobs/network/kDrive_API/createdirjob.h"
+#include "jobs/network/kDrive_API/deletejob.h"
+#include "jobs/network/kDrive_API/movejob.h"
+#include "jobs/network/kDrive_API/copytodirectoryjob.h"
 
 #include <Poco/JSON/Array.h>
 #include <Poco/JSON/Parser.h>
+
+#include <fstream>
+#include <sstream>
 
 namespace KDC {
 
@@ -52,6 +68,15 @@ Operations::Operations(const StringType &jsonDescription) :
     if (!obj->has("operations") || !obj->isArray("operations")) {
         throw OperationsParserException("Operations must contain an 'operations' array");
     }
+}
+
+Operations Operations::fromFile(const std::filesystem::path &filePath) {
+    std::ifstream file(filePath, std::ios::binary);
+    if (!file) throw std::runtime_error("Operations::fromFile: unable to open file: " + filePath.string());
+
+    std::ostringstream buffer;
+    buffer << file.rdbuf();
+    return Operations(Str2SyncName(buffer.str()));
 }
 
 const Operations::StringType &Operations::json() const noexcept {
@@ -158,22 +183,38 @@ void ExecuteOperations::applyOperation(const ReplicaSide side, const OperationDe
     switch (side) {
         case ReplicaSide::Local: {
             switch (desc.type) {
-                case OperationType::Create:
-                    // TODO: create desc.path (directory or file, see desc.itemType) under _syncPal->localPath(),
-                    // e.g. LocalCreateDirJob for a directory, or a plain file write for a file.
+                case OperationType::Create: {
+                    const SyncPath fullPath = _syncPal->localPath() / desc.path;
+                    IoError ioError = IoError::Success;
+                    if (desc.itemType == NodeType::Directory) {
+                        auto job = std::make_shared<LocalCreateDirJob>(fullPath);
+                        job->runSynchronously();
+                    } else {
+                        (void) IoHelper::createDirectory(fullPath.parent_path(), true, ioError);
+                        testhelpers::generateTestFile(fullPath, static_cast<uint64_t>(desc.size));
+                    }
                     break;
-                case OperationType::Edit:
-                    // TODO: edit the local file at _syncPal->localPath() / desc.path (content/size/mtime, see
-                    // desc.size / desc.lastModifiedAt).
+                }
+                case OperationType::Edit: {
+                    const SyncPath fullPath = _syncPal->localPath() / desc.path;
+                    testhelpers::setTestFileSize(fullPath, static_cast<uint64_t>(desc.size));
+                    IoError ioError = IoError::Success;
+                    (void) IoHelper::setFileDates(fullPath, desc.createdAt, desc.lastModifiedAt, false);
                     break;
-                case OperationType::Delete:
-                    // TODO: delete the local item at _syncPal->localPath() / desc.path,
-                    // e.g. GenericLocalDeleteJob / SyncLocalDeleteJob.
+                }
+                case OperationType::Delete: {
+                    const SyncPath fullPath = _syncPal->localPath() / desc.path;
+                    GenericLocalDeleteJob deleteJob(fullPath);
+                    (void) deleteJob.runSynchronously();
                     break;
-                case OperationType::Move:
-                    // TODO: move/rename the local item from _syncPal->localPath() / desc.fromPath to
-                    // _syncPal->localPath() / desc.toPath, e.g. LocalMoveJob.
+                }
+                case OperationType::Move: {
+                    const SyncPath fullFromPath = _syncPal->localPath() / desc.fromPath;
+                    const SyncPath fullToPath = _syncPal->localPath() / desc.toPath;
+                    LocalMoveJob job(fullFromPath, fullToPath);
+                    (void) job.runSynchronously();
                     break;
+                }
                 default:
                     throw OperationsParserException("Unsupported operation type: " + toString(desc.type));
             }

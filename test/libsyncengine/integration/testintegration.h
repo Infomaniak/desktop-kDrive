@@ -138,6 +138,10 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
                 bool isValid() const { return !id.empty(); }
         };
         RemoteFileInfo getRemoteFileInfoByName(int driveDbId, const NodeId &parentId, const SyncName &name) const;
+        // Resolves a possibly multi-segment relative path (e.g. "A/AA/BBB") by walking down the remote tree one
+        // path component at a time, starting from rootParentId. Returns an invalid RemoteFileInfo as soon as any
+        // segment along the way cannot be found (in particular if the leaf itself doesn't exist).
+        RemoteFileInfo getRemoteFileInfoByPath(int driveDbId, const NodeId &rootParentId, const SyncPath &relativePath) const;
         int64_t countItemsInRemoteDir(int driveDbId, const NodeId &parentId) const;
 
         log4cplus::Logger _logger;

@@ -240,44 +240,56 @@ void TestIntegration::testUploadBigFile() {
     logStep("testUploadBigFile");
 }
 
-/*
-// Very simple example test: create a local file and upload it, then check that it exists on the remote replica.
-void TestIntegration::testSimpleUpload() {
-    // Create a local file.
-    const SyncPath localFilePath = _syncPal->localPath() / "testSimpleUpload.txt";
-    testhelpers::generateOrEditTestFile(localFilePath);
-
-    // Upload it to the remote sync directory.
-    UploadJob job(nullptr, _driveDbId, localFilePath, localFilePath.filename(), _remoteSyncDir.id(), testhelpers::defaultTime,
-                  testhelpers::defaultTime);
-    (void) job.runSynchronously();
-
-    // Verify that the file now exists on the remote replica.
-    const auto remoteFileInfo = getRemoteFileInfoByName(_driveDbId, _remoteSyncDir.id(), localFilePath.filename());
-    CPPUNIT_ASSERT(remoteFileInfo.isValid());
-    logStep("testSimpleUpload");
-}*/
-
 void TestIntegration::testSimpleUpload() {
     SyncpalTestHelper testHelper(_syncPal);
     testHelper.setUp();
+
+    testHelper.executeSyncUntilEnd();
 
     // Describe one operation: create a file. Applied to Local it creates the file on disk;
     // applied to Remote it's meant to upload that same file (still a TODO in
     // ExecuteOperations::applyOperation - right now the Remote/Create case is a no-op, so this
     // call succeeds without doing anything until you add the UploadJob there).
-    const Operations operations(Str2SyncName(R"({
-        "operations": [
-            { "type": "Create", "itemType": "File", "name": "testSimpleUpload.txt" }
+    const Situation situation(Str2SyncName(R"({
+        "content" : [
+            {
+                "type" : "Directory",
+                "name" : "A",
+                "createdAt" : 20260601000000,
+                "lastModifiedAt" : 20260601000000,
+                "content" : [ {"type" : "Directory", "name" : "AA", "content" : [ {"type" : "File", "name" : "AAA"} ]} ]
+            },
+            {"type" : "Directory", "name" : "B"}, {"type" : "File", "name" : "C", "size" : 1234}
         ]
     })"));
 
-    CPPUNIT_ASSERT(testHelper.executeOperations(ReplicaSide::Local, operations));
-    CPPUNIT_ASSERT(testHelper.executeOperations(ReplicaSide::Remote, operations));
+    const Operations localoperations(Str2SyncName(R"({
+        "operations": [
+            { "type": "Delete", "path":"A/AA/AAA" },
+            { "type": "Create", "itemType": "File", "name": "A/AA/BBB" }
+        ]
+    })"));
 
-    // Verify that the file now exists on the remote replica.
-    const auto remoteFileInfo = getRemoteFileInfoByName(_driveDbId, _remoteSyncDir.id(), SyncPath("testSimpleUpload.txt"));
+    const Operations remoteoperations(Str2SyncName(R"({
+        "operations": [
+            { "type": "Move", "fromPath":"B", "toPath":"C" }
+        ]
+    })"));
+
+    testHelper.setInitialSituation(situation, situation);
+    CPPUNIT_ASSERT(testHelper.executeOperations(ReplicaSide::Local, localoperations));
+    //CPPUNIT_ASSERT(testHelper.executeOperations(ReplicaSide::Remote, remoteoperations));
+
+    // The local Create operation above wrote the file directly to disk, bypassing the sync engine, so we
+    // need to wait for the SyncPal to detect it and upload it to the remote replica before checking below.
+    testHelper.executeSyncUntilEnd();
+
+    // Verify that the new file now exists on the remote replica...
+    const auto remoteFileInfo = getRemoteFileInfoByPath(_driveDbId, _remoteSyncDir.id(), SyncPath("A/AA/BBB"));
     CPPUNIT_ASSERT(remoteFileInfo.isValid());
+    // ...and that the deleted one is gone.
+    const auto remoteDeletedFileInfo = getRemoteFileInfoByPath(_driveDbId, _remoteSyncDir.id(), SyncPath("A/AA/AAA"));
+    CPPUNIT_ASSERT(!remoteDeletedFileInfo.isValid());
 
     testHelper.tearDown();
     logStep("testSimpleUpload");

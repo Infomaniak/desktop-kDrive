@@ -32,6 +32,9 @@
 #include <Poco/JSON/Array.h>
 #include <Poco/JSON/Parser.h>
 
+#include <fstream>
+#include <sstream>
+
 namespace KDC {
 
 static const std::string localIdSuffix = "l_";
@@ -57,6 +60,15 @@ Situation::Situation(const StringType &jsonDescription) :
     } catch (Poco::Exception &) {
         throw SituationGeneratorException("Invalid Situation JSON");
     }
+}
+
+Situation Situation::fromFile(const std::filesystem::path &filePath) {
+    std::ifstream file(filePath, std::ios::binary);
+    if (!file) throw std::runtime_error("Situation::fromFile: unable to open file: " + filePath.string());
+
+    std::ostringstream buffer;
+    buffer << file.rdbuf();
+    return Situation(Str2SyncName(buffer.str()));
 }
 
 const Situation::StringType &Situation::json() const noexcept {
@@ -90,10 +102,11 @@ SetInitialSituation::SetInitialSituation() {
 SetInitialSituation::SetInitialSituation(const std::shared_ptr<SyncPal> syncPal) :
     _syncPal(syncPal),
     _syncDb(syncPal->syncDb()),
-    _localLiveSnapshot(syncPal->_localFSObserverWorker->_liveSnapshot),
-    _remoteLiveSnapshot(syncPal->_remoteFSObserverWorker->_liveSnapshot),
     _localUpdateTree(syncPal->updateTree(ReplicaSide::Local)),
-    _remoteUpdateTree(syncPal->updateTree(ReplicaSide::Remote)) {}
+    _remoteUpdateTree(syncPal->updateTree(ReplicaSide::Remote)) {
+    if (syncPal->_localFSObserverWorker) _localLiveSnapshot = syncPal->_localFSObserverWorker->_liveSnapshot;
+    if (syncPal->_remoteFSObserverWorker) _remoteLiveSnapshot = syncPal->_remoteFSObserverWorker->_liveSnapshot;
+}
 
 void SetInitialSituation::setSyncpal(const std::shared_ptr<SyncPal> syncPal) {
     _syncPal = syncPal;
@@ -297,7 +310,8 @@ DbNodeId SetInitialSituation::insertInDb(const ItemDesc &desc, const NodeId &par
     return dbNodeId;
 }
 
-std::shared_ptr<Node> SetInitialSituation::insertInUpdateTree(const ReplicaSide side, const ItemDesc &desc, const NodeId &parentId,
+std::shared_ptr<Node> SetInitialSituation::insertInUpdateTree(const ReplicaSide side, const ItemDesc &desc,
+                                                              const NodeId &parentId,
                                                               const std::optional<DbNodeId> dbNodeId) const {
     const auto parentNode =
             parentId.empty() ? updateTree(side)->rootNode() : updateTree(side)->getNodeById(generateId(side, parentId));

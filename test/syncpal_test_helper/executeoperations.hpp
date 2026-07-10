@@ -48,6 +48,10 @@ class Operations {
 
         explicit Operations(const StringType &jsonDescription); // throws if jsonDescription is not valid
 
+        // Reads the JSON from a file instead of an inline string. Throws the same way the
+        // constructor does if the content isn't valid.
+        [[nodiscard]] static Operations fromFile(const std::filesystem::path &filePath);
+
         const StringType &json() const noexcept;
 
         void log() const;
