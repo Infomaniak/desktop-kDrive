@@ -23,7 +23,6 @@ import InfomaniakConcurrency
 import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
-import OrderedCollections
 
 @MainActor
 final class DriveSelectionViewModel: ObservableObject {
@@ -88,6 +87,7 @@ final class DriveSelectionViewModel: ObservableObject {
                     .filter { Int($0.user.dbId) == currentUserDbId && !$0.drive.synchros.isEmpty }
                     .map { UIDrive(drive: $0.drive) }
             }
+            .removeDuplicates()
             .receiveOnMain(store: &bindStore) { [weak self] synchronizedDrives in
                 self?.synchronizedDrives = synchronizedDrives
             }
