@@ -28,3 +28,15 @@ namespace KDC::AppConstants::Login {
 }
 
 } // namespace KDC::AppConstants::Login
+
+namespace KDC::AppConstants::Onboarding {
+
+[[nodiscard]] inline QUrl driveOffersUri() {
+    return QUrl{QStringLiteral("https://www.infomaniak.com/gtl/myksuite#prices")};
+}
+
+[[nodiscard]] inline QUrl freeDriveOrderUri() {
+    return QUrl{QStringLiteral("https://shop.infomaniak.com/order/select/drive")};
+}
+
+} // namespace KDC::AppConstants::Onboarding

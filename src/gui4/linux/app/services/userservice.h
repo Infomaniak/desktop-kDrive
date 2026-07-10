@@ -28,6 +28,7 @@
 
 #include <cstdint>
 #include <unordered_map>
+#include <unordered_set>
 
 namespace KDC {
 
@@ -53,12 +54,15 @@ class UserService : public QObject {
         Q_INVOKABLE void loadAvailableDrives(qint64 userDbId);
         Q_INVOKABLE void deleteUser(qint64 userDbId);
         Q_INVOKABLE void requestLoginToken(const QString &code, const QString &codeVerifier);
+        void invalidateAvailableDrivesRequest(UserDbId userDbId);
+        void invalidateLoginTokenRequest();
         Q_INVOKABLE [[nodiscard]] bool isLoadAvailableDrivesPending(qint64 userDbId) const;
         Q_INVOKABLE [[nodiscard]] bool isDeleteUserPending(qint64 userDbId) const;
         Q_INVOKABLE [[nodiscard]] bool isLoginPending() const;
 
     signals:
         void loadingChanged();
+        void availableDrivesLoadingChanged(UserDbId userDbId);
         void loginTokenSucceeded(qint64 userDbId);
         void loginTokenFailed(const QString &error, const QString &errorDescription);
         void availableDrivesLoaded(UserDbId userDbId);
@@ -80,6 +84,10 @@ class UserService : public QObject {
         ServiceActionTracker &_serviceActionTracker;
         ServiceEventBus &_serviceEventBus;
         std::unordered_map<UserDbId, uint64_t> _availableDriveLoadGenerations;
+        std::unordered_map<UserDbId, std::unordered_set<uint64_t>> _pendingAvailableDriveLoadGenerations;
+        std::unordered_set<uint64_t> _pendingLoginTokenGenerations;
+        uint64_t _nextAvailableDriveLoadGeneration{1};
+        uint64_t _loginTokenGeneration{0};
         bool _loading{false};
 };
 

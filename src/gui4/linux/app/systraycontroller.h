@@ -71,6 +71,7 @@ class SystemTrayController final : public QObject {
 
     signals:
         void quitRequested();
+        void openMainWindowRequested();
         void trayModeActiveChanged(bool active);
 
     private:
@@ -81,7 +82,7 @@ class SystemTrayController final : public QObject {
         void refreshIconState();
         void reconcileKnownSyncStatuses();
         void onSyncProgressInfo(SyncDbId syncDbId, SyncStatus status);
-        void onTrayActivated(QSystemTrayIcon::ActivationReason reason) const;
+        void onTrayActivated(QSystemTrayIcon::ActivationReason reason);
 
         AppCache *_appCache = nullptr;
         QPointer<QWindow> _mainWindow;

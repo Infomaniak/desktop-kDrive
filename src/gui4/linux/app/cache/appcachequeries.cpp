@@ -114,6 +114,14 @@ std::optional<UserInfo> AppCache::user(const UserDbId userDbId) const {
     return it->second.info;
 }
 
+std::optional<UserDisplayInfo> AppCache::userDisplayInfo(const UserDbId userDbId) const {
+    const auto it = _usersByDbId.find(userDbId);
+    if (it == _usersByDbId.end()) {
+        return std::nullopt;
+    }
+    return it->second.info;
+}
+
 std::optional<AccountInfo> AppCache::account(const AccountDbId accountDbId) const {
     const auto it = _accountsByDbId.find(accountDbId);
     if (it == _accountsByDbId.end()) {
