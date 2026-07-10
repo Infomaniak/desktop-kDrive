@@ -18,25 +18,26 @@
 
 #pragma once
 
-#include <QString>
-#include <QUrl>
+#include "libcommon/utility/types.h"
 
-namespace KDC::AppConstants::Login {
+#include <cstdint>
+#include <optional>
 
-[[nodiscard]] inline QUrl signupUri() {
-    return QUrl{QStringLiteral("https://welcome.infomaniak.com/signup")};
-}
+namespace KDC {
 
-} // namespace KDC::AppConstants::Login
+class AppCache;
 
-namespace KDC::AppConstants::Onboarding {
+struct OnboardingEntryDecision {
+        enum class EntryPoint : uint8_t {
+            Inactive,
+            Login,
+            DriveSelection,
+        };
 
-[[nodiscard]] inline QUrl driveOffersUri() {
-    return QUrl{QStringLiteral("https://www.infomaniak.com/gtl/myksuite#prices")};
-}
+        EntryPoint entryPoint{EntryPoint::Inactive};
+        std::optional<UserDbId> selectedUserDbId;
+};
 
-[[nodiscard]] inline QUrl freeDriveOrderUri() {
-    return QUrl{QStringLiteral("https://shop.infomaniak.com/order/select/drive")};
-}
+[[nodiscard]] OnboardingEntryDecision determineOnboardingEntry(const AppCache &appCache);
 
-} // namespace KDC::AppConstants::Onboarding
+} // namespace KDC
