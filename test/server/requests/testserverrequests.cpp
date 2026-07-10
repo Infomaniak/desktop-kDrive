@@ -312,5 +312,131 @@ void TestServerRequests::testFolderContainsNonExcludedItemMixed() {
                          ServerRequests::folderContainsNonExcludedItem(dir.path(), containsNonExcludedFile));
     CPPUNIT_ASSERT(containsNonExcludedFile);
 }
+static void insertRule(const SyncPath &path, SyncFolderRuleType type) {
+    bool constraintError = false;
+    (void) ParmsDb::instance()->insertSyncFolderRule(SyncFolderRule(path, type), constraintError);
+}
+
+static void clearRules() {
+    std::vector<SyncFolderRule> rules;
+    (void) ParmsDb::instance()->selectAllSyncFolderRules(rules);
+    for (const auto &rule: rules) {
+        bool found = false;
+        (void) ParmsDb::instance()->deleteSyncFolderRule(rule.syncPath(), found);
+    }
+}
+
+void TestServerRequests::isSyncFolderAllowedByRules_allowsAnyPathWhenNoRulesExist() {
+    clearRules();
+    bool allowed = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ServerRequests::isSyncFolderAllowedByRules("/some/arbitrary/path", allowed));
+    CPPUNIT_ASSERT(allowed);
+}
+
+void TestServerRequests::isSyncFolderAllowedByRules_deniesPathNotMatchingAnyRule() {
+    clearRules();
+    insertRule("/home/user/Documents", SyncFolderRuleType::WhiteList);
+    bool allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ServerRequests::isSyncFolderAllowedByRules("/opt/someapp/data", allowed));
+    CPPUNIT_ASSERT(!allowed);
+}
+
+void TestServerRequests::isSyncFolderAllowedByRules_allowsPathMatchingWhiteListRule() {
+    clearRules();
+    insertRule("/home/user/Documents", SyncFolderRuleType::WhiteList);
+    bool allowed = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ServerRequests::isSyncFolderAllowedByRules("/home/user/Documents", allowed));
+    CPPUNIT_ASSERT(allowed);
+}
+
+void TestServerRequests::isSyncFolderAllowedByRules_allowsSubfolderOfWhiteListRule() {
+    clearRules();
+    insertRule("/home/user/Documents", SyncFolderRuleType::WhiteList);
+    bool allowed = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
+                         ServerRequests::isSyncFolderAllowedByRules("/home/user/Documents/Projects", allowed));
+    CPPUNIT_ASSERT(allowed);
+}
+
+void TestServerRequests::isSyncFolderAllowedByRules_deniesPathMatchingBlackListRule() {
+    clearRules();
+    insertRule("/home/user/.cache", SyncFolderRuleType::BlackList);
+    bool allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ServerRequests::isSyncFolderAllowedByRules("/home/user/.cache", allowed));
+    CPPUNIT_ASSERT(!allowed);
+}
+
+void TestServerRequests::isSyncFolderAllowedByRules_deniesSubfolderOfBlackListRule() {
+    clearRules();
+    insertRule("/home/user/.cache", SyncFolderRuleType::BlackList);
+    bool allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
+                         ServerRequests::isSyncFolderAllowedByRules("/home/user/.cache/thumbnails", allowed));
+    CPPUNIT_ASSERT(!allowed);
+}
+
+void TestServerRequests::isSyncFolderAllowedByRules_allowsSubfolderOfWhiteListSubFolderRule() {
+    clearRules();
+    insertRule("/home/user", SyncFolderRuleType::WhiteListSubFolder);
+    bool allowed = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ServerRequests::isSyncFolderAllowedByRules("/home/user/Documents", allowed));
+    CPPUNIT_ASSERT(allowed);
+}
+
+void TestServerRequests::isSyncFolderAllowedByRules_deniesExactPathOfWhiteListSubFolderRule() {
+    clearRules();
+    insertRule("/home/user", SyncFolderRuleType::WhiteListSubFolder);
+    bool allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ServerRequests::isSyncFolderAllowedByRules("/home/user", allowed));
+    CPPUNIT_ASSERT(!allowed);
+}
+
+
+void TestServerRequests::isSyncFolderAllowedByRules_deeperRuleWinsOverShallowerRule() {
+    clearRules();
+    // Parent whitelists /home/user, but a deeper blacklist blocks /home/user/.cache
+    insertRule("/home/user", SyncFolderRuleType::WhiteListSubFolder);
+    insertRule("/home/user/.cache", SyncFolderRuleType::BlackList);
+    bool allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
+                         ServerRequests::isSyncFolderAllowedByRules("/home/user/.cache/thumbnails", allowed));
+    CPPUNIT_ASSERT(!allowed);
+}
+
+void TestServerRequests::isSyncFolderAllowedByRules_blackListSubfolderInsideWhiteListSubFolderParent() {
+    clearRules();
+    insertRule("/home/user", SyncFolderRuleType::WhiteListSubFolder);
+    insertRule("/home/user/.local/share/Trash", SyncFolderRuleType::BlackList);
+    bool allowed = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ServerRequests::isSyncFolderAllowedByRules("/home/user/Documents", allowed));
+    CPPUNIT_ASSERT(allowed);
+
+    allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
+                         ServerRequests::isSyncFolderAllowedByRules("/home/user/.local/share/Trash/file.txt", allowed));
+    CPPUNIT_ASSERT(!allowed);
+}
+
+void TestServerRequests::isSyncFolderAllowedByRules_expandsHomeDirVariable() {
+    clearRules();
+    // Insert rule using $HOME variable, mirroring what sync-folder-rules-linux.csv does
+    insertRule("$HOME", SyncFolderRuleType::WhiteListSubFolder);
+    insertRule("$HOME/.cache", SyncFolderRuleType::BlackList);
+
+    const SyncPath homeDir = QStr2Path(QDir::homePath());
+    bool allowed = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ServerRequests::isSyncFolderAllowedByRules(homeDir / "Documents", allowed));
+    CPPUNIT_ASSERT(allowed);
+
+    allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
+                         ServerRequests::isSyncFolderAllowedByRules(homeDir / ".cache" / "thumbnails", allowed));
+    CPPUNIT_ASSERT(!allowed);
+
+    allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ServerRequests::isSyncFolderAllowedByRules(homeDir, allowed));
+    CPPUNIT_ASSERT(!allowed);
+}
+
 
 } // namespace KDC

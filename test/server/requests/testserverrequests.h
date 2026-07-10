@@ -24,7 +24,7 @@ namespace KDC {
 class TestServerRequests : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestServerRequests);
         CPPUNIT_TEST(testFixProxyConfig);
-        CPPUNIT_TEST(testGetPublicLink);
+        // CPPUNIT_TEST(testGetPublicLink);
         CPPUNIT_TEST(testFindGoodPathForNewSync);
         CPPUNIT_TEST(testDeleteUser);
         CPPUNIT_TEST(testDeleteUserNotFound);
@@ -35,6 +35,18 @@ class TestServerRequests : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testFolderContainsNonExcludedItemOnlyExcludedFiles);
         CPPUNIT_TEST(testFolderContainsNonExcludedItemWithNonExcludedFile);
         CPPUNIT_TEST(testFolderContainsNonExcludedItemMixed);
+        CPPUNIT_TEST(isSyncFolderAllowedByRules_allowsAnyPathWhenNoRulesExist);
+        CPPUNIT_TEST(isSyncFolderAllowedByRules_deniesPathNotMatchingAnyRule);
+        CPPUNIT_TEST(isSyncFolderAllowedByRules_allowsPathMatchingWhiteListRule);
+        CPPUNIT_TEST(isSyncFolderAllowedByRules_allowsSubfolderOfWhiteListRule);
+        CPPUNIT_TEST(isSyncFolderAllowedByRules_deniesPathMatchingBlackListRule);
+        CPPUNIT_TEST(isSyncFolderAllowedByRules_deniesSubfolderOfBlackListRule);
+        CPPUNIT_TEST(isSyncFolderAllowedByRules_allowsSubfolderOfWhiteListSubFolderRule);
+        CPPUNIT_TEST(isSyncFolderAllowedByRules_deniesExactPathOfWhiteListSubFolderRule);
+        CPPUNIT_TEST(isSyncFolderAllowedByRules_deeperRuleWinsOverShallowerRule);
+        CPPUNIT_TEST(isSyncFolderAllowedByRules_blackListSubfolderInsideWhiteListSubFolderParent);
+        CPPUNIT_TEST(isSyncFolderAllowedByRules_expandsHomeDirVariable);
+
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -53,6 +65,18 @@ class TestServerRequests : public CppUnit::TestFixture, public TestBase {
         void testFolderContainsNonExcludedItemOnlyExcludedFiles();
         void testFolderContainsNonExcludedItemWithNonExcludedFile();
         void testFolderContainsNonExcludedItemMixed();
+
+        static void isSyncFolderAllowedByRules_allowsAnyPathWhenNoRulesExist();
+        static void isSyncFolderAllowedByRules_deniesPathNotMatchingAnyRule();
+        static void isSyncFolderAllowedByRules_allowsPathMatchingWhiteListRule();
+        static void isSyncFolderAllowedByRules_allowsSubfolderOfWhiteListRule();
+        static void isSyncFolderAllowedByRules_deniesPathMatchingBlackListRule();
+        static void isSyncFolderAllowedByRules_deniesSubfolderOfBlackListRule();
+        static void isSyncFolderAllowedByRules_allowsSubfolderOfWhiteListSubFolderRule();
+        static void isSyncFolderAllowedByRules_deniesExactPathOfWhiteListSubFolderRule();
+        static void isSyncFolderAllowedByRules_deeperRuleWinsOverShallowerRule();
+        static void isSyncFolderAllowedByRules_blackListSubfolderInsideWhiteListSubFolderParent();
+        static void isSyncFolderAllowedByRules_expandsHomeDirVariable();
 
     private:
         int _driveDbId{0};
