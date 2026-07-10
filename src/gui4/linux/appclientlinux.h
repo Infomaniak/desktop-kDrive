@@ -38,6 +38,7 @@
 #include <QApplication>
 #include <QLoggingCategory>
 #include <QQmlApplicationEngine>
+#include <QTranslator>
 
 namespace KDC {
 
