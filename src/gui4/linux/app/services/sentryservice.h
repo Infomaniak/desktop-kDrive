@@ -18,8 +18,6 @@
 
 #pragma once
 
-#include "libcommon/info/parametersinfo.h"
-
 #include <QObject>
 #include <QString>
 
@@ -29,7 +27,8 @@
 namespace KDC {
 
 class AppCache;
-class CommService;
+class ParametersService;
+class ParametersStore;
 
 /**
  * Linux v4 Sentry coordinator.
@@ -41,7 +40,8 @@ class SentryService final : public QObject {
         Q_OBJECT
 
     public:
-        explicit SentryService(CommService &commService, AppCache &appCache, QObject *parent = nullptr);
+        explicit SentryService(ParametersService &parametersService, AppCache &appCache, ParametersStore &parametersStore,
+                               QObject *parent = nullptr);
 
         [[nodiscard]] static std::optional<bool> readCachedConsent();
         static void writeCachedConsent(bool enabled);
@@ -55,17 +55,16 @@ class SentryService final : public QObject {
         [[noreturn]] static void reportFatalAndExit(const char *title, const char *message);
         [[noreturn]] static void reportFatalAndExit(const QString &title, const QString &message);
 
-        void reconcileConsentWithServer();
-        void setConsent(bool enabled);
+        void setConsent(bool enabled) const;
         void updateAuthenticatedUser() const;
 
     private:
+        void reconcileConsentWithParametersStore();
         void applyConsent(bool enabled);
-        void setCurrentParametersInfo(const ParametersInfo &parametersInfo);
 
-        CommService &_commService;
+        ParametersService &_parametersService;
         AppCache &_appCache;
-        std::optional<ParametersInfo> _currentParametersInfo;
+        ParametersStore &_parametersStore;
 };
 
 } // namespace KDC
