@@ -37,17 +37,30 @@ Q_LOGGING_CATEGORY(lcCachePopulator, "gui.v4.cachepopulator", QtInfoMsg)
 }
 } // namespace
 
-CachePopulator::CachePopulator(CommService &commService, AppCache &appCache, QObject *const parent) :
+CachePopulator::CachePopulator(CommService &commService, AppCache &appCache, ParametersStore &parametersStore,
+                               QObject *const parent) :
     QObject(parent),
     _commService(commService),
-    _appCache(appCache) {}
+    _appCache(appCache),
+    _parametersStore(parametersStore) {}
 
 void CachePopulator::bootstrap() {
-    loadUsers(PopulationMode::Bootstrap);
+    loadParameters(PopulationMode::Bootstrap);
+}
+
+void CachePopulator::loadParameters(const PopulationMode mode) {
+    _commService.requestParametersInfo([this, mode](const ExitInfo &exitInfo, const ParametersInfo &parametersInfo) {
+        if (!exitInfo && handlePopulationFailure("parameters", exitInfo, mode)) {
+            return;
+        }
+
+        _parametersStore.replaceParametersInfo(parametersInfo);
+        loadUsers(mode);
+    });
 }
 
 void CachePopulator::reconcile() {
-    loadUsers(PopulationMode::Reconciliation);
+    loadParameters(PopulationMode::Reconciliation);
 }
 
 void CachePopulator::loadUsers(const PopulationMode mode) {
