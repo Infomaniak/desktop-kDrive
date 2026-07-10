@@ -55,7 +55,7 @@ void User::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, userDbIdKey, _dbId);
     CommonUtility::writeValueToStruct(dstruct, userUserIdKey, _userId);
     CommonUtility::writeValueToStruct(dstruct, userNameKey, CommonUtility::str2CommString(_name));
-    CommonUtility::writeValueToStruct(dstruct, userFirstNameKey, CommonUtility::str2CommString(_firstName));
+    CommonUtility::writeValueToStruct(dstruct, userFirstNameKey, CommonUtility::str2CommString(firstName()));
     CommonUtility::writeValueToStruct(dstruct, userEmailKey, CommonUtility::str2CommString(_email));
 
     if (_avatar) {
