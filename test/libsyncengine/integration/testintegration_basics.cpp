@@ -244,7 +244,7 @@ void TestIntegration::testSimpleUpload() {
     SyncpalTestHelper testHelper(_syncPal);
     testHelper.setUp();
 
-    testHelper.executeSyncUntilEnd();
+    CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
 
     // Describe one operation: create a file. Applied to Local it creates the file on disk;
     // applied to Remote it's meant to upload that same file (still a TODO in
@@ -262,6 +262,7 @@ void TestIntegration::testSimpleUpload() {
             {"type" : "Directory", "name" : "B"}, {"type" : "File", "name" : "C", "size" : 1234}
         ]
     })"));
+    testHelper.setInitialSituation(situation, situation);
 
     const Operations localoperations(Str2SyncName(R"({
         "operations": [
@@ -269,20 +270,11 @@ void TestIntegration::testSimpleUpload() {
             { "type": "Create", "itemType": "File", "name": "A/AA/BBB" }
         ]
     })"));
-
-    const Operations remoteoperations(Str2SyncName(R"({
-        "operations": [
-            { "type": "Move", "fromPath":"B", "toPath":"C" }
-        ]
-    })"));
-
-    testHelper.setInitialSituation(situation, situation);
     CPPUNIT_ASSERT(testHelper.executeOperations(ReplicaSide::Local, localoperations));
-    //CPPUNIT_ASSERT(testHelper.executeOperations(ReplicaSide::Remote, remoteoperations));
 
     // The local Create operation above wrote the file directly to disk, bypassing the sync engine, so we
     // need to wait for the SyncPal to detect it and upload it to the remote replica before checking below.
-    testHelper.executeSyncUntilEnd();
+    CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
 
     // Verify that the new file now exists on the remote replica...
     const auto remoteFileInfo = getRemoteFileInfoByPath(_driveDbId, _remoteSyncDir.id(), SyncPath("A/AA/BBB"));
@@ -290,6 +282,24 @@ void TestIntegration::testSimpleUpload() {
     // ...and that the deleted one is gone.
     const auto remoteDeletedFileInfo = getRemoteFileInfoByPath(_driveDbId, _remoteSyncDir.id(), SyncPath("A/AA/AAA"));
     CPPUNIT_ASSERT(!remoteDeletedFileInfo.isValid());
+
+    auto path = _syncPal->localPath(); // this is for debug, to find where is the tmp dir)
+
+    CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / "C"));
+    CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / "CC"));
+
+    // Now apply an operation on the remote replica (move C -> CC, i.e. rename since they share the same parent)
+    // and verify it gets propagated back to the local replica.
+    const Operations remoteoperations(Str2SyncName(R"({
+        "operations": [
+            { "type": "Move", "fromPath":"C", "toPath":"CC" }
+        ]
+    })"));
+    CPPUNIT_ASSERT(testHelper.executeOperations(ReplicaSide::Remote, remoteoperations));
+    CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
+
+    CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / "C"));
+    CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / "CC"));
 
     testHelper.tearDown();
     logStep("testSimpleUpload");

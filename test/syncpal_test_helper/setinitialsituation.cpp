@@ -234,7 +234,8 @@ void SetInitialSituation::insertLocalItem(const ItemDesc &desc, const NodeId &pa
     const SyncPath parentRelPath = parentId.empty() ? SyncPath{} : _localItemPaths.at(parentId);
     const SyncPath relPath = parentRelPath / desc.name;
     _localItemPaths[desc.id] = relPath;
-    const SyncPath fullPath = _localItemDir.path() / relPath;
+    const SyncPath localRootPath = _syncPal ? _syncPal->localPath() : _localItemDir.path();
+    const SyncPath fullPath = localRootPath / relPath;
     IoError ioError = IoError::Success;
     if (desc.type == NodeType::Directory) {
         (void) IoHelper::createDirectory(fullPath, true, ioError);

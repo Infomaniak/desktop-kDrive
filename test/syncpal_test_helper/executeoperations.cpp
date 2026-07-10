@@ -30,10 +30,13 @@
 #include "jobs/local/localcopyjob.h"
 
 #include "jobs/network/kDrive_API/createdirjob.h"
-#include "jobs/network/kDrive_API/createdirjob.h"
 #include "jobs/network/kDrive_API/deletejob.h"
 #include "jobs/network/kDrive_API/movejob.h"
+#include "jobs/network/kDrive_API/renamejob.h"
 #include "jobs/network/kDrive_API/copytodirectoryjob.h"
+#include "jobs/network/kDrive_API/upload/uploadjob.h"
+
+#include "db/syncdb.h"
 
 #include <Poco/JSON/Array.h>
 #include <Poco/JSON/Parser.h>
@@ -222,21 +225,78 @@ void ExecuteOperations::applyOperation(const ReplicaSide side, const OperationDe
         }
         case ReplicaSide::Remote: {
             switch (desc.type) {
-                case OperationType::Create:
-                    // TODO: create desc.path (directory or file, see desc.itemType) on drive _syncPal->driveDbId(),
-                    // e.g. CreateDirJob for a directory, or UploadJob for a file.
+                case OperationType::Create: {
+                    bool found = false;
+                    std::optional<NodeId> parentId;
+                    if (!_syncPal->syncDb()->id(ReplicaSide::Remote, desc.path.parent_path(), parentId, found) || !found ||
+                        !parentId) {
+                        throw OperationsParserException("Create operation: remote parent not found for " +
+                                                        desc.path.parent_path().string());
+                    }
+
+                    if (desc.itemType == NodeType::Directory) {
+                        CreateDirJob job(nullptr, _syncPal->driveDbId(), *parentId, desc.path.filename().native());
+                        (void) job.runSynchronously();
+                    } else {
+                        const SyncPath fullPath = _syncPal->localPath() / desc.path;
+                        UploadJob job(nullptr, _syncPal->driveDbId(), fullPath, desc.path.filename().native(), *parentId,
+                                      desc.createdAt, desc.lastModifiedAt);
+                        (void) job.runSynchronously();
+                    }
                     break;
-                case OperationType::Edit:
-                    // TODO: edit the remote file at desc.path on drive _syncPal->driveDbId(),
-                    // e.g. UploadJob (file-id overload).
+                }
+                case OperationType::Edit: {
+                    bool found = false;
+                    std::optional<NodeId> fileId;
+                    if (!_syncPal->syncDb()->id(ReplicaSide::Remote, desc.path, fileId, found) || !found || !fileId) {
+                        throw OperationsParserException("Edit operation: remote item not found for " + desc.path.string());
+                    }
+
+                    const SyncPath fullPath = _syncPal->localPath() / desc.path;
+                    UploadJob job(nullptr, _syncPal->driveDbId(), fullPath, *fileId, desc.lastModifiedAt);
+                    (void) job.runSynchronously();
                     break;
-                case OperationType::Delete:
-                    // TODO: delete the remote item at desc.path on drive _syncPal->driveDbId(), e.g. DeleteJob.
+                }
+                case OperationType::Delete: {
+                    bool found = false;
+                    std::optional<NodeId> itemId;
+                    if (!_syncPal->syncDb()->id(ReplicaSide::Remote, desc.path, itemId, found) || !found || !itemId) {
+                        throw OperationsParserException("Delete operation: remote item not found for " + desc.path.string());
+                    }
+
+                    DeleteJob job(_syncPal->driveDbId(), *itemId);
+                    job.setBypassCheck(true);
+                    (void) job.runSynchronously();
                     break;
-                case OperationType::Move:
-                    // TODO: move/rename the remote item from desc.fromPath to desc.toPath on drive _syncPal->driveDbId(),
-                    // e.g. MoveJob / RenameJob.
+                }
+                case OperationType::Move: {
+                    bool found = false;
+                    std::optional<NodeId> itemId;
+                    if (!_syncPal->syncDb()->id(ReplicaSide::Remote, desc.fromPath, itemId, found) || !found || !itemId) {
+                        throw OperationsParserException("Move operation: remote item not found for " + desc.fromPath.string());
+                    }
+
+                    if (desc.fromPath.parent_path() == desc.toPath.parent_path()) {
+                        // Same parent: rename only.
+                        const SyncPath fullToPath = _syncPal->localPath() / desc.toPath;
+                        RenameJob job(nullptr, _syncPal->driveDbId(), *itemId, fullToPath);
+                        (void) job.runSynchronously();
+                    } else {
+                        std::optional<NodeId> destParentId;
+                        if (!_syncPal->syncDb()->id(ReplicaSide::Remote, desc.toPath.parent_path(), destParentId, found) ||
+                            !found || !destParentId) {
+                            throw OperationsParserException("Move operation: remote destination parent not found for " +
+                                                            desc.toPath.parent_path().string());
+                        }
+
+                        const SyncPath fullToPath = _syncPal->localPath() / desc.toPath;
+                        MoveJob job(nullptr, _syncPal->driveDbId(), fullToPath, *itemId, *destParentId,
+                                    desc.toPath.filename().native());
+                        job.setBypassCheck(true);
+                        (void) job.runSynchronously();
+                    }
                     break;
+                }
                 default:
                     throw OperationsParserException("Unsupported operation type: " + toString(desc.type));
             }
