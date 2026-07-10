@@ -51,7 +51,7 @@ class SyncpalTestHelper {
         bool setInitialSituation(const Situation &localSituation, const Situation &remoteSituation);
         bool getSituation(const Situation &localSituation, const Situation &remoteSituation);
 
-        bool executeSyncUntilEnd(int timeout);
+        bool executeSyncUntilEnd(const std::chrono::milliseconds minWaitTime = std::chrono::milliseconds(3000)) const;
         bool executeSyncUpToStep(int targetStep, int timeout);
 
         bool pauseSync();

@@ -76,6 +76,7 @@ class FileSystemObserverWorker : public ISyncWorker {
         friend class TestSituationGenerator;
         friend class TestSyncPal;
         friend class SetInitialSituation;
+        friend class SyncpalTestHelper;
 };
 
 } // namespace KDC

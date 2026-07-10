@@ -17,8 +17,10 @@
  */
 
 #include "syncpaltesthelper.hpp"
+#include "libcommon/utility/timerutility.h"
 
 #include "syncpal/syncpal.h"
+#include "update_detection/file_system_observer/filesystemobserverworker.h"
 
 namespace KDC {
 
@@ -27,7 +29,9 @@ SyncpalTestHelper::SyncpalTestHelper(const std::shared_ptr<SyncPal> syncPal) :
     _setInitialSituation(syncPal),
     _executeOperations(syncPal) {}
 
-void SyncpalTestHelper::setUp() {}
+void SyncpalTestHelper::setUp() {
+    _syncPal->start();
+}
 
 void SyncpalTestHelper::tearDown() {}
 
@@ -64,7 +68,27 @@ bool SyncpalTestHelper::getSituation(const Situation &, const Situation &) {
     return true;
 }
 
-bool SyncpalTestHelper::executeSyncUntilEnd(int) {
+bool SyncpalTestHelper::executeSyncUntilEnd(const std::chrono::milliseconds minWaitTime) const {
+    const auto timeOutDuration = std::chrono::minutes(2);
+    const TimerUtility timeoutTimer;
+
+    // Wait for end of sync (A sync is considered ended when it stay in Idle for more than 3s)
+    bool ended = false;
+    while (!ended) {
+        if (timeoutTimer.elapsed<std::chrono::minutes>() >= timeOutDuration) return false;
+
+        if (_syncPal->isIdle() && !_syncPal->_localFSObserverWorker->updating() &&
+            !_syncPal->_remoteFSObserverWorker->updating()) {
+            const TimerUtility idleTimer;
+            while (_syncPal->isIdle() && idleTimer.elapsed<std::chrono::microseconds>() < minWaitTime) {
+                if (timeoutTimer.elapsed<std::chrono::minutes>() >= timeOutDuration) return false;
+                Utility::msleep(5);
+            }
+            ended = idleTimer.elapsed<std::chrono::milliseconds>() >= minWaitTime;
+        }
+        Utility::msleep(100);
+    }
+
     return true;
 }
 
