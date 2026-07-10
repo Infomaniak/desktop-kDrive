@@ -33,7 +33,7 @@ set(libcommon_SRCS
     data/account.h data/account.cpp
     data/drive.h data/drive.cpp
     data/driveavailable.h data/driveavailable.cpp
-    info/userinfo.h info/userinfo.cpp
+    data/user.h data/user.cpp
     info/syncinfo.h info/syncinfo.cpp
     info/nodeinfo.h info/nodeinfo.cpp
     info/nodeconflictinfo.h info/nodeconflictinfo.cpp

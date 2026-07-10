@@ -91,18 +91,17 @@ void TestGuiCommChannel::testSignalUpdaterStateChangedJob() {
 }
 
 void TestGuiCommChannel::testSignalUserUpdatedJob() {
-    UserInfo userInfo;
-    userInfo.setDbId(1);
-    userInfo.setUserId(2);
-    userInfo.setAvatar(QImage{});
-    userInfo.setConnected(true);
-    userInfo.setCredentialsAsked(true);
-    userInfo.setIsStaff(true);
+    User user;
+    user.setDbId(1);
+    user.setUserId(2);
+    user.setConnected(true);
+    user.setCredentialsAsked(true);
+    user.setIsStaff(true);
 
-    SignalUserUpdatedJob job(userInfo);
+    SignalUserUpdatedJob job(user);
 
     checkSignalCommonMethods(job, SignalNum::USER_UPDATED);
-    CPPUNIT_ASSERT(userInfo == job._userInfo);
+    CPPUNIT_ASSERT(user == job._user);
 }
 
 void TestGuiCommChannel::testSignalUtilityShowNotificationJob() {

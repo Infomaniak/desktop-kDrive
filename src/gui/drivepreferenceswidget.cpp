@@ -334,13 +334,13 @@ void DrivePreferencesWidget::updateUserInfo() {
         return;
     }
 
-    if (!userInfoMapIt->second.avatar().isNull()) {
-        _userAvatarLabel->setPixmap(KDC::GuiUtility::getAvatarFromImage(userInfoMapIt->second.avatar())
+    if (userInfoMapIt->second.avatar()) {
+        _userAvatarLabel->setPixmap(KDC::GuiUtility::getAvatarFromImage(CommonUtility::toQImage(userInfoMapIt->second.avatar()))
                                             .scaled(avatarSize, avatarSize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
     }
 
-    _userNameLabel->setText(userInfoMapIt->second.name());
-    _userMailLabel->setText(userInfoMapIt->second.email());
+    _userNameLabel->setText(QString::fromStdString(userInfoMapIt->second.name()));
+    _userMailLabel->setText(QString::fromStdString(userInfoMapIt->second.email()));
 }
 
 void DrivePreferencesWidget::askEnableLiteSync(const std::function<void(bool)> &callback) {

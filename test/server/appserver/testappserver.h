@@ -44,7 +44,7 @@ class MockAppServer : public AppServer {
         };
 
     private:
-        void sendUserUpdated(const UserInfo &) const override { /* Do not try to notify the client */ };
+        void sendUserUpdated(const User &) const override { /* Do not try to notify the client */ };
         void sendAccountAdded(const Account &) const override { /* Do not try to notify the client */ };
         void sendAccountUpdated(const Account &) const override { /* Do not try to notify the client */ };
         void sendDriveUpdated(const Drive &) const override { /* Do not try to notify the client */ };
