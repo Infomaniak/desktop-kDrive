@@ -71,6 +71,10 @@ OnboardingLoginCoordinator::OnboardingLoginCoordinator(OnboardingFlowController 
     });
 }
 
+OnboardingLoginCoordinator::~OnboardingLoginCoordinator() {
+    _userService.invalidateLoginTokenRequest();
+}
+
 void OnboardingLoginCoordinator::clearPendingLogin() {
     _pendingUserDbId.reset();
     _pendingAvailableDrivesUserDbId.reset();
@@ -90,7 +94,7 @@ void OnboardingLoginCoordinator::handleLoginStateChanged() {
             return;
         case LoadingUser:
         case LoginError:
-            emit windowActivationRequested();
+            emit openWindowRequested();
             return;
     }
 }
@@ -105,6 +109,7 @@ void OnboardingLoginCoordinator::loadAvailableDrivesWhenUserIsCached(const UserD
     _pendingUserDbId.reset();
     _pendingAvailableDrivesUserDbId = userDbId;
     _onboardingState.selectUser(userDbId);
+    _flowController.completeLogin(userDbId);
     _userService.loadAvailableDrives(userDbId);
 }
 
@@ -114,7 +119,6 @@ void OnboardingLoginCoordinator::completeLoginWhenAvailableDrivesAreLoaded(const
     }
 
     _pendingAvailableDrivesUserDbId.reset();
-    _flowController.completeLogin(userDbId);
 }
 
 void OnboardingLoginCoordinator::handleAvailableDrivesLoadFailed(const UserDbId userDbId) {
@@ -123,7 +127,6 @@ void OnboardingLoginCoordinator::handleAvailableDrivesLoadFailed(const UserDbId 
     }
 
     _pendingAvailableDrivesUserDbId.reset();
-    _flowController.handleLoginFailed(QString(), QString());
 }
 
 } // namespace KDC
