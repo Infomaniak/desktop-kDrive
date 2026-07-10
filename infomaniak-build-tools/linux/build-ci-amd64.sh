@@ -217,3 +217,4 @@ if [ "$use_ccache" -eq 1 ] && command -v ccache >/dev/null 2>&1; then
 fi
 
 cp "$BASEPATH/sync-exclude-linux.lst" "$BUILD_DIR/bin/sync-exclude.lst"
+cp "$BASEPATH/sync-folder-rules-linux.lst" "$BUILD_DIR/bin/sync-folder-rules.lst"
