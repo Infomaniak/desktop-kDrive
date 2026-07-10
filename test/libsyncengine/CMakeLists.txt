@@ -27,9 +27,9 @@ set(testsyncengine_SRCS
         ../test_classes/syncpaltest.h
         ../test_classes/testsituationgenerator.h ../test_classes/testsituationgenerator.cpp
         # SyncpalTestHelper
-        ../syncpal_test_helper/syncpaltesthelper.hpp ../syncpal_test_helper/syncpaltesthelper.cpp
-        ../syncpal_test_helper/setinitialsituation.hpp ../syncpal_test_helper/setinitialsituation.cpp
-        ../syncpal_test_helper/executeoperations.hpp ../syncpal_test_helper/executeoperations.cpp
+        ../syncpal_test_helper/syncpaltesthelper.h ../syncpal_test_helper/syncpaltesthelper.cpp
+        ../syncpal_test_helper/setinitialsituation.h ../syncpal_test_helper/setinitialsituation.cpp
+        ../syncpal_test_helper/executeoperations.h ../syncpal_test_helper/executeoperations.cpp
         # Database
         db/testsyncdb.h db/testsyncdb.cpp
         # Jobs

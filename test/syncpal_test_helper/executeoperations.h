@@ -31,7 +31,7 @@ class SyncPal;
 
 /**
  * @brief Wraps a JSON description of a list of local/remote operations to apply on top of an existing
- * situation (see Situation / SetInitialSituation in setinitialsituation.hpp).
+ * situation (see Situation / SetInitialSituation in setinitialsituation.h).
  * Supported operation types: Create, Edit, Delete and Move, e.g.:
  * {
  *    "operations": [

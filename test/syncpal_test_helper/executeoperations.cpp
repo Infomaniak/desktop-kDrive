@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "executeoperations.hpp"
+#include "executeoperations.h"
 
 #include "syncpal/syncpal.h"
 #include "test_utility/testhelpers.h"

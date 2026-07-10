@@ -18,8 +18,8 @@
 
 #pragma once
 
-#include "setinitialsituation.hpp"
-#include "executeoperations.hpp"
+#include "setinitialsituation.h"
+#include "executeoperations.h"
 
 #include <memory>
 
@@ -31,8 +31,8 @@ class SyncPal;
  * Db/update-tree/filesystem situation from a JSON description (via SetInitialSituation), applying
  * operations on top of it (via ExecuteOperations), and (eventually) driving a sync run.
  *
- * See Situation (setinitialsituation.hpp) for the supported situation JSON formats, and Operations
- * (executeoperations.hpp) for the supported operations JSON format.
+ * See Situation (setinitialsituation.h) for the supported situation JSON formats, and Operations
+ * (executeoperations.h) for the supported operations JSON format.
  */
 class SyncpalTestHelper {
     public:

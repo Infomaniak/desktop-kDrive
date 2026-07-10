@@ -29,7 +29,7 @@
 #include "update_detection/update_detector/updatetree.h"
 #include "reconciliation/conflict_finder/conflict.h"
 #include "reconciliation/syncoperation.h"
-#include "../../test/syncpal_test_helper/setinitialsituation.hpp"
+#include "../../test/syncpal_test_helper/setinitialsituation.h"
 
 #include "libcommon/utility/types.h"
 

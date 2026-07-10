@@ -27,7 +27,7 @@
 #include "propagation/executor/filerescuer.h"
 #include "test_utility/testhelpers_requests.h"
 #include "test_utility/testhelpers.h"
-#include "syncpal_test_helper/syncpaltesthelper.hpp"
+#include "syncpal_test_helper/syncpaltesthelper.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 
 namespace KDC {

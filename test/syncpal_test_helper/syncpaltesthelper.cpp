@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "syncpaltesthelper.hpp"
+#include "syncpaltesthelper.h"
 #include "libcommon/utility/timerutility.h"
 
 #include "syncpal/syncpal.h"
