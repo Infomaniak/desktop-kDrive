@@ -19,8 +19,8 @@
 #include "appclientlinux.h"
 
 #include "app/applicationidentity.h"
-#include "libcommongui/logger.h"
 #include "libcommon/utility/utility.h"
+#include "libcommongui/logger.h"
 
 #include <Poco/Dynamic/Struct.h>
 
