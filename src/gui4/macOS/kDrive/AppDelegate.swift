@@ -25,6 +25,7 @@ import kDriveResources
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private lazy var mainWindow = MainWindowController()
     private var preferencesWindow: PreferencesWindowController?
+    private var onboardingWindow: OnboardingWindowController?
 
     // periphery:ignore - We keep a strong reference on the statusBarManager
     private(set) var statusBarManager: StatusBarManager?
@@ -112,6 +113,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         preferencesWindow?.window?.makeKeyAndOrderFront(nil)
         preferencesWindow?.window?.isReleasedWhenClosed = false
+    }
+
+    func openOnboardingWindow() {
+        if onboardingWindow == nil {
+            let controller = OnboardingWindowController()
+            controller.onClose = { [weak self] in
+                self?.onboardingWindow = nil
+            }
+            onboardingWindow = controller
+        }
+
+        if #available(macOS 14.0, *) {
+            NSApp.activate()
+        } else {
+            NSApp.activate(ignoringOtherApps: true)
+        }
+
+        onboardingWindow?.window?.makeKeyAndOrderFront(nil)
     }
 
     @objc func quitApp() {
