@@ -55,10 +55,6 @@ final class PreferencesSplitViewController: IKSplitViewController {
             .receiveOnMain(store: &bindStore) { [weak self] newPath in
                 self?.onPathChange(newPath)
             }
-        router.$currentModal
-            .receiveOnMain(store: &bindStore) { [weak self] newPath in
-                self?.onModalPathChange(newPath)
-            }
     }
 
     private func setupSplitView() {
@@ -76,14 +72,6 @@ final class PreferencesSplitViewController: IKSplitViewController {
         let generalViewController = NSViewController()
         let contentItem = NSSplitViewItem(viewController: generalViewController)
         addSplitViewItem(contentItem)
-    }
-
-    func onModalPathChange(_ modalPath: ModalPath?) {
-        if let modalPath {
-            // TODO: Present some modal view controller based on modalPath
-        } else if let presentedViewController = presentedViewControllers?.first {
-            dismiss(presentedViewController)
-        }
     }
 
     func onPathChange(_ path: PreferencesViewRouter.RouterPath) {
