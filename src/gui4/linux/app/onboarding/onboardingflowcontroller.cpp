@@ -49,6 +49,10 @@ bool OnboardingFlowController::loginFailed() const {
     return _loginState == LoginError;
 }
 
+bool OnboardingFlowController::driveSelectionActive() const {
+    return _currentStep == DriveSelection;
+}
+
 QString OnboardingFlowController::title() const {
     switch (_currentStep) {
         case Login:
@@ -85,14 +89,51 @@ void OnboardingFlowController::requestAccountCreation() const {
     }
 }
 
+void OnboardingFlowController::requestDriveOffers() const {
+    if (_currentStep != DriveSelection) {
+        return;
+    }
+
+    const auto url = AppConstants::Onboarding::driveOffersUri();
+    qCInfo(lcOnboardingFlowController) << "Opening onboarding drive offers URL:" << url;
+    if (!QDesktopServices::openUrl(url)) {
+        qCWarning(lcOnboardingFlowController) << "Failed to open onboarding drive offers URL:" << url;
+    }
+}
+
+void OnboardingFlowController::requestFreeDriveOrder() const {
+    if (_currentStep != DriveSelection) {
+        return;
+    }
+
+    const auto url = AppConstants::Onboarding::freeDriveOrderUri();
+    qCInfo(lcOnboardingFlowController) << "Opening onboarding free drive order URL:" << url;
+    if (!QDesktopServices::openUrl(url)) {
+        qCWarning(lcOnboardingFlowController) << "Failed to open onboarding free drive order URL:" << url;
+    }
+}
+
+void OnboardingFlowController::requestAdvancedSettings() {
+    if (_currentStep != DriveSelection) {
+        return;
+    }
+
+    qCInfo(lcOnboardingFlowController) << "Onboarding advanced settings requested";
+    emit advancedSettingsRequested();
+}
+
+void OnboardingFlowController::requestDriveSelectionContinue() {
+    if (_currentStep != DriveSelection) {
+        return;
+    }
+
+    qCInfo(lcOnboardingFlowController) << "Onboarding drive selection continue requested";
+    emit driveSelectionContinueRequested();
+}
+
 void OnboardingFlowController::cancel() {
     qCInfo(lcOnboardingFlowController) << "Onboarding cancel requested";
     emit cancelRequested();
-}
-
-void OnboardingFlowController::restart() {
-    setCurrentStep(Login);
-    setLoginState(LoginIdle);
 }
 
 void OnboardingFlowController::setCurrentStep(const Step step) {
