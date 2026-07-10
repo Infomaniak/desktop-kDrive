@@ -302,8 +302,6 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
     int res = sentry_init(options);
     if (res) {
         std::cerr << "sentry_init returned " << res << std::endl;
-        _instance->_isSentryActivated = false;
-        return;
     }
     assert(res == 0);
     _instance->setDistributionChannel(DistributionChannel::Unknown);
@@ -351,7 +349,6 @@ void Handler::setMinUploadIntervalOnRateLimit(int minUploadIntervalOnRateLimit) 
 }
 
 void Handler::setTag(const std::string &key, const std::string &value) {
-    if (!_isSentryActivated) return;
     sentry_set_tag(key.c_str(), value.c_str());
 }
 
