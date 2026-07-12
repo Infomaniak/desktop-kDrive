@@ -21,9 +21,9 @@
 #include "libcommon/data/account.h"
 #include "libcommon/data/drive.h"
 #include "libcommon/data/driveavailable.h"
+#include "libcommon/data/user.h"
 #include "libcommon/info/errorinfo.h"
 #include "libcommon/info/syncinfo.h"
-#include "libcommon/info/userinfo.h"
 #include "libcommon/utility/types.h"
 
 #include <Poco/Hash.h>
@@ -45,16 +45,15 @@ struct AvailableDriveKey {
         friend bool operator==(const AvailableDriveKey &lhs, const AvailableDriveKey &rhs) = default;
 };
 
-class UserDisplayInfo : public UserInfo {
+class UserDisplayInfo : public User {
     public:
-        using UserInfo::UserInfo;
+        using User::User;
 
         [[nodiscard]] const QString &avatarSource() const { return _avatarSource; }
         void setAvatarSource(const QString &avatarSource) { _avatarSource = avatarSource; }
 
         friend bool operator==(const UserDisplayInfo &lhs, const UserDisplayInfo &rhs) {
-            return static_cast<const UserInfo &>(lhs) == static_cast<const UserInfo &>(rhs) &&
-                   lhs.avatarSource() == rhs.avatarSource();
+            return static_cast<const User &>(lhs) == static_cast<const User &>(rhs) && lhs.avatarSource() == rhs.avatarSource();
         }
 
     private:
