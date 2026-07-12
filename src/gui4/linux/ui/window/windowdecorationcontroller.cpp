@@ -105,7 +105,7 @@ bool flushX11(Display *const display) {
  * provides composition; that case is detected separately through the XWAYLAND extension.
  */
 bool x11CompositingManagerRunning(Display *const display) {
-    const auto selectionName = QByteArrayLiteral("_NET_WM_CM_S") + QByteArray::number(DefaultScreen(display));
+    const QByteArray selectionName = QByteArrayLiteral("_NET_WM_CM_S") + QByteArray::number(DefaultScreen(display));
     const auto selectionAtom = XInternAtom(display, selectionName.constData(), True);
     return selectionAtom != None && XGetSelectionOwner(display, selectionAtom) != None;
 }
