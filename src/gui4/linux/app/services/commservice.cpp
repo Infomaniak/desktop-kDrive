@@ -105,13 +105,13 @@ void CommService::registerUserHandlers(SignalDispatcher &dispatcher) {
 
 void CommService::registerAccountHandlers(SignalDispatcher &dispatcher) {
     dispatcher.registerHandler(SignalNum::ACCOUNT_ADDED, [this](const Poco::DynamicStruct &params) {
-        AccountInfo info;
+        Account info;
         info.fromDynamicStruct(params[msgParamAccountInfo].extract<Poco::DynamicStruct>());
         emit accountAdded(info);
     });
 
     dispatcher.registerHandler(SignalNum::ACCOUNT_UPDATED, [this](const Poco::DynamicStruct &params) {
-        AccountInfo info;
+        Account info;
         info.fromDynamicStruct(params[msgParamAccountInfo].extract<Poco::DynamicStruct>());
         emit accountUpdated(info);
     });
@@ -352,9 +352,9 @@ void CommService::requestDeleteUser(const UserDbId userDbId, const VoidCallback 
 void CommService::requestAccountInfoList(const AccountInfoListCallback &callback) const {
     _ipcClient.sendRequest(
             RequestNum::ACCOUNT_INFOLIST, {}, [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
-                std::vector<AccountInfo> list;
+                std::vector<Account> list;
                 if (exitInfo) {
-                    CommonUtility::readValuesFromStruct(result, msgParamAccountInfoList, list, dynamicVar2Struct<AccountInfo>);
+                    CommonUtility::readValuesFromStruct(result, msgParamAccountInfoList, list, dynamicVar2Struct<Account>);
                 }
                 callback(exitInfo, list);
             });
