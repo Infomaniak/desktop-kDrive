@@ -258,6 +258,24 @@ void AppServer::init() {
         throw std::runtime_error("Unable to clear old errors.");
     }
 
+    // Init KeyChainManager instance
+    if (!KeyChainManager::instance()) {
+        LOG_WARN(_logger, "Error in KeyChainManager::instance");
+        throw std::runtime_error("Unable to initialize key chain manager.");
+    }
+
+#if defined(KD_LINUX)
+    // For access to keyring in order to prompt authentication popup
+    LOG_INFO(_logger, "Check system keyring access");
+    if (KeyChainManager::instance()->writeDummyTest()) {
+        KeyChainManager::instance()->clearDummyTest();
+        LOG_INFO(_logger, "System keyring access check succeeded");
+    } else {
+        LOG_WARN(_logger, "System keyring access check failed");
+        throw std::runtime_error("Unable to access system keyring.");
+    }
+#endif
+
     bool migrateFromPre334 = !newDbExists && oldConfigExists;
     if (migrateFromPre334) {
         // Migrate pre v3.4.0 configuration
@@ -273,18 +291,6 @@ void AppServer::init() {
             addError(Error(ERR_ID, ExitCode::DataError, ExitCause::MigrationProxyNotImplemented));
         }
     }
-
-    // Init KeyChainManager instance
-    if (!KeyChainManager::instance()) {
-        LOG_WARN(_logger, "Error in KeyChainManager::instance");
-        throw std::runtime_error("Unable to initialize key chain manager.");
-    }
-
-#if defined(KD_LINUX)
-    // For access to keyring in order to promt authentication popup
-    KeyChainManager::instance()->writeDummyTest();
-    KeyChainManager::instance()->clearDummyTest();
-#endif
 
     // Init ParametersCache instance
     if (!ParametersCache::instance()) {
