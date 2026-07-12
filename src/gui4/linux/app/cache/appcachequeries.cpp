@@ -41,13 +41,13 @@ std::vector<UserInfo> AppCache::users() const {
     return values;
 }
 
-std::vector<AccountInfo> AppCache::accounts() const {
-    std::vector<AccountInfo> values;
+std::vector<Account> AppCache::accounts() const {
+    std::vector<Account> values;
     values.reserve(_accountsByDbId.size());
     for (const auto &node: _accountsByDbId | std::views::values) {
         values.push_back(node.info);
     }
-    sortById(values, [](const AccountInfo &info) { return info.dbId(); });
+    sortById(values, [](const Account &info) { return info.dbId(); });
     return values;
 }
 
@@ -122,7 +122,7 @@ std::optional<UserDisplayInfo> AppCache::userDisplayInfo(const UserDbId userDbId
     return it->second.info;
 }
 
-std::optional<AccountInfo> AppCache::account(const AccountDbId accountDbId) const {
+std::optional<Account> AppCache::account(const AccountDbId accountDbId) const {
     const auto it = _accountsByDbId.find(accountDbId);
     if (it == _accountsByDbId.end()) {
         return std::nullopt;
@@ -180,20 +180,20 @@ std::optional<DriveAvailable> AppCache::availableDrive(const AvailableDriveKey &
     return *availableDriveIt;
 }
 
-std::vector<AccountInfo> AppCache::accountsForUser(const UserDbId userDbId) const {
+std::vector<Account> AppCache::accountsForUser(const UserDbId userDbId) const {
     const auto userIt = _usersByDbId.find(userDbId);
     if (userIt == _usersByDbId.end()) {
         return {};
     }
 
-    std::vector<AccountInfo> values;
+    std::vector<Account> values;
     values.reserve(userIt->second.accountDbIds.size());
     for (const auto accountDbId: userIt->second.accountDbIds) {
         if (const auto accountInfo = account(accountDbId)) {
             values.push_back(*accountInfo);
         }
     }
-    sortById(values, [](const AccountInfo &info) { return info.dbId(); });
+    sortById(values, [](const Account &info) { return info.dbId(); });
     return values;
 }
 
@@ -378,7 +378,7 @@ std::vector<AvailableDriveContext> AppCache::availableDriveContexts() const {
     return contexts;
 }
 
-std::optional<AccountInfo> AppCache::accountForAvailableDrive(const UserDbId userDbId, const AccountId accountId) const {
+std::optional<Account> AppCache::accountForAvailableDrive(const UserDbId userDbId, const AccountId accountId) const {
     const auto userIt = _usersByDbId.find(userDbId);
     if (userIt == _usersByDbId.end()) {
         return std::nullopt;
@@ -386,7 +386,7 @@ std::optional<AccountInfo> AppCache::accountForAvailableDrive(const UserDbId use
 
     for (const auto accountDbId: userIt->second.accountDbIds) {
         if (const auto accountIt = _accountsByDbId.find(accountDbId);
-            accountIt != _accountsByDbId.end() && accountIt->second.info.id() == accountId) {
+            accountIt != _accountsByDbId.end() && accountIt->second.info.accountId() == accountId) {
             return accountIt->second.info;
         }
     }
