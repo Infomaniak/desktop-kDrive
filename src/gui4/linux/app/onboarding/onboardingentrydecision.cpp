@@ -30,7 +30,7 @@ OnboardingEntryDecision determineOnboardingEntry(const AppCache &appCache) {
     }
 
     const auto users = appCache.users();
-    const auto connectedUserIt = std::ranges::find_if(users, [](const UserInfo &user) { return user.connected(); });
+    const auto connectedUserIt = std::ranges::find_if(users, [](const User &user) { return user.connected(); });
     if (connectedUserIt == users.end()) {
         return {
                 .entryPoint = OnboardingEntryDecision::EntryPoint::Login,
