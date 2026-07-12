@@ -31,13 +31,13 @@ void sortById(std::vector<T> &values, Getter getter) {
 
 namespace KDC {
 
-std::vector<UserInfo> AppCache::users() const {
-    std::vector<UserInfo> values;
+std::vector<User> AppCache::users() const {
+    std::vector<User> values;
     values.reserve(_usersByDbId.size());
     for (const auto &node: _usersByDbId | std::views::values) {
         values.push_back(node.info);
     }
-    sortById(values, [](const UserInfo &info) { return info.dbId(); });
+    sortById(values, [](const User &info) { return info.dbId(); });
     return values;
 }
 
@@ -106,7 +106,7 @@ std::vector<DriveAvailable> AppCache::availableDrives(const UserDbId userDbId) c
     return values;
 }
 
-std::optional<UserInfo> AppCache::user(const UserDbId userDbId) const {
+std::optional<User> AppCache::user(const UserDbId userDbId) const {
     const auto it = _usersByDbId.find(userDbId);
     if (it == _usersByDbId.end()) {
         return std::nullopt;
