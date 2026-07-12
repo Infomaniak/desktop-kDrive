@@ -139,7 +139,8 @@ The exact set of redistributed binaries can vary by platform:
 - **License:** MIT
 - **Copyright:** Copyright (c) 2019 Hannes Rantzsch, Rene Meusel
 - **Repository:** https://github.com/hrantzsch/keychain
-- **Note:** Built from vendored source.
+- **Note:** Built from vendored source on macOS and Windows. On Linux, kDrive uses a derived implementation of the keychain
+  Linux backend with the original MIT notice preserved.
 
 ### qt-piwik-tracker
 
