@@ -44,7 +44,7 @@ class AppCache : public QObject {
         explicit AppCache(QObject *parent = nullptr);
 
         // Flat snapshots rebuilt from the canonical graph for compatibility with list consumers.
-        [[nodiscard]] std::vector<UserInfo> users() const;
+        [[nodiscard]] std::vector<User> users() const;
         [[nodiscard]] std::vector<Account> accounts() const;
         [[nodiscard]] std::vector<Drive> drives() const;
         [[nodiscard]] std::vector<SyncInfo> syncs() const;
@@ -54,7 +54,7 @@ class AppCache : public QObject {
         [[nodiscard]] std::vector<DriveAvailable> availableDrives(UserDbId userDbId) const;
 
         // Direct id-based lookups. Missing or orphaned entities are returned as std::nullopt.
-        [[nodiscard]] std::optional<UserInfo> user(UserDbId userDbId) const;
+        [[nodiscard]] std::optional<User> user(UserDbId userDbId) const;
         [[nodiscard]] std::optional<UserDisplayInfo> userDisplayInfo(UserDbId userDbId) const;
         [[nodiscard]] std::optional<Account> account(AccountDbId accountDbId) const;
         [[nodiscard]] std::optional<Drive> drive(DriveDbId driveDbId) const;

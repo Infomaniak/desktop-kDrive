@@ -24,6 +24,7 @@
 #include "libcommon/data/account.h"
 #include "libcommon/data/drive.h"
 #include "libcommon/data/driveavailable.h"
+#include "libcommon/data/user.h"
 #include "libcommon/info/errorinfo.h"
 #include "libcommon/info/exclusiontemplateinfo.h"
 #include "libcommon/info/nodeconflictinfo.h"
@@ -32,7 +33,6 @@
 #include "libcommon/info/parametersinfo.h"
 #include "libcommon/info/syncfileiteminfo.h"
 #include "libcommon/info/syncinfo.h"
-#include "libcommon/info/userinfo.h"
 #include "libcommon/utility/cstypes.h"
 #include "libcommon/utility/types.h"
 
