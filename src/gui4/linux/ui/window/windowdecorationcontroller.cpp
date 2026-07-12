@@ -24,7 +24,9 @@
 #include <QWindow>
 #include <QtGui/qguiapplication_platform.h>
 
+#include <array>
 #include <cstdint>
+#include <type_traits>
 
 #if QT_CONFIG(xcb)
 #include <X11/Xatom.h>
@@ -57,6 +59,12 @@ namespace {
  */
 
 #if QT_CONFIG(xcb)
+using X11ElementCount = std::int32_t;
+using X11ExtensionCode = std::int32_t;
+using X11PropertyItem = std::conditional_t<sizeof(long) == sizeof(std::uint64_t), std::uint64_t, std::uint32_t>;
+using X11RectangleCoordinate = std::int16_t;
+using X11RectangleDimension = std::uint16_t;
+
 /**
  * Returns the Xlib display only when the application is currently running through Qt's XCB platform plugin.
  *
@@ -78,10 +86,14 @@ Display *x11Display() {
  */
 bool x11ExtensionAvailable(Display *const display, const QByteArray &extensionName) {
     // XQueryExtension requires int pointers for its three output parameters.
-    int opcode = 0;
-    int eventBase = 0;
-    int errorBase = 0;
+    X11ExtensionCode opcode = 0;
+    X11ExtensionCode eventBase = 0;
+    X11ExtensionCode errorBase = 0;
     return XQueryExtension(display, extensionName.constData(), &opcode, &eventBase, &errorBase) != False;
+}
+
+bool flushX11(Display *const display) {
+    return XFlush(display) == 0;
 }
 
 /**
@@ -93,8 +105,7 @@ bool x11ExtensionAvailable(Display *const display, const QByteArray &extensionNa
  * provides composition; that case is detected separately through the XWAYLAND extension.
  */
 bool x11CompositingManagerRunning(Display *const display) {
-    auto selectionName = QByteArrayLiteral("_NET_WM_CM_S");
-    selectionName.append(QByteArray::number(DefaultScreen(display)));
+    const auto selectionName = QByteArrayLiteral("_NET_WM_CM_S") + QByteArray::number(DefaultScreen(display));
     const auto selectionAtom = XInternAtom(display, selectionName.constData(), True);
     return selectionAtom != None && XGetSelectionOwner(display, selectionAtom) != None;
 }
@@ -127,8 +138,8 @@ bool updateX11InputRegion(const QWindow *const window, const QRect &inputRect, c
         return false;
     }
 
-    int32_t eventBase = 0;
-    if (int32_t errorBase = 0; !XShapeQueryExtension(display, &eventBase, &errorBase)) {
+    X11ExtensionCode eventBase = 0;
+    if (X11ExtensionCode errorBase = 0; !XShapeQueryExtension(display, &eventBase, &errorBase)) {
         return false;
     }
 
@@ -141,20 +152,18 @@ bool updateX11InputRegion(const QWindow *const window, const QRect &inputRect, c
     if (!customFrameEnabled) {
         // A null ShapeInput mask restores the default full-window input region.
         XShapeCombineMask(display, windowId, ShapeInput, 0, 0, None, ShapeSet);
-        XFlush(display);
-        return true;
+        return flushX11(display);
     }
 
     const auto nativeInputRect = toNativePixels(inputRect, window->devicePixelRatio());
     XRectangle rectangle{
-            .x = static_cast<short>(nativeInputRect.x()),
-            .y = static_cast<short>(nativeInputRect.y()),
-            .width = static_cast<unsigned short>(nativeInputRect.width()),
-            .height = static_cast<unsigned short>(nativeInputRect.height()),
+            .x = static_cast<X11RectangleCoordinate>(nativeInputRect.x()),
+            .y = static_cast<X11RectangleCoordinate>(nativeInputRect.y()),
+            .width = static_cast<X11RectangleDimension>(nativeInputRect.width()),
+            .height = static_cast<X11RectangleDimension>(nativeInputRect.height()),
     };
     XShapeCombineRectangles(display, windowId, ShapeInput, 0, 0, &rectangle, 1, ShapeSet, Unsorted);
-    XFlush(display);
-    return true;
+    return flushX11(display);
 }
 
 /**
@@ -175,12 +184,15 @@ void updateX11FrameExtents(const QWindow *const window, const qreal frameMargin)
         return;
     }
 
-    const auto nativeMargin = static_cast<unsigned long>(qMax(0, qRound(frameMargin * window->devicePixelRatio())));
-    const unsigned long frameExtents[] = {nativeMargin, nativeMargin, nativeMargin, nativeMargin};
+    const auto nativeMargin = static_cast<X11PropertyItem>(qMax(0, qRound(frameMargin * window->devicePixelRatio())));
+    const std::array<X11PropertyItem, 4> frameExtents{nativeMargin, nativeMargin, nativeMargin, nativeMargin};
     const auto frameExtentsAtom = XInternAtom(display, "_GTK_FRAME_EXTENTS", False);
-    XChangeProperty(display, windowId, frameExtentsAtom, XA_CARDINAL, 32, PropModeReplace,
-                    reinterpret_cast<const unsigned char *>(frameExtents), 4);
-    XFlush(display);
+    const auto changeResult = XChangeProperty(display, windowId, frameExtentsAtom, XA_CARDINAL, 32, PropModeReplace,
+                                              reinterpret_cast<const unsigned char *>(frameExtents.data()), // NOSONAR
+                                              static_cast<X11ElementCount>(frameExtents.size()));
+    if (changeResult == Success) {
+        (void) flushX11(display);
+    }
 }
 #endif
 
@@ -226,7 +238,7 @@ void applyInputRegion(QWindow *const window, const QRect &inputRect, const bool 
  * and its shadow remain enabled, but snapping aligns the complete native window, including its transparent margin.
  * Consequently, the visible surface can remain separated from the screen edge by the shadow margin.
  */
-void applyFrameExtents(QWindow *const window, const bool customFrameEnabled, const qreal frameMargin) {
+void applyFrameExtents(const QWindow *const window, const bool customFrameEnabled, const qreal frameMargin) {
 #if QT_CONFIG(xcb)
     updateX11FrameExtents(window, customFrameEnabled ? frameMargin : 0);
 #else
