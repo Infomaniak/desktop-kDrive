@@ -18,13 +18,13 @@
 
 #pragma once
 
+#include "libcommon/data/account.h"
 #include "libcommon/data/drive.h"
-#include "libcommon/utility/types.h"
-#include "libcommon/info/accountinfo.h"
 #include "libcommon/data/driveavailable.h"
 #include "libcommon/info/errorinfo.h"
 #include "libcommon/info/syncinfo.h"
 #include "libcommon/info/userinfo.h"
+#include "libcommon/utility/types.h"
 
 #include <Poco/Hash.h>
 
@@ -63,7 +63,7 @@ class UserDisplayInfo : public UserInfo {
 
 struct SyncContext {
         UserDisplayInfo userDisplayInfo;
-        AccountInfo accountInfo;
+        Account accountInfo;
         Drive drive;
         SyncInfo syncInfo;
         std::vector<ErrorInfo> errorInfoList;
@@ -74,7 +74,7 @@ struct SyncContext {
 
 struct DriveContext {
         UserDisplayInfo userDisplayInfo;
-        AccountInfo accountInfo;
+        Account accountInfo;
         Drive drive;
         std::vector<SyncInfo> syncInfos;
 
@@ -83,7 +83,7 @@ struct DriveContext {
 
 struct AvailableDriveContext {
         UserDisplayInfo userDisplayInfo;
-        std::optional<AccountInfo> accountInfo;
+        std::optional<Account> accountInfo;
         DriveAvailable availableDrive;
         bool alreadyConfigured{false};
         std::optional<Drive> configuredDrive;

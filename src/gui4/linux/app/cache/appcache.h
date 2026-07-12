@@ -45,7 +45,7 @@ class AppCache : public QObject {
 
         // Flat snapshots rebuilt from the canonical graph for compatibility with list consumers.
         [[nodiscard]] std::vector<UserInfo> users() const;
-        [[nodiscard]] std::vector<AccountInfo> accounts() const;
+        [[nodiscard]] std::vector<Account> accounts() const;
         [[nodiscard]] std::vector<Drive> drives() const;
         [[nodiscard]] std::vector<SyncInfo> syncs() const;
         [[nodiscard]] std::vector<ErrorInfo> syncErrors() const;
@@ -56,7 +56,7 @@ class AppCache : public QObject {
         // Direct id-based lookups. Missing or orphaned entities are returned as std::nullopt.
         [[nodiscard]] std::optional<UserInfo> user(UserDbId userDbId) const;
         [[nodiscard]] std::optional<UserDisplayInfo> userDisplayInfo(UserDbId userDbId) const;
-        [[nodiscard]] std::optional<AccountInfo> account(AccountDbId accountDbId) const;
+        [[nodiscard]] std::optional<Account> account(AccountDbId accountDbId) const;
         [[nodiscard]] std::optional<Drive> drive(DriveDbId driveDbId) const;
         [[nodiscard]] std::optional<SyncInfo> sync(SyncDbId syncDbId) const;
         [[nodiscard]] std::optional<ErrorInfo> syncError(ErrorDbId errorDbId) const;
@@ -64,7 +64,7 @@ class AppCache : public QObject {
         [[nodiscard]] std::optional<DriveAvailable> availableDrive(const AvailableDriveKey &key) const;
 
         // Parent-to-children graph traversal helpers. Results are stable-sorted by database id.
-        [[nodiscard]] std::vector<AccountInfo> accountsForUser(UserDbId userDbId) const;
+        [[nodiscard]] std::vector<Account> accountsForUser(UserDbId userDbId) const;
         [[nodiscard]] std::vector<Drive> drivesForAccount(AccountDbId accountDbId) const;
         [[nodiscard]] std::vector<SyncInfo> syncsForDrive(DriveDbId driveDbId) const;
         // Sync-scoped errors sorted by error time, oldest first.
@@ -85,7 +85,7 @@ class AppCache : public QObject {
 
         // Atomic family snapshot replacements. Orphans are pruned so the graph remains coherent.
         void replaceUsers(const std::vector<UserDisplayInfo> &users);
-        void replaceAccounts(const std::vector<AccountInfo> &accounts);
+        void replaceAccounts(const std::vector<Account> &accounts);
         void replaceDrives(const std::vector<Drive> &drives);
         void replaceSyncs(const std::vector<SyncInfo> &syncs);
         void replaceSyncErrors(const std::vector<ErrorInfo> &errors);
@@ -100,7 +100,7 @@ class AppCache : public QObject {
         void upsertUser(const UserDisplayInfo &info);
         void removeUser(UserDbId userDbId);
 
-        void upsertAccount(const AccountInfo &info);
+        void upsertAccount(const Account &info);
         void removeAccount(AccountDbId accountDbId);
 
         void upsertDrive(const Drive &drive);
@@ -134,7 +134,7 @@ class AppCache : public QObject {
         };
 
         struct AccountNode {
-                AccountInfo info;
+                Account info;
                 UserDbId parentUserDbId{0};
                 std::vector<DriveDbId> driveDbIds;
         };
@@ -171,7 +171,7 @@ class AppCache : public QObject {
         void rebuildGraphRelations();
 
         // Resolve configured-account/drive matches for addable-drive read models.
-        [[nodiscard]] std::optional<AccountInfo> accountForAvailableDrive(UserDbId userDbId, AccountId accountId) const;
+        [[nodiscard]] std::optional<Account> accountForAvailableDrive(UserDbId userDbId, AccountId accountId) const;
         [[nodiscard]] std::optional<Drive> configuredDriveForAvailableDrive(AccountDbId accountDbId, DriveId driveId) const;
 
         std::unordered_map<UserDbId, UserNode> _usersByDbId;
