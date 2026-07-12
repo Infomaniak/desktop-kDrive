@@ -91,14 +91,14 @@ bool DriveSelectionController::canOpenAdvancedSettings() const {
 
 QString DriveSelectionController::userName() const {
     if (const auto user = _cache.userDisplayInfo(selectedUserDbId())) {
-        return user->name();
+        return QString::fromStdString(user->name());
     }
     return {};
 }
 
 QString DriveSelectionController::userEmail() const {
     if (const auto user = _cache.userDisplayInfo(selectedUserDbId())) {
-        return user->email();
+        return QString::fromStdString(user->email());
     }
     return {};
 }
@@ -108,7 +108,7 @@ QString DriveSelectionController::userAvatarSource() const {
         if (!user->avatarSource().isEmpty()) {
             return user->avatarSource();
         }
-        return user->avatarUrl();
+        return QString::fromStdString(user->avatarUrl());
     }
     return {};
 }

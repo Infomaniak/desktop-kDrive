@@ -175,7 +175,7 @@ void SentryService::updateAuthenticatedUser() const {
     }
 
     const auto users = _appCache.users();
-    const auto userIt = std::ranges::find_if(users, [](const UserInfo &user) { return user.connected(); });
+    const auto userIt = std::ranges::find_if(users, [](const User &user) { return user.connected(); });
     if (userIt == users.end()) {
         sentry::Handler::instance()->setGlobalConfidentialityLevel(sentry::ConfidentialityLevel::Anonymous);
         sentry::Handler::instance()->setAuthenticatedUser(SentryUser());
@@ -185,7 +185,7 @@ void SentryService::updateAuthenticatedUser() const {
 
     sentry::Handler::instance()->setGlobalConfidentialityLevel(sentry::ConfidentialityLevel::Authenticated);
     sentry::Handler::instance()->setAuthenticatedUser(
-            SentryUser(userIt->email().toStdString(), userIt->name().toStdString(), std::to_string(userIt->userId())));
+            SentryUser(userIt->email(), userIt->name(), std::to_string(userIt->userId())));
     qCInfo(lcSentryService) << "Sentry authenticated user updated | userId:" << userIt->userId()
                             << "/ connected:" << userIt->connected();
 }

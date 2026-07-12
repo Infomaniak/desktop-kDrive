@@ -40,7 +40,7 @@ QString avatarSourceFromUserStruct(const Poco::DynamicStruct &userStruct) {
         return {};
     }
 
-    // UserInfo serializes the avatar field as PNG bytes before the IPC layer base64-encodes the BLOB.
+    // User serializes the avatar field as PNG bytes before the IPC layer base64-encodes the BLOB.
     return QStringLiteral("data:image/png;base64,%1")
             .arg(QString::fromLatin1(base64Avatar.data(), static_cast<qsizetype>(base64Avatar.size())));
 }
