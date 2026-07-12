@@ -42,9 +42,28 @@ if(UNIX)
 endif()
 
 # keychain
-add_subdirectory(src/3rdparty/keychain)
-if (UNIX AND NOT APPLE) # Add this on linux to fix keychain problems with gcc 15
-    target_compile_options(keychain PRIVATE -Wno-uninitialized)
+if(UNIX AND NOT APPLE)
+    add_library(keychain STATIC src/libcommonserver/keychainmanager/keychain_linux_kdrive.cpp)
+    target_include_directories(keychain
+        PUBLIC
+            ${CMAKE_SOURCE_DIR}/src/3rdparty/keychain/include
+        PRIVATE
+            ${CMAKE_SOURCE_DIR}/src/3rdparty/keychain/include/keychain)
+    target_compile_features(keychain PUBLIC cxx_std_11)
+    target_compile_definitions(keychain PUBLIC -DKEYCHAIN_LINUX=1)
+
+    find_package(PkgConfig REQUIRED)
+    find_package(Threads REQUIRED)
+    pkg_check_modules(GLIB2 IMPORTED_TARGET glib-2.0)
+    pkg_check_modules(LIBSECRET IMPORTED_TARGET libsecret-1)
+
+    target_link_libraries(keychain
+        PRIVATE
+            Threads::Threads
+            PkgConfig::GLIB2
+            PkgConfig::LIBSECRET)
+else()
+    add_subdirectory(src/3rdparty/keychain)
 endif()
 
 #####
