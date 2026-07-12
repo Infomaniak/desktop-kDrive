@@ -58,7 +58,7 @@ void CachePopulator::loadUsers() {
 }
 
 void CachePopulator::loadAccounts() {
-    _commService.requestAccountInfoList([this](const ExitInfo &exitInfo, const std::vector<AccountInfo> &list) {
+    _commService.requestAccountInfoList([this](const ExitInfo &exitInfo, const std::vector<Account> &list) {
         if (!exitInfo) {
             exitOnPopulationFailure("accounts", exitInfo);
         }

@@ -21,10 +21,8 @@
 #include "app/cache/cachetypes.h"
 #include "communicationlayer/ipcclient.h"
 #include "communicationlayer/signaldispatcher.h"
+#include "libcommon/data/account.h"
 #include "libcommon/data/drive.h"
-#include "libcommon/utility/cstypes.h"
-#include "libcommon/utility/types.h"
-#include "libcommon/info/accountinfo.h"
 #include "libcommon/data/driveavailable.h"
 #include "libcommon/info/errorinfo.h"
 #include "libcommon/info/exclusiontemplateinfo.h"
@@ -35,6 +33,8 @@
 #include "libcommon/info/syncfileiteminfo.h"
 #include "libcommon/info/syncinfo.h"
 #include "libcommon/info/userinfo.h"
+#include "libcommon/utility/cstypes.h"
+#include "libcommon/utility/types.h"
 
 #include <QObject>
 #include <QString>
@@ -107,7 +107,7 @@ class CommService : public QObject {
         using UserDbIdListCallback = std::function<void(const ExitInfo &, const std::vector<UserDbId> &)>;
         using UserDisplayInfoListCallback = std::function<void(const ExitInfo &, const std::vector<UserDisplayInfo> &)>;
         using DriveAvailableListCallback = std::function<void(const ExitInfo &, const std::vector<DriveAvailable> &)>;
-        using AccountInfoListCallback = std::function<void(const ExitInfo &, const std::vector<AccountInfo> &)>;
+        using AccountInfoListCallback = std::function<void(const ExitInfo &, const std::vector<Account> &)>;
         using DriveListCallback = std::function<void(const ExitInfo &, const std::vector<Drive> &)>;
         using SyncInfoListCallback = std::function<void(const ExitInfo &, const std::vector<SyncInfo> &)>;
         using SyncInfoCallback = std::function<void(const ExitInfo &, const SyncInfo &)>;
@@ -233,8 +233,8 @@ class CommService : public QObject {
         void userRemoved(UserDbId userDbId);
 
         // --- Account ---
-        void accountAdded(const AccountInfo &info);
-        void accountUpdated(const AccountInfo &info);
+        void accountAdded(const Account &info);
+        void accountUpdated(const Account &info);
         void accountRemoved(AccountDbId accountDbId);
 
         // --- Drive ---
