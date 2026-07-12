@@ -68,7 +68,7 @@ void AppCache::replaceUsers(const std::vector<UserDisplayInfo> &users) {
     emit allAvailableDrivesChanged();
 }
 
-void AppCache::replaceAccounts(const std::vector<AccountInfo> &accounts) {
+void AppCache::replaceAccounts(const std::vector<Account> &accounts) {
     for (auto &userNode: _usersByDbId | std::views::values) {
         userNode.accountDbIds.clear();
     }
@@ -204,7 +204,7 @@ void AppCache::removeUser(const UserDbId userDbId) {
     if (hadAvailableDrives) emit availableDrivesChanged(userDbId);
 }
 
-void AppCache::upsertAccount(const AccountInfo &info) {
+void AppCache::upsertAccount(const Account &info) {
     if (!_usersByDbId.contains(info.userDbId())) {
         qCWarning(lcAppCache) << "Account upsert dropped | accountDbId:" << info.dbId()
                               << "/ unknown userDbId:" << info.userDbId();
