@@ -20,6 +20,8 @@ Shared library providing server-process utilities: platform-abstracted filesyste
 - **SQLite:** Use `SqliteDb` + `SqliteQuery` wrappers. Never call `sqlite3_*` functions directly outside `libcommonserver/db/`.
 - **Logging:** Logger initialization is done once in `Log::init()`. Child libraries get their logger via `Log::instance()->getLogger("libraryName")`.
 - **Keychain:** Credentials are stored/retrieved via `KeychainManager`. Never cache raw passwords in memory long-term.
+- **Linux keychain backend:** Linux uses a kDrive-owned implementation of the `keychain` API to bound libsecret calls with a
+  timeout. Do not reintroduce non-cancellable libsecret calls in the Linux keychain path.
 - DO: Add new platform-specific file ops to `IoHelper` — one interface, three implementations.
 - DON'T: Add UI or Qt Widgets dependencies here. This library is server-side only.
 
