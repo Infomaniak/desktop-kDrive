@@ -28,9 +28,11 @@
 #include <QDir>
 #include <QLocale>
 #include <QQmlContext>
+#include <QQmlError>
 #include <QScreen>
 #include <QStringList>
 #include <QSysInfo>
+#include <QTimer>
 #include <QTranslator>
 #include <QVariant>
 #include <QWindow>
@@ -60,6 +62,7 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     (void) connect(&_ipcClient, &IpcClient::serverSignalReceived, &_signalDispatcher, &SignalDispatcher::dispatch);
     (void) connect(this, &AppClientLinux::ipcDisconnected, &_appCache, [this] {
         _systemTrayController.setProductStateInitialized(false);
+        _appRouter.hideMainWindow();
         _appCache.clearAll();
         _parametersStore.clear();
     });
@@ -77,6 +80,8 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
                    &SystemTrayController::showMainWindow);
     (void) connect(&_onboardingSessionManager, &OnboardingSessionManager::closeOnboardingWindowRequested, &_systemTrayController,
                    &SystemTrayController::hideMainWindow);
+    (void) connect(&_onboardingSessionManager, &OnboardingSessionManager::onboardingCompleted, this,
+                   [this] { QTimer::singleShot(0, this, &AppClientLinux::openMainWindow); });
     (void) connect(&_systemTrayController, &SystemTrayController::openMainWindowRequested, this, &AppClientLinux::openMainWindow);
     (void) connect(&_appCache, &AppCache::usersChanged, &_sentryService, &SentryService::updateAuthenticatedUser);
     (void) connect(&_parametersStore, &ParametersStore::parametersInfoChanged, this, [this] {
@@ -111,7 +116,13 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("syncService"), &_syncService);
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("serviceEventBus"), &_serviceEventBus);
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("windowDecorationController"), &_windowDecorationController);
+    (void) connect(&_qmlEngine, &QQmlApplicationEngine::warnings, this, [](const QList<QQmlError> &warnings) {
+        for (const auto &warning: warnings) {
+            qCWarning(lcAppClientLinux) << "QML warning:" << warning.toString();
+        }
+    });
     _qmlEngine.setInitialProperties({
+            {QStringLiteral("appRouter"), QVariant::fromValue<QObject *>(&_appRouter)},
             {QStringLiteral("onboardingSessionManager"), QVariant::fromValue<QObject *>(&_onboardingSessionManager)},
             {QStringLiteral("systemTrayController"), QVariant::fromValue<QObject *>(&_systemTrayController)},
     });
@@ -178,8 +189,13 @@ void AppClientLinux::openMainWindow() {
         return;
     }
 
-    qCInfo(lcAppClientLinux) << "Main window open skipped: main content is not implemented"
-                             << "| configuredDrives:" << _appCache.driveContexts().size();
+    _mainSelectionStore.ensureValidSelection();
+    _appRouter.showMainWindow();
+    _systemTrayController.showMainWindow();
+    qCInfo(lcAppClientLinux) << "Main window opened"
+                             << "| configuredDrives:" << _appCache.driveContexts().size()
+                             << "| configuredSyncs:" << _appCache.syncContexts().size()
+                             << "| currentSyncDbId:" << _mainSelectionStore.currentSyncDbId();
 }
 
 void AppClientLinux::setupLogging() {
