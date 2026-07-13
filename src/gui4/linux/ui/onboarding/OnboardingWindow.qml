@@ -28,6 +28,12 @@ Item {
     readonly property var onboardingFlowController: session.flowController
     readonly property var driveSelectionController: session.driveSelectionController
     readonly property var drivesModel: session.availableDrivesModel
+    readonly property var onboardingStepComponents: [
+        loginComponent,
+        driveSelectionComponent,
+        synchronizationComponent,
+        readyComponent
+    ]
 
     Rectangle {
         anchors.fill: parent
@@ -46,13 +52,7 @@ Item {
 
             width: parent.width * IKOnboarding.contentPanelWidthRatio
             height: parent.height
-            sourceComponent: root.onboardingFlowController.readyActive
-                             ? readyComponent
-                             : (root.onboardingFlowController.synchronizationActive
-                                ? synchronizationComponent
-                                : (root.onboardingFlowController.driveSelectionActive
-                                   ? driveSelectionComponent
-                                   : loginComponent))
+            sourceComponent: root.onboardingStepComponents[root.onboardingFlowController.currentStep] || loginComponent
         }
 
         Rectangle {
