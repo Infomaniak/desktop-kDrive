@@ -36,7 +36,11 @@ struct UtilitySignalHandler {
 
         let requestId = "kdrive_notification_\(notificationSignal.num)_\(notificationSignal.id)"
         let request = UNNotificationRequest(identifier: requestId, content: content, trigger: nil)
-        try? await UNUserNotificationCenter.current().add(request)
+        do {
+            try await UNUserNotificationCenter.current().add(request)
+        } catch {
+            IKLogger.xpc.error("[KD] Failed to post user notification: \(error)")
+        }
     }
 
     func handleError(_ signal: Data) async throws {
@@ -44,7 +48,13 @@ struct UtilitySignalHandler {
             throw SignalError.unableToGetErrorInfoFromSignal
         }
 
-        let errorInfo = ErrorInfo(errorInfoMetadata: errorInfoSignal.body.errorInfo)
+        let errorMetadata = errorInfoSignal.body.errorInfo
+        IKLogger.xpc.info(
+            "[KD] [Signal ←] #\(errorInfoSignal.id) error added: syncDbId=\(errorMetadata.syncDbId) " +
+                "level=\(errorMetadata.level) code=\(errorMetadata.exitCode) cause=\(errorMetadata.exitCause)"
+        )
+
+        let errorInfo = ErrorInfo(errorInfoMetadata: errorMetadata)
         try await coherentCache.addOrUpdateError(errorInfo)
     }
 

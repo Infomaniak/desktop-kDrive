@@ -27,7 +27,6 @@ public struct NodeJobs: Sendable {
     public init() {}
 
     public func getNodePath(syncDbId: Int32, nodeId: String) async throws -> String {
-        IKLogger.data.log("Query to get a node path")
         let query = NodePathQuery(syncDbId: syncDbId, nodeId: nodeId)
         let request = await RequestMessage<NodePathQuery>(num: RequestNum.NODE_PATH, body: query)
 
@@ -40,7 +39,6 @@ public struct NodeJobs: Sendable {
                             driveId: Int32,
                             nodeId: String,
                             withPath: Bool = true) async throws -> NodeInfo {
-        IKLogger.data.log("Query to get node info")
         let query = NodeQuery(userDbId: userDbId, driveId: driveId, nodeId: nodeId, withPath: withPath)
         let request = await RequestMessage<NodeQuery>(num: RequestNum.NODE_INFO, body: query)
 
@@ -53,7 +51,6 @@ public struct NodeJobs: Sendable {
                                   driveId: Int32,
                                   nodeId: String,
                                   withPath: Bool = true) async throws -> [NodeInfo] {
-        IKLogger.data.log("Query to get node subfolder info")
         let query = NodeQuery(userDbId: userDbId, driveId: driveId, nodeId: nodeId, withPath: withPath)
         let request = await RequestMessage<NodeQuery>(num: RequestNum.NODE_SUBFOLDERS, body: query)
 
@@ -65,7 +62,6 @@ public struct NodeJobs: Sendable {
     public func getNodeSubfolders(driveDbId: Int32,
                                   nodeId: String,
                                   withPath: Bool = true) async throws -> [NodeInfo] {
-        IKLogger.data.log("Query to get node subfolder info from driveDbId")
         let query = NodeAlternateQuery(driveDbId: driveDbId, nodeId: nodeId, withPath: withPath)
         let request = await RequestMessage<NodeAlternateQuery>(num: RequestNum.NODE_SUBFOLDERS2, body: query)
 
@@ -75,7 +71,6 @@ public struct NodeJobs: Sendable {
     }
 
     public func getFolderSize(userDbId: Int32, driveId: Int32, nodeId: String) async throws -> Int64 {
-        IKLogger.data.log("Query to get a node size")
         let query = NodeSizeQuery(userDbId: userDbId, driveId: driveId, nodeId: nodeId)
         let request = await RequestMessage<NodeSizeQuery>(num: RequestNum.NODE_FOLDER_SIZE, body: query)
 
@@ -88,7 +83,6 @@ public struct NodeJobs: Sendable {
                                      driveId: Int32,
                                      parentNodeId: String,
                                      relativePath: String) async throws -> String {
-        IKLogger.data.log("Query to create missing folders")
         let query = CreateMissingFoldersQuery(userDbId: userDbId,
                                               driveId: driveId,
                                               parentNodeId: parentNodeId,
@@ -106,7 +100,6 @@ public struct NodeJobs: Sendable {
     public func getNodeConflictInfo(syncDbId: Int32,
                                     relativePath: String,
                                     replicaSide: KDC.ReplicaSide) async throws -> NodeConflictInfo {
-        IKLogger.data.log("Query to get node conflict info")
         let query = NodeConflictInfoQuery(syncDbId: syncDbId, relativePath: relativePath, replicaSide: replicaSide)
         let request = await RequestMessage<NodeConflictInfoQuery>(num: RequestNum.NODE_CONFLICT_INFO, body: query)
 

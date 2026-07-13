@@ -67,7 +67,6 @@ public struct SyncJobs: Sendable {
 
     @discardableResult
     public func availableSync() async throws -> [SyncInfo] {
-        IKLogger.data.log("Query for availableSync list")
         let query = EmptyQuery()
         let request = await RequestMessage<EmptyQuery>(num: RequestNum.SYNC_INFOLIST, body: query)
 
@@ -80,7 +79,6 @@ public struct SyncJobs: Sendable {
     }
 
     public func startSync(syncDbId: Int32) async throws {
-        IKLogger.data.log("Query to startSync")
         let previousProgress = await setSyncStatusOptimistically(syncDbId: syncDbId, status: .Starting)
 
         let query = SyncQuery(syncDbId: syncDbId)
@@ -95,7 +93,6 @@ public struct SyncJobs: Sendable {
     }
 
     public func stopSync(syncDbId: Int32) async throws {
-        IKLogger.data.log("Query to stopSync")
         let previousProgress = await setSyncStatusOptimistically(syncDbId: syncDbId, status: .StopAsked)
 
         let query = SyncQuery(syncDbId: syncDbId)
@@ -110,7 +107,6 @@ public struct SyncJobs: Sendable {
     }
 
     public func syncStatus(syncDbId: Int32) async throws -> KDC.SyncFileStatus {
-        IKLogger.data.log("Query for syncStatus")
         let query = SyncQuery(syncDbId: syncDbId)
         let request = await RequestMessage<SyncQuery>(num: RequestNum.SYNC_STATUS, body: query)
 
@@ -120,8 +116,6 @@ public struct SyncJobs: Sendable {
     }
 
     public func addSync(identifier: NewSyncParentIdentifier, metadata: NewSyncMetadata) async throws -> SyncInfo {
-        IKLogger.data.log("Query to addSync")
-
         switch identifier {
         case .transitive(let userDbId, let accountId, let driveId):
             let newSyncQuery = NewSyncQuery(userDbId: userDbId,
@@ -152,7 +146,6 @@ public struct SyncJobs: Sendable {
     }
 
     public func syncStartAfterLoginJob(userDbId: Int32) async throws {
-        IKLogger.data.log("Query for userDelete")
         let query = UserQuery(userDbId: userDbId)
         let request = await RequestMessage<UserQuery>(num: RequestNum.SYNC_START_AFTER_LOGIN, body: query)
 
@@ -160,7 +153,6 @@ public struct SyncJobs: Sendable {
     }
 
     public func syncDelete(syncDbId: Int32) async throws {
-        IKLogger.data.log("Query to syncDelete")
         let query = SyncQuery(syncDbId: syncDbId)
         let request = await RequestMessage<SyncQuery>(num: RequestNum.SYNC_DELETE, body: query)
 
@@ -171,7 +163,6 @@ public struct SyncJobs: Sendable {
     }
 
     public func getPublicLinkUrl(driveDbId: Int32, nodeId: String) async throws -> URL {
-        IKLogger.data.log("Query to syncGetPublicLinkUrl")
         let query = LinkQuery(driveDbId: driveDbId, nodeId: nodeId)
         let request = await RequestMessage<LinkQuery>(num: RequestNum.SYNC_GETPUBLICLINKURL, body: query)
 
@@ -180,7 +171,6 @@ public struct SyncJobs: Sendable {
     }
 
     public func getPrivateLinkUrl(driveDbId: Int32, nodeId: String) async throws -> URL {
-        IKLogger.data.log("Query to syncGetPrivateLinkUrl")
         let query = LinkQuery(driveDbId: driveDbId, nodeId: nodeId)
         let request = await RequestMessage<LinkQuery>(num: RequestNum.SYNC_GETPRIVATELINKURL, body: query)
 
@@ -189,7 +179,6 @@ public struct SyncJobs: Sendable {
     }
 
     public func triggerSyncProgressUpdate() async throws {
-        IKLogger.data.log("Query to triggerSyncProgressUpdate")
         let query = EmptyQuery()
         let request = await RequestMessage<EmptyQuery>(num: RequestNum.SYNC_TRIGGER_PROGRESS_UPDATE, body: query)
 
@@ -197,7 +186,6 @@ public struct SyncJobs: Sendable {
     }
 
     public func setSupportsVirtualFiles(syncDbId: Int32, value: Bool) async throws {
-        IKLogger.data.log("Query to setSupportsVirtualFiles")
         let query = SetSupportsVirtualFilesQuery(syncDbId: syncDbId, value: value)
         let request = await RequestMessage<SetSupportsVirtualFilesQuery>(
             num: RequestNum.SYNC_SETSUPPORTSVIRTUALFILES,
@@ -214,7 +202,6 @@ public struct SyncJobs: Sendable {
     }
 
     public func getOfflineFilesSize(syncDbId: Int32) async throws -> UInt64 {
-        IKLogger.data.log("Query for offlineFilesSize")
         let query = SyncQuery(syncDbId: syncDbId)
         let request = await RequestMessage<SyncQuery>(num: RequestNum.SYNC_OFFLINE_FILES_SIZE, body: query)
 
@@ -234,11 +221,7 @@ public struct SyncJobs: Sendable {
             synchro.progress = .placeholder(status: status)
         }
 
-        do {
-            try await coherentCache.updateSynchro(synchro)
-        } catch {
-            IKLogger.data.error("Failed to apply optimistic sync status update: \(error)")
-        }
+        try? await coherentCache.updateSynchro(synchro)
 
         return previousProgress
     }
@@ -247,10 +230,6 @@ public struct SyncJobs: Sendable {
         guard var synchro = await coherentCache.getSynchro(synchroDbId: syncDbId) else { return }
         synchro.progress = previousProgress
 
-        do {
-            try await coherentCache.updateSynchro(synchro)
-        } catch {
-            IKLogger.data.error("Failed to revert optimistic sync status: \(error)")
-        }
+        try? await coherentCache.updateSynchro(synchro)
     }
 }

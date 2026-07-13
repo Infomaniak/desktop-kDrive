@@ -26,7 +26,6 @@ public struct ParametersJobs: Sendable {
     public init() {}
 
     public func parametersInfo() async throws -> ParametersInfo {
-        IKLogger.data.log("Query for parametersInfo")
         let query = EmptyQuery()
         let request = await RequestMessage<EmptyQuery>(num: RequestNum.PARAMETERS_INFO, body: query)
 
@@ -36,7 +35,6 @@ public struct ParametersJobs: Sendable {
     }
 
     public func updateParameters(parametersInfo: ParametersInfo) async throws {
-        IKLogger.data.log("Query for updating parameters")
         let query = ParametersUpdateQuery(parametersInfo: parametersInfo)
         let request = await RequestMessage<ParametersUpdateQuery>(
             num: RequestNum.PARAMETERS_UPDATE,

@@ -28,7 +28,6 @@ public struct UserJobs: Sendable {
     public init() {}
 
     public func userDbIds() async throws -> [Int32] {
-        IKLogger.data.log("Query for userDbIds list")
         let request = await RequestMessage<EmptyQuery>(num: RequestNum.USER_DBIDLIST, body: EmptyQuery())
 
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<UserDbIdsListResponse>.self)
@@ -38,7 +37,6 @@ public struct UserJobs: Sendable {
 
     @discardableResult
     public func userInfoList() async throws -> [UserInfoResponse] {
-        IKLogger.data.log("Query for userInfo list")
         let request = await RequestMessage<EmptyQuery>(num: RequestNum.USER_INFOLIST, body: EmptyQuery())
 
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<UserInfoListResponse>.self)
@@ -51,7 +49,6 @@ public struct UserJobs: Sendable {
     }
 
     public func userDelete(dbId: Int32) async throws {
-        IKLogger.data.log("Query for userDelete")
         let query = UserQuery(userDbId: dbId)
         let request = await RequestMessage<UserQuery>(num: RequestNum.USER_DELETE, body: query)
 

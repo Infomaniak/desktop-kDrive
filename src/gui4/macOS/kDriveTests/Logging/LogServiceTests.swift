@@ -66,6 +66,35 @@ struct LogServiceTests {
         #expect(sentryReporter.capturedEvents.isEmpty)
     }
 
+    @Test("Service only writes events at or above the minimum file level to the file")
+    func serviceFiltersFileWritesByMinimumLevel() throws {
+        let writer = InMemoryLogFileWriter()
+        let sentryReporter = SpySentryLogReporter()
+        let date = try Self.date(year: 2026, month: 6, day: 9, hour: 12, minute: 0, second: 46, millisecond: 529)
+        let service = LogService(
+            formatter: LogLineFormatter(timeZone: Self.utcTimeZone),
+            fileWriter: writer,
+            sentryReporter: sentryReporter,
+            dateProvider: { date },
+            threadIDProvider: { "227895" },
+            minimumFileLevel: .warning
+        )
+
+        service.log(level: .debug, category: "general", message: "debug", file: "File.swift", line: 1)
+        service.log(level: .info, category: "general", message: "info", file: "File.swift", line: 2)
+        service.log(level: .warning, category: "general", message: "warning", file: "File.swift", line: 3)
+        service.log(level: .error, category: "general", message: "error", file: "File.swift", line: 4)
+        service.flush()
+
+        // Only warning and above reach the file...
+        #expect(writer.lines == [
+            "2026-06-09 12:00:46:529 [W] (227895) File.swift:3 - warning",
+            "2026-06-09 12:00:46:529 [C] (227895) File.swift:4 - error"
+        ])
+        // ...while Sentry breadcrumbs still fire for every level.
+        #expect(sentryReporter.breadcrumbs.map(\.level) == [.debug, .info, .warning, .error])
+    }
+
     @Test("Service captures only error and fatal events")
     func serviceCapturesOnlyErrorAndFatalEvents() {
         let sentryReporter = SpySentryLogReporter()

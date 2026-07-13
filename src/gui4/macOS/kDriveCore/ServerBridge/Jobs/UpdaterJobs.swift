@@ -26,7 +26,6 @@ public struct UpdaterJobs: Sendable {
     public init() {}
 
     public func versionInfo(channel: KDC.DistributionChannel) async throws -> VersionInfo {
-        IKLogger.data.log("Query for version info")
         let query = UpdaterVersionInfoQuery(channel: channel)
         let request = await RequestMessage<UpdaterVersionInfoQuery>(num: RequestNum.UPDATER_VERSION_INFO, body: query)
 
@@ -47,7 +46,6 @@ public struct UpdaterJobs: Sendable {
     }
 
     public func updaterState() async throws -> KDC.UpdateState {
-        IKLogger.data.log("Query for updater state")
         let request = await RequestMessage<EmptyQuery>(num: RequestNum.UPDATER_STATE, body: EmptyQuery())
 
         let decodedMessage = try await queryFetcher.query(
@@ -59,14 +57,12 @@ public struct UpdaterJobs: Sendable {
     }
 
     public func startInstaller() async throws {
-        IKLogger.data.log("Query to start installer")
         let request = await RequestMessage<EmptyQuery>(num: RequestNum.UPDATER_START_INSTALLER, body: EmptyQuery())
 
         try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
     }
 
     public func skipVersion(version: String) async throws {
-        IKLogger.data.log("Query to skip version")
         let query = UpdaterSkipVersionQuery(skippedVersion: version)
         let request = await RequestMessage<UpdaterSkipVersionQuery>(num: RequestNum.UPDATER_SKIP_VERSION, body: query)
 

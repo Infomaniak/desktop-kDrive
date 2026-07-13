@@ -28,6 +28,7 @@ public final class LogService: @unchecked Sendable {
     private let sentryReporter: SentryLogReporting
     private let dateProvider: () -> Date
     private let threadIDProvider: () -> String
+    private let minimumFileLevel: LogLevel
 
     convenience init() {
         self.init(fileWriter: try? LogFileWriter())
@@ -38,13 +39,16 @@ public final class LogService: @unchecked Sendable {
         fileWriter: LogFileWriting?,
         sentryReporter: SentryLogReporting = SentryLogReporter(),
         dateProvider: @escaping () -> Date = Date.init,
-        threadIDProvider: @escaping () -> String = LogService.currentThreadID
+        threadIDProvider: @escaping () -> String = LogService.currentThreadID,
+        // Beta: everything → file. Raise this for the big release (e.g. `.info`) to reduce what is written to disk.
+        minimumFileLevel: LogLevel = .debug
     ) {
         self.formatter = formatter
         self.fileWriter = fileWriter
         self.sentryReporter = sentryReporter
         self.dateProvider = dateProvider
         self.threadIDProvider = threadIDProvider
+        self.minimumFileLevel = minimumFileLevel
 
         queue.setSpecific(key: queueKey, value: ())
     }
@@ -71,8 +75,10 @@ public final class LogService: @unchecked Sendable {
             sentryReporter.capture(event)
         }
 
-        queue.async { [weak self] in
-            self?.write(event)
+        if event.level >= minimumFileLevel {
+            queue.async { [weak self] in
+                self?.write(event)
+            }
         }
     }
 

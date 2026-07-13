@@ -26,7 +26,6 @@ public struct ExclusionTemplateJobs: Sendable {
     public init() {}
 
     public func getNameExcluded(name: String) async throws -> Bool {
-        IKLogger.data.log("Query for exclusionTemplateGetExcluded")
         let query = ExclusionTemplateGetExcludedQuery(name: name)
         let request = await RequestMessage<ExclusionTemplateGetExcludedQuery>(
             num: RequestNum.EXCLTEMPL_GETEXCLUDED,
@@ -42,7 +41,6 @@ public struct ExclusionTemplateJobs: Sendable {
     }
 
     public func getExclusionTemplateList(default isDefault: Bool) async throws -> [ExclusionTemplateInfo] {
-        IKLogger.data.log("Query for exclusionTemplateGetList")
         let query = ExclusionTemplateGetListQuery(default: isDefault)
         let request = await RequestMessage<ExclusionTemplateGetListQuery>(
             num: RequestNum.EXCLTEMPL_GETLIST,
@@ -58,7 +56,6 @@ public struct ExclusionTemplateJobs: Sendable {
     }
 
     public func setUserExclusionTemplateList(_ exclusionTemplateList: [ExclusionTemplateInfo]) async throws {
-        IKLogger.data.log("Set user exclusionTemplateList")
         let exchangeList = exclusionTemplateList.map {
             ExclusionTemplateInfoExchange(template: $0.template, warning: $0.warning, default: $0.default)
         }

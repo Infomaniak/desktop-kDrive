@@ -48,23 +48,69 @@ struct XPCQueryFetcher: XPCQueryFetcherProtocol {
     func query<Response: Decodable>(_ request: Encodable, responseType: Response.Type) async throws -> Response {
         let requestData = try encoder.encode(request)
 
+        let logContext = RequestLogContext(request)
+        logRequestSent(logContext)
+
+        let startTime = DispatchTime.now()
+
         let guiConnection = try await xpcConnectionProvider.guiConnection
         guard let replyData = await guiConnection.sendQueryAsync(requestData) else {
-            IKLogger.data.error("[KD] no replyData on sendQueryAsync woops")
+            logNoReply(logContext)
             throw QueryError.noReplyData
         }
 
-        // IKLogger.data.log("[KD] recv raw: \(String(data: replyData, encoding: .utf8))")
         let headerMessage = try decoder.decode(CallbackMessage<EmptyResponse>.self, from: replyData)
+        logCallbackReceived(headerMessage, context: logContext, since: startTime)
+
         try headerMessage.validate()
 
         do {
-            let decodedMessage = try decoder.decode(Response.self, from: replyData)
-            IKLogger.data.log("[KD] recv callback: \(String(describing: decodedMessage))")
-            return decodedMessage
+            return try decoder.decode(Response.self, from: replyData)
         } catch {
-            IKLogger.data.error("[KD] recv decoding woops \(error)")
+            logDecodingFailure(error, header: headerMessage, context: logContext)
             throw QueryError.unableToDecodeReply(parsingError: error)
         }
+    }
+}
+
+// MARK: - Logging
+
+private extension XPCQueryFetcher {
+    struct RequestLogContext {
+        let num: String
+        let id: String
+
+        init(_ request: Encodable) {
+            let loggable = request as? XPCLoggableRequest
+            num = loggable.map { "\($0.requestNum)" } ?? "unknown"
+            id = loggable.map { "\($0.requestId)" } ?? "?"
+        }
+    }
+
+    func logRequestSent(_ context: RequestLogContext) {
+        IKLogger.xpc.info("[KD] [Job →] #\(context.id) \(context.num)")
+    }
+
+    func logNoReply(_ context: RequestLogContext) {
+        IKLogger.xpc.error("[KD] [Job ←] #\(context.id) \(context.num) no reply data")
+    }
+
+    func logCallbackReceived(_ header: CallbackMessage<EmptyResponse>, context: RequestLogContext, since start: DispatchTime) {
+        let elapsed = String(format: "%.1f", Self.elapsedMilliseconds(since: start))
+        let outcome = "[KD] [Job ←] #\(header.id) \(context.num) \(header.code)/\(header.cause) (\(elapsed)ms)"
+        if header.code != .Ok || header.cause != .Unknown {
+            IKLogger.xpc.error(outcome)
+        } else {
+            IKLogger.xpc.info(outcome)
+        }
+    }
+
+    func logDecodingFailure(_ error: Error, header: CallbackMessage<EmptyResponse>, context: RequestLogContext) {
+        IKLogger.xpc.error("[KD] [Job ←] #\(header.id) \(context.num) decode failed: \(error)")
+    }
+
+    static func elapsedMilliseconds(since start: DispatchTime) -> Double {
+        let elapsedNanoseconds = DispatchTime.now().uptimeNanoseconds &- start.uptimeNanoseconds
+        return Double(elapsedNanoseconds) / 1_000_000
     }
 }
