@@ -18,12 +18,8 @@
 
 #pragma once
 
-#include "test_utility/localtemporarydirectory.h"
 #include "test_utility/remotetemporarydirectory.h"
 
-#include "db/dbnode.h"
-#include "update_detection/update_detector/node.h"
-#include "update_detection/file_system_observer/snapshot/livesnapshot.h"
 #include "utility/types.h"
 
 #include <Poco/JSON/Array.h>
@@ -35,10 +31,6 @@
 #include <unordered_map>
 
 namespace KDC {
-class SyncDb;
-class Snapshot;
-class UpdateTree;
-class Node;
 class SyncPal;
 
 /**
@@ -67,8 +59,13 @@ class Situation {
 
 /**
  * @brief This class is the single entry point for setting up and driving Syncpal-based tests. It combines:
- *  - Building an initial Db/update-tree/filesystem situation from a JSON description (formerly SituationGenerator).
+ *  - Building an initial local/remote filesystem situation from a JSON description (formerly SituationGenerator).
  *  - Applying simple local/remote operations (delete/edit) on top of that situation (formerly ExecuteOperations).
+ *
+ * Items are created using real local filesystem operations and real remote API jobs, exactly like ExecuteOperations
+ * does for operations applied afterwards. This class never touches the SyncDb, update trees, or snapshots directly:
+ * it is up to the caller to run a real sync pass (e.g. SyncpalTestHelper::executeSyncUntilEnd) afterwards so that the
+ * SyncPal discovers the generated items itself and populates its own Db/update-trees/snapshots with real ids.
  *
  * Two JSON formats are supported for `run` / `generateInitialSituation`:
  *
@@ -106,7 +103,7 @@ class Situation {
  */
 class SetInitialSituation {
     public:
-        SetInitialSituation();
+        SetInitialSituation() = default;
         explicit SetInitialSituation(std::shared_ptr<SyncPal> syncPal);
 
         // JSON = same format documented on the class.
@@ -116,13 +113,7 @@ class SetInitialSituation {
         bool run(const std::string &jsonDescription);
 
         void setSyncpal(std::shared_ptr<SyncPal> syncPal);
-        void setSyncDb(const std::shared_ptr<SyncDb> syncDb) { _syncDb = syncDb; }
-        void setLocalSnapshot(LiveSnapshot &localSnapshot) { _localLiveSnapshot = localSnapshot; }
-        void setRemoteSnapshot(LiveSnapshot &remoteSnapshot) { _remoteLiveSnapshot = remoteSnapshot; }
-        void setLocalUpdateTree(const std::shared_ptr<UpdateTree> localUpdateTree) { _localUpdateTree = localUpdateTree; }
-        void setRemoteUpdateTree(const std::shared_ptr<UpdateTree> remoteUpdateTree) { _remoteUpdateTree = remoteUpdateTree; }
 
-        [[nodiscard]] const std::filesystem::path &localPath() const { return _localItemDir.path(); }
         [[nodiscard]] NodeId remoteRootId() const { return _remoteItemDir ? _remoteItemDir->id() : NodeId{}; }
         void setRemoteDrive(DriveDbId driveDbId, const NodeId &parentRemoteNodeId);
 
@@ -131,14 +122,12 @@ class SetInitialSituation {
     private:
         struct ItemDesc {
                 NodeType type = NodeType::File;
-                NodeId id; // lowercase, used for ID generation
-                SyncName name; // display name stored in all data structures
+                NodeId id; // lowercase, used to derive the relative path and as a map key
+                SyncName name; // display name
                 SyncTime createdAt = 0;
                 SyncTime lastModifiedAt = 0;
                 int64_t size = 0;
         };
-
-        [[nodiscard]] NodeId generateId(ReplicaSide side, const NodeId &id) const;
 
         void addItem(Poco::JSON::Object::Ptr obj, const std::string &parentId = {});
         void addItem(Poco::JSON::Array::Ptr arr, const std::string &parentId);
@@ -146,44 +135,13 @@ class SetInitialSituation {
 
         void insertLocalItem(const ItemDesc &desc, const NodeId &parentId) const;
         void insertRemoteItem(const ItemDesc &desc, const NodeId &parentId) const;
-        void insertInAllSnapshot(const ItemDesc &desc, const NodeId &parentId) const;
-        [[nodiscard]] DbNodeId insertInDb(const ItemDesc &desc, const NodeId &parentId) const;
-        /**
-         * @brief Insert a new node in the update tree.
-         * @param side Replica side for the update tree (Local or Remote).
-         * @param desc Item description (type, id, name, timestamps, size).
-         * @param parentId Parent file ID in lowercase. If empty, the parent is the root node.
-         * @param dbNodeId DB ID of the node to insert.
-         * @return A pointer to the generated node.
-         */
-        [[nodiscard]] std::shared_ptr<Node> insertInUpdateTree(ReplicaSide side, const ItemDesc &desc, const NodeId &parentId,
-                                                               std::optional<DbNodeId> dbNodeId) const;
-        void insertInAllUpdateTrees(const ItemDesc &desc, const NodeId &parentId, DbNodeId dbNodeId) const;
-
-        LiveSnapshot &liveSnapshot(const ReplicaSide side) const {
-            return side == ReplicaSide::Local ? _localLiveSnapshot->get() : _remoteLiveSnapshot->get();
-        }
-
-        std::shared_ptr<UpdateTree> updateTree(const ReplicaSide side) const {
-            return side == ReplicaSide::Local ? _localUpdateTree : _remoteUpdateTree;
-        }
 
         std::shared_ptr<SyncPal> _syncPal;
 
-        const LocalTemporaryDirectory _temporaryDirectory = LocalTemporaryDirectory("SituationGenerator");
-        const LocalTemporaryDirectory _localItemDir = LocalTemporaryDirectory("SituationGenerator_local");
         std::unique_ptr<RemoteTemporaryDirectory> _remoteItemDir;
         std::optional<DriveDbId> _remoteDriveDbId;
         mutable std::unordered_map<NodeId, SyncPath> _localItemPaths; // item id (lowercase) -> local relative path
-        mutable std::unordered_map<NodeId, NodeId> _localNodeIds; // item id (lowercase) -> real local inode NodeId
-        mutable std::unordered_map<NodeId, NodeId> _remoteNodeIds; // item id (lowercase) -> remote NodeId
-
-        std::shared_ptr<SyncDb> _syncDb;
-        std::optional<std::reference_wrapper<LiveSnapshot>> _localLiveSnapshot;
-        std::optional<std::reference_wrapper<LiveSnapshot>> _remoteLiveSnapshot;
-
-        std::shared_ptr<UpdateTree> _localUpdateTree;
-        std::shared_ptr<UpdateTree> _remoteUpdateTree;
+        mutable std::unordered_map<NodeId, NodeId> _remoteNodeIds; // item id (lowercase) -> real remote NodeId
 };
 
 } // namespace KDC

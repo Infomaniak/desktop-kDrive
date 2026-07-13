@@ -246,10 +246,6 @@ void TestIntegration::testSimpleUpload() {
 
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
 
-    // Describe one operation: create a file. Applied to Local it creates the file on disk;
-    // applied to Remote it's meant to upload that same file (still a TODO in
-    // ExecuteOperations::applyOperation - right now the Remote/Create case is a no-op, so this
-    // call succeeds without doing anything until you add the UploadJob there).
     const Situation situation{Str2SyncName(R"({
         "content" : [
             {
@@ -262,7 +258,7 @@ void TestIntegration::testSimpleUpload() {
             {"type" : "Directory", "name" : "B"}, {"type" : "File", "name" : "C", "size" : 1234}
         ]
     })")};
-    testHelper.setInitialSituation(situation, situation);
+    CPPUNIT_ASSERT(testHelper.setInitialSituation(situation, situation));
 
     const Operations localoperations{Str2SyncName(R"({
         "operations": [
@@ -270,6 +266,8 @@ void TestIntegration::testSimpleUpload() {
             { "type": "Create", "itemType": "File", "name": "A/AA/BBB" }
         ]
     })")};
+    auto testpath = _syncPal->localPath(); // this is for debug, to find where is the tmp dir
+    auto remotesyncdirname = _remoteSyncDir.name(); // this is for debug, to find where is the tmp kDrive dir
     CPPUNIT_ASSERT(testHelper.executeOperations(ReplicaSide::Local, localoperations));
 
     // The local Create operation above wrote the file directly to disk, bypassing the sync engine, so we
@@ -290,11 +288,11 @@ void TestIntegration::testSimpleUpload() {
 
     // Now apply an operation on the remote replica (move C -> CC, i.e. rename since they share the same parent)
     // and verify it gets propagated back to the local replica.
-    const Operations remoteoperations(Str2SyncName(R"({
+    const Operations remoteoperations{Str2SyncName(R"({
         "operations": [
             { "type": "Move", "fromPath":"C", "toPath":"CC" }
         ]
-    })"));
+    })")};
     CPPUNIT_ASSERT(testHelper.executeOperations(ReplicaSide::Remote, remoteoperations));
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
 

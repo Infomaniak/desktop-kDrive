@@ -19,8 +19,6 @@
 #include "setinitialsituation.h"
 
 #include "syncpal/syncpal.h"
-#include "update_detection/file_system_observer/filesystemobserverworker.h"
-#include "db/dbnode.h"
 
 #include "test_utility/testhelpers.h"
 
@@ -37,13 +35,9 @@
 
 namespace KDC {
 
-static const std::string localIdSuffix = "l_";
-static const std::string remoteIdSuffix = "r_";
-
 class SituationGeneratorException final : public std::runtime_error {
     public:
-        explicit SituationGeneratorException(const std::string &what) :
-            std::runtime_error(what) {}
+        using std::runtime_error::runtime_error;
 };
 
 //
@@ -89,32 +83,11 @@ void Situation::log() const {
 // ─────────────────────────────────────────────────
 //
 
-SetInitialSituation::SetInitialSituation() {
-    const auto syncDbPath = _temporaryDirectory.path() / ("dummySyncDb_" + CommonUtility::generateRandomStringAlphaNum());
-    _syncDb = std::make_shared<SyncDb>(syncDbPath.string());
-    (void) _syncDb->init(KDRIVE_VERSION_STRING);
-    _syncDb->setAutoDelete(true);
-
-    _localUpdateTree = std::make_shared<UpdateTree>(ReplicaSide::Local, SyncDb::driveRootNode());
-    _remoteUpdateTree = std::make_shared<UpdateTree>(ReplicaSide::Remote, SyncDb::driveRootNode());
-}
-
 SetInitialSituation::SetInitialSituation(const std::shared_ptr<SyncPal> syncPal) :
-    _syncPal(syncPal),
-    _syncDb(syncPal->syncDb()),
-    _localUpdateTree(syncPal->updateTree(ReplicaSide::Local)),
-    _remoteUpdateTree(syncPal->updateTree(ReplicaSide::Remote)) {
-    if (syncPal->_localFSObserverWorker) _localLiveSnapshot = syncPal->_localFSObserverWorker->_liveSnapshot;
-    if (syncPal->_remoteFSObserverWorker) _remoteLiveSnapshot = syncPal->_remoteFSObserverWorker->_liveSnapshot;
-}
+    _syncPal(syncPal) {}
 
 void SetInitialSituation::setSyncpal(const std::shared_ptr<SyncPal> syncPal) {
     _syncPal = syncPal;
-    _syncDb = syncPal->syncDb();
-    _localLiveSnapshot = syncPal->_localFSObserverWorker->_liveSnapshot;
-    _remoteLiveSnapshot = syncPal->_remoteFSObserverWorker->_liveSnapshot;
-    _localUpdateTree = syncPal->updateTree(ReplicaSide::Local);
-    _remoteUpdateTree = syncPal->updateTree(ReplicaSide::Remote);
 }
 
 void SetInitialSituation::setRemoteDrive(const DriveDbId driveDbId, const NodeId &parentRemoteNodeId) {
@@ -142,7 +115,7 @@ bool SetInitialSituation::run(const std::string &jsonDescription) {
 }
 
 void SetInitialSituation::generateInitialSituation(const Situation &situation) {
-    if (!_syncDb || !_localUpdateTree || !_remoteUpdateTree) throw std::runtime_error("Invalid parameters!");
+    if (!_syncPal) throw std::runtime_error("Invalid parameters!");
 
     Poco::JSON::Object::Ptr obj;
     try {
@@ -157,21 +130,6 @@ void SetInitialSituation::generateInitialSituation(const Situation &situation) {
     } else {
         addItem(obj);
     }
-
-    _localUpdateTree->drawUpdateTree();
-    (void) _syncDb->cache().reloadIfNeeded();
-}
-
-NodeId SetInitialSituation::generateId(const ReplicaSide side, const NodeId &id) const {
-    NodeId rawId;
-    if (id.starts_with(localIdSuffix)) {
-        rawId = id.substr(localIdSuffix.size());
-    } else if (id.starts_with(remoteIdSuffix)) {
-        rawId = id.substr(remoteIdSuffix.size());
-    } else {
-        rawId = id;
-    }
-    return (side == ReplicaSide::Local ? localIdSuffix : remoteIdSuffix) + rawId;
 }
 
 void SetInitialSituation::addItem(Poco::JSON::Object::Ptr obj, const NodeId &parentId /*= {}*/) {
@@ -225,17 +183,13 @@ void SetInitialSituation::addItem(Poco::JSON::Array::Ptr arr, const NodeId &pare
 void SetInitialSituation::addItem(const ItemDesc &desc, const NodeId &parentId) const {
     insertLocalItem(desc, parentId);
     insertRemoteItem(desc, parentId);
-    insertInAllSnapshot(desc, parentId);
-    const DbNodeId dbNodeId = insertInDb(desc, parentId);
-    insertInAllUpdateTrees(desc, parentId, dbNodeId);
 }
 
 void SetInitialSituation::insertLocalItem(const ItemDesc &desc, const NodeId &parentId) const {
     const SyncPath parentRelPath = parentId.empty() ? SyncPath{} : _localItemPaths.at(parentId);
     const SyncPath relPath = parentRelPath / desc.name;
     _localItemPaths[desc.id] = relPath;
-    const SyncPath localRootPath = _syncPal ? _syncPal->localPath() : _localItemDir.path();
-    const SyncPath fullPath = localRootPath / relPath;
+    const SyncPath fullPath = _syncPal->localPath() / relPath;
     IoError ioError = IoError::Success;
     if (desc.type == NodeType::Directory) {
         (void) IoHelper::createDirectory(fullPath, true, ioError);
@@ -244,8 +198,6 @@ void SetInitialSituation::insertLocalItem(const ItemDesc &desc, const NodeId &pa
         testhelpers::generateTestFile(fullPath);
         if (desc.size > 0) testhelpers::setTestFileSize(fullPath, static_cast<uint64_t>(desc.size));
     }
-    NodeId nodeId;
-    if (IoHelper::getNodeId(fullPath, nodeId)) _localNodeIds[desc.id] = nodeId;
 }
 
 void SetInitialSituation::insertRemoteItem(const ItemDesc &desc, const NodeId &parentId) const {
@@ -256,76 +208,10 @@ void SetInitialSituation::insertRemoteItem(const ItemDesc &desc, const NodeId &p
         (void) job.runSynchronously();
         _remoteNodeIds[desc.id] = job.nodeId();
     } else {
-        const SyncPath localFilePath = _localItemDir.path() / _localItemPaths.at(desc.id);
+        const SyncPath localFilePath = _syncPal->localPath() / _localItemPaths.at(desc.id);
         UploadJob job(nullptr, *_remoteDriveDbId, localFilePath, desc.name, parentRemoteId, desc.createdAt, desc.lastModifiedAt);
         (void) job.runSynchronously();
         _remoteNodeIds[desc.id] = job.nodeId();
-    }
-}
-
-void SetInitialSituation::insertInAllSnapshot(const ItemDesc &desc, const NodeId &parentId) const {
-    if (desc.id.empty()) return;
-    for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote}) {
-        if (!(side == ReplicaSide::Local ? _localLiveSnapshot : _remoteLiveSnapshot).has_value()) continue;
-
-        const auto &nodeIdMap = (side == ReplicaSide::Local) ? _localNodeIds : _remoteNodeIds;
-        const auto nodeIdIt = nodeIdMap.find(desc.id);
-        const NodeId snapshotId = (nodeIdIt != nodeIdMap.end()) ? nodeIdIt->second : generateId(side, desc.id);
-
-        NodeId snapshotParentId;
-        if (parentId.empty()) {
-            snapshotParentId = (side == ReplicaSide::Local)
-                                       ? _localItemDir.id()
-                                       : (_remoteItemDir ? _remoteItemDir->id() : *_syncDb->rootNode().nodeIdRemote());
-        } else {
-            const auto parentIt = nodeIdMap.find(parentId);
-            snapshotParentId = (parentIt != nodeIdMap.end()) ? parentIt->second : generateId(side, parentId);
-        }
-
-        const SnapshotItem item(snapshotId, snapshotParentId, desc.name, desc.createdAt, desc.lastModifiedAt, desc.type,
-                                desc.size, false, true, true);
-        (void) liveSnapshot(side).updateItem(item);
-    }
-}
-
-DbNodeId SetInitialSituation::insertInDb(const ItemDesc &desc, const NodeId &parentId) const {
-    DbNode parentNode;
-    if (parentId.empty()) {
-        parentNode = _syncDb->rootNode();
-    } else {
-        bool found = false;
-        if (!_syncDb->node(ReplicaSide::Local, generateId(ReplicaSide::Local, parentId), parentNode, found)) {
-            throw SituationGeneratorException("Failed to find parent node");
-        }
-        if (!found) {
-            throw SituationGeneratorException("Failed to find parent node");
-        }
-    }
-
-    const DbNode dbNode(parentNode.nodeId(), desc.name, desc.name, generateId(ReplicaSide::Local, desc.id),
-                        generateId(ReplicaSide::Remote, desc.id), desc.createdAt, desc.lastModifiedAt, desc.lastModifiedAt,
-                        desc.type, desc.size);
-    DbNodeId dbNodeId = 0;
-    bool constraintError = false;
-    (void) _syncDb->insertNode(dbNode, dbNodeId, constraintError);
-    return dbNodeId;
-}
-
-std::shared_ptr<Node> SetInitialSituation::insertInUpdateTree(const ReplicaSide side, const ItemDesc &desc,
-                                                              const NodeId &parentId,
-                                                              const std::optional<DbNodeId> dbNodeId) const {
-    const auto parentNode =
-            parentId.empty() ? updateTree(side)->rootNode() : updateTree(side)->getNodeById(generateId(side, parentId));
-    const auto node = std::make_shared<Node>(dbNodeId, side, desc.name, desc.type, OperationType::None, generateId(side, desc.id),
-                                             desc.createdAt, desc.lastModifiedAt, desc.size, parentNode);
-    updateTree(side)->insertNode(node);
-    (void) parentNode->insertChild(node);
-    return node;
-}
-
-void SetInitialSituation::insertInAllUpdateTrees(const ItemDesc &desc, const NodeId &parentId, const DbNodeId dbNodeId) const {
-    for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote}) {
-        (void) insertInUpdateTree(side, desc, parentId, dbNodeId);
     }
 }
 

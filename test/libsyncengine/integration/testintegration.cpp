@@ -1002,7 +1002,7 @@ TestIntegration::RemoteFileInfo TestIntegration::getRemoteFileInfoByName(const i
     return fileInfo;
 }
 
-TestIntegration::RemoteFileInfo TestIntegration::getRemoteFileInfoByPath(const int driveDbId, const NodeId &rootParentId,
+TestIntegration::RemoteFileInfo TestIntegration::getRemoteFileInfoByPath(const int64_t driveDbId, const NodeId &rootParentId,
                                                                          const SyncPath &relativePath) const {
     RemoteFileInfo fileInfo;
     NodeId currentParentId = rootParentId;
@@ -1014,7 +1014,7 @@ TestIntegration::RemoteFileInfo TestIntegration::getRemoteFileInfoByPath(const i
     return fileInfo;
 }
 
-int64_t TestIntegration::countItemsInRemoteDir(int driveDbId, const NodeId &parentId) const {
+int64_t TestIntegration::countItemsInRemoteDir(int64_t driveDbId, const NodeId &parentId) const {
     GetFileListJob job(driveDbId, parentId);
     (void) job.runSynchronously();
 

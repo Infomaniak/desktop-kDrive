@@ -94,6 +94,22 @@ class ExecuteOperations {
         [[nodiscard]] static OperationDesc parseOperation(const Poco::JSON::Object::Ptr &obj);
         void applyOperation(ReplicaSide side, const OperationDesc &desc) const;
 
+        // Local side, one function per operation type.
+        void applyLocalCreate(const OperationDesc &desc) const;
+        void applyLocalEdit(const OperationDesc &desc) const;
+        void applyLocalDelete(const OperationDesc &desc) const;
+        void applyLocalMove(const OperationDesc &desc) const;
+
+        // Remote side, one function per operation type.
+        void applyRemoteCreate(const OperationDesc &desc) const;
+        void applyRemoteEdit(const OperationDesc &desc) const;
+        void applyRemoteDelete(const OperationDesc &desc) const;
+        void applyRemoteMove(const OperationDesc &desc) const;
+
+        // Resolves the remote NodeId of `path` in the sync DB. Throws OperationsParserException (with `context`
+        // prefixed to the error message) if not found.
+        [[nodiscard]] NodeId remoteIdForPath(const SyncPath &path, const std::string &context) const;
+
         std::shared_ptr<SyncPal> _syncPal;
 };
 

@@ -50,18 +50,19 @@ bool SyncpalTestHelper::setInitialSituation(const Situation &localSituation, con
             _setInitialSituation.setRemoteDrive(_syncPal->driveDbId(), *_syncPal->syncDb()->rootNode().nodeIdRemote());
         }
 
-        // NOTE: generateInitialSituation() populates BOTH local and remote structures from a
-        // single JSON tree in one call (every item is inserted on both sides at once). Calling it
-        // twice here - once per Situation - will double-insert (and likely throw on duplicate ids)
-        // if localSituation and remoteSituation aren't disjoint. Worth confirming whether local/remote
-        // are meant to diverge before relying on this; if they should always match, only one call is needed.
+        // generateInitialSituation() creates the described items on both the real local filesystem and
+        // the real remote drive in one call (every item is inserted on both sides at once, just like
+        // ExecuteOperations does for operations). Calling it a second time with the same content would
+        // create duplicate local/remote items. Local and remote are therefore expected to match here, so
+        // only one call is needed. The SyncPal is then run so it discovers the generated items itself and
+        // populates its own Db/update-trees/snapshots with real ids.
+        if (!(localSituation == remoteSituation)) return false;
         _setInitialSituation.generateInitialSituation(localSituation);
-        _setInitialSituation.generateInitialSituation(remoteSituation);
     } catch (const std::exception &) {
         return false;
     }
 
-    return true;
+    return executeSyncUntilEnd();
 }
 
 bool SyncpalTestHelper::getSituation(const Situation &, const Situation &) {

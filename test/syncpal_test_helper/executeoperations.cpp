@@ -19,6 +19,7 @@
 #include "executeoperations.h"
 
 #include "syncpal/syncpal.h"
+#include "update_detection/file_system_observer/filesystemobserverworker.h"
 #include "test_utility/testhelpers.h"
 
 #include "libcommonserver/io/iohelper.h"
@@ -48,8 +49,7 @@ namespace KDC {
 
 class OperationsParserException final : public std::runtime_error {
     public:
-        explicit OperationsParserException(const std::string &what) :
-            std::runtime_error(what) {}
+        using std::runtime_error::runtime_error;
 };
 
 //
@@ -74,8 +74,8 @@ Operations::Operations(const StringType &jsonDescription) :
 }
 
 Operations Operations::fromFile(const std::filesystem::path &filePath) {
-    std::ifstream file(filePath, std::ios::binary);
-    if (!file) throw std::runtime_error("Operations::fromFile: unable to open file: " + filePath.string());
+    const std::ifstream file(filePath, std::ios::binary);
+    if (!file) throw OperationsParserException("Operations::fromFile: unable to open file: " + filePath.string());
 
     std::ostringstream buffer;
     buffer << file.rdbuf();
@@ -107,7 +107,7 @@ bool ExecuteOperations::run(const ReplicaSide side, const std::string &jsonDescr
         executeOperations(side, operations);
 
         return true;
-    } catch (...) {
+    } catch (const OperationsParserException &) {
         return false;
     }
 }
@@ -123,9 +123,15 @@ void ExecuteOperations::executeOperations(const ReplicaSide side, const Operatio
 
     const auto arr = obj->getArray("operations");
     for (size_t i = 0; i < arr->size(); ++i) {
-        const auto &itemObj = arr->getObject(static_cast<unsigned int>(i));
+        const auto &itemObj = arr->getObject(static_cast<uint64_t>(i));
         const OperationDesc desc = parseOperation(itemObj);
         applyOperation(side, desc);
+    }
+
+    if (side == ReplicaSide::Remote && _syncPal->_remoteFSObserverWorker) {
+        // Remote changes are otherwise only picked up via long-poll/cursor, which can lag behind the
+        // real API calls above. Force an immediate update so the caller's subsequent sync wait detects them.
+        _syncPal->_remoteFSObserverWorker->forceUpdate();
     }
 }
 
@@ -186,38 +192,10 @@ void ExecuteOperations::applyOperation(const ReplicaSide side, const OperationDe
     switch (side) {
         case ReplicaSide::Local: {
             switch (desc.type) {
-                case OperationType::Create: {
-                    const SyncPath fullPath = _syncPal->localPath() / desc.path;
-                    IoError ioError = IoError::Success;
-                    if (desc.itemType == NodeType::Directory) {
-                        auto job = std::make_shared<LocalCreateDirJob>(fullPath);
-                        job->runSynchronously();
-                    } else {
-                        (void) IoHelper::createDirectory(fullPath.parent_path(), true, ioError);
-                        testhelpers::generateTestFile(fullPath, static_cast<uint64_t>(desc.size));
-                    }
-                    break;
-                }
-                case OperationType::Edit: {
-                    const SyncPath fullPath = _syncPal->localPath() / desc.path;
-                    testhelpers::setTestFileSize(fullPath, static_cast<uint64_t>(desc.size));
-                    IoError ioError = IoError::Success;
-                    (void) IoHelper::setFileDates(fullPath, desc.createdAt, desc.lastModifiedAt, false);
-                    break;
-                }
-                case OperationType::Delete: {
-                    const SyncPath fullPath = _syncPal->localPath() / desc.path;
-                    GenericLocalDeleteJob deleteJob(fullPath);
-                    (void) deleteJob.runSynchronously();
-                    break;
-                }
-                case OperationType::Move: {
-                    const SyncPath fullFromPath = _syncPal->localPath() / desc.fromPath;
-                    const SyncPath fullToPath = _syncPal->localPath() / desc.toPath;
-                    LocalMoveJob job(fullFromPath, fullToPath);
-                    (void) job.runSynchronously();
-                    break;
-                }
+                case OperationType::Create: applyLocalCreate(desc); break;
+                case OperationType::Edit: applyLocalEdit(desc); break;
+                case OperationType::Delete: applyLocalDelete(desc); break;
+                case OperationType::Move: applyLocalMove(desc); break;
                 default:
                     throw OperationsParserException("Unsupported operation type: " + toString(desc.type));
             }
@@ -225,78 +203,10 @@ void ExecuteOperations::applyOperation(const ReplicaSide side, const OperationDe
         }
         case ReplicaSide::Remote: {
             switch (desc.type) {
-                case OperationType::Create: {
-                    bool found = false;
-                    std::optional<NodeId> parentId;
-                    if (!_syncPal->syncDb()->id(ReplicaSide::Remote, desc.path.parent_path(), parentId, found) || !found ||
-                        !parentId) {
-                        throw OperationsParserException("Create operation: remote parent not found for " +
-                                                        desc.path.parent_path().string());
-                    }
-
-                    if (desc.itemType == NodeType::Directory) {
-                        CreateDirJob job(nullptr, _syncPal->driveDbId(), *parentId, desc.path.filename().native());
-                        (void) job.runSynchronously();
-                    } else {
-                        const SyncPath fullPath = _syncPal->localPath() / desc.path;
-                        UploadJob job(nullptr, _syncPal->driveDbId(), fullPath, desc.path.filename().native(), *parentId,
-                                      desc.createdAt, desc.lastModifiedAt);
-                        (void) job.runSynchronously();
-                    }
-                    break;
-                }
-                case OperationType::Edit: {
-                    bool found = false;
-                    std::optional<NodeId> fileId;
-                    if (!_syncPal->syncDb()->id(ReplicaSide::Remote, desc.path, fileId, found) || !found || !fileId) {
-                        throw OperationsParserException("Edit operation: remote item not found for " + desc.path.string());
-                    }
-
-                    const SyncPath fullPath = _syncPal->localPath() / desc.path;
-                    UploadJob job(nullptr, _syncPal->driveDbId(), fullPath, *fileId, desc.lastModifiedAt);
-                    (void) job.runSynchronously();
-                    break;
-                }
-                case OperationType::Delete: {
-                    bool found = false;
-                    std::optional<NodeId> itemId;
-                    if (!_syncPal->syncDb()->id(ReplicaSide::Remote, desc.path, itemId, found) || !found || !itemId) {
-                        throw OperationsParserException("Delete operation: remote item not found for " + desc.path.string());
-                    }
-
-                    DeleteJob job(_syncPal->driveDbId(), *itemId);
-                    job.setBypassCheck(true);
-                    (void) job.runSynchronously();
-                    break;
-                }
-                case OperationType::Move: {
-                    bool found = false;
-                    std::optional<NodeId> itemId;
-                    if (!_syncPal->syncDb()->id(ReplicaSide::Remote, desc.fromPath, itemId, found) || !found || !itemId) {
-                        throw OperationsParserException("Move operation: remote item not found for " + desc.fromPath.string());
-                    }
-
-                    if (desc.fromPath.parent_path() == desc.toPath.parent_path()) {
-                        // Same parent: rename only.
-                        const SyncPath fullToPath = _syncPal->localPath() / desc.toPath;
-                        RenameJob job(nullptr, _syncPal->driveDbId(), *itemId, fullToPath);
-                        (void) job.runSynchronously();
-                    } else {
-                        std::optional<NodeId> destParentId;
-                        if (!_syncPal->syncDb()->id(ReplicaSide::Remote, desc.toPath.parent_path(), destParentId, found) ||
-                            !found || !destParentId) {
-                            throw OperationsParserException("Move operation: remote destination parent not found for " +
-                                                            desc.toPath.parent_path().string());
-                        }
-
-                        const SyncPath fullToPath = _syncPal->localPath() / desc.toPath;
-                        MoveJob job(nullptr, _syncPal->driveDbId(), fullToPath, *itemId, *destParentId,
-                                    desc.toPath.filename().native());
-                        job.setBypassCheck(true);
-                        (void) job.runSynchronously();
-                    }
-                    break;
-                }
+                case OperationType::Create: applyRemoteCreate(desc); break;
+                case OperationType::Edit: applyRemoteEdit(desc); break;
+                case OperationType::Delete: applyRemoteDelete(desc); break;
+                case OperationType::Move: applyRemoteMove(desc); break;
                 default:
                     throw OperationsParserException("Unsupported operation type: " + toString(desc.type));
             }
@@ -304,6 +214,94 @@ void ExecuteOperations::applyOperation(const ReplicaSide side, const OperationDe
         }
         default:
             throw OperationsParserException("Unsupported side: " + toString(side));
+    }
+}
+
+void ExecuteOperations::applyLocalCreate(const OperationDesc &desc) const {
+    const SyncPath fullPath = _syncPal->localPath() / desc.path;
+    IoError ioError = IoError::Success;
+    if (desc.itemType == NodeType::Directory) {
+        auto job = std::make_shared<LocalCreateDirJob>(fullPath);
+        job->runSynchronously();
+    } else {
+        (void) IoHelper::createDirectory(fullPath.parent_path(), true, ioError);
+        testhelpers::generateTestFile(fullPath, static_cast<uint64_t>(desc.size));
+    }
+}
+
+void ExecuteOperations::applyLocalEdit(const OperationDesc &desc) const {
+    const SyncPath fullPath = _syncPal->localPath() / desc.path;
+    testhelpers::setTestFileSize(fullPath, static_cast<uint64_t>(desc.size));
+    (void) IoHelper::setFileDates(fullPath, desc.createdAt, desc.lastModifiedAt, false);
+}
+
+void ExecuteOperations::applyLocalDelete(const OperationDesc &desc) const {
+    const SyncPath fullPath = _syncPal->localPath() / desc.path;
+    GenericLocalDeleteJob deleteJob(fullPath);
+    (void) deleteJob.runSynchronously();
+}
+
+void ExecuteOperations::applyLocalMove(const OperationDesc &desc) const {
+    const SyncPath fullFromPath = _syncPal->localPath() / desc.fromPath;
+    const SyncPath fullToPath = _syncPal->localPath() / desc.toPath;
+    LocalMoveJob job(fullFromPath, fullToPath);
+    (void) job.runSynchronously();
+}
+
+NodeId ExecuteOperations::remoteIdForPath(const SyncPath &path, const std::string &context) const {
+    bool found = false;
+    std::optional<NodeId> id;
+    if (!_syncPal->syncDb()->id(ReplicaSide::Remote, path, id, found) || !found || !id) {
+        throw OperationsParserException(context + ": remote item not found for " + path.string());
+    }
+    return *id;
+}
+
+void ExecuteOperations::applyRemoteCreate(const OperationDesc &desc) const {
+    const NodeId parentId = remoteIdForPath(desc.path.parent_path(), "Create operation");
+
+    if (desc.itemType == NodeType::Directory) {
+        CreateDirJob job(nullptr, _syncPal->driveDbId(), parentId, desc.path.filename().native());
+        (void) job.runSynchronously();
+    } else {
+        const SyncPath fullPath = _syncPal->localPath() / desc.path;
+        UploadJob job(nullptr, _syncPal->driveDbId(), fullPath, desc.path.filename().native(), parentId, desc.createdAt,
+                      desc.lastModifiedAt);
+        (void) job.runSynchronously();
+    }
+}
+
+void ExecuteOperations::applyRemoteEdit(const OperationDesc &desc) const {
+    const NodeId fileId = remoteIdForPath(desc.path, "Edit operation");
+
+    const SyncPath fullPath = _syncPal->localPath() / desc.path;
+    UploadJob job(nullptr, _syncPal->driveDbId(), fullPath, fileId, desc.lastModifiedAt);
+    (void) job.runSynchronously();
+}
+
+void ExecuteOperations::applyRemoteDelete(const OperationDesc &desc) const {
+    const NodeId itemId = remoteIdForPath(desc.path, "Delete operation");
+
+    DeleteJob job(_syncPal->driveDbId(), itemId);
+    job.setBypassCheck(true);
+    (void) job.runSynchronously();
+}
+
+void ExecuteOperations::applyRemoteMove(const OperationDesc &desc) const {
+    const NodeId itemId = remoteIdForPath(desc.fromPath, "Move operation");
+
+    if (desc.fromPath.parent_path() == desc.toPath.parent_path()) {
+        // Same parent: rename only.
+        const SyncPath fullToPath = _syncPal->localPath() / desc.toPath;
+        RenameJob job(nullptr, _syncPal->driveDbId(), itemId, fullToPath);
+        (void) job.runSynchronously();
+    } else {
+        const NodeId destParentId = remoteIdForPath(desc.toPath.parent_path(), "Move operation: destination parent");
+
+        const SyncPath fullToPath = _syncPal->localPath() / desc.toPath;
+        MoveJob job(nullptr, _syncPal->driveDbId(), fullToPath, itemId, destParentId, desc.toPath.filename().native());
+        job.setBypassCheck(true);
+        (void) job.runSynchronously();
     }
 }
 
