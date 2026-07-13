@@ -19,6 +19,7 @@
 #include "availabledrivesmodel.h"
 
 #include <QColor>
+#include <QCoreApplication>
 
 #include <algorithm>
 #include <cstddef>
@@ -118,8 +119,7 @@ QVariant AvailableDrivesModel::data(const QModelIndex &index, const int role) co
         case EnabledRole:
             return !context.alreadyConfigured;
         case TooltipRole:
-            return context.alreadyConfigured ? tr("This kDrive is already configured.\nGo to your settings to modify it.")
-                                             : QString();
+            return context.alreadyConfigured ? qtTrId("onboardingAlreadySyncedDriveTooltip") : QString();
         default:
             return {};
     }
