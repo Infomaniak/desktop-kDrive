@@ -26,12 +26,11 @@
 
 #include <array>
 #include <cstdint>
-#include <type_traits>
 
 #if QT_CONFIG(xcb)
-#include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/extensions/shape.h>
+#include <xcb/xcb.h>
 #endif
 
 namespace KDC {
@@ -59,9 +58,7 @@ namespace {
  */
 
 #if QT_CONFIG(xcb)
-using X11ElementCount = std::int32_t;
 using X11ExtensionCode = std::int32_t;
-using X11PropertyItem = std::conditional_t<sizeof(long) == sizeof(std::uint64_t), std::uint64_t, std::uint32_t>;
 using X11RectangleCoordinate = std::int16_t;
 using X11RectangleDimension = std::uint16_t;
 
@@ -79,6 +76,21 @@ Display *x11Display() {
 
     const auto *const x11Application = qGuiApp->nativeInterface<QNativeInterface::QX11Application>();
     return x11Application == nullptr ? nullptr : x11Application->display();
+}
+
+/**
+ * Returns the xcb connection only when the application is currently running through Qt's XCB platform plugin.
+ *
+ * Mirrors x11Display() for the lower-level xcb API. It backs the _GTK_FRAME_EXTENTS publication, which uses
+ * xcb_change_property to store a genuine 32-bit CARDINAL array (see updateX11FrameExtents).
+ */
+xcb_connection_t *x11Connection() {
+    if (QGuiApplication::platformName() != QStringLiteral("xcb")) {
+        return nullptr;
+    }
+
+    const auto *const x11Application = qGuiApp->nativeInterface<QNativeInterface::QX11Application>();
+    return x11Application == nullptr ? nullptr : x11Application->connection();
 }
 
 /**
@@ -169,30 +181,34 @@ bool updateX11InputRegion(const QWindow *const window, const QRect &inputRect, c
 /**
  * Publishes the invisible decoration margins used by X11 window managers for placement, snapping, and maximization.
  *
- * _GTK_FRAME_EXTENTS contains the left, right, top, and bottom margins between the native window bounds and the visible
- * application frame. Xlib expects CARDINAL values in native pixels. A zero margin tells the window manager that the
- * complete native window is visible, which is the correct state when the custom frame is disabled or maximized.
+ * _GTK_FRAME_EXTENTS contains the left, right, top, and bottom margins, in native pixels, between the native window
+ * bounds and the visible application frame. A zero margin tells the window manager that the complete native window is
+ * visible, which is the correct state when the custom frame is disabled or maximized.
+ *
+ * The property is written through xcb rather than Xlib on purpose: xcb stores a format-32 property as genuine 32-bit
+ * values, so std::uint32_t is exactly the expected element type. Xlib's XChangeProperty would instead require an array
+ * of `long` (64-bit on LP64) for the same format. The atom itself is still interned through Xlib, which caches it
+ * client-side and therefore avoids a server round-trip on every decoration update.
  */
 void updateX11FrameExtents(const QWindow *const window, const qreal frameMargin) {
     auto *const display = x11Display();
-    if (display == nullptr) {
+    auto *const connection = x11Connection();
+    if (display == nullptr || connection == nullptr) {
         return;
     }
 
-    const auto windowId = window->winId();
+    const auto windowId = static_cast<xcb_window_t>(window->winId());
     if (windowId == 0) {
         return;
     }
 
-    const auto nativeMargin = static_cast<X11PropertyItem>(qMax(0, qRound(frameMargin * window->devicePixelRatio())));
-    const std::array<X11PropertyItem, 4> frameExtents{nativeMargin, nativeMargin, nativeMargin, nativeMargin};
-    const auto frameExtentsAtom = XInternAtom(display, "_GTK_FRAME_EXTENTS", False);
-    const auto changeResult = XChangeProperty(display, windowId, frameExtentsAtom, XA_CARDINAL, 32, PropModeReplace,
-                                              reinterpret_cast<const unsigned char *>(frameExtents.data()), // NOSONAR
-                                              static_cast<X11ElementCount>(frameExtents.size()));
-    if (changeResult == Success) {
-        (void) flushX11(display);
-    }
+    const auto nativeMargin = static_cast<std::uint32_t>(qMax(0, qRound(frameMargin * window->devicePixelRatio())));
+    const std::array<std::uint32_t, 4> frameExtents{nativeMargin, nativeMargin, nativeMargin, nativeMargin};
+    const auto frameExtentsAtom = static_cast<xcb_atom_t>(XInternAtom(display, "_GTK_FRAME_EXTENTS", False));
+
+    xcb_change_property(connection, XCB_PROP_MODE_REPLACE, windowId, frameExtentsAtom, XCB_ATOM_CARDINAL, 32,
+                        static_cast<std::uint32_t>(frameExtents.size()), frameExtents.data());
+    xcb_flush(connection);
 }
 #endif
 
