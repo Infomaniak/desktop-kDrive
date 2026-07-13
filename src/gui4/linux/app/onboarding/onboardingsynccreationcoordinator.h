@@ -57,6 +57,7 @@ class OnboardingSyncCreationCoordinator final : public QObject {
         void discardPendingSynchronization(const AvailableDriveKey &key);
         void handleCreationFailure(bool cacheReconciliationRequired = false);
         void handleCacheReconciliationCompleted();
+        void handleCacheReconciliationFailed();
         void openSynchronizedFolders();
         [[nodiscard]] QString defaultLocalPath(const QString &driveName) const;
 
