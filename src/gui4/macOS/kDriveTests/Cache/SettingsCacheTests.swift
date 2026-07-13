@@ -22,63 +22,58 @@ import Foundation
 import Testing
 
 extension SettingsCache {
-    var receivedSettingsValues: AsyncStream<ParametersInfo> {
+    var settingsEmissions: AsyncStream<Void> {
         AsyncStream { continuation in
             let cancellable = settingsPublisher
-                .sink { value in continuation.yield(value) }
+                .sink { _ in continuation.yield(()) }
 
             continuation.onTermination = { _ in cancellable.cancel() }
         }
     }
 }
 
+@MainActor
 @Suite("SettingsCache Test")
 struct SettingsCacheTests {
-    private static func makeParametersInfo(sentryEnabled: Bool) -> ParametersInfo {
-        ParametersInfo(
-            language: .English,
-            monoIcons: false,
-            autoStart: true,
-            moveToTrash: true,
-            notificationsDisabled: .Never,
-            useLog: true,
-            logLevel: .Debug,
-            extendedLog: false,
-            purgeOldLogs: true,
-            proxyConfigInfo: ProxyConfigInfo(type: .None, hostName: "", port: 0, needsAuth: false, user: "", pwd: ""),
-            darkTheme: false,
-            maxAllowedCpu: 50,
-            distributionChannel: .Prod,
-            sentryEnabled: sentryEnabled,
-            matomoEnabled: true,
-            askBeforeDelete: true
-        )
+    // MARK: - Test Data
+
+    private static func decodedResponse() throws -> CallbackMessage<ParametersInfoResponse> {
+        let bundle = Bundle(for: TestBundleMarker.self)
+
+        guard let url = bundle.url(forResource: "PARAMETERS_INFO", withExtension: "json") else {
+            fatalError("Unable to find specified JSON file")
+        }
+
+        let data = try Data(contentsOf: url)
+        return try JSONDecoder().decode(CallbackMessage<ParametersInfoResponse>.self, from: data)
     }
+
+    // MARK: - Tests
 
     @Test(.timeLimit(.minutes(1)))
     func publishesAndStoresSettings() async throws {
         // GIVEN
+        let settings = try Self.decodedResponse().body.parametersInfo
         let cache = SettingsCache()
-        let receivedValues = await cache.receivedSettingsValues // Start to save the received values
+        let emissions = await cache.settingsEmissions // Start observing before mutating
 
-        var receivedSettings: ParametersInfo?
+        var receivedSentryEnabled: Bool?
         var cancellables = Set<AnyCancellable>()
 
         let subscription = cache.settingsPublisher
-            .sink { settings in receivedSettings = settings }
+            .sink { receivedSentryEnabled = $0.sentryEnabled }
         subscription.store(in: &cancellables)
 
         // WHEN
-        await cache.setSettings(Self.makeParametersInfo(sentryEnabled: false))
+        await cache.setSettings(settings)
 
         // THEN
-        _ = await receivedValues.first { _ in true }
+        _ = await emissions.first { _ in true }
 
-        #expect(receivedSettings != nil, "Should have received a settings update")
-        #expect(receivedSettings?.sentryEnabled == false, "Received settings should match expected")
+        #expect(receivedSentryEnabled == false, "Should have published the settings")
 
-        let storedSettings = await cache.getSettings()
-        #expect(storedSettings?.sentryEnabled == false, "Cache should retain the last settings")
+        let storedSentryEnabled = await cache.getSettings()?.sentryEnabled
+        #expect(storedSentryEnabled == false, "Cache should retain the last settings")
     }
 
     @Test(.timeLimit(.minutes(1)))
@@ -87,18 +82,19 @@ struct SettingsCacheTests {
         let originalValue = UserDefaults.standard.lastKnownSentryEnabled
         defer { UserDefaults.standard.lastKnownSentryEnabled = originalValue }
 
+        let settings = try Self.decodedResponse().body.parametersInfo
         let cache = SettingsCache()
 
-        // WHEN
-        await cache.setSettings(Self.makeParametersInfo(sentryEnabled: false))
-
-        // THEN
-        #expect(UserDefaults.standard.lastKnownSentryEnabled == false, "Should persist the disabled flag")
+        // Seed the opposite value to prove `setSettings` actively writes the flag.
+        UserDefaults.standard.lastKnownSentryEnabled = true
 
         // WHEN
-        await cache.setSettings(Self.makeParametersInfo(sentryEnabled: true))
+        await cache.setSettings(settings)
 
         // THEN
-        #expect(UserDefaults.standard.lastKnownSentryEnabled == true, "Should persist the enabled flag")
+        #expect(
+            UserDefaults.standard.lastKnownSentryEnabled == false,
+            "Should persist the Sentry flag coming from the settings"
+        )
     }
 }

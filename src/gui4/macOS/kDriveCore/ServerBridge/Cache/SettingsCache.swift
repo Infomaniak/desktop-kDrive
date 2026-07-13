@@ -28,6 +28,7 @@ public protocol SettingsCacheObservable: Sendable {
 public protocol SettingsCaching: Sendable {
     func getSettings() async -> ParametersInfo?
     func refresh() async throws
+    func update(_ parametersInfo: ParametersInfo) async throws
 }
 
 public actor SettingsCache: SettingsCaching, SettingsCacheObservable {
@@ -50,6 +51,11 @@ public actor SettingsCache: SettingsCaching, SettingsCacheObservable {
     public func refresh() async throws {
         let refreshedSettings = try await ParametersJobs().parametersInfo()
         setSettings(refreshedSettings)
+    }
+
+    public func update(_ parametersInfo: ParametersInfo) async throws {
+        try await ParametersJobs().updateParameters(parametersInfo: parametersInfo)
+        try await refresh()
     }
 
     func setSettings(_ settings: ParametersInfo) {
