@@ -133,7 +133,8 @@ void OnboardingSessionManager::startSession(const OnboardingSession::EntryPoint 
     });
     (void) connect(session->flowController(), &OnboardingFlowController::completed, this, [this, session] {
         if (_activeSession == session) {
-            stopSession(true);
+            emit onboardingCompleted();
+            stopSession(false);
         }
     });
 
