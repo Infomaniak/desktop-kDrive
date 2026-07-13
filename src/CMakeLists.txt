@@ -33,6 +33,7 @@ add_subdirectory(libsyncengine)
 add_subdirectory(libparms)
 
 if(NOT BUILD_LIBRARIES_ONLY)
+    add_subdirectory(manualupdater)  #This is the updater that is used when kDrive crash on startup
     add_subdirectory(server)
 
     # At most one GUI type can be built, fail if both are enabled
