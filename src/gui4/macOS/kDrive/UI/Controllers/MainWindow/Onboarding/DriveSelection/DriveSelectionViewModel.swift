@@ -23,6 +23,7 @@ import InfomaniakConcurrency
 import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
+import OrderedCollections
 
 @MainActor
 final class DriveSelectionViewModel: ObservableObject {
@@ -62,19 +63,31 @@ final class DriveSelectionViewModel: ObservableObject {
     }
 
     private func observeAvailableDrives() {
+        let currentUserDbId = flowCoordinator.currentUser?.dbId
+
         coherentCacheObservable.usersPublisher.allAvailableDrivesPublisher()
-            .map { $0.map { UIAvailableDrive(availableDrive: $0.availableDrive) } }
+            .map { availableDriveContexts in
+                availableDriveContexts
+                    .filter { Int($0.user.dbId) == currentUserDbId }
+                    .map { UIAvailableDrive(availableDrive: $0.availableDrive) }
+                    .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+            }
+            .removeDuplicates()
             .receiveOnMain(store: &bindStore) { [weak self] availableDrives in
-                self?.availableDrives = availableDrives.sorted {
-                    return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
-                }
+                self?.availableDrives = availableDrives
                 self?.generateConfigurations(for: availableDrives)
             }
     }
 
     private func observeSynchronizedDrives() {
+        let currentUserDbId = flowCoordinator.currentUser?.dbId
+
         coherentCacheObservable.usersPublisher.allDrivesPublisher()
-            .map { $0.map { UIDrive(drive: $0.drive) } }
+            .map { driveContexts in
+                driveContexts
+                    .filter { Int($0.user.dbId) == currentUserDbId && !$0.drive.synchros.isEmpty }
+                    .map { UIDrive(drive: $0.drive) }
+            }
             .removeDuplicates()
             .receiveOnMain(store: &bindStore) { [weak self] synchronizedDrives in
                 self?.synchronizedDrives = synchronizedDrives
@@ -89,6 +102,11 @@ final class DriveSelectionViewModel: ObservableObject {
 
         _ = try await DriveJobs().availableDrives(userDbId: Int32(user.dbId))
         _ = try await SyncJobs().availableSync()
+    }
+
+    func selectDrive(_ drive: UIAvailableDrive) {
+        guard !selectedDrives.contains(drive) else { return }
+        selectedDrives.insert(drive)
     }
 
     func toggleDriveSelection(_ drive: UIAvailableDrive) {

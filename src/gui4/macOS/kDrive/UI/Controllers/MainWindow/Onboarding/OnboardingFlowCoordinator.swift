@@ -38,6 +38,8 @@ final class OnboardingFlowCoordinator: ObservableObject {
     private let steps: [OnboardingStep]
     var synchronizations = [NewSyncCandidate]()
 
+    private let onFinish: (@MainActor () -> Void)?
+
     private static let defaultSteps: [OnboardingStep] = [
         .login,
         .drivesSelection,
@@ -47,9 +49,10 @@ final class OnboardingFlowCoordinator: ObservableObject {
         .appReady
     ]
 
-    init(user: UIUser?, steps: [OnboardingStep]?, initialStep: OnboardingStep?) {
+    init(user: UIUser?, steps: [OnboardingStep]?, initialStep: OnboardingStep?, onFinish: (@MainActor () -> Void)? = nil) {
         currentUser = user
         self.steps = steps ?? Self.defaultSteps
+        self.onFinish = onFinish
 
         currentStep = initialStep ?? steps?.first ?? .login
     }
@@ -80,6 +83,11 @@ final class OnboardingFlowCoordinator: ObservableObject {
     }
 
     private func didFinishOnboarding() {
+        if let onFinish {
+            onFinish()
+            return
+        }
+
         @InjectService var windowRouter: MainWindowRouter
         windowRouter.navigate(to: .mainWindow())
     }

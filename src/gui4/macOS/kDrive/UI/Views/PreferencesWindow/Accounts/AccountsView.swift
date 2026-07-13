@@ -16,7 +16,6 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import InfomaniakDI
 import kDriveCoreUI
 import kDriveResources
 import OrderedCollections
@@ -40,8 +39,7 @@ struct AccountsView: View {
 
                 Section {
                     Button(KDriveLocalizable.buttonConnectAccount) {
-                        @InjectService var router: MainWindowRouter
-                        router.navigate(to: .onboarding(nil, nil, .login))
+                        (NSApp.delegate as? AppDelegate)?.openOnboardingWindow()
                     }
                     .buttonStyle(.bordered)
                     .frame(maxWidth: .infinity, alignment: .trailing)
