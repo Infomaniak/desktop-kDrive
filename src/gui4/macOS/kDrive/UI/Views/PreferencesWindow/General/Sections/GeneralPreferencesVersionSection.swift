@@ -82,8 +82,8 @@ struct GeneralPreferencesVersionSection: View {
         Section {
             VersionManagementView(repository: repository)
 
-            // TODO: Automatic update is not available yet
-            Toggle(KDriveLocalizable.automaticUpdatesSetting, isOn: .constant(false))
+            // TODO: Automatic update is not available yet, hidden until implemented
+            // Toggle(KDriveLocalizable.automaticUpdatesSetting, isOn: .constant(false))
 
             IKLabeledContent(KDriveLocalizable.releaseChannelBeta) {
                 HStack {
