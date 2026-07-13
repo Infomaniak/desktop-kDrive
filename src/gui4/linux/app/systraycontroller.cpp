@@ -121,7 +121,7 @@ void SystemTrayController::initialize() {
                                    << "| state:" << toQString(_iconState) << "| icon:" << trayIconPath(_iconState);
 
     _trayIcon.setIcon(QIcon(trayIconPath(_iconState)));
-    _trayIcon.setToolTip(tr("kDrive"));
+    _trayIcon.setToolTip(QStringLiteral("kDrive"));
 
     _openAction = _trayMenu.addAction(qtTrId("statusBarOpenApp"));
     _settingsAction = _trayMenu.addAction(qtTrId("statusBarSettings"));
