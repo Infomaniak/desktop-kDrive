@@ -26,8 +26,6 @@ public protocol SettingsObserving: Sendable {
     var settingsPublisher: AnyPublisher<UIParametersInfo, Never> { get }
 }
 
-/// Observes the `SettingsCache` and republishes its content as a UI model (`UIParametersInfo`),
-/// mirroring the observation pattern used for the coherent server cache (e.g. `UISynchroStateObserver`).
 public final class SettingsObserver: SettingsObserving {
     @MainActor public private(set) var settings = UIParametersInfo() {
         didSet {
