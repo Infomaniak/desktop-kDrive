@@ -860,7 +860,7 @@ bool ParmsDb::insertUserTemplateNormalizations(const std::string &fromVersion) {
 
 namespace {
 
-std::string trim(std::string_view str) {
+std::string trim(const std::string_view str) {
     const size_t start = str.find_first_not_of(' ');
     if (start == std::string_view::npos) return "";
     const size_t end = str.find_last_not_of(' ');
@@ -872,7 +872,7 @@ void stripLineEndings(std::string &line) {
     }
 }
 
-bool parseRuleType(std::string_view typeStr, SyncFolderRuleType &ruleType) {
+bool parseRuleType(const std::string_view typeStr, SyncFolderRuleType &ruleType) {
     if (typeStr == "BlackList")
         ruleType = SyncFolderRuleType::BlackList;
     else if (typeStr == "WhiteList")
@@ -886,13 +886,13 @@ bool parseRuleType(std::string_view typeStr, SyncFolderRuleType &ruleType) {
 
 // Returns true if a valid rule was parsed and appended.
 bool tryParseCsvLine(const std::string &line, std::vector<SyncFolderRule> &rules, log4cplus::Logger _logger) {
-    const size_t commaPos = line.find(',');
-    if (commaPos == std::string::npos || commaPos >= line.length() - 1) {
+    const std::vector<std::string> columns = Utility::splitStr(line, ',');
+    if (columns.size() != 2) {
         return false;
     }
 
-    const std::string pathStr = trim(line.substr(0, commaPos));
-    const std::string typeStr = trim(line.substr(commaPos + 1));
+    const std::string pathStr = trim(columns[0]);
+    const std::string typeStr = trim(columns[1]);
     if (pathStr.empty() || typeStr.empty()) {
         return false;
     }
