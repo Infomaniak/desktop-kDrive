@@ -67,7 +67,7 @@ QString OnboardingFlowController::title() const {
         case Login:
             return qtTrId("onboardingLoginTitle");
         case DriveSelection:
-            return tr("Welcome back!");
+            return qtTrId("onboardingDriveSelectionTitle");
         case Synchronization:
             return qtTrId("onboardingSynchronizationInProgressTitle");
         case Ready:
