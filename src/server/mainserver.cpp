@@ -204,6 +204,13 @@ std::int32_t exec(std::unique_ptr<KDC::AppServer> &appPtr) {
         return 0;
     }
 
+    // AppServer::init() stops before full server initialization for orphan OAuth callbacks; do not enter the event loop
+    // afterwards with that partially initialized process.
+    if (appPtr->authorizationCodeReceived()) {
+        std::cout << "No running server found for authorization callback" << std::endl;
+        return 0;
+    }
+
     return appPtr->exec();
 }
 
