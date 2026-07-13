@@ -23,18 +23,11 @@
 static const auto syncInfoDbId = "dbId";
 static const auto syncInfoDriveDbId = "driveDbId";
 static const auto syncInfoLocalPath = "localPath";
-static const auto syncInfoLocalNodeId = "localNodeId";
 static const auto syncInfoTargetPath = "targetPath";
 static const auto syncInfoTargetNodeId = "targetNodeId";
-static const auto syncInfoPaused = "paused";
 static const auto syncInfoSupportVfs = "supportVfs";
 static const auto syncInfoVirtualFileMode = "virtualFileMode";
-static const auto syncInfoNotificationsDisabled = "notificationsDisabled";
-static const auto syncInfoDbPath = "dbPath";
-static const auto syncInfoHasFullyCompleted = "hasFullyCompleted";
 static const auto syncInfoNavigationPaneClsid = "navigationPaneClsid";
-static const auto syncInfoListingCursor = "listingCursor";
-static const auto syncInfoListingCursorTimestamp = "listingCursorTimestamp";
 
 namespace KDC {
 
