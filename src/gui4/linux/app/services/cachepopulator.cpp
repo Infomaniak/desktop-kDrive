@@ -43,57 +43,61 @@ CachePopulator::CachePopulator(CommService &commService, AppCache &appCache, QOb
     _appCache(appCache) {}
 
 void CachePopulator::bootstrap() {
-    loadUsers();
+    loadUsers(PopulationMode::Bootstrap);
 }
 
-void CachePopulator::loadUsers() {
-    _commService.requestUserDisplayInfoList([this](const ExitInfo &exitInfo, const std::vector<UserDisplayInfo> &list) {
-        if (!exitInfo) {
-            exitOnPopulationFailure("users", exitInfo);
+void CachePopulator::reconcile() {
+    loadUsers(PopulationMode::Reconciliation);
+}
+
+void CachePopulator::loadUsers(const PopulationMode mode) {
+    _commService.requestUserDisplayInfoList([this, mode](const ExitInfo &exitInfo, const std::vector<UserDisplayInfo> &list) {
+        if (!exitInfo && handlePopulationFailure("users", exitInfo, mode)) {
+            return;
         }
 
         _appCache.replaceUsers(list);
-        loadAccounts();
+        loadAccounts(mode);
     });
 }
 
-void CachePopulator::loadAccounts() {
-    _commService.requestAccountInfoList([this](const ExitInfo &exitInfo, const std::vector<Account> &list) {
-        if (!exitInfo) {
-            exitOnPopulationFailure("accounts", exitInfo);
+void CachePopulator::loadAccounts(const PopulationMode mode) {
+    _commService.requestAccountInfoList([this, mode](const ExitInfo &exitInfo, const std::vector<Account> &list) {
+        if (!exitInfo && handlePopulationFailure("accounts", exitInfo, mode)) {
+            return;
         }
 
         _appCache.replaceAccounts(list);
-        loadDrives();
+        loadDrives(mode);
     });
 }
 
-void CachePopulator::loadDrives() {
-    _commService.requestDriveList([this](const ExitInfo &exitInfo, const std::vector<Drive> &list) {
-        if (!exitInfo) {
-            exitOnPopulationFailure("drives", exitInfo);
+void CachePopulator::loadDrives(const PopulationMode mode) {
+    _commService.requestDriveList([this, mode](const ExitInfo &exitInfo, const std::vector<Drive> &list) {
+        if (!exitInfo && handlePopulationFailure("drives", exitInfo, mode)) {
+            return;
         }
 
         _appCache.replaceDrives(list);
-        loadSyncs();
+        loadSyncs(mode);
     });
 }
 
-void CachePopulator::loadSyncs() {
-    _commService.requestSyncInfoList([this](const ExitInfo &exitInfo, const std::vector<SyncInfo> &list) {
-        if (!exitInfo) {
-            exitOnPopulationFailure("syncs", exitInfo);
+void CachePopulator::loadSyncs(const PopulationMode mode) {
+    _commService.requestSyncInfoList([this, mode](const ExitInfo &exitInfo, const std::vector<SyncInfo> &list) {
+        if (!exitInfo && handlePopulationFailure("syncs", exitInfo, mode)) {
+            return;
         }
 
         _appCache.replaceSyncs(list);
-        loadSyncErrors();
+        loadSyncErrors(mode);
     });
 }
 
-void CachePopulator::loadSyncErrors() {
-    _commService.requestErrorInfoList([this](const ExitInfo &exitInfo, const std::vector<ErrorInfo> &list) {
-        if (!exitInfo) {
-            exitOnPopulationFailure("errors", exitInfo);
+void CachePopulator::loadSyncErrors(const PopulationMode mode) {
+    _commService.requestErrorInfoList([this, mode](const ExitInfo &exitInfo, const std::vector<ErrorInfo> &list) {
+        if (!exitInfo && handlePopulationFailure("errors", exitInfo, mode)) {
+            return;
         }
 
         std::vector<ErrorInfo> syncErrors;
@@ -119,7 +123,11 @@ void CachePopulator::loadSyncErrors() {
 
         _appCache.replaceSyncErrors(syncErrors);
         _appCache.replaceServerErrors(serverErrors);
-        emit bootstrapCompleted();
+        if (mode == PopulationMode::Bootstrap) {
+            emit bootstrapCompleted();
+        } else {
+            emit reconciliationCompleted();
+        }
         activateLiveInfoRefresh();
     });
 }
@@ -131,6 +139,17 @@ void CachePopulator::activateLiveInfoRefresh() const {
                                         << "/ cause:" << exitInfo.cause();
         }
     });
+}
+
+bool CachePopulator::handlePopulationFailure(const char *const stage, const ExitInfo &exitInfo, const PopulationMode mode) {
+    if (mode == PopulationMode::Bootstrap) {
+        exitOnPopulationFailure(stage, exitInfo);
+    }
+
+    qCWarning(lcCachePopulator) << "Cache reconciliation failed at" << stage << "| code:" << exitInfo.code()
+                                << "/ cause:" << exitInfo.cause();
+    emit reconciliationFailed();
+    return true;
 }
 
 } // namespace KDC
