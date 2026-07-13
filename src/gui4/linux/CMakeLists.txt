@@ -7,7 +7,7 @@ project(${APPLICATION_CLIENTV4_EXECUTABLE} LANGUAGES C CXX)
 
 find_package(Qt6 6.11 REQUIRED COMPONENTS Core Gui Network Qml Quick Sql Widgets QuickControls2 QuickEffects)
 if (QT_FEATURE_xcb)
-    find_package(X11 REQUIRED COMPONENTS Xext)
+    find_package(X11 REQUIRED COMPONENTS Xext xcb)
 endif ()
 
 qt_standard_project_setup(REQUIRES 6.11)
@@ -174,6 +174,7 @@ if (QT_FEATURE_xcb)
     target_link_libraries(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
             X11::X11
             X11::Xext
+            X11::xcb
     )
 endif ()
 
