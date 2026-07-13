@@ -178,7 +178,6 @@ bool CommonUtility::fileSystemInfo(const SyncPath &targetPath, std::string &fsTy
     }
 
     // Mount point
-    // NB: If no matching mount point found, fallback to the root directory
     libmnt_cache *cache = mnt_new_cache();
     libmnt_table *table = mnt_new_table();
     mnt_table_set_cache(table, cache);

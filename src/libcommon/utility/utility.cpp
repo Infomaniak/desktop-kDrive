@@ -258,7 +258,7 @@ std::string CommonUtility::underlyingFileSystemType(const SyncPath &targetPath) 
 }
 
 std::string CommonUtility::fileSystemType(const SyncPath &targetPath, std::string &fallbackFSType,
-                                          const bool useCache /*= true*/) {
+                                          const UseCache useCache /*UseCache::Yes*/) {
     fallbackFSType.clear();
 
     // Cache of FS type & fallback type by mount point ordered by decreasing path depth.

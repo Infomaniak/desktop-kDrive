@@ -36,7 +36,7 @@ void FolderWatcher::start() {
     LOGW_DEBUG(_logger, L"Start watching folder: " << Utility::formatSyncPath(_folder));
 
     std::string fallbackFSType;
-    std::string fsType = CommonUtility::fileSystemType(_folder, fallbackFSType, false);
+    std::string fsType = CommonUtility::fileSystemType(_folder, fallbackFSType, CommonUtility::UseCache::No);
     LOGW_DEBUG(_logger, L"File system format: " << CommonUtility::s2ws(fsType) << L", fallback format: "
                                                 << CommonUtility::s2ws(fallbackFSType));
 

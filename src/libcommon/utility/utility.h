@@ -53,6 +53,11 @@ struct COMMON_EXPORT CommonUtility {
             NORMAL_FOLDER_ICON
         };
 
+        enum UseCache {
+            Yes = 0,
+            No
+        };
+
         static inline const QString linkStyle = QString("color:#0098FF; font-weight:450; text-decoration:none;");
 
         static const int logsPurgeRate; // Delay after which the logs are purged, expressed in days
@@ -72,14 +77,15 @@ struct COMMON_EXPORT CommonUtility {
         // File system type
         //! Returns the type of the file system (FS) containing the given path.
         //! Optionally use a cache to optimize performances.
-        //! For virtiofs/SMB/NFS, try to determine the actual underlying storage format
+        //! For unmanaged FS (see isManagedFS), try to determine the actual underlying storage format
         /*!
           \param targetPath is the path the FS type of which is queried.
           \param fallbackFSType is the type of the underlying FS.
           \param useCache if true, use a cache to optimize performances.
           \return the type of the FS.
         */
-        static std::string fileSystemType(const SyncPath &targetPath, std::string &fallbackFSType, const bool useCache = true);
+        static std::string fileSystemType(const SyncPath &targetPath, std::string &fallbackFSType,
+                                          const UseCache useCache = UseCache::Yes);
 
         static std::string fsTypeNTFS() { return "NTFS"; }
         static std::string fsTypeAPFS() { return "APFS"; }
