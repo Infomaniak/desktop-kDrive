@@ -29,6 +29,7 @@
 #include <QDesktopServices>
 #include <QDir>
 #include <QLoggingCategory>
+#include <QPointer>
 #include <QSet>
 #include <QUrl>
 
@@ -55,8 +56,10 @@ OnboardingSyncCreationCoordinator::OnboardingSyncCreationCoordinator(OnboardingF
                    &OnboardingSyncCreationCoordinator::createNextSynchronization);
     (void) connect(&_flowController, &OnboardingFlowController::synchronizedFoldersOpenRequested, this,
                    &OnboardingSyncCreationCoordinator::openSynchronizedFolders);
-    (void) connect(&_cachePopulator, &CachePopulator::bootstrapCompleted, this,
+    (void) connect(&_cachePopulator, &CachePopulator::reconciliationCompleted, this,
                    &OnboardingSyncCreationCoordinator::handleCacheReconciliationCompleted);
+    (void) connect(&_cachePopulator, &CachePopulator::reconciliationFailed, this,
+                   &OnboardingSyncCreationCoordinator::handleCacheReconciliationFailed);
 }
 
 void OnboardingSyncCreationCoordinator::startSynchronization() {
@@ -101,19 +104,24 @@ void OnboardingSyncCreationCoordinator::prepareSynchronization(const AvailableDr
     const auto basePath = defaultLocalPath(QString::fromStdString(availableDrive->name()));
     qCInfo(lcOnboardingSyncCreationCoordinator)
             << "Requesting onboarding sync path | driveId:" << key.driveId << "/ basePath:" << basePath;
+    const QPointer<OnboardingSyncCreationCoordinator> self(this);
     _commService.requestFindGoodPathForNewSync(
-            QStr2Path(basePath), [this, key](const ExitInfo &exitInfo, const GoodPathResult &result) {
-                if (!exitInfo) {
-                    _serviceEventBus.notifyGenericError(exitInfo, RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC);
-                    handleCreationFailure();
+            QStr2Path(basePath), [self, key](const ExitInfo &exitInfo, const GoodPathResult &result) {
+                if (!self) {
                     return;
                 }
 
-                if (!_onboardingState.isAvailableDriveSelected(key) || !_appCache.availableDrive(key).has_value()) {
+                if (!exitInfo) {
+                    self->_serviceEventBus.notifyGenericError(exitInfo, RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC);
+                    self->handleCreationFailure();
+                    return;
+                }
+
+                if (!self->_onboardingState.isAvailableDriveSelected(key) || !self->_appCache.availableDrive(key).has_value()) {
                     qCWarning(lcOnboardingSyncCreationCoordinator)
                             << "Discarding prepared onboarding sync: drive is no longer selectable | userDbId:" << key.userDbId
                             << "/ driveId:" << key.driveId;
-                    discardPendingSynchronization(key);
+                    self->discardPendingSynchronization(key);
                     return;
                 }
 
@@ -122,12 +130,12 @@ void OnboardingSyncCreationCoordinator::prepareSynchronization(const AvailableDr
                 if (config.localPath.isEmpty()) {
                     qCWarning(lcOnboardingSyncCreationCoordinator)
                             << "Server returned an empty onboarding sync path | driveId:" << key.driveId;
-                    handleCreationFailure();
+                    self->handleCreationFailure();
                     return;
                 }
 
-                _onboardingState.setPendingSyncConfig(key, config);
-                createSynchronization(key, config);
+                self->_onboardingState.setPendingSyncConfig(key, config);
+                self->createSynchronization(key, config);
             });
 }
 
@@ -151,22 +159,27 @@ void OnboardingSyncCreationCoordinator::createSynchronization(const AvailableDri
 
     qCInfo(lcOnboardingSyncCreationCoordinator)
             << "Creating onboarding sync | driveId:" << key.driveId << "/ localPath:" << config.localPath;
+    const QPointer<OnboardingSyncCreationCoordinator> self(this);
     _commService.requestSyncAdd(
-            request, [this, key, localPath = config.localPath](const ExitInfo &exitInfo, const SyncInfo &syncInfo) {
+            request, [self, key, localPath = config.localPath](const ExitInfo &exitInfo, const SyncInfo &syncInfo) {
+                if (!self) {
+                    return;
+                }
+
                 if (!exitInfo) {
-                    _serviceEventBus.notifyGenericError(exitInfo, RequestNum::SYNC_ADD);
-                    handleCreationFailure(true);
+                    self->_serviceEventBus.notifyGenericError(exitInfo, RequestNum::SYNC_ADD);
+                    self->handleCreationFailure(true);
                     return;
                 }
 
                 qCInfo(lcOnboardingSyncCreationCoordinator)
                         << "Onboarding sync created | driveId:" << key.driveId << "/ syncDbId:" << syncInfo.dbId();
-                _createdLocalPaths.push_back(localPath);
-                _onboardingState.unselectAvailableDrive(key);
-                if (!_pendingDriveKeys.empty() && _pendingDriveKeys.front() == key) {
-                    _pendingDriveKeys.pop_front();
+                self->_createdLocalPaths.push_back(localPath);
+                self->_onboardingState.unselectAvailableDrive(key);
+                if (!self->_pendingDriveKeys.empty() && self->_pendingDriveKeys.front() == key) {
+                    self->_pendingDriveKeys.pop_front();
                 }
-                createNextSynchronization();
+                self->createNextSynchronization();
             });
 }
 
@@ -207,7 +220,7 @@ void OnboardingSyncCreationCoordinator::handleCreationFailure(const bool cacheRe
     if (cacheReconciliationRequired) {
         _cacheReconciliationPending = true;
         qCInfo(lcOnboardingSyncCreationCoordinator) << "Reconciling cache after failed onboarding SYNC_ADD";
-        _cachePopulator.bootstrap();
+        _cachePopulator.reconcile();
         return;
     }
 
@@ -221,6 +234,16 @@ void OnboardingSyncCreationCoordinator::handleCacheReconciliationCompleted() {
 
     _cacheReconciliationPending = false;
     qCInfo(lcOnboardingSyncCreationCoordinator) << "Cache reconciled after failed onboarding SYNC_ADD";
+    _flowController.failSynchronization();
+}
+
+void OnboardingSyncCreationCoordinator::handleCacheReconciliationFailed() {
+    if (!_cacheReconciliationPending) {
+        return;
+    }
+
+    _cacheReconciliationPending = false;
+    qCWarning(lcOnboardingSyncCreationCoordinator) << "Cache reconciliation failed after onboarding SYNC_ADD failure";
     _flowController.failSynchronization();
 }
 
