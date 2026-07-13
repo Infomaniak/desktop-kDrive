@@ -64,7 +64,7 @@ void OnboardingSyncCreationCoordinator::startSynchronization() {
     _createdLocalPaths.clear();
 
     const auto selectedDriveKeys = _onboardingState.selectedAvailableDriveKeys();
-    _pendingDriveKeys.insert(_pendingDriveKeys.end(), selectedDriveKeys.begin(), selectedDriveKeys.end());
+    (void) _pendingDriveKeys.insert(_pendingDriveKeys.end(), selectedDriveKeys.begin(), selectedDriveKeys.end());
 
     qCInfo(lcOnboardingSyncCreationCoordinator) << "Starting onboarding sync creation | count:" << _pendingDriveKeys.size();
     _flowController.beginSynchronization();
@@ -228,12 +228,12 @@ void OnboardingSyncCreationCoordinator::openSynchronizedFolders() {
     QSet<QString> localPaths;
     for (const auto &syncInfo: _appCache.syncs()) {
         if (!syncInfo.localPath().isEmpty()) {
-            localPaths.insert(QDir::cleanPath(syncInfo.localPath()));
+            (void) localPaths.insert(QDir::cleanPath(syncInfo.localPath()));
         }
     }
     for (const auto &localPath: _createdLocalPaths) {
         if (!localPath.isEmpty()) {
-            localPaths.insert(QDir::cleanPath(localPath));
+            (void) localPaths.insert(QDir::cleanPath(localPath));
         }
     }
 
@@ -250,7 +250,7 @@ void OnboardingSyncCreationCoordinator::openSynchronizedFolders() {
 QString OnboardingSyncCreationCoordinator::defaultLocalPath(const QString &driveName) const {
     auto normalizedName = driveName.trimmed();
     if (normalizedName.startsWith(QStringLiteral("kDrive"), Qt::CaseInsensitive)) {
-        normalizedName.remove(0, QStringLiteral("kDrive").size());
+        (void) normalizedName.remove(0, QStringLiteral("kDrive").size());
         normalizedName = normalizedName.trimmed();
     }
 
