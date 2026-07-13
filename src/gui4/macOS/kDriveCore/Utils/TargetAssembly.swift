@@ -91,6 +91,13 @@ open class TargetAssembly {
             Factory(type: XPCSignalHandlerProtocol.self) { _, _ in
                 XPCSignalHandler()
             },
+            Factory(type: SignalProcessing.self) { _, resolver in
+                let handler = try resolver.resolve(type: XPCSignalHandlerProtocol.self,
+                                                   forCustomTypeIdentifier: nil,
+                                                   factoryParameters: nil,
+                                                   resolver: resolver)
+                return SignalProcessor(handler: handler)
+            },
             Factory(type: AutoIncrementIDGenerator.self) { _, _ in
                 AutoIncrementIDGenerator()
             },
