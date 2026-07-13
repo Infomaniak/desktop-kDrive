@@ -35,6 +35,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/cache/onboardingstate.h
         app/cache/parametersstore.cpp
         app/cache/parametersstore.h
+        app/navigation/approuter.cpp
+        app/navigation/approuter.h
         app/onboarding/availabledrivesmodel.cpp
         app/onboarding/availabledrivesmodel.h
         app/onboarding/driveselectioncontroller.cpp
