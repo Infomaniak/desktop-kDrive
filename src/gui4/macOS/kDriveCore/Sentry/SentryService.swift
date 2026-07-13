@@ -16,13 +16,21 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Combine
+import Foundation
+import InfomaniakDI
 import Sentry
 
 public final class SentryService {
-    private var isSentryAuthorized = true
+    @LazyInjectService private var settingsCacheObservable: SettingsCacheObservable
+
+    private var isSentryAuthorized: Bool
+    private var cancellable: AnyCancellable?
 
     public init() {
-        fetchAuthorization()
+        // Apply the last known value immediately at startup, before the server connection is ready.
+        isSentryAuthorized = UserDefaults.standard.lastKnownSentryEnabled
+        observeSettings()
     }
 
     public func initSentry() {
@@ -38,7 +46,6 @@ public final class SentryService {
 
             options.beforeSend = { [weak self] event in
                 guard let self else { return nil }
-                fetchAuthorization()
 
                 #if DEBUG || TEST
                 return nil
@@ -49,11 +56,12 @@ public final class SentryService {
         }
     }
 
-    private func fetchAuthorization() {
-        Task {
-            if let isEnabled = try? await ParametersJobs().parametersInfo().sentryEnabled {
-                isSentryAuthorized = isEnabled
+    private func observeSettings() {
+        cancellable = settingsCacheObservable.settingsPublisher
+            .map(\.sentryEnabled)
+            .removeDuplicates()
+            .sink { [weak self] isEnabled in
+                self?.isSentryAuthorized = isEnabled
             }
-        }
     }
 }

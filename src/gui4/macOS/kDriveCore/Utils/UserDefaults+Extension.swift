@@ -23,6 +23,7 @@ public extension UserDefaults {
         public static let isFirstLaunch = "isFirstLaunch"
         public static let shouldPresentOnboarding = "shouldPresentOnboarding"
         public static let selectedSynchroDbId = "selectedSynchroDbId"
+        public static let lastKnownSentryEnabled = "lastKnownSentryEnabled"
     }
 }
 
@@ -33,6 +34,15 @@ public extension UserDefaults {
         }
         set {
             set(newValue, forKey: Key.selectedSynchroDbId)
+        }
+    }
+
+    var lastKnownSentryEnabled: Bool {
+        get {
+            object(forKey: Key.lastKnownSentryEnabled) as? Bool ?? true
+        }
+        set {
+            set(newValue, forKey: Key.lastKnownSentryEnabled)
         }
     }
 }

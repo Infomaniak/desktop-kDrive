@@ -53,6 +53,9 @@ final class DriveTargetAssembly: TargetAssembly {
             },
             Factory(type: SynchroErrorsObserving.self) { _, _ in
                 SynchroErrorsObserver()
+            },
+            Factory(type: SettingsObserving.self) { _, _ in
+                SettingsObserver()
             }
         ]
     }

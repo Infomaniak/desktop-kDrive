@@ -18,28 +18,39 @@
 
 import Combine
 import Foundation
+import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 
 @MainActor
 public final class PreferencesRepository: ObservableObject {
+    @LazyInjectService private var settingsCache: SettingsCaching
+
     @Published public private(set) var parametersInfo = UIParametersInfo()
 
     public init() {}
 
     public func refreshData() async throws {
-        let refreshedData = try await ParametersJobs().parametersInfo()
-        parametersInfo = UIParametersInfo(parametersInfo: refreshedData)
+        try await settingsCache.refresh()
+        if let refreshedData = await settingsCache.getSettings() {
+            parametersInfo = UIParametersInfo(parametersInfo: refreshedData)
+        }
     }
 
     public func update<T>(_ keyPath: WritableKeyPath<UIParametersInfo, T>, value: T) async throws {
         var updatedParameters = parametersInfo
         updatedParameters[keyPath: keyPath] = value
 
-        let currentData = try await ParametersJobs().parametersInfo()
-        let payload = updatedParameters.copyToParametersInfo(from: currentData)
-        try await ParametersJobs().updateParameters(parametersInfo: payload)
+        if await settingsCache.getSettings() == nil {
+            try await settingsCache.refresh()
+        }
+        guard let currentData = await settingsCache.getSettings() else { return }
 
-        try? await refreshData()
+        let payload = updatedParameters.copyToParametersInfo(from: currentData)
+        try await settingsCache.update(payload)
+
+        if let refreshedData = await settingsCache.getSettings() {
+            parametersInfo = UIParametersInfo(parametersInfo: refreshedData)
+        }
     }
 }
