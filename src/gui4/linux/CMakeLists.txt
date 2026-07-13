@@ -110,6 +110,13 @@ set(GUI_QML_FILES # .qml files for the app
         ui/window/IKShadowedWindow.qml
         ui/window/IKWindowControlButton.qml
         ui/window/IKWindowHeader.qml
+        ui/mainwindow/ActivitiesPlaceholder.qml
+        ui/mainwindow/BlockingErrorPlaceholder.qml
+        ui/mainwindow/HomePlaceholder.qml
+        ui/mainwindow/MainSidebarPlaceholder.qml
+        ui/mainwindow/MainToolbar.qml
+        ui/mainwindow/MainWindowView.qml
+        ui/mainwindow/StoragePlaceholder.qml
         ${GUI_GENERATED_QML_FILES}
         ui/onboarding/DriveCellView.qml
         ui/onboarding/DriveIconView.qml
