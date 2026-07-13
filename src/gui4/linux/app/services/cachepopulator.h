@@ -23,33 +23,59 @@
 
 #include <QObject>
 
+#include <cstdint>
+
 namespace KDC {
 
 /**
  * Sequential parent-first snapshot loader for Linux v4 cache population and explicit reconciliation.
  *
  * Loads users, then accounts, then drives, then syncs, then errors so the graph-backed AppCache is populated in
- * parent-first order. Used at initial connection and when a non-transactional backend mutation may have persisted parent
- * entities without emitting their normal push signals. Once the snapshot is complete, asks the server to refresh live
- * user/account/drive metadata so quota-only drive updates are pushed through CachePipeline.
+ * parent-first order. Initial bootstrap remains fatal on failure because the app has no coherent cache to run from.
+ * Reconciliation reuses the same sequence after recoverable mutations and reports failures to the caller without
+ * emitting the bootstrap signal. Once a snapshot is complete, asks the server to refresh live user/account/drive metadata
+ * so quota-only drive updates are pushed through CachePipeline.
  */
 class CachePopulator : public QObject {
         Q_OBJECT
 
     public:
         explicit CachePopulator(CommService &commService, AppCache &appCache, QObject *parent = nullptr);
+        /**
+         * Populates the initial cache snapshot.
+         *
+         * Failure is fatal because Linux v4 cannot safely start without a coherent user/account/drive/sync graph.
+         */
         void bootstrap();
 
+        /**
+         * Repairs the cache snapshot while the app is already running.
+         *
+         * Failure is reported through reconciliationFailed() so the caller can keep the UI in a recoverable state.
+         */
+        void reconcile();
+
     signals:
+        /// Emitted only after the initial startup snapshot completes successfully.
         void bootstrapCompleted();
+        /// Emitted after an explicit recoverable cache repair completes successfully.
+        void reconciliationCompleted();
+        /// Emitted when an explicit recoverable cache repair fails.
+        void reconciliationFailed();
 
     private:
-        void loadUsers();
-        void loadAccounts();
-        void loadDrives();
-        void loadSyncs();
-        void loadSyncErrors();
+        enum class PopulationMode : uint8_t {
+            Bootstrap,
+            Reconciliation,
+        };
+
+        void loadUsers(PopulationMode mode);
+        void loadAccounts(PopulationMode mode);
+        void loadDrives(PopulationMode mode);
+        void loadSyncs(PopulationMode mode);
+        void loadSyncErrors(PopulationMode mode);
         void activateLiveInfoRefresh() const;
+        [[nodiscard]] bool handlePopulationFailure(const char *stage, const ExitInfo &exitInfo, PopulationMode mode);
 
         CommService &_commService;
         AppCache &_appCache;
