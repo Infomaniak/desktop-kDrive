@@ -1197,14 +1197,14 @@ ExitInfo ServerRequests::isSyncFolderAllowedByRules(const SyncPath &path, bool &
 
     const SyncFolderRule *bestMatch = nullptr;
     SyncPath bestMatchExpandedPath;
-    int bestDepth = -1;
+    std::int32_t bestDepth = -1;
 
-    auto expandPath = [](const SyncPath &rulePath) -> SyncPath {
+    auto expandPath = [](const SyncPath &rulePath) {
         QString pathStr = Path2QStr(rulePath);
 
         // Cross-platform home directory (Linux, macOS, Windows)
         const QString homeDir = QDir::homePath();
-        pathStr.replace("$HOME", homeDir);
+        (void) pathStr.replace("$HOME", homeDir);
 
         // Cross-platform username: try USER (Unix), fall back to USERNAME (Windows)
         QString user = qEnvironmentVariable("USER");
@@ -1212,12 +1212,12 @@ ExitInfo ServerRequests::isSyncFolderAllowedByRules(const SyncPath &path, bool &
             user = qEnvironmentVariable("USERNAME"); // Windows
         }
         if (!user.isEmpty()) {
-            pathStr.replace("$USER", user);
+            (void) pathStr.replace("$USER", user);
         }
 
         // Handle ~ shorthand
         if (pathStr.startsWith("~")) {
-            pathStr.replace(0, 1, homeDir);
+            (void) pathStr.replace(0, 1, homeDir);
         }
 
         return QStr2Path(pathStr);
@@ -1238,8 +1238,7 @@ ExitInfo ServerRequests::isSyncFolderAllowedByRules(const SyncPath &path, bool &
         if (!candidateDir.startsWith(ruleDir, Qt::CaseSensitive)) continue;
         LOGW_DEBUG(Log::instance()->getLogger(), L"isSyncFolderAllowedByRules: rule matched");
 
-        const int depth = Utility::pathDepth(expandedRulePath);
-        if (depth > bestDepth) {
+        if (const std::int32_t depth = Utility::pathDepth(expandedRulePath); depth > bestDepth) {
             bestDepth = depth;
             bestMatch = &rule;
             bestMatchExpandedPath = expandedRulePath;
@@ -1284,6 +1283,8 @@ ExitInfo ServerRequests::isSyncFolderAllowedByRules(const SyncPath &path, bool &
                 LOG_DEBUG(Log::instance()->getLogger(),
                           "isSyncFolderAllowedByRules RESULT: allowed=true (whitelistsubfolder rule)");
             }
+            break;
+        case SyncFolderRuleType::None:
             break;
     }
 
