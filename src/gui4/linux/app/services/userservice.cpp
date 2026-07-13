@@ -82,7 +82,7 @@ void UserService::invalidateAvailableDrivesRequest(const UserDbId userDbId) {
     }
 
     for (const auto generation: pendingIt->second) {
-        static_cast<void>(generation);
+        (void) generation;
         endAction(actionLoadAvailableDrives, userDbId);
     }
     (void) _pendingAvailableDriveLoadGenerations.erase(pendingIt);
@@ -144,7 +144,7 @@ void UserService::requestLoginToken(const QString &code, const QString &codeVeri
 void UserService::invalidateLoginTokenRequest() {
     ++_loginTokenGeneration;
     for (const auto generation: _pendingLoginTokenGenerations) {
-        static_cast<void>(generation);
+        (void) generation;
         endAction(actionRequestLoginToken);
     }
     _pendingLoginTokenGenerations.clear();
@@ -172,7 +172,7 @@ void UserService::pruneStaleAvailableDriveGenerations() {
         if (const auto pendingIt = _pendingAvailableDriveLoadGenerations.find(it->first);
             pendingIt != _pendingAvailableDriveLoadGenerations.end()) {
             for (const auto generation: pendingIt->second) {
-                static_cast<void>(generation);
+                (void) generation;
                 endAction(actionLoadAvailableDrives, it->first);
             }
             (void) _pendingAvailableDriveLoadGenerations.erase(pendingIt);
