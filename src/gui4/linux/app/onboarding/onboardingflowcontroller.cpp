@@ -20,6 +20,7 @@
 
 #include "app/appconstants.h"
 
+#include <QCoreApplication>
 #include <QDesktopServices>
 #include <QMetaEnum>
 
@@ -64,13 +65,13 @@ bool OnboardingFlowController::readyActive() const {
 QString OnboardingFlowController::title() const {
     switch (_currentStep) {
         case Login:
-            return tr("Welcome to kDrive");
+            return qtTrId("onboardingLoginTitle");
         case DriveSelection:
             return tr("Welcome back!");
         case Synchronization:
-            return tr("Synchronization in progress..");
+            return qtTrId("onboardingSynchronizationInProgressTitle");
         case Ready:
-            return tr("All set!");
+            return qtTrId("onboardingSynchronizationAppReadyTitle");
     }
     return {};
 }
