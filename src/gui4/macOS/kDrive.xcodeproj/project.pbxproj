@@ -222,6 +222,7 @@
 				Parsing/Signals/UtilityShowNotificationTest.swift,
 				Parsing/Signals/VfsConversionCompletedParsingTest.swift,
 				Router/MainViewRouterTests.swift,
+				Signal/SignalProcessorTests.swift,
 				UI/UISynchroNodeTests.swift,
 				XPC/JSON/AnyValidJobResponse.json,
 				XPC/JSON/ParsingError.json,
