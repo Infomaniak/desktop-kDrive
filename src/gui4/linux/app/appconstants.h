@@ -40,3 +40,11 @@ namespace KDC::AppConstants::Onboarding {
 }
 
 } // namespace KDC::AppConstants::Onboarding
+
+namespace KDC::AppConstants::Support {
+
+[[nodiscard]] inline QUrl helpUri() {
+    return QUrl{QStringLiteral("https://support.infomaniak.com/")};
+}
+
+} // namespace KDC::AppConstants::Support
