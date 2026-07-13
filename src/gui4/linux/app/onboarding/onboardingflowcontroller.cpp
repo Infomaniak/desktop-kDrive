@@ -225,7 +225,6 @@ void OnboardingFlowController::completeSynchronization() {
         _readyActionEnabled = true;
         emit readyActionEnabledChanged();
     }
-    _onboardingCompleted = false;
     setCurrentStep(Ready);
 }
 
