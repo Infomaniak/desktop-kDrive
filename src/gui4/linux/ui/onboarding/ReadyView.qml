@@ -70,7 +70,7 @@ Item {
 
             contentItem: Text {
                 text: openButton.text
-                color: IKColors.actionOnPrimary
+                color: openButton.enabled ? IKColors.actionOnPrimary : IKColors.actionDisabled
                 font.pixelSize: IKFonts.bodySize
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
