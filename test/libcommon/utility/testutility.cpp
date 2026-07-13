@@ -1020,7 +1020,7 @@ void TestUtility::testFileSystemType() {
                          CommonUtility::fileSystemType("/Volumes/FAT PART", fallbackFSType, CommonUtility::UseCache::No));
 
     CPPUNIT_ASSERT_EQUAL(CommonUtility::fsTypeFAT(), CommonUtility::fileSystemType("/Volumes/FAT PART", fallbackFSType));
-    /*
+    */
     // AppleVirtIOFS (Parallels Desktop shared folder for instance).
     /*
     CPPUNIT_ASSERT_EQUAL(std::string("APPLEVIRTIOFS"),
