@@ -264,10 +264,10 @@ std::string CommonUtility::fileSystemType(const SyncPath &targetPath, std::strin
     // Cache of FS type & fallback type by mount point ordered by decreasing path depth.
     static std::map<SyncPath, std::pair<std::string, std::string>, CmpPath> fsTypeMap((CmpPath(false)));
 
-    if (useCache) {
+    if (useCache == UseCache::Yes) {
         // Search in cache first.
 #if defined(KD_WINDOWS)
-        const SyncPath rootPath = targetPath.root_name().native();
+        const SyncPath rootPath = targetPath.root_path().native();
         if (const auto it = fsTypeMap.find(rootPath); it != fsTypeMap.end()) {
             fallbackFSType = it->second.second;
             return it->second.first;
@@ -296,10 +296,6 @@ std::string CommonUtility::fileSystemType(const SyncPath &targetPath, std::strin
     } else {
         fallbackFSType = underlyingFileSystemType(targetPath);
     }
-
-#if defined(KD_WINDOWS)
-    assert(targetPath.root_name().native() == mountPoint);
-#endif
 
     (void) fsTypeMap.try_emplace(mountPoint, fsType, fallbackFSType);
 
