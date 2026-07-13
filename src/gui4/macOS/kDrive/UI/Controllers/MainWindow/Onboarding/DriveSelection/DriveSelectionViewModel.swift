@@ -23,6 +23,7 @@ import InfomaniakConcurrency
 import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
+import OrderedCollections
 
 @MainActor
 final class DriveSelectionViewModel: ObservableObject {
