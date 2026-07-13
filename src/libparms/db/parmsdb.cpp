@@ -860,30 +860,27 @@ bool ParmsDb::insertUserTemplateNormalizations(const std::string &fromVersion) {
 
 namespace {
 
-std::string trim(const std::string &str) {
-    size_t start = str.find_first_not_of(' ');
-    if (start == std::string::npos) return "";
-    size_t end = str.find_last_not_of(' ');
-    return str.substr(start, end - start + 1);
+std::string trim(std::string_view str) {
+    const size_t start = str.find_first_not_of(' ');
+    if (start == std::string_view::npos) return "";
+    const size_t end = str.find_last_not_of(' ');
+    return std::string(str.substr(start, end - start + 1));
 }
-
 void stripLineEndings(std::string &line) {
     while (!line.empty() && (line.back() == '\n' || line.back() == '\r')) {
         line.pop_back();
     }
 }
 
-bool parseRuleType(const std::string &typeStr, SyncFolderRuleType &ruleType) {
-    static const std::unordered_map<std::string, SyncFolderRuleType> typeMap = {
-            {"BlackList", SyncFolderRuleType::BlackList},
-            {"WhiteList", SyncFolderRuleType::WhiteList},
-            {"WhiteListSubFolder", SyncFolderRuleType::WhiteListSubFolder},
-    };
-    const auto it = typeMap.find(typeStr);
-    if (it == typeMap.end()) {
+bool parseRuleType(std::string_view typeStr, SyncFolderRuleType &ruleType) {
+    if (typeStr == "BlackList")
+        ruleType = SyncFolderRuleType::BlackList;
+    else if (typeStr == "WhiteList")
+        ruleType = SyncFolderRuleType::WhiteList;
+    else if (typeStr == "WhiteListSubFolder")
+        ruleType = SyncFolderRuleType::WhiteListSubFolder;
+    else
         return false;
-    }
-    ruleType = it->second;
     return true;
 }
 
@@ -900,7 +897,7 @@ bool tryParseCsvLine(const std::string &line, std::vector<SyncFolderRule> &rules
         return false;
     }
 
-    SyncFolderRuleType ruleType;
+    SyncFolderRuleType ruleType = SyncFolderRuleType::None;
     if (!parseRuleType(typeStr, ruleType)) {
         LOG_WARN(_logger, "Invalid sync folder rule type: " << typeStr.c_str());
         return false;
