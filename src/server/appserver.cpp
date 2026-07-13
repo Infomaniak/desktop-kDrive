@@ -240,6 +240,12 @@ void AppServer::init() {
         return;
     }
 #endif
+    // OAuth callback launches are only forwarders. If no running server was detected, stop here instead of letting the
+    // callback process initialize itself as a second full server instance.
+    if (!_authorizationCodeStr.isEmpty()) {
+        LOG_WARN(_logger, "Login authorization callback received but no running server was detected");
+        return;
+    }
 
     // Cleanup at quit
     connect(this, &QCoreApplication::aboutToQuit, this, &AppServer::onCleanup);
