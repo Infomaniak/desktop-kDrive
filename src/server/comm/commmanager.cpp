@@ -289,8 +289,13 @@ void CommManager::sendGuiSignal(const std::shared_ptr<AbstractGuiJob> signal) {
     signal->setCommManager(shared_from_this());
     signal->setChannels(_guiCommServer->connections());
 
-    // Add job to JobManager pool
-    GuiJobManagerSingleton::instance()->queueAsyncJob(signal);
+    // Dispatch the signal synchronously while holding _mutex, so signals are written to the GUI
+    // channel(s) in submission (FIFO) order. Queuing them on the shared multi-threaded job pool let
+    // causally-linked signals (e.g. ACCOUNT_ADDED -> DRIVE_ADDED -> SYNC_ADDED emitted by a single
+    // addSync) run concurrently and reach the client out of order, which dropped the sync from the
+    // client cache. A signal job's work is only "serialize + write to channel", so running it inline
+    // here is cheap and requires no job-pool bookkeeping.
+    (void) signal->runSynchronously();
 }
 
 bool CommManager::hasActiveGuiConnection() {
