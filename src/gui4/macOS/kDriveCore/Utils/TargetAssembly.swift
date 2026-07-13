@@ -60,6 +60,15 @@ open class TargetAssembly {
                                      factoryParameters: nil,
                                      resolver: resolver)
             },
+            Factory(type: SettingsCaching.self) { _, _ in
+                SettingsCache()
+            },
+            Factory(type: SettingsCacheObservable.self) { _, resolver in
+                try resolver.resolve(type: SettingsCaching.self,
+                                     forCustomTypeIdentifier: nil,
+                                     factoryParameters: nil,
+                                     resolver: resolver)
+            },
             Factory(type: VFSConversionStoring.self) { _, _ in
                 VFSConversionStore()
             },

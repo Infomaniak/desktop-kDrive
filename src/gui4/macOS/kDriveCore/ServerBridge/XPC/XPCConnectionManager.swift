@@ -23,6 +23,7 @@ import InfomaniakDI
 @objc final class XPCConnectionManager: NSObject, @unchecked Sendable {
     @InjectService var signalHandler: XPCSignalHandlerProtocol
     @LazyInjectService var coherentCache: CoherentCache
+    @LazyInjectService var settingsCache: SettingsCaching
 
     @MainActor
     @Published private(set) var guiConnectionState: XPCConnectionState = .notConnected
@@ -203,6 +204,7 @@ import InfomaniakDI
         Task {
             IKLogger.xpc.log("[KD] coherentCache.clearAndRefresh")
             try await coherentCache.clearAndRefresh()
+            try? await settingsCache.refresh()
             await MainActor.run { [weak self] in
                 guard let self, let conn = appConnection else { return }
                 let currentId = ObjectIdentifier(conn)

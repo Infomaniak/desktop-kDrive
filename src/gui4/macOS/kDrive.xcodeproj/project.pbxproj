@@ -138,6 +138,7 @@
 				Cache/Observation/helpers/ObservedSynchros.swift,
 				Cache/Observation/helpers/ObservedUpdater.swift,
 				Cache/Observation/helpers/ObservedUser.swift,
+				Cache/SettingsCacheTests.swift,
 				Jobs/LoginJobTests.swift,
 				Logging/GzipCompressorTests.swift,
 				Logging/LogServiceTests.swift,

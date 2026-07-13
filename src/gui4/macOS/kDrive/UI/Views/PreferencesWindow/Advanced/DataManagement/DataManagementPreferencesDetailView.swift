@@ -21,6 +21,8 @@ import kDriveResources
 import SwiftUI
 
 struct DataManagementPreferencesDetailView: View {
+    @ObservedSettings private var settings
+
     @State private var allowTracking = false
 
     let item: DataManagementItem
@@ -44,7 +46,10 @@ struct DataManagementPreferencesDetailView: View {
         }
         .groupedFormatStyle()
         .onAppear {
-            allowTracking = repository.parametersInfo[keyPath: item.keyPath]
+            allowTracking = settings[keyPath: item.keyPath]
+        }
+        .onChange(of: settings[keyPath: item.keyPath]) { newValue in
+            allowTracking = newValue
         }
         .onChange(of: allowTracking) { newValue in
             updateValue(\.$allowTracking, item.keyPath, newValue: newValue)
@@ -57,12 +62,12 @@ struct DataManagementPreferencesDetailView: View {
         newValue: T
     ) {
         Task {
-            guard newValue != repository.parametersInfo[keyPath: repositoryKeyPath] else { return }
+            guard newValue != settings[keyPath: repositoryKeyPath] else { return }
 
             do {
                 try await repository.update(repositoryKeyPath, value: newValue)
             } catch {
-                self[keyPath: stateKeyPath].wrappedValue = repository.parametersInfo[keyPath: repositoryKeyPath]
+                self[keyPath: stateKeyPath].wrappedValue = settings[keyPath: repositoryKeyPath]
             }
         }
     }

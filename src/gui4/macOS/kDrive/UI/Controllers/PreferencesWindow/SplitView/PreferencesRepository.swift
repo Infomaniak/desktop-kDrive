@@ -18,11 +18,14 @@
 
 import Combine
 import Foundation
+import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 
 @MainActor
 public final class PreferencesRepository: ObservableObject {
+    @LazyInjectService private var settingsCache: SettingsCaching
+
     @Published public private(set) var parametersInfo = UIParametersInfo()
 
     public init() {}
@@ -41,5 +44,6 @@ public final class PreferencesRepository: ObservableObject {
         try await ParametersJobs().updateParameters(parametersInfo: payload)
 
         try? await refreshData()
+        try? await settingsCache.refresh()
     }
 }
