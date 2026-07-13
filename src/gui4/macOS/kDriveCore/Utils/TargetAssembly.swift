@@ -98,6 +98,9 @@ open class TargetAssembly {
                                                    resolver: resolver)
                 return SignalProcessor(handler: handler)
             },
+            Factory(type: CacheReconciling.self) { _, _ in
+                CacheReconciler()
+            },
             Factory(type: AutoIncrementIDGenerator.self) { _, _ in
                 AutoIncrementIDGenerator()
             },
