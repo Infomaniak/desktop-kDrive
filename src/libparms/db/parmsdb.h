@@ -185,7 +185,8 @@ class PARMS_EXPORT ParmsDb : public Db {
          * @param fileSyncFolderRules  The vector to be populated with the sync folder rules.
          * @return true if the sync folder rules are successfully read from the file, false otherwise
          */
-        bool getSyncFolderRulesFromFile(const SyncPath &syncFolderRulesPath, std::vector<SyncFolderRule> &fileSyncFolderRules);
+        bool getSyncFolderRulesFromFile(const SyncPath &syncFolderRulesPath,
+                                        std::vector<SyncFolderRule> &fileSyncFolderRules) const;
         bool updateSyncFolderRules();
 
 

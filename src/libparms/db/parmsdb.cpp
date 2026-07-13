@@ -858,68 +858,91 @@ bool ParmsDb::insertUserTemplateNormalizations(const std::string &fromVersion) {
 }
 
 
-bool ParmsDb::getSyncFolderRulesFromFile(const SyncPath &syncFolderRulesPath, std::vector<SyncFolderRule> &fileSyncFolderRules) {
+namespace {
+
+std::string trim(const std::string &str) {
+    size_t start = str.find_first_not_of(' ');
+    if (start == std::string::npos) return "";
+    size_t end = str.find_last_not_of(' ');
+    return str.substr(start, end - start + 1);
+}
+
+void stripLineEndings(std::string &line) {
+    while (!line.empty() && (line.back() == '\n' || line.back() == '\r')) {
+        line.pop_back();
+    }
+}
+
+bool parseRuleType(const std::string &typeStr, SyncFolderRuleType &ruleType) {
+    static const std::unordered_map<std::string, SyncFolderRuleType> typeMap = {
+            {"BlackList", SyncFolderRuleType::BlackList},
+            {"WhiteList", SyncFolderRuleType::WhiteList},
+            {"WhiteListSubFolder", SyncFolderRuleType::WhiteListSubFolder},
+    };
+    const auto it = typeMap.find(typeStr);
+    if (it == typeMap.end()) {
+        return false;
+    }
+    ruleType = it->second;
+    return true;
+}
+
+// Returns true if a valid rule was parsed and appended.
+bool tryParseCsvLine(const std::string &line, std::vector<SyncFolderRule> &rules, log4cplus::Logger _logger) {
+    const size_t commaPos = line.find(',');
+    if (commaPos == std::string::npos || commaPos >= line.length() - 1) {
+        return false;
+    }
+
+    const std::string pathStr = trim(line.substr(0, commaPos));
+    const std::string typeStr = trim(line.substr(commaPos + 1));
+    if (pathStr.empty() || typeStr.empty()) {
+        return false;
+    }
+
+    SyncFolderRuleType ruleType;
+    if (!parseRuleType(typeStr, ruleType)) {
+        LOG_WARN(_logger, "Invalid sync folder rule type: " << typeStr.c_str());
+        return false;
+    }
+
+    (void) rules.emplace_back(SyncPath(pathStr), ruleType);
+    return true;
+}
+
+} // namespace
+
+bool ParmsDb::getSyncFolderRulesFromFile(const SyncPath &syncFolderRulesPath,
+                                         std::vector<SyncFolderRule> &fileSyncFolderRules) const {
     fileSyncFolderRules.clear();
 
-    if (std::ifstream rulesFile(syncFolderRulesPath); rulesFile.is_open()) {
-        std::string line;
-        bool headerSkipped = false;
+    std::ifstream rulesFile(syncFolderRulesPath);
+    if (!rulesFile.is_open()) {
+        return false;
+    }
 
-        while (std::getline(rulesFile, line)) {
-            if (!line.empty() && line.back() == '\n') {
-                line.pop_back();
-            }
-            if (!line.empty() && line.back() == '\r') {
-                line.pop_back();
-            }
+    std::string line;
+    bool headerSkipped = false;
+    while (std::getline(rulesFile, line)) {
+        stripLineEndings(line);
+        if (line.empty()) {
+            continue;
+        }
 
-            if (line.empty()) {
+        if (!headerSkipped) {
+            headerSkipped = true;
+            if (line.find("Path") != std::string::npos) {
                 continue;
             }
-
-            // Skip header line
-            if (!headerSkipped) {
-                if (line.find("Path") != std::string::npos) {
-                    headerSkipped = true;
-                    continue;
-                }
-                headerSkipped = true;
-            }
-
-            // Parse CSV: Path,Type
-            size_t commaPos = line.find(',');
-            if (commaPos != std::string::npos && commaPos < line.length() - 1) {
-                std::string pathStr = line.substr(0, commaPos);
-                std::string typeStr = line.substr(commaPos + 1);
-
-                // Trim whitespace from path and type
-                while (!pathStr.empty() && pathStr.front() == ' ') pathStr.erase(0, 1);
-                while (!pathStr.empty() && pathStr.back() == ' ') pathStr.pop_back();
-                while (!typeStr.empty() && typeStr.front() == ' ') typeStr.erase(0, 1);
-                while (!typeStr.empty() && typeStr.back() == ' ') typeStr.pop_back();
-
-                if (!pathStr.empty() && !typeStr.empty()) {
-                    // 3 possible rule type WhiteListSubFolder, BlackList, WhiteList
-                    SyncFolderRuleType ruleType = SyncFolderRuleType::None;
-                    if (typeStr == "BlackList") {
-                        ruleType = SyncFolderRuleType::BlackList;
-                    } else if (typeStr == "WhiteList") {
-                        ruleType = SyncFolderRuleType::WhiteList;
-                    } else if (typeStr == "WhiteListSubFolder") {
-                        ruleType = SyncFolderRuleType::WhiteListSubFolder;
-                    } else {
-                        LOG_WARN(_logger, "Invalid sync folder rule type: %s" << typeStr.c_str());
-                        continue;
-                    }
-
-                    fileSyncFolderRules.emplace_back(SyncPath(pathStr), ruleType);
-                }
-            }
         }
-        return true;
+
+        tryParseCsvLine(line, fileSyncFolderRules, _logger);
     }
-    return false;
+
+    return true;
 }
+
+
 bool ParmsDb::updateSyncFolderRules() {
     std::vector<SyncFolderRule> dbSyncFolderRules;
     if (!selectAllSyncFolderRules(dbSyncFolderRules)) {
@@ -935,9 +958,9 @@ bool ParmsDb::updateSyncFolderRules() {
     }
 
     for (const auto &dbRule: dbSyncFolderRules) {
-        const auto it =
-                std::find_if(fileSyncFolderRules.cbegin(), fileSyncFolderRules.cend(),
-                             [&dbRule](const SyncFolderRule &fileRule) { return fileRule.syncPath() == dbRule.syncPath(); });
+        const auto it = std::ranges::find_if(std::as_const(fileSyncFolderRules), [&dbRule](const SyncFolderRule &fileRule) {
+            return fileRule.syncPath() == dbRule.syncPath();
+        });
 
         if (it == fileSyncFolderRules.cend()) {
             if (bool found = false; !deleteSyncFolderRule(dbRule.syncPath(), found)) {
@@ -948,9 +971,9 @@ bool ParmsDb::updateSyncFolderRules() {
     }
 
     for (const auto &fileRule: fileSyncFolderRules) {
-        const auto it =
-                std::find_if(dbSyncFolderRules.cbegin(), dbSyncFolderRules.cend(),
-                             [&fileRule](const SyncFolderRule &dbRule) { return dbRule.syncPath() == fileRule.syncPath(); });
+        const auto it = std::ranges::find_if(std::as_const(dbSyncFolderRules), [&fileRule](const SyncFolderRule &dbRule) {
+            return dbRule.syncPath() == fileRule.syncPath();
+        });
 
         if (it == dbSyncFolderRules.cend()) {
             if (bool constraintError = false; !insertSyncFolderRule(fileRule, constraintError)) {
