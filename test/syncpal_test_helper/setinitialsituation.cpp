@@ -83,8 +83,8 @@ void SetInitialSituation::setSyncpal(const std::shared_ptr<SyncPal> syncPal) {
 
 void SetInitialSituation::setRemoteDrive(const DriveDbId driveDbId, const NodeId &parentRemoteNodeId) {
     _remoteDriveDbId = driveDbId;
-    _remoteItemDir = std::make_unique<RemoteTemporaryDirectory>(driveDbId, parentRemoteNodeId, "TestSituationGenerator");
-    _remoteNodeIds[{}] = _remoteItemDir->id();
+    _remoteRootId = parentRemoteNodeId;
+    _remoteNodeIds[{}] = _remoteRootId;
 }
 
 bool SetInitialSituation::run(const std::string &jsonDescription) {
@@ -92,7 +92,7 @@ bool SetInitialSituation::run(const std::string &jsonDescription) {
 
     try {
         // If remote is needed (optional depending on test)
-        if (!_remoteItemDir) {
+        if (_remoteRootId.empty()) {
             setRemoteDrive(_syncPal->driveDbId(), *_syncPal->syncDb()->rootNode().nodeIdRemote());
         }
 
@@ -192,8 +192,8 @@ void SetInitialSituation::insertLocalItem(const ItemDesc &desc, const NodeId &pa
 }
 
 void SetInitialSituation::insertRemoteItem(const ItemDesc &desc, const NodeId &parentId) {
-    if (!_remoteDriveDbId.has_value() || !_remoteItemDir) return;
-    const NodeId parentRemoteId = parentId.empty() ? _remoteItemDir->id() : _remoteNodeIds.at(parentId);
+    if (!_remoteDriveDbId.has_value() || _remoteRootId.empty()) return;
+    const NodeId parentRemoteId = parentId.empty() ? _remoteRootId : _remoteNodeIds.at(parentId);
     if (desc.type == NodeType::Directory) {
         CreateDirJob job(nullptr, *_remoteDriveDbId, parentRemoteId, desc.name);
         (void) job.runSynchronously();

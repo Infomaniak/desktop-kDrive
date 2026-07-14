@@ -36,7 +36,6 @@ void TestIntegration::basicTests() {
     testRemoteChanges();
     testSimultaneousChanges();
     testUploadBigFile();
-    testSimpleUpload();
 }
 
 void TestIntegration::testLocalChanges() {

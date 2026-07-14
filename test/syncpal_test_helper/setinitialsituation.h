@@ -18,8 +18,6 @@
 
 #pragma once
 
-#include "test_utility/remotetemporarydirectory.h"
-
 #include "utility/types.h"
 
 #include <Poco/JSON/Array.h>
@@ -120,7 +118,7 @@ class SetInitialSituation {
 
         void setSyncpal(std::shared_ptr<SyncPal> syncPal);
 
-        [[nodiscard]] NodeId remoteRootId() const { return _remoteItemDir ? _remoteItemDir->id() : NodeId{}; }
+        [[nodiscard]] const NodeId &remoteRootId() const { return _remoteRootId; }
         void setRemoteDrive(DriveDbId driveDbId, const NodeId &parentRemoteNodeId);
 
         void generateInitialSituation(const Situation &situation);
@@ -144,7 +142,7 @@ class SetInitialSituation {
 
         std::shared_ptr<SyncPal> _syncPal;
 
-        std::unique_ptr<RemoteTemporaryDirectory> _remoteItemDir;
+        NodeId _remoteRootId;
         std::optional<DriveDbId> _remoteDriveDbId;
         std::unordered_map<NodeId, SyncPath, StringHashFunction, std::equal_to<>>
                 _localItemPaths; // item id (lowercase) -> local relative path
