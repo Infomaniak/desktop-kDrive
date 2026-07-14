@@ -33,6 +33,8 @@
   bindings with an unused `_` element when only keys or only values are needed.
 - For Linux v4 model/UI checks, build only the `kdrive_qml` target unless a broader backend/server validation is
   explicitly needed.
+- After resolving a rebase conflict that removes or renames a shared model/header, grep Linux v4 for stale includes and
+  old type names, then validate at least the `kdrive_qml` target.
 - For tray fallback testing, `KDRIVE_FORCE_NO_TRAY=1` is Debug-only and forces the startup tray probe to stay disabled.
 - Avoid magic layout values in QML; put reusable or semantic dimensions and ratios in `ui/tokens/` with explicit names.
 - Store Linux v4 app-level non-translatable constants in `app/appconstants.h`; keep it header-only while constants stay

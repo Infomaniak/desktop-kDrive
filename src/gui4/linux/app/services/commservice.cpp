@@ -149,14 +149,14 @@ void CommService::registerDriveHandlers(SignalDispatcher &dispatcher) {
 
 void CommService::registerSyncHandlers(SignalDispatcher &dispatcher) {
     dispatcher.registerHandler(SignalNum::SYNC_ADDED, [this](const Poco::DynamicStruct &params) {
-        SyncInfo info;
+        BaseSync info;
         info.fromDynamicStruct(params[msgParamSyncInfo].extract<Poco::DynamicStruct>());
         qCInfo(lcCommService) << "Sync added | syncDbId:" << info.dbId() << "/ driveDbId:" << info.driveDbId();
         emit syncAdded(info);
     });
 
     dispatcher.registerHandler(SignalNum::SYNC_UPDATED, [this](const Poco::DynamicStruct &params) {
-        SyncInfo info;
+        BaseSync info;
         info.fromDynamicStruct(params[msgParamSyncInfo].extract<Poco::DynamicStruct>());
         emit syncUpdated(info);
     });
@@ -411,9 +411,9 @@ void CommService::requestDriveSearch(const SyncDbId syncDbId, const QString &sea
 void CommService::requestSyncInfoList(const SyncInfoListCallback &callback) const {
     _ipcClient.sendRequest(
             RequestNum::SYNC_INFOLIST, {}, [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
-                std::vector<SyncInfo> list;
+                std::vector<BaseSync> list;
                 if (exitInfo) {
-                    CommonUtility::readValuesFromStruct(result, msgParamSyncInfoList, list, dynamicVar2Struct<SyncInfo>);
+                    CommonUtility::readValuesFromStruct(result, msgParamSyncInfoList, list, dynamicVar2Struct<BaseSync>);
                 }
                 callback(exitInfo, list);
             });
@@ -432,7 +432,7 @@ void CommService::requestSyncAdd(const SyncAddRequest &request, const SyncInfoCa
     CommonUtility::writeValueToStruct(params, msgParamLiteSync, request.liteSync);
     CommonUtility::writeValuesToStruct(params, msgParamBlackList, request.blackList);
     _ipcClient.sendRequest(RequestNum::SYNC_ADD, params, [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
-        SyncInfo info;
+        BaseSync info;
         if (exitInfo) {
             info.fromDynamicStruct(result[msgParamSyncInfo].extract<Poco::DynamicStruct>());
         }
@@ -452,7 +452,7 @@ void CommService::requestSyncAdd2(const SyncAdd2Request &request, const SyncInfo
     CommonUtility::writeValuesToStruct(params, msgParamBlackList, request.blackList);
     _ipcClient.sendRequest(RequestNum::SYNC_ADD2, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
-                               SyncInfo info;
+                               BaseSync info;
                                if (exitInfo) {
                                    info.fromDynamicStruct(result[msgParamSyncInfo].extract<Poco::DynamicStruct>());
                                }
