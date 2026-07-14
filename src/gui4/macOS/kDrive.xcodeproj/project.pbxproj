@@ -142,6 +142,7 @@
 				Cache/SettingsCacheTests.swift,
 				Jobs/LoginJobTests.swift,
 				Logging/GzipCompressorTests.swift,
+				Logging/LogLevelKDCMappingTests.swift,
 				Logging/LogServiceTests.swift,
 				Onboarding/OnboardingFlowCoordinatorTests.swift,
 				Parsing/Base64CodedTests.swift,
