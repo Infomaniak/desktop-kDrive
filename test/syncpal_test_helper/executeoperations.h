@@ -23,6 +23,7 @@
 #include <Poco/JSON/Object.h>
 
 #include <filesystem>
+#include <map>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -83,7 +84,9 @@ class ExecuteOperations {
         // returns false if invalid
         bool run(ReplicaSide side, const std::string &jsonDescription);
 
-        void executeOperations(ReplicaSide side, const Operations &operations) const;
+        // Not const: applying operations triggers real local/remote side effects (filesystem changes, network
+        // jobs) and tracks per-batch state in `_batchRemoteIds`.
+        void executeOperations(ReplicaSide side, const Operations &operations);
 
     private:
         struct OperationDesc {
@@ -108,7 +111,7 @@ class ExecuteOperations {
         // not indicate success. Used to surface local/remote job failures instead of silently ignoring them.
         static void checkExitInfo(const ExitInfo &exitInfo, const std::string &context);
 
-        void applyOperation(ReplicaSide side, const OperationDesc &desc) const;
+        void applyOperation(ReplicaSide side, const OperationDesc &desc);
 
         // Local side, one function per operation type.
         void applyLocalCreate(const OperationDesc &desc) const;
@@ -117,16 +120,23 @@ class ExecuteOperations {
         void applyLocalMove(const OperationDesc &desc) const;
 
         // Remote side, one function per operation type.
-        void applyRemoteCreate(const OperationDesc &desc) const;
+        void applyRemoteCreate(const OperationDesc &desc);
         void applyRemoteEdit(const OperationDesc &desc) const;
-        void applyRemoteDelete(const OperationDesc &desc) const;
-        void applyRemoteMove(const OperationDesc &desc) const;
+        void applyRemoteDelete(const OperationDesc &desc);
+        void applyRemoteMove(const OperationDesc &desc);
 
-        // Resolves the remote NodeId of `path` in the sync DB. Throws OperationsParserException (with `context`
-        // prefixed to the error message) if not found.
+        // Resolves the remote NodeId of `path`, checking items created/moved within the current batch
+        // (`_batchRemoteIds`, since they may not be in the sync DB yet) before falling back to the sync DB.
+        // Throws OperationsParserException (with `context` prefixed to the error message) if not found.
         [[nodiscard]] NodeId remoteIdForPath(const SyncPath &path, const std::string &context) const;
 
         std::shared_ptr<SyncPal> _syncPal;
+
+        // Remote ids of items created/moved during the current executeOperations() batch, keyed by their
+        // current relative path. Needed because those items may not exist in the sync DB yet (no sync has
+        // run within the batch), so a subsequent operation referencing them (e.g. a Create inside a
+        // directory just created earlier in the same batch) cannot rely on a sync DB lookup alone.
+        std::map<SyncPath, NodeId> _batchRemoteIds;
 };
 
 } // namespace KDC

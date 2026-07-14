@@ -60,7 +60,7 @@ class SyncpalTestHelper {
         // Applies operations (see ExecuteOperations::executeOperations) on the given side, against the
         // SyncPal passed to the constructor (or set via setSyncpal).
         // returns false if invalid
-        bool executeOperations(ReplicaSide side, const Operations &operations) const;
+        bool executeOperations(ReplicaSide side, const Operations &operations);
 
     private:
         std::shared_ptr<SyncPal> _syncPal;

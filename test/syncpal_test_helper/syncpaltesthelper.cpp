@@ -111,7 +111,7 @@ bool SyncpalTestHelper::stopSync() const {
     return true;
 }
 
-bool SyncpalTestHelper::executeOperations(const ReplicaSide side, const Operations &operations) const {
+bool SyncpalTestHelper::executeOperations(const ReplicaSide side, const Operations &operations) {
     if (!_syncPal) return false;
 
     try {

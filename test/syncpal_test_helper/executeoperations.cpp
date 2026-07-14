@@ -21,6 +21,7 @@
 #include "syncpal/syncpal.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 #include "test_utility/testhelpers.h"
+#include "test_utility/localtemporarydirectory.h"
 
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
@@ -107,7 +108,7 @@ bool ExecuteOperations::run(const ReplicaSide side, const std::string &jsonDescr
     }
 }
 
-void ExecuteOperations::executeOperations(const ReplicaSide side, const Operations &operations) const {
+void ExecuteOperations::executeOperations(const ReplicaSide side, const Operations &operations) {
     Poco::JSON::Object::Ptr obj;
     try {
         Poco::JSON::Parser parser;
@@ -115,6 +116,8 @@ void ExecuteOperations::executeOperations(const ReplicaSide side, const Operatio
     } catch (Poco::Exception &) {
         throw OperationsParserException("Invalid JSON input");
     }
+
+    _batchRemoteIds.clear();
 
     const auto arr = obj->getArray("operations");
     for (size_t i = 0; i < arr->size(); ++i) {
@@ -199,7 +202,7 @@ ExecuteOperations::OperationDesc ExecuteOperations::parseOperation(const Poco::J
     return desc;
 }
 
-void ExecuteOperations::applyOperation(const ReplicaSide side, const OperationDesc &desc) const {
+void ExecuteOperations::applyOperation(const ReplicaSide side, const OperationDesc &desc) {
     switch (side) {
         case ReplicaSide::Local: {
             switch (desc.type) {
@@ -273,6 +276,10 @@ void ExecuteOperations::applyLocalMove(const OperationDesc &desc) const {
 }
 
 NodeId ExecuteOperations::remoteIdForPath(const SyncPath &path, const std::string &context) const {
+    if (const auto it = _batchRemoteIds.find(path); it != _batchRemoteIds.end()) {
+        return it->second;
+    }
+
     bool found = false;
     std::optional<NodeId> id;
     if (!_syncPal->syncDb()->id(ReplicaSide::Remote, path, id, found) || !found || !id) {
@@ -281,17 +288,30 @@ NodeId ExecuteOperations::remoteIdForPath(const SyncPath &path, const std::strin
     return *id;
 }
 
-void ExecuteOperations::applyRemoteCreate(const OperationDesc &desc) const {
+void ExecuteOperations::applyRemoteCreate(const OperationDesc &desc) {
     const NodeId parentId = remoteIdForPath(desc.path.parent_path(), "Create operation");
 
     if (desc.itemType == NodeType::Directory) {
         CreateDirJob job(nullptr, _syncPal->driveDbId(), parentId, desc.path.filename().native());
         checkExitInfo(job.runSynchronously(), "Create operation (directory)");
+        _batchRemoteIds[desc.path] = job.nodeId();
     } else {
-        const SyncPath fullPath = _syncPal->localPath() / desc.path;
+        // This is a remote-only operation: the file doesn't exist locally, but UploadJob needs to read its
+        // content from a local path. Generate it in a temporary location, upload it, then remove it so the
+        // local replica is left untouched by this remote-only operation.
+        const LocalTemporaryDirectory temporaryDir("executeRemoteOperations");
+        const SyncPath fullPath = temporaryDir.path() / desc.path.filename();
+        testhelpers::generateTestFile(fullPath, static_cast<uint64_t>(desc.size));
+        if (const IoError ioError = IoHelper::setFileDates(fullPath, desc.createdAt, desc.lastModifiedAt, false);
+            ioError != IoError::Success) {
+            throw OperationsParserException("Create operation (file upload): unable to set file dates for '" +
+                                             fullPath.string() + "'");
+        }
+
         UploadJob job(nullptr, _syncPal->driveDbId(), fullPath, desc.path.filename().native(), parentId, desc.createdAt,
                       desc.lastModifiedAt);
         checkExitInfo(job.runSynchronously(), "Create operation (file upload)");
+        _batchRemoteIds[desc.path] = job.nodeId();
     }
 }
 
@@ -303,15 +323,16 @@ void ExecuteOperations::applyRemoteEdit(const OperationDesc &desc) const {
     checkExitInfo(job.runSynchronously(), "Edit operation (upload)");
 }
 
-void ExecuteOperations::applyRemoteDelete(const OperationDesc &desc) const {
+void ExecuteOperations::applyRemoteDelete(const OperationDesc &desc) {
     const NodeId itemId = remoteIdForPath(desc.path, "Delete operation");
 
     DeleteJob job(_syncPal->driveDbId(), itemId);
     job.setBypassCheck(true);
     checkExitInfo(job.runSynchronously(), "Delete operation");
+    _batchRemoteIds.erase(desc.path);
 }
 
-void ExecuteOperations::applyRemoteMove(const OperationDesc &desc) const {
+void ExecuteOperations::applyRemoteMove(const OperationDesc &desc) {
     const NodeId itemId = remoteIdForPath(desc.fromPath, "Move operation");
 
     if (desc.fromPath.parent_path() == desc.toPath.parent_path()) {
@@ -327,6 +348,8 @@ void ExecuteOperations::applyRemoteMove(const OperationDesc &desc) const {
         job.setBypassCheck(true);
         checkExitInfo(job.runSynchronously(), "Move operation");
     }
+    _batchRemoteIds.erase(desc.fromPath);
+    _batchRemoteIds[desc.toPath] = itemId;
 }
 
 } // namespace KDC
