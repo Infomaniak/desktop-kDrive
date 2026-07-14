@@ -57,7 +57,7 @@ void GenericErrorItemWidget::init() {
 
         // Path
         if (_errorInfo.level() == ErrorLevel::SyncPal) {
-            setDriveName(QString::fromStdString(driveInfoMapIt->second.name()), syncInfoMapIt->second.localPath());
+            setDriveName(QString::fromStdString(driveInfoMapIt->second.name()), Path2QStr(syncInfoMapIt->second.localPath()));
             setPathIconColor(QColor(QString::fromStdString(driveInfoMapIt->second.color())));
         } else if (_errorInfo.level() == ErrorLevel::Node) {
             const bool useDestPath = _errorInfo.cancelType() == CancelType::MoveToBinFailed ||
@@ -97,7 +97,7 @@ void GenericErrorItemWidget::openFolder(const QString &path) {
     }
     // Open on local filesystem (open the parent folder for an item of file type).
     const auto absolutePath =
-            SyncPath(path.toStdString()).is_absolute() ? path : (syncInfoMapIt->second.localPath() + "/" + path);
+            SyncPath(path.toStdString()).is_absolute() ? path : (Path2QStr(syncInfoMapIt->second.localPath()) + "/" + path);
     const auto folderPath = GuiUtility::getFolderPath(absolutePath, _errorInfo.nodeType());
     AbstractFileItemWidget::openFolder(folderPath);
 }

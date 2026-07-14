@@ -1419,15 +1419,21 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::SYNC_INFOLIST: {
-            QList<SyncInfo> list;
-            const auto exitCode = ServerRequests::getSyncInfoList(list);
+            QList<Sync> list;
+            const auto exitCode = ServerRequests::getSyncList(list);
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::getSyncInfoList: code=" << exitCode);
+                LOG_WARN(_logger, "Error in Requests::getSyncList: code=" << exitCode);
                 addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
             }
 
+            QList<BaseSync> baseList;
+            baseList.reserve(list.size());
+            for (const auto &sync: list) {
+                baseList.push_back(static_cast<const BaseSync &>(sync));
+            }
+
             resultStream << toInt(exitCode);
-            resultStream << list;
+            resultStream << baseList;
             break;
         }
         case RequestNum::SYNC_START: {
@@ -1555,7 +1561,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             // Add sync in DB
             ExitCode exitCode = ExitCode::Ok;
-            SyncInfo syncInfo;
+            Sync syncInfo;
             if (num == RequestNum::SYNC_ADD) {
                 Account account;
                 Drive drive;
@@ -1607,26 +1613,23 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
 
             QTimer::singleShot(100, this, [=, this]() {
-                Sync sync;
-                ServerRequests::syncInfoToSync(syncInfo, sync);
-
                 // Check if sync is valid
-                if (const auto exitInfo = checkIfSyncIsValid(sync); !exitInfo) {
-                    LOG_WARN(_logger, "Error in checkIfSyncIsValid for syncDbId=" << sync.dbId() << " : " << exitInfo);
-                    addError(Error(sync.dbId(), ERR_ID, exitInfo));
+                if (const auto exitInfo = checkIfSyncIsValid(syncInfo); !exitInfo) {
+                    LOG_WARN(_logger, "Error in checkIfSyncIsValid for syncDbId=" << syncInfo.dbId() << " : " << exitInfo);
+                    addError(Error(syncInfo.dbId(), ERR_ID, exitInfo));
                     return;
                 }
 
                 bool startPostponed = false;
-                if (const auto exitInfo = tryCreateAndStartVfs(sync, startPostponed); !exitInfo) {
-                    LOG_WARN(_logger, "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " : " << exitInfo);
+                if (const auto exitInfo = tryCreateAndStartVfs(syncInfo, startPostponed); !exitInfo) {
+                    LOG_WARN(_logger, "Error in tryCreateAndStartVfs for syncDbId=" << syncInfo.dbId() << " : " << exitInfo);
                     if (!Utility::isLiteSyncExtError(exitInfo)) {
                         return;
                     }
                 }
 
                 // Create and start SyncPal
-                if (const auto exitInfo = initSyncPal(sync, blackList, !startPostponed, std::chrono::seconds(0), false, true);
+                if (const auto exitInfo = initSyncPal(syncInfo, blackList, !startPostponed, std::chrono::seconds(0), false, true);
                     !exitInfo) {
                     stopSyncTask(syncInfo.dbId(), SyncPal::DbBehaviorAfterStop::Remove);
 
@@ -2585,7 +2588,7 @@ void AppServer::uploadLog(const bool includeArchivedLogs) {
     SyncJobManagerSingleton::instance()->queueAsyncJob(logUploadJob, Poco::Thread::PRIO_HIGH);
 }
 
-ExitInfo AppServer::checkIfSyncIsValid(const Sync &sync) {
+ExitInfo AppServer::checkIfSyncIsValid(const BaseSync &sync) {
     std::vector<Sync> syncList;
     if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
         LOG_WARN(_logger, "Error in ParmsDb::selectAllSyncs");
@@ -3224,10 +3227,12 @@ ExitInfo AppServer::tryCreateAndStartVfs(const Sync &sync, bool &startPostponed)
 
     return ExitCode::Ok;
 }
+
 ExitInfo AppServer::startSyncs(User &user) {
     std::unordered_set<SyncDbId> emptyList;
     return startSyncs(user, emptyList, emptyList);
 }
+
 ExitInfo AppServer::startSyncs(User &user, const std::unordered_set<SyncDbId> toIgnoreSyncDbIds,
                                std::unordered_set<SyncDbId> &startedSyncDbIds) {
     logExtendedLogActivationMessage(ParametersCache::isExtendedLogEnabled());
@@ -3300,9 +3305,7 @@ ExitInfo AppServer::startSyncs(User &user, const std::unordered_set<SyncDbId> to
                         return {ExitCode::DataError, ExitCause::DbEntryNotFound};
                     }
 
-                    SyncInfo syncInfo;
-                    ServerRequests::syncToSyncInfo(sync, syncInfo);
-                    sendSyncUpdated(syncInfo);
+                    sendSyncUpdated(sync);
                 }
 
                 // Clear old errors for this sync
@@ -4372,9 +4375,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(const SyncDbId syncDbId, const bool 
         }
 
         // Update sync info on client side
-        SyncInfo syncInfo;
-        ServerRequests::syncToSyncInfo(sync, syncInfo);
-        sendSyncUpdated(syncInfo);
+        sendSyncUpdated(sync);
 
         auto func = [this, newMode, vfs, sync, asyncResponse, startPostponed, syncDbId]() {
             if (newMode != VirtualFileMode::Off && vfs) {
@@ -4831,18 +4832,18 @@ void AppServer::sendDriveRemoved(const DriveDbId driveDbId) const {
     }
 }
 
-void AppServer::sendSyncUpdated(const SyncInfo &syncInfo) const {
+void AppServer::sendSyncUpdated(const Sync &sync) const {
     if (useOldCommServer()) {
         int id = 0;
 
         QByteArray params;
         QDataStream paramsStream(&params, QIODevice::WriteOnly);
-        paramsStream << syncInfo;
+        paramsStream << sync;
 
         (void) OldCommServer::instance()->sendSignal(SignalNum::SYNC_UPDATED, params, id);
     }
     if (useCommManager()) {
-        _commManager->sendGuiSignal(std::make_shared<SignalSyncUpdatedJob>(syncInfo));
+        _commManager->sendGuiSignal(std::make_shared<SignalSyncUpdatedJob>(sync));
     }
 }
 
@@ -4977,18 +4978,18 @@ void AppServer::sendVfsConversionCompleted(const SyncDbId syncDbId) const {
     }
 }
 
-void AppServer::sendSyncAdded(const SyncInfo &syncInfo) const {
+void AppServer::sendSyncAdded(const Sync &sync) const {
     if (useOldCommServer()) {
         int id = 0;
 
         QByteArray params;
         QDataStream paramsStream(&params, QIODevice::WriteOnly);
-        paramsStream << syncInfo;
+        paramsStream << sync;
 
         (void) OldCommServer::instance()->sendSignal(SignalNum::SYNC_ADDED, params, id);
     }
     if (useCommManager()) {
-        _commManager->sendGuiSignal(std::make_shared<SignalSyncAddedJob>(syncInfo));
+        _commManager->sendGuiSignal(std::make_shared<SignalSyncAddedJob>(sync));
     }
 }
 

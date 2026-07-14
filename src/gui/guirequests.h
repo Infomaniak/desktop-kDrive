@@ -25,7 +25,7 @@
 #include "libcommon/data/account.h"
 #include "libcommon/info/nodeinfo.h"
 #include "libcommon/data/driveavailable.h"
-#include "libcommon/info/syncinfo.h"
+#include "libcommon/data/sync.h"
 #include "libcommon/info/errorinfo.h"
 #include "libcommon/info/parametersinfo.h"
 #include "libcommon/info/exclusiontemplateinfo.h"
@@ -49,7 +49,7 @@ struct GuiRequests {
         static ExitCode getAccountList(QList<Account> &list);
         static ExitCode getDriveInfoList(QList<Drive> &list);
         static ExitCode updateDrive(const Drive &drive);
-        static ExitCode getSyncInfoList(QList<SyncInfo> &list);
+        static ExitCode getSyncList(QList<BaseSync> &list);
         static ExitCode getSyncStatus(SyncDbId syncDbId, SyncStatus &status);
         static ExitCode getBlacklistedNodeIdSet(SyncDbId syncDbId, QSet<QString> &syncIdSet);
         static ExitCode setBlacklistedNodeIdSet(SyncDbId syncDbId, const QSet<QString> &syncIdSet);
