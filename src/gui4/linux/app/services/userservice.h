@@ -69,8 +69,9 @@ class UserService : public QObject {
         void availableDrivesLoadFailed(UserDbId userDbId);
 
     private:
-        void beginAction(const ServiceActionTracker::ActionKey &actionKey, ServiceActionTracker::ScopeId scopeId = 0);
-        void endAction(const ServiceActionTracker::ActionKey &actionKey, ServiceActionTracker::ScopeId scopeId = 0);
+        void beginAction(const ServiceActionTracker::ActionKey &actionKey, ServiceActionTracker::ScopeId scopeId = 0) const;
+        void endAction(const ServiceActionTracker::ActionKey &actionKey, ServiceActionTracker::ScopeId scopeId = 0) const;
+        void endAllActions(const ServiceActionTracker::ActionKey &actionKey, ServiceActionTracker::ScopeId scopeId = 0) const;
         void setLoading(bool loading);
         void pruneStaleAvailableDriveGenerations();
         void handleAvailableDrivesLoaded(UserDbId userDbId, uint64_t generation, const ExitInfo &exitInfo,

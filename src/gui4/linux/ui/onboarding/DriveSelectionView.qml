@@ -37,7 +37,7 @@ Item {
 
         Text {
             width: parent.width
-            text: qsTr("Welcome back!")
+            text: qsTrId("onboardingDriveSelectionTitle")
             color: IKColors.textPrimary
             font.pixelSize: IKFonts.largeTitleSize
             font.weight: Font.Bold
@@ -105,7 +105,7 @@ Item {
                 id: retryButton
 
                 height: IKOnboarding.driveSelectionButtonHeight
-                text: qsTr("Retry")
+                text: qsTrId("buttonRetry")
                 onClicked: root.selectionController.reload()
 
                 contentItem: Text {
@@ -139,7 +139,7 @@ Item {
 
             Text {
                 width: IKOnboarding.driveSelectionListWidth
-                text: qsTr("Select the kDrive to be synchronized on this computer:")
+                text: qsTrId("onboardingDriveSelectionSelectTitle")
                 color: IKColors.textSecondary
                 font.pixelSize: IKFonts.subheadlineSize
                 font.weight: IKFonts.emphasized
@@ -165,7 +165,7 @@ Item {
 
                         anchors.fill: parent
                         enabled: false
-                        text: qsTr("Advanced settings")
+                        text: qsTrId("buttonAdvancedParameters")
                         onClicked: root.selectionController.requestAdvancedSettings()
 
                         contentItem: Text {
@@ -226,7 +226,7 @@ Item {
 
                     enabled: root.selectionController.canContinue
                     height: IKOnboarding.driveSelectionButtonHeight
-                    text: qsTr("Continue")
+                    text: qsTrId("buttonContinue")
                     onClicked: root.selectionController.continueOnboarding()
 
                     contentItem: Text {
