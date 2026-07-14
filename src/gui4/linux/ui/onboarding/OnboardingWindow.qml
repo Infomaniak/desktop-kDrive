@@ -55,14 +55,13 @@ Item {
             width: parent.width * IKOnboarding.illustrationPanelWidthRatio
             height: parent.height
             color: IKColors.onboardingSurfaceSecondary
-            radius: IKRadius.r16
-            topRightRadius: 0
-            bottomRightRadius: 0
 
             OnboardingAnimationsView {
                 anchors.centerIn: parent
-                width: Math.min(IKOnboarding.illustrationAnimationMaxSize, parent.width * IKOnboarding.illustrationAnimationFillRatio)
-                height: width * IKOnboarding.loaderStrokeAnimationHeightRatio
+                width: Math.min(IKOnboarding.illustrationAnimationMaxSize,
+                                parent.width * IKOnboarding.illustrationAnimationFillRatio)
+                height: width * contentHeightRatio
+                onboardingFlowController: root.onboardingFlowController
             }
         }
     }
