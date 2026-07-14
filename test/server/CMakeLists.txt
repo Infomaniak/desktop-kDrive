@@ -124,6 +124,7 @@ set(server_SRCS
 
     ${server_srcs_path}/migration/migrationparams.h ${server_srcs_path}/migration/migrationparams.cpp
     ${server_srcs_path}/requests/serverrequests.h ${server_srcs_path}/requests/serverrequests.cpp
+    ${server_srcs_path}/requests/syncfolderallowedchecker.h ${server_srcs_path}/requests/syncfolderallowedchecker.cpp
     ${server_srcs_path}/updater/abstractupdater.h ${server_srcs_path}/updater/abstractupdater.cpp
     ${server_srcs_path}/updater/versionretriever.h ${server_srcs_path}/updater/versionretriever.cpp
     ${server_srcs_path}/requests/offlinefilessizeestimator.h ${server_srcs_path}/requests/offlinefilessizeestimator.cpp
