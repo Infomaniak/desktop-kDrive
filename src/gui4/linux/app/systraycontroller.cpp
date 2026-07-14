@@ -123,10 +123,10 @@ void SystemTrayController::initialize() {
     _trayIcon.setIcon(QIcon(trayIconPath(_iconState)));
     _trayIcon.setToolTip(tr("kDrive"));
 
-    _openAction = _trayMenu.addAction(tr("Open kDrive"));
-    _settingsAction = _trayMenu.addAction(tr("Settings"));
+    _openAction = _trayMenu.addAction(qtTrId("statusBarOpenApp"));
+    _settingsAction = _trayMenu.addAction(qtTrId("statusBarSettings"));
     (void) _trayMenu.addSeparator();
-    _quitAction = _trayMenu.addAction(tr("Quit"));
+    _quitAction = _trayMenu.addAction(qtTrId("statusBarQuitApp"));
     _trayIcon.setContextMenu(&_trayMenu);
 
     (void) connect(_openAction, &QAction::triggered, this, &SystemTrayController::openMainWindowRequested);
