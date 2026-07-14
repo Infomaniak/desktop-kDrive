@@ -21,7 +21,7 @@
 #include "libcommonserver/log/log.h"
 #include "requests/serverrequests.h"
 
-// Imput parameters key
+// Input parameters key
 static const auto inputParamsDriveName = "driveName";
 
 // Output parameters keys
