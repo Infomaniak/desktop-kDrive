@@ -193,7 +193,7 @@ void AddDriveWizard::startNextStep(bool backward) {
             qCWarning(lcAddDriveWizard()) << "Error in Requests::findGoodPathForNewSyncFolder : " << error;
             CustomMessageBox msgBox(
                     QMessageBox::Warning,
-                    tr("Failed to find a a valid local folder to create your synchronisation. Please, select a folder manually."),
+                    tr("Failed to find a valid local folder to create your synchronisation. Please, select a folder manually."),
                     QMessageBox::Ok, this);
         }
 
