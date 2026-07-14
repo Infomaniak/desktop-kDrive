@@ -119,7 +119,7 @@ runs:
         id: build
         shell: powershell
         run: |
-          & "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
+          & "C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\vcvars64.bat"
 
           $thumbprint = "${{ inputs.debug_cert_thumbprint }}"
 
