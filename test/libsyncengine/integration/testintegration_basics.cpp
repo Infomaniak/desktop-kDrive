@@ -300,6 +300,39 @@ void TestIntegration::testSimpleUpload() {
 
     testHelper.tearDown();
     logStep("testSimpleUpload");
+
+
+}
+
+void TestIntegration::testNestedRemoteOperations() {
+    SyncpalTestHelper testHelper(_syncPal);
+    testHelper.setUp();
+
+    CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
+
+    // Start from an empty situation.
+    const Situation situation{Str2SyncName(R"({"content": []})")};
+    CPPUNIT_ASSERT(testHelper.setInitialSituation(situation, situation));
+
+    // Imbricated remote operations applied in a single batch: create a directory, then create a file inside
+    // that same directory, right away. Resolving "A/AAA"'s parent must not rely on a stale SyncDb lookup,
+    // since "A" was only just created earlier in this very batch.
+    const Operations remoteOperations{Str2SyncName(R"({
+        "operations": [
+            { "type": "Create", "itemType": "Directory", "name": "A" },
+            { "type": "Create", "itemType": "File", "name": "A/AAA" }
+        ]
+    })")};
+    CPPUNIT_ASSERT(testHelper.executeOperations(ReplicaSide::Remote, remoteOperations));
+    CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
+
+    CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / "A" / "AAA"));
+
+    const auto remoteFileInfo = getRemoteFileInfoByPath(_driveDbId, _remoteSyncDir.id(), SyncPath("A/AAA"));
+    CPPUNIT_ASSERT(remoteFileInfo.isValid());
+
+    testHelper.tearDown();
+    logStep("testNestedRemoteOperations");
 }
 
 } // namespace KDC
