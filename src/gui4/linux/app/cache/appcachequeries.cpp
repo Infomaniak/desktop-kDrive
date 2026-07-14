@@ -61,13 +61,13 @@ std::vector<Drive> AppCache::drives() const {
     return values;
 }
 
-std::vector<SyncInfo> AppCache::syncs() const {
-    std::vector<SyncInfo> values;
+std::vector<BaseSync> AppCache::syncs() const {
+    std::vector<BaseSync> values;
     values.reserve(_syncsByDbId.size());
     for (const auto &node: _syncsByDbId | std::views::values) {
         values.push_back(node.info);
     }
-    sortById(values, [](const SyncInfo &info) { return info.dbId(); });
+    sortById(values, [](const BaseSync &info) { return info.dbId(); });
     return values;
 }
 
@@ -138,7 +138,7 @@ std::optional<Drive> AppCache::drive(const DriveDbId driveDbId) const {
     return it->second.drive;
 }
 
-std::optional<SyncInfo> AppCache::sync(const SyncDbId syncDbId) const {
+std::optional<BaseSync> AppCache::sync(const SyncDbId syncDbId) const {
     const auto it = _syncsByDbId.find(syncDbId);
     if (it == _syncsByDbId.end()) {
         return std::nullopt;
@@ -214,20 +214,20 @@ std::vector<Drive> AppCache::drivesForAccount(const AccountDbId accountDbId) con
     return values;
 }
 
-std::vector<SyncInfo> AppCache::syncsForDrive(const DriveDbId driveDbId) const {
+std::vector<BaseSync> AppCache::syncsForDrive(const DriveDbId driveDbId) const {
     const auto driveIt = _drivesByDbId.find(driveDbId);
     if (driveIt == _drivesByDbId.end()) {
         return {};
     }
 
-    std::vector<SyncInfo> values;
+    std::vector<BaseSync> values;
     values.reserve(driveIt->second.syncDbIds.size());
     for (const auto syncDbId: driveIt->second.syncDbIds) {
         if (const auto syncInfo = sync(syncDbId)) {
             values.push_back(*syncInfo);
         }
     }
-    sortById(values, [](const SyncInfo &info) { return info.dbId(); });
+    sortById(values, [](const BaseSync &info) { return info.dbId(); });
     return values;
 }
 
