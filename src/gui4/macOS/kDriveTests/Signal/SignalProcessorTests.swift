@@ -25,7 +25,9 @@ private actor RecordingStore {
     private(set) var values: [Int] = []
     private var awaited: (target: Int, continuation: CheckedContinuation<Void, Never>)?
 
-    func snapshot() -> [Int] { values }
+    func snapshot() -> [Int] {
+        values
+    }
 
     /// Non-atomic replace: overwrites the whole array from a snapshot the caller took *before* a
     /// suspension point. If two handlers ran concurrently, the second replace would clobber the
@@ -71,7 +73,7 @@ struct SignalProcessorTests {
 
         let count = 200
         for index in 0 ..< count {
-            processor.enqueue(try encoder.encode(index))
+            try processor.enqueue(encoder.encode(index))
         }
 
         await store.waitFor(count: count)
