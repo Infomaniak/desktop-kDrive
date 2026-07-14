@@ -150,6 +150,8 @@ void CachePopulator::activateLiveInfoRefresh() const {
         if (!exitInfo) {
             qCWarning(lcCachePopulator) << "Live info refresh activation failed | code:" << exitInfo.code()
                                         << "/ cause:" << exitInfo.cause();
+            SentryService::reportError(QStringLiteral("Live info refresh activation failed"),
+                                       QString::fromStdString(toString(exitInfo)));
         }
     });
 }
