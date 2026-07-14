@@ -350,7 +350,7 @@ void SystemTrayController::reconcileKnownSyncStatuses() {
 
     const auto syncs = _appCache->syncs();
     (void) std::erase_if(_syncStatuses, [&syncs](const auto &entry) {
-        return std::ranges::none_of(syncs, [&entry](const SyncInfo &sync) { return sync.dbId() == entry.first; });
+        return std::ranges::none_of(syncs, [&entry](const BaseSync &sync) { return sync.dbId() == entry.first; });
     });
 
     for (const auto &sync: syncs) {
