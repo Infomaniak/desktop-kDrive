@@ -24,6 +24,9 @@ on:
     # Every weekday at 06:00 UTC — adjust to your needs
    # - cron: "0 6 * * 1-5"
 
+permissions:
+  contents: read
+
 env:
   OS_CLOUD: infomaniak
   IMAGE_NAME: "win_kdrive_runner_build_env"
