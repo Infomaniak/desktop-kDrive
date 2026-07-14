@@ -1188,6 +1188,9 @@ ExitInfo ServerRequests::isSyncFolderAllowedByRules(const SyncPath &path, bool &
         // Technically we only allow a directory that is whitelisted, but it's assumed that if something is wrong with the rules
         // file we don't just reject every directory
         LOG_DEBUG(Log::instance()->getLogger(), "isSyncFolderAllowedByRules: no rules found, allowing path");
+        // we need to send a sentry too:
+        sentry::Handler::captureMessage(sentry::Level::Warning, "ServerRequests::isSyncFolderAllowedByRules",
+                                        "No sync rules found, allowing path");
         return ExitCode::Ok;
     }
 
