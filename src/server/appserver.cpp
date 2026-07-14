@@ -218,17 +218,12 @@ void AppServer::init() {
     setWindowIcon(_theme->applicationIcon());
     setApplicationVersion(QString::fromStdString(_theme->version()));
 
-    parseOptions(_arguments);
-    if (!_authorizationCodeStr.isEmpty()) {
-        std::cout << "Authorization code received";
-        return;
-    }
-
     // Setup logging with default parameters
     if (!initLogging()) {
         throw std::runtime_error("Unable to init logging.");
     }
 
+    parseOptions(_arguments);
     if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked) {
         LOG_INFO(_logger, "Command line options processed");
         return;
@@ -245,6 +240,12 @@ void AppServer::init() {
         return;
     }
 #endif
+    // OAuth callback launches are only forwarders. If no running server was detected, stop here instead of letting the
+    // callback process initialize itself as a second full server instance.
+    if (!_authorizationCodeStr.isEmpty()) {
+        LOG_WARN(_logger, "Login authorization callback received but no running server was detected");
+        return;
+    }
 
     // Cleanup at quit
     connect(this, &QCoreApplication::aboutToQuit, this, &AppServer::onCleanup);
