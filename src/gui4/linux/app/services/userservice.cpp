@@ -81,10 +81,7 @@ void UserService::invalidateAvailableDrivesRequest(const UserDbId userDbId) {
         return;
     }
 
-    for (const auto generation: pendingIt->second) {
-        static_cast<void>(generation);
-        endAction(actionLoadAvailableDrives, userDbId);
-    }
+    endAllActions(actionLoadAvailableDrives, userDbId);
     (void) _pendingAvailableDriveLoadGenerations.erase(pendingIt);
 }
 
@@ -143,11 +140,10 @@ void UserService::requestLoginToken(const QString &code, const QString &codeVeri
 
 void UserService::invalidateLoginTokenRequest() {
     ++_loginTokenGeneration;
-    for (const auto generation: _pendingLoginTokenGenerations) {
-        static_cast<void>(generation);
-        endAction(actionRequestLoginToken);
+    if (!_pendingLoginTokenGenerations.empty()) {
+        endAllActions(actionRequestLoginToken);
+        _pendingLoginTokenGenerations.clear();
     }
-    _pendingLoginTokenGenerations.clear();
 }
 
 bool UserService::isLoadAvailableDrivesPending(const qint64 userDbId) const {
@@ -171,10 +167,7 @@ void UserService::pruneStaleAvailableDriveGenerations() {
 
         if (const auto pendingIt = _pendingAvailableDriveLoadGenerations.find(it->first);
             pendingIt != _pendingAvailableDriveLoadGenerations.end()) {
-            for (const auto generation: pendingIt->second) {
-                static_cast<void>(generation);
-                endAction(actionLoadAvailableDrives, it->first);
-            }
+            endAllActions(actionLoadAvailableDrives, it->first);
             (void) _pendingAvailableDriveLoadGenerations.erase(pendingIt);
         }
         it = _availableDriveLoadGenerations.erase(it);
@@ -213,12 +206,18 @@ void UserService::handleAvailableDrivesLoaded(const UserDbId userDbId, const uin
     emit availableDrivesLoaded(userDbId);
 }
 
-void UserService::beginAction(const ServiceActionTracker::ActionKey &actionKey, const ServiceActionTracker::ScopeId scopeId) {
+void UserService::beginAction(const ServiceActionTracker::ActionKey &actionKey,
+                              const ServiceActionTracker::ScopeId scopeId) const {
     _serviceActionTracker.beginAction(serviceKeyUser, actionKey, scopeId);
 }
 
-void UserService::endAction(const ServiceActionTracker::ActionKey &actionKey, const ServiceActionTracker::ScopeId scopeId) {
+void UserService::endAction(const ServiceActionTracker::ActionKey &actionKey, const ServiceActionTracker::ScopeId scopeId) const {
     _serviceActionTracker.endAction(serviceKeyUser, actionKey, scopeId);
+}
+
+void UserService::endAllActions(const ServiceActionTracker::ActionKey &actionKey,
+                                const ServiceActionTracker::ScopeId scopeId) const {
+    _serviceActionTracker.endAllActions(serviceKeyUser, actionKey, scopeId);
 }
 
 bool UserService::isActionPending(const ServiceActionTracker::ActionKey &actionKey,
