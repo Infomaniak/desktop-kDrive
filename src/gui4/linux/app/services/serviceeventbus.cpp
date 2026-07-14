@@ -18,9 +18,11 @@
 
 #include "serviceeventbus.h"
 
+#include "app/services/sentryservice.h"
 #include "libcommon/utility/types.h"
 
 #include <QLoggingCategory>
+#include <QString>
 
 namespace KDC {
 
@@ -32,7 +34,9 @@ ServiceEventBus::ServiceEventBus(QObject *const parent) :
 void ServiceEventBus::notifyGenericError(const ExitInfo &exitInfo, const RequestNum requestNum) {
     qCWarning(lcServiceEventBus) << "Generic service error | request:" << toInt(requestNum) << "/ code:" << exitInfo.code()
                                  << "/ cause:" << exitInfo.cause();
-    // TODO(gui4/linux): capture this error in Sentry once Sentry is integrated in the Linux v4 app.
+    SentryService::reportError(
+            QStringLiteral("Generic service error"),
+            QStringLiteral("request: %1 | %2").arg(toInt(requestNum)).arg(QString::fromStdString(toString(exitInfo))));
     emit genericErrorOccurred();
 }
 
