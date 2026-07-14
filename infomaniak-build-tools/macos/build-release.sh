@@ -192,3 +192,10 @@ if [ -n "$sign_files" ]; then
 			--progress --wait
 	fi
 fi
+
+# Generate Sparkle auto-update files (signed archive + appcast).
+# Runs last so it archives the signed app and references the freshly built .pkg.
+# Set SKIP_SPARKLE=1 to skip this step (e.g. for local/unsigned builds).
+if [ -z "$SKIP_SPARKLE" ]; then
+	INSTALL_DIR="$install_dir" bash "$src_dir/infomaniak-build-tools/macos/generate-sparkle.sh"
+fi
