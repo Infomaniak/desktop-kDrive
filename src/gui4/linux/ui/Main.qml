@@ -22,19 +22,30 @@ import QtQuick
 import kDrive.UI
 import "onboarding"
 
-Window {
+IKShadowedWindow {
     id: mainWindow
 
     required property var onboardingSessionManager
     required property var systemTrayController
 
     visible: false
-    width: 900
-    height: 600
-    minimumWidth: 720
-    minimumHeight: 520
+    contentWidth: 900
+    contentHeight: 600
+    minimumContentWidth: 720
+    minimumContentHeight: 520
     title: onboardingLoader.session ? onboardingLoader.session.flowController.title : qsTr("kDrive")
-    color: IKColors.onboardingSurfacePrimary
+    surfaceColor: IKColors.onboardingSurfacePrimary
+    customShadowEnabled: true
+    headerOverlaysContent: true
+    windowTitleVisible: false
+
+    headerBackgroundData: Rectangle {
+        anchors.top: parent.top
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        width: parent.width * IKOnboarding.illustrationPanelWidthRatio
+        color: IKColors.onboardingSurfaceSecondary
+    }
 
     onClosing: close => {
         if (mainWindow.systemTrayController.trayModeActive) {
