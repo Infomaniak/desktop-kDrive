@@ -36,6 +36,7 @@
 #include <QTranslator>
 #include <QVariant>
 #include <QWindow>
+#include <QQmlEngine>
 
 #include <chrono>
 #include <thread>
@@ -124,6 +125,8 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("syncService"), &_syncService);
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("serviceEventBus"), &_serviceEventBus);
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("windowDecorationController"), &_windowDecorationController);
+    qmlRegisterUncreatableType<AppRouter>("kDrive.UI", 1, 0, "AppRouter",
+                                          "AppRouter is owned by AppClientLinux and exposed as appRouter.");
     (void) connect(&_qmlEngine, &QQmlApplicationEngine::warnings, this, [](const QList<QQmlError> &warnings) {
         for (const auto &warning: warnings) {
             qCWarning(lcAppClientLinux) << "QML warning:" << warning.toString();
