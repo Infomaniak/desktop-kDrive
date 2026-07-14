@@ -93,7 +93,7 @@ runs:
             echo "C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.8 Tools" >> $GITHUB_PATH
             echo "C:\Program Files\DigiCert\DigiCert Keylocker Tools" >> $GITHUB_PATH
           fi
-        shell: bash
+        shell: cmd
 
       - name: Digicert KSP - Setup SSM KSP on Windows latest
         run: |
