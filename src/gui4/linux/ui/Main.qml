@@ -51,7 +51,7 @@ IKShadowedWindow {
             anchors.top: parent.top
             anchors.bottom: parent.bottom
             visible: !mainWindow.onboardingActive && mainWindow.appRouter.mainWindowActive
-            width: 240
+            width: IKMainWindow.sidebarWidth
             color: IKColors.surfaceSecondary
         }
 
@@ -81,13 +81,12 @@ IKShadowedWindow {
 
         MainToolbar {
             anchors.left: parent.left
-            anchors.leftMargin: 240
+            anchors.leftMargin: IKMainWindow.sidebarWidth
             anchors.right: parent.right
             anchors.rightMargin: IKSpacing.s8
             anchors.top: parent.top
             anchors.bottom: parent.bottom
             appRouter: mainWindow.appRouter
-            currentTab: mainWindow.appRouter.currentMainTabIndex
         }
     }
 

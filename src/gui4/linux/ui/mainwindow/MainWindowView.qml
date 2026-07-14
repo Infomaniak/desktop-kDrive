@@ -26,11 +26,11 @@ Item {
 
     required property var appRouter
 
-    readonly property int tabHome: 0
-    readonly property int tabActivities: 1
-    readonly property int tabStorage: 2
-    readonly property int tabBlockingError: 3
-    readonly property real sidebarWidth: 240
+    readonly property int tabHome: AppRouter.Home
+    readonly property int tabActivities: AppRouter.Activities
+    readonly property int tabStorage: AppRouter.Storage
+    readonly property int tabBlockingError: AppRouter.BlockingError
+    readonly property real sidebarWidth: IKMainWindow.sidebarWidth
     readonly property int currentTab: appRouter.currentMainTabIndex
 
     Row {
