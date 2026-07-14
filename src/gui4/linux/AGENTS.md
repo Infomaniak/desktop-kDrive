@@ -135,8 +135,7 @@
   login-specific workflow logic.
 - `app/onboarding/onboardingsynccreationcoordinator.*`: automatic end-of-onboarding sync creation coordinator. It derives
   collision-free local folders, creates selected-drive syncs sequentially at the remote root, preserves only failed and
-  not-yet-attempted work for retry, reconciles the parent-first cache snapshot after a failed `SYNC_ADD`, and temporarily
-  opens every configured sync root in the system file manager from the ready screen.
+  not-yet-attempted work for retry, and reconciles the parent-first cache snapshot after a failed `SYNC_ADD`.
 - `app/onboarding/oauthloginservice.*`: Linux v4 OAuth browser-launch service. It owns PKCE/state generation, idempotent
   browser relaunch during an active authorization, callback validation, and emits the authorization code to app wiring.
   Do not expose OAuth details to QML.
