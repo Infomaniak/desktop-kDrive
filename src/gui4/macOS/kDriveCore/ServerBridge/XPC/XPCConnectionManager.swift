@@ -21,7 +21,7 @@ import Foundation
 import InfomaniakDI
 
 @objc final class XPCConnectionManager: NSObject, @unchecked Sendable {
-    @InjectService var signalHandler: XPCSignalHandlerProtocol
+    @LazyInjectService var signalProcessor: SignalProcessing
     @LazyInjectService var coherentCache: CoherentCache
     @LazyInjectService var settingsCache: SettingsCaching
 
@@ -234,8 +234,6 @@ extension XPCConnectionManager: XPCLoginItemRemoteProtocol {
 
 extension XPCConnectionManager: XPCGuiRemoteProtocol {
     func processSignal(_ msg: Data) {
-        Task {
-            await signalHandler.handleServerSignal(msg)
-        }
+        signalProcessor.enqueue(msg)
     }
 }

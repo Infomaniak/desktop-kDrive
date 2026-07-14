@@ -57,11 +57,17 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
     private let utilitySignalHandler = UtilitySignalHandler()
     private let updaterSignalHandler = UpdaterSignalHandler()
 
+    @LazyInjectService private var cacheReconciler: CacheReconciling
+
     func handleServerSignal(_ signal: Data?) async {
         do {
             try await decodeAndUseServerSignal(signal)
         } catch {
             IKLogger.xpc.error("[KD] signal error :\(error)")
+
+            if error.indicatesCacheInconsistency {
+                await cacheReconciler.scheduleRefresh()
+            }
 
             SentrySDK.capture(message: "Error processing Signal") { scope in
                 scope.setLevel(.error)
@@ -144,6 +150,18 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
 
         default:
             throw SignalError.unsupported(signalNum)
+        }
+    }
+}
+
+private extension Error {
+    var indicatesCacheInconsistency: Bool {
+        guard let cacheError = self as? ServerCoherentCache.CacheError else { return false }
+        switch cacheError {
+        case .userNotFound, .accountNotFound, .driveNotFound, .synchroNotFound:
+            return true
+        case .errorNotFound, .notAServerError:
+            return false
         }
     }
 }
