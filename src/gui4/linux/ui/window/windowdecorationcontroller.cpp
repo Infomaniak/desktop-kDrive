@@ -112,7 +112,7 @@ bool x11ExtensionAvailable(Display *const display, const QByteArray &extensionNa
  * controller does not use. Callers therefore report success from having issued the request, not from this flush.
  */
 void flushX11(Display *const display) {
-   (void) XFlush(display);
+    (void) XFlush(display);
 }
 
 /**
@@ -301,8 +301,8 @@ void WindowDecorationController::updateWindowDecoration(QWindow *const window, c
     // Keep the resize handles interactive by excluding only the outer part of the shadow margin. A maximized window
     // passes a zero frameMargin, so clamping the subtraction restores the full-window input region.
     const auto interactiveMargin = qMax<int32_t>(0, qRound(frameMargin - resizeHandleThickness));
-    const auto interactiveWidth = qMax<int32_t>(0, window->width() - 2 * interactiveMargin);
-    const auto interactiveHeight = qMax<int32_t>(0, window->height() - 2 * interactiveMargin);
+    const auto interactiveWidth = qMax<int32_t>(0, window->width() - (2 * interactiveMargin));
+    const auto interactiveHeight = qMax<int32_t>(0, window->height() - (2 * interactiveMargin));
     const QRect inputRect{interactiveMargin, interactiveMargin, interactiveWidth, interactiveHeight};
     applyInputRegion(window, inputRect, customFrameEnabled);
     applyFrameExtents(window, customFrameEnabled, frameMargin);
