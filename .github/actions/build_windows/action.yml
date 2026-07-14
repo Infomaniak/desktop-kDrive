@@ -114,7 +114,10 @@ runs:
         id: build
         shell: powershell
         run: |
-          & "C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\vcvars64.bat"
+          & "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\Tools\Launch-VsDevShell.ps1" `
+            -Arch amd64 `
+            -HostArch amd64 `
+            -SkipAutomaticLocation
 
           $thumbprint = "${{ inputs.debug_cert_thumbprint }}"
 
