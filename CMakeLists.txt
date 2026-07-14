@@ -42,7 +42,7 @@ if(UNIX)
 endif()
 
 # keychain
-add_subdirectory(src/3rdparty/keychain)
+add_subdirectory(src/3rdparty/keychain EXCLUDE_FROM_ALL) # EXCLUDE_FROM_ALL: don't install libkeychain.a (internal static lib); still built as a link dependency
 if (UNIX AND NOT APPLE) # Add this on linux to fix keychain problems with gcc 15
     target_compile_options(keychain PRIVATE -Wno-uninitialized)
 endif()
