@@ -27,20 +27,20 @@ namespace KDC {
 
 class SyncFolderRule {
     public:
-        SyncFolderRule();
+        SyncFolderRule() = default;
         SyncFolderRule(const SyncPath &syncPath, SyncFolderRuleType ruleType);
 
-        inline void setRule(const SyncPath &syncPath, const SyncFolderRuleType ruleType) {
+        void setRule(const SyncPath &syncPath, const SyncFolderRuleType ruleType) {
             _syncPath = syncPath;
             _folderRuleType = ruleType;
         }
-        inline const SyncPath &syncPath() const { return _syncPath; }
-        inline const SyncFolderRuleType &folderRuleType() const { return _folderRuleType; }
+        const SyncPath &syncPath() const { return _syncPath; }
+        const SyncFolderRuleType &folderRuleType() const { return _folderRuleType; }
 
 
     private:
         SyncPath _syncPath;
-        SyncFolderRuleType _folderRuleType;
+        SyncFolderRuleType _folderRuleType{SyncFolderRuleType::None};
 };
 
 } // namespace KDC

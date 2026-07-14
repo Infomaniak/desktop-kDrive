@@ -19,9 +19,6 @@
 #include "syncfolderrule.h"
 
 namespace KDC {
-SyncFolderRule::SyncFolderRule() :
-    _folderRuleType(SyncFolderRuleType::BlackList) {}
-
 SyncFolderRule::SyncFolderRule(const SyncPath &syncPath, const SyncFolderRuleType ruleType) :
     _syncPath(syncPath),
     _folderRuleType(ruleType) {}
