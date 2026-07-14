@@ -20,8 +20,8 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import kDrive.UI
-import "mainwindow"
-import "onboarding"
+import "windows/main"
+import "windows/onboarding"
 
 IKShadowedWindow {
     id: mainWindow
