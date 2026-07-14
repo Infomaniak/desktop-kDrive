@@ -81,7 +81,7 @@ void FolderTreeItemWidget::setSyncDbId(const SyncDbId syncDbId) {
     }
 
     _driveId = driveInfoMapIt->second.driveId();
-    _nodeId = syncInfoMapIt->second.targetNodeId();
+    _nodeId = QString::fromStdString(syncInfoMapIt->second.targetNodeId());
 
     setDriveDbId(syncInfoMapIt->second.driveDbId());
 }

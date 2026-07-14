@@ -202,8 +202,8 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void onDriveRemoved(DriveDbId driveDbId);
         void onDriveDeletionFailed(DriveDbId driveDbId);
         // Sync slots
-        void onSyncAdded(const SyncInfo &syncInfo);
-        void onSyncUpdated(const SyncInfo &syncInfo);
+        void onSyncAdded(const BaseSync &syncInfo);
+        void onSyncUpdated(const BaseSync &syncInfo);
         void onRemoveSync(SyncDbId syncDbId);
         void onSyncRemoved(SyncDbId syncDbId);
         void onSyncDeletionFailed(SyncDbId syncDbId);

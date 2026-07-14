@@ -439,7 +439,7 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
                 if (syncCheckPair.second.virtualFileMode() != masterVfs) {
                     // TODO : changeVfs for this sync in database
                     syncCheckPair.second.setVirtualFileMode(masterVfs);
-                    bool found;
+                    bool found = false;
                     if (!ParmsDb::instance()->updateSync(syncCheckPair.second, found)) {
                         LOG_WARN(_logger, "Error in ParmsDb::updateSync");
                         return ExitCode::DbError;

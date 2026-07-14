@@ -23,7 +23,8 @@
 #include "libcommon/data/user.h"
 #include "libcommon/data/account.h"
 #include "libcommon/data/driveavailable.h"
-#include "libcommon/info/syncinfo.h"
+#include "libcommon/data/drive.h"
+#include "libcommon/data/sync.h"
 #include "libcommon/info/nodeinfo.h"
 #include "libcommon/info/syncfileiteminfo.h"
 #include "libcommon/info/errorinfo.h"
@@ -31,8 +32,6 @@
 #include "libcommon/info/proxyconfiginfo.h"
 #include "libcommon/info/exclusiontemplateinfo.h"
 #include "libcommon/info/exclusionappinfo.h"
-#include "libcommon/data/drive.h"
-#include "libparms/db/sync.h"
 #include "libparms/db/error.h"
 #include "libparms/db/parameters.h"
 #include "libparms/db/exclusiontemplate.h"
@@ -60,8 +59,8 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitInfo getDriveList(std::vector<Drive> &list);
         static ExitInfo getDrive(DriveDbId driveDbId, Drive &drive);
         static ExitInfo updateDrive(const Drive &drive);
-        static ExitCode getSyncInfoList(QList<SyncInfo> &list);
-        static ExitCode getSyncInfoList(std::vector<SyncInfo> &list);
+        static ExitCode getSyncList(QList<Sync> &list);
+        static ExitCode getSyncList(std::vector<Sync> &list);
         static ExitCode getParameters(ParametersInfo &parametersInfo);
         static ExitCode updateParameters(const ParametersInfo &parametersInfo);
         static ExitInfo isPathValidForNewSync(const SyncPath &path, SyncConfiguration syncConfig, bool &valid);
@@ -103,14 +102,14 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitInfo getUserAvailableDrives(UserDbId userDbId, std::vector<DriveAvailable> &list);
         static ExitInfo addSync(UserDbId userDbId, AccountId accountId, DriveId driveId, const SyncPath &localFolderPath,
                                 const SyncPath &serverFolderPath, const NodeId &serverFolderNodeId, bool liteSync,
-                                Account &account, Drive &drive, SyncInfo &syncInfo, bool &accountCreated, bool &driveCreated);
+                                Account &account, Drive &drive, Sync &sync, bool &accountCreated, bool &driveCreated);
         static ExitInfo addSync(UserDbId userDbId, AccountId accountId, DriveId driveId, const QString &localFolderPath,
                                 const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync,
-                                Account &account, Drive &drive, SyncInfo &syncInfo, bool &accountCreated, bool &driveCreated);
+                                Account &account, Drive &drive, Sync &sync, bool &accountCreated, bool &driveCreated);
         static ExitInfo addSync(DriveDbId driveDbId, const SyncPath &localFolderPath, const SyncPath &serverFolderPath,
-                                const NodeId &serverFolderNodeId, bool liteSync, SyncInfo &syncInfo);
+                                const NodeId &serverFolderNodeId, bool liteSync, Sync &sync);
         static ExitInfo addSync(DriveDbId driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
-                                const QString &serverFolderNodeId, bool liteSync, SyncInfo &syncInfo);
+                                const QString &serverFolderNodeId, bool liteSync, Sync &sync);
         static ExitInfo getNodeInfo(UserDbId userDbId, DriveId driveId, const std::string &nodeId, NodeInfo &nodeInfo,
                                     bool withPath = false);
         static ExitInfo getNodeInfo(UserDbId userDbId, DriveId driveId, const QString &nodeId, NodeInfo &nodeInfo,
@@ -151,8 +150,6 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitInfo getThumbnail(DriveDbId driveDbId, const NodeId &nodeId, int width, std::string &thumbnail);
 
         // Utility
-        static void syncToSyncInfo(const Sync &sync, SyncInfo &syncInfo);
-        static void syncInfoToSync(const SyncInfo &syncInfo, Sync &sync);
         static void errorToErrorInfo(const Error &error, ErrorInfo &errorInfo);
         static void syncFileItemToSyncFileItemInfo(const SyncFileItem &item, SyncFileItemInfo &itemInfo);
         static void parametersToParametersInfo(const Parameters &parameters, ParametersInfo &parametersInfo);
@@ -181,7 +178,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitInfo updateUser(User &user);
         static ExitCode createAccount(Account &account);
         static ExitCode createDrive(Drive &drive);
-        static ExitCode createSync(const Sync &sync, SyncInfo &syncInfo);
+        static ExitCode createSync(const Sync &sync);
 };
 
 } // namespace KDC

@@ -147,7 +147,7 @@ class ExtensionJob : public AbstractJob {
 
         void manageActionsOnSingleFile(std::shared_ptr<AbstractCommChannel> channel, const SyncPath &path,
                                        SyncPalMap::const_iterator syncPalMapIt, VfsMap::const_iterator vfsMapIt,
-                                       const Sync &sync);
+                                       const BaseSync &sync);
 
         void fetchPrivateLinkUrlHelper(const SyncPath &localFile, const std::function<void(const std::string &url)> &targetFun);
 

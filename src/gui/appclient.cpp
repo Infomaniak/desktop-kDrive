@@ -309,14 +309,14 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::SYNC_ADDED: {
-            SyncInfo syncInfo;
+            BaseSync syncInfo;
             paramsStream >> syncInfo;
 
             emit syncAdded(syncInfo);
             break;
         }
         case SignalNum::SYNC_UPDATED: {
-            SyncInfo syncInfo;
+            BaseSync syncInfo;
             paramsStream >> syncInfo;
 
             emit syncUpdated(syncInfo);

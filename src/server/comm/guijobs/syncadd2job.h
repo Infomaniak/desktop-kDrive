@@ -19,7 +19,7 @@
 #pragma once
 
 #include "server/comm/guijobs/abstractsyncaddjob.h"
-#include "libcommon/info/syncinfo.h"
+#include "libcommon/data/sync.h"
 
 namespace KDC {
 

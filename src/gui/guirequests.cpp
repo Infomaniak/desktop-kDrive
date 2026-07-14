@@ -299,7 +299,7 @@ ExitCode GuiRequests::searchItemInDrive(const DriveDbId driveDbId, const QString
     return exitCode;
 }
 
-ExitCode GuiRequests::getSyncInfoList(QList<SyncInfo> &list) {
+ExitCode GuiRequests::getSyncList(QList<BaseSync> &list) {
     QByteArray results;
     if (!CommClient::instance()->execute(RequestNum::SYNC_INFOLIST, {}, results)) {
         return ExitCode::SystemError;
