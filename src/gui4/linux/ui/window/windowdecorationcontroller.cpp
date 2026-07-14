@@ -25,7 +25,7 @@
 #include <QtGui/qguiapplication_platform.h>
 
 #include <array>
-#include <climits>
+#include <cstdint>
 
 #if QT_CONFIG(xcb)
 #include <X11/Xlib.h>
@@ -218,15 +218,12 @@ void updateX11FrameExtents(const QWindow *const window, const qreal frameMargin)
     // (unlike the True passed for the compositor-selection lookup, which only probes for an already-existing atom).
     const auto frameExtentsAtom = static_cast<xcb_atom_t>(XInternAtom(display, "_GTK_FRAME_EXTENTS", False));
 
-    // Publish the client-side frame margin to the window manager via the _GTK_FRAME_EXTENTS property:
-    // xcb_change_property (re)sets that property on the native window to our CARDINAL[4] {left, right,
-    // top, bottom} array. The WM treats this margin as decoration/shadow area lying outside the "real"
-    // window, so it excludes it from snapping, tiling and maximize geometry.
-    // format is a bit-width (8/16/32), not a byte count: each extent is a 32-bit CARDINAL (EWMH), hence
-    // sizeof(uint32_t) * CHAR_BIT == 32. data_len is the element count (4), not a size in bytes.
-    constexpr auto frameExtentsFormatBits = static_cast<std::uint8_t>(sizeof(std::uint32_t) * CHAR_BIT);
-    static_assert(frameExtentsFormatBits == 32,
-                  "X11 property format must be 8, 16 or 32 bits; _GTK_FRAME_EXTENTS is defined as CARDINAL/32 (EWMH)");
+    // xcb_change_property (re)sets _GTK_FRAME_EXTENTS on the native window to our CARDINAL[4]
+    // {left, right, top, bottom} array. The window manager treats this margin as decoration/shadow area
+    // outside the "real" window, excluding it from snapping, tiling and maximize geometry.
+    // The format argument is the value bit-width, fixed at 32 because _GTK_FRAME_EXTENTS is CARDINAL/32
+    // (EWMH). The following count is a number of elements (4), not a size in bytes.
+    constexpr std::uint8_t frameExtentsFormatBits = 32;
     (void) xcb_change_property(connection, XCB_PROP_MODE_REPLACE, windowId, frameExtentsAtom, XCB_ATOM_CARDINAL,
                                frameExtentsFormatBits, frameExtents.size(), frameExtents.data());
     (void) xcb_flush(connection);
