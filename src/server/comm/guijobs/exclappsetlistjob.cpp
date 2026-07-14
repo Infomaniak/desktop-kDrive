@@ -38,7 +38,7 @@ ExclAppSetListJob::ExclAppSetListJob(std::shared_ptr<CommManager> commManager, i
 ExitInfo ExclAppSetListJob::deserializeInputParms() {
     try {
         readParamValue(inParamsDefault, _default);
-        readParamValues(inParamsApplicationList, _applicationList, dynamicVar2Struct<ExclusionAppInfo>);
+        readParamValues(inParamsApplicationList, _applicationList, dynamicVar2Struct<ExclusionApp>);
     } catch (const std::exception &e) {
         LOG_WARN(_logger, "Exception in ExclAppSetListJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;

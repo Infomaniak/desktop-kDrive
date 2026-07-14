@@ -51,7 +51,7 @@ ExitInfo ExclAppGetListJob::deserializeInputParms() {
 }
 
 ExitInfo ExclAppGetListJob::serializeOutputParms() {
-    writeParamValues(outParamsApplicationList, _applicationList, info2DynamicVar<ExclusionAppInfo>);
+    writeParamValues(outParamsApplicationList, _applicationList, info2DynamicVar<ExclusionApp>);
 
     return ExitCode::Ok;
 }

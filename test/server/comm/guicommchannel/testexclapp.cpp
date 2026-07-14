@@ -111,8 +111,8 @@ void TestGuiCommChannel::testExclAppGetListJob() {
         CPPUNIT_ASSERT(exclAppGetListJob);
         CPPUNIT_ASSERT(!exclAppGetListJob->_default);
 
-        exclAppGetListJob->_applicationList = {ExclusionAppInfo("appId1", "description1", false),
-                                               ExclusionAppInfo("appId2", "description2", false)};
+        exclAppGetListJob->_applicationList = {ExclusionApp("appId1", "description1", false),
+                                               ExclusionApp("appId2", "description2", false)};
     };
 
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
@@ -166,8 +166,8 @@ void TestGuiCommChannel::testExclAppSetListJob() {
         CPPUNIT_ASSERT(exclAppSetListJob);
         CPPUNIT_ASSERT(!exclAppSetListJob->_default);
         CPPUNIT_ASSERT_EQUAL(size_t{2}, exclAppSetListJob->_applicationList.size());
-        CPPUNIT_ASSERT(ExclusionAppInfo("appId1", "description1", false) == exclAppSetListJob->_applicationList.at(0));
-        CPPUNIT_ASSERT(ExclusionAppInfo("appId2", "description2", false) == exclAppSetListJob->_applicationList.at(1));
+        CPPUNIT_ASSERT(ExclusionApp("appId1", "description1", false) == exclAppSetListJob->_applicationList.at(0));
+        CPPUNIT_ASSERT(ExclusionApp("appId2", "description2", false) == exclAppSetListJob->_applicationList.at(1));
     };
 
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
