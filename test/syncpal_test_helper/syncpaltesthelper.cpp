@@ -70,7 +70,7 @@ bool SyncpalTestHelper::setInitialSituation(const Situation &localSituation, con
 }
 
 bool SyncpalTestHelper::getSituation(const Situation &, const Situation &) const {
-    return true;
+    return false;
 }
 
 bool SyncpalTestHelper::executeSyncUntilEnd(const std::chrono::milliseconds minWaitTime) const {
@@ -100,15 +100,15 @@ bool SyncpalTestHelper::executeSyncUntilEnd(const std::chrono::milliseconds minW
 
 bool SyncpalTestHelper::executeSyncUpToStep([[maybe_unused]] const int64_t targetStep,
                                             [[maybe_unused]] const int64_t timeout) const {
-    return true;
+    return false;
 }
 
 bool SyncpalTestHelper::pauseSync() const {
-    return true;
+    return false;
 }
 
 bool SyncpalTestHelper::stopSync() const {
-    return true;
+    return false;
 }
 
 bool SyncpalTestHelper::executeOperations(const ReplicaSide side, const Operations &operations) {
