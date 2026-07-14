@@ -413,7 +413,7 @@ void TestServerRequests::isSyncFolderAllowedByRules_blackListSubfolderInsideWhit
 
     allowed = true;
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
-                         SyncFolderAllowedChecker::check("/home/user/.local/share/Trash/file.txt", allowed));
+                         SyncFolderAllowedChecker::check("/home/user/.local/share/Trash/OldDocuments", allowed));
     CPPUNIT_ASSERT(!allowed);
 }
 
