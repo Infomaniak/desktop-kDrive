@@ -40,6 +40,7 @@ public final class SentryService {
             options.enableNetworkTracking = false
             options.enableNetworkBreadcrumbs = false
             options.enableSwizzling = false // We can disable swizzling because we only used it for networking
+            options.maxBreadcrumbs = 100
             if #available(macOS 12.0, *) {
                 options.enableMetricKit = true
             }
