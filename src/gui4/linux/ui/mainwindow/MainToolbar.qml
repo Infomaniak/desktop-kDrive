@@ -25,11 +25,11 @@ Rectangle {
     id: root
 
     required property var appRouter
-    property int currentTab: 0
 
-    readonly property int tabActivities: 1
-    readonly property int tabStorage: 2
-    readonly property int tabBlockingError: 3
+    readonly property int currentTab: root.appRouter.currentMainTabIndex
+    readonly property int tabActivities: AppRouter.Activities
+    readonly property int tabStorage: AppRouter.Storage
+    readonly property int tabBlockingError: AppRouter.BlockingError
 
     color: "transparent"
 
@@ -75,10 +75,14 @@ Rectangle {
         }
 
         Rectangle {
+            id: searchButton
+
+            property bool hovered: false
+
             width: 132
             height: 36
             radius: height / 2
-            color: IKColors.surfaceSecondary
+            color: hovered ? IKColors.surfaceTertiary : IKColors.surfaceSecondary
             border.width: 1
             border.color: IKColors.surfaceTertiary
 
@@ -86,8 +90,8 @@ Rectangle {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onEntered: parent.color = IKColors.surfaceTertiary
-                onExited: parent.color = IKColors.surfaceSecondary
+                onEntered: searchButton.hovered = true
+                onExited: searchButton.hovered = false
                 onClicked: root.appRouter.requestSearch()
             }
 
@@ -115,11 +119,12 @@ Rectangle {
         signal triggered()
 
         property string label: ""
+        property bool hovered: false
 
         width: 32
         height: 32
         radius: width / 2
-        color: IKColors.surfaceSecondary
+        color: hovered ? IKColors.surfaceTertiary : IKColors.surfaceSecondary
         border.width: 1
         border.color: IKColors.surfaceTertiary
 
@@ -135,8 +140,8 @@ Rectangle {
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
-            onEntered: buttonRoot.color = IKColors.surfaceTertiary
-            onExited: buttonRoot.color = IKColors.surfaceSecondary
+            onEntered: buttonRoot.hovered = true
+            onExited: buttonRoot.hovered = false
             onClicked: buttonRoot.triggered()
         }
     }
