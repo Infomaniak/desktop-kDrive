@@ -5,7 +5,7 @@ endif ()
 project(${APPLICATION_CLIENTV4_EXECUTABLE} LANGUAGES C CXX)
 
 
-find_package(Qt6 6.11 REQUIRED COMPONENTS Core Gui Network Qml Quick Sql Widgets QuickControls2 QuickEffects)
+find_package(Qt6 6.11 REQUIRED COMPONENTS Core Gui Network Qml Quick Sql Widgets QuickControls2 QuickEffects LinguistTools)
 if (QT_FEATURE_xcb)
     find_package(X11 REQUIRED COMPONENTS Xext xcb)
 endif ()
@@ -47,6 +47,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/onboarding/onboardingsession.h
         app/onboarding/onboardingsessionmanager.cpp
         app/onboarding/onboardingsessionmanager.h
+        app/onboarding/onboardingsynccreationcoordinator.cpp
+        app/onboarding/onboardingsynccreationcoordinator.h
         app/onboarding/oauthloginservice.cpp
         app/onboarding/oauthloginservice.h
         communicationlayer/ipcclient.cpp
@@ -112,6 +114,8 @@ set(GUI_QML_FILES # .qml files for the app
         ui/onboarding/NoDriveAvailableView.qml
         ui/onboarding/OnboardingAnimationsView.qml
         ui/onboarding/OnboardingWindow.qml
+        ui/onboarding/ReadyView.qml
+        ui/onboarding/SynchronizationView.qml
         ${GUI_QML_SINGLETON_FILES}
 )
 
@@ -145,6 +149,16 @@ qt_add_qml_module(${APPLICATION_CLIENTV4_EXECUTABLE}
         ${GUI_QML_FILES}
         RESOURCES
         ${GUI_QML_RESOURCE_FILES}
+)
+
+# Compile the .ts catalogs to .qm and embed them under :/i18n (loaded in setupTranslations()).
+# The .ts files are owned by Loco: update them by running `import_loco`
+# (https://github.com/Infomaniak/importloco) from src/gui4/linux, not the generated
+# `update_translations` (lupdate) target.
+file(GLOB CLIENT_TS_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/translations/client_*.ts")
+qt_add_translations(${APPLICATION_CLIENTV4_EXECUTABLE}
+        TS_FILES ${CLIENT_TS_FILES}
+        RESOURCE_PREFIX "/i18n"
 )
 
 qt_add_resources(${APPLICATION_CLIENTV4_EXECUTABLE} "linux_gui_assets"
