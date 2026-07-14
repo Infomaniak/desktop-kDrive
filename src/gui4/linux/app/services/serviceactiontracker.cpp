@@ -72,9 +72,20 @@ void ServiceActionTracker::beginAction(const ServiceKey &serviceKey, const Actio
 }
 
 void ServiceActionTracker::endAction(const ServiceKey &serviceKey, const ActionKey &actionKey, const ScopeId scopeId) {
+    endActions(serviceKey, actionKey, scopeId, EndActionMode::One);
+}
+
+void ServiceActionTracker::endAllActions(const ServiceKey &serviceKey, const ActionKey &actionKey, const ScopeId scopeId) {
+    endActions(serviceKey, actionKey, scopeId, EndActionMode::All);
+}
+
+void ServiceActionTracker::endActions(const ServiceKey &serviceKey, const ActionKey &actionKey, const ScopeId scopeId,
+                                      const EndActionMode mode) {
+    const char *const operation = mode == EndActionMode::One ? "endAction" : "endAllActions";
+
     const auto serviceIt = _pendingByServiceAndAction.find(serviceKey);
     if (serviceIt == _pendingByServiceAndAction.end()) {
-        qCWarning(lcServiceActionTracker) << "endAction called for unknown serviceKey:" << serviceKey
+        qCWarning(lcServiceActionTracker) << operation << "called for unknown serviceKey:" << serviceKey
                                           << "| actionKey:" << actionKey << "| scopeId:" << scopeId;
         return;
     }
@@ -82,29 +93,31 @@ void ServiceActionTracker::endAction(const ServiceKey &serviceKey, const ActionK
     auto &serviceActions = serviceIt.value();
     auto actionIt = serviceActions.find(actionKey);
     if (actionIt == serviceActions.end()) {
-        qCWarning(lcServiceActionTracker) << "endAction called for unknown actionKey:" << actionKey
+        qCWarning(lcServiceActionTracker) << operation << "called for unknown actionKey:" << actionKey
                                           << "| serviceKey:" << serviceKey << "| scopeId:" << scopeId;
         return;
     }
 
-    auto &actionState = actionIt.value();
-    const auto scopeIt = actionState.pendingCountByScope.find(scopeId);
-    if (scopeIt == actionState.pendingCountByScope.end() || scopeIt.value() == 0) {
-        qCWarning(lcServiceActionTracker) << "endAction called for non-pending scope | serviceKey:" << serviceKey
+    auto &[pendingCountByScope, totalPendingCount] = actionIt.value();
+    const auto scopeIt = pendingCountByScope.find(scopeId);
+    if (scopeIt == pendingCountByScope.end() || scopeIt.value() == 0) {
+        qCWarning(lcServiceActionTracker) << operation << "called for non-pending scope | serviceKey:" << serviceKey
                                           << "| actionKey:" << actionKey << "| scopeId:" << scopeId;
         return;
     }
 
-    scopeIt.value() -= 1;
-    actionState.totalPendingCount -= 1;
-    _pendingCountByService[serviceKey] -= 1;
+    const uint32_t pendingScopeCount = scopeIt.value();
+    const uint32_t endedScopeCount = mode == EndActionMode::One ? uint32_t{1} : pendingScopeCount;
+    scopeIt.value() -= endedScopeCount;
+    totalPendingCount -= endedScopeCount;
+    _pendingCountByService[serviceKey] -= endedScopeCount;
 
     if (scopeIt.value() == 0) {
-        (void) actionState.pendingCountByScope.erase(scopeIt);
+        (void) pendingCountByScope.erase(scopeIt);
         emit actionPendingChanged(serviceKey, actionKey, scopeId, false);
     }
 
-    if (actionState.totalPendingCount == 0) {
+    if (totalPendingCount == 0) {
         (void) serviceActions.erase(actionIt);
     }
 
