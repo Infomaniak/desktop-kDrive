@@ -107,7 +107,7 @@ void AppCache::replaceDrives(const std::vector<Drive> &drives) {
     emit syncErrorsChanged();
 }
 
-void AppCache::replaceSyncs(const std::vector<SyncInfo> &syncs) {
+void AppCache::replaceSyncs(const std::vector<BaseSync> &syncs) {
     for (auto &driveNode: _drivesByDbId | std::views::values) {
         driveNode.syncDbIds.clear();
     }
@@ -267,7 +267,7 @@ void AppCache::removeDrive(const DriveDbId driveDbId) {
     emit syncErrorsChanged();
 }
 
-void AppCache::upsertSync(const SyncInfo &info) {
+void AppCache::upsertSync(const BaseSync &info) {
     if (!_drivesByDbId.contains(info.driveDbId())) {
         qCWarning(lcAppCache) << "Sync upsert dropped | syncDbId:" << info.dbId() << "/ unknown driveDbId:" << info.driveDbId();
         return;

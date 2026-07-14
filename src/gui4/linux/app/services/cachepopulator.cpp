@@ -84,7 +84,7 @@ void CachePopulator::loadDrives(const PopulationMode mode) {
 }
 
 void CachePopulator::loadSyncs(const PopulationMode mode) {
-    _commService.requestSyncInfoList([this, mode](const ExitInfo &exitInfo, const std::vector<SyncInfo> &list) {
+    _commService.requestSyncInfoList([this, mode](const ExitInfo &exitInfo, const std::vector<BaseSync> &list) {
         if (!exitInfo && handlePopulationFailure("syncs", exitInfo, mode)) {
             return;
         }

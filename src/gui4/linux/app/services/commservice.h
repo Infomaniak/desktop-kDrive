@@ -24,6 +24,7 @@
 #include "libcommon/data/account.h"
 #include "libcommon/data/drive.h"
 #include "libcommon/data/driveavailable.h"
+#include "libcommon/data/sync.h"
 #include "libcommon/data/user.h"
 #include "libcommon/info/errorinfo.h"
 #include "libcommon/info/exclusiontemplateinfo.h"
@@ -32,7 +33,6 @@
 #include "libcommon/info/searchinfo.h"
 #include "libcommon/info/parametersinfo.h"
 #include "libcommon/info/syncfileiteminfo.h"
-#include "libcommon/info/syncinfo.h"
 #include "libcommon/utility/cstypes.h"
 #include "libcommon/utility/types.h"
 
@@ -109,8 +109,8 @@ class CommService : public QObject {
         using DriveAvailableListCallback = std::function<void(const ExitInfo &, const std::vector<DriveAvailable> &)>;
         using AccountInfoListCallback = std::function<void(const ExitInfo &, const std::vector<Account> &)>;
         using DriveListCallback = std::function<void(const ExitInfo &, const std::vector<Drive> &)>;
-        using SyncInfoListCallback = std::function<void(const ExitInfo &, const std::vector<SyncInfo> &)>;
-        using SyncInfoCallback = std::function<void(const ExitInfo &, const SyncInfo &)>;
+        using SyncInfoListCallback = std::function<void(const ExitInfo &, const std::vector<BaseSync> &)>;
+        using SyncInfoCallback = std::function<void(const ExitInfo &, const BaseSync &)>;
         using SyncStatusCallback = std::function<void(const ExitInfo &, SyncStatus)>;
         using GoodPathCallback = std::function<void(const ExitInfo &, const GoodPathResult &)>;
         using AppStateCallback = std::function<void(const ExitInfo &, const QString &)>;
@@ -243,8 +243,8 @@ class CommService : public QObject {
         void driveRemoved(DriveDbId driveDbId);
 
         // --- Sync ---
-        void syncAdded(const SyncInfo &info);
-        void syncUpdated(const SyncInfo &info);
+        void syncAdded(const BaseSync &info);
+        void syncUpdated(const BaseSync &info);
         void syncRemoved(SyncDbId syncDbId);
         void syncProgressInfo(SyncDbId syncDbId, SyncStatus status, SyncStep step, int64_t currentFile, int64_t totalFiles,
                               int64_t completedSize, int64_t totalSize, int64_t estimatedRemainingTime);

@@ -68,7 +68,7 @@ void SyncService::addSync(const qint64 userDbId, const qint64 accountId, const q
     request.serverFolderNodeId = QStr2Str(serverFolderNodeId);
     request.liteSync = liteSync;
 
-    _commService.requestSyncAdd(request, [this](const ExitInfo &exitInfo, const SyncInfo &syncInfo) {
+    _commService.requestSyncAdd(request, [this](const ExitInfo &exitInfo, const BaseSync &syncInfo) {
         endAction(actionAddSync);
         if (!exitInfo) {
             notifyRequestFailure(exitInfo, RequestNum::SYNC_ADD);
