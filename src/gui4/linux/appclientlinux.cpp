@@ -71,6 +71,14 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
                    [this] { _systemTrayController.setProductStateInitialized(true); });
     (void) connect(&_cachePopulator, &CachePopulator::bootstrapCompleted, &_sentryService,
                    &SentryService::updateAuthenticatedUser);
+    (void) connect(&_cachePopulator, &CachePopulator::bootstrapCompleted, this, [this] {
+        if (_systemTrayController.trayModeActive() || _appCache.driveContexts().empty()) {
+            return;
+        }
+
+        qCInfo(lcAppClientLinux) << "Opening main window after bootstrap because tray fallback mode is active";
+        openMainWindow();
+    });
     (void) connect(this, &AppClientLinux::ipcConnected, this, [this] { _cachePopulator.bootstrap(); });
     (void) connect(this, &QCoreApplication::aboutToQuit, this, [] { qCInfo(lcAppClientLinux) << "Qt aboutToQuit emitted"; });
     (void) connect(&_serverCommService, &CommService::showSettings, this, &AppClientLinux::openMainWindow);
