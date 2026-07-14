@@ -151,17 +151,6 @@ void OnboardingFlowController::retrySynchronization() {
     emit synchronizationRetryRequested();
 }
 
-void OnboardingFlowController::openSynchronizedFolders() {
-    if (_currentStep != Ready || !_readyActionEnabled) {
-        return;
-    }
-
-    qCInfo(lcOnboardingFlowController) << "Opening synchronized folders from onboarding";
-    _readyActionEnabled = false;
-    emit readyActionEnabledChanged();
-    emit synchronizedFoldersOpenRequested();
-}
-
 void OnboardingFlowController::cancel() {
     qCInfo(lcOnboardingFlowController) << "Onboarding cancel requested";
     emit cancelRequested();
@@ -235,6 +224,10 @@ void OnboardingFlowController::completeOnboarding() {
     }
 
     qCInfo(lcOnboardingFlowController) << "Onboarding completed";
+    if (_readyActionEnabled) {
+        _readyActionEnabled = false;
+        emit readyActionEnabledChanged();
+    }
     _onboardingCompleted = true;
     emit completed();
 }
