@@ -16,10 +16,16 @@
 - In versioned documentation, use repo-relative paths, not hardcoded absolute paths.
 - Do not add links to `.md` files that are not versioned in git.
 - Never launch a build unless explicitly asked by the user.
+- Treat native Wayland as the default Linux runtime on current Ubuntu/GNOME systems. XCB/XWayland is a compatibility
+  path, not the primary platform; window-shell changes must cover both paths explicitly.
+- Keep the Linux frameless header and custom shadow on native Wayland without depending on `Qt6::GuiPrivate`. Accept
+  that Wayland snapping includes the transparent shadow margin, so the visible surface may not touch the screen edge.
 - On a Linux host, validate natively: run `./infomaniak-build-tools/conan/build_dependencies.sh Debug`, configure with
   the generated Conan/CMake Debug preset, then build `kDrive`, `kDrive_client`, and `kdrive_qml`. Do not use the Podman
   release script for this local Linux validation path.
 - Prefer documenting private implementation helpers in `.cpp` rather than headers.
+- Do not duplicate method documentation between headers and implementation files. Document public API contracts in
+  headers, private helpers in `.cpp` files, and keep implementation-specific comments next to the relevant code.
 - Do not introduce raw `int` in new code when a fixed-width type fits (`uint8_t`, `int32_t`, ...).
 - Do not run `clang-format` on `CMakeLists.txt` in this repository.
 - For shared infrastructure classes, document the class role explicitly in the header comment when relevant.
@@ -46,6 +52,8 @@
   generated output builds and visually matches the source animation.
 - `lottietoqml` expects the JSON animation payload; extract `animations/<id>.json` from `.lottie` containers before
   generating QML components.
+- `LoaderStrokeAnimation` is intentionally used for the login loader in both light and dark themes. Do not restore or
+  generate separate light/dark loader variants unless the user explicitly requests them.
 - Version generated onboarding animation QML files in `ui/onboarding/animations/`, but do not edit them manually.
   Regenerate them from the source `.lottie` asset and keep the "Do not edit" header.
 
@@ -118,18 +126,27 @@
   durable cache mutations stay signal-driven through `CachePipeline`.
 - `ui/`: QML shell, onboarding screens, design tokens, and bundled UI assets such as tray icons and onboarding Lottie
   animations.
+    - `ui/window/`: shared QML frameless-window shell, header bar, controls, resize handles, and shadow wrapper.
+      Top-level app-owned QML windows should use `IKShadowedWindow`; its `headerBackgroundData` and `headerData` slots
+      accept page-specific header visuals and content while preserving the standard move, resize, minimize, maximize,
+      and close behavior. Onboarding uses `headerOverlaysContent` so window controls do not shift its fixed visual
+      composition. The window decoration controller limits input to the surface and resize handles without clipping the
+      diffuse shadow. It publishes `_GTK_FRAME_EXTENTS` on X11/XWayland so those window managers align the visible
+      surface rather than the transparent shadow during snapping and maximization. Native Wayland intentionally uses
+      public Qt APIs only and therefore snaps the complete native window, including its transparent shadow margin.
     - `ui/onboarding/animations/`: versioned generated QML animation components produced from Lottie JSON payloads.
       Do not edit these files manually. They are excluded from `qmllint`; validation belongs to the generator and the
       QML compilation step.
 
 ### Regenerate Onboarding Lottie QML
 
-Run `lottietoqml` from the Qt/Conan package that provides `qtlottie`. The `.lottie` files are zip containers, so extract
-the internal JSON payload first:
+Run `lottietoqml` from the Qt/Conan package that provides `qtlottie`. The loader source JSON is supplied locally and is
+not versioned; only the generated QML component is tracked. Set `LOTTIE_INPUT` to that source file before running:
 
 ```bash
 source build-linux/build/build/Debug/generators/conanrun.sh
 mkdir -p build-linux/lottie-json
+LOTTIE_INPUT=${LOTTIE_INPUT:?Set LOTTIE_INPUT to the loader-stroke JSON source}
 
 LOTTIE_QML_LICENSE=$(cat <<'EOF'
 Infomaniak kDrive - Desktop
@@ -150,25 +167,18 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 EOF
 )
 
-unzip -p src/gui4/linux/ui/assets/onboarding/lotties/light/loader-stroke.lottie \
-  animations/6160a4f3-bd74-4732-8c38-2a2460359741.json \
-  > build-linux/lottie-json/6160a4f3-bd74-4732-8c38-2a2460359741.json
+jq '(.layers[] | select(.nm == "page-front") | .shapes) |=
+      [.[0], (.[-1] | .ty = "st" | .w = {"a": 0, "k": 1.25} |
+      .lc = 2 | .lj = 2 | .ml = 4 | del(.r))] |
+    ((.. | objects | select(.ty? == "sh") | .ks.k[]?) |= del(.h))' \
+  "$LOTTIE_INPUT" \
+  > build-linux/lottie-json/kDrive-LoaderStroke-LIGHT.json
 lottietoqml -c -p \
   --copyright-statement \
   "$LOTTIE_QML_LICENSE
-Generated by lottietoqml from ui/assets/onboarding/lotties/light/loader-stroke.lottie. Do not edit manually." \
-  build-linux/lottie-json/6160a4f3-bd74-4732-8c38-2a2460359741.json \
-  src/gui4/linux/ui/onboarding/animations/LoaderStrokeLightAnimation.qml
-
-unzip -p src/gui4/linux/ui/assets/onboarding/lotties/dark/loader-stroke.lottie \
-  animations/16dfd798-bc1f-49c0-bfa4-f2849325edc3.json \
-  > build-linux/lottie-json/16dfd798-bc1f-49c0-bfa4-f2849325edc3.json
-lottietoqml -c -p \
-  --copyright-statement \
-  "$LOTTIE_QML_LICENSE
-Generated by lottietoqml from ui/assets/onboarding/lotties/dark/loader-stroke.lottie. Do not edit manually." \
-  build-linux/lottie-json/16dfd798-bc1f-49c0-bfa4-f2849325edc3.json \
-  src/gui4/linux/ui/onboarding/animations/LoaderStrokeDarkAnimation.qml
+Generated by lottietoqml. Do not edit manually." \
+  build-linux/lottie-json/kDrive-LoaderStroke-LIGHT.json \
+  src/gui4/linux/ui/onboarding/animations/LoaderStrokeAnimation.qml
 ```
 
 ## Build And Validation
