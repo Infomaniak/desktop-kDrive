@@ -3182,7 +3182,7 @@ bool ParmsDb::selectAllSyncFolderRules(std::vector<SyncFolderRule> &syncFolderRu
     syncFolderRuleList.clear();
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_SYNC_FOLDER_RULE_REQUEST_ID));
-    bool found;
+    bool found = false;
     for (;;) {
         if (!queryNext(SELECT_ALL_SYNC_FOLDER_RULE_REQUEST_ID, found)) {
             LOG_WARN(_logger, "Error getting query result: " << SELECT_ALL_SYNC_FOLDER_RULE_REQUEST_ID);
