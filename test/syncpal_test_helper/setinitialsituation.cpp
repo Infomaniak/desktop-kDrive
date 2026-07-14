@@ -57,8 +57,8 @@ Situation::Situation(const StringType &jsonDescription) :
 }
 
 Situation Situation::fromFile(const std::filesystem::path &filePath) {
-    std::ifstream file(filePath, std::ios::binary);
-    if (!file) throw std::runtime_error("Situation::fromFile: unable to open file: " + filePath.string());
+    const std::ifstream file(filePath, std::ios::binary);
+    if (!file) throw SituationGeneratorException("Situation::fromFile: unable to open file: " + filePath.string());
 
     std::ostringstream buffer;
     buffer << file.rdbuf();
@@ -67,10 +67,6 @@ Situation Situation::fromFile(const std::filesystem::path &filePath) {
 
 const Situation::StringType &Situation::json() const noexcept {
     return _jsonDescription;
-}
-
-bool Situation::operator==(const Situation &other) const noexcept {
-    return _jsonDescription == other._jsonDescription;
 }
 
 void Situation::log() const {
@@ -109,13 +105,13 @@ bool SetInitialSituation::run(const std::string &jsonDescription) {
         generateInitialSituation(situation);
 
         return true;
-    } catch (...) {
+    } catch (const std::exception &) {
         return false;
     }
 }
 
 void SetInitialSituation::generateInitialSituation(const Situation &situation) {
-    if (!_syncPal) throw std::runtime_error("Invalid parameters!");
+    if (!_syncPal) throw SituationGeneratorException("Invalid parameters!");
 
     Poco::JSON::Object::Ptr obj;
     try {
@@ -156,7 +152,7 @@ void SetInitialSituation::addItem(Poco::JSON::Object::Ptr obj, const NodeId &par
 
 void SetInitialSituation::addItem(Poco::JSON::Array::Ptr arr, const NodeId &parentId) {
     for (size_t i = 0; i < arr->size(); ++i) {
-        const auto &itemObj = arr->getObject(static_cast<unsigned int>(i));
+        const auto &itemObj = arr->getObject(static_cast<uint64_t>(i));
         if (!itemObj) throw SituationGeneratorException("Extended format: each 'content' element must be an object");
 
         const std::string typeStr = itemObj->optValue<std::string>("type", "File");
@@ -180,12 +176,12 @@ void SetInitialSituation::addItem(Poco::JSON::Array::Ptr arr, const NodeId &pare
     }
 }
 
-void SetInitialSituation::addItem(const ItemDesc &desc, const NodeId &parentId) const {
+void SetInitialSituation::addItem(const ItemDesc &desc, const NodeId &parentId) {
     insertLocalItem(desc, parentId);
     insertRemoteItem(desc, parentId);
 }
 
-void SetInitialSituation::insertLocalItem(const ItemDesc &desc, const NodeId &parentId) const {
+void SetInitialSituation::insertLocalItem(const ItemDesc &desc, const NodeId &parentId) {
     const SyncPath parentRelPath = parentId.empty() ? SyncPath{} : _localItemPaths.at(parentId);
     const SyncPath relPath = parentRelPath / desc.name;
     _localItemPaths[desc.id] = relPath;
@@ -200,8 +196,8 @@ void SetInitialSituation::insertLocalItem(const ItemDesc &desc, const NodeId &pa
     }
 }
 
-void SetInitialSituation::insertRemoteItem(const ItemDesc &desc, const NodeId &parentId) const {
-    if (!_remoteDriveDbId || !_remoteItemDir) return;
+void SetInitialSituation::insertRemoteItem(const ItemDesc &desc, const NodeId &parentId) {
+    if (!_remoteDriveDbId.has_value() || !_remoteItemDir) return;
     const NodeId parentRemoteId = parentId.empty() ? _remoteItemDir->id() : _remoteNodeIds.at(parentId);
     if (desc.type == NodeType::Directory) {
         CreateDirJob job(nullptr, *_remoteDriveDbId, parentRemoteId, desc.name);

@@ -49,13 +49,13 @@ class SyncpalTestHelper {
         // against the SyncPal passed to the constructor (or set via setSyncpal).
         // returns false if invalid
         bool setInitialSituation(const Situation &localSituation, const Situation &remoteSituation);
-        bool getSituation(const Situation &localSituation, const Situation &remoteSituation);
+        bool getSituation(const Situation &localSituation, const Situation &remoteSituation) const;
 
         bool executeSyncUntilEnd(const std::chrono::milliseconds minWaitTime = std::chrono::milliseconds(3000)) const;
-        bool executeSyncUpToStep(int targetStep, int timeout);
+        bool executeSyncUpToStep(const int64_t targetStep, const int64_t timeout) const;
 
-        bool pauseSync();
-        bool stopSync();
+        bool pauseSync() const;
+        bool stopSync() const;
 
         // Applies operations (see ExecuteOperations::executeOperations) on the given side, against the
         // SyncPal passed to the constructor (or set via setSyncpal).

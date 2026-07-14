@@ -33,7 +33,11 @@ void SyncpalTestHelper::setUp() {
     _syncPal->start();
 }
 
-void SyncpalTestHelper::tearDown() {}
+void SyncpalTestHelper::tearDown() {
+    if (_syncPal) {
+        _syncPal->stop(SyncPal::PauseCaller::Sync, SyncPal::DbBehaviorAfterStop::Remove);
+    }
+}
 
 void SyncpalTestHelper::setSyncpal(const std::shared_ptr<SyncPal> syncPal) {
     _syncPal = syncPal;
@@ -58,14 +62,14 @@ bool SyncpalTestHelper::setInitialSituation(const Situation &localSituation, con
         // populates its own Db/update-trees/snapshots with real ids.
         if (!(localSituation == remoteSituation)) return false;
         _setInitialSituation.generateInitialSituation(localSituation);
-    } catch (const std::exception &) {
+    } catch (const std::runtime_error &) {
         return false;
     }
 
     return executeSyncUntilEnd();
 }
 
-bool SyncpalTestHelper::getSituation(const Situation &, const Situation &) {
+bool SyncpalTestHelper::getSituation(const Situation &, const Situation &) const {
     return true;
 }
 
@@ -73,35 +77,36 @@ bool SyncpalTestHelper::executeSyncUntilEnd(const std::chrono::milliseconds minW
     const auto timeOutDuration = std::chrono::minutes(2);
     const TimerUtility timeoutTimer;
 
-    // Wait for end of sync (A sync is considered ended when it stay in Idle for more than 3s)
-    bool ended = false;
-    while (!ended) {
+    // Wait for end of sync (A sync is considered ended when it stays in Idle for more than minWaitTime)
+    TimerUtility idleTimer;
+    bool wasIdle = false;
+    while (true) {
         if (timeoutTimer.elapsed<std::chrono::minutes>() >= timeOutDuration) return false;
 
-        if (_syncPal->isIdle() && !_syncPal->_localFSObserverWorker->updating() &&
-            !_syncPal->_remoteFSObserverWorker->updating()) {
-            const TimerUtility idleTimer;
-            while (_syncPal->isIdle() && idleTimer.elapsed<std::chrono::microseconds>() < minWaitTime) {
-                if (timeoutTimer.elapsed<std::chrono::minutes>() >= timeOutDuration) return false;
-                Utility::msleep(5);
-            }
-            ended = idleTimer.elapsed<std::chrono::milliseconds>() >= minWaitTime;
+        const bool isIdleNow = _syncPal->isIdle() && !_syncPal->_localFSObserverWorker->updating() &&
+                                !_syncPal->_remoteFSObserverWorker->updating();
+        if (!isIdleNow) {
+            wasIdle = false;
+        } else if (!wasIdle) {
+            wasIdle = true;
+            idleTimer.restart();
+        } else if (idleTimer.elapsed<std::chrono::milliseconds>() >= minWaitTime) {
+            return true;
         }
+
         Utility::msleep(100);
     }
+}
 
+bool SyncpalTestHelper::executeSyncUpToStep(const int64_t targetStep, const int64_t timeout) const {
     return true;
 }
 
-bool SyncpalTestHelper::executeSyncUpToStep(int, int) {
+bool SyncpalTestHelper::pauseSync() const {
     return true;
 }
 
-bool SyncpalTestHelper::pauseSync() {
-    return true;
-}
-
-bool SyncpalTestHelper::stopSync() {
+bool SyncpalTestHelper::stopSync() const {
     return true;
 }
 
@@ -110,7 +115,7 @@ bool SyncpalTestHelper::executeOperations(const ReplicaSide side, const Operatio
 
     try {
         _executeOperations.executeOperations(side, operations);
-    } catch (const std::exception &) {
+    } catch (const std::runtime_error &) {
         return false;
     }
 

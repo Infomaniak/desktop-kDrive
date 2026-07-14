@@ -69,7 +69,7 @@ class ExecuteOperations {
         ExecuteOperations() = default;
         explicit ExecuteOperations(std::shared_ptr<SyncPal> syncPal);
 
-        void setSyncpal(std::shared_ptr<SyncPal> syncPal) { _syncPal = syncPal; }
+        void setSyncpal(const std::shared_ptr<SyncPal> syncPal) { _syncPal = syncPal; }
 
         // JSON = same format documented on Operations.
         // Constructs an Operations from jsonDescription (which validates it) and applies it, on the given

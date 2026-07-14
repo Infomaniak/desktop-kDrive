@@ -49,7 +49,7 @@ class Situation {
 
         const StringType &json() const noexcept;
 
-        bool operator==(const Situation &other) const noexcept;
+        bool operator==(const Situation &other) const noexcept = default;
 
         void log() const;
 
@@ -131,17 +131,17 @@ class SetInitialSituation {
 
         void addItem(Poco::JSON::Object::Ptr obj, const std::string &parentId = {});
         void addItem(Poco::JSON::Array::Ptr arr, const std::string &parentId);
-        void addItem(const ItemDesc &desc, const std::string &parentId) const;
+        void addItem(const ItemDesc &desc, const std::string &parentId);
 
-        void insertLocalItem(const ItemDesc &desc, const NodeId &parentId) const;
-        void insertRemoteItem(const ItemDesc &desc, const NodeId &parentId) const;
+        void insertLocalItem(const ItemDesc &desc, const NodeId &parentId);
+        void insertRemoteItem(const ItemDesc &desc, const NodeId &parentId);
 
         std::shared_ptr<SyncPal> _syncPal;
 
         std::unique_ptr<RemoteTemporaryDirectory> _remoteItemDir;
         std::optional<DriveDbId> _remoteDriveDbId;
-        mutable std::unordered_map<NodeId, SyncPath> _localItemPaths; // item id (lowercase) -> local relative path
-        mutable std::unordered_map<NodeId, NodeId> _remoteNodeIds; // item id (lowercase) -> real remote NodeId
+        std::unordered_map<NodeId, SyncPath> _localItemPaths; // item id (lowercase) -> local relative path
+        std::unordered_map<NodeId, NodeId> _remoteNodeIds; // item id (lowercase) -> real remote NodeId
 };
 
 } // namespace KDC
