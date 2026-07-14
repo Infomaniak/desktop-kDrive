@@ -23,7 +23,6 @@
 #include "snapshot/livesnapshot.h"
 #include "db/syncdb.h"
 #include "libcommon/utility/types.h"
-#include "../../test/syncpal_test_helper/setinitialsituation.h"
 
 #include <list>
 
