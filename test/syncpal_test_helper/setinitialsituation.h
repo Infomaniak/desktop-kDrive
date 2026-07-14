@@ -27,11 +27,17 @@
 
 #include <filesystem>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <unordered_map>
 
 namespace KDC {
 class SyncPal;
+
+class SituationGeneratorException final : public std::runtime_error {
+    public:
+        using std::runtime_error::runtime_error;
+};
 
 /**
  * @brief Wraps a JSON description of a local or remote directory situation.
@@ -140,8 +146,10 @@ class SetInitialSituation {
 
         std::unique_ptr<RemoteTemporaryDirectory> _remoteItemDir;
         std::optional<DriveDbId> _remoteDriveDbId;
-        std::unordered_map<NodeId, SyncPath> _localItemPaths; // item id (lowercase) -> local relative path
-        std::unordered_map<NodeId, NodeId> _remoteNodeIds; // item id (lowercase) -> real remote NodeId
+        std::unordered_map<NodeId, SyncPath, StringHashFunction, std::equal_to<>>
+                _localItemPaths; // item id (lowercase) -> local relative path
+        std::unordered_map<NodeId, NodeId, StringHashFunction, std::equal_to<>>
+                _remoteNodeIds; // item id (lowercase) -> real remote NodeId
 };
 
 } // namespace KDC

@@ -24,10 +24,16 @@
 
 #include <filesystem>
 #include <memory>
+#include <stdexcept>
 #include <string>
 
 namespace KDC {
 class SyncPal;
+
+class OperationsParserException final : public std::runtime_error {
+    public:
+        using std::runtime_error::runtime_error;
+};
 
 /**
  * @brief Wraps a JSON description of a list of local/remote operations to apply on top of an existing

@@ -35,11 +35,6 @@
 
 namespace KDC {
 
-class SituationGeneratorException final : public std::runtime_error {
-    public:
-        using std::runtime_error::runtime_error;
-};
-
 //
 // ─────────────────────────────────────────────────
 // Situation
@@ -105,7 +100,7 @@ bool SetInitialSituation::run(const std::string &jsonDescription) {
         generateInitialSituation(situation);
 
         return true;
-    } catch (const std::exception &) {
+    } catch (const SituationGeneratorException &) {
         return false;
     }
 }

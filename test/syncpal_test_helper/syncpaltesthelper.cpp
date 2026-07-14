@@ -62,7 +62,7 @@ bool SyncpalTestHelper::setInitialSituation(const Situation &localSituation, con
         // populates its own Db/update-trees/snapshots with real ids.
         if (!(localSituation == remoteSituation)) return false;
         _setInitialSituation.generateInitialSituation(localSituation);
-    } catch (const std::runtime_error &) {
+    } catch (const SituationGeneratorException &) {
         return false;
     }
 
@@ -83,9 +83,9 @@ bool SyncpalTestHelper::executeSyncUntilEnd(const std::chrono::milliseconds minW
     while (true) {
         if (timeoutTimer.elapsed<std::chrono::minutes>() >= timeOutDuration) return false;
 
-        const bool isIdleNow = _syncPal->isIdle() && !_syncPal->_localFSObserverWorker->updating() &&
-                                !_syncPal->_remoteFSObserverWorker->updating();
-        if (!isIdleNow) {
+        if (const bool isIdleNow = _syncPal->isIdle() && !_syncPal->_localFSObserverWorker->updating() &&
+                                   !_syncPal->_remoteFSObserverWorker->updating();
+            !isIdleNow) {
             wasIdle = false;
         } else if (!wasIdle) {
             wasIdle = true;
@@ -98,7 +98,8 @@ bool SyncpalTestHelper::executeSyncUntilEnd(const std::chrono::milliseconds minW
     }
 }
 
-bool SyncpalTestHelper::executeSyncUpToStep(const int64_t targetStep, const int64_t timeout) const {
+bool SyncpalTestHelper::executeSyncUpToStep([[maybe_unused]] const int64_t targetStep,
+                                            [[maybe_unused]] const int64_t timeout) const {
     return true;
 }
 
@@ -110,12 +111,12 @@ bool SyncpalTestHelper::stopSync() const {
     return true;
 }
 
-bool SyncpalTestHelper::executeOperations(const ReplicaSide side, const Operations &operations) {
+bool SyncpalTestHelper::executeOperations(const ReplicaSide side, const Operations &operations) const {
     if (!_syncPal) return false;
 
     try {
         _executeOperations.executeOperations(side, operations);
-    } catch (const std::runtime_error &) {
+    } catch (const OperationsParserException &) {
         return false;
     }
 
