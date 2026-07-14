@@ -32,16 +32,16 @@ Item {
 
     function loginTitleText() {
         if (root.loginFailed) {
-            return qsTr("Connection error")
+            return qsTrId("onboardingLoginErrorTitle")
         }
-        return qsTr("Welcome to kDrive")
+        return qsTrId("onboardingLoginTitle")
     }
 
-    function loginSubtitleText() {
+    function loginDescriptionText() {
         if (root.loginFailed) {
-            return qsTr("An error has occurred, please try again.")
+            return qsTrId("onboardingLoginErrorDescription")
         }
-        return qsTr("The fast, secure private cloud, hosted in Switzerland.")
+        return qsTrId("onboardingLoginDescription")
     }
 
     Column {
@@ -69,18 +69,7 @@ Item {
 
             Text {
                 width: parent.width
-                text: root.loginSubtitleText()
-                color: IKColors.textSecondary
-                font.pixelSize: IKFonts.bodySize
-                lineHeightMode: Text.FixedHeight
-                lineHeight: IKOnboarding.loginBodyLineHeight
-                wrapMode: Text.WordWrap
-            }
-
-            Text {
-                width: parent.width
-                visible: !root.loginFailed
-                text: qsTr("Log in and keep your documents synchronized on all your devices.")
+                text: root.loginDescriptionText()
                 color: IKColors.textSecondary
                 font.pixelSize: IKFonts.bodySize
                 lineHeightMode: Text.FixedHeight
@@ -97,7 +86,7 @@ Item {
 
                 enabled: !root.onboardingFlowController.loginInProgress
                 height: IKOnboarding.loginButtonHeight
-                text: qsTr("Create an account")
+                text: qsTrId("buttonCreateAccount")
                 onClicked: root.onboardingFlowController.requestAccountCreation()
 
                 contentItem: Text {
@@ -128,7 +117,7 @@ Item {
 
                 enabled: !root.onboardingFlowController.loginInProgress
                 height: IKOnboarding.loginButtonHeight
-                text: qsTr("Login")
+                text: qsTrId("buttonLogin")
                 onClicked: root.onboardingFlowController.requestLogin()
 
                 contentItem: Text {
@@ -168,8 +157,8 @@ Item {
         Text {
             width: parent.width
             text: root.waitingForWebAuthentication
-                  ? qsTr("Login from your browser…")
-                  : qsTr("Just a few more moments, and we’ll load your account…")
+                  ? qsTrId("onboardingLoginHintWebAuth")
+                  : qsTrId("onboardingLoginHintLoading")
             color: IKColors.textPrimary
             font.pixelSize: IKOnboarding.loginBrowserTitleSize
             font.weight: IKFonts.emphasized
