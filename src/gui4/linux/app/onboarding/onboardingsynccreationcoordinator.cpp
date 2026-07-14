@@ -161,7 +161,7 @@ void OnboardingSyncCreationCoordinator::createSynchronization(const AvailableDri
             << "Creating onboarding sync | driveId:" << key.driveId << "/ localPath:" << config.localPath;
     const QPointer<OnboardingSyncCreationCoordinator> self(this);
     _commService.requestSyncAdd(
-            request, [self, key, localPath = config.localPath](const ExitInfo &exitInfo, const SyncInfo &syncInfo) {
+            request, [self, key, localPath = config.localPath](const ExitInfo &exitInfo, const BaseSync &syncInfo) {
                 if (!self) {
                     return;
                 }
@@ -250,8 +250,8 @@ void OnboardingSyncCreationCoordinator::handleCacheReconciliationFailed() {
 void OnboardingSyncCreationCoordinator::openSynchronizedFolders() {
     QSet<QString> localPaths;
     for (const auto &syncInfo: _appCache.syncs()) {
-        if (!syncInfo.localPath().isEmpty()) {
-            (void) localPaths.insert(QDir::cleanPath(syncInfo.localPath()));
+        if (!syncInfo.localPath().empty()) {
+            (void) localPaths.insert(QDir::cleanPath(Path2QStr(syncInfo.localPath())));
         }
     }
     for (const auto &localPath: _createdLocalPaths) {
