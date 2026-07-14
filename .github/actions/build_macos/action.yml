@@ -131,10 +131,10 @@ runs:
           mkdir uncached_dependencies
           if [ "${{ inputs.release_build }}" = "true" ]; then
                 cp ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Resources/*.lst ./uncached_dependencies/
-                cp ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Resources/sync-folder-rules*.csv ./uncached_dependencies/
+                cp ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Resources/sync-folder-rules.csv ./uncached_dependencies/
           else
                 cp ${{ github.workspace }}/build-macos/client/bin/*.lst ./uncached_dependencies/
-                cp ${{ github.workspace }}/build-macos/client/bin/sync-folder-rules*.csv ./uncached_dependencies/
+                cp ${{ github.workspace }}/build-macos/client/bin/sync-folder-rules.csv ./uncached_dependencies/
           fi
 
           cp ${{ github.workspace }}/build-macos/client/bin/kDrive_vfs_mac.dylib ./uncached_dependencies/
