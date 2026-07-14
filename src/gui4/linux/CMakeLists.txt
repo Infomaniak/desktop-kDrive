@@ -93,6 +93,7 @@ set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
         ui/tokens/IKFonts.qml
         ui/tokens/IKIconSizes.qml
         ui/tokens/IKOnboarding.qml
+        ui/tokens/IKMainWindow.qml
 )
 
 set_source_files_properties(${GUI_QML_SINGLETON_FILES} PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
