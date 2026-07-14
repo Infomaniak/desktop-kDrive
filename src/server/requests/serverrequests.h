@@ -183,7 +183,6 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode createAccount(Account &account);
         static ExitCode createDrive(Drive &drive);
         static ExitCode createSync(const Sync &sync, SyncInfo &syncInfo);
-        static ExitInfo isSyncFolderAllowedByRules(const SyncPath &path, bool &allowed);
 };
 
 } // namespace KDC

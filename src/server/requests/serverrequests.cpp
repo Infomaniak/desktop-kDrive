@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "syncfolderallowedchecker.h"
+
 #include "jobs/network/login/deletetokenjob.h"
 #if defined(KD_WINDOWS)
 #define _WINSOCKAPI_
@@ -302,7 +304,7 @@ ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, SyncConfigu
                                                                                       << L", syncConfig="
                                                                                       << static_cast<int>(syncConfig));
 
-    if (const auto exitInfo = isSyncFolderAllowedByRules(path, valid); !exitInfo) {
+    if (const auto exitInfo = SyncFolderAllowedChecker::check(path, valid); !exitInfo) {
         return exitInfo;
     }
     if (!valid) {
@@ -739,7 +741,7 @@ ExitInfo ServerRequests::addSync(const DriveDbId driveDbId, const SyncPath &loca
                                                                             << liteSync);
 
     bool pathAllowedByRules = true;
-    if (const auto exitInfo = isSyncFolderAllowedByRules(localFolderPath, pathAllowedByRules); !exitInfo) {
+    if (const auto exitInfo = SyncFolderAllowedChecker::check(localFolderPath, pathAllowedByRules); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in isSyncFolderAllowedByRules");
         return exitInfo;
     }
@@ -1174,125 +1176,7 @@ ExitCode ServerRequests::createSync(const Sync &sync, SyncInfo &syncInfo) {
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::isSyncFolderAllowedByRules(const SyncPath &path, bool &allowed) {
-    allowed = true;
-    LOGW_DEBUG(Log::instance()->getLogger(), L"isSyncFolderAllowedByRules START: path=" << Utility::formatSyncPath(path));
 
-    std::vector<SyncFolderRule> rules;
-    if (!ParmsDb::instance()->selectAllSyncFolderRules(rules)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncFolderRules");
-        return ExitCode::DbError;
-    }
-
-    if (rules.empty()) {
-        // Technically we only allow a directory that is whitelisted, but it's assumed that if something is wrong with the rules
-        // file we don't just reject every directory
-        LOG_DEBUG(Log::instance()->getLogger(), "isSyncFolderAllowedByRules: no rules found, allowing path");
-        // we need to send a sentry too:
-        sentry::Handler::captureMessage(sentry::Level::Warning, "ServerRequests::isSyncFolderAllowedByRules",
-                                        "No sync rules found, allowing path");
-        return ExitCode::Ok;
-    }
-
-    LOG_DEBUG(Log::instance()->getLogger(), "isSyncFolderAllowedByRules: found " << rules.size() << " rules");
-
-    const QString candidateDir = QDir::cleanPath(Path2QStr(path)) + '/';
-
-    const SyncFolderRule *bestMatch = nullptr;
-    SyncPath bestMatchExpandedPath;
-    int32_t bestDepth = -1;
-
-    auto expandPath = [](const SyncPath &rulePath) {
-        QString pathStr = Path2QStr(rulePath);
-
-        // Cross-platform home directory (Linux, macOS, Windows)
-        const QString homeDir = QDir::homePath();
-        (void) pathStr.replace("$HOME", homeDir);
-
-        // Cross-platform username: try USER (Unix), fall back to USERNAME (Windows)
-        QString user = qEnvironmentVariable("USER");
-        if (user.isEmpty()) {
-            user = qEnvironmentVariable("USERNAME"); // Windows
-        }
-        if (!user.isEmpty()) {
-            (void) pathStr.replace("$USER", user);
-        }
-
-        // Handle ~ shorthand
-        if (pathStr.startsWith("~")) {
-            (void) pathStr.replace(0, 1, homeDir);
-        }
-
-        return QStr2Path(pathStr);
-    };
-
-    for (const auto &rule: rules) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"isSyncFolderAllowedByRules: checking rule syncPath: "
-                                                         << Utility::formatSyncPath(rule.syncPath()) << L" type: "
-                                                         << static_cast<int>(rule.folderRuleType()));
-
-        // Expand environment variables in the rule path
-        SyncPath expandedRulePath = expandPath(rule.syncPath());
-
-        LOGW_DEBUG(Log::instance()->getLogger(),
-                   L"isSyncFolderAllowedByRules: expanded rule syncPath: " << Utility::formatSyncPath(expandedRulePath));
-
-        const QString ruleDir = QDir::cleanPath(Path2QStr(expandedRulePath)) + '/';
-        if (!candidateDir.startsWith(ruleDir, Qt::CaseSensitive)) continue;
-        LOGW_DEBUG(Log::instance()->getLogger(), L"isSyncFolderAllowedByRules: rule matched");
-
-        if (const int32_t depth = Utility::pathDepth(expandedRulePath); depth > bestDepth) {
-            bestDepth = depth;
-            bestMatch = &rule;
-            bestMatchExpandedPath = expandedRulePath;
-        }
-    }
-    if (bestMatch) {
-        LOGW_DEBUG(Log::instance()->getLogger(),
-                   L"isSyncFolderAllowedByRules: bestMatch syncPath: " << Utility::formatSyncPath(bestMatchExpandedPath));
-    } else {
-        LOG_DEBUG(Log::instance()->getLogger(), "isSyncFolderAllowedByRules: bestMatch: none");
-    }
-
-
-    if (!bestMatch) {
-        // no match found so no whitelist so we don't allow it
-        allowed = false;
-        LOG_DEBUG(Log::instance()->getLogger(), "isSyncFolderAllowedByRules RESULT: allowed=false (no matching rule)");
-        return ExitCode::Ok;
-    }
-
-    // If the deepest path type is blacklist then no
-    // if it's whiteList then yes
-    // if it's whiteListSubDirectory then yes only if it's the rule path is strictly smaller than the candidate path
-    switch (bestMatch->folderRuleType()) {
-        case SyncFolderRuleType::BlackList:
-            LOGW_INFO(Log::instance()->getLogger(), L"Path rejected by blacklist rule \""
-                                                            << Utility::formatSyncPath(bestMatchExpandedPath) << L"\": "
-                                                            << Utility::formatSyncPath(path));
-            allowed = false;
-            break;
-        case SyncFolderRuleType::WhiteList:
-            allowed = true;
-            LOG_DEBUG(Log::instance()->getLogger(), "isSyncFolderAllowedByRules RESULT: allowed=true (whitelist rule)");
-            break;
-        case SyncFolderRuleType::WhiteListSubFolder:
-            allowed = path != bestMatchExpandedPath;
-            if (!allowed) {
-                LOGW_INFO(Log::instance()->getLogger(), L"Path rejected by WhiteListSubFolder rule \""
-                                                                << Utility::formatSyncPath(bestMatchExpandedPath) << L"\": "
-                                                                << Utility::formatSyncPath(path));
-            } else {
-                LOG_DEBUG(Log::instance()->getLogger(),
-                          "isSyncFolderAllowedByRules RESULT: allowed=true (whitelistsubfolder rule)");
-            }
-            break;
-        case SyncFolderRuleType::None:
-            break;
-    }
-
-    return ExitCode::Ok;
-}
 
 ExitCode ServerRequests::fixProxyConfig() {
     ProxyConfig proxyConfig = ParametersCache::instance()->parameters().proxyConfig();
