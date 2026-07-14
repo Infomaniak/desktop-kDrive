@@ -95,6 +95,66 @@ struct LogServiceTests {
         #expect(sentryReporter.breadcrumbs.map(\.level) == [.debug, .info, .warning, .error])
     }
 
+    @Test("Updating the minimum file level at runtime changes which events are written")
+    func setMinimumFileLevelUpdatesFiltering() throws {
+        let writer = InMemoryLogFileWriter()
+        let date = try Self.date(year: 2026, month: 6, day: 9, hour: 12, minute: 0, second: 46, millisecond: 529)
+        let service = LogService(
+            formatter: LogLineFormatter(timeZone: Self.utcTimeZone),
+            fileWriter: writer,
+            sentryReporter: SpySentryLogReporter(),
+            dateProvider: { date },
+            threadIDProvider: { "227895" },
+            minimumFileLevel: .debug
+        )
+
+        service.log(level: .debug, category: "general", message: "before", file: "File.swift", line: 1)
+        service.flush()
+
+        service.setMinimumFileLevel(.error)
+        service.log(level: .warning, category: "general", message: "filtered out", file: "File.swift", line: 2)
+        service.log(level: .error, category: "general", message: "still written", file: "File.swift", line: 3)
+        service.flush()
+
+        // The runtime change itself is traced, so ignore it when checking the filtered writes.
+        let changeMarker = "Minimum file log level changed"
+        let writtenLogs = writer.lines.filter { !$0.contains(changeMarker) }
+        #expect(writtenLogs == [
+            "2026-06-09 12:00:46:529 [D] (227895) File.swift:1 - before",
+            "2026-06-09 12:00:46:529 [C] (227895) File.swift:3 - still written"
+        ])
+
+        let changeLines = writer.lines.filter { $0.contains(changeMarker) }
+        #expect(changeLines.count == 1)
+        #expect(changeLines.first?.contains("[I]") == true)
+        #expect(changeLines.first?.contains("from debug to error") == true)
+    }
+
+    @Test("Changing the minimum file level is logged once, and not when the value is unchanged")
+    func setMinimumFileLevelLogsOnlyOnChange() throws {
+        let writer = InMemoryLogFileWriter()
+        let date = try Self.date(year: 2026, month: 6, day: 9, hour: 12, minute: 0, second: 46, millisecond: 529)
+        let service = LogService(
+            formatter: LogLineFormatter(timeZone: Self.utcTimeZone),
+            fileWriter: writer,
+            sentryReporter: SpySentryLogReporter(),
+            dateProvider: { date },
+            threadIDProvider: { "227895" },
+            minimumFileLevel: .info
+        )
+
+        // Same value: no change, nothing logged.
+        service.setMinimumFileLevel(.info)
+        service.flush()
+        #expect(writer.lines.isEmpty)
+
+        // Different value: the change is logged exactly once.
+        service.setMinimumFileLevel(.warning)
+        service.flush()
+        #expect(writer.lines.count == 1)
+        #expect(writer.lines.first?.contains("Minimum file log level changed from info to warning") == true)
+    }
+
     @Test("Service captures only error and fatal events")
     func serviceCapturesOnlyErrorAndFatalEvents() {
         let sentryReporter = SpySentryLogReporter()

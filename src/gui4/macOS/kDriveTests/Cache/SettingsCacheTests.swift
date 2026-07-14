@@ -97,4 +97,27 @@ struct SettingsCacheTests {
             "Should persist the Sentry flag coming from the settings"
         )
     }
+
+    @Test(.timeLimit(.minutes(1)))
+    func persistsLastKnownFileLogLevel() async throws {
+        // GIVEN
+        let originalValue = UserDefaults.standard.lastKnownFileLogLevel
+        defer { UserDefaults.standard.lastKnownFileLogLevel = originalValue }
+
+        let settings = try Self.decodedResponse().body.parametersInfo
+
+        let cache = SettingsCache()
+
+        UserDefaults.standard.lastKnownFileLogLevel = .error
+
+        // WHEN
+        await cache.setSettings(settings)
+
+        // THEN
+        // The fixture carries `logLevel: 0` (KDC.LogLevel.Debug), which maps to `.debug`.
+        #expect(
+            UserDefaults.standard.lastKnownFileLogLevel == .debug,
+            "Should persist the log level coming from the settings"
+        )
+    }
 }
