@@ -105,6 +105,18 @@ QtObject {
     readonly property real driveSelectionTooltipRadius: IKRadius.r8
     readonly property int driveSelectionTooltipDelay: 250
 
+    // Synchronization and ready screen layout.
+    readonly property real completionCompactBreakpointWidth: compactBreakpointWidth
+    readonly property real completionContentMaxWidth: contentMaxWidth
+    readonly property real completionContentExpandedLeftMargin: expandedContentLeftMargin
+    readonly property real completionTextSpacing: IKSpacing.s8
+    readonly property real completionErrorSpacing: IKSpacing.s24
+    readonly property real completionReadySpacing: IKSpacing.s32
+    readonly property real completionTitleLineHeight: titleLineHeight
+    readonly property real completionBodyLineHeight: bodyLineHeight
+    readonly property real completionButtonHeight: compactButtonHeight
+    readonly property real completionButtonMinWidth: primaryButtonMinWidth
+
     // Source dimensions of the loader-stroke animation (login step).
     readonly property real loaderStrokeVectorSourceWidth: 163
     readonly property real loaderStrokeVectorSourceHeight: 134
