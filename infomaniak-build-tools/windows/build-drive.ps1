@@ -144,12 +144,7 @@ function Get-Cert-Property {
         [bool] $ci, # On CI build machines, the certificate are located in local computer store
         [string] $property
     )
-    if ($ci) {
-        $certStore = "Cert:\LocalMachine\My"
-    } else {
-        $certStore = "Cert:\CurrentUser\My"
-    }
-    
+    $certStore = "Cert:\CurrentUser\My"
     $value = Get-ChildItem $certStore/$thumbprint | Select -ExpandProperty $property
 
     return $value
