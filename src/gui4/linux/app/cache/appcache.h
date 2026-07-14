@@ -47,7 +47,7 @@ class AppCache : public QObject {
         [[nodiscard]] std::vector<User> users() const;
         [[nodiscard]] std::vector<Account> accounts() const;
         [[nodiscard]] std::vector<Drive> drives() const;
-        [[nodiscard]] std::vector<SyncInfo> syncs() const;
+        [[nodiscard]] std::vector<BaseSync> syncs() const;
         [[nodiscard]] std::vector<ErrorInfo> syncErrors() const;
         [[nodiscard]] std::vector<ErrorInfo> serverErrors() const;
         // Returns the addable-drive snapshot scoped to one user. This is not tied to main selection.
@@ -58,7 +58,7 @@ class AppCache : public QObject {
         [[nodiscard]] std::optional<UserDisplayInfo> userDisplayInfo(UserDbId userDbId) const;
         [[nodiscard]] std::optional<Account> account(AccountDbId accountDbId) const;
         [[nodiscard]] std::optional<Drive> drive(DriveDbId driveDbId) const;
-        [[nodiscard]] std::optional<SyncInfo> sync(SyncDbId syncDbId) const;
+        [[nodiscard]] std::optional<BaseSync> sync(SyncDbId syncDbId) const;
         [[nodiscard]] std::optional<ErrorInfo> syncError(ErrorDbId errorDbId) const;
         [[nodiscard]] std::optional<ErrorInfo> serverError(ErrorDbId errorDbId) const;
         [[nodiscard]] std::optional<DriveAvailable> availableDrive(const AvailableDriveKey &key) const;
@@ -66,7 +66,7 @@ class AppCache : public QObject {
         // Parent-to-children graph traversal helpers. Results are stable-sorted by database id.
         [[nodiscard]] std::vector<Account> accountsForUser(UserDbId userDbId) const;
         [[nodiscard]] std::vector<Drive> drivesForAccount(AccountDbId accountDbId) const;
-        [[nodiscard]] std::vector<SyncInfo> syncsForDrive(DriveDbId driveDbId) const;
+        [[nodiscard]] std::vector<BaseSync> syncsForDrive(DriveDbId driveDbId) const;
         // Sync-scoped errors sorted by error time, oldest first.
         [[nodiscard]] std::vector<ErrorInfo> errorsForSync(SyncDbId syncDbId) const;
 
@@ -87,7 +87,7 @@ class AppCache : public QObject {
         void replaceUsers(const std::vector<UserDisplayInfo> &users);
         void replaceAccounts(const std::vector<Account> &accounts);
         void replaceDrives(const std::vector<Drive> &drives);
-        void replaceSyncs(const std::vector<SyncInfo> &syncs);
+        void replaceSyncs(const std::vector<BaseSync> &syncs);
         void replaceSyncErrors(const std::vector<ErrorInfo> &errors);
         void replaceServerErrors(const std::vector<ErrorInfo> &errors);
         // Replaces only one user's addable-drive snapshot; other users' snapshots are preserved.
@@ -106,7 +106,7 @@ class AppCache : public QObject {
         void upsertDrive(const Drive &drive);
         void removeDrive(DriveDbId driveDbId);
 
-        void upsertSync(const SyncInfo &info);
+        void upsertSync(const BaseSync &info);
         void removeSync(SyncDbId syncDbId);
 
         void upsertSyncError(const ErrorInfo &info);
@@ -146,7 +146,7 @@ class AppCache : public QObject {
         };
 
         struct SyncNode {
-                SyncInfo info;
+                BaseSync info;
                 DriveDbId parentDriveDbId{0};
                 std::vector<ErrorDbId> errorDbIds;
         };
