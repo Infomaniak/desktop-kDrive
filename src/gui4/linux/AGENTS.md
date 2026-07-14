@@ -110,16 +110,23 @@
   no displayable session exists.
 - `app/onboarding/onboardingflowcontroller.*`: QML-facing onboarding flow controller aligned with the macOS flow
   (`login -> drive selection -> synchronization -> ready`, with macOS permission steps omitted on Linux). It owns simple
-  onboarding UI actions such as opening account signup and drive-offer URLs; OAuth launch, `LOGIN_REQUESTTOKEN`,
-  available-drive loading, and sync creation stay outside QML-facing flow state.
+  onboarding UI actions such as opening account signup and drive-offer URLs, plus synchronization/ready presentation
+  state; OAuth launch, `LOGIN_REQUESTTOKEN`, available-drive loading, and sync creation stay outside QML-facing flow
+  state.
 - `app/onboarding/onboardinglogincoordinator.*`: login workflow coordinator for onboarding. It wires the flow controller,
   OAuth service, comm service, user service, app cache, and onboarding state so `AppClientLinux` does not accumulate
   login-specific workflow logic.
+- `app/onboarding/onboardingsynccreationcoordinator.*`: automatic end-of-onboarding sync creation coordinator. It derives
+  collision-free local folders, creates selected-drive syncs sequentially at the remote root, preserves only failed and
+  not-yet-attempted work for retry, reconciles the parent-first cache snapshot after a failed `SYNC_ADD`, and temporarily
+  opens every configured sync root in the system file manager from the ready screen.
 - `app/onboarding/oauthloginservice.*`: Linux v4 OAuth browser-launch service. It owns PKCE/state generation, idempotent
   browser relaunch during an active authorization, callback validation, and emits the authorization code to app wiring.
   Do not expose OAuth details to QML.
-- `app/services/cachepopulator.*`: sequential initial snapshot loader for users, accounts, drives, syncs, and sync
-  errors; after bootstrap, activates the server live-info refresh so only drive updates reach `CachePipeline`.
+- `app/services/cachepopulator.*`: sequential parent-first snapshot loader for users, accounts, drives, syncs, and sync
+  errors. It is used at initial connection and for explicit reconciliation after a non-transactional backend mutation
+  may have persisted parents without emitting their normal pushes; after each snapshot, it activates the server
+  live-info refresh so only drive updates reach `CachePipeline`.
 - `app/services/driveservice.*`: targeted drive use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`;
   durable cache mutations stay signal-driven through `CachePipeline`.
 - `app/services/syncservice.*`: targeted sync use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`;
@@ -221,8 +228,8 @@ cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive
 - `CachePipeline` must not let server pushes mutate `AppCache` before the initial `CachePopulator` snapshot has
   completed.
 - Full graph snapshots (`USER_INFOLIST`, `ACCOUNT_INFOLIST`, `DRIVE_INFOLIST`, `SYNC_INFOLIST`, initial error list)
-  belong to `CachePopulator` bootstrap/reconnect only. Do not expose user/drive/sync full-refresh methods to QML
-  services.
+  belong to `CachePopulator` for bootstrap/reconnect and explicit parent-first reconciliation after a non-transactional
+  mutation failure. Do not expose user/drive/sync full-refresh methods to QML services.
 - QML-facing services should provide targeted actions only; user/account/drive/sync cache consistency is
   push-signal-driven.
 - Onboarding navigation belongs in `OnboardingFlowController`; keep long-running backend work in service facades and
