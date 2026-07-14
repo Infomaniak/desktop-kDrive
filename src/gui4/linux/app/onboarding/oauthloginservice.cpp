@@ -18,6 +18,7 @@
 
 #include "oauthloginservice.h"
 
+#include "app/services/sentryservice.h"
 #include "config.h"
 #include "libcommon/utility/urlhelper.h"
 #include "libcommon/utility/utility.h"
@@ -65,6 +66,8 @@ void OAuthLoginService::startAuthorization() {
 
     if (!QDesktopServices::openUrl(_authorizationUrl)) {
         qCWarning(lcOAuthLoginService) << "Failed to open OAuth authorization URL in browser";
+        SentryService::reportError(QStringLiteral("Failed to open OAuth authorization URL in browser"),
+                                   QStringLiteral("QDesktopServices::openUrl returned false"));
         resetAuthorization();
         emit authorizationFailed(QString::fromLatin1(browserOpenFailed), QString());
         return;
