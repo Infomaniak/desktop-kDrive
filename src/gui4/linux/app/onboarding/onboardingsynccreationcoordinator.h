@@ -24,7 +24,6 @@
 #include <QString>
 
 #include <deque>
-#include <vector>
 
 namespace KDC {
 
@@ -58,7 +57,6 @@ class OnboardingSyncCreationCoordinator final : public QObject {
         void handleCreationFailure(bool cacheReconciliationRequired = false);
         void handleCacheReconciliationCompleted();
         void handleCacheReconciliationFailed();
-        void openSynchronizedFolders();
         [[nodiscard]] QString defaultLocalPath(const QString &driveName) const;
 
         OnboardingFlowController &_flowController;
@@ -68,7 +66,6 @@ class OnboardingSyncCreationCoordinator final : public QObject {
         CachePopulator &_cachePopulator;
         ServiceEventBus &_serviceEventBus;
         std::deque<AvailableDriveKey> _pendingDriveKeys;
-        std::vector<QString> _createdLocalPaths;
         bool _cacheReconciliationPending{false};
 };
 
