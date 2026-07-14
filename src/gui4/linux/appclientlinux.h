@@ -33,6 +33,7 @@
 #include "app/systraycontroller.h"
 #include "communicationlayer/ipcclient.h"
 #include "communicationlayer/signaldispatcher.h"
+#include "ui/window/windowdecorationcontroller.h"
 
 #include <QApplication>
 #include <QLoggingCategory>
@@ -52,6 +53,7 @@ Q_DECLARE_LOGGING_CATEGORY(lcAppClientLinux)
  * - CachePopulator: sequential initial snapshot loader for the graph-backed cache.
  * - ServiceActionTracker: durable UI-facing pending-action state.
  * - ServiceEventBus: transient cross-service events (errors, notifications, ...).
+ * - WindowDecorationController: platform-specific input regions for frameless windows.
  *
  * On construction, sets up logging,
  * wires IPC signals to the dispatcher, initializes the system tray, and initiates the connection to the server.
@@ -97,6 +99,7 @@ class AppClientLinux : public QApplication {
         OnboardingSessionManager _onboardingSessionManager{_cachePopulator, _appCache, _serverCommService, _userService, this};
         DriveService _driveService{_serverCommService, _serviceActionTracker, _serviceEventBus, this};
         SyncService _syncService{_serverCommService, _serviceActionTracker, _serviceEventBus, this};
+        WindowDecorationController _windowDecorationController{this};
         SystemTrayController _systemTrayController{this};
         QQmlApplicationEngine _qmlEngine;
 };
