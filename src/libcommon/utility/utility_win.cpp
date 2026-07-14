@@ -169,18 +169,18 @@ bool CommonUtility::fileSystemInfo(const SyncPath &targetPath, std::string &fsTy
     mountPoint.clear();
 
     // FS type & mount point
-    TCHAR szFileSystemName[MAX_PATH + 1];
+    TCHAR szFileSystemName[MAX_PATH + 1] = {0};
     DWORD dwMaxFileNameLength = 0;
     DWORD dwFileSystemFlags = 0;
 
     if (GetVolumeInformation(targetPath.root_path().native().c_str(), NULL, 0, NULL, &dwMaxFileNameLength, &dwFileSystemFlags,
-                             szFileSystemName, sizeof(szFileSystemName)) == 0) {
+                             szFileSystemName, ARRAYSIZE(szFileSystemName)) == 0) {
         // /!\ Not all the requested information is retrieved, FS type & mount point can be OK or not !!!
         DWORD dwError = GetLastError();
         std::wstringstream message;
         message << L"Error in GetVolumeInformation for " << Path2WStr(targetPath.root_path()) << L" ("
                 << utility_base::getErrorMessage(dwError) << L")";
-        sentry::Handler::captureMessage(sentry::Level::Warning, "CommonUtility::fileSystemName", ws2s(message.str()));
+        sentry::Handler::captureMessage(sentry::Level::Warning, "CommonUtility::fileSyst.emName", ws2s(message.str()));
         // /!\ File system name can be OK or not
     }
 

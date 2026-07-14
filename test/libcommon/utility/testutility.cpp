@@ -960,7 +960,7 @@ void TestUtility::testFileSystemInfo() {
     // External disk.
     /*CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/Volumes/EXFAT PART", fsType, mountPoint) && fsType ==
     "exfat" && mountPoint == "/Volumes/EXFAT PART");
-    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/Volumes/FAT PART", fsType, mountPoint) && fsType == "msdos"
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/Volumes/FAT PART", fsType, mountPoint) && fsType == CommonUtility::fsTypeFAT()
     && mountPoint == "/Volumes/FAT PART");*/
     // AppleVirtIOFS (Parallels Desktop shared folder for instance).
     /*CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/Volumes/My Shared Files/Volumes/APFS PART", fsType, mountPoint) &&

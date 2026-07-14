@@ -35,8 +35,6 @@ namespace ForbiddenFilenameCharacters {
 // Windows
 static const std::vector<char> winChars = {'\\', '/', ':',  '*',  '?',  '"', '<',
                                            '>',  '|', '\n', '\r', '\t', '\0'}; // Windows APIs limitation
-static const std::vector<char> winFatChars = {'\\', '/', ':', '*', '?',  '"',  '<',  '>', '|',
-                                              '+',  ',', ';', '=', '\n', '\r', '\t', '\0'}; // FAT32
 
 // macOS
 static const std::vector<char> macChars = {'/', '\0'};
@@ -261,13 +259,9 @@ SyncName PlatformInconsistencyCheckerUtility::generateSuffix(SuffixType suffixTy
     return suffix + ss.str() + Str("_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10));
 }
 
-std::vector<char> PlatformInconsistencyCheckerUtility::forbiddenChars(const std::string &fsType)
-{
+std::vector<char> PlatformInconsistencyCheckerUtility::forbiddenChars([[maybe_unused]] const std::string &fsType) {
 #if defined(KD_WINDOWS)
-    if (fsType == CommonUtility::fsTypeFAT())
-        return ForbiddenFilenameCharacters::winFatChars;
-    else
-        return ForbiddenFilenameCharacters::winChars;
+    return ForbiddenFilenameCharacters::winChars;
 #elif defined(KD_MACOS)
     return ForbiddenFilenameCharacters::macChars;
 #else

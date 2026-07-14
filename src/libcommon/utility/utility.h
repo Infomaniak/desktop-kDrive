@@ -90,7 +90,7 @@ struct COMMON_EXPORT CommonUtility {
         static std::string fsTypeNTFS() { return "NTFS"; }
         static std::string fsTypeAPFS() { return "APFS"; }
         static std::string fsTypeHFS() { return "HFS"; }
-        static std::string fsTypeFAT() { return "MSDOS"; }
+        static std::string fsTypeFAT() { return "FAT32"; }
         static std::string fsTypeEXFAT() { return "EXFAT"; }
         static std::string fsTypeEXT234() { return "EXT234"; }
         static bool isManagedFS(const std::string &fsType);
