@@ -225,7 +225,7 @@ std::string CommonUtility::underlyingFileSystemType(const SyncPath &targetPath) 
         targetDirPath = targetPath;
     } else {
         if (ec.value() != 0) {
-            return fallbackFileSystemType();
+            return {};
         }
         targetDirPath = targetPath.parent_path();
     }
@@ -242,7 +242,8 @@ std::string CommonUtility::underlyingFileSystemType(const SyncPath &targetPath) 
             // exFAT and both have the same naming rules
             return fsTypeEXFAT();
         }
-        return fallbackFileSystemType();
+
+        return {};
     } else {
         (void) std::filesystem::remove(targetDirPath / invalidExFatFileName, ec);
     }
@@ -285,9 +286,9 @@ std::string CommonUtility::fileSystemType(const SyncPath &targetPath, std::strin
     std::string fsType;
     SyncPath mountPoint;
     if (!CommonUtility::fileSystemInfo(targetPath, fsType, mountPoint)) {
-        fallbackFSType = fallbackFileSystemType();
-        return fallbackFileSystemType();
+        return {};
     }
+
     fsType = CommonUtility::toUpper(fsType);
 
     if (isManagedFS(fsType)) {

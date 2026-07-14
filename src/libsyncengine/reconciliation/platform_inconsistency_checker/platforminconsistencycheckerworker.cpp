@@ -67,7 +67,7 @@ ExitCode PlatformInconsistencyCheckerWorker::checkTree(ReplicaSide side) {
     if (side == ReplicaSide::Remote) {
         std::string fallbackFSType;
         (void) CommonUtility::fileSystemType(_syncPal->localPath(), fallbackFSType);
-
+        // If fallbackFSType is undefined (empty), the allowed characters will be the default ones for the OS
         perfmonitor = std::make_unique<sentry::pTraces::scoped::CheckLocalTree>(syncDbId());
         exitCode = checkRemoteTree(fallbackFSType, node, parentPath);
     } else if (side == ReplicaSide::Local) {
