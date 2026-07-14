@@ -1,0 +1,3 @@
+platform: qt
+localizable_path: ./translations
+languages: [ da, de, el, en, es, fi, fr, it, nb, nl, pl, pt, sv ]

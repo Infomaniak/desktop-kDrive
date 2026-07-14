@@ -20,6 +20,7 @@
 
 #include "app/appconstants.h"
 
+#include <QCoreApplication>
 #include <QDesktopServices>
 #include <QMetaEnum>
 
@@ -53,16 +54,24 @@ bool OnboardingFlowController::driveSelectionActive() const {
     return _currentStep == DriveSelection;
 }
 
+bool OnboardingFlowController::synchronizationActive() const {
+    return _currentStep == Synchronization;
+}
+
+bool OnboardingFlowController::readyActive() const {
+    return _currentStep == Ready;
+}
+
 QString OnboardingFlowController::title() const {
     switch (_currentStep) {
         case Login:
-            return tr("Welcome to kDrive");
+            return qtTrId("onboardingLoginTitle");
         case DriveSelection:
             return tr("Welcome back!");
         case Synchronization:
-            return tr("Synchronization in progress..");
+            return qtTrId("onboardingSynchronizationInProgressTitle");
         case Ready:
-            return tr("All set!");
+            return qtTrId("onboardingSynchronizationAppReadyTitle");
     }
     return {};
 }
@@ -131,6 +140,28 @@ void OnboardingFlowController::requestDriveSelectionContinue() {
     emit driveSelectionContinueRequested();
 }
 
+void OnboardingFlowController::retrySynchronization() {
+    if (_currentStep != Synchronization || !_synchronizationFailed) {
+        return;
+    }
+
+    qCInfo(lcOnboardingFlowController) << "Onboarding synchronization retry requested";
+    _synchronizationFailed = false;
+    emit synchronizationFailedChanged();
+    emit synchronizationRetryRequested();
+}
+
+void OnboardingFlowController::openSynchronizedFolders() {
+    if (_currentStep != Ready || !_readyActionEnabled) {
+        return;
+    }
+
+    qCInfo(lcOnboardingFlowController) << "Opening synchronized folders from onboarding";
+    _readyActionEnabled = false;
+    emit readyActionEnabledChanged();
+    emit synchronizedFoldersOpenRequested();
+}
+
 void OnboardingFlowController::cancel() {
     qCInfo(lcOnboardingFlowController) << "Onboarding cancel requested";
     emit cancelRequested();
@@ -162,6 +193,50 @@ void OnboardingFlowController::handleAuthorizationCodeReady() {
     if (_loginState == LoginIdle || _loginState == WaitingForWebAuthentication || _loginState == LoginError) {
         setLoginState(LoadingUser);
     }
+}
+
+void OnboardingFlowController::beginSynchronization() {
+    if (_synchronizationFailed) {
+        _synchronizationFailed = false;
+        emit synchronizationFailedChanged();
+    }
+    setCurrentStep(Synchronization);
+}
+
+void OnboardingFlowController::failSynchronization() {
+    if (_currentStep != Synchronization || _synchronizationFailed) {
+        return;
+    }
+
+    qCWarning(lcOnboardingFlowController) << "Onboarding synchronization creation failed";
+    _synchronizationFailed = true;
+    emit synchronizationFailedChanged();
+}
+
+void OnboardingFlowController::completeSynchronization() {
+    if (_currentStep != Synchronization) {
+        return;
+    }
+
+    if (_synchronizationFailed) {
+        _synchronizationFailed = false;
+        emit synchronizationFailedChanged();
+    }
+    if (!_readyActionEnabled) {
+        _readyActionEnabled = true;
+        emit readyActionEnabledChanged();
+    }
+    setCurrentStep(Ready);
+}
+
+void OnboardingFlowController::completeOnboarding() {
+    if (_currentStep != Ready || _onboardingCompleted) {
+        return;
+    }
+
+    qCInfo(lcOnboardingFlowController) << "Onboarding completed";
+    _onboardingCompleted = true;
+    emit completed();
 }
 
 void OnboardingFlowController::handleLoginTokenSucceeded(const qint64 userDbId) {
