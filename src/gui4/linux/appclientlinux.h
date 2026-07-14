@@ -38,6 +38,7 @@
 #include <QApplication>
 #include <QLoggingCategory>
 #include <QQmlApplicationEngine>
+#include <QTranslator>
 
 namespace KDC {
 
@@ -83,6 +84,7 @@ class AppClientLinux : public QApplication {
 
     private:
         static void setupLogging();
+        void setupTranslations();
         void openMainWindow();
 
         IpcClient _ipcClient{this};
@@ -96,11 +98,14 @@ class AppClientLinux : public QApplication {
         SentryService _sentryService{_serverCommService, _appCache, this};
         CachePopulator _cachePopulator{_serverCommService, _appCache, this};
         UserService _userService{_serverCommService, _appCache, _serviceActionTracker, _serviceEventBus, this};
-        OnboardingSessionManager _onboardingSessionManager{_cachePopulator, _appCache, _serverCommService, _userService, this};
+        OnboardingSessionManager _onboardingSessionManager{_cachePopulator, _appCache,        _serverCommService,
+                                                           _userService,    _serviceEventBus, this};
         DriveService _driveService{_serverCommService, _serviceActionTracker, _serviceEventBus, this};
         SyncService _syncService{_serverCommService, _serviceActionTracker, _serviceEventBus, this};
         WindowDecorationController _windowDecorationController{this};
         SystemTrayController _systemTrayController{this};
+        QTranslator _baseTranslator{this};
+        QTranslator _localizedTranslator{this};
         QQmlApplicationEngine _qmlEngine;
 };
 
