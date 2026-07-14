@@ -30,6 +30,7 @@
 #include <Poco/JSON/Array.h>
 #include <Poco/JSON/Parser.h>
 
+#include <algorithm>
 #include <fstream>
 #include <sstream>
 
@@ -131,7 +132,7 @@ void SetInitialSituation::addItem(Poco::JSON::Object::Ptr obj, const NodeId &par
         const NodeType type = !obj->isObject(key) ? NodeType::File : NodeType::Directory;
         ItemDesc desc;
         desc.type = type;
-        desc.id = key;
+        desc.id = parentId.empty() ? key : parentId + "/" + key;
         desc.name = Str2SyncName(CommonUtility::toUpper(key));
         desc.createdAt = testhelpers::defaultTime;
         desc.lastModifiedAt = testhelpers::defaultTime;
@@ -140,7 +141,7 @@ void SetInitialSituation::addItem(Poco::JSON::Object::Ptr obj, const NodeId &par
 
         if (obj->isObject(key)) {
             const auto &childObj = obj->getObject(key);
-            addItem(childObj, key);
+            addItem(childObj, desc.id);
         }
     }
 }
@@ -155,9 +156,11 @@ void SetInitialSituation::addItem(Poco::JSON::Array::Ptr arr, const NodeId &pare
         const std::string nameStr = itemObj->optValue<std::string>("name", "");
         if (nameStr.empty()) throw SituationGeneratorException("Extended format: missing 'name' field");
 
+        const std::string lowerName = CommonUtility::toLower(nameStr);
+
         ItemDesc desc;
         desc.type = type;
-        desc.id = CommonUtility::toLower(nameStr);
+        desc.id = parentId.empty() ? lowerName : parentId + "/" + lowerName;
         desc.name = Str2SyncName(nameStr);
         desc.createdAt = itemObj->optValue<SyncTime>("createdAt", testhelpers::defaultTime);
         desc.lastModifiedAt = itemObj->optValue<SyncTime>("lastModifiedAt", testhelpers::defaultTime);
@@ -177,10 +180,23 @@ void SetInitialSituation::addItem(const ItemDesc &desc, const NodeId &parentId) 
 }
 
 void SetInitialSituation::insertLocalItem(const ItemDesc &desc, const NodeId &parentId) {
+    const SyncPath namePath(desc.name);
+    if (namePath.is_absolute() || namePath.filename() != namePath || namePath.empty()) {
+        throw SituationGeneratorException("Invalid item name: '" + SyncName2Str(desc.name) + "'");
+    }
+
     const SyncPath parentRelPath = parentId.empty() ? SyncPath{} : _localItemPaths.at(parentId);
-    const SyncPath relPath = parentRelPath / desc.name;
+    const SyncPath relPath = parentRelPath / namePath;
     _localItemPaths[desc.id] = relPath;
-    const SyncPath fullPath = _syncPal->localPath() / relPath;
+    const SyncPath localRoot = _syncPal->localPath().lexically_normal();
+    const SyncPath fullPath = (localRoot / relPath).lexically_normal();
+
+    // Ensure the resulting path stays within the local sync root (guards against traversal via "..").
+    const auto [rootEnd, fullBegin] = std::mismatch(localRoot.begin(), localRoot.end(), fullPath.begin(), fullPath.end());
+    if (rootEnd != localRoot.end()) {
+        throw SituationGeneratorException("Item path escapes the local sync root: '" + fullPath.string() + "'");
+    }
+
     IoError ioError = IoError::Success;
     if (desc.type == NodeType::Directory) {
         (void) IoHelper::createDirectory(fullPath, true, ioError);

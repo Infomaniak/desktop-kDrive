@@ -98,6 +98,16 @@ class ExecuteOperations {
         };
 
         [[nodiscard]] static OperationDesc parseOperation(const Poco::JSON::Object::Ptr &obj);
+
+        // Ensures `path` is a relative path that stays within the sync root once normalized (i.e. not absolute
+        // and without any ".." component that could make it escape). Throws OperationsParserException
+        // (with `fieldName` prefixed to the error message) otherwise.
+        static void validateRelativePath(const SyncPath &path, const std::string &fieldName);
+
+        // Throws OperationsParserException (with `context` prefixed to the error message) if `exitInfo` does
+        // not indicate success. Used to surface local/remote job failures instead of silently ignoring them.
+        static void checkExitInfo(const ExitInfo &exitInfo, const std::string &context);
+
         void applyOperation(ReplicaSide side, const OperationDesc &desc) const;
 
         // Local side, one function per operation type.

@@ -130,6 +130,17 @@ void ExecuteOperations::executeOperations(const ReplicaSide side, const Operatio
     }
 }
 
+void ExecuteOperations::validateRelativePath(const SyncPath &path, const std::string &fieldName) {
+    if (path.empty() || path.is_absolute()) {
+        throw OperationsParserException("'" + fieldName + "' must be a non-empty relative path: '" + path.string() + "'");
+    }
+    for (const auto &part: path) {
+        if (part == "..") {
+            throw OperationsParserException("'" + fieldName + "' must not contain '..' components: '" + path.string() + "'");
+        }
+    }
+}
+
 ExecuteOperations::OperationDesc ExecuteOperations::parseOperation(const Poco::JSON::Object::Ptr &obj) {
     if (!obj) throw OperationsParserException("Each operation must be an object");
 
@@ -145,6 +156,7 @@ ExecuteOperations::OperationDesc ExecuteOperations::parseOperation(const Poco::J
         const std::string nameStr = obj->optValue<std::string>("name", "");
         if (nameStr.empty()) throw OperationsParserException("Create operation missing 'name'");
         desc.path = Str2Path(nameStr);
+        validateRelativePath(desc.path, "name");
 
         desc.size = obj->optValue<int64_t>(
                 "size", desc.itemType == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize);
@@ -156,6 +168,7 @@ ExecuteOperations::OperationDesc ExecuteOperations::parseOperation(const Poco::J
         const std::string pathStr = obj->optValue<std::string>("path", "");
         if (pathStr.empty()) throw OperationsParserException("Edit operation missing 'path'");
         desc.path = Str2Path(pathStr);
+        validateRelativePath(desc.path, "path");
 
         desc.size = obj->optValue<int64_t>("newSize", 0);
         desc.createdAt = obj->optValue<SyncTime>("newCreatedAt", 0);
@@ -166,6 +179,7 @@ ExecuteOperations::OperationDesc ExecuteOperations::parseOperation(const Poco::J
         const std::string pathStr = obj->optValue<std::string>("path", "");
         if (pathStr.empty()) throw OperationsParserException("Delete operation missing 'path'");
         desc.path = Str2Path(pathStr);
+        validateRelativePath(desc.path, "path");
     } else if (typeStr == "Move") {
         desc.type = OperationType::Move;
 
@@ -176,6 +190,8 @@ ExecuteOperations::OperationDesc ExecuteOperations::parseOperation(const Poco::J
         }
         desc.fromPath = Str2Path(fromPathStr);
         desc.toPath = Str2Path(toPathStr);
+        validateRelativePath(desc.fromPath, "fromPath");
+        validateRelativePath(desc.toPath, "toPath");
     } else {
         throw OperationsParserException("Unknown operation type: " + typeStr);
     }
@@ -212,14 +228,24 @@ void ExecuteOperations::applyOperation(const ReplicaSide side, const OperationDe
     }
 }
 
+void ExecuteOperations::checkExitInfo(const ExitInfo &exitInfo, const std::string &context) {
+    if (!exitInfo) {
+        throw OperationsParserException(context + " failed: " + std::string(exitInfo));
+    }
+}
+
 void ExecuteOperations::applyLocalCreate(const OperationDesc &desc) const {
     const SyncPath fullPath = _syncPal->localPath() / desc.path;
     IoError ioError = IoError::Success;
     if (desc.itemType == NodeType::Directory) {
         auto job = std::make_shared<LocalCreateDirJob>(fullPath);
-        job->runSynchronously();
+        checkExitInfo(job->runSynchronously(), "Create operation (directory)");
     } else {
         (void) IoHelper::createDirectory(fullPath.parent_path(), true, ioError);
+        if (ioError != IoError::Success && ioError != IoError::DirectoryExists) {
+            throw OperationsParserException("Create operation (file): unable to create parent directory for '" +
+                                             fullPath.string() + "'");
+        }
         testhelpers::generateTestFile(fullPath, static_cast<uint64_t>(desc.size));
     }
 }
@@ -227,20 +253,23 @@ void ExecuteOperations::applyLocalCreate(const OperationDesc &desc) const {
 void ExecuteOperations::applyLocalEdit(const OperationDesc &desc) const {
     const SyncPath fullPath = _syncPal->localPath() / desc.path;
     testhelpers::setTestFileSize(fullPath, static_cast<uint64_t>(desc.size));
-    (void) IoHelper::setFileDates(fullPath, desc.createdAt, desc.lastModifiedAt, false);
+    if (const IoError ioError = IoHelper::setFileDates(fullPath, desc.createdAt, desc.lastModifiedAt, false);
+        ioError != IoError::Success) {
+        throw OperationsParserException("Edit operation: unable to set file dates for '" + fullPath.string() + "'");
+    }
 }
 
 void ExecuteOperations::applyLocalDelete(const OperationDesc &desc) const {
     const SyncPath fullPath = _syncPal->localPath() / desc.path;
     GenericLocalDeleteJob deleteJob(fullPath);
-    (void) deleteJob.runSynchronously();
+    checkExitInfo(deleteJob.runSynchronously(), "Delete operation");
 }
 
 void ExecuteOperations::applyLocalMove(const OperationDesc &desc) const {
     const SyncPath fullFromPath = _syncPal->localPath() / desc.fromPath;
     const SyncPath fullToPath = _syncPal->localPath() / desc.toPath;
     LocalMoveJob job(fullFromPath, fullToPath);
-    (void) job.runSynchronously();
+    checkExitInfo(job.runSynchronously(), "Move operation");
 }
 
 NodeId ExecuteOperations::remoteIdForPath(const SyncPath &path, const std::string &context) const {
@@ -257,12 +286,12 @@ void ExecuteOperations::applyRemoteCreate(const OperationDesc &desc) const {
 
     if (desc.itemType == NodeType::Directory) {
         CreateDirJob job(nullptr, _syncPal->driveDbId(), parentId, desc.path.filename().native());
-        (void) job.runSynchronously();
+        checkExitInfo(job.runSynchronously(), "Create operation (directory)");
     } else {
         const SyncPath fullPath = _syncPal->localPath() / desc.path;
         UploadJob job(nullptr, _syncPal->driveDbId(), fullPath, desc.path.filename().native(), parentId, desc.createdAt,
                       desc.lastModifiedAt);
-        (void) job.runSynchronously();
+        checkExitInfo(job.runSynchronously(), "Create operation (file upload)");
     }
 }
 
@@ -271,7 +300,7 @@ void ExecuteOperations::applyRemoteEdit(const OperationDesc &desc) const {
 
     const SyncPath fullPath = _syncPal->localPath() / desc.path;
     UploadJob job(nullptr, _syncPal->driveDbId(), fullPath, fileId, desc.lastModifiedAt);
-    (void) job.runSynchronously();
+    checkExitInfo(job.runSynchronously(), "Edit operation (upload)");
 }
 
 void ExecuteOperations::applyRemoteDelete(const OperationDesc &desc) const {
@@ -279,7 +308,7 @@ void ExecuteOperations::applyRemoteDelete(const OperationDesc &desc) const {
 
     DeleteJob job(_syncPal->driveDbId(), itemId);
     job.setBypassCheck(true);
-    (void) job.runSynchronously();
+    checkExitInfo(job.runSynchronously(), "Delete operation");
 }
 
 void ExecuteOperations::applyRemoteMove(const OperationDesc &desc) const {
@@ -289,14 +318,14 @@ void ExecuteOperations::applyRemoteMove(const OperationDesc &desc) const {
         // Same parent: rename only.
         const SyncPath fullToPath = _syncPal->localPath() / desc.toPath;
         RenameJob job(nullptr, _syncPal->driveDbId(), itemId, fullToPath);
-        (void) job.runSynchronously();
+        checkExitInfo(job.runSynchronously(), "Move operation (rename)");
     } else {
         const NodeId destParentId = remoteIdForPath(desc.toPath.parent_path(), "Move operation: destination parent");
 
         const SyncPath fullToPath = _syncPal->localPath() / desc.toPath;
         MoveJob job(nullptr, _syncPal->driveDbId(), fullToPath, itemId, destParentId, desc.toPath.filename().native());
         job.setBypassCheck(true);
-        (void) job.runSynchronously();
+        checkExitInfo(job.runSynchronously(), "Move operation");
     }
 }
 
