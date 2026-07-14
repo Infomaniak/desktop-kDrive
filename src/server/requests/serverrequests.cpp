@@ -1200,7 +1200,7 @@ ExitInfo ServerRequests::isSyncFolderAllowedByRules(const SyncPath &path, bool &
 
     const SyncFolderRule *bestMatch = nullptr;
     SyncPath bestMatchExpandedPath;
-    std::int32_t bestDepth = -1;
+    int32_t bestDepth = -1;
 
     auto expandPath = [](const SyncPath &rulePath) {
         QString pathStr = Path2QStr(rulePath);
@@ -1241,7 +1241,7 @@ ExitInfo ServerRequests::isSyncFolderAllowedByRules(const SyncPath &path, bool &
         if (!candidateDir.startsWith(ruleDir, Qt::CaseSensitive)) continue;
         LOGW_DEBUG(Log::instance()->getLogger(), L"isSyncFolderAllowedByRules: rule matched");
 
-        if (const std::int32_t depth = Utility::pathDepth(expandedRulePath); depth > bestDepth) {
+        if (const int32_t depth = Utility::pathDepth(expandedRulePath); depth > bestDepth) {
             bestDepth = depth;
             bestMatch = &rule;
             bestMatchExpandedPath = expandedRulePath;
