@@ -56,6 +56,10 @@ QtObject {
         readonly property color gray600: "#9F9F9F"
         readonly property color gray950: "#0A0C0F"
 
+        // Red
+        readonly property color red500: "#E33D4E"
+        readonly property color red600: "#C92F40"
+
         // Green
         readonly property color green400: "#5FC96B"
         readonly property color green500: "#3EBF4D"
@@ -111,6 +115,14 @@ QtObject {
     readonly property color onboardingDriveIconHighlightStart: Qt.rgba(1, 1, 1, 0.20)
     readonly property color onboardingDriveIconHighlightEnd: Qt.rgba(1, 1, 1, 0)
     readonly property color onboardingDriveIconInnerBorder: Qt.rgba(1, 1, 1, 0.25)
+
+    // Window chrome
+    readonly property color windowControlHover: surfaceSecondary
+    readonly property color windowControlPressed: surfaceTertiary
+    readonly property color windowControlCloseHover: _p.red500
+    readonly property color windowControlClosePressed: _p.red600
+    readonly property color windowControlIcon: textPrimary
+    readonly property color windowControlIconOnClose: _p.white
 
     // Status — Strong
     readonly property color statusStrongWarning: darkMode ? _p.orange300 : _p.orange800
