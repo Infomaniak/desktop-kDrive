@@ -42,6 +42,10 @@ class OnboardingFlowController final : public QObject {
         Q_PROPERTY(bool waitingForWebAuthentication READ waitingForWebAuthentication NOTIFY loginStateChanged)
         Q_PROPERTY(bool loginFailed READ loginFailed NOTIFY loginStateChanged)
         Q_PROPERTY(bool driveSelectionActive READ driveSelectionActive NOTIFY currentStepChanged)
+        Q_PROPERTY(bool synchronizationActive READ synchronizationActive NOTIFY currentStepChanged)
+        Q_PROPERTY(bool synchronizationFailed READ synchronizationFailed NOTIFY synchronizationFailedChanged)
+        Q_PROPERTY(bool readyActive READ readyActive NOTIFY currentStepChanged)
+        Q_PROPERTY(bool readyActionEnabled READ readyActionEnabled NOTIFY readyActionEnabledChanged)
         Q_PROPERTY(QString title READ title NOTIFY currentStepChanged)
 
     public:
@@ -69,6 +73,10 @@ class OnboardingFlowController final : public QObject {
         [[nodiscard]] bool waitingForWebAuthentication() const;
         [[nodiscard]] bool loginFailed() const;
         [[nodiscard]] bool driveSelectionActive() const;
+        [[nodiscard]] bool synchronizationActive() const;
+        [[nodiscard]] bool synchronizationFailed() const { return _synchronizationFailed; }
+        [[nodiscard]] bool readyActive() const;
+        [[nodiscard]] bool readyActionEnabled() const { return _readyActionEnabled; }
         [[nodiscard]] QString title() const;
 
         Q_INVOKABLE void requestLogin();
@@ -77,9 +85,15 @@ class OnboardingFlowController final : public QObject {
         Q_INVOKABLE void requestFreeDriveOrder() const;
         Q_INVOKABLE void requestAdvancedSettings();
         Q_INVOKABLE void requestDriveSelectionContinue();
+        Q_INVOKABLE void retrySynchronization();
+        Q_INVOKABLE void openSynchronizedFolders();
         Q_INVOKABLE void cancel();
         Q_INVOKABLE void setCurrentStep(Step step);
         void handleAuthorizationCodeReady();
+        void beginSynchronization();
+        void failSynchronization();
+        void completeSynchronization();
+        void completeOnboarding();
 
     public slots:
         void handleLoginTokenSucceeded(qint64 userDbId);
@@ -93,6 +107,10 @@ class OnboardingFlowController final : public QObject {
         void cancelRequested();
         void advancedSettingsRequested();
         void driveSelectionContinueRequested();
+        void synchronizationRetryRequested();
+        void synchronizedFoldersOpenRequested();
+        void synchronizationFailedChanged();
+        void readyActionEnabledChanged();
         void completed();
 
     private:
@@ -102,6 +120,9 @@ class OnboardingFlowController final : public QObject {
 
         Step _currentStep{Login};
         LoginState _loginState{LoginIdle};
+        bool _synchronizationFailed{false};
+        bool _readyActionEnabled{true};
+        bool _onboardingCompleted{false};
 };
 
 } // namespace KDC
