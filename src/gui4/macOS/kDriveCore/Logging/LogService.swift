@@ -28,10 +28,11 @@ public final class LogService: @unchecked Sendable {
     private let sentryReporter: SentryLogReporting
     private let dateProvider: () -> Date
     private let threadIDProvider: () -> String
-    private let minimumFileLevel: LogLevel
+
+    private var minimumFileLevel: LogLevel
 
     convenience init() {
-        self.init(fileWriter: try? LogFileWriter())
+        self.init(fileWriter: try? LogFileWriter(), minimumFileLevel: UserDefaults.standard.lastKnownFileLogLevel)
     }
 
     init(
@@ -40,7 +41,6 @@ public final class LogService: @unchecked Sendable {
         sentryReporter: SentryLogReporting = SentryLogReporter(),
         dateProvider: @escaping () -> Date = Date.init,
         threadIDProvider: @escaping () -> String = LogService.currentThreadID,
-        // Beta: everything → file. Raise this for the big release (e.g. `.info`) to reduce what is written to disk.
         minimumFileLevel: LogLevel = .debug
     ) {
         self.formatter = formatter
@@ -75,14 +75,33 @@ public final class LogService: @unchecked Sendable {
             sentryReporter.capture(event)
         }
 
-        if event.level >= minimumFileLevel {
-            queue.async { [weak self] in
-                self?.write(event)
-            }
+        queue.async { [weak self] in
+            guard let self, event.level >= minimumFileLevel else { return }
+            write(event)
         }
     }
 
-    // periphery:ignore - Public API to flush pending log writes, e.g. before exit.
+    public func setMinimumFileLevel(_ level: LogLevel) {
+        queue.async { [weak self] in
+            guard let self, minimumFileLevel != level else { return }
+
+            let previousLevel = minimumFileLevel
+            minimumFileLevel = level
+
+            // Written unconditionally so the change is traced even when the new level would filter it out.
+            let event = LogEvent(
+                date: dateProvider(),
+                level: .info,
+                category: "general",
+                threadID: threadIDProvider(),
+                file: "LogService.swift",
+                line: #line,
+                message: "Minimum file log level changed from \(previousLevel) to \(level)"
+            )
+            write(event)
+        }
+    }
+
     func flush() {
         guard DispatchQueue.getSpecific(key: queueKey) == nil else { return }
         queue.sync {}
