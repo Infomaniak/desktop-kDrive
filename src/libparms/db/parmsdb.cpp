@@ -948,9 +948,9 @@ bool ParmsDb::updateSyncFolderRules() {
     }
 
     std::vector<SyncFolderRule> fileSyncFolderRules;
-    if (const auto &syncFolderRulesFileName = Utility::getSyncFolderRulesFilePath(_test);
-        !getSyncFolderRulesFromFile(syncFolderRulesFileName.c_str(), fileSyncFolderRules)) {
-        LOGW_WARN(_logger, L"Cannot open sync folder rules file " << Utility::formatSyncName(syncFolderRulesFileName));
+    if (const auto &syncFolderRulesFilePath = Utility::getSyncFolderRulesFilePath();
+        !getSyncFolderRulesFromFile(syncFolderRulesFilePath, fileSyncFolderRules)) {
+        LOGW_WARN(_logger, L"Cannot open sync folder rules file " << Utility::formatSyncName(syncFolderRulesFilePath));
         return false;
     }
 

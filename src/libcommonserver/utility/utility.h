@@ -146,7 +146,7 @@ struct COMMONSERVER_EXPORT Utility {
         static bool normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath,
                                        UnicodeNormalization normalization = UnicodeNormalization::NFC) noexcept;
 
-        static SyncPath getSyncFolderRulesFilePath(bool test = false);
+        static SyncPath getSyncFolderRulesFilePath();
 
 #if defined(KD_WINDOWS)
         static bool longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound);

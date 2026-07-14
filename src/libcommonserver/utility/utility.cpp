@@ -436,9 +436,7 @@ bool Utility::normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath,
 
     return true;
 }
-SyncPath Utility::getSyncFolderRulesFilePath(const bool test) {
-    if (test) return syncFolderRulesFileName;
-
+SyncPath Utility::getSyncFolderRulesFilePath() {
     auto canonicalPath = std::filesystem::weakly_canonical(CommonUtility::getAppWorkingDir() / SyncPath{resourcesPath} /
                                                            syncFolderRulesFileName);
     return canonicalPath.make_preferred();
