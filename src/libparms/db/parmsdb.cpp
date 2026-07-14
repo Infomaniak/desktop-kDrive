@@ -860,12 +860,6 @@ bool ParmsDb::insertUserTemplateNormalizations(const std::string &fromVersion) {
 
 namespace {
 
-std::string trim(const std::string_view str) {
-    const size_t start = str.find_first_not_of(' ');
-    if (start == std::string_view::npos) return "";
-    const size_t end = str.find_last_not_of(' ');
-    return std::string(str.substr(start, end - start + 1));
-}
 void stripLineEndings(std::string &line) {
     while (!line.empty() && (line.back() == '\n' || line.back() == '\r')) {
         line.pop_back();
@@ -891,8 +885,8 @@ bool tryParseCsvLine(const std::string &line, std::vector<SyncFolderRule> &rules
         return false;
     }
 
-    const std::string pathStr = trim(columns[0]);
-    const std::string typeStr = trim(columns[1]);
+    const std::string pathStr = CommonUtility::trim(columns[0]);
+    const std::string typeStr = CommonUtility::trim(columns[1]);
     if (pathStr.empty() || typeStr.empty()) {
         return false;
     }
