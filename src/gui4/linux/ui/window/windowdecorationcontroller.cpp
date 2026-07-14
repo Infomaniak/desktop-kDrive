@@ -25,7 +25,7 @@
 #include <QtGui/qguiapplication_platform.h>
 
 #include <array>
-#include <cstdint>
+#include <climits>
 
 #if QT_CONFIG(xcb)
 #include <X11/Xlib.h>
@@ -104,8 +104,15 @@ bool x11ExtensionAvailable(Display *const display, const QByteArray &extensionNa
     return XQueryExtension(display, extensionName.constData(), &opcode, &eventBase, &errorBase) != False;
 }
 
-bool flushX11(Display *const display) {
-    return XFlush(display) == 0;
+/**
+ * Flushes the Xlib output buffer so queued requests reach the server promptly.
+ *
+ * XFlush's int return is not a documented success status and is intentionally ignored: whether a native request took
+ * effect cannot be known without a synchronous round-trip (XSync) plus the asynchronous error handler, which this
+ * controller does not use. Callers therefore report success from having issued the request, not from this flush.
+ */
+void flushX11(Display *const display) {
+   (void) XFlush(display);
 }
 
 /**
@@ -164,7 +171,8 @@ bool updateX11InputRegion(const QWindow *const window, const QRect &inputRect, c
     if (!customFrameEnabled) {
         // A null ShapeInput mask restores the default full-window input region.
         XShapeCombineMask(display, windowId, ShapeInput, 0, 0, None, ShapeSet);
-        return flushX11(display);
+        flushX11(display);
+        return true;
     }
 
     const auto nativeInputRect = toNativePixels(inputRect, window->devicePixelRatio());
@@ -175,7 +183,8 @@ bool updateX11InputRegion(const QWindow *const window, const QRect &inputRect, c
             .height = static_cast<X11RectangleDimension>(nativeInputRect.height()),
     };
     XShapeCombineRectangles(display, windowId, ShapeInput, 0, 0, &rectangle, 1, ShapeSet, Unsorted);
-    return flushX11(display);
+    flushX11(display);
+    return true;
 }
 
 /**
@@ -203,12 +212,24 @@ void updateX11FrameExtents(const QWindow *const window, const qreal frameMargin)
     }
 
     const auto nativeMargin = static_cast<std::uint32_t>(qMax(0, qRound(frameMargin * window->devicePixelRatio())));
+    // The shadow margin is uniform, so the four {left, right, top, bottom} extents all carry nativeMargin.
     const std::array<std::uint32_t, 4> frameExtents{nativeMargin, nativeMargin, nativeMargin, nativeMargin};
+    // only_if_exists = False makes XInternAtom create the atom when missing, so it always returns a usable value
+    // (unlike the True passed for the compositor-selection lookup, which only probes for an already-existing atom).
     const auto frameExtentsAtom = static_cast<xcb_atom_t>(XInternAtom(display, "_GTK_FRAME_EXTENTS", False));
 
-    xcb_change_property(connection, XCB_PROP_MODE_REPLACE, windowId, frameExtentsAtom, XCB_ATOM_CARDINAL, 32,
-                        static_cast<std::uint32_t>(frameExtents.size()), frameExtents.data());
-    xcb_flush(connection);
+    // Publish the client-side frame margin to the window manager via the _GTK_FRAME_EXTENTS property:
+    // xcb_change_property (re)sets that property on the native window to our CARDINAL[4] {left, right,
+    // top, bottom} array. The WM treats this margin as decoration/shadow area lying outside the "real"
+    // window, so it excludes it from snapping, tiling and maximize geometry.
+    // format is a bit-width (8/16/32), not a byte count: each extent is a 32-bit CARDINAL (EWMH), hence
+    // sizeof(uint32_t) * CHAR_BIT == 32. data_len is the element count (4), not a size in bytes.
+    constexpr auto frameExtentsFormatBits = static_cast<std::uint8_t>(sizeof(std::uint32_t) * CHAR_BIT);
+    static_assert(frameExtentsFormatBits == 32,
+                  "X11 property format must be 8, 16 or 32 bits; _GTK_FRAME_EXTENTS is defined as CARDINAL/32 (EWMH)");
+    (void) xcb_change_property(connection, XCB_PROP_MODE_REPLACE, windowId, frameExtentsAtom, XCB_ATOM_CARDINAL,
+                               frameExtentsFormatBits, frameExtents.size(), frameExtents.data());
+    (void) xcb_flush(connection);
 }
 #endif
 
