@@ -255,21 +255,24 @@ std::string CommonUtility::fileSystemType(const SyncPath &targetPath, std::strin
     fallbackFSType.clear();
 
     // Cache of FS type & fallback type by mount point ordered by decreasing path depth.
-    static std::map<SyncPath, std::pair<std::string, std::string>, CmpPath> fsTypeMap((CmpPath(false)));
-    static std::mutex fsTypeMapMutex;
+    struct Cache {
+            std::map<SyncPath, std::pair<std::string, std::string>, CmpPath> fsTypeMap{CmpPath(false)};
+            std::mutex fsTypeMapMutex;
+    };
 
-    const std::scoped_lock lock(fsTypeMapMutex);
+    static Cache cache;
+    const std::scoped_lock lock(cache.fsTypeMapMutex);
 
     if (useCache == UseCache::Yes) {
         // Search in cache first.
 #if defined(KD_WINDOWS)
         const SyncPath rootPath = targetPath.root_path().native();
-        if (const auto it = fsTypeMap.find(rootPath); it != fsTypeMap.end()) {
+        if (const auto it = cache.fsTypeMap.find(rootPath); it != cache.fsTypeMap.end()) {
             fallbackFSType = it->second.second;
             return it->second.first;
         }
 #else
-        for (const auto &it: fsTypeMap) {
+        for (const auto &it: cache.fsTypeMap) {
             if (CommonUtility::isDescendantOrEqual(targetPath, it.first)) {
                 fallbackFSType = it.second.second;
                 return it.second.first;
@@ -293,7 +296,7 @@ std::string CommonUtility::fileSystemType(const SyncPath &targetPath, std::strin
         fallbackFSType = underlyingFileSystemType(targetPath);
     }
 
-    (void) fsTypeMap.insert_or_assign(mountPoint, std::make_pair(fsType, fallbackFSType));
+    (void) cache.fsTypeMap.insert_or_assign(mountPoint, std::make_pair(fsType, fallbackFSType));
 
     return fsType;
 }
