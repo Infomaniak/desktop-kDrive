@@ -26,7 +26,7 @@ struct SynchroFolderTypeLabel: View {
     var body: some View {
         HStack(spacing: AppPadding.padding8) {
             KDriveResources.folderFilled.swiftUIImage
-                .resizable(at: AppIconSize.iconSize12)
+                .resizable(at: AppIconSize.iconSize16)
                 .foregroundStyle(ColorToken.Surface.quaternary.asColor)
             Text(text)
                 .font(.Tokens.bodyEmphasized)
