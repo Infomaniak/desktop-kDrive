@@ -226,21 +226,6 @@ enum class ActionType {
     EnumEnd
 };
 
-enum class AppStateKey {
-    // Adding a new key here requires to add it in insertDefaultAppState in parmsdbappstate.cpp
-    LastServerSelfRestartDate,
-    LastClientSelfRestartDate,
-    LastSuccessfulLogUploadDate, // Format: "month,day,year,hour,minute,second"
-    LastLogUploadArchivePath,
-    LogUploadState,
-    LogUploadPercent,
-    LogUploadToken,
-    AppUid,
-    NoUpdate,
-    Unknown, // Only for initialization purpose
-    EnumEnd
-};
-
 enum class AppType {
     None,
     Server,

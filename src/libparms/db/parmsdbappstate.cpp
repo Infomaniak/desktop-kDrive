@@ -45,6 +45,7 @@ constexpr char APP_STATE_KEY_DEFAULT_LogUploadState[] = "0"; // KDC::LogUploadSt
 constexpr char APP_STATE_KEY_DEFAULT_LogUploadPercent[] = "0";
 constexpr const char *APP_STATE_KEY_DEFAULT_LogUploadToken = APP_STATE_DEFAULT_IS_EMPTY;
 constexpr char APP_STATE_KEY_DEFAULT_NoUpdate[] = "0";
+constexpr char APP_STATE_KEY_DEFAULT_ShowV4Onboarding[] = "1";
 
 namespace KDC {
 
@@ -111,6 +112,11 @@ bool ParmsDb::insertDefaultAppState() {
 
     if (!insertAppState(AppStateKey::NoUpdate, APP_STATE_KEY_DEFAULT_NoUpdate)) {
         LOG_WARN(_logger, "Error while inserting default value for NoUpdate");
+        return false;
+    }
+
+    if (!insertAppState(AppStateKey::ShowV4Onboarding, APP_STATE_KEY_DEFAULT_ShowV4Onboarding)) {
+        LOG_WARN(_logger, "Error while inserting default value for ShowV4Onboarding");
         return false;
     }
 
