@@ -143,6 +143,8 @@ void SetInitialSituation::addItem(Poco::JSON::Object::Ptr obj, const NodeId &par
             const auto &childObj = obj->getObject(key);
             addItem(childObj, desc.id);
         }
+
+        if (desc.type == NodeType::Directory) setLocalItemDates(desc);
     }
 }
 
@@ -171,6 +173,8 @@ void SetInitialSituation::addItem(Poco::JSON::Array::Ptr arr, const NodeId &pare
         if (type == NodeType::Directory && itemObj->isArray("content")) {
             addItem(itemObj->getArray("content"), desc.id);
         }
+
+        if (desc.type == NodeType::Directory) setLocalItemDates(desc);
     }
 }
 
@@ -204,6 +208,15 @@ void SetInitialSituation::insertLocalItem(const ItemDesc &desc, const NodeId &pa
         (void) IoHelper::createDirectory(fullPath.parent_path(), true, ioError);
         testhelpers::generateTestFile(fullPath);
         if (desc.size > 0) testhelpers::setTestFileSize(fullPath, static_cast<uint64_t>(desc.size));
+        setLocalItemDates(desc);
+    }
+}
+
+void SetInitialSituation::setLocalItemDates(const ItemDesc &desc) const {
+    const SyncPath fullPath = _syncPal->localPath() / _localItemPaths.at(desc.id);
+    if (const IoError ioError = IoHelper::setFileDates(fullPath, desc.createdAt, desc.lastModifiedAt, false);
+        ioError != IoError::Success) {
+        throw SituationGeneratorException("Unable to set item dates for '" + fullPath.string() + "'");
     }
 }
 

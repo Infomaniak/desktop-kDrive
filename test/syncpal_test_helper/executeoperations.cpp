@@ -318,7 +318,17 @@ void ExecuteOperations::applyRemoteCreate(const OperationDesc &desc) {
 void ExecuteOperations::applyRemoteEdit(const OperationDesc &desc) const {
     const NodeId fileId = remoteIdForPath(desc.path, "Edit operation");
 
-    const SyncPath fullPath = _syncPal->localPath() / desc.path;
+    // This is a remote-only operation: uploading the unchanged local replica would not reflect the requested
+    // newSize/newCreatedAt/newLastModifiedAt. Generate an edited payload in a temporary location, upload that
+    // instead, then discard it so the local replica is left untouched by this remote-only operation.
+    const LocalTemporaryDirectory temporaryDir("executeRemoteOperations");
+    const SyncPath fullPath = temporaryDir.path() / desc.path.filename();
+    testhelpers::generateTestFile(fullPath, static_cast<uint64_t>(desc.size));
+    if (const IoError ioError = IoHelper::setFileDates(fullPath, desc.createdAt, desc.lastModifiedAt, false);
+        ioError != IoError::Success) {
+        throw OperationsParserException("Edit operation (upload): unable to set file dates for '" + fullPath.string() + "'");
+    }
+
     UploadJob job(nullptr, _syncPal->driveDbId(), fullPath, fileId, desc.lastModifiedAt);
     checkExitInfo(job.runSynchronously(), "Edit operation (upload)");
 }

@@ -140,6 +140,11 @@ class SetInitialSituation {
         void insertLocalItem(const ItemDesc &desc, const NodeId &parentId);
         void insertRemoteItem(const ItemDesc &desc, const NodeId &parentId);
 
+        // Applies `desc`'s createdAt/lastModifiedAt onto the already-created local item at `desc.id`.
+        // For directories, this must be called only once all of their children have been created (adding
+        // children updates a directory's modification date on most filesystems).
+        void setLocalItemDates(const ItemDesc &desc) const;
+
         std::shared_ptr<SyncPal> _syncPal;
 
         NodeId _remoteRootId;
