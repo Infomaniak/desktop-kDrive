@@ -25,6 +25,7 @@ Item {
     id: root
 
     required property var appRouter
+    required property var mainSidebarController
 
     readonly property int tabHome: AppRouter.Home
     readonly property int tabActivities: AppRouter.Activities
@@ -36,10 +37,11 @@ Item {
     Row {
         anchors.fill: parent
 
-        MainSidebarPlaceholder {
+        SidebarView {
             width: root.sidebarWidth
             height: parent.height
             appRouter: root.appRouter
+            controller: root.mainSidebarController
         }
 
         Rectangle {
