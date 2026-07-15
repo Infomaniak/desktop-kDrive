@@ -135,6 +135,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task<bool> ActivateLoadInfo(CancellationToken cancellationToken);
         Task Exit(); // Notify the server that the application is exiting. No cancellation token is required as the app is closing.
 
+        // Stores the provided value for the given app state key on the server.
+        // Returns true on success, false on failure.
+        Task<bool> SetAppState(AppStateKey key, string value, CancellationToken cancellationToken);
+
+        // Retrieves the value stored for the given app state key from the server.
+        // Returns the value on success, or null on failure.
+        Task<string?> GetAppState(AppStateKey key, CancellationToken cancellationToken);
+
         // Error-related requests
         Task<bool> RefreshErrors(CancellationToken cancellationToken);
         Task<bool> DeleteError(DbId errorDbId, CancellationToken cancellationToken);

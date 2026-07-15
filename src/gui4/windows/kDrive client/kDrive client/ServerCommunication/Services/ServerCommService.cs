@@ -1239,6 +1239,39 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return CheckJobResultAndLogIfError(data);
         }
 
+        public async Task<bool> SetAppState(AppStateKey key, string value, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.Key] = (int)key,
+                [JsonKeys.Value] = value
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_SET_APPSTATE, parms, cancellationToken);
+            return CheckJobResultAndLogIfError(data, parms);
+        }
+
+        public async Task<string?> GetAppState(AppStateKey key, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.Key] = (int)key
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_GET_APPSTATE, parms, cancellationToken);
+            if (!CheckJobResultAndLogIfError(data, parms))
+                return null;
+
+            if (!HasRequiredParam(data, JsonKeys.Value))
+                return null;
+
+            string? value = data.Params[JsonKeys.Value]?.GetValue<string>();
+            if (value is null)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to parse {JsonKeys.Value} from response: {data.Params}");
+                return null;
+            }
+            return value;
+        }
+
         public async Task Exit()
         {
             // Try and forget, no need to wait for response on exit
