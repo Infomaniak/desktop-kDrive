@@ -233,7 +233,7 @@ void ExecuteOperations::applyOperation(const ReplicaSide side, const OperationDe
 
 void ExecuteOperations::checkExitInfo(const ExitInfo &exitInfo, const std::string &context) {
     if (!exitInfo) {
-        throw OperationsParserException(context + " failed: " + std::string(exitInfo));
+        throw OperationsParserException(context + " failed: " + static_cast<std::string>(exitInfo));
     }
 }
 
@@ -339,7 +339,7 @@ void ExecuteOperations::applyRemoteDelete(const OperationDesc &desc) {
     DeleteJob job(_syncPal->driveDbId(), itemId);
     job.setBypassCheck(true);
     checkExitInfo(job.runSynchronously(), "Delete operation");
-    _batchRemoteIds.erase(desc.path);
+    (void) _batchRemoteIds.erase(desc.path);
 }
 
 void ExecuteOperations::applyRemoteMove(const OperationDesc &desc) {
@@ -358,7 +358,7 @@ void ExecuteOperations::applyRemoteMove(const OperationDesc &desc) {
         job.setBypassCheck(true);
         checkExitInfo(job.runSynchronously(), "Move operation");
     }
-    _batchRemoteIds.erase(desc.fromPath);
+    (void) _batchRemoteIds.erase(desc.fromPath);
     _batchRemoteIds[desc.toPath] = itemId;
 }
 
