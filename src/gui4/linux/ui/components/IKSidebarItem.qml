@@ -22,6 +22,7 @@ import QtQuick
 import QtQuick.Effects
 import kDrive.UI
 
+// Provides an interactive sidebar navigation row with an icon, label, selection state, and optional status badge.
 Rectangle {
     id: root
 
