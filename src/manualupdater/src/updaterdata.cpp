@@ -60,7 +60,7 @@ bool UpdaterData::initialize() {
         return false;
     }
     _appId = std::get<std::string>(appStateValue);
-    
+
     _isInstalled = true;
     return true;
 }

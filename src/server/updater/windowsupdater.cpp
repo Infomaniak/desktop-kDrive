@@ -289,4 +289,52 @@ void WindowsUpdater::retryDownload(const SyncPath &filepath) {
     downloadUpdate();
 }
 
+ExitCode WindowsUpdater::installVersion() {
+    SyncPath filepath;
+    if (!getInstallerPath(filepath)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Failed to get installer path.");
+        return ExitCode::SystemError;
+    }
+
+    // Remove an eventual already existing installer file.
+    auto ioError = IoError::Success;
+    (void) IoHelper::deleteItem(filepath, ioError);
+    if (ioError != IoError::Success && ioError != IoError::NoSuchFileOrDirectory) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Failed to remove existing installer " << Utility::formatSyncPath(filepath));
+    }
+
+    // Download synchronously
+    const auto job = std::make_shared<DirectDownloadJob>(filepath, versionInfo().downloadUrl);
+    if (!job->runSynchronously()) {
+        if (job->httpResponse().getStatus() == 404) {
+            LOGW_WARN(Log::instance()->getLogger(), L"Version not found (404).");
+        } else {
+            LOGW_WARN(Log::instance()->getLogger(), L"Download failed.");
+        }
+        return ExitCode::NetworkError;
+    }
+
+    if (std::error_code ec; !std::filesystem::exists(filepath, ec)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Installer file not found after download." << Utility::formatStdError(filepath, ec));
+        return ExitCode::SystemError;
+    }
+
+    if (!verifyFileChecksum(filepath)) {
+        return ExitCode::UpdateError;
+    }
+
+    if (!verifyDigitalSignature(filepath)) {
+        return ExitCode::UpdateError;
+    }
+
+    LOGW_INFO(Log::instance()->getLogger(), L"Starting installer " << Utility::formatSyncPath(filepath));
+    const auto cmd = filepath.wstring() + L" /S /launch";
+    if (!Utility::runDetachedProcess(cmd)) {
+        LOGW_ERROR(Log::instance()->getLogger(), L"Failed to launch installer.");
+        return ExitCode::SystemError;
+    }
+
+    return ExitCode::Ok;
+}
+
 } // namespace KDC

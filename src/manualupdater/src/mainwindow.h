@@ -2,6 +2,7 @@
 
 #include "updaterdata.h"
 
+#include "libcommon/utility/types.h"
 
 #include <QMainWindow>
 #include <QLineEdit>
@@ -9,6 +10,7 @@
 #include <QLabel>
 #include <QTextEdit>
 #include <QProgressBar>
+#include <QPointer>
 #include <string>
 
 namespace KDUpdater {
@@ -23,10 +25,12 @@ class MainWindow : public QMainWindow {
     private slots:
         void onInstallClicked();
         void onVersionTextChanged(const QString &text) const;
+        void onInstallFinished(bool success, const QString &message);
+        void onInstallProgress(int percent, const QString &message);
 
     private:
         void setupUi();
-        void updateCurrentVersionLabel();
+        void updateCurrentVersionLabel() const;
         void fetchAndSetDefaultVersion();
         bool validateInputVersion(const std::string &inputVersion, std::string &errorMsg) const;
 
@@ -40,7 +44,11 @@ class MainWindow : public QMainWindow {
 
         const UpdaterData &_updaterData;
         std::string _installedVersion;
-        std::string _appId;
+        KDC::VersionInfo _fetchedVersionInfo;
+
+#if defined(KD_MACOS)
+        bool installMacOS(const KDC::VersionInfo &versionInfo, QString &outMessage);
+#endif
 };
 
 } // namespace KDUpdater

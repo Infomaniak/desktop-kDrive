@@ -10,6 +10,22 @@ set(SOURCES
     src/updaterdata.cpp
 )
 
+if(WIN32)
+    list(APPEND SOURCES
+        ${CMAKE_SOURCE_DIR}/src/server/updater/abstractupdater.cpp
+        ${CMAKE_SOURCE_DIR}/src/server/updater/versionretriever.cpp
+        ${CMAKE_SOURCE_DIR}/src/server/updater/windowsupdater.cpp
+        ${CMAKE_SOURCE_DIR}/src/server/updater/windowsupdater.h
+    )
+elseif(UNIX AND NOT APPLE)
+    list(APPEND SOURCES
+        ${CMAKE_SOURCE_DIR}/src/server/updater/abstractupdater.cpp
+        ${CMAKE_SOURCE_DIR}/src/server/updater/versionretriever.cpp
+        ${CMAKE_SOURCE_DIR}/src/server/updater/linuxupdater.cpp
+        ${CMAKE_SOURCE_DIR}/src/server/updater/linuxupdater.h
+    )
+endif()
+
 set(HEADERS
     src/mainwindow.h
     src/updaterdata.h
@@ -29,6 +45,8 @@ target_link_libraries(kDriveRecoveryUpdater PRIVATE
 
 target_include_directories(kDriveRecoveryUpdater PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_SOURCE_DIR}/src/server
 )
 
 set_target_properties(kDriveRecoveryUpdater PROPERTIES
