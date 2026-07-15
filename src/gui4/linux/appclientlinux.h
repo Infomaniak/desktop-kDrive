@@ -36,7 +36,7 @@
 #include "app/systraycontroller.h"
 #include "communicationlayer/ipcclient.h"
 #include "communicationlayer/signaldispatcher.h"
-#include "ui/window/windowdecorationcontroller.h"
+#include "ui/chrome/windowdecorationcontroller.h"
 
 #include <QApplication>
 #include <QLoggingCategory>

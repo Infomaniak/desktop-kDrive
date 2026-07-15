@@ -161,7 +161,7 @@
       becomes reusable from another product window.
     - `ui/features/`: future reusable product features shared by several windows, such as sync configuration.
     - `ui/components/`: future reusable UI primitives without product-window ownership.
-    - `ui/window/`: shared QML frameless-window shell, header bar, controls, resize handles, and shadow wrapper.
+    - `ui/chrome/`: shared window chrome: frameless shell, header bar, controls, resize handles, and shadow wrapper.
       Top-level app-owned QML windows should use `IKShadowedWindow`; its `headerBackgroundData` and `headerData` slots
       accept page-specific header visuals and content while preserving the standard move, resize, minimize, maximize,
       and close behavior. Onboarding uses `headerOverlaysContent` so window controls do not shift its fixed visual
