@@ -18,8 +18,8 @@
 
 #include "appclientlinux.h"
 #include "app/services/sentryservice.h"
-#include "libcommongui/logger.h"
 #include "libcommon/utility/utility.h"
+#include "libcommongui/logger.h"
 
 #include <QLockFile>
 #include <QString>
@@ -43,5 +43,6 @@ int main(int argc, char *argv[]) {
     const int32_t exitCode = app->exec();
 
     qCInfo(KDC::lcAppClientLinux) << "Qt event loop exited with code" << exitCode;
+    KDC::SentryService::shutdown();
     return exitCode;
 }
