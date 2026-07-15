@@ -6,11 +6,13 @@ find_package(Qt6 REQUIRED COMPONENTS Core Widgets Network)
 
 set(SOURCES
     src/main.cpp
-    src/MainWindow.cpp
+    src/mainwindow.cpp
+    src/updaterdata.cpp
 )
 
 set(HEADERS
-    src/MainWindow.h
+    src/mainwindow.h
+    src/updaterdata.h
 )
 
 add_executable(kDriveRecoveryUpdater ${SOURCES} ${HEADERS})
@@ -22,6 +24,7 @@ target_link_libraries(kDriveRecoveryUpdater PRIVATE
     ${libcommon_NAME}
     ${libcommonserver_NAME}
     ${libparms_NAME}
+    ${libsyncengine_NAME}
 )
 
 target_include_directories(kDriveRecoveryUpdater PRIVATE
