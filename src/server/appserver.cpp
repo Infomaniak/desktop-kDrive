@@ -4088,6 +4088,9 @@ ExitInfo AppServer::installVfs() {
         return {ExitCode::SystemError, ExitCause::UnableToStartVfs};
     }
 
+    // Set callbacks
+    vfs->setExclusionAppListCallback(std::bind_front(&AppServer::exclusionAppList, this));
+
     // Start VFS
     if (ExitInfo exitInfo = vfs->start(_vfsInstallationDone, _vfsActivationDone, _vfsConnectionDone); !exitInfo) {
         LOG_WARN(_logger, "Error in Vfs::start: " << exitInfo);
