@@ -41,6 +41,8 @@
   old type names, then validate at least the `kdrive_qml` target.
 - For tray fallback testing, `KDRIVE_FORCE_NO_TRAY=1` is Debug-only and forces the startup tray probe to stay disabled.
 - Avoid magic layout values in QML; put reusable or semantic dimensions and ratios in `ui/tokens/` with explicit names.
+- Render the main-sidebar synchronization selector with the bare drive glyph tinted by the drive color; do not place
+  the glyph on a colored tile.
 - Store Linux v4 app-level non-translatable constants in `app/appconstants.h`; keep it header-only while constants stay
   simple.
 - Keep simple onboarding external-link actions in `OnboardingFlowController` when they do not mutate app/backend state;
@@ -103,6 +105,10 @@
       but the underlying cache graph changes.
     - Exposes selected-sync runtime through its dedicated accessor and signal so progress ticks do not rebuild the
       configured graph context.
+- `app/mainwindow/synclistmodel.*`: QML adapter for configured synchronizations. It projects only sidebar row data from
+  `AppCache::syncContexts()` and derives `isSelected` from `MainSelectionStore`; it does not own navigation or actions.
+- `app/mainwindow/mainsidebarcontroller.*`: QML-facing sidebar interaction controller. It exposes `SyncListModel`,
+  delegates sync selection to `MainSelectionStore`, and opens the selected local sync folder through desktop services.
 - `app/navigation/approuter.*`: minimal main-window router. It owns only `mainWindowActive` and the selected main tab;
   it must not read `AppCache`, call backend services, or decide whether onboarding is required.
 - `app/cache/onboardingstate.*`: session-owned onboarding selected user, selected available-drive keys, and pending sync
@@ -160,7 +166,9 @@
     - `ui/windows/onboarding/`: onboarding window composition and flow screens. Onboarding-only QML stays here unless it
       becomes reusable from another product window.
     - `ui/features/`: future reusable product features shared by several windows, such as sync configuration.
-    - `ui/components/`: future reusable UI primitives without product-window ownership.
+    - `ui/components/`: reusable presentation primitives without product-window ownership. Main-window sidebar
+      primitives accept display values and emit interactions; they do not read `AppCache`, own selection, or call
+      services directly.
     - `ui/chrome/`: shared window chrome: frameless shell, header bar, controls, resize handles, and shadow wrapper.
       Top-level app-owned QML windows should use `IKShadowedWindow`; its `headerBackgroundData` and `headerData` slots
       accept page-specific header visuals and content while preserving the standard move, resize, minimize, maximize,
@@ -249,6 +257,8 @@ cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive
   transient failure notification; avoid reintroducing local `lastError` / ad hoc pending counters there.
 - `AppCache`, `MainSelectionStore`, and `OnboardingState` mutations must run on the Qt main thread.
 - `AppCache` must not own mutable main selection; derive main context through `MainSelectionStore.currentSyncDbId`.
+- Configured-sync QML rows belong in `SyncListModel`. Keep window state, tab navigation, desktop actions, and future
+  Home/Activities/Storage data out of that model.
 - Store available drives per user via `AppCache::replaceAvailableDrivesForUser(...)`; do not reintroduce a global
   available-drives snapshot.
 - `CachePipeline` owns the direct push-signal bridge from `CommService` to `AppCache`; service classes should not wire
@@ -264,8 +274,9 @@ cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive
   durable selections in `OnboardingState`. The login screen must not advance optimistically: it advances only after the
   server login-token request succeeds, the logged-in user appears in `AppCache`, and available-drive loading has been
   requested. The drive-selection screen then owns the loading/empty/loaded presentation while the request completes.
-- Pass the stable `OnboardingSessionManager` to `Main.qml` as an initial property. Pass session-owned controllers/models
-  through explicit required QML properties; do not add dynamic onboarding context properties.
+- Pass stable app-owned controllers such as `OnboardingSessionManager` and `MainSidebarController` to `Main.qml` as
+  initial properties. Pass controllers/models down through explicit required QML properties; do not add dynamic context
+  properties for window-owned composition.
 
 ## IPC And Error Handling
 
