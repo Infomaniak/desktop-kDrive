@@ -21,6 +21,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import kDrive.UI
 
+// Displays a compact status dot when count is greater than zero.
 Rectangle {
     id: root
 
