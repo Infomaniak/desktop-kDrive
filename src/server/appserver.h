@@ -324,6 +324,14 @@ class AppServer : public SharedTools::QtSingleApplication {
                                            const std::chrono::seconds &startDelay = std::chrono::seconds(0),
                                            bool resumedByUser = false, bool firstInit = false);
 
+#if defined(KD_MACOS)
+        //! Install the Vfs Mac extension.
+        /*!
+          \return The exit code of the operation.
+        */
+        [[nodiscard]] ExitInfo installVfs();
+#endif
+
         [[nodiscard]] ExitInfo createAndStartVfs(const Sync &sync) noexcept;
         [[nodiscard]] ExitInfo setSupportsVirtualFiles(SyncDbId syncDbId, bool value, bool asyncResponse);
 

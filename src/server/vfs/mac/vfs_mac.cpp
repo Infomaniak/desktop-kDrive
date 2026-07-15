@@ -47,7 +47,7 @@ VfsMac::VfsMac(const VfsSetupParams &vfsSetupParams, QObject *parent) :
         throw std::runtime_error("Unable to initialize LiteSyncExtConnector.");
     }
 
-    starVfsWorkers();
+    if (vfsSetupParams.syncDbId > 0) starVfsWorkers();
 }
 
 VirtualFileMode VfsMac::mode() const {
@@ -91,44 +91,46 @@ ExitInfo VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &c
         LOG_WARN(logger(), "Error in setAppExcludeList!");
     }
 
-    bool isPlaceholder = false;
-    bool isSyncing = false;
-    if (!_connector->vfsStart(_vfsSetupParams.syncDbId, _vfsSetupParams.localPath, isPlaceholder, isSyncing)) {
-        LOG_WARN(logger(), "Error in vfsStart!");
-        resetLiteSyncConnector();
-        return {ExitCode::SystemError, ExitCause::UnableToStartVfs};
-    }
-
-    if (std::list<SyncPath> filesToFix;
-        isPlaceholder && isSyncing &&
-        _connector->checkFilesAttributes(_vfsSetupParams.localPath, _vfsSetupParams.localPath,
-                                         filesToFix)) { // Verify that all files/folders are in the correct state
-        // Get the directories to fix
-        std::unordered_set<SyncPath> dirsToFix;
-        for (const auto &filePath: filesToFix) {
-            bool isDirectory = false;
-            auto ioError = IoError::Success;
-            if (const bool isDirSuccess = IoHelper::checkIfIsDirectory(filePath, isDirectory, ioError); !isDirSuccess) {
-                LOGW_WARN(logger(), L"Error in IoHelper::checkIfIsDirectory: " << Utility::formatIoError(filePath, ioError));
-                continue;
-            }
-
-            if (isDirectory) {
-                (void) dirsToFix.emplace(filePath);
-                continue;
-            }
-            (void) dirsToFix.emplace(filePath.parent_path());
+    if (_vfsSetupParams.syncDbId > 0) {
+        bool isPlaceholder = false;
+        bool isSyncing = false;
+        if (!_connector->vfsStart(_vfsSetupParams.syncDbId, _vfsSetupParams.localPath, isPlaceholder, isSyncing)) {
+            LOG_WARN(logger(), "Error in vfsStart!");
+            resetLiteSyncConnector();
+            return {ExitCode::SystemError, ExitCause::UnableToStartVfs};
         }
 
-        // Fix parent directories status
-        bool ok = true;
-        for (const auto &dir: dirsToFix) {
-            if (!_connector->vfsProcessDirStatus(dir, _vfsSetupParams.localPath)) {
-                LOGW_WARN(logger(), L"Error in vfsProcessDirStatus for " << Utility::formatErrno(dir, errno));
-                ok = false;
+        if (std::list<SyncPath> filesToFix;
+            isPlaceholder && isSyncing &&
+            _connector->checkFilesAttributes(_vfsSetupParams.localPath, _vfsSetupParams.localPath,
+                                             filesToFix)) { // Verify that all files/folders are in the correct state
+            // Get the directories to fix
+            std::unordered_set<SyncPath> dirsToFix;
+            for (const auto &filePath: filesToFix) {
+                bool isDirectory = false;
+                auto ioError = IoError::Success;
+                if (const bool isDirSuccess = IoHelper::checkIfIsDirectory(filePath, isDirectory, ioError); !isDirSuccess) {
+                    LOGW_WARN(logger(), L"Error in IoHelper::checkIfIsDirectory: " << Utility::formatIoError(filePath, ioError));
+                    continue;
+                }
+
+                if (isDirectory) {
+                    (void) dirsToFix.emplace(filePath);
+                    continue;
+                }
+                (void) dirsToFix.emplace(filePath.parent_path());
             }
+
+            // Fix parent directories status
+            bool ok = true;
+            for (const auto &dir: dirsToFix) {
+                if (!_connector->vfsProcessDirStatus(dir, _vfsSetupParams.localPath)) {
+                    LOGW_WARN(logger(), L"Error in vfsProcessDirStatus for " << Utility::formatErrno(dir, errno));
+                    ok = false;
+                }
+            }
+            return ok ? ExitInfo(ExitCode::Ok) : ExitInfo(ExitCode::SystemError, ExitCause::UnableToStartVfs);
         }
-        return ok ? ExitInfo(ExitCode::Ok) : ExitInfo(ExitCode::SystemError, ExitCause::UnableToStartVfs);
     }
 
     return ExitCode::Ok;
