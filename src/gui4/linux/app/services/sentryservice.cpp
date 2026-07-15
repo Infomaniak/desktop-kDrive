@@ -109,6 +109,16 @@ bool SentryService::isInitialized() {
     return sentry::Handler::isInitialized();
 }
 
+void SentryService::shutdown() {
+    if (!isInitialized()) {
+        qCInfo(lcSentryService) << "Sentry shutdown skipped because handler is not initialized";
+        return;
+    }
+
+    qCInfo(lcSentryService) << "Shutting down Sentry";
+    sentry::Handler::shutdown();
+}
+
 void SentryService::reportError(const std::string &title, const std::string &message) {
     sentry::Handler::captureMessage(sentry::Level::Error, title, message);
 }
