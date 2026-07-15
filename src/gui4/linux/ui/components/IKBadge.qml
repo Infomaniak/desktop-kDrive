@@ -21,15 +21,30 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import kDrive.UI
 
-// Displays a compact status dot when count is greater than zero.
+// Displays either a compact status dot or a numeric notification badge.
 Rectangle {
     id: root
 
     property int count: 0
+    property bool dot: false
 
-    visible: count > 0
-    implicitWidth: IKMainWindow.errorBadgeSize
-    implicitHeight: IKMainWindow.errorBadgeSize
+    readonly property bool showCount: count > 0
+
+    visible: showCount || dot
+    implicitWidth: showCount ? Math.max(IKMainWindow.notificationBadgeMinSize,
+                                       countLabel.implicitWidth + IKSpacing.s8) : IKMainWindow.errorBadgeSize
+    implicitHeight: showCount ? IKMainWindow.notificationBadgeMinSize : IKMainWindow.errorBadgeSize
     radius: height / 2
     color: IKColors.actionPrimary
+
+    Text {
+        id: countLabel
+
+        anchors.centerIn: parent
+        visible: root.showCount
+        text: root.count
+        color: IKColors.actionOnPrimary
+        font.pixelSize: IKFonts.subheadlineSize
+        font.weight: IKFonts.emphasized
+    }
 }
