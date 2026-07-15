@@ -79,8 +79,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/services/userservice.h
         app/systraycontroller.cpp
         app/systraycontroller.h
-        ui/window/windowdecorationcontroller.cpp
-        ui/window/windowdecorationcontroller.h
+        ui/chrome/windowdecorationcontroller.cpp
+        ui/chrome/windowdecorationcontroller.h
 )
 
 set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
@@ -108,9 +108,9 @@ set_source_files_properties(${GUI_GENERATED_QML_FILES} PROPERTIES QT_QML_SKIP_QM
 
 set(GUI_QML_FILES # .qml files for the app
         ui/Main.qml
-        ui/window/IKShadowedWindow.qml
-        ui/window/IKWindowControlButton.qml
-        ui/window/IKWindowHeader.qml
+        ui/chrome/IKShadowedWindow.qml
+        ui/chrome/IKWindowControlButton.qml
+        ui/chrome/IKWindowHeader.qml
         ui/windows/main/ActivitiesPlaceholder.qml
         ui/windows/main/BlockingErrorPlaceholder.qml
         ui/windows/main/HomePlaceholder.qml
