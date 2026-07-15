@@ -61,7 +61,7 @@ Rectangle {
                 iconSource: "qrc:/assets/main/activities.svg"
                 label: qsTrId("tabTitleActivities")
                 selected: root.currentTab === root.tabActivities
-                badgeCount: root.controller.currentErrorCount
+                notificationDot: root.controller.currentErrorCount > 0
                 onTriggered: root.appRouter.navigateToMainTab(root.tabActivities)
             }
 
