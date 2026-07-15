@@ -1,6 +1,9 @@
 #include "MainWindow.h"
 
 #include "libcommon/utility/utility.h"
+#include "libcommonserver/db/sqlitedb.h"
+#include "libparms/db/parmsdb.h"
+#include "libcommonserver/log/log.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -8,6 +11,7 @@
 #include <QMessageBox>
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
+#include <iostream>
 #include <memory>
 #include <regex>
 #include <string>
@@ -83,14 +87,39 @@ void MainWindow::setupUi() {
 }
 
 void MainWindow::updateCurrentVersionLabel() {
-    _installedVersion = {};
-    if (_installedVersion.empty()) {
-        _currentVersionLabel->setText(tr("kDrive is not installed or the version could not be detected."));
-    } else {
-        _currentVersionLabel->setText(tr("Installed version: <b>%1</b>").arg(QString::fromStdString(_installedVersion)));
-    }
-}
+    _installedVersion.clear();
 
+    bool alreadyExist = false;
+    const auto dbPath = KDC::Db::makeDbName(alreadyExist);
+    if (dbPath.empty() || !alreadyExist) {
+        LOGW_INFO(KDC::Log::instance()->getLogger(), L"kDrive database not found at: " << Path2WStr(dbPath));
+        _currentVersionLabel->setText(tr("kDrive is not installed or the version could not be detected."));
+        return;
+    }
+    LOGW_INFO(KDC::Log::instance()->getLogger(), L"kDrive database found at: " << Path2WStr(dbPath));
+
+    const auto db = KDC::ParmsDb::instance(dbPath);
+    LOGW_INFO(KDC::Log::instance()->getLogger(), L"Opened kDrive database at: " << Path2WStr(dbPath));
+
+    if (!db) {
+        LOGW_INFO(KDC::Log::instance()->getLogger(), L"Failed to open kDrive database at: " << Path2WStr(dbPath));
+        _currentVersionLabel->setText(tr("kDrive is not installed or the version could not be detected."));
+        return;
+    }
+
+    bool found = false;
+    if (!db->selectVersion(_installedVersion, found) || !found) {
+        LOGW_INFO(KDC::Log::instance()->getLogger(),
+                  L"Failed to retrieve kDrive version from database at: " << Path2WStr(dbPath));
+        _currentVersionLabel->setText(tr("kDrive is not installed or the version could not be detected."));
+        return;
+    }
+    LOGW_INFO(KDC::Log::instance()->getLogger(),
+              L"Current kDrive version: " << QString::fromStdString(_installedVersion).toStdWString());
+
+
+    _currentVersionLabel->setText(tr("Installed version: <b>%1</b>").arg(QString::fromStdString(_installedVersion)));
+}
 void MainWindow::onVersionTextChanged(const QString &text) const {
     std::string errorMsg;
     const bool valid = validateInputVersion(text.toStdString(), errorMsg);

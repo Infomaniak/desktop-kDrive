@@ -20,6 +20,8 @@ target_link_libraries(kDriveRecoveryUpdater PRIVATE
     Qt6::Widgets
     Qt6::Network
     ${libcommon_NAME}
+    ${libcommonserver_NAME}
+    ${libparms_NAME}
 )
 
 target_include_directories(kDriveRecoveryUpdater PRIVATE
