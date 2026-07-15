@@ -1233,7 +1233,7 @@ void ParametersDialog::refreshErrorList(const DriveDbId driveDbId) {
     for (const auto &error: errorList) {
         // Find list to update and increase drive error counters
         QListWidget *list = nullptr;
-        if (error.autoResolved()) {
+        if (error.isAutoResolved()) {
             list = autoresolvedErrorsListWidget;
             autoresolvedErrorCount++;
         } else {

@@ -4536,7 +4536,7 @@ void AppServer::manageError(const Error &error, std::vector<Error> &errorList, b
         manageUpdateRequiredErrorError();
     }
 
-    if (!ServerRequests::isAutoResolvedError(error) && !errorAlreadyExists) {
+    if (!error.isAutoResolved() && !errorAlreadyExists) {
         // Send error to sentry only for technical errors
         SentryUser sentryUser(user.email(), user.name(), std::to_string(user.userId()));
         sentry::Handler::captureMessage(sentry::Level::Warning, "AppServer::addError", error.errorString(), sentryUser);

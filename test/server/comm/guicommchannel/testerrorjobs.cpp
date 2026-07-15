@@ -108,7 +108,6 @@ void TestGuiCommChannel::testErrorListJob() {
         e1.setInconsistencyType(InconsistencyType::None);
         e1.setCancelType(CancelType::None);
         e1.setDestinationPath("");
-        e1.setAutoResolved(false);
         errorJob->_errorList = {e1};
     };
 

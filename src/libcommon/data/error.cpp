@@ -176,7 +176,7 @@ void Error::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, outParamsConflictType, _conflictType);
     CommonUtility::writeValueToStruct(dstruct, outParamsInconsistencyType, _inconsistencyType);
     CommonUtility::writeValueToStruct(dstruct, outParamsCancelType, _cancelType);
-    CommonUtility::writeValueToStruct(dstruct, outParamsAutoResolved, _autoResolved);
+    CommonUtility::writeValueToStruct(dstruct, outParamsAutoResolved, isAutoResolved());
 }
 
 void Error::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
@@ -211,7 +211,27 @@ void Error::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, outParamsConflictType, _conflictType);
     CommonUtility::readValueFromStruct(dstruct, outParamsInconsistencyType, _inconsistencyType);
     CommonUtility::readValueFromStruct(dstruct, outParamsCancelType, _cancelType);
-    CommonUtility::readValueFromStruct(dstruct, outParamsAutoResolved, _autoResolved);
+    // CommonUtility::readValueFromStruct(dstruct, outParamsAutoResolved, _autoResolved);
+}
+
+bool Error::isAutoResolved() const {
+    bool autoResolved = false;
+    if (_level == ErrorLevel::Server) {
+        autoResolved = false;
+    } else if (_level == ErrorLevel::SyncPal) {
+        autoResolved =
+                (_exitCode == ExitCode::NetworkError // Sync is paused, and we try to restart it every RESTART_SYNCS_INTERVAL
+                 || (_exitCode == ExitCode::BackError // Sync is stopped and a full sync is restarted
+                     && _exitCause != ExitCause::DriveAccessError && _exitCause != ExitCause::DriveNotRenew) ||
+                 _exitCode == ExitCode::DataError); // Sync is stopped and a full sync is restarted
+    } else if (_level == ErrorLevel::Node) {
+        autoResolved =
+                (_conflictType != ConflictType::None && !isConflictsWithLocalRename(_conflictType)) ||
+                (_inconsistencyType != InconsistencyType::None /*&& _inconsistencyType != InconsistencyType::ForbiddenChar*/) ||
+                _cancelType != CancelType::None;
+    }
+
+    return autoResolved;
 }
 
 } // namespace KDC

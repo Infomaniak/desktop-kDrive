@@ -162,7 +162,6 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static void exclusionAppToExclusionAppInfo(const ExclusionApp &exclusionApp, ExclusionAppInfo &exclusionAppInfo);
         static void exclusionAppInfoToExclusionApp(const ExclusionAppInfo &exclusionAppInfo, ExclusionApp &exclusionApp);
         static bool isDisplayableError(const Error &error);
-        static bool isAutoResolvedError(const Error &error);
         static ExitCode getDbStructsFromSyncDbId(SyncDbId syncDbId, User &user, Account &account, Drive &drive, Sync &sync);
         static ExitCode fixProxyConfig();
 

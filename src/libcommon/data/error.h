@@ -88,14 +88,14 @@ class Error {
         void setInconsistencyType(const InconsistencyType val) { _inconsistencyType = val; }
         [[nodiscard]] CancelType cancelType() const { return _cancelType; }
         void setCancelType(const CancelType val) { _cancelType = val; }
-        [[nodiscard]] bool autoResolved() const { return _autoResolved; }
-        void setAutoResolved(const bool val) { _autoResolved = val; }
 
         std::string errorString() const;
         bool isSimilarTo(const Error &other) const;
 
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
         void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
+
+        bool isAutoResolved() const;
 
         /// TODO : to be removed once we moved to the new GUI ///
         friend void operator>>(QDataStream &in, Error &error) {
@@ -111,7 +111,7 @@ class Error {
 
             in >> dbId >> time >> error._level >> functionName >> syncDbId >> workerName >> error._exitCode >> error._exitCause >>
                     localNodeId >> remoteNodeId >> error._nodeType >> path >> destinationPath >> error._conflictType >>
-                    error._inconsistencyType >> error._cancelType >> error._autoResolved;
+                    error._inconsistencyType >> error._cancelType;
 
             error._dbId = static_cast<ErrorDbId>(dbId);
             error._time = static_cast<int64_t>(time);
@@ -129,7 +129,7 @@ class Error {
                 << QString::fromStdString(error._workerName) << error._exitCode << error._exitCause
                 << QString::fromStdString(error._localNodeId) << QString::fromStdString(error._remoteNodeId) << error._nodeType
                 << Path2QStr(error._path) << Path2QStr(error._destinationPath) << error._conflictType << error._inconsistencyType
-                << error._cancelType << error._autoResolved;
+                << error._cancelType;
             return out;
         }
 
@@ -171,7 +171,6 @@ class Error {
         ConflictType _conflictType{ConflictType::None};
         InconsistencyType _inconsistencyType{InconsistencyType::None};
         CancelType _cancelType{CancelType::None};
-        bool _autoResolved{false};
 };
 
 using ErrorList = std::vector<Error>;

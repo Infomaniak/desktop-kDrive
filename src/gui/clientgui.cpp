@@ -983,7 +983,7 @@ void ClientGui::onRefreshErrorList() {
         for (const auto &error: _errorMap[driveDbId]) {
             versionLocked = versionLocked || error.exitCode() == ExitCode::UpdateRequired;
 
-            if (error.autoResolved()) {
+            if (error.isAutoResolved()) {
                 ++autoResolvedErrorsCount;
             } else {
                 ++unresolvedErrorsCount;

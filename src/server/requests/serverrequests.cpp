@@ -1211,27 +1211,6 @@ bool ServerRequests::isDisplayableError(const Error &error) {
     }
 }
 
-bool ServerRequests::isAutoResolvedError(const Error &error) {
-    bool autoResolved = false;
-    if (error.level() == ErrorLevel::Server) {
-        autoResolved = false;
-    } else if (error.level() == ErrorLevel::SyncPal) {
-        autoResolved =
-                (error.exitCode() ==
-                         ExitCode::NetworkError // Sync is paused, and we try to restart it every RESTART_SYNCS_INTERVAL
-                 || (error.exitCode() == ExitCode::BackError // Sync is stopped and a full sync is restarted
-                     && error.exitCause() != ExitCause::DriveAccessError && error.exitCause() != ExitCause::DriveNotRenew) ||
-                 error.exitCode() == ExitCode::DataError); // Sync is stopped and a full sync is restarted
-    } else if (error.level() == ErrorLevel::Node) {
-        autoResolved = (error.conflictType() != ConflictType::None && !isConflictsWithLocalRename(error.conflictType())) ||
-                       (error.inconsistencyType() !=
-                        InconsistencyType::None /*&& error.inconsistencyType() != InconsistencyType::ForbiddenChar*/) ||
-                       error.cancelType() != CancelType::None;
-    }
-
-    return autoResolved;
-}
-
 ExitCode ServerRequests::getDbStructsFromSyncDbId(SyncDbId syncDbId, User &user, Account &account, Drive &drive, Sync &sync) {
     // Get User
     bool found = false;
@@ -1749,7 +1728,7 @@ ExitCode ServerRequests::deleteErrorsForSync(const SyncDbId syncDbId, const bool
         if (const auto exitInfo = keepError(error, keepErrorFlag); !exitInfo) return exitInfo;
         if (keepErrorFlag) continue;
 
-        if (isAutoResolvedError(error) == autoResolved) {
+        if (error.isAutoResolved() == autoResolved) {
             bool found = false;
             if (!ParmsDb::instance()->deleteError(error.dbId(), found)) {
                 LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteError for dbId=" << error.dbId());
