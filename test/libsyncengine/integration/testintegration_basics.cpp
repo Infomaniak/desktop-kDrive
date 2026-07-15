@@ -245,13 +245,17 @@ void TestIntegration::testSimpleUpload() {
 
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
 
+    // Note: SyncTime is a real Unix epoch (seconds since 1970), not a "YYYYMMDDHHMMSS"-formatted number.
+    const SyncTime dirTime = testhelpers::defaultTime - 3600; // 1 hour ago
     const Situation situation{Str2SyncName(R"({
         "content" : [
             {
                 "type" : "Directory",
                 "name" : "A",
-                "createdAt" : 20260601000000,
-                "lastModifiedAt" : 20260601000000,
+                "createdAt" : )" + std::to_string(dirTime) +
+                                           R"(,
+                "lastModifiedAt" : )" + std::to_string(dirTime) +
+                                           R"(,
                 "content" : [ {"type" : "Directory", "name" : "AA", "content" : [ {"type" : "File", "name" : "AAA"} ]} ]
             },
             {"type" : "Directory", "name" : "B"}, {"type" : "File", "name" : "C", "size" : 1234}
@@ -300,8 +304,6 @@ void TestIntegration::testSimpleUpload() {
 
     testHelper.tearDown();
     logStep("testSimpleUpload");
-
-
 }
 
 void TestIntegration::testNestedRemoteOperations() {
@@ -333,6 +335,80 @@ void TestIntegration::testNestedRemoteOperations() {
 
     testHelper.tearDown();
     logStep("testNestedRemoteOperations");
+}
+
+void TestIntegration::testOperationsMetadata() {
+    SyncpalTestHelper testHelper(_syncPal);
+    testHelper.setUp();
+
+    CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
+
+    // Start from a situation with explicit size/dates (SetInitialSituation extended format), to check that
+    // those are actually applied to the local replica (see setLocalItemDates in setinitialsituation.cpp).
+    // Note: SyncTime is a real Unix epoch (seconds since 1970), not a "YYYYMMDDHHMMSS"-formatted number.
+    const SyncTime initialTime = testhelpers::defaultTime - 3600; // 1 hour ago
+    constexpr int64_t initialSize = 111;
+    const Situation situation{Str2SyncName(R"({
+        "content" : [
+            { "type" : "File", "name" : "D", "size" : )" +
+                                           std::to_string(initialSize) + R"(, "createdAt" : )" + std::to_string(initialTime) +
+                                           R"(, "lastModifiedAt" : )" + std::to_string(initialTime) + R"( }
+        ]
+    })")};
+    CPPUNIT_ASSERT(testHelper.setInitialSituation(situation, situation));
+
+    FileStat fileStatD;
+    bool exists = false;
+    IoHelper::getFileStat(_syncPal->localPath() / "D", &fileStatD, exists, IoHelper::PathCheckOption::Insensitive);
+    CPPUNIT_ASSERT(exists);
+    CPPUNIT_ASSERT_EQUAL(initialSize, fileStatD.size);
+    CPPUNIT_ASSERT_EQUAL(initialTime, fileStatD.modificationTime);
+    logStep("testOperationsMetadata: initial situation dates/size applied locally");
+
+    // Local Edit operation: check that newSize/newCreatedAt/newLastModifiedAt are applied to the local file.
+    const SyncTime editedTime = testhelpers::defaultTime - 1800; // 30 minutes ago
+    constexpr int64_t editedSize = 222;
+    const Operations localOperations{Str2SyncName(R"({
+        "operations": [
+            { "type": "Edit", "path": "D", "newSize": )" +
+                                                  std::to_string(editedSize) + R"(, "newCreatedAt": )" +
+                                                  std::to_string(editedTime) + R"(, "newLastModifiedAt": )" +
+                                                  std::to_string(editedTime) + R"( }
+        ]
+    })")};
+    CPPUNIT_ASSERT(testHelper.executeOperations(ReplicaSide::Local, localOperations));
+
+    IoHelper::getFileStat(_syncPal->localPath() / "D", &fileStatD, exists, IoHelper::PathCheckOption::Insensitive);
+    CPPUNIT_ASSERT(exists);
+    CPPUNIT_ASSERT_EQUAL(editedSize, fileStatD.size);
+    CPPUNIT_ASSERT_EQUAL(editedTime, fileStatD.modificationTime);
+    logStep("testOperationsMetadata: local Edit operation applied newSize/newLastModifiedAt");
+
+    // Remote Edit operation: check that newSize/newLastModifiedAt actually reach the remote replica (i.e. an
+    // edited payload is uploaded instead of the unchanged local file, see applyRemoteEdit in
+    // executeoperations.cpp).
+    CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
+
+    const SyncTime remoteEditedTime = testhelpers::defaultTime - 900; // 15 minutes ago
+    constexpr int64_t remoteEditedSize = 333;
+    const Operations remoteOperations{Str2SyncName(R"({
+        "operations": [
+            { "type": "Edit", "path": "D", "newSize": )" +
+                                                   std::to_string(remoteEditedSize) + R"(, "newLastModifiedAt": )" +
+                                                   std::to_string(remoteEditedTime) + R"( }
+        ]
+    })")};
+    CPPUNIT_ASSERT(testHelper.executeOperations(ReplicaSide::Remote, remoteOperations));
+    CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
+
+    const auto remoteFileInfo = getRemoteFileInfoByPath(_driveDbId, _remoteSyncDir.id(), SyncPath("D"));
+    CPPUNIT_ASSERT(remoteFileInfo.isValid());
+    CPPUNIT_ASSERT_EQUAL(remoteEditedSize, remoteFileInfo.size);
+    CPPUNIT_ASSERT_EQUAL(remoteEditedTime, remoteFileInfo.modificationTime);
+    logStep("testOperationsMetadata: remote Edit operation applied newSize/newLastModifiedAt");
+
+    testHelper.tearDown();
+    logStep("testOperationsMetadata");
 }
 
 } // namespace KDC

@@ -42,6 +42,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         //CPPUNIT_TEST(testAll);
         CPPUNIT_TEST(testSimpleUpload);
         CPPUNIT_TEST(testNestedRemoteOperations);
+        CPPUNIT_TEST(testOperationsMetadata);
 #if defined(KD_LINUX)
         CPPUNIT_TEST(testNodeIdReuseFile2DirAndDir2File);
         CPPUNIT_TEST(testNodeIdReuseFile2File);
@@ -63,6 +64,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testUploadBigFile();
         void testSimpleUpload();
         void testNestedRemoteOperations();
+        void testOperationsMetadata();
 
         void inconsistencyTests();
 
