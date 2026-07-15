@@ -22,7 +22,7 @@ import QtQuick
 import QtQuick.Effects
 import kDrive.UI
 
-// Provides an interactive sidebar navigation row with an icon, label, selection state, and optional status badge.
+// Provides an interactive sidebar row whose selection, disabled, notification, and trailing-accessory states combine.
 Rectangle {
     id: root
 
@@ -30,13 +30,16 @@ Rectangle {
     property string label: ""
     property bool selected: false
     property int badgeCount: 0
+    property bool notificationDot: false
+    property url trailingIconSource
     property bool hovered: false
+    readonly property bool pressed: pointerArea.pressed
     signal triggered
 
     implicitHeight: IKMainWindow.sidebarItemHeight
     radius: IKRadius.r8
-    color: selected ? IKColors.surfaceTertiary : hovered ? IKColors.surfacePrimary : "transparent"
-    opacity: enabled ? 1 : 0.45
+    color: !enabled ? "transparent"
+                    : selected || pressed ? IKColors.surfaceTertiary : hovered ? IKColors.surfacePrimary : "transparent"
 
     Image {
         id: iconImage
@@ -52,33 +55,54 @@ Rectangle {
         layer.enabled: true
         layer.effect: MultiEffect {
             colorization: 1
-            colorizationColor: root.selected ? IKColors.textPrimary : IKColors.textSecondary
+            colorizationColor: root.enabled ? IKColors.textSecondary : IKColors.actionDisabled
         }
     }
 
     Text {
         anchors.left: iconImage.right
         anchors.leftMargin: IKSpacing.s12
-        anchors.right: badge.left
+        anchors.right: accessories.left
         anchors.rightMargin: IKSpacing.s8
         anchors.verticalCenter: parent.verticalCenter
         text: root.label
-        color: root.selected ? IKColors.textPrimary : IKColors.textSecondary
+        color: root.enabled ? IKColors.textPrimary : IKColors.actionDisabled
         font.pixelSize: IKFonts.bodySize
-        font.weight: root.selected ? IKFonts.emphasized : Font.Normal
+        font.weight: IKFonts.regular
         elide: Text.ElideRight
     }
 
-    IKBadge {
-        id: badge
+    Row {
+        id: accessories
 
         anchors.right: parent.right
         anchors.rightMargin: IKSpacing.s12
         anchors.verticalCenter: parent.verticalCenter
-        count: root.badgeCount
+        spacing: IKSpacing.s8
+
+        IKBadge {
+            count: root.enabled ? root.badgeCount : 0
+            dot: root.enabled && root.notificationDot
+        }
+
+        Image {
+            visible: root.trailingIconSource.toString().length > 0
+            width: visible ? IKIconSizes.medium : 0
+            height: IKIconSizes.medium
+            source: root.trailingIconSource
+            sourceSize.width: width
+            sourceSize.height: height
+            layer.enabled: visible
+            layer.effect: MultiEffect {
+                colorization: 1
+                colorizationColor: root.enabled ? IKColors.textSecondary : IKColors.actionDisabled
+            }
+        }
     }
 
     MouseArea {
+        id: pointerArea
+
         anchors.fill: parent
         enabled: root.enabled
         hoverEnabled: true
