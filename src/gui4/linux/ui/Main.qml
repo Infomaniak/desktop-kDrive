@@ -27,6 +27,7 @@ IKShadowedWindow {
     id: mainWindow
 
     required property var appRouter
+    required property var mainSidebarController
     required property var onboardingSessionManager
     required property var systemTrayController
 
@@ -69,14 +70,11 @@ IKShadowedWindow {
         anchors.fill: parent
         visible: !mainWindow.onboardingActive && mainWindow.appRouter.mainWindowActive
 
-        Text {
+        SidebarHeaderView {
             anchors.left: parent.left
-            anchors.leftMargin: IKSpacing.s16
-            anchors.verticalCenter: parent.verticalCenter
-            text: "kDrive"
-            color: IKColors.textPrimary
-            font.pixelSize: IKFonts.headlineSize
-            font.weight: IKFonts.emphasized
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            width: IKMainWindow.sidebarWidth
         }
 
         MainToolbar {
@@ -151,6 +149,7 @@ IKShadowedWindow {
 
         MainWindowView {
             appRouter: mainWindow.appRouter
+            mainSidebarController: mainWindow.mainSidebarController
         }
     }
 }
