@@ -446,7 +446,6 @@ void AppServer::init() {
         LOG_INFO(_logger, "Updater disabled by app_state table");
     }
 
-
     if (!_noUpdate) {
         // Update checks
         _updateManager = std::make_unique<UpdateManager>();
@@ -477,6 +476,10 @@ void AppServer::init() {
 
 #if defined(KD_MACOS)
     if (ParmsDb::instance()->versionUpdated()) Utility::restartLoginItemAgent();
+
+    if (const auto exitInfo = installVfs(); !exitInfo) {
+        LOG_WARN(_logger, "Error in installVfs: " << exitInfo);
+    }
 #endif
 
     // Start syncs
@@ -4065,6 +4068,35 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const QSet<QString> &blackList
 
     return ExitCode::Ok;
 }
+
+#if defined(KD_MACOS)
+ExitInfo AppServer::installVfs() {
+    VfsSetupParams vfsSetupParams;
+    vfsSetupParams.logger = _logger;
+    vfsSetupParams.sentryHandler = sentry::Handler::instance();
+    vfsSetupParams.executeCommand = []([[maybe_unused]] const CommString &command, [[maybe_unused]] bool broadcast) {
+        if (useCommManager()) {
+            _commManager->executeCommandDirect(command, broadcast);
+        }
+    };
+
+    QString error;
+    std::shared_ptr vfs = KDC::createVfsFromPlugin(KDC::VirtualFileMode::Mac, vfsSetupParams, error);
+    if (!vfs) {
+        LOG_WARN(_logger,
+                 "Error in Vfs::createVfsFromPlugin for mode " << KDC::VirtualFileMode::Mac << " : " << error.toStdString());
+        return {ExitCode::SystemError, ExitCause::UnableToStartVfs};
+    }
+
+    // Start VFS
+    if (ExitInfo exitInfo = vfs->start(_vfsInstallationDone, _vfsActivationDone, _vfsConnectionDone); !exitInfo) {
+        LOG_WARN(_logger, "Error in Vfs::start: " << exitInfo);
+        return exitInfo;
+    }
+
+    return ExitCode::Ok;
+}
+#endif
 
 ExitInfo AppServer::stopSyncPal(const SyncDbId syncDbId, const SyncPal::PauseCaller caller,
                                 const SyncPal::DbBehaviorAfterStop behavior) {
