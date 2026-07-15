@@ -47,6 +47,7 @@ class SentryService final : public QObject {
         static void writeCachedConsent(bool enabled);
         static void initializeFromCachedConsent();
         static void initializeWithLinuxConfig();
+        static void shutdown();
         [[nodiscard]] static bool isInitialized();
 
         static void reportError(const std::string &title, const std::string &message);
