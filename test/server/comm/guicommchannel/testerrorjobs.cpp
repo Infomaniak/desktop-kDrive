@@ -72,7 +72,7 @@ void TestGuiCommChannel::testErrorListJob() {
     (void) errorInfoObj.set("conflictType", toInt(ConflictType::None));
     (void) errorInfoObj.set("inconsistencyType", toInt(InconsistencyType::None));
     (void) errorInfoObj.set("cancelType", toInt(CancelType::None));
-    (void) errorInfoObj.set("autoResolved", false);
+    (void) errorInfoObj.set("autoResolved", true);
 
     Poco::JSON::Array errorInfoListArr;
     (void) errorInfoListArr.add(errorInfoObj);
