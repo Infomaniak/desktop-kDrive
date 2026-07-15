@@ -32,6 +32,22 @@ namespace Infomaniak.kDrive.Types
         NoUpdate,
         Unknown
     };
+
+    public enum AppStateKey
+    {
+        LastServerSelfRestartDate = 0,
+        LastClientSelfRestartDate = 1,
+        LastSuccessfulLogUploadDate = 2, // Format: "month,day,year,hour,minute,second"
+        LastLogUploadArchivePath = 3,
+        LogUploadState = 4,
+        LogUploadPercent = 5,
+        LogUploadToken = 6,
+        AppUid = 7,
+        NoUpdate = 8,
+        ShowV4Onboarding = 9,
+        Unknown, // Only for initialization purpose, never use it in the database
+        EnumEnd
+    };
     public enum RequestNum
     {
         Unknown = 0,
