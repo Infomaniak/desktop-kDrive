@@ -1,12 +1,3 @@
-/*
- * Loco ios export: Xcode Strings (legacy)
- * Project: kDrive Desktop
- * Locale: it, Italian
- * Tagged: macOS
- * Exported by: Valentin Perignon
- * Exported at: Wed, 24 Jun 2026 08:42:57 +0200
- */
-
 /* loco:6a3b7a3cab4f843c0405ebd2 */
 "aboutAppVersionCopyrightMac" = "Versione %@ (build %@)\n© 2019-%@ Infomaniak Network SA";
 
@@ -1130,7 +1121,7 @@
 "onboardingAdvancedSettingsDriveCustomizeLocationTip" = "La cartella scelta deve essere vuota per il corretto funzionamento della sincronizzazione.";
 
 /* loco:698c5c378bdea123d60afff7 */
-"onboardingAdvancedSettingsDriveExclusionDescription" = "Scegli le cartelle da sincronizzare su questo computer:";
+"onboardingAdvancedSettingsDriveExclusionDescription" = "Seleziona le cartelle da sincronizzare su questo computer:";
 
 /* loco:698c5bf9735560170309a842 */
 "onboardingAdvancedSettingsDriveExclusionTitle" = "Cartelle sincronizzate";
@@ -1215,6 +1206,15 @@
 
 /* loco:6931a14fa4031f6161097f42 */
 "onboardingSynchronizationInProgressTitle" = "Sincronizzazione in corso…";
+
+/* loco:6a57951024f1cb7e550ab932 */
+"onboardingV4Faq" = "Scopri l’app.";
+
+/* loco:6a57949f03c629668b0ec6b3 */
+"onboardingV4Message" = "Gestisci le tue sincronizzazioni in modo più semplice.";
+
+/* loco:6a5794493019354d4b087d62 */
+"onboardingV4Title" = "La tua nuova app kDrive è disponibile!";
 
 /* loco:698b0ee1587496f4f5035cd2 */
 "openKDriveAtStartupSetting" = "Apri kDrive all’avvio del computer";
@@ -1392,7 +1392,7 @@
 "synchroInProgress" = "i tuoi file sono in sincronizzazione";
 
 /* loco:6960b7fd4e868a099e022dc5 */
-"synchroPaused" = "La sincronizzazione è temporaneamente sospesa.";
+"synchroPaused" = "la sincronizzazione è in pausa";
 
 /* loco:6960f0917cb01bc78104ed32 */
 "synchroStatusInProgressDescription" = "I tuoi file recenti sono in fase di aggiornamento.";

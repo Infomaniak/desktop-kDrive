@@ -1,12 +1,3 @@
-/*
- * Loco ios export: Xcode Strings (legacy)
- * Project: kDrive Desktop
- * Locale: es, Spanish
- * Tagged: macOS
- * Exported by: Valentin Perignon
- * Exported at: Wed, 24 Jun 2026 08:42:57 +0200
- */
-
 /* loco:6a3b7a3cab4f843c0405ebd2 */
 "aboutAppVersionCopyrightMac" = "Versión %@ (compilación %@)\n© 2019-%@ Infomaniak Network SA";
 
@@ -161,7 +152,7 @@
 "buttonContactSupport" = "Contactar con el servicio de asistencia";
 
 /* loco:691deb0be15255c13908ba42 */
-"buttonContinue" = "Continúe en";
+"buttonContinue" = "Continuar";
 
 /* loco:698a09c2c9fb920b0c03e782 */
 "buttonCopyShareLink" = "Copiar enlace compartido";
@@ -1130,7 +1121,7 @@
 "onboardingAdvancedSettingsDriveCustomizeLocationTip" = "La carpeta elegida debe estar vacía para que la sincronización funcione correctamente.";
 
 /* loco:698c5c378bdea123d60afff7 */
-"onboardingAdvancedSettingsDriveExclusionDescription" = "Elija las carpetas a sincronizar en este ordenador:";
+"onboardingAdvancedSettingsDriveExclusionDescription" = "Selecciona las carpetas que deseas sincronizar en este ordenador:";
 
 /* loco:698c5bf9735560170309a842 */
 "onboardingAdvancedSettingsDriveExclusionTitle" = "Carpetas sincronizadas";
@@ -1215,6 +1206,15 @@
 
 /* loco:6931a14fa4031f6161097f42 */
 "onboardingSynchronizationInProgressTitle" = "Sincronización en curso…";
+
+/* loco:6a57951024f1cb7e550ab932 */
+"onboardingV4Faq" = "Descubre la aplicación.";
+
+/* loco:6a57949f03c629668b0ec6b3 */
+"onboardingV4Message" = "Controla tus sincronizaciones de forma más sencilla.";
+
+/* loco:6a5794493019354d4b087d62 */
+"onboardingV4Title" = "¡Ya está aquí tu nueva aplicación kDrive!";
 
 /* loco:698b0ee1587496f4f5035cd2 */
 "openKDriveAtStartupSetting" = "Abrir kDrive cuando se inicie el ordenador";
@@ -1305,7 +1305,7 @@
 "statusBarOpenApp" = "Abrir kDrive";
 
 /* loco:69ccce749ecf25eb9005e002 */
-"statusBarQuitApp" = "Deja";
+"statusBarQuitApp" = "Salir";
 
 /* loco:69ccce9808d1b71a410eab92 */
 "statusBarSettings" = "Ajustes";
@@ -1392,7 +1392,7 @@
 "synchroInProgress" = "sus archivos se están sincronizando";
 
 /* loco:6960b7fd4e868a099e022dc5 */
-"synchroPaused" = "La sincronización se ha detenido temporalmente.";
+"synchroPaused" = "la sincronización está en pausa";
 
 /* loco:6960f0917cb01bc78104ed32 */
 "synchroStatusInProgressDescription" = "Sus archivos recientes se están actualizando.";
