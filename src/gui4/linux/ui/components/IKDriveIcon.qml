@@ -22,6 +22,7 @@ import QtQuick
 import QtQuick.Effects
 import kDrive.UI
 
+// Renders the kDrive glyph tinted with the owning drive's color, without a background tile.
 Item {
     id: root
 

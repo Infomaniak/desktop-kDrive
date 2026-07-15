@@ -22,6 +22,7 @@ import QtQuick
 import QtQuick.Effects
 import kDrive.UI
 
+// Presents one configured synchronization by drive name and color, with an optional dropdown chevron.
 Rectangle {
     id: root
 
