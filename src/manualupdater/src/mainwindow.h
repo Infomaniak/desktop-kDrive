@@ -1,5 +1,8 @@
 #pragma once
 
+#include "updaterdata.h"
+
+
 #include <QMainWindow>
 #include <QLineEdit>
 #include <QPushButton>
@@ -10,11 +13,12 @@
 
 namespace KDUpdater {
 
+
 class MainWindow : public QMainWindow {
         Q_OBJECT
 
     public:
-        explicit MainWindow(QWidget *parent = nullptr);
+        explicit MainWindow(const UpdaterData &updaterData, QWidget *parent = nullptr);
 
     private slots:
         void onInstallClicked();
@@ -23,6 +27,7 @@ class MainWindow : public QMainWindow {
     private:
         void setupUi();
         void updateCurrentVersionLabel();
+        void fetchAndSetDefaultVersion();
         bool validateInputVersion(const std::string &inputVersion, std::string &errorMsg) const;
 
         QLabel *_currentVersionLabel = nullptr;
@@ -33,7 +38,9 @@ class MainWindow : public QMainWindow {
         QTextEdit *_statusLog = nullptr;
         QLabel *_validationHint = nullptr;
 
+        const UpdaterData &_updaterData;
         std::string _installedVersion;
+        std::string _appId;
 };
 
 } // namespace KDUpdater

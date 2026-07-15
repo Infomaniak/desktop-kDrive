@@ -1,5 +1,6 @@
 #include <QApplication>
-#include "MainWindow.h"
+#include "mainwindow.h"
+#include "updaterdata.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/log/log.h"
 #include "utility/types.h"
@@ -20,11 +21,19 @@ int main(int argc, char *argv[]) {
     if (!KDC::Log::instance(Path2WStr(logFilePath))) {
         return 1;
     }
-    // test the logger
+
     LOG_INFO(KDC::Log::instance()->getLogger(), "kDrive Recovery Updater started");
 
+    KDUpdater::UpdaterData updaterData;
+    if (!updaterData.initialize()) {
+        LOG_ERROR(KDC::Log::instance()->getLogger(), "Failed to initialize updater data");
+        return 1;
+    }
 
-    KDUpdater::MainWindow window;
+    // log the distributionChannel
+    LOG_INFO(KDC::Log::instance()->getLogger(), "Distribution Channel: " << updaterData.distributionChannel());
+
+    KDUpdater::MainWindow window(updaterData);
     window.show();
 
     return QApplication::exec();
