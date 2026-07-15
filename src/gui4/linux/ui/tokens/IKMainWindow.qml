@@ -25,5 +25,6 @@ QtObject {
     readonly property real syncSelectorHeight: 32
     readonly property real syncSelectorIconSize: 14
     readonly property real errorBadgeSize: 8
+    readonly property real notificationBadgeMinSize: 20
     readonly property real syncSelectorPopupMaxHeight: 260
 }
