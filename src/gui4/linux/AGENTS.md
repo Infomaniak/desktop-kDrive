@@ -43,6 +43,13 @@
 - Avoid magic layout values in QML; put reusable or semantic dimensions and ratios in `ui/tokens/` with explicit names.
 - Render the main-sidebar synchronization selector with the bare drive glyph tinted by the drive color; do not place
   the glyph on a colored tile.
+- Use white source fills for monochrome SVGs tinted through `MultiEffect.colorization`; black source fills retain too
+  little luminance and remain dark when the theme color changes.
+- Keep main-sidebar item states composable: selection, disabled state, notification count or dot, and a trailing
+  accessory must remain independent presentation inputs rather than a screen-specific state enum.
+- Main-sidebar selection changes only the row background; it must not recolor the icon or increase the label weight.
+- Keep shared color primitives aligned with the macOS design-token assets; notably, `NeutralBlue200` is `#DCE3F0` and
+  `NeutralBlue600` is `#1F242E`.
 - Store Linux v4 app-level non-translatable constants in `app/appconstants.h`; keep it header-only while constants stay
   simple.
 - Keep simple onboarding external-link actions in `OnboardingFlowController` when they do not mutate app/backend state;
