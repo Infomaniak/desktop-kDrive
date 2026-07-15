@@ -203,6 +203,12 @@ void AppClientLinux::openMainWindow() {
     _mainSelectionStore.ensureValidSelection();
     _appRouter.showMainWindow();
     _systemTrayController.showMainWindow();
+    _serverCommService.requestActivateLoadInfo([](const ExitInfo &exitInfo) {
+        if (!exitInfo) {
+            qCWarning(lcAppClientLinux) << "Main window live info refresh failed | code:" << exitInfo.code()
+                                        << "/ cause:" << exitInfo.cause();
+        }
+    });
     qCInfo(lcAppClientLinux) << "Main window opened"
                              << "| configuredDrives:" << _appCache.driveContexts().size()
                              << "| configuredSyncs:" << _appCache.syncContexts().size()
