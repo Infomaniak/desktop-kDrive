@@ -77,12 +77,12 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode getExclusionAppList(bool def, QList<ExclusionAppInfo> &list);
         static ExitCode getExclusionAppList(bool def, std::vector<ExclusionAppInfo> &list);
         static ExitCode setExclusionAppList(bool def, const QList<ExclusionAppInfo> &list);
-        static ExitCode getErrorInfoList(ErrorLevel level, SyncDbId syncDbId, int limit, QList<Error> &list);
-        static ExitInfo getErrorInfoList(int limit, std::vector<Error> &list);
+        static ExitCode getErrorList(ErrorLevel level, SyncDbId syncDbId, int limit, QList<Error> &list);
+        static ExitInfo getErrorList(int limit, std::vector<Error> &list);
         static ExitCode getConflictList(SyncDbId syncDbId, const std::unordered_set<ConflictType> &filter,
-                                        std::vector<Error> &errorLis);
-        static ExitCode getConflictErrorInfoList(DriveDbId driveDbId, const std::unordered_set<ConflictType> &filter,
-                                                 QList<Error> &errorInfoList);
+                                        std::vector<Error> &errorList);
+        static ExitCode getConflictErrorList(DriveDbId driveDbId, const std::unordered_set<ConflictType> &filter,
+                                             QList<Error> &errorList);
         static ExitCode deleteErrorsServer();
         static ExitCode deleteErrorsForSync(SyncDbId syncDbId, bool autoResolved);
         static ExitCode deleteInvalidTokenErrors();

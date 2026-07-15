@@ -32,7 +32,7 @@ class GenericErrorItemWidget : public AbstractFileItemWidget {
         Q_OBJECT
 
     public:
-        explicit GenericErrorItemWidget(std::shared_ptr<ClientGui> gui, const QString &errorMsg, const Error &errorInfo,
+        explicit GenericErrorItemWidget(std::shared_ptr<ClientGui> gui, const QString &errorMsg, const Error &error,
                                         QWidget *parent = nullptr);
 
         void init() override;
@@ -44,7 +44,7 @@ class GenericErrorItemWidget : public AbstractFileItemWidget {
         [[nodiscard]] bool openInWebview() const;
 
         std::shared_ptr<ClientGui> _gui;
-        Error _errorInfo;
+        Error _error;
         const QString _errorMsg;
 };
 

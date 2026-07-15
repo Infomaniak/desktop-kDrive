@@ -29,7 +29,7 @@ class SignalErrorAddedJob : public AbstractGuiJob {
 
     private:
         // Output parameters
-        Error _errorInfo;
+        Error _error;
 
         ExitInfo deserializeInputParms() override { return ExitCode::Ok; }
         ExitInfo serializeOutputParms() override;

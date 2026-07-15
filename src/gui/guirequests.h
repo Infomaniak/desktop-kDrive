@@ -66,7 +66,7 @@ struct GuiRequests {
         static ExitCode setExclusionAppList(bool def, const QList<ExclusionAppInfo> &appList);
         static ExitCode getFetchingAppList(QHash<QString, QString> &appTable);
 #endif
-        static ExitCode getErrorInfoList(ErrorLevel level, SyncDbId syncDbId, int limit, QList<Error> &list);
+        static ExitCode getErrorList(ErrorLevel level, SyncDbId syncDbId, int limit, QList<Error> &list);
         static ExitCode getConflictList(DriveDbId driveDbId, const QList<ConflictType> &filter, QList<Error> &list);
         static ExitCode deleteErrorsServer();
         static ExitCode deleteErrorsForSync(SyncDbId syncDbId, bool autoResolved);

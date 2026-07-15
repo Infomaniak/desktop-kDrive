@@ -48,12 +48,12 @@ ExitInfo ErrorListJob::deserializeInputParms() {
 }
 
 ExitInfo ErrorListJob::serializeOutputParms() {
-    writeParamValues(outParamsError, _errorInfoList, info2DynamicVar<Error>);
+    writeParamValues(outParamsError, _errorList, info2DynamicVar<Error>);
     return ExitCode::Ok;
 }
 
 ExitInfo ErrorListJob::process() {
-    ExitInfo exitInfo = ServerRequests::getErrorInfoList(_limit, _errorInfoList);
+    ExitInfo exitInfo = ServerRequests::getErrorList(_limit, _errorList);
     if (!exitInfo) {
         LOG_WARN(_logger, "Error in ServerRequests::getErrorInfoList: " << exitInfo);
         addError(Error(ERR_ID, exitInfo));

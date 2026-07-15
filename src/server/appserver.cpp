@@ -1145,9 +1145,9 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             const auto syncDbId = static_cast<SyncDbId>(tmpSyncDbId);
 
             QList<Error> list;
-            const auto exitCode = ServerRequests::getErrorInfoList(level, syncDbId, limit, list);
+            const auto exitCode = ServerRequests::getErrorList(level, syncDbId, limit, list);
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::getErrorInfoList: code=" << exitCode);
+                LOG_WARN(_logger, "Error in Requests::getErrorList: code=" << exitCode);
                 addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
             }
 
@@ -1181,9 +1181,9 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             ExitCode exitCode = ExitCode::Ok;
             for (auto &sync: syncs) {
-                exitCode = ServerRequests::getConflictErrorInfoList(sync.dbId(), filter2, list);
+                exitCode = ServerRequests::getConflictErrorList(sync.dbId(), filter2, list);
                 if (exitCode != ExitCode::Ok) {
-                    LOG_WARN(_logger, "Error in Requests::getConflictErrorInfoList: code=" << exitCode);
+                    LOG_WARN(_logger, "Error in Requests::getConflictErrorList: code=" << exitCode);
                     addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
                 }
             }

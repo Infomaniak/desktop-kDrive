@@ -1607,7 +1607,7 @@ ExitCode ServerRequests::setExclusionAppList(const bool def, const QList<Exclusi
 }
 #endif
 
-ExitCode ServerRequests::getErrorInfoList(const ErrorLevel level, const SyncDbId syncDbId, const int limit, QList<Error> &list) {
+ExitCode ServerRequests::getErrorList(const ErrorLevel level, const SyncDbId syncDbId, const int limit, QList<Error> &list) {
     std::vector<Error> errorList;
     if (!ParmsDb::instance()->selectAllErrors(level, syncDbId, limit, errorList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllErrors");
@@ -1624,7 +1624,7 @@ ExitCode ServerRequests::getErrorInfoList(const ErrorLevel level, const SyncDbId
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::getErrorInfoList(const int limit, std::vector<Error> &list) {
+ExitInfo ServerRequests::getErrorList(const int limit, std::vector<Error> &list) {
     std::vector<Error> errorList;
     if (!ParmsDb::instance()->selectAllErrors(limit, errorList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllErrors");
@@ -1660,8 +1660,8 @@ ExitCode ServerRequests::getConflictList(const SyncDbId syncDbId, const std::uno
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getConflictErrorInfoList(const SyncDbId syncDbId, const std::unordered_set<ConflictType> &filter,
-                                                  QList<Error> &errorInfoList) {
+ExitCode ServerRequests::getConflictErrorList(const SyncDbId syncDbId, const std::unordered_set<ConflictType> &filter,
+                                              QList<Error> &errorInfoList) {
     std::vector<Error> errorList;
     ServerRequests::getConflictList(syncDbId, filter, errorList);
 

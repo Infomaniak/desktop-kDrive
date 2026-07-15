@@ -109,7 +109,7 @@ void TestGuiCommChannel::testErrorListJob() {
         e1.setCancelType(CancelType::None);
         e1.setDestinationPath("");
         e1.setAutoResolved(false);
-        errorJob->_errorInfoList = {e1};
+        errorJob->_errorList = {e1};
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)

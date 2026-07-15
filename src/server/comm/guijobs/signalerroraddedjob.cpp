@@ -26,12 +26,12 @@ static const auto outParamsError = "errorInfo";
 namespace KDC {
 
 SignalErrorAddedJob::SignalErrorAddedJob(const Error &error) :
-    _errorInfo(error) {
+    _error(error) {
     _signalNum = SignalNum::UTILITY_ERROR_ADDED;
 }
 
 ExitInfo SignalErrorAddedJob::serializeOutputParms() {
-    writeParamValue(outParamsError, _errorInfo, info2DynamicVar<Error>);
+    writeParamValue(outParamsError, _error, info2DynamicVar<Error>);
     return ExitCode::Ok;
 }
 

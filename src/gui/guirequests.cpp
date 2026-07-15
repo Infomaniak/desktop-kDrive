@@ -61,7 +61,7 @@ ExitCode GuiRequests::getUserList(QList<User> &list) {
     return exitCode;
 }
 
-ExitCode GuiRequests::getErrorInfoList(const ErrorLevel level, const SyncDbId syncDbId, const int limit, QList<Error> &list) {
+ExitCode GuiRequests::getErrorList(const ErrorLevel level, const SyncDbId syncDbId, const int limit, QList<Error> &list) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << level;

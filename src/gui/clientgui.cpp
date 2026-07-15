@@ -899,9 +899,9 @@ void ClientGui::getWebviewDriveLink(const DriveDbId driveDbId, QString &driveLin
     }
 }
 
-void ClientGui::errorInfoList(const DriveDbId driveDbId, QList<Error> &errorInfoList) {
+void ClientGui::errorList(const DriveDbId driveDbId, QList<Error> &errorList) {
     if (_errorMap.find(driveDbId) != _errorMap.end()) {
-        errorInfoList = _errorMap[driveDbId];
+        errorList = _errorMap[driveDbId];
     }
 }
 
@@ -929,9 +929,9 @@ void ClientGui::onScreenUpdated(QScreen *screen) {
 }
 
 ExitCode ClientGui::loadError(const DriveDbId driveDbId, const SyncDbId syncDbId, ErrorLevel level) {
-    const ExitCode exitCode = GuiRequests::getErrorInfoList(level, syncDbId, MAX_ERRORS_DISPLAYED, _errorMap[driveDbId]);
+    const ExitCode exitCode = GuiRequests::getErrorList(level, syncDbId, MAX_ERRORS_DISPLAYED, _errorMap[driveDbId]);
     if (exitCode != ExitCode::Ok) {
-        qCWarning(lcClientGui()) << "Error in Requests::getErrorInfoList for level=" << level;
+        qCWarning(lcClientGui()) << "Error in Requests::getErrorList for level=" << level;
     }
 
     return exitCode;
@@ -953,8 +953,8 @@ void ClientGui::onRefreshErrorList() {
 
         _generalErrorsCounter = static_cast<Count>(_errorMap[0].count());
         emit errorAdded(0);
-        for (const auto &errorInfo: _errorMap[0]) {
-            versionLocked = versionLocked || errorInfo.exitCode() == ExitCode::UpdateRequired;
+        for (const auto &error: _errorMap[0]) {
+            versionLocked = versionLocked || error.exitCode() == ExitCode::UpdateRequired;
         }
 
         _driveWithNewErrorSet.remove(0);
@@ -980,10 +980,10 @@ void ClientGui::onRefreshErrorList() {
 
         Count unresolvedErrorsCount = 0;
         Count autoResolvedErrorsCount = 0;
-        for (const auto &errorInfo: _errorMap[driveDbId]) {
-            versionLocked = versionLocked || errorInfo.exitCode() == ExitCode::UpdateRequired;
+        for (const auto &error: _errorMap[driveDbId]) {
+            versionLocked = versionLocked || error.exitCode() == ExitCode::UpdateRequired;
 
-            if (errorInfo.autoResolved()) {
+            if (error.autoResolved()) {
                 ++autoResolvedErrorsCount;
             } else {
                 ++unresolvedErrorsCount;

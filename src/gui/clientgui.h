@@ -77,7 +77,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void openLoginDialog(UserDbId userDbId, bool invalidTokenError);
         void newDriveWizard(bool addDriveAccept = false);
         void getWebviewDriveLink(UserDbId userDbId, QString &driveLink);
-        void errorInfoList(DriveDbId driveDbId, QList<Error> &errorInfoList);
+        void errorList(DriveDbId driveDbId, QList<Error> &errorList);
         void resolveConflictErrors(DriveDbId driveDbId, bool keepLocalVersion);
         void resolveUnsupportedCharErrors(DriveDbId driveDbId);
         void closeAllExcept(const QWidget *exceptWidget);
