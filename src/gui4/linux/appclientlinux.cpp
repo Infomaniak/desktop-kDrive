@@ -134,6 +134,7 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     });
     _qmlEngine.setInitialProperties({
             {QStringLiteral("appRouter"), QVariant::fromValue<QObject *>(&_appRouter)},
+            {QStringLiteral("mainSidebarController"), QVariant::fromValue<QObject *>(&_mainSidebarController)},
             {QStringLiteral("onboardingSessionManager"), QVariant::fromValue<QObject *>(&_onboardingSessionManager)},
             {QStringLiteral("systemTrayController"), QVariant::fromValue<QObject *>(&_systemTrayController)},
     });
