@@ -26,6 +26,13 @@ class LinuxUpdater final : public AbstractUpdater {
     public:
         void onUpdateFound() override;
         void startInstaller() override { /* No automatic update on Linux for now */ }
+
+        /**
+         * @brief Downloads the AppImage for the override version
+         *        into ~/Applications and makes it executable.
+         */
+        ExitCode installVersion() override;
+
         bool checkMinOsVersion(const std::string &minOsVersion) const override;
 };
 
