@@ -138,6 +138,11 @@ set(GUI_QML_RESOURCE_FILES # Resources for the QML files (e.g. qmldir, js files,
 )
 
 set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
+        ui/assets/main/activities.svg
+        ui/assets/main/chevron-down.svg
+        ui/assets/main/folder.svg
+        ui/assets/main/house.svg
+        ui/assets/main/storage.svg
         ui/assets/onboarding/drive-icon-glyph.svg
         ui/assets/taskbar/logo_kdrive.svg
         ui/assets/tray/error.svg
