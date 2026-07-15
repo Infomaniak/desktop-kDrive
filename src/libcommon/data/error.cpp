@@ -211,7 +211,6 @@ void Error::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, outParamsConflictType, _conflictType);
     CommonUtility::readValueFromStruct(dstruct, outParamsInconsistencyType, _inconsistencyType);
     CommonUtility::readValueFromStruct(dstruct, outParamsCancelType, _cancelType);
-    // CommonUtility::readValueFromStruct(dstruct, outParamsAutoResolved, _autoResolved);
 }
 
 bool Error::isAutoResolved() const {
