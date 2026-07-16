@@ -23,6 +23,7 @@ public enum Constants {
     public static let bundleID = Bundle.main.bundleIdentifier ?? "com.infomaniak.drive"
     public static let lightSyncBundleID = "com.infomaniak.drive.desktopclient.LiteSyncExt"
     public static let kDriveRootNodeId = "1"
+    public static let matomoId = "41"
 }
 
 public enum URLConstants {
@@ -37,4 +38,6 @@ public enum URLConstants {
     public static func releaseNote(versionTag: String, languageCode: String) -> URL {
         return desktopClientStorage.appendingPathComponent("kDrive-\(versionTag)-macos-\(languageCode).html")
     }
+
+    public static let matomo = URL(string: "https://analytics.infomaniak.com/matomo.php")!
 }
