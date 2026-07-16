@@ -21,33 +21,45 @@
 #include "app/cache/mainselectionstore.h"
 
 #include <QAbstractListModel>
+#include <QColor>
+#include <QString>
 
 #include <vector>
 
 namespace KDC {
 
 /**
- * QML list adapter for configured synchronizations.
+ * QML list adapter for the main-sidebar drive and synchronization selector.
  *
- * Rows are projections of AppCache sync contexts. MainSelectionStore remains the selection authority; this model only
- * exposes the selected row and role for presentation.
+ * Rows contain only selector presentation data. AppCache owns entities and MainSelectionStore remains the selection
+ * authority; this model does not own navigation, desktop actions, or screen state.
  */
-class SyncListModel final : public QAbstractListModel {
+class SyncSelectorModel final : public QAbstractListModel {
         Q_OBJECT
         Q_PROPERTY(qint32 selectedRow READ selectedRow NOTIFY selectedRowChanged)
 
     public:
+        enum class EntryType : uint8_t {
+            DriveOnly,
+            ClassicSync,
+            AdvancedSync,
+        };
+        Q_ENUM(EntryType)
+
         enum Role {
-            SyncDbIdRole = Qt::UserRole + 1,
+            EntryTypeRole = Qt::UserRole + 1,
+            DriveDbIdRole,
+            SyncDbIdRole,
             TitleRole,
             SubtitleRole,
             DriveColorRole,
             ErrorCountRole,
+            WarningRole,
             SelectedRole,
         };
         Q_ENUM(Role)
 
-        explicit SyncListModel(const AppCache &cache, MainSelectionStore &selectionStore, QObject *parent = nullptr);
+        explicit SyncSelectorModel(const AppCache &cache, MainSelectionStore &selectionStore, QObject *parent = nullptr);
 
         [[nodiscard]] int rowCount(const QModelIndex &parent = QModelIndex()) const override;
         [[nodiscard]] QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
@@ -58,13 +70,25 @@ class SyncListModel final : public QAbstractListModel {
         void selectedRowChanged();
 
     private:
+        struct Entry {
+                EntryType type{EntryType::DriveOnly};
+                DriveDbId driveDbId{0};
+                SyncDbId syncDbId{0};
+                QString title;
+                QString subtitle;
+                QColor driveColor;
+                qint32 errorCount{0};
+                bool warning{false};
+        };
+
         void rebuild();
         void handleSelectionChanged();
-        [[nodiscard]] qint32 rowForSyncDbId(SyncDbId syncDbId) const;
+        [[nodiscard]] qint32 rowForSelection(DriveDbId driveDbId, SyncDbId syncDbId) const;
 
         const AppCache &_cache;
         MainSelectionStore &_selectionStore;
-        std::vector<SyncContext> _contexts;
+        std::vector<Entry> _entries;
+        DriveDbId _selectedDriveDbId{0};
         SyncDbId _selectedSyncDbId{0};
 };
 

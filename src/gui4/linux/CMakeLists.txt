@@ -37,8 +37,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/cache/parametersstore.h
         app/mainwindow/mainsidebarcontroller.cpp
         app/mainwindow/mainsidebarcontroller.h
-        app/mainwindow/synclistmodel.cpp
-        app/mainwindow/synclistmodel.h
+        app/mainwindow/syncselectormodel.cpp
+        app/mainwindow/syncselectormodel.h
         app/navigation/approuter.cpp
         app/navigation/approuter.h
         app/onboarding/availabledrivesmodel.cpp
