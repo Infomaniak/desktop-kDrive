@@ -118,6 +118,9 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testUtilityCancelLogToSupportJob);
         CPPUNIT_TEST(testUtilityGetLogEstimatedSizeJob);
         CPPUNIT_TEST(testUtilitySendLogToSupportJob);
+#if defined(KD_MACOS)
+        CPPUNIT_TEST(testUtilityInstallMacLiteSyncExtJob);
+#endif
         CPPUNIT_TEST(testUpdaterVersionInfoJob);
         CPPUNIT_TEST(testUpdaterStateJob);
         CPPUNIT_TEST(testUpdaterStartInstallerJob);
@@ -198,6 +201,9 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testUtilityCancelLogToSupportJob();
         void testUtilityGetLogEstimatedSizeJob();
         void testUtilitySendLogToSupportJob();
+#if defined(KD_MACOS)
+        void testUtilityInstallMacLiteSyncExtJob();
+#endif
         void testUpdaterVersionInfoJob();
         void testUpdaterStateJob();
         void testUpdaterStartInstallerJob();

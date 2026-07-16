@@ -244,6 +244,14 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         [[nodiscard]] ExitInfo acknowledgeManyDeletes(SyncDbId syncDbId, TooManyDeletesUserChoice userChoice);
 
+#if defined(KD_MACOS)
+        //! Install the Vfs Mac extension.
+        /*!
+          \return The exit code of the operation.
+        */
+        [[nodiscard]] ExitInfo installVfs();
+#endif
+
     protected:
         // ServerRequests methods are accessible through std::function pointers in order to be mocked in tests
         std::function<ExitInfo(User &user, bool &updated)> _loadUserInfo =
@@ -323,14 +331,6 @@ class AppServer : public SharedTools::QtSingleApplication {
         [[nodiscard]] ExitInfo initSyncPal(const Sync &sync, const QSet<QString> &blackList, bool start = true,
                                            const std::chrono::seconds &startDelay = std::chrono::seconds(0),
                                            bool resumedByUser = false, bool firstInit = false);
-
-#if defined(KD_MACOS)
-        //! Install the Vfs Mac extension.
-        /*!
-          \return The exit code of the operation.
-        */
-        [[nodiscard]] ExitInfo installVfs();
-#endif
 
         [[nodiscard]] ExitInfo createAndStartVfs(const Sync &sync) noexcept;
         [[nodiscard]] ExitInfo setSupportsVirtualFiles(SyncDbId syncDbId, bool value, bool asyncResponse);
