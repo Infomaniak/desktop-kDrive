@@ -24,6 +24,8 @@ import kDriveCoreUI
 import kDriveResources
 
 final class LoginViewController: OnboardingStepViewController {
+    @LazyInjectService var matomo: MatomoUtils
+
     private let viewModel: LoginViewModel
 
     private var bindStore = Set<AnyCancellable>()
@@ -71,10 +73,12 @@ final class LoginViewController: OnboardingStepViewController {
     }
 
     @objc private func openLoginWebView() {
+        matomo.track(eventWithCategory: .onboardingWelcomePage, name: "openSignInWeb")
         viewModel.startWebAuthenticationLogin(anchor: view.window)
     }
 
     @objc private func openCreateAccount() {
+        matomo.track(eventWithCategory: .onboardingWelcomePage, name: "openSignUpWeb")
         viewModel.openAccountRegistrationProcess()
     }
 
