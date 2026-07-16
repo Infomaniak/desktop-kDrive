@@ -31,26 +31,7 @@ class AbstractUpdater {
         AbstractUpdater();
         virtual ~AbstractUpdater() = default;
 
-        /**
-         * @brief Force a specific version info, bypassing the version retriever.
-         *        Used by manual updater to install a specific version.
-         */
-        void setVersionInfo(const VersionInfo &versionInfo) { _overrideVersionInfo = versionInfo; }
-
-        [[nodiscard]] virtual const VersionInfo &versionInfo() const {
-            if (_overrideVersionInfo.isValid()) {
-                return _overrideVersionInfo;
-            }
-            return _versionRetriever->versionInfo();
-        }
-
-        /**
-         * @brief Install a specific version synchronously.
-         *        Downloads, verifies and runs the installer.
-         * @return ExitCode::Ok on success.
-         */
-        virtual ExitCode installVersion() { return ExitCode::SystemError; }
-
+        [[nodiscard]] virtual const VersionInfo &versionInfo() const { return _versionRetriever->versionInfo(); }
         [[nodiscard]] const UpdateState &state() const { return _state; }
 
         /**
@@ -93,7 +74,6 @@ class AbstractUpdater {
         void onAppVersionReceived();
 
         std::shared_ptr<VersionRetriever> _versionRetriever;
-        VersionInfo _overrideVersionInfo;
         UpdateState _state{UpdateState::UpToDate}; // Current state of the update process.
         std::function<void(UpdateState)> _stateChangeCallback = nullptr;
         bool _appShouldBeBlocked{false};

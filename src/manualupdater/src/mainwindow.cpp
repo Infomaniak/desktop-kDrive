@@ -172,108 +172,13 @@ void MainWindow::onInstallClicked() {
         return;
     }
 
-    if (!_fetchedVersionInfo.isValid()) {
-        QMessageBox::critical(this, tr("No version info"),
-                              tr("Cannot install: no version information was fetched. Please restart the updater."));
-        return;
-    }
-
-    _installButton->setEnabled(false);
-    _statusLog->append(tr("Starting installation of kDrive %1...").arg(QString::fromStdString(desiredVersion)));
+    _statusLog->append(tr("Starting download of kDrive %1...").arg(QString::fromStdString(desiredVersion)));
     _progressBar->setValue(10);
+    _installButton->setEnabled(false);
 
-    const KDC::VersionInfo fetchedInfo = _fetchedVersionInfo; // copy for thread safety
-    QPointer<MainWindow> weakThis = this;
-    std::thread([weakThis, desiredVersion, fetchedInfo]() {
-        LOGW_INFO(KDC::Log::instance()->getLogger(),
-                  L"Starting installation thread for version " << QString::fromStdString(desiredVersion).toStdWString());
-
-        bool success = false;
-        QString message;
-
-        // Build specific version info with user-specified version
-        KDC::VersionInfo specificVersion = fetchedInfo;
-        specificVersion.checksum.clear(); // we don't know the specific version's checksum
-
-        const std::string originalUrl = specificVersion.downloadUrl;
-        const std::string oldVersion = specificVersion.fullVersion();
-        LOGW_INFO(KDC::Log::instance()->getLogger(), L"OLD version: " << QString::fromStdString(oldVersion).toStdWString());
-        if (auto pos = specificVersion.downloadUrl.find(oldVersion); pos != std::string::npos) {
-            specificVersion.downloadUrl.replace(pos, oldVersion.length(), desiredVersion);
-        } else if (pos = specificVersion.downloadUrl.find(specificVersion.tag); pos != std::string::npos) {
-            // Fallback: try to replace tag only
-            specificVersion.downloadUrl.replace(pos, specificVersion.tag.length(), desiredVersion);
-        } else {
-            message = tr("Failed to construct download URL for version %1.").arg(QString::fromStdString(desiredVersion));
-            LOGW_INFO(KDC::Log::instance()->getLogger(), message.toStdWString());
-            if (weakThis) {
-                QMetaObject::invokeMethod(
-                        weakThis, [weakThis, message]() { weakThis->onInstallFinished(false, message); }, Qt::QueuedConnection);
-                return message;
-            }
-        }
-
-
-        LOGW_INFO(KDC::Log::instance()->getLogger(),
-                  L"Original download URL: " << QString::fromStdString(originalUrl).toStdWString());
-        LOGW_INFO(KDC::Log::instance()->getLogger(),
-                  L"Target download URL for version " << QString::fromStdString(desiredVersion).toStdWString() << L": "
-                                                      << QString::fromStdString(specificVersion.downloadUrl).toStdWString());
-
-        if (weakThis) {
-            QMetaObject::invokeMethod(
-                    weakThis,
-                    [weakThis]() {
-                        weakThis->_statusLog->append(tr("Downloading installer..."));
-                        weakThis->_progressBar->setValue(30);
-                    },
-                    Qt::QueuedConnection);
-        }
-
-#if defined(KD_WINDOWS)
-        auto updater = KDC::createUpdater();
-        updater->setVersionInfo(specificVersion);
-        auto exitCode = updater->installVersion();
-        success = (exitCode == KDC::ExitCode::Ok);
-        if (!success) {
-            if (exitCode == KDC::ExitCode::NetworkError) {
-                message = tr("The specified version does not exist or the download failed.");
-            } else if (exitCode == KDC::ExitCode::UpdateError) {
-                message = tr("File verification failed. The downloaded file may be corrupted.");
-            } else {
-                message = tr("Installation failed (error code %1).").arg(static_cast<int>(exitCode));
-            }
-        } else {
-            message = tr("Installer launched. The update will install silently.");
-        }
-#elif defined(KD_LINUX)
-        auto updater = KDC::createUpdater();
-        updater->setVersionInfo(specificVersion);
-        auto exitCode = updater->installVersion();
-        success = (exitCode == KDC::ExitCode::Ok);
-        if (!success) {
-            if (exitCode == KDC::ExitCode::NetworkError) {
-                message = tr("The specified version does not exist or the download failed.");
-            } else {
-                message = tr("Installation failed (error code %1).").arg(static_cast<int>(exitCode));
-            }
-        } else {
-            message = tr("AppImage downloaded to ~/Applications/. If needed, move it to replace your current kDrive AppImage.");
-        }
-#else // macOS
-        if (weakThis) {
-            success = weakThis->installMacOS(specificVersion, message);
-        } else {
-            message = tr("Window was closed during operation.");
-        }
-#endif
-
-        if (weakThis) {
-            QMetaObject::invokeMethod(
-                    weakThis, [weakThis, success, message]() { weakThis->onInstallFinished(success, message); },
-                    Qt::QueuedConnection);
-        }
-    }).detach();
+    _statusLog->append(tr("(Download logic is not yet implemented.)"));
+    _progressBar->setValue(0);
+    _installButton->setEnabled(true);
 }
 
 void MainWindow::onInstallProgress(int percent, const QString &message) {
