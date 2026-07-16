@@ -9,33 +9,37 @@ set(SOURCES
     src/mainwindow.cpp
     src/updaterdata.cpp
     src/httpdownloader.cpp
-        src/parmsdblite.cpp
+    src/parmsdblite.cpp
+    src/updater/abstractosupdater.cpp
 )
 
 if(WIN32)
-    list(APPEND SOURCES
-        ${CMAKE_SOURCE_DIR}/src/server/updater/abstractupdater.cpp
-        ${CMAKE_SOURCE_DIR}/src/server/updater/versionretriever.cpp
-        ${CMAKE_SOURCE_DIR}/src/server/updater/windowsupdater.cpp
-        ${CMAKE_SOURCE_DIR}/src/server/updater/windowsupdater.h
-    )
-elseif(UNIX AND NOT APPLE)
-    list(APPEND SOURCES
-        ${CMAKE_SOURCE_DIR}/src/server/updater/abstractupdater.cpp
-        ${CMAKE_SOURCE_DIR}/src/server/updater/versionretriever.cpp
-        ${CMAKE_SOURCE_DIR}/src/server/updater/linuxupdater.cpp
-        ${CMAKE_SOURCE_DIR}/src/server/updater/linuxupdater.h
-    )
+    list(APPEND SOURCES src/updater/windowsupdater.cpp)
+elseif(APPLE)
+    list(APPEND SOURCES src/updater/macosupdater.cpp)
+else()
+    list(APPEND SOURCES src/updater/linuxupdater.cpp)
 endif()
 
 set(HEADERS
     src/mainwindow.h
     src/updaterdata.h
     src/httpdownloader.h
-        src/parmsdblite.h
+    src/parmsdblite.h
+    src/updater/abstractosupdater.h
 )
 
+if(WIN32)
+    list(APPEND HEADERS src/updater/windowsupdater.h)
+elseif(APPLE)
+    list(APPEND HEADERS src/updater/macosupdater.h)
+else()
+    list(APPEND HEADERS src/updater/linuxupdater.h)
+endif()
+
 add_executable(kDriveRecoveryUpdater ${SOURCES} ${HEADERS})
+
+find_package(Poco 1.13.3 REQUIRED Foundation Net NetSSL JSON)
 
 target_link_libraries(kDriveRecoveryUpdater PRIVATE
     Qt6::Core
@@ -44,11 +48,15 @@ target_link_libraries(kDriveRecoveryUpdater PRIVATE
     ${libcommon_NAME}
     ${libcommonserver_NAME}
     ${libparms_NAME}
-    ${libsyncengine_NAME}
+    Poco::Foundation
+    Poco::Net
+    Poco::NetSSL
+    Poco::JSON
 )
 
 target_include_directories(kDriveRecoveryUpdater PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_SOURCE_DIR}/src
     ${CMAKE_SOURCE_DIR}/src/server
 )

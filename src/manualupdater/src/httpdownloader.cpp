@@ -26,23 +26,29 @@
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPResponse.h>
 #include <Poco/URI.h>
-
-#include <sstream>
-#include <Poco/JSON/Parser.h>
 #include <Poco/Net/HTTPSClientSession.h>
 
+#include <Poco/JSON/Parser.h>
+#include <fstream>
+#include <sstream>
+
 namespace KDUpdater {
+
+namespace {
+Poco::Net::Context::Ptr createSslContext() {
+    Poco::Net::Context::Ptr context =
+            new Poco::Net::Context(Poco::Net::Context::TLS_CLIENT_USE, "", "", "", Poco::Net::Context::VERIFY_NONE);
+    context->requireMinimumProtocol(Poco::Net::Context::PROTO_TLSV1_2);
+    return context;
+}
+} // namespace
 
 HttpDownloader::Result HttpDownloader::get(const std::string &url) {
     Result result;
     try {
         Poco::URI uri(url);
 
-        Poco::Net::Context::Ptr context =
-                new Poco::Net::Context(Poco::Net::Context::TLS_CLIENT_USE, "", "", "", Poco::Net::Context::VERIFY_NONE);
-        context->requireMinimumProtocol(Poco::Net::Context::PROTO_TLSV1_2);
-
-        Poco::Net::HTTPSClientSession session(uri.getHost(), uri.getPort(), context);
+        Poco::Net::HTTPSClientSession session(uri.getHost(), uri.getPort(), createSslContext());
         session.setTimeout(Poco::Timespan(30, 0));
 
         std::string path = uri.getPathAndQuery();
@@ -55,7 +61,7 @@ HttpDownloader::Result HttpDownloader::get(const std::string &url) {
         request.set("Accept", "application/json");
 
         std::ostream &reqStream = session.sendRequest(request);
-        (void) reqStream; // HTTP GET has no body
+        (void) reqStream;
 
         Poco::Net::HTTPResponse response;
         std::istream &respStream = session.receiveResponse(response);
@@ -80,8 +86,64 @@ HttpDownloader::Result HttpDownloader::get(const std::string &url) {
     return result;
 }
 
-bool HttpDownloader::fetchAppVersion(KDC::DistributionChannel channel, const std::string &appId, KDC::VersionInfo &outVersionInfo,
-                                     std::string &outError) {
+HttpDownloader::Result HttpDownloader::downloadFile(const std::string &url, const KDC::SyncPath &destPath) {
+    Result result;
+    try {
+        Poco::URI uri(url);
+
+        Poco::Net::HTTPSClientSession session(uri.getHost(), uri.getPort(), createSslContext());
+        session.setTimeout(Poco::Timespan(30, 0));
+
+        std::string path = uri.getPathAndQuery();
+        if (path.empty()) {
+            path = "/";
+        }
+
+        Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, path, Poco::Net::HTTPMessage::HTTP_1_1);
+        request.set("User-Agent", KDC::CommonUtility::userAgentString());
+
+        std::ostream &reqStream = session.sendRequest(request);
+        (void) reqStream;
+
+        Poco::Net::HTTPResponse response;
+        std::istream &respStream = session.receiveResponse(response);
+
+        result.statusCode = static_cast<int>(response.getStatus());
+
+        if (result.statusCode != Poco::Net::HTTPResponse::HTTP_OK) {
+            result.error = "HTTP " + std::to_string(result.statusCode) + " " + response.getReason();
+            return result;
+        }
+
+        std::ofstream outFile(destPath, std::ios::binary);
+        if (!outFile) {
+            result.error = "Failed to open file for writing: " + destPath.string();
+            return result;
+        }
+
+        std::array<char, 8192> buffer{};
+        while (respStream.read(buffer.data(), buffer.size()) || respStream.gcount() > 0) {
+            outFile.write(buffer.data(), respStream.gcount());
+            if (!outFile) {
+                result.error = "Failed to write to file: " + destPath.string();
+                outFile.close();
+                return result;
+            }
+        }
+        outFile.close();
+        result.success = true;
+    } catch (const Poco::Exception &e) {
+        result.error = e.displayText();
+    } catch (const std::exception &e) {
+        result.error = e.what();
+    } catch (...) {
+        result.error = "unknown exception";
+    }
+    return result;
+}
+
+bool HttpDownloader::fetchAppVersion(KDC::DistributionChannel channel, const std::string &appId,
+                                     KDC::VersionInfo &outVersionInfo, std::string &outError) {
     constexpr auto kEndpoint = "/app-information/applications/version/no-auth";
 
     try {

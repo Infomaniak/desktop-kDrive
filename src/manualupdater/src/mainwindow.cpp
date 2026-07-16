@@ -4,25 +4,17 @@
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/log/log.h"
 #include "httpdownloader.h"
-#include "libsyncengine/jobs/network/directdownloadjob.h"
-#include "server/updater/abstractupdater.h"
+#include "updater/abstractosupdater.h"
 
 #include <QHBoxLayout>
 #include <QGroupBox>
 #include <QMessageBox>
 #include <QRegularExpressionValidator>
-#include <QFile>
-#include <QXmlStreamReader>
-#include <QProcess>
 #include <thread>
-#include <filesystem>
-#include <iostream>
-#include <memory>
 #include <regex>
 #include <string>
 
 namespace KDUpdater {
-
 
 namespace {
 bool isValidVersion(const std::string &version) {
@@ -176,9 +168,86 @@ void MainWindow::onInstallClicked() {
     _progressBar->setValue(10);
     _installButton->setEnabled(false);
 
-    _statusLog->append(tr("(Download logic is not yet implemented.)"));
-    _progressBar->setValue(0);
-    _installButton->setEnabled(true);
+    const KDC::VersionInfo fetchedInfo = _fetchedVersionInfo; // copy for thread safety
+    QPointer<MainWindow> weakThis = this;
+
+    std::thread([weakThis, desiredVersion, fetchedInfo]() {
+        LOGW_INFO(KDC::Log::instance()->getLogger(),
+                  L"Starting installation thread for version " << QString::fromStdString(desiredVersion).toStdWString());
+
+        bool success = false;
+        QString message;
+
+        // Build specific version info with user-specified version
+        KDC::VersionInfo specificVersion = fetchedInfo;
+        specificVersion.checksum.clear(); // we don't know the specific version's checksum
+
+        const std::string originalUrl = specificVersion.downloadUrl;
+        const std::string oldVersion = specificVersion.fullVersion();
+        LOGW_INFO(KDC::Log::instance()->getLogger(), L"OLD version: " << QString::fromStdString(oldVersion).toStdWString());
+
+        if (auto pos = specificVersion.downloadUrl.find(oldVersion); pos != std::string::npos) {
+            specificVersion.downloadUrl.replace(pos, oldVersion.length(), desiredVersion);
+        } else if (pos = specificVersion.downloadUrl.find(specificVersion.tag); pos != std::string::npos) {
+            specificVersion.downloadUrl.replace(pos, specificVersion.tag.length(), desiredVersion);
+        } else {
+            message = QObject::tr("Failed to construct download URL for version %1.").arg(QString::fromStdString(desiredVersion));
+            LOGW_INFO(KDC::Log::instance()->getLogger(), message.toStdWString());
+            if (weakThis) {
+                QMetaObject::invokeMethod(
+                        weakThis, [weakThis, message]() { weakThis->onInstallFinished(false, message); }, Qt::QueuedConnection);
+            }
+            return;
+        }
+
+        LOGW_INFO(KDC::Log::instance()->getLogger(),
+                  L"Original download URL: " << QString::fromStdString(originalUrl).toStdWString());
+        LOGW_INFO(KDC::Log::instance()->getLogger(),
+                  L"Target download URL for version " << QString::fromStdString(desiredVersion).toStdWString() << L": "
+                                                                      << QString::fromStdString(specificVersion.downloadUrl)
+                                                                             .toStdWString());
+
+        if (weakThis) {
+            QMetaObject::invokeMethod(
+                    weakThis,
+                    [weakThis]() {
+                        weakThis->_statusLog->append(QObject::tr("Downloading installer..."));
+                        weakThis->_progressBar->setValue(30);
+                    },
+                    Qt::QueuedConnection);
+        }
+
+        auto updater = createOsUpdater();
+        if (!updater) {
+            message = QObject::tr("Failed to create OS-specific updater.");
+            if (weakThis) {
+                QMetaObject::invokeMethod(
+                        weakThis, [weakThis, message]() { weakThis->onInstallFinished(false, message); }, Qt::QueuedConnection);
+            }
+            return;
+        }
+
+        auto progressCallback = [weakThis](int percent, const QString &msg) {
+            if (!weakThis) return;
+            QMetaObject::invokeMethod(
+                    weakThis,
+                    [weakThis, percent, msg]() {
+                        weakThis->_progressBar->setValue(percent);
+                        if (!msg.isEmpty()) {
+                            weakThis->_statusLog->append(msg);
+                        }
+                    },
+                    Qt::QueuedConnection);
+        };
+
+        success = updater->install(specificVersion, desiredVersion, progressCallback, message);
+
+        if (weakThis) {
+            QMetaObject::invokeMethod(
+                    weakThis, [weakThis, success, message]() { weakThis->onInstallFinished(success, message); },
+                    Qt::QueuedConnection);
+        }
+    }).detach();
 }
 
 void MainWindow::onInstallProgress(int percent, const QString &message) {
@@ -199,82 +268,5 @@ void MainWindow::onInstallFinished(bool success, const QString &message) {
         QMessageBox::critical(this, tr("Installation Failed"), message);
     }
 }
-
-#if defined(KD_MACOS)
-bool MainWindow::installMacOS(const KDC::VersionInfo &versionInfo, QString &outMessage) {
-    KDC::SyncPath tmpDir;
-    if (!KDC::CommonUtility::deviceTempDirectoryPath(tmpDir)) {
-        outMessage = tr("Failed to get temp directory.");
-        return false;
-    }
-
-    const KDC::SyncPath appcastXmlPath = tmpDir / "appcast.xml";
-    std::filesystem::remove(appcastXmlPath);
-
-    const auto appcastJob = std::make_shared<KDC::DirectDownloadJob>(appcastXmlPath, versionInfo.downloadUrl);
-    const auto exitInfo = appcastJob->runSynchronously();
-    if (!exitInfo) {
-        if (appcastJob->httpResponse().getStatus() == 404) {
-            outMessage = tr("The specified version does not exist or the download failed.");
-        } else {
-            outMessage = tr("Failed to download appcast: %1").arg(QString::fromStdString(KDC::toString(exitInfo)));
-        }
-        return false;
-    }
-
-    QFile file(QString::fromStdString(appcastXmlPath.string()));
-    if (!file.open(QIODevice::ReadOnly)) {
-        outMessage = tr("Failed to read appcast.");
-        return false;
-    }
-
-    QXmlStreamReader reader(&file);
-    QString pkgUrl;
-    while (!reader.atEnd() && !reader.hasError()) {
-        reader.readNext();
-        if (reader.isStartElement() && reader.name() == QStringLiteral("enclosure")) {
-            pkgUrl = QString(reader.attributes().value(QStringLiteral("url")));
-            if (!pkgUrl.isEmpty()) {
-                break;
-            }
-        }
-    }
-    file.close();
-
-    if (pkgUrl.isEmpty()) {
-        outMessage = tr("Could not find download link in appcast.");
-        return false;
-    }
-
-    // Download .pkg
-    const auto pkgFilename = pkgUrl.mid(pkgUrl.lastIndexOf('/') + 1);
-    const auto pkgPath = QString::fromStdString(tmpDir.string()) + QStringLiteral("/") + pkgFilename;
-    std::filesystem::remove(KDC::SyncPath(pkgPath.toStdString()));
-
-    const auto pkgJob = std::make_shared<KDC::DirectDownloadJob>(KDC::SyncPath(pkgPath.toStdString()), pkgUrl.toStdString());
-    const auto pkgExitInfo = pkgJob->runSynchronously();
-    if (!pkgExitInfo) {
-        if (pkgJob->httpResponse().getStatus() == 404) {
-            outMessage = tr("The specified version does not exist or the download failed.");
-        } else {
-            outMessage = tr("Failed to download package.");
-        }
-        return false;
-    }
-
-    if (!QFile::exists(pkgPath)) {
-        outMessage = tr("Package file not found after download.");
-        return false;
-    }
-
-    if (!QProcess::startDetached(QStringLiteral("open"), QStringList{pkgPath})) {
-        outMessage = tr("Failed to open installer. Please install manually: %1").arg(pkgPath);
-        return false;
-    }
-
-    outMessage = tr("Installer opened: %1").arg(pkgPath);
-    return true;
-}
-#endif
 
 } // namespace KDUpdater
