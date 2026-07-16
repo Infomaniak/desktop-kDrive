@@ -1,5 +1,5 @@
 {
-  "originHash" : "26f4b038697fb2961312828a038a1c55b47bdd38ce6ccf598c9ea812a2cc17fc",
+  "originHash" : "03371d29c51eb07ae902d3a1464a9e12d5658f64ed62fb9499c749eb10b647bc",
   "pins" : [
     {
       "identity" : "ios-dependency-injection",
@@ -26,6 +26,15 @@
       "state" : {
         "revision" : "04f2fd18cc9404a0a0917265a449002674f24ec9",
         "version" : "4.5.2"
+      }
+    },
+    {
+      "identity" : "matomo-sdk-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/matomo-org/matomo-sdk-ios.git",
+      "state" : {
+        "revision" : "f140afcb7cedebdcbf8b8230fdd822b4b61e3685",
+        "version" : "7.8.0"
       }
     },
     {
