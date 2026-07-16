@@ -51,11 +51,13 @@ namespace Infomaniak.kDrive.ViewModels
         /* Sets the ShowV4Onboarding app state. Returns true on success, false on failure. */
         public async Task<bool> SetShowV4Onboarding(bool showV4Onboarding, CancellationToken cancellationToken = default)
         {
-            if (_showV4OnboardingCachedValue is not null)
-                _showV4OnboardingCachedValue = showV4Onboarding;
 
             if (await _serverCommService.SetAppState(AppStateKey.ShowV4Onboarding, showV4Onboarding ? "1" : "0", cancellationToken))
+            {
+                if (_showV4OnboardingCachedValue is not null)
+                    _showV4OnboardingCachedValue = showV4Onboarding;
                 return true;
+            }
 
             Logger.Log(Logger.Level.Warning, "Failed to set ShowV4Onboarding state on the server.");
             return false;
