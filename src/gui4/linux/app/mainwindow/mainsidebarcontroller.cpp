@@ -32,37 +32,42 @@ namespace KDC {
 MainSidebarController::MainSidebarController(const AppCache &cache, MainSelectionStore &selectionStore, QObject *const parent) :
     QObject(parent),
     _selectionStore(selectionStore),
-    _syncListModel(cache, selectionStore, this) {
-    (void) connect(&_selectionStore, &MainSelectionStore::currentSyncContextChanged, this,
-                   &MainSidebarController::currentSyncContextChanged);
-    (void) connect(&_syncListModel, &SyncListModel::selectedRowChanged, this, &MainSidebarController::selectedRowChanged);
-    (void) connect(&_syncListModel, &QAbstractItemModel::modelReset, this, &MainSidebarController::syncCountChanged);
-    (void) connect(&_syncListModel, &QAbstractItemModel::modelReset, this, &MainSidebarController::currentSyncContextChanged);
+    _syncSelectorModel(cache, selectionStore, this) {
+    (void) connect(&_syncSelectorModel, &QAbstractItemModel::modelReset, this, &MainSidebarController::entryCountChanged);
+    (void) connect(&_syncSelectorModel, &QAbstractItemModel::modelReset, this, &MainSidebarController::currentContextChanged);
+    (void) connect(&_syncSelectorModel, &SyncSelectorModel::selectedRowChanged, this,
+                   &MainSidebarController::selectedRowChanged);
+    (void) connect(&_syncSelectorModel, &SyncSelectorModel::selectedRowChanged, this,
+                   &MainSidebarController::currentContextChanged);
 }
 
-qint32 MainSidebarController::syncCount() const {
-    return _syncListModel.rowCount();
+qint32 MainSidebarController::entryCount() const {
+    return static_cast<qint32>(_syncSelectorModel.rowCount());
 }
 
 qint32 MainSidebarController::selectedRow() const {
-    return _syncListModel.selectedRow();
+    return _syncSelectorModel.selectedRow();
+}
+
+SyncSelectorModel::EntryType MainSidebarController::currentEntryType() const {
+    return selectedData(SyncSelectorModel::EntryTypeRole).value<SyncSelectorModel::EntryType>();
 }
 
 QString MainSidebarController::currentTitle() const {
-    return selectedData(SyncListModel::TitleRole).toString();
+    return selectedData(SyncSelectorModel::TitleRole).toString();
 }
 
 QString MainSidebarController::currentSubtitle() const {
-    return selectedData(SyncListModel::SubtitleRole).toString();
+    return selectedData(SyncSelectorModel::SubtitleRole).toString();
 }
 
 QColor MainSidebarController::currentDriveColor() const {
-    const auto context = _selectionStore.currentSyncContext();
-    if (!context.has_value()) {
-        return AppConstants::Drive::defaultColor();
-    }
-    const QColor color{QString::fromStdString(context->drive.color())};
+    const QColor color = selectedData(SyncSelectorModel::DriveColorRole).value<QColor>();
     return color.isValid() ? color : AppConstants::Drive::defaultColor();
+}
+
+bool MainSidebarController::currentHasWarning() const {
+    return selectedData(SyncSelectorModel::WarningRole).toBool();
 }
 
 bool MainSidebarController::canOpenCurrentSyncFolder() const {
@@ -72,12 +77,15 @@ bool MainSidebarController::canOpenCurrentSyncFolder() const {
 }
 
 qint32 MainSidebarController::currentErrorCount() const {
-    const auto context = _selectionStore.currentSyncContext();
-    return context.has_value() ? static_cast<qint32>(context->errors.size()) : 0;
+    return selectedData(SyncSelectorModel::ErrorCountRole).value<qint32>();
 }
 
 void MainSidebarController::selectSync(const qint64 syncDbId) {
     _selectionStore.selectSync(syncDbId);
+}
+
+void MainSidebarController::selectDrive(const qint64 driveDbId) {
+    _selectionStore.selectDrive(driveDbId);
 }
 
 bool MainSidebarController::openCurrentSyncFolder() const {
@@ -105,9 +113,12 @@ bool MainSidebarController::openCurrentSyncFolder() const {
     return true;
 }
 
-QVariant MainSidebarController::selectedData(const SyncListModel::Role role) const {
-    const qint32 row = _syncListModel.selectedRow();
-    return row < 0 ? QVariant{} : _syncListModel.data(_syncListModel.index(row, 0), role);
+QVariant MainSidebarController::selectedData(const SyncSelectorModel::Role role) const {
+    const qint32 row = _syncSelectorModel.selectedRow();
+    if (row < 0) {
+        return {};
+    }
+    return _syncSelectorModel.data(_syncSelectorModel.index(row, 0), role);
 }
 
 } // namespace KDC
