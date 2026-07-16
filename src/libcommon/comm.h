@@ -123,6 +123,9 @@ enum class RequestNum {
     UTILITY_CRASH,
     UTILITY_QUIT,
     UTILITY_SEND_APP_START_TRACE, // Sent by the Client process as soon the UI is visible for the user.
+#if defined(KD_MACOS)
+    UTILITY_INSTALL_MAC_LITESYNC_EXT,
+#endif
     UPDATER_CHANGE_CHANNEL,
     UPDATER_VERSION_INFO,
     UPDATER_STATE,
@@ -271,6 +274,10 @@ inline std::string toString(RequestNum e) {
             return "UTILITY_QUIT";
         case RequestNum::UTILITY_SEND_APP_START_TRACE:
             return "UTILITY_SEND_APP_START_TRACE";
+#if defined(KD_MACOS)
+        case RequestNum::UTILITY_INSTALL_MAC_LITESYNC_EXT:
+            return "UTILITY_INSTALL_MAC_LITESYNC_EXT";
+#endif
         case RequestNum::UPDATER_VERSION_INFO:
             return "UPDATER_VERSION_INFO";
         case RequestNum::UPDATER_STATE:

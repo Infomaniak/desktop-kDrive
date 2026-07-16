@@ -244,6 +244,14 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         [[nodiscard]] ExitInfo acknowledgeManyDeletes(SyncDbId syncDbId, TooManyDeletesUserChoice userChoice);
 
+#if defined(KD_MACOS)
+        //! Install the Vfs Mac extension.
+        /*!
+          \return The exit code of the operation.
+        */
+        [[nodiscard]] ExitInfo installVfs();
+#endif
+
     protected:
         // ServerRequests methods are accessible through std::function pointers in order to be mocked in tests
         std::function<ExitInfo(User &user, bool &updated)> _loadUserInfo =
