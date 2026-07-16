@@ -160,7 +160,6 @@ public final class FileTreeOutlineView: NSView {
             node.children = loadedNodes
 
             guard !loadedNodes.isEmpty else {
-                outlineView.collapseItem(node)
                 outlineView.reloadItem(node, reloadChildren: true)
                 refreshSelectionDisplay()
                 return
@@ -400,11 +399,10 @@ extension FileTreeOutlineView: NSOutlineViewDataSource {
     }
 
     public func outlineView(_ outlineView: NSOutlineView, isItemExpandable item: Any) -> Bool {
-        guard let node = item as? FileTreeNode, !node.isPlaceholder, node.isFolder else { return false }
-
-        if let children = node.children {
-            return !children.isEmpty
+        guard let node = item as? FileTreeNode, !node.isPlaceholder, node.isFolder else {
+            return false
         }
+
         return true
     }
 }
