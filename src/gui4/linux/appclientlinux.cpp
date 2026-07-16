@@ -129,6 +129,8 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("windowDecorationController"), &_windowDecorationController);
     (void) qmlRegisterUncreatableType<AppRouter>("kDrive.UI", 1, 0, "AppRouter",
                                                  "AppRouter is owned by AppClientLinux and exposed as appRouter.");
+    (void) qmlRegisterUncreatableType<SyncSelectorModel>("kDrive.UI", 1, 0, "SyncSelectorModel",
+                                                        "SyncSelectorModel is owned by MainSidebarController.");
     _qmlEngine.setOutputWarningsToStandardError(false);
     (void) connect(&_qmlEngine, &QQmlApplicationEngine::warnings, this, [](const QList<QQmlError> &warnings) {
         for (const auto &warning: warnings) {
