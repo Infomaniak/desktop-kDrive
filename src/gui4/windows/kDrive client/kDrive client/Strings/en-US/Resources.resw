@@ -6,7 +6,7 @@
   Locale: en, English
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 25 Jun 2026 15:41:36 +0200 
+  Exported at: Thu, 16 Jul 2026 09:11:33 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -1301,7 +1301,7 @@ Analyzing this data allows our team to continuously improve the application’s 
     <value>The chosen folder must be empty for sync to work correctly.</value> 
   </data> 
   <data name="onboardingAdvancedSettingsDriveExclusionDescription" xml:space="preserve"> 
-    <value>Choose the folders to sync on this computer:</value> 
+    <value>Select the folders to sync on this computer:</value> 
   </data> 
   <data name="onboardingAdvancedSettingsDriveExclusionTitle" xml:space="preserve"> 
     <value>Synced folders</value> 
@@ -1387,6 +1387,12 @@ Please wait a few moments.</value>
   </data> 
   <data name="onboardingSynchronizationInProgressTitle" xml:space="preserve"> 
     <value>Sync in progress…</value> 
+  </data> 
+  <data name="onboardingV4Faq" xml:space="preserve"> 
+    <value>Explore the app</value> 
+  </data> 
+  <data name="onboardingV4Title" xml:space="preserve"> 
+    <value>Your new kDrive app is here!</value> 
   </data> 
   <data name="openKDriveAtStartupSetting" xml:space="preserve"> 
     <value>Open kDrive when the computer starts</value> 
@@ -1476,7 +1482,7 @@ This data allows our team to quickly fix and optimize the application, resulting
     <value>kDrive folder</value> 
   </data> 
   <data name="signInBrowser" xml:space="preserve"> 
-    <value>Sign in using your browse</value> 
+    <value>Sign in using your browser</value> 
   </data> 
   <data name="storageComputerFreeSpace" xml:space="preserve"> 
     <value>Free space on computer</value> 
