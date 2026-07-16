@@ -19,6 +19,7 @@
 #import "xpcGuiProtocol.h"
 #import "../Extension/xpcExtensionProtocol.h"
 #import "../LoginItemAgent/xpcLoginItemProtocol.h"
+#import "../FileProExt/xpcFileProExtProtocol.h"
 
 #import <Cocoa/Cocoa.h>
 
@@ -30,10 +31,12 @@
 
 @property(retain) NSXPCListener *extListener;
 @property(retain) NSXPCListener *guiListener;
+@property(retain) NSXPCListener *fpextListener;
 
 @property(retain) NSXPCConnection *loginItemAgentConnection;
 @property(retain) NSXPCConnection *extConnection;
 @property(retain) NSXPCConnection *guiConnection;
+@property(retain) NSXPCConnection *fpextConnection;
 
 - (void)connectToLoginAgent;
 - (void)scheduleRetryToConnectToLoginAgent;

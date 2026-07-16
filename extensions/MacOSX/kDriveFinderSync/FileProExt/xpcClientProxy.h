@@ -16,22 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#import "xpcLoginItemProtocol.h"
+#import "xpcFileProExtProtocol.h"
+#import "../LoginItemAgent/xpcLoginItemProtocol.h"
 
 #import <Foundation/Foundation.h>
 
-@interface AppDelegate : NSObject <NSXPCListenerDelegate, XPCLoginItemProtocol>
-
-@property(retain) NSXPCConnection *srvExtConnection;
-@property(retain) NSXPCConnection *srvGuiConnection;
-@property(retain) NSXPCConnection *guiConnection;
-@property(retain) NSXPCConnection *extConnection;
-@property(retain) NSXPCConnection *fpextConnection;
-
-@property(retain) NSXPCListenerEndpoint *srvExtEndpoint;
-@property(retain) NSXPCListenerEndpoint *srvGuiEndpoint;
-@property(retain) NSXPCListenerEndpoint *srvFileProExtEndpoint;
-
-- (instancetype)init;
-
+@protocol XPCClientProxyDelegate <NSObject>
+- (void)connectionEnded;
 @end
+
+@interface XPCClientProxy : NSObject <XPCFileProExtProtocol, XPCLoginItemRemoteProtocol>
+
+@property(weak) id<XPCClientProxyDelegate> delegate;
+@property(retain) NSString *serviceName;
+@property(retain) NSXPCConnection *loginItemAgentConnection;
+@property(retain) NSXPCConnection *appConnection;
+
+- (instancetype)initWithDelegate:(id)arg1 serviceName:(NSString *)serviceName;
+- (void)dealloc;
+- (void)start;
+- (void)connectToLoginAgent;
+- (void)connectToServer:(NSXPCListenerEndpoint *)endpoint;
+- (void)scheduleRetryToConnectToLoginAgent;
+@end
+

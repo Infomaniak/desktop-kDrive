@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -22,6 +22,8 @@
 		4679573926218B8200080183 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4626075D262061F000C29FBA /* Foundation.framework */; };
 		4679574826218C6400080183 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 462607882620791400C29FBA /* main.m */; };
 		4679574A26218C6400080183 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 462607802620791300C29FBA /* AppDelegate.m */; };
+		46C975FB30077ACC0059722A /* UniformTypeIdentifiers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 46C975E13007763E0059722A /* UniformTypeIdentifiers.framework */; };
+		46C9760A30077ACC0059722A /* FileProExt.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 46C975FA30077ACC0059722A /* FileProExt.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		46C9BC8B267A26F300C9616C /* sync_100.iconset in Resources */ = {isa = PBXBuildFile; fileRef = 46C9BC8A267A26F300C9616C /* sync_100.iconset */; };
 		46FCF8FA2678760E001A8B27 /* sync_35.iconset in Resources */ = {isa = PBXBuildFile; fileRef = 46FCF8E62678760C001A8B27 /* sync_35.iconset */; };
 		46FCF8FB2678760E001A8B27 /* sync_10.iconset in Resources */ = {isa = PBXBuildFile; fileRef = 46FCF8E72678760C001A8B27 /* sync_10.iconset */; };
@@ -66,6 +68,13 @@
 			remoteGlobalIDString = 4679572E26218B0900080183;
 			remoteInfo = LoginItemAgent;
 		};
+		46C9760830077ACC0059722A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C2B573951B1CD88000303B36 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 46C975F930077ACC0059722A;
+			remoteInfo = FileProExt;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -86,6 +95,7 @@
 			dstSubfolderSpec = 13;
 			files = (
 				4617C2F126219FAD00EC19A1 /* Extension.appex in Embed App Extensions */,
+				46C9760A30077ACC0059722A /* FileProExt.appex in Embed App Extensions */,
 			);
 			name = "Embed App Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -116,6 +126,8 @@
 		4679572F26218B0900080183 /* 864VDCS2QY.com.infomaniak.drive.desktopclient.LoginItemAgent.app */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = 864VDCS2QY.com.infomaniak.drive.desktopclient.LoginItemAgent.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4679573126218B0900080183 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		46993C7F2611D32F00C6F93F /* xpcExtensionProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = xpcExtensionProtocol.h; sourceTree = "<group>"; };
+		46C975E13007763E0059722A /* UniformTypeIdentifiers.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UniformTypeIdentifiers.framework; path = System/Library/Frameworks/UniformTypeIdentifiers.framework; sourceTree = SDKROOT; };
+		46C975FA30077ACC0059722A /* FileProExt.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FileProExt.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		46C9BC8A267A26F300C9616C /* sync_100.iconset */ = {isa = PBXFileReference; lastKnownFileType = folder.iconset; name = sync_100.iconset; path = ../../../icons/nopadding/sync_100.iconset; sourceTree = "<group>"; };
 		46FCF8E62678760C001A8B27 /* sync_35.iconset */ = {isa = PBXFileReference; lastKnownFileType = folder.iconset; name = sync_35.iconset; path = ../../../icons/nopadding/sync_35.iconset; sourceTree = "<group>"; };
 		46FCF8E72678760C001A8B27 /* sync_10.iconset */ = {isa = PBXFileReference; lastKnownFileType = folder.iconset; name = sync_10.iconset; path = ../../../icons/nopadding/sync_10.iconset; sourceTree = "<group>"; };
@@ -150,6 +162,20 @@
 		C2C932EF1F0BFC6700C8BCB3 /* xpcClientProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = xpcClientProxy.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		46C9760B30077ACC0059722A /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 46C975F930077ACC0059722A /* FileProExt */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		46C975FC30077ACC0059722A /* FileProExt */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (46C9760B30077ACC0059722A /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = FileProExt; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
 /* Begin PBXFrameworksBuildPhase section */
 		467956C526217FB000080183 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
@@ -165,6 +191,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				4679573926218B8200080183 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		46C975F730077ACC0059722A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				46C975FB30077ACC0059722A /* UniformTypeIdentifiers.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -184,6 +218,7 @@
 				4617C2EC26219ED400EC19A1 /* Cocoa.framework */,
 				4679566C262164FB00080183 /* ServiceManagement.framework */,
 				4626075D262061F000C29FBA /* Foundation.framework */,
+				46C975E13007763E0059722A /* UniformTypeIdentifiers.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -224,6 +259,7 @@
 				467956C926217FB000080183 /* kDriveModel */,
 				C2B573D81B1CD9CE00303B36 /* Extension */,
 				4679573026218B0900080183 /* LoginItemAgent */,
+				46C975FC30077ACC0059722A /* FileProExt */,
 				C2B573B21B1CD91E00303B36 /* Products */,
 				462607562620619900C29FBA /* Frameworks */,
 			);
@@ -235,6 +271,7 @@
 				C2B573D71B1CD9CE00303B36 /* Extension.appex */,
 				467956C826217FB000080183 /* kDrive.app */,
 				4679572F26218B0900080183 /* 864VDCS2QY.com.infomaniak.drive.desktopclient.LoginItemAgent.app */,
+				46C975FA30077ACC0059722A /* FileProExt.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -305,6 +342,7 @@
 			dependencies = (
 				4679575326218C9C00080183 /* PBXTargetDependency */,
 				467957212621871500080183 /* PBXTargetDependency */,
+				46C9760930077ACC0059722A /* PBXTargetDependency */,
 			);
 			name = kDrive;
 			productName = kDrive;
@@ -327,6 +365,28 @@
 			productName = LoginItemAgent;
 			productReference = 4679572F26218B0900080183 /* 864VDCS2QY.com.infomaniak.drive.desktopclient.LoginItemAgent.app */;
 			productType = "com.apple.product-type.bundle";
+		};
+		46C975F930077ACC0059722A /* FileProExt */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 46C9760C30077ACC0059722A /* Build configuration list for PBXNativeTarget "FileProExt" */;
+			buildPhases = (
+				46C975F630077ACC0059722A /* Sources */,
+				46C975F730077ACC0059722A /* Frameworks */,
+				46C975F830077ACC0059722A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				46C975FC30077ACC0059722A /* FileProExt */,
+			);
+			name = FileProExt;
+			packageProductDependencies = (
+			);
+			productName = FileProExt;
+			productReference = 46C975FA30077ACC0059722A /* FileProExt.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 		C2B573D61B1CD9CE00303B36 /* Extension */ = {
 			isa = PBXNativeTarget;
@@ -364,6 +424,9 @@
 						DevelopmentTeam = 864VDCS2QY;
 						ProvisioningStyle = Manual;
 					};
+					46C975F930077ACC0059722A = {
+						CreatedOnToolsVersion = 26.2;
+					};
 					C2B573D61B1CD9CE00303B36 = {
 						CreatedOnToolsVersion = 6.3.1;
 						DevelopmentTeam = 864VDCS2QY;
@@ -392,6 +455,7 @@
 				467956C726217FB000080183 /* kDrive */,
 				C2B573D61B1CD9CE00303B36 /* Extension */,
 				4679572E26218B0900080183 /* LoginItemAgent */,
+				46C975F930077ACC0059722A /* FileProExt */,
 			);
 		};
 /* End PBXProject section */
@@ -408,6 +472,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		4679572D26218B0900080183 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		46C975F830077ACC0059722A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -487,6 +558,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		46C975F630077ACC0059722A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		C2B573D31B1CD9CE00303B36 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -508,6 +586,11 @@
 			isa = PBXTargetDependency;
 			target = 4679572E26218B0900080183 /* LoginItemAgent */;
 			targetProxy = 4679575226218C9C00080183 /* PBXContainerItemProxy */;
+		};
+		46C9760930077ACC0059722A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 46C975F930077ACC0059722A /* FileProExt */;
+			targetProxy = 46C9760830077ACC0059722A /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -563,8 +646,11 @@
 				KD_APPLICATION_DOMAIN = com.infomaniak.drive.desktopclient;
 				KD_APPLICATION_VERSION = 3.2.0;
 				KD_TEAM_IDENTIFIER_PREFIX = 864VDCS2QY.;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.5;
 				MARKETING_VERSION = "$(KD_APPLICATION_VERSION)";
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -611,8 +697,11 @@
 				KD_APPLICATION_DOMAIN = com.infomaniak.drive.desktopclient;
 				KD_APPLICATION_VERSION = 3.2.0;
 				KD_TEAM_IDENTIFIER_PREFIX = 864VDCS2QY.;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.5;
 				MARKETING_VERSION = "$(KD_APPLICATION_VERSION)";
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -718,6 +807,122 @@
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+		46C9760D30077ACC0059722A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = FileProExt/FileProExt.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Mac Developer";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=macosx*]" = 864VDCS2QY;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = FileProExt/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = FileProExt;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				KD_APPLICATION_DOMAIN = com.infomaniak.drive.desktopclient;
+				KD_TEAM_IDENTIFIER_PREFIX = 864VDCS2QY.;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.5;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.infomaniak.drive.desktopclient.FileProExt;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = kDriveFileProExtension;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Debug;
+		};
+		46C9760E30077ACC0059722A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = FileProExt/FileProExt.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Developer ID Application";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = FileProExt/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = FileProExt;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				KD_APPLICATION_DOMAIN = com.infomaniak.drive.desktopclient;
+				KD_TEAM_IDENTIFIER_PREFIX = 864VDCS2QY.;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.5;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.infomaniak.drive.desktopclient.FileProExt;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
 			};
 			name = Release;
 		};
@@ -838,7 +1043,11 @@
 				KD_APPLICATION_NAME = kDrive;
 				KD_APPLICATION_VERSION = 3.2.0;
 				KD_TEAM_IDENTIFIER_PREFIX = 864VDCS2QY.;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @executable_path/../../../../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				MARKETING_VERSION = "$(KD_APPLICATION_VERSION)";
 				MTL_ENABLE_DEBUG_INFO = YES;
@@ -897,7 +1106,11 @@
 				KD_APPLICATION_NAME = kDrive;
 				KD_APPLICATION_VERSION = 3.2.0;
 				KD_TEAM_IDENTIFIER_PREFIX = 864VDCS2QY.;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @executable_path/../../../../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				MARKETING_VERSION = "$(KD_APPLICATION_VERSION)";
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -928,6 +1141,15 @@
 			buildConfigurations = (
 				4679573326218B0900080183 /* Debug */,
 				4679573426218B0900080183 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		46C9760C30077ACC0059722A /* Build configuration list for PBXNativeTarget "FileProExt" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				46C9760D30077ACC0059722A /* Debug */,
+				46C9760E30077ACC0059722A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

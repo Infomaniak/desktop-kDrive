@@ -16,22 +16,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#import "xpcLoginItemProtocol.h"
+#import "xpcClient.h"
 
-#import <Foundation/Foundation.h>
+#import <pthread.h>
+#include <sys/stat.h>
 
-@interface AppDelegate : NSObject <NSXPCListenerDelegate, XPCLoginItemProtocol>
+@implementation XPCClient
 
-@property(retain) NSXPCConnection *srvExtConnection;
-@property(retain) NSXPCConnection *srvGuiConnection;
-@property(retain) NSXPCConnection *guiConnection;
-@property(retain) NSXPCConnection *extConnection;
-@property(retain) NSXPCConnection *fpextConnection;
+- (instancetype)init
+{
+    self = [super init];
 
-@property(retain) NSXPCListenerEndpoint *srvExtEndpoint;
-@property(retain) NSXPCListenerEndpoint *srvGuiEndpoint;
-@property(retain) NSXPCListenerEndpoint *srvFileProExtEndpoint;
+    NSBundle *extBundle = [NSBundle bundleForClass:[self class]];
 
-- (instancetype)init;
+    NSString *loginItemAgentMachName = [extBundle objectForInfoDictionaryKey:@"LoginItemAgentMachName"];
+
+    _xpcClientProxy = [[XPCClientProxy alloc] initWithDelegate:self serviceName:loginItemAgentMachName];
+
+    [_xpcClientProxy start];
+    return self;
+}
+
+- (void)connectionEnded
+{
+}
 
 @end
+

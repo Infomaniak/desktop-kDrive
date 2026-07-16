@@ -27,8 +27,10 @@
     _srvGuiConnection = nil;
     _srvExtEndpoint = nil;
     _srvGuiEndpoint = nil;
+    _srvFileProExtEndpoint = nil;
     _extConnection = nil;
     _guiConnection = nil;
+    _fpextConnection = nil;
     
     return self;
 }
@@ -59,8 +61,11 @@
             NSLog(@"[KD] Connection with gui interrupted");
             self->_guiConnection = nil;
         } else if (self->_extConnection == newConnection) {
-            NSLog(@"[KD] Connection with ext interrupted");
+            NSLog(@"[KD] Connection with Finder ext interrupted");
             self->_extConnection = nil;
+        } else if (self->_fpextConnection == newConnection) {
+            NSLog(@"[KD] Connection with File Provider ext interrupted");
+            self->_fpextConnection = nil;
         }
     };
     
@@ -77,8 +82,11 @@
             NSLog(@"[KD] Connection with gui invalidated");
             self->_guiConnection = nil;
         } else if (self->_extConnection == newConnection) {
-            NSLog(@"[KD] Connection with ext invalidated");
+            NSLog(@"[KD] Connection with Finder ext invalidated");
             self->_extConnection = nil;
+        } else if (self->_fpextConnection == newConnection) {
+            NSLog(@"[KD] Connection with File Provider ext invalidated");
+            self->_fpextConnection = nil;
         }
     };
     
@@ -105,6 +113,10 @@
                 NSLog(@"[KD] Finder Extension connected");
                 self->_extConnection = newConnection;
                 break;
+            case fileProExt:
+                NSLog(@"[KD] FileProvider Extension connected");
+                self->_fpextConnection = newConnection;
+                break;
         }
     }];
     
@@ -113,10 +125,10 @@
 
 - (void)setServerExtEndpoint:(NSXPCListenerEndpoint *)endPoint
 {
-    NSLog(@"[KD] Set server ext endpoint %@", endPoint);
+    NSLog(@"[KD] Set server Finder ext endpoint %@", endPoint);
     _srvExtEndpoint = endPoint;
     
-    // Inform extension
+    // Inform Finder extension
     if (_extConnection) {
         [[_extConnection remoteObjectProxy] serverIsRunning:endPoint];
     }
@@ -124,7 +136,7 @@
 
 - (void)serverExtEndpoint:(void (^)(NSXPCListenerEndpoint *))callback
 {
-    NSLog(@"[KD] Server ext endpoint asked %@", _srvExtEndpoint);
+    NSLog(@"[KD] Server Finder ext endpoint asked %@", _srvExtEndpoint);
     callback(_srvExtEndpoint);
 }
 
@@ -143,6 +155,23 @@
 {
     NSLog(@"[KD] Server gui endpoint asked %@", _srvGuiEndpoint);
     callback(_srvGuiEndpoint);
+}
+
+- (void)setServerFileProExtEndpoint:(NSXPCListenerEndpoint *)endPoint
+{
+    NSLog(@"[KD] Set server File Provider ext endpoint %@", endPoint);
+    _srvFileProExtEndpoint = endPoint;
+    
+    // Inform File Provider extension
+    if (_fpextConnection) {
+        [[_fpextConnection remoteObjectProxy] serverIsRunning:endPoint];
+    }
+}
+
+- (void)serverFileProExtEndpoint:(void (^)(NSXPCListenerEndpoint *))callback
+{
+    NSLog(@"[KD] Server File Provider ext endpoint asked %@", _srvFileProExtEndpoint);
+    callback(_srvFileProExtEndpoint);
 }
 
 @end

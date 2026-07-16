@@ -22,6 +22,7 @@
 #import "xpcGuiProtocol.h"
 
 #import <Foundation/Foundation.h>
+#import <FileProvider/FileProvider.h>
 
 @implementation AppDelegate
 
@@ -31,24 +32,44 @@
     
     _extListener = nil;
     _guiListener = nil;
+    _fpextListener = nil;
     _loginItemAgentConnection = nil;
     _extConnection = nil;
     _guiConnection = nil;
+    _fpextConnection = nil;
 
     return self;
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
     [self connectToLoginAgent];
+    
+    // FileProvider domain creation
+    NSFileProviderDomainIdentifier domainIdentifier = @"infomaniak-kdrive";
+    NSString *domainDisplayName = @"Infomaniak kDrive";
+
+    NSFileProviderDomain *domain =
+        [[NSFileProviderDomain alloc] initWithIdentifier:domainIdentifier
+                                             displayName:domainDisplayName];
+
+    [NSFileProviderManager addDomain:domain completionHandler:^(NSError * _Nullable error) {
+        if (error) {
+            NSLog(@"Could not create domain for %@: %@",
+                  domain.identifier,
+                  error);
+        }
+    }];
 }
 
 - (void)applicationWillTerminate:(NSNotification *)aNotification {
     NSLog(@"[KD] App will terminate");
     [_extListener invalidate];
     [_guiListener invalidate];
+    [_fpextListener invalidate];
     [_loginItemAgentConnection invalidate];
     [_extConnection invalidate];
     [_guiConnection invalidate];
+    [_fpextConnection invalidate];
 }
 
 - (void)connectToLoginAgent
@@ -107,45 +128,84 @@
     NSLog(@"[KD] Resume connection with login item agent");
     [_loginItemAgentConnection resume];
 
-    // Create anonymous ext listener
-    NSLog(@"[KD] Create anonymous ext listener");
+    // Create anonymous Finder ext listener
+    NSLog(@"[KD] Create anonymous Finder ext listener");
     _extListener = [NSXPCListener anonymousListener];
     [_extListener setDelegate:self];
     [_extListener resume];
-        
+    
+    // Create anonymous GUI listener
+    NSLog(@"[KD] Create anonymous GUI listener");
+    _guiListener = [NSXPCListener anonymousListener];
+    [_guiListener setDelegate:self];
+    [_guiListener resume];
+
+    // Create anonymous FileProvider ext listener
+    NSLog(@"[KD] Create anonymous FileProvider ext listener");
+    _fpextListener = [NSXPCListener anonymousListener];
+    [_fpextListener setDelegate:self];
+    [_fpextListener resume];
+
     // Send endpoints to login item agent
-    NSLog(@"[KD] Send server endpoint to login item agent");
+    NSLog(@"[KD] Send server endpoints to login item agent");
     [[_loginItemAgentConnection remoteObjectProxy] setServerExtEndpoint:[_extListener endpoint]];
+    [[_loginItemAgentConnection remoteObjectProxy] setServerFileProExtEndpoint:[_fpextListener endpoint]];
 }
 
 - (BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)newConnection
 {
-    // Set exported interface
-    NSLog(@"[KD] Set exported interface for connection with ext");
-    newConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCExtensionRemoteProtocol)];
-    newConnection.exportedObject = self;
-    
-    // Set remote object interface
-    NSLog(@"[KD] Set remote object interface for connection with ext");
-    newConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCExtensionProtocol)];
+    if (listener == _extListener) {
+        // Set exported interface
+        NSLog(@"[KD] Set exported interface for connection with Finder ext");
+        newConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCExtensionRemoteProtocol)];
+        newConnection.exportedObject = self;
+        
+        // Set remote object interface
+        NSLog(@"[KD] Set remote object interface for connection with Finder ext");
+        newConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCExtensionProtocol)];
+    } else if (listener == _guiListener) {
+        // Set exported interface
+        NSLog(@"[KD] Set exported interface for connection with GUI");
+        newConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCGuiRemoteProtocol)];
+        newConnection.exportedObject = self;
+        
+        // Set remote object interface
+        NSLog(@"[KD] Set remote object interface for connection with GUI");
+        newConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCGuiProtocol)];
+    } else if (listener == _fpextListener) {
+        // Set exported interface
+        NSLog(@"[KD] Set exported interface for connection with File Provider ext");
+        newConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCFileProExtRemoteProtocol)];
+        newConnection.exportedObject = self;
+        
+        // Set remote object interface
+        NSLog(@"[KD] Set remote object interface for connection with File Provider ext");
+        newConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCFileProExtProtocol)];
+    }
     
     // Set connection handlers
-    NSLog(@"[KD] Set connection handlers for connection with ext");
+    NSLog(@"[KD] Set connection handlers for connection");
     newConnection.interruptionHandler = ^{
         // The extension has exited or crashed
-        NSLog(@"[KD] Connection with ext interrupted");
+        NSLog(@"[KD] Connection interrupted");
     };
 
     newConnection.invalidationHandler = ^{
         // Connection can not be formed or has terminated and may not be re-established
-        NSLog(@"[KD] Connection with ext invalidated");
+        NSLog(@"[KD] Connection invalidated");
     };
     
     // Start processing incoming messages.
-    NSLog(@"[KD] Resume connection with ext");
+    NSLog(@"[KD] Resume connection");
     [newConnection resume];
     
-    _extConnection = newConnection;
+    if (listener == _extListener) {
+        _extConnection = newConnection;
+    } else if (listener == _guiListener) {
+        _guiConnection = newConnection;
+    } else if (listener == _fpextListener) {
+        _fpextConnection = newConnection;
+    }
 
     return YES;
 }

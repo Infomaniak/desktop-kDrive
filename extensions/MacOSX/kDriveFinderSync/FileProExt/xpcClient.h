@@ -16,22 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#import "xpcLoginItemProtocol.h"
+#import "xpcClientProxy.h"
 
-#import <Foundation/Foundation.h>
+#import <Cocoa/Cocoa.h>
 
-@interface AppDelegate : NSObject <NSXPCListenerDelegate, XPCLoginItemProtocol>
-
-@property(retain) NSXPCConnection *srvExtConnection;
-@property(retain) NSXPCConnection *srvGuiConnection;
-@property(retain) NSXPCConnection *guiConnection;
-@property(retain) NSXPCConnection *extConnection;
-@property(retain) NSXPCConnection *fpextConnection;
-
-@property(retain) NSXPCListenerEndpoint *srvExtEndpoint;
-@property(retain) NSXPCListenerEndpoint *srvGuiEndpoint;
-@property(retain) NSXPCListenerEndpoint *srvFileProExtEndpoint;
-
-- (instancetype)init;
+@interface XPCClient : NSObject <XPCClientProxyDelegate> {
+    XPCClientProxy *_xpcClientProxy;
+}
 
 @end

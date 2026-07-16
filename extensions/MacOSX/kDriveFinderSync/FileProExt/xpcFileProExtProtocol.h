@@ -18,30 +18,15 @@
 
 #import <Foundation/Foundation.h>
 
-typedef NS_ENUM(NSInteger, ProcessType) {
-    extServer,
-    guiServer,
-    client,
-    finderExt,
-    fileProExt
-};
-
-@protocol XPCLoginItemProtocol
-
-- (void)setServerExtEndpoint:(NSXPCListenerEndpoint *)endPoint;
-- (void)serverExtEndpoint:(void (^)(NSXPCListenerEndpoint *))callback;
-
-- (void)setServerGuiEndpoint:(NSXPCListenerEndpoint *)endPoint;
-- (void)serverGuiEndpoint:(void (^)(NSXPCListenerEndpoint *))callback;
-
-- (void)setServerFileProExtEndpoint:(NSXPCListenerEndpoint *)endPoint;
-- (void)serverFileProExtEndpoint:(void (^)(NSXPCListenerEndpoint *))callback;
+// Server protocol (Ext => Server)
+@protocol XPCFileProExtProtocol
 
 @end
 
-@protocol XPCLoginItemRemoteProtocol
+// Client protocol (Server => Ext)
+@protocol XPCFileProExtRemoteProtocol
 
-- (void)processType:(void (^)(ProcessType))callback;
-- (void)serverIsRunning:(NSXPCListenerEndpoint *)endPoint;
+- (void)initConnection:(void (^)(BOOL))callback;
 
 @end
+
