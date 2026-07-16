@@ -1,10 +1,10 @@
 #include "updaterdata.h"
 
+#include "parmsdblite.h"
+#include "libparms/db/parmsdb.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/db/db.h"
 #include "libcommonserver/log/log.h"
-#include "libparms/db/parmsdb.h"
-#include "libparms/db/parameters.h"
 
 
 namespace KDUpdater {
@@ -36,9 +36,10 @@ bool UpdaterData::initialize() {
         return true;
     }
 
-    _db = KDC::ParmsDb::instance(dbPath);
+    _db = ParmsDbLite::instance(dbPath);
     if (!_db) {
         LOGW_INFO(KDC::Log::instance()->getLogger(), L"Failed to open kDrive database at: " << Path2WStr(dbPath));
+        _isInstalled = false;
         return false;
     }
 
@@ -52,14 +53,14 @@ bool UpdaterData::initialize() {
         return false;
     }
 
-    KDC::AppStateValue appStateValue = "";
+    std::string appUid = "";
     found = false;
-    if (!_db->selectAppState(KDC::AppStateKey::AppUid, appStateValue, found) || !found) {
+    if (!_db->selectAppUid(appUid, found) || !found) {
         LOGW_WARN(KDC::Log::instance()->getLogger(), L"Failed to retrieve app UID from database");
         _isInstalled = false;
         return false;
     }
-    _appId = std::get<std::string>(appStateValue);
+    _appId = appUid;
 
     _isInstalled = true;
     return true;

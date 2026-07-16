@@ -1,13 +1,13 @@
 #pragma once
 
+#include "parmsdblite.h"
+
+
 #include <memory>
 #include <string>
 
 #include "libcommon/utility/cstypes.h"
 
-namespace KDC {
-class ParmsDb;
-}
 
 namespace KDUpdater {
 
@@ -19,7 +19,7 @@ class UpdaterData {
         [[nodiscard]] const std::string &installedVersion() const { return _installedVersion; }
         [[nodiscard]] const std::string &appId() const { return _appId; }
         [[nodiscard]] KDC::DistributionChannel distributionChannel() const { return _distributionChannel; }
-        [[nodiscard]] std::shared_ptr<KDC::ParmsDb> db() const { return _db; }
+        [[nodiscard]] std::shared_ptr<::KDUpdater::ParmsDbLite> db() const { return _db; }
 
     private:
         static KDC::DistributionChannel defaultDistributionChannel();
@@ -27,7 +27,7 @@ class UpdaterData {
         std::string _installedVersion;
         std::string _appId;
         KDC::DistributionChannel _distributionChannel = defaultDistributionChannel();
-        std::shared_ptr<KDC::ParmsDb> _db;
+        std::shared_ptr<::KDUpdater::ParmsDbLite> _db;
 };
 
 } // namespace KDUpdater
