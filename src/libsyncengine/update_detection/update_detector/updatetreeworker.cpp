@@ -61,7 +61,7 @@ bool UpdateTreeWorker::resetNodes() {
             tmpBlacklist);
 
     auto nodeIt = _updateTree->nodes().begin();
-    std::unordered_set<NodeId> toDeleteNode;
+    std::set<NodeId> toDeleteNode;
 
     while (nodeIt != _updateTree->nodes().end()) {
         const auto node = nodeIt->second;
@@ -70,7 +70,7 @@ bool UpdateTreeWorker::resetNodes() {
 
         // Make sure no node flagged with status "ToDelete" or blacklisted node remains in the update tree
         if (node->status() == NodeStatus::ToDelete || (node->id().has_value() && tmpBlacklist.contains(node->id().value()))) {
-            toDeleteNode.emplace(nodeId);
+            (void) toDeleteNode.emplace(nodeId);
             continue;
         }
 
