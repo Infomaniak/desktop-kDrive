@@ -41,7 +41,7 @@ bool MacOSUpdater::install(const KDC::VersionInfo &versionInfo, const std::strin
         return false;
     }
 
-    const auto pkgPath = QString::fromStdString(tmpDir.string()) + QStringLiteral("/") + pkgFilename;
+    const QString pkgPath = QString::fromStdString(tmpDir.string()) + QStringLiteral("/") + pkgFilename;
     std::filesystem::remove(KDC::SyncPath(pkgPath.toStdString()));
 
     progressCallback(40, QObject::tr("Downloading package..."));
@@ -62,12 +62,15 @@ bool MacOSUpdater::install(const KDC::VersionInfo &versionInfo, const std::strin
     }
 
     progressCallback(70, QObject::tr("Removing old application..."));
-    std::system("osascript -e 'tell application \"Finder\" to delete POSIX file "
-                "\"/Applications/kDrive/kDrive Uninstaller.app\"'");
-    std::system("osascript -e 'tell application \"Finder\" to delete POSIX file "
-                "\"/Applications/kDrive/kDrive.app\"'");
-    std::system("osascript -e 'tell application \"Finder\" to delete POSIX file "
-                "\"/Applications/kDrive\"'");
+    std::system(
+            "osascript -e 'tell application \"Finder\" to delete POSIX file "
+            "\"/Applications/kDrive/kDrive Uninstaller.app\"'");
+    std::system(
+            "osascript -e 'tell application \"Finder\" to delete POSIX file "
+            "\"/Applications/kDrive/kDrive.app\"'");
+    std::system(
+            "osascript -e 'tell application \"Finder\" to delete POSIX file "
+            "\"/Applications/kDrive\"'");
 
     progressCallback(90, QObject::tr("Opening installer..."));
     if (!QProcess::startDetached(QStringLiteral("open"), QStringList{pkgPath})) {
