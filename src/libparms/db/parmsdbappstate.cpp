@@ -45,7 +45,6 @@ constexpr char APP_STATE_KEY_DEFAULT_LogUploadState[] = "0"; // KDC::LogUploadSt
 constexpr char APP_STATE_KEY_DEFAULT_LogUploadPercent[] = "0";
 constexpr const char *APP_STATE_KEY_DEFAULT_LogUploadToken = APP_STATE_DEFAULT_IS_EMPTY;
 constexpr char APP_STATE_KEY_DEFAULT_NoUpdate[] = "0";
-constexpr char APP_STATE_KEY_DEFAULT_ShowV4Onboarding[] = "1";
 
 namespace KDC {
 
@@ -115,7 +114,10 @@ bool ParmsDb::insertDefaultAppState() {
         return false;
     }
 
-    if (!insertAppState(AppStateKey::ShowV4Onboarding, APP_STATE_KEY_DEFAULT_ShowV4Onboarding)) {
+    // This AppState was added in version <= 4.x. If an update needs to insert it, the application necessarily comes from a
+    // version <= 4.0.0, so the OnboardingV4 banner should be shown. Otherwise, if it is not inserted during an update, there is
+    // no need to display the banner. 
+    if (!insertAppState(AppStateKey::ShowV4Onboarding, _versionUpdated ? "1" : "0")) {
         LOG_WARN(_logger, "Error while inserting default value for ShowV4Onboarding");
         return false;
     }
