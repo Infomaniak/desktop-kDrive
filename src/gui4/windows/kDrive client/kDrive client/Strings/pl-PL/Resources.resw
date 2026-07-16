@@ -6,7 +6,7 @@
   Locale: pl, Polish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 25 Jun 2026 15:41:36 +0200 
+  Exported at: Thu, 16 Jul 2026 09:11:33 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -1387,6 +1387,12 @@ Prosimy o chwilę cierpliwości.</value>
   </data> 
   <data name="onboardingSynchronizationInProgressTitle" xml:space="preserve"> 
     <value>Synchronizacja w toku…</value> 
+  </data> 
+  <data name="onboardingV4Faq" xml:space="preserve"> 
+    <value>Poznaj aplikację</value> 
+  </data> 
+  <data name="onboardingV4Title" xml:space="preserve"> 
+    <value>Nowa aplikacja kDrive jest już dostępna!</value> 
   </data> 
   <data name="openKDriveAtStartupSetting" xml:space="preserve"> 
     <value>Otwórz kDrive przy uruchomieniu komputera</value> 
