@@ -76,6 +76,7 @@ namespace Infomaniak.kDrive
             services.AddSingleton<AppModel>();
             services.AddSingleton<IServerCommClient, TcpServerCommClient>();
             services.AddSingleton<IServerCommService, ServerCommService>();
+            services.AddSingleton<AppStateModel>();
             services.AddSingleton<UserDefaults>();
             services.AddSingleton<TrayIconManager>();
             services.AddSingleton<NotificationManager>();
