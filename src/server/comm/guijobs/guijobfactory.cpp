@@ -50,7 +50,7 @@
 #include "nodefoldersizejob.h"
 #include "nodecreatemissingfoldersjob.h"
 #include "nodeconflictinfojob.h"
-#include "errorinfolistjob.h"
+#include "errorlistjob.h"
 #include "errorresolveconflictsjob.h"
 #include "errorresolveconflictsquickjob.h"
 #include "errordeletejob.h"
@@ -123,7 +123,7 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::NODE_FOLDER_SIZE, makeShared<NodeFolderSizeJob>},
                 {RequestNum::NODE_CREATEMISSINGFOLDERS, makeShared<NodeCreateMissingFoldersJob>},
                 {RequestNum::NODE_CONFLICT_INFO, makeShared<NodeConflictInfoJob>},
-                {RequestNum::ERROR_INFOLIST, makeShared<ErrorInfolistJob>},
+                {RequestNum::ERROR_INFOLIST, makeShared<ErrorListJob>},
                 {RequestNum::ERROR_RESOLVE_CONFLICTS, makeShared<ErrorResolveConflictsJob>},
                 {RequestNum::ERROR_RESOLVE_CONFLICTS_QUICK, makeShared<ErrorResolveConflictsQuickJob>},
                 {RequestNum::ERROR_DELETE, makeShared<ErrorDeleteJob>},

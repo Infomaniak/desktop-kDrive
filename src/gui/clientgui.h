@@ -77,7 +77,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void openLoginDialog(UserDbId userDbId, bool invalidTokenError);
         void newDriveWizard(bool addDriveAccept = false);
         void getWebviewDriveLink(UserDbId userDbId, QString &driveLink);
-        void errorInfoList(DriveDbId driveDbId, QList<ErrorInfo> &errorInfoList);
+        void errorList(DriveDbId driveDbId, QList<Error> &errorList);
         void resolveConflictErrors(DriveDbId driveDbId, bool keepLocalVersion);
         void resolveUnsupportedCharErrors(DriveDbId driveDbId);
         void closeAllExcept(const QWidget *exceptWidget);
@@ -140,7 +140,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         DriveDbId _currentDriveDbId{0};
         QSet<DriveDbId> _driveWithNewErrorSet;
         QTimer _refreshErrorListTimer;
-        std::map<ErrorDbId, QList<ErrorInfo>> _errorInfoMap;
+        std::map<DriveDbId, QList<Error>> _errorMap;
         QMap<SyncDbId, CustomMessageBox *> _tooManyDeletesNotificationPopupMap;
 
 #ifdef Q_OS_LINUX
