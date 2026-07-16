@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<!--
- Loco ios export: Xcode Stringsdict (legacy)
- Project: kDrive Desktop
- Locale: nb, Norwegian Bokmål
- Tagged: macOS-stringsdict
- Exported by: Valentin Perignon
- Exported at: Tue, 23 Jun 2026 16:13:20 +0200
--->
+
 <plist version="1.0">
   <dict>
     <key>buttonRemoveFileExclusionRule</key>

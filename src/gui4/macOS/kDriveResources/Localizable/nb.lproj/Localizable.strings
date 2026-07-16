@@ -1,12 +1,3 @@
-/*
- * Loco ios export: Xcode Strings (legacy)
- * Project: kDrive Desktop
- * Locale: nb, Norwegian Bokmål
- * Tagged: macOS
- * Exported by: Valentin Perignon
- * Exported at: Wed, 24 Jun 2026 08:42:57 +0200
- */
-
 /* loco:6a3b7a3cab4f843c0405ebd2 */
 "aboutAppVersionCopyrightMac" = "Versjon %@ (build %@)\n© 2019-%@ Infomaniak Network SA";
 
@@ -709,6 +700,9 @@
 /* loco:6a1e7c960b63328e7a01f812 */
 "errorListSystemHeader" = "System og tillatelser";
 
+/* loco:6a460c4f5fd1e1a4fb0a8302 */
+"errorOpeningLocalURL" = "Det gikk ikke an å åpne URL-adressen %@";
+
 /* loco:6995dff99537658db20fabb3 */
 "errorPageTitle" = "Feil som skal rettes";
 
@@ -1127,7 +1121,7 @@
 "onboardingAdvancedSettingsDriveCustomizeLocationTip" = "Den valgte mappen må være tom for at synkroniseringen skal fungere korrekt.";
 
 /* loco:698c5c378bdea123d60afff7 */
-"onboardingAdvancedSettingsDriveExclusionDescription" = "Velg mappene som skal synkroniseres på denne datamaskinen:";
+"onboardingAdvancedSettingsDriveExclusionDescription" = "Velg mappene du vil synkronisere på denne datamaskinen:";
 
 /* loco:698c5bf9735560170309a842 */
 "onboardingAdvancedSettingsDriveExclusionTitle" = "Synkroniserte mapper";
@@ -1212,6 +1206,15 @@
 
 /* loco:6931a14fa4031f6161097f42 */
 "onboardingSynchronizationInProgressTitle" = "Synkronisering pågår…";
+
+/* loco:6a57951024f1cb7e550ab932 */
+"onboardingV4Faq" = "Oppdag appen.";
+
+/* loco:6a57949f03c629668b0ec6b3 */
+"onboardingV4Message" = "Få enklere oversikt over synkroniseringene dine.";
+
+/* loco:6a5794493019354d4b087d62 */
+"onboardingV4Title" = "Den nye kDrive-appen er her!";
 
 /* loco:698b0ee1587496f4f5035cd2 */
 "openKDriveAtStartupSetting" = "Åpne kDrive når datamaskinen starter";
@@ -1389,7 +1392,7 @@
 "synchroInProgress" = "filene dine synkroniseres";
 
 /* loco:6960b7fd4e868a099e022dc5 */
-"synchroPaused" = "Synkroniseringen er midlertidig stoppet.";
+"synchroPaused" = "synkroniseringen er satt på pause";
 
 /* loco:6960f0917cb01bc78104ed32 */
 "synchroStatusInProgressDescription" = "De siste filene dine oppdateres.";
