@@ -26,6 +26,7 @@ using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.Pages
 {
@@ -33,6 +34,7 @@ namespace Infomaniak.kDrive.Pages
     {
         private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
+        private readonly AppStateModel _appStateModel = App.ServiceProvider.GetRequiredService<AppStateModel>();
         public AppModel ViewModel => _viewModel;
         public HomePage()
         {
@@ -98,12 +100,27 @@ namespace Infomaniak.kDrive.Pages
             return true;
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             ViewModel.SelectedSyncChanged += OnSelectedSyncChanged;
             OnSelectedSyncChanged(null, new(null, ViewModel.SelectedSync));
             if (!RedirectToErrorPageIfNeeded())
+            {
                 _analyticsService.TrackPageView(Analytics.Keys.Category.HomePage);
+                await UpdateV4OnboardingInfoBar();
+                return;
+            }
+        }
+
+        private async Task UpdateV4OnboardingInfoBar()
+        {
+            bool? showV4Onboarding = await _appStateModel.GetShowV4Onboarding();
+            AppModel.UIThreadDispatcher.TryEnqueue(() => V4OnboardingInfoBar.IsOpen = showV4Onboarding == true);
+        }
+
+        private async void V4OnboardingInfoBar_CloseButtonClick(InfoBar sender, object args)
+        {
+            await _appStateModel.SetShowV4Onboarding(false);
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
