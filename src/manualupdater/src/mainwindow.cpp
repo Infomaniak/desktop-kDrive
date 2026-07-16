@@ -263,6 +263,7 @@ void MainWindow::onInstallFinished(bool success, const QString &message) {
     if (success) {
         _statusLog->append(tr("Success: %1").arg(message));
         QMessageBox::information(this, tr("Installation Complete"), message);
+        close();
     } else {
         _statusLog->append(tr("Failed: %1").arg(message));
         QMessageBox::critical(this, tr("Installation Failed"), message);
