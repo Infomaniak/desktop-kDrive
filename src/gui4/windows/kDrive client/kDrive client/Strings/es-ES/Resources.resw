@@ -6,7 +6,7 @@
   Locale: es, Spanish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 25 Jun 2026 15:41:36 +0200 
+  Exported at: Thu, 16 Jul 2026 09:11:33 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -1301,7 +1301,7 @@ El análisis de estos datos permite a nuestro equipo mejorar continuamente la in
     <value>La carpeta elegida debe estar vacía para que la sincronización funcione correctamente.</value> 
   </data> 
   <data name="onboardingAdvancedSettingsDriveExclusionDescription" xml:space="preserve"> 
-    <value>Elija las carpetas a sincronizar en este ordenador:</value> 
+    <value>Selecciona las carpetas que deseas sincronizar en este ordenador:</value> 
   </data> 
   <data name="onboardingAdvancedSettingsDriveExclusionTitle" xml:space="preserve"> 
     <value>Carpetas sincronizadas</value> 
@@ -1387,6 +1387,12 @@ Por favor, espere unos instantes.</value>
   </data> 
   <data name="onboardingSynchronizationInProgressTitle" xml:space="preserve"> 
     <value>Sincronización en curso…</value> 
+  </data> 
+  <data name="onboardingV4Faq" xml:space="preserve"> 
+    <value>Descubre la aplicación</value> 
+  </data> 
+  <data name="onboardingV4Title" xml:space="preserve"> 
+    <value>¡Ya está aquí tu nueva aplicación kDrive!</value> 
   </data> 
   <data name="openKDriveAtStartupSetting" xml:space="preserve"> 
     <value>Abrir kDrive cuando se inicie el ordenador</value> 
