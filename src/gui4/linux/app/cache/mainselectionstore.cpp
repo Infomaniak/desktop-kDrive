@@ -18,6 +18,8 @@
 
 #include "mainselectionstore.h"
 
+#include <algorithm>
+
 Q_LOGGING_CATEGORY(lcMainSelectionStore, "gui.v4.mainselectionstore", QtInfoMsg)
 
 namespace KDC {
@@ -25,11 +27,11 @@ namespace KDC {
 MainSelectionStore::MainSelectionStore(AppCache &cache, QObject *const parent) :
     QObject(parent),
     _cache(cache) {
-    (void) connect(&_cache, &AppCache::syncsChanged, this, &MainSelectionStore::handleSyncsChanged);
-    (void) connect(&_cache, &AppCache::usersChanged, this, &MainSelectionStore::handleContextDataChanged);
-    (void) connect(&_cache, &AppCache::accountsChanged, this, &MainSelectionStore::handleContextDataChanged);
-    (void) connect(&_cache, &AppCache::drivesChanged, this, &MainSelectionStore::handleContextDataChanged);
-    (void) connect(&_cache, &AppCache::syncErrorsChanged, this, &MainSelectionStore::handleContextDataChanged);
+    (void) connect(&_cache, &AppCache::syncsChanged, this, &MainSelectionStore::handleCacheGraphChanged);
+    (void) connect(&_cache, &AppCache::usersChanged, this, &MainSelectionStore::handleCacheGraphChanged);
+    (void) connect(&_cache, &AppCache::accountsChanged, this, &MainSelectionStore::handleCacheGraphChanged);
+    (void) connect(&_cache, &AppCache::drivesChanged, this, &MainSelectionStore::handleCacheGraphChanged);
+    (void) connect(&_cache, &AppCache::syncErrorsChanged, this, &MainSelectionStore::handleCacheGraphChanged);
     (void) connect(&_cache, &AppCache::syncRuntimeInfoChanged, this, [this](const SyncDbId syncDbId) {
         if (syncDbId == _currentSyncDbId) {
             emit currentSyncRuntimeInfoChanged();
@@ -37,8 +39,19 @@ MainSelectionStore::MainSelectionStore(AppCache &cache, QObject *const parent) :
     });
 }
 
+qint64 MainSelectionStore::currentDriveDbId() const {
+    return static_cast<qint64>(_currentDriveDbId);
+}
+
 qint64 MainSelectionStore::currentSyncDbId() const {
     return static_cast<qint64>(_currentSyncDbId);
+}
+
+std::optional<DriveContext> MainSelectionStore::currentDriveContext() const {
+    if (_currentDriveDbId == 0) {
+        return std::nullopt;
+    }
+    return _cache.driveContext(_currentDriveDbId);
 }
 
 std::optional<SyncContext> MainSelectionStore::currentSyncContext() const {
@@ -55,67 +68,126 @@ std::optional<SyncRuntimeInfo> MainSelectionStore::currentSyncRuntimeInfo() cons
     return _cache.syncRuntimeInfo(_currentSyncDbId);
 }
 
-std::vector<SyncContext> MainSelectionStore::syncContexts() const {
-    return _cache.syncContexts();
-}
-
 void MainSelectionStore::selectSync(const qint64 syncDbId) {
     const auto typedSyncDbId = static_cast<SyncDbId>(syncDbId);
     _lastRequestedSyncDbId = typedSyncDbId;
-    if (typedSyncDbId != 0 && !_cache.syncContext(typedSyncDbId)) {
+    const auto context = _cache.syncContext(typedSyncDbId);
+    if (!context.has_value()) {
         qCWarning(lcMainSelectionStore) << "Requested sync not in context, falling back | syncDbId:" << typedSyncDbId;
         ensureValidSelection();
         return;
     }
-    setCurrentSyncDbId(typedSyncDbId);
+    _lastRequestedDriveDbId = context->drive.dbId();
+    setCurrentSelection(context->drive.dbId(), typedSyncDbId);
+}
+
+void MainSelectionStore::selectDrive(const qint64 driveDbId) {
+    const auto typedDriveDbId = static_cast<DriveDbId>(driveDbId);
+    const auto context = _cache.driveContext(typedDriveDbId);
+    if (!context.has_value() || !context->syncInfos.empty()) {
+        qCWarning(lcMainSelectionStore) << "Requested drive-only context is unavailable, falling back | driveDbId:"
+                                        << typedDriveDbId;
+        ensureValidSelection();
+        return;
+    }
+    _lastRequestedDriveDbId = typedDriveDbId;
+    _lastRequestedSyncDbId = 0;
+    setCurrentSelection(typedDriveDbId, 0);
 }
 
 void MainSelectionStore::clearSelection() {
+    _lastRequestedDriveDbId = 0;
     _lastRequestedSyncDbId = 0;
-    setCurrentSyncDbId(0);
+    setCurrentSelection(0, 0);
 }
 
 void MainSelectionStore::ensureValidSelection() {
-    if (_currentSyncDbId != 0 && _cache.syncContext(_currentSyncDbId)) {
-        return;
-    }
-
-    if (_lastRequestedSyncDbId != 0 && _cache.syncContext(_lastRequestedSyncDbId)) {
-        setCurrentSyncDbId(_lastRequestedSyncDbId);
-        return;
-    }
-
-    setCurrentSyncDbId(firstAvailableSyncDbId());
-}
-
-void MainSelectionStore::handleSyncsChanged() {
-    const auto previousContext = currentSyncContext();
-    const auto previousCurrentSyncDbId = _currentSyncDbId;
-    ensureValidSelection();
-    if (_currentSyncDbId != 0 && _currentSyncDbId == previousCurrentSyncDbId && previousContext != currentSyncContext()) {
-        emit currentSyncContextChanged();
-    }
-}
-
-void MainSelectionStore::handleContextDataChanged() {
-    const auto previousCurrentSyncDbId = _currentSyncDbId;
     if (_currentSyncDbId != 0) {
-        ensureValidSelection();
+        const auto currentSyncContext = _cache.syncContext(_currentSyncDbId);
+        if (currentSyncContext.has_value()) {
+            setCurrentSelection(currentSyncContext->drive.dbId(), _currentSyncDbId);
+            return;
+        }
+
+        const auto formerDriveContext = _cache.driveContext(_currentDriveDbId);
+        if (formerDriveContext.has_value() && formerDriveContext->syncInfos.empty()) {
+            setCurrentSelection(_currentDriveDbId, 0);
+            return;
+        }
+    } else if (_currentDriveDbId != 0) {
+        const auto currentDriveContext = _cache.driveContext(_currentDriveDbId);
+        if (currentDriveContext.has_value() && currentDriveContext->syncInfos.empty()) {
+            return;
+        }
     }
-    if (_currentSyncDbId != 0 && _currentSyncDbId == previousCurrentSyncDbId) {
-        emit currentSyncContextChanged();
+
+    if (_lastRequestedSyncDbId != 0) {
+        const auto requestedSyncContext = _cache.syncContext(_lastRequestedSyncDbId);
+        if (requestedSyncContext.has_value()) {
+            setCurrentSelection(requestedSyncContext->drive.dbId(), _lastRequestedSyncDbId);
+            return;
+        }
+    }
+
+    if (_lastRequestedDriveDbId != 0) {
+        const auto requestedDriveContext = _cache.driveContext(_lastRequestedDriveDbId);
+        if (requestedDriveContext.has_value() && requestedDriveContext->syncInfos.empty()) {
+            setCurrentSelection(_lastRequestedDriveDbId, 0);
+            return;
+        }
+    }
+
+    SyncDbId fallbackSyncDbId = firstClassicSyncDbId();
+    if (fallbackSyncDbId == 0) {
+        fallbackSyncDbId = firstAvailableSyncDbId();
+    }
+    if (fallbackSyncDbId != 0) {
+        const auto fallbackContext = _cache.syncContext(fallbackSyncDbId);
+        setCurrentSelection(fallbackContext->drive.dbId(), fallbackSyncDbId);
+        return;
+    }
+
+    setCurrentSelection(firstAvailableDriveDbId(), 0);
+}
+
+void MainSelectionStore::handleCacheGraphChanged() {
+    const auto previousDriveContext = currentDriveContext();
+    const auto previousSyncContext = currentSyncContext();
+    const auto previousDriveDbId = _currentDriveDbId;
+    const auto previousSyncDbId = _currentSyncDbId;
+    ensureValidSelection();
+    if (_currentDriveDbId == previousDriveDbId && _currentSyncDbId == previousSyncDbId &&
+        (previousDriveContext != currentDriveContext() || previousSyncContext != currentSyncContext())) {
+        emit currentContextChanged();
     }
 }
 
-void MainSelectionStore::setCurrentSyncDbId(const SyncDbId syncDbId) {
-    if (_currentSyncDbId == syncDbId) {
+void MainSelectionStore::setCurrentSelection(const DriveDbId driveDbId, const SyncDbId syncDbId) {
+    if (_currentDriveDbId == driveDbId && _currentSyncDbId == syncDbId) {
         return;
     }
-    qCDebug(lcMainSelectionStore) << "Current sync changed | from:" << _currentSyncDbId << "/ to:" << syncDbId;
+
+    qCDebug(lcMainSelectionStore) << "Current main context changed | driveDbId:" << _currentDriveDbId << "=>" << driveDbId
+                                  << "| syncDbId:" << _currentSyncDbId << "=>" << syncDbId;
+    const bool driveChanged = _currentDriveDbId != driveDbId;
+    const bool syncChanged = _currentSyncDbId != syncDbId;
+    _currentDriveDbId = driveDbId;
     _currentSyncDbId = syncDbId;
-    emit currentSyncDbIdChanged();
-    emit currentSyncContextChanged();
-    emit currentSyncRuntimeInfoChanged();
+    if (driveChanged) {
+        emit currentDriveDbIdChanged();
+    }
+    if (syncChanged) {
+        emit currentSyncDbIdChanged();
+        emit currentSyncRuntimeInfoChanged();
+    }
+    emit currentContextChanged();
+}
+
+SyncDbId MainSelectionStore::firstClassicSyncDbId() const {
+    const auto contexts = _cache.syncContexts();
+    const auto classicContext =
+            std::ranges::find_if(contexts, [](const SyncContext &context) { return context.syncInfo.targetNodeId().empty(); });
+    return classicContext == contexts.end() ? 0 : classicContext->syncInfo.dbId();
 }
 
 SyncDbId MainSelectionStore::firstAvailableSyncDbId() const {
@@ -124,6 +196,14 @@ SyncDbId MainSelectionStore::firstAvailableSyncDbId() const {
         return 0;
     }
     return contexts.front().syncInfo.dbId();
+}
+
+DriveDbId MainSelectionStore::firstAvailableDriveDbId() const {
+    const auto contexts = _cache.driveContexts();
+    if (contexts.empty()) {
+        return 0;
+    }
+    return contexts.front().drive.dbId();
 }
 
 } // namespace KDC
