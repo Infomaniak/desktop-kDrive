@@ -8,6 +8,7 @@ set(SOURCES
     src/main.cpp
     src/mainwindow.cpp
     src/updaterdata.cpp
+    src/httpdownloader.cpp
         src/parmsdblite.cpp
 )
 
@@ -30,6 +31,7 @@ endif()
 set(HEADERS
     src/mainwindow.h
     src/updaterdata.h
+    src/httpdownloader.h
         src/parmsdblite.h
 )
 

@@ -3,7 +3,7 @@
 
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/log/log.h"
-#include "libsyncengine/jobs/network/infomaniak_API/getappversionjob.h"
+#include "httpdownloader.h"
 #include "libsyncengine/jobs/network/directdownloadjob.h"
 #include "server/updater/abstractupdater.h"
 
@@ -120,13 +120,11 @@ void MainWindow::fetchAndSetDefaultVersion() {
         return;
     }
 
-    const auto job = std::make_shared<KDC::GetAppVersionJob>(_updaterData.distributionChannel(), _updaterData.appId());
-    if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(), L"Failed to fetch default version: " << exitInfo);
+    if (std::string error;
+        !HttpDownloader::fetchAppVersion(_updaterData.distributionChannel(), _updaterData.appId(), _fetchedVersionInfo, error)) {
+        LOGW_WARN(KDC::Log::instance()->getLogger(), L"Failed to fetch default version: " << KDC::CommonUtility::s2ws(error));
         return;
     }
-
-    _fetchedVersionInfo = job->versionInfo();
     if (_fetchedVersionInfo.tag.empty() || _fetchedVersionInfo.buildVersion == 0) {
         return;
     }
