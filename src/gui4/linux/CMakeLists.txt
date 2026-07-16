@@ -153,6 +153,7 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/main/folder.svg
         ui/assets/main/house.svg
         ui/assets/main/storage.svg
+        ui/assets/main/triangle-alert.svg
         ui/assets/onboarding/drive-icon-glyph.svg
         ui/assets/taskbar/logo_kdrive.svg
         ui/assets/tray/error.svg
