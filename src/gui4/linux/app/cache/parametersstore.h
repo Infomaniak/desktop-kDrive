@@ -38,12 +38,9 @@ namespace KDC {
  */
 class ParametersStore final : public QObject {
         Q_OBJECT
-        Q_PROPERTY(bool populated READ populated NOTIFY populatedChanged)
 
     public:
         explicit ParametersStore(QObject *parent = nullptr);
-
-        [[nodiscard]] bool populated() const;
 
         /**
          * Last server-confirmed parameters snapshot.
@@ -54,7 +51,6 @@ class ParametersStore final : public QObject {
         void clear();
 
     signals:
-        void populatedChanged();
         void parametersInfoChanged();
 
     private:
