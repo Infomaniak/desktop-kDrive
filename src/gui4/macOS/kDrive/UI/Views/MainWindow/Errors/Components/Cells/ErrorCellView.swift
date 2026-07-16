@@ -35,10 +35,10 @@ struct PathInfoChipView: View {
                     .resizable()
                     .scaledToFit()
                     .foregroundStyle(folderRepresentation.color.swiftUIColor)
-                    .frame(size: AppIconSize.iconSize12)
+                    .frame(size: AppIconSize.iconSize16)
             case .file:
                 FileTypeView(fileTypeRepresentation: pathInfo.fileTypeRepresentation)
-                    .frame(size: AppIconSize.iconSize12)
+                    .frame(size: AppIconSize.iconSize16)
             }
 
             Text(pathInfo.name)

@@ -33,7 +33,7 @@ struct ConflictCellView: View {
         HStack {
             HStack(spacing: AppPadding.padding4) {
                 FileTypeView(fileTypeRepresentation: fileTypeRepresentation)
-                    .frame(size: AppIconSize.iconSize12)
+                    .frame(size: AppIconSize.iconSize16)
 
                 Text(path)
                     .frame(maxWidth: .infinity, alignment: .leading)

@@ -223,7 +223,7 @@ final class MainSidebarViewController: NSViewController {
                 constant: -AppPadding.padding16
             ),
 
-            synchroSelectorView.topAnchor.constraint(equalTo: headerView.bottomAnchor, constant: AppPadding.padding16),
+            synchroSelectorView.topAnchor.constraint(equalTo: headerView.bottomAnchor, constant: AppPadding.padding24),
             synchroSelectorView.leadingAnchor.constraint(
                 equalTo: view.safeAreaLayoutGuide.leadingAnchor,
                 constant: AppPadding.padding12

@@ -116,7 +116,7 @@ struct ActivitiesTableStatusView: View {
                         Text(KDriveLocalizable.buttonShowOption)
                     } icon: {
                         KDriveResources.dotsVertical.swiftUIImage
-                            .resizable(at: AppIconSize.iconSize12)
+                            .resizable(at: AppIconSize.iconSize16)
                     }
                     .labelStyle(.iconOnly)
                     .tint(ColorToken.Text.primary.asColor)

@@ -53,7 +53,7 @@ struct SynchroLabelView: View {
     var body: some View {
         HStack(alignment: .iconTitleCenter, spacing: AppPadding.padding8) {
             item.icon
-                .resizable(at: AppIconSize.iconSize12)
+                .resizable(at: AppIconSize.iconSize16)
                 .foregroundStyle(iconColor)
                 .alignmentGuide(.iconTitleCenter) {
                     $0[VerticalAlignment.center]

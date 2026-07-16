@@ -42,7 +42,7 @@ struct ActivitiesTable: View {
                     Text(context.node.relevantPath, format: .node)
                 } icon: {
                     FileTypeView(fileTypeRepresentation: context.node.fileTypeRepresentation)
-                        .frame(size: AppIconSize.iconSize12)
+                        .frame(size: AppIconSize.iconSize16)
                 }
                 .foregroundStyle(ColorToken.Text.primary.asColor)
             }
