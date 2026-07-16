@@ -1244,7 +1244,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             var parms = new JsonObject
             {
                 [JsonKeys.Key] = (int)key,
-                [JsonKeys.Value] = value
+                [JsonKeys.Value] = Utility.ToBase64String(value)
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_SET_APPSTATE, parms, cancellationToken);
             return CheckJobResultAndLogIfError(data, parms);
