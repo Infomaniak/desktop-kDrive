@@ -39,7 +39,7 @@
                  Closed="kDriveFullInfoBar_Closed">
             <InfoBar.IconSource>
                 <controls:SvgIconSource UriSource="{StaticResource Infomaniak.DS.Icons.Products.kDrive-outline}"
-                                        Foreground="{ThemeResource SystemAccentColor}" />
+                                        Foreground="{ThemeResource SystemFillColorAttentionBrush}" />
             </InfoBar.IconSource>
             <InfoBar.ActionButton>
 
@@ -57,7 +57,7 @@
                  Closed="TmpDirAccessError_Closed">
             <InfoBar.IconSource>
                 <controls:SvgIconSource UriSource="{StaticResource Infomaniak.DS.Icons.Network.cloud-offline}"
-                                        Foreground="{ThemeResource SystemAccentColor}" />
+                                        Foreground="{ThemeResource SystemFillColorAttentionBrush}" />
             </InfoBar.IconSource>
             <InfoBar.ActionButton>
                 <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonCloseKDrive')}"
