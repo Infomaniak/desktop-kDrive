@@ -1,12 +1,3 @@
-/*
- * Loco ios export: Xcode Strings (legacy)
- * Project: kDrive Desktop
- * Locale: da, Danish
- * Tagged: macOS
- * Exported by: Valentin Perignon
- * Exported at: Wed, 24 Jun 2026 08:42:57 +0200
- */
-
 /* loco:6a3b7a3cab4f843c0405ebd2 */
 "aboutAppVersionCopyrightMac" = "Version %@ (build %@)\n© 2019-%@ Infomaniak Network SA";
 
@@ -709,6 +700,9 @@
 /* loco:6a1e7c960b63328e7a01f812 */
 "errorListSystemHeader" = "System og tilladelser";
 
+/* loco:6a460c4f5fd1e1a4fb0a8302 */
+"errorOpeningLocalURL" = "Det lykkedes ikke at åbne URL’en %@";
+
 /* loco:6995dff99537658db20fabb3 */
 "errorPageTitle" = "Fejl der skal rettes";
 
@@ -1213,6 +1207,15 @@
 /* loco:6931a14fa4031f6161097f42 */
 "onboardingSynchronizationInProgressTitle" = "Synkronisering i gang…";
 
+/* loco:6a57951024f1cb7e550ab932 */
+"onboardingV4Faq" = "Udforsk appen.";
+
+/* loco:6a57949f03c629668b0ec6b3 */
+"onboardingV4Message" = "Hold nemmere styr på dine synkroniseringer.";
+
+/* loco:6a5794493019354d4b087d62 */
+"onboardingV4Title" = "Din nye kDrive-app er her!";
+
 /* loco:698b0ee1587496f4f5035cd2 */
 "openKDriveAtStartupSetting" = "Åbn kDrive, når computeren starter";
 
@@ -1389,7 +1392,7 @@
 "synchroInProgress" = "dine filer synkroniseres";
 
 /* loco:6960b7fd4e868a099e022dc5 */
-"synchroPaused" = "Synkroniseringen er midlertidigt stoppet.";
+"synchroPaused" = "synkroniseringen er sat på pause";
 
 /* loco:6960f0917cb01bc78104ed32 */
 "synchroStatusInProgressDescription" = "Dine seneste filer opdateres.";

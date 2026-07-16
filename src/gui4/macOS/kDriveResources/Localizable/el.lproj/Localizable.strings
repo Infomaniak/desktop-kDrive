@@ -1,12 +1,3 @@
-/*
- * Loco ios export: Xcode Strings (legacy)
- * Project: kDrive Desktop
- * Locale: el, Greek
- * Tagged: macOS
- * Exported by: Valentin Perignon
- * Exported at: Wed, 24 Jun 2026 08:42:57 +0200
- */
-
 /* loco:6a3b7a3cab4f843c0405ebd2 */
 "aboutAppVersionCopyrightMac" = "Έκδοση %@ (build %@)\n© 2019-%@ Infomaniak Network SA";
 
@@ -709,6 +700,9 @@
 /* loco:6a1e7c960b63328e7a01f812 */
 "errorListSystemHeader" = "Σύστημα και δικαιώματα";
 
+/* loco:6a460c4f5fd1e1a4fb0a8302 */
+"errorOpeningLocalURL" = "Δεν κατέστη δυνατό το άνοιγμα της διεύθυνσης URL %@";
+
 /* loco:6995dff99537658db20fabb3 */
 "errorPageTitle" = "Σφάλματα για διόρθωση";
 
@@ -1127,7 +1121,7 @@
 "onboardingAdvancedSettingsDriveCustomizeLocationTip" = "Ο επιλεγμένος φάκελος πρέπει να είναι κενός για να λειτουργεί σωστά ο συγχρονισμός.";
 
 /* loco:698c5c378bdea123d60afff7 */
-"onboardingAdvancedSettingsDriveExclusionDescription" = "Επιλέξτε τους φακέλους για συγχρονισμό σε αυτόν τον υπολογιστή:";
+"onboardingAdvancedSettingsDriveExclusionDescription" = "Επιλέξτε τους φακέλους που θέλετε να συγχρονίσετε σε αυτόν τον υπολογιστή:";
 
 /* loco:698c5bf9735560170309a842 */
 "onboardingAdvancedSettingsDriveExclusionTitle" = "Συγχρονισμένοι φάκελοι";
@@ -1212,6 +1206,15 @@
 
 /* loco:6931a14fa4031f6161097f42 */
 "onboardingSynchronizationInProgressTitle" = "Συγχρονισμός σε εξέλιξη…";
+
+/* loco:6a57951024f1cb7e550ab932 */
+"onboardingV4Faq" = "Ανακαλύψτε την εφαρμογή.";
+
+/* loco:6a57949f03c629668b0ec6b3 */
+"onboardingV4Message" = "Παρακολουθήστε τους συγχρονισμούς σας πιο εύκολα.";
+
+/* loco:6a5794493019354d4b087d62 */
+"onboardingV4Title" = "Η νέα σας εφαρμογή kDrive είναι εδώ!";
 
 /* loco:698b0ee1587496f4f5035cd2 */
 "openKDriveAtStartupSetting" = "Άνοιγμα kDrive κατά την εκκίνηση του υπολογιστή";
@@ -1389,7 +1392,7 @@
 "synchroInProgress" = "τα αρχεία σας συγχρονίζονται";
 
 /* loco:6960b7fd4e868a099e022dc5 */
-"synchroPaused" = "Ο συγχρονισμός έχει διακοπεί προσωρινά.";
+"synchroPaused" = "ο συγχρονισμός έχει τεθεί σε παύση";
 
 /* loco:6960f0917cb01bc78104ed32 */
 "synchroStatusInProgressDescription" = "Τα πρόσφατα αρχεία σας ενημερώνονται.";

@@ -96,7 +96,9 @@ public final class SyncCreationService: SyncCreator {
 
         var name = driveName
         if driveName.lowercased().hasPrefix("kdrive") {
-            name = driveName.replacingOccurrences(of: "kdrive", with: "", options: .caseInsensitive)
+            name = driveName
+                .replacingOccurrences(of: "kdrive", with: "", options: .caseInsensitive)
+                .trimmingCharacters(in: .whitespaces)
         }
 
         let folderName = "kDrive \(name)".trimmingCharacters(in: .whitespacesAndNewlines)
