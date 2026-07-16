@@ -6,7 +6,7 @@
   Locale: it, Italian
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 25 Jun 2026 15:41:36 +0200 
+  Exported at: Thu, 16 Jul 2026 09:11:33 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -605,7 +605,7 @@ Accedi di nuovo con l’indirizzo email corretto %@</value>
     <value>Inserisci la tua password</value> 
   </data> 
   <data name="errCaseDescription" xml:space="preserve"> 
-    <value>In questa cartella esiste già un altro %@ il cui nome differisce solo per le lettere maiuscole/minuscole. Questo tipo di nome non è supportato dall'applicazione kDrive per Windows. Rinominare una delle cartelle %@ da kDrive online per poterla sincronizzare sul PC.
+    <value>In questa cartella esiste già un altro %@ il cui nome differisce solo per le lettere maiuscole/minuscole. Questo tipo di nome non è supportato dall’applicazione kDrive per Windows. Rinominare una delle cartelle %@ da kDrive online per poterla sincronizzare sul PC.
 </value> 
   </data> 
   <data name="errCaseTitle" xml:space="preserve"> 
@@ -1301,7 +1301,7 @@ L’analisi di questi dati consente al nostro team di migliorare continuamente l
     <value>La cartella scelta deve essere vuota per il corretto funzionamento della sincronizzazione.</value> 
   </data> 
   <data name="onboardingAdvancedSettingsDriveExclusionDescription" xml:space="preserve"> 
-    <value>Scegli le cartelle da sincronizzare su questo computer:</value> 
+    <value>Seleziona le cartelle da sincronizzare su questo computer:</value> 
   </data> 
   <data name="onboardingAdvancedSettingsDriveExclusionTitle" xml:space="preserve"> 
     <value>Cartelle sincronizzate</value> 
@@ -1387,6 +1387,12 @@ Attendi qualche istante.</value>
   </data> 
   <data name="onboardingSynchronizationInProgressTitle" xml:space="preserve"> 
     <value>Sincronizzazione in corso…</value> 
+  </data> 
+  <data name="onboardingV4Faq" xml:space="preserve"> 
+    <value>Scopri l’app</value> 
+  </data> 
+  <data name="onboardingV4Title" xml:space="preserve"> 
+    <value>La tua nuova app kDrive è disponibile!</value> 
   </data> 
   <data name="openKDriveAtStartupSetting" xml:space="preserve"> 
     <value>Apri kDrive all’avvio del computer</value> 
