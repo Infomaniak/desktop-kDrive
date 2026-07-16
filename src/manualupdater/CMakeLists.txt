@@ -8,6 +8,7 @@ set(SOURCES
     src/main.cpp
     src/mainwindow.cpp
     src/updaterdata.cpp
+        src/parmsdblite.cpp
 )
 
 if(WIN32)
@@ -29,6 +30,7 @@ endif()
 set(HEADERS
     src/mainwindow.h
     src/updaterdata.h
+        src/parmsdblite.h
 )
 
 add_executable(kDriveRecoveryUpdater ${SOURCES} ${HEADERS})
