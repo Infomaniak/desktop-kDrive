@@ -1,0 +1,30 @@
+#pragma once
+
+#include "libcommon/utility/types.h"
+
+#include <QString>
+#include <functional>
+#include <memory>
+#include <string>
+
+namespace KDUpdater {
+
+class AbstractOsUpdater {
+    public:
+        virtual ~AbstractOsUpdater() = default;
+
+        /**
+         * @brief Download and install the specified version.
+         * @param versionInfo      Base VersionInfo (URL may be mutated internally).
+         * @param desiredVersion   The explicit version string entered by the user.
+         * @param progressCallback Called with (percent, message) for UI progress updates.
+         * @param outMessage       On failure, human-readable error; on success, completion message.
+         * @return true if the operation succeeded.
+         */
+        virtual bool install(const KDC::VersionInfo &versionInfo, const std::string &desiredVersion,
+                             std::function<void(int, QString)> progressCallback, QString &outMessage) = 0;
+};
+
+std::unique_ptr<AbstractOsUpdater> createOsUpdater();
+
+} // namespace KDUpdater

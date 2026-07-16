@@ -15,7 +15,6 @@
 
 namespace KDUpdater {
 
-
 class MainWindow : public QMainWindow {
         Q_OBJECT
 
@@ -45,10 +44,6 @@ class MainWindow : public QMainWindow {
         const UpdaterData &_updaterData;
         std::string _installedVersion;
         KDC::VersionInfo _fetchedVersionInfo;
-
-#if defined(KD_MACOS)
-        bool installMacOS(const KDC::VersionInfo &versionInfo, QString &outMessage);
-#endif
 };
 
 } // namespace KDUpdater
