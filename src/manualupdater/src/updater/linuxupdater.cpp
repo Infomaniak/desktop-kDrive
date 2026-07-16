@@ -44,7 +44,7 @@ bool LinuxUpdater::install(const KDC::VersionInfo &versionInfo, const std::strin
     auto ioError = KDC::IoError::Success;
     (void) KDC::IoHelper::deleteItem(destPath, ioError);
 
-    progressCallback(30, QObject::tr("Downloading installer..."));
+    progressCallback(30, QObject::tr(""));
 
     const auto result = HttpDownloader::downloadFile(urlStr, destPath);
     if (!result.success) {
@@ -68,8 +68,7 @@ bool LinuxUpdater::install(const KDC::VersionInfo &versionInfo, const std::strin
     try {
         std::filesystem::permissions(
                 destPath,
-                std::filesystem::perms::owner_exec | std::filesystem::perms::group_exec |
-                        std::filesystem::perms::others_exec,
+                std::filesystem::perms::owner_exec | std::filesystem::perms::group_exec | std::filesystem::perms::others_exec,
                 std::filesystem::perm_options::add);
     } catch (const std::filesystem::filesystem_error &e) {
         LOGW_WARN(KDC::Log::instance()->getLogger(),
