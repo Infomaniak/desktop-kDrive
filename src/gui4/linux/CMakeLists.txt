@@ -118,7 +118,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/components/IKBadge.qml
         ui/components/IKDriveIcon.qml
         ui/components/IKSidebarItem.qml
-        ui/components/IKSyncSelectorItem.qml
+        ui/components/IKDriveSyncSelectorItem.qml
         ui/windows/main/ActivitiesPlaceholder.qml
         ui/windows/main/BlockingErrorPlaceholder.qml
         ui/windows/main/HomePlaceholder.qml
