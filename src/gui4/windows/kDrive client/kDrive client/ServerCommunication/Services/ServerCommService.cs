@@ -1263,12 +1263,13 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             if (!HasRequiredParam(data, JsonKeys.Value))
                 return null;
 
-            string? value = data.Params[JsonKeys.Value]?.GetValue<string>();
-            if (value is null)
+            var options = new JsonSerializerOptions
             {
-                Logger.Log(Logger.Level.Error, $"Failed to parse {JsonKeys.Value} from response: {data.Params}");
-                return null;
-            }
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+            options.Converters.Add(new Base64StringJsonConverter());
+
+            string? value = data.Params[JsonKeys.Value].Deserialize<string>(options);
             return value;
         }
 
