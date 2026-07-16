@@ -1263,4 +1263,37 @@ void TestUpdateTreeWorker::testResetNodes() {
     CPPUNIT_ASSERT(!_remoteUpdateTree->exists(nodeE->id().value()));
 }
 
+void TestUpdateTreeWorker::testResetNodesRecursiveDelete() {
+    // Regression test for the iterator-invalidation crash in resetNodes(). The buggy implementation advanced the iterator
+    // to the ToDelete node's successor before recursively deleting it (and its children); when the successor was the child
+    // being erased, the just-advanced iterator was invalidated. Reproduce this deterministically with only two nodes: mark
+    // one as ToDelete and make it the parent of the other, so deleting the parent also erases the child.
+    const auto node1 =
+            std::make_shared<Node>(ReplicaSide::Remote, Str("node1"), NodeType::Directory, _remoteUpdateTree->rootNode());
+    _remoteUpdateTree->insertNode(node1);
+
+    const auto node2 =
+            std::make_shared<Node>(ReplicaSide::Remote, Str("node2"), NodeType::Directory, _remoteUpdateTree->rootNode());
+    _remoteUpdateTree->insertNode(node2);
+
+
+    auto parent = _remoteUpdateTree->_validNodes.begin();
+    if (parent->second == _remoteUpdateTree->rootNode()) ++parent;
+
+    auto children = parent++;
+    if (children->second == _remoteUpdateTree->rootNode()) ++children;
+
+    CPPUNIT_ASSERT(children->second->setParentNode(parent->second));
+
+    parent->second->setStatus(NodeStatus::ToDelete);
+    CPPUNIT_ASSERT(parent->second->insertChildren(children->second));
+
+    auto parentId = *parent->second->id();
+    auto childrenId = *children->second->id();
+    CPPUNIT_ASSERT(_remoteUpdateTreeWorker->resetNodes());
+
+    CPPUNIT_ASSERT(!_remoteUpdateTree->exists(parentId));
+    CPPUNIT_ASSERT(!_remoteUpdateTree->exists(childrenId));
+}
+
 } // namespace KDC
