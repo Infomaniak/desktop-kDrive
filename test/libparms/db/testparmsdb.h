@@ -43,6 +43,7 @@ class TestParmsDb : public CppUnit::TestFixture, public TestBase {
 #endif
         CPPUNIT_TEST(testError);
         CPPUNIT_TEST(testAppState);
+        CPPUNIT_TEST(testAppStateShowV4Onboarding);
 #if defined(KD_WINDOWS)
         CPPUNIT_TEST(testUpgradeOfShortPathNames);
 #endif
@@ -60,6 +61,7 @@ class TestParmsDb : public CppUnit::TestFixture, public TestBase {
         void testSync();
         void testExclusionTemplate();
         void testAppState();
+        void testAppStateShowV4Onboarding();
         void testUpdateExclusionTemplates();
         void testUpgradeOfExclusionTemplates();
         void testUpgrade();
@@ -74,6 +76,7 @@ class TestParmsDb : public CppUnit::TestFixture, public TestBase {
     private:
         LocalTemporaryDirectory _parmsDbTemporarDirectory;
         bool deleteColumns();
+        bool deleteAppState(AppStateKey key);
 };
 
 } // namespace KDC
