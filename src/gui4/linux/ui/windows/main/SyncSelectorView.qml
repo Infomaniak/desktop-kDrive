@@ -27,39 +27,51 @@ Item {
 
     required property var controller
 
-    implicitHeight: currentSyncItem.implicitHeight
+    visible: controller.entryCount > 0
+    implicitHeight: visible ? currentSelectorItem.implicitHeight : 0
 
-    IKSyncSelectorItem {
-        id: currentSyncItem
+    IKDriveSyncSelectorItem {
+        id: currentSelectorItem
 
         anchors.left: parent.left
         anchors.right: parent.right
+        entryType: root.controller.currentEntryType
         title: root.controller.currentTitle
         subtitle: root.controller.currentSubtitle
         driveColor: root.controller.currentDriveColor
-        interactive: root.controller.syncCount > 1
-        showChevron: root.controller.syncCount > 1
-        onTriggered: syncPopup.open()
+        errorCount: root.controller.currentErrorCount
+        warning: root.controller.currentHasWarning
+        interactive: root.controller.entryCount > 1
+        showSurface: root.controller.entryCount > 1
+        showChevron: root.controller.entryCount > 1
+        onTriggered: selectorPopup.open()
     }
 
     Popup {
-        id: syncPopup
+        id: selectorPopup
 
         x: 0
         y: root.height + IKSpacing.s4
         width: root.width
-        height: Math.min(syncList.contentHeight + IKSpacing.s8 * 2, IKMainWindow.syncSelectorPopupMaxHeight)
+        height: Math.min(selectorList.contentHeight + IKSpacing.s8 * 2, IKMainWindow.syncSelectorPopupMaxHeight)
         padding: IKSpacing.s8
         focus: true
+        modal: true
+        dim: false
         closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-        onOpened: Qt.callLater(function() {
-            if (syncList.currentItem) {
-                syncList.currentItem.forceActiveFocus()
+        onOpened: {
+            if (root.controller.selectedRow >= 0) {
+                selectorList.positionViewAtIndex(root.controller.selectedRow, ListView.Contain)
             }
-        })
+            Qt.callLater(function() {
+                if (selectorList.currentItem) {
+                    selectorList.currentItem.forceActiveFocus()
+                }
+            })
+        }
         onClosed: {
-            if (currentSyncItem.interactive) {
-                currentSyncItem.forceActiveFocus()
+            if (currentSelectorItem.interactive) {
+                currentSelectorItem.forceActiveFocus()
             }
         }
 
@@ -71,11 +83,11 @@ Item {
         }
 
         contentItem: ListView {
-            id: syncList
+            id: selectorList
 
             clip: true
             spacing: IKSpacing.s4
-            model: root.controller.syncsModel
+            model: root.controller.selectorModel
             currentIndex: root.controller.selectedRow
 
             onCurrentIndexChanged: {
@@ -84,17 +96,25 @@ Item {
                 }
             }
 
-            delegate: IKSyncSelectorItem {
+            delegate: IKDriveSyncSelectorItem {
                 required property var model
 
-                width: syncList.width
+                width: selectorList.width
+                entryType: model.entryType
                 title: model.title
                 subtitle: model.subtitle
                 driveColor: model.driveColor
+                errorCount: model.errorCount
+                warning: model.hasWarning
                 selected: model.isSelected
+                showSurface: false
                 onTriggered: {
-                    root.controller.selectSync(model.syncDbId)
-                    syncPopup.close()
+                    if (model.entryType === SyncSelectorModel.DriveOnly) {
+                        root.controller.selectDrive(model.driveDbId)
+                    } else {
+                        root.controller.selectSync(model.syncDbId)
+                    }
+                    selectorPopup.close()
                 }
             }
         }
