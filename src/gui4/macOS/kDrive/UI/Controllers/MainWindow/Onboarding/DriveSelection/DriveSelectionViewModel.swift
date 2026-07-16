@@ -143,7 +143,8 @@ final class DriveSelectionViewModel: ObservableObject {
                         origin: syncOrigin,
                         remoteFolder: .kDriveRoot,
                         localFolder: localFolder,
-                        blackList: synchroConfiguration?.blackList ?? []
+                        blackList: synchroConfiguration?.blackList ?? [],
+                        useLightSync: synchroConfiguration?.useLightSync ?? true
                     )
                 }
 
@@ -160,7 +161,7 @@ final class DriveSelectionViewModel: ObservableObject {
         for drive in drives {
             guard synchroConfigurations[drive.id] == nil else { continue }
 
-            let configuration = SynchroConfiguration(drive: drive, blackList: [])
+            let configuration = SynchroConfiguration(drive: drive, blackList: [], useLightSync: true)
             synchroConfigurations[drive.id] = configuration
         }
     }

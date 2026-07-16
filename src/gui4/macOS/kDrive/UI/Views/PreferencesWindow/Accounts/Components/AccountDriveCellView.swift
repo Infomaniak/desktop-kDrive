@@ -32,7 +32,7 @@ struct AccountDriveCellView: View {
     let isSynchronized: Bool
 
     private var synchroConfiguration: SynchroConfiguration {
-        return SynchroConfiguration(drive: drive, localFolder: .init(), blackList: [])
+        return SynchroConfiguration(drive: drive, localFolder: .init(), blackList: [], useLightSync: true)
     }
 
     var body: some View {
@@ -121,7 +121,8 @@ struct AccountDriveCellView: View {
             origin: .availableDrive(drive),
             remoteFolder: .kDriveRoot,
             localFolder: configuration.localFolder.url,
-            blackList: configuration.blackList
+            blackList: configuration.blackList,
+            useLightSync: configuration.useLightSync
         )
 
         try await SyncCreationService().create(from: syncCandidate)

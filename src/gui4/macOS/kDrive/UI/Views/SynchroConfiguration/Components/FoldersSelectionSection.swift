@@ -78,6 +78,10 @@ struct FolderFoldersSelectionSection: View {
 }
 
 #Preview {
-    FolderFoldersSelectionSection(configuration: SynchroConfiguration(drive: PreviewHelper.drive1, blackList: []))
-        .environmentObject(SynchroConfigurationFlowViewModel(onConfirm: nil, onCancel: nil))
+    FolderFoldersSelectionSection(configuration: SynchroConfiguration(
+        drive: PreviewHelper.drive1,
+        blackList: [],
+        useLightSync: true
+    ))
+    .environmentObject(SynchroConfigurationFlowViewModel(onConfirm: nil, onCancel: nil))
 }

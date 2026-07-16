@@ -69,8 +69,8 @@ struct SynchroConfigurationPickerView: View {
 #Preview {
     let viewModel = SynchroConfigurationFlowViewModel(onConfirm: nil, onCancel: nil)
     viewModel.setupInitialConfigurations([
-        SynchroConfiguration(drive: PreviewHelper.drive1, blackList: []),
-        SynchroConfiguration(drive: PreviewHelper.drive2, blackList: ["hey"])
+        SynchroConfiguration(drive: PreviewHelper.drive1, blackList: [], useLightSync: true),
+        SynchroConfiguration(drive: PreviewHelper.drive2, blackList: ["hey"], useLightSync: false)
     ])
 
     return SynchroConfigurationPickerView()
