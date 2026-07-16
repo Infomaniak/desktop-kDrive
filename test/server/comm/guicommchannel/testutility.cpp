@@ -29,6 +29,9 @@
 #include "comm/guijobs/utilitygetlogestimatedsizejob.h"
 #include "comm/guijobs/utilityquitjob.h"
 #include "comm/guijobs/utilitysendappstarttracejob.h"
+#if defined(KD_MACOS)
+#include "comm/guijobs/utilityinstallmaclitesyncextjob.h"
+#endif
 
 #include "testguicommchannel.h"
 #include "../testcommhelpers.h"
@@ -380,6 +383,29 @@ void TestGuiCommChannel::testUtilitySendLogToSupportJob() {
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
+
+#if defined(KD_MACOS)
+void TestGuiCommChannel::testUtilityInstallMacLiteSyncExtJob() {
+    const Poco::JSON::Object query = createSimpleQuery(RequestNum::UTILITY_INSTALL_MAC_LITESYNC_EXT);
+    const auto queryStr = stringifyQueryObj(query);
+
+    // Job expected answers
+    const SimpleAnswers simpleAnswers = createSimpleAnswers(RequestNum::UTILITY_INSTALL_MAC_LITESYNC_EXT);
+    const auto answerStr = stringifyAnswerObj(simpleAnswers.answerWithNumAndType);
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        const auto utilityInstallMacLiteSyncExtJob = std::dynamic_pointer_cast<UtilityInstallMacLiteSyncExtJob>(job);
+        CPPUNIT_ASSERT(utilityInstallMacLiteSyncExtJob);
+    };
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(queryStr, answerStr, {}, processFct);
+#else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(simpleAnswers.answer);
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
+#endif
 
 void TestGuiCommChannel::testUtilityCancelLogToSupportJob() {
     const Poco::JSON::Object query = createSimpleQuery(RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT);

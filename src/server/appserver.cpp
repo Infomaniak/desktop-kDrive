@@ -476,10 +476,6 @@ void AppServer::init() {
 
 #if defined(KD_MACOS)
     if (ParmsDb::instance()->versionUpdated()) Utility::restartLoginItemAgent();
-
-    if (const auto exitInfo = installVfs(); !exitInfo) {
-        LOG_WARN(_logger, "Error in installVfs: " << exitInfo);
-    }
 #endif
 
     // Start syncs

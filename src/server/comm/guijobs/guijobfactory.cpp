@@ -80,6 +80,9 @@
 #include "utilitygetlogestimatedsizejob.h"
 #include "utilityquitjob.h"
 #include "utilitysendappstarttracejob.h"
+#if defined(KD_MACOS)
+#include "utilityinstallmaclitesyncextjob.h"
+#endif
 
 #include "updaterversioninfojob.h"
 #include "updaterstatejob.h"
@@ -151,6 +154,9 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY, makeShared<UtilityGetLogEstimatedSizeJob>},
                 {RequestNum::UTILITY_QUIT, makeShared<UtilityQuitJob>},
                 {RequestNum::UTILITY_SEND_APP_START_TRACE, makeShared<UtilitySendAppStartTraceJob>},
+#if defined(KD_MACOS)
+                {RequestNum::UTILITY_INSTALL_MAC_LITESYNC_EXT, makeShared<UtilityInstallMacLiteSyncExtJob>},
+#endif
                 {RequestNum::UPDATER_VERSION_INFO, makeShared<UpdaterVersionInfoJob>},
                 {RequestNum::UPDATER_STATE, makeShared<UpdaterStateJob>},
                 {RequestNum::UPDATER_START_INSTALLER, makeShared<UpdaterStartInstallerJob>},
