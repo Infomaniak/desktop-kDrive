@@ -27,13 +27,6 @@ class WindowsUpdater : public AbstractUpdater {
         void onUpdateFound() override;
         void startInstaller() override;
 
-        /**
-         * @brief Install a specific version synchronously:
-         *        downloads the installer, verifies signature,
-         *        and launches it silently.
-         */
-        ExitCode installVersion() override;
-
     private:
         /**
          * @brief Start the synchronous download of the new version installer.
