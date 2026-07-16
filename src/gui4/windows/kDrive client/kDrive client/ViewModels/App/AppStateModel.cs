@@ -26,6 +26,7 @@ namespace Infomaniak.kDrive.ViewModels
     public class AppStateModel
     {
         private readonly IServerCommService _serverCommService;
+        private bool? _showV4OnboardingCachedValue = null;
 
         public AppStateModel(IServerCommService serverCommService)
         {
@@ -35,18 +36,24 @@ namespace Infomaniak.kDrive.ViewModels
         /* Returns the value of the ShowV4Onboarding app state, or null on failure. */
         public async Task<bool?> GetShowV4Onboarding(CancellationToken cancellationToken = default)
         {
+            if (_showV4OnboardingCachedValue is not null) return _showV4OnboardingCachedValue;
+
             string? value = await _serverCommService.GetAppState(AppStateKey.ShowV4Onboarding, cancellationToken);
             if (value is null)
             {
                 Logger.Log(Logger.Level.Warning, "Failed to get ShowV4Onboarding state from the server.");
                 return null;
             }
-            return value == "1";
+            _showV4OnboardingCachedValue = value == "1";
+            return _showV4OnboardingCachedValue;
         }
 
         /* Sets the ShowV4Onboarding app state. Returns true on success, false on failure. */
         public async Task<bool> SetShowV4Onboarding(bool showV4Onboarding, CancellationToken cancellationToken = default)
         {
+            if (_showV4OnboardingCachedValue is not null)
+                _showV4OnboardingCachedValue = showV4Onboarding;
+
             if (await _serverCommService.SetAppState(AppStateKey.ShowV4Onboarding, showV4Onboarding ? "1" : "0", cancellationToken))
                 return true;
 
