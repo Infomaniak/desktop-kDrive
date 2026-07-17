@@ -269,8 +269,8 @@ std::string CommonUtility::fileSystemType(const SyncPath &targetPath, std::strin
 #if defined(KD_WINDOWS)
         const SyncPath rootPath = targetPath.root_path().native();
         if (const auto it = cache.fsTypeMap.find(rootPath); it != cache.fsTypeMap.end()) {
-            fsType = it.second.first;
-            return it.second.second;
+            fsType = it->second.first;
+            return it->second.second;
         }
 #else
         for (const auto &it: cache.fsTypeMap) {
