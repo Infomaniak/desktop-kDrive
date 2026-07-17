@@ -46,7 +46,7 @@ class PocoConan(ConanFile):
 
     _PocoComponent = namedtuple("_PocoComponent", ("option",                    "default_option",   "dependencies", "external_dependencies", "is_lib"))
     _poco_component_tree = {
-        "Foundation":           _PocoComponent(None, "Foundation",              [],                 ["pcre::pcre", "zlib::zlib"], True),
+        "Foundation":           _PocoComponent(None, "Foundation",              [],                 ["pcre::pcre", "zlib::zlib", "utf8proc::utf8proc"], True),
         "Crypto":               _PocoComponent("enable_crypto",                 True,               ["Foundation"], ["openssl::openssl"], True),
         "JSON":                 _PocoComponent("enable_json",                   True,               ["Foundation"], [], True),
         "Net":                  _PocoComponent("enable_net",                    True,               ["Foundation"], [], True),
@@ -125,13 +125,15 @@ class PocoConan(ConanFile):
     def requirements(self):
         self.requires("pcre2/[>=10.42 <11]")
         self.requires("zlib/[>=1.2.11 <2]", transitive_headers=True, options={"shared": True})
+        # Since Poco 1.15.x, Foundation's Unicode support is unbundled onto utf8proc.
+        self.requires("utf8proc/[>=2.5.0 <3]")
         if self.options.enable_xml:
             self.requires("expat/[>=2.6.2 <2.7.4]", transitive_headers=True)
         if self.options.enable_netssl or self.options.enable_crypto:
             if self.settings.os == "Macos":
-                self.requires("openssl-macos/3.2.4", options={ "shared": True })
+                self.requires("openssl-macos/3.6.2", options={ "shared": True })
             else:
-                self.requires("openssl/3.2.4", options={ "shared": True })
+                self.requires("openssl/3.6.2", options={ "shared": True })
 
     def package_id(self):
         del self.info.options.enable_active_record
@@ -181,8 +183,6 @@ class PocoConan(ConanFile):
         # Disable SharedLibrary::suffix() including "d" as part of the platform-specific filename suffix
         if not self.options.get_safe("sharedlibrary_debug_suffix", True):
             tc.preprocessor_definitions["POCO_NO_SHARED_LIBRARY_DEBUG_SUFFIX"] = "1"
-        # Backport Conan Center's pcre2 library type marker for Poco's unbundled build.
-        tc.cache_variables["_PCRE2TYPE"] = "SHARED_LIBRARY" if self.dependencies["pcre2"].options.shared else "STATIC_LIBRARY"
         tc.generate()
 
         deps = CMakeDeps(self)
@@ -190,30 +190,19 @@ class PocoConan(ConanFile):
         deps.set_property("expat", "cmake_target_name", "EXPAT::EXPAT")
         deps.set_property("expat", "cmake_find_mode", "config")
         deps.set_property("pcre2::pcre2-8", "cmake_target_name", "Pcre2::Pcre2")
+        deps.set_property("utf8proc", "cmake_file_name", "Utf8Proc")
+        deps.set_property("utf8proc", "cmake_target_name", "Utf8Proc::Utf8Proc")
         deps.generate()
 
     def build(self):
-        foundation_cmake = os.path.join(self.source_folder, "Foundation", "CMakeLists.txt")
-        replace_in_file(self, foundation_cmake,
-            """\t# Unicode.cpp requires functions from these files. The can't be taken from the library
-\tPOCO_SOURCES(SRCS RegExp
-\t\tsrc/pcre2_ucd.c
-\t\tsrc/pcre2_tables.c
-\t)
-""",
-            """\t# Unicode.cpp requires functions from these files.
-\t# They can be used directly from PCRE2 only when linking the static library.
-\tif("${_PCRE2TYPE}" STREQUAL "SHARED_LIBRARY")
-\t\tPOCO_SOURCES(SRCS RegExp
-\t\t\tsrc/pcre2_ucd.c
-\t\t\tsrc/pcre2_tables.c
-\t\t)
-\tendif()
-""")
+        # NOTE: Upstream Poco (since ~1.15.x) already guards the embedded pcre2 sources behind
+        # a get_target_property(_PCRE2TYPE Pcre2::Pcre2 TYPE) check in Foundation/CMakeLists.txt,
+        # so the replace_in_file() backport that used to be needed here for older Poco versions
+        # no longer applies and has been removed.
 
         # Remove debug suffix from library names when sharedlibrary_debug_suffix is False
         if not self.options.get_safe("sharedlibrary_debug_suffix", True):
-            platform_specific_cmake = os.path.join(self.source_folder, "cmake", "DefinePlatformSpecifc.cmake")
+            platform_specific_cmake = os.path.join(self.source_folder, "cmake", "DefinePlatformSpecific.cmake")
             # Replace "d" suffix with empty string for shared libs
             replace_in_file(self, platform_specific_cmake,
                 'set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "Set Debug library postfix" FORCE)',
@@ -222,6 +211,28 @@ class PocoConan(ConanFile):
             replace_in_file(self, platform_specific_cmake,
                 'set(CMAKE_DEBUG_POSTFIX "${STATIC_POSTFIX}d" CACHE STRING "Set Debug library postfix" FORCE)',
                 'set(CMAKE_DEBUG_POSTFIX "${STATIC_POSTFIX}" CACHE STRING "Set Debug library postfix" FORCE)')
+
+        # Poco's own cmake/openssl/FindOpenSSL.cmake module (a copy of CMake's stock module) may
+        # transitively call find_package(ZLIB) while probing OpenSSL's static link dependencies,
+        # which creates the ZLIB::ZLIB imported target in an ancestor directory scope (it is
+        # included directly, not add_subdirectory()'d). dependencies/zlib/CMakeLists.txt then
+        # tries to unconditionally promote that already-existing target to global scope, which
+        # CMake refuses because IMPORTED_GLOBAL can only be set from the directory that created
+        # the target. Since dependencies/zlib is a descendant of that ancestor scope, the target
+        # is already visible there without promotion, so only find_package()/promote when the
+        # target doesn't already exist.
+        zlib_cmake = os.path.join(self.source_folder, "dependencies", "zlib", "CMakeLists.txt")
+        replace_in_file(self, zlib_cmake,
+            """if(POCO_UNBUNDLED)
+\tfind_package(ZLIB REQUIRED)
+\tset_target_properties(ZLIB::ZLIB PROPERTIES IMPORTED_GLOBAL TRUE)
+else()""",
+            """if(POCO_UNBUNDLED)
+\tif(NOT TARGET ZLIB::ZLIB)
+\t\tfind_package(ZLIB REQUIRED)
+\t\tset_target_properties(ZLIB::ZLIB PROPERTIES IMPORTED_GLOBAL TRUE)
+\tendif()
+else()""")
 
         cmake = CMake(self)
         cmake.configure()

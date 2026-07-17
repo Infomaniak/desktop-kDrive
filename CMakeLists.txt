@@ -360,8 +360,8 @@ if(UNIX AND NOT APPLE)
         # Copy .so files to the conan dependency directory
         find_package(log4cplus 2.1.2 REQUIRED)
         find_package(xxHash 0.8.2 REQUIRED)
-        find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
-        find_package(Poco 1.13.3 REQUIRED)
+        find_package(OpenSSL 3.6.2 REQUIRED SSL Crypto)
+        find_package(Poco 1.15.2 REQUIRED)
         find_package(sentry REQUIRED)
 
         # Normalize Conan variables to be build-type agnostic

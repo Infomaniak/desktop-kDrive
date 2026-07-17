@@ -5,7 +5,7 @@ else()
 endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Network Svg)
-find_package(Poco 1.13.3 REQUIRED XML)
+find_package(Poco 1.15.2 REQUIRED XML)
 find_package(sentry REQUIRED)
 
 set(CMAKE_AUTOMOC TRUE)

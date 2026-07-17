@@ -148,8 +148,7 @@ class KDriveDesktop(ConanFile):
         """
         self.requires("zlib/[>=1.2.11 <2]", transitive_headers=True, options={"shared": True})
         # From local recipe, using the qt online installer.
-        # Qt 6.8.3 for Linux ARM, Qt 6.5.3 for other platforms
-        qt_version = "6.8.3" if self.settings.os == "Linux" and str(self.settings.arch).startswith("arm") else "6.2.3"
+        qt_version = "6.8.3"
         self.requires(f"qt/{qt_version}")
         self.requires("xxhash/0.8.2") # From local recipe
         self.requires("sqlite3/3.53.0", options={
@@ -166,12 +165,12 @@ class KDriveDesktop(ConanFile):
         # openssl depends on zlib, which is already inside the conanfile.py of openssl
         # but since we build openssl two times (for x86_64 and arm64) in single arch and then merge them, we need to add zlib in 'armv8|x86_64' arch mode.
         if self.settings.os == "Macos":
-            self.requires("openssl-macos/3.2.4", options={ "shared": True }) # on macOS => Using the local recipe, using the openssl universal build script.
+            self.requires("openssl-macos/3.6.2", options={ "shared": True }) # on macOS => Using the local recipe, using the openssl universal build script.
         else:
-            self.requires("openssl/3.2.4", options={ "shared": True }) # Otherwise, using the conan center recipe.
+            self.requires("openssl/3.6.2", options={ "shared": True }) # Otherwise, using the conan center recipe.
 
         self.requires("sentry/0.7.10", options={ "shared": True, "qt_version": qt_version })
-        self.requires("poco/1.13.3", options={ "shared": True })
+        self.requires("poco/1.15.2", options={ "shared": True })
 
     def _append_conan_vars_normalization(self):
         """
