@@ -100,6 +100,7 @@ final class LoginViewController: OnboardingStepViewController {
         alert.informativeText = KDriveLocalizable.onboardingLoginErrorDescription
         alert.runModal()
 
+        matomo.track(eventWithCategory: .onboardingConnectionFailedPage, name: "reOpenLoginWeb")
         viewModel.isShowingError = false
     }
 }
