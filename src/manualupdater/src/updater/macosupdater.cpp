@@ -1,6 +1,7 @@
 #include "macosupdater.h"
 #include "httpdownloader.h"
 
+#include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
 #include "libcommon/utility/utility.h"
 
@@ -61,7 +62,19 @@ bool MacOSUpdater::install(const KDC::VersionInfo &versionInfo, const std::strin
         return false;
     }
 
-    progressCallback(70, QObject::tr("Removing old application..."));
+    progressCallback(55, QObject::tr("Verifying file integrity..."));
+    if (!versionInfo.checksum.empty()) {
+        if (!verifyFileChecksum(versionInfo, KDC::SyncPath(pkgPath.toStdString()), outMessage)) {
+            return false;
+        }
+    }
+
+    progressCallback(70, QObject::tr("Verifying digital signature..."));
+    if (!verifyPackageSignature(KDC::SyncPath(pkgPath.toStdString()), outMessage)) {
+        return false;
+    }
+
+    progressCallback(85, QObject::tr("Removing old application..."));
     std::system(
             "osascript -e 'tell application \"Finder\" to delete POSIX file "
             "\"/Applications/kDrive/kDrive Uninstaller.app\"'");
@@ -72,7 +85,7 @@ bool MacOSUpdater::install(const KDC::VersionInfo &versionInfo, const std::strin
             "osascript -e 'tell application \"Finder\" to delete POSIX file "
             "\"/Applications/kDrive\"'");
 
-    progressCallback(90, QObject::tr("Opening installer..."));
+    progressCallback(95, QObject::tr("Opening installer..."));
     if (!QProcess::startDetached(QStringLiteral("open"), QStringList{pkgPath})) {
         outMessage = QObject::tr("Failed to open installer. Please install manually: %1").arg(pkgPath);
         return false;
@@ -132,6 +145,42 @@ bool MacOSUpdater::downloadAndParseAppcast(const std::string &appcastUrl, QStrin
         return false;
     }
 
+    return true;
+}
+
+bool MacOSUpdater::verifyPackageSignature(const KDC::SyncPath &pkgPath, QString &outMessage) const {
+    QProcess process;
+    process.setProgram(QStringLiteral("pkgutil"));
+    process.setArguments(QStringList{QStringLiteral("--check-signature"), QString::fromStdString(pkgPath.string())});
+    process.start();
+    if (!process.waitForFinished(30000)) {
+        LOGW_WARN(KDC::Log::instance()->getLogger(), L"pkgutil --check-signature timed out.");
+        outMessage = QObject::tr("Signature verification timed out.");
+        auto ioError = KDC::IoError::Success;
+        (void) KDC::IoHelper::deleteItem(pkgPath, ioError);
+        return false;
+    }
+
+    const int exitCode = process.exitCode();
+    if (exitCode != 0) {
+        LOGW_ERROR(KDC::Log::instance()->getLogger(), L"pkgutil --check-signature failed with exit code " << exitCode);
+        outMessage = QObject::tr("Digital signature verification failed.");
+        auto ioError = KDC::IoError::Success;
+        (void) KDC::IoHelper::deleteItem(pkgPath, ioError);
+        return false;
+    }
+
+    const QString output = QString::fromUtf8(process.readAllStandardOutput());
+    if (!output.contains(QStringLiteral("Status: signed by"))) {
+        LOGW_ERROR(KDC::Log::instance()->getLogger(),
+                   L"Package is not signed. Output: " << KDC::CommonUtility::s2ws(output.toStdString()));
+        outMessage = QObject::tr("Digital signature verification failed.");
+        auto ioError = KDC::IoError::Success;
+        (void) KDC::IoHelper::deleteItem(pkgPath, ioError);
+        return false;
+    }
+
+    LOGW_INFO(KDC::Log::instance()->getLogger(), L"Package signature verification passed.");
     return true;
 }
 

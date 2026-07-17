@@ -9,15 +9,10 @@
 
 #include <QProcess>
 
-#include <fstream>
-#include <array>
-#include <Poco/SHA2Engine.h>
-#include <Poco/DigestStream.h>
-
 namespace KDUpdater {
 
 bool WindowsUpdater::install(const KDC::VersionInfo &versionInfo, const std::string &desiredVersion,
-                               std::function<void(int, QString)> progressCallback, QString &outMessage) {
+                             std::function<void(int, QString)> progressCallback, QString &outMessage) {
     (void) desiredVersion;
 
     KDC::SyncPath filepath;
@@ -30,7 +25,8 @@ bool WindowsUpdater::install(const KDC::VersionInfo &versionInfo, const std::str
     auto ioError = KDC::IoError::Success;
     (void) KDC::IoHelper::deleteItem(filepath, ioError);
     if (ioError != KDC::IoError::Success && ioError != KDC::IoError::NoSuchFileOrDirectory) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(), L"Failed to remove existing installer " << KDC::Utility::formatSyncPath(filepath));
+        LOGW_WARN(KDC::Log::instance()->getLogger(),
+                  L"Failed to remove existing installer " << KDC::Utility::formatSyncPath(filepath));
     }
 
     progressCallback(30, QObject::tr("Downloading installer..."));
@@ -97,54 +93,11 @@ bool WindowsUpdater::getInstallerPath(const KDC::VersionInfo &versionInfo, KDC::
     return true;
 }
 
-bool WindowsUpdater::verifyFileChecksum(const KDC::VersionInfo &versionInfo, const KDC::SyncPath &filepath,
-                                          QString &outMessage) const {
-    const std::string expectedChecksum = KDC::CommonUtility::trim(KDC::CommonUtility::toLower(versionInfo.checksum));
-    if (expectedChecksum.empty()) {
-        return true;
-    }
-
-    const std::string actualChecksum = KDC::CommonUtility::trim(KDC::CommonUtility::toLower(computeFileChecksum(filepath)));
-    if (actualChecksum.empty()) {
-        LOGW_ERROR(KDC::Log::instance()->getLogger(), L"Failed to compute file checksum.");
-        outMessage = QObject::tr("Failed to compute file checksum.");
-        auto ioError = KDC::IoError::Success;
-        (void) KDC::IoHelper::deleteItem(filepath, ioError);
-        return false;
-    }
-
-    if (actualChecksum != expectedChecksum) {
-        LOGW_ERROR(KDC::Log::instance()->getLogger(),
-                  L"Checksum mismatch! Expected: " << KDC::CommonUtility::s2ws(expectedChecksum)
-                                                  << L", Got: " << KDC::CommonUtility::s2ws(actualChecksum));
-        outMessage = QObject::tr("Checksum verification failed.");
-        auto ioError = KDC::IoError::Success;
-        (void) KDC::IoHelper::deleteItem(filepath, ioError);
-        return false;
-    }
-
-    LOGW_INFO(KDC::Log::instance()->getLogger(), L"Checksum verification passed.");
-    return true;
-}
-
-std::string WindowsUpdater::computeFileChecksum(const KDC::SyncPath &filepath) const {
-    std::ifstream file(filepath, std::ios::binary);
-    if (!file) return "";
-
-    Poco::SHA2Engine sha256(Poco::SHA2Engine::ALGORITHM::SHA_256);
-    std::array<char, 8192> buffer{};
-    while (file.read(buffer.data(), buffer.size()) || file.gcount() > 0) {
-        sha256.update(buffer.data(), static_cast<std::size_t>(file.gcount()));
-    }
-
-    return Poco::DigestEngine::digestToHex(sha256.digest());
-}
-
 bool WindowsUpdater::verifyDigitalSignature(const KDC::SyncPath &filepath, QString &outMessage) const {
     if (!KDC::DigitalSignatureChecker_win(filepath).isSignatureValid()) {
-        LOGW_ERROR(KDC::Log::instance()->getLogger(),
-                  L"The digital signature of installer " << KDC::Utility::formatSyncPath(filepath)
-                                                           << L" is invalid. Aborting update.");
+        LOGW_ERROR(KDC::Log::instance()->getLogger(), L"The digital signature of installer "
+                                                              << KDC::Utility::formatSyncPath(filepath)
+                                                              << L" is invalid. Aborting update.");
         outMessage = QObject::tr("Digital signature verification failed.");
         auto ioError = KDC::IoError::Success;
         (void) KDC::IoHelper::deleteItem(filepath, ioError);
