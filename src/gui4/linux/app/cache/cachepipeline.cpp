@@ -52,6 +52,7 @@ constexpr auto directCacheConnections =
                         makeCacheConnection("syncAdded", &CommService::syncAdded, &AppCache::upsertSync),
                         makeCacheConnection("syncUpdated", &CommService::syncUpdated, &AppCache::upsertSync),
                         makeCacheConnection("syncRemoved", &CommService::syncRemoved, &AppCache::removeSync),
+                        makeCacheConnection("syncProgressInfo", &CommService::syncProgressInfo, &AppCache::updateSyncRuntimeInfo),
                         makeCacheConnection("errorAdded", &CommService::errorAdded, &AppCache::upsertError),
                         makeCacheConnection("errorRemoved", &CommService::errorRemoved, &AppCache::removeError));
 } // namespace
