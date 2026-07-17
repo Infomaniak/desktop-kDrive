@@ -1211,27 +1211,6 @@ bool ServerRequests::isDisplayableError(const Error &error) {
     }
 }
 
-bool ServerRequests::isAutoResolvedError(const Error &error) {
-    bool autoResolved = false;
-    if (error.level() == ErrorLevel::Server) {
-        autoResolved = false;
-    } else if (error.level() == ErrorLevel::SyncPal) {
-        autoResolved =
-                (error.exitCode() ==
-                         ExitCode::NetworkError // Sync is paused, and we try to restart it every RESTART_SYNCS_INTERVAL
-                 || (error.exitCode() == ExitCode::BackError // Sync is stopped and a full sync is restarted
-                     && error.exitCause() != ExitCause::DriveAccessError && error.exitCause() != ExitCause::DriveNotRenew) ||
-                 error.exitCode() == ExitCode::DataError); // Sync is stopped and a full sync is restarted
-    } else if (error.level() == ErrorLevel::Node) {
-        autoResolved = (error.conflictType() != ConflictType::None && !isConflictsWithLocalRename(error.conflictType())) ||
-                       (error.inconsistencyType() !=
-                        InconsistencyType::None /*&& error.inconsistencyType() != InconsistencyType::ForbiddenChar*/) ||
-                       error.cancelType() != CancelType::None;
-    }
-
-    return autoResolved;
-}
-
 ExitCode ServerRequests::getDbStructsFromSyncDbId(SyncDbId syncDbId, User &user, Account &account, Drive &drive, Sync &sync) {
     // Get User
     bool found = false;
@@ -1607,8 +1586,7 @@ ExitCode ServerRequests::setExclusionAppList(const bool def, const QList<Exclusi
 }
 #endif
 
-ExitCode ServerRequests::getErrorInfoList(const ErrorLevel level, const SyncDbId syncDbId, const int limit,
-                                          QList<ErrorInfo> &list) {
+ExitCode ServerRequests::getErrorList(const ErrorLevel level, const SyncDbId syncDbId, const int limit, QList<Error> &list) {
     std::vector<Error> errorList;
     if (!ParmsDb::instance()->selectAllErrors(level, syncDbId, limit, errorList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllErrors");
@@ -1618,16 +1596,14 @@ ExitCode ServerRequests::getErrorInfoList(const ErrorLevel level, const SyncDbId
     list.clear();
     for (const Error &error: errorList) {
         if (isDisplayableError(error)) {
-            ErrorInfo errorInfo;
-            errorToErrorInfo(error, errorInfo);
-            list << errorInfo;
+            list << error;
         }
     }
 
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::getErrorInfoList(const int limit, std::vector<ErrorInfo> &list) {
+ExitInfo ServerRequests::getErrorList(const int limit, std::vector<Error> &list) {
     std::vector<Error> errorList;
     if (!ParmsDb::instance()->selectAllErrors(limit, errorList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllErrors");
@@ -1637,9 +1613,7 @@ ExitInfo ServerRequests::getErrorInfoList(const int limit, std::vector<ErrorInfo
     list.clear();
     for (const Error &error: errorList) {
         if (isDisplayableError(error)) {
-            ErrorInfo errorInfo;
-            errorToErrorInfo(error, errorInfo);
-            list.push_back(errorInfo);
+            list.push_back(error);
         }
     }
 
@@ -1665,16 +1639,14 @@ ExitCode ServerRequests::getConflictList(const SyncDbId syncDbId, const std::uno
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getConflictErrorInfoList(const SyncDbId syncDbId, const std::unordered_set<ConflictType> &filter,
-                                                  QList<ErrorInfo> &errorInfoList) {
+ExitCode ServerRequests::getConflictErrorList(const SyncDbId syncDbId, const std::unordered_set<ConflictType> &filter,
+                                              QList<Error> &errorInfoList) {
     std::vector<Error> errorList;
     ServerRequests::getConflictList(syncDbId, filter, errorList);
 
     for (const Error &error: errorList) {
         if (isDisplayableError(error)) {
-            ErrorInfo errorInfo;
-            errorToErrorInfo(error, errorInfo);
-            errorInfoList << errorInfo;
+            errorInfoList << error;
         }
     }
 
@@ -1756,7 +1728,7 @@ ExitCode ServerRequests::deleteErrorsForSync(const SyncDbId syncDbId, const bool
         if (const auto exitInfo = keepError(error, keepErrorFlag); !exitInfo) return exitInfo;
         if (keepErrorFlag) continue;
 
-        if (isAutoResolvedError(error) == autoResolved) {
+        if (error.isAutoResolved() == autoResolved) {
             bool found = false;
             if (!ParmsDb::instance()->deleteError(error.dbId(), found)) {
                 LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteError for dbId=" << error.dbId());
@@ -2164,26 +2136,6 @@ ExitCode ServerRequests::syncForPath(const std::vector<Sync> &syncList, const QS
     }
 
     return ExitCode::Ok;
-}
-
-void ServerRequests::errorToErrorInfo(const Error &error, ErrorInfo &errorInfo) {
-    errorInfo.setDbId(error.dbId());
-    errorInfo.setTime(error.time());
-    errorInfo.setLevel(error.level());
-    errorInfo.setFunctionName(QString::fromStdString(error.functionName()));
-    errorInfo.setSyncDbId(error.syncDbId());
-    errorInfo.setWorkerName(QString::fromStdString(error.workerName()));
-    errorInfo.setExitCode(error.exitCode());
-    errorInfo.setExitCause(error.exitCause());
-    errorInfo.setLocalNodeId(QString::fromStdString(error.localNodeId()));
-    errorInfo.setRemoteNodeId(QString::fromStdString(error.remoteNodeId()));
-    errorInfo.setNodeType(error.nodeType());
-    errorInfo.setPath(SyncName2QStr(error.path().native()));
-    errorInfo.setConflictType(error.conflictType());
-    errorInfo.setInconsistencyType(error.inconsistencyType());
-    errorInfo.setCancelType(error.cancelType());
-    errorInfo.setDestinationPath(SyncName2QStr(error.destinationPath().native()));
-    errorInfo.setAutoResolved(isAutoResolvedError(error));
 }
 
 void ServerRequests::syncFileItemToSyncFileItemInfo(const SyncFileItem &item, SyncFileItemInfo &itemInfo) {

@@ -1144,10 +1144,10 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             const auto syncDbId = static_cast<SyncDbId>(tmpSyncDbId);
 
-            QList<ErrorInfo> list;
-            const auto exitCode = ServerRequests::getErrorInfoList(level, syncDbId, limit, list);
+            QList<Error> list;
+            const auto exitCode = ServerRequests::getErrorList(level, syncDbId, limit, list);
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::getErrorInfoList: code=" << exitCode);
+                LOG_WARN(_logger, "Error in Requests::getErrorList: code=" << exitCode);
                 addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
             }
 
@@ -1162,7 +1162,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> tmpDriveDbId;
             paramsStream >> filter;
 
-            QList<ErrorInfo> list;
+            QList<Error> list;
 
             const auto driveDbId = static_cast<DriveDbId>(tmpDriveDbId);
 
@@ -1181,9 +1181,9 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             ExitCode exitCode = ExitCode::Ok;
             for (auto &sync: syncs) {
-                exitCode = ServerRequests::getConflictErrorInfoList(sync.dbId(), filter2, list);
+                exitCode = ServerRequests::getConflictErrorList(sync.dbId(), filter2, list);
                 if (exitCode != ExitCode::Ok) {
-                    LOG_WARN(_logger, "Error in Requests::getConflictErrorInfoList: code=" << exitCode);
+                    LOG_WARN(_logger, "Error in Requests::getConflictErrorList: code=" << exitCode);
                     addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
                 }
             }
@@ -2740,19 +2740,19 @@ void AppServer::sendShowNotification(const QString &title, const QString &messag
     }
 }
 
-void AppServer::sendErrorAdded(const ErrorInfo &errorInfo) const {
+void AppServer::sendErrorAdded(const Error &error) const {
     if (useOldCommServer()) {
         int id = 0;
 
         QByteArray params;
         QDataStream paramsStream(&params, QIODevice::WriteOnly);
-        paramsStream << (errorInfo.level() == ErrorLevel::Server);
-        paramsStream << toInt(errorInfo.exitCode());
-        paramsStream << static_cast<qint64>(errorInfo.syncDbId());
+        paramsStream << (error.level() == ErrorLevel::Server);
+        paramsStream << toInt(error.exitCode());
+        paramsStream << static_cast<qint64>(error.syncDbId());
         (void) OldCommServer::instance()->sendSignal(SignalNum::UTILITY_ERROR_ADDED_LEGACY, params, id);
     }
     if (useCommManager()) {
-        _commManager->sendGuiSignal(std::make_shared<SignalErrorAddedJob>(errorInfo));
+        _commManager->sendGuiSignal(std::make_shared<SignalErrorAddedJob>(error));
     }
 }
 
@@ -4509,9 +4509,7 @@ void AppServer::addError(const Error &error) const {
             sendErrorRemoved(errorCopy.dbId());
         }
 
-        ErrorInfo errorInfo;
-        ServerRequests::errorToErrorInfo(errorCopy, errorInfo);
-        sendErrorAdded(errorInfo);
+        sendErrorAdded(errorCopy);
     }
 }
 
@@ -4538,7 +4536,7 @@ void AppServer::manageError(const Error &error, std::vector<Error> &errorList, b
         manageUpdateRequiredErrorError();
     }
 
-    if (!ServerRequests::isAutoResolvedError(error) && !errorAlreadyExists) {
+    if (!error.isAutoResolved() && !errorAlreadyExists) {
         // Send error to sentry only for technical errors
         SentryUser sentryUser(user.email(), user.name(), std::to_string(user.userId()));
         sentry::Handler::captureMessage(sentry::Level::Warning, "AppServer::addError", error.errorString(), sentryUser);

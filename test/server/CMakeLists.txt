@@ -67,7 +67,7 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/nodefoldersizejob.h ${server_srcs_path}/comm/guijobs/nodefoldersizejob.cpp
     ${server_srcs_path}/comm/guijobs/nodecreatemissingfoldersjob.h ${server_srcs_path}/comm/guijobs/nodecreatemissingfoldersjob.cpp
     ${server_srcs_path}/comm/guijobs/nodeconflictinfojob.h ${server_srcs_path}/comm/guijobs/nodeconflictinfojob.cpp
-    ${server_srcs_path}/comm/guijobs/errorinfolistjob.h ${server_srcs_path}/comm/guijobs/errorinfolistjob.cpp
+    ${server_srcs_path}/comm/guijobs/errorlistjob.h ${server_srcs_path}/comm/guijobs/errorlistjob.cpp
     ${server_srcs_path}/comm/guijobs/abstracterrorresolveconflictsjob.h ${server_srcs_path}/comm/guijobs/abstracterrorresolveconflictsjob.cpp
     ${server_srcs_path}/comm/guijobs/errordeletejob.h ${server_srcs_path}/comm/guijobs/errordeletejob.cpp
     ${server_srcs_path}/comm/guijobs/errorsyncrefreshjob.h ${server_srcs_path}/comm/guijobs/errorsyncrefreshjob.cpp

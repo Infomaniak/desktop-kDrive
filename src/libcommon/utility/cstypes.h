@@ -180,6 +180,7 @@ enum class InconsistencyType {
     NotYetSupportedChar = 0x020, // Char not yet supported, ie recent Unicode char (ex: U+1FA77 on pre macOS 13.4)
     ForbiddenCharOnlySpaces = 0x080, // The name contains only spaces (not supported by back end)
     ForbiddenCharEndWithSpace = 0x100, // The name ends with a space
+    EnumEnd = 0x1000
 };
 
 enum class Language {
