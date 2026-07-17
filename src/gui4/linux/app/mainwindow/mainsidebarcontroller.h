@@ -32,8 +32,8 @@ namespace KDC {
 /**
  * QML-facing controller for main-sidebar interactions.
  *
- * It exposes the drive/synchronization selector model, delegates selection ownership to MainSelectionStore, and owns
- * the local desktop action for opening the selected synchronization folder.
+ * It exposes the synchronization selector model, delegates selection ownership to MainSelectionStore, and owns the
+ * local desktop action for opening the selected synchronization folder.
  */
 class MainSidebarController final : public QObject {
         Q_OBJECT
@@ -63,7 +63,6 @@ class MainSidebarController final : public QObject {
         [[nodiscard]] qint32 currentErrorCount() const;
 
         Q_INVOKABLE void selectSync(qint64 syncDbId);
-        Q_INVOKABLE void selectDrive(qint64 driveDbId);
         Q_INVOKABLE bool openCurrentSyncFolder() const;
 
     signals:
