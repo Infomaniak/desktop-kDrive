@@ -23,7 +23,7 @@
 #include "libcommon/data/driveavailable.h"
 #include "libcommon/data/sync.h"
 #include "libcommon/data/user.h"
-#include "libcommon/info/errorinfo.h"
+#include "libcommon/data/error.h"
 #include "libcommon/utility/types.h"
 
 #include <Poco/Hash.h>
@@ -65,8 +65,8 @@ struct SyncContext {
         Account accountInfo;
         Drive drive;
         BaseSync syncInfo;
-        std::vector<ErrorInfo> errorInfoList;
-        std::optional<ErrorInfo> latestErrorInfo;
+        std::vector<Error> errors;
+        std::optional<Error> latestError;
 
         friend bool operator==(const SyncContext &lhs, const SyncContext &rhs) = default;
 };
