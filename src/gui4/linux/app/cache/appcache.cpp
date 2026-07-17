@@ -317,7 +317,7 @@ void AppCache::updateSyncRuntimeInfo(const SyncDbId syncDbId, const SyncRuntimeI
                         << "/ step:" << toInt(runtimeInfo.step);
     emit syncRuntimeInfoChanged(syncDbId);
     if (statusChanged) {
-        emit syncStatusChanged(syncDbId);
+        emit syncStatusChanged(syncDbId); // used by the systray to be triggered only when the status changed and not on progression for example.
     }
 }
 
