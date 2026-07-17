@@ -19,8 +19,10 @@ int main(int argc, char *argv[]) {
     if (!KDC::Log::instance(Path2WStr(logFilePath))) {
         return 1;
     }
-
-    LOG_INFO(KDC::Log::instance()->getLogger(), "kDrive Recovery Updater started");
+    {
+        using namespace KDC;
+        LOG_INFO(Log::instance()->getLogger(), "kDrive Recovery Updater started");
+    }
 
     KDC::UpdaterData updaterData;
     if (!updaterData.initialize()) {
@@ -32,7 +34,10 @@ int main(int argc, char *argv[]) {
     }
 
     // log the distributionChannel
-    LOG_INFO(KDC::Log::instance()->getLogger(), "Distribution Channel: " << updaterData.distributionChannel());
+    {
+        using namespace KDC;
+        LOG_INFO(Log::instance()->getLogger(), "Distribution Channel: " << updaterData.distributionChannel());
+    }
 
     KDC::MainWindow window(updaterData);
     window.show();
