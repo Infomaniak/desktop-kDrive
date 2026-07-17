@@ -204,7 +204,7 @@ void CommService::registerSyncHandlers(SignalDispatcher &dispatcher) {
 
 void CommService::registerErrorHandlers(SignalDispatcher &dispatcher) {
     dispatcher.registerHandler(SignalNum::UTILITY_ERROR_ADDED, [this](const Poco::DynamicStruct &params) {
-        ErrorInfo info;
+        Error info;
         info.fromDynamicStruct(params[msgParamErrorInfo].extract<Poco::DynamicStruct>());
         qCWarning(lcCommService) << "Error added | errorDbId:" << info.dbId() << "/ level:" << info.level();
         emit errorAdded(info);
@@ -546,15 +546,15 @@ void CommService::requestSyncGetPublicLinkUrl(const DriveDbId driveDbId, const N
 
 // -- Error ---------------------------------------------------------------
 
-void CommService::requestErrorInfoList(const ErrorInfoListCallback &callback) const {
+void CommService::requestErrorList(const ErrorListCallback &callback) const {
     Poco::DynamicStruct params;
     CommonUtility::writeValueToStruct(params, msgParamLimit, maxErrorsToLoad);
 
     _ipcClient.sendRequest(
             RequestNum::ERROR_INFOLIST, params, [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
-                std::vector<ErrorInfo> list;
+                std::vector<Error> list;
                 if (exitInfo) {
-                    CommonUtility::readValuesFromStruct(result, msgParamErrorInfoList, list, dynamicVar2Struct<ErrorInfo>);
+                    CommonUtility::readValuesFromStruct(result, msgParamErrorInfoList, list, dynamicVar2Struct<Error>);
                 }
                 callback(exitInfo, list);
             });
