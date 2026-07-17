@@ -271,8 +271,10 @@ extension DriveSelectionViewController {
 
         primaryButton.title = KDriveLocalizable.buttonStartForFree
         primaryButton.action = #selector(didTapStartForFree)
+        primaryButton.isEnabled = true
         secondaryButton.title = KDriveLocalizable.buttonShowOffers
         secondaryButton.action = #selector(didTapShowOffers)
+        secondaryButton.isEnabled = true
     }
 
     @objc private func didTapStartForFree() {
