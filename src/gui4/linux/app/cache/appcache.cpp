@@ -111,14 +111,18 @@ void AppCache::replaceSyncs(const std::vector<BaseSync> &syncs) {
     for (auto &driveNode: _drivesByDbId | std::views::values) {
         driveNode.syncDbIds.clear();
     }
-    _syncsByDbId.clear();
+    auto previousSyncs = std::exchange(_syncsByDbId, {});
     for (const auto &info: syncs) {
         if (!_drivesByDbId.contains(info.driveDbId())) {
             qCWarning(lcAppCache) << "Sync dropped during replace | syncDbId:" << info.dbId()
                                   << "/ unknown driveDbId:" << info.driveDbId();
             continue;
         }
-        _syncsByDbId[info.dbId()] = SyncNode{info, info.driveDbId(), {}};
+        SyncRuntimeInfo runtimeInfo = {};
+        if (const auto previousIt = previousSyncs.find(info.dbId()); previousIt != previousSyncs.end()) {
+            runtimeInfo = previousIt->second.runtimeInfo;
+        }
+        _syncsByDbId[info.dbId()] = SyncNode{info, runtimeInfo, info.driveDbId(), {}};
     }
     pruneConfiguredGraph();
     emit syncsChanged();
@@ -294,6 +298,27 @@ void AppCache::removeSync(const SyncDbId syncDbId) {
     removeSyncCascade(syncDbId);
     emit syncsChanged();
     emit syncErrorsChanged();
+}
+
+void AppCache::updateSyncRuntimeInfo(const SyncDbId syncDbId, const SyncRuntimeInfo &runtimeInfo) {
+    const auto syncIt = _syncsByDbId.find(syncDbId);
+    if (syncIt == _syncsByDbId.end()) {
+        qCWarning(lcAppCache) << "Sync runtime update dropped | unknown syncDbId:" << syncDbId;
+        return;
+    }
+
+    if (syncIt->second.runtimeInfo == runtimeInfo) {
+        return;
+    }
+
+    const bool statusChanged = syncIt->second.runtimeInfo.status != runtimeInfo.status;
+    syncIt->second.runtimeInfo = runtimeInfo;
+    qCDebug(lcAppCache) << "Sync runtime updated | syncDbId:" << syncDbId << "/ status:" << toInt(runtimeInfo.status)
+                        << "/ step:" << toInt(runtimeInfo.step);
+    emit syncRuntimeInfoChanged(syncDbId);
+    if (statusChanged) {
+        emit syncStatusChanged(syncDbId);
+    }
 }
 
 void AppCache::upsertSyncError(const Error &info) {
