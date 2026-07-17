@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
 
     LOG_INFO(KDC::Log::instance()->getLogger(), "kDrive Recovery Updater started");
 
-    KDUpdater::UpdaterData updaterData;
+    KDC::UpdaterData updaterData;
     if (!updaterData.initialize()) {
         {
             using namespace KDC;
@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
     // log the distributionChannel
     LOG_INFO(KDC::Log::instance()->getLogger(), "Distribution Channel: " << updaterData.distributionChannel());
 
-    KDUpdater::MainWindow window(updaterData);
+    KDC::MainWindow window(updaterData);
     window.show();
 
     return QApplication::exec();

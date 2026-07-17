@@ -2,7 +2,7 @@
 
 #include "abstractosupdater.h"
 
-namespace KDUpdater {
+namespace KDC {
 
 class MacOSUpdater final : public AbstractOsUpdater {
     public:
@@ -14,4 +14,4 @@ class MacOSUpdater final : public AbstractOsUpdater {
         [[nodiscard]] static bool verifyPackageSignature(const KDC::SyncPath &pkgPath, QString &outMessage);
 };
 
-} // namespace KDUpdater
+} // namespace KDC

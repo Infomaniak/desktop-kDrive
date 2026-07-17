@@ -7,7 +7,7 @@
 #include "libcommonserver/log/log.h"
 
 
-namespace KDUpdater {
+namespace KDC {
 
 KDC::DistributionChannel UpdaterData::defaultDistributionChannel() {
     LOGW_INFO(KDC::Log::instance()->getLogger(), L"Determining default distribution channel" << KDC::CommonUtility::platform());
@@ -66,4 +66,4 @@ bool UpdaterData::initialize() {
     return true;
 }
 
-} // namespace KDUpdater
+} // namespace KDC

@@ -7,7 +7,7 @@
 #include <memory>
 #include <string>
 
-namespace KDUpdater {
+namespace KDC {
 
 class AbstractOsUpdater {
     public:
@@ -32,4 +32,4 @@ class AbstractOsUpdater {
 
 std::unique_ptr<AbstractOsUpdater> createOsUpdater();
 
-} // namespace KDUpdater
+} // namespace KDC

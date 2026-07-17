@@ -8,7 +8,7 @@ constexpr char SELECT_APP_STATE_REQUEST_ID[] = "select_value_from_key";
 constexpr char SELECT_APP_STATE_REQUEST[] = "SELECT value FROM app_state WHERE key=?1;";
 } // namespace
 
-namespace KDUpdater {
+namespace KDC {
 
 std::shared_ptr<ParmsDbLite> ParmsDbLite::instance(const std::filesystem::path &dbPath) {
     auto db = std::make_shared<ParmsDbLite>(dbPath);
@@ -66,4 +66,4 @@ bool ParmsDbLite::selectAppUid(std::string &appUid, bool &found) {
     return true;
 }
 
-} // namespace KDUpdater
+} // namespace KDC

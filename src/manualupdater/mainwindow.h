@@ -14,7 +14,7 @@
 #include <string>
 #include <thread>
 
-namespace KDUpdater {
+namespace KDC {
 
 class MainWindow : public QMainWindow {
         Q_OBJECT
@@ -51,4 +51,4 @@ class MainWindow : public QMainWindow {
         std::atomic<bool> _installInProgress{false};
 };
 
-} // namespace KDUpdater
+} // namespace KDC

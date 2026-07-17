@@ -17,7 +17,7 @@
 #include "linuxupdater.h"
 #endif
 
-namespace KDUpdater {
+namespace KDC {
 
 std::unique_ptr<AbstractOsUpdater> createOsUpdater() {
 #if defined(KD_MACOS)
@@ -72,4 +72,4 @@ std::string AbstractOsUpdater::computeFileChecksum(const KDC::SyncPath &filepath
     return Poco::DigestEngine::digestToHex(sha256.digest());
 }
 
-} // namespace KDUpdater
+} // namespace KDC

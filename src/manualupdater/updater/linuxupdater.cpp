@@ -9,7 +9,7 @@
 #include <cstdlib>
 #include <filesystem>
 
-namespace KDUpdater {
+namespace KDC {
 
 bool LinuxUpdater::install(const KDC::VersionInfo &versionInfo, const std::string &desiredVersion,
                            std::function<void(int, QString)> progressCallback, QString &outMessage) {
@@ -93,4 +93,4 @@ bool LinuxUpdater::install(const KDC::VersionInfo &versionInfo, const std::strin
     return true;
 }
 
-} // namespace KDUpdater
+} // namespace KDC
