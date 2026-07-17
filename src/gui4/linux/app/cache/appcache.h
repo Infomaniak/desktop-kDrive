@@ -32,9 +32,10 @@ Q_DECLARE_LOGGING_CATEGORY(lcAppCache)
 namespace KDC {
 
 /**
- * Durable graph-backed cache and query layer for Linux v4 product state.
+ * Graph-backed cache and query layer for Linux v4 product state.
  *
- * Role: own configured entities, per-user available drives, graph relations, and derived read models.
+ * Role: own configured entities, volatile per-sync runtime information, per-user available drives, graph relations, and
+ * derived read models.
  * All mutations must run on the Qt main thread.
  */
 class AppCache : public QObject {
@@ -59,6 +60,8 @@ class AppCache : public QObject {
         [[nodiscard]] std::optional<Account> account(AccountDbId accountDbId) const;
         [[nodiscard]] std::optional<Drive> drive(DriveDbId driveDbId) const;
         [[nodiscard]] std::optional<BaseSync> sync(SyncDbId syncDbId) const;
+        // Returns the latest volatile server-pushed state for an existing sync.
+        [[nodiscard]] std::optional<SyncRuntimeInfo> syncRuntimeInfo(SyncDbId syncDbId) const;
         [[nodiscard]] std::optional<Error> syncError(ErrorDbId errorDbId) const;
         [[nodiscard]] std::optional<Error> serverError(ErrorDbId errorDbId) const;
         [[nodiscard]] std::optional<DriveAvailable> availableDrive(const AvailableDriveKey &key) const;
@@ -108,6 +111,8 @@ class AppCache : public QObject {
 
         void upsertSync(const BaseSync &info);
         void removeSync(SyncDbId syncDbId);
+        // Replaces the complete volatile runtime snapshot and emits only when its value changed.
+        void updateSyncRuntimeInfo(SyncDbId syncDbId, const SyncRuntimeInfo &runtimeInfo);
 
         void upsertSyncError(const Error &info);
         void removeSyncError(ErrorDbId errorDbId);
@@ -122,6 +127,9 @@ class AppCache : public QObject {
         void accountsChanged();
         void drivesChanged();
         void syncsChanged();
+        // Fine-grained runtime invalidations. Status changes are a subset of complete runtime changes.
+        void syncRuntimeInfoChanged(SyncDbId syncDbId);
+        void syncStatusChanged(SyncDbId syncDbId);
         void syncErrorsChanged();
         void serverErrorsChanged();
         void availableDrivesChanged(UserDbId userDbId);
@@ -147,6 +155,7 @@ class AppCache : public QObject {
 
         struct SyncNode {
                 BaseSync info;
+                SyncRuntimeInfo runtimeInfo;
                 DriveDbId parentDriveDbId{0};
                 std::vector<ErrorDbId> errorDbIds;
         };
