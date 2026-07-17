@@ -46,7 +46,9 @@
 - Render the main-sidebar synchronization selector with the bare drive glyph tinted by the drive color; do not place
   the glyph on a colored tile.
 - Render advanced synchronizations with the outline `ui/assets/main/folder.svg` tinted by the owning drive color;
-  reserve the bare drive glyph for classic synchronizations and drive-only entries.
+  reserve the bare drive glyph for classic root synchronizations.
+- In the main-sidebar Figma variants, "no synchronization" means no advanced synchronization. The drive row is the
+  classic root synchronization and must retain its local-folder action; do not model it as a drive-only entry.
 - Use white source fills for monochrome SVGs tinted through `MultiEffect.colorization`; black source fills retain too
   little luminance and remain dark when the theme color changes.
 - Keep main-sidebar item states composable: selection, disabled state, notification count or dot, and a trailing
@@ -111,18 +113,16 @@
   `SyncRuntimeInfo`, `AvailableDriveContext`, `AvailableDriveKey`, `PendingSyncConfig`).
     - Configured-drive state uses the unified `libcommon/data/drive.h` `Drive` model; do not reintroduce the removed
       `DriveInfo` type in Linux v4.
-- `app/cache/mainselectionstore.*`: main-shell context owner (`currentDriveDbId` plus optional `currentSyncDbId`) and
-  selection healing. It prefers a classic root synchronization, then any synchronization, then a drive without sync.
+- `app/cache/mainselectionstore.*`: sync-first main-shell selection owner (`currentSyncDbId`) and selection healing. It
+  prefers a classic root synchronization, then any synchronization.
     - Emits `currentContextChanged()` as a coarse invalidation signal when the selected ids stay unchanged but the
       underlying cache graph changes.
     - Exposes selected-sync runtime through its dedicated accessor and signal so progress ticks do not rebuild the
       configured graph context.
-- `app/mainwindow/syncselectormodel.*`: QML adapter for the drive/synchronization selector. It flattens each configured
-  drive into classic and advanced synchronization rows, or a drive-only row when no sync exists, and exposes only the
-  presentation data required by the selector.
+- `app/mainwindow/syncselectormodel.*`: QML adapter for the synchronization selector. It flattens each configured drive
+  into classic and advanced synchronization rows and exposes only the presentation data required by the selector.
 - `app/mainwindow/mainsidebarcontroller.*`: QML-facing sidebar interaction controller. It exposes `SyncSelectorModel`,
-  delegates drive/sync selection to `MainSelectionStore`, and opens the selected local sync folder through desktop
-  services.
+  delegates sync selection to `MainSelectionStore`, and opens the selected local sync folder through desktop services.
 - `app/navigation/approuter.*`: minimal main-window router. It owns only `mainWindowActive` and the selected main tab;
   it must not read `AppCache`, call backend services, or decide whether onboarding is required.
 - `app/cache/onboardingstate.*`: session-owned onboarding selected user, selected available-drive keys, and pending sync
@@ -270,8 +270,7 @@ cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive
 - `DriveService` and `SyncService` use `ServiceActionTracker` for loading/pending state and `ServiceEventBus` for
   transient failure notification; avoid reintroducing local `lastError` / ad hoc pending counters there.
 - `AppCache`, `MainSelectionStore`, and `OnboardingState` mutations must run on the Qt main thread.
-- `AppCache` must not own mutable main selection; derive main context through `MainSelectionStore.currentDriveDbId` and
-  its optional `currentSyncDbId`.
+- `AppCache` must not own mutable main selection; derive main context through `MainSelectionStore.currentSyncDbId`.
 - Main-sidebar drive/sync rows belong in `SyncSelectorModel`. Keep window state, tab navigation, desktop actions, and
   future Home/Activities/Storage data out of that model.
 - Store available drives per user via `AppCache::replaceAvailableDrivesForUser(...)`; do not reintroduce a global
