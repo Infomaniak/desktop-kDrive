@@ -61,7 +61,7 @@ bool UpdateTreeWorker::resetNodes() {
             tmpBlacklist);
 
     auto nodeIt = _updateTree->nodes().begin();
-    std::set<NodeId> toDeleteNode;
+    std::unordered_set<NodeId> toDeleteNode;
 
     while (nodeIt != _updateTree->nodes().end()) {
         const auto node = nodeIt->second;
