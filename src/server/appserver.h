@@ -360,7 +360,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         virtual void sendNodeFixConflictedFilesCompleted(SyncDbId syncDbId, qint64 nbErrors) const;
 
         void deleteAccount(AccountDbId accountDbId);
-        void sendErrorAdded(const ErrorInfo &errorInfo) const;
+        void sendErrorAdded(const Error &error) const;
         void sendErrorRemoved(int64_t dbId) const;
         void addCompletedItem(SyncDbId syncDbId, const SyncFileItem &item, bool notify);
         void sendGuiSignal(std::shared_ptr<AbstractGuiJob> signal) const;

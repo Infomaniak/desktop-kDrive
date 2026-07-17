@@ -19,21 +19,21 @@
 #pragma once
 
 #include "server/comm/guijobs/abstractguijob.h"
-#include "libcommon/info/errorinfo.h"
+#include "libcommon/data/error.h"
 
 namespace KDC {
 
-class ErrorInfolistJob : public AbstractGuiJob {
+class ErrorListJob : public AbstractGuiJob {
     public:
-        ErrorInfolistJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                         std::shared_ptr<AbstractCommChannel> channel);
+        ErrorListJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                     std::shared_ptr<AbstractCommChannel> channel);
 
     private:
         // Input parameters
         int _limit = 0;
 
         // Output parameters
-        std::vector<ErrorInfo> _errorInfoList;
+        std::vector<Error> _errorList;
 
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override;

@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "errorinfolistjob.h"
+#include "errorlistjob.h"
 #include "appserver.h"
 #include "requests/serverrequests.h"
 #include "libcommon/utility/utility.h"
@@ -27,33 +27,33 @@
 static const auto inParmsLimit = "limit";
 
 // Output parameters keys
-static const auto outParamsErrorInfo = "errorInfoList";
+static const auto outParamsError = "errorInfoList";
 
 namespace KDC {
 
-ErrorInfolistJob::ErrorInfolistJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                                   std::shared_ptr<AbstractCommChannel> channel) :
+ErrorListJob::ErrorListJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                           std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
     _requestNum = RequestNum::ERROR_INFOLIST;
 }
 
-ExitInfo ErrorInfolistJob::deserializeInputParms() {
+ExitInfo ErrorListJob::deserializeInputParms() {
     try {
         readParamValue(inParmsLimit, _limit);
     } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Exception in ErrorInfolistJob::readParamValue: error=" << e.what());
+        LOG_WARN(_logger, "Exception in ErrorListJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
     }
     return ExitCode::Ok;
 }
 
-ExitInfo ErrorInfolistJob::serializeOutputParms() {
-    writeParamValues(outParamsErrorInfo, _errorInfoList, info2DynamicVar<ErrorInfo>);
+ExitInfo ErrorListJob::serializeOutputParms() {
+    writeParamValues(outParamsError, _errorList, info2DynamicVar<Error>);
     return ExitCode::Ok;
 }
 
-ExitInfo ErrorInfolistJob::process() {
-    ExitInfo exitInfo = ServerRequests::getErrorInfoList(_limit, _errorInfoList);
+ExitInfo ErrorListJob::process() {
+    ExitInfo exitInfo = ServerRequests::getErrorList(_limit, _errorList);
     if (!exitInfo) {
         LOG_WARN(_logger, "Error in ServerRequests::getErrorInfoList: " << exitInfo);
         addError(Error(ERR_ID, exitInfo));

@@ -27,13 +27,13 @@
 #include "libcommon/data/sync.h"
 #include "libcommon/info/nodeinfo.h"
 #include "libcommon/info/syncfileiteminfo.h"
-#include "libcommon/info/errorinfo.h"
+#include "libcommon/data/error.h"
 #include "libcommon/info/parametersinfo.h"
 #include "libcommon/info/proxyconfiginfo.h"
 #include "libcommon/info/exclusiontemplateinfo.h"
 #include "libcommon/info/exclusionappinfo.h"
-#include "libparms/db/error.h"
 #include "libparms/db/parameters.h"
+
 #include "libparms/db/exclusiontemplate.h"
 #include "libparms/db/exclusionapp.h"
 #include "libsyncengine/login/login.h"
@@ -77,12 +77,12 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode getExclusionAppList(bool def, QList<ExclusionAppInfo> &list);
         static ExitCode getExclusionAppList(bool def, std::vector<ExclusionAppInfo> &list);
         static ExitCode setExclusionAppList(bool def, const QList<ExclusionAppInfo> &list);
-        static ExitCode getErrorInfoList(ErrorLevel level, SyncDbId syncDbId, int limit, QList<ErrorInfo> &list);
-        static ExitInfo getErrorInfoList(int limit, std::vector<ErrorInfo> &list);
+        static ExitCode getErrorList(ErrorLevel level, SyncDbId syncDbId, int limit, QList<Error> &list);
+        static ExitInfo getErrorList(int limit, std::vector<Error> &list);
         static ExitCode getConflictList(SyncDbId syncDbId, const std::unordered_set<ConflictType> &filter,
-                                        std::vector<Error> &errorLis);
-        static ExitCode getConflictErrorInfoList(DriveDbId driveDbId, const std::unordered_set<ConflictType> &filter,
-                                                 QList<ErrorInfo> &errorInfoList);
+                                        std::vector<Error> &errorList);
+        static ExitCode getConflictErrorList(DriveDbId driveDbId, const std::unordered_set<ConflictType> &filter,
+                                             QList<Error> &errorList);
         static ExitCode deleteErrorsServer();
         static ExitCode deleteErrorsForSync(SyncDbId syncDbId, bool autoResolved);
         static ExitCode deleteInvalidTokenErrors();
@@ -150,7 +150,6 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitInfo getThumbnail(DriveDbId driveDbId, const NodeId &nodeId, int width, std::string &thumbnail);
 
         // Utility
-        static void errorToErrorInfo(const Error &error, ErrorInfo &errorInfo);
         static void syncFileItemToSyncFileItemInfo(const SyncFileItem &item, SyncFileItemInfo &itemInfo);
         static void parametersToParametersInfo(const Parameters &parameters, ParametersInfo &parametersInfo);
         static void parametersInfoToParameters(const ParametersInfo &parametersInfo, Parameters &parameters);
@@ -163,7 +162,6 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static void exclusionAppToExclusionAppInfo(const ExclusionApp &exclusionApp, ExclusionAppInfo &exclusionAppInfo);
         static void exclusionAppInfoToExclusionApp(const ExclusionAppInfo &exclusionAppInfo, ExclusionApp &exclusionApp);
         static bool isDisplayableError(const Error &error);
-        static bool isAutoResolvedError(const Error &error);
         static ExitCode getDbStructsFromSyncDbId(SyncDbId syncDbId, User &user, Account &account, Drive &drive, Sync &sync);
         static ExitCode fixProxyConfig();
 

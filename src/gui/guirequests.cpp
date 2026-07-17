@@ -61,7 +61,7 @@ ExitCode GuiRequests::getUserList(QList<User> &list) {
     return exitCode;
 }
 
-ExitCode GuiRequests::getErrorInfoList(const ErrorLevel level, const SyncDbId syncDbId, const int limit, QList<ErrorInfo> &list) {
+ExitCode GuiRequests::getErrorList(const ErrorLevel level, const SyncDbId syncDbId, const int limit, QList<Error> &list) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << level;
@@ -81,7 +81,7 @@ ExitCode GuiRequests::getErrorInfoList(const ErrorLevel level, const SyncDbId sy
     return exitCode;
 }
 
-ExitCode GuiRequests::getConflictList(const DriveDbId driveDbId, const QList<ConflictType> &filter, QList<ErrorInfo> &list) {
+ExitCode GuiRequests::getConflictList(const DriveDbId driveDbId, const QList<ConflictType> &filter, QList<Error> &list) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << static_cast<qint64>(driveDbId);
