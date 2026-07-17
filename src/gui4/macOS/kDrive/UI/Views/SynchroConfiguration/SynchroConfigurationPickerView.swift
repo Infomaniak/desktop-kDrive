@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCoreUI
 import kDriveResources
 import OrderedCollections
@@ -23,6 +24,7 @@ import SwiftUI
 
 struct SynchroConfigurationPickerView: View {
     @EnvironmentObject private var viewModel: SynchroConfigurationFlowViewModel
+    @LazyInjectService var matomo: MatomoUtils
 
     @State private var isLoading = false
 
@@ -49,6 +51,7 @@ struct SynchroConfigurationPickerView: View {
             ToolbarItem(placement: .confirmationAction) {
                 LoadingButton(isLoading: $isLoading) {
                     await viewModel.onConfirm?(Array(viewModel.configurations.values))
+                    matomo.track(eventWithCategory: .driveSetupDialog, name: "confirm")
                 } label: {
                     Text(KDriveLocalizable.buttonValidate)
                 }
@@ -58,6 +61,7 @@ struct SynchroConfigurationPickerView: View {
             ToolbarItem(placement: .cancellationAction) {
                 Button(KDriveLocalizable.buttonCancel, role: .cancel) {
                     viewModel.onCancel?()
+                    matomo.track(eventWithCategory: .driveSetupDialog, name: "cancel")
                 }
                 .keyboardShortcut(.cancelAction)
                 .disabled(isLoading)
