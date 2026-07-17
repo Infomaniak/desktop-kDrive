@@ -19,6 +19,7 @@
 import Cocoa
 import InfomaniakDI
 import kDriveCore
+import kDriveCoreUI
 import kDriveResources
 
 @MainActor
@@ -102,6 +103,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func openPreferencesWindow() {
+        @InjectService var matomo: MatomoUtils
+        matomo.track(eventWithCategory: .navBar, name: "openSettings")
         if preferencesWindow?.window?.isVisible != true {
             @InjectService var preferencesRouter: PreferencesViewRouter
             preferencesRouter.resetToDefaultState()

@@ -27,6 +27,7 @@ public struct SidebarItem: ClickableItem, Equatable, Hashable {
 
     public let icon: NSImage
     public let title: String
+    public let matomo: String?
     public let type: ItemType
 
     public var canBeSelected: Bool {
@@ -37,9 +38,10 @@ public struct SidebarItem: ClickableItem, Equatable, Hashable {
         return type == .action
     }
 
-    public init(icon: NSImage, title: String, type: ItemType = .navigation) {
+    public init(icon: NSImage, title: String, matomo: String? = nil, type: ItemType = .navigation) {
         self.icon = icon
         self.title = title
+        self.matomo = matomo
         self.type = type
     }
 }
