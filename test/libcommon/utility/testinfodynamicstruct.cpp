@@ -18,7 +18,7 @@
 
 #include "testinfodynamicstruct.h"
 
-#include "libcommon/info/errorinfo.h"
+#include "libcommon/data/error.h"
 #include "libcommon/info/nodeinfo.h"
 #include "libcommon/info/syncfileiteminfo.h"
 
@@ -27,34 +27,34 @@
 namespace KDC {
 
 void TestInfoDynamicStruct::testErrorInfoRoundTrip() {
-    const ErrorInfo source(ErrorDbId{41}, int64_t{1712345678}, ErrorLevel::SyncPal, QString("syncStep"), SyncDbId{99},
-                           QString("workerA"), ExitCode::NetworkError, ExitCause::NetworkTimeout, QString("local-1"),
-                           QString("remote-2"), NodeType::File, QString("workspace/file.txt"), ConflictType::EditEdit,
-                           InconsistencyType::ForbiddenChar, CancelType::Move, QString("workspace/file-copy.txt"));
+    const Error source(ErrorDbId{41}, int64_t{1712345678}, ErrorLevel::SyncPal, "syncStep", SyncDbId{99}, "workerA",
+                       ExitCode::NetworkError, ExitCause::NetworkTimeout, "local-1", "remote-2", NodeType::File,
+                       "workspace/file.txt", ConflictType::EditEdit, InconsistencyType::ForbiddenChar, CancelType::Move,
+                       "workspace/file-copy.txt");
 
     Poco::DynamicStruct dstruct;
     source.toDynamicStruct(dstruct);
 
-    ErrorInfo parsed;
+    Error parsed;
     parsed.fromDynamicStruct(dstruct);
 
     CPPUNIT_ASSERT_EQUAL(ErrorDbId{41}, parsed.dbId());
-    CPPUNIT_ASSERT_EQUAL(qint64{1712345678}, parsed.getTime());
+    CPPUNIT_ASSERT_EQUAL(int64_t{1712345678}, parsed.time());
     CPPUNIT_ASSERT_EQUAL(ErrorLevel::SyncPal, parsed.level());
-    CPPUNIT_ASSERT_EQUAL(std::string("syncStep"), parsed.functionName().toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("syncStep"), parsed.functionName());
     CPPUNIT_ASSERT_EQUAL(SyncDbId{99}, parsed.syncDbId());
-    CPPUNIT_ASSERT_EQUAL(std::string("workerA"), parsed.workerName().toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("workerA"), parsed.workerName());
     CPPUNIT_ASSERT_EQUAL(ExitCode::NetworkError, parsed.exitCode());
     CPPUNIT_ASSERT_EQUAL(ExitCause::NetworkTimeout, parsed.exitCause());
-    CPPUNIT_ASSERT_EQUAL(std::string("local-1"), parsed.localNodeId().toStdString());
-    CPPUNIT_ASSERT_EQUAL(std::string("remote-2"), parsed.remoteNodeId().toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("local-1"), parsed.localNodeId());
+    CPPUNIT_ASSERT_EQUAL(std::string("remote-2"), parsed.remoteNodeId());
     CPPUNIT_ASSERT_EQUAL(NodeType::File, parsed.nodeType());
-    CPPUNIT_ASSERT_EQUAL(std::string("workspace/file.txt"), parsed.path().toStdString());
-    CPPUNIT_ASSERT_EQUAL(std::string("workspace/file-copy.txt"), parsed.destinationPath().toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("workspace/file.txt"), parsed.path().string());
+    CPPUNIT_ASSERT_EQUAL(std::string("workspace/file-copy.txt"), parsed.destinationPath().string());
     CPPUNIT_ASSERT_EQUAL(ConflictType::EditEdit, parsed.conflictType());
     CPPUNIT_ASSERT_EQUAL(InconsistencyType::ForbiddenChar, parsed.inconsistencyType());
     CPPUNIT_ASSERT_EQUAL(CancelType::Move, parsed.cancelType());
-    CPPUNIT_ASSERT_EQUAL(false, parsed.autoResolved());
+    CPPUNIT_ASSERT_EQUAL(false, parsed.isAutoResolved());
 }
 
 void TestInfoDynamicStruct::testNodeInfoRoundTrip() {
