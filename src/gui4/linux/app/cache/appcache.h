@@ -48,8 +48,8 @@ class AppCache : public QObject {
         [[nodiscard]] std::vector<Account> accounts() const;
         [[nodiscard]] std::vector<Drive> drives() const;
         [[nodiscard]] std::vector<BaseSync> syncs() const;
-        [[nodiscard]] std::vector<ErrorInfo> syncErrors() const;
-        [[nodiscard]] std::vector<ErrorInfo> serverErrors() const;
+        [[nodiscard]] std::vector<Error> syncErrors() const;
+        [[nodiscard]] std::vector<Error> serverErrors() const;
         // Returns the addable-drive snapshot scoped to one user. This is not tied to main selection.
         [[nodiscard]] std::vector<DriveAvailable> availableDrives(UserDbId userDbId) const;
 
@@ -59,8 +59,8 @@ class AppCache : public QObject {
         [[nodiscard]] std::optional<Account> account(AccountDbId accountDbId) const;
         [[nodiscard]] std::optional<Drive> drive(DriveDbId driveDbId) const;
         [[nodiscard]] std::optional<BaseSync> sync(SyncDbId syncDbId) const;
-        [[nodiscard]] std::optional<ErrorInfo> syncError(ErrorDbId errorDbId) const;
-        [[nodiscard]] std::optional<ErrorInfo> serverError(ErrorDbId errorDbId) const;
+        [[nodiscard]] std::optional<Error> syncError(ErrorDbId errorDbId) const;
+        [[nodiscard]] std::optional<Error> serverError(ErrorDbId errorDbId) const;
         [[nodiscard]] std::optional<DriveAvailable> availableDrive(const AvailableDriveKey &key) const;
 
         // Parent-to-children graph traversal helpers. Results are stable-sorted by database id.
@@ -68,7 +68,7 @@ class AppCache : public QObject {
         [[nodiscard]] std::vector<Drive> drivesForAccount(AccountDbId accountDbId) const;
         [[nodiscard]] std::vector<BaseSync> syncsForDrive(DriveDbId driveDbId) const;
         // Sync-scoped errors sorted by error time, oldest first.
-        [[nodiscard]] std::vector<ErrorInfo> errorsForSync(SyncDbId syncDbId) const;
+        [[nodiscard]] std::vector<Error> errorsForSync(SyncDbId syncDbId) const;
 
         // Derived read models used by sidebar, settings, and onboarding adapters.
         // A context is omitted when its full parent chain cannot be resolved.
@@ -88,8 +88,8 @@ class AppCache : public QObject {
         void replaceAccounts(const std::vector<Account> &accounts);
         void replaceDrives(const std::vector<Drive> &drives);
         void replaceSyncs(const std::vector<BaseSync> &syncs);
-        void replaceSyncErrors(const std::vector<ErrorInfo> &errors);
-        void replaceServerErrors(const std::vector<ErrorInfo> &errors);
+        void replaceSyncErrors(const std::vector<Error> &errors);
+        void replaceServerErrors(const std::vector<Error> &errors);
         // Replaces only one user's addable-drive snapshot; other users' snapshots are preserved.
         void replaceAvailableDrivesForUser(UserDbId userDbId, const std::vector<DriveAvailable> &availableDrives);
         void clearAvailableDrivesForUser(UserDbId userDbId);
@@ -109,11 +109,11 @@ class AppCache : public QObject {
         void upsertSync(const BaseSync &info);
         void removeSync(SyncDbId syncDbId);
 
-        void upsertSyncError(const ErrorInfo &info);
+        void upsertSyncError(const Error &info);
         void removeSyncError(ErrorDbId errorDbId);
-        void upsertServerError(const ErrorInfo &info);
+        void upsertServerError(const Error &info);
         void removeServerError(ErrorDbId errorDbId);
-        void upsertError(const ErrorInfo &info);
+        void upsertError(const Error &info);
         void removeError(ErrorDbId errorDbId);
 
     signals:
@@ -178,8 +178,8 @@ class AppCache : public QObject {
         std::unordered_map<AccountDbId, AccountNode> _accountsByDbId;
         std::unordered_map<DriveDbId, DriveNode> _drivesByDbId;
         std::unordered_map<SyncDbId, SyncNode> _syncsByDbId;
-        std::unordered_map<ErrorDbId, ErrorInfo> _syncErrorsByDbId;
-        std::unordered_map<ErrorDbId, ErrorInfo> _serverErrorsByDbId;
+        std::unordered_map<ErrorDbId, Error> _syncErrorsByDbId;
+        std::unordered_map<ErrorDbId, Error> _serverErrorsByDbId;
         std::unordered_map<UserDbId, std::vector<DriveAvailable>> _availableDrivesByUserDbId;
 };
 

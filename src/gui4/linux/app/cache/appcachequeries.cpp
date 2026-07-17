@@ -71,23 +71,23 @@ std::vector<BaseSync> AppCache::syncs() const {
     return values;
 }
 
-std::vector<ErrorInfo> AppCache::syncErrors() const {
-    std::vector<ErrorInfo> values;
+std::vector<Error> AppCache::syncErrors() const {
+    std::vector<Error> values;
     values.reserve(_syncErrorsByDbId.size());
     for (const auto &info: _syncErrorsByDbId | std::views::values) {
         values.push_back(info);
     }
-    sortById(values, [](const ErrorInfo &info) { return info.dbId(); });
+    sortById(values, [](const Error &info) { return info.dbId(); });
     return values;
 }
 
-std::vector<ErrorInfo> AppCache::serverErrors() const {
-    std::vector<ErrorInfo> values;
+std::vector<Error> AppCache::serverErrors() const {
+    std::vector<Error> values;
     values.reserve(_serverErrorsByDbId.size());
     for (const auto &info: _serverErrorsByDbId | std::views::values) {
         values.push_back(info);
     }
-    sortById(values, [](const ErrorInfo &info) { return info.dbId(); });
+    sortById(values, [](const Error &info) { return info.dbId(); });
     return values;
 }
 
@@ -146,7 +146,7 @@ std::optional<BaseSync> AppCache::sync(const SyncDbId syncDbId) const {
     return it->second.info;
 }
 
-std::optional<ErrorInfo> AppCache::syncError(const ErrorDbId errorDbId) const {
+std::optional<Error> AppCache::syncError(const ErrorDbId errorDbId) const {
     const auto it = _syncErrorsByDbId.find(errorDbId);
     if (it == _syncErrorsByDbId.end()) {
         return std::nullopt;
@@ -157,7 +157,7 @@ std::optional<ErrorInfo> AppCache::syncError(const ErrorDbId errorDbId) const {
     return it->second;
 }
 
-std::optional<ErrorInfo> AppCache::serverError(const ErrorDbId errorDbId) const {
+std::optional<Error> AppCache::serverError(const ErrorDbId errorDbId) const {
     const auto it = _serverErrorsByDbId.find(errorDbId);
     if (it == _serverErrorsByDbId.end()) {
         return std::nullopt;
@@ -231,20 +231,20 @@ std::vector<BaseSync> AppCache::syncsForDrive(const DriveDbId driveDbId) const {
     return values;
 }
 
-std::vector<ErrorInfo> AppCache::errorsForSync(const SyncDbId syncDbId) const {
+std::vector<Error> AppCache::errorsForSync(const SyncDbId syncDbId) const {
     const auto syncIt = _syncsByDbId.find(syncDbId);
     if (syncIt == _syncsByDbId.end()) {
         return {};
     }
 
-    std::vector<ErrorInfo> values;
+    std::vector<Error> values;
     values.reserve(syncIt->second.errorDbIds.size());
     for (const auto errorDbId: syncIt->second.errorDbIds) {
-        if (const auto errorInfo = syncError(errorDbId)) {
-            values.push_back(*errorInfo);
+        if (const auto error = syncError(errorDbId)) {
+            values.push_back(*error);
         }
     }
-    (void) std::ranges::sort(values, [](const ErrorInfo &lhs, const ErrorInfo &rhs) { return lhs.getTime() < rhs.getTime(); });
+    (void) std::ranges::sort(values, [](const Error &lhs, const Error &rhs) { return lhs.time() < rhs.time(); });
     return values;
 }
 
@@ -274,9 +274,9 @@ std::optional<SyncContext> AppCache::syncContext(const SyncDbId syncDbId) const 
     context.accountInfo = accountIt->second.info;
     context.drive = driveIt->second.drive;
     context.syncInfo = syncIt->second.info;
-    context.errorInfoList = errorsForSync(syncDbId);
-    if (!context.errorInfoList.empty()) {
-        context.latestErrorInfo = context.errorInfoList.back();
+    context.errors = errorsForSync(syncDbId);
+    if (!context.errors.empty()) {
+        context.latestError = context.errors.back();
     }
     return context;
 }
