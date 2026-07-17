@@ -984,19 +984,11 @@ void TestUtility::testFileSystemInfo() {
     CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(R"(C:\windows)", fsType, mountPoint) && fsType == fsType::NTFS &&
                    mountPoint == R"(C:\)");
 #else
-    std::string fsTypeResult;
-    if (testhelpers::isRunningOnCI()) {
-        // Docker containers use overlayfs
-        fsTypeResult = "OVERLAYFS";
-    } else {
-        fsTypeResult = fsType::EXT234;
-    }
-    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/", fsType, mountPoint));
-    CPPUNIT_ASSERT(fsType == fsTypeResult);
-    CPPUNIT_ASSERT(mountPoint == "/");
-    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/", fsType, mountPoint) && fsType == fsTypeResult && mountPoint == "/");
+    // /!\ Docker containers use overlayfs
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/", fsType, mountPoint) &&
+                   (fsType == fsType::EXT234 || fsType == "OVERLAYFS") && mountPoint == "/");
     CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(std::filesystem::weakly_canonical("."), fsType, mountPoint) &&
-                   fsType == fsTypeResult && mountPoint == "/");
+                   (fsType == fsType::EXT234 || fsType == "OVERLAYFS") && mountPoint == "/");
     // TODO: implement these tests on the CI.
     // External disk.
     /*
@@ -1071,17 +1063,11 @@ void TestUtility::testFileSystemType() {
     CPPUNIT_ASSERT_EQUAL(fsType::NTFS, CommonUtility::fileSystemType("C:\\", fsType));
     CPPUNIT_ASSERT_EQUAL(fsType::NTFS, fsType);
 #else
-    std::string fsTypeResult;
-    if (testhelpers::isRunningOnCI()) {
-        // Docker containers use overlayfs
-        fsTypeResult = "OVERLAYFS";
-    } else {
-        fsTypeResult = fsType::EXT234;
-    }
+    // /!\ Docker containers use overlayfs
     CPPUNIT_ASSERT_EQUAL(fsType::EXT234, CommonUtility::fileSystemType("/", fsType));
-    CPPUNIT_ASSERT_EQUAL(fsTypeResult, fsType);
+    CPPUNIT_ASSERT(fsType == fsType::EXT234 || fsType == "OVERLAYFS");
     CPPUNIT_ASSERT_EQUAL(fsType::EXT234, CommonUtility::fileSystemType(std::filesystem::weakly_canonical("."), fsType));
-    CPPUNIT_ASSERT_EQUAL(fsTypeResult, fsType);
+    CPPUNIT_ASSERT(fsType == fsType::EXT234 || fsType == "OVERLAYFS");
     // TODO: implement these tests on the CI.
     // External disk.
     /*
