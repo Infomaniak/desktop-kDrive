@@ -588,8 +588,15 @@ void AppServer::reset() {
 
 // Schedule the quit on the Qt application thread. Most callers only need the default zero-delay queued execution, while
 // asynchronous operations can request enough time to finish before aboutToQuit starts cleanup.
+// Note: this function is intentionally thread-safe — it may be called from non-Qt threads (e.g. Poco thread pool).
+// QTimer::singleShot called directly from a non-Qt thread cannot reliably transfer the timer to the main thread
+// in release builds. Instead, we use QMetaObject::invokeMethod (Qt::QueuedConnection) to first post the
+// timer creation to the main thread's event loop, then start the timer there.
 void AppServer::quitLater(const int32_t delayMs) {
-    QTimer::singleShot(delayMs, QCoreApplication::instance(), [] { AppServer::quit(); });
+    auto *app = QCoreApplication::instance();
+    if (!app) return;
+    QMetaObject::invokeMethod(
+            app, [delayMs] { QTimer::singleShot(delayMs, [] { QCoreApplication::quit(); }); }, Qt::QueuedConnection);
 }
 
 // This task can be long and block the GUI
