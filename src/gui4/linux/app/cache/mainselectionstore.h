@@ -31,9 +31,9 @@ Q_DECLARE_LOGGING_CATEGORY(lcMainSelectionStore)
 namespace KDC {
 
 /**
- * Main-shell drive and synchronization selection owner for Linux v4.
+ * Main-shell synchronization selection owner for Linux v4.
  *
- * Role: own the selected drive/synchronization context and heal it when the cache graph changes.
+ * Role: own the selected synchronization and heal it when the cache graph changes.
  * Selected runtime state is exposed separately from the configured graph context so high-frequency progress updates stay
  * lightweight.
  * Non-role: own cached entities or onboarding selections.
@@ -41,40 +41,32 @@ namespace KDC {
  */
 class MainSelectionStore : public QObject {
         Q_OBJECT
-        Q_PROPERTY(qint64 currentDriveDbId READ currentDriveDbId NOTIFY currentDriveDbIdChanged)
         Q_PROPERTY(qint64 currentSyncDbId READ currentSyncDbId NOTIFY currentSyncDbIdChanged)
 
     public:
         explicit MainSelectionStore(AppCache &cache, QObject *parent = nullptr);
 
-        [[nodiscard]] qint64 currentDriveDbId() const;
         [[nodiscard]] qint64 currentSyncDbId() const;
-        [[nodiscard]] std::optional<DriveContext> currentDriveContext() const;
         [[nodiscard]] std::optional<SyncContext> currentSyncContext() const;
         [[nodiscard]] std::optional<SyncRuntimeInfo> currentSyncRuntimeInfo() const;
 
         Q_INVOKABLE void selectSync(qint64 syncDbId);
-        Q_INVOKABLE void selectDrive(qint64 driveDbId);
         Q_INVOKABLE void clearSelection();
         Q_INVOKABLE void ensureValidSelection();
 
     signals:
-        void currentDriveDbIdChanged();
         void currentSyncDbIdChanged();
         void currentContextChanged();
         void currentSyncRuntimeInfoChanged();
 
     private:
         void handleCacheGraphChanged();
-        void setCurrentSelection(DriveDbId driveDbId, SyncDbId syncDbId);
+        void setCurrentSyncDbId(SyncDbId syncDbId);
         [[nodiscard]] SyncDbId firstClassicSyncDbId() const;
         [[nodiscard]] SyncDbId firstAvailableSyncDbId() const;
-        [[nodiscard]] DriveDbId firstAvailableDriveDbId() const;
 
         AppCache &_cache;
-        DriveDbId _currentDriveDbId{0};
         SyncDbId _currentSyncDbId{0};
-        DriveDbId _lastRequestedDriveDbId{0};
         SyncDbId _lastRequestedSyncDbId{0};
 };
 
