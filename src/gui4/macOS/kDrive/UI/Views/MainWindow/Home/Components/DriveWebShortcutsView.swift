@@ -16,16 +16,18 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
-struct WebFolder: Sendable, Identifiable, Equatable {
+struct WebFolder: Identifiable, Equatable {
     let id: Int
     let name: String
     let icon: Image
     let path: String
+    let matomo: String
 
     func url(driveID: Int) -> URL {
         return URLConstants.kDrive(for: driveID).appendingPathComponent(path)
@@ -35,25 +37,29 @@ struct WebFolder: Sendable, Identifiable, Equatable {
         id: 0,
         name: KDriveLocalizable.folderFavorites,
         icon: KDriveResources.star.swiftUIImage,
-        path: "favorites"
+        path: "favorites",
+        matomo: "openFavoritesWeb"
     )
     static let sharedWithMe = WebFolder(
         id: 1,
         name: KDriveLocalizable.folderShares,
         icon: KDriveResources.folderShare.swiftUIImage,
-        path: "shared-with-me"
+        path: "shared-with-me",
+        matomo: "openSharedWeb"
     )
     static let kDriveHome = WebFolder(
         id: 2,
         name: KDriveLocalizable.buttonKDriveOnline,
         icon: KDriveResources.kdriveFoldersStacked.swiftUIImage,
-        path: "files"
+        path: "files",
+        matomo: "openkDriveWeb"
     )
     static let trash = WebFolder(
         id: 3,
         name: KDriveLocalizable.folderTrash,
         icon: KDriveResources.trash.swiftUIImage,
-        path: "trash"
+        path: "trash",
+        matomo: "openTrashWeb"
     )
 }
 
@@ -102,6 +108,9 @@ struct DriveWebShortcutsView: View {
         guard let drive else {
             return
         }
+
+        @InjectService var matomo: MatomoUtils
+        matomo.track(eventWithCategory: .homePage, name: folder.matomo)
 
         let url = folder.url(driveID: drive.driveId)
         NSWorkspace.shared.open(url)
