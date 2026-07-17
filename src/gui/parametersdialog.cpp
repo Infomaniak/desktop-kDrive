@@ -694,6 +694,12 @@ QString ParametersDialog::getInconsistencyText(const InconsistencyType inconsist
                 tr("The item name contains only spaces.<br>"
                    "It has been temporarily blacklisted.");
     }
+    if (bitWiseEnumToBool(inconsistencyType & InconsistencyType::InvalidTimestamp)) {
+        text += (text.isEmpty() ? "" : "\n");
+        text +=
+                tr("The item has an invalid timestamp.<br>"
+                   "It has been ignored.");
+    }
 
     return text;
 }

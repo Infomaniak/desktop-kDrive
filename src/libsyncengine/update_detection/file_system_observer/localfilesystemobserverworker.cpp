@@ -187,6 +187,16 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(const std::list<std::pai
 
         NodeId nodeId = std::to_string(fileStat.inode);
 
+        const auto currentTimePlusOneYear = (std::chrono::system_clock::now() + std::chrono::years(1)).time_since_epoch().count();
+        if (fileStat.modificationTime > currentTimePlusOneYear) {
+            LOGW_SYNCPAL_WARN(_logger, L"Item " << Utility::formatSyncPath(absolutePath)
+                                                << L" has a modification or creation time in the future. Item is ignored.");
+            const Error error(_syncPal->syncDbId(), "", nodeId, fileStat.nodeType, relativePath, ConflictType::None,
+                              InconsistencyType::InvalidTimestamp);
+            _syncPal->addError(error);
+            continue;
+        }
+
         // Determines if the item is a link
         ItemType itemType;
         if (!IoHelper::getItemType(absolutePath, itemType)) {
