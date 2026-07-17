@@ -4006,17 +4006,15 @@ bool AppServer::startClient() {
         QString pathToExecutable;
 
 #if defined(__APPLE__)
-        if (ParametersCache::instance()->parameters().distributionChannel() ==
-            DistributionChannel::Internal) { // The SwiftUI GUI is currently only for internal builds
-            pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.app").arg(APPLICATION_CLIENTV4_APP_EXECUTABLE);
-            
-            IoError ioError = IoError::Success;
-            bool exists = false;
-            if (!IoHelper::checkIfPathExists(pathToExecutable.toStdString(), exists, ioError,
-                                             IoHelper::PathCheckOption::Insensitive) ||
-                !exists || ioError != IoError::Success) {
-                pathToExecutable.clear();
-            }
+        // Always prefer the SwiftUI GUI4 app; fall back to the legacy Qt client if it is missing.
+        pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.app").arg(APPLICATION_CLIENTV4_APP_EXECUTABLE);
+
+        IoError ioError = IoError::Success;
+        bool exists = false;
+        if (!IoHelper::checkIfPathExists(pathToExecutable.toStdString(), exists, ioError,
+                                         IoHelper::PathCheckOption::Insensitive) ||
+            !exists || ioError != IoError::Success) {
+            pathToExecutable.clear();
         }
         if (pathToExecutable.isEmpty()) {
             pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1").arg(APPLICATION_CLIENT_EXECUTABLE);
