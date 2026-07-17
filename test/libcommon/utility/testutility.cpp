@@ -991,6 +991,9 @@ void TestUtility::testFileSystemInfo() {
     } else {
         fsTypeResult = fsType::EXT234;
     }
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/", fsType, mountPoint));
+    CPPUNIT_ASSERT(fsType == fsTypeResult);
+    CPPUNIT_ASSERT(mountPoint == "/");
     CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/", fsType, mountPoint) && fsType == fsTypeResult && mountPoint == "/");
     CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(std::filesystem::weakly_canonical("."), fsType, mountPoint) &&
                    fsType == fsTypeResult && mountPoint == "/");
@@ -1069,18 +1072,15 @@ void TestUtility::testFileSystemType() {
     CPPUNIT_ASSERT_EQUAL(fsType::NTFS, fsType);
 #else
     std::string fsTypeResult;
-    std::string fallbackFSTypeResult;
     if (testhelpers::isRunningOnCI()) {
         // Docker containers use overlayfs
         fsTypeResult = "OVERLAYFS";
-        fallbackFSTypeResult = "";
     } else {
         fsTypeResult = fsType::EXT234;
-        fallbackFSTypeResult = fsType::EXT234;
     }
-    CPPUNIT_ASSERT_EQUAL(fallbackFSTypeResult, CommonUtility::fileSystemType("/", fsType));
+    CPPUNIT_ASSERT_EQUAL(fsType::EXT234, CommonUtility::fileSystemType("/", fsType));
     CPPUNIT_ASSERT_EQUAL(fsTypeResult, fsType);
-    CPPUNIT_ASSERT_EQUAL(fallbackFSTypeResult, CommonUtility::fileSystemType(std::filesystem::weakly_canonical("."), fsType));
+    CPPUNIT_ASSERT_EQUAL(fsType::EXT234, CommonUtility::fileSystemType(std::filesystem::weakly_canonical("."), fsType));
     CPPUNIT_ASSERT_EQUAL(fsTypeResult, fsType);
     // TODO: implement these tests on the CI.
     // External disk.
