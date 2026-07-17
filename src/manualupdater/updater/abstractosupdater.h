@@ -21,13 +21,13 @@ class AbstractOsUpdater {
          * @param outMessage       On failure, human-readable error; on success, completion message.
          * @return true if the operation succeeded.
          */
-        virtual bool install(const KDC::VersionInfo &versionInfo, const std::string &desiredVersion,
+        virtual bool install(const VersionInfo &versionInfo, const std::string &desiredVersion,
                              std::function<void(int, QString)> progressCallback, QString &outMessage) = 0;
 
     protected:
-        [[nodiscard]] static bool verifyFileChecksum(const KDC::VersionInfo &versionInfo, const KDC::SyncPath &filepath,
+        [[nodiscard]] static bool verifyFileChecksum(const VersionInfo &versionInfo, const SyncPath &filepath,
                                                      QString &outMessage);
-        [[nodiscard]] static std::string computeFileChecksum(const KDC::SyncPath &filepath);
+        [[nodiscard]] static std::string computeFileChecksum(const SyncPath &filepath);
 };
 
 std::unique_ptr<AbstractOsUpdater> createOsUpdater();

@@ -44,9 +44,9 @@ Poco::Net::Context::Ptr createSslContext() {
     return context;
 }
 
-inline std::unique_ptr<Poco::Net::HTTPSClientSession> createHttpsSession(const std::string &url, Poco::Timespan timeout,
-                                                                         std::string &outPath) {
-    Poco::URI uri(url);
+std::unique_ptr<Poco::Net::HTTPSClientSession> createHttpsSession(const std::string &url, const Poco::Timespan &timeout,
+                                                                  std::string &outPath) {
+    const Poco::URI uri(url);
     auto session = std::make_unique<Poco::Net::HTTPSClientSession>(uri.getHost(), uri.getPort(), createSslContext());
     session->setTimeout(timeout);
 
@@ -63,10 +63,10 @@ HttpDownloader::Result HttpDownloader::get(const std::string &url) {
     Result result;
     try {
         std::string path;
-        auto session = createHttpsSession(url, Poco::Timespan(30, 0), path);
+        const auto session = createHttpsSession(url, Poco::Timespan(30, 0), path);
 
         Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, path, Poco::Net::HTTPMessage::HTTP_1_1);
-        request.set("User-Agent", KDC::CommonUtility::userAgentString());
+        request.set("User-Agent", CommonUtility::userAgentString());
         request.set("Accept", "application/json");
 
         session->sendRequest(request);
@@ -94,14 +94,14 @@ HttpDownloader::Result HttpDownloader::get(const std::string &url) {
     return result;
 }
 
-HttpDownloader::Result HttpDownloader::downloadFile(const std::string &url, const KDC::SyncPath &destPath, long timeoutSeconds) {
+HttpDownloader::Result HttpDownloader::downloadFile(const std::string &url, const SyncPath &destPath, long timeoutSeconds) {
     Result result;
     try {
         std::string path;
         auto session = createHttpsSession(url, Poco::Timespan(timeoutSeconds, 0), path);
 
         Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, path, Poco::Net::HTTPMessage::HTTP_1_1);
-        request.set("User-Agent", KDC::CommonUtility::userAgentString());
+        request.set("User-Agent", CommonUtility::userAgentString());
 
         session->sendRequest(request);
 
@@ -142,15 +142,15 @@ HttpDownloader::Result HttpDownloader::downloadFile(const std::string &url, cons
     return result;
 }
 
-bool HttpDownloader::fetchAppVersion(KDC::DistributionChannel channel, const std::string &appId, KDC::VersionInfo &outVersionInfo,
+bool HttpDownloader::fetchAppVersion(DistributionChannel channel, const std::string &appId, VersionInfo &outVersionInfo,
                                      std::string &outError) {
     try {
         constexpr auto kEndpoint = "/app-information/applications/version/no-auth";
-        Poco::URI uri(KDC::UrlHelper::infomaniakApiUrl(1) + kEndpoint);
+        Poco::URI uri(UrlHelper::infomaniakApiUrl(1) + kEndpoint);
         uri.addQueryParameter("appId", appId);
-        uri.addQueryParameter("channel", KDC::toString(channel));
-        uri.addQueryParameter("platform", KDC::toString(KDC::CommonUtility::platform()));
-        uri.addQueryParameter("os_version", KDC::CommonUtility::osVersion());
+        uri.addQueryParameter("channel", toString(channel));
+        uri.addQueryParameter("platform", toString(CommonUtility::platform()));
+        uri.addQueryParameter("os_version", CommonUtility::osVersion());
         uri.addQueryParameter("store", "kStore");
         uri.addQueryParameter("name", "com.infomaniak.drive");
 
@@ -164,38 +164,38 @@ bool HttpDownloader::fetchAppVersion(KDC::DistributionChannel channel, const std
         Poco::JSON::Object::Ptr dataObj = jsonObj->getObject("data");
         if (!dataObj) {
             outError = "missing 'data' key in response";
-            LOG_WARN(KDC::Log::instance()->getLogger(), outError);
+            LOG_WARN(Log::instance()->getLogger(), outError);
             return false;
         }
 
         std::string channelStr;
-        if (!KDC::JsonParserUtility::extractValue(dataObj, "channel", channelStr)) {
+        if (!JsonParserUtility::extractValue(dataObj, "channel", channelStr)) {
             outError = "missing 'channel'";
             return false;
         }
-        outVersionInfo.channel = KDC::toDistributionChannel(channelStr);
+        outVersionInfo.channel = toDistributionChannel(channelStr);
 
-        if (!KDC::JsonParserUtility::extractValue(dataObj, "tag", outVersionInfo.tag)) {
+        if (!JsonParserUtility::extractValue(dataObj, "tag", outVersionInfo.tag)) {
             outError = "missing 'tag'";
             return false;
         }
-        if (!KDC::JsonParserUtility::extractValue(dataObj, "build_version", outVersionInfo.buildVersion)) {
+        if (!JsonParserUtility::extractValue(dataObj, "build_version", outVersionInfo.buildVersion)) {
             outError = "missing 'build_version'";
             return false;
         }
-        if (!KDC::JsonParserUtility::extractValue(dataObj, "build_min_os_version", outVersionInfo.minOsVersion)) {
+        if (!JsonParserUtility::extractValue(dataObj, "build_min_os_version", outVersionInfo.minOsVersion)) {
             outError = "missing 'build_min_os_version'";
             return false;
         }
-        if (!KDC::JsonParserUtility::extractValue(dataObj, "download_link", outVersionInfo.downloadUrl)) {
+        if (!JsonParserUtility::extractValue(dataObj, "download_link", outVersionInfo.downloadUrl)) {
             outError = "missing 'download_link'";
             return false;
         }
-        if (!KDC::JsonParserUtility::extractValue(dataObj, "checksum", outVersionInfo.checksum)) {
+        if (!JsonParserUtility::extractValue(dataObj, "checksum", outVersionInfo.checksum)) {
             outError = "missing 'checksum'";
             return false;
         }
-        if (!KDC::JsonParserUtility::extractValue(dataObj, "min_version", outVersionInfo.minAppVersion)) {
+        if (!JsonParserUtility::extractValue(dataObj, "min_version", outVersionInfo.minAppVersion)) {
             outError = "missing 'min_version'";
             return false;
         }

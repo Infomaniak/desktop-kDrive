@@ -172,6 +172,7 @@ QString CommonUtility::platformName() {
 }
 
 Platform CommonUtility::platform() {
+    // return Platform::MacOS;
     const QString name = platformName();
     if (name.contains("macos", Qt::CaseInsensitive)) return Platform::MacOS;
     if (name.contains("windows", Qt::CaseInsensitive)) {

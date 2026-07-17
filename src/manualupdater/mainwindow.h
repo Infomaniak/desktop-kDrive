@@ -45,7 +45,7 @@ class MainWindow : public QMainWindow {
 
         const UpdaterData &_updaterData;
         std::string _installedVersion;
-        KDC::VersionInfo _fetchedVersionInfo;
+        VersionInfo _fetchedVersionInfo;
 
         std::thread _workerThread;
         std::atomic<bool> _installInProgress{false};

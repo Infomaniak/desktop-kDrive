@@ -6,7 +6,7 @@
 
 namespace KDC {
 
-class ParmsDbLite : public KDC::Db {
+class ParmsDbLite : public Db {
     public:
         explicit ParmsDbLite(const std::filesystem::path &dbPath) :
             Db(dbPath) {}

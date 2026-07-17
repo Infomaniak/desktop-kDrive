@@ -29,37 +29,37 @@ std::unique_ptr<AbstractOsUpdater> createOsUpdater() {
 #endif
 }
 
-bool AbstractOsUpdater::verifyFileChecksum(const KDC::VersionInfo &versionInfo, const KDC::SyncPath &filepath,
+bool AbstractOsUpdater::verifyFileChecksum(const VersionInfo &versionInfo, const SyncPath &filepath,
                                            QString &outMessage) {
-    const std::string expectedChecksum = KDC::CommonUtility::trim(KDC::CommonUtility::toLower(versionInfo.checksum));
+    const std::string expectedChecksum = CommonUtility::trim(CommonUtility::toLower(versionInfo.checksum));
     if (expectedChecksum.empty()) {
         return true;
     }
 
-    const std::string actualChecksum = KDC::CommonUtility::trim(KDC::CommonUtility::toLower(computeFileChecksum(filepath)));
+    const std::string actualChecksum = CommonUtility::trim(CommonUtility::toLower(computeFileChecksum(filepath)));
     if (actualChecksum.empty()) {
-        LOGW_ERROR(KDC::Log::instance()->getLogger(), L"Failed to compute file checksum.");
+        LOGW_ERROR(Log::instance()->getLogger(), L"Failed to compute file checksum.");
         outMessage = QObject::tr("Failed to compute file checksum.");
-        auto ioError = KDC::IoError::Success;
-        (void) KDC::IoHelper::deleteItem(filepath, ioError);
+        auto ioError = IoError::Success;
+        (void) IoHelper::deleteItem(filepath, ioError);
         return false;
     }
 
     if (actualChecksum != expectedChecksum) {
-        LOGW_ERROR(KDC::Log::instance()->getLogger(), L"Checksum mismatch! Expected: "
-                                                              << KDC::CommonUtility::s2ws(expectedChecksum) << L", Got: "
-                                                              << KDC::CommonUtility::s2ws(actualChecksum));
+        LOGW_ERROR(Log::instance()->getLogger(), L"Checksum mismatch! Expected: "
+                                                              << CommonUtility::s2ws(expectedChecksum) << L", Got: "
+                                                              << CommonUtility::s2ws(actualChecksum));
         outMessage = QObject::tr("Checksum verification failed.");
-        auto ioError = KDC::IoError::Success;
-        (void) KDC::IoHelper::deleteItem(filepath, ioError);
+        auto ioError = IoError::Success;
+        (void) IoHelper::deleteItem(filepath, ioError);
         return false;
     }
 
-    LOGW_INFO(KDC::Log::instance()->getLogger(), L"Checksum verification passed.");
+    LOGW_INFO(Log::instance()->getLogger(), L"Checksum verification passed.");
     return true;
 }
 
-std::string AbstractOsUpdater::computeFileChecksum(const KDC::SyncPath &filepath) {
+std::string AbstractOsUpdater::computeFileChecksum(const SyncPath &filepath) {
     std::ifstream file(filepath, std::ios::binary);
     if (!file) return "";
 

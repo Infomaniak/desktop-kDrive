@@ -18,16 +18,16 @@ class UpdaterData {
         [[nodiscard]] bool isInstalled() const { return _isInstalled; }
         [[nodiscard]] const std::string &installedVersion() const { return _installedVersion; }
         [[nodiscard]] const std::string &appId() const { return _appId; }
-        [[nodiscard]] KDC::DistributionChannel distributionChannel() const { return _distributionChannel; }
-        [[nodiscard]] std::shared_ptr<::KDC::ParmsDbLite> db() const { return _db; }
+        [[nodiscard]] DistributionChannel distributionChannel() const { return _distributionChannel; }
+        [[nodiscard]] std::shared_ptr<ParmsDbLite> db() const { return _db; }
 
     private:
-        static KDC::DistributionChannel defaultDistributionChannel();
+        static DistributionChannel defaultDistributionChannel();
         bool _isInstalled = false;
         std::string _installedVersion;
         std::string _appId;
-        KDC::DistributionChannel _distributionChannel = defaultDistributionChannel();
-        std::shared_ptr<::KDC::ParmsDbLite> _db;
+        DistributionChannel _distributionChannel = defaultDistributionChannel();
+        std::shared_ptr<ParmsDbLite> _db;
 };
 
 } // namespace KDC
