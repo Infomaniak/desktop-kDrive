@@ -76,7 +76,7 @@ bool WindowsUpdater::install(const KDC::VersionInfo &versionInfo, const std::str
     return true;
 }
 
-bool WindowsUpdater::getInstallerPath(const KDC::VersionInfo &versionInfo, KDC::SyncPath &path) const {
+bool WindowsUpdater::getInstallerPath(const KDC::VersionInfo &versionInfo, KDC::SyncPath &path) {
     const auto &url = versionInfo.downloadUrl;
     const auto pos = url.find_last_of('/');
     if (pos == std::string::npos) {
@@ -93,7 +93,7 @@ bool WindowsUpdater::getInstallerPath(const KDC::VersionInfo &versionInfo, KDC::
     return true;
 }
 
-bool WindowsUpdater::verifyDigitalSignature(const KDC::SyncPath &filepath, QString &outMessage) const {
+bool WindowsUpdater::verifyDigitalSignature(const KDC::SyncPath &filepath, QString &outMessage) {
     if (!KDC::DigitalSignatureChecker_win(filepath).isSignatureValid()) {
         LOGW_ERROR(KDC::Log::instance()->getLogger(), L"The digital signature of installer "
                                                               << KDC::Utility::formatSyncPath(filepath)

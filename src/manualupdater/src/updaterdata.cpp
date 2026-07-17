@@ -53,7 +53,7 @@ bool UpdaterData::initialize() {
         return false;
     }
 
-    std::string appUid = "";
+    std::string appUid;
     found = false;
     if (!_db->selectAppUid(appUid, found) || !found) {
         LOGW_WARN(KDC::Log::instance()->getLogger(), L"Failed to retrieve app UID from database");

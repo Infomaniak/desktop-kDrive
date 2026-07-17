@@ -1,4 +1,3 @@
-#include <QApplication>
 #include "mainwindow.h"
 #include "updaterdata.h"
 #include "libcommonserver/utility/utility.h"

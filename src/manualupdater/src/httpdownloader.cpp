@@ -142,11 +142,10 @@ HttpDownloader::Result HttpDownloader::downloadFile(const std::string &url, cons
     return result;
 }
 
-bool HttpDownloader::fetchAppVersion(KDC::DistributionChannel channel, const std::string &appId,
-                                     KDC::VersionInfo &outVersionInfo, std::string &outError) {
-    constexpr auto kEndpoint = "/app-information/applications/version/no-auth";
-
+bool HttpDownloader::fetchAppVersion(KDC::DistributionChannel channel, const std::string &appId, KDC::VersionInfo &outVersionInfo,
+                                     std::string &outError) {
     try {
+        constexpr auto kEndpoint = "/app-information/applications/version/no-auth";
         Poco::URI uri(KDC::UrlHelper::infomaniakApiUrl(1) + kEndpoint);
         uri.addQueryParameter("appId", appId);
         uri.addQueryParameter("channel", KDC::toString(channel));

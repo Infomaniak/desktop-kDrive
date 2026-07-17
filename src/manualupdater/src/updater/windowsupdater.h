@@ -10,8 +10,8 @@ class WindowsUpdater final : public AbstractOsUpdater {
                      std::function<void(int, QString)> progressCallback, QString &outMessage) override;
 
     private:
-        [[nodiscard]] bool getInstallerPath(const KDC::VersionInfo &versionInfo, KDC::SyncPath &path) const;
-        [[nodiscard]] bool verifyDigitalSignature(const KDC::SyncPath &filepath, QString &outMessage) const;
+        [[nodiscard]] static bool getInstallerPath(const KDC::VersionInfo &versionInfo, KDC::SyncPath &path);
+        [[nodiscard]] static bool verifyDigitalSignature(const KDC::SyncPath &filepath, QString &outMessage);
 };
 
 } // namespace KDUpdater
