@@ -72,7 +72,7 @@ bool MainSidebarController::canOpenCurrentSyncFolder() const {
 
 qint32 MainSidebarController::currentErrorCount() const {
     const auto context = _selectionStore.currentSyncContext();
-    return context.has_value() ? static_cast<qint32>(context->errorInfoList.size()) : 0;
+    return context.has_value() ? static_cast<qint32>(context->errors.size()) : 0;
 }
 
 void MainSidebarController::selectSync(const qint64 syncDbId) {
