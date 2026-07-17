@@ -29,7 +29,7 @@
 namespace KDC {
 
 /**
- * QML list adapter for the main-sidebar drive and synchronization selector.
+ * QML list adapter for the main-sidebar synchronization selector.
  *
  * Rows contain only selector presentation data. AppCache owns entities and MainSelectionStore remains the selection
  * authority; this model does not own navigation, desktop actions, or screen state.
@@ -40,7 +40,6 @@ class SyncSelectorModel final : public QAbstractListModel {
 
     public:
         enum class EntryType : uint8_t {
-            DriveOnly,
             ClassicSync,
             AdvancedSync,
         };
@@ -48,7 +47,6 @@ class SyncSelectorModel final : public QAbstractListModel {
 
         enum Role {
             EntryTypeRole = Qt::UserRole + 1,
-            DriveDbIdRole,
             SyncDbIdRole,
             TitleRole,
             SubtitleRole,
@@ -71,8 +69,7 @@ class SyncSelectorModel final : public QAbstractListModel {
 
     private:
         struct Entry {
-                EntryType type{EntryType::DriveOnly};
-                DriveDbId driveDbId{0};
+                EntryType type{EntryType::ClassicSync};
                 SyncDbId syncDbId{0};
                 QString title;
                 QString subtitle;
@@ -83,12 +80,11 @@ class SyncSelectorModel final : public QAbstractListModel {
 
         void rebuild();
         void handleSelectionChanged();
-        [[nodiscard]] qint32 rowForSelection(DriveDbId driveDbId, SyncDbId syncDbId) const;
+        [[nodiscard]] qint32 rowForSyncDbId(SyncDbId syncDbId) const;
 
         const AppCache &_cache;
         MainSelectionStore &_selectionStore;
         std::vector<Entry> _entries;
-        DriveDbId _selectedDriveDbId{0};
         SyncDbId _selectedSyncDbId{0};
 };
 
