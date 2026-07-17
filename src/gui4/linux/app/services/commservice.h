@@ -26,7 +26,7 @@
 #include "libcommon/data/driveavailable.h"
 #include "libcommon/data/sync.h"
 #include "libcommon/data/user.h"
-#include "libcommon/info/errorinfo.h"
+#include "libcommon/data/error.h"
 #include "libcommon/info/exclusiontemplateinfo.h"
 #include "libcommon/info/nodeconflictinfo.h"
 #include "libcommon/info/nodeinfo.h"
@@ -121,7 +121,7 @@ class CommService : public QObject {
         using NodeInfoListCallback = std::function<void(const ExitInfo &, const std::vector<NodeInfo> &)>;
         using FolderSizeCallback = std::function<void(const ExitInfo &, int64_t)>;
         using ParametersInfoCallback = std::function<void(const ExitInfo &, const ParametersInfo &)>;
-        using ErrorInfoListCallback = std::function<void(const ExitInfo &, const std::vector<ErrorInfo> &)>;
+        using ErrorListCallback = std::function<void(const ExitInfo &, const std::vector<Error> &)>;
         using ExclusionTemplateListCallback = std::function<void(const ExitInfo &, const std::vector<ExclusionTemplateInfo> &)>;
         using UpdateStateCallback = std::function<void(const ExitInfo &, UpdateState)>;
         using VersionInfoCallback = std::function<void(const ExitInfo &, const VersionInfo &)>;
@@ -171,7 +171,7 @@ class CommService : public QObject {
         void requestSyncGetPublicLinkUrl(DriveDbId driveDbId, const NodeId &nodeId, const StringCallback &callback) const;
 
         // --- Error ---
-        void requestErrorInfoList(const ErrorInfoListCallback &callback) const;
+        void requestErrorList(const ErrorListCallback &callback) const;
         void requestErrorDelete(ErrorDbId errorDbId, const VoidCallback &callback) const;
         void requestErrorResolveConflicts(const std::vector<ErrorDbId> &keepLocalList,
                                           const std::vector<ErrorDbId> &keepRemoteList, const VoidCallback &callback) const;
@@ -251,7 +251,7 @@ class CommService : public QObject {
         void itemCompleted(SyncDbId syncDbId, const SyncFileItemInfo &info);
 
         // --- Error ---
-        void errorAdded(const ErrorInfo &info);
+        void errorAdded(const Error &info);
         void errorRemoved(ErrorDbId errorDbId);
 
         // --- Updater ---
