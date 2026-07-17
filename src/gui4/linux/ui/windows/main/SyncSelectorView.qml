@@ -109,11 +109,7 @@ Item {
                 selected: model.isSelected
                 showSurface: false
                 onTriggered: {
-                    if (model.entryType === SyncSelectorModel.DriveOnly) {
-                        root.controller.selectDrive(model.driveDbId)
-                    } else {
-                        root.controller.selectSync(model.syncDbId)
-                    }
+                    root.controller.selectSync(model.syncDbId)
                     selectorPopup.close()
                 }
             }
