@@ -114,13 +114,13 @@ void CachePopulator::loadSyncs(const PopulationMode mode) {
 }
 
 void CachePopulator::loadSyncErrors(const PopulationMode mode) {
-    _commService.requestErrorInfoList([this, mode](const ExitInfo &exitInfo, const std::vector<ErrorInfo> &list) {
+    _commService.requestErrorList([this, mode](const ExitInfo &exitInfo, const std::vector<Error> &list) {
         if (!exitInfo && handlePopulationFailure("errors", exitInfo, mode)) {
             return;
         }
 
-        std::vector<ErrorInfo> syncErrors;
-        std::vector<ErrorInfo> serverErrors;
+        std::vector<Error> syncErrors;
+        std::vector<Error> serverErrors;
         syncErrors.reserve(list.size());
         serverErrors.reserve(list.size());
         for (const auto &info: list) {
@@ -156,7 +156,8 @@ void CachePopulator::markBranchCompleted(const PopulationMode mode, const Popula
             break;
     }
 
-    if (_populationProgress.terminalSignalEmitted || !_populationProgress.parametersCompleted || !_populationProgress.userDataCompleted) {
+    if (_populationProgress.terminalSignalEmitted || !_populationProgress.parametersCompleted ||
+        !_populationProgress.userDataCompleted) {
         return;
     }
 
