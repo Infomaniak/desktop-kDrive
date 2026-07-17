@@ -65,7 +65,7 @@ QVariant SyncListModel::data(const QModelIndex &index, const int role) const {
             return color.isValid() ? color : defaultDriveColor;
         }
         case ErrorCountRole:
-            return static_cast<qint32>(context.errorInfoList.size());
+            return static_cast<qint32>(context.errors.size());
         case SelectedRole:
             return context.syncInfo.dbId() == _selectedSyncDbId;
         default:
