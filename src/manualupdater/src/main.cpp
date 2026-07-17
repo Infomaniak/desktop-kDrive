@@ -2,7 +2,6 @@
 #include "updaterdata.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/log/log.h"
-#include "utility/types.h"
 #include "utility/utility.h"
 
 int main(int argc, char *argv[]) {

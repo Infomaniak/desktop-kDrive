@@ -61,9 +61,17 @@ target_include_directories(kDriveRecoveryUpdater PRIVATE
     ${CMAKE_SOURCE_DIR}/src/server
 )
 
+if(WIN32)
+    set_target_properties(kDriveRecoveryUpdater PROPERTIES
+        WIN32_EXECUTABLE TRUE
+    )
+elseif(APPLE)
+    set_target_properties(kDriveRecoveryUpdater PROPERTIES
+        MACOSX_BUNDLE TRUE
+    )
+endif()
+
 set_target_properties(kDriveRecoveryUpdater PROPERTIES
-    WIN32_EXECUTABLE TRUE
-    MACOSX_BUNDLE TRUE
     RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY}
 )
 
