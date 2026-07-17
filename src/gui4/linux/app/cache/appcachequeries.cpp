@@ -146,6 +146,14 @@ std::optional<BaseSync> AppCache::sync(const SyncDbId syncDbId) const {
     return it->second.info;
 }
 
+std::optional<SyncRuntimeInfo> AppCache::syncRuntimeInfo(const SyncDbId syncDbId) const {
+    const auto it = _syncsByDbId.find(syncDbId);
+    if (it == _syncsByDbId.end()) {
+        return std::nullopt;
+    }
+    return it->second.runtimeInfo;
+}
+
 std::optional<Error> AppCache::syncError(const ErrorDbId errorDbId) const {
     const auto it = _syncErrorsByDbId.find(errorDbId);
     if (it == _syncErrorsByDbId.end()) {
