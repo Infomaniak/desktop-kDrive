@@ -84,10 +84,6 @@ void MainSidebarController::selectSync(const qint64 syncDbId) {
     _selectionStore.selectSync(syncDbId);
 }
 
-void MainSidebarController::selectDrive(const qint64 driveDbId) {
-    _selectionStore.selectDrive(driveDbId);
-}
-
 bool MainSidebarController::openCurrentSyncFolder() const {
     // Do not reuse canOpenCurrentSyncFolder(): the action must read the current context once and validate the filesystem.
     const auto context = _selectionStore.currentSyncContext();
