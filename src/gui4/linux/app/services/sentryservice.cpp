@@ -19,7 +19,8 @@
 #include "sentryservice.h"
 
 #include "app/cache/appcache.h"
-#include "app/services/commservice.h"
+#include "app/cache/parametersstore.h"
+#include "app/services/parametersservice.h"
 #include "config.h"
 #include "libcommon/log/sentry/handler.h"
 
@@ -40,10 +41,15 @@ constexpr char sentryConsentKey[] = "sentry/enabled";
 
 namespace KDC {
 
-SentryService::SentryService(CommService &commService, AppCache &appCache, QObject *const parent) :
+SentryService::SentryService(ParametersService &parametersService, AppCache &appCache, ParametersStore &parametersStore,
+                             QObject *const parent) :
     QObject(parent),
-    _commService(commService),
-    _appCache(appCache) {}
+    _parametersService(parametersService),
+    _appCache(appCache),
+    _parametersStore(parametersStore) {
+    (void) connect(&_parametersStore, &ParametersStore::parametersInfoChanged, this,
+                   &SentryService::reconcileConsentWithParametersStore);
+}
 
 std::optional<bool> SentryService::readCachedConsent() {
     const QSettings settings(QSettings::IniFormat, QSettings::UserScope, settingsOrganization, settingsApplication);
@@ -129,43 +135,25 @@ void SentryService::reportFatalAndExit(const QString &title, const QString &mess
     reportFatalAndExit(title.toStdString(), message.toStdString());
 }
 
-void SentryService::reconcileConsentWithServer() {
-    qCInfo(lcSentryService) << "Reconciling Sentry consent with server";
-    _commService.requestParametersInfo([this](const ExitInfo &exitInfo, const ParametersInfo &parametersInfo) {
-        if (!exitInfo) {
-            qCWarning(lcSentryService) << "Sentry consent reconciliation failed | ExitInfo:"
-                                       << QString::fromStdString(toString(exitInfo));
-            return;
-        }
-
-        qCInfo(lcSentryService) << "Sentry consent reconciled with server | enabled:" << parametersInfo.sentryEnabled();
-        setCurrentParametersInfo(parametersInfo);
-        writeCachedConsent(parametersInfo.sentryEnabled());
-        applyConsent(parametersInfo.sentryEnabled());
-    });
-}
-
-void SentryService::setConsent(const bool enabled) {
+void SentryService::setConsent(const bool enabled) const {
     qCInfo(lcSentryService) << "Sentry consent update requested | enabled:" << enabled;
-    if (!_currentParametersInfo.has_value()) {
-        qCWarning(lcSentryService) << "Sentry consent update ignored because server parameters are not loaded yet";
-        return;
-    }
 
-    ParametersInfo updatedParametersInfo = *_currentParametersInfo;
-    updatedParametersInfo.setSentryEnabled(enabled);
-    _commService.requestParametersUpdate(updatedParametersInfo, [this, updatedParametersInfo, enabled](const ExitInfo &exitInfo) {
+    const ParametersService::ParametersMutation mutation = [enabled](ParametersInfo &parametersInfo) {
+        parametersInfo.setSentryEnabled(enabled);
+    };
+
+    const ParametersService::UpdateCallback callback = [enabled](const ExitInfo &exitInfo) {
         if (!exitInfo) {
-            qCWarning(lcSentryService) << "Sentry consent update failed | ExitInfo:"
+            qCWarning(lcSentryService) << "Sentry consent update failed; keeping confirmed store value | ExitInfo:"
                                        << QString::fromStdString(toString(exitInfo));
             return;
         }
 
         qCInfo(lcSentryService) << "Sentry consent update confirmed by server | enabled:" << enabled;
-        setCurrentParametersInfo(updatedParametersInfo);
-        writeCachedConsent(enabled);
-        applyConsent(enabled);
-    });
+    };
+
+
+    _parametersService.updateParameters(mutation, callback);
 }
 
 void SentryService::updateAuthenticatedUser() const {
@@ -218,8 +206,17 @@ void SentryService::applyConsent(const bool enabled) {
     qCInfo(lcSentryService) << "Sentry shutdown skipped because handler is not initialized";
 }
 
-void SentryService::setCurrentParametersInfo(const ParametersInfo &parametersInfo) {
-    _currentParametersInfo = parametersInfo;
+void SentryService::reconcileConsentWithParametersStore() {
+    const auto currentParametersInfo = _parametersStore.parametersInfo();
+    if (!currentParametersInfo.has_value()) {
+        qCInfo(lcSentryService) << "Sentry consent reconciliation skipped because parameters are not loaded";
+        return;
+    }
+
+    qCInfo(lcSentryService) << "Sentry consent reconciled with parameters store | enabled:"
+                            << currentParametersInfo->sentryEnabled();
+    writeCachedConsent(currentParametersInfo->sentryEnabled());
+    applyConsent(currentParametersInfo->sentryEnabled());
 }
 
 } // namespace KDC
