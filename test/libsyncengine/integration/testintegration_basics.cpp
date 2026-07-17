@@ -271,7 +271,7 @@ void TestIntegration::testSimpleUpload() {
     })")};
     auto testpath = _syncPal->localPath(); // this is for debug, to find where is the tmp dir
     auto remotesyncdirname = _remoteSyncDir.name(); // this is for debug, to find where is the tmp kDrive dir
-    CPPUNIT_ASSERT(testHelper.executeOperations(ReplicaSide::Local, localoperations));
+    CPPUNIT_ASSERT(testHelper.execute(ReplicaSide::Local, localoperations));
 
     // The local Create operation above wrote the file directly to disk, bypassing the sync engine, so we
     // need to wait for the SyncPal to detect it and upload it to the remote replica before checking below.
@@ -296,7 +296,7 @@ void TestIntegration::testSimpleUpload() {
             { "type": "Move", "fromPath":"C", "toPath":"CC" }
         ]
     })")};
-    CPPUNIT_ASSERT(testHelper.executeOperations(ReplicaSide::Remote, remoteoperations));
+    CPPUNIT_ASSERT(testHelper.execute(ReplicaSide::Remote, remoteoperations));
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
 
     CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / "C"));
@@ -325,7 +325,7 @@ void TestIntegration::testNestedRemoteOperations() {
             { "type": "Create", "itemType": "File", "name": "A/AAA" }
         ]
     })")};
-    CPPUNIT_ASSERT(testHelper.executeOperations(ReplicaSide::Remote, remoteOperations));
+    CPPUNIT_ASSERT(testHelper.execute(ReplicaSide::Remote, remoteOperations));
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
 
     CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / "A" / "AAA"));

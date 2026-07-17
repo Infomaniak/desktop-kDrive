@@ -64,9 +64,9 @@ class Situation {
 /**
  * @brief This class is the single entry point for setting up and driving Syncpal-based tests. It combines:
  *  - Building an initial local/remote filesystem situation from a JSON description (formerly SituationGenerator).
- *  - Applying simple local/remote operations (delete/edit) on top of that situation (formerly ExecuteOperations).
+ *  - Applying simple local/remote operations (delete/edit) on top of that situation (formerly OperationsExecutor).
  *
- * Items are created using real local filesystem operations and real remote API jobs, exactly like ExecuteOperations
+ * Items are created using real local filesystem operations and real remote API jobs, exactly like OperationsExecutor
  * does for operations applied afterwards. This class never touches the SyncDb, update trees, or snapshots directly:
  * it is up to the caller to run a real sync pass (e.g. SyncpalTestHelper::executeSyncUntilEnd) afterwards so that the
  * SyncPal discovers the generated items itself and populates its own Db/update-trees/snapshots with real ids.
@@ -119,7 +119,6 @@ class SetInitialSituation {
         void setSyncpal(std::shared_ptr<SyncPal> syncPal);
 
         [[nodiscard]] const NodeId &remoteRootId() const { return _remoteRootId; }
-        void setRemoteDrive(DriveDbId driveDbId, const NodeId &parentRemoteNodeId);
 
         void generateInitialSituation(const Situation &situation);
 

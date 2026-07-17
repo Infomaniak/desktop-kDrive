@@ -49,14 +49,9 @@ bool SyncpalTestHelper::setInitialSituation(const Situation &localSituation, con
     if (!_syncPal) return false;
 
     try {
-        // If remote is needed (optional depending on test)
-        if (_setInitialSituation.remoteRootId().empty()) {
-            _setInitialSituation.setRemoteDrive(_syncPal->driveDbId(), *_syncPal->syncDb()->rootNode().nodeIdRemote());
-        }
-
         // generateInitialSituation() creates the described items on both the real local filesystem and
         // the real remote drive in one call (every item is inserted on both sides at once, just like
-        // ExecuteOperations does for operations). Calling it a second time with the same content would
+        // OperationsExecutor does for operations). Calling it a second time with the same content would
         // create duplicate local/remote items. Local and remote are therefore expected to match here, so
         // only one call is needed. The SyncPal is then run so it discovers the generated items itself and
         // populates its own Db/update-trees/snapshots with real ids.
@@ -111,11 +106,11 @@ bool SyncpalTestHelper::stopSync() const {
     return false;
 }
 
-bool SyncpalTestHelper::executeOperations(const ReplicaSide side, const Operations &operations) {
+bool SyncpalTestHelper::execute(const ReplicaSide side, const Operations &operations) {
     if (!_syncPal) return false;
 
     try {
-        _executeOperations.executeOperations(side, operations);
+        _executeOperations.execute(side, operations);
     } catch (const OperationsParserException &) {
         return false;
     }

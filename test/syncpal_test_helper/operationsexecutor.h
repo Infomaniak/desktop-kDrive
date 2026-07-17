@@ -21,6 +21,7 @@
 #include "utility/types.h"
 #include "test_utility/localtemporarydirectory.h"
 
+#include <Poco/JSON/Array.h>
 #include <Poco/JSON/Object.h>
 
 #include <filesystem>
@@ -45,7 +46,7 @@ class OperationsParserException final : public std::runtime_error {
  * {
  *    "operations": [
  *        { "type": "Edit", "path": "C/D/e", "newSize": 1234 },
- *        { "type": "Create", "itemType": "File", "name": "f", "size": 5678 },
+ *        { "type": "Create", "itemType": "File", "name": "C/D/f", "size": 5678 },
  *        { "type": "Delete", "path": "F/G/H" },
  *        { "type": "Move", "fromPath": "I/J/k", "toPath": "L/m" }
  *    ]
@@ -61,22 +62,31 @@ class Operations {
         // constructor does if the content isn't valid.
         [[nodiscard]] static Operations fromFile(const std::filesystem::path &filePath);
 
-        const StringType &json() const noexcept;
+        // Operations are immutable once parsed and not meant to be duplicated: forbid copies (the parsed
+        // JSON is only stored once, moves are still allowed).
+        Operations(const Operations &) = delete;
+        Operations &operator=(const Operations &) = delete;
+        Operations(Operations &&) = default;
+        Operations &operator=(Operations &&) = default;
+
+        // The parsed "operations" JSON array, ready to be iterated without re-parsing.
+        const Poco::JSON::Array::Ptr &operationsArray() const noexcept;
 
         void log() const;
 
     private:
-        StringType _jsonDescription;
+        Poco::JSON::Object::Ptr _jsonObject;
+        Poco::JSON::Array::Ptr _operationsArray;
 };
 
 /**
  * @brief Applies an Operations JSON description (Create/Edit/Delete/Move) on the local or remote replica
  * of the SyncPal passed to the constructor (or set via setSyncpal).
  */
-class ExecuteOperations {
+class OperationsExecutor {
     public:
-        ExecuteOperations() = default;
-        explicit ExecuteOperations(std::shared_ptr<SyncPal> syncPal);
+        OperationsExecutor() = default;
+        explicit OperationsExecutor(std::shared_ptr<SyncPal> syncPal);
 
         void setSyncpal(const std::shared_ptr<SyncPal> syncPal) { _syncPal = syncPal; }
 
@@ -88,7 +98,7 @@ class ExecuteOperations {
 
         // Not const: applying operations triggers real local/remote side effects (filesystem changes, network
         // jobs) and tracks per-batch state in `_batchRemoteIds`.
-        void executeOperations(ReplicaSide side, const Operations &operations);
+        void execute(ReplicaSide side, const Operations &operations);
 
     private:
         struct OperationDesc {
@@ -133,12 +143,12 @@ class ExecuteOperations {
         std::shared_ptr<SyncPal> _syncPal;
 
         // Temporary directory used to generate the local payload of remote-only operations (Create/Edit file
-        // uploads). Lazily created on first use and reused for the whole executeOperations() batch, instead of
+        // uploads). Lazily created on first use and reused for the whole OperationsExecutor() batch, instead of
         // creating/destroying one per operation.
         std::optional<LocalTemporaryDirectory> _remoteOperationsTemporaryDir;
         [[nodiscard]] const SyncPath &remoteOperationsTemporaryDirPath();
 
-        // Remote ids of items created/moved during the current executeOperations() batch, keyed by their
+        // Remote ids of items created/moved during the current OperationsExecutor() batch, keyed by their
         // current relative path. Needed because those items may not exist in the sync DB yet (no sync has
         // run within the batch), so a subsequent operation referencing them (e.g. a Create inside a
         // directory just created earlier in the same batch) cannot rely on a sync DB lookup alone.

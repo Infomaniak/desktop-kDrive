@@ -29,7 +29,7 @@ set(testsyncengine_SRCS
         # SyncpalTestHelper
         ../syncpal_test_helper/syncpaltesthelper.h ../syncpal_test_helper/syncpaltesthelper.cpp
         ../syncpal_test_helper/setinitialsituation.h ../syncpal_test_helper/setinitialsituation.cpp
-        ../syncpal_test_helper/executeoperations.h ../syncpal_test_helper/executeoperations.cpp
+        ../syncpal_test_helper/operationsexecutor.h ../syncpal_test_helper/operationsexecutor.cpp
         # Database
         db/testsyncdb.h db/testsyncdb.cpp
         # Jobs

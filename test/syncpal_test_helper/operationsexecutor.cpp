@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "executeoperations.h"
+#include "OperationsExecutor.h"
 
 #include "syncpal/syncpal.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
@@ -56,19 +56,18 @@ namespace KDC {
 // ─────────────────────────────────────────────────
 //
 
-Operations::Operations(const StringType &jsonDescription) :
-    _jsonDescription(jsonDescription) {
-    Poco::JSON::Object::Ptr obj;
+Operations::Operations(const StringType &jsonDescription) {
     try {
         Poco::JSON::Parser parser;
-        obj = parser.parse(SyncName2Str(jsonDescription)).extract<Poco::JSON::Object::Ptr>();
+        _jsonObject = parser.parse(SyncName2Str(jsonDescription)).extract<Poco::JSON::Object::Ptr>();
     } catch (Poco::Exception &) {
         throw OperationsParserException("Invalid Operations JSON");
     }
 
-    if (!obj->has("operations") || !obj->isArray("operations")) {
+    if (!_jsonObject->has("operations") || !_jsonObject->isArray("operations")) {
         throw OperationsParserException("Operations must contain an 'operations' array");
     }
+    _operationsArray = _jsonObject->getArray("operations");
 }
 
 Operations Operations::fromFile(const std::filesystem::path &filePath) {
@@ -80,35 +79,31 @@ Operations Operations::fromFile(const std::filesystem::path &filePath) {
     return Operations(Str2SyncName(buffer.str()));
 }
 
-const Operations::StringType &Operations::json() const noexcept {
-    return _jsonDescription;
+const Poco::JSON::Array::Ptr &Operations::operationsArray() const noexcept {
+    return _operationsArray;
 }
 
 void Operations::log() const {
-    // The JSON was already validated in the constructor, so parsing here cannot fail.
-    Poco::JSON::Parser parser;
-    const auto var = parser.parse(SyncName2Str(_jsonDescription));
-
     std::ostringstream oss;
-    Poco::JSON::Stringifier::stringify(var, oss, 2);
+    Poco::JSON::Stringifier::stringify(_jsonObject, oss, 2);
     LOGW_INFO(Log::instance()->getLogger(), CommonUtility::s2ws(oss.str()));
 }
 
 //
 // ─────────────────────────────────────────────────
-// ExecuteOperations
+// OperationsExecutor
 // ─────────────────────────────────────────────────
 //
 
-ExecuteOperations::ExecuteOperations(const std::shared_ptr<SyncPal> syncPal) :
+OperationsExecutor::OperationsExecutor(const std::shared_ptr<SyncPal> syncPal) :
     _syncPal(syncPal) {}
 
-bool ExecuteOperations::run(const ReplicaSide side, const std::string &jsonDescription) {
+bool OperationsExecutor::run(const ReplicaSide side, const std::string &jsonDescription) {
     if (!_syncPal) return false;
 
     try {
         const Operations operations{Str2SyncName(jsonDescription)};
-        executeOperations(side, operations);
+        execute(side, operations);
 
         return true;
     } catch (const OperationsParserException &) {
@@ -116,34 +111,33 @@ bool ExecuteOperations::run(const ReplicaSide side, const std::string &jsonDescr
     }
 }
 
-void ExecuteOperations::executeOperations(const ReplicaSide side, const Operations &operations) {
-    Poco::JSON::Object::Ptr obj;
-    try {
-        Poco::JSON::Parser parser;
-        obj = parser.parse(SyncName2Str(operations.json())).extract<Poco::JSON::Object::Ptr>();
-    } catch (Poco::Exception &) {
-        throw OperationsParserException("Invalid JSON input");
-    }
-
+void OperationsExecutor::execute(const ReplicaSide side, const Operations &operations) {
     _batchRemoteIds.clear();
     _remoteOperationsTemporaryDir.reset();
 
-    const auto arr = obj->getArray("operations");
+    const auto &arr = operations.operationsArray();
     for (size_t i = 0; i < arr->size(); ++i) {
         const auto &itemObj = arr->getObject(static_cast<uint64_t>(i));
         const OperationDesc desc = parseOperation(itemObj);
         applyOperation(side, desc);
     }
+
+    // Remote operations are applied directly via API jobs, bypassing the SyncPal's own remote polling. Force
+    // an immediate refresh so the change is detected right away instead of waiting for the next poll interval,
+    // which could otherwise race with (and be missed by) the caller's subsequent executeSyncUntilEnd().
+    if (side == ReplicaSide::Remote && _syncPal) {
+        _syncPal->_remoteFSObserverWorker->forceUpdate();
+    }
 }
 
-const SyncPath &ExecuteOperations::remoteOperationsTemporaryDirPath() {
+const SyncPath &OperationsExecutor::remoteOperationsTemporaryDirPath() {
     if (!_remoteOperationsTemporaryDir) {
         _remoteOperationsTemporaryDir.emplace("executeRemoteOperations");
     }
     return _remoteOperationsTemporaryDir->path();
 }
 
-void ExecuteOperations::validateRelativePath(const SyncPath &path, const std::string &fieldName) {
+void OperationsExecutor::validateRelativePath(const SyncPath &path, const std::string &fieldName) {
     if (path.empty() || path.is_absolute()) {
         throw OperationsParserException("'" + fieldName + "' must be a non-empty relative path: '" + path.string() + "'");
     }
@@ -154,7 +148,7 @@ void ExecuteOperations::validateRelativePath(const SyncPath &path, const std::st
     }
 }
 
-ExecuteOperations::OperationDesc ExecuteOperations::parseOperation(const Poco::JSON::Object::Ptr &obj) {
+OperationsExecutor::OperationDesc OperationsExecutor::parseOperation(const Poco::JSON::Object::Ptr &obj) {
     if (!obj) throw OperationsParserException("Each operation must be an object");
 
     static const std::string OPERATION_TYPE_KEY = "type";
@@ -209,7 +203,7 @@ ExecuteOperations::OperationDesc ExecuteOperations::parseOperation(const Poco::J
     return desc;
 }
 
-void ExecuteOperations::applyOperation(const ReplicaSide side, const OperationDesc &desc) {
+void OperationsExecutor::applyOperation(const ReplicaSide side, const OperationDesc &desc) {
     switch (side) {
         case ReplicaSide::Local: {
             switch (desc.type) {
@@ -254,13 +248,13 @@ void ExecuteOperations::applyOperation(const ReplicaSide side, const OperationDe
     }
 }
 
-void ExecuteOperations::checkExitInfo(const ExitInfo &exitInfo, const std::string &context) {
+void OperationsExecutor::checkExitInfo(const ExitInfo &exitInfo, const std::string &context) {
     if (!exitInfo) {
         throw OperationsParserException(context + " failed: " + static_cast<std::string>(exitInfo));
     }
 }
 
-void ExecuteOperations::applyLocalCreate(const OperationDesc &desc) const {
+void OperationsExecutor::applyLocalCreate(const OperationDesc &desc) const {
     const SyncPath fullPath = _syncPal->localPath() / desc.path;
     IoError ioError = IoError::Success;
     if (desc.itemType == NodeType::Directory) {
@@ -276,25 +270,25 @@ void ExecuteOperations::applyLocalCreate(const OperationDesc &desc) const {
     testhelpers::generateTestFile(fullPath, static_cast<uint64_t>(desc.size));
 }
 
-void ExecuteOperations::applyLocalEdit(const OperationDesc &desc) const {
+void OperationsExecutor::applyLocalEdit(const OperationDesc &desc) const {
     const SyncPath fullPath = _syncPal->localPath() / desc.path;
     testhelpers::setTestFileSize(fullPath, static_cast<uint64_t>(desc.size));
 }
 
-void ExecuteOperations::applyLocalDelete(const OperationDesc &desc) const {
+void OperationsExecutor::applyLocalDelete(const OperationDesc &desc) const {
     const SyncPath fullPath = _syncPal->localPath() / desc.path;
     GenericLocalDeleteJob deleteJob(fullPath);
     checkExitInfo(deleteJob.runSynchronously(), "Delete operation");
 }
 
-void ExecuteOperations::applyLocalMove(const OperationDesc &desc) const {
+void OperationsExecutor::applyLocalMove(const OperationDesc &desc) const {
     const SyncPath fullFromPath = _syncPal->localPath() / desc.fromPath;
     const SyncPath fullToPath = _syncPal->localPath() / desc.toPath;
     LocalMoveJob job(fullFromPath, fullToPath);
     checkExitInfo(job.runSynchronously(), "Move operation");
 }
 
-NodeId ExecuteOperations::remoteIdForPath(const SyncPath &path, const std::string &context) const {
+NodeId OperationsExecutor::remoteIdForPath(const SyncPath &path, const std::string &context) const {
     if (const auto it = _batchRemoteIds.find(path); it != _batchRemoteIds.end()) {
         return it->second;
     }
@@ -307,7 +301,7 @@ NodeId ExecuteOperations::remoteIdForPath(const SyncPath &path, const std::strin
     return *id;
 }
 
-void ExecuteOperations::applyRemoteCreate(const OperationDesc &desc) {
+void OperationsExecutor::applyRemoteCreate(const OperationDesc &desc) {
     const NodeId parentId = remoteIdForPath(desc.path.parent_path(), "Create operation");
 
     if (desc.itemType == NodeType::Directory) {
@@ -332,7 +326,7 @@ void ExecuteOperations::applyRemoteCreate(const OperationDesc &desc) {
     }
 }
 
-void ExecuteOperations::applyRemoteEdit(const OperationDesc &desc) {
+void OperationsExecutor::applyRemoteEdit(const OperationDesc &desc) {
     const NodeId fileId = remoteIdForPath(desc.path, "Edit operation");
 
     // This is a remote-only operation: uploading the unchanged local replica would not reflect the requested
@@ -349,7 +343,7 @@ void ExecuteOperations::applyRemoteEdit(const OperationDesc &desc) {
     checkExitInfo(job.runSynchronously(), "Edit operation (upload)");
 }
 
-void ExecuteOperations::applyRemoteDelete(const OperationDesc &desc) {
+void OperationsExecutor::applyRemoteDelete(const OperationDesc &desc) {
     const NodeId itemId = remoteIdForPath(desc.path, "Delete operation");
 
     DeleteJob job(_syncPal->driveDbId(), itemId);
@@ -358,7 +352,7 @@ void ExecuteOperations::applyRemoteDelete(const OperationDesc &desc) {
     (void) _batchRemoteIds.erase(desc.path);
 }
 
-void ExecuteOperations::applyRemoteMove(const OperationDesc &desc) {
+void OperationsExecutor::applyRemoteMove(const OperationDesc &desc) {
     const NodeId itemId = remoteIdForPath(desc.fromPath, "Move operation");
 
     if (desc.fromPath.parent_path() == desc.toPath.parent_path()) {

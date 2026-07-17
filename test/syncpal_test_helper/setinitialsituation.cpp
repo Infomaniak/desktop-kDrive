@@ -66,7 +66,9 @@ const Situation::StringType &Situation::json() const noexcept {
 }
 
 void Situation::log() const {
-    LOGW_INFO(Log::instance()->getLogger(), SyncName2WStr(_jsonDescription));
+    std::ostringstream oss;
+    Poco::JSON::Stringifier::stringify(_jsonDescription, oss, 2);
+    LOGW_INFO(Log::instance()->getLogger(), CommonUtility::s2ws(oss.str()));
 }
 
 //
@@ -75,28 +77,27 @@ void Situation::log() const {
 // ─────────────────────────────────────────────────
 //
 
-SetInitialSituation::SetInitialSituation(const std::shared_ptr<SyncPal> syncPal) :
-    _syncPal(syncPal) {}
+SetInitialSituation::SetInitialSituation(const std::shared_ptr<SyncPal> syncPal) {
+    setSyncpal(syncPal);
+}
 
 void SetInitialSituation::setSyncpal(const std::shared_ptr<SyncPal> syncPal) {
     _syncPal = syncPal;
-}
 
-void SetInitialSituation::setRemoteDrive(const DriveDbId driveDbId, const NodeId &parentRemoteNodeId) {
-    _remoteDriveDbId = driveDbId;
-    _remoteRootId = parentRemoteNodeId;
-    _remoteNodeIds[{}] = _remoteRootId;
+    _remoteDriveDbId.reset();
+    _remoteRootId.clear();
+    _remoteNodeIds.clear();
+    if (_syncPal) {
+        _remoteDriveDbId = _syncPal->driveDbId();
+        _remoteRootId = *_syncPal->syncDb()->rootNode().nodeIdRemote();
+        _remoteNodeIds[{}] = _remoteRootId;
+    }
 }
 
 bool SetInitialSituation::run(const std::string &jsonDescription) {
     if (!_syncPal) return false;
 
     try {
-        // If remote is needed (optional depending on test)
-        if (_remoteRootId.empty()) {
-            setRemoteDrive(_syncPal->driveDbId(), *_syncPal->syncDb()->rootNode().nodeIdRemote());
-        }
-
         const Situation situation{Str2SyncName(jsonDescription)};
         generateInitialSituation(situation);
 

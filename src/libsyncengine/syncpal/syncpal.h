@@ -520,7 +520,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         friend class TestSituationGenerator;
         friend class TestFileRescuer;
         friend class SetInitialSituation;
-        friend class ExecuteOperations;
+        friend class OperationsExecutor;
         friend class SyncpalTestHelper;
 };
 

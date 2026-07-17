@@ -19,7 +19,7 @@
 #pragma once
 
 #include "setinitialsituation.h"
-#include "executeoperations.h"
+#include "OperationsExecutor.h"
 
 #include <memory>
 
@@ -29,10 +29,10 @@ class SyncPal;
 /**
  * @brief Single entry point for setting up and driving Syncpal-based tests: building an initial
  * Db/update-tree/filesystem situation from a JSON description (via SetInitialSituation), applying
- * operations on top of it (via ExecuteOperations), and (eventually) driving a sync run.
+ * operations on top of it (via OperationsExecutor), and (eventually) driving a sync run.
  *
  * See Situation (setinitialsituation.h) for the supported situation JSON formats, and Operations
- * (executeoperations.h) for the supported operations JSON format.
+ * (OperationsExecutor.h) for the supported operations JSON format.
  */
 class SyncpalTestHelper {
     public:
@@ -57,16 +57,16 @@ class SyncpalTestHelper {
         bool pauseSync() const;
         bool stopSync() const;
 
-        // Applies operations (see ExecuteOperations::executeOperations) on the given side, against the
+        // Applies operations (see OperationsExecutor::execute) on the given side, against the
         // SyncPal passed to the constructor (or set via setSyncpal).
         // returns false if invalid
-        bool executeOperations(ReplicaSide side, const Operations &operations);
+        bool execute(ReplicaSide side, const Operations &operations);
 
     private:
         std::shared_ptr<SyncPal> _syncPal;
 
         SetInitialSituation _setInitialSituation;
-        ExecuteOperations _executeOperations;
+        OperationsExecutor _executeOperations;
 };
 
 } // namespace KDC
