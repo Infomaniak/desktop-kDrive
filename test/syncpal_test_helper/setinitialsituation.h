@@ -81,11 +81,11 @@ class Situation {
  *    "c": 1
  * }
  *
- * Extended format: an array under the "content" key allows explicit control over name, type, size and timestamps.
+ * Extended format: an array under the "content" key allows explicit control over name, type and size.
  * The node ID is derived from toLower(name):
  * {
  *    "content": [
- *        { "type": "Directory", "name": "A", "createdAt": 20260601000000, "lastModifiedAt": 20260601000000, "content": [
+ *        { "type": "Directory", "name": "A", "content": [
  *            { "type": "Directory", "name": "AA", "content": [
  *                { "type": "File", "name": "AAA" }
  *            ]}
@@ -128,8 +128,6 @@ class SetInitialSituation {
                 NodeType type = NodeType::File;
                 NodeId id; // lowercase, used to derive the relative path and as a map key
                 SyncName name; // display name
-                SyncTime createdAt = 0;
-                SyncTime lastModifiedAt = 0;
                 int64_t size = 0;
         };
 
@@ -139,11 +137,6 @@ class SetInitialSituation {
 
         void insertLocalItem(const ItemDesc &desc, const NodeId &parentId);
         void insertRemoteItem(const ItemDesc &desc, const NodeId &parentId);
-
-        // Applies `desc`'s createdAt/lastModifiedAt onto the already-created local item at `desc.id`.
-        // For directories, this must be called only once all of their children have been created (adding
-        // children updates a directory's modification date on most filesystems).
-        void setLocalItemDates(const ItemDesc &desc) const;
 
         std::shared_ptr<SyncPal> _syncPal;
 

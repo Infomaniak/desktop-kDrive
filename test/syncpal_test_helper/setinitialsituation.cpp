@@ -134,8 +134,6 @@ void SetInitialSituation::addItem(Poco::JSON::Object::Ptr obj, const NodeId &par
         desc.type = type;
         desc.id = parentId.empty() ? key : parentId + "/" + key;
         desc.name = Str2SyncName(CommonUtility::toUpper(key));
-        desc.createdAt = testhelpers::defaultTime;
-        desc.lastModifiedAt = testhelpers::defaultTime;
         desc.size = type == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize;
         addItem(desc, parentId);
 
@@ -143,8 +141,6 @@ void SetInitialSituation::addItem(Poco::JSON::Object::Ptr obj, const NodeId &par
             const auto &childObj = obj->getObject(key);
             addItem(childObj, desc.id);
         }
-
-        if (desc.type == NodeType::Directory) setLocalItemDates(desc);
     }
 }
 
@@ -164,8 +160,6 @@ void SetInitialSituation::addItem(Poco::JSON::Array::Ptr arr, const NodeId &pare
         desc.type = type;
         desc.id = parentId.empty() ? lowerName : parentId + "/" + lowerName;
         desc.name = Str2SyncName(nameStr);
-        desc.createdAt = itemObj->optValue<SyncTime>("createdAt", testhelpers::defaultTime);
-        desc.lastModifiedAt = itemObj->optValue<SyncTime>("lastModifiedAt", testhelpers::defaultTime);
         desc.size = itemObj->optValue<int64_t>(
                 "size", type == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize);
         addItem(desc, parentId);
@@ -173,8 +167,6 @@ void SetInitialSituation::addItem(Poco::JSON::Array::Ptr arr, const NodeId &pare
         if (type == NodeType::Directory && itemObj->isArray("content")) {
             addItem(itemObj->getArray("content"), desc.id);
         }
-
-        if (desc.type == NodeType::Directory) setLocalItemDates(desc);
     }
 }
 
@@ -208,15 +200,6 @@ void SetInitialSituation::insertLocalItem(const ItemDesc &desc, const NodeId &pa
         (void) IoHelper::createDirectory(fullPath.parent_path(), true, ioError);
         testhelpers::generateTestFile(fullPath);
         if (desc.size > 0) testhelpers::setTestFileSize(fullPath, static_cast<uint64_t>(desc.size));
-        setLocalItemDates(desc);
-    }
-}
-
-void SetInitialSituation::setLocalItemDates(const ItemDesc &desc) const {
-    const SyncPath fullPath = _syncPal->localPath() / _localItemPaths.at(desc.id);
-    if (const IoError ioError = IoHelper::setFileDates(fullPath, desc.createdAt, desc.lastModifiedAt, false);
-        ioError != IoError::Success) {
-        throw SituationGeneratorException("Unable to set item dates for '" + fullPath.string() + "'");
     }
 }
 
@@ -229,7 +212,10 @@ void SetInitialSituation::insertRemoteItem(const ItemDesc &desc, const NodeId &p
         _remoteNodeIds[desc.id] = job.nodeId();
     } else {
         const SyncPath localFilePath = _syncPal->localPath() / _localItemPaths.at(desc.id);
-        UploadJob job(nullptr, *_remoteDriveDbId, localFilePath, desc.name, parentRemoteId, desc.createdAt, desc.lastModifiedAt);
+        // UploadJob requires creation/modification times structurally; no date semantics are relevant here, so
+        // the current time is used.
+        const auto now = std::time(nullptr);
+        UploadJob job(nullptr, *_remoteDriveDbId, localFilePath, desc.name, parentRemoteId, now, now);
         (void) job.runSynchronously();
         _remoteNodeIds[desc.id] = job.nodeId();
     }

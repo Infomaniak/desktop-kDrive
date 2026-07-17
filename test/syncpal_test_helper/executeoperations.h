@@ -19,12 +19,14 @@
 #pragma once
 
 #include "utility/types.h"
+#include "test_utility/localtemporarydirectory.h"
 
 #include <Poco/JSON/Object.h>
 
 #include <filesystem>
 #include <map>
 #include <memory>
+#include <optional>
 #include <stdexcept>
 #include <string>
 
@@ -42,8 +44,8 @@ class OperationsParserException final : public std::runtime_error {
  * Supported operation types: Create, Edit, Delete and Move, e.g.:
  * {
  *    "operations": [
- *        { "type": "Edit", "path": "C/D/e", "newSize": 1234, "newCreatedAt": 20260601000000, "newLastModifiedAt": 20260601000000 },
- *        { "type": "Create", "itemType": "File", "name": "f", "size": 5678, "createdAt": 20260601000000, "lastModifiedAt": 20260601000000 },
+ *        { "type": "Edit", "path": "C/D/e", "newSize": 1234 },
+ *        { "type": "Create", "itemType": "File", "name": "f", "size": 5678 },
  *        { "type": "Delete", "path": "F/G/H" },
  *        { "type": "Move", "fromPath": "I/J/k", "toPath": "L/m" }
  *    ]
@@ -96,8 +98,6 @@ class ExecuteOperations {
                 SyncPath toPath; // Move ("toPath"): destination item, relative to the sync root.
                 NodeType itemType = NodeType::File; // Create ("itemType"): File or Directory.
                 int64_t size = 0; // Create ("size") / Edit ("newSize").
-                SyncTime createdAt = 0; // Create ("createdAt") / Edit ("newCreatedAt").
-                SyncTime lastModifiedAt = 0; // Create ("lastModifiedAt") / Edit ("newLastModifiedAt").
         };
 
         [[nodiscard]] static OperationDesc parseOperation(const Poco::JSON::Object::Ptr &obj);
@@ -121,7 +121,7 @@ class ExecuteOperations {
 
         // Remote side, one function per operation type.
         void applyRemoteCreate(const OperationDesc &desc);
-        void applyRemoteEdit(const OperationDesc &desc) const;
+        void applyRemoteEdit(const OperationDesc &desc);
         void applyRemoteDelete(const OperationDesc &desc);
         void applyRemoteMove(const OperationDesc &desc);
 
@@ -131,6 +131,12 @@ class ExecuteOperations {
         [[nodiscard]] NodeId remoteIdForPath(const SyncPath &path, const std::string &context) const;
 
         std::shared_ptr<SyncPal> _syncPal;
+
+        // Temporary directory used to generate the local payload of remote-only operations (Create/Edit file
+        // uploads). Lazily created on first use and reused for the whole executeOperations() batch, instead of
+        // creating/destroying one per operation.
+        std::optional<LocalTemporaryDirectory> _remoteOperationsTemporaryDir;
+        [[nodiscard]] const SyncPath &remoteOperationsTemporaryDirPath();
 
         // Remote ids of items created/moved during the current executeOperations() batch, keyed by their
         // current relative path. Needed because those items may not exist in the sync DB yet (no sync has

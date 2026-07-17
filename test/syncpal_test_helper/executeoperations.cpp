@@ -25,6 +25,7 @@
 
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
+#include "libcommon/utility/utility.h"
 
 #include "jobs/local/localcreatedirjob.h"
 #include "jobs/local/synclocaldeletejob.h"
@@ -42,6 +43,7 @@
 
 #include <Poco/JSON/Array.h>
 #include <Poco/JSON/Parser.h>
+#include <Poco/JSON/Stringifier.h>
 
 #include <fstream>
 #include <sstream>
@@ -83,7 +85,13 @@ const Operations::StringType &Operations::json() const noexcept {
 }
 
 void Operations::log() const {
-    LOGW_INFO(Log::instance()->getLogger(), SyncName2WStr(_jsonDescription));
+    // The JSON was already validated in the constructor, so parsing here cannot fail.
+    Poco::JSON::Parser parser;
+    const auto var = parser.parse(SyncName2Str(_jsonDescription));
+
+    std::ostringstream oss;
+    Poco::JSON::Stringifier::stringify(var, oss, 2);
+    LOGW_INFO(Log::instance()->getLogger(), CommonUtility::s2ws(oss.str()));
 }
 
 //
@@ -118,6 +126,7 @@ void ExecuteOperations::executeOperations(const ReplicaSide side, const Operatio
     }
 
     _batchRemoteIds.clear();
+    _remoteOperationsTemporaryDir.reset();
 
     const auto arr = obj->getArray("operations");
     for (size_t i = 0; i < arr->size(); ++i) {
@@ -125,19 +134,20 @@ void ExecuteOperations::executeOperations(const ReplicaSide side, const Operatio
         const OperationDesc desc = parseOperation(itemObj);
         applyOperation(side, desc);
     }
+}
 
-    if (side == ReplicaSide::Remote && _syncPal->_remoteFSObserverWorker) {
-        // Remote changes are otherwise only picked up via long-poll/cursor, which can lag behind the
-        // real API calls above. Force an immediate update so the caller's subsequent sync wait detects them.
-        _syncPal->_remoteFSObserverWorker->forceUpdate();
+const SyncPath &ExecuteOperations::remoteOperationsTemporaryDirPath() {
+    if (!_remoteOperationsTemporaryDir) {
+        _remoteOperationsTemporaryDir.emplace("executeRemoteOperations");
     }
+    return _remoteOperationsTemporaryDir->path();
 }
 
 void ExecuteOperations::validateRelativePath(const SyncPath &path, const std::string &fieldName) {
     if (path.empty() || path.is_absolute()) {
         throw OperationsParserException("'" + fieldName + "' must be a non-empty relative path: '" + path.string() + "'");
     }
-    for (const auto &part: path) {
+    for (const auto &part: path.lexically_normal()) {
         if (part == "..") {
             throw OperationsParserException("'" + fieldName + "' must not contain '..' components: '" + path.string() + "'");
         }
@@ -147,7 +157,8 @@ void ExecuteOperations::validateRelativePath(const SyncPath &path, const std::st
 ExecuteOperations::OperationDesc ExecuteOperations::parseOperation(const Poco::JSON::Object::Ptr &obj) {
     if (!obj) throw OperationsParserException("Each operation must be an object");
 
-    const std::string typeStr = obj->optValue<std::string>("type", "");
+    static const std::string OPERATION_TYPE_KEY = "type";
+    const std::string typeStr = obj->optValue<std::string>(OPERATION_TYPE_KEY, "");
 
     OperationDesc desc;
     if (typeStr == "Create") {
@@ -163,8 +174,6 @@ ExecuteOperations::OperationDesc ExecuteOperations::parseOperation(const Poco::J
 
         desc.size = obj->optValue<int64_t>(
                 "size", desc.itemType == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize);
-        desc.createdAt = obj->optValue<SyncTime>("createdAt", testhelpers::defaultTime);
-        desc.lastModifiedAt = obj->optValue<SyncTime>("lastModifiedAt", testhelpers::defaultTime);
     } else if (typeStr == "Edit") {
         desc.type = OperationType::Edit;
 
@@ -174,8 +183,6 @@ ExecuteOperations::OperationDesc ExecuteOperations::parseOperation(const Poco::J
         validateRelativePath(desc.path, "path");
 
         desc.size = obj->optValue<int64_t>("newSize", 0);
-        desc.createdAt = obj->optValue<SyncTime>("newCreatedAt", 0);
-        desc.lastModifiedAt = obj->optValue<SyncTime>("newLastModifiedAt", 0);
     } else if (typeStr == "Delete") {
         desc.type = OperationType::Delete;
 
@@ -206,10 +213,18 @@ void ExecuteOperations::applyOperation(const ReplicaSide side, const OperationDe
     switch (side) {
         case ReplicaSide::Local: {
             switch (desc.type) {
-                case OperationType::Create: applyLocalCreate(desc); break;
-                case OperationType::Edit: applyLocalEdit(desc); break;
-                case OperationType::Delete: applyLocalDelete(desc); break;
-                case OperationType::Move: applyLocalMove(desc); break;
+                case OperationType::Create:
+                    applyLocalCreate(desc);
+                    break;
+                case OperationType::Edit:
+                    applyLocalEdit(desc);
+                    break;
+                case OperationType::Delete:
+                    applyLocalDelete(desc);
+                    break;
+                case OperationType::Move:
+                    applyLocalMove(desc);
+                    break;
                 default:
                     throw OperationsParserException("Unsupported operation type: " + toString(desc.type));
             }
@@ -217,10 +232,18 @@ void ExecuteOperations::applyOperation(const ReplicaSide side, const OperationDe
         }
         case ReplicaSide::Remote: {
             switch (desc.type) {
-                case OperationType::Create: applyRemoteCreate(desc); break;
-                case OperationType::Edit: applyRemoteEdit(desc); break;
-                case OperationType::Delete: applyRemoteDelete(desc); break;
-                case OperationType::Move: applyRemoteMove(desc); break;
+                case OperationType::Create:
+                    applyRemoteCreate(desc);
+                    break;
+                case OperationType::Edit:
+                    applyRemoteEdit(desc);
+                    break;
+                case OperationType::Delete:
+                    applyRemoteDelete(desc);
+                    break;
+                case OperationType::Move:
+                    applyRemoteMove(desc);
+                    break;
                 default:
                     throw OperationsParserException("Unsupported operation type: " + toString(desc.type));
             }
@@ -243,23 +266,19 @@ void ExecuteOperations::applyLocalCreate(const OperationDesc &desc) const {
     if (desc.itemType == NodeType::Directory) {
         auto job = std::make_shared<LocalCreateDirJob>(fullPath);
         checkExitInfo(job->runSynchronously(), "Create operation (directory)");
-    } else {
-        (void) IoHelper::createDirectory(fullPath.parent_path(), true, ioError);
-        if (ioError != IoError::Success && ioError != IoError::DirectoryExists) {
-            throw OperationsParserException("Create operation (file): unable to create parent directory for '" +
-                                             fullPath.string() + "'");
-        }
-        testhelpers::generateTestFile(fullPath, static_cast<uint64_t>(desc.size));
+        return;
     }
+    (void) IoHelper::createDirectory(fullPath.parent_path(), true, ioError);
+    if (ioError != IoError::Success && ioError != IoError::DirectoryExists) {
+        throw OperationsParserException("Create operation (file): unable to create parent directory for '" +
+                                        fullPath.string() + "'");
+    }
+    testhelpers::generateTestFile(fullPath, static_cast<uint64_t>(desc.size));
 }
 
 void ExecuteOperations::applyLocalEdit(const OperationDesc &desc) const {
     const SyncPath fullPath = _syncPal->localPath() / desc.path;
     testhelpers::setTestFileSize(fullPath, static_cast<uint64_t>(desc.size));
-    if (const IoError ioError = IoHelper::setFileDates(fullPath, desc.createdAt, desc.lastModifiedAt, false);
-        ioError != IoError::Success) {
-        throw OperationsParserException("Edit operation: unable to set file dates for '" + fullPath.string() + "'");
-    }
 }
 
 void ExecuteOperations::applyLocalDelete(const OperationDesc &desc) const {
@@ -297,39 +316,36 @@ void ExecuteOperations::applyRemoteCreate(const OperationDesc &desc) {
         _batchRemoteIds[desc.path] = job.nodeId();
     } else {
         // This is a remote-only operation: the file doesn't exist locally, but UploadJob needs to read its
-        // content from a local path. Generate it in a temporary location, upload it, then remove it so the
-        // local replica is left untouched by this remote-only operation.
-        const LocalTemporaryDirectory temporaryDir("executeRemoteOperations");
-        const SyncPath fullPath = temporaryDir.path() / desc.path.filename();
+        // content from a local path. Generate it in the batch's shared temporary location (a random filename
+        // avoids collisions with other operations reusing the same directory), upload it, then let the
+        // temporary directory be cleaned up once the batch is done, so the local replica is left untouched by
+        // this remote-only operation.
+        const SyncPath fullPath = remoteOperationsTemporaryDirPath() / CommonUtility::generateRandomStringAlphaNum();
         testhelpers::generateTestFile(fullPath, static_cast<uint64_t>(desc.size));
-        if (const IoError ioError = IoHelper::setFileDates(fullPath, desc.createdAt, desc.lastModifiedAt, false);
-            ioError != IoError::Success) {
-            throw OperationsParserException("Create operation (file upload): unable to set file dates for '" +
-                                             fullPath.string() + "'");
-        }
 
-        UploadJob job(nullptr, _syncPal->driveDbId(), fullPath, desc.path.filename().native(), parentId, desc.createdAt,
-                      desc.lastModifiedAt);
+        // UploadJob requires creation/modification times structurally; no date semantics are relevant here, so
+        // the current time is used.
+        const auto now = std::time(nullptr);
+        UploadJob job(nullptr, _syncPal->driveDbId(), fullPath, desc.path.filename().native(), parentId, now, now);
         checkExitInfo(job.runSynchronously(), "Create operation (file upload)");
         _batchRemoteIds[desc.path] = job.nodeId();
     }
 }
 
-void ExecuteOperations::applyRemoteEdit(const OperationDesc &desc) const {
+void ExecuteOperations::applyRemoteEdit(const OperationDesc &desc) {
     const NodeId fileId = remoteIdForPath(desc.path, "Edit operation");
 
     // This is a remote-only operation: uploading the unchanged local replica would not reflect the requested
-    // newSize/newCreatedAt/newLastModifiedAt. Generate an edited payload in a temporary location, upload that
-    // instead, then discard it so the local replica is left untouched by this remote-only operation.
-    const LocalTemporaryDirectory temporaryDir("executeRemoteOperations");
-    const SyncPath fullPath = temporaryDir.path() / desc.path.filename();
+    // newSize. Generate an edited payload in the batch's shared temporary location (a random filename avoids
+    // collisions with other operations reusing the same directory), upload that instead, then let the
+    // temporary directory be cleaned up once the batch is done, so the local replica is left untouched by this
+    // remote-only operation.
+    const SyncPath fullPath = remoteOperationsTemporaryDirPath() / CommonUtility::generateRandomStringAlphaNum();
     testhelpers::generateTestFile(fullPath, static_cast<uint64_t>(desc.size));
-    if (const IoError ioError = IoHelper::setFileDates(fullPath, desc.createdAt, desc.lastModifiedAt, false);
-        ioError != IoError::Success) {
-        throw OperationsParserException("Edit operation (upload): unable to set file dates for '" + fullPath.string() + "'");
-    }
 
-    UploadJob job(nullptr, _syncPal->driveDbId(), fullPath, fileId, desc.lastModifiedAt);
+    // UploadJob requires a modification time structurally; no date semantics are relevant here, so the current
+    // time is used.
+    UploadJob job(nullptr, _syncPal->driveDbId(), fullPath, fileId, std::time(nullptr));
     checkExitInfo(job.runSynchronously(), "Edit operation (upload)");
 }
 
