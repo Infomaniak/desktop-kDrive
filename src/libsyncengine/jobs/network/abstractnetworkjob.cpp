@@ -37,6 +37,7 @@
 
 #include <atomic>
 #include <functional>
+#include <mutex>
 #include <thread>
 #include <Poco/JSON/Parser.h>
 #include <Poco/Net/HTTPRequest.h>
@@ -55,6 +56,7 @@ const int64_t sleepDurationThreshold = 60000; // 60'000 ms -> 1 min
 
 const std::string AbstractNetworkJob::_userAgent = KDC::CommonUtility::userAgentString();
 Poco::Net::Context::Ptr AbstractNetworkJob::_context = nullptr;
+std::mutex AbstractNetworkJob::_contextMutex;
 AbstractNetworkJob::TimeoutHelper AbstractNetworkJob::_timeoutHelper;
 
 AbstractNetworkJob::AbstractNetworkJob() :
@@ -204,7 +206,11 @@ ExitInfo AbstractNetworkJob::runJob() noexcept {
 
         uri = Poco::URI(url);
 
-        createSession(uri);
+        outputExitInfo = createSession(uri);
+        if (!outputExitInfo) {
+            LOG_WARN(_logger, "Failed to create session for job " << jobId() << " " << uri.toString());
+            break;
+        }
 
         try {
             outputExitInfo = canRun();
@@ -338,7 +344,7 @@ void AbstractNetworkJob::abort() {
     abortSession();
 }
 
-void AbstractNetworkJob::createSession(const Poco::URI &uri) {
+ExitInfo AbstractNetworkJob::createSession(const Poco::URI &uri) {
     const std::scoped_lock lock(_mutexSession);
 
     if (_session) {
@@ -346,7 +352,17 @@ void AbstractNetworkJob::createSession(const Poco::URI &uri) {
         clearSession();
     }
 
-    _session.reset(new Poco::Net::HTTPSClientSession(uri.getHost(), uri.getPort(), _context));
+    try {
+        _session.reset(new Poco::Net::HTTPSClientSession(uri.getHost(), uri.getPort(), _context));
+    } catch (Poco::Exception &e) {
+        LOG_WARN(_logger,
+                 "Failed to create HTTPS session for job " << jobId() << " (" << uri.toString() << "): " << errorText(e));
+        return {ExitCode::NetworkError, ExitCause::Unknown};
+    } catch (const std::exception &e) {
+        LOG_WARN(_logger,
+                 "Failed to create HTTPS session for job " << jobId() << " (" << uri.toString() << "): " << errorText(e));
+        return {ExitCode::NetworkError, ExitCause::Unknown};
+    }
 
     if (_customTimeout) {
         _session->setTimeout(Poco::Timespan(_customTimeout, 0));
@@ -361,6 +377,8 @@ void AbstractNetworkJob::createSession(const Poco::URI &uri) {
                                           ParametersCache::instance()->parameters().proxyConfig().pwd());
         }
     }
+
+    return ExitCode::Ok;
 }
 
 void AbstractNetworkJob::clearSession() {
@@ -680,7 +698,9 @@ ExitInfo AbstractNetworkJob::followRedirect() {
 
     // Follow redirection
     LOG_DEBUG(_logger, "Request " << jobId() << ", following redirection: " << redirectUrl);
-    createSession(uri);
+    if (const auto exitInfo = createSession(uri); !exitInfo) {
+        return exitInfo;
+    }
 
     if (const auto exitInfo = sendRequest(uri); !exitInfo) {
         return exitInfo;
