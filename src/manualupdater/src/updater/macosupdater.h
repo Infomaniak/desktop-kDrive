@@ -10,8 +10,8 @@ class MacOSUpdater final : public AbstractOsUpdater {
                      std::function<void(int, QString)> progressCallback, QString &outMessage) override;
 
     private:
-        bool downloadAndParseAppcast(const std::string &appcastUrl, QString &outPkgUrl, QString &outMessage);
-        [[nodiscard]] bool verifyPackageSignature(const KDC::SyncPath &pkgPath, QString &outMessage) const;
+        static bool downloadAndParseAppcast(const std::string &appcastUrl, QString &outPkgUrl, QString &outMessage);
+        [[nodiscard]] static bool verifyPackageSignature(const KDC::SyncPath &pkgPath, QString &outMessage);
 };
 
 } // namespace KDUpdater

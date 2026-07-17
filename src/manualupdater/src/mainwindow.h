@@ -10,7 +10,6 @@
 #include <QLabel>
 #include <QTextEdit>
 #include <QProgressBar>
-#include <QPointer>
 #include <string>
 
 namespace KDUpdater {

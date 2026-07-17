@@ -148,7 +148,7 @@ bool MacOSUpdater::downloadAndParseAppcast(const std::string &appcastUrl, QStrin
     return true;
 }
 
-bool MacOSUpdater::verifyPackageSignature(const KDC::SyncPath &pkgPath, QString &outMessage) const {
+bool MacOSUpdater::verifyPackageSignature(const KDC::SyncPath &pkgPath, QString &outMessage) {
     QProcess process;
     process.setProgram(QStringLiteral("pkgutil"));
     process.setArguments(QStringList{QStringLiteral("--check-signature"), QString::fromStdString(pkgPath.string())});
