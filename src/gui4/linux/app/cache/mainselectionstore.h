@@ -35,6 +35,8 @@ namespace KDC {
  * Sync-first main-shell selection owner for Linux v4.
  *
  * Role: own currentSyncDbId and heal it when cache graph changes.
+ * Selected runtime state is exposed separately from the configured graph context so high-frequency progress updates stay
+ * lightweight.
  * Non-role: own cached entities or onboarding selections.
  * All mutations must run on the Qt main thread.
  */
@@ -47,6 +49,7 @@ class MainSelectionStore : public QObject {
 
         [[nodiscard]] qint64 currentSyncDbId() const;
         [[nodiscard]] std::optional<SyncContext> currentSyncContext() const;
+        [[nodiscard]] std::optional<SyncRuntimeInfo> currentSyncRuntimeInfo() const;
         [[nodiscard]] std::vector<SyncContext> syncContexts() const;
 
         Q_INVOKABLE void selectSync(qint64 syncDbId);
@@ -56,6 +59,7 @@ class MainSelectionStore : public QObject {
     signals:
         void currentSyncDbIdChanged();
         void currentSyncContextChanged();
+        void currentSyncRuntimeInfoChanged();
 
     private:
         void handleSyncsChanged();
