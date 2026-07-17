@@ -31,6 +31,7 @@
 #include <QString>
 
 #include <cstddef>
+#include <cstdint>
 #include <functional>
 #include <optional>
 #include <vector>
@@ -58,6 +59,18 @@ class UserDisplayInfo : public User {
 
     private:
         QString _avatarSource;
+};
+
+struct SyncRuntimeInfo {
+        SyncStatus status{SyncStatus::Undefined};
+        SyncStep step{SyncStep::None};
+        int64_t currentFile{0};
+        int64_t totalFiles{0};
+        int64_t completedSize{0};
+        int64_t totalSize{0};
+        int64_t estimatedRemainingTime{0};
+
+        friend bool operator==(const SyncRuntimeInfo &lhs, const SyncRuntimeInfo &rhs) = default;
 };
 
 struct SyncContext {
