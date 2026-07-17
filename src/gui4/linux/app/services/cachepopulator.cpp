@@ -37,20 +37,39 @@ Q_LOGGING_CATEGORY(lcCachePopulator, "gui.v4.cachepopulator", QtInfoMsg)
 }
 } // namespace
 
-CachePopulator::CachePopulator(CommService &commService, AppCache &appCache, QObject *const parent) :
+CachePopulator::CachePopulator(CommService &commService, AppCache &appCache, ParametersStore &parametersStore,
+                               QObject *const parent) :
     QObject(parent),
     _commService(commService),
-    _appCache(appCache) {}
+    _appCache(appCache),
+    _parametersStore(parametersStore) {}
 
 void CachePopulator::bootstrap() {
-    loadUsers(PopulationMode::Bootstrap);
+    startPopulation(PopulationMode::Bootstrap);
 }
 
 void CachePopulator::reconcile() {
-    loadUsers(PopulationMode::Reconciliation);
+    startPopulation(PopulationMode::Reconciliation);
 }
 
-void CachePopulator::loadUsers(const PopulationMode mode) {
+void CachePopulator::startPopulation(const PopulationMode mode) {
+    _populationProgress = {};
+    loadParameters(mode);
+    loadUserData(mode);
+}
+
+void CachePopulator::loadParameters(const PopulationMode mode) {
+    _commService.requestParametersInfo([this, mode](const ExitInfo &exitInfo, const ParametersInfo &parametersInfo) {
+        if (!exitInfo && handlePopulationFailure("parameters", exitInfo, mode)) {
+            return;
+        }
+
+        _parametersStore.replaceParametersInfo(parametersInfo);
+        markBranchCompleted(mode, PopulationBranch::Parameters);
+    });
+}
+
+void CachePopulator::loadUserData(const PopulationMode mode) {
     _commService.requestUserDisplayInfoList([this, mode](const ExitInfo &exitInfo, const std::vector<UserDisplayInfo> &list) {
         if (!exitInfo && handlePopulationFailure("users", exitInfo, mode)) {
             return;
@@ -123,13 +142,31 @@ void CachePopulator::loadSyncErrors(const PopulationMode mode) {
 
         _appCache.replaceSyncErrors(syncErrors);
         _appCache.replaceServerErrors(serverErrors);
-        if (mode == PopulationMode::Bootstrap) {
-            emit bootstrapCompleted();
-        } else {
-            emit reconciliationCompleted();
-        }
-        activateLiveInfoRefresh();
+        markBranchCompleted(mode, PopulationBranch::UserData);
     });
+}
+
+void CachePopulator::markBranchCompleted(const PopulationMode mode, const PopulationBranch branch) {
+    switch (branch) {
+        case PopulationBranch::Parameters:
+            _populationProgress.parametersCompleted = true;
+            break;
+        case PopulationBranch::UserData:
+            _populationProgress.userDataCompleted = true;
+            break;
+    }
+
+    if (_populationProgress.terminalSignalEmitted || !_populationProgress.parametersCompleted || !_populationProgress.userDataCompleted) {
+        return;
+    }
+
+    _populationProgress.terminalSignalEmitted = true;
+    if (mode == PopulationMode::Bootstrap) {
+        emit bootstrapCompleted();
+    } else {
+        emit reconciliationCompleted();
+    }
+    activateLiveInfoRefresh();
 }
 
 void CachePopulator::activateLiveInfoRefresh() const {
@@ -148,7 +185,10 @@ bool CachePopulator::handlePopulationFailure(const char *const stage, const Exit
 
     qCWarning(lcCachePopulator) << "Cache reconciliation failed at" << stage << "| code:" << exitInfo.code()
                                 << "/ cause:" << exitInfo.cause();
-    emit reconciliationFailed();
+    if (!_populationProgress.terminalSignalEmitted) {
+        _populationProgress.terminalSignalEmitted = true;
+        emit reconciliationFailed();
+    }
     return true;
 }
 
