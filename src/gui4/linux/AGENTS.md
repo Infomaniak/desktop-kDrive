@@ -131,10 +131,12 @@
 - `app/onboarding/oauthloginservice.*`: Linux v4 OAuth browser-launch service. It owns PKCE/state generation, idempotent
   browser relaunch during an active authorization, callback validation, and emits the authorization code to app wiring.
   Do not expose OAuth details to QML.
-- `app/services/cachepopulator.*`: sequential snapshot loader for application parameters, then users, accounts, drives,
-  syncs, and sync errors. It is used at initial connection and for explicit reconciliation after a
-  non-transactional backend mutation may have persisted parents without emitting their normal pushes; after each snapshot,
-  it activates the server live-info refresh so only drive updates reach `CachePipeline`.
+- `app/services/cachepopulator.*`: two-branch snapshot loader for application parameters and user data. The user-data
+  branch remains sequential and parent-first (users, accounts, drives, syncs, then sync errors); completion is emitted
+  only after both branches succeed, and overlapping population requests are ignored. It is used at initial connection
+  and for explicit reconciliation after a non-transactional backend mutation may have persisted parents without emitting
+  their normal pushes; after each snapshot, it activates the server live-info refresh so only drive updates reach
+  `CachePipeline`.
 - `app/services/driveservice.*`: targeted drive use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`;
   durable cache mutations stay signal-driven through `CachePipeline`.
 - `app/services/parametersservice.*`: targeted facade for application settings updates. It starts from the confirmed
