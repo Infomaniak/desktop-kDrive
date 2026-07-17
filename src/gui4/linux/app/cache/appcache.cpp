@@ -125,7 +125,7 @@ void AppCache::replaceSyncs(const std::vector<BaseSync> &syncs) {
     emit syncErrorsChanged();
 }
 
-void AppCache::replaceSyncErrors(const std::vector<ErrorInfo> &errors) {
+void AppCache::replaceSyncErrors(const std::vector<Error> &errors) {
     for (auto &syncNode: _syncsByDbId | std::views::values) {
         syncNode.errorDbIds.clear();
     }
@@ -142,7 +142,7 @@ void AppCache::replaceSyncErrors(const std::vector<ErrorInfo> &errors) {
     emit syncErrorsChanged();
 }
 
-void AppCache::replaceServerErrors(const std::vector<ErrorInfo> &errors) {
+void AppCache::replaceServerErrors(const std::vector<Error> &errors) {
     _serverErrorsByDbId.clear();
     for (const auto &info: errors) {
         _serverErrorsByDbId[info.dbId()] = info;
@@ -296,7 +296,7 @@ void AppCache::removeSync(const SyncDbId syncDbId) {
     emit syncErrorsChanged();
 }
 
-void AppCache::upsertSyncError(const ErrorInfo &info) {
+void AppCache::upsertSyncError(const Error &info) {
     if (!_syncsByDbId.contains(info.syncDbId())) {
         qCWarning(lcAppCache) << "Sync error upsert dropped | errorDbId:" << info.dbId()
                               << "/ unknown syncDbId:" << info.syncDbId();
@@ -325,7 +325,7 @@ void AppCache::removeSyncError(const ErrorDbId errorDbId) {
     emit syncErrorsChanged();
 }
 
-void AppCache::upsertServerError(const ErrorInfo &info) {
+void AppCache::upsertServerError(const Error &info) {
     _serverErrorsByDbId[info.dbId()] = info;
     emit serverErrorsChanged();
 }
@@ -337,7 +337,7 @@ void AppCache::removeServerError(const ErrorDbId errorDbId) {
     emit serverErrorsChanged();
 }
 
-void AppCache::upsertError(const ErrorInfo &info) {
+void AppCache::upsertError(const Error &info) {
     switch (info.level()) {
         using enum KDC::ErrorLevel;
 
