@@ -1,8 +1,8 @@
 #include "mainwindow.h"
 #include "updaterdata.h"
+#include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/log/log.h"
-#include "utility/utility.h"
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    const auto logFilePath = logDirPath / KDC::Utility::logFileNameWithTime();
+    const auto logFilePath = logDirPath / "kDriverUpdater.log";
     if (!KDC::Log::instance(Path2WStr(logFilePath))) {
         return 1;
     }
@@ -24,7 +24,10 @@ int main(int argc, char *argv[]) {
 
     KDUpdater::UpdaterData updaterData;
     if (!updaterData.initialize()) {
-        LOG_ERROR(KDC::Log::instance()->getLogger(), "Failed to initialize updater data");
+        {
+            using namespace KDC;
+            LOG_ERROR(Log::instance()->getLogger(), "Failed to initialize updater data");
+        }
         return 1;
     }
 
