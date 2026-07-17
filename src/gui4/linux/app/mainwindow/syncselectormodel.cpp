@@ -53,8 +53,6 @@ SyncSelectorModel::SyncSelectorModel(const AppCache &cache, MainSelectionStore &
     (void) connect(&_cache, &AppCache::drivesChanged, this, &SyncSelectorModel::rebuild);
     (void) connect(&_cache, &AppCache::syncsChanged, this, &SyncSelectorModel::rebuild);
     (void) connect(&_cache, &AppCache::syncErrorsChanged, this, &SyncSelectorModel::rebuild);
-    (void) connect(&_selectionStore, &MainSelectionStore::currentDriveDbIdChanged, this,
-                   &SyncSelectorModel::handleSelectionChanged);
     (void) connect(&_selectionStore, &MainSelectionStore::currentSyncDbIdChanged, this,
                    &SyncSelectorModel::handleSelectionChanged);
 
@@ -74,8 +72,6 @@ QVariant SyncSelectorModel::data(const QModelIndex &index, const int role) const
     switch (role) {
         case EntryTypeRole:
             return QVariant::fromValue(entry.type);
-        case DriveDbIdRole:
-            return static_cast<qint64>(entry.driveDbId);
         case SyncDbIdRole:
             return static_cast<qint64>(entry.syncDbId);
         case TitleRole:
@@ -90,7 +86,7 @@ QVariant SyncSelectorModel::data(const QModelIndex &index, const int role) const
         case WarningRole:
             return entry.warning;
         case SelectedRole:
-            return entry.driveDbId == _selectedDriveDbId && entry.syncDbId == _selectedSyncDbId;
+            return entry.syncDbId == _selectedSyncDbId;
         default:
             return {};
     }
@@ -98,14 +94,14 @@ QVariant SyncSelectorModel::data(const QModelIndex &index, const int role) const
 
 QHash<int, QByteArray> SyncSelectorModel::roleNames() const {
     return {
-            {EntryTypeRole, "entryType"},   {DriveDbIdRole, "driveDbId"}, {SyncDbIdRole, "syncDbId"},
-            {TitleRole, "title"},           {SubtitleRole, "subtitle"},   {DriveColorRole, "driveColor"},
-            {ErrorCountRole, "errorCount"}, {WarningRole, "hasWarning"},  {SelectedRole, "isSelected"},
+            {EntryTypeRole, "entryType"}, {SyncDbIdRole, "syncDbId"},     {TitleRole, "title"},
+            {SubtitleRole, "subtitle"},   {DriveColorRole, "driveColor"}, {ErrorCountRole, "errorCount"},
+            {WarningRole, "hasWarning"},  {SelectedRole, "isSelected"},
     };
 }
 
 qint32 SyncSelectorModel::selectedRow() const {
-    return rowForSelection(_selectedDriveDbId, _selectedSyncDbId);
+    return rowForSyncDbId(_selectedSyncDbId);
 }
 
 void SyncSelectorModel::rebuild() {
@@ -117,11 +113,6 @@ void SyncSelectorModel::rebuild() {
         const bool warning = driveHasWarning(driveContext.drive);
         const QString driveName = QString::fromStdString(driveContext.drive.name());
 
-        if (driveContext.syncInfos.empty()) {
-            entries.emplace_back(Entry{EntryType::DriveOnly, driveContext.drive.dbId(), 0, driveName, {}, color, 0, warning});
-            continue;
-        }
-
         const auto classicSyncCount = static_cast<std::size_t>(std::ranges::count_if(
                 driveContext.syncInfos, [](const BaseSync &syncInfo) { return syncInfo.targetNodeId().empty(); }));
         const auto appendSync = [&](const BaseSync &syncInfo) {
@@ -131,7 +122,6 @@ void SyncSelectorModel::rebuild() {
             const bool usePreciseClassicLabel = isClassic && classicSyncCount > 1;
             entries.emplace_back(Entry{
                     isClassic ? EntryType::ClassicSync : EntryType::AdvancedSync,
-                    driveContext.drive.dbId(),
                     syncInfo.dbId(),
                     usePreciseClassicLabel || !isClassic ? localFolderName(syncInfo) : driveName,
                     usePreciseClassicLabel || !isClassic ? driveName : QString{},
@@ -155,7 +145,6 @@ void SyncSelectorModel::rebuild() {
 
     beginResetModel();
     _entries = std::move(entries);
-    _selectedDriveDbId = static_cast<DriveDbId>(_selectionStore.currentDriveDbId());
     _selectedSyncDbId = static_cast<SyncDbId>(_selectionStore.currentSyncDbId());
     endResetModel();
 
@@ -166,7 +155,6 @@ void SyncSelectorModel::rebuild() {
 
 void SyncSelectorModel::handleSelectionChanged() {
     const auto previousSelectedRow = selectedRow();
-    _selectedDriveDbId = static_cast<DriveDbId>(_selectionStore.currentDriveDbId());
     _selectedSyncDbId = static_cast<SyncDbId>(_selectionStore.currentSyncDbId());
     const auto currentSelectedRow = selectedRow();
 
@@ -181,13 +169,13 @@ void SyncSelectorModel::handleSelectionChanged() {
     }
 }
 
-qint32 SyncSelectorModel::rowForSelection(const DriveDbId driveDbId, const SyncDbId syncDbId) const {
-    if (driveDbId == 0) {
+qint32 SyncSelectorModel::rowForSyncDbId(const SyncDbId syncDbId) const {
+    if (syncDbId == 0) {
         return -1;
     }
     for (qint32 row = 0; row < static_cast<qint32>(_entries.size()); ++row) {
         const auto &entry = _entries[static_cast<std::size_t>(row)];
-        if (entry.driveDbId == driveDbId && entry.syncDbId == syncDbId) {
+        if (entry.syncDbId == syncDbId) {
             return row;
         }
     }
