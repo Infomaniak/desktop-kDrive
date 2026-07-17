@@ -33,6 +33,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/cache/mainselectionstore.h
         app/cache/onboardingstate.cpp
         app/cache/onboardingstate.h
+        app/cache/parametersstore.cpp
+        app/cache/parametersstore.h
         app/onboarding/availabledrivesmodel.cpp
         app/onboarding/availabledrivesmodel.h
         app/onboarding/driveselectioncontroller.cpp
@@ -61,6 +63,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/services/cachepopulator.h
         app/services/driveservice.cpp
         app/services/driveservice.h
+        app/services/parametersservice.cpp
+        app/services/parametersservice.h
         app/services/serviceactiontracker.cpp
         app/services/serviceactiontracker.h
         app/services/serviceeventbus.cpp

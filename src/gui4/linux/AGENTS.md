@@ -29,6 +29,8 @@
 - Do not introduce raw `int` in new code when a fixed-width type fits (`uint8_t`, `int32_t`, ...).
 - Do not run `clang-format` on `CMakeLists.txt` in this repository.
 - For shared infrastructure classes, document the class role explicitly in the header comment when relevant.
+- Keep `ParametersStore` as a server-confirmed parameters snapshot only. Do not add global draft/pending state there;
+  screen-specific drafts, such as proxy edition, belong to the owning UI/view model.
 - In range-for loops over associative containers, prefer `std::views::keys` / `std::views::values` over structured
   bindings with an unused `_` element when only keys or only values are needed.
 - For Linux v4 model/UI checks, build only the `kdrive_qml` target unless a broader backend/server validation is
@@ -96,6 +98,10 @@
       but the underlying cache graph changes.
 - `app/cache/onboardingstate.*`: session-owned onboarding selected user, selected available-drive keys, and pending sync
   configs.
+- `app/cache/parametersstore.*`: process-wide cache for server-owned application parameters (`ParametersInfo`).
+  It is populated during the bootstrap sequence next to the product graph snapshot, but remains separate from `AppCache`
+  because the server is still the persistence source of truth for application settings. It stores only the last
+  server-confirmed snapshot; update workflows publish a new value only after `PARAMETERS_UPDATE` succeeds.
 - `app/onboarding/availabledrivesmodel.*`: QML adapter for onboarding drive selection. It derives rows from
   `AppCache::availableDriveContexts(selectedUserDbId)` and stores row selection through `OnboardingState`. It must not own
   screen-level loading, user, or navigation state.
@@ -125,12 +131,17 @@
 - `app/onboarding/oauthloginservice.*`: Linux v4 OAuth browser-launch service. It owns PKCE/state generation, idempotent
   browser relaunch during an active authorization, callback validation, and emits the authorization code to app wiring.
   Do not expose OAuth details to QML.
-- `app/services/cachepopulator.*`: sequential parent-first snapshot loader for users, accounts, drives, syncs, and sync
-  errors. It is used at initial connection and for explicit reconciliation after a non-transactional backend mutation
-  may have persisted parents without emitting their normal pushes; after each snapshot, it activates the server
-  live-info refresh so only drive updates reach `CachePipeline`.
+- `app/services/cachepopulator.*`: two-branch snapshot loader for application parameters and user data. The user-data
+  branch remains sequential and parent-first (users, accounts, drives, syncs, then sync errors); completion is emitted
+  only after both branches succeed, and overlapping population requests are ignored. It is used at initial connection
+  and for explicit reconciliation after a non-transactional backend mutation may have persisted parents without emitting
+  their normal pushes; after each snapshot, it activates the server live-info refresh so only drive updates reach
+  `CachePipeline`.
 - `app/services/driveservice.*`: targeted drive use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`;
   durable cache mutations stay signal-driven through `CachePipeline`.
+- `app/services/parametersservice.*`: targeted facade for application settings updates. It starts from the confirmed
+  `ParametersStore` snapshot, sends the full `PARAMETERS_UPDATE` payload, and updates the store only after server
+  confirmation.
 - `app/services/syncservice.*`: targeted sync use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`;
   durable cache mutations stay signal-driven through `CachePipeline`.
 - `ui/`: QML shell, onboarding screens, design tokens, and bundled UI assets such as tray icons and onboarding Lottie
