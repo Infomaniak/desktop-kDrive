@@ -16,8 +16,8 @@ class HttpDownloader {
         };
 
         static Result get(const std::string &url);
-        static Result downloadFile(const std::string &url, const KDC::SyncPath &destPath, long timeoutSeconds = 1800);
-        static bool fetchAppVersion(KDC::DistributionChannel channel, const std::string &appId, KDC::VersionInfo &outVersionInfo,
+        static Result downloadFile(const std::string &url, const SyncPath &destPath, long timeoutSeconds = 1800);
+        static bool fetchAppVersion(DistributionChannel channel, const std::string &appId, VersionInfo &outVersionInfo,
                                     std::string &outError);
 };
 

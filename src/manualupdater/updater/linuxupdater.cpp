@@ -11,55 +11,55 @@
 
 namespace KDC {
 
-bool LinuxUpdater::install(const KDC::VersionInfo &versionInfo, const std::string &desiredVersion,
+bool LinuxUpdater::install(const VersionInfo &versionInfo, const std::string &desiredVersion,
                            std::function<void(int, QString)> progressCallback, QString &outMessage) {
     (void) desiredVersion;
 
     const auto &urlStr = versionInfo.downloadUrl;
     if (urlStr.empty()) {
-        LOG_ERROR(KDC::Log::instance()->getLogger(), "Download URL is empty.");
+        LOG_ERROR(Log::instance()->getLogger(), "Download URL is empty.");
         outMessage = QObject::tr("Download URL is empty.");
         return false;
     }
 
     const char *homeDir = std::getenv("HOME");
     if (!homeDir) {
-        LOG_ERROR(KDC::Log::instance()->getLogger(), "HOME environment variable not set.");
+        LOG_ERROR(Log::instance()->getLogger(), "HOME environment variable not set.");
         outMessage = QObject::tr("HOME environment variable not set.");
         return false;
     }
 
-    const KDC::SyncPath destDir = std::filesystem::path(homeDir) / "Applications";
+    const SyncPath destDir = std::filesystem::path(homeDir) / "Applications";
     std::filesystem::create_directories(destDir);
 
     const auto pos = urlStr.find_last_of('/');
     if (pos == std::string::npos) {
-        LOG_ERROR(KDC::Log::instance()->getLogger(), "Invalid download URL.");
+        LOG_ERROR(Log::instance()->getLogger(), "Invalid download URL.");
         outMessage = QObject::tr("Invalid download URL.");
         return false;
     }
     const auto filename = urlStr.substr(pos + 1);
-    const KDC::SyncPath destPath = destDir / filename;
+    const SyncPath destPath = destDir / filename;
 
-    auto ioError = KDC::IoError::Success;
-    (void) KDC::IoHelper::deleteItem(destPath, ioError);
+    auto ioError = IoError::Success;
+    (void) IoHelper::deleteItem(destPath, ioError);
 
     progressCallback(30, QObject::tr(""));
 
     const auto result = HttpDownloader::downloadFile(urlStr, destPath);
     if (!result.success) {
         if (result.statusCode == 404) {
-            LOGW_WARN(KDC::Log::instance()->getLogger(), L"Version not found (404).");
+            LOGW_WARN(Log::instance()->getLogger(), L"Version not found (404).");
             outMessage = QObject::tr("The specified version does not exist or the download failed.");
         } else {
-            LOGW_WARN(KDC::Log::instance()->getLogger(), L"Download failed: " << KDC::CommonUtility::s2ws(result.error));
+            LOGW_WARN(Log::instance()->getLogger(), L"Download failed: " << CommonUtility::s2ws(result.error));
             outMessage = QObject::tr("Download failed: %1").arg(QString::fromStdString(result.error));
         }
         return false;
     }
 
     if (std::error_code ec; !std::filesystem::exists(destPath, ec)) {
-        LOGW_ERROR(KDC::Log::instance()->getLogger(), L"Downloaded file not found.");
+        LOGW_ERROR(Log::instance()->getLogger(), L"Downloaded file not found.");
         outMessage = QObject::tr("Downloaded file not found.");
         return false;
     }
@@ -78,8 +78,8 @@ bool LinuxUpdater::install(const KDC::VersionInfo &versionInfo, const std::strin
                 std::filesystem::perms::owner_exec | std::filesystem::perms::group_exec | std::filesystem::perms::others_exec,
                 std::filesystem::perm_options::add);
     } catch (const std::filesystem::filesystem_error &e) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(),
-                  L"Failed to make AppImage executable: " << KDC::CommonUtility::s2ws(e.what()));
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Failed to make AppImage executable: " << CommonUtility::s2ws(e.what()));
     }
 
     progressCallback(90, QObject::tr("Opening download folder..."));

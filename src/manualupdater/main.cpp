@@ -3,6 +3,7 @@
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/log/log.h"
+#include "utility/utility.h"
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
@@ -15,8 +16,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    const auto logFilePath = logDirPath / "kDriverUpdater.log";
-    if (!KDC::Log::instance(Path2WStr(logFilePath))) {
+    if (const auto logFilePath = logDirPath / "kDriverUpdater.log"; !KDC::Log::instance(Path2WStr(logFilePath))) {
         return 1;
     }
     {

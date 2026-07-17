@@ -19,20 +19,20 @@ static bool runOsascriptDelete(const QString &posixPath, QString &outMessage) {
                                QStringLiteral("tell application \"Finder\" to delete POSIX file \"%1\"").arg(posixPath)});
     p.start();
     if (!p.waitForFinished(10000)) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(),
-                  L"osascript timed out deleting: " << KDC::CommonUtility::s2ws(posixPath.toStdString()));
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"osascript timed out deleting: " << CommonUtility::s2ws(posixPath.toStdString()));
         return false;
     }
     if (p.exitCode() != 0) {
         const auto err = QString::fromUtf8(p.readAllStandardError());
-        LOGW_WARN(KDC::Log::instance()->getLogger(), L"osascript delete failed for: "
-                                                             << KDC::CommonUtility::s2ws(posixPath.toStdString()) << L" — "
+        LOGW_WARN(Log::instance()->getLogger(), L"osascript delete failed for: "
+                                                             << CommonUtility::s2ws(posixPath.toStdString()) << L" — "
                                                              << err.toStdWString());
     }
     return true;
 }
 
-bool MacOSUpdater::install(const KDC::VersionInfo &versionInfo, const std::string &desiredVersion,
+bool MacOSUpdater::install(const VersionInfo &versionInfo, const std::string &desiredVersion,
                            std::function<void(int, QString)> progressCallback, QString &outMessage) {
     (void) desiredVersion; // the XML URL already encodes the version
 
@@ -49,8 +49,8 @@ bool MacOSUpdater::install(const KDC::VersionInfo &versionInfo, const std::strin
         return false;
     }
 
-    KDC::SyncPath tmpDir;
-    if (const auto exitInfo = KDC::CommonUtility::deviceTempDirectoryPath(tmpDir); !exitInfo) {
+    SyncPath tmpDir;
+    if (const auto exitInfo = CommonUtility::deviceTempDirectoryPath(tmpDir); !exitInfo) {
         outMessage = QObject::tr("Failed to get temp directory.");
         return false;
     }
@@ -62,11 +62,11 @@ bool MacOSUpdater::install(const KDC::VersionInfo &versionInfo, const std::strin
     }
 
     const QString pkgPath = QString::fromStdString(tmpDir.string()) + QStringLiteral("/") + pkgFilename;
-    std::filesystem::remove(KDC::SyncPath(pkgPath.toStdString()));
+    std::filesystem::remove(SyncPath(pkgPath.toStdString()));
 
     progressCallback(40, QObject::tr("Downloading package..."));
 
-    const auto result = HttpDownloader::downloadFile(pkgUrl.toStdString(), KDC::SyncPath(pkgPath.toStdString()));
+    const auto result = HttpDownloader::downloadFile(pkgUrl.toStdString(), SyncPath(pkgPath.toStdString()));
     if (!result.success) {
         if (result.statusCode == 404) {
             outMessage = QObject::tr("The specified version does not exist or the download failed.");
@@ -76,20 +76,20 @@ bool MacOSUpdater::install(const KDC::VersionInfo &versionInfo, const std::strin
         return false;
     }
 
-    if (!std::filesystem::exists(KDC::SyncPath(pkgPath.toStdString()))) {
+    if (!std::filesystem::exists(SyncPath(pkgPath.toStdString()))) {
         outMessage = QObject::tr("Package file not found after download.");
         return false;
     }
 
     progressCallback(55, QObject::tr("Verifying file integrity..."));
     if (!versionInfo.checksum.empty()) {
-        if (!verifyFileChecksum(versionInfo, KDC::SyncPath(pkgPath.toStdString()), outMessage)) {
+        if (!verifyFileChecksum(versionInfo, SyncPath(pkgPath.toStdString()), outMessage)) {
             return false;
         }
     }
 
     progressCallback(70, QObject::tr("Verifying digital signature..."));
-    if (!verifyPackageSignature(KDC::SyncPath(pkgPath.toStdString()), outMessage)) {
+    if (!verifyPackageSignature(SyncPath(pkgPath.toStdString()), outMessage)) {
         return false;
     }
     progressCallback(85, QObject::tr("Removing old application..."));
@@ -115,13 +115,13 @@ bool MacOSUpdater::install(const KDC::VersionInfo &versionInfo, const std::strin
 }
 
 bool MacOSUpdater::downloadAndParseAppcast(const std::string &appcastUrl, QString &outPkgUrl, QString &outMessage) {
-    KDC::SyncPath tmpDir;
-    if (const auto exitInfo = KDC::CommonUtility::deviceTempDirectoryPath(tmpDir); !exitInfo) {
+    SyncPath tmpDir;
+    if (const auto exitInfo = CommonUtility::deviceTempDirectoryPath(tmpDir); !exitInfo) {
         outMessage = QObject::tr("Failed to get temp directory.");
         return false;
     }
 
-    const KDC::SyncPath appcastXmlPath = tmpDir / "appcast.xml";
+    const SyncPath appcastXmlPath = tmpDir / "appcast.xml";
     std::filesystem::remove(appcastXmlPath);
 
     const auto result = HttpDownloader::downloadFile(appcastUrl, appcastXmlPath);
@@ -166,39 +166,39 @@ bool MacOSUpdater::downloadAndParseAppcast(const std::string &appcastUrl, QStrin
     return true;
 }
 
-bool MacOSUpdater::verifyPackageSignature(const KDC::SyncPath &pkgPath, QString &outMessage) {
+bool MacOSUpdater::verifyPackageSignature(const SyncPath &pkgPath, QString &outMessage) {
     QProcess process;
     process.setProgram(QStringLiteral("pkgutil"));
     process.setArguments(QStringList{QStringLiteral("--check-signature"), QString::fromStdString(pkgPath.string())});
     process.start();
     if (!process.waitForFinished(30000)) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(), L"pkgutil --check-signature timed out.");
+        LOGW_WARN(Log::instance()->getLogger(), L"pkgutil --check-signature timed out.");
         outMessage = QObject::tr("Signature verification timed out.");
-        auto ioError = KDC::IoError::Success;
-        (void) KDC::IoHelper::deleteItem(pkgPath, ioError);
+        auto ioError = IoError::Success;
+        (void) IoHelper::deleteItem(pkgPath, ioError);
         return false;
     }
 
     const int exitCode = process.exitCode();
     if (exitCode != 0) {
-        LOGW_ERROR(KDC::Log::instance()->getLogger(), L"pkgutil --check-signature failed with exit code " << exitCode);
+        LOGW_ERROR(Log::instance()->getLogger(), L"pkgutil --check-signature failed with exit code " << exitCode);
         outMessage = QObject::tr("Digital signature verification failed.");
-        auto ioError = KDC::IoError::Success;
-        (void) KDC::IoHelper::deleteItem(pkgPath, ioError);
+        auto ioError = IoError::Success;
+        (void) IoHelper::deleteItem(pkgPath, ioError);
         return false;
     }
 
     const QString output = QString::fromUtf8(process.readAllStandardOutput());
     if (!output.contains(QStringLiteral("Status: signed by"))) {
-        LOGW_ERROR(KDC::Log::instance()->getLogger(),
-                   L"Package is not signed. Output: " << KDC::CommonUtility::s2ws(output.toStdString()));
+        LOGW_ERROR(Log::instance()->getLogger(),
+                   L"Package is not signed. Output: " << CommonUtility::s2ws(output.toStdString()));
         outMessage = QObject::tr("Digital signature verification failed.");
-        auto ioError = KDC::IoError::Success;
-        (void) KDC::IoHelper::deleteItem(pkgPath, ioError);
+        auto ioError = IoError::Success;
+        (void) IoHelper::deleteItem(pkgPath, ioError);
         return false;
     }
 
-    LOGW_INFO(KDC::Log::instance()->getLogger(), L"Package signature verification passed.");
+    LOGW_INFO(Log::instance()->getLogger(), L"Package signature verification passed.");
     return true;
 }
 

@@ -112,7 +112,7 @@ void MainWindow::updateCurrentVersionLabel() const {
         return;
     }
 
-    LOGW_INFO(KDC::Log::instance()->getLogger(),
+    LOGW_INFO(Log::instance()->getLogger(),
               L"Current kDrive version: " << QString::fromStdString(_installedVersion).toStdWString());
 
     _currentVersionLabel->setText(tr("Installed version: <b>%1</b>").arg(QString::fromStdString(_installedVersion)));
@@ -120,13 +120,13 @@ void MainWindow::updateCurrentVersionLabel() const {
 
 void MainWindow::fetchAndSetDefaultVersion() {
     if (_updaterData.appId().empty()) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(), L"App ID is empty. Cannot fetch default version.");
+        LOGW_WARN(Log::instance()->getLogger(), L"App ID is empty. Cannot fetch default version.");
         return;
     }
 
     if (std::string error;
         !HttpDownloader::fetchAppVersion(_updaterData.distributionChannel(), _updaterData.appId(), _fetchedVersionInfo, error)) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(), L"Failed to fetch default version: " << KDC::CommonUtility::s2ws(error));
+        LOGW_WARN(Log::instance()->getLogger(), L"Failed to fetch default version: " << CommonUtility::s2ws(error));
         return;
     }
     if (_fetchedVersionInfo.tag.empty() || _fetchedVersionInfo.buildVersion == 0) {
@@ -134,7 +134,7 @@ void MainWindow::fetchAndSetDefaultVersion() {
     }
 
     _versionInput->setText(QString::fromStdString(_fetchedVersionInfo.fullVersion()));
-    LOG_INFO(KDC::Log::instance()->getLogger(), "Default version set to: " << _fetchedVersionInfo.fullVersion());
+    LOG_INFO(Log::instance()->getLogger(), "Default version set to: " << _fetchedVersionInfo.fullVersion());
 }
 void MainWindow::onVersionTextChanged(const QString &text) const {
     std::string errorMsg;
@@ -159,7 +159,7 @@ bool MainWindow::validateInputVersion(const std::string &inputVersion, std::stri
         return false;
     }
 
-    if (!_installedVersion.empty() && KDC::CommonUtility::isVersionLower(inputVersion, _installedVersion)) {
+    if (!_installedVersion.empty() && CommonUtility::isVersionLower(inputVersion, _installedVersion)) {
         errorMsg = tr("You cannot install a version older than the one currently installed (%1).")
                            .arg(QString::fromStdString(_installedVersion))
                            .toStdString();
@@ -186,23 +186,23 @@ void MainWindow::onInstallClicked() {
     _installButton->setEnabled(false);
     _installInProgress = true;
 
-    const KDC::VersionInfo fetchedInfo = _fetchedVersionInfo; // copy for thread safety
+    const VersionInfo fetchedInfo = _fetchedVersionInfo; // copy for thread safety
     QPointer<MainWindow> weakThis = this;
 
     _workerThread = std::thread([weakThis, desiredVersion, fetchedInfo]() {
-        LOGW_INFO(KDC::Log::instance()->getLogger(),
+        LOGW_INFO(Log::instance()->getLogger(),
                   L"Starting installation thread for version " << QString::fromStdString(desiredVersion).toStdWString());
 
         bool success = false;
         QString message;
 
         // Build specific version info with user-specified version
-        KDC::VersionInfo specificVersion = fetchedInfo;
+        VersionInfo specificVersion = fetchedInfo;
         specificVersion.checksum.clear(); // we don't know the specific version's checksum
 
         const std::string originalUrl = specificVersion.downloadUrl;
         const std::string oldVersion = specificVersion.fullVersion();
-        LOGW_INFO(KDC::Log::instance()->getLogger(), L"OLD version: " << QString::fromStdString(oldVersion).toStdWString());
+        LOGW_INFO(Log::instance()->getLogger(), L"OLD version: " << QString::fromStdString(oldVersion).toStdWString());
 
         if (auto pos = specificVersion.downloadUrl.find(oldVersion); pos != std::string::npos) {
             specificVersion.downloadUrl.replace(pos, oldVersion.length(), desiredVersion);
@@ -210,7 +210,7 @@ void MainWindow::onInstallClicked() {
             specificVersion.downloadUrl.replace(pos, specificVersion.tag.length(), desiredVersion);
         } else {
             message = QObject::tr("Failed to construct download URL for version %1.").arg(QString::fromStdString(desiredVersion));
-            LOGW_INFO(KDC::Log::instance()->getLogger(), message.toStdWString());
+            LOGW_INFO(Log::instance()->getLogger(), message.toStdWString());
             if (weakThis) {
                 QMetaObject::invokeMethod(
                         weakThis, [weakThis, message]() { weakThis->onInstallFinished(false, message); }, Qt::QueuedConnection);
@@ -218,9 +218,9 @@ void MainWindow::onInstallClicked() {
             return;
         }
 
-        LOGW_INFO(KDC::Log::instance()->getLogger(),
+        LOGW_INFO(Log::instance()->getLogger(),
                   L"Original download URL: " << QString::fromStdString(originalUrl).toStdWString());
-        LOGW_INFO(KDC::Log::instance()->getLogger(),
+        LOGW_INFO(Log::instance()->getLogger(),
                   L"Target download URL for version " << QString::fromStdString(desiredVersion).toStdWString() << L": "
                                                       << QString::fromStdString(specificVersion.downloadUrl).toStdWString());
 
