@@ -29,6 +29,8 @@ enum OnboardingLinks {
 }
 
 final class DriveSelectionViewController: OnboardingStepViewController {
+    @LazyInjectService var matomo: MatomoUtils
+
     private let viewModel: DriveSelectionViewModel
     private let flowCoordinator: OnboardingFlowCoordinator
 
@@ -190,11 +192,14 @@ extension DriveSelectionViewController {
     }
 
     @objc private func didTapContinue() {
+        matomo.track(eventWithCategory: .onboardingSyncConfigurationPage, name: "confirm")
+
         viewModel.startSynchronization()
     }
 
     @objc private func didTapAdvancedSettings() {
         guard let currentUser = flowCoordinator.currentUser else { return }
+        matomo.track(eventWithCategory: .onboardingSyncConfigurationPage, name: "openAdvancedSettings")
 
         let viewController = SynchroConfigurationFlowViewController(
             userDbId: Int(currentUser.dbId),
@@ -278,10 +283,12 @@ extension DriveSelectionViewController {
     }
 
     @objc private func didTapStartForFree() {
+        matomo.track(eventWithCategory: .onboardingSyncConfigurationPage, name: "openStartFreeWeb")
         NSWorkspace.shared.open(OnboardingLinks.shopDriveSelection)
     }
 
     @objc private func didTapShowOffers() {
+        matomo.track(eventWithCategory: .onboardingSyncConfigurationPage, name: "openOffersWeb")
         NSWorkspace.shared.open(OnboardingLinks.myKSuiteOffers)
     }
 }
