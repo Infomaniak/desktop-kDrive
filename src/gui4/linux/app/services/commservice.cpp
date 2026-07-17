@@ -170,25 +170,20 @@ void CommService::registerSyncHandlers(SignalDispatcher &dispatcher) {
 
     dispatcher.registerHandler(SignalNum::SYNC_PROGRESSINFO, [this](const Poco::DynamicStruct &params) {
         SyncDbId syncDbId = 0;
-        auto status = SyncStatus::Undefined;
-        auto step = SyncStep::Idle;
+        SyncRuntimeInfo runtimeInfo;
+        runtimeInfo.step = SyncStep::Idle;
         CommonUtility::readValueFromStruct(params, msgParamSyncDbId, syncDbId);
-        CommonUtility::readValueFromStruct(params, msgParamSyncStatus, status);
-        CommonUtility::readValueFromStruct(params, msgParamSyncStep, step);
+        CommonUtility::readValueFromStruct(params, msgParamSyncStatus, runtimeInfo.status);
+        CommonUtility::readValueFromStruct(params, msgParamSyncStep, runtimeInfo.step);
 
         const Poco::DynamicStruct progressStruct = params[msgParamSyncProgress].extract<Poco::DynamicStruct>();
-        int64_t currentFile = 0;
-        int64_t totalFiles = 0;
-        int64_t completedSize = 0;
-        int64_t totalSize = 0;
-        int64_t estimatedRemainingTime = 0;
-        CommonUtility::readValueFromStruct(progressStruct, msgParamCurrentFile, currentFile);
-        CommonUtility::readValueFromStruct(progressStruct, msgParamTotalFiles, totalFiles);
-        CommonUtility::readValueFromStruct(progressStruct, msgParamCompletedSize, completedSize);
-        CommonUtility::readValueFromStruct(progressStruct, msgParamTotalSize, totalSize);
-        CommonUtility::readValueFromStruct(progressStruct, msgParamEstimatedRemainingTime, estimatedRemainingTime);
+        CommonUtility::readValueFromStruct(progressStruct, msgParamCurrentFile, runtimeInfo.currentFile);
+        CommonUtility::readValueFromStruct(progressStruct, msgParamTotalFiles, runtimeInfo.totalFiles);
+        CommonUtility::readValueFromStruct(progressStruct, msgParamCompletedSize, runtimeInfo.completedSize);
+        CommonUtility::readValueFromStruct(progressStruct, msgParamTotalSize, runtimeInfo.totalSize);
+        CommonUtility::readValueFromStruct(progressStruct, msgParamEstimatedRemainingTime, runtimeInfo.estimatedRemainingTime);
 
-        emit syncProgressInfo(syncDbId, status, step, currentFile, totalFiles, completedSize, totalSize, estimatedRemainingTime);
+        emit syncProgressInfo(syncDbId, runtimeInfo);
     });
 
     dispatcher.registerHandler(SignalNum::SYNC_COMPLETEDITEM, [this](const Poco::DynamicStruct &params) {
