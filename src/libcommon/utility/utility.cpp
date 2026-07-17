@@ -210,11 +210,11 @@ uint64_t CommonUtility::versionBuild() {
 
 std::string CommonUtility::fallbackFileSystemType() {
 #if defined(KD_WINDOWS)
-    return fsTypeNTFS();
+    return fsType::NTFS;
 #elif defined(KD_MACOS)
-    return fsTypeAPFS();
+    return fsType::APFS;
 #else
-    return fsTypeEXT234();
+    return fsType::EXT234;
 #endif
 }
 
@@ -240,7 +240,7 @@ std::string CommonUtility::underlyingFileSystemType(const SyncPath &targetPath) 
 #endif
             // Invalid name for FAT32/exFAT, we assume that the underlying FS is exFAT as we cannot distinguish between FAT32 and
             // exFAT and both have the same naming rules
-            return fsTypeEXFAT();
+            return fsType::EXFAT;
         }
 
         return {};
@@ -251,13 +251,13 @@ std::string CommonUtility::underlyingFileSystemType(const SyncPath &targetPath) 
     return fallbackFileSystemType();
 }
 
-std::string CommonUtility::fileSystemType(const SyncPath &targetPath, std::string &fallbackFSType,
+std::string CommonUtility::fileSystemType(const SyncPath &targetPath, std::string &fsType,
                                           const UseCache useCache /*UseCache::Yes*/) {
-    fallbackFSType.clear();
+    fsType.clear();
 
     // Cache of FS type & fallback type by mount point ordered by decreasing path depth.
     struct Cache {
-            std::map<SyncPath, std::pair<std::string, std::string>, CmpPath> fsTypeMap{CmpPath(false)};
+            std::map<SyncPath, std::pair<std::string, std::string>, CmpPath> fsTypeMap{CmpPath(CmpPath::SortByDepth::Decreasing)};
             std::mutex fsTypeMapMutex;
     };
 
@@ -269,21 +269,20 @@ std::string CommonUtility::fileSystemType(const SyncPath &targetPath, std::strin
 #if defined(KD_WINDOWS)
         const SyncPath rootPath = targetPath.root_path().native();
         if (const auto it = cache.fsTypeMap.find(rootPath); it != cache.fsTypeMap.end()) {
-            fallbackFSType = it->second.second;
-            return it->second.first;
+            fsType = it.second.first;
+            return it.second.second;
         }
 #else
         for (const auto &it: cache.fsTypeMap) {
             if (CommonUtility::isDescendantOrEqual(targetPath, it.first)) {
-                fallbackFSType = it.second.second;
-                return it.second.first;
+                fsType = it.second.first;
+                return it.second.second;
             }
         }
 #endif
     }
 
     // If not found in cache, get the FS type and mount point from the OS.
-    std::string fsType;
     SyncPath mountPoint;
     if (!CommonUtility::fileSystemInfo(targetPath, fsType, mountPoint)) {
         return {};
@@ -291,6 +290,7 @@ std::string CommonUtility::fileSystemType(const SyncPath &targetPath, std::strin
 
     fsType = CommonUtility::toUpper(fsType);
 
+    std::string fallbackFSType;
     if (isManagedFS(fsType)) {
         fallbackFSType = fsType;
     } else {
@@ -299,48 +299,43 @@ std::string CommonUtility::fileSystemType(const SyncPath &targetPath, std::strin
 
     (void) cache.fsTypeMap.insert_or_assign(mountPoint, std::make_pair(fsType, fallbackFSType));
 
-    return fsType;
+    return fallbackFSType;
 }
 
 bool CommonUtility::isManagedFS(const std::string &fsType)
 {
-    return fsType == fsTypeNTFS() || fsType == fsTypeAPFS() || fsType == fsTypeHFS() || fsType == fsTypeFAT() || fsType == fsTypeEXFAT() || fsType == fsTypeEXT234();
+    return fsType == fsType::NTFS || fsType == fsType::APFS || fsType == fsType::HFS || fsType == fsType::FAT ||
+           fsType == fsType::EXFAT || fsType == fsType::EXT234;
 }
 
 bool CommonUtility::isNTFS(const SyncPath &targetPath) {
-     std::string fallbackFSType;
-    (void) fileSystemType(targetPath, fallbackFSType);
-    return fallbackFSType == fsTypeNTFS();
+    std::string fsType;
+    return fileSystemType(targetPath, fsType) == fsType::NTFS;
 }
 
 bool CommonUtility::isAPFS(const SyncPath &targetPath) {
-   std::string fallbackFSType;
-    (void) fileSystemType(targetPath, fallbackFSType);
-    return fallbackFSType == fsTypeAPFS();
+    std::string fsType;
+    return fileSystemType(targetPath, fsType) == fsType::APFS;
 }
 
 bool CommonUtility::isHFS(const SyncPath &targetPath) {
-    std::string fallbackFSType;
-    (void) fileSystemType(targetPath, fallbackFSType);
-    return fallbackFSType == fsTypeHFS();
+    std::string fsType;
+    return fileSystemType(targetPath, fsType) == fsType::HFS;
 }
 
 bool CommonUtility::isFAT(const SyncPath &targetPath) {
-    std::string fallbackFSType;
-    (void) fileSystemType(targetPath, fallbackFSType);
-    return fallbackFSType == fsTypeFAT();
+    std::string fsType;
+    return fileSystemType(targetPath, fsType) == fsType::FAT;
 }
 
 bool CommonUtility::isEXFAT(const SyncPath &targetPath) {
-    std::string fallbackFSType;
-    (void) fileSystemType(targetPath, fallbackFSType);
-    return fallbackFSType == fsTypeEXFAT();
+    std::string fsType;
+    return fileSystemType(targetPath, fsType) == fsType::EXFAT;
 }
 
 bool CommonUtility::isEXT234(const SyncPath &targetPath) {
-    std::string fallbackFSType;
-    (void) fileSystemType(targetPath, fallbackFSType);
-    return fallbackFSType == fsTypeEXT234();
+    std::string fsType;
+    return fileSystemType(targetPath, fsType) == fsType::EXT234;
 }
 
 bool CommonUtility::isSyncCompatible([[maybe_unused]] const SyncPath &targetPath) {

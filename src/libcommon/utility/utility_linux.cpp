@@ -145,19 +145,19 @@ bool CommonUtility::fileSystemInfo(const SyncPath &targetPath, std::string &fsTy
 
     switch (stat.f_type) {
         case 0xef53u: // EXT2_SUPER_MAGIC, EXT3_SUPER_MAGIC, EXT4_SUPER_MAGIC
-            fsType = fsTypeEXT234();
+            fsType = fsType::EXT234;
             break;
         case 0x5346544eu: // NTFS_SB_MAGIC
-            fsType = fsTypeNTFS();
+            fsType = fsType::NTFS;
             break;
         case 0x2011bab0u: // EXFAT_SUPER_MAGIC
-            fsType = fsTypeEXFAT();
+            fsType = fsType::EXFAT;
             break;
         case 0x4d44u: // MSDOS_SUPER_MAGIC
-            fsType = fsTypeFAT();
+            fsType = fsType::FAT;
             break;
         case 0x4244u: // HFS_SUPER_MAGIC
-            fsType = fsTypeHFS();
+            fsType = fsType::HFS;
             break;
         case 0x65735546u: // FUSE_SUPER_MAGIC
             fsType = "FUSE";

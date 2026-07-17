@@ -45,6 +45,16 @@
 #include <log4cplus/log4cplus.h>
 
 namespace KDC {
+
+namespace fsType {
+static const std::string NTFS = "NTFS";
+static const std::string APFS = "APFS";
+static const std::string HFS = "HFS";
+static const std::string FAT = "FAT32";
+static const std::string EXFAT = "EXFAT";
+static const std::string EXT234 = "EXT234";
+} // namespace fsType
+
 struct COMMON_EXPORT CommonUtility {
         enum IconType {
             MAIN_FOLDER_ICON,
@@ -80,19 +90,13 @@ struct COMMON_EXPORT CommonUtility {
         //! For unmanaged FS (see isManagedFS), try to determine the actual underlying storage format
         /*!
           \param targetPath is the path the FS type of which is queried.
-          \param fallbackFSType is the type of the underlying FS.
+          \param fsType is the type of the FS.
           \param useCache if true, use a cache to optimize performances.
-          \return the type of the FS.
+          \return the type of the FS or, if unmanaged, the type of the underlying FS.
         */
-        static std::string fileSystemType(const SyncPath &targetPath, std::string &fallbackFSType,
+        static std::string fileSystemType(const SyncPath &targetPath, std::string &fsType,
                                           const UseCache useCache = UseCache::Yes);
 
-        static std::string fsTypeNTFS() { return "NTFS"; }
-        static std::string fsTypeAPFS() { return "APFS"; }
-        static std::string fsTypeHFS() { return "HFS"; }
-        static std::string fsTypeFAT() { return "FAT32"; }
-        static std::string fsTypeEXFAT() { return "EXFAT"; }
-        static std::string fsTypeEXT234() { return "EXT234"; }
         static bool isManagedFS(const std::string &fsType);
         static bool isNTFS(const SyncPath &targetPath);
         static bool isAPFS(const SyncPath &targetPath);
@@ -682,26 +686,31 @@ static const std::function<C(const Poco::Dynamic::Var &)> dynamicVar2Struct = []
 
 class CmpPath {
     public:
-        explicit CmpPath(const bool increasingDepth) :
-            _increasingDepth(increasingDepth) {}
+        enum SortByDepth {
+            Growing = 0,
+            Decreasing
+        };
+
+        explicit CmpPath(const SortByDepth sort) :
+            _sort(sort) {}
 
         bool operator()(const SyncPath &path1, const SyncPath &path2) const {
             const auto pathDepth1 = CommonUtility::pathDepth(path1);
             const auto pathDepth2 = CommonUtility::pathDepth(path2);
             if (pathDepth1 < pathDepth2)
-                return _increasingDepth;
+                return (_sort == Growing);
             else if (pathDepth1 > pathDepth2)
-                return !_increasingDepth;
+                return (_sort == Decreasing);
             else if (path1 < path2)
-                return _increasingDepth;
+                return (_sort == Growing);
             else if (path1 > path2)
-                return !_increasingDepth;
+                return (_sort == Decreasing);
             else
                 return false;
         }
 
     private:
-        bool _increasingDepth = false;
+        SortByDepth _sort = Growing;
 };
 
 } // namespace KDC

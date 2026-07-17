@@ -952,18 +952,18 @@ void TestUtility::testFileSystemInfo() {
     std::string fsType;
     SyncPath mountPoint;
 #if defined(KD_MACOS)
-    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/", fsType, mountPoint) &&
-                   CommonUtility::toUpper(fsType) == CommonUtility::fsTypeAPFS() && mountPoint == "/");
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/", fsType, mountPoint) && CommonUtility::toUpper(fsType) == fsType::APFS &&
+                   mountPoint == "/");
     CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(std::filesystem::weakly_canonical("."), fsType, mountPoint) &&
-                   CommonUtility::toUpper(fsType) == CommonUtility::fsTypeAPFS() && mountPoint == "/");
+                   CommonUtility::toUpper(fsType) == fsType::APFS && mountPoint == "/");
     // TODO: implement these tests on the CI.
     // External disk.
     /*
-    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/Volumes/EXFAT PART", fsType, mountPoint) && fsType == "exfat" && mountPoint ==
-    "/Volumes/EXFAT PART");
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/Volumes/EXFAT PART", fsType, mountPoint) && fsType ==
+    "exfat" && mountPoint == "/Volumes/EXFAT PART");
 
-    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/Volumes/FAT PART", fsType, mountPoint) && fsType == CommonUtility::fsTypeFAT()
-    && mountPoint == "/Volumes/FAT PART");
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/Volumes/FAT PART", fsType, mountPoint) && fsType ==
+    fsType::FAT && mountPoint == "/Volumes/FAT PART");
     */
     // AppleVirtIOFS (Parallels Desktop shared folder for instance).
     /*
@@ -978,9 +978,10 @@ void TestUtility::testFileSystemInfo() {
     */
 #elif defined(KD_WINDOWS)
     CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(std::filesystem::temp_directory_path(), fsType, mountPoint) &&
-                   fsType == "NTFS" && mountPoint == R"(C:\)");
-    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(R"(C:\)", fsType, mountPoint) && fsType == "NTFS" && mountPoint == R"(C:\)");
-    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(R"(C:\windows)", fsType, mountPoint) && fsType == "NTFS" &&
+                   fsType == fsType::NTFS && mountPoint == R"(C:\)");
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(R"(C:\)", fsType, mountPoint) && fsType == fsType::NTFS &&
+                   mountPoint == R"(C:\)");
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(R"(C:\windows)", fsType, mountPoint) && fsType == fsType::NTFS &&
                    mountPoint == R"(C:\)");
 #else
     std::string fsTypeResult;
@@ -988,7 +989,7 @@ void TestUtility::testFileSystemInfo() {
         // Docker containers use overlayfs
         fsTypeResult = "OVERLAYFS";
     } else {
-        fsTypeResult = "EXT234";
+        fsTypeResult = fsType::EXT234;
     }
     CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/", fsType, mountPoint) && fsType == fsTypeResult && mountPoint == "/");
     CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(std::filesystem::weakly_canonical("."), fsType, mountPoint) &&
@@ -997,10 +998,10 @@ void TestUtility::testFileSystemInfo() {
     // External disk.
     /*
     CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/media/parallels/EXFAT PART/toto.txt", fsType, mountPoint) &&
-                   fsType == CommonUtility::fsTypeEXFAT() && mountPoint == "/media/parallels/EXFAT PART");
+                   fsType == fsType::EXFAT && mountPoint == "/media/parallels/EXFAT PART");
 
     CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/media/parallels/FAT PART", fsType, mountPoint) &&
-                   fsType == CommonUtility::fsTypeFAT() && mountPoint == "/media/parallels/FAT PART");
+                   fsType == fsType::FAT && mountPoint == "/media/parallels/FAT PART");
     */
     // Fuse (Parallels Desktop shared folder for instance).
     /*
@@ -1014,59 +1015,58 @@ void TestUtility::testFileSystemInfo() {
 }
 
 void TestUtility::testFileSystemType() {
-    std::string fallbackFSType;
+    std::string fsType;
 #if defined(KD_MACOS)
-    CPPUNIT_ASSERT_EQUAL(CommonUtility::fsTypeAPFS(), CommonUtility::fileSystemType("/", fallbackFSType));
-    CPPUNIT_ASSERT_EQUAL(CommonUtility::fsTypeAPFS(), fallbackFSType);
-    CPPUNIT_ASSERT_EQUAL(CommonUtility::fsTypeAPFS(),
-                         CommonUtility::fileSystemType(std::filesystem::weakly_canonical("."), fallbackFSType));
-    CPPUNIT_ASSERT_EQUAL(CommonUtility::fsTypeAPFS(), fallbackFSType);
+    CPPUNIT_ASSERT_EQUAL(fsType::APFS, CommonUtility::fileSystemType("/", fsType));
+    CPPUNIT_ASSERT_EQUAL(fsType::APFS, fsType);
+    CPPUNIT_ASSERT_EQUAL(fsType::APFS, CommonUtility::fileSystemType(std::filesystem::weakly_canonical("."), fsType));
+    CPPUNIT_ASSERT_EQUAL(fsType::APFS, fsType);
     // TODO: implement these tests on the CI.
     // External disk.
     /*
-    CPPUNIT_ASSERT_EQUAL(CommonUtility::fsTypeEXFAT(),
-                         CommonUtility::fileSystemType("/Volumes/EXFAT PART", fallbackFSType, CommonUtility::UseCache::No));
+    CPPUNIT_ASSERT_EQUAL(fsType::EXFAT,
+                         CommonUtility::fileSystemType("/Volumes/EXFAT PART", fsType, CommonUtility::UseCache::No));
 
-    CPPUNIT_ASSERT_EQUAL(CommonUtility::fsTypeEXFAT(), CommonUtility::fileSystemType("/Volumes/EXFAT PART", fallbackFSType));
+    CPPUNIT_ASSERT_EQUAL(fsType::EXFAT, CommonUtility::fileSystemType("/Volumes/EXFAT PART", fsType));
 
-    CPPUNIT_ASSERT_EQUAL(CommonUtility::fsTypeFAT(),
-                         CommonUtility::fileSystemType("/Volumes/FAT PART", fallbackFSType, CommonUtility::UseCache::No));
+    CPPUNIT_ASSERT_EQUAL(fsType::FAT,
+                         CommonUtility::fileSystemType("/Volumes/FAT PART", fsType, CommonUtility::UseCache::No));
 
-    CPPUNIT_ASSERT_EQUAL(CommonUtility::fsTypeFAT(), CommonUtility::fileSystemType("/Volumes/FAT PART", fallbackFSType));
+    CPPUNIT_ASSERT_EQUAL(fsType::FAT, CommonUtility::fileSystemType("/Volumes/FAT PART", fsType));
     */
     // AppleVirtIOFS (Parallels Desktop shared folder for instance).
     /*
-    CPPUNIT_ASSERT_EQUAL(std::string("APPLEVIRTIOFS"),
-                         CommonUtility::fileSystemType("/Volumes/My Shared Files/Volumes/APFS PART", fallbackFSType,
+    CPPUNIT_ASSERT_EQUAL(fsType::APFS,
+                         CommonUtility::fileSystemType("/Volumes/My Shared Files/Volumes/APFS PART", fsType,
                                                        CommonUtility::UseCache::No));
 
-    CPPUNIT_ASSERT_EQUAL(CommonUtility::fsTypeAPFS(), fallbackFSType);
+    CPPUNIT_ASSERT_EQUAL(std::string("APPLEVIRTIOFS"), fsType);
 
-    CPPUNIT_ASSERT_EQUAL(std::string("APPLEVIRTIOFS"),
-                         CommonUtility::fileSystemType("/Volumes/My Shared Files/Volumes/APFS PART", fallbackFSType));
+    CPPUNIT_ASSERT_EQUAL(fsType::APFS,
+                         CommonUtility::fileSystemType("/Volumes/My Shared Files/Volumes/APFS PART", fsType));
 
-    CPPUNIT_ASSERT_EQUAL(CommonUtility::fsTypeAPFS(), fallbackFSType);
+    CPPUNIT_ASSERT_EQUAL(std::string("APPLEVIRTIOFS"), fsType);
 
-    CPPUNIT_ASSERT_EQUAL(std::string("APPLEVIRTIOFS"),
-                         CommonUtility::fileSystemType("/Volumes/My Shared Files/Volumes/EXFAT PART", fallbackFSType,
+    CPPUNIT_ASSERT_EQUAL(fsType::APFS,
+                         CommonUtility::fileSystemType("/Volumes/My Shared Files/Volumes/EXFAT PART", fsType,
                                                        CommonUtility::UseCache::No));
 
-    CPPUNIT_ASSERT_EQUAL(CommonUtility::fsTypeAPFS(), fallbackFSType);
+    CPPUNIT_ASSERT_EQUAL(std::string("APPLEVIRTIOFS"), fsType);
 
-    CPPUNIT_ASSERT_EQUAL(std::string("APPLEVIRTIOFS"),
-                         CommonUtility::fileSystemType("/Volumes/My Shared Files/Volumes/EXFAT PART", fallbackFSType));
+    CPPUNIT_ASSERT_EQUAL(fsType::APFS,
+                         CommonUtility::fileSystemType("/Volumes/My Shared Files/Volumes/EXFAT PART", fsType));
 
-    CPPUNIT_ASSERT_EQUAL(CommonUtility::fsTypeAPFS(), fallbackFSType);
+    CPPUNIT_ASSERT_EQUAL(std::string("APPLEVIRTIOFS"), fsType);
 
-    CPPUNIT_ASSERT_EQUAL(std::string("APPLEVIRTIOFS"),
-                         CommonUtility::fileSystemType("/Volumes/My Shared Files/Volumes/FAT PART", fallbackFSType,
+    CPPUNIT_ASSERT_EQUAL(fsType::APFS,
+                         CommonUtility::fileSystemType("/Volumes/My Shared Files/Volumes/FAT PART", fsType,
                                                        CommonUtility::UseCache::No));
 
-    CPPUNIT_ASSERT_EQUAL(CommonUtility::fsTypeAPFS(), fallbackFSType);
+    CPPUNIT_ASSERT_EQUAL(std::string("APPLEVIRTIOFS"), fsType);
     */
 #elif defined(KD_WINDOWS)
-    CPPUNIT_ASSERT_EQUAL(CommonUtility::fsTypeNTFS(), CommonUtility::fileSystemType("C:\\", fallbackFSType));
-    CPPUNIT_ASSERT_EQUAL(CommonUtility::fsTypeNTFS(), fallbackFSType);
+    CPPUNIT_ASSERT_EQUAL(fsType::NTFS, CommonUtility::fileSystemType("C:\\", fsType));
+    CPPUNIT_ASSERT_EQUAL(fsType::NTFS, fsType);
 #else
     std::string fsTypeResult;
     std::string fallbackFSTypeResult;
@@ -1075,35 +1075,35 @@ void TestUtility::testFileSystemType() {
         fsTypeResult = "OVERLAYFS";
         fallbackFSTypeResult = "";
     } else {
-        fsTypeResult = CommonUtility::fsTypeEXT234();
-        fallbackFSTypeResult = CommonUtility::fsTypeEXT234();
+        fsTypeResult = fsType::EXT234;
+        fallbackFSTypeResult = fsType::EXT234;
     }
-    CPPUNIT_ASSERT_EQUAL(fsTypeResult, CommonUtility::fileSystemType("/", fallbackFSType));
-    CPPUNIT_ASSERT_EQUAL(fallbackFSTypeResult, fallbackFSType);
-    CPPUNIT_ASSERT_EQUAL(fsTypeResult, CommonUtility::fileSystemType(std::filesystem::weakly_canonical("."), fallbackFSType));
-    CPPUNIT_ASSERT_EQUAL(fallbackFSTypeResult, fallbackFSType);
+    CPPUNIT_ASSERT_EQUAL(fallbackFSTypeResult, CommonUtility::fileSystemType("/", fsType));
+    CPPUNIT_ASSERT_EQUAL(fsTypeResult, fsType);
+    CPPUNIT_ASSERT_EQUAL(fallbackFSTypeResult, CommonUtility::fileSystemType(std::filesystem::weakly_canonical("."), fsType));
+    CPPUNIT_ASSERT_EQUAL(fsTypeResult, fsType);
     // TODO: implement these tests on the CI.
     // External disk.
     /*
     CPPUNIT_ASSERT_EQUAL(
-            CommonUtility::fsTypeEXFAT(),
-            CommonUtility::fileSystemType("/media/parallels/EXFAT PART", fallbackFSType, CommonUtility::UseCache::No));
+            fsType::EXFAT,
+            CommonUtility::fileSystemType("/media/parallels/EXFAT PART", fsType, CommonUtility::UseCache::No));
 
-    CPPUNIT_ASSERT_EQUAL(CommonUtility::fsTypeEXFAT(),
-                         CommonUtility::fileSystemType("/media/parallels/EXFAT PART", fallbackFSType));
+    CPPUNIT_ASSERT_EQUAL(fsType::EXFAT,
+                         CommonUtility::fileSystemType("/media/parallels/EXFAT PART", fsType));
 
-    CPPUNIT_ASSERT_EQUAL(CommonUtility::fsTypeFAT(),
-                         CommonUtility::fileSystemType("/media/parallels/FAT PART", fallbackFSType, CommonUtility::UseCache::No));
+    CPPUNIT_ASSERT_EQUAL(fsType::FAT,
+                         CommonUtility::fileSystemType("/media/parallels/FAT PART", fsType, CommonUtility::UseCache::No));
 
-    CPPUNIT_ASSERT_EQUAL(CommonUtility::fsTypeFAT(), CommonUtility::fileSystemType("/media/parallels/FAT PART", fallbackFSType));
+    CPPUNIT_ASSERT_EQUAL(fsType::FAT, CommonUtility::fileSystemType("/media/parallels/FAT PART", fsType));
     */
     // Fuse (Parallels Desktop shared folder for instance).
     /*
-    CPPUNIT_ASSERT_EQUAL(CommonUtility::fsTypeEXFAT(),
-                         CommonUtility::fileSystemType("/media/psf/EXFAT PART", fallbackFSType, CommonUtility::UseCache::No));
+    CPPUNIT_ASSERT_EQUAL(fsType::EXFAT,
+                         CommonUtility::fileSystemType("/media/psf/EXFAT PART", fsType, CommonUtility::UseCache::No));
 
-    CPPUNIT_ASSERT_EQUAL(CommonUtility::fsTypeFAT(),
-                         CommonUtility::fileSystemType("/media/psf/FAT PART", fallbackFSType, CommonUtility::UseCache::No));
+    CPPUNIT_ASSERT_EQUAL(fsType::FAT,
+                         CommonUtility::fileSystemType("/media/psf/FAT PART", fsType, CommonUtility::UseCache::No));
     */
 #endif
 }

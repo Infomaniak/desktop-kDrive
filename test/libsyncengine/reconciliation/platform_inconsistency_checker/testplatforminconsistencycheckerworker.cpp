@@ -113,7 +113,7 @@ void TestPlatformInconsistencyCheckerWorker::testCheckNameForbiddenChars() {
     CPPUNIT_ASSERT(hasForbiddenChars);
 
 #if defined(KD_WINDOWS)
-    CPPUNIT_ASSERT_EQUAL(CommonUtility::fsTypeNTFS(), fallbackFSType);
+    CPPUNIT_ASSERT_EQUAL(CommonUtility::fsTypeNTFS, fallbackFSType);
 
     forbiddenName = Str("test\\test");
     hasForbiddenChars = false;
@@ -180,7 +180,7 @@ void TestPlatformInconsistencyCheckerWorker::testCheckNameForbiddenChars() {
                                                          forbiddenName, _syncPal->cacheDirectory(), endsWithForbiddenSpace));
     CPPUNIT_ASSERT(endsWithForbiddenSpace);
 #elif defined(KD_LINUX)
-    CPPUNIT_ASSERT_EQUAL(CommonUtility::fsTypeEXT234(), fallbackFSType);
+    CPPUNIT_ASSERT_EQUAL(CommonUtility::fsTypeEXT234, fallbackFSType);
 
     forbiddenName = std::string("test");
     forbiddenName.append(1, '\0');
