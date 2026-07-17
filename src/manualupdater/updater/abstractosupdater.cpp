@@ -1,5 +1,4 @@
 #include "abstractosupdater.h"
-
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
 #include "libcommon/utility/utility.h"
