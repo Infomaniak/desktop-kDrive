@@ -17,6 +17,7 @@
  */
 
 import Cocoa
+import InfomaniakDI
 import kDriveCoreUI
 import kDriveResources
 
@@ -27,6 +28,8 @@ final class NonInteractiveButton: NSButton {
 }
 
 final class DriveCellView: NSView {
+    @LazyInjectService var matomo: MatomoUtils
+
     enum Tokens {
         static let backgroundColor = ColorToken.Surface.secondary.asNSColor
         static let activatedBackgroundColor = ColorToken.Surface.tertiary.asNSColor
@@ -165,6 +168,12 @@ final class DriveCellView: NSView {
         needsDisplay = true
 
         toggleDrive?(drive)
+
+        if state == .on {
+            matomo.track(eventWithCategory: .onboardingSyncConfigurationPage, name: "selectDrive")
+        } else {
+            matomo.track(eventWithCategory: .onboardingSyncConfigurationPage, name: "unselectDrive")
+        }
     }
 }
 
