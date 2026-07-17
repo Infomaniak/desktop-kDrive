@@ -2,7 +2,7 @@
 
 #include "abstractosupdater.h"
 
-namespace KDUpdater {
+namespace KDC {
 
 class LinuxUpdater final : public AbstractOsUpdater {
     public:
@@ -10,4 +10,4 @@ class LinuxUpdater final : public AbstractOsUpdater {
                      std::function<void(int, QString)> progressCallback, QString &outMessage) override;
 };
 
-} // namespace KDUpdater
+} // namespace KDC

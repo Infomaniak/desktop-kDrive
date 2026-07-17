@@ -9,7 +9,7 @@
 
 #include <QProcess>
 
-namespace KDUpdater {
+namespace KDC {
 
 bool WindowsUpdater::install(const KDC::VersionInfo &versionInfo, const std::string &desiredVersion,
                              std::function<void(int, QString)> progressCallback, QString &outMessage) {
@@ -106,4 +106,4 @@ bool WindowsUpdater::verifyDigitalSignature(const KDC::SyncPath &filepath, QStri
     return true;
 }
 
-} // namespace KDUpdater
+} // namespace KDC

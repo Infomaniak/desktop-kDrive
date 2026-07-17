@@ -4,7 +4,7 @@
 
 #include "libcommonserver/db/db.h"
 
-namespace KDUpdater {
+namespace KDC {
 
 class ParmsDbLite : public KDC::Db {
     public:
@@ -21,4 +21,4 @@ class ParmsDbLite : public KDC::Db {
         bool upgrade(const std::string &fromVersion, const std::string &toVersion) override;
 };
 
-} // namespace KDUpdater
+} // namespace KDC

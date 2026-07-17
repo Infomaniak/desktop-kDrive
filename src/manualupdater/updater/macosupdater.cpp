@@ -10,7 +10,7 @@
 #include <QFile>
 #include <filesystem>
 
-namespace KDUpdater {
+namespace KDC {
 
 static bool runOsascriptDelete(const QString &posixPath, QString &outMessage) {
     QProcess p;
@@ -202,4 +202,4 @@ bool MacOSUpdater::verifyPackageSignature(const KDC::SyncPath &pkgPath, QString 
     return true;
 }
 
-} // namespace KDUpdater
+} // namespace KDC

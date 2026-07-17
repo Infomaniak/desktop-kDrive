@@ -15,7 +15,7 @@
 #include <regex>
 #include <string>
 
-namespace KDUpdater {
+namespace KDC {
 
 namespace {
 constexpr char kVersionRegexPattern[] = R"(^[0-9]+(\.[0-9]+)*$)";
@@ -288,4 +288,4 @@ void MainWindow::onInstallFinished(bool success, const QString &message) {
     }
 }
 
-} // namespace KDUpdater
+} // namespace KDC

@@ -4,7 +4,7 @@
 
 #include <string>
 
-namespace KDUpdater {
+namespace KDC {
 
 class HttpDownloader {
     public:
@@ -21,4 +21,4 @@ class HttpDownloader {
                                     std::string &outError);
 };
 
-} // namespace KDUpdater
+} // namespace KDC

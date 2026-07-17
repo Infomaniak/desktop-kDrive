@@ -2,7 +2,7 @@
 
 #include "abstractosupdater.h"
 
-namespace KDUpdater {
+namespace KDC {
 
 class WindowsUpdater final : public AbstractOsUpdater {
     public:
@@ -14,4 +14,4 @@ class WindowsUpdater final : public AbstractOsUpdater {
         [[nodiscard]] static bool verifyDigitalSignature(const KDC::SyncPath &filepath, QString &outMessage);
 };
 
-} // namespace KDUpdater
+} // namespace KDC

@@ -33,7 +33,7 @@
 #include <memory>
 #include <sstream>
 
-namespace KDUpdater {
+namespace KDC {
 
 namespace {
 
@@ -213,4 +213,4 @@ bool HttpDownloader::fetchAppVersion(KDC::DistributionChannel channel, const std
     }
 }
 
-} // namespace KDUpdater
+} // namespace KDC
