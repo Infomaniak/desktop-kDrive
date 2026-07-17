@@ -166,6 +166,8 @@ extension RequestNum: CustomStringConvertible {
             return "UTILITY_QUIT"
         case .UTILITY_SEND_APP_START_TRACE:
             return "UTILITY_SEND_APP_START_TRACE"
+        case .UTILITY_INSTALL_MAC_LITESYNC_EXT:
+            return "UTILITY_INSTALL_MAC_LITESYNC_EXT"
         case .UPDATER_CHANGE_CHANNEL:
             return "UPDATER_CHANGE_CHANNEL"
         case .UPDATER_VERSION_INFO:

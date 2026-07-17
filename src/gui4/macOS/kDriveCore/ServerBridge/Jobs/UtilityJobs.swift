@@ -201,4 +201,16 @@ public struct UtilityJobs: Sendable {
             responseType: CallbackMessage<EmptyResponse>.self
         )
     }
+
+    public func installLiteSyncExtension() async throws {
+        let request = await RequestMessage<EmptyQuery>(
+            num: RequestNum.UTILITY_INSTALL_MAC_LITESYNC_EXT,
+            body: EmptyQuery()
+        )
+
+        try await queryFetcher.query(
+            request,
+            responseType: CallbackMessage<EmptyResponse>.self
+        )
+    }
 }

@@ -178,6 +178,8 @@ final class PermissionsViewController: OnboardingStepViewController {
 
         setupUI()
         bindValues()
+
+        viewModel.installLiteSyncExtensionIfNeeded()
     }
 
     override func viewWillAppear() {
