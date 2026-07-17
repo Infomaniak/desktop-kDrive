@@ -10,7 +10,9 @@
 #include <QLabel>
 #include <QTextEdit>
 #include <QProgressBar>
+#include <atomic>
 #include <string>
+#include <thread>
 
 namespace KDUpdater {
 
@@ -19,6 +21,7 @@ class MainWindow : public QMainWindow {
 
     public:
         explicit MainWindow(const UpdaterData &updaterData, QWidget *parent = nullptr);
+        ~MainWindow() override;
 
     private slots:
         void onInstallClicked();
@@ -43,6 +46,9 @@ class MainWindow : public QMainWindow {
         const UpdaterData &_updaterData;
         std::string _installedVersion;
         KDC::VersionInfo _fetchedVersionInfo;
+
+        std::thread _workerThread;
+        std::atomic<bool> _installInProgress{false};
 };
 
 } // namespace KDUpdater

@@ -9,9 +9,28 @@
 #include <QXmlStreamReader>
 #include <QFile>
 #include <filesystem>
-#include <cstdlib>
 
 namespace KDUpdater {
+
+static bool runOsascriptDelete(const QString &posixPath, QString &outMessage) {
+    QProcess p;
+    p.setProgram(QStringLiteral("/usr/bin/osascript"));
+    p.setArguments(QStringList{QStringLiteral("-e"),
+                               QStringLiteral("tell application \"Finder\" to delete POSIX file \"%1\"").arg(posixPath)});
+    p.start();
+    if (!p.waitForFinished(10000)) {
+        LOGW_WARN(KDC::Log::instance()->getLogger(),
+                  L"osascript timed out deleting: " << KDC::CommonUtility::s2ws(posixPath.toStdString()));
+        return false;
+    }
+    if (p.exitCode() != 0) {
+        const auto err = QString::fromUtf8(p.readAllStandardError());
+        LOGW_WARN(KDC::Log::instance()->getLogger(), L"osascript delete failed for: "
+                                                             << KDC::CommonUtility::s2ws(posixPath.toStdString()) << L" — "
+                                                             << err.toStdWString());
+    }
+    return true;
+}
 
 bool MacOSUpdater::install(const KDC::VersionInfo &versionInfo, const std::string &desiredVersion,
                            std::function<void(int, QString)> progressCallback, QString &outMessage) {
@@ -73,17 +92,16 @@ bool MacOSUpdater::install(const KDC::VersionInfo &versionInfo, const std::strin
     if (!verifyPackageSignature(KDC::SyncPath(pkgPath.toStdString()), outMessage)) {
         return false;
     }
-
     progressCallback(85, QObject::tr("Removing old application..."));
-    std::system(
-            "osascript -e 'tell application \"Finder\" to delete POSIX file "
-            "\"/Applications/kDrive/kDrive Uninstaller.app\"'");
-    std::system(
-            "osascript -e 'tell application \"Finder\" to delete POSIX file "
-            "\"/Applications/kDrive/kDrive.app\"'");
-    std::system(
-            "osascript -e 'tell application \"Finder\" to delete POSIX file "
-            "\"/Applications/kDrive\"'");
+    if (std::filesystem::exists("/Applications/kDrive/kDrive Uninstaller.app")) {
+        (void) runOsascriptDelete(QStringLiteral("/Applications/kDrive/kDrive Uninstaller.app"), outMessage);
+    }
+    if (std::filesystem::exists("/Applications/kDrive/kDrive.app")) {
+        (void) runOsascriptDelete(QStringLiteral("/Applications/kDrive/kDrive.app"), outMessage);
+    }
+    if (std::filesystem::exists("/Applications/kDrive")) {
+        (void) runOsascriptDelete(QStringLiteral("/Applications/kDrive"), outMessage);
+    }
 
     progressCallback(95, QObject::tr("Opening installer..."));
     if (!QProcess::startDetached(QStringLiteral("open"), QStringList{pkgPath})) {

@@ -9,6 +9,7 @@
 #include <QHBoxLayout>
 #include <QGroupBox>
 #include <QMessageBox>
+#include <QPointer>
 #include <QRegularExpressionValidator>
 #include <thread>
 #include <regex>
@@ -17,8 +18,10 @@
 namespace KDUpdater {
 
 namespace {
+constexpr char kVersionRegexPattern[] = R"(^[0-9]+(\.[0-9]+)*$)";
+
 bool isValidVersion(const std::string &version) {
-    static const std::regex re(R"(^\d+\.\d+\.\d+\.\d+$)");
+    static const std::regex re(kVersionRegexPattern);
     return std::regex_match(version, re);
 }
 } // namespace
@@ -30,6 +33,15 @@ MainWindow::MainWindow(const UpdaterData &updaterData, QWidget *parent) :
     setupUi();
     updateCurrentVersionLabel();
     fetchAndSetDefaultVersion();
+}
+
+MainWindow::~MainWindow() {
+    if (_workerThread.joinable()) {
+        _installInProgress = false; // allow the thread to finish naturally
+        // We can't safely join here because the thread may be blocked on network I/O.
+        // Detach it to finish in background.
+        _workerThread.detach();
+    }
 }
 
 void MainWindow::setupUi() {
@@ -60,7 +72,7 @@ void MainWindow::setupUi() {
     _versionInput = new QLineEdit(inputGroup);
     _versionInput->setPlaceholderText(tr("e.g., 3.6.10"));
     const auto *validator =
-            new QRegularExpressionValidator(QRegularExpression(QStringLiteral("^[0-9]+(\\.[0-9]+)*$")), _versionInput);
+            new QRegularExpressionValidator(QRegularExpression(QString::fromLatin1(kVersionRegexPattern)), _versionInput);
     _versionInput->setValidator(validator);
     inputRow->addWidget(_desiredVersionLabel);
     inputRow->addWidget(_versionInput);
@@ -143,7 +155,7 @@ bool MainWindow::validateInputVersion(const std::string &inputVersion, std::stri
     }
 
     if (!isValidVersion(inputVersion)) {
-        errorMsg = tr("Invalid version format. Use numbers separated by dots (e.g., 3.6.10.1).").toStdString();
+        errorMsg = tr("Invalid version format. Use numbers separated by dots (e.g., 3.6.10).").toStdString();
         return false;
     }
 
@@ -158,6 +170,11 @@ bool MainWindow::validateInputVersion(const std::string &inputVersion, std::stri
 }
 
 void MainWindow::onInstallClicked() {
+    if (_installInProgress.load()) {
+        _statusLog->append(tr("Installation already in progress."));
+        return;
+    }
+
     const std::string desiredVersion = _versionInput->text().toStdString();
     if (std::string errorMsg; !validateInputVersion(desiredVersion, errorMsg)) {
         QMessageBox::warning(this, tr("Validation Error"), QString::fromStdString(errorMsg));
@@ -167,11 +184,12 @@ void MainWindow::onInstallClicked() {
     _statusLog->append(tr("Starting download of kDrive %1...").arg(QString::fromStdString(desiredVersion)));
     _progressBar->setValue(10);
     _installButton->setEnabled(false);
+    _installInProgress = true;
 
     const KDC::VersionInfo fetchedInfo = _fetchedVersionInfo; // copy for thread safety
     QPointer<MainWindow> weakThis = this;
 
-    std::thread([weakThis, desiredVersion, fetchedInfo]() {
+    _workerThread = std::thread([weakThis, desiredVersion, fetchedInfo]() {
         LOGW_INFO(KDC::Log::instance()->getLogger(),
                   L"Starting installation thread for version " << QString::fromStdString(desiredVersion).toStdWString());
 
@@ -204,8 +222,7 @@ void MainWindow::onInstallClicked() {
                   L"Original download URL: " << QString::fromStdString(originalUrl).toStdWString());
         LOGW_INFO(KDC::Log::instance()->getLogger(),
                   L"Target download URL for version " << QString::fromStdString(desiredVersion).toStdWString() << L": "
-                                                                      << QString::fromStdString(specificVersion.downloadUrl)
-                                                                             .toStdWString());
+                                                      << QString::fromStdString(specificVersion.downloadUrl).toStdWString());
 
         if (weakThis) {
             QMetaObject::invokeMethod(
@@ -247,7 +264,7 @@ void MainWindow::onInstallClicked() {
                     weakThis, [weakThis, success, message]() { weakThis->onInstallFinished(success, message); },
                     Qt::QueuedConnection);
         }
-    }).detach();
+    });
 }
 
 void MainWindow::onInstallProgress(int percent, const QString &message) {
@@ -258,6 +275,7 @@ void MainWindow::onInstallProgress(int percent, const QString &message) {
 }
 
 void MainWindow::onInstallFinished(bool success, const QString &message) {
+    _installInProgress = false;
     _progressBar->setValue(success ? 100 : 0);
     _installButton->setEnabled(true);
     if (success) {

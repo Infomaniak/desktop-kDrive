@@ -30,41 +30,49 @@
 
 #include <Poco/JSON/Parser.h>
 #include <fstream>
+#include <memory>
 #include <sstream>
 
 namespace KDUpdater {
 
 namespace {
+
 Poco::Net::Context::Ptr createSslContext() {
     Poco::Net::Context::Ptr context =
             new Poco::Net::Context(Poco::Net::Context::TLS_CLIENT_USE, "", "", "", Poco::Net::Context::VERIFY_NONE);
     context->requireMinimumProtocol(Poco::Net::Context::PROTO_TLSV1_2);
     return context;
 }
+
+inline std::unique_ptr<Poco::Net::HTTPSClientSession> createHttpsSession(const std::string &url, Poco::Timespan timeout,
+                                                                         std::string &outPath) {
+    Poco::URI uri(url);
+    auto session = std::make_unique<Poco::Net::HTTPSClientSession>(uri.getHost(), uri.getPort(), createSslContext());
+    session->setTimeout(timeout);
+
+    outPath = uri.getPathAndQuery();
+    if (outPath.empty()) {
+        outPath = "/";
+    }
+    return session;
+}
+
 } // namespace
 
 HttpDownloader::Result HttpDownloader::get(const std::string &url) {
     Result result;
     try {
-        Poco::URI uri(url);
-
-        Poco::Net::HTTPSClientSession session(uri.getHost(), uri.getPort(), createSslContext());
-        session.setTimeout(Poco::Timespan(30, 0));
-
-        std::string path = uri.getPathAndQuery();
-        if (path.empty()) {
-            path = "/";
-        }
+        std::string path;
+        auto session = createHttpsSession(url, Poco::Timespan(30, 0), path);
 
         Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, path, Poco::Net::HTTPMessage::HTTP_1_1);
         request.set("User-Agent", KDC::CommonUtility::userAgentString());
         request.set("Accept", "application/json");
 
-        std::ostream &reqStream = session.sendRequest(request);
-        (void) reqStream;
+        session->sendRequest(request);
 
         Poco::Net::HTTPResponse response;
-        std::istream &respStream = session.receiveResponse(response);
+        std::istream &respStream = session->receiveResponse(response);
 
         result.statusCode = static_cast<int>(response.getStatus());
 
@@ -86,27 +94,19 @@ HttpDownloader::Result HttpDownloader::get(const std::string &url) {
     return result;
 }
 
-HttpDownloader::Result HttpDownloader::downloadFile(const std::string &url, const KDC::SyncPath &destPath) {
+HttpDownloader::Result HttpDownloader::downloadFile(const std::string &url, const KDC::SyncPath &destPath, long timeoutSeconds) {
     Result result;
     try {
-        Poco::URI uri(url);
-
-        Poco::Net::HTTPSClientSession session(uri.getHost(), uri.getPort(), createSslContext());
-        session.setTimeout(Poco::Timespan(30, 0));
-
-        std::string path = uri.getPathAndQuery();
-        if (path.empty()) {
-            path = "/";
-        }
+        std::string path;
+        auto session = createHttpsSession(url, Poco::Timespan(timeoutSeconds, 0), path);
 
         Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, path, Poco::Net::HTTPMessage::HTTP_1_1);
         request.set("User-Agent", KDC::CommonUtility::userAgentString());
 
-        std::ostream &reqStream = session.sendRequest(request);
-        (void) reqStream;
+        session->sendRequest(request);
 
         Poco::Net::HTTPResponse response;
-        std::istream &respStream = session.receiveResponse(response);
+        std::istream &respStream = session->receiveResponse(response);
 
         result.statusCode = static_cast<int>(response.getStatus());
 
