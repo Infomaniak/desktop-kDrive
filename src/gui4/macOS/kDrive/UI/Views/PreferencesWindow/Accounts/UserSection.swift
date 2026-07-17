@@ -29,8 +29,8 @@ struct UserSection: View {
 
     let user: UIUser
 
-    let synchronizedDrives: [UIDrive]
-    let availableDrives: [UIAvailableDrive]
+    let synchronizedDrives: [UIDriveContext]
+    let availableDrives: [UIAvailableDriveContext]
 
     enum DomainError: LocalizedError {
         case impossibleToDeleteUser
@@ -47,12 +47,22 @@ struct UserSection: View {
         Section {
             UserHeaderCellView(avatar: user.avatar, name: user.name, email: user.email)
 
-            ForEach(synchronizedDrives) { drive in
-                AccountDriveCellView(userDbId: user.dbId, drive: drive, isSynchronized: true)
+            ForEach(synchronizedDrives) { driveContext in
+                AccountDriveCellView(
+                    userDbId: user.dbId,
+                    drive: driveContext.drive,
+                    organizationName: driveContext.account.name,
+                    isSynchronized: true
+                )
             }
 
-            ForEach(availableDrives) { drive in
-                AccountDriveCellView(userDbId: user.dbId, drive: drive, isSynchronized: false)
+            ForEach(availableDrives) { driveContext in
+                AccountDriveCellView(
+                    userDbId: user.dbId,
+                    drive: driveContext.availableDrive,
+                    organizationName: driveContext.account?.name,
+                    isSynchronized: false
+                )
             }
 
             Button(KDriveLocalizable.buttonDisconnectAccount, role: .destructive) {
@@ -87,7 +97,7 @@ struct UserSection: View {
 #Preview {
     UserSection(
         user: PreviewHelper.user,
-        synchronizedDrives: [PreviewHelper.drive1],
-        availableDrives: [PreviewHelper.availableDrive1]
+        synchronizedDrives: [PreviewHelper.driveContext1],
+        availableDrives: [PreviewHelper.availableDriveContext1]
     )
 }

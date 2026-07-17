@@ -28,6 +28,7 @@ struct AccountDriveCellView: View {
 
     let userDbId: Int
     let drive: any UIDriveRepresentation
+    let organizationName: String?
     let isSynchronized: Bool
 
     private var synchroConfiguration: SynchroConfiguration {
@@ -41,10 +42,19 @@ struct AccountDriveCellView: View {
                 color: drive.color ?? ColorToken.Drive.defaultColor.asColor
             )
 
-            Text(drive.name)
-                .font(.Tokens.body)
-                .foregroundStyle(ColorToken.Text.primary.asColor)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(alignment: .leading, spacing: 0) {
+                Text(drive.name)
+                    .font(.Tokens.body)
+                    .foregroundStyle(ColorToken.Text.primary.asColor)
+
+                if let organizationName {
+                    Text(organizationName)
+                        .font(.Tokens.subheadline)
+                        .foregroundStyle(ColorToken.Text.tertiary.asColor)
+                }
+            }
+            .lineLimit(1)
+            .frame(maxWidth: .infinity, alignment: .leading)
 
             if isSynchronized {
                 Text(KDriveLocalizable.syncedDrive)
@@ -119,5 +129,10 @@ struct AccountDriveCellView: View {
 }
 
 #Preview {
-    AccountDriveCellView(userDbId: PreviewHelper.user.id, drive: PreviewHelper.drive1, isSynchronized: true)
+    AccountDriveCellView(
+        userDbId: PreviewHelper.user.id,
+        drive: PreviewHelper.drive1,
+        organizationName: PreviewHelper.account.name,
+        isSynchronized: true
+    )
 }
