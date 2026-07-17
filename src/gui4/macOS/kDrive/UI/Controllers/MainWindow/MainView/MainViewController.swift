@@ -41,6 +41,7 @@ final class MainViewController: IKSplitViewController {
     @LazyInjectService private var synchroStateObserver: UISynchroStateObserving
     @LazyInjectService private var vfsConversionStore: VFSConversionStoring
     @LazyInjectService private var vfsConversionStoreObservable: VFSConversionStoreObservable
+    @LazyInjectService var matomo: MatomoUtils
 
     private let viewModel = MainViewModel()
 
@@ -303,8 +304,10 @@ extension MainViewController {
             do {
                 switch synchroStateObserver.synchroState.status {
                 case .starting, .running, .idle:
+                    matomo.track(eventWithCategory: .startPauseButton, name: "pauseSync")
                     try await SyncJobs().stopSync(syncDbId: syncDbId)
                 case .pauseAsked, .paused, .stopAsked, .stopped, .error:
+                    matomo.track(eventWithCategory: .startPauseButton, name: "startSync")
                     try await SyncJobs().startSync(syncDbId: syncDbId)
                 }
             } catch {
