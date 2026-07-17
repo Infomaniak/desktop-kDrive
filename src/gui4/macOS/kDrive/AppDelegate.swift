@@ -30,6 +30,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     // periphery:ignore - We keep a strong reference on the statusBarManager
     private(set) var statusBarManager: StatusBarManager?
 
+    // periphery:ignore - We keep a strong reference on the dockIconManager
+    private(set) var dockIconManager: DockIconManager?
+
     // periphery:ignore - We keep a strong reference on the SentryService
     private(set) var sentryService: SentryService?
 
@@ -53,6 +56,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         sentryService?.initSentry()
 
         statusBarManager = StatusBarManager()
+        dockIconManager = DockIconManager()
         updateModalPresenter = UpdateModalPresenter()
 
         openMainWindow()
@@ -89,11 +93,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func openMainWindow() {
-        if #available(macOS 14.0, *) {
-            NSApp.activate()
-        } else {
-            NSApp.activate(ignoringOtherApps: true)
-        }
+        dockIconManager?.showDockIconAndActivate()
 
         mainWindow.showWindow(nil)
         mainWindow.window?.orderFrontRegardless()
@@ -111,6 +111,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             preferencesWindow = PreferencesWindowController()
         }
 
+        dockIconManager?.showDockIconAndActivate()
         preferencesWindow?.window?.makeKeyAndOrderFront(nil)
         preferencesWindow?.window?.isReleasedWhenClosed = false
     }
@@ -124,13 +125,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             onboardingWindow = controller
         }
 
-        if #available(macOS 14.0, *) {
-            NSApp.activate()
-        } else {
-            NSApp.activate(ignoringOtherApps: true)
-        }
-
+        dockIconManager?.showDockIconAndActivate()
         onboardingWindow?.window?.makeKeyAndOrderFront(nil)
+    }
+
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        if !flag {
+            openMainWindow()
+        }
+        return true
     }
 
     @objc func quitApp() {
