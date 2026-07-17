@@ -47,6 +47,7 @@
 #include <Poco/Base64Decoder.h>
 #include <Poco/Base64Encoder.h>
 #include <Poco/StreamCopier.h>
+#include <Poco/Dynamic/Struct.h>
 
 #if defined(KD_MACOS) || defined(KD_LINUX)
 #include <sys/statvfs.h>
@@ -80,6 +81,9 @@
 constexpr std::string_view liteSyncExtBundleIdStr = "com.infomaniak.drive.desktopclient.LiteSyncExt";
 constexpr std::string_view loginItemAgentIdStr = "com.infomaniak.drive.desktopclient.LoginItemAgent";
 #endif
+
+// Poco 1.15.x may miss default Dynamic::Struct<std::string> instantiation in some builds.
+template class Poco::Dynamic::Struct<std::string>;
 
 namespace KDC {
 
