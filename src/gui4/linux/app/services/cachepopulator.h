@@ -19,6 +19,7 @@
 #pragma once
 
 #include "app/cache/appcache.h"
+#include "app/cache/parametersstore.h"
 #include "app/services/commservice.h"
 
 #include <QObject>
@@ -28,23 +29,26 @@
 namespace KDC {
 
 /**
- * Sequential parent-first snapshot loader for Linux v4 cache population and explicit reconciliation.
+ * Snapshot loader for Linux v4 cache population and explicit reconciliation.
  *
- * Loads users, then accounts, then drives, then syncs, then errors so the graph-backed AppCache is populated in
- * parent-first order. Initial bootstrap remains fatal on failure because the app has no coherent cache to run from.
- * Reconciliation reuses the same sequence after recoverable mutations and reports failures to the caller without
- * emitting the bootstrap signal. Once a snapshot is complete, asks the server to refresh live user/account/drive metadata
- * so quota-only drive updates are pushed through CachePipeline.
+ * Loads application parameters and user data as two asynchronous branches. The user-data branch remains parent-first:
+ * users, accounts, drives, syncs, then errors. Product entities go to AppCache; application parameters go to
+ * ParametersStore. Completion is reported only after both branches succeed. Initial bootstrap remains fatal on failure
+ * because the app has no coherent cache to run from. Reconciliation reports failures to the caller without emitting the
+ * bootstrap signal. Once a snapshot is complete, asks the server to refresh live user/account/drive metadata so
+ * quota-only drive updates are pushed through CachePipeline.
  */
 class CachePopulator : public QObject {
         Q_OBJECT
 
     public:
-        explicit CachePopulator(CommService &commService, AppCache &appCache, QObject *parent = nullptr);
+        explicit CachePopulator(CommService &commService, AppCache &appCache, ParametersStore &parametersStore,
+                                QObject *parent = nullptr);
         /**
          * Populates the initial cache snapshot.
          *
-         * Failure is fatal because Linux v4 cannot safely start without a coherent user/account/drive/sync graph.
+         * Failure is fatal because Linux v4 cannot safely start without parameters and a coherent
+         * user/account/drive/sync graph.
          */
         void bootstrap();
 
@@ -69,16 +73,32 @@ class CachePopulator : public QObject {
             Reconciliation,
         };
 
-        void loadUsers(PopulationMode mode);
+        enum class PopulationBranch : uint8_t {
+            Parameters,
+            UserData,
+        };
+
+        struct PopulationProgress {
+                bool parametersCompleted{false};
+                bool userDataCompleted{false};
+                bool terminalSignalEmitted{false};
+        };
+
+        void startPopulation(PopulationMode mode);
+        void loadParameters(PopulationMode mode);
+        void loadUserData(PopulationMode mode);
         void loadAccounts(PopulationMode mode);
         void loadDrives(PopulationMode mode);
         void loadSyncs(PopulationMode mode);
         void loadSyncErrors(PopulationMode mode);
+        void markBranchCompleted(PopulationMode mode, PopulationBranch branch);
         void activateLiveInfoRefresh() const;
         [[nodiscard]] bool handlePopulationFailure(const char *stage, const ExitInfo &exitInfo, PopulationMode mode);
 
         CommService &_commService;
         AppCache &_appCache;
+        ParametersStore &_parametersStore;
+        PopulationProgress _populationProgress;
 };
 
 } // namespace KDC
