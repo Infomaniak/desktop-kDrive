@@ -21,12 +21,12 @@
 #include "libcommon/utility/utility.h"
 
 #include <QDir>
+#include <QLoggingCategory>
+#include <QRegularExpression>
 #include <QStringList>
 #include <QThread>
-#include <QMap>
-#include <QRegularExpression>
-#include <QLoggingCategory>
 
+#include <cstdint>
 #include <iostream>
 
 #if defined(KD_WINDOWS)
@@ -46,8 +46,22 @@ constexpr char logMessagePattern[] =
 
 namespace KDC {
 
-static const QMap<QtMsgType, int> qtMsgTypeLevel = {{QtInfoMsg, 0},     {QtDebugMsg, 1},  {QtWarningMsg, 2},
-                                                    {QtCriticalMsg, 3}, {QtSystemMsg, 3}, {QtFatalMsg, 4}};
+static int8_t logLevelForMessageType(const QtMsgType type) noexcept {
+    switch (type) {
+        case QtDebugMsg:
+            return 0;
+        case QtInfoMsg:
+            return 1;
+        case QtWarningMsg:
+            return 2;
+        case QtCriticalMsg: // In Qt's implem, QtCriticalMsg == QtSystemMsg
+            return 3;
+        case QtFatalMsg:
+            return 4;
+    }
+
+    Q_UNREACHABLE();
+}
 
 static QString formatLogMessageWithShortFile(const QtMsgType type, const QMessageLogContext &ctx, const QString &message) {
     SyncName fileName;
@@ -71,8 +85,10 @@ static void earlyLogCatcher(const QtMsgType type, const QMessageLogContext &ctx,
 }
 
 static void kdriveLogCatcher(QtMsgType type, const QMessageLogContext &ctx, const QString &message) {
-    auto logger = Logger::instance();
-    if (qtMsgTypeLevel[type] < logger->minLogLevel()) return;
+    const auto logger = Logger::instance();
+    if (logLevelForMessageType(type) < logger->minLogLevel()) {
+        return;
+    }
 
     if (!logger->isNoop()) {
         logger->doLog(formatLogMessageWithShortFile(type, ctx, message));
