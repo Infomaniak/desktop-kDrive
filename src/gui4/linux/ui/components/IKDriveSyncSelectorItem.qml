@@ -24,17 +24,16 @@ import QtQuick.Effects
 import kDrive.UI
 
 // Presents a drive or synchronization selector entry with independent selection, status, and interaction states.
-Rectangle {
+Button {
     id: root
 
-    property int entryType: SyncSelectorModel.DriveOnly
+    property int entryType: SyncSelectorModel.ClassicSync
     property string title: ""
     property string subtitle: ""
     property color driveColor: IKColors.driveDefaultColor
     property int errorCount: 0
     property bool warning: false
     property bool selected: false
-    property bool hovered: false
     property bool interactive: true
     property bool showSurface: true
     property bool showChevron: false
@@ -60,109 +59,123 @@ Rectangle {
     }
 
     implicitHeight: hasSubtitle ? IKMainWindow.syncSelectorAdvancedHeight : IKMainWindow.syncSelectorHeight
-    radius: IKRadius.r4
-    color: selected || hovered ? IKColors.surfaceTertiary : showSurface ? IKColors.surfacePrimary : "transparent"
+    padding: 0
+    enabled: interactive
+    focusPolicy: interactive ? Qt.StrongFocus : Qt.NoFocus
+    hoverEnabled: interactive
+    text: hasSubtitle ? title + ", " + subtitle : title
+    onClicked: triggered()
 
-    Item {
-        id: leadingIcon
+    background: Rectangle {
+        radius: IKRadius.r4
+        color: root.selected || root.down || root.hovered ? IKColors.surfaceTertiary
+                                                          : root.showSurface ? IKColors.surfacePrimary : "transparent"
+        border.width: root.visualFocus ? 2 : 0
+        border.color: IKColors.accentPrimary
+    }
 
-        anchors.left: parent.left
-        anchors.leftMargin: IKSpacing.s8
-        anchors.verticalCenter: parent.verticalCenter
-        width: IKMainWindow.syncSelectorIconSize
-        height: IKMainWindow.syncSelectorIconSize
+    contentItem: Item {
+        Item {
+            id: leadingIcon
 
-        IKDriveIcon {
-            anchors.fill: parent
-            visible: !root.advancedSync
-            driveColor: root.driveColor
-        }
+            anchors.left: parent.left
+            anchors.leftMargin: IKSpacing.s8
+            anchors.verticalCenter: parent.verticalCenter
+            width: IKMainWindow.syncSelectorIconSize
+            height: IKMainWindow.syncSelectorIconSize
 
-        Image {
-            anchors.fill: parent
-            visible: root.advancedSync
-            source: "qrc:/assets/main/folder.svg"
-            sourceSize.width: width
-            sourceSize.height: height
-            layer.enabled: visible
-            layer.effect: MultiEffect {
-                colorization: 1
-                colorizationColor: root.driveColor
+            IKDriveIcon {
+                anchors.fill: parent
+                visible: !root.advancedSync
+                driveColor: root.driveColor
             }
-        }
-    }
 
-    Column {
-        id: textColumn
-
-        anchors.left: leadingIcon.right
-        anchors.leftMargin: IKSpacing.s8
-        anchors.right: accessories.left
-        anchors.rightMargin: IKSpacing.s8
-        anchors.verticalCenter: parent.verticalCenter
-        spacing: 0
-
-        Text {
-            id: titleText
-
-            width: parent.width
-            text: root.title
-            color: IKColors.textPrimary
-            font.pixelSize: IKFonts.bodySize
-            font.weight: IKFonts.regular
-            elide: Text.ElideRight
-        }
-
-        Text {
-            id: subtitleText
-
-            width: parent.width
-            visible: root.hasSubtitle
-            text: root.subtitle
-            color: IKColors.textSecondary
-            font.pixelSize: IKFonts.subheadlineSize
-            font.weight: IKFonts.regular
-            elide: Text.ElideRight
-        }
-    }
-
-    Row {
-        id: accessories
-
-        anchors.right: parent.right
-        anchors.rightMargin: IKSpacing.s8
-        anchors.verticalCenter: parent.verticalCenter
-        spacing: IKSpacing.s8
-
-        Image {
-            visible: root.warning
-            width: visible ? IKMainWindow.syncSelectorStatusIconSize : 0
-            height: IKMainWindow.syncSelectorStatusIconSize
-            source: "qrc:/assets/main/triangle-alert.svg"
-            sourceSize.width: width
-            sourceSize.height: height
-            layer.enabled: visible
-            layer.effect: MultiEffect {
-                colorization: 1
-                colorizationColor: IKColors.statusMediumWarning
+            Image {
+                anchors.fill: parent
+                visible: root.advancedSync
+                source: "qrc:/assets/main/folder.svg"
+                sourceSize.width: width
+                sourceSize.height: height
+                layer.enabled: visible
+                layer.effect: MultiEffect {
+                    colorization: 1
+                    colorizationColor: root.driveColor
+                }
             }
         }
 
-        IKBadge {
-            dot: !root.warning && root.errorCount > 0
+        Column {
+            id: textColumn
+
+            anchors.left: leadingIcon.right
+            anchors.leftMargin: IKSpacing.s8
+            anchors.right: accessories.left
+            anchors.rightMargin: IKSpacing.s8
+            anchors.verticalCenter: parent.verticalCenter
+            spacing: 0
+
+            Text {
+                id: titleText
+
+                width: parent.width
+                text: root.title
+                color: IKColors.textPrimary
+                font.pixelSize: IKFonts.bodySize
+                font.weight: IKFonts.regular
+                elide: Text.ElideRight
+            }
+
+            Text {
+                id: subtitleText
+
+                width: parent.width
+                visible: root.hasSubtitle
+                text: root.subtitle
+                color: IKColors.textSecondary
+                font.pixelSize: IKFonts.subheadlineSize
+                font.weight: IKFonts.regular
+                elide: Text.ElideRight
+            }
         }
 
-        Image {
-            visible: root.showChevron
-            width: visible ? IKIconSizes.small : 0
-            height: IKIconSizes.small
-            source: "qrc:/assets/main/chevron-down.svg"
-            sourceSize.width: width
-            sourceSize.height: height
-            layer.enabled: visible
-            layer.effect: MultiEffect {
-                colorization: 1
-                colorizationColor: IKColors.textSecondary
+        Row {
+            id: accessories
+
+            anchors.right: parent.right
+            anchors.rightMargin: IKSpacing.s8
+            anchors.verticalCenter: parent.verticalCenter
+            spacing: IKSpacing.s8
+
+            Image {
+                visible: root.warning
+                width: visible ? IKMainWindow.syncSelectorStatusIconSize : 0
+                height: IKMainWindow.syncSelectorStatusIconSize
+                source: "qrc:/assets/main/triangle-alert.svg"
+                sourceSize.width: width
+                sourceSize.height: height
+                layer.enabled: visible
+                layer.effect: MultiEffect {
+                    colorization: 1
+                    colorizationColor: IKColors.statusMediumWarning
+                }
+            }
+
+            IKBadge {
+                dot: !root.warning && root.errorCount > 0
+            }
+
+            Image {
+                visible: root.showChevron
+                width: visible ? IKIconSizes.small : 0
+                height: IKIconSizes.small
+                source: "qrc:/assets/main/chevron-down.svg"
+                sourceSize.width: width
+                sourceSize.height: height
+                layer.enabled: visible
+                layer.effect: MultiEffect {
+                    colorization: 1
+                    colorizationColor: IKColors.textSecondary
+                }
             }
         }
     }
@@ -172,15 +185,11 @@ Rectangle {
 
         anchors.fill: parent
         hoverEnabled: true
-        acceptedButtons: root.interactive ? Qt.LeftButton : Qt.NoButton
+        acceptedButtons: Qt.NoButton
+    }
+
+    HoverHandler {
         cursorShape: root.interactive ? Qt.PointingHandCursor : Qt.ArrowCursor
-        onEntered: root.hovered = true
-        onExited: root.hovered = false
-        onClicked: {
-            if (root.interactive) {
-                root.triggered()
-            }
-        }
     }
 
     ToolTip {
