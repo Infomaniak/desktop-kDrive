@@ -23,6 +23,11 @@ class AbstractOsUpdater {
          */
         virtual bool install(const KDC::VersionInfo &versionInfo, const std::string &desiredVersion,
                              std::function<void(int, QString)> progressCallback, QString &outMessage) = 0;
+
+    protected:
+        [[nodiscard]] static bool verifyFileChecksum(const KDC::VersionInfo &versionInfo, const KDC::SyncPath &filepath,
+                                                     QString &outMessage);
+        [[nodiscard]] static std::string computeFileChecksum(const KDC::SyncPath &filepath);
 };
 
 std::unique_ptr<AbstractOsUpdater> createOsUpdater();

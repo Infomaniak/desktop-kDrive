@@ -64,7 +64,14 @@ bool LinuxUpdater::install(const KDC::VersionInfo &versionInfo, const std::strin
         return false;
     }
 
-    progressCallback(60, QObject::tr("Making installer executable..."));
+    progressCallback(55, QObject::tr("Verifying file integrity..."));
+    if (!versionInfo.checksum.empty()) {
+        if (!verifyFileChecksum(versionInfo, destPath, outMessage)) {
+            return false;
+        }
+    }
+
+    progressCallback(70, QObject::tr("Making AppImage executable..."));
     try {
         std::filesystem::permissions(
                 destPath,
@@ -75,7 +82,7 @@ bool LinuxUpdater::install(const KDC::VersionInfo &versionInfo, const std::strin
                   L"Failed to make AppImage executable: " << KDC::CommonUtility::s2ws(e.what()));
     }
 
-    progressCallback(80, QObject::tr("Opening download folder..."));
+    progressCallback(90, QObject::tr("Opening download folder..."));
     if (!QProcess::startDetached(QStringLiteral("xdg-open"), QStringList{QString::fromStdString(destDir.string())})) {
         outMessage = QObject::tr("AppImage saved to %1. Please open it manually.").arg(QString::fromStdString(destDir.string()));
     } else {
