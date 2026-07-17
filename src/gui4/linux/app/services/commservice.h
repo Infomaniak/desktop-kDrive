@@ -246,8 +246,7 @@ class CommService : public QObject {
         void syncAdded(const BaseSync &info);
         void syncUpdated(const BaseSync &info);
         void syncRemoved(SyncDbId syncDbId);
-        void syncProgressInfo(SyncDbId syncDbId, SyncStatus status, SyncStep step, int64_t currentFile, int64_t totalFiles,
-                              int64_t completedSize, int64_t totalSize, int64_t estimatedRemainingTime);
+        void syncProgressInfo(SyncDbId syncDbId, const KDC::SyncRuntimeInfo &runtimeInfo);
         void itemCompleted(SyncDbId syncDbId, const SyncFileItemInfo &info);
 
         // --- Error ---
