@@ -60,6 +60,16 @@ public enum PreviewHelper {
         name: "Tim Cook"
     )
 
+    public static let driveContext1 = UIDriveContext(
+        drive: PreviewHelper.drive1,
+        account: PreviewHelper.account
+    )
+
+    public static let availableDriveContext1 = UIAvailableDriveContext(
+        availableDrive: PreviewHelper.availableDrive1,
+        account: PreviewHelper.account
+    )
+
     public static let drive1 = UIDrive(
         dbId: 1,
         driveId: 1,
