@@ -39,6 +39,7 @@
 #include <iostream> // std::ios, std::istream, std::cout, std::cerr
 #include <atomic>
 #include <functional>
+#include <mutex>
 #include <thread>
 #include <Poco/JSON/Parser.h>
 #include <Poco/Net/HTTPRequest.h>
@@ -57,30 +58,36 @@ const int64_t sleepDurationThreshold = 60000; // 60'000 ms -> 1 min
 
 const std::string AbstractNetworkJob::_userAgent = KDC::CommonUtility::userAgentString();
 Poco::Net::Context::Ptr AbstractNetworkJob::_context = nullptr;
+std::mutex AbstractNetworkJob::_contextMutex;
 AbstractNetworkJob::TimeoutHelper AbstractNetworkJob::_timeoutHelper;
 
 AbstractNetworkJob::AbstractNetworkJob() :
     _requestUuid(CommonUtility::generateUUID()) {
     if (!_context) {
-        for (int trials = 1; trials <= std::min(_trials, MAX_TRIALS); trials++) {
-            try {
-                _context =
-                        new Poco::Net::Context(Poco::Net::Context::TLS_CLIENT_USE, "", "", "", Poco::Net::Context::VERIFY_NONE);
-                _context->requireMinimumProtocol(Poco::Net::Context::PROTO_TLSV1_2);
-            } catch (Poco::Exception const &e) {
-                if (trials < _trials) {
-                    LOG_INFO(_logger, "Error in Poco::Net::Context constructor: " << errorText(e) << ", retrying...");
-                    continue;
-                } else {
-                    LOG_INFO(_logger, "Error in Poco::Net::Context constructor: " << errorText(e));
-                    throw std::runtime_error(errorText(e).c_str());
-                }
-            } catch (const std::exception &e) {
-                if (trials < _trials) {
-                    LOG_INFO(_logger, "Unknown error in Poco::Net::Context constructor: " << errorText(e) << ", retrying...");
-                } else {
-                    LOG_ERROR(_logger, "Unknown error in Poco::Net::Context constructor: " << errorText(e));
-                    throw std::runtime_error(errorText(e).c_str());
+        const std::scoped_lock lock(_contextMutex);
+        if (!_context) {
+            for (int trials = 1; trials <= std::min(_trials, MAX_TRIALS); trials++) {
+                try {
+                    _context = new Poco::Net::Context(Poco::Net::Context::TLS_CLIENT_USE, "", "", "",
+                                                      Poco::Net::Context::VERIFY_NONE);
+                    _context->requireMinimumProtocol(Poco::Net::Context::PROTO_TLSV1_2);
+                } catch (Poco::Exception const &e) {
+                    _context = nullptr; // Ensure context is reset on partial initialization failure
+                    if (trials < _trials) {
+                        LOG_INFO(_logger, "Error in Poco::Net::Context constructor: " << errorText(e) << ", retrying...");
+                        continue;
+                    } else {
+                        LOG_INFO(_logger, "Error in Poco::Net::Context constructor: " << errorText(e));
+                        throw std::runtime_error(errorText(e).c_str());
+                    }
+                } catch (const std::exception &e) {
+                    _context = nullptr; // Ensure context is reset on partial initialization failure
+                    if (trials < _trials) {
+                        LOG_INFO(_logger, "Unknown error in Poco::Net::Context constructor: " << errorText(e) << ", retrying...");
+                    } else {
+                        LOG_ERROR(_logger, "Unknown error in Poco::Net::Context constructor: " << errorText(e));
+                        throw std::runtime_error(errorText(e).c_str());
+                    }
                 }
             }
         }
@@ -196,7 +203,11 @@ ExitInfo AbstractNetworkJob::runJob() noexcept {
 
         uri = Poco::URI(url);
 
-        createSession(uri);
+        outputExitInfo = createSession(uri);
+        if (!outputExitInfo) {
+            LOG_WARN(_logger, "Failed to create session for job " << jobId() << " " << uri.toString());
+            break;
+        }
 
         try {
             outputExitInfo = canRun();
@@ -330,7 +341,7 @@ void AbstractNetworkJob::abort() {
     abortSession();
 }
 
-void AbstractNetworkJob::createSession(const Poco::URI &uri) {
+ExitInfo AbstractNetworkJob::createSession(const Poco::URI &uri) {
     const std::scoped_lock lock(_mutexSession);
 
     if (_session) {
@@ -338,7 +349,17 @@ void AbstractNetworkJob::createSession(const Poco::URI &uri) {
         clearSession();
     }
 
-    _session.reset(new Poco::Net::HTTPSClientSession(uri.getHost(), uri.getPort(), _context));
+    try {
+        _session.reset(new Poco::Net::HTTPSClientSession(uri.getHost(), uri.getPort(), _context));
+    } catch (Poco::Exception &e) {
+        LOG_WARN(_logger,
+                 "Failed to create HTTPS session for job " << jobId() << " (" << uri.toString() << "): " << errorText(e));
+        return {ExitCode::NetworkError, ExitCause::Unknown};
+    } catch (const std::exception &e) {
+        LOG_WARN(_logger,
+                 "Failed to create HTTPS session for job " << jobId() << " (" << uri.toString() << "): " << errorText(e));
+        return {ExitCode::NetworkError, ExitCause::Unknown};
+    }
 
     if (_customTimeout) {
         _session->setTimeout(Poco::Timespan(_customTimeout, 0));
@@ -352,6 +373,8 @@ void AbstractNetworkJob::createSession(const Poco::URI &uri) {
             _session->setProxyCredentials(Proxy::instance()->proxyConfig().user(), Proxy::instance()->proxyConfig().token());
         }
     }
+
+    return ExitCode::Ok;
 }
 
 void AbstractNetworkJob::clearSession() {
@@ -671,7 +694,9 @@ ExitInfo AbstractNetworkJob::followRedirect() {
 
     // Follow redirection
     LOG_DEBUG(_logger, "Request " << jobId() << ", following redirection: " << redirectUrl);
-    createSession(uri);
+    if (const auto exitInfo = createSession(uri); !exitInfo) {
+        return exitInfo;
+    }
 
     if (const auto exitInfo = sendRequest(uri); !exitInfo) {
         return exitInfo;
