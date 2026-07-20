@@ -3,7 +3,6 @@
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/log/log.h"
-#include "utility/utility.h"
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
@@ -20,22 +19,21 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     {
-        using namespace KDC;
+        using namespace KDC; // Required: in Release mode the LOG macro calls a KDC method without a ::KDC qualifier.
         LOG_INFO(Log::instance()->getLogger(), "kDrive Recovery Updater started");
     }
 
     KDC::UpdaterData updaterData;
     if (!updaterData.initialize()) {
         {
-            using namespace KDC;
+            using namespace KDC; // same as above
             LOG_ERROR(Log::instance()->getLogger(), "Failed to initialize updater data");
         }
         return 1;
     }
 
-    // log the distributionChannel
     {
-        using namespace KDC;
+        using namespace KDC; // same as above
         LOG_INFO(Log::instance()->getLogger(), "Distribution Channel: " << updaterData.distributionChannel());
     }
 

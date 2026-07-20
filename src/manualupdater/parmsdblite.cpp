@@ -21,6 +21,7 @@ std::shared_ptr<ParmsDbLite> ParmsDbLite::instance(const std::filesystem::path &
     return db;
 }
 
+// Dummy create override
 bool ParmsDbLite::create(bool &retry) {
     retry = false;
     return true;
@@ -31,6 +32,7 @@ bool ParmsDbLite::prepare() {
     return true;
 }
 
+// Dummy upgrade override
 bool ParmsDbLite::upgrade(const std::string &fromVersion, const std::string &toVersion) {
     (void) fromVersion;
     (void) toVersion;
