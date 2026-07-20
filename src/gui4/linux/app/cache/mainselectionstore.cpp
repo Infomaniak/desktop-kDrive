@@ -30,6 +30,11 @@ MainSelectionStore::MainSelectionStore(AppCache &cache, QObject *const parent) :
     (void) connect(&_cache, &AppCache::accountsChanged, this, &MainSelectionStore::handleContextDataChanged);
     (void) connect(&_cache, &AppCache::drivesChanged, this, &MainSelectionStore::handleContextDataChanged);
     (void) connect(&_cache, &AppCache::syncErrorsChanged, this, &MainSelectionStore::handleContextDataChanged);
+    (void) connect(&_cache, &AppCache::syncRuntimeInfoChanged, this, [this](const SyncDbId syncDbId) {
+        if (syncDbId == _currentSyncDbId) {
+            emit currentSyncRuntimeInfoChanged();
+        }
+    });
 }
 
 qint64 MainSelectionStore::currentSyncDbId() const {
@@ -41,6 +46,13 @@ std::optional<SyncContext> MainSelectionStore::currentSyncContext() const {
         return std::nullopt;
     }
     return _cache.syncContext(_currentSyncDbId);
+}
+
+std::optional<SyncRuntimeInfo> MainSelectionStore::currentSyncRuntimeInfo() const {
+    if (_currentSyncDbId == 0) {
+        return std::nullopt;
+    }
+    return _cache.syncRuntimeInfo(_currentSyncDbId);
 }
 
 std::vector<SyncContext> MainSelectionStore::syncContexts() const {
@@ -103,6 +115,7 @@ void MainSelectionStore::setCurrentSyncDbId(const SyncDbId syncDbId) {
     _currentSyncDbId = syncDbId;
     emit currentSyncDbIdChanged();
     emit currentSyncContextChanged();
+    emit currentSyncRuntimeInfoChanged();
 }
 
 SyncDbId MainSelectionStore::firstAvailableSyncDbId() const {
