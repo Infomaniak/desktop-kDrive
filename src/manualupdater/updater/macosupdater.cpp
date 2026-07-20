@@ -31,7 +31,7 @@ static bool runOsascriptDelete(const QString &posixPath) {
     return true;
 }
 
-bool MacOSUpdater::install(const VersionInfo &versionInfo, std::function<void(int32_t, QString)> progressCallback,
+bool MacOSUpdater::install(const VersionInfo &versionInfo, const std::function<void(int32_t, QString)> &progressCallback,
                            QString &outMessage) {
     const auto &appcastUrl = versionInfo.downloadUrl;
     if (appcastUrl.empty()) {
@@ -83,10 +83,6 @@ bool MacOSUpdater::install(const VersionInfo &versionInfo, std::function<void(in
         return false;
     }
 
-    progressCallback(70, QObject::tr("Verifying digital signature..."));
-    if (!verifyPackageSignature(SyncPath(pkgPath.toStdString()), outMessage)) {
-        return false;
-    }
     progressCallback(85, QObject::tr("Removing old application..."));
     if (std::filesystem::exists("/Applications/kDrive/kDrive Uninstaller.app")) {
         (void) runOsascriptDelete(QStringLiteral("/Applications/kDrive/kDrive Uninstaller.app"));

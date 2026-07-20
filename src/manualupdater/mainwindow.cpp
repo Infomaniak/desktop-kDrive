@@ -19,8 +19,7 @@
 namespace KDC {
 
 namespace {
-constexpr char kVersionRegexPattern[] = R"(^[0-9]+(\.[0-9]+)*$)";
-
+constexpr char kVersionRegexPattern[] = R"(^[0-9]{1,9}(\.[0-9]{1,9})*$)";
 bool isValidVersion(const std::string &version) {
     static const std::regex re(kVersionRegexPattern);
     return std::regex_match(version, re);
@@ -183,12 +182,11 @@ void MainWindow::onInstallClicked() {
     _progressBar->setValue(10);
     _installButton->setEnabled(false);
     _installInProgress = true;
-
-    const VersionInfo fetchedInfo = _fetchedVersionInfo; // copy for thread safety
-
-    _workerThread = std::thread([this, desiredVersion, fetchedInfo = _fetchedVersionInfo]() {
-        runInstall(desiredVersion, fetchedInfo);
-    });
+    if (_workerThread.joinable()) {
+        _workerThread.join();
+    }
+    const VersionInfo fetchedInfo = _fetchedVersionInfo;
+    _workerThread = std::thread([this, desiredVersion, fetchedInfo] { runInstall(desiredVersion, fetchedInfo); });
 }
 
 void MainWindow::onInstallProgress(const int32_t percent, const QString &message) const {
