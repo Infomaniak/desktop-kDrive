@@ -38,7 +38,13 @@ UtilityFindGoodPathForNewSyncJob::UtilityFindGoodPathForNewSyncJob(std::shared_p
 }
 
 ExitInfo UtilityFindGoodPathForNewSyncJob::deserializeInputParms() {
-    readParamValue(inputParamsDriveName, _driveName);
+    try {
+        readParamValue(inputParamsDriveName, _driveName);
+    } catch (const std::exception &e) {
+        LOG_WARN(_logger, "Exception in NodeInfoJob::readParamValue: error=" << e.what());
+        return ExitCode::LogicError;
+    }
+
     return ExitCode::Ok;
 }
 
