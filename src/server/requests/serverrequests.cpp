@@ -438,15 +438,20 @@ ExitInfo ServerRequests::findGoodPathForNewSync(const SyncName &driveName, SyncP
         return ExitCode::SystemError;
     }
 
-    int attempt = 1;
+    QString errorMessage;
+    const ExitInfo exitInfo = checkSyncNesting(syncList, Path2QStr(initialPath), errorMessage);
+    if (!exitInfo) {
+        LOGW_WARN(Log::instance()->getLogger(), QStr2WStr(errorMessage));
+        return exitInfo;
+    }
+
+    auto attempt = 1;
     SyncPath finalPath = initialPath;
     forever {
         // Check if the local directory already exists
         auto ioError = IoError::Success;
         bool alreadyExists = false;
-        const bool success =
-                IoHelper::checkIfPathExists(finalPath, alreadyExists, ioError, IoHelper::PathCheckOption::Insensitive);
-        if (!success) {
+        if (!IoHelper::checkIfPathExists(finalPath, alreadyExists, ioError, IoHelper::PathCheckOption::Insensitive)) {
             LOGW_WARN(Log::instance()->getLogger(),
                       L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(finalPath, ioError));
             return ExitCode::SystemError;
